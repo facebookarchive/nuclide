@@ -20,9 +20,9 @@ const {
   ReactDOM,
 } = require('react-for-atom');
 
-type NuclideSideBarViewInstance = {
+type ViewInstance = {
   commandDisposable: IDisposable,
-  view: NuclideSideBarView,
+  view: View,
 };
 
 /**
@@ -43,9 +43,10 @@ type NuclideSideBarViewInstance = {
  *   methods may be used normally. When another view is shown, the active view's React element is
  *   unmounted.
  */
-type NuclideSideBarView = {
+type View = {
   toggleCommand: string,
   getComponent: () => (typeof React.Component),
+  onDidShow: () => mixed,
   viewId: string,
 };
 
@@ -53,7 +54,7 @@ type State = {
   activeViewId: ?string,
   hidden: boolean,
   initialLength: number,
-  views: Map<string, NuclideSideBarViewInstance>,
+  views: Map<string, ViewInstance>,
 };
 
 let disposables: CompositeDisposable;
@@ -72,12 +73,14 @@ function getDefaultState(): State {
   };
 }
 
-function renderPanel(renderState) {
-  let activeViewInstance;
-  if (renderState.activeViewId != null) {
-    activeViewInstance = renderState.views.get(renderState.activeViewId);
+function getActiveViewInstance(activeState: State): ?ViewInstance {
+  if (activeState.activeViewId != null) {
+    return activeState.views.get(activeState.activeViewId);
   }
+}
 
+function renderPanel(renderState: State, onDidRender?: () => mixed): void {
+  const activeViewInstance = getActiveViewInstance(renderState);
   panelComponent = ReactDOM.render(
     <PanelComponent
       dock="left"
@@ -87,16 +90,12 @@ function renderPanel(renderState) {
         ? <div />
         : React.createElement(activeViewInstance.view.getComponent())}
     </PanelComponent>,
-    item
+    item,
+    onDidRender
   );
 }
 
-function toggleView(viewId: string, options?: {display: boolean}) {
-  if (!state.views.has(viewId)) {
-    logger.warn(`No view with ID '${viewId}' is registered. Toggling nothing.`);
-    return;
-  }
-
+function toggleView(viewId: ?string, options?: {display: boolean}) {
   // If `display` is specified in the event details, use it as the `hidden` value rather than
   // toggle. This enables consumers to force hide/show without first asking for the visibility
   // state.
@@ -105,28 +104,47 @@ function toggleView(viewId: string, options?: {display: boolean}) {
     forceHidden = !options.display;
   }
 
+  let nextState;
   if (viewId === state.activeViewId) {
     // If this view is already active, just toggle the visibility of the side bar or set it to the
     // desired `display`.
-    state = {
+    nextState = {
       ...state,
       hidden: (forceHidden == null) ? !state.hidden : forceHidden,
     };
   } else {
     // If this is not already the active view, switch to it and ensure the side bar is visible or is
     // the specified `display` value.
-    state = {
+    nextState = {
       ...state,
       activeViewId: viewId,
       hidden: (forceHidden == null) ? false : forceHidden,
     };
   }
 
-  renderPanel(state);
+  // If the side bar became visible or if it was already visible and the active view changed, call
+  // the next active view's `onDidShow` so it can respond to becoming visible.
+  const didShow = (nextState.hidden === false && state.hidden === true)
+    || (!nextState.hidden && (nextState.activeViewId !== state.activeViewId));
+
+  // Store the next state.
+  state = nextState;
+
+  if (didShow) {
+    const activeViewInstance = getActiveViewInstance(state);
+    let onDidShow;
+    if (activeViewInstance != null) {
+      onDidShow = activeViewInstance.view.onDidShow;
+    }
+
+    renderPanel(state, onDidShow);
+  } else {
+    renderPanel(state);
+  }
 }
 
-const NuclideSideBarService = {
-  registerView(view: NuclideSideBarView): void {
+const Service = {
+  registerView(view: View): void {
     if (state.views.has(view.viewId)) {
       logger.warn(`A view with ID '${view.viewId}' is already registered.`);
       return;
@@ -191,20 +209,23 @@ const NuclideSideBarService = {
   },
 };
 
-export function provideNuclideSideBar(): typeof NuclideSideBarService {
-  return NuclideSideBarService;
+/**
+ * The type provided to service consumers.
+ */
+export type NuclideSideBarService = typeof Service;
+
+export function provideNuclideSideBar(): NuclideSideBarService {
+  return Service;
 }
 
 export function activate(deserializedState: ?Object) {
   logger = getLogger('nuclide-side-bar');
   disposables = new CompositeDisposable();
 
-  disposables.add(atom.commands.add('atom-workspace', 'nuclide-side-bar:toggle', () => {
-    state = {
-      ...state,
-      hidden: !state.hidden,
-    };
-    renderPanel(state);
+  disposables.add(atom.commands.add('atom-workspace', 'nuclide-side-bar:toggle', event => {
+    // Pass the already-active view ID to simply toggle the side bar's visibility.
+    // $FlowIssue Missing `CustomEvent` type in Flow's 'dom.js' library
+    toggleView(state.activeViewId, event.detail);
   }));
 
   disposables.add(atom.commands.add('atom-workspace', 'nuclide-side-bar:toggle-focus', () => {
@@ -227,9 +248,9 @@ export function activate(deserializedState: ?Object) {
 
 export function deactivate() {
   ReactDOM.unmountComponentAtNode(item);
-  state.views.clear();
   // Contains the `commandDisposable` Objects for all currently-registered views.
   disposables.dispose();
+  state.views.clear();
   panel.destroy();
 }
 

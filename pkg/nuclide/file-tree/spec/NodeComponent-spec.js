@@ -29,6 +29,7 @@ function renderEntryComponentIntoDocument(componentKlass: Object, props: Object 
     nodeName: '',
     nodePath: '',
     rootKey: '',
+    usePreviewTabs: false,
     ...props,
   };
   return TestUtils.renderIntoDocument(React.createElement(componentKlass, componentProps));

@@ -14,17 +14,11 @@ import type {ExportStoreData} from './FileTreeStore';
 import {CompositeDisposable} from 'atom';
 import {EVENT_HANDLER_SELECTOR}  from './FileTreeConstants';
 import FileSystemActions from './FileSystemActions';
-import FileTree from '../components/FileTree';
 import FileTreeActions from './FileTreeActions';
 import FileTreeContextMenu from './FileTreeContextMenu';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeStore from './FileTreeStore';
 import Immutable from 'immutable';
-import {PanelComponent} from '../../ui/panel';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
 import {track} from '../../analytics';
 import {isTextEditor} from '../../atom-helpers';
 
@@ -33,48 +27,24 @@ import shell from 'shell';
 
 import invariant from 'assert';
 
-const {PropTypes} = React;
-
 type FileTreeNodeData = {
   nodeKey: string,
   rootKey: string,
 };
 
 export type FileTreeControllerState = {
-  panel: {
-    isVisible: ?boolean;
-    width: number;
-  };
   tree: ExportStoreData;
 };
 
 class FileTreeController {
   _actions: FileTreeActions;
   _contextMenu: FileTreeContextMenu;
-  _isVisible: boolean;
-  _panel: atom$Panel;
-  _fileTreePanel: FileTreePanel;
-  _panelElement: HTMLElement;
   _repositories: Immutable.Set<atom$Repository>;
   _store: FileTreeStore;
   _subscriptions: CompositeDisposable;
   _subscriptionForRepository: Immutable.Map<atom$Repository, IDisposable>;
-  /**
-   * True if a reveal was requested while the file tree is hidden. If so, we should apply it when
-   * the tree is shown.
-   */
-  _revealActiveFilePending: boolean;
-
-  static INITIAL_WIDTH = 240;
 
   constructor(state: ?FileTreeControllerState) {
-    const {panel} = {
-      panel: {width: FileTreeController.INITIAL_WIDTH},
-      ...state,
-    };
-
-    // show the file tree by default
-    this._isVisible = panel.isVisible != null ? panel.isVisible : true;
     this._actions = FileTreeActions.getInstance();
     this._store = FileTreeStore.getInstance();
     this._repositories = new Immutable.Set();
@@ -86,20 +56,12 @@ class FileTreeController {
     this._subscriptions.add(
       atom.project.onDidChangePaths(() => this._updateRootDirectories())
     );
-    this._initializePanel();
-    // Initial render
-    this._render(panel.width);
-    // Subsequent renders happen on changes to data store
-    this._subscriptions.add(
-      this._store.subscribe(() => this._render())
-    );
+
     this._subscriptions.add(
       atom.commands.add('atom-workspace', {
         // Pass undefined so the default parameter gets used.
         'nuclide-file-tree:reveal-text-editor': this._revealTextEditor.bind(this),
         'nuclide-file-tree:reveal-active-file': this.revealActiveFile.bind(this, undefined),
-        'nuclide-file-tree:toggle': this.toggleVisibility.bind(this),
-        'nuclide-file-tree:toggle-focus': this.toggleTreeFocus.bind(this),
       })
     );
     this._subscriptions.add(
@@ -149,27 +111,6 @@ class FileTreeController {
       this._store.loadData(state.tree);
     }
     this._contextMenu = new FileTreeContextMenu();
-
-    this._revealActiveFilePending = false;
-  }
-
-  _initializePanel(): void {
-    this._panelElement = document.createElement('div');
-    this._panelElement.style.height = '100%';
-    this._panel = atom.workspace.addLeftPanel({
-      item: this._panelElement,
-      visible: this._isVisible,
-    });
-  }
-
-  _render(initialWidth?: ?number): void {
-    this._fileTreePanel = ReactDOM.render(
-      <FileTreePanel
-        initialWidth={initialWidth}
-        store={this._store}
-      />,
-      this._panelElement,
-    );
   }
 
   _openAndRevealFilePath(filePath: ?string): void {
@@ -198,69 +139,16 @@ class FileTreeController {
     this._actions.updateRepositories(rootDirectories);
   }
 
-  _setVisibility(shouldBeVisible: boolean): void {
-    if (shouldBeVisible) {
-      this._panel.show();
-      this.focusTree();
-    } else {
-      if (this._treeHasFocus()) {
-        // If the file tree has focus, blur it because it will be hidden when the panel is hidden.
-        this.blurTree();
-      }
-      this._panel.hide();
-    }
-    this._isVisible = shouldBeVisible;
-  }
-
-  /**
-   * "Blurs" the tree, which is done by activating the active pane in
-   * [Atom's tree-view]{@link https://github.com/atom/tree-view/blob/v0.188.0/lib/tree-view.coffee#L187}.
-   */
-  blurTree(): void {
-    atom.workspace.getActivePane().activate();
-  }
-
-  focusTree(): void {
-    this._fileTreePanel.getFileTree().focus();
-  }
-
-  /**
-   * Returns `true` if the file tree DOM node has focus, otherwise `false`.
-   */
-  _treeHasFocus(): boolean {
-    const fileTree = this._fileTreePanel.getFileTree();
-    return fileTree.hasFocus();
-  }
-
-  /**
-   * Focuses the tree if it does not have focus, blurs the tree if it does have focus.
-   */
-  toggleTreeFocus(): void {
-    if (this._treeHasFocus()) {
-      this.blurTree();
-    } else {
-      this.focusTree();
-    }
-  }
-
-  toggleVisibility(): void {
-    const willBeVisible = !this._isVisible;
-    this._setVisibility(willBeVisible);
-    if (willBeVisible && this._revealActiveFilePending) {
-      this.revealActiveFile();
-      this._revealActiveFilePending = false;
-    }
-  }
-
   _revealTextEditor(event: Event): void {
     const editorElement = ((event.target: any): atom$TextEditorElement);
     if (
       editorElement == null
-        || typeof editorElement.getModel !== 'function'
-        || !isTextEditor(editorElement.getModel())
-      ) {
+      || typeof editorElement.getModel !== 'function'
+      || !isTextEditor(editorElement.getModel())
+    ) {
       return;
     }
+
     const filePath = editorElement.getModel().getPath();
     this._revealFilePath(filePath);
   }
@@ -279,17 +167,14 @@ class FileTreeController {
     if (showIfHidden) {
       // Ensure the file tree is visible before trying to reveal a file in it. Even if the currently
       // active pane is not an ordinary editor, we still at least want to show the tree.
-      this._setVisibility(true);
+      atom.commands.dispatch(
+        atom.views.getView(atom.workspace),
+        'nuclide-file-tree:toggle',
+        {display: true}
+      );
     }
 
     if (!filePath) {
-      return;
-    }
-
-    // If we are not showing the tree as part of this action, and it is currently hidden, this
-    // reveal will take effect when the tree is shown.
-    if (!showIfHidden && !this._isVisible) {
-      this._revealActiveFilePending = true;
       return;
     }
 
@@ -309,7 +194,11 @@ class FileTreeController {
     }
 
     const filePath = title.dataset.path;
-    this._setVisibility(true);
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'nuclide-file-tree:toggle',
+      {display: true}
+    );
     this.revealNodeKey(filePath);
   }
 
@@ -757,45 +646,13 @@ class FileTreeController {
       disposable.dispose();
     }
     this._store.reset();
-    ReactDOM.unmountComponentAtNode(this._panelElement);
-    this._panel.destroy();
     this._contextMenu.dispose();
   }
 
   serialize(): FileTreeControllerState {
     return {
-      panel: {
-        isVisible: this._isVisible,
-        width: this._fileTreePanel.getLength(),
-      },
       tree: this._store.exportData(),
     };
-  }
-}
-
-class FileTreePanel extends React.Component {
-  static propTypes = {
-    initialWidth: PropTypes.number,
-    store: PropTypes.instanceOf(FileTreeStore).isRequired,
-  };
-
-  render() {
-    return (
-      <PanelComponent
-        dock="left"
-        initialLength={this.props.initialWidth}
-        ref="panel">
-        <FileTree store={this.props.store} />
-      </PanelComponent>
-    );
-  }
-
-  getFileTree(): FileTree {
-    return this.refs['panel'].getChildComponent();
-  }
-
-  getLength(): number {
-    return this.refs['panel'].getLength();
   }
 }
 

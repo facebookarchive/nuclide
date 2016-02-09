@@ -25,14 +25,16 @@ class CoolerBarView extends React.Component {
 }
 
 const SIDE_BAR = {
-  toggleCommand: 'side-bar-view:toggle',
   getComponent() { return SideBarView; },
+  onDidShow() {},
+  toggleCommand: 'side-bar-view:toggle',
   viewId: 'side-bar-view',
 };
 
 const COOLER_BAR = {
-  toggleCommand: 'cooler-bar-view:toggle',
   getComponent() { return CoolerBarView; },
+  onDidShow() {},
+  toggleCommand: 'cooler-bar-view:toggle',
   viewId: 'cooler-bar-view',
 };
 
@@ -125,4 +127,30 @@ describe('nuclide-side-bar main', () => {
     });
   });
 
+  it("calls a view's `onDidShow` when the active view changes", () => {
+    const sideBarService = NuclideSideBar.provideNuclideSideBar();
+
+    spyOn(COOLER_BAR, 'onDidShow');
+    sideBarService.registerView(SIDE_BAR);
+    showView(SIDE_BAR);
+    sideBarService.registerView(COOLER_BAR);
+    showView(COOLER_BAR);
+
+    expect(COOLER_BAR.onDidShow).toHaveBeenCalled();
+  });
+
+  it("calls a view's `onDidShow` when the side bar becomes visible", () => {
+    const sideBarService = NuclideSideBar.provideNuclideSideBar();
+
+    // Ensure the side bar is hidden to start
+    atom.commands.dispatch(workspaceElement, 'nuclide-side-bar:toggle', {display: false});
+
+    spyOn(SIDE_BAR, 'onDidShow');
+    sideBarService.registerView(SIDE_BAR);
+
+    // Show the side bar.
+    atom.commands.dispatch(workspaceElement, 'nuclide-side-bar:toggle', {display: true});
+
+    expect(SIDE_BAR.onDidShow).toHaveBeenCalled();
+  });
 });

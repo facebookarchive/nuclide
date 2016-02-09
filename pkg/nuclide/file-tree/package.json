@@ -4,6 +4,13 @@
   "main": "./lib/main",
   "version": "0.0.0",
   "description": "Provides the new file tree panel for Nuclide",
+  "consumedServices": {
+    "nuclide-side-bar": {
+      "versions": {
+        "1.0.0": "consumeNuclideSideBar"
+      }
+    }
+  },
   "nuclide": {
     "config": {
       "revealFileOnSwitch": {

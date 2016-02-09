@@ -9,11 +9,14 @@
  * the root directory of this source tree.
  */
 
-import type {Disposable} from 'atom';
 import type {FileTreeControllerState} from './FileTreeController';
 import type FileTreeControllerType from './FileTreeController';
+import type {NuclideSideBarService} from '../../side-bar';
 
-import {CompositeDisposable} from 'atom';
+import {
+  CompositeDisposable,
+  Disposable,
+} from 'atom';
 
 import featureConfig from '../../feature-config';
 
@@ -22,6 +25,8 @@ import featureConfig from '../../feature-config';
  * item in the file tree.
  */
 const ACTIVE_PANE_DEBOUNCE_INTERVAL_MS = 150;
+
+const REVEAL_FILE_ON_SWITCH_SETTING = 'nuclide-file-tree.revealFileOnSwitch';
 
 class Activation {
   _fileTreeController: ?FileTreeControllerType;
@@ -36,9 +41,8 @@ class Activation {
     const FileTreeController = require('./FileTreeController');
     this._fileTreeController = new FileTreeController(this._packageState);
 
-    const revealSetting = 'nuclide-file-tree.revealFileOnSwitch';
     // Flow does not know that this setting is a boolean, thus the cast.
-    this._setRevealOnFileSwitch(((featureConfig.get(revealSetting): any): boolean));
+    this._setRevealOnFileSwitch(((featureConfig.get(REVEAL_FILE_ON_SWITCH_SETTING): any): boolean));
 
     const ignoredNamesSetting = 'core.ignoredNames';
     this._setIgnoredNames(((atom.config.get(ignoredNamesSetting): any): string | Array<string>));
@@ -55,7 +59,7 @@ class Activation {
     this._setUsePreviewTabs(((atom.config.get(usePreviewTabs): any): ?boolean));
 
     this._subscriptions.add(
-      featureConfig.observe(revealSetting, this._setRevealOnFileSwitch.bind(this)),
+      featureConfig.observe(REVEAL_FILE_ON_SWITCH_SETTING, this._setRevealOnFileSwitch.bind(this)),
       atom.config.observe(ignoredNamesSetting, this._setIgnoredNames.bind(this)),
       featureConfig.observe(hideIgnoredNamesSetting, this._setHideIgnoredNames.bind(this)),
       atom.config.observe(
@@ -156,6 +160,8 @@ class Activation {
 }
 
 let activation: ?Activation;
+let deserializedState: ?FileTreeControllerState;
+let sideBarDisposable: ?IDisposable;
 
 module.exports = {
   activate(state: ?FileTreeControllerState): void {
@@ -170,12 +176,13 @@ module.exports = {
       atom.packages.unloadPackage('tree-view');
     }
 
-    if (!activation) {
-      activation = new Activation(state);
-    }
+    deserializedState = state;
   },
 
   deactivate() {
+    if (sideBarDisposable != null) {
+      sideBarDisposable.dispose();
+    }
     if (activation) {
       activation.dispose();
       activation = null;
@@ -186,5 +193,33 @@ module.exports = {
     if (activation) {
       return activation.serialize();
     }
+  },
+
+  consumeNuclideSideBar(sidebar: NuclideSideBarService): IDisposable {
+    if (!activation) {
+      activation = new Activation(deserializedState);
+    }
+
+    sidebar.registerView({
+      getComponent() { return require('../components/FileTree'); },
+      onDidShow() {
+        // If "Reveal File on Switch" is enabled, ensure the scroll position is synced to where the
+        // user expects when the side bar shows the file tree.
+        if (featureConfig.get(REVEAL_FILE_ON_SWITCH_SETTING)) {
+          atom.commands.dispatch(
+            atom.views.getView(atom.workspace),
+            'nuclide-file-tree:reveal-active-file'
+          );
+        }
+      },
+      toggleCommand: 'nuclide-file-tree:toggle',
+      viewId: 'nuclide-file-tree',
+    });
+
+    sideBarDisposable = new Disposable(() => {
+      sidebar.destroyView('nuclide-file-tree');
+    });
+
+    return sideBarDisposable;
   },
 };

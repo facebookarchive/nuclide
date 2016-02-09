@@ -12,7 +12,6 @@
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeController from '../lib/FileTreeController';
 import FileTreeStore from '../lib/FileTreeStore';
-import {ReactDOM} from 'react-for-atom';
 
 import pathModule from 'path';
 
@@ -43,72 +42,6 @@ describe('FileTreeController', () => {
   afterEach(() => {
     controller.destroy();
     store.reset();
-  });
-
-  describe('revealActiveFile', () => {
-    beforeEach(() => {
-      // Ensure the file tree's panel is hidden at first.
-      controller.toggleVisibility();
-      expect(controller._isVisible).toBe(false);
-    });
-
-    it('shows/unhides the controller\'s panel', () => {
-      controller.revealActiveFile();
-      expect(controller._isVisible).toBe(true);
-    });
-
-    it('does not show the panel if showIfHidden is false', () => {
-      controller.revealActiveFile(/* showIfHidden */ false);
-      expect(controller._isVisible).toBe(false);
-    });
-  });
-
-  describe('toggleVisibility', () => {
-    it('focuses the file tree element when going from hidden to visible', () => {
-      const domNode = ReactDOM.findDOMNode(controller._fileTreePanel.getFileTree());
-      controller.toggleVisibility();
-      expect(domNode).not.toMatchSelector(':focus');
-      controller.toggleVisibility();
-      expect(domNode).toMatchSelector(':focus');
-    });
-
-    it('blurs the file tree element when going from visible to hidden', () => {
-      const domNode = ReactDOM.findDOMNode(controller._fileTreePanel.getFileTree());
-      controller.focusTree();
-      expect(domNode).toMatchSelector(':focus');
-      controller.toggleVisibility();
-      expect(domNode).not.toMatchSelector(':focus');
-    });
-  });
-
-  describe('focusTree', () => {
-    it('focuses the expected element', () => {
-      const domNode = ReactDOM.findDOMNode(controller._fileTreePanel.getFileTree());
-      expect(domNode).not.toMatchSelector(':focus');
-      controller.focusTree();
-      expect(domNode).toMatchSelector(':focus');
-    });
-  });
-
-  describe('blurTree', () => {
-    it('sends focus to the workspace element to match Atom\'s tree-view API', () => {
-      const domNode = ReactDOM.findDOMNode(controller._fileTreePanel.getFileTree());
-      controller.focusTree();
-      expect(domNode).toMatchSelector(':focus');
-      controller.blurTree();
-      expect(atom.views.getView(atom.workspace.getActivePane())).toMatchSelector(':focus');
-    });
-  });
-
-  describe('serialize', () => {
-    it('returns an object with valid values', () => {
-      const serializedControllerData = controller.serialize();
-      expect(serializedControllerData.panel).toEqual({
-        isVisible: true,
-        width: FileTreeController.INITIAL_WIDTH,
-      });
-      expect(typeof serializedControllerData.panel).toBe('object');
-    });
   });
 
   describe('navigating with the keyboard', () => {

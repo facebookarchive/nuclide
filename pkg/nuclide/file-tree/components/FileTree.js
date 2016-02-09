@@ -11,22 +11,17 @@
 
 import {CompositeDisposable} from 'atom';
 import FileTreeStore from '../lib/FileTreeStore';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import {React} from 'react-for-atom';
 import RootNodeComponent from './RootNodeComponent';
 import EmptyComponent from './EmptyComponent';
 import {track} from '../../analytics';
 import {once} from '../../commons';
 
-const {PropTypes} = React;
-
 class FileTree extends React.Component {
   _subscriptions: CompositeDisposable;
 
-  static trackFirstRender = once(instance => {
-    const rootKeysLength = instance.props.store.getRootKeys().length;
+  static trackFirstRender = once(() => {
+    const rootKeysLength = FileTreeStore.getInstance().getRootKeys().length;
     // Wait using `setTimeout` and not `process.nextTick` or `setImmediate`
     // because those queue tasks in the current and next turn of the event loop
     // respectively. Since `setTimeout` gets preempted by them, it works great
@@ -41,10 +36,6 @@ class FileTree extends React.Component {
     });
   });
 
-  static propTypes = {
-    store: PropTypes.instanceOf(FileTreeStore).isRequired,
-  };
-
   constructor(props: Object) {
     super(props);
     this._subscriptions = new CompositeDisposable();
@@ -55,8 +46,8 @@ class FileTree extends React.Component {
 
   componentDidMount(): void {
     this._subscriptions.add(
-      this.props.store.subscribe(() => {
-        const nodeToKeepInView = this.props.store.getTrackedNode();
+      FileTreeStore.getInstance().subscribe(() => {
+        const nodeToKeepInView = FileTreeStore.getInstance().getTrackedNode();
         if (nodeToKeepInView !== this.state.nodeToKeepInView) {
           /*
            * Store a copy of `nodeToKeepInView` so the Store can update during this component's
@@ -92,14 +83,6 @@ class FileTree extends React.Component {
     this._subscriptions.dispose();
   }
 
-  focus(): void {
-    ReactDOM.findDOMNode(this).focus();
-  }
-
-  hasFocus(): boolean {
-    return document.activeElement === ReactDOM.findDOMNode(this);
-  }
-
   render(): ReactElement {
     return (
       <div className="nuclide-file-tree focusable-panel tree-view" tabIndex={0}>
@@ -109,7 +92,7 @@ class FileTree extends React.Component {
   }
 
   _renderChildren(): ReactElement | Array<ReactElement> {
-    const rootKeys: Array<string> = this.props.store.getRootKeys();
+    const rootKeys: Array<string> = FileTreeStore.getInstance().getRootKeys();
     if (rootKeys.length === 0) {
       return <EmptyComponent />;
     }
@@ -118,7 +101,7 @@ class FileTree extends React.Component {
         <RootNodeComponent
           key={rootKey}
           ref={rootKey}
-          rootNode={this.props.store.getRootNode(rootKey)}
+          rootNode={FileTreeStore.getInstance().getRootNode(rootKey)}
           rootKey={rootKey}
         />
       );
