@@ -4,124 +4,21 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
-from lldb import eStateStepping, eStateRunning, SBBreakpoint, SBEvent, SBListener, SBProcess, SBTarget, SBWatchpoint
-from threading import Thread
-
+import lldb
 from handler import HandlerDomain, UndefinedHandlerError, handler
 from remote_objects import ValueListRemoteObject
 import file_manager
 import serialize
 from logging_helper import log_debug
 from thread_manager import ThreadManager
-
-class ModuleSourcePathUpdater:
-    """Register source paths in debug data of modules as they are loaded.
-
-    NB: module in this context are SBModule instances, representing executable
-    images including symbol and debug information.
-    """
-    def __init__(self, target, file_manager, basepath='.'):
-        self._registered_modules = set()
-        self._target = target
-        self._file_manager = file_manager
-        self._basepath = basepath
-
-    def modules_updated(self):
-        for module in self._target.modules:
-            try:
-                if module.uuid not in self._registered_modules:
-                    self._register_source_paths_for_module(module)
-                    self._registered_modules.add(module.uuid)
-            except Exception as e:
-                # Some module does not have uuid.
-                log_debug('Can\'t register module: %s' % str(e))
-
-    def _register_source_paths_for_module(self, module):
-        for comp_unit in module.compile_units:
-            if comp_unit.file.fullpath is None:
-                continue
-            self._file_manager.register_filelike(
-                file_manager.File.from_filespec(
-                    comp_unit.file, self._basepath))
-
-
-class LLDBListenerThread(Thread):
-    should_quit = False
-
-    def __init__(self, server, location_serializer, remote_object_manager,
-                 module_source_path_updater, thread_manager, process):
-      Thread.__init__(self)
-      self.daemon = True
-
-      self.server = server
-      self.location_serializer = location_serializer
-      self.remote_object_manager = remote_object_manager
-      self.module_source_path_updater = module_source_path_updater
-      self.listener = SBListener('Chrome Dev Tools Listener')
-      self.thread_manager = thread_manager
-
-      self._add_listener_to_process(process)
-      self._broadcast_process_state(process)
-
-      self._add_listener_to_target(process.target)
-
-    def _add_listener_to_target(self, target):
-        # Listen for breakpoint/watchpoint events (Added/Removed/Disabled/etc).
-        broadcaster = target.GetBroadcaster()
-        mask = SBTarget.eBroadcastBitBreakpointChanged | SBTarget.eBroadcastBitWatchpointChanged | SBTarget.eBroadcastBitModulesLoaded
-        broadcaster.AddListener(self.listener, mask)
-
-    def _add_listener_to_process(self, process):
-        # Listen for process events (Start/Stop/Interrupt/etc).
-        broadcaster = process.GetBroadcaster()
-        mask = SBProcess.eBroadcastBitStateChanged
-        broadcaster.AddListener(self.listener, mask)
-
-    def _broadcast_process_state(self, process):
-        # Reset the object group so old frame variable objects don't linger
-        # forever.
-        self.thread_manager.release()
-        if process.state == eStateStepping or process.state == eStateRunning:
-            self.server.send_notification('Debugger.resumed', None)
-        else:
-            thread = process.GetSelectedThread()
-            self.thread_manager.update(process)
-            params = {
-              "callFrames": self.thread_manager.get_thread_stack(thread),
-              "reason": serialize.StopReason_to_string(thread.GetStopReason()),
-              "data": {},
-            }
-            self.server.send_notification('Debugger.paused', params)
-
-    def _breakpoint_event(self, event):
-        breakpoint = SBBreakpoint.GetBreakpointFromEvent(event)
-        for location in self.location_serializer.get_breakpoint_locations(breakpoint):
-            params = {
-                'breakpointId': str(breakpoint.id),
-                'location': location,
-            }
-            self.server.send_notification('Debugger.breakpointResolved', params)
-
-    def _watchpoint_event(self, event):
-        # TODO(williamsc) Add support for sending watchpoint change events.
-        pass
-
-    def run(self):
-        while not self.should_quit:
-            event = SBEvent()
-            if self.listener.WaitForEvent(1, event):
-                if event.GetType() == SBTarget.eBroadcastBitModulesLoaded:
-                    self.module_source_path_updater.modules_updated()
-                elif SBProcess.EventIsProcessEvent(event):
-                    self._broadcast_process_state(SBProcess.GetProcessFromEvent(event))
-                elif SBBreakpoint.EventIsBreakpointEvent(event):
-                    self._breakpoint_event(event)
-                elif SBWatchpoint.EventIsWatchpointEvent(event):
-                    self._watchpoint_event(event)
+from event_thread import LLDBListenerThread
+from modules import ModuleSourcePathUpdater
 
 
 class DebuggerDomain(HandlerDomain):
-
+    '''Implement Chrome debugger domain protocol and
+    convert into lldb python API.
+    '''
     def __init__(self, runtimeDomain, fileManager, remoteObjectManager,
                  basepath='.', **kwargs):
         HandlerDomain.__init__(self, **kwargs)
