@@ -16,9 +16,6 @@ import type {
   RemoteFile,
 } from '../../remote-connection';
 
-import {fsPromise} from '../../../nuclide/commons';
-import {React} from 'react-for-atom';
-import {repositoryForPath} from '../../hg-git-bridge';
 import FileDialogComponent from '../components/FileDialogComponent';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeStore from './FileTreeStore';
@@ -27,6 +24,9 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 import RemoteUri from '../../remote-uri';
+import {File} from 'atom';
+import {fsPromise} from '../../../nuclide/commons';
+import {repositoryForPath} from '../../hg-git-bridge';
 
 import invariant from 'assert';
 import pathModule from 'path';
@@ -152,6 +152,60 @@ const FileSystemActions = {
     }
   },
 
+  async _onConfirmDuplicate(
+    file: File | RemoteFile,
+    nodePath: string,
+    newBasename: string,
+    addToVCS: boolean,
+    onDidConfirm: (filePath: ?string) => mixed,
+  ): Promise<void> {
+    const directory = file.getParent();
+    const newFile = directory.getFile(newBasename);
+    const newPath = newFile.getPath();
+    if (FileTreeHelpers.isLocalFile(file)) {
+      const exists = await fsPromise.exists(newPath);
+      if (!exists) {
+        await fsPromise.copy(nodePath, newPath);
+        const hgRepository = this._getHgRepositoryForPath(newPath);
+        if (hgRepository !== null && addToVCS) {
+          function errorHandler(error) {
+            let message = newPath + ' was duplicated, but there was an error adding it to ' +
+              'version control.';
+            if (error != null) {
+              message += '  Error: ' + error.toString();
+            }
+            atom.notifications.addError(message);
+            onDidConfirm(null);
+          }
+          const ret = hgRepository.add(newPath).catch(errorHandler);
+          if (!ret) {
+            errorHandler(null);
+          } else {
+            onDidConfirm(newPath);
+          }
+        }
+      } else {
+        atom.notifications.addError(`'${newPath}' already exists.`);
+      }
+    } else {
+      invariant(file.isFile());
+      const remoteFile = ((file: any): RemoteFile);
+      const newRemoteFile = ((newFile: any): RemoteFile);
+
+      const wasCopied = await remoteFile.copy(newRemoteFile.getLocalPath());
+      if (!wasCopied) {
+        atom.notifications.addError(`'${newPath}' already exists.`);
+        onDidConfirm(null);
+      } else {
+        const hgRepository = this._getHgRepositoryForPath(newRemoteFile.getPath());
+        if (hgRepository !== null && addToVCS) {
+          await hgRepository.add(newRemoteFile.getLocalPath());
+        }
+        onDidConfirm(newPath);
+      }
+    }
+  },
+
   openRenameDialog(): void {
     const store = FileTreeStore.getInstance();
     const selectedNodes = store.getSelectedNodes();
@@ -191,45 +245,34 @@ const FileSystemActions = {
     let initialValue = pathModule.basename(nodePath);
     const ext = pathModule.extname(nodePath);
     initialValue = initialValue.substr(0, initialValue.length - ext.length) + '-copy' + ext;
+    const hgRepository = this._getHgRepositoryForNode(node);
+    const additionalOptions = {};
+    if (hgRepository !== null) {
+      additionalOptions['addToVCS'] = 'Add the new file to version control.';
+    }
     this._openDialog({
       iconClassName: 'icon-arrow-right',
       initialValue: initialValue,
       message: <span>Enter the new path for the duplicate.</span>,
-      onConfirm: async (newBasename: string, options: Object) => {
+      onConfirm: (newBasename: string, options: {addToVCS?: boolean}) => {
         const file = FileTreeHelpers.getFileByKey(node.nodeKey);
         if (file == null) {
           // TODO: Connection could have been lost for remote file.
           return;
         }
-        if (FileTreeHelpers.isLocalFile(file)) {
-          const directory = file.getParent();
-          const newFile = directory.getFile(newBasename.trim());
-          const newPath = newFile.getPath();
-          const exists = await fsPromise.exists(newPath);
-          if (!exists) {
-            await fsPromise.copy(nodePath, newPath);
-          } else {
-            atom.notifications.addError(`'${newPath}' already exists.`);
-          }
-        } else {
-          invariant(file.isFile());
-          const remoteFile = ((file: any): RemoteFile);
-          const remoteDirectory = remoteFile.getParent();
-          const newRemoteFile = remoteDirectory.getFile(newBasename.trim());
-          const newRemotePath = newRemoteFile.getPath();
-
-          const wasCopied =
-            await remoteFile.copy(newRemoteFile.getLocalPath());
-          if (!wasCopied) {
-            atom.notifications.addError(`'${newRemotePath}' already exists.`);
-            onDidConfirm(null);
-          } else {
-            onDidConfirm(newRemotePath);
-          }
-        }
+        this._onConfirmDuplicate(
+          file,
+          nodePath,
+          newBasename.trim(),
+          !!options.addToVCS,
+          onDidConfirm,
+        ).catch(error => {
+          atom.notifications.addError(`Failed to duplicate '{file.getPath()}'`);
+        });
       },
       onClose: this._closeDialog,
       selectBasename: true,
+      additionalOptions,
     });
   },
 
