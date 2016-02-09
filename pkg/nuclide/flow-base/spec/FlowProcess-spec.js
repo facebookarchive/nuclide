@@ -26,6 +26,7 @@ describe('FlowProcess', () => {
   // methods).
   let childSpy: any;
 
+  let FlowProcess = (null: any);
   let flowProcess: FlowProcessType = (null: any);
 
   const root = '/path/to/flow/root';
@@ -37,8 +38,9 @@ describe('FlowProcess', () => {
   beforeEach(() => {
     // We need this level of indirection to ensure that if fakeAsyncExec is rebound, the new one
     // gets executed.
-    const runFakeAsyncExec = () => fakeAsyncExec();
+    const runFakeAsyncExec = (...args) => fakeAsyncExec(...args);
     spyOn(require('../../commons'), 'asyncExecute').andCallFake(runFakeAsyncExec);
+    fakeAsyncExec = jasmine.createSpy().andReturn({exitCode: FLOW_RETURN_CODES.ok});
 
     childSpy = {
       stdout: { on() {} },
@@ -50,7 +52,7 @@ describe('FlowProcess', () => {
     spyOn(require('../../commons'), 'safeSpawn').andReturn(childSpy);
     // we have to create another flow service here since we've mocked modules
     // we depend on since the outer beforeEach ran.
-    const {FlowProcess} = (uncachedRequire(require, flowProcessPath): any);
+    FlowProcess = (uncachedRequire(require, flowProcessPath): any).FlowProcess;
     flowProcess = new FlowProcess(root);
     spyOn(flowProcess, '_getFlowExecOptions').andReturn(Promise.resolve({cwd: root}));
   });
@@ -181,6 +183,16 @@ describe('FlowProcess', () => {
         await execFlow();
         expect(await states).toEqual(['unknown', 'not running', 'init', 'ready']);
       });
+    });
+  });
+
+  describe('execFlowClient', () => {
+    it('should call asyncExecute', () => {
+      FlowProcess.execFlowClient(['arg']);
+      const [asyncExecArgs] = fakeAsyncExec.argsForCall;
+      expect(asyncExecArgs[0]).toEqual('flow');
+      expect(asyncExecArgs[1]).toEqual(['arg', '--from', 'nuclide']);
+      expect(asyncExecArgs[2]).toEqual({});
     });
   });
 });

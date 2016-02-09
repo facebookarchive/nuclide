@@ -171,11 +171,9 @@ export class FlowProcess {
       '--retry-if-init', 'false',
       '--retries', '0',
       '--no-auto-start',
-      '--from', 'nuclide',
     ];
-    const pathToFlow = getPathToFlow();
     try {
-      const result = await asyncExecute(pathToFlow, args, options);
+      const result = await FlowProcess.execFlowClient(args, options);
       this._updateServerStatus(result);
       return result;
     } catch (e) {
@@ -269,5 +267,27 @@ export class FlowProcess {
     } else {
       return null;
     }
+  }
+
+  /**
+   * This should be used to execute Flow commands that do not rely on a Flow server. So, they do not
+   * need to be associated with a FlowProcess instance and they may be executed from any working
+   * directory.
+   *
+   * Note that using this method means that you get no guarantee that the Flow version specified in
+   * any given .flowconfig is the one that will be executed here, because it has no association with
+   * any given root. If you need this property, create an instance with the appropriate root and use
+   * execFlow.
+   */
+  static async execFlowClient(
+    args: Array<any>,
+    options?: Object = {}
+  ): Promise<?process$asyncExecuteRet> {
+    args = [
+      ...args,
+      '--from', 'nuclide',
+    ];
+    const pathToFlow = getPathToFlow();
+    return await asyncExecute(pathToFlow, args, options);
   }
 }
