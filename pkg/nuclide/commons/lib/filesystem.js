@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-const fs = require('fs');
 const path = require('path');
 const mkdirpLib = require('mkdirp');
 const rimraf = require('rimraf');
 
-import {checkOutput} from './process';
+import fs from 'fs-plus';
 import invariant from 'assert';
+import {checkOutput} from './process';
 
 function isRoot(filePath: string): boolean {
   return path.dirname(filePath) === filePath;
@@ -180,6 +180,7 @@ function denodeifyFsMethod(methodName: string): () => Promise {
 }
 
 module.exports = {
+  copy: denodeifyFsMethod('copy'),
   chmod: denodeifyFsMethod('chmod'),
   exists,
   findNearestFile,

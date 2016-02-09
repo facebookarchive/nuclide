@@ -16,20 +16,20 @@ import type {
   RemoteFile,
 } from '../../remote-connection';
 
+import {fsPromise} from '../../../nuclide/commons';
+import {React} from 'react-for-atom';
+import {repositoryForPath} from '../../hg-git-bridge';
+import FileDialogComponent from '../components/FileDialogComponent';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeStore from './FileTreeStore';
-import FileDialogComponent from '../components/FileDialogComponent';
 import {
   React,
   ReactDOM,
 } from 'react-for-atom';
 import RemoteUri from '../../remote-uri';
-import {repositoryForPath} from '../../hg-git-bridge';
-
-import fs from 'fs-plus';
-import pathModule from 'path';
 
 import invariant from 'assert';
+import pathModule from 'path';
 
 let dialogComponent: ?ReactComponent;
 let dialogHostElement: ?HTMLElement;
@@ -145,9 +145,9 @@ const FileSystemActions = {
     }
     if (shouldFSRename) {
       if (FileTreeHelpers.isLocalFile(file)) {
-        fs.rename(nodePath, newPath);
+        await fsPromise.rename(nodePath, newPath);
       } else {
-        ((file: any): (RemoteDirectory | RemoteFile)).rename(newPath);
+        await ((file: any): (RemoteDirectory | RemoteFile)).rename(newPath);
       }
     }
   },
@@ -205,13 +205,12 @@ const FileSystemActions = {
           const directory = file.getParent();
           const newFile = directory.getFile(newBasename.trim());
           const newPath = newFile.getPath();
-          fs.exists(newPath, function(exists) {
-            if (!exists) {
-              fs.copy(nodePath, newPath);
-            } else {
-              atom.notifications.addError(`'${newPath}' already exists.`);
-            }
-          });
+          const exists = await fsPromise.exists(newPath);
+          if (!exists) {
+            await fsPromise.copy(nodePath, newPath);
+          } else {
+            atom.notifications.addError(`'${newPath}' already exists.`);
+          }
         } else {
           invariant(file.isFile());
           const remoteFile = ((file: any): RemoteFile);
