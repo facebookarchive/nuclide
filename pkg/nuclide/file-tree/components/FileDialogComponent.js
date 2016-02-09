@@ -10,6 +10,7 @@
  */
 
 import AtomInput from '../../ui/atom-input';
+import NuclideCheckbox from '../../ui/checkbox';
 import {CompositeDisposable} from 'atom';
 import {
   React,
@@ -32,13 +33,22 @@ class FileDialogComponent extends React.Component {
     initialValue: PropTypes.string,
     // Message is displayed above the input.
     message: PropTypes.element.isRequired,
-    // Will be called (before `onClose`) if the user confirms.
+    // Will be called (before `onClose`) if the user confirms.  `onConfirm` will
+    // be called with two arguments, the value of the input field and a map of
+    // option name => bool (true if option was selected).
     onConfirm: PropTypes.func.isRequired,
     // Will be called regardless of whether the user confirms.
     onClose: PropTypes.func.isRequired,
     // Whether or not to initially select the base name of the path.
     // This is useful for renaming files.
     selectBasename: PropTypes.bool,
+    // Extra options to show the user.  Key is the name of the option and value
+    // is a description string that will be displayed.
+    additionalOptions: PropTypes.objectOf(PropTypes.string),
+  };
+
+  static defaultProps = {
+    additionalOptions: {},
   };
 
   constructor() {
@@ -47,6 +57,13 @@ class FileDialogComponent extends React.Component {
     this._subscriptions = new CompositeDisposable();
     this._close = this._close.bind(this);
     this._confirm = this._confirm.bind(this);
+    this._handleDocumentClick = this._handleDocumentClick.bind(this);
+    this.state = {
+      options: {},
+    };
+    for (const name in this.props.additionalOptions) {
+      this.state.options[name] = true;
+    }
   }
 
   componentDidMount(): void {
@@ -66,16 +83,32 @@ class FileDialogComponent extends React.Component {
       const selectionEnd = selectionStart + name.length;
       input.getTextEditor().setSelectedBufferRange([[0, selectionStart], [0, selectionEnd]]);
     }
+    document.addEventListener('click', this._handleDocumentClick);
   }
 
   componentWillUnmount(): void {
     this._subscriptions.dispose();
+    document.removeEventListener('click', this._handleDocumentClick);
   }
 
   render(): ReactElement {
     let labelClassName;
     if (this.props.iconClassName != null) {
       labelClassName = `icon ${this.props.iconClassName}`;
+    }
+
+    const checkboxes = [];
+    for (const name in this.props.additionalOptions) {
+      const message = this.props.additionalOptions[name];
+      const checked = this.state.options[name];
+      const checkbox =
+        <NuclideCheckbox
+          key={name}
+          checked={checked}
+          onChange={this._handleAdditionalOptionChanged.bind(this, name)}
+          label={message}
+        />;
+      checkboxes.push(checkbox);
     }
 
     // `.tree-view-dialog` is unstyled but is added by Atom's tree-view package[1] and is styled by
@@ -85,20 +118,35 @@ class FileDialogComponent extends React.Component {
     // [1] https://github.com/atom/tree-view/blob/v0.200.0/lib/dialog.coffee#L7
     return (
       <atom-panel class="modal overlay from-top">
-        <div className="tree-view-dialog">
+        <div className="tree-view-dialog" ref="dialog">
           <label className={labelClassName}>{this.props.message}</label>
           <AtomInput
             initialValue={this.props.initialValue}
-            onBlur={this._close}
             ref="input"
           />
+          {checkboxes}
         </div>
       </atom-panel>
     );
   }
 
+  _handleAdditionalOptionChanged(name: string, isChecked: boolean): void {
+    const {options} = this.state;
+    options[name] = isChecked;
+    this.setState({options: options});
+  }
+
+  _handleDocumentClick(event: Event): void {
+    const dialog = this.refs['dialog'];
+    // If the click did not happen on the dialog or on any of its descendants,
+    // the click was elsewhere on the document and should close the modal.
+    if (event.target !== dialog && !dialog.contains(event.target)) {
+      this._close();
+    }
+  }
+
   _confirm() {
-    this.props.onConfirm(this.refs.input.getText());
+    this.props.onConfirm(this.refs.input.getText(), this.state.options);
     this._close();
   }
 

@@ -40,29 +40,33 @@ const FileSystemActions = {
     if (!node) {
       return;
     }
-    this._openAddDialog('folder', node.getLocalPath() + '/', async (filePath: string) => {
-      // Prevent submission of a blank field from creating a directory.
-      if (filePath === '') {
-        return;
-      }
+    this._openAddDialog(
+      'folder',
+      node.getLocalPath() + '/',
+      async (filePath: string, options: Object) => {
+        // Prevent submission of a blank field from creating a directory.
+        if (filePath === '') {
+          return;
+        }
 
-      // TODO: check if filePath is in rootKey and if not, find the rootKey it belongs to.
-      const directory = FileTreeHelpers.getDirectoryByKey(node.nodeKey);
-      if (directory == null) {
-        return;
-      }
+        // TODO: check if filePath is in rootKey and if not, find the rootKey it belongs to.
+        const directory = FileTreeHelpers.getDirectoryByKey(node.nodeKey);
+        if (directory == null) {
+          return;
+        }
 
-      const {pathname} = RemoteUri.parse(filePath);
-      const basename = pathModule.basename(pathname);
-      const newDirectory = directory.getSubdirectory(basename);
-      const created = await newDirectory.create();
-      if (!created) {
-        atom.notifications.addError(`'${basename}' already exists.`);
-        onDidConfirm(null);
-      } else {
-        onDidConfirm(newDirectory.getPath());
-      }
-    });
+        const {pathname} = RemoteUri.parse(filePath);
+        const basename = pathModule.basename(pathname);
+        const newDirectory = directory.getSubdirectory(basename);
+        const created = await newDirectory.create();
+        if (!created) {
+          atom.notifications.addError(`'${basename}' already exists.`);
+          onDidConfirm(null);
+        } else {
+          onDidConfirm(newDirectory.getPath());
+        }
+      },
+    );
   },
 
   openAddFileDialog(onDidConfirm: (filePath: ?string) => mixed): void {
@@ -164,7 +168,7 @@ const FileSystemActions = {
       message: node.isContainer
         ? <span>Enter the new path for the directory.</span>
         : <span>Enter the new path for the file.</span>,
-      onConfirm: (newBasename: string) => {
+      onConfirm: (newBasename: string, options: Object) => {
         this._onConfirmRename(node, nodePath, newBasename).catch(error => {
           atom.notifications.addError(`Rename to ${newBasename} failed`);
         });
@@ -191,7 +195,7 @@ const FileSystemActions = {
       iconClassName: 'icon-arrow-right',
       initialValue: initialValue,
       message: <span>Enter the new path for the duplicate.</span>,
-      onConfirm: async (newBasename: string) => {
+      onConfirm: async (newBasename: string, options: Object) => {
         const file = FileTreeHelpers.getFileByKey(node.nodeKey);
         if (file == null) {
           // TODO: Connection could have been lost for remote file.
@@ -249,7 +253,11 @@ const FileSystemActions = {
     return node.isContainer ? node : node.getParentNode();
   },
 
-  _openAddDialog(entryType: string, path: string, onConfirm: (filePath: string) => mixed) {
+  _openAddDialog(
+    entryType: string,
+    path: string,
+    onConfirm: (filePath: string, options: Object) => mixed,
+  ) {
     this._openDialog({
       iconClassName: 'icon-file-add',
       message: <span>Enter the path for the new {entryType} in the root:<br />{path}</span>,
