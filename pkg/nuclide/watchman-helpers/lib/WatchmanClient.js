@@ -55,9 +55,17 @@ class WatchmanClient {
     this._clientPromise = this._createClientPromise();
 
     const client = await this._clientPromise;
-    client.on('end', this._serializedReconnect);
+    client.on('end', () => {
+      client.removeAllListeners();
+      this._serializedReconnect();
+    });
     client.on('error', error => {
       logger.error('Error while talking to watchman: ', error);
+      // If Watchman encounters an error in the middle of a command, it may never finish!
+      // The client must be immediately killed here so that the command fails and
+      // `serializeAsyncCall` can be unblocked. Otherwise, we end up in a deadlock.
+      client.removeAllListeners();
+      client.end();
       // Those are errors in deserializing a stream of changes.
       // The only possible recovery here is reconnecting a new client,
       // but the failed to serialize events will be missed.
@@ -75,11 +83,6 @@ class WatchmanClient {
 
   async _reconnectClient(): Promise<void> {
     logger.error('Watchman client disconnected, reconnecting a new client!');
-    const oldClient = await this._clientPromise;
-    oldClient.removeAllListeners('end');
-    oldClient.removeAllListeners('error');
-    oldClient.removeAllListeners('subscription');
-    oldClient.end();
     await this._initWatchmanClient();
     await this._restoreSubscriptions();
   }

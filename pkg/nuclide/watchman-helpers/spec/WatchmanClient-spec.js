@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type watchman from 'fb-watchman';
+import watchman from 'fb-watchman';
 
 const fs = require('fs');
 const path = require('path');
@@ -95,6 +95,30 @@ describe('WatchmanClient test suite', () => {
     it('restores subscriptions on client error', () => {
       testRestoreSubscriptions(watchmanClient => {
         // End the socket client to watchman to trigger restore subscriptions.
+        watchmanClient.emit('error', new Error('fake error'));
+      });
+    });
+
+    /**
+     * This simulates the case where:
+     * 1. watchman fails, and then
+     * 2. the reconnection fails on startup
+     * 3. subsequent reconnections can still succeed.
+     *
+     * We need to make sure we don't end up in a deadlock where the first reconnection
+     * attempt blocks subsequent ones.
+     */
+    it('restores subscriptions on client startup failure', () => {
+      testRestoreSubscriptions(watchmanClient => {
+        let counter = 0;
+        const oldConnect = watchman.Client.prototype.connect;
+        spyOn(watchman.Client.prototype, 'connect').andCallFake(function() {
+          if (counter++ === 0) {
+            this.emit('error', new Error('startup error'));
+          } else {
+            oldConnect.apply(this);
+          }
+        });
         watchmanClient.emit('error', new Error('fake error'));
       });
     });
