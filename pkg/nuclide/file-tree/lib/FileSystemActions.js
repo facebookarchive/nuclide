@@ -10,6 +10,7 @@
  */
 
 import type FileTreeNode from './FileTreeNode';
+import type {HgRepositoryClient} from '../../hg-repository-client';
 import type {
   RemoteDirectory,
   RemoteFile,
@@ -23,6 +24,7 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 import RemoteUri from '../../remote-uri';
+import {repositoryForPath} from '../../hg-git-bridge';
 
 import fs from 'fs-plus';
 import pathModule from 'path';
@@ -91,6 +93,46 @@ const FileSystemActions = {
     });
   },
 
+  async _onConfirmRename(
+    node: FileTreeNode,
+    nodePath: string,
+    newBasename: string,
+  ): Promise<void> {
+    const file = FileTreeHelpers.getFileByKey(node.nodeKey);
+    if (file == null) {
+      // TODO: Connection could have been lost for remote file.
+      return;
+    }
+
+    /*
+     * Use `resolve` to strip trailing slashes because renaming a file to a name with a
+     * trailing slash is an error.
+     */
+    const newPath = pathModule.resolve(
+      // Trim leading and trailing whitespace to prevent bad filenames.
+      pathModule.join(pathModule.dirname(nodePath), newBasename.trim())
+    );
+    const repository = repositoryForPath(file.getPath());
+    let shouldFSRename = true;
+    if (repository != null && repository.getType() === 'hg') {
+      const hgRepository = ((repository: any): HgRepositoryClient);
+      let oldPath = file.getPath();
+      if (!FileTreeHelpers.isLocalFile(file)) {
+        const remoteFile = ((file: any): (RemoteDirectory | RemoteFile));
+        oldPath = remoteFile.getLocalPath();
+      }
+      const success = await hgRepository.rename(oldPath, newPath);
+      shouldFSRename = !success;
+    }
+    if (shouldFSRename) {
+      if (FileTreeHelpers.isLocalFile(file)) {
+        fs.rename(nodePath, newPath);
+      } else {
+        ((file: any): (RemoteDirectory | RemoteFile)).rename(newPath);
+      }
+    }
+  },
+
   openRenameDialog(): void {
     const store = FileTreeStore.getInstance();
     const selectedNodes = store.getSelectedNodes();
@@ -108,25 +150,9 @@ const FileSystemActions = {
         ? <span>Enter the new path for the directory.</span>
         : <span>Enter the new path for the file.</span>,
       onConfirm: (newBasename: string) => {
-        const file = FileTreeHelpers.getFileByKey(node.nodeKey);
-        if (file == null) {
-          // TODO: Connection could have been lost for remote file.
-          return;
-        }
-
-        /*
-         * Use `resolve` to strip trailing slashes because renaming a file to a name with a
-         * trailing slash is an error.
-         */
-        const newPath = pathModule.resolve(
-          // Trim leading and trailing whitespace to prevent bad filenames.
-          pathModule.join(pathModule.dirname(nodePath), newBasename.trim())
-        );
-        if (FileTreeHelpers.isLocalFile(file)) {
-          fs.rename(nodePath, newPath);
-        } else {
-          ((file: any): (RemoteDirectory | RemoteFile)).rename(newPath);
-        }
+        this._onConfirmRename(node, nodePath, newBasename).catch(error => {
+          atom.notifications.addError(`Rename to ${newBasename} failed`);
+        });
       },
       onClose: this._closeDialog,
       selectBasename: true,
