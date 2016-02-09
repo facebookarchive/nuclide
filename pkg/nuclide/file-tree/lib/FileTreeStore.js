@@ -9,19 +9,22 @@
  * the root directory of this source tree.
  */
 
+import type {HgRepositoryClient} from '../../hg-repository-client';
 import type {
   RemoteDirectory,
   RemoteFile,
 } from '../../remote-connection';
 
-import {ActionType} from './FileTreeConstants';
-import {Disposable, Emitter} from 'atom';
 import FileTreeDispatcher from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeNode from './FileTreeNode';
 import Immutable from 'immutable';
+import {ActionType} from './FileTreeConstants';
+import {Disposable, Emitter} from 'atom';
 import {Minimatch} from 'minimatch';
+import {getPath} from '../../remote-uri';
 import {repositoryContainsPath} from '../../hg-git-bridge';
+import {repositoryForPath} from '../../hg-git-bridge';
 
 import {array} from '../../commons';
 import {getLogger} from '../../logging';
@@ -205,7 +208,9 @@ class FileTreeStore {
   _onDispatch(payload: ActionPayload): void {
     switch (payload.actionType) {
       case ActionType.DELETE_SELECTED_NODES:
-        this._deleteSelectedNodes();
+        this._deleteSelectedNodes().catch(error => {
+          atom.notifications.addError('Deleting nodes failed with an error: ' + error.toString());
+        });
         break;
       case ActionType.SET_TRACKED_NODE:
         this._setTrackedNode(payload.rootKey, payload.nodeKey);
@@ -557,20 +562,36 @@ class FileTreeStore {
     this._checkTrackedNode();
   }
 
-  _deleteSelectedNodes(): void {
+  async _deleteSelectedNodes(): Promise<void> {
     const selectedNodes = this.getSelectedNodes();
-    selectedNodes.forEach(node => {
+    await Promise.all(selectedNodes.map(async node => {
       const file = FileTreeHelpers.getFileByKey(node.nodeKey);
-      if (file != null) {
-        if (FileTreeHelpers.isLocalFile(file)) {
-          // TODO: This special-case can be eliminated once `delete()` is added to `Directory`
-          // and `File`.
-          shell.moveItemToTrash(node.nodePath);
+      if (file == null) {
+        return;
+      }
+      const filePath = getPath(file.getPath());
+      const repository = repositoryForPath(file.getPath());
+      if (repository != null && repository.getType() === 'hg') {
+        const hgRepository = ((repository: any): HgRepositoryClient);
+        const success = await hgRepository.remove(filePath);
+        if (success) {
+          return;
         } else {
-          ((file: any): (RemoteDirectory | RemoteFile)).delete();
+          atom.notifications.addError(
+            'Failed to remove ' + filePath + ' from version control.  The file will still get ' +
+            'deleted but you will have to remove it from your VCS yourself.'
+          );
         }
       }
-    });
+      if (FileTreeHelpers.isLocalFile(file)) {
+        // TODO: This special-case can be eliminated once `delete()` is added to `Directory`
+        // and `File`.
+        shell.moveItemToTrash(node.nodePath);
+      } else {
+        const remoteFile = ((file: any): (RemoteDirectory | RemoteFile));
+        await remoteFile.delete();
+      }
+    }));
   }
 
   _expandNode(rootKey: string, nodeKey: string): void {
