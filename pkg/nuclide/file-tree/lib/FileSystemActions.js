@@ -93,6 +93,22 @@ const FileSystemActions = {
     });
   },
 
+  _getHgRepositoryForNode(node: FileTreeNode): ?HgRepositoryClient {
+    const file = FileTreeHelpers.getFileByKey(node.nodeKey);
+    if (file == null) {
+      return null;
+    }
+    return this._getHgRepositoryForPath(file.getPath());
+  },
+
+  _getHgRepositoryForPath(filePath: string): ?HgRepositoryClient {
+    const repository = repositoryForPath(filePath);
+    if (repository != null && repository.getType() === 'hg') {
+      return ((repository: any): HgRepositoryClient);
+    }
+    return null;
+  },
+
   async _onConfirmRename(
     node: FileTreeNode,
     nodePath: string,
@@ -112,10 +128,9 @@ const FileSystemActions = {
       // Trim leading and trailing whitespace to prevent bad filenames.
       pathModule.join(pathModule.dirname(nodePath), newBasename.trim())
     );
-    const repository = repositoryForPath(file.getPath());
+    const hgRepository = this._getHgRepositoryForNode(node);
     let shouldFSRename = true;
-    if (repository != null && repository.getType() === 'hg') {
-      const hgRepository = ((repository: any): HgRepositoryClient);
+    if (hgRepository !== null) {
       let oldPath = file.getPath();
       if (!FileTreeHelpers.isLocalFile(file)) {
         const remoteFile = ((file: any): (RemoteDirectory | RemoteFile));
