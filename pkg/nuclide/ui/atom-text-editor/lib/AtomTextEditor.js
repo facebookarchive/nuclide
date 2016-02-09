@@ -53,9 +53,8 @@ function setupTextEditor(props: Object): atom$TextEditor {
     // Make backspace key presses in the text editor a no-op to disallow editing (read-only).
     textEditor.backspace = doNothing;
 
-    // Make duplicate lines, triggering a buffer insert a no-op to disallow editing (read-only).
-    textEditor.getBuffer().insert = doNothing;
-    textEditor.getBuffer().delete = doNothing;
+    // Make duplicate lines a no-op to disallow editing (read-only).
+    textEditor.duplicateLines = doNothing;
 
     // Remove the cursor line decorations because that's distracting in read-only mode.
     textEditor.getDecorations({class: 'cursor-line'}).forEach(decoration => {
