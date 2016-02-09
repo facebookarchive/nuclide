@@ -11,27 +11,57 @@
 
 import type DiffViewModel from './DiffViewModel';
 
-import {Emitter} from 'atom';
+import {Emitter, CompositeDisposable} from 'atom';
+import {basename} from '../../remote-uri';
 
 const DID_DESTROY_EVENT_NAME = 'did-destroy';
+const CHANGE_TITLE_EVENT_NAME = 'did-change-title';
 
 class DiffViewElement extends HTMLElement {
   _uri: string;
   _diffModel: DiffViewModel;
   _emitter: atom$Emitter;
+  _subscriptions: CompositeDisposable;
 
   initialize(diffModel: DiffViewModel, uri: string): HTMLElement {
     this._diffModel = diffModel;
     this._uri = uri;
     this._emitter = new Emitter();
+    this._subscriptions = new CompositeDisposable();
+
+    let fileName = this._getActiveFileName();
+    this._subscriptions.add(this._diffModel.onActiveFileUpdates(() => {
+      const newFileName = this._getActiveFileName();
+      if (newFileName !== fileName) {
+        fileName = newFileName;
+        this._emitter.emit(CHANGE_TITLE_EVENT_NAME, this.getTitle());
+      }
+    }));
+    this._subscriptions.add(this._emitter);
     return this;
+  }
+
+  _getActiveFileName(): ?string {
+    const {filePath} = this._diffModel.getActiveFileState();
+    if (filePath == null || filePath.length == 0) {
+      return null;
+    }
+    return basename(filePath);
   }
 
   /**
    * Return the tab title for the opened diff view tab item.
    */
   getTitle(): string {
-    return 'Diff View';
+    const fileName = this._getActiveFileName();
+    return 'Diff View' + (fileName == null ? '' : ` : ${fileName}`);
+  }
+
+  /**
+   * Change the title as the active file changes.
+   */
+  onDidChangeTitle(callback: (title: string) => mixed): IDisposable {
+    return this._emitter.on('did-change-title', callback);
   }
 
   /**
@@ -63,6 +93,7 @@ class DiffViewElement extends HTMLElement {
    */
   destroy(): void {
     this._emitter.emit('did-destroy');
+    this._subscriptions.dispose();
   }
 
   serialize(): ?Object {
