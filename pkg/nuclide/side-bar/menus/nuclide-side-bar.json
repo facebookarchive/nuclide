@@ -1,0 +1,10 @@
+{
+  "menu": [
+    {
+      "label": "View",
+      "submenu": [
+        {"command": "nuclide-side-bar:toggle", "label": "Toggle Side Bar"}
+      ]
+    }
+  ]
+}
