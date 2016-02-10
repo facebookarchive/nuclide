@@ -25,7 +25,8 @@ export class HyperclickProvider {
 
   constructor() {
     this.wordRegExp = /[^\s]+/g;
-    this.priority = 100;
+    // Allow all language-specific providers to take priority.
+    this.priority = 5;
     this.providerName = 'url-hyperclick';
   }
 
