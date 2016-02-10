@@ -92,3 +92,7 @@ process.on('uncaughtException', function(err) {
   /*eslint-enable no-console*/
   process.exit(1);
 });
+// Properly terminate if the parent server crashes.
+process.on('disconnect', function() {
+  process.exit();
+});
