@@ -24,6 +24,8 @@ import {React} from 'react-for-atom';
 
 import {array} from '../../commons';
 import classnames from 'classnames';
+import {getFileTreePathFromTargetEvent} from './utils';
+import {getPath, basename} from '../../remote-uri';
 
 function labelClassNameForNode(node: LazyTreeNode): string {
   const classObj = {
@@ -47,21 +49,25 @@ function rowClassNameForNode(node: LazyTreeNode) {
 }
 
 function vcsClassNameForEntry(entry: FileChange): string {
-  let className = '';
+  const statusCodeDefined = entry.statusCode != null;
+  const classObject: Object = {
+    'root': !statusCodeDefined,
+    'file-change': statusCodeDefined,
+  };
   switch (entry.statusCode) {
     case FileChangeStatus.ADDED:
     case FileChangeStatus.UNTRACKED:
-      className = 'status-added';
+      classObject['status-added'] = true;
       break;
     case FileChangeStatus.MODIFIED:
-      className = 'status-modified';
+      classObject['status-modified'] = true;
       break;
     case FileChangeStatus.REMOVED:
     case FileChangeStatus.MISSING:
-      className = 'status-removed';
+      classObject['status-removed'] = true;
       break;
   }
-  return className;
+  return classnames(classObject);
 }
 
 type Props = {
@@ -97,6 +103,50 @@ export default class DiffViewTree extends React.Component {
         this.setState({selectedFilePath: filePath, fileChanges: this.state.fileChanges});
       }
     }));
+    subscriptions.add(atom.contextMenu.add({
+      '.nuclide-diff-view-tree .entry.file-change': [
+        {type: 'separator'},
+        {
+          label: 'Goto File',
+          command: 'nuclide-diff-tree:goto-file',
+        },
+        {
+          label: 'Copy File Name',
+          command: 'nuclide-diff-tree:copy-file-name',
+        },
+        {
+          label: 'Copy Full Path',
+          command: 'nuclide-diff-tree:copy-full-path',
+        },
+        {type: 'separator'},
+      ],
+    }));
+    subscriptions.add(atom.commands.add(
+      '.nuclide-diff-view-tree .entry.file-change',
+      'nuclide-diff-tree:goto-file',
+      event => {
+        const filePath = getFileTreePathFromTargetEvent(event);
+        if (filePath != null && filePath.length) {
+          atom.workspace.open(filePath);
+        }
+      }
+    ));
+    subscriptions.add(atom.commands.add(
+      '.nuclide-diff-view-tree .entry.file-change',
+      'nuclide-diff-tree:copy-full-path',
+      event => {
+        const filePath = getFileTreePathFromTargetEvent(event);
+        atom.clipboard.write(getPath(filePath || ''));
+      }
+    ));
+    subscriptions.add(atom.commands.add(
+      '.nuclide-diff-view-tree .entry.file-change',
+      'nuclide-diff-tree:copy-file-name',
+      event => {
+        const filePath = getFileTreePathFromTargetEvent(event);
+        atom.clipboard.write(basename(filePath || ''));
+      }
+    ));
   }
 
   componentDidUpdate(): void {

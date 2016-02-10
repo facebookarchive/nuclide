@@ -15,6 +15,7 @@ import type DiffViewModelType from './DiffViewModel';
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
 import nuclideFeatures from '../../../../lib/nuclideFeatures';
+import {getFileTreePathFromTargetEvent} from './utils';
 
 let diffViewModel: ?DiffViewModelType = null;
 let activeDiffView: ?{
@@ -157,15 +158,6 @@ module.exports = {
       }
     ));
 
-    function getTargetFromEvent(event: Event): HTMLElement {
-      // Event target isn't necessarily an HTMLElement,
-      // but that's guranteed in the usages here.
-      const target: HTMLElement = (event.currentTarget: any);
-      return target.classList.contains('name')
-        ? target
-        : target.querySelector('.name');
-    }
-
     // Listen for switching to editor mode for the active file.
     subscriptions.add(atom.commands.add(
       'nuclide-diff-view',
@@ -184,8 +176,8 @@ module.exports = {
       '.tree-view .entry.file.list-item',
       'nuclide-diff-view:open-context',
       event => {
-        const target = getTargetFromEvent(event);
-        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + (target.dataset.path || ''));
+        const filePath = getFileTreePathFromTargetEvent(event);
+        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + (filePath || ''));
       }
     ));
     subscriptions.add(atom.contextMenu.add({
