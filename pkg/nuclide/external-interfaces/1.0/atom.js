@@ -803,7 +803,7 @@ declare class atom$Workspace {
   activateNextPane(): boolean;
   activatePreviousPane(): boolean;
   paneForURI(uri: string): atom$Pane;
-  paneForItem(item: mixed): atom$Pane;
+  paneForItem(item: mixed): ?atom$Pane;
 
   // Panels
   getBottomPanels(): Array<atom$Panel>;

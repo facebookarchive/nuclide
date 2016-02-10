@@ -43,7 +43,9 @@ describe('BreakpointManager', () => {
       expect(hasBreakpointDecorationInRow(editor, 0)).toBe(true);
       expect(breakpointManager.getDisplayControllers().size).toBe(1);
 
-      atom.workspace.paneForItem(editor).destroyItem(editor);
+      const pane = atom.workspace.paneForItem(editor);
+      invariant(pane != null);
+      pane.destroyItem(editor);
       expect(breakpointManager.getDisplayControllers().size).toBe(0);
 
       // But the store should still remember the breakpoint

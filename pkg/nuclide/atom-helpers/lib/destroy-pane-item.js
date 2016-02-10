@@ -13,8 +13,10 @@ export default function destroyPaneItemWithTitle(title: string) {
   for (const item of atom.workspace.getPaneItems()) {
     if (item.getTitle() === title) {
       const pane = atom.workspace.paneForItem(item);
-      pane.destroyItem(item);
-      return;
+      if (pane != null) {
+        pane.destroyItem(item);
+        return;
+      }
     }
   }
 }
