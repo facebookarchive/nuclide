@@ -30,7 +30,7 @@ const os = require('os');
 const {track} = require('../../analytics');
 
 export type TestRunnerControllerState = {
-  panelVisible?: boolean;
+  panelVisible?: boolean,
 };
 
 class TestRunnerController {

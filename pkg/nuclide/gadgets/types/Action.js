@@ -10,6 +10,6 @@
  */
 
 export type Action = {
-  type: string;
-  payload: Object;
+  type: string,
+  payload: Object,
 };

@@ -96,20 +96,20 @@ export const ClangCursorToDeclarationTypes = {
 export type ClangCursorType = string;
 
 export type ClangCursorExtent = {
-  start: {line: number; column: number};
-  end: {line: number; column: number};
+  start: {line: number, column: number},
+  end: {line: number, column: number},
 };
 
 export type ClangCompileResult = {
   diagnostics: Array<{
-    spelling: string;
-    severity: number;
+    spelling: string,
+    severity: number,
     location: {
-      column: number;
-      file: NuclideUri;
-      line: number;
-    };
-    ranges: any;
+      column: number,
+      file: NuclideUri,
+      line: number,
+    },
+    ranges: any,
   }>,
   // If defaultFlags was provided and used, this will be set to true.
   // `diagnostics` is likely to be inaccurate if this was the case.
@@ -132,12 +132,12 @@ export type ClangCompletionsResult = {
 };
 
 export type ClangDeclarationResult = {
-  file: NuclideUri;
-  line: number;
-  column: number;
-  spelling: ?string;
-  type: ?string;
-  extent: ClangCursorExtent;
+  file: NuclideUri,
+  line: number,
+  column: number,
+  spelling: ?string,
+  type: ?string,
+  extent: ClangCursorExtent,
 };
 
 export type ClangDeclaration = {

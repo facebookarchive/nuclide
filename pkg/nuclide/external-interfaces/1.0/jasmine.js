@@ -12,32 +12,32 @@
 // https://jasmine.github.io/1.3/introduction.html
 
 type JasmineMatcher = {
-  not: JasmineMatcher;
-  toBe(expected: mixed): boolean;
-  toContain(item: mixed): boolean;
-  toBeCloseTo(expected: number, precision: number): boolean;
-  toBeDefined(): boolean;
-  toBeFalsy(): boolean;
-  toBeTruthy(): boolean;
-  toBeGreaterThan(expected: number): boolean;
-  toBeLessThan(expected: number): boolean;
-  toBeNull(): boolean;
-  toBeUndefined(): boolean;
-  toEqual(expected: mixed): boolean;
-  toExist(): boolean;
-  toHaveBeenCalled(): boolean;
-  toHaveBeenCalledWith(...args: Array<mixed>): boolean;
-  toMatch(expected: mixed): boolean;
-  toMatchSelector(expected: string): boolean;
-  toThrow(): boolean;
+  not: JasmineMatcher,
+  toBe(expected: mixed): boolean,
+  toContain(item: mixed): boolean,
+  toBeCloseTo(expected: number, precision: number): boolean,
+  toBeDefined(): boolean,
+  toBeFalsy(): boolean,
+  toBeTruthy(): boolean,
+  toBeGreaterThan(expected: number): boolean,
+  toBeLessThan(expected: number): boolean,
+  toBeNull(): boolean,
+  toBeUndefined(): boolean,
+  toEqual(expected: mixed): boolean,
+  toExist(): boolean,
+  toHaveBeenCalled(): boolean,
+  toHaveBeenCalledWith(...args: Array<mixed>): boolean,
+  toMatch(expected: mixed): boolean,
+  toMatchSelector(expected: string): boolean,
+  toThrow(): boolean,
 
   // Custom Matchers from nuclide-test-helpers
-  diffJson(expected: mixed): boolean;
-  diffLines(expected: string): boolean;
+  diffJson(expected: mixed): boolean,
+  diffLines(expected: string): boolean,
 
   // Custom Matchers from nuclide-atom-test-helpers
-  toEqualAtomRange(): boolean;
-  toEqualAtomRanges(): boolean;
+  toEqualAtomRange(): boolean,
+  toEqualAtomRanges(): boolean,
 };
 
 // Declaring, describing, and grouping tests
@@ -55,21 +55,21 @@ declare function xit(title: string, spec: () => mixed): void;
 // Spies
 // https://jasmine.github.io/1.3/introduction.html#section-Spies
 type JasmineSpyCall = {
-  args: Array<mixed>;
+  args: Array<mixed>,
 };
 
 type JasmineSpy = {
   (...args: Array<any>): any;
-  andCallFake(fake: (...args: Array<any>) => mixed): JasmineSpy;
-  andCallThrough(): JasmineSpy;
-  argsForCall: Array<Array<mixed>>;
-  andReturn<T>(value: T): JasmineSpy;
-  andThrow(error: mixed): JasmineSpy;
-  callCount: number;
-  calls: Array<JasmineSpyCall>;
-  identity: string;
-  mostRecentCall: JasmineSpyCall;
-  wasCalled: boolean;
+  andCallFake(fake: (...args: Array<any>) => mixed): JasmineSpy,
+  andCallThrough(): JasmineSpy,
+  argsForCall: Array<Array<mixed>>,
+  andReturn<T>(value: T): JasmineSpy,
+  andThrow(error: mixed): JasmineSpy,
+  callCount: number,
+  calls: Array<JasmineSpyCall>,
+  identity: string,
+  mostRecentCall: JasmineSpyCall,
+  wasCalled: boolean,
 };
 
 declare function spyOn(object: Object, method: string): JasmineSpy;
@@ -78,8 +78,8 @@ declare function unspy(obj: Object, prop: string): void;
 // Mocking the JavaScript Clock
 // https://jasmine.github.io/1.3/introduction.html#section-Mocking_the_JavaScript_Clock
 type JasmineMockClock = {
-  tick(milliseconds: number): void;
-  useMock(): void;
+  tick(milliseconds: number): void,
+  useMock(): void,
 };
 
 // Asynchronous Support
@@ -98,38 +98,38 @@ declare function unspy(object: Object, methodName: string): void;
 
 type JasmineEnvironment = {
   currentSpec: {
-    fail(message: string): void;
-  };
-  defaultTimeoutInterval: number;
+    fail(message: string): void,
+  },
+  defaultTimeoutInterval: number,
 };
 
 type JasmineSpec = {
-  addMatchers(matchersPrototype: {[methodName: string]: (expected: any) => boolean}): void;
+  addMatchers(matchersPrototype: {[methodName: string]: (expected: any) => boolean}): void,
 }
 
 type JasmineMatchers = {
-  message: () => string;
+  message: () => string,
 }
 
 // Jasmine global
 declare var jasmine: {
   // Default timeout.
-  DEFAULT_TIMEOUT_INTERVAL: number;
+  DEFAULT_TIMEOUT_INTERVAL: number,
 
-  Clock: JasmineMockClock;
-  Matchers: JasmineMatchers;
-  any(expected: string | Object): mixed;
+  Clock: JasmineMockClock,
+  Matchers: JasmineMatchers,
+  any(expected: string | Object): mixed,
 
   /**
    * This is a non-standard method that Atom adds to Jasmine via spec-helper.coffee.
    * Ideally, we would declare this in atom-jasmine.js, but we can't extend this global here.
    */
-  attachToDOM(element: Element): ?HTMLElement;
+  attachToDOM(element: Element): ?HTMLElement,
 
-  createSpy(name?: string): JasmineSpy;
-  createSpyObj(name: string, spyNames: Array<string>): {[key: string]: JasmineSpy};
-  getEnv(): JasmineEnvironment;
-  pp(value: mixed): string;
-  unspy(obj: Object, prop: string): void;
-  useRealClock(): void;
+  createSpy(name?: string): JasmineSpy,
+  createSpyObj(name: string, spyNames: Array<string>): {[key: string]: JasmineSpy},
+  getEnv(): JasmineEnvironment,
+  pp(value: mixed): string,
+  unspy(obj: Object, prop: string): void,
+  useRealClock(): void,
 };

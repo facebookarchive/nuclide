@@ -223,7 +223,7 @@ module.exports = class HackLanguage {
   async getDiagnostics(
     path: NuclideUri,
     contents: string,
-  ): Promise<Array<{message: HackDiagnostic;}>> {
+  ): Promise<Array<{message: HackDiagnostic,}>> {
     const {hostname, port, path: localPath} = parse(path);
     await this.updateFile(localPath, contents);
     const webWorkerMessage = {cmd: 'hh_check_file', args: [localPath]};
@@ -242,7 +242,7 @@ module.exports = class HackLanguage {
 
   async getServerDiagnostics(
     filePath: NuclideUri,
-  ): Promise<Array<{message: HackDiagnostic;}>> {
+  ): Promise<Array<{message: HackDiagnostic,}>> {
     const {getDiagnostics} = getHackService(filePath);
     let diagnosticResult = null;
     try {
@@ -460,7 +460,7 @@ module.exports = class HackLanguage {
   _parseStringForExpression(
     lineText: string,
     column: number,
-  ): {search: string; start: number; end: number} {
+  ): {search: string, start: number, end: number} {
     let search = null;
     let start = column;
 

@@ -18,8 +18,8 @@ import {React} from 'react-for-atom';
 import RecordView from './RecordView';
 
 type Props = {
-  records: Array<Record>;
-  clearRecords: () => void;
+  records: Array<Record>,
+  clearRecords: () => void,
 };
 
 export default class OutputTable extends React.Component<void, Props, void> {

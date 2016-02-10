@@ -23,8 +23,8 @@ import {
 const {PropTypes} = React;
 
 type DiagnosticCount = {
-  errorCount: number;
-  warningCount: number;
+  errorCount: number,
+  warningCount: number,
 }
 
 // Stick this to the left of remote-projects (-99)

@@ -15,8 +15,8 @@ export default class SyncScroll {
 
   _subscriptions: ?CompositeDisposable;
   _syncInfo: Array<{
-    scrollElement: atom$TextEditorElement;
-    scrolling: boolean;
+    scrollElement: atom$TextEditorElement,
+    scrolling: boolean,
   }>;
 
   constructor(editor1Element: atom$TextEditorElement, editor2Element: atom$TextEditorElement) {

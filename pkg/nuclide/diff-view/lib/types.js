@@ -15,55 +15,55 @@ import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
 export type FileChangeStatusValue = 1 | 2 | 3 | 4 | 5;
 
 export type FileChange = {
-  filePath: NuclideUri;
-  statusCode?: FileChangeStatusValue;
+  filePath: NuclideUri,
+  statusCode?: FileChangeStatusValue,
 };
 
 export type FileChangeState = {
-  filePath: NuclideUri;
-  oldContents: string;
-  newContents: string;
-  savedContents?: string;
-  inlineComponents?: Array<InlineComponent>;
+  filePath: NuclideUri,
+  oldContents: string,
+  newContents: string,
+  savedContents?: string,
+  inlineComponents?: Array<InlineComponent>,
 };
 
 export type RevisionsState = {
-  revisions: Array<RevisionInfo>;
-  compareCommitId: ?number;
-  commitId: number;
+  revisions: Array<RevisionInfo>,
+  compareCommitId: ?number,
+  commitId: number,
 };
 
 export type OffsetMap = Map<number, number>;
 
 export type TextDiff = {
-  addedLines: Array<number>;
-  removedLines: Array<number>;
-  oldLineOffsets: OffsetMap;
-  newLineOffsets: OffsetMap;
+  addedLines: Array<number>,
+  removedLines: Array<number>,
+  oldLineOffsets: OffsetMap,
+  newLineOffsets: OffsetMap,
 };
 
 export type HgDiffState = {
-  committedContents: string;
-  filesystemContents: string;
+  committedContents: string,
+  filesystemContents: string,
 };
 
 export type LineRangesWithOffsets = {
-  regions: Array<{bufferRows: number; screenRows: number}>;
-  screenLines: Array<any>;
+  regions: Array<{bufferRows: number, screenRows: number}>,
+  screenLines: Array<any>,
 };
 
 export type HighlightedLines = {
-  added: Array<number>;
-  removed: Array<number>;
+  added: Array<number>,
+  removed: Array<number>,
 };
 
 export type InlineComponent = {
-  node: ReactElement;
-  bufferRow: number;
+  node: ReactElement,
+  bufferRow: number,
 };
 
 export type RenderedComponent = {
-  container: HTMLElement;
-  component: ReactComponent;
-  bufferRow: number;
+  container: HTMLElement,
+  component: ReactComponent,
+  bufferRow: number,
 };

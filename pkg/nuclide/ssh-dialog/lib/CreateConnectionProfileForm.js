@@ -27,12 +27,12 @@ import {validateFormInputs} from './form-validation-utils';
 
 type Props = {
   // A function called when the "Cancel" button is clicked.
-  onCancel: () => mixed;
+  onCancel: () => mixed,
   // A function called when the "Save" button is clicked. The profile passed
   // to the function is the profile that the user has just created.
   // The CreateConnectionProfileForm will do basic validation on the inputs: It
   // checks that the fields are non-empty before calling this function.
-  onSave: (profile: NuclideRemoteConnectionProfile) => mixed;
+  onSave: (profile: NuclideRemoteConnectionProfile) => mixed,
   // The inputs to pre-fill the form with.
   initialFormFields: NuclideNewConnectionProfileInitialFields,
 };

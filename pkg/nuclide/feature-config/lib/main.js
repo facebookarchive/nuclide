@@ -24,9 +24,9 @@ module.exports = {
   get(
     keyPath: string,
     options?: {
-      excludeSources?: Array<string>;
-      sources?: Array<string>;
-      scope?: Object;
+      excludeSources?: Array<string>,
+      sources?: Array<string>,
+      scope?: Object,
     }
   ): mixed {
     return atom.config.get(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));

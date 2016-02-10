@@ -24,21 +24,21 @@ type Props = {
   // Whenever a user add/removes profiles via the child NuclideListSelector,
   // these props should be updated from the top-level by calling ReactDOM.render()
   // again (with the new props) on the ConnectionDetailsPrompt.
-  connectionProfiles: ?Array<NuclideRemoteConnectionProfile>;
+  connectionProfiles: ?Array<NuclideRemoteConnectionProfile>,
   // If there is >= 1 connection profile, this index indicates the profile to use.
-  indexOfSelectedConnectionProfile: ?number;
+  indexOfSelectedConnectionProfile: ?number,
   // Function to call when 'enter'/'confirm' is selected by the user in this view.
-  onConfirm: () => mixed;
+  onConfirm: () => mixed,
   // Function to call when 'cancel' is selected by the user in this view.
-  onCancel: () => mixed;
+  onCancel: () => mixed,
   // Function that is called when the "+" button on the profiles list is clicked.
   // The user's intent is to create a new profile.
-  onAddProfileClicked: () => mixed;
+  onAddProfileClicked: () => mixed,
   // Function that is called when the "-" button on the profiles list is clicked
   // ** while a profile is selected **.
   // The user's intent is to delete the currently-selected profile.
-  onDeleteProfileClicked: (indexOfSelectedConnectionProfile: number) => mixed;
-  onProfileClicked: (indexOfSelectedConnectionProfile: number) => mixed;
+  onDeleteProfileClicked: (indexOfSelectedConnectionProfile: number) => mixed,
+  onProfileClicked: (indexOfSelectedConnectionProfile: number) => mixed,
 };
 
 /**

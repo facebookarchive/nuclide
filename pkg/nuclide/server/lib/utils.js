@@ -15,20 +15,20 @@ const request = require('request');
 const MAX_REQUEST_LENGTH = 1e6;
 
 type HttpResponse = {
-  statusCode: number;
+  statusCode: number,
 };
-export type ResponseBody = {body: string; response: HttpResponse};
+export type ResponseBody = {body: string, response: HttpResponse};
 type QueryParams = {[key:string]: any};
-type SerializedArguments = {args: Array<string>; argTypes: Array<string>};
+type SerializedArguments = {args: Array<string>, argTypes: Array<string>};
 
 export type RequestOptions = {
-  uri: string;
+  uri: string,
   agentOptions?: {
-    ca: Buffer;
-    key: Buffer;
-    cert: Buffer;
-  };
-  useQuerystring?: boolean;
+    ca: Buffer,
+    key: Buffer,
+    cert: Buffer,
+  },
+  useQuerystring?: boolean,
 };
 
 /**

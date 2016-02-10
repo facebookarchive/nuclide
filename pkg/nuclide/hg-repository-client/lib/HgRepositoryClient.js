@@ -36,13 +36,13 @@ import {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} fro
 
 type HgRepositoryOptions = {
   /** The origin URL of this repository. */
-  originURL: ?string;
+  originURL: ?string,
 
   /** The working directory of this repository. */
-  workingDirectory: atom$Directory | RemoteDirectory;
+  workingDirectory: atom$Directory | RemoteDirectory,
 
   /** The root directory that is opened in Atom, which this Repository serves. **/
-  projectRootDirectory: atom$Directory;
+  projectRootDirectory: atom$Directory,
 };
 
 /**
@@ -52,7 +52,7 @@ type HgRepositoryOptions = {
  */
 
 export type HgStatusCommandOptions = {
-  hgStatusOption: HgStatusOptionValue;
+  hgStatusOption: HgStatusOptionValue,
 };
 
 const EDITOR_SUBSCRIPTION_NAME = 'hg-repository-editor-subscription';
@@ -194,7 +194,7 @@ export default class HgRepositoryClient {
   }
 
   onDidChangeStatus(
-    callback: (event: {path: string; pathStatus: StatusCodeNumberValue}) => {}
+    callback: (event: {path: string, pathStatus: StatusCodeNumberValue}) => {}
   ): IDisposable {
     return this._emitter.on('did-change-status', callback);
   }
@@ -265,7 +265,7 @@ export default class HgRepositoryClient {
   }
 
   // TODO This is a stub.
-  getCachedUpstreamAheadBehindCount(path: ?NuclideUri): {ahead: number; behind: number;} {
+  getCachedUpstreamAheadBehindCount(path: ?NuclideUri): {ahead: number, behind: number,} {
     return {
       ahead: 0,
       behind: 0,
@@ -289,7 +289,7 @@ export default class HgRepositoryClient {
   // TODO This is a stub.
   getReferences(
     path: ?NuclideUri,
-  ): {heads: Array<string>; remotes: Array<string>; tags: Array<string>;} {
+  ): {heads: Array<string>, remotes: Array<string>, tags: Array<string>,} {
     return {
       heads: [],
       remotes: [],
@@ -598,7 +598,7 @@ export default class HgRepositoryClient {
    *
    */
 
-  getDiffStats(filePath: ?NuclideUri): {added: number; deleted: number;} {
+  getDiffStats(filePath: ?NuclideUri): {added: number, deleted: number,} {
     const cleanStats = {added: 0, deleted: 0};
     if (!filePath) {
       return cleanStats;
@@ -637,7 +637,7 @@ export default class HgRepositoryClient {
    * @param path The file path to get the status for. If a path is not in the
    *   project, default "clean" stats will be returned.
    */
-  async getDiffStatsForPath(filePath: NuclideUri): Promise<{added: number; deleted: number;}> {
+  async getDiffStatsForPath(filePath: NuclideUri): Promise<{added: number, deleted: number,}> {
     const cleanStats = {added: 0, deleted: 0};
     if (!filePath) {
       return cleanStats;

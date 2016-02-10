@@ -14,8 +14,8 @@ const BATCH_EVENT = 'batch';
 import {BatchProcessedQueue} from '../../commons';
 
 type TrackEvent = {
-  key: string;
-  values: {[key: string]: string};
+  key: string,
+  values: {[key: string]: string},
 };
 
 const REPORTING_PERIOD = 1000;

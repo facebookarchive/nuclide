@@ -52,7 +52,7 @@ module.exports = {
 
   async findDiagnostics(
     editor: atom$TextEditor,
-  ): Promise<Array<{message: HackDiagnostic;}>> {
+  ): Promise<Array<{message: HackDiagnostic,}>> {
     const filePath = editor.getPath();
     const hackLanguage = await getHackLanguageForUri(filePath);
     if (!hackLanguage || !filePath) {
@@ -207,7 +207,7 @@ module.exports = {
     editor: atom$TextEditor,
     line: number,
     column: number
-  ): Promise<?{baseUri: string, symbolName: string; references: Array<HackReference>}> {
+  ): Promise<?{baseUri: string, symbolName: string, references: Array<HackReference>}> {
     const filePath = editor.getPath();
     const hackLanguage = await getHackLanguageForUri(filePath);
     if (!hackLanguage || !filePath) {
@@ -282,7 +282,7 @@ async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLanguage> {
 }
 
 type HackConfig = {
-  hhClientPath: string;
+  hhClientPath: string,
 };
 
 function getConfig(): HackConfig {

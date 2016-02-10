@@ -16,7 +16,7 @@ import type {Record} from './types';
 import {React} from 'react-for-atom';
 
 type Props = {
-  record: Record;
+  record: Record,
 };
 
 export default class RecordView extends React.Component<void, Props, void> {

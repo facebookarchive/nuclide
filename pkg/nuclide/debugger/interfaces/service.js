@@ -12,6 +12,6 @@
 import type {DebuggerProcessInfo} from '../atom';
 
 export type nuclide_debugger$Service = {
-  name: string;
-  getProcessInfoList(): Promise<Array<DebuggerProcessInfo>>;
+  name: string,
+  getProcessInfoList(): Promise<Array<DebuggerProcessInfo>>,
 };

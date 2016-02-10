@@ -9,7 +9,7 @@
 /*eslint-disable no-unused-vars */
 
 declare class connect$Error extends Error {
-  code?: number;
+  code?: number,
 }
 
 type connect$ServerHandle = connect$HandleFunction | http$fixed$Server;
@@ -25,15 +25,15 @@ type connect$HandleFunction =
   connect$SimpleHandleFunction | connect$NextHandleFunction | connect$ErrorHandleFunction;
 
 type connect$ServerStackItem = {
-   route: string;
-   handle: connect$ServerHandle;
+   route: string,
+   handle: connect$ServerHandle,
 };
 
 declare class connect$Server {
   (req: http$fixed$IncomingMessage, res: http$fixed$ServerResponse, next?: Function): void;
 
-  route: string;
-  stack: Array<connect$ServerStackItem>;
+  route: string,
+  stack: Array<connect$ServerStackItem>,
 
   /**
   * Utilize the given middleware `handle` to the given `route`,
@@ -48,8 +48,8 @@ declare class connect$Server {
   *
   * @public
   */
-  use(fn: connect$HandleFunction): connect$Server;
-  use(route: string, fn: connect$HandleFunction): connect$Server;
+  use(fn: connect$HandleFunction): connect$Server,
+  use(route: string, fn: connect$HandleFunction): connect$Server,
 
   /**
   * Handle server requests, punting them down
@@ -57,7 +57,7 @@ declare class connect$Server {
   *
   * @private
   */
-  handle(req: http$fixed$IncomingMessage, res: http$fixed$ServerResponse, next: Function): void;
+  handle(req: http$fixed$IncomingMessage, res: http$fixed$ServerResponse, next: Function): void,
 
   /**
   * Listen for connections.
@@ -83,10 +83,10 @@ declare class connect$Server {
   *
   * @api public
   */
-  listen(port: number, hostname?: string, backlog?: number, callback?: Function): http$fixed$Server;
-  listen(port: number, hostname?: string, callback?: Function): http$fixed$Server;
-  listen(path: string, callback?: Function): http$fixed$Server;
-  listen(handle: any, listeningListener?: Function): http$fixed$Server;
+  listen(port: number, hostname?: string, backlog?: number, callback?: Function): http$fixed$Server,
+  listen(port: number, hostname?: string, callback?: Function): http$fixed$Server,
+  listen(path: string, callback?: Function): http$fixed$Server,
+  listen(handle: any, listeningListener?: Function): http$fixed$Server,
 }
 
 type connect$module = () => connect$Server;

@@ -12,12 +12,12 @@
 type Processor = (path: string) => void;
 
 type ProcessorJob = {
-  processor: Processor;
-  paths: {[key: string]: boolean};
-  canceled: boolean;
-  startTime: number;
-  chunkSize?: number;
-  chunkCount: number;
+  processor: Processor,
+  paths: {[key: string]: boolean},
+  canceled: boolean,
+  startTime: number,
+  chunkSize?: number,
+  chunkCount: number,
 };
 
 type ForEachCallback = (key: string, value: string, set: PathSet) => void;

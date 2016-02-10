@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-type Target = {path: string; name: string};
+type Target = {path: string, name: string};
 
 import type {BuckProject} from '../../base/lib/BuckProject';
 

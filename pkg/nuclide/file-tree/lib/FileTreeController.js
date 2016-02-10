@@ -33,7 +33,7 @@ type FileTreeNodeData = {
 };
 
 export type FileTreeControllerState = {
-  tree: ExportStoreData;
+  tree: ExportStoreData,
 };
 
 class FileTreeController {

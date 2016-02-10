@@ -14,24 +14,24 @@ import type Rx from 'rx';
 export type Level = 'info' | 'warn' | 'error';
 
 export type Message = {
-  text: string;
-  level: Level;
+  text: string,
+  level: Level,
 };
 
 export type Record = Message & {
-  source: string;
+  source: string,
 };
 
 export type AppState = {
-  maxMessageCount: number;
-  records: Array<Record>;
-  providers: Map<string, OutputProvider>;
+  maxMessageCount: number,
+  records: Array<Record>,
+  providers: Map<string, OutputProvider>,
 };
 
 export type OutputProvider = {
-  messages: Rx.Observable<Message>;
+  messages: Rx.Observable<Message>,
 
   // The source can't be part of the message because we want to be able to populate a filter menu
   // before we even have any messages.
-  source: string;
+  source: string,
 };

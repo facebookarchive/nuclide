@@ -36,7 +36,7 @@ class DebuggerInstance {
   }
 
   onSessionEnd(callback: () => void): {
-    dispose(): void;
+    dispose(): void,
   } {
     throw new Error('abstract method');
   }

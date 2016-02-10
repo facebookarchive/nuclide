@@ -14,17 +14,17 @@ import type {TextDiff, OffsetMap} from './types';
 import {array} from '../../commons';
 
 type ChunkPiece = {
-  added: number;
-  removed: number;
-  value: string;
-  count: number;
-  offset: number;
+  added: number,
+  removed: number,
+  value: string,
+  count: number,
+  offset: number,
 };
 
 type DiffChunk = {
-  addedLines: Array<number>;
-  removedLines: Array<number>;
-  chunks: Array<ChunkPiece>;
+  addedLines: Array<number>,
+  removedLines: Array<number>,
+  chunks: Array<ChunkPiece>,
 };
 
 export function computeDiff(oldText: string, newText: string): TextDiff {
@@ -89,7 +89,7 @@ function _computeDiffChunks(oldText: string, newText: string): DiffChunk {
 
 function _computeOffsets(
   diffChunks: Array<ChunkPiece>,
-): {oldLineOffsets: OffsetMap; newLineOffsets: OffsetMap;} {
+): {oldLineOffsets: OffsetMap, newLineOffsets: OffsetMap,} {
   const newLineOffsets = new Map();
   const oldLineOffsets = new Map();
 

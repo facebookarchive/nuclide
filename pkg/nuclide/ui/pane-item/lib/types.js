@@ -10,9 +10,9 @@
  */
 
 export type NuclideCustomPaneItemOptions = {
-  title: string; // Title for the custom pane item being created.
-  iconName?: string; // Optional string representing the octicon that is rendered next to the title.
-  uri?: string;
-  allowSplit?: bool; // Whether splits are allowed on the pane item. Defaults to false.
-  initialProps: Object; // The pane item specific properties.
+  title: string, // Title for the custom pane item being created.
+  iconName?: string, // Optional string representing the octicon that is rendered next to the title.
+  uri?: string,
+  allowSplit?: bool, // Whether splits are allowed on the pane item. Defaults to false.
+  initialProps: Object, // The pane item specific properties.
 };

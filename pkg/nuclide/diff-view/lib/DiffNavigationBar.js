@@ -17,14 +17,14 @@ import {getLineCountWithOffsets, getOffsetLineNumber} from './diff-utils';
 import classnames from 'classnames';
 
 type DiffNavigationBarProps = {
-  elementHeight: number;
-  addedLines: Array<number>;
-  removedLines: Array<number>;
-  oldContents: string;
-  newContents: string;
-  oldOffsets: OffsetMap;
-  newOffsets: OffsetMap;
-  onClick: (lineNumber: number, isAddedLine: boolean) => any;
+  elementHeight: number,
+  addedLines: Array<number>,
+  removedLines: Array<number>,
+  oldContents: string,
+  newContents: string,
+  oldOffsets: OffsetMap,
+  newOffsets: OffsetMap,
+  onClick: (lineNumber: number, isAddedLine: boolean) => any,
 };
 
 /* eslint-disable react/prop-types */
@@ -133,13 +133,13 @@ export default class DiffNavigationBar extends React.Component {
 }
 
 type NavigatonBarJumpTargetProps = {
-  offsetLineNumber: number;
-  lineNumber: number;
-  lineChangeClass: string;
-  linesCount: number;
-  isAddedLine: boolean;
-  containerHeight: number;
-  onClick: (lineNumber: number, isAddedLine: boolean) => any;
+  offsetLineNumber: number,
+  lineNumber: number,
+  lineChangeClass: string,
+  linesCount: number,
+  isAddedLine: boolean,
+  containerHeight: number,
+  onClick: (lineNumber: number, isAddedLine: boolean) => any,
 };
 
 class NavigatonBarJumpTarget extends React.Component {

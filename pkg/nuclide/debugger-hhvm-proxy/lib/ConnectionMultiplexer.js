@@ -43,21 +43,21 @@ import {ClientCallback} from './ClientCallback';
 const CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
 
 type ConnectionInfo = {
-  connection: Connection;
-  onStatusDisposable: IDisposable;
-  status: string;
+  connection: Connection,
+  onStatusDisposable: IDisposable,
+  status: string,
 };
 
 type DbgpError = {
   $: {
     code: number,
-  };
-  message: Array<string>;
+  },
+  message: Array<string>,
 };
 
 type EvaluationFailureResult = {
-  error: DbgpError;
-  wasThrown: boolean;
+  error: DbgpError,
+  wasThrown: boolean,
 };
 
 // The ConnectionMultiplexer makes multiple debugger connections appear to be

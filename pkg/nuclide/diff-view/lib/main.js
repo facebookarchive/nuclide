@@ -19,8 +19,8 @@ import {getFileTreePathFromTargetEvent} from './utils';
 
 let diffViewModel: ?DiffViewModelType = null;
 let activeDiffView: ?{
-  component: ReactComponent;
-  element: HTMLElement;
+  component: ReactComponent,
+  element: HTMLElement,
 }  = null;
 
 // This url style is the one Atom uses for the welcome and settings pages.

@@ -48,7 +48,7 @@ describe('Hyperclick', () => {
    */
   function clientCoordinatesForScreenPosition(
     screenPosition: atom$Point,
-  ): {clientX: number; clientY: number} {
+  ): {clientX: number, clientY: number} {
     const positionOffset = textEditorView.pixelPositionForScreenPosition(screenPosition);
     const {component} = textEditorView;
     invariant(component);

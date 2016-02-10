@@ -26,11 +26,11 @@ import {uriToPath} from './helpers';
  */
 type DbgpStackFrame = {
   $: {
-    where: string;
-    level: string;
-    type: string;
-    filename: string;
-    lineno: string;
+    where: string,
+    level: string,
+    type: string,
+    filename: string,
+    lineno: string,
   }
 };
 

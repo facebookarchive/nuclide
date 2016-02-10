@@ -27,16 +27,16 @@ const DiagnosticsPanel = require('./DiagnosticsPanel');
 const DEFAULT_TABLE_WIDTH = 600;
 
 type PanelProps = {
-  diagnostics: Array<DiagnosticMessage>;
-  width: number;
-  height: number;
-  onResize: () => void;
-  onDismiss: () => void;
-  pathToActiveTextEditor: ?string;
-  filterByActiveTextEditor: boolean;
-  onFilterByActiveTextEditorChange: (isChecked: boolean) => void;
-  warnAboutLinter: boolean;
-  disableLinter: () => void;
+  diagnostics: Array<DiagnosticMessage>,
+  width: number,
+  height: number,
+  onResize: () => void,
+  onDismiss: () => void,
+  pathToActiveTextEditor: ?string,
+  filterByActiveTextEditor: boolean,
+  onFilterByActiveTextEditorChange: (isChecked: boolean) => void,
+  warnAboutLinter: boolean,
+  disableLinter: () => void,
 }
 
 function createDiagnosticsPanel(
@@ -45,9 +45,9 @@ function createDiagnosticsPanel(
   initialfilterByActiveTextEditor: boolean,
   disableLinter: () => void,
 ): {
-  atomPanel: atom$Panel;
-  getDiagnosticsPanel: () => ?DiagnosticsPanel;
-  setWarnAboutLinter: (warn: boolean) => void;
+  atomPanel: atom$Panel,
+  getDiagnosticsPanel: () => ?DiagnosticsPanel,
+  setWarnAboutLinter: (warn: boolean) => void,
  } {
   let diagnosticsPanel: ?DiagnosticsPanel = null;
   let bottomPanel: ?atom$Panel = null;

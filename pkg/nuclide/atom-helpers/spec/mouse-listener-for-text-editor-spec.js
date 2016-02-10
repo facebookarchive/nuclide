@@ -53,7 +53,7 @@ describe('mouseListenerForTextEditor', () => {
    */
   function clientCoordinatesForScreenPosition(
     screenPosition: Point
-  ): {clientX: number; clientY: number} {
+  ): {clientX: number, clientY: number} {
     invariant(textEditorView);
     const positionOffset = textEditorView.pixelPositionForScreenPosition(screenPosition);
     const component = textEditorView.component;

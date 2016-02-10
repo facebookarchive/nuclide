@@ -16,9 +16,9 @@ const {React} = require('react-for-atom');
 const {PropTypes} = React;
 
 type State = {
-  selectedProcess: ?DebuggerProcessInfo;
-  processes: Array<DebuggerProcessInfo>;
-  debuggerStoreChangeListener: ?IDisposable;
+  selectedProcess: ?DebuggerProcessInfo,
+  processes: Array<DebuggerProcessInfo>,
+  debuggerStoreChangeListener: ?IDisposable,
 };
 
 /**

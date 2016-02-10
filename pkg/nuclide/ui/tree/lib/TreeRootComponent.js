@@ -22,20 +22,20 @@ const {
 const {PropTypes} = React;
 
 type TreeMenuItemDefinition = {
-  label: string;
-  command: string;
-  submenu: ?Array<TreeMenuItemDefinition>;
-  shouldDisplay: ?() => boolean;
-  shouldDisplayForSelectedNodes: ?(nodes: Array<LazyTreeNode>) => boolean;
+  label: string,
+  command: string,
+  submenu: ?Array<TreeMenuItemDefinition>,
+  shouldDisplay: ?() => boolean,
+  shouldDisplayForSelectedNodes: ?(nodes: Array<LazyTreeNode>) => boolean,
 
   // By default, no context menu item will be displayed if the tree is empty.
   // Set this to true to override that behavior.
-  shouldDisplayIfTreeIsEmpty: ?boolean;
+  shouldDisplayIfTreeIsEmpty: ?boolean,
 };
 
 type TreeComponentState = {
-  expandedNodeKeys: Array<string>;
-  selectedNodeKeys: Array<string>;
+  expandedNodeKeys: Array<string>,
+  selectedNodeKeys: Array<string>,
 };
 
 /**

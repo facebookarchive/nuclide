@@ -69,7 +69,7 @@ function hackMessageToTrace(traceError: SingleHackMessage): Object {
 }
 
 function hackMessageToDiagnosticMessage(
-  hackDiagnostic: {message: HackDiagnostic;},
+  hackDiagnostic: {message: HackDiagnostic,},
 ): FileDiagnosticMessage {
   const {message: hackMessages} = hackDiagnostic;
 
@@ -167,7 +167,7 @@ class HackDiagnosticsProvider {
     this._providerBase.publishMessageUpdate(this._processDiagnostics(diagnostics));
   }
 
-  _processDiagnostics(diagnostics: Array<{message: HackDiagnostic;}>): DiagnosticProviderUpdate {
+  _processDiagnostics(diagnostics: Array<{message: HackDiagnostic,}>): DiagnosticProviderUpdate {
     // Convert array messages to Error Objects with Traces.
     const fileDiagnostics = diagnostics.map(hackMessageToDiagnosticMessage);
 

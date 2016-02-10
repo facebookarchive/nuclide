@@ -20,7 +20,7 @@ import OutputTable from './OutputTable';
 import {React} from 'react-for-atom';
 
 type State = {
-  records: Array<Record>;
+  records: Array<Record>,
 };
 
 export default function createOutputGadget(

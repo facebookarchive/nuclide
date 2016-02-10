@@ -19,7 +19,7 @@ module.exports = {
       scopeDescriptor: any,
       prefix: string,
     }
-  ): Promise<?Array<{snippet: string; rightLabel: string}>> {
+  ): Promise<?Array<{snippet: string, rightLabel: string}>> {
 
     const {editor, prefix} = request;
 

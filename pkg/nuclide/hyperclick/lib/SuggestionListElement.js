@@ -43,11 +43,11 @@ class SuggestionListElement extends HTMLElement {
 }
 
 type Props = {
-  suggestionList: SuggestionListType;
+  suggestionList: SuggestionListType,
 };
 
 type State = {
-  selectedIndex: number;
+  selectedIndex: number,
 };
 
 /* eslint-disable react/prop-types */

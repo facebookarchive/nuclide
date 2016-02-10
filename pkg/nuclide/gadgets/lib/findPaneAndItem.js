@@ -10,8 +10,8 @@
  */
 
 type ItemAndPane = {
-  item: Object;
-  pane: Object;
+  item: Object,
+  pane: Object,
 };
 
 type Predicate = (item: Object, pane: Object) => boolean;

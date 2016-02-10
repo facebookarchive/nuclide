@@ -12,7 +12,7 @@
 function extractWordAtPosition(
     editor: atom$TextEditor,
     position: atom$Point,
-    wordRegex: ?RegExp): ?{wordMatch: Array<string>; range: atom$Range} {
+    wordRegex: ?RegExp): ?{wordMatch: Array<string>, range: atom$Range} {
   if (!wordRegex) {
     wordRegex = editor.getLastCursor().wordRegExp();
   }

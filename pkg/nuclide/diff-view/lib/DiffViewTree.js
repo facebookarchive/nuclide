@@ -71,7 +71,7 @@ function vcsClassNameForEntry(entry: FileChange): string {
 }
 
 type Props = {
-  diffModel: DiffViewModel;
+  diffModel: DiffViewModel,
 };
 
 /* eslint-disable react/prop-types */

@@ -29,18 +29,18 @@ import {getLogger, flushLogsAndExit} from '../../logging';
 const logger = getLogger();
 
 type NuclideServerOptions = {
-  port: number;
-  serverKey?: Buffer;
-  serverCertificate?: Buffer;
-  certificateAuthorityCertificate?: Buffer;
-  trackEventLoop?: boolean;
+  port: number,
+  serverKey?: Buffer,
+  serverCertificate?: Buffer,
+  certificateAuthorityCertificate?: Buffer,
+  trackEventLoop?: boolean,
 }
 
 export type SocketClient = {
-  id: string;
-  subscriptions: {[channel: string]: (event: any) => void};
-  socket: ?ws$WebSocket;
-  messageQueue: Array<{data: string}>;
+  id: string,
+  subscriptions: {[channel: string]: (event: any) => void},
+  socket: ?ws$WebSocket,
+  messageQueue: Array<{data: string}>,
 };
 
 class NuclideServer {

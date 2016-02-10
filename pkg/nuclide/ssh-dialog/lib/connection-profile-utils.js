@@ -82,9 +82,9 @@ export function saveConnectionProfiles(profiles: Array<NuclideRemoteConnectionPr
 
 
 type ConnectionProfileChange = {
-  newValue: ?Array<NuclideRemoteConnectionProfile>;
-  oldValue: ?Array<NuclideRemoteConnectionProfile>;
-  keyPath: string;
+  newValue: ?Array<NuclideRemoteConnectionProfile>,
+  oldValue: ?Array<NuclideRemoteConnectionProfile>,
+  keyPath: string,
 };
 /**
  * Calls the callback when the saved connection profiles change.

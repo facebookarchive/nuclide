@@ -13,8 +13,8 @@ const invariant = require('assert');
 const {CompositeDisposable, Disposable, Emitter, Point} = require('atom');
 
 type PositionChangeEvent = {
-  nativeEvent: MouseEvent;
-  position: Point;
+  nativeEvent: MouseEvent,
+  position: Point,
 };
 
 const DEBOUNCE_TIME = 200;

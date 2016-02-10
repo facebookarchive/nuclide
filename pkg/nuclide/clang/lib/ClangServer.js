@@ -25,9 +25,9 @@ const logger = getLogger();
 const pathToLibClangServer = path.join(__dirname, '../python/clang_server.py');
 
 async function _findClangServerArgs(): Promise<{
-  libClangLibraryFile: ?string;
-  pythonExecutable: string;
-  pythonPathEnv: ?string;
+  libClangLibraryFile: ?string,
+  pythonExecutable: string,
+  pythonPathEnv: ?string,
 }> {
   let findClangServerArgs;
   try {

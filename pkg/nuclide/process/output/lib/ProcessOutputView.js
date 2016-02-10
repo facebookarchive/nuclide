@@ -25,11 +25,11 @@ const PROCESS_OUTPUT_PATH = 'nuclide-process-output.ansi';
 
 type DefaultProps = {};
 type Props = {
-  title: string;
+  title: string,
   processOutputStore: ProcessOutputStore,
   processOutputHandler: ?ProcessOutputHandler,
   processOutputViewTopElement: ?HTMLElement,
-  textBuffer: TextBuffer;
+  textBuffer: TextBuffer,
 };
 type State = {};
 

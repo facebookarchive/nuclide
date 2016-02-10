@@ -27,7 +27,7 @@ function formatBreakpointKey(url: string, line: number): string {
 type BreakpointNotificationType = 'BreakpointAdded' | 'BreakpointRemoved';
 
 class NuclideBridge {
-  _allBreakpoints: {sourceURL: string; lineNumber: number}[];
+  _allBreakpoints: {sourceURL: string, lineNumber: number}[];
   _unresolvedBreakpoints: Multimap<string, number>;
   _emitter: Emitter;
   _debuggerPausedCount: number;
@@ -349,7 +349,7 @@ class NuclideBridge {
     return this._emitter.on('unresolved-breakpoints-changed', callback);
   }
 
-  getUnresolvedBreakpointsList(): {url: string; line: number}[] {
+  getUnresolvedBreakpointsList(): {url: string, line: number}[] {
     const result = [];
     this._unresolvedBreakpoints.forEach((line, url) => {
       result.push({url, line});

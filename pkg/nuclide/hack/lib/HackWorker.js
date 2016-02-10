@@ -19,9 +19,9 @@ const DEFAULT_WEBWORKER_TIMEOUT = 30 * 1000;
 const DEFAULT_POOR_PERF_TIMEOUT = 8 * 1000;
 
 type WorkerTask = {
-  workerMessage: mixed;
-  onResponse: (response: any) => void;
-  onFail: (error: Error) => void;
+  workerMessage: mixed,
+  onResponse: (response: any) => void,
+  onFail: (error: Error) => void,
 };
 
 /**
@@ -33,9 +33,9 @@ type WorkerTask = {
  */
 
 type HackWorkerOptions = {
-  webWorkerTimeout?: number;
-  poorPerfTimeout?: number;
-  worker?: Worker;
+  webWorkerTimeout?: number,
+  poorPerfTimeout?: number,
+  worker?: Worker,
 };
 
 class HackWorker {

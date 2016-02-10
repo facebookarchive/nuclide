@@ -236,7 +236,7 @@ function mvPromise(sourcePath: string, destinationPath: string): Promise<void> {
  * TODO: move to nuclide-commons and rename to writeFileAtomic
  */
 export async function writeFile(path: string, data: string,
-    options: ?{encoding?: string; mode?: number; flag?:string}): Promise<void> {
+    options: ?{encoding?: string, mode?: number, flag?:string}): Promise<void> {
 
   let complete = false;
   const tempFilePath = await fsPromise.tempfile('nuclide');

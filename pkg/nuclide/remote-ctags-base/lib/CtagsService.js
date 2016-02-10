@@ -40,7 +40,7 @@ export class CtagsService {
 
   findTags(
     query: string,
-    options?: {caseInsensitive?: boolean; partialMatch?: boolean, limit?: number},
+    options?: {caseInsensitive?: boolean, partialMatch?: boolean, limit?: number},
   ): Promise<Array<CtagsResult>> {
     let ctags;
     try {

@@ -14,7 +14,7 @@ import type {HintTree} from '../../type-hint-interfaces';
 import {React} from 'react-for-atom';
 
 type TypeHintComponentProps = {
-  content: string | HintTree;
+  content: string | HintTree,
 }
 
 type TypeHintComponentState = {

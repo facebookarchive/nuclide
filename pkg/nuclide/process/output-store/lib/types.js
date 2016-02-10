@@ -10,7 +10,7 @@
  */
 
 export type KillableProcess = {
-  kill: () => mixed;
+  kill: () => mixed,
 };
 
 /**
@@ -21,10 +21,10 @@ export type KillableProcess = {
  * @param exit A function that receives the exit code when the process exits.
  */
 export type ProcessOutputDataHandlers = {
-  stdout: (data: string) => mixed;
-  stderr: (data: string) => mixed;
-  error: (err: Error) => mixed;
-  exit: (code: number) => mixed;
+  stdout: (data: string) => mixed,
+  stderr: (data: string) => mixed,
+  error: (err: Error) => mixed,
+  exit: (code: number) => mixed,
 };
 
 /**

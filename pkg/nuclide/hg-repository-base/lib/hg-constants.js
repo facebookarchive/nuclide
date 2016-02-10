@@ -65,39 +65,39 @@ const HgStatusOption: {[key: string]: HgStatusOptionValue} = {
 };
 
 export type LineDiff = {
-  oldStart: number;
-  oldLines: number;
-  newStart: number;
-  newLines: number;
+  oldStart: number,
+  oldLines: number,
+  newStart: number,
+  newLines: number,
 };
 
 export type DiffInfo = {
-  added: number;
-  deleted: number;
-  lineDiffs: Array<LineDiff>;
+  added: number,
+  deleted: number,
+  lineDiffs: Array<LineDiff>,
 };
 
 export type RevisionInfo = {
-  id: number;
-  hash: string;
-  title: string;
-  author: string;
-  date: Date;
+  id: number,
+  hash: string,
+  title: string,
+  author: string,
+  date: Date,
   // List of bookmarks at this revision.
-  bookmarks: Array<string>;
+  bookmarks: Array<string>,
 };
 
 export type RevisionFileCopy = {
-  from: NuclideUri;
-  to: NuclideUri;
+  from: NuclideUri,
+  to: NuclideUri,
 };
 
 export type RevisionFileChanges = {
-  all: Array<NuclideUri>;
-  added: Array<NuclideUri>;
-  deleted: Array<NuclideUri>;
-  copied: Array<RevisionFileCopy>;
-  modified: Array<NuclideUri>;
+  all: Array<NuclideUri>,
+  added: Array<NuclideUri>,
+  deleted: Array<NuclideUri>,
+  copied: Array<RevisionFileCopy>,
+  modified: Array<NuclideUri>,
 };
 
 module.exports = {

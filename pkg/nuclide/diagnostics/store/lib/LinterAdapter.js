@@ -21,11 +21,11 @@ import type {
 } from '../../base';
 
 type LinterTrace = {
-  type: 'Trace';
-  text?: string;
-  html?: string;
-  filePath: string;
-  range?: atom$Range;
+  type: 'Trace',
+  text?: string,
+  html?: string,
+  filePath: string,
+  range?: atom$Range,
 };
 
 type LinterMessage = {
@@ -46,26 +46,26 @@ export type LinterProvider = {
   /**
    * Extension: Allows a provider to include a display name that will be shown with its messages.
    */
-  providerName?: string;
+  providerName?: string,
   /**
    * In the official Linter API, the providerName is just "name".
    */
-  name?: string;
+  name?: string,
   /**
    * Extension: Intended for developers who want to provide both interfaces to cater towards people
    * who use only the `linter` package. This way you can provide both, but tell Nuclide to ignore
    * the `linter` provider so that duplicate results do not appear.
    */
-  disabledForNuclide?: boolean;
-  grammarScopes: Array<string>;
+  disabledForNuclide?: boolean,
+  grammarScopes: Array<string>,
   /**
    * Extension: Overrides `grammarScopes` and triggers the linter on changes to any file, rather
    * than just files with specific grammar scopes.
    */
-  allGrammarScopes?: boolean;
-  scope: 'file' | 'project';
-  lintOnFly: boolean;
-  lint: (textEditor: TextEditor) => Promise<Array<LinterMessage>>;
+  allGrammarScopes?: boolean,
+  scope: 'file' | 'project',
+  lintOnFly: boolean,
+  lint: (textEditor: TextEditor) => Promise<Array<LinterMessage>>,
 };
 
 import {Range} from 'atom';

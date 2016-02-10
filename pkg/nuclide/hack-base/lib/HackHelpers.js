@@ -124,10 +124,10 @@ export async function getSearchResults(
     pendingSearchPromises.set(search, searchPromise);
   }
 
-  let searchResponse: ?{hackRoot: string; result: Array<HHSearchPosition>} = null;
+  let searchResponse: ?{hackRoot: string, result: Array<HHSearchPosition>} = null;
   try {
     searchResponse = (
-      ((await searchPromise): any): {hackRoot: string; result: Array<HHSearchPosition>}
+      ((await searchPromise): any): {hackRoot: string, result: Array<HHSearchPosition>}
     );
   } catch (error) {
     throw error;

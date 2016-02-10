@@ -10,9 +10,9 @@
  */
 
 type ComboboxOption = {
-  value: string;
-  valueLowercase: string;
-  matchIndex: number;
+  value: string,
+  valueLowercase: string,
+  matchIndex: number,
 };
 
 const {CompositeDisposable} = require('atom');

@@ -16,8 +16,8 @@ import PathSet from './PathSet';
 import TopScores from './TopScores';
 
 type ResultSet = {
-  query: string;
-  results: Array<QueryScore>;
+  query: string,
+  results: Array<QueryScore>,
 };
 
 const PATH_SEARCH_TIMEOUT_MS = 60 * 1000;

@@ -29,24 +29,24 @@ import {createPaneContainer} from '../../atom-helpers';
 import {bufferForUri} from '../../atom-helpers';
 
 type Props = {
-  diffModel: DiffViewModel;
+  diffModel: DiffViewModel,
 };
 
 type EditorState = {
-  text: string;
-  savedContents?: string;
-  offsets: OffsetMap;
+  text: string,
+  savedContents?: string,
+  offsets: OffsetMap,
   highlightedLines: {
-    added: Array<number>;
-    removed: Array<number>;
-  };
-  inlineElements: Array<InlineComponent>;
+    added: Array<number>,
+    removed: Array<number>,
+  },
+  inlineElements: Array<InlineComponent>,
 }
 
 type State = {
   filePath: string,
-  oldEditorState: EditorState;
-  newEditorState: EditorState;
+  oldEditorState: EditorState,
+  newEditorState: EditorState,
 };
 
 /* eslint-disable react/prop-types */

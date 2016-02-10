@@ -19,11 +19,11 @@ import {
 } from 'react-for-atom';
 
 type Props = {
-  gadgetId: string;
-  iconName: string;
-  rawInitialGadgetState: Object;
-  title: string;
-  expandedFlexScale: ?number;
+  gadgetId: string,
+  iconName: string,
+  rawInitialGadgetState: Object,
+  title: string,
+  expandedFlexScale: ?number,
 };
 
 class GadgetPlaceholder extends React.Component<void, Props, void> {

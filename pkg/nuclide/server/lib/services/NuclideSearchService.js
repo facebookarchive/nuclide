@@ -10,22 +10,22 @@
  */
 
 type ProviderInfo = {
-  name: string;
+  name: string,
 }
 
 type SearchQueryResult = {
-  line: number;
-  column: number;
-  name: string;
-  path: string;
-  length: number;
-  scope: string;
-  additionalInfo: string;
-  action: string;
+  line: number,
+  column: number,
+  name: string,
+  path: string,
+  length: number,
+  scope: string,
+  additionalInfo: string,
+  action: string,
 }
 
 type SearchResponse = {
-  results: Array<SearchQueryResult>;
+  results: Array<SearchQueryResult>,
 }
 
 import invariant from 'assert';
@@ -36,8 +36,8 @@ const {fileSearchForDirectory} = require('../../../path-search');
 const remoteUri = require('../../../remote-uri');
 
 type SearchProvider = {
-  isAvailable: (cwd: string) => boolean;
-  query: (cwd: string, query: string) => Promise<Array<SearchQueryResult>>;
+  isAvailable: (cwd: string) => boolean,
+  query: (cwd: string, query: string) => Promise<Array<SearchQueryResult>>,
 };
 
 let providers: ?{[providerName: string]: SearchProvider};

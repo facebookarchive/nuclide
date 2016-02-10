@@ -88,7 +88,7 @@ class Bridge {
     // addEventListener expects its callback to take an Event. I'm not sure how to reconcile it with
     // the type that is expected here.
     // $FlowFixMe(jeffreytan)
-    const event: {channel: string; args: any[]} = stdEvent;
+    const event: {channel: string, args: any[]} = stdEvent;
     switch (event.channel) {
       case 'notification':
         switch (event.args[0]) {
@@ -116,7 +116,7 @@ class Bridge {
     }
   }
 
-  _setSelectedCallFrameLine(nullableOptions: ?{sourceURL: string; lineNumber: number}) {
+  _setSelectedCallFrameLine(nullableOptions: ?{sourceURL: string, lineNumber: number}) {
     if (nullableOptions) {
       const options = nullableOptions; // For use in capture without re-checking null
       const path = remoteUri.uriToNuclideUri(options.sourceURL);
@@ -131,7 +131,7 @@ class Bridge {
     }
   }
 
-  _openSourceLocation(nullableOptions: ?{sourceURL: string; lineNumber: number}) {
+  _openSourceLocation(nullableOptions: ?{sourceURL: string, lineNumber: number}) {
     if (nullableOptions) {
       const options = nullableOptions; // For use in capture without re-checking null
       const path = remoteUri.uriToNuclideUri(options.sourceURL);
@@ -156,7 +156,7 @@ class Bridge {
     this._selectedCallFrameMarker = marker;
   }
 
-  _addBreakpoint(location: {sourceURL: string; lineNumber: number}) {
+  _addBreakpoint(location: {sourceURL: string, lineNumber: number}) {
     const path = remoteUri.uriToNuclideUri(location.sourceURL);
     // only handle real files for now.
     if (path) {
@@ -169,7 +169,7 @@ class Bridge {
     }
   }
 
-  _removeBreakpoint(location: {sourceURL: string; lineNumber: number}) {
+  _removeBreakpoint(location: {sourceURL: string, lineNumber: number}) {
     const path = remoteUri.uriToNuclideUri(location.sourceURL);
     // only handle real files for now.
     if (path) {

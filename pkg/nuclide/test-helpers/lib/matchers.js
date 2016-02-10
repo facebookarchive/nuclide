@@ -32,9 +32,9 @@ const chalk = require('chalk');
 const diff = require('diff');
 
 type Change = {
-  value: string;
-  removed?: boolean;
-  added?: boolean;
+  value: string,
+  removed?: boolean,
+  added?: boolean,
 };
 
 /**

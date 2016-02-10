@@ -17,14 +17,14 @@ declare function waitsForPromise(
 ): void;
 
 declare class Benchmark {
-  description: string;
-  columns: Array<string>;
-  timeout: number;
-  iterations: number;
-  repetitions: number;
-  run: (iteration: number) => Object;
-  name?: string;
-  index?: number;
+  description: string,
+  columns: Array<string>,
+  timeout: number,
+  iterations: number,
+  repetitions: number,
+  run: (iteration: number) => Object,
+  name?: string,
+  index?: number,
 }
 
 const fs = require('fs');

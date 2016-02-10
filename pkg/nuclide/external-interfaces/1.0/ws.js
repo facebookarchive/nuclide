@@ -9,13 +9,13 @@
 /*eslint-disable no-unused-vars */
 
 declare class ws$Server extends events$EventEmitter {
-  constructor(options: {server: http$fixed$Server}): void;
-  close(): void;
+  constructor(options: {server: http$fixed$Server}): void,
+  close(): void,
 }
 
 declare class ws$WebSocket extends events$EventEmitter {
-  send(message: string, ack: (error: ?Object) => void): void;
-  close(): void;
+  send(message: string, ack: (error: ?Object) => void): void,
+  close(): void,
 }
 
 /**

@@ -42,7 +42,7 @@ type Props = {
 };
 
 type State = {
-  textContent: string;
+  textContent: string,
 };
 
 /* eslint-disable react/prop-types */

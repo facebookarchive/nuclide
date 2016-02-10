@@ -22,7 +22,7 @@ const BreakpointStore = require('./BreakpointStore.js');
  * Disposable objects.
  */
 type BreakpointDisplayControllerDelegate = {
-  handleTextEditorDestroyed: (controller: BreakpointDisplayController) => void;
+  handleTextEditorDestroyed: (controller: BreakpointDisplayController) => void,
 };
 
 /**

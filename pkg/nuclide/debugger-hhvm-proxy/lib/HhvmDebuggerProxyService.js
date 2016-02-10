@@ -17,18 +17,18 @@ import {MessageTranslator} from './MessageTranslator';
 import type {Observable} from 'rx';
 
 export type ConnectionConfig = {
-  xdebugPort: number;
-  pid?: number;
-  scriptRegex?: string;
-  idekeyRegex?: string;
-  endDebugWhenNoRequests?: boolean;
-  logLevel: string;
-  targetUri: string;
+  xdebugPort: number,
+  pid?: number,
+  scriptRegex?: string,
+  idekeyRegex?: string,
+  endDebugWhenNoRequests?: boolean,
+  logLevel: string,
+  targetUri: string,
 };
 
 export type NotificationMessage = {
-  type: string;
-  message: string;
+  type: string,
+  message: string,
 };
 
 // Connection states

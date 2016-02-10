@@ -19,9 +19,9 @@ import PathSearch from './PathSearch';
 import PathSetUpdater from './PathSetUpdater';
 
 export type FileSearchResult = {
-  score: number;
-  path: string;
-  matchIndexes: Array<number>;
+  score: number,
+  path: string,
+  matchIndexes: Array<number>,
 };
 
 /**

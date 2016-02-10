@@ -46,17 +46,17 @@ const FILE_SYSTEM_SERVICE = 'FileSystemService';
 const CONNECTION_ALREADY_EXISTS = 'A connection already exists for the specified directory.';
 
 type HeartbeatNotification = {
-  notification: atom$Notification;
-  code: string;
+  notification: atom$Notification,
+  code: string,
 }
 
 export type RemoteConnectionConfiguration = {
-  host: string; // host nuclide server is running on.
-  port: number; // port to connect to.
-  cwd: string; // Path to remote directory user should start in upon connection.
-  certificateAuthorityCertificate?: Buffer; // certificate of certificate authority.
-  clientCertificate?: Buffer; // client certificate for https connection.
-  clientKey?: Buffer; // key for https connection.
+  host: string, // host nuclide server is running on.
+  port: number, // port to connect to.
+  cwd: string, // Path to remote directory user should start in upon connection.
+  certificateAuthorityCertificate?: Buffer, // certificate of certificate authority.
+  clientCertificate?: Buffer, // client certificate for https connection.
+  clientKey?: Buffer, // key for https connection.
 }
 
 const _emitter: EventEmitter = new EventEmitter();

@@ -28,19 +28,19 @@ export type Diagnostics = {
 export type Diagnostic = Array<SingleMessage>;
 
 export type SingleMessage = {
-  path: ?NuclideUri;
-  descr: string;
-  line: number;
-  endline: number;
-  start: number;
-  end: number;
-  level: string;
+  path: ?NuclideUri,
+  descr: string,
+  line: number,
+  endline: number,
+  start: number,
+  end: number,
+  level: string,
 }
 
 export type Loc = {
-  file: NuclideUri;
-  line: number;
-  column: number;
+  file: NuclideUri,
+  line: number,
+  column: number,
 }
 
 // If types are added here, make sure to also add them to FlowConstants.js. This needs to be the

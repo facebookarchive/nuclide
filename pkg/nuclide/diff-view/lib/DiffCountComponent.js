@@ -12,7 +12,7 @@
 import {React} from 'react-for-atom';
 
 type Props = {
-  count: number;
+  count: number,
 };
 
 /* eslint-disable react/prop-types */

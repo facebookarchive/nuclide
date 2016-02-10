@@ -16,19 +16,19 @@ import FileTreeStore from './FileTreeStore';
 import {isFullyQualifiedLocalPath} from './FileTreeHelpers';
 
 type MenuItemSingle = {
-  label: string;
-  command: string;
-  shouldDisplay?: () => boolean;
+  label: string,
+  command: string,
+  shouldDisplay?: () => boolean,
 };
 
 type MenuItemGroup = {
-  label: string;
-  submenu: Array<MenuItemDefinition>;
-  shouldDisplay?: () => boolean;
+  label: string,
+  submenu: Array<MenuItemDefinition>,
+  shouldDisplay?: () => boolean,
 };
 
 type MenuItemSeparator = {
-  type: string;
+  type: string,
 };
 
 type MenuItemDefinition = MenuItemSingle | MenuItemGroup | MenuItemSeparator;

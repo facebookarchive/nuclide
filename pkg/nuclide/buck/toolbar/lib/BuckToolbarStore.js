@@ -25,7 +25,7 @@ const {buckProjectRootForPath} = require('../../commons');
 const BuckToolbarActions = require('./BuckToolbarActions');
 
 type BuckRunDetails = {
-  pid?: number;
+  pid?: number,
 };
 import type {ProcessOutputStore as ProcessOutputStoreType} from '../../../process/output-store';
 import type {ProcessOutputDataHandlers} from '../../../process/output-store/lib/types';
@@ -41,7 +41,7 @@ const REACT_NATIVE_APP_FLAGS = [
 ];
 
 type InitialState = {
-  isReactNativeServerMode?: boolean;
+  isReactNativeServerMode?: boolean,
 };
 
 class BuckToolbarStore {
@@ -362,7 +362,7 @@ class BuckToolbarStore {
       } else {
         observable = await buckProject.buildWithOutput([buildTarget]);
       }
-      const onNext = (data: {stderr?: string; stdout?: string}) => {
+      const onNext = (data: {stderr?: string, stdout?: string}) => {
         if (data.stdout) {
           stdout(data.stdout);
         } else {

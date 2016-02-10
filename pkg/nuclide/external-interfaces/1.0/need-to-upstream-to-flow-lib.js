@@ -13,96 +13,96 @@
 /* eslint-disable no-unused-vars */
 
 interface IDisposable {
-  dispose(): void;
+  dispose(): void,
 }
 
 declare class Worker {
-  addEventListener(type: 'message', listener: (message: {data: mixed}) => mixed): void;
-  addEventListener(type: 'error', listener: (error: Error) => mixed): void;
-  terminate(): void;
-  postMessage(message: mixed): void;
+  addEventListener(type: 'message', listener: (message: {data: mixed}) => mixed): void,
+  addEventListener(type: 'error', listener: (error: Error) => mixed): void,
+  terminate(): void,
+  postMessage(message: mixed): void,
 }
 
 type IDBDatabase = {
-  close: () => void;
-  transaction: (key: string) => any;
+  close: () => void,
+  transaction: (key: string) => any,
 }
 
 type CreateInterfaceOptions = {
-  input: stream$Readable;
-  output?: stream$Writable;
-  completer?: (line: string) => [Array<string>, string];
-  terminal?: boolean;
-  historySize?: number;
+  input: stream$Readable,
+  output?: stream$Writable,
+  completer?: (line: string) => [Array<string>, string],
+  terminal?: boolean,
+  historySize?: number,
 }
 
 declare module 'readline' {
   declare class Interface {
-    on: (event: string, listener: Function) => void;
-    close: () => void;
+    on: (event: string, listener: Function) => void,
+    close: () => void,
   }
   declare function createInterface(options: CreateInterfaceOptions): Interface;
 }
 
 // T9254051 - Fix flow http/https definitions.
 declare class http$fixed$Server extends events$EventEmitter {
-  listen(port: number, hostname?: string, backlog?: number, callback?: Function): http$fixed$Server;
-  listen(path: string, callback?: Function): http$fixed$Server;
-  listen(handle: Object, callback?: Function): http$fixed$Server;
-  close(callback?: Function): http$fixed$Server;
-  address(): { port: number; fmaily: string; address: string; };
-  maxHeadersCount: number;
+  listen(port: number, hostname?: string, backlog?: number, callback?: Function): http$fixed$Server,
+  listen(path: string, callback?: Function): http$fixed$Server,
+  listen(handle: Object, callback?: Function): http$fixed$Server,
+  close(callback?: Function): http$fixed$Server,
+  address(): { port: number, fmaily: string, address: string, },
+  maxHeadersCount: number,
 }
 
 declare class http$fixed$IncomingMessage extends stream$Readable {
-  headers: Object;
-  httpVersion: string;
-  method: string;
-  trailers: Object;
-  setTimeout(msecs: number, callback: Function): void;
-  socket: any;  // TODO net.Socket
-  statusCode: number;
-  url: String;
-  connection: { destroy: () =>void };
+  headers: Object,
+  httpVersion: string,
+  method: string,
+  trailers: Object,
+  setTimeout(msecs: number, callback: Function): void,
+  socket: any,  // TODO net.Socket
+  statusCode: number,
+  url: String,
+  connection: { destroy: () =>void },
 }
 
 declare class http$fixed$ClientRequest extends stream$Writable {
 }
 
 declare class http$fixed$ServerResponse {
-  setHeader(name: string, value: string): void;
-  statusCode: number;
-  write(value: string): void;
-  end(): void;
+  setHeader(name: string, value: string): void,
+  statusCode: number,
+  write(value: string): void,
+  end(): void,
 }
 
 declare class https$fixed {
-  Server: typeof http$fixed$Server;
+  Server: typeof http$fixed$Server,
   createServer(options: Object,
     requestListener?:
       (request: http$fixed$IncomingMessage, response: http$fixed$ServerResponse) => void):
-      http$fixed$Server;
+      http$fixed$Server,
   request(
     options: Object | string,
     callback: (response: http$fixed$IncomingMessage) => void
-  ): http$fixed$ClientRequest;
+  ): http$fixed$ClientRequest,
   get(
     options: Object | string,
     callback: (response: http$fixed$IncomingMessage) => void
-  ): http$fixed$ClientRequest;
+  ): http$fixed$ClientRequest,
 }
 
 declare class http$fixed {
-  Server: typeof http$fixed$Server;
+  Server: typeof http$fixed$Server,
   createServer(requestListener?:
       (request: http$fixed$IncomingMessage, response: http$fixed$ServerResponse) => void):
-      http$fixed$Server;
+      http$fixed$Server,
   request(
     options: Object | string,
     callback: (response: http$fixed$IncomingMessage) => void
-  ): http$fixed$ClientRequest;
+  ): http$fixed$ClientRequest,
   get(
     options: Object | string,
     callback: (response: http$fixed$IncomingMessage) => void
-  ): http$fixed$ClientRequest;
+  ): http$fixed$ClientRequest,
 }

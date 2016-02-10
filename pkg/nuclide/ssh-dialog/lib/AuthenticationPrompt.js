@@ -17,9 +17,9 @@ import {
 
 type DefaultProps = {};
 type Props = {
-  instructions: string;
-  onConfirm: () => mixed;
-  onCancel: () => mixed;
+  instructions: string,
+  onConfirm: () => mixed,
+  onCancel: () => mixed,
 };
 type State = {};
 
