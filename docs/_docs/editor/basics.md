@@ -141,12 +141,43 @@ blame (assuming that information is available), etc.
 
 ## Status Bar
 
-### Errors and Warnings
+The status bar in Nuclide builds upon the
+[Atom status bar package](https://github.com/atom/status-bar). Nuclide adds powerful new
+features to the status bar, including code diagnostics and remote connection status.
+
+![](/static/images/docs/editor-basics-status-bar-intro.png)
+
+### Code Diagnostics
+
+If you are using a supported language that provides a linting and/or typechecking capability
+(e.g., Hack or Flow), then code diagnostics is built directly into Nuclide for that language.
+
+![](/static/images/docs/editor-basics-status-bar-diagnostics.png)
+
+### Remote Connection Status
+
+If you are connected to a project on a remote machine, clicking on the remote connection icon on
+the status bar will provide information about the current status of that connection. Generally, if
+all is well, the connection should say "Healthy".
+
+![](/static/images/docs/editor-basics-status-bar-connection.png)
+
+> If you check the connection against a local project, you will get information regarding whether
+> the current active file exists on the local filesystem.
 
 ### File Encoding
 
+The default file encoding for Atom is `UTF-8`. Clicking on this in the status bar allows you to
+change the encoding of the current file.
+
 ### Language Selection
 
+Atom determines the language of the current file. Normally this is correct. However, you can change
+the language, and Atom will then change its syntax highlighting appropriately.
+
 ### Branch
+
+Assuming your project is under source control, the status bar also shows the current branch on
+which you are working.
 
 ## Command Palette
