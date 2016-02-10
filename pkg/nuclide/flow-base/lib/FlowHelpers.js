@@ -153,7 +153,17 @@ async function canFindFlow(flowPath: string): Promise<boolean> {
  */
 function getPathToFlow(): string {
   // $UPFixMe: This should use nuclide-features-config
+  // Does not currently do so because this is an npm module that may run on the server.
   return global.atom && global.atom.config.get('nuclide.nuclide-flow.pathToFlow') || 'flow';
+}
+
+function getStopFlowOnExit(): boolean {
+  // $UPFixMe: This should use nuclide-features-config
+  // Does not currently do so because this is an npm module that may run on the server.
+  if (global.atom) {
+    return ((global.atom.config.get('nuclide.nuclide-flow.stopFlowOnExit'): any): boolean);
+  }
+  return true;
 }
 
 function findFlowConfigDir(localFile: string): Promise<?string> {
@@ -166,6 +176,7 @@ function findFlowConfigDir(localFile: string): Promise<?string> {
 module.exports = {
   findFlowConfigDir,
   getPathToFlow,
+  getStopFlowOnExit,
   insertAutocompleteToken,
   isFlowInstalled,
   processAutocompleteItem,

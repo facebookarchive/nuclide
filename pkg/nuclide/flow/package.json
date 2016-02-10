@@ -12,6 +12,12 @@
         "default": "flow",
         "description": "Absolute path to the Flow executable on your system."
       },
+      "stopFlowOnExit": {
+        "title": "Stop Flow On Exit",
+        "type": "boolean",
+        "default": true,
+        "description": "If Nuclide was responsible for starting a Flow server (on the client-side), stop it when Nuclide closes or reloads."
+      },
       "enableTypeHints": {
         "title": "Enable Type Hints",
         "type": "boolean",

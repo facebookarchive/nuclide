@@ -28,6 +28,7 @@ import {
 import {
   isFlowInstalled,
   getPathToFlow,
+  getStopFlowOnExit,
 } from './FlowHelpers.js';
 
 import {ServerStatus} from './FlowConstants';
@@ -74,7 +75,7 @@ export class FlowProcess {
 
   dispose(): void {
     this._serverStatus.onCompleted();
-    if (this._startedServer) {
+    if (this._startedServer && getStopFlowOnExit()) {
       // The default, SIGTERM, does not reliably kill the flow servers.
       this._startedServer.kill('SIGKILL');
     }
