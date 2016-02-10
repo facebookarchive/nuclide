@@ -71,7 +71,7 @@ export function notifySshHandshakeError(
       detail = originalErrorDetail;
       break;
     default:
-      message = `Unexpected error happend: ${error.message}.`;
+      message = `Unexpected error occurred: ${error.message}.`;
       detail = originalErrorDetail;
   }
   atom.notifications.addError(message, {detail, dismissable: true});

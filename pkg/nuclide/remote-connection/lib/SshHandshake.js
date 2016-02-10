@@ -289,24 +289,7 @@ export class SshHandshake {
       const cmd = `${this._config.remoteServerCommand} --workspace=${this._config.cwd}`
         + ` --common-name=${this._config.host} --json-output-file=${remoteTempFile} -t 60`;
 
-      // This imitates a user typing:
-      //   $ TERM=nuclide ssh server
-      // then on the interactive prompt executing the remote server command.  If
-      // that works, then nuclide should also work.
-      //
-      // The reason we don'y use exec here is because people like to put as the
-      // last statement in their .bashrc zsh or fish.  This starts an
-      // and interactive child shell that never exits if you exec.
-      //
-      // This is a bad idea because besides breaking us, it also breaks this:
-      // $ ssh server any_cmd
-      //
-      // As a last resort we also set term to 'nuclide' so that if anything we
-      // haven't thought of happens, the user can always add the following to
-      // the top of their favorite shell startup file:
-      //
-      //   [ "$TERM" = "nuclide"] && return;
-      this._connection.shell({term: 'nuclide'}, (err, stream) => {
+      this._connection.exec(cmd, {pty: {term: 'nuclide'}}, (err, stream) => {
         if (err) {
           this._onSshConnectionError(err);
           return resolve(false);
@@ -388,19 +371,6 @@ export class SshHandshake {
         }).on('data', data => {
           stdOut += data;
         });
-        // Yes we exit twice.  This is because people who use shells like zsh
-        // or fish, etc like to put zsh/fish as the last statement of their
-        // .bashrc.  This means that when we exit zsh/fish, we then have to exit
-        // the parent bash shell.
-        //
-        // The second exit is ignored when there is only one shell.
-        //
-        // We will still hang forever if they have a shell within a shell within
-        // a shell.  But I can't bring myself to exit 3 times.
-        //
-        // TODO: (mikeo) There is a SHLVL environment variable set that can be
-        // used to decide how many times to exit
-        stream.end(`${cmd}\nexit\nexit\n`);
       });
     });
   }
