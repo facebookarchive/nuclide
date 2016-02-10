@@ -339,6 +339,13 @@ function checkOutput(
 
       lastChild = spawn(localOptions.pipedCommand, localOptions.pipedArgs, localOptions);
       monitorStreamErrors(lastChild, command, args, localOptions);
+      // pipe() normally pauses the writer when the reader errors (closes).
+      // This is not how UNIX pipes work: if the reader closes, the writer needs
+      // to also close (otherwise the writer process may hang.)
+      // We have to manually close the writer in this case.
+      lastChild.stdin.on('error', () => {
+        firstChild.stdout.emit('end');
+      });
       firstChild.stdout.pipe(lastChild.stdin);
     } else {
       lastChild = spawn(command, args, localOptions);

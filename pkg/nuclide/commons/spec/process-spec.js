@@ -109,6 +109,26 @@ describe('nuclide-commons/process', () => {
           expect(val.stdout).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].join('\n') + '\n');
         });
       });
+      // This behaviour does not work properly on Macs :(
+      if (process.platform === 'linux') {
+        it('terminates piped processes correctly', () => {
+          waitsForPromise(async () => {
+            const val = await processLib.asyncExecute(
+              'yes',
+              [],
+              {env: process.env, pipedCommand: 'head', pipedArgs: ['-1']},
+            );
+            expect(val.stdout).toEqual('y\n');
+            // Make sure the `yes` process actually terminates.
+            // It's possible to end up with dangling processes if pipe isn't implemented correctly.
+            const children = await processLib.asyncExecute(
+              'ps',
+              ['--ppid', process.pid.toString()],
+            );
+            expect(children.stdout).not.toContain('yes');
+          });
+        });
+      }
       describe('when passed a pipedCommand', () => {
         it('captures an error message if the first command exits', () => {
           waitsForPromise(async () => {
