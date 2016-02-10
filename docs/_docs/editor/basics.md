@@ -33,7 +33,7 @@ information regarding how to provide feedback.
 ## Project and File Explorer
 
 The project and file explorer is on the left-hand side of Nuclide. This is where you can open
-projects, navigate through your project to open files in the [editor](#editor),
+projects, navigate through your project to open files in the [editing area](#editing-area),
 create new files and folders, etc.
 
 ### Adding Projects
@@ -80,15 +80,64 @@ Diff View (assuming you are working in a Mercurial repository), etc.
 
 ![](/static/images/docs/editor-basics-explorer-context-aware.png)
 
-## Editor
+## Editing Area
+
+The editing area is the main area to edit your code and text files. Each file is represented by a
+tab. You can split this area into various panes for easier modification of multiple files.
+The editing area is also where you will find specialized tabs for the Nuclide Home page,
+the settings page, etc.
 
 ### File Navigation
 
+Navigating between files and within files is the same as in
+[Atom](https://atom.io/docs/v1.5.0/using-atom-moving-in-atom).
+
+You can quickly switch between open files by using `ctrl-tab` to cycle right and `ctrl-shift-tab` to
+cycle left.
+
+Within files you can go straight to a line number by pressing `ctrl-g`. And if your project uses
+a supported language, you can also jump to symbols with `cmd-r` (`ctrl-r` on Linux).
+
+![](/static/images/docs/editor-basics-editing-area-symbols.png)
+
 ### Panes
+
+Pane manipulation in Nuclide is different depending on whether you use menus or the keyboard.
+
+If you use the menu to manipulate panes, Nuclide is also similar to
+[Atom](https://atom.io/docs/v1.5.0/using-atom-panes) when it comes to splitting the editing area
+into multiple panes. (e.g., `File | Panes | ...`). When adding a pane, the currently active file is
+*copied* into the new pane. This is useful for editing different sections of the same file at
+the same time.
+
+> If you open the same file in multiple panes, any edits made in the file in one pane will be
+> immediately reflected in that file in the other panes.
+
+However, if you use the keyboard shortcuts to manipulate panes (e.g., `cmd-k <arrow>`), then there
+is slightly different behavior. If you are adding a pane, then the currently active file is *moved*
+to the new pane.
+
+![](/static/images/docs/editor-basics-editing-panes.png)
 
 ### Search
 
+Most of the searching actions are the same as
+[Atom](https://atom.io/docs/v1.5.0/using-atom-find-and-replace). For example, you can search within
+a file (e.g., `cmd-F`) or throughout your entire project(s) (e.g., `cmd-shift-F`).
+
+In addition to the basic Atom searching, Nuclide adds an additional powerful search functionality
+that allows you to search in various contexts. Omnisearch (`cmd-T` on Mac and `ctrl-T` on Linux)
+provides a way to search, all at once, across your project, within your files, code symbols, etc.
+
+![](/static/images/docs/editor-basics-editing-omnisearch.png)
+
 ### Context-Aware Menu
+
+The explorer has a context-aware menu that is shown when you `right-click`. This menu provides
+options such as adding and closing panes, setting and removing breakpoints, showing line-by-line
+blame (assuming that information is available), etc.
+
+![](/static/images/docs/editor-basics-editing-context-aware.png)
 
 ## Status Bar
 
