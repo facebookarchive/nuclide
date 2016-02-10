@@ -16,6 +16,13 @@ export type AttachTargetInfo = {
   name: string
 };
 
+export type LaunchTargetInfo = {
+  executablePath: string,
+  arguments: Array<string>,
+  environmentVariables: ?Array<string>,
+  workingDirectory: string,
+};
+
 export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>> {
   throw new Error('Not implemented');
 }
@@ -35,6 +42,9 @@ export class DebuggerConnection {
 
 export class DebuggerRpcService {
   async attach(pid: number): Promise<DebuggerConnection> {
+    throw new Error('Not implemented');
+  }
+  async launch(launchInfo: LaunchTargetInfo): Promise<DebuggerConnection> {
     throw new Error('Not implemented');
   }
   async dispose(): Promise<void> {

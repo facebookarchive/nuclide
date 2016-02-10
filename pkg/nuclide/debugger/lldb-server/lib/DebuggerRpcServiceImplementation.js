@@ -16,7 +16,7 @@ import utils from './utils';
 import WebSocket from 'ws';
 const {log, logError} = utils;
 import {ClientCallback} from './ClientCallback';
-import {AttachTargetInfo} from './DebuggerRpcServiceInterface';
+import {AttachTargetInfo, LaunchTargetInfo} from './DebuggerRpcServiceInterface';
 
 export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>> {
   const {asyncExecute} = require('../../../commons');
@@ -84,19 +84,37 @@ export class DebuggerRpcService {
 
   async attach(pid: number): Promise<DebuggerConnection> {
     log(`attach process: ${pid}`);
-    const lldbProcess = this._attachLLDBToProcess(pid);
+    const lldbProcess = this._attachDebuggerToProcess(pid);
     this._lldbProcess = lldbProcess;
     const lldbWebSocket = await this._connectWithLLDB(lldbProcess);
     return new DebuggerConnection(lldbWebSocket);
   }
 
-  _attachLLDBToProcess(pid: number): child_process$ChildProcess {
+  async launch(launchInfo: LaunchTargetInfo): Promise<DebuggerConnection> {
+    log(`launch process: ${JSON.stringify(launchInfo)}`);
+    const lldbProcess = this._launchExecutableUnderDebugger(launchInfo);
+    this._lldbProcess = lldbProcess;
+    const lldbWebSocket = await this._connectWithLLDB(lldbProcess);
+    return new DebuggerConnection(lldbWebSocket);
+  }
+
+  _attachDebuggerToProcess(pid: number): child_process$ChildProcess {
+    const args = ['-p', String(pid)];
+    return this._spawnPythonBackend(args);
+  }
+
+  _launchExecutableUnderDebugger(launchInfo: LaunchTargetInfo): child_process$ChildProcess {
+    const args = ['-e', launchInfo.executablePath];
+    return this._spawnPythonBackend(args);
+  }
+
+  _spawnPythonBackend(args: Array<string>): child_process$ChildProcess {
     const lldbPath = path.join(__dirname, '../scripts/main.py');
-    const args = [lldbPath, '-p', String(pid)];
+    args = [lldbPath, ...args];
     if (this._basepath) {
       args.push('--basepath', this._basepath);
     }
-    log(`spawn child_process: ${lldbPath}, ${JSON.stringify(args)}`);
+    log(`spawn child_process: ${JSON.stringify(args)}`);
     return child_process.spawn('python', args);
   }
 
