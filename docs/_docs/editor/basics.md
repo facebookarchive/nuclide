@@ -16,6 +16,20 @@ to your project root, the type of file that is open, and other context-aware dat
 
 ## Opening
 
+Assuming you have it [installed](/docs/editor/setup/), Nuclide is opened by opening Atom via mouse
+(Dock, Applications folder, etc.) or at the command-line in a terminal window by running:
+
+```bash
+$ atom
+```
+
+By default, when you open Nuclide, the Home page appears.
+
+![](/static/images/docs/editor-basics-homepage.png)
+
+The Nuclide Home page gives you quick access to common Nuclide tools and features, as well as
+information regarding how to provide feedback.
+
 ## Project and File Explorer
 
 ### Adding Projects

@@ -15,10 +15,19 @@ depending on how widespread the problem may be, we will add it here as well.
 
 ## Environment Issues
 
-### `$PATH` changes
+### Custom `$PATH`
 
-If you are finding that Atom is not picking up your changes to `$PATH`, changes to your `$PATH`
-made in your `.bashrc` will not be made available to Atom unless you start it from the command line.
+In general, it is perfectly fine to open Atom/Nuclide from something like the Dock. However, if
+you have installed certain Nuclide prerequisites outside of a location that is not in your default
+`$PATH`, you may run into issues. This is because does not inherit any custom changes to `$PATH` or
+other environment variables when opening Atom/Nuclide outside of a command line environment.
+
+For example, if you have installed HHVM in a location that is specified in your `.bashrc`,
+Atom/Nuclide will not see that location, and thus not be able to load HHVM for debugging Hack
+programs.
+
+However, *opening Atom/Nuclide from the command line* will inherit any custom changes to your
+environment variables.
 
 This is a [known issue](https://github.com/AtomLinter/Linter/issues/150), and there are possible
 [workarounds](http://serverfault.com/a/277034).
