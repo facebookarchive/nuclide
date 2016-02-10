@@ -30,8 +30,21 @@ export type OutlineTree = {
 };
 
 export type Outline = {
-  file: string,
   outlineTrees: Array<OutlineTree>,
+}
+
+/**
+ * Includes additional information that is useful to the UI, but redundant for
+ * providers to include in their responses.
+ */
+export type OutlineForUi = Outline & {
+  /**
+   * Use a TextEditor instead of a path so that:
+   * - If there are multiple editors for a file, we always jump to outline item
+   *   locations in the correct editor.
+   * - Jumping to outline item locations works for new, unsaved files.
+   */
+  editor: atom$TextEditor,
 }
 
 export type OutlineProvider = {
@@ -46,7 +59,7 @@ export type OutlineProvider = {
 class Activation {
   _disposables: CompositeDisposable;
 
-  _outline$: Observable<?Outline>;
+  _outline$: Observable<?OutlineForUi>;
 
   _providers: ProviderRegistry<OutlineProvider>;
 
@@ -98,14 +111,21 @@ class Activation {
     return new Disposable(() => this._providers.removeProvider(provider));
   }
 
-  _outlineForEditor(editor: atom$TextEditor): Promise<?Outline> {
+  async _outlineForEditor(editor: atom$TextEditor): Promise<?OutlineForUi> {
     const scopeName = editor.getGrammar().scopeName;
 
     const outlineProvider = this._providers.findProvider(scopeName);
     if (outlineProvider == null) {
       return Promise.resolve(null);
     }
-    return outlineProvider.getOutline(editor);
+    const outline: ?Outline = await outlineProvider.getOutline(editor);
+    if (outline == null) {
+      return null;
+    }
+    return {
+      ...outline,
+      editor,
+    };
   }
 }
 

@@ -10,13 +10,15 @@
  */
 
 import type {Observable} from 'rx';
-import type {Outline, OutlineTree} from './main';
+import type {OutlineForUi, OutlineTree} from './main';
 
 import {React} from 'react-for-atom';
 
 import invariant from 'assert';
 
-export function createOutlineViewClass(outlines: Observable<?Outline>): typeof React.Component {
+export function createOutlineViewClass(
+  outlines: Observable<?OutlineForUi>
+): typeof React.Component {
   return class OutlineView extends React.Component {
     static gadgetId = 'nuclide-outline-view';
     static defaultLocation = 'right';
@@ -89,11 +91,14 @@ class OutlineViewComponent extends React.Component {
 
   _renderTree(outline: OutlineTree): ReactElement {
     const onClick = () => {
-      atom.workspace.open(this.props.outline.file, {
-        initialLine: outline.startPosition.row,
-        initialColumn: outline.startPosition.column,
-        searchAllPanes: true,
-      });
+      const editor: atom$TextEditor = this.props.outline.editor;
+      const pane = atom.workspace.paneForItem(editor);
+      if (pane == null) {
+        return;
+      }
+      pane.activate();
+      pane.activateItem(editor);
+      editor.setCursorBufferPosition(outline.startPosition);
     };
     return (
       <ul className="list-tree">
