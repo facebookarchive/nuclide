@@ -181,3 +181,16 @@ Assuming your project is under source control, the status bar also shows the cur
 which you are working.
 
 ## Command Palette
+
+Atom is highly flexible in how you perform actions. Nuclide adds actions as well. There is a
+variety of menu options. And many menu commands are equally accessible from the keyboard as well.
+
+The Command Palette shows you every available command available in Atom and Nuclide.
+
+`cmd-shift-P` toggles the Command Palette.
+
+![](/static/images/docs/editor-basics-command-palette-intro.png)
+
+By typing in the textbox of the palette, you can narrow down the options that match your search.
+
+![](/static/images/docs/editor-basics-command-palette-search.png)
