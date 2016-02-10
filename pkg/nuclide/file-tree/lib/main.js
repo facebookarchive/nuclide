@@ -17,7 +17,6 @@ import {
   CompositeDisposable,
   Disposable,
 } from 'atom';
-
 import featureConfig from '../../feature-config';
 
 /**
@@ -161,28 +160,64 @@ class Activation {
 
 let activation: ?Activation;
 let deserializedState: ?FileTreeControllerState;
+let onDidActivateDisposable: IDisposable;
 let sideBarDisposable: ?IDisposable;
+
+function disableTreeViewPackage() {
+  if (!atom.packages.isPackageDisabled('tree-view')) {
+    // Calling `disablePackage` on a package first *loads* the package. This step must come
+    // before calling `unloadPackage`.
+    atom.packages.disablePackage('tree-view');
+  }
+
+  if (atom.packages.isPackageActive('tree-view')) {
+    // Only *inactive* packages can be unloaded. Attempting to unload an active package is
+    // considered an exception. Deactivating must come before unloading.
+    atom.packages.deactivatePackage('tree-view');
+  }
+
+  if (atom.packages.isPackageLoaded('tree-view')) {
+    atom.packages.unloadPackage('tree-view');
+  }
+}
 
 module.exports = {
   activate(state: ?FileTreeControllerState): void {
-    // We need to check if the package is already disabled, otherwise Atom will add it to the
-    // 'core.disabledPackages' config multiple times.
-    if (!atom.packages.isPackageDisabled('tree-view')) {
-      atom.packages.disablePackage('tree-view');
-    }
+    // Disable Atom's bundled 'tree-view' package. If this activation is happening during the
+    // normal startup activation, the `onDidActivateInitialPackages` handler below must unload the
+    // 'tree-view' because it will have been loaded during startup.
+    disableTreeViewPackage();
 
-    // Unload 'tree-view' to free its resources that are not needed.
-    if (atom.packages.isPackageLoaded('tree-view')) {
-      atom.packages.unloadPackage('tree-view');
-    }
+    // Disabling and unloading Atom's bundled 'tree-view' must happen after activation because this
+    // package's `activate` is called during an traversal of all initial packages to activate.
+    // Disabling a package during the traversal has no effect if this is a startup load because
+    // `PackageManager` does not re-load the list of packages to activate after each iteration.
+    onDidActivateDisposable = atom.packages.onDidActivateInitialPackages(() => {
+      disableTreeViewPackage();
+      onDidActivateDisposable.dispose();
+    });
 
     deserializedState = state;
   },
 
   deactivate() {
+    const nuclideFeatures = require('../../../../lib/nuclideFeatures');
+
+    // Re-enable Atom's bundled 'tree-view' when this package is disabled to leave the user's
+    // environment the way this package found it.
+    if (nuclideFeatures.isFeatureDisabled('nuclide-file-tree')
+      && atom.packages.isPackageDisabled('tree-view')) {
+      atom.packages.enablePackage('tree-view');
+    }
+
     if (sideBarDisposable != null) {
       sideBarDisposable.dispose();
     }
+
+    if (!onDidActivateDisposable.disposed) {
+      onDidActivateDisposable.dispose();
+    }
+
     if (activation) {
       activation.dispose();
       activation = null;

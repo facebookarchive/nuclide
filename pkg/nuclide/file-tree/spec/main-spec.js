@@ -21,12 +21,12 @@ describe('main', () => {
   });
 
   // Closing an Atom window calls `deactivate` on loaded packages.
-  it("keeps Atom's builtin tree-view package disabled on deactivation", () => {
+  it("re-enables Atom's builtin tree-view package on deactivation", () => {
     waitsForPromise(async () => {
       expect(atom.packages.isPackageDisabled('tree-view')).toBe(false);
       await atom.packages.activatePackage('nuclide-file-tree');
       atom.packages.deactivatePackage('nuclide-file-tree');
-      expect(atom.packages.isPackageDisabled('tree-view')).toBe(true);
+      expect(atom.packages.isPackageDisabled('tree-view')).toBe(false);
     });
   });
 });
