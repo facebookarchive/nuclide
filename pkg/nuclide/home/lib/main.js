@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +8,28 @@
  * the root directory of this source tree.
  */
 
-import type {GadgetsService} from '../../gadgets-interfaces';
-import type {HomeFragments} from '../../home-interfaces';
+var _require = require('atom');
 
-const {CompositeDisposable, Disposable} = require('atom');
-const featureConfig = require('../../feature-config');
-const Immutable = require('immutable');
-const Rx = require('rx');
+var CompositeDisposable = _require.CompositeDisposable;
+var Disposable = _require.Disposable;
 
-let disposables: ?CompositeDisposable = null;
-let gadgetsApi: ?GadgetsService = null;
+var featureConfig = require('../../feature-config');
+var Immutable = require('immutable');
+var Rx = require('rx');
+
+var disposables = null;
+var gadgetsApi = null;
 
 // A stream of all of the fragments. This is essentially the state of our panel.
-const allHomeFragmentsStream: Rx.BehaviorSubject<Immutable.Set<HomeFragments>> =
-  new Rx.BehaviorSubject(Immutable.Set());
+var allHomeFragmentsStream = new Rx.BehaviorSubject(Immutable.Set());
 
-function activate(): void {
+function activate() {
   considerDisplayingHome();
 }
 
-function setHomeFragments(homeFragments: HomeFragments): Disposable {
+function setHomeFragments(homeFragments) {
   allHomeFragmentsStream.onNext(allHomeFragmentsStream.getValue().add(homeFragments));
-  return new Disposable(() => {
+  return new Disposable(function () {
     allHomeFragmentsStream.onNext(allHomeFragmentsStream.getValue().remove(homeFragments));
   });
 }
@@ -39,13 +38,13 @@ function considerDisplayingHome() {
   if (gadgetsApi == null) {
     return;
   }
-  const showHome = featureConfig.get('nuclide-home.showHome');
+  var showHome = featureConfig.get('nuclide-home.showHome');
   if (showHome) {
     gadgetsApi.showGadget('nuclide-home');
   }
 }
 
-function deactivate(): void {
+function deactivate() {
   gadgetsApi = null;
   allHomeFragmentsStream.onNext(Immutable.Set());
   if (disposables) {
@@ -54,18 +53,19 @@ function deactivate(): void {
   }
 }
 
-function consumeGadgetsService(api: GadgetsService): IDisposable {
-  const createHomePaneItem = require('./createHomePaneItem');
+function consumeGadgetsService(api) {
+  var createHomePaneItem = require('./createHomePaneItem');
   gadgetsApi = api;
-  const gadget = createHomePaneItem(allHomeFragmentsStream);
-  const disposable = api.registerGadget(gadget);
+  var gadget = createHomePaneItem(allHomeFragmentsStream);
+  var disposable = api.registerGadget(gadget);
   considerDisplayingHome();
   return disposable;
 }
 
 module.exports = {
-  activate,
-  setHomeFragments,
-  deactivate,
-  consumeGadgetsService,
+  activate: activate,
+  setHomeFragments: setHomeFragments,
+  deactivate: deactivate,
+  consumeGadgetsService: consumeGadgetsService
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztlQWMwQyxPQUFPLENBQUMsTUFBTSxDQUFDOztJQUFsRCxtQkFBbUIsWUFBbkIsbUJBQW1CO0lBQUUsVUFBVSxZQUFWLFVBQVU7O0FBQ3RDLElBQU0sYUFBYSxHQUFHLE9BQU8sQ0FBQyxzQkFBc0IsQ0FBQyxDQUFDO0FBQ3RELElBQU0sU0FBUyxHQUFHLE9BQU8sQ0FBQyxXQUFXLENBQUMsQ0FBQztBQUN2QyxJQUFNLEVBQUUsR0FBRyxPQUFPLENBQUMsSUFBSSxDQUFDLENBQUM7O0FBRXpCLElBQUksV0FBaUMsR0FBRyxJQUFJLENBQUM7QUFDN0MsSUFBSSxVQUEyQixHQUFHLElBQUksQ0FBQzs7O0FBR3ZDLElBQU0sc0JBQXdFLEdBQzVFLElBQUksRUFBRSxDQUFDLGVBQWUsQ0FBQyxTQUFTLENBQUMsR0FBRyxFQUFFLENBQUMsQ0FBQzs7QUFFMUMsU0FBUyxRQUFRLEdBQVM7QUFDeEIsd0JBQXNCLEVBQUUsQ0FBQztDQUMxQjs7QUFFRCxTQUFTLGdCQUFnQixDQUFDLGFBQTRCLEVBQWM7QUFDbEUsd0JBQXNCLENBQUMsTUFBTSxDQUFDLHNCQUFzQixDQUFDLFFBQVEsRUFBRSxDQUFDLEdBQUcsQ0FBQyxhQUFhLENBQUMsQ0FBQyxDQUFDO0FBQ3BGLFNBQU8sSUFBSSxVQUFVLENBQUMsWUFBTTtBQUMxQiwwQkFBc0IsQ0FBQyxNQUFNLENBQUMsc0JBQXNCLENBQUMsUUFBUSxFQUFFLENBQUMsTUFBTSxDQUFDLGFBQWEsQ0FBQyxDQUFDLENBQUM7R0FDeEYsQ0FBQyxDQUFDO0NBQ0o7O0FBRUQsU0FBUyxzQkFBc0IsR0FBRztBQUNoQyxNQUFJLFVBQVUsSUFBSSxJQUFJLEVBQUU7QUFDdEIsV0FBTztHQUNSO0FBQ0QsTUFBTSxRQUFRLEdBQUcsYUFBYSxDQUFDLEdBQUcsQ0FBQyx1QkFBdUIsQ0FBQyxDQUFDO0FBQzVELE1BQUksUUFBUSxFQUFFO0FBQ1osY0FBVSxDQUFDLFVBQVUsQ0FBQyxjQUFjLENBQUMsQ0FBQztHQUN2QztDQUNGOztBQUVELFNBQVMsVUFBVSxHQUFTO0FBQzFCLFlBQVUsR0FBRyxJQUFJLENBQUM7QUFDbEIsd0JBQXNCLENBQUMsTUFBTSxDQUFDLFNBQVMsQ0FBQyxHQUFHLEVBQUUsQ0FBQyxDQUFDO0FBQy9DLE1BQUksV0FBVyxFQUFFO0FBQ2YsZUFBVyxDQUFDLE9BQU8sRUFBRSxDQUFDO0FBQ3RCLGVBQVcsR0FBRyxJQUFJLENBQUM7R0FDcEI7Q0FDRjs7QUFFRCxTQUFTLHFCQUFxQixDQUFDLEdBQW1CLEVBQWU7QUFDL0QsTUFBTSxrQkFBa0IsR0FBRyxPQUFPLENBQUMsc0JBQXNCLENBQUMsQ0FBQztBQUMzRCxZQUFVLEdBQUcsR0FBRyxDQUFDO0FBQ2pCLE1BQU0sTUFBTSxHQUFHLGtCQUFrQixDQUFDLHNCQUFzQixDQUFDLENBQUM7QUFDMUQsTUFBTSxVQUFVLEdBQUcsR0FBRyxDQUFDLGNBQWMsQ0FBQyxNQUFNLENBQUMsQ0FBQztBQUM5Qyx3QkFBc0IsRUFBRSxDQUFDO0FBQ3pCLFNBQU8sVUFBVSxDQUFDO0NBQ25COztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUc7QUFDZixVQUFRLEVBQVIsUUFBUTtBQUNSLGtCQUFnQixFQUFoQixnQkFBZ0I7QUFDaEIsWUFBVSxFQUFWLFVBQVU7QUFDVix1QkFBcUIsRUFBckIscUJBQXFCO0NBQ3RCLENBQUMiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtHYWRnZXRzU2VydmljZX0gZnJvbSAnLi4vLi4vZ2FkZ2V0cy1pbnRlcmZhY2VzJztcbmltcG9ydCB0eXBlIHtIb21lRnJhZ21lbnRzfSBmcm9tICcuLi8uLi9ob21lLWludGVyZmFjZXMnO1xuXG5jb25zdCB7Q29tcG9zaXRlRGlzcG9zYWJsZSwgRGlzcG9zYWJsZX0gPSByZXF1aXJlKCdhdG9tJyk7XG5jb25zdCBmZWF0dXJlQ29uZmlnID0gcmVxdWlyZSgnLi4vLi4vZmVhdHVyZS1jb25maWcnKTtcbmNvbnN0IEltbXV0YWJsZSA9IHJlcXVpcmUoJ2ltbXV0YWJsZScpO1xuY29uc3QgUnggPSByZXF1aXJlKCdyeCcpO1xuXG5sZXQgZGlzcG9zYWJsZXM6ID9Db21wb3NpdGVEaXNwb3NhYmxlID0gbnVsbDtcbmxldCBnYWRnZXRzQXBpOiA/R2FkZ2V0c1NlcnZpY2UgPSBudWxsO1xuXG4vLyBBIHN0cmVhbSBvZiBhbGwgb2YgdGhlIGZyYWdtZW50cy4gVGhpcyBpcyBlc3NlbnRpYWxseSB0aGUgc3RhdGUgb2Ygb3VyIHBhbmVsLlxuY29uc3QgYWxsSG9tZUZyYWdtZW50c1N0cmVhbTogUnguQmVoYXZpb3JTdWJqZWN0PEltbXV0YWJsZS5TZXQ8SG9tZUZyYWdtZW50cz4+ID1cbiAgbmV3IFJ4LkJlaGF2aW9yU3ViamVjdChJbW11dGFibGUuU2V0KCkpO1xuXG5mdW5jdGlvbiBhY3RpdmF0ZSgpOiB2b2lkIHtcbiAgY29uc2lkZXJEaXNwbGF5aW5nSG9tZSgpO1xufVxuXG5mdW5jdGlvbiBzZXRIb21lRnJhZ21lbnRzKGhvbWVGcmFnbWVudHM6IEhvbWVGcmFnbWVudHMpOiBEaXNwb3NhYmxlIHtcbiAgYWxsSG9tZUZyYWdtZW50c1N0cmVhbS5vbk5leHQoYWxsSG9tZUZyYWdtZW50c1N0cmVhbS5nZXRWYWx1ZSgpLmFkZChob21lRnJhZ21lbnRzKSk7XG4gIHJldHVybiBuZXcgRGlzcG9zYWJsZSgoKSA9PiB7XG4gICAgYWxsSG9tZUZyYWdtZW50c1N0cmVhbS5vbk5leHQoYWxsSG9tZUZyYWdtZW50c1N0cmVhbS5nZXRWYWx1ZSgpLnJlbW92ZShob21lRnJhZ21lbnRzKSk7XG4gIH0pO1xufVxuXG5mdW5jdGlvbiBjb25zaWRlckRpc3BsYXlpbmdIb21lKCkge1xuICBpZiAoZ2FkZ2V0c0FwaSA9PSBudWxsKSB7XG4gICAgcmV0dXJuO1xuICB9XG4gIGNvbnN0IHNob3dIb21lID0gZmVhdHVyZUNvbmZpZy5nZXQoJ251Y2xpZGUtaG9tZS5zaG93SG9tZScpO1xuICBpZiAoc2hvd0hvbWUpIHtcbiAgICBnYWRnZXRzQXBpLnNob3dHYWRnZXQoJ251Y2xpZGUtaG9tZScpO1xuICB9XG59XG5cbmZ1bmN0aW9uIGRlYWN0aXZhdGUoKTogdm9pZCB7XG4gIGdhZGdldHNBcGkgPSBudWxsO1xuICBhbGxIb21lRnJhZ21lbnRzU3RyZWFtLm9uTmV4dChJbW11dGFibGUuU2V0KCkpO1xuICBpZiAoZGlzcG9zYWJsZXMpIHtcbiAgICBkaXNwb3NhYmxlcy5kaXNwb3NlKCk7XG4gICAgZGlzcG9zYWJsZXMgPSBudWxsO1xuICB9XG59XG5cbmZ1bmN0aW9uIGNvbnN1bWVHYWRnZXRzU2VydmljZShhcGk6IEdhZGdldHNTZXJ2aWNlKTogSURpc3Bvc2FibGUge1xuICBjb25zdCBjcmVhdGVIb21lUGFuZUl0ZW0gPSByZXF1aXJlKCcuL2NyZWF0ZUhvbWVQYW5lSXRlbScpO1xuICBnYWRnZXRzQXBpID0gYXBpO1xuICBjb25zdCBnYWRnZXQgPSBjcmVhdGVIb21lUGFuZUl0ZW0oYWxsSG9tZUZyYWdtZW50c1N0cmVhbSk7XG4gIGNvbnN0IGRpc3Bvc2FibGUgPSBhcGkucmVnaXN0ZXJHYWRnZXQoZ2FkZ2V0KTtcbiAgY29uc2lkZXJEaXNwbGF5aW5nSG9tZSgpO1xuICByZXR1cm4gZGlzcG9zYWJsZTtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSB7XG4gIGFjdGl2YXRlLFxuICBzZXRIb21lRnJhZ21lbnRzLFxuICBkZWFjdGl2YXRlLFxuICBjb25zdW1lR2FkZ2V0c1NlcnZpY2UsXG59O1xuIl19

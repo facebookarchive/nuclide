@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +8,20 @@
  * the root directory of this source tree.
  */
 
-import type {ClassBody} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
+var printArrayOfStatements = require('../common/printArrayOfStatements');
+var printComments = require('../common/printComments');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-const printArrayOfStatements = require('../common/printArrayOfStatements');
-const printComments = require('../common/printComments');
-
-function printClassBody(print: Print, node: ClassBody): Lines {
+function printClassBody(print, node) {
   // Can't put extra new lines in here like BlockStatement since it may be
   // used in a ClassExpression.
-  return flatten([
-    '{',
-    // We want to override the extra space within the first node of a class
-    // body, so we do one hard break and then throw in a no break. The empty
-    // string is necessary to reset the run of markers.
-    markers.hardBreak,
-    markers.indent,
-    '',
-    markers.noBreak,
-    printComments(node.innerComments),
-    printArrayOfStatements(print, node.body),
-    markers.dedent,
-    markers.hardBreak,
-    '}',
-  ]);
+  return flatten(['{',
+  // We want to override the extra space within the first node of a class
+  // body, so we do one hard break and then throw in a no break. The empty
+  // string is necessary to reset the run of markers.
+  markers.hardBreak, markers.indent, '', markers.noBreak, printComments(node.innerComments), printArrayOfStatements(print, node.body), markers.dedent, markers.hardBreak, '}']);
 }
 
 module.exports = printClassBody;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50Q2xhc3NCb2R5LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7QUFjQSxJQUFNLE9BQU8sR0FBRyxPQUFPLENBQUMscUJBQXFCLENBQUMsQ0FBQztBQUMvQyxJQUFNLE9BQU8sR0FBRyxPQUFPLENBQUMseUJBQXlCLENBQUMsQ0FBQztBQUNuRCxJQUFNLHNCQUFzQixHQUFHLE9BQU8sQ0FBQyxrQ0FBa0MsQ0FBQyxDQUFDO0FBQzNFLElBQU0sYUFBYSxHQUFHLE9BQU8sQ0FBQyx5QkFBeUIsQ0FBQyxDQUFDOztBQUV6RCxTQUFTLGNBQWMsQ0FBQyxLQUFZLEVBQUUsSUFBZSxFQUFTOzs7QUFHNUQsU0FBTyxPQUFPLENBQUMsQ0FDYixHQUFHOzs7O0FBSUgsU0FBTyxDQUFDLFNBQVMsRUFDakIsT0FBTyxDQUFDLE1BQU0sRUFDZCxFQUFFLEVBQ0YsT0FBTyxDQUFDLE9BQU8sRUFDZixhQUFhLENBQUMsSUFBSSxDQUFDLGFBQWEsQ0FBQyxFQUNqQyxzQkFBc0IsQ0FBQyxLQUFLLEVBQUUsSUFBSSxDQUFDLElBQUksQ0FBQyxFQUN4QyxPQUFPLENBQUMsTUFBTSxFQUNkLE9BQU8sQ0FBQyxTQUFTLEVBQ2pCLEdBQUcsQ0FDSixDQUFDLENBQUM7Q0FDSjs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHLGNBQWMsQ0FBQyIsImZpbGUiOiJwcmludENsYXNzQm9keS5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtDbGFzc0JvZHl9IGZyb20gJ2FzdC10eXBlcy1mbG93JztcbmltcG9ydCB0eXBlIHtMaW5lcywgUHJpbnR9IGZyb20gJy4uLy4uL3R5cGVzL2NvbW1vbic7XG5cbmNvbnN0IGZsYXR0ZW4gPSByZXF1aXJlKCcuLi8uLi91dGlscy9mbGF0dGVuJyk7XG5jb25zdCBtYXJrZXJzID0gcmVxdWlyZSgnLi4vLi4vY29uc3RhbnRzL21hcmtlcnMnKTtcbmNvbnN0IHByaW50QXJyYXlPZlN0YXRlbWVudHMgPSByZXF1aXJlKCcuLi9jb21tb24vcHJpbnRBcnJheU9mU3RhdGVtZW50cycpO1xuY29uc3QgcHJpbnRDb21tZW50cyA9IHJlcXVpcmUoJy4uL2NvbW1vbi9wcmludENvbW1lbnRzJyk7XG5cbmZ1bmN0aW9uIHByaW50Q2xhc3NCb2R5KHByaW50OiBQcmludCwgbm9kZTogQ2xhc3NCb2R5KTogTGluZXMge1xuICAvLyBDYW4ndCBwdXQgZXh0cmEgbmV3IGxpbmVzIGluIGhlcmUgbGlrZSBCbG9ja1N0YXRlbWVudCBzaW5jZSBpdCBtYXkgYmVcbiAgLy8gdXNlZCBpbiBhIENsYXNzRXhwcmVzc2lvbi5cbiAgcmV0dXJuIGZsYXR0ZW4oW1xuICAgICd7JyxcbiAgICAvLyBXZSB3YW50IHRvIG92ZXJyaWRlIHRoZSBleHRyYSBzcGFjZSB3aXRoaW4gdGhlIGZpcnN0IG5vZGUgb2YgYSBjbGFzc1xuICAgIC8vIGJvZHksIHNvIHdlIGRvIG9uZSBoYXJkIGJyZWFrIGFuZCB0aGVuIHRocm93IGluIGEgbm8gYnJlYWsuIFRoZSBlbXB0eVxuICAgIC8vIHN0cmluZyBpcyBuZWNlc3NhcnkgdG8gcmVzZXQgdGhlIHJ1biBvZiBtYXJrZXJzLlxuICAgIG1hcmtlcnMuaGFyZEJyZWFrLFxuICAgIG1hcmtlcnMuaW5kZW50LFxuICAgICcnLFxuICAgIG1hcmtlcnMubm9CcmVhayxcbiAgICBwcmludENvbW1lbnRzKG5vZGUuaW5uZXJDb21tZW50cyksXG4gICAgcHJpbnRBcnJheU9mU3RhdGVtZW50cyhwcmludCwgbm9kZS5ib2R5KSxcbiAgICBtYXJrZXJzLmRlZGVudCxcbiAgICBtYXJrZXJzLmhhcmRCcmVhayxcbiAgICAnfScsXG4gIF0pO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IHByaW50Q2xhc3NCb2R5O1xuIl19

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +10,29 @@
  * the root directory of this source tree.
  */
 
-import type {EventEmitter} from 'events';
+exports.attachEvent = attachEvent;
+exports.observableFromSubscribeFunction = observableFromSubscribeFunction;
 
-import {Disposable} from 'event-kit';
-import {Observable} from 'rx';
+var _eventKit = require('event-kit');
+
+var _rx = require('rx');
 
 /**
  * Add an event listener an return a disposable for removing it. Note that this function assumes
  * node EventEmitter semantics: namely, that adding the same combination of eventName and callback
  * adds a second listener.
  */
-export function attachEvent(
-  emitter: EventEmitter,
-  eventName: string,
-  callback: Function
-): Disposable {
+
+function attachEvent(emitter, eventName, callback) {
   emitter.addListener(eventName, callback);
-  return new Disposable(() => {
+  return new _eventKit.Disposable(function () {
     emitter.removeListener(eventName, callback);
   });
 }
 
-type SubscribeCallback<T> = (item: T) => mixed;
-type SubscribeFunction<T> = (callback: SubscribeCallback<T>) => IDisposable;
-
-export function observableFromSubscribeFunction<T>(fn: SubscribeFunction<T>): Observable<T> {
-  return Observable.create(observer => fn(observer.onNext.bind(observer)));
+function observableFromSubscribeFunction(fn) {
+  return _rx.Observable.create(function (observer) {
+    return fn(observer.onNext.bind(observer));
+  });
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImV2ZW50LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozt3QkFheUIsV0FBVzs7a0JBQ1gsSUFBSTs7Ozs7Ozs7QUFPdEIsU0FBUyxXQUFXLENBQ3pCLE9BQXFCLEVBQ3JCLFNBQWlCLEVBQ2pCLFFBQWtCLEVBQ047QUFDWixTQUFPLENBQUMsV0FBVyxDQUFDLFNBQVMsRUFBRSxRQUFRLENBQUMsQ0FBQztBQUN6QyxTQUFPLHlCQUFlLFlBQU07QUFDMUIsV0FBTyxDQUFDLGNBQWMsQ0FBQyxTQUFTLEVBQUUsUUFBUSxDQUFDLENBQUM7R0FDN0MsQ0FBQyxDQUFDO0NBQ0o7O0FBS00sU0FBUywrQkFBK0IsQ0FBSSxFQUF3QixFQUFpQjtBQUMxRixTQUFPLGVBQVcsTUFBTSxDQUFDLFVBQUEsUUFBUTtXQUFJLEVBQUUsQ0FBQyxRQUFRLENBQUMsTUFBTSxDQUFDLElBQUksQ0FBQyxRQUFRLENBQUMsQ0FBQztHQUFBLENBQUMsQ0FBQztDQUMxRSIsImZpbGUiOiJldmVudC5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtFdmVudEVtaXR0ZXJ9IGZyb20gJ2V2ZW50cyc7XG5cbmltcG9ydCB7RGlzcG9zYWJsZX0gZnJvbSAnZXZlbnQta2l0JztcbmltcG9ydCB7T2JzZXJ2YWJsZX0gZnJvbSAncngnO1xuXG4vKipcbiAqIEFkZCBhbiBldmVudCBsaXN0ZW5lciBhbiByZXR1cm4gYSBkaXNwb3NhYmxlIGZvciByZW1vdmluZyBpdC4gTm90ZSB0aGF0IHRoaXMgZnVuY3Rpb24gYXNzdW1lc1xuICogbm9kZSBFdmVudEVtaXR0ZXIgc2VtYW50aWNzOiBuYW1lbHksIHRoYXQgYWRkaW5nIHRoZSBzYW1lIGNvbWJpbmF0aW9uIG9mIGV2ZW50TmFtZSBhbmQgY2FsbGJhY2tcbiAqIGFkZHMgYSBzZWNvbmQgbGlzdGVuZXIuXG4gKi9cbmV4cG9ydCBmdW5jdGlvbiBhdHRhY2hFdmVudChcbiAgZW1pdHRlcjogRXZlbnRFbWl0dGVyLFxuICBldmVudE5hbWU6IHN0cmluZyxcbiAgY2FsbGJhY2s6IEZ1bmN0aW9uXG4pOiBEaXNwb3NhYmxlIHtcbiAgZW1pdHRlci5hZGRMaXN0ZW5lcihldmVudE5hbWUsIGNhbGxiYWNrKTtcbiAgcmV0dXJuIG5ldyBEaXNwb3NhYmxlKCgpID0+IHtcbiAgICBlbWl0dGVyLnJlbW92ZUxpc3RlbmVyKGV2ZW50TmFtZSwgY2FsbGJhY2spO1xuICB9KTtcbn1cblxudHlwZSBTdWJzY3JpYmVDYWxsYmFjazxUPiA9IChpdGVtOiBUKSA9PiBtaXhlZDtcbnR5cGUgU3Vic2NyaWJlRnVuY3Rpb248VD4gPSAoY2FsbGJhY2s6IFN1YnNjcmliZUNhbGxiYWNrPFQ+KSA9PiBJRGlzcG9zYWJsZTtcblxuZXhwb3J0IGZ1bmN0aW9uIG9ic2VydmFibGVGcm9tU3Vic2NyaWJlRnVuY3Rpb248VD4oZm46IFN1YnNjcmliZUZ1bmN0aW9uPFQ+KTogT2JzZXJ2YWJsZTxUPiB7XG4gIHJldHVybiBPYnNlcnZhYmxlLmNyZWF0ZShvYnNlcnZlciA9PiBmbihvYnNlcnZlci5vbk5leHQuYmluZChvYnNlcnZlcikpKTtcbn1cbiJdfQ==

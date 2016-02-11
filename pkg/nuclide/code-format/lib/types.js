@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +10,17 @@
  * the root directory of this source tree.
  */
 
-export type CodeFormatProvider = {
-  /**
-   * Providers should implement exactly one of formatCode / formatEntireFile.
-   * formatCode should be preferred whenever possible.
-   */
+/**
+ * Providers should implement exactly one of formatCode / formatEntireFile.
+ * formatCode should be preferred whenever possible.
+ */
 
-  /**
-   * Formats the range specified, and returns the replacement result for that range.
-   */
-  formatCode?: (editor: atom$TextEditor, range: atom$Range) => Promise<string>;
+/**
+ * Formats the range specified, and returns the replacement result for that range.
+ */
 
-  /**
-   * Formats the range specified, but returns the entire file (along with the new cursor position).
-   * Useful for less-flexible providers like clang-format.
-   */
-  formatEntireFile?: (editor: atom$TextEditor, range: atom$Range) => Promise<{
-    newCursor: number,
-    formatted: string,
-  }>;
-
-  selector: string;
-  inclusionPriority: number;
-};
+/**
+ * Formats the range specified, but returns the entire file (along with the new cursor position).
+ * Useful for less-flexible providers like clang-format.
+ */
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJ0eXBlcy5qcyIsInNvdXJjZXNDb250ZW50IjpbXX0=

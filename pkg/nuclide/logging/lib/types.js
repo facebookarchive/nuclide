@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -8,47 +9,4 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
-export type node$CallSite = {
-  toString(): ?string;
-  getFunctionName(): ?string;
-  getMethodName(): ?string;
-  getFileName(): ?string;
-  getLineNumber(): ?number;
-  getColumnNumber(): ?number;
-  getEvalOrigin(): ?string;
-  isToplevel(): boolean;
-  isEval(): boolean;
-  isNative(): boolean;
-  isConstructor(): boolean;
-}
-
-export type Logger = {
-  debug(...args: Array<any>): mixed;
-  error(...args: Array<any>): mixed;
-  fatal(...args: Array<any>): mixed;
-  info(...args: Array<any>): mixed;
-  trace(...args: Array<any>): mixed;
-  warn(...args: Array<any>): mixed;
-  isLevelEnabled(level: string): mixed;
-  setLevel(level: string): mixed;
-}
-
-export type LoggingEvent = {
-  startTime: Date;
-  categoryName: string;
-  data: Array<any>;
-  level: {
-    level: number;
-    levelStr: string;
-  };
-  logger?: {
-    category: string;
-  };
-  storageKey?: string;
-  runtime?: any;
-}
-
-export type LoggingAppender = {
-  appenders: any;
-}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJ0eXBlcy5qcyIsInNvdXJjZXNDb250ZW50IjpbXX0=
