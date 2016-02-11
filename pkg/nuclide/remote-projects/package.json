@@ -13,6 +13,9 @@
         "default": true
       }
     },
+    "deserializers": {
+      "NuclideTextBuffer": "./lib/deserializeNuclideTextBuffer.js"
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

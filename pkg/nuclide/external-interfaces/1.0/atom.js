@@ -1080,6 +1080,9 @@ declare class atom$TextBuffer {
   cachedDiskContents: ?string,
   emitter: atom$Emitter,
 
+  // Mixin
+  static deserialize: (state: Object, params: Object) => mixed,
+
   // Events
   onDidChange(callback: () => mixed): IDisposable,
   onDidDestroy(callback: () => mixed): IDisposable,
@@ -1093,6 +1096,7 @@ declare class atom$TextBuffer {
   setEncoding(encoding: string): void,
   getEncoding(): string,
   getUri(): string,
+  getId(): string,
 
   // Reading Text
   isEmpty(): boolean,
