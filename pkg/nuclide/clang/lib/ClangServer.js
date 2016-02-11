@@ -11,6 +11,7 @@
 
 import type ClangFlagsManager from './ClangFlagsManager';
 
+import invariant from 'assert';
 import path from 'path';
 import split from 'split';
 
@@ -103,7 +104,9 @@ async function createAsyncConnection(src: string): Promise<Connection> {
     const child = await safeSpawn(pythonExecutable, /* args */ [pathToLibClangServer], options);
 
     child.on('close', function(exitCode) {
-      logger.error('%s exited with code %s', pathToLibClangServer, exitCode);
+      if (!this._disposed) {
+        logger.error('%s exited with code %s', pathToLibClangServer, exitCode);
+      }
     });
     child.stderr.on('data', function(error) {
       if (error instanceof Buffer) {
@@ -158,6 +161,7 @@ export default class ClangServer {
   _asyncConnection: ?Connection;
   _pendingCompileRequests: number;
   _getAsyncConnection: () => Promise<?Connection>;
+  _disposed: boolean;
 
   // Cache the flags-fetching promise so we don't end up invoking Buck twice.
   _flagsPromise: ?Promise<?Array<string>>;
@@ -171,10 +175,16 @@ export default class ClangServer {
     this._lastProcessedRequestId = -1;
     this._pendingCompileRequests = 0;
     this._getAsyncConnection = promises.serializeAsyncCall(this._getAsyncConnectionImpl.bind(this));
+    this._disposed = false;
     this._flagsRetries = 0;
   }
 
   dispose() {
+    this._disposed = true;
+    this._cleanup();
+  }
+
+  _cleanup() {
     // Fail all pending requests.
     // The Clang server receives requests serially via stdin (and processes them in that order)
     // so it's quite safe to assume that requests are processed in order.
@@ -208,6 +218,7 @@ export default class ClangServer {
     defaultFlags: ?Array<string>,
     params: Object,
   ): Promise<?Object> {
+    invariant(!this._disposed, 'calling makeRequest on a disposed ClangServer');
     if (method === 'compile') {
       this._pendingCompileRequests++;
     } else if (this._pendingCompileRequests) {
@@ -295,12 +306,14 @@ export default class ClangServer {
             this._emitter.emit(id, response);
           })
           .on('error', error => {
-            logger.error(
-              'Failed to handle libclang output, most likely the libclang python'
-              + ' server crashed.',
-              error,
-            );
-            this.dispose();
+            if (!this._disposed) {
+              logger.error(
+                'Failed to handle libclang output, most likely the libclang python'
+                + ' server crashed.',
+                error,
+              );
+              this._cleanup();
+            }
             this._asyncConnection = null;
             this._lastProcessedRequestId = this._nextRequestId - 1;
           });
