@@ -37,9 +37,6 @@ class Activation {
     this._disposables = new CompositeDisposable(
       action$,
 
-      // Handle all gadget URLs
-      atom.workspace.addOpener(uri => commands.openUri(uri)),
-
       // Re-render all pane items when (1) new items are added, (2) new gadgets are registered and
       // (3) the active pane item changes.
       observableFromSubscribeFunction(atom.workspace.observePaneItems.bind(atom.workspace))

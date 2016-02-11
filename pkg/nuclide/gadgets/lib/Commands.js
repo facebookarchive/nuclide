@@ -22,7 +22,6 @@ import findPaneAndItem from './findPaneAndItem';
 import getContainerToHide from './getContainerToHide';
 import getResizableContainers from './getResizableContainers';
 import GadgetPlaceholder from './GadgetPlaceholder';
-import * as GadgetUri from './GadgetUri';
 import {
   React,
   ReactDOM,
@@ -69,19 +68,6 @@ export default class Commands {
       type: ActionTypes.DESTROY_PANE_ITEM,
       payload: {item},
     });
-  }
-
-  /**
-   * Creates a new gadget instance.
-   */
-  openUri(uri: string): ?Object {
-    const parsed = GadgetUri.parse(uri);
-
-    if (parsed == null) {
-      return;
-    }
-
-    return this.showGadget(parsed.gadgetId);
   }
 
   /**

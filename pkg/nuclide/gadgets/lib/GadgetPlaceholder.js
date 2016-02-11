@@ -11,7 +11,6 @@
 
 /*eslint-disable react/prop-types */
 
-import * as GadgetUri from './GadgetUri';
 import createComponentItem from './createComponentItem';
 import {
   React,
@@ -53,10 +52,6 @@ class GadgetPlaceholder extends React.Component<void, Props, void> {
 
   getRawInitialGadgetState(): Object {
     return this.props.rawInitialGadgetState;
-  }
-
-  getURI() {
-    return GadgetUri.format({gadgetId: this.props.gadgetId});
   }
 
   render(): ?ReactElement {

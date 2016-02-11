@@ -12,12 +12,19 @@
 const featureConfig = require('../../feature-config');
 const path = require('path');
 
-const BASE_ITEM_URI = 'atom://nuclide/gadgets/nuclide-health';
+const openHealthPane = () => {
+  atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-health:show');
+};
 
 function findHealthPaneAndItem(): {pane: ?atom$Pane, item: ?Object} {
-  const pane = atom.workspace.paneForURI(BASE_ITEM_URI);
-  const item = pane ? pane.itemForURI(BASE_ITEM_URI) : null;
-  return {pane, item};
+  for (const pane of atom.workspace.getPanes()) {
+    for (const item of pane.getItems()) {
+      if (item.getTitle() === 'Health') {
+        return {pane, item};
+      }
+    }
+  }
+  return {pane: null, item: null};
 }
 
 function sleep(ms: number): Promise {
@@ -44,9 +51,9 @@ describe('Health', () => {
     });
   });
 
-  it('appears when opened by URI and contains stats after its first refresh', () => {
+  it('contains stats after its first refresh', () => {
     waitsForPromise(async () => {
-      await atom.workspace.open(BASE_ITEM_URI);
+      openHealthPane();
       const {item} = findHealthPaneAndItem();
       expect(item).toBeTruthy();
       if (item) {
@@ -73,7 +80,7 @@ describe('Health', () => {
 
   it('disappears when closed', () => {
     waitsForPromise(async () => {
-      await atom.workspace.open(BASE_ITEM_URI);
+      openHealthPane();
       const {pane, item} = findHealthPaneAndItem();
       expect(item).toBeTruthy();
       if (pane && item) {

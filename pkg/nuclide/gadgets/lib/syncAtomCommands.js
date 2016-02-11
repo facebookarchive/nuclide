@@ -24,7 +24,6 @@ export default function syncAtomCommands(
   let atomCommands: ?IDisposable;
 
   return gadget$
-    .debounce(500)
     .distinctUntilChanged()
     .forEach(gadgets => {
       // Add Atom commands idempotently...

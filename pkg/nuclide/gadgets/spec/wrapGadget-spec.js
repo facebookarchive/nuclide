@@ -44,10 +44,8 @@ describe('wrapGadget', () => {
 
     it('has default implementations of Atom pane item methods', () => {
       const wrapped = wrapGadget(MyGadget);
-      ['getTitle', 'getURI'].forEach(methodName => {
-        expect(wrapped.prototype[methodName]).toBeDefined();
-        expect(typeof wrapped.prototype[methodName]).toBe('function');
-      });
+      expect(wrapped.prototype.getTitle).toBeDefined();
+      expect(typeof wrapped.prototype.getTitle).toBe('function');
     });
 
   });

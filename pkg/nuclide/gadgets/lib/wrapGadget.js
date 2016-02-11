@@ -11,7 +11,6 @@
 
 import addObserveMethods from './addObserveMethods';
 import invariant from 'assert';
-import * as GadgetUri from './GadgetUri';
 
 /**
  * A higher order component that wraps the provided gadget to adapt it to Atom's expectations for
@@ -100,8 +99,5 @@ const defaultMethods = {
   getTitle() {
     // TODO: Generate default title from gadgetId
     return 'Default Title';
-  },
-  getURI() {
-    return GadgetUri.format({gadgetId: this.constructor.gadgetId});
   },
 };
