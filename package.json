@@ -30,6 +30,7 @@
   "scripts": {
     "lint": "eslint",
     "lint-all": "eslint .",
+    "fix-all": "eslint --fix .",
     "service-parser-validate": "./pkg/nuclide/service-parser/bin/validate"
   },
   "dependencies": {
