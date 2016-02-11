@@ -238,7 +238,8 @@ export function activate(deserializedState: ?Object) {
   }));
 
   item = document.createElement('div');
-  item.style.height = '100%';
+  item.style.display = 'flex';
+  item.style.height = 'inherit';
   panel = atom.workspace.addLeftPanel({item});
   state = object.assign({}, getDefaultState(), deserializedState);
 
