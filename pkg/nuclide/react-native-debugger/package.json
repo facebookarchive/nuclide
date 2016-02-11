@@ -9,5 +9,9 @@
     "testRunner": "apm"
   },
   "activationCommands": {
+    "atom-workspace": [
+      "nuclide-react-native-debugger:connect",
+      "nuclide-react-native-debugger:disconnect"
+    ]
   }
 }
