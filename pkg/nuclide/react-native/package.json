@@ -1,17 +1,17 @@
 {
-  "name": "nuclide-react-native-debugger",
+  "name": "nuclide-react-native",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main",
   "version": "0.0.0",
-  "description": "Manage the React Native debugger from Nuclide",
+  "description": "React Native development tools",
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"
   },
   "activationCommands": {
     "atom-workspace": [
-      "nuclide-react-native-debugger:connect",
-      "nuclide-react-native-debugger:disconnect"
+      "nuclide-react-native:attach-debugger",
+      "nuclide-react-native:detach-debugger"
     ]
   }
 }

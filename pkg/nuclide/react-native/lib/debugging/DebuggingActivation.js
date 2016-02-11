@@ -9,30 +9,41 @@
  * the root directory of this source tree.
  */
 
-import {event as eventLib} from '../../commons';
-import {DebuggerProxyClient} from '../../react-native-node-executor/lib/DebuggerProxyClient';
-import serviceHub from '../../service-hub-plus';
+import {event as eventLib} from '../../../commons';
+import {DebuggerProxyClient} from '../../../react-native-node-executor/lib/DebuggerProxyClient';
+import serviceHub from '../../../service-hub-plus';
 import {CompositeDisposable, Disposable} from 'atom';
 import Rx from 'rx';
 
 const {observableFromSubscribeFunction} = eventLib;
 
-export class Activation {
-  _connectionDisposables: ?CompositeDisposable;
-  _disposables: CompositeDisposable;
+/**
+ * Connects the executor to the debugger.
+ */
+export class DebuggingActivation {
 
-  constructor(state: ?Object) {
+  _disposables: CompositeDisposable;
+  _connectionDisposables: ?IDisposable;
+
+  constructor() {
     this._disposables = new CompositeDisposable(
       atom.commands.add('atom-workspace', {
-        'nuclide-react-native-debugger:connect': this._connect.bind(this),
-        'nuclide-react-native-debugger:disconnect': this._disconnect.bind(this),
+        'nuclide-react-native:attach-debugger': () => this._attachDebugger(),
+        'nuclide-react-native:detach-debugger': () => this._detachDebugger(),
       }),
-      new Disposable(() => this._disconnect()),
+      new Disposable(() => this._detachDebugger()),
     );
   }
 
-  _connect(): void {
-    this._disconnect();
+  dispose(): void {
+    this._disposables.dispose();
+    if (this._connectionDisposables != null) {
+      this._connectionDisposables.dispose();
+    }
+  }
+
+  _attachDebugger(): void {
+    this._detachDebugger();
     const client = new DebuggerProxyClient();
     this._connectionDisposables = new CompositeDisposable(
       new Disposable(() => client.disconnect()),
@@ -48,19 +59,12 @@ export class Activation {
     client.connect();
   }
 
-  _disconnect(): void {
+  _detachDebugger(): void {
     if (this._connectionDisposables == null) {
       return;
     }
     this._connectionDisposables.dispose();
     this._connectionDisposables = null;
-  }
-
-  dispose(): void {
-    this._disposables.dispose();
-    if (this._connectionDisposables != null) {
-      this._connectionDisposables.dispose();
-    }
   }
 
 }
