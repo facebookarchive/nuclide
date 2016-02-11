@@ -12,10 +12,9 @@
 import type OutputService from '../../output/lib/OutputService';
 
 import {track} from '../../analytics';
-import {observeProcess} from '../../commons';
+import {observeProcess, safeSpawn} from '../../commons';
 import createMessageStream from './createMessageStream';
 import {CompositeDisposable} from 'atom';
-import {spawn} from 'child_process';
 import Rx from 'rx';
 
 class Activation {
@@ -112,9 +111,8 @@ class Activation {
   }
 }
 
-function spawnAdbLogcat(): child_process$ChildProcess {
-  // TODO(matthewwithanm): Move the adb path to a setting.
-  return spawn('/usr/local/bin/adb', ['logcat', '-v', 'long', '-T', '1']);
+function spawnAdbLogcat(): Promise<child_process$ChildProcess> {
+  return safeSpawn('adb', ['logcat', '-v', 'long', '-T', '1']);
 }
 
 module.exports = Activation;
