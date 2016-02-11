@@ -122,19 +122,12 @@ function isOptional(param: string): boolean {
 }
 
 async function isFlowInstalled(): Promise<boolean> {
-  const os = require('os');
-  const platform = os.platform();
-  if (platform === 'linux' || platform === 'darwin') {
-    const flowPath = getPathToFlow();
-    if (!flowPathCache.has(flowPath)) {
-      flowPathCache.set(flowPath, await canFindFlow(flowPath));
-    }
-
-    return flowPathCache.get(flowPath);
-  } else {
-    // Flow does not currently work in Windows.
-    return false;
+  const flowPath = getPathToFlow();
+  if (!flowPathCache.has(flowPath)) {
+    flowPathCache.set(flowPath, await canFindFlow(flowPath));
   }
+
+  return flowPathCache.get(flowPath);
 }
 
 async function canFindFlow(flowPath: string): Promise<boolean> {
