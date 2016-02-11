@@ -109,11 +109,15 @@ module.exports = {
     return requireFromCache('./stream').observeStream(stream);
   },
 
-  observeProcessExit(createProcess: () => child_process$ChildProcess): Observable<number> {
+  observeProcessExit(
+    createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
+  ): Observable<number> {
     return requireFromCache('./process').observeProcessExit(createProcess);
   },
 
-  observeProcess(createProcess: () => child_process$ChildProcess): Observable<ProcessMessage> {
+  observeProcess(
+    createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
+  ): Observable<ProcessMessage> {
     return requireFromCache('./process').observeProcess(createProcess);
   },
 

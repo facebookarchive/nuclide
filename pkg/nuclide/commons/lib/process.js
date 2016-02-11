@@ -22,7 +22,7 @@ import type {Observer} from 'rx';
 import type {ProcessMessage, process$asyncExecuteRet} from './main';
 
 import {observeStream, splitStream} from './stream';
-import {Observable} from 'rx';
+import {Observable, ReplaySubject} from 'rx';
 import invariant from 'assert';
 
 let platformPathPromise: ?Promise<string>;
@@ -249,58 +249,79 @@ function scriptSafeSpawnAndObserveOutput(
   });
 }
 
-class Process {
-  process: ?child_process$ChildProcess;
-  constructor(process: child_process$ChildProcess) {
-    this.process = process;
-    Observable.fromEvent(process, 'exit').
-      take(1).
-      doOnNext(() => { this.process = null; });
+class ProcessResource {
+  process$: Observable<child_process$ChildProcess>;
+  disposed$: ReplaySubject<boolean>;
+
+  constructor(promiseOrProcess: child_process$ChildProcess | Promise<child_process$ChildProcess>) {
+    this.disposed$ = new ReplaySubject(1);
+    this.process$ = Observable.fromPromise(Promise.resolve(promiseOrProcess));
+
+    // $FlowIssue: There's currently no good way to describe this function with Flow
+    Observable.combineLatest(this.process$, this.disposed$)
+      .takeUntil(
+        this.process$.flatMap(process => Observable.fromEvent(process, 'exit')),
+      )
+      .subscribe(([process, disposed]) => {
+        if (disposed && (process != null)) {
+          process.kill();
+        }
+      });
   }
-  dispose() {
-    if (this.process) {
-      this.process.kill();
-      this.process = null;
-    }
+
+  getStream(): Observable<child_process$ChildProcess> {
+    return this.process$.takeUntil(this.disposed$);
   }
+
+  dispose(): void {
+    this.disposed$.onNext(true);
+    this.disposed$.onCompleted();
+  }
+
 }
 
 /**
  * Observe the stdout, stderr and exit code of a process.
  * stdout and stderr are split by newlines.
  */
-function observeProcessExit(createProcess: () => child_process$ChildProcess):
-    Observable<number> {
+function observeProcessExit(
+  createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
+): Observable<number> {
   return Observable.using(
-    () => new Process(createProcess()),
-    process => {
-      return Observable.fromEvent(process.process, 'exit').take(1);
-    });
+    () => new ProcessResource(createProcess()),
+    processResource => (
+      processResource.getStream().flatMap(process => Observable.fromEvent(process, 'exit').take(1))
+    ),
+  );
 }
 
 /**
  * Observe the stdout, stderr and exit code of a process.
  */
-function observeProcess(createProcess: () => child_process$ChildProcess):
-    Observable<ProcessMessage> {
+function observeProcess(
+  createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
+): Observable<ProcessMessage> {
   return Observable.using(
-    () => new Process(createProcess()),
-    ({process}) => {
-      invariant(process != null, 'process has not yet been disposed');
-      // Use replay/connect on exit for the final concat.
-      // By default concat defers subscription until after the LHS completes.
-      const exit = Observable.fromEvent(process, 'exit').take(1).
-          map(exitCode => ({kind: 'exit', exitCode})).replay();
-      exit.connect();
-      const error = Observable.fromEvent(process, 'error').
-          takeUntil(exit).
-          map(errorObj => ({kind: 'error', error: errorObj}));
-      const stdout = splitStream(observeStream(process.stdout)).
-          map(data => ({kind: 'stdout', data}));
-      const stderr = splitStream(observeStream(process.stderr)).
-          map(data => ({kind: 'stderr', data}));
-      return stdout.merge(stderr).merge(error).concat(exit);
-    });
+    () => new ProcessResource(createProcess()),
+    processResource => {
+      return processResource.getStream().flatMap(process => {
+        invariant(process != null, 'process has not yet been disposed');
+        // Use replay/connect on exit for the final concat.
+        // By default concat defers subscription until after the LHS completes.
+        const exit = Observable.fromEvent(process, 'exit').take(1).
+            map(exitCode => ({kind: 'exit', exitCode})).replay();
+        exit.connect();
+        const error = Observable.fromEvent(process, 'error').
+            takeUntil(exit).
+            map(errorObj => ({kind: 'error', error: errorObj}));
+        const stdout = splitStream(observeStream(process.stdout)).
+            map(data => ({kind: 'stdout', data}));
+        const stderr = splitStream(observeStream(process.stderr)).
+            map(data => ({kind: 'stderr', data}));
+        return stdout.merge(stderr).merge(error).concat(exit);
+      });
+    },
+  );
 }
 
 /**

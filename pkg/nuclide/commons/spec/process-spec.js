@@ -10,6 +10,7 @@
  */
 
 import invariant from 'assert';
+import mockSpawn from 'mock-spawn';
 import path from 'path';
 import processLib from '../lib/process.js';
 import {spawn} from 'child_process';
@@ -200,7 +201,7 @@ describe('nuclide-commons/process', () => {
   describe('process.observeProcessExit', () => {
     it('exitCode', () => {
       waitsForPromise(async () => {
-        const child = () => spawn(process.execPath, ['-e', 'process.exit(1)']);
+        const child = () => processLib.safeSpawn(process.execPath, ['-e', 'process.exit(1)']);
         const exitCode = await processLib.observeProcessExit(child).toPromise();
         expect(exitCode).toBe(1);
       });
@@ -208,7 +209,7 @@ describe('nuclide-commons/process', () => {
 
     it('stdout exitCode', () => {
       waitsForPromise(async () => {
-        const child = () => spawn(process.execPath,
+        const child = () => processLib.safeSpawn(process.execPath,
           ['-e', 'console.log("stdout1\\nstdout2\\n\\n\\n"); process.exit(1);']);
         const results = await processLib.observeProcess(child).toArray().toPromise();
         expect(results).toEqual([
@@ -223,7 +224,7 @@ describe('nuclide-commons/process', () => {
 
     it('stderr exitCode', () => {
       waitsForPromise(async () => {
-        const child = () => spawn(process.execPath,
+        const child = () => processLib.safeSpawn(process.execPath,
           ['-e', 'console.error("stderr"); process.exit(42);']);
         const results = await processLib.observeProcess(child).toArray().toPromise();
         expect(results).toEqual([{kind: 'stderr', data: 'stderr\n'},
@@ -233,7 +234,7 @@ describe('nuclide-commons/process', () => {
 
     it('stdout, stderr and exitCode', () => {
       waitsForPromise(async () => {
-        const child = () => spawn(process.execPath,
+        const child = () => processLib.safeSpawn(process.execPath,
           ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);']);
         const results = await processLib.observeProcess(child).toArray().toPromise();
         expect(results).toEqual([
@@ -243,5 +244,31 @@ describe('nuclide-commons/process', () => {
         ]);
       });
     });
+
+    it("kills the process when it becomes ready if you unsubscribe before it's returned", () => {
+      waitsForPromise(async () => {
+        // A process that lasts ten seconds.
+        const process = mockSpawn(cb => {
+          setTimeout(() => cb(0), 10000);
+        })();
+        spyOn(process, 'kill');
+        const createProcess = async () => {
+          // Take five seconds to "create" the process.
+          await new Promise(resolve => { setTimeout(resolve, 5000); });
+          return process;
+        };
+        const promise = createProcess();
+        const subscription = processLib.observeProcess(() => promise).subscribe(() => {});
+
+        // Unsubscribe before the process is "created".
+        subscription.dispose();
+
+        // Make sure the process is killed when we get it.
+        advanceClock(20000);
+        await promise;
+        expect(process.kill).toHaveBeenCalled();
+      });
+    });
+
   });
 });
