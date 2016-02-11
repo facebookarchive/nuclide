@@ -14,6 +14,7 @@ import type {NuclideUri} from '../../remote-uri';
 import type {
   Diagnostics,
   Loc,
+  FlowOutlineTree,
 } from './FlowService';
 
 import {filter} from 'fuzzaldrin';
@@ -28,6 +29,8 @@ import {
 } from './FlowHelpers.js';
 
 import {FlowProcess} from './FlowProcess';
+
+import {astToOutline} from './astToOutline';
 
 /** Encapsulates all of the state information we need about a specific Flow root */
 export class FlowRoot {
@@ -268,6 +271,35 @@ export class FlowRoot {
       return null;
     }
     return {type, rawType};
+  }
+
+  static async flowGetOutline(currentContents: string): Promise<?Array<FlowOutlineTree>> {
+    const options = {
+      stdin: currentContents,
+    };
+
+    const args = ['ast'];
+
+    let json;
+    try {
+      const result = await FlowProcess.execFlowClient(args, options);
+      if (result == null) {
+        return null;
+      }
+      json = parseJSON(args, result.stdout);
+    } catch (e) {
+      logger.warn(e);
+      return null;
+    }
+
+    try {
+      return astToOutline(json);
+    } catch (e) {
+      // Traversing the AST is an error-prone process and it's hard to be sure we've handled all the
+      // cases. Fail gracefully if it does not work.
+      logger.error(e);
+      return null;
+    }
   }
 }
 

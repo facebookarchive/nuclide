@@ -13,6 +13,7 @@ import type {HyperclickProvider} from '../../hyperclick-interfaces';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../busy-signal-provider-base';
+import type {OutlineProvider} from '../../outline-view';
 
 const invariant = require('assert');
 const {CompositeDisposable} = require('atom');
@@ -103,6 +104,17 @@ module.exports = {
       }));
     }
     return flowDiagnosticsProvider;
+  },
+
+  provideOutlines(): OutlineProvider {
+    const {FlowOutlineProvider} = require('./FlowOutlineProvider');
+    const provider = new FlowOutlineProvider();
+    return {
+      grammarScopes: JS_GRAMMARS,
+      priority: 1,
+      name: 'Flow',
+      getOutline: provider.getOutline.bind(provider),
+    };
   },
 
   createTypeHintProvider(): Object {

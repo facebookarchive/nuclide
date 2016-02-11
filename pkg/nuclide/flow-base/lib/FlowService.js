@@ -11,8 +11,6 @@
 
 import type {NuclideUri} from '../../remote-uri';
 
-import type {FlowRoot as FlowRootType} from './FlowRoot';
-
 // Diagnostic information, returned from findDiagnostics.
 export type Diagnostics = {
   // The location of the .flowconfig where these messages came from.
@@ -54,13 +52,24 @@ export type ServerStatusType =
   'init' |
   'ready';
 
+export type FlowOutlineTree = {
+  displayText: string,
+  // Service framework can't serialize Point so we need a slightly different type from the canonical
+  // OutlineTree.
+  startLine: number,
+  startColumn: number,
+  children: Array<FlowOutlineTree>,
+};
+
 import {findFlowConfigDir} from './FlowHelpers';
+
+import {FlowRoot} from './FlowRoot';
 
 // string rather than NuclideUri because this module will always execute at the location of the
 // file, so it will always be a real path and cannot be prefixed with nuclide://
-const flowRoots: Map<string, FlowRootType> = new Map();
+const flowRoots: Map<string, FlowRoot> = new Map();
 
-async function getInstance(file: string): Promise<?FlowRootType> {
+async function getInstance(file: string): Promise<?FlowRoot> {
   const root = await findFlowConfigDir(file);
   if (root == null) {
     return null;
@@ -68,7 +77,6 @@ async function getInstance(file: string): Promise<?FlowRootType> {
 
   let instance = flowRoots.get(root);
   if (!instance) {
-    const {FlowRoot} = require('./FlowRoot');
     instance = new FlowRoot(root);
     flowRoots.set(root, instance);
   }
@@ -77,7 +85,7 @@ async function getInstance(file: string): Promise<?FlowRootType> {
 
 async function runWithInstance<T>(
   file: string,
-  f: (instance: FlowRootType) => Promise<T>
+  f: (instance: FlowRoot) => Promise<T>
 ): Promise<?T> {
   const instance = await getInstance(file);
   if (instance == null) {
@@ -160,4 +168,10 @@ export async function flowGetType(
       includeRawType,
     )
   );
+}
+
+export function flowGetOutline(
+  currentContents: string,
+): Promise<?Array<FlowOutlineTree>> {
+  return FlowRoot.flowGetOutline(currentContents);
 }

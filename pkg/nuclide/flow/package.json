@@ -65,6 +65,11 @@
       "versions": {
         "0.1.0": "provideBusySignal"
       }
+    },
+    "nuclide-outline-view": {
+      "versions": {
+        "0.0.0": "provideOutlines"
+      }
     }
   }
 }
