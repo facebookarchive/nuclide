@@ -18,6 +18,7 @@ import type {
 import type {CtagsResult, CtagsService} from '../../remote-ctags-base';
 
 import {React} from 'react-for-atom';
+import featureConfig from '../../feature-config';
 import {getHackService} from '../../hack-symbol-provider/lib/getHackService';
 import {getServiceByNuclideUri} from '../../remote-connection';
 import {join, relative} from '../../remote-uri';
@@ -100,7 +101,10 @@ module.exports = ({
     // HACK: Ctags results typically just duplicate Hack results when they're present.
     // Filter out results from PHP files when the Hack service is available.
     // TODO(hansonw): Remove this when quick-open has proper ranking/de-duplication.
-    const hack = await getHackService(directory);
+    let hack;
+    if (featureConfig.get('nuclide-remote-ctags.disableWithHack') !== false) {
+      hack = await getHackService(directory);
+    }
 
     try {
       const results = await service.findTags(query, {

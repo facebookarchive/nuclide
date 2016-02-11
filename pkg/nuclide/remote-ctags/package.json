@@ -5,6 +5,14 @@
   "version": "0.0.0",
   "description": "Exposes nuclide-remote-ctags-base functionality to Atom.",
   "nuclide": {
+    "config": {
+      "disableWithHack": {
+        "title": "Filter out PHP symbols when Hack is available",
+        "type": "boolean",
+        "default": "true",
+        "description": "Avoid overlap with symbol results from Hack."
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },
