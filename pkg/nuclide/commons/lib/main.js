@@ -75,6 +75,11 @@ module.exports = {
     return requireFromCache('./promises').denodeify(f);
   },
 
+  forkWithExecEnvironment(modulePath: string, args?: Array<string>, options?: Object = {}):
+      Promise<child_process$ChildProcess> {
+    return requireFromCache('./process').forkWithExecEnvironment(modulePath, args, options);
+  },
+
   safeSpawn(command: string, args?: Array<string>, options?: Object = {}):
       Promise<child_process$ChildProcess> {
     return requireFromCache('./process').safeSpawn(command, args, options);

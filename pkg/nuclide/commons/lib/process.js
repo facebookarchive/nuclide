@@ -12,6 +12,7 @@
 import * as array from './array';
 import {
   execFile,
+  fork,
   spawn,
 } from 'child_process';
 import path from 'path';
@@ -153,6 +154,22 @@ async function safeSpawn(
   monitorStreamErrors(child, command, args, options);
   child.on('error', error => {
     logError('error with command:', command, args, options, 'error:', error);
+  });
+  return child;
+}
+
+async function forkWithExecEnvironment(
+  modulePath: string,
+  args?: Array<string> = [],
+  options?: Object = {},
+): Promise<child_process$ChildProcess> {
+  const forkOptions = {
+    ...options,
+    env: await createExecEnvironment(options.env || process.env, COMMON_BINARY_PATHS),
+  };
+  const child = fork(modulePath, args, forkOptions);
+  child.on('error', error => {
+    logError('error from module:', modulePath, args, options, 'error:', error);
   });
   return child;
 }
@@ -437,6 +454,7 @@ module.exports = {
   asyncExecute,
   createArgsForScriptCommand,
   checkOutput,
+  forkWithExecEnvironment,
   safeSpawn,
   scriptSafeSpawn,
   scriptSafeSpawnAndObserveOutput,
