@@ -10,7 +10,7 @@
  */
 
 import {event as eventLib} from '../../commons';
-import ExecutorServer from '../../react-native-node-executor/lib/ExecutorServer';
+import {DebuggerProxyClient} from '../../react-native-node-executor/lib/DebuggerProxyClient';
 import serviceHub from '../../service-hub-plus';
 import {CompositeDisposable, Disposable} from 'atom';
 import Rx from 'rx';
@@ -33,18 +33,19 @@ export class Activation {
 
   _connect(): void {
     this._disconnect();
-    const server = new ExecutorServer(8090);
+    const client = new DebuggerProxyClient();
     this._connectionDisposables = new CompositeDisposable(
-      new Disposable(() => server.close()),
+      new Disposable(() => client.disconnect()),
       // $FlowIgnore: Not sure how to annotate combineLatest
       Rx.Observable.combineLatest(
-        observableFromSubscribeFunction(server.onDidEvalApplicationScript.bind(server)),
+        observableFromSubscribeFunction(client.onDidEvalApplicationScript.bind(client)),
         Rx.Observable.fromPromise(serviceHub.consumeFirstProvider('nuclide-debugger.remote')),
       )
         .subscribe(([pid, debuggerService]) => {
           debuggerService.debugNode(pid);
         }),
     );
+    client.connect();
   }
 
   _disconnect(): void {
