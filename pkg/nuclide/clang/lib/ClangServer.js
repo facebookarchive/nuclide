@@ -15,7 +15,7 @@ import path from 'path';
 import split from 'split';
 
 import {EventEmitter} from 'events';
-import {checkOutput, safeSpawn} from '../../commons';
+import {checkOutput, safeSpawn, promises} from '../../commons';
 import {getLogger} from '../../logging';
 
 // Do not tie up the Buck server continuously retrying for flags.
@@ -157,6 +157,7 @@ export default class ClangServer {
   _lastProcessedRequestId: number;
   _asyncConnection: ?Connection;
   _pendingCompileRequests: number;
+  _getAsyncConnection: () => Promise<?Connection>;
 
   // Cache the flags-fetching promise so we don't end up invoking Buck twice.
   _flagsPromise: ?Promise<?Array<string>>;
@@ -169,6 +170,7 @@ export default class ClangServer {
     this._nextRequestId = 0;
     this._lastProcessedRequestId = -1;
     this._pendingCompileRequests = 0;
+    this._getAsyncConnection = promises.serializeAsyncCall(this._getAsyncConnectionImpl.bind(this));
     this._flagsRetries = 0;
   }
 
@@ -282,7 +284,7 @@ export default class ClangServer {
     return (this._nextRequestId++).toString(16);
   }
 
-  async _getAsyncConnection(): Promise<?Connection> {
+  async _getAsyncConnectionImpl(): Promise<?Connection> {
     if (this._asyncConnection == null) {
       try {
         const connection = await createAsyncConnection(this._src);
