@@ -48,7 +48,7 @@ class NuclideServer {
 
   _webServer: http$fixed$Server;
   _webSocketServer: ws$Server;
-  _clients: {[clientId: string]: SocketClient};
+  _clients: Map<string, SocketClient>;
   _port: number;
   _app: connect$Server;
   _serviceRegistry: {[serviceName: string]: () => any};
@@ -87,7 +87,7 @@ class NuclideServer {
     this._port = port;
 
     this._webSocketServer = this._createWebSocketServer();
-    this._clients = {};
+    this._clients = new Map();
 
     this._setupServices(); // Setup 1.0 and 2.0 services.
 
@@ -226,14 +226,17 @@ class NuclideServer {
     logger.debug('WebSocket connecting');
 
 
-    let client = null;
+    let client: ?SocketClient = null;
 
     socket.on('error', e =>
       logger.error('Client #%s error: %s', client ? client.id : 'unkown', e.message));
 
     socket.once('message', (clientId: string) => {
-      client = this._clients[clientId] = this._clients[clientId] ||
-          {subscriptions: {}, id: clientId, messageQueue: []};
+      client = this._clients.get(clientId);
+      if (client == null) {
+        client = {subscriptions: {}, id: clientId, socket: null, messageQueue: []};
+        this._clients.set(clientId, client);
+      }
       const localClient = client;
       // If an existing client, we close its socket before listening to the new socket.
       if (client.socket) {

@@ -67,12 +67,13 @@ describe('Nuclide Server test suite', () => {
       const message4 = {foo4: 'bar4'};
 
       // Wait for the connection to exist on the server.
-      waitsForPromise(() => Object.keys(server._clients).length === 1);
+      waitsForPromise(() => server._clients.size === 1);
 
       let serverSocketClient = null;
       runs(() => {
-        const clientId = Object.keys(server._clients)[0];
-        serverSocketClient = server._clients[clientId];
+        const clientId = Array.from(server._clients.keys())[0];
+        serverSocketClient = server._clients.get(clientId);
+        invariant(serverSocketClient != null);
         expect(serverSocketClient.id).toBe(clientId);
 
         server._sendSocketMessage(serverSocketClient, message1);
