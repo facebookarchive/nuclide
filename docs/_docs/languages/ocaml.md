@@ -1,5 +1,5 @@
 ---
-id: ocaml
+id: language-ocaml
 title: OCaml
 layout: docs
 permalink: /docs/languages/ocaml/

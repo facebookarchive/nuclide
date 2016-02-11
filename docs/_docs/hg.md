@@ -1,5 +1,5 @@
 ---
-id: hg
+id: feature-hg
 title: Using with Mercurial
 layout: docs
 permalink: /docs/hg/
@@ -13,4 +13,3 @@ UI as Atom does natively for Git repositories:
 Nuclide colorizes the gutter beside any lines that have been modified, added, or removed. It also
 adds color indicators in the file tree to reflect changes - new files are green, modified files
 are orange, and ignored files are dark grey.
-

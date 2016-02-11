@@ -1,23 +1,23 @@
 - title: Quick Start
   items:
-  - id: getting-started
+  - id: quick-start-getting-started
 - title: Editor
   items:
-  - id: setup
+  - id: editor-setup
   - id: editor-basics
-  - id: keyboard-shortcuts
-  - id: uninstall
+  - id: editor-keyboard-shortcuts
+  - id: editor-uninstall
 - title: Feature Guides
   items:
-  - id: remote
-  - id: hg
+  - id: feature-remote
+  - id: feature-hg
 - title: Languages
   items:
-  - id: hack
-  - id: flow
-  - id: objective-c
-  - id: ocaml
+  - id: language-hack
+  - id: language-flow
+  - id: language-objective-c
+  - id: language-ocaml
 - title: Advanced Topics
   items:
-  - id: building-from-source
-  - id: custom-keybindings
+  - id: advanced-building-from-source
+  - id: advanced-custom-keybindings

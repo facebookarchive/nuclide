@@ -1,5 +1,5 @@
 ---
-id: troubleshooting
+id: help-troubleshooting
 title: Troubleshooting
 layout: docs
 permalink: /docs/help/troubleshooting/

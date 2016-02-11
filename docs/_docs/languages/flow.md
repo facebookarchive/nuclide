@@ -1,5 +1,5 @@
 ---
-id: flow
+id: language-flow
 title: Flow and JavaScript
 layout: docs
 permalink: /docs/languages/flow/

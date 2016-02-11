@@ -1,5 +1,5 @@
 ---
-id: setup
+id: editor-setup
 title: Setup
 layout: docs
 permalink: /docs/editor/setup/

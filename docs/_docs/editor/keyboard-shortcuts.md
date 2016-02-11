@@ -1,5 +1,5 @@
 ---
-id: keyboard-shortcuts
+id: editor-keyboard-shortcuts
 title: Keyboard Shortcuts
 layout: docs
 permalink: /docs/editor/keyboard-shortcuts/
