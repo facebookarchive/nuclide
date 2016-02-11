@@ -10,6 +10,11 @@ atom-panel.top {
   border-bottom: 1px solid @pane-item-border-color;
 }
 
+// Ensure the `hidden` attribute overrides the `.tool-panel` selector.
+.buck-toolbar[hidden] {
+  display: none;
+}
+
 .buck-toolbar .combobox-combobox {
   display: inline-block;
   width: 200px;
