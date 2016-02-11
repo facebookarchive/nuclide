@@ -1,0 +1,13 @@
+{
+  "name": "nuclide-react-native-debugger",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Manage the React Native debugger from Nuclide",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationCommands": {
+  }
+}
