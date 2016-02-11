@@ -9,49 +9,76 @@
  * the root directory of this source tree.
  */
 
-import {fork} from 'child_process';
-import path from 'path';
 
 import type {ServerReplyCallback} from './types';
 import type {EventEmitter} from 'events';
 
+import {forkWithExecEnvironment} from '../../commons/lib/process';
+import path from 'path';
+import Rx from 'rx';
+
 export default class Child {
 
-  _onReply: ServerReplyCallback;
-  _proc: Object;
-  _emitter: EventEmitter;
+  _closed: Promise<mixed>;
   _execScriptMessageId: number;
+  _process$: Rx.Observable<child_process$ChildProcess>;
+  _input$: Rx.Subject<Object>;
 
   constructor(onReply: ServerReplyCallback, emitter: EventEmitter) {
-    this._onReply = onReply;
-    this._emitter = emitter;
     this._execScriptMessageId = -1;
 
-    // TODO(natthu): Atom v1.2.0 will upgrade Electron to v0.34.0 which in turn vendors in node 4.
-    // Once we upgrade to that version of atom, we can remove the `execPath` argument and let Atom
-    // invoke the subprocess script.
-    this._proc = fork(path.join(__dirname, 'executor.js'), [], {execPath: 'node'});
-    this._proc.on('message', payload => {
-      if (this._execScriptMessageId === payload.replyId) {
-        this._emitter.emit('eval_application_script', this._proc.pid);
-        this._execScriptMessageId = -1;
-      }
-      this._onReply(payload.replyId, payload.result);
+    const process$ = this._process$ = Rx.Observable.fromPromise(
+      // TODO: The node location/path needs to be more configurable. We need to figure out a way to
+      //   handle this across the board.
+      forkWithExecEnvironment(path.join(__dirname, 'executor.js'), [], {execPath: 'node'})
+    );
+
+    this._closed = process$.flatMap(process => Rx.Observable.fromEvent(process, 'close'))
+      .first()
+      .toPromise();
+
+    // A stream of messages we're sending to the executor.
+    this._input$ = new Rx.Subject();
+
+    // The messages we're receiving from the executor.
+    const output$ = process$.flatMap(process => Rx.Observable.fromEvent(process, 'message'));
+
+    // Emit the eval_application_script event when we get the message that corresponds to it.
+    output$
+      .filter(message => message.replyId === this._execScriptMessageId)
+      .first()
+      // $FlowIgnore: Not sure how to annotate combineLatest
+      .combineLatest(process$)
+      .map(([, process]) => process.pid)
+      .subscribe(pid => {
+        emitter.emit('eval_application_script', pid);
+      });
+
+    // Forward the output we get from the process to subscribers
+    output$.subscribe(message => {
+      onReply(message.replyId, message.result);
     });
+
+    // Buffer the messages until we have a process to send them to, then send them.
+    const bufferedMessage$ = this._input$.takeUntil(process$).buffer(process$).flatMap(x => x);
+    const remainingMessages = this._input$.skipUntil(process$);
+    bufferedMessage$.concat(remainingMessages)
+      // $FlowIgnore: Not sure how to annotate combineLatest
+      .combineLatest(process$)
+      .subscribe(([message, process]) => {
+        process.send(message);
+      });
   }
 
-  kill(): Promise<void> {
-    return new Promise((res, rej) => {
-      this._proc.on('close', () => {
-        res();
-      });
-      this._proc.kill();
-    });
+  async kill(): Promise<void> {
+    // Kill the process once we have one.
+    this._process$.subscribe(process => { process.kill(); });
+    await this._closed;
   }
 
   execScript(script: string, inject: string, id: number) {
     this._execScriptMessageId = id;
-    this._proc.send({
+    this._input$.onNext({
       id,
       op: 'evalScript',
       data: {
@@ -62,7 +89,7 @@ export default class Child {
   }
 
   execCall(payload: Object, id: number) {
-    this._proc.send({
+    this._input$.onNext({
       id,
       op: 'call',
       data: {
