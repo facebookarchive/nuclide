@@ -9,17 +9,18 @@
  * the root directory of this source tree.
  */
 
+/*eslint-disable react/prop-types */
+
 import {React} from 'react-for-atom';
-import ReactNativeServerActions from './ReactNativeServerActions';
 import ReactNativeServerStatus from './ReactNativeServerStatus';
 
 type Props = {
-  actions: ReactNativeServerActions;
   store: ReactNativeServerStatus;
-  serverCommand: string;
+  restartServer: () => void;
+  stopServer: () => void;
 };
 
-export default class ReactNativeServerPanel extends React.Component {
+export default class ReactNativeServerPanel extends React.Component<void, Props, void> {
 
   _storeSubscription: IDisposable;
 
@@ -28,8 +29,6 @@ export default class ReactNativeServerPanel extends React.Component {
     this._storeSubscription = props.store.subscribe(() => {
       this.forceUpdate();
     });
-    this._stopServer = this._handleStopClicked.bind(this);
-    this._restartServer = this._handleRestartClicked.bind(this);
   }
 
   componentWillUnmount() {
@@ -46,13 +45,13 @@ export default class ReactNativeServerPanel extends React.Component {
         <div className="inline-block">
           <button
             className="btn icon icon-primitive-square inline-block-tight"
-            onClick={this._stopServer}
+            onClick={this.props.stopServer}
           >
             Stop
           </button>
           <button
             className="btn icon icon-sync inline-block-tight"
-            onClick={this._restartServer}
+            onClick={this.props.restartServer}
           >
             Restart
           </button>
@@ -62,11 +61,4 @@ export default class ReactNativeServerPanel extends React.Component {
     );
   }
 
-  _handleStopClicked() {
-    this.props.actions.stopServer();
-  }
-
-  _handleRestartClicked() {
-    this.props.actions.restartServer(this.props.serverCommand);
-  }
 }

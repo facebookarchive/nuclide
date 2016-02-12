@@ -65,10 +65,7 @@ export class PackagerActivation {
             });
             return;
           }
-
-          // TODO(matthewwithanm): We also need to pass along the projectRoot and use that as the
-          //   cwd.
-          this._actions.startServer(commandInfo.command);
+          this._actions.startServer(commandInfo);
         }),
       new Disposable(() => this._actions.stopServer()),
     );

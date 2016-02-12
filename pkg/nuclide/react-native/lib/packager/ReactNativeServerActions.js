@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {CommandInfo} from './types';
 import type {Dispatcher} from 'flux';
 
 export default class ReactNativeServerActions {
@@ -27,10 +28,10 @@ export default class ReactNativeServerActions {
     });
   }
 
-  startServer(serverCommand: string) {
+  startServer(commandInfo: CommandInfo) {
     this._dispatcher.dispatch({
       actionType: ReactNativeServerActions.ActionType.START_SERVER,
-      serverCommand,
+      commandInfo,
     });
   }
 
@@ -38,10 +39,10 @@ export default class ReactNativeServerActions {
     this._dispatcher.dispatch({actionType: ReactNativeServerActions.ActionType.STOP_SERVER});
   }
 
-  restartServer(serverCommand: string) {
+  restartServer(commandInfo: CommandInfo) {
     this._dispatcher.dispatch({
       actionType: ReactNativeServerActions.ActionType.RESTART_SERVER,
-      serverCommand,
+      commandInfo,
     });
   }
 }

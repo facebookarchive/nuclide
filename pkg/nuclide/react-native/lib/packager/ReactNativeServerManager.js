@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {CommandInfo} from './types';
+
 import invariant from 'assert';
 import type {ProcessOutputDataHandlers} from '../../../process/output-store/lib/types';
 import type {Dispatcher} from 'flux';
@@ -48,7 +50,7 @@ export default class ReactNativeServerManager {
           this._startNodeExecutorServer();
           break;
         case ReactNativeServerActions.ActionType.START_SERVER:
-          this._startServer(action.serverCommand);
+          this._startServer(action.commandInfo);
           break;
         case ReactNativeServerActions.ActionType.STOP_SERVER:
           this._stopServer();
@@ -56,7 +58,7 @@ export default class ReactNativeServerManager {
         case ReactNativeServerActions.ActionType.RESTART_SERVER:
           this._stopServer();
           atom.workspace.destroyActivePaneItem();
-          this._startServer(action.serverCommand);
+          this._startServer(action.commandInfo);
           break;
       }
     });
@@ -68,10 +70,10 @@ export default class ReactNativeServerManager {
     this._status.setServerRunning(false);
   }
 
-  async _startServer(serverCommand: string): Promise<void> {
+  async _startServer(commandInfo: CommandInfo): Promise<void> {
     let processRunner = this._processRunner;
     if (processRunner == null) {
-      processRunner = await this._createProcessRunner(serverCommand);
+      processRunner = await this._createProcessRunner(commandInfo);
       if (processRunner == null) {
         return;
       }
@@ -82,14 +84,16 @@ export default class ReactNativeServerManager {
     processRunner.run();
   }
 
-  async _createProcessRunner(serverCommand: string): Promise<?Object> {
+  async _createProcessRunner(commandInfo: CommandInfo): Promise<?Object> {
     const getRunCommandInNewPane = require('../../../process/output');
     const {runCommandInNewPane, disposable} = getRunCommandInNewPane();
 
     const runProcessWithHandlers = (dataHandlerOptions: ProcessOutputDataHandlers) => {
       const {stdout, stderr, error, exit} = dataHandlerOptions;
-      invariant(serverCommand);
-      const observable = scriptSafeSpawnAndObserveOutput(serverCommand);
+      const {command, cwd} = commandInfo;
+      invariant(command);
+      invariant(cwd);
+      const observable = scriptSafeSpawnAndObserveOutput(command, [], {cwd});
       const onNext = (data: {stdout?: string; stderr?: string}) => {
         if (data.stdout) {
           stdout(data.stdout);
@@ -121,9 +125,9 @@ export default class ReactNativeServerManager {
 
     const panel =
       <ReactNativeServerPanel
-        actions={this._actions}
         store={this._status}
-        serverCommand={serverCommand}
+        stopServer={() => this._actions.stopServer()}
+        restartServer={() => this._actions.restartServer(commandInfo)}
       />;
 
     let isOutputPaneOpen = false;
