@@ -10,8 +10,8 @@
   },
   "activationCommands": {
     "atom-workspace": [
-      "nuclide-react-native:attach-debugger",
-      "nuclide-react-native:detach-debugger"
+      "nuclide-react-native:start-debugging",
+      "nuclide-react-native:stop-debugging"
     ]
   }
 }

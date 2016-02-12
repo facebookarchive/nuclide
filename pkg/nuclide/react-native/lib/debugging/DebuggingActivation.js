@@ -28,10 +28,10 @@ export class DebuggingActivation {
   constructor() {
     this._disposables = new CompositeDisposable(
       atom.commands.add('atom-workspace', {
-        'nuclide-react-native:attach-debugger': () => this._attachDebugger(),
-        'nuclide-react-native:detach-debugger': () => this._detachDebugger(),
+        'nuclide-react-native:start-debugging': () => this._startDebugging(),
+        'nuclide-react-native:stop-debugging': () => this._stopDebugging(),
       }),
-      new Disposable(() => this._detachDebugger()),
+      new Disposable(() => this._stopDebugging()),
     );
   }
 
@@ -42,8 +42,8 @@ export class DebuggingActivation {
     }
   }
 
-  _attachDebugger(): void {
-    this._detachDebugger();
+  _startDebugging(): void {
+    this._stopDebugging();
     const client = new DebuggerProxyClient();
     this._connectionDisposables = new CompositeDisposable(
       new Disposable(() => client.disconnect()),
@@ -59,7 +59,7 @@ export class DebuggingActivation {
     client.connect();
   }
 
-  _detachDebugger(): void {
+  _stopDebugging(): void {
     if (this._connectionDisposables == null) {
       return;
     }
