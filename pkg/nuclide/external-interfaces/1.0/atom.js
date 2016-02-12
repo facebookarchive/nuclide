@@ -424,14 +424,20 @@ declare class atom$ThemeManager {
   requireStylesheet(stylesheetPath: string): IDisposable,
 }
 
+type atom$TooltipsAddOptions = {
+  title: string,
+  keyBindingCommand?: string,
+  keyBindingTarget?: HTMLElement,
+  animation?: boolean,
+  container?: string | false,
+  delay?: number | {show: number, hide: number},
+  placement?: 'top' | 'bottom' | 'left' | 'right' | 'auto',
+}
+
 declare class atom$TooltipManager {
   add(
     target: HTMLElement,
-    options: {
-      title: string,
-      keyBindingCommand?: string,
-      keyBindingTarget?: HTMLElement,
-    }
+    options: atom$TooltipsAddOptions,
   ): IDisposable,
 }
 

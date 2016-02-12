@@ -103,4 +103,8 @@ module.exports = {
   get withLoadingNotification() {
     return requireFromCache('./with-loading-notification');
   },
+
+  get addTooltip() {
+    return requireFromCache('./tooltip').addTooltip;
+  },
 };
