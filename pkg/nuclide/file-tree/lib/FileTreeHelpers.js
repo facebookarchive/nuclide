@@ -24,22 +24,30 @@ import url from 'url';
 type Directory = LocalDirectory | RemoteDirectory;
 type File = LocalFile | RemoteFile;
 
+/*
+ * Returns a string with backslashes replaced by two backslashes for use with strings passed to the
+ * `RegExp` constructor.
+ */
+function escapeBackslash(str: string): string {
+  return str.replace('\\', '\\\\');
+}
+
 function dirPathToKey(path: string): string {
-  return path.replace(/\/+$/, '') + '/';
+  return path.replace(new RegExp(`${escapeBackslash(pathModule.sep)}+$`), '') + pathModule.sep;
 }
 
 function isDirKey(key: string): boolean {
-  return (key.slice(-1) === '/');
+  return (key.slice(-1) === pathModule.sep);
 }
 
 function keyToName(key: string): string {
   const path = keyToPath(key);
-  const index = path.lastIndexOf('/');
+  const index = path.lastIndexOf(pathModule.sep);
   return (index === -1) ? path : path.slice(index + 1);
 }
 
 function keyToPath(key: string): string {
-  return key.replace(/\/+$/, '');
+  return key.replace(new RegExp(`${escapeBackslash(pathModule.sep)}+$`), '');
 }
 
 function getParentKey(key: string): string {
@@ -120,7 +128,7 @@ function isLocalFile(entry: File | Directory): boolean {
 }
 
 function isFullyQualifiedLocalPath(path: string): boolean {
-  return path.charAt(0) === '/';
+  return path.charAt(0) === pathModule.sep;
 }
 
 function isContextClick(event: SyntheticMouseEvent): boolean {
