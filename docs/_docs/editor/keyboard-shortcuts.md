@@ -81,7 +81,7 @@ The file tree is the left-hand side pane where a tree of all of your project fil
 | `cmd-k-right` | `ctrl-k-right` | `open-selected-entry-right` | If a file is selected, it opens the file in the right pane. | |
 | `cmd-k-up` | `ctrl-k-up` | `open-selected-entry-up` | If a file is selected, it opens the file in the top pane. | |
 | `cmd-k-left` | `ctrl-k-left` | `open-selected-entry-left` | If a file is selected, it opens the file in the left pane. | |
-| `cmd-|` | `ctrl-|` | `reveal-active-file` | Shows the file that is currently active in the main workspace in the file tree. | |
+| `cmd-|` | `ctrl-|` | `reveal-active-file` | Shows the file that is currently active in the main workspace in the file tree. | | `cmd-shift-\` (Mac) or  `ctrl-shift-\` (Linux)
 | `ctrl-O` | `ctrl-O` | `toggle-focus` | Toggles the focus of the current active file. | |
 
 ## Files
