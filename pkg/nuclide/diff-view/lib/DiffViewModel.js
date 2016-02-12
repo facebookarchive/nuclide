@@ -324,7 +324,7 @@ class DiffViewModel {
 
     const hgRepository: HgRepositoryClient = (repository: any);
     const repositoryStack = this._repositoryStacks.get(hgRepository);
-    invariant(repositoryStack);
+    invariant(repositoryStack, 'There must be an repository stack for a given repository!');
     const [hgDiff] = await Promise.all([
       repositoryStack.fetchHgDiff(filePath),
       this._setActiveRepositoryStack(repositoryStack),
@@ -414,6 +414,7 @@ class DiffViewModel {
   }
 
   activate(): void {
+    this._updateRepositories();
     this._isActive = true;
     for (const repositoryStack of this._repositoryStacks.values()) {
       repositoryStack.activate();

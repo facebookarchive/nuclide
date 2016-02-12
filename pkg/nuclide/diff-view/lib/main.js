@@ -232,7 +232,8 @@ module.exports = {
         return;
       }
       // If it's a remote directory, it should come on a path change event.
-      const changePathsSubscription = atom.project.onDidChangePaths(() => {
+      // The change handler is delayed to break the race with the `DiffViewModel` subscription.
+      const changePathsSubscription = atom.project.onDidChangePaths(() => setTimeout(() => {
         // try/catch here because in case of any error, Atom stops dispatching events to the
         // rest of the listeners, which can stop the remote editing from being functional.
         try {
@@ -245,7 +246,7 @@ module.exports = {
         } catch (e) {
           getLogger().error('DiffView restore error', e);
         }
-      });
+      }, 10));
       invariant(subscriptions);
       subscriptions.add(changePathsSubscription);
     }));
