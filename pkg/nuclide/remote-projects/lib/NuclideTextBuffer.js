@@ -17,6 +17,7 @@ import invariant from 'assert';
 
 const logger = getLogger();
 const {CompositeDisposable, TextBuffer} = require('atom');
+const {track} = require('../../analytics');
 
 class NuclideTextBuffer extends TextBuffer {
   connection: RemoteConnection;
@@ -75,6 +76,7 @@ class NuclideTextBuffer extends TextBuffer {
       throw new Error('Can\'t save buffer with no file path');
     }
 
+    let success;
     this.emitter.emit('will-save', {path: filePath});
     this.setPath(filePath);
     try {
@@ -86,10 +88,17 @@ class NuclideTextBuffer extends TextBuffer {
       /* $FlowFixMe Private Atom API */
       this.emitModifiedStatusChanged(false);
       this.emitter.emit('did-save', {path: filePath});
+      success = true;
     } catch (e) {
       logger.fatal('Failed to save remote file.', e);
       atom.notifications.addError(`Failed to save remote file: ${e.message}`);
+      success = false;
     }
+
+    track('remoteprojects-text-buffer-save-as', {
+      'remoteprojects-file-path': filePath,
+      'remoteprojects-save-success': success.toString(),
+    });
   }
 
   updateCachedDiskContentsSync(): void {
