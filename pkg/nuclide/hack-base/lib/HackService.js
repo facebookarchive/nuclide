@@ -20,7 +20,7 @@ import {
   symbolTypeToSearchTypes,
   getSearchResults,
 } from './HackHelpers';
-import {setHackCommand, getHackExecOptions} from './hack-config';
+import {setHackCommand, setUseIde, getHackExecOptions} from './hack-config';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -300,9 +300,11 @@ export async function getReferences(
 
 export function getHackEnvironmentDetails(
   localFile: NuclideUri,
-  hackCommand: string
+  hackCommand: string,
+  useIdeConnection: boolean
 ): Promise<?{hackRoot: NuclideUri, hackCommand: string}> {
   setHackCommand(hackCommand);
+  setUseIde(useIdeConnection);
   return getHackExecOptions(localFile);
 }
 

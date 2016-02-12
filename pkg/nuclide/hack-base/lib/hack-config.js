@@ -22,10 +22,12 @@ const PATH_TO_HH_CLIENT = 'hh_client';
 const DEFAULT_HACK_COMMAND: Promise<string> = findHackCommand();
 let hackCommand = DEFAULT_HACK_COMMAND;
 
+let useConnection = false;
+
 /**
 * If this returns null, then it is not safe to run hack.
 */
-function findHackConfigDir(localFile: string): Promise<?string> {
+export function findHackConfigDir(localFile: string): Promise<?string> {
   return findNearestFile(HACK_CONFIG_FILE_NAME, localFile);
 }
 
@@ -45,6 +47,10 @@ export function setHackCommand(newHackCommand: string): void {
   }
 }
 
+export function getHackCommand(): Promise<string> {
+  return hackCommand;
+}
+
 export async function getHackExecOptions(
   localFile: string
 ): Promise<?{hackRoot: string, hackCommand: string}> {
@@ -57,4 +63,12 @@ export async function getHackExecOptions(
   } else {
     return null;
   }
+}
+
+export function setUseIde(useIdeConnection: boolean): void {
+  useConnection = useIdeConnection;
+}
+
+export function getUseIde(): boolean {
+  return useConnection;
 }

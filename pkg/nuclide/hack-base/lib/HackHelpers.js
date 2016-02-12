@@ -16,7 +16,8 @@ import type {SearchResultTypeValue, SymbolTypeValue} from '../../hack-common/lib
 import invariant from 'assert';
 import {checkOutput, PromiseQueue} from '../../commons';
 import {SearchResultType, SymbolType} from '../../hack-common/lib/constants';
-import {getHackExecOptions} from './hack-config';
+import {getHackExecOptions, getUseIde} from './hack-config';
+import {callHHClientUsingConnection} from './HackConnection';
 
 const HH_SERVER_INIT_MESSAGE = 'hh_server still initializing';
 const HH_SERVER_BUSY_MESSAGE = 'hh_server is busy';
@@ -44,6 +45,10 @@ export async function callHHClient(
   outputJson: boolean,
   processInput: ?string,
   filePath: string): Promise<?{hackRoot: string, result: string | Object}> {
+
+  if (getUseIde()) {
+    return await callHHClientUsingConnection(args, processInput, filePath);
+  }
 
   if (!hhPromiseQueue) {
     hhPromiseQueue = new PromiseQueue();

@@ -283,6 +283,7 @@ async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLanguage> {
 
 type HackConfig = {
   hhClientPath: string,
+  useIdeConnection: boolean,
 };
 
 function getConfig(): HackConfig {
@@ -295,9 +296,11 @@ async function createHackLanguageIfNotExisting(
 ): Promise<HackLanguage> {
   if (!uriToHackLanguage.has(key)) {
     const service = getHackService(fileUri);
+    const config = getConfig();
     const hackEnvironment = await service.getHackEnvironmentDetails(
       fileUri,
-      getConfig().hhClientPath);
+      config.hhClientPath,
+      config.useIdeConnection);
     const isHHAvailable = hackEnvironment != null;
     const {hackRoot} = hackEnvironment || {};
 
