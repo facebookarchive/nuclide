@@ -11,6 +11,7 @@
 
 import {CompositeDisposable} from 'atom';
 import {DebuggingActivation} from './debugging/DebuggingActivation';
+import {PackagerActivation} from './packager/PackagerActivation';
 
 export class Activation {
   _disposables: CompositeDisposable;
@@ -18,6 +19,7 @@ export class Activation {
   constructor(state: ?Object) {
     this._disposables = new CompositeDisposable(
       new DebuggingActivation(),
+      new PackagerActivation(),
     );
   }
 

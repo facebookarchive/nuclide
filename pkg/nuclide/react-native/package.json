@@ -11,7 +11,10 @@
   "activationCommands": {
     "atom-workspace": [
       "nuclide-react-native:start-debugging",
-      "nuclide-react-native:stop-debugging"
+      "nuclide-react-native:stop-debugging",
+      "nuclide-react-native:start-packager",
+      "nuclide-react-native:stop-packager",
+      "nuclide-react-native:restart-packager"
     ]
   }
 }
