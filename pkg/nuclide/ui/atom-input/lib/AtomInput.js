@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/*eslint-disable react/prop-types */
+
 const classNames = require('classnames');
 const {CompositeDisposable} = require('atom');
 const {
@@ -16,26 +18,46 @@ const {
   ReactDOM,
 } = require('react-for-atom');
 
-const {PropTypes} = React;
+const ENTER_KEY_CODE = 13;
+const ESCAPE_KEY_CODE = 27;
+
+type DefaultProps = {
+  disabled: boolean;
+  initialValue: string;
+  placeholderText: ?string;
+  onClick: () => void;
+  onDidChange: () => void;
+  onFocus: () => void;
+  onBlur: () => void;
+  unstyled: boolean;
+};
+
+type Props = {
+  className: string;
+  disabled: boolean;
+  initialValue: string;
+  placeholderText: string;
+  onFocus: () => mixed;
+  onClick: (event: SyntheticMouseEvent) => mixed;
+  onDidChange: (text: string) => mixed;
+  onConfirm: () => mixed;
+  onCancel: () => mixed;
+  onBlur: () => mixed;
+  size: 'xs' | 'sm' | 'lg';
+  unstyled: boolean;
+
+};
+
+type State = {
+  value: string;
+}
 
 /**
  * An input field rendered as an <atom-text-editor mini />.
  */
-class AtomInput extends React.Component {
+class AtomInput extends React.Component<DefaultProps, Props, State> {
 
   _disposables: ?CompositeDisposable;
-
-  static propTypes = {
-    disabled: PropTypes.bool,
-    initialValue: PropTypes.string.isRequired,
-    placeholderText: PropTypes.string,
-    onFocus: PropTypes.func,
-    onClick: PropTypes.func,
-    onDidChange: PropTypes.func,
-    onBlur: PropTypes.func,
-    size: PropTypes.oneOf(['xs', 'sm', 'lg']),
-    unstyled: PropTypes.bool,
-  };
 
   static defaultProps = {
     disabled: false,
@@ -48,11 +70,13 @@ class AtomInput extends React.Component {
     unstyled: false,
   };
 
-  constructor(props: Object) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       value: props.initialValue,
     };
+
+    this._analyzeKeyCodes = this._analyzeKeyCodes.bind(this);
   }
 
   componentDidMount(): void {
@@ -102,7 +126,7 @@ class AtomInput extends React.Component {
   }
 
   render(): ReactElement {
-    const className = classNames({
+    const className = classNames(this.props.className, {
       'atom-text-editor-unstyled': this.props.unstyled,
       [`atom-text-editor-${this.props.size}`]: (this.props.size != null),
     });
@@ -113,6 +137,7 @@ class AtomInput extends React.Component {
         mini
         onClick={this.props.onClick}
         onFocus={this.props.onFocus}
+        onKeyUp={this._analyzeKeyCodes}
         onBlur={this.props.onBlur}>
         {this.state.value}
       </atom-text-editor>
@@ -137,6 +162,21 @@ class AtomInput extends React.Component {
 
   _getTextEditorElement(): atom$TextEditorElement {
     return ReactDOM.findDOMNode(this);
+  }
+
+  _analyzeKeyCodes(event: SyntheticKeyboardEvent): void {
+    switch (event.keyCode) {
+      case ENTER_KEY_CODE:
+        if (this.props.onConfirm != null) {
+          this.props.onConfirm();
+        }
+        break;
+      case ESCAPE_KEY_CODE:
+        if (this.props.onCancel != null) {
+          this.props.onCancel();
+        }
+        break;
+    }
   }
 
   focus(): void {
