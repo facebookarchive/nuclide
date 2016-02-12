@@ -11,23 +11,32 @@
 
 const invariant = require('assert');
 const path = require('path');
-const {observeLanguageTextEditors} = require('../lib/main');
+const {observeLanguageTextEditors, observeGrammarForTextEditors} = require('../lib/main');
 
 describe('observeLanguageTextEditors', () => {
-  atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/objective-c.cson'));
-  const objcGrammar = atom.grammars.grammarForScopeName('source.objc');
-  invariant(objcGrammar);
-  atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/java.cson'));
-  const javaGrammar = atom.grammars.grammarForScopeName('source.java');
-  invariant(javaGrammar);
-  atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/javascript.cson'));
-  const jsGrammar = atom.grammars.grammarForScopeName('source.js');
-  const nullGrammar = atom.grammars.grammarForScopeName('text.plain.null-grammar');
+  let objcGrammar;
+  let javaGrammar;
+  let jsGrammar;
+  let nullGrammar;
+  let grammarScopes;
 
-  const grammarScopes = [
-    objcGrammar.scopeName,
-    javaGrammar.scopeName,
-  ];
+  beforeEach(() => {
+    observeGrammarForTextEditors.__reset__();
+    atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/objective-c.cson'));
+    objcGrammar = atom.grammars.grammarForScopeName('source.objc');
+    invariant(objcGrammar);
+    atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/java.cson'));
+    javaGrammar = atom.grammars.grammarForScopeName('source.java');
+    invariant(javaGrammar);
+    atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/javascript.cson'));
+    jsGrammar = atom.grammars.grammarForScopeName('source.js');
+    nullGrammar = atom.grammars.grammarForScopeName('text.plain.null-grammar');
+
+    grammarScopes = [
+      objcGrammar.scopeName,
+      javaGrammar.scopeName,
+    ];
+  });
 
   describe('without cleanup function', () => {
     it('calls for existing text editors that match the grammars', () => {
@@ -63,6 +72,7 @@ describe('observeLanguageTextEditors', () => {
         const fn: any = jasmine.createSpy('fn');
         const subscription = observeLanguageTextEditors(grammarScopes, fn);
 
+        // $FlowIssue
         const textEditor = await atom.workspace.open();
         textEditor.setGrammar(objcGrammar);
 
@@ -93,6 +103,7 @@ describe('observeLanguageTextEditors', () => {
         const fn: any = jasmine.createSpy('fn');
         const subscription = observeLanguageTextEditors(grammarScopes, fn);
 
+        // $FlowIssue
         const textEditor = await atom.workspace.open('file.m');
         textEditor.setGrammar(javaGrammar);
 

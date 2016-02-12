@@ -73,9 +73,8 @@ class GrammarForTextEditorsListener {
   }
 }
 
-const listeners: WeakMap<atom$Workspace, GrammarForTextEditorsListener> = new WeakMap();
+let grammarForTextEditorsListener: ?GrammarForTextEditorsListener;
 
-module.exports =
 /**
  * Use this to perform an action on every text editor with its latest grammar.
  *
@@ -85,13 +84,19 @@ module.exports =
 function observeGrammarForTextEditors(
   fn: (textEditor: TextEditor, grammar: atom$Grammar) => void,
 ): IDisposable {
-  // The listener should be a global singleton but workspaces are destroyed
-  // between each test run so we need to reinstantiate the listener to attach
-  // to the current workspace.
-  let listener = listeners.get(atom.workspace);
-  if (!listener) {
-    listener = new GrammarForTextEditorsListener();
-    listeners.set(atom.workspace, listener);
+  if (!grammarForTextEditorsListener) {
+    grammarForTextEditorsListener = new GrammarForTextEditorsListener();
   }
-  return listener.observeGrammarForTextEditors(fn);
-};
+  return grammarForTextEditorsListener.observeGrammarForTextEditors(fn);
+}
+
+if (atom.inSpecMode()) {
+  observeGrammarForTextEditors.__reset__ = function() {
+    if (grammarForTextEditorsListener) {
+      grammarForTextEditorsListener.dispose();
+      grammarForTextEditorsListener = null;
+    }
+  };
+}
+
+module.exports = observeGrammarForTextEditors;

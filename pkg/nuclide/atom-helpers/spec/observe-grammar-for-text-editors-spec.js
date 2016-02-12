@@ -13,10 +13,18 @@ const path = require('path');
 const {observeGrammarForTextEditors} = require('../lib/main');
 
 describe('observeGrammarForTextEditors', () => {
-  atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/objective-c.cson'));
-  const objcGrammar = atom.grammars.grammarForScopeName('source.objc');
-  atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/javascript.cson'));
-  const jsGrammar = atom.grammars.grammarForScopeName('source.js');
+  let objcGrammar;
+  let jsGrammar;
+
+  beforeEach(() => {
+    observeGrammarForTextEditors.__reset__();
+    // The grammar registry is cleared automatically after Atom 1.3.0+
+    atom.grammars.clear();
+    atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/objective-c.cson'));
+    objcGrammar = atom.grammars.grammarForScopeName('source.objc');
+    atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/javascript.cson'));
+    jsGrammar = atom.grammars.grammarForScopeName('source.js');
+  });
 
   it('calls for existing text editors', () => {
     waitsForPromise(async () => {
@@ -28,6 +36,7 @@ describe('observeGrammarForTextEditors', () => {
       expect(fn.callCount).toBe(1);
 
       subscription.dispose();
+      textEditor.destroy();
     });
   });
 
@@ -41,6 +50,7 @@ describe('observeGrammarForTextEditors', () => {
       expect(fn.callCount).toBe(1);
 
       subscription.dispose();
+      textEditor.destroy();
     });
   });
 
@@ -57,6 +67,7 @@ describe('observeGrammarForTextEditors', () => {
       expect(fn.callCount).toBe(2);
 
       subscription.dispose();
+      textEditor.destroy();
     });
   });
 
@@ -74,6 +85,7 @@ describe('observeGrammarForTextEditors', () => {
       expect(fn.callCount).toBe(1);
 
       subscription.dispose();
+      textEditor.destroy();
     });
   });
 
@@ -97,6 +109,7 @@ describe('observeGrammarForTextEditors', () => {
       expect(fn2.callCount).toBe(2);
 
       subscription2.dispose();
+      textEditor.destroy();
     });
   });
 });

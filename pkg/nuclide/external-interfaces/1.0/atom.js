@@ -984,6 +984,9 @@ declare class atom$GrammarRegistry {
   removeGrammarForScopeName(scopeName: string): ?atom$Grammar,
   loadGrammarSync(grammarPath: string): atom$Grammar,
   selectGrammar(filePath: string, fileContents: string): atom$Grammar,
+
+  // Private API
+  clear(): IDisposable,
 }
 
 type atom$KeyBinding = Object;
