@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-import {checkOutput, safeSpawn} from './process';
+import {denodeify} from './promises';
+import {safeSpawn} from './process';
+
+const which = denodeify(require('which'));
 
 let SCRIBE_CAT_COMMAND = 'scribe_cat';
 
@@ -34,8 +37,12 @@ export class ScribeProcess {
    * Check if `scribe_cat` exists in PATH.
    */
   static async isScribeCatOnPath(): Promise<boolean> {
-    const {exitCode} = await checkOutput('which', [SCRIBE_CAT_COMMAND]);
-    return exitCode === 0;
+    try {
+      await which(SCRIBE_CAT_COMMAND);
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 
   /**

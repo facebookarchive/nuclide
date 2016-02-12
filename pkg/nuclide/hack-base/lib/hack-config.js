@@ -9,8 +9,12 @@
  * the root directory of this source tree.
  */
 
-import {findNearestFile, checkOutput} from '../../commons';
+import {
+  denodeify,
+  findNearestFile,
+} from '../../commons';
 const logger = require('../../logging').getLogger();
+const which = denodeify(require('which'));
 
 const HACK_CONFIG_FILE_NAME = '.hhconfig';
 const PATH_TO_HH_CLIENT = 'hh_client';
@@ -33,8 +37,13 @@ export function findHackConfigDir(localFile: string): Promise<?string> {
 
 // Returns the empty string on failure
 async function findHackCommand(): Promise<string> {
-  // `stdout` would be empty if there is no such command.
-  return (await checkOutput('which', [PATH_TO_HH_CLIENT])).stdout.trim();
+  let foundHackCommand;
+  try {
+    foundHackCommand = await which(PATH_TO_HH_CLIENT);
+  } catch (error) {
+    foundHackCommand = '';
+  }
+  return foundHackCommand;
 }
 
 export function setHackCommand(newHackCommand: string): void {
