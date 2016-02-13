@@ -355,7 +355,7 @@ export default class RepositoryStack {
   }
 
   async fetchHgDiff(filePath: NuclideUri): Promise<HgDiffState> {
-    const {compareCommitId} = await this.getCachedRevisionsStatePromise();
+    const {revisions, commitId, compareCommitId} = await this.getCachedRevisionsStatePromise();
     const committedContents = await this._repository
       .fetchFileContentAtRevision(filePath, compareCommitId ? `${compareCommitId}` : null)
       // If the file didn't exist on the previous revision, return empty contents.
@@ -364,9 +364,17 @@ export default class RepositoryStack {
     // Intentionally fetch the filesystem contents after getting the committed contents
     // to make sure we have the latest filesystem version.
     const filesystemContents = await getFileSystemContents(filePath);
+
+    const fetchedRevisionId = compareCommitId != null ? compareCommitId : commitId;
+    const [revisionInfo] = revisions.filter(revision => revision.id === fetchedRevisionId);
+    invariant(
+      revisionInfo,
+      `Diff Viw Fetcher: revision with id ${fetchedRevisionId} not found`,
+    );
     return {
       committedContents,
       filesystemContents,
+      revisionInfo,
     };
   }
 

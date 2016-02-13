@@ -36,6 +36,17 @@ const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
 const FILE_CHANGE_DEBOUNCE_MS = 200;
 const UI_CHANGE_DEBOUNCE_MS = 100;
 
+function getInitialFileChangeState(): FileChangeState {
+  return {
+    fromRevisionTitle: 'No file selected',
+    toRevisionTitle: 'No file selected',
+    filePath: '',
+    oldContents: '',
+    newContents: '',
+    compareRevisionInfo: null,
+  };
+}
+
 class DiffViewModel {
 
   _emitter: Emitter;
@@ -68,11 +79,7 @@ class DiffViewModel {
       UI_CHANGE_DEBOUNCE_MS,
       false,
     );
-    this._setActiveFileState({
-      filePath: '',
-      oldContents: '',
-      newContents: '',
-    });
+    this._setActiveFileState(getInitialFileChangeState());
   }
 
   _updateRepositories(): void {
@@ -156,11 +163,16 @@ class DiffViewModel {
       if (!filePath || !reloadFileDiff) {
         return;
       }
-      const {committedContents, filesystemContents} = await this._fetchHgDiff(filePath);
+      const {
+        committedContents,
+        filesystemContents,
+        revisionInfo,
+      } = await this._fetchHgDiff(filePath);
       await this._updateDiffStateIfChanged(
         filePath,
         committedContents,
         filesystemContents,
+        revisionInfo,
       );
     }
   }
@@ -195,11 +207,14 @@ class DiffViewModel {
     const filesystemContents = await getFileSystemContents(filePath);
     const {
       oldContents: committedContents,
+      compareRevisionInfo: revisionInfo,
     } = this._activeFileState;
+    invariant(revisionInfo, 'Diff View: Revision info must be defined to update changed state');
     await this._updateDiffStateIfChanged(
       filePath,
       committedContents,
       filesystemContents,
+      revisionInfo,
     );
   }
 
@@ -223,49 +238,47 @@ class DiffViewModel {
     filePath: NuclideUri,
     committedContents: string,
     filesystemContents: string,
+    revisionInfo: RevisionInfo,
   ): Promise<void> {
-    const {filePath: activeFilePath, newContents, savedContents} = this._activeFileState;
+    const {
+      filePath: activeFilePath,
+      newContents,
+      savedContents,
+    } = this._activeFileState;
     if (filePath !== activeFilePath) {
       return Promise.resolve();
     }
+    const updatedDiffState = {
+      committedContents,
+      filesystemContents,
+      revisionInfo,
+    };
     if (savedContents === newContents || filesystemContents === newContents) {
-      return this._updateDiffState(filePath, {
-        committedContents,
-        filesystemContents,
-      });
+      return this._updateDiffState(filePath, updatedDiffState);
     }
     // The user have edited since the last update.
     if (filesystemContents === savedContents) {
       // The changes haven't touched the filesystem, keep user edits.
-      return this._updateDiffState(filePath, {
-        committedContents,
-        filesystemContents: newContents,
-      });
+      return this._updateDiffState(
+        filePath,
+        {...updatedDiffState, filesystemContents: newContents},
+      );
     } else {
       // The committed and filesystem state have changed, notify of override.
       notifyFilesystemOverrideUserEdits(filePath);
-      return this._updateDiffState(filePath, {
-        committedContents,
-        filesystemContents,
-      });
+      return this._updateDiffState(filePath, updatedDiffState);
     }
   }
 
   setNewContents(newContents: string): void {
-    const {filePath, oldContents, savedContents, inlineComponents} = this._activeFileState;
-    this._setActiveFileState({
-      filePath,
-      oldContents,
-      newContents,
-      savedContents,
-      inlineComponents,
-    });
+    this._setActiveFileState({...this._activeFileState, newContents});
   }
 
   setRevision(revision: RevisionInfo): void {
     track('diff-view-set-revision');
     const repositoryStack = this._activeRepositoryStack;
     invariant(repositoryStack, 'There must be an active repository stack!');
+    this._activeFileState = {...this._activeFileState, compareRevisionInfo: revision};
     repositoryStack.setRevision(revision).catch(notifyInternalError);
   }
 
@@ -285,21 +298,23 @@ class DiffViewModel {
     const {
       committedContents: oldContents,
       filesystemContents: newContents,
+      revisionInfo,
     } = hgDiffState;
-    this._setActiveFileState({
+    const {hash, bookmarks} = revisionInfo;
+    const newFileState = {
       filePath,
       oldContents,
       newContents,
       savedContents: newContents,
-    });
+      compareRevisionInfo: revisionInfo,
+      fromRevisionTitle: `${hash}` + (bookmarks.length === 0 ? '' : ` - (${bookmarks.join(', ')})`),
+      toRevisionTitle: 'Filesystem / Editor',
+    };
+    this._setActiveFileState(newFileState);
+    // TODO(most): Fix: this assumes that the editor contents aren't changed while
+    // fetching the comments, that's okay now because we don't fetch them.
     const inlineComponents = await this._fetchInlineComponents();
-    this._setActiveFileState({
-      filePath,
-      oldContents,
-      newContents,
-      savedContents: newContents,
-      inlineComponents,
-    });
+    this._setActiveFileState({...newFileState, inlineComponents});
   }
 
   _setActiveFileState(state: FileChangeState): void {
@@ -427,11 +442,7 @@ class DiffViewModel {
       this._activeRepositoryStack.deactivate();
       this._activeRepositoryStack = null;
     }
-    this._setActiveFileState({
-      filePath: '',
-      oldContents: '',
-      newContents: '',
-    });
+    this._setActiveFileState(getInitialFileChangeState());
   }
 
   dispose(): void {

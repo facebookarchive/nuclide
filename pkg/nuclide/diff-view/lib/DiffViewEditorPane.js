@@ -25,6 +25,7 @@ import invariant from 'assert';
 const CHANGE_DEBOUNCE_DELAY_MS = 5;
 
 type Props = {
+  headerTitle: string,
   filePath: NuclideUri,
   textBuffer: atom$TextBuffer,
   offsets: OffsetMap,
@@ -125,10 +126,17 @@ export default class DiffViewEditorPane extends React.Component {
 
   render(): ReactElement {
     return (
-      <AtomTextEditor
-        ref="editor"
-        readOnly={this.props.readOnly}
-        textBuffer={this.props.textBuffer} />
+      <div className="nuclide-diff-editor-container">
+        <div className="panel-heading text-center nuclide-diff-editor-header">
+          {this.props.headerTitle}
+        </div>
+        <div className="nuclide-diff-editor-wrapper">
+          <AtomTextEditor
+            ref="editor"
+            readOnly={this.props.readOnly}
+            textBuffer={this.props.textBuffer} />
+        </div>
+      </div>
     );
   }
 

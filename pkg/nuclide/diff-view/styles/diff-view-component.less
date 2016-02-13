@@ -196,6 +196,25 @@ atom-text-editor, atom-text-editor::shadow {
   width: 100%;
 }
 
+.nuclide-diff-editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.nuclide-diff-editor-wrapper {
+  flex-grow: 1;
+  position: relative;
+}
+
+.nuclide-diff-editor-header {
+  padding: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .nuclide-diff-view-navigation-target {
   position: absolute;
   width: 100%;

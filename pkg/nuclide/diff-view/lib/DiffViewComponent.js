@@ -33,9 +33,10 @@ type Props = {
 };
 
 type EditorState = {
-  text: string,
-  savedContents?: string,
-  offsets: OffsetMap,
+  revisionTitle: string;
+  text: string;
+  savedContents?: string;
+  offsets: OffsetMap;
   highlightedLines: {
     added: Array<number>,
     removed: Array<number>,
@@ -48,6 +49,19 @@ type State = {
   oldEditorState: EditorState,
   newEditorState: EditorState,
 };
+
+function initialEditorState(): EditorState {
+  return {
+    revisionTitle: '',
+    text: '',
+    offsets: new Map(),
+    highlightedLines: {
+      added: [],
+      removed: [],
+    },
+    inlineElements: [],
+  };
+}
 
 /* eslint-disable react/prop-types */
 class DiffViewComponent extends React.Component {
@@ -75,28 +89,10 @@ class DiffViewComponent extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    const oldEditorState = {
-      text: '',
-      offsets: new Map(),
-      highlightedLines: {
-        added: [],
-        removed: [],
-      },
-      inlineElements: [],
-    };
-    const newEditorState = {
-      text: '',
-      offsets: new Map(),
-      highlightedLines: {
-        added: [],
-        removed: [],
-      },
-      inlineElements: [],
-    };
     this.state = {
       filePath: '',
-      oldEditorState,
-      newEditorState,
+      oldEditorState: initialEditorState(),
+      newEditorState: initialEditorState(),
     };
     this._boundHandleNewOffsets = this._handleNewOffsets.bind(this);
     this._boundUpdateLineDiffState = this._updateLineDiffState.bind(this);
@@ -190,6 +186,7 @@ class DiffViewComponent extends React.Component {
     invariant(this._oldEditorPane);
     this._oldEditorComponent = ReactDOM.render(
         <DiffViewEditorPane
+          headerTitle={oldState.revisionTitle}
           textBuffer={this._readonlyBuffer}
           filePath={filePath}
           offsets={oldState.offsets}
@@ -205,6 +202,7 @@ class DiffViewComponent extends React.Component {
     invariant(this._newEditorPane);
     this._newEditorComponent = ReactDOM.render(
         <DiffViewEditorPane
+          headerTitle={newState.revisionTitle}
           textBuffer={textBuffer}
           filePath={filePath}
           offsets={newState.offsets}
@@ -323,13 +321,22 @@ class DiffViewComponent extends React.Component {
    * Updates the line diff state on active file state change.
    */
   _updateLineDiffState(fileState: FileChangeState): void {
-    const {oldContents, newContents, savedContents, filePath, inlineComponents} = fileState;
+    const {
+      filePath,
+      oldContents,
+      newContents,
+      savedContents,
+      inlineComponents,
+      fromRevisionTitle,
+      toRevisionTitle,
+    } = fileState;
 
     const {computeDiff} = require('./diff-utils');
     const {addedLines, removedLines, oldLineOffsets, newLineOffsets} =
       computeDiff(oldContents, newContents);
 
     const oldEditorState = {
+      revisionTitle: fromRevisionTitle,
       text: oldContents,
       offsets: oldLineOffsets,
       highlightedLines: {
@@ -339,6 +346,7 @@ class DiffViewComponent extends React.Component {
       inlineElements: inlineComponents || [],
     };
     const newEditorState = {
+      revisionTitle: toRevisionTitle,
       text: newContents,
       savedContents,
       offsets: newLineOffsets,
