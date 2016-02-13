@@ -180,6 +180,21 @@ the language, and Atom will then change its syntax highlighting appropriately.
 Assuming your project is under source control, the status bar also shows the current branch on
 which you are working.
 
+## Gutter
+
+Atom has a [gutter](https://atom.io/docs/latest/getting-started-atom-basics#basic-terminology) that
+shows you information such as current line number, source control status and function/method
+folding. Nuclide has added further features to the gutter, including setting breakpoints for the
+debugger and showing diagnostics for supported languages.
+
+![](/static/images/docs/editor-basics-gutter-intro.png)
+
+### Code Diagnostics
+
+If you hover over the code diagnostics errors, an inline window will appear showing the problem.
+
+![](/static/images/docs/editor-basics-gutter-code-diagnostics.png)
+
 ## Command Palette
 
 Atom is highly flexible in how you perform actions. Nuclide adds actions as well. There is a
