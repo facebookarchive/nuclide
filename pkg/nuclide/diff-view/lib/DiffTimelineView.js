@@ -103,7 +103,6 @@ class RevisionsTimelineComponent extends React.Component {
 
     return (
       <div className="revision-timeline-wrap">
-        <h3 className="text-center timeline-header">Revision Timeline</h3>
         <div className="revision-selector">
           <div className="revisions">
             {latestToOldestRevisions.map((revision, i) =>

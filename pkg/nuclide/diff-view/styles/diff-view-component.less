@@ -11,6 +11,8 @@
   display: flex;
 
   .nuclide-diff-view-tree {
+    z-index: 3;
+    border-top: 1px solid @pane-item-border-color;
     -webkit-user-select: none;
     white-space: nowrap;
     padding-left: 10px;
@@ -27,10 +29,13 @@
   }
 
   .diff-timeline {
+    z-index: 3;
+    border-top: 1px solid @pane-item-border-color;
     width: 100%;
     color: @text-color;
 
     .revision-timeline-wrap {
+      padding-top: 12px;
       height: 100%;
       overflow: auto;
     }
@@ -213,6 +218,11 @@ atom-text-editor, atom-text-editor::shadow {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.nuclide-diff-commit-view {
+  z-index: 3;
+  border-top: 1px solid @pane-item-border-color;
 }
 
 .nuclide-diff-view-navigation-target {
