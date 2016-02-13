@@ -2,7 +2,7 @@
   text: >
     Connect to your remote servers, and get full access to the file tree within Nuclide.  
     
-    [**Get Started**](/docs/remote/)
+    [**Get Started**](/docs/features/remote/)
   image: images/docs/NuclideRemote.gif
   
 - title: Developing JavaScript
@@ -26,6 +26,6 @@
     Local changes to files in a Mercurial repo will be reflected in Atom's file tree and UI, as 
     Atom does natively for Git repos.  
     
-    [**Read More**](/docs/hg/)
+    [**Read More**](/docs/features/hg/)
   image: images/docs/MercurialFileTreeLineColours.png
 

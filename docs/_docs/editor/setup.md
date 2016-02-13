@@ -116,7 +116,7 @@ After installation, running `Atom` will automatically load Nuclide.
 ### Installing Nuclide Server
 
 If you want to use Nuclide for remote development, you'll also need to setup the NPM `nuclide`
-package. Instructions can be found in the [Remote Development docs](/docs/remote/).
+package. Instructions can be found in the [Remote Development docs](/docs/features/remote/).
 
 ### Other Installations
 
@@ -124,7 +124,7 @@ To benefit from all of Nuclide's features, we recommend you also install the fol
 
 * [Flow](/docs/languages/flow/)
 * [Hack](/docs/languages/hack/)
-* [Mercurial](/docs/hg/)
+* [Mercurial](/docs/features/hg/)
 * [Watchman](https://facebook.github.io/watchman/) - version 3.2 or above. It must be in
   `/usr/local/bin/` or in your `$PATH`. Without Watchman, Nuclide will lose some functionality: for
   instance, in the

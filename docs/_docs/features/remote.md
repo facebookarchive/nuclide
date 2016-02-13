@@ -2,7 +2,7 @@
 id: feature-remote
 title: Remote Development
 layout: docs
-permalink: /docs/remote/
+permalink: /docs/features/remote/
 ---
 
 ![Nuclide connecting to a remote server](/static/images/docs/NuclideRemote.gif)

@@ -40,7 +40,7 @@ create new files and folders, etc.
 
 The first time you open Nuclide, there will be no projects or files open. Instead you will see two
 options in the explorer. The first is to open a local project. The second is to open a project on a
-[remote machine](/docs/remote/).
+[remote machine](/docs/features/remote/).
 
 ![](/static/images/docs/editor-basics-adding-projects.png)
 
