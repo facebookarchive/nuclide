@@ -11,14 +11,15 @@
 
 const DirectoryEntryComponent = require('./DirectoryEntryComponent');
 const FileEntryComponent = require('./FileEntryComponent');
+const FileTreeNode = require('../lib/FileTreeNode');
 const {
   React,
   ReactDOM,
 } = require('react-for-atom');
-
-import type FileTreeNode from '../lib/FileTreeNode';
+const {track} = require('../../analytics');
 
 const {PropTypes} = React;
+const {performance} = global;
 
 class RootNodeComponent extends React.Component {
   static propTypes = {
@@ -27,11 +28,20 @@ class RootNodeComponent extends React.Component {
   };
 
   render(): ReactElement {
-    return (
+    const renderStart = performance.now();
+    const children = this._renderNode(this.props.rootNode, 0);
+    const rootNodeComponent = (
       <ol className="list-tree has-collapsable-children">
-        {this._renderNode(this.props.rootNode, 0)}
+        {children}
       </ol>
     );
+
+    track('filetree-root-node-component-render', {
+      'filetree-root-node-component-render-duration': (performance.now() - renderStart).toString(),
+      'filetree-root-node-component-rendered-child-count': children.length.toString(),
+    });
+
+    return rootNodeComponent;
   }
 
   _renderNode(node: FileTreeNode, indentLevel: number): Array<ReactElement> {
