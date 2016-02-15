@@ -24,7 +24,7 @@ $ apm install nuclide
 
 ### Server Installation
 
-Nuclide supports [Remote Development](http://nuclide.io/docs/remote/) via a process that runs on the
+Nuclide supports [Remote Development](http://nuclide.io/docs/features/remote/) via a process that runs on the
 remote machine where you want to edit files. Nuclide's server is distributed as the
 ['nuclide' NPM package](https://www.npmjs.com/package/nuclide). This is optional and only needed if
 you want to edit remote files from within Atom+Nuclide. To install the server, run the following
