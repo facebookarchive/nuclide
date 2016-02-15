@@ -62,7 +62,11 @@ export class DbgpMessageHandler {
 
     // Verify that we can't get another message without completing previous one.
     if (prevIncompletedMessage && components.length !== 0) {
-      logger.logErrorAndThrow(`Error: got extra messages without completing previous message.`);
+      logger.logErrorAndThrow(
+        `Error: got extra messages without completing previous message. ` +
+        `Previous message was: ${prevIncompletedMessage}. ` +
+        `Remaining components: ${JSON.stringify(components)}`,
+      );
     }
 
     const isIncompleteResponse = (components.length % 2 === 0);
@@ -98,8 +102,11 @@ export class DbgpMessageHandler {
         content: components.shift(),
       };
       if (!this._isCompletedMessage(message)) {
-        logger.logErrorAndThrow(`Got message length(${message.content.length})` +
-          ` not equal to expected(${message.length}).`);
+        logger.logErrorAndThrow(
+          `Got message length(${message.content.length}) ` +
+          `not equal to expected(${message.length}). ` +
+          `Message was: ${JSON.stringify(message)}`,
+        );
       }
       results.push(this._parseXml(message));
     }

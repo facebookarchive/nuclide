@@ -146,7 +146,7 @@ describe('debugger-hhvm-proxy DbgpMessageHandler', () => {
 
     expect(() => {
       messageHandler.parseMessages(messagePart2 + '\x00' + completedMessage2);
-    }).toThrow(new Error('Error: got extra messages without completing previous message.'));
+    }).toThrow();
   });
 
   it('got incompleted message in the middle of array', () => {
