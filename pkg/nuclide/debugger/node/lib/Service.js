@@ -15,10 +15,12 @@ const Session = require('../VendorLib/node-inspector/lib/session');
 
 import invariant from 'assert';
 import {DebuggerInstance, DebuggerProcessInfo} from '../../atom';
+import Rx from 'rx';
 
 import type {NuclideUri} from '../../../remote-uri';
 
 class NodeDebuggerInstance extends DebuggerInstance {
+  _close$: Rx.Subject<mixed>;
   _debugPort: number;
   _server: ?WebSocketServer;
   _sessionEndCallback: ?() => void;
@@ -27,6 +29,8 @@ class NodeDebuggerInstance extends DebuggerInstance {
     super(processInfo);
     this._debugPort = debugPort;
     this._server = null;
+    this._close$ = new Rx.Subject();
+    this._close$.first().subscribe(() => { this.dispose(); });
   }
 
   dispose() {
@@ -46,23 +50,15 @@ class NodeDebuggerInstance extends DebuggerInstance {
           preload: false, // This makes the node inspector not load all the source files on startup.
         };
         const session = new Session(config, this._debugPort, websocket);
-        session.on('close', this._handleSessionEnd.bind(this));
+        Rx.Observable.fromEvent(session, 'close').subscribe(this._close$);
       });
     }
     // create an instance of DebugServer, and get its ws port.
     return Promise.resolve(`ws=localhost:${wsPort}/`);
   }
 
-  _handleSessionEnd(): void {
-    if (this._sessionEndCallback) {
-      this._sessionEndCallback();
-    }
-    this.dispose();
-  }
-
-  onSessionEnd(callback: () => void): Disposable {
-    this._sessionEndCallback = callback;
-    return (new Disposable(() => this._sessionEndCallback = null));
+  onSessionEnd(callback: () => mixed): Disposable {
+    return this._close$.first().subscribe(callback);
   }
 }
 
@@ -127,4 +123,5 @@ function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
 module.exports = {
   name: 'node',
   getProcessInfoList,
+  NodeDebuggerInstance,
 };

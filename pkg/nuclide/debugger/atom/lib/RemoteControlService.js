@@ -73,6 +73,15 @@ class RemoteControlService {
         }
       });
   }
+
+  async startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
+    const model = this._getModel();
+    if (model == null) {
+      throw new Error('Package is not activated.');
+    }
+    model.getActions().startDebugging(processInfo);
+  }
+
 }
 
 module.exports = RemoteControlService;
