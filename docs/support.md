@@ -18,6 +18,10 @@ questions, find answers, and report issues.
 
 <https://www.facebook.com/groups/nuclide/>
 
+### FAQ
+
+Check out a list of [commonly asked questions](/docs/help/faq) about Nuclide.
+
 ### Troubleshooting
 
 Have installation or other issues, check out our

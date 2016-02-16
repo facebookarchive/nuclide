@@ -7,28 +7,7 @@ permalink: /docs/editor/uninstall/
 
 The uninstallation process for Nuclide differs depending on which version you have installed.
 
-## Determining Installed Version
-
-Determine which version of Nuclide you have installed with
-[Atom Package Manager](https://github.com/atom/apm) (APM) from the command line.
-
-```bash
-$ apm list --no-dev --installed
-```
-
-The output will contain installed Atom packages and their versions.
-
-```bash
-/Users/foobar/.atom/packages (1)
-└── nuclide@X.Y.Z
-```
-
-Your installed version is the number following either the `nuclide` package or the first package
-starting with `nuclide-`. In the example above, the installed version is `X.Y.Z`.
-
-## Uninstalling 'nuclide'
-
-### Current Release
+## Current Release
 
 If you only have the package named 'nuclide' installed, uninstall it with the following command:
 
@@ -36,7 +15,7 @@ If you only have the package named 'nuclide' installed, uninstall it with the fo
 $ apm uninstall nuclide
 ```
 
-#### Re-activate Disabled Core Packages
+### Re-activate Disabled Core Packages
 
 Nuclide replaces Atom's 'tree-view' package in order to support remote file systems. When
 uninstalling Nuclide, you need to re-activate the 'tree-view' package yourself. The following are
@@ -59,7 +38,7 @@ two ways to do that:
         ]
     ```
 
-### v0.0.35 and Prior
+## v0.0.35 and Prior
 
 [Nuclide v0.0.35](https://github.com/facebook/nuclide/releases/tag/v0.0.35) and earlier was released
 as many separate Atom packages. If you have any packages starting with `nuclide-`, you likely have
