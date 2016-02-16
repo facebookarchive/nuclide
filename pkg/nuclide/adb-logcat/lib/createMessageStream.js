@@ -44,10 +44,12 @@ export default function createMessageStream(
       prevMetadata = null;
     };
 
+    const sharedLine$ = line$.share();
+
     return new CompositeDisposable(
 
       // Buffer incoming lines.
-      line$.subscribe(
+      sharedLine$.subscribe(
         // onNext
         line => {
           let metadata;
@@ -82,7 +84,7 @@ export default function createMessageStream(
       // We know *for certain* that we have a complete entry once we see the metadata for the next
       // one. But what if the next one takes a long time to happen? After a certain point, we need
       // to just assume we have the complete entry and move on.
-      line$.debounce(200).subscribe(flush),
+      sharedLine$.debounce(200).subscribe(flush),
 
     );
 
