@@ -38,9 +38,10 @@ module.exports = {
       return;
     }
 
-    const {registerGrammarForFileExtension} = require('../../atom-helpers');
     subscriptions = new CompositeDisposable();
-    subscriptions.add(registerGrammarForFileExtension('source.json', '.arcconfig'));
+
+    const {registerGrammarForFileExtension} = require('../../atom-helpers');
+    registerGrammarForFileExtension('source.json', '.arcconfig');
   },
 
   dactivate(): void {

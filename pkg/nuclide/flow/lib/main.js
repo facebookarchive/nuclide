@@ -43,7 +43,7 @@ module.exports = {
       disposables = new CompositeDisposable();
 
       const {registerGrammarForFileExtension} = require('../../atom-helpers');
-      disposables.add(registerGrammarForFileExtension('source.ini', '.flowconfig'));
+      registerGrammarForFileExtension('source.ini', '.flowconfig');
     }
   },
 

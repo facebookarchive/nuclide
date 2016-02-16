@@ -9,47 +9,42 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
+const invariant = require('assert');
 
 /**
- * Utility to make it easier to register a file extension with a grammar. For example, it makes
- * sense to associate ".flowconfig" or ".buckconfig" with "source.ini", or "BUCK" with
- * "source.python".
+ * Utility to make it easier to register a file extension with a grammar,
+ * overwriting existing registrations or adding duplicates. The
+ * "core.customFileTypes" config was added in Atom v1.0.8.
+ * https://github.com/atom/atom/releases/tag/v1.0.8
+ *
+ * Note on periods: Using the extension "cats" will match the files "file.cats"
+ *   and "cats". The extension ".cats" will match a file named ".cats".
+ *
  * @param scopeName for the grammar, such as "source.js" or "source.python"
- * @param extension when a file is opened that ends with this extension, its grammar will be updated
- *   to match that of the specified scopeName, if the grammar is available.
+ * @param extension when a file is opened that ends with this extension, its
+ *   grammar will be updated to match that of the specified scopeName, if
+ *   the grammar is available.
+ * @return whether the extension was registered or not.
  */
-function registerGrammarForFileExtension(scopeName: string, extension: string): IDisposable {
-  const subscriptions = new CompositeDisposable();
-
-  // If the grammar that corresponds to the scopeName is already registered, then start monitoring
-  // TextEditors right away. If not, wait for the grammar to be registered before monitoring
-  // TextEditors.
-  const registeredGrammar = atom.grammars.grammarForScopeName(scopeName);
-  if (registeredGrammar) {
-    setEditorObservations(registeredGrammar);
-  } else {
-    const grammarObserver = atom.grammars.onDidAddGrammar((grammar: atom$Grammar) => {
-      if (grammar.scopeName === scopeName) {
-        setEditorObservations(grammar);
-        subscriptions.remove(grammarObserver);
-        grammarObserver.dispose();
-      }
-    });
-    subscriptions.add(grammarObserver);
+function registerGrammarForFileExtension(
+  scopeName: string,
+  extension: string,
+): boolean {
+  let customFileTypes = atom.config.get('core.customFileTypes');
+  if (!customFileTypes || typeof customFileTypes !== 'object') {
+    customFileTypes = {};
   }
-
-  function setEditorObservations(grammar: atom$Grammar) {
-    const subscription = atom.workspace.observeTextEditors((editor: TextEditor) => {
-      const path = editor.getPath();
-      if (path && path.endsWith(extension)) {
-        editor.setGrammar(grammar);
-      }
-    });
-    subscriptions.add(subscription);
+  invariant(customFileTypes);
+  let customFileType = customFileTypes[scopeName];
+  if (!Array.isArray(customFileType)) {
+    customFileType = [];
   }
-
-  return subscriptions;
+  if (customFileType.indexOf(extension) === -1) {
+    customFileTypes[scopeName] = customFileType.concat(extension);
+    atom.config.set('core.customFileTypes', customFileTypes);
+    return true;
+  }
+  return false;
 }
 
 module.exports = registerGrammarForFileExtension;
