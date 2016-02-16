@@ -605,6 +605,23 @@ class FileTreeController {
   _removeRootFolderSelection(): void {
     const rootNode = this._store.getSingleSelectedNode();
     if (rootNode != null && rootNode.isRoot) {
+      // close all the files associated with the project before closing
+      const projectEditors = atom.workspace.getTextEditors();
+      const roots = this._store.getRootKeys();
+      projectEditors.forEach(editor => {
+        const path = editor.getPath();
+        // if the path of the editor is not null AND
+        // is part of the currently selected root that would be removed AND
+        // is not part of any other open root, then close the file.
+        if (
+          path != null &&
+          path.startsWith(rootNode.nodePath) &&
+          roots.filter(root => path.startsWith(root)).length === 1
+        ) {
+          atom.workspace.paneForURI(path).destroyItem(editor);
+        }
+      });
+      // actually close the project
       atom.project.removePath(rootNode.nodePath);
     }
   }
