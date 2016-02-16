@@ -36,7 +36,7 @@ export function getDefaultConnectionProfile(): NuclideRemoteConnectionProfile {
   const currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
 
   const lastConnectionDetails = getSavedConnectionConfig() || {};
-  const lastConfig = lastConnectionDetails.config || {};
+  const lastConfig = lastConnectionDetails.updatedConfig || {};
 
   // Only use the user's last saved remote server command if there has been no
   // change (upgrade) in the official remote server command.
