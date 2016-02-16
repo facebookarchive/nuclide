@@ -30,6 +30,8 @@ const DATATIP_DELAY_MS = 50;
 
 export class DatatipManager {
   _subscriptions: CompositeDisposable;
+  _boundHideDatatip: Function;
+  _globalKeydownSubscription: ?IDisposable;
   _marker: ?atom$Marker;
   _ephemeralDatatipElement: HTMLElement;
   _currentRange: ?atom$Range;
@@ -44,6 +46,7 @@ export class DatatipManager {
   _datatipToggle: boolean;
 
   constructor() {
+    this._boundHideDatatip = this.hideDatatip.bind(this);
     this._subscriptions = new CompositeDisposable();
     this._subscriptions.add(atom.commands.add(
       'atom-text-editor',
@@ -53,7 +56,7 @@ export class DatatipManager {
     this._subscriptions.add(atom.commands.add(
       'atom-text-editor',
       'core:cancel',
-      this.hideDatatip.bind(this)
+      this._boundHideDatatip
     ));
 
     // TODO(most): Replace with @jjiaa's mouseListenerForTextEditor introduced in D2005545.
@@ -95,6 +98,7 @@ export class DatatipManager {
     this._currentRange = null;
     this._isHoveringDatatip = false;
     this._pinnedDatatips = new Set();
+    this._globalKeydownSubscription = null;
   }
 
   toggleDatatip(): void {
@@ -113,6 +117,10 @@ export class DatatipManager {
   hideDatatip(): void {
     if (this._marker == null) {
       return;
+    }
+    if (this._globalKeydownSubscription != null) {
+      this._globalKeydownSubscription.dispose();
+      this._globalKeydownSubscription = null;
     }
     this._ephemeralDatatipElement.style.display = 'none';
     this._marker.destroy();
@@ -261,6 +269,15 @@ export class DatatipManager {
         class: 'nuclide-datatip-highlight-region',
       }
     );
+    this._subscribeToGlobalKeydown();
+  }
+
+  _subscribeToGlobalKeydown(): void {
+    const editor = atom.views.getView(atom.workspace);
+    editor.addEventListener('keydown', this._boundHideDatatip);
+    this._globalKeydownSubscription = new Disposable(() => {
+      editor.removeEventListener('keydown', this._boundHideDatatip);
+    });
   }
 
   _handlePinClicked(editor: TextEditor, datatip: Datatip): void {
