@@ -12,6 +12,7 @@
 import type {FileChangeState, InlineComponent, OffsetMap, DiffModeType} from './types';
 import type DiffViewModel from './DiffViewModel';
 import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
+import type {NuclideUri} from '../../remote-uri';
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable, TextBuffer} from 'atom';
@@ -23,10 +24,12 @@ import DiffViewEditorPane from './DiffViewEditorPane';
 import DiffViewTree from './DiffViewTree';
 import SyncScroll from './SyncScroll';
 import DiffTimelineView from './DiffTimelineView';
+import DiffViewToolbar from './DiffViewToolbar';
 import DiffNavigationBar from './DiffNavigationBar';
 import {createPaneContainer} from '../../atom-helpers';
 import {bufferForUri} from '../../atom-helpers';
 import {DiffMode} from './constants';
+import featureConfig from '../../feature-config';
 
 type Props = {
   diffModel: DiffViewModel,
@@ -46,9 +49,10 @@ type EditorState = {
 
 type State = {
   mode: DiffModeType,
-  filePath: string,
+  filePath: NuclideUri,
   oldEditorState: EditorState,
   newEditorState: EditorState,
+  toolbarVisible: boolean,
 };
 
 function initialEditorState(): EditorState {
@@ -63,6 +67,8 @@ function initialEditorState(): EditorState {
     inlineElements: [],
   };
 }
+
+const TOOLBAR_VISIBLE_SETTING = 'nuclide-diff-view.toolbarVisible';
 
 /* eslint-disable react/prop-types */
 class DiffViewComponent extends React.Component {
@@ -91,9 +97,11 @@ class DiffViewComponent extends React.Component {
 
   constructor(props: Props) {
     super(props);
+    const toolbarVisible = ((featureConfig.get(TOOLBAR_VISIBLE_SETTING): any): boolean);
     this.state = {
       mode: DiffMode.BROWSE_MODE,
       filePath: '',
+      toolbarVisible,
       oldEditorState: initialEditorState(),
       newEditorState: initialEditorState(),
     };
@@ -103,8 +111,16 @@ class DiffViewComponent extends React.Component {
     this._boundOnTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
     this._boundOnNavigationClick = this._onNavigationClick.bind(this);
     this._boundOnDidUpdateTextEditorElement = this._onDidUpdateTextEditorElement.bind(this);
+    this._onChangeMode = this._onChangeMode.bind(this);
+    this._onSwitchToEditor = this._onSwitchToEditor.bind(this);
     this._readonlyBuffer = new TextBuffer();
     this._subscriptions = new CompositeDisposable();
+  }
+
+  componentWillMount(): void {
+    this._subscriptions.add(featureConfig.observe(TOOLBAR_VISIBLE_SETTING, toolbarVisible => {
+      this.setState({toolbarVisible});
+    }));
   }
 
   componentDidMount(): void {
@@ -164,10 +180,7 @@ class DiffViewComponent extends React.Component {
   }
 
   _onChangeMode(mode: DiffModeType): void {
-    this.setState({
-      ...this.state,
-      mode,
-    });
+    this.setState({mode});
   }
 
   _renderDiffView(): void {
@@ -307,9 +320,29 @@ class DiffViewComponent extends React.Component {
   }
 
   render(): ReactElement {
+    let toolbarComponent = null;
+    if (this.state.toolbarVisible) {
+      toolbarComponent = (
+        <DiffViewToolbar
+          filePath={this.state.filePath}
+          diffMode={this.state.mode}
+          onSwitchMode={this._onChangeMode}
+          onSwitchToEditor={this._onSwitchToEditor}
+          />
+      );
+    }
     return (
-      <div className="nuclide-diff-view-component" ref="paneContainer" />
+      <div className="nuclide-diff-view-container">
+        {toolbarComponent}
+        <div className="nuclide-diff-view-component" ref="paneContainer" />
+      </div>
     );
+  }
+
+  _onSwitchToEditor(): void {
+    const diffViewNode = ReactDOM.findDOMNode(this);
+    invariant(diffViewNode, 'Diff View DOM needs to be attached to switch to editor mode');
+    atom.commands.dispatch(diffViewNode, 'nuclide-diff-view:switch-to-editor');
   }
 
   _handleNewOffsets(offsetsFromComponents: Map): void {
@@ -320,7 +353,6 @@ class DiffViewComponent extends React.Component {
       oldLineOffsets.set(row, (oldLineOffsets.get(row) || 0) + offsetAmount);
     });
     this.setState({
-      ...this.state,
       oldEditorState: {...this.state.oldEditorState, offsets: oldLineOffsets},
       newEditorState: {...this.state.newEditorState, offsets: newLineOffsets},
     });
@@ -374,7 +406,6 @@ class DiffViewComponent extends React.Component {
       inlineElements: [],
     };
     this.setState({
-      ...this.state,
       filePath,
       oldEditorState,
       newEditorState,

@@ -3,10 +3,22 @@
 
 @revisionBubbleDiameter: 10px;
 
-.nuclide-diff-view-component {
-  -webkit-user-select: none;
+.nuclide-diff-view-container {
   height: 100%;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  -webkit-user-select: none;
+}
+
+.nuclide-diff-view-toolbar {
+  padding: 4px 4px 0px 4px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.nuclide-diff-view-component {
+  flex-grow: 1;
   /* Let the `<atom-pane-container>` fill the height since it already has `flex: 1` applied. */
   display: flex;
 
