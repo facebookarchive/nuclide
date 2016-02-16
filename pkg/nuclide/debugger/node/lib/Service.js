@@ -77,7 +77,7 @@ class NodeDebuggerProcessInfo extends DebuggerProcessInfo {
     this._command = command;
   }
 
-  attach(): DebuggerInstance {
+  async debug(): Promise<DebuggerInstance> {
     // Enable debugging in the process.
     process.kill(this.pid, 'SIGUSR1');
 

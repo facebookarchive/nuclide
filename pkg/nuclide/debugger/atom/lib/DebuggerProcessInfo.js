@@ -41,11 +41,7 @@ class DebuggerProcessInfo {
     throw new Error('abstract method');
   }
 
-  attach(): DebuggerInstance {
-    throw new Error('abstract method');
-  }
-
-  launch(launchTarget: string): DebuggerInstance {
+  async debug(): Promise<DebuggerInstance> {
     throw new Error('abstract method');
   }
 

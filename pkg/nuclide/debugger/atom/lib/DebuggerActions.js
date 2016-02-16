@@ -18,6 +18,7 @@ import type {nuclide_debugger$Service} from '../../interfaces/service';
 import type DebuggerStoreType from './DebuggerStore';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 import type BridgeType from './Bridge';
+import type DebuggerInstance from './DebuggerInstance';
 
 function track(...args: any) {
   const trackFunc = require('../../../analytics').track;
@@ -45,47 +46,54 @@ class DebuggerActions {
     this._store = store;
   }
 
-  attachToProcess(processInfo: DebuggerProcessInfoType, launchTarget: ?string) {
+  async startDebugging(processInfo: DebuggerProcessInfoType): Promise<void> {
     track(AnalyticsEvents.DEBUGGER_START, {
       serviceName: processInfo.getServiceName(),
     });
-    beginTimerTracking('nuclide-debugger-atom:attachToProcess');
+    beginTimerTracking('nuclide-debugger-atom:startDebugging');
 
     this.killDebugger(); // Kill the existing session.
     this.setError(null);
 
-    let process = null;
-    if (launchTarget) {
-      process = processInfo.launch(launchTarget);
-    } else {
-      process = processInfo.attach();
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
+      data: 'starting',
+    });
+
+    try {
+      const debugSession = await processInfo.debug();
+      await this._waitForChromeConnection(debugSession);
+    } catch (err) {
+      failTimerTracking(err);
+      track(AnalyticsEvents.DEBUGGER_START_FAIL, {});
+      this.setError('Failed to start debugger process: ' + err);
+      this.killDebugger();
     }
+  }
+
+  async _waitForChromeConnection(debugSession: DebuggerInstance): Promise<void> {
     this._dispatcher.dispatch({
       actionType: Constants.Actions.SET_DEBUGGER_PROCESS,
-      data: process,
+      data: debugSession,
     });
 
     // TODO[jeffreytan]: currently only HHVM debugger implements this method
     // investigate if LLDB/Node needs to implement it.
-    if (process.onSessionEnd) {
-      this._disposables.add(process.onSessionEnd(this._handleSessionEnd.bind(this)));
+    if (debugSession.onSessionEnd) {
+      this._disposables.add(debugSession.onSessionEnd(this._handleSessionEnd.bind(this)));
     }
 
-    process.getWebsocketAddress().then(
-      socketAddr => {
-        endTimerTracking();
-        this._dispatcher.dispatch({
-          actionType: Constants.Actions.SET_PROCESS_SOCKET,
-          data: socketAddr,
-        });
-      },
-      err => {
-        failTimerTracking(err);
-        track(AnalyticsEvents.DEBUGGER_START_FAIL, {});
-        this.setError('Failed to start debugger process: ' + err);
-        this.killDebugger();
-      }
-    );
+    const socketAddr = await debugSession.getWebsocketAddress();
+    endTimerTracking();
+
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.SET_PROCESS_SOCKET,
+      data: socketAddr,
+    });
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
+      data: 'debugging',  // Debugger finished initializing and enterig debug mode.
+    });
   }
 
   _handleSessionEnd(): void {
@@ -95,9 +103,9 @@ class DebuggerActions {
   killDebugger() {
     track(AnalyticsEvents.DEBUGGER_STOP);
     endTimerTracking();
-    const process = this._store.getDebuggerProcess();
-    if (process) {
-      process.dispose();
+    const debugSession = this._store.getDebuggerProcess();
+    if (debugSession) {
+      debugSession.dispose();
       this._dispatcher.dispatch({
         actionType: Constants.Actions.SET_DEBUGGER_PROCESS,
         data: null,
@@ -106,6 +114,10 @@ class DebuggerActions {
     this._dispatcher.dispatch({
       actionType: Constants.Actions.SET_PROCESS_SOCKET,
       data: null,
+    });
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
+      data: 'stopped',
     });
   }
 

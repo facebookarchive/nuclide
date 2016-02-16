@@ -18,6 +18,8 @@ import type {nuclide_debugger$Service} from '../../interfaces/service';
 import type DebuggerInstance from './DebuggerInstance';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 
+type DebuggerMode = 'starting' | 'debugging' | 'stopped';
+
 /**
  * Flux style Store holding all data used by the debugger plugin.
  */
@@ -31,6 +33,7 @@ class DebuggerStore {
   _error: ?string;
   _services: Set<nuclide_debugger$Service>;
   _processSocket: ?string;
+  _debuggerMode: DebuggerMode;
 
   constructor(dispatcher: Dispatcher) {
     this._dispatcher = dispatcher;
@@ -41,6 +44,7 @@ class DebuggerStore {
     this._error = null;
     this._services = new Set();
     this._processSocket = null;
+    this._debuggerMode = 'stopped';
   }
 
   dispose() {
@@ -81,6 +85,10 @@ class DebuggerStore {
     return this._processSocket;
   }
 
+  getDebuggerMode(): DebuggerMode {
+    return this._debuggerMode;
+  }
+
   onChange(callback: () => void): Disposable {
     const emitter = this._eventEmitter;
     this._eventEmitter.on('change', callback);
@@ -109,6 +117,9 @@ class DebuggerStore {
         break;
       case Constants.Actions.SET_DEBUGGER_PROCESS:
         this._debuggerProcess = payload.data;
+        break;
+      case Constants.Actions.DEBUGGER_MODE_CHANGE:
+        this._debuggerMode = payload.data;
         break;
       default:
         return;

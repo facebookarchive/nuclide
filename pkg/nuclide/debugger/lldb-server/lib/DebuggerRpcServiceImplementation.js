@@ -41,10 +41,12 @@ export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>
 export class DebuggerConnection {
   _clientCallback: ClientCallback;
   _lldbWebSocket: WebSocket;
+  _lldbProcess: child_process$ChildProcess;
 
-  constructor(lldbWebSocket: WebSocket) {
+  constructor(lldbWebSocket: WebSocket, lldbProcess: child_process$ChildProcess) {
     this._clientCallback = new ClientCallback();
     this._lldbWebSocket = lldbWebSocket;
+    this._lldbProcess = lldbProcess;
     lldbWebSocket.on('message', this._handleLLDBMessage.bind(this));
   }
 
@@ -70,32 +72,27 @@ export class DebuggerConnection {
   async dispose(): Promise<void> {
     log(`DebuggerConnection disposed`);
     this._clientCallback.dispose();
+    this._lldbWebSocket.terminate();
+    this._lldbProcess.kill();
   }
 }
 
 export class DebuggerRpcService {
-  _lldbWebSocket: ?WebSocket;
-  _lldbProcess: ?child_process$ChildProcess;
-
   constructor() {
-    this._lldbWebSocket = null;
-    this._lldbProcess = null;
   }
 
   async attach(pid: number): Promise<DebuggerConnection> {
     log(`attach process: ${pid}`);
     const lldbProcess = this._attachDebuggerToProcess(pid);
-    this._lldbProcess = lldbProcess;
     const lldbWebSocket = await this._connectWithLLDB(lldbProcess);
-    return new DebuggerConnection(lldbWebSocket);
+    return new DebuggerConnection(lldbWebSocket, lldbProcess);
   }
 
   async launch(launchInfo: LaunchTargetInfo): Promise<DebuggerConnection> {
     log(`launch process: ${JSON.stringify(launchInfo)}`);
     const lldbProcess = this._launchExecutableUnderDebugger(launchInfo);
-    this._lldbProcess = lldbProcess;
     const lldbWebSocket = await this._connectWithLLDB(lldbProcess);
-    return new DebuggerConnection(lldbWebSocket);
+    return new DebuggerConnection(lldbWebSocket, lldbProcess);
   }
 
   _attachDebuggerToProcess(pid: number): child_process$ChildProcess {
@@ -136,7 +133,6 @@ export class DebuggerRpcService {
           const lldbWebSocketAddress = `ws://127.0.0.1:${result[1]}/`;
           log(`Connecting lldb with address: ${lldbWebSocketAddress}`);
           const ws = new WebSocket(lldbWebSocketAddress);
-          this._lldbWebSocket = ws;
           ws.on('open', () => {
             // Successfully connected with lldb python process, fulfill the promise.
             resolve(ws);
@@ -157,14 +153,5 @@ export class DebuggerRpcService {
 
   async dispose(): Promise<void> {
     log(`DebuggerRpcService disposed`);
-    const lldbWebSocket = this._lldbWebSocket;
-    if (lldbWebSocket) {
-      lldbWebSocket.terminate();
-      this._lldbWebSocket = null;
-    }
-    const lldbProcess = this._lldbProcess;
-    if (lldbProcess) {
-      lldbProcess.kill();
-    }
   }
 }

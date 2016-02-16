@@ -11,6 +11,7 @@
 
 const {array} = require('../../../commons');
 import type DebuggerModel from './DebuggerModel';
+import type DebuggerProcessInfo from './DebuggerProcessInfo';
 
 class RemoteControlService {
   _getModel: () => ?DebuggerModel;
@@ -27,7 +28,7 @@ class RemoteControlService {
     this._getModel = getModel;
   }
 
-  debugLLDB(pid: number, basepath: string): Promise {
+  debugLLDB(pid: number, basepath: string): Promise<void> {
     // Nullable values are captured as nullable in lambdas, as they may change
     // between lambda capture and lambda evaluation. Assigning to a
     // non-nullable value after checking placates flow in this regard.
@@ -41,33 +42,23 @@ class RemoteControlService {
         const process = array.find(processes, p => p.pid === pid);
         if (process) {
           process.basepath = basepath;
-          model.getActions().attachToProcess(process);
+          model.getActions().startDebugging(process);
         } else {
           throw new Error(`Requested process not found: ${pid}.`);
         }
       });
   }
 
-  debugHhvm(scriptTarget: ?string): Promise {
+  debugHhvm(processInfo: DebuggerProcessInfo): Promise<void> {
     const modelNullable = this._getModel();
     if (!modelNullable) {
       return Promise.reject(new Error('Package is not activated.'));
     }
     const model = modelNullable;
-    return model.getStore().getProcessInfoList('hhvm')
-      .then(processes => {
-        // TODO[jeffreytan]: currently HHVM debugger getProcessInfoList() always
-        // returns the first remote server for attaching we should modify it to
-        // return all available remote servers.
-        if (processes.length > 0) {
-          model.getActions().attachToProcess(processes[0], scriptTarget);
-        } else {
-          Promise.reject('No hhvm process to debug.');
-        }
-      });
+    return model.getActions().startDebugging(processInfo);
   }
 
-  debugNode(pid: number): Promise {
+  debugNode(pid: number): Promise<void> {
     const model = this._getModel();
     if (!model) {
       return Promise.reject(new Error('Package is not activated.'));
@@ -76,7 +67,7 @@ class RemoteControlService {
       .then(processes => {
         const proc = array.find(processes, p => p.pid === pid);
         if (proc) {
-          model.getActions().attachToProcess(proc);
+          model.getActions().startDebugging(proc);
         } else {
           Promise.reject('No node process to debug.');
         }

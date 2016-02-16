@@ -15,21 +15,17 @@ import {HhvmDebuggerInstance} from './HhvmDebuggerInstance';
 
 import type {NuclideUri} from '../../../remote-uri';
 
-export class HhvmDebuggerProcessInfo extends DebuggerProcessInfo {
+export class AttachProcessInfo extends DebuggerProcessInfo {
   constructor(targetUri: NuclideUri) {
     super('hhvm', targetUri);
   }
 
-  attach(): HhvmDebuggerInstance {
+  async debug(): Promise<HhvmDebuggerInstance> {
     return new HhvmDebuggerInstance(this);
   }
 
-  launch(launchTarget: string): HhvmDebuggerInstance {
-    return new HhvmDebuggerInstance(this, launchTarget);
-  }
-
   compareDetails(other: DebuggerProcessInfo): number {
-    invariant(other instanceof HhvmDebuggerProcessInfo);
+    invariant(other instanceof AttachProcessInfo);
     return compareString(this._targetUri, other._targetUri);
   }
 

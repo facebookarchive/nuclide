@@ -10,13 +10,10 @@
  */
 
 import type {
-  DebuggerRpcService as DebuggerRpcServiceType,
   DebuggerConnection as DebuggerConnectionType,
-  AttachTargetInfo,
 } from '../../lldb-server/lib/DebuggerRpcServiceInterface';
 import type {DebuggerProcessInfo} from '../../atom';
 
-import invariant from 'assert';
 import {EventEmitter} from 'events';
 import utils from './utils';
 import {DebuggerInstance} from '../../atom';
@@ -30,8 +27,6 @@ const {stringifyError} = require('../../../commons').error;
 const SESSION_END_EVENT = 'session-end-event';
 
 export class LldbDebuggerInstance extends DebuggerInstance {
-  _targetInfo: AttachTargetInfo;
-  _rpcService: ?DebuggerRpcServiceType;
   _debuggerConnection: ?DebuggerConnectionType;
   _attachPromise: ?Promise<DebuggerConnectionType>;
   _chromeWebSocketServer: ?WebSocketServer;
@@ -39,10 +34,9 @@ export class LldbDebuggerInstance extends DebuggerInstance {
   _disposables: atom$CompositeDisposable;
   _emitter: EventEmitter;
 
-  constructor(processInfo: DebuggerProcessInfo, targetInfo: AttachTargetInfo) {
+  constructor(processInfo: DebuggerProcessInfo, connection: DebuggerConnectionType) {
     super(processInfo);
-    this._targetInfo = targetInfo;
-    this._rpcService = null;
+
     this._debuggerConnection = null;
     this._attachPromise = null;
     this._chromeWebSocketServer = null;
@@ -50,31 +44,7 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     const {CompositeDisposable} = require('atom');
     this._disposables = new CompositeDisposable();
     this._emitter = new EventEmitter();
-  }
-
-  attach(): void {
-    const rpcService = this._getRpcService();
-    this._attachPromise = rpcService.attach(this._targetInfo.pid);
-  }
-
-  _getRpcService(): DebuggerRpcServiceType {
-    if (!this._rpcService) {
-      const {DebuggerRpcService} = require('../../../client').
-        getServiceByNuclideUri('LLDBDebuggerRpcService', this.getTargetUri());
-      const rpcService = new DebuggerRpcService();
-      this._rpcService = rpcService;
-      this._disposables.add(rpcService);
-    }
-    invariant(this._rpcService);
-    return this._rpcService;
-  }
-
-  async getWebsocketAddress(): Promise<string> {
-    // Start websocket server with Chrome after attach completed.
-    invariant(this._attachPromise);
-    const connection = await this._attachPromise;
     this._registerConnection(connection);
-    return Promise.resolve(this._startChromeWebSocketServer());
   }
 
   _registerConnection(connection: DebuggerConnectionType): void {
@@ -106,6 +76,10 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     log('Ending Session');
     this._emitter.emit(SESSION_END_EVENT);
     this.dispose();
+  }
+
+  getWebsocketAddress(): Promise<string> {
+    return Promise.resolve(this._startChromeWebSocketServer());
   }
 
   _startChromeWebSocketServer(): string {

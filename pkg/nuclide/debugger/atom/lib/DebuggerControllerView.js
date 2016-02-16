@@ -19,14 +19,12 @@ const DebuggerStore = require('./DebuggerStore');
 const Bridge = require('./Bridge');
 
 type State = {
-  hasDebuggerProcess: boolean,
   processSocket: ?string,
   debuggerStoreChangeListener?: IDisposable,
 };
 
 function getStateFromStore(store: DebuggerStore): State {
   return {
-    hasDebuggerProcess: !!store.getDebuggerProcess(),
     processSocket: store.getProcessSocket(),
   };
 }
@@ -86,7 +84,7 @@ const DebuggerControllerView = React.createClass({
         onClick={this._handleClickClose}
       />
     );
-    if (this.state.hasDebuggerProcess) {
+    if (this.props.store.getDebuggerMode() === 'starting') {
       return (
         <div className="padded">
           {closeButton}

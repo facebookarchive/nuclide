@@ -12,7 +12,7 @@
 import type {DebuggerProcessInfo} from '../../atom';
 
 async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
-  const {LldbDebuggerProcessInfo} = require('./LldbDebuggerProcessInfo');
+  const {AttachProcessInfo} = require('./AttachProcessInfo');
   // TODO: Currently first local dir only.
   const remoteUri = require('../../../remote-uri');
   const localDirectory = atom.project.getDirectories()
@@ -28,7 +28,7 @@ async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
 
   const processes = [];
   for (const targetInfo of targetInfoList) {
-    processes.push(new LldbDebuggerProcessInfo(localDirectory.getPath(), targetInfo));
+    processes.push(new AttachProcessInfo(localDirectory.getPath(), targetInfo));
   }
   return processes;
 }

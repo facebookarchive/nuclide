@@ -108,8 +108,8 @@ const DebuggerSessionSelector = React.createClass({
 
   _handleClick(e: any) {
     if (this.state.selectedProcess) {
-      this.props.actions.attachToProcess(this.state.selectedProcess);
-      this.setState({selectedProcess: null});
+      // fire and forget.
+      this.props.actions.startDebugging(this.state.selectedProcess);
     }
   },
 });

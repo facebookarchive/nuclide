@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type DebuggerProcessInfo from '../../Debugger/atom/lib/DebuggerProcessInfo';
 const AtomInput = require('../../ui/atom-input');
 const NuclideDropdown = require('../../ui/dropdown');
 const {React} = require('react-for-atom');
@@ -27,12 +28,12 @@ const NO_LAUNCH_DEBUG_OPTIONS = [
   WEB_SERVER_OPTION,
 ];
 
-async function callDebugService(scriptTarget: ?string): Promise {
+async function callDebugService(processInfo: DebuggerProcessInfo): Promise {
   // Use commands here to trigger package activation.
   atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
   const debuggerService = await require('../../service-hub-plus')
       .consumeFirstProvider('nuclide-debugger.remote');
-  debuggerService.debugHhvm(scriptTarget);
+  debuggerService.debugHhvm(processInfo);
 }
 
 class HhvmToolbar extends React.Component {
@@ -131,11 +132,17 @@ class HhvmToolbar extends React.Component {
       atom.views.getView(atom.workspace),
       'nuclide-debugger:stop-debugging');
 
-    let scriptTarget = null;
+    // TODO: is this.props.targetFilePath best one for targetUri?
+    let processInfo = null;
     if (this._isDebugScript(this.state.selectedIndex)) {
-      scriptTarget = this.refs['debugTarget'].getText();
+      const scriptTarget = this.refs['debugTarget'].getText();
+      const {LaunchProcessInfo} = require('../../debugger/hhvm/lib/LaunchProcessInfo');
+      processInfo = new LaunchProcessInfo(this.props.targetFilePath, scriptTarget);
+    } else {
+      const {AttachProcessInfo} = require('../../debugger/hhvm/lib/AttachProcessInfo');
+      processInfo = new AttachProcessInfo(this.props.targetFilePath);
     }
-    callDebugService(scriptTarget);
+    callDebugService(processInfo);
   }
 }
 

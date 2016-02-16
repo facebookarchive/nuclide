@@ -11,13 +11,16 @@
 
 import type {DebuggerInstance} from '../../atom';
 import type {NuclideUri} from '../../../remote-uri';
-import type {AttachTargetInfo} from '../../lldb-server/lib/DebuggerRpcServiceInterface';
+import type {
+  AttachTargetInfo,
+  DebuggerRpcService as DebuggerRpcServiceType,
+} from '../../lldb-server/lib/DebuggerRpcServiceInterface';
 
 import {DebuggerProcessInfo} from '../../atom';
 import invariant from 'assert';
 import {LldbDebuggerInstance} from './LldbDebuggerInstance';
 
-export class LldbDebuggerProcessInfo extends DebuggerProcessInfo {
+export class AttachProcessInfo extends DebuggerProcessInfo {
   _targetInfo: AttachTargetInfo;
 
   constructor(targetUri: NuclideUri, targetInfo: AttachTargetInfo) {
@@ -25,10 +28,18 @@ export class LldbDebuggerProcessInfo extends DebuggerProcessInfo {
     this._targetInfo = targetInfo;
   }
 
-  attach(): DebuggerInstance {
-    const process = new LldbDebuggerInstance(this, this._targetInfo);
-    process.attach();
-    return process;
+  async debug(): Promise<DebuggerInstance> {
+    const rpcService = this._getRpcService();
+    const connection = await rpcService.attach(this._targetInfo.pid);
+    rpcService.dispose();
+    // Start websocket server with Chrome after attach completed.
+    return new LldbDebuggerInstance(this, connection);
+  }
+
+  _getRpcService(): DebuggerRpcServiceType {
+    const {DebuggerRpcService} = require('../../../client').
+      getServiceByNuclideUri('LLDBDebuggerRpcService', this.getTargetUri());
+    return new DebuggerRpcService();
   }
 
   get pid(): number {
@@ -36,7 +47,7 @@ export class LldbDebuggerProcessInfo extends DebuggerProcessInfo {
   }
 
   compareDetails(other: DebuggerProcessInfo): number {
-    invariant(other instanceof LldbDebuggerProcessInfo);
+    invariant(other instanceof AttachProcessInfo);
     return this.displayString() === other.displayString()
       ? (this.pid - other.pid)
       : (this.displayString() < other.displayString()) ? -1 : 1;
