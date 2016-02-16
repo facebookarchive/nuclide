@@ -5,17 +5,17 @@ layout: docs
 permalink: /docs/editor/uninstall/
 ---
 
-The uninstallation process for Nuclide differs depending on which version you have installed.
-
-## Current Release
-
-If you only have the package named 'nuclide' installed, uninstall it with the following command:
+To uninstall Nuclide, you run the simple Atom package manager command below.
 
 ```bash
 $ apm uninstall nuclide
 ```
 
-### Re-activate Disabled Core Packages
+> If you have a version of Nuclide prior to 0.0.35, you will need to follow a
+> [different process](/docs/help/troubleshooting#uninstalling-older-versions-of-nuclide) to
+> uninstall Nuclide.
+
+## Re-activate Disabled Core Packages
 
 Nuclide replaces Atom's 'tree-view' package in order to support remote file systems. When
 uninstalling Nuclide, you need to re-activate the 'tree-view' package yourself. The following are
@@ -37,61 +37,3 @@ two ways to do that:
           "tree-view" # REMOVE THIS LINE
         ]
     ```
-
-## v0.0.35 and Prior
-
-[Nuclide v0.0.35](https://github.com/facebook/nuclide/releases/tag/v0.0.35) and earlier was released
-as many separate Atom packages. If you have any packages starting with `nuclide-`, you likely have
-some part of <=v0.0.35 still installed.
-
-Run the uninstall command below, which contains the full list of Nuclide's packages when they were
-last released on 25 November 2015. This is safe to run even if you only have a subset of the
-packages installed; `apm` will ignore any packages that are not present.
-
-```bash
-$ apm uninstall \
-hyperclick \
-nuclide-arcanist \
-nuclide-blame \
-nuclide-blame-provider-hg \
-nuclide-blame-ui \
-nuclide-buck-files \
-nuclide-busy-signal \
-nuclide-clang-atom \
-nuclide-clipboard-path \
-nuclide-code-format \
-nuclide-code-highlight \
-nuclide-debugger-atom \
-nuclide-debugger-hhvm \
-nuclide-debugger-lldb \
-nuclide-diagnostics-store \
-nuclide-diagnostics-ui \
-nuclide-diff-view \
-nuclide-file-tree \
-nuclide-file-watcher \
-nuclide-find-references \
-nuclide-flow \
-nuclide-format-js \
-nuclide-fuzzy-filename-provider \
-nuclide-hack \
-nuclide-hack-symbol-provider \
-nuclide-health \
-nuclide-hg-repository \
-nuclide-home \
-nuclide-installer \
-nuclide-language-hack \
-nuclide-move-pane \
-nuclide-objc \
-nuclide-ocaml \
-nuclide-open-filenames-provider \
-nuclide-quick-open \
-nuclide-react-native-inspector \
-nuclide-recent-files-provider \
-nuclide-recent-files-service \
-nuclide-remote-projects \
-nuclide-service-monitor \
-nuclide-test-runner \
-nuclide-toolbar \
-nuclide-type-hint \
-nuclide-url-hyperclick
-```
