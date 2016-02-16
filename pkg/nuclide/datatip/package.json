@@ -5,6 +5,15 @@
   "version": "0.0.0",
   "description": "Provides a datatip service for rendering persistent windows in the editor",
   "nuclide": {
+    "config": {
+      "datatipDebounceDelay": {
+        "title": "Datatip debounce delay",
+        "description": "Delay (in ms) between hovering over an identifier and showing a datatip",
+        "type": "number",
+        "default": 200,
+        "minimum": 1
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

@@ -26,10 +26,12 @@ import {track, trackOperationTiming} from '../../analytics';
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
 import {PinnedDatatip} from './PinnedDatatip';
 
-const DATATIP_DELAY_MS = 50;
+import featureConfig from '../../feature-config';
 
 export class DatatipManager {
   _subscriptions: CompositeDisposable;
+  _debouncedMouseMove:
+    (event: MouseEvent, editor: TextEditor, editorView: atom$TextEditorElement) => void;
   _boundHideDatatip: Function;
   _globalKeydownSubscription: ?IDisposable;
   _marker: ?atom$Marker;
@@ -58,7 +60,13 @@ export class DatatipManager {
       'core:cancel',
       this._boundHideDatatip
     ));
-
+    this._debouncedMouseMove = () => {};
+    this._subscriptions.add(
+      featureConfig.observe(
+        'nuclide-datatip.datatipDebounceDelay',
+        debounceDelay => this.updateDebounceDelay(debounceDelay),
+      )
+    );
     // TODO(most): Replace with @jjiaa's mouseListenerForTextEditor introduced in D2005545.
     this._subscriptions.add(atom.workspace.observeTextEditors(editor => {
       // When the cursor moves the next time we do a toggle we should show the
@@ -68,11 +76,7 @@ export class DatatipManager {
       }));
 
       const editorView = atom.views.getView(editor);
-      const mouseMoveListener = debounce(
-        e => {this._datatipForMouseEvent(((e: any): MouseEvent), editor, editorView);},
-        DATATIP_DELAY_MS,
-        /* immediate */ false,
-      );
+      const mouseMoveListener = event => {this.handleMouseMove(event, editor, editorView);};
       editorView.addEventListener('mousemove', mouseMoveListener);
       const mouseListenerSubscription = new Disposable(() =>
           editorView.removeEventListener('mousemove', mouseMoveListener));
@@ -99,6 +103,20 @@ export class DatatipManager {
     this._isHoveringDatatip = false;
     this._pinnedDatatips = new Set();
     this._globalKeydownSubscription = null;
+  }
+
+  updateDebounceDelay(debounceDelay: number): void {
+    this._debouncedMouseMove = debounce(
+      (event, editor, editorView) => {
+        this._datatipForMouseEvent(event, editor, editorView);
+      },
+      debounceDelay,
+      /* immediate */ false
+    );
+  }
+
+  handleMouseMove(event: MouseEvent, editor: TextEditor, editorView: atom$TextEditorElement): void {
+    this._debouncedMouseMove(event, editor, editorView);
   }
 
   toggleDatatip(): void {
