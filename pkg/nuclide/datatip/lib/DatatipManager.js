@@ -137,15 +137,27 @@ export class DatatipManager {
     this._isHoveringDatatip = false;
   }
 
-  _datatipForMouseEvent(e: MouseEvent, editor: TextEditor, editorView: HTMLElement) {
+  _datatipForMouseEvent(e: MouseEvent, editor: TextEditor, editorView: HTMLElement): void {
     if (!editorView.component) {
       // The editor was destroyed, but the destroy handler haven't yet been called to cancel
       // the timer.
       return;
     }
-    const screenPosition = editorView.component.screenPositionForMouseEvent(e);
-    const position = editor.bufferPositionForScreenPosition(screenPosition);
-    this._datatipInEditor(editor, position);
+    const textEditorComponent = editorView.component;
+    const screenPosition = textEditorComponent.screenPositionForMouseEvent(e);
+    const pixelPosition = textEditorComponent.pixelPositionForMouseEvent(e);
+    const pixelPositionFromScreenPosition =
+      textEditorComponent.pixelPositionForScreenPosition(screenPosition);
+    // Distance (in pixels) between screenPosition and the cursor.
+    const horizontalDistance = pixelPosition.left - pixelPositionFromScreenPosition.left;
+    // `screenPositionForMouseEvent.column` cannot exceed the current line length.
+    // This is essentially a heuristic for "mouse cursor is to the left or right of text content".
+    if (pixelPosition.left < 0 || horizontalDistance > editor.getDefaultCharWidth()) {
+      this.hideDatatip();
+      return;
+    }
+    const bufferPosition = editor.bufferPositionForScreenPosition(screenPosition);
+    this._datatipInEditor(editor, bufferPosition);
   }
 
   async _datatipInEditor(editor: TextEditor, position: atom$Point): Promise {
