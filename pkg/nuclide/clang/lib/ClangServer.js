@@ -77,6 +77,7 @@ async function augmentDefaultFlags(src: string, flags: Array<string>): Promise<A
 
 type Connection = {
   dispose: () => any,
+  process: child_process$ChildProcess,
   readableStream: stream$Readable,
   writableStream: stream$Writable,
 }
@@ -135,6 +136,7 @@ async function createAsyncConnection(src: string): Promise<Connection> {
               childRunning = false;
             }
           },
+          process: child,
           readableStream: child.stdout,
           writableStream,
         };
@@ -182,6 +184,24 @@ export default class ClangServer {
   dispose() {
     this._disposed = true;
     this._cleanup();
+  }
+
+  /**
+   * Returns RSS of the child process in bytes.
+   * Works on Unix and Mac OS X.
+   */
+  async getMemoryUsage(): Promise<number> {
+    if (this._asyncConnection == null) {
+      return 0;
+    }
+    const {exitCode, stdout} = await checkOutput(
+      'ps',
+      ['-p', this._asyncConnection.process.pid.toString(), '-o', 'rss='],
+    );
+    if (exitCode !== 0) {
+      return 0;
+    }
+    return parseInt(stdout, 10) * 1024; // ps returns KB
   }
 
   _cleanup() {

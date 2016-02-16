@@ -11,9 +11,10 @@
 
 import type {NuclideUri} from '../../remote-uri';
 
-import {checkOutput, fsPromise, object} from '../../commons';
+import {checkOutput, fsPromise, object, promises} from '../../commons';
 import {BuckUtils} from '../../buck/base/lib/BuckUtils';
 import LRUCache from 'lru-cache';
+import os from 'os';
 import {Observable} from 'rx';
 import ClangFlagsManager from './ClangFlagsManager';
 import ClangServer from './ClangServer';
@@ -28,18 +29,63 @@ const clangServers = new LRUCache({
   },
 });
 
+// Limit the total memory usage of all Clang servers.
+const MEMORY_LIMIT = Math.round(os.totalmem() * 15 / 100);
+
+// It's important that only one instance of this function runs at any time.
+const checkMemoryUsage = promises.serializeAsyncCall(async () => {
+  const usage = new Map();
+  await Promise.all(clangServers.values().map(async server => {
+    const mem = await server.getMemoryUsage();
+    usage.set(server, mem);
+  }));
+
+  // Servers may have been deleted in the meantime, so calculate the total now.
+  let total = 0;
+  let count = 0;
+  clangServers.forEach(server => {
+    const mem = usage.get(server);
+    if (mem) {
+      total += mem;
+      count++;
+    }
+  });
+
+  // Remove servers until we're under the memory limit.
+  // Make sure we allow at least one server to stay alive.
+  if (count > 1 && total > MEMORY_LIMIT) {
+    const toDispose = [];
+    clangServers.rforEach((server, key) => {
+      const mem = usage.get(server);
+      if (mem && count > 1 && total > MEMORY_LIMIT) {
+        total -= mem;
+        count--;
+        toDispose.push(key);
+      }
+    });
+    toDispose.forEach(key => clangServers.del(key));
+  }
+});
+
 /**
  * Spawn one Clang server per translation unit (i.e. source file).
  * This allows working on multiple files at once, and simplifies per-file state handling.
- *
- * TODO(hansonw): Implement some sort of cleanup mechanism to kill idle servers.
  */
-function getClangServer(src: NuclideUri): ClangServer {
+function getClangServer(
+  src: NuclideUri,
+  contents?: string,
+  defaultFlags?: ?Array<string>,
+): ClangServer {
   let server = clangServers.get(src);
   if (server != null) {
     return server;
   }
   server = new ClangServer(clangFlagsManager, src);
+  // Seed with a compile request to ensure fast responses.
+  if (contents != null) {
+    server.makeRequest('compile', defaultFlags, {contents})
+      .then(checkMemoryUsage);
+  }
   clangServers.set(src, server);
   return server;
 }
@@ -170,7 +216,13 @@ export function compile(
   defaultFlags?: Array<string>,
 ): Observable<?ClangCompileResult> {
   return Observable.fromPromise(
-    getClangServer(src).makeRequest('compile', defaultFlags, {contents})
+    getClangServer(src)
+      .makeRequest('compile', defaultFlags, {contents})
+      .then(value => {
+        // Trigger the memory usage check but do not wait for it.
+        checkMemoryUsage();
+        return value;
+      })
   );
 }
 
@@ -183,7 +235,7 @@ export function getCompletions(
   prefix: string,
   defaultFlags?: Array<string>,
 ): Promise<?ClangCompletionsResult> {
-  return getClangServer(src).makeRequest('get_completions', defaultFlags, {
+  return getClangServer(src, contents, defaultFlags).makeRequest('get_completions', defaultFlags, {
     contents,
     line,
     column,
@@ -199,11 +251,12 @@ export async function getDeclaration(
   column: number,
   defaultFlags?: Array<string>,
 ): Promise<?ClangDeclarationResult> {
-  const result = await getClangServer(src).makeRequest('get_declaration', defaultFlags, {
-    contents,
-    line,
-    column,
-  });
+  const result = await getClangServer(src, contents, defaultFlags)
+    .makeRequest('get_declaration', defaultFlags, {
+      contents,
+      line,
+      column,
+    });
   if (result == null) {
     return null;
   }
@@ -228,11 +281,12 @@ export function getDeclarationInfo(
   column: number,
   defaultFlags: ?Array<string>,
 ): Promise<?ClangDeclarationInfoResult> {
-  return getClangServer(src).makeRequest('get_declaration_info', defaultFlags, {
-    contents,
-    line,
-    column,
-  });
+  return getClangServer(src, contents, defaultFlags)
+    .makeRequest('get_declaration_info', defaultFlags, {
+      contents,
+      line,
+      column,
+    });
 }
 
 export async function formatCode(
@@ -268,15 +322,10 @@ export async function formatCode(
  * as well as all the cached compilation flags.
  */
 export function reset(src: NuclideUri): void {
-  const server = getClangServer(src);
-  if (server != null) {
-    server.dispose();
-    clangServers.del(src);
-  }
+  clangServers.del(src);
   clangFlagsManager.reset();
 }
 
 export function dispose(): void {
-  clangServers.forEach(server => server.dispose());
   clangServers.reset();
 }

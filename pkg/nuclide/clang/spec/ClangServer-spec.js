@@ -39,6 +39,9 @@ describe('ClangServer', () => {
         accurateFlags: true,
       });
 
+      const mem = await server.getMemoryUsage();
+      expect(mem).toBeGreaterThan(0);
+
       response = await server.makeRequest('get_completions', null, {
         contents: FILE_CONTENTS,
         line: 4,
