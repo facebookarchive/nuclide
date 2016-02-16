@@ -19,10 +19,20 @@ import {Point} from 'atom';
 
 import invariant from 'assert';
 
+import {
+  getFlowServiceByNuclideUri,
+  getLocalFlowService,
+} from './FlowServiceFactory';
+
 export class FlowOutlineProvider {
   async getOutline(editor: atom$TextEditor): Promise<?Outline> {
     const filePath = editor.getPath();
-    const flowService = require('../../client').getServiceByNuclideUri('FlowService', filePath);
+    let flowService;
+    if (filePath != null) {
+      flowService = getFlowServiceByNuclideUri(filePath);
+    } else {
+      flowService = getLocalFlowService();
+    }
     invariant(flowService != null);
     const flowOutline = await flowService.flowGetOutline(editor.getText());
     if (flowOutline != null) {

@@ -13,20 +13,26 @@ import invariant from 'assert';
 
 import {trackTiming} from '../../analytics';
 
+import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
+
 class FlowAutocompleteProvider {
   @trackTiming('flow.autocomplete')
   getSuggestions(request: atom$AutocompleteRequest): Promise<?Array<atom$AutocompleteSuggestion>> {
     const {editor, prefix, activatedManually} = request;
-    const file = editor.getPath();
+    const filePath = editor.getPath();
     const contents = editor.getText();
     const cursor = editor.getLastCursor();
     const line = cursor.getBufferRow();
     const col = cursor.getBufferColumn();
 
-    const flowService = require('../../client').getServiceByNuclideUri('FlowService', file);
+    if (filePath == null) {
+      return Promise.resolve(null);
+    }
+
+    const flowService = getFlowServiceByNuclideUri(filePath);
     invariant(flowService);
     return flowService.flowGetAutocompleteSuggestions(
-      file,
+      filePath,
       contents,
       line,
       col,

@@ -20,7 +20,7 @@ import type {
 
 import {trackTiming} from '../../analytics';
 
-const {getServiceByNuclideUri} = require('../../client');
+import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 const {promises, array} = require('../../commons');
 const {RequestSerializer} = promises;
 const {DiagnosticsProviderBase} = require('../../diagnostics/provider-base');
@@ -149,7 +149,7 @@ class FlowDiagnosticsProvider {
 
     const currentContents = textEditor.isModified() ? textEditor.getText() : null;
 
-    const flowService = getServiceByNuclideUri('FlowService', file);
+    const flowService = getFlowServiceByNuclideUri(file);
     invariant(flowService);
     const result = await this._requestSerializer.run(
       flowService.flowFindDiagnostics(file, currentContents)

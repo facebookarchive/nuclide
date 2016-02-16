@@ -13,7 +13,7 @@ import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
 
 import invariant from 'assert';
 
-import {getServiceByNuclideUri} from '../../client';
+import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 import {goToLocation} from '../../atom-helpers';
 
 import {JS_GRAMMARS} from './constants.js';
@@ -26,12 +26,15 @@ class FlowHyperclickProvider {
       return null;
     }
 
-    const file = textEditor.getPath();
+    const filePath = textEditor.getPath();
+    if (filePath == null) {
+      return null;
+    }
     const {start: position} = range;
-    const flowService = getServiceByNuclideUri('FlowService', file);
+    const flowService = getFlowServiceByNuclideUri(filePath);
     invariant(flowService);
     const location = await flowService
-        .flowFindDefinition(file, textEditor.getText(), position.row + 1, position.column + 1);
+        .flowFindDefinition(filePath, textEditor.getText(), position.row + 1, position.column + 1);
     if (location) {
       return {
         range,

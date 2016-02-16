@@ -15,7 +15,7 @@ import invariant from 'assert';
 
 const {extractWordAtPosition} = require('../../atom-helpers');
 const featureConfig = require('../../feature-config');
-const {getServiceByNuclideUri} = require('../../client');
+import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 const {Range} = require('atom');
 
 import {JAVASCRIPT_WORD_REGEX} from './constants';
@@ -27,11 +27,15 @@ export class FlowTypeHintProvider {
       return null;
     }
     const filePath = editor.getPath();
+    if (filePath == null) {
+      return null;
+    }
     const contents = editor.getText();
-    const flowService = await getServiceByNuclideUri('FlowService', filePath);
+    const flowService = await getFlowServiceByNuclideUri(filePath);
     invariant(flowService);
 
-    const enableStructuredTypeHints = featureConfig.get('nuclide-flow.enableStructuredTypeHints');
+    const enableStructuredTypeHints: boolean =
+      (featureConfig.get('nuclide-flow.enableStructuredTypeHints'): any);
     const getTypeResult = await flowService.flowGetType(
       filePath,
       contents,
