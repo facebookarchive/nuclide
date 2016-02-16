@@ -51,6 +51,8 @@ export class PinnedDatatip {
   _boundHandleMouseDown: Function;
   _boundHandleMouseEnter: Function;
   _boundHandleMouseLeave: Function;
+  _boundHandleCapturedClick: Function;
+  _mouseUpTimeout: ?number;
   _hostElement: HTMLElement;
   _marker: ?atom$Marker;
   _rangeDecoration: ?atom$Decoration;
@@ -87,17 +89,18 @@ export class PinnedDatatip {
     this._boundHandleMouseDown = this.handleMouseDown.bind(this);
     this._boundHandleMouseEnter = this.handleMouseEnter.bind(this);
     this._boundHandleMouseLeave = this.handleMouseLeave.bind(this);
+    this._boundHandleCapturedClick = this.handleCapturedClick.bind(this);
     this._hostElement.addEventListener('mouseenter', this._boundHandleMouseEnter);
     this._hostElement.addEventListener('mouseleave', this._boundHandleMouseLeave);
     this._subscriptions.add(new Disposable(() => {
       this._hostElement.removeEventListener('mouseenter', this._boundHandleMouseEnter);
       this._hostElement.removeEventListener('mouseleave', this._boundHandleMouseLeave);
     }));
+    this._mouseUpTimeout = null;
     this._offset = {x: 0, y: 0};
     this._isDragging = false;
     this._dragOrigin = null;
     this._isHovering = false;
-
     this.render();
   }
 
@@ -115,6 +118,7 @@ export class PinnedDatatip {
     const evt: MouseEvent = (event: any);
     const {_dragOrigin} = this;
     invariant(_dragOrigin);
+    this._isDragging = true;
     this._offset = {
       x: evt.clientX - _dragOrigin.x,
       y: evt.clientY - _dragOrigin.y,
@@ -123,10 +127,15 @@ export class PinnedDatatip {
   }
 
   handleGlobalMouseUp(): void {
-    this._isDragging = false;
-    this._dragOrigin = null;
-    this._ensureMouseSubscriptionDisposed();
-    this.render();
+    // If the datatip was moved, push the effects of mouseUp to the next tick,
+    // in order to allow cancelation of captured events (e.g. clicks on child components).
+    this._mouseUpTimeout = setTimeout(() => {
+      this._isDragging = false;
+      this._dragOrigin = null;
+      this._mouseUpTimeout = null;
+      this._ensureMouseSubscriptionDisposed();
+      this.render();
+    }, 0);
   }
 
   _ensureMouseSubscriptionDisposed(): void {
@@ -138,7 +147,6 @@ export class PinnedDatatip {
 
   handleMouseDown(event: Event): void {
     const evt: MouseEvent = (event: any);
-    this._isDragging = true;
     this._dragOrigin = {
       x: evt.clientX - this._offset.x,
       y: evt.clientY - this._offset.y,
@@ -150,6 +158,12 @@ export class PinnedDatatip {
       (error: any) => {},
       () => {this.handleGlobalMouseUp();},
     ));
+  }
+
+  handleCapturedClick(event: SyntheticEvent): void {
+    if (this._isDragging) {
+      event.stopPropagation();
+    }
   }
 
   // Ensure positioning of the Datatip at the end of the current line.
@@ -184,7 +198,8 @@ export class PinnedDatatip {
         actionTitle="Close this datatip"
         className={_isDragging ? 'nuclide-datatip-dragging' : ''}
         onActionClick={this._boundDispose}
-        onMouseDown={this._boundHandleMouseDown}>
+        onMouseDown={this._boundHandleMouseDown}
+        onClickCapture={this._boundHandleCapturedClick}>
         {_component}
       </DatatipComponent>,
       _hostElement,
@@ -224,6 +239,9 @@ export class PinnedDatatip {
   }
 
   dispose(): void {
+    if (this._mouseUpTimeout != null) {
+      clearTimeout(this._mouseUpTimeout);
+    }
     if (this._marker != null) {
       this._marker.destroy();
     }
