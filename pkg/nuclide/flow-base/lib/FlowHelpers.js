@@ -10,12 +10,8 @@
  */
 
 const path = require('path');
-const {
-  denodeify,
-  findNearestFile,
-} = require('../../commons');
+const {asyncExecute, findNearestFile} = require('../../commons');
 const LRU = require('lru-cache');
-const which = denodeify(require('which'));
 
 import invariant from 'assert';
 
@@ -136,7 +132,7 @@ async function isFlowInstalled(): Promise<boolean> {
 
 async function canFindFlow(flowPath: string): Promise<boolean> {
   try {
-    await which(flowPath);
+    await asyncExecute('which', [flowPath]);
     return true;
   } catch (e) {
     return false;
