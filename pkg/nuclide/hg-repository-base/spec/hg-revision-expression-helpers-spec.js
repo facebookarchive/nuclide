@@ -13,6 +13,7 @@ import {
   expressionForRevisionsBeforeHead,
   parseRevisionInfoOutput,
   parseBookmarksOutput,
+  INFO_REV_END_MARK,
 } from '../lib/hg-revision-expression-helpers';
 
 describe('hg-revision-expression-helpers', () => {
@@ -29,18 +30,30 @@ describe('hg-revision-expression-helpers', () => {
 
   describe('parseRevisionInfoOutput', () => {
     it('returns the parsed revision info if is valid.', () => {
+      const commit1Description =
+`Commit 1 'title'.
+Continue Commit 1 message.`;
+    const commit2Description =
+`Commit 2 'title'.
+
+Still, multi-line commit 2 message
+
+Test Plan: complete`;
       const revisionsString =
 `id:124
 title:Commit 1 'title'.
 author:Author Name<auth_2_alias@domain.com>
 date:2015-10-15 16:03 -0700
 hash:a343fb3
-
+${commit1Description}
+${INFO_REV_END_MARK}
 id:123
 title:Commit 2 'title'.
 author:Author Name<auth_2_alias@domain.com>
 date:2015-10-15 16:02 -0700
 hash:a343fb2
+${commit2Description}
+${INFO_REV_END_MARK}
 `;
       expect(parseRevisionInfoOutput(revisionsString)).toEqual([
         {
@@ -50,6 +63,7 @@ hash:a343fb2
           hash: 'a343fb3',
           bookmarks: [],
           date: new Date('2015-10-15 16:03 -0700'),
+          description: commit1Description,
         },
         {
           id: 123,
@@ -58,6 +72,7 @@ hash:a343fb2
           hash: 'a343fb2',
           bookmarks: [],
           date: new Date('2015-10-15 16:02 -0700'),
+          description: commit2Description,
         },
       ]);
     });

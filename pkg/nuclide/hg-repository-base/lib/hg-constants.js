@@ -83,6 +83,7 @@ export type RevisionInfo = {
   title: string,
   author: string,
   date: Date,
+  description: string,
   // List of bookmarks at this revision.
   bookmarks: Array<string>,
 };

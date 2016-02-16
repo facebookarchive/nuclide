@@ -32,13 +32,16 @@ const INFO_HASH_PREFIX = 'hash:';
 const INFO_TITLE_PREFIX = 'title:';
 const INFO_AUTHOR_PREFIX = 'author:';
 const INFO_DATE_PREFIX = 'date:';
+// Exported for testing.
+export const INFO_REV_END_MARK = '<<NUCLIDE_REV_END_MARK>>';
 
 const REVISION_INFO_TEMPLATE = `${INFO_ID_PREFIX}{rev}
 ${INFO_TITLE_PREFIX}{desc|firstline}
 ${INFO_AUTHOR_PREFIX}{author}
 ${INFO_DATE_PREFIX}{date|isodate}
 ${INFO_HASH_PREFIX}{node|short}
-
+{desc}
+${INFO_REV_END_MARK}
 `;
 
 /**
@@ -153,11 +156,11 @@ export async function fetchRevisionInfoBetweenRevisions(
  * Helper function to `fetchRevisionInfoBetweenRevisions`.
  */
 export function parseRevisionInfoOutput(revisionsInfoOutput: string): Array<RevisionInfo> {
-  const revisions = revisionsInfoOutput.split('\n\n');
+  const revisions = revisionsInfoOutput.split(INFO_REV_END_MARK)
   const revisionInfo = [];
   for (const chunk of revisions) {
     const revisionLines = chunk.trim().split('\n');
-    if (revisionLines.length !== 5) {
+    if (revisionLines.length < 6) {
       continue;
     }
     revisionInfo.push({
@@ -166,6 +169,7 @@ export function parseRevisionInfoOutput(revisionsInfoOutput: string): Array<Revi
       author: revisionLines[2].slice(INFO_AUTHOR_PREFIX.length),
       date: new Date(revisionLines[3].slice(INFO_DATE_PREFIX.length)),
       hash: revisionLines[4].slice(INFO_HASH_PREFIX.length),
+      description: revisionLines.slice(5).join('\n'),
       bookmarks: [],
     });
   }
