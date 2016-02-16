@@ -1,5 +1,13 @@
 # Nuclide Changelog
 
+## 0.117.0
+
+* Add commands for debugging non-Buck React Native apps (requires [react-native#5717](https://github.com/facebook/react-native/pull/5715))
+* Add commands for running RN Packager without building via Buck
+* Fixed “unknown call” warning in RN element inspector
+* Added limit on Clang server memory usage
+* Improvements to datatip UX: Datatips disappear on keydown, and the default delay is now 200ms and can be configured in settings (Packages > Nuclide > Nuclide-datatip > debounce delay). Also improved the mapping of mouse coordinates to code.
+
 ## 0.116.0
 
 * Datatips are now pinnable.
