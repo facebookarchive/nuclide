@@ -9,8 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {Disposable} = require('atom');
-const {EventEmitter} = require('events');
+const {CompositeDisposable, Emitter} = require('atom');
 
 const GRAMMAR_CHANGE_EVENT = 'grammar-change';
 
@@ -18,38 +17,30 @@ const GRAMMAR_CHANGE_EVENT = 'grammar-change';
  * A singleton that listens to grammar changes in all text editors.
  */
 class GrammarForTextEditorsListener {
-  _emitter: EventEmitter;
-  _grammarSubscriptionsMap: Map<TextEditor, IDisposable>;
-  _destroySubscriptionsMap: Map<TextEditor, IDisposable>;
-  _textEditorsSubscription: IDisposable;
+  _emitter: Emitter;
+  _subscriptions: CompositeDisposable;
 
   constructor() {
-    this._emitter = new EventEmitter();
-    this._grammarSubscriptionsMap = new Map();
-    this._destroySubscriptionsMap = new Map();
-    this._textEditorsSubscription = atom.workspace.observeTextEditors(textEditor => {
-      const grammarSubscription = textEditor.observeGrammar(grammar => {
-        this._emitter.emit(GRAMMAR_CHANGE_EVENT, textEditor);
-      });
-      this._grammarSubscriptionsMap.set(textEditor, grammarSubscription);
-
-      const destroySubscription = textEditor.onDidDestroy(() => {
-        const subscription = this._grammarSubscriptionsMap.get(textEditor);
-        if (subscription) {
-          subscription.dispose();
-          this._grammarSubscriptionsMap.delete(textEditor);
-        }
-
-        destroySubscription.dispose();
-        this._destroySubscriptionsMap.delete(textEditor);
-      });
-      this._destroySubscriptionsMap.set(textEditor, destroySubscription);
-    });
+    this._emitter = new Emitter();
+    this._subscriptions = new CompositeDisposable();
+    this._subscriptions.add(
+      this._emitter,
+      atom.workspace.observeTextEditors(textEditor => {
+        const grammarSubscription = textEditor.observeGrammar(grammar => {
+          this._emitter.emit(GRAMMAR_CHANGE_EVENT, textEditor);
+        });
+        const destroySubscription = textEditor.onDidDestroy(() => {
+          grammarSubscription.dispose();
+          destroySubscription.dispose();
+        });
+        this._subscriptions.add(grammarSubscription, destroySubscription);
+      }),
+    );
   }
 
   observeGrammarForTextEditors(
     fn: (textEditor: TextEditor, grammar: atom$Grammar) => void,
-  ): Disposable {
+  ): IDisposable {
     function fnWithGrammar(textEditor) {
       fn(textEditor, textEditor.getGrammar());
     }
@@ -57,19 +48,11 @@ class GrammarForTextEditorsListener {
     // The event was already handled before `fn` was added to the emitter, so
     // we need to call it on all the existing editors.
     atom.workspace.getTextEditors().forEach(fnWithGrammar);
-    this._emitter.addListener(GRAMMAR_CHANGE_EVENT, fnWithGrammar);
-    return new Disposable(() => {
-      this._emitter.removeListener(GRAMMAR_CHANGE_EVENT, fnWithGrammar);
-    });
+    return this._emitter.on(GRAMMAR_CHANGE_EVENT, fnWithGrammar);
   }
 
   dispose(): void {
-    this._emitter.removeAllListeners();
-    this._grammarSubscriptionsMap.forEach(subscription => subscription.dispose());
-    this._grammarSubscriptionsMap.clear();
-    this._destroySubscriptionsMap.forEach(subscription => subscription.dispose());
-    this._destroySubscriptionsMap.clear();
-    this._textEditorsSubscription.dispose();
+    this._subscriptions.dispose();
   }
 }
 
