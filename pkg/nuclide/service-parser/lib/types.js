@@ -47,7 +47,6 @@ export type AliasDefinition = {
   definition?: Type,
 };
 
-// $FlowIssue
 export type Type = NullableType | MixedType |
   AnyType | StringType | BooleanType | NumberType | // Primitive types.
   ObjectType | ArrayType | MapType | SetType | TupleType | // Container types.
