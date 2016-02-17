@@ -237,7 +237,7 @@ WebInspector.SourcesPanel.prototype = {
             if (!breakpoint)
                 return;
             this.sidebarPanes.jsBreakpoints.highlightBreakpoint(breakpoint);
-            this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a JavaScript breakpoint."));
+            this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a breakpoint."));
         }
 
         if (details.reason === WebInspector.DebuggerModel.BreakReason.DOM) {
