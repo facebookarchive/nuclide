@@ -135,12 +135,7 @@ const FileSystemActions = {
     const hgRepository = this._getHgRepositoryForNode(node);
     let shouldFSRename = true;
     if (hgRepository !== null) {
-      let oldPath = file.getPath();
-      if (!FileTreeHelpers.isLocalFile(file)) {
-        const remoteFile = ((file: any): (RemoteDirectory | RemoteFile));
-        oldPath = remoteFile.getLocalPath();
-      }
-      const success = await hgRepository.rename(oldPath, newPath);
+      const success = await hgRepository.rename(file.getPath(), newPath);
       shouldFSRename = !success;
     }
     if (shouldFSRename) {
@@ -199,7 +194,7 @@ const FileSystemActions = {
       } else {
         const hgRepository = this._getHgRepositoryForPath(newRemoteFile.getPath());
         if (hgRepository !== null && addToVCS) {
-          await hgRepository.add(newRemoteFile.getLocalPath());
+          await hgRepository.add(newRemoteFile.getPath());
         }
         onDidConfirm(newPath);
       }

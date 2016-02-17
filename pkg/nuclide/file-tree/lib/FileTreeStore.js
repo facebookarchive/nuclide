@@ -22,7 +22,6 @@ import Immutable from 'immutable';
 import {ActionType} from './FileTreeConstants';
 import {Disposable, Emitter} from 'atom';
 import {Minimatch} from 'minimatch';
-import {getPath} from '../../remote-uri';
 import {repositoryContainsPath} from '../../hg-git-bridge';
 import {repositoryForPath} from '../../hg-git-bridge';
 
@@ -569,17 +568,16 @@ class FileTreeStore {
       if (file == null) {
         return;
       }
-      const filePath = getPath(file.getPath());
       const repository = repositoryForPath(file.getPath());
       if (repository != null && repository.getType() === 'hg') {
         const hgRepository = ((repository: any): HgRepositoryClient);
-        const success = await hgRepository.remove(filePath);
+        const success = await hgRepository.remove(file.getPath());
         if (success) {
           return;
         } else {
           atom.notifications.addError(
-            'Failed to remove ' + filePath + ' from version control.  The file will still get ' +
-            'deleted but you will have to remove it from your VCS yourself.'
+            'Failed to remove ' + file.getPath() + ' from version control.  The file will still ' +
+            'get deleted but you will have to remove it from your VCS yourself.'
           );
         }
       }

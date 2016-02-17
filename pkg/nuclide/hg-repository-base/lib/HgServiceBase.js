@@ -25,6 +25,7 @@ import {
   fetchFilesChangedAtRevision,
 } from './hg-revision-state-helpers';
 import {asyncExecute, createArgsForScriptCommand} from '../../commons';
+import {getPath} from '../../remote-uri';
 import path from 'path';
 
 import type {DiffInfo, RevisionFileChanges, StatusCodeIdValue, RevisionInfo} from './hg-constants';
@@ -313,19 +314,19 @@ class HgServiceBase {
     return this._runSimpleInWorkingDirectory('checkout', [revision]);
   }
 
-  rename(oldFilePath: string, newFilePath: string): Promise<boolean> {
+  rename(oldFilePath: NuclideUri, newFilePath: NuclideUri): Promise<boolean> {
     return this._runSimpleInWorkingDirectory(
       'rename',
-      [oldFilePath, newFilePath],
+      [getPath(oldFilePath), getPath(newFilePath)],
     );
   }
 
-  remove(filePath: string): Promise<boolean> {
-    return this._runSimpleInWorkingDirectory('remove', [filePath]);
+  remove(filePath: NuclideUri): Promise<boolean> {
+    return this._runSimpleInWorkingDirectory('remove', [getPath(filePath)]);
   }
 
-  add(filePath: string): Promise<boolean> {
-    return this._runSimpleInWorkingDirectory('add', [filePath]);
+  add(filePath: NuclideUri): Promise<boolean> {
+    return this._runSimpleInWorkingDirectory('add', [getPath(filePath)]);
   }
 }
 
