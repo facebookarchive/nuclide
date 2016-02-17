@@ -54,6 +54,7 @@ class DebuggerActions {
 
     this.killDebugger(); // Kill the existing session.
     this.setError(null);
+    this._handleDebugModeStart();
 
     this._dispatcher.dispatch({
       actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
@@ -103,8 +104,9 @@ class DebuggerActions {
   killDebugger() {
     track(AnalyticsEvents.DEBUGGER_STOP);
     endTimerTracking();
+    this._handleDebugModeEnd();
     const debugSession = this._store.getDebuggerProcess();
-    if (debugSession) {
+    if (debugSession != null) {
       debugSession.dispose();
       this._dispatcher.dispatch({
         actionType: Constants.Actions.SET_DEBUGGER_PROCESS,
@@ -159,6 +161,17 @@ class DebuggerActions {
   dispose() {
     endTimerTracking();
     this._disposables.dispose();
+  }
+
+  _handleDebugModeStart(): void {
+    // Open the output window if it's not already opened.
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-output:show');
+  }
+
+  _handleDebugModeEnd(): void {
+    // Close the output window when we are done with debugging.
+    // TODO(jonaldislarry) don't close the window if it was open prior to debugging.
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-output:hide');
   }
 }
 
