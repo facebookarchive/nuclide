@@ -141,9 +141,8 @@ export class ConnectionMultiplexer {
   async _handleDummyConnection(socket: Socket): Promise<void> {
     logger.log('ConnectionMultiplexer successfully got dummy connection.');
     const dummyConnection = new Connection(socket);
-    // TODO(jonaldislarry) handle return values.
-    await dummyConnection.sendStdoutRequest();
-    await dummyConnection.sendStderrRequest();
+    await this._handleOutputSetupForConnection(dummyConnection);
+
     // Continue from loader breakpoint to hit xdebug_break()
     // which will load whole www repo for evaluation if possible.
     await dummyConnection.sendContinuationCommand(COMMAND_RUN);
@@ -181,9 +180,7 @@ export class ConnectionMultiplexer {
     } else {
       const connection = new Connection(socket);
       this._breakpointStore.addConnection(connection);
-      // TODO(jonaldislarry) handle return values.
-      await connection.sendStdoutRequest();
-      await connection.sendStderrRequest();
+      await this._handleOutputSetupForConnection(connection);
 
       const info = {
         connection,
@@ -449,5 +446,18 @@ export class ConnectionMultiplexer {
     // .. we are seeing a request in a state that should not generate
     // that request.
     return new Error('No connection');
+  }
+
+  async _handleOutputSetupForConnection(connection: Connection): Promise<void> {
+    const stdoutRequestSucceeded = await connection.sendStdoutRequest();
+    if (!stdoutRequestSucceeded) {
+      logger.logError('HHVM returned failure for a stdout request');
+      this._clientCallback.sendUserMessage('outputWindow', {
+        level: 'error',
+        text: 'HHVM failed to redirect stdout, so no output will be sent to the output window.',
+      });
+    }
+    // TODO: Stderr redirection is not implemented in HHVM so we won't check this return value.
+    await connection.sendStderrRequest();
   }
 }
