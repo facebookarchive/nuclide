@@ -35,7 +35,7 @@ export class Connection {
     return this._id;
   }
 
-  onStatus(callback: (status: string) => mixed): IDisposable {
+  onStatus(callback: (status: string, ...args: Array<string>) => mixed): IDisposable {
     return this._socket.onStatus(callback);
   }
 
@@ -69,6 +69,10 @@ export class Connection {
 
   sendContinuationCommand(command: string): Promise<string> {
     return this._socket.sendContinuationCommand(command);
+  }
+
+  sendStdoutRequest(): Promise<boolean> {
+    return this._socket.sendStdoutRequest();
   }
 
   sendBreakCommand(): Promise<boolean> {

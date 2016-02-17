@@ -109,6 +109,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
           'getStatus',
           'sendContinuationCommand',
           'sendBreakCommand',
+          'sendStdoutRequest',
           'dispose',
         ]): any
       ): ConnectionType);
@@ -239,7 +240,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     expect(connectionCount).toBe(1);
 
     expect(connector.dispose).not.toHaveBeenCalledWith();
-    expect(Connection).toHaveBeenCalledWith(socket);
+    expect(Connection.calls[0].args[0]).toEqual(socket);
     expect(breakpointStore.addConnection).toHaveBeenCalledWith(connections[0]);
     expect(connections[0].onStatus).toHaveBeenCalledWith(connectionSpys[0].onStatus);
     expect(connections[0].getStatus).toHaveBeenCalledWith();
@@ -297,7 +298,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       expect(connectionCount).toBe(1);
 
       expect(connector.dispose).not.toHaveBeenCalledWith();
-      expect(Connection).toHaveBeenCalledWith(socket);
+      expect(Connection.calls[0].args[0]).toEqual(socket);
       expect(breakpointStore.addConnection).toHaveBeenCalledWith(connections[0]);
       expect(connections[0].onStatus).toHaveBeenCalledWith(connectionSpys[0].onStatus);
       expect(connections[0].getStatus).toHaveBeenCalledWith();

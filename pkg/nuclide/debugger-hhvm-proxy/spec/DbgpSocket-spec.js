@@ -11,6 +11,7 @@
 
 import type {Socket} from 'net';
 
+import {EventEmitter} from 'events';
 import {makeMessage} from '../lib/helpers';
 import {
   DbgpSocket,
@@ -49,7 +50,7 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
       }
     };
     spyOn(socket, 'on').andCallThrough();
-    dbgpSocket = new DbgpSocket(socket);
+    dbgpSocket = new DbgpSocket(socket, new EventEmitter());
     dbgpSocket.onStatus(onStatus);
   });
 

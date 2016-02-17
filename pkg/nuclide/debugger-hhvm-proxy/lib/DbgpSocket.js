@@ -11,6 +11,7 @@
 
 
 import logger from './utils';
+import {base64Decode} from './helpers';
 import {EventEmitter} from 'events';
 import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
 import type {Socket} from 'net';
@@ -24,6 +25,9 @@ const STATUS_BREAK = 'break';
 // Error and End are not dbgp status codes, they relate to socket states.
 const STATUS_ERROR = 'error';
 const STATUS_END = 'end';
+// stdout and stderr are emitted when DBGP sends the corresponding message packets.
+const STATUS_STDOUT = 'stdout';
+const STATUS_STDERR = 'stderr';
 
 // Valid continuation commands
 const COMMAND_RUN = 'run';
@@ -122,6 +126,7 @@ class DbgpSocket {
     const responses = this._messageHandler.parseMessages(message);
     responses.forEach(r => {
       const response = r.response;
+      const stream = r.stream;
       if (response) {
         const responseAttributes = response.$;
         const {command, transaction_id} = responseAttributes;
@@ -144,6 +149,12 @@ class DbgpSocket {
         } catch (e) {
           logger.logError('Exception: ' + e.toString() + ' handling call: ' + message);
         }
+      } else if (stream != null) {
+        const outputType = stream.$.type;
+        const outputText = base64Decode(stream._);
+        logger.log(`${outputType} message received: ${outputText}`);
+        const status = outputType === 'stdout' ? STATUS_STDOUT : STATUS_STDERR;
+        this._emitStatus(status, outputText);
       } else {
         logger.logError('Unexpected socket message: ' + message);
       }
@@ -227,6 +238,12 @@ class DbgpSocket {
     return response.$.success !== '0';
   }
 
+  async sendStdoutRequest(): Promise<boolean> {
+    // `-c 1` tells HHVM to send stdout to the normal destination, as well as forward it to nuclide.
+    const response = await this._callDebugger('stdout', '-c 1');
+    return response.$.success !== '0';
+  }
+
   /**
    * Returns the exception breakpoint id.
    */
@@ -293,9 +310,9 @@ class DbgpSocket {
     }
   }
 
-  _emitStatus(status: string): void {
+  _emitStatus(status: string, ...args: Array<string>): void {
     logger.log('Emitting status: ' + status);
-    this._emitter.emit(DBGP_SOCKET_STATUS_EVENT, status);
+    this._emitter.emit(DBGP_SOCKET_STATUS_EVENT, status, ...args);
   }
 
   dispose(): void {
@@ -325,6 +342,8 @@ module.exports = {
   STATUS_BREAK,
   STATUS_ERROR,
   STATUS_END,
+  STATUS_STDOUT,
+  STATUS_STDERR,
   COMMAND_RUN,
   COMMAND_STEP_INTO,
   COMMAND_STEP_OVER,
