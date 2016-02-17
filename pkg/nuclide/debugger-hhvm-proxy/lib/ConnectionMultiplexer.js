@@ -256,7 +256,7 @@ export class ConnectionMultiplexer {
   }
 
   _sendOutput(message: string, level: string): void {
-    this._clientCallback.sendUserMessage('console', {
+    this._clientCallback.sendUserMessage('outputWindow', {
       level: level,
       text: message,
     });

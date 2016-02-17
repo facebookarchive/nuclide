@@ -16,14 +16,23 @@ import ConsoleHandler from '../lib/ConsoleHandler';
 describe('debugger-hhvm-proxy ConsoleHandler', () => {
   let clientCallback: any;
   let handler: any;
+  let observableSpy: any;
 
   beforeEach(() => {
+    observableSpy = jasmine.createSpyObj('serverMessageObservable', [
+      'onNext',
+      'onCompleted',
+    ]);
     clientCallback = ((
       jasmine.createSpyObj(
         'clientCallback',
-        ['replyToCommand', 'replyWithError', 'sendMethod']
+        ['replyToCommand', 'replyWithError', 'sendMethod', 'getServerMessageObservable'],
       ): any
     ): ClientCallback);
+    // $FlowIssue -- instance method on object.
+    clientCallback.getServerMessageObservable = jasmine
+      .createSpy('getServerMessageObservable')
+      .andReturn(observableSpy);
     handler = new ConsoleHandler(clientCallback);
   });
 
@@ -44,7 +53,11 @@ describe('debugger-hhvm-proxy ConsoleHandler', () => {
   it('clearMessages', () => {
     waitsForPromise(async () => {
       await handler.handleMethod(3, 'clearMessages');
-      expect(clientCallback.sendMethod).toHaveBeenCalledWith('Console.messagesCleared', undefined);
+      expect(clientCallback.sendMethod).toHaveBeenCalledWith(
+        observableSpy,
+        'Console.messagesCleared',
+        undefined,
+      );
     });
   });
 

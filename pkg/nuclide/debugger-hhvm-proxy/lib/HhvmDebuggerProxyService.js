@@ -77,6 +77,10 @@ export class HhvmDebuggerProxyService {
     return this._clientCallback.getServerMessageObservable();
   }
 
+  getOutputWindowObservable(): Observable<string> {
+    return this._clientCallback.getOutputWindowObservable();
+  }
+
   async attach(config: ConnectionConfig): Promise<string> {
     logger.logInfo('Connecting config: ' + JSON.stringify(config));
 

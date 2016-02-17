@@ -31,14 +31,23 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
   let handler: any;
   let onStatus: any;
   let onStatusSubscription: any;
+  let observableSpy: any;
 
   beforeEach(() => {
+    observableSpy = jasmine.createSpyObj('serverMessageObservable', [
+      'onNext',
+      'onCompleted',
+    ]);
     clientCallback = ((
       jasmine.createSpyObj(
         'clientCallback',
-        ['replyToCommand', 'replyWithError', 'sendMethod']
+        ['replyToCommand', 'replyWithError', 'sendMethod', 'getServerMessageObservable'],
       ): any
     ): ClientCallbackType);
+    // $FlowIssue -- instance method on object.
+    clientCallback.getServerMessageObservable = jasmine
+      .createSpy('getServerMessageObservable')
+      .andReturn(observableSpy);
     connectionMultiplexer = ((
       jasmine.createSpyObj('connectionMultiplexer', [
         'onStatus',
@@ -66,6 +75,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       expect(clientCallback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
       expect(connectionMultiplexer.listen).not.toHaveBeenCalledWith();
       expect(clientCallback.sendMethod).toHaveBeenCalledWith(
+        observableSpy,
         'Debugger.paused',
         {
           callFrames: [],
@@ -108,6 +118,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       expect(connectionMultiplexer.getScopesForFrame).toHaveBeenCalledWith(0);
       expect(connectionMultiplexer.getScopesForFrame).toHaveBeenCalledWith(1);
       expect(clientCallback.sendMethod).toHaveBeenCalledWith(
+        observableSpy,
         'Debugger.scriptParsed',
         {
           scriptId: '/usr/test.php',
@@ -118,6 +129,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
           endColumn: 0 ,
         });
       expect(clientCallback.sendMethod).toHaveBeenCalledWith(
+        observableSpy,
         'Debugger.paused',
         {
           callFrames: [
@@ -169,7 +181,11 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
     waitsForPromise(async () => {
       await handler.handleMethod(1, 'resume');
       expect(connectionMultiplexer.listen).toHaveBeenCalledWith();
-      expect(clientCallback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
+      expect(clientCallback.sendMethod).toHaveBeenCalledWith(
+        observableSpy,
+        'Debugger.resumed',
+        undefined,
+      );
     });
   });
 
@@ -180,7 +196,11 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       // Fake the run from loader bp
       await handler.handleMethod(1, 'resume');
       expect(connectionMultiplexer.listen).toHaveBeenCalledWith();
-      expect(clientCallback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
+      expect(clientCallback.sendMethod).toHaveBeenCalledWith(
+        observableSpy,
+        'Debugger.resumed',
+        undefined,
+      );
       expect(connectionMultiplexer.sendContinuationCommand).not.toHaveBeenCalled();
 
       connectionMultiplexer.getStackFrames = jasmine.createSpy('getStackFrames').andReturn(
@@ -192,11 +212,16 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       expect(connectionMultiplexer.sendContinuationCommand).toHaveBeenCalledWith(dbgpCommand);
 
       await onStatus(STATUS_RUNNING);
-      expect(clientCallback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
+      expect(clientCallback.sendMethod).toHaveBeenCalledWith(
+        observableSpy,
+        'Debugger.resumed',
+        undefined,
+      );
 
       await onStatus(STATUS_BREAK);
       expect(connectionMultiplexer.getStackFrames).toHaveBeenCalledWith();
       expect(clientCallback.sendMethod).toHaveBeenCalledWith(
+        observableSpy,
         'Debugger.paused',
         {
           callFrames: [],

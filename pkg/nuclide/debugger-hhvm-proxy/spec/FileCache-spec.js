@@ -17,11 +17,23 @@ describe('debugger-hhvm-proxy FileCache', () => {
   let callback;
   let cache;
   let filepath;
+  let observableSpy;
 
   beforeEach(() => {
+    observableSpy = jasmine.createSpyObj('serverMessageObservable', [
+      'onNext',
+      'onCompleted',
+    ]);
     callback = ((
-      jasmine.createSpyObj('callback', ['replyToCommand', 'replyWithError', 'sendMethod']): any
+      jasmine.createSpyObj(
+        'callback',
+        ['replyToCommand', 'replyWithError', 'sendMethod', 'getServerMessageObservable'],
+      ): any
     ): ClientCallback);
+    // $FlowIssue -- instance method on object.
+    callback.getServerMessageObservable = jasmine
+      .createSpy('getServerMessageObservable')
+      .andReturn(observableSpy);
     cache = new FileCache(callback);
     const path = require('path');
     const fixturesPath = path.join(__dirname, 'fixtures');
@@ -33,6 +45,7 @@ describe('debugger-hhvm-proxy FileCache', () => {
       const sourceFileUrl = `file://${filepath}`;
       cache.registerFile(sourceFileUrl);
       expect(callback.sendMethod).toHaveBeenCalledWith(
+        observableSpy,
         'Debugger.scriptParsed',
         {
           'scriptId': filepath,
@@ -52,6 +65,7 @@ describe('debugger-hhvm-proxy FileCache', () => {
       const noSourceFileUrl = filepath;
       cache.registerFile(noSourceFileUrl);
       expect(callback.sendMethod).toHaveBeenCalledWith(
+        observableSpy,
         'Debugger.scriptParsed',
         {
           'scriptId': filepath,

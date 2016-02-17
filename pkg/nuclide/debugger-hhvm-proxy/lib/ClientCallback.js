@@ -14,7 +14,7 @@ import {Observable, Subject} from 'rx';
 
 import type {NotificationMessage} from './HhvmDebuggerProxyService';
 
-export type UserMessageType = 'notification' | 'console';
+export type UserMessageType = 'notification' | 'console' | 'outputWindow';
 export type NotificationType = 'info' | 'warning' | 'error' | 'fatalError';
 
 function createMessage(method: string, params: ?Object): Object {
@@ -27,18 +27,21 @@ function createMessage(method: string, params: ?Object): Object {
 
 /**
  * This class provides a central callback channel to communicate with debugger client.
- * Currently it provides three callback channels:
+ * Currently it provides four callback channels:
  * 1. Chrome server messages.
  * 2. Atom UI notification.
  * 3. Chrome console user messages.
+ * 4. Output window messages.
  */
 export class ClientCallback {
   _serverMessageObservable: Subject;  // For server messages.
   _notificationObservable: Subject;   // For atom UI notifications.
+  _outputWindowObservable: Subject;   // For output window messages.
 
   constructor() {
     this._serverMessageObservable = new Subject();
     this._notificationObservable = new Subject();
+    this._outputWindowObservable = new Subject();
   }
 
   getNotificationObservable(): Observable<NotificationMessage> {
@@ -49,19 +52,31 @@ export class ClientCallback {
     return this._serverMessageObservable;
   }
 
+  getOutputWindowObservable(): Observable<string> {
+    return this._outputWindowObservable;
+  }
+
   sendUserMessage(type: UserMessageType, message: Object): void {
     logger.log(`sendUserMessage(${type}): ${JSON.stringify(message)}`);
-    if (type === 'notification') {
-      this._notificationObservable.onNext({
-        type: message.type,
-        message: message.message,
-      });
-    } else if (type === 'console') {
-      this.sendMethod('Console.messageAdded', {
-        message,
-      });
-    } else {
-      logger.logError(`Unknown UserMessageType: ${type}`);
+    switch (type) {
+      case 'notification':
+        this._notificationObservable.onNext({
+          type: message.type,
+          message: message.message,
+        });
+        break;
+      case 'console':
+        this.sendMethod(this._serverMessageObservable, 'Console.messageAdded', {
+          message,
+        });
+        break;
+      case 'outputWindow':
+        this.sendMethod(this._outputWindowObservable, 'Console.messageAdded', {
+          message,
+        });
+        break;
+      default:
+        logger.logError(`Unknown UserMessageType: ${type}`);
     }
   }
 
@@ -80,21 +95,22 @@ export class ClientCallback {
     if (error) {
       value.error = error;
     }
-    this._sendJsonObject(value);
+    this._sendJsonObject(this._serverMessageObservable, value);
   }
 
-  sendMethod(method: string, params: ?Object) {
-    this._sendJsonObject(createMessage(method, params));
+  sendMethod(observable: Observable<string>, method: string, params: ?Object) {
+    this._sendJsonObject(observable, createMessage(method, params));
   }
 
-  _sendJsonObject(value: Object): void {
+  _sendJsonObject(observable: Observable<string>, value: Object): void {
     const message = JSON.stringify(value);
     logger.log('Sending JSON: ' + message);
-    this._serverMessageObservable.onNext(message);
+    ((observable : any) : Subject).onNext(message);
   }
 
   dispose(): void {
     this._notificationObservable.onCompleted();
     this._serverMessageObservable.onCompleted();
+    this._outputWindowObservable.onCompleted();
   }
 }

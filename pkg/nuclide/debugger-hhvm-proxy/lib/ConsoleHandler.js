@@ -15,9 +15,7 @@ import type {ClientCallback} from './ClientCallback';
 
 // Handles all 'Console.*' Chrome dev tools messages
 class ConsoleHandler extends Handler {
-  constructor(
-    clientCallback: ClientCallback,
-  ) {
+  constructor(clientCallback: ClientCallback) {
     super('Console', clientCallback);
   }
 

@@ -32,6 +32,7 @@ class FileCache {
     if (!this._files.has(filepath)) {
       this._files.set(filepath, new File(filepath));
       this._callback.sendMethod(
+        this._callback.getServerMessageObservable(),
         'Debugger.scriptParsed',
         {
           'scriptId': filepath,

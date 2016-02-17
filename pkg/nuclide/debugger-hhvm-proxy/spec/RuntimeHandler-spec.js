@@ -18,8 +18,13 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
   let clientCallback: any;
   let connectionMultiplexer: any;
   let handler: any;
+  let observableSpy: any;
 
   beforeEach(() => {
+    observableSpy = jasmine.createSpyObj('serverMessageObservable', [
+      'onNext',
+      'onCompleted',
+    ]);
     connectionMultiplexer = ((
       jasmine.createSpyObj('connectionMultiplexer', [
         'getProperties',
@@ -29,15 +34,20 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
     clientCallback = ((
       jasmine.createSpyObj(
         'clientCallback',
-        ['replyToCommand', 'replyWithError', 'sendMethod']
+        ['replyToCommand', 'replyWithError', 'sendMethod', 'getServerMessageObservable'],
       ): any
     ): ClientCallback);
+    // $FlowIssue -- instance method on object.
+    clientCallback.getServerMessageObservable = jasmine
+      .createSpy('getServerMessageObservable')
+      .andReturn(observableSpy);
     handler = new RuntimeHandler(clientCallback, connectionMultiplexer);
   });
 
   it('enable', () => {
     handler.handleMethod(1, 'enable');
     expect(clientCallback.sendMethod).toHaveBeenCalledWith(
+      observableSpy,
       'Runtime.executionContextCreated',
       {
         'context': {

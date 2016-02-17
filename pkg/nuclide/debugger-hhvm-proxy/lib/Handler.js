@@ -48,7 +48,11 @@ class Handler {
   }
 
   sendMethod(method: string, params: ?Object): void {
-    this._clientCallback.sendMethod(method, params);
+    this._clientCallback.sendMethod(
+      this._clientCallback.getServerMessageObservable(),
+      method,
+      params,
+    );
   }
 
   sendUserMessage(type: UserMessageType, message: Object): void {

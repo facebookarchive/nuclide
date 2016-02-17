@@ -34,12 +34,12 @@ describe('debugger-hhvm-proxy ClientCallback', () => {
   });
 
   it('sendMethod: no args', () => {
-    clientCallback.sendMethod('method1');
+    clientCallback.sendMethod(observableSpy, 'method1');
     expect(observableSpy.onNext).toHaveBeenCalledWith('{"method":"method1"}');
   });
 
   it('sendMethod: args', () => {
-    clientCallback.sendMethod('method1', { arg1: 12 });
+    clientCallback.sendMethod(observableSpy, 'method1', { arg1: 12 });
     expect(observableSpy.onNext).toHaveBeenCalledWith('{"method":"method1","params":{"arg1":12}}');
   });
 
