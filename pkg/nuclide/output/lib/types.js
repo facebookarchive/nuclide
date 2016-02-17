@@ -11,7 +11,7 @@
 
 import type Rx from 'rx';
 
-export type Level = 'info' | 'warn' | 'error';
+export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug';
 
 export type Message = {
   text: string,

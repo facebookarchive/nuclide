@@ -26,7 +26,7 @@ export default function createMessage(entry: LogcatEntry): Message {
 function priorityToLevel(priority: Priority): Level {
   switch (priority) {
     case 'W': // warn
-      return 'warn';
+      return 'warning';
     case 'E': // error
     case 'F': // fatal
       return 'error';

@@ -234,7 +234,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
         .filter(messageObj => messageObj.method === 'Console.messageAdded')
         .map(messageObj => {
           return {
-            level: 'info', // TODO(jonaldislarry) determine from messageObj.params.message.level.
+            level: messageObj.params.message.level,
             text: messageObj.params.message.text,
           };
         });
