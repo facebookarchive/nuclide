@@ -21,6 +21,11 @@ const MINIMUM_LENGTH = 100;
 
 const emptyFunction = () => {};
 
+type State = {
+  isResizing: boolean;
+  length: number;
+};
+
 /**
  * A container for centralizing the logic for making panels scrollable,
  * resizeable, dockable, etc.
@@ -28,6 +33,7 @@ const emptyFunction = () => {};
 class PanelComponent extends React.Component {
 
   _resizeSubscriptions: CompositeDisposable;
+  state: State;
 
   static propTypes = {
     children: PropTypes.element.isRequired,
@@ -52,10 +58,10 @@ class PanelComponent extends React.Component {
     };
 
     // Bind main events to this object. _updateSize is only ever bound within these.
-    this._handleDoubleClick = this._handleDoubleClick.bind(this);
-    this._handleMouseDown = this._handleMouseDown.bind(this);
-    this._handleMouseMove = this._handleMouseMove.bind(this);
-    this._handleMouseUp = this._handleMouseUp.bind(this);
+    (this: any)._handleDoubleClick = this._handleDoubleClick.bind(this);
+    (this: any)._handleMouseDown = this._handleMouseDown.bind(this);
+    (this: any)._handleMouseMove = this._handleMouseMove.bind(this);
+    (this: any)._handleMouseUp = this._handleMouseUp.bind(this);
   }
 
   render(): ReactElement {

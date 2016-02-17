@@ -17,7 +17,12 @@ const {PropTypes} = React;
 
 import type {Device} from './IosSimulator';
 
-class SimulatorDropdown extends React.Component {
+type State = {
+  menuItems: Array<Object>;
+  selectedIndex: number;
+};
+
+class SimulatorDropdown extends React.Component<void, void, State> {
   static propTypes = {
     className: PropTypes.string.isRequired,
     disabled: PropTypes.bool.isRequired,
@@ -38,8 +43,8 @@ class SimulatorDropdown extends React.Component {
       menuItems: [],
       selectedIndex: 0,
     };
-    this._buildMenuItems = this._buildMenuItems.bind(this);
-    this._handleSelection = this._handleSelection.bind(this);
+    (this: any)._buildMenuItems = this._buildMenuItems.bind(this);
+    (this: any)._handleSelection = this._handleSelection.bind(this);
   }
 
   componentDidMount() {

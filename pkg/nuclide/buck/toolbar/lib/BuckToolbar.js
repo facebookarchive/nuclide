@@ -47,16 +47,18 @@ class BuckToolbar extends React.Component {
 
   constructor(props: mixed) {
     super(props);
-    this._handleBuildTargetChange = debounce(this._handleBuildTargetChange.bind(this), 100, false);
-    this._handleSimulatorChange = this._handleSimulatorChange.bind(this);
-    this._handleReactNativeServerModeChanged = this._handleReactNativeServerModeChanged.bind(this);
-    this._requestOptions = this._requestOptions.bind(this);
-    this._build = this._build.bind(this);
-    this._run = this._run.bind(this);
-    this._debug = this._debug.bind(this);
+    (this: any)._handleBuildTargetChange =
+      debounce(this._handleBuildTargetChange.bind(this), 100, false);
+    (this: any)._handleSimulatorChange = this._handleSimulatorChange.bind(this);
+    (this: any)._handleReactNativeServerModeChanged =
+      this._handleReactNativeServerModeChanged.bind(this);
+    (this: any)._requestOptions = this._requestOptions.bind(this);
+    (this: any)._build = this._build.bind(this);
+    (this: any)._run = this._run.bind(this);
+    (this: any)._debug = this._debug.bind(this);
+
     this._buckToolbarActions = this.props.actions;
     this._buckToolbarStore = this.props.store;
-
     this._onActivePaneItemChanged(atom.workspace.getActivePaneItem());
 
     this._disposables = new CompositeDisposable();

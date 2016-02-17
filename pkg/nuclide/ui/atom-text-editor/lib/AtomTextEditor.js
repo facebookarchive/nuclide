@@ -66,7 +66,7 @@ function setupTextEditor(props: Object): atom$TextEditor {
 }
 
 class AtomTextEditor extends React.Component {
-
+  state: void;
   _textEditorElement: ?atom$TextEditorElement;
 
   static propTypes = {
@@ -120,7 +120,7 @@ class AtomTextEditor extends React.Component {
     }
   }
 
-  componentDidUpdate(prevProps: Object, prevState: Object): void {
+  componentDidUpdate(prevProps: Object, prevState: void): void {
     if (prevProps.textBuffer !== this.props.textBuffer) {
       this._onDidUpdateTextEditorElement();
     }
@@ -161,7 +161,7 @@ class AtomTextEditor extends React.Component {
 
   // This component wraps the imperative API of `<atom-text-editor>`, and so React's rendering
   // should always pass because this subtree won't change.
-  shouldComponentUpdate(nextProps: Object, nextState: Object): boolean {
+  shouldComponentUpdate(nextProps: Object, nextState: void): boolean {
     return false;
   }
 

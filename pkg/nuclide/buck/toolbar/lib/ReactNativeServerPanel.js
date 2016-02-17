@@ -29,8 +29,8 @@ export default class ReactNativeServerPanel extends React.Component {
     this._storeSubscription = props.store.subscribe(() => {
       this.forceUpdate();
     });
-    this._stopServer = this._handleStopClicked.bind(this);
-    this._restartServer = this._handleRestartClicked.bind(this);
+    (this: any)._handleStopClicked = this._handleStopClicked.bind(this);
+    (this: any)._handleRestartClicked = this._handleRestartClicked.bind(this);
   }
 
   componentWillUnmount() {
@@ -47,13 +47,13 @@ export default class ReactNativeServerPanel extends React.Component {
         <div className="inline-block">
           <button
             className="btn icon icon-primitive-square inline-block-tight"
-            onClick={this._stopServer}
+            onClick={this._handleStopClicked}
           >
             Stop
           </button>
           <button
             className="btn icon icon-sync inline-block-tight"
-            onClick={this._restartServer}
+            onClick={this._handleRestartClicked}
           >
             Restart
           </button>

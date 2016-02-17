@@ -50,7 +50,7 @@ type Props = {
 
 type State = {
   value: string;
-}
+};
 
 /**
  * An input field rendered as an <atom-text-editor mini />.
@@ -76,7 +76,7 @@ class AtomInput extends React.Component<DefaultProps, Props, State> {
       value: props.initialValue,
     };
 
-    this._analyzeKeyCodes = this._analyzeKeyCodes.bind(this);
+    (this: any)._analyzeKeyCodes = this._analyzeKeyCodes.bind(this);
   }
 
   componentDidMount(): void {

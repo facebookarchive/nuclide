@@ -26,6 +26,14 @@ const emptyfunction = require('emptyfunction');
 
 const {PropTypes} = React;
 
+type State = {
+  filteredOptions: Array<Object>;
+  options: Array<string>;
+  optionsVisible: boolean;
+  selectedIndex: number;
+  textInput: string;
+};
+
 /**
  * A Combo Box.
  * TODO allow making text input non-editable via props
@@ -35,7 +43,7 @@ const {PropTypes} = React;
  * TODO move combobox to separate package.
  */
 class AtomComboBox extends React.Component {
-
+  state: State;
   _subscriptions: ?CompositeDisposable;
 
   static propTypes = {
@@ -69,15 +77,15 @@ class AtomComboBox extends React.Component {
       selectedIndex: -1,
       textInput: props.initialTextInput,
     };
-    this.receiveUpdate = this.receiveUpdate.bind(this);
-    this._handleTextInputChange = this._handleTextInputChange.bind(this);
-    this._handleInputBlur = this._handleInputBlur.bind(this);
-    this._handleInputFocus = this._handleInputFocus.bind(this);
-    this._handleMoveDown = this._handleMoveDown.bind(this);
-    this._handleMoveUp = this._handleMoveUp.bind(this);
-    this._handleCancel = this._handleCancel.bind(this);
-    this._handleConfirm = this._handleConfirm.bind(this);
-    this._scrollSelectedOptionIntoViewIfNeeded =
+    (this: any).receiveUpdate = this.receiveUpdate.bind(this);
+    (this: any)._handleTextInputChange = this._handleTextInputChange.bind(this);
+    (this: any)._handleInputBlur = this._handleInputBlur.bind(this);
+    (this: any)._handleInputFocus = this._handleInputFocus.bind(this);
+    (this: any)._handleMoveDown = this._handleMoveDown.bind(this);
+    (this: any)._handleMoveUp = this._handleMoveUp.bind(this);
+    (this: any)._handleCancel = this._handleCancel.bind(this);
+    (this: any)._handleConfirm = this._handleConfirm.bind(this);
+    (this: any)._scrollSelectedOptionIntoViewIfNeeded =
       this._scrollSelectedOptionIntoViewIfNeeded.bind(this);
   }
 
@@ -112,7 +120,7 @@ class AtomComboBox extends React.Component {
     });
   }
 
-  selectValue(newValue: string, didRenderCallback?: () => mixed) {
+  selectValue(newValue: string, didRenderCallback?: () => void) {
     this.refs['freeformInput'].setText(newValue);
     this.setState({
       textInput: newValue,

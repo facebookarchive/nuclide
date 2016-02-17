@@ -29,6 +29,7 @@ const SPINNER = '\uF087';
  * Represents one entry in a TreeComponent.
  */
 class TreeNodeComponent extends React.Component {
+  state: void;
 
   static propTypes = {
     depth: PropTypes.number.isRequired,
@@ -49,12 +50,12 @@ class TreeNodeComponent extends React.Component {
 
   constructor(props: Object) {
     super(props);
-    this._onClick = this._onClick.bind(this);
-    this._onDoubleClick = this._onDoubleClick.bind(this);
-    this._onMouseDown = this._onMouseDown.bind(this);
+    (this: any)._onClick = this._onClick.bind(this);
+    (this: any)._onDoubleClick = this._onDoubleClick.bind(this);
+    (this: any)._onMouseDown = this._onMouseDown.bind(this);
   }
 
-  shouldComponentUpdate(nextProps: Object, nextState: Object): boolean {
+  shouldComponentUpdate(nextProps: Object, nextState: void): boolean {
     return PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
   }
 

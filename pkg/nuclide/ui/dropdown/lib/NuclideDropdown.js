@@ -47,7 +47,7 @@ class NuclideDropdown extends React.Component {
 
   constructor(props: Object) {
     super(props);
-    this._onChange = this._onChange.bind(this);
+    (this: any)._onChange = this._onChange.bind(this);
   }
 
   render(): ReactElement {

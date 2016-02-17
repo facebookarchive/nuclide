@@ -21,6 +21,7 @@ const {PropTypes} = React;
  * to ensure this component is pure.
  */
 export default class NuclideCheckbox extends React.Component {
+  state: void;
 
   static propTypes = {
     checked: PropTypes.bool.isRequired,
@@ -30,10 +31,10 @@ export default class NuclideCheckbox extends React.Component {
 
   constructor(props: Object) {
     super(props);
-    this._onChange = this._onChange.bind(this);
+    (this: any)._onChange = this._onChange.bind(this);
   }
 
-  shouldComponentUpdate(nextProps: Object, nextState: Object): boolean {
+  shouldComponentUpdate(nextProps: Object, nextState: void): boolean {
     return PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
   }
 

@@ -26,10 +26,11 @@ type Props = {
 };
 
 export default class Webview extends React.Component<void, Props, void> {
+  _disposables: CompositeDisposable;
 
   constructor(props: Object) {
     super(props);
-    this._handleDidFinishLoad = this._handleDidFinishLoad.bind(this);
+    (this: any)._handleDidFinishLoad = this._handleDidFinishLoad.bind(this);
     this._disposables = new CompositeDisposable();
   }
 
