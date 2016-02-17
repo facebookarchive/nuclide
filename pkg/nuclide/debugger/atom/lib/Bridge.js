@@ -120,8 +120,8 @@ class Bridge {
     if (nullableOptions) {
       const options = nullableOptions; // For use in capture without re-checking null
       const path = remoteUri.uriToNuclideUri(options.sourceURL);
-      if (path) { // only handle real files for now
-        atom.workspace.open(path).then(editor => {
+      if (path != null) { // only handle real files for now
+        atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
           this._clearSelectedCallFrameMarker();
           this._highlightCallFrameLine(editor, options.lineNumber);
         });
@@ -135,12 +135,11 @@ class Bridge {
     if (nullableOptions) {
       const options = nullableOptions; // For use in capture without re-checking null
       const path = remoteUri.uriToNuclideUri(options.sourceURL);
-      if (path) { // only handle real files for now.
-        atom.workspace.open(path)
-          .then(editor => {
-            editor.scrollToBufferPosition([options.lineNumber, 0]);
-            editor.setCursorBufferPosition([options.lineNumber, 0]);
-          });
+      if (path != null) { // only handle real files for now.
+        atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
+          editor.scrollToBufferPosition([options.lineNumber, 0]);
+          editor.setCursorBufferPosition([options.lineNumber, 0]);
+        });
       }
     }
   }
