@@ -11,6 +11,7 @@
 
 import {checkOutput, safeSpawn} from './process';
 
+const DEFAULT_JOIN_TIMEOUT = 5000;
 let SCRIBE_CAT_COMMAND = 'scribe_cat';
 
 /**
@@ -61,6 +62,17 @@ export class ScribeProcess {
       if (this._childProcessRunning.get(child)) {
         child.kill();
       }
+    }
+  }
+
+  async join(timeout: number = DEFAULT_JOIN_TIMEOUT): Promise<void> {
+    if (this._childPromise) {
+      const child = await this._childPromise;
+      child.stdin.end();
+      return new Promise(resolve => {
+        child.on('exit', () => resolve());
+        setTimeout(resolve, timeout);
+      });
     }
   }
 
