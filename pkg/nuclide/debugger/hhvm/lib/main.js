@@ -11,9 +11,16 @@
 
 import type {HomeFragments} from '../../../home-interfaces';
 import type {nuclide_debugger$Service} from '../../interfaces/service';
+import type OutputService from '../../../output/lib/OutputService';
+
+import {setOutputService} from './OutputServiceManager';
 
 module.exports = {
   activate(state: mixed): void {
+  },
+
+  consumeOutputService(api: OutputService): void {
+    setOutputService(api);
   },
 
   provideNuclideDebuggerHhvm(): nuclide_debugger$Service {

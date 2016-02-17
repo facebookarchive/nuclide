@@ -17,6 +17,7 @@ import type {HhvmDebuggerProxyService as HhvmDebuggerProxyServiceType,}
     from '../../../debugger-hhvm-proxy/lib/HhvmDebuggerProxyService';
 
 import {DebuggerInstance} from '../../atom';
+import {getOutputService} from './OutputServiceManager';
 
 const {log, logInfo, logError, setLogLevel} = utils;
 const featureConfig = require('../../../feature-config');
@@ -81,6 +82,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       this._handleServerError.bind(this),
       this._handleServerEnd.bind(this)
     ));
+    this._registerOutputWindowLogging(proxy);
 
     const config = getConfig();
     const connectionConfig: ConnectionConfig = {
@@ -215,6 +217,34 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
   _handleNotificationEnd(): void {
     log('Notification observerable ends.');
     this._endSession();
+  }
+
+  _registerOutputWindowLogging(proxy: HhvmDebuggerProxyServiceType): void {
+    const api = getOutputService();
+    if (api != null) {
+      const outputWindowMessage$ = proxy.getOutputWindowObservable()
+        .map(message => {
+          const serverMessage = translateMessageFromServer(
+            remoteUri.getHostname(this.getTargetUri()),
+            remoteUri.getPort(this.getTargetUri()),
+            message,
+          );
+          return JSON.parse(serverMessage);
+        })
+        .filter(messageObj => messageObj.method === 'Console.messageAdded')
+        .map(messageObj => {
+          return {
+            level: 'info', // TODO(jonaldislarry) determine from messageObj.params.message.level.
+            text: messageObj.params.message.text,
+          };
+        });
+      this._disposables.add(api.registerOutputProvider({
+        source: 'hhvm debugger',
+        messages: outputWindowMessage$,
+      }));
+    } else {
+      logError('Cannot get output window service.');
+    }
   }
 
   _endSession(): void {
