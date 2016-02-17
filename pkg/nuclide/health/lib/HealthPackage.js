@@ -82,6 +82,9 @@ export function deactivate() {
 
 export function consumeToolBar(getToolBar: (group: string) => Object): void {
   const toolBar = getToolBar('nuclide-health');
+  toolBar.addSpacer({
+    priority: 899,
+  });
   toolBar.addButton({
     icon: 'dashboard',
     callback: 'nuclide-health:toggle',

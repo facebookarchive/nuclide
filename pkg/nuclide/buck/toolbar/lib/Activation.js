@@ -68,6 +68,9 @@ class Activation {
 
   consumeToolBar(getToolBar: (group: string) => Object): void {
     const toolBar = getToolBar('nuclide-buck-toolbar');
+    toolBar.addSpacer({
+      priority: 499,
+    });
     const toolBarButton = toolBar.addButton({
       callback: 'nuclide-buck-toolbar:toggle',
       tooltip: 'Toggle Buck Toolbar',
