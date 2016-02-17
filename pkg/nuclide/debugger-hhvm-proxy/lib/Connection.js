@@ -75,6 +75,10 @@ export class Connection {
     return this._socket.sendStdoutRequest();
   }
 
+  sendStderrRequest(): Promise<boolean> {
+    return this._socket.sendStderrRequest();
+  }
+
   sendBreakCommand(): Promise<boolean> {
     return this._socket.sendBreakCommand();
   }

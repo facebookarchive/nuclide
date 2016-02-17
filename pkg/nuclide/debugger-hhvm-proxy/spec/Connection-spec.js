@@ -42,6 +42,7 @@ describe('debugger-hhvm-proxy Connection', () => {
       'sendContinuationCommand',
       'sendBreakCommand',
       'sendStdoutRequest',
+      'sendStderrRequest',
       'dispose']
     ): any): DbgpSocketType);
     DbgpSocketConstructor = (

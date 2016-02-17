@@ -110,6 +110,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
           'sendContinuationCommand',
           'sendBreakCommand',
           'sendStdoutRequest',
+          'sendStderrRequest',
           'dispose',
         ]): any
       ): ConnectionType);

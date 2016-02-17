@@ -141,7 +141,9 @@ export class ConnectionMultiplexer {
   async _handleDummyConnection(socket: Socket): Promise<void> {
     logger.log('ConnectionMultiplexer successfully got dummy connection.');
     const dummyConnection = new Connection(socket);
+    // TODO(jonaldislarry) handle return values.
     await dummyConnection.sendStdoutRequest();
+    await dummyConnection.sendStderrRequest();
     // Continue from loader breakpoint to hit xdebug_break()
     // which will load whole www repo for evaluation if possible.
     await dummyConnection.sendContinuationCommand(COMMAND_RUN);
@@ -179,7 +181,9 @@ export class ConnectionMultiplexer {
     } else {
       const connection = new Connection(socket);
       this._breakpointStore.addConnection(connection);
+      // TODO(jonaldislarry) handle return values.
       await connection.sendStdoutRequest();
+      await connection.sendStderrRequest();
 
       const info = {
         connection,

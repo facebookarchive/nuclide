@@ -245,6 +245,14 @@ class DbgpSocket {
   }
 
   /**
+   * Stderr forwarding is not implemented by HHVM yet so this will always return failure.
+   */
+  async sendStderrRequest(): Promise<boolean> {
+    const response = await this._callDebugger('stderr', '-c 1');
+    return response.$.success !== '0';
+  }
+
+  /**
    * Returns the exception breakpoint id.
    */
   async setExceptionBreakpoint(exceptionName: string): Promise<string> {
