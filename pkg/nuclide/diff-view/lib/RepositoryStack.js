@@ -242,16 +242,16 @@ export default class RepositoryStack {
     // may be not applicable, but that's defined once the rebase is done.
     // Hence, we need to retry fetching the revision info (depending on the common ancestor)
     // because the watchman-based Mercurial updates doesn't consider or wait while rebasing.
-    const revisions = await promises.retryLimit(
+    const revisions: ?Array<RevisionInfo> = await promises.retryLimit(
       () => this._repository.fetchRevisionInfoBetweenHeadAndBase(),
       result => result != null,
       FETCH_REV_INFO_MAX_TRIES,
       FETCH_REV_INFO_RETRY_TIME_MS,
     );
-    if (revisions == null) {
+    if (revisions == null || revisions.length === 0) {
       throw new Error('Cannot fetch revision info needed!');
     }
-    const commitId = revisions[revisions.length - 1];
+    const commitId = revisions[revisions.length - 1].id;
     return {
       revisions,
       commitId,
