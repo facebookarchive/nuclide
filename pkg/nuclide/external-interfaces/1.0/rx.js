@@ -108,9 +108,21 @@ declare module 'rx' {
 
     publishLast(): ConnectableObservable<T>,
 
+    reduce<U>(
+      accumulator: (
+        acc: U,
+        currentValue: T,
+        index: number,
+        source: Observable<T>,
+      ) => U,
+      seed: U,
+    ): Observable<U>,
+
     replay(): ConnectableObservable<T>,
 
     retry(retryCount: number): Observable<T>,
+
+    retryWhen(notifier: (errors: Observable<Error>) => Observable<any>): Observable<T>,
 
     scan<U>(
       f: (acc: U, value: T) => U,
