@@ -90,7 +90,8 @@ class HhvmToolbar extends React.Component {
             ref="debugTarget"
             initialValue={debugTarget}
             disabled={!isDebugScript}
-            size="sm"/>
+            size="sm"
+          />
         </div>
         <div className="btn-group btn-group-sm inline-block">
           <button

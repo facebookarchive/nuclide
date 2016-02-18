@@ -65,7 +65,8 @@ export default class DiffTimelineView extends React.Component {
         <RevisionsTimelineComponent
           revisions={revisions}
           compareRevisionId={compareCommitId || commitId}
-          onSelectionChange={this.props.onSelectionChange}/>
+          onSelectionChange={this.props.onSelectionChange}
+        />
       );
     }
     return (

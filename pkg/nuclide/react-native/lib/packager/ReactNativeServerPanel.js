@@ -45,14 +45,12 @@ export default class ReactNativeServerPanel extends React.Component<void, Props,
         <div className="inline-block">
           <button
             className="btn icon icon-primitive-square inline-block-tight"
-            onClick={this.props.stopServer}
-          >
+            onClick={this.props.stopServer}>
             Stop
           </button>
           <button
             className="btn icon icon-sync inline-block-tight"
-            onClick={this.props.restartServer}
-          >
+            onClick={this.props.restartServer}>
             Restart
           </button>
         </div>

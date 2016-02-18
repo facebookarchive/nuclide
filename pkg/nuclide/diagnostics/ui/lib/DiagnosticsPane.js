@@ -187,8 +187,7 @@ class DiagnosticsPane extends React.Component {
         rowHeight={DEFAULT_ROW_TEXT_HEIGHT + ROW_VERTICAL_PADDING}
         rowHeightGetter={this._rowHeightGetter}
         rowsCount={this.props.diagnostics.length}
-        width={this.props.width}
-        >
+        width={this.props.width}>
         <Column
           align="left"
           cellDataGetter={typeColumnCellDataGetter}

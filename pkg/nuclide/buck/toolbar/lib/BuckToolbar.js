@@ -111,8 +111,7 @@ class BuckToolbar extends React.Component {
     return (
       <div
         className="buck-toolbar padded tool-panel"
-        hidden={!buckToolbarStore.isPanelVisible()}
-      >
+        hidden={!buckToolbarStore.isPanelVisible()}>
         <AtomComboBox
           className="inline-block"
           ref="buildTarget"

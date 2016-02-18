@@ -134,7 +134,8 @@ export default class DiffViewEditorPane extends React.Component {
           <AtomTextEditor
             ref="editor"
             readOnly={this.props.readOnly}
-            textBuffer={this.props.textBuffer} />
+            textBuffer={this.props.textBuffer}
+          />
         </div>
       </div>
     );

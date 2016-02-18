@@ -244,7 +244,8 @@ class DiffViewComponent extends React.Component {
           initialTextContent={oldState.text}
           inlineElements={oldState.inlineElements}
           handleNewOffsets={this._boundHandleNewOffsets}
-          readOnly={true}/>,
+          readOnly={true}
+        />,
         this._getPaneElement(this._oldEditorPane),
     );
     const textBuffer = bufferForUri(filePath);
@@ -261,7 +262,8 @@ class DiffViewComponent extends React.Component {
           handleNewOffsets={this._boundHandleNewOffsets}
           onDidUpdateTextEditorElement={this._boundOnDidUpdateTextEditorElement}
           readOnly={false}
-          onChange={this._boundOnChangeNewTextEditor}/>,
+          onChange={this._boundOnChangeNewTextEditor}
+        />,
         this._getPaneElement(this._newEditorPane),
     );
   }
@@ -274,7 +276,8 @@ class DiffViewComponent extends React.Component {
     this._timelineComponent = ReactDOM.render(
       <DiffTimelineView
         diffModel={this.props.diffModel}
-        onSelectionChange={this._boundOnTimelineChangeRevision}/>,
+        onSelectionChange={this._boundOnTimelineChangeRevision}
+      />,
       this._getPaneElement(this._bottomRightPane),
     );
   }
@@ -293,8 +296,9 @@ class DiffViewComponent extends React.Component {
         removedLines={oldLines.removed}
         oldOffsets={oldOffsets}
         oldContents={oldContents}
-        onClick={this._boundOnNavigationClick}/>,
-        navigationPaneElement,
+        onClick={this._boundOnNavigationClick}
+      />,
+      navigationPaneElement,
     );
   }
 
@@ -328,7 +332,7 @@ class DiffViewComponent extends React.Component {
           diffMode={this.state.mode}
           onSwitchMode={this._onChangeMode}
           onSwitchToEditor={this._onSwitchToEditor}
-          />
+        />
       );
     }
     return (

@@ -214,7 +214,8 @@ export default class DiffViewTree extends React.Component {
         rowClassNameForNode={rowClassNameForNode}
         elementToRenderWhenEmpty={<div>No changes to show</div>}
         onKeepSelection={() => {}}
-        ref="tree" />
+        ref="tree"
+      />
     );
   }
 

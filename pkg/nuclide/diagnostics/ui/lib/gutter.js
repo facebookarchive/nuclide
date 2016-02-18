@@ -390,8 +390,7 @@ class DiagnosticsPopup extends React.Component {
     return (
       <div
         className="nuclide-diagnostics-gutter-ui-popup"
-        style={{left: this.props.left + 'px', top: this.props.top + 'px'}}
-        >
+        style={{left: this.props.left + 'px', top: this.props.top + 'px'}}>
         {this.props.children}
       </div>
     );

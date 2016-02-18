@@ -82,41 +82,47 @@ export default class DiffNavigationBar extends React.Component {
     const jumpTargets = [];
 
     for (const [addedLineWithOffset, addedLine] of addedLinesWithOffsets) {
-      jumpTargets.push(<NavigatonBarJumpTarget
-        offsetLineNumber={addedLineWithOffset}
-        key={addedLineWithOffset}
-        lineNumber={addedLine}
-        linesCount={linesCount}
-        lineChangeClass="added"
-        isAddedLine={true}
-        containerHeight={elementHeight}
-        onClick={this._boundHandleClick}/>
+      jumpTargets.push(
+        <NavigatonBarJumpTarget
+          offsetLineNumber={addedLineWithOffset}
+          key={addedLineWithOffset}
+          lineNumber={addedLine}
+          linesCount={linesCount}
+          lineChangeClass="added"
+          isAddedLine={true}
+          containerHeight={elementHeight}
+          onClick={this._boundHandleClick}
+        />
       );
     }
 
     for (const [changedLineWithOffset, changedLine] of changedLinesWithOffsets) {
-      jumpTargets.push(<NavigatonBarJumpTarget
-        offsetLineNumber={changedLineWithOffset}
-        key={changedLineWithOffset}
-        lineNumber={changedLine}
-        linesCount={linesCount}
-        lineChangeClass="modified"
-        isAddedLine={true}
-        containerHeight={elementHeight}
-        onClick={this._boundHandleClick}/>
+      jumpTargets.push(
+        <NavigatonBarJumpTarget
+          offsetLineNumber={changedLineWithOffset}
+          key={changedLineWithOffset}
+          lineNumber={changedLine}
+          linesCount={linesCount}
+          lineChangeClass="modified"
+          isAddedLine={true}
+          containerHeight={elementHeight}
+          onClick={this._boundHandleClick}
+        />
       );
     }
 
     for (const [removedLineWithOffset, removedLine] of removedLinesWithOffsets) {
-      jumpTargets.push(<NavigatonBarJumpTarget
-        offsetLineNumber={removedLineWithOffset}
-        key={removedLineWithOffset}
-        lineNumber={removedLine}
-        linesCount={linesCount}
-        lineChangeClass="removed"
-        isAddedLine={false}
-        containerHeight={elementHeight}
-        onClick={this._boundHandleClick}/>
+      jumpTargets.push(
+        <NavigatonBarJumpTarget
+          offsetLineNumber={removedLineWithOffset}
+          key={removedLineWithOffset}
+          lineNumber={removedLine}
+          linesCount={linesCount}
+          lineChangeClass="removed"
+          isAddedLine={false}
+          containerHeight={elementHeight}
+          onClick={this._boundHandleClick}
+        />
       );
     }
 
@@ -169,7 +175,8 @@ class NavigatonBarJumpTarget extends React.Component {
       <div
         className={targetClassName}
         style={targetStyle}
-        onClick={this._boundHandleClick} />
+        onClick={this._boundHandleClick}
+      />
     );
   }
 

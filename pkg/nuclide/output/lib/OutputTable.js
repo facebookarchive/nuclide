@@ -52,16 +52,14 @@ export default class OutputTable extends React.Component<void, Props, void> {
         <div className="nuclide-output-header padded">
           <button
             className="btn btn-sm icon inline-block btn-secondary pull-right"
-            onClick={this._handleClearButtonClick}
-          >
+            onClick={this._handleClearButtonClick}>
             Clear
           </button>
         </div>
         <div
           className="nuclide-output-table-wrapper"
           ref={this._handleTableWrapper}
-          onScroll={this._handleScroll}
-        >
+          onScroll={this._handleScroll}>
           {this.props.records.map(this._renderRow, this)}
         </div>
       </div>

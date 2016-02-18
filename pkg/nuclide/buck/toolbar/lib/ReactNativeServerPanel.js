@@ -47,14 +47,12 @@ export default class ReactNativeServerPanel extends React.Component {
         <div className="inline-block">
           <button
             className="btn icon icon-primitive-square inline-block-tight"
-            onClick={this._handleStopClicked}
-          >
+            onClick={this._handleStopClicked}>
             Stop
           </button>
           <button
             className="btn icon icon-sync inline-block-tight"
-            onClick={this._handleRestartClicked}
-          >
+            onClick={this._handleRestartClicked}>
             Restart
           </button>
         </div>

@@ -34,7 +34,8 @@ function createDebuggerView(model: DebuggerModel): HTMLElement {
       store={model.getStore()}
       bridge = {model.getBridge()}
       actions={model.getActions()}
-      breakpointStore={model.getBreakpointStore()} />,
+      breakpointStore={model.getBreakpointStore()}
+    />,
     elem);
   return elem;
 }

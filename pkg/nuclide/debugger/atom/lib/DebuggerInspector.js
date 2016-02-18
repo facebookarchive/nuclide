@@ -44,12 +44,14 @@ const DebuggerInspector = React.createClass({
               title="Detach from the current process."
               className="icon icon-x"
               style={{color: 'red'}}
-              onClick={this._handleClickClose} />
+              onClick={this._handleClickClose}
+            />
             <button
               title="(Debug) Open Web Inspector for the debugger frame."
               className="icon icon-gear"
               style={{color: 'grey'}}
-              onClick={this._handleClickDevTools} />
+              onClick={this._handleClickDevTools}
+            />
           </div>
         </div>
       </PanelComponent>
