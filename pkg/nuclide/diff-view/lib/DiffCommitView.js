@@ -41,7 +41,7 @@ class DiffCommitView extends React.Component {
       commitMessage: null,
       loading: true,
     };
-    this._onClickCommit = this._onClickCommit.bind(this);
+    (this: any)._onClickCommit = this._onClickCommit.bind(this);
   }
 
   componentWillMount(): void {
