@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _HgStatusToFileChangeStatus, _FileChangeStatusToPrefix;
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,48 +10,33 @@
  * the root directory of this source tree.
  */
 
-const {StatusCodeNumber: HgStatusCodeNumber} = require('../../hg-repository-base').hgConstants;
+var HgStatusCodeNumber = require('../../hg-repository-base').hgConstants.StatusCodeNumber;
 
-import type {StatusCodeNumberValue} from '../../hg-repository-base/lib/hg-constants';
-import type {DiffModeType, FileChangeStatusValue} from './types';
-
-const FileChangeStatus: {[key: string]: FileChangeStatusValue} = {
+var FileChangeStatus = {
   ADDED: 1,
   MODIFIED: 2,
   MISSING: 3,
   REMOVED: 4,
-  UNTRACKED: 5,
+  UNTRACKED: 5
 };
 
-const DiffMode = {
+var DiffMode = {
   BROWSE_MODE: 'Browse',
-  COMMIT_MODE: 'Commit',
+  COMMIT_MODE: 'Commit'
 };
 
 // This is to work around flow's missing support of enums.
-(DiffMode: { [key: string]: DiffModeType });
+DiffMode;
 
+var HgStatusToFileChangeStatus = (_HgStatusToFileChangeStatus = {}, _defineProperty(_HgStatusToFileChangeStatus, HgStatusCodeNumber.ADDED, FileChangeStatus.ADDED), _defineProperty(_HgStatusToFileChangeStatus, HgStatusCodeNumber.MODIFIED, FileChangeStatus.MODIFIED), _defineProperty(_HgStatusToFileChangeStatus, HgStatusCodeNumber.MISSING, FileChangeStatus.MISSING), _defineProperty(_HgStatusToFileChangeStatus, HgStatusCodeNumber.REMOVED, FileChangeStatus.REMOVED), _defineProperty(_HgStatusToFileChangeStatus, HgStatusCodeNumber.UNTRACKED, FileChangeStatus.UNTRACKED), _HgStatusToFileChangeStatus);
 
-const HgStatusToFileChangeStatus : {[key: StatusCodeNumberValue]: FileChangeStatusValue} = {
-  [HgStatusCodeNumber.ADDED]: FileChangeStatus.ADDED,
-  [HgStatusCodeNumber.MODIFIED]: FileChangeStatus.MODIFIED,
-  [HgStatusCodeNumber.MISSING]: FileChangeStatus.MISSING,
-  [HgStatusCodeNumber.REMOVED]: FileChangeStatus.REMOVED,
-  [HgStatusCodeNumber.UNTRACKED]: FileChangeStatus.UNTRACKED,
-};
-
-const FileChangeStatusToPrefix: {[key: FileChangeStatusValue]: string} = {
-  [FileChangeStatus.ADDED]: '[A] ',
-  [FileChangeStatus.MODIFIED]: '[M] ',
-  [FileChangeStatus.MISSING]: '[!] ',
-  [FileChangeStatus.REMOVED]: '[D] ',
-  [FileChangeStatus.UNTRACKED]: '[?] ',
-};
+var FileChangeStatusToPrefix = (_FileChangeStatusToPrefix = {}, _defineProperty(_FileChangeStatusToPrefix, FileChangeStatus.ADDED, '[A] '), _defineProperty(_FileChangeStatusToPrefix, FileChangeStatus.MODIFIED, '[M] '), _defineProperty(_FileChangeStatusToPrefix, FileChangeStatus.MISSING, '[!] '), _defineProperty(_FileChangeStatusToPrefix, FileChangeStatus.REMOVED, '[D] '), _defineProperty(_FileChangeStatusToPrefix, FileChangeStatus.UNTRACKED, '[?] '), _FileChangeStatusToPrefix);
 
 module.exports = {
-  DiffMode,
-  FileChangeStatus,
-  HgStatusToFileChangeStatus,
-  FileChangeStatusToPrefix,
-  HgStatusCodeNumber,
+  DiffMode: DiffMode,
+  FileChangeStatus: FileChangeStatus,
+  HgStatusToFileChangeStatus: HgStatusToFileChangeStatus,
+  FileChangeStatusToPrefix: FileChangeStatusToPrefix,
+  HgStatusCodeNumber: HgStatusCodeNumber
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImNvbnN0YW50cy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7SUFXeUIsa0JBQWtCLEdBQUksT0FBTyxDQUFDLDBCQUEwQixDQUFDLENBQUMsV0FBVyxDQUF2RixnQkFBZ0I7O0FBS3ZCLElBQU0sZ0JBQXdELEdBQUc7QUFDL0QsT0FBSyxFQUFFLENBQUM7QUFDUixVQUFRLEVBQUUsQ0FBQztBQUNYLFNBQU8sRUFBRSxDQUFDO0FBQ1YsU0FBTyxFQUFFLENBQUM7QUFDVixXQUFTLEVBQUUsQ0FBQztDQUNiLENBQUM7O0FBRUYsSUFBTSxRQUFRLEdBQUc7QUFDZixhQUFXLEVBQUUsUUFBUTtBQUNyQixhQUFXLEVBQUUsUUFBUTtDQUN0QixDQUFDOzs7QUFHRixBQUFDLFFBQVEsQ0FBbUM7O0FBRzVDLElBQU0sMEJBQWtGLG1GQUNyRixrQkFBa0IsQ0FBQyxLQUFLLEVBQUcsZ0JBQWdCLENBQUMsS0FBSyxnREFDakQsa0JBQWtCLENBQUMsUUFBUSxFQUFHLGdCQUFnQixDQUFDLFFBQVEsZ0RBQ3ZELGtCQUFrQixDQUFDLE9BQU8sRUFBRyxnQkFBZ0IsQ0FBQyxPQUFPLGdEQUNyRCxrQkFBa0IsQ0FBQyxPQUFPLEVBQUcsZ0JBQWdCLENBQUMsT0FBTyxnREFDckQsa0JBQWtCLENBQUMsU0FBUyxFQUFHLGdCQUFnQixDQUFDLFNBQVMsK0JBQzNELENBQUM7O0FBRUYsSUFBTSx3QkFBZ0UsK0VBQ25FLGdCQUFnQixDQUFDLEtBQUssRUFBRyxNQUFNLDhDQUMvQixnQkFBZ0IsQ0FBQyxRQUFRLEVBQUcsTUFBTSw4Q0FDbEMsZ0JBQWdCLENBQUMsT0FBTyxFQUFHLE1BQU0sOENBQ2pDLGdCQUFnQixDQUFDLE9BQU8sRUFBRyxNQUFNLDhDQUNqQyxnQkFBZ0IsQ0FBQyxTQUFTLEVBQUcsTUFBTSw2QkFDckMsQ0FBQzs7QUFFRixNQUFNLENBQUMsT0FBTyxHQUFHO0FBQ2YsVUFBUSxFQUFSLFFBQVE7QUFDUixrQkFBZ0IsRUFBaEIsZ0JBQWdCO0FBQ2hCLDRCQUEwQixFQUExQiwwQkFBMEI7QUFDMUIsMEJBQXdCLEVBQXhCLHdCQUF3QjtBQUN4QixvQkFBa0IsRUFBbEIsa0JBQWtCO0NBQ25CLENBQUMiLCJmaWxlIjoiY29uc3RhbnRzLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuY29uc3Qge1N0YXR1c0NvZGVOdW1iZXI6IEhnU3RhdHVzQ29kZU51bWJlcn0gPSByZXF1aXJlKCcuLi8uLi9oZy1yZXBvc2l0b3J5LWJhc2UnKS5oZ0NvbnN0YW50cztcblxuaW1wb3J0IHR5cGUge1N0YXR1c0NvZGVOdW1iZXJWYWx1ZX0gZnJvbSAnLi4vLi4vaGctcmVwb3NpdG9yeS1iYXNlL2xpYi9oZy1jb25zdGFudHMnO1xuaW1wb3J0IHR5cGUge0RpZmZNb2RlVHlwZSwgRmlsZUNoYW5nZVN0YXR1c1ZhbHVlfSBmcm9tICcuL3R5cGVzJztcblxuY29uc3QgRmlsZUNoYW5nZVN0YXR1czoge1trZXk6IHN0cmluZ106IEZpbGVDaGFuZ2VTdGF0dXNWYWx1ZX0gPSB7XG4gIEFEREVEOiAxLFxuICBNT0RJRklFRDogMixcbiAgTUlTU0lORzogMyxcbiAgUkVNT1ZFRDogNCxcbiAgVU5UUkFDS0VEOiA1LFxufTtcblxuY29uc3QgRGlmZk1vZGUgPSB7XG4gIEJST1dTRV9NT0RFOiAnQnJvd3NlJyxcbiAgQ09NTUlUX01PREU6ICdDb21taXQnLFxufTtcblxuLy8gVGhpcyBpcyB0byB3b3JrIGFyb3VuZCBmbG93J3MgbWlzc2luZyBzdXBwb3J0IG9mIGVudW1zLlxuKERpZmZNb2RlOiB7IFtrZXk6IHN0cmluZ106IERpZmZNb2RlVHlwZSB9KTtcblxuXG5jb25zdCBIZ1N0YXR1c1RvRmlsZUNoYW5nZVN0YXR1cyA6IHtba2V5OiBTdGF0dXNDb2RlTnVtYmVyVmFsdWVdOiBGaWxlQ2hhbmdlU3RhdHVzVmFsdWV9ID0ge1xuICBbSGdTdGF0dXNDb2RlTnVtYmVyLkFEREVEXTogRmlsZUNoYW5nZVN0YXR1cy5BRERFRCxcbiAgW0hnU3RhdHVzQ29kZU51bWJlci5NT0RJRklFRF06IEZpbGVDaGFuZ2VTdGF0dXMuTU9ESUZJRUQsXG4gIFtIZ1N0YXR1c0NvZGVOdW1iZXIuTUlTU0lOR106IEZpbGVDaGFuZ2VTdGF0dXMuTUlTU0lORyxcbiAgW0hnU3RhdHVzQ29kZU51bWJlci5SRU1PVkVEXTogRmlsZUNoYW5nZVN0YXR1cy5SRU1PVkVELFxuICBbSGdTdGF0dXNDb2RlTnVtYmVyLlVOVFJBQ0tFRF06IEZpbGVDaGFuZ2VTdGF0dXMuVU5UUkFDS0VELFxufTtcblxuY29uc3QgRmlsZUNoYW5nZVN0YXR1c1RvUHJlZml4OiB7W2tleTogRmlsZUNoYW5nZVN0YXR1c1ZhbHVlXTogc3RyaW5nfSA9IHtcbiAgW0ZpbGVDaGFuZ2VTdGF0dXMuQURERURdOiAnW0FdICcsXG4gIFtGaWxlQ2hhbmdlU3RhdHVzLk1PRElGSUVEXTogJ1tNXSAnLFxuICBbRmlsZUNoYW5nZVN0YXR1cy5NSVNTSU5HXTogJ1shXSAnLFxuICBbRmlsZUNoYW5nZVN0YXR1cy5SRU1PVkVEXTogJ1tEXSAnLFxuICBbRmlsZUNoYW5nZVN0YXR1cy5VTlRSQUNLRURdOiAnWz9dICcsXG59O1xuXG5tb2R1bGUuZXhwb3J0cyA9IHtcbiAgRGlmZk1vZGUsXG4gIEZpbGVDaGFuZ2VTdGF0dXMsXG4gIEhnU3RhdHVzVG9GaWxlQ2hhbmdlU3RhdHVzLFxuICBGaWxlQ2hhbmdlU3RhdHVzVG9QcmVmaXgsXG4gIEhnU3RhdHVzQ29kZU51bWJlcixcbn07XG4iXX0=

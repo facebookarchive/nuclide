@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +10,6 @@
  * the root directory of this source tree.
  */
 
-export type HomeFragments = {
-  // A string that a package can publish to the main part of the home panel. This allows for
-  // customized welcome messages, but should be used judiciously.
-  welcome?: ReactElement,
-  feature?: {
-    title: string,
-    icon: string,
-    description: ReactElement | string,
-    command?: string,
-  },
-  priority?: number,
-};
+// A string that a package can publish to the main part of the home panel. This allows for
+// customized welcome messages, but should be used judiciously.
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOltdfQ==

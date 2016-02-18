@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +10,8 @@
  * the root directory of this source tree.
  */
 
-export type NuclideCustomPaneItemOptions = {
-  title: string, // Title for the custom pane item being created.
-  iconName?: string, // Optional string representing the octicon that is rendered next to the title.
-  uri?: string,
-  allowSplit?: bool, // Whether splits are allowed on the pane item. Defaults to false.
-  initialProps: Object, // The pane item specific properties.
-};
+// Title for the custom pane item being created.
+// Optional string representing the octicon that is rendered next to the title.
+// Whether splits are allowed on the pane item. Defaults to false.
+// The pane item specific properties.
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJ0eXBlcy5qcyIsInNvdXJjZXNDb250ZW50IjpbXX0=

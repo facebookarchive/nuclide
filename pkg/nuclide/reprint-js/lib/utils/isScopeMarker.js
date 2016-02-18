@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +8,13 @@
  * the root directory of this source tree.
  */
 
-const markers = require('../constants/markers');
+var markers = require('../constants/markers');
 
-const SCOPE_MARKER = new Set([
-  markers.openScope,
-  markers.scopeIndent,
-  markers.scopeBreak,
-  markers.scopeSpaceBreak,
-  markers.scopeComma,
-  markers.scopeDedent,
-  markers.closeScope,
-]);
+var SCOPE_MARKER = new Set([markers.openScope, markers.scopeIndent, markers.scopeBreak, markers.scopeSpaceBreak, markers.scopeComma, markers.scopeDedent, markers.closeScope]);
 
-function isScopeMarker(marker: any): boolean {
+function isScopeMarker(marker) {
   return SCOPE_MARKER.has(marker);
 }
 
 module.exports = isScopeMarker;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImlzU2NvcGVNYXJrZXIuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQVdBLElBQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyxzQkFBc0IsQ0FBQyxDQUFDOztBQUVoRCxJQUFNLFlBQVksR0FBRyxJQUFJLEdBQUcsQ0FBQyxDQUMzQixPQUFPLENBQUMsU0FBUyxFQUNqQixPQUFPLENBQUMsV0FBVyxFQUNuQixPQUFPLENBQUMsVUFBVSxFQUNsQixPQUFPLENBQUMsZUFBZSxFQUN2QixPQUFPLENBQUMsVUFBVSxFQUNsQixPQUFPLENBQUMsV0FBVyxFQUNuQixPQUFPLENBQUMsVUFBVSxDQUNuQixDQUFDLENBQUM7O0FBRUgsU0FBUyxhQUFhLENBQUMsTUFBVyxFQUFXO0FBQzNDLFNBQU8sWUFBWSxDQUFDLEdBQUcsQ0FBQyxNQUFNLENBQUMsQ0FBQztDQUNqQzs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHLGFBQWEsQ0FBQyIsImZpbGUiOiJpc1Njb3BlTWFya2VyLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuY29uc3QgbWFya2VycyA9IHJlcXVpcmUoJy4uL2NvbnN0YW50cy9tYXJrZXJzJyk7XG5cbmNvbnN0IFNDT1BFX01BUktFUiA9IG5ldyBTZXQoW1xuICBtYXJrZXJzLm9wZW5TY29wZSxcbiAgbWFya2Vycy5zY29wZUluZGVudCxcbiAgbWFya2Vycy5zY29wZUJyZWFrLFxuICBtYXJrZXJzLnNjb3BlU3BhY2VCcmVhayxcbiAgbWFya2Vycy5zY29wZUNvbW1hLFxuICBtYXJrZXJzLnNjb3BlRGVkZW50LFxuICBtYXJrZXJzLmNsb3NlU2NvcGUsXG5dKTtcblxuZnVuY3Rpb24gaXNTY29wZU1hcmtlcihtYXJrZXI6IGFueSk6IGJvb2xlYW4ge1xuICByZXR1cm4gU0NPUEVfTUFSS0VSLmhhcyhtYXJrZXIpO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IGlzU2NvcGVNYXJrZXI7XG4iXX0=

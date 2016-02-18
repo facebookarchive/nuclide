@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,22 +10,14 @@
  * the root directory of this source tree.
  */
 
-import type {
-  ClangCompileResult,
-  ClangCompletionsResult,
-  ClangDeclarationResult,
-} from '../../clang';
+var _featureConfig = require('../../feature-config');
 
-import featureConfig from '../../feature-config';
-import {getServiceByNuclideUri} from '../../remote-connection';
+var _featureConfig2 = _interopRequireDefault(_featureConfig);
 
-type NuclideClangConfig = {
-  enableDefaultFlags: boolean,
-  defaultFlags: Array<string>,
-};
+var _remoteConnection = require('../../remote-connection');
 
-function getDefaultFlags(): ?Array<string> {
-  const config: NuclideClangConfig = (featureConfig.get('nuclide-clang-atom'): any);
+function getDefaultFlags() {
+  var config = _featureConfig2['default'].get('nuclide-clang-atom');
   if (!config.enableDefaultFlags) {
     return null;
   }
@@ -33,72 +26,52 @@ function getDefaultFlags(): ?Array<string> {
 
 module.exports = {
 
-  async getDiagnostics(editor: atom$TextEditor): Promise<?ClangCompileResult> {
-    const src = editor.getPath();
-    const contents = editor.getText();
+  getDiagnostics: _asyncToGenerator(function* (editor) {
+    var src = editor.getPath();
+    var contents = editor.getText();
 
-    const defaultFlags = getDefaultFlags();
-    return getServiceByNuclideUri('ClangService', src)
-        .compile(src, contents, defaultFlags)
-        .toPromise();
-  },
+    var defaultFlags = getDefaultFlags();
+    return (0, _remoteConnection.getServiceByNuclideUri)('ClangService', src).compile(src, contents, defaultFlags).toPromise();
+  }),
 
-  async getCompletions(editor: atom$TextEditor, prefix: string): Promise<?ClangCompletionsResult> {
-    const src = editor.getPath();
-    const cursor = editor.getLastCursor();
+  getCompletions: _asyncToGenerator(function* (editor, prefix) {
+    var src = editor.getPath();
+    var cursor = editor.getLastCursor();
 
-    const line = cursor.getBufferRow();
-    const column = cursor.getBufferColumn();
-    const tokenStartColumn = column - prefix.length;
+    var line = cursor.getBufferRow();
+    var column = cursor.getBufferColumn();
+    var tokenStartColumn = column - prefix.length;
 
-    const defaultFlags = getDefaultFlags();
-    return getServiceByNuclideUri('ClangService', src)
-      .getCompletions(
-        src,
-        editor.getText(),
-        line,
-        column,
-        tokenStartColumn,
-        prefix,
-        defaultFlags,
-      );
-  },
+    var defaultFlags = getDefaultFlags();
+    return (0, _remoteConnection.getServiceByNuclideUri)('ClangService', src).getCompletions(src, editor.getText(), line, column, tokenStartColumn, prefix, defaultFlags);
+  }),
 
   /**
    * If a location can be found for the declaration, it will be available via
    * the 'location' field on the returned object.
    */
-  async getDeclaration(
-    editor: atom$TextEditor,
-    line: number,
-    column: number,
-  ): Promise<?ClangDeclarationResult> {
-    const src = editor.getPath();
-    const defaultFlags = getDefaultFlags();
-    return getServiceByNuclideUri('ClangService', src)
-        .getDeclaration(src, editor.getText(), line, column, defaultFlags);
+  getDeclaration: _asyncToGenerator(function* (editor, line, column) {
+    var src = editor.getPath();
+    var defaultFlags = getDefaultFlags();
+    return (0, _remoteConnection.getServiceByNuclideUri)('ClangService', src).getDeclaration(src, editor.getText(), line, column, defaultFlags);
+  }),
+
+  formatCode: function formatCode(editor, range) {
+    var fileUri = editor.getPath();
+    var buffer = editor.getBuffer();
+    var cursor = buffer.characterIndexForPosition(editor.getLastCursor().getBufferPosition());
+    var startIndex = buffer.characterIndexForPosition(range.start);
+    var endIndex = buffer.characterIndexForPosition(range.end);
+
+    return (0, _remoteConnection.getServiceByNuclideUri)('ClangService', fileUri).formatCode(fileUri, editor.getText(), cursor, startIndex, endIndex - startIndex);
   },
 
-  formatCode(editor: atom$TextEditor, range: atom$Range): Promise<{
-    newCursor: number,
-    formatted: string,
-  }> {
-    const fileUri = editor.getPath();
-    const buffer = editor.getBuffer();
-    const cursor = buffer.characterIndexForPosition(editor.getLastCursor().getBufferPosition());
-    const startIndex = buffer.characterIndexForPosition(range.start);
-    const endIndex = buffer.characterIndexForPosition(range.end);
-
-    return getServiceByNuclideUri('ClangService', fileUri)
-        .formatCode(fileUri, editor.getText(), cursor, startIndex, endIndex - startIndex);
-  },
-
-  reset(editor: atom$TextEditor) {
-    const src = editor.getPath();
+  reset: function reset(editor) {
+    var src = editor.getPath();
     if (src != null) {
-      return getServiceByNuclideUri('ClangService', src)
-        .reset(src);
+      return (0, _remoteConnection.getServiceByNuclideUri)('ClangService', src).reset(src);
     }
-  },
+  }
 
 };
+//# sourceMappingURL=data:application/json;base64,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QyxPQUFPLEVBQUUsRUFBRSxNQUFNLEVBQUUsVUFBVSxFQUFFLFFBQVEsR0FBRyxVQUFVLENBQUMsQ0FBQztHQUN2Rjs7QUFFRCxPQUFLLEVBQUEsZUFBQyxNQUF1QixFQUFFO0FBQzdCLFFBQU0sR0FBRyxHQUFHLE1BQU0sQ0FBQyxPQUFPLEVBQUUsQ0FBQztBQUM3QixRQUFJLEdBQUcsSUFBSSxJQUFJLEVBQUU7QUFDZixhQUFPLDhDQUF1QixjQUFjLEVBQUUsR0FBRyxDQUFDLENBQy9DLEtBQUssQ0FBQyxHQUFHLENBQUMsQ0FBQztLQUNmO0dBQ0Y7O0NBRUYsQ0FBQyIsImZpbGUiOiJsaWJjbGFuZy5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtcbiAgQ2xhbmdDb21waWxlUmVzdWx0LFxuICBDbGFuZ0NvbXBsZXRpb25zUmVzdWx0LFxuICBDbGFuZ0RlY2xhcmF0aW9uUmVzdWx0LFxufSBmcm9tICcuLi8uLi9jbGFuZyc7XG5cbmltcG9ydCBmZWF0dXJlQ29uZmlnIGZyb20gJy4uLy4uL2ZlYXR1cmUtY29uZmlnJztcbmltcG9ydCB7Z2V0U2VydmljZUJ5TnVjbGlkZVVyaX0gZnJvbSAnLi4vLi4vcmVtb3RlLWNvbm5lY3Rpb24nO1xuXG50eXBlIE51Y2xpZGVDbGFuZ0NvbmZpZyA9IHtcbiAgZW5hYmxlRGVmYXVsdEZsYWdzOiBib29sZWFuLFxuICBkZWZhdWx0RmxhZ3M6IEFycmF5PHN0cmluZz4sXG59O1xuXG5mdW5jdGlvbiBnZXREZWZhdWx0RmxhZ3MoKTogP0FycmF5PHN0cmluZz4ge1xuICBjb25zdCBjb25maWc6IE51Y2xpZGVDbGFuZ0NvbmZpZyA9IChmZWF0dXJlQ29uZmlnLmdldCgnbnVjbGlkZS1jbGFuZy1hdG9tJyk6IGFueSk7XG4gIGlmICghY29uZmlnLmVuYWJsZURlZmF1bHRGbGFncykge1xuICAgIHJldHVybiBudWxsO1xuICB9XG4gIHJldHVybiBjb25maWcuZGVmYXVsdEZsYWdzO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IHtcblxuICBhc3luYyBnZXREaWFnbm9zdGljcyhlZGl0b3I6IGF0b20kVGV4dEVkaXRvcik6IFByb21pc2U8P0NsYW5nQ29tcGlsZVJlc3VsdD4ge1xuICAgIGNvbnN0IHNyYyA9IGVkaXRvci5nZXRQYXRoKCk7XG4gICAgY29uc3QgY29udGVudHMgPSBlZGl0b3IuZ2V0VGV4dCgpO1xuXG4gICAgY29uc3QgZGVmYXVsdEZsYWdzID0gZ2V0RGVmYXVsdEZsYWdzKCk7XG4gICAgcmV0dXJuIGdldFNlcnZpY2VCeU51Y2xpZGVVcmkoJ0NsYW5nU2VydmljZScsIHNyYylcbiAgICAgICAgLmNvbXBpbGUoc3JjLCBjb250ZW50cywgZGVmYXVsdEZsYWdzKVxuICAgICAgICAudG9Qcm9taXNlKCk7XG4gIH0sXG5cbiAgYXN5bmMgZ2V0Q29tcGxldGlvbnMoZWRpdG9yOiBhdG9tJFRleHRFZGl0b3IsIHByZWZpeDogc3RyaW5nKTogUHJvbWlzZTw/Q2xhbmdDb21wbGV0aW9uc1Jlc3VsdD4ge1xuICAgIGNvbnN0IHNyYyA9IGVkaXRvci5nZXRQYXRoKCk7XG4gICAgY29uc3QgY3Vyc29yID0gZWRpdG9yLmdldExhc3RDdXJzb3IoKTtcblxuICAgIGNvbnN0IGxpbmUgPSBjdXJzb3IuZ2V0QnVmZmVyUm93KCk7XG4gICAgY29uc3QgY29sdW1uID0gY3Vyc29yLmdldEJ1ZmZlckNvbHVtbigpO1xuICAgIGNvbnN0IHRva2VuU3RhcnRDb2x1bW4gPSBjb2x1bW4gLSBwcmVmaXgubGVuZ3RoO1xuXG4gICAgY29uc3QgZGVmYXVsdEZsYWdzID0gZ2V0RGVmYXVsdEZsYWdzKCk7XG4gICAgcmV0dXJuIGdldFNlcnZpY2VCeU51Y2xpZGVVcmkoJ0NsYW5nU2VydmljZScsIHNyYylcbiAgICAgIC5nZXRDb21wbGV0aW9ucyhcbiAgICAgICAgc3JjLFxuICAgICAgICBlZGl0b3IuZ2V0VGV4dCgpLFxuICAgICAgICBsaW5lLFxuICAgICAgICBjb2x1bW4sXG4gICAgICAgIHRva2VuU3RhcnRDb2x1bW4sXG4gICAgICAgIHByZWZpeCxcbiAgICAgICAgZGVmYXVsdEZsYWdzLFxuICAgICAgKTtcbiAgfSxcblxuICAvKipcbiAgICogSWYgYSBsb2NhdGlvbiBjYW4gYmUgZm91bmQgZm9yIHRoZSBkZWNsYXJhdGlvbiwgaXQgd2lsbCBiZSBhdmFpbGFibGUgdmlhXG4gICAqIHRoZSAnbG9jYXRpb24nIGZpZWxkIG9uIHRoZSByZXR1cm5lZCBvYmplY3QuXG4gICAqL1xuICBhc3luYyBnZXREZWNsYXJhdGlvbihcbiAgICBlZGl0b3I6IGF0b20kVGV4dEVkaXRvcixcbiAgICBsaW5lOiBudW1iZXIsXG4gICAgY29sdW1uOiBudW1iZXIsXG4gICk6IFByb21pc2U8P0NsYW5nRGVjbGFyYXRpb25SZXN1bHQ+IHtcbiAgICBjb25zdCBzcmMgPSBlZGl0b3IuZ2V0UGF0aCgpO1xuICAgIGNvbnN0IGRlZmF1bHRGbGFncyA9IGdldERlZmF1bHRGbGFncygpO1xuICAgIHJldHVybiBnZXRTZXJ2aWNlQnlOdWNsaWRlVXJpKCdDbGFuZ1NlcnZpY2UnLCBzcmMpXG4gICAgICAgIC5nZXREZWNsYXJhdGlvbihzcmMsIGVkaXRvci5nZXRUZXh0KCksIGxpbmUsIGNvbHVtbiwgZGVmYXVsdEZsYWdzKTtcbiAgfSxcblxuICBmb3JtYXRDb2RlKGVkaXRvcjogYXRvbSRUZXh0RWRpdG9yLCByYW5nZTogYXRvbSRSYW5nZSk6IFByb21pc2U8e1xuICAgIG5ld0N1cnNvcjogbnVtYmVyLFxuICAgIGZvcm1hdHRlZDogc3RyaW5nLFxuICB9PiB7XG4gICAgY29uc3QgZmlsZVVyaSA9IGVkaXRvci5nZXRQYXRoKCk7XG4gICAgY29uc3QgYnVmZmVyID0gZWRpdG9yLmdldEJ1ZmZlcigpO1xuICAgIGNvbnN0IGN1cnNvciA9IGJ1ZmZlci5jaGFyYWN0ZXJJbmRleEZvclBvc2l0aW9uKGVkaXRvci5nZXRMYXN0Q3Vyc29yKCkuZ2V0QnVmZmVyUG9zaXRpb24oKSk7XG4gICAgY29uc3Qgc3RhcnRJbmRleCA9IGJ1ZmZlci5jaGFyYWN0ZXJJbmRleEZvclBvc2l0aW9uKHJhbmdlLnN0YXJ0KTtcbiAgICBjb25zdCBlbmRJbmRleCA9IGJ1ZmZlci5jaGFyYWN0ZXJJbmRleEZvclBvc2l0aW9uKHJhbmdlLmVuZCk7XG5cbiAgICByZXR1cm4gZ2V0U2VydmljZUJ5TnVjbGlkZVVyaSgnQ2xhbmdTZXJ2aWNlJywgZmlsZVVyaSlcbiAgICAgICAgLmZvcm1hdENvZGUoZmlsZVVyaSwgZWRpdG9yLmdldFRleHQoKSwgY3Vyc29yLCBzdGFydEluZGV4LCBlbmRJbmRleCAtIHN0YXJ0SW5kZXgpO1xuICB9LFxuXG4gIHJlc2V0KGVkaXRvcjogYXRvbSRUZXh0RWRpdG9yKSB7XG4gICAgY29uc3Qgc3JjID0gZWRpdG9yLmdldFBhdGgoKTtcbiAgICBpZiAoc3JjICE9IG51bGwpIHtcbiAgICAgIHJldHVybiBnZXRTZXJ2aWNlQnlOdWNsaWRlVXJpKCdDbGFuZ1NlcnZpY2UnLCBzcmMpXG4gICAgICAgIC5yZXNldChzcmMpO1xuICAgIH1cbiAgfSxcblxufTtcbiJdfQ==

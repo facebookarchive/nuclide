@@ -1,5 +1,67 @@
-'use babel';
-/* @flow */
+
+
+// TODO (mikeo): Make this another search provider
+
+var doSearchDirectory = _asyncToGenerator(function* (directoryUri, query) {
+  var search = fileSearchers[directoryUri];
+  if (search === undefined) {
+    var directory = remoteUri.parse(directoryUri).path;
+
+    var exists = yield fsPromise.exists(directory);
+    if (!exists) {
+      throw new Error('Could not find directory to search : ' + directory);
+    }
+
+    var stat = yield fsPromise.stat(directory);
+    if (!stat.isDirectory()) {
+      throw new Error('Provided path is not a directory : ' + directory);
+    }
+
+    search = yield fileSearchForDirectory(directoryUri);
+    fileSearchers[directoryUri] = search;
+  }
+
+  return yield search.query(query);
+});
+
+var getSearchProviders = _asyncToGenerator(function* (cwd) {
+  var checkAvailability = _asyncToGenerator(function* (providerName) {
+    (0, _assert2['default'])(providers);
+    var isAvailable = yield providers[providerName].isAvailable(cwd);
+    return isAvailable ? { name: providerName } : null;
+  });
+
+  var validPromises = [];
+
+  for (var _name in providers) {
+    validPromises.push(checkAvailability(_name));
+  }
+
+  var allResults = yield Promise.all(validPromises);
+  // Any is required here as otherwise we get a flow error in core.js
+  return allResults.filter(function (provider) {
+    return provider != null;
+  });
+});
+
+var doSearchQuery = _asyncToGenerator(function* (cwd, provider, query) {
+  (0, _assert2['default'])(providers);
+  var currentProvider = providers[provider];
+  if (!currentProvider) {
+    throw new Error('Invalid provider: ' + provider);
+  }
+  (0, _assert2['default'])(currentProvider != null);
+  var results = yield currentProvider.query(cwd, query);
+  return { results: results };
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +71,17 @@
  * the root directory of this source tree.
  */
 
-type ProviderInfo = {
-  name: string,
-}
+var _require = require('../../../commons');
 
-type SearchQueryResult = {
-  line: number,
-  column: number,
-  name: string,
-  path: string,
-  length: number,
-  scope: string,
-  additionalInfo: string,
-  action: string,
-}
+var fsPromise = _require.fsPromise;
 
-type SearchResponse = {
-  results: Array<SearchQueryResult>,
-}
+var _require2 = require('../../../path-search');
 
-import invariant from 'assert';
-import type {FileSearchResult} from '../../../path-search';
+var fileSearchForDirectory = _require2.fileSearchForDirectory;
 
-const {fsPromise} = require('../../../commons');
-const {fileSearchForDirectory} = require('../../../path-search');
-const remoteUri = require('../../../remote-uri');
+var remoteUri = require('../../../remote-uri');
 
-type SearchProvider = {
-  isAvailable: (cwd: string) => boolean,
-  query: (cwd: string, query: string) => Promise<Array<SearchQueryResult>>,
-};
-
-let providers: ?{[providerName: string]: SearchProvider};
+var providers = undefined;
 
 /*
  * TODO(williamsc): This needs to have some better
@@ -48,99 +89,39 @@ let providers: ?{[providerName: string]: SearchProvider};
  */
 
 // Cache of previously indexed folders for later use.
-let fileSearchers: any = Object.create(null);
+var fileSearchers = Object.create(null);
 
-// TODO (mikeo): Make this another search provider
-async function doSearchDirectory(
-  directoryUri: string,
-  query: string
-): Promise<Array<FileSearchResult>> {
-  let search = fileSearchers[directoryUri];
-  if (search === undefined) {
-    const directory = remoteUri.parse(directoryUri).path;
-
-    const exists = await fsPromise.exists(directory);
-    if (!exists) {
-      throw new Error('Could not find directory to search : ' + directory);
-    }
-
-    const stat = await fsPromise.stat(directory);
-    if (!stat.isDirectory()) {
-      throw new Error('Provided path is not a directory : ' + directory);
-    }
-
-    search = await fileSearchForDirectory(directoryUri);
-    fileSearchers[directoryUri] = search;
-  }
-
-  return await search.query(query);
-}
-
-async function getSearchProviders(cwd: string): Promise<Array<ProviderInfo>> {
-  const validPromises: Array<Promise<?ProviderInfo>> = [];
-
-  async function checkAvailability(providerName: string): Promise<?ProviderInfo> {
-    invariant(providers);
-    const isAvailable = await providers[providerName].isAvailable(cwd);
-    return isAvailable ? {name: providerName} : null;
-  }
-
-  for (const name in providers) {
-    validPromises.push(checkAvailability(name));
-  }
-
-  const allResults: Array<?ProviderInfo> =
-      await Promise.all((validPromises: Array<Promise<?ProviderInfo>>));
-  // Any is required here as otherwise we get a flow error in core.js
-  return (allResults.filter(provider => provider != null): any);
-}
-
-async function doSearchQuery(
-  cwd: string,
-  provider: string,
-  query: string
-): Promise<SearchResponse> {
-  invariant(providers);
-  const currentProvider: ?SearchProvider = providers[provider];
-  if (!currentProvider) {
-    throw new Error(`Invalid provider: ${provider}`);
-  }
-  invariant(currentProvider != null);
-  const results: Array<SearchQueryResult> = await currentProvider.query(cwd, query);
-  return {results};
-}
-
-function addProvider(name: string, provider: SearchProvider): void {
+function addProvider(name, provider) {
   providers = providers || {};
   if (providers[name]) {
-    throw new Error(`${name} has already been added as a provider.`);
+    throw new Error(name + ' has already been added as a provider.');
   }
   providers[name] = provider;
 }
 
-function clearProviders(): void {
+function clearProviders() {
   providers = null;
 }
 
-function initialize(): void {
-}
+function initialize() {}
 
-function shutdown(): void {
+function shutdown() {
   clearProviders();
-  for (const k in fileSearchers) {
+  for (var k in fileSearchers) {
     fileSearchers[k].dispose();
   }
   fileSearchers = Object.create(null);
 }
 
 module.exports = {
-  initialize,
-  shutdown,
-  addProvider,
-  clearProviders,
+  initialize: initialize,
+  shutdown: shutdown,
+  addProvider: addProvider,
+  clearProviders: clearProviders,
   services: {
-    '/search/query': {handler: doSearchQuery, method: 'post'},
-    '/search/listProviders': {handler: getSearchProviders, method: 'post'},
-    '/search/directory': {handler: doSearchDirectory},
-  },
+    '/search/query': { handler: doSearchQuery, method: 'post' },
+    '/search/listProviders': { handler: getSearchProviders, method: 'post' },
+    '/search/directory': { handler: doSearchDirectory }
+  }
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIk51Y2xpZGVTZWFyY2hTZXJ2aWNlLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7SUFxRGUsaUJBQWlCLHFCQUFoQyxXQUNFLFlBQW9CLEVBQ3BCLEtBQWEsRUFDcUI7QUFDbEMsTUFBSSxNQUFNLEdBQUcsYUFBYSxDQUFDLFlBQVksQ0FBQyxDQUFDO0FBQ3pDLE1BQUksTUFBTSxLQUFLLFNBQVMsRUFBRTtBQUN4QixRQUFNLFNBQVMsR0FBRyxTQUFTLENBQUMsS0FBSyxDQUFDLFlBQVksQ0FBQyxDQUFDLElBQUksQ0FBQzs7QUFFckQsUUFBTSxNQUFNLEdBQUcsTUFBTSxTQUFTLENBQUMsTUFBTSxDQUFDLFNBQVMsQ0FBQyxDQUFDO0FBQ2pELFFBQUksQ0FBQyxNQUFNLEVBQUU7QUFDWCxZQUFNLElBQUksS0FBSyxDQUFDLHVDQUF1QyxHQUFHLFNBQVMsQ0FBQyxDQUFDO0tBQ3RFOztBQUVELFFBQU0sSUFBSSxHQUFHLE1BQU0sU0FBUyxDQUFDLElBQUksQ0FBQyxTQUFTLENBQUMsQ0FBQztBQUM3QyxRQUFJLENBQUMsSUFBSSxDQUFDLFdBQVcsRUFBRSxFQUFFO0FBQ3ZCLFlBQU0sSUFBSSxLQUFLLENBQUMscUNBQXFDLEdBQUcsU0FBUyxDQUFDLENBQUM7S0FDcEU7O0FBRUQsVUFBTSxHQUFHLE1BQU0sc0JBQXNCLENBQUMsWUFBWSxDQUFDLENBQUM7QUFDcEQsaUJBQWEsQ0FBQyxZQUFZLENBQUMsR0FBRyxNQUFNLENBQUM7R0FDdEM7O0FBRUQsU0FBTyxNQUFNLE1BQU0sQ0FBQyxLQUFLLENBQUMsS0FBSyxDQUFDLENBQUM7Q0FDbEM7O0lBRWMsa0JBQWtCLHFCQUFqQyxXQUFrQyxHQUFXLEVBQWdDO01BRzVELGlCQUFpQixxQkFBaEMsV0FBaUMsWUFBb0IsRUFBMEI7QUFDN0UsNkJBQVUsU0FBUyxDQUFDLENBQUM7QUFDckIsUUFBTSxXQUFXLEdBQUcsTUFBTSxTQUFTLENBQUMsWUFBWSxDQUFDLENBQUMsV0FBVyxDQUFDLEdBQUcsQ0FB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U2VydmljZS5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbnR5cGUgUHJvdmlkZXJJbmZvID0ge1xuICBuYW1lOiBzdHJpbmcsXG59XG5cbnR5cGUgU2VhcmNoUXVlcnlSZXN1bHQgPSB7XG4gIGxpbmU6IG51bWJlcixcbiAgY29sdW1uOiBudW1iZXIsXG4gIG5hbWU6IHN0cmluZyxcbiAgcGF0aDogc3RyaW5nLFxuICBsZW5ndGg6IG51bWJlcixcbiAgc2NvcGU6IHN0cmluZyxcbiAgYWRkaXRpb25hbEluZm86IHN0cmluZyxcbiAgYWN0aW9uOiBzdHJpbmcsXG59XG5cbnR5cGUgU2VhcmNoUmVzcG9uc2UgPSB7XG4gIHJlc3VsdHM6IEFycmF5PFNlYXJjaFF1ZXJ5UmVzdWx0Pixcbn1cblxuaW1wb3J0IGludmFyaWFudCBmcm9tICdhc3NlcnQnO1xuaW1wb3J0IHR5cGUge0ZpbGVTZWFyY2hSZXN1bHR9IGZyb20gJy4uLy4uLy4uL3BhdGgtc2VhcmNoJztcblxuY29uc3Qge2ZzUHJvbWlzZX0gPSByZXF1aXJlKCcuLi8uLi8uLi9jb21tb25zJyk7XG5jb25zdCB7ZmlsZVNlYXJjaEZvckRpcmVjdG9yeX0gPSByZXF1aXJlKCcuLi8uLi8uLi9wYXRoLXNlYXJjaCcpO1xuY29uc3QgcmVtb3RlVXJpID0gcmVxdWlyZSgnLi4vLi4vLi4vcmVtb3RlLXVyaScpO1xuXG50eXBlIFNlYXJjaFByb3ZpZGVyID0ge1xuICBpc0F2YWlsYWJsZTogKGN3ZDogc3RyaW5nKSA9PiBib29sZWFuLFxuICBxdWVyeTogKGN3ZDogc3RyaW5nLCBxdWVyeTogc3RyaW5nKSA9PiBQcm9taXNlPEFycmF5PFNlYXJjaFF1ZXJ5UmVzdWx0Pj4sXG59O1xuXG5sZXQgcHJvdmlkZXJzOiA/e1twcm92aWRlck5hbWU6IHN0cmluZ106IFNlYXJjaFByb3ZpZGVyfTtcblxuLypcbiAqIFRPRE8od2lsbGlhbXNjKTogVGhpcyBuZWVkcyB0byBoYXZlIHNvbWUgYmV0dGVyXG4gKiAgICAgICAgICAgICAgICAgIG1hbmFnbWVudCB0b29scyAoQWRkaW5nL3JlbW92aW5nIHF1ZXJ5IHNldHMpLlxuICovXG5cbi8vIENhY2hlIG9mIHByZXZpb3VzbHkgaW5kZXhlZCBmb2xkZXJzIGZvciBsYXRlciB1c2UuXG5sZXQgZmlsZVNlYXJjaGVyczogYW55ID0gT2JqZWN0LmNyZWF0ZShudWxsKTtcblxuLy8gVE9ETyAobWlrZW8pOiBNYWtlIHRoaXMgYW5vdGhlciBzZWFyY2ggcHJvdmlkZXJcbmFzeW5jIGZ1bmN0aW9uIGRvU2VhcmNoRGlyZWN0b3J5KFxuICBkaXJlY3RvcnlVcmk6IHN0cmluZyxcbiAgcXVlcnk6IHN0cmluZ1xuKTogUHJvbWlzZTxBcnJheTxGaWxlU2VhcmNoUmVzdWx0Pj4ge1xuICBsZXQgc2VhcmNoID0gZmlsZVNlYXJjaGVyc1tkaXJlY3RvcnlVcmldO1xuICBpZiAoc2VhcmNoID09PSB1bmRlZmluZWQpIHtcbiAgICBjb25zdCBkaXJlY3RvcnkgPSByZW1vdGVVcmkucGFyc2UoZGlyZWN0b3J5VXJpKS5wYXRoO1xuXG4gICAgY29uc3QgZXhpc3RzID0gYXdhaXQgZnNQcm9taXNlLmV4aXN0cyhkaXJlY3RvcnkpO1xuICAgIGlmICghZXhpc3RzKSB7XG4gICAgICB0aHJvdyBuZXcgRXJyb3IoJ0NvdWxkIG5vdCBmaW5kIGRpcmVjdG9yeSB0byBzZWFyY2ggOiAnICsgZGlyZWN0b3J5KTtcbiAgICB9XG5cbiAgICBjb25zdCBzdGF0ID0gYXdhaXQgZnNQcm9taXNlLnN0YXQoZGlyZWN0b3J5KTtcbiAgICBpZiAoIXN0YXQuaXNEaXJlY3RvcnkoKSkge1xuICAgICAgdGhyb3cgbmV3IEVycm9yKCdQcm92aWRlZCBwYXRoIGlzIG5vdCBhIGRpcmVjdG9yeSA6ICcgKyBkaXJlY3RvcnkpO1xuICAgIH1cblxuICAgIHNlYXJjaCA9IGF3YWl0IGZpbGVTZWFyY2hGb3JEaXJlY3RvcnkoZGlyZWN0b3J5VXJpKTtcbiAgICBmaWxlU2VhcmNoZXJzW2RpcmVjdG9yeVVyaV0gPSBzZWFyY2g7XG4gIH1cblxuICByZXR1cm4gYXdhaXQgc2VhcmNoLnF1ZXJ5KHF1ZXJ5KTtcbn1cblxuYXN5bmMgZnVuY3Rpb24gZ2V0U2VhcmNoUHJvdmlkZXJzKGN3ZDogc3RyaW5nKTogUHJvbWlzZTxBcnJheTxQcm92aWRlckluZm8+PiB7XG4gIGNvbnN0IHZhbGlkUHJvbWlzZXM6IEFycmF5PFByb21pc2U8P1Byb3ZpZGVySW5mbz4+ID0gW107XG5cbiAgYXN5bmMgZnVuY3Rpb24gY2hlY2tBdmFpbGFiaWxpdHkocHJvdmlkZXJOYW1lOiBzdHJpbmcpOiBQcm9taXNlPD9Qcm92aWRlckluZm8+IHtcbiAgICBpbnZhcmlhbnQocHJvdmlkZXJzKTtcbiAgICBjb25zdCBpc0F2YWlsYWJsZSA9IGF3YWl0IHByb3ZpZGVyc1twcm92aWRlck5hbWVdLmlzQXZhaWxhYmxlKGN3ZCk7XG4gICAgcmV0dXJuIGlzQXZhaWxhYmxlID8ge25hbWU6IHByb3ZpZGVyTmFtZX0gOiBudWxsO1xuICB9XG5cbiAgZm9yIChjb25zdCBuYW1lIGluIHByb3ZpZGVycykge1xuICAgIHZhbGlkUHJvbWlzZXMucHVzaChjaGVja0F2YWlsYWJpbGl0eShuYW1lKSk7XG4gIH1cblxuICBjb25zdCBhbGxSZXN1bHRzOiBBcnJheTw/UHJvdmlkZXJJbmZvPiA9XG4gICAgICBhd2FpdCBQcm9taXNlLmFsbCgodmFsaWRQcm9taXNlczogQXJyYXk8UHJvbWlzZTw/UHJvdmlkZXJJbmZvPj4pKTtcbiAgLy8gQW55IGlzIHJlcXVpcmVkIGhlcmUgYXMgb3RoZXJ3aXNlIHdlIGdldCBhIGZsb3cgZXJyb3IgaW4gY29yZS5qc1xuICByZXR1cm4gKGFsbFJlc3VsdHMuZmlsdGVyKHByb3ZpZGVyID0+IHByb3ZpZGVyICE9IG51bGwpOiBhbnkpO1xufVxuXG5hc3luYyBmdW5jdGlvbiBkb1NlYXJjaFF1ZXJ5KFxuICBjd2Q6IHN0cmluZyxcbiAgcHJvdmlkZXI6IHN0cmluZyxcbiAgcXVlcnk6IHN0cmluZ1xuKTogUHJvbWlzZTxTZWFyY2hSZXNwb25zZT4ge1xuICBpbnZhcmlhbnQocHJvdmlkZXJzKTtcbiAgY29uc3QgY3VycmVudFByb3ZpZGVyOiA/U2VhcmNoUHJvdmlkZXIgPSBwcm92aWRlcnNbcHJvdmlkZXJdO1xuICBpZiAoIWN1cnJlbnRQcm92aWRlcikge1xuICAgIHRocm93IG5ldyBFcnJvcihgSW52YWxpZCBwcm92aWRlcjogJHtwcm92aWRlcn1gKTtcbiAgfVxuICBpbnZhcmlhbnQoY3VycmVudFByb3ZpZGVyICE9IG51bGwpO1xuICBjb25zdCByZXN1bHRzOiBBcnJheTxTZWFyY2hRdWVyeVJlc3VsdD4gPSBhd2FpdCBjdXJyZW50UHJvdmlkZXIucXVlcnkoY3dkLCBxdWVyeSk7XG4gIHJldHVybiB7cmVzdWx0c307XG59XG5cbmZ1bmN0aW9uIGFkZFByb3ZpZGVyKG5hbWU6IHN0cmluZywgcHJvdmlkZXI6IFNlYXJjaFByb3ZpZGVyKTogdm9pZCB7XG4gIHByb3ZpZGVycyA9IHByb3ZpZGVycyB8fCB7fTtcbiAgaWYgKHByb3ZpZGVyc1tuYW1lXSkge1xuICAgIHRocm93IG5ldyBFcnJvcihgJHtuYW1lfSBoYXMgYWxyZWFkeSBiZWVuIGFkZGVkIGFzIGEgcHJvdmlkZXIuYCk7XG4gIH1cbiAgcHJvdmlkZXJzW25hbWVdID0gcHJvdmlkZXI7XG59XG5cbmZ1bmN0aW9uIGNsZWFyUHJvdmlkZXJzKCk6IHZvaWQge1xuICBwcm92aWRlcnMgPSBudWxsO1xufVxuXG5mdW5jdGlvbiBpbml0aWFsaXplKCk6IHZvaWQge1xufVxuXG5mdW5jdGlvbiBzaHV0ZG93bigpOiB2b2lkIHtcbiAgY2xlYXJQcm92aWRlcnMoKTtcbiAgZm9yIChjb25zdCBrIGluIGZpbGVTZWFyY2hlcnMpIHtcbiAgICBmaWxlU2VhcmNoZXJzW2tdLmRpc3Bvc2UoKTtcbiAgfVxuICBmaWxlU2VhcmNoZXJzID0gT2JqZWN0LmNyZWF0ZShudWxsKTtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSB7XG4gIGluaXRpYWxpemUsXG4gIHNodXRkb3duLFxuICBhZGRQcm92aWRlcixcbiAgY2xlYXJQcm92aWRlcnMsXG4gIHNlcnZpY2VzOiB7XG4gICAgJy9zZWFyY2gvcXVlcnknOiB7aGFuZGxlcjogZG9TZWFyY2hRdWVyeSwgbWV0aG9kOiAncG9zdCd9LFxuICAgICcvc2VhcmNoL2xpc3RQcm92aWRlcnMnOiB7aGFuZGxlcjogZ2V0U2VhcmNoUHJvdmlkZXJzLCBtZXRob2Q6ICdwb3N0J30sXG4gICAgJy9zZWFyY2gvZGlyZWN0b3J5Jzoge2hhbmRsZXI6IGRvU2VhcmNoRGlyZWN0b3J5fSxcbiAgfSxcbn07XG4iXX0=

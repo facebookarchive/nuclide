@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,37 +10,9 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rx';
-import type {NuclideUri} from '../../../remote-uri';
-
-import type {TextEdit} from '../../../textedit';
-
-export type InvalidationMessage = {
-  scope: 'file',
-  filePaths: Array<NuclideUri>,
-} | {
-  scope: 'project',
-} | {
-  scope: 'all',
-};
-
-export type MessageUpdateCallback = (update: DiagnosticProviderUpdate) => mixed;
-export type MessageInvalidationCallback = (message: InvalidationMessage) => mixed;
-
 // TODO figure out how to allow the diagnostic consumer to poll (for example, if
 // it was just activated and wants diagnostic messages without having to wait
 // for an event to occur)
-export type CallbackDiagnosticProvider = {
-  onMessageUpdate: (callback: MessageUpdateCallback) => IDisposable,
-  onMessageInvalidation: (callback: MessageInvalidationCallback) => IDisposable,
-};
-
-export type ObservableDiagnosticProvider = {
-  updates: Observable<DiagnosticProviderUpdate>,
-  invalidations: Observable<InvalidationMessage>,
-}
-
-export type DiagnosticProvider = CallbackDiagnosticProvider | ObservableDiagnosticProvider;
 
 // Implicit invalidation semantics:
 //
@@ -48,63 +21,10 @@ export type DiagnosticProvider = CallbackDiagnosticProvider | ObservableDiagnost
 //
 // - All previous 'project' scope messages are invalidated whenever
 // projectMessages is populated.
-export type DiagnosticProviderUpdate = {
-  filePathToMessages?: Map<NuclideUri, Array<FileDiagnosticMessage>>,
-  projectMessages?: Array<ProjectDiagnosticMessage>,
-};
 
-export type MessageType = 'Error' | 'Warning';
-
-export type Trace = {
-  type: 'Trace',
-  text?: string,
-  html?: string,
-  filePath?: NuclideUri,
-  range?: atom$Range,
-};
-
-export type FileDiagnosticMessage = {
-  scope: 'file',
-  providerName: string,
-  type: MessageType,
-  filePath: NuclideUri,
-  text?: string,
-  html?: string,
-  range?: atom$Range,
-  trace?: Array<Trace>,
-  fix?: TextEdit,
-};
-
-export type ProjectDiagnosticMessage = {
-  scope: 'project',
-  providerName: string,
-  type: MessageType,
-  text?: string,
-  html?: string,
-  range?: atom$Range,
-  trace?: Array<Trace>,
-};
-
-export type FileMessageUpdate = {
-  filePath: NuclideUri,
-  messages: Array<FileDiagnosticMessage>,
-};
-
-export type DiagnosticMessage = FileDiagnosticMessage | ProjectDiagnosticMessage;
-
-export type DiagnosticUpdater = {
-  onFileMessagesDidUpdate:
-    (callback: (update: FileMessageUpdate) => mixed, filePath: NuclideUri) => IDisposable,
-  onProjectMessagesDidUpdate:
-    (callback: (messages: Array<ProjectDiagnosticMessage>) => mixed) => IDisposable,
-  onAllMessagesDidUpdate:
-    (callback: (messages: Array<DiagnosticMessage>) => mixed) => IDisposable,
-  applyFix: (message: FileDiagnosticMessage) => void,
-  applyFixesForFile: (file: NuclideUri) => void,
-};
-
-const DiagnosticStore = require('./DiagnosticStore');
+var DiagnosticStore = require('./DiagnosticStore');
 
 module.exports = {
-  DiagnosticStore,
+  DiagnosticStore: DiagnosticStore
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBeUdBLElBQU0sZUFBZSxHQUFHLE9BQU8sQ0FBQyxtQkFBbUIsQ0FBQyxDQUFDOztBQUVyRCxNQUFNLENBQUMsT0FBTyxHQUFHO0FBQ2YsaUJBQWUsRUFBZixlQUFlO0NBQ2hCLENBQUMiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtPYnNlcnZhYmxlfSBmcm9tICdyeCc7XG5pbXBvcnQgdHlwZSB7TnVjbGlkZVVyaX0gZnJvbSAnLi4vLi4vLi4vcmVtb3RlLXVyaSc7XG5cbmltcG9ydCB0eXBlIHtUZXh0RWRpdH0gZnJvbSAnLi4vLi4vLi4vdGV4dGVkaXQnO1xuXG5leHBvcnQgdHlwZSBJbnZhbGlkYXRpb25NZXNzYWdlID0ge1xuICBzY29wZTogJ2ZpbGUnLFxuICBmaWxlUGF0aHM6IEFycmF5PE51Y2xpZGVVcmk+LFxufSB8IHtcbiAgc2NvcGU6ICdwcm9qZWN0Jyxcbn0gfCB7XG4gIHNjb3BlOiAnYWxsJyxcbn07XG5cbmV4cG9ydCB0eXBlIE1lc3NhZ2VVcGRhdGVDYWxsYmFjayA9ICh1cGRhdGU6IERpYWdub3N0aWNQcm92aWRlclVwZGF0ZSkgPT4gbWl4ZWQ7XG5leHBvcnQgdHlwZSBNZXNzYWdlSW52YWxpZGF0aW9uQ2FsbGJhY2sgPSAobWVzc2FnZTogSW52YWxpZGF0aW9uTWVzc2FnZSkgPT4gbWl4ZWQ7XG5cbi8vIFRPRE8gZmlndXJlIG91dCBob3cgdG8gYWxsb3cgdGhlIGRpYWdub3N0aWMgY29uc3VtZXIgdG8gcG9sbCAoZm9yIGV4YW1wbGUsIGlmXG4vLyBpdCB3YXMganVzdCBhY3RpdmF0ZWQgYW5kIHdhbnRzIGRpYWdub3N0aWMgbWVzc2FnZXMgd2l0aG91dCBoYXZpbmcgdG8gd2FpdFxuLy8gZm9yIGFuIGV2ZW50IHRvIG9jY3VyKVxuZXhwb3J0IHR5cGUgQ2FsbGJhY2tEaWFnbm9zdGljUHJvdmlkZXIgPSB7XG4gIG9uTWVzc2FnZVVwZGF0ZTogKGNhbGxiYWNrOiBNZXNzYWdlVXBkYXRlQ2FsbGJhY2spID0+IElEaXNwb3NhYmxlLFxuICBvbk1lc3NhZ2VJbnZhbGlkYXRpb246IChjYWxsYmFjazogTWVzc2FnZUludmFsaWRhdGlvbkNhbGxiYWNrKSA9PiBJRGlzcG9zYWJsZSxcbn07XG5cbmV4cG9ydCB0eXBlIE9ic2VydmFibGVEaWFnbm9zdGljUHJvdmlkZXIgPSB7XG4gIHVwZGF0ZXM6IE9ic2VydmFibGU8RGlhZ25vc3RpY1Byb3ZpZGVyVXBkYXRlPixcbiAgaW52YWxpZGF0aW9uczogT2JzZXJ2YWJsZTxJbnZhbGlkYXRpb25NZXNzYWdlPixcbn1cblxuZXhwb3J0IHR5cGUgRGlhZ25vc3RpY1Byb3ZpZGVyID0gQ2FsbGJhY2tEaWFnbm9zdGljUHJvdmlkZXIgfCBPYnNlcnZhYmxlRGlhZ25vc3RpY1Byb3ZpZGVyO1xuXG4vLyBJbXBsaWNpdCBpbnZhbGlkYXRpb24gc2VtYW50aWNzOlxuLy9cbi8vIC0gUHJldmlvdXMgJ2ZpbGUnIHNjb3BlIG1lc3NhZ2VzIGFyZSBpbnZhbGlkYXRlZCBpZiBhbmQgb25seSBpZlxuLy8gZmlsZVBhdGhUb01lc3NhZ2VzIGNvbnRhaW5zIHRoZWlyIGtleSBhcyBhIHBhdGguXG4vL1xuLy8gLSBBbGwgcHJldmlvdXMgJ3Byb2plY3QnIHNjb3BlIG1lc3NhZ2VzIGFyZSBpbnZhbGlkYXRlZCB3aGVuZXZlclxuLy8gcHJvamVjdE1lc3NhZ2VzIGlzIHBvcHVsYXRlZC5cbmV4cG9ydCB0eXBlIERpYWdub3N0aWNQcm92aWRlclVwZGF0ZSA9IHtcbiAgZmlsZVBhdGhUb01lc3NhZ2VzPzogTWFwPE51Y2xpZGVVcmksIEFycmF5PEZpbGVEaWFnbm9zdGljTWVzc2FnZT4+LFxuICBwcm9qZWN0TWVzc2FnZXM/OiBBcnJheTxQcm9qZWN0RGlhZ25vc3RpY01lc3NhZ2U+LFxufTtcblxuZXhwb3J0IHR5cGUgTWVzc2FnZVR5cGUgPSAnRXJyb3InIHwgJ1dhcm5pbmcnO1xuXG5leHBvcnQgdHlwZSBUcmFjZSA9IHtcbiAgdHlwZTogJ1RyYWNlJyxcbiAgdGV4dD86IHN0cmluZyxcbiAgaHRtbD86IHN0cmluZyxcbiAgZmlsZVBhdGg/OiBOdWNsaWRlVXJpLFxuICByYW5nZT86IGF0b20kUmFuZ2UsXG59O1xuXG5leHBvcnQgdHlwZSBGaWxlRGlhZ25vc3RpY01lc3NhZ2UgPSB7XG4gIHNjb3BlOiAnZmlsZScsXG4gIHByb3ZpZGVyTmFtZTogc3RyaW5nLFxuICB0eXBlOiBNZXNzYWdlVHlwZSxcbiAgZmlsZVBhdGg6IE51Y2xpZGVVcmksXG4gIHRleHQ/OiBzdHJpbmcsXG4gIGh0bWw/OiBzdHJpbmcsXG4gIHJhbmdlPzogYXRvbSRSYW5nZSxcbiAgdHJhY2U/OiBBcnJheTxUcmFjZT4sXG4gIGZpeD86IFRleHRFZGl0LFxufTtcblxuZXhwb3J0IHR5cGUgUHJvamVjdERpYWdub3N0aWNNZXNzYWdlID0ge1xuICBzY29wZTogJ3Byb2plY3QnLFxuICBwcm92aWRlck5hbWU6IHN0cmluZyxcbiAgdHlwZTogTWVzc2FnZVR5cGUsXG4gIHRleHQ/OiBzdHJpbmcsXG4gIGh0bWw/OiBzdHJpbmcsXG4gIHJhbmdlPzogYXRvbSRSYW5nZSxcbiAgdHJhY2U/OiBBcnJheTxUcmFjZT4sXG59O1xuXG5leHBvcnQgdHlwZSBGaWxlTWVzc2FnZVVwZGF0ZSA9IHtcbiAgZmlsZVBhdGg6IE51Y2xpZGVVcmksXG4gIG1lc3NhZ2VzOiBBcnJheTxGaWxlRGlhZ25vc3RpY01lc3NhZ2U+LFxufTtcblxuZXhwb3J0IHR5cGUgRGlhZ25vc3RpY01lc3NhZ2UgPSBGaWxlRGlhZ25vc3RpY01lc3NhZ2UgfCBQcm9qZWN0RGlhZ25vc3RpY01lc3NhZ2U7XG5cbmV4cG9ydCB0eXBlIERpYWdub3N0aWNVcGRhdGVyID0ge1xuICBvbkZpbGVNZXNzYWdlc0RpZFVwZGF0ZTpcbiAgICAoY2FsbGJhY2s6ICh1cGRhdGU6IEZpbGVNZXNzYWdlVXBkYXRlKSA9PiBtaXhlZCwgZmlsZVBhdGg6IE51Y2xpZGVVcmkpID0+IElEaXNwb3NhYmxlLFxuICBvblByb2plY3RNZXNzYWdlc0RpZFVwZGF0ZTpcbiAgICAoY2FsbGJhY2s6IChtZXNzYWdlczogQXJyYXk8UHJvamVjdERpYWdub3N0aWNNZXNzYWdlPikgPT4gbWl4ZWQpID0+IElEaXNwb3NhYmxlLFxuICBvbkFsbE1lc3NhZ2VzRGlkVXBkYXRlOlxuICAgIChjYWxsYmFjazogKG1lc3NhZ2VzOiBBcnJheTxEaWFnbm9zdGljTWVzc2FnZT4pID0+IG1peGVkKSA9PiBJRGlzcG9zYWJsZSxcbiAgYXBwbHlGaXg6IChtZXNzYWdlOiBGaWxlRGlhZ25vc3RpY01lc3NhZ2UpID0+IHZvaWQsXG4gIGFwcGx5Rml4ZXNGb3JGaWxlOiAoZmlsZTogTnVjbGlkZVVyaSkgPT4gdm9pZCxcbn07XG5cbmNvbnN0IERpYWdub3N0aWNTdG9yZSA9IHJlcXVpcmUoJy4vRGlhZ25vc3RpY1N0b3JlJyk7XG5cbm1vZHVsZS5leHBvcnRzID0ge1xuICBEaWFnbm9zdGljU3RvcmUsXG59O1xuIl19

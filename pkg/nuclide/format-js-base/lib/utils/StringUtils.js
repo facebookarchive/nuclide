@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +8,7 @@
  * the root directory of this source tree.
  */
 
-function capitalize(word: string): string {
+function capitalize(word) {
   if (word.length === 0) {
     return word;
   }
@@ -21,21 +20,19 @@ function capitalize(word: string): string {
  * directly in case we every choose another sorting algorithm. Such as some
  * sort of natural compare algorithm.
  */
-function compareStrings(one: ?string, two: ?string): number {
+function compareStrings(one, two) {
   one = (one || '').toLowerCase();
   two = (two || '').toLowerCase();
   return one.localeCompare(two);
 }
 
-function isCapitalized(name: string): boolean {
-  return (
-    name.length > 0 &&
-    name.charAt(0).toUpperCase() === name.charAt(0)
-  );
+function isCapitalized(name) {
+  return name.length > 0 && name.charAt(0).toUpperCase() === name.charAt(0);
 }
 
-function isLowerCase(name: string): boolean {
+function isLowerCase(name) {
   return name.toLowerCase() === name;
 }
 
-module.exports = {capitalize, compareStrings, isCapitalized, isLowerCase};
+module.exports = { capitalize: capitalize, compareStrings: compareStrings, isCapitalized: isCapitalized, isLowerCase: isLowerCase };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlN0cmluZ1V0aWxzLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7QUFXQSxTQUFTLFVBQVUsQ0FBQyxJQUFZLEVBQVU7QUFDeEMsTUFBSSxJQUFJLENBQUMsTUFBTSxLQUFLLENBQUMsRUFBRTtBQUNyQixXQUFPLElBQUksQ0FBQztHQUNiO0FBQ0QsU0FBTyxJQUFJLENBQUMsTUFBTSxDQUFDLENBQUMsQ0FBQyxDQUFDLFdBQVcsRUFBRSxHQUFHLElBQUksQ0FBQyxLQUFLLENBQUMsQ0FBQyxDQUFDLENBQUM7Q0FDckQ7Ozs7Ozs7QUFPRCxTQUFTLGNBQWMsQ0FBQyxHQUFZLEVBQUUsR0FBWSxFQUFVO0FBQzFELEtBQUcsR0FBRyxDQUFDLEdBQUcsSUFBSSxFQUFFLENBQUEsQ0FBRSxXQUFXLEVBQUUsQ0FBQztBQUNoQyxLQUFHLEdBQUcsQ0FBQyxHQUFHLElBQUksRUFBRSxDQUFBLENBQUUsV0FBVyxFQUFFLENBQUM7QUFDaEMsU0FBTyxHQUFHLENBQUMsYUFBYSxDQUFDLEdBQUcsQ0FBQyxDQUFDO0NBQy9COztBQUVELFNBQVMsYUFBYSxDQUFDLElBQVksRUFBVztBQUM1QyxTQUNFLElBQUksQ0FBQyxNQUFNLEdBQUcsQ0FBQyxJQUNmLElBQUksQ0FBQyxNQUFNLENBQUMsQ0FBQyxDQUFDLENBQUMsV0FBVyxFQUFFLEtBQUssSUFBSSxDQUFDLE1BQU0sQ0FBQyxDQUFDLENBQUMsQ0FDL0M7Q0FDSDs7QUFFRCxTQUFTLFdBQVcsQ0FBQyxJQUFZLEVBQVc7QUFDMUMsU0FBTyxJQUFJLENBQUMsV0FBVyxFQUFFLEtBQUssSUFBSSxDQUFDO0NBQ3BDOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUcsRUFBQyxVQUFVLEVBQVYsVUFBVSxFQUFFLGNBQWMsRUFBZCxjQUFjLEVBQUUsYUFBYSxFQUFiLGFBQWEsRUFBRSxXQUFXLEVBQVgsV0FBVyxFQUFDLENBQUMiLCJmaWxlIjoiU3RyaW5nVXRpbHMuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5mdW5jdGlvbiBjYXBpdGFsaXplKHdvcmQ6IHN0cmluZyk6IHN0cmluZyB7XG4gIGlmICh3b3JkLmxlbmd0aCA9PT0gMCkge1xuICAgIHJldHVybiB3b3JkO1xuICB9XG4gIHJldHVybiB3b3JkLmNoYXJBdCgwKS50b1VwcGVyQ2FzZSgpICsgd29yZC5zbGljZSgxKTtcbn1cblxuLyoqXG4gKiBUaGlzIGlzIHB1bGxlZCBvdXQgaW50byBpdHMgb3duIGZ1bmN0aW9uIHJhdGhlciB0aGFuIHVzaW5nIGxvY2FsZUNvbXBhcmVcbiAqIGRpcmVjdGx5IGluIGNhc2Ugd2UgZXZlcnkgY2hvb3NlIGFub3RoZXIgc29ydGluZyBhbGdvcml0aG0uIFN1Y2ggYXMgc29tZVxuICogc29ydCBvZiBuYXR1cmFsIGNvbXBhcmUgYWxnb3JpdGhtLlxuICovXG5mdW5jdGlvbiBjb21wYXJlU3RyaW5ncyhvbmU6ID9zdHJpbmcsIHR3bzogP3N0cmluZyk6IG51bWJlciB7XG4gIG9uZSA9IChvbmUgfHwgJycpLnRvTG93ZXJDYXNlKCk7XG4gIHR3byA9ICh0d28gfHwgJycpLnRvTG93ZXJDYXNlKCk7XG4gIHJldHVybiBvbmUubG9jYWxlQ29tcGFyZSh0d28pO1xufVxuXG5mdW5jdGlvbiBpc0NhcGl0YWxpemVkKG5hbWU6IHN0cmluZyk6IGJvb2xlYW4ge1xuICByZXR1cm4gKFxuICAgIG5hbWUubGVuZ3RoID4gMCAmJlxuICAgIG5hbWUuY2hhckF0KDApLnRvVXBwZXJDYXNlKCkgPT09IG5hbWUuY2hhckF0KDApXG4gICk7XG59XG5cbmZ1bmN0aW9uIGlzTG93ZXJDYXNlKG5hbWU6IHN0cmluZyk6IGJvb2xlYW4ge1xuICByZXR1cm4gbmFtZS50b0xvd2VyQ2FzZSgpID09PSBuYW1lO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IHtjYXBpdGFsaXplLCBjb21wYXJlU3RyaW5ncywgaXNDYXBpdGFsaXplZCwgaXNMb3dlckNhc2V9O1xuIl19

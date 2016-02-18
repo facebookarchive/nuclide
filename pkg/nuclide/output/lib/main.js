@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,36 +10,40 @@
  * the root directory of this source tree.
  */
 
-import type ActivationType from './Activation';
-import type {GadgetsService} from '../../gadgets-interfaces';
-import type OutputService from './OutputService';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeGadgetsService = consumeGadgetsService;
+exports.provideOutputService = provideOutputService;
 
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let activation: ?ActivationType = null;
+var _assert = require('assert');
 
-export function activate(state: ?Object) {
+var _assert2 = _interopRequireDefault(_assert);
+
+var activation = null;
+
+function activate(state) {
   if (activation == null) {
-    const Activation = require('./Activation');
+    var Activation = require('./Activation');
     activation = new Activation(state);
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function consumeGadgetsService(
-  gadgetsApi: GadgetsService,
-): IDisposable {
-  invariant(activation);
+function consumeGadgetsService(gadgetsApi) {
+  (0, _assert2['default'])(activation);
   return activation.consumeGadgetsService(gadgetsApi);
 }
 
-export function provideOutputService(): OutputService {
-  invariant(activation);
+function provideOutputService() {
+  (0, _assert2['default'])(activation);
   return activation.provideOutputService();
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7OztzQkFlc0IsUUFBUTs7OztBQUU5QixJQUFJLFVBQTJCLEdBQUcsSUFBSSxDQUFDOztBQUVoQyxTQUFTLFFBQVEsQ0FBQyxLQUFjLEVBQUU7QUFDdkMsTUFBSSxVQUFVLElBQUksSUFBSSxFQUFFO0FBQ3RCLFFBQU0sVUFBVSxHQUFHLE9BQU8sQ0FBQyxjQUFjLENBQUMsQ0FBQztBQUMzQyxjQUFVLEdBQUcsSUFBSSxVQUFVLENBQUMsS0FBSyxDQUFDLENBQUM7R0FDcEM7Q0FDRjs7QUFFTSxTQUFTLFVBQVUsR0FBRztBQUMzQixNQUFJLFVBQVUsSUFBSSxJQUFJLEVBQUU7QUFDdEIsY0FBVSxDQUFDLE9BQU8sRUFBRSxDQUFDO0FBQ3JCLGNBQVUsR0FBRyxJQUFJLENBQUM7R0FDbkI7Q0FDRjs7QUFFTSxTQUFTLHFCQUFxQixDQUNuQyxVQUEwQixFQUNiO0FBQ2IsMkJBQVUsVUFBVSxDQUFDLENBQUM7QUFDdEIsU0FBTyxVQUFVLENBQUMscUJBQXFCLENBQUMsVUFBVSxDQUFDLENBQUM7Q0FDckQ7O0FBRU0sU0FBUyxvQkFBb0IsR0FBa0I7QUFDcEQsMkJBQVUsVUFBVSxDQUFDLENBQUM7QUFDdEIsU0FBTyxVQUFVLENBQUMsb0JBQW9CLEVBQUUsQ0FBQztDQUMxQyIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUgQWN0aXZhdGlvblR5cGUgZnJvbSAnLi9BY3RpdmF0aW9uJztcbmltcG9ydCB0eXBlIHtHYWRnZXRzU2VydmljZX0gZnJvbSAnLi4vLi4vZ2FkZ2V0cy1pbnRlcmZhY2VzJztcbmltcG9ydCB0eXBlIE91dHB1dFNlcnZpY2UgZnJvbSAnLi9PdXRwdXRTZXJ2aWNlJztcblxuaW1wb3J0IGludmFyaWFudCBmcm9tICdhc3NlcnQnO1xuXG5sZXQgYWN0aXZhdGlvbjogP0FjdGl2YXRpb25UeXBlID0gbnVsbDtcblxuZXhwb3J0IGZ1bmN0aW9uIGFjdGl2YXRlKHN0YXRlOiA/T2JqZWN0KSB7XG4gIGlmIChhY3RpdmF0aW9uID09IG51bGwpIHtcbiAgICBjb25zdCBBY3RpdmF0aW9uID0gcmVxdWlyZSgnLi9BY3RpdmF0aW9uJyk7XG4gICAgYWN0aXZhdGlvbiA9IG5ldyBBY3RpdmF0aW9uKHN0YXRlKTtcbiAgfVxufVxuXG5leHBvcnQgZnVuY3Rpb24gZGVhY3RpdmF0ZSgpIHtcbiAgaWYgKGFjdGl2YXRpb24gIT0gbnVsbCkge1xuICAgIGFjdGl2YXRpb24uZGlzcG9zZSgpO1xuICAgIGFjdGl2YXRpb24gPSBudWxsO1xuICB9XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBjb25zdW1lR2FkZ2V0c1NlcnZpY2UoXG4gIGdhZGdldHNBcGk6IEdhZGdldHNTZXJ2aWNlLFxuKTogSURpc3Bvc2FibGUge1xuICBpbnZhcmlhbnQoYWN0aXZhdGlvbik7XG4gIHJldHVybiBhY3RpdmF0aW9uLmNvbnN1bWVHYWRnZXRzU2VydmljZShnYWRnZXRzQXBpKTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIHByb3ZpZGVPdXRwdXRTZXJ2aWNlKCk6IE91dHB1dFNlcnZpY2Uge1xuICBpbnZhcmlhbnQoYWN0aXZhdGlvbik7XG4gIHJldHVybiBhY3RpdmF0aW9uLnByb3ZpZGVPdXRwdXRTZXJ2aWNlKCk7XG59XG4iXX0=

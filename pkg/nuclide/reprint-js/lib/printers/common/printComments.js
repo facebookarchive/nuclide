@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var flatten = require('../../utils/flatten');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +10,16 @@
  * the root directory of this source tree.
  */
 
-import type {Lines} from '../../types/common';
+var printComment = require('./printComment');
 
-const flatten = require('../../utils/flatten');
-const printComment = require('./printComment');
-
-function printComments(nodes: ?Array<any>): Lines {
+function printComments(nodes) {
   if (!Array.isArray(nodes)) {
     return [];
   }
-  return flatten(nodes.map(n => printComment(n)));
+  return flatten(nodes.map(function (n) {
+    return printComment(n);
+  }));
 }
 
 module.exports = printComments;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50Q29tbWVudHMuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFhQSxJQUFNLE9BQU8sR0FBRyxPQUFPLENBQUMscUJBQXFCLENBQUMsQ0FBQzs7Ozs7Ozs7OztBQUMvQyxJQUFNLFlBQVksR0FBRyxPQUFPLENBQUMsZ0JBQWdCLENBQUMsQ0FBQzs7QUFFL0MsU0FBUyxhQUFhLENBQUMsS0FBa0IsRUFBUztBQUNoRCxNQUFJLENBQUMsS0FBSyxDQUFDLE9BQU8sQ0FBQyxLQUFLLENBQUMsRUFBRTtBQUN6QixXQUFPLEVBQUUsQ0FBQztHQUNYO0FBQ0QsU0FBTyxPQUFPLENBQUMsS0FBSyxDQUFDLEdBQUcsQ0FBQyxVQUFBLENBQUM7V0FBSSxZQUFZLENBQUMsQ0FBQyxDQUFDO0dBQUEsQ0FBQyxDQUFDLENBQUM7Q0FDakQ7O0FBRUQsTUFBTSxDQUFDLE9BQU8sR0FBRyxhQUFhLENBQUMiLCJmaWxlIjoicHJpbnRDb21tZW50cy5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtMaW5lc30gZnJvbSAnLi4vLi4vdHlwZXMvY29tbW9uJztcblxuY29uc3QgZmxhdHRlbiA9IHJlcXVpcmUoJy4uLy4uL3V0aWxzL2ZsYXR0ZW4nKTtcbmNvbnN0IHByaW50Q29tbWVudCA9IHJlcXVpcmUoJy4vcHJpbnRDb21tZW50Jyk7XG5cbmZ1bmN0aW9uIHByaW50Q29tbWVudHMobm9kZXM6ID9BcnJheTxhbnk+KTogTGluZXMge1xuICBpZiAoIUFycmF5LmlzQXJyYXkobm9kZXMpKSB7XG4gICAgcmV0dXJuIFtdO1xuICB9XG4gIHJldHVybiBmbGF0dGVuKG5vZGVzLm1hcChuID0+IHByaW50Q29tbWVudChuKSkpO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IHByaW50Q29tbWVudHM7XG4iXX0=
