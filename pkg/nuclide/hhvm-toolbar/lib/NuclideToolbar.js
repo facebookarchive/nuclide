@@ -17,6 +17,11 @@ const {PropTypes} = React;
 class NuclideToolbar extends React.Component {
   _disposable: ?Disposable;
 
+  state: {
+    currentFilePath: string,
+    projectType: string,
+  };
+
   static propTypes = {
     projectStore: PropTypes.instanceOf(ProjectStore).isRequired,
   };
@@ -28,7 +33,7 @@ class NuclideToolbar extends React.Component {
       projectType: 'Other',
     };
     this._disposable = null;
-    this._updateStateFromStore = this._updateStateFromStore.bind(this);
+    (this: any)._updateStateFromStore = this._updateStateFromStore.bind(this);
   }
 
   componentWillMount() {

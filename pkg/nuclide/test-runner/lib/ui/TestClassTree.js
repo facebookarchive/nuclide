@@ -38,7 +38,7 @@ class TestClassTree extends React.Component {
       this.refs['tree'].setRoots(roots);
     }
 
-    this.boundRowClassNameForNode = this.rowClassNameForNode.bind(this);
+    (this: any).rowClassNameForNode = this.rowClassNameForNode.bind(this);
   }
 
   render() {
@@ -61,7 +61,7 @@ class TestClassTree extends React.Component {
         labelClassNameForNode={labelClassNameForNode}
         onKeepSelection={() => {}}
         ref="tree"
-        rowClassNameForNode={this.boundRowClassNameForNode}
+        rowClassNameForNode={this.rowClassNameForNode}
       />
     );
   }

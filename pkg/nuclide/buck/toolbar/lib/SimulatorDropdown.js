@@ -17,12 +17,7 @@ const {PropTypes} = React;
 
 import type {Device} from './IosSimulator';
 
-type State = {
-  menuItems: Array<Object>;
-  selectedIndex: number;
-};
-
-class SimulatorDropdown extends React.Component<void, void, State> {
+class SimulatorDropdown extends React.Component {
   static propTypes = {
     className: PropTypes.string.isRequired,
     disabled: PropTypes.bool.isRequired,
@@ -34,7 +29,12 @@ class SimulatorDropdown extends React.Component<void, void, State> {
     className: '',
     disabled: false,
     title: 'Choose a device',
-    onSelectedSimulatorChange: () => {},
+    onSelectedSimulatorChange: (simulator: string) => {},
+  };
+
+  state: {
+    menuItems: Array<{label: string, value: string}>,
+    selectedIndex: number,
   };
 
   constructor(props: {[key: string]: mixed}) {
@@ -51,7 +51,7 @@ class SimulatorDropdown extends React.Component<void, void, State> {
     IosSimulator.getDevices().then(this._buildMenuItems);
   }
 
-  _buildMenuItems(devices: Array<Device>) {
+  _buildMenuItems(devices: Array<Device>): void {
     const selectedIndex = IosSimulator.selectDevice(devices);
     const menuItems = devices.map(device => ({
       label: `${device.name} (${device.os})`,

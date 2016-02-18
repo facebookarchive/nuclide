@@ -55,8 +55,8 @@ class SuggestionList extends React.Component {
   props: Props;
   state: State;
 
+  _items: Array<{rightLabel?: string, title: string, callback: () => mixed}>;
   _textEditor: ?atom$TextEditor;
-
   _subscriptions: atom$CompositeDisposable;
   _boundConfirm: () => void;
 
@@ -73,7 +73,10 @@ class SuggestionList extends React.Component {
     const {suggestionList} = this.props;
     const suggestion = suggestionList.getSuggestion();
     invariant(suggestion);
-    this._items = suggestion.callback;
+    // TODO(nmote): This is assuming `suggestion.callback` is always an Array, which is not true
+    //   according to hyperclick-interfaces/types. It can also be a function.
+    this._items = ((suggestion.callback: any):
+        Array<{rightLabel?: string, title: string, callback: () => mixed}>);
     this._textEditor = suggestionList.getTextEditor();
   }
 

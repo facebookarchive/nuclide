@@ -41,13 +41,17 @@ class HhvmToolbar extends React.Component {
     targetFilePath: PropTypes.string.isRequired,
   };
 
+  state: {
+    selectedIndex: number,
+  };
+
   constructor(props: mixed) {
     super(props);
     this.state = {
       selectedIndex: DEFAULT_OPTION_INDEX,
     };
-    this._debug = this._debug.bind(this);
-    this._handleDropdownChange = this._handleDropdownChange.bind(this);
+    (this: any)._debug = this._debug.bind(this);
+    (this: any)._handleDropdownChange = this._handleDropdownChange.bind(this);
   }
 
   _getMenuItems(): Array<{label: string, value: number}> {

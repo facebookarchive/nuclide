@@ -34,7 +34,7 @@ class TestQuickSelectionProvider {
 
 xdescribe('QuickSelectionComponent', () => {
   let componentRoot: Node;
-  let component: typeof QuickSelectionComponent;
+  let component: QuickSelectionComponent;
 
   beforeEach(() => {
     spyOn(Date, 'now').andCallFake(() => window.now);
@@ -347,7 +347,7 @@ xdescribe('QuickSelectionComponent', () => {
 
     it('should allow input text to be set after mount', () => {
       component.setInputValue('foo');
-      const editor = component.getInputTextEditor().model;
+      const editor = component.getInputTextEditor().getModel();
       expect(editor.getText()).toBe('foo');
     });
 

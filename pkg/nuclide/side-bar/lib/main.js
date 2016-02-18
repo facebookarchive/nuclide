@@ -45,7 +45,7 @@ type ViewInstance = {
  */
 type View = {
   toggleCommand: string,
-  getComponent: () => (typeof React.Component),
+  getComponent: () => Class<any>, // TODO(ssorallen): Should be polymorphic `Class<React.Component>`
   onDidShow: () => mixed,
   viewId: string,
 };

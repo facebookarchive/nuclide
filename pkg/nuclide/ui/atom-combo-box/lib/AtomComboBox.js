@@ -27,11 +27,11 @@ const emptyfunction = require('emptyfunction');
 const {PropTypes} = React;
 
 type State = {
-  filteredOptions: Array<Object>;
-  options: Array<string>;
-  optionsVisible: boolean;
-  selectedIndex: number;
-  textInput: string;
+  filteredOptions: Array<Object>,
+  options: Array<string>,
+  optionsVisible: boolean,
+  selectedIndex: number,
+  textInput: string,
 };
 
 /**

@@ -6,6 +6,8 @@
 .*/node_modules/babel-types/.*
 # ignore module src to prefer declaration
 .*/node_modules/rx/.*
+# ignore module src to prefer declaration
+.*/node_modules/react/react.js
 # Annotated with `@flow` but has errors
 .*/node_modules/fixed-data-table/internal/.*
 .*/node_modules/sabor/.*

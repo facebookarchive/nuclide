@@ -25,14 +25,14 @@ type DatatipComponentProps = {
   action: string,
   actionTitle: string,
   onActionClick: Function,
-}
+};
 
 /* eslint-disable react/prop-types */
 export class DatatipComponent extends React.Component {
 
   constructor(props: DatatipComponentProps) {
     super(props);
-    this.handleActionClick = this.handleActionClick.bind(this);
+    (this: any).handleActionClick = this.handleActionClick.bind(this);
   }
 
   handleActionClick(event: SyntheticEvent): void {

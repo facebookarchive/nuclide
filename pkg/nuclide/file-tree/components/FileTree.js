@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {FileTreeNodeData} from '../lib/FileTreeStore';
+
 import {CompositeDisposable} from 'atom';
 import FileTreeStore from '../lib/FileTreeStore';
 import {React} from 'react-for-atom';
@@ -17,7 +19,12 @@ import EmptyComponent from './EmptyComponent';
 import {track} from '../../analytics';
 import {once} from '../../commons';
 
-class FileTree extends React.Component {
+type State = {
+  nodeToKeepInView: ?FileTreeNodeData,
+};
+
+class FileTree extends React.Component<void, void, State> {
+  state: State;
   _subscriptions: CompositeDisposable;
 
   static trackFirstRender = once(() => {
@@ -36,7 +43,7 @@ class FileTree extends React.Component {
     });
   });
 
-  constructor(props: Object) {
+  constructor(props: void) {
     super(props);
     this._subscriptions = new CompositeDisposable();
     this.state = {
@@ -65,7 +72,7 @@ class FileTree extends React.Component {
     FileTree.trackFirstRender(this);
   }
 
-  componentDidUpdate(prevProps: Object, prevState: Object): void {
+  componentDidUpdate(prevProps: void, prevState: Object): void {
     if (prevState.nodeToKeepInView != null) {
       /*
        * Scroll the node into view one final time after being reset to ensure final render is

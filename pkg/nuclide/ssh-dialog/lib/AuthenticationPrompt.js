@@ -15,17 +15,16 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 
-type DefaultProps = {};
 type Props = {
   instructions: string,
   onConfirm: () => mixed,
   onCancel: () => mixed,
 };
-type State = {};
 
 /** Component to prompt the user for authentication information. */
 /* eslint-disable react/prop-types */
-export default class AuthenticationPrompt extends React.Component<DefaultProps, Props, State> {
+export default class AuthenticationPrompt extends React.Component<void, Props, void> {
+  _disposables: ?CompositeDisposable;
   constructor(props: Props) {
     super(props);
   }
@@ -67,17 +66,17 @@ export default class AuthenticationPrompt extends React.Component<DefaultProps, 
   }
 
   componentDidMount(): void {
-    this._disposables = new CompositeDisposable();
+    const disposables = this._disposables = new CompositeDisposable();
     const root = ReactDOM.findDOMNode(this.refs['root']);
 
     // Hitting enter when this panel has focus should confirm the dialog.
-    this._disposables.add(atom.commands.add(
+    disposables.add(atom.commands.add(
         root,
         'core:confirm',
         event => this.props.onConfirm()));
 
     // Hitting escape when this panel has focus should cancel the dialog.
-    this._disposables.add(atom.commands.add(
+    disposables.add(atom.commands.add(
         root,
         'core:cancel',
         event => this.props.onCancel()));

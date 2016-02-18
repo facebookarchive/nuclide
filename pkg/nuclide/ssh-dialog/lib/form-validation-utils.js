@@ -106,6 +106,7 @@ export function validateFormInputs(
     profileParams.remoteServerCommand = '';
   }
   const validatedProfile = {
+    deletable: true,
     displayTitle: profileName,
     params: profileParams,
   };

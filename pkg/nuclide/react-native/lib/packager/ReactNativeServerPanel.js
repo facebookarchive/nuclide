@@ -15,9 +15,9 @@ import {React} from 'react-for-atom';
 import ReactNativeServerStatus from './ReactNativeServerStatus';
 
 type Props = {
-  store: ReactNativeServerStatus;
-  restartServer: () => void;
-  stopServer: () => void;
+  store: ReactNativeServerStatus,
+  restartServer: () => void,
+  stopServer: () => void,
 };
 
 export default class ReactNativeServerPanel extends React.Component<void, Props, void> {

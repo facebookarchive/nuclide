@@ -32,6 +32,7 @@ const SEARCH_RESULTS_FIXTURE: GroupedResult = {
         error: null,
       },
     },
+    title: 'searchService',
   },
   symbolService: {
     results: {
@@ -46,6 +47,7 @@ const SEARCH_RESULTS_FIXTURE: GroupedResult = {
         error: null,
       },
     },
+    title: 'symbolService',
   },
   shouldNotAppearInOutputService: {
     results: {
@@ -60,6 +62,7 @@ const SEARCH_RESULTS_FIXTURE: GroupedResult = {
         error: null,
       },
     },
+    title: 'shouldNotAppearInOutputService',
   },
 };
 

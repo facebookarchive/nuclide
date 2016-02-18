@@ -27,6 +27,7 @@ type Props = {
 
 class GadgetPlaceholder extends React.Component<void, Props, void> {
 
+  element: HTMLElement;
   _expandedFlexScale: ?number;
 
   constructor(props: Props) {

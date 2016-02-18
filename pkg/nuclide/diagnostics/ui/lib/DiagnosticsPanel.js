@@ -60,7 +60,8 @@ class DiagnosticsPanel extends React.Component {
 
   constructor(props: mixed) {
     super(props);
-    this._onFilterByActiveTextEditorChange = this._onFilterByActiveTextEditorChange.bind(this);
+    (this: any)._onFilterByActiveTextEditorChange =
+      this._onFilterByActiveTextEditorChange.bind(this);
   }
 
   getHeight(): number {

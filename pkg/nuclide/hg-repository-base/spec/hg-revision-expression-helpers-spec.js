@@ -33,7 +33,7 @@ describe('hg-revision-expression-helpers', () => {
       const commit1Description =
 `Commit 1 'title'.
 Continue Commit 1 message.`;
-    const commit2Description =
+      const commit2Description =
 `Commit 2 'title'.
 
 Still, multi-line commit 2 message

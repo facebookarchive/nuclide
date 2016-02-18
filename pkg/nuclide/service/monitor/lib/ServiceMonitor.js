@@ -17,7 +17,12 @@ import {React} from 'react-for-atom';
 
 const {PropTypes} = React;
 
+type State = {
+  serviceFilter: string,
+};
+
 export default class ServiceMonitor extends React.Component {
+  state: State;
 
   static propTypes = {
     serviceLogger: PropTypes.object.isRequired,
@@ -36,7 +41,7 @@ export default class ServiceMonitor extends React.Component {
     this.state = {
       serviceFilter: '',
     };
-    this._onFilterDidChange = this._onFilterDidChange.bind(this);
+    (this: any)._onFilterDidChange = this._onFilterDidChange.bind(this);
   }
 
   componentDidMount() {
@@ -58,7 +63,7 @@ export default class ServiceMonitor extends React.Component {
   // TODO(t8579654): Use FixedDataTable.
   // TODO(t8579695): Make it possible to click on a row and console.dir() the arguments so that they
   // can be inspected.
-  render(): void {
+  render(): ReactElement {
     const rows = [];
     const serviceFilter = this.state.serviceFilter.toLowerCase();
     for (const item of this.props.serviceLogger) {

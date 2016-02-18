@@ -36,10 +36,10 @@ type Props = {
 };
 
 type EditorState = {
-  revisionTitle: string;
-  text: string;
-  savedContents?: string;
-  offsets: OffsetMap;
+  revisionTitle: string,
+  text: string,
+  savedContents?: string,
+  offsets: OffsetMap,
   highlightedLines: {
     added: Array<number>,
     removed: Array<number>,
@@ -68,6 +68,7 @@ function initialEditorState(): EditorState {
   };
 }
 
+const EMPTY_FUNCTION = () => {};
 const TOOLBAR_VISIBLE_SETTING = 'nuclide-diff-view.toolbarVisible';
 
 /* eslint-disable react/prop-types */
@@ -79,6 +80,7 @@ class DiffViewComponent extends React.Component {
   _syncScroll: SyncScroll;
   _oldEditorPane: atom$Pane;
   _oldEditorComponent: DiffViewEditorPane;
+  _paneContainer: Object;
   _newEditorPane: atom$Pane;
   _newEditorComponent: DiffViewEditorPane;
   _bottomRightPane: atom$Pane;
@@ -107,12 +109,12 @@ class DiffViewComponent extends React.Component {
     };
     this._boundHandleNewOffsets = this._handleNewOffsets.bind(this);
     this._boundUpdateLineDiffState = this._updateLineDiffState.bind(this);
-    this._boundOnChangeNewTextEditor = this._onChangeNewTextEditor.bind(this);
-    this._boundOnTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
+    (this: any)._onChangeNewTextEditor = this._onChangeNewTextEditor.bind(this);
+    (this: any)._onTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
     this._boundOnNavigationClick = this._onNavigationClick.bind(this);
     this._boundOnDidUpdateTextEditorElement = this._onDidUpdateTextEditorElement.bind(this);
-    this._onChangeMode = this._onChangeMode.bind(this);
-    this._onSwitchToEditor = this._onSwitchToEditor.bind(this);
+    (this: any)._onChangeMode = this._onChangeMode.bind(this);
+    (this: any)._onSwitchToEditor = this._onSwitchToEditor.bind(this);
     this._readonlyBuffer = new TextBuffer();
     this._subscriptions = new CompositeDisposable();
   }
@@ -245,6 +247,8 @@ class DiffViewComponent extends React.Component {
           inlineElements={oldState.inlineElements}
           handleNewOffsets={this._boundHandleNewOffsets}
           readOnly={true}
+          onChange={EMPTY_FUNCTION}
+          onDidUpdateTextEditorElement={EMPTY_FUNCTION}
         />,
         this._getPaneElement(this._oldEditorPane),
     );
@@ -262,7 +266,7 @@ class DiffViewComponent extends React.Component {
           handleNewOffsets={this._boundHandleNewOffsets}
           onDidUpdateTextEditorElement={this._boundOnDidUpdateTextEditorElement}
           readOnly={false}
-          onChange={this._boundOnChangeNewTextEditor}
+          onChange={this._onChangeNewTextEditor}
         />,
         this._getPaneElement(this._newEditorPane),
     );
@@ -276,7 +280,7 @@ class DiffViewComponent extends React.Component {
     this._timelineComponent = ReactDOM.render(
       <DiffTimelineView
         diffModel={this.props.diffModel}
-        onSelectionChange={this._boundOnTimelineChangeRevision}
+        onSelectionChange={this._onTimelineChangeRevision}
       />,
       this._getPaneElement(this._bottomRightPane),
     );

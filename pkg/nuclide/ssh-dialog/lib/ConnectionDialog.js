@@ -32,10 +32,6 @@ import {
 } from '../../remote-connection';
 const logger = require('../../logging').getLogger();
 
-type DefaultProps = {
-  indexOfInitiallySelectedConnectionProfile: number,
-};
-
 type Props = {
   // The list of connection profiles that will be displayed.
   connectionProfiles: ?Array<NuclideRemoteConnectionProfile>,
@@ -73,9 +69,8 @@ const WAITING_FOR_AUTHENTICATION = 4;
  * server.
  */
 /* eslint-disable react/prop-types */
-export default class ConnectionDialog extends React.Component<DefaultProps, Props, State> {
-  _boundOk: () => void;
-  _boundCancel: () => void;
+class ConnectionDialog extends React.Component {
+  state: State;
 
   static defaultProps = {
     indexOfInitiallySelectedConnectionProfile: -1,
@@ -117,9 +112,9 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
       sshHandshake: sshHandshake,
     };
 
-    this._boundCancel = this.cancel.bind(this);
-    this._boundOk = this.ok.bind(this);
-    this._boundOnProfileClicked = this.onProfileClicked.bind(this);
+    (this: any).cancel = this.cancel.bind(this);
+    (this: any).ok = this.ok.bind(this);
+    (this: any).onProfileClicked = this.onProfileClicked.bind(this);
   }
 
   componentWillReceiveProps(nextProps: Props): void {
@@ -127,8 +122,9 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
     if (nextProps.connectionProfiles == null) {
       indexOfSelectedConnectionProfile = -1;
     } else if (
+      this.props.connectionProfiles == null
       // The current selection is outside the bounds of the next profiles list
-      indexOfSelectedConnectionProfile > (nextProps.connectionProfiles.length - 1)
+      || indexOfSelectedConnectionProfile > (nextProps.connectionProfiles.length - 1)
       // The next profiles list is longer than before, a new one was added
       || nextProps.connectionProfiles.length > this.props.connectionProfiles.length
     ) {
@@ -154,9 +150,9 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
           indexOfSelectedConnectionProfile={this.state.indexOfSelectedConnectionProfile}
           onAddProfileClicked={this.props.onAddProfileClicked}
           onDeleteProfileClicked={this.props.onDeleteProfileClicked}
-          onConfirm={this._boundOk}
-          onCancel={this._boundCancel}
-          onProfileClicked={this._boundOnProfileClicked}
+          onConfirm={this.ok}
+          onCancel={this.cancel}
+          onProfileClicked={this.onProfileClicked}
         />
       );
       isOkDisabled = false;
@@ -170,8 +166,8 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
         <AuthenticationPrompt
           ref="authentication"
           instructions={this.state.instructions}
-          onConfirm={this._boundOk}
-          onCancel={this._boundCancel}
+          onConfirm={this.ok}
+          onCancel={this.cancel}
         />
       );
       isOkDisabled = false;
@@ -185,10 +181,10 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
         </div>
         <div className="padded text-right">
           <div className="btn-group">
-            <button className="btn" onClick={this._boundCancel}>
+            <button className="btn" onClick={this.cancel}>
               Cancel
             </button>
-            <button className="btn btn-primary" onClick={this._boundOk} disabled={isOkDisabled}>
+            <button className="btn btn-primary" onClick={this.ok} disabled={isOkDisabled}>
               {okButtonText}
             </button>
           </div>
@@ -301,3 +297,5 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
   }
 }
 /* eslint-enable react/prop-types */
+
+module.exports = ConnectionDialog;

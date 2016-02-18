@@ -18,16 +18,20 @@ const {
   ReactDOM,
 } = require('react-for-atom');
 const TestClassTree = require('./TestClassTree');
-
 const pathUtil = require('path');
 
 const {PropTypes} = React;
+
+type State = {
+  selectedTestRunnerIndex: number,
+};
 
 function runStopButtonClassName(icon: string, className: string): string {
   return `btn btn-sm icon inline-block icon-${icon} ${className}`;
 }
 
 class TestRunnerPanel extends React.Component {
+  state: State;
   _paneContainer: Object;
   _leftPane: atom$Pane;
   _rightPane: atom$Pane;

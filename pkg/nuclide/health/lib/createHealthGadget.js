@@ -16,15 +16,17 @@ import HealthPaneItemComponent from './ui/HealthPaneItemComponent';
 import {React} from 'react-for-atom';
 
 type State = {
-  stats: HealthStats,
-  activeHandleObjects: Array<Object>,
+  activeHandleObjects?: Array<Object>,
+  stats?: HealthStats,
 };
 
-export default function createHealthGadget(state$: Rx.Observable<?State>): typeof React.Component {
+export default function createHealthGadget(state$: Rx.Observable<?State>): Class<any> {
 
-  return class HealthPaneItem extends React.Component {
+  return class HealthPaneItem extends React.Component<void, void, State> {
 
     static gadgetId = 'nuclide-health';
+
+    state: State;
 
     _stateSubscription: IDisposable;
 

@@ -28,7 +28,9 @@ export default function createOutputGadget(
   commands: Commands,
 ): Gadget {
 
-  class OutputGadget extends React.Component<void, void, State> {
+  class OutputGadget extends React.Component {
+
+    state: State;
 
     static gadgetId = 'nuclide-output';
     static defaultLocation = 'bottom';
@@ -47,7 +49,7 @@ export default function createOutputGadget(
     }
 
     componentWillMount() {
-      this._state$Subscription = state$.subscribe(state => this.setState(state));
+      this._state$Subscription = state$.subscribe(state => this.setState({records: state.records}));
     }
 
     componentWillUnmount() {

@@ -40,6 +40,7 @@ export type NuclideNewConnectionProfileInitialFields = {
 };
 
 export type NuclideRemoteConnectionProfile = {
+  deletable: boolean,
   displayTitle: string,
   params: NuclideRemoteConnectionParams,
 };

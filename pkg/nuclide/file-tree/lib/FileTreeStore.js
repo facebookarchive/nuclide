@@ -40,7 +40,7 @@ import type {NuclideUri} from '../../remote-uri';
 
 type ActionPayload = Object;
 type ChangeListener = () => mixed;
-type FileTreeNodeData = {
+export type FileTreeNodeData = {
   nodeKey: string,
   rootKey: string,
 }

@@ -10,8 +10,9 @@
  */
 
 import type LazyTreeNode from '../../ui/tree';
-import type {FileChange, FileChangeState} from './types';
+import type {FileChange, FileChangeState, FileChangeStatusValue} from './types';
 import type DiffViewModel from './DiffViewModel';
+import type {NuclideUri} from '../../remote-uri';
 
 import {fileTypeClass} from '../../atom-helpers';
 import {TreeRootComponent} from '../../ui/tree';
@@ -76,6 +77,11 @@ type Props = {
 
 /* eslint-disable react/prop-types */
 export default class DiffViewTree extends React.Component {
+
+  state: {
+    fileChanges: Map<NuclideUri, FileChangeStatusValue>,
+    selectedFilePath: string,
+  };
 
   _boundOnConfirmSelection: Function;
   _subscriptions: ?CompositeDisposable;

@@ -20,7 +20,7 @@ class Inspector extends React.Component {
 
   constructor(props: mixed) {
     super(props);
-    this._handleDidFinishLoad = this._handleDidFinishLoad.bind(this);
+    (this: any)._handleDidFinishLoad = this._handleDidFinishLoad.bind(this);
   }
 
   getTitle(): string {
@@ -40,7 +40,7 @@ class Inspector extends React.Component {
   }
 
   _handleDidFinishLoad(event) {
-    const element = event.target;
+    const element = ((event.target: any): WebviewElement);
     const packageDirectory = path.resolve(__dirname, '../../');
     const requirePaths = require.cache[__filename].paths;
     element.executeJavaScript(

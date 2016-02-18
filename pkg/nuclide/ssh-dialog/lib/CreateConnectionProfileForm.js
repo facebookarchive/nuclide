@@ -46,14 +46,14 @@ const emptyFunction = () => {};
  * A form that is used to create a new connection profile.
  */
 /* eslint-disable react/prop-types */
-export default class CreateConnectionProfileForm extends React.Component<void, Props, void> {
+class CreateConnectionProfileForm extends React.Component<void, Props, void> {
 
   disposables: CompositeDisposable;
 
   constructor(props: Props) {
     super(props);
-    this._boundClickSave = this._clickSave.bind(this);
-    this._boundClickCancel = this._clickCancel.bind(this);
+    (this: any)._clickSave = this._clickSave.bind(this);
+    (this: any)._clickCancel = this._clickCancel.bind(this);
     this.disposables = new CompositeDisposable();
   }
 
@@ -61,9 +61,9 @@ export default class CreateConnectionProfileForm extends React.Component<void, P
     const root = ReactDOM.findDOMNode(this);
     this.disposables.add(
       // Hitting enter when this panel has focus should confirm the dialog.
-      atom.commands.add(root, 'core:confirm', this._boundClickSave),
+      atom.commands.add(root, 'core:confirm', this._clickSave),
       // Hitting escape when this panel has focus should cancel the dialog.
-      atom.commands.add(root, 'core:cancel', this._boundClickCancel)
+      atom.commands.add(root, 'core:cancel', this._clickCancel)
     );
   }
 
@@ -104,10 +104,10 @@ export default class CreateConnectionProfileForm extends React.Component<void, P
           />
           <div className="padded text-right">
             <div className="btn-group">
-              <button className="btn" onClick={this._boundClickCancel}>
+              <button className="btn" onClick={this._clickCancel}>
                 Cancel
               </button>
-              <button className="btn btn-primary" onClick={this._boundClickSave}>
+              <button className="btn btn-primary" onClick={this._clickSave}>
                 Save
               </button>
             </div>
@@ -151,3 +151,5 @@ export default class CreateConnectionProfileForm extends React.Component<void, P
 }
 
 /* eslint-enable react/prop-types */
+
+module.exports = CreateConnectionProfileForm;

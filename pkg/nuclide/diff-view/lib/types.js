@@ -22,14 +22,14 @@ export type FileChange = {
 };
 
 export type FileChangeState = {
-  filePath: NuclideUri;
-  oldContents: string;
-  newContents: string;
-  savedContents?: string;
-  fromRevisionTitle: string;
-  toRevisionTitle: string;
-  compareRevisionInfo: ?RevisionInfo;
-  inlineComponents?: Array<InlineComponent>;
+  filePath: NuclideUri,
+  oldContents: string,
+  newContents: string,
+  savedContents?: string,
+  fromRevisionTitle: string,
+  toRevisionTitle: string,
+  compareRevisionInfo: ?RevisionInfo,
+  inlineComponents?: Array<InlineComponent>,
 };
 
 export type RevisionsState = {
@@ -48,9 +48,9 @@ export type TextDiff = {
 };
 
 export type HgDiffState = {
-  revisionInfo: RevisionInfo;
-  committedContents: string;
-  filesystemContents: string;
+  revisionInfo: RevisionInfo,
+  committedContents: string,
+  filesystemContents: string,
 };
 
 export type LineRangesWithOffsets = {

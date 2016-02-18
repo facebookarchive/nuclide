@@ -23,7 +23,6 @@ const PROCESS_OUTPUT_PATH = 'nuclide-process-output.ansi';
 
 /* eslint-disable react/prop-types */
 
-type DefaultProps = {};
 type Props = {
   title: string,
   processOutputStore: ProcessOutputStore,
@@ -31,10 +30,8 @@ type Props = {
   processOutputViewTopElement: ?HTMLElement,
   textBuffer: TextBuffer,
 };
-type State = {};
 
-
-class ProcessOutputView extends React.Component<DefaultProps, Props, State> {
+class ProcessOutputView extends React.Component<void, Props, void> {
   _processOutputStore: ProcessOutputStore;
   _textBuffer: atom$TextBuffer;
   _disposables: atom$CompositeDisposable;

@@ -13,7 +13,6 @@ import invariant from 'assert';
 import mockSpawn from 'mock-spawn';
 import path from 'path';
 import processLib from '../lib/process.js';
-import {spawn} from 'child_process';
 
 const {
   DARWIN_PATH_HELPER_REGEXP,

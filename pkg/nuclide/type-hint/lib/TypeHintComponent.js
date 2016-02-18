@@ -26,10 +26,6 @@ export class TypeHintComponent extends React.Component {
   props: TypeHintComponentProps;
   state: TypeHintComponentState;
 
-  static defaultProps = {
-    content: '<type unavailable>',
-  };
-
   constructor(props: TypeHintComponentProps) {
     super(props);
     this.state = {

@@ -9,6 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type {
+  NuclideRemoteAuthMethods,
+  NuclideRemoteConnectionParamsWithPassword,
+} from './connection-types';
+
 const AtomInput = require('../../ui/atom-input');
 const {CompositeDisposable} = require('atom');
 const RadioGroup = require('../../ui/radiogroup');
@@ -19,6 +24,16 @@ const {
 const {PropTypes} = React;
 const {SshHandshake} = require('../../remote-connection');
 
+type State = {
+  cwd: string,
+  pathToPrivateKey: string,
+  remoteServerCommand: string,
+  selectedAuthMethodIndex: number,
+  server: string,
+  sshPort: string,
+  username: string,
+};
+
 const {SupportedMethods} = SshHandshake;
 const authMethods = [
   SupportedMethods.PASSWORD,
@@ -26,14 +41,9 @@ const authMethods = [
   SupportedMethods.PRIVATE_KEY,
 ];
 
-import type {
-  NuclideRemoteAuthMethods,
-  NuclideRemoteConnectionParamsWithPassword,
-} from './connection-types';
-
-
 /** Component to prompt the user for connection details. */
 export default class ConnectionDetailsForm extends React.Component {
+  state: State;
   static propTypes = {
     initialUsername: PropTypes.string,
     initialServer: PropTypes.string,

@@ -77,10 +77,15 @@ export default class QuickSelectionComponent extends React.Component {
   _debouncedQueryHandler: () => void;
   _boundSelect: () => void;
   _boundHandleTabChange: (tab: ProviderSpec) => void;
-  _state: {
+  state: {
+    activeProviderName?: string,
     activeTab: ProviderSpec,
+    hasUserSelection: boolean,
     resultsByService: GroupedResult,
     renderableProviders: Array<ProviderSpec>,
+    selectedService: string,
+    selectedDirectory: string,
+    selectedItemIndex: number,
   };
 
   constructor(props: Object) {
@@ -99,8 +104,8 @@ export default class QuickSelectionComponent extends React.Component {
       selectedItemIndex: -1,
       hasUserSelection: false,
     };
-    this.handleProvidersChangeBound = this.handleProvidersChange.bind(this);
-    this.handleResultsChangeBound = this.handleResultsChange.bind(this);
+    (this: any).handleProvidersChange = this.handleProvidersChange.bind(this);
+    (this: any).handleResultsChange = this.handleResultsChange.bind(this);
   }
 
   componentWillReceiveProps(nextProps: any) {
@@ -155,11 +160,11 @@ export default class QuickSelectionComponent extends React.Component {
     this._subscriptions.add(
       searchResultManager.on(
         searchResultManager.PROVIDERS_CHANGED,
-        this.handleProvidersChangeBound
+        this.handleProvidersChange
       ),
       searchResultManager.on(
         searchResultManager.RESULTS_CHANGED,
-        this.handleResultsChangeBound
+        this.handleResultsChange
       ),
     );
 
@@ -576,7 +581,7 @@ export default class QuickSelectionComponent extends React.Component {
     );
   }
 
-  _renderEmptyMessage(message: string): ReactElement {
+  _renderEmptyMessage(message: string | ReactElement): ReactElement {
     return (
       <ul className="background-message centered">
         <li>{message}</li>

@@ -51,13 +51,17 @@ class FileDialogComponent extends React.Component {
     additionalOptions: {},
   };
 
+  state: {
+    options: Object,
+  };
+
   constructor() {
     super(...arguments);
     this._isClosed = false;
     this._subscriptions = new CompositeDisposable();
-    this._close = this._close.bind(this);
-    this._confirm = this._confirm.bind(this);
-    this._handleDocumentClick = this._handleDocumentClick.bind(this);
+    (this: any)._close = this._close.bind(this);
+    (this: any)._confirm = this._confirm.bind(this);
+    (this: any)._handleDocumentClick = this._handleDocumentClick.bind(this);
     this.state = {
       options: {},
     };

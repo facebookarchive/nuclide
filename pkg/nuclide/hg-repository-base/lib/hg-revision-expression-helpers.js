@@ -156,7 +156,7 @@ export async function fetchRevisionInfoBetweenRevisions(
  * Helper function to `fetchRevisionInfoBetweenRevisions`.
  */
 export function parseRevisionInfoOutput(revisionsInfoOutput: string): Array<RevisionInfo> {
-  const revisions = revisionsInfoOutput.split(INFO_REV_END_MARK)
+  const revisions = revisionsInfoOutput.split(INFO_REV_END_MARK);
   const revisionInfo = [];
   for (const chunk of revisions) {
     const revisionLines = chunk.trim().split('\n');

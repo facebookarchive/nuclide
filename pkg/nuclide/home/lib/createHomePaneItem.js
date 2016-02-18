@@ -44,11 +44,17 @@ const DEFAULT_WELCOME = (
  */
 function createHomePaneItem(
   allHomeFragmentsStream: Rx.Observable<Immutable.Set<HomeFragments>>,
-): typeof React.Component {
+): Gadget {
 
   class HomePaneItem extends React.Component {
 
     static gadgetId = 'nuclide-home';
+
+    state: {
+      allHomeFragments: Immutable.Set<string, ReactElement>,
+    };
+
+    _homeFragmentsSubscription: IDisposable;
 
     constructor(...args) {
       super(...args);
@@ -81,7 +87,7 @@ function createHomePaneItem(
         }
       });
       if (welcomes.length === 0) {
-        welcomes = DEFAULT_WELCOME;
+        welcomes = [DEFAULT_WELCOME];
       }
 
       const containers = [

@@ -19,7 +19,7 @@ import {
 
 type Props = {
   className: ?string,
-  nodeintegration: ?boolean,
+  nodeintegration?: boolean,
   onDidFinishLoad: (event: Event) => mixed,
   src: string,
   style: ?Object,

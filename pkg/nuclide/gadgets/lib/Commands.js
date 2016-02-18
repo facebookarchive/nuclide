@@ -75,7 +75,7 @@ export default class Commands {
    * through which all pane item creation goes (new pane item creation, deserialization,
    * splitting, reopening, etc.).
    */
-  createPaneItem(gadgetId: string, props?: Object, isNew: boolean = true): ?React.Component {
+  createPaneItem(gadgetId: string, props?: Object, isNew: boolean = true): ?HTMLElement {
     // Look up the gadget.
     const gadget = this._getState().get('gadgets').get(gadgetId);
 
@@ -239,7 +239,9 @@ export default class Commands {
     }
 
     // Copy the metadata about the container from the placeholder.
-    realItem._expandedFlexScale = item._expandedFlexScale;
+    // TODO(matthewwithanm): Decide how to assign `_expandedFlexScale` to `HTMLElement` to remove
+    //   this `any` cast.
+    (realItem: any)._expandedFlexScale = item._expandedFlexScale;
 
     // Replace the placeholder with the real item. We'll add the real item first and then
     // remove the old one so that we don't risk dropping down to zero items.

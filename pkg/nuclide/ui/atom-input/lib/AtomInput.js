@@ -21,42 +21,30 @@ const {
 const ENTER_KEY_CODE = 13;
 const ESCAPE_KEY_CODE = 27;
 
-type DefaultProps = {
-  disabled: boolean;
-  initialValue: string;
-  placeholderText: ?string;
-  onClick: () => void;
-  onDidChange: () => void;
-  onFocus: () => void;
-  onBlur: () => void;
-  unstyled: boolean;
-};
-
 type Props = {
-  className: string;
-  disabled: boolean;
-  initialValue: string;
-  placeholderText: string;
-  onFocus: () => mixed;
-  onClick: (event: SyntheticMouseEvent) => mixed;
-  onDidChange: (text: string) => mixed;
-  onConfirm: () => mixed;
-  onCancel: () => mixed;
-  onBlur: () => mixed;
-  size: 'xs' | 'sm' | 'lg';
-  unstyled: boolean;
-
+  className: string,
+  disabled: boolean,
+  initialValue: string,
+  placeholderText: string,
+  onFocus: () => mixed,
+  onClick: (event: SyntheticMouseEvent) => mixed,
+  onDidChange: (text: string) => mixed,
+  onConfirm: () => mixed,
+  onCancel: () => mixed,
+  onBlur: () => mixed,
+  size: 'xs' | 'sm' | 'lg',
+  unstyled: boolean,
 };
 
 type State = {
-  value: string;
+  value: string,
 };
 
 /**
  * An input field rendered as an <atom-text-editor mini />.
  */
-class AtomInput extends React.Component<DefaultProps, Props, State> {
-
+class AtomInput extends React.Component {
+  state: State;
   _disposables: ?CompositeDisposable;
 
   static defaultProps = {

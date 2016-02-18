@@ -240,8 +240,13 @@ function showPopupFor(
   // Move it down vertically so it does not end up under the mouse pointer.
   const {top, left} = item.getBoundingClientRect();
 
+  // TODO(ssorallen): Remove the `children` prop when Flow is able to associate JSX children with
+  //   the prop named `children`. JSX children overwrite the prop of the same name, so do that for
+  //   now to appease both ESLint and Flow.
+  //
+  //   https://github.com/facebook/flow/issues/1355#issuecomment-178883891
   ReactDOM.render(
-    <DiagnosticsPopup left={left} top={top}>
+    <DiagnosticsPopup children={children} left={left} top={top}>
       {children}
     </DiagnosticsPopup>,
     hostElement
@@ -278,7 +283,7 @@ function createElementForMessage(
   message: FileDiagnosticMessage,
   goToLocation: (path: string, line: number) => mixed,
   fixer: (message: FileDiagnosticMessage) => void,
-): HTMLElement {
+): ReactElement {
   const providerClassName = message.type === 'Error'
     ? 'highlight-error'
     : 'highlight-warning';
@@ -345,7 +350,7 @@ function plainTextForDiagnostic(message: FileDiagnosticMessage): string {
 function createElementForTrace(
   trace: Trace,
   goToLocation: (path: string, line: number) => mixed,
-): HTMLElement {
+): ReactElement {
   let locSpan = null;
   // Local variable so that the type refinement holds in the onClick handler.
   const path = trace.filePath;
@@ -369,7 +374,7 @@ function createElementForTrace(
   );
 }
 
-function createMessageSpan(message: {html?: string, text?: string}): HTMLElement {
+function createMessageSpan(message: {html?: string, text?: string}): ReactElement {
   if (message.html != null) {
     return <span dangerouslySetInnerHTML={{__html: message.html}} />;
   } else if (message.text != null) {
@@ -381,7 +386,7 @@ function createMessageSpan(message: {html?: string, text?: string}): HTMLElement
 
 class DiagnosticsPopup extends React.Component {
   static propTypes = {
-    children: PropTypes.node,
+    children: PropTypes.node.isRequired,
     left: PropTypes.number.isRequired,
     top: PropTypes.number.isRequired,
   };

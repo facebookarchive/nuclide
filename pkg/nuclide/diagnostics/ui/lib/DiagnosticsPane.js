@@ -128,9 +128,9 @@ class DiagnosticsPane extends React.Component {
 
   constructor(props: mixed) {
     super(props);
-    this._rowGetter = this._rowGetter.bind(this);
-    this._rowHeightGetter = this._rowHeightGetter.bind(this);
-    this._renderHeader = this._renderHeader.bind(this);
+    (this: any)._rowGetter = this._rowGetter.bind(this);
+    (this: any)._rowHeightGetter = this._rowHeightGetter.bind(this);
+    (this: any)._renderHeader = this._renderHeader.bind(this);
   }
 
   _rowGetter(rowIndex: number): DiagnosticMessage {

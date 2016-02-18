@@ -13,13 +13,18 @@ import type {Observable} from 'rx';
 import type {OutlineForUi, OutlineTree} from './main';
 
 import {React} from 'react-for-atom';
-
 import invariant from 'assert';
+
+type State = {
+  outline: ?Object,
+};
 
 export function createOutlineViewClass(
   outlines: Observable<?OutlineForUi>
-): typeof React.Component {
+): Class<any> { // TODO(matthewwithanm): Should be subclass of `Class<React.Component>`
   return class OutlineView extends React.Component {
+    state: State;
+
     static gadgetId = 'nuclide-outline-view';
     static defaultLocation = 'right';
 
