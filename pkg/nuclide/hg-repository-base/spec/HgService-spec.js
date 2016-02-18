@@ -171,8 +171,9 @@ describe('HgService', () => {
     it('can remove files', () => {
       let wasCalled = false;
       spyOn(hgService, '_hgAsyncExecute').andCallFake((args, options) => {
-        expect(args.length).toBe(2);
+        expect(args.length).toBe(3);
         expect(args.pop()).toBe('file.txt');
+        expect(args.pop()).toBe('-f');
         expect(args.pop()).toBe('remove');
         wasCalled = true;
       });

@@ -322,7 +322,7 @@ class HgServiceBase {
   }
 
   remove(filePath: NuclideUri): Promise<boolean> {
-    return this._runSimpleInWorkingDirectory('remove', [getPath(filePath)]);
+    return this._runSimpleInWorkingDirectory('remove', ['-f', getPath(filePath)]);
   }
 
   add(filePath: NuclideUri): Promise<boolean> {
