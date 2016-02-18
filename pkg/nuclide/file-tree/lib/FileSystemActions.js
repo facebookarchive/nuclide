@@ -74,27 +74,43 @@ const FileSystemActions = {
     if (!node) {
       return;
     }
-    this._openAddDialog('file', node.getLocalPath() + '/', async (filePath: string) => {
-      // Prevent submission of a blank field from creating a file.
-      if (filePath === '') {
-        return;
-      }
+    const hgRepository = this._getHgRepositoryForNode(node);
+    const additionalOptions = {};
+    if (hgRepository !== null) {
+      additionalOptions['addToVCS'] = 'Add the new file to version control.';
+    }
+    this._openAddDialog(
+      'file',
+      node.getLocalPath() + pathModule.sep,
+      async (filePath: string, options: {addToVCS?: boolean}) => {
+        // Prevent submission of a blank field from creating a file.
+        if (filePath === '') {
+          return;
+        }
 
-      // TODO: check if filePath is in rootKey and if not, find the rootKey it belongs to.
-      const directory = FileTreeHelpers.getDirectoryByKey(node.nodeKey);
-      if (directory == null) {
-        return;
-      }
+        // TODO: check if filePath is in rootKey and if not, find the rootKey it belongs to.
+        const directory = FileTreeHelpers.getDirectoryByKey(node.nodeKey);
+        if (directory == null) {
+          return;
+        }
 
-      const newFile = directory.getFile(filePath);
-      const created = await newFile.create();
-      if (created) {
-        onDidConfirm(newFile.getPath());
-      } else {
-        atom.notifications.addError(`'${filePath}' already exists.`);
-        onDidConfirm(null);
-      }
-    });
+        const newFile = directory.getFile(filePath);
+        const created = await newFile.create();
+        if (created) {
+          if (hgRepository !== null && options.addToVCS === true) {
+            const success = await hgRepository.add(newFile.getPath());
+            if (!success) {
+              atom.notifications.addError(`Failed to add '${newFile.getPath}' to version control.`);
+            }
+          }
+          onDidConfirm(newFile.getPath());
+        } else {
+          atom.notifications.addError(`'${filePath}' already exists.`);
+          onDidConfirm(null);
+        }
+      },
+      additionalOptions,
+    );
   },
 
   _getHgRepositoryForNode(node: FileTreeNode): ?HgRepositoryClient {
@@ -294,12 +310,14 @@ const FileSystemActions = {
     entryType: string,
     path: string,
     onConfirm: (filePath: string, options: Object) => mixed,
+    additionalOptions?: Object = {},
   ) {
     this._openDialog({
       iconClassName: 'icon-file-add',
       message: <span>Enter the path for the new {entryType} in the root:<br />{path}</span>,
       onConfirm,
       onClose: this._closeDialog,
+      additionalOptions,
     });
   },
 
