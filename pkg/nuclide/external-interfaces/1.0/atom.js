@@ -726,6 +726,7 @@ declare class atom$ViewRegistry {
   getView(textEditor: atom$TextEditor): atom$TextEditorElement,
   getView(notification: atom$Notification): HTMLElement,
   getView(gutter: atom$Gutter): HTMLElement,
+  getView(panel: atom$Panel): HTMLElement,
   getView(object: Object): HTMLElement,
   providers: Array<atom$ViewProvider>,
 }
