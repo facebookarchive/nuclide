@@ -270,7 +270,7 @@
         'beginCaptures':
           '1':
             'name': 'punctuation.definition.type.php'
-        'end': '(?=\\{)'
+        'end': '(?=[{;])'
         'patterns': [
           {
             'include': '#comments'
@@ -1039,7 +1039,7 @@
             'name': 'support.function.magic.php'
           '5':
             'name': 'entity.name.function.php'
-        'end': '(?=\\{)'
+        'end': '(?=[{;])'
         'name': 'meta.function.php'
         'patterns': [
           {
@@ -1060,7 +1060,7 @@
             'beginCaptures':
               '1':
                 'name': 'punctuation.definition.parameters.end.php'
-            'end': '(?=\\{)'
+            'end': '(?=[{;])'
             'patterns': [
               {
                 'include': '#function-return-type'
