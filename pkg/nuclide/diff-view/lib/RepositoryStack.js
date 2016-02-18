@@ -378,6 +378,21 @@ export default class RepositoryStack {
     };
   }
 
+  // TODO(most): Convert to a service using: `hg config committemplate.emptymsg`
+  async getTemplateCommitMessage(): Promise<string> {
+    return `
+Summary:
+
+Test Plan:
+
+Reviewers:
+
+Reviewed By:
+
+Subscribers:
+`;
+  }
+
   async setRevision(revision: RevisionInfo): Promise<void> {
     const revisionsState = await this.getCachedRevisionsStatePromise();
     const {revisions} = revisionsState;

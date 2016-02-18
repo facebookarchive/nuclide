@@ -82,13 +82,9 @@ class AtomTextEditor extends React.Component {
     readOnly: false,
   };
 
-  constructor(props: Object) {
-    super(props);
-  }
-
   componentDidMount(): void {
     this._updateTextEditor(setupTextEditor(this.props));
-    this._onDidUpdateTextEditorElement();
+    this._onDidUpdateTextEditorElement(this.props);
   }
 
   _updateTextEditor(textEditor: atom$TextEditor): void {
@@ -109,8 +105,12 @@ class AtomTextEditor extends React.Component {
   }
 
   componentWillReceiveProps(nextProps: Object): void {
-    if (nextProps.textBuffer !== this.props.textBuffer) {
+    if (
+        nextProps.textBuffer !== this.props.textBuffer ||
+        nextProps.readOnly !== this.props.readOnly
+      ) {
       this._updateTextEditor(setupTextEditor(nextProps));
+      this._onDidUpdateTextEditorElement(nextProps);
     }
     if (nextProps.path !== this.props.path) {
       this.getTextBuffer().setPath(nextProps.path);
@@ -120,14 +120,8 @@ class AtomTextEditor extends React.Component {
     }
   }
 
-  componentDidUpdate(prevProps: Object, prevState: void): void {
-    if (prevProps.textBuffer !== this.props.textBuffer) {
-      this._onDidUpdateTextEditorElement();
-    }
-  }
-
-  _onDidUpdateTextEditorElement(): void {
-    if (!this.props.readOnly) {
+  _onDidUpdateTextEditorElement(props: Object): void {
+    if (!props.readOnly) {
       return;
     }
     // TODO(most): t9929679 Remove this hack when Atom has a blinking cursor configuration API.

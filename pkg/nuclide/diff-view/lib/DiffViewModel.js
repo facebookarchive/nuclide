@@ -421,6 +421,24 @@ class DiffViewModel {
     return this._compareFileChanges;
   }
 
+  async getActiveRepositoryLatestCommitMessage(): Promise<string> {
+    if (this._activeRepositoryStack == null) {
+      throw new Error('Diff View: No active file or repository open');
+    }
+    const revisionsState = await this.getActiveRevisionsState();
+    invariant(revisionsState, 'Diff View Internal Error: revisionsState cannot be null');
+    const {revisions} = revisionsState;
+    invariant(revisions.length > 0, 'Diff View Error: Cannot amend non-existing commit');
+    return revisions[revisions.length - 1].description;
+  }
+
+  getActiveRepositoryTemplateCommitMessage(): Promise<string> {
+    if (this._activeRepositoryStack == null) {
+      throw new Error('Diff View: No active file or repository open');
+    }
+    return this._activeRepositoryStack.getTemplateCommitMessage();
+  }
+
   async getActiveRevisionsState(): Promise<?RevisionsState> {
     if (this._activeRepositoryStack == null) {
       return null;

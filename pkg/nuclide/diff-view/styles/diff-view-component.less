@@ -234,7 +234,22 @@ atom-text-editor, atom-text-editor::shadow {
 
 .nuclide-diff-commit-view {
   z-index: 3;
+  display: flex;
+  flex-direction: column;
   border-top: 1px solid @pane-item-border-color;
+
+  .tool-panel {
+    padding: 5px;
+  }
+
+  .message-editor-wrapper {
+    flex-grow: 1;
+    position: relative;
+  }
+
+  .loading, .commit-button {
+    float: right;
+  }
 }
 
 .nuclide-diff-view-navigation-target {

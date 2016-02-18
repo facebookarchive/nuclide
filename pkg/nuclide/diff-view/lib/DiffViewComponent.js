@@ -26,6 +26,7 @@ import SyncScroll from './SyncScroll';
 import DiffTimelineView from './DiffTimelineView';
 import DiffViewToolbar from './DiffViewToolbar';
 import DiffNavigationBar from './DiffNavigationBar';
+import DiffCommitView from './DiffCommitView';
 import {createPaneContainer} from '../../atom-helpers';
 import {bufferForUri} from '../../atom-helpers';
 import {DiffMode} from './constants';
@@ -89,7 +90,7 @@ class DiffViewComponent extends React.Component {
   _treeComponent: ReactComponent;
   _navigationPane: atom$Pane;
   _navigationComponent: DiffNavigationBar;
-  _commitComponent: ?ReactComponent;
+  _commitComponent: ?DiffCommitView;
   _readonlyBuffer: atom$TextBuffer;
 
   _boundHandleNewOffsets: Function;
@@ -213,11 +214,7 @@ class DiffViewComponent extends React.Component {
 
   _renderCommitView(): void {
     this._commitComponent = ReactDOM.render(
-      (
-        <div className="nuclide-diff-commit-view">
-          TODO (Show the commit message editor, load template message or amend).
-        </div>
-      ),
+      <DiffCommitView diffModel={this.props.diffModel} />,
       this._getPaneElement(this._bottomRightPane),
     );
   }
