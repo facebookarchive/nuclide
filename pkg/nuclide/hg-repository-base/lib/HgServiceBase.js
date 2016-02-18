@@ -291,7 +291,7 @@ class HgServiceBase {
   async _runSimpleInWorkingDirectory(
     action: string,
     args: Array<string>,
-  ): Promise<boolean> {
+  ): Promise<void> {
     const options = {
       cwd: this.getWorkingDirectory(),
     };
@@ -305,28 +305,27 @@ class HgServiceBase {
         args.toString(),
         e.toString(),
       );
-      return false;
+      throw e;
     }
-    return true;
   }
 
-  checkout(revision: string, create: boolean): Promise<boolean> {
-    return this._runSimpleInWorkingDirectory('checkout', [revision]);
+  async checkout(revision: string, create: boolean): Promise<void> {
+    await this._runSimpleInWorkingDirectory('checkout', [revision]);
   }
 
-  rename(oldFilePath: NuclideUri, newFilePath: NuclideUri): Promise<boolean> {
-    return this._runSimpleInWorkingDirectory(
+  async rename(oldFilePath: NuclideUri, newFilePath: NuclideUri): Promise<void> {
+    await this._runSimpleInWorkingDirectory(
       'rename',
       [getPath(oldFilePath), getPath(newFilePath)],
     );
   }
 
-  remove(filePath: NuclideUri): Promise<boolean> {
-    return this._runSimpleInWorkingDirectory('remove', ['-f', getPath(filePath)]);
+  async remove(filePath: NuclideUri): Promise<void> {
+    await this._runSimpleInWorkingDirectory('remove', ['-f', getPath(filePath)]);
   }
 
-  add(filePath: NuclideUri): Promise<boolean> {
-    return this._runSimpleInWorkingDirectory('add', [getPath(filePath)]);
+  async add(filePath: NuclideUri): Promise<void> {
+    await this._runSimpleInWorkingDirectory('add', [getPath(filePath)]);
   }
 }
 

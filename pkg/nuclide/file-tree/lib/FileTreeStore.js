@@ -572,16 +572,16 @@ class FileTreeStore {
       const repository = repositoryForPath(file.getPath());
       if (repository != null && repository.getType() === 'hg') {
         const hgRepository = ((repository: any): HgRepositoryClient);
-        const success = await hgRepository.remove(file.getPath());
-        if (success) {
-          return;
-        } else {
+        try {
+          await hgRepository.remove(file.getPath());
+        } catch (e) {
           const statuses = await hgRepository.getStatuses([file.getPath()]);
           const pathStatus = statuses.get(file.getPath());
           if (pathStatus !== StatusCodeNumber.UNTRACKED) {
             atom.notifications.addError(
               'Failed to remove ' + file.getPath() + ' from version control.  The file will ' +
-              'still get deleted but you will have to remove it from your VCS yourself.'
+              'still get deleted but you will have to remove it from your VCS yourself.  Error: ' +
+              e.toString(),
             );
           }
         }

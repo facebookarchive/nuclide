@@ -153,7 +153,7 @@ export class HgService {
    * @param create Currently, this parameter is ignored.
    * @return whether the call to `hg checkout` succeeded.
    */
-  checkout(revision: string, create: boolean): Promise<boolean> {}
+  async checkout(revision: string, create: boolean): Promise<void> {}
 
   /**
    * Rename a file versioned under Hg.
@@ -161,19 +161,19 @@ export class HgService {
    * @param newFilePath What should the file be renamed to.
    * @return whether the call to `hg rename` succeeded.
    */
-  rename(oldFilePath: string, newFilePath: string): Promise<boolean> {}
+  async rename(oldFilePath: string, newFilePath: string): Promise<void> {}
 
   /**
    * Remove a file versioned under Hg.
    * @param filePath Which file should be removed.
    * @return whether the call to `hg remove` succeeded.
    */
-  remove(filePath: string): Promise<boolean> {}
+  async remove(filePath: string): Promise<void> {}
 
   /**
    * Version a new file under Hg.
    * @param filePath Which file should be versioned.
    * @return whether the call to `hg add` succeeded.
    */
-  add(filePath: string): Promise<boolean> {}
+  async add(filePath: string): Promise<void> {}
 }

@@ -98,9 +98,12 @@ const FileSystemActions = {
         const created = await newFile.create();
         if (created) {
           if (hgRepository !== null && options.addToVCS === true) {
-            const success = await hgRepository.add(newFile.getPath());
-            if (!success) {
-              atom.notifications.addError(`Failed to add '${newFile.getPath}' to version control.`);
+            try {
+              await hgRepository.add(newFile.getPath());
+            } catch (e) {
+              atom.notifications.addError(
+                `Failed to add '${newFile.getPath}' to version control.  Error: ${e.toString()}`,
+              );
             }
           }
           onDidConfirm(newFile.getPath());
@@ -151,8 +154,16 @@ const FileSystemActions = {
     const hgRepository = this._getHgRepositoryForNode(node);
     let shouldFSRename = true;
     if (hgRepository !== null) {
-      const success = await hgRepository.rename(file.getPath(), newPath);
-      shouldFSRename = !success;
+      try {
+        shouldFSRename = false;
+        await hgRepository.rename(file.getPath(), newPath);
+      } catch (e) {
+        atom.notifications.addError(
+          '`hg rename` failed, will try to move the file ignoring version control instead.  ' +
+          'Error: ' + e.toString(),
+        );
+        shouldFSRename = true;
+      }
     }
     if (shouldFSRename) {
       if (FileTreeHelpers.isLocalFile(file)) {
@@ -173,30 +184,11 @@ const FileSystemActions = {
     const directory = file.getParent();
     const newFile = directory.getFile(newBasename);
     const newPath = newFile.getPath();
+    let exists = false;
     if (FileTreeHelpers.isLocalFile(file)) {
-      const exists = await fsPromise.exists(newPath);
+      exists = await fsPromise.exists(newPath);
       if (!exists) {
         await fsPromise.copy(nodePath, newPath);
-        const hgRepository = this._getHgRepositoryForPath(newPath);
-        if (hgRepository !== null && addToVCS) {
-          function errorHandler(error) {
-            let message = newPath + ' was duplicated, but there was an error adding it to ' +
-              'version control.';
-            if (error != null) {
-              message += '  Error: ' + error.toString();
-            }
-            atom.notifications.addError(message);
-            onDidConfirm(null);
-          }
-          const ret = hgRepository.add(newPath).catch(errorHandler);
-          if (!ret) {
-            errorHandler(null);
-          } else {
-            onDidConfirm(newPath);
-          }
-        }
-      } else {
-        atom.notifications.addError(`'${newPath}' already exists.`);
       }
     } else {
       invariant(file.isFile());
@@ -204,16 +196,25 @@ const FileSystemActions = {
       const newRemoteFile = ((newFile: any): RemoteFile);
 
       const wasCopied = await remoteFile.copy(newRemoteFile.getLocalPath());
-      if (!wasCopied) {
-        atom.notifications.addError(`'${newPath}' already exists.`);
+      exists = !wasCopied;
+    }
+    if (exists) {
+      atom.notifications.addError(`'${newPath}' already exists.`);
+      onDidConfirm(null);
+      return;
+    }
+    const hgRepository = this._getHgRepositoryForPath(newPath);
+    if (hgRepository !== null && addToVCS) {
+      try {
+        await hgRepository.add(newPath);
+      } catch (e) {
+        const message = newPath + ' was duplicated, but there was an error adding it to ' +
+          'version control.  Error: ' + e.toString();
+        atom.notifications.addError(message);
         onDidConfirm(null);
-      } else {
-        const hgRepository = this._getHgRepositoryForPath(newRemoteFile.getPath());
-        if (hgRepository !== null && addToVCS) {
-          await hgRepository.add(newRemoteFile.getPath());
-        }
-        onDidConfirm(newPath);
+        return;
       }
+      onDidConfirm(newPath);
     }
   },
 
