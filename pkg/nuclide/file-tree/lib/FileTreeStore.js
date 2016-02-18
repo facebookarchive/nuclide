@@ -24,6 +24,7 @@ import {Disposable, Emitter} from 'atom';
 import {Minimatch} from 'minimatch';
 import {repositoryContainsPath} from '../../hg-git-bridge';
 import {repositoryForPath} from '../../hg-git-bridge';
+import {StatusCodeNumber} from '../../hg-repository-base/lib/hg-constants';
 
 import {array} from '../../commons';
 import {getLogger} from '../../logging';
@@ -575,10 +576,14 @@ class FileTreeStore {
         if (success) {
           return;
         } else {
-          atom.notifications.addError(
-            'Failed to remove ' + file.getPath() + ' from version control.  The file will still ' +
-            'get deleted but you will have to remove it from your VCS yourself.'
-          );
+          const statuses = await hgRepository.getStatuses([file.getPath()]);
+          const pathStatus = statuses.get(file.getPath());
+          if (pathStatus !== StatusCodeNumber.UNTRACKED) {
+            atom.notifications.addError(
+              'Failed to remove ' + file.getPath() + ' from version control.  The file will ' +
+              'still get deleted but you will have to remove it from your VCS yourself.'
+            );
+          }
         }
       }
       if (FileTreeHelpers.isLocalFile(file)) {
