@@ -62,6 +62,8 @@ export class LogTailer {
       track(this._eventNames.start);
     }
 
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-output:show');
+
     this._running = true;
 
     if (this._disposables != null) {
