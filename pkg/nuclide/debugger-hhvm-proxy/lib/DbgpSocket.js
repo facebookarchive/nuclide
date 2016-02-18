@@ -123,7 +123,15 @@ class DbgpSocket {
   _onData(data: Buffer | string): void {
     const message = data.toString();
     logger.log('Recieved data: ' + message);
-    const responses = this._messageHandler.parseMessages(message);
+    let responses = [];
+    try {
+      responses = this._messageHandler.parseMessages(message);
+    } catch (_) {
+      // If message parsing fails, then our contract with HHVM is violated and we need to kill the
+      // connection.
+      this._emitStatus(STATUS_ERROR);
+      return;
+    }
     responses.forEach(r => {
       const response = r.response;
       const stream = r.stream;

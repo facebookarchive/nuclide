@@ -235,8 +235,14 @@ export class ConnectionMultiplexer {
           return;
         }
         break;
-      case STATUS_STOPPED:
       case STATUS_ERROR:
+        this._clientCallback.sendUserMessage('notification', {
+          type: 'error',
+          message: 'The debugger encountered a problem and the connection had to be shut down.',
+        });
+        this._removeConnection(connection);
+        break;
+      case STATUS_STOPPED:
       case STATUS_END:
         connectionInfo.status = status;
         this._removeConnection(connection);
