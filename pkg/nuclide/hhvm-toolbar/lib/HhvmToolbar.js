@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type DebuggerProcessInfo from '../../Debugger/atom/lib/DebuggerProcessInfo';
+import type DebuggerProcessInfo from '../../debugger/atom/lib/DebuggerProcessInfo';
 const AtomInput = require('../../ui/atom-input');
 const NuclideDropdown = require('../../ui/dropdown');
 const {React} = require('react-for-atom');
