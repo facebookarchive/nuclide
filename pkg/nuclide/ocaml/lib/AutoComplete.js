@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+const invariant = require('assert');
 const {getServiceByNuclideUri} = require('../../client');
 
 module.exports = {
@@ -30,6 +31,7 @@ module.exports = {
 
     const path = editor.getPath();
     const ocamlmerlin = getServiceByNuclideUri('MerlinService', path);
+    invariant(ocamlmerlin);
     const text = editor.getText();
     const [line, col] = editor.getCursorBufferPosition().toArray();
 

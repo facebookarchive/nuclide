@@ -10,7 +10,7 @@
  */
 
 import type {RemoteConnection} from '../../remote-connection/lib/RemoteConnection';
-import type RemoteFile from '../../remote-connection/lib/RemoteFile';
+import type {RemoteFile} from '../../remote-connection/lib/RemoteFile';
 
 import {getLogger} from '../../logging/';
 import invariant from 'assert';

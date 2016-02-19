@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../remote-uri';
-import type RemoteFile from './RemoteFile';
+import type {RemoteFile} from './RemoteFile';
 
 const {RemoteConnection} = require('./RemoteConnection');
 const {isRemote} = require('../../remote-uri');

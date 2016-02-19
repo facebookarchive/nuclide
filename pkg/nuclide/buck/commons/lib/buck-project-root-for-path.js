@@ -9,12 +9,13 @@
  * the root directory of this source tree.
  */
 
-import {getServiceByNuclideUri} from '../../../client';
 import type {BuckProject} from '../../base/lib/BuckProject';
-const {getPath} = require('../../../remote-uri');
-
 import typeof * as BuckUtilsService from '../../base/lib/BuckUtils';
 import typeof * as BuckProjectService from '../../base/lib/BuckProject';
+
+import invariant from 'assert';
+import {getPath} from '../../../remote-uri';
+import {getServiceByNuclideUri} from '../../../client';
 
 const buckProjectForBuckProjectDirectory: {[key: string]: BuckProject} = {};
 
@@ -23,7 +24,8 @@ const buckProjectForBuckProjectDirectory: {[key: string]: BuckProject} = {};
  *     specified filePath is not part of a Buck project.
  */
 async function buckProjectRootForPath(filePath: string): Promise<?BuckProject> {
-  const service: BuckUtilsService = getServiceByNuclideUri('BuckUtils', filePath);
+  const service: ?BuckUtilsService = getServiceByNuclideUri('BuckUtils', filePath);
+  invariant(service);
   const buckUtils = new service.BuckUtils();
   let directory = await buckUtils.getBuckProjectRoot(filePath);
 
@@ -38,7 +40,7 @@ async function buckProjectRootForPath(filePath: string): Promise<?BuckProject> {
 
   directory = getPath(directory);
 
-  const buckService: BuckProjectService = getServiceByNuclideUri('BuckProject', filePath);
+  const buckService: ?BuckProjectService = getServiceByNuclideUri('BuckProject', filePath);
   if (buckService) {
     buckProject = new buckService.BuckProject({rootPath: directory});
     buckProjectForBuckProjectDirectory[directory] = buckProject;

@@ -16,8 +16,8 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const temp = require('temp').track();
-const RemoteFile = require('../lib/RemoteFile');
 const connectionMock = require('./connection_mock');
+const {RemoteFile} = require('../lib/RemoteFile');
 
 
 describe('RemoteFile', () => {

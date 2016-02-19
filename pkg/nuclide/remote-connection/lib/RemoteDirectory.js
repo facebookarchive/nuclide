@@ -12,7 +12,7 @@
 import type {FileSystemService} from '../../server/lib/services/FileSystemServiceType';
 import type {RemoteConnection} from './RemoteConnection';
 import type {HgRepositoryDescription} from '../../source-control-helpers';
-import type RemoteFile from './RemoteFile';
+import type {RemoteFile} from './RemoteFile';
 
 import typeof * as FileWatcherService from '../../filewatcher-base';
 
@@ -27,7 +27,7 @@ const logger = getLogger();
 const MARKER_PROPERTY_FOR_REMOTE_DIRECTORY = '__nuclide_remote_directory__';
 
 /* Mostly implements https://atom.io/docs/api/latest/Directory */
-class RemoteDirectory {
+export class RemoteDirectory {
   static isRemoteDirectory(directory: atom$Directory | RemoteDirectory): boolean {
     /* $FlowFixMe */
     return directory[MARKER_PROPERTY_FOR_REMOTE_DIRECTORY] === true;
@@ -304,5 +304,3 @@ class RemoteDirectory {
     return this._remote.getService(serviceName);
   }
 }
-
-module.exports = RemoteDirectory;

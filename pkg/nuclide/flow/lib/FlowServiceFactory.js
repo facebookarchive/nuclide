@@ -12,14 +12,17 @@
 import type {NuclideUri} from '../../remote-uri';
 import typeof * as FlowService from '../../flow-base';
 
+import invariant from 'assert';
 import {getServiceByNuclideUri} from '../../client';
 
-const FLOW_SERVICE = 'FlowService';
-
 export function getFlowServiceByNuclideUri(file: NuclideUri): FlowService {
-  return getServiceByNuclideUri(FLOW_SERVICE, file);
+  const service = getServiceByNuclideUri('FlowService', file);
+  invariant(service);
+  return service;
 }
 
 export function getLocalFlowService(): FlowService {
-  return getServiceByNuclideUri(FLOW_SERVICE, null);
+  const service = getServiceByNuclideUri('FlowService', null);
+  invariant(service);
+  return service;
 }

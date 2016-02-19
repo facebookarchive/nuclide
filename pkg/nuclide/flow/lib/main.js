@@ -19,6 +19,7 @@ const invariant = require('assert');
 const {CompositeDisposable} = require('atom');
 
 import featureConfig from '../../feature-config';
+import {getServiceByNuclideUri} from '../../client';
 import {track} from '../../analytics';
 
 import {JS_GRAMMARS, JAVASCRIPT_WORD_REGEX} from './constants.js';
@@ -26,10 +27,6 @@ const GRAMMARS_STRING = JS_GRAMMARS.join(', ');
 const diagnosticsOnFlySetting = 'nuclide-flow.diagnosticsOnFly';
 
 const PACKAGE_NAME = 'nuclide-flow';
-
-function getServiceByNuclideUri(service, file?) {
-  return require('../../client').getServiceByNuclideUri(service, file);
-}
 
 let busySignalProvider;
 
@@ -133,7 +130,9 @@ module.exports = {
     // TODO(mbolin): Find a way to unregister the autocomplete provider from
     // ServiceHub, or set a boolean in the autocomplete provider to always return
     // empty results.
-    getServiceByNuclideUri('FlowService').dispose();
+    const service = getServiceByNuclideUri('FlowService');
+    invariant(service);
+    service.dispose();
     if (disposables) {
       disposables.dispose();
       disposables = null;

@@ -18,7 +18,8 @@ import typeof * as SourceControlService from '../../server/lib/services/SourceCo
 import invariant from 'assert';
 import {trackEvent} from '../../analytics';
 import ClientComponent from '../../server/lib/serviceframework/ClientComponent';
-import RemoteDirectory from './RemoteDirectory';
+import {RemoteDirectory} from './RemoteDirectory';
+import {RemoteFile} from './RemoteFile';
 import {loadServicesConfig} from '../../server/lib/serviceframework/config';
 import {getProxy} from '../../service-parser';
 import ServiceFramework from '../../server/lib/serviceframework';
@@ -28,7 +29,6 @@ const remoteUri = require('../../remote-uri');
 const logger = require('../../logging').getLogger();
 const {EventEmitter} = require('events');
 
-const RemoteFile = require('./RemoteFile');
 const NuclideSocket = require('../../server/lib/NuclideSocket');
 const {getConnectionConfig, setConnectionConfig} =
   require('./RemoteConnectionConfigurationManager');

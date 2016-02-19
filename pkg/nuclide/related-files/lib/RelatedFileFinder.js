@@ -11,6 +11,7 @@
 
 import type {NuclideUri} from '../../remote-uri';
 
+import invariant from 'assert';
 import {getServiceByNuclideUri} from '../../remote-connection';
 import {basename, dirname, getPath, join} from '../../remote-uri';
 
@@ -35,8 +36,9 @@ export default class RelatedFileFinder {
     const dirName = dirname(filePath);
     const prefix = this._getPrefix(filePath);
 
-    const listing = await getServiceByNuclideUri('FileSystemService', filePath)
-      .readdir(getPath(dirName));
+    const service = getServiceByNuclideUri('FileSystemService', filePath);
+    invariant(service);
+    const listing = await service.readdir(getPath(dirName));
     const relatedFiles = listing
       .filter(otherFilePath => {
         return otherFilePath.stats.isFile() && this._getPrefix(otherFilePath.file) === prefix;

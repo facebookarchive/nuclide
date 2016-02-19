@@ -10,7 +10,7 @@
  */
 
 import type {RemoteConnection} from './RemoteConnection';
-import type RemoteDirectory from './RemoteDirectory';
+import type {RemoteDirectory} from './RemoteDirectory';
 import type {FileSystemService} from '../../server/lib/services/FileSystemServiceType';
 import typeof * as FileWatcherService from '../../filewatcher-base';
 
@@ -24,7 +24,7 @@ import {getLogger} from '../../logging';
 const logger = getLogger();
 
 /* Mostly implements https://atom.io/docs/api/latest/File */
-class RemoteFile {
+export class RemoteFile {
 
   _deleted: boolean;
   _emitter: Emitter;
@@ -283,5 +283,3 @@ class RemoteFile {
     return this._remote.getService(serviceName);
   }
 }
-
-module.exports = RemoteFile;

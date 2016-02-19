@@ -10,6 +10,7 @@
  */
 
 const {Directory} = require('atom');
+import invariant from 'assert';
 import {trackTiming} from '../../analytics';
 import {RemoteDirectory as RemoteDirectoryType} from '../../remote-connection';
 const {HgRepositoryClient} = require('../../hg-repository-client');
@@ -97,8 +98,9 @@ export class HgRepositoryProvider {
       } = repositoryDescription;
 
       const {getServiceByNuclideUri} = require('../../client');
-      const {HgService} = getServiceByNuclideUri('HgService', directory.getPath());
-      const hgService = new HgService(workingDirectoryLocalPath);
+      const service = getServiceByNuclideUri('HgService', directory.getPath());
+      invariant(service);
+      const hgService = new service.HgService(workingDirectoryLocalPath);
       return new HgRepositoryClient(repoPath, hgService, {
         workingDirectory,
         projectRootDirectory: directory,

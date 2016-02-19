@@ -357,8 +357,11 @@ module.exports = {
     const {getServiceByNuclideUri} = require('../../client');
     const {RemoteDirectory} = require('../../remote-connection');
     const RemoteDirectorySearcher = require('./RemoteDirectorySearcher');
-    return new RemoteDirectorySearcher((dir: RemoteDirectory) =>
-      (getServiceByNuclideUri('FindInProjectService', dir.getPath()): FindInProjectService));
+    return new RemoteDirectorySearcher((dir: RemoteDirectory) => {
+      const service = getServiceByNuclideUri('FindInProjectService', dir.getPath());
+      invariant(service);
+      return (service: FindInProjectService);
+    });
   },
 
   getHomeFragments(): HomeFragments {

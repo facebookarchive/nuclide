@@ -12,8 +12,13 @@
 import type {NuclideUri} from '../../remote-uri';
 import typeof * as ArcanistBaseService from '../../arcanist-base';
 
+import invariant from 'assert';
+
 function getService(fileName: NuclideUri): ArcanistBaseService {
-  return require('../../client').getServiceByNuclideUri('ArcanistBaseService', fileName);
+  const {getServiceByNuclideUri} = require('../../client');
+  const service = getServiceByNuclideUri('ArcanistBaseService', fileName);
+  invariant(service);
+  return service;
 }
 
 function findArcConfigDirectory(fileName: NuclideUri): Promise<?NuclideUri> {

@@ -37,9 +37,11 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
   }
 
   _getRpcService(): DebuggerRpcServiceType {
-    const {DebuggerRpcService} = require('../../../client').
+    const {getServiceByNuclideUri} = require('../../../client');
+    const service =
       getServiceByNuclideUri('LLDBDebuggerRpcService', this.getTargetUri());
-    return new DebuggerRpcService();
+    invariant(service);
+    return new service.DebuggerRpcService();
   }
 
   get pid(): number {

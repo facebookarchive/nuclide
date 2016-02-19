@@ -16,6 +16,7 @@ import type {
 } from '../../clang';
 
 import featureConfig from '../../feature-config';
+import invariant from 'assert';
 import {getServiceByNuclideUri} from '../../remote-connection';
 
 type NuclideClangConfig = {
@@ -38,7 +39,10 @@ module.exports = {
     const contents = editor.getText();
 
     const defaultFlags = getDefaultFlags();
-    return getServiceByNuclideUri('ClangService', src)
+    const service = getServiceByNuclideUri('ClangService', src);
+    invariant(service);
+
+    return service
         .compile(src, contents, defaultFlags)
         .toPromise();
   },
@@ -52,7 +56,10 @@ module.exports = {
     const tokenStartColumn = column - prefix.length;
 
     const defaultFlags = getDefaultFlags();
-    return getServiceByNuclideUri('ClangService', src)
+    const service = getServiceByNuclideUri('ClangService', src);
+    invariant(service);
+
+    return service
       .getCompletions(
         src,
         editor.getText(),
@@ -75,7 +82,11 @@ module.exports = {
   ): Promise<?ClangDeclarationResult> {
     const src = editor.getPath();
     const defaultFlags = getDefaultFlags();
-    return getServiceByNuclideUri('ClangService', src)
+
+    const service = getServiceByNuclideUri('ClangService', src);
+    invariant(service);
+
+    return service
         .getDeclaration(src, editor.getText(), line, column, defaultFlags);
   },
 
@@ -89,15 +100,19 @@ module.exports = {
     const startIndex = buffer.characterIndexForPosition(range.start);
     const endIndex = buffer.characterIndexForPosition(range.end);
 
-    return getServiceByNuclideUri('ClangService', fileUri)
+    const service = getServiceByNuclideUri('ClangService', fileUri);
+    invariant(service);
+
+    return service
         .formatCode(fileUri, editor.getText(), cursor, startIndex, endIndex - startIndex);
   },
 
   reset(editor: atom$TextEditor) {
     const src = editor.getPath();
     if (src != null) {
-      return getServiceByNuclideUri('ClangService', src)
-        .reset(src);
+      const service = getServiceByNuclideUri('ClangService', src);
+      invariant(service);
+      return service.reset(src);
     }
   },
 

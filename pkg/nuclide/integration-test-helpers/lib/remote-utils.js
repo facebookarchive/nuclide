@@ -9,10 +9,11 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+import path from 'path';
 import {RemoteConnection} from '../../remote-connection';
 import {getServiceByNuclideUri} from '../../client';
 import {spawnSync} from 'child_process';
-import path from 'path';
 
 const DEFAULT_PORT = 9090;
 
@@ -41,7 +42,10 @@ export async function addRemoteProject(projectPath: string): Promise<?RemoteConn
  * Kills the nuclide server associated with `connection`, and closes the connection.
  */
 export async function stopNuclideServer(connection: RemoteConnection): Promise<void> {
-  getServiceByNuclideUri('FlowService', connection.getUriForInitialWorkingDirectory()).dispose();
+  const service =
+    getServiceByNuclideUri('FlowService', connection.getUriForInitialWorkingDirectory());
+  invariant(service);
+  service.dispose();
   await connection.getService('InfoService').shutdownServer();
   connection.close();
 }

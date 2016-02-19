@@ -13,7 +13,7 @@ import invariant from 'assert';
 const fs = require('fs');
 const path = require('path');
 const {Directory} = require('atom');
-const RemoteDirectory = require('../lib/RemoteDirectory');
+const {RemoteDirectory} = require('../lib/RemoteDirectory');
 const temp = require('temp').track();
 const connectionMock = require('./connection_mock');
 

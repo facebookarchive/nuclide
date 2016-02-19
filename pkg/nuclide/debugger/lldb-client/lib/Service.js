@@ -11,6 +11,8 @@
 
 import type {DebuggerProcessInfo} from '../../atom';
 
+import invariant from 'assert';
+
 async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
   const {AttachProcessInfo} = require('./AttachProcessInfo');
   // TODO: Currently first local dir only.
@@ -22,8 +24,9 @@ async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
     return [];
   }
 
-  const localService = require('../../../client').
-      getServiceByNuclideUri('LLDBDebuggerRpcService', localDirectory.getPath());
+  const {getServiceByNuclideUri} = require('../../../client');
+  const localService = getServiceByNuclideUri('LLDBDebuggerRpcService', localDirectory.getPath());
+  invariant(localService);
   const targetInfoList = await localService.getAttachTargetInfoList();
 
   const processes = [];

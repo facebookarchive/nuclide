@@ -11,6 +11,7 @@
 
 import type {CtagsResult} from '../../remote-ctags-base';
 
+import invariant from 'assert';
 import {getLogger} from '../../logging';
 import {getServiceByNuclideUri} from '../../remote-connection';
 import {getPath} from '../../remote-uri';
@@ -63,8 +64,9 @@ export async function getLineNumberForTag(tag: CtagsResult): Promise<number> {
     }
     try {
       // Search for the pattern in the file.
-      const contents = await getServiceByNuclideUri('FileSystemService', tag.file)
-        .readFile(getPath(tag.file));
+      const service = getServiceByNuclideUri('FileSystemService', tag.file);
+      invariant(service);
+      const contents = await service.readFile(getPath(tag.file));
       const lines = contents.toString('utf8').split('\n');
       lineNumber = 0;
       for (let i = 0; i < lines.length; i++) {

@@ -46,6 +46,7 @@ module.exports = {
     }
 
     const instance = await getServiceByNuclideUri('MerlinService', file);
+    invariant(instance);
     const start = range.start;
 
     return {

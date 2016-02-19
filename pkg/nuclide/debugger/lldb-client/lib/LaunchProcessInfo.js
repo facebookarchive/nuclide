@@ -16,6 +16,7 @@ import type {
   DebuggerRpcService as DebuggerRpcServiceType,
 } from '../../lldb-server/lib/DebuggerRpcServiceInterface';
 
+import invariant from 'assert';
 import {DebuggerProcessInfo} from '../../atom';
 import {LldbDebuggerInstance} from './LldbDebuggerInstance';
 
@@ -36,8 +37,9 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
   }
 
   _getRpcService(): DebuggerRpcServiceType {
-    const {DebuggerRpcService} = require('../../../client').
-      getServiceByNuclideUri('LLDBDebuggerRpcService', this.getTargetUri());
-    return new DebuggerRpcService();
+    const {getServiceByNuclideUri} = require('../../../client');
+    const service = getServiceByNuclideUri('LLDBDebuggerRpcService', this.getTargetUri());
+    invariant(service);
+    return new service.DebuggerRpcService();
   }
 }

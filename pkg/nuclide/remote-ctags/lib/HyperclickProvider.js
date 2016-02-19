@@ -16,6 +16,7 @@ import {goToLocation} from '../../atom-helpers';
 import {getServiceByNuclideUri} from '../../remote-connection';
 import {dirname, relative} from '../../remote-uri';
 import {CTAGS_KIND_NAMES, getLineNumberForTag} from './utils';
+import invariant from 'assert';
 
 const LIMIT = 100;
 
@@ -50,14 +51,16 @@ export class HyperclickProvider {
       return null;
     }
 
-    const service = (await getServiceByNuclideUri('CtagsService', path)
-      .getCtagsService(path): ?CtagsService);
-    if (service == null) {
+    const service = getServiceByNuclideUri('CtagsService', path);
+    invariant(service);
+    const ctagsService = (await service.getCtagsService(path): ?CtagsService);
+
+    if (ctagsService == null) {
       return null;
     }
 
     try {
-      const tags = await service.findTags(text, {limit: LIMIT});
+      const tags = await ctagsService.findTags(text, {limit: LIMIT});
       if (!tags.length) {
         return null;
       }
@@ -75,7 +78,7 @@ export class HyperclickProvider {
         return len;
       });
 
-      const tagsDir = dirname(await service.getTagsPath());
+      const tagsDir = dirname(await ctagsService.getTagsPath());
       return {
         range,
         callback: tags.map(tag => {
@@ -91,7 +94,7 @@ export class HyperclickProvider {
         }),
       };
     } finally {
-      service.dispose();
+      ctagsService.dispose();
     }
   }
 

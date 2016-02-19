@@ -16,6 +16,7 @@ import type {DebuggerProcessInfo} from '../../atom';
 import type {HhvmDebuggerProxyService as HhvmDebuggerProxyServiceType,}
     from '../../../debugger-hhvm-proxy/lib/HhvmDebuggerProxyService';
 
+import invariant from 'assert';
 import {DebuggerInstance} from '../../atom';
 import {getOutputService} from './OutputServiceManager';
 
@@ -67,9 +68,11 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
 
   getWebsocketAddress(): Promise<string> {
     logInfo('Connecting to: ' + this.getTargetUri());
-    const {HhvmDebuggerProxyService} = require('../../../client').
+    const {getServiceByNuclideUri} = require('../../../client');
+    const service =
       getServiceByNuclideUri('HhvmDebuggerProxyService', this.getTargetUri());
-    const proxy = new HhvmDebuggerProxyService();
+    invariant(service);
+    const proxy = new service.HhvmDebuggerProxyService();
     this._proxy = proxy;
     this._disposables.add(proxy);
     this._disposables.add(proxy.getNotificationObservable().subscribe(

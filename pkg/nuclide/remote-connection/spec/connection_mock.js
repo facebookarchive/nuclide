@@ -11,10 +11,10 @@
 
 import type {RemoteConnection} from '../../remote-connection';
 
-import {fsPromise} from '../../commons';
 import fsPlus from 'fs-plus';
-import RemoteDirectory from '../lib/RemoteDirectory';
-import RemoteFile from '../lib/RemoteFile';
+import {fsPromise} from '../../commons';
+import {RemoteDirectory} from '../lib/RemoteDirectory';
+import {RemoteFile} from '../lib/RemoteFile';
 /*
  * Match the signature of `NuclideClient::newFile`:
  *

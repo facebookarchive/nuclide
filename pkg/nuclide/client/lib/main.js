@@ -11,8 +11,7 @@
 
 import type {NuclideUri} from '../../remote-uri';
 import type {FileSystemService} from '../../server/lib/services/FileSystemServiceType';
-
-const FILE_SYSTEM_SERVICE = 'FileSystemService';
+import invariant from 'assert';
 
 // TODO: Remove this once all services have been moved to framework v3.
 import {
@@ -29,6 +28,8 @@ module.exports = {
   getServiceByNuclideUri,
 
   getFileSystemServiceByNuclideUri(uri: NuclideUri): FileSystemService {
-    return getServiceByNuclideUri(FILE_SYSTEM_SERVICE, uri);
+    const service = getServiceByNuclideUri('FileSystemService', uri);
+    invariant(service);
+    return service;
   },
 };
