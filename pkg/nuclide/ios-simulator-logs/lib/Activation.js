@@ -12,6 +12,8 @@
 import type OutputService from '../../output/lib/OutputService';
 
 import {LogTailer} from '../../output/lib/LogTailer';
+import {createMessageStream} from './createMessageStream';
+import {createProcessStream} from './createProcessStream';
 import {CompositeDisposable, Disposable} from 'atom';
 import Rx from 'rx';
 
@@ -20,7 +22,7 @@ class Activation {
   _logTailer: LogTailer;
 
   constructor(state: ?Object) {
-    const message$ = Rx.Observable.empty();
+    const message$ = Rx.Observable.defer(() => createMessageStream(createProcessStream()));
 
     this._logTailer = new LogTailer(message$, {
       start: 'ios-simulator-logs:start',
