@@ -11,6 +11,8 @@
 
 import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
 
+import invariant from 'assert';
+
 const GRAMMARS = new Set([
   'source.ocaml',
 ]);
