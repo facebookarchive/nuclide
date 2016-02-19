@@ -92,7 +92,7 @@ const FindReferencesView = React.createClass({
     }
 
     return (
-      <div className="nuclide-find-references" onScroll={this._onScroll} ref="root">
+      <div className="nuclide-find-references" onScroll={this._onScroll} ref="root" tabIndex="0">
         <div className="nuclide-find-references-count">
           Found {refCount} {pluralize('reference', refCount)}{' '}
           in {fileCount} {pluralize('file', fileCount)}.

@@ -170,6 +170,16 @@ module.exports = {
         subscriptions.add(disposable);
       }
     }));
+
+    // Enable text copy from the symbol reference view
+    subscriptions.add(atom.commands.add(
+      'nuclide-find-references-view',
+      'core:copy',
+      () => {
+        const selectedText = window.getSelection().toString();
+        atom.clipboard.write(selectedText);
+      }
+    ));
   },
 
   deactivate(): void {
