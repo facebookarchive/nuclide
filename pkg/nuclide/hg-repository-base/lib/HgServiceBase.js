@@ -25,6 +25,7 @@ import {
   fetchFilesChangedAtRevision,
 } from './hg-revision-state-helpers';
 import {asyncExecute, createArgsForScriptCommand} from '../../commons';
+import {fsPromise} from '../../../nuclide/commons';
 import {getPath} from '../../remote-uri';
 import path from 'path';
 
@@ -286,6 +287,20 @@ class HgServiceBase {
       TTY_OUTPUT: ttyOutput,
     };
     return await this._hgAsyncExecute(args, execOptions);
+  }
+
+  async commit(message: string): Promise<void> {
+    const tempFile = await fsPromise.tempfile();
+    const execOptions = {
+      cwd: this.getWorkingDirectory(),
+    };
+    try {
+      await fsPromise.writeFile(tempFile, message);
+      const args = ['commit', '-l', tempFile];
+      await this._hgAsyncExecute(args, execOptions);
+    } finally {
+      await fsPromise.unlink(tempFile);
+    }
   }
 
   async _runSimpleInWorkingDirectory(

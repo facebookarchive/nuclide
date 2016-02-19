@@ -172,4 +172,10 @@ export class HgService {
    * @param filePath Which file should be versioned.
    */
   async add(filePath: string): Promise<void> {}
+
+  /**
+   * Commit code to version control.
+   * @param message Commit message.
+   */
+  async commit(message: string): Promise<void> {}
 }

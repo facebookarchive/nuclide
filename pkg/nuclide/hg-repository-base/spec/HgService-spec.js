@@ -13,6 +13,7 @@ import path from 'path';
 import HgServiceBase from '../lib/HgServiceBase';
 import {HgStatusOption, StatusCodeId} from '../lib/hg-constants';
 import invariant from 'assert';
+import {fsPromise} from '../../../nuclide/commons';
 
 class TestHgService extends HgServiceBase {
   // These tests target the non-watchman-dependent features of LocalHgService.
@@ -196,6 +197,30 @@ describe('HgService', () => {
       waitsForPromise(async () => {
         await hgService.add('file.txt');
         expect(wasCalled).toBeTruthy();
+      });
+    });
+  });
+
+  describe('::commit', () => {
+    it('can commit changes', () => {
+      const commitMessage = 'foo\n\nbar\nbaz';
+      let messageFile = null;
+      spyOn(fsPromise, 'writeFile').andCallFake((filePath, contents) => {
+        expect(contents).toBe(commitMessage);
+        messageFile = filePath;
+      });
+      let committedToHg = false;
+      spyOn(hgService, '_hgAsyncExecute').andCallFake((args, options) => {
+        expect(args.length).toBe(3);
+        expect(messageFile).not.toBeNull();
+        expect(args.pop()).toBe(messageFile);
+        expect(args.pop()).toBe('-l');
+        expect(args.pop()).toBe('commit');
+        committedToHg = true;
+      });
+      waitsForPromise(async () => {
+        await hgService.commit(commitMessage);
+        expect(committedToHg).toBeTruthy();
       });
     });
   });
