@@ -21,9 +21,17 @@ const {fileColumnCellDataGetter, getProjectRelativePathOfDiagnostic} = require('
 
 type textAndType = {text: string, isPlainText: boolean};
 
+const DEFAULT_LINE_TEXT_HEIGHT = 15;
+const DESCRIPTION_COLUMN_FLEX_GROW = 3;
+const DESCRIPTION_COLUMN_WIDTH = 100;
+const FILE_COLUMN_FLEX_GROW = 2;
+const FILE_COLUMN_WIDTH = 100;
+const LINE_COLUMN_WIDTH = 100;
+const PIXELS_PER_CHAR = 6;
+const ROW_HORIZONTAL_PADDING = 16; // 8px left and right padding.
 const ROW_VERTICAL_PADDING = 16; // 8px top and bottom padding.
-const DEFAULT_ROW_TEXT_HEIGHT = 15;
-const MAX_CHARS_PER_LINE = 100;
+const SOURCE_COLUMN_WIDTH = 175;
+const TYPE_COLUMN_WIDTH = 100;
 
 const TypeToHighlightClassName = {
   ERROR: 'highlight-error',
@@ -138,17 +146,43 @@ class DiagnosticsPane extends React.Component {
   }
 
   _rowHeightGetter(rowIndex: number): number {
-    // TODO(t8055416): Improve this heuristic for determining the row height.
+    const tableWidth = this.props.width;
     const diagnostic = this._rowGetter(rowIndex);
     const filePath = getProjectRelativePathOfDiagnostic(diagnostic);
     const {text: message} = messageColumnCellDataGetter('message', diagnostic);
 
-    // Note this will be an overestimate if the message is HTML instead of plaintext.
-    const messageLength = message.length;
+    // Calculate (character) length of description and file respectively.
+    const descriptionLength = message.length;
+    const fileLength = filePath.length;
 
-    const textLength = Math.max(filePath.length, messageLength);
-    const numRowsOfText = Math.floor(textLength / MAX_CHARS_PER_LINE) + 1;
-    return numRowsOfText * DEFAULT_ROW_TEXT_HEIGHT + ROW_VERTICAL_PADDING;
+    // Calculate (pixel) width of flexible space used by description and file cells.
+    const nonFlexWidth =
+      TYPE_COLUMN_WIDTH + SOURCE_COLUMN_WIDTH + LINE_COLUMN_WIDTH;
+    const flexWidth = tableWidth - nonFlexWidth;
+
+    // Calculate (pixel) widths of description and file cells respectively.
+    const flexGrowTotal = DESCRIPTION_COLUMN_FLEX_GROW + FILE_COLUMN_FLEX_GROW;
+    const descriptionWidth =
+      flexWidth * (DESCRIPTION_COLUMN_FLEX_GROW / flexGrowTotal) - ROW_HORIZONTAL_PADDING;
+    const fileWidth =
+      flexWidth * (FILE_COLUMN_FLEX_GROW / flexGrowTotal) - ROW_HORIZONTAL_PADDING;
+
+    // Calculate number of characters that fit in one line using cell width.
+    const descriptionCharsPerRow = descriptionWidth / PIXELS_PER_CHAR;
+    const fileCharsPerRow = fileWidth / PIXELS_PER_CHAR;
+
+    // Calculate number of lines needed using text length and characters per line.
+    const descriptionMaxLinesOfText =
+      Math.floor(descriptionLength / descriptionCharsPerRow) + 1;
+    const fileMaxLinesOfText =
+      Math.floor(fileLength / fileCharsPerRow) + 1;
+
+    // Set height using the maximum of the two required cell heights.
+    const maxNumLinesOfText = Math.max(
+      descriptionMaxLinesOfText,
+      fileMaxLinesOfText
+    );
+    return maxNumLinesOfText * DEFAULT_LINE_TEXT_HEIGHT + ROW_VERTICAL_PADDING;
   }
 
   _renderHeader(label: ?string, cellDataKey: string): ReactElement {
@@ -172,7 +206,7 @@ class DiagnosticsPane extends React.Component {
           flexGrow={2}
           headerRenderer={this._renderHeader}
           label="File"
-          width={100}
+          width={FILE_COLUMN_WIDTH}
         />
       );
     }
@@ -183,8 +217,9 @@ class DiagnosticsPane extends React.Component {
         onRowClick={onRowClick}
         overflowX="hidden"
         overflowY="auto"
+        ref="table"
         rowGetter={this._rowGetter}
-        rowHeight={DEFAULT_ROW_TEXT_HEIGHT + ROW_VERTICAL_PADDING}
+        rowHeight={DEFAULT_LINE_TEXT_HEIGHT + ROW_VERTICAL_PADDING}
         rowHeightGetter={this._rowHeightGetter}
         rowsCount={this.props.diagnostics.length}
         width={this.props.width}>
@@ -193,17 +228,16 @@ class DiagnosticsPane extends React.Component {
           cellDataGetter={typeColumnCellDataGetter}
           cellRenderer={typeColumnCellRenderer}
           dataKey="type"
-          maxWidth={100}
           label="Type"
-          width={75}
+          width={TYPE_COLUMN_WIDTH}
         />
         <Column
           align="left"
           cellDataGetter={sourceColumnCellDataGetter}
           cellRenderer={plainTextColumnCellRenderer}
           dataKey="providerName"
-          width={175}
           label="Source"
+          width={SOURCE_COLUMN_WIDTH}
         />
         <Column
           align="left"
@@ -212,7 +246,7 @@ class DiagnosticsPane extends React.Component {
           dataKey="message"
           flexGrow={3}
           label="Description"
-          width={100}
+          width={DESCRIPTION_COLUMN_WIDTH}
         />
         {fileColumn}
         <Column
@@ -220,9 +254,8 @@ class DiagnosticsPane extends React.Component {
           cellDataGetter={locationColumnCellDataGetter}
           cellRenderer={plainTextColumnCellRenderer}
           dataKey="range"
-          maxWidth={100}
           label="Line"
-          width={50}
+          width={LINE_COLUMN_WIDTH}
         />
       </Table>
     );
