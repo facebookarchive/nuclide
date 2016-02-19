@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {nuclide_debugger$Service} from '../../interfaces/service';
+import type {
+  nuclide_debugger$Service,
+  NuclideDebuggerProvider,
+} from '../../interfaces/service';
 
 module.exports = {
   activate(state: mixed): void {
@@ -18,5 +21,9 @@ module.exports = {
   provideNuclideDebuggerLLDB(): nuclide_debugger$Service {
     const Service = require('./Service');
     return Service;
+  },
+
+  createDebuggerProvider(): NuclideDebuggerProvider {
+    return require('./DebuggerProvider');
   },
 };
