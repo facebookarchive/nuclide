@@ -12,7 +12,10 @@
 const {CompositeDisposable, Disposable} = require('atom');
 import {trackTiming} from '../../../analytics';
 
-import type {nuclide_debugger$Service} from '../../interfaces/service';
+import type {
+  nuclide_debugger$Service,
+  NuclideDebuggerProvider,
+} from '../../interfaces/service';
 import RemoteControlService from './RemoteControlService';
 import DebuggerModel from './DebuggerModel';
 import type {SerializedBreakpoint} from './BreakpointStore';
@@ -232,8 +235,23 @@ module.exports = {
       }
     });
   },
+
+  consumeDebuggerProvider(
+    provider: NuclideDebuggerProvider
+  ): IDisposable {
+    if (activation) {
+      activation.getModel().getActions().addDebuggerProvider(provider);
+    }
+    return new Disposable(() => {
+      if (activation) {
+        activation.getModel().getActions().removeDebuggerProvider(provider);
+      }
+    });
+  },
+
   DebuggerProcessInfo: require('./DebuggerProcessInfo'),
   DebuggerInstance: require('./DebuggerInstance'),
+  DebuggerLaunchAttachProvider: require('./DebuggerLaunchAttachProvider'),
 
   consumeToolBar(getToolBar: (group: string) => Object): void {
     toolBar = getToolBar('nuclide-debugger');

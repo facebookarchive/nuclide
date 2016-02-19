@@ -14,7 +14,10 @@ const {CompositeDisposable} = require('atom');
 import {beginTimerTracking, failTimerTracking, endTimerTracking} from './AnalyticsHelper';
 
 import type {Dispatcher} from 'flux';
-import type {nuclide_debugger$Service} from '../../interfaces/service';
+import type {
+  nuclide_debugger$Service,
+  NuclideDebuggerProvider,
+} from '../../interfaces/service';
 import type DebuggerStoreType from './DebuggerStore';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 import type BridgeType from './Bridge';
@@ -134,6 +137,20 @@ class DebuggerActions {
     this._dispatcher.dispatch({
       actionType: Constants.Actions.REMOVE_SERVICE,
       data: service,
+    });
+  }
+
+  addDebuggerProvider(provider: NuclideDebuggerProvider) {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.ADD_DEBUGGER_PROVIDER,
+      data: provider,
+    });
+  }
+
+  removeDebuggerProvider(provider: NuclideDebuggerProvider) {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.REMOVE_DEBUGGER_PROVIDER,
+      data: provider,
     });
   }
 
