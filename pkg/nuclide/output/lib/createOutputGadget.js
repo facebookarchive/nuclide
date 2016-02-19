@@ -16,7 +16,7 @@ import type {Gadget} from '../../gadgets-interfaces';
 import type {AppState, Record} from './types';
 import type Rx from 'rx';
 
-import OutputTable from './OutputTable';
+import Console from './Console';
 import {React} from 'react-for-atom';
 
 type State = {
@@ -58,7 +58,7 @@ export default function createOutputGadget(
 
     render(): ?ReactElement {
       return (
-        <OutputTable
+        <Console
           clearRecords={() => commands.clearRecords()}
           records={this.state.records}
         />
