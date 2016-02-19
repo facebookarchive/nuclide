@@ -52,12 +52,15 @@ export type ServerStatusType =
   'init' |
   'ready';
 
-export type FlowOutlineTree = {
-  displayText: string,
+export type FlowStartLocation = {
   // Service framework can't serialize Point so we need a slightly different type from the canonical
   // OutlineTree.
   startLine: number,
   startColumn: number,
+};
+
+export type FlowOutlineTree = FlowStartLocation & {
+  displayText: string,
   children: Array<FlowOutlineTree>,
 };
 

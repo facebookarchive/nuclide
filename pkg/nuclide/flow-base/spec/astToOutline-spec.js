@@ -33,6 +33,32 @@ const expectedOutline = [
     startColumn: 0,
     children: [],
   },
+  {
+    displayText: 'describe foo',
+    startLine: 25,
+    startColumn: 0,
+    children: [
+      {
+        displayText: 'it should work',
+        startLine: 27,
+        startColumn: 2,
+        children: [],
+      },
+    ],
+  },
+  {
+    displayText: 'describe bar',
+    startLine: 32,
+    startColumn: 0,
+    children: [
+      {
+        displayText: 'it should work with a normal function',
+        startLine: 33,
+        startColumn: 2,
+        children: [],
+      },
+    ],
+  },
 ];
 
 describe('astToOutline', () => {
