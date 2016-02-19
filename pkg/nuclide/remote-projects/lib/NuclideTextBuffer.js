@@ -90,7 +90,10 @@ class NuclideTextBuffer extends TextBuffer {
       this.emitter.emit('did-save', {path: filePath});
       success = true;
     } catch (e) {
-      logger.fatal('Failed to save remote file.', e);
+      // Timeouts occur quite frequently when the network is unstable.
+      // Demote these to 'error' level.
+      const logFunction = (/timeout/i).test(e.message) ? logger.error : logger.fatal;
+      logFunction('Failed to save remote file.', e);
       atom.notifications.addError(`Failed to save remote file: ${e.message}`);
       success = false;
     }
