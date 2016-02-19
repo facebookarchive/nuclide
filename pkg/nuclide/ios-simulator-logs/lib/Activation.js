@@ -9,14 +9,41 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
+import type OutputService from '../../output/lib/OutputService';
+
+import {LogTailer} from '../../output/lib/LogTailer';
+import {CompositeDisposable, Disposable} from 'atom';
+import Rx from 'rx';
 
 class Activation {
   _disposables: CompositeDisposable;
+  _logTailer: LogTailer;
 
   constructor(state: ?Object) {
+    const message$ = Rx.Observable.empty();
+
+    this._logTailer = new LogTailer(message$, {
+      start: 'ios-simulator-logs:start',
+      stop: 'ios-simulator-logs:stop',
+      restart: 'ios-simulator-logs:restart',
+      error: 'ios-simulator-logs:error',
+    });
+
     this._disposables = new CompositeDisposable(
+      new Disposable(() => { this._logTailer.stop(); }),
+      atom.commands.add('atom-workspace', {
+        'nuclide-ios-simulator-logs:start': () => this._logTailer.start(),
+        'nuclide-ios-simulator-logs:stop': () => this._logTailer.stop(),
+        'nuclide-ios-simulator-logs:restart': () => this._logTailer.restart(),
+      }),
     );
+  }
+
+  consumeOutputService(api: OutputService): IDisposable {
+    return api.registerOutputProvider({
+      source: 'iOS Simulator Logs',
+      messages: this._logTailer.getMessages(),
+    });
   }
 
   dispose() {

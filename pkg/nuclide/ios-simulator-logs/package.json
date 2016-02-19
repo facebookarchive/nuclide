@@ -14,5 +14,12 @@
       "nuclide-ios-simulator-logs:stop",
       "nuclide-ios-simulator-logs:restart"
     ]
+  },
+  "consumedServices": {
+    "nuclide-output": {
+      "versions": {
+        "0.0.0": "consumeOutputService"
+      }
+    }
   }
 }

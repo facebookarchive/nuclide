@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type OutputService from '../../output/lib/OutputService';
+
 import invariant from 'assert';
 
 let activation: ?Object = null;
@@ -23,4 +25,9 @@ export function deactivate() {
   invariant(activation);
   activation.dispose();
   activation = null;
+}
+
+export function consumeOutputService(api: OutputService): IDisposable {
+  invariant(activation);
+  return activation.consumeOutputService(api);
 }
