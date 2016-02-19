@@ -1,0 +1,13 @@
+export type Foo = {
+  x: string,
+};
+
+export type Bar = Foo & {
+  y: number,
+};
+
+export type Baz = Bar & {
+  z: boolean,
+};
+
+export function intersectionFunction(baz: Baz): void { }

@@ -380,6 +380,66 @@ describe('TypeRegistry', () => {
     });
   });
 
+  it('can serialize/deserialize intersection object types', () => {
+    waitsForPromise(async () => {
+      invariant(typeRegistry);
+
+      // { x: number, y: number }
+      const o1: ObjectType = {
+        location: builtinLocation,
+        kind: 'object',
+        fields: [
+          {
+            location: builtinLocation,
+            type: numberType,
+            name: 'x',
+            optional: false,
+          },
+          {
+            location: builtinLocation,
+            type: numberType,
+            name: 'y',
+            optional: false,
+          },
+        ],
+      };
+
+      // { s: string }
+      const o2: ObjectType = {
+        location: builtinLocation,
+        kind: 'object',
+        fields: [
+          {
+            location: builtinLocation,
+            type: stringType,
+            name: 's',
+            optional: false,
+          },
+        ],
+      };
+
+      const type = {
+        location: builtinLocation,
+        kind: 'intersection',
+        types: [o1, o2],
+        flattened: {
+          kind: 'object',
+          location: builtinLocation,
+          fields: o1.fields.concat(o2.fields),
+        },
+      };
+
+      const data1 = {x: 5, y: 6, s: 'asdf'};
+      const result1 = await typeRegistry.unmarshal(await typeRegistry.marshal(data1, type), type);
+      expect(result1).toEqual(data1);
+
+      // Ensure no extra fields are accidentally marshalled.
+      const data4 = {x: 5, y: 6, s: 'asdf', b: true};
+      const result4 = await typeRegistry.unmarshal(await typeRegistry.marshal(data4, type), type);
+      expect(result4).toEqual(data1);
+    });
+  });
+
   it('works for very large values', () => {
     waitsForPromise(async () => {
       unspy(Date, 'now');

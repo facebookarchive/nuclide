@@ -22,6 +22,7 @@ import type {
   FunctionType,
   NamedType,
   UnionType,
+  IntersectionType,
   ObjectType,
   ObjectField,
   LiteralType,
@@ -99,6 +100,9 @@ export function validateDefinitions(definitions: Definitions): void {
         type.types.forEach(checkTypeForMissingNames);
         break;
       case 'union':
+        type.types.forEach(checkTypeForMissingNames);
+        break;
+      case 'intersection':
         type.types.forEach(checkTypeForMissingNames);
         break;
       case 'function':
@@ -179,6 +183,9 @@ export function validateDefinitions(definitions: Definitions): void {
         // Union types break the layout chain.
         // TODO: Strictly we should detect alternates which directly contain their parent union,
         // or if all alternates indirectly contain the parent union.
+        break;
+      case 'intersection':
+        type.types.forEach(validateTypeRec);
         break;
       case 'function':
         break;
@@ -272,6 +279,23 @@ export function validateDefinitions(definitions: Definitions): void {
         return true;
       default:
         return false;
+    }
+  }
+
+  function validateIntersectionType(intersectionType: IntersectionType): void {
+    const fields = flattenIntersection(intersectionType);
+    const fieldNameToLocation = new Map();
+    for (const field of fields) {
+      if (fieldNameToLocation.has(field.name)) {
+        // TODO allow duplicate field names if they have the same type.
+        const otherLocation = fieldNameToLocation.get(field.name);
+        invariant(otherLocation != null);
+        throw errorLocations(
+          [intersectionType.location, field.location, otherLocation],
+          `Duplicate field name '${field.name}' in intersection types are not supported.`,
+        );
+      }
+      fieldNameToLocation.set(field.name, field.location);
     }
   }
 
@@ -425,6 +449,9 @@ export function validateDefinitions(definitions: Definitions): void {
       case 'union':
         validateUnionType(type);
         break;
+      case 'intersection':
+        validateIntersectionType(type);
+        break;
       case 'function':
         type.argumentTypes.forEach(validateType);
         validateReturnType(type, resolvePossiblyNamedType(type.returnType));
@@ -502,6 +529,10 @@ export function validateDefinitions(definitions: Definitions): void {
         cannonicalizeTypeArray(type.types);
         type.types = flattenUnionAlternates(type.types);
         break;
+      case 'intersection':
+        cannonicalizeTypeArray(type.types);
+        canonicalizeIntersection(type);
+        break;
       case 'function':
         cannonicalizeTypeArray(type.argumentTypes);
         type.returnType = resolvePossiblyNamedType(type.returnType);
@@ -513,6 +544,33 @@ export function validateDefinitions(definitions: Definitions): void {
       default:
         throw new Error(JSON.stringify(type));
     }
+  }
+
+  function canonicalizeIntersection(intersectionType: IntersectionType): void {
+    const fields = flattenIntersection(intersectionType);
+    intersectionType.flattened = {
+      kind: 'object',
+      location: intersectionType.location,
+      fields,
+    };
+  }
+
+  function flattenIntersection(intersectionType: IntersectionType): Array<ObjectField> {
+    const fields = [];
+    for (const type of intersectionType.types) {
+      const resolvedType = resolvePossiblyNamedType(type);
+      if (resolvedType.kind === 'object') {
+        fields.push(...resolvedType.fields);
+      } else if (resolvedType.kind === 'intersection') {
+        fields.push(...flattenIntersection(resolvedType));
+      } else {
+        throw errorLocations(
+          [intersectionType.location, type.location],
+          'Types in intersections must be object or intersection types',
+        );
+      }
+    }
+    return fields;
   }
 
   // Will return a named type if and only if the alias resolves to a builtin type, or an interface.

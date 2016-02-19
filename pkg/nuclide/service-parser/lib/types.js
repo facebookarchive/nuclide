@@ -52,7 +52,7 @@ export type Type = NullableType | MixedType |
   ObjectType | ArrayType | MapType | SetType | TupleType | // Container types.
   VoidType | PromiseType | ObservableType | // Return types.
   StringLiteralType | NumberLiteralType | BooleanLiteralType | // Literal types.
-  NamedType | FunctionType | UnionType; // Type aliases.
+  NamedType | FunctionType | UnionType | IntersectionType; // Type aliases.
 
 // Nullable type.
 export type NullableType = { location: Location, kind: 'nullable', type: Type };
@@ -101,6 +101,15 @@ export type UnionType = {
   kind: 'union',
   types: Array<Type>,
   discriminantField?: string, // This is filled in for unions of object types during validation.
+};
+
+export type IntersectionType = {
+  location: Location,
+  kind: 'intersection',
+  types: Array<Type>,
+  // Filled in during validation -- this is the flattened object type containing all of the relevant
+  // fields.
+  flattened?: ObjectType,
 };
 
 // Represents a named, custom type.

@@ -339,6 +339,12 @@ class ServiceParser {
           kind: 'union',
           types: typeAnnotation.types.map(this._parseTypeAnnotation.bind(this)),
         };
+      case 'IntersectionTypeAnnotation':
+        return {
+          location,
+          kind: 'intersection',
+          types: typeAnnotation.types.map(this._parseTypeAnnotation.bind(this)),
+        };
       case 'GenericTypeAnnotation':
         return this._parseGenericTypeAnnotation(typeAnnotation);
       default:

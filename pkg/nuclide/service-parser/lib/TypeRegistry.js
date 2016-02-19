@@ -135,6 +135,7 @@ export default class TypeRegistry {
     this._registerContainers();
     this._registerLiterals();
     this._registerUnions();
+    this._registerIntersections();
 
     // Register NullableType and NamedType
     this._registerKind('nullable', (value: any, type: Type) => {
@@ -327,6 +328,20 @@ export default class TypeRegistry {
       }
     };
     this._registerKind('union', unionMarshaller, unionUnmarshaller);
+  }
+
+  _registerIntersections(): void {
+    const intersectionMarshaller = (arg, type) => {
+      invariant(type.kind === 'intersection');
+      invariant(type.flattened != null);
+      return this._marshal(arg, type.flattened);
+    };
+    const intersectionUnmarshaller = (arg, type) => {
+      invariant(type.kind === 'intersection');
+      invariant(type.flattened != null);
+      return this._unmarshal(arg, type.flattened);
+    };
+    this._registerKind('intersection', intersectionMarshaller, intersectionUnmarshaller);
   }
 
   _registerSpecialTypes(): void {

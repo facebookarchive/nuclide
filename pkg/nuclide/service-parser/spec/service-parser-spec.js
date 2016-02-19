@@ -276,6 +276,33 @@ describe('Nuclide service parser test suite.', () => {
       parseServiceDefinition('fileName', code);
     }).toThrow();
   });
+
+  it('allows intersections', () => {
+    const code = `
+      export type A = {x: string} & {y: string};
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).not.toThrow();
+  });
+
+  it('disallows intersections of non-object types', () => {
+    const code = `
+      export type A = {x: string} & boolean;
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('disallows intersections with overlapping fields', () => {
+    const code = `
+      export type A = {x: string} & {x: string};
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
 });
 
 function mapDefinitions(map: Map<string, Definition>): { [key: string]: Object } {
