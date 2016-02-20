@@ -20,12 +20,12 @@ const logger = getLogger();
  * be translated directly to/from JSON.
  */
 type SerializableRemoteConnectionConfiguration = {
-  host: string,
-  port: number,
-  cwd: string,
-  certificateAuthorityCertificate?: string,
-  clientCertificate?: string,
-  clientKey?: string,
+  host: string;
+  port: number;
+  cwd: string;
+  certificateAuthorityCertificate?: string;
+  clientCertificate?: string;
+  clientKey?: string;
 }
 
 const CONFIG_KEY_PREFIX = 'nuclide.nuclide-connection.config';
@@ -155,7 +155,7 @@ function decryptString(text: string, password: string, salt: string): string {
   return decryptedString;
 }
 
-function encryptString(text: string): {password: string, salt: string, encryptedString: string} {
+function encryptString(text: string): {password: string; salt: string; encryptedString: string} {
   const crypto = require('crypto');
   const password = crypto.randomBytes(16).toString('base64');
   const salt = crypto.randomBytes(16).toString('base64');

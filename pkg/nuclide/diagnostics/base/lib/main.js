@@ -15,12 +15,12 @@ import type {NuclideUri} from '../../../remote-uri';
 import type {TextEdit} from '../../../textedit';
 
 export type InvalidationMessage = {
-  scope: 'file',
-  filePaths: Array<NuclideUri>,
+  scope: 'file';
+  filePaths: Array<NuclideUri>;
 } | {
-  scope: 'project',
+  scope: 'project';
 } | {
-  scope: 'all',
+  scope: 'all';
 };
 
 export type MessageUpdateCallback = (update: DiagnosticProviderUpdate) => mixed;
@@ -30,13 +30,13 @@ export type MessageInvalidationCallback = (message: InvalidationMessage) => mixe
 // it was just activated and wants diagnostic messages without having to wait
 // for an event to occur)
 export type CallbackDiagnosticProvider = {
-  onMessageUpdate: (callback: MessageUpdateCallback) => IDisposable,
-  onMessageInvalidation: (callback: MessageInvalidationCallback) => IDisposable,
+  onMessageUpdate: (callback: MessageUpdateCallback) => IDisposable;
+  onMessageInvalidation: (callback: MessageInvalidationCallback) => IDisposable;
 };
 
 export type ObservableDiagnosticProvider = {
-  updates: Observable<DiagnosticProviderUpdate>,
-  invalidations: Observable<InvalidationMessage>,
+  updates: Observable<DiagnosticProviderUpdate>;
+  invalidations: Observable<InvalidationMessage>;
 }
 
 export type DiagnosticProvider = CallbackDiagnosticProvider | ObservableDiagnosticProvider;
@@ -49,58 +49,58 @@ export type DiagnosticProvider = CallbackDiagnosticProvider | ObservableDiagnost
 // - All previous 'project' scope messages are invalidated whenever
 // projectMessages is populated.
 export type DiagnosticProviderUpdate = {
-  filePathToMessages?: Map<NuclideUri, Array<FileDiagnosticMessage>>,
-  projectMessages?: Array<ProjectDiagnosticMessage>,
+  filePathToMessages?: Map<NuclideUri, Array<FileDiagnosticMessage>>;
+  projectMessages?: Array<ProjectDiagnosticMessage>;
 };
 
 export type MessageType = 'Error' | 'Warning';
 
 export type Trace = {
-  type: 'Trace',
-  text?: string,
-  html?: string,
-  filePath?: NuclideUri,
-  range?: atom$Range,
+  type: 'Trace';
+  text?: string;
+  html?: string;
+  filePath?: NuclideUri;
+  range?: atom$Range;
 };
 
 export type FileDiagnosticMessage = {
-  scope: 'file',
-  providerName: string,
-  type: MessageType,
-  filePath: NuclideUri,
-  text?: string,
-  html?: string,
-  range?: atom$Range,
-  trace?: Array<Trace>,
-  fix?: TextEdit,
+  scope: 'file';
+  providerName: string;
+  type: MessageType;
+  filePath: NuclideUri;
+  text?: string;
+  html?: string;
+  range?: atom$Range;
+  trace?: Array<Trace>;
+  fix?: TextEdit;
 };
 
 export type ProjectDiagnosticMessage = {
-  scope: 'project',
-  providerName: string,
-  type: MessageType,
-  text?: string,
-  html?: string,
-  range?: atom$Range,
-  trace?: Array<Trace>,
+  scope: 'project';
+  providerName: string;
+  type: MessageType;
+  text?: string;
+  html?: string;
+  range?: atom$Range;
+  trace?: Array<Trace>;
 };
 
 export type FileMessageUpdate = {
-  filePath: NuclideUri,
-  messages: Array<FileDiagnosticMessage>,
+  filePath: NuclideUri;
+  messages: Array<FileDiagnosticMessage>;
 };
 
 export type DiagnosticMessage = FileDiagnosticMessage | ProjectDiagnosticMessage;
 
 export type DiagnosticUpdater = {
   onFileMessagesDidUpdate:
-    (callback: (update: FileMessageUpdate) => mixed, filePath: NuclideUri) => IDisposable,
+    (callback: (update: FileMessageUpdate) => mixed, filePath: NuclideUri) => IDisposable;
   onProjectMessagesDidUpdate:
-    (callback: (messages: Array<ProjectDiagnosticMessage>) => mixed) => IDisposable,
+    (callback: (messages: Array<ProjectDiagnosticMessage>) => mixed) => IDisposable;
   onAllMessagesDidUpdate:
-    (callback: (messages: Array<DiagnosticMessage>) => mixed) => IDisposable,
-  applyFix: (message: FileDiagnosticMessage) => void,
-  applyFixesForFile: (file: NuclideUri) => void,
+    (callback: (messages: Array<DiagnosticMessage>) => mixed) => IDisposable;
+  applyFix: (message: FileDiagnosticMessage) => void;
+  applyFixesForFile: (file: NuclideUri) => void;
 };
 
 const DiagnosticStore = require('./DiagnosticStore');

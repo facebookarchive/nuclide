@@ -36,8 +36,8 @@ const FETCH_REV_INFO_RETRY_TIME_MS = 1000;
 const FETCH_REV_INFO_MAX_TRIES = 5;
 
 type RevisionsFileHistory = Array<{
-  id: number,
-  changes: RevisionFileChanges,
+  id: number;
+  changes: RevisionFileChanges;
 }>;
 
 export default class RepositoryStack {

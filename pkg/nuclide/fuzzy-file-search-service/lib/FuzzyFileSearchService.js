@@ -12,9 +12,9 @@
 import type {NuclideUri} from '../../remote-uri';
 
 export type FileSearchResult = {
-  path: NuclideUri,
-  score: number,
-  matchIndexes: Array<number>,
+  path: NuclideUri;
+  score: number;
+  matchIndexes: Array<number>;
 };
 
 import {fileSearchForDirectory, FileSearch} from '../../path-search';

@@ -12,14 +12,14 @@
 export type Priority = 'V' | 'D' | 'I' | 'W' | 'E' | 'F' | 'S';
 
 export type LogcatEntry = {
-  message: string,
-  metadata: ?Metadata,
+  message: string;
+  metadata: ?Metadata;
 };
 
 export type Metadata = {
-  time: string,
-  pid: number,
-  tid: number,
-  priority: Priority,
-  tag: string,
+  time: string;
+  pid: number;
+  tid: number;
+  priority: Priority;
+  tag: string;
 };

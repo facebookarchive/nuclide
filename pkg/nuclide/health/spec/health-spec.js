@@ -16,7 +16,7 @@ const openHealthPane = () => {
   atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-health:show');
 };
 
-function findHealthPaneAndItem(): {pane: ?atom$Pane, item: ?Object} {
+function findHealthPaneAndItem(): {pane: ?atom$Pane; item: ?Object} {
   for (const pane of atom.workspace.getPanes()) {
     for (const item of pane.getItems()) {
       if (item.getTitle() === 'Health') {

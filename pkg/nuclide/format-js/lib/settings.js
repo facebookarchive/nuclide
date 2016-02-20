@@ -21,17 +21,17 @@ const formatJSBase = require('../../format-js-base');
 // Nuclide package settings used to calculate the module map,
 // the blacklist, and control the plugin behavior.
 export type Settings = {
-  aliases: Array<[string, string]>,
-  builtIns: Array<string>,
-  builtInTypes: Array<string>,
-  nuclideFixHeader: boolean,
-  requiresTransferComments: boolean,
-  requiresRemoveUnusedRequires: boolean,
-  requiresAddMissingRequires: boolean,
-  requiresRemoveUnusedTypes: boolean,
-  requiresAddMissingTypes: boolean,
-  requiresFormatRequires: boolean,
-  runOnSave: boolean,
+  aliases: Array<[string, string]>;
+  builtIns: Array<string>;
+  builtInTypes: Array<string>;
+  nuclideFixHeader: boolean;
+  requiresTransferComments: boolean;
+  requiresRemoveUnusedRequires: boolean;
+  requiresAddMissingRequires: boolean;
+  requiresRemoveUnusedTypes: boolean;
+  requiresAddMissingTypes: boolean;
+  requiresFormatRequires: boolean;
+  runOnSave: boolean;
 };
 
 const arrayFrom = NuclideCommons.array.from;

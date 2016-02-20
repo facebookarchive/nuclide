@@ -30,7 +30,7 @@ function writeAllTsv(location: string, columns: Array<string>, records: Array<Ob
   records.forEach(record => writeTsv(location, columns, record));
 }
 
-function readAllTsv(location: string): {columns: Array<string>, records: Array<Object>} {
+function readAllTsv(location: string): {columns: Array<string>; records: Array<Object>} {
   let columns = [];
   const records = [];
   fs.readFileSync(location, 'utf8').split('\n').forEach((row, r) => {

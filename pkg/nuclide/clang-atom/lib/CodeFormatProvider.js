@@ -20,8 +20,8 @@ module.exports = {
   selector: array.from(GRAMMAR_SET).join(', '),
   inclusionPriority: 1,
   formatEntireFile(editor: atom$TextEditor, range: atom$Range): Promise<{
-    newCursor: number,
-    formatted: string,
+    newCursor: number;
+    formatted: string;
   }> {
     return trackOperationTiming('nuclide-clang-atom.formatCode', async () => {
       try {

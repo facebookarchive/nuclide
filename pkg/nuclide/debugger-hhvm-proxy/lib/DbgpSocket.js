@@ -40,40 +40,40 @@ const COMMAND_DETACH = 'detach';
 const DBGP_SOCKET_STATUS_EVENT = 'dbgp-socket-status';
 
 export type DbgpContext = {
-  name: string,
-  id: string,
+  name: string;
+  id: string;
 };
 
 export type DbgpProperty = {
   $: {
-    name: string,
-    fullname: string,
-    address: string,
-    type: string,
+    name: string;
+    fullname: string;
+    address: string;
+    type: string;
 
     // array or object
-    classname?: string,
-    children?: boolean,
-    numChildren?: number,
-    page?: number,
-    pagesize?: number,
+    classname?: string;
+    children?: boolean;
+    numChildren?: number;
+    page?: number;
+    pagesize?: number;
 
     // string
-    size?: number,
-    encoding?: string,
-  },
+    size?: number;
+    encoding?: string;
+  };
 
   // Value if present, subject to encoding if present
-  _?: string,
+  _?: string;
 
   // array or object members
-  property?: Array<DbgpProperty>,
+  property?: Array<DbgpProperty>;
 };
 
 type EvaluationResult = {
-  error?: Object,
-  result?: ?DbgpProperty,
-  wasThrown: boolean,
+  error?: Object;
+  result?: ?DbgpProperty;
+  wasThrown: boolean;
 };
 
 /**
@@ -84,7 +84,7 @@ class DbgpSocket {
   _socket: ?Socket;
   _transactionId: number;
   // Maps from transactionId -> call
-  _calls: Map<number, {command: string, complete: (results: Object) => void}>;
+  _calls: Map<number, {command: string; complete: (results: Object) => void}>;
   _emitter: EventEmitter;
   _isClosed: boolean;
   _messageHandler: DbgpMessageHandler;

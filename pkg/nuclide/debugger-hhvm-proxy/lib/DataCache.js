@@ -34,29 +34,29 @@ export type RemoteObjectId = string;
 
 // description wins over value in display
 export type RemoteObject = {
-  className?: string,
-  description?: string,
-  objectId?: RemoteObjectId,
-  subtype?: string, // [ "array" , "date" , "node" , "null" , "regexp" ]
-  type: string, // [ "boolean" , "function" , "number" , "object" , "string" , "undefined" ]
-  value?: any,
+  className?: string;
+  description?: string;
+  objectId?: RemoteObjectId;
+  subtype?: string; // [ "array" , "date" , "node" , "null" , "regexp" ]
+  type: string; // [ "boolean" , "function" , "number" , "object" , "string" , "undefined" ]
+  value?: any;
 };
 
 // scope.object.description shows on RHS
 export type Scope = {
-  object: RemoteObject,
-  type: string, // [ "catch" , "closure" , "global" , "local" , "with" ]
+  object: RemoteObject;
+  type: string; // [ "catch" , "closure" , "global" , "local" , "with" ]
 };
 
 export type PropertyDescriptor = {
-  configurable: boolean,
-  enumerable: boolean,
-  get?: RemoteObject,
-  name: string,
-  set?: RemoteObject,
-  value?: RemoteObject,
-  wasThrown?: boolean,
-  writable?: boolean,
+  configurable: boolean;
+  enumerable: boolean;
+  get?: RemoteObject;
+  name: string;
+  set?: RemoteObject;
+  value?: RemoteObject;
+  wasThrown?: boolean;
+  writable?: boolean;
 };
 
 import type {DbgpSocket} from './DbgpSocket';

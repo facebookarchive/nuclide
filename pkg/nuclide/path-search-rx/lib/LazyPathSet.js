@@ -17,8 +17,8 @@ type Path = string;
 type PathSegment = string;
 type PathSet = Set<Path>;
 type PathSetIndex = {
-  segments: Map<PathSegment, PathSet>,
-  filenames: Map<PathSegment, PathSet>,
+  segments: Map<PathSegment, PathSet>;
+  filenames: Map<PathSegment, PathSet>;
 };
 
 const MAX_RESULTS_COUNT = 25;
@@ -35,7 +35,7 @@ function findIn(query: string, corpus: Iterator<string>): Array<string> {
 
 const SPLIT_CHARS = /[\/\s]/;
 const ONLY_NON_ALPHANUMERIC_CHARS = /^[\W]*$/;
-function splitFilePath(path: string): {last: PathSegment, paths: Array<PathSegment>,} {
+function splitFilePath(path: string): {last: PathSegment; paths: Array<PathSegment>;} {
   const split = path.split(SPLIT_CHARS).filter(p => !p.match(ONLY_NON_ALPHANUMERIC_CHARS));
   return {
     last: split.pop(),

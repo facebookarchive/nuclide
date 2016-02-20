@@ -10,9 +10,9 @@
  */
 
 export type HgRepositoryDescription = {
-  repoPath: string,
-  originURL: ?string,
-  workingDirectoryPath: string,
+  repoPath: string;
+  originURL: ?string;
+  workingDirectoryPath: string;
 };
 
 module.exports = {

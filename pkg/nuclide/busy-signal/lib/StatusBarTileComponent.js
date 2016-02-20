@@ -12,7 +12,7 @@
 import {React} from 'react-for-atom';
 
 type Props = {
-  busy: boolean,
+  busy: boolean;
 }
 
 const SPINNER = '\uF087';

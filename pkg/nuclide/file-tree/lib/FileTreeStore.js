@@ -41,36 +41,36 @@ import type {NuclideUri} from '../../remote-uri';
 type ActionPayload = Object;
 type ChangeListener = () => mixed;
 export type FileTreeNodeData = {
-  nodeKey: string,
-  rootKey: string,
+  nodeKey: string;
+  rootKey: string;
 }
 
 type StoreData = {
-  childKeyMap: { [key: string]: Array<string> },
-  isDirtyMap: { [key: string]: boolean },
-  expandedKeysByRoot: { [key: string]: Immutable.Set<string> },
-  trackedNode: ?FileTreeNodeData,
+  childKeyMap: { [key: string]: Array<string> };
+  isDirtyMap: { [key: string]: boolean };
+  expandedKeysByRoot: { [key: string]: Immutable.Set<string> };
+  trackedNode: ?FileTreeNodeData;
   // Saves a list of child nodes that should be expande when a given key is expanded.
   // Looks like: { rootKey: { nodeKey: [childKey1, childKey2] } }.
-  previouslyExpanded: { [rootKey: string]: Immutable.Map<string, Array<String>> },
-  isLoadingMap: { [key: string]: ?Promise },
-  rootKeys: Array<string>,
-  selectedKeysByRoot: { [key: string]: Immutable.OrderedSet<string> },
-  subscriptionMap: { [key: string]: Disposable },
-  vcsStatusesByRoot: { [key: string]: Immutable.Map<string, number> },
-  ignoredPatterns: Immutable.Set<Minimatch>,
-  hideIgnoredNames: boolean,
-  excludeVcsIgnoredPaths: boolean,
-  usePreviewTabs: boolean,
-  repositories: Immutable.Set<atom$Repository>,
+  previouslyExpanded: { [rootKey: string]: Immutable.Map<string, Array<String>> };
+  isLoadingMap: { [key: string]: ?Promise };
+  rootKeys: Array<string>;
+  selectedKeysByRoot: { [key: string]: Immutable.OrderedSet<string> };
+  subscriptionMap: { [key: string]: Disposable };
+  vcsStatusesByRoot: { [key: string]: Immutable.Map<string, number> };
+  ignoredPatterns: Immutable.Set<Minimatch>;
+  hideIgnoredNames: boolean;
+  excludeVcsIgnoredPaths: boolean;
+  usePreviewTabs: boolean;
+  repositories: Immutable.Set<atom$Repository>;
 };
 
 export type ExportStoreData = {
-  childKeyMap: { [key: string]: Array<string> },
-  expandedKeysByRoot: { [key: string]: Array<string> },
-  rootKeys: Array<string>,
-  selectedKeysByRoot: { [key: string]: Array<string> },
-  version: number,
+  childKeyMap: { [key: string]: Array<string> };
+  expandedKeysByRoot: { [key: string]: Array<string> };
+  rootKeys: Array<string>;
+  selectedKeysByRoot: { [key: string]: Array<string> };
+  version: number;
 };
 
 let instance: ?Object;

@@ -15,7 +15,7 @@ type Comparer = (a: mixed, b: mixed) => boolean;
 type SubscribeCallback = (...args: Array<mixed>) => mixed;
 type SubscribeFunction = (callback: SubscribeCallback) => IDisposable;
 type NotifyFunction = (getValue: () => mixed) => void;
-type Result = {notify: NotifyFunction, observe: SubscribeFunction};
+type Result = {notify: NotifyFunction; observe: SubscribeFunction};
 type MethodMap = {[methodName: string]: (instance: Object) => mixed};
 type Decorator = (target: Object) => Object;
 

@@ -17,10 +17,10 @@ import {React} from 'react-for-atom';
 import classnames from 'classnames';
 
 type Props = {
-  diffMode: DiffModeType,
-  filePath: NuclideUri,
-  onSwitchToEditor: () => mixed,
-  onSwitchMode: (mode: DiffModeType) => mixed,
+  diffMode: DiffModeType;
+  filePath: NuclideUri;
+  onSwitchToEditor: () => mixed;
+  onSwitchMode: (mode: DiffModeType) => mixed;
 };
 
 class DiffViewToolbar extends React.Component {

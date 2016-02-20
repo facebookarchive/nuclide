@@ -14,7 +14,7 @@ import {EventEmitter} from 'events';
 import {getLogger} from '../../logging';
 
 declare class MockedWorkerEE extends Worker {
-  emit(type: string, data: mixed): void,
+  emit(type: string, data: mixed): void;
 }
 
 const logger = getLogger();
@@ -45,7 +45,7 @@ describe('HackWorker', () => {
       hackWorker.runWorkerTask({cmd: 'nothing', args: []}).catch(taskHandler);
       waitsFor(() => taskHandler.callCount > 0);
       runs(() => {
-        const error: {type: string, message: string,} = (taskHandler.argsForCall[0][0]: any);
+        const error: {type: string; message: string;} = (taskHandler.argsForCall[0][0]: any);
         expect(error.type).toBe('error');
         expect(error.message).toBe(
           'Uncaught TypeError: Cannot read property \'apply\' of undefined');

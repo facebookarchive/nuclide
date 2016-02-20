@@ -21,8 +21,8 @@ const {
 } = require('react-for-atom');
 
 type ViewInstance = {
-  commandDisposable: IDisposable,
-  view: View,
+  commandDisposable: IDisposable;
+  view: View;
 };
 
 /**
@@ -44,17 +44,17 @@ type ViewInstance = {
  *   unmounted.
  */
 type View = {
-  toggleCommand: string,
-  getComponent: () => Class<any>, // TODO(ssorallen): Should be polymorphic `Class<React.Component>`
-  onDidShow: () => mixed,
-  viewId: string,
+  toggleCommand: string;
+  getComponent: () => Class<any>; // TODO(ssorallen): Should be polymorphic `Class<React.Component>`
+  onDidShow: () => mixed;
+  viewId: string;
 };
 
 type State = {
-  activeViewId: ?string,
-  hidden: boolean,
-  initialLength: number,
-  views: Map<string, ViewInstance>,
+  activeViewId: ?string;
+  hidden: boolean;
+  initialLength: number;
+  views: Map<string, ViewInstance>;
 };
 
 const PANEL_Z_INDEX = 25;

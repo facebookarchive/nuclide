@@ -12,10 +12,10 @@
 const {array, asyncExecute} = require('../../../commons');
 
 export type Device = {
-  name: string,
-  udid: string,
-  state: string,
-  os: string,
+  name: string;
+  udid: string;
+  state: string;
+  os: string;
 }
 
 const DeviceState = {

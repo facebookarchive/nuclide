@@ -76,8 +76,8 @@ export class FlowTypeHintProvider {
 
 // TODO Import from type-hints package once it exposes it.
 type HintTree = {
-  value: string,
-  children?: Array<HintTree>,
+  value: string;
+  children?: Array<HintTree>;
 }
 
 export function getTypeHintTree(typeHint: ?string): ?HintTree {

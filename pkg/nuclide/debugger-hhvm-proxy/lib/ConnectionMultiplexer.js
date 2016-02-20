@@ -45,21 +45,21 @@ import {ClientCallback} from './ClientCallback';
 const CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
 
 type ConnectionInfo = {
-  connection: Connection,
-  onStatusDisposable: IDisposable,
-  status: string,
+  connection: Connection;
+  onStatusDisposable: IDisposable;
+  status: string;
 };
 
 type DbgpError = {
   $: {
-    code: number,
-  },
-  message: Array<string>,
+    code: number;
+  };
+  message: Array<string>;
 };
 
 type EvaluationFailureResult = {
-  error: DbgpError,
-  wasThrown: boolean,
+  error: DbgpError;
+  wasThrown: boolean;
 };
 
 // The ConnectionMultiplexer makes multiple debugger connections appear to be
@@ -169,7 +169,7 @@ export class ConnectionMultiplexer {
     return this._dummyConnection;
   }
 
-  async _onAttach(params: {socket: Socket, message: Object}): Promise {
+  async _onAttach(params: {socket: Socket; message: Object}): Promise {
     const {socket, message} = params;
     if (!isCorrectConnection(this._config, message)) {
       failConnection(socket, 'Discarding connection ' + JSON.stringify(message));

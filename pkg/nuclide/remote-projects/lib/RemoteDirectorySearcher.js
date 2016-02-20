@@ -14,8 +14,8 @@ const {RemoteDirectory} = require('../../remote-connection');
 import typeof * as FindInProjectService from '../../remote-search';
 
 type RemoteDirectorySearch = {
-  then: (onFullfilled: any, onRejected: any) => Promise<any>,
-  cancel: () => void,
+  then: (onFullfilled: any, onRejected: any) => Promise<any>;
+  cancel: () => void;
 }
 
 class RemoteDirectorySearcher {

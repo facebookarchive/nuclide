@@ -42,7 +42,7 @@ class HhvmToolbar extends React.Component {
   };
 
   state: {
-    selectedIndex: number,
+    selectedIndex: number;
   };
 
   constructor(props: mixed) {
@@ -54,7 +54,7 @@ class HhvmToolbar extends React.Component {
     (this: any)._handleDropdownChange = this._handleDropdownChange.bind(this);
   }
 
-  _getMenuItems(): Array<{label: string, value: number}> {
+  _getMenuItems(): Array<{label: string; value: number}> {
     return this._isTargetLaunchable(this.props.targetFilePath)
       ? DEBUG_OPTIONS
       : NO_LAUNCH_DEBUG_OPTIONS;

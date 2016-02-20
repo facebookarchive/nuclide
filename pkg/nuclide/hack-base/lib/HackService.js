@@ -26,10 +26,10 @@ export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
 export type HackDiagnosticsResult = {
   // The location of the .hhconfig where these messages came from.
-  hackRoot: NuclideUri,
+  hackRoot: NuclideUri;
   messages: Array<{
-    message: HackDiagnostic,
-  }>,
+    message: HackDiagnostic;
+  }>;
 };
 
 /**
@@ -40,61 +40,61 @@ export type HackDiagnosticsResult = {
 export type HackDiagnostic = Array<SingleHackMessage>;
 
 export type SingleHackMessage = {
-  path: ?NuclideUri,
-  descr: string,
-  code: number,
-  line: number,
-  start: number,
-  end: number,
+  path: ?NuclideUri;
+  descr: string;
+  code: number;
+  line: number;
+  start: number;
+  end: number;
 };
 
 export type HackFunctionDetails = {
-  params: Array<{name: string}>,
+  params: Array<{name: string}>;
 };
 
 export type HackCompletion = {
-  name: string,
-  type: string,
+  name: string;
+  type: string;
   pos: {
-    filename: NuclideUri,
-    line: number,
-    char_start: number,
-    char_end: number,
-  },
-  func_details: ?HackFunctionDetails,
+    filename: NuclideUri;
+    line: number;
+    char_start: number;
+    char_end: number;
+  };
+  func_details: ?HackFunctionDetails;
 };
 
 export type HackCompletionsResult = {
-  hackRoot: NuclideUri,
-  completions: Array<HackCompletion>,
+  hackRoot: NuclideUri;
+  completions: Array<HackCompletion>;
 };
 
 export type HackDefinitionResult = {
-  hackRoot: NuclideUri,
-  definitions: Array<HackSearchPosition>,
+  hackRoot: NuclideUri;
+  definitions: Array<HackSearchPosition>;
 };
 
 export type HackReferencesResult = {
-  hackRoot: NuclideUri,
-  references: Array<HackReference>,
+  hackRoot: NuclideUri;
+  references: Array<HackReference>;
 };
 
 export type HackSearchPosition = {
-  path: NuclideUri,
-  line: number,
-  column: number,
-  name: string,
-  length: number,
-  scope: string,
-  additionalInfo: string,
+  path: NuclideUri;
+  line: number;
+  column: number;
+  name: string;
+  length: number;
+  scope: string;
+  additionalInfo: string;
 };
 
 export type HackReference = {
-  name: string,
-  filename: NuclideUri,
-  line: number,
-  char_start: number,
-  char_end: number,
+  name: string;
+  filename: NuclideUri;
+  line: number;
+  char_start: number;
+  char_end: number;
 };
 
 const HH_NEWLINE = '<?hh\n';
@@ -207,10 +207,10 @@ export async function getIdentifierDefinition(
  */
 export async function getDependencies(
   filePath: NuclideUri,
-  dependenciesInfo: Array<{name: string, type: string}>,
+  dependenciesInfo: Array<{name: string; type: string}>,
 ): Promise<?{
-  hackRoot: NuclideUri,
-  dependencies: Map<string, string>,
+  hackRoot: NuclideUri;
+  dependencies: Map<string, string>;
 }> {
   const dependencies = new Map();
   const dependencyPaths = new Set();
@@ -302,7 +302,7 @@ export function getHackEnvironmentDetails(
   localFile: NuclideUri,
   hackCommand: string,
   useIdeConnection: boolean
-): Promise<?{hackRoot: NuclideUri, hackCommand: string}> {
+): Promise<?{hackRoot: NuclideUri; hackCommand: string}> {
   setHackCommand(hackCommand);
   setUseIde(useIdeConnection);
   return getHackExecOptions(localFile);

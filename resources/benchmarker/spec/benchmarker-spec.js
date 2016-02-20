@@ -12,19 +12,19 @@
 /* eslint-disable no-console */
 
 declare function waitsForPromise(
-  optionsOrFunc: ({shouldReject?: boolean, timeout?: number} | () => Promise<mixed>),
+  optionsOrFunc: ({shouldReject?: boolean; timeout?: number} | () => Promise<mixed>),
   func?: () => Promise<mixed>,
 ): void;
 
 declare class Benchmark {
-  description: string,
-  columns: Array<string>,
-  timeout: number,
-  iterations: number,
-  repetitions: number,
-  run: (iteration: number) => Object,
-  name?: string,
-  index?: number,
+  description: string;
+  columns: Array<string>;
+  timeout: number;
+  iterations: number;
+  repetitions: number;
+  run: (iteration: number) => Object;
+  name?: string;
+  index?: number;
 }
 
 const fs = require('fs');
@@ -120,7 +120,7 @@ describe('Nuclide performance', () => {
 
 });
 
-function getBenchmarksAndPackages(): {benchmarks: Array<string>, packages: Array<string>} {
+function getBenchmarksAndPackages(): {benchmarks: Array<string>; packages: Array<string>} {
   let benchmarks = [];
   if (process.env.BENCHMARK) {
     // A single benchmark has been passed in from the command line or shell.

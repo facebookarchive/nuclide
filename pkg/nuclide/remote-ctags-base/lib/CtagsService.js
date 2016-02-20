@@ -18,13 +18,13 @@ import {getLogger} from '../../logging';
 const TAGS_FILENAME = 'tags';
 
 export type CtagsResult = {
-  name: string,
-  file: NuclideUri,
+  name: string;
+  file: NuclideUri;
   // As specified in the tags file; defaults to 0 if not specified.
-  lineNumber: number,
+  lineNumber: number;
   // As specified in the tags file; defaults to empty if not specified.
-  kind: string,
-  pattern?: string,
+  kind: string;
+  pattern?: string;
 };
 
 export class CtagsService {
@@ -40,7 +40,7 @@ export class CtagsService {
 
   findTags(
     query: string,
-    options?: {caseInsensitive?: boolean, partialMatch?: boolean, limit?: number},
+    options?: {caseInsensitive?: boolean; partialMatch?: boolean; limit?: number},
   ): Promise<Array<CtagsResult>> {
     let ctags;
     try {

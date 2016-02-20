@@ -20,12 +20,12 @@ import {array} from '../../commons';
 import classnames from 'classnames';
 
 type DiffTimelineViewProps = {
-  diffModel: DiffViewModel,
-  onSelectionChange: (revisionInfo: RevisionInfo) => any,
+  diffModel: DiffViewModel;
+  onSelectionChange: (revisionInfo: RevisionInfo) => any;
 };
 
 type DiffTimelineViewState = {
-  revisionsState: ?RevisionsState,
+  revisionsState: ?RevisionsState;
 };
 
 /* eslint-disable react/prop-types */
@@ -86,9 +86,9 @@ export default class DiffTimelineView extends React.Component {
 }
 
 type RevisionsComponentProps = {
-  revisions: Array<RevisionInfo>,
-  compareRevisionId: number,
-  onSelectionChange: (revisionInfo: RevisionInfo) => any,
+  revisions: Array<RevisionInfo>;
+  compareRevisionId: number;
+  onSelectionChange: (revisionInfo: RevisionInfo) => any;
 };
 
 class RevisionsTimelineComponent extends React.Component {
@@ -124,11 +124,11 @@ class RevisionsTimelineComponent extends React.Component {
 }
 
 type RevisionTimelineNodeProps = {
-  revision: RevisionInfo,
-  index: number,
-  selectedIndex: number,
-  revisionsCount: number,
-  onSelectionChange: (revisionInfo: RevisionInfo) => any,
+  revision: RevisionInfo;
+  index: number;
+  selectedIndex: number;
+  revisionsCount: number;
+  onSelectionChange: (revisionInfo: RevisionInfo) => any;
 };
 
 class RevisionTimelineNode extends React.Component {

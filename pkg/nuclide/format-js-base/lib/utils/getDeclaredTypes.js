@@ -15,9 +15,9 @@ import type {SourceOptions} from '../options/SourceOptions';
 const jscs = require('jscodeshift');
 
 type ConfigEntry = {
-  searchTerms: [any, Object],
-  filters: Array<(path: NodePath) => boolean>,
-  getNodes: (path: NodePath) => Array<Node>,
+  searchTerms: [any, Object];
+  filters: Array<(path: NodePath) => boolean>;
+  getNodes: (path: NodePath) => Array<Node>;
 };
 
 const CONFIG: Array<ConfigEntry> = [

@@ -14,8 +14,8 @@ import type {NuclideUri} from '../../remote-uri';
 // Diagnostic information, returned from findDiagnostics.
 export type Diagnostics = {
   // The location of the .flowconfig where these messages came from.
-  flowRoot: NuclideUri,
-  messages: Array<Diagnostic>,
+  flowRoot: NuclideUri;
+  messages: Array<Diagnostic>;
 };
 
 /*
@@ -26,19 +26,19 @@ export type Diagnostics = {
 export type Diagnostic = Array<SingleMessage>;
 
 export type SingleMessage = {
-  path: ?NuclideUri,
-  descr: string,
-  line: number,
-  endline: number,
-  start: number,
-  end: number,
-  level: string,
+  path: ?NuclideUri;
+  descr: string;
+  line: number;
+  endline: number;
+  start: number;
+  end: number;
+  level: string;
 }
 
 export type Loc = {
-  file: NuclideUri,
-  line: number,
-  column: number,
+  file: NuclideUri;
+  line: number;
+  column: number;
 }
 
 // If types are added here, make sure to also add them to FlowConstants.js. This needs to be the
@@ -55,13 +55,13 @@ export type ServerStatusType =
 export type FlowStartLocation = {
   // Service framework can't serialize Point so we need a slightly different type from the canonical
   // OutlineTree.
-  startLine: number,
-  startColumn: number,
+  startLine: number;
+  startColumn: number;
 };
 
 export type FlowOutlineTree = FlowStartLocation & {
-  displayText: string,
-  children: Array<FlowOutlineTree>,
+  displayText: string;
+  children: Array<FlowOutlineTree>;
 };
 
 import {findFlowConfigDir} from './FlowHelpers';
@@ -160,7 +160,7 @@ export async function flowGetType(
   line: number,
   column: number,
   includeRawType: boolean,
-): Promise<?{type: string, rawType: ?string}> {
+): Promise<?{type: string; rawType: ?string}> {
   return runWithInstance(
     file,
     instance => instance.flowGetType(

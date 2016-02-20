@@ -19,59 +19,59 @@ export type CommitModeType = 'Commit' | 'Amend';
 export type FileChangeStatusValue = 1 | 2 | 3 | 4 | 5;
 
 export type FileChange = {
-  filePath: NuclideUri,
-  statusCode?: FileChangeStatusValue,
+  filePath: NuclideUri;
+  statusCode?: FileChangeStatusValue;
 };
 
 export type FileChangeState = {
-  filePath: NuclideUri,
-  oldContents: string,
-  newContents: string,
-  savedContents?: string,
-  fromRevisionTitle: string,
-  toRevisionTitle: string,
-  compareRevisionInfo: ?RevisionInfo,
-  inlineComponents?: Array<InlineComponent>,
+  filePath: NuclideUri;
+  oldContents: string;
+  newContents: string;
+  savedContents?: string;
+  fromRevisionTitle: string;
+  toRevisionTitle: string;
+  compareRevisionInfo: ?RevisionInfo;
+  inlineComponents?: Array<InlineComponent>;
 };
 
 export type RevisionsState = {
-  revisions: Array<RevisionInfo>,
-  compareCommitId: ?number,
-  commitId: number,
+  revisions: Array<RevisionInfo>;
+  compareCommitId: ?number;
+  commitId: number;
 };
 
 export type OffsetMap = Map<number, number>;
 
 export type TextDiff = {
-  addedLines: Array<number>,
-  removedLines: Array<number>,
-  oldLineOffsets: OffsetMap,
-  newLineOffsets: OffsetMap,
+  addedLines: Array<number>;
+  removedLines: Array<number>;
+  oldLineOffsets: OffsetMap;
+  newLineOffsets: OffsetMap;
 };
 
 export type HgDiffState = {
-  revisionInfo: RevisionInfo,
-  committedContents: string,
-  filesystemContents: string,
+  revisionInfo: RevisionInfo;
+  committedContents: string;
+  filesystemContents: string;
 };
 
 export type LineRangesWithOffsets = {
-  regions: Array<{bufferRows: number, screenRows: number}>,
-  screenLines: Array<any>,
+  regions: Array<{bufferRows: number; screenRows: number}>;
+  screenLines: Array<any>;
 };
 
 export type HighlightedLines = {
-  added: Array<number>,
-  removed: Array<number>,
+  added: Array<number>;
+  removed: Array<number>;
 };
 
 export type InlineComponent = {
-  node: ReactElement,
-  bufferRow: number,
+  node: ReactElement;
+  bufferRow: number;
 };
 
 export type RenderedComponent = {
-  container: HTMLElement,
-  component: ReactComponent,
-  bufferRow: number,
+  container: HTMLElement;
+  component: ReactComponent;
+  bufferRow: number;
 };

@@ -22,9 +22,9 @@ const WHITESPACE = '\\s*';
  */
 function updateCursor(
   startSource: string,
-  startPosition: {row: number, column: number},
+  startPosition: {row: number; column: number},
   endSource: string,
-): {row: number, column: number} {
+): {row: number; column: number} {
   for (const accuracy of ACCURACIES) {
     const result = maybeUpdateCursorWithAccuracy(
       startSource,
@@ -42,10 +42,10 @@ function updateCursor(
 
 function maybeUpdateCursorWithAccuracy(
   startSource: string,
-  startPosition: {row: number, column: number},
+  startPosition: {row: number; column: number},
   endSource: string,
   accuracy: number,
-): ?{row: number, column: number} {
+): ?{row: number; column: number} {
   const rawStartPosition = getRawPosition(startSource, startPosition);
   const regexParts = [];
   let inWord = false;

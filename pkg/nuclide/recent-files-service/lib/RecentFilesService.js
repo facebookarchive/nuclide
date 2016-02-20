@@ -11,7 +11,7 @@
 
 export type FilePath = string;
 export type TimeStamp = number;
-export type FileList = Array<{path: FilePath, timestamp: TimeStamp}>;
+export type FileList = Array<{path: FilePath; timestamp: TimeStamp}>;
 
 const {CompositeDisposable} = require('atom');
 

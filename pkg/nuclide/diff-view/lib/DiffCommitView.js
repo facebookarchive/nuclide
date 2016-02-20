@@ -20,13 +20,13 @@ import {notifyInternalError} from './notifications';
 import {React} from 'react-for-atom';
 
 type Props = {
-  diffModel: DiffViewModel,
+  diffModel: DiffViewModel;
 };
 
 type State = {
-  commitMode: CommitModeType,
-  loading: boolean,
-  commitMessage: ?string,
+  commitMode: CommitModeType;
+  loading: boolean;
+  commitMessage: ?string;
 };
 
 class DiffCommitView extends React.Component {

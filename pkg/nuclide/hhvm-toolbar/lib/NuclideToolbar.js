@@ -18,8 +18,8 @@ class NuclideToolbar extends React.Component {
   _disposable: ?Disposable;
 
   state: {
-    currentFilePath: string,
-    projectType: string,
+    currentFilePath: string;
+    projectType: string;
   };
 
   static propTypes = {

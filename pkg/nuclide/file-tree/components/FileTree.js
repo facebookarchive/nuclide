@@ -20,7 +20,7 @@ import {track} from '../../analytics';
 import {once} from '../../commons';
 
 type State = {
-  nodeToKeepInView: ?FileTreeNodeData,
+  nodeToKeepInView: ?FileTreeNodeData;
 };
 
 class FileTree extends React.Component<void, void, State> {

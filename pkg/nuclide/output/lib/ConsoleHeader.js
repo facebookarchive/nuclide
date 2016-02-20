@@ -14,7 +14,7 @@
 import {React} from 'react-for-atom';
 
 type Props = {
-  clear: () => void,
+  clear: () => void;
 };
 
 export default class ConsoleHeader extends React.Component<void, Props, void> {

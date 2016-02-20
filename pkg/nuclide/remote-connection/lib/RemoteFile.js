@@ -141,7 +141,7 @@ export class RemoteFile {
   }
 
   onWillThrowWatchError(
-    callback: (watchError: {error: Error, handle: () => void}) => mixed,
+    callback: (watchError: {error: Error; handle: () => void}) => mixed,
   ): IDisposable {
     return this._emitter.on('will-throw-watch-error', callback);
   }

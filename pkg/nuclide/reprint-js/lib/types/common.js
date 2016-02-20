@@ -21,15 +21,15 @@ export type Context = {
   /**
    * The starting position of invalid leading comments.
    */
-  invalidLeadingComments: Immutable.Set<number>,
+  invalidLeadingComments: Immutable.Set<number>;
   /**
    * The starting position of invalid trailing comments.
    */
-  invalidTrailingComments: Immutable.Set<number>,
-  options: Options,
-  path: Immutable.List<Node>,
+  invalidTrailingComments: Immutable.Set<number>;
+  options: Options;
+  path: Immutable.List<Node>;
 };
 
 export type Output = {
-  source: string,
+  source: string;
 };

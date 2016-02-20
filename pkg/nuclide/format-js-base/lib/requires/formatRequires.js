@@ -22,10 +22,10 @@ const jscs = require('jscodeshift');
 const reprintRequire = require('../utils/reprintRequire');
 
 type ConfigEntry = {
-  searchTerms: [any, Object],
-  filters: Array<(path: NodePath) => boolean>,
-  comparator: (node1: Node, node2: Node) => number,
-  mapper: (node: Node) => Node,
+  searchTerms: [any, Object];
+  filters: Array<(path: NodePath) => boolean>;
+  comparator: (node1: Node, node2: Node) => number;
+  mapper: (node: Node) => Node;
 };
 
 // Set up a config to easily add require formats

@@ -29,16 +29,16 @@ const WebSocketServer = require('ws').Server;
 const {stringifyError} = require('../../../commons').error;
 
 type NotificationMessage = {
-  type: 'info' | 'warning' | 'error' | 'fatalError',
-  message: string,
+  type: 'info' | 'warning' | 'error' | 'fatalError';
+  message: string;
 };
 
 type HhvmDebuggerConfig = {
-  scriptRegex: string,
-  idekeyRegex: string,
-  xdebugPort: number,
-  endDebugWhenNoRequests: boolean,
-  logLevel: string,
+  scriptRegex: string;
+  idekeyRegex: string;
+  xdebugPort: number;
+  endDebugWhenNoRequests: boolean;
+  logLevel: string;
 };
 
 function getConfig(): HhvmDebuggerConfig {

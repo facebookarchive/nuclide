@@ -12,18 +12,18 @@
 export type AslLevel = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7';
 
 export type AslRecord = {
-  ASLMessageID: string,
-  Time: string,
-  TimeNanoSec: string,
-  Level: AslLevel,
-  PID: string,
-  UID: string,
-  GID: string,
-  ReadGID: string,
-  Host: string,
-  Sender: string,
-  Facility: string,
-  Message: string,
-  ASLSHIM: string,
-  SenderMachUUID: string,
+  ASLMessageID: string;
+  Time: string;
+  TimeNanoSec: string;
+  Level: AslLevel;
+  PID: string;
+  UID: string;
+  GID: string;
+  ReadGID: string;
+  Host: string;
+  Sender: string;
+  Facility: string;
+  Message: string;
+  ASLSHIM: string;
+  SenderMachUUID: string;
 };

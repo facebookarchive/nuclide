@@ -16,7 +16,7 @@
 function getPosition(
   source: string,
   rawPosition: number,
-): {row: number, column: number} {
+): {row: number; column: number} {
   let row = 0;
   let column = 0;
   for (let i = 0; i < rawPosition && i < source.length; i++) {

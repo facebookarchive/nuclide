@@ -13,12 +13,12 @@ import {CircularBuffer} from '../../commons';
 import {Emitter} from 'atom';
 
 export type Item = {
-  date: Date,
-  service: string,
-  method: string,
-  isLocal: boolean,
-  args: Array<mixed>,
-  argInfo: ?string,
+  date: Date;
+  service: string;
+  method: string;
+  isLocal: boolean;
+  args: Array<mixed>;
+  argInfo: ?string;
 }
 
 const NEW_ITEM_EVENT = 'NEW_ITEM_EVENT';

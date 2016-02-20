@@ -25,13 +25,13 @@ const {PropTypes} = React;
 const {SshHandshake} = require('../../remote-connection');
 
 type State = {
-  cwd: string,
-  pathToPrivateKey: string,
-  remoteServerCommand: string,
-  selectedAuthMethodIndex: number,
-  server: string,
-  sshPort: string,
-  username: string,
+  cwd: string;
+  pathToPrivateKey: string;
+  remoteServerCommand: string;
+  selectedAuthMethodIndex: number;
+  server: string;
+  sshPort: string;
+  username: string;
 };
 
 const {SupportedMethods} = SshHandshake;
@@ -258,13 +258,13 @@ export default class ConnectionDetailsForm extends React.Component {
 
   // Note: 'password' is not settable. The only exposed method is 'clearPassword'.
   setFormFields(fields: {
-    username?: string,
-    server?: string,
-    cwd?: string,
-    remoteServerCommand?: string,
-    sshPort?: string,
-    pathToPrivateKey?: string,
-    authMethod?: NuclideRemoteAuthMethods,
+    username?: string;
+    server?: string;
+    cwd?: string;
+    remoteServerCommand?: string;
+    sshPort?: string;
+    pathToPrivateKey?: string;
+    authMethod?: NuclideRemoteAuthMethods;
   }): void {
     this._setText('username', fields.username);
     this._setText('server', fields.server);

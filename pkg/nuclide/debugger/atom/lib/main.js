@@ -21,7 +21,7 @@ import DebuggerModel from './DebuggerModel';
 import type {SerializedBreakpoint} from './BreakpointStore';
 
 export type SerializedState = {
-  breakpoints: ?Array<SerializedBreakpoint>,
+  breakpoints: ?Array<SerializedBreakpoint>;
 };
 
 function createDebuggerView(model: DebuggerModel): HTMLElement {

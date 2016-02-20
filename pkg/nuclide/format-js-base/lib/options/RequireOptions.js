@@ -15,7 +15,7 @@ import type {AbsolutePath} from '../types/common';
  * These are the options that are necessary to get a require out of a ModuleMap.
  */
 export type RequireOptions = {
-  sourcePath?: AbsolutePath,
-  typeImport?: boolean,
-  jsxIdentifier?: boolean,
+  sourcePath?: AbsolutePath;
+  typeImport?: boolean;
+  jsxIdentifier?: boolean;
 };

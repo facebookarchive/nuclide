@@ -31,12 +31,12 @@ import type {SocketClient} from '../SocketClient';
 
 const logger = require('../../../logging').getLogger();
 
-type FunctionImplementation = {localImplementation: Function, type: FunctionType};
+type FunctionImplementation = {localImplementation: Function; type: FunctionType};
 
 type RemoteObject = {
-  _interface: string,
-  _remoteId: ?number,
-  dispose: () => mixed,
+  _interface: string;
+  _remoteId: ?number;
+  dispose: () => mixed;
 };
 
 export default class ServerComponent {
@@ -52,7 +52,7 @@ export default class ServerComponent {
    * Store a mapping from a class name to a struct containing it's local constructor and it's
    * interface definition.
    */
-  _classesByName: Map<string, {localImplementation: any, definition: InterfaceDefinition}>;
+  _classesByName: Map<string, {localImplementation: any; definition: InterfaceDefinition}>;
 
   _objectRegistry: Map<number, RemoteObject>;
   _nextObjectId: number;

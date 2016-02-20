@@ -25,7 +25,7 @@ const {buckProjectRootForPath} = require('../../commons');
 const BuckToolbarActions = require('./BuckToolbarActions');
 
 type BuckRunDetails = {
-  pid?: number,
+  pid?: number;
 };
 import type {ProcessOutputStore as ProcessOutputStoreType} from '../../../process/output-store';
 import type {ProcessOutputDataHandlers} from '../../../process/output-store/lib/types';
@@ -41,7 +41,7 @@ const REACT_NATIVE_APP_FLAGS = [
 ];
 
 type InitialState = {
-  isReactNativeServerMode?: boolean,
+  isReactNativeServerMode?: boolean;
 };
 
 class BuckToolbarStore {
@@ -292,7 +292,7 @@ class BuckToolbarStore {
   async _doBuild(
     run: boolean,
     debug: boolean,
-  ): Promise<?{buckProject: BuckProject, buildTarget: string, pid: ?number}> {
+  ): Promise<?{buckProject: BuckProject; buildTarget: string; pid: ?number}> {
     const buildTarget = this._buildTarget;
     const simulator = this._simulator;
     const buckProject = this._mostRecentBuckProject;
@@ -339,13 +339,13 @@ class BuckToolbarStore {
    *   pid: The process id of the running app, if 'run' was true.
    */
   async _runBuckCommandInNewPane(buckParams: {
-    buckProject: BuckProject,
-    buildTarget: string,
-    simulator: ?string,
-    run: boolean,
-    debug: boolean,
-    command: string,
-    appArgs: Array<string>,
+    buckProject: BuckProject;
+    buildTarget: string;
+    simulator: ?string;
+    run: boolean;
+    debug: boolean;
+    command: string;
+    appArgs: Array<string>;
   }): Promise<BuckRunDetails> {
     const {buckProject, buildTarget, simulator, run, debug, command, appArgs} = buckParams;
 
@@ -362,7 +362,7 @@ class BuckToolbarStore {
       } else {
         observable = await buckProject.buildWithOutput([buildTarget]);
       }
-      const onNext = (data: {stderr?: string, stdout?: string}) => {
+      const onNext = (data: {stderr?: string; stdout?: string}) => {
         if (data.stdout) {
           stdout(data.stdout);
         } else {

@@ -28,12 +28,12 @@ import shell from 'shell';
 import invariant from 'assert';
 
 type FileTreeNodeData = {
-  nodeKey: string,
-  rootKey: string,
+  nodeKey: string;
+  rootKey: string;
 };
 
 export type FileTreeControllerState = {
-  tree: ExportStoreData,
+  tree: ExportStoreData;
 };
 
 class FileTreeController {

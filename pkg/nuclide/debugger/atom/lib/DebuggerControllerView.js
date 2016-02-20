@@ -19,8 +19,8 @@ const DebuggerStore = require('./DebuggerStore');
 const Bridge = require('./Bridge');
 
 type State = {
-  processSocket: ?string,
-  debuggerStoreChangeListener?: IDisposable,
+  processSocket: ?string;
+  debuggerStoreChangeListener?: IDisposable;
 };
 
 function getStateFromStore(store: DebuggerStore): State {

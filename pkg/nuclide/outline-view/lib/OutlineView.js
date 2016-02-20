@@ -16,7 +16,7 @@ import {React} from 'react-for-atom';
 import invariant from 'assert';
 
 type State = {
-  outline: ?Object,
+  outline: ?Object;
 };
 
 export function createOutlineViewClass(

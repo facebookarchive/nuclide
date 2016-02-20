@@ -23,7 +23,7 @@ const pathUtil = require('path');
 const {PropTypes} = React;
 
 type State = {
-  selectedTestRunnerIndex: number,
+  selectedTestRunnerIndex: number;
 };
 
 function runStopButtonClassName(icon: string, className: string): string {

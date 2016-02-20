@@ -35,10 +35,10 @@ function getLogger() {
 function getRepositoryDescription(
   directory: atom$Directory | RemoteDirectoryType,
 ): ?{
-  originURL: ?string,
-  repoPath: string,
-  workingDirectory: atom$Directory | RemoteDirectoryType,
-  workingDirectoryLocalPath: string,
+  originURL: ?string;
+  repoPath: string;
+  workingDirectory: atom$Directory | RemoteDirectoryType;
+  workingDirectoryLocalPath: string;
 } {
   const {RemoteDirectory} = require('../../remote-connection');
   if (directory instanceof RemoteDirectoryType) {

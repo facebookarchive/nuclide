@@ -24,13 +24,13 @@ import {ProviderRegistry} from './ProviderRegistry';
 import invariant from 'assert';
 
 export type OutlineTree = {
-  displayText: string,
-  startPosition: atom$Point,
-  children: Array<OutlineTree>,
+  displayText: string;
+  startPosition: atom$Point;
+  children: Array<OutlineTree>;
 };
 
 export type Outline = {
-  outlineTrees: Array<OutlineTree>,
+  outlineTrees: Array<OutlineTree>;
 }
 
 /**
@@ -44,16 +44,16 @@ export type OutlineForUi = Outline & {
    *   locations in the correct editor.
    * - Jumping to outline item locations works for new, unsaved files.
    */
-  editor: atom$TextEditor,
+  editor: atom$TextEditor;
 }
 
 export type OutlineProvider = {
-  name: string,
+  name: string;
   // If there are multiple providers for a given grammar, the one with the highest priority will be
   // used.
-  priority: number,
-  grammarScopes: Array<string>,
-  getOutline: (editor: TextEditor) => Promise<?Outline>,
+  priority: number;
+  grammarScopes: Array<string>;
+  getOutline: (editor: TextEditor) => Promise<?Outline>;
 };
 
 class Activation {

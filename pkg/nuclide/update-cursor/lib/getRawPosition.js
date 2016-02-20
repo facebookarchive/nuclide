@@ -19,7 +19,7 @@
  */
 function getRawPosition(
   source: string,
-  position: {row: number, column: number},
+  position: {row: number; column: number},
 ): number {
   return source.split('\n').reduce(
     (curr, line, i) => {

@@ -104,7 +104,7 @@ async function getHackConnection(filePath: string): Promise<?HackConnection> {
 export async function callHHClientUsingConnection(
  args: Array<string>,
  processInput: ?string,
- filePath: string): Promise<?{hackRoot: string, result: string | Object}> {
+ filePath: string): Promise<?{hackRoot: string; result: string | Object}> {
 
   const connection: ?HackConnection = await getHackConnection(filePath);
   if (connection == null) {

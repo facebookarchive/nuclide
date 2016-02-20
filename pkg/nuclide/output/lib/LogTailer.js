@@ -16,10 +16,10 @@ import {CompositeDisposable} from 'atom';
 import Rx from 'rx';
 
 type EventNames = {
-  start: string,
-  stop: string,
-  restart: string,
-  error: string,
+  start: string;
+  stop: string;
+  restart: string;
+  error: string;
 };
 
 /**

@@ -16,16 +16,16 @@ const logger = require('../../logging').getLogger();
 const ARC_CONFIG_FILE_NAME = '.arcconfig';
 
 export type ArcDiagnostic = {
-  type: string,
-  text: string,
-  filePath: NuclideUri,
-  row: number,
-  col: number,
-  code: ?string,
+  type: string;
+  text: string;
+  filePath: NuclideUri;
+  row: number;
+  col: number;
+  code: ?string;
 
   // For autofix
-  original?: string,
-  replacement?: string,
+  original?: string;
+  replacement?: string;
 };
 
 // Exported for testing
@@ -147,13 +147,13 @@ async function execArcLint(cwd: string, filePaths: Array<NuclideUri>):
 function convertLints(
   pathToFile: string,
   lints: Array<{
-    severity: string,
-    line: number,
-    char: number,
-    code: string,
-    description: string,
-    original?: string,
-    replacement?: string,
+    severity: string;
+    line: number;
+    char: number;
+    code: string;
+    description: string;
+    original?: string;
+    replacement?: string;
   }>,
 ): Array<ArcDiagnostic> {
   return lints.map(lint => {

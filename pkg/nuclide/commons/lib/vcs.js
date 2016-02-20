@@ -13,8 +13,8 @@ const {asyncExecute} = require('./process');
 const path = require('path');
 
 type VcsInfo = {
-  vcs: string,
-  root: string,
+  vcs: string;
+  root: string;
 }
 
 const vcsInfoCache: {[src: string]: VcsInfo} = {};

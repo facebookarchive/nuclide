@@ -54,7 +54,7 @@ const UnresolvedBreakpointsComponent = React.createClass({
     );
   },
 
-  _onBreakpointClick(breakpoint: {url: string, line: number}) {
+  _onBreakpointClick(breakpoint: {url: string; line: number}) {
     NuclideBridge.sendOpenSourceLocation(breakpoint.url, breakpoint.line);
   },
 

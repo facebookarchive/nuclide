@@ -22,22 +22,22 @@ const ENTER_KEY_CODE = 13;
 const ESCAPE_KEY_CODE = 27;
 
 type Props = {
-  className: string,
-  disabled: boolean,
-  initialValue: string,
-  placeholderText: string,
-  onFocus: () => mixed,
-  onClick: (event: SyntheticMouseEvent) => mixed,
-  onDidChange: (text: string) => mixed,
-  onConfirm: () => mixed,
-  onCancel: () => mixed,
-  onBlur: () => mixed,
-  size: 'xs' | 'sm' | 'lg',
-  unstyled: boolean,
+  className: string;
+  disabled: boolean;
+  initialValue: string;
+  placeholderText: string;
+  onFocus: () => mixed;
+  onClick: (event: SyntheticMouseEvent) => mixed;
+  onDidChange: (text: string) => mixed;
+  onConfirm: () => mixed;
+  onCancel: () => mixed;
+  onBlur: () => mixed;
+  size: 'xs' | 'sm' | 'lg';
+  unstyled: boolean;
 };
 
 type State = {
-  value: string,
+  value: string;
 };
 
 /**

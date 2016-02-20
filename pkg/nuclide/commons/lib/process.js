@@ -215,7 +215,7 @@ function scriptSafeSpawnAndObserveOutput(
   command: string,
   args?: Array<string> = [],
   options?: Object = {},
-): Observable<{stderr?: string, stdout?: string,}> {
+): Observable<{stderr?: string; stdout?: string;}> {
   return Observable.create((observer: Observer) => {
     let childProcess;
     scriptSafeSpawn(command, args, options).then(proc => {

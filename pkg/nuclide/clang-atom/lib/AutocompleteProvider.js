@@ -112,9 +112,9 @@ function getCompletionBodyMultiLine(
 
 function _convertArgsToMultiLineSnippet(
   args: Array<{
-    text: string,
-    placeholder: string,
-    offset: number,
+    text: string;
+    placeholder: string;
+    offset: number;
   }>
 ): string {
   // We have two types of multine line method calls.

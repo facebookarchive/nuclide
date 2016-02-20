@@ -21,8 +21,8 @@ import {fsPromise} from '../../commons';
 import {WatchmanClient} from '../../watchman-helpers';
 
 type watcher$WatchEntry = {
-  eventEmitter: EventEmitter,
-  subscriptionCount: number,
+  eventEmitter: EventEmitter;
+  subscriptionCount: number;
 };
 
 const watchedFiles: Map<string, watcher$WatchEntry> = new Map();
@@ -40,8 +40,8 @@ function getWatchmanClient(): WatchmanClient {
 }
 
 export type watcher$WatchResult = {
-  path: NuclideUri,
-  type: string,
+  path: NuclideUri;
+  type: string;
 };
 
 export function watchFile(filePath: NuclideUri): Observable<watcher$WatchResult> {

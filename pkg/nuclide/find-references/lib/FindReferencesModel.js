@@ -19,7 +19,7 @@ import type {
 
 type FindReferencesOptions = {
   // Lines of context to show around each preview block. Defaults to 1.
-  previewContext?: number,
+  previewContext?: number;
 };
 
 const {array} = require('../../commons');

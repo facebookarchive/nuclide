@@ -18,7 +18,7 @@ const openHomePane = () => {
   atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-home:show');
 };
 
-function findHomePaneAndItem(): {pane: ?atom$Pane, item: ?Object} {
+function findHomePaneAndItem(): {pane: ?atom$Pane; item: ?Object} {
   for (const pane of atom.workspace.getPanes()) {
     for (const item of pane.getItems()) {
       if (item.getTitle() === 'Home') {

@@ -13,8 +13,8 @@ const invariant = require('assert');
 
 /*eslint-disable no-unused-vars*/
 type WaitsForPromiseOptions = {
-  shouldReject?: boolean,
-  timeout?: number,
+  shouldReject?: boolean;
+  timeout?: number;
 }
 /*eslint-enable no-unused-vars*/
 

@@ -12,10 +12,10 @@
 import type {NuclideUri} from '../../remote-uri';
 
 export type TextEdit = {
-  oldRange: atom$Range,
-  newText: string,
+  oldRange: atom$Range;
+  newText: string;
   // If included, this will be used to verify that the edit still applies cleanly.
-  oldText?: string,
+  oldText?: string;
 }
 
 import invariant from 'assert';

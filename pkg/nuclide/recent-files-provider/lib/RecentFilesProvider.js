@@ -25,10 +25,10 @@ const {safeRegExpFromString} = regexp;
 // Imported from nuclide-files-service, which is an apm package, preventing a direct import.
 type FilePath = string;
 type TimeStamp = number;
-type FileList = Array<{path: FilePath, timestamp: TimeStamp}>;
+type FileList = Array<{path: FilePath; timestamp: TimeStamp}>;
 type RecentFilesService = {
-  getRecentFiles(): FileList,
-  touchFile(path: string): void,
+  getRecentFiles(): FileList;
+  touchFile(path: string): void;
 };
 
 let _recentFilesService: ?RecentFilesService = null;

@@ -14,9 +14,9 @@ import ReactNativeServerActions from './ReactNativeServerActions';
 import ReactNativeServerStatus from './ReactNativeServerStatus';
 
 type Props = {
-  actions: ReactNativeServerActions,
-  store: ReactNativeServerStatus,
-  serverCommand: string,
+  actions: ReactNativeServerActions;
+  store: ReactNativeServerStatus;
+  serverCommand: string;
 };
 
 export default class ReactNativeServerPanel extends React.Component {

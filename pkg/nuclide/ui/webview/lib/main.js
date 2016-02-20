@@ -18,11 +18,11 @@ import {
 } from 'react-for-atom';
 
 type Props = {
-  className: ?string,
-  nodeintegration?: boolean,
-  onDidFinishLoad: (event: Event) => mixed,
-  src: string,
-  style: ?Object,
+  className: ?string;
+  nodeintegration?: boolean;
+  onDidFinishLoad: (event: Event) => mixed;
+  src: string;
+  style: ?Object;
 };
 
 export default class Webview extends React.Component<void, Props, void> {

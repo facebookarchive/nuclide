@@ -70,7 +70,7 @@ export default class CircularBuffer<T> {
     let index = this._isFull ? this._nextInsertIndex : 0;
     let numIterations = this._isFull ? this._capacity : this._nextInsertIndex;
 
-    const next = (): {done: boolean, value: ?T} => {
+    const next = (): {done: boolean; value: ?T} => {
       if (numIterations === 0) {
         return {done: true, value: undefined};
       }

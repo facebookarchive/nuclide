@@ -23,7 +23,7 @@ const PACKAGES_MISSING_MESSAGE =
 You are missing one of these.`;
 
 type BlameGutter = {
-  destroy: () => void,
+  destroy: () => void;
 };
 
 type BlameGutterClass = () => BlameGutter;

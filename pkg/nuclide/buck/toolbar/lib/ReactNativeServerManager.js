@@ -90,7 +90,7 @@ export default class ReactNativeServerManager {
       const {stdout, stderr, error, exit} = dataHandlerOptions;
       invariant(serverCommand);
       const observable = scriptSafeSpawnAndObserveOutput(serverCommand);
-      const onNext = (data: {stdout?: string, stderr?: string}) => {
+      const onNext = (data: {stdout?: string; stderr?: string}) => {
         if (data.stdout) {
           stdout(data.stdout);
         } else {

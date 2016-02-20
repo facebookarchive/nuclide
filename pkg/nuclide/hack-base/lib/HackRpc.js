@@ -18,26 +18,26 @@ const CALL_MESSAGE_TYPE = 'call';
 const RESPONSE_MESSAGE_TYPE = 'response';
 
 type CallMessage = {
-  type: 'call',
-  id: number,
-  args: any, // Typically Array<string | Object>
+  type: 'call';
+  id: number;
+  args: any; // Typically Array<string | Object>
 }
 
 type ResponseError = {
-  code?: number,
-  message: string,
+  code?: number;
+  message: string;
 };
 
 type ResponseMessage = {
-  type: 'response',
-  id: number,
-  result?: any,
-  error?: ResponseError,
+  type: 'response';
+  id: number;
+  result?: any;
+  error?: ResponseError;
 };
 
 type CallResolver = {
-  resolve: (result: string | Object) => void,
-  reject: (message: any) => void,
+  resolve: (result: string | Object) => void;
+  reject: (message: any) => void;
 };
 
 export function createCallMessage(id: number, args: any): CallMessage {
@@ -71,8 +71,8 @@ export function isValidResponseMessage(obj: any): boolean {
 }
 
 interface Transport {
-  sendMessage(message: string): void,
-  onMessage(): Observable<string>,
+  sendMessage(message: string): void;
+  onMessage(): Observable<string>;
 }
 
 export class StreamTransport {

@@ -20,8 +20,8 @@ import invariant from 'assert';
 import {getServiceByNuclideUri} from '../../remote-connection';
 
 type NuclideClangConfig = {
-  enableDefaultFlags: boolean,
-  defaultFlags: Array<string>,
+  enableDefaultFlags: boolean;
+  defaultFlags: Array<string>;
 };
 
 function getDefaultFlags(): ?Array<string> {
@@ -91,8 +91,8 @@ module.exports = {
   },
 
   formatCode(editor: atom$TextEditor, range: atom$Range): Promise<{
-    newCursor: number,
-    formatted: string,
+    newCursor: number;
+    formatted: string;
   }> {
     const fileUri = editor.getPath();
     const buffer = editor.getBuffer();

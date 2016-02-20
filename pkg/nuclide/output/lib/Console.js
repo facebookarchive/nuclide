@@ -20,8 +20,8 @@ import ConsoleHeader from './ConsoleHeader';
 import RecordView from './RecordView';
 
 type Props = {
-  records: Array<Record>,
-  clearRecords: () => void,
+  records: Array<Record>;
+  clearRecords: () => void;
 };
 
 export default class Console extends React.Component<void, Props, void> {

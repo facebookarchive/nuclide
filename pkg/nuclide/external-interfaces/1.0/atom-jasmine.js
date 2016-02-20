@@ -13,7 +13,7 @@
 
 /** Note that waitsForPromise has an optional first argument. */
 declare function waitsForPromise(
-  optionsOrFunc: {timeout?: number, shouldReject?: boolean} | () => Promise<mixed>,
+  optionsOrFunc: {timeout?: number; shouldReject?: boolean} | () => Promise<mixed>,
   func?: () => Promise<mixed>
 ): void;
 

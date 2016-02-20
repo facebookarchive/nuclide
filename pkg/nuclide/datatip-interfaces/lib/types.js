@@ -10,16 +10,16 @@
  */
 
 export type Datatip = {
-  component: ReactElement,
-  range: atom$Range,
-  pinnable?: boolean,
+  component: ReactElement;
+  range: atom$Range;
+  pinnable?: boolean;
 }
 
 export type DatatipProvider = {
-  datatip(editor: atom$TextEditor, bufferPosition: atom$Point): Promise<?Datatip>,
-  inclusionPriority: number,
-  validForScope(scopeName: string): boolean,
+  datatip(editor: atom$TextEditor, bufferPosition: atom$Point): Promise<?Datatip>;
+  inclusionPriority: number;
+  validForScope(scopeName: string): boolean;
   // A unique name for the provider to be used for analytics.
   // It is recommended that it be the name of the provider's package.
-  providerName: string,
+  providerName: string;
 };

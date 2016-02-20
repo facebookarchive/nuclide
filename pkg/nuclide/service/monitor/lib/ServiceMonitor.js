@@ -18,7 +18,7 @@ import {React} from 'react-for-atom';
 const {PropTypes} = React;
 
 type State = {
-  serviceFilter: string,
+  serviceFilter: string;
 };
 
 export default class ServiceMonitor extends React.Component {

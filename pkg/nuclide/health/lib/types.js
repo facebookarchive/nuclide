@@ -10,12 +10,12 @@
  */
 
 export type HealthStats = {
-  rss: number,
-  heapUsed: number,
-  heapTotal: number,
-  heapPercentage: number,
-  cpuPercentage: number,
-  lastKeyLatency: number,
-  activeHandles: number,
-  activeRequests: number,
+  rss: number;
+  heapUsed: number;
+  heapTotal: number;
+  heapPercentage: number;
+  cpuPercentage: number;
+  lastKeyLatency: number;
+  activeHandles: number;
+  activeRequests: number;
 };

@@ -17,10 +17,10 @@ import type {
 } from './connection-types';
 
 export type NuclideNewConnectionProfileValidationResult =
-  {errorMessage: string,} |
+  {errorMessage: string;} |
   {
-    validatedProfile: NuclideRemoteConnectionProfile,
-    warningMessage?: string,
+    validatedProfile: NuclideRemoteConnectionProfile;
+    warningMessage?: string;
   };
 
 /*

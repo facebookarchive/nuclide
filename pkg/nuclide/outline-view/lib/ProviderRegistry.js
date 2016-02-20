@@ -10,8 +10,8 @@
  */
 
 type Provider = { // eslint-disable-line no-unused-vars
-  priority: number,
-  grammarScopes: Array<string>,
+  priority: number;
+  grammarScopes: Array<string>;
 }
 
 export class ProviderRegistry<T: Provider> {

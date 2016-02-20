@@ -72,15 +72,15 @@ function vcsClassNameForEntry(entry: FileChange): string {
 }
 
 type Props = {
-  diffModel: DiffViewModel,
+  diffModel: DiffViewModel;
 };
 
 /* eslint-disable react/prop-types */
 export default class DiffViewTree extends React.Component {
 
   state: {
-    fileChanges: Map<NuclideUri, FileChangeStatusValue>,
-    selectedFilePath: string,
+    fileChanges: Map<NuclideUri, FileChangeStatusValue>;
+    selectedFilePath: string;
   };
 
   _boundOnConfirmSelection: Function;

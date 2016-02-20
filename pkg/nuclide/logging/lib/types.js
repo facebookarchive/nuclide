@@ -10,45 +10,45 @@
  */
 
 export type node$CallSite = {
-  toString(): ?string,
-  getFunctionName(): ?string,
-  getMethodName(): ?string,
-  getFileName(): ?string,
-  getLineNumber(): ?number,
-  getColumnNumber(): ?number,
-  getEvalOrigin(): ?string,
-  isToplevel(): boolean,
-  isEval(): boolean,
-  isNative(): boolean,
-  isConstructor(): boolean,
+  toString(): ?string;
+  getFunctionName(): ?string;
+  getMethodName(): ?string;
+  getFileName(): ?string;
+  getLineNumber(): ?number;
+  getColumnNumber(): ?number;
+  getEvalOrigin(): ?string;
+  isToplevel(): boolean;
+  isEval(): boolean;
+  isNative(): boolean;
+  isConstructor(): boolean;
 }
 
 export type Logger = {
-  debug(...args: Array<any>): mixed,
-  error(...args: Array<any>): mixed,
-  fatal(...args: Array<any>): mixed,
-  info(...args: Array<any>): mixed,
-  trace(...args: Array<any>): mixed,
-  warn(...args: Array<any>): mixed,
-  isLevelEnabled(level: string): mixed,
-  setLevel(level: string): mixed,
+  debug(...args: Array<any>): mixed;
+  error(...args: Array<any>): mixed;
+  fatal(...args: Array<any>): mixed;
+  info(...args: Array<any>): mixed;
+  trace(...args: Array<any>): mixed;
+  warn(...args: Array<any>): mixed;
+  isLevelEnabled(level: string): mixed;
+  setLevel(level: string): mixed;
 }
 
 export type LoggingEvent = {
-  startTime: Date,
-  categoryName: string,
-  data: Array<any>,
+  startTime: Date;
+  categoryName: string;
+  data: Array<any>;
   level: {
-    level: number,
-    levelStr: string,
-  },
+    level: number;
+    levelStr: string;
+  };
   logger?: {
-    category: string,
-  },
-  storageKey?: string,
-  runtime?: any,
+    category: string;
+  };
+  storageKey?: string;
+  runtime?: any;
 }
 
 export type LoggingAppender = {
-  appenders: any,
+  appenders: any;
 }

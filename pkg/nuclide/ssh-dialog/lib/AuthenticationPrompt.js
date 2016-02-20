@@ -16,9 +16,9 @@ import {
 } from 'react-for-atom';
 
 type Props = {
-  instructions: string,
-  onConfirm: () => mixed,
-  onCancel: () => mixed,
+  instructions: string;
+  onConfirm: () => mixed;
+  onCancel: () => mixed;
 };
 
 /** Component to prompt the user for authentication information. */

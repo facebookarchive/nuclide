@@ -142,64 +142,64 @@ export const ClangCursorToDeclarationTypes = {
 export type ClangCursorType = string;
 
 export type ClangCursorExtent = {
-  start: {line: number, column: number},
-  end: {line: number, column: number},
+  start: {line: number; column: number};
+  end: {line: number; column: number};
 };
 
 export type ClangCompileResult = {
   diagnostics: Array<{
-    spelling: string,
-    severity: number,
+    spelling: string;
+    severity: number;
     location: {
-      column: number,
-      file: NuclideUri,
-      line: number,
-    },
-    ranges: any,
-  }>,
+      column: number;
+      file: NuclideUri;
+      line: number;
+    };
+    ranges: any;
+  }>;
   // If defaultFlags was provided and used, this will be set to true.
   // `diagnostics` is likely to be inaccurate if this was the case.
-  accurateFlags: boolean,
+  accurateFlags: boolean;
 };
 
 export type ClangCompletion = {
-  chunks: Array<{spelling: string, isPlaceHolder: boolean}>,
-  first_token?: ?string,
-  result_type?: string,
-  spelling?: string,
-  cursor_kind?: string,
+  chunks: Array<{spelling: string; isPlaceHolder: boolean}>;
+  first_token?: ?string;
+  result_type?: string;
+  spelling?: string;
+  cursor_kind?: string;
 };
 
 export type ClangCompletionsResult = {
-  completions: Array<ClangCompletion>,
-  line: number,
-  column: number,
-  prefix: string,
+  completions: Array<ClangCompletion>;
+  line: number;
+  column: number;
+  prefix: string;
 };
 
 export type ClangDeclarationResult = {
-  file: NuclideUri,
-  line: number,
-  column: number,
-  spelling: ?string,
-  type: ?string,
-  extent: ClangCursorExtent,
+  file: NuclideUri;
+  line: number;
+  column: number;
+  spelling: ?string;
+  type: ?string;
+  extent: ClangCursorExtent;
 };
 
 export type ClangDeclaration = {
-  name: string,
-  type: ClangCursorType,
-  cursor_usr: ?string,
-  file: ?NuclideUri,
+  name: string;
+  type: ClangCursorType;
+  cursor_usr: ?string;
+  file: ?NuclideUri;
 };
 
 // Fetches information for a declaration and all its parents.
 // The first element in info will be for the declaration itself,
 // the second will be for its direct semantic parent (if it exists), etc.
 export type ClangDeclarationInfoResult = {
-  line: number,
-  column: number,
-  info?: Array<ClangDeclaration>,
+  line: number;
+  column: number;
+  info?: Array<ClangDeclaration>;
 };
 
 export const ClangCursorTypes: {[key: ClangCursorType]: ClangCursorType} =
@@ -295,7 +295,7 @@ export async function formatCode(
   cursor: number,
   offset?: number,
   length?: number,
-): Promise<{newCursor: number, formatted: string}> {
+): Promise<{newCursor: number; formatted: string}> {
   const args = [
     '-style=file',
     `-assume-filename=${src}`,

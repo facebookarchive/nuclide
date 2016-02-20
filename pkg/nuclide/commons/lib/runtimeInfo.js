@@ -21,17 +21,17 @@ import environment from './environment';
 import session from './session';
 
 export type RuntimeInformation = {
-  sessionId: string,
-  user: string,
-  osType: string,
-  timestamp: number,
-  isClient: boolean,
-  isDevelopment: boolean,
-  atomVersion: string,
-  nuclideVersion: string,
-  installerPackageVersion: number,
-  serverVersion: number,
-  uptime: number,
+  sessionId: string;
+  user: string;
+  osType: string;
+  timestamp: number;
+  isClient: boolean;
+  isDevelopment: boolean;
+  atomVersion: string;
+  nuclideVersion: string;
+  installerPackageVersion: number;
+  serverVersion: number;
+  uptime: number;
 };
 
 let cachedInformation = null;

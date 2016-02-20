@@ -25,9 +25,9 @@ import type {RemoteObjectId} from './DataCache';
  * and count of 32^4.
  */
 type ElementRange = {
-  pagesize: number,
-  startIndex: number,
-  count: number,
+  pagesize: number;
+  startIndex: number;
+  count: number;
 };
 
 /*
@@ -52,12 +52,12 @@ type ElementRange = {
  * PagedObjectIds may be a combination of SinglePageObjectIds and PagedObjectIds.
  */
 export type ObjectId = {
-  enableCount: number,
-  frameIndex: number,
-  contextId: string,
-  fullname?: string,
-  page?: number,
-  elementRange?: ElementRange,
+  enableCount: number;
+  frameIndex: number;
+  contextId: string;
+  fullname?: string;
+  page?: number;
+  elementRange?: ElementRange;
 };
 
 const WATCH_CONTEXT_ID = 'Watch Context Id';

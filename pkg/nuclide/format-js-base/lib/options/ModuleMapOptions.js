@@ -17,14 +17,14 @@ export type ModuleMapOptions = {
    * generated based on the file's name. When required the import will NOT be
    * relativized.
    */
-  paths: Array<AbsolutePath>,
+  paths: Array<AbsolutePath>;
 
   /**
    * These are paths to files that can be imported. Identifiers will be
    * generated based on the file's name. When required the import WILL be
    * relativized.
    */
-  pathsToRelativize: Array<AbsolutePath>,
+  pathsToRelativize: Array<AbsolutePath>;
 
   /**
    * This is a map from identifier to literal that can be imported. For example
@@ -36,7 +36,7 @@ export type ModuleMapOptions = {
    * The exact value will be used as the literal to require. It will not be
    * altered in any way.
    */
-  aliases: Map<string, string>,
+  aliases: Map<string, string>;
 
   /**
    * This is a map from identifier to path that can be imported. For example if
@@ -50,7 +50,7 @@ export type ModuleMapOptions = {
    * of the source code. This means the values in this map must be absolute
    * paths.
    */
-  aliasesToRelativize: Map<string, AbsolutePath>,
+  aliasesToRelativize: Map<string, AbsolutePath>;
 
   /**
    * This is the set of built in modules that do not need to be required.
@@ -58,7 +58,7 @@ export type ModuleMapOptions = {
    * Note: This only applies to requires. Type imports will still be generated
    * for these modules unless they are also provided in 'builtInTypes'.
    */
-  builtIns: Set<string>,
+  builtIns: Set<string>;
 
   /**
    * This is the set of built in types that do not need to be imported.
@@ -66,7 +66,7 @@ export type ModuleMapOptions = {
    * Note: This only applies to type imports. Requires will still be generated
    * for these modules unless they are also provided in 'builtIns'.
    */
-  builtInTypes: Set<string>,
+  builtInTypes: Set<string>;
 
   // TODO: useImportSyntax/useRequireSyntax: boolean,
   // TODO: exports: Map<string, Set<string>>,

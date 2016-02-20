@@ -19,8 +19,8 @@ import {track as rawTrack} from './track';
 const ANALYTICS_BATCHER = 'analytics-batcher';
 
 export type TrackingEvent = {
-  type: string,
-  data?: Object,
+  type: string;
+  data?: Object;
 };
 
 function getBatcher(): AnalyticsBatcher {

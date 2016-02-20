@@ -17,34 +17,34 @@ const logger = require('../../../logging').getLogger();
 const path = require('path');
 
 export type dontRunOptions = {
-  run: false,
+  run: false;
 };
 
 export type doRunOptions = {
-  run: true,
-  debug: boolean,
-  appArgs: Array<string>,
+  run: true;
+  debug: boolean;
+  appArgs: Array<string>;
 }
 
 export type BuckRunOptions = dontRunOptions | doRunOptions;
 
 type BuckConfig = Object;
 type BaseBuckBuildOptions = {
-  install: boolean,
-  simulator?: ?string,
-  runOptions?: ?BuckRunOptions,
+  install: boolean;
+  simulator?: ?string;
+  runOptions?: ?BuckRunOptions;
 };
 type FullBuckBuildOptions = {
-  baseOptions: BaseBuckBuildOptions,
-  pathToBuildReport?: string,
-  buildTargets: Array<string>,
+  baseOptions: BaseBuckBuildOptions;
+  pathToBuildReport?: string;
+  buildTargets: Array<string>;
 };
 type BuckCommandAndOptions = {
-  pathToBuck: string,
+  pathToBuck: string;
   buckCommandOptions: {
-    cwd: string,
-    queueName: string,
-  },
+    cwd: string;
+    queueName: string;
+  };
 };
 import type {Observable} from 'rx';
 
@@ -93,7 +93,7 @@ export class BuckProject {
    *     automatically.
    */
   _runBuckCommandFromProjectRoot(args: Array<string>
-      ): Promise<{stdout: string, stderr: string, exitCode: number}> {
+      ): Promise<{stdout: string; stderr: string; exitCode: number}> {
     const {pathToBuck, buckCommandOptions: options} = this._getBuckCommandAndOptions();
     logger.debug('Buck command:', pathToBuck, args, options);
     return asyncExecute(pathToBuck, args, options);
@@ -249,7 +249,7 @@ export class BuckProject {
    */
   buildWithOutput(
     buildTargets: Array<string>
-  ): Observable<{stderr?: string, stdout?: string,}> {
+  ): Observable<{stderr?: string; stdout?: string;}> {
     return this._buildWithOutput(buildTargets, {install: false});
   }
 
@@ -268,7 +268,7 @@ export class BuckProject {
     buildTargets: Array<string>,
     simulator: ?string,
     runOptions: ?BuckRunOptions,
-  ): Observable<{stderr?: string, stdout?: string,}> {
+  ): Observable<{stderr?: string; stdout?: string;}> {
     return this._buildWithOutput(buildTargets, {install: true, simulator, runOptions});
   }
 
@@ -280,7 +280,7 @@ export class BuckProject {
   _buildWithOutput(
     buildTargets: Array<string>,
     options: BaseBuckBuildOptions,
-  ): Observable<{stderr?: string, stdout?: string,}> {
+  ): Observable<{stderr?: string; stdout?: string;}> {
     const args = this._translateOptionsToBuckBuildArgs({
       baseOptions: {...options},
       buildTargets,

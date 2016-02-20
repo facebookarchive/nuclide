@@ -12,29 +12,29 @@
 import type {Observable} from 'rx';
 
 export type process$asyncExecuteRet = {
-  command?: string,
-  errorMessage?: string,
-  exitCode: number,
-  stderr: string,
-  stdout: string,
+  command?: string;
+  errorMessage?: string;
+  exitCode: number;
+  stderr: string;
+  stdout: string;
 };
 
 export type ProcessMessage = StdoutMessage | StderrMessage | ExitMessage | ErrorMessage;
 export type StdoutMessage = {
-  kind: 'stdout',
-  data: string,
+  kind: 'stdout';
+  data: string;
 };
 export type StderrMessage = {
-  kind: 'stderr',
-  data: string,
+  kind: 'stderr';
+  data: string;
 };
 export type ExitMessage = {
-  kind: 'exit',
-  exitCode: number,
+  kind: 'exit';
+  exitCode: number;
 };
 export type ErrorMessage = {
-  kind: 'error',
-  error: Object,
+  kind: 'error';
+  error: Object;
 };
 
 // It's impactful to memoize our requires here since these commons are so often used.
@@ -97,7 +97,7 @@ module.exports = {
     command: string,
     args?: Array<string> = [],
     options?: Object = {},
-  ): Observable<{stdout?: string, stderr?: string,}> {
+  ): Observable<{stdout?: string; stderr?: string;}> {
     return requireFromCache('./process').scriptSafeSpawnAndObserveOutput(command, args, options);
   },
 

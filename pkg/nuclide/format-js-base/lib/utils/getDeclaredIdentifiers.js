@@ -16,8 +16,8 @@ const getNamesFromID = require('./getNamesFromID');
 const jscs = require('jscodeshift');
 
 type ConfigEntry = {
-  searchTerms: [any, Object],
-  getNodes: (path: NodePath) => Array<Node>,
+  searchTerms: [any, Object];
+  getNodes: (path: NodePath) => Array<Node>;
 };
 
 /**

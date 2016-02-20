@@ -22,7 +22,7 @@ import {promises} from '../../commons';
 const {isPromise} = promises;
 
 export type MessageDisplayOptions = {
-  onlyForFile: NuclideUri,
+  onlyForFile: NuclideUri;
 };
 
 export class BusySignalProviderBase {
@@ -78,7 +78,7 @@ export class BusySignalProviderBase {
     });
   }
 
-  _nextMessagePair(message: string): {busy: BusySignalMessage, done: BusySignalMessage} {
+  _nextMessagePair(message: string): {busy: BusySignalMessage; done: BusySignalMessage} {
     const busy = {
       status: 'busy',
       id: this._nextId,

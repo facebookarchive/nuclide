@@ -10,103 +10,103 @@
 // `declare interface` syntax.
 // FIXME(samgoldman) Remove this once Subject<T> can mixin Observer<T>
 interface rx$IObserver<T> {
-  onNext(value: T): mixed,
-  onError(error: any): mixed,
-  onCompleted(): mixed,
+  onNext(value: T): mixed;
+  onError(error: any): mixed;
+  onCompleted(): mixed;
 }
 
 declare module 'rx' {
   declare class Observable<T> {
-    static catch(...sources: Observable<T>[]): Observable<T>,
+    static catch(...sources: Observable<T>[]): Observable<T>;
 
-    static concat(...sources: Observable<T>[]): Observable<T>,
+    static concat(...sources: Observable<T>[]): Observable<T>;
 
     static create(
       subscribe: (observer: Observer<T>) => IDisposable | Function | void
-    ): Observable<T>,
+    ): Observable<T>;
 
-    static defer(observableFactory: () => Observable<T>): Observable<T>,
+    static defer(observableFactory: () => Observable<T>): Observable<T>;
 
-    static from(iterable: Iterable<T>): Observable<T>,
+    static from(iterable: Iterable<T>): Observable<T>;
 
     static fromEvent(
       element: any,
       eventName: string,
       selector?: () => T,
-    ): Observable<T>,
+    ): Observable<T>;
 
-    static fromPromise(promise: Promise<T>): Observable<T>,
+    static fromPromise(promise: Promise<T>): Observable<T>;
 
-    static empty(): Observable<any>,
+    static empty(): Observable<any>;
 
-    static interval(period: number): Observable<number>,
+    static interval(period: number): Observable<number>;
 
-    static just(value: T): Observable<T>,
+    static just(value: T): Observable<T>;
 
-    static merge(sources: Observable<T>[]): Observable<T>,
-    static merge(...sources: Observable<T>[]): Observable<T>,
+    static merge(sources: Observable<T>[]): Observable<T>;
+    static merge(...sources: Observable<T>[]): Observable<T>;
 
-    static never(): Observable<void>,
+    static never(): Observable<void>;
 
-    static of(...values: T[]): Observable<T>,
+    static of(...values: T[]): Observable<T>;
 
-    static return(value: T): Observable<T>,
+    static return(value: T): Observable<T>;
 
-    static throw(error: any): Observable<any>,
-    static throwError(error: any): Observable<any>,
+    static throw(error: any): Observable<any>;
+    static throwError(error: any): Observable<any>;
 
     static using<Resource: IDisposable>(
       resourceFactory: () => Resource,
       observableFactory: (resource: Resource) => Observable<T>,
-    ): Observable<T>,
+    ): Observable<T>;
 
-    amb(other: Observable<T>): Observable<T>,
+    amb(other: Observable<T>): Observable<T>;
 
-    buffer(bufferBoundaries: Observable<any>): Observable<Array<T>>,
+    buffer(bufferBoundaries: Observable<any>): Observable<Array<T>>;
 
-    doOnNext(f: (value: T) => mixed): Observable<T>,
+    doOnNext(f: (value: T) => mixed): Observable<T>;
 
-    catch(secondOrHandler: Observable<T> | (error: any) => Observable<T>): Observable<T>,
+    catch(secondOrHandler: Observable<T> | (error: any) => Observable<T>): Observable<T>;
 
-    concat(...sources: Observable<T>[]): Observable<T>,
+    concat(...sources: Observable<T>[]): Observable<T>;
 
     concatMap<U>(
       f: (value: T) => Observable<U> | Promise<U> | Iterable<U>
-    ): Observable<U>,
+    ): Observable<U>;
 
-    debounce(duration: number): Observable<T>,
+    debounce(duration: number): Observable<T>;
 
-    delay(dueTime: number): Observable<T>,
+    delay(dueTime: number): Observable<T>;
 
-    distinctUntilChanged(): Observable<T>,
+    distinctUntilChanged(): Observable<T>;
 
-    doOnError(onError: (error: any) => mixed, thisArg?: any): Observable<T>,
+    doOnError(onError: (error: any) => mixed, thisArg?: any): Observable<T>;
 
-    filter(predicate: (value: T) => boolean): Observable<T>,
+    filter(predicate: (value: T) => boolean): Observable<T>;
 
-    finally(f: () => mixed): Observable<T>,
+    finally(f: () => mixed): Observable<T>;
 
-    first(): Observable<T>,
+    first(): Observable<T>;
 
     flatMap<U>(
       f: (value: T) => Observable<U> | Promise<U> | Iterable<U>
-    ): Observable<U>,
+    ): Observable<U>;
 
     forEach(
       onNext?: (value: T) => mixed,
       onError?: (error: any) => mixed,
       onCompleted?: () => mixed,
-    ): IDisposable,
+    ): IDisposable;
 
-    map<U>(f: (value: T) => U): Observable<U>,
+    map<U>(f: (value: T) => U): Observable<U>;
 
-    merge(other: Observable<T>): Observable<T>,
+    merge(other: Observable<T>): Observable<T>;
 
-    mergeAll(): T, // assumption: T is Observable
+    mergeAll(): T; // assumption: T is Observable
 
-    publish(): ConnectableObservable<T>,
+    publish(): ConnectableObservable<T>;
 
-    publishLast(): ConnectableObservable<T>,
+    publishLast(): ConnectableObservable<T>;
 
     reduce<U>(
       accumulator: (
@@ -116,58 +116,58 @@ declare module 'rx' {
         source: Observable<T>,
       ) => U,
       seed: U,
-    ): Observable<U>,
+    ): Observable<U>;
 
-    replay(): ConnectableObservable<T>,
+    replay(): ConnectableObservable<T>;
 
-    retry(retryCount: number): Observable<T>,
+    retry(retryCount: number): Observable<T>;
 
-    retryWhen(notifier: (errors: Observable<Error>) => Observable<any>): Observable<T>,
+    retryWhen(notifier: (errors: Observable<Error>) => Observable<any>): Observable<T>;
 
     scan<U>(
       f: (acc: U, value: T) => U,
       initialValue: U,
-    ): Observable<U>,
+    ): Observable<U>;
 
-    share(): Observable<T>,
+    share(): Observable<T>;
 
-    skip(count: number): Observable<T>,
+    skip(count: number): Observable<T>;
 
-    skipUntil(other: Observable<any> | Promise<any>): Observable<T>,
+    skipUntil(other: Observable<any> | Promise<any>): Observable<T>;
 
-    skipUntilWithTime(startTime: Date | number): Observable<T>,
+    skipUntilWithTime(startTime: Date | number): Observable<T>;
 
-    take(count: number): Observable<T>,
+    take(count: number): Observable<T>;
 
-    takeUntil(other: Observable<any>): Observable<T>,
+    takeUntil(other: Observable<any>): Observable<T>;
 
-    takeWhile(f: (value: T) => boolean): Observable<T>,
+    takeWhile(f: (value: T) => boolean): Observable<T>;
 
-    tapOnError(onError: (error: any) => mixed, thisArg?: any): Observable<T>,
+    tapOnError(onError: (error: any) => mixed, thisArg?: any): Observable<T>;
 
-    throttle(duration: number): Observable<T>,
+    throttle(duration: number): Observable<T>;
 
-    timeout(dueTime: number, other?: Observable<T>): Observable<T>,
+    timeout(dueTime: number, other?: Observable<T>): Observable<T>;
 
-    toArray(): Observable<T[]>,
+    toArray(): Observable<T[]>;
 
-    toPromise(): Promise<T>,
+    toPromise(): Promise<T>;
 
     subscribe(
       onNext?: (value: T) => mixed,
       onError?: (error: any) => mixed,
       onCompleted?: () => mixed,
-    ): IDisposable,
-    subscribe(observer: rx$IObserver<T>): IDisposable,
+    ): IDisposable;
+    subscribe(observer: rx$IObserver<T>): IDisposable;
 
-    subscribeOnNext(onNext: (value: T) => mixed): IDisposable,
-    subscribeOnError(onError: (error: any) => mixed): IDisposable,
-    subscribeOnCompleted(onCompleted: () => mixed): IDisposable,
+    subscribeOnNext(onNext: (value: T) => mixed): IDisposable;
+    subscribeOnError(onError: (error: any) => mixed): IDisposable;
+    subscribeOnCompleted(onCompleted: () => mixed): IDisposable;
   }
 
   declare class ConnectableObservable<T> extends Observable<T> {
-    connect(): IDisposable,
-    refCount(): Observable<T>,
+    connect(): IDisposable;
+    refCount(): Observable<T>;
   }
 
   declare class Observer<T> {
@@ -175,37 +175,37 @@ declare module 'rx' {
       onNext?: (value: T) => mixed,
       onError?: (error: any) => mixed,
       onCompleted?: () => mixed,
-    ): Observer<T>,
+    ): Observer<T>;
 
-    asObserver(): Observer<T>,
+    asObserver(): Observer<T>;
 
-    onNext(value: T): mixed,
+    onNext(value: T): mixed;
 
-    onError(error: any): mixed,
+    onError(error: any): mixed;
 
-    onCompleted(): mixed,
+    onCompleted(): mixed;
   }
 
   // FIXME(samgoldman) should be `mixins Observable<T>, Observer<T>`
   // once Babel parsing support exists: https://phabricator.babeljs.io/T6821
   declare class Subject<T> extends Observable<T> {
-    asObservable(): Observable<T>,
+    asObservable(): Observable<T>;
 
-    hasObservers(): boolean,
+    hasObservers(): boolean;
 
-    dispose(): void,
+    dispose(): void;
 
     // Copied from Observer<T>
-    asObserver(): Observer<T>,
-    onNext(value: T): mixed,
-    onError(error: any): mixed,
-    onCompleted(): mixed,
+    asObserver(): Observer<T>;
+    onNext(value: T): mixed;
+    onError(error: any): mixed;
+    onCompleted(): mixed;
   }
 
   declare class BehaviorSubject<T> extends Subject<T> {
-    constructor(initialValue: T): void,
+    constructor(initialValue: T): void;
 
-    getValue(): T,
+    getValue(): T;
   }
 
   declare class ReplaySubject<T> extends Subject<T> {
@@ -213,6 +213,6 @@ declare module 'rx' {
   }
 
   declare class Disposable {
-    static create(action: () => mixed): IDisposable,
+    static create(action: () => mixed): IDisposable;
   }
 }

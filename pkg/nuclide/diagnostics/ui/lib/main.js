@@ -31,9 +31,9 @@ let getDiagnosticsPanel: ?(() => ?DiagnosticsPanel);
 let statusBarTile: ?StatusBarTile;
 
 type ActivationState = {
-  hideDiagnosticsPanel: boolean,
-  diagnosticsPanelHeight: number,
-  filterByActiveTextEditor: boolean,
+  hideDiagnosticsPanel: boolean;
+  diagnosticsPanelHeight: number;
+  filterByActiveTextEditor: boolean;
 };
 
 let activationState: ?ActivationState = null;

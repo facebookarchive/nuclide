@@ -10,9 +10,9 @@
  */
 
 export type ProviderSpec = {
-  action?: string,
-  debounceDelay?: number,
-  name: string,
-  prompt?: string,
-  title: string,
+  action?: string;
+  debounceDelay?: number;
+  name: string;
+  prompt?: string;
+  title: string;
 }

@@ -21,9 +21,9 @@ const jscs = require('jscodeshift');
 const {match} = jscs;
 
 type ConfigEntry = {
-  searchTerms: [any, Object],
-  filters: Array<(path: NodePath) => boolean>,
-  getNames: (node: Node) => Array<string>,
+  searchTerms: [any, Object];
+  filters: Array<(path: NodePath) => boolean>;
+  getNames: (node: Node) => Array<string>;
 };
 
 // These are the things we should try to remove.

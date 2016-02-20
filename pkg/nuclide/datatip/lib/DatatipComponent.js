@@ -22,9 +22,9 @@ const IconsForAction = {
 };
 
 type DatatipComponentProps = {
-  action: string,
-  actionTitle: string,
-  onActionClick: Function,
+  action: string;
+  actionTitle: string;
+  onActionClick: Function;
 };
 
 /* eslint-disable react/prop-types */

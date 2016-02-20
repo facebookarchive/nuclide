@@ -48,9 +48,9 @@ class Options extends OptionsRecord {
   useSpaces: boolean;
 
   constructor(init?: {
-    maxLineLength?: number,
-    tabWidth?: number,
-    useSpaces?: boolean,
+    maxLineLength?: number;
+    tabWidth?: number;
+    useSpaces?: boolean;
   }) {
     super(init);
   }

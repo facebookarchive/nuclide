@@ -12,15 +12,15 @@
 import {Observable} from 'rx';
 
 export type AttachTargetInfo = {
-  pid: number,
+  pid: number;
   name: string
 };
 
 export type LaunchTargetInfo = {
-  executablePath: string,
-  arguments: Array<string>,
-  environmentVariables: ?Array<string>,
-  workingDirectory: string,
+  executablePath: string;
+  arguments: Array<string>;
+  environmentVariables: ?Array<string>;
+  workingDirectory: string;
 };
 
 export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>> {

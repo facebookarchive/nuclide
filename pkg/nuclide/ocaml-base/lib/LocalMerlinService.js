@@ -29,11 +29,11 @@ export async function locate(
   col: number,
   kind: string
 ): Promise<?{
-  file: NuclideUri,
+  file: NuclideUri;
   pos: {
-    line: number,
-    col: number,
-  },
+    line: number;
+    col: number;
+  };
 }> {
   const instance = await getInstance(path);
   return instance ? await instance.locate(path, line, col, kind) : null;

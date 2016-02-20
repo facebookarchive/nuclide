@@ -34,17 +34,17 @@ const {JS_GRAMMARS} = require('./constants.js');
  * through symlinks.
  */
 export type Diagnostics = {
-  flowRoot: NuclideUri,
+  flowRoot: NuclideUri;
   messages: Array<FlowDiagnosticItem>
 };
 type FlowError = {
-  level: string,
-  descr: string,
-  path: string,
-  line: number,
-  start: number,
-  endline: number,
-  end: number,
+  level: string;
+  descr: string;
+  path: string;
+  line: number;
+  start: number;
+  endline: number;
+  end: number;
 }
 
 type FlowDiagnosticItem = Array<FlowError>;

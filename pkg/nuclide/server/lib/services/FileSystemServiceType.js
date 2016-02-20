@@ -12,9 +12,9 @@
 import type {Stats} from 'fs';
 
 export type FileWithStats = {
-  file: string,
-  stats: ?Stats,
-  isSymbolicLink: boolean,
+  file: string;
+  stats: ?Stats;
+  isSymbolicLink: boolean;
 };
 
 export type FileSystemService = {
@@ -23,24 +23,24 @@ export type FileSystemService = {
    * Copies a file to a new path.
    * @return true if the operation was successful; false if it wasn't.
    */
-  copy(oldPath: string, newPath: string): Promise<boolean>,
+  copy(oldPath: string, newPath: string): Promise<boolean>;
 
-  exists(path: string): Promise<boolean>,
+  exists(path: string): Promise<boolean>;
 
-  findNearestFile(fileName: string, pathToDirectory: string): Promise<?string>,
+  findNearestFile(fileName: string, pathToDirectory: string): Promise<?string>;
 
   /**
    * The lstat endpoint is the same as the stat endpoint except it will return
    * the stat of a link instead of the file the link points to.
    */
-  lstat(path: string): Promise<Stats>,
+  lstat(path: string): Promise<Stats>;
 
   /**
    * Creates a new directory with the given path.
    * Throws EEXIST error if the directory already exists.
    * Throws ENOENT if the path given is nested in a non-existing directory.
    */
-  mkdir(path: string): Promise<void>,
+  mkdir(path: string): Promise<void>;
 
   /**
    * Runs the equivalent of `mkdir -p` with the given path.
@@ -49,7 +49,7 @@ export type FileSystemService = {
    * directories were created for some prefix of the given path.
    * @return true if the path was created; false if it already existed.
    */
-  mkdirp(path: string): Promise<boolean>,
+  mkdirp(path: string): Promise<boolean>;
 
   /**
    * If no file (or directory) at the specified path exists, creates the parent
@@ -58,7 +58,7 @@ export type FileSystemService = {
    *
    * @return A boolean indicating whether the file was created.
    */
-  newFile(filePath: string): Promise<boolean>,
+  newFile(filePath: string): Promise<boolean>;
 
   /**
    * The readdir endpoint accepts the following query parameters:
@@ -69,24 +69,24 @@ export type FileSystemService = {
    * file: has the file or directory name, stats: has the stats of the file/dir,
    * isSymbolicLink: true if the entry is a symlink to another filesystem location.
    */
-  readdir(path: string): Promise<Array<FileWithStats>>,
+  readdir(path: string): Promise<Array<FileWithStats>>;
 
   /**
    * Gets the real path of a file path.
    * It could be different than the given path if the file is a symlink
    * or exists in a symlinked directory.
    */
-  realpath(path: string): Promise<string>,
+  realpath(path: string): Promise<string>;
 
   /**
    * Runs the equivalent of `mv sourcePath destinationPath`.
    */
-  rename(sourcePath: string, destinationPath: string): Promise<void>,
+  rename(sourcePath: string, destinationPath: string): Promise<void>;
 
   /**
    * Removes directories even if they are non-empty. Does not fail if the directory doesn't exist.
    */
-  rmdir(path: string): Promise<void>,
+  rmdir(path: string): Promise<void>;
 
   /**
    * The stat endpoint accepts the following query parameters:
@@ -112,12 +112,12 @@ export type FileSystemService = {
    * }
    *
    */
-  stat(path: string): Promise<Stats>,
+  stat(path: string): Promise<Stats>;
 
   /**
    * Removes files. Does not fail if the file doesn't exist.
    */
-  unlink(path: string): Promise<void>,
+  unlink(path: string): Promise<void>;
 
   /**
    *   path: the path to the file to read
@@ -128,7 +128,7 @@ export type FileSystemService = {
    *   Callers who want a string should call buffer.toString('utf8').
    */
   readFile(path: string, options?: {flag?:string}):
-      Promise<Buffer>,
+      Promise<Buffer>;
 
   /**
    * The writeFile endpoint accepts the following query parameters:
@@ -138,5 +138,5 @@ export type FileSystemService = {
    *   options: options to pass to fs.writeFile
    */
   writeFile(path: string, data: string,
-      options: ?{encoding?: string, mode?: number, flag?:string}): Promise<void>,
+      options: ?{encoding?: string; mode?: number; flag?:string}): Promise<void>;
 };

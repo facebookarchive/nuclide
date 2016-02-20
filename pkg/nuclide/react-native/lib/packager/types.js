@@ -10,6 +10,6 @@
  */
 
 export type CommandInfo = {
-  command: string,
-  cwd: string,
+  command: string;
+  cwd: string;
 };

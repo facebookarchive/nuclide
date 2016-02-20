@@ -15,9 +15,9 @@
  */
 
 export type HgRepositoryDescription = {
-  repoPath: string,
-  originURL: ?string,
-  workingDirectoryPath: string,
+  repoPath: string;
+  originURL: ?string;
+  workingDirectoryPath: string;
 };
 
 export function getHgRepository(directoryPath: string): Promise<?HgRepositoryDescription> {

@@ -15,9 +15,9 @@ import {DebuggerProcessInfo} from '../../../debugger/atom';
 import {NodeDebuggerInstance} from '../../../debugger/node/lib/Service';
 
 type Options = {
-  targetUri: NuclideUri,
-  pid: ?number,
-  onAllSessionsEnded: () => void,
+  targetUri: NuclideUri;
+  pid: ?number;
+  onAllSessionsEnded: () => void;
 };
 
 export class ReactNativeProcessInfo extends DebuggerProcessInfo {

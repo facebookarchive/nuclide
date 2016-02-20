@@ -14,8 +14,8 @@ import type {QueryScore} from './QueryScore';
 import LazyPathSet from './LazyPathSet';
 
 type ResultSet = {
-  query: string,
-  results: Array<QueryScore>,
+  query: string;
+  results: Array<QueryScore>;
 };
 
 /**

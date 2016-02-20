@@ -22,7 +22,7 @@ import type {Definitions} from './types';
 /** Cache for definitions. */
 const definitionsCache: Map<string, Definitions> = new Map();
 /** Cache for remote proxies. */
-const proxiesCache: Map<string, {factory: Function, proxies: WeakMap}> = new Map();
+const proxiesCache: Map<string, {factory: Function; proxies: WeakMap}> = new Map();
 
 /**
  * Load the definitions, cached by their resolved file path.

@@ -12,24 +12,24 @@
 const {React} = require('react-for-atom');
 
 type NuclideListSelectorItem = {
-  deletable?: boolean,
-  displayTitle: string,
-  id: string,
+  deletable?: boolean;
+  displayTitle: string;
+  id: string;
 };
 
 type Props = {
-  items: Array<NuclideListSelectorItem>,
+  items: Array<NuclideListSelectorItem>;
   // If null, no item is initially selected.
-  idOfSelectedItem: ?string,
-  onItemClicked: (idOfClickedItem: string) => mixed,
+  idOfSelectedItem: ?string;
+  onItemClicked: (idOfClickedItem: string) => mixed;
   // Function that is called when the "+" button on the list is clicked.
   // The user's intent is to create a new item for the list.
-  onAddButtonClicked: () => mixed,
+  onAddButtonClicked: () => mixed;
   // Function that is called when the "-" button on the list is clicked.
   // The user's intent is to delete the currently-selected item.
   // If the `idOfCurrentlySelectedItem` is null, this means there is
   // no item selected.
-  onDeleteButtonClicked: (idOfCurrentlySelectedItem: ?string) => mixed,
+  onDeleteButtonClicked: (idOfCurrentlySelectedItem: ?string) => mixed;
 };
 
 const DELETE_BUTTON_TITLE_DEFAULT = 'Delete selected item';

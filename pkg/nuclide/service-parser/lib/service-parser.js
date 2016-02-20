@@ -243,7 +243,7 @@ class ServiceParser {
    * @returns A record containing the name of the method, and a FunctionType object
    *   encoding the arguments and return type of the method.
    */
-  _parseMethodDefinition(definition: any): {name: string, type: FunctionType} {
+  _parseMethodDefinition(definition: any): {name: string; type: FunctionType} {
     this._assert(definition, definition.type === 'MethodDefinition',
         'This is a MethodDefinition object.');
     this._assert(definition, definition.key && definition.key.type === 'Identifier',

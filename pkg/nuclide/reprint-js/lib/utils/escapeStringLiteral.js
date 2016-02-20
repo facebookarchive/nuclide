@@ -10,7 +10,7 @@
  */
 
 type QuoteOptions = {
-  quotes: 'single' | 'double',
+  quotes: 'single' | 'double';
 };
 
 function escapeStringLiteral(value: string, options: QuoteOptions): string {

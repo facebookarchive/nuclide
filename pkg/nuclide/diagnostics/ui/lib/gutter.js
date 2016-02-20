@@ -155,7 +155,7 @@ function createGutterItem(
   messages: Array<FileDiagnosticMessage>,
   gutterMarkerCssClass: string,
   fixer: (message: FileDiagnosticMessage) => void,
-): {item: HTMLElement, dispose: () => void} {
+): {item: HTMLElement; dispose: () => void} {
   const item = window.document.createElement('span');
   item.innerText = '\u25B6'; // Unicode character for a right-pointing triangle.
   item.className = gutterMarkerCssClass;
@@ -374,7 +374,7 @@ function createElementForTrace(
   );
 }
 
-function createMessageSpan(message: {html?: string, text?: string}): ReactElement {
+function createMessageSpan(message: {html?: string; text?: string}): ReactElement {
   if (message.html != null) {
     return <span dangerouslySetInnerHTML={{__html: message.html}} />;
   } else if (message.text != null) {

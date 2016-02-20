@@ -33,27 +33,27 @@ import {DiffMode} from './constants';
 import featureConfig from '../../feature-config';
 
 type Props = {
-  diffModel: DiffViewModel,
+  diffModel: DiffViewModel;
 };
 
 type EditorState = {
-  revisionTitle: string,
-  text: string,
-  savedContents?: string,
-  offsets: OffsetMap,
+  revisionTitle: string;
+  text: string;
+  savedContents?: string;
+  offsets: OffsetMap;
   highlightedLines: {
-    added: Array<number>,
-    removed: Array<number>,
-  },
-  inlineElements: Array<InlineComponent>,
+    added: Array<number>;
+    removed: Array<number>;
+  };
+  inlineElements: Array<InlineComponent>;
 }
 
 type State = {
-  mode: DiffModeType,
-  filePath: NuclideUri,
-  oldEditorState: EditorState,
-  newEditorState: EditorState,
-  toolbarVisible: boolean,
+  mode: DiffModeType;
+  filePath: NuclideUri;
+  oldEditorState: EditorState;
+  newEditorState: EditorState;
+  toolbarVisible: boolean;
 };
 
 function initialEditorState(): EditorState {

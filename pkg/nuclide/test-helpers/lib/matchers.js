@@ -32,9 +32,9 @@ const chalk = require('chalk');
 const diff = require('diff');
 
 type Change = {
-  value: string,
-  removed?: boolean,
-  added?: boolean,
+  value: string;
+  removed?: boolean;
+  added?: boolean;
 };
 
 /**
@@ -74,7 +74,7 @@ function diffLines(expected: string): boolean {
  * @returns On object containing the number of changes (added or removed parts),
  *   and a string containing the colored diff output.
  */
-function formatMessage(parts: Array<Change>): {changes: number, message: string} {
+function formatMessage(parts: Array<Change>): {changes: number; message: string} {
   let changes = 0, message = '';
   for (const part of parts) {
     let color = 'gray';

@@ -19,9 +19,9 @@ import {BusySignalProviderBase} from './BusySignalProviderBase';
 
 type MessageRecord = {
   // The disposable to call to remove the message
-  disposable: IDisposable,
+  disposable: IDisposable;
   // The number of messages outstanding
-  count: number,
+  count: number;
 }
 
 export class DedupedBusySignalProviderBase extends BusySignalProviderBase {

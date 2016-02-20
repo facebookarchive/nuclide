@@ -22,8 +22,8 @@ const MINIMUM_LENGTH = 100;
 const emptyFunction = () => {};
 
 type State = {
-  isResizing: boolean,
-  length: number,
+  isResizing: boolean;
+  length: number;
 };
 
 /**

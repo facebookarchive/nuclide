@@ -52,7 +52,7 @@ class FileDialogComponent extends React.Component {
   };
 
   state: {
-    options: Object,
+    options: Object;
   };
 
   constructor() {

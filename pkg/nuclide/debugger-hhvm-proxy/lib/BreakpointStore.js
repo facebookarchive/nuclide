@@ -14,9 +14,9 @@ import type {Connection} from './Connection';
 
 type BreakpointId = string;
 type Breakpoint = {
-  storeId: BreakpointId,
-  filename: string,
-  lineNumber: number,
+  storeId: BreakpointId;
+  filename: string;
+  lineNumber: number;
 };
 export type ExceptionState = 'none' | 'uncaught' | 'all';
 

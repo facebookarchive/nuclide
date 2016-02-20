@@ -12,27 +12,27 @@
 export type NuclideUri = string;
 
 export type Location = {
-  line: number,
-  column: number,
+  line: number;
+  column: number;
 };
 
 export type Reference = {
-  uri: NuclideUri,  // Nuclide URI of the file path
-  name: ?string,    // name of calling method/function/symbol
-  start: Location,
-  end: Location,
+  uri: NuclideUri;  // Nuclide URI of the file path
+  name: ?string;    // name of calling method/function/symbol
+  start: Location;
+  end: Location;
 };
 
 export type ReferenceGroup = {
-  references: Array<Reference>,
+  references: Array<Reference>;
   // Start and end range of the preview text.
-  startLine: number,
-  endLine: number,
+  startLine: number;
+  endLine: number;
 };
 
 export type FileReferences = {
-  uri: NuclideUri,
-  grammar: Object /* atom$Grammar */,
-  previewText: Array<string>,
-  refGroups: Array<ReferenceGroup>,
+  uri: NuclideUri;
+  grammar: Object /* atom$Grammar */;
+  previewText: Array<string>;
+  refGroups: Array<ReferenceGroup>;
 };

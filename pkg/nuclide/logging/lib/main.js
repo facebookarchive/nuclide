@@ -121,11 +121,11 @@ export function getLogger(category: ?string): Logger {
 }
 
 export type CategoryLogger = {
-  log(message: string): void,
-  logInfo(message: string): void,
-  logError(message: string): void,
-  logErrorAndThrow(message: string): void,
-  setLogLevel(level: string): void,
+  log(message: string): void;
+  logInfo(message: string): void;
+  logError(message: string): void;
+  logErrorAndThrow(message: string): void;
+  setLogLevel(level: string): void;
 };
 
 // Utility function that returns a wrapper logger for input category.

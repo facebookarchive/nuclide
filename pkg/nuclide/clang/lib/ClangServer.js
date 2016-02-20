@@ -26,9 +26,9 @@ const logger = getLogger();
 const pathToLibClangServer = path.join(__dirname, '../python/clang_server.py');
 
 async function _findClangServerArgs(): Promise<{
-  libClangLibraryFile: ?string,
-  pythonExecutable: string,
-  pythonPathEnv: ?string,
+  libClangLibraryFile: ?string;
+  pythonExecutable: string;
+  pythonPathEnv: ?string;
 }> {
   let findClangServerArgs;
   try {
@@ -76,10 +76,10 @@ async function augmentDefaultFlags(src: string, flags: Array<string>): Promise<A
 }
 
 type Connection = {
-  dispose: () => any,
-  process: child_process$ChildProcess,
-  readableStream: stream$Readable,
-  writableStream: stream$Writable,
+  dispose: () => any;
+  process: child_process$ChildProcess;
+  readableStream: stream$Readable;
+  writableStream: stream$Writable;
 }
 
 async function createAsyncConnection(src: string): Promise<Connection> {

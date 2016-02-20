@@ -25,25 +25,25 @@ import invariant from 'assert';
 const CHANGE_DEBOUNCE_DELAY_MS = 5;
 
 type Props = {
-  headerTitle: string,
-  filePath: NuclideUri,
-  textBuffer: atom$TextBuffer,
-  offsets: OffsetMap,
+  headerTitle: string;
+  filePath: NuclideUri;
+  textBuffer: atom$TextBuffer;
+  offsets: OffsetMap;
   highlightedLines: {
-    added: Array<number>,
-    removed: Array<number>,
-  },
-  initialTextContent: string,
-  savedContents: string,
-  inlineElements: Array<InlineComponent>,
-  handleNewOffsets: (newOffsets: OffsetMap) => any,
-  readOnly: boolean,
-  onChange: (newContents: string) => any,
-  onDidUpdateTextEditorElement: () => mixed,
+    added: Array<number>;
+    removed: Array<number>;
+  };
+  initialTextContent: string;
+  savedContents: string;
+  inlineElements: Array<InlineComponent>;
+  handleNewOffsets: (newOffsets: OffsetMap) => any;
+  readOnly: boolean;
+  onChange: (newContents: string) => any;
+  onDidUpdateTextEditorElement: () => mixed;
 };
 
 type State = {
-  textContent: string,
+  textContent: string;
 };
 
 /* eslint-disable react/prop-types */

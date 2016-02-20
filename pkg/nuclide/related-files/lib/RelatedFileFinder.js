@@ -32,7 +32,7 @@ export default class RelatedFileFinder {
    * @param filePath The filepath for which to get related files.
    * @return The related files and the given path's index into it.
    */
-  async find(filePath: NuclideUri): Promise<{relatedFiles: Array<string>, index: number}> {
+  async find(filePath: NuclideUri): Promise<{relatedFiles: Array<string>; index: number}> {
     const dirName = dirname(filePath);
     const prefix = this._getPrefix(filePath);
 

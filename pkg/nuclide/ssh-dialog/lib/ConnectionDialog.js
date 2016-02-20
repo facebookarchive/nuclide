@@ -34,29 +34,29 @@ const logger = require('../../logging').getLogger();
 
 type Props = {
   // The list of connection profiles that will be displayed.
-  connectionProfiles: ?Array<NuclideRemoteConnectionProfile>,
+  connectionProfiles: ?Array<NuclideRemoteConnectionProfile>;
   // If there is >= 1 connection profile, this index indicates the initial
   // profile to use.
-  indexOfInitiallySelectedConnectionProfile: number,
+  indexOfInitiallySelectedConnectionProfile: number;
   // Function that is called when the "+" button on the profiles list is clicked.
   // The user's intent is to create a new profile.
-  onAddProfileClicked: () => mixed,
+  onAddProfileClicked: () => mixed;
   // Function that is called when the "-" button on the profiles list is clicked
   // ** while a profile is selected **.
   // The user's intent is to delete the currently-selected profile.
-  onDeleteProfileClicked: (indexOfSelectedConnectionProfile: number) => mixed,
-  onConnect: () => mixed,
-  onError: () => mixed,
-  onCancel: () => mixed,
-  onClosed: ?() => mixed,
+  onDeleteProfileClicked: (indexOfSelectedConnectionProfile: number) => mixed;
+  onConnect: () => mixed;
+  onError: () => mixed;
+  onCancel: () => mixed;
+  onClosed: ?() => mixed;
 };
 
 type State = {
-  indexOfSelectedConnectionProfile: number,
-  instructions: string,
-  finish: (answers: Array<string>) => mixed,
-  mode: number,
-  sshHandshake: SshHandshake,
+  indexOfSelectedConnectionProfile: number;
+  instructions: string;
+  finish: (answers: Array<string>) => mixed;
+  mode: number;
+  sshHandshake: SshHandshake;
 };
 
 const REQUEST_CONNECTION_DETAILS = 1;
@@ -257,7 +257,7 @@ class ConnectionDialog extends React.Component {
   }
 
   requestAuthentication(
-    instructions: {echo: boolean, prompt: string},
+    instructions: {echo: boolean; prompt: string},
     finish: (answers: Array<string>) => void
   ) {
     this.setState({

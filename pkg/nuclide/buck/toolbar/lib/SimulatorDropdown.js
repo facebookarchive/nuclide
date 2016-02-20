@@ -33,8 +33,8 @@ class SimulatorDropdown extends React.Component {
   };
 
   state: {
-    menuItems: Array<{label: string, value: string}>,
-    selectedIndex: number,
+    menuItems: Array<{label: string; value: string}>;
+    selectedIndex: number;
   };
 
   constructor(props: {[key: string]: mixed}) {

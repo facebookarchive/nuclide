@@ -108,7 +108,7 @@ export class MerlinProcess {
     line: number,
     col: number,
     kind: string,
-  ): Promise<?{file: string, pos: {line: number, col: number}}> {
+  ): Promise<?{file: string; pos: {line: number; col: number}}> {
     return await this._promiseQueue.submit(async (resolve, reject) => {
       const location = await this.runSingleCommand([
         'locate',

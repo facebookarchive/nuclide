@@ -19,9 +19,9 @@ const logger = require('../../logging').getLogger();
 import {HEARTBEAT_CHANNEL} from './config';
 
 type NuclideSocketOptions = {
-  certificateAuthorityCertificate?: Buffer,
-  clientCertificate?: Buffer,
-  clientKey?: Buffer,
+  certificateAuthorityCertificate?: Buffer;
+  clientCertificate?: Buffer;
+  clientKey?: Buffer;
 };
 
 const INITIAL_RECONNECT_TIME_MS = 10;

@@ -18,7 +18,7 @@ import {defaultWordRegExpForEditor} from './hyperclick-utils';
 export default function getWordTextAndRange(
     textEditor: TextEditor,
     position: atom$Point,
-    wordRegExp?: ?RegExp): {text: string, range: Range} {
+    wordRegExp?: ?RegExp): {text: string; range: Range} {
   let textAndRange = {text: '', range: new Range(position, position)};
   wordRegExp = wordRegExp || defaultWordRegExpForEditor(textEditor);
   if (!wordRegExp) {

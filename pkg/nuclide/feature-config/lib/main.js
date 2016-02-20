@@ -24,9 +24,9 @@ module.exports = {
   get(
     keyPath: string,
     options?: {
-      excludeSources?: Array<string>,
-      sources?: Array<string>,
-      scope?: Object,
+      excludeSources?: Array<string>;
+      sources?: Array<string>;
+      scope?: Object;
     }
   ): mixed {
     return atom.config.get(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
@@ -77,8 +77,8 @@ module.exports = {
     keyPath: string,
     value: ?mixed,
     options?: {
-      scopeSelector?: string,
-      source?: string,
+      scopeSelector?: string;
+      source?: string;
     }
   ): boolean {
     return atom.config.set(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
@@ -105,8 +105,8 @@ module.exports = {
   unset(
     keyPath: string,
     options?: {
-      scopeSelector?: string,
-      source?: string,
+      scopeSelector?: string;
+      source?: string;
     }
   ): void {
     return atom.config.unset(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));

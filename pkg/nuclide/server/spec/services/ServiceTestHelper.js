@@ -16,7 +16,7 @@ import NuclideServer from '../../lib/NuclideServer';
 import ServiceFramework from '../../lib/serviceframework';
 import NuclideSocket from '../../lib/NuclideSocket';
 
-type Services = Array<{name: string, definition: string, implementation: string}>;
+type Services = Array<{name: string; definition: string; implementation: string}>;
 
 export default class ServiceTestHelper {
   _server: NuclideServer;

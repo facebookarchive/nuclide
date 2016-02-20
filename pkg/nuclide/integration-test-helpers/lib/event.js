@@ -21,10 +21,10 @@ export function dispatchKeyboardEvent(
   key: string,
   target: HTMLElement,
   metaKeys: {
-    alt?: boolean,
-    cmd?: boolean,
-    ctrl?: boolean,
-    shift?: boolean,
+    alt?: boolean;
+    cmd?: boolean;
+    ctrl?: boolean;
+    shift?: boolean;
   } = {},
 ): void {
   const {alt, cmd, ctrl, shift} = metaKeys;

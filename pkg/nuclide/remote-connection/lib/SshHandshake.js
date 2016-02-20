@@ -25,14 +25,14 @@ const {fsPromise, promises} = require('../../commons');
 const READY_TIMEOUT_MS = 60 * 1000;
 
 export type SshConnectionConfiguration = {
-  host: string, // host nuclide server is running on
-  sshPort: number, // ssh port of host nuclide server is running on
-  username: string, // username to authenticate as
-  pathToPrivateKey: string, // The path to private key
-  remoteServerCommand: string, // Command to use to start server
-  cwd: string, // Path to remote directory user should start in upon connection.
-  authMethod: string, // Which of the authentication methods in `SupportedMethods` to use.
-  password: string, // for simple password-based authentication
+  host: string; // host nuclide server is running on
+  sshPort: number; // ssh port of host nuclide server is running on
+  username: string; // username to authenticate as
+  pathToPrivateKey: string; // The path to private key
+  remoteServerCommand: string; // Command to use to start server
+  cwd: string; // Path to remote directory user should start in upon connection.
+  authMethod: string; // Which of the authentication methods in `SupportedMethods` to use.
+  password: string; // for simple password-based authentication
 }
 
 const SupportedMethods = {
@@ -77,19 +77,19 @@ export type KeyboardInteractiveCallback = (
   name: string,
   instructions: string,
   instructionsLang: string,
-  prompts: Array<{prompt: string, echo: boolean,}>,
+  prompts: Array<{prompt: string; echo: boolean;}>,
   finish: (answers: Array<string>) => void)  => void;
 
 export type SshConnectionDelegate = {
   /** Invoked when server requests keyboard interaction */
-  onKeyboardInteractive: KeyboardInteractiveCallback,
+  onKeyboardInteractive: KeyboardInteractiveCallback;
   /** Invoked when trying to connect */
-  onWillConnect: (config: SshConnectionConfiguration) => void,
+  onWillConnect: (config: SshConnectionConfiguration) => void;
   /** Invoked when connection is sucessful */
-  onDidConnect: (connection: RemoteConnection, config: SshConnectionConfiguration) => void,
+  onDidConnect: (connection: RemoteConnection, config: SshConnectionConfiguration) => void;
   /** Invoked when connection is fails */
   onError:
-    (errorType: SshHandshakeErrorType, error: Error, config: SshConnectionConfiguration) => void,
+    (errorType: SshHandshakeErrorType, error: Error, config: SshConnectionConfiguration) => void;
 };
 
 const SshConnectionErrorLevelMap: Map<SshConnectionErrorLevel, SshHandshakeErrorType> = new Map([
@@ -234,7 +234,7 @@ export class SshHandshake {
       name: string,
       instructions: string,
       instructionsLang: string,
-      prompts: Array<{prompt: string, echo: boolean,}>,
+      prompts: Array<{prompt: string; echo: boolean;}>,
       finish: (answers: Array<string>) => void): void {
     this._delegate.onKeyboardInteractive(name, instructions, instructionsLang, prompts, finish);
   }
@@ -450,7 +450,7 @@ export function decorateSshConnectionDelegateWithTracking(
       name: string,
       instructions: string,
       instructionsLang: string,
-      prompts: Array<{prompt: string, echo: boolean,}>,
+      prompts: Array<{prompt: string; echo: boolean;}>,
       finish: (answers: Array<string>) => void,
     ) => {
       invariant(connectionTracker);

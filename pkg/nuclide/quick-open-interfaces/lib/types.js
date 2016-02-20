@@ -10,42 +10,42 @@
  */
 
 export type Store = {
-  toggleProvider(service: Provider): void,
+  toggleProvider(service: Provider): void;
 }
 
 export type ProviderType = 'DIRECTORY' | 'GLOBAL';
 
 export type Provider = {
-  executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>>,
-  getProviderType(): ProviderType,
-  getName(): string,
-  isRenderable(): boolean,
-  getTabTitle(): string,
+  executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>>;
+  getProviderType(): ProviderType;
+  getName(): string;
+  isRenderable(): boolean;
+  getTabTitle(): string;
 
-  getPromptText?: () => string,
-  getAction?: () => string,
-  getDebounceDelay?: () => number,
-  isEligibleForDirectory?: (directory: atom$Directory) => Promise<boolean>,
-  getComponentForItem?: (item: FileResult) => ReactElement,
+  getPromptText?: () => string;
+  getAction?: () => string;
+  getDebounceDelay?: () => number;
+  isEligibleForDirectory?: (directory: atom$Directory) => Promise<boolean>;
+  getComponentForItem?: (item: FileResult) => ReactElement;
 };
 
 export type FileResult = {
-  path: string,
-  matchIndexes?: Array<number>,
-  score?: number,
+  path: string;
+  matchIndexes?: Array<number>;
+  score?: number;
   // The original query that prompted this result, e.g. to highlight it in the UI.
-  query?: string,
-  context?: string,
-  timestamp?: number,
+  query?: string;
+  context?: string;
+  timestamp?: number;
   // Jump to line/column if provided.
-  line?: number,
-  column?: number,
+  line?: number;
+  column?: number;
 };
 
 export type ProviderResult = {
-  error: ?Object,
-  loading: boolean,
-  results: Array<FileResult>,
+  error: ?Object;
+  loading: boolean;
+  results: Array<FileResult>;
 };
 
 export type DirectoryName = string;
@@ -55,7 +55,7 @@ export type GroupedResult = {
   [key: ServiceName]: {
     results: {
       [key: DirectoryName]: ProviderResult
-    },
-    title: string,
+    };
+    title: string;
   }
 };

@@ -18,17 +18,17 @@ export type CodeFormatProvider = {
   /**
    * Formats the range specified, and returns the replacement result for that range.
    */
-  formatCode?: (editor: atom$TextEditor, range: atom$Range) => Promise<string>,
+  formatCode?: (editor: atom$TextEditor, range: atom$Range) => Promise<string>;
 
   /**
    * Formats the range specified, but returns the entire file (along with the new cursor position).
    * Useful for less-flexible providers like clang-format.
    */
   formatEntireFile?: (editor: atom$TextEditor, range: atom$Range) => Promise<{
-    newCursor: number,
-    formatted: string,
-  }>,
+    newCursor: number;
+    formatted: string;
+  }>;
 
-  selector: string,
-  inclusionPriority: number,
+  selector: string;
+  inclusionPriority: number;
 };

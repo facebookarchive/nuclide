@@ -19,7 +19,7 @@ import {track} from '../../../analytics';
 
 const {fileColumnCellDataGetter, getProjectRelativePathOfDiagnostic} = require('./paneUtils');
 
-type textAndType = {text: string, isPlainText: boolean};
+type textAndType = {text: string; isPlainText: boolean};
 
 const DEFAULT_LINE_TEXT_HEIGHT = 15;
 const DESCRIPTION_COLUMN_FLEX_GROW = 3;
@@ -78,7 +78,7 @@ function messageColumnCellDataGetter(
   let text = '';
   let isPlainText = true;
   const traces = diagnostic.trace || [];
-  const allMessages: Array<{html?: string, text?: string}> = [diagnostic, ...traces];
+  const allMessages: Array<{html?: string; text?: string}> = [diagnostic, ...traces];
   for (const message of allMessages) {
     if (message.html != null) {
       text += message.html + ' ';

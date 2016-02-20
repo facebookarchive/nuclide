@@ -13,8 +13,8 @@ const {Emitter} = require('atom');
 const Multimap = require('./Multimap');
 
 export type SerializedBreakpoint = {
-  line: number,
-  sourceURL: string,
+  line: number;
+  sourceURL: string;
 };
 
 /**
