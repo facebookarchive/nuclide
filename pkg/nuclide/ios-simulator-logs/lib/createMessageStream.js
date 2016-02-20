@@ -32,6 +32,9 @@ export function createMessageStream(line$: Rx.Observable<string>): Rx.Observable
     // (that correspond to records). We just want those dicts so we use `flatMap()`.
     .flatMap(xml => plist.parse(xml))
 
+    // Exclude dicts that don't have any message property.
+    .filter(record => record.hasOwnProperty('Message'))
+
     // Format the messages for Nuclide.
     .map(createMessage);
 }
