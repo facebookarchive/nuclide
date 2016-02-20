@@ -23,8 +23,9 @@ import atom
 from dependencies import check_dependencies
 import fs
 import optparse
-parser = optparse.OptionParser(usage='usage: %prog [options] [package-names]',
-                               description='Run all tests for Nuclide')
+parser = optparse.OptionParser(usage='usage: %prog [options] [package-names or integration-tests]',
+                               description='Run all tests for Nuclide. ' +
+                               'Can explicitly list individual packages or integration-tests to run.')
 # If you are certain that all of the packages have their dependencies installed correctly,
 # skipping the installation step can save a considerable amount of time.
 parser.add_option('--no-install', action='store_true', default=False, help='Skip `./setup` step')
@@ -87,13 +88,15 @@ package_manager = PackageManager()
 os.umask(022)
 
 # Validate explicit package names if given
-for package_name in args:
-    if not package_manager.is_local_dependency(package_name):
-        raise Exception('%s is not a valid nuclide package name' % (package_name))
+if not options.run_integration_tests:
+    for package_name in args:
+        if not package_manager.is_local_dependency(package_name):
+            raise Exception('%s is not a valid nuclide package name' % (package_name))
 
 # Create and run JsTestRunner.
 from js_test_runner import JsTestRunner
 test_runner = JsTestRunner(package_manager, include_apm, args, verbose, run_in_band)
+
 if options.run_integration_tests:
     test_runner.run_integration_tests()
 else:

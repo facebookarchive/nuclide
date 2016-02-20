@@ -25,7 +25,7 @@ class JsTestRunner(object):
         self._verbose = verbose
 
     def run_integration_tests(self):
-        run_integration_tests_with_clean_state(self._package_manager.get_nuclide_path())
+        run_integration_tests_with_clean_state(self._package_manager.get_nuclide_path(), self._packages_to_test)
 
     def run_tests(self):
         apm_tests = []
@@ -154,13 +154,14 @@ def run_flow_check(pkg_path, name, show_all):
     else:
         logging.info('FLOW CHECK PASSED: %s', name)
 
-def run_integration_tests_with_clean_state(path_to_nuclide):
+def run_integration_tests_with_clean_state(path_to_nuclide, named_tests):
     test_dir = os.path.join(path_to_nuclide, 'spec')
     test_dir_backup = os.path.join(path_to_nuclide, 'spec-backup');
 
     # Copy test_dir and its contents to backup so we can restore it later.
     shutil.copytree(test_dir, test_dir_backup)
 
+    ran_tests = []
     try:
         # Remove all files in test_dir leaving directory structure intact.
         for root, subdirs, files in os.walk(test_dir):
@@ -177,18 +178,24 @@ def run_integration_tests_with_clean_state(path_to_nuclide):
                 subdirs.remove('lib')
             for name in files:
                 # Copy file.
-                src_path_list = os.path.join(root, name).split(os.path.sep)
-                dest_path_list = map(lambda piece: piece if piece != 'spec-backup' else 'spec', src_path_list)
-                dest = os.path.sep + os.path.join(*dest_path_list)
-                shutil.copy(os.path.join(root, name), dest)
+                if not named_tests or name in named_tests:
+                    ran_tests.append(name)
+                    src_path_list = os.path.join(root, name).split(os.path.sep)
+                    dest_path_list = map(lambda piece: piece if piece != 'spec-backup' else 'spec', src_path_list)
+                    dest = os.path.sep + os.path.join(*dest_path_list)
+                    shutil.copy(os.path.join(root, name), dest)
 
-                # Run test.
-                run_js_test('apm', path_to_nuclide, os.path.basename(dest))
+                    # Run test.
+                    run_js_test('apm', path_to_nuclide, os.path.basename(dest))
 
-                # Remove file.
-                os.remove(dest)
+                    # Remove file.
+                    os.remove(dest)
     finally:
         # Clean up by restoring the backup.
         shutil.rmtree(test_dir)
         shutil.copytree(test_dir_backup, test_dir)
         shutil.rmtree(test_dir_backup)
+    if named_tests:
+        missing_tests = filter(lambda test: test not in ran_tests, named_tests)
+        if (missing_tests):
+            raise Exception('%s are not valid integration tests' % (','.join(missing_tests)))
