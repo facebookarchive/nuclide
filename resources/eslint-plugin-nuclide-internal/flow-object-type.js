@@ -14,12 +14,12 @@ module.exports = function(context) {
     const tokens = context.getSourceCode().getTokens(node);
     const lastToken = tokens[tokens.length - 1];
     if (lastToken.type === 'Punctuator') {
-      if (lastToken.value === ';') {
+      if (lastToken.value === ',') {
         context.report({
-          message: 'Prefer commas to semicolons in object types',
+          message: 'Prefer semicolons to commas in object and class types',
           node: lastToken,
           fix: function(fixer) {
-            return fixer.replaceText(lastToken, ',');
+            return fixer.replaceText(lastToken, ';');
           },
         });
       }
