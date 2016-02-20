@@ -6,7 +6,26 @@
   "description": "A nuclide-output provider for iOS Simulator logs",
   "nuclide": {
     "packageType": "Atom",
-    "testRunner": "apm"
+    "testRunner": "apm",
+    "config": {
+      "senderBlacklist": {
+        "title": "Sender Blacklist",
+        "type": "array",
+        "default": [
+          "assertiond",
+          "routined",
+          "syslogd",
+          "SpringBoard",
+          "installd",
+          "pkd",
+          "lsd",
+          "searchd",
+          "itunesstored",
+          "backboardd"
+        ],
+        "description": "Exclude messages sent by these senders from the output window"
+      }
+    }
   },
   "activationCommands": {
     "atom-workspace": [

@@ -11,6 +11,7 @@
 
 import type {Message} from '../../output/lib/types';
 
+import featureConfig from '../../feature-config';
 import {createMessage} from './createMessage';
 import plist from 'plist';
 import Rx from 'rx';
@@ -34,6 +35,15 @@ export function createMessageStream(line$: Rx.Observable<string>): Rx.Observable
 
     // Exclude dicts that don't have any message property.
     .filter(record => record.hasOwnProperty('Message'))
+
+    // Exclude blacklisted senders.
+    // FIXME: This is a stopgap. What we really need to do is identify the currently running app and
+    //   only show its messages. ):
+    .filter(record => {
+      const blacklist =
+        ((featureConfig.get('nuclide-ios-simulator-logs.senderBlacklist'): any): Array<string>);
+      return blacklist.indexOf(record.Sender) === -1;
+    })
 
     // Format the messages for Nuclide.
     .map(createMessage);

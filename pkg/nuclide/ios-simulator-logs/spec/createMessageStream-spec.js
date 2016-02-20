@@ -9,10 +9,20 @@
  * the root directory of this source tree.
  */
 
+import featureConfig from '../../feature-config';
 import {createMessageStream} from '../lib/createMessageStream';
 import Rx from 'rx';
 
 describe('createMessageStream', () => {
+
+  beforeEach(() => {
+    const config = require('../package.json').nuclide.config;
+    // $UPFixMe: With UP, the default settings are set by the loader, but I don't have a good way to
+    // do that just for tests (yet).
+    Object.keys(config).forEach(k =>
+      featureConfig.setSchema(`nuclide-ios-simulator-logs.${k}`, config[k])
+    );
+  });
 
   it('splits the output by record', () => {
     waitsForPromise(async () => {
