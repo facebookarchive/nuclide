@@ -1,9 +1,9 @@
 @import "ui-variables";
 
-@border-size: 1px;
+@nuclide-output-border-size: 1px;
 @nuclide-output-table-background-color: @tab-background-color-active;
-@nuclide-output-record-background-color-normal: @base-background-color;
-@nuclide-output-record-text-color-normal: @text-color;
+@nuclide-output-record-background-color-normal: @syntax-background-color;
+@nuclide-output-record-text-color-normal: @syntax-text-color;
 @nuclide-output-record-border-color-normal: @base-border-color;
 @nuclide-output-record-background-color-error: lighten(@background-color-error, 25%);
 @nuclide-output-record-text-color-error: darken(@text-color-error, 40%);
@@ -11,6 +11,11 @@
 @nuclide-output-record-background-color-warning: lighten(@background-color-warning, 25%);
 @nuclide-output-record-text-color-warning: darken(@text-color-warning, 40%);
 @nuclide-output-record-border-color-warning: @background-color-warning;
+@nuclide-output-vertical-padding: 0.2em;
+@nuclide-output-padding: @nuclide-output-vertical-padding 1em;
+
+// Console text should be smaller than normal text. Gotta fit more!
+@nuclide-output-record-font-size: @font-size * 0.9;
 
 .nuclide-output {
   display: flex;
@@ -19,10 +24,16 @@
   background-color: @pane-item-background-color;
 }
 
+.nuclide-output-record .icon:before,
+.nuclide-output-record pre {
+  font-size: @nuclide-output-record-font-size;
+}
+
 .nuclide-output-scroll-pane {
   position: relative;
   flex-grow: 1;
   overflow: auto;
+  background-color: @syntax-background-color;
 }
 
 .nuclide-output-header {
@@ -31,42 +42,65 @@
 }
 
 .nuclide-output-record {
-  display: block;
-  padding: 0.75em;
+  padding: @nuclide-output-padding;
   background-color: @nuclide-output-record-background-color-normal;
-  color: @nuclide-output-record-text-color-normal;
-  font-size: 90%; // Log text shouldn't be as huge as regular text.
   border-radius: 0;
-  border-top: @border-size solid @nuclide-output-record-border-color-normal;
+  border-top: @nuclide-output-border-size solid @nuclide-output-record-border-color-normal;
+
+  pre {
+    padding: 0;
+    background-color: transparent;
+    color: @nuclide-output-record-text-color-normal;
+  }
+
+  .icon {
+    float: left;
+    overflow: hidden;
+    color: @nuclide-output-record-text-color-normal;
+  }
 
   &:first-child {
     border-top: none;
   }
 
   &:last-child {
-    border-bottom: @border-size solid @nuclide-output-record-border-color-normal;
+    border-bottom: @nuclide-output-border-size solid @nuclide-output-record-border-color-normal;
   }
 
   &.level-warning {
     background-color: @nuclide-output-record-background-color-warning;
     border-color: @nuclide-output-record-border-color-warning;
-    color: @nuclide-output-record-text-color-warning;
 
     // The border on both sides of the warning message should be the warning
     // color unless it's a higher-level (error).
     & + :not(.level-error) {
       border-top-color: @nuclide-output-record-border-color-warning;
     }
+
+    pre {
+      color: @nuclide-output-record-text-color-warning;
+    }
+
+    .icon {
+      color: @nuclide-output-record-border-color-warning;
+    }
   }
 
   &.level-error {
     background-color: @nuclide-output-record-background-color-error;
     border-color: @nuclide-output-record-border-color-error;
-    color: @nuclide-output-record-text-color-error;
 
     // The border on both sides of the error should be the error color.
     & + .nuclide-output-record {
       border-top-color: @nuclide-output-record-border-color-error;
+    }
+
+    pre {
+      color: @nuclide-output-record-text-color-error;
+    }
+
+    .icon {
+      color: @nuclide-output-record-border-color-error;
     }
   }
 

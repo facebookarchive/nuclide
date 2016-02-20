@@ -18,7 +18,9 @@ export type Message = {
   level: Level,
 };
 
-export type Record = Message & {
+export type Record = {
+  text: string,
+  level: Level,
   source: string,
 };
 

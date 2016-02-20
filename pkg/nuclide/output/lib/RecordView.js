@@ -22,16 +22,38 @@ type Props = {
 export default class RecordView extends React.Component<void, Props, void> {
 
   render(): ReactElement {
+    const {record} = this.props;
     const classes = [
       'nuclide-output-record',
-      `level-${this.props.record.level}`,
+      `level-${record.level}`,
     ];
 
+    const iconName = getIconName(record);
+    const icon = iconName ? <span className={`icon icon-${iconName}`} /> : null;
+
     return (
-      <pre className={classes.join(' ')}>
-        {this.props.record.text}
-      </pre>
+      <div className={classes.join(' ')}>
+        {icon}
+        {renderContent(record)}
+      </div>
     );
   }
 
+}
+
+function renderContent(record: Record): ReactElement {
+  // If there's not text, use a space to make sure the row doesn't collapse.
+  const text = record.text || ' ';
+  return <pre>{text}</pre>;
+}
+
+function getIconName(record: Record): ?string {
+  switch (record.level) {
+    case 'info':
+      return 'info';
+    case 'warning':
+      return 'alert';
+    case 'error':
+      return 'stop';
+  }
 }
