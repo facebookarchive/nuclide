@@ -29,7 +29,24 @@ const MAX_RECONNECT_TIME_MS = 5000;
 const HEARTBEAT_INTERVAL_MS = 5000;
 const MAX_HEARTBEAT_AWAY_RECONNECT_MS = 60000;
 
-// TODO(most): Rename class to reflect its new responsibilities (not just WebSocket connection).
+// The Nuclide Socket class does several things:
+//   - Provides a transport mechanism for sending/receiving JSON messages
+//   - Provides a transport layer for xhr requests
+//   - monitors connection with a heartbeat (over xhr) and automatically attempts to reconnect
+//   - caches JSON messages when the connection is down and retries on reconnect
+//
+// Can be in one of the following states:
+//   - Connected - everything healthy
+//   - Disconnected - Was connected, but connection died. Will attempt to reconnect.
+//   - Closed - No longer connected. May not send/recieve messages. Cannot be resurected.
+//
+// Publishes the following events:
+//   - status(boolean): on connect/disconnect
+//   - connect: on first Connection
+//   - reconnect: on reestablishing connection after a disconnect
+//   - message(message: Object): on receipt fo JSON message
+//   - heartbeat: On receipt of successful heartbeat
+//   - heartbeat.error({code, originalCode, message}): On failure of heartbeat
 class NuclideSocket extends EventEmitter {
   id: string;
 

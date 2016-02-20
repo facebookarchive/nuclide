@@ -76,7 +76,7 @@ describe('Nuclide Server test suite', () => {
         invariant(serverSocketClient != null);
         expect(serverSocketClient.id).toBe(clientId);
 
-        server._sendSocketMessage(serverSocketClient, message1);
+        serverSocketClient.sendSocketMessage(message1);
       });
 
       waitsFor(() => messageHandler.callCount === 1);
@@ -85,17 +85,17 @@ describe('Nuclide Server test suite', () => {
         // A server socket close will trigger a client disconnect and a scheduled reconnect.
         if (serverSocketClient != null && serverSocketClient.socket != null) {
           serverSocketClient.socket.close();
-          server._sendSocketMessage(serverSocketClient, message2);
+          serverSocketClient.sendSocketMessage(serverSocketClient, message2);
           // The default WebSocket's close timeout is 30 seconds.
           window.advanceClock(31 * 1000);
-          server._sendSocketMessage(serverSocketClient, message3);
+          serverSocketClient.sendSocketMessage(serverSocketClient, message3);
         }
       });
 
       waitsFor(() => reconnectHandler.callCount === 1);
       runs(() => {
         if (serverSocketClient != null) {
-          server._sendSocketMessage(serverSocketClient, message4);
+          serverSocketClient.sendSocketMessage(serverSocketClient, message4);
         }
       });
 

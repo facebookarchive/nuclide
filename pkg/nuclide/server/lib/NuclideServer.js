@@ -15,15 +15,14 @@ const connect: connect$module = require('connect');
 const http: http$fixed = (require('http'): any);
 const https: https$fixed = (require('https'): any);
 
-import {
-  HEARTBEAT_CHANNEL,
-  SERVICE_FRAMEWORK3_CHANNEL} from './config';
+import {HEARTBEAT_CHANNEL} from './config';
 const WebSocketServer: Class<ws$Server> = require('ws').Server;
 const {deserializeArgs, sendJsonResponse, sendTextResponse} = require('./utils');
 const {getVersion} = require('../../version');
 import invariant from 'assert';
 import ServiceFramework from './serviceframework';
 import type {ConfigEntry} from './serviceframework/index';
+import {SocketClient} from './SocketClient';
 
 import {getLogger, flushLogsAndExit} from '../../logging';
 const logger = getLogger();
@@ -35,13 +34,6 @@ type NuclideServerOptions = {
   certificateAuthorityCertificate?: Buffer,
   trackEventLoop?: boolean,
 }
-
-export type SocketClient = {
-  id: string,
-  subscriptions: {[channel: string]: (event: any) => void},
-  socket: ?ws$WebSocket,
-  messageQueue: Array<{data: string}>,
-};
 
 class NuclideServer {
   static _theServer: ?NuclideServer;
@@ -98,7 +90,7 @@ class NuclideServer {
     }
 
     this._serverComponent =
-        new ServiceFramework.ServerComponent(this, services);
+        new ServiceFramework.ServerComponent(services);
   }
 
   _attachUtilHandlers() {
@@ -234,57 +226,11 @@ class NuclideServer {
     socket.once('message', (clientId: string) => {
       client = this._clients.get(clientId);
       if (client == null) {
-        client = {subscriptions: {}, id: clientId, socket: null, messageQueue: []};
+        client = new SocketClient(clientId, this._serverComponent, socket);
         this._clients.set(clientId, client);
-      }
-      const localClient = client;
-      // If an existing client, we close its socket before listening to the new socket.
-      if (client.socket) {
-        client.socket.close();
-        client.socket = null;
-      }
-      logger.info('Client #%s connecting with a new socket!', clientId);
-      client.socket = socket;
-      client.messageQueue.splice(0).
-          forEach(message => this._sendSocketMessage(localClient, message.data));
-      socket.on('message', message => this._onSocketMessage(localClient, message));
-    });
-
-    socket.on('close', () => {
-      if (!client) {
-        return;
-      }
-      if (client.socket === socket) {
-        client.socket = null;
-      }
-      logger.info('Client #%s closing a socket!', client.id);
-    });
-  }
-
-  _onSocketMessage(client: SocketClient, message: any): void {
-    message = JSON.parse(message);
-    invariant(message.protocol && message.protocol === SERVICE_FRAMEWORK3_CHANNEL);
-    this._serverComponent.handleMessage(client, message);
-  }
-
-  _sendSocketMessage(client: SocketClient, data: any) {
-    // Wrap the data in an object, because if `data` is a primitive data type,
-    // finding it in an array would return the first matching item, not necessarily
-    // the same inserted item.
-    const message = {data};
-    const {id, socket, messageQueue} = client;
-    messageQueue.push(message);
-    if (!socket) {
-      return;
-    }
-    socket.send(JSON.stringify(data), err => {
-      if (err) {
-        logger.warn('Failed sending socket message to client:', id, data);
       } else {
-        const messageIndex = messageQueue.indexOf(message);
-        if (messageIndex !== -1) {
-          messageQueue.splice(messageIndex, 1);
-        }
+        invariant(clientId === client.id);
+        client.reconnect(socket);
       }
     });
   }

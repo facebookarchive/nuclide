@@ -11,7 +11,6 @@
 
 import {Observable} from 'rx';
 import {getDefinitions} from '../../../service-parser';
-import type NuclideServer from '../NuclideServer';
 import TypeRegistry from '../../../service-parser/lib/TypeRegistry';
 import {builtinLocation, voidType} from '../../../service-parser/lib/builtin-types';
 import type {
@@ -28,7 +27,7 @@ import type {ConfigEntry} from './index';
 
 import type {RequestMessage, ErrorResponseMessage, PromiseResponseMessage,
   ObservableResponseMessage} from './types';
-import type {SocketClient} from '../NuclideServer';
+import type {SocketClient} from '../SocketClient';
 
 const logger = require('../../../logging').getLogger();
 
@@ -60,11 +59,7 @@ export default class ServerComponent {
 
   _subscriptions: Map<number, IDisposable>;
 
-  _server: NuclideServer;
-
-  constructor(server: NuclideServer, services: Array<ConfigEntry>) {
-    this._server = server;
-
+  constructor(services: Array<ConfigEntry>) {
     this._typeRegistry = new TypeRegistry();
     this._functionsByName = new Map();
     this._classesByName = new Map();
@@ -298,7 +293,7 @@ export default class ServerComponent {
             result,
             hadError: false,
           };
-          this._server._sendSocketMessage(client, resultMessage);
+          client.sendSocketMessage(resultMessage);
         }, error => {
           const errorMessage: ErrorResponseMessage = {
             channel: 'service_framework3_rpc',
@@ -307,7 +302,7 @@ export default class ServerComponent {
             hadError: true,
             error: formatError(error),
           };
-          this._server._sendSocketMessage(client, errorMessage);
+          client.sendSocketMessage(errorMessage);
         });
         break;
       case 'observable':
@@ -340,7 +335,7 @@ export default class ServerComponent {
               data: data,
             },
           };
-          this._server._sendSocketMessage(client, eventMessage);
+          client.sendSocketMessage(eventMessage);
         }, error => {
           const errorMessage: ErrorResponseMessage = {
             channel: 'service_framework3_rpc',
@@ -349,7 +344,7 @@ export default class ServerComponent {
             hadError: true,
             error: formatError(error),
           };
-          this._server._sendSocketMessage(client, errorMessage);
+          client.sendSocketMessage(errorMessage);
           this._subscriptions.delete(requestId);
         }, completed => {
           const eventMessage: ObservableResponseMessage = {
@@ -359,7 +354,7 @@ export default class ServerComponent {
             hadError: false,
             result: { type: 'completed' },
           };
-          this._server._sendSocketMessage(client, eventMessage);
+          client.sendSocketMessage(eventMessage);
           this._subscriptions.delete(requestId);
         });
         this._subscriptions.set(requestId, subscription);

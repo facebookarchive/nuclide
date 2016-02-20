@@ -12,9 +12,11 @@
 import NuclideServer from '../lib/NuclideServer';
 import ServiceFramework from '../lib/serviceframework';
 import NuclideSocket from '../lib/NuclideSocket';
+import {SocketClient} from '../lib/SocketClient';
 
 let server: NuclideServer;
 let socket: NuclideSocket;
+let serverSocketClient: SocketClient;
 
 xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-disabled-tests
   beforeEach(() => {
@@ -23,6 +25,12 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
       server = new NuclideServer({port: 8176}, ServiceFramework.loadServicesConfig());
       await server.connect();
       socket = new NuclideSocket('http://localhost:8176');
+
+      const clientId = Array.from(server._clients.keys())[0];
+      const client = server._clients.get(clientId);
+      invariant(client != null);
+      serverSocketClient = client;
+      expect(serverSocketClient.id).toBe(clientId);
     });
 
     // Use spec-helper.coffee utils to test the the heartbeat interval.
@@ -105,7 +113,7 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
     it('the socket would send the cached messages on reconnect', () => {
       const reconnectHandler: Function = (jasmine.createSpy(): any);
       socket.on('reconnect', reconnectHandler);
-      spyOn(server, '_onSocketMessage');
+      spyOn(serverSocketClient, '_onSocketMessage');
 
       const message0 = {foo0: 'bar0'};
       const message1 = {foo1: 'bar1'};
@@ -115,7 +123,7 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
 
       waitsForPromise(() => socket.waitForConnect());
       runs(() => socket.send(message0));
-      waitsFor(() => server._onSocketMessage.calls.length === 1);
+      waitsFor(() => serverSocketClient._onSocketMessage.calls.length === 1);
 
       runs(() => {
         // This call will error, because the socket will be closed on the next statement
@@ -133,13 +141,18 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
         window.advanceClock(6000); // The maximum reconnect time is 5 seconds.
       });
       waitsFor(() => reconnectHandler.callCount > 0);
-      waitsFor(() => server._onSocketMessage.calls.length === 5);
+      waitsFor(() => serverSocketClient._onSocketMessage.calls.length === 5);
       runs(() => {
-        expect(server._onSocketMessage.calls[0].args[1]).toEqual(JSON.stringify(message0));
-        expect(server._onSocketMessage.calls[1].args[1]).toEqual(JSON.stringify(message1));
-        expect(server._onSocketMessage.calls[2].args[1]).toEqual(JSON.stringify(message2));
-        expect(server._onSocketMessage.calls[3].args[1]).toEqual(JSON.stringify(message3));
-        expect(server._onSocketMessage.calls[4].args[1]).toEqual(JSON.stringify(message4));
+        expect(serverSocketClient._onSocketMessage.calls[0].args[1])
+          .toEqual(JSON.stringify(message0));
+        expect(serverSocketClient._onSocketMessage.calls[1].args[1])
+          .toEqual(JSON.stringify(message1));
+        expect(serverSocketClient._onSocketMessage.calls[2].args[1])
+          .toEqual(JSON.stringify(message2));
+        expect(serverSocketClient._onSocketMessage.calls[3].args[1])
+          .toEqual(JSON.stringify(message3));
+        expect(serverSocketClient._onSocketMessage.calls[4].args[1])
+          .toEqual(JSON.stringify(message4));
       });
     });
   });
