@@ -10,6 +10,7 @@
  */
 
 import ConnectionTracker from './ConnectionTracker';
+import type {RemoteConnectionConfiguration} from './RemoteConnection';
 
 const SshConnection = require('ssh2').Client;
 const fs = require('fs-plus');
@@ -380,9 +381,10 @@ export class SshHandshake {
       return;
     }
 
-    const finishHandshake = async (connection: RemoteConnection) => {
+    const connect = async (config: RemoteConnectionConfiguration) => {
+      let connection = null;
       try {
-        await connection.initialize();
+        connection = await RemoteConnection.findOrCreate(config);
       } catch (e) {
         this._error(
           'Connection check failed',
@@ -390,10 +392,12 @@ export class SshHandshake {
           e,
         );
       }
-      this._didConnect(connection);
-      // If we are secure then we don't need the ssh tunnel.
-      if (this._isSecure()) {
-        this._connection.end();
+      if (connection != null) {
+        this._didConnect(connection);
+        // If we are secure then we don't need the ssh tunnel.
+        if (this._isSecure()) {
+          this._connection.end();
+        }
       }
     };
 
@@ -401,7 +405,7 @@ export class SshHandshake {
     if (this._isSecure()) {
       invariant(this._remoteHost);
       invariant(this._remotePort);
-      const connection = new RemoteConnection({
+      connect({
         host: this._remoteHost,
         port: this._remotePort,
         cwd: this._config.cwd,
@@ -409,7 +413,6 @@ export class SshHandshake {
         clientCertificate: this._clientCertificate,
         clientKey: this._clientKey,
       });
-      finishHandshake(connection);
     } else {
       /* $FlowIssue t9212378 */
       this._forwardingServer = net.createServer(sock => {
@@ -417,12 +420,11 @@ export class SshHandshake {
       }).listen(0, 'localhost', () => {
         const localPort = this._getLocalPort();
         invariant(localPort);
-        const connection = new RemoteConnection({
+        connect({
           host: 'localhost',
           port: localPort,
           cwd: this._config.cwd,
         });
-        finishHandshake(connection);
       });
     }
   }

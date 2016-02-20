@@ -43,8 +43,6 @@ const HEARTBEAT_NOTIFICATION_WARNING = 2;
 const FILE_WATCHER_SERVICE = 'FileWatcherService';
 const FILE_SYSTEM_SERVICE = 'FileSystemService';
 
-const CONNECTION_ALREADY_EXISTS = 'A connection already exists for the specified directory.';
-
 type HeartbeatNotification = {
   notification: atom$Notification,
   code: string,
@@ -74,6 +72,13 @@ class RemoteConnection {
 
   static _connections: Array<RemoteConnection> = [];
 
+  static findOrCreate(config: RemoteConnectionConfiguration):
+      Promise<RemoteConnection> {
+    const connection = new RemoteConnection(config);
+    return connection._initialize();
+  }
+
+  // Do NOT call this directly. Use findOrCreate instead.
   constructor(config: RemoteConnectionConfiguration) {
     this._subscriptions = new CompositeDisposable();
     this._entries = {};
@@ -86,18 +91,16 @@ class RemoteConnection {
     this._subscriptions.dispose();
   }
 
-  static async _createInsecureConnectionForTesting(
+  static _createInsecureConnectionForTesting(
     cwd: string,
     port: number,
-  ): Promise<?RemoteConnection> {
+  ): Promise<RemoteConnection> {
     const config = {
       host: 'localhost',
       port,
       cwd,
     };
-    const connection = new RemoteConnection(config);
-    await connection.initialize();
-    return connection;
+    return RemoteConnection.findOrCreate(config);
   }
 
   /**
@@ -111,22 +114,12 @@ class RemoteConnection {
   ): Promise<?RemoteConnection> {
     const connectionConfig = getConnectionConfig(host);
     if (!connectionConfig) {
-      return;
+      return null;
     }
-    let connection;
     try {
       const config = {...connectionConfig, cwd};
-      connection = new RemoteConnection(config);
-      await connection.initialize();
-      return connection;
+      return await RemoteConnection.findOrCreate(config);
     } catch (e) {
-      if (e.message === CONNECTION_ALREADY_EXISTS) {
-        invariant(connection);
-        return RemoteConnection.getByHostnameAndPath(
-          connection.getRemoteHostname(),
-          connection.getPathForInitialWorkingDirectory(),
-        );
-      }
       logger.warn(`Failed to reuse connectionConfiguration for ${host}`, e);
       return null;
     }
@@ -353,7 +346,7 @@ class RemoteConnection {
     });
   }
 
-  async initialize(): Promise<void> {
+  async _initialize(): Promise<RemoteConnection> {
     // Right now we don't re-handshake.
     if (this._initialized === undefined) {
       this._initialized = false;
@@ -385,8 +378,10 @@ class RemoteConnection {
 
         // Now that we know the real path, it's possible this collides with an existing connection.
         // If so, we should just stop immediately.
-        if (RemoteConnection.getByHostnameAndPath(this._config.host, this._config.cwd) != null) {
-          throw new Error(CONNECTION_ALREADY_EXISTS);
+        const existingConnection =
+            RemoteConnection.getByHostnameAndPath(this._config.host, this._config.cwd);
+        if (existingConnection != null) {
+          return existingConnection;
         }
       } catch (e) {
         client.close();
@@ -410,6 +405,8 @@ class RemoteConnection {
       this._addConnection();
       this._watchRootProjectDirectory();
     }
+
+    return this;
   }
 
   _addConnection() {
