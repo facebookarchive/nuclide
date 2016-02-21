@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var jscs = require('jscodeshift');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +10,33 @@
  * the root directory of this source tree.
  */
 
-import type {Collection} from '../types/ast';
+var _require = require('./StringUtils');
 
-const jscs = require('jscodeshift');
-
-const {isLowerCase} = require('./StringUtils');
+var isLowerCase = _require.isLowerCase;
 
 // TODO: make this configurable somehow, we probably don't want to explicitly
 // list out all of the lowercase html tags that are built-in
-const LOWER_CASE_WHITE_LIST = new Set(['fbt']);
+var LOWER_CASE_WHITE_LIST = new Set(['fbt']);
 
 /**
  * This will get a list of identifiers for JSXElements in the AST
  */
-function getJSXIdentifiers(root: Collection): Set<string> {
-  const ids = new Set();
+function getJSXIdentifiers(root) {
+  var ids = new Set();
   root
-    // There should be an opening element for every single closing element so
-    // we can just look for opening ones
-    .find(jscs.JSXOpeningElement)
-    .filter(path => jscs.JSXIdentifier.check(path.node.name))
-    .forEach(path => {
-      const name = path.node.name.name;
-      // TODO: should this be here or in addMissingRequires?
-      if (!isLowerCase(name) || LOWER_CASE_WHITE_LIST.has(name)) {
-        ids.add(name);
-      }
-    });
+  // There should be an opening element for every single closing element so
+  // we can just look for opening ones
+  .find(jscs.JSXOpeningElement).filter(function (path) {
+    return jscs.JSXIdentifier.check(path.node.name);
+  }).forEach(function (path) {
+    var name = path.node.name.name;
+    // TODO: should this be here or in addMissingRequires?
+    if (!isLowerCase(name) || LOWER_CASE_WHITE_LIST.has(name)) {
+      ids.add(name);
+    }
+  });
   return ids;
 }
 
 module.exports = getJSXIdentifiers;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImdldEpTWElkZW50aWZpZXJzLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBYUEsSUFBTSxJQUFJLEdBQUcsT0FBTyxDQUFDLGFBQWEsQ0FBQyxDQUFDOzs7Ozs7Ozs7O2VBRWQsT0FBTyxDQUFDLGVBQWUsQ0FBQzs7SUFBdkMsV0FBVyxZQUFYLFdBQVc7Ozs7QUFJbEIsSUFBTSxxQkFBcUIsR0FBRyxJQUFJLEdBQUcsQ0FBQyxDQUFDLEtBQUssQ0FBQyxDQUFDLENBQUM7Ozs7O0FBSy9DLFNBQVMsaUJBQWlCLENBQUMsSUFBZ0IsRUFBZTtBQUN4RCxNQUFNLEdBQUcsR0FBRyxJQUFJLEdBQUcsRUFBRSxDQUFDO0FBQ3RCLE1BQUk7OztHQUdELElBQUksQ0FBQyxJQUFJLENBQUMsaUJBQWlCLENBQUMsQ0FDNUIsTUFBTSxDQUFDLFVBQUEsSUFBSTtXQUFJLElBQUksQ0FBQyxhQUFhLENBQUMsS0FBSyxDQUFDLElBQUksQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDO0dBQUEsQ0FBQyxDQUN4RCxPQUFPLENBQUMsVUFBQSxJQUFJLEVBQUk7QUFDZixRQUFNLElBQUksR0FBRyxJQUFJLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxJQUFJLENBQUM7O0FBRWpDLFFBQUksQ0FBQyxXQUFXLENBQUMsSUFBSSxDQUFDLElBQUkscUJBQXFCLENBQUMsR0FBRyxDQUFDLElBQUksQ0FBQyxFQUFFO0FBQ3pELFNBQUcsQ0FBQyxHQUFHLENBQUMsSUFBSSxDQUFDLENBQUM7S0FDZjtHQUNGLENBQUMsQ0FBQztBQUNMLFNBQU8sR0FBRyxDQUFDO0NBQ1o7O0FBRUQsTUFBTSxDQUFDLE9BQU8sR0FBRyxpQkFBaUIsQ0FBQyIsImZpbGUiOiJnZXRKU1hJZGVudGlmaWVycy5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtDb2xsZWN0aW9ufSBmcm9tICcuLi90eXBlcy9hc3QnO1xuXG5jb25zdCBqc2NzID0gcmVxdWlyZSgnanNjb2Rlc2hpZnQnKTtcblxuY29uc3Qge2lzTG93ZXJDYXNlfSA9IHJlcXVpcmUoJy4vU3RyaW5nVXRpbHMnKTtcblxuLy8gVE9ETzogbWFrZSB0aGlzIGNvbmZpZ3VyYWJsZSBzb21laG93LCB3ZSBwcm9iYWJseSBkb24ndCB3YW50IHRvIGV4cGxpY2l0bHlcbi8vIGxpc3Qgb3V0IGFsbCBvZiB0aGUgbG93ZXJjYXNlIGh0bWwgdGFncyB0aGF0IGFyZSBidWlsdC1pblxuY29uc3QgTE9XRVJfQ0FTRV9XSElURV9MSVNUID0gbmV3IFNldChbJ2ZidCddKTtcblxuLyoqXG4gKiBUaGlzIHdpbGwgZ2V0IGEgbGlzdCBvZiBpZGVudGlmaWVycyBmb3IgSlNYRWxlbWVudHMgaW4gdGhlIEFTVFxuICovXG5mdW5jdGlvbiBnZXRKU1hJZGVudGlmaWVycyhyb290OiBDb2xsZWN0aW9uKTogU2V0PHN0cmluZz4ge1xuICBjb25zdCBpZHMgPSBuZXcgU2V0KCk7XG4gIHJvb3RcbiAgICAvLyBUaGVyZSBzaG91bGQgYmUgYW4gb3BlbmluZyBlbGVtZW50IGZvciBldmVyeSBzaW5nbGUgY2xvc2luZyBlbGVtZW50IHNvXG4gICAgLy8gd2UgY2FuIGp1c3QgbG9vayBmb3Igb3BlbmluZyBvbmVzXG4gICAgLmZpbmQoanNjcy5KU1hPcGVuaW5nRWxlbWVudClcbiAgICAuZmlsdGVyKHBhdGggPT4ganNjcy5KU1hJZGVudGlmaWVyLmNoZWNrKHBhdGgubm9kZS5uYW1lKSlcbiAgICAuZm9yRWFjaChwYXRoID0+IHtcbiAgICAgIGNvbnN0IG5hbWUgPSBwYXRoLm5vZGUubmFtZS5uYW1lO1xuICAgICAgLy8gVE9ETzogc2hvdWxkIHRoaXMgYmUgaGVyZSBvciBpbiBhZGRNaXNzaW5nUmVxdWlyZXM/XG4gICAgICBpZiAoIWlzTG93ZXJDYXNlKG5hbWUpIHx8IExPV0VSX0NBU0VfV0hJVEVfTElTVC5oYXMobmFtZSkpIHtcbiAgICAgICAgaWRzLmFkZChuYW1lKTtcbiAgICAgIH1cbiAgICB9KTtcbiAgcmV0dXJuIGlkcztcbn1cblxubW9kdWxlLmV4cG9ydHMgPSBnZXRKU1hJZGVudGlmaWVycztcbiJdfQ==

@@ -1,5 +1,17 @@
-'use babel';
-/* @flow */
+
+
+module.exports = {
+  activate: function activate(state) {},
+
+  provideNuclideDebuggerLLDB: function provideNuclideDebuggerLLDB() {
+    var Service = require('./Service');
+    return Service;
+  },
+
+  createDebuggerProvider: function createDebuggerProvider() {
+    return require('./DebuggerProvider');
+  }
+};
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -8,22 +20,4 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
-import type {
-  nuclide_debugger$Service,
-  NuclideDebuggerProvider,
-} from '../../interfaces/service';
-
-module.exports = {
-  activate(state: mixed): void {
-  },
-
-  provideNuclideDebuggerLLDB(): nuclide_debugger$Service {
-    const Service = require('./Service');
-    return Service;
-  },
-
-  createDebuggerProvider(): NuclideDebuggerProvider {
-    return require('./DebuggerProvider');
-  },
-};
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFnQkEsTUFBTSxDQUFDLE9BQU8sR0FBRztBQUNmLFVBQVEsRUFBQSxrQkFBQyxLQUFZLEVBQVEsRUFDNUI7O0FBRUQsNEJBQTBCLEVBQUEsc0NBQTZCO0FBQ3JELFFBQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyxXQUFXLENBQUMsQ0FBQztBQUNyQyxXQUFPLE9BQU8sQ0FBQztHQUNoQjs7QUFFRCx3QkFBc0IsRUFBQSxrQ0FBNEI7QUFDaEQsV0FBTyxPQUFPLENBQUMsb0JBQW9CLENBQUMsQ0FBQztHQUN0QztDQUNGLENBQUMiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtcbiAgbnVjbGlkZV9kZWJ1Z2dlciRTZXJ2aWNlLFxuICBOdWNsaWRlRGVidWdnZXJQcm92aWRlcixcbn0gZnJvbSAnLi4vLi4vaW50ZXJmYWNlcy9zZXJ2aWNlJztcblxubW9kdWxlLmV4cG9ydHMgPSB7XG4gIGFjdGl2YXRlKHN0YXRlOiBtaXhlZCk6IHZvaWQge1xuICB9LFxuXG4gIHByb3ZpZGVOdWNsaWRlRGVidWdnZXJMTERCKCk6IG51Y2xpZGVfZGVidWdnZXIkU2VydmljZSB7XG4gICAgY29uc3QgU2VydmljZSA9IHJlcXVpcmUoJy4vU2VydmljZScpO1xuICAgIHJldHVybiBTZXJ2aWNlO1xuICB9LFxuXG4gIGNyZWF0ZURlYnVnZ2VyUHJvdmlkZXIoKTogTnVjbGlkZURlYnVnZ2VyUHJvdmlkZXIge1xuICAgIHJldHVybiByZXF1aXJlKCcuL0RlYnVnZ2VyUHJvdmlkZXInKTtcbiAgfSxcbn07XG4iXX0=

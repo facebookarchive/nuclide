@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,55 +8,38 @@
  * the root directory of this source tree.
  */
 
-import type {ForStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var markers = require('../../constants/markers');
+var wrapStatement = require('../../wrappers/simple/wrapStatement');
 
-const markers = require('../../constants/markers');
-const wrapStatement = require('../../wrappers/simple/wrapStatement');
+function printForStatement(print, node) {
+  var wrap = function wrap(x) {
+    return wrapStatement(print, node, x);
+  };
 
-function printForStatement(print: Print, node: ForStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
-
-  let parts = [
-    markers.hardBreak,
-    'for (',
-    markers.openScope,
-    markers.scopeIndent,
-  ];
+  var parts = [markers.hardBreak, 'for (', markers.openScope, markers.scopeIndent];
   parts.push(markers.scopeBreak);
   if (node.init) {
-    const init = node.init;
+    var init = node.init;
     parts.push(print(init));
   }
   parts.push(';');
   parts.push(markers.scopeBreak);
   if (node.test) {
-    const test = node.test;
-    parts = parts.concat([
-      markers.space,
-      print(test),
-    ]);
+    var test = node.test;
+    parts = parts.concat([markers.space, print(test)]);
   }
   parts.push(';');
   parts.push(markers.scopeBreak);
   if (node.update) {
-    const update = node.update;
-    parts = parts.concat([
-      markers.space,
-      print(update),
-    ]);
+    var update = node.update;
+    parts = parts.concat([markers.space, print(update)]);
     // We only need an additional one if there was an update, otherwise we
     // just ended with a scopeBreak.
     parts.push(markers.scopeBreak);
   }
-  parts = parts.concat([
-    markers.scopeDedent,
-    markers.closeScope,
-    ')',
-    markers.space,
-    print(node.body),
-  ]);
+  parts = parts.concat([markers.scopeDedent, markers.closeScope, ')', markers.space, print(node.body)]);
   return wrap(parts);
 }
 
 module.exports = printForStatement;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50Rm9yU3RhdGVtZW50LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7QUFjQSxJQUFNLE9BQU8sR0FBRyxPQUFPLENBQUMseUJBQXlCLENBQUMsQ0FBQztBQUNuRCxJQUFNLGFBQWEsR0FBRyxPQUFPLENBQUMscUNBQXFDLENBQUMsQ0FBQzs7QUFFckUsU0FBUyxpQkFBaUIsQ0FBQyxLQUFZLEVBQUUsSUFBa0IsRUFBUztBQUNsRSxNQUFNLElBQUksR0FBRyxTQUFQLElBQUksQ0FBRyxDQUFDO1dBQUksYUFBYSxDQUFDLEtBQUssRUFBRSxJQUFJLEVBQUUsQ0FBQyxDQUFDO0dBQUEsQ0FBQzs7QUFFaEQsTUFBSSxLQUFLLEdBQUcsQ0FDVixPQUFPLENBQUMsU0FBUyxFQUNqQixPQUFPLEVBQ1AsT0FBTyxDQUFDLFNBQVMsRUFDakIsT0FBTyxDQUFDLFdBQVcsQ0FDcEIsQ0FBQztBQUNGLE9BQUssQ0FBQyxJQUFJLENBQUMsT0FBTyxDQUFDLFVBQVUsQ0FBQyxDQUFDO0FBQy9CLE1BQUksSUFBSSxDQUFDLElBQUksRUFBRTtBQUNiLFFBQU0sSUFBSSxHQUFHLElBQUksQ0FBQyxJQUFJLENBQUM7QUFDdkIsU0FBSyxDQUFDLElBQUksQ0FBQyxLQUFLLENBQUMsSUFBSSxDQUFDLENBQUMsQ0FBQztHQUN6QjtBQUNELE9BQUssQ0FBQyxJQUFJLENBQUMsR0FBRyxDQUFDLENBQUM7QUFDaEIsT0FBSyxDQUFDLElBQUksQ0FBQyxPQUFPLENBQUMsVUFBVSxDQUFDLENBQUM7QUFDL0IsTUFBSSxJQUFJLENBQUMsSUFBSSxFQUFFO0FBQ2IsUUFBTSxJQUFJLEdBQUcsSUFBSSxDQUFDLElBQUksQ0FBQztBQUN2QixTQUFLLEdBQUcsS0FBSyxDQUFDLE1BQU0sQ0FBQyxDQUNuQixPQUFPLENBQUMsS0FBSyxFQUNiLEtBQUssQ0FBQyxJQUFJLENBQUMsQ0FDWixDQUFDLENBQUM7R0FDSjtBQUNELE9BQUssQ0FBQyxJQUFJLENBQUMsR0FBRyxDQUFDLENBQUM7QUFDaEIsT0FBSyxDQUFDLElBQUksQ0FBQyxPQUFPLENBQUMsVUFBVSxDQUFDLENBQUM7QUFDL0IsTUFBSSxJQUFJLENBQUMsTUFBTSxFQUFFO0FBQ2YsUUFBTSxNQUFNLEdBQUcsSUFBSSxDQUFDLE1BQU0sQ0FBQztBQUMzQixTQUFLLEdBQUcsS0FBSyxDQUFDLE1BQU0sQ0FBQyxDQUNuQixPQUFPLENBQUMsS0FBSyxFQUNiLEtBQUssQ0FBQyxNQUFNLENBQUMsQ0FDZCxDQUFDLENBQUM7OztBQUdILFNBQUssQ0FBQyxJQUFJLENBQUMsT0FBTyxDQUFDLFVBQVUsQ0FBQyxDQUFDO0dBQ2hDO0FBQ0QsT0FBSyxHQUFHLEtBQUssQ0FBQyxNQUFNLENBQUMsQ0FDbkIsT0FBTyxDQUFDLFdBQVcsRUFDbkIsT0FBTyxDQUFDLFVBQVUsRUFDbEIsR0FBRyxFQUNILE9BQU8sQ0FBQyxLQUFLLEVBQ2IsS0FBSyxDQUFDLElBQUksQ0FBQyxJQUFJLENBQUMsQ0FDakIsQ0FBQyxDQUFDO0FBQ0gsU0FBTyxJQUFJLENBQUMsS0FBSyxDQUFDLENBQUM7Q0FDcEI7O0FBRUQsTUFBTSxDQUFDLE9BQU8sR0FBRyxpQkFBaUIsQ0FBQyIsImZpbGUiOiJwcmludEZvclN0YXRlbWVudC5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtGb3JTdGF0ZW1lbnR9IGZyb20gJ2FzdC10eXBlcy1mbG93JztcbmltcG9ydCB0eXBlIHtMaW5lcywgUHJpbnR9IGZyb20gJy4uLy4uL3R5cGVzL2NvbW1vbic7XG5cbmNvbnN0IG1hcmtlcnMgPSByZXF1aXJlKCcuLi8uLi9jb25zdGFudHMvbWFya2VycycpO1xuY29uc3Qgd3JhcFN0YXRlbWVudCA9IHJlcXVpcmUoJy4uLy4uL3dyYXBwZXJzL3NpbXBsZS93cmFwU3RhdGVtZW50Jyk7XG5cbmZ1bmN0aW9uIHByaW50Rm9yU3RhdGVtZW50KHByaW50OiBQcmludCwgbm9kZTogRm9yU3RhdGVtZW50KTogTGluZXMge1xuICBjb25zdCB3cmFwID0geCA9PiB3cmFwU3RhdGVtZW50KHByaW50LCBub2RlLCB4KTtcblxuICBsZXQgcGFydHMgPSBbXG4gICAgbWFya2Vycy5oYXJkQnJlYWssXG4gICAgJ2ZvciAoJyxcbiAgICBtYXJrZXJzLm9wZW5TY29wZSxcbiAgICBtYXJrZXJzLnNjb3BlSW5kZW50LFxuICBdO1xuICBwYXJ0cy5wdXNoKG1hcmtlcnMuc2NvcGVCcmVhayk7XG4gIGlmIChub2RlLmluaXQpIHtcbiAgICBjb25zdCBpbml0ID0gbm9kZS5pbml0O1xuICAgIHBhcnRzLnB1c2gocHJpbnQoaW5pdCkpO1xuICB9XG4gIHBhcnRzLnB1c2goJzsnKTtcbiAgcGFydHMucHVzaChtYXJrZXJzLnNjb3BlQnJlYWspO1xuICBpZiAobm9kZS50ZXN0KSB7XG4gICAgY29uc3QgdGVzdCA9IG5vZGUudGVzdDtcbiAgICBwYXJ0cyA9IHBhcnRzLmNvbmNhdChbXG4gICAgICBtYXJrZXJzLnNwYWNlLFxuICAgICAgcHJpbnQodGVzdCksXG4gICAgXSk7XG4gIH1cbiAgcGFydHMucHVzaCgnOycpO1xuICBwYXJ0cy5wdXNoKG1hcmtlcnMuc2NvcGVCcmVhayk7XG4gIGlmIChub2RlLnVwZGF0ZSkge1xuICAgIGNvbnN0IHVwZGF0ZSA9IG5vZGUudXBkYXRlO1xuICAgIHBhcnRzID0gcGFydHMuY29uY2F0KFtcbiAgICAgIG1hcmtlcnMuc3BhY2UsXG4gICAgICBwcmludCh1cGRhdGUpLFxuICAgIF0pO1xuICAgIC8vIFdlIG9ubHkgbmVlZCBhbiBhZGRpdGlvbmFsIG9uZSBpZiB0aGVyZSB3YXMgYW4gdXBkYXRlLCBvdGhlcndpc2Ugd2VcbiAgICAvLyBqdXN0IGVuZGVkIHdpdGggYSBzY29wZUJyZWFrLlxuICAgIHBhcnRzLnB1c2gobWFya2Vycy5zY29wZUJyZWFrKTtcbiAgfVxuICBwYXJ0cyA9IHBhcnRzLmNvbmNhdChbXG4gICAgbWFya2Vycy5zY29wZURlZGVudCxcbiAgICBtYXJrZXJzLmNsb3NlU2NvcGUsXG4gICAgJyknLFxuICAgIG1hcmtlcnMuc3BhY2UsXG4gICAgcHJpbnQobm9kZS5ib2R5KSxcbiAgXSk7XG4gIHJldHVybiB3cmFwKHBhcnRzKTtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSBwcmludEZvclN0YXRlbWVudDtcbiJdfQ==
