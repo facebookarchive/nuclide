@@ -1,5 +1,21 @@
 # Nuclide Changelog
 
+## 0.118.0
+
+### Added
+
+  * Open a newly duplicated file on duplication.
+  * Pretty toolbar dividers.
+  * React Native debugger w/o Buck.
+  * React Native iOS simulator logs.
+  * HHVM output is shown in the output window.
+
+### Fixed
+
+  * Correctly remember last connection profile.
+  * Close project files when removing project.
+  * CMD+C copying from "Find References".
+
 ## 0.117.0
 
 * Add commands for debugging non-Buck React Native apps (requires [react-native#5717](https://github.com/facebook/react-native/pull/5715))
