@@ -33,7 +33,7 @@ async function callDebugService(processInfo: DebuggerProcessInfo): Promise {
   atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
   const debuggerService = await require('../../service-hub-plus')
       .consumeFirstProvider('nuclide-debugger.remote');
-  debuggerService.debugHhvm(processInfo);
+  debuggerService.startDebugging(processInfo);
 }
 
 class HhvmToolbar extends React.Component {

@@ -10,6 +10,12 @@
  */
 
 import {DebuggerLaunchAttachProvider} from '../../atom';
+import {React} from 'react-for-atom';
+import {Dispatcher} from 'flux';
+import {LaunchAttachStore} from './LaunchAttachStore';
+import {LaunchUIComponent} from './LaunchUIComponent';
+import {AttachUIComponent} from './AttachUIComponent';
+import {LaunchAttachActions} from './LaunchAttachActions';
 
 export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   constructor(debuggingTypeName: string, targetUri: string) {
@@ -21,6 +27,15 @@ export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   }
 
   getComponent(action: string): ?ReactElement {
-    return null;
+    const dispatcher = new Dispatcher();
+    const actions = new LaunchAttachActions(dispatcher, this.getTargetUri());
+    const store = new LaunchAttachStore(dispatcher);
+    if (action === 'Launch') {
+      return <LaunchUIComponent store={store} actions={actions}/>;
+    } else if (action === 'Attach') {
+      return <AttachUIComponent store={store} actions={actions}/>;
+    } else {
+      return null;
+    }
   }
 }

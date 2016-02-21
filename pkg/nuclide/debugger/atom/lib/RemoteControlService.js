@@ -49,15 +49,6 @@ class RemoteControlService {
       });
   }
 
-  debugHhvm(processInfo: DebuggerProcessInfo): Promise<void> {
-    const modelNullable = this._getModel();
-    if (!modelNullable) {
-      return Promise.reject(new Error('Package is not activated.'));
-    }
-    const model = modelNullable;
-    return model.getActions().startDebugging(processInfo);
-  }
-
   debugNode(pid: number): Promise<void> {
     const model = this._getModel();
     if (!model) {
@@ -81,7 +72,6 @@ class RemoteControlService {
     }
     model.getActions().startDebugging(processInfo);
   }
-
 }
 
 module.exports = RemoteControlService;
