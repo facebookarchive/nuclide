@@ -43,7 +43,7 @@ module.exports = {
   /**
    * Send Http(s) GET request to given url and return the body as string.
    */
-  get(url: string, headers: ?Object): Promise<string> {
+  get(url: string, headers: ?Object, rejectUnauthorized: bool = true): Promise<string> {
     return new Promise((resolve, reject) => {
       let body = '';
       const options: Object = require('url').parse(url);
@@ -53,6 +53,7 @@ module.exports = {
       if (headers) {
         options.headers = headers;
       }
+      options.rejectUnauthorized = rejectUnauthorized;
       getProtocolModule(url).get(options, response => {
         if (response.statusCode < 200 || response.statusCode >= 300) {
           reject(`Bad status ${response.statusCode}`);
