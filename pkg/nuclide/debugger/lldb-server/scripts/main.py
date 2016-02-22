@@ -27,19 +27,44 @@ def parseArgs():
                         help='Port for the server to bind. (default: any)')
     parser.add_argument('--basepath', type=str, default='.',
                         help='Path against which to resolve relative paths.')
+    parser.add_argument('--interactive', '-i', type=str,
+                        help='Interactive mode.')
+
     attach_group = parser.add_mutually_exclusive_group()
-    attach_group.add_argument('--name', '-n', type=str,
+    attach_group.add_argument('--pname', '-n', type=str,
                               help='Attach to process with name.')
     attach_group.add_argument('--pid', '-p', type=int,
                               help='Attach to process with pid.')
+
+    launch_group = parser.add_argument_group()
+    launch_group.add_argument('--executable_path', '-e', type=str,
+                              help='The executable path to launch.')
+    launch_group.add_argument('--launch_arguments', '-args', type=str,
+                              help='Launch arguments.')
     return parser.parse_args()
+
+
+def interactive_loop(debugger):
+    while (True):
+        sys.stdout.write('dbg> ')
+        command = sys.stdin.readline().rstrip()
+        if len(command) == 0:
+            continue
+        elif command == 'q':
+            debugger.Destroy(debugger)
+            log_debug('bye~')
+            break
+        elif command == 'b':
+            debugger.GetSelectedTarget().process.Stop()
+        else:
+            debugger.HandleCommand(command)
 
 
 def main():
     args = parseArgs()
     debugger = lldb.SBDebugger.Create()
-    if args.name:
-        debugger.HandleCommand('process attach -n %r' % args.name)
+    if args.pname:
+        debugger.HandleCommand('process attach -n %r' % args.pname)
     elif args.pid:
         debugger.HandleCommand('process attach -p %d' % args.pid)
 
@@ -58,7 +83,11 @@ def main():
                                         port=args.port,
                                         basepath=args.basepath)
         log_debug('Port: %s' % app.debug_server.server_port)
-        app.start_blocking()
+        if args.interactive:
+            app.start_nonblocking()
+            interactive_loop(debugger)
+        else:
+            app.start_blocking()
     except KeyboardInterrupt:  # Force app to exit on Ctrl-C.
         os._exit(1)
 
