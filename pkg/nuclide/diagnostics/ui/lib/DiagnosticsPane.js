@@ -29,7 +29,7 @@ const FILE_COLUMN_WIDTH = 100;
 const LINE_COLUMN_WIDTH = 100;
 const PIXELS_PER_CHAR = 6;
 const ROW_HORIZONTAL_PADDING = 16; // 8px left and right padding.
-const ROW_VERTICAL_PADDING = 16; // 8px top and bottom padding.
+const ROW_VERTICAL_PADDING = 8; // 4px top and bottom padding.
 const SOURCE_COLUMN_WIDTH = 175;
 const TYPE_COLUMN_WIDTH = 100;
 
