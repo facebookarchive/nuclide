@@ -29,6 +29,8 @@ function setupServer(): void {
 
 async function main(args) {
   const serverStartTimer = startTracking('nuclide-server:start');
+  process.on('SIGHUP', () => {});
+
   try {
     setupServer();
     const {port} = args;
