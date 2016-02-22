@@ -58,7 +58,7 @@ class DiffCommitView extends React.Component {
       );
     } else {
       commitButton = (
-        <button className="btn btn-success commit-button"
+        <button className="btn btn-sm btn-success commit-button"
           onClick={this._onClickCommit}>
           {commitMode} to HEAD
         </button>
@@ -89,8 +89,8 @@ class DiffCommitView extends React.Component {
             gutterHidden={true}
           />
         </div>
-        <div className="tool-panel">
-          <div className="btn-group inline-block">
+        <div className="padded">
+          <div className="btn-group btn-group-sm inline-block">
             {commitModes}
           </div>
           {loadingIndicator}

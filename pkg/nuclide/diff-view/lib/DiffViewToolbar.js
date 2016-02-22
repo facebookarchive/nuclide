@@ -45,11 +45,11 @@ class DiffViewToolbar extends React.Component {
       );
     });
     return (
-      <div className="nuclide-diff-view-toolbar tool-panel">
-        <div className="btn-group">
+      <div className="nuclide-diff-view-toolbar padded">
+        <div className="btn-group btn-group-sm">
           {modes}
         </div>
-        <div className="editor-switch btn-group">
+        <div className="btn-group btn-group-sm">
           <button
             onClick={this.props.onSwitchToEditor}
             disabled={!hasActiveFile} className="btn">
