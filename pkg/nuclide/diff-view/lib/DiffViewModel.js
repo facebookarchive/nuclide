@@ -16,6 +16,7 @@ import type {NuclideUri} from '../../remote-uri';
 
 import invariant from 'assert';
 import {CompositeDisposable, Emitter} from 'atom';
+import {CommitMode} from './constants';
 import {repositoryForPath} from '../../hg-git-bridge';
 import {track, trackTiming} from '../../analytics';
 import {getFileSystemContents} from './utils';
@@ -47,6 +48,12 @@ function getInitialFileChangeState(): FileChangeState {
   };
 }
 
+type State = {
+  commitMessage: ?string,
+  isCommitMessageLoading: boolean,
+  commitMode: string,
+};
+
 class DiffViewModel {
 
   _emitter: Emitter;
@@ -61,6 +68,7 @@ class DiffViewModel {
   _repositoryStacks: Map<HgRepositoryClient, RepositoryStack>;
   _repositorySubscriptions: Map<HgRepositoryClient, CompositeDisposable>;
   _isActive: boolean;
+  _state: State;
   _debouncedEmitActiveFileUpdate: () => void;
 
   constructor(uiProviders: Array<Object>) {
@@ -72,6 +80,11 @@ class DiffViewModel {
     this._repositoryStacks = new Map();
     this._repositorySubscriptions = new Map();
     this._isActive = false;
+    this._state = {
+      commitMessage: null,
+      isCommitMessageLoading: false,
+      commitMode: CommitMode.COMMIT,
+    };
     this._updateRepositories();
     this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
     this._debouncedEmitActiveFileUpdate = debounce(
@@ -80,6 +93,10 @@ class DiffViewModel {
       false,
     );
     this._setActiveFileState(getInitialFileChangeState());
+  }
+
+  emitChange(): void {
+    this._emitter.emit('did-change');
   }
 
   _updateRepositories(): void {
@@ -381,6 +398,10 @@ class DiffViewModel {
     }
   }
 
+  addChangeListener(callback: () => mixed): IDisposable {
+    return this._emitter.on('did-change', callback);
+  }
+
   onDidChangeDirtyStatus(
     callback: (dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>) => void
   ): IDisposable {
@@ -421,7 +442,31 @@ class DiffViewModel {
     return this._compareFileChanges;
   }
 
-  async getActiveRepositoryLatestCommitMessage(): Promise<string> {
+  // TODO(ssorallen): This should be removed by moving the DiffMode from DiffViewComponent's state
+  //   into this model. After that, commit message loading can be triggered by either changing the
+  //   the diff mode *or* the commit mode.
+  async loadCommitMessage(): Promise<void> {
+    this._state.isCommitMessageLoading = true;
+    this.emitChange();
+
+    let commitMessage;
+    try {
+      if (this._state.commitMode === CommitMode.COMMIT) {
+        commitMessage = await this._loadActiveRepositoryTemplateCommitMessage();
+      } else {
+        commitMessage = await this._loadActiveRepositoryLatestCommitMessage();
+      }
+    } catch (error) {
+      this._state.commitMessage = null;
+      notifyInternalError(error);
+    } finally {
+      this._state.isCommitMessageLoading = false;
+    }
+    this._state.commitMessage = commitMessage;
+    this.emitChange();
+  }
+
+  async _loadActiveRepositoryLatestCommitMessage(): Promise<string> {
     if (this._activeRepositoryStack == null) {
       throw new Error('Diff View: No active file or repository open');
     }
@@ -432,7 +477,7 @@ class DiffViewModel {
     return revisions[revisions.length - 1].description;
   }
 
-  getActiveRepositoryTemplateCommitMessage(): Promise<string> {
+  _loadActiveRepositoryTemplateCommitMessage(): Promise<string> {
     if (this._activeRepositoryStack == null) {
       throw new Error('Diff View: No active file or repository open');
     }
@@ -444,6 +489,25 @@ class DiffViewModel {
       return null;
     }
     return await this._activeRepositoryStack.getCachedRevisionsStatePromise();
+  }
+
+  getCommitMessage(): ?string {
+    return this._state.commitMessage;
+  }
+
+  getIsCommitMessageLoading(): boolean {
+    return this._state.isCommitMessageLoading;
+  }
+
+  getCommitMode(): string {
+    return this._state.commitMode;
+  }
+
+  setCommitMode(commitMode: string): void {
+    this._state.commitMode = commitMode;
+    // When the commit mode changes, load the appropriate commit message.
+    this.loadCommitMessage();
+    this.emitChange();
   }
 
   activate(): void {

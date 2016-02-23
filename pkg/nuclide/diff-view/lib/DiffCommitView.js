@@ -13,9 +13,9 @@ import type {CommitModeType} from './types';
 import type DiffViewModel from './DiffViewModel';
 
 import AtomTextEditor from '../../ui/atom-text-editor';
-import {CommitMode} from './constants';
 import classnames from 'classnames';
-import {notifyInternalError} from './notifications';
+import {CommitMode} from './constants';
+import {CompositeDisposable} from 'atom';
 
 import {React} from 'react-for-atom';
 
@@ -23,35 +23,48 @@ type Props = {
   diffModel: DiffViewModel;
 };
 
-type State = {
-  commitMode: CommitModeType;
-  loading: boolean;
-  commitMessage: ?string;
-};
-
 class DiffCommitView extends React.Component {
   props: Props;
-  state: State;
+
+  _disposables: CompositeDisposable;
 
   constructor(props: Props) {
     super(props);
-    const commitMode = CommitMode.COMMIT;
-    this.state = {
-      commitMode,
-      commitMessage: null,
-      loading: true,
-    };
+    this._disposables = new CompositeDisposable();
     (this: any)._onClickCommit = this._onClickCommit.bind(this);
   }
 
-  componentWillMount(): void {
-    this._loadCommitMessage(this.state.commitMode);
+  componentDidMount(): void {
+    this._disposables.add(
+      this.props.diffModel.addChangeListener(() => {
+        this.forceUpdate();
+      })
+    );
+    this.props.diffModel.loadCommitMessage();
+  }
+
+  componentDidUpdate(): void {
+    this.refs['message'].getTextBuffer().setText(this.props.diffModel.getCommitMessage() || '');
+  }
+
+  componentWillUnmount(): void {
+    this._disposables.dispose();
+  }
+
+  _onClickCommit(): void {
+    // TODO(most): real commit/amend logic.
+  }
+
+  _onChangeCommitMode(commitMode: CommitModeType): void {
+    this.props.diffModel.setCommitMode(commitMode);
   }
 
   render(): ReactElement {
     let loadingIndicator = null;
     let commitButton = null;
-    const {commitMode, loading} = this.state;
+    const commitMode = this.props.diffModel.getCommitMode();
+    const loading = this.props.diffModel.getIsCommitMessageLoading();
+
     if (loading) {
       loadingIndicator = (
         <span className="loading loading-spinner-tiny inline-block"></span>
@@ -64,6 +77,7 @@ class DiffCommitView extends React.Component {
         </button>
       );
     }
+
     const commitModes = Object.keys(CommitMode).map(modeId => {
       const modeValue = CommitMode[modeId];
       const className = classnames({
@@ -85,7 +99,7 @@ class DiffCommitView extends React.Component {
         <div className="message-editor-wrapper">
           <AtomTextEditor
             ref="message"
-            readOnly={this.state.loading}
+            readOnly={loading}
             gutterHidden={true}
           />
         </div>
@@ -97,38 +111,6 @@ class DiffCommitView extends React.Component {
           {commitButton}
         </div>
       </div>
-    );
-  }
-
-  componentDidUpdate(): void {
-    this.refs['message'].getTextBuffer().setText(this.state.commitMessage || '');
-  }
-
-  _onClickCommit(): void {
-    // TODO(most): real commit/amend logic.
-  }
-
-  _onChangeCommitMode(commitMode: CommitModeType): void {
-    if (commitMode === this.state.commitMode) {
-      return;
-    }
-    this.setState({commitMode, loading: true, commitMessage: null});
-    this._loadCommitMessage(commitMode);
-  }
-
-  _loadCommitMessage(commitMode: CommitModeType): void {
-    const {diffModel} = this.props;
-    const commitMessagePromise = commitMode === CommitMode.COMMIT
-      ? diffModel.getActiveRepositoryTemplateCommitMessage()
-      : diffModel.getActiveRepositoryLatestCommitMessage();
-    commitMessagePromise.then(
-      commitMessage => {
-        this.setState({commitMode, loading: false, commitMessage});
-      },
-      error => {
-        this.setState({commitMode, loading: false, commitMessage: null});
-        notifyInternalError(error);
-      },
     );
   }
 }
