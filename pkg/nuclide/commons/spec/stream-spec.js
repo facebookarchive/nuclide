@@ -35,4 +35,27 @@ describe('nuclide-commons/stream', () => {
       expect(output.join('')).toEqual(input.join(''));
     });
   });
+
+  it('observeStream - error', () => {
+    waitsForPromise(async () => {
+      const stream = new PassThrough();
+      const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
+      const output = [];
+      const promise = new Promise((resolve, reject) => {
+        observeStream(stream).subscribe(
+          v => output.push(v),
+          e => resolve(e),
+          () => {}
+        );
+      });
+      const error = new Error('Had an error');
+
+      input.forEach(value => { stream.write(value, 'utf8'); });
+      stream.emit('error', error);
+
+      const result = await promise;
+      expect(output).toEqual(input);
+      expect(result).toBe(error);
+    });
+  });
 });

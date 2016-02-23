@@ -17,7 +17,7 @@ import {Observable} from 'rx';
  * Observe a stream like stdout or stderr.
  */
 export function observeStream(stream: stream$Readable): ObservableType<string> {
-  const error = Observable.fromEvent(stream, 'error').flatMap(Observable.throwError);
+  const error = Observable.fromEvent(stream, 'error').flatMap(Observable.throw);
   return Observable.fromEvent(stream, 'data').map(data => data.toString()).
     merge(error).
     takeUntil(Observable.fromEvent(stream, 'end').amb(error));
