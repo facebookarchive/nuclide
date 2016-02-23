@@ -466,7 +466,7 @@ module.exports = class HackLanguage {
 
     let isXHP = false;
     let xhpMatch;
-    while  (xhpMatch = XHP_LINE_TEXT_REGEX.exec(lineText)) { // eslint-disable-line no-cond-assign
+    while  ((xhpMatch = XHP_LINE_TEXT_REGEX.exec(lineText))) {
       const xhpMatchIndex = xhpMatch.index + 1;
       if (column >= xhpMatchIndex && column < (xhpMatchIndex + xhpMatch[1].length)) {
         isXHP = true;
