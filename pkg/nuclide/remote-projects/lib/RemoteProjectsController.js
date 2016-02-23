@@ -80,7 +80,7 @@ class RemoteProjectsController {
       return;
     }
 
-    const socket = connection.getSocket();
+    const socket = connection.getConnection().getSocket();
     updateStatus(socket.isConnected());
     socket.on('status', updateStatus);
 

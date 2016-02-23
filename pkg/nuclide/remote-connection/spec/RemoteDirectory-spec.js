@@ -91,13 +91,12 @@ describe('RemoteDirectory::getEntries()', () => {
       const directoryStats = {isFile() { return false; }};
 
       // Directories should sort first, then files, and case should be ignored
-      spyOn(connectionMock.getClient(), 'readdir').andReturn([
+      spyOn(connectionMock.getFsService(), 'readdir').andReturn([
         {file: 'Aa', stats: fileStats},
         {file: 'a', stats: fileStats},
         {file: 'Bb', stats: directoryStats},
         {file: 'b', stats: directoryStats},
       ]);
-
       const remoteDirectory = new RemoteDirectory(connectionMock, 'nuclide://example.com:9090/');
 
       remoteDirectory.getEntries((err, entries) => {
@@ -118,7 +117,7 @@ describe('RemoteDirectory::getEntries()', () => {
     let complete = false;
 
     runs(() => {
-      spyOn(connectionMock.getClient(), 'readdir').andCallFake(() => {
+      spyOn(connectionMock.getFsService(), 'readdir').andCallFake(() => {
         throw new Error('ENOENT');
       });
 
@@ -307,15 +306,13 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
     directoryPath = temp.mkdirSync('on_did_change_test');
     filePath = path.join(directoryPath, 'sample_file.txt');
     fs.writeFileSync(filePath, 'sample contents!');
-    // $FlowFixMe old API usage - disabled.
-    waitsForPromise(() => connectionMock.getClient().watchDirectoryRecursive(directoryPath));
+    waitsForPromise(() => connectionMock.getFsService().watchDirectoryRecursive(directoryPath));
     // wait for the watchman to settle on the created directory and file.
     waits(WATCHMAN_SETTLE_TIME_MS + /* buffer */ 10);
   });
 
   afterEach(() => {
-    // $FlowFixMe old API usage - disabled.
-    waitsForPromise(() => connectionMock.getClient().unwatchDirectoryRecursive(directoryPath));
+    waitsForPromise(() => connectionMock.getFsService().unwatchDirectoryRecursive(directoryPath));
   });
 
   it('notifies onDidChange observers when a new file is added to the directory', () => {

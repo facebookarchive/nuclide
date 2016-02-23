@@ -24,7 +24,13 @@ describe('getFileForPath()', () => {
         return null;
       }
       if (!connection) {
-        connection = new RemoteConnection({host: 'server', cwd: '', port: 123});
+        const server: any = {
+          getRemoteHost() {
+            return 'server';
+          },
+          port: 123,
+        };
+        connection = new RemoteConnection(server, '');
         // $FlowFixMe Skip the usage of the watcher service.
         connection._addHandlersForEntry = () => {};
       }

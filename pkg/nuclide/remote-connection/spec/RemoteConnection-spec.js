@@ -10,7 +10,8 @@
  */
 
 const fs = require('fs');
-const {RemoteConnection, __test__} = require('../lib/RemoteConnection');
+const {RemoteConnection} = require('../lib/RemoteConnection');
+const {ServerConnection, __test__} = require('../lib/ServerConnection');
 const path = require('path');
 const pathToFakePk = path.join(__dirname, 'fakepk');
 
@@ -22,16 +23,17 @@ describe('RemoteConnection', () => {
 
   beforeEach(() => {
     fs.writeFileSync(pathToFakePk, '');
-    testConnection = {
-      getPathForInitialWorkingDirectory: () => testPath,
-      getRemoteHostname: () => testHostname,
-    };
-    // $FlowFixMe This should be a mock.
-    testConnections.push(testConnection);
+    const server = new ServerConnection({
+      host: testHostname,
+      port: 8192,
+    });
+    testConnections.set(testHostname, server);
+    testConnection = new RemoteConnection(server, testPath);
+    server.addConnection(testConnection);
   });
 
   afterEach(() => {
-    testConnections.splice(0);
+    testConnections.delete(testHostname);
     if (fs.existsSync(pathToFakePk)) {
       fs.unlink(pathToFakePk);
     }

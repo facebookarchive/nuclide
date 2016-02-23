@@ -11,26 +11,25 @@
 
 import invariant from 'assert';
 import {getLogger} from '../../logging';
-import type {RemoteConnectionConfiguration} from './RemoteConnection';
+import type {ServerConnectionConfiguration} from './ServerConnection';
 
 const logger = getLogger();
 
 /**
- * Version of RemoteConnectionConfiguration that uses string instead of Buffer for fields so it can
+ * Version of ServerConnectionConfiguration that uses string instead of Buffer for fields so it can
  * be translated directly to/from JSON.
  */
-type SerializableRemoteConnectionConfiguration = {
-  host: string;
-  port: number;
-  cwd: string;
-  certificateAuthorityCertificate?: string;
-  clientCertificate?: string;
-  clientKey?: string;
+type SerializableServerConnectionConfiguration = {
+  host: string,
+  port: number,
+  certificateAuthorityCertificate?: string,
+  clientCertificate?: string,
+  clientKey?: string,
 }
 
 const CONFIG_KEY_PREFIX = 'nuclide.nuclide-connection.config';
 
-export function getConnectionConfig(host: string): ?RemoteConnectionConfiguration {
+export function getConnectionConfig(host: string): ?ServerConnectionConfiguration {
   // $FlowIssue
   const storedConfig = atom.config.get(getAtomConfigKey(host));
   // $UPFixMe: These settings should go through nuclide-feature-config
@@ -45,7 +44,7 @@ export function getConnectionConfig(host: string): ?RemoteConnectionConfiguratio
   }
 }
 
-export function setConnectionConfig(config: RemoteConnectionConfiguration): void {
+export function setConnectionConfig(config: ServerConnectionConfiguration): void {
   try {
     atom.config.set(getAtomConfigKey(config.host), encryptConfig(config));
   } catch (e) {
@@ -63,8 +62,8 @@ function getAtomConfigKey(host: string): string {
  * @return returns the passed in config with the clientKey encrypted.
  */
 function encryptConfig(
-  remoteProjectConfig: RemoteConnectionConfiguration,
-): SerializableRemoteConnectionConfiguration {
+  remoteProjectConfig: ServerConnectionConfiguration,
+): SerializableServerConnectionConfiguration {
   const {replacePassword} = require('../../keytar-wrapper');
   const crypto = require('crypto');
 
@@ -86,7 +85,6 @@ function encryptConfig(
   return {
     host: remoteProjectConfig.host,
     port: remoteProjectConfig.port,
-    cwd: remoteProjectConfig.cwd,
     certificateAuthorityCertificate: certificateAuthorityCertificate.toString(),
     clientCertificate: clientCertificate.toString(),
     clientKey: clientKeyWithSalt,
@@ -94,13 +92,13 @@ function encryptConfig(
 }
 
 /**
- * Decrypts the clientKey of a SerializableRemoteConnectionConfiguration.
+ * Decrypts the clientKey of a SerializableServerConnectionConfiguration.
  * @param remoteProjectConfig - The config with the clientKey we want encrypted.
  * @return returns the passed in config with the clientKey encrypted.
  */
 function decryptConfig(
-  remoteProjectConfig: SerializableRemoteConnectionConfiguration,
-): RemoteConnectionConfiguration {
+  remoteProjectConfig: SerializableServerConnectionConfiguration,
+): ServerConnectionConfiguration {
   const {getPassword} = require('../../keytar-wrapper');
   const crypto = require('crypto');
 
@@ -134,7 +132,6 @@ function decryptConfig(
   return {
     host: remoteProjectConfig.host,
     port: remoteProjectConfig.port,
-    cwd: remoteProjectConfig.cwd,
     certificateAuthorityCertificate: new Buffer(certificateAuthorityCertificate),
     clientCertificate: new Buffer(clientCertificate),
     clientKey: new Buffer(restoredClientKey),

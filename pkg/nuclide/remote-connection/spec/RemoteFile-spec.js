@@ -185,8 +185,7 @@ describe('RemoteFile', () => {
       file = new RemoteFile(connectionMock, filePath);
       fs.writeFileSync(filePath, 'sample contents');
       // Ask watchman to watch the directory.
-      // $FlowFixMe old API usage - disabled.
-      waitsForPromise(() => connectionMock.getClient().watchDirectoryRecursive(tempDir));
+      waitsForPromise(() => connectionMock.getFsService().watchDirectoryRecursive(tempDir));
       // wait for the watchman to settle on the created directory and file.
       waits(WATCHMAN_SETTLE_TIME_MS + /* buffer */ 10);
     });
@@ -194,8 +193,7 @@ describe('RemoteFile', () => {
     afterEach(() => {
       waitsForPromise(async () => {
         await file._unsubscribeFromNativeChangeEvents();
-        // $FlowFixMe old API usage - disabled.
-        await connectionMock.getClient().unwatchDirectoryRecursive(tempDir);
+        await connectionMock.getFsService().unwatchDirectoryRecursive(tempDir);
       });
     });
 

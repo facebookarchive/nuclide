@@ -12,7 +12,7 @@
 import type {NuclideUri} from '../../remote-uri';
 
 const logger = require('../../logging').getLogger();
-const {RemoteConnection} = require('./RemoteConnection');
+const {ServerConnection} = require('./ServerConnection');
 const {isRemote, getHostname} = require('../../remote-uri');
 
 import invariant from 'assert';
@@ -43,11 +43,11 @@ function getServiceByNuclideUri(
  */
 function getService(serviceName: string, hostname: ?string): ?any {
   if (hostname) {
-    const remoteConnection = RemoteConnection.getByHostnameAndPath(hostname, null);
-    if (remoteConnection == null) {
+    const serverConnection = ServerConnection.getByHostname(hostname);
+    if (serverConnection == null) {
       return null;
     }
-    return remoteConnection.getService(serviceName);
+    return serverConnection.getService(serviceName);
   } else {
     const [serviceConfig] = newServices.filter(config => config.name === serviceName);
     invariant(serviceConfig, `No config found for service ${serviceName}`);

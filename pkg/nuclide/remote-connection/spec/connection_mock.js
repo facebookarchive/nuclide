@@ -33,8 +33,8 @@ fsPromise.copy = async function(src, dst) {
   return true;
 };
 
-const connectionMock: RemoteConnection = ({
-  getClient: () => fsPromise,
+const connectionMock: RemoteConnection & { getFsService(): Object } = ({
+  getFsService: () => fsPromise,
   createDirectory: uri => new RemoteDirectory(connectionMock, uri),
   createFile: uri => new RemoteFile(connectionMock, uri),
   getService: (serviceName: string) => {
