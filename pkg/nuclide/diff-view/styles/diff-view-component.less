@@ -171,39 +171,30 @@
 }
 
 // Default colors for themes that do not specify any.
-@success-color: #0c0;
-@success-color: @text-color-success;
+@add-color: #0c0;
+@add-color: @text-color-success;
 
-@error-color: #c00;
-@error-color: @text-color-error;
+@remove-color: #c00;
+@remove-color: @text-color-error;
 
-@backgroundLuma: luma(@syntax-background-color);
-@lumaThreshold: 50%;
-@blendAmount: 40%;
+@blendAmount: 7%;
 
 atom-text-editor, atom-text-editor::shadow {
 
-  // `screen` works well for dark themes,
-  // `multiply` works well for light themes
-
   .diff-view-insert .region {
-    @success-color-faded: fade(@success-color, @blendAmount);
-    & when (@backgroundLuma <= @lumaThreshold) {
-      background-color: screen(@syntax-background-color, @success-color-faded);
-    }
-    & when (@backgroundLuma > @lumaThreshold) {
-      background-color: multiply(@syntax-background-color, @success-color-faded);
-    }
+    @add-color-faded: fade(@add-color, @blendAmount);
+    border-style: solid;
+    border-color: @add-color;
+    border-width: 1px;
+    background-color: @add-color-faded;
   }
 
   .diff-view-delete .region {
-    @error-color-faded: fade(@error-color, @blendAmount);
-    & when (@backgroundLuma <= @lumaThreshold) {
-      background-color: screen(@syntax-background-color, @error-color-faded);
-    }
-    & when (@backgroundLuma > @lumaThreshold) {
-      background-color: multiply(@syntax-background-color, @error-color-faded);
-    }
+    @remove-color-faded: fade(@remove-color, @blendAmount);
+    border-style: solid;
+    border-color: @remove-color;
+    border-width: 1px;
+    background-color: @remove-color-faded;
   }
 }
 
