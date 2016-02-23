@@ -55,6 +55,12 @@ function aFileSearchShould(typename) {
       });
     });
 
+    // Jasmine won't trigger temp's cleanup handler. Do it manually.
+    // This is especially important since we create Watchman watches on the temp directories.
+    afterEach(() => {
+      temp.cleanupSync();
+    });
+
     describe('a FileSearch at the root of a project', () => {
       function correctIndexes(indexes): Array<number> {
         return indexes.map(index => {

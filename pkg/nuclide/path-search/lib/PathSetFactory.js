@@ -19,6 +19,7 @@ import {spawn} from 'child_process';
 import split from 'split';
 
 import PathSet from './PathSet';
+import {WatchmanClient} from '../../watchman-helpers';
 
 function getFilesFromCommand(
     command: string,
@@ -140,6 +141,20 @@ function getAllFiles(localDirectory: string): Promise<FilePathsPseudoSet> {
       filePath => filePath.substring(2));
 }
 
+async function getFilesFromWatchman(localDirectory: string): Promise<FilePathsPseudoSet> {
+  const watchmanClient = new WatchmanClient();
+  try {
+    const files = await watchmanClient.listFiles(localDirectory);
+    const filePaths = {};
+    for (const file of files) {
+      filePaths[file] = true;
+    }
+    return filePaths;
+  } finally {
+    watchmanClient.dispose();
+  }
+}
+
 /**
  * Creates a `PathSet` with the contents of the specified directory.
  */
@@ -148,7 +163,8 @@ export async function createPathSet(localDirectory: string): Promise<PathSet> {
   // a fast source control index.
   // TODO (williamsc) once ``{HG|Git}Repository` is working in nuclide-server,
   // use those instead to determine VCS.
-  const paths = await getFilesFromHg(localDirectory)
+  const paths = await getFilesFromWatchman(localDirectory)
+      .catch(() => getFilesFromHg(localDirectory))
       .catch(() => getFilesFromGit(localDirectory))
       .catch(() => getAllFiles(localDirectory))
       .catch(() => { throw new Error(`Failed to populate FileSearch for ${localDirectory}`); });

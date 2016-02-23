@@ -48,7 +48,9 @@ class WatchmanClient {
   }
 
   async dispose(): Promise<void> {
-    (await this._clientPromise).end();
+    const client = await this._clientPromise;
+    client.removeAllListeners(); // disable reconnection
+    client.end();
   }
 
   async _initWatchmanClient(): Promise<void> {
@@ -179,6 +181,22 @@ class WatchmanClient {
       }
       this._deleteSubscription(entryPath);
     }
+  }
+
+  /**
+   * List all (watched) files in the given directory.
+   * Paths will be relative.
+   */
+  async listFiles(entryPath: string): Promise<Array<string>> {
+    const {watch, relative_path} = await this._watchProject(entryPath);
+    const result = await this._command('query', watch, {
+      expression: ['type', 'f'], // all files
+      fields: ['name'],          // names only
+      relative_root: relative_path,
+      // Do not wait for Watchman to sync. We can subscribe to updates for this.
+      sync_timeout: 0,
+    });
+    return result.files;
   }
 
   async _watchList(): Promise<Array<string>> {
