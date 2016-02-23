@@ -178,4 +178,10 @@ export class HgService {
    * @param message Commit message.
    */
   async commit(message: string): Promise<void> {}
+
+  /**
+   * Amend code changes to the latest commit.
+   * @param message Commit message.  Message will remain unchaged if not provided.
+   */
+   async amend(message: ?string): Promise<void> {}
 }

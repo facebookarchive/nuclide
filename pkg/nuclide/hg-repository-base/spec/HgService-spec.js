@@ -201,26 +201,79 @@ describe('HgService', () => {
     });
   });
 
-  describe('::commit', () => {
-    it('can commit changes', () => {
-      const commitMessage = 'foo\n\nbar\nbaz';
-      let messageFile = null;
+  describe('::commit|amend', () => {
+    const messageFile = 'fakePathForTesting';
+    const commitMessage = 'foo\n\nbar\nbaz';
+    let tempFileCreated = false;
+    let tempFileRemoved = false;
+    let committedToHg = false;
+    let expectedArgs = null;
+    beforeEach(() => {
+      expectedArgs = null;
+      tempFileCreated = false;
+      tempFileRemoved = false;
+      let tempFileWritten = false;
+      spyOn(fsPromise, 'tempfile').andCallFake(async () => {
+        tempFileCreated = true;
+        return messageFile;
+      });
+      spyOn(fsPromise, 'unlink').andCallFake(async () => tempFileRemoved = true);
       spyOn(fsPromise, 'writeFile').andCallFake((filePath, contents) => {
         expect(contents).toBe(commitMessage);
-        messageFile = filePath;
+        tempFileWritten = true;
       });
-      let committedToHg = false;
+      committedToHg = false;
       spyOn(hgService, '_hgAsyncExecute').andCallFake((args, options) => {
-        expect(args.length).toBe(3);
+        expect(expectedArgs).not.toBeNull();
+        invariant(expectedArgs !== null);
+        expect(args.length).toBe(
+          expectedArgs.length,
+          `\nExpected args: [${expectedArgs.toString()}]\nActual args: [${args.toString()}]`,
+        );
         expect(messageFile).not.toBeNull();
-        expect(args.pop()).toBe(messageFile);
-        expect(args.pop()).toBe('-l');
-        expect(args.pop()).toBe('commit');
+        while (args.length > 0) {
+          const expectedArg = expectedArgs.pop();
+          if (expectedArg === messageFile) {
+            expect(tempFileWritten).toBeTruthy();
+          }
+          expect(args.pop()).toBe(expectedArg);
+        }
         committedToHg = true;
       });
-      waitsForPromise(async () => {
-        await hgService.commit(commitMessage);
-        expect(committedToHg).toBeTruthy();
+    });
+
+    describe('::commit', () => {
+      it('can commit changes', () => {
+        expectedArgs = ['commit', '-l', messageFile];
+        waitsForPromise(async () => {
+          await hgService.commit(commitMessage);
+          expect(committedToHg).toBeTruthy('Looks like commit did not happen');
+          expect(tempFileCreated).toBeTruthy('No temporary file created');
+          expect(tempFileRemoved).toBeTruthy('Temporary file was not removed');
+        });
+      });
+    });
+
+    describe('::amend', () => {
+      it('can amend changes with a message', () => {
+        expectedArgs = ['commit', '-l', messageFile, '--amend'];
+        waitsForPromise(async () => {
+          await hgService.amend(commitMessage);
+          expect(committedToHg).toBeTruthy('Looks like commit did not happen');
+          expect(tempFileCreated).toBeTruthy('No temporary file created');
+          expect(tempFileRemoved).toBeTruthy('Temporary file was not removed');
+        });
+      });
+      it('can amend changes without a message', () => {
+        expectedArgs = ['commit', '--amend', '--reuse-message', '.'];
+        waitsForPromise(async () => {
+          await hgService.amend();
+          expect(committedToHg).toBeTruthy('Looks like commit did not happen');
+          expect(tempFileCreated).not.toBeTruthy('Temporary file created while it is not needed');
+          expect(tempFileRemoved).not.toBeTruthy(
+            'Temporary file should not exist and removal should not have been attempted',
+          );
+        });
       });
     });
   });

@@ -289,18 +289,39 @@ class HgServiceBase {
     return await this._hgAsyncExecute(args, execOptions);
   }
 
-  async commit(message: string): Promise<void> {
-    const tempFile = await fsPromise.tempfile();
+  async _commitCode(
+    message: ?string,
+    extraArgs?: Array<string> = [],
+  ): Promise<void> {
+    const args = ['commit'];
+    let tempFile = null;
+    if (message != null) {
+      tempFile = await fsPromise.tempfile();
+      await fsPromise.writeFile(tempFile, message);
+      args.push('-l', tempFile);
+    }
     const execOptions = {
       cwd: this.getWorkingDirectory(),
     };
     try {
-      await fsPromise.writeFile(tempFile, message);
-      const args = ['commit', '-l', tempFile];
-      await this._hgAsyncExecute(args, execOptions);
+      await this._hgAsyncExecute(args.concat(extraArgs), execOptions);
     } finally {
-      await fsPromise.unlink(tempFile);
+      if (tempFile != null) {
+        await fsPromise.unlink(tempFile);
+      }
     }
+  }
+
+  async commit(message: string): Promise<void> {
+    await this._commitCode(message);
+  }
+
+  async amend(message: ?string): Promise<void> {
+    const extraArgs = ['--amend'];
+    if (message == null) {
+      extraArgs.push('--reuse-message', '.');
+    }
+    await this._commitCode(message, extraArgs);
   }
 
   async _runSimpleInWorkingDirectory(

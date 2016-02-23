@@ -912,6 +912,10 @@ export default class HgRepositoryClient {
     return this._service.commit(message);
   }
 
+  amend(message: ?string): Promise<void> {
+    return this._service.amend(message);
+  }
+
   _getStatusOption(options: ?HgStatusCommandOptions): ?HgStatusOptionValue {
     if (options == null) {
       return null;
