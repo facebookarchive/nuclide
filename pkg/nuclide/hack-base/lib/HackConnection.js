@@ -16,6 +16,10 @@ import {
 } from '../../commons';
 import {getHackCommand, findHackConfigDir} from './hack-config';
 import {StreamTransport, HackRpc} from './HackRpc';
+
+// From https://reviews.facebook.net/diffusion/HHVM/browse/master/hphp/hack/src/utils/exit_status.ml
+const HACK_SERVER_ALREADY_EXISTS_EXIT_CODE = 77;
+
 const logger = require('../../logging').getLogger();
 
 class HackConnection {
@@ -78,11 +82,12 @@ async function getHackConnection(filePath: string): Promise<?HackConnection> {
 
   let connection = connections.get(configDir);
   if (connection == null) {
-    logger.info(`Creating new hack conncection for ${configDir}`);
+    logger.info(`Creating new hack connection for ${configDir}`);
     const startServerResult = await checkOutput(command, ['start', configDir]);
     logger.info(
       `Hack connection start server results:\n${JSON.stringify(startServerResult, null, 2)}\n`);
-    if (startServerResult.exitCode !== 0) {
+    if (startServerResult.exitCode !== 0 &&
+        startServerResult.exitCode !== HACK_SERVER_ALREADY_EXISTS_EXIT_CODE) {
       return null;
     }
     const process = await safeSpawn(command, ['ide', configDir]);
