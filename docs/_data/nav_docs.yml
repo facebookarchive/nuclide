@@ -11,6 +11,7 @@
   items:
   - id: feature-remote
   - id: feature-hg
+  - id: feature-toolbar
 - title: Languages
   items:
   - id: language-hack
