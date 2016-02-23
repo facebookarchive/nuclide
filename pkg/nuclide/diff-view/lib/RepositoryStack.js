@@ -359,7 +359,7 @@ export default class RepositoryStack {
     const committedContents = await this._repository
       .fetchFileContentAtRevision(filePath, compareCommitId ? `${compareCommitId}` : null)
       // If the file didn't exist on the previous revision, return empty contents.
-      .then(contents => contents || '', err => '');
+      .then(contents => contents || '', _err => '');
 
     // Intentionally fetch the filesystem contents after getting the committed contents
     // to make sure we have the latest filesystem version.
