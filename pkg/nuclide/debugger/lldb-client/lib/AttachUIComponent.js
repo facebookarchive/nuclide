@@ -18,13 +18,13 @@ import type {AttachTargetInfo} from '../../lldb-server/lib/DebuggerRpcServiceInt
 import {React} from 'react-for-atom';
 
 type PropsType = {
-  store: LaunchAttachStore,
-  actions: LaunchAttachActions,
+  store: LaunchAttachStore;
+  actions: LaunchAttachActions;
 };
 
 type StateType = {
-  targetListChangeDisposable: ?IDisposable,
-  attachTargetInfos: Array<AttachTargetInfo>,
+  targetListChangeDisposable: ?IDisposable;
+  attachTargetInfos: Array<AttachTargetInfo>;
 };
 
 export class AttachUIComponent extends React.Component<void, PropsType, StateType> {

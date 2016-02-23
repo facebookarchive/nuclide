@@ -18,8 +18,8 @@ import {React} from 'react-for-atom';
 import AtomInput from '../../../ui/atom-input';
 
 type PropsType = {
-  store: LaunchAttachStore,
-  actions: LaunchAttachActions,
+  store: LaunchAttachStore;
+  actions: LaunchAttachActions;
 }
 
 export class LaunchUIComponent extends React.Component<void, PropsType, void> {

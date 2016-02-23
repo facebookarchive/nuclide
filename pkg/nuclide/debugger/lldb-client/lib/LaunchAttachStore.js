@@ -41,7 +41,7 @@ export class LaunchAttachStore {
     return new Disposable(() => emitter.removeListener(ATTACH_TARGET_LIST_CHANGE_EVENT, callback));
   }
 
-  _handleActions(args: {actionType: string, data: any}): void {
+  _handleActions(args: {actionType: string; data: any}): void {
     switch (args.actionType) {
       case LaunchAttachActionCode.UPDATE_ATTACH_TARGET_LIST:
         this._attachTargetInfos = args.data;

@@ -34,6 +34,6 @@ describe('NuclideTextBuffer', () => {
     buffer.setPath(filePath);
     expect(buffer.file instanceof RemoteFile).toBe(true);
     invariant(buffer.file);
-    expect(buffer.file.getPath()).toBe('nuclide://most.fb.com:9090' + __filename);
+    expect(buffer.file.getPath()).toBe('nuclide://most.fb.com:9090' + filePath);
   });
 });
