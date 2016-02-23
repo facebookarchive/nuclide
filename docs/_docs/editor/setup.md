@@ -113,6 +113,28 @@ Detailed instructions for Windows coming soon.
 
 After installation, running `Atom` will automatically load Nuclide.
 
+### Recommended Packages
+
+By default, Nuclide does not install all of the recommended packages that enhance the Nuclide
+experience. This was done purposely in order to ensure that users have to opt-in to some features
+rather than obtrusively modify their work environment.
+
+Recommended packages include:
+
+- [`tool-bar`](https://atom.io/packages/tool-bar) to enable the Nuclide toolbar.
+- [`sort-lines`](https://atom.io/packages/sort-lines) to enable sorting lines of text.
+- [`language-ocaml`](https://atom.io/packages/language-ocaml) to enable OCaml language syntax highlighting.
+- [`language-babel`](https://atom.io/packages/language-babel) to enable language grammar for JS, Flow and React JS, etc.
+- ...and [others](https://github.com/facebook/nuclide/blob/master/package.json) under `package-deps`.
+
+In order to install all of the recommended packages, go to
+`Packages | Settings View | Manage Packages`, search for the `nuclide` package and click on
+`Settings`.
+
+You will find a checkbox allowing you enable the recommended settings.
+
+![](/static/images/docs/editor-setup-recommended-packages.png)
+
 ### Installing Nuclide Server
 
 If you want to use Nuclide for remote development, you'll also need to setup the NPM `nuclide`
