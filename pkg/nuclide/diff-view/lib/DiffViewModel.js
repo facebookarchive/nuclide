@@ -37,6 +37,11 @@ const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
 const FILE_CHANGE_DEBOUNCE_MS = 200;
 const UI_CHANGE_DEBOUNCE_MS = 100;
 
+// Returns a string with all newline strings, '\\n', converted to literal newlines, '\n'.
+function convertNewlines(message: string): string {
+  return message.replace(/\\n/g, '\n');
+}
+
 function getInitialFileChangeState(): FileChangeState {
   return {
     fromRevisionTitle: 'No file selected',
@@ -453,6 +458,11 @@ class DiffViewModel {
     try {
       if (this._state.commitMode === CommitMode.COMMIT) {
         commitMessage = await this._loadActiveRepositoryTemplateCommitMessage();
+        // Commit templates that include newline strings, '\\n' in JavaScript, need to convert their
+        // strings to literal newlines, '\n' in JavaScript, to be rendered as line breaks.
+        if (commitMessage != null) {
+          commitMessage = convertNewlines(commitMessage);
+        }
       } else {
         commitMessage = await this._loadActiveRepositoryLatestCommitMessage();
       }
@@ -477,7 +487,7 @@ class DiffViewModel {
     return revisions[revisions.length - 1].description;
   }
 
-  _loadActiveRepositoryTemplateCommitMessage(): Promise<string> {
+  _loadActiveRepositoryTemplateCommitMessage(): Promise<?string> {
     if (this._activeRepositoryStack == null) {
       throw new Error('Diff View: No active file or repository open');
     }

@@ -134,6 +134,12 @@ export class HgService {
   getBlameAtHead(filePath: NuclideUri): Promise<Map<string, string>> {}
 
   /**
+   * Returns the value of the config item at `key`.
+   * @param key Name of config item
+   */
+  async getConfigValueAsync(key: string): Promise<string> {}
+
+  /**
    * Gets the Differential Revision id (aka DXXXXXX) id for the specified changeSetId, if it exists.
    * Otherwise, returns null.
    */
@@ -183,5 +189,5 @@ export class HgService {
    * Amend code changes to the latest commit.
    * @param message Commit message.  Message will remain unchaged if not provided.
    */
-   async amend(message: ?string): Promise<void> {}
+  async amend(message: ?string): Promise<void> {}
 }

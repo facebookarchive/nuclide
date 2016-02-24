@@ -60,6 +60,7 @@ describe('HgService', () => {
         expect(statusMap.get(PATH_2)).toBe(StatusCodeId.ADDED);
       });
     });
+
     describe('when called with a hgStatusOption', () => {
       it('fetches only non-ignored status if no option is passed.', () => {
         invariant(hgService);
@@ -147,6 +148,19 @@ describe('HgService', () => {
         invariant(pathToDiffInfo);
         expect(pathToDiffInfo.size).toBe(1);
         expect(pathToDiffInfo.get(PATH_1)).toEqual(expectedDiffInfo);
+      });
+    });
+  });
+
+  describe('::getConfigValueAsync', () => {
+    it('calls `hg config` with the passed key', () => {
+      spyOn(hgService, '_hgAsyncExecute').andCallFake((args, options) => {
+        expect(args).toEqual(['config', 'committemplate.emptymsg']);
+        // Return the Object shape expected by `HgServiceBase`.
+        return {stdout: ''};
+      });
+      waitsForPromise(async () => {
+        await hgService.getConfigValueAsync('committemplate.emptymsg');
       });
     });
   });
@@ -264,6 +278,7 @@ describe('HgService', () => {
           expect(tempFileRemoved).toBeTruthy('Temporary file was not removed');
         });
       });
+
       it('can amend changes without a message', () => {
         expectedArgs = ['commit', '--amend', '--reuse-message', '.'];
         waitsForPromise(async () => {

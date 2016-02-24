@@ -378,19 +378,8 @@ export default class RepositoryStack {
     };
   }
 
-  // TODO(most): Convert to a service using: `hg config committemplate.emptymsg`
-  async getTemplateCommitMessage(): Promise<string> {
-    return `
-Summary:
-
-Test Plan:
-
-Reviewers:
-
-Reviewed By:
-
-Subscribers:
-`;
+  getTemplateCommitMessage(): Promise<?string> {
+    return this._repository.getConfigValueAsync('committemplate.emptymsg');
   }
 
   async setRevision(revision: RevisionInfo): Promise<void> {

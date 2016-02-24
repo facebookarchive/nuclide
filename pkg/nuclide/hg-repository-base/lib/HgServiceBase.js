@@ -255,6 +255,14 @@ class HgServiceBase {
     return parseHgBlameOutput(output.stdout);
   }
 
+  async getConfigValueAsync(key: string): Promise<string> {
+    const args = ['config', key];
+    const execOptions = {
+      cwd: this.getWorkingDirectory(),
+    };
+    return (await this._hgAsyncExecute(args, execOptions)).stdout;
+  }
+
   /**
    * This implementation relies on the "phabdiff" template being available as defined in:
    * https://bitbucket.org/facebook/hg-experimental/src/fbf23b3f96bade5986121a7c57d7400585d75f54/phabdiff.py.

@@ -887,6 +887,10 @@ export default class HgRepositoryClient {
     return this._service.getBlameAtHead(filePath);
   }
 
+  getConfigValueAsync(key: string, path: ?string): Promise<?string> {
+    return this._service.getConfigValueAsync(key);
+  }
+
   // See HgService.getDifferentialRevisionForChangeSetId.
   getDifferentialRevisionForChangeSetId(changeSetId: string): Promise<?string> {
     return this._service.getDifferentialRevisionForChangeSetId(changeSetId);
