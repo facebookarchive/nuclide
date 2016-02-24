@@ -17,15 +17,21 @@ const featureConfig = require('../../feature-config');
 const Immutable = require('immutable');
 const Rx = require('rx');
 
-let disposables: ?CompositeDisposable = null;
+let subscriptions: CompositeDisposable = (null: any);
 let gadgetsApi: ?GadgetsService = null;
 
 // A stream of all of the fragments. This is essentially the state of our panel.
 const allHomeFragmentsStream: Rx.BehaviorSubject<Immutable.Set<HomeFragments>> =
   new Rx.BehaviorSubject(Immutable.Set());
 
-function activate(): void {
+function activate(state: ?Object): void {
   considerDisplayingHome();
+  subscriptions = new CompositeDisposable();
+  subscriptions.add(
+    atom.commands.add('atom-workspace', 'nuclide-home:show-settings', () => {
+      atom.workspace.open('atom://config/packages/nuclide');
+    })
+  );
 }
 
 function setHomeFragments(homeFragments: HomeFragments): Disposable {
@@ -48,10 +54,8 @@ function considerDisplayingHome() {
 function deactivate(): void {
   gadgetsApi = null;
   allHomeFragmentsStream.onNext(Immutable.Set());
-  if (disposables) {
-    disposables.dispose();
-    disposables = null;
-  }
+  subscriptions.dispose();
+  subscriptions = (null: any);
 }
 
 function consumeGadgetsService(api: GadgetsService): IDisposable {
@@ -63,9 +67,26 @@ function consumeGadgetsService(api: GadgetsService): IDisposable {
   return disposable;
 }
 
+function consumeToolBar(getToolBar: (group: string) => Object): void {
+  const toolBar = getToolBar('nuclide-home');
+  toolBar.addSpacer({
+    priority: 799,
+  });
+  toolBar.addButton({
+    icon: 'gear',
+    callback: 'nuclide-home:show-settings',
+    tooltip: 'Open Nuclide Settings',
+    priority: 800,
+  });
+  subscriptions.add(new Disposable(() => {
+    toolBar.removeItems();
+  }));
+}
+
 module.exports = {
   activate,
   setHomeFragments,
   deactivate,
   consumeGadgetsService,
+  consumeToolBar,
 };
