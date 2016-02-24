@@ -31,6 +31,11 @@ key items of note are:
    * You have an empty `.flowconfig` file in the root of your project.
    * You have `/* @flow */` at the top of your JavaScript (`.js`) file.
 
+## Debugging Flow
+
+You can debug projects written in Flow and JavaScript with the
+[Nuclide Node debugger](/docs/features/debugger/#language-specific-debugging__node).
+
 ## Feature Examples
 
 *Jump To Definition*

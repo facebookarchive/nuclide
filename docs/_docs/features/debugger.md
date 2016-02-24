@@ -297,6 +297,10 @@ Go to `Settings | Packages | Nuclide | Settings` and look for the `nuclide-debug
 
 ### Node
 
+The [general Nuclide debugging section](#basics) is centered around debugging with Node. If your
+project is written in [Flow or JavaScript](/docs/languages/flow/), you can use Nuclide's Node
+debugging.
+
 ### C++
 
 ### React Native
