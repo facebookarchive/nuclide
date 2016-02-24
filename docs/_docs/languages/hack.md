@@ -35,6 +35,13 @@ key items of note are:
     * You have an `.hhconfig` file at the root of your project.
     * You have `<?hh` at the top of your `.php` or `.hh` file.
 
+
+## Debugging
+
+Nuclide features a
+[built-in debugger](/docs/features/debugger/#language-specific-debugging__php-and-hack) for Hack
+(and PHP).
+
 ## Feature Examples
 
 Type Hint with mouse hover:
