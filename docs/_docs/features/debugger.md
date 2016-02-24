@@ -457,3 +457,10 @@ the simulator and choose `Show Inspector`.
 ![](/static/images/docs/feature-debugger-languages-react-native-application-show-inspector.png)
 
 ### iOS
+
+Currently, the extent of Nuclide support for iOS debugging is through
+[React Native](#language-specific-debugging__react-native). Debugging native
+Objective-C (e.g., `.m` files) or Swift (e.g., `.swift` files) projects is not supported.
+
+> We are working on being able to debug native Objective-C projects using
+> [Buck](https://buckbuild.com/).
