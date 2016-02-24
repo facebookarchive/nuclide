@@ -156,10 +156,12 @@ describe('nuclide-arcanist-base', () => {
     beforeEach(() => {
       setResult({});
       execArgs = [];
-      spyOn(require('../../commons'), 'asyncExecute').andCallFake((command, args, options) => {
-        execArgs.push(args);
-        return arcResult;
-      });
+      spyOn(require('../../commons/lib/process'), 'asyncExecute')
+        .andCallFake((command, args, options) => {
+          execArgs.push(args);
+          return arcResult;
+        }
+      );
       arcanistBaseService = (uncachedRequire(require, '../lib/ArcanistBaseService'): any);
       // Add these paths to the arcConfigDirectoryMap as a roundabout way to mock
       // findArcConfigDirectory.

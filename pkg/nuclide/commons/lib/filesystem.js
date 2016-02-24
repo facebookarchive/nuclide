@@ -17,7 +17,7 @@ import fs from 'fs-plus';
 import invariant from 'assert';
 import {checkOutput} from './process';
 
-function isRoot(filePath: string): boolean {
+export function isRoot(filePath: string): boolean {
   return path.dirname(filePath) === filePath;
 }
 
@@ -27,7 +27,7 @@ function isRoot(filePath: string): boolean {
  * @param prefix optinal prefix for the temp directory name.
  * @return path to a temporary directory.
  */
-function tempdir(prefix: string = ''): Promise<string> {
+export function tempdir(prefix: string = ''): Promise<string> {
   return new Promise((resolve, reject) => {
     require('temp').mkdir(prefix, (err, dirPath) => {
       if (err) {
@@ -43,7 +43,7 @@ function tempdir(prefix: string = ''): Promise<string> {
  * @return path to a temporary file. The caller is responsible for cleaning up
  *     the file.
  */
-function tempfile(options: any): Promise<string> {
+export function tempfile(options: any): Promise<string> {
   return new Promise((resolve, reject) => {
     require('temp').open(options, (err, info) => {
       if (err) {
@@ -69,7 +69,7 @@ function tempfile(options: any): Promise<string> {
  *   file.
  * @return directory that contains the nearest file or null.
  */
-async function findNearestFile(fileName: string, pathToDirectory: string): Promise<?string> {
+export async function findNearestFile(fileName: string, pathToDirectory: string): Promise<?string> {
   // TODO(5586355): If this becomes a bottleneck, we should consider memoizing
   // this function. The downside would be that if someone added a closer file
   // with fileName to pathToFile (or deleted the one that was cached), then we
@@ -89,7 +89,7 @@ async function findNearestFile(fileName: string, pathToDirectory: string): Promi
   } while (true);
 }
 
-function exists(filePath: string): Promise<boolean> {
+export function exists(filePath: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
     fs.exists(filePath, resolve);
   });
@@ -102,7 +102,7 @@ function exists(filePath: string): Promise<boolean> {
  * directories were created for some prefix of the given path.
  * @return true if the path was created; false if it already existed.
  */
-async function mkdirp(filePath: string): Promise<boolean> {
+export async function mkdirp(filePath: string): Promise<boolean> {
   const isExistingDirectory = await exists(filePath);
   if (isExistingDirectory) {
     return false;
@@ -122,7 +122,7 @@ async function mkdirp(filePath: string): Promise<boolean> {
 /**
  * Removes directories even if they are non-empty. Does not fail if the directory doesn't exist.
  */
-async function rmdir(filePath: string): Promise {
+export async function rmdir(filePath: string): Promise {
   return new Promise((resolve, reject) => {
     rimraf(filePath, err => {
       if (err) {
@@ -134,7 +134,7 @@ async function rmdir(filePath: string): Promise {
   });
 }
 
-function expandHomeDir(filePath: string): string {
+export function expandHomeDir(filePath: string): string {
   const {HOME} = process.env;
   let resolvedPath = null;
   if (filePath === '~') {
@@ -149,7 +149,7 @@ function expandHomeDir(filePath: string): string {
 }
 
 /** @return true only if we are sure directoryPath is on NFS. */
-async function isNfs(entityPath: string): Promise<boolean> {
+export async function isNfs(entityPath: string): Promise<boolean> {
   if (process.platform === 'linux' || process.platform === 'darwin') {
     const {stdout, exitCode} = await checkOutput('stat', ['-f', '-L', '-c', '%T', entityPath]);
     if (exitCode === 0) {
@@ -179,27 +179,16 @@ function denodeifyFsMethod(methodName: string): () => Promise {
   };
 }
 
-module.exports = {
-  copy: denodeifyFsMethod('copy'),
-  chmod: denodeifyFsMethod('chmod'),
-  exists,
-  findNearestFile,
-  isRoot,
-  isNfs,
-  lstat: denodeifyFsMethod('lstat'),
-  mkdir: denodeifyFsMethod('mkdir'),
-  mkdirp,
-  readdir: denodeifyFsMethod('readdir'),
-  readFile: denodeifyFsMethod('readFile'),
-  readlink: denodeifyFsMethod('readlink'),
-  realpath: denodeifyFsMethod('realpath'),
-  rename: denodeifyFsMethod('rename'),
-  rmdir,
-  stat: denodeifyFsMethod('stat'),
-  symlink: denodeifyFsMethod('symlink'),
-  tempdir,
-  tempfile,
-  unlink: denodeifyFsMethod('unlink'),
-  writeFile: denodeifyFsMethod('writeFile'),
-  expandHomeDir,
-};
+export const copy = denodeifyFsMethod('copy');
+export const chmod = denodeifyFsMethod('chmod');
+export const lstat = denodeifyFsMethod('lstat');
+export const mkdir = denodeifyFsMethod('mkdir');
+export const readdir = denodeifyFsMethod('readdir');
+export const readFile = denodeifyFsMethod('readFile');
+export const readlink = denodeifyFsMethod('readlink');
+export const realpath = denodeifyFsMethod('realpath');
+export const rename = denodeifyFsMethod('rename');
+export const stat = denodeifyFsMethod('stat');
+export const symlink = denodeifyFsMethod('symlink');
+export const unlink = denodeifyFsMethod('unlink');
+export const writeFile = denodeifyFsMethod('writeFile');

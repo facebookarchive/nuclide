@@ -138,12 +138,12 @@ class HackDiagnosticsProvider {
     // `hh_client` doesn't currently support `onTheFly` diagnosis.
     // So, currently, it would only work if there is no `hh_client` or `.hhconfig` where
     // the `HackWorker` model will diagnose with the updated editor contents.
-    const {status, result} = await this._requestSerializer.run(findDiagnostics(textEditor));
-    if (!result || status === 'outdated') {
+    const diagnosisResult = await this._requestSerializer.run(findDiagnostics(textEditor));
+    if (diagnosisResult.status === 'outdated' || diagnosisResult.result == null) {
       return;
     }
 
-    const diagnostics = result;
+    const diagnostics = diagnosisResult.result;
     const hackLanguage = await getHackLanguageForUri(textEditor.getPath());
     if (!hackLanguage) {
       return;

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-function once<T>(fn: () => T): () => T {
+export function once<T>(fn: () => T): () => T {
   let ret;
   return function(): T {
     // The type gymnastics here are so `fn` can be
@@ -23,5 +23,3 @@ function once<T>(fn: () => T): () => T {
     }
   };
 }
-
-module.exports = once;

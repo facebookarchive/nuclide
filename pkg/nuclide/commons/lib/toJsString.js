@@ -15,6 +15,6 @@
  * escaped in JS.
  * See http://timelessrepo.com/json-isnt-a-javascript-subset
  */
-module.exports = function toJsString(str: string): string {
+export function toJsString(str: string): string {
   return JSON.stringify(str).replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');
 };

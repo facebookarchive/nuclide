@@ -11,6 +11,11 @@
 
 import invariant from 'assert';
 
+export type Environment = {
+  USER: string,
+  HOME: string,
+};
+
 module.exports = {
   // Get name of the user who starts this process, supports both *nix and Windows.
   get USER(): string {

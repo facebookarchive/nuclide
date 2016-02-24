@@ -11,11 +11,11 @@
 
 const invariant = require('assert');
 
-function debounce<X>(
-  func: (...varargs: Array<any>) => X,
+export function debounce(
+  func: (...varargs: Array<any>) => any,
   wait: number,
-  immediate: boolean,
-): (...varargs: Array<any>) => ?X {
+  immediate?: boolean = false,
+): (...varargs: Array<any>) => any {
   // Taken from: https://github.com/jashkenas/underscore/blob/b10b2e6d72/underscore.js#L815.
   let timeout;
   let args: ?Array<any>;
@@ -56,5 +56,3 @@ function debounce<X>(
     return result;
   };
 }
-
-module.exports = debounce;

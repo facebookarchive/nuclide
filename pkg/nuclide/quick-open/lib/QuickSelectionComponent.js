@@ -217,7 +217,7 @@ export default class QuickSelectionComponent extends React.Component {
   _updateQueryHandler(): void {
     this._debouncedQueryHandler = debounce(
       () => this.setKeyboardQuery(this.getInputTextEditor().getModel().getText()),
-      this.getProvider().debounceDelay,
+      this.getProvider().debounceDelay || 0,
       false
     );
   }

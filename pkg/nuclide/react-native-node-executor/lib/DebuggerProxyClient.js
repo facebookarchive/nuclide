@@ -44,8 +44,11 @@ export class DebuggerProxyClient {
     this._killConnection();
   }
 
-  onDidEvalApplicationScript(callback: (pid: number) => void | Promise<void>) {
+  onDidEvalApplicationScript(callback: (pid: number) => void | Promise<void>): IDisposable {
     this._emitter.on('eval_application_script', callback);
+    return new Disposable(() => {
+      this._emitter.removeListener('eval_application_script', callback);
+    });
   }
 
   _tryToConnect(): void {

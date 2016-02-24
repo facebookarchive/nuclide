@@ -11,7 +11,7 @@
 
 import fs from 'fs';
 import invariant from 'assert';
-import once from './once';
+import {once} from './once';
 import path from 'path';
 
 const NUCLIDE_PACKAGE_JSON_PATH = require.resolve('../../../../package.json');

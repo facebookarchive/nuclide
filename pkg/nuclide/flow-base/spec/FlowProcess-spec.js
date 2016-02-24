@@ -39,7 +39,7 @@ describe('FlowProcess', () => {
     // We need this level of indirection to ensure that if fakeAsyncExec is rebound, the new one
     // gets executed.
     const runFakeAsyncExec = (...args) => fakeAsyncExec(...args);
-    spyOn(require('../../commons'), 'asyncExecute').andCallFake(runFakeAsyncExec);
+    spyOn(require('../../commons/lib/process'), 'asyncExecute').andCallFake(runFakeAsyncExec);
     fakeAsyncExec = jasmine.createSpy().andReturn({exitCode: FLOW_RETURN_CODES.ok});
 
     childSpy = {
@@ -49,7 +49,7 @@ describe('FlowProcess', () => {
       kill() {},
     };
 
-    spyOn(require('../../commons'), 'safeSpawn').andCallFake(() => {
+    spyOn(require('../../commons/lib/process'), 'safeSpawn').andCallFake(() => {
       return childSpy;
     });
     // we have to create another flow service here since we've mocked modules
@@ -84,8 +84,8 @@ describe('FlowProcess', () => {
     });
 
     afterEach(() => {
-      global.unspy(require('../../commons'), 'asyncExecute');
-      global.unspy(require('../../commons'), 'safeSpawn');
+      global.unspy(require('../../commons/lib/process'), 'asyncExecute');
+      global.unspy(require('../../commons/lib/process'), 'safeSpawn');
     });
 
     describe('execFlow', () => {

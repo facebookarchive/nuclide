@@ -30,7 +30,7 @@ export function attachEvent(
   });
 }
 
-type SubscribeCallback<T> = (item: T) => mixed;
+type SubscribeCallback<T> = (item: T) => any;
 type SubscribeFunction<T> = (callback: SubscribeCallback<T>) => IDisposable;
 
 export function observableFromSubscribeFunction<T>(fn: SubscribeFunction<T>): Observable<T> {

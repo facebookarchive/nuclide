@@ -22,12 +22,7 @@ import QuickSelectionComponent from './QuickSelectionComponent';
 import {CompositeDisposable} from 'atom';
 import featureConfig from '../../feature-config';
 import {track} from '../../analytics';
-
-let debounceFunction = null;
-function debounce(...args) {
-  const debounceFunc = debounceFunction || (debounceFunction = require('../../commons').debounce);
-  return debounceFunc.apply(null, args);
-}
+import {debounce} from '../../commons';
 
 function getSearchResultManager() {
   return require('./SearchResultManager').default.getInstance();

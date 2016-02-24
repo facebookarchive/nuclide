@@ -22,8 +22,9 @@ function repositoryForPath(aPath: NuclideUri): ?atom$Repository {
   // which requires a round-trip to the server for remote paths.
   // Instead, this function keeps filtering local.
   const repositoryContainsPath = require('./repositoryContainsPath');
+  const repositories = array.compact(atom.project.getRepositories());
   return array.find(
-    atom.project.getRepositories(),
+    repositories,
     repo => {
       try {
         return repositoryContainsPath(repo, aPath);

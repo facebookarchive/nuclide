@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-export default class CircularBuffer<T> {
+export class CircularBuffer<T> {
   /** The maximum number of elements this CircularBuffer can hold. */
   _capacity: number;
   _elements: Array<T>;
