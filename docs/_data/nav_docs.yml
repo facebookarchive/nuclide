@@ -10,6 +10,7 @@
 - title: Feature Guides
   items:
   - id: feature-remote
+  - id: feature-debugger
   - id: feature-hg
   - id: feature-toolbar
 - title: Languages
