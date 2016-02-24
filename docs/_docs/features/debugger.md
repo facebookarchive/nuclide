@@ -180,6 +180,27 @@ You can even step into a function that exists in another module.
 
 ### Evaluation
 
+The Nuclide debugger supports
+[REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) via the `Console` tab.
+
+When you hit a breakpoint during your debugging session, you can use the `Console` to write
+expressions, call functions, etc. using the current state of the program at the breakpoint.
+
+> For Hack and PHP debugging, hitting a breakpoint is not necessary to use the REPL support of
+> the Nuclide debugger. If you do not hit a breakpoint, then REPL is run in the global context as
+> opposed to the current stack frame if breakpoint is hit.
+
+> For LLDB-based debugging, REPL runs LLDB debugger commands as opposed to evaluating code in the
+> debuggee.
+
+*Example*
+
+Here we have a breakpoint before printing out the sum of the two global variables `num1` and `num2`.
+This shows printing out the values of the global and local variables, writing simple expressions,
+calling a function in another module (`math.add()`), and inspecting objects.
+
+![](/static/images/docs/feature-debugger-basics-evaluation-example.png)
+
 ## Language Specific Debugging
 
 While the [general process](#basics) for debugging in Nuclide is similar, it is useful to discuss
