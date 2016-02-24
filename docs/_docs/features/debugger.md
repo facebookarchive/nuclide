@@ -152,6 +152,32 @@ currently in the `processSum` method and started from the `onData` method.
 
 ### Stepping
 
+It is essential for any debugger to have a mechanism to step into, over and out of code. The
+Nuclide debugger provides stepping functionality with shortcuts within the debugger itself and
+via the [keyboard](/docs/editor/keyboard-shortcuts/#debugger).
+
+![](/static/images/docs/feature-debugger-basics-stepping-icons.png)
+
+*Example*
+
+Assume we have a breakpoint set at line 22 of `read.js` (before the call to `processSum()`).
+
+![](/static/images/docs/feature-debugger-basics-stepping-example-start.png)
+
+The following shows what happens when you step into the function. We step into the actual
+`processSum()` function itself.
+
+![](/static/images/docs/feature-debugger-basics-stepping-example-step-in.png)
+
+The following shows what happens when you step over the function. `processSum()` is fully executed
+and we move on to closing the `readline` object.
+
+![](/static/images/docs/feature-debugger-basics-stepping-example-step-over.png)
+
+You can even step into a function that exists in another module.
+
+![](/static/images/docs/feature-debugger-basics-stepping-example-start-other-module.png)
+
 ### Evaluation
 
 ## Language Specific Debugging
