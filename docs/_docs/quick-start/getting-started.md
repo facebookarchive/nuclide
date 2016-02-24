@@ -98,8 +98,8 @@ properly synchronized.
 
 Nuclide has built-in support for Mercurial-based repositories. If your project is using Mercurial,
 one of the features that may help your workflow is the *Diff View*. This allows you to quickly see
-exactly what files you have modified and what has changed from the current revision the point where
-your diff (or stack of diffs) fork from the nearest ancesort in `remote/master`.
+what has changed in the files you have modified. It shows what has changed from the current
+committed revision which you are tracking.
 
 To access the diff view, click on the `Try It` button (or use the `alt-cmd-shift-D` shortcut or
 `Packages | Diff View`) after making a change to one of the files in your Mercurial project.
