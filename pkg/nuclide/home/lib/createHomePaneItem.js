@@ -86,9 +86,6 @@ function createHomePaneItem(
           features.push(<HomeFeatureComponent key={features.length} {...feature} />);
         }
       });
-      if (welcomes.length === 0) {
-        welcomes = [DEFAULT_WELCOME];
-      }
 
       const containers = [
         <div key="welcome" className="nuclide-home-container">
@@ -97,7 +94,7 @@ function createHomePaneItem(
             <h1 className="nuclide-home-title">Welcome to Nuclide</h1>
           </section>
           <section className="text-center">
-            {welcomes}
+            {welcomes.length > 0 ? welcomes : DEFAULT_WELCOME}
           </section>
         </div>,
       ];
