@@ -49,6 +49,10 @@ class DiffViewElement extends HTMLElement {
     return basename(filePath);
   }
 
+  getIconName(): string {
+    return 'git-branch';
+  }
+
   /**
    * Return the tab title for the opened diff view tab item.
    */
