@@ -9,6 +9,9 @@ Nuclide has a bunch of [built-in bindings](/docs/editor/keyboard-shortcuts) to h
 productive from the keyboard. However, you may want to add your own keybindings for Nuclide
 commands as well. This is fairly easily done with some CSON editing.
 
+* TOC
+{:toc}
+
 ## Keymap CSON
 
 To create your own keybinding, you will need to edit your `~/.atom/keymap.cson`. If you aren't

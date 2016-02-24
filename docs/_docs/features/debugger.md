@@ -11,6 +11,9 @@ is provided within the familiar [Chrome DevTools](https://developer.chrome.com/d
 The Nuclide debugger provides many capabilities allowing you to have a productive debug loop,
 including inspection and watches, setting breakpoints, step in/over/out, etc.
 
+* TOC
+{:toc}
+
 ## Instantiation
 
 In general, the debugger is instantiated via `cmd-shift-Y` (`ctrl-shift-Y` on Linux). You can also

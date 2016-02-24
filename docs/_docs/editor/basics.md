@@ -14,6 +14,9 @@ to your project root, the type of file that is open, and other context-aware dat
 
 ![](/static/images/docs/editor-basics-intro.png)
 
+* TOC
+{:toc}
+
 ## Opening
 
 Assuming you have it [installed](/docs/editor/setup/), Nuclide is opened by opening Atom via mouse

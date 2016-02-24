@@ -15,6 +15,12 @@ available for the sets of functionality that Nuclide has to offer.
 > You can create your own [custom keybindings](/docs/advanced-topics/custom-keybindings) beyond
 > those Nuclide provides.
 
+<br/>
+
+* TOC
+{:toc}
+
+
 ## Symbols
 
 Here is a legend of symbols that are associated with the keys shown in the keybindings.

@@ -11,6 +11,9 @@ statistics.
 
 ![](/static/images/docs/feature-health-overview.png)
 
+* TOC
+{:toc}
+
 ## Toggling
 
 The health statistics come up as a tabbed window in the

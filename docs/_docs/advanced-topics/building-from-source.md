@@ -8,9 +8,8 @@ permalink: /docs/advanced-topics/building-from-source/
 It is generally recommended to [install the released package of Nuclide](/docs/setup), but for
 those willing to live on the bleeding edge, you can install Nuclide from source.
 
-- [Mac](#mac)
-- [Linux](#linux)
-- [Windows](#windows)
+* TOC
+{:toc}
 
 ## Mac
 

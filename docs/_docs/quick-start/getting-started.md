@@ -8,6 +8,9 @@ permalink: /docs/quick-start/getting-started/
 This getting started guide walks you through the core features of Nuclide and aims to get you moving
 and productive quickly.
 
+* TOC
+{:toc}
+
 ## Installation
 
 The [installation guides](/docs/editor/setup/) will provide you detailed information to install Nuclide

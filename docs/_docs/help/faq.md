@@ -7,6 +7,9 @@ permalink: /docs/help/faq/
 
 Here is an ever-growing list of frequently asked questions around Nuclide.
 
+* TOC
+{:toc}
+
 ## What version of Nuclide is installed?
 
 Determine which version of Nuclide you have installed with

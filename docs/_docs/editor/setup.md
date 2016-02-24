@@ -9,8 +9,13 @@ There are two supported platforms for Nuclide, Linux and Mac OS X. Nuclide can b
 Windows, but it is not fully supported; work is in progress.
 
 These instructions are for installing the released package of Nuclide. For advanced users, you can
-[build from source](/docs/advanced-topics/building-from-source), but this is not officially supported and
-stability is not guaranteed.
+[build from source](/docs/advanced-topics/building-from-source), but this is not officially supported
+and stability is not guaranteed.
+
+* TOC
+{:toc}
+
+## Quick Install
 
 Assuming you have met all the prerequisites for your platform, culminating with **Atom 1.4.0 or
 greater** being installed, the easiest way to install Nuclide is either at the command line:

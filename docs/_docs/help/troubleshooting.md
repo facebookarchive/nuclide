@@ -10,8 +10,8 @@ are being added as we come across common issues found by users. If you have an i
 listed here, please [file a GitHub issue](https://github.com/facebook/nuclide/issues), and
 depending on how widespread the problem may be, we will add it here as well.
 
-- [Environment Issues](#environment-issues)
-- [Flow Issues](#flow-issues)
+* TOC
+{:toc}
 
 ## Environment Issues
 

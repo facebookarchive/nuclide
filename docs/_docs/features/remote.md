@@ -13,6 +13,9 @@ the bridge between your local client version of Nuclide and the development
 machine on which you want to work. It has its own setup process that is outlined
 below.
 
+* TOC
+{:toc}
+
 ## Nuclide Server Setup
 
 The following versions are required before installing the `nuclide` package:

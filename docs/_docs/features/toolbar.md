@@ -14,6 +14,9 @@ By default, the toolbar is not installed.
 > Internally to Facebook the toolbar is installed by default. However, at this point, we did not
 > want to presume to install other community packages without the user opting in.
 
+* TOC
+{:toc}
+
 ## Installing
 
 The toolbar can be installed as part of installing the

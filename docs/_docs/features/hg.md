@@ -12,6 +12,9 @@ integration with support for [Mercurial](https://www.mercurial-scm.org/).
 > Nuclide's support for Mercurial is much more full-featured that its support for Git. Nuclide
 > has not yet tried to extend the default support for Git provided by Atom.
 
+* TOC
+{:toc}
+
 ## Diff View
 
 The *Diff View* allows you to quickly see what has changed in the files you have modified. It
