@@ -1,6 +1,6 @@
 'use strict';
 
-var binary = require('./util/pre-binding');
+var binary = require('pre-binding');
 var path = require('path');
 var binding_path = binary.find(path.resolve(path.join(__dirname, '../package.json')));
 
