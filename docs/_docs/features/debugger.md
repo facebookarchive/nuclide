@@ -87,6 +87,69 @@ breakpoints are set as well.
 
 ### Debugger
 
+The main debugging tab is the information control center for the Nuclide debugger.
+
+![](/static/images/docs/feature-debugger-basics-main-debugging-tab.png)
+
+In additions to specialized areas described below, it also provides mouse-clickable execution,
+[stepping](#basics__stepping), and breakpoint options.
+
+*Watches*
+
+The `Watch` area is for you to keep track of the values of global and local variables. Press `+` to
+add a variable. Right-clicking in the area will give you context-aware options to add and delete
+watch expressions.
+
+![](/static/images/docs/feature-debugger-basics-debugger-watch-menu.png)
+
+*Call Stack*
+
+The `Call Stack` area shows you were you came from to get to your current point in the code. The
+top function is where you currently are, the function below the top is the one that called the
+current function, and so on. Clicking on any function in the call stack will change the scope
+information so that it is relevant to that function.
+
+*Scope*
+
+The `Scope` area shows you scope information based upon the current point in the running of the
+code. For example, local scope will show you the name and values of local variables.
+
+*Breakpoints*
+
+The `Breakpoints` area shows you all the places in your project where you have breakpoints set. If
+any are highlighted, that means that you have now hit that breakpoint while running the code. Right
+clicking in the area will give you context-aware options to add, remove, activate and deactivate
+breakpoints.
+
+![](/static/images/docs/feature-debugger-basics-debugger-breakpoint-menu.png)
+
+*Unresolved Breakpoints*
+
+These are breakpoints that cannot be resolved by the debugger. The most likely cause of an
+unresolved breakpoint is putting a breakpoint on code that is not part of the project on which the
+debugger process is attached.
+
+*Detaching*
+
+You can detach the debugger from the current process by clicking on
+![](/static/images/docs/feature-debugger-basics-debugger-detach.png) in the upper-right corner.
+This will stop the entire debugging session for that process.
+
+*Web Inspector*
+
+You can open the web inspector by clicking on the settings icon
+![](/static/images/docs/feature-debugger-basics-debugger-web-inspector.png). This will bring up
+a [Chrome Developer Tools window](https://developers.google.com/web/tools/chrome-devtools/) for the
+current debugging frame.
+
+*Example*
+
+Here we have a breakpoints set on line 10 of `read.js` and line 3 of `math.js`. We set watches on
+the two global variables in `read.js`, `num1` and `num2`. The call stack shows that we are
+currently in the `processSum` method and started from the `onData` method.
+
+![](/static/images/docs/feature-debugger-basics-debugger-example.png)
+
 ### Stepping
 
 ### Evaluation
