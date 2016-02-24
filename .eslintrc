@@ -211,7 +211,7 @@
   // ECMAScript 6
   // These rules are only relevant to ES6 environments.
     "arrow-parens": 0,                    // require parens in arrow function arguments
-    "arrow-spacing": 0,                   // require space before/after arrow function's arrow (fixable)
+    "arrow-spacing": 1,                   // require space before/after arrow function's arrow (fixable)
     "constructor-super": 0,               // verify calls of super() in constructors
     "generator-star-spacing": 0,          // enforce spacing around the * in generator functions (fixable)
     "no-class-assign": 0,                 // disallow modifying variables of class declarations
