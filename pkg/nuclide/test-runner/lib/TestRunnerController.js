@@ -47,12 +47,6 @@ class TestRunnerController {
   _testRunnerPanel: ?TestRunnerPanel;
   _testSuiteModel: ?TestSuiteModel;
 
-  // Bound Functions for use as callbacks.
-  clearOutput: Function;
-  hidePanel: Function;
-  stopTests: Function;
-  _handleClickRun: Function;
-
   constructor(state: ?TestRunnerControllerState, testRunners: Set<TestRunner>) {
     if (state == null) {
       state = {};
@@ -62,6 +56,13 @@ class TestRunnerController {
       panelVisible: state.panelVisible,
     };
 
+    // Bind Functions for use as callbacks;
+    // TODO: Replace with property initializers when supported by Flow;
+    (this: any).clearOutput = this.clearOutput.bind(this);
+    (this: any).hidePanel = this.hidePanel.bind(this);
+    (this: any).stopTests = this.stopTests.bind(this);
+    (this: any)._handleClickRun = this._handleClickRun.bind(this);
+
     // TODO: Use the ReadOnlyTextBuffer class from nuclide-atom-text-editor when it is exported.
     this._buffer = new TextBuffer();
     // Make `delete` a no-op to effectively create a read-only buffer.
@@ -70,13 +71,6 @@ class TestRunnerController {
     this._executionState = TestRunnerPanel.ExecutionState.STOPPED;
     this._testRunners = testRunners;
     this._renderPanel();
-
-    // Bind Functions for use as callbacks;
-    // TODO: Replace with property initializers when supported by Flow;
-    this.clearOutput = this.clearOutput.bind(this);
-    this.hidePanel = this.hidePanel.bind(this);
-    this.stopTests = this.stopTests.bind(this);
-    this._handleClickRun = this._handleClickRun.bind(this);
   }
 
   clearOutput() {
