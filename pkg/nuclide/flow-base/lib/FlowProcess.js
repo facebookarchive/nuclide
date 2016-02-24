@@ -81,6 +81,16 @@ export class FlowProcess {
     }
   }
 
+  /**
+   * If the Flow server fails we will not try to restart it again automatically. Calling this
+   * method lets us exit that state and retry.
+   */
+  allowServerRestart(): void {
+    if (this._serverStatus.getValue() === ServerStatus.FAILED) {
+      this._serverStatus.onNext(ServerStatus.UNKNOWN);
+    }
+  }
+
   getServerStatusUpdates(): Observable<ServerStatusType> {
     return this._serverStatus.asObservable();
   }
@@ -154,7 +164,6 @@ export class FlowProcess {
       if (code === 2 && signal === null) {
         logger.error('Flow server unexpectedly exited', this._root);
         this._serverStatus.onNext(ServerStatus.FAILED);
-        this._serverStatus.onCompleted();
       }
     });
     this._startedServer = serverProcess;
@@ -219,7 +228,10 @@ export class FlowProcess {
       }
     }
     invariant(status != null);
-    if (status !== this._serverStatus.getValue()) {
+    const currentStatus = this._serverStatus.getValue();
+    // Avoid duplicate updates and avoid moving the status away from FAILED, to let any existing
+    // work die out when the server fails.
+    if (status !== currentStatus && currentStatus !== ServerStatus.FAILED) {
       this._serverStatus.onNext(status);
     }
   }

@@ -47,6 +47,10 @@ export class FlowRoot {
     this._process.dispose();
   }
 
+  allowServerRestart(): void {
+    this._process.allowServerRestart();
+  }
+
   async flowFindDefinition(
     file: NuclideUri,
     currentContents: string,

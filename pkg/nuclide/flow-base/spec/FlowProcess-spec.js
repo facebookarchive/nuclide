@@ -49,7 +49,9 @@ describe('FlowProcess', () => {
       kill() {},
     };
 
-    spyOn(require('../../commons'), 'safeSpawn').andReturn(childSpy);
+    spyOn(require('../../commons'), 'safeSpawn').andCallFake(() => {
+      return childSpy;
+    });
     // we have to create another flow service here since we've mocked modules
     // we depend on since the outer beforeEach ran.
     FlowProcess = (uncachedRequire(require, flowProcessPath): any).FlowProcess;
@@ -106,12 +108,20 @@ describe('FlowProcess', () => {
       });
 
       it('should blacklist the root', () => {
-        expect(event).toBe('exit');
-        (require('../../commons').safeSpawn: any).reset();
         waitsForPromise(async () => {
+          expect(event).toBe('exit');
           expect(await execFlow()).toBeNull();
         });
-        expect(require('../../commons').safeSpawn).not.toHaveBeenCalled();
+      });
+
+      it('should allow the server to restart if allowServerRestart is called', () => {
+        waitsForPromise(async () => {
+          expect(event).toBe('exit');
+
+          flowProcess.allowServerRestart();
+
+          expect(await execFlow()).not.toBeNull();
+        });
       });
     });
 

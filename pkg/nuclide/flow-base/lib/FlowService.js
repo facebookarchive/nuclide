@@ -178,3 +178,9 @@ export function flowGetOutline(
 ): Promise<?Array<FlowOutlineTree>> {
   return FlowRoot.flowGetOutline(currentContents);
 }
+
+export function allowServerRestart(): void {
+  for (const root of flowRoots.values()) {
+    root.allowServerRestart();
+  }
+}
