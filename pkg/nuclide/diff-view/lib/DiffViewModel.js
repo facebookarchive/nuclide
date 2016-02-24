@@ -49,9 +49,9 @@ function getInitialFileChangeState(): FileChangeState {
 }
 
 type State = {
-  commitMessage: ?string,
-  isCommitMessageLoading: boolean,
-  commitMode: string,
+  commitMessage: ?string;
+  isCommitMessageLoading: boolean;
+  commitMode: string;
 };
 
 class DiffViewModel {
