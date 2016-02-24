@@ -64,6 +64,27 @@ both the main Debugger and `Console` tabs.
 
 ### Breakpoints
 
+To set a breakpoint in Nuclide, you use the [gutter](/docs/editor/basics#gutter). Click to the left
+of each line number in the file(s) on which you want Nuclide to break the running program. Then
+as the program in running, if a line on which a breakpoint is set is hit, the program halts and you
+are able to perform debugging tasks such as [step](#basics__stepping) and
+[evaluation](#basics__evaluation) from that point.
+
+> There is currently only one type of breakpoint called a *source breakpoint*. This is a breakpoint
+> on one line of code. We are looking into ways to support functional, conditional, and other types
+> of breakpoints.
+
+*Example*
+
+Here we have breakpoints on lines 13 and 18 of `read.js`.
+
+![](/static/images/docs/feature-debugger-basics-breakpoints-gutter.png)
+
+In the [main debugging](#basics__debugger) tab of the debugger, you will see what
+breakpoints are set as well.
+
+![](/static/images/docs/feature-debugger-basics-breakpoints-main-debugging-tab.png)
+
 ### Debugger
 
 ### Stepping
