@@ -50,7 +50,6 @@ type EditorState = {
 }
 
 type State = {
-  mode: DiffModeType;
   filePath: NuclideUri;
   oldEditorState: EditorState;
   newEditorState: EditorState;
@@ -191,18 +190,19 @@ class DiffViewComponent extends React.Component {
   }
 
   _onChangeMode(mode: DiffModeType): void {
-    this.setState({mode});
+    this.props.diffModel.setViewMode(mode);
   }
 
   _renderDiffView(): void {
     this._renderTree();
     this._renderEditors();
     this._renderNavigation();
-    this._renderBottomRightPane(this.state.mode);
+    this._renderBottomRightPane();
   }
 
-  _renderBottomRightPane(mode: DiffModeType): void {
-    switch (mode) {
+  _renderBottomRightPane(): void {
+    const {viewMode} = this.props.diffModel.getState();
+    switch (viewMode) {
       case DiffMode.BROWSE_MODE:
         this._renderTimelineView();
         this._commitComponent = null;
@@ -219,7 +219,7 @@ class DiffViewComponent extends React.Component {
         this._timelineComponent = null;
         break;
       default:
-        throw new Error(`Invalid Diff Mode: ${mode}`);
+        throw new Error(`Invalid Diff Mode: ${viewMode}`);
     }
   }
 
@@ -364,10 +364,11 @@ class DiffViewComponent extends React.Component {
   render(): ReactElement {
     let toolbarComponent = null;
     if (this.state.toolbarVisible) {
+      const {viewMode} = this.props.diffModel.getState();
       toolbarComponent = (
         <DiffViewToolbar
           filePath={this.state.filePath}
-          diffMode={this.state.mode}
+          diffMode={viewMode}
           onSwitchMode={this._onChangeMode}
           onSwitchToEditor={this._onSwitchToEditor}
         />

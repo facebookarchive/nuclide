@@ -17,13 +17,14 @@ import type {
   HgDiffState,
   CommitModeType,
   PublishModeType,
+  DiffModeType,
 } from './types';
 import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
 import type {NuclideUri} from '../../remote-uri';
 
 import invariant from 'assert';
 import {CompositeDisposable, Emitter} from 'atom';
-import {CommitMode, PublishMode} from './constants';
+import {CommitMode, DiffMode, PublishMode} from './constants';
 import {repositoryForPath} from '../../hg-git-bridge';
 import {track, trackTiming} from '../../analytics';
 import {getFileSystemContents} from './utils';
@@ -63,6 +64,7 @@ function getInitialFileChangeState(): FileChangeState {
 }
 
 type State = {
+  viewMode: DiffModeType;
   commitMessage: ?string;
   isCommitMessageLoading: boolean;
   commitMode: CommitModeType;
@@ -100,6 +102,7 @@ class DiffViewModel {
     this._repositorySubscriptions = new Map();
     this._isActive = false;
     this._state = {
+      viewMode: DiffMode.BROWSE_MODE,
       commitMessage: null,
       isCommitMessageLoading: false,
       commitMode: CommitMode.COMMIT,
@@ -234,6 +237,13 @@ class DiffViewModel {
     this._setState({
       ...this._state,
       publishMessage,
+    });
+  }
+
+  setViewMode(viewMode: DiffModeType) {
+    this._setState({
+      ...this._state,
+      viewMode,
     });
   }
 
@@ -440,6 +450,8 @@ class DiffViewModel {
     try {
       await promises.awaitMilliSeconds(5000);
       headRevision = await Promise.resolve(null);
+      // Switch to browse mode after a successful publish.
+      this.setViewMode(DiffMode.BROWSE_MODE);
     } catch (error) {
       notifyInternalError(error);
     } finally {
