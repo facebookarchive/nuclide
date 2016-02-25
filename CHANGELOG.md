@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## 0.119.0
+
+* Fix an assertion that can cause the server to crash periodically.
+
 ## 0.118.0
 
 ### Added
