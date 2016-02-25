@@ -12,7 +12,7 @@
 import type {NuclideUri} from '../../remote-uri';
 
 import invariant from 'assert';
-import {TextBuffer} from 'atom';
+import {TextBuffer, TextEditor} from 'atom';
 // TODO(most): move to remote-connection/lib/RemoteTextBuffer.js
 import NuclideTextBuffer from '../../remote-projects/lib/NuclideTextBuffer';
 import {isLocal} from '../../remote-uri';
@@ -31,7 +31,6 @@ export function isTextEditor(item: ?any): boolean {
       typeof item.scanInBufferRange === 'function' &&
       typeof item.scopeDescriptorForBufferPosition === 'function';
   } else {
-    const {TextEditor} = require('atom');
     return item instanceof TextEditor;
   }
 }
@@ -43,7 +42,6 @@ export function createTextEditor(textEditorParams: atom$TextEditorParams): TextE
   if (atom.workspace.buildTextEditor) {
     return atom.workspace.buildTextEditor(textEditorParams);
   } else {
-    const {TextEditor} = require('atom');
     return new TextEditor(textEditorParams);
   }
 }

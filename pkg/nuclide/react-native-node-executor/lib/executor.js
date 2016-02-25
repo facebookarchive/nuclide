@@ -7,6 +7,7 @@
  */
 
 'use strict';
+/* global __fbBatchedBridge */
 /* eslint-disable no-var */
 
 var vm = require('vm');

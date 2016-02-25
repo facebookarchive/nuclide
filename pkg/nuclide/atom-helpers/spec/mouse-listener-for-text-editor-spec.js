@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* eslint-env browser */
+
 const invariant = require('assert');
 const {Point} = require('atom');
 const mouseListenerForTextEditor = require('../lib/mouse-listener-for-text-editor');

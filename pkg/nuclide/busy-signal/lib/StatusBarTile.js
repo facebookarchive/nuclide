@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* eslint-env browser */
+
 import type {Observable} from 'rx';
 
 import type {BusySignalMessageBusy} from '../../busy-signal-interfaces';

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* eslint-env browser */
+
 import fs from 'fs';
 import path from 'path';
 import {getLogger} from '../../logging';
@@ -162,7 +164,6 @@ function startWebWorker(): Worker {
   );
   // Concatenate the code text to pass to the Worker in a blob url
   const workerText = hhIdeText + '\n//<<MERGE>>\n' + webWorkerText;
-  const {Blob, Worker, URL} = window;
   const blob = new Blob([workerText], {type: 'application/javascript'});
   const worker = new Worker(URL.createObjectURL(blob));
   return worker;

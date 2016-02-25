@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* eslint-env browser */
+
 import type SuggestionListType from './SuggestionList';
 
 import {CompositeDisposable, Disposable} from 'atom';

@@ -6,8 +6,9 @@
  * the root directory of this source tree.
  */
 
-/*eslint-disable no-var */
-/*global hh_add_dep */
+/* eslint-env worker */
+/* eslint-disable no-var */
+/* global hh_add_dep */
 
 var worker = self;
 

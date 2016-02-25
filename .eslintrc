@@ -32,19 +32,27 @@
     "Promise": false,
     "requestAnimationFrame": true,
     "require": false,
-    "runs": false, // Jasmine
     "Set": false,
     "setImmediate": true,
     "setInterval": false,
     "setTimeout": false,
-    "waitsForPromise": false, // Jasmine
     "window": false,
     "WebSocket": false,
-    "XMLHttpRequest": false
+    "XMLHttpRequest": false,
+
+    // Atom test globals
+    "advanceClock": false,
+    "fakeClearInterval": false,
+    "fakeClearTimeout": false,
+    "fakeSetInterval": false,
+    "fakeSetTimeout": false,
+    "resetTimeouts": false,
+    "waitsForPromise": false
   },
 
   "plugins": [
     "babel",
+    "flow-vars",
     "jasmine",
     "nuclide-internal",
     "react",
@@ -134,7 +142,7 @@
     "no-label-var": 1,               // disallow labels that share a name with a variable
     "no-shadow": 1,                  // disallow declaration of variables already declared in the outer scope
     "no-shadow-restricted-names": 1, // disallow shadowing of names such as arguments
-    "no-undef": 0,                   // this causes false positives in the presence of Flow type annotations. Flow should take care of this problem, anyway.
+    "no-undef": 1,                   // disallow referencing undeclared variables
     "no-undefined": 0,               // disallow use of undefined variable (off by default)
     "no-undef-init": 0,              // disallow use of undefined when initializing variables
     "no-unused-vars": [1, {"vars": "all", "args": "none"}], // disallow declaration of variables that are not used in the code
@@ -248,6 +256,8 @@
     "babel/no-await-in-loop": 1,
 
   // Custom
+    "flow-vars/define-flow-type": 1,
+    "flow-vars/use-flow-type": 1,
     "nuclide-internal/comment-style": 1,
     "nuclide-internal/fb-license-header": 2,
     "nuclide-internal/import-type-style": 1,

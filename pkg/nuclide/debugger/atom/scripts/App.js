@@ -13,7 +13,9 @@
  * THIS IS FILE IS NOT TRANSPILED - USE ELECTRON COMPATIBLE JAVASCRIPT
  */
 
-/*eslint-disable no-var*/
+/* global WebInspector */
+/* eslint-env browser */
+/* eslint-disable no-var */
 
 require('../../../node-transpiler');
 

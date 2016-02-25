@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+/* eslint-env browser */
 /* eslint-disable no-console */
 
 declare function waitsForPromise(

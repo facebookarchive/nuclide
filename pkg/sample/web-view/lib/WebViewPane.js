@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* eslint-env browser */
+
 const {CompositeDisposable, Emitter} = require('atom');
 
 class WebViewPane extends HTMLElement {
@@ -43,9 +45,7 @@ class WebViewPane extends HTMLElement {
     // running in Atom by default (which is important for security). If you want to communicate
     // between Atom and the webview, you can use webview's API.
 
-    /*eslint-disable no-undef*/
     const webview = ((document.createElement('webview'): any): WebviewElement);
-    /*eslint-enable no-undef*/
 
     this._webview = webview;
 

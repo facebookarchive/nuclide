@@ -16,6 +16,7 @@ const NuclideServer = require('../lib/NuclideServer');
 import ClientComponent from '../lib/serviceframework/ClientComponent';
 const {loadServicesConfig} = require('../lib/serviceframework/config');
 
+import invariant from 'assert';
 import NuclideSocket from '../lib/NuclideSocket';
 
 let server;
