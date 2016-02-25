@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {DiagnosticMessage} from '../../base';
+import type {DiagnosticMessage, MessageType} from '../../base';
 
 function fileOfDiagnosticMessage(diagnostic: DiagnosticMessage): string {
   if (diagnostic.filePath != null) {
@@ -34,13 +34,20 @@ function fileColumnCellDataGetter(cellDataKey: 'filePath', diagnostic: Diagnosti
 
 function compareMessagesByFile(a: DiagnosticMessage, b: DiagnosticMessage): number {
   // This will sort by:
+  //  - errors before warnings
   //  - local before remote
   //  - Remote machine name/port
   //  - full path
   //
+
+  let compareVal = compareMessagesByLevel(a, b);
+  if (compareVal !== 0) {
+    return compareVal;
+  }
+
   // We don't sort by project relative path as that will interleave diagnostics from
   // different projects.
-  let compareVal = fileOfDiagnosticMessage(a).localeCompare(fileOfDiagnosticMessage(b));
+  compareVal = fileOfDiagnosticMessage(a).localeCompare(fileOfDiagnosticMessage(b));
   // If the messages are from the same file (`filePath` is equal and `localeCompare`
   // returns 0), compare the line numbers within the file to determine their sort order.
   if (compareVal === 0 && (a.range !== undefined && b.range !== undefined)) {
@@ -48,6 +55,15 @@ function compareMessagesByFile(a: DiagnosticMessage, b: DiagnosticMessage): numb
   }
 
   return compareVal;
+}
+
+const messageLevelRank: {[key: MessageType]: number} = {
+  'Error': 0,
+  'Warning': 1,
+};
+
+function compareMessagesByLevel(a: DiagnosticMessage, b: DiagnosticMessage): number {
+  return messageLevelRank[a.type] - messageLevelRank[b.type];
 }
 
 module.exports = {

@@ -19,6 +19,7 @@ describe('compareMessagesByFile', () => {
 
   let fileAMsgA: FileDiagnosticMessage = (null: any);
   let fileAMsgB: FileDiagnosticMessage = (null: any);
+  let fileAError: FileDiagnosticMessage = (null: any);
   let fileBMsgA: FileDiagnosticMessage = (null: any);
 
   beforeEach(() => {
@@ -35,6 +36,13 @@ describe('compareMessagesByFile', () => {
       range: new Range([5, 0], [6, 0]),
       scope: 'file',
       type: 'Warning',
+    };
+    fileAError = {
+      filePath: '/foo/bar/baz.html',
+      providerName: 'foo',
+      range: new Range([10, 0], [11, 0]),
+      scope: 'file',
+      type: 'Error',
     };
     fileBMsgA = {
       filePath: '/foo/bar/xyz.html',
@@ -60,4 +68,8 @@ describe('compareMessagesByFile', () => {
     expect(msgs.sort(compareMessagesByFile)).toEqual([fileAMsgA, fileAMsgB, fileBMsgA]);
   });
 
+  it('sorts messages based on level', () => {
+    const msgs = [fileAMsgA, fileAMsgB, fileAError];
+    expect(msgs.sort(compareMessagesByFile)).toEqual([fileAError, fileAMsgA, fileAMsgB]);
+  });
 });
