@@ -197,13 +197,13 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   afterEach(() => {
     config.idekeyRegex = null;
     config.scriptRegex = null;
-    unspy(require('../lib/ConnectionUtils'), 'sendDummyRequest');
-    unspy(require('../lib/ConnectionUtils'), 'isDummyConnection');
-    unspy(require('../lib/ConnectionUtils'), 'isCorrectConnection');
-    unspy(require('../lib/ConnectionUtils'), 'failConnection');
-    unspy(require('../lib/DbgpConnector'), 'DbgpConnector');
-    unspy(require('../lib/Connection'), 'Connection');
-    unspy(require('../lib/BreakpointStore'), 'BreakpointStore');
+    jasmine.unspy(require('../lib/ConnectionUtils'), 'sendDummyRequest');
+    jasmine.unspy(require('../lib/ConnectionUtils'), 'isDummyConnection');
+    jasmine.unspy(require('../lib/ConnectionUtils'), 'isCorrectConnection');
+    jasmine.unspy(require('../lib/ConnectionUtils'), 'failConnection');
+    jasmine.unspy(require('../lib/DbgpConnector'), 'DbgpConnector');
+    jasmine.unspy(require('../lib/Connection'), 'Connection');
+    jasmine.unspy(require('../lib/BreakpointStore'), 'BreakpointStore');
     clearRequireCache(require, '../lib/ConnectionMultiplexer');
   });
 

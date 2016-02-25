@@ -27,6 +27,7 @@ require('../../node-transpiler');
 global.waitsForPromise = require('../lib/waitsForPromise');
 global.window = global;
 
+require('../lib/unspy');
 require('../lib/faketimer');
 
 try {

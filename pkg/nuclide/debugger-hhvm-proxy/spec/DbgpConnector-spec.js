@@ -68,7 +68,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
   });
 
   afterEach(() => {
-    unspy(net, 'createServer');
+    jasmine.unspy(net, 'createServer');
     clearRequireCache(require, '../lib/DbgpConnector');
   });
 

@@ -24,7 +24,7 @@ describe('Jasmine transpile test suite', () => {
 });
 
 describe('Jasmine waitsForPromise test suite', () => {
-  beforeEach(() => window.useRealClock());
+  beforeEach(() => jasmine.useRealClock());
 
   it('test waitsForPromise worked as expected on a resolved promise', () => {
     waitsForPromise(async () => {

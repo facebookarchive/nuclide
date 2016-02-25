@@ -39,7 +39,7 @@ describe('queryHack()', () => {
   });
 
   afterEach(() => {
-    unspy(require('../lib/HackHelpers'), 'getSearchResults');
+    jasmine.unspy(require('../lib/HackHelpers'), 'getSearchResults');
     clearRequireCache(require, '../lib/HackService');
   });
 

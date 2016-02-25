@@ -228,7 +228,7 @@ describe('promises::serializeAsyncCall()', () => {
 
 describe('promises::asyncLimit()', () => {
 
-  beforeEach(() => window.useRealClock());
+  beforeEach(() => jasmine.useRealClock());
 
   it('runs in series if limit is 1', () => {
     waitsForPromise(async () => {
@@ -280,7 +280,7 @@ describe('promises::asyncLimit()', () => {
 
 describe('promises::asyncFilter()', () => {
 
-  beforeEach(() => window.useRealClock());
+  beforeEach(() => jasmine.useRealClock());
 
   it('filters an array with an async iterator and maximum parallelization when no limit is'
     + ' specified', () => {
@@ -316,7 +316,7 @@ describe('promises::asyncFilter()', () => {
 
 describe('promises::asyncSome()', () => {
 
-  beforeEach(() => window.useRealClock());
+  beforeEach(() => jasmine.useRealClock());
 
   it('some an array with an async iterator and maximum parallelization when no limit is'
     + ' specified', () => {
@@ -351,7 +351,7 @@ describe('promises::asyncSome()', () => {
 
 describe('promises::retryLimit()', () => {
 
-  beforeEach(() => window.useRealClock());
+  beforeEach(() => jasmine.useRealClock());
 
   it('retries and fails 2 times before resolving to an acceptable result where limit = 5', () => {
     waitsForPromise(async () => {
@@ -449,7 +449,7 @@ describe('promises::RequestSerializer()', () => {
   let requestSerializer: RequestSerializer = (null: any);
 
   beforeEach(() => {
-    window.useRealClock();
+    jasmine.useRealClock();
     requestSerializer = new RequestSerializer();
   });
 

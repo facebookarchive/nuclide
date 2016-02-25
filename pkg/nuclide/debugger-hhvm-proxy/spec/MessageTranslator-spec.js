@@ -44,7 +44,7 @@ describe('debugger-hhvm-proxy MessageTranslator', () => {
   });
 
   afterEach(() => {
-    unspy(require('../lib/ConnectionMultiplexer'), 'ConnectionMultiplexer');
+    jasmine.unspy(require('../lib/ConnectionMultiplexer'), 'ConnectionMultiplexer');
     clearRequireCache(require, '../lib/MessageTranslator');
   });
 

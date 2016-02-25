@@ -442,7 +442,7 @@ describe('TypeRegistry', () => {
 
   it('works for very large values', () => {
     waitsForPromise(async () => {
-      unspy(Date, 'now');
+      jasmine.unspy(Date, 'now');
       const testArray = [];
       for (let i = 0; i < 100000; i++) {
         testArray.push('this is a test string');

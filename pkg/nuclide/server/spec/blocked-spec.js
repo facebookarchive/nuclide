@@ -20,7 +20,7 @@ describe('blocked()', () => {
   beforeEach(() => {
     blockHandler = jasmine.createSpy();
     jasmine.Clock.useMock();
-    unspy(Date, 'now');
+    jasmine.unspy(Date, 'now');
     spyOn(Date, 'now').andCallFake(() => now);
 
     intervalHandler = blocked(blockHandler, 100, 10);

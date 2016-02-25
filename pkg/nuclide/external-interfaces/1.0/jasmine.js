@@ -73,7 +73,6 @@ type JasmineSpy = {
 };
 
 declare function spyOn(object: Object, method: string): JasmineSpy;
-declare function unspy(obj: Object, prop: string): void;
 
 // Mocking the JavaScript Clock
 // https://jasmine.github.io/1.3/introduction.html#section-Mocking_the_JavaScript_Clock
@@ -93,8 +92,6 @@ declare function waitsFor(
   latchFunction?: WaitsForArg, failureMessage?: WaitsForArg, timeout?: WaitsForArg): void;
 
 declare function waits(milliseconds: number): void;
-
-declare function unspy(object: Object, methodName: string): void;
 
 type JasmineEnvironment = {
   currentSpec: {
@@ -130,6 +127,6 @@ declare var jasmine: {
   createSpyObj(name: string, spyNames: Array<string>): {[key: string]: JasmineSpy};
   getEnv(): JasmineEnvironment;
   pp(value: mixed): string;
-  unspy(obj: Object, prop: string): void;
+  unspy(obj: Object, methodName: string): void;
   useRealClock(): void;
 };

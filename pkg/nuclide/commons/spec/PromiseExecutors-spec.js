@@ -18,7 +18,7 @@ describe('PromiseQueue', () => {
 
   // Workarounds to enable setTimeout, as suggested by:
   // https://discuss.atom.io/t/solved-settimeout-not-working-firing-in-specs-tests/11427/17
-  beforeEach(() => window.useRealClock());
+  beforeEach(() => jasmine.useRealClock());
 
   it('Run three async operations serially and make sure they do not overlap.', () => {
     const queue = new PromiseQueue();
@@ -55,7 +55,7 @@ describe('PromiseQueue', () => {
 });
 
 describe('PromisePool', () => {
-  beforeEach(() => window.useRealClock());
+  beforeEach(() => jasmine.useRealClock());
 
   it('Run async operations in parallel and do not exceed pool size.', () => {
     const poolSize = 3;

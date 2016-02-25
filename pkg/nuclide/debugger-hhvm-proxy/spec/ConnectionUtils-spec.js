@@ -93,7 +93,7 @@ describe('debugger-hhvm-proxy ConnectionUtils', () => {
   });
 
   afterEach(() => {
-    unspy(require('../../commons').fsPromise, 'exists');
+    jasmine.unspy(require('../../commons').fsPromise, 'exists');
   });
 
   describe('isCorrectConnection', () => {

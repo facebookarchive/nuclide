@@ -84,8 +84,8 @@ describe('FlowProcess', () => {
     });
 
     afterEach(() => {
-      global.unspy(require('../../commons/lib/process'), 'asyncExecute');
-      global.unspy(require('../../commons/lib/process'), 'safeSpawn');
+      jasmine.unspy(require('../../commons/lib/process'), 'asyncExecute');
+      jasmine.unspy(require('../../commons/lib/process'), 'safeSpawn');
     });
 
     describe('execFlow', () => {

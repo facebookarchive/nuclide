@@ -39,7 +39,7 @@ function sleep(timeMs: number): Promise<void> {
 
 describe('scribe_cat test suites', () => {
   beforeEach(() => {
-    window.useRealClock();
+    jasmine.useRealClock();
     waitsForPromise(async () => {
       tempDir = await fsPromise.tempdir();
       originalCommand = __test__.setScribeCatCommand(scribeCatMockCommandPath);

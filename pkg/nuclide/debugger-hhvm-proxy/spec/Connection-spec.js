@@ -64,8 +64,8 @@ describe('debugger-hhvm-proxy Connection', () => {
   });
 
   afterEach(() => {
-    unspy(require('../lib/DbgpSocket'), 'DbgpSocket');
-    unspy(require('../lib/DataCache'), 'DataCache');
+    jasmine.unspy(require('../lib/DbgpSocket'), 'DbgpSocket');
+    jasmine.unspy(require('../lib/DataCache'), 'DataCache');
     clearRequireCache(require, '../lib/Connection');
   });
 

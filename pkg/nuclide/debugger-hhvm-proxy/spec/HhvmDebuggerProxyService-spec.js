@@ -38,7 +38,7 @@ describe('debugger-hhvm-proxy proxy', () => {
   });
 
   afterEach(() => {
-    unspy(require('../lib/MessageTranslator'), 'MessageTranslator');
+    jasmine.unspy(require('../lib/MessageTranslator'), 'MessageTranslator');
     clearRequireCache(require, '../lib/HhvmDebuggerProxyService');
   });
 

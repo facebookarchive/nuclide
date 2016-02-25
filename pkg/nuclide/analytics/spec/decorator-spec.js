@@ -36,7 +36,7 @@ describe('The @trackTiming decorator', () => {
     trackKey = null;
     trackValues = null;
 
-    useRealClock(); // Make setTimeout work as expected.
+    jasmine.useRealClock(); // Make setTimeout work as expected.
 
     // Intercept Parse API call.
     spyOn(track, 'track').andCallFake((key, values) => {

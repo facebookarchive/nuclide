@@ -73,20 +73,9 @@ function advanceClock(deltaMs: number): void {
  * Allows tests to use the non-fake setTimeout and clearTimeout functions.
  */
 function useRealClock(): void {
-  unspy(global, 'setTimeout');
-  unspy(global, 'clearTimeout');
-  unspy(Date, 'now');
-}
-
-/**
- * unspy is a ported utility from Atom's `spec-helper.coffee` that restores the jasmine spied
- * function on an object to its original value.
- */
-function unspy(object: Object, methodName: string) {
-  if (!object[methodName].hasOwnProperty('originalValue')) {
-    throw new Error('Not a spy');
-  }
-  object[methodName] = object[methodName].originalValue;
+  jasmine.unspy(global, 'setTimeout');
+  jasmine.unspy(global, 'clearTimeout');
+  jasmine.unspy(Date, 'now');
 }
 
 // Expose the fake timer utils to global to be used by npm spec tests.
@@ -96,9 +85,7 @@ global.fakeClearTimeout = fakeClearTimeout;
 global.fakeSetInterval = fakeSetInterval;
 global.fakeClearInterval = fakeClearInterval;
 global.advanceClock = advanceClock;
-global.useRealClock = useRealClock;
-global.unspy = unspy;
-global.now = unspy;
+jasmine.useRealClock = useRealClock;
 const attributes = {};
 attributes['get'] = function() { return now; };
 Object.defineProperty(global, 'now', attributes);
