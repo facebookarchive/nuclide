@@ -218,10 +218,10 @@ export default class ClientComponent {
 
           setTimeout(() => {
             this._emitter.removeAllListeners(message.requestId.toString());
-            reject(
+            reject(new Error(
               `Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for requestId: ` +
               `${message.requestId}, ${timeoutMessage}.`
-            );
+            ));
           }, SERVICE_FRAMEWORK_RPC_TIMEOUT_MS);
         });
       case 'observable':
