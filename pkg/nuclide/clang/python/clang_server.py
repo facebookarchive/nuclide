@@ -144,6 +144,8 @@ class Server:
         flags = request['flags']
 
         # Update the translation unit with the latest contents.
+        # Force a re-parse, in case the user e.g. changed a header file.
+        self.cached_contents = None
         translation_unit = self._update_translation_unit(contents, flags)
         if not translation_unit:
             sys.stderr.write(
