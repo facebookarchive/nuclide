@@ -9,10 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type BreakpointStore from './BreakpointStore';
+
 const {CompositeDisposable, Disposable} = require('atom');
-/* eslint-disable no-unused-vars */
-const BreakpointStore = require('./BreakpointStore.js');
-/* eslint-enable no-unused-vars */
 
 /**
  * A single delegate which handles events from the object.

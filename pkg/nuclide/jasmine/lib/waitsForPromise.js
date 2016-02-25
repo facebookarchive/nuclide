@@ -11,12 +11,10 @@
 
 const invariant = require('assert');
 
-/*eslint-disable no-unused-vars*/
 type WaitsForPromiseOptions = {
   shouldReject?: boolean;
   timeout?: number;
 }
-/*eslint-enable no-unused-vars*/
 
 function waitsForPromise(...args: Array<WaitsForPromiseOptions | () => Promise<mixed>>): void {
   let shouldReject;

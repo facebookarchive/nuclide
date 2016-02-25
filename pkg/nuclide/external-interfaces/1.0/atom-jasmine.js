@@ -6,8 +6,6 @@
  * the root directory of this source tree.
  */
 
-/*eslint-disable no-unused-vars */
-
 // Type declarations for Atom's extensions to Jasmine v1.3
 // https://github.com/atom/atom/blob/master/spec/spec-helper.coffee
 

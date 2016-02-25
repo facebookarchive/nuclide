@@ -12,8 +12,6 @@
  * These are defined only for code executing in the chrome devtools webview.
  */
 
-/* eslint-disable no-unused-vars */
-
 declare class WebInspector$Object {
   // Hack to call super constructor in WebInspector classes.
   static call(...args?: any[]): void;

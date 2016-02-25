@@ -9,11 +9,10 @@
  * the root directory of this source tree.
  */
 
+import type BreakpointStore from './BreakpointStore';
+
 const {CompositeDisposable} = require('atom');
 const BreakpointDisplayController = require('./BreakpointDisplayController.js');
-/* eslint-disable no-unused-vars */
-const BreakpointStore = require('./BreakpointStore');
-/* eslint-enable no-unused-vars */
 
 class BreakpointManager {
   _breakpointStore: BreakpointStore;

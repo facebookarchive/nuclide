@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-type Provider = { // eslint-disable-line no-unused-vars
+type Provider = {
   priority: number;
   grammarScopes: Array<string>;
 }
