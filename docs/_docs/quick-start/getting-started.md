@@ -13,13 +13,19 @@ and productive quickly.
 
 ## Installation
 
-The [installation guides](/docs/editor/setup/) will provide you detailed information to install Nuclide
-on your platform, but assuming you have met the [prerequisites](/docs/editor/setup/#mac__prerequisites),
+The [installation guides](/docs/editor/setup/) will provide you detailed information to install
+Nuclide on your platform, but assuming you have met your platform dependent prerequisites
+([Mac](/docs/editor/setup/#mac__prerequisites) | [Linux](/docs/editor/setup/#linux__prerequisites)),
 you can install Nuclide with one command:
 
 ```bash
 apm install nuclide
 ```
+
+While technically optional, in order for features such as [`Quick Open`](#quick-open) to work
+correctly, you will also need to install [`Watchman`](https://facebook.github.io/watchman/) and
+ensure it is on your `$PATH`. There are other
+[recommended installations](/docs/editor/setup/#post-installation) as well.
 
 ## Launch
 

@@ -5,12 +5,12 @@ layout: docs
 permalink: /docs/editor/setup/
 ---
 
-There are two supported platforms for Nuclide, Linux and Mac OS X. Nuclide can be installed on
-Windows, but it is not fully supported; work is in progress.
+There are two supported platforms for Nuclide, [Linux](#linux) and [Mac OS X](#mac). Nuclide can be
+installed on [Windows](#windows), but it is not fully supported; work is in progress.
 
 These instructions are for installing the released package of Nuclide. For advanced users, you can
-[build from source](/docs/advanced-topics/building-from-source), but this is not officially supported
-and stability is not guaranteed.
+[build from source](/docs/advanced-topics/building-from-source), but this is not officially
+supported and stability is not guaranteed.
 
 * TOC
 {:toc}
@@ -34,12 +34,8 @@ or within Atom itself:
 5. The package you are looking for is called `nuclide` and should be version `0.111.0` or greater.
 6. Click the *Install* button for that package.
 
-Otherwise, choose your installation platform for detailed installation instructions, including
-prerequisites:
-
-- [Mac](#mac)
-- [Linux](#linux)
-- [Windows](#windows)
+Otherwise, see your installation platform below for detailed installation instructions, including
+prerequisites.
 
 ## Mac
 
@@ -153,8 +149,6 @@ To benefit from all of Nuclide's features, we recommend you also install the fol
 * [Hack](/docs/languages/hack/)
 * [Mercurial](/docs/features/hg/)
 * [Watchman](https://facebook.github.io/watchman/) - version 3.2 or above. It must be in
-  `/usr/local/bin/` or in your `$PATH`. Without Watchman, Nuclide will lose some functionality: for
-  instance, in the
-  [hg-repository](https://github.com/facebook/nuclide/tree/master/pkg/nuclide/hg-repository),
-  [server](https://github.com/facebook/nuclide/tree/master/pkg/nuclide/server), and
-  [quick-open](https://github.com/facebook/nuclide/tree/master/pkg/nuclide/quick-open) packages.
+  `/usr/local/bin/` or in your `$PATH`. Without Watchman, Nuclide will lose some functionality in
+  its [Mercurial](/docs/features/hg), [Remote Development](/docs/features/remote), and
+  [`Quick Open`](/docs/quick-start/getting-started/#quick-open) features.
