@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +8,9 @@
  * the root directory of this source tree.
  */
 
-import type {MixedTypeAnnotation} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
-
-function printMixedTypeAnnotation(
-  print: Print,
-  node: MixedTypeAnnotation,
-): Lines {
+function printMixedTypeAnnotation(print, node) {
   return ['mixed'];
 }
 
 module.exports = printMixedTypeAnnotation;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50TWl4ZWRUeXBlQW5ub3RhdGlvbi5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBY0EsU0FBUyx3QkFBd0IsQ0FDL0IsS0FBWSxFQUNaLElBQXlCLEVBQ2xCO0FBQ1AsU0FBTyxDQUFDLE9BQU8sQ0FBQyxDQUFDO0NBQ2xCOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUcsd0JBQXdCLENBQUMiLCJmaWxlIjoicHJpbnRNaXhlZFR5cGVBbm5vdGF0aW9uLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge01peGVkVHlwZUFubm90YXRpb259IGZyb20gJ2FzdC10eXBlcy1mbG93JztcbmltcG9ydCB0eXBlIHtMaW5lcywgUHJpbnR9IGZyb20gJy4uLy4uL3R5cGVzL2NvbW1vbic7XG5cbmZ1bmN0aW9uIHByaW50TWl4ZWRUeXBlQW5ub3RhdGlvbihcbiAgcHJpbnQ6IFByaW50LFxuICBub2RlOiBNaXhlZFR5cGVBbm5vdGF0aW9uLFxuKTogTGluZXMge1xuICByZXR1cm4gWydtaXhlZCddO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IHByaW50TWl4ZWRUeXBlQW5ub3RhdGlvbjtcbiJdfQ==

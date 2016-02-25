@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+var _commons = require('../../commons');
+
+/**
+ * @param aPath The NuclideUri of a file or directory for which you want to find
+ *   a Repository it belongs to.
+ * @return A Git or Hg repository the path belongs to, if any.
+ */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +14,20 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../remote-uri';
-import {array} from '../../commons';
-
-/**
- * @param aPath The NuclideUri of a file or directory for which you want to find
- *   a Repository it belongs to.
- * @return A Git or Hg repository the path belongs to, if any.
- */
-function repositoryForPath(aPath: NuclideUri): ?atom$Repository {
+function repositoryForPath(aPath) {
   // Calling atom.project.repositoryForDirectory gets the real path of the directory,
   // which requires a round-trip to the server for remote paths.
   // Instead, this function keeps filtering local.
-  const repositoryContainsPath = require('./repositoryContainsPath');
-  return array.find(
-    atom.project.getRepositories(),
-    repo => {
-      try {
-        return repositoryContainsPath(repo, aPath);
-      } catch (e) {
-        // The repo type is not supported.
-        return false;
-      }
-    },
-  );
+  var repositoryContainsPath = require('./repositoryContainsPath');
+  return _commons.array.find(atom.project.getRepositories(), function (repo) {
+    try {
+      return repositoryContainsPath(repo, aPath);
+    } catch (e) {
+      // The repo type is not supported.
+      return false;
+    }
+  });
 }
 
 module.exports = repositoryForPath;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInJlcG9zaXRvcnlGb3JQYXRoLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJ1QkFZb0IsZUFBZTs7Ozs7Ozs7Ozs7Ozs7OztBQU9uQyxTQUFTLGlCQUFpQixDQUFDLEtBQWlCLEVBQW9COzs7O0FBSTlELE1BQU0sc0JBQXNCLEdBQUcsT0FBTyxDQUFDLDBCQUEwQixDQUFDLENBQUM7QUFDbkUsU0FBTyxlQUFNLElBQUksQ0FDZixJQUFJLENBQUMsT0FBTyxDQUFDLGVBQWUsRUFBRSxFQUM5QixVQUFBLElBQUksRUFBSTtBQUNOLFFBQUk7QUFDRixhQUFPLHNCQUFzQixDQUFDLElBQUksRUFBRSxLQUFLLENBQUMsQ0FBQztLQUM1QyxDQUFDLE9BQU8sQ0FBQyxFQUFFOztBQUVWLGFBQU8sS0FBSyxDQUFDO0tBQ2Q7R0FDRixDQUNGLENBQUM7Q0FDSDs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHLGlCQUFpQixDQUFDIiwiZmlsZSI6InJlcG9zaXRvcnlGb3JQYXRoLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge051Y2xpZGVVcml9IGZyb20gJy4uLy4uL3JlbW90ZS11cmknO1xuaW1wb3J0IHthcnJheX0gZnJvbSAnLi4vLi4vY29tbW9ucyc7XG5cbi8qKlxuICogQHBhcmFtIGFQYXRoIFRoZSBOdWNsaWRlVXJpIG9mIGEgZmlsZSBvciBkaXJlY3RvcnkgZm9yIHdoaWNoIHlvdSB3YW50IHRvIGZpbmRcbiAqICAgYSBSZXBvc2l0b3J5IGl0IGJlbG9uZ3MgdG8uXG4gKiBAcmV0dXJuIEEgR2l0IG9yIEhnIHJlcG9zaXRvcnkgdGhlIHBhdGggYmVsb25ncyB0bywgaWYgYW55LlxuICovXG5mdW5jdGlvbiByZXBvc2l0b3J5Rm9yUGF0aChhUGF0aDogTnVjbGlkZVVyaSk6ID9hdG9tJFJlcG9zaXRvcnkge1xuICAvLyBDYWxsaW5nIGF0b20ucHJvamVjdC5yZXBvc2l0b3J5Rm9yRGlyZWN0b3J5IGdldHMgdGhlIHJlYWwgcGF0aCBvZiB0aGUgZGlyZWN0b3J5LFxuICAvLyB3aGljaCByZXF1aXJlcyBhIHJvdW5kLXRyaXAgdG8gdGhlIHNlcnZlciBmb3IgcmVtb3RlIHBhdGhzLlxuICAvLyBJbnN0ZWFkLCB0aGlzIGZ1bmN0aW9uIGtlZXBzIGZpbHRlcmluZyBsb2NhbC5cbiAgY29uc3QgcmVwb3NpdG9yeUNvbnRhaW5zUGF0aCA9IHJlcXVpcmUoJy4vcmVwb3NpdG9yeUNvbnRhaW5zUGF0aCcpO1xuICByZXR1cm4gYXJyYXkuZmluZChcbiAgICBhdG9tLnByb2plY3QuZ2V0UmVwb3NpdG9yaWVzKCksXG4gICAgcmVwbyA9PiB7XG4gICAgICB0cnkge1xuICAgICAgICByZXR1cm4gcmVwb3NpdG9yeUNvbnRhaW5zUGF0aChyZXBvLCBhUGF0aCk7XG4gICAgICB9IGNhdGNoIChlKSB7XG4gICAgICAgIC8vIFRoZSByZXBvIHR5cGUgaXMgbm90IHN1cHBvcnRlZC5cbiAgICAgICAgcmV0dXJuIGZhbHNlO1xuICAgICAgfVxuICAgIH0sXG4gICk7XG59XG5cbm1vZHVsZS5leHBvcnRzID0gcmVwb3NpdG9yeUZvclBhdGg7XG4iXX0=

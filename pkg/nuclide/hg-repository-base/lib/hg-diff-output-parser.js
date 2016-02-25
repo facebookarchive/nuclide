@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _os = require('os');
+
+var _os2 = _interopRequireDefault(_os);
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -14,74 +17,72 @@
  * Explained here: http://www.gnu.org/software/diffutils/manual/html_node/Detailed-Unified.html
  * and here: http://www.artima.com/weblogs/viewpost.jsp?thread=164293.
  */
-const HUNK_DIFF_REGEX = /@@ .* @@/g;
-const HUNK_OLD_INFO_REGEX = /\-([0-9]+)((?:,[0-9]+)?)/;
-const HUNK_NEW_INFO_REGEX = /\+([0-9]+)((?:,[0-9]+)?)/;
-
-import os from 'os';
-import type {DiffInfo} from './hg-constants';
 
 /**
  * Parses the output of `hg diff --unified 0`.
  */
-function parseHgDiffUnifiedOutput(output: string): DiffInfo {
-  const diffInfo = {
+var HUNK_DIFF_REGEX = /@@ .* @@/g;
+var HUNK_OLD_INFO_REGEX = /\-([0-9]+)((?:,[0-9]+)?)/;
+var HUNK_NEW_INFO_REGEX = /\+([0-9]+)((?:,[0-9]+)?)/;
+
+function parseHgDiffUnifiedOutput(output) {
+  var diffInfo = {
     added: 0,
     deleted: 0,
-    lineDiffs: [],
+    lineDiffs: []
   };
   if (!output) {
     return diffInfo;
   }
   // $FlowFixMe match may return null
-  const diffHunks = output.match(HUNK_DIFF_REGEX);
-  diffHunks.forEach(hunk => {
+  var diffHunks = output.match(HUNK_DIFF_REGEX);
+  diffHunks.forEach(function (hunk) {
     // `hunk` will look like: "@@ -a(,b) +c(,d) @@"
-    const hunkParts = hunk.split(' ');
+    var hunkParts = hunk.split(' ');
     // $FlowFixMe match may return null
-    const oldInfo = hunkParts[1].match(HUNK_OLD_INFO_REGEX);
+    var oldInfo = hunkParts[1].match(HUNK_OLD_INFO_REGEX);
     // $FlowFixMe match may return null
-    const newInfo = hunkParts[2].match(HUNK_NEW_INFO_REGEX);
+    var newInfo = hunkParts[2].match(HUNK_NEW_INFO_REGEX);
 
     // `oldInfo`/`newInfo` will look like: ["a,b", "a", ",b"], or ["a", "a", ""].
-    const oldStart = parseInt(oldInfo[1], 10);
-    const newStart = parseInt(newInfo[1], 10);
+    var oldStart = parseInt(oldInfo[1], 10);
+    var newStart = parseInt(newInfo[1], 10);
     // According to the spec, if the line length is 1, it may be omitted.
-    const oldLines = oldInfo[2] ? parseInt(oldInfo[2].substring(1), 10) : 1;
-    const newLines = newInfo[2] ? parseInt(newInfo[2].substring(1), 10) : 1;
+    var oldLines = oldInfo[2] ? parseInt(oldInfo[2].substring(1), 10) : 1;
+    var newLines = newInfo[2] ? parseInt(newInfo[2].substring(1), 10) : 1;
 
     diffInfo.added += newLines;
     diffInfo.deleted += oldLines;
-    diffInfo.lineDiffs.push({oldStart, oldLines, newStart, newLines});
+    diffInfo.lineDiffs.push({ oldStart: oldStart, oldLines: oldLines, newStart: newStart, newLines: newLines });
   });
 
   return diffInfo;
 }
 
-const SINGLE_UNIFIED_DIFF_BEGINNING_REGEX = /--- /;
+var SINGLE_UNIFIED_DIFF_BEGINNING_REGEX = /--- /;
 
 /**
  * Parses the output of `hg diff --unified 0 --noprefix` from one or more files.
  * @return A map of each file path in the output (relative to the root of the
  *   repo) to its parsed DiffInfo.
  */
-function parseMultiFileHgDiffUnifiedOutput(output: string): Map<string, DiffInfo> {
-  const filePathToDiffInfo = new Map();
+function parseMultiFileHgDiffUnifiedOutput(output) {
+  var filePathToDiffInfo = new Map();
   // Split the output by the symbols '--- '. This is specified in the Unified diff format:
   // http://www.gnu.org/software/diffutils/manual/html_node/Detailed-Unified.html#Detailed-Unified.
-  let diffOutputs = output.split(SINGLE_UNIFIED_DIFF_BEGINNING_REGEX);
+  var diffOutputs = output.split(SINGLE_UNIFIED_DIFF_BEGINNING_REGEX);
   // Throw out the first chunk (anything before the first '--- ' sequence), because
   // it is not part of a complete diff.
   diffOutputs = diffOutputs.slice(1);
 
-  for (const diffOutputForFile of diffOutputs) {
+  for (var diffOutputForFile of diffOutputs) {
     // First, extract the file name. The first line of the string should be the file path.
-    const newLineChar = os.EOL;
-    const firstNewline = diffOutputForFile.indexOf(newLineChar);
-    let filePath = diffOutputForFile.slice(0, firstNewline);
+    var newLineChar = _os2['default'].EOL;
+    var firstNewline = diffOutputForFile.indexOf(newLineChar);
+    var filePath = diffOutputForFile.slice(0, firstNewline);
     filePath = filePath.trim();
     // Then, get the parsed diff info.
-    const lineDiffs = parseHgDiffUnifiedOutput(diffOutputForFile);
+    var lineDiffs = parseHgDiffUnifiedOutput(diffOutputForFile);
 
     filePathToDiffInfo.set(filePath, lineDiffs);
   }
@@ -89,6 +90,7 @@ function parseMultiFileHgDiffUnifiedOutput(output: string): Map<string, DiffInfo
 }
 
 module.exports = {
-  parseHgDiffUnifiedOutput,
-  parseMultiFileHgDiffUnifiedOutput,
+  parseHgDiffUnifiedOutput: parseHgDiffUnifiedOutput,
+  parseMultiFileHgDiffUnifiedOutput: parseMultiFileHgDiffUnifiedOutput
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImhnLWRpZmYtb3V0cHV0LXBhcnNlci5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztrQkFvQmUsSUFBSTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBSm5CLElBQU0sZUFBZSxHQUFHLFdBQVcsQ0FBQztBQUNwQyxJQUFNLG1CQUFtQixHQUFHLDBCQUEwQixDQUFDO0FBQ3ZELElBQU0sbUJBQW1CLEdBQUcsMEJBQTBCLENBQUM7O0FBUXZELFNBQVMsd0JBQXdCLENBQUMsTUFBYyxFQUFZO0FBQzFELE1BQU0sUUFBUSxHQUFHO0FBQ2YsU0FBSyxFQUFFLENBQUM7QUFDUixXQUFPLEVBQUUsQ0FBQztBQUNWLGFBQVMsRUFBRSxFQUFFO0dBQ2QsQ0FBQztBQUNGLE1BQUksQ0FBQyxNQUFNLEVBQUU7QUFDWCxXQUFPLFFBQVEsQ0FBQztHQUNqQjs7QUFFRCxNQUFNLFNBQVMsR0FBRyxNQUFNLENBQUMsS0FBSyxDQUFDLGVBQWUsQ0FBQyxDQUFDO0FBQ2hELFdBQVMsQ0FBQyxPQUFPLENBQUMsVUFBQSxJQUFJLEVBQUk7O0FBRXhCLFFBQU0sU0FBUyxHQUFHLElBQUksQ0FBQyxLQUFLLENBQUMsR0FBRyxDQUFDLENBQUM7O0FBRWxDLFFBQU0sT0FBTyxHQUFHLFNBQVMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxLQUFLLENBQUMsbUJBQW1CLENBQUMsQ0FBQzs7QUFFeEQsUUFBTSxPQUFPLEdBQUcsU0FBUyxDQUFDLENBQUMsQ0FBQyxDQUFDLEtBQUssQ0FBQyxtQkFBbUIsQ0FBQyxDQUFDOzs7QUFHeEQsUUFBTSxRQUFRLEdBQUcsUUFBUSxDQUFDLE9BQU8sQ0FBQyxDQUFDLENBQUMsRUFBRSxFQUFFLENBQUMsQ0FBQztBQUMxQyxRQUFNLFFBQVEsR0FBRyxRQUFRLENBQUMsT0FBTyxDQUFDLENBQUMsQ0FBQyxFQUFFLEVBQUUsQ0FBQyxDQUFDOztBQUUxQyxRQUFNLFFBQVEsR0FBRyxPQUFPLENBQUMsQ0FBQyxDQUFDLEdBQUcsUUFBUSxDQUFDLE9BQU8sQ0FBQyxDQUFDLENBQUMsQ0FBQyxTQUFTLENBQUMsQ0FBQyxDQUFDLEVBQUUsRUFBRSxDQUFDLEdBQUcsQ0FBQyxDQUFDO0FBQ3hFLFFBQU0sUUFBUSxHQUFHLE9BQU8sQ0FBQyxDQUFDLENBQUMsR0FBRyxRQUFRLENBQUMsT0FBTyxDQUFDLENBQUMsQ0FBQyxDQUFDLFNBQVMsQ0FBQyxDQUFDLENBQUMsRUFBRSxFQUFFLENBQUMsR0FBRyxDQUFDLENBQUM7O0FBRXhFLFlBQVEsQ0FBQyxLQUFLLElBQUksUUFBUSxDQUFDO0FBQzNCLFlBQVEsQ0FBQyxPQUFPLElBQUksUUFBUSxDQUFDO0FBQzdCLFlBQVEsQ0FBQyxTQUFTLENBQUMsSUFBSSxDQUFDLEVBQUMsUUFBUSxFQUFSLFFBQVEsRUFBRSxRQUFRLEVBQVIsUUFBUSxFQUFFLFFBQVEsRUFBUixRQUFRLEVBQUUsUUFBUSxFQUFSLFFBQVEsRUFBQyxDQUFDLENBQUM7R0FDbkUsQ0FBQyxDQUFDOztBQUVILFNBQU8sUUFBUSxDQUFDO0NBQ2pCOztBQUVELElBQU0sbUNBQW1DLEdBQUcsTUFBTSxDQUFDOzs7Ozs7O0FBT25ELFNBQVMsaUNBQWlDLENBQUMsTUFBYyxFQUF5QjtBQUNoRixNQUFNLGtCQUFrQixHQUFHLElBQUksR0FBRyxFQUFFLENBQUM7OztBQUdyQyxNQUFJLFdBQVcsR0FBRyxNQUFNLENBQUMsS0FBSyxDQUFDLG1DQUFtQyxDQUFDLENBQUM7OztBQUdwRSxhQUFXLEdBQUcsV0FBVyxDQUFDLEtBQUssQ0FBQyxDQUFDLENBQUMsQ0FBQzs7QUFFbkMsT0FBSyxJQUFNLGlCQUFpQixJQUFJLFdBQVcsRUFBRTs7QUFFM0MsUUFBTSxXQUFXLEdBQUcsZ0JBQUcsR0FBRyxDQUFDO0FBQzNCLFFBQU0sWUFBWSxHQUFHLGlCQUFpQixDQUFDLE9BQU8sQ0FBQyxXQUFXLENBQUMsQ0FBQztBQUM1RCxRQUFJLFFBQVEsR0FBRyxpQkFBaUIsQ0FBQyxLQUFLLENBQUMsQ0FBQyxFQUFFLFlBQVksQ0FBQyxDQUFDO0FBQ3hELFlBQVEsR0FBRyxRQUFRLENBQUMsSUFBSSxFQUFFLENBQUM7O0FBRTNCLFFBQU0sU0FBUyxHQUFHLHdCQUF3QixDQUFDLGlCQUFpQixDQUFDLENBQUM7O0FBRTlELHNCQUFrQixDQUFDLEdBQUcsQ0FBQyxRQUFRLEVBQUUsU0FBUyxDQUFDLENBQUM7R0FDN0M7QUFDRCxTQUFPLGtCQUFrQixDQUFDO0NBQzNCOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUc7QUFDZiwwQkFBd0IsRUFBeEIsd0JBQXdCO0FBQ3hCLG1DQUFpQyxFQUFqQyxpQ0FBaUM7Q0FDbEMsQ0FBQyIsImZpbGUiOiJoZy1kaWZmLW91dHB1dC1wYXJzZXIuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG4vKipcbiAqIE1hdGNoZXMgYSBodW5rIHN1bW1hcnkgbGluZSBhcyBzcGVjaWZpZWQgaW4gdGhlIHVuaWZpZWQgZGlmZiBmb3JtYXQuXG4gKiBFeHBsYWluZWQgaGVyZTogaHR0cDovL3d3dy5nbnUub3JnL3NvZnR3YXJlL2RpZmZ1dGlscy9tYW51YWwvaHRtbF9ub2RlL0RldGFpbGVkLVVuaWZpZWQuaHRtbFxuICogYW5kIGhlcmU6IGh0dHA6Ly93d3cuYXJ0aW1hLmNvbS93ZWJsb2dzL3ZpZXdwb3N0LmpzcD90aHJlYWQ9MTY0MjkzLlxuICovXG5jb25zdCBIVU5LX0RJRkZfUkVHRVggPSAvQEAgLiogQEAvZztcbmNvbnN0IEhVTktfT0xEX0lORk9fUkVHRVggPSAvXFwtKFswLTldKykoKD86LFswLTldKyk/KS87XG5jb25zdCBIVU5LX05FV19JTkZPX1JFR0VYID0gL1xcKyhbMC05XSspKCg/OixbMC05XSspPykvO1xuXG5pbXBvcnQgb3MgZnJvbSAnb3MnO1xuaW1wb3J0IHR5cGUge0RpZmZJbmZvfSBmcm9tICcuL2hnLWNvbnN0YW50cyc7XG5cbi8qKlxuICogUGFyc2VzIHRoZSBvdXRwdXQgb2YgYGhnIGRpZmYgLS11bmlmaWVkIDBgLlxuICovXG5mdW5jdGlvbiBwYXJzZUhnRGlmZlVuaWZpZWRPdXRwdXQob3V0cHV0OiBzdHJpbmcpOiBEaWZmSW5mbyB7XG4gIGNvbnN0IGRpZmZJbmZvID0ge1xuICAgIGFkZGVkOiAwLFxuICAgIGRlbGV0ZWQ6IDAsXG4gICAgbGluZURpZmZzOiBbXSxcbiAgfTtcbiAgaWYgKCFvdXRwdXQpIHtcbiAgICByZXR1cm4gZGlmZkluZm87XG4gIH1cbiAgLy8gJEZsb3dGaXhNZSBtYXRjaCBtYXkgcmV0dXJuIG51bGxcbiAgY29uc3QgZGlmZkh1bmtzID0gb3V0cHV0Lm1hdGNoKEhVTktfRElGRl9SRUdFWCk7XG4gIGRpZmZIdW5rcy5mb3JFYWNoKGh1bmsgPT4ge1xuICAgIC8vIGBodW5rYCB3aWxsIGxvb2sgbGlrZTogXCJAQCAtYSgsYikgK2MoLGQpIEBAXCJcbiAgICBjb25zdCBodW5rUGFydHMgPSBodW5rLnNwbGl0KCcgJyk7XG4gICAgLy8gJEZsb3dGaXhNZSBtYXRjaCBtYXkgcmV0dXJuIG51bGxcbiAgICBjb25zdCBvbGRJbmZvID0gaHVua1BhcnRzWzFdLm1hdGNoKEhVTktfT0xEX0lORk9fUkVHRVgpO1xuICAgIC8vICRGbG93Rml4TWUgbWF0Y2ggbWF5IHJldHVybiBudWxsXG4gICAgY29uc3QgbmV3SW5mbyA9IGh1bmtQYXJ0c1syXS5tYXRjaChIVU5LX05FV19JTkZPX1JFR0VYKTtcblxuICAgIC8vIGBvbGRJbmZvYC9gbmV3SW5mb2Agd2lsbCBsb29rIGxpa2U6IFtcImEsYlwiLCBcImFcIiwgXCIsYlwiXSwgb3IgW1wiYVwiLCBcImFcIiwgXCJcIl0uXG4gICAgY29uc3Qgb2xkU3RhcnQgPSBwYXJzZUludChvbGRJbmZvWzFdLCAxMCk7XG4gICAgY29uc3QgbmV3U3RhcnQgPSBwYXJzZUludChuZXdJbmZvWzFdLCAxMCk7XG4gICAgLy8gQWNjb3JkaW5nIHRvIHRoZSBzcGVjLCBpZiB0aGUgbGluZSBsZW5ndGggaXMgMSwgaXQgbWF5IGJlIG9taXR0ZWQuXG4gICAgY29uc3Qgb2xkTGluZXMgPSBvbGRJbmZvWzJdID8gcGFyc2VJbnQob2xkSW5mb1syXS5zdWJzdHJpbmcoMSksIDEwKSA6IDE7XG4gICAgY29uc3QgbmV3TGluZXMgPSBuZXdJbmZvWzJdID8gcGFyc2VJbnQobmV3SW5mb1syXS5zdWJzdHJpbmcoMSksIDEwKSA6IDE7XG5cbiAgICBkaWZmSW5mby5hZGRlZCArPSBuZXdMaW5lcztcbiAgICBkaWZmSW5mby5kZWxldGVkICs9IG9sZExpbmVzO1xuICAgIGRpZmZJbmZvLmxpbmVEaWZmcy5wdXNoKHtvbGRTdGFydCwgb2xkTGluZXMsIG5ld1N0YXJ0LCBuZXdMaW5lc30pO1xuICB9KTtcblxuICByZXR1cm4gZGlmZkluZm87XG59XG5cbmNvbnN0IFNJTkdMRV9VTklGSUVEX0RJRkZfQkVHSU5OSU5HX1JFR0VYID0gLy0tLSAvO1xuXG4vKipcbiAqIFBhcnNlcyB0aGUgb3V0cHV0IG9mIGBoZyBkaWZmIC0tdW5pZmllZCAwIC0tbm9wcmVmaXhgIGZyb20gb25lIG9yIG1vcmUgZmlsZXMuXG4gKiBAcmV0dXJuIEEgbWFwIG9mIGVhY2ggZmlsZSBwYXRoIGluIHRoZSBvdXRwdXQgKHJlbGF0aXZlIHRvIHRoZSByb290IG9mIHRoZVxuICogICByZXBvKSB0byBpdHMgcGFyc2VkIERpZmZJbmZvLlxuICovXG5mdW5jdGlvbiBwYXJzZU11bHRpRmlsZUhnRGlmZlVuaWZpZWRPdXRwdXQob3V0cHV0OiBzdHJpbmcpOiBNYXA8c3RyaW5nLCBEaWZmSW5mbz4ge1xuICBjb25zdCBmaWxlUGF0aFRvRGlmZkluZm8gPSBuZXcgTWFwKCk7XG4gIC8vIFNwbGl0IHRoZSBvdXRwdXQgYnkgdGhlIHN5bWJvbHMgJy0tLSAnLiBUaGlzIGlzIHNwZWNpZmllZCBpbiB0aGUgVW5pZmllZCBkaWZmIGZvcm1hdDpcbiAgLy8gaHR0cDovL3d3dy5nbnUub3JnL3NvZnR3YXJlL2RpZmZ1dGlscy9tYW51YWwvaHRtbF9ub2RlL0RldGFpbGVkLVVuaWZpZWQuaHRtbCNEZXRhaWxlZC1VbmlmaWVkLlxuICBsZXQgZGlmZk91dHB1dHMgPSBvdXRwdXQuc3BsaXQoU0lOR0xFX1VOSUZJRURfRElGRl9CRUdJTk5JTkdfUkVHRVgpO1xuICAvLyBUaHJvdyBvdXQgdGhlIGZpcnN0IGNodW5rIChhbnl0aGluZyBiZWZvcmUgdGhlIGZpcnN0ICctLS0gJyBzZXF1ZW5jZSksIGJlY2F1c2VcbiAgLy8gaXQgaXMgbm90IHBhcnQgb2YgYSBjb21wbGV0ZSBkaWZmLlxuICBkaWZmT3V0cHV0cyA9IGRpZmZPdXRwdXRzLnNsaWNlKDEpO1xuXG4gIGZvciAoY29uc3QgZGlmZk91dHB1dEZvckZpbGUgb2YgZGlmZk91dHB1dHMpIHtcbiAgICAvLyBGaXJzdCwgZXh0cmFjdCB0aGUgZmlsZSBuYW1lLiBUaGUgZmlyc3QgbGluZSBvZiB0aGUgc3RyaW5nIHNob3VsZCBiZSB0aGUgZmlsZSBwYXRoLlxuICAgIGNvbnN0IG5ld0xpbmVDaGFyID0gb3MuRU9MO1xuICAgIGNvbnN0IGZpcnN0TmV3bGluZSA9IGRpZmZPdXRwdXRGb3JGaWxlLmluZGV4T2YobmV3TGluZUNoYXIpO1xuICAgIGxldCBmaWxlUGF0aCA9IGRpZmZPdXRwdXRGb3JGaWxlLnNsaWNlKDAsIGZpcnN0TmV3bGluZSk7XG4gICAgZmlsZVBhdGggPSBmaWxlUGF0aC50cmltKCk7XG4gICAgLy8gVGhlbiwgZ2V0IHRoZSBwYXJzZWQgZGlmZiBpbmZvLlxuICAgIGNvbnN0IGxpbmVEaWZmcyA9IHBhcnNlSGdEaWZmVW5pZmllZE91dHB1dChkaWZmT3V0cHV0Rm9yRmlsZSk7XG5cbiAgICBmaWxlUGF0aFRvRGlmZkluZm8uc2V0KGZpbGVQYXRoLCBsaW5lRGlmZnMpO1xuICB9XG4gIHJldHVybiBmaWxlUGF0aFRvRGlmZkluZm87XG59XG5cbm1vZHVsZS5leHBvcnRzID0ge1xuICBwYXJzZUhnRGlmZlVuaWZpZWRPdXRwdXQsXG4gIHBhcnNlTXVsdGlGaWxlSGdEaWZmVW5pZmllZE91dHB1dCxcbn07XG4iXX0=

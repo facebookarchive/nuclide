@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,58 +8,46 @@
  * the root directory of this source tree.
  */
 
-const path = require('path');
-const {spawnSync} = require('child_process');
+var path = require('path');
+
+var _require = require('child_process');
+
+var spawnSync = _require.spawnSync;
 
 function getApmNodePath() {
-  const apmDir = path.dirname(atom.packages.getApmPath());
+  var apmDir = path.dirname(atom.packages.getApmPath());
   return path.normalize(path.join(apmDir, 'node'));
 }
 
 function getApmNodeModulesPath() {
-  const apmDir = path.dirname(atom.packages.getApmPath());
+  var apmDir = path.dirname(atom.packages.getApmPath());
   return path.normalize(path.join(apmDir, '..', 'node_modules'));
 }
 
-function runScriptInApmNode(script: string) {
-  const args = ['-e', script];
-  const options = {env: {NODE_PATH: getApmNodeModulesPath()}};
-  const output = spawnSync(getApmNodePath(), args, options);
+function runScriptInApmNode(script) {
+  var args = ['-e', script];
+  var options = { env: { NODE_PATH: getApmNodeModulesPath() } };
+  var output = spawnSync(getApmNodePath(), args, options);
   return output.stdout.toString();
 }
 
-function getPassword(service: string, account: string): ?string {
-  const script = `
-    var keytar = require('keytar');
-    var service = ${JSON.stringify(service)};
-    var account = ${JSON.stringify(account)};
-    var password = keytar.getPassword(service, account);
-    console.log(JSON.stringify(password));
-  `;
+function getPassword(service, account) {
+  var script = '\n    var keytar = require(\'keytar\');\n    var service = ' + JSON.stringify(service) + ';\n    var account = ' + JSON.stringify(account) + ';\n    var password = keytar.getPassword(service, account);\n    console.log(JSON.stringify(password));\n  ';
   return JSON.parse(runScriptInApmNode(script));
 }
 
-function replacePassword(
-    service: string,
-    account: string,
-    password: string): ?boolean {
-  const script = `
-    var keytar = require('keytar');
-    var service = ${JSON.stringify(service)};
-    var account = ${JSON.stringify(account)};
-    var password = ${JSON.stringify(password)};
-    var result = keytar.replacePassword(service, account, password);
-    console.log(JSON.stringify(result));
-  `;
+function replacePassword(service, account, password) {
+  var script = '\n    var keytar = require(\'keytar\');\n    var service = ' + JSON.stringify(service) + ';\n    var account = ' + JSON.stringify(account) + ';\n    var password = ' + JSON.stringify(password) + ';\n    var result = keytar.replacePassword(service, account, password);\n    console.log(JSON.stringify(result));\n  ';
   return JSON.parse(runScriptInApmNode(script));
 }
 
 module.exports = {
-  getPassword,
-  replacePassword,
+  getPassword: getPassword,
+  replacePassword: replacePassword,
   __test__: {
-    runScriptInApmNode,
-    getApmNodePath,
-    getApmNodeModulesPath,
-  },
+    runScriptInApmNode: runScriptInApmNode,
+    getApmNodePath: getApmNodePath,
+    getApmNodeModulesPath: getApmNodeModulesPath
+  }
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQVdBLElBQU0sSUFBSSxHQUFHLE9BQU8sQ0FBQyxNQUFNLENBQUMsQ0FBQzs7ZUFDVCxPQUFPLENBQUMsZUFBZSxDQUFDOztJQUFyQyxTQUFTLFlBQVQsU0FBUzs7QUFFaEIsU0FBUyxjQUFjLEdBQUc7QUFDeEIsTUFBTSxNQUFNLEdBQUcsSUFBSSxDQUFDLE9BQU8sQ0FBQyxJQUFJLENBQUMsUUFBUSxDQUFDLFVBQVUsRUFBRSxDQUFDLENBQUM7QUFDeEQsU0FBTyxJQUFJLENBQUMsU0FBUyxDQUFDLElBQUksQ0FBQyxJQUFJLENBQUMsTUFBTSxFQUFFLE1BQU0sQ0FBQyxDQUFDLENBQUM7Q0FDbEQ7O0FBRUQsU0FBUyxxQkFBcUIsR0FBRztBQUMvQixNQUFNLE1BQU0sR0FBRyxJQUFJLENBQUMsT0FBTyxDQUFDLElBQUksQ0FBQyxRQUFRLENBQUMsVUFBVSxFQUFFLENBQUMsQ0FBQztBQUN4RCxTQUFPLElBQUksQ0FBQyxTQUFTLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxNQUFNLEVBQUUsSUFBSSxFQUFFLGNBQWMsQ0FBQyxDQUFDLENBQUM7Q0FDaEU7O0FBRUQsU0FBUyxrQkFBa0IsQ0FBQyxNQUFjLEVBQUU7QUFDMUMsTUFBTSxJQUFJLEdBQUcsQ0FBQyxJQUFJLEVBQUUsTUFBTSxDQUFDLENBQUM7QUFDNUIsTUFBTSxPQUFPLEdBQUcsRUFBQyxHQUFHLEVBQUUsRUFBQyxTQUFTLEVBQUUscUJBQXFCLEVBQUUsRUFBQyxFQUFDLENBQUM7QUFDNUQsTUFBTSxNQUFNLEdBQUcsU0FBUyxDQUFDLGNBQWMsRUFBRSxFQUFFLElBQUksRUFBRSxPQUFPLENBQUMsQ0FBQztBQUMxRCxTQUFPLE1BQU0sQ0FBQyxNQUFNLENBQUMsUUFBUSxFQUFFLENBQUM7Q0FDakM7O0FBRUQsU0FBUyxXQUFXLENBQUMsT0FBZSxFQUFFLE9BQWUsRUFBVztBQUM5RCxNQUFNLE1BQU0sbUVBRU0sSUFBSSxDQUFDLFNBQVMsQ0FBQyxPQUFPLENBQUMsNkJBQ3ZCLElBQUksQ0FBQyxTQUFTLENBQUMsT0FBTyxDQUFDLGdIQUd4QyxDQUFDO0FBQ0YsU0FBTyxJQUFJLENBQUMsS0FBSyxDQUFDLGtCQUFrQixDQUFDLE1BQU0sQ0FBQyxDQUFDLENBQUM7Q0FDL0M7O0FBRUQsU0FBUyxlQUFlLENBQ3BCLE9BQWUsRUFDZixPQUFlLEVBQ2YsUUFBZ0IsRUFBWTtBQUM5QixNQUFNLE1BQU0sbUVBRU0sSUFBSSxDQUFDLFNBQVMsQ0FBQyxPQUFPLENBQUMsNkJBQ3ZCLElBQUksQ0FBQyxTQUFTLENBQUMsT0FBTyxDQUFDLDhCQUN0QixJQUFJLENBQUMsU0FBUyxDQUFDLFFBQVEsQ0FBQywwSEFHMUMsQ0FBQztBQUNGLFNBQU8sSUFBSSxDQUFDLEtBQUssQ0FBQyxrQkFBa0IsQ0FBQyxNQUFNLENBQUMsQ0FBQyxDQUFDO0NBQy9DOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUc7QUFDZixhQUFXLEVBQVgsV0FBVztBQUNYLGlCQUFlLEVBQWYsZUFBZTtBQUNmLFVBQVEsRUFBRTtBQUNSLHNCQUFrQixFQUFsQixrQkFBa0I7QUFDbEIsa0JBQWMsRUFBZCxjQUFjO0FBQ2QseUJBQXFCLEVBQXJCLHFCQUFxQjtHQUN0QjtDQUNGLENBQUMiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmNvbnN0IHBhdGggPSByZXF1aXJlKCdwYXRoJyk7XG5jb25zdCB7c3Bhd25TeW5jfSA9IHJlcXVpcmUoJ2NoaWxkX3Byb2Nlc3MnKTtcblxuZnVuY3Rpb24gZ2V0QXBtTm9kZVBhdGgoKSB7XG4gIGNvbnN0IGFwbURpciA9IHBhdGguZGlybmFtZShhdG9tLnBhY2thZ2VzLmdldEFwbVBhdGgoKSk7XG4gIHJldHVybiBwYXRoLm5vcm1hbGl6ZShwYXRoLmpvaW4oYXBtRGlyLCAnbm9kZScpKTtcbn1cblxuZnVuY3Rpb24gZ2V0QXBtTm9kZU1vZHVsZXNQYXRoKCkge1xuICBjb25zdCBhcG1EaXIgPSBwYXRoLmRpcm5hbWUoYXRvbS5wYWNrYWdlcy5nZXRBcG1QYXRoKCkpO1xuICByZXR1cm4gcGF0aC5ub3JtYWxpemUocGF0aC5qb2luKGFwbURpciwgJy4uJywgJ25vZGVfbW9kdWxlcycpKTtcbn1cblxuZnVuY3Rpb24gcnVuU2NyaXB0SW5BcG1Ob2RlKHNjcmlwdDogc3RyaW5nKSB7XG4gIGNvbnN0IGFyZ3MgPSBbJy1lJywgc2NyaXB0XTtcbiAgY29uc3Qgb3B0aW9ucyA9IHtlbnY6IHtOT0RFX1BBVEg6IGdldEFwbU5vZGVNb2R1bGVzUGF0aCgpfX07XG4gIGNvbnN0IG91dHB1dCA9IHNwYXduU3luYyhnZXRBcG1Ob2RlUGF0aCgpLCBhcmdzLCBvcHRpb25zKTtcbiAgcmV0dXJuIG91dHB1dC5zdGRvdXQudG9TdHJpbmcoKTtcbn1cblxuZnVuY3Rpb24gZ2V0UGFzc3dvcmQoc2VydmljZTogc3RyaW5nLCBhY2NvdW50OiBzdHJpbmcpOiA/c3RyaW5nIHtcbiAgY29uc3Qgc2NyaXB0ID0gYFxuICAgIHZhciBrZXl0YXIgPSByZXF1aXJlKCdrZXl0YXInKTtcbiAgICB2YXIgc2VydmljZSA9ICR7SlNPTi5zdHJpbmdpZnkoc2VydmljZSl9O1xuICAgIHZhciBhY2NvdW50ID0gJHtKU09OLnN0cmluZ2lmeShhY2NvdW50KX07XG4gICAgdmFyIHBhc3N3b3JkID0ga2V5dGFyLmdldFBhc3N3b3JkKHNlcnZpY2UsIGFjY291bnQpO1xuICAgIGNvbnNvbGUubG9nKEpTT04uc3RyaW5naWZ5KHBhc3N3b3JkKSk7XG4gIGA7XG4gIHJldHVybiBKU09OLnBhcnNlKHJ1blNjcmlwdEluQXBtTm9kZShzY3JpcHQpKTtcbn1cblxuZnVuY3Rpb24gcmVwbGFjZVBhc3N3b3JkKFxuICAgIHNlcnZpY2U6IHN0cmluZyxcbiAgICBhY2NvdW50OiBzdHJpbmcsXG4gICAgcGFzc3dvcmQ6IHN0cmluZyk6ID9ib29sZWFuIHtcbiAgY29uc3Qgc2NyaXB0ID0gYFxuICAgIHZhciBrZXl0YXIgPSByZXF1aXJlKCdrZXl0YXInKTtcbiAgICB2YXIgc2VydmljZSA9ICR7SlNPTi5zdHJpbmdpZnkoc2VydmljZSl9O1xuICAgIHZhciBhY2NvdW50ID0gJHtKU09OLnN0cmluZ2lmeShhY2NvdW50KX07XG4gICAgdmFyIHBhc3N3b3JkID0gJHtKU09OLnN0cmluZ2lmeShwYXNzd29yZCl9O1xuICAgIHZhciByZXN1bHQgPSBrZXl0YXIucmVwbGFjZVBhc3N3b3JkKHNlcnZpY2UsIGFjY291bnQsIHBhc3N3b3JkKTtcbiAgICBjb25zb2xlLmxvZyhKU09OLnN0cmluZ2lmeShyZXN1bHQpKTtcbiAgYDtcbiAgcmV0dXJuIEpTT04ucGFyc2UocnVuU2NyaXB0SW5BcG1Ob2RlKHNjcmlwdCkpO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IHtcbiAgZ2V0UGFzc3dvcmQsXG4gIHJlcGxhY2VQYXNzd29yZCxcbiAgX190ZXN0X186IHtcbiAgICBydW5TY3JpcHRJbkFwbU5vZGUsXG4gICAgZ2V0QXBtTm9kZVBhdGgsXG4gICAgZ2V0QXBtTm9kZU1vZHVsZXNQYXRoLFxuICB9LFxufTtcbiJdfQ==
