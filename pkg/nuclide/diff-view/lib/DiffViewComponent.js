@@ -94,11 +94,6 @@ class DiffViewComponent extends React.Component {
   _publishComponent: ?DiffPublishView;
   _readonlyBuffer: atom$TextBuffer;
 
-  _boundHandleNewOffsets: Function;
-  _boundUpdateLineDiffState: Function;
-  _boundOnNavigationClick: Function;
-  _boundOnDidUpdateTextEditorElement: Function;
-
   constructor(props: Props) {
     super(props);
     const toolbarVisible = ((featureConfig.get(TOOLBAR_VISIBLE_SETTING): any): boolean);
@@ -110,12 +105,12 @@ class DiffViewComponent extends React.Component {
       newEditorState: initialEditorState(),
     };
     (this: any)._onModelStateChange = this._onModelStateChange.bind(this);
-    this._boundHandleNewOffsets = this._handleNewOffsets.bind(this);
-    this._boundUpdateLineDiffState = this._updateLineDiffState.bind(this);
+    (this: any)._handleNewOffsets = this._handleNewOffsets.bind(this);
+    (this: any)._updateLineDiffState = this._updateLineDiffState.bind(this);
     (this: any)._onChangeNewTextEditor = this._onChangeNewTextEditor.bind(this);
     (this: any)._onTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
-    this._boundOnNavigationClick = this._onNavigationClick.bind(this);
-    this._boundOnDidUpdateTextEditorElement = this._onDidUpdateTextEditorElement.bind(this);
+    (this: any)._onNavigationClick = this._onNavigationClick.bind(this);
+    (this: any)._onDidUpdateTextEditorElement = this._onDidUpdateTextEditorElement.bind(this);
     (this: any)._onChangeMode = this._onChangeMode.bind(this);
     (this: any)._onSwitchToEditor = this._onSwitchToEditor.bind(this);
     this._readonlyBuffer = new TextBuffer();
@@ -130,7 +125,7 @@ class DiffViewComponent extends React.Component {
 
   componentDidMount(): void {
     const {diffModel} = this.props;
-    this._subscriptions.add(diffModel.onActiveFileUpdates(this._boundUpdateLineDiffState));
+    this._subscriptions.add(diffModel.onActiveFileUpdates(this._updateLineDiffState));
     this._subscriptions.add(diffModel.onDidUpdateState(this._onModelStateChange));
 
     this._paneContainer = createPaneContainer();
@@ -279,7 +274,7 @@ class DiffViewComponent extends React.Component {
           savedContents={oldState.text}
           initialTextContent={oldState.text}
           inlineElements={oldState.inlineElements}
-          handleNewOffsets={this._boundHandleNewOffsets}
+          handleNewOffsets={this._handleNewOffsets}
           readOnly={true}
           onChange={EMPTY_FUNCTION}
           onDidUpdateTextEditorElement={EMPTY_FUNCTION}
@@ -297,8 +292,8 @@ class DiffViewComponent extends React.Component {
           initialTextContent={newState.text}
           savedContents={newState.savedContents}
           inlineElements={newState.inlineElements}
-          handleNewOffsets={this._boundHandleNewOffsets}
-          onDidUpdateTextEditorElement={this._boundOnDidUpdateTextEditorElement}
+          handleNewOffsets={this._handleNewOffsets}
+          onDidUpdateTextEditorElement={this._onDidUpdateTextEditorElement}
           readOnly={false}
           onChange={this._onChangeNewTextEditor}
         />,
@@ -334,7 +329,7 @@ class DiffViewComponent extends React.Component {
         removedLines={oldLines.removed}
         oldOffsets={oldOffsets}
         oldContents={oldContents}
-        onClick={this._boundOnNavigationClick}
+        onClick={this._onNavigationClick}
       />,
       navigationPaneElement,
     );

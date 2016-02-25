@@ -31,11 +31,9 @@ type DiffNavigationBarProps = {
 export default class DiffNavigationBar extends React.Component {
   props: DiffNavigationBarProps;
 
-  _boundHandleClick: (lineNumber: number, isAddedLine: boolean) => void;
-
   constructor(props: DiffNavigationBarProps) {
     super(props);
-    this._boundHandleClick = this._handleClick.bind(this);
+    (this: any)._handleClick = this._handleClick.bind(this);
   }
 
   render(): ?ReactElement {
@@ -91,7 +89,7 @@ export default class DiffNavigationBar extends React.Component {
           lineChangeClass="added"
           isAddedLine={true}
           containerHeight={elementHeight}
-          onClick={this._boundHandleClick}
+          onClick={this._handleClick}
         />
       );
     }
@@ -106,7 +104,7 @@ export default class DiffNavigationBar extends React.Component {
           lineChangeClass="modified"
           isAddedLine={true}
           containerHeight={elementHeight}
-          onClick={this._boundHandleClick}
+          onClick={this._handleClick}
         />
       );
     }
@@ -121,7 +119,7 @@ export default class DiffNavigationBar extends React.Component {
           lineChangeClass="removed"
           isAddedLine={false}
           containerHeight={elementHeight}
-          onClick={this._boundHandleClick}
+          onClick={this._handleClick}
         />
       );
     }
@@ -151,11 +149,9 @@ type NavigatonBarJumpTargetProps = {
 class NavigatonBarJumpTarget extends React.Component {
   props: NavigatonBarJumpTargetProps;
 
-  _boundHandleClick: () => void;
-
   constructor(props: NavigatonBarJumpTargetProps) {
     super(props);
-    this._boundHandleClick = this._handleClick.bind(this);
+    (this: any)._handleClick = this._handleClick.bind(this);
   }
 
   render(): ReactElement {
@@ -175,7 +171,7 @@ class NavigatonBarJumpTarget extends React.Component {
       <div
         className={targetClassName}
         style={targetStyle}
-        onClick={this._boundHandleClick}
+        onClick={this._handleClick}
       />
     );
   }

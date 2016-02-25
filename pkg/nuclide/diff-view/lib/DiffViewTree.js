@@ -83,12 +83,11 @@ export default class DiffViewTree extends React.Component {
     selectedFilePath: string;
   };
 
-  _boundOnConfirmSelection: Function;
   _subscriptions: ?CompositeDisposable;
 
   constructor(props: Props) {
     super(props);
-    this._boundOnConfirmSelection = this._onConfirmSelection.bind(this);
+    (this: any)._onConfirmSelection = this._onConfirmSelection.bind(this);
     const {diffModel} = props;
     const {filePath} = diffModel.getActiveFileState();
     this.state = {
@@ -215,7 +214,7 @@ export default class DiffViewTree extends React.Component {
       <TreeRootComponent
         initialRoots={[]}
         eventHandlerSelector=".nuclide-diff-view-tree"
-        onConfirmSelection={this._boundOnConfirmSelection}
+        onConfirmSelection={this._onConfirmSelection}
         labelClassNameForNode={labelClassNameForNode}
         rowClassNameForNode={rowClassNameForNode}
         elementToRenderWhenEmpty={<div>No changes to show</div>}
