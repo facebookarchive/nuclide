@@ -28,6 +28,7 @@ const {PropTypes} = React;
 
 type State = {
   filteredOptions: Array<Object>;
+  loadingCount: number;
   options: Array<string>;
   optionsVisible: boolean;
   selectedIndex: number;
@@ -49,6 +50,7 @@ class AtomComboBox extends React.Component {
   static propTypes = {
     className: PropTypes.string.isRequired,
     initialTextInput: PropTypes.string,
+    loadingMessage: PropTypes.string,
     placeholderText: PropTypes.string,
     maxOptionCount: PropTypes.number.isRequired,
     onChange: PropTypes.func.isRequired,
@@ -72,6 +74,7 @@ class AtomComboBox extends React.Component {
     super(props);
     this.state = {
       filteredOptions: [],
+      loadingCount: 0,
       options: [],
       optionsVisible: false,
       selectedIndex: -1,
@@ -109,12 +112,14 @@ class AtomComboBox extends React.Component {
   }
 
   requestUpdate() {
+    this.setState({loadingCount: this.state.loadingCount + 1});
     this.props.requestOptions(this.state.textInput).then(this.receiveUpdate);
   }
 
   receiveUpdate(newOptions: Array<string>) {
     const filteredOptions = this._getFilteredOptions(newOptions, this.state.textInput);
     this.setState({
+      loadingCount: this.state.loadingCount -1,
       options: newOptions,
       filteredOptions: filteredOptions,
     });
@@ -250,8 +255,18 @@ class AtomComboBox extends React.Component {
 
   render(): ReactElement {
     let optionsContainer;
+    const options = [];
+
+    if (this.props.loadingMessage && this.state.loadingCount > 0) {
+      options.push(
+        <li key="loading-text" className="loading">
+          <span className="loading-message">{this.props.loadingMessage}</span>
+        </li>
+      );
+    }
+
     if (this.state.optionsVisible) {
-      const options = this.state.filteredOptions.map((option, i) => {
+      options.push(...this.state.filteredOptions.map((option, i) => {
         const beforeMatch = option.value.substring(0, option.matchIndex);
         const endOfMatchIndex = option.matchIndex + this.state.textInput.length;
         const highlightedMatch = option.value.substring(
@@ -275,7 +290,7 @@ class AtomComboBox extends React.Component {
             {afterMatch}
           </li>
         );
-      });
+      }));
 
       if (!options.length) {
         options.push(

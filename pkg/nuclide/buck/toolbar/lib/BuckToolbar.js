@@ -117,6 +117,7 @@ class BuckToolbar extends React.Component {
           ref="buildTarget"
           requestOptions={this._requestOptions}
           size="sm"
+          loadingMessage="Updating target names..."
           initialTextInput={this.props.store.getBuildTarget()}
           onChange={this._handleBuildTargetChange}
           placeholderText="Buck build target"
