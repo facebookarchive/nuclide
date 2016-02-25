@@ -16,17 +16,18 @@ import type {
   FileChangeStatusValue,
   HgDiffState,
   CommitModeType,
+  PublishModeType,
 } from './types';
 import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
 import type {NuclideUri} from '../../remote-uri';
 
 import invariant from 'assert';
 import {CompositeDisposable, Emitter} from 'atom';
-import {CommitMode} from './constants';
+import {CommitMode, PublishMode} from './constants';
 import {repositoryForPath} from '../../hg-git-bridge';
 import {track, trackTiming} from '../../analytics';
 import {getFileSystemContents} from './utils';
-import {array, map, debounce} from '../../commons';
+import {array, map, debounce, promises} from '../../commons';
 import RepositoryStack from './RepositoryStack';
 import {
   notifyInternalError,
@@ -40,6 +41,7 @@ const ACTIVE_FILE_UPDATE_EVENT = 'active-file-update';
 const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
 const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
 const DID_UPDATE_STATE_EVENT = 'did-update-state';
+const UPDATE_REVISION_TEMPLATE = '';
 
 const FILE_CHANGE_DEBOUNCE_MS = 200;
 const UI_CHANGE_DEBOUNCE_MS = 100;
@@ -64,6 +66,11 @@ type State = {
   commitMessage: ?string;
   isCommitMessageLoading: boolean;
   commitMode: CommitModeType;
+  publishMessageLoading: boolean;
+  publishMessage: string;
+  isPublishing: boolean;
+  publishMode: PublishModeType;
+  headRevision: ?RevisionInfo;
 };
 
 class DiffViewModel {
@@ -96,6 +103,11 @@ class DiffViewModel {
       commitMessage: null,
       isCommitMessageLoading: false,
       commitMode: CommitMode.COMMIT,
+      publishMessageLoading: true,
+      publishMessage: '',
+      publishMode: PublishMode.CREATE,
+      isPublishing: false,
+      headRevision: null,
     };
     this._updateRepositories();
     this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
@@ -181,6 +193,22 @@ class DiffViewModel {
       track('diff-view-update-timeline-revisions', {
         revisionsCount: `${revisionsState.revisions.length}`,
       });
+      const {revisions} = revisionsState;
+      invariant(revisions.length > 0, 'Diff View Error: Zero Revisions');
+      const headRevision = revisions[revisions.length - 1];
+      const headMessage = headRevision.description;
+      // TODO(most): Use @mareksapota's utility when done.
+      const hasPhabricatorRevision = headMessage.indexOf('Differential Revision:') !== -1;
+      this._setState({
+        ...this._state,
+        publishMessageLoading: false,
+        publishMessage: hasPhabricatorRevision
+          ? UPDATE_REVISION_TEMPLATE
+          : headMessage,
+        isPublishing: false,
+        publishMode: hasPhabricatorRevision ? PublishMode.UPDATE : PublishMode.CREATE,
+        headRevision,
+      });
       this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
 
       // Update the active file, if changed.
@@ -200,6 +228,13 @@ class DiffViewModel {
         revisionInfo,
       );
     }
+  }
+
+  setPublishMessage(publishMessage: string) {
+    this._setState({
+      ...this._state,
+      publishMessage,
+    });
   }
 
   activateFile(filePath: NuclideUri): void {
@@ -390,6 +425,30 @@ class DiffViewModel {
       this._activeFileState.savedContents = await this._saveFile(filePath);
     } catch (error) {
       notifyInternalError(error);
+    }
+  }
+
+  @trackTiming('diff-view.publish-diff')
+  async publishDiff(publishMessage: string): Promise<void> {
+    this._setState({
+      ...this._state,
+      publishMessage,
+      isPublishing: true,
+    });
+    // TODO(most): do publish to Phabricator.
+    let headRevision = this._state.headRevision;
+    try {
+      await promises.awaitMilliSeconds(5000);
+      headRevision = await Promise.resolve(null);
+    } catch (error) {
+      notifyInternalError(error);
+    } finally {
+      this._setState({
+        ...this._state,
+        publishMessage,
+        isPublishing: false,
+        headRevision,
+      });
     }
   }
 

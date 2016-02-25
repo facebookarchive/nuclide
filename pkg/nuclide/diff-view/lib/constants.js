@@ -12,7 +12,7 @@
 const {StatusCodeNumber: HgStatusCodeNumber} = require('../../hg-repository-base').hgConstants;
 
 import type {StatusCodeNumberValue} from '../../hg-repository-base/lib/hg-constants';
-import type {DiffModeType, CommitModeType, FileChangeStatusValue} from './types';
+import type {DiffModeType, CommitModeType, PublishModeType, FileChangeStatusValue} from './types';
 
 const FileChangeStatus: {[key: string]: FileChangeStatusValue} = {
   ADDED: 1,
@@ -25,6 +25,7 @@ const FileChangeStatus: {[key: string]: FileChangeStatusValue} = {
 const DiffMode = {
   BROWSE_MODE: 'Browse',
   COMMIT_MODE: 'Commit',
+  PUBLISH_MODE: 'Publish',
 };
 
 // This is to work around flow's missing support of enums.
@@ -37,6 +38,14 @@ const CommitMode = {
 
 // This is to work around flow's missing support of enums.
 (CommitMode: { [key: string]: CommitModeType });
+
+const PublishMode = {
+  CREATE: 'Create',
+  UPDATE: 'Update',
+};
+
+// This is to work around flow's missing support of enums.
+(PublishMode: { [key: string]: PublishModeType });
 
 const HgStatusToFileChangeStatus : {[key: StatusCodeNumberValue]: FileChangeStatusValue} = {
   [HgStatusCodeNumber.ADDED]: FileChangeStatus.ADDED,
@@ -57,6 +66,7 @@ const FileChangeStatusToPrefix: {[key: FileChangeStatusValue]: string} = {
 module.exports = {
   DiffMode,
   CommitMode,
+  PublishMode,
   FileChangeStatus,
   HgStatusToFileChangeStatus,
   FileChangeStatusToPrefix,

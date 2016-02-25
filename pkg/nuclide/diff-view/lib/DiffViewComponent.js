@@ -27,6 +27,7 @@ import DiffTimelineView from './DiffTimelineView';
 import DiffViewToolbar from './DiffViewToolbar';
 import DiffNavigationBar from './DiffNavigationBar';
 import DiffCommitView from './DiffCommitView';
+import DiffPublishView from './DiffPublishView';
 import {createPaneContainer} from '../../atom-helpers';
 import {bufferForUri} from '../../atom-helpers';
 import {DiffMode} from './constants';
@@ -91,6 +92,7 @@ class DiffViewComponent extends React.Component {
   _navigationPane: atom$Pane;
   _navigationComponent: DiffNavigationBar;
   _commitComponent: ?DiffCommitView;
+  _publishComponent: ?DiffPublishView;
   _readonlyBuffer: atom$TextBuffer;
 
   _boundHandleNewOffsets: Function;
@@ -204,9 +206,16 @@ class DiffViewComponent extends React.Component {
       case DiffMode.BROWSE_MODE:
         this._renderTimelineView();
         this._commitComponent = null;
+        this._publishComponent = null;
         break;
       case DiffMode.COMMIT_MODE:
         this._renderCommitView();
+        this._timelineComponent = null;
+        this._publishComponent = null;
+        break;
+      case DiffMode.PUBLISH_MODE:
+        this._renderPublishView();
+        this._commitComponent = null;
         this._timelineComponent = null;
         break;
       default:
@@ -221,6 +230,28 @@ class DiffViewComponent extends React.Component {
   _renderCommitView(): void {
     this._commitComponent = ReactDOM.render(
       <DiffCommitView diffModel={this.props.diffModel} />,
+      this._getPaneElement(this._bottomRightPane),
+    );
+  }
+
+  _renderPublishView(): void {
+    const {diffModel} = this.props;
+    const {
+      publishMessageLoading,
+      publishMessage,
+      isPublishing,
+      publishMode,
+      headRevision,
+    } = diffModel.getState();
+    this._publishComponent = ReactDOM.render(
+      <DiffPublishView
+        isLoading={publishMessageLoading}
+        isPublishing={isPublishing}
+        message={publishMessage}
+        publishMode={publishMode}
+        headRevision={headRevision}
+        diffModel={diffModel}
+      />,
       this._getPaneElement(this._bottomRightPane),
     );
   }

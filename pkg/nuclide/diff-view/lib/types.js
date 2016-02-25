@@ -12,9 +12,11 @@
 import type {NuclideUri} from '../../remote-uri';
 import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
 
-export type DiffModeType = 'Browse' | 'Commit';
+export type DiffModeType = 'Browse' | 'Commit' | 'Publish';
 
 export type CommitModeType = 'Commit' | 'Amend';
+
+export type PublishModeType = 'Create' | 'Update';
 
 export type FileChangeStatusValue = 1 | 2 | 3 | 4 | 5;
 

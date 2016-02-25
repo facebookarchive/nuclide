@@ -54,11 +54,11 @@ class DiffCommitView extends React.Component {
     const {commitMode, isCommitMessageLoading} = this.props.diffModel.getState();
     if (isCommitMessageLoading) {
       loadingIndicator = (
-        <span className="loading loading-spinner-tiny inline-block"></span>
+        <span className="loading loading-spinner-tiny inline-block pull-right"></span>
       );
     } else {
       commitButton = (
-        <button className="btn btn-sm btn-success commit-button"
+        <button className="btn btn-sm btn-success pull-right"
           onClick={this._onClickCommit}>
           {commitMode} to HEAD
         </button>
@@ -82,7 +82,7 @@ class DiffCommitView extends React.Component {
       );
     });
     return (
-      <div className="nuclide-diff-commit-view">
+      <div className="nuclide-diff-mode">
         <div className="message-editor-wrapper">
           <AtomTextEditor
             ref="message"
