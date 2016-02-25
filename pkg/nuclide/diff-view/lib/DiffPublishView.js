@@ -14,7 +14,9 @@ import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
 import type DiffViewModel from './DiffViewModel';
 import type {PublishModeType} from './types';
 
+import invariant from 'assert';
 import {React} from 'react-for-atom';
+import {PublishMode} from './constants';
 
 type Props = {
   message: string;
@@ -34,17 +36,29 @@ class DiffPublishView extends React.Component {
   }
 
   render(): ReactElement {
-    const {isPublishing, isLoading} = this.props;
+    const {isPublishing, isLoading, publishMode, headRevision} = this.props;
     const isBusy = isPublishing || isLoading;
+
+    let revisionView = null;
+    let publishMessage = null;
+    let loadingIndicator = null;
+    let progressIndicator = null;
+
+    if (publishMode === PublishMode.CREATE) {
+      publishMessage = 'Publish Phabricator Revision';
+    } else {
+      publishMessage = 'Update Phabricator Revision';
+      invariant(headRevision != null, 'Diff View: Updated Revision can not be null');
+      revisionView = <DiffRevisionView revision={headRevision}/>;
+    }
+
     const publishButton = (
       <button className="btn btn-sm btn-success pull-right"
         onClick={this._onClickPublish}
         disabled={isBusy}>
-        Publish to Phabricator
+        {publishMessage}
       </button>
     );
-    let loadingIndicator = null;
-    let progressIndicator = null;
     if (isLoading) {
       loadingIndicator = <span className="loading loading-spinner-tiny inline-block"></span>;
     }
@@ -63,6 +77,7 @@ class DiffPublishView extends React.Component {
         <div className="padded">
           {loadingIndicator}
           {progressIndicator}
+          {revisionView}
           {publishButton}
         </div>
       </div>
@@ -104,7 +119,44 @@ class DiffPublishView extends React.Component {
   _getPublishMessage(): string {
     return this.refs['message'].getTextBuffer().getText();
   }
+}
 
+type DiffRevisionViewProps = {
+  revision: RevisionInfo;
+};
+
+// TODO(most): Use @mareksapota's utility when done.
+const DIFF_REVISION_REGEX = /Differential Revision: (.*)/;
+function getUrlFromMessage(message: string): string {
+  const diffMatch = DIFF_REVISION_REGEX.exec(message);
+  invariant(diffMatch != null, 'Diff View: Revision must have a valid message');
+  return diffMatch[1];
+
+}
+
+class DiffRevisionView extends React.Component {
+  props: DiffRevisionViewProps;
+
+  constructor(props: DiffRevisionViewProps) {
+    super(props);
+    (this: any)._onClickDiff = this._onClickDiff.bind(this);
+  }
+
+  render(): ReactElement {
+    const {hash, title, description} = this.props.revision;
+    const tooltip = `${hash}: ${title}`;
+    const url = getUrlFromMessage(description);
+    return (
+      <a href={url} title={tooltip} onClick={this._onClickDiff}>
+        {url}
+      </a>
+    );
+  }
+
+  _onClickDiff(): void {
+    const url = getUrlFromMessage(this.props.revision.description);
+    require('shell').openExternal(url);
+  }
 }
 
 module.exports = DiffPublishView;
