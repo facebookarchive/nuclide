@@ -43,8 +43,11 @@ export class SocketClient {
 
     socket.on('close', () => {
       if (this._socket != null) {
-        invariant(this._socket === socket);
-        this._socket = null;
+        // This can occur on a reconnect, where the old socket has been closed
+        // but its close event is sent asynchronously.
+        if (this._socket === socket) {
+          this._socket = null;
+        }
         logger.info('Client #%s closing a socket!', this.id);
       }
     });
@@ -62,7 +65,8 @@ export class SocketClient {
   _close(): void {
     if (this._socket != null) {
       this._socket.close();
-      // In Error conditions socket.close may not emit the on close event.
+      // In certain (Error) conditions socket.close may not emit the on close
+      // event synchronously.
       this._socket = null;
     }
   }
