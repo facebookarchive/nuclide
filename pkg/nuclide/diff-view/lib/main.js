@@ -54,7 +54,7 @@ function createView(entryPath: string): HTMLElement {
   const diffModel = getDiffViewModel();
   const hostElement = new DiffViewElement().initialize(diffModel, NUCLIDE_DIFF_VIEW_URI);
   const component = ReactDOM.render(
-    <DiffViewComponent diffModel={diffModel}/>,
+    <DiffViewComponent diffModel={diffModel} />,
     hostElement,
   );
   activeDiffView = {
@@ -132,7 +132,7 @@ function updateToolbarCount(diffViewButton: HTMLElement, count: number): void {
     ReactDOM,
   } = require('react-for-atom');
   const DiffCountComponent = require('./DiffCountComponent');
-  ReactDOM.render(<DiffCountComponent count={count}/>, changeCountElement);
+  ReactDOM.render(<DiffCountComponent count={count} />, changeCountElement);
 }
 
 module.exports = {

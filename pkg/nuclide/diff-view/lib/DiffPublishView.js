@@ -49,7 +49,7 @@ class DiffPublishView extends React.Component {
     } else {
       publishMessage = 'Update Phabricator Revision';
       invariant(headRevision != null, 'Diff View: Updated Revision can not be null');
-      revisionView = <DiffRevisionView revision={headRevision}/>;
+      revisionView = <DiffRevisionView revision={headRevision} />;
     }
 
     const publishButton = (

@@ -83,7 +83,7 @@ export class StatusBarTile {
 
     const item = this._item;
     if (item) {
-      ReactDOM.render(<StatusBarTileComponent {...props}/>, item);
+      ReactDOM.render(<StatusBarTileComponent {...props} />, item);
       if (this._tooltip) {
         this._tooltip.dispose();
       }

@@ -31,9 +31,9 @@ export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     const actions = new LaunchAttachActions(dispatcher, this.getTargetUri());
     const store = new LaunchAttachStore(dispatcher);
     if (action === 'Launch') {
-      return <LaunchUIComponent store={store} actions={actions}/>;
+      return <LaunchUIComponent store={store} actions={actions} />;
     } else if (action === 'Attach') {
-      return <AttachUIComponent store={store} actions={actions}/>;
+      return <AttachUIComponent store={store} actions={actions} />;
     } else {
       return null;
     }

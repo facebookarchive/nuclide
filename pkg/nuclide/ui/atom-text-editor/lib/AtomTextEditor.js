@@ -149,7 +149,7 @@ class AtomTextEditor extends React.Component {
 
   render(): ReactElement {
     return (
-      <div className="nuclide-text-editor-container"/>
+      <div className="nuclide-text-editor-container" />
     );
   }
 
