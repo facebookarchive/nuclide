@@ -76,7 +76,7 @@ export default class RepositoryStack {
     // triggered by another integration, like the file tree.
     repository.getStatuses([repository.getProjectDirectory()]);
     this._subscriptions.add(
-      repository.onDidChangeStatuses(debouncedSerializedUpdateStatus)
+      repository.onDidChangeStatuses(debouncedSerializedUpdateStatus),
     );
   }
 

@@ -189,17 +189,17 @@ export default class HgRepositoryClient {
    *
    */
 
-  onDidDestroy(callback: () => {}): IDisposable {
+  onDidDestroy(callback: () => mixed): IDisposable {
     return this._emitter.on('did-destroy', callback);
   }
 
   onDidChangeStatus(
-    callback: (event: {path: string; pathStatus: StatusCodeNumberValue}) => {}
+    callback: (event: {path: string; pathStatus: StatusCodeNumberValue}) => mixed,
   ): IDisposable {
     return this._emitter.on('did-change-status', callback);
   }
 
-  onDidChangeStatuses(callback: () => {}): IDisposable {
+  onDidChangeStatuses(callback: () => mixed): IDisposable {
     return this._emitter.on('did-change-statuses', callback);
   }
 

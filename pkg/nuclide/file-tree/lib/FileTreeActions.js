@@ -347,7 +347,7 @@ class FileTreeActions {
   _onDidChangeStatusesForRepository(
     repo: HgRepositoryClient,
     rootKeysForRepository: Immutable.Map<atom$Repository, Immutable.Set<string>>,
-  ) {
+  ): void {
     for (const rootKey of rootKeysForRepository.get(repo)) {
       const statusForNodeKey = {};
       for (const fileTreeNode of this._store.getVisibleNodes(rootKey)) {

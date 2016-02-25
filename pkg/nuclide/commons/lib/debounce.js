@@ -11,11 +11,11 @@
 
 const invariant = require('assert');
 
-export function debounce(
-  func: (...varargs: Array<any>) => any,
+export function debounce<T : Function>(
+  func: T,
   wait: number,
   immediate?: boolean = false,
-): (...varargs: Array<any>) => any {
+): T {
   // Taken from: https://github.com/jashkenas/underscore/blob/b10b2e6d72/underscore.js#L815.
   let timeout;
   let args: ?Array<any>;
@@ -40,6 +40,7 @@ export function debounce(
     }
   };
 
+  // $FlowIssue -- Flow's type system isn't expressive enough to type debounce.
   return function() {
     context = this; // eslint-disable-line consistent-this
     args = arguments;
