@@ -97,18 +97,19 @@ function formatBlameInfo(
 }
 
 
-// From http://www.regular-expressions.info/email.html.
-const EMAIL_REGEX = /\b([A-Za-z0-9._%+-]+)@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}\b/;
+// Mercurial history emails can be invalid.
+const HG_EMAIL_REGEX = /\b([A-Za-z0-9._%+-]+)@[A-Za-z0-9.-]+\b/;
 /**
  * `hg blame` may return the 'user' name in a mix of formats:
  *   - foo@bar.com
+ *   - bar@56abc2-24378f
  *   - Foo Bar <foo@bar.com>
  * This method shortens the name in `blameName` to just
  * return the beginning part of the email, iff an email is present.
  * The examples above would become 'foo'.
  */
 function shortenBlameName(blameName: string): string {
-  const match = blameName.match(EMAIL_REGEX);
+  const match = blameName.match(HG_EMAIL_REGEX);
   // Index 0 will be the whole email. Index 1 is the capture group.
   return match ? match[1] : blameName;
 }

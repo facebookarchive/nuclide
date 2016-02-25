@@ -20,6 +20,7 @@ describe('HgBlameProvider', () => {
         ['3', 'alice@bob.com null'],
         ['4', '<alice@bob.com> faceb00c'],
         ['5', 'No Email Here faceb00c'],
+        ['6', 'Some User baz@abc123-45678f faceb00k'],
       ]);
       const expectedShortenedBlame = new Map([
         [1, {author: 'foo', changeset: 'faceb00c'}],
@@ -27,6 +28,7 @@ describe('HgBlameProvider', () => {
         [3, {author: 'alice', changeset: null}],
         [4, {author: 'alice', changeset: 'faceb00c'}],
         [5, {author: 'No Email Here', changeset: 'faceb00c'}],
+        [6, {author: 'baz', changeset: 'faceb00k'}],
       ]);
       const formattedBlameInfo = formatBlameInfo(originalBlame, /* useShortName */ true);
       let numEntries = 0;
@@ -34,7 +36,7 @@ describe('HgBlameProvider', () => {
         ++numEntries;
         expect(blame).toEqual(expectedShortenedBlame.get(index));
       }
-      expect(numEntries).toBe(5);
+      expect(numEntries).toBe(6);
     });
   });
 });
