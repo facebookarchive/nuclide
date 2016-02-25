@@ -108,6 +108,7 @@ class DiffViewComponent extends React.Component {
       oldEditorState: initialEditorState(),
       newEditorState: initialEditorState(),
     };
+    (this: any)._onModelStateChange = this._onModelStateChange.bind(this);
     this._boundHandleNewOffsets = this._handleNewOffsets.bind(this);
     this._boundUpdateLineDiffState = this._updateLineDiffState.bind(this);
     (this: any)._onChangeNewTextEditor = this._onChangeNewTextEditor.bind(this);
@@ -129,6 +130,7 @@ class DiffViewComponent extends React.Component {
   componentDidMount(): void {
     const {diffModel} = this.props;
     this._subscriptions.add(diffModel.onActiveFileUpdates(this._boundUpdateLineDiffState));
+    this._subscriptions.add(diffModel.onDidUpdateState(this._onModelStateChange));
 
     this._paneContainer = createPaneContainer();
     // The changed files status tree takes 1/5 of the width and lives on the right most,
@@ -162,6 +164,10 @@ class DiffViewComponent extends React.Component {
     );
 
     this._updateLineDiffState(diffModel.getActiveFileState());
+  }
+
+  _onModelStateChange(): void {
+    this.setState({});
   }
 
   _setupSyncScroll(): void {

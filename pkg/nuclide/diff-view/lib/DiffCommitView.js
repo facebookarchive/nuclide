@@ -15,7 +15,6 @@ import type DiffViewModel from './DiffViewModel';
 import AtomTextEditor from '../../ui/atom-text-editor';
 import classnames from 'classnames';
 import {CommitMode} from './constants';
-import {CompositeDisposable} from 'atom';
 
 import {React} from 'react-for-atom';
 
@@ -26,29 +25,18 @@ type Props = {
 class DiffCommitView extends React.Component {
   props: Props;
 
-  _disposables: CompositeDisposable;
-
   constructor(props: Props) {
     super(props);
-    this._disposables = new CompositeDisposable();
     (this: any)._onClickCommit = this._onClickCommit.bind(this);
   }
 
   componentDidMount(): void {
-    this._disposables.add(
-      this.props.diffModel.addChangeListener(() => {
-        this.forceUpdate();
-      })
-    );
     this.props.diffModel.loadCommitMessage();
   }
 
   componentDidUpdate(): void {
-    this.refs['message'].getTextBuffer().setText(this.props.diffModel.getCommitMessage() || '');
-  }
-
-  componentWillUnmount(): void {
-    this._disposables.dispose();
+    const {commitMessage} = this.props.diffModel.getState();
+    this.refs['message'].getTextBuffer().setText(commitMessage || '');
   }
 
   _onClickCommit(): void {
@@ -62,10 +50,9 @@ class DiffCommitView extends React.Component {
   render(): ReactElement {
     let loadingIndicator = null;
     let commitButton = null;
-    const commitMode = this.props.diffModel.getCommitMode();
-    const loading = this.props.diffModel.getIsCommitMessageLoading();
 
-    if (loading) {
+    const {commitMode, isCommitMessageLoading} = this.props.diffModel.getState();
+    if (isCommitMessageLoading) {
       loadingIndicator = (
         <span className="loading loading-spinner-tiny inline-block"></span>
       );
@@ -99,7 +86,7 @@ class DiffCommitView extends React.Component {
         <div className="message-editor-wrapper">
           <AtomTextEditor
             ref="message"
-            readOnly={loading}
+            readOnly={isCommitMessageLoading}
             gutterHidden={true}
           />
         </div>

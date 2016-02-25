@@ -10,7 +10,13 @@
  */
 
 import type {HgRepositoryClient} from '../../hg-repository-client';
-import type {FileChangeState, RevisionsState, FileChangeStatusValue, HgDiffState} from './types';
+import type {
+  FileChangeState,
+  RevisionsState,
+  FileChangeStatusValue,
+  HgDiffState,
+  CommitModeType,
+} from './types';
 import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
 import type {NuclideUri} from '../../remote-uri';
 
@@ -33,6 +39,7 @@ const CHANGE_COMPARE_STATUS_EVENT = 'did-change-compare-status';
 const ACTIVE_FILE_UPDATE_EVENT = 'active-file-update';
 const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
 const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
+const DID_UPDATE_STATE_EVENT = 'did-update-state';
 
 const FILE_CHANGE_DEBOUNCE_MS = 200;
 const UI_CHANGE_DEBOUNCE_MS = 100;
@@ -56,7 +63,7 @@ function getInitialFileChangeState(): FileChangeState {
 type State = {
   commitMessage: ?string;
   isCommitMessageLoading: boolean;
-  commitMode: string;
+  commitMode: CommitModeType;
 };
 
 class DiffViewModel {
@@ -98,10 +105,6 @@ class DiffViewModel {
       false,
     );
     this._setActiveFileState(getInitialFileChangeState());
-  }
-
-  emitChange(): void {
-    this._emitter.emit('did-change');
   }
 
   _updateRepositories(): void {
@@ -403,8 +406,8 @@ class DiffViewModel {
     }
   }
 
-  addChangeListener(callback: () => mixed): IDisposable {
-    return this._emitter.on('did-change', callback);
+  onDidUpdateState(callback: () => mixed): IDisposable {
+    return this._emitter.on(DID_UPDATE_STATE_EVENT, callback);
   }
 
   onDidChangeDirtyStatus(
@@ -451,10 +454,11 @@ class DiffViewModel {
   //   into this model. After that, commit message loading can be triggered by either changing the
   //   the diff mode *or* the commit mode.
   async loadCommitMessage(): Promise<void> {
-    this._state.isCommitMessageLoading = true;
-    this.emitChange();
-
-    let commitMessage;
+    this._setState({
+      ...this._state,
+      isCommitMessageLoading: true,
+    });
+    let commitMessage = null;
     try {
       if (this._state.commitMode === CommitMode.COMMIT) {
         commitMessage = await this._loadActiveRepositoryTemplateCommitMessage();
@@ -467,13 +471,14 @@ class DiffViewModel {
         commitMessage = await this._loadActiveRepositoryLatestCommitMessage();
       }
     } catch (error) {
-      this._state.commitMessage = null;
       notifyInternalError(error);
     } finally {
-      this._state.isCommitMessageLoading = false;
+      this._setState({
+        ...this._state,
+        commitMessage,
+        isCommitMessageLoading: false,
+      });
     }
-    this._state.commitMessage = commitMessage;
-    this.emitChange();
   }
 
   async _loadActiveRepositoryLatestCommitMessage(): Promise<string> {
@@ -501,23 +506,22 @@ class DiffViewModel {
     return await this._activeRepositoryStack.getCachedRevisionsStatePromise();
   }
 
-  getCommitMessage(): ?string {
-    return this._state.commitMessage;
+  _setState(newState: State) {
+    this._state = newState;
+    this._emitter.emit(DID_UPDATE_STATE_EVENT);
   }
 
-  getIsCommitMessageLoading(): boolean {
-    return this._state.isCommitMessageLoading;
+  getState(): State {
+    return this._state;
   }
 
-  getCommitMode(): string {
-    return this._state.commitMode;
-  }
-
-  setCommitMode(commitMode: string): void {
-    this._state.commitMode = commitMode;
+  setCommitMode(commitMode: CommitModeType): void {
+    this._setState({
+      ...this._state,
+      commitMode,
+    });
     // When the commit mode changes, load the appropriate commit message.
     this.loadCommitMessage();
-    this.emitChange();
   }
 
   activate(): void {
