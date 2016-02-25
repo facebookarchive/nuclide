@@ -35,17 +35,17 @@ const HEARTBEAT_NOTIFICATION_ERROR = 1;
 const HEARTBEAT_NOTIFICATION_WARNING = 2;
 
 type HeartbeatNotification = {
-  notification: atom$Notification,
-  code: string,
-}
+  notification: atom$Notification;
+  code: string;
+};
 
 export type ServerConnectionConfiguration = {
-  host: string, // host nuclide server is running on.
-  port: number, // port to connect to.
-  certificateAuthorityCertificate?: Buffer, // certificate of certificate authority.
-  clientCertificate?: Buffer, // client certificate for https connection.
-  clientKey?: Buffer, // key for https connection.
-}
+  host: string; // host nuclide server is running on.
+  port: number; // port to connect to.
+  certificateAuthorityCertificate?: Buffer; // certificate of certificate authority.
+  clientCertificate?: Buffer; // client certificate for https connection.
+  clientKey?: Buffer; // key for https connection.
+};
 
 const _emitter: EventEmitter = new EventEmitter();
 

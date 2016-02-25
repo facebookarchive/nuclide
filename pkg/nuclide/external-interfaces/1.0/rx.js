@@ -94,7 +94,7 @@ declare module 'rx' {
 
     flatMapLatest<U>(
       f: (value: T) => Observable<U> | Promise<U> | Iterable<U>
-    ): Observable<U>,
+    ): Observable<U>;
 
     forEach(
       onNext?: (value: T) => mixed,

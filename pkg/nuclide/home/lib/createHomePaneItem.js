@@ -72,7 +72,7 @@ function createHomePaneItem(
     }
 
     render() {
-      let welcomes = [];
+      const welcomes = [];
       const features = [];
       const sortedHomeFragments = arrayFrom(this.state.allHomeFragments).sort(
         (fragmentA, fragmentB) => (fragmentB.priority || 0) - (fragmentA.priority || 0)

@@ -20,12 +20,12 @@ const logger = getLogger();
  * be translated directly to/from JSON.
  */
 type SerializableServerConnectionConfiguration = {
-  host: string,
-  port: number,
-  certificateAuthorityCertificate?: string,
-  clientCertificate?: string,
-  clientKey?: string,
-}
+  host: string;
+  port: number;
+  certificateAuthorityCertificate?: string;
+  clientCertificate?: string;
+  clientKey?: string;
+};
 
 const CONFIG_KEY_PREFIX = 'nuclide.nuclide-connection.config';
 

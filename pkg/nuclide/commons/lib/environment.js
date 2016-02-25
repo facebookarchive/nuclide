@@ -12,8 +12,8 @@
 import invariant from 'assert';
 
 export type Environment = {
-  USER: string,
-  HOME: string,
+  USER: string;
+  HOME: string;
 };
 
 module.exports = {

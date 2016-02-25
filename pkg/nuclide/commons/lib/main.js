@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rx';
-
 export type process$asyncExecuteRet = {
   command?: string;
   errorMessage?: string;

@@ -14,7 +14,7 @@ const invariant = require('assert');
 type WaitsForPromiseOptions = {
   shouldReject?: boolean;
   timeout?: number;
-}
+};
 
 function waitsForPromise(...args: Array<WaitsForPromiseOptions | () => Promise<mixed>>): void {
   let shouldReject;
