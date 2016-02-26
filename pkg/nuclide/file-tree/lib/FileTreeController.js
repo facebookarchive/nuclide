@@ -19,6 +19,7 @@ import FileTreeContextMenu from './FileTreeContextMenu';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeStore from './FileTreeStore';
 import Immutable from 'immutable';
+import {array} from '../../commons';
 import {track} from '../../analytics';
 import {isTextEditor} from '../../atom-helpers';
 
@@ -36,6 +37,9 @@ export type FileTreeControllerState = {
   tree: ExportStoreData;
 };
 
+const NOT_LETTERS = /[^a-zA-Z]/g;
+const PREFIX_RESET_DELAY = 500;
+
 class FileTreeController {
   _actions: FileTreeActions;
   _contextMenu: FileTreeContextMenu;
@@ -43,6 +47,8 @@ class FileTreeController {
   _store: FileTreeStore;
   _subscriptions: CompositeDisposable;
   _subscriptionForRepository: Immutable.Map<atom$Repository, IDisposable>;
+  _prefix: string;
+  _prefixTimeout: ?number;
 
   constructor(state: ?FileTreeControllerState) {
     this._actions = FileTreeActions.getInstance();
@@ -64,6 +70,13 @@ class FileTreeController {
         'nuclide-file-tree:reveal-active-file': this.revealActiveFile.bind(this, undefined),
       })
     );
+    const letterKeyBindings = {};
+    const zCharCode = 'z'.charCodeAt(0);
+    for (let c = 'a'.charCodeAt(0); c <= zCharCode; c++) {
+      const char = String.fromCharCode(c);
+      letterKeyBindings[`nuclide-file-tree:go-to-letter-${char}`] =
+        this._handlePrefixKeypress.bind(this, char);
+    }
     this._subscriptions.add(
       atom.commands.add(EVENT_HANDLER_SELECTOR, {
         'core:move-down': this._moveDown.bind(this),
@@ -100,6 +113,7 @@ class FileTreeController {
         },
         'nuclide-file-tree:search-in-directory': this._searchInDirectory.bind(this),
         'nuclide-file-tree:show-in-file-manager': this._showInFileManager.bind(this),
+        ...letterKeyBindings,
       })
     );
     this._subscriptions.add(
@@ -111,6 +125,45 @@ class FileTreeController {
       this._store.loadData(state.tree);
     }
     this._contextMenu = new FileTreeContextMenu();
+    this._prefixTimeout = null;
+    this._prefix = '';
+  }
+
+  _handlePrefixKeypress(letter: string): void {
+    if (this._prefixTimeout != null) {
+      clearTimeout(this._prefixTimeout);
+      this._prefixTimeout = null;
+    }
+    const prefix = this._prefix + letter;
+    if (this._didRevealNodeStartingWith(prefix)) {
+      // Only append the prefix string if a match exists to allow for typos.
+      this._prefix = prefix;
+    }
+    this._prefixTimeout = setTimeout(
+      () => {
+        this._prefix = '';
+        this._prefixTimeout = null;
+      },
+      PREFIX_RESET_DELAY
+    );
+  }
+
+  // Returns whether a node matching the prefix was successfully selected.
+  _didRevealNodeStartingWith(prefix: string): boolean {
+    const nodes = this._store.getSelectedNodes();
+    const firstSelectedNode = nodes.values().next().value;
+    if (firstSelectedNode == null || firstSelectedNode.isRoot) {
+      return false;
+    }
+    const targetNode = array.find(
+      firstSelectedNode.getParentNode().getChildNodes(),
+      childNode => childNode.nodeName.toLowerCase().replace(NOT_LETTERS, '').startsWith(prefix)
+    );
+    if (targetNode == null) {
+      return false;
+    }
+    this.revealNodeKey(targetNode.nodeKey);
+    return true;
   }
 
   _openAndRevealFilePath(filePath: ?string): void {
@@ -664,6 +717,7 @@ class FileTreeController {
     }
     this._store.reset();
     this._contextMenu.dispose();
+    clearTimeout(this._prefixTimeout);
   }
 
   serialize(): FileTreeControllerState {
