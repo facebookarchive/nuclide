@@ -162,7 +162,6 @@ describe('debugger-hhvm-proxy convertValue', () => {
     )).toEqual({
       description: 'Array[1]',
       type: 'object',
-      subtype: 'array',
       objectId: '{"fullname":"$argv","page":0}',
     });
   });

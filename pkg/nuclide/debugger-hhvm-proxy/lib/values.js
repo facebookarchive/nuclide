@@ -110,7 +110,6 @@ function convertArrayValue(contextId: ObjectId, dbgpProperty: DbgpProperty): Rem
   return {
     description: `Array[${dbgpProperty.$.numchildren}]`,
     type: 'object',
-    subtype: 'array',
     objectId: remoteId,
   };
 }
