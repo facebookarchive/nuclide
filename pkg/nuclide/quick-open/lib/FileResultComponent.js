@@ -17,6 +17,26 @@ const {React} = require('react-for-atom');
 const {fileTypeClass} = require('../../atom-helpers');
 const path = require('path');
 
+type Key = number | string;
+
+function renderSubsequence(seq: string, props: Object): ?ReactElement {
+  return seq.length === 0 ? null : <span {...props}>{seq}</span>;
+}
+
+function renderUnmatchedSubsequence(seq: string, key: Key): ?ReactElement {
+  return renderSubsequence(seq, {key});
+}
+
+function renderMatchedSubsequence(seq: string, key: Key): ?ReactElement {
+  return renderSubsequence(
+    seq,
+    {
+      key,
+      className: 'quick-open-file-search-match',
+    }
+  );
+}
+
 class FileResultComponent {
 
   static getComponentForItem(
@@ -32,49 +52,39 @@ class FileResultComponent {
       ? item.matchIndexes.map(i => i - (dirName.length - 1))
       : [];
 
-    const filenameStart = filePath.lastIndexOf(path.sep);
-    const importantIndexes = [filenameStart, filePath.length]
-      .concat(matchIndexes)
-      .sort((index1, index2) => index1 - index2);
-
-    const folderComponents = [];
-    const filenameComponents = [];
-
-    let last = -1;
-    // Split the path into it's path and directory, with matching characters pulled out and
-    //  highlighted.
-    // When there's no matches, the ouptut is equivalent to just calling path.dirname/basename.
-    importantIndexes.forEach(index => {
-      // If the index is after the filename start, push the new text elements
-      // into `filenameComponents`, otherwise push them into `folderComponents`.
-      const target = index <= filenameStart ? folderComponents : filenameComponents;
-
-      // If there was text before the `index`, push it onto `target` unstyled.
-      const previousString = filePath.slice(last + 1, index);
-      if (previousString.length !== 0) {
-        target.push(<span key={index + 'prev'}>{previousString}</span>);
+    let streakOngoing = false;
+    let start = 0;
+    const pathComponents = [];
+    // Split the path into highlighted and non-highlighted subsequences for optimal rendering perf.
+    // Do this in O(n) where n is the number of matchIndexes (ie. less than the length of the path).
+    matchIndexes.forEach((i, n) => {
+      if (matchIndexes[n + 1] === i + 1) {
+        if (!streakOngoing) {
+          pathComponents.push(renderUnmatchedSubsequence(filePath.slice(start, i), i));
+          start = i;
+          streakOngoing = true;
+        }
+      } else {
+        if (streakOngoing) {
+          pathComponents.push(renderMatchedSubsequence(filePath.slice(start, i + 1), i));
+          streakOngoing = false;
+        } else {
+          if (i > 0) {
+            pathComponents.push(renderUnmatchedSubsequence(filePath.slice(start, i), `before${i}`));
+          }
+          pathComponents.push(renderMatchedSubsequence(filePath.slice(i, i + 1), i));
+        }
+        start = i + 1;
       }
-
-      // Don't put the '/' between the folder path and the filename on either line.
-      if (index !== filenameStart && index < filePath.length) {
-        const character = filePath.charAt(index);
-        target.push(<span key={index} className="quick-open-file-search-match">{character}</span>);
-      }
-
-      last = index;
     });
+    pathComponents.push(renderUnmatchedSubsequence(filePath.slice(start, filePath.length), 'last'));
 
     const filenameClasses = ['file', 'icon', fileTypeClass(filePath)].join(' ');
-    const folderClasses = ['path', 'no-icon'].join(' ');
-
     // `data-name` is support for the "file-icons" package.
     // See: https://atom.io/packages/file-icons
     return (
-      <div>
-        <span className={filenameClasses} data-name={path.basename(filePath)}>
-          {filenameComponents}
-        </span>
-        <span className={folderClasses}>{folderComponents}</span>
+      <div className={filenameClasses} data-name={path.basename(filePath)}>
+        {pathComponents}
       </div>
     );
   }
