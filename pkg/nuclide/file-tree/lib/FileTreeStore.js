@@ -50,6 +50,7 @@ export type FileTreeNodeData = {
 }
 
 type StoreData = {
+  cwdKey: ?string;
   childKeyMap: { [key: string]: Array<string> };
   isDirtyMap: { [key: string]: boolean };
   expandedKeysByRoot: { [key: string]: Immutable.Set<string> };
@@ -197,6 +198,7 @@ class FileTreeStore {
 
   _getDefaults(): StoreData {
     return {
+      cwdKey: null,
       childKeyMap: {},
       isDirtyMap: {},
       expandedKeysByRoot: {},
@@ -227,6 +229,9 @@ class FileTreeStore {
         this._deleteSelectedNodes().catch(error => {
           atom.notifications.addError('Deleting nodes failed with an error: ' + error.toString());
         });
+        break;
+      case ActionType.SET_CWD:
+        this._setCwdKey(payload.rootKey);
         break;
       case ActionType.SET_TRACKED_NODE:
         this._setTrackedNode(payload.rootKey, payload.nodeKey);
@@ -607,6 +612,18 @@ class FileTreeStore {
 
   _setLoading(nodeKey: string, value: Promise): void {
     this._set('isLoadingMap', setProperty(this._data.isLoadingMap, nodeKey, value));
+  }
+
+  isCwd(nodeKey: string): boolean {
+    return nodeKey === this._data.cwdKey;
+  }
+
+  hasCwd(): boolean {
+    return this._data.cwdKey != null;
+  }
+
+  _setCwdKey(rootKey: ?string): void {
+    this._set('cwdKey', rootKey);
   }
 
   /**

@@ -12,6 +12,7 @@
 import type {FileTreeControllerState} from './FileTreeController';
 import type FileTreeControllerType from './FileTreeController';
 import type {NuclideSideBarService} from '../../side-bar';
+import type {CwdApi} from '../../current-working-directory/lib/CwdApi';
 
 import {Disposable, CompositeDisposable} from 'atom';
 import invariant from 'assert';
@@ -30,6 +31,7 @@ const ACTIVE_PANE_DEBOUNCE_INTERVAL_MS = 150;
 const REVEAL_FILE_ON_SWITCH_SETTING = 'nuclide-file-tree.revealFileOnSwitch';
 
 class Activation {
+  _cwdApiSubscription: ?IDisposable;
   _fileTreeController: FileTreeControllerType;
   _packageState: ?FileTreeControllerState;
   _subscriptions: CompositeDisposable;
@@ -60,6 +62,17 @@ class Activation {
       atom.config.observe(usePreviewTabs, this._setUsePreviewTabs.bind(this)),
     );
 
+  }
+
+  consumeCwdApi(cwdApi: CwdApi): IDisposable {
+    invariant(this._fileTreeController);
+    if (this._cwdApiSubscription != null) {
+      this._cwdApiSubscription.dispose();
+    }
+    const controller = this._fileTreeController;
+    controller.setCwdApi(cwdApi);
+    this._cwdApiSubscription = new Disposable(() => controller.setCwdApi(null));
+    return this._cwdApiSubscription;
   }
 
   dispose() {
@@ -281,5 +294,10 @@ module.exports = {
     invariant(activation);
 
     return activation.consumeWorkingSetsStore(workingSetsStore);
+  },
+
+  consumeCwdApi(cwdApi: CwdApi): IDisposable {
+    invariant(activation);
+    return activation.consumeCwdApi(cwdApi);
   },
 };

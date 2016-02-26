@@ -42,6 +42,14 @@ class FileTreeContextMenu {
     this._store = FileTreeStore.getInstance();
     this._addContextMenuItemGroup([
       {
+        label: 'Set to Current Working Root',
+        command: 'nuclide-file-tree:set-current-working-root',
+        shouldDisplay: () => {
+          const node = this._store.getSingleSelectedNode();
+          return node != null && node.isRoot && this._store.hasCwd() && !node.isCwd();
+        },
+      },
+      {
         label: 'Split',
         shouldDisplay: () => {
           const node = this._store.getSingleSelectedNode();

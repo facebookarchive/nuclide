@@ -31,6 +31,7 @@ const INDENT_PER_LEVEL = 17;
 class DirectoryEntryComponent extends React.Component {
   static propTypes = {
     indentLevel: PropTypes.number.isRequired,
+    isCwd: PropTypes.bool.isRequired,
     isExpanded: PropTypes.bool.isRequired,
     isLoading: PropTypes.bool.isRequired,
     isRoot: PropTypes.bool.isRequired,
@@ -58,6 +59,7 @@ class DirectoryEntryComponent extends React.Component {
 
   render(): ReactElement {
     const outerClassName = classnames({
+      'current-working-directory': this.props.isCwd,
       'collapsed': !this.props.isExpanded,
       'directory entry list-nested-item': true,
       'expanded': this.props.isExpanded,
@@ -83,6 +85,8 @@ class DirectoryEntryComponent extends React.Component {
       statusClass = '';
     }
 
+    const iconName = this.props.isCwd ? 'briefcase' : 'file-directory';
+
     return (
       <li
         key={this.props.nodeKey}
@@ -92,7 +96,7 @@ class DirectoryEntryComponent extends React.Component {
         onMouseDown={this._onMouseDown}>
         <div className={listItemClassName} ref="arrowContainer">
           <span
-            className="icon name icon-file-directory"
+            className={`icon name icon-${iconName}`}
             ref="pathContainer"
             data-name={this.props.nodeName}
             data-path={this.props.nodePath}>

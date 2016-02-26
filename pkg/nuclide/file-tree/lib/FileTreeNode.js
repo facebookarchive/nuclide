@@ -33,6 +33,10 @@ class FileTreeNode {
     this.isContainer = FileTreeHelpers.isDirKey(nodeKey);
   }
 
+  isCwd(): boolean {
+    return this._store.isCwd(this.nodeKey);
+  }
+
   isLoading(): boolean {
     return this._store.isLoading(this.rootKey, this.nodeKey);
   }

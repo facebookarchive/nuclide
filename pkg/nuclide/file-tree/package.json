@@ -5,6 +5,11 @@
   "version": "0.0.0",
   "description": "Provides the new file tree panel for Nuclide",
   "consumedServices": {
+    "nuclide-current-working-directory": {
+      "versions": {
+        "0.0.0": "consumeCwdApi"
+      }
+    },
     "nuclide-side-bar": {
       "versions": {
         "1.0.0": "consumeNuclideSideBar"

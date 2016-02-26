@@ -9,9 +9,10 @@
  * the root directory of this source tree.
  */
 
+import type {CwdApi} from '../../current-working-directory/lib/CwdApi';
 import type {ExportStoreData} from './FileTreeStore';
 
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 import {EVENT_HANDLER_SELECTOR}  from './FileTreeConstants';
 import FileSystemActions from './FileSystemActions';
 import FileTreeActions from './FileTreeActions';
@@ -46,6 +47,8 @@ const PREFIX_RESET_DELAY = 500;
 class FileTreeController {
   _actions: FileTreeActions;
   _contextMenu: FileTreeContextMenu;
+  _cwdApi: ?CwdApi;
+  _cwdApiSubscription: ?IDisposable;
   _repositories: Immutable.Set<atom$Repository>;
   _store: FileTreeStore;
   _subscriptions: CompositeDisposable;
@@ -58,7 +61,13 @@ class FileTreeController {
     this._store = FileTreeStore.getInstance();
     this._repositories = new Immutable.Set();
     this._subscriptionForRepository = new Immutable.Map();
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new CompositeDisposable(
+      new Disposable(() => {
+        if (this._cwdApiSubscription != null) {
+          this._cwdApiSubscription.dispose();
+        }
+      }),
+    );
     // Initial root directories
     this._updateRootDirectories();
     // Subsequent root directories updated on change
@@ -116,6 +125,7 @@ class FileTreeController {
         },
         'nuclide-file-tree:search-in-directory': this._searchInDirectory.bind(this),
         'nuclide-file-tree:show-in-file-manager': this._showInFileManager.bind(this),
+        'nuclide-file-tree:set-current-working-root': this._setCwdToSelection.bind(this),
         ...letterKeyBindings,
       })
     );
@@ -283,6 +293,33 @@ class FileTreeController {
       this._actions.expandNode(rootKey, parentKey);
     });
     this._selectAndTrackNode(rootKey, nodeKey);
+  }
+
+  _setCwdToSelection(): void {
+    const node = this._store.getSingleSelectedNode();
+    if (node == null) {
+      return;
+    }
+    const path = FileTreeHelpers.keyToPath(node.rootKey);
+    if (this._cwdApi != null) {
+      this._cwdApi.setCwd(path);
+    }
+  }
+
+  setCwdApi(cwdApi: ?CwdApi): void {
+    if (cwdApi == null) {
+      this._actions.setCwd(null);
+      this._cwdApiSubscription = null;
+    } else {
+      invariant(this._cwdApiSubscription == null);
+      this._cwdApiSubscription = cwdApi.observeCwd(directory => {
+        const path = directory == null ? null : directory.getPath();
+        const rootKey = path && FileTreeHelpers.dirPathToKey(path);
+        this._actions.setCwd(rootKey);
+      });
+    }
+
+    this._cwdApi = cwdApi;
   }
 
   setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {

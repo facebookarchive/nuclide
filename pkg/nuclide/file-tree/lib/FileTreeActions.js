@@ -50,6 +50,13 @@ class FileTreeActions {
     this._subscriptionForRepository = new Immutable.Map();
   }
 
+  setCwd(rootKey: ?string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_CWD,
+      rootKey,
+    });
+  }
+
   setRootKeys(rootKeys: Array<string>): void {
     const existingRootKeySet: Immutable.Set<string> = new Immutable.Set(this._store.getRootKeys());
     const addedRootKeys: Immutable.Set<string> =

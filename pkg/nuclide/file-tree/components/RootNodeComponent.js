@@ -48,6 +48,7 @@ class RootNodeComponent extends React.Component {
     let elements = [node.isContainer ?
       <DirectoryEntryComponent
         indentLevel={indentLevel}
+        isCwd={node.isCwd()}
         isExpanded={node.isExpanded()}
         isLoading={node.isLoading()}
         isRoot={indentLevel === 0}
