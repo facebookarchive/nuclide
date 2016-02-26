@@ -9,5 +9,13 @@
     "testRunner": "apm"
   },
   "activationCommands": {
+  },
+  "providedServices": {
+    "nuclide-current-working-directory": {
+      "description": "Which of the directories in the project is the \"active\" one?",
+      "versions": {
+        "0.0.0": "provideApi"
+      }
+    }
   }
 }

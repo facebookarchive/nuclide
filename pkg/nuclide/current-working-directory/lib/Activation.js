@@ -9,19 +9,35 @@
  * the root directory of this source tree.
  */
 
+import {CwdApi} from './CwdApi';
 import {CompositeDisposable} from 'atom';
 
 export class Activation {
+  _cwdApi: CwdApi;
   _disposables: CompositeDisposable;
 
-  constructor(state: ?Object) {
-    // TODO(matthewwithanm): Assign all fields here so they are
-    // non-nullable for the lifetime of Activation.
-    this._disposables = new CompositeDisposable();
+  constructor(rawState: ?Object) {
+    const state = rawState || {};
+    const {initialCwdPath} = state;
+    this._cwdApi = new CwdApi(initialCwdPath);
+    this._disposables = new CompositeDisposable(
+      this._cwdApi,
+    );
   }
 
   dispose(): void {
     this._disposables.dispose();
+  }
+
+  provideApi(): CwdApi {
+    return this._cwdApi;
+  }
+
+  serialize(): Object {
+    const cwd = this._cwdApi.getCwd();
+    return {
+      initialCwdPath: cwd == null ? null : cwd.getPath(),
+    };
   }
 
 }

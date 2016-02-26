@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {CwdApi} from './CwdApi';
+
 import {Activation} from './Activation';
 import invariant from 'assert';
 
@@ -23,4 +25,14 @@ export function deactivate(): void {
   invariant(activation != null);
   activation.dispose();
   activation = null;
+}
+
+export function provideApi(): CwdApi {
+  invariant(activation != null);
+  return activation.provideApi();
+}
+
+export function serialize(): Object {
+  invariant(activation != null);
+  return activation.serialize();
 }
