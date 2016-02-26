@@ -12,6 +12,7 @@
 import {Emitter} from 'atom';
 import {WorkingSet} from './WorkingSet';
 import {array} from '../../commons';
+import {track} from '../../analytics';
 
 import type {WorkingSetDefinition} from './main';
 
@@ -73,6 +74,8 @@ export class WorkingSetsStore {
 
     // Do not fire an update event if the change is of a cosmetical nature. Such as order in UI.
     if (!invisibleChange) {
+      track('working-sets-applying-definitions', {uris: combinedUris.join(',')});
+
       const workingSet = new WorkingSet(combinedUris);
       this._updateCurrent(workingSet);
     }
@@ -98,6 +101,8 @@ export class WorkingSetsStore {
   }
 
   deleteWorkingSet(name: string): void {
+    track('working-sets-delete', {name});
+
     const definitions = this._definitions.filter(d => d.name !== name);
     this._saveDefinitions(definitions);
   }
@@ -119,8 +124,15 @@ export class WorkingSetsStore {
 
     let newDefinitions;
     if (nameIndex < 0) {
+      track('working-sets-create', {name, uris: workingSet.getUris().join(',')});
+
       newDefinitions = definitions.concat({name, uris: workingSet.getUris(), active: false});
     } else {
+      track(
+        'working-sets-update',
+        {oldName: name, name: newName, uris: workingSet.getUris().join(',')},
+      );
+
       const active = definitions[nameIndex].active;
       newDefinitions = [].concat(
         definitions.slice(0, nameIndex),
@@ -133,8 +145,9 @@ export class WorkingSetsStore {
   }
 
   _activateDefinition(name: string, active: boolean): void {
-    const definitions = this.getDefinitions();
+    track('working-sets-activate', {name, active: active.toString()});
 
+    const definitions = this.getDefinitions();
     const newDefinitions = definitions.map(d => {
       if (d.name === name) {
         d.active = active;
@@ -151,6 +164,8 @@ export class WorkingSetsStore {
   }
 
   toggleLastSelected(): void {
+    track('working-sets-toggle-last-selected');
+
     if (this.getDefinitions().some(d => d.active)) {
       this.deactivateAll();
     } else {
