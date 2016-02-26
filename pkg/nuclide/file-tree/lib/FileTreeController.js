@@ -388,7 +388,15 @@ class FileTreeController {
       if (deep) {
         this._actions.expandNodeDeep(node.rootKey, node.nodeKey);
       } else {
-        this._actions.expandNode(node.rootKey, node.nodeKey);
+        if (node.isExpanded()) {
+          // Node is already expanded; move the selection to the first child.
+          const [firstChildKey] = node.getChildKeys();
+          if (firstChildKey != null) {
+            this.revealNodeKey(firstChildKey);
+          }
+        } else {
+          this._actions.expandNode(node.rootKey, node.nodeKey);
+        }
       }
     });
   }
