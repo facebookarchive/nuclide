@@ -16,6 +16,9 @@ import type {
 } from '../../quick-open-interfaces';
 
 import {getFuzzyFileSearchService} from './utils';
+import {
+  RemoteDirectory,
+} from '../../remote-connection';
 
 const FuzzyFileNameProvider: Provider = {
 
@@ -70,6 +73,14 @@ const FuzzyFileNameProvider: Provider = {
 
     const directoryPath = directory.getPath();
     const result = await service.queryFuzzyFile(directoryPath, query);
+    // Take the `nuclide://<host><port>` prefix into account for matchIndexes of remote files.
+    if (RemoteDirectory.isRemoteDirectory(directory)) {
+      const remoteDir: RemoteDirectory = (directory: any);
+      const indexOffset = directoryPath.length - remoteDir.getLocalPath().length;
+      result.forEach(res => {
+        res.matchIndexes = res.matchIndexes.map(index => index + indexOffset);
+      });
+    }
     return ((result: any): Array<FileResult>);
   },
 };
