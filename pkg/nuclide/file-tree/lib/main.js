@@ -40,24 +40,14 @@ class Activation {
     const FileTreeController = require('./FileTreeController');
     this._fileTreeController = new FileTreeController(this._packageState);
 
-    // Flow does not know that this setting is a boolean, thus the cast.
-    this._setRevealOnFileSwitch(((featureConfig.get(REVEAL_FILE_ON_SWITCH_SETTING): any): boolean));
-
-    const ignoredNamesSetting = 'core.ignoredNames';
-    this._setIgnoredNames(((atom.config.get(ignoredNamesSetting): any): string | Array<string>));
-
-    const hideIgnoredNamesSetting = 'nuclide-file-tree.hideIgnoredNames';
-    this._setRevealOnFileSwitch(((featureConfig.get(hideIgnoredNamesSetting): any): boolean));
-
     const excludeVcsIgnoredPathsSetting = 'core.excludeVcsIgnoredPaths';
-    this._setExcludeVcsIgnoredPaths(
-      ((atom.config.get(excludeVcsIgnoredPathsSetting): any): boolean)
-    );
-
+    const hideIgnoredNamesSetting = 'nuclide-file-tree.hideIgnoredNames';
+    const ignoredNamesSetting = 'core.ignoredNames';
+    const prefixKeyNavSetting = 'nuclide-file-tree.allowKeyboardPrefixNavigation';
     const usePreviewTabs = 'tabs.usePreviewTabs';
-    this._setUsePreviewTabs(((atom.config.get(usePreviewTabs): any): ?boolean));
 
     this._subscriptions.add(
+      featureConfig.observe(prefixKeyNavSetting, this._setPrefixKeyNavSetting.bind(this)),
       featureConfig.observe(REVEAL_FILE_ON_SWITCH_SETTING, this._setRevealOnFileSwitch.bind(this)),
       atom.config.observe(ignoredNamesSetting, this._setIgnoredNames.bind(this)),
       featureConfig.observe(hideIgnoredNamesSetting, this._setHideIgnoredNames.bind(this)),
@@ -139,6 +129,14 @@ class Activation {
         this._paneItemSubscription = null;
       }
     }
+  }
+
+  _setPrefixKeyNavSetting(usePrefixNav: ?boolean): void {
+    // config is void during startup, signifying no config yet
+    if (usePrefixNav == null || !this._fileTreeController) {
+      return;
+    }
+    this._fileTreeController.setUsePrefixNav(usePrefixNav);
   }
 
   _setUsePreviewTabs(usePreviewTabs: ?boolean): void {

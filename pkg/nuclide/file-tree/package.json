@@ -24,6 +24,12 @@
         "type": "boolean",
         "default": true,
         "description": "Hide paths that match the \"Ignored Names\" under \"Settings > Core Settings\""
+      },
+      "allowKeyboardPrefixNavigation": {
+        "title": "Enable prefix-based keyboard navigation",
+        "type": "boolean",
+        "default": true,
+        "description": "Allows using the keyboard to navigate to a sibling node matching a prefix string"
       }
     },
     "packageType": "Atom",

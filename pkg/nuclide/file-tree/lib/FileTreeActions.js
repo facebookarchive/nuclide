@@ -161,6 +161,13 @@ class FileTreeActions {
     });
   }
 
+  setUsePrefixNav(usePrefixNav: boolean): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_USE_PREFIX_NAV,
+      usePrefixNav,
+    });
+  }
+
   selectSingleNode(rootKey: string, nodeKey: string): void {
     const selectedKeysByRoot = {};
     selectedKeysByRoot[rootKey] = new Immutable.Set([nodeKey]);

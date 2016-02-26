@@ -62,6 +62,7 @@ type StoreData = {
   hideIgnoredNames: boolean;
   excludeVcsIgnoredPaths: boolean;
   usePreviewTabs: boolean;
+  usePrefixNav: boolean;
   repositories: Immutable.Set<atom$Repository>;
 };
 
@@ -201,6 +202,7 @@ class FileTreeStore {
       hideIgnoredNames: true,
       excludeVcsIgnoredPaths: true,
       usePreviewTabs: false,
+      usePrefixNav: true,
       repositories: Immutable.Set(),
     };
   }
@@ -232,6 +234,9 @@ class FileTreeStore {
         break;
       case ActionType.SET_USE_PREVIEW_TABS:
         this._setUsePreviewTabs(payload.usePreviewTabs);
+        break;
+      case ActionType.SET_USE_PREFIX_NAV:
+        this._setUsePrefixNav(payload.usePrefixNav);
         break;
       case ActionType.COLLAPSE_NODE_DEEP:
         this._purgeDirectoryWithinARoot(payload.rootKey, payload.nodeKey, /* unselect */false);
@@ -354,8 +359,16 @@ class FileTreeStore {
     this._set('usePreviewTabs', usePreviewTabs);
   }
 
+  _setUsePrefixNav(usePrefixNav: boolean) {
+    this._set('usePrefixNav', usePrefixNav);
+  }
+
   usePreviewTabs(): boolean {
     return this._data.usePreviewTabs;
+  }
+
+  usePrefixNav(): boolean {
+    return this._data.usePrefixNav;
   }
 
   /**

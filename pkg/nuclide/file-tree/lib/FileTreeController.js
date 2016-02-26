@@ -130,6 +130,9 @@ class FileTreeController {
   }
 
   _handlePrefixKeypress(letter: string): void {
+    if (!this._store.usePrefixNav()) {
+      return;
+    }
     if (this._prefixTimeout != null) {
       clearTimeout(this._prefixTimeout);
       this._prefixTimeout = null;
@@ -293,6 +296,10 @@ class FileTreeController {
 
   setUsePreviewTabs(usePreviewTabs: boolean): void {
     this._actions.setUsePreviewTabs(usePreviewTabs);
+  }
+
+  setUsePrefixNav(usePrefixNav: boolean): void {
+    this._actions.setUsePrefixNav(usePrefixNav);
   }
 
   /**
