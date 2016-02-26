@@ -56,8 +56,9 @@ describe('CtagsService.findTags', () => {
           name: 'b',
           file: path.join(__dirname, 'fixtures', 'b.cpp'),
           lineNumber: 0,
-          kind: '',
+          kind: 'f',
           pattern: '/^void b() {$/',
+          fields: new Map([['namespace', 'test']]),
         },
       ]);
     });

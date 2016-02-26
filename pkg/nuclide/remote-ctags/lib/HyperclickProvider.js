@@ -19,6 +19,7 @@ import {CTAGS_KIND_NAMES, getLineNumberForTag} from './utils';
 import invariant from 'assert';
 
 const LIMIT = 100;
+const QUALIFYING_FIELDS = ['class', 'namespace', 'struct', 'enum', 'Module'];
 
 /**
  * If a line number is specified by the tag, jump to that line.
@@ -82,10 +83,23 @@ export class HyperclickProvider {
       return {
         range,
         callback: tags.map(tag => {
-          const relpath = relative(tagsDir, tag.file);
+          const {file, fields, kind} = tag;
+          const relpath = relative(tagsDir, file);
           let title = `${tag.name} (${relpath})`;
-          if (tag.kind != null && CTAGS_KIND_NAMES[tag.kind] != null) {
-            title = CTAGS_KIND_NAMES[tag.kind] + ' ' + title;
+          if (fields != null) {
+            // Python uses a.b.c; most other langauges use a::b::c.
+            // There are definitely other cases, but it's not a big issue.
+            const sep = file.endsWith('.py') ? '.' : '::';
+            for (const field of QUALIFYING_FIELDS) {
+              const val = fields.get(field);
+              if (val != null) {
+                title = val + sep + title;
+                break;
+              }
+            }
+          }
+          if (kind != null && CTAGS_KIND_NAMES[kind] != null) {
+            title = CTAGS_KIND_NAMES[kind] + ' ' + title;
           }
           return {
             title,

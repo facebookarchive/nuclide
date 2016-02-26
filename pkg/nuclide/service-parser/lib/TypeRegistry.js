@@ -476,11 +476,14 @@ export default class TypeRegistry {
         serializePromises.push(this._marshal(elem, type.type));
       }
       return smartPromiseAll(serializePromises);
-    }, async (value: any, type: Type) => {
+    }, (value: any, type: Type) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
       invariant(type.kind === 'set');
       const elemType = type.type;
-      const elements = await smartPromiseAll(value.map(elem => this._unmarshal(elem, elemType)));
+      const elements = smartPromiseAll(value.map(elem => this._unmarshal(elem, elemType)));
+      if (elements instanceof Promise) {
+        return elements.then(x => new Set(x));
+      }
       return new Set(elements);
     });
 
@@ -496,17 +499,20 @@ export default class TypeRegistry {
         ]));
       }
       return smartPromiseAll(serializePromises);
-    }, async (serialized: any, type: Type) => {
+    }, (serialized: any, type: Type) => {
       assert(serialized instanceof Array, 'Expected an object of type Array.');
       invariant(type.kind === 'map');
       const keyType = type.keyType;
       const valueType = type.valueType;
-      const entries = await smartPromiseAll(
+      const entries = smartPromiseAll(
         serialized.map(entry => checkedSmartPromiseAll([
           this._unmarshal(entry[0], keyType),
           this._unmarshal(entry[1], valueType),
         ]))
       );
+      if (entries instanceof Promise) {
+        return entries.then(x => new Map(x));
+      }
       return new Map(entries);
     });
 

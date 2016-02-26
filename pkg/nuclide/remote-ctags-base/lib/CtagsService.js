@@ -25,6 +25,7 @@ export type CtagsResult = {
   // As specified in the tags file; defaults to empty if not specified.
   kind: string;
   pattern?: string;
+  fields?: Map<string, string>,
 };
 
 export class CtagsService {
@@ -52,21 +53,22 @@ export class CtagsService {
 
     const dir = dirname(this._tagsPath);
     return new Promise((resolve, reject) => {
-      ctags.findTags(this._tagsPath, query, options, async (error, tags: Array<CtagsResult>) => {
+      ctags.findTags(this._tagsPath, query, options, async (error, tags: Array<Object>) => {
         if (error != null) {
           reject(error);
         } else {
-          if (options != null) {
-            const {limit} = options;
-            if (limit != null && tags.length > limit) {
-              tags.splice(limit, tags.length - limit);
-            }
-          }
           const processed = await Promise.all(tags.map(async tag => {
             // Convert relative paths to absolute ones.
             tag.file = join(dir, tag.file);
             // Tag files are often not perfectly in sync - filter out missing files.
             if (await fsPromise.exists(tag.file)) {
+              if (tag.fields != null) {
+                const map = new Map();
+                for (const key in tag.fields) {
+                  map.set(key, tag.fields[key]);
+                }
+                tag.fields = map;
+              }
               return tag;
             }
             return null;
