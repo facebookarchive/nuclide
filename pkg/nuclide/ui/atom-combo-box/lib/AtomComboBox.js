@@ -119,7 +119,7 @@ class AtomComboBox extends React.Component {
   receiveUpdate(newOptions: Array<string>) {
     const filteredOptions = this._getFilteredOptions(newOptions, this.state.textInput);
     this.setState({
-      loadingCount: this.state.loadingCount -1,
+      loadingCount: this.state.loadingCount - 1,
       options: newOptions,
       filteredOptions: filteredOptions,
     });

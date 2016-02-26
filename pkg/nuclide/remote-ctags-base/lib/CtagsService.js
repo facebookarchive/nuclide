@@ -25,7 +25,7 @@ export type CtagsResult = {
   // As specified in the tags file; defaults to empty if not specified.
   kind: string;
   pattern?: string;
-  fields?: Map<string, string>,
+  fields?: Map<string, string>;
 };
 
 export class CtagsService {
