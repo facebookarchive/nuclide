@@ -22,6 +22,7 @@ var args = [
   runJasmineTests,
   '--forceexit',
   '--color',
+  '--captureExceptions',
 ].concat(varArgs);
 
 var testInfo = 'cd ' + process.cwd() + ' && node ' + args.join(' ');
