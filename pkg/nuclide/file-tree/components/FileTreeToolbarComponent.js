@@ -14,9 +14,13 @@
 import {React} from 'react-for-atom';
 import {CompositeDisposable} from 'atom';
 import classnames from 'classnames';
+import invariant from 'assert';
 import {addTooltip} from '../../atom-helpers';
 import {WorkingSetSelectionComponent} from './WorkingSetSelectionComponent';
+import {WorkingSetNameAndSaveComponent} from './WorkingSetNameAndSaveComponent';
 import FileTreeStore from '../lib/FileTreeStore';
+import FileTreeActions from '../lib/FileTreeActions';
+import {WorkingSet} from '../../working-sets';
 
 import type {WorkingSetsStore} from '../../working-sets';
 
@@ -26,14 +30,18 @@ type Props = {
 
 type State = {
   selectionIsActive: boolean;
-  workingSetName: string;
   definitionsAreEmpty: boolean;
+  isUpdatingExistingWorkingSet: boolean;
+  updatedWorkingSetName: string;
 };
 
 export class FileTreeToolbarComponent extends React.Component {
   _store: FileTreeStore;
   _disposables: CompositeDisposable;
   _inProcessOfClosingSelection: boolean;
+  _prevName: string;
+  _store: FileTreeStore;
+  _actions: FileTreeActions;
   state: State;
   props: Props;
 
@@ -43,11 +51,13 @@ export class FileTreeToolbarComponent extends React.Component {
     this._store = FileTreeStore.getInstance();
     this.state = {
       selectionIsActive: false,
-      workingSetName: '',
       definitionsAreEmpty: props.workingSetsStore.getDefinitions().length === 0,
+      isUpdatingExistingWorkingSet: false,
+      updatedWorkingSetName: '',
     };
 
     this._inProcessOfClosingSelection = false;
+    this._actions = FileTreeActions.getInstance();
 
     this._disposables = new CompositeDisposable();
     this._disposables.add(props.workingSetsStore.subscribeToDefinitions(
@@ -57,6 +67,10 @@ export class FileTreeToolbarComponent extends React.Component {
     (this: any)._toggleWorkingSetsSelector = this._toggleWorkingSetsSelector.bind(this);
     (this: any)._closeWorkingSetsSelector = this._closeWorkingSetsSelector.bind(this);
     (this: any)._checkIfClosingSelector = this._checkIfClosingSelector.bind(this);
+    (this: any)._editWorkingSet = this._editWorkingSet.bind(this);
+    (this: any)._saveWorkingSet = this._saveWorkingSet.bind(this);
+    (this: any)._updateWorkingSet = this._updateWorkingSet.bind(this);
+    (this: any)._toggleWorkingSetEditMode = this._toggleWorkingSetEditMode.bind(this);
   }
 
   componentDidMount(): void {
@@ -73,14 +87,29 @@ export class FileTreeToolbarComponent extends React.Component {
 
   render(): React.Element {
     const workingSet = this._store.getWorkingSet();
+    const editedWorkingSet = this._store.getEditedWorkingSet();
+    const isEditingWorkingSet = this._store.isEditingWorkingSet();
 
     let selectWorkingSetButton;
-    if (!this.state.definitionsAreEmpty) {
+    if (!this.state.definitionsAreEmpty && !isEditingWorkingSet) {
       selectWorkingSetButton = (
-        <SelectWorkingsetButton
+        <SelectWorkingSetButton
           highlight={!workingSet.isEmpty()}
           onClick={this._toggleWorkingSetsSelector}
           onFocus={this._checkIfClosingSelector}
+        />
+      );
+    }
+
+    let workingSetNameAndSave;
+    if (!editedWorkingSet.isEmpty()) {
+      workingSetNameAndSave = (
+        <WorkingSetNameAndSaveComponent
+          isEditing={this.state.isUpdatingExistingWorkingSet}
+          initialName={this.state.updatedWorkingSetName}
+          onUpdate={this._updateWorkingSet}
+          onSave={this._saveWorkingSet}
+          onCancel={this._toggleWorkingSetEditMode}
         />
       );
     }
@@ -91,27 +120,31 @@ export class FileTreeToolbarComponent extends React.Component {
         <WorkingSetSelectionComponent
           workingSetsStore={this.props.workingSetsStore}
           onClose={this._closeWorkingSetsSelector}
+          onEditWorkingSet={this._editWorkingSet}
         />
       );
     }
-
     return (
       <div
         className={classnames({
           'nuclide-file-tree-toolbar': true,
           'nuclide-file-tree-toolbar-fader':
-            workingSet.isEmpty() && !this.state.selectionIsActive,
+            workingSet.isEmpty() &&
+            !this.state.selectionIsActive &&
+            !this._store.isEditingWorkingSet(),
         })}>
         <div className="btn-group pull-right">
-        {selectWorkingSetButton}
+          {selectWorkingSetButton}
+          <DefineWorkingSetButton
+            isActive={isEditingWorkingSet}
+            onClick={this._toggleWorkingSetEditMode}
+          />
         </div>
+        <div className="clearfix" />
+        {workingSetNameAndSave}
         {workingSetSelectionPanel}
       </div>
     );
-  }
-
-  _trackWorkingSetName(text: string): void {
-    this.setState({workingSetName: text});
   }
 
   _toggleWorkingSetsSelector(): void {
@@ -127,14 +160,63 @@ export class FileTreeToolbarComponent extends React.Component {
     this.setState({selectionIsActive: false});
   }
 
+  _toggleWorkingSetEditMode(): void {
+    if (this._store.isEditingWorkingSet()) {
+      this._finishEditingWorkingSet();
+    } else {
+      this._startEditingWorkingSet(new WorkingSet());
+    }
+  }
+
+  _saveWorkingSet(name: string): void {
+    const workingSetsStore = this._store.getWorkingSetsStore();
+    invariant(workingSetsStore);
+    const editedWorkingSet = this._store.getEditedWorkingSet();
+    this._finishEditingWorkingSet();
+
+    workingSetsStore.saveWorkingSet(name, editedWorkingSet);
+    workingSetsStore.activate(name);
+  }
+
+  _updateWorkingSet(prevName: string, name: string): void {
+    const workingSetsStore = this._store.getWorkingSetsStore();
+    invariant(workingSetsStore);
+    const editedWorkingSet = this._store.getEditedWorkingSet();
+    this._finishEditingWorkingSet();
+
+    workingSetsStore.update(prevName, name, editedWorkingSet);
+  }
+
   _checkIfClosingSelector(): void {
     if (this.state.selectionIsActive) {
       this._inProcessOfClosingSelection = true;
     }
   }
+
+  _editWorkingSet(name: string, uris: Array<string>): void {
+    this._prevName = name;
+    this.setState({
+      isUpdatingExistingWorkingSet: true,
+      updatedWorkingSetName: name,
+      selectionIsActive: false,
+    });
+    this._startEditingWorkingSet(new WorkingSet(uris));
+  }
+
+  _startEditingWorkingSet(workingSet: WorkingSet): void {
+    this._actions.startEditingWorkingSet(workingSet);
+  }
+
+  _finishEditingWorkingSet(): void {
+    this.setState({
+      isUpdatingExistingWorkingSet: false,
+      updatedWorkingSetName: '',
+    });
+    this._actions.finishEditingWorkingSet();
+  }
 }
 
-class SelectWorkingsetButton extends React.Component {
+class SelectWorkingSetButton extends React.Component {
   props: {
     highlight: boolean;
     onClick: () => void;
@@ -157,6 +239,36 @@ class SelectWorkingsetButton extends React.Component {
         onClick={this.props.onClick}
         onFocus={this.props.onFocus}>
         <span className="icon icon-list-unordered" />
+      </button>
+    );
+  }
+}
+
+class DefineWorkingSetButton extends React.Component {
+  props: {
+    isActive: boolean;
+    onClick: () => void;
+  };
+
+  render(): React.Element {
+    return (
+      <button
+        className={classnames({
+          btn: true,
+          selected: this.props.isActive,
+        })}
+        ref={addTooltip({
+          title: this.props.isActive ? 'Cancel' : 'Define a Working Set',
+          delay: 500,
+          placement: 'bottom',
+        })}
+        onClick={this.props.onClick}>
+        <span className={classnames({
+          icon: true,
+          'icon-plus': !this.props.isActive,
+          'icon-dash': this.props.isActive,
+        })}
+        />
       </button>
     );
   }

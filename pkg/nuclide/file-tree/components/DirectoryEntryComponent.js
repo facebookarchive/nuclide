@@ -19,6 +19,7 @@ const {StatusCodeNumber} = require('../../hg-repository-base').hgConstants;
 
 const classnames = require('classnames');
 const {isContextClick} = require('../lib/FileTreeHelpers');
+const {TriStateCheckboxComponent} = require('./TriStateCheckboxComponent');
 
 const {PropTypes} = React;
 
@@ -40,12 +41,14 @@ class DirectoryEntryComponent extends React.Component {
     nodePath: PropTypes.string.isRequired,
     rootKey: PropTypes.string.isRequired,
     vcsStatusCode: PropTypes.number,
+    checkedStatus: PropTypes.oneOf(['partial', 'checked', 'clear', '']).isRequired,
   };
 
   constructor(props: Object) {
     super(props);
     (this: any)._onClick = this._onClick.bind(this);
     (this: any)._onMouseDown = this._onMouseDown.bind(this);
+    (this: any)._checkboxOnClick = this._checkboxOnClick.bind(this);
   }
 
   shouldComponentUpdate(nextProps: Object, nextState: void) {
@@ -59,6 +62,9 @@ class DirectoryEntryComponent extends React.Component {
       'expanded': this.props.isExpanded,
       'project-root': this.props.isRoot,
       'selected': this.props.isSelected,
+      'nuclide-file-tree-partial': this.props.checkedStatus === 'partial',
+      'nuclide-file-tree-checked': this.props.checkedStatus === 'checked',
+      'nuclide-file-tree-reset-coloring': this.props.checkedStatus === 'clear',
     });
     const listItemClassName = classnames({
       'header list-item': true,
@@ -88,12 +94,27 @@ class DirectoryEntryComponent extends React.Component {
             ref="pathContainer"
             data-name={this.props.nodeName}
             data-path={this.props.nodePath}>
+            {this._renderCheckbox()}
             {this.props.nodeName}
           </span>
         </div>
       </li>
     );
   }
+
+  _renderCheckbox(): ?React.Element {
+    if (this.props.checkedStatus === '') {
+      return;
+    }
+
+    return (
+      <TriStateCheckboxComponent
+        checkedStatus={this.props.checkedStatus}
+        onClick={this._checkboxOnClick}
+      />
+    );
+  }
+
 
   _onClick(event: SyntheticMouseEvent) {
     const deep = event.altKey;
@@ -141,6 +162,15 @@ class DirectoryEntryComponent extends React.Component {
       } else {
         getActions().expandNode(this.props.rootKey, this.props.nodeKey);
       }
+    }
+  }
+
+  _checkboxOnClick(event: Event): void {
+    event.stopPropagation();
+    if (this.props.checkedStatus === 'clear') {
+      getActions().checkNode(this.props.rootKey, this.props.nodeKey);
+    } else {
+      getActions().uncheckNode(this.props.rootKey, this.props.nodeKey);
     }
   }
 }

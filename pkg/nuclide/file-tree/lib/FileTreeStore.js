@@ -70,6 +70,8 @@ type StoreData = {
   repositories: Immutable.Set<atom$Repository>;
   workingSet: WorkingSet;
   workingSetsStore: ?WorkingSetsStore;
+  isEditingWorkingSet: boolean;
+  editedWorkingSet: WorkingSet;
 };
 
 export type ExportStoreData = {
@@ -212,6 +214,8 @@ class FileTreeStore {
       repositories: Immutable.Set(),
       workingSet: new WorkingSet(),
       workingSetsStore: null,
+      isEditingWorkingSet: false,
+      editedWorkingSet: new WorkingSet(),
     };
   }
 
@@ -275,6 +279,18 @@ class FileTreeStore {
         break;
       case ActionType.SET_WORKING_SETS_STORE:
         this._setWorkingSetsStore(payload.workingSetsStore);
+        break;
+      case ActionType.START_EDITING_WORKING_SET:
+        this._startEditingWorkingSet(payload.editedWorkingSet);
+        break;
+      case ActionType.FINISH_EDITING_WORKING_SET:
+        this._finishEditingWorkingSet();
+        break;
+      case ActionType.CHECK_NODE:
+        this._checkNode(payload.rootKey, payload.nodeKey);
+        break;
+      case ActionType.UNCHECK_NODE:
+        this._uncheckNode(payload.rootKey, payload.nodeKey);
         break;
     }
   }
@@ -529,6 +545,18 @@ class FileTreeStore {
 
   getNode(rootKey: string, nodeKey: string): FileTreeNode {
     return new FileTreeNode(this, rootKey, nodeKey);
+  }
+
+  isEditingWorkingSet(): boolean {
+    return this._data.isEditingWorkingSet;
+  }
+
+  getEditedWorkingSet(): WorkingSet {
+    return this._data.editedWorkingSet;
+  }
+
+  _setEditedWorkingSet(editedWorkingSet: WorkingSet): void {
+    this._set('editedWorkingSet', editedWorkingSet);
   }
 
   /**
@@ -983,6 +1011,65 @@ class FileTreeStore {
     this._set('workingSetsStore', workingSetsStore);
   }
 
+  _startEditingWorkingSet(editedWorkingSet: WorkingSet): void {
+    if (!this._data.isEditingWorkingSet) {
+      this._set('isEditingWorkingSet', true);
+      this._setEditedWorkingSet(editedWorkingSet);
+    }
+  }
+
+  _finishEditingWorkingSet(): void {
+    if (this._data.isEditingWorkingSet) {
+      this._set('isEditingWorkingSet', false);
+      this._setEditedWorkingSet(new WorkingSet());
+    }
+  }
+
+  _checkNode(rootKey: string, nodeKey: string): void {
+    if (!this._data.isEditingWorkingSet) {
+      return;
+    }
+
+    const editedWorkingSet = this._data.editedWorkingSet.append(nodeKey);
+
+    const node = this.getNode(rootKey, nodeKey);
+    if (node.isRoot) {
+      this._setEditedWorkingSet(editedWorkingSet);
+      return;
+    }
+
+    const parent = node.getParentNode();
+    const childrenKeys = this.getCachedChildKeys(rootKey, parent.nodeKey);
+    if (childrenKeys.every(ck => editedWorkingSet.containsFile(ck))) {
+      this._checkNode(rootKey, parent.nodeKey);
+    } else {
+      this._setEditedWorkingSet(editedWorkingSet);
+    }
+  }
+
+  _uncheckNode(rootKey: string, nodeKey: string): void {
+    if (!this._data.isEditingWorkingSet) {
+      return;
+    }
+
+    const node = this.getNode(rootKey, nodeKey);
+    if (node.isRoot) {
+      this._setEditedWorkingSet(this._data.editedWorkingSet.remove(nodeKey));
+      return;
+    }
+
+    const parent = node.getParentNode();
+    if (this._data.editedWorkingSet.containsFile(parent.nodeKey)) {
+      this._uncheckNode(rootKey, parent.nodeKey);
+      const childrenKeys = this.getCachedChildKeys(rootKey, parent.nodeKey);
+      const siblingsKeys = childrenKeys.filter(ck => ck !== nodeKey);
+
+      this._setEditedWorkingSet(this._data.editedWorkingSet.append(...siblingsKeys));
+    } else {
+      this._setEditedWorkingSet(this._data.editedWorkingSet.remove(nodeKey));
+    }
+  }
+
   _omitHiddenPaths(nodeKeys: Array<string>): Array<string> {
     if (
       !this._data.hideIgnoredNames &&
@@ -1016,13 +1103,17 @@ class FileTreeStore {
   }
 
   _isExcludedFromWorkingSet(nodeKey: string): boolean {
-    const {workingSet} = this._data;
+    const {workingSet, isEditingWorkingSet} = this._data;
 
-    if (FileTreeHelpers.isDirKey(nodeKey)) {
-      return !workingSet.containsDir(nodeKey);
+    if (!isEditingWorkingSet) {
+      if (FileTreeHelpers.isDirKey(nodeKey)) {
+        return !workingSet.containsDir(nodeKey);
+      } else {
+        return !workingSet.containsFile(nodeKey);
+      }
     }
 
-    return !workingSet.containsFile(nodeKey);
+    return false;
   }
 
   reset(): void {

@@ -19,6 +19,7 @@ const {StatusCodeNumber} = require('../../hg-repository-base').hgConstants;
 const classnames = require('classnames');
 const {fileTypeClass} = require('../../atom-helpers');
 const {isContextClick} = require('../lib/FileTreeHelpers');
+const {TriStateCheckboxComponent} = require('./TriStateCheckboxComponent');
 
 const {PropTypes} = React;
 
@@ -37,11 +38,13 @@ class FileEntryComponent extends React.Component {
     nodePath: PropTypes.string.isRequired,
     rootKey: PropTypes.string.isRequired,
     vcsStatusCode: PropTypes.number,
+    checkedStatus: PropTypes.oneOf(['checked', 'clear', '']).isRequired,
   };
 
   constructor(props: Object) {
     super(props);
     (this: any)._onClick = this._onClick.bind(this);
+    (this: any)._checkboxOnClick = this._checkboxOnClick.bind(this);
     (this: any)._onMouseDown = this._onMouseDown.bind(this);
     (this: any)._onDoubleClick = this._onDoubleClick.bind(this);
   }
@@ -54,6 +57,8 @@ class FileEntryComponent extends React.Component {
     const outerClassName = classnames({
       'entry file list-item': true,
       'selected': this.props.isSelected,
+      'nuclide-file-tree-checked': this.props.checkedStatus === 'checked',
+      'nuclide-file-tree-reset-coloring': this.props.checkedStatus === 'clear',
     });
 
     let statusClass;
@@ -78,9 +83,23 @@ class FileEntryComponent extends React.Component {
           className={`icon name ${fileTypeClass(this.props.nodeName)}`}
           data-name={this.props.nodeName}
           data-path={this.props.nodePath}>
+          {this._renderCheckbox()}
           {this.props.nodeName}
         </span>
       </li>
+    );
+  }
+
+  _renderCheckbox(): ?React.Element {
+    if (this.props.checkedStatus === '') {
+      return;
+    }
+
+    return (
+      <TriStateCheckboxComponent
+        checkedStatus={this.props.checkedStatus}
+        onClick={this._checkboxOnClick}
+      />
     );
   }
 
@@ -112,6 +131,15 @@ class FileEntryComponent extends React.Component {
       getActions().keepPreviewTab();
     } else {
       getActions().confirmNode(this.props.rootKey, this.props.nodeKey);
+    }
+  }
+
+  _checkboxOnClick(event: Event): void {
+    event.stopPropagation();
+    if (this.props.checkedStatus === 'checked') {
+      getActions().uncheckNode(this.props.rootKey, this.props.nodeKey);
+    } else {
+      getActions().checkNode(this.props.rootKey, this.props.nodeKey);
     }
   }
 }

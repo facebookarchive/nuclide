@@ -33,14 +33,15 @@ class FileTreeSidebarComponent extends React.Component {
     this.state = {
       shouldRenderToolbar: false,
     };
-    this._processExternalUpdate();
     this._disposables = new CompositeDisposable();
   }
 
   componentDidMount(): void {
+    this._processExternalUpdate();
     this._disposables.add(
       this._store.subscribe(this._processExternalUpdate.bind(this))
     );
+    this._disposables.add(atom.project.onDidChangePaths(this._processExternalUpdate.bind(this)));
   }
 
   componentWillUnmount(): void {

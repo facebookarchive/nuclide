@@ -64,3 +64,36 @@
 .nuclide-file-tree-toolbar-container:hover .nuclide-file-tree-toolbar-fader {
   opacity: 1;
 }
+
+.nuclide-file-tree.nuclide-file-tree-editing-working-set ol.list-tree li.nuclide-file-tree-reset-coloring,
+.nuclide-file-tree.nuclide-file-tree-editing-working-set ol.list-tree li.nuclide-file-tree-reset-coloring .list-item {
+  color: inherit;
+}
+
+.nuclide-file-tree.nuclide-file-tree-editing-working-set ol.list-tree li.nuclide-file-tree-partial,
+.nuclide-file-tree.nuclide-file-tree-editing-working-set ol.list-tree li.nuclide-file-tree-partial .list-item {
+  color: @text-color-warning;
+}
+
+.nuclide-file-tree.nuclide-file-tree-editing-working-set ol.list-tree li.nuclide-file-tree-checked,
+.nuclide-file-tree.nuclide-file-tree-editing-working-set ol.list-tree li.nuclide-file-tree-checked .list-item {
+  color: @text-color-success;
+}
+
+
+.nuclide-file-tree-checkbox {
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.nuclide-file-tree-checkbox-path {
+  stroke: @text-color;
+}
+
+.nuclide-file-tree-checkbox-checked {
+  stroke: @text-color-success
+}
+
+.nuclide-file-tree-checkbox-partial {
+  stroke: @text-color-warning
+}

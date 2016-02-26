@@ -18,6 +18,7 @@ import RootNodeComponent from './RootNodeComponent';
 import EmptyComponent from './EmptyComponent';
 import {track} from '../../analytics';
 import {once} from '../../commons';
+import classnames from 'classnames';
 
 type State = {
   nodeToKeepInView: ?FileTreeNodeData;
@@ -26,6 +27,7 @@ type State = {
 class FileTree extends React.Component {
   state: State;
   _subscriptions: CompositeDisposable;
+  _store: FileTreeStore;
 
   static trackFirstRender = once(() => {
     const rootKeysLength = FileTreeStore.getInstance().getRootKeys().length;
@@ -49,6 +51,7 @@ class FileTree extends React.Component {
     this.state = {
       nodeToKeepInView: null,
     };
+    this._store = FileTreeStore.getInstance();
   }
 
   componentDidMount(): void {
@@ -91,15 +94,32 @@ class FileTree extends React.Component {
   }
 
   render(): ReactElement {
+    const classes = {
+      'nuclide-file-tree': true,
+      'focusable-panel': true,
+      'tree-view': true,
+      'nuclide-file-tree-editing-working-set': this._store.isEditingWorkingSet(),
+    };
+
     return (
-      <div className="nuclide-file-tree focusable-panel tree-view" tabIndex={0}>
+      <div className={classnames(classes)} tabIndex={0}>
         {this._renderChildren()}
       </div>
     );
   }
 
   _renderChildren(): ReactElement | Array<ReactElement> {
-    const rootKeys: Array<string> = FileTreeStore.getInstance().getRootKeys();
+    const workingSet = this._store.getWorkingSet();
+    const isEditingWorkingSet = this._store.isEditingWorkingSet();
+
+    const rootKeys: Array<string> = FileTreeStore.getInstance().getRootKeys()
+      .filter(rK =>  {
+        if (workingSet == null || isEditingWorkingSet) {
+          return true;
+        }
+
+        return workingSet.containsDir(rK);
+      });
     if (rootKeys.length === 0) {
       return <EmptyComponent />;
     }

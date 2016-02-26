@@ -294,6 +294,35 @@ class FileTreeActions {
     });
   }
 
+  startEditingWorkingSet(editedWorkingSet: WorkingSet): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.START_EDITING_WORKING_SET,
+      editedWorkingSet,
+    });
+  }
+
+  finishEditingWorkingSet(): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.FINISH_EDITING_WORKING_SET,
+    });
+  }
+
+  checkNode(rootKey: string, nodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.CHECK_NODE,
+      rootKey,
+      nodeKey,
+    });
+  }
+
+  uncheckNode(rootKey: string, nodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.UNCHECK_NODE,
+      rootKey,
+      nodeKey,
+    });
+  }
+
   async _repositoryAdded(
     repo: atom$Repository,
     rootKeysForRepository: Immutable.Map<atom$Repository, Immutable.Set<string>>,

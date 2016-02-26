@@ -22,6 +22,7 @@ import type {WorkingSetsStore} from '../../working-sets/lib/WorkingSetsStore';
 type Props = {
   workingSetsStore: WorkingSetsStore;
   onClose: () => void;
+  onEditWorkingSet: (name: string, uris: Array<string>) => void;
 };
 
 type State = {
@@ -41,7 +42,7 @@ export class WorkingSetSelectionComponent extends React.Component {
 
     this.state = {
       selectionIndex: 0,
-      definitions: workingSetsStore.getDefinitions(),
+      definitions: workingSetsStore.getDefinitions() || [],
     };
 
     this._disposables = new CompositeDisposable();
@@ -132,6 +133,16 @@ export class WorkingSetSelectionComponent extends React.Component {
             }}
             tabIndex="-1">
             <span className="icon icon-trashcan" />
+          </button>
+
+          <button
+            className="inline-block-tight btn"
+            onClick={event => {
+              this.props.onEditWorkingSet(def.name, def.uris);
+              event.stopPropagation();
+            }}
+            onBlur={this._lostFocus}>
+            <span className="icon icon-pencil" />
           </button>
         </div>
         <span>

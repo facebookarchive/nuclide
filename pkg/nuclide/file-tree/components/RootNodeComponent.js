@@ -60,6 +60,7 @@ class RootNodeComponent extends React.Component {
         nodePath={node.nodePath}
         ref={node.nodeKey}
         rootKey={node.rootKey}
+        checkedStatus={node.getCheckedStatus()}
       /> :
       <FileEntryComponent
         indentLevel={indentLevel}
@@ -72,6 +73,7 @@ class RootNodeComponent extends React.Component {
         nodePath={node.nodePath}
         ref={node.nodeKey}
         rootKey={node.rootKey}
+        checkedStatus={node.getCheckedStatus()}
       />,
     ];
     if (node.isExpanded()) {
