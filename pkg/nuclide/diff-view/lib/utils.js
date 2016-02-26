@@ -42,7 +42,7 @@ export function getFileSystemContents(filePath: NuclideUri): Promise<string> {
 export function getFileTreePathFromTargetEvent(event: Event): string {
   // Event target isn't necessarily an HTMLElement,
   // but that's guaranteed in the usages here.
-  const target: HTMLElement = (event.target: any);
+  const target: HTMLElement = (event.currentTarget: any);
   const nameElement = target.hasAttribute(TREE_API_DATA_PATH)
     ? target
     : target.querySelector(`[${TREE_API_DATA_PATH}]`);
