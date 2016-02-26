@@ -1,0 +1,175 @@
+'use babel';
+/* @flow */
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+import {WorkingSet} from '../lib/WorkingSet';
+
+describe('WorkingSet', () => {
+  describe('- Empty set', () => {
+    it('contains any files', () => {
+      const empty = new WorkingSet();
+      expect(empty.containsFile('/')).toBe(true);
+      expect(empty.containsFile('/aaa')).toBe(true);
+      expect(empty.containsFile('/aaa/bbbb')).toBe(true);
+      expect(empty.containsFile('nuclide://aaa.bbb/')).toBe(true);
+      expect(empty.containsFile('nuclide://aaa.bbb/aaa')).toBe(true);
+      expect(empty.containsFile('nuclide://aaa.bbb/aaa/bbb')).toBe(true);
+    });
+
+    it('contain any dir', () => {
+      const empty = new WorkingSet();
+      expect(empty.containsDir('/aaa')).toBe(true);
+      expect(empty.containsDir('/aaa/bbbb')).toBe(true);
+      expect(empty.containsDir('nuclide://aaa.bbb/')).toBe(true);
+      expect(empty.containsDir('nuclide://aaa.bbb/aaa')).toBe(true);
+      expect(empty.containsDir('nuclide://aaa.bbb/aaa/bbb')).toBe(true);
+    });
+
+    it('throws on invalid paths', () => {
+      const empty = new WorkingSet();
+      expect(() => empty.containsDir('')).toThrow();
+      expect(() => empty.containsDir('nuclide://aaa.bbb')).toThrow();
+      expect(() => empty.containsDir('nuclide://aaa.bbb')).toThrow();
+    });
+  });
+
+  describe('- Local root set', () => {
+    it('contains every local file', () => {
+      const root = new WorkingSet(['/']);
+      expect(root.containsFile('/')).toBe(true);
+      expect(root.containsFile('/aaa')).toBe(true);
+      expect(root.containsFile('/aaa/bbbb')).toBe(true);
+    });
+
+    it('contains every local dir', () => {
+      const root = new WorkingSet(['/']);
+      expect(root.containsDir('/')).toBe(true);
+      expect(root.containsDir('/aaa')).toBe(true);
+      expect(root.containsDir('/aaa/bbbb')).toBe(true);
+    });
+
+    it('does not contain any remote file', () => {
+      const root = new WorkingSet(['/']);
+      expect(root.containsFile('nuclide://aaa.bbb/')).toBe(false);
+      expect(root.containsFile('nuclide://aaa.bbb/aaa')).toBe(false);
+      expect(root.containsFile('nuclide://aaa.bbb/aaa/bbb')).toBe(false);
+    });
+
+    it('does not contain any remote dir', () => {
+      const root = new WorkingSet(['/']);
+      expect(root.containsDir('nuclide://aaa.bbb/')).toBe(false);
+      expect(root.containsDir('nuclide://aaa.bbb/aaa')).toBe(false);
+      expect(root.containsDir('nuclide://aaa.bbb/aaa/bbb')).toBe(false);
+    });
+  });
+
+  describe('- Remote root set', () => {
+    it('contains every remote file', () => {
+      const root = new WorkingSet(['nuclide://aaa.bbb/']);
+      expect(root.containsFile('nuclide://aaa.bbb/')).toBe(true);
+      expect(root.containsFile('nuclide://aaa.bbb/aaa')).toBe(true);
+      expect(root.containsFile('nuclide://aaa.bbb/aaa/bbb')).toBe(true);
+    });
+
+    it('contains every remote dir', () => {
+      const root = new WorkingSet(['nuclide://aaa.bbb/']);
+      expect(root.containsDir('nuclide://aaa.bbb/')).toBe(true);
+      expect(root.containsDir('nuclide://aaa.bbb/aaa')).toBe(true);
+      expect(root.containsDir('nuclide://aaa.bbb/aaa/bbb')).toBe(true);
+    });
+
+    it('does not contain any local file', () => {
+      const root = new WorkingSet(['nuclide://aaa.bbb/']);
+      expect(root.containsFile('/')).toBe(false);
+      expect(root.containsFile('/aaa')).toBe(false);
+      expect(root.containsFile('/aaa/bbbb')).toBe(false);
+    });
+
+    it('does not contain any local dir', () => {
+      const root = new WorkingSet(['nuclide://aaa.bbb/']);
+      expect(root.containsDir('/')).toBe(false);
+      expect(root.containsDir('/aaa')).toBe(false);
+      expect(root.containsDir('/aaa/bbbb')).toBe(false);
+    });
+  });
+
+  it('detects properly files and dirs included in the set', () => {
+    const ws = new WorkingSet(['/aaa/bbb', '/aaa/ccc', '/ddd']);
+    expect(ws.containsFile('/aaa/bbb/file.test')).toBe(true);
+    expect(ws.containsFile('/aaa/ccc/file.test')).toBe(true);
+    expect(ws.containsFile('/aaa/ddd/file.test')).toBe(false);
+    expect(ws.containsFile('/ddd/file.test')).toBe(true);
+    expect(ws.containsFile('/aaa/file.test')).toBe(false);
+    expect(ws.containsFile('/file.test')).toBe(false);
+
+    expect(ws.containsDir('/')).toBe(true);
+    expect(ws.containsDir('/aaa')).toBe(true);
+    expect(ws.containsDir('/aaa/bbb')).toBe(true);
+    expect(ws.containsDir('/aaa/bbb/ccc')).toBe(true);
+    expect(ws.containsDir('/aaa/ddd')).toBe(false);
+    expect(ws.containsDir('/eee')).toBe(false);
+  });
+
+  it('differentiate between similar local and remote paths', () => {
+    const local = new WorkingSet(['/aaa/bbb', '/aaa/ccc']);
+    expect(local.containsFile('nuclide://some.host/')).toBe(false);
+    expect(local.containsFile('nuclide://some.host/aaa')).toBe(false);
+    expect(local.containsFile('nuclide://some.host/aaa/bbb')).toBe(false);
+    expect(local.containsFile('nuclide://some.host/aaa/bbb/file.test')).toBe(false);
+    expect(local.containsFile('nuclide://some.host/aaa/ccc/file.test')).toBe(false);
+
+    expect(local.containsDir('nuclide://some.host/')).toBe(false);
+    expect(local.containsDir('nuclide://some.host/aaa')).toBe(false);
+    expect(local.containsDir('nuclide://some.host/aaa/bbb')).toBe(false);
+    expect(local.containsDir('nuclide://some.host/aaa/bbb/ccc')).toBe(false);
+  });
+
+  it('differentiate between different hosts', () => {
+    const local = new WorkingSet(['nuclide://some.host/aaa/bbb', 'nuclide://some.host/aaa/ccc']);
+    expect(local.containsFile('nuclide://other.host/')).toBe(false);
+    expect(local.containsFile('nuclide://other.host/aaa')).toBe(false);
+    expect(local.containsFile('nuclide://other.host/aaa/bbb')).toBe(false);
+    expect(local.containsFile('nuclide://other.host/aaa/bbb/file.test')).toBe(false);
+    expect(local.containsFile('nuclide://other.host/aaa/ccc/file.test')).toBe(false);
+
+    expect(local.containsDir('nuclide://other.host/')).toBe(false);
+    expect(local.containsDir('nuclide://other.host/aaa')).toBe(false);
+    expect(local.containsDir('nuclide://other.host/aaa/bbb')).toBe(false);
+    expect(local.containsDir('nuclide://other.host/aaa/bbb/ccc')).toBe(false);
+  });
+
+  it('does not care about the port of a connection to the host', () => {
+    const local = new WorkingSet(['nuclide://host:1/aaa/bbb', 'nuclide://host:1/aaa/ccc']);
+    expect(local.containsFile('nuclide://host:2/')).toBe(false);
+    expect(local.containsFile('nuclide://host:2/aaa')).toBe(false);
+    expect(local.containsFile('nuclide://host:2/aaa/bbb')).toBe(true);
+    expect(local.containsFile('nuclide://host:2/aaa/bbb/file.test')).toBe(true);
+    expect(local.containsFile('nuclide://host:2/aaa/ccc/file.test')).toBe(true);
+    expect(local.containsFile('nuclide://host:2/aaa/ddd/file.test')).toBe(false);
+
+    expect(local.containsDir('nuclide://host:2/')).toBe(true);
+    expect(local.containsDir('nuclide://host:2/aaa')).toBe(true);
+    expect(local.containsDir('nuclide://host:2/aaa/bbb')).toBe(true);
+    expect(local.containsDir('nuclide://host:2/aaa/bbb/ccc')).toBe(true);
+    expect(local.containsDir('nuclide://host:2/aaa/ddd')).toBe(false);
+  });
+
+  it('handles removal of one of the URIs', () => {
+    const local = new WorkingSet([
+      '/aaa/bbb/ccc/ddd.txt',
+      '/aaa/bbb/ccc/eee.txt',
+    ]);
+
+    const processed = local.remove('/aaa/bbb/ccc/eee.txt');
+    const processedUris = processed.getUris();
+    expect(processedUris.length).toBe(1);
+    expect(processedUris[0]).toBe('/aaa/bbb/ccc/ddd.txt');
+  });
+});

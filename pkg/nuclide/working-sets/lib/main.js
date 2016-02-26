@@ -13,49 +13,13 @@ import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 import {WorkingSetsStore} from './WorkingSetsStore';
 
-export class WorkingSet {
-  static union(...sets: Array<WorkingSet>): WorkingSet {
-    // $FlowIgnore
-    return null;
-  }
-
-  constructor(uris: Array<string> = []) {
-  }
-
-  containsFile(uri: string) : boolean {
-    return true;
-  }
-
-  containsDir(uri: string): boolean {
-    return true;
-  }
-
-  isEmpty(): boolean {
-    return true;
-  }
-
-  getUris(): Array<string> {
-    // $FlowIgnore
-    return null;
-  }
-
-  append(...uris: Array<string>): WorkingSet {
-    // $FlowIgnore
-    return null;
-  }
-
-  remove(uri: string): WorkingSet {
-    // $FlowIgnore
-    return null;
-  }
-}
-
-
 export type WorkingSetDefinition = {
   name: string;
   active: boolean;
   uris: Array<string>;
 }
+
+export {WorkingSet} from './WorkingSet';
 
 class Activation {
   workingSetsStore: WorkingSetsStore;
