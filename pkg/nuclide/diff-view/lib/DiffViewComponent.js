@@ -223,8 +223,20 @@ class DiffViewComponent extends React.Component {
   }
 
   _renderCommitView(): void {
+    const {
+      commitMessage,
+      commitMode,
+      commitModeState,
+    } = this.props.diffModel.getState();
     this._commitComponent = ReactDOM.render(
-      <DiffCommitView diffModel={this.props.diffModel} />,
+      <DiffCommitView
+        commitMessage={commitMessage}
+        commitMode={commitMode}
+        commitModeState={commitModeState}
+        // `diffModel` is acting as the action creator for commit view and needs to be passed so
+        // methods can be called on it.
+        diffModel={this.props.diffModel}
+      />,
       this._getPaneElement(this._bottomRightPane),
     );
   }

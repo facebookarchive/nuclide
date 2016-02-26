@@ -16,6 +16,7 @@ import type {
   FileChangeStatusValue,
   HgDiffState,
   CommitModeType,
+  CommitModeStateType,
   PublishModeType,
   DiffModeType,
 } from './types';
@@ -24,7 +25,7 @@ import type {NuclideUri} from '../../remote-uri';
 
 import invariant from 'assert';
 import {CompositeDisposable, Emitter} from 'atom';
-import {CommitMode, DiffMode, PublishMode} from './constants';
+import {CommitMode, CommitModeState, DiffMode, PublishMode} from './constants';
 import {repositoryForPath} from '../../hg-git-bridge';
 import {track, trackTiming} from '../../analytics';
 import {getFileSystemContents} from './utils';
@@ -66,8 +67,8 @@ function getInitialFileChangeState(): FileChangeState {
 type State = {
   viewMode: DiffModeType;
   commitMessage: ?string;
-  isCommitMessageLoading: boolean;
   commitMode: CommitModeType;
+  commitModeState: CommitModeStateType;
   publishMessageLoading: boolean;
   publishMessage: string;
   isPublishing: boolean;
@@ -104,8 +105,8 @@ class DiffViewModel {
     this._state = {
       viewMode: DiffMode.BROWSE_MODE,
       commitMessage: null,
-      isCommitMessageLoading: false,
       commitMode: CommitMode.COMMIT,
+      commitModeState: CommitModeState.READY,
       publishMessageLoading: true,
       publishMessage: '',
       publishMode: PublishMode.CREATE,
@@ -527,9 +528,10 @@ class DiffViewModel {
   async loadCommitMessage(): Promise<void> {
     this._setState({
       ...this._state,
-      isCommitMessageLoading: true,
+      commitModeState: CommitModeState.LOADING_COMMIT_MESSAGE,
     });
-    let commitMessage = null;
+
+    let commitMessage;
     try {
       if (this._state.commitMode === CommitMode.COMMIT) {
         commitMessage = await this._loadActiveRepositoryTemplateCommitMessage();
@@ -547,7 +549,7 @@ class DiffViewModel {
       this._setState({
         ...this._state,
         commitMessage,
-        isCommitMessageLoading: false,
+        commitModeState: CommitModeState.READY,
       });
     }
   }
@@ -580,6 +582,34 @@ class DiffViewModel {
   _setState(newState: State) {
     this._state = newState;
     this._emitter.emit(DID_UPDATE_STATE_EVENT);
+  }
+
+  async commit(message: string): Promise<void> {
+    this._setState({
+      ...this._state,
+      commitMessage: message,
+      commitModeState: CommitModeState.AWAITING_COMMIT,
+    });
+
+    try {
+      invariant(this._activeRepositoryStack);
+      await this._activeRepositoryStack.commit(message);
+    } catch (e) {
+      atom.notifications.addError(
+        'Error creating commit',
+        {detail: `Details: ${e.stdout}`},
+      );
+      this._setState({
+        ...this._state,
+        commitModeState: CommitModeState.READY,
+      });
+      return;
+    }
+
+    atom.notifications.addSuccess('Commit created');
+    // After a successful commit, load the appropriate commit message again because the one in the
+    // editor might no longer be correct for the current repo state.
+    this.loadCommitMessage();
   }
 
   getState(): State {

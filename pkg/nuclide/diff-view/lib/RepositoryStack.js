@@ -119,6 +119,10 @@ export default class RepositoryStack {
     return dirtyFileChanges;
   }
 
+  commit(message: string): Promise<void> {
+    return this._repository.commit(message);
+  }
+
   /**
    * Update the file change state comparing the dirty filesystem status
    * to a selected commit.

@@ -16,6 +16,8 @@ export type DiffModeType = 'Browse' | 'Commit' | 'Publish';
 
 export type CommitModeType = 'Commit' | 'Amend';
 
+export type CommitModeStateType = 'Ready' | 'Loading Commit Message' | 'Awaiting Commit';
+
 export type PublishModeType = 'Create' | 'Update';
 
 export type FileChangeStatusValue = 1 | 2 | 3 | 4 | 5;
