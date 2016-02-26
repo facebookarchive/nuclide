@@ -287,6 +287,13 @@ class FileTreeActions {
     });
   }
 
+  updateOpenFilesWorkingSet(openFilesWorkingSet: WorkingSet): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_OPEN_FILES_WORKING_SET,
+      openFilesWorkingSet,
+    });
+  }
+
   updateWorkingSetsStore(workingSetsStore: ?WorkingSetsStore): void {
     this._dispatcher.dispatch({
       actionType: ActionType.SET_WORKING_SETS_STORE,

@@ -313,6 +313,10 @@ class FileTreeController {
     this._actions.updateWorkingSetsStore(workingSetsStore);
   }
 
+  updateOpenFilesWorkingSet(openFilesWorkingSet: WorkingSet): void {
+    this._actions.updateOpenFilesWorkingSet(openFilesWorkingSet);
+  }
+
   /**
    * Collapses all selected directory nodes. If the selection is a single file or a single collapsed
    * directory, the selection is set to the directory's parent.

@@ -80,9 +80,27 @@ class Activation {
     });
     this._subscriptions.add(currentSubscription);
 
+    const rebuildOpenFilesWorkingSet = () => {
+      const openUris = atom.workspace.getTextEditors()
+        .filter(te => te.getPath() != null && te.getPath() !== '')
+        .map(te => (te.getPath(): any));
+      const openFilesWorkingSet = new WorkingSet(openUris);
+      this._fileTreeController.updateOpenFilesWorkingSet(openFilesWorkingSet);
+    };
+
+    rebuildOpenFilesWorkingSet();
+
+    const paneObservingDisposable = new CompositeDisposable();
+    paneObservingDisposable.add(atom.workspace.onDidAddPaneItem(rebuildOpenFilesWorkingSet));
+    paneObservingDisposable.add(atom.workspace.onDidDestroyPaneItem(rebuildOpenFilesWorkingSet));
+
+    this._subscriptions.add(paneObservingDisposable);
+
     return new Disposable(() => {
       this._fileTreeController.updateWorkingSetsStore(null);
       this._fileTreeController.updateWorkingSet(new WorkingSet());
+      this._fileTreeController.updateOpenFilesWorkingSet(new WorkingSet());
+      paneObservingDisposable.dispose();
       this._subscriptions.remove(currentSubscription);
       currentSubscription.dispose();
     });

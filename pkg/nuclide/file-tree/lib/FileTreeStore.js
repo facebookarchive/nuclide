@@ -69,6 +69,7 @@ type StoreData = {
   usePrefixNav: boolean;
   repositories: Immutable.Set<atom$Repository>;
   workingSet: WorkingSet;
+  openFilesWorkingSet: WorkingSet;
   workingSetsStore: ?WorkingSetsStore;
   isEditingWorkingSet: boolean;
   editedWorkingSet: WorkingSet;
@@ -213,6 +214,7 @@ class FileTreeStore {
       usePrefixNav: true,
       repositories: Immutable.Set(),
       workingSet: new WorkingSet(),
+      openFilesWorkingSet: new WorkingSet(),
       workingSetsStore: null,
       isEditingWorkingSet: false,
       editedWorkingSet: new WorkingSet(),
@@ -277,6 +279,9 @@ class FileTreeStore {
       case ActionType.SET_WORKING_SET:
         this._setWorkingSet(payload.workingSet);
         break;
+      case ActionType.SET_OPEN_FILES_WORKING_SET:
+        this._setOpenFilesWorkingSet(payload.openFilesWorkingSet);
+        break;
       case ActionType.SET_WORKING_SETS_STORE:
         this._setWorkingSetsStore(payload.workingSetsStore);
         break;
@@ -331,6 +336,10 @@ class FileTreeStore {
 
   getWorkingSet(): WorkingSet {
     return this._data.workingSet;
+  }
+
+  getOpenFilesWorkingSet(): WorkingSet {
+    return this._data.openFilesWorkingSet;
   }
 
   getWorkingSetsStore(): ?WorkingSetsStore {
@@ -1007,6 +1016,10 @@ class FileTreeStore {
     this._set('workingSet', workingSet);
   }
 
+  _setOpenFilesWorkingSet(openFilesWorkingSet: WorkingSet): void {
+    this._set('openFilesWorkingSet', openFilesWorkingSet);
+  }
+
   _setWorkingSetsStore(workingSetsStore: ?WorkingSetsStore): void {
     this._set('workingSetsStore', workingSetsStore);
   }
@@ -1085,8 +1098,13 @@ class FileTreeStore {
   _shouldHidePath(nodeKey: string): boolean {
     const isIgnoredPath = this._isIgnoredPath(nodeKey);
     const isExcludedFromWs = this._isExcludedFromWorkingSet(nodeKey);
+    const isExcludedFromOpenFilesWs = this._isExcludedFromOpenFilesWorkingSet(nodeKey);
 
-    return isIgnoredPath || isExcludedFromWs;
+    if (isIgnoredPath) {
+      return true;
+    }
+
+    return isExcludedFromWs && isExcludedFromOpenFilesWs;
   }
 
   _isIgnoredPath(nodeKey: string): boolean {
@@ -1114,6 +1132,24 @@ class FileTreeStore {
     }
 
     return false;
+  }
+
+  _isExcludedFromOpenFilesWorkingSet(nodeKey: string): boolean {
+    const {openFilesWorkingSet, isEditingWorkingSet} = this._data;
+
+    if (isEditingWorkingSet) {
+      return false;
+    }
+
+    if (openFilesWorkingSet.isEmpty()) {
+      return true;
+    }
+
+    if (FileTreeHelpers.isDirKey(nodeKey)) {
+      return !openFilesWorkingSet.containsDir(nodeKey);
+    } else {
+      return !openFilesWorkingSet.containsFile(nodeKey);
+    }
   }
 
   reset(): void {

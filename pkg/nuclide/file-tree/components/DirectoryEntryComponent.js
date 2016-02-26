@@ -42,6 +42,7 @@ class DirectoryEntryComponent extends React.Component {
     rootKey: PropTypes.string.isRequired,
     vcsStatusCode: PropTypes.number,
     checkedStatus: PropTypes.oneOf(['partial', 'checked', 'clear', '']).isRequired,
+    soften: PropTypes.bool.isRequired,
   };
 
   constructor(props: Object) {
@@ -65,6 +66,7 @@ class DirectoryEntryComponent extends React.Component {
       'nuclide-file-tree-partial': this.props.checkedStatus === 'partial',
       'nuclide-file-tree-checked': this.props.checkedStatus === 'checked',
       'nuclide-file-tree-reset-coloring': this.props.checkedStatus === 'clear',
+      'nuclide-file-tree-softened': this.props.soften,
     });
     const listItemClassName = classnames({
       'header list-item': true,

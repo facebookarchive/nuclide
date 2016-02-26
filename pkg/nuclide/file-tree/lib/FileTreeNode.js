@@ -108,6 +108,33 @@ class FileTreeNode {
       return 'clear';
     }
   }
+
+  shouldBeSoftened(): boolean {
+    if (this._store.isEditingWorkingSet()) {
+      return false;
+    }
+
+    const workingSet = this._store.getWorkingSet();
+    const openFilesWs = this._store.getOpenFilesWorkingSet();
+
+    if (!workingSet || !openFilesWs || openFilesWs.isEmpty()) {
+      return false;
+    }
+
+    if (this.isContainer) {
+      if (!workingSet.containsDir(this.nodeKey) && openFilesWs.containsDir(this.nodeKey)) {
+        return true;
+      }
+
+      return false;
+    } else {
+      if (!workingSet.containsFile(this.nodeKey) && openFilesWs.containsFile(this.nodeKey)) {
+        return true;
+      }
+
+      return false;
+    }
+  }
 }
 
 module.exports = FileTreeNode;

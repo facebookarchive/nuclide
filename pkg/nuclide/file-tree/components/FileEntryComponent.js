@@ -39,6 +39,7 @@ class FileEntryComponent extends React.Component {
     rootKey: PropTypes.string.isRequired,
     vcsStatusCode: PropTypes.number,
     checkedStatus: PropTypes.oneOf(['checked', 'clear', '']).isRequired,
+    soften: PropTypes.bool.isRequired,
   };
 
   constructor(props: Object) {
@@ -59,6 +60,7 @@ class FileEntryComponent extends React.Component {
       'selected': this.props.isSelected,
       'nuclide-file-tree-checked': this.props.checkedStatus === 'checked',
       'nuclide-file-tree-reset-coloring': this.props.checkedStatus === 'clear',
+      'nuclide-file-tree-softened': this.props.soften,
     });
 
     let statusClass;
