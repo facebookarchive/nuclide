@@ -15,6 +15,8 @@ type ComboboxOption = {
   matchIndex: number;
 };
 
+import Rx from 'rx';
+
 const {CompositeDisposable} = require('atom');
 const AtomInput = require('../../atom-input');
 const {
@@ -27,8 +29,9 @@ const emptyfunction = require('emptyfunction');
 const {PropTypes} = React;
 
 type State = {
+  error: ?Error;
   filteredOptions: Array<Object>;
-  loadingCount: number;
+  loadingOptions: boolean;
   options: Array<string>;
   optionsVisible: boolean;
   selectedIndex: number;
@@ -45,15 +48,18 @@ type State = {
  */
 class AtomComboBox extends React.Component {
   state: State;
+  _updateSubscription: ?IDisposable;
   _subscriptions: ?CompositeDisposable;
 
   static propTypes = {
     className: PropTypes.string.isRequired,
+    formatRequestOptionsErrorMessage: PropTypes.func,
     initialTextInput: PropTypes.string,
     loadingMessage: PropTypes.string,
     placeholderText: PropTypes.string,
     maxOptionCount: PropTypes.number.isRequired,
     onChange: PropTypes.func.isRequired,
+    onRequestOptionsError: PropTypes.func,
     onSelect: PropTypes.func.isRequired,
     /**
      * promise-returning function; Gets called with
@@ -73,8 +79,9 @@ class AtomComboBox extends React.Component {
   constructor(props: Object) {
     super(props);
     this.state = {
+      error: null,
       filteredOptions: [],
-      loadingCount: 0,
+      loadingOptions: false,
       options: [],
       optionsVisible: false,
       selectedIndex: -1,
@@ -109,17 +116,38 @@ class AtomComboBox extends React.Component {
     if (this._subscriptions) {
       this._subscriptions.dispose();
     }
+    if (this._updateSubscription != null) {
+      this._updateSubscription.dispose();
+    }
   }
 
-  requestUpdate() {
-    this.setState({loadingCount: this.state.loadingCount + 1});
-    this.props.requestOptions(this.state.textInput).then(this.receiveUpdate);
+  requestUpdate(): void {
+    // Cancel pending update.
+    if (this._updateSubscription != null) {
+      this._updateSubscription.dispose();
+    }
+
+    this.setState({error: null, loadingOptions: true});
+
+    this._updateSubscription = Rx.Observable.fromPromise(
+      this.props.requestOptions(this.state.textInput)
+    )
+      .subscribe(
+        options => this.receiveUpdate(options),
+        err => {
+          this.setState({error: err, loadingOptions: false});
+          if (this.props.onRequestOptionsError != null) {
+            this.props.onRequestOptionsError(err);
+          }
+        },
+      );
   }
 
   receiveUpdate(newOptions: Array<string>) {
     const filteredOptions = this._getFilteredOptions(newOptions, this.state.textInput);
     this.setState({
-      loadingCount: this.state.loadingCount - 1,
+      error: null,
+      loadingOptions: false,
       options: newOptions,
       filteredOptions: filteredOptions,
     });
@@ -257,10 +285,19 @@ class AtomComboBox extends React.Component {
     let optionsContainer;
     const options = [];
 
-    if (this.props.loadingMessage && this.state.loadingCount > 0) {
+    if (this.props.loadingMessage && this.state.loadingOptions) {
       options.push(
         <li key="loading-text" className="loading">
           <span className="loading-message">{this.props.loadingMessage}</span>
+        </li>
+      );
+    }
+
+    if (this.state.error != null && this.props.formatRequestOptionsErrorMessage != null) {
+      const message = this.props.formatRequestOptionsErrorMessage(this.state.error);
+      options.push(
+        <li className="text-error">
+          {message}
         </li>
       );
     }

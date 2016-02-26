@@ -25,6 +25,8 @@ const {
 const {onWorkspaceDidStopChangingActivePaneItem} = atomEventDebounce;
 const {PropTypes} = React;
 
+const formatRequestOptionsErrorMessage = () => 'Invalid .buckconfig';
+
 class BuckToolbar extends React.Component {
   /**
    * The toolbar makes an effort to keep track of which BuckProject to act on, based on the last
@@ -49,6 +51,7 @@ class BuckToolbar extends React.Component {
     super(props);
     (this: any)._handleBuildTargetChange =
       debounce(this._handleBuildTargetChange.bind(this), 100, false);
+    (this: any)._handleRequestOptionsError = this._handleRequestOptionsError.bind(this);
     (this: any)._handleSimulatorChange = this._handleSimulatorChange.bind(this);
     (this: any)._handleReactNativeServerModeChanged =
       this._handleReactNativeServerModeChanged.bind(this);
@@ -115,6 +118,8 @@ class BuckToolbar extends React.Component {
         <AtomComboBox
           className="inline-block"
           ref="buildTarget"
+          formatRequestOptionsErrorMessage={formatRequestOptionsErrorMessage}
+          onRequestOptionsError={this._handleRequestOptionsError}
           requestOptions={this._requestOptions}
           size="sm"
           loadingMessage="Updating target names..."
@@ -141,6 +146,13 @@ class BuckToolbar extends React.Component {
 
   _handleBuildTargetChange(value: string) {
     this._buckToolbarActions.updateBuildTarget(value);
+  }
+
+  _handleRequestOptionsError(error: Error): void {
+    atom.notifications.addError(
+      'Failed to get targets from Buck',
+      {detail: error.message},
+    );
   }
 
   _handleSimulatorChange(simulator: string) {
