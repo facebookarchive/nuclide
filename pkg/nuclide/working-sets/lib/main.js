@@ -9,13 +9,60 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
+import {WorkingSetsStore} from './WorkingSetsStore';
 
+export class WorkingSet {
+  static union(...sets: Array<WorkingSet>): WorkingSet {
+    // $FlowIgnore
+    return null;
+  }
+
+  constructor(uris: Array<string> = []) {
+  }
+
+  containsFile(uri: string) : boolean {
+    return true;
+  }
+
+  containsDir(uri: string): boolean {
+    return true;
+  }
+
+  isEmpty(): boolean {
+    return true;
+  }
+
+  getUris(): Array<string> {
+    // $FlowIgnore
+    return null;
+  }
+
+  append(...uris: Array<string>): WorkingSet {
+    // $FlowIgnore
+    return null;
+  }
+
+  remove(uri: string): WorkingSet {
+    // $FlowIgnore
+    return null;
+  }
+}
+
+
+export type WorkingSetDefinition = {
+  name: string;
+  active: boolean;
+  uris: Array<string>;
+}
 
 class Activation {
+  workingSetsStore: WorkingSetsStore;
   _disposables: CompositeDisposable;
 
   constructor() {
+    this.workingSetsStore = new WorkingSetsStore();
     this._disposables = new CompositeDisposable();
   }
 
@@ -42,4 +89,10 @@ export function deactivate() {
 
   activation.deactivate();
   activation = null;
+}
+
+export function provideWorkingSetsStore(): WorkingSetsStore {
+  invariant(activation, 'Was requested to provide service from a non-activated package');
+
+  return activation.workingSetsStore;
 }
