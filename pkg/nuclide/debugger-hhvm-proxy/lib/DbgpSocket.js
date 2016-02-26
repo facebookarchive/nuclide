@@ -57,6 +57,7 @@ export type DbgpProperty = {
     numChildren?: number;
     page?: number;
     pagesize?: number;
+    recursive?: number;
 
     // string
     size?: number;

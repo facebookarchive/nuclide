@@ -106,9 +106,12 @@ function convertNullValue(dbgpProperty: DbgpProperty): RemoteObject {
 
 function convertArrayValue(contextId: ObjectId, dbgpProperty: DbgpProperty): RemoteObject {
   const remoteId = getAggregateRemoteObjectId(contextId, dbgpProperty);
-  invariant(dbgpProperty.$.numchildren != null);
+  let description = `Array[${dbgpProperty.$.numchildren || 0}]`;
+  if (dbgpProperty.$.recursive != null) {
+    description = '* Recursive *';
+  }
   return {
-    description: `Array[${dbgpProperty.$.numchildren}]`,
+    description,
     type: 'object',
     objectId: remoteId,
   };
@@ -116,9 +119,12 @@ function convertArrayValue(contextId: ObjectId, dbgpProperty: DbgpProperty): Rem
 
 function convertObjectValue(contextId: ObjectId, dbgpProperty: DbgpProperty): RemoteObject {
   const remoteId = getAggregateRemoteObjectId(contextId, dbgpProperty);
-  invariant(dbgpProperty.$.classname != null);
+  let description = dbgpProperty.$.classname;
+  if (dbgpProperty.$.recursive != null) {
+    description = '* Recursive *';
+  }
   return {
-    description: dbgpProperty.$.classname,
+    description,
     type: 'object',
     objectId: remoteId,
   };
@@ -128,10 +134,14 @@ function getAggregateRemoteObjectId(
   contextId: ObjectId,
   dbgpProperty: DbgpProperty
 ): RemoteObjectId {
-  invariant(dbgpProperty.$.numchildren != null);
-  const numchildren = Number(dbgpProperty.$.numchildren);
-  const pagesize = Number(dbgpProperty.$.pagesize);
-  const pageCount = Math.trunc((numchildren + pagesize - 1) / pagesize);
+  // If the DbgpProperty represents an empty array or object, the `pagesize` and `numchildren`
+  // will be omitted so we handle this "zero" case specially.
+  const numchildren = Number(dbgpProperty.$.numchildren || 0);
+  const pagesize = Number(dbgpProperty.$.pagesize) || 0;
+  let pageCount = 0;
+  if (pagesize !== 0) {
+    pageCount = Math.trunc((numchildren + pagesize - 1) / pagesize) || 0;
+  }
   logger.log(`numchildren: ${numchildren} pagesize: ${pagesize} pageCount ${pageCount}`);
   if (pageCount > 1) {
     const elementRange = {
