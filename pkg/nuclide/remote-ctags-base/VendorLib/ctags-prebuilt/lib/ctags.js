@@ -1,10 +1,9 @@
 'use strict';
 
 var binary = require('pre-binding');
-var path = require('path');
-var binding_path = binary.find(path.resolve(path.join(__dirname, '../package.json')));
+var binding_path = binary.find(require.resolve('../package.json'));
 
-var readable = require('./util/readable');
+var readable = require('./readable');
 var Tags = require(binding_path).Tags;
 
 exports.findTags = function(tagsFilePath, tag, options, callback) {
@@ -23,9 +22,13 @@ exports.findTags = function(tagsFilePath, tag, options, callback) {
 
   var caseInsensitive = options ? options.caseInsensitive : null;
   var partialMatch = options ? options.partialMatch : null;
+  var limit = options ? options.limit : null;
+  if (limit != null && (!(typeof limit === "number") || limit <= 0)) {
+    throw new TypeError('limit must be a positive integer');
+  }
   var tagsWrapper = new Tags(tagsFilePath);
 
-  tagsWrapper.findTags(tag, partialMatch, caseInsensitive, function(error, tags) {
+  tagsWrapper.findTags(tag, partialMatch, caseInsensitive, limit, function(error, tags) {
     tagsWrapper.end();
     callback(error, tags);
   });
