@@ -1,5 +1,15 @@
 # Nuclide Changelog
 
+Added:
+* New feature: Working Sets - show only selected directories in the file-tree
+* File tree keyboard navigation: Allows you to rapidly change the selected node by typing a prefix string.
+* Buck toolbar now shows loading message while querying targets
+* Diagnostics panel displays errors above warnings
+
+Fixed:
+* Improved Ctags search performance
+* Fix some server connection issues
+
 ## 0.119.0
 
 * Fix an assertion that can cause the server to crash periodically.
