@@ -6,7 +6,37 @@
   "description": "Service for the definition of an overlay filtering layer on top of connected projects.",
   "nuclide": {
     "packageType": "Atom",
-    "testRunner": "apm"
+    "testRunner": "apm",
+    "config": {
+      "workingSets": {
+        "title": "Working sets",
+        "type": "array",
+        "description": "Array where each item defines a working set with all its included items",
+        "default": [],
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Name",
+              "type": "string"
+            },
+            "active": {
+              "title": "Active",
+              "type": "boolean",
+              "default": false
+            },
+            "uris": {
+              "type": "array",
+              "title": "URIs",
+              "description": "The array of URIs to items included in the working set",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
   },
   "providedServices": {
     "working-sets.provider": {
