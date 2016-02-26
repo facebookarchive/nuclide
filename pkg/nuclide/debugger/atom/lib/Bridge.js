@@ -17,6 +17,8 @@ import type BreakpointStoreType from './BreakpointStore';
 const INJECTED_CSS = [
   /* Force the inspector to scroll vertically on Atom ≥ 1.4.0 */
   'body > .root-view {overflow-y: scroll;}',
+  /* Force the contents of the mini console (on the bottom) to scroll vertically */
+  '.insertion-point-sidebar#drawer-contents {overflow-y: auto;}',
 ].join('');
 
 class Bridge {
