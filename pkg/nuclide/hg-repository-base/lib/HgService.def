@@ -27,6 +27,7 @@ export type RevisionInfo = {
   title: string;
   author: string;
   date: Date;
+  description: string;
   bookmarks: Array<string>;
 };
 export type AsyncExecuteRet = {
