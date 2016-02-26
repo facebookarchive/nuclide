@@ -23,7 +23,7 @@ type State = {
   nodeToKeepInView: ?FileTreeNodeData;
 };
 
-class FileTree extends React.Component<void, void, State> {
+class FileTree extends React.Component {
   state: State;
   _subscriptions: CompositeDisposable;
 

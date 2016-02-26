@@ -44,3 +44,23 @@
     }
   }
 }
+
+.nuclide-file-tree-toolbar {
+  position: absolute;
+  right: 30px;
+  top: 10px;
+  z-index: 1;
+}
+
+.nuclide-file-tree-toolbar-container {
+  width: 100%;
+}
+
+.nuclide-file-tree-toolbar-fader {
+  opacity: 0;
+  transition: opacity 0.35s ease-in-out;
+}
+
+.nuclide-file-tree-toolbar-container:hover .nuclide-file-tree-toolbar-fader {
+  opacity: 1;
+}

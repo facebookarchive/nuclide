@@ -31,4 +31,4 @@ exports.ActionType = {
   SET_WORKING_SETS_STORE: 'SET_WORKING_SETS_STORE',
 };
 
-exports.EVENT_HANDLER_SELECTOR = '.nuclide-file-tree';
+exports.EVENT_HANDLER_SELECTOR = '.nuclide-file-tree-toolbar-container';

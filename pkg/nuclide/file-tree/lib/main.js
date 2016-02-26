@@ -14,6 +14,7 @@ import type FileTreeControllerType from './FileTreeController';
 import type {NuclideSideBarService} from '../../side-bar';
 
 import {Disposable, CompositeDisposable} from 'atom';
+import invariant from 'assert';
 
 import featureConfig from '../../feature-config';
 
@@ -29,7 +30,7 @@ const ACTIVE_PANE_DEBOUNCE_INTERVAL_MS = 150;
 const REVEAL_FILE_ON_SWITCH_SETTING = 'nuclide-file-tree.revealFileOnSwitch';
 
 class Activation {
-  _fileTreeController: ?FileTreeControllerType;
+  _fileTreeController: FileTreeControllerType;
   _packageState: ?FileTreeControllerState;
   _subscriptions: CompositeDisposable;
   _paneItemSubscription: ?Disposable;
@@ -67,51 +68,35 @@ class Activation {
   }
 
   serialize(): ?FileTreeControllerState {
-    if (this._fileTreeController) {
-      return this._fileTreeController.serialize();
-    }
+    return this._fileTreeController.serialize();
   }
 
   consumeWorkingSetsStore(workingSetsStore: WorkingSetsStore): ?IDisposable {
-    const fileTreeController = this._fileTreeController;
-    if (!fileTreeController) {
-      return;
-    }
-
-    fileTreeController.updateWorkingSetsStore(workingSetsStore);
-    fileTreeController.updateWorkingSet(workingSetsStore.getCurrent());
+    this._fileTreeController.updateWorkingSetsStore(workingSetsStore);
+    this._fileTreeController.updateWorkingSet(workingSetsStore.getCurrent());
 
     const currentSubscription = workingSetsStore.subscribeToCurrent(currentWorkingSet => {
-      fileTreeController.updateWorkingSet(currentWorkingSet);
+      this._fileTreeController.updateWorkingSet(currentWorkingSet);
     });
     this._subscriptions.add(currentSubscription);
 
     return new Disposable(() => {
-      fileTreeController.updateWorkingSetsStore(null);
-      fileTreeController.updateWorkingSet(new WorkingSet());
+      this._fileTreeController.updateWorkingSetsStore(null);
+      this._fileTreeController.updateWorkingSet(new WorkingSet());
       this._subscriptions.remove(currentSubscription);
       currentSubscription.dispose();
     });
   }
 
   _setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {
-    if (!this._fileTreeController) {
-      return;
-    }
     this._fileTreeController.setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths);
   }
 
   _setHideIgnoredNames(hideIgnoredNames: boolean): void {
-    if (!this._fileTreeController) {
-      return;
-    }
     this._fileTreeController.setHideIgnoredNames(hideIgnoredNames);
   }
 
   _setIgnoredNames(ignoredNames: string|Array<string>) {
-    if (!this._fileTreeController) {
-      return;
-    }
     let normalizedIgnoredNames;
     if (ignoredNames === '') {
       normalizedIgnoredNames = [];
@@ -129,9 +114,7 @@ class Activation {
 
     if (shouldReveal) {
       const reveal = () => {
-        if (this._fileTreeController) {
-          this._fileTreeController.revealActiveFile(/* showIfHidden */ false);
-        }
+        this._fileTreeController.revealActiveFile(/* showIfHidden */ false);
       };
       // Guard against this getting called multiple times
       if (!this._paneItemSubscription) {
@@ -164,7 +147,7 @@ class Activation {
 
   _setUsePreviewTabs(usePreviewTabs: ?boolean): void {
     // config is void during startup, signifying no config yet
-    if (usePreviewTabs == null || !this._fileTreeController) {
+    if (usePreviewTabs == null) {
       return;
     }
     this._fileTreeController.setUsePreviewTabs(usePreviewTabs);
@@ -172,10 +155,7 @@ class Activation {
 
   _deactivate() {
     // Guard against deactivate being called twice
-    if (this._fileTreeController) {
-      this._fileTreeController.destroy();
-      this._fileTreeController = null;
-    }
+    this._fileTreeController.destroy();
   }
 }
 
@@ -204,6 +184,7 @@ function disableTreeViewPackage() {
 
 module.exports = {
   activate(state: ?FileTreeControllerState): void {
+    invariant(activation == null);
     // Disable Atom's bundled 'tree-view' package. If this activation is happening during the
     // normal startup activation, the `onDidActivateInitialPackages` handler below must unload the
     // 'tree-view' because it will have been loaded during startup.
@@ -219,6 +200,7 @@ module.exports = {
     });
 
     deserializedState = state;
+    activation = new Activation(deserializedState);
   },
 
   deactivate() {
@@ -252,12 +234,10 @@ module.exports = {
   },
 
   consumeNuclideSideBar(sidebar: NuclideSideBarService): IDisposable {
-    if (!activation) {
-      activation = new Activation(deserializedState);
-    }
+    invariant(activation);
 
     sidebar.registerView({
-      getComponent() { return require('../components/FileTree'); },
+      getComponent() { return require('../components/FileTreeSidebarComponent'); },
       onDidShow() {
         // If "Reveal File on Switch" is enabled, ensure the scroll position is synced to where the
         // user expects when the side bar shows the file tree.
@@ -280,8 +260,8 @@ module.exports = {
   },
 
   consumeWorkingSetsStore(workingSetsStore: WorkingSetsStore): ?IDisposable {
-    if (activation != null) {
-      return activation.consumeWorkingSetsStore(workingSetsStore);
-    }
+    invariant(activation);
+
+    return activation.consumeWorkingSetsStore(workingSetsStore);
   },
 };

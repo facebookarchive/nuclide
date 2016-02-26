@@ -19,7 +19,9 @@ export type WorkingSetDefinition = {
   name: string;
   active: boolean;
   uris: Array<string>;
-}
+};
+
+export type {WorkingSetsStore};
 
 export {WorkingSet} from './WorkingSet';
 
