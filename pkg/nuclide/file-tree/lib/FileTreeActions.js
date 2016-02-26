@@ -21,6 +21,9 @@ import Immutable from 'immutable';
 import {repositoryForPath} from '../../hg-git-bridge';
 
 import type {HgRepositoryClient} from '../../hg-repository-client';
+import type {WorkingSet} from '../../working-sets';
+import type {WorkingSetsStore} from '../../working-sets/lib/WorkingSetsStore';
+
 
 let instance: ?Object;
 
@@ -275,6 +278,20 @@ class FileTreeActions {
 
     // Create subscriptions for addedRepos.
     addedRepos.forEach(repo => this._repositoryAdded(repo, rootKeysForRepository));
+  }
+
+  updateWorkingSet(workingSet: WorkingSet): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_WORKING_SET,
+      workingSet,
+    });
+  }
+
+  updateWorkingSetsStore(workingSetsStore: ?WorkingSetsStore): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_WORKING_SETS_STORE,
+      workingSetsStore,
+    });
   }
 
   async _repositoryAdded(

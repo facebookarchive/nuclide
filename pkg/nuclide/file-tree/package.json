@@ -9,6 +9,11 @@
       "versions": {
         "1.0.0": "consumeNuclideSideBar"
       }
+    },
+    "working-sets.provider": {
+      "versions": {
+        "0.0.0": "consumeWorkingSetsStore"
+      }
     }
   },
   "nuclide": {

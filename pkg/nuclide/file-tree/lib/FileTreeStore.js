@@ -32,11 +32,15 @@ import {object as objectUtil} from '../../commons';
 import shell from 'shell';
 import memoize from 'lodash.memoize';
 
+import {WorkingSet} from '../../working-sets';
+
 // Used to ensure the version we serialized is the same version we are deserializing.
 const VERSION = 1;
 
 import type {Dispatcher} from 'flux';
 import type {NuclideUri} from '../../remote-uri';
+import type {WorkingSetsStore} from '../../working-sets/lib/WorkingSetsStore';
+
 
 type ActionPayload = Object;
 type ChangeListener = () => mixed;
@@ -64,6 +68,8 @@ type StoreData = {
   usePreviewTabs: boolean;
   usePrefixNav: boolean;
   repositories: Immutable.Set<atom$Repository>;
+  workingSet: WorkingSet;
+  workingSetsStore: ?WorkingSetsStore;
 };
 
 export type ExportStoreData = {
@@ -204,6 +210,8 @@ class FileTreeStore {
       usePreviewTabs: false,
       usePrefixNav: true,
       repositories: Immutable.Set(),
+      workingSet: new WorkingSet(),
+      workingSetsStore: null,
     };
   }
 
@@ -262,6 +270,12 @@ class FileTreeStore {
       case ActionType.SET_REPOSITORIES:
         this._setRepositories(payload.repositories);
         break;
+      case ActionType.SET_WORKING_SET:
+        this._setWorkingSet(payload.workingSet);
+        break;
+      case ActionType.SET_WORKING_SETS_STORE:
+        this._setWorkingSetsStore(payload.workingSetsStore);
+        break;
     }
   }
 
@@ -297,6 +311,14 @@ class FileTreeStore {
 
   getRepositories(): Immutable.Set<atom$Repository> {
     return this._data.repositories;
+  }
+
+  getWorkingSet(): WorkingSet {
+    return this._data.workingSet;
+  }
+
+  getWorkingSetsStore(): ?WorkingSetsStore {
+    return this._data.workingSetsStore;
   }
 
   getRootKeys(): Array<string> {
@@ -953,8 +975,20 @@ class FileTreeStore {
     this._repositoryForPath.cache = new Map();
   }
 
+  _setWorkingSet(workingSet: WorkingSet): void {
+    this._set('workingSet', workingSet);
+  }
+
+  _setWorkingSetsStore(workingSetsStore: ?WorkingSetsStore): void {
+    this._set('workingSetsStore', workingSetsStore);
+  }
+
   _omitHiddenPaths(nodeKeys: Array<string>): Array<string> {
-    if (!this._data.hideIgnoredNames && !this._data.excludeVcsIgnoredPaths) {
+    if (
+      !this._data.hideIgnoredNames &&
+      !this._data.excludeVcsIgnoredPaths &&
+      this._data.workingSet.isEmpty()
+    ) {
       return nodeKeys;
     }
 
@@ -962,14 +996,33 @@ class FileTreeStore {
   }
 
   _shouldHidePath(nodeKey: string): boolean {
+    const isIgnoredPath = this._isIgnoredPath(nodeKey);
+    const isExcludedFromWs = this._isExcludedFromWorkingSet(nodeKey);
+
+    return isIgnoredPath || isExcludedFromWs;
+  }
+
+  _isIgnoredPath(nodeKey: string): boolean {
     const {hideIgnoredNames, excludeVcsIgnoredPaths, ignoredPatterns} = this._data;
+
     if (hideIgnoredNames && matchesSome(nodeKey, ignoredPatterns)) {
       return true;
     }
     if (excludeVcsIgnoredPaths && isVcsIgnored(nodeKey, this._repositoryForPath(nodeKey))) {
       return true;
     }
+
     return false;
+  }
+
+  _isExcludedFromWorkingSet(nodeKey: string): boolean {
+    const {workingSet} = this._data;
+
+    if (FileTreeHelpers.isDirKey(nodeKey)) {
+      return !workingSet.containsDir(nodeKey);
+    }
+
+    return !workingSet.containsFile(nodeKey);
   }
 
   reset(): void {

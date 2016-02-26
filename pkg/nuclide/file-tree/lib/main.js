@@ -13,11 +13,12 @@ import type {FileTreeControllerState} from './FileTreeController';
 import type FileTreeControllerType from './FileTreeController';
 import type {NuclideSideBarService} from '../../side-bar';
 
-import {
-  CompositeDisposable,
-  Disposable,
-} from 'atom';
+import {Disposable, CompositeDisposable} from 'atom';
+
 import featureConfig from '../../feature-config';
+
+import {WorkingSet} from '../../working-sets';
+import type {WorkingSetsStore} from '../../working-sets/lib/WorkingSetsStore';
 
 /**
  * Minimum interval (in ms) between onChangeActivePaneItem events before revealing the active pane
@@ -69,6 +70,28 @@ class Activation {
     if (this._fileTreeController) {
       return this._fileTreeController.serialize();
     }
+  }
+
+  consumeWorkingSetsStore(workingSetsStore: WorkingSetsStore): ?IDisposable {
+    const fileTreeController = this._fileTreeController;
+    if (!fileTreeController) {
+      return;
+    }
+
+    fileTreeController.updateWorkingSetsStore(workingSetsStore);
+    fileTreeController.updateWorkingSet(workingSetsStore.getCurrent());
+
+    const currentSubscription = workingSetsStore.subscribeToCurrent(currentWorkingSet => {
+      fileTreeController.updateWorkingSet(currentWorkingSet);
+    });
+    this._subscriptions.add(currentSubscription);
+
+    return new Disposable(() => {
+      fileTreeController.updateWorkingSetsStore(null);
+      fileTreeController.updateWorkingSet(new WorkingSet());
+      this._subscriptions.remove(currentSubscription);
+      currentSubscription.dispose();
+    });
   }
 
   _setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {
@@ -254,5 +277,11 @@ module.exports = {
     });
 
     return sideBarDisposable;
+  },
+
+  consumeWorkingSetsStore(workingSetsStore: WorkingSetsStore): ?IDisposable {
+    if (activation != null) {
+      return activation.consumeWorkingSetsStore(workingSetsStore);
+    }
   },
 };

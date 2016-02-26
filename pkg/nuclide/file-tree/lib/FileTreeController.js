@@ -28,6 +28,9 @@ import shell from 'shell';
 
 import invariant from 'assert';
 
+import type {WorkingSet} from '../../working-sets';
+import type {WorkingSetsStore} from '../../working-sets/lib/WorkingSetsStore';
+
 type FileTreeNodeData = {
   nodeKey: string;
   rootKey: string;
@@ -300,6 +303,14 @@ class FileTreeController {
 
   setUsePrefixNav(usePrefixNav: boolean): void {
     this._actions.setUsePrefixNav(usePrefixNav);
+  }
+
+  updateWorkingSet(workingSet: WorkingSet): void {
+    this._actions.updateWorkingSet(workingSet);
+  }
+
+  updateWorkingSetsStore(workingSetsStore: ?WorkingSetsStore): void {
+    this._actions.updateWorkingSetsStore(workingSetsStore);
   }
 
   /**
