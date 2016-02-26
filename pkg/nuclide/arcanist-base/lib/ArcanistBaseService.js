@@ -11,6 +11,8 @@
 
 import type {NuclideUri} from '../../remote-uri';
 import invariant from 'assert';
+import {quote} from 'shell-quote';
+const {asyncExecute} = require('../../commons');
 const logger = require('../../logging').getLogger();
 
 const ARC_CONFIG_FILE_NAME = '.arcconfig';
@@ -95,11 +97,33 @@ export async function findDiagnostics(pathToFiles: Array<NuclideUri>):
   return [].concat(...(await Promise.all(results)));
 }
 
+export async function createPhabricatorRevision(
+  filePath: NuclideUri,
+  message: string,
+): Promise<void> {
+  const env = {...process.env};
+  const extraArcDiffArgs = ['-m', message];
+  // Even with `--verbatim` Arcanist will sometimes launch and enditor in interactive mode.  With
+  // the editor set to `/bin/false` it will immediately exit with a failure and abort `arc diff`.
+  env['EDITOR'] = 'false';
+  // Don't change the checkout and answer no to all of Arcanist's questions.
+  const cmd = 'yes n | arc diff ' + quote(extraArcDiffArgs);
+  const args: Array<string> = ['-c', cmd];
+  const arcConfigDir = await findArcConfigDirectory(filePath);
+  if (arcConfigDir == null) {
+    throw new Error('Failed to find Arcanist config.  Is this project set-up for Arcanist?');
+  }
+  const options = {
+    'cwd': arcConfigDir,
+    'env': env,
+  };
+  await asyncExecute('bash', args, options);
+}
+
 async function execArcLint(cwd: string, filePaths: Array<NuclideUri>):
     Promise<Array<ArcDiagnostic>> {
   const args: Array<string> = ['lint', '--output', 'json', ...filePaths];
   const options = {'cwd': cwd};
-  const {asyncExecute} = require('../../commons');
   const result = await asyncExecute('arc', args, options);
 
   const output: Map<string, Array<Object>> = new Map();

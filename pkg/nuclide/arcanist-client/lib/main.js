@@ -57,10 +57,15 @@ async function findDiagnostics(fileNames: Iterable<NuclideUri>): Promise<Array<O
   return [].concat(...(await Promise.all(results)));
 }
 
+async function createPhabricatorRevision(filePath: NuclideUri, message: string): Promise<void> {
+  await getService(filePath).createPhabricatorRevision(filePath, message);
+}
+
 module.exports = {
   findArcConfigDirectory,
   readArcConfig,
   findArcProjectIdOfPath,
   getProjectRelativePath,
   findDiagnostics,
+  createPhabricatorRevision,
 };
