@@ -20,6 +20,26 @@ export type FileSearch = {
   dispose: () => void;
 };
 
+let _fileSearchModule: ?string;
+async function getFileSearchModule(): Promise<string> {
+  if (_fileSearchModule != null) {
+    return _fileSearchModule;
+  }
+  const GK_NATIVE_SEARCH = 'nuclide_file_search_native';
+  const GK_TIMEOUT = 2000;
+  try {
+    const {gatekeeper} = require('../../../fb/gatekeeper');
+    if (await gatekeeper.asyncIsGkEnabled(GK_NATIVE_SEARCH, GK_TIMEOUT)) {
+      _fileSearchModule = require.resolve('./NativeFileSearch');
+      return _fileSearchModule;
+    }
+  } catch (e) {
+    // ignore
+  }
+  _fileSearchModule = require.resolve('./FileSearch');
+  return _fileSearchModule;
+}
+
 /**
  * This is an object that lives in the main process that delegates calls to the
  * FileSearch in the forked process.
@@ -33,9 +53,9 @@ class MainProcessFileSearch {
     this._directoryUri = directoryUri;
   }
 
-  query(query: string): Promise<Array<FileSearchResult>> {
+  async query(query: string): Promise<Array<FileSearchResult>> {
     return this._task.invokeRemoteMethod({
-      file: require.resolve('./FileSearch'),
+      file: await getFileSearchModule(),
       method: 'doSearch',
       args: [this._directoryUri, query],
     });
@@ -55,7 +75,7 @@ async function newFileSearch(directoryUri: string): Promise<MainProcessFileSearc
   const {createTask} = require('../../task');
   const task = createTask();
   await task.invokeRemoteMethod({
-    file: require.resolve('./FileSearch'),
+    file: await getFileSearchModule(),
     method: 'initFileSearchForDirectory',
     args: [directoryUri],
   });

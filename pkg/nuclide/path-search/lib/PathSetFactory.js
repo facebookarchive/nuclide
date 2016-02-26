@@ -155,19 +155,23 @@ async function getFilesFromWatchman(localDirectory: string): Promise<FilePathsPs
   }
 }
 
-/**
- * Creates a `PathSet` with the contents of the specified directory.
- */
-export async function createPathSet(localDirectory: string): Promise<PathSet> {
+export function getPaths(localDirectory: string): Promise<FilePathsPseudoSet> {
   // Attempts to get a list of files relative to `localDirectory`, hopefully from
   // a fast source control index.
   // TODO (williamsc) once ``{HG|Git}Repository` is working in nuclide-server,
   // use those instead to determine VCS.
-  const paths = await getFilesFromWatchman(localDirectory)
+  return getFilesFromWatchman(localDirectory)
       .catch(() => getFilesFromHg(localDirectory))
       .catch(() => getFilesFromGit(localDirectory))
       .catch(() => getAllFiles(localDirectory))
       .catch(() => { throw new Error(`Failed to populate FileSearch for ${localDirectory}`); });
+}
+
+/**
+ * Creates a `PathSet` with the contents of the specified directory.
+ */
+export async function createPathSet(localDirectory: string): Promise<PathSet> {
+  const paths = await getPaths(localDirectory);
   return new PathSet({paths});
 }
 
