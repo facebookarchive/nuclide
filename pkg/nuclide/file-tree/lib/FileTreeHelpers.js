@@ -20,6 +20,7 @@ import RemoteUri from '../../remote-uri';
 
 import pathModule from 'path';
 import url from 'url';
+import crypto from 'crypto';
 
 type Directory = LocalDirectory | RemoteDirectory;
 type File = LocalFile | RemoteFile;
@@ -138,6 +139,10 @@ function isContextClick(event: SyntheticMouseEvent): boolean {
   );
 }
 
+function buildHashKey(nodeKey: string): string {
+  return crypto.createHash('MD5').update(nodeKey).digest('base64');
+}
+
 module.exports = {
   dirPathToKey,
   isDirKey,
@@ -151,4 +156,5 @@ module.exports = {
   isLocalFile,
   isFullyQualifiedLocalPath,
   isContextClick,
+  buildHashKey,
 };

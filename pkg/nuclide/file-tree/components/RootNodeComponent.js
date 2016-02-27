@@ -55,7 +55,7 @@ class RootNodeComponent extends React.Component {
         isSelected={node.isSelected()}
         usePreviewTabs={node.usePreviewTabs()}
         vcsStatusCode={node.getVcsStatusCode()}
-        key={node.nodeKey}
+        key={node.hashKey}
         nodeKey={node.nodeKey}
         nodeName={node.nodeName}
         nodePath={node.nodePath}
@@ -69,7 +69,7 @@ class RootNodeComponent extends React.Component {
         isSelected={node.isSelected()}
         usePreviewTabs={node.usePreviewTabs()}
         vcsStatusCode={node.getVcsStatusCode()}
-        key={node.nodeKey}
+        key={node.hashKey}
         nodeKey={node.nodeKey}
         nodeName={node.nodeName}
         nodePath={node.nodePath}

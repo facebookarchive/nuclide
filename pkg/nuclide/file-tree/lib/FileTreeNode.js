@@ -18,6 +18,7 @@ class FileTreeNode {
   _store: FileTreeStore;
   rootKey: string;
   nodeKey: string;
+  hashKey: string;
   nodePath: string;
   nodeName: string;
   isRoot: boolean;
@@ -27,6 +28,7 @@ class FileTreeNode {
     this._store = store;
     this.rootKey = rootKey;
     this.nodeKey = nodeKey;
+    this.hashKey = FileTreeHelpers.buildHashKey(nodeKey);
     this.nodePath = FileTreeHelpers.keyToPath(nodeKey);
     this.nodeName = FileTreeHelpers.keyToName(nodeKey);
     this.isRoot = rootKey === nodeKey;

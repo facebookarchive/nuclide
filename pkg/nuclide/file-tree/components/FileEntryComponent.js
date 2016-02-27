@@ -75,7 +75,6 @@ class FileEntryComponent extends React.Component {
 
     return (
       <li
-        key={this.props.nodeKey}
         className={`${outerClassName} ${statusClass}`}
         style={{paddingLeft: this.props.indentLevel * INDENT_PER_LEVEL}}
         onClick={this._onClick}

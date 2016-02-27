@@ -123,10 +123,10 @@ class FileTree extends React.Component {
     if (rootKeys.length === 0) {
       return <EmptyComponent />;
     }
-    return rootKeys.map(rootKey => {
+    return rootKeys.map((rootKey, index) => {
       return (
         <RootNodeComponent
-          key={rootKey}
+          key={index.toString()}
           ref={rootKey}
           rootNode={FileTreeStore.getInstance().getRootNode(rootKey)}
           rootKey={rootKey}
