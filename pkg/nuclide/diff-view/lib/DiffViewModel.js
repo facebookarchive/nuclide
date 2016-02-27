@@ -626,7 +626,16 @@ class DiffViewModel {
     const activeStack = this._activeRepositoryStack;
     try {
       invariant(activeStack, 'No active repository stack');
-      await activeStack.commit(message);
+      switch (this._state.commitMode) {
+        case CommitMode.COMMIT:
+          await activeStack.commit(message);
+          atom.notifications.addSuccess('Commit created');
+          break;
+        case CommitMode.AMEND:
+          await activeStack.amend(message);
+          atom.notifications.addSuccess('Commit amended');
+          break;
+      }
       // Force trigger an update to the revisions to update the UI state with the new comit info.
       activeStack.getRevisionsStatePromise();
     } catch (e) {
@@ -640,8 +649,6 @@ class DiffViewModel {
       });
       return;
     }
-
-    atom.notifications.addSuccess('Commit created');
   }
 
   getState(): State {

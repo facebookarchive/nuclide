@@ -123,6 +123,10 @@ export default class RepositoryStack {
     return this._repository.commit(message);
   }
 
+  amend(message: string): Promise<void> {
+    return this._repository.amend(message);
+  }
+
   /**
    * Update the file change state comparing the dirty filesystem status
    * to a selected commit.
