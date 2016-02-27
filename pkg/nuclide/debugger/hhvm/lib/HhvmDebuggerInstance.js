@@ -111,10 +111,6 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       connectionConfig.idekeyRegex = config.idekeyRegex;
     }
 
-    if (this._launchScriptPath) {
-      connectionConfig.endDebugWhenNoRequests = true;
-    }
-
     const attachPromise = proxy.attach(connectionConfig);
     if (this._launchScriptPath) {
       logInfo('launchScript: ' + this._launchScriptPath);

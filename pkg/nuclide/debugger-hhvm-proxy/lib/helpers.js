@@ -46,7 +46,10 @@ export function uriToPath(uri: string): string {
   return components.pathname || '';
 }
 
-export function launchPhpScriptWithXDebugEnabled(scriptPath: string): child_process$ChildProcess {
+export function launchPhpScriptWithXDebugEnabled(
+  scriptPath: string,
+  sendToOutputWindow?: (text: string) => void,
+): child_process$ChildProcess {
   const child_process = require('child_process');
   const scriptArgv = parse(scriptPath);
   const args = ['-c', 'xdebug.ini', ...scriptArgv];
@@ -64,9 +67,15 @@ export function launchPhpScriptWithXDebugEnabled(scriptPath: string): child_proc
   });
   proc.on('error', err => {
     logger.log(`child_process(${proc.pid}) error: ${err}`);
+    if (sendToOutputWindow != null) {
+      sendToOutputWindow(`The process running script: ${scriptPath} encountered an error: ${err}`);
+    }
   });
   proc.on('exit', code => {
     logger.log(`child_process(${proc.pid}) exit: ${code}`);
+    if (sendToOutputWindow != null) {
+      sendToOutputWindow(`Script: ${scriptPath} exited with code: ${code}`);
+    }
   });
   return proc;
 }

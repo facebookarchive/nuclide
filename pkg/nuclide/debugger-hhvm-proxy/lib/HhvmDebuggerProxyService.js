@@ -98,7 +98,10 @@ export class HhvmDebuggerProxyService {
 
   async launchScript(scriptPath: string): Promise<string> {
     logger.log('launchScript: ' + scriptPath);
-    launchPhpScriptWithXDebugEnabled(scriptPath);
+    launchPhpScriptWithXDebugEnabled(
+      scriptPath,
+      text => this._clientCallback.sendUserMessage('outputWindow', {level: 'info', text}),
+    );
     return 'Script launched';
   }
 
