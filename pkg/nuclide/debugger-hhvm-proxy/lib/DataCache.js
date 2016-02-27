@@ -61,7 +61,13 @@ export type PropertyDescriptor = {
 
 import type {DbgpSocket} from './DbgpSocket';
 
-const {STATUS_BREAK} = require('./DbgpSocket');
+const {
+  STATUS_BREAK,
+  STATUS_STOPPING,
+  STATUS_STOPPED,
+  STATUS_RUNNING,
+  STATUS_STARTING,
+} = require('./DbgpSocket');
 
 /**
  * Handles data value tracking between Chrome and Dbgp.
@@ -87,7 +93,10 @@ export class DataCache {
       case STATUS_BREAK:
         this._enable();
         break;
-      default:
+      case STATUS_STARTING:
+      case STATUS_STOPPING:
+      case STATUS_STOPPED:
+      case STATUS_RUNNING:
         this._disable();
         break;
     }
