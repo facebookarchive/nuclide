@@ -109,7 +109,10 @@ class AtomTextEditor extends React.Component {
         nextProps.textBuffer !== this.props.textBuffer ||
         nextProps.readOnly !== this.props.readOnly
       ) {
-      this._updateTextEditor(setupTextEditor(nextProps));
+      const previousTextContents = this.getTextBuffer().getText();
+      const textEditor = setupTextEditor(nextProps);
+      textEditor.setText(previousTextContents);
+      this._updateTextEditor(textEditor);
       this._onDidUpdateTextEditorElement(nextProps);
     }
     if (nextProps.path !== this.props.path) {

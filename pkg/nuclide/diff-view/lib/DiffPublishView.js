@@ -89,11 +89,7 @@ class DiffPublishView extends React.Component {
   }
 
   componentDidUpdate(prevProps: Props): void {
-    const oldReadOnly = prevProps.isLoading || prevProps.isPublishing;
-    const newReadOnly = this.props.isLoading || this.props.isPublishing;
-    // Since changing readOnly destroys the text editor / buffer.
-    // This should be fixed in AtomTextEditor.
-    if (this.props.message !== prevProps.message || oldReadOnly !== newReadOnly) {
+    if (this.props.message !== prevProps.message) {
       this._setPublishText();
     }
   }

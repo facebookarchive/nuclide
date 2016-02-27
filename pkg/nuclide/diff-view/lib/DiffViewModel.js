@@ -447,10 +447,9 @@ class DiffViewModel {
       isPublishing: true,
     });
     // TODO(most): do publish to Phabricator.
-    let headRevision = this._state.headRevision;
     try {
       await promises.awaitMilliSeconds(5000);
-      headRevision = await Promise.resolve(null);
+      await Promise.resolve();
       // Switch to browse mode after a successful publish.
       this.setViewMode(DiffMode.BROWSE_MODE);
     } catch (error) {
@@ -460,7 +459,6 @@ class DiffViewModel {
         ...this._state,
         publishMessage,
         isPublishing: false,
-        headRevision,
       });
     }
   }
