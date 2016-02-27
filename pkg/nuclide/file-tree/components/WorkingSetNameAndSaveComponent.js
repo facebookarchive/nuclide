@@ -49,27 +49,40 @@ export class WorkingSetNameAndSaveComponent extends React.Component {
   }
 
   render() {
+    let setNameText;
+    if (this.state.name === '') {
+      setNameText = (
+        <atom-panel class="nuclide-file-tree-working-set-name-missing">
+          Name is missing
+        </atom-panel>
+      );
+    }
+
     return (
       <div>
-        <AtomInput
-          placeholderText="name"
-          size="sm"
-          className="nuclide-file-tree-working-set-name inline-block-tight"
-          onDidChange={this._trackName}
-          initialValue={this.props.initialName}
-          onConfirm={this._saveWorkingSet}
-          onCancel={this.props.onCancel}
-        />
+        <div className="nuclide-file-tree-working-set-name-outline">
+          <AtomInput
+            placeholderText="name"
+            size="sm"
+            className="nuclide-file-tree-working-set-name inline-block-tight"
+            onDidChange={this._trackName}
+            initialValue={this.props.initialName}
+            onConfirm={this._saveWorkingSet}
+            onCancel={this.props.onCancel}
+          />
+        </div>
         <button
           className={classnames({
             'btn': true,
             'btn-success': true,
             'inline-block-tight': true,
             'disabled': this.state.name === '',
+            'nuclide-file-tree-toolbar-icon': true,
           })}
           onClick={this._saveWorkingSet}>
-          <span className="icon icon-check" />
+          <span className="icon icon-check nuclide-file-tree-toolbar-icon" />
         </button>
+        {setNameText}
       </div>
     );
   }
@@ -80,6 +93,10 @@ export class WorkingSetNameAndSaveComponent extends React.Component {
 
   _saveWorkingSet(): void {
     if (this.state.name === '') {
+      atom.notifications.addWarning(
+        'Name is missing',
+        {detail: 'Please provide a name for the Working Set'},
+      );
       return;
     }
 

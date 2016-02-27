@@ -238,7 +238,7 @@ class SelectWorkingSetButton extends React.Component {
         })}
         onClick={this.props.onClick}
         onFocus={this.props.onFocus}>
-        <span className="icon icon-list-unordered" />
+        <span className="icon icon-list-unordered nuclide-file-tree-toolbar-icon" />
       </button>
     );
   }
@@ -267,6 +267,7 @@ class DefineWorkingSetButton extends React.Component {
           icon: true,
           'icon-plus': !this.props.isActive,
           'icon-dash': this.props.isActive,
+          'nuclide-file-tree-toolbar-icon': true,
         })}
         />
       </button>
