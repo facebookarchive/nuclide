@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +8,23 @@
  * the root directory of this source tree.
  */
 
-function notifyLocalDiskFile(fileUri: string): void {
-  atom.notifications.addInfo(`File \`${fileUri}\` exists on the local filesystem.`);
+function notifyLocalDiskFile(fileUri) {
+  atom.notifications.addInfo('File `' + fileUri + '` exists on the local filesystem.');
 }
 
-function notifyConnectedRemoteFile(fileUri: string): void {
-  const hostname = require('../../remote-uri').getHostname(fileUri);
-  atom.notifications.addInfo(`The connection to the server: \`${hostname}\` is healthy.`);
+function notifyConnectedRemoteFile(fileUri) {
+  var hostname = require('../../remote-uri').getHostname(fileUri);
+  atom.notifications.addInfo('The connection to the server: `' + hostname + '` is healthy.');
 }
 
-function notifyDisconnectedRemoteFile(fileUri: string): void {
-  const hostname = require('../../remote-uri').getHostname(fileUri);
-  atom.notifications.addError(
-    `The connection to the server: \`${hostname}\` is lost, retrying in the background!`);
+function notifyDisconnectedRemoteFile(fileUri) {
+  var hostname = require('../../remote-uri').getHostname(fileUri);
+  atom.notifications.addError('The connection to the server: `' + hostname + '` is lost, retrying in the background!');
 }
 
 module.exports = {
-  notifyLocalDiskFile,
-  notifyConnectedRemoteFile,
-  notifyDisconnectedRemoteFile,
+  notifyLocalDiskFile: notifyLocalDiskFile,
+  notifyConnectedRemoteFile: notifyConnectedRemoteFile,
+  notifyDisconnectedRemoteFile: notifyDisconnectedRemoteFile
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm5vdGlmaWNhdGlvbi5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBV0EsU0FBUyxtQkFBbUIsQ0FBQyxPQUFlLEVBQVE7QUFDbEQsTUFBSSxDQUFDLGFBQWEsQ0FBQyxPQUFPLFlBQVcsT0FBTyx1Q0FBcUMsQ0FBQztDQUNuRjs7QUFFRCxTQUFTLHlCQUF5QixDQUFDLE9BQWUsRUFBUTtBQUN4RCxNQUFNLFFBQVEsR0FBRyxPQUFPLENBQUMsa0JBQWtCLENBQUMsQ0FBQyxXQUFXLENBQUMsT0FBTyxDQUFDLENBQUM7QUFDbEUsTUFBSSxDQUFDLGFBQWEsQ0FBQyxPQUFPLHFDQUFvQyxRQUFRLG1CQUFpQixDQUFDO0NBQ3pGOztBQUVELFNBQVMsNEJBQTRCLENBQUMsT0FBZSxFQUFRO0FBQzNELE1BQU0sUUFBUSxHQUFHLE9BQU8sQ0FBQyxrQkFBa0IsQ0FBQyxDQUFDLFdBQVcsQ0FBQyxPQUFPLENBQUMsQ0FBQztBQUNsRSxNQUFJLENBQUMsYUFBYSxDQUFDLFFBQVEscUNBQ1UsUUFBUSw0Q0FBMEMsQ0FBQztDQUN6Rjs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHO0FBQ2YscUJBQW1CLEVBQW5CLG1CQUFtQjtBQUNuQiwyQkFBeUIsRUFBekIseUJBQXlCO0FBQ3pCLDhCQUE0QixFQUE1Qiw0QkFBNEI7Q0FDN0IsQ0FBQyIsImZpbGUiOiJub3RpZmljYXRpb24uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5mdW5jdGlvbiBub3RpZnlMb2NhbERpc2tGaWxlKGZpbGVVcmk6IHN0cmluZyk6IHZvaWQge1xuICBhdG9tLm5vdGlmaWNhdGlvbnMuYWRkSW5mbyhgRmlsZSBcXGAke2ZpbGVVcml9XFxgIGV4aXN0cyBvbiB0aGUgbG9jYWwgZmlsZXN5c3RlbS5gKTtcbn1cblxuZnVuY3Rpb24gbm90aWZ5Q29ubmVjdGVkUmVtb3RlRmlsZShmaWxlVXJpOiBzdHJpbmcpOiB2b2lkIHtcbiAgY29uc3QgaG9zdG5hbWUgPSByZXF1aXJlKCcuLi8uLi9yZW1vdGUtdXJpJykuZ2V0SG9zdG5hbWUoZmlsZVVyaSk7XG4gIGF0b20ubm90aWZpY2F0aW9ucy5hZGRJbmZvKGBUaGUgY29ubmVjdGlvbiB0byB0aGUgc2VydmVyOiBcXGAke2hvc3RuYW1lfVxcYCBpcyBoZWFsdGh5LmApO1xufVxuXG5mdW5jdGlvbiBub3RpZnlEaXNjb25uZWN0ZWRSZW1vdGVGaWxlKGZpbGVVcmk6IHN0cmluZyk6IHZvaWQge1xuICBjb25zdCBob3N0bmFtZSA9IHJlcXVpcmUoJy4uLy4uL3JlbW90ZS11cmknKS5nZXRIb3N0bmFtZShmaWxlVXJpKTtcbiAgYXRvbS5ub3RpZmljYXRpb25zLmFkZEVycm9yKFxuICAgIGBUaGUgY29ubmVjdGlvbiB0byB0aGUgc2VydmVyOiBcXGAke2hvc3RuYW1lfVxcYCBpcyBsb3N0LCByZXRyeWluZyBpbiB0aGUgYmFja2dyb3VuZCFgKTtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSB7XG4gIG5vdGlmeUxvY2FsRGlza0ZpbGUsXG4gIG5vdGlmeUNvbm5lY3RlZFJlbW90ZUZpbGUsXG4gIG5vdGlmeURpc2Nvbm5lY3RlZFJlbW90ZUZpbGUsXG59O1xuIl19

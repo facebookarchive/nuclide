@@ -1,5 +1,33 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var getHackRoot = _asyncToGenerator(function* (filePath) {
+  return yield (0, _commons.findNearestFile)('.hhconfig', filePath);
+});
+
+var setRootDirectoryUri = _asyncToGenerator(function* (directoryUri) {
+  var hackRootDirectory = yield getHackRoot(directoryUri);
+  _utils2['default'].log('setRootDirectoryUri: from ' + directoryUri + ' to ' + hackRootDirectory);
+  var path = require('path');
+  // TODO: make xdebug_includes.php path configurable from hhconfig.
+  var hackDummyRequestFilePath = path.join(hackRootDirectory ? hackRootDirectory : '', '/scripts/xdebug_includes.php');
+
+  // Use hackDummyRequestFilePath if possible.
+  if (yield _commons.fsPromise.exists(hackDummyRequestFilePath)) {
+    dummyRequestFilePath = hackDummyRequestFilePath;
+  }
+});
+
+exports.setRootDirectoryUri = setRootDirectoryUri;
+exports.sendDummyRequest = sendDummyRequest;
+exports.isDummyConnection = isDummyConnection;
+exports.failConnection = failConnection;
+exports.isCorrectConnection = isCorrectConnection;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,72 +37,53 @@
  * the root directory of this source tree.
  */
 
-import logger from './utils';
-import {launchPhpScriptWithXDebugEnabled, uriToPath} from './helpers';
-import {fsPromise, findNearestFile} from '../../commons';
+var _utils = require('./utils');
 
-import type {Socket} from 'net';
-import type {ConnectionConfig} from './HhvmDebuggerProxyService';
+var _utils2 = _interopRequireDefault(_utils);
 
-let dummyRequestFilePath = 'php_only_xdebug_request.php';
+var _helpers = require('./helpers');
 
-async function getHackRoot(filePath: string): Promise<?string> {
-  return await findNearestFile('.hhconfig', filePath);
+var _commons = require('../../commons');
+
+var dummyRequestFilePath = 'php_only_xdebug_request.php';
+
+function sendDummyRequest() {
+  return (0, _helpers.launchPhpScriptWithXDebugEnabled)(dummyRequestFilePath);
 }
 
-export async function setRootDirectoryUri(directoryUri: string): Promise {
-  const hackRootDirectory = await getHackRoot(directoryUri);
-  logger.log(`setRootDirectoryUri: from ${directoryUri} to ${hackRootDirectory}`);
-  const path = require('path');
-  // TODO: make xdebug_includes.php path configurable from hhconfig.
-  const hackDummyRequestFilePath = path.join(
-    (hackRootDirectory ? hackRootDirectory : ''),
-    '/scripts/xdebug_includes.php'
-  );
-
-  // Use hackDummyRequestFilePath if possible.
-  if (await fsPromise.exists(hackDummyRequestFilePath)) {
-    dummyRequestFilePath = hackDummyRequestFilePath;
-  }
-}
-
-export function sendDummyRequest(): child_process$ChildProcess {
-  return launchPhpScriptWithXDebugEnabled(dummyRequestFilePath);
-}
-
-export function isDummyConnection(message: Object): boolean {
-  const attributes = message.init.$;
+function isDummyConnection(message) {
+  var attributes = message.init.$;
   return attributes.fileuri.endsWith(dummyRequestFilePath);
 }
 
-export function failConnection(socket: Socket, errorMessage: string): void {
-  logger.log(errorMessage);
+function failConnection(socket, errorMessage) {
+  _utils2['default'].log(errorMessage);
   socket.end();
   socket.destroy();
 }
 
-export function isCorrectConnection(config: ConnectionConfig, message: Object): boolean {
-  const {pid, idekeyRegex, scriptRegex} = config;
+function isCorrectConnection(config, message) {
+  var pid = config.pid;
+  var idekeyRegex = config.idekeyRegex;
+  var scriptRegex = config.scriptRegex;
+
   if (!message || !message.init || !message.init.$) {
-    logger.logError('Incorrect init');
+    _utils2['default'].logError('Incorrect init');
     return false;
   }
 
-  const init = message.init;
+  var init = message.init;
   if (!init.engine || !init.engine || !init.engine[0] || init.engine[0]._ !== 'xdebug') {
-    logger.logError('Incorrect engine');
+    _utils2['default'].logError('Incorrect engine');
     return false;
   }
 
-  const attributes = init.$;
-  if (attributes.xmlns !== 'urn:debugger_protocol_v1'
-    || attributes['xmlns:xdebug'] !== 'http://xdebug.org/dbgp/xdebug'
-    || attributes.language !== 'PHP') {
-    logger.logError('Incorrect attributes');
+  var attributes = init.$;
+  if (attributes.xmlns !== 'urn:debugger_protocol_v1' || attributes['xmlns:xdebug'] !== 'http://xdebug.org/dbgp/xdebug' || attributes.language !== 'PHP') {
+    _utils2['default'].logError('Incorrect attributes');
     return false;
   }
 
-  return (!pid || attributes.appid === String(pid)) &&
-    (!idekeyRegex || new RegExp(idekeyRegex).test(attributes.idekey)) &&
-    (!scriptRegex || new RegExp(scriptRegex).test(uriToPath(attributes.fileuri)));
+  return (!pid || attributes.appid === String(pid)) && (!idekeyRegex || new RegExp(idekeyRegex).test(attributes.idekey)) && (!scriptRegex || new RegExp(scriptRegex).test((0, _helpers.uriToPath)(attributes.fileuri)));
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkNvbm5lY3Rpb25VdGlscy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7O0lBb0JlLFdBQVcscUJBQTFCLFdBQTJCLFFBQWdCLEVBQW9CO0FBQzdELFNBQU8sTUFBTSw4QkFBZ0IsV0FBVyxFQUFFLFFBQVEsQ0FBQyxDQUFDO0NBQ3JEOztJQUVxQixtQkFBbUIscUJBQWxDLFdBQW1DLFlBQW9CLEVBQVc7QUFDdkUsTUFBTSxpQkFBaUIsR0FBRyxNQUFNLFdBQVcsQ0FBQyxZQUFZLENBQUMsQ0FBQztBQUMxRCxxQkFBTyxHQUFHLGdDQUE4QixZQUFZLFlBQU8saUJBQWlCLENBQUcsQ0FBQztBQUNoRixNQUFNLElBQUksR0FBRyxPQUFPLENBQUMsTUFBTSxDQUFDLENBQUM7O0FBRTdCLE1BQU0sd0JBQXdCLEdBQUcsSUFBSSxDQUFDLElBQUksQ0FDdkMsaUJBQWlCLEdBQUcsaUJBQWlCLEdBQUcsRUFBRSxFQUMzQyw4QkFBOEIsQ0FDL0IsQ0FBQzs7O0FBR0YsTUFBSSxNQUFNLG1CQUFVLE1BQU0sQ0FBQyx3QkFBd0IsQ0FBQyxFQUFFO0FBQ3BELHdCQUFvQixHQUFHLHdCQUF3QixDQUFDO0dBQ2pEO0NBQ0Y7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O3FCQTNCa0IsU0FBUzs7Ozt1QkFDOEIsV0FBVzs7dUJBQzVCLGVBQWU7O0FBS3hELElBQUksb0JBQW9CLEdBQUcsNkJBQTZCLENBQUM7O0FBc0JsRCxTQUFTLGdCQUFnQixHQUErQjtBQUM3RCxTQUFPLCtDQUFpQyxvQkFBb0IsQ0FBQyxDQUFDO0NBQy9EOztBQUVNLFNBQVMsaUJBQWlCLENBQUMsT0FBZSxFQUFXO0FBQzFELE1BQU0sVUFBVSxHQUFHLE9BQU8sQ0FBQyxJQUFJLENBQUMsQ0FBQyxDQUFDO0FBQ2xDLFNBQU8sVUFBVSxDQUFDLE9BQU8sQ0FBQyxRQUFRLENBQUMsb0JBQW9CLENBQUMsQ0FBQztDQUMxRDs7QUFFTSxTQUFTLGNBQWMsQ0FBQyxNQUFjLEVBQUUsWUFBb0IsRUFBUTtBQUN6RSxxQkFBTyxHQUFHLENBQUMsWUFBWSxDQUFDLENBQUM7QUFDekIsUUFBTSxDQUFDLEdBQUcsRUFBRSxDQUFDO0FBQ2IsUUFBTSxDQUFDLE9BQU8sRUFBRSxDQUFDO0NBQ2xCOztBQUVNLFNBQVMsbUJBQW1CLENBQUMsTUFBd0IsRUFBRSxPQUFlLEVBQVc7TUFDL0UsR0FBRyxHQUE4QixNQUFNLENBQXZDLEdBQUc7TUFBRSxXQUFXLEdBQWlCLE1BQU0sQ0FBbEMsV0FBVztNQUFFLFdBQVcsR0FBSSxNQUFNLENBQXJCLFdBQVc7O0FBQ3BDLE1BQUksQ0FBQyxPQUFPLElBQUksQ0FBQyxPQUFPLENBQUMsSUFBSSxJQUFJLENBQUMsT0FBTyxDQUFDLElBQUksQ0FBQyxDQUFDLEVBQUU7QUFDaEQsdUJBQU8sUUFBUSxDQUFDLGdCQUFnQixDQUFDLENBQUM7QUFDbEMsV0FBTyxLQUFLLENBQUM7R0FDZDs7QUFFRCxNQUFNLElBQUksR0FBRyxPQUFPLENBQUMsSUFBSSxDQUFDO0FBQzFCLE1BQUksQ0FBQyxJQUFJLENBQUMsTUFBTSxJQUFJLENBQUMsSUFBSSxDQUFDLE1BQU0sSUFBSSxDQUFDLElBQUksQ0FBQyxNQUFNLENBQUMsQ0FBQyxDQUFDLElBQUksSUFBSSxDQUFDLE1BQU0sQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLEtBQUssUUFBUSxFQUFFO0FBQ3BGLHVCQUFPLFFBQVEsQ0FBQyxrQkFBa0IsQ0FBQyxDQUFDO0FBQ3BDLFdBQU8sS0FBSyxDQUFDO0dBQ2Q7O0FBRUQsTUFBTSxVQUFVLEdBQUcsSUFBSSxDQUFDLENBQUMsQ0FBQztBQUMxQixNQUFJLFVBQVUsQ0FBQyxLQUFLLEtBQUssMEJBQTBCLElBQzlDLFVBQVUsQ0FBQyxjQUFjLENBQUMsS0FBSywrQkFBK0IsSUFDOUQsVUFBVSxDQUFDLFFBQVEsS0FBSyxLQUFLLEVBQUU7QUFDbEMsdUJBQU8sUUFBUSxDQUFDLHNCQUFzQixDQUFDLENBQUM7QUFDeEMsV0FBTyxLQUFLLENBQUM7R0FDZDs7QUFFRCxTQUFPLENBQUMsQ0FBQyxHQUFHLElBQUksVUFBVSxDQUFDLEtBQUssS0FBSyxNQUFNLENBQUMsR0FBRyxDQUFDLENBQUEsS0FDN0MsQ0FBQyxXQUFXLElBQUksSUFBSSxNQUFNLENBQUMsV0FBVyxDQUFDLENBQUMsSUFBSSxDQUFDLFVBQVUsQ0FBQyxNQUFNLENBQUMsQ0FBQSxBQUFDLEtBQ2hFLENBQUMsV0FBVyxJQUFJLElBQUksTUFBTSxDQUFDLFdBQVcsQ0FBQyxDQUFDLElBQUksQ0FBQyx3QkFBVSxVQUFVLENBQUMsT0FBTyxDQUFDLENBQUMsQ0FBQSxBQUFDLENBQUM7Q0FDakYiLCJmaWxlIjoiQ29ubmVjdGlvblV0aWxzLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IGxvZ2dlciBmcm9tICcuL3V0aWxzJztcbmltcG9ydCB7bGF1bmNoUGhwU2NyaXB0V2l0aFhEZWJ1Z0VuYWJsZWQsIHVyaVRvUGF0aH0gZnJvbSAnLi9oZWxwZXJzJztcbmltcG9ydCB7ZnNQcm9taXNlLCBmaW5kTmVhcmVzdEZpbGV9IGZyb20gJy4uLy4uL2NvbW1vbnMnO1xuXG5pbXBvcnQgdHlwZSB7U29ja2V0fSBmcm9tICduZXQnO1xuaW1wb3J0IHR5cGUge0Nvbm5lY3Rpb25Db25maWd9IGZyb20gJy4vSGh2bURlYnVnZ2VyUHJveHlTZXJ2aWNlJztcblxubGV0IGR1bW15UmVxdWVzdEZpbGVQYXRoID0gJ3BocF9vbmx5X3hkZWJ1Z19yZXF1ZXN0LnBocCc7XG5cbmFzeW5jIGZ1bmN0aW9uIGdldEhhY2tSb290KGZpbGVQYXRoOiBzdHJpbmcpOiBQcm9taXNlPD9zdHJpbmc+IHtcbiAgcmV0dXJuIGF3YWl0IGZpbmROZWFyZXN0RmlsZSgnLmhoY29uZmlnJywgZmlsZVBhdGgpO1xufVxuXG5leHBvcnQgYXN5bmMgZnVuY3Rpb24gc2V0Um9vdERpcmVjdG9yeVVyaShkaXJlY3RvcnlVcmk6IHN0cmluZyk6IFByb21pc2Uge1xuICBjb25zdCBoYWNrUm9vdERpcmVjdG9yeSA9IGF3YWl0IGdldEhhY2tSb290KGRpcmVjdG9yeVVyaSk7XG4gIGxvZ2dlci5sb2coYHNldFJvb3REaXJlY3RvcnlVcmk6IGZyb20gJHtkaXJlY3RvcnlVcml9IHRvICR7aGFja1Jvb3REaXJlY3Rvcnl9YCk7XG4gIGNvbnN0IHBhdGggPSByZXF1aXJlKCdwYXRoJyk7XG4gIC8vIFRPRE86IG1ha2UgeGRlYnVnX2luY2x1ZGVzLnBocCBwYXRoIGNvbmZpZ3VyYWJsZSBmcm9tIGhoY29uZmlnLlxuICBjb25zdCBoYWNrRHVtbXlSZXF1ZXN0RmlsZVBhdGggPSBwYXRoLmpvaW4oXG4gICAgKGhhY2tSb290RGlyZWN0b3J5ID8gaGFja1Jvb3REaXJlY3RvcnkgOiAnJyksXG4gICAgJy9zY3JpcHRzL3hkZWJ1Z19pbmNsdWRlcy5waHAnXG4gICk7XG5cbiAgLy8gVXNlIGhhY2tEdW1teVJlcXVlc3RGaWxlUGF0aCBpZiBwb3NzaWJsZS5cbiAgaWYgKGF3YWl0IGZzUHJvbWlzZS5leGlzdHMoaGFja0R1bW15UmVxdWVzdEZpbGVQYXRoKSkge1xuICAgIGR1bW15UmVxdWVzdEZpbGVQYXRoID0gaGFja0R1bW15UmVxdWVzdEZpbGVQYXRoO1xuICB9XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBzZW5kRHVtbXlSZXF1ZXN0KCk6IGNoaWxkX3Byb2Nlc3MkQ2hpbGRQcm9jZXNzIHtcbiAgcmV0dXJuIGxhdW5jaFBocFNjcmlwdFdpdGhYRGVidWdFbmFibGVkKGR1bW15UmVxdWVzdEZpbGVQYXRoKTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGlzRHVtbXlDb25uZWN0aW9uKG1lc3NhZ2U6IE9iamVjdCk6IGJvb2xlYW4ge1xuICBjb25zdCBhdHRyaWJ1dGVzID0gbWVzc2FnZS5pbml0LiQ7XG4gIHJldHVybiBhdHRyaWJ1dGVzLmZpbGV1cmkuZW5kc1dpdGgoZHVtbXlSZXF1ZXN0RmlsZVBhdGgpO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gZmFpbENvbm5lY3Rpb24oc29ja2V0OiBTb2NrZXQsIGVycm9yTWVzc2FnZTogc3RyaW5nKTogdm9pZCB7XG4gIGxvZ2dlci5sb2coZXJyb3JNZXNzYWdlKTtcbiAgc29ja2V0LmVuZCgpO1xuICBzb2NrZXQuZGVzdHJveSgpO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gaXNDb3JyZWN0Q29ubmVjdGlvbihjb25maWc6IENvbm5lY3Rpb25Db25maWcsIG1lc3NhZ2U6IE9iamVjdCk6IGJvb2xlYW4ge1xuICBjb25zdCB7cGlkLCBpZGVrZXlSZWdleCwgc2NyaXB0UmVnZXh9ID0gY29uZmlnO1xuICBpZiAoIW1lc3NhZ2UgfHwgIW1lc3NhZ2UuaW5pdCB8fCAhbWVzc2FnZS5pbml0LiQpIHtcbiAgICBsb2dnZXIubG9nRXJyb3IoJ0luY29ycmVjdCBpbml0Jyk7XG4gICAgcmV0dXJuIGZhbHNlO1xuICB9XG5cbiAgY29uc3QgaW5pdCA9IG1lc3NhZ2UuaW5pdDtcbiAgaWYgKCFpbml0LmVuZ2luZSB8fCAhaW5pdC5lbmdpbmUgfHwgIWluaXQuZW5naW5lWzBdIHx8IGluaXQuZW5naW5lWzBdLl8gIT09ICd4ZGVidWcnKSB7XG4gICAgbG9nZ2VyLmxvZ0Vycm9yKCdJbmNvcnJlY3QgZW5naW5lJyk7XG4gICAgcmV0dXJuIGZhbHNlO1xuICB9XG5cbiAgY29uc3QgYXR0cmlidXRlcyA9IGluaXQuJDtcbiAgaWYgKGF0dHJpYnV0ZXMueG1sbnMgIT09ICd1cm46ZGVidWdnZXJfcHJvdG9jb2xfdjEnXG4gICAgfHwgYXR0cmlidXRlc1sneG1sbnM6eGRlYnVnJ10gIT09ICdodHRwOi8veGRlYnVnLm9yZy9kYmdwL3hkZWJ1ZydcbiAgICB8fCBhdHRyaWJ1dGVzLmxhbmd1YWdlICE9PSAnUEhQJykge1xuICAgIGxvZ2dlci5sb2dFcnJvcignSW5jb3JyZWN0IGF0dHJpYnV0ZXMnKTtcbiAgICByZXR1cm4gZmFsc2U7XG4gIH1cblxuICByZXR1cm4gKCFwaWQgfHwgYXR0cmlidXRlcy5hcHBpZCA9PT0gU3RyaW5nKHBpZCkpICYmXG4gICAgKCFpZGVrZXlSZWdleCB8fCBuZXcgUmVnRXhwKGlkZWtleVJlZ2V4KS50ZXN0KGF0dHJpYnV0ZXMuaWRla2V5KSkgJiZcbiAgICAoIXNjcmlwdFJlZ2V4IHx8IG5ldyBSZWdFeHAoc2NyaXB0UmVnZXgpLnRlc3QodXJpVG9QYXRoKGF0dHJpYnV0ZXMuZmlsZXVyaSkpKTtcbn1cbiJdfQ==

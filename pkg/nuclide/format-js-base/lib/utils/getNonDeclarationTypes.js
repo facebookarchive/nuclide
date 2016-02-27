@@ -1,5 +1,13 @@
-'use babel';
-/* @flow */
+
+
+var jscs = require('jscodeshift');
+
+/**
+ * This will get a list of all types that are not from a declaration.
+ *
+ * NOTE: this can get types that are declared, if you want access to
+ * types that are used but undeclared see getUndeclaredTypes
+ */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +17,17 @@
  * the root directory of this source tree.
  */
 
-import type {Collection, Node} from '../types/ast';
-
-const jscs = require('jscodeshift');
-
-/**
- * This will get a list of all types that are not from a declaration.
- *
- * NOTE: this can get types that are declared, if you want access to
- * types that are used but undeclared see getUndeclaredTypes
- */
-function getNonDeclarationTypes(root: Collection): Set<string> {
-  const ids = new Set();
+function getNonDeclarationTypes(root) {
+  var ids = new Set();
 
   // Pull out the logic to handle a generic type annotation, we have to iterate
   // down the qualified types to handle things like: `<Immutable.List<Foo>>`
-  function handleGenericType(node: Node): void {
+  function handleGenericType(node) {
     if (jscs.Identifier.check(node.id)) {
       ids.add(node.id.name);
     }
     if (jscs.QualifiedTypeIdentifier.check(node.id)) {
-      let currPos = node.id;
+      var currPos = node.id;
       while (currPos && !jscs.Identifier.check(currPos)) {
         currPos = currPos.qualification;
       }
@@ -42,24 +40,21 @@ function getNonDeclarationTypes(root: Collection): Set<string> {
   // Ideally this would be the only find in here, but it's not because of a
   // jscodeshift bug, so we have to manually search for a specific kind of
   // GenericTypeAnnotations on class super types
-  root
-    .find(jscs.GenericTypeAnnotation)
-    .forEach(path => handleGenericType(path.node));
+  root.find(jscs.GenericTypeAnnotation).forEach(function (path) {
+    return handleGenericType(path.node);
+  });
 
   // TODO: Delete this after https://github.com/facebook/jscodeshift/issues/34
-  root
-    .find(jscs.ClassDeclaration)
-    .filter(path => (
-      path.node.superTypeParameters &&
-      Array.isArray(path.node.superTypeParameters.params)
-    ))
-    .forEach(path => {
-      jscs(path.node.superTypeParameters)
-        .find(jscs.GenericTypeAnnotation)
-        .forEach(subPath => handleGenericType(subPath.node));
+  root.find(jscs.ClassDeclaration).filter(function (path) {
+    return path.node.superTypeParameters && Array.isArray(path.node.superTypeParameters.params);
+  }).forEach(function (path) {
+    jscs(path.node.superTypeParameters).find(jscs.GenericTypeAnnotation).forEach(function (subPath) {
+      return handleGenericType(subPath.node);
     });
+  });
 
   return ids;
 }
 
 module.exports = getNonDeclarationTypes;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImdldE5vbkRlY2xhcmF0aW9uVHlwZXMuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFhQSxJQUFNLElBQUksR0FBRyxPQUFPLENBQUMsYUFBYSxDQUFDLENBQUM7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBUXBDLFNBQVMsc0JBQXNCLENBQUMsSUFBZ0IsRUFBZTtBQUM3RCxNQUFNLEdBQUcsR0FBRyxJQUFJLEdBQUcsRUFBRSxDQUFDOzs7O0FBSXRCLFdBQVMsaUJBQWlCLENBQUMsSUFBVSxFQUFRO0FBQzNDLFFBQUksSUFBSSxDQUFDLFVBQVUsQ0FBQyxLQUFLLENBQUMsSUFBSSxDQUFDLEVBQUUsQ0FBQyxFQUFFO0FBQ2xDLFNBQUcsQ0FBQyxHQUFHLENBQUMsSUFBSSxDQUFDLEVBQUUsQ0FBQyxJQUFJLENBQUMsQ0FBQztLQUN2QjtBQUNELFFBQUksSUFBSSxDQUFDLHVCQUF1QixDQUFDLEtBQUssQ0FBQyxJQUFJLENBQUMsRUFBRSxDQUFDLEVBQUU7QUFDL0MsVUFBSSxPQUFPLEdBQUcsSUFBSSxDQUFDLEVBQUUsQ0FBQztBQUN0QixhQUFPLE9BQU8sSUFBSSxDQUFDLElBQUksQ0FBQyxVQUFVLENBQUMsS0FBSyxDQUFDLE9BQU8sQ0FBQyxFQUFFO0FBQ2pELGVBQU8sR0FBRyxPQUFPLENBQUMsYUFBYSxDQUFDO09BQ2pDO0FBQ0QsVUFBSSxJQUFJLENBQUMsVUFBVSxDQUFDLEtBQUssQ0FBQyxPQUFPLENBQUMsRUFBRTtBQUNsQyxXQUFHLENBQUMsR0FBRyxDQUFDLE9BQU8sQ0FBQyxJQUFJLENBQUMsQ0FBQztPQUN2QjtLQUNGO0dBQ0Y7Ozs7O0FBS0QsTUFBSSxDQUNELElBQUksQ0FBQyxJQUFJLENBQUMscUJBQXFCLENBQUMsQ0FDaEMsT0FBTyxDQUFDLFVBQUEsSUFBSTtXQUFJLGlCQUFpQixDQUFDLElBQUksQ0FBQyxJQUFJLENBQUM7R0FBQSxDQUFDLENBQUM7OztBQUdqRCxNQUFJLENBQ0QsSUFBSSxDQUFDLElBQUksQ0FBQyxnQkFBZ0IsQ0FBQyxDQUMzQixNQUFNLENBQUMsVUFBQSxJQUFJO1dBQ1YsSUFBSSxDQUFDLElBQUksQ0FBQyxtQkFBbUIsSUFDN0IsS0FBSyxDQUFDLE9BQU8sQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDLG1CQUFtQixDQUFDLE1BQU0sQ0FBQztHQUNwRCxDQUFDLENBQ0QsT0FBTyxDQUFDLFVBQUEsSUFBSSxFQUFJO0FBQ2YsUUFBSSxDQUFDLElBQUksQ0FBQyxJQUFJLENBQUMsbUJBQW1CLENBQUMsQ0FDaEMsSUFBSSxDQUFDLElBQUksQ0FBQyxxQkFBcUIsQ0FBQyxDQUNoQyxPQUFPLENBQUMsVUFBQSxPQUFPO2FBQUksaUJBQWlCLENBQUMsT0FBTyxDQUFDLElBQUksQ0FBQztLQUFBLENBQUMsQ0FBQztHQUN4RCxDQUFDLENBQUM7O0FBRUwsU0FBTyxHQUFHLENBQUM7Q0FDWjs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHLHNCQUFzQixDQUFDIiwiZmlsZSI6ImdldE5vbkRlY2xhcmF0aW9uVHlwZXMuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7Q29sbGVjdGlvbiwgTm9kZX0gZnJvbSAnLi4vdHlwZXMvYXN0JztcblxuY29uc3QganNjcyA9IHJlcXVpcmUoJ2pzY29kZXNoaWZ0Jyk7XG5cbi8qKlxuICogVGhpcyB3aWxsIGdldCBhIGxpc3Qgb2YgYWxsIHR5cGVzIHRoYXQgYXJlIG5vdCBmcm9tIGEgZGVjbGFyYXRpb24uXG4gKlxuICogTk9URTogdGhpcyBjYW4gZ2V0IHR5cGVzIHRoYXQgYXJlIGRlY2xhcmVkLCBpZiB5b3Ugd2FudCBhY2Nlc3MgdG9cbiAqIHR5cGVzIHRoYXQgYXJlIHVzZWQgYnV0IHVuZGVjbGFyZWQgc2VlIGdldFVuZGVjbGFyZWRUeXBlc1xuICovXG5mdW5jdGlvbiBnZXROb25EZWNsYXJhdGlvblR5cGVzKHJvb3Q6IENvbGxlY3Rpb24pOiBTZXQ8c3RyaW5nPiB7XG4gIGNvbnN0IGlkcyA9IG5ldyBTZXQoKTtcblxuICAvLyBQdWxsIG91dCB0aGUgbG9naWMgdG8gaGFuZGxlIGEgZ2VuZXJpYyB0eXBlIGFubm90YXRpb24sIHdlIGhhdmUgdG8gaXRlcmF0ZVxuICAvLyBkb3duIHRoZSBxdWFsaWZpZWQgdHlwZXMgdG8gaGFuZGxlIHRoaW5ncyBsaWtlOiBgPEltbXV0YWJsZS5MaXN0PEZvbz4+YFxuICBmdW5jdGlvbiBoYW5kbGVHZW5lcmljVHlwZShub2RlOiBOb2RlKTogdm9pZCB7XG4gICAgaWYgKGpzY3MuSWRlbnRpZmllci5jaGVjayhub2RlLmlkKSkge1xuICAgICAgaWRzLmFkZChub2RlLmlkLm5hbWUpO1xuICAgIH1cbiAgICBpZiAoanNjcy5RdWFsaWZpZWRUeXBlSWRlbnRpZmllci5jaGVjayhub2RlLmlkKSkge1xuICAgICAgbGV0IGN1cnJQb3MgPSBub2RlLmlkO1xuICAgICAgd2hpbGUgKGN1cnJQb3MgJiYgIWpzY3MuSWRlbnRpZmllci5jaGVjayhjdXJyUG9zKSkge1xuICAgICAgICBjdXJyUG9zID0gY3VyclBvcy5xdWFsaWZpY2F0aW9uO1xuICAgICAgfVxuICAgICAgaWYgKGpzY3MuSWRlbnRpZmllci5jaGVjayhjdXJyUG9zKSkge1xuICAgICAgICBpZHMuYWRkKGN1cnJQb3MubmFtZSk7XG4gICAgICB9XG4gICAgfVxuICB9XG5cbiAgLy8gSWRlYWxseSB0aGlzIHdvdWxkIGJlIHRoZSBvbmx5IGZpbmQgaW4gaGVyZSwgYnV0IGl0J3Mgbm90IGJlY2F1c2Ugb2YgYVxuICAvLyBqc2NvZGVzaGlmdCBidWcsIHNvIHdlIGhhdmUgdG8gbWFudWFsbHkgc2VhcmNoIGZvciBhIHNwZWNpZmljIGtpbmQgb2ZcbiAgLy8gR2VuZXJpY1R5cGVBbm5vdGF0aW9ucyBvbiBjbGFzcyBzdXBlciB0eXBlc1xuICByb290XG4gICAgLmZpbmQoanNjcy5HZW5lcmljVHlwZUFubm90YXRpb24pXG4gICAgLmZvckVhY2gocGF0aCA9PiBoYW5kbGVHZW5lcmljVHlwZShwYXRoLm5vZGUpKTtcblxuICAvLyBUT0RPOiBEZWxldGUgdGhpcyBhZnRlciBodHRwczovL2dpdGh1Yi5jb20vZmFjZWJvb2svanNjb2Rlc2hpZnQvaXNzdWVzLzM0XG4gIHJvb3RcbiAgICAuZmluZChqc2NzLkNsYXNzRGVjbGFyYXRpb24pXG4gICAgLmZpbHRlcihwYXRoID0+IChcbiAgICAgIHBhdGgubm9kZS5zdXBlclR5cGVQYXJhbWV0ZXJzICYmXG4gICAgICBBcnJheS5pc0FycmF5KHBhdGgubm9kZS5zdXBlclR5cGVQYXJhbWV0ZXJzLnBhcmFtcylcbiAgICApKVxuICAgIC5mb3JFYWNoKHBhdGggPT4ge1xuICAgICAganNjcyhwYXRoLm5vZGUuc3VwZXJUeXBlUGFyYW1ldGVycylcbiAgICAgICAgLmZpbmQoanNjcy5HZW5lcmljVHlwZUFubm90YXRpb24pXG4gICAgICAgIC5mb3JFYWNoKHN1YlBhdGggPT4gaGFuZGxlR2VuZXJpY1R5cGUoc3ViUGF0aC5ub2RlKSk7XG4gICAgfSk7XG5cbiAgcmV0dXJuIGlkcztcbn1cblxubW9kdWxlLmV4cG9ydHMgPSBnZXROb25EZWNsYXJhdGlvblR5cGVzO1xuIl19
