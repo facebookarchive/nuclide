@@ -61,6 +61,10 @@ async function createPhabricatorRevision(filePath: NuclideUri, message: string):
   await getService(filePath).createPhabricatorRevision(filePath, message);
 }
 
+async function updatePhabricatorRevision(filePath: NuclideUri, message: string): Promise<void> {
+  await getService(filePath).updatePhabricatorRevision(filePath, message);
+}
+
 module.exports = {
   findArcConfigDirectory,
   readArcConfig,
@@ -68,4 +72,5 @@ module.exports = {
   getProjectRelativePath,
   findDiagnostics,
   createPhabricatorRevision,
+  updatePhabricatorRevision,
 };

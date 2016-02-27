@@ -97,12 +97,11 @@ export async function findDiagnostics(pathToFiles: Array<NuclideUri>):
   return [].concat(...(await Promise.all(results)));
 }
 
-export async function createPhabricatorRevision(
+async function _callArcDiff(
   filePath: NuclideUri,
-  message: string,
+  extraArcDiffArgs: Array<string>,
 ): Promise<void> {
   const env = {...process.env};
-  const extraArcDiffArgs = ['-m', message];
   // Even with `--verbatim` Arcanist will sometimes launch and enditor in interactive mode.  With
   // the editor set to `/bin/false` it will immediately exit with a failure and abort `arc diff`.
   env['EDITOR'] = 'false';
@@ -118,6 +117,20 @@ export async function createPhabricatorRevision(
     'env': env,
   };
   await asyncExecute('bash', args, options);
+}
+
+export async function createPhabricatorRevision(
+  filePath: NuclideUri,
+  message: string,
+): Promise<void> {
+  await _callArcDiff(filePath, ['-m', message]);
+}
+
+export async function updatePhabricatorRevision(
+  filePath: NuclideUri,
+  message: string,
+): Promise<void> {
+  await _callArcDiff(filePath, ['-m', message]);
 }
 
 async function execArcLint(cwd: string, filePaths: Array<NuclideUri>):
