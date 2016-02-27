@@ -193,45 +193,53 @@ class DiffViewModel {
     revisionsState: RevisionsState,
     reloadFileDiff: boolean,
   ): Promise<void> {
-    if (repositoryStack === this._activeRepositoryStack) {
-      track('diff-view-update-timeline-revisions', {
-        revisionsCount: `${revisionsState.revisions.length}`,
-      });
-      const {revisions} = revisionsState;
-      invariant(revisions.length > 0, 'Diff View Error: Zero Revisions');
-      const headRevision = revisions[revisions.length - 1];
-      const headMessage = headRevision.description;
-      // TODO(most): Use @mareksapota's utility when done.
-      const hasPhabricatorRevision = headMessage.indexOf('Differential Revision:') !== -1;
-      this._setState({
-        ...this._state,
-        publishMessageLoading: false,
-        publishMessage: hasPhabricatorRevision
-          ? UPDATE_REVISION_TEMPLATE
-          : headMessage,
-        isPublishing: false,
-        publishMode: hasPhabricatorRevision ? PublishMode.UPDATE : PublishMode.CREATE,
-        headRevision,
-      });
-      this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
-
-      // Update the active file, if changed.
-      const {filePath} = this._activeFileState;
-      if (!filePath || !reloadFileDiff) {
-        return;
-      }
-      const {
-        committedContents,
-        filesystemContents,
-        revisionInfo,
-      } = await this._fetchHgDiff(filePath);
-      await this._updateDiffStateIfChanged(
-        filePath,
-        committedContents,
-        filesystemContents,
-        revisionInfo,
-      );
+    if (repositoryStack !== this._activeRepositoryStack) {
+      return;
     }
+    track('diff-view-update-timeline-revisions', {
+      revisionsCount: `${revisionsState.revisions.length}`,
+    });
+    this._onUpdateRevisionsState(revisionsState);
+
+    // Update the active file, if changed.
+    const {filePath} = this._activeFileState;
+    if (!filePath || !reloadFileDiff) {
+      return;
+    }
+    const {
+      committedContents,
+      filesystemContents,
+      revisionInfo,
+    } = await this._fetchHgDiff(filePath);
+    await this._updateDiffStateIfChanged(
+      filePath,
+      committedContents,
+      filesystemContents,
+      revisionInfo,
+    );
+  }
+
+  _onUpdateRevisionsState(revisionsState: RevisionsState): void {
+    const {revisions} = revisionsState;
+    invariant(revisions.length > 0, 'Diff View Error: Zero Revisions');
+    const headRevision = revisions[revisions.length - 1];
+    const headMessage = headRevision.description;
+    // TODO(most): Use @mareksapota's utility when done.
+    const hasPhabricatorRevision = headMessage.indexOf('Differential Revision:') !== -1;
+    this._setState({
+      ...this._state,
+      publishMessageLoading: false,
+      publishMessage: hasPhabricatorRevision
+        ? UPDATE_REVISION_TEMPLATE
+        : headMessage,
+      isPublishing: false,
+      publishMode: hasPhabricatorRevision ? PublishMode.UPDATE : PublishMode.CREATE,
+      headRevision,
+    });
+    if (this._state.viewMode === DiffMode.COMMIT_MODE) {
+      this.loadCommitMessage();
+    }
+    this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
   }
 
   setPublishMessage(publishMessage: string) {
@@ -450,8 +458,6 @@ class DiffViewModel {
     try {
       await promises.awaitMilliSeconds(5000);
       await Promise.resolve();
-      // Switch to browse mode after a successful publish.
-      this.setViewMode(DiffMode.BROWSE_MODE);
     } catch (error) {
       notifyInternalError(error);
     } finally {
@@ -589,9 +595,12 @@ class DiffViewModel {
       commitModeState: CommitModeState.AWAITING_COMMIT,
     });
 
+    const activeStack = this._activeRepositoryStack;
     try {
-      invariant(this._activeRepositoryStack);
-      await this._activeRepositoryStack.commit(message);
+      invariant(activeStack, 'No active repository stack');
+      await activeStack.commit(message);
+      // Force trigger an update to the revisions to update the UI state with the new comit info.
+      activeStack.getRevisionsStatePromise();
     } catch (e) {
       atom.notifications.addError(
         'Error creating commit',
@@ -605,9 +614,6 @@ class DiffViewModel {
     }
 
     atom.notifications.addSuccess('Commit created');
-    // After a successful commit, load the appropriate commit message again because the one in the
-    // editor might no longer be correct for the current repo state.
-    this.loadCommitMessage();
   }
 
   getState(): State {

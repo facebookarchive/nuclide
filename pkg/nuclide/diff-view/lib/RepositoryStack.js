@@ -135,7 +135,7 @@ export default class RepositoryStack {
       this._revisionsStatePromise = null;
       return;
     }
-    const revisionsState = await this._getRevisionsStatePromise();
+    const revisionsState = await this.getRevisionsStatePromise();
     this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
 
     // If the commits haven't changed ids, then thier diff haven't changed as well.
@@ -169,7 +169,7 @@ export default class RepositoryStack {
     this._emitter.emit(CHANGE_COMPARE_STATUS_EVENT, this._compareFileChanges);
   }
 
-  _getRevisionsStatePromise(): Promise<RevisionsState> {
+  getRevisionsStatePromise(): Promise<RevisionsState> {
     this._revisionsStatePromise = this._fetchRevisionsState().then(
       this._amendSelectedCompareCommitId.bind(this),
       error => {
@@ -185,7 +185,7 @@ export default class RepositoryStack {
     if (revisionsStatePromise != null) {
       return revisionsStatePromise.then(this._amendSelectedCompareCommitId.bind(this));
     } else {
-      return this._getRevisionsStatePromise();
+      return this.getRevisionsStatePromise();
     }
   }
 

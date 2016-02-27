@@ -34,17 +34,18 @@ class DiffCommitView extends React.Component {
   }
 
   componentDidMount(): void {
+    this._setCommitMessage();
     this.props.diffModel.loadCommitMessage();
   }
 
   componentDidUpdate(prevProps: Props, prevState: void): void {
-    if (
-      this.props.commitModeState === CommitModeState.READY
-      && prevProps.commitModeState !== CommitModeState.READY
-    ) {
-      // If the model went from an unready state to a ready state, sync the commit message.
-      this.refs['message'].getTextBuffer().setText(this.props.commitMessage || '');
+    if (this.props.commitMessage !== prevProps.commitMessage) {
+      this._setCommitMessage();
     }
+  }
+
+  _setCommitMessage(): void {
+    this.refs['message'].getTextBuffer().setText(this.props.commitMessage || '');
   }
 
   render(): ReactElement {
@@ -53,6 +54,7 @@ class DiffCommitView extends React.Component {
       commitMode,
       commitModeState,
     } = this.props;
+    const isLoading = commitModeState !== CommitModeState.READY;
 
     if (commitModeState === CommitModeState.READY) {
       actionOrMessage = (
@@ -68,8 +70,10 @@ class DiffCommitView extends React.Component {
           loadingMessage = 'Committing...';
           break;
         case CommitModeState.LOADING_COMMIT_MESSAGE:
-        default:
           loadingMessage = 'Loading...';
+          break;
+        default:
+          loadingMessage = 'Unknown Commit State!';
           break;
       }
 
@@ -92,20 +96,21 @@ class DiffCommitView extends React.Component {
         <button
           className={className}
           key={modeValue}
+          disabled={isLoading}
           onClick={() => this._onChangeCommitMode(modeValue)}>
           {modeValue}
         </button>
       );
     });
 
-    // TODO(ssorallen): Ensure a transition in `readOnly` maintains the text value of the
-    // `AtomTextEditor` instance. Currently, changing this value instantiates a new `TextBuffer` and
-    // wipes out the current state.
-    // readOnly={commitModeState !== CommitModeState.READY}
     return (
       <div className="nuclide-diff-mode">
         <div className="message-editor-wrapper">
-          <AtomTextEditor ref="message" gutterHidden={true} />
+          <AtomTextEditor
+            ref="message"
+            gutterHidden={true}
+            readOnly={isLoading}
+          />
         </div>
         <div className="padded">
           <div className="btn-group btn-group-sm inline-block">
