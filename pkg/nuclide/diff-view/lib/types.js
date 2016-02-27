@@ -20,6 +20,8 @@ export type CommitModeStateType = 'Ready' | 'Loading Commit Message' | 'Awaiting
 
 export type PublishModeType = 'Create' | 'Update';
 
+export type PublishModeStateType = 'Ready' | 'Loading Publish Message' | 'Awaiting Publish';
+
 export type FileChangeStatusValue = 1 | 2 | 3 | 4 | 5;
 
 export type FileChange = {

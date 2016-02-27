@@ -244,16 +244,14 @@ class DiffViewComponent extends React.Component {
   _renderPublishView(): void {
     const {diffModel} = this.props;
     const {
-      publishMessageLoading,
-      publishMessage,
-      isPublishing,
       publishMode,
+      publishModeState,
+      publishMessage,
       headRevision,
     } = diffModel.getState();
     this._publishComponent = ReactDOM.render(
       <DiffPublishView
-        isLoading={publishMessageLoading}
-        isPublishing={isPublishing}
+        publishModeState={publishModeState}
         message={publishMessage}
         publishMode={publishMode}
         headRevision={headRevision}

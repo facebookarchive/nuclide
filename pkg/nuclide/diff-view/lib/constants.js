@@ -18,6 +18,7 @@ import type {
   DiffModeType,
   FileChangeStatusValue,
   PublishModeType,
+  PublishModeStateType,
 } from './types';
 
 const FileChangeStatus: {[key: string]: FileChangeStatusValue} = {
@@ -62,6 +63,16 @@ const PublishMode = {
 // This is to work around flow's missing support of enums.
 (PublishMode: { [key: string]: PublishModeType });
 
+const PublishModeState = {
+  READY: 'Ready',
+  LOADING_PUBLISH_MESSAGE: 'Loading Publish Message',
+  AWAITING_PUBLISH: 'Awaiting Publish',
+};
+
+// This is to work around flow's missing support of enums.
+(PublishModeState: { [key: string]: PublishModeStateType });
+
+
 const HgStatusToFileChangeStatus : {[key: StatusCodeNumberValue]: FileChangeStatusValue} = {
   [HgStatusCodeNumber.ADDED]: FileChangeStatus.ADDED,
   [HgStatusCodeNumber.MODIFIED]: FileChangeStatus.MODIFIED,
@@ -83,6 +94,7 @@ module.exports = {
   CommitMode,
   CommitModeState,
   PublishMode,
+  PublishModeState,
   FileChangeStatus,
   HgStatusToFileChangeStatus,
   FileChangeStatusToPrefix,

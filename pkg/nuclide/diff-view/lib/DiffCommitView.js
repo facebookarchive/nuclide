@@ -35,7 +35,6 @@ class DiffCommitView extends React.Component {
 
   componentDidMount(): void {
     this._setCommitMessage();
-    this.props.diffModel.loadCommitMessage();
   }
 
   componentDidUpdate(prevProps: Props, prevState: void): void {

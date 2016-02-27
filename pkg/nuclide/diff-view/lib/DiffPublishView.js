@@ -12,17 +12,16 @@
 import AtomTextEditor from '../../ui/atom-text-editor';
 import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
 import type DiffViewModel from './DiffViewModel';
-import type {PublishModeType} from './types';
+import type {PublishModeType, PublishModeStateType} from './types';
 
 import invariant from 'assert';
 import {React} from 'react-for-atom';
-import {PublishMode} from './constants';
+import {PublishMode, PublishModeState} from './constants';
 
 type Props = {
-  message: string;
-  isPublishing: boolean;
-  isLoading: boolean;
+  message: ?string;
   publishMode: PublishModeType;
+  publishModeState: PublishModeStateType;
   headRevision: ?RevisionInfo;
   diffModel: DiffViewModel;
 };
@@ -36,8 +35,8 @@ class DiffPublishView extends React.Component {
   }
 
   render(): ReactElement {
-    const {isPublishing, isLoading, publishMode, headRevision} = this.props;
-    const isBusy = isPublishing || isLoading;
+    const {publishModeState, publishMode, headRevision} = this.props;
+    const isBusy = publishModeState !== PublishModeState.READY;
 
     let revisionView = null;
     let publishMessage = null;
@@ -48,8 +47,9 @@ class DiffPublishView extends React.Component {
       publishMessage = 'Publish Phabricator Revision';
     } else {
       publishMessage = 'Update Phabricator Revision';
-      invariant(headRevision != null, 'Diff View: Updated Revision can not be null');
-      revisionView = <DiffRevisionView revision={headRevision} />;
+      if (headRevision != null) {
+        revisionView = <DiffRevisionView revision={headRevision} />;
+      }
     }
 
     const publishButton = (
@@ -59,11 +59,13 @@ class DiffPublishView extends React.Component {
         {publishMessage}
       </button>
     );
-    if (isLoading) {
-      loadingIndicator = <span className="loading loading-spinner-tiny inline-block"></span>;
-    }
-    if (isPublishing) {
-      progressIndicator = <progress className="inline-block"></progress>;
+    switch (publishModeState) {
+      case PublishModeState.LOADING_PUBLISH_MESSAGE:
+        loadingIndicator = <span className="loading loading-spinner-tiny inline-block"></span>;
+        break;
+      case PublishModeState.AWAITING_PUBLISH:
+        progressIndicator = <progress className="inline-block"></progress>;
+        break;
     }
     return (
       <div className="nuclide-diff-mode">
@@ -105,7 +107,7 @@ class DiffPublishView extends React.Component {
   }
 
   _setPublishText(): void {
-    this.refs['message'].getTextBuffer().setText(this.props.message);
+    this.refs['message'].getTextBuffer().setText(this.props.message || '');
   }
 
   _onClickPublish(): void {

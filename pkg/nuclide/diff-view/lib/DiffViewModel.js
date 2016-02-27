@@ -18,6 +18,7 @@ import type {
   CommitModeType,
   CommitModeStateType,
   PublishModeType,
+  PublishModeStateType,
   DiffModeType,
 } from './types';
 import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
@@ -25,7 +26,13 @@ import type {NuclideUri} from '../../remote-uri';
 
 import invariant from 'assert';
 import {CompositeDisposable, Emitter} from 'atom';
-import {CommitMode, CommitModeState, DiffMode, PublishMode} from './constants';
+import {
+  DiffMode,
+  CommitMode,
+  CommitModeState,
+  PublishMode,
+  PublishModeState,
+} from './constants';
 import {repositoryForPath} from '../../hg-git-bridge';
 import {track, trackTiming} from '../../analytics';
 import {getFileSystemContents} from './utils';
@@ -69,10 +76,9 @@ type State = {
   commitMessage: ?string;
   commitMode: CommitModeType;
   commitModeState: CommitModeStateType;
-  publishMessageLoading: boolean;
-  publishMessage: string;
-  isPublishing: boolean;
+  publishMessage: ?string;
   publishMode: PublishModeType;
+  publishModeState: PublishModeStateType;
   headRevision: ?RevisionInfo;
 };
 
@@ -107,10 +113,9 @@ class DiffViewModel {
       commitMessage: null,
       commitMode: CommitMode.COMMIT,
       commitModeState: CommitModeState.READY,
-      publishMessageLoading: true,
-      publishMessage: '',
+      publishMessage: null,
       publishMode: PublishMode.CREATE,
-      isPublishing: false,
+      publishModeState: PublishModeState.READY,
       headRevision: null,
     };
     this._updateRepositories();
@@ -220,26 +225,8 @@ class DiffViewModel {
   }
 
   _onUpdateRevisionsState(revisionsState: RevisionsState): void {
-    const {revisions} = revisionsState;
-    invariant(revisions.length > 0, 'Diff View Error: Zero Revisions');
-    const headRevision = revisions[revisions.length - 1];
-    const headMessage = headRevision.description;
-    // TODO(most): Use @mareksapota's utility when done.
-    const hasPhabricatorRevision = headMessage.indexOf('Differential Revision:') !== -1;
-    this._setState({
-      ...this._state,
-      publishMessageLoading: false,
-      publishMessage: hasPhabricatorRevision
-        ? UPDATE_REVISION_TEMPLATE
-        : headMessage,
-      isPublishing: false,
-      publishMode: hasPhabricatorRevision ? PublishMode.UPDATE : PublishMode.CREATE,
-      headRevision,
-    });
-    if (this._state.viewMode === DiffMode.COMMIT_MODE) {
-      this.loadCommitMessage();
-    }
     this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
+    this._loadModeState();
   }
 
   setPublishMessage(publishMessage: string) {
@@ -250,10 +237,25 @@ class DiffViewModel {
   }
 
   setViewMode(viewMode: DiffModeType) {
+    if (viewMode === this._state.viewMode) {
+      return;
+    }
     this._setState({
       ...this._state,
       viewMode,
     });
+    this._loadModeState();
+  }
+
+  _loadModeState(): void {
+    switch (this._state.viewMode) {
+      case DiffMode.COMMIT_MODE:
+        this._loadCommitModeState();
+        break;
+      case DiffMode.PUBLISH_MODE:
+        this._loadPublishModeState().catch(notifyInternalError);
+        break;
+    }
   }
 
   activateFile(filePath: NuclideUri): void {
@@ -452,7 +454,7 @@ class DiffViewModel {
     this._setState({
       ...this._state,
       publishMessage,
-      isPublishing: true,
+      publishModeState: PublishModeState.AWAITING_PUBLISH,
     });
     // TODO(most): do publish to Phabricator.
     try {
@@ -464,7 +466,7 @@ class DiffViewModel {
       this._setState({
         ...this._state,
         publishMessage,
-        isPublishing: false,
+        publishModeState: PublishModeState.READY,
       });
     }
   }
@@ -526,10 +528,7 @@ class DiffViewModel {
     return this._compareFileChanges;
   }
 
-  // TODO(ssorallen): This should be removed by moving the DiffMode from DiffViewComponent's state
-  //   into this model. After that, commit message loading can be triggered by either changing the
-  //   the diff mode *or* the commit mode.
-  async loadCommitMessage(): Promise<void> {
+  async _loadCommitModeState(): Promise<void> {
     this._setState({
       ...this._state,
       commitModeState: CommitModeState.LOADING_COMMIT_MESSAGE,
@@ -556,6 +555,35 @@ class DiffViewModel {
         commitModeState: CommitModeState.READY,
       });
     }
+  }
+
+  async _loadPublishModeState(): Promise<void> {
+    this._setState({
+      ...this._state,
+      publishMode: PublishMode.CREATE,
+      publishModeState: PublishModeState.LOADING_PUBLISH_MESSAGE,
+      publishMessage: null,
+      headRevision: null,
+    });
+    const revisionsState = await this.getActiveRevisionsState();
+    if (revisionsState == null) {
+      throw new Error('Cannot Load Publish View: No active file or repository');
+    }
+    const {revisions} = revisionsState;
+    invariant(revisions.length > 0, 'Diff View Error: Zero Revisions');
+    const headRevision = revisions[revisions.length - 1];
+    const headMessage = headRevision.description;
+    // TODO(most): Use @mareksapota's utility when done.
+    const hasPhabricatorRevision = headMessage.indexOf('Differential Revision:') !== -1;
+    this._setState({
+      ...this._state,
+      publishMode: hasPhabricatorRevision ? PublishMode.UPDATE : PublishMode.CREATE,
+      publishModeState: PublishModeState.READY,
+      publishMessage: hasPhabricatorRevision
+        ? UPDATE_REVISION_TEMPLATE
+        : headMessage,
+      headRevision,
+    });
   }
 
   async _loadActiveRepositoryLatestCommitMessage(): Promise<string> {
@@ -626,7 +654,7 @@ class DiffViewModel {
       commitMode,
     });
     // When the commit mode changes, load the appropriate commit message.
-    this.loadCommitMessage();
+    this._loadCommitModeState();
   }
 
   activate(): void {
