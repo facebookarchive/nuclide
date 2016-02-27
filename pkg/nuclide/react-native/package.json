@@ -14,7 +14,8 @@
       "nuclide-react-native:stop-debugging",
       "nuclide-react-native:start-packager",
       "nuclide-react-native:stop-packager",
-      "nuclide-react-native:restart-packager"
+      "nuclide-react-native:restart-packager",
+      "nuclide-react-native:reload-app"
     ]
   }
 }
