@@ -48,7 +48,7 @@ To add a project, you can click on the `Add Project Folder` button in the left-h
 the keyboard shortcut `Cmd-Shift-O` (`ctrl-shift-O` on Linux), or choose
 `File | Add Project Folder` from the Atom menu.
 
-![](/static/images/docs/add-project.png)
+![](/static/images/docs/getting-started-add-project.png)
 
 After adding a project you will see the root of your project at the top of the file tree and all
 files and folders as a tree hierarchy underneath it.
