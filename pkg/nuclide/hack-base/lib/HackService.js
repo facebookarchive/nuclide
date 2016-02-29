@@ -97,6 +97,11 @@ export type HackReference = {
   char_end: number;
 };
 
+export type HackTypedRegion = {
+  color: 'default' | 'checked' | 'partial' | 'unchecked';
+  text: string;
+};
+
 const HH_NEWLINE = '<?hh\n';
 const HH_STRICT_NEWLINE = '<?hh // strict\n';
 const HH_DIAGNOSTICS_DELAY_MS = 600;
@@ -363,6 +368,22 @@ export async function queryHack(
   } else {
     return searchResponse.result;
   }
+}
+
+export async function getTypedRegions(filePath: NuclideUri):
+    Promise<?Array<HackTypedRegion>> {
+  const hhResult = await callHHClient(
+    /*args*/ ['--colour', filePath],
+    /*errorStream*/ false,
+    /*outputJson*/ true,
+    /*processInput*/ null,
+    /*file*/ filePath,
+  );
+  if (!hhResult) {
+    return null;
+  }
+  const {result} = hhResult;
+  return (result: any);
 }
 
 /**
