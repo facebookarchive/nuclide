@@ -23,6 +23,7 @@
 - title: Platforms
   items:
   - id: platform-ios
+  - id: platform-android
 - title: Advanced Topics
   items:
   - id: advanced-building-from-source

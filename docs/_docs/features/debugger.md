@@ -467,3 +467,8 @@ Objective-C (e.g., `.m` files) or Swift (e.g., `.swift` files) projects is not s
 
 > We are working on being able to debug native Objective-C projects using
 > [Buck](https://buckbuild.com/).
+
+### Android
+
+Debugging Android applications is currently not supported except through the logs provided
+by Nuclide's [Android Debug Bridge (ADB) Logcat support](/docs/platform/android/emulator-logs).
