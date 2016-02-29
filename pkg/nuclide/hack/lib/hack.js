@@ -22,7 +22,7 @@ import {SymbolType} from '../../hack-common';
 import {getHackService} from './utils';
 import {RemoteConnection} from '../../remote-connection';
 import {compareHackCompletions} from './utils';
-import featureConfig from '../../feature-config';
+import {getConfig} from './config';
 
 const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 
@@ -279,15 +279,6 @@ async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLanguage> {
     return null;
   }
   return await createHackLanguageIfNotExisting(key, uri);
-}
-
-type HackConfig = {
-  hhClientPath: string;
-  useIdeConnection: boolean;
-};
-
-function getConfig(): HackConfig {
-  return (featureConfig.get('nuclide-hack'): any);
 }
 
 async function createHackLanguageIfNotExisting(

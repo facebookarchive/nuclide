@@ -17,6 +17,12 @@
         "type": "boolean",
         "default": false,
         "description": "In Development: For use by Hack/Nuclide team only."
+      },
+      "showTypeCoverage": {
+        "title": "Show regions of unchecked code",
+        "type": "boolean",
+        "default": false,
+        "description": "Show regions of Hack code which are not type checked."
       }
     },
     "packageType": "Atom",
