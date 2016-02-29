@@ -155,6 +155,7 @@ export class FlowRoot {
         // behind separating it out, but prepending it with 'See also: ' and adding it to the end of
         // the messages is what the Flow team recommended.
         operation['descr'] = 'See also: ' + operation['descr'];
+        operation['level'] = message[0]['level'];
         message.push(operation);
       }
       return message;
