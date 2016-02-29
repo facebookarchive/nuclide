@@ -177,7 +177,7 @@ describe('nuclide-arcanist-base', () => {
         const filePaths = filePathMap.get('/fake/path/one');
         invariant(filePaths != null);
         expect(filePaths.length).toBe(3);
-        await arcanistBaseService.findDiagnostics(filePaths);
+        await arcanistBaseService.findDiagnostics(filePaths, []);
         // Expect arc lint to be called once
         expect(execArgs.length).toBe(1);
         for (const filePath of filePaths) {
@@ -189,7 +189,7 @@ describe('nuclide-arcanist-base', () => {
     it('should call `arc lint` separately for paths in different arc config dirs', () => {
       waitsForPromise(async () => {
         const filePaths = ['path1', 'foo'];
-        await arcanistBaseService.findDiagnostics(filePaths);
+        await arcanistBaseService.findDiagnostics(filePaths, []);
         // Expect arc lint to be called twice.
         expect(execArgs.length).toBe(2);
         let path1Args;
@@ -209,7 +209,7 @@ describe('nuclide-arcanist-base', () => {
         setResult({
           'path1': [fakeLint],
         });
-        const lints = await arcanistBaseService.findDiagnostics(['/fake/path/one/path1']);
+        const lints = await arcanistBaseService.findDiagnostics(['/fake/path/one/path1'], []);
         expect(lints).toEqual([fakeLintResult]);
       });
     });
@@ -218,7 +218,7 @@ describe('nuclide-arcanist-base', () => {
       waitsForPromise(async () => {
         const fakeArcResult = {'path1': [fakeLint]};
         setResult(fakeArcResult, fakeArcResult);
-        const lints = await arcanistBaseService.findDiagnostics(['/fake/path/one/path1']);
+        const lints = await arcanistBaseService.findDiagnostics(['/fake/path/one/path1'], []);
         expect(lints).toEqual([fakeLintResult, fakeLintResult]);
       });
     });

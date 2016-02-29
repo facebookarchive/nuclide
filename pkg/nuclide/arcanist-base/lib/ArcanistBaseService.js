@@ -70,7 +70,7 @@ export async function getProjectRelativePath(fileName: NuclideUri): Promise<?str
   return arcPath && fileName ? path.relative(arcPath, fileName) : null;
 }
 
-export async function findDiagnostics(pathToFiles: Array<NuclideUri>):
+export async function findDiagnostics(pathToFiles: Array<NuclideUri>, skip: Array<string>):
     Promise<Array<ArcDiagnostic>> {
   const arcConfigDirToFiles: Map<string, Array<string>> = new Map();
   await Promise.all(
@@ -90,7 +90,7 @@ export async function findDiagnostics(pathToFiles: Array<NuclideUri>):
   // Kick off all the arc execs at once, then await later so they all happen in parallel.
   const results: Array<Promise<Array<ArcDiagnostic>>> = [];
   for (const [arcDir, files] of arcConfigDirToFiles) {
-    results.push(execArcLint(arcDir, files));
+    results.push(execArcLint(arcDir, files, skip));
   }
 
   // Flatten the resulting array
@@ -133,9 +133,12 @@ export async function updatePhabricatorRevision(
   await _callArcDiff(filePath, ['-m', message]);
 }
 
-async function execArcLint(cwd: string, filePaths: Array<NuclideUri>):
+async function execArcLint(cwd: string, filePaths: Array<NuclideUri>, skip: Array<string>):
     Promise<Array<ArcDiagnostic>> {
   const args: Array<string> = ['lint', '--output', 'json', ...filePaths];
+  if (skip.length > 0) {
+    args.push('--skip', skip.join(','));
+  }
   const options = {'cwd': cwd};
   const result = await asyncExecute('arc', args, options);
 
