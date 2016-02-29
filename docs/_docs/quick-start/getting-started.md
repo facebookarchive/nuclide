@@ -105,10 +105,11 @@ properly synchronized.
 
 ## Diff View
 
-Nuclide has built-in support for Mercurial-based repositories. If your project is using Mercurial,
-one of the features that may help your workflow is the *Diff View*. This allows you to quickly see
-what has changed in the files you have modified. It shows what has changed from the current
-committed revision which you are tracking.
+Nuclide has built-in support for [Mercurial-based repositories](/docs/features/hg). If your
+project is using Mercurial, one of the features that may help your workflow is the
+[*Diff View*](/docs/features/hg/#diff-view). This allows you to quickly see what has changed in the
+files you have modified. It shows what has changed from the current committed revision which you
+are tracking.
 
 To access the diff view, click on the `Try It` button (or use the `alt-cmd-shift-D` shortcut or
 `Packages | Diff View`) after making a change to one of the files in your Mercurial project.
