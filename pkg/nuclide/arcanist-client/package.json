@@ -6,6 +6,9 @@
   "description": "Wrapper for arcanist-base which can handle both local and remote paths.",
   "nuclide": {
     "packageType": "Node",
-    "testRunner": "apm"
+    "testRunner": "npm"
+  },
+  "scripts": {
+    "test": "node --harmony ../jasmine/bin/jasmine-node-transpiled spec"
   }
 }
