@@ -103,7 +103,7 @@ def run_eslint():
         start = datetime.now()
         logging.info('Running eslint...')
         subprocess.check_call(
-            ['node', '--harmony', './node_modules/.bin/eslint', '.'],
+            ['node', '--harmony', './node_modules/.bin/eslint', '--max-warnings=0', '.'],
             cwd=NUCLIDE_PATH)
     except subprocess.CalledProcessError:
         sys.exit(1)
