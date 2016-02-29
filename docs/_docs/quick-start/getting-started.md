@@ -64,9 +64,9 @@ the popular features of Nuclide. Click on the `Try It` button to use each featur
 
 ## Quick Open
 
-Nuclide's *Quick Open* feature gives you access to Nuclide's file search mechanism, which includes
-*omnisearch* which can find anything in your opened project. Click on `Try It`, or `Cmd-T`
-(`ctrl-T` on Linux) to access the feature.
+Nuclide's [*Quick Open*](/docs/features/quick-open) feature gives you access to Nuclide's file
+search mechanism, which includes *omnisearch* which can find anything in your opened project.
+Click on `Try It`, or `Cmd-T` (`ctrl-T` on Linux) to access the feature.
 
 ![](/static/images/docs/quick-open.png)
 

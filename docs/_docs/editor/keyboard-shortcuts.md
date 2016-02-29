@@ -47,7 +47,7 @@ for the most common shortcuts provided by Nuclide.
 
 | Key (Mac) | Key (Linux) | Description |
 |-----------|-------------|-------------|
-| `cmd-p` | `ctrl-p` | Use omnisearch to open files, etc. |
+| `cmd-t` | `ctrl-t` | Use omnisearch to open files, etc. |
 | `cmd-\` | `ctrl-\` | Toggle the file tree. |
 | `ctrl-0` | `ctrl-0` | Toggle between the editor and the file tree. |
 | `cmd-k-<arrow>` | `ctrl-k-<arrow>` | Split the current file to the pane represented by `<arrow>`, where `<arrow>` is the down, up, left or right arrow. |
@@ -97,7 +97,7 @@ help accomplish file tasks a bit faster.
 
 | Key (Mac) | Key (Linux) | Command | Description | Alternative |
 |-----------|-------------|---------|-------------|-------------|
-| `cmd-p` | `ctrl-p` | `nuclide-quick-open:find-anything-via-omni-search` | Use this for a global search of anything within your project, including all files, currently open files, etc. | `cmd-t` (Mac) or `ctrl-t` (Linux) |
+| `cmd-t` | `ctrl-t` | `nuclide-quick-open:find-anything-via-omni-search` | Use this for a global search of anything within your project, including all files, currently open files, etc. | `cmd-p` (Mac) or `ctrl-p` (Linux) |
 | `option-cmd-o` | `alt-ctrl-o` | `nuclide-open-filenames-provider:toggle-provider` | This lets you switch between files that are currently open in the editor. Useful if you have a bunch of files open and you want quick access to them. |
 | `option-cmd-r` | `alt-ctrl-r` | `nuclide-recent-files-provider:toggle-provider` | This will show you files that you have recently opened and used in previous sessions of Nuclide.  |
 | `option-cmd-t`| `alt-ctrl-t` | `nuclide-fuzzy-filename-provider:toggle-provider` | This allows you to search for files based on patterns. |

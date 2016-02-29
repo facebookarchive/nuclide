@@ -13,6 +13,7 @@
   - id: feature-debugger
   - id: feature-hg
   - id: feature-toolbar
+  - id: feature-quick-open
   - id: feature-health
 - title: Languages
   items:
