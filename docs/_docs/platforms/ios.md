@@ -5,10 +5,11 @@ layout: docs
 permalink: /docs/platforms/ios/
 ---
 
-Nuclide supports both native iOS development through Objective-C and React Native.
+Nuclide supports both native iOS development through Objective-C and 
+[React Native](/docs/platforms/react-native).
 
 > This section discusses primarily native iOS development since there is a whole separate section
-> dedicated to React Native.
+> dedicated to [React Native](/docs/platforms/react-native).
 
 <br/>
 

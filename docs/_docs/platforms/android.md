@@ -6,12 +6,13 @@ permalink: /docs/platforms/android/
 ---
 
 Nuclide's support for Android is currently much more limited and basic than that for
-[iOS](/docs/platforms/ios). If you are a React Native developer for Android, there is more
+[iOS](/docs/platforms/ios). If you are a 
+[React Native](/docs/platforms/react-native) developer for Android, there is more
 full-featured support for the Flow or JavaScript side of your application. For debugging, there is
 currently built-in support for [ADB logs](#emulator-logs).
 
 > This section discusses primarily native Android development since there is a whole separate
-> section dedicated to React Native.
+> section dedicated to [React Native](/docs/platforms/react-native).
 
 <br/>
 
