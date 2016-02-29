@@ -20,6 +20,9 @@
   - id: language-flow
   - id: language-objective-c
   - id: language-ocaml
+- title: Platforms
+  items:
+  - id: platform-ios
 - title: Advanced Topics
   items:
   - id: advanced-building-from-source
