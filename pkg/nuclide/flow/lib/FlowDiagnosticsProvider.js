@@ -24,6 +24,10 @@ import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 const {promises, array} = require('../../commons');
 const {RequestSerializer} = promises;
 const {DiagnosticsProviderBase} = require('../../diagnostics/provider-base');
+
+import {getLogger} from '../../logging';
+const logger = getLogger();
+
 const {Range} = require('atom');
 const invariant = require('assert');
 
@@ -137,7 +141,7 @@ class FlowDiagnosticsProvider {
     this._busySignalProvider.reportBusy(
       'Flow: Waiting for diagnostics',
       () => this._runDiagnosticsImpl(textEditor),
-    );
+    ).catch(e => logger.error(e));
   }
 
   @trackTiming('flow.run-diagnostics')
