@@ -14,6 +14,7 @@
   - id: feature-hg
   - id: feature-toolbar
   - id: feature-quick-open
+  - id: feature-working-sets
   - id: feature-health
 - title: Languages
   items:
