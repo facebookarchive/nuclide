@@ -10,10 +10,19 @@ Mock module/function to swap in for chromedebugger's send_notifications.
 Captures notifications for later analysis.
 """
 
-class MockServer(object):
+class MockNotificationChannel(object):
 
-    def __init__(self):
+    def __init__(self, running_signal, stopped_sigal):
+        self._running_signal = running_signal
+        self._stopped_sigal = stopped_sigal
         self.sent_notifications = []
 
     def send_notification(self, method, result=None):
         self.sent_notifications.append({'method': method, 'params': result})
+        if method == 'Debugger.resumed':
+            self._running_signal.set()
+        elif method == 'Debugger.paused':
+            self._stopped_sigal.set()
+
+    def enable(self):
+        pass

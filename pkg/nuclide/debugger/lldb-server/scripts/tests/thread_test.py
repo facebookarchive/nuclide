@@ -6,10 +6,8 @@
 
 from ..find_lldb import lldb
 from ..thread_manager import ThreadManager
-from ..remote_objects import RemoteObjectManager
-from ..serialize import LocationSerializer
-from ..file_manager import FileManager
-from mock_server import MockServer
+from ..debugger_store import DebuggerStore
+from mock_notification_channel import MockNotificationChannel
 from test_executable import TestExecutable
 import os
 import shutil
@@ -38,14 +36,9 @@ class ThreadTestCase(unittest.TestCase):
             self.__class__.test_executable.executable_path,
             lldb.LLDB_ARCH_DEFAULT)
 
-        self.server = MockServer()
-        file_manager = FileManager(self.server)
-        self.location_serializer = LocationSerializer(file_manager, '.')
-        self.remote_object_manager = RemoteObjectManager()
-        self.thread_manager = ThreadManager(
-                                self.server,
-                                self.location_serializer,
-                                self.remote_object_manager)
+        self.channel = MockNotificationChannel()
+        debugger_store = DebuggerStore(self.channel, self.lldb_debugger, '.')
+        self.thread_manager = ThreadManager(debugger_store)
 
     def tearDown(self):
         lldb.SBDebugger.Destroy(self.lldb_debugger)
@@ -55,7 +48,7 @@ class ThreadTestCase(unittest.TestCase):
         self.lldb_debugger.GetTargetAtIndex(0).BreakpointCreateByName('main')
         self.lldb_debugger.GetSelectedTarget().LaunchSimple(None, None, os.getcwd())
         self.thread_manager.update(self.lldb_debugger.GetSelectedTarget().process)
-        for notification in self.server.sent_notifications:
+        for notification in self.channel.sent_notifications:
             if notification['method'] == 'Debugger.threadsUpdated':
                 self.assertEquals(len(notification['params']['threads']), 1)
                 thread = notification['params']['threads'][0]

@@ -6,30 +6,17 @@
 
 import lldb
 from handler import HandlerDomain, UndefinedHandlerError, handler
-from remote_objects import ValueListRemoteObject
-import file_manager
-import serialize
 from logging_helper import log_debug
-from thread_manager import ThreadManager
-from event_thread import LLDBListenerThread
-from modules import ModuleSourcePathUpdater
+import file_manager
 
 
 class DebuggerDomain(HandlerDomain):
     '''Implement Chrome debugger domain protocol and
     convert into lldb python API.
     '''
-    def __init__(self, runtimeDomain, fileManager, remoteObjectManager,
-                 basepath='.', **kwargs):
+    def __init__(self, runtimeDomain, **kwargs):
         HandlerDomain.__init__(self, **kwargs)
         self.runtimeDomain = runtimeDomain
-        self.fileManager = fileManager
-        self.remoteObjectManager = remoteObjectManager
-        self.locationSerializer = serialize.LocationSerializer(
-            fileManager, basepath)
-        self.moduleSourcePathUpdater = ModuleSourcePathUpdater(
-            self.debugger.GetSelectedTarget(), fileManager, basepath)
-        self.thread_manager = ThreadManager(self.socket, self.locationSerializer, self.remoteObjectManager)
 
     @property
     def name(self):
@@ -50,21 +37,12 @@ class DebuggerDomain(HandlerDomain):
     def disable(self, params):
         # Not exactly the same as disable. Detach() might be closer to
         # what Chrome Dev Tools is trying to do.
-        self.debugger.GetSelectedTarget().DisableAllBreakpoints()
+        self.debugger_store.debugger.GetSelectedTarget().DisableAllBreakpoints()
         return {}
 
     @handler()
     def enable(self, params):
-        process = self.debugger.GetSelectedTarget().process
-        self.event_thread = LLDBListenerThread(
-            server=self.socket,
-            location_serializer=self.locationSerializer,
-            remote_object_manager=self.remoteObjectManager,
-            module_source_path_updater=self.moduleSourcePathUpdater,
-            thread_manager = self.thread_manager,
-            process=process)
-        self.moduleSourcePathUpdater.modules_updated()
-        self.event_thread.start()
+        self.debugger_store.channel.enable()
         return {}
 
     @handler()
@@ -73,14 +51,15 @@ class DebuggerDomain(HandlerDomain):
 
         thread, frame = frameId.split('.')
         # TODO: These return booleans to indicate success. Throw something if False.
-        self.debugger.GetSelectedTarget().process.SetSelectedThreadByIndexID(int(thread))
-        self.debugger.GetSelectedTarget().process.GetSelectedThread().SetSelectedFrame(int(frame))
+        process = self.debugger_store.debugger.GetSelectedTarget().process
+        process.SetSelectedThreadByIndexID(int(thread))
+        process.GetSelectedThread().SetSelectedFrame(int(frame))
 
         return self.runtimeDomain.evaluate(params)
 
     @handler()
     def getScriptSource(self, params):
-        filelike = self.fileManager.get_by_script_id(params['scriptId'])
+        filelike = self.debugger_store.file_manager.get_by_script_id(params['scriptId'])
         if filelike:
             return {'scriptSource': filelike.script_source}
         else:
@@ -88,32 +67,32 @@ class DebuggerDomain(HandlerDomain):
 
     @handler()
     def pause(self, params):
-        self.debugger.GetSelectedTarget().process.Stop()
+        self.debugger_store.debugger.GetSelectedTarget().process.Stop()
         return {}
 
     @handler()
     def removeBreakpoint(self, params):
-        self.debugger.GetSelectedTarget().BreakpointDelete(int(params['breakpointId']))
+        self.debugger_store.debugger.GetSelectedTarget().BreakpointDelete(int(params['breakpointId']))
         return {}
 
     @handler()
     def resume(self, params):
-        self.debugger.GetSelectedTarget().process.Continue()
+        self.debugger_store.debugger.GetSelectedTarget().process.Continue()
         return {}
 
     @handler()
     def selectThread(self, params):
         threadId = params['threadId']
-        self.debugger.GetSelectedTarget().process.SetSelectedThreadByID(threadId)
+        self.debugger_store.debugger.GetSelectedTarget().process.SetSelectedThreadByID(threadId)
         return {}
 
     @handler()
     def getThreadStack(self, params):
         threadId = params['threadId']
-        thread = self.debugger.GetSelectedTarget().process.GetThreadByID(threadId)
+        thread = self.debugger_store.debugger.GetSelectedTarget().process.GetThreadByID(threadId)
         params = { "callFrames": [] }
         if not thread == None:
-            params["callFrames"] = self.thread_manager.get_thread_stack(thread)
+            params["callFrames"] = self.debugger_store.thread_manager.get_thread_stack(thread)
         return params
 
     @handler()
@@ -122,7 +101,7 @@ class DebuggerDomain(HandlerDomain):
 
     @handler()
     def setBreakpoint(self, params):
-        filelike = self.fileManager.get_by_script_id(params['location']['scriptId'])
+        filelike = self.debugger_store.file_manager.get_by_script_id(params['location']['scriptId'])
         if not filelike or not isinstance(filelike, file_manager.File):
             # Only support setting breakpoints in real files.
             return {}
@@ -132,7 +111,7 @@ class DebuggerDomain(HandlerDomain):
 
     @handler()
     def setBreakpointByUrl(self, params):
-        filelike = self.fileManager.get_by_client_url(params['url'])
+        filelike = self.debugger_store.file_manager.get_by_client_url(params['url'])
         if not filelike or not isinstance(filelike, file_manager.File):
             raise RuntimeError('Cannot find file for breakpoint.')
         return self._set_breakpoint_by_filespec(
@@ -142,9 +121,9 @@ class DebuggerDomain(HandlerDomain):
     @handler()
     def setBreakpointsActive(self, params):
         if params['active']:
-            self.debugger.GetSelectedTarget().EnableAllBreakpoints()
+            self.debugger_store.debugger.GetSelectedTarget().EnableAllBreakpoints()
         else:
-            self.debugger.GetSelectedTarget().DisableAllBreakpoints()
+            self.debugger_store.debugger.GetSelectedTarget().DisableAllBreakpoints()
         return {}
 
     @handler()
@@ -158,23 +137,23 @@ class DebuggerDomain(HandlerDomain):
 
     @handler()
     def stepInto(self, params):
-        self.debugger.GetSelectedTarget().GetProcess().GetSelectedThread().StepInto()
+        self.debugger_store.debugger.GetSelectedTarget().GetProcess().GetSelectedThread().StepInto()
         return {}
 
     @handler()
     def stepOut(self, params):
-        self.debugger.GetSelectedTarget().GetProcess().GetSelectedThread().StepOut()
+        self.debugger_store.debugger.GetSelectedTarget().GetProcess().GetSelectedThread().StepOut()
         return {}
 
     @handler()
     def stepOver(self, params):
-        self.debugger.GetSelectedTarget().GetProcess().GetSelectedThread().StepOver()
+        self.debugger_store.debugger.GetSelectedTarget().GetProcess().GetSelectedThread().StepOver()
         return {}
 
     def _set_breakpoint_by_filespec(self, filespec, line):
-        breakpoint = self.debugger.GetSelectedTarget().BreakpointCreateByLocation(filespec, line)
+        breakpoint = self.debugger_store.debugger.GetSelectedTarget().BreakpointCreateByLocation(filespec, line)
         return {
             'breakpointId': str(breakpoint.id),
             'locations':
-                self.locationSerializer.get_breakpoint_locations(breakpoint),
+                self.debugger_store.location_serializer.get_breakpoint_locations(breakpoint),
         }

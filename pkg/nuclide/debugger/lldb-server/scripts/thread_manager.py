@@ -16,17 +16,10 @@ class ThreadManager(object):
 
     The client expects one `Debugger.threadCreated` message for each thread.
     """
-    def __init__(self, socket, location_serializer, remote_object_manager):
+    def __init__(self, debugger_store):
         """Initialize a ThreadManager for a given connection.
-
-        Args:
-            socket (DebuggerWebSocket): socket to send thread update notification.
-            location_serializer: serialize frame location into JSON.
-            remote_object_manager: manage the local variables in stack frame.
         """
-        self._socket = socket
-        self._location_serializer = location_serializer
-        self._remote_object_manager = remote_object_manager
+        self._debugger_store = debugger_store
 
     def update(self, process):
         """Update threads status for input process."""
@@ -44,7 +37,7 @@ class ThreadManager(object):
                 'status': status_stream.GetData(),
                 'description': description_stream.GetData(),
                 'stop_reason': thread.GetStopReason(),
-                'location': self._location_serializer.get_frame_location(thread.GetSelectedFrame()),
+                'location': self._debugger_store.location_serializer.get_frame_location(thread.GetSelectedFrame()),
             })
 
         params = {
@@ -52,7 +45,7 @@ class ThreadManager(object):
             'stopThreadId': process.GetSelectedThread().GetThreadID(),
             'threads': threads_array,
         }
-        self._socket.send_notification('Debugger.threadsUpdated', params)
+        self._debugger_store.channel.send_notification('Debugger.threadsUpdated', params)
 
     def get_thread_stack(self, thread):
         """Fetch serialized callstack for input thread."""
@@ -60,10 +53,10 @@ class ThreadManager(object):
         for frame in thread.frames:
             # SBFrame.GetVariables(arguments, locals, statics, in_scope_only)
             variables = frame.GetVariables(True, True, True, False)
-            local_variables = self._remote_object_manager.add_object(
+            local_variables = self._debugger_store.remote_object_manager.add_object(
                 ValueListRemoteObject(
                     variables,
-                    self._remote_object_manager.get_add_object_func(CALL_STACK_OBJECT_GROUP)),
+                    self._debugger_store.remote_object_manager.get_add_object_func(CALL_STACK_OBJECT_GROUP)),
                 CALL_STACK_OBJECT_GROUP)
             target = frame.GetThread().GetProcess().GetTarget()
             offset = frame.GetPCAddress().GetLoadAddress(target) \
@@ -71,7 +64,7 @@ class ThreadManager(object):
             result.append({
                 'callFrameId': "%d.%d" % (frame.thread.idx, frame.idx),
                 'functionName': "%s +%x" % (frame.name, offset),
-                'location': self._location_serializer.get_frame_location(frame),
+                'location': self._debugger_store.location_serializer.get_frame_location(frame),
                 'scopeChain': [{
                     'object': local_variables.serialized_value,
                     'type': 'local',
@@ -80,4 +73,4 @@ class ThreadManager(object):
         return result
 
     def release(self):
-        self._remote_object_manager.release_object_group(CALL_STACK_OBJECT_GROUP)
+        self._debugger_store.remote_object_manager.release_object_group(CALL_STACK_OBJECT_GROUP)

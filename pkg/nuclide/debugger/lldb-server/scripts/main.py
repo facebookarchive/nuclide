@@ -18,6 +18,9 @@ import argparse
 import sys
 import os
 from logging_helper import log_debug
+from event_thread import LLDBListenerThread
+from debugger_store import DebuggerStore
+from notification_channel import NotificationChannel
 
 
 def parseArgs():
@@ -60,13 +63,32 @@ def interactive_loop(debugger):
             debugger.HandleCommand(command)
 
 
-def main():
-    args = parseArgs()
-    debugger = lldb.SBDebugger.Create()
-    if args.pname:
-        debugger.HandleCommand('process attach -n %r' % args.pname)
-    elif args.pid:
-        debugger.HandleCommand('process attach -p %d' % args.pid)
+def startDebugging(debugger, arguments):
+    listener = lldb.SBListener('Chrome Dev Tools Listener')
+    is_attach = True
+    if arguments.executable_path:
+        target = debugger.CreateTargetWithFileAndArch(
+            arguments.executable_path,
+            lldb.LLDB_ARCH_DEFAULT)
+        # TODO: pass arguments and environment variables.
+        error = lldb.SBError()
+        target.Launch (listener,
+                        None,      # argv
+                        None,      # envp
+                        None,      # stdin_path
+                        None,      # stdout_path
+                        None,      # stderr_path
+                        None,      # working directory
+                        0,         # launch flags
+                        True,      # Stop at entry
+                        error)     # error
+        is_attach = False
+    elif arguments.pname:
+        debugger.HandleCommand('process attach -n %r' % arguments.pname)
+    elif arguments.pid:
+        debugger.HandleCommand('process attach -p %d' % arguments.pid)
+
+    # TODO: remove these hacky commands after using python API for attach.
 
     # Run a script command in the interpreter, this seems to be necessary as
     # things like assembly seems to not be available from the script
@@ -77,13 +99,23 @@ def main():
     # command confirmations.
     lldb.SBDebugger.SetInternalVariable('auto-confirm', 'true',
                                         debugger.GetInstanceName())
+    return is_attach
+
+
+def main():
+    arguments = parseArgs()
+    debugger = lldb.SBDebugger.Create()
+    is_attach = startDebugging(debugger, arguments)
+
+    channel = NotificationChannel()
+    debugger_store = DebuggerStore(channel, debugger, arguments.basepath)
+    event_thread = LLDBListenerThread(debugger_store, is_attach=is_attach)
+    event_thread.start()
 
     try:
-        app = ChromeDevToolsDebuggerApp(debugger,
-                                        port=args.port,
-                                        basepath=args.basepath)
+        app = ChromeDevToolsDebuggerApp(debugger_store, arguments.port)
         log_debug('Port: %s' % app.debug_server.server_port)
-        if args.interactive:
+        if arguments.interactive:
             app.start_nonblocking()
             interactive_loop(debugger)
         else:

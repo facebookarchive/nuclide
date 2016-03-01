@@ -73,10 +73,9 @@ class HandlerDomain(object):
     debugger -- the associated SBDebugger instance.
     """
 
-    def __init__(self, debugger, socket):
+    def __init__(self, debugger_store):
         super(HandlerDomain, self).__init__()
-        self._debugger = debugger
-        self._socket = socket
+        self._debugger_store = debugger_store
         self._handlers = self._discover_handlers()
 
     def _discover_handlers(self):
@@ -108,9 +107,5 @@ class HandlerDomain(object):
             raise UndefinedHandlerError(method)
 
     @property
-    def debugger(self):
-        return self._debugger
-
-    @property
-    def socket(self):
-        return self._socket
+    def debugger_store(self):
+        return self._debugger_store

@@ -20,13 +20,13 @@ import urlparse
 
 
 class FileManager:
-    def __init__(self, socket):
+    def __init__(self, channel):
         """Initialize a File Manager for a given connection.
 
         Args:
-            socket (DebuggerWebSocket): socket to send file notifications
+            channel (NotificationChannel): channel to send file notifications
         """
-        self.socket = socket
+        self.channel = channel
         self.registered_files = {}
         self.files_by_client_url = {}
 
@@ -43,7 +43,7 @@ class FileManager:
         if filelike.script_id not in self.registered_files:
             self.registered_files[filelike.script_id] = filelike
             self.files_by_client_url[filelike.client_url] = filelike
-            self.socket.send_notification('Debugger.scriptParsed', {
+            self.channel.send_notification('Debugger.scriptParsed', {
                 'scriptId': filelike.script_id,
                 'url': filelike.client_url,
                 'startLine': 0,

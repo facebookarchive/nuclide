@@ -7,6 +7,7 @@
 import lldb
 import serialize
 from threading import Thread
+from logging_helper import log_debug
 
 
 class LLDBListenerThread(Thread):
@@ -15,59 +16,64 @@ class LLDBListenerThread(Thread):
     '''
     should_quit = False
 
-    def __init__(self, server, location_serializer, remote_object_manager,
-                 module_source_path_updater, thread_manager, process):
+    def __init__(self, debugger_store, is_attach):
       Thread.__init__(self)
       self.daemon = True
+      self._debugger_store = debugger_store
+      self._listener = debugger_store.debugger.GetListener()
+      # Send scriptPaused for each souce files.
+      self._debugger_store.module_source_path_updater.modules_updated()
 
-      self.server = server
-      self.location_serializer = location_serializer
-      self.remote_object_manager = remote_object_manager
-      self.module_source_path_updater = module_source_path_updater
-      self.listener = lldb.SBListener('Chrome Dev Tools Listener')
-      self.thread_manager = thread_manager
-
+      process = debugger_store.debugger.GetSelectedTarget().process
       self._add_listener_to_process(process)
-      self._broadcast_process_state(process)
-
+      if is_attach:
+          self._broadcast_process_state(process)
       self._add_listener_to_target(process.target)
 
     def _add_listener_to_target(self, target):
         # Listen for breakpoint/watchpoint events (Added/Removed/Disabled/etc).
         broadcaster = target.GetBroadcaster()
         mask = lldb.SBTarget.eBroadcastBitBreakpointChanged | lldb.SBTarget.eBroadcastBitWatchpointChanged | lldb.SBTarget.eBroadcastBitModulesLoaded
-        broadcaster.AddListener(self.listener, mask)
+        broadcaster.AddListener(self._listener, mask)
 
     def _add_listener_to_process(self, process):
         # Listen for process events (Start/Stop/Interrupt/etc).
         broadcaster = process.GetBroadcaster()
         mask = lldb.SBProcess.eBroadcastBitStateChanged
-        broadcaster.AddListener(self.listener, mask)
+        broadcaster.AddListener(self._listener, mask)
+
+    def _sendPausedNotification(self, thread):
+        params = {
+          "callFrames": self._debugger_store.thread_manager.get_thread_stack(thread),
+          "reason": serialize.StopReason_to_string(thread.GetStopReason()),
+          "data": {},
+        }
+        self._debugger_store.channel.send_notification('Debugger.paused', params)
 
     def _broadcast_process_state(self, process):
         # Reset the object group so old frame variable objects don't linger
         # forever.
-        self.thread_manager.release()
+        log_debug('_broadcast_process_state, process state: %d' % process.state)
+        self._debugger_store.thread_manager.release()
         if process.state == lldb.eStateStepping or process.state == lldb.eStateRunning:
-            self.server.send_notification('Debugger.resumed', None)
+            self._debugger_store.channel.send_notification('Debugger.resumed', None)
+        elif process.state == lldb.eStateExited:
+            log_debug('Process exited: %s' % process.GetExitDescription())
+            self.should_quit = True
         else:
+            self._debugger_store.thread_manager.update(process)
             thread = process.GetSelectedThread()
-            self.thread_manager.update(process)
-            params = {
-              "callFrames": self.thread_manager.get_thread_stack(thread),
-              "reason": serialize.StopReason_to_string(thread.GetStopReason()),
-              "data": {},
-            }
-            self.server.send_notification('Debugger.paused', params)
+            log_debug('thread.GetStopReason(): %s' % serialize.StopReason_to_string(thread.GetStopReason()))
+            self._sendPausedNotification(thread)
 
     def _breakpoint_event(self, event):
         breakpoint = lldb.SBBreakpoint.GetBreakpointFromEvent(event)
-        for location in self.location_serializer.get_breakpoint_locations(breakpoint):
+        for location in self._debugger_store.location_serializer.get_breakpoint_locations(breakpoint):
             params = {
                 'breakpointId': str(breakpoint.id),
                 'location': location,
             }
-            self.server.send_notification('Debugger.breakpointResolved', params)
+            self._debugger_store.channel.send_notification('Debugger.breakpointResolved', params)
 
     def _watchpoint_event(self, event):
         # TODO(williamsc) Add support for sending watchpoint change events.
@@ -76,9 +82,9 @@ class LLDBListenerThread(Thread):
     def run(self):
         while not self.should_quit:
             event = lldb.SBEvent()
-            if self.listener.WaitForEvent(1, event):
+            if self._listener.WaitForEvent(1, event):
                 if event.GetType() == lldb.SBTarget.eBroadcastBitModulesLoaded:
-                    self.module_source_path_updater.modules_updated()
+                    self._debugger_store.module_source_path_updater.modules_updated()
                 elif lldb.SBProcess.EventIsProcessEvent(event):
                     self._broadcast_process_state(lldb.SBProcess.GetProcessFromEvent(event))
                 elif lldb.SBBreakpoint.EventIsBreakpointEvent(event):

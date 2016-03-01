@@ -16,9 +16,8 @@ import value_serializer
 
 
 class RuntimeDomain(HandlerDomain):
-    def __init__(self, remote_object_manager, **kwargs):
+    def __init__(self, **kwargs):
         HandlerDomain.__init__(self, **kwargs)
-        self._remote_object_manager = remote_object_manager
 
     @property
     def name(self):
@@ -43,7 +42,7 @@ class RuntimeDomain(HandlerDomain):
         # C-style expressions.
         if params['objectGroup'] == 'console':
             result = lldb.SBCommandReturnObject()
-            self.debugger.GetCommandInterpreter().HandleCommand(command, result)
+            self.debugger_store.debugger.GetCommandInterpreter().HandleCommand(command, result)
 
             return {
                 'result': {
@@ -52,7 +51,7 @@ class RuntimeDomain(HandlerDomain):
                 'wasThrown': False,
             }
         elif params['objectGroup'] == 'watch-group':
-            frame = self.debugger.GetSelectedTarget().process.GetSelectedThread().GetSelectedFrame()
+            frame = self.debugger_store.debugger.GetSelectedTarget().process.GetSelectedThread().GetSelectedFrame()
             value = frame.EvaluateExpression(command)
             # `value.error` is an `SBError` instance which captures whether the
             # result had an error. `SBError.success` denotes no error.
@@ -60,7 +59,7 @@ class RuntimeDomain(HandlerDomain):
                 return {
                     'result': value_serializer.serialize_value(
                         value,
-                        self._remote_object_manager.get_add_object_func(params['objectGroup'])),
+                        self.debugger_store.remote_object_manager.get_add_object_func(params['objectGroup'])),
                     'wasThrown': False,
                 }
             else:
@@ -96,7 +95,7 @@ class RuntimeDomain(HandlerDomain):
             generatePreview	boolean
                 Whether preview should be generated for the results.
         """
-        obj = self._remote_object_manager.get_object(params['objectId'])
+        obj = self.debugger_store.remote_object_manager.get_object(params['objectId'])
         if obj and not params.get('accessorPropertiesOnly', False):
             return obj.properties
         else:
@@ -105,14 +104,14 @@ class RuntimeDomain(HandlerDomain):
     def _notifyExecutionContext(self):
         # Send a notification context with frame id of the dummy frame sent by
         # Page.getResourceTree.
-        selectedTarget = self.debugger.GetSelectedTarget()
+        selectedTarget = self.debugger_store.debugger.GetSelectedTarget()
         if selectedTarget.IsValid():
-            filename = self.debugger.GetSelectedTarget().executable.basename
-            pid = self.debugger.GetSelectedTarget().process.id
+            filename = self.debugger_store.debugger.GetSelectedTarget().executable.basename
+            pid = self.debugger_store.debugger.GetSelectedTarget().process.id
             name = 'LLDB - %s (%d)' % (filename, pid)
         else:
             name = 'LLDB - no target'
-        self.socket.send_notification(
+        self.debugger_store.channel.send_notification(
             'Runtime.executionContextCreated',
             params={
                 'context': {

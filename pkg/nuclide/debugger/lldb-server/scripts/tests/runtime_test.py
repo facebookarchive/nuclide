@@ -5,26 +5,22 @@
 # the root directory of this source tree.
 
 from ..find_lldb import lldb
-from ..remote_objects import RemoteObjectManager
 from ..runtime_domain import RuntimeDomain
-from mock_server import MockServer
+from mock_notification_channel import MockNotificationChannel
 from mock_remote_objects import MockRemoteObject
 from pkg_resources import resource_string
 from test_executable import TestExecutable
 import os
 import unittest
-
+from ..debugger_store import DebuggerStore
 
 class NoProcessMixin(object):
     """Mixin to set up a runtime domain without a target process."""
     def setUp(self):
         super(NoProcessMixin, self).setUp()
         self.debugger = lldb.SBDebugger.Create()
-        self.remote_object_manager = RemoteObjectManager()
-        self.runtime_domain = RuntimeDomain(
-            remote_object_manager=self.remote_object_manager,
-            socket=None,
-            debugger=self.debugger)
+        self.debugger_store = DebuggerStore(None, self.debugger)
+        self.runtime_domain = RuntimeDomain(debugger_store = self.debugger_store)
 
 
 class RealProcessMixin(object):
@@ -56,12 +52,9 @@ class RealProcessMixin(object):
             None, None, os.getcwd())
         self.assertTrue(self.debugger.GetSelectedTarget().process.is_stopped)
 
-        self.mock_server = MockServer
-        self.remote_object_manager = RemoteObjectManager()
-        self.runtime_domain = RuntimeDomain(
-            remote_object_manager=self.remote_object_manager,
-            socket=self.mock_server,
-            debugger=self.debugger)
+        mock_channel = MockNotificationChannel
+        self.debugger_store = DebuggerStore(mock_channel, self.debugger)
+        self.runtime_domain = RuntimeDomain(debugger_store = self.debugger_store)
 
     def tearDown(self):
         super(RealProcessMixin, self).tearDown()
@@ -129,7 +122,7 @@ class RuntimeDomainWatchTest(RealProcessMixin, unittest.TestCase):
         })
         self.assertIn('(char **)', actual['result']['description'])
 
-        obj = self.remote_object_manager.get_object(actual['result']['objectId'])
+        obj = self.debugger_store.remote_object_manager.get_object(actual['result']['objectId'])
         self.assertEqual(1, len(obj.properties['result']),
             'should have one target')
 
@@ -143,7 +136,7 @@ class RuntimeDomainWatchTest(RealProcessMixin, unittest.TestCase):
             obj_level1_target_result['value']['description'],
             'target should have correct string content')
 
-        obj_level1_target = self.remote_object_manager.get_object(
+        obj_level1_target = self.debugger_store.remote_object_manager.get_object(
             obj_level1_target_result['value']['objectId']);
         self.assertEqual(1, len(obj_level1_target.properties['result']),
             'should have one target')
@@ -163,7 +156,7 @@ class RuntimeDomainWatchTest(RealProcessMixin, unittest.TestCase):
         })
         self.assertIn('NSArray', actual['result']['description'])
 
-        obj = self.remote_object_manager.get_object(
+        obj = self.debugger_store.remote_object_manager.get_object(
             actual['result']['objectId'])
         self.assertEqual(3, len(obj.properties['result']),
             'should have three children')
@@ -191,7 +184,7 @@ class RuntimeDomainWatchTest(RealProcessMixin, unittest.TestCase):
         })
         self.assertIn('NSSet', actual['result']['description'])
 
-        obj = self.remote_object_manager.get_object(
+        obj = self.debugger_store.remote_object_manager.get_object(
             actual['result']['objectId'])
         self.assertEqual(3, len(obj.properties['result']),
             'should have three children')
@@ -216,7 +209,7 @@ class RuntimeDomainWatchTest(RealProcessMixin, unittest.TestCase):
             'expression': '(ObjcClassWithIvars *)[ObjcClassWithIvars new]',
         })
         self.assertIn('ObjcClassWithIvars', actual['result']['description'])
-        obj = self.remote_object_manager.get_object(
+        obj = self.debugger_store.remote_object_manager.get_object(
             actual['result']['objectId'])
         self.assertEqual(2, len(obj.properties['result']),
             'should have two properties')
@@ -238,7 +231,7 @@ class RuntimeDomainPropertiesTest(NoProcessMixin, unittest.TestCase):
         test_object = MockRemoteObject()
         test_object.properties = mock_props
 
-        self.remote_object_manager.add_object(test_object)
+        self.debugger_store.remote_object_manager.add_object(test_object)
         result = self.runtime_domain.getProperties({
             'objectId': test_object.id
         })

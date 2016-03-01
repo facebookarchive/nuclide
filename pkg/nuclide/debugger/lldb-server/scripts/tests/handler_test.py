@@ -24,8 +24,7 @@ class HandlerDomainSetTestCase(unittest.TestCase):
 
     def test_duplicate_domain_name(self):
         domain_args = {
-            'socket': None,
-            'debugger': None,
+            'debugger_store': None,
         }
         with self.assertRaises(AssertionError):
             self.set.register_domains([
@@ -38,7 +37,7 @@ class HandlerDomainSetTestCase(unittest.TestCase):
             self.set.handle('Test.working', {})
 
     def test_no_handler(self):
-        self.set.register_domains([TestDomain(None, None)])
+        self.set.register_domains([TestDomain(None)])
         with self.assertRaises(UndefinedHandlerError):
             self.set.handle('Test.notThere', {})
 
@@ -56,5 +55,5 @@ class HandlerDomainTestCase(unittest.TestCase):
             def working(self, params):
                 return {'ok': True}
 
-        set = HandlerDomainSet(WorkingDomain(socket=None, debugger=None))
+        set = HandlerDomainSet(WorkingDomain(debugger_store=None))
         self.assertEquals(set.handle('Test.working', {}), {'ok': True})

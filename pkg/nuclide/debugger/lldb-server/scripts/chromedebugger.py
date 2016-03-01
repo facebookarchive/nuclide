@@ -18,7 +18,6 @@ from debugger_domain import DebuggerDomain
 from file_manager import FileManager
 from handler import HandlerDomainSet, UndefinedDomainError, UndefinedHandlerError
 from page_domain import PageDomain
-from remote_objects import RemoteObjectManager
 from runtime_domain import RuntimeDomain
 from logging_helper import log_debug, log_error
 
@@ -27,36 +26,28 @@ class DebuggerWebSocket(WebSocket):
     # List of HandlerDomainSets for the server to respond to reqs with.
     def __init__(self, *args, **kwargs):
         WebSocket.__init__(self, *args, **kwargs)
-        common_domain_args = {
-            'debugger': self.debugger(),
-            'socket': self,
-        }
-        file_manager = FileManager(self)
-        remote_object_manager = RemoteObjectManager()
+        channel = self.debugger_store().channel
+        channel.setSocket(self)
 
-        runtime_domain = RuntimeDomain(
-            remote_object_manager,
+        common_domain_args = {
+            'debugger_store': self.debugger_store()
+        }
+
+        runtime_domain = RuntimeDomain(**common_domain_args)
+        debugger_domain = DebuggerDomain(
+            runtime_domain,
             **common_domain_args)
         self.handlers = HandlerDomainSet(
             ConsoleDomain(**common_domain_args),
-            DebuggerDomain(
-                runtime_domain,
-                file_manager,
-                remote_object_manager,
-                basepath=self.basepath(),
-                **common_domain_args),
+            debugger_domain,
             PageDomain(**common_domain_args),
             runtime_domain,
         )
 
     @staticmethod
-    def debugger():
+    def debugger_store():
         """The ChromeDevToolsDebugger instance associated with this handler.
         """
-        raise NotImplementedError()
-
-    @staticmethod
-    def basepath():
         raise NotImplementedError()
 
     def _generate_response(self, message):
@@ -97,23 +88,13 @@ class DebuggerWebSocket(WebSocket):
         log_debug('response: %s' % response_in_json);
         self.send(response_in_json)
 
-    def send_notification(self, method, params=None):
-        """ Send a notification over the socket to a Chrome Dev Tools client.
-        """
-        notification_in_json = json.dumps({'method': method, 'params': params});
-        log_debug('send_notification: %s' % notification_in_json);
-        self.send(notification_in_json)
-
 
 class ChromeDevToolsDebuggerApp(object):
-    def __init__(self, debugger, port, basepath='.'):
+    def __init__(self, debugger_store, port):
         class ConcreteDebuggerWebSocket(DebuggerWebSocket):
             @staticmethod
-            def basepath():
-                return basepath
-            @staticmethod
-            def debugger():
-                return debugger
+            def debugger_store():
+                return debugger_store
 
         self.debug_server = make_server(
             'localhost',
