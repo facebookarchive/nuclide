@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../remote-uri';
-import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
+import type {RevisionInfo} from '../../hg-repository-base/lib/HgService';
 
 export type DiffModeType = 'Browse' | 'Commit' | 'Publish';
 

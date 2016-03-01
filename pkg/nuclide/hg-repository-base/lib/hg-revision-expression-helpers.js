@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {RevisionInfo} from './hg-constants';
+import type {RevisionInfo} from './HgService';
 
 import invariant from 'assert';
 

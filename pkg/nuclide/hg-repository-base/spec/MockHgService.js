@@ -10,7 +10,7 @@
  */
 
 import {Observable, Subject} from 'rx';
-import type {DiffInfo, StatusCodeIdValue} from '../lib/hg-constants';
+import type {DiffInfo, StatusCodeIdValue} from '../lib/HgService';
 import type {NuclideUri} from '../../remote-uri';
 
 // This class is meant to be stubbed out.

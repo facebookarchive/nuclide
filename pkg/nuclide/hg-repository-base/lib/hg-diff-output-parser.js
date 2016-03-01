@@ -19,7 +19,7 @@ const HUNK_OLD_INFO_REGEX = /\-([0-9]+)((?:,[0-9]+)?)/;
 const HUNK_NEW_INFO_REGEX = /\+([0-9]+)((?:,[0-9]+)?)/;
 
 import os from 'os';
-import type {DiffInfo} from './hg-constants';
+import type {DiffInfo} from './HgService';
 
 /**
  * Parses the output of `hg diff --unified 0`.

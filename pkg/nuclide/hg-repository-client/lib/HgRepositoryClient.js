@@ -10,6 +10,7 @@
  */
 
 import type {
+  HgService,
   DiffInfo,
   HgStatusOptionValue,
   LineDiff,
@@ -17,11 +18,7 @@ import type {
   RevisionFileChanges,
   StatusCodeIdValue,
   StatusCodeNumberValue,
-} from '../../hg-repository-base/lib/hg-constants';
-
-import type {
-  HgService,
-} from '../../hg-repository-base/lib/HgService.js';
+} from '../../hg-repository-base/lib/HgService';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import {

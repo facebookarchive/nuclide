@@ -11,9 +11,8 @@
 
 import type {HgRepositoryClient} from '../../hg-repository-client';
 import type {FileChangeStatusValue, HgDiffState, RevisionsState} from './types';
-import type {RevisionFileChanges} from '../../hg-repository-base/lib/hg-constants';
+import type {RevisionFileChanges, RevisionInfo} from '../../hg-repository-base/lib/HgService';
 import type {NuclideUri} from '../../remote-uri';
-import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import {HgStatusToFileChangeStatus, FileChangeStatus} from './constants';

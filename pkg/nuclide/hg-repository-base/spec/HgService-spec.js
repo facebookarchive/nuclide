@@ -10,13 +10,16 @@
  */
 
 import path from 'path';
-import HgServiceBase from '../lib/HgServiceBase';
+import {HgService} from '../lib/HgService';
 import {HgStatusOption, StatusCodeId} from '../lib/hg-constants';
 import invariant from 'assert';
 import {fsPromise} from '../../../nuclide/commons';
 
-class TestHgService extends HgServiceBase {
+class TestHgService extends HgService {
   // These tests target the non-watchman-dependent features of LocalHgService.
+  _subscribeToWatchman(): Promise<void> {
+    return Promise.resolve();
+  }
 }
 
 describe('HgService', () => {

@@ -11,7 +11,7 @@
 
 import type DiffViewModel from './DiffViewModel';
 import type {RevisionsState} from './types';
-import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
+import type {RevisionInfo} from '../../hg-repository-base/lib/HgService';
 
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';

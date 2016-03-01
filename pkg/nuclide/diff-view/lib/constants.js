@@ -11,7 +11,7 @@
 
 const {StatusCodeNumber: HgStatusCodeNumber} = require('../../hg-repository-base').hgConstants;
 
-import type {StatusCodeNumberValue} from '../../hg-repository-base/lib/hg-constants';
+import type {StatusCodeNumberValue} from '../../hg-repository-base/lib/HgService';
 import type {
   CommitModeType,
   CommitModeStateType,

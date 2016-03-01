@@ -10,7 +10,7 @@
  */
 
 import AtomTextEditor from '../../ui/atom-text-editor';
-import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
+import type {RevisionInfo} from '../../hg-repository-base/lib/HgService';
 import type DiffViewModel from './DiffViewModel';
 import type {PublishModeType, PublishModeStateType} from './types';
 

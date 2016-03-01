@@ -21,7 +21,7 @@ import type {
   PublishModeStateType,
   DiffModeType,
 } from './types';
-import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
+import type {RevisionInfo} from '../../hg-repository-base/lib/HgService';
 import type {NuclideUri} from '../../remote-uri';
 
 import invariant from 'assert';

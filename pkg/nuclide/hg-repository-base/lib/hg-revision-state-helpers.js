@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {RevisionFileChanges} from './hg-constants';
+import type {RevisionFileChanges} from './HgService';
 import type {NuclideUri} from '../../remote-uri';
 
 const {asyncExecute} = require('../../commons');
