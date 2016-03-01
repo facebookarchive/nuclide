@@ -1,4 +1,6 @@
 #!/usr/bin/env node --harmony
+'use strict';
+/* @noflow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -7,6 +9,8 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+/*eslint-disable no-var, prefer-const, no-console*/
 
 // Generates a .proxy file to stdout from a service definition file.
 
@@ -31,7 +35,6 @@ if (process.argv.length > 4) {
 }
 
 var fs = require('fs');
-var path = require('path');
 
 var file = process.argv[2];
 var serviceName = process.argv[3];

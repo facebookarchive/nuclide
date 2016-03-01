@@ -1,3 +1,7 @@
+#!/usr/bin/env node --harmony
+'use strict';
+/* @noflow */
+
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,11 +9,16 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+/*eslint-disable no-var, prefer-const, no-console*/
+
 // Forwards the arguments from this script to ./run-jasmine-tests and invokes it runs it under
 // a timeout. This is used to help find tests that are not terminating on their own.
 
+var spawn = require('child_process').spawn;
+
 var TIMEOUT_IN_MILLIS = 5 * 60 * 1000;
-var runJasmineTests = require('path').resolve(__dirname, './run-jasmine-tests')
+var runJasmineTests = require.resolve('./run-jasmine-tests');
 
 // Contents of process.argv:
 // 0 is "node"
@@ -32,7 +41,7 @@ var timeoutId = setTimeout(function() {
   process.abort();
 }, TIMEOUT_IN_MILLIS);
 
-var child = require('child_process').spawn('node', args);
+var child = spawn('node', args);
 
 child.stdout.on('data', function(/* Buffer */ data) {
   process.stdout.write(data.toString());

@@ -31,7 +31,7 @@
     "lint": "eslint",
     "lint-all": "eslint .",
     "fix-all": "eslint --fix .",
-    "service-parser-validate": "./pkg/nuclide/service-parser/bin/validate"
+    "service-parser-validate": "./pkg/nuclide/service-parser/bin/validate.js"
   },
   "dependencies": {
     "async": "1.5.2",

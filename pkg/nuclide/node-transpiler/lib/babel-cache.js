@@ -205,6 +205,6 @@ function transpileFileWithOptions(sourceCode, options, filePath) {
 module.exports = {
   createOrFetchFromCache: createOrFetchFromCache,
 
-  // Exported for nuclide-node-transpiler/bin/transpile.
+  // Exported for nuclide-node-transpiler/bin/transpile.js.
   transpileFile: transpileFile,
 };

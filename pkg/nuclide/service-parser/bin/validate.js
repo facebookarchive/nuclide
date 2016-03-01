@@ -1,4 +1,6 @@
 #!/usr/bin/env node --harmony
+'use strict';
+/* @noflow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -8,8 +10,12 @@
  * the root directory of this source tree.
  */
 
+/*eslint-disable no-var, prefer-const, no-console*/
+
 // Load nuclide-node-transpiler to start transpiling.
 require('../../node-transpiler');
+
+var path = require('path');
 
 // Load the service parser module.
 var serviceParser = require('../lib/main');
@@ -24,7 +30,7 @@ try {
   // Try to generate a proxy from the file.
   var file = process.argv[2];
   var fakeClient = {};
-  var proxy = serviceParser.getProxy('dummyServiceName', require('path').resolve(file), fakeClient);
+  serviceParser.getProxy('dummyServiceName', path.resolve(file), fakeClient);
 } catch (e) {
   // Proxy generation failed.
   console.error('Failed to validate ' + file);
