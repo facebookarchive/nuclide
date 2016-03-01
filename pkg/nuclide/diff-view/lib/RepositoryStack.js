@@ -26,8 +26,8 @@ import {getLogger} from '../../logging';
 
 const logger = getLogger();
 const {serializeAsyncCall} = promises;
-const CHANGE_COMPARE_STATUS_EVENT = 'did-change-compare-status';
-const CHANGE_DIRTY_STATUS_EVENT = 'did-change-dirty-status';
+const UPDATE_COMMIT_MERGE_FILES_EVENT = 'update-commit-merge-files';
+const UPDATE_DIRTY_FILES_EVENT = 'update-dirty-files';
 const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
 const UPDATE_STATUS_DEBOUNCE_MS = 2000;
 
@@ -44,7 +44,7 @@ export default class RepositoryStack {
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
   _dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>;
-  _compareFileChanges: Map<NuclideUri, FileChangeStatusValue>;
+  _commitMergeFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _repository: HgRepositoryClient;
   _revisionsStatePromise: ?Promise<RevisionsState>;
   _revisionsFileHistoryPromise: ?Promise<RevisionsFileHistory>;
@@ -58,7 +58,7 @@ export default class RepositoryStack {
     this._repository = repository;
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
-    this._compareFileChanges = new Map();
+    this._commitMergeFileChanges = new Map();
     this._dirtyFileChanges = new Map();
     this._isActive = false;
     this._revisionIdToFileChanges = new LRU({max: 100});
@@ -95,7 +95,7 @@ export default class RepositoryStack {
   async _updateChangedStatus(): Promise<void> {
     try {
       this._updateDirtyFileChanges();
-      await this._updateCompareFileChanges();
+      await this._updateCommitMergeFileChanges();
     } catch (error) {
       notifyInternalError(error);
     }
@@ -103,7 +103,7 @@ export default class RepositoryStack {
 
   _updateDirtyFileChanges(): void {
     this._dirtyFileChanges = this._getDirtyChangedStatus();
-    this._emitter.emit(CHANGE_DIRTY_STATUS_EVENT, this._dirtyFileChanges);
+    this._emitter.emit(UPDATE_DIRTY_FILES_EVENT, this._dirtyFileChanges);
   }
 
   _getDirtyChangedStatus(): Map<NuclideUri, FileChangeStatusValue> {
@@ -132,7 +132,7 @@ export default class RepositoryStack {
    * That would be a merge of `hg status` with the diff from commits,
    * and `hg log --rev ${revId}` for every commit.
    */
-  async _updateCompareFileChanges(): Promise<void> {
+  async _updateCommitMergeFileChanges(): Promise<void> {
     // We should only update the revision state when the repository is active.
     if (!this._isActive) {
       this._revisionsStatePromise = null;
@@ -165,11 +165,11 @@ export default class RepositoryStack {
         return;
       }
     }
-    this._compareFileChanges = this._computeCompareChangesFromHistory(
+    this._commitMergeFileChanges = this._computeCommitMergeFromHistory(
       revisionsState,
       revisionsFileHistory,
     );
-    this._emitter.emit(CHANGE_COMPARE_STATUS_EVENT, this._compareFileChanges);
+    this._emitter.emit(UPDATE_COMMIT_MERGE_FILES_EVENT, this._commitMergeFileChanges);
   }
 
   getRevisionsStatePromise(): Promise<RevisionsState> {
@@ -292,7 +292,7 @@ export default class RepositoryStack {
     return revisionsFileHistory;
   }
 
-  _computeCompareChangesFromHistory(
+  _computeCommitMergeFromHistory(
     revisionsState: RevisionsState,
     revisionsFileHistory: RevisionsFileHistory,
   ): Map<NuclideUri, FileChangeStatusValue> {
@@ -302,7 +302,7 @@ export default class RepositoryStack {
     // or `HEAD` if not.
     const startCommitId = compareCommitId ? (compareCommitId + 1) : commitId;
     // Get the revision changes that's newer than or is the current commit id.
-    const compareRevisionsFileChanges = revisionsFileHistory
+    const commitRevisionsFileChanges = revisionsFileHistory
       .slice(1) // Exclude the BASE revision.
       .filter(revision => revision.id >= startCommitId)
       .map(revision => revision.changes);
@@ -310,7 +310,7 @@ export default class RepositoryStack {
     // The last status to merge is the dirty filesystem status.
     const mergedFileStatuses = this._mergeFileStatuses(
       this._dirtyFileChanges,
-      compareRevisionsFileChanges,
+      commitRevisionsFileChanges,
     );
     return mergedFileStatuses;
   }
@@ -357,8 +357,8 @@ export default class RepositoryStack {
     return this._dirtyFileChanges;
   }
 
-  getCompareFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
-    return this._compareFileChanges;
+  getCommitMergeFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
+    return this._commitMergeFileChanges;
   }
 
   async fetchHgDiff(filePath: NuclideUri): Promise<HgDiffState> {
@@ -402,23 +402,23 @@ export default class RepositoryStack {
     this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
 
     const revisionsFileHistory = await this._getCachedRevisionFileHistoryPromise(revisionsState);
-    this._compareFileChanges = this._computeCompareChangesFromHistory(
+    this._commitMergeFileChanges = this._computeCommitMergeFromHistory(
       revisionsState,
       revisionsFileHistory,
     );
-    this._emitter.emit(CHANGE_COMPARE_STATUS_EVENT, this._compareFileChanges);
+    this._emitter.emit(UPDATE_COMMIT_MERGE_FILES_EVENT, this._commitMergeFileChanges);
   }
 
-  onDidChangeDirtyStatus(
+  onDidUpdateDirtyFileChanges(
     callback: (fileChanges: Map<NuclideUri, FileChangeStatusValue>) => void
   ): IDisposable {
-    return this._emitter.on(CHANGE_DIRTY_STATUS_EVENT, callback);
+    return this._emitter.on(UPDATE_DIRTY_FILES_EVENT, callback);
   }
 
-  onDidChangeCompareStatus(
+  onDidUpdateCommitMergeFileChanges(
     callback: (fileChanges: Map<NuclideUri, FileChangeStatusValue>) => void
   ): IDisposable {
-    return this._emitter.on(CHANGE_COMPARE_STATUS_EVENT, callback);
+    return this._emitter.on(UPDATE_COMMIT_MERGE_FILES_EVENT, callback);
   }
 
   onDidChangeRevisions(
@@ -430,7 +430,7 @@ export default class RepositoryStack {
   dispose(): void {
     this._subscriptions.dispose();
     this._dirtyFileChanges.clear();
-    this._compareFileChanges.clear();
+    this._commitMergeFileChanges.clear();
     this._revisionIdToFileChanges.reset();
   }
 }

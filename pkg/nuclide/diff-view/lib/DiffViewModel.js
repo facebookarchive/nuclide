@@ -44,8 +44,6 @@ import {
 } from './notifications';
 import {bufferForUri} from '../../atom-helpers';
 
-const CHANGE_DIRTY_STATUS_EVENT = 'did-change-dirty-status';
-const CHANGE_COMPARE_STATUS_EVENT = 'did-change-compare-status';
 const ACTIVE_FILE_UPDATE_EVENT = 'active-file-update';
 const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
 const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
@@ -80,6 +78,9 @@ type State = {
   publishMode: PublishModeType;
   publishModeState: PublishModeStateType;
   headRevision: ?RevisionInfo;
+  dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>;
+  commitMergeFileChanges: Map<NuclideUri, FileChangeStatusValue>;
+  compareFileChanges: Map<NuclideUri, FileChangeStatusValue>;
 };
 
 class DiffViewModel {
@@ -90,8 +91,6 @@ class DiffViewModel {
   _activeFileState: FileChangeState;
   _activeRepositoryStack: ?RepositoryStack;
   _newEditor: ?TextEditor;
-  _dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>;
-  _compareFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _uiProviders: Array<Object>;
   _repositoryStacks: Map<HgRepositoryClient, RepositoryStack>;
   _repositorySubscriptions: Map<HgRepositoryClient, CompositeDisposable>;
@@ -101,8 +100,6 @@ class DiffViewModel {
 
   constructor(uiProviders: Array<Object>) {
     this._uiProviders = uiProviders;
-    this._dirtyFileChanges = new Map();
-    this._compareFileChanges = new Map();
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
     this._repositoryStacks = new Map();
@@ -117,6 +114,9 @@ class DiffViewModel {
       publishMode: PublishMode.CREATE,
       publishModeState: PublishModeState.READY,
       headRevision: null,
+      dirtyFileChanges: new Map(),
+      commitMergeFileChanges: new Map(),
+      compareFileChanges: new Map(),
     };
     this._updateRepositories();
     this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
@@ -158,20 +158,16 @@ class DiffViewModel {
     this._updateDirtyChangedStatus();
   }
 
-  _updateDirtyChangedStatus(): void {
-    this._dirtyFileChanges = this._compareFileChanges = map.union(...array
-      .from(this._repositoryStacks.values())
-      .map(repositoryStack => repositoryStack.getDirtyFileChanges())
-    );
-    this._emitter.emit(CHANGE_DIRTY_STATUS_EVENT, this._dirtyFileChanges);
-  }
-
   _createRepositoryStack(repository: HgRepositoryClient): RepositoryStack {
     const repositoryStack = new RepositoryStack(repository);
     const subscriptions = new CompositeDisposable();
     subscriptions.add(
-      repositoryStack.onDidChangeDirtyStatus(this._updateDirtyChangedStatus.bind(this)),
-      repositoryStack.onDidChangeCompareStatus(this._updateCompareChangedStatus.bind(this)),
+      repositoryStack.onDidUpdateDirtyFileChanges(
+        this._updateDirtyChangedStatus.bind(this)
+      ),
+      repositoryStack.onDidUpdateCommitMergeFileChanges(
+        this._updateCommitMergeFileChanges.bind(this)
+      ),
       repositoryStack.onDidChangeRevisions(revisionsState => {
         this._updateChangedRevisions(repositoryStack, revisionsState, true)
           .catch(notifyInternalError);
@@ -185,12 +181,44 @@ class DiffViewModel {
     return repositoryStack;
   }
 
-  _updateCompareChangedStatus(): void {
-    this._compareFileChanges = map.union(...array
+  _updateDirtyChangedStatus(): void {
+    const dirtyFileChanges = map.union(...array
       .from(this._repositoryStacks.values())
-      .map(repositoryStack => repositoryStack.getCompareFileChanges())
+      .map(repositoryStack => repositoryStack.getDirtyFileChanges())
     );
-    this._emitter.emit(CHANGE_COMPARE_STATUS_EVENT, this._compareFileChanges);
+    this._updateCompareChangedStatus(dirtyFileChanges, null);
+  }
+
+  _updateCommitMergeFileChanges(): void {
+    const commitMergeFileChanges = map.union(...array
+      .from(this._repositoryStacks.values())
+      .map(repositoryStack => repositoryStack.getCommitMergeFileChanges())
+    );
+    this._updateCompareChangedStatus(null, commitMergeFileChanges);
+  }
+
+  _updateCompareChangedStatus(
+    dirtyFileChanges?: ?Map<NuclideUri, FileChangeStatusValue>,
+    commitMergeFileChanges?: ?Map<NuclideUri, FileChangeStatusValue>,
+  ): void {
+    if (dirtyFileChanges == null) {
+      dirtyFileChanges = this._state.dirtyFileChanges;
+    }
+    if (commitMergeFileChanges == null) {
+      commitMergeFileChanges = this._state.commitMergeFileChanges;
+    }
+    let compareFileChanges = null;
+    if (this._state.viewMode === DiffMode.COMMIT_MODE) {
+      compareFileChanges = dirtyFileChanges;
+    } else {
+      compareFileChanges = commitMergeFileChanges;
+    }
+    this._setState({
+      ...this._state,
+      dirtyFileChanges,
+      commitMergeFileChanges,
+      compareFileChanges,
+    });
   }
 
   async _updateChangedRevisions(
@@ -244,6 +272,7 @@ class DiffViewModel {
       ...this._state,
       viewMode,
     });
+    this._updateCompareChangedStatus();
     this._loadModeState();
   }
 
@@ -488,18 +517,6 @@ class DiffViewModel {
     return this._emitter.on(DID_UPDATE_STATE_EVENT, callback);
   }
 
-  onDidChangeDirtyStatus(
-    callback: (dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>) => void
-  ): IDisposable {
-    return this._emitter.on(CHANGE_DIRTY_STATUS_EVENT, callback);
-  }
-
-  onDidChangeCompareStatus(
-    callback: (compareFileChanges: Map<NuclideUri, FileChangeStatusValue>) => void
-  ): IDisposable {
-    return this._emitter.on(CHANGE_COMPARE_STATUS_EVENT, callback);
-  }
-
   onRevisionsUpdate(callback: (state: ?RevisionsState) => void): IDisposable {
     return this._emitter.on(CHANGE_REVISIONS_EVENT, callback);
   }
@@ -518,14 +535,6 @@ class DiffViewModel {
     // Flatten uiComponentLists from list of lists of components to a list of components.
     const uiComponents = [].concat.apply([], uiComponentLists);
     return uiComponents;
-  }
-
-  getDirtyFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
-    return this._dirtyFileChanges;
-  }
-
-  getCompareFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
-    return this._compareFileChanges;
   }
 
   async _loadCommitModeState(): Promise<void> {
@@ -691,7 +700,6 @@ class DiffViewModel {
       subscription.dispose();
     }
     this._repositorySubscriptions.clear();
-    this._dirtyFileChanges.clear();
     if (this._activeSubscriptions != null) {
       this._activeSubscriptions.dispose();
       this._activeSubscriptions = null;

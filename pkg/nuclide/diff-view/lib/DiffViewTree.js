@@ -10,7 +10,7 @@
  */
 
 import type LazyTreeNode from '../../ui/tree';
-import type {FileChange, FileChangeState, FileChangeStatusValue} from './types';
+import type {FileChange, FileChangeStatusValue} from './types';
 import type DiffViewModel from './DiffViewModel';
 import type {NuclideUri} from '../../remote-uri';
 
@@ -72,43 +72,31 @@ function vcsClassNameForEntry(entry: FileChange): string {
 }
 
 type Props = {
+  fileChanges: Map<NuclideUri, FileChangeStatusValue>;
+  activeFilePath: ?NuclideUri;
   diffModel: DiffViewModel;
 };
 
 /* eslint-disable react/prop-types */
 export default class DiffViewTree extends React.Component {
 
-  state: {
-    fileChanges: Map<NuclideUri, FileChangeStatusValue>;
-    selectedFilePath: string;
-  };
-
-  _subscriptions: ?CompositeDisposable;
+  _subscriptions: CompositeDisposable;
 
   constructor(props: Props) {
     super(props);
     (this: any)._onConfirmSelection = this._onConfirmSelection.bind(this);
-    const {diffModel} = props;
-    const {filePath} = diffModel.getActiveFileState();
-    this.state = {
-      fileChanges: diffModel.getCompareFileChanges(),
-      selectedFilePath: filePath,
-    };
+  }
+
+  shouldComponentUpdate(nextProps: Props): boolean {
+    return (
+      this.props.activeFilePath !== nextProps.activeFilePath ||
+      this.props.fileChanges !== nextProps.fileChanges
+    );
   }
 
   componentDidMount(): void {
-    const {diffModel} = this.props;
-    const subscriptions = this._subscriptions = new CompositeDisposable();
-    subscriptions.add(diffModel.onDidChangeCompareStatus(fileChanges => {
-      this.setState({fileChanges, selectedFilePath: this.state.selectedFilePath});
-    }));
-    subscriptions.add(diffModel.onActiveFileUpdates((fileState: FileChangeState) => {
-      const {filePath} = fileState;
-      if (filePath !== this.state.selectedFilePath) {
-        this.setState({selectedFilePath: filePath, fileChanges: this.state.fileChanges});
-      }
-    }));
-    subscriptions.add(atom.contextMenu.add({
+    this._subscriptions = new CompositeDisposable();
+    this._subscriptions.add(atom.contextMenu.add({
       '.nuclide-diff-view-tree .entry.file-change': [
         {type: 'separator'},
         {
@@ -126,7 +114,7 @@ export default class DiffViewTree extends React.Component {
         {type: 'separator'},
       ],
     }));
-    subscriptions.add(atom.commands.add(
+    this._subscriptions.add(atom.commands.add(
       '.nuclide-diff-view-tree .entry.file-change',
       'nuclide-diff-tree:goto-file',
       event => {
@@ -136,7 +124,7 @@ export default class DiffViewTree extends React.Component {
         }
       }
     ));
-    subscriptions.add(atom.commands.add(
+    this._subscriptions.add(atom.commands.add(
       '.nuclide-diff-view-tree .entry.file-change',
       'nuclide-diff-tree:copy-full-path',
       event => {
@@ -144,7 +132,7 @@ export default class DiffViewTree extends React.Component {
         atom.clipboard.write(getPath(filePath || ''));
       }
     ));
-    subscriptions.add(atom.commands.add(
+    this._subscriptions.add(atom.commands.add(
       '.nuclide-diff-view-tree .entry.file-change',
       'nuclide-diff-tree:copy-file-name',
       event => {
@@ -166,11 +154,12 @@ export default class DiffViewTree extends React.Component {
     const treeRoot = this.refs['tree'];
     const noOp = () => {};
     const selectFileNode = () => {
-      treeRoot.selectNodeKey(this.state.selectedFilePath).then(noOp, noOp);
+      treeRoot.selectNodeKey(this.props.activeFilePath).then(noOp, noOp);
     };
     treeRoot.setRoots(roots).then(selectFileNode, selectFileNode);
   }
 
+  // TODO(most): move async code out of the React component class.
   async _rootChildrenFetcher(rootNode: LazyTreeNode): Promise<Immutable.List<LazyTreeNode>> {
     const noChildrenFetcher = async () => Immutable.List.of();
     const {filePath: rootPath} = rootNode.getItem();
@@ -183,7 +172,7 @@ export default class DiffViewTree extends React.Component {
         new DiffViewTreeNode({filePath: nodeName}, rootNode, false, noChildrenFetcher)
       );
     } else {
-      const {fileChanges} = this.state;
+      const {fileChanges} = this.props;
       const filePaths = array.from(fileChanges.keys())
         .sort((filePath1, filePath2) =>
           remoteUri.basename(filePath1).toLowerCase().localeCompare(
@@ -203,10 +192,7 @@ export default class DiffViewTree extends React.Component {
   }
 
   componentWillUnmount(): void {
-    if (this._subscriptions) {
-      this._subscriptions.dispose();
-      this._subscriptions = null;
-    }
+    this._subscriptions.dispose();
   }
 
   render() {
@@ -226,7 +212,7 @@ export default class DiffViewTree extends React.Component {
 
   _onConfirmSelection(node: LazyTreeNode): void {
     const entry: FileChange = node.getItem();
-    if (!entry.statusCode || entry.filePath === this.state.selectedFilePath) {
+    if (!entry.statusCode || entry.filePath === this.props.activateFilePath) {
       return;
     }
     this.props.diffModel.activateFile(entry.filePath);

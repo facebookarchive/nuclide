@@ -261,10 +261,10 @@ module.exports = {
       priority: 300,
     })[0];
     const diffModel = getDiffViewModel();
-    updateToolbarCount(button, diffModel.getDirtyFileChanges().size);
+    updateToolbarCount(button, diffModel.getState().dirtyFileChanges.size);
     invariant(subscriptions);
-    subscriptions.add(diffModel.onDidChangeDirtyStatus(dirtyFileChanges => {
-      updateToolbarCount(button, dirtyFileChanges.size);
+    subscriptions.add(diffModel.onDidUpdateState(() => {
+      updateToolbarCount(button, diffModel.getState().dirtyFileChanges.size);
     }));
   },
 

@@ -262,10 +262,17 @@ class DiffViewComponent extends React.Component {
   }
 
   _renderTree(): void {
+    const {diffModel} = this.props;
+    const {compareFileChanges} = diffModel.getState();
+    const {filePath} = diffModel.getActiveFileState();
     this._treeComponent = ReactDOM.render(
       (
         <div className="nuclide-diff-view-tree">
-          <DiffViewTree diffModel={this.props.diffModel} />
+          <DiffViewTree
+            activeFilePath={filePath}
+            fileChanges={compareFileChanges}
+            diffModel={diffModel}
+          />
         </div>
       ),
       this._getPaneElement(this._treePane),
