@@ -11,7 +11,6 @@
 
 import type {FileTreeNodeData} from '../lib/FileTreeStore';
 
-import {CompositeDisposable} from 'atom';
 import FileTreeStore from '../lib/FileTreeStore';
 import {React} from 'react-for-atom';
 import RootNodeComponent from './RootNodeComponent';
@@ -20,13 +19,13 @@ import {track} from '../../analytics';
 import {once} from '../../commons';
 import classnames from 'classnames';
 
-type State = {
+type Props = {
   nodeToKeepInView: ?FileTreeNodeData;
 };
 
 class FileTree extends React.Component {
-  state: State;
-  _subscriptions: CompositeDisposable;
+  props: Props;
+  state: Object;
   _store: FileTreeStore;
 
   static trackFirstRender = once(() => {
@@ -47,50 +46,25 @@ class FileTree extends React.Component {
 
   constructor(props: void) {
     super(props);
-    this._subscriptions = new CompositeDisposable();
-    this.state = {
-      nodeToKeepInView: null,
-    };
     this._store = FileTreeStore.getInstance();
   }
 
   componentDidMount(): void {
-    this._subscriptions.add(
-      FileTreeStore.getInstance().subscribe(() => {
-        const nodeToKeepInView = FileTreeStore.getInstance().getTrackedNode();
-        if (nodeToKeepInView !== this.state.nodeToKeepInView) {
-          /*
-           * Store a copy of `nodeToKeepInView` so the Store can update during this component's
-           * rendering without wiping out the state of the node that needs to scroll into view.
-           * Store events are fired synchronously, which means `getNodeToKeepInView` will return its
-           * value for at least one `change` event.
-           */
-          this.setState({nodeToKeepInView});
-        } else {
-          // Note: It's safe to call forceUpdate here because the change events are de-bounced.
-          this.forceUpdate();
-        }
-      })
-    );
     FileTree.trackFirstRender(this);
   }
 
-  componentDidUpdate(prevProps: void, prevState: Object): void {
-    if (prevState.nodeToKeepInView != null) {
+  componentDidUpdate(prevProps: Props, prevState: Object): void {
+    if (prevProps.nodeToKeepInView != null) {
       /*
        * Scroll the node into view one final time after being reset to ensure final render is
-       * complete before scrolling. Because the node is in `prevState`, check for its existence
+       * complete before scrolling. Because the node is in `prevProps`, check for its existence
        * before scrolling it.
        */
-      const refNode = this.refs[prevState.nodeToKeepInView.rootKey];
+      const refNode = this.refs[prevProps.nodeToKeepInView.rootKey];
       if (refNode != null) {
-        refNode.scrollNodeIntoViewIfNeeded(prevState.nodeToKeepInView.nodeKey);
+        refNode.scrollNodeIntoViewIfNeeded(prevProps.nodeToKeepInView.nodeKey);
       }
     }
-  }
-
-  componentWillUnmount(): void {
-    this._subscriptions.dispose();
   }
 
   render(): ReactElement {

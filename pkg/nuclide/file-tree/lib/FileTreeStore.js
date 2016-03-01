@@ -1097,14 +1097,12 @@ class FileTreeStore {
 
   _shouldHidePath(nodeKey: string): boolean {
     const isIgnoredPath = this._isIgnoredPath(nodeKey);
-    const isExcludedFromWs = this._isExcludedFromWorkingSet(nodeKey);
-    const isExcludedFromOpenFilesWs = this._isExcludedFromOpenFilesWorkingSet(nodeKey);
-
     if (isIgnoredPath) {
       return true;
     }
 
-    return isExcludedFromWs && isExcludedFromOpenFilesWs;
+    const isExcludedFromWs = this._isExcludedFromWorkingSet(nodeKey);
+    return isExcludedFromWs && this._isExcludedFromOpenFilesWorkingSet(nodeKey);
   }
 
   _isIgnoredPath(nodeKey: string): boolean {
