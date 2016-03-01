@@ -11,6 +11,7 @@
 # (which is provided in ../pythonpath)
 from clang.cindex import *
 from codecomplete import CompletionCache
+from ctypes import *
 from declarationlocation import get_declaration_location_and_spelling
 
 import json
@@ -81,7 +82,63 @@ def is_header_file(src):
     return ext in HEADER_EXTENSIONS
 
 
+def range_dict(source_range):
+    # Clang indexes for line and column are 1-based.
+    return {
+        'file': str(source_range.start.file),
+        'start': {
+            'line': source_range.start.line - 1,
+            'column': source_range.start.column - 1,
+        },
+        'end': {
+            'line': source_range.end.line - 1,
+            'column': source_range.end.column - 1,
+        }
+    }
+
+
+def location_dict(location):
+    return {
+        'file': location.file and str(location.file),
+        'line': location.line - 1,
+        'column': location.column - 1,
+    }
+
+
+def child_diagnostics(lib, diag):
+    class ChildDiagnosticsIterator:
+
+        def __init__(self, diag):
+            self.ds = lib.clang_getChildDiagnostics(diag)
+
+        def __len__(self):
+            return int(lib.clang_getNumDiagnosticsInSet(self.ds))
+
+        def __getitem__(self, key):
+            diag = lib.clang_getDiagnosticInSet(self.ds, key)
+            if not diag:
+                raise IndexError
+            return Diagnostic(diag)
+
+    return ChildDiagnosticsIterator(diag)
+
+
 class Server:
+    # Extra functions from the libclang API.
+    # TOOD(hansonw): Remove this when these bindings are upstreamed.
+    CUSTOM_CLANG_FUNCTIONS = [
+        ("clang_getChildDiagnostics",
+         [Diagnostic],
+            POINTER(c_void_p)),
+
+        ("clang_getNumDiagnosticsInSet",
+            [POINTER(c_void_p)],
+            c_uint),
+
+        ("clang_getDiagnosticInSet",
+            [POINTER(c_void_p), c_uint],
+            POINTER(c_void_p)),
+    ]
 
     def __init__(self, src, input_stream, output_stream):
         self.src = src
@@ -91,6 +148,9 @@ class Server:
         self.translation_unit = None
         self.completion_cache = None
         self.cached_contents = None
+        conf = Config()
+        self.custom_clang_lib = conf.lib
+        self._register_custom_clang_functions()
 
     def run(self):
         input_stream = self.input_stream
@@ -158,32 +218,40 @@ class Server:
         for diag in translation_unit.diagnostics:
             if diag.spelling == PRAGMA_ONCE_IN_MAIN_FILE and is_header_file(self.src):
                 continue
-            ranges = []
-            # Clang indexes for line and column are 1-based.
-            for source_range in diag.ranges:
-                ranges.append({
-                    'start': {
-                        'line': source_range.start.line - 1,
-                        'column': source_range.start.column - 1,
-                    },
-                    'end': {
-                        'line': source_range.end.line - 1,
-                        'column': source_range.end.column - 1,
-                    }
-                })
-            if len(ranges) == 0:
-                ranges = None
-            diagnostics.append({
-                'spelling': diag.spelling,
-                'severity': diag.severity,
-                'location': {
-                    'file': str(diag.location.file),
-                    'line': diag.location.line - 1,
-                    'column': diag.location.column - 1,
-                },
-                'ranges': ranges,
-            })
+            diagnostics.append(self.diagnostic_dict(diag))
         response['diagnostics'] = diagnostics
+
+    def diagnostic_dict(self, diag):
+        ranges = map(range_dict, diag.ranges)
+        if len(ranges) == 0:
+            ranges = None
+        fixits = []
+        for fixit in diag.fixits:
+            fixits.append({
+                'range': range_dict(fixit.range),
+                'value': fixit.value,
+            })
+        children = []
+        for child in child_diagnostics(self.custom_clang_lib, diag):
+            children.append({
+                'spelling': child.spelling,
+                'location': location_dict(child.location),
+                'ranges': map(range_dict, child.ranges),
+            })
+            # Some fixits may be nested; add them to the root diagnostic.
+            for fixit in child.fixits:
+                fixits.append({
+                    'range': range_dict(fixit.range),
+                    'value': fixit.value,
+                })
+        return {
+            'spelling': diag.spelling,
+            'severity': diag.severity,
+            'location': location_dict(diag.location),
+            'ranges': ranges,
+            'fixits': fixits,
+            'children': children,
+        }
 
     def get_completions(self, request, response):
         contents = request['contents']
@@ -329,7 +397,9 @@ class Server:
         return [(self.src, unsaved_contents.encode('utf-8'))]
 
     def _get_args_for_flags(self, flags):
-        args = []
+        # Enable typo-detection (and the corresponding fixits)
+        # For some reason this is not enabled by default in libclang.
+        args = ['-fspell-checking']
         for arg in flags:
             if arg == self.src:
                 # Including the input file as an argument causes index.parse() to fail.
@@ -357,7 +427,7 @@ class Server:
             return None
         # Reparsing isn't cheap, so skip it if nothing changed.
         if (unsaved_contents is not None and
-            unsaved_contents == self.cached_contents):
+                unsaved_contents == self.cached_contents):
             return translation_unit
         options = 0  # There are no reparse options available in libclang yet.
         translation_unit.reparse(self._make_files(unsaved_contents), options)
@@ -365,6 +435,13 @@ class Server:
         if self.completion_cache is not None:
             self.completion_cache.invalidate()
         return translation_unit
+
+    def _register_custom_clang_functions(self):
+        # Extend the Clang C bindings with the additional required functions.
+        for item in Server.CUSTOM_CLANG_FUNCTIONS:
+            func = getattr(self.custom_clang_lib, item[0])
+            func.argtypes = item[1]
+            func.restype = item[2]
 
 
 if __name__ == '__main__':

@@ -100,6 +100,8 @@ class ClangDiagnosticsProvider {
     data: ClangCompileResult,
     textEditor: atom$TextEditor,
   ): Map<NuclideUri, Array<FileDiagnosticMessage>> {
+    const editorPath = textEditor.getPath();
+    invariant(editorPath);
     const filePathToMessages = new Map();
     if (data.accurateFlags) {
       data.diagnostics.forEach(diagnostic => {
@@ -129,7 +131,7 @@ class ClangDiagnosticsProvider {
           range = new Range([line, col], [line, endCol]);
         }
 
-        const {file: filePath} = diagnostic.location;
+        const filePath = diagnostic.location.file || editorPath;
         let messages = filePathToMessages.get(filePath);
         if (messages == null) {
           messages = [];
@@ -145,14 +147,12 @@ class ClangDiagnosticsProvider {
         });
       });
     } else {
-      const filePath = textEditor.getPath();
-      invariant(filePath);
-      filePathToMessages.set(filePath, [
+      filePathToMessages.set(editorPath, [
         {
           scope: 'file',
           providerName: 'Clang',
           type: 'Warning',
-          filePath,
+          filePath: editorPath,
           text: DEFAULT_FLAGS_WARNING,
           range: new Range([0, 0], [1, 0]),
         },

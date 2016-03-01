@@ -35,7 +35,57 @@ describe('ClangServer', () => {
       invariant(response);
       expect(response).toEqual({
         reqid: '0',
-        diagnostics: [],
+        diagnostics: [
+          {
+            severity: 3,
+            ranges: [
+              {
+                file: path.join(__dirname, 'fixtures/test.cpp'),
+                start: {column: 2, line: 5},
+                end: {column: 3, line: 5},
+              },
+            ],
+            fixits: [],
+            location: {
+              column: 2,
+              line: 5,
+              file: path.join(__dirname, 'fixtures/test.cpp'),
+            },
+            spelling: 'no matching function for call to \'f\'',
+            children: [
+              {
+                location: {
+                  column: 5,
+                  line: 0,
+                  file: path.join(__dirname, 'fixtures/test.cpp'),
+                },
+                ranges: [],
+                spelling: 'candidate function not viable: requires 0 arguments, but 1 was provided',
+              },
+            ],
+          },
+          {
+            severity: 3,
+            ranges: null,
+            fixits: [
+              {
+                range: {
+                  file: path.join(__dirname, 'fixtures/test.cpp'),
+                  start: {column: 10, line: 6},
+                  end: {column: 10, line: 6},
+                },
+                value: ';',
+              },
+            ],
+            location: {
+              column: 10,
+              line: 6,
+              file: path.join(__dirname, 'fixtures/test.cpp'),
+            },
+            spelling: 'expected \';\' after return statement',
+            children: [],
+          },
+        ],
         accurateFlags: true,
       });
 
@@ -99,14 +149,6 @@ describe('ClangServer', () => {
       expect(info[0].type).toBe('FUNCTION_DECL');
       // May not be consistent between clang versions.
       expect(info[0].cursor_usr).not.toBe(null);
-
-      // Introduce a compile error.
-      response = await server.makeRequest('compile', null, {
-        contents: FILE_CONTENTS + '}',
-      });
-      invariant(response);
-      expect(response.reqid).toBe('5');
-      expect(response.diagnostics.length).toBe(1);
     });
   });
 

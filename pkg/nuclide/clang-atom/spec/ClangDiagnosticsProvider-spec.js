@@ -83,6 +83,7 @@ describe('ClangDiagnosticsProvider', () => {
               },
               ranges: [
                 {
+                  file: TEST_PATH,
                   start: {line: 1, column: 0},
                   end: {line: 1, column: 2},
                 },
