@@ -664,12 +664,19 @@ export class HgService {
    * Returns the value of the config item at `key`.
    * @param key Name of config item
    */
-  async getConfigValueAsync(key: string): Promise<string> {
+  async getConfigValueAsync(key: string): Promise<?string> {
     const args = ['config', key];
     const execOptions = {
       cwd: this._workingDirectory,
     };
-    return (await this._hgAsyncExecute(args, execOptions)).stdout;
+    try {
+      return (await this._hgAsyncExecute(args, execOptions)).stdout;
+    } catch (e) {
+      getLogger().error(
+        `Failed to fetch Hg config for key ${key}.  Error: ${e.toString()}`
+      );
+      return null;
+    }
   }
 
   /**

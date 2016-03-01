@@ -166,6 +166,14 @@ describe('HgService', () => {
         await hgService.getConfigValueAsync('committemplate.emptymsg');
       });
     });
+
+    it('returns `null` on errors', () => {
+      spyOn(hgService, '_hgAsyncExecute').andThrow(new Error('Something failed'));
+      waitsForPromise(async () => {
+        const config = await hgService.getConfigValueAsync('non.existent.config');
+        expect(config).toBeNull();
+      });
+    });
   });
 
   describe('::rename', () => {
