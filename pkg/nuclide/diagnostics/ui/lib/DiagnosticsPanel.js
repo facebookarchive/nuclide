@@ -10,6 +10,7 @@
  */
 
 const DiagnosticsPane = require('./DiagnosticsPane');
+const NuclideCheckbox = require('../../../ui/checkbox');
 const {PanelComponent} = require('../../../ui/panel');
 const {React} = require('react-for-atom');
 const {PropTypes} = React;
@@ -136,15 +137,11 @@ class DiagnosticsPanel extends React.Component {
                 Warnings: {warningCount}
               </span>
               <span className="inline-block">
-                <label className="nuclide-diagnostics-label">
-                  <input
-                    type="checkbox"
-                    checked={this.props.filterByActiveTextEditor}
-                    onChange={this._onFilterByActiveTextEditorChange}
-                  />
-                  &nbsp;
-                  Show only diagnostics for current file.
-                </label>
+                <NuclideCheckbox
+                  checked={this.props.filterByActiveTextEditor}
+                  label="Show only diagnostics for current file"
+                  onChange={this._onFilterByActiveTextEditorChange}
+                />
               </span>
             </div>
             <div className="nuclide-diagnostics-pane-nav-right">
@@ -167,8 +164,7 @@ class DiagnosticsPanel extends React.Component {
     );
   }
 
-  _onFilterByActiveTextEditorChange(event: SyntheticEvent) {
-    const isChecked = ((event.target: any): HTMLInputElement).checked;
+  _onFilterByActiveTextEditorChange(isChecked: boolean) {
     track('diagnostics-panel-toggle-current-file', {isChecked: isChecked.toString()});
     this.props.onFilterByActiveTextEditorChange.call(null, isChecked);
   }

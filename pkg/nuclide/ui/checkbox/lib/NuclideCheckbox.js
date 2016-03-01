@@ -42,9 +42,10 @@ export default class NuclideCheckbox extends React.Component {
     return (
       <label className="nuclide-ui-checkbox-label">
         <input
-          type="checkbox"
           checked={this.props.checked}
+          className="nuclide-ui-checkbox"
           onChange={this._onChange}
+          type="checkbox"
         />
         {' '}{this.props.label}
       </label>
