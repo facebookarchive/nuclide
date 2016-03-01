@@ -66,7 +66,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
     setLogLevel(getConfig().logLevel);
   }
 
-  getWebsocketAddress(): Promise<string> {
+  async getWebsocketAddress(): Promise<string> {
     logInfo('Connecting to: ' + this.getTargetUri());
     const {getServiceByNuclideUri} = require('../../../client');
     const service =
@@ -111,45 +111,42 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       connectionConfig.idekeyRegex = config.idekeyRegex;
     }
 
-    const attachPromise = proxy.attach(connectionConfig);
-    if (this._launchScriptPath) {
-      logInfo('launchScript: ' + this._launchScriptPath);
-      proxy.launchScript(this._launchScriptPath);
-    }
+    const attachResult = await proxy.attach(connectionConfig);
+    logInfo('Attached to process. Attach message: ' + attachResult);
 
-    return attachPromise.then(attachResult => {
-
-      logInfo('Attached to process. Attach message: ' + attachResult);
-
-      // setup web socket
-      // TODO: Assign random port rather than using fixed port.
-      const wsPort = 2000;
-      const server = new WebSocketServer({port: wsPort});
-      this._server = server;
-      server.on('error', error => {
-        logError('Server error: ' + error);
-        this.dispose();
-      });
-      server.on('headers', headers => {
-        log('Server headers: ' + headers);
-      });
-      server.on('connection', webSocket => {
-        if (this._webSocket) {
-          log('Already connected to web socket. Discarding new connection.');
-          return;
-        }
-
-        log('Connecting to web socket client.');
-        this._webSocket = webSocket;
-        webSocket.on('message', this._onSocketMessage.bind(this));
-        webSocket.on('error', this._onSocketError.bind(this));
-        webSocket.on('close', this._onSocketClose.bind(this));
-      });
-
-      const result = 'ws=localhost:' + String(wsPort) + '/';
-      log('Listening for connection at: ' + result);
-      return result;
+    // setup web socket
+    // TODO: Assign random port rather than using fixed port.
+    const wsPort = 2000;
+    const server = new WebSocketServer({port: wsPort});
+    this._server = server;
+    server.on('error', error => {
+      logError('Server error: ' + error);
+      this.dispose();
     });
+    server.on('headers', headers => {
+      log('Server headers: ' + headers);
+    });
+    server.on('connection', webSocket => {
+      if (this._webSocket) {
+        log('Already connected to web socket. Discarding new connection.');
+        return;
+      }
+
+      log('Connecting to web socket client.');
+      this._webSocket = webSocket;
+      webSocket.on('message', this._onSocketMessage.bind(this));
+      webSocket.on('error', this._onSocketError.bind(this));
+      webSocket.on('close', this._onSocketClose.bind(this));
+
+      if (this._launchScriptPath) {
+        logInfo('launchScript: ' + this._launchScriptPath);
+        proxy.launchScript(this._launchScriptPath);
+      }
+    });
+
+    const result = 'ws=localhost:' + String(wsPort) + '/';
+    log('Listening for connection at: ' + result);
+    return result;
   }
 
   onSessionEnd(callback: () => void): Disposable {
