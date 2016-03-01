@@ -21,8 +21,8 @@ const ATTACH_TARGET_LIST_CHANGE_EVENT = 'ATTACH_TARGET_LIST_CHANGE_EVENT';
 export class LaunchAttachStore {
   _dispatcher: Dispatcher;
   _dispatcherToken: any;
-  _eventEmitter: EventEmitter;
   _attachTargetInfos: Array<AttachTargetInfo>;
+  _eventEmitter: EventEmitter;
 
   constructor(dispatcher: Dispatcher) {
     this._dispatcher = dispatcher;
@@ -36,9 +36,10 @@ export class LaunchAttachStore {
   }
 
   onAttachTargetListChanged(callback: () => void): IDisposable {
-    const emitter = this._eventEmitter;
     this._eventEmitter.on(ATTACH_TARGET_LIST_CHANGE_EVENT, callback);
-    return new Disposable(() => emitter.removeListener(ATTACH_TARGET_LIST_CHANGE_EVENT, callback));
+    return new Disposable(
+      () => this._eventEmitter.removeListener(ATTACH_TARGET_LIST_CHANGE_EVENT, callback)
+    );
   }
 
   _handleActions(args: {actionType: string; data: any}): void {

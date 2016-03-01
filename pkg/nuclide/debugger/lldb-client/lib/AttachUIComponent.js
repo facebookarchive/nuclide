@@ -32,24 +32,17 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
 
   constructor(props: PropsType) {
     super(props);
+
     (this: any)._updateList = this._updateList.bind(this);
     this.state = {
-      targetListChangeDisposable: null,
+      targetListChangeDisposable: this.props.store.onAttachTargetListChanged(this._updateList),
       attachTargetInfos: [],
     };
   }
 
-  componentWillMount() {
-    this.setState({
-      targetListChangeDisposable: this.props.store.onAttachTargetListChanged(this._updateList),
-    });
-    this._updateList();
-  }
-
   componentWillUnmount() {
-    const disposable = this.state.targetListChangeDisposable;
-    if (disposable != null) {
-      disposable.dispose();
+    if (this.state.targetListChangeDisposable != null) {
+      this.state.targetListChangeDisposable.dispose();
     }
   }
 

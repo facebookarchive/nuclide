@@ -11,17 +11,28 @@
 
 import type {NuclideUri} from '../../../remote-uri';
 
-/*
+let uniqueKeySeed = 0;
+
+/**
  * Base class of all launch/attach providers.
  * It allows each concrete provider to provide customized debugging types, actions and UI.
  */
 class DebuggerLaunchAttachProvider {
   _debuggingTypeName: string;
   _targetUri: NuclideUri;
+  _uniqueKey: number;
 
   constructor(debuggingTypeName: string, targetUri: NuclideUri) {
     this._debuggingTypeName = debuggingTypeName;
     this._targetUri = targetUri;
+    this._uniqueKey = uniqueKeySeed++;
+  }
+
+  /**
+   * Returns a unique key which can be associated with the component.
+   */
+  getUniqueKey(): number {
+    return this._uniqueKey;
   }
 
   /**
@@ -49,6 +60,13 @@ class DebuggerLaunchAttachProvider {
    * Returns the UI component for input debug action.
    */
   getComponent(action: string): ?ReactElement {
+    throw new Error('abstract method');
+  }
+
+  /**
+   * Dispose any resource held by this provider.
+   */
+  dispose(): void {
     throw new Error('abstract method');
   }
 }

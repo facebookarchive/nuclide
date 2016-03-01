@@ -9,16 +9,22 @@
  * the root directory of this source tree.
  */
 
-const {CompositeDisposable, Disposable} = require('atom');
-import {trackTiming} from '../../../analytics';
-
 import type {
-  nuclide_debugger$Service,
-  NuclideDebuggerProvider,
+   nuclide_debugger$Service,
+   NuclideDebuggerProvider,
 } from '../../interfaces/service';
+import type {SerializedBreakpoint} from './BreakpointStore';
+
+import invariant from 'assert';
+import {CompositeDisposable, Disposable} from 'atom';
+import {trackTiming} from '../../../analytics';
 import RemoteControlService from './RemoteControlService';
 import DebuggerModel from './DebuggerModel';
-import type {SerializedBreakpoint} from './BreakpointStore';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
+import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
 
 export type SerializedState = {
   breakpoints: ?Array<SerializedBreakpoint>;
@@ -26,10 +32,6 @@ export type SerializedState = {
 
 function createDebuggerView(model: DebuggerModel): HTMLElement {
   const DebuggerControllerView = require('./DebuggerControllerView');
-  const {
-    React,
-    ReactDOM,
-  } = require('react-for-atom');
   const elem = document.createElement('div');
   elem.className = 'nuclide-debugger-root';
   ReactDOM.render(
@@ -45,12 +47,14 @@ function createDebuggerView(model: DebuggerModel): HTMLElement {
 
 class Activation {
   _disposables: CompositeDisposable;
-
   _model: DebuggerModel;
   _panel: ?Object;
+  _launchAttachDialog: ?atom$Panel;
 
   constructor(state: ?SerializedState) {
     this._model = new DebuggerModel(state);
+    this._panel = null;
+    this._launchAttachDialog = null;
     this._disposables = new CompositeDisposable(
       this._model,
       atom.views.addViewProvider(DebuggerModel, createDebuggerView),
@@ -91,6 +95,9 @@ class Activation {
       }),
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:toggle-breakpoint': this._toggleBreakpoint.bind(this),
+      }),
+      atom.commands.add('atom-workspace', {
+        'nuclide-debugger:toggle-launch-attach': this._toggleLaunchAttach.bind(this),
       }),
 
       // Context Menu Items.
@@ -175,6 +182,42 @@ class Activation {
         this.getModel().getBreakpointStore().toggleBreakpoint(filePath, line);
       }
     }
+  }
+
+
+  _toggleLaunchAttach() {
+    const dialog = this._getLaunchAttachDialog();
+    if (dialog.isVisible()) {
+      dialog.hide();
+    } else {
+      dialog.show();
+    }
+  }
+
+  _getLaunchAttachDialog(): atom$Panel {
+    if (!this._launchAttachDialog) {
+      const component = (
+        <DebuggerLaunchAttachUI
+          store={this._model.getDebuggerProviderStore()}
+          debuggerActions={this._model.getActions()}
+        />
+      );
+      const host = document.createElement('div');
+      ReactDOM.render(component, host);
+      this._launchAttachDialog = atom.workspace.addModalPanel({
+        item: host,
+        visible: false, // Hide first so that caller can toggle it visible.
+      });
+
+      this._disposables.add(new Disposable(() => {
+        if (this._launchAttachDialog != null) {
+          this._launchAttachDialog.destroy();
+          this._launchAttachDialog = null;
+        }
+      }));
+    }
+    invariant(this._launchAttachDialog);
+    return this._launchAttachDialog;
   }
 
   /**

@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import {DebuggerProviderStore} from './DebuggerProviderStore';
 const BreakpointManager = require('./BreakpointManager');
 const BreakpointStore = require('./BreakpointStore');
 const DebuggerActions = require('./DebuggerActions');
@@ -29,6 +30,7 @@ class DebuggerModel {
   _breakpointStore: BreakpointStore;
   _dispatcher: Dispatcher;
   _store: DebuggerStore;
+  _debuggerProviderStore: DebuggerProviderStore;
   _bridge: Bridge;
 
   constructor(state: ?SerializedState) {
@@ -38,6 +40,7 @@ class DebuggerModel {
     this._breakpointStore = new BreakpointStore(state ? state.breakpoints : null);
     this._breakpointManager = new BreakpointManager(this._breakpointStore);
     this._bridge = new Bridge(this._breakpointStore);
+    this._debuggerProviderStore = new DebuggerProviderStore(this._dispatcher);
 
     this._disposables = new CompositeDisposable(
       this._store,
@@ -58,6 +61,10 @@ class DebuggerModel {
 
   getStore(): DebuggerStore {
     return this._store;
+  }
+
+  getDebuggerProviderStore(): DebuggerProviderStore {
+    return this._debuggerProviderStore;
   }
 
   getBreakpointStore(): BreakpointStore {

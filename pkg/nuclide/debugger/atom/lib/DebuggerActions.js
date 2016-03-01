@@ -12,6 +12,7 @@
 const Constants = require('./Constants');
 const {CompositeDisposable} = require('atom');
 import {beginTimerTracking, failTimerTracking, endTimerTracking} from './AnalyticsHelper';
+import remoteUri from '../../../remote-uri';
 
 import type {Dispatcher} from 'flux';
 import type {
@@ -172,6 +173,36 @@ class DebuggerActions {
     this._dispatcher.dispatch({
       actionType: Constants.Actions.SET_PROCESS_SOCKET,
       data: socketAddr,
+    });
+  }
+
+  /**
+   * Utility for getting refreshed connections.
+   * TODO: refresh connections when new directories are removed/added in file-tree.
+   */
+  updateConnections(): void {
+
+    const connections = this._getRemoteConnections();
+    // Always have one single local connection.
+    connections.push('local');
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.UPDATE_CONNECTIONS,
+      data: connections,
+    });
+  }
+
+  /**
+   * Get remote connections without duplication.
+   */
+  _getRemoteConnections(): Array<string> {
+    // TODO: move this logic into RemoteConnection package.
+    return atom.project.getPaths().filter(path => {
+      return remoteUri.isRemote(path);
+    }).map(remotePath => {
+      const {hostname, port} = remoteUri.parseRemoteUri(remotePath);
+      return remoteUri.createRemoteUri(hostname, Number(port), '/');
+    }).filter((path, index, inputArray) => {
+      return inputArray.indexOf(path) === index;
     });
   }
 

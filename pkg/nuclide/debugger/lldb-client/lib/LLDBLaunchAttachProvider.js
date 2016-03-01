@@ -18,8 +18,15 @@ import {AttachUIComponent} from './AttachUIComponent';
 import {LaunchAttachActions} from './LaunchAttachActions';
 
 export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
+  _dispatcher: Dispatcher;
+  _actions: LaunchAttachActions;
+  _store: LaunchAttachStore;
+
   constructor(debuggingTypeName: string, targetUri: string) {
     super(debuggingTypeName, targetUri);
+    this._dispatcher = new Dispatcher();
+    this._actions = new LaunchAttachActions(this._dispatcher, this.getTargetUri());
+    this._store = new LaunchAttachStore(this._dispatcher);
   }
 
   getActions(): Array<string> {
@@ -27,15 +34,17 @@ export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   }
 
   getComponent(action: string): ?ReactElement {
-    const dispatcher = new Dispatcher();
-    const actions = new LaunchAttachActions(dispatcher, this.getTargetUri());
-    const store = new LaunchAttachStore(dispatcher);
     if (action === 'Launch') {
-      return <LaunchUIComponent store={store} actions={actions} />;
+      return <LaunchUIComponent store={this._store} actions={this._actions} />;
     } else if (action === 'Attach') {
-      return <AttachUIComponent store={store} actions={actions} />;
+      this._actions.updateAttachTargetList();
+      return <AttachUIComponent store={this._store} actions={this._actions} />;
     } else {
       return null;
     }
+  }
+
+  dispose(): void {
+    this._store.dispose();
   }
 }
