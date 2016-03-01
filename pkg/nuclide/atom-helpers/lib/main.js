@@ -104,6 +104,10 @@ module.exports = {
     return requireFromCache('./with-loading-notification');
   },
 
+  get onWillDestroyTextBuffer(): (callback: (buffer: atom$TextBuffer) => mixed) => IDisposable {
+    return requireFromCache('./on-will-destroy-text-buffer');
+  },
+
   get addTooltip() {
     return requireFromCache('./tooltip').addTooltip;
   },

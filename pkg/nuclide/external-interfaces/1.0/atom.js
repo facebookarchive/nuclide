@@ -1089,6 +1089,7 @@ declare class atom$TextBuffer {
   file: ?atom$File;
   cachedDiskContents: ?string;
   emitter: atom$Emitter;
+  refcount: number;
 
   // Mixin
   static deserialize: (state: Object, params: Object) => mixed;

@@ -21,7 +21,7 @@ import {DiagnosticsProviderBase} from '../../diagnostics/provider-base';
 
 import featureConfig from '../../feature-config';
 import {trackTiming} from '../../analytics';
-import {isTextEditor} from '../../atom-helpers';
+import {onWillDestroyTextBuffer} from '../../atom-helpers';
 import {promises} from '../../commons';
 import invariant from 'assert';
 
@@ -44,22 +44,12 @@ export class ArcanistDiagnosticsProvider {
     };
     this._providerBase = new DiagnosticsProviderBase(baseOptions);
     this._requestSerializer = new RequestSerializer();
-    this._subscriptions.add(atom.workspace.onWillDestroyPaneItem(({item}) => {
-      if (isTextEditor(item)) {
-        invariant(typeof item.getPath === 'function');
-        const path: ?string = item.getPath();
-        if (!path) {
-          return;
-        }
-        const openBufferCount = this._getOpenBufferCount(path);
-        invariant(
-          openBufferCount !== 0,
-          'The file that is about to be closed should still be open.'
-        );
-        if (openBufferCount === 1) {
-          this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: [path]});
-        }
+    this._subscriptions.add(onWillDestroyTextBuffer(buffer => {
+      const path: ?string = buffer.getPath();
+      if (!path) {
+        return;
       }
+      this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: [path]});
     }));
   }
 
@@ -169,11 +159,5 @@ export class ArcanistDiagnosticsProvider {
 
   onMessageInvalidation(callback: MessageInvalidationCallback): IDisposable {
     return this._providerBase.onMessageInvalidation(callback);
-  }
-
-  _getOpenBufferCount(path: string): number {
-    return atom.workspace.getTextEditors()
-      .filter(editor => editor.getPath() === path)
-      .length;
   }
 }
