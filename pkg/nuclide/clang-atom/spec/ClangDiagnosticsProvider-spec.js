@@ -63,6 +63,27 @@ describe('ClangDiagnosticsProvider', () => {
               },
               ranges: null, // use the entire line
               spelling: 'other file',
+              fixits: [
+                {
+                  range: {
+                    file: TEST_PATH2,
+                    start: {line: 3, column: 4},
+                    end: {line: 3, column: 5},
+                  },
+                  value: 'fixit',
+                },
+              ],
+              children: [
+                {
+                  spelling: 'child error',
+                  location: {
+                    file: TEST_PATH2,
+                    line: 0,
+                    column: 0,
+                  },
+                  ranges: [],
+                },
+              ],
             },
             {
               severity: 2,
@@ -104,7 +125,19 @@ describe('ClangDiagnosticsProvider', () => {
               type: 'Warning',
               filePath: TEST_PATH2,
               text: 'other file',
-              range: new Range([0, 0], [0, 1]),
+              range: new Range([0, 0], [1, 0]),
+              trace: [
+                {
+                  type: 'Trace',
+                  text: 'child error',
+                  filePath: TEST_PATH2,
+                  range: new Range([0, 0], [1, 0]),
+                },
+              ],
+              fix: {
+                oldRange: new Range([3, 4], [3, 5]),
+                newText: 'fixit',
+              },
             },
           ],
         ],
@@ -117,7 +150,9 @@ describe('ClangDiagnosticsProvider', () => {
               type: 'Warning',
               filePath: TEST_PATH,
               text: 'test error',
-              range: new Range([0, 0], [0, 1]),
+              range: new Range([0, 0], [1, 0]),
+              fix: undefined,
+              trace: undefined,
             },
             {
               scope: 'file',
@@ -126,6 +161,8 @@ describe('ClangDiagnosticsProvider', () => {
               filePath: TEST_PATH,
               text: 'test error 2',
               range: new Range([1, 0], [1, 2]),
+              fix: undefined,
+              trace: undefined,
             },
           ],
         ],

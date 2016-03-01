@@ -11,7 +11,11 @@
 
 import type {BusySignalProviderBase} from '../../busy-signal-provider-base';
 import type {NuclideUri} from '../../remote-uri';
-import type {ClangCompileResult} from '../../clang';
+import type {
+  ClangCompileResult,
+  ClangSourceRange,
+  ClangLocation,
+} from '../../clang';
 import type {
   FileDiagnosticMessage,
   MessageUpdateCallback,
@@ -30,6 +34,18 @@ import {CompositeDisposable, Range} from 'atom';
 const DEFAULT_FLAGS_WARNING =
   'Diagnostics are disabled due to lack of compilation flags. ' +
   'Build this file with Buck, or create a compile_commands.json file manually.';
+
+function atomRangeFromSourceRange(clangRange: ClangSourceRange): atom$Range {
+  return new Range(
+    [clangRange.start.line, clangRange.start.column],
+    [clangRange.end.line, clangRange.end.column]
+  );
+}
+
+function atomRangeFromLocation(location: ClangLocation): atom$Range {
+  const line = Math.max(0, location.line);
+  return new Range([line, 0], [line + 1, 0]);
+}
 
 class ClangDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
@@ -112,23 +128,12 @@ class ClangDiagnosticsProvider {
 
         // Clang adds file-wide errors on line -1, so we put it on line 0 instead.
         // The usual file-wide error is 'too many errors emitted, stopping now'.
-        const line = Math.max(0, diagnostic.location.line);
-        const col = 0;
         let range;
         if (diagnostic.ranges) {
           // Use the first range from the diagnostic as the range for Linter.
-          const clangRange = diagnostic.ranges[0];
-          range = new Range(
-            [clangRange.start.line, clangRange.start.column],
-            [clangRange.end.line, clangRange.end.column]
-          );
+          range = atomRangeFromSourceRange(diagnostic.ranges[0]);
         } else {
-          let endCol = 1000;
-          const buffer = textEditor.getBuffer();
-          if (line <= buffer.getLastRow()) {
-            endCol = buffer.lineLengthForRow(line);
-          }
-          range = new Range([line, col], [line, endCol]);
+          range = atomRangeFromLocation(diagnostic.location);
         }
 
         const filePath = diagnostic.location.file || editorPath;
@@ -137,6 +142,31 @@ class ClangDiagnosticsProvider {
           messages = [];
           filePathToMessages.set(filePath, messages);
         }
+
+        let trace;
+        if (diagnostic.children != null) {
+          trace = diagnostic.children.map(child => {
+            return {
+              type: 'Trace',
+              text: child.spelling,
+              filePath: child.location.file,
+              range: atomRangeFromLocation(child.location),
+            };
+          });
+        }
+
+        let fix;
+        if (diagnostic.fixits != null) {
+          // TODO: support multiple fixits (if it's ever used at all)
+          const fixit = diagnostic.fixits[0];
+          if (fixit != null) {
+            fix = {
+              oldRange: atomRangeFromSourceRange(fixit.range),
+              newText: fixit.value,
+            };
+          }
+        }
+
         messages.push({
           scope: 'file',
           providerName: 'Clang',
@@ -144,6 +174,8 @@ class ClangDiagnosticsProvider {
           filePath,
           text: diagnostic.spelling,
           range,
+          trace,
+          fix,
         });
       });
     } else {
