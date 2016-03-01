@@ -85,7 +85,11 @@ class FileEntryComponent extends React.Component {
           data-name={this.props.nodeName}
           data-path={this.props.nodePath}>
           {this._renderCheckbox()}
-          {this.props.nodeName}
+          <span
+            data-name={this.props.nodeName}
+            data-path={this.props.nodePath}>
+            {this.props.nodeName}
+          </span>
         </span>
       </li>
     );
