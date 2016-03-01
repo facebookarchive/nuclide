@@ -66,12 +66,12 @@ def interactive_loop(debugger):
 def startDebugging(debugger, arguments):
     listener = lldb.SBListener('Chrome Dev Tools Listener')
     is_attach = True
+    error = lldb.SBError()
     if arguments.executable_path:
         target = debugger.CreateTargetWithFileAndArch(
             arguments.executable_path,
             lldb.LLDB_ARCH_DEFAULT)
         # TODO: pass arguments and environment variables.
-        error = lldb.SBError()
         target.Launch (listener,
                         None,      # argv
                         None,      # envp
@@ -84,21 +84,21 @@ def startDebugging(debugger, arguments):
                         error)     # error
         is_attach = False
     elif arguments.pname:
-        debugger.HandleCommand('process attach -n %r' % arguments.pname)
+        target = debugger.CreateTarget(None)
+        target.AttachToProcessWithName(
+            listener,
+            arguments.pname,
+            False,   # does not wait for process to launch.
+            error)
     elif arguments.pid:
-        debugger.HandleCommand('process attach -p %d' % arguments.pid)
+        target = debugger.CreateTarget(None)
+        target.AttachToProcessWithID(listener, arguments.pid, error)
+    else:
+        sys.exit('Unknown arguments: %s' % arguments)
 
-    # TODO: remove these hacky commands after using python API for attach.
+    if error.Fail():
+        sys.exit(error.description)
 
-    # Run a script command in the interpreter, this seems to be necessary as
-    # things like assembly seems to not be available from the script
-    # environment otherwise.
-    debugger.HandleCommand('script 1')
-
-    # Turn on auto-confirm so LLDB does not block forever querying users for
-    # command confirmations.
-    lldb.SBDebugger.SetInternalVariable('auto-confirm', 'true',
-                                        debugger.GetInstanceName())
     return is_attach
 
 
