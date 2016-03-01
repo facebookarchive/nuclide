@@ -123,7 +123,7 @@ class FileTreeNode {
     const workingSet = this._store.getWorkingSet();
     const openFilesWs = this._store.getOpenFilesWorkingSet();
 
-    if (!workingSet || !openFilesWs || openFilesWs.isEmpty()) {
+    if (!workingSet || !openFilesWs || workingSet.isEmpty() || openFilesWs.isEmpty()) {
       return false;
     }
 

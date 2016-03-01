@@ -59,7 +59,7 @@ class FileTreeSidebarComponent extends React.Component {
     return (
       <div className="nuclide-file-tree-toolbar-container">
         {toolbar}
-        <FileTree />
+        <FileTree nodeToKeepInView={this._store.getTrackedNode()} />
       </div>
     );
   }
