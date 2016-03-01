@@ -1,5 +1,15 @@
 # Nuclide Changelog
 
+## 0.121.0
+
+Fixed:
+* Slow typing caused by the FileTree - even when hidden.
+* Fix Slow typing caused by health monitor.
+* Fix FB login.
+* Fix endDebugWhenNoRequests
+
+## 0.120.0
+
 Added:
 * New feature: Working Sets - show only selected directories in the file-tree
 * File tree keyboard navigation: Allows you to rapidly change the selected node by typing a prefix string.
