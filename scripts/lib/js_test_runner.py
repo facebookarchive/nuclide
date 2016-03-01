@@ -73,11 +73,9 @@ class JsTestRunner(object):
 
         serial_tests += serial_only_tests
 
-        serial_tests += [('flow', self._package_manager.get_nuclide_path(), 'nuclide')]
-
         if parallel_tests:
             pool = Pool(processes=max(1, cpu_count() - 2))
-            results = [pool.apply_async(run_test, args=test_args) for test_args in parallel_tests]
+            results = [pool.apply_async(run_js_test, args=test_args) for test_args in parallel_tests]
             for async_result in results:
                 async_result.wait()
                 if not async_result.successful():
@@ -85,14 +83,7 @@ class JsTestRunner(object):
 
         for test_args in serial_tests:
             (test_runner, pkg_path, name) = test_args
-            run_test(test_runner, pkg_path, name)
-
-
-def run_test(test_runner, pkg_path, name, verbose=False):
-    if test_runner == 'flow':
-        run_flow_check(pkg_path, name, verbose)
-    else:
-        run_js_test(test_runner, pkg_path, name)
+            run_js_test(test_runner, pkg_path, name)
 
 def run_js_test(test_runner, pkg_path, name):
     """Run `apm test` or `npm test` in the given pkg_path."""
@@ -127,32 +118,6 @@ def run_js_test(test_runner, pkg_path, name):
         raise Exception('TEST FAILED: %s test %s' % (test_runner, name))
     else:
         logging.info('TEST PASSED: %s', name)
-
-def run_flow_check(pkg_path, name, show_all):
-    """Run a flow typecheck in the given pkg_path."""
-    logging.info('Running `flow check` in %s...', pkg_path)
-    test_args = ['flow', 'check']
-    if show_all:
-        test_args.append('--show-all-errors')
-
-    proc = subprocess.Popen(
-            test_args,
-            cwd=pkg_path,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            shell=platform_checker.is_windows())
-    stdout = []
-    for line in proc.stdout:
-        # line is a bytes string literal in Python 3.
-        logging.info('[flow check %s]: %s', name, line.rstrip().decode('utf-8'))
-        stdout.append(line)
-    proc.wait()
-
-    if proc.returncode:
-        logging.info('FLOW CHECK FAILED: %s\nstdout:\n%s', name, '\n'.join(stdout))
-        raise Exception('FLOW CHECK FAILED: flow test %s' % name)
-    else:
-        logging.info('FLOW CHECK PASSED: %s', name)
 
 def run_integration_tests_with_clean_state(path_to_nuclide, named_tests):
     test_dir = os.path.join(path_to_nuclide, 'spec')

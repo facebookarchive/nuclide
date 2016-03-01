@@ -110,8 +110,19 @@ def run_eslint():
     finally:
         logging.info('eslint took %s seconds.', (datetime.now() - start).seconds)
 
+def run_flow_check():
+    try:
+        start = datetime.now()
+        logging.info('Running flow check...')
+        subprocess.check_call(['flow', 'check', '--show-all-errors'], cwd=NUCLIDE_PATH)
+    except subprocess.CalledProcessError:
+        sys.exit(1)
+    finally:
+        logging.info('flow check took %s seconds.', (datetime.now() - start).seconds)
+
 if options.run_integration_tests:
     test_runner.run_integration_tests()
 else:
     run_eslint()
+    run_flow_check()
     test_runner.run_tests()
