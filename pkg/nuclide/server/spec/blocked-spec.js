@@ -18,9 +18,9 @@ describe('blocked()', () => {
   let intervalHandler;
 
   beforeEach(() => {
+    jasmine.useRealClock();
     blockHandler = jasmine.createSpy();
     jasmine.Clock.useMock();
-    jasmine.unspy(Date, 'now');
     spyOn(Date, 'now').andCallFake(() => now);
 
     intervalHandler = blocked(blockHandler, 100, 10);

@@ -39,6 +39,35 @@ describe('Fake timer test suite', () => {
     expect(thirdExecuted).toBe(true);
   });
 
+  it('test setInterval and clearInterval', () => {
+    let firstExecuted = false;
+
+    setInterval(() => {firstExecuted = true;}, 10);
+
+    window.advanceClock(9);
+
+    expect(firstExecuted).toBe(false);
+    window.advanceClock(1);
+    expect(firstExecuted).toBe(true);
+
+    let secondExecuted = false;
+    let thirdExecuted = false;
+
+    const secondId = setInterval(() => {secondExecuted = true;}, 20);
+    setInterval(() => {thirdExecuted = true;}, 30);
+
+    window.advanceClock(19);
+    clearInterval(secondId);
+
+    expect(secondExecuted).toBe(false);
+    expect(thirdExecuted).toBe(false);
+
+    window.advanceClock(20);
+
+    expect(secondExecuted).toBe(false);
+    expect(thirdExecuted).toBe(true);
+  });
+
   it('test fakeSetTimeout triggered in expected order', () => {
     let firstExecuted = false;
     let secondExecuted = false;

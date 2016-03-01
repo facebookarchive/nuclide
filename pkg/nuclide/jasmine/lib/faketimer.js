@@ -75,6 +75,8 @@ function advanceClock(deltaMs: number): void {
 function useRealClock(): void {
   jasmine.unspy(global, 'setTimeout');
   jasmine.unspy(global, 'clearTimeout');
+  jasmine.unspy(global, 'setInterval');
+  jasmine.unspy(global, 'clearInterval');
   jasmine.unspy(Date, 'now');
 }
 
@@ -100,4 +102,6 @@ beforeEach(() => {
   spyOn(Date, 'now').andCallFake(() => now);
   spyOn(global, 'setTimeout').andCallFake(fakeSetTimeout);
   spyOn(global, 'clearTimeout').andCallFake(fakeClearTimeout);
+  spyOn(global, 'setInterval').andCallFake(fakeSetInterval);
+  spyOn(global, 'clearInterval').andCallFake(fakeClearInterval);
 });
