@@ -14,8 +14,9 @@ import type DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
 import type {
   NuclideDebuggerProvider,
 } from '../../interfaces/service';
+import type DebuggerActions from './DebuggerActions';
 
-import {Disposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 import Constants from './Constants';
 import {EventEmitter} from 'events';
 
@@ -26,21 +27,37 @@ const CONNECTIONS_UPDATED_EVENT = 'CONNECTIONS_UPDATED_EVENT';
  */
 export class DebuggerProviderStore {
   _dispatcher: Dispatcher;
-  _dispatcherToken: any;
+  _disposables: CompositeDisposable;
+  _debuggerActions: DebuggerActions;
   _eventEmitter: EventEmitter;
   _debuggerProviders: Set<NuclideDebuggerProvider>;
   _connections: Array<string>;
 
-  constructor(dispatcher: Dispatcher) {
+  constructor(dispatcher: Dispatcher, debuggerActions: DebuggerActions) {
     this._dispatcher = dispatcher;
-    this._dispatcherToken = this._dispatcher.register(this._handlePayload.bind(this));
+    this._disposables = new CompositeDisposable(
+      this._registerDispatcherEvents(),
+      this._listenForProjectChange(),
+    );
+    this._debuggerActions = debuggerActions;
     this._eventEmitter = new EventEmitter();
     this._debuggerProviders = new Set();
     this._connections = [];
   }
 
+  _registerDispatcherEvents(): IDisposable {
+    const dispatcherToken = this._dispatcher.register(this._handlePayload.bind(this));
+    return new Disposable(() => this._dispatcher.unregister(dispatcherToken));
+  }
+
+  _listenForProjectChange(): IDisposable {
+    return atom.project.onDidChangePaths(() => {
+      this._debuggerActions.updateConnections();
+    });
+  }
+
   dispose() {
-    this._dispatcher.unregister(this._dispatcherToken);
+    this._disposables.dispose();
   }
 
   /**
