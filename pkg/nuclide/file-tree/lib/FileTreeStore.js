@@ -666,7 +666,12 @@ class FileTreeStore {
         } catch (e) {
           const statuses = await hgRepository.getStatuses([file.getPath()]);
           const pathStatus = statuses.get(file.getPath());
-          if (pathStatus !== StatusCodeNumber.UNTRACKED) {
+          const goodStatuses = [
+            StatusCodeNumber.ADDED,
+            StatusCodeNumber.CLEAN,
+            StatusCodeNumber.MODIFIED,
+          ];
+          if (goodStatuses.indexOf(pathStatus) !== -1) {
             atom.notifications.addError(
               'Failed to remove ' + file.getPath() + ' from version control.  The file will ' +
               'still get deleted but you will have to remove it from your VCS yourself.  Error: ' +
