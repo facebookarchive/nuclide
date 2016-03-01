@@ -28,7 +28,6 @@ import createHealthGadget from './createHealthGadget';
 
 // We may as well declare these outside of Activation because most of them really are nullable.
 let currentConfig = {};
-let paneItem: ?HTMLElement;
 let viewTimeout: ?number = null;
 let analyticsTimeout: ?number = null;
 let analyticsBuffer: Array<HealthStats> = [];
@@ -112,11 +111,11 @@ function timeActiveEditorKeys(): void {
   activeEditorSubscriptions = new CompositeDisposable();
 
   // If option is enabled, start timing latency of keys on the new text editor.
-  if (!paneItem) {
+  if (!paneItemState$) {
     return;
   }
 
-  // Ensure the editor is valid and there is a view to attatch the keypress timing to.
+  // Ensure the editor is valid and there is a view to attach the keypress timing to.
   const editor: ?TextEditor = atom.workspace.getActiveTextEditor();
   if (!editor) {
     return;
@@ -150,7 +149,7 @@ function timeActiveEditorKeys(): void {
     // Remove the listener in a home-made disposable for when this editor is no-longer active.
     new Disposable(() => view.removeEventListener('keydown', startKeyClock)),
 
-    // stopKeyClock is fast so attatching it to onDidChange here is OK.
+    // stopKeyClock is fast so attaching it to onDidChange here is OK.
     // onDidStopChanging would be another option - any cost is deferred, but with far less fidelity.
     editor.onDidChange(stopKeyClock),
   );
