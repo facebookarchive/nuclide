@@ -92,6 +92,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       xdebugPort: config.xdebugPort,
       targetUri: remoteUri.getPath(this.getTargetUri()),
       logLevel: config.logLevel,
+      endDebugWhenNoRequests: config.endDebugWhenNoRequests,
     };
     logInfo('Connection config: ' + JSON.stringify(config));
 
