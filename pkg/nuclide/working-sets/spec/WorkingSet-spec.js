@@ -31,13 +31,6 @@ describe('WorkingSet', () => {
       expect(empty.containsDir('nuclide://aaa.bbb/aaa')).toBe(true);
       expect(empty.containsDir('nuclide://aaa.bbb/aaa/bbb')).toBe(true);
     });
-
-    it('throws on invalid paths', () => {
-      const empty = new WorkingSet();
-      expect(() => empty.containsDir('')).toThrow();
-      expect(() => empty.containsDir('nuclide://aaa.bbb')).toThrow();
-      expect(() => empty.containsDir('nuclide://aaa.bbb')).toThrow();
-    });
   });
 
   describe('- Local root set', () => {

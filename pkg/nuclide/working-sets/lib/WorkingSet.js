@@ -59,11 +59,19 @@ export class WorkingSet {
   }
 
   containsFile(uri: NuclideUri) : boolean {
+    if (this.isEmpty()) {
+      return true;
+    }
+
     const tokens = splitUri(normalizePathUri(uri));
     return this._containsPathFor(tokens, /* mustHaveLeaf */ true);
   }
 
   containsDir(uri: NuclideUri): boolean {
+    if (this.isEmpty()) {
+      return true;
+    }
+
     const tokens = splitUri(normalizePathUri(uri));
     return this._containsPathFor(tokens, /* mustHaveLeaf */ false);
   }
