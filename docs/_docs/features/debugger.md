@@ -274,6 +274,32 @@ When you launch the debugger for Hack and PHP, an `Output` window will appear in
 separate pane. When debugging, HHVM will send its stdout to this window. This includes output from
 `print()` (or similar) statements and stacktraces.
 
+*Evaluation*
+
+Setting up [evaluation](#basics__evaluation) in the REPL requires some prepatory work.  If you are
+debugging a non-Hack, vanilla PHP project, then you must check in a file named
+`php_only_xdebug_request.php` to the root of your project.  If you are debugging a Hack project,
+then you must check in a `.hhconfig` file at the root of your project, and also a
+`scripts/xdebug_includes.php` file.
+
+In either of these cases, these files must contain at least one call to the `xdebug_break` function.
+Here is an example of such a file:
+
+```php
+<?hh
+
+// This file is named 'xdebug_includes.php' and lives inside a directory named 'scripts/'.
+
+// Put code here that loads context into the environment.  For example, you can use PHP's require to
+// import function and variable bindings, which will then be available via the REPL.
+
+xdebug_break(); // Pauses the runtime's execution when xdebug mode is enabled.
+```
+
+Now when you debug your Hack or PHP project, the nuclide debugger will also make a separate
+connection to the runtime and launch this script.  Any context loaded before calling
+`xdebug_break()` will be accessible via the REPL. 
+
 *Filtering*
 
 After you attach to a remote server with HHVM, the debugger will then utilize the *first* instance
