@@ -112,6 +112,48 @@ describe('RemoteFile', () => {
     });
   });
 
+  describe('RemoteDirectory::isSymbolicLink()', () => {
+    let tempDir;
+
+    beforeEach(() => {
+      tempDir = temp.mkdirSync('rename_test');
+    });
+
+    it('verifies symlink', () => {
+      const targetFilePath = path.join(tempDir, 'target');
+      const symLinkedFilePath = path.join(tempDir, 'linked');
+      fs.writeFileSync(targetFilePath, '');
+      fs.symlinkSync(
+        targetFilePath,
+        symLinkedFilePath,
+        'file',
+      );
+      expect(fs.lstatSync(symLinkedFilePath).isSymbolicLink()).toBe(true);
+
+      const file = new RemoteFile(
+        connectionMock,
+        `nuclide://host13:1234${symLinkedFilePath}`,
+        true,
+      );
+      const symlink = file.isSymbolicLink();
+      expect(symlink).toBe(true);
+    });
+
+    it('verifies non-symlink', () => {
+      const notLinkedFilePath = path.join(tempDir, 'not_linked');
+      fs.writeFileSync(notLinkedFilePath, '');
+      expect(fs.lstatSync(notLinkedFilePath).isSymbolicLink()).toBe(false);
+
+      const file = new RemoteFile(
+        connectionMock,
+        `nuclide://host13:1234${notLinkedFilePath}`,
+        false,
+      );
+      const symlink = file.isSymbolicLink();
+      expect(symlink).toBe(false);
+    });
+  });
+
   describe('RemoteFile::rename()', () => {
     let tempDir;
 

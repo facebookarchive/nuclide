@@ -41,16 +41,23 @@ export class RemoteDirectory {
   _host: string;
   _localPath: string;
   _hgRepositoryDescription: ?HgRepositoryDescription;
+  _symlink: boolean;
 
   /**
    * @param uri should be of the form "nuclide://example.com:9090/path/to/directory".
    */
-  constructor(remote: RemoteConnection, uri: string, options: ?any) {
+  constructor(
+    remote: RemoteConnection,
+    uri: string,
+    symlink: boolean = false,
+    options: ?any,
+  ) {
     Object.defineProperty(this, MARKER_PROPERTY_FOR_REMOTE_DIRECTORY, {value: true});
     this._remote = remote;
     this._uri = uri;
     this._emitter = new Emitter();
     this._subscriptionCount = 0;
+    this._symlink = symlink;
     const {path: directoryPath, protocol, host} = remoteUri.parse(uri);
     invariant(protocol);
     invariant(host);
@@ -259,10 +266,11 @@ export class RemoteDirectory {
     }).forEach(entry => {
       invariant(entry);
       const uri = this._host + path.join(this._localPath, entry.file);
+      const symlink = entry.isSymbolicLink;
       if (entry.stats && entry.stats.isFile()) {
-        files.push(this._remote.createFile(uri));
+        files.push(this._remote.createFile(uri, symlink));
       } else {
-        directories.push(this._remote.createDirectory(uri));
+        directories.push(this._remote.createDirectory(uri, symlink));
       }
     });
     callback(null, directories.concat(files));
@@ -294,6 +302,10 @@ export class RemoteDirectory {
   // A workaround before Atom 2.0: see ::getHgRepoInfo of main.js.
   getHgRepositoryDescription(): ?HgRepositoryDescription {
     return this._hgRepositoryDescription;
+  }
+
+  isSymbolicLink(): boolean {
+    return this._symlink;
   }
 
   _getFileSystemService(): FileSystemService {

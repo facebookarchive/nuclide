@@ -268,6 +268,48 @@ describe('RemoteDirectory::exists()', () => {
   });
 });
 
+describe('RemoteDirectory::isSymbolicLink()', () => {
+  let tempDir;
+
+  beforeEach(() => {
+    tempDir = temp.mkdirSync('rename_test');
+  });
+
+  it('verifies symlink', () => {
+    const targetDirectoryPath = path.join(tempDir, 'target');
+    const symLinkedDirectoryPath = path.join(tempDir, 'linked');
+    fs.mkdirSync(targetDirectoryPath);
+    fs.symlinkSync(
+      targetDirectoryPath,
+      symLinkedDirectoryPath,
+      'dir',
+    );
+    expect(fs.lstatSync(symLinkedDirectoryPath).isSymbolicLink()).toBe(true);
+
+    const directory = new RemoteDirectory(
+      connectionMock,
+      `nuclide://host13:1234${symLinkedDirectoryPath}`,
+      true,
+    );
+    const symlink = directory.isSymbolicLink();
+    expect(symlink).toBe(true);
+  });
+
+  it('verifies non-symlink', () => {
+    const notLinkedDirectoryPath = path.join(tempDir, 'not_linked');
+    fs.mkdirSync(notLinkedDirectoryPath);
+    expect(fs.lstatSync(notLinkedDirectoryPath).isSymbolicLink()).toBe(false);
+
+    const directory = new RemoteDirectory(
+      connectionMock,
+      `nuclide://host13:1234${notLinkedDirectoryPath}`,
+      false,
+    );
+    const symlink = directory.isSymbolicLink();
+    expect(symlink).toBe(false);
+  });
+});
+
 describe('RemoteDirectory::rename()', () => {
   let tempDir;
 

@@ -36,8 +36,13 @@ export class RemoteFile {
   _subscriptionCount: number;
   _watchSubscription: ?IDisposable;
   _digest: ?string;
+  _symlink: boolean;
 
-  constructor(remote: RemoteConnection, remotePath: string) {
+  constructor(
+    remote: RemoteConnection,
+    remotePath: string,
+    symlink: boolean = false,
+  ) {
     this._remote = remote;
     const {path: localPath} = remoteUri.parse(remotePath);
     this._localPath = localPath;
@@ -45,6 +50,7 @@ export class RemoteFile {
     this._emitter = new Emitter();
     this._subscriptionCount = 0;
     this._deleted = false;
+    this._symlink = symlink;
   }
 
   onDidChange(callback: () => mixed): IDisposable {
@@ -273,6 +279,10 @@ export class RemoteFile {
     invariant(host);
     const directoryPath = protocol + '//' + host + pathUtil.dirname(localPath);
     return this._remote.createDirectory(directoryPath);
+  }
+
+  isSymbolicLink(): boolean {
+    return this._symlink;
   }
 
   _getFileSystemService(): FileSystemService {

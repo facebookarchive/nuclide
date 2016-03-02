@@ -126,15 +126,20 @@ export class RemoteConnection {
     return remoteUri.parse(uri).path;
   }
 
-  createDirectory(uri: string): RemoteDirectory {
+  createDirectory(uri: string, symlink: boolean = false): RemoteDirectory {
     let {path} = remoteUri.parse(uri);
     path = require('path').normalize(path);
 
     let entry = this._entries[path];
-    if (!entry || entry.getLocalPath() !== path) {
+    if (
+      !entry ||
+      entry.getLocalPath() !== path ||
+      entry.isSymbolicLink() !== symlink
+    ) {
       this._entries[path] = entry = new RemoteDirectory(
         this,
         this.getUriOfRemotePath(path),
+        symlink,
         {hgRepositoryDescription: this._hgRepositoryDescription}
       );
       // TODO: We should add the following line to keep the cache up-to-date.
@@ -158,13 +163,21 @@ export class RemoteConnection {
     this._hgRepositoryDescription = hgRepositoryDescription;
   }
 
-  createFile(uri: string): RemoteFile {
+  createFile(uri: string, symlink: boolean = false): RemoteFile {
     let {path} = remoteUri.parse(uri);
     path = require('path').normalize(path);
 
     let entry = this._entries[path];
-    if (!entry || entry.getLocalPath() !== path) {
-      this._entries[path] = entry = new RemoteFile(this, this.getUriOfRemotePath(path));
+    if (
+      !entry ||
+      entry.getLocalPath() !== path ||
+      entry.isSymbolicLink() !== symlink
+    ) {
+      this._entries[path] = entry = new RemoteFile(
+        this,
+        this.getUriOfRemotePath(path),
+        symlink,
+      );
       this._addHandlersForEntry(entry);
     }
 
