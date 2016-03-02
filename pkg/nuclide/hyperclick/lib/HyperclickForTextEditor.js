@@ -14,7 +14,7 @@ import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
 import type Hyperclick from './Hyperclick';
 import type {TimingTracker} from '../../analytics';
 
-import {Disposable, CompositeDisposable} from 'atom';
+import {Disposable, CompositeDisposable, Point} from 'atom';
 import {trackTiming, startTracking} from '../../analytics';
 import {getLogger} from '../../logging';
 import getWordTextAndRange from './get-word-text-and-range';
@@ -242,7 +242,16 @@ export default class HyperclickForTextEditor {
     invariant(component);
     invariant(this._lastMouseEvent);
     const screenPosition = component.screenPositionForMouseEvent(this._lastMouseEvent);
-    return this._textEditor.bufferPositionForScreenPosition(screenPosition);
+    try {
+      return this._textEditor.bufferPositionForScreenPosition(screenPosition);
+    } catch (error) {
+      // Fix https://github.com/facebook/nuclide/issues/292
+      // When navigating Atom workspace with `CMD/CTRL` down,
+      // it triggers TextEditorElement's `mousemove` with invalid screen position.
+      // This falls back to returning the start of the editor.
+      logger.error('Hyperclick: Error getting buffer position for screen position:', error);
+      return new Point(0, 0);
+    }
   }
 
   _isMouseAtLastSuggestion(): boolean {
