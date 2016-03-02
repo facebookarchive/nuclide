@@ -67,7 +67,17 @@
     }
     &:after {
       transform: rotate(-45deg) scale(1);
-      transition-delay: 0;
+      transition-delay: 0s;
+    }
+  }
+
+  &:indeterminate {
+    background-color: @background-color-warning;
+    &:after {
+      left: 0.4em;
+      opacity: 1;
+      top: 0.8em;
+      transform: rotate(0deg) scale(1);
     }
   }
 }

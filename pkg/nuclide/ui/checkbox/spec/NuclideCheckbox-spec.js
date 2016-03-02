@@ -18,7 +18,7 @@ import {
 
 let hostEl;
 
-function createWithProps(props: mixed) {
+function createWithProps(props) {
   return ReactDOM.render(<NuclideCheckbox {...props} />, hostEl);
 }
 

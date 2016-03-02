@@ -9,4 +9,7 @@
  * the root directory of this source tree.
  */
 
-module.exports = require('../../../atom-npm').load(__dirname, 'NuclideCheckbox');
+import type NuclideCheckbox from './NuclideCheckbox';
+
+module.exports =
+  (require('../../../atom-npm').load(__dirname, 'NuclideCheckbox'): Class<NuclideCheckbox>);

@@ -14,19 +14,22 @@ import {
   React,
 } from 'react-for-atom';
 
-const {PropTypes} = React;
+type Props = {
+  checked: boolean;
+  indeterminate: boolean;
+  label: string;
+  onChange: (isChecked: boolean) => mixed;
+};
 
 /**
  * A checkbox component with an input checkbox and a label. We restrict the label to a string
  * to ensure this component is pure.
  */
 export default class NuclideCheckbox extends React.Component {
-  state: void;
+  props: Props;
 
-  static propTypes = {
-    checked: PropTypes.bool.isRequired,
-    label: PropTypes.string.isRequired,
-    onChange: PropTypes.func.isRequired,
+  static defaultProps = {
+    indeterminate: false,
   };
 
   constructor(props: Object) {
@@ -44,6 +47,7 @@ export default class NuclideCheckbox extends React.Component {
         <input
           checked={this.props.checked}
           className="nuclide-ui-checkbox"
+          indeterminate={this.props.indeterminate}
           onChange={this._onChange}
           type="checkbox"
         />
