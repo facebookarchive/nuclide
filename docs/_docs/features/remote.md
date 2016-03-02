@@ -124,8 +124,8 @@ agent.
 to your path as described above, this should just be `nuclide-start-server`.
 If not, you need to supply the full path to the location of this script. You
 can either let the script pick an open port for you from a list of predefined
-ports, or start the server on a specific port using the `-p` flag.
-For example `nuclide-start-server -p 9099`
+ports, or start the server on a specific port using the `--port` flag.
+For example `nuclide-start-server --port 9099`
 
 After supplying these options, click OK to connect.
 
