@@ -16,6 +16,7 @@ import {
 
 type Props = {
   checked: boolean;
+  disabled: boolean;
   indeterminate: boolean;
   label: string;
   onChange: (isChecked: boolean) => mixed;
@@ -29,6 +30,7 @@ export default class NuclideCheckbox extends React.Component {
   props: Props;
 
   static defaultProps = {
+    disabled: false,
     indeterminate: false,
   };
 
@@ -47,6 +49,7 @@ export default class NuclideCheckbox extends React.Component {
         <input
           checked={this.props.checked}
           className="nuclide-ui-checkbox"
+          disabled={this.props.disabled}
           indeterminate={this.props.indeterminate}
           onChange={this._onChange}
           type="checkbox"

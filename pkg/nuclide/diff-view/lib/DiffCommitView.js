@@ -9,12 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {CommitModeType, CommitModeStateType} from './types';
+import type {CommitModeStateType} from './types';
 import type DiffViewModel from './DiffViewModel';
 
 import AtomTextEditor from '../../ui/atom-text-editor';
 import classnames from 'classnames';
 import {CommitMode, CommitModeState} from './constants';
+import NuclideCheckbox from '../../ui/checkbox';
 
 import {React} from 'react-for-atom';
 
@@ -31,6 +32,7 @@ class DiffCommitView extends React.Component {
   constructor(props: Props) {
     super(props);
     (this: any)._onClickCommit = this._onClickCommit.bind(this);
+    (this: any)._onToggleAmend = this._onToggleAmend.bind(this);
   }
 
   componentDidMount(): void {
@@ -48,60 +50,29 @@ class DiffCommitView extends React.Component {
   }
 
   render(): ReactElement {
-    let actionOrMessage;
-    const {
-      commitMode,
-      commitModeState,
-    } = this.props;
+    const {commitModeState} = this.props;
     const isLoading = commitModeState !== CommitModeState.READY;
 
-    if (commitModeState === CommitModeState.READY) {
-      actionOrMessage = (
-        <button className="btn btn-sm btn-success pull-right"
-          onClick={this._onClickCommit}>
-          {commitMode} to HEAD
-        </button>
-      );
-    } else {
-      let loadingMessage;
+    let message;
+    if (isLoading) {
       switch (commitModeState) {
         case CommitModeState.AWAITING_COMMIT:
-          loadingMessage = 'Committing...';
+          message = 'Committing...';
           break;
         case CommitModeState.LOADING_COMMIT_MESSAGE:
-          loadingMessage = 'Loading...';
+          message = 'Loading...';
           break;
         default:
-          loadingMessage = 'Unknown Commit State!';
+          message = 'Unknown Commit State!';
           break;
       }
-
-      actionOrMessage = (
-        <span className="pull-right">
-          <span className="loading loading-spinner-tiny inline-block"></span>
-          <span className="inline-block">{loadingMessage}</span>
-        </span>
-      );
+    } else {
+      message = 'Commit';
     }
 
-    const commitModes = Object.keys(CommitMode).map(modeId => {
-      const modeValue = CommitMode[modeId];
-      const className = classnames({
-        'btn': true,
-        'btn-sm': true,
-        'selected': modeValue === commitMode,
-      });
-      return (
-        <button
-          className={className}
-          key={modeValue}
-          disabled={isLoading}
-          onClick={() => this._onChangeCommitMode(modeValue)}>
-          {modeValue}
-        </button>
-      );
+    const btnClassname = classnames('btn btn-sm btn-success pull-right', {
+      'btn-progress': isLoading,
     });
-
     return (
       <div className="nuclide-diff-mode">
         <div className="message-editor-wrapper">
@@ -112,10 +83,18 @@ class DiffCommitView extends React.Component {
           />
         </div>
         <div className="padded">
-          <div className="btn-group btn-group-sm inline-block">
-            {commitModes}
-          </div>
-          {actionOrMessage}
+          <NuclideCheckbox
+            checked={this.props.commitMode === CommitMode.AMEND}
+            disabled={isLoading}
+            label="Amend"
+            onChange={this._onToggleAmend}
+          />
+          <button
+            className={btnClassname}
+            disabled={isLoading}
+            onClick={this._onClickCommit}>
+            {message}
+          </button>
         </div>
       </div>
     );
@@ -125,8 +104,11 @@ class DiffCommitView extends React.Component {
     this.props.diffModel.commit(this.refs['message'].getTextBuffer().getText());
   }
 
-  _onChangeCommitMode(commitMode: CommitModeType): void {
-    this.props.diffModel.setCommitMode(commitMode);
+  _onToggleAmend(isChecked: boolean): void {
+    this.props.diffModel.setCommitMode(isChecked
+      ? CommitMode.AMEND
+      : CommitMode.COMMIT
+    );
   }
 }
 

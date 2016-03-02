@@ -250,3 +250,23 @@ atom-text-editor, atom-text-editor::shadow {
     background-color: @background-color-warning;
   }
 }
+
+/*
+ * Prepend another class selector, `nuclide-diff-view-component` in this case, to beat the
+ * specificity of core styles with 2 classes + 1 tag.
+ */
+.nuclide-diff-view-component .btn.btn-progress {
+  background-image: linear-gradient(to right, transparent 50%, hsla(0,0%,0%,.15) 50%);
+  background-size: 10px 100%;
+  -webkit-animation: btn-progress .5s linear infinite;
+}
+
+/*
+ * Animation originally taken from [atom/settings-view][1] to match its installing/uninstalling
+ * buttons.
+ *
+ * [1] https://github.com/atom/settings-view/blob/cc409bacf1c44dbd7d27626809b11ea7a01639a0/styles/package-card.less#L296
+ */
+@-webkit-keyframes btn-progress {
+  100% { background-position: -10px 0px; }
+}
