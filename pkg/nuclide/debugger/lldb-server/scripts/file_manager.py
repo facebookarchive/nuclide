@@ -147,8 +147,12 @@ class File(FileLike):
 
     @property
     def script_source(self):
-        with open(self._abspath, 'r') as f:
-            return f.read()
+        try:
+            with open(self._abspath, 'r') as f:
+                return f.read()
+        except:
+            # The source can't be found.
+            return ''
 
     @property
     def client_url(self):
