@@ -44,7 +44,7 @@ describe('Diff view simple integration test', () => {
       textEditor.insertText('change');
     });
 
-    waitsFor('Text to be inserted', 1000, () => {
+    waitsFor('Text to be inserted', 10000, () => {
       return textEditor.getText().startsWith('change');
     });
 
