@@ -2,22 +2,30 @@
   "atom": {
     "clientOnly": true,
     "dependency": "Atom",
-    "version": "1.5.3"
+    "version": "1.5.3",
+    "url": "https://github.com/atom/atom/releases/download/v1.5.3/atom-mac.zip",
+    "shasum": "5cb5db601bd80be60d068e1c13a0b927bdebe40926b78e09164ad2af75625c0d"
   },
   "flow": {
     "clientOnly": false,
     "dependency": "flow",
     "version": "0.21.0",
-    "version-output": "Flow, a static type checker for JavaScript, version 0.21.0"
+    "version-output": "Flow, a static type checker for JavaScript, version 0.21.0",
+    "url": "https://github.com/facebook/flow/releases/download/v0.21.0/flow-osx-v0.21.0.zip",
+    "shasum": "0a5a03f84f83521a014bf2ee158b4c499e83c4fe4a34d96cc8b74d4c3d71ee67"
   },
   "node": {
     "clientOnly": false,
     "dependency": "node",
-    "version": "v0.12.4"
+    "version": "v0.12.4",
+    "url": "https://nodejs.org/dist/v0.12.4/node-v0.12.4-darwin-x64.tar.gz",
+    "shasum": "757d1a2e7d3deb03b40277e9f04ae276c370b53e6e5238d44e08846f1f3c85c2"
   },
   "npm": {
     "clientOnly": false,
     "dependency": "npm",
-    "version": "2.13.3"
+    "version": "2.10.1",
+    "url": null,
+    "shasum": null
   }
 }

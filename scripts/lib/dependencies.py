@@ -19,16 +19,13 @@ import os.path
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
 import fs
-from json_helpers import json_dump, json_load
+from json_helpers import json_load
 
 def get_dependencies_filename():
     return os.path.join(os.path.dirname(__file__), 'dependencies.json')
 
 def load_dependencies():
     return json_load(get_dependencies_filename())
-
-def write_dependencies(dependencies):
-    json_dump(dependencies, get_dependencies_filename())
 
 def check_dependency(binary, expected_version):
     # Since flow v0.18.1 `--version` was deprecated in favor a `version` command
@@ -52,15 +49,3 @@ def get_atom_version():
 
 def get_flow_version():
     return load_dependencies()['flow']['version']
-
-def set_atom_version(new_atom_version):
-    dependencies = load_dependencies()
-    dependencies['atom']['version'] = new_atom_version
-    write_dependencies(dependencies)
-
-def set_flow_version(new_flow_version):
-    dependencies = load_dependencies()
-    dependencies['flow']['version'] = new_flow_version
-    dependencies['flow']['version-output'] = (
-        'Flow, a static type checker for JavaScript, version ' + new_flow_version)
-    write_dependencies(dependencies)
