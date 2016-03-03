@@ -61,9 +61,16 @@ describe('FileTreeHelpers', () => {
     it('instantiates a local file from a key', () => {
       expect(FileTreeHelpers.getFileByKey('/a.md') instanceof File).toBe(true);
     });
+  });
+
+  describe('getEntryByKey', () => {
+    it('instantiates a local file from a key', () => {
+      expect(FileTreeHelpers.getEntryByKey('/a.md') instanceof File).toBe(true);
+    });
 
     it('instantiates a local directory from a key', () => {
-      expect(FileTreeHelpers.getFileByKey('/a/') instanceof Directory).toBe(true);
+      expect(FileTreeHelpers.getEntryByKey('/a/') instanceof Directory)
+        .toBe(true);
     });
   });
 
@@ -125,9 +132,17 @@ describe('FileTreeHelpers', () => {
       it('instantiates a local file from a key', () => {
         expect(FileTreeHelpers.getFileByKey('\\a.md') instanceof File).toBe(true);
       });
+    });
+
+    describe('getEntryByKey', () => {
+      it('instantiates a local file from a key', () => {
+        expect(FileTreeHelpers.getEntryByKey('\\a.md') instanceof File)
+          .toBe(true);
+      });
 
       it('instantiates a local directory from a key', () => {
-        expect(FileTreeHelpers.getFileByKey('\\a\\') instanceof Directory).toBe(true);
+        expect(FileTreeHelpers.getEntryByKey('\\a\\') instanceof Directory)
+          .toBe(true);
       });
     });
   });

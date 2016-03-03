@@ -44,6 +44,7 @@ import type {WorkingSetsStore} from '../../working-sets/lib/WorkingSetsStore';
 
 type ActionPayload = Object;
 type ChangeListener = () => mixed;
+
 export type FileTreeNodeData = {
   nodeKey: string;
   rootKey: string;
@@ -432,7 +433,7 @@ class FileTreeStore {
   }
 
   /**
-   * The node child keys may either be  available immediately (cached), or
+   * The node child keys may either be available immediately (cached), or
    * require an async fetch. If all of the children are needed it's easier to
    * return as promise, to make the caller oblivious to the way children were
    * fetched.
@@ -582,25 +583,28 @@ class FileTreeStore {
       return existingPromise;
     }
 
-    const promise = FileTreeHelpers.fetchChildren(nodeKey).catch(error => {
-      this._logger.error(`Unable to fetch children for "${nodeKey}".`);
-      this._logger.error('Original error: ', error);
-      // Collapse the node and clear its loading state on error so the user can retry expanding it.
-      const rootKey = this.getRootForKey(nodeKey);
-      if (rootKey != null) {
-        this._collapseNode(rootKey, nodeKey);
-      }
-      this._clearLoading(nodeKey);
-    }).then(childKeys => {
-      // If this node's root went away while the Promise was resolving, do no more work. This node
-      // is no longer needed in the store.
-      if (this.getRootForKey(nodeKey) == null) {
-        return;
-      }
-      this._setChildKeys(nodeKey, childKeys);
-      this._addSubscription(nodeKey);
-      this._clearLoading(nodeKey);
-    });
+    const promise = FileTreeHelpers.fetchChildren(nodeKey)
+      .catch(error => {
+        this._logger.error(`Unable to fetch children for "${nodeKey}".`);
+        this._logger.error('Original error: ', error);
+        // Collapse the node and clear its loading state on error so the
+        // user can retry expanding it.
+        const rootKey = this.getRootForKey(nodeKey);
+        if (rootKey != null) {
+          this._collapseNode(rootKey, nodeKey);
+        }
+        this._clearLoading(nodeKey);
+      })
+      .then(childKeys => {
+        // If this node's root went away while the Promise was resolving, do
+        // no more work. This is no longer needed in the store.
+        if (this.getRootForKey(nodeKey) == null) {
+          return;
+        }
+        this._setChildKeys(nodeKey, childKeys);
+        this._addSubscription(nodeKey);
+        this._clearLoading(nodeKey);
+      });
 
     this._setLoading(nodeKey, promise);
     return promise;
@@ -654,18 +658,20 @@ class FileTreeStore {
   async _deleteSelectedNodes(): Promise<void> {
     const selectedNodes = this.getSelectedNodes();
     await Promise.all(selectedNodes.map(async node => {
-      const file = FileTreeHelpers.getFileByKey(node.nodeKey);
-      if (file == null) {
+      const entry = FileTreeHelpers.getEntryByKey(node.nodeKey);
+
+      if (entry == null) {
         return;
       }
-      const repository = repositoryForPath(file.getPath());
+      const path = entry.getPath();
+      const repository = repositoryForPath(path);
       if (repository != null && repository.getType() === 'hg') {
         const hgRepository = ((repository: any): HgRepositoryClient);
         try {
-          await hgRepository.remove(file.getPath());
+          await hgRepository.remove(path);
         } catch (e) {
-          const statuses = await hgRepository.getStatuses([file.getPath()]);
-          const pathStatus = statuses.get(file.getPath());
+          const statuses = await hgRepository.getStatuses([path]);
+          const pathStatus = statuses.get(path);
           const goodStatuses = [
             StatusCodeNumber.ADDED,
             StatusCodeNumber.CLEAN,
@@ -673,19 +679,19 @@ class FileTreeStore {
           ];
           if (goodStatuses.indexOf(pathStatus) !== -1) {
             atom.notifications.addError(
-              'Failed to remove ' + file.getPath() + ' from version control.  The file will ' +
+              'Failed to remove ' + path + ' from version control.  The file will ' +
               'still get deleted but you will have to remove it from your VCS yourself.  Error: ' +
               e.toString(),
             );
           }
         }
       }
-      if (FileTreeHelpers.isLocalFile(file)) {
+      if (FileTreeHelpers.isLocalEntry(entry)) {
         // TODO: This special-case can be eliminated once `delete()` is added to `Directory`
         // and `File`.
         shell.moveItemToTrash(node.nodePath);
       } else {
-        const remoteFile = ((file: any): (RemoteDirectory | RemoteFile));
+        const remoteFile = ((entry: any): (RemoteFile | RemoteDirectory));
         await remoteFile.delete();
       }
     }));

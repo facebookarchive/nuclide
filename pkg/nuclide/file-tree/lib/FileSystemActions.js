@@ -117,11 +117,11 @@ const FileSystemActions = {
   },
 
   _getHgRepositoryForNode(node: FileTreeNode): ?HgRepositoryClient {
-    const file = FileTreeHelpers.getFileByKey(node.nodeKey);
-    if (file == null) {
+    const entry = FileTreeHelpers.getEntryByKey(node.nodeKey);
+    if (entry == null) {
       return null;
     }
-    return this._getHgRepositoryForPath(file.getPath());
+    return this._getHgRepositoryForPath(entry.getPath());
   },
 
   _getHgRepositoryForPath(filePath: string): ?HgRepositoryClient {
@@ -137,8 +137,8 @@ const FileSystemActions = {
     nodePath: string,
     newBasename: string,
   ): Promise<void> {
-    const file = FileTreeHelpers.getFileByKey(node.nodeKey);
-    if (file == null) {
+    const entry = FileTreeHelpers.getEntryByKey(node.nodeKey);
+    if (entry == null) {
       // TODO: Connection could have been lost for remote file.
       return;
     }
@@ -156,7 +156,7 @@ const FileSystemActions = {
     if (hgRepository !== null) {
       try {
         shouldFSRename = false;
-        await hgRepository.rename(file.getPath(), newPath);
+        await hgRepository.rename(entry.getPath(), newPath);
       } catch (e) {
         atom.notifications.addError(
           '`hg rename` failed, will try to move the file ignoring version control instead.  ' +
@@ -166,10 +166,10 @@ const FileSystemActions = {
       }
     }
     if (shouldFSRename) {
-      if (FileTreeHelpers.isLocalFile(file)) {
+      if (FileTreeHelpers.isLocalEntry(entry)) {
         await fsPromise.rename(nodePath, newPath);
       } else {
-        await ((file: any): (RemoteDirectory | RemoteFile)).rename(newPath);
+        await ((entry: any): (RemoteDirectory | RemoteFile)).rename(newPath);
       }
     }
   },
@@ -185,7 +185,7 @@ const FileSystemActions = {
     const newFile = directory.getFile(newBasename);
     const newPath = newFile.getPath();
     let exists = false;
-    if (FileTreeHelpers.isLocalFile(file)) {
+    if (FileTreeHelpers.isLocalEntry(file)) {
       exists = await fsPromise.exists(newPath);
       if (!exists) {
         await fsPromise.copy(nodePath, newPath);

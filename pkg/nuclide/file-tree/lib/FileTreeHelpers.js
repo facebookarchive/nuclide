@@ -24,6 +24,7 @@ import crypto from 'crypto';
 
 type Directory = LocalDirectory | RemoteDirectory;
 type File = LocalFile | RemoteFile;
+type Entry = LocalDirectory | RemoteDirectory | LocalFile | RemoteFile;
 
 /*
  * Returns a string with backslashes replaced by two backslashes for use with strings passed to the
@@ -87,13 +88,14 @@ function fetchChildren(nodeKey: string): Promise<Array<string>> {
   });
 }
 
-// TODO: cache these instantiated directories (also expose a way to purge)
 function getDirectoryByKey(key: string): ?Directory {
   const path = keyToPath(key);
-  if (RemoteUri.isRemote(path)) {
+  if (!isDirKey(key)) {
+    return null;
+  } else if (RemoteUri.isRemote(path)) {
     const connection = RemoteConnection.getForUri(path);
-    if (!connection) {
-      return;
+    if (connection == null) {
+      return null;
     }
     return new RemoteDirectory(connection, path);
   } else {
@@ -101,29 +103,35 @@ function getDirectoryByKey(key: string): ?Directory {
   }
 }
 
-// TODO: cache these instantiated entries (also expose a way to purge)
-function getFileByKey(key: string): ?(File | Directory) {
+function getFileByKey(key: string): ?File {
   const path = keyToPath(key);
-  if (RemoteUri.isRemote(path)) {
+  if (isDirKey(key)) {
+    return null;
+  } else if (RemoteUri.isRemote(path)) {
     const connection = RemoteConnection.getForUri(path);
-    if (!connection) {
+    if (connection == null) {
       return;
     }
 
-    return isDirKey(key) ?
-      (new RemoteDirectory(connection, path): any) :
-      new RemoteFile(connection, path);
+    return new RemoteFile(connection, path);
   } else {
-    return isDirKey(key) ? (new LocalDirectory(path): any) : new LocalFile(path);
+    return new LocalFile(path);
   }
+}
+
+function getEntryByKey(key: string): ?Entry {
+  return getFileByKey(key) || getDirectoryByKey(key);
 }
 
 // Sometimes remote directories are instantiated as local directories but with invalid paths.
 function isValidDirectory(directory: Directory): boolean {
-  return (!isLocalFile((directory: any)) || isFullyQualifiedLocalPath(directory.getPath()));
+  return (
+    !isLocalEntry((directory: any)) ||
+    isFullyQualifiedLocalPath(directory.getPath())
+  );
 }
 
-function isLocalFile(entry: File | Directory): boolean {
+function isLocalEntry(entry: Entry): boolean {
   // TODO: implement `RemoteDirectory.isRemoteDirectory()`
   return !('getLocalPath' in entry);
 }
@@ -151,9 +159,10 @@ module.exports = {
   getParentKey,
   fetchChildren,
   getDirectoryByKey,
+  getEntryByKey,
   getFileByKey,
   isValidDirectory,
-  isLocalFile,
+  isLocalEntry,
   isFullyQualifiedLocalPath,
   isContextClick,
   buildHashKey,
