@@ -11,7 +11,7 @@
 
 /*eslint-disable react/prop-types */
 
-import {React} from 'react-for-atom';
+import {React, ReactDOM} from 'react-for-atom';
 import {CompositeDisposable} from 'atom';
 import classnames from 'classnames';
 import invariant from 'assert';
@@ -42,6 +42,7 @@ export class FileTreeToolbarComponent extends React.Component {
   _prevName: string;
   _store: FileTreeStore;
   _actions: FileTreeActions;
+  _closeWorkingSetsSelector: ?() => void;
   state: State;
   props: Props;
 
@@ -65,7 +66,6 @@ export class FileTreeToolbarComponent extends React.Component {
     ));
 
     (this: any)._toggleWorkingSetsSelector = this._toggleWorkingSetsSelector.bind(this);
-    (this: any)._closeWorkingSetsSelector = this._closeWorkingSetsSelector.bind(this);
     (this: any)._checkIfClosingSelector = this._checkIfClosingSelector.bind(this);
     (this: any)._editWorkingSet = this._editWorkingSet.bind(this);
     (this: any)._saveWorkingSet = this._saveWorkingSet.bind(this);
@@ -83,6 +83,15 @@ export class FileTreeToolbarComponent extends React.Component {
 
   componentWillUnmount(): void {
     this._disposables.dispose();
+  }
+
+  componentDidUpdate(prevProps: Props, prevState: State): void {
+    if (!prevState.selectionIsActive && this.state.selectionIsActive) {
+      this._closeWorkingSetsSelector = this._renderWorkingSetSelectionPanel();
+    } else if (prevState.selectionIsActive && !this.state.selectionIsActive) {
+      invariant(this._closeWorkingSetsSelector);
+      this._closeWorkingSetsSelector();
+    }
   }
 
   render(): React.Element {
@@ -114,16 +123,6 @@ export class FileTreeToolbarComponent extends React.Component {
       );
     }
 
-    let workingSetSelectionPanel;
-    if (this.state.selectionIsActive) {
-      workingSetSelectionPanel = (
-        <WorkingSetSelectionComponent
-          workingSetsStore={this.props.workingSetsStore}
-          onClose={this._closeWorkingSetsSelector}
-          onEditWorkingSet={this._editWorkingSet}
-        />
-      );
-    }
     return (
       <div
         className={classnames({
@@ -142,7 +141,6 @@ export class FileTreeToolbarComponent extends React.Component {
         </div>
         <div className="clearfix" />
         {workingSetNameAndSave}
-        {workingSetSelectionPanel}
       </div>
     );
   }
@@ -156,8 +154,31 @@ export class FileTreeToolbarComponent extends React.Component {
     this.setState({selectionIsActive: !this.state.selectionIsActive});
   }
 
-  _closeWorkingSetsSelector(): void {
-    this.setState({selectionIsActive: false});
+  _renderWorkingSetSelectionPanel(): () => void {
+    const reactDiv = document.createElement('div');
+    const panel = atom.workspace.addModalPanel({item: reactDiv});
+
+    let closed = false;
+    const onClose = () => {
+      if (closed) {
+        return;
+      }
+      closed = true;
+
+      ReactDOM.unmountComponentAtNode(reactDiv);
+      panel.destroy();
+      this.setState({selectionIsActive: false});
+    };
+
+    ReactDOM.render((
+      <WorkingSetSelectionComponent
+        workingSetsStore={this.props.workingSetsStore}
+        onClose={onClose}
+        onEditWorkingSet={this._editWorkingSet}
+      />
+    ), reactDiv);
+
+    return onClose;
   }
 
   _toggleWorkingSetEditMode(): void {

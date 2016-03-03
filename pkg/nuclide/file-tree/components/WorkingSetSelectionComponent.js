@@ -67,13 +67,13 @@ export class WorkingSetSelectionComponent extends React.Component {
     this._disposables.add(atom.commands.add(
       node,
       {
-        'file-tree:workset-select-up': () => this._moveSelectionIndex(-1),
-        'file-tree:workset-select-down': () => this._moveSelectionIndex(1),
-        'file-tree:workset-select-toggle': () => {
+        'core:move-up': () => this._moveSelectionIndex(-1),
+        'core:move-down': () => this._moveSelectionIndex(1),
+        'core:confirm': () => {
           const def = this.state.definitions[this.state.selectionIndex];
           this._toggleWorkingSet(def.name, def.active);
         },
-        'file-tree:workset-select-close': this.props.onClose,
+        'core:cancel': this.props.onClose,
       }
     ));
   }
@@ -99,14 +99,13 @@ export class WorkingSetSelectionComponent extends React.Component {
   render(): React.Element {
     return (
       <div
-        className="nuclide-file-tree-working-set-selection-panel padded"
+        className="select-list"
         tabIndex="0"
         onBlur={this._lostFocus}>
-        <div className="select-list">
-          <ol className="list-group mark-active">
-            {this.state.definitions.map(this._renderDefinition)}
-          </ol>
-        </div>
+
+        <ol className="list-group mark-active">
+          {this.state.definitions.map(this._renderDefinition)}
+        </ol>
       </div>
     );
   }
@@ -124,26 +123,28 @@ export class WorkingSetSelectionComponent extends React.Component {
         onMouseOver={() => this.setState({selectionIndex: index})}
         onClick={() => this._toggleWorkingSet(def.name, def.active)}
         key={def.name}>
-        <div className="btn-group btn-group-xs pull-right">
+        <div className="btn-group pull-right">
           <button
-            className="inline-block-tight btn"
+            className="btn icon icon-trashcan"
+            tabIndex="-1"
             onClick={event => {
               this.props.workingSetsStore.deleteWorkingSet(def.name);
               event.stopPropagation();
             }}
-            tabIndex="-1">
-            <span className="icon icon-trashcan" />
-          </button>
+            tabIndex="-1"
+          />
+
 
           <button
-            className="inline-block-tight btn"
+            className="btn icon icon-pencil"
+            tabIndex="-1"
             onClick={event => {
               this.props.onEditWorkingSet(def.name, def.uris);
               event.stopPropagation();
             }}
-            onBlur={this._lostFocus}>
-            <span className="icon icon-pencil" />
-          </button>
+            onBlur={this._lostFocus}
+          />
+
         </div>
         <span>
           {def.name}

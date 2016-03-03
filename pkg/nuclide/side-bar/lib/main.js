@@ -57,8 +57,6 @@ type State = {
   views: Map<string, ViewInstance>;
 };
 
-const PANEL_Z_INDEX = 25;
-
 let disposables: CompositeDisposable;
 let item: HTMLElement;
 let logger: Logger;
@@ -243,12 +241,6 @@ export function activate(deserializedState: ?Object) {
   item.style.display = 'flex';
   item.style.height = 'inherit';
   panel = atom.workspace.addLeftPanel({item});
-
-  // Panels in Atom have a z-index of 5. So, if a panel has an element overflowing to the center,
-  // it will be inconsistently hidden by the editor pane.
-  // To have a consistent rendering of such panels - raise the side panel z-index
-  const panelView = atom.views.getView(panel);
-  panelView.style.zIndex = PANEL_Z_INDEX;
   state = object.assign({}, getDefaultState(), deserializedState);
 
   // Initializes `panelComponent` so it does not need to be considered nullable.
