@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type {Observable} from 'rx';
 import type {NuclideUri} from '../../remote-uri';
+import type {ServerStatusType} from './FlowService';
 
 import type {
   Diagnostics,
@@ -49,6 +51,14 @@ export class FlowRoot {
 
   allowServerRestart(): void {
     this._process.allowServerRestart();
+  }
+
+  getPathToRoot(): string {
+    return this._root;
+  }
+
+  getServerStatusUpdates(): Observable<ServerStatusType> {
+    return this._process.getServerStatusUpdates();
   }
 
   async flowFindDefinition(

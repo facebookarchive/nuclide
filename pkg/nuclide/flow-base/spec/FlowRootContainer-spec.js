@@ -11,6 +11,8 @@
 
 import type {FlowRootContainer as FlowRootContainerType} from '../lib/FlowRootContainer';
 
+import invariant from 'assert';
+
 import {uncachedRequire} from '../../test-helpers';
 
 import {array} from '../../commons';
@@ -50,6 +52,31 @@ describe('FlowRootContainer', () => {
       expect(array.from(flowRootContainer.getAllRoots())).toEqual([]);
       const flowRoot = await flowRootContainer.getRootForPath('foo');
       expect(array.from(flowRootContainer.getAllRoots())).toEqual([flowRoot]);
+    });
+  });
+
+  it('should return server status updates', () => {
+    waitsForPromise(async () => {
+      const resultsPromise = flowRootContainer
+        .getServerStatusUpdates()
+        .take(2)
+        .toArray()
+        .toPromise();
+
+      const flowRoot = await flowRootContainer.getRootForPath('foo');
+      invariant(flowRoot != null);
+      flowRoot._process._serverStatus.onNext('failed');
+
+      expect(await resultsPromise).toEqual([
+        {
+          pathToRoot: '/definitely/a/legit/path/',
+          status: 'unknown',
+        },
+        {
+          pathToRoot: '/definitely/a/legit/path/',
+          status: 'failed',
+        },
+      ]);
     });
   });
 });

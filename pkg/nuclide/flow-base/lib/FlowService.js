@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {Observable} from 'rx';
+
 import type {NuclideUri} from '../../remote-uri';
 
 // Diagnostic information, returned from findDiagnostics.
@@ -52,6 +54,11 @@ export type ServerStatusType =
   'init' |
   'ready';
 
+export type ServerStatusUpdate = {
+  pathToRoot: NuclideUri;
+  status: ServerStatusType;
+};
+
 export type FlowStartLocation = {
   // Service framework can't serialize Point so we need a slightly different type from the canonical
   // OutlineTree.
@@ -71,6 +78,10 @@ const rootContainer: FlowRootContainer = new FlowRootContainer();
 
 export function dispose(): void {
   rootContainer.clear();
+}
+
+export function getServerStatusUpdates(): Observable<ServerStatusUpdate> {
+  return rootContainer.getServerStatusUpdates();
 }
 
 export function flowFindDefinition(

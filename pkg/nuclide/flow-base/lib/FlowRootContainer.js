@@ -9,17 +9,30 @@
  * the root directory of this source tree.
  */
 
-import {findFlowConfigDir} from './FlowHelpers';
+import type {Observable} from 'rx';
+import type {ServerStatusUpdate} from './FlowService';
 
+import {Subject} from 'rx';
+
+import {findFlowConfigDir} from './FlowHelpers';
 import {FlowRoot} from './FlowRoot';
 
 export class FlowRootContainer {
   // string rather than NuclideUri because this module will always execute at the location of the
   // file, so it will always be a real path and cannot be prefixed with nuclide://
-  _flowRoots: Map<string, FlowRoot>;
+  _flowRootMap: Map<string, FlowRoot>;
+
+  _flowRoot$: Subject<FlowRoot>;
 
   constructor() {
-    this._flowRoots = new Map();
+    this._flowRootMap = new Map();
+
+    // No need to dispose of this subscription since we want to keep it for the entire life of this
+    // object. When this object is garbage collected the subject should be too.
+    this._flowRoot$ = new Subject();
+    this._flowRoot$.subscribe(flowRoot => {
+      this._flowRootMap.set(flowRoot.getPathToRoot(), flowRoot);
+    });
   }
 
   async getRootForPath(path: string): Promise<?FlowRoot> {
@@ -28,10 +41,10 @@ export class FlowRootContainer {
       return null;
     }
 
-    let instance = this._flowRoots.get(rootPath);
+    let instance = this._flowRootMap.get(rootPath);
     if (!instance) {
       instance = new FlowRoot(rootPath);
-      this._flowRoots.set(rootPath, instance);
+      this._flowRoot$.onNext(instance);
     }
     return instance;
   }
@@ -49,11 +62,20 @@ export class FlowRootContainer {
   }
 
   getAllRoots(): Iterable<FlowRoot> {
-    return this._flowRoots.values();
+    return this._flowRootMap.values();
+  }
+
+  getServerStatusUpdates(): Observable<ServerStatusUpdate> {
+    return this._flowRoot$.flatMap(root => {
+      const pathToRoot = root.getPathToRoot();
+      // The status update stream will be completed when a root is disposed, so there is no need to
+      // use takeUntil here to truncate the stream and release resources.
+      return root.getServerStatusUpdates().map(status => ({pathToRoot, status}));
+    });
   }
 
   clear(): void {
-    this._flowRoots.forEach(instance => instance.dispose());
-    this._flowRoots.clear();
+    this._flowRootMap.forEach(instance => instance.dispose());
+    this._flowRootMap.clear();
   }
 }
