@@ -121,13 +121,26 @@ describe('ClangServer', () => {
         'false',
       ]);
 
+      // Function argument completions are a little special.
+      response = await server.makeRequest('get_completions', null, {
+        contents: FILE_CONTENTS,
+        line: 4,
+        column: 4,
+        tokenStartColumn: 4,
+        prefix: '',
+      });
+      invariant(response);
+      expect(response.reqid).toBe('3');
+      expect(response.completions[0].spelling).toBe('f()');
+      expect(response.completions[0].cursor_kind).toBe('OVERLOAD_CANDIDATE');
+
       response = await server.makeRequest('get_declaration', null, {
         contents: FILE_CONTENTS,
         line: 4,
         column: 2,
       });
       invariant(response);
-      expect(response.reqid).toBe('3');
+      expect(response.reqid).toBe('4');
       const {line, column, spelling, type} = response.locationAndSpelling;
       expect(line).toBe(0);
       expect(column).toBe(5);
@@ -140,7 +153,7 @@ describe('ClangServer', () => {
         column: 2,
       });
       invariant(response);
-      expect(response.reqid).toBe('4');
+      expect(response.reqid).toBe('5');
       expect(response.line).toBe(4);
       expect(response.column).toBe(2);
       const {info} = response;

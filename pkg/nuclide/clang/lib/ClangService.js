@@ -135,6 +135,7 @@ export const ClangCursorToDeclarationTypes = {
   OBJC_SYNTHESIZE_DECL: 'ObjCSynthesize',
   OBJC_DYNAMIC_DECL: 'ObjCDynamic',
   CXX_ACCESS_SPEC_DECL: 'AccessSpec',
+  OVERLOAD_CANDIDATE: 'Function',
 };
 
 // TODO: Support enums in rpc3 framework.
@@ -188,7 +189,11 @@ export type ClangCompileResult = {
 };
 
 export type ClangCompletion = {
-  chunks: Array<{spelling: string; isPlaceHolder: boolean}>;
+  chunks: Array<{
+    spelling: string;
+    isPlaceHolder: boolean;
+    kind?: string;
+  }>;
   first_token?: ?string;
   result_type?: string;
   spelling?: string;

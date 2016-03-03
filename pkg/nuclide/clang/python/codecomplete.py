@@ -130,21 +130,16 @@ def _processResult(completion_result):
         spelling += chunk.spelling
         chunks.append({
             'spelling': chunk.spelling,
-            'isPlaceHolder': chunk.isKindPlaceHolder(),
+            'isPlaceHolder': chunk.isKindPlaceHolder() or chunk.kind.name == 'CurrentParameter',
+            'kind': str(chunk.kind),
         })
-
-    cursor_kind = _getKind(completion_result)
-    if cursor_kind is None:
-        kind_name = 'UNKNOWN'
-    else:
-        kind_name = cursor_kind.name
 
     return {
         'spelling': spelling,
         'chunks': chunks,
         'result_type': result_type,
         'first_token': _getFirstNonResultTypeTokenChunk(completion_string),
-        'cursor_kind': kind_name,
+        'cursor_kind': _getKind(completion_result),
     }
 
 
@@ -158,6 +153,12 @@ def _getFirstNonResultTypeTokenChunk(completion_string):
 # Some cursor kinds aren't known to libclang yet.
 def _getKind(completion_result):
     try:
-        return completion_result.kind
+        return completion_result.kind.name
     except:
-        return None
+        # Function argument completions return a special cursor kind:
+        #   CXCursor_OverloadCandidate = 700
+        # This isn't declared in the LLVM Python bindings (yet).
+        # TODO(hansonw): remove when this is upstreamed
+        if completion_result.cursorKind == 700:
+            return 'OVERLOAD_CANDIDATE'
+        return 'UNKNOWN'

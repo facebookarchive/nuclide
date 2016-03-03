@@ -14,11 +14,12 @@ import type {ClangCompletion} from '../../clang';
 import {Point} from 'atom';
 import {trackTiming} from '../../analytics';
 import {ClangCursorToDeclarationTypes} from '../../clang';
+import {array} from '../../commons';
 import {getCompletions} from './libclang';
 
 const MAX_LINE_LENGTH = 120;
 const TAB_LENGTH = 2;
-const VALID_EMPTY_SUFFIX = /(->|\.|::)$/;
+const VALID_EMPTY_SUFFIX = /(->|\.|::|\()$/;
 
 const ClangCursorToAutocompletionTypes = {
   STRUCT_DECL: 'class',
@@ -45,6 +46,7 @@ const ClangCursorToAutocompletionTypes = {
   DESTRUCTOR: 'method',
   FUNCTION_TEMPLATE: 'function',
   CLASS_TEMPLATE: 'class',
+  OVERLOAD_CANDIDATE: 'function',
 };
 
 function getCompletionBody(
@@ -183,7 +185,8 @@ class AutocompleteProvider {
   ): Promise<Array<atom$AutocompleteSuggestion>> {
     const {editor, bufferPosition: {row, column}, activatedManually} = request;
     const prefix = getCompletionPrefix(editor);
-    // Only autocomplete empty strings when it's a method (a.?, a->?) or qualifier (a::?).
+    // Only autocomplete empty strings when it's a method (a.?, a->?) or qualifier (a::?),
+    // or function call (f(...)).
     if (!activatedManually && prefix === '') {
       const wordPrefix = editor.getLastCursor().getCurrentWordPrefix();
       if (!VALID_EMPTY_SUFFIX.test(wordPrefix)) {
@@ -198,17 +201,38 @@ class AutocompleteProvider {
     }
 
     return data.completions.map(completion => {
-      const snippet = getCompletionBody(completion, column, indentation);
+      let snippet, displayText;
+      // For function argument completions, strip out everything before the current parameter.
+      // Ideally we'd use the replacement prefix, but this is a hard problem in C++:
+      //   e.g. min<decltype(x)>(x, y) is a perfectly valid function call.
+      if (completion.cursor_kind === 'OVERLOAD_CANDIDATE') {
+        const curParamIndex = array.findIndex(
+          completion.chunks,
+          x => x.kind === 'CurrentParameter',
+        );
+        if (curParamIndex !== -1) {
+          completion.chunks.splice(0, curParamIndex);
+          snippet = getCompletionBody(completion, column, indentation);
+        } else {
+          // Function had no arguments.
+          snippet = ')';
+        }
+        displayText = completion.spelling;
+      } else {
+        snippet = getCompletionBody(completion, column, indentation);
+      }
       const rightLabel = completion.cursor_kind ?
         ClangCursorToDeclarationTypes[completion.cursor_kind] : null;
       const type = completion.cursor_kind ?
         ClangCursorToAutocompletionTypes[completion.cursor_kind] : null;
       return {
         snippet,
+        displayText,
         replacementPrefix: prefix,
         type,
         leftLabel: completion.result_type,
         rightLabel,
+        description: completion.result_type,
       };
     });
   }
