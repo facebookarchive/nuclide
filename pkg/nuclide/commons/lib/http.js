@@ -9,9 +9,44 @@
  * the root directory of this source tree.
  */
 
-const fs = require('fs');
-const http = require('http');
-const https = require('https');
+import fs from 'fs';
+import http from 'http';
+import https from 'https';
+
+/**
+ * This is not complete: see https://www.npmjs.com/package/request for details.
+ */
+type RequestOptions = {
+  auth?: {
+    user: string;
+    pass: string;
+    sendImmediately?: boolean;
+    bearer?: string;
+  };
+
+  headers?: {[name: string]: string};
+
+  /** Use this for application/x-www-form-urlencoded (URL-Encoded Forms). */
+  form?: Object;
+
+  /** Use this for multipart/form-data (Multipart Form Uploads). */
+  formData?: Object;
+
+  /** Type of HTTP method: 'GET', 'POST', 'PUT', etc. */
+  method?: string;
+
+  /** See docs. */
+  multipart?: mixed;
+
+  /** See docs. */
+  oauth?: mixed;
+
+  /** See docs. */
+  preambleCRLF?: boolean;
+
+  /** See docs. */
+  postambleCRLF?: boolean;
+};
 
 // Although rfc forbids the usage of white space in content type
 // (http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.7), it's still
@@ -70,6 +105,79 @@ module.exports = {
   },
 
   /**
+   * Provides a limited version of `require('request').del()` so we have a basic Promise-based API
+   * for making DELETE requests.
+   */
+  delete(
+    uri: string,
+    options: RequestOptions,
+  ): Promise<{response: http$IncomingMessage; body: string}> {
+    return makeRequest(uri, options, 'DELETE');
+  },
+
+  /**
+   * Provides a limited version of `require('request').get()` so we have a basic Promise-based API
+   * for making GET requests.
+   *
+   * Currently named "doGet" because "get" was created first. We probably want to replace all
+   * existing uses of "get", replace them with "doGet()", and then rename "doGet()" to "get()".
+   * The implementation of "doGet" is simpler, follows redirects, and has more features than "get".
+   *
+   * The major downside of using request instead of our hand-rolled implementation is that it has
+   * a lot of dependencies of its own.
+   */
+  doGet(
+    uri: string,
+    options: RequestOptions,
+  ): Promise<{response: http$IncomingMessage; body: string}> {
+    return makeRequest(uri, options, 'GET');
+  },
+
+  /**
+   * Provides a limited version of `require('request').head()` so we have a basic Promise-based API
+   * for making HEAD requests.
+   */
+  head(
+    uri: string,
+    options: RequestOptions,
+  ): Promise<{response: http$IncomingMessage; body: string}> {
+    return makeRequest(uri, options, 'HEAD');
+  },
+
+  /**
+   * Provides a limited version of `require('request').patch()` so we have a basic Promise-based API
+   * for making PATCH requests.
+   */
+  patch(
+    uri: string,
+    options: RequestOptions,
+  ): Promise<{response: http$IncomingMessage; body: string}> {
+    return makeRequest(uri, options, 'PATCH');
+  },
+
+  /**
+   * Provides a limited version of `require('request').post()` so we have a basic Promise-based API
+   * for making POST requests.
+   */
+  post(
+    uri: string,
+    options: RequestOptions,
+  ): Promise<{response: http$IncomingMessage; body: string}> {
+    return makeRequest(uri, options, 'POST');
+  },
+
+  /**
+   * Provides a limited version of `require('request').put()` so we have a basic Promise-based API
+   * for making PUT requests.
+   */
+  put(
+    uri: string,
+    options: RequestOptions,
+  ): Promise<{response: http$IncomingMessage; body: string}> {
+    return makeRequest(uri, options, 'PUT');
+  },
+
+  /**
    * Send Http(s) GET request to given url and save the body to dest file.
    */
   download(url: string, dest: string): Promise<void> {
@@ -88,3 +196,28 @@ module.exports = {
     });
   },
 };
+
+/**
+ * Makes a request using the [`request`](https://www.npmjs.com/package/request) module,
+ * which follows redirects and takes care of http vs. https by default.
+ */
+function makeRequest(
+  uri: string,
+  options: RequestOptions,
+  method: string,
+): Promise<{response: http$IncomingMessage; body: string}> {
+  if (options.method !== method) {
+    options = {...options};
+    options.method = method;
+  }
+  const request = require('request');
+  return new Promise((resolve, reject) => {
+    request(uri, options, (error, response, body) => {
+      if (error != null) {
+        reject(error);
+      } else {
+        resolve({response, body});
+      }
+    });
+  });
+}
