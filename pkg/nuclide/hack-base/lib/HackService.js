@@ -12,7 +12,7 @@
 import type {HackSearchResult} from './types';
 import type {NuclideUri} from '../../remote-uri';
 
-import {fsPromise, promises} from '../../commons';
+import {fsPromise, promises, findNearestFile} from '../../commons';
 import invariant from 'assert';
 import {SymbolType, SearchResultType} from '../../hack-common/lib/constants';
 import {
@@ -21,6 +21,8 @@ import {
   getSearchResults,
 } from './HackHelpers';
 import {setHackCommand, setUseIde, getHackExecOptions} from './hack-config';
+import path from 'path';
+import {getPath} from '../../remote-uri';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -250,12 +252,12 @@ export async function getDependencies(
     const {result: searchResults} = searchResponse;
     hackRoot = searchResponse.hackRoot;
     await Promise.all(searchResults.map(async location => {
-      const {name, path} = location;
-      if (name !== dependencyName || dependencyPaths.has(path)) {
+      const {name, path: resultPath} = location;
+      if (name !== dependencyName || dependencyPaths.has(resultPath)) {
         return;
       }
-      dependencyPaths.add(path);
-      let contents = await fsPromise.readFile(path, 'utf8');
+      dependencyPaths.add(resultPath);
+      let contents = await fsPromise.readFile(resultPath, 'utf8');
       if (!contents.startsWith('<?hh')) {
         return;
       }
@@ -266,7 +268,7 @@ export async function getDependencies(
       } else if (contents.startsWith(HH_STRICT_NEWLINE)) {
         contents = '<?hh // decl\n' + contents.substring(HH_STRICT_NEWLINE.length);
       }
-      dependencies.set(path, contents);
+      dependencies.set(resultPath, contents);
     }));
   }
   /* eslint-enable babel/no-await-in-loop */
@@ -394,4 +396,14 @@ export async function getTypedRegions(filePath: NuclideUri):
 export async function isAvailableForDirectoryHack(rootDirectory: NuclideUri): Promise<boolean> {
   const hackOptions = await getHackExecOptions(rootDirectory);
   return hackOptions != null;
+}
+
+/**
+ * @param fileUri a file path.  It cannot be a directory.
+ * @return whether the file represented by fileUri is inside of a Hack project.
+ */
+export async function isFileInHackProject(fileUri: NuclideUri): Promise<boolean> {
+  const filePath = getPath(fileUri);
+  const hhconfigPath = await findNearestFile('.hhconfig', path.dirname(filePath));
+  return hhconfigPath != null;
 }

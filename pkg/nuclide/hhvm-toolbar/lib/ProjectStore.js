@@ -13,8 +13,10 @@ const {CompositeDisposable, Disposable} = require('atom');
 const {EventEmitter} = require('events');
 const {buckProjectRootForPath} = require('../../buck/commons');
 import {trackTiming} from '../../analytics';
+import remoteUri from '../../remote-uri';
+import {getServiceByNuclideUri} from '../../client';
 
-const ARC_PROJECT_WWW = 'facebook-www';
+import type {NuclideUri} from '../../../nuclide/remote-uri';
 
 type ProjectType = 'Buck' | 'Hhvm' | 'Other';
 
@@ -65,12 +67,11 @@ class ProjectStore {
   }
 
   @trackTiming('toolbar.isFileHHVMProject')
-  async _isFileHHVMProject(fileName: string): Promise<boolean> {
-    const remoteUri = require('../../remote-uri');
-    const arcanist = require('../../arcanist-client');
-    const arcProjectId = await arcanist.findArcProjectIdOfPath(fileName);
-
-    return remoteUri.isRemote(fileName) && arcProjectId === ARC_PROJECT_WWW;
+  async _isFileHHVMProject(fileUri: NuclideUri): Promise<boolean> {
+    const hackService = getServiceByNuclideUri('HackService', fileUri);
+    return remoteUri.isRemote(fileUri)
+      && hackService != null
+      && await hackService.isFileInHackProject(fileUri);
   }
 
   @trackTiming('toolbar.isFileBuckProject')
