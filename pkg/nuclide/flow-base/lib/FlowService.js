@@ -64,43 +64,13 @@ export type FlowOutlineTree = FlowStartLocation & {
   children: Array<FlowOutlineTree>;
 };
 
-import {findFlowConfigDir} from './FlowHelpers';
-
 import {FlowRoot} from './FlowRoot';
 
-// string rather than NuclideUri because this module will always execute at the location of the
-// file, so it will always be a real path and cannot be prefixed with nuclide://
-const flowRoots: Map<string, FlowRoot> = new Map();
-
-async function getInstance(file: string): Promise<?FlowRoot> {
-  const root = await findFlowConfigDir(file);
-  if (root == null) {
-    return null;
-  }
-
-  let instance = flowRoots.get(root);
-  if (!instance) {
-    instance = new FlowRoot(root);
-    flowRoots.set(root, instance);
-  }
-  return instance;
-}
-
-async function runWithInstance<T>(
-  file: string,
-  f: (instance: FlowRoot) => Promise<T>
-): Promise<?T> {
-  const instance = await getInstance(file);
-  if (instance == null) {
-    return null;
-  }
-
-  return await f(instance);
-}
+import {FlowRootContainer} from './FlowRootContainer';
+const rootContainer: FlowRootContainer = new FlowRootContainer();
 
 export function dispose(): void {
-  flowRoots.forEach(instance => instance.dispose());
-  flowRoots.clear();
+  rootContainer.clear();
 }
 
 export function flowFindDefinition(
@@ -109,9 +79,9 @@ export function flowFindDefinition(
   line: number,
   column: number
 ): Promise<?Loc> {
-  return runWithInstance(
+  return rootContainer.runWithRoot(
     file,
-    instance => instance.flowFindDefinition(
+    root => root.flowFindDefinition(
       file,
       currentContents,
       line,
@@ -124,9 +94,9 @@ export function flowFindDiagnostics(
   file: NuclideUri,
   currentContents: ?string
 ): Promise<?Diagnostics> {
-  return runWithInstance(
+  return rootContainer.runWithRoot(
     file,
-    instance => instance.flowFindDiagnostics(
+    root => root.flowFindDiagnostics(
       file,
       currentContents,
     )
@@ -141,9 +111,9 @@ export function flowGetAutocompleteSuggestions(
   prefix: string,
   activatedManually: boolean,
 ): Promise<any> {
-  return runWithInstance(
+  return rootContainer.runWithRoot(
     file,
-    instance => instance.flowGetAutocompleteSuggestions(
+    root => root.flowGetAutocompleteSuggestions(
       file,
       currentContents,
       line,
@@ -161,9 +131,9 @@ export async function flowGetType(
   column: number,
   includeRawType: boolean,
 ): Promise<?{type: string; rawType: ?string}> {
-  return runWithInstance(
+  return rootContainer.runWithRoot(
     file,
-    instance => instance.flowGetType(
+    root => root.flowGetType(
       file,
       currentContents,
       line,
@@ -180,7 +150,7 @@ export function flowGetOutline(
 }
 
 export function allowServerRestart(): void {
-  for (const root of flowRoots.values()) {
+  for (const root of rootContainer.getAllRoots()) {
     root.allowServerRestart();
   }
 }
