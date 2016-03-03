@@ -42,16 +42,21 @@ export class LaunchAttachActions {
     return this._startDebugging(launchInfo);
   }
 
-  async _startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
+  toggleLaunchAttachDialog(): void {
     atom.commands.dispatch(
       atom.views.getView(atom.workspace),
       'nuclide-debugger:toggle-launch-attach'
     );
+  }
+
+  showDebuggerPanel(): void {
     atom.commands.dispatch(
       atom.views.getView(atom.workspace),
       'nuclide-debugger:show'
     );
+  }
 
+  async _startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
     const debuggerService = await require('../../../service-hub-plus')
           .consumeFirstProvider('nuclide-debugger.remote');
     await debuggerService.startDebugging(processInfo);

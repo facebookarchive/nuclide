@@ -52,5 +52,7 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
     };
     // Fire and forget.
     this.props.actions.launchDebugger(launchTarget);
+    this.props.actions.showDebuggerPanel();
+    this.props.actions.toggleLaunchAttachDialog();
   }
 }

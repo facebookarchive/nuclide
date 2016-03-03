@@ -87,11 +87,6 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
       value: index,
     }));
 
-    // TODO: move into less file and better customized UI.
-    const containerStyle = {
-      maxHeight: '30em',
-      overflow: 'auto',
-    };
     return (
       <div className="block padded">
         <label className="inline-block">Connection: </label>
@@ -118,7 +113,7 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
           selectedIndex={this.state.providerActionsDropdownIndex}
           size="sm"
         />
-        <div style={containerStyle}>
+        <div>
           {this.state.element}
         </div>
       </div>
