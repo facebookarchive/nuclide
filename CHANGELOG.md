@@ -1,5 +1,30 @@
 # Nuclide Changelog
 
+## v0.122.0
+
+Added:
+
+* Added 'Current Working Root'
+
+Fixed:
+
+* Faster Path Search (blacklist yourself from GK nuclide_file_search_native in case of issues)
+* Working Sets selection UI was aligned with core Atom for better compatibility with themes and other UI elements
+* Correctly report invalid .buckconfig file
+* A bug prevented certain types of Flow errors from appearing. This is now fixed.
+* Some fixes for HHVM debugger printing of map-like arrays and other hierarchical data structures.
+* HHVM script debugging breakpoints trigger more reliably. 
+
+## 0.121.0
+
+Fixed:
+* Slow typing caused by the FileTree - even when hidden.
+* Fix Slow typing caused by health monitor.
+* Fix FB login.
+* Fix endDebugWhenNoRequests
+
+## 0.120.0
+
 Added:
 * New feature: Working Sets - show only selected directories in the file-tree
 * File tree keyboard navigation: Allows you to rapidly change the selected node by typing a prefix string.
