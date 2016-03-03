@@ -26,6 +26,9 @@ from platform_checker import is_os_x
 
 try:
     from fb.pre_setup import fb_pre_setup
+    logging.info('Running development pre-setup scripts...')
+    fb_pre_setup()
+    logging.info('Development pre-setup scripts executed.')
 except ImportError as e:
     fb_pre_setup = None
 
@@ -69,12 +72,6 @@ atom.add_node_executables_to_path(parser, include_apm)
 
 if options.verbose:
     logging.getLogger().setLevel(logging.DEBUG)
-
-# Run pre-setup actions.
-if fb_pre_setup:
-    logging.info('Running development pre-setup scripts...')
-    fb_pre_setup()
-    logging.info('Development pre-setup scripts executed.')
 
 if not options.fast:
     # Remove pre-existing node_modules.
