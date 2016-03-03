@@ -97,7 +97,7 @@ class Activation {
         'nuclide-debugger:toggle-breakpoint': this._toggleBreakpoint.bind(this),
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:toggle-launch-attach': this._toggleLaunchAttach.bind(this),
+        'nuclide-debugger:toggle-launch-attach': this._toggleLaunchAttachDialog.bind(this),
       }),
 
       // Context Menu Items.
@@ -117,6 +117,7 @@ class Activation {
         ],
       }),
     );
+    (this: any)._hideLaunchAttachDialog = this._hideLaunchAttachDialog.bind(this);
   }
 
   serialize(): SerializedState {
@@ -185,12 +186,19 @@ class Activation {
   }
 
 
-  _toggleLaunchAttach() {
+  _toggleLaunchAttachDialog(): void {
     const dialog = this._getLaunchAttachDialog();
     if (dialog.isVisible()) {
       dialog.hide();
     } else {
       dialog.show();
+    }
+  }
+
+  _hideLaunchAttachDialog(): void {
+    const dialog = this._getLaunchAttachDialog();
+    if (dialog.isVisible()) {
+      dialog.hide();
     }
   }
 
@@ -209,12 +217,19 @@ class Activation {
         visible: false, // Hide first so that caller can toggle it visible.
       });
 
-      this._disposables.add(new Disposable(() => {
-        if (this._launchAttachDialog != null) {
-          this._launchAttachDialog.destroy();
-          this._launchAttachDialog = null;
-        }
-      }));
+      this._disposables.add(
+        new Disposable(() => {
+          if (this._launchAttachDialog != null) {
+            this._launchAttachDialog.destroy();
+            this._launchAttachDialog = null;
+          }
+        }),
+        atom.commands.add(
+          'atom-workspace',
+          'core:cancel',
+          this._hideLaunchAttachDialog,
+        ),
+      );
     }
     invariant(this._launchAttachDialog);
     return this._launchAttachDialog;

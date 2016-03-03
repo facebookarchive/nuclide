@@ -17,6 +17,7 @@ import type {AttachTargetInfo} from '../../lldb-server/lib/DebuggerRpcServiceInt
 
 import {React} from 'react-for-atom';
 import classnames from 'classnames';
+import AtomInput from '../../../ui/atom-input';
 
 type PropsType = {
   store: LaunchAttachStore;
@@ -26,7 +27,8 @@ type PropsType = {
 type StateType = {
   targetListChangeDisposable: IDisposable;
   attachTargetInfos: Array<AttachTargetInfo>;
-  selectedProcessIndex: number;
+  selectedAttachTarget: ?AttachTargetInfo;
+  filterText: string;
 };
 
 export class AttachUIComponent extends React.Component<void, PropsType, StateType> {
@@ -35,6 +37,7 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
   constructor(props: PropsType) {
     super(props);
 
+    (this: any)._handleFilterTextChange = this._handleFilterTextChange.bind(this);
     (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(this);
     (this: any)._handleAttachClick = this._handleAttachClick.bind(this);
     (this: any)._updateAttachTargetList = this._updateAttachTargetList.bind(this);
@@ -42,7 +45,8 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
     this.state = {
       targetListChangeDisposable: this.props.store.onAttachTargetListChanged(this._updateList),
       attachTargetInfos: [],
-      selectedProcessIndex: -1,
+      selectedAttachTarget: null,
+      filterText: '',
     };
   }
 
@@ -63,21 +67,31 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
       maxHeight: '30em',
       overflow: 'auto',
     };
-    const children = this.state.attachTargetInfos.map((item, index) => (
+    const filterRegex = new RegExp(this.state.filterText, 'i');
+    const children = this.state.attachTargetInfos
+      .filter(item => filterRegex.test(item.name) || filterRegex.test(item.pid.toString()))
+      .map((item, index) => (
         <tr key={index + 1}
             align="center"
             className={
-              classnames({'attach-selected-row': index === this.state.selectedProcessIndex})
+              classnames({'attach-selected-row': this.state.selectedAttachTarget === item})
             }
-            onClick={this._handleClickTableRow.bind(this, index)}
+            onClick={this._handleClickTableRow.bind(this, item)}
             onDoubleClick={this._handleDoubleClickTableRow.bind(this, index)}>
           <td>{item.name}</td>
           <td>{item.pid}</td>
         </tr>
       )
     );
+    // TODO: wrap into separate React components.
     return (
       <div className="block">
+        <AtomInput
+          placeholderText="Search..."
+          initialValue={this.state.filterText}
+          onDidChange={this._handleFilterTextChange}
+          size="sm"
+        />
         <div style={containerStyle}>
           <table width="100%">
             <thead>
@@ -95,7 +109,7 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
           <button
               className="btn btn-primary"
               onClick={this._handleAttachClick}
-              disabled={this.state.selectedProcessIndex === -1}>
+              disabled={this.state.selectedAttachTarget === null}>
             Attach
           </button>
           <button className="btn" onClick={this._updateAttachTargetList}>
@@ -109,9 +123,15 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
     );
   }
 
-  _handleClickTableRow(processIndex: number): void {
+  _handleFilterTextChange(text: string): void {
     this.setState({
-      selectedProcessIndex: processIndex,
+      filterText: text,
+    });
+  }
+
+  _handleClickTableRow(item: AttachTargetInfo): void {
+    this.setState({
+      selectedAttachTarget: item,
     });
   }
 
@@ -131,17 +151,19 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
     // Clear old list.
     this.setState({
       attachTargetInfos: [],
-      selectedProcessIndex: -1,
+      selectedAttachTarget: null,
     });
     // Fire and forget.
     this.props.actions.updateAttachTargetList();
   }
 
   _attachToProcess(): void {
-    const attachTarget = this.props.store.getAttachTargetInfos()[this.state.selectedProcessIndex];
-    // Fire and forget.
-    this.props.actions.attachDebugger(attachTarget);
-    this.props.actions.showDebuggerPanel();
-    this.props.actions.toggleLaunchAttachDialog();
+    const attachTarget = this.state.selectedAttachTarget;
+    if (attachTarget) {
+      // Fire and forget.
+      this.props.actions.attachDebugger(attachTarget);
+      this.props.actions.showDebuggerPanel();
+      this.props.actions.toggleLaunchAttachDialog();
+    }
   }
 }
