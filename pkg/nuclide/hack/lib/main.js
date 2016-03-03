@@ -18,6 +18,13 @@ import type {HyperclickProvider} from '../../hyperclick-interfaces';
 import CodeHighlightProvider from './CodeHighlightProvider';
 import {CompositeDisposable} from 'atom';
 import {HACK_GRAMMARS} from '../../hack-common/lib/constants';
+import {
+  SHOW_TYPE_COVERAGE_CONFIG_PATH,
+  getShowTypeCoverage,
+} from './config';
+import {TypeCoverageProvider} from './TypeCoverageProvider';
+import {onDidChange} from '../../feature-config';
+import invariant from 'assert';
 
 const HACK_GRAMMARS_STRING = HACK_GRAMMARS.join(', ');
 const PACKAGE_NAME = 'nuclide-hack';
@@ -25,6 +32,8 @@ const PACKAGE_NAME = 'nuclide-hack';
 let subscriptions: ?CompositeDisposable = null;
 let hackDiagnosticsProvider;
 let busySignalProvider;
+let hackTypeCoverageProviderSubscription = null;
+let coverageProvider = null;
 
 module.exports = {
 
@@ -41,6 +50,18 @@ module.exports = {
         hackDiagnosticsProvider.invalidateProjectPath(projectPath);
       }
     }));
+    subscriptions.add(onDidChange(SHOW_TYPE_COVERAGE_CONFIG_PATH,
+      (delta: {newValue: boolean; oldValue: boolean}) => {
+        if (delta.newValue) {
+          enableCoverageProvider();
+        } else {
+          disableCoverageProvider();
+        }
+      }));
+
+    if (getShowTypeCoverage()) {
+      enableCoverageProvider();
+    }
   },
 
   /** Provider for autocomplete service. */
@@ -121,18 +142,10 @@ module.exports = {
     };
   },
 
-  provideBusySignal(): BusySignalProviderBaseType {
-    if (busySignalProvider == null) {
-      const {BusySignalProviderBase} = require('../../busy-signal-provider-base');
-      busySignalProvider = new BusySignalProviderBase();
-    }
-    return busySignalProvider;
-  },
-
   provideDiagnostics() {
     if (!hackDiagnosticsProvider) {
       const HackDiagnosticsProvider = require('./HackDiagnosticsProvider');
-      const busyProvider = this.provideBusySignal();
+      const busyProvider = provideBusySignal();
       hackDiagnosticsProvider = new HackDiagnosticsProvider(false, busyProvider);
     }
     return hackDiagnosticsProvider;
@@ -147,5 +160,35 @@ module.exports = {
       hackDiagnosticsProvider.dispose();
       hackDiagnosticsProvider = null;
     }
+    disableCoverageProvider();
   },
 };
+
+function provideBusySignal(): BusySignalProviderBaseType {
+  if (busySignalProvider == null) {
+    const {BusySignalProviderBase} = require('../../busy-signal-provider-base');
+    busySignalProvider = new BusySignalProviderBase();
+  }
+  return busySignalProvider;
+}
+
+function enableCoverageProvider(): void {
+  if (coverageProvider == null) {
+    coverageProvider = new TypeCoverageProvider(provideBusySignal());
+    invariant(hackTypeCoverageProviderSubscription == null);
+    hackTypeCoverageProviderSubscription = atom.packages.serviceHub.provide(
+      'nuclide-diagnostics-provider', '0.1.0',
+      coverageProvider);
+  }
+}
+
+function disableCoverageProvider(): void {
+  if (hackTypeCoverageProviderSubscription != null) {
+    hackTypeCoverageProviderSubscription.dispose();
+    hackTypeCoverageProviderSubscription = null;
+  }
+  if (coverageProvider != null) {
+    coverageProvider.dispose();
+    coverageProvider = null;
+  }
+}
