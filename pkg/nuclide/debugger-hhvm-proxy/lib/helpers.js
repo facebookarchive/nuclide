@@ -46,9 +46,32 @@ export function uriToPath(uri: string): string {
   return components.pathname || '';
 }
 
-export function launchPhpScriptWithXDebugEnabled(
+/**
+ * Used to start the HHVM instance that the dummy connection connects to so we can evaluate
+ * expressions in the REPL.
+ */
+export function launchScriptForDummyConnection(scriptPath: string): child_process$ChildProcess {
+  return launchPhpScriptWithXDebugEnabled(scriptPath);
+}
+
+/**
+ * Used to start an HHVM instance running the given script in debug mode.
+ */
+export function launchScriptToDebug(
   scriptPath: string,
-  sendToOutputWindow?: (text: string) => void,
+  sendToOutputWindow: (text: string) => void,
+): Promise<void> {
+  return new Promise((resolve, _) => {
+    launchPhpScriptWithXDebugEnabled(scriptPath, text => {
+      sendToOutputWindow(text);
+      resolve();
+    });
+  });
+}
+
+function launchPhpScriptWithXDebugEnabled(
+  scriptPath: string,
+  sendToOutputWindowAndResolve?: (text: string) => void,
 ): child_process$ChildProcess {
   const child_process = require('child_process');
   const scriptArgv = parse(scriptPath);
@@ -67,14 +90,16 @@ export function launchPhpScriptWithXDebugEnabled(
   });
   proc.on('error', err => {
     logger.log(`child_process(${proc.pid}) error: ${err}`);
-    if (sendToOutputWindow != null) {
-      sendToOutputWindow(`The process running script: ${scriptPath} encountered an error: ${err}`);
+    if (sendToOutputWindowAndResolve != null) {
+      sendToOutputWindowAndResolve(
+        `The process running script: ${scriptPath} encountered an error: ${err}`
+      );
     }
   });
   proc.on('exit', code => {
     logger.log(`child_process(${proc.pid}) exit: ${code}`);
-    if (sendToOutputWindow != null) {
-      sendToOutputWindow(`Script: ${scriptPath} exited with code: ${code}`);
+    if (sendToOutputWindowAndResolve != null) {
+      sendToOutputWindowAndResolve(`Script: ${scriptPath} exited with code: ${code}`);
     }
   });
   return proc;

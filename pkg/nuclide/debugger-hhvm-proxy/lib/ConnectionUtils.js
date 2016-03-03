@@ -10,7 +10,7 @@
  */
 
 import logger from './utils';
-import {launchPhpScriptWithXDebugEnabled, uriToPath} from './helpers';
+import {launchScriptForDummyConnection, uriToPath} from './helpers';
 import {fsPromise, findNearestFile} from '../../commons';
 
 import type {Socket} from 'net';
@@ -39,7 +39,7 @@ export async function setRootDirectoryUri(directoryUri: string): Promise {
 }
 
 export function sendDummyRequest(): child_process$ChildProcess {
-  return launchPhpScriptWithXDebugEnabled(dummyRequestFilePath);
+  return launchScriptForDummyConnection(dummyRequestFilePath);
 }
 
 export function isDummyConnection(message: Object): boolean {

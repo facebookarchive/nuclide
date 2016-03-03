@@ -10,7 +10,7 @@
  */
 
 import logger from './utils';
-import {launchPhpScriptWithXDebugEnabled} from './helpers';
+import {launchScriptToDebug} from './helpers';
 import {setRootDirectoryUri} from './ConnectionUtils';
 import {MessageTranslator} from './MessageTranslator';
 
@@ -60,12 +60,14 @@ import {ClientCallback} from './ClientCallback';
 
 export class HhvmDebuggerProxyService {
   _state: string;
+  _launchedScriptProcess: ?Promise<void>;
   _translator: ?MessageTranslator;
   _clientCallback: ClientCallback;
 
   constructor() {
     this._state = INITIAL;
     this._translator = null;
+    this._launchedScriptProcess = null;
     this._clientCallback = new ClientCallback();
   }
 
@@ -98,7 +100,7 @@ export class HhvmDebuggerProxyService {
 
   async launchScript(scriptPath: string): Promise<string> {
     logger.log('launchScript: ' + scriptPath);
-    launchPhpScriptWithXDebugEnabled(
+    this._launchedScriptProcess = launchScriptToDebug(
       scriptPath,
       text => this._clientCallback.sendUserMessage('outputWindow', {level: 'info', text}),
     );
@@ -128,6 +130,10 @@ export class HhvmDebuggerProxyService {
 
   async dispose(): Promise<void> {
     logger.logInfo('Proxy: Ending session');
+    if (this._launchedScriptProcess != null) {
+      await this._launchedScriptProcess;
+      this._launchedScriptProcess = null;
+    }
     this._clientCallback.dispose();
     if (this._translator) {
       this._translator.dispose();
