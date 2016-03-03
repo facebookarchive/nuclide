@@ -1,0 +1,1 @@
+add .arcconfig to select mercurial compare default
