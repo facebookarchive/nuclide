@@ -1,7 +1,0 @@
-'.nuclide-file-tree-working-set-selection-panel':
-  'up': 'file-tree:workset-select-up'
-  'down': 'file-tree:workset-select-down'
-  'space': 'file-tree:workset-select-toggle'
-  'escape': 'file-tree:workset-select-close'
-  'tab': 'file-tree:workset-select-focus-next'
-  'shift-tab': 'file-tree:workset-select-focus-previous'
