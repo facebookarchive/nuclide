@@ -13,7 +13,7 @@
 
 var FAKE_DISABLE_RE = /\s*eslint-disable\s+nuclide-internal\/fb-license-header\s*/;
 
-var SHEBANG_RE = /^#!\/usr\/bin\/env node --harmony\n/;
+var SHEBANG_RE = /^#!\/usr\/bin\/env node\n/;
 var DIRECTIVES_RE = /^['"]use (babel|strict)['"];\n/;
 var FLOW_PRAGMA_RE = /^\/\* @(no)?flow \*\//;
 

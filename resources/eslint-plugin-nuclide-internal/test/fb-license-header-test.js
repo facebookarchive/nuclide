@@ -14,7 +14,7 @@
 var rule = require('../fb-license-header');
 var RuleTester = require('eslint').RuleTester;
 
-var SHEBANG = '#!/usr/bin/env node --harmony';
+var SHEBANG = '#!/usr/bin/env node';
 var USE_BABEL = '\'use babel\';';
 var USE_STRICT = '\'use strict\';';
 var FLOW = '/* @flow */';

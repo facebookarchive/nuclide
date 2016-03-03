@@ -150,6 +150,10 @@ class PackageLinter(object):
                 ('Package %s should have a "test" property in its "scripts" section ' +
                     'to define how its tests are run.'),
                 package_name)
+        elif '--harmony' in package['scripts']['test']:
+            self.report_error(
+                ('Package %s should not use the `--harmony` flag when running tests.'),
+                package_name)
 
     def verify_apm_package(self, package):
         self.verify_apm_test_property(package)

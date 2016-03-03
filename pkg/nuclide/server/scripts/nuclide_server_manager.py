@@ -26,13 +26,12 @@ from nuclide_server import NuclideServer
 from nuclide_server_logger import configure_nuclide_logger, get_buffered_logs
 from nuclide_certificates_generator import NuclideCertificatesGenerator
 from process_info import ProcessInfo
+from utils import darwin_path_helper
 
 
 try:
-    from fb.nuclide_config import EXTRA_NODE_PATHS, OPEN_PORTS, HOME_FOLDER
+    from fb.nuclide_config import OPEN_PORTS, HOME_FOLDER
 except ImportError as e:
-    # Default extra $PATH elements for Node v0.12.
-    EXTRA_NODE_PATHS = []
     # Default open ports.
     OPEN_PORTS = [9090, 9091, 9092, 9093]
     # Default home folder.
@@ -45,8 +44,6 @@ SEMVERISH_RE = re.compile(r'^(\d+)\.(\d+)\.(\d+)(?:-([a-z0-9.-]+))?$')
 # Certificates store is ~/.certs
 CERTS_DIR = os.path.join(HOME_FOLDER, '.certs')
 CERTS_EXPIRATION_DAYS = 7
-NODE_PATHS = EXTRA_NODE_PATHS + ['/opt/local/bin', '/usr/local/bin']
-
 
 # Default core dump location on Linux machines.
 CORE_DUMP_PATH = '/var/tmp/cores'
@@ -356,7 +353,9 @@ if __name__ == '__main__':
     logger = logging.getLogger()
     logger.info('Invoked nuclide_server_manager...')
 
-    os.environ['PATH'] = os.pathsep.join(NODE_PATHS) + os.pathsep + os.environ.get('PATH', '')
+    if sys.platform == 'darwin':
+        os.environ['PATH'] = darwin_path_helper() + os.pathsep + os.environ.get('PATH', '')
+
     parser = get_option_parser()
     options, args = parser.parse_args(sys.argv[1:])
 

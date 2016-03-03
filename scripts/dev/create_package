@@ -145,7 +145,7 @@ NODE_NPM_PACKAGE_JSON_TEMPLATE = """\
     "testRunner": "npm"
   },
   "scripts": {
-    "test": "node --harmony %s spec"
+    "test": "node %s spec"
   }
 }
 """

@@ -57,19 +57,19 @@ def add_node_executables_to_path(parser, include_apm=True):
 
 
 def _verify_node():
-    '''Ensures that Node v0.12.0 or later is on the user's $PATH.'''
+    '''Ensures that Node v4.1.1 or later is on the user's $PATH.'''
     # As noted in _install_apm_and_npm_os_x(), ultimately that function should be responsible for
     # doing this work.
 
-    # First, check for the presence of node. Make sure it is at least v0.12.0.
+    # First, check for the presence of node. Make sure it is at least v4.1.1.
     node_executable = platform_checker.get_node_executable()
     if _is_executable_on_path(node_executable):
         node_version = fs.cross_platform_check_output([node_executable, '--version']).rstrip()
-        major, minor = re.match(r'^v(\d+)\.(\d+)\.(\d+)$', node_version).group(1, 2)
-        if int(major) > 0 or int(minor) >= 12:
+        major, minor, patch = re.match(r'^v(\d+)\.(\d+)\.(\d+)$', node_version).group(1, 2, 3)
+        if (int(major), int(minor), int(patch)) >= (4, 1, 1):
             return
 
-    raise Exception('Must install Node v0.12.0 or later. Not found in %s' % os.environ['PATH'])
+    raise Exception('Must install Node v4.1.1 or later. Not found in %s' % os.environ['PATH'])
 
 
 def _install_apm_and_npm_os_x(atom_app_dir):

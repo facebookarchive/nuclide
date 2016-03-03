@@ -9,6 +9,7 @@ from __future__ import print_function
 import httplib
 import logging
 import os
+import re
 import socket
 import ssl
 import subprocess
@@ -38,6 +39,16 @@ def check_output_silent(args, cwd=None, env=None):
         raise error
     else:
         return out
+
+
+def darwin_path_helper():
+    try:
+        out = check_output_silent(['/usr/libexec/path_helper', '-s'])
+        path = re.search(r'PATH=\"([^\"]+)\"', out).group(1)
+        return path
+    except Exception as e:
+        logger.warn('Failed to get additional PATH info (%s)', e.message)
+        return ''
 
 
 # It supports https if key_file and cert_file are given.

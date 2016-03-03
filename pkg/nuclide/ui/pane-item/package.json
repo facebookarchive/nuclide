@@ -9,6 +9,6 @@
     "testRunner": "npm"
   },
   "scripts": {
-    "test": "node --harmony ../../jasmine/bin/jasmine-node-transpiled spec"
+    "test": "node ../../jasmine/bin/jasmine-node-transpiled spec"
   }
 }

@@ -1,4 +1,4 @@
-#!/usr/bin/env node --harmony
+#!/usr/bin/env node
 'use strict';
 /* @noflow */
 
@@ -27,7 +27,6 @@ var runJasmineTests = require.resolve('./run-jasmine-tests');
 var varArgs = process.argv.slice(2);
 
 var args = [
-  '--harmony',
   runJasmineTests,
   '--forceexit',
   '--color',

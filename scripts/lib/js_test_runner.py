@@ -96,7 +96,7 @@ def run_js_test(test_runner, pkg_path, name):
         return
 
     if test_runner == 'apm':
-        test_args = ['node', '--harmony', APM_TEST_WRAPPER, pkg_path]
+        test_args = ['node', APM_TEST_WRAPPER, pkg_path]
     else:
         test_args = ['npm', 'test']
 

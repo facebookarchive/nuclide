@@ -49,7 +49,8 @@ async function main(args) {
     }, ServiceFramework.loadServicesConfig());
     await server.connect();
     serverStartTimer.onSuccess();
-    logger.info('NuclideServer started on port ' + port + '.');
+    logger.info(`NuclideServer started on port ${port}.`);
+    logger.info(`Using node ${process.version}.`);
   } catch (e) {
     // Ensure logging is configured.
     await initialUpdateConfig();

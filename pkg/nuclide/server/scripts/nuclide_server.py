@@ -206,7 +206,7 @@ class NuclideServer(object):
         if abort_on_uncaught_exception:
             js_cmd += ' --abort_on_uncaught_exception '
         if debug:
-            args = shlex.split('node debug --harmony %s' % js_cmd)
+            args = shlex.split('node debug %s' % js_cmd)
             p = subprocess.Popen(args)
             p.wait()
         if quiet:
@@ -214,13 +214,13 @@ class NuclideServer(object):
             # TODO: This is a workaround for testing.
             # When we enable nohup logging, the test or any Python script that calls
             # this script via subprocess.Popen will hang on Popen.communicate().
-            args = shlex.split('nohup node --harmony %s' % js_cmd)
+            args = shlex.split('nohup node %s' % js_cmd)
             with open(os.devnull, "w") as f:
                 subprocess.Popen(args, stdout=f, stderr=subprocess.STDOUT)
         else:
             self.logger.info('Opening node server subprocess.')
             p = subprocess.Popen(
-                'nohup node --harmony %s > %s 2>&1 &' %
+                'nohup node %s > %s 2>&1 &' %
                 (js_cmd, LOG_FILE), shell=True)
 
         if not debug:

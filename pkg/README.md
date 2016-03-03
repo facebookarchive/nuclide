@@ -108,7 +108,7 @@ relevant parts of the `package.json` file that set this up:
     "nuclide-node-transpiler": "0.0.0",
   },
   "scripts": {
-    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
+    "test": "node node_modules/.bin/jasmine-node-transpiled spec"
   }
 }
 ```
