@@ -1,24 +1,21 @@
 ---
 id: language-flow
-title: Flow and JavaScript
+title: Flow
 layout: docs
 permalink: /docs/languages/flow/
 ---
 
-Nuclide has deep, built in support for [Flow-enabled](http://flowtype.org) JavaScript (and regular
-JavaScript too).
+Nuclide has deep, built in support for [Flow-enabled](http://flowtype.org) JavaScript.
 
-Flow's integration into Nuclide provides you with productivity features such as:
+> Currently, Flow is [not supported on Windows](https://github.com/facebook/flow/issues/6), so this
+> integration is not yet available on that platform.
 
-* Linting (Flow errors inline)
-* Autocompletion
-* Go to Definition
-* Inline (mouse over) typehinting
+<br/>
 
-*Currently, Flow is [not supported on Windows](https://github.com/facebook/flow/issues/6), so this
-integration is not yet available on that platform.*
+* TOC
+{:toc}
 
-## Using Flow
+## Installing Flow
 
 In order to fully use the integration of Flow, you must have Flow installed on your system:
 
@@ -31,17 +28,67 @@ key items of note are:
    * You have an empty `.flowconfig` file in the root of your project.
    * You have `/* @flow */` at the top of your JavaScript (`.js`) file.
 
-## Debugging Flow
+## Features
 
-You can debug projects written in Flow and JavaScript with the
-[Nuclide Node debugger](/docs/features/debugger/#language-specific-debugging__node).
+Flow's integration into Nuclide provides you with productivity features such as:
 
-## Feature Examples
+* [Code Diagnostics](#features__code-diagnostics) (e.g., Flow errors inline)
+* [Autocomplete](#features__autocomplete)
+* [Jump to Definition](#features__jump-to-definition)
+* [Inline (mouse over) typehinting](#features__type-hinting)
+* [Debugging](/docs/features/debugger/#language-specific-debugging__node)
 
-*Jump To Definition*
+> These features will not work properly unless you are working with Flow-enabled JavaScript since
+> they require a `.flowconfig` file in your project root and the ability to run the Flow
+> typechecker (e.g., `flow`) from the project root.
 
-![Jump to definition of entity with cmd-click (Mac), ctrl-click (Linux).](/static/images/docs/FlowClickDefine.gif)
+### Code Diagnostics
 
-*Inline diagnostics and error highlighting*
+If you write code that will not pass the Flow typechecker, Nuclide will provide you error details in
+both its [code diagnostics](/docs/editor/basics/#status-bar__code-diagnostics) pane and inline
+within the [main text editor](/docs/editor/basics/#editing-area).
 
-![Nuclide highlights your errors in real time as you code.](/static/images/docs/FlowInlineError.gif)
+![](/static/images/docs/language-flow-code-diagnostics.png)
+
+Hover over the sideways red triangle in the [gutter](/docs/editor/basics/#gutter) to see the Flow
+error inline.
+
+![](/static/images/docs/language-flow-code-diagnostics-gutter.png)
+
+### Autocomplete
+​​
+Given that Nuclide has access to all of the type information within your project along with the
+built-in types provided by Flow, autocomplete just works.
+
+![](/static/images/docs/language-flow-autocomplete.png)
+
+### Jump To Definition
+
+Nuclide provides a jump to definition/symbol feature for Flow programs.
+
+For example, if you want to go to the definition of `arr_length()`, you will hover over
+`arr_length()`and either press `cmd-<mouse click>` (`ctrl-<mouse click>` on Linux) or
+`cmd-option-Enter` (`ctrl-alt-Enter` on Linux).
+
+![](/static/images/docs/language-flow-jump-to-definition-link.png)
+
+![](/static/images/docs/language-flow-jump-to-definition-result.png)
+
+### Type Hinting
+
+If you hover over a variable in your Flow file, you can get the type of the variable directly
+inline.
+
+![](/static/images/docs/language-flow-typehint.png)
+
+In fact, you can even pin that type hint so that it always shows as well. Just click on the pin
+when hovering over a variable and it will be pinned.
+
+​​![](/static/images/docs/language-flow-pinned-typehint.png)
+
+The highlighted variables show that their type variables have been pinned. If you hover over the
+type hint, its associated variable will have motion in its highlight.
+
+Click the `x` to remove the pinned type hint.
+
+> Pinned type hints can be moved anywhere within the editor.
