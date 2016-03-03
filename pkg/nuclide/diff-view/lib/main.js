@@ -326,4 +326,8 @@ module.exports = {
     // uiProviders.push(provider);
     return;
   },
+
+  get __testDiffView() {
+    return activeDiffView;
+  },
 };
