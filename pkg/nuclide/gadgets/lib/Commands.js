@@ -12,6 +12,7 @@
 import type {Gadget, GadgetLocation} from '../../gadgets-interfaces';
 import type Immutable from 'immutable';
 import type {PaneItemContainer} from '../types/PaneItemContainer';
+import type {Action} from '../types/Action';
 
 import * as ActionTypes from './ActionTypes';
 import * as ContainerVisibility from './ContainerVisibility';
@@ -34,10 +35,10 @@ import wrapGadget from './wrapGadget';
  */
 export default class Commands {
 
-  _observer: rx$IObserver;
+  _observer: rx$IObserver<Action>;
   _getState: () => Immutable.Map;
 
-  constructor(observer: rx$IObserver, getState: () => Immutable.Map) {
+  constructor(observer: rx$IObserver<Action>, getState: () => Immutable.Map) {
     this._observer = observer;
     this._getState = getState;
   }
@@ -190,6 +191,7 @@ export default class Commands {
             item.element,
           );
 
+          // $FlowIssue(t10268095)
           this._observer.onNext({
             type: ActionTypes.UPDATE_PANE_ITEM,
             payload: {
@@ -337,6 +339,6 @@ export default class Commands {
 
 }
 
-function getGadgetId(item) {
+function getGadgetId(item: Object): string {
   return item.getGadgetId ? item.getGadgetId() : item.constructor.gadgetId;
 }

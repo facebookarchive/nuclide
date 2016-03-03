@@ -9,7 +9,51 @@
  * the root directory of this source tree.
  */
 
-export type Action = {
-  type: string;
-  payload: Object;
+export type Action =
+  CreatePaneItemAction |
+  DestroyPaneItemAction |
+  RegisterGadgetAction |
+  DeactivateAction |
+  UnregisterGadgetAction |
+  UpdatePaneItemAction;
+
+// The duplication of string literals here is necessary to make the disjoint unions work properly.
+export type CreatePaneItemAction = {
+  type: 'CREATE_PANE_ITEM';
+  payload: {
+    item: Object;
+  };
+};
+
+export type DeactivateAction = {
+  type: 'DEACTIVATE';
+}
+
+export type DestroyPaneItemAction = {
+  type: 'DESTROY_PANE_ITEM';
+  payload: {
+    item: Object;
+  };
+}
+
+export type RegisterGadgetAction = {
+  type: 'REGISTER_GADGET';
+  payload: {
+    gadget: Object;
+  };
+}
+
+export type UnregisterGadgetAction = {
+  type: 'UNREGISTER_GADGET';
+  payload: {
+    gadgetId: string;
+  };
+};
+
+export type UpdatePaneItemAction = {
+  type: 'UPDATE_PANE_ITEM';
+  payload: {
+    item: Object;
+    props: Object;
+  };
 };

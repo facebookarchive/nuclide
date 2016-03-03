@@ -17,7 +17,9 @@ describe('createTrackingEventStream', () => {
 
   it('ignores unknown actions', () => {
     waitsForPromise(async () => {
-      const action$ = Rx.Observable.of({type: 'something-unknown'});
+      // We need a cast to `any` here because this test purposefully sends data that Flow does not
+      // allow.
+      const action$ = Rx.Observable.of(({type: 'something-unknown'}: any));
       const trackingEvent$ = createTrackingEventStream(action$);
       const eventList = await trackingEvent$.toArray().toPromise();
       expect(eventList.length).toBe(0);

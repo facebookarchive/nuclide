@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {Action} from '../types/Action';
+
 import {CompositeDisposable} from 'atom';
 import Commands from './Commands';
 import GadgetsService from './GadgetsService';
@@ -27,7 +29,7 @@ class Activation {
 
   constructor(initialState: ?Object) {
     initialState = getInitialState();
-    const action$ = new Rx.Subject();
+    const action$: Rx.Subject<Action> = new Rx.Subject();
     const state$ = createStateStream(action$, initialState);
     const commands = this.commands = new Commands(action$, () => state$.getValue());
 

@@ -30,14 +30,18 @@ export default function trackActions(action$: Rx.Observable<Action>): IDisposabl
  * Create a stream of tracking events from a stream of actions. This is mostly exposed for testing
  * purposes since, unlike `trackActions`, it's side-effect free.
  */
-export function createTrackingEventStream(action$: Rx.Observable): Rx.Observable {
+export function createTrackingEventStream(
+  action$: Rx.Observable<Action>,
+): Rx.Observable<TrackingEvent> {
   return action$.flatMap(toTrackingEvents);
 }
 
 /**
  * Map an application action to an Array of tracking events.
  */
-function toTrackingEvents(action): Array<TrackingEvent> {
+function toTrackingEvents(typedAction: Action): Array<TrackingEvent> {
+  // TODO Make this all typecheck. This is still better than before. The any is just explicit now.
+  const action: any = typedAction;
   const standardEvent = toTrackingEvent(action);
 
   // For each event we're tracking, allow the gadget creator to specify their own custom event too.

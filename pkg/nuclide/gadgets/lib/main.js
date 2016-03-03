@@ -15,13 +15,13 @@ import invariant from 'assert';
 
 let activation: ?Object = null;
 
-export function activate(state: ?Object) {
+export function activate(state: ?Object): void {
   invariant(activation == null);
   const Activation = require('./Activation');
   activation = new Activation(state);
 }
 
-export function deactivate() {
+export function deactivate(): void {
   invariant(activation);
   activation.deactivate();
   activation = null;
