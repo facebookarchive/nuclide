@@ -13,6 +13,60 @@ depending on how widespread the problem may be, we will add it here as well.
 * TOC
 {:toc}
 
+## Nuclide Server
+
+### Installation
+
+If you are having issues installing the [Nuclide Server](/docs/features/remote#nuclide-server),
+check out the following tips:
+
+*Node Version*
+
+Verify that you are using the correct node version by running:
+
+```bash
+node --version
+```
+
+and verifying that you have version 0.12.0 or higher.
+
+*Permissions*
+
+If you get `EACCESS` errors when you `npm install`, then you likely do not have your NPM properly
+configured for installing global packages without root permissions. To fix this problem, install in
+a directory your user owns like this:
+
+```bash
+npm config set prefix '~/.npm_packages'
+```
+
+and add
+
+```bash
+PATH=$PATH:$HOME/.npm_packages/bin; export PATH
+```
+
+to the end of your `.profile`.  Now you should be able to run:
+
+```bash
+npm install -g nuclide
+```
+
+without errors.
+
+If you previously ran `npm install` as root you may need to correct the permissions on your `.npm`
+directory by running:
+
+```bash
+sudo chown -R userid:userid .npm
+```
+
+where `userid` is your userid.  If you still get errors you may need to do this:
+
+```bash
+npm clear cache
+```
+
 ## Environment Issues
 
 ### Custom `$PATH`

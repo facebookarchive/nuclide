@@ -81,12 +81,11 @@ your editing experience be seamless between the two.
 
 Nuclide provides a *server* that bridges your local client with the remote development machine. In
 order for remote development to work correctly, you must meet the
-[prerequisites](/docs/features/remote/#nuclide-server-setup) on the remote machine before installing
-the Nuclide server.
+[prerequisites](/docs/features/remote/#nuclide-server__prerequisites) on the remote machine before
+installing the Nuclide server.
 
 After the prerequisites are met, you then
-[install the server](/docs/features/remote/#nuclide-server-setup__installing-via-npm) on the remote
-machine.
+[install the server](/docs/features/remote/#nuclide-server__setup) on the remote machine.
 
 In order to connect to your remote project, click on the `Try It` button next to
 *Remote Connection* in the *Quick Launch Menu*. You can also select `Packages | Connect`, use the
