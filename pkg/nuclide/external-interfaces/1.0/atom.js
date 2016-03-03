@@ -1075,6 +1075,7 @@ declare class atom$Project {
   findBufferForPath(path: string): ?atom$TextBuffer;
   addBuffer(buffer: atom$TextBuffer): void;
   removeBuffer(buffer: atom$TextBuffer): void;
+  getBuffers(): Array<atom$TextBuffer>;
 }
 
 type TextBufferScanIterator = (arg: {

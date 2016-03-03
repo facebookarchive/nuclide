@@ -19,6 +19,7 @@ import type {
   HackSearchPosition,
   HackReferencesResult,
 } from '../../hack-base/lib/HackService';
+import {TypeCoverageRegion} from './TypedRegions';
 
 import type {HackSymbolNameResult} from '../../hack-base/lib/types';
 
@@ -29,6 +30,7 @@ import {array} from '../../commons';
 import {Range, Emitter} from 'atom';
 import HackWorker from './HackWorker';
 import {CompletionType, SymbolType} from '../../hack-common';
+import {convertTypedRegionsToCoverageRegions} from './TypedRegions';
 
 // The word char regex include \ to search for namespaced classes.
 const wordCharRegex = /[\w\\]/;
@@ -257,6 +259,14 @@ module.exports = class HackLanguage {
     }
     const hackDiagnostics = ((diagnosticResult: any): HackDiagnosticsResult);
     return hackDiagnostics.messages;
+  }
+
+  async getTypeCoverage(
+    filePath: NuclideUri,
+  ): Promise<Array<TypeCoverageRegion>> {
+    const {getTypedRegions} = getHackService(filePath);
+    const regions = await getTypedRegions(filePath);
+    return convertTypedRegionsToCoverageRegions(regions);
   }
 
   async getDefinition(
