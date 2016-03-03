@@ -1,5 +1,20 @@
 # Nuclide Changelog
 
+## v0.122.0
+
+Added:
+
+* Added 'Current Working Root'
+
+Fixed:
+
+* Faster Path Search (blacklist yourself from GK nuclide_file_search_native in case of issues)
+* Working Sets selection UI was aligned with core Atom for better compatibility with themes and other UI elements
+* Correctly report invalid .buckconfig file
+* A bug prevented certain types of Flow errors from appearing. This is now fixed.
+* Some fixes for HHVM debugger printing of map-like arrays and other hierarchical data structures.
+* HHVM script debugging breakpoints trigger more reliably. 
+
 ## 0.121.0
 
 Fixed:
