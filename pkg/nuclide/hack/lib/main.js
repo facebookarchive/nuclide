@@ -21,6 +21,7 @@ import {HACK_GRAMMARS} from '../../hack-common/lib/constants';
 import {
   SHOW_TYPE_COVERAGE_CONFIG_PATH,
   getShowTypeCoverage,
+  setShowTypeCoverage,
 } from './config';
 import {TypeCoverageProvider} from './TypeCoverageProvider';
 import {onDidChange} from '../../feature-config';
@@ -58,6 +59,9 @@ module.exports = {
           disableCoverageProvider();
         }
       }));
+    subscriptions.add(
+      atom.commands.add('atom-workspace',
+        'nuclide-hack:toggle-type-coverage', toggleTypeCoverage));
 
     if (getShowTypeCoverage()) {
       enableCoverageProvider();
@@ -191,4 +195,8 @@ function disableCoverageProvider(): void {
     coverageProvider.dispose();
     coverageProvider = null;
   }
+}
+
+function toggleTypeCoverage(): void {
+  setShowTypeCoverage(!getShowTypeCoverage());
 }
