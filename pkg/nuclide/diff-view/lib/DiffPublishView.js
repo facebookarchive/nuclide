@@ -135,25 +135,15 @@ function getUrlFromMessage(message: string): string {
 class DiffRevisionView extends React.Component {
   props: DiffRevisionViewProps;
 
-  constructor(props: DiffRevisionViewProps) {
-    super(props);
-    (this: any)._onClickDiff = this._onClickDiff.bind(this);
-  }
-
   render(): ReactElement {
     const {hash, title, description} = this.props.revision;
     const tooltip = `${hash}: ${title}`;
     const url = getUrlFromMessage(description);
     return (
-      <a href={url} title={tooltip} onClick={this._onClickDiff}>
+      <a href={url} title={tooltip}>
         {url}
       </a>
     );
-  }
-
-  _onClickDiff(): void {
-    const url = getUrlFromMessage(this.props.revision.description);
-    require('shell').openExternal(url);
   }
 }
 
