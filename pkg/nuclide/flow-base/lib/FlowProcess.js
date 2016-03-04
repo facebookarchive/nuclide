@@ -149,7 +149,8 @@ export class FlowProcess {
       ['server', '--from', 'nuclide', this._root],
     );
     const logIt = data => {
-      logger.debug('flow server: ' + data);
+      const pid = serverProcess.pid;
+      logger.debug(`flow server (${pid}): ${data}`);
     };
     serverProcess.stdout.on('data', logIt);
     serverProcess.stderr.on('data', logIt);
