@@ -14,9 +14,38 @@ import type {RevisionInfo} from '../../hg-repository-base/lib/HgService';
 import type DiffViewModel from './DiffViewModel';
 import type {PublishModeType, PublishModeStateType} from './types';
 
-import invariant from 'assert';
+import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import {PublishMode, PublishModeState} from './constants';
+
+type DiffRevisionViewProps = {
+  revision: RevisionInfo;
+};
+
+// TODO(most): Use @mareksapota's utility when done.
+const DIFF_REVISION_REGEX = /Differential Revision: (.*)/;
+function getUrlFromMessage(message: string): ?string {
+  const diffMatch = DIFF_REVISION_REGEX.exec(message);
+  return (diffMatch == null) ? null : diffMatch[1];
+}
+
+class DiffRevisionView extends React.Component {
+  props: DiffRevisionViewProps;
+
+  render(): ReactElement {
+    const {hash, title, description} = this.props.revision;
+    const tooltip = `${hash}: ${title}`;
+    const url = getUrlFromMessage(description);
+
+    return (url == null)
+      ? <span />
+      : (
+        <a href={url} title={tooltip}>
+          {url}
+        </a>
+      );
+  }
+}
 
 type Props = {
   message: ?string;
@@ -32,58 +61,6 @@ class DiffPublishView extends React.Component {
   constructor(props: Props) {
     super(props);
     (this: any)._onClickPublish = this._onClickPublish.bind(this);
-  }
-
-  render(): ReactElement {
-    const {publishModeState, publishMode, headRevision} = this.props;
-    const isBusy = publishModeState !== PublishModeState.READY;
-
-    let revisionView = null;
-    let publishMessage = null;
-    let loadingIndicator = null;
-    let progressIndicator = null;
-
-    if (publishMode === PublishMode.CREATE) {
-      publishMessage = 'Publish Phabricator Revision';
-    } else {
-      publishMessage = 'Update Phabricator Revision';
-      if (headRevision != null) {
-        revisionView = <DiffRevisionView revision={headRevision} />;
-      }
-    }
-
-    const publishButton = (
-      <button className="btn btn-sm btn-success pull-right"
-        onClick={this._onClickPublish}
-        disabled={isBusy}>
-        {publishMessage}
-      </button>
-    );
-    switch (publishModeState) {
-      case PublishModeState.LOADING_PUBLISH_MESSAGE:
-        loadingIndicator = <span className="loading loading-spinner-tiny inline-block"></span>;
-        break;
-      case PublishModeState.AWAITING_PUBLISH:
-        progressIndicator = <progress className="inline-block"></progress>;
-        break;
-    }
-    return (
-      <div className="nuclide-diff-mode">
-        <div className="message-editor-wrapper">
-          <AtomTextEditor
-            ref="message"
-            readOnly={isBusy}
-            gutterHidden={true}
-          />
-        </div>
-        <div className="padded">
-          {loadingIndicator}
-          {progressIndicator}
-          {revisionView}
-          {publishButton}
-        </div>
-      </div>
-    );
   }
 
   componentDidMount(): void {
@@ -117,32 +94,59 @@ class DiffPublishView extends React.Component {
   _getPublishMessage(): string {
     return this.refs['message'].getTextBuffer().getText();
   }
-}
-
-type DiffRevisionViewProps = {
-  revision: RevisionInfo;
-};
-
-// TODO(most): Use @mareksapota's utility when done.
-const DIFF_REVISION_REGEX = /Differential Revision: (.*)/;
-function getUrlFromMessage(message: string): string {
-  const diffMatch = DIFF_REVISION_REGEX.exec(message);
-  invariant(diffMatch != null, 'Diff View: Revision must have a valid message');
-  return diffMatch[1];
-
-}
-
-class DiffRevisionView extends React.Component {
-  props: DiffRevisionViewProps;
 
   render(): ReactElement {
-    const {hash, title, description} = this.props.revision;
-    const tooltip = `${hash}: ${title}`;
-    const url = getUrlFromMessage(description);
+    const {publishModeState, publishMode, headRevision} = this.props;
+
+    let revisionView;
+    if (headRevision != null) {
+      revisionView = <DiffRevisionView revision={headRevision} />;
+    }
+
+    let isBusy;
+    let publishMessage;
+    switch (publishModeState) {
+      case PublishModeState.READY:
+        isBusy = false;
+        if (publishMode === PublishMode.CREATE) {
+          publishMessage = 'Publish Phabricator Revision';
+        } else {
+          publishMessage = 'Update Phabricator Revision';
+        }
+        break;
+      case PublishModeState.LOADING_PUBLISH_MESSAGE:
+        isBusy = true;
+        publishMessage = 'Loading...';
+        break;
+      case PublishModeState.AWAITING_PUBLISH:
+        isBusy = true;
+        publishMessage = 'Publishing...';
+        break;
+    }
+
+    const publishButton = (
+      <button
+        className={classnames('btn btn-sm btn-success pull-right', {'btn-progress': isBusy})}
+        onClick={this._onClickPublish}
+        disabled={isBusy}>
+        {publishMessage}
+      </button>
+    );
+
     return (
-      <a href={url} title={tooltip}>
-        {url}
-      </a>
+      <div className="nuclide-diff-mode">
+        <div className="message-editor-wrapper">
+          <AtomTextEditor
+            ref="message"
+            readOnly={isBusy}
+            gutterHidden={true}
+          />
+        </div>
+        <div className="padded">
+          {revisionView}
+          {publishButton}
+        </div>
+      </div>
     );
   }
 }
