@@ -82,19 +82,23 @@ class DiffCommitView extends React.Component {
             readOnly={isLoading}
           />
         </div>
-        <div className="padded">
-          <NuclideCheckbox
-            checked={this.props.commitMode === CommitMode.AMEND}
-            disabled={isLoading}
-            label="Amend"
-            onChange={this._onToggleAmend}
-          />
-          <button
-            className={btnClassname}
-            disabled={isLoading}
-            onClick={this._onClickCommit}>
-            {message}
-          </button>
+        <div className="nuclide-diff-view-toolbar nuclide-diff-view-toolbar-bottom">
+          <div className="nuclide-diff-view-toolbar-left">
+            <NuclideCheckbox
+              checked={this.props.commitMode === CommitMode.AMEND}
+              disabled={isLoading}
+              label="Amend"
+              onChange={this._onToggleAmend}
+            />
+          </div>
+          <div className="nuclide-diff-view-toolbar-right">
+            <button
+              className={btnClassname}
+              disabled={isLoading}
+              onClick={this._onClickCommit}>
+              {message}
+            </button>
+          </div>
         </div>
       </div>
     );

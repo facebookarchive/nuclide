@@ -19,6 +19,8 @@ import classnames from 'classnames';
 type Props = {
   diffMode: DiffModeType;
   filePath: NuclideUri;
+  newRevisionTitle: ?string;
+  oldRevisionTitle: ?string;
   onSwitchToEditor: () => mixed;
   onSwitchMode: (mode: DiffModeType) => mixed;
 };
@@ -31,8 +33,7 @@ class DiffViewToolbar extends React.Component {
     const hasActiveFile = filePath != null && filePath.length > 0;
     const modes = Object.keys(DiffMode).map(modeId => {
       const modeValue = DiffMode[modeId];
-      const className = classnames({
-        'btn': true,
+      const className = classnames('btn', {
         'selected': modeValue === diffMode,
       });
       return (
@@ -40,21 +41,32 @@ class DiffViewToolbar extends React.Component {
           key={modeValue}
           className={className}
           onClick={() => this.props.onSwitchMode(modeValue)}>
-          {modeValue} Mode
+          {modeValue}
         </button>
       );
     });
+
     return (
-      <div className="nuclide-diff-view-toolbar padded">
-        <div className="btn-group btn-group-sm">
-          {modes}
+      <div className="nuclide-diff-view-toolbar nuclide-diff-view-toolbar-top">
+        <div className="nuclide-diff-view-toolbar-left">
+          <div className="btn-group btn-group-sm">
+            {modes}
+          </div>
         </div>
-        <div className="btn-group btn-group-sm">
-          <button
-            onClick={this.props.onSwitchToEditor}
-            disabled={!hasActiveFile} className="btn">
-            Goto Editor
-          </button>
+        <div className="nuclide-diff-view-toolbar-center">
+          {this.props.oldRevisionTitle == null ? '?' : this.props.oldRevisionTitle}
+          {'...'}
+          {this.props.newRevisionTitle == null ? '?' : this.props.newRevisionTitle}
+        </div>
+        <div className="nuclide-diff-view-toolbar-right">
+          <div className="btn-group btn-group-sm">
+            <button
+              className="btn"
+              disabled={!hasActiveFile}
+              onClick={this.props.onSwitchToEditor}>
+              Goto Editor
+            </button>
+          </div>
         </div>
       </div>
     );

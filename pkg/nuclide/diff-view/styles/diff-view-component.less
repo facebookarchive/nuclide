@@ -2,6 +2,7 @@
 @import 'syntax-variables';
 
 @revisionBubbleDiameter: 10px;
+@revisionBubbleShadowRadius: 4px;
 
 .nuclide-diff-view-container {
   height: 100%;
@@ -13,7 +14,35 @@
 
 .nuclide-diff-view-toolbar {
   display: flex;
-  justify-content: space-between;
+  height: 26px;
+  line-height: 22px;
+  padding: 0 12.5px;
+}
+
+.nuclide-diff-view-toolbar-bottom {
+  border-top: 1px solid @pane-item-border-color;
+}
+
+.nuclide-diff-view-toolbar-top {
+  border-bottom: 1px solid @pane-item-border-color;
+}
+
+.nuclide-diff-view-toolbar-center,
+.nuclide-diff-view-toolbar-left,
+.nuclide-diff-view-toolbar-right {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.nuclide-diff-view-toolbar-center {
+  justify-content: center;
+}
+
+.nuclide-diff-view-toolbar-right {
+  justify-content: flex-end;
 }
 
 .nuclide-diff-view-component {
@@ -26,17 +55,12 @@
     border-top: 1px solid @pane-item-border-color;
     -webkit-user-select: none;
     white-space: nowrap;
-    padding-left: 10px;
-    padding-right: 10px;
     overflow: auto;
     cursor: default;
 
     // Fill vertical and horizontal space if tree is smaller than panel.
     min-width: 100%;
     min-height: 100%;
-
-    // Allow block to extend past parent's width, for autoresizing purposes.
-    display: inline-block;
   }
 
   .diff-timeline {
@@ -46,7 +70,6 @@
     color: @text-color;
 
     .revision-timeline-wrap {
-      padding-top: 12px;
       height: 100%;
       overflow: auto;
     }
@@ -54,7 +77,6 @@
     .revision-selector  {
       // TODO Use a standard Atom font-family https://github.com/atom/atom/issues/8800
       font-family: Menlo, Consolas, monospace;
-      font-size: 12px;
       width: 100%;
       white-space: nowrap;
       display: flex;
@@ -68,9 +90,6 @@
 
     .revision {
       cursor: pointer;
-      margin: auto 1em;
-      position: relative;
-      z-index: 0;
     }
 
     .revision:hover .revision-label {
@@ -88,6 +107,7 @@
       display: inline-block;
       height: @revisionBubbleDiameter;
       width: @revisionBubbleDiameter;
+      margin: @revisionBubbleShadowRadius;
       position: absolute;
     }
 
@@ -122,8 +142,9 @@
     }
 
     .revision-label {
-      margin-bottom: 10px;
-      margin-left: 20px;
+      margin-bottom: 6px;
+      margin-left: 24px;
+      margin-top: 4px;
       display: inline-block;
     }
 
@@ -140,7 +161,7 @@
 
     .selected-revision-start .revision-bubble,
     .selected-revision-end .revision-bubble {
-       box-shadow: 0 0 0 4px fade(@text-color-info, 25%);
+       box-shadow: 0 0 0 @revisionBubbleShadowRadius fade(@text-color-info, 25%);
     }
   }
 }
@@ -214,13 +235,6 @@ atom-text-editor, atom-text-editor::shadow {
   display: flex;
   flex-grow: 1;
   position: relative;
-}
-
-.nuclide-diff-editor-header {
-  padding: 5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .nuclide-diff-mode {

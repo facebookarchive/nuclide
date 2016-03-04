@@ -70,7 +70,7 @@ export default class DiffTimelineView extends React.Component {
       );
     }
     return (
-      <div className="diff-timeline">
+      <div className="diff-timeline padded">
         {content}
       </div>
     );

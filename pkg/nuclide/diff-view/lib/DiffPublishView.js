@@ -126,7 +126,7 @@ class DiffPublishView extends React.Component {
 
     const publishButton = (
       <button
-        className={classnames('btn btn-sm btn-success pull-right', {'btn-progress': isBusy})}
+        className={classnames('btn btn-sm btn-success', {'btn-progress': isBusy})}
         onClick={this._onClickPublish}
         disabled={isBusy}>
         {publishMessage}
@@ -142,9 +142,13 @@ class DiffPublishView extends React.Component {
             gutterHidden={true}
           />
         </div>
-        <div className="padded">
-          {revisionView}
-          {publishButton}
+        <div className="nuclide-diff-view-toolbar nuclide-diff-view-toolbar-bottom">
+          <div className="nuclide-diff-view-toolbar-left">
+            {revisionView}
+          </div>
+          <div className="nuclide-diff-view-toolbar-right">
+            {publishButton}
+          </div>
         </div>
       </div>
     );

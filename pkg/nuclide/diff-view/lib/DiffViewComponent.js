@@ -267,7 +267,7 @@ class DiffViewComponent extends React.Component {
     const {filePath} = diffModel.getActiveFileState();
     this._treeComponent = ReactDOM.render(
       (
-        <div className="nuclide-diff-view-tree">
+        <div className="nuclide-diff-view-tree padded">
           <DiffViewTree
             activeFilePath={filePath}
             fileChanges={compareFileChanges}
@@ -377,10 +377,13 @@ class DiffViewComponent extends React.Component {
     let toolbarComponent = null;
     if (this.state.toolbarVisible) {
       const {viewMode} = this.props.diffModel.getState();
+      const {oldEditorState, newEditorState} = this.state;
       toolbarComponent = (
         <DiffViewToolbar
           filePath={this.state.filePath}
           diffMode={viewMode}
+          newRevisionTitle={newEditorState.revisionTitle}
+          oldRevisionTitle={oldEditorState.revisionTitle}
           onSwitchMode={this._onChangeMode}
           onSwitchToEditor={this._onSwitchToEditor}
         />
