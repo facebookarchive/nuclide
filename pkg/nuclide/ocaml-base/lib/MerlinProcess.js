@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from '../../remote-uri';
+import type {MerlinError} from './LocalMerlinService';
 
 import {
   checkOutput,
@@ -31,7 +32,7 @@ const ERROR_RESPONSES = new Set([
  * ocamlmerlin's json-over-stdin/stdout protocol.
  *
  * This is based on the protocol description at:
- *   https://github.com/the-lambda-church/merlin/blob/master/PROTOCOL.md
+ *   https://github.com/the-lambda-church/merlin/blob/master/doc/dev/PROTOCOL.md
  *   https://github.com/the-lambda-church/merlin/tree/master/src/frontend
  */
 export class MerlinProcess {
@@ -85,9 +86,17 @@ export class MerlinProcess {
         name,
       ]);
 
+      // Clear the buffer.
+      await this.runSingleCommand([
+        'seek',
+        'exact',
+        {line: 1, col: 0},
+      ]);
+      await this.runSingleCommand(['drop']);
+
       const result = await this.runSingleCommand([
         'tell',
-        'source',
+        'source-eof',
         content,
       ]);
       resolve(result);
@@ -147,6 +156,11 @@ export class MerlinProcess {
     });
   }
 
+  async errors(): Promise<Array<MerlinError>> {
+    return await this._promiseQueue.submit(async (resolve, reject) => {
+      resolve(await this.runSingleCommand(['errors']));
+    });
+  }
 
   /**
    * Run a command; parse the json output, return an object. This assumes

@@ -13,6 +13,19 @@ import type {NuclideUri} from '../../remote-uri';
 
 import {getInstance} from './MerlinProcess';
 
+export type MerlinPosition = {
+  line: number; // 1-indexed
+  col: number;  // 0-indexed
+};
+
+export type MerlinError = {
+  start: MerlinPosition;
+  end: MerlinPosition;
+  valid: boolean;
+  message: string;
+  type: 'type' | 'parser' | 'env' | 'warning' | 'unknown';
+};
+
 export async function pushDotMerlinPath(path: NuclideUri): Promise<?any> {
   const instance = await getInstance(path);
   return instance ? instance.pushDotMerlinPath(path) : null;
@@ -47,6 +60,13 @@ export async function complete(
 ): Promise<any> {
   const instance = await getInstance(path);
   return instance ? instance.complete(path, line, col, prefix) : null;
+}
+
+export async function errors(
+  path: NuclideUri,
+): Promise<?Array<MerlinError>> {
+  const instance = await getInstance(path);
+  return instance ? instance.errors() : null;
 }
 
 /**
