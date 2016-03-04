@@ -126,15 +126,12 @@ export class WorkingSetSelectionComponent extends React.Component {
         <div className="btn-group pull-right">
           <button
             className="btn icon icon-trashcan"
-            tabIndex="-1"
             onClick={event => {
               this.props.workingSetsStore.deleteWorkingSet(def.name);
               event.stopPropagation();
             }}
             tabIndex="-1"
           />
-
-
           <button
             className="btn icon icon-pencil"
             tabIndex="-1"
@@ -144,7 +141,6 @@ export class WorkingSetSelectionComponent extends React.Component {
             }}
             onBlur={this._lostFocus}
           />
-
         </div>
         <span>
           {def.name}

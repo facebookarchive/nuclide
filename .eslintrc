@@ -164,8 +164,9 @@
 
     "react/jsx-closing-bracket-location": [1, {"selfClosing": "tag-aligned", "nonEmpty": "after-props"}],
     "react/jsx-curly-spacing": [1, "never"],  // Enforce or disallow spaces inside of curly braces in JSX attributes
+    "react/jsx-no-duplicate-props": 1,        // Prevent duplicate props in JSX
     "react/jsx-no-undef": 1,                  // Disallow undeclared variables in JSX
-    "react/jsx-space-before-closing": 1,       // Require space before self-closing bracket in JSX
+    "react/jsx-space-before-closing": 1,      // Require space before self-closing bracket in JSX
     "react/jsx-uses-react": 1,                // Prevent React to be incorrectly marked as unused
     "react/jsx-uses-vars": 1,                 // Prevent variables used in JSX to be incorrectly marked as unused
     "react/no-deprecated": 1,                 // Prevent usage of deprecated methods (like `React.render`)
