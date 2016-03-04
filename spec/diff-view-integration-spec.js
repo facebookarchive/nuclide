@@ -57,11 +57,14 @@ describe('Diff view integration test', () => {
       expect(uncommitedFileChangeCount).toEqual('');
 
       // Change the active file and see that the diff view counter is at 1.
-      textEditor.insertText('change');
+      const res1 = textEditor.insertText('c');
+      expect(res1).not.toEqual(false);
+      const res2 = textEditor.insertText('g');
+      expect(res2).not.toEqual(false);
     });
 
     waitsFor('Text to be inserted', 10000, () => {
-      return textEditor.getText().startsWith('change');
+      return textEditor.getText().startsWith('cg');
     });
 
     runs(() => {
