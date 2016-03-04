@@ -108,6 +108,8 @@ declare module 'rx' {
 
     mergeAll(): T; // assumption: T is Observable
 
+    pausableBuffered(pauser: Observable<boolean>): Observable<T>;
+
     publish(): ConnectableObservable<T>;
 
     publishLast(): ConnectableObservable<T>;
