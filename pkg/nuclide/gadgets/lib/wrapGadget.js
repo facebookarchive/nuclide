@@ -96,7 +96,7 @@ export default function wrapGadget(gadget: any): Object {
 }
 
 const defaultMethods = {
-  getTitle() {
+  getTitle(): string {
     // TODO: Generate default title from gadgetId
     return 'Default Title';
   },

@@ -12,6 +12,7 @@
 import createAtomCommands from './createAtomCommands';
 import type Immutable from 'immutable';
 import type Rx from 'rx';
+import type Commands from './Commands';
 
 /**
  * Keep the Atom commands in sync with the application state. If the returned subscription is
@@ -19,7 +20,7 @@ import type Rx from 'rx';
  */
 export default function syncAtomCommands(
   gadget$: Rx.Observable<Immutable.Map>,
-  appCommands: Object,
+  appCommands: Commands,
 ): IDisposable {
   let atomCommands: ?IDisposable;
 

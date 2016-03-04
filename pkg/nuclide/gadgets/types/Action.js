@@ -21,7 +21,11 @@ export type Action =
 export type CreatePaneItemAction = {
   type: 'CREATE_PANE_ITEM';
   payload: {
+    component?: ReactComponent;
+    gadgetId: string;
     item: Object;
+    props?: Object;
+    isNew: boolean;
   };
 };
 

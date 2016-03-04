@@ -35,7 +35,7 @@ class GadgetPlaceholder extends React.Component<void, Props, void> {
     this._expandedFlexScale = props && props.expandedFlexScale;
   }
 
-  destroy() {
+  destroy(): void {
     ReactDOM.unmountComponentAtNode(this.element);
   }
 
@@ -75,10 +75,9 @@ class GadgetPlaceholder extends React.Component<void, Props, void> {
     };
   }
 
-  static deserialize(state) {
+  static deserialize(state): HTMLElement {
     return createComponentItem(<GadgetPlaceholder {...state.data} />);
   }
-
 }
 
 module.exports = GadgetPlaceholder;

@@ -26,7 +26,7 @@ class GadgetsService {
     this._commands.destroyGadget(gadgetId);
   }
 
-  registerGadget(gadget: Gadget): Disposable {
+  registerGadget(gadget: Gadget): IDisposable {
     this._commands.registerGadget(gadget);
     return new Disposable(() => {
       this._commands.unregisterGadget(gadget.gadgetId);

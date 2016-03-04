@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {Action} from '../types/Action';
+
 import * as ActionTypes from './ActionTypes';
 import Immutable from 'immutable';
 import Rx from 'rx';
@@ -17,10 +19,10 @@ import Rx from 'rx';
  * Convert a stream of actions into a stream of application states.
  */
 export default function createStateStream(
-  action$: Rx.Observable,
+  action$: Rx.Observable<Action>,
   initialState: Immutable.Map,
-): Rx.BehaviorSubject {
-  const state$ = new Rx.BehaviorSubject(initialState);
+): Rx.BehaviorSubject<Immutable.Map> {
+  const state$: Rx.BehaviorSubject<Immutable.Map> = new Rx.BehaviorSubject(initialState);
   action$.scan(handleAction, initialState).subscribe(state$);
   return state$;
 }
@@ -28,7 +30,7 @@ export default function createStateStream(
 /**
  * Transform the state based on the given action and return the result.
  */
-function handleAction(state, action) {
+function handleAction(state: Immutable.Map, action: Action): Immutable.Map {
   switch (action.type) {
 
     case ActionTypes.CREATE_PANE_ITEM: {

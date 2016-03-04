@@ -30,7 +30,7 @@ describe('createAtomCommands', () => {
   });
 
   it('registers a show command for each gadget', () => {
-    createAtomCommands(gadgets, {});
+    createAtomCommands(gadgets, ({}: any));
     expect(getAddedCommands(atom.commands.add.calls)).toContain(`${gadgetId}:show`);
   });
 
@@ -39,7 +39,7 @@ describe('createAtomCommands', () => {
     // returned CompositeDisposable. Unfortunately, this wouldn't be noticed until `dispose()` was
     // called on the result when an error would be thrown. Things are good as long as we don't get
     // that error when invoking `dispose()`.
-    const disposable = createAtomCommands(gadgets, {});
+    const disposable = createAtomCommands(gadgets, ({}: any));
     expect(() => { disposable.dispose(); }).not.toThrow();
   });
 

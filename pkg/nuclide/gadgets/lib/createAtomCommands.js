@@ -10,13 +10,14 @@
  */
 
 import type Immutable from 'immutable';
+import type Commands from './Commands';
 
 import {CompositeDisposable} from 'atom';
 import normalizeEventString from './normalizeEventString';
 
 export default function createAtomCommands(
   gadgets: Immutable.Map,
-  appCommands: Object,
+  appCommands: Commands,
 ): IDisposable {
   const commands = gadgets
     .valueSeq()
