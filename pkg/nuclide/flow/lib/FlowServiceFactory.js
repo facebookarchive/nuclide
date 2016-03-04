@@ -26,7 +26,7 @@ const FLOW_SERVICE = 'FlowService';
 
 const serverStatusUpdates: Subject<ServerStatusUpdate> = new Subject();
 
-const subscribedServiceInstances = new WeakSet();
+const serviceInstances = new Set();
 
 export function getFlowServiceByNuclideUri(file: NuclideUri): FlowService {
   return getFlowServiceByNullableUri(file);
@@ -40,8 +40,8 @@ export function getLocalFlowService(): FlowService {
 function getFlowServiceByNullableUri(file: ?NuclideUri): FlowService {
   const flowService: ?FlowService = getServiceByNuclideUri(FLOW_SERVICE, file);
   invariant(flowService != null);
-  if (!subscribedServiceInstances.has(flowService)) {
-    subscribedServiceInstances.add(flowService);
+  if (!serviceInstances.has(flowService)) {
+    serviceInstances.add(flowService);
     const statusUpdates: Observable<ServerStatusUpdate> = flowService.getServerStatusUpdates();
     // TODO Unsubscribe at some point. To do that, we need a hook into the service framework so we
     // can learn when a given service instance is gone. I would expect the service framework to send
@@ -56,4 +56,8 @@ function getFlowServiceByNullableUri(file: ?NuclideUri): FlowService {
 
 export function getServerStatusUpdates(): Observable<ServerStatusUpdate> {
   return serverStatusUpdates.asObservable();
+}
+
+export function getCurrentServiceInstances(): Set<FlowService> {
+  return new Set(serviceInstances);
 }

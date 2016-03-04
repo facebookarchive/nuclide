@@ -21,14 +21,16 @@ describe('FlowServiceFactory', () => {
   let FlowServiceFactory: FlowServiceFactoryType = (null: any);
   let getServiceByNuclideUriSpy: JasmineSpy = (null: any);
   let serverUpdates: Array<ServerStatusUpdate> = (null: any);
+  let fakeFlowService: Object = (null: any);
 
   beforeEach(() => {
     serverUpdates = [];
+    fakeFlowService = {
+      getServerStatusUpdates() { return Observable.from(serverUpdates); },
+    };
     getServiceByNuclideUriSpy =
       spyOn(require('../../client'), 'getServiceByNuclideUri')
-      .andCallFake(() => ({
-        getServerStatusUpdates() { return Observable.from(serverUpdates); },
-      }));
+      .andCallFake(() => fakeFlowService);
     FlowServiceFactory = (uncachedRequire(require, '../lib/FlowServiceFactory'): any);
   });
 
@@ -74,6 +76,18 @@ describe('FlowServiceFactory', () => {
         FlowServiceFactory.getLocalFlowService();
         expect(await updatesPromise).toEqual(serverUpdates);
       });
+    });
+  });
+
+  describe('getCurrentServiceInstances', () => {
+    it('returns a set with the current service instances', () => {
+      expect(FlowServiceFactory.getCurrentServiceInstances().size).toEqual(0);
+
+      FlowServiceFactory.getLocalFlowService();
+
+      const instances = FlowServiceFactory.getCurrentServiceInstances();
+      expect(instances.size).toEqual(1);
+      expect(instances.has(fakeFlowService)).toBeTruthy();
     });
   });
 });

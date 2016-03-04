@@ -39,6 +39,12 @@ module.exports = {
     if (!disposables) {
       disposables = new CompositeDisposable();
 
+      disposables.add(atom.commands.add(
+        atom.views.getView(atom.workspace),
+        'nuclide-flow:restart-flow-server',
+        allowFlowServerRestart,
+      ));
+
       const {registerGrammarForFileExtension} = require('../../atom-helpers');
       registerGrammarForFileExtension('source.ini', '.flowconfig');
     }
@@ -143,3 +149,10 @@ module.exports = {
     }
   },
 };
+
+function allowFlowServerRestart(): void {
+  const {getCurrentServiceInstances} = require('./FlowServiceFactory');
+  for (const service of getCurrentServiceInstances()) {
+    service.allowServerRestart();
+  }
+}
