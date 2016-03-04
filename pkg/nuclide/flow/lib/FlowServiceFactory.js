@@ -9,20 +9,51 @@
  * the root directory of this source tree.
  */
 
+import type {Observable} from 'rx';
+
 import type {NuclideUri} from '../../remote-uri';
+import type {
+  ServerStatusUpdate,
+} from '../../flow-base';
 import typeof * as FlowService from '../../flow-base';
 
 import invariant from 'assert';
+import {Subject} from 'rx';
+
 import {getServiceByNuclideUri} from '../../client';
 
+const FLOW_SERVICE = 'FlowService';
+
+const serverStatusUpdates: Subject<ServerStatusUpdate> = new Subject();
+
+const subscribedServiceInstances = new WeakSet();
+
 export function getFlowServiceByNuclideUri(file: NuclideUri): FlowService {
-  const service = getServiceByNuclideUri('FlowService', file);
-  invariant(service);
-  return service;
+  return getFlowServiceByNullableUri(file);
 }
 
 export function getLocalFlowService(): FlowService {
-  const service = getServiceByNuclideUri('FlowService', null);
-  invariant(service);
-  return service;
+  return getFlowServiceByNullableUri(null);
+}
+
+/** Returns the FlowService for the given URI, or the local FlowService if the given URI is null. */
+function getFlowServiceByNullableUri(file: ?NuclideUri): FlowService {
+  const flowService: ?FlowService = getServiceByNuclideUri(FLOW_SERVICE, file);
+  invariant(flowService != null);
+  if (!subscribedServiceInstances.has(flowService)) {
+    subscribedServiceInstances.add(flowService);
+    const statusUpdates: Observable<ServerStatusUpdate> = flowService.getServerStatusUpdates();
+    // TODO Unsubscribe at some point. To do that, we need a hook into the service framework so we
+    // can learn when a given service instance is gone. I would expect the service framework to send
+    // onCompleted when it disconnects, but that seemingly doesn't happen. So, we should do this
+    // manually. However, the bound on the number of services is the number of remote connections
+    // initiated during this Nuclide session, plus the local one. So while this is a memory leak,
+    // it's very small.
+    statusUpdates.subscribe(serverStatusUpdates);
+  }
+  return flowService;
+}
+
+export function getServerStatusUpdates(): Observable<ServerStatusUpdate> {
+  return serverStatusUpdates.asObservable();
 }

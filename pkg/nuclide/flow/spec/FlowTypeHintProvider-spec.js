@@ -9,9 +9,11 @@
  * the root directory of this source tree.
  */
 
-const {uncachedRequire, spyOnGetterValue} = require('../../test-helpers');
-const {Range} = require('atom');
-const featureConfig = require('../../feature-config');
+import {Observable} from 'rx';
+
+import {uncachedRequire, spyOnGetterValue} from '../../test-helpers';
+import {Range} from 'atom';
+import featureConfig from '../../feature-config';
 
 import {array} from '../../commons';
 
@@ -44,6 +46,7 @@ describe('FlowTypeHintProvider', () => {
       }
     });
     spyOn(require('../../client'), 'getServiceByNuclideUri').andReturn({
+      getServerStatusUpdates() { return Observable.empty(); },
       flowGetType() { return Promise.resolve(result); },
     });
     spyOnGetterValue(require('../../atom-helpers'), 'extractWordAtPosition')
