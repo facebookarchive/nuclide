@@ -20,6 +20,8 @@ import {BehaviorSubject, Observable} from 'rx';
 import {getLogger} from '../../logging';
 const logger = getLogger();
 
+import {track} from '../../analytics';
+
 import {
   asyncExecute,
   safeSpawn,
@@ -70,6 +72,10 @@ export class FlowProcess {
     }
     this._serverStatus.filter(isBusyOrInit).subscribe(() => {
       this._pingServer();
+    });
+
+    this._serverStatus.filter(status => status === ServerStatus.FAILED).subscribe(() => {
+      track('flow-server-failed');
     });
   }
 
