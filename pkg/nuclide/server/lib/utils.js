@@ -44,6 +44,8 @@ function asyncRequest(options: RequestOptions): Promise<ResponseBody> {
     if (options.useQuerystring === undefined) {
       options.useQuerystring = true;
     }
+    // TODO(t8118670): This can cause an uncaught exception.
+    // Likely requires a fix to 'request'.
     request(options, (error, response, body) => {
       if (error) {
         reject(error);

@@ -267,12 +267,6 @@ class NuclideSocket extends EventEmitter {
   }
 
   async _heartbeat(): Promise<void> {
-    // Do not send heartbeat requests when not connected.
-    // This can cause an uncaught exception. See t8118670.
-    if (!this._connected) {
-      return;
-    }
-
     try {
       await this._sendHeartBeat();
       this._heartbeatConnectedOnce = true;
