@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {LinterProvider} from '../../diagnostics/base';
+
 module.exports = {
   activate(): void {
   },
@@ -30,5 +32,10 @@ module.exports = {
       disableForSelector: '.source.ocaml .comment',
       getSuggestions,
     };
+  },
+
+  provideLinter(): LinterProvider {
+    const MerlinLinterProvider = require('./LinterProvider');
+    return MerlinLinterProvider;
   },
 };

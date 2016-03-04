@@ -12,10 +12,8 @@
 import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
 
 import invariant from 'assert';
+import {GRAMMARS} from './constants';
 
-const GRAMMARS = new Set([
-  'source.ocaml',
-]);
 const EXTENSIONS = new Set([
   'ml',
   'mli',
