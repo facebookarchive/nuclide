@@ -217,7 +217,7 @@ function showPopupFor(
     goToLocation: (filePath: NuclideUri, line: number) => mixed,
     fixer: (message: FileDiagnosticMessage) => void,
     ): HTMLElement {
-  const children = messages.map(message => {
+  const children = messages.map((message, index) => {
     const contents = createElementForMessage(message, goToLocation, fixer);
     const diagnosticTypeClass = message.type === 'Error'
       ? 'nuclide-diagnostics-gutter-ui-popup-error'
@@ -226,7 +226,7 @@ function showPopupFor(
     const classes =
       `native-key-bindings nuclide-diagnostics-gutter-ui-popup-diagnostic ${diagnosticTypeClass}`;
     return (
-      <div tabIndex={-1} className={classes}>
+      <div className={classes} key={index} tabIndex={-1}>
         {contents}
       </div>
     );

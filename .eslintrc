@@ -164,6 +164,7 @@
 
     "react/jsx-closing-bracket-location": [1, {"selfClosing": "tag-aligned", "nonEmpty": "after-props"}],
     "react/jsx-curly-spacing": [1, "never"],  // Enforce or disallow spaces inside of curly braces in JSX attributes
+    "react/jsx-key": 1,                       // Validate JSX has `key` prop when in array or iterator
     "react/jsx-no-duplicate-props": 1,        // Prevent duplicate props in JSX
     "react/jsx-no-undef": 1,                  // Disallow undeclared variables in JSX
     "react/jsx-space-before-closing": 1,      // Require space before self-closing bracket in JSX
