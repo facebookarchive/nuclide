@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {LinterProvider} from './LinterAdapter';
+import type {LinterProvider} from '../../base';
 // Flow didn't like it when I tried import type here. This shouldn't affect
 // performance though, since LinterAdapter requires this anyway.
 import {DiagnosticsProviderBase} from '../../provider-base';

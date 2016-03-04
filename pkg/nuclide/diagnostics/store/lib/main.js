@@ -13,13 +13,14 @@ import type {
   DiagnosticStore,
   DiagnosticUpdater,
   CallbackDiagnosticProvider,
+  LinterProvider,
   ObservableDiagnosticProvider,
 } from '../../base';
-import type {LinterProvider} from './LinterAdapter';
 
 import {Disposable, CompositeDisposable} from 'atom';
 import featureConfig from '../../../feature-config';
 import {event} from '../../../commons';
+
 const {observableFromSubscribeFunction} = event;
 
 const legacyLinterSetting = 'nuclide-diagnostics-store.consumeLegacyLinters';
