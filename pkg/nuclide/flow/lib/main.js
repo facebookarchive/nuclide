@@ -39,6 +39,10 @@ module.exports = {
     if (!disposables) {
       disposables = new CompositeDisposable();
 
+      const {FlowServiceWatcher} = require('./FlowServiceWatcher');
+      const watcher = new FlowServiceWatcher();
+      disposables.add(watcher);
+
       disposables.add(atom.commands.add(
         atom.views.getView(atom.workspace),
         'nuclide-flow:restart-flow-server',
