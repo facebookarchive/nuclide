@@ -32,7 +32,9 @@ type State = {
  */
 class PanelComponent extends React.Component {
 
+  _isMounted: boolean;
   _resizeSubscriptions: CompositeDisposable;
+
   state: State;
 
   static propTypes = {
@@ -52,6 +54,7 @@ class PanelComponent extends React.Component {
 
   constructor(props: Object) {
     super(props);
+    this._isMounted = false;
     this.state = {
       isResizing: false,
       length: this.props.initialLength,
@@ -62,6 +65,42 @@ class PanelComponent extends React.Component {
     (this: any)._handleMouseDown = this._handleMouseDown.bind(this);
     (this: any)._handleMouseMove = this._handleMouseMove.bind(this);
     (this: any)._handleMouseUp = this._handleMouseUp.bind(this);
+  }
+
+  componentDidMount() {
+    this._isMounted = true;
+    // Note: This method is called via `requestAnimationFrame` rather than `process.nextTick` like
+    // Atom's tree-view does because this does not have a guarantee a paint will have already
+    // happened when `componentDidMount` gets called the first time.
+    window.requestAnimationFrame(this._repaint.bind(this));
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
+
+  /**
+   * Forces the potentially scrollable region to redraw so its scrollbars are drawn with styles from
+   * the active theme. This mimics the login in Atom's tree-view [`onStylesheetChange`][1].
+   *
+   * [1] https://github.com/atom/tree-view/blob/v0.201.5/lib/tree-view.coffee#L722
+   */
+  _repaint() {
+    // Normally an ugly pattern, but calls to `requestAnimationFrame` cannot be canceled. Must guard
+    // against an unmounted component here.
+    if (!this._isMounted) {
+      return;
+    }
+
+    const element = ReactDOM.findDOMNode(this);
+    const isVisible = window.getComputedStyle(element, null).getPropertyValue('visibility');
+
+    if (isVisible) {
+      // Force a redraw so the scrollbars are styled correctly based on the theme
+      element.style.display = 'none';
+      element.offsetWidth;
+      element.style.display = '';
+    }
   }
 
   render(): ReactElement {
@@ -95,9 +134,16 @@ class PanelComponent extends React.Component {
       scrollerStyle.overflowX = this.props.overflowX;
     }
 
+    // Use the `tree-view-resizer` class from Atom's [tree-view][1] because it is targeted by some
+    // themes, like [spacegray-dark-ui][2], to customize the scroll bar in the tree-view. Use this
+    // inside `PanelComponent` rather than just file-tree so any scrollable panels created with this
+    // component are styled accordingly.
+    //
+    // [1] https://github.com/atom/tree-view/blob/v0.201.5/lib/tree-view.coffee#L28
+    // [2] https://github.com/cannikin/spacegray-dark-ui/blob/v0.12.0/styles/tree-view.less#L21
     return (
       <div
-        className={`nuclide-ui-panel-component ${this.props.dock}`}
+        className={`nuclide-ui-panel-component tree-view-resizer ${this.props.dock}`}
         hidden={this.props.hidden}
         ref="container"
         style={containerStyle}>
