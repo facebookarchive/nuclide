@@ -21,6 +21,7 @@
   - id: language-hack
   - id: language-flow
   - id: language-objective-c
+  - id: language-cpp
   - id: language-ocaml
 - title: Platforms
   items:
