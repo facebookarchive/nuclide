@@ -61,24 +61,28 @@ function aFileSearchShould(typename) {
       temp.cleanupSync();
     });
 
-    describe('a FileSearch at the root of a project', () => {
-      function correctIndexes(indexes): Array<number> {
-        return indexes.map(index => {
-          invariant(dirPath);
-          return index + dirPath.length + 1;
-        });
-      }
+    // Score values are difficult to test.
+    function values(results) {
+      return results.map(x => x.path);
+    }
 
+    // Correct for dirPath, which is essentially a random string.
+    function indexes(results) {
+      return results.map(x => x.matchIndexes.map(idx => idx - dirPath.length - 1));
+    }
+
+    describe('a FileSearch at the root of a project', () => {
       it('should return an easy match in the root directory', () => {
         waitsForPromise(async () => {
           invariant(search);
           invariant(dirPath);
           const results = await search.query('test');
-          expect(results).toEqual([{
-            score: 0,
-            path: path.join(dirPath, 'test'),
-            matchIndexes: correctIndexes([]),
-          }]);
+          expect(values(results)).toEqual([
+            path.join(dirPath, 'test'),
+          ]);
+          expect(indexes(results)).toEqual([
+            [0, 1, 2, 3],
+          ]);
         });
       });
 
@@ -87,35 +91,28 @@ function aFileSearchShould(typename) {
           invariant(search);
           invariant(dirPath);
           const results = await search.query('deeper');
-          expect(results).toEqual([{
-            score: 0,
-            path: path.join(dirPath, 'deeper/deeper'),
-            matchIndexes: correctIndexes([]),
-          }]);
+          expect(values(results)).toEqual([
+            path.join(dirPath, 'deeper/deeper'),
+          ]);
+          expect(indexes(results)).toEqual([
+            [7, 8, 9, 10, 11, 12],
+          ]);
         });
       });
-
     });
 
     describe('a subdirectory FileSearch', () => {
-      function correctIndexes(indexes): Array<number> {
-        return indexes.map(index => {
-          invariant(uriSearch);
-          return index + uriSearch.getLocalDirectory().length;
-        });
-      }
-
-      // TODO path search not yet implemented
-      xit('should return results relative to the deeper path', () => {
+      it('should return results relative to the deeper path', () => {
         waitsForPromise(async () => {
           invariant(deeperSearch);
           invariant(dirPath);
           const results = await deeperSearch.query('deeper');
-          expect(results).toEqual([{
-            score: 235,
-            path: path.join(dirPath, 'deeper/deeper'),
-            matchIndexes: correctIndexes([0, 1, 2, 3, 4, 5]),
-          }]);
+          expect(values(results)).toEqual([
+            path.join(dirPath, 'deeper/deeper'),
+          ]);
+          expect(indexes(results)).toEqual([
+            [7, 8, 9, 10, 11, 12],
+          ]);
         });
       });
 
@@ -126,26 +123,16 @@ function aFileSearchShould(typename) {
           expect(results).toEqual([]);
         });
       });
-
     });
 
     describe('a FileSearch with a hostname', () => {
-      function correctIndexes(indexes): Array<number> {
-        return indexes.map(index => {
-          invariant(uriSearch);
-          return index + uriSearch.getFullBaseUri().length + 1;
-        });
-      }
-
       it('should return an easy match in the root directory', () => {
         waitsForPromise(async () => {
           invariant(uriSearch);
           const results = await uriSearch.query('test');
-          expect(results).toEqual([{
-            score: 0,
-            path: `http://somehost.fb.com${dirPath}/test`,
-            matchIndexes: correctIndexes([]),
-          }]);
+          expect(values(results)).toEqual([
+            `http://somehost.fb.com${dirPath}/test`,
+          ]);
         });
       });
 
@@ -153,14 +140,11 @@ function aFileSearchShould(typename) {
         waitsForPromise(async () => {
           invariant(uriSearch);
           const results = await uriSearch.query('deeper');
-          expect(results).toEqual([{
-            score: 0,
-            path: `http://somehost.fb.com${dirPath}/deeper/deeper`,
-            matchIndexes: correctIndexes([]),
-          }]);
+          expect(values(results)).toEqual([
+            `http://somehost.fb.com${dirPath}/deeper/deeper`,
+          ]);
         });
       });
-
     });
   });
 }

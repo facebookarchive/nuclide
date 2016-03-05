@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type PathSet from './PathSet';
+import type {PathSet} from './PathSet';
 import type {WatchmanSubscription} from '../../watchman-helpers';
 
 import {Disposable} from 'event-kit';

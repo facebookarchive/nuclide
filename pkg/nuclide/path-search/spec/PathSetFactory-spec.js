@@ -55,10 +55,7 @@ describe('PathSetFactory', () => {
     it('returns tracked and untracked files, but not ignored files.', () => {
       waitsForPromise(async () => {
         await setUpGitRepo();
-        const expectedOutput = {
-          [TRACKED_FILE_BASE]: true,
-          [UNTRACKED_FILE_BASE]: true,
-        };
+        const expectedOutput = [TRACKED_FILE_BASE, UNTRACKED_FILE_BASE];
         invariant(testDir);
         const fetchedFiles = await getFilesFromGit(testDir);
         expect(fetchedFiles).toEqual(expectedOutput);
@@ -84,10 +81,7 @@ describe('PathSetFactory', () => {
     it('returns tracked and untracked files, but not ignored files.', () => {
       waitsForPromise(async () => {
         await setUpHgRepo();
-        const expectedOutput = {
-          [TRACKED_FILE_BASE]: true,
-          [UNTRACKED_FILE_BASE]: true,
-        };
+        const expectedOutput = [TRACKED_FILE_BASE, UNTRACKED_FILE_BASE];
         invariant(testDir);
         const fetchedFiles = await getFilesFromHg(testDir);
         expect(fetchedFiles).toEqual(expectedOutput);

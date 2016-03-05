@@ -9,23 +9,17 @@
  * the root directory of this source tree.
  */
 
-/**
- * An Object where the keys are file paths (relative to a certain directory),
- * and the values are booleans. In practice, all the values are 'true'.
- */
-type FilePathsPseudoSet = {[key: string]: boolean};
-
 import {spawn} from 'child_process';
 import split from 'split';
 
-import PathSet from './PathSet';
 import {WatchmanClient} from '../../watchman-helpers';
 
 function getFilesFromCommand(
-    command: string,
-    args: Array<string>,
-    localDirectory: string,
-    transform?: (path: string) => string): Promise<FilePathsPseudoSet> {
+  command: string,
+  args: Array<string>,
+  localDirectory: string,
+  transform?: (path: string) => string,
+): Promise<Array<string>> {
   return new Promise((resolve, reject) => {
     // Use `spawn` here to process the, possibly huge, output of the file listing.
 
@@ -33,14 +27,14 @@ function getFilesFromCommand(
 
     proc.on('error', reject);
 
-    const filePaths = {};
+    const filePaths = [];
     proc.stdout.pipe(split()).on('data', filePath => {
       if (transform) {
         filePath = transform(filePath);
       }
 
       if (filePath !== '') {
-        filePaths[filePath] = true;
+        filePaths.push(filePath);
       }
     });
 
@@ -59,7 +53,7 @@ function getFilesFromCommand(
   });
 }
 
-function getTrackedHgFiles(localDirectory: string): Promise<FilePathsPseudoSet> {
+function getTrackedHgFiles(localDirectory: string): Promise<Array<string>> {
   return getFilesFromCommand(
     'hg',
     ['locate', '--fullpath', '--include', '.'],
@@ -72,7 +66,7 @@ function getTrackedHgFiles(localDirectory: string): Promise<FilePathsPseudoSet> 
  * 'Untracked' files are files that haven't been added to the repo, but haven't
  * been explicitly hg-ignored.
  */
-function getUntrackedHgFiles(localDirectory: string): Promise<FilePathsPseudoSet> {
+function getUntrackedHgFiles(localDirectory: string): Promise<Array<string>> {
   return getFilesFromCommand(
     'hg',
     // Calling 'hg status' with a path has two side-effects:
@@ -93,16 +87,16 @@ function getUntrackedHgFiles(localDirectory: string): Promise<FilePathsPseudoSet
  *   files within that directory, but not including ignored files. All values
  *   are 'true'. If localDirectory is not within an Hg repo, the Promise rejects.
  */
-function getFilesFromHg(localDirectory: string): Promise<FilePathsPseudoSet> {
+function getFilesFromHg(localDirectory: string): Promise<Array<string>> {
   return Promise.all([getTrackedHgFiles(localDirectory), getUntrackedHgFiles(localDirectory)]).then(
     returnedFiles => {
       const [trackedFiles, untrackedFiles] = returnedFiles;
-      return {...trackedFiles, ...untrackedFiles};
+      return trackedFiles.concat(untrackedFiles);
     }
   );
 }
 
-function getTrackedGitFiles(localDirectory: string): Promise<FilePathsPseudoSet> {
+function getTrackedGitFiles(localDirectory: string): Promise<Array<string>> {
   return getFilesFromCommand('git', ['ls-files'], localDirectory);
 }
 
@@ -110,7 +104,7 @@ function getTrackedGitFiles(localDirectory: string): Promise<FilePathsPseudoSet>
  * 'Untracked' files are files that haven't been added to the repo, but haven't
  * been explicitly git-ignored.
  */
-function getUntrackedGitFiles(localDirectory: string): Promise<FilePathsPseudoSet> {
+function getUntrackedGitFiles(localDirectory: string): Promise<Array<string>> {
   // '--others' means untracked files, and '--exclude-standard' excludes ignored files.
   return getFilesFromCommand('git', ['ls-files', '--exclude-standard', '--others'], localDirectory);
 }
@@ -122,17 +116,17 @@ function getUntrackedGitFiles(localDirectory: string): Promise<FilePathsPseudoSe
  *   files within that directory, but not including ignored files. All values
  *   are 'true'. If localDirectory is not within a Git repo, the Promise rejects.
  */
-function getFilesFromGit(localDirectory: string): Promise<FilePathsPseudoSet> {
+function getFilesFromGit(localDirectory: string): Promise<Array<string>> {
   return Promise.all(
       [getTrackedGitFiles(localDirectory), getUntrackedGitFiles(localDirectory)]).then(
     returnedFiles => {
       const [trackedFiles, untrackedFiles] = returnedFiles;
-      return {...trackedFiles, ...untrackedFiles};
+      return trackedFiles.concat(untrackedFiles);
     }
   );
 }
 
-function getAllFiles(localDirectory: string): Promise<FilePathsPseudoSet> {
+function getAllFiles(localDirectory: string): Promise<Array<string>> {
   return getFilesFromCommand(
       'find',
       ['.', '-type', 'f'],
@@ -141,21 +135,16 @@ function getAllFiles(localDirectory: string): Promise<FilePathsPseudoSet> {
       filePath => filePath.substring(2));
 }
 
-async function getFilesFromWatchman(localDirectory: string): Promise<FilePathsPseudoSet> {
+async function getFilesFromWatchman(localDirectory: string): Promise<Array<string>> {
   const watchmanClient = new WatchmanClient();
   try {
-    const files = await watchmanClient.listFiles(localDirectory);
-    const filePaths = {};
-    for (const file of files) {
-      filePaths[file] = true;
-    }
-    return filePaths;
+    return await watchmanClient.listFiles(localDirectory);
   } finally {
     watchmanClient.dispose();
   }
 }
 
-export function getPaths(localDirectory: string): Promise<FilePathsPseudoSet> {
+export function getPaths(localDirectory: string): Promise<Array<string>> {
   // Attempts to get a list of files relative to `localDirectory`, hopefully from
   // a fast source control index.
   // TODO (williamsc) once ``{HG|Git}Repository` is working in nuclide-server,
@@ -165,14 +154,6 @@ export function getPaths(localDirectory: string): Promise<FilePathsPseudoSet> {
       .catch(() => getFilesFromGit(localDirectory))
       .catch(() => getAllFiles(localDirectory))
       .catch(() => { throw new Error(`Failed to populate FileSearch for ${localDirectory}`); });
-}
-
-/**
- * Creates a `PathSet` with the contents of the specified directory.
- */
-export async function createPathSet(localDirectory: string): Promise<PathSet> {
-  const paths = await getPaths(localDirectory);
-  return new PathSet({paths});
 }
 
 export const __test__ = {

@@ -13,10 +13,13 @@ import urlJoin from 'url-join';
 
 import {parse} from '../../remote-uri';
 import {fsPromise} from '../../commons';
+import {getLogger} from '../../logging';
 
-import {createPathSet} from './PathSetFactory';
-import PathSearch from './PathSearch';
+import {PathSet} from './PathSet';
+import {getPaths} from './PathSetFactory';
 import PathSetUpdater from './PathSetUpdater';
+
+const logger = getLogger();
 
 export type FileSearchResult = {
   score: number;
@@ -24,62 +27,33 @@ export type FileSearchResult = {
   matchIndexes: Array<number>;
 };
 
-/**
- * Utility to search the set of files under `localDirectory`. It attempts to use
- * source control to populate the search space quickly, as well as to exclude
- * source control metadata files from search.
- *
- * @param localDirectory the directory whose files should be searched
- * @param fullUri is the original path provided to `fileSearchForDirectory`,
- *     which is prepended to all results.
- * @param pathSearch delegate to use for the actual searching.
- */
 class FileSearch {
-  _localDirectory: string;
   _originalUri: string;
-  _pathSearch: PathSearch;
+  _pathSet: PathSet;
 
-  constructor(localDirectory: string, fullUri: string, pathSearch: PathSearch) {
-    this._localDirectory = localDirectory;
+  constructor(fullUri: string, pathSet: PathSet) {
     this._originalUri = fullUri;
-    this._pathSearch = pathSearch;
+    this._pathSet = pathSet;
   }
 
   async query(query: string): Promise<Array<FileSearchResult>> {
-    const resultSet = await this._pathSearch.doQuery(query);
-    // TODO: Cache the result of this call to map().
-    const results: Array<FileSearchResult> = resultSet.results.map(result => {
-      const mappedResult = {
+    const results = this._pathSet.match(query).map(result => {
+      let {matchIndexes} = result;
+      if (matchIndexes != null) {
+        matchIndexes = matchIndexes.map(idx => idx + this._originalUri.length + 1);
+      }
+      return {
         score: result.score,
         path: urlJoin(this._originalUri, '/', result.value),
-        matchIndexes: [],
+        matchIndexes: matchIndexes || [],
       };
-      if (result.matchIndexes) {
-        mappedResult.matchIndexes =
-          result.matchIndexes.map(index => index + this._originalUri.length + 1);
-      }
-      return mappedResult;
     });
     return results;
-  }
-
-  getLocalDirectory(): string {
-    return this._localDirectory;
-  }
-
-  getFullBaseUri(): string {
-    return this._originalUri;
   }
 }
 
 const fileSearchForDirectoryUri = {};
 
-/**
- * FileSearch is an object with a query() method. Currently, this is visible only for testing.
- * @param directoryUri The directory to get the FileSearch for.
- * @param pathSetUpdater Exposed for testing purposes. The pathSetUpdater to use
- *   in this method--likely a mock.
- */
 export async function fileSearchForDirectory(
   directoryUri: string,
   pathSetUpdater: ?PathSetUpdater,
@@ -90,16 +64,21 @@ export async function fileSearchForDirectory(
   }
 
   const realpath = await fsPromise.realpath(parse(directoryUri).path);
-  const pathSet = await createPathSet(realpath);
+  const paths = await getPaths(realpath);
+  const pathSet = new PathSet(paths);
 
   const thisPathSetUpdater = pathSetUpdater || getPathSetUpdater();
-  await thisPathSetUpdater.startUpdatingPathSet(pathSet, realpath);
+  try {
+    await thisPathSetUpdater.startUpdatingPathSet(pathSet, realpath);
+  } catch (e) {
+    logger.warn(`Could not update path sets for ${realpath}. Searches may be stale`, e);
+    // TODO(hansonw): Fall back to manual refresh or node watches
+  }
 
   // TODO: Stop updating the pathSet when the fileSearch is torn down. But
   // currently the fileSearch is never torn down.
 
-  const pathSearch = new PathSearch(pathSet);
-  fileSearch = new FileSearch(realpath, directoryUri, pathSearch);
+  fileSearch = new FileSearch(directoryUri, pathSet);
   fileSearchForDirectoryUri[directoryUri] = fileSearch;
   return fileSearch;
 }

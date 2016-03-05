@@ -14,15 +14,12 @@ import path from 'path';
 
 import {WatchmanSubscription} from '../../watchman-helpers';
 
-import PathSet from '../lib/PathSet';
+import {PathSet} from '../lib/PathSet';
 import PathSetUpdater from '../lib/PathSetUpdater';
 
 describe('PathSetUpdater', () => {
   const MOCK_WATCHMAN_PROJECT_ROOT = '/Mock/Root';
-  const INITIAL_PATHS = {
-    'a': true,
-    'b': true,
-  };
+  const INITIAL_PATHS = ['a', 'b'];
   const TEST_DIRECTORY = '/Mock/Root/To/Test/Dir';
   const RELATIVE_PATH = path.relative(MOCK_WATCHMAN_PROJECT_ROOT, TEST_DIRECTORY);
   let pathSet;
@@ -56,7 +53,7 @@ describe('PathSetUpdater', () => {
 
 
   beforeEach(() => {
-    pathSet = new PathSet({paths: INITIAL_PATHS});
+    pathSet = new PathSet(INITIAL_PATHS);
     pathSetUpdater = new PathSetUpdater();
   });
 
@@ -95,11 +92,7 @@ describe('PathSetUpdater', () => {
           },
         ];
         emitMockWatchmanUpdate(mockChanges);
-        const newValues = [];
-        invariant(pathSet);
-        await pathSet.submit(aPath => {
-          newValues.push(aPath);
-        });
+        const newValues = pathSet.match('').map(x => x.value);
         expect(newValues.sort()).toEqual(['b', 'c']);
 
         // Verify that disposing the Disposable stops updates to the pathSet.
@@ -120,11 +113,7 @@ describe('PathSetUpdater', () => {
           },
         ];
         emitMockWatchmanUpdate(unnoticedChanges);
-        const unchangedValues = [];
-        invariant(pathSet);
-        await pathSet.submit(aPath => {
-          unchangedValues.push(aPath);
-        });
+        const unchangedValues = pathSet.match('').map(x => x.value);
         expect(unchangedValues.sort()).toEqual(newValues);
       });
     });
