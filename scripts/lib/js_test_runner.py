@@ -114,8 +114,14 @@ def run_js_test(test_runner, pkg_path, name):
     proc.wait()
 
     if proc.returncode:
-        logging.info('TEST FAILED: %s\nstdout:\n%s', name, '\n'.join(stdout))
-        raise Exception('TEST FAILED: %s test %s' % (test_runner, name))
+        logging.info(
+            'TEST FAILED: %s (exit code: %d)\nstdout:\n%s',
+            name,
+            proc.returncode,
+            '\n'.join(stdout),
+        )
+        raise Exception('TEST FAILED: %s test %s (exit code: %d)' %
+                        (test_runner, name, proc.returncode))
     else:
         logging.info('TEST PASSED: %s', name)
 
