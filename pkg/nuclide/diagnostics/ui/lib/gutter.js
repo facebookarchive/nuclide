@@ -16,6 +16,7 @@ import type {
 } from '../../base';
 
 import type {NuclideUri} from '../../../remote-uri';
+import {goToLocation as atomGoToLocation} from '../../../atom-helpers';
 
 import invariant from 'assert';
 
@@ -182,11 +183,8 @@ function createGutterItem(
   const goToLocation = (path: string, line: number) => {
     // Before we jump to the location, we want to close the popup.
     dispose();
-    const options = {
-      searchAllPanes: true,
-      initialLine: line,
-    };
-    atom.workspace.open(path, options);
+    const column = 0;
+    atomGoToLocation(path, line, column);
   };
   item.addEventListener('mouseenter', event => {
     // If there was somehow another popup for this gutter item, dispose it. This can happen if the

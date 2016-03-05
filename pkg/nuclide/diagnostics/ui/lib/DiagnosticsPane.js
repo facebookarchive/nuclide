@@ -16,6 +16,7 @@ const {React} = require('react-for-atom');
 const {PropTypes} = React;
 
 import {track} from '../../../analytics';
+import {goToLocation} from '../../../atom-helpers';
 
 const {fileColumnCellDataGetter, getProjectRelativePathOfDiagnostic} = require('./paneUtils');
 
@@ -117,13 +118,11 @@ function onRowClick(
   track('diagnostics-panel-goto-location');
 
   const uri = rowData.filePath;
-  const options = {
-    searchAllPanes: true,
-    // If initialLine is N, Atom will navigate to line N+1.
-    // Flow sometimes reports a row of -1, so this ensures the line is at least one.
-    initialLine: Math.max(rowData.range ? rowData.range.start.row : 0, 0),
-  };
-  atom.workspace.open(uri, options);
+  // If initialLine is N, Atom will navigate to line N+1.
+  // Flow sometimes reports a row of -1, so this ensures the line is at least one.
+  const line = Math.max(rowData.range ? rowData.range.start.row : 0, 0);
+  const column = 0;
+  goToLocation(uri, line, column);
 }
 
 class DiagnosticsPane extends React.Component {

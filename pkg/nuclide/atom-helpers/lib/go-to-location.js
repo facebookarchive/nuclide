@@ -9,15 +9,23 @@
  * the root directory of this source tree.
  */
 
-function goToLocation(
+// Opens the given file at the line/column.
+// By default will center the opened text editor.
+async function goToLocation(
     file: string,
     line: number,
-    column: number): Promise {
-  return atom.workspace.open(file, {
+    column: number,
+    center: boolean = true): Promise<atom$TextEditor> {
+  const editor = await atom.workspace.open(file, {
     initialLine: line,
     initialColumn: column,
     searchAllPanes: true,
   });
+
+  if (center) {
+    editor.scrollToBufferPosition([line, column], {center: true});
+  }
+  return editor;
 }
 
 module.exports = goToLocation;
