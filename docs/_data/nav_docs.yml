@@ -28,6 +28,7 @@
   - id: platform-ios
   - id: platform-android
   - id: platform-react-native
+  - id: platform-web
 - title: Advanced Topics
   items:
   - id: advanced-building-from-source
