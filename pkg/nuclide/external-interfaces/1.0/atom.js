@@ -255,6 +255,16 @@ declare class atom$PackageManager {
   unloadPackages(): void;
 }
 
+declare class atom$StyleManager {
+  // Event Subscription
+
+  // Reading Style Elements
+  getStyleElements(): Array<HTMLStyleElement>;
+
+  // Paths
+  getUserStyleSheetPath(): string;
+}
+
 type atom$PaneSplitParams = {
   copyActiveItem?: boolean;
   items?: Array<Object>;
@@ -421,6 +431,7 @@ declare class atom$ThemeManager {
   getEnabledThemeNames(): Array<string>;
 
   // Private
+  activateThemes(): Promise;
   requireStylesheet(stylesheetPath: string): IDisposable;
 }
 
@@ -1235,6 +1246,7 @@ type AtomGlobal = {
   menu: atom$MenuManager;
   notifications: atom$NotificationManager;
   packages: atom$PackageManager;
+  styles: atom$StyleManager;
   themes: atom$ThemeManager;
   tooltips: atom$TooltipManager;
   views: atom$ViewRegistry;
