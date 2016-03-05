@@ -14,7 +14,6 @@ import {
   copyMercurialFixture,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
-  dispatchKeyboardEvent,
   setLocalProject,
 } from '../pkg/nuclide/integration-test-helpers';
 import path from 'path';
@@ -49,36 +48,29 @@ describe('Diff view integration test', () => {
   it('tests diff files count', () => {
     const textEditor = atom.workspace.getActiveTextEditor();
     invariant(textEditor, 'no active text editor!');
-    let uncommitedFileChangeCount: ?string = (null : any);
 
-    waitsForPromise({timeout: 30000}, async () => {
-      // Initially we have no changed files so the diff view tool-bar counter should be empty.
-      uncommitedFileChangeCount = document.querySelector('.diff-view-count').innerText;
-      expect(uncommitedFileChangeCount).toEqual('');
+    function getDiffCountElement() {
+      return document.querySelector('.diff-view-count');
+    }
 
-      // Change the active file and see that the diff view counter is at 1.
-      const res1 = textEditor.insertText('c');
-      expect(res1).not.toEqual(false);
-      const res2 = textEditor.insertText('g');
-      expect(res2).not.toEqual(false);
-    });
-
-    waitsFor('Text to be inserted', 10000, () => {
-      return textEditor.getText().startsWith('cg');
+    waitsFor('diff-count element to register in the toolbar', () => {
+      return getDiffCountElement() != null;
     });
 
     runs(() => {
-      // Save the change.
-      dispatchKeyboardEvent('s', document.activeElement, {cmd: true});
+      // Initially we have no changed files so the diff view tool-bar counter should be empty.
+      expect(getDiffCountElement().innerText).toEqual('');
+
+      textEditor.setText('cg');
+      textEditor.save();
     });
 
     waitsFor('uncommited file changes tool-bar counter to update', 10000, () => {
-      uncommitedFileChangeCount = document.querySelector('.diff-view-count').innerText;
-      return uncommitedFileChangeCount;
+      return getDiffCountElement().innerText;
     });
 
     runs(() => {
-      expect(uncommitedFileChangeCount).toEqual('1');
+      expect(getDiffCountElement().innerText).toEqual('1');
     });
   });
 
