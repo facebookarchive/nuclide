@@ -100,6 +100,14 @@ export default class DiffViewEditor {
     return this._editor.getLineHeightInPixels();
   }
 
+  scrollToScreenLine(screenLine: number): void {
+    this._editor.scrollToScreenPosition(
+      // Markers are ordered in ascending order by line number.
+      [screenLine, 0],
+      {center: true},
+    );
+  }
+
   setFileContents(filePath: string, contents: string, clearHistory: boolean): void {
     // The text is set via diffs to keep the cursor position.
     const buffer = this._editor.getBuffer();

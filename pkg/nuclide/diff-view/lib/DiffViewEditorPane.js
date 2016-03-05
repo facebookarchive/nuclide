@@ -179,6 +179,11 @@ export default class DiffViewEditorPane extends React.Component {
     }
   }
 
+  scrollToScreenLine(screenLine: number): void {
+    invariant(this._diffViewEditor, 'diffViewEditor has not been setup yet.');
+    this._diffViewEditor.scrollToScreenLine(screenLine);
+  }
+
   _setTextContent(filePath: string, text: string, clearHistory: boolean): void {
     invariant(this._diffViewEditor);
     this._diffViewEditor.setFileContents(filePath, text, clearHistory);

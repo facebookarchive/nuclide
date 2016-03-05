@@ -28,6 +28,7 @@ import DiffViewToolbar from './DiffViewToolbar';
 import DiffNavigationBar from './DiffNavigationBar';
 import DiffCommitView from './DiffCommitView';
 import DiffPublishView from './DiffPublishView';
+import {computeDiff, getOffsetLineNumber} from './diff-utils';
 import {createPaneContainer} from '../../atom-helpers';
 import {bufferForUri} from '../../atom-helpers';
 import {DiffMode} from './constants';
@@ -184,6 +185,34 @@ class DiffViewComponent extends React.Component {
     this._subscriptions.add(this._syncScroll);
   }
 
+  _scrollToFirstHighlightedLine(): void {
+    // Schedule scroll to first line after all lines have been rendered.
+    const {oldEditorState, newEditorState} = this.state;
+    const removedLines = oldEditorState.highlightedLines.removed;
+    const addedLines = newEditorState.highlightedLines.added;
+    if (addedLines.length === 0 && removedLines.length === 0) {
+      return;
+    }
+    const firstRemovedLine = getOffsetLineNumber(
+      removedLines[0] || 0,
+      oldEditorState.offsets,
+    );
+    const firstAddedLine = getOffsetLineNumber(
+      addedLines[0] || 0,
+      newEditorState.offsets,
+    );
+    setImmediate(() => {
+      if (
+        addedLines.length === 0 ||
+        (removedLines.length > 0 && firstRemovedLine < firstAddedLine)
+      ) {
+        this._oldEditorComponent.scrollToScreenLine(firstRemovedLine);
+      } else {
+        this._newEditorComponent.scrollToScreenLine(firstAddedLine);
+      }
+    });
+  }
+
   _onChangeMode(mode: DiffModeType): void {
     this.props.diffModel.setViewMode(mode);
   }
@@ -218,8 +247,11 @@ class DiffViewComponent extends React.Component {
     }
   }
 
-  componentDidUpdate(): void {
+  componentDidUpdate(prevProps: Props, prevState: State): void {
     this._renderDiffView();
+    if (this.state.filePath !== prevState.filePath) {
+      this._scrollToFirstHighlightedLine();
+    }
   }
 
   _renderCommitView(): void {
@@ -438,7 +470,6 @@ class DiffViewComponent extends React.Component {
       toRevisionTitle,
     } = fileState;
 
-    const {computeDiff} = require('./diff-utils');
     const {addedLines, removedLines, oldLineOffsets, newLineOffsets} =
       computeDiff(oldContents, newContents);
 
