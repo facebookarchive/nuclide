@@ -47,7 +47,6 @@ export default class Child {
     output$
       .filter(message => message.replyId === this._execScriptMessageId)
       .first()
-      // $FlowIgnore: Not sure how to annotate combineLatest
       .combineLatest(process$)
       .map(([, process]) => process.pid)
       .subscribe(pid => {
@@ -63,7 +62,6 @@ export default class Child {
     const bufferedMessage$ = this._input$.takeUntil(process$).buffer(process$).flatMap(x => x);
     const remainingMessages = this._input$.skipUntil(process$);
     bufferedMessage$.concat(remainingMessages)
-      // $FlowIgnore: Not sure how to annotate combineLatest
       .combineLatest(process$)
       .subscribe(([message, process]) => {
         process.send(message);

@@ -19,6 +19,25 @@ declare module 'rx' {
   declare class Observable<T> {
     static catch(...sources: Observable<T>[]): Observable<T>;
 
+    // This is actually variadic, but we only support one or two other observables.
+    static combineLatest<T, U>(t: Observable<T>, u: Observable<U>): Observable<[T, U]>;
+    static combineLatest<T, U, V>(
+      t: Observable<T>,
+      u: Observable<U>,
+      resultSelector: (t: T, u: U) => V,
+    ): Observable<V>;
+    static combineLatest<T, U, V>(
+      t: Observable<T>,
+      u: Observable<U>,
+      v: Observable<V>,
+    ): Observable<[T, U, V]>;
+    static combineLatest<T, U, V, W>(
+      t: Observable<T>,
+      u: Observable<U>,
+      v: Observable<V>,
+      resultSelector: (t: T, u: U, v: V) => W,
+    ): Observable<W>;
+
     static concat(...sources: Observable<T>[]): Observable<T>;
 
     static create(
@@ -67,6 +86,19 @@ declare module 'rx' {
     doOnNext(f: (value: T) => mixed): Observable<T>;
 
     catch(secondOrHandler: Observable<T> | (error: any) => Observable<T>): Observable<T>;
+
+    // This is actually variadic, but we only support one or two other observables.
+    combineLatest<U>(u: Observable<U>): Observable<[T, U]>;
+    combineLatest<U, V>(u: Observable<U>, v: Observable<V>): Observable<[T, U, V]>;
+    combineLatest<U, V>(
+      u: Observable<U>,
+      resultSelector: (t: T, u: U) => V,
+    ): Observable<V>;
+    combineLatest<U, V, W>(
+      u: Observable<U>,
+      v: Observable<V>,
+      resultSelector: (t: T, u: U, v: V) => W,
+    ): Observable<W>;
 
     concat(...sources: Observable<T>[]): Observable<T>;
 

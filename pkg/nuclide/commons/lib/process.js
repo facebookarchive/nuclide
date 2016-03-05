@@ -257,7 +257,6 @@ class ProcessResource {
     this.disposed$ = new ReplaySubject(1);
     this.process$ = Observable.fromPromise(Promise.resolve(promiseOrProcess));
 
-    // $FlowIssue: There's currently no good way to describe this function with Flow
     Observable.combineLatest(this.process$, this.disposed$)
       .takeUntil(
         this.process$.flatMap(process => Observable.fromEvent(process, 'exit')),

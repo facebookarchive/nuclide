@@ -67,7 +67,6 @@ export class DebuggingActivation {
 
       // Update the debugger whenever we get a new pid. (This happens whenever the user reloads the
       // RN app.)
-      // $FlowIgnore: Not sure how to annotate combineLatest
       Rx.Observable.combineLatest(
         service$,
         observableFromSubscribeFunction(client.onDidEvalApplicationScript.bind(client)),
