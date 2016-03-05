@@ -12,6 +12,7 @@
 import type {NuclideUri} from '../../remote-uri';
 
 import path from 'path';
+import fs from 'fs';
 import {debounce} from '../../commons';
 import DelayedEventManager from './DelayedEventManager';
 import {WatchmanClient} from '../../watchman-helpers';
@@ -39,9 +40,6 @@ const logger = getLogger();
 const DEFAULT_FORK_BASE_NAME = 'default';
 
 const WATCHMAN_SUBSCRIPTION_NAME_PRIMARY = 'hg-repository-watchman-subscription-primary';
-const WATCHMAN_SUBSCRIPTION_NAME_HGIGNORE = 'hg-repository-watchman-subscription-hgignore';
-const WATCHMAN_SUBSCRIPTION_NAME_HGLOCK = 'hg-repository-watchman-subscription-hglock';
-const WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE = 'hg-repository-watchman-subscription-hgdirstate';
 const WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK = 'hg-repository-watchman-subscription-hgbookmark';
 const WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK = 'arc-build-lock';
 const EVENT_DELAY_IN_MS = 1000;
@@ -49,7 +47,7 @@ const EVENT_DELAY_IN_MS = 1000;
 // If Watchman reports that many files have changed, it's not really useful to report this.
 // This is typically caused by a large rebase or a Watchman re-crawl.
 // We'll just report that the repository state changed, which should trigger a full client refresh.
-const FILES_CHANGED_LIMIT = 10000;
+const FILES_CHANGED_LIMIT = 1000;
 
 /**
  * These are status codes used by Mercurial's output.
@@ -152,6 +150,7 @@ export class HgService {
   _lockFileHeld: boolean;
   _shouldUseDirstate: boolean;
   _watchmanClient: ?WatchmanClient;
+  _hgDirWatcher: ?fs.FSWatcher;
   _allowEventsAgain: ?() => ?void;
 
   _workingDirectory: string;
@@ -179,7 +178,10 @@ export class HgService {
     this._hgIgnoreFileDidChangeObserver.onCompleted();
     this._hgRepoStateDidChangeObserver.onCompleted();
     this._hgBookmarkDidChangeObserver.onCompleted();
-
+    if (this._hgDirWatcher != null) {
+      this._hgDirWatcher.close();
+      this._hgDirWatcher = null;
+    }
     await this._cleanUpWatchman();
     this._delayedEventManager.dispose();
     if (this._dirstateDelayedEventManager) {
@@ -268,41 +270,31 @@ export class HgService {
     );
     logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_PRIMARY} established.`);
 
-    // Subscribe to changes to .hgignore files.
-    const hgIgnoreSubscription = await watchmanClient.watchDirectoryRecursive(
-      workingDirectory,
-      WATCHMAN_SUBSCRIPTION_NAME_HGIGNORE,
-      {
-        fields: ['name'],
-        expression: ['name', '.hgignore', 'wholename'],
-      },
-    );
-    logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGIGNORE} established.`);
-
-    // Subscribe to changes to the source control lock file.
-    const hgLockSubscription = await watchmanClient.watchDirectoryRecursive(
-      workingDirectory,
-      WATCHMAN_SUBSCRIPTION_NAME_HGLOCK,
-      {
-        fields: ['name', 'exists'],
-        expression: ['name', '.hg/wlock', 'wholename'],
-        defer_vcs: false,
-      },
-    );
-    logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGLOCK} established.`);
-
-    // Subscribe to changes to the source control directory state file.
-    const hgDirSrateSubscription = await watchmanClient.watchDirectoryRecursive(
-      workingDirectory,
-      WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE,
-      {
-        fields: ['name', 'exists'],
-        expression: ['name', '.hg/dirstate', 'wholename'],
-        defer_vcs: false,
-      },
-    );
-
-    logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE} established.`);
+    // TODO(most): Replace the usage of node watchers when watchman is ready
+    //  with the advanced option: "defer": "hg.update"
+    // Watchman currently (v4.5) doesn't report `.hg` file updates until it reaches
+    // a stable filesystem (not respecting `defer_vcs` option) and
+    // that doesn't happen with big mercurial updates (the primary use of state file watchers).
+    // Hence, we here use node's filesystem watchers instead.
+    const lockFilePath = path.join(workingDirectory, '.hg', 'wslock');
+    try {
+      this._hgDirWatcher = fs.watch(path.join(workingDirectory, '.hg'), (event, fileName) => {
+        if (fileName === 'wslock') {
+          // The synchronous exist check is used to avoid the race condition of
+          // fast updates, when the watcher is called twice as the file is created/removed.
+          // That may lead to a sequence calls: lockFileChange(false) then lockFileChange(true),
+          // stopping future events from being sent to the client.
+          lockFileChange(fs.existsSync(lockFilePath));
+        } else if (fileName === 'dirstate') {
+          dirStateChange();
+        } else if (fileName === '.hgignore') {
+          hgIgnoreChange();
+        }
+      });
+      logger.debug(`Node watcher created for lock/dirstate/bookmarks files.`);
+    } catch (error) {
+      getLogger().error(`Error when creating node watcher for hg state files`, error);
+    }
 
     // Subscribe to changes in the current Hg bookmark.
     const hgBookmarkSubscription = await watchmanClient.watchDirectoryRecursive(
@@ -364,7 +356,7 @@ export class HgService {
         EVENT_DELAY_IN_MS,
       );
     });
-    hgIgnoreSubscription.on('change', files => {
+    const hgIgnoreChange = () => {
       // There are three events that may outdate the status of ignored files.
       // 1. The .hgignore file changes. In this case, we want to run a fresh 'hg status -i'.
       // 2. A file is added that meets the criteria under .hgignore. In this case, we can
@@ -379,11 +371,10 @@ export class HgService {
         this._hgIgnoreFileDidChange.bind(this),
         EVENT_DELAY_IN_MS,
       );
-    });
+    };
 
-    const lockFileChange = files => {
-      const [lockfile] = files;
-      if (lockfile.exists) {
+    const lockFileChange = exists => {
+      if (exists) {
         // TODO: Implement a timer to unset this, in case watchman update
         // fails to notify of the removal of the lock. I haven't seen this
         // in practice but it's better to be safe.
@@ -400,14 +391,13 @@ export class HgService {
         // Block the effects from any dirstate change, which is a fuzzier signal.
         this._shouldUseDirstate = false;
       }
-      this._hgLockDidChange(lockfile.exists);
+      this._hgLockDidChange(exists);
     };
-    hgLockSubscription.on('change', lockFileChange);
     if (arcBuildSubscription != null) {
       arcBuildSubscription.on('change', lockFileChange);
     }
 
-    hgDirSrateSubscription.on('change', files => {
+    const dirStateChange = () => {
       // We don't know whether the change to the dirstate is at the middle or end
       // of a Mercurial action. But we would rather have false positives (ignore
       // some user-generated events that occur near a Mercurial event) than false
@@ -438,15 +428,15 @@ export class HgService {
         this._allowEventsAgain = allowEventsAgain;
       }
       allowEventsAgain();
-    });
+    };
 
     hgBookmarkSubscription.on('change', this._hgBookmarkDidChange.bind(this));
   }
 
   async _cleanUpWatchman(): Promise<void> {
-    const watchmanClient = this._watchmanClient;
-    if (watchmanClient != null) {
-      await watchmanClient.dispose();
+    if (this._watchmanClient != null) {
+      await this._watchmanClient.dispose();
+      this._watchmanClient = null;
     }
   }
 
