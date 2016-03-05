@@ -45,12 +45,12 @@ class FileResultComponent {
     dirName: string
   ): ReactElement {
     // Trim the `dirName` off the `filePath` since that's shown by the group
-    const filePath = item.path.startsWith(dirName)
-      ? '.' + item.path.slice(dirName.length)
-      : item.path;
-    const matchIndexes = item.matchIndexes && item.path.startsWith(dirName)
-      ? item.matchIndexes.map(i => i - (dirName.length - 1))
-      : [];
+    let filePath = item.path;
+    let matchIndexes = item.matchIndexes || [];
+    if (filePath.startsWith(dirName)) {
+      filePath = '.' + filePath.slice(dirName.length);
+      matchIndexes = matchIndexes.map(i => i - (dirName.length - 1));
+    }
 
     let streakOngoing = false;
     let start = 0;

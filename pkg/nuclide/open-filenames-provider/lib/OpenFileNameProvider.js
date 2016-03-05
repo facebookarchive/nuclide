@@ -15,16 +15,21 @@ import type {
   ProviderType,
 } from '../../quick-open-interfaces';
 
-import {regexp} from '../../commons';
-const {safeRegExpFromString} = regexp;
+import {array} from '../../commons';
+import {Matcher} from '../../fuzzy-native';
 
 // Returns paths of currently opened editor tabs.
 function getOpenTabsMatching(query: string): Array<FileResult> {
-  const queryRegExp = safeRegExpFromString(query);
-  return atom.workspace.getTextEditors()
-    .map(editor => editor.getPath())
-    .filter(path => path != null && (!query.length || queryRegExp.test(path)))
-    .map(file => ({path: (file == null) ? '' : file, matchIndexes: []}));
+  const matcher = new Matcher(array.compact(
+    atom.workspace.getTextEditors()
+      .map(editor => editor.getPath())
+  ));
+  return matcher.match(query, {recordMatchIndexes: true})
+    .map(result => ({
+      path: result.value,
+      score: result.score,
+      matchIndexes: result.matchIndexes,
+    }));
 }
 
 const OpenFileListProvider: Provider = {
