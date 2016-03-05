@@ -7,19 +7,23 @@ permalink: /docs/platforms/react-native/
 
 Nuclide has built-in support for the [React Native](https://facebook.github.io/react-native/)
 framework. React Native provides a set of components and extensions that allows you to easily write
-native iOS and Android applications using the [Flow and Javascript](/docs/languages/flow)
-programming languages and the [React](http://facebook.github.io/react/) UI library.
+native iOS and Android applications using the [Flow](/docs/languages/flow) and
+[JavaScript](/docs/languages/other#javascript) programming languages and the
+[React](http://facebook.github.io/react/) UI library.
 
 * TOC
 {:toc}
 
 ## Features
 
-Since React Native apps are primarily written in Flow or Javascript, you get all the features
-provided by [those languages](/docs/languages/flow) within Nuclide, including autocomplete,
-inline diagnostics, etc.
+If your React Native apps are primarily written in [Flow](/docs/languages/flow), you get all of its
+[features](/docs/languages/flow/#features) within Nuclide, including
+[autocomplete](/docs/languages/flow/#autocomplete),
+[code diagnostics](/docs/languages/flow/#features__code-diagnostics), etc.
 
 ![](/static/images/docs/platform-react-native-feature-autocomplete.png)
+
+> [JavaScript](/docs/languages/other/#javascript) works well with Nuclide as well.
 
 > You can also write [native iOS (Objective-C)](/docs/platforms/ios) with React Native, and get
 > features such as automatic bracket completion from Nuclide when doing so. Native Android code

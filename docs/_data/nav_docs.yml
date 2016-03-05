@@ -22,7 +22,7 @@
   - id: language-flow
   - id: language-objective-c
   - id: language-cpp
-  - id: language-ocaml
+  - id: language-other
 - title: Platforms
   items:
   - id: platform-ios
