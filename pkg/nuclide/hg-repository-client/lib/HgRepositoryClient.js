@@ -27,9 +27,11 @@ import {
   StatusCodeNumber,
   HgStatusOption,
 } from '../../hg-repository-base/lib/hg-constants';
-import {debounce} from '../../commons';
+import {promises} from '../../commons';
 import {ensureTrailingSeparator} from '../../commons/lib/paths';
 import {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} from './utils';
+
+const {serializeAsyncCall} = promises;
 
 type HgRepositoryOptions = {
   /** The origin URL of this repository. */
@@ -53,7 +55,6 @@ export type HgStatusCommandOptions = {
 };
 
 const EDITOR_SUBSCRIPTION_NAME = 'hg-repository-editor-subscription';
-export const DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL = 500;
 export const MAX_INDIVIDUAL_CHANGED_PATHS = 1;
 
 function filterForOnlyNotIgnored(code: StatusCodeIdValue): boolean {
@@ -102,11 +103,8 @@ export default class HgRepositoryClient {
   _hgDiffCacheFilesUpdating: Set<NuclideUri>;
   _hgDiffCacheFilesToClear: Set<NuclideUri>;
 
-  // A debounced function that eventually calls _doRefreshStatusesOfAllFilesInCache.
-  _debouncedRefreshAll: ?() => mixed;
-  _isRefreshingAllFilesInCache: boolean;
-
   _currentBookmark: ?string;
+  _serializedRefreshStatusesCache: () => Promise<void>;
 
   constructor(repoPath: string, hgService: HgService, options: HgRepositoryOptions) {
     this._path = repoPath;
@@ -124,6 +122,11 @@ export default class HgRepositoryClient {
     this._hgDiffCache = {};
     this._hgDiffCacheFilesUpdating = new Set();
     this._hgDiffCacheFilesToClear = new Set();
+
+    this._serializedRefreshStatusesCache = serializeAsyncCall(
+      this._refreshStatusesOfAllFilesInCache.bind(this),
+    );
+
     this._disposables[EDITOR_SUBSCRIPTION_NAME] = atom.workspace.observeTextEditors(editor => {
       const filePath = editor.getPath();
       if (!filePath) {
@@ -159,16 +162,27 @@ export default class HgRepositoryClient {
       }));
     });
 
+    // Regardless of how frequently the service sends file change updates,
+    // Only one batched status update can be running at any point of time.
+    const toUpdateChangedPaths = [];
+    const serializedUpdateChangedPaths = serializeAsyncCall(() => {
+      // Send a batched update and clear the pending changes.
+      return this._updateChangedPaths(toUpdateChangedPaths.splice(0));
+    });
+    const onFilesChanges = (changedPaths: Array<NuclideUri>) => {
+      toUpdateChangedPaths.push(...changedPaths);
+      // Will trigger an update immediately if no other async call is active.
+      // Otherwise, will schedule an async call when it's done.
+      serializedUpdateChangedPaths();
+    };
     // Get updates that tell the HgRepositoryClient when to clear its caches.
-    this._service.observeFilesDidChange().subscribe(this._filesDidChange.bind(this));
+    this._service.observeFilesDidChange().subscribe(onFilesChanges);
     this._service.observeHgIgnoreFileDidChange()
-      .subscribe(this._refreshStatusesOfAllFilesInCache.bind(this));
+      .subscribe(this._serializedRefreshStatusesCache);
     this._service.observeHgRepoStateDidChange()
-      .subscribe(this._refreshStatusesOfAllFilesInCache.bind(this));
+      .subscribe(this._serializedRefreshStatusesCache);
     this._service.observeHgBookmarkDidChange()
       .subscribe(this.fetchCurrentBookmark.bind(this));
-
-    this._isRefreshingAllFilesInCache = false;
   }
 
   destroy() {
@@ -785,7 +799,8 @@ export default class HgRepositoryClient {
    * This is the async version of what checkoutReference() is meant to do.
    */
   async checkoutRevision(reference: string, create: boolean): Promise<boolean> {
-    return await this._service.checkout(reference, create);
+    await this._service.checkout(reference, create);
+    return true;
   }
 
 
@@ -799,66 +814,44 @@ export default class HgRepositoryClient {
    * Updates the cache in response to any number of (non-.hgignore) files changing.
    * @param update The changed file paths.
    */
-  _filesDidChange(changedPaths: Array<NuclideUri>): void {
+  async _updateChangedPaths(changedPaths: Array<NuclideUri>): Promise<void> {
     const relevantChangedPaths = changedPaths.filter(this._isPathRelevant.bind(this));
     if (relevantChangedPaths.length === 0) {
       return;
     } else if (relevantChangedPaths.length <= MAX_INDIVIDUAL_CHANGED_PATHS) {
       // Update the statuses individually.
-      this._updateStatuses(relevantChangedPaths, {hgStatusOption: HgStatusOption.ALL_STATUSES});
-      this._updateDiffInfo(relevantChangedPaths.filter(filePath => this._hgDiffCache[filePath]));
+      await this._updateStatuses(
+        relevantChangedPaths,
+        {hgStatusOption: HgStatusOption.ALL_STATUSES},
+      );
+      await this._updateDiffInfo(
+        relevantChangedPaths.filter(filePath => this._hgDiffCache[filePath]),
+      );
     } else {
       // This is a heuristic to improve performance. Many files being changed may
       // be a sign that we are picking up changes that were created in an automated
       // way -- so in addition, there may be many batches of changes in succession.
-      // _refreshStatusesOfAllFilesInCache debounces calls, so it is safe to call
-      // it multiple times in succession.
-      this._refreshStatusesOfAllFilesInCache();
+      // The refresh is serialized, so it is safe to call it multiple times in succession.
+      await this._serializedRefreshStatusesCache();
     }
   }
 
-  _refreshStatusesOfAllFilesInCache(): void {
-    let debouncedRefreshAll = this._debouncedRefreshAll;
-    if (debouncedRefreshAll == null) {
-      const doRefresh = async () => {
-        if (this._isRefreshingAllFilesInCache) {
-          return;
-        }
-        this._isRefreshingAllFilesInCache = true;
-
-        const pathsInStatusCache = Object.keys(this._hgStatusCache);
-        this._hgStatusCache = {};
-        this._modifiedDirectoryCache = new Map();
-        // We should get the modified status of all files in the repo that is
-        // under the HgRepositoryClient's project directory, because when Hg
-        // modifies the repo, it doesn't necessarily only modify files that were
-        // previously modified.
-        this._updateStatuses(
-            [this.getProjectDirectory()], {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
-        if (pathsInStatusCache.length) {
-          // The logic is a bit different for ignored files, because the
-          // HgRepositoryClient always fetches ignored statuses lazily (as callers
-          // ask for them). So, we only fetch the ignored status of files already
-          // in the cache. (Note: if I ask Hg for the 'ignored' status of a list of
-          // files, and none of them are ignored, no statuses will be returned.)
-          await this._updateStatuses(
-              pathsInStatusCache, {hgStatusOption: HgStatusOption.ONLY_IGNORED});
-        }
-
-        const pathsInDiffCache = Object.keys(this._hgDiffCache);
-        this._hgDiffCache = {};
-        await this._updateDiffInfo(pathsInDiffCache);
-
-        this._isRefreshingAllFilesInCache = false;
-      };
-      this._debouncedRefreshAll = debounce(
-        doRefresh,
-        DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL,
-        /* immediate */ false
-      );
-      debouncedRefreshAll = this._debouncedRefreshAll;
+  async _refreshStatusesOfAllFilesInCache(): Promise<void> {
+    this._hgStatusCache = {};
+    this._modifiedDirectoryCache = new Map();
+    const pathsInDiffCache = Object.keys(this._hgDiffCache);
+    this._hgDiffCache = {};
+    // We should get the modified status of all files in the repo that is
+    // under the HgRepositoryClient's project directory, because when Hg
+    // modifies the repo, it doesn't necessarily only modify files that were
+    // previously modified.
+    await this._updateStatuses(
+      [this.getProjectDirectory()],
+      {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED},
+    );
+    if (pathsInDiffCache.length > 0) {
+      await this._updateDiffInfo(pathsInDiffCache);
     }
-    debouncedRefreshAll();
   }
 
 

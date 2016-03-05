@@ -14,7 +14,7 @@ import type {HgService as HgServiceType} from '../../hg-repository-base/lib/HgSe
 import {Directory} from 'atom';
 import
   HgRepositoryClient,
-  {DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL, MAX_INDIVIDUAL_CHANGED_PATHS,}
+  {MAX_INDIVIDUAL_CHANGED_PATHS,}
 from '../lib/HgRepositoryClient';
 import MockHgService from '../../hg-repository-base/spec/MockHgService';
 import {
@@ -262,7 +262,7 @@ describe('HgRepositoryClient', () => {
     });
   });
 
-  describe('::_filesDidChange', () => {
+  describe('::_updateChangedPaths', () => {
     it(
       'triggers a full refresh of the state of the Hg statuses if there are more than ' +
       'MAX_INDIVIDUAL_CHANGED_PATHS paths changed within the project directory.',
@@ -275,11 +275,11 @@ describe('HgRepositoryClient', () => {
         spyOn(repo, '_updateStatuses');
 
         waitsForPromise(async () => {
-          await repo._filesDidChange(mockUpdate);
-          setTimeout(() => {
-            expect(repo._updateStatuses).toHaveBeenCalledWith(
-                [repo.getProjectDirectory()], {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
-          }, DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL + 50);
+          await repo._updateChangedPaths(mockUpdate);
+          expect(repo._updateStatuses).toHaveBeenCalledWith(
+            [repo.getProjectDirectory()],
+            {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED},
+          );
         });
       }
     );
@@ -296,17 +296,15 @@ describe('HgRepositoryClient', () => {
         spyOn(repo, '_updateStatuses');
 
         waitsForPromise(async () => {
-          await repo._filesDidChange(mockUpdate);
-          setTimeout(() => {
-            expect(repo._updateStatuses).toHaveBeenCalled(
-              [PATH_1],
-              {hgStatusOption: HgStatusOption.ALL_STATUSES},
-            );
-            expect(repo._updateStatuses).not.toHaveBeenCalledWith(
-              [repo.getProjectDirectory()],
-              {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED},
-            );
-          }, DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL + 50);
+          await repo._updateChangedPaths(mockUpdate);
+          expect(repo._updateStatuses).toHaveBeenCalledWith(
+            [PATH_1],
+            {hgStatusOption: HgStatusOption.ALL_STATUSES},
+          );
+          expect(repo._updateStatuses).not.toHaveBeenCalledWith(
+            [repo.getProjectDirectory()],
+            {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED},
+          );
         });
       }
     );
@@ -319,19 +317,18 @@ describe('HgRepositoryClient', () => {
       spyOn(repo, '_updateStatuses');
 
       waitsForPromise(async () => {
-        await repo._filesDidChange(mockUpdate);
-        setTimeout(() => {
-          expect(repo._updateStatuses).not.toHaveBeenCalledWith(
-                [repo.getProjectDirectory()], {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
-        }, DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL + 50);
+        await repo._updateChangedPaths(mockUpdate);
+        expect(repo._updateStatuses).not.toHaveBeenCalledWith(
+          [repo.getProjectDirectory()],
+          {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED},
+        );
       });
     }
     );
   });
 
   describe('_refreshStatusesOfAllFilesInCache', () => {
-    it('refreshes the status of all paths currently in the cache after a debounce ' +
-        'interval.', () => {
+    it('refreshes the status of all paths currently in the cache', () => {
       // Test setup: force the state of the repo.
       const testRepoState = {
         [PATH_1]: StatusCodeId.IGNORED,
@@ -344,13 +341,13 @@ describe('HgRepositoryClient', () => {
         expect(repo._hgStatusCache).toEqual({});
       });
 
-      repo._refreshStatusesOfAllFilesInCache();
-      setTimeout(() => {
+      waitsForPromise(async () => {
+        await repo._refreshStatusesOfAllFilesInCache();
         expect(repo._updateStatuses).toHaveBeenCalledWith(
-          Object.keys(testRepoState),
-          {hgStatusOption: HgStatusOption.ALL_STATUSES}
+          [repo.getProjectDirectory()],
+          {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED},
         );
-      }, DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL + 50);
+      });
     });
   });
 
