@@ -13,6 +13,8 @@ describe('fuzzy-native', () => {
   it('can be required', () => {
     const fuzzyNative = require('../lib/main');
     const matcher = new fuzzyNative.Matcher(['test']);
+    // The fallback uses a different scoring mechanism, so this will fail
+    // if the native module failed to load.
     expect(matcher.match('test')).toEqual([{value: 'test', score: 1}]);
   });
 });
