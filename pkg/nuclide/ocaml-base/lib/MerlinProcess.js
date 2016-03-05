@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../remote-uri';
-import type {MerlinError} from './LocalMerlinService';
+import type {MerlinError, MerlinType} from './LocalMerlinService';
 
 import {
   checkOutput,
@@ -142,23 +142,36 @@ export class MerlinProcess {
     });
   }
 
+  async enclosingType(
+    path: NuclideUri,
+    line: number,
+    col: number,
+  ): Promise<Array<MerlinType>> {
+    return await this._promiseQueue.submit((resolve, reject) => {
+      this.runSingleCommand(['type', 'enclosing', 'at', {line: line + 1, col}])
+        .then(resolve)
+        .catch(reject);
+    });
+  }
+
   async complete(path: NuclideUri, line: number, col: number, prefix: string): Promise<mixed> {
-    return await this._promiseQueue.submit(async (resolve, reject) => {
-      const result = await this.runSingleCommand([
+    return await this._promiseQueue.submit((resolve, reject) => {
+      this.runSingleCommand([
         'complete',
         'prefix',
         prefix,
         'at',
         {line: line + 1, col: col + 1},
-      ]);
-
-      resolve(result);
+      ]).then(resolve)
+        .catch(reject);
     });
   }
 
   async errors(): Promise<Array<MerlinError>> {
-    return await this._promiseQueue.submit(async (resolve, reject) => {
-      resolve(await this.runSingleCommand(['errors']));
+    return await this._promiseQueue.submit((resolve, reject) => {
+      this.runSingleCommand(['errors'])
+        .then(resolve)
+        .catch(reject);
     });
   }
 

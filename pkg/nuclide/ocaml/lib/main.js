@@ -10,6 +10,10 @@
  */
 
 import type {LinterProvider} from '../../diagnostics/base';
+import type {TypeHintProvider as TypeHintProviderType} from '../../type-hint-interfaces';
+
+import {array} from '../../commons';
+import {GRAMMARS} from './constants';
 
 module.exports = {
   activate(): void {
@@ -38,4 +42,18 @@ module.exports = {
     const MerlinLinterProvider = require('./LinterProvider');
     return MerlinLinterProvider;
   },
+
+  createTypeHintProvider(): TypeHintProviderType {
+    const {TypeHintProvider} = require('./TypeHintProvider');
+    const typeHintProvider = new TypeHintProvider();
+    const typeHint = typeHintProvider.typeHint.bind(typeHintProvider);
+
+    return {
+      inclusionPriority: 1,
+      providerName: 'nuclide-ocaml',
+      selector: array.from(GRAMMARS).join(', '),
+      typeHint,
+    };
+  },
+
 };

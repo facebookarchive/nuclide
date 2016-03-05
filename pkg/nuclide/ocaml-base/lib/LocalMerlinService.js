@@ -18,6 +18,13 @@ export type MerlinPosition = {
   col: number;  // 0-indexed
 };
 
+export type MerlinType = {
+  start: MerlinPosition;
+  end: MerlinPosition;
+  type: string;
+  tail: 'no' | 'position' | 'call';
+};
+
 export type MerlinError = {
   start: MerlinPosition;
   end: MerlinPosition;
@@ -50,6 +57,19 @@ export async function locate(
 }> {
   const instance = await getInstance(path);
   return instance ? await instance.locate(path, line, col, kind) : null;
+}
+
+/**
+ * Returns a list of all expression around the given position.
+ * Results will be ordered in increasing size (so the best guess will be first).
+ */
+export async function enclosingType(
+  path: NuclideUri,
+  line: number,
+  col: number,
+): Promise<?Array<MerlinType>> {
+  const instance = await getInstance(path);
+  return instance ? await instance.enclosingType(path, line, col) : null;
 }
 
 export async function complete(
