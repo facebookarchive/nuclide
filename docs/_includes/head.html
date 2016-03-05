@@ -9,6 +9,11 @@
   <meta property="og:image" content="{{ site.url }}{{ site.baseurl }}/static/og_image.png" />
   <meta property="og:description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}" />
 
+  {% comment %}
+  For Algolia search
+  {% endcomment %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.css" />
+  
   {% comment %}Local "Gotham Rounded A" stylesheet{% endcomment %}
   <link rel="stylesheet" href="{{ site.baseurl }}/static/fonts/332720/BC699FA675F9356E3.css" media="screen">
   <link rel="stylesheet" href="{{ site.baseurl }}/css/main.css" media="screen">
