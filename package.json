@@ -28,10 +28,12 @@
   },
   "repository": "https://github.com/facebook/nuclide",
   "scripts": {
+    "flow": "flow check --show-all-errors",
     "lint": "eslint",
     "lint-all": "eslint .",
     "fix-all": "eslint --fix .",
-    "service-parser-validate": "./pkg/nuclide/service-parser/bin/validate.js"
+    "service-parser-validate": "./pkg/nuclide/service-parser/bin/validate.js",
+    "test": "npm run lint-all && npm run flow"
   },
   "dependencies": {
     "async": "1.5.2",
