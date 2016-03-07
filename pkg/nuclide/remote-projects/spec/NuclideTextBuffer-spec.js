@@ -25,7 +25,7 @@ describe('NuclideTextBuffer', () => {
         return 'most.fb.com:9090';
       },
     };
-    connection = new RemoteConnection(server, '/');
+    connection = new RemoteConnection(server, '/', ''/*displayTitle*/);
     // Mock watcher service handlers registry.
     // $FlowFixMe override instance method.
     connection._addHandlersForEntry = () => {};

@@ -21,6 +21,8 @@ const classnames = require('classnames');
 const {isContextClick} = require('../lib/FileTreeHelpers');
 const {TriStateCheckboxComponent} = require('./TriStateCheckboxComponent');
 
+const {getDisplayTitle} = require('../lib/FileTreeHelpers');
+
 const {PropTypes} = React;
 
 const getActions = FileTreeActions.getInstance;
@@ -102,6 +104,7 @@ class DirectoryEntryComponent extends React.Component {
             {this._renderCheckbox()}
             {this.props.nodeName}
           </span>
+          {this._renderConnectionTitle()}
         </div>
       </li>
     );
@@ -120,6 +123,21 @@ class DirectoryEntryComponent extends React.Component {
     );
   }
 
+  _renderConnectionTitle(): ?React.Element {
+    if (!this.props.isRoot) {
+      return null;
+    }
+    const title = getDisplayTitle(this.props.nodeKey);
+    if (!title) {
+      return null;
+    }
+
+    return (
+      <span className="nuclide-file-tree-connection-title highlight">
+        {title}
+      </span>
+    );
+  }
 
   _onClick(event: SyntheticMouseEvent) {
     const deep = event.altKey;

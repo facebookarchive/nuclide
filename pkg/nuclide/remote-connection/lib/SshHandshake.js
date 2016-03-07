@@ -33,6 +33,7 @@ export type SshConnectionConfiguration = {
   cwd: string; // Path to remote directory user should start in upon connection.
   authMethod: string; // Which of the authentication methods in `SupportedMethods` to use.
   password: string; // for simple password-based authentication
+  displayTitle: string; // Name of the saved connection profile.
 }
 
 const SupportedMethods = {
@@ -157,6 +158,7 @@ export class SshHandshake {
     const connection = await RemoteConnection.createConnectionBySavedConfig(
       this._config.host,
       this._config.cwd,
+      this._config.displayTitle,
     );
 
     if (connection) {
@@ -412,6 +414,7 @@ export class SshHandshake {
         certificateAuthorityCertificate: this._certificateAuthorityCertificate,
         clientCertificate: this._clientCertificate,
         clientKey: this._clientKey,
+        displayTitle: this._config.displayTitle,
       });
     } else {
       /* $FlowIssue t9212378 */
@@ -424,6 +427,7 @@ export class SshHandshake {
           host: 'localhost',
           port: localPort,
           cwd: this._config.cwd,
+          displayTitle: this._config.displayTitle,
         });
       });
     }

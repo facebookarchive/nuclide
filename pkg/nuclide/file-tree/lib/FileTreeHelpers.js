@@ -123,6 +123,18 @@ function getEntryByKey(key: string): ?Entry {
   return getFileByKey(key) || getDirectoryByKey(key);
 }
 
+function getDisplayTitle(key: string): ?string {
+  const path = keyToPath(key);
+
+  if (RemoteUri.isRemote(path)) {
+    const connection = RemoteConnection.getForUri(path);
+
+    if (connection != null) {
+      return connection.getDisplayTitle();
+    }
+  }
+}
+
 // Sometimes remote directories are instantiated as local directories but with invalid paths.
 function isValidDirectory(directory: Directory): boolean {
   return (
@@ -161,6 +173,7 @@ module.exports = {
   getDirectoryByKey,
   getEntryByKey,
   getFileByKey,
+  getDisplayTitle,
   isValidDirectory,
   isLocalEntry,
   isFullyQualifiedLocalPath,

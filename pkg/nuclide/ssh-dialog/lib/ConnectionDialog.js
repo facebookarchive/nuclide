@@ -216,7 +216,14 @@ class ConnectionDialog extends React.Component {
   }
 
   ok() {
-    const mode = this.state.mode;
+    const {
+      indexOfSelectedConnectionProfile,
+      mode,
+    } = this.state;
+
+    const {
+      connectionProfiles,
+    } = this.props;
 
     if (mode === REQUEST_CONNECTION_DETAILS) {
       // User is trying to submit connection details.
@@ -231,6 +238,12 @@ class ConnectionDialog extends React.Component {
         authMethod,
         password,
       } = connectionDetailsForm.getFormFields();
+
+      let displayTitle = '';
+      if (indexOfSelectedConnectionProfile > -1) {
+        ({displayTitle} = connectionProfiles[indexOfSelectedConnectionProfile]);
+      }
+
       if (username && server && cwd && remoteServerCommand) {
         this.setState({mode: WAITING_FOR_CONNECTION});
         this.state.sshHandshake.connect({
@@ -242,6 +255,7 @@ class ConnectionDialog extends React.Component {
           cwd,
           remoteServerCommand,
           password,
+          displayTitle,
         });
       } else {
         // TODO(mbolin): Tell user to fill out all of the fields.

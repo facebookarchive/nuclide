@@ -35,6 +35,7 @@ export type RemoteConnectionConfiguration = {
   host: string; // host nuclide server is running on.
   port: number; // port to connect to.
   cwd: string; // Path to remote directory user should start in upon connection.
+  displayTitle: string; // Name of the saved connection profile.
   certificateAuthorityCertificate?: Buffer; // certificate of certificate authority.
   clientCertificate?: Buffer; // client certificate for https connection.
   clientKey?: Buffer; // key for https connection.
@@ -54,21 +55,23 @@ export class RemoteConnection {
   _subscriptions: CompositeDisposable;
   _hgRepositoryDescription: ?HgRepositoryDescription;
   _connection: ServerConnection;
+  _displayTitle: string;
 
   static async findOrCreate(config: RemoteConnectionConfiguration):
       Promise<RemoteConnection> {
     const serverConnection = await ServerConnection.getOrCreate(config);
-    const connection = new RemoteConnection(serverConnection, config.cwd);
+    const connection = new RemoteConnection(serverConnection, config.cwd, config.displayTitle);
     return await connection._initialize();
   }
 
   // Do NOT call this directly. Use findOrCreate instead.
-  constructor(connection: ServerConnection, cwd: string) {
+  constructor(connection: ServerConnection, cwd: string, displayTitle: string) {
     this._entries = {};
     this._cwd = cwd;
     this._subscriptions = new CompositeDisposable();
     this._hgRepositoryDescription = null;
     this._connection = connection;
+    this._displayTitle = displayTitle;
   }
 
   dispose(): void {
@@ -83,6 +86,7 @@ export class RemoteConnection {
       host: 'localhost',
       port,
       cwd,
+      displayTitle: '',
     };
     return RemoteConnection.findOrCreate(config);
   }
@@ -95,13 +99,14 @@ export class RemoteConnection {
   static async createConnectionBySavedConfig(
     host: string,
     cwd: string,
+    displayTitle: string
   ): Promise<?RemoteConnection> {
     const connectionConfig = getConnectionConfig(host);
     if (!connectionConfig) {
       return null;
     }
     try {
-      const config = {...connectionConfig, cwd};
+      const config = {...connectionConfig, cwd, displayTitle};
       return await RemoteConnection.findOrCreate(config);
     } catch (e) {
       logger.warn(`Failed to reuse connectionConfiguration for ${host}`, e);
@@ -303,6 +308,10 @@ export class RemoteConnection {
     return this._connection.getRemoteHostname();
   }
 
+  getDisplayTitle(): string {
+    return this._displayTitle;
+  }
+
   getUriForInitialWorkingDirectory(): string {
     return this.getUriOfRemotePath(this.getPathForInitialWorkingDirectory());
   }
@@ -312,7 +321,7 @@ export class RemoteConnection {
   }
 
   getConfig(): RemoteConnectionConfiguration {
-    return {...this._connection.getConfig(), cwd: this._cwd};
+    return {...this._connection.getConfig(), cwd: this._cwd, displayTitle: this._displayTitle};
   }
 
   static onDidAddRemoteConnection(handler: (connection: RemoteConnection) => void): Disposable {

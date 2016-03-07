@@ -30,7 +30,7 @@ describe('getFileForPath()', () => {
           },
           port: 123,
         };
-        connection = new RemoteConnection(server, '');
+        connection = new RemoteConnection(server, ''/*path*/, ''/*displayTitle*/);
         // $FlowFixMe Skip the usage of the watcher service.
         connection._addHandlersForEntry = () => {};
       }

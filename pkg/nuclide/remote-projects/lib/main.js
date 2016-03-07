@@ -35,6 +35,7 @@ const logger = getLogger();
 type SerializableRemoteConnectionConfiguration = {
   host: string;
   cwd: string;
+  displayTitle: string;
 }
 
 let packageSubscriptions: ?CompositeDisposable = null;
@@ -49,19 +50,20 @@ function createSerializableRemoteConnectionConfiguration(
   return {
     host: config.host,
     cwd: config.cwd,
+    displayTitle: config.displayTitle,
   };
 }
 
 async function createRemoteConnection(
   remoteProjectConfig: SerializableRemoteConnectionConfiguration,
 ): Promise<?RemoteConnection> {
-  const {host, cwd} = remoteProjectConfig;
+  const {host, cwd, displayTitle} = remoteProjectConfig;
   let connection = RemoteConnection.getByHostnameAndPath(host, cwd);
   if (connection != null) {
     return connection;
   }
 
-  connection = await RemoteConnection.createConnectionBySavedConfig(host, cwd);
+  connection = await RemoteConnection.createConnectionBySavedConfig(host, cwd, displayTitle);
   if (connection != null) {
     return connection;
   }
@@ -217,10 +219,10 @@ async function reloadRemoteProjects(
     } else {
       // It's fine the user connected to a different project on the same host:
       // we should still be able to restore this using the new connection.
-      const {cwd, host} = config;
+      const {cwd, host, displayTitle} = config;
       if (connection.getPathForInitialWorkingDirectory() !== cwd &&
           connection.getRemoteHostname() === host) {
-        await RemoteConnection.createConnectionBySavedConfig(host, cwd);
+        await RemoteConnection.createConnectionBySavedConfig(host, cwd, displayTitle);
       }
     }
     /* eslint-enable babel/no-await-in-loop */
