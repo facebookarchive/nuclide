@@ -42,7 +42,8 @@ input#algolia-doc-search {
   background: transparent url('/static/search.png') no-repeat left center;
   background-size: 16px 16px;
 
-  padding-left: 30px;
+  padding-left: 20px;
+  margin-left: 10px;
   font-size: 16px;
   line-height: 20px;
   background-color: $nav-bg;

@@ -763,12 +763,13 @@ a.blockButton {
         ul {
           margin: 0 -0.4em;
           li {
-            padding: 0 0.4em;
             display: inline-block;
 
             a {
+              padding: 14px 0.4em;
               border: 0;
               color: $nav-text;
+              display: inline-block;
 
               &:hover {
                 color: $header-text;
