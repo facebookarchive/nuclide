@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 from clang.cindex import *
+from utils import location_dict, range_dict
 import logging
 import os
 
@@ -49,14 +50,8 @@ def get_declaration_location_and_spelling(translation_unit, absolute_path, line,
         logger.warn('Was not able to get cursor type')
         pass
 
-    return {
-        'file': loc.file.name,
-        'line': loc.line,
-        'column': loc.column,
-        'spelling': cursor.spelling,
-        'type': type,
-        'extent': {
-            'start': {'line': extent.start.line, 'column': extent.start.column},
-            'end': {'line': extent.end.line, 'column': extent.end.column},
-        },
-    }
+    location = location_dict(loc)
+    location['spelling'] = cursor.spelling
+    location['type'] = type
+    location['extent'] = range_dict(extent)
+    return location

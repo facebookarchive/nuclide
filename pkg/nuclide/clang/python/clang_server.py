@@ -23,6 +23,7 @@ import sys
 import time
 import traceback
 from logging import FileHandler
+from utils import is_header_file, resolve_file, range_dict, location_dict
 
 LOGGING_DIR = '/tmp/nuclide-clang-logs'
 FD_FOR_READING = 3
@@ -36,7 +37,6 @@ COMPLETIONS_LIMIT = 100
 # However, we often build compilation units from header files here, so avoid the nag.
 # https://llvm.org/bugs/show_bug.cgi?id=16686
 PRAGMA_ONCE_IN_MAIN_FILE = '#pragma once in main file'
-HEADER_EXTENSIONS = ['.h', '.hh', '.hpp', '.hxx', '.h++']
 
 
 root_logger = logging.getLogger()
@@ -75,34 +75,6 @@ def wait_for_init():
     else:
         # Fail: did not receive proper initialization sequence.
         sys.exit(2)
-
-
-def is_header_file(src):
-    _, ext = os.path.splitext(src)
-    return ext in HEADER_EXTENSIONS
-
-
-def range_dict(source_range):
-    # Clang indexes for line and column are 1-based.
-    return {
-        'file': str(source_range.start.file),
-        'start': {
-            'line': source_range.start.line - 1,
-            'column': source_range.start.column - 1,
-        },
-        'end': {
-            'line': source_range.end.line - 1,
-            'column': source_range.end.column - 1,
-        }
-    }
-
-
-def location_dict(location):
-    return {
-        'file': location.file and str(location.file),
-        'line': location.line - 1,
-        'column': location.column - 1,
-    }
 
 
 def child_diagnostics(lib, diag):
@@ -295,17 +267,8 @@ class Server:
         if not translation_unit:
             return
 
-        location_and_spelling = get_declaration_location_and_spelling(
+        response['locationAndSpelling'] = get_declaration_location_and_spelling(
             translation_unit, self.src, line + 1, column + 1)
-        # Clang returns 1-indexed values, but we want to return 0-indexed.
-        if location_and_spelling:
-            location_and_spelling['line'] -= 1
-            location_and_spelling['column'] -= 1
-            location_and_spelling['extent']['start']['line'] -= 1
-            location_and_spelling['extent']['start']['column'] -= 1
-            location_and_spelling['extent']['end']['line'] -= 1
-            location_and_spelling['extent']['end']['column'] -= 1
-        response['locationAndSpelling'] = location_and_spelling
 
     def get_declaration_info(self, request, response):
         contents = request['contents']
@@ -341,7 +304,7 @@ class Server:
                 'name': self.get_name_for_cursor(cursor),
                 'type': cursor.kind.name,
                 'cursor_usr': cursor.get_usr(),
-                'file': file.name if file is not None else None,
+                'file': resolve_file(file),
             })
             cursor = cursor.semantic_parent
 
