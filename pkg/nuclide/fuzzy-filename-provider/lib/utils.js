@@ -10,7 +10,6 @@
  */
 
 import typeof * as FuzzyFileSearchService from '../../fuzzy-file-search-service';
-import featureConfig from '../../feature-config';
 
 import {getServiceByNuclideUri} from '../../client';
 
@@ -21,10 +20,9 @@ export async function getFuzzyFileSearchService(
   directory: atom$Directory,
 ): Promise<?FuzzyFileSearchService> {
   const directoryPath = directory.getPath();
-  const serviceName = featureConfig.get('nuclide-fuzzy-filename-provider.useRxMode')
-    ? 'FuzzyFileSearchRxService'
-    : 'FuzzyFileSearchService';
   const service: ?FuzzyFileSearchService = getServiceByNuclideUri(
-    serviceName, directoryPath);
+    'FuzzyFileSearchService',
+    directoryPath,
+  );
   return service;
 }
