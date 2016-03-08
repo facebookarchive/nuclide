@@ -20,7 +20,6 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 # Add the lib/ directory to $PYTHONPATH so library code can be imported.
 sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 
-import atom
 from package_manager import NUCLIDE_PATH
 from platform_checker import is_os_x
 
@@ -35,6 +34,7 @@ except ImportError as e:
 # Parse the command-line arguments.
 parser = optparse.OptionParser(usage='usage: %prog [options]',
                                description='Install Nuclide packages for development')
+
 parser.add_option('--no-atom', action='store_true', default=False,
                   help='Exclude packages that depend on Atom')
 parser.add_option('--nuke', action='store_true', default=False,
@@ -48,7 +48,7 @@ parser.add_option('--verbose', action='store_true', default=False,
                   help='Verbose output from npm install')
 parser.add_option('--fast', action='store_true', default=False,
                   help='Run faster by skipping a full re-install of node_modules')
-atom.add_args_for_env_setup(parser)
+
 options, args = parser.parse_args(sys.argv[1:])
 
 # Don't do this by default as it destroys some saved user state.
@@ -65,10 +65,6 @@ if options.nuke:
         shutil.rmtree(os.path.expanduser('~/Library/Application Support/Atom'), ignore_errors=True)
     else:
         shutil.rmtree(os.path.expanduser('~/.config/atom'), ignore_errors=True)
-
-# When installing the server packages, only `node` and `npm` need to be on the $PATH.
-include_apm = not options.no_atom
-atom.add_node_executables_to_path(parser, include_apm)
 
 if options.verbose:
     logging.getLogger().setLevel(logging.DEBUG)

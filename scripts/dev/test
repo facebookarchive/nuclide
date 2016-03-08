@@ -20,7 +20,6 @@ from datetime import datetime
 sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 
 # Parse the command-line arguments.
-import atom
 from dependencies import check_dependencies
 import fs
 import optparse
@@ -36,7 +35,7 @@ parser.add_option('--no-atom', action='store_true', default=False, help='Exclude
 parser.add_option('--run-in-band', action='store_true', default=False, help='Run tests in a single process')
 parser.add_option('--no-version', action='store_true', default=False, help='Ignore mismatched versions of Atom/npm/node/apm')
 parser.add_option('--run-integration-tests', action='store_true', default=False, help='Only run tests in Nuclide/spec')
-atom.add_args_for_env_setup(parser)
+
 options, args = parser.parse_args(sys.argv[1:])
 
 run_in_band = options.run_in_band
@@ -44,7 +43,6 @@ verbose = options.verbose
 
 # When testing the server packages, only `node` and `npm` need to be on the $PATH.
 include_apm = not options.no_atom
-atom.add_node_executables_to_path(parser, include_apm)
 
 should_version_check = not options.no_version
 if should_version_check:
@@ -64,8 +62,6 @@ if not options.no_install:
     # Run setup.
     setup = os.path.join(os.path.dirname(__file__), 'setup')
     setup_args = [setup]
-    if options.atom_app_dir:
-        setup_args += ['--atom-app-dir', options.atom_app_dir]
     if options.no_atom:
         setup_args += ['--no-atom']
     subprocess.check_call(setup_args)
