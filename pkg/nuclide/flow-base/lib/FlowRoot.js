@@ -15,7 +15,6 @@ import type {ServerStatusType} from './FlowService';
 
 import type {
   Diagnostics,
-  Diagnostic,
   Loc,
   FlowOutlineTree,
 } from './FlowService';
@@ -34,6 +33,7 @@ import {
 import {FlowProcess} from './FlowProcess';
 
 import {astToOutline} from './astToOutline';
+import {flowStatusOutputToDiagnostics} from './diagnosticsParser';
 
 /** Encapsulates all of the state information we need about a specific Flow root */
 export class FlowRoot {
@@ -149,38 +149,7 @@ export class FlowRoot {
       return null;
     }
 
-    // TODO better types for the JSON output
-    const errors: Array<Object> = json['errors'];
-
-    const messages: Array<Diagnostic> = errors.map(diagnostic => {
-      const messageComponents = diagnostic['message'];
-      // `message` is a list of message components
-      messageComponents.forEach(component => {
-        if (!component.path) {
-          // Use a consistent 'falsy' value for the empty string, undefined, etc. Flow returns the
-          // empty string instead of null when there is no relevant path.
-          // TODO(t8644340) Remove this when Flow is fixed.
-          delete component.path;
-        }
-      });
-      const operation = diagnostic['operation'];
-      if (operation != null) {
-        // The operation field provides additional context. I don't fully understand the motivation
-        // behind separating it out, but prepending it with 'See also: ' and adding it to the end of
-        // the messages is what the Flow team recommended.
-        operation['descr'] = 'See also: ' + operation['descr'];
-        messageComponents.push(operation);
-      }
-      return {
-        level: messageComponents[0]['level'],
-        messageComponents,
-      };
-    });
-
-    return {
-      flowRoot: this._root,
-      messages: messages,
-    };
+    return flowStatusOutputToDiagnostics(this._root, json);
   }
 
   async flowGetAutocompleteSuggestions(
