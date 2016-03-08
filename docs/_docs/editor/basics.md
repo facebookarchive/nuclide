@@ -198,6 +198,27 @@ If you hover over the code diagnostics errors, an inline window will appear show
 
 ![](/static/images/docs/editor-basics-gutter-code-diagnostics.png)
 
+## Preferences Pane
+
+Nuclide has its own set of customizable preferences and settings.
+
+You get to these preferences by first opening up the Atom settings view via `cmd-,`
+(`ctrl-,` on Linux) or through the Atom menu system of `Packages | Settings View | Open`.
+
+A new tab opens up in the [editing area](/docs/editor/basics/#editing-area) named `Settings`. From
+there click on `Packages` and scroll down until you see `nuclide` under either
+`Community Packages` or `Development Packages`.
+
+![](/static/images/docs/editor-basics-nuclide-package.png)
+
+> If you linked the [Nuclide source code](https://github.com/facebook/nuclide) to Atom's development
+> packages and opened up Atom in development mode via the `--dev` flag, you will see the `nuclide`
+> package under `Development Packages`.
+
+Click on `Settings` to see all of the Nuclide preferences and settings.
+
+![](/static/images/docs/editor-basics-nuclide-preferences.png)
+
 ## Command Palette
 
 Atom is highly flexible in how you perform actions. Nuclide adds actions as well. There is a

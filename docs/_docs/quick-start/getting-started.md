@@ -29,8 +29,8 @@ ensure it is on your `$PATH`. There are other
 
 ## Launch
 
-After installation, you launch Nuclide by opening Atom. Once Atom is open, you should see the
-Nuclide home page.
+After installation, you launch Nuclide by [opening Atom](/docs/editor/basics/#opening). Once Atom
+is open, you should see the Nuclide home page.
 
 ![](/static/images/docs/home-page.png)
 
