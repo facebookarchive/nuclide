@@ -263,17 +263,21 @@ export class SshHandshake {
     invariant(serverInfo.port);
     this._remotePort = serverInfo.port;
     this._remoteHost = `${serverInfo.hostname || this._config.host}`;
+
     // Because the value for the Initial Directory that the user supplied may have
     // been a symlink that was resolved by the server, overwrite the original `cwd`
     // value with the resolved value.
     invariant(serverInfo.workspace);
     this._config.cwd = serverInfo.workspace;
-    invariant(serverInfo.ca);
-    this._certificateAuthorityCertificate = serverInfo.ca;
-    invariant(serverInfo.cert);
-    this._clientCertificate = serverInfo.cert;
-    invariant(serverInfo.key);
-    this._clientKey = serverInfo.key;
+
+    // The following keys are optional in `RemoteConnectionConfiguration`.
+    //
+    // Do not throw when any of them (`ca`, `cert`, or `key`) are undefined because that will be the
+    // case when the server is started in "insecure" mode. See `::_isSecure`, which returns the
+    // security of this connection after the server is started.
+    if (serverInfo.ca != null) { this._certificateAuthorityCertificate = serverInfo.ca; }
+    if (serverInfo.cert != null) { this._clientCertificate = serverInfo.cert; }
+    if (serverInfo.key != null) { this._clientKey = serverInfo.key; }
   }
 
   _isSecure(): boolean {
