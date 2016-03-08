@@ -26,9 +26,7 @@ import optparse
 parser = optparse.OptionParser(usage='usage: %prog [options] [package-names or integration-tests]',
                                description='Run all tests for Nuclide. ' +
                                'Can explicitly list individual packages or integration-tests to run.')
-# If you are certain that all of the packages have their dependencies installed correctly,
-# skipping the installation step can save a considerable amount of time.
-parser.add_option('--no-install', action='store_true', default=False, help='Skip `./setup` step')
+
 parser.add_option('--no-module-cycle-check', action='store_true', default=False, help='Skip `./module_cycle_check` step')
 parser.add_option('--verbose', action='store_true', default=False, help='Verbose output')
 parser.add_option('--no-atom', action='store_true', default=False, help='Exclude packages that depend on Atom')
@@ -56,15 +54,6 @@ try:
     ])
 except subprocess.CalledProcessError:
     sys.exit(1)
-
-# Run ./setup, if appropriate.
-if not options.no_install:
-    # Run setup.
-    setup = os.path.join(os.path.dirname(__file__), 'setup')
-    setup_args = [setup]
-    if options.no_atom:
-        setup_args += ['--no-atom']
-    subprocess.check_call(setup_args)
 
 # Run ./module_cycle_check
 if not options.no_module_cycle_check:
