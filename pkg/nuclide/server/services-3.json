@@ -25,10 +25,6 @@
     "name": "FuzzyFileSearchService"
   },
   {
-    "implementation": "../fuzzy-file-search-rx-service/lib/FuzzyFileSearchService.js",
-    "name": "FuzzyFileSearchRxService"
-  },
-  {
     "implementation": "../buck/base/lib/BuckUtils.js",
     "name": "BuckUtils"
   },
