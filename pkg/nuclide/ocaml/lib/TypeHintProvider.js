@@ -35,6 +35,7 @@ export class TypeHintProvider {
     if (instance == null) {
       return null;
     }
+    await instance.pushNewBuffer(path, editor.getText());
     const types = await instance.enclosingType(path, position.row, position.column);
     if (types == null || types.length === 0) {
       return null;
