@@ -24,7 +24,7 @@ import type {
 import type {RevisionInfo} from '../../hg-repository-base/lib/HgService';
 import type {NuclideUri} from '../../remote-uri';
 
-import invariant from 'assert';
+import arcanist from '../../arcanist-client';
 import {CompositeDisposable, Emitter} from 'atom';
 import {
   DiffMode,
@@ -33,10 +33,11 @@ import {
   PublishMode,
   PublishModeState,
 } from './constants';
+import invariant from 'assert';
 import {repositoryForPath} from '../../hg-git-bridge';
 import {track, trackTiming} from '../../analytics';
 import {getFileSystemContents} from './utils';
-import {array, map, debounce, promises} from '../../commons';
+import {array, map, debounce} from '../../commons';
 import RepositoryStack from './RepositoryStack';
 import {
   notifyInternalError,
@@ -510,10 +511,19 @@ class DiffViewModel {
       publishMessage,
       publishModeState: PublishModeState.AWAITING_PUBLISH,
     });
-    // TODO(most): do publish to Phabricator.
+
+    const {filePath} = this._activeFileState;
     try {
-      await promises.awaitMilliSeconds(5000);
-      await Promise.resolve();
+      switch (this._state.publishMode) {
+        case PublishMode.CREATE:
+          await arcanist.createPhabricatorRevision(filePath, publishMessage);
+          break;
+        case PublishMode.UPDATE:
+          await arcanist.updatePhabricatorRevision(filePath, publishMessage);
+          break;
+        default:
+          throw new Error(`Unknown publish mode '${this._state.publishMode}'`);
+      }
     } catch (error) {
       notifyInternalError(error);
     } finally {
