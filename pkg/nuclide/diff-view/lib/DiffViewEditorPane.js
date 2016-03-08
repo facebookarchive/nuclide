@@ -41,14 +41,9 @@ type Props = {
   onDidUpdateTextEditorElement: () => mixed;
 };
 
-type State = {
-  textContent: string;
-};
-
 /* eslint-disable react/prop-types */
 export default class DiffViewEditorPane extends React.Component {
   props: Props;
-  state: State;
 
   _diffViewEditor: ?DiffViewEditor;
   _subscriptions: CompositeDisposable;
@@ -59,9 +54,6 @@ export default class DiffViewEditorPane extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    this.state = {
-      textContent: this.props.initialTextContent,
-    };
     this._subscriptions = new CompositeDisposable();
     this._isMounted = false;
   }
@@ -77,17 +69,17 @@ export default class DiffViewEditorPane extends React.Component {
 
     this._diffViewEditor = new DiffViewEditor(this.getEditorDomElement());
     const textEditor = this.getEditorModel();
+    const textBuffer = textEditor.getBuffer();
 
     const debouncedOnChange = debounce(
       () => {
-        if (!this._isMounted || textEditor !== this.getEditorModel()) {
+        if (!this._isMounted || textBuffer !== this.props.textBuffer) {
           return;
         }
-        const textContent = textEditor.getText();
-        if (textContent === this.state.textContent) {
+        const textContent = textBuffer.getText();
+        if (textContent === this.props.initialTextContent) {
           return;
         }
-        this.setState({textContent});
         if (this.props.onChange) {
           this.props.onChange(textContent);
         }
@@ -95,7 +87,7 @@ export default class DiffViewEditorPane extends React.Component {
       CHANGE_DEBOUNCE_DELAY_MS,
       false,
     );
-    editorSubscriptions.add(textEditor.onDidChange(debouncedOnChange));
+    editorSubscriptions.add(textBuffer.onDidChange(debouncedOnChange));
     /*
      * Those should have been synced automatically, but an implementation limitation of creating
      * a <atom-text-editor> element assumes default settings for those.
@@ -137,13 +129,7 @@ export default class DiffViewEditorPane extends React.Component {
     );
   }
 
-  componentWillReceiveProps(nextProps: Props) {
-    if (this.props.initialTextContent !== nextProps.initialTextContent) {
-      this.setState({textContent: nextProps.initialTextContent});
-    }
-  }
-
-  componentDidUpdate(prevProps: Props, prevState: State): void {
+  componentDidUpdate(prevProps: Props): void {
     if (prevProps.textBuffer !== this.props.textBuffer) {
       const oldEditorSubscriptions = this._editorSubscriptions;
       if (oldEditorSubscriptions != null) {
@@ -153,20 +139,19 @@ export default class DiffViewEditorPane extends React.Component {
       }
       this._setupDiffEditor();
     }
-    this._updateDiffView(prevProps, prevState);
+    this._updateDiffView(prevProps);
   }
 
-  _updateDiffView(oldProps: Props, oldState: State): void {
+  _updateDiffView(oldProps: Props): void {
     const newProps = this.props;
-    const newState = this.state;
     const diffEditorUpdated = oldProps.textBuffer !== newProps.textBuffer;
     // Cache latest disk contents for an accurate `isModified` functionality.
     newProps.textBuffer.cachedDiskContents = this.props.savedContents;
     if (diffEditorUpdated || oldProps.filePath !== newProps.filePath) {
       // Loading a new file should clear the undo history.
-      this._setTextContent(newProps.filePath, newState.textContent, true /*clearHistory*/);
-    } else if (newState.textContent !== oldState.textContent) {
-      this._setTextContent(newProps.filePath, newState.textContent, false /*clearHistory*/);
+      this._setTextContent(newProps.filePath, newProps.initialTextContent, true /*clearHistory*/);
+    } else if (oldProps.initialTextContent !== this.props.initialTextContent) {
+      this._setTextContent(newProps.filePath, newProps.initialTextContent, false /*clearHistory*/);
     }
     if (diffEditorUpdated || oldProps.highlightedLines !== newProps.highlightedLines) {
       this._setHighlightedLines(newProps.highlightedLines);

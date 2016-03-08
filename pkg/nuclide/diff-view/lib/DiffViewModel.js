@@ -51,7 +51,6 @@ const DID_UPDATE_STATE_EVENT = 'did-update-state';
 const UPDATE_REVISION_TEMPLATE = '';
 
 const FILE_CHANGE_DEBOUNCE_MS = 200;
-const UI_CHANGE_DEBOUNCE_MS = 100;
 
 // Returns a string with all newline strings, '\\n', converted to literal newlines, '\n'.
 function convertNewlines(message: string): string {
@@ -96,7 +95,6 @@ class DiffViewModel {
   _repositorySubscriptions: Map<HgRepositoryClient, CompositeDisposable>;
   _isActive: boolean;
   _state: State;
-  _debouncedEmitActiveFileUpdate: () => void;
 
   constructor(uiProviders: Array<Object>) {
     this._uiProviders = uiProviders;
@@ -120,11 +118,6 @@ class DiffViewModel {
     };
     this._updateRepositories();
     this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
-    this._debouncedEmitActiveFileUpdate = debounce(
-      this._emitActiveFileUpdate.bind(this),
-      UI_CHANGE_DEBOUNCE_MS,
-      false,
-    );
     this._setActiveFileState(getInitialFileChangeState());
   }
 
@@ -305,6 +298,15 @@ class DiffViewModel {
     activeSubscriptions.add(buffer.onDidChangeModified(
       this._onDidBufferChangeModified.bind(this),
     ));
+    // Modified events could be late that it doesn't capture the latest edits/ state changes.
+    // Hence, it's safe to re-emit changes when stable from changes.
+    activeSubscriptions.add(buffer.onDidStopChanging(
+      this._onDidBufferChangeModified.bind(this),
+    ));
+    // Update `savedContents` on buffer save requests.
+    activeSubscriptions.add(buffer.onWillSave(
+      () => this._onWillSaveActiveBuffer(buffer),
+    ));
     track('diff-view-open-file', {filePath});
     this._updateActiveDiffState(filePath).catch(notifyInternalError);
   }
@@ -363,8 +365,13 @@ class DiffViewModel {
       filesystemContents,
       revisionInfo,
     };
+    invariant(savedContents, 'savedContents is not defined while updating diff state!');
     if (savedContents === newContents || filesystemContents === newContents) {
-      return this._updateDiffState(filePath, updatedDiffState);
+      return this._updateDiffState(
+        filePath,
+        updatedDiffState,
+        savedContents,
+      );
     }
     // The user have edited since the last update.
     if (filesystemContents === savedContents) {
@@ -372,11 +379,16 @@ class DiffViewModel {
       return this._updateDiffState(
         filePath,
         {...updatedDiffState, filesystemContents: newContents},
+        savedContents,
       );
     } else {
       // The committed and filesystem state have changed, notify of override.
       notifyFilesystemOverrideUserEdits(filePath);
-      return this._updateDiffState(filePath, updatedDiffState);
+      return this._updateDiffState(
+        filePath,
+        updatedDiffState,
+        filesystemContents,
+      );
     }
   }
 
@@ -401,10 +413,18 @@ class DiffViewModel {
       return;
     }
     const hgDiffState = await this._fetchHgDiff(filePath);
-    await this._updateDiffState(filePath, hgDiffState);
+    await this._updateDiffState(
+      filePath,
+      hgDiffState,
+      hgDiffState.filesystemContents,
+    );
   }
 
-  async _updateDiffState(filePath: NuclideUri, hgDiffState: HgDiffState): Promise<void> {
+  async _updateDiffState(
+    filePath: NuclideUri,
+    hgDiffState: HgDiffState,
+    savedContents: string,
+  ): Promise<void> {
     const {
       committedContents: oldContents,
       filesystemContents: newContents,
@@ -415,7 +435,7 @@ class DiffViewModel {
       filePath,
       oldContents,
       newContents,
-      savedContents: newContents,
+      savedContents,
       compareRevisionInfo: revisionInfo,
       fromRevisionTitle: `${hash}` + (bookmarks.length === 0 ? '' : ` - (${bookmarks.join(', ')})`),
       toRevisionTitle: 'Filesystem / Editor',
@@ -429,10 +449,6 @@ class DiffViewModel {
 
   _setActiveFileState(state: FileChangeState): void {
     this._activeFileState = state;
-    this._debouncedEmitActiveFileUpdate();
-  }
-
-  _emitActiveFileUpdate(): void {
     this._emitter.emit(ACTIVE_FILE_UPDATE_EVENT, this._activeFileState);
   }
 
@@ -468,14 +484,10 @@ class DiffViewModel {
 
 
   @trackTiming('diff-view.save-file')
-  async saveActiveFile(): Promise<void> {
+  saveActiveFile(): Promise<void> {
     const {filePath} = this._activeFileState;
     track('diff-view-save-file', {filePath});
-    try {
-      this._activeFileState.savedContents = await this._saveFile(filePath);
-    } catch (error) {
-      notifyInternalError(error);
-    }
+    return this._saveFile(filePath).catch(notifyInternalError);
   }
 
   @trackTiming('diff-view.publish-diff')
@@ -500,14 +512,20 @@ class DiffViewModel {
     }
   }
 
-  async _saveFile(filePath: NuclideUri): Promise<string> {
+  _onWillSaveActiveBuffer(buffer: atom$TextBuffer): void {
+    this._setActiveFileState({
+      ...this._activeFileState,
+      savedContents: buffer.getText(),
+    });
+  }
+
+  async _saveFile(filePath: NuclideUri): Promise<void> {
     const buffer = bufferForUri(filePath);
     if (buffer == null) {
       throw new Error(`Could not find file buffer to save: \`${filePath}\``);
     }
     try {
       await buffer.save();
-      return buffer.getText();
     } catch (err) {
       throw new Error(`Could not save file buffer: \`${filePath}\` - ${err.toString()}`);
     }
