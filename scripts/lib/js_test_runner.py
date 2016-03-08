@@ -12,8 +12,6 @@ import sys
 
 from multiprocessing import Pool, cpu_count
 
-APM_TEST_WRAPPER = os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                                 'run-apm-test-with-timeout.js'))
 
 class JsTestRunner(object):
     def __init__(self, package_manager, include_apm=True, packages_to_test=[], verbose=False, run_in_band=False):
@@ -95,7 +93,7 @@ def run_js_test(test_runner, pkg_path, name):
         return
 
     if test_runner == 'apm':
-        test_args = ['node', APM_TEST_WRAPPER, pkg_path]
+        test_args = ['apm', 'test']
     else:
         test_args = ['npm', 'test']
 
