@@ -276,14 +276,11 @@ separate pane. When debugging, HHVM will send its stdout to this window. This in
 
 *Evaluation*
 
-Setting up [evaluation](#basics__evaluation) in the REPL requires some prepatory work.  If you are
-debugging a non-Hack, vanilla PHP project, then you must check in a file named
-`php_only_xdebug_request.php` to the root of your project.  If you are debugging a Hack project,
-then you must check in a `.hhconfig` file at the root of your project, and also a
-`scripts/xdebug_includes.php` file.
-
-In either of these cases, these files must contain at least one call to the `xdebug_break` function.
-Here is an example of such a file:
+Basic [evaluation](#basics__evaluation) in the REPL works out of the box.  You can also load
+bindings from your project so that you can interact with them in the console.  To do this, make sure
+there is a `.hhconfig` file checked in at the root of your project, and also a
+`scripts/xdebug_includes.php` file.  `xdebug_includes.php` must contain at least one call to the
+`xdebug_break` function.  Here is an example of such a file:
 
 ```php
 <?hh
@@ -298,7 +295,7 @@ xdebug_break(); // Pauses the runtime's execution when xdebug mode is enabled.
 
 Now when you debug your Hack or PHP project, the nuclide debugger will also make a separate
 connection to the runtime and launch this script.  Any context loaded before calling
-`xdebug_break()` will be accessible via the REPL. 
+`xdebug_break()` will be accessible via the REPL.
 
 *Filtering*
 
