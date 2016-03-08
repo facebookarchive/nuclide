@@ -156,7 +156,7 @@ export class FlowRoot {
           // Use a consistent 'falsy' value for the empty string, undefined, etc. Flow returns the
           // empty string instead of null when there is no relevant path.
           // TODO(t8644340) Remove this when Flow is fixed.
-          component.path = null;
+          delete component.path;
         }
       });
       const operation = diagnostic['operation'];

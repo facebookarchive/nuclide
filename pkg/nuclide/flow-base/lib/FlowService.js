@@ -28,7 +28,7 @@ export type Diagnostics = {
 export type Diagnostic = Array<SingleMessage>;
 
 export type SingleMessage = {
-  path: ?NuclideUri;
+  path?: NuclideUri;
   descr: string;
   line: number;
   endline: number;

@@ -16,7 +16,12 @@ import type {
   MessageUpdateCallback,
   MessageInvalidationCallback,
   DiagnosticProviderUpdate,
+  Trace,
 } from '../../diagnostics/base';
+import type {
+  Diagnostics,
+  SingleMessage,
+} from '../../flow-base';
 
 import {trackTiming} from '../../analytics';
 
@@ -32,26 +37,6 @@ const {Range} = require('atom');
 const invariant = require('assert');
 
 const {JS_GRAMMARS} = require('./constants.js');
-
-/*
- * TODO remove these duplicate definitions once we figure out importing types
- * through symlinks.
- */
-export type Diagnostics = {
-  flowRoot: NuclideUri;
-  messages: Array<FlowDiagnosticItem>
-};
-type FlowError = {
-  level: string;
-  descr: string;
-  path: string;
-  line: number;
-  start: number;
-  endline: number;
-  end: number;
-}
-
-type FlowDiagnosticItem = Array<FlowError>;
 
 /**
  * Currently, a diagnostic from Flow is an object with a "message" property.
@@ -69,7 +54,7 @@ type FlowDiagnosticItem = Array<FlowError>;
  * with which the usage disagrees. Note that these could occur in different
  * files.
  */
-function extractRange(message) {
+function extractRange(message: SingleMessage): atom$Range {
   // It's unclear why the 1-based to 0-based indexing works the way that it
   // does, but this has the desired effect in the UI, in practice.
   return new Range(
@@ -79,7 +64,7 @@ function extractRange(message) {
 }
 
 // A trace object is very similar to an error object.
-function flowMessageToTrace(message) {
+function flowMessageToTrace(message: SingleMessage): Trace {
   return {
     type: 'Trace',
     text: message['descr'],
@@ -91,12 +76,17 @@ function flowMessageToTrace(message) {
 function flowMessageToDiagnosticMessage(flowMessages) {
   const flowMessage = flowMessages[0];
 
+  // The Flow type does not capture this, but the first message always has a path, and the
+  // diagnostics package requires a FileDiagnosticMessage to have a path.
+  const path = flowMessage['path'];
+  invariant(path != null, 'Expected path to not be null or undefined');
+
   const diagnosticMessage: FileDiagnosticMessage = {
     scope: 'file',
     providerName: 'Flow',
     type: flowMessage['level'] === 'error' ? 'Error' : 'Warning',
     text: flowMessage['descr'],
-    filePath: flowMessage['path'],
+    filePath: path,
     range: extractRange(flowMessage),
   };
 
@@ -182,7 +172,9 @@ class FlowDiagnosticsProvider {
        * own text and path.
        */
       for (const messageComponent of message) {
-        pathsForRoot.add(messageComponent.path);
+        if (messageComponent.path != null) {
+          pathsForRoot.add(messageComponent.path);
+        }
       }
     }
 
@@ -229,7 +221,7 @@ class FlowDiagnosticsProvider {
   }
 
   _processDiagnostics(
-    diagnostics: Array<FlowDiagnosticItem>,
+    diagnostics: Array<Array<SingleMessage>>,
     currentFile: string
   ): DiagnosticProviderUpdate {
 
