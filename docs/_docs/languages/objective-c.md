@@ -6,8 +6,8 @@ permalink: /docs/languages/objective-c/
 ---
 
 Nuclide has *limited*, built-in support for
-[Objective-C](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/Introduction/Introduction.html), which allows you to build native [iOS](/docs/platforms/ios) applications directly
-within Nuclide.
+[Objective-C](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/Introduction/Introduction.html),
+which allows you to build native [iOS](/docs/platforms/ios) applications directly within Nuclide.
 
 * TOC
 {:toc}
@@ -130,3 +130,8 @@ For example, if you want to go to the definition of `initWithHelloString`, you w
 ![](/static/images/docs/language-objc-jump-to-definition-link.png)
 
 ![](/static/images/docs/language-objc-jump-to-definition-result.png)
+
+### Jump Between Header and Implementation
+
+Using `cmd-option-n` (`ctrl-alt-n` on Linux), you can jump between header (e.g., `.h`) and
+implementation files (`.cpp`).

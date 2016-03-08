@@ -18,8 +18,15 @@ cross-platform development in [React Native](/docs/platforms/react-native).
 
 ## Features
 
-When you open an Objective-C file (e.g., `.h`, `.m`, `.mm`), you automatically get support for
-Nuclide features such as autocomplete and diagnostics.
+When you open an [Objective-C](/docs/languages/objective-c/) file (e.g., `.h`, `.m`, `.mm`), you
+automatically get support for default [features](/docs/languages/objective-c/#default-features) such
+as
+[automatic bracket completion](/docs/languages/objective-c/#default-features__automatic-bracket-completion).
+
+However, if you are compiling your project with [Buck](http://buckbuild.com), you get richer
+[features](/docs/languages/objective-c/#buck-enabled-features) such as
+[autocomplete](/docs/languages/objective-c/#buck-enabled-features__autocomplete) and
+[jump to definition](/docs/languages/objective-c/#buck-enabled-features__jump-to-definition).
 
 ![](/static/images/docs/platform-ios-native-autocomplete.png)
 
