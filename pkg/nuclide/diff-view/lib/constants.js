@@ -21,6 +21,9 @@ import type {
   PublishModeStateType,
 } from './types';
 
+const GK_DIFF_VIEW_PUBLISH: string = 'nuclide_diff_view_publish';
+const TOOLBAR_VISIBLE_SETTING: string = 'nuclide-diff-view.toolbarVisible';
+
 const FileChangeStatus: {[key: string]: FileChangeStatusValue} = {
   ADDED: 1,
   MODIFIED: 2,
@@ -99,4 +102,6 @@ module.exports = {
   HgStatusToFileChangeStatus,
   FileChangeStatusToPrefix,
   HgStatusCodeNumber,
+  GK_DIFF_VIEW_PUBLISH,
+  TOOLBAR_VISIBLE_SETTING,
 };

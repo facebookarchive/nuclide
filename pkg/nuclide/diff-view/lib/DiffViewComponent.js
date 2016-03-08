@@ -31,7 +31,10 @@ import DiffPublishView from './DiffPublishView';
 import {computeDiff, getOffsetLineNumber} from './diff-utils';
 import {createPaneContainer} from '../../atom-helpers';
 import {bufferForUri} from '../../atom-helpers';
-import {DiffMode} from './constants';
+import {
+  DiffMode,
+  TOOLBAR_VISIBLE_SETTING,
+} from './constants';
 import featureConfig from '../../feature-config';
 
 type Props = {
@@ -71,7 +74,6 @@ function initialEditorState(): EditorState {
 }
 
 const EMPTY_FUNCTION = () => {};
-const TOOLBAR_VISIBLE_SETTING = 'nuclide-diff-view.toolbarVisible';
 
 /* eslint-disable react/prop-types */
 class DiffViewComponent extends React.Component {
