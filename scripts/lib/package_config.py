@@ -6,14 +6,14 @@
 
 import os
 
-from json_helpers import json_load
+import utils
 
 
 def create_config_for_package(path):
     '''Reads the package.json at `path` and returns a config created by
     `create_config_for_manifest`.
     '''
-    return create_config_for_manifest(path, json_load(path))
+    return create_config_for_manifest(path, utils.json_load(path))
 
 
 def create_config_for_manifest(path, manifest):

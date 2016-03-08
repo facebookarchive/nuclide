@@ -7,7 +7,7 @@
 import logging
 import os
 
-from json_helpers import json_load
+import utils
 from package_config import create_config_for_package
 
 NUCLIDE_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '../..'))
@@ -68,7 +68,7 @@ class PackageManager(object):
         config = create_config_for_package(package_json)
         if not config:
             # config is None: this must be a transitive dependency of a Nuclide package.
-            package = json_load(package_json)
+            package = utils.json_load(package_json)
             config = {
               'dependencies': package.get('dependencies', {}),
               'devDependencies': package.get('devDependencies', {}),

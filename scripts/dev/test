@@ -21,7 +21,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 
 # Parse the command-line arguments.
 from dependencies import check_dependencies
-import fs
 import optparse
 parser = optparse.OptionParser(usage='usage: %prog [options] [package-names or integration-tests]',
                                description='Run all tests for Nuclide. ' +

@@ -18,19 +18,18 @@ import os.path
 # Set up the logging early on in the process.
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
-import fs
-from json_helpers import json_load
+import utils
 
 def get_dependencies_filename():
     return os.path.join(os.path.dirname(__file__), 'dependencies.json')
 
 def load_dependencies():
-    return json_load(get_dependencies_filename())
+    return utils.json_load(get_dependencies_filename())
 
 def check_dependency(binary, expected_version):
     # Since flow v0.18.1 `--version` was deprecated in favor a `version` command
     cmd = [binary, '--version'] if binary != 'flow' else [binary, 'version']
-    actual_version = fs.cross_platform_check_output(cmd).rstrip()
+    actual_version = utils.check_output(cmd).rstrip()
     if actual_version != expected_version:
         raise Exception(('Incorrect %s version. Found %s, expected %s. ' +
                          'Use the --no-version option to ignore this test.') %
