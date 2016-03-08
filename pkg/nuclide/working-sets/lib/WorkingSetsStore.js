@@ -16,6 +16,11 @@ import {track} from '../../analytics';
 
 import type {WorkingSetDefinition} from './main';
 
+export type ApplicabilitySortedDefinitions = {
+  applicable: Array<WorkingSetDefinition>;
+  notApplicable: Array<WorkingSetDefinition>;
+}
+
 const NEW_WORKING_SET_EVENT = 'new-working-set';
 const NEW_DEFINITIONS_EVENT = 'new-definitions';
 const SAVE_DEFINITIONS_EVENT = 'save-definitions';
@@ -24,6 +29,8 @@ export class WorkingSetsStore {
   _emitter: Emitter;
   _current: WorkingSet;
   _definitions: Array<WorkingSetDefinition>;
+  _applicableDefinitions: Array<WorkingSetDefinition>;
+  _notApplicableDefinitions: Array<WorkingSetDefinition>;
   _prevCombinedUris: Array<string>;
   _lastSelected: Array<string>;
 
@@ -31,6 +38,8 @@ export class WorkingSetsStore {
     this._emitter = new Emitter();
     this._current = new WorkingSet();
     this._definitions = [];
+    this._applicableDefinitions = [];
+    this._notApplicableDefinitions = [];
     this._prevCombinedUris = [];
     this._lastSelected = [];
   }
@@ -43,12 +52,20 @@ export class WorkingSetsStore {
     return this._definitions;
   }
 
+  getApplicableDefinitions(): Array<WorkingSetDefinition> {
+    return this._applicableDefinitions;
+  }
+
+  getNotApplicableDefinitions(): Array<WorkingSetDefinition> {
+    return this._notApplicableDefinitions;
+  }
+
   subscribeToCurrent(callback: (current: WorkingSet) => void): IDisposable {
     return this._emitter.on(NEW_WORKING_SET_EVENT, callback);
   }
 
   subscribeToDefinitions(
-    callback: (definitions: Array<WorkingSetDefinition>) => mixed
+    callback: (definitions: ApplicabilitySortedDefinitions) => mixed
   ): IDisposable {
     return this._emitter.on(NEW_DEFINITIONS_EVENT, callback);
   }
@@ -60,28 +77,13 @@ export class WorkingSetsStore {
   }
 
   updateDefinitions(definitions: Array<WorkingSetDefinition>): void {
-    const activeDefinitions = definitions.filter(d => d.active);
-    if (activeDefinitions.length > 0) {
-      this._lastSelected = activeDefinitions.map(d => d.name);
-    }
-    const combinedUris = [].concat(
-      ...activeDefinitions.map(d => d.uris)
-    );
-    combinedUris.sort();
+    const {applicable, notApplicable} = this._sortOutApplicability(definitions);
+    this._setDefinitions(applicable, notApplicable, definitions);
+  }
 
-    const invisibleChange = array.equal(combinedUris, this._prevCombinedUris);
-    this._prevCombinedUris = combinedUris;
-
-    // Do not fire an update event if the change is of a cosmetical nature. Such as order in UI.
-    if (!invisibleChange) {
-      track('working-sets-applying-definitions', {uris: combinedUris.join(',')});
-
-      const workingSet = new WorkingSet(combinedUris);
-      this._updateCurrent(workingSet);
-    }
-
-    this._definitions = definitions;
-    this._emitter.emit(NEW_DEFINITIONS_EVENT, definitions);
+  updateApplicability(): void {
+    const {applicable, notApplicable} = this._sortOutApplicability(this._definitions);
+    this._setDefinitions(applicable, notApplicable, this._definitions);
   }
 
   saveWorkingSet(name: string, workingSet: WorkingSet): void {
@@ -107,9 +109,40 @@ export class WorkingSetsStore {
     this._saveDefinitions(definitions);
   }
 
-  _updateCurrent(newSet: WorkingSet): void {
-    this._current = newSet;
-    this._emitter.emit(NEW_WORKING_SET_EVENT, newSet);
+  _setDefinitions(
+    applicable: Array<WorkingSetDefinition>,
+    notApplicable: Array<WorkingSetDefinition>,
+    definitions: Array<WorkingSetDefinition>
+  ): void {
+    const somethingHasChanged =
+      !array.equal(this._applicableDefinitions, applicable) ||
+      !array.equal(this._notApplicableDefinitions, notApplicable);
+
+    if (somethingHasChanged) {
+      this._applicableDefinitions = applicable;
+      this._notApplicableDefinitions = notApplicable;
+      this._definitions = definitions;
+
+      const activeApplicable = applicable.filter(d => d.active);
+      if (activeApplicable.length > 0) {
+        this._lastSelected = activeApplicable.map(d => d.name);
+      }
+      this._emitter.emit(NEW_DEFINITIONS_EVENT, {applicable, notApplicable});
+
+      this._updateCurrentWorkingSet(activeApplicable);
+    }
+  }
+
+  _updateCurrentWorkingSet(activeApplicable: Array<WorkingSetDefinition>): void {
+    const combinedUris = [].concat(
+      ...activeApplicable.map(d => d.uris)
+    );
+
+    const newWorkingSet = new WorkingSet(combinedUris);
+    if (!this._current.equals(newWorkingSet)) {
+      this._current = newWorkingSet;
+      this._emitter.emit(NEW_WORKING_SET_EVENT, newWorkingSet);
+    }
   }
 
   _saveDefinition(name: string, newName: string, workingSet: WorkingSet): void {
@@ -159,20 +192,26 @@ export class WorkingSetsStore {
   }
 
   deactivateAll(): void {
-    const definitions = this.getDefinitions().map(d => {return {...d, active: false};});
+    const definitions = this.getDefinitions().map(d => {
+      if (!this._isApplicable(d)) {
+        return d;
+      }
+
+      return {...d, active: false};
+    });
     this._saveDefinitions(definitions);
   }
 
   toggleLastSelected(): void {
     track('working-sets-toggle-last-selected');
 
-    if (this.getDefinitions().some(d => d.active)) {
+    if (this.getApplicableDefinitions().some(d => d.active)) {
       this.deactivateAll();
     } else {
       const newDefinitions = this.getDefinitions().map(d => {
         return {
           ...d,
-          active: this._lastSelected.indexOf(d.name) > -1,
+          active: d.active || this._lastSelected.indexOf(d.name) > -1,
         };
       });
       this._saveDefinitions(newDefinitions);
@@ -181,5 +220,25 @@ export class WorkingSetsStore {
 
   _saveDefinitions(definitions: Array<WorkingSetDefinition>): void {
     this._emitter.emit(SAVE_DEFINITIONS_EVENT, definitions);
+  }
+
+  _sortOutApplicability(definitions: Array<WorkingSetDefinition>): ApplicabilitySortedDefinitions {
+    const applicable = [];
+    const notApplicable = [];
+
+    definitions.forEach(def => {
+      if (this._isApplicable(def)) {
+        applicable.push(def);
+      } else {
+        notApplicable.push(def);
+      }
+    });
+
+    return {applicable, notApplicable};
+  }
+
+  _isApplicable(definition: WorkingSetDefinition): boolean {
+    const workingSet = new WorkingSet(definition.uris);
+    return atom.project.getDirectories().some(dir => workingSet.containsDir(dir.getPath()));
   }
 }

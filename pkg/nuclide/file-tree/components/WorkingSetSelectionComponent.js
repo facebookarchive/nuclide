@@ -27,7 +27,8 @@ type Props = {
 
 type State = {
   selectionIndex: number;
-  definitions: Array<WorkingSetDefinition>;
+  applicableDefinitions: Array<WorkingSetDefinition>;
+  notApplicableDefinitions: Array<WorkingSetDefinition>;
 };
 
 export class WorkingSetSelectionComponent extends React.Component {
@@ -42,15 +43,19 @@ export class WorkingSetSelectionComponent extends React.Component {
 
     this.state = {
       selectionIndex: 0,
-      definitions: workingSetsStore.getDefinitions() || [],
+      applicableDefinitions: workingSetsStore.getApplicableDefinitions(),
+      notApplicableDefinitions: workingSetsStore.getNotApplicableDefinitions(),
     };
 
     this._disposables = new CompositeDisposable();
 
     this._disposables.add(
       workingSetsStore.subscribeToDefinitions(definitions => {
-        this.setState({definitions});
-        if (definitions.length === 0) {
+        this.setState({
+          applicableDefinitions: definitions.applicable,
+          notApplicableDefinitions: definitions.notApplicable,
+        });
+        if (definitions.applicable.length + definitions.notApplicable.length === 0) {
           this.props.onClose();
         }
       })
@@ -58,7 +63,9 @@ export class WorkingSetSelectionComponent extends React.Component {
 
     (this: any)._lostFocus = this._lostFocus.bind(this);
     (this: any)._checkFocus = this._checkFocus.bind(this);
-    (this: any)._renderDefinition = this._renderDefinition.bind(this);
+    (this: any)._toggleWorkingSet = this._toggleWorkingSet.bind(this);
+    (this: any)._setSelectionIndex = this._setSelectionIndex.bind(this);
+    (this: any)._deleteWorkingSet = this._deleteWorkingSet.bind(this);
   }
 
   componentDidMount(): void {
@@ -70,7 +77,7 @@ export class WorkingSetSelectionComponent extends React.Component {
         'core:move-up': () => this._moveSelectionIndex(-1),
         'core:move-down': () => this._moveSelectionIndex(1),
         'core:confirm': () => {
-          const def = this.state.definitions[this.state.selectionIndex];
+          const def = this.state.applicableDefinitions[this.state.selectionIndex];
           this._toggleWorkingSet(def.name, def.active);
         },
         'core:cancel': this.props.onClose,
@@ -83,12 +90,15 @@ export class WorkingSetSelectionComponent extends React.Component {
   }
 
   componentWillUpdate(nextProps: Props, nextState: State): void {
-    if (nextState.selectionIndex >= nextState.definitions.length) {
-      this.setState({selectionIndex: nextState.definitions.length - 1});
-    } else if (nextState.selectionIndex < 0) {
-      this.setState({selectionIndex: 0});
-    }
+    const applicableLength = nextState.applicableDefinitions.length;
 
+    if (applicableLength > 0) {
+      if (nextState.selectionIndex >= applicableLength) {
+        this.setState({selectionIndex: applicableLength - 1});
+      } else if (nextState.selectionIndex < 0) {
+        this.setState({selectionIndex: 0});
+      }
+    }
   }
 
   componentDidUpdate(): void {
@@ -97,6 +107,44 @@ export class WorkingSetSelectionComponent extends React.Component {
   }
 
   render(): React.Element {
+    const applicableDefinitions = this.state.applicableDefinitions.map((def, index) => {
+      return (
+        <ApplicableDefinitionLine
+          key={def.name}
+          def={def}
+          index={index}
+          selected={index === this.state.selectionIndex}
+          toggleWorkingSet={this._toggleWorkingSet}
+          onSelect={this._setSelectionIndex}
+          onDeleteWorkingSet={this._deleteWorkingSet}
+          onEditWorkingSet={this.props.onEditWorkingSet}
+        />
+      );
+    });
+
+    let notApplicableSection;
+    if (this.state.notApplicableDefinitions.length > 0) {
+      const notApplicableDefinitions = this.state.notApplicableDefinitions.map(def => {
+        return (
+          <NonApplicableDefinitionLine
+            key={def.name}
+            def={def}
+            onDeleteWorkingSet={this._deleteWorkingSet}
+          />
+        );
+      });
+
+      notApplicableSection = (
+        <div>
+          <hr className="nuclide-file-tree-working-set-separator" />
+          <span>The working sets below are not applicable to your current project folders</span>
+          <ol className="list-group">
+            {notApplicableDefinitions}
+          </ol>
+        </div>
+      );
+    }
+
     return (
       <div
         className="select-list"
@@ -104,53 +152,19 @@ export class WorkingSetSelectionComponent extends React.Component {
         onBlur={this._lostFocus}>
 
         <ol className="list-group mark-active">
-          {this.state.definitions.map(this._renderDefinition)}
+          {applicableDefinitions}
         </ol>
+        {notApplicableSection}
       </div>
-    );
-  }
-
-  _renderDefinition(def: WorkingSetDefinition, index: number): React.Element {
-    const classes = {
-      active: def.active,
-      selected: index === this.state.selectionIndex,
-      clearfix: true,
-    };
-
-    return (
-      <li
-        className={classnames(classes)}
-        onMouseOver={() => this.setState({selectionIndex: index})}
-        onClick={() => this._toggleWorkingSet(def.name, def.active)}
-        key={def.name}>
-        <div className="btn-group pull-right">
-          <button
-            className="btn icon icon-trashcan"
-            onClick={event => {
-              this.props.workingSetsStore.deleteWorkingSet(def.name);
-              event.stopPropagation();
-            }}
-            tabIndex="-1"
-          />
-          <button
-            className="btn icon icon-pencil"
-            tabIndex="-1"
-            onClick={event => {
-              this.props.onEditWorkingSet(def.name, def.uris);
-              event.stopPropagation();
-            }}
-            onBlur={this._lostFocus}
-          />
-        </div>
-        <span>
-          {def.name}
-        </span>
-      </li>
     );
   }
 
   _moveSelectionIndex(step: number): void {
     this.setState({selectionIndex: this.state.selectionIndex + step});
+  }
+
+  _setSelectionIndex(selectionIndex: number): void {
+    this.setState({selectionIndex});
   }
 
   _lostFocus(): void {
@@ -177,5 +191,112 @@ export class WorkingSetSelectionComponent extends React.Component {
     } else {
       this.props.workingSetsStore.activate(name);
     }
+  }
+
+  _deleteWorkingSet(name: string): void {
+    this.props.workingSetsStore.deleteWorkingSet(name);
+  }
+}
+
+
+type ApplicableDefinitionLineProps = {
+    def: WorkingSetDefinition;
+    index: number;
+    selected: boolean;
+    toggleWorkingSet: (name: string, active: boolean) => void;
+    onSelect: (index: number) => void;
+    onDeleteWorkingSet: (name: string) => void;
+    onEditWorkingSet: (name: string, uris: Array<string>) => void;
+}
+
+class ApplicableDefinitionLine extends React.Component {
+  props: ApplicableDefinitionLineProps;
+
+  constructor(props: ApplicableDefinitionLineProps) {
+    super(props);
+
+    (this: any)._lineOnClick = this._lineOnClick.bind(this);
+    (this: any)._deleteButtonOnClick = this._deleteButtonOnClick.bind(this);
+    (this: any)._editButtonOnClick = this._editButtonOnClick.bind(this);
+  }
+
+  render(): React.Element {
+    const classes = {
+      active: this.props.def.active,
+      selected: this.props.selected,
+      clearfix: true,
+    };
+
+    return (
+      <li
+        className={classnames(classes)}
+        onMouseOver={() => this.props.onSelect(this.props.index)}
+        onClick={this._lineOnClick}>
+        <div className="btn-group pull-right">
+          <button
+            className="btn icon icon-trashcan"
+            tabIndex="-1"
+            onClick={this._deleteButtonOnClick}
+          />
+          <button
+            className="btn icon icon-pencil"
+            tabIndex="-1"
+            onClick={this._editButtonOnClick}
+          />
+        </div>
+        <span>
+          {this.props.def.name}
+        </span>
+      </li>
+    );
+  }
+
+  _lineOnClick(event: MouseEvent): void {
+    this.props.toggleWorkingSet(this.props.def.name, this.props.def.active);
+  }
+
+  _deleteButtonOnClick(event: MouseEvent): void {
+    this.props.onDeleteWorkingSet(this.props.def.name);
+    event.stopPropagation();
+  }
+
+  _editButtonOnClick(event: MouseEvent): void {
+    this.props.onEditWorkingSet(this.props.def.name, this.props.def.uris);
+    event.stopPropagation();
+  }
+}
+
+type NonApplicableDefinitionLineProps = {
+    def: WorkingSetDefinition;
+    onDeleteWorkingSet: (name: string) => void;
+}
+
+class NonApplicableDefinitionLine extends React.Component {
+  props: NonApplicableDefinitionLineProps;
+
+  constructor(props: NonApplicableDefinitionLineProps) {
+    super(props);
+
+    (this: any)._deleteButtonOnClick = this._deleteButtonOnClick.bind(this);
+  }
+
+  render(): React.Element {
+    return (
+      <li className="clearfix">
+        <button
+          className="btn icon icon-trashcan pull-right"
+          tabIndex="-1"
+          onClick={this._deleteButtonOnClick}
+        />
+        <span className="text-subtle">
+          {this.props.def.name}
+        </span>
+      </li>
+    );
+  }
+
+  _deleteButtonOnClick(event: MouseEvent): void {
+    this.props.onDeleteWorkingSet(this.props.def.name);
+    event.stopPropagation();
   }
 }

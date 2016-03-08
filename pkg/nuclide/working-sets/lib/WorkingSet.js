@@ -10,6 +10,7 @@
  */
 
 
+import {array} from '../../commons';
 import {normalizePathUri, dedupeNormalizedUris, splitUri, isUriBelow} from './uri';
 import invariant from 'assert';
 
@@ -92,6 +93,10 @@ export class WorkingSet {
     const normalizedRoot = normalizePathUri(rootUri);
     const uris = this._uris.filter(uri => !isUriBelow(normalizedRoot, uri));
     return new WorkingSet(uris);
+  }
+
+  equals(other: WorkingSet): boolean {
+    return array.equal(this._uris, other._uris);
   }
 
   _buildDirTree(uris: Array<string>): ?InnerNode {

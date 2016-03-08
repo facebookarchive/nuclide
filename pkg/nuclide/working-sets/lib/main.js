@@ -13,7 +13,7 @@ import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 import {WorkingSetsStore} from './WorkingSetsStore';
 import {WorkingSetsConfig} from './WorkingSetsConfig';
-import {EmptyPathsObserver} from './EmptyPathsObserver';
+import {PathsObserver} from './PathsObserver';
 
 export type WorkingSetDefinition = {
   name: string;
@@ -22,6 +22,7 @@ export type WorkingSetDefinition = {
 };
 
 export type {WorkingSetsStore};
+export type {ApplicabilitySortedDefinitions} from './workingSetsStore';
 
 export {WorkingSet} from './WorkingSet';
 
@@ -49,10 +50,7 @@ class Activation {
       this.workingSetsStore.toggleLastSelected.bind(this.workingSetsStore),
     ));
 
-    const emptyPathsObserver = new EmptyPathsObserver(this.workingSetsStore);
-    this._disposables.add(emptyPathsObserver.onEmptyPaths(
-      this.workingSetsStore.deactivateAll.bind(this.workingSetsStore)
-    ));
+    this._disposables.add(new PathsObserver(this.workingSetsStore));
   }
 
   deactivate(): void {

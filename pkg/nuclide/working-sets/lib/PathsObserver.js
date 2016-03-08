@@ -11,29 +11,34 @@
 
 import type {WorkingSetsStore} from './WorkingSetsStore';
 
-export class EmptyPathsObserver {
+export class PathsObserver {
   _prevPaths: Array<string>;
   _workingSetsStore: WorkingSetsStore;
+  _disposable: IDisposable;
 
   constructor(workingSetsStore: WorkingSetsStore) {
     this._prevPaths = atom.project.getPaths();
     this._workingSetsStore = workingSetsStore;
+
+    this._disposable = atom.project.onDidChangePaths(
+      this._didChangePaths.bind(this)
+    );
   }
 
-  onEmptyPaths(callback: () => void): IDisposable {
-    return atom.project.onDidChangePaths((paths: Array<string>) => {
-      this._didChangePaths(paths, callback);
-    });
+  dispose(): void {
+    this._disposable.dispose();
   }
 
-  _didChangePaths(paths: Array<string>, emptyPathsCallback: () => void): void {
+  _didChangePaths(paths: Array<string>): void {
+    this._workingSetsStore.updateApplicability();
+
     const prevPaths = this._prevPaths;
     this._prevPaths = paths;
 
     const currentWs = this._workingSetsStore.getCurrent();
     const noneShown = !paths.some(p => currentWs.containsDir(p));
     if (noneShown) {
-      emptyPathsCallback();
+      this._workingSetsStore.deactivateAll();
       return;
     }
 
@@ -43,7 +48,7 @@ export class EmptyPathsObserver {
     // The user added a new project root and the currently active working sets did not let
     // it show. This would feel broken - better deactivate the working sets.
     if (pathChangeWasHidden) {
-      emptyPathsCallback();
+      this._workingSetsStore.deactivateAll();
     }
   }
 }

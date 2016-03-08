@@ -62,7 +62,10 @@ export class FileTreeToolbarComponent extends React.Component {
 
     this._disposables = new CompositeDisposable();
     this._disposables.add(props.workingSetsStore.subscribeToDefinitions(
-      definitions => this.setState({definitionsAreEmpty: definitions.length === 0})
+      definitions => {
+        const empty = definitions.applicable.length + definitions.notApplicable.length === 0;
+        this.setState({definitionsAreEmpty: empty});
+      }
     ));
 
     (this: any)._toggleWorkingSetsSelector = this._toggleWorkingSetsSelector.bind(this);
