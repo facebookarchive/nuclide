@@ -10,6 +10,11 @@ Here is an ever-growing list of frequently asked questions around Nuclide.
 * TOC
 {:toc}
 
+## How do I open Nuclide?
+
+See [opening](/docs/editor/basics/#opening) in the Nuclide [basics](/docs/editor/basics/#opening)
+section.
+
 ## What version of Nuclide is installed?
 
 Determine which version of Nuclide you have installed with
