@@ -16,6 +16,7 @@
   - id: feature-quick-open
   - id: feature-working-sets
   - id: feature-health
+  - id: feature-format-js
 - title: Languages
   items:
   - id: language-hack
