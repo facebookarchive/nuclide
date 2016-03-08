@@ -20,7 +20,8 @@ import type {
 } from '../../diagnostics/base';
 import type {
   Diagnostics,
-  SingleMessage,
+  Diagnostic,
+  MessageComponent,
 } from '../../flow-base';
 
 import {trackTiming} from '../../analytics';
@@ -54,7 +55,7 @@ const {JS_GRAMMARS} = require('./constants.js');
  * with which the usage disagrees. Note that these could occur in different
  * files.
  */
-function extractRange(message: SingleMessage): atom$Range {
+function extractRange(message: MessageComponent): atom$Range {
   // It's unclear why the 1-based to 0-based indexing works the way that it
   // does, but this has the desired effect in the UI, in practice.
   return new Range(
@@ -64,7 +65,7 @@ function extractRange(message: SingleMessage): atom$Range {
 }
 
 // A trace object is very similar to an error object.
-function flowMessageToTrace(message: SingleMessage): Trace {
+function flowMessageToTrace(message: MessageComponent): Trace {
   return {
     type: 'Trace',
     text: message['descr'],
@@ -73,8 +74,8 @@ function flowMessageToTrace(message: SingleMessage): Trace {
   };
 }
 
-function flowMessageToDiagnosticMessage(flowMessages) {
-  const flowMessage = flowMessages[0];
+function flowMessageToDiagnosticMessage(diagnostic: Diagnostic) {
+  const flowMessage = diagnostic.messageComponents[0];
 
   // The Flow type does not capture this, but the first message always has a path, and the
   // diagnostics package requires a FileDiagnosticMessage to have a path.
@@ -84,7 +85,7 @@ function flowMessageToDiagnosticMessage(flowMessages) {
   const diagnosticMessage: FileDiagnosticMessage = {
     scope: 'file',
     providerName: 'Flow',
-    type: flowMessage['level'] === 'error' ? 'Error' : 'Warning',
+    type: diagnostic['level'] === 'error' ? 'Error' : 'Warning',
     text: flowMessage['descr'],
     filePath: path,
     range: extractRange(flowMessage),
@@ -92,8 +93,8 @@ function flowMessageToDiagnosticMessage(flowMessages) {
 
   // When the message is an array with multiple elements, the second element
   // onwards comprise the trace for the error.
-  if (flowMessages.length > 1) {
-    diagnosticMessage.trace = flowMessages.slice(1).map(flowMessageToTrace);
+  if (diagnostic.messageComponents.length > 1) {
+    diagnosticMessage.trace = diagnostic.messageComponents.slice(1).map(flowMessageToTrace);
   }
 
   return diagnosticMessage;
@@ -171,7 +172,7 @@ class FlowDiagnosticsProvider {
        * Each message consists of several different components, each with its
        * own text and path.
        */
-      for (const messageComponent of message) {
+      for (const messageComponent of message.messageComponents) {
         if (messageComponent.path != null) {
           pathsForRoot.add(messageComponent.path);
         }
@@ -221,7 +222,7 @@ class FlowDiagnosticsProvider {
   }
 
   _processDiagnostics(
-    diagnostics: Array<Array<SingleMessage>>,
+    diagnostics: Array<Diagnostic>,
     currentFile: string
   ): DiagnosticProviderUpdate {
 

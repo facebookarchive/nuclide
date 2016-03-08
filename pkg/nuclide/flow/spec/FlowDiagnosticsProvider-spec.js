@@ -25,18 +25,21 @@ describe('FlowDiagnosticsProvider', () => {
 
   describe('processDiagnostics', () => {
     it('should propertly transform a simple diagnostic', () => {
-      const diags = [[
-        {
-          level: 'error',
-          path: testPath,
-          descr: 'message',
-          line: 1,
-          endline: 2,
-          start: 3,
-          end: 4,
-          code: 0,
-        },
-      ]];
+      const diags = [{
+        level: 'error',
+        messageComponents: [
+          {
+            level: 'error',
+            path: testPath,
+            descr: 'message',
+            line: 1,
+            endline: 2,
+            start: 3,
+            end: 4,
+            code: 0,
+          },
+        ],
+      }];
 
       const expectedOutput = {
         scope: 'file',
@@ -60,18 +63,20 @@ describe('FlowDiagnosticsProvider', () => {
     });
 
     it('should keep warnings as warnings', () => {
-      const diags = [[
-        {
-          level: 'warning',
-          path: testPath,
-          descr: 'message',
-          line: 1,
-          endline: 2,
-          start: 3,
-          end: 4,
-          code: 0,
-        },
-      ]];
+      const diags = [{
+        level: 'warning',
+        messageComponents: [
+          {
+            path: testPath,
+            descr: 'message',
+            line: 1,
+            endline: 2,
+            start: 3,
+            end: 4,
+            code: 0,
+          },
+        ],
+      }];
 
       const expectedOutput = {
         scope: 'file',
@@ -89,17 +94,20 @@ describe('FlowDiagnosticsProvider', () => {
     });
 
     it('should not filter diagnostics not in the target file', () => {
-      const diags = [[
-        {
-          path: 'notMyPath',
-          descr: 'message',
-          line: 1,
-          endline: 2,
-          start: 3,
-          end: 4,
-          code: 0,
-        },
-      ]];
+      const diags = [{
+        level: 'warning',
+        messageComponents: [
+          {
+            path: 'notMyPath',
+            descr: 'message',
+            line: 1,
+            endline: 2,
+            start: 3,
+            end: 4,
+            code: 0,
+          },
+        ],
+      }];
 
       const allMessages = flowDiagnosticsProvider
         ._processDiagnostics(diags, testPath)
@@ -108,28 +116,30 @@ describe('FlowDiagnosticsProvider', () => {
     });
 
     it('should create traces for diagnostics spanning multiple messages', () => {
-      const diags = [[
-        {
-          level: 'error',
-          path: testPath,
-          descr: 'message',
-          line: 1,
-          endline: 2,
-          start: 3,
-          end: 4,
-          code: 0,
-        },
-        {
-          level: 'error',
-          path: 'otherPath',
-          descr: 'more message',
-          line: 5,
-          endline: 6,
-          start: 7,
-          end: 8,
-          code: 0,
-        },
-      ]];
+      const diags = [{
+        level: 'error',
+        messageComponents: [
+          {
+            path: testPath,
+            descr: 'message',
+            line: 1,
+            endline: 2,
+            start: 3,
+            end: 4,
+            code: 0,
+          },
+          {
+            level: 'error',
+            path: 'otherPath',
+            descr: 'more message',
+            line: 5,
+            endline: 6,
+            start: 7,
+            end: 8,
+            code: 0,
+          },
+        ],
+      }];
 
       const expectedOutput = {
         scope: 'file',

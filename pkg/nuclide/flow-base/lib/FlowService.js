@@ -25,16 +25,18 @@ export type Diagnostics = {
  * Flow to help explain the problem and point to different locations that may be
  * of interest.
  */
-export type Diagnostic = Array<SingleMessage>;
+export type Diagnostic = {
+  level: string;
+  messageComponents: Array<MessageComponent>;
+}
 
-export type SingleMessage = {
+export type MessageComponent = {
   path?: NuclideUri;
   descr: string;
   line: number;
   endline: number;
   start: number;
   end: number;
-  level: string;
 }
 
 export type Loc = {

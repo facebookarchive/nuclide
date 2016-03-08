@@ -15,6 +15,7 @@ import type {ServerStatusType} from './FlowService';
 
 import type {
   Diagnostics,
+  Diagnostic,
   Loc,
   FlowOutlineTree,
 } from './FlowService';
@@ -148,10 +149,13 @@ export class FlowRoot {
       return null;
     }
 
-    const messages = json['errors'].map(diagnostic => {
-      const message = diagnostic['message'];
+    // TODO better types for the JSON output
+    const errors: Array<Object> = json['errors'];
+
+    const messages: Array<Diagnostic> = errors.map(diagnostic => {
+      const messageComponents = diagnostic['message'];
       // `message` is a list of message components
-      message.forEach(component => {
+      messageComponents.forEach(component => {
         if (!component.path) {
           // Use a consistent 'falsy' value for the empty string, undefined, etc. Flow returns the
           // empty string instead of null when there is no relevant path.
@@ -165,10 +169,12 @@ export class FlowRoot {
         // behind separating it out, but prepending it with 'See also: ' and adding it to the end of
         // the messages is what the Flow team recommended.
         operation['descr'] = 'See also: ' + operation['descr'];
-        operation['level'] = message[0]['level'];
-        message.push(operation);
+        messageComponents.push(operation);
       }
-      return message;
+      return {
+        level: messageComponents[0]['level'],
+        messageComponents,
+      };
     });
 
     return {
