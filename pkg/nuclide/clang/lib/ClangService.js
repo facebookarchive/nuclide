@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from '../../remote-uri';
 
-import {checkOutput, fsPromise, object, promises} from '../../commons';
+import {checkOutput, object, promises} from '../../commons';
 import {BuckUtils} from '../../buck/base/lib/BuckUtils';
 import LRUCache from 'lru-cache';
 import os from 'os';
@@ -290,18 +290,7 @@ export async function getDeclaration(
   if (result == null) {
     return null;
   }
-
-  const {locationAndSpelling} = result;
-  if (locationAndSpelling == null) {
-    return null;
-  }
-
-  const state = await fsPromise.lstat(locationAndSpelling.file);
-  if (state.isSymbolicLink()) {
-    locationAndSpelling.file = await fsPromise.readlink(locationAndSpelling.file);
-  }
-
-  return locationAndSpelling;
+  return result.locationAndSpelling;
 }
 
 export function getDeclarationInfo(

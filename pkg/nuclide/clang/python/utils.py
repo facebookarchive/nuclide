@@ -13,9 +13,17 @@ def is_header_file(src):
     return ext in HEADER_EXTENSIONS
 
 
+# Compilation flags often contain symlinks.
+# Nuclide can't open these remotely, so resolve them to the real path.
 def resolve_file(file):
     if file is None:
         return None
+    realpath = os.path.realpath(file.name)
+    # If the file itself is a symlink, always resolve it.
+    # Otherwise, do not resolve '/mnt' paths, since Nuclide can't open them remotely.
+    # TODO(hansonw): this is a hack! Remove when we support arbitrary filesystem paths.
+    if os.path.islink(file.name) or not realpath.startswith('/mnt'):
+        return realpath
     return file.name
 
 
