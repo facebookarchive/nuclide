@@ -1,5 +1,24 @@
 # Nuclide Changelog
 
+## v0.123.0
+
+Added:
+
+* Show Hack Type Coverage - ctrl-alt-shift-V
+* Display an error if the Flow server crashes, rather than silently ceasing to provide Flow features.
+* Autofix for C++ diagnostics (e.g. for typos and missing semicolons)
+* OCaml diagnostics and typehints
+* Diff View auto-scroll to first change.
+* Show connection profile info next to remote folders in file tree.
+
+Fixed:
+
+* Diff View: Fix multiple race conditions that caused user edits override.
+* 3x Optimization to mercurial status queries during updates - fix halting nuclide.
+* Better scrolling when navigating with hyperclick and diagnostics.
+* Fix Hyperclick error when going out of screen range.
+* Improved autocompletion for C++ function/method calls
+
 ## v0.122.0
 
 Added:
@@ -13,7 +32,7 @@ Fixed:
 * Correctly report invalid .buckconfig file
 * A bug prevented certain types of Flow errors from appearing. This is now fixed.
 * Some fixes for HHVM debugger printing of map-like arrays and other hierarchical data structures.
-* HHVM script debugging breakpoints trigger more reliably. 
+* HHVM script debugging breakpoints trigger more reliably.
 
 ## 0.121.0
 
