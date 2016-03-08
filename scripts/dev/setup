@@ -21,7 +21,6 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 
 from package_manager import NUCLIDE_PATH
-from platform_checker import is_os_x
 
 try:
     from fb.pre_setup import fb_pre_setup
@@ -61,7 +60,7 @@ if options.nuke:
     # serialized state
     shutil.rmtree(os.path.expanduser('~/.atom/storage'), ignore_errors=True)
     # cookies, localstorage, etc.
-    if is_os_x():
+    if sys.platform == 'darwin':
         shutil.rmtree(os.path.expanduser('~/Library/Application Support/Atom'), ignore_errors=True)
     else:
         shutil.rmtree(os.path.expanduser('~/.config/atom'), ignore_errors=True)

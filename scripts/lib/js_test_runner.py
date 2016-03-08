@@ -6,7 +6,6 @@
 
 import logging
 import os
-import platform_checker
 import shutil
 import subprocess
 import sys
@@ -59,7 +58,7 @@ class JsTestRunner(object):
               test_bucket = apm_tests
             test_bucket.append(test_args)
 
-        if self._run_in_band or platform_checker.is_windows():
+        if self._run_in_band:
             # We run all tests in serial on Windows because Python's multiprocessing library has issues:
             # https://docs.python.org/2/library/multiprocessing.html#windows
             parallel_tests = []
@@ -105,7 +104,7 @@ def run_js_test(test_runner, pkg_path, name):
             cwd=pkg_path,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            shell=platform_checker.is_windows())
+            shell=False)
     stdout = []
     for line in proc.stdout:
         # line is a bytes string literal in Python 3.

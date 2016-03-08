@@ -7,7 +7,6 @@
 import errno
 import logging
 import os
-import platform_checker
 import shutil
 import subprocess
 
@@ -48,12 +47,9 @@ def symlink(src, dest, relative=False):
     if (not os.path.islink(dest) or
         os.path.realpath(os.path.join(dest_dir, src)) != os.path.realpath(dest)):
         try:
-            if platform_checker.is_windows() and os.path.isdir(src):
-                cross_platform_check_output(['mklink', '/J', '/D', dest, src])
-            else:
-                if relative and os.path.isabs(src):
-                    src = os.path.relpath(src, os.path.dirname(dest))
-                os.symlink(src, dest)
+            if relative and os.path.isabs(src):
+                src = os.path.relpath(src, os.path.dirname(dest))
+            os.symlink(src, dest)
         except OSError as e:
             if e.errno == errno.EEXIST:
                 os.remove(dest)
@@ -72,13 +68,6 @@ def enhanced_remove(src):
 def cross_platform_check_output(cmd_args, **kwargs):
     ''' This is a subprocess.check_output() implementation providing cross-platform support
     '''
-
-    # Unfortunately, it appears that shell=True must be used on Windows to behave like it does on
-    # OS X and Linux: https://bugs.python.org/issue17023. Alternatively, we could try to get the
-    # full path to the executable, but that seems like a pain.
-    if platform_checker.is_windows():
-        kwargs['shell'] = True
-
     kwargs['stdout'] = subprocess.PIPE
     process = subprocess.Popen(cmd_args, **kwargs)
     stdout, stderr = process.communicate()
