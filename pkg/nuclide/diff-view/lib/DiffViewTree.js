@@ -72,13 +72,13 @@ function vcsClassNameForEntry(entry: FileChange): string {
 }
 
 type Props = {
-  fileChanges: Map<NuclideUri, FileChangeStatusValue>;
   activeFilePath: ?NuclideUri;
   diffModel: DiffViewModel;
+  fileChanges: Map<NuclideUri, FileChangeStatusValue>;
 };
 
-/* eslint-disable react/prop-types */
 export default class DiffViewTree extends React.Component {
+  props: Props;
 
   _subscriptions: CompositeDisposable;
 
@@ -212,7 +212,7 @@ export default class DiffViewTree extends React.Component {
 
   _onConfirmSelection(node: LazyTreeNode): void {
     const entry: FileChange = node.getItem();
-    if (!entry.statusCode || entry.filePath === this.props.activateFilePath) {
+    if (!entry.statusCode || entry.filePath === this.props.activeFilePath) {
       return;
     }
     this.props.diffModel.activateFile(entry.filePath);
