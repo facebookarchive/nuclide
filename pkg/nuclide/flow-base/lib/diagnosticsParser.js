@@ -15,19 +15,22 @@ import type {
   MessageComponent,
 } from './FlowService';
 
-type FlowStatusOutput = {
+// Types for the old `flow status` output -- v0.22 and below
+
+type OldFlowStatusOutput = {
   passed: boolean;
+  // This is not actually the Flow version; instead it is a build ID or something.
   version?: string;
-  errors: Array<FlowStatusError>;
+  errors: Array<OldFlowStatusError>;
 };
 
-type FlowStatusError = {
+type OldFlowStatusError = {
   kind: string;
-  operation?: FlowStatusErrorOperation;
-  message: Array<FlowStatusErrorMessageComponent>;
+  operation?: OldFlowStatusErrorOperation;
+  message: Array<OldFlowStatusErrorMessageComponent>;
 };
 
-type BaseFlowStatusErrorMessageComponent = {
+type OldBaseFlowStatusErrorMessageComponent = {
   // If there is no path component, this is the empty string. We should make it null instead, in
   // that case (t8644340)
   path: string;
@@ -38,20 +41,20 @@ type BaseFlowStatusErrorMessageComponent = {
   endline: number;
 }
 
-type FlowStatusErrorMessageComponent = BaseFlowStatusErrorMessageComponent & {
+type OldFlowStatusErrorMessageComponent = OldBaseFlowStatusErrorMessageComponent & {
   level: 'error' | 'warning';
 };
 
 // Same as FlowStatusErrorMessageComponent, except without the 'level' field.
-type FlowStatusErrorOperation = BaseFlowStatusErrorMessageComponent;
+type OldFlowStatusErrorOperation = OldBaseFlowStatusErrorMessageComponent;
 
 export function flowStatusOutputToDiagnostics(
   root: string,
-  statusOutput: FlowStatusOutput,
+  statusOutput: OldFlowStatusOutput,
 ): Diagnostics {
-  const errors: Array<FlowStatusError> = statusOutput['errors'];
-  const messages: Array<Diagnostic> = errors.map((flowStatusError: FlowStatusError) => {
-    const flowMessageComponents: Array<FlowStatusErrorMessageComponent> =
+  const errors: Array<OldFlowStatusError> = statusOutput['errors'];
+  const messages: Array<Diagnostic> = errors.map((flowStatusError: OldFlowStatusError) => {
+    const flowMessageComponents: Array<OldFlowStatusErrorMessageComponent> =
       flowStatusError['message'];
     const level = flowMessageComponents[0]['level'];
 
@@ -79,7 +82,7 @@ export function flowStatusOutputToDiagnostics(
 }
 
 function flowMessageComponentToMessageComponent(
-  component: BaseFlowStatusErrorMessageComponent,
+  component: OldBaseFlowStatusErrorMessageComponent,
 ): MessageComponent {
   let path = component['path'];
   if (path == null || path === '') {
