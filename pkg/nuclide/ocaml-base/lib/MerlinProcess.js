@@ -235,6 +235,7 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
   }
 
   const merlinPath = getPathToMerlin();
+  const flags = getMerlinFlags();
 
   if (!await isInstalled(merlinPath)) {
     return null;
@@ -247,7 +248,7 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
   };
 
   logger.info('Spawning new ocamlmerlin process');
-  const process = await safeSpawn(merlinPath, [], options);
+  const process = await safeSpawn(merlinPath, flags, options);
   merlinProcessInstance = new MerlinProcess(process);
 
   if (dotMerlinPath) {
@@ -267,6 +268,18 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
 function getPathToMerlin(): string {
   return global.atom
     && global.atom.config.get('nuclide.nuclide-ocaml.pathToMerlin') || 'ocamlmerlin';
+}
+
+/**
+ * @return The set of arguments to pass to ocamlmerlin.
+ */
+function getMerlinFlags(): Array<string> {
+  const configVal = global.atom
+    && global.atom.config.get('nuclide.nuclide-ocaml.merlinFlags');
+  // To split while stripping out any leading/trailing space, we match on all
+  // *non*-whitespace.
+  const configItems = configVal && configVal.match(/\S+/g);
+  return configItems || [];
 }
 
 let isInstalledCache: ?boolean = null;
