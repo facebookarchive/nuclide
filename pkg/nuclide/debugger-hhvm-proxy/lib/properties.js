@@ -43,7 +43,7 @@ function convertProperty(
   const result = {
     configurable: false,
     enumerable: true,
-    name: dbgpProperty.$.name,
+    name: dbgpProperty.$.name || 'Anonymous Property',
     value: convertValue(contextId, dbgpProperty),
   };
   return result;

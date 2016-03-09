@@ -148,9 +148,11 @@ function getAggregateRemoteObjectId(
       startIndex: 0,
       count: numchildren,
     };
+    invariant(dbgpProperty.$.fullname != null);
     return remoteObjectIdOfObjectId(
       pagedObjectId(contextId, dbgpProperty.$.fullname, elementRange));
   } else {
+    invariant(dbgpProperty.$.fullname != null);
     return remoteObjectIdOfObjectId(singlePageObjectId(contextId, dbgpProperty.$.fullname, 0));
   }
 }

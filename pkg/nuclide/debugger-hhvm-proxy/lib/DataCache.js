@@ -37,6 +37,8 @@ const {
   STATUS_STARTING,
 } = require('./DbgpSocket');
 
+const EVAL_IDENTIFIER = '$__unique_xdebug_variable_name__';
+
 /**
  * Handles data value tracking between Chrome and Dbgp.
  *
@@ -48,11 +50,13 @@ export class DataCache {
   _socket: DbgpSocket;
   _enabled: boolean;
   _enableCount: number;
+  _evalIdentifierId: number;
 
   constructor(socket: DbgpSocket) {
     this._socket = socket;
     this._enableCount = 0;
     this._enabled = false;
+    this._evalIdentifierId = 0;
     socket.onStatus(this._onStatusChanged.bind(this));
   }
 
@@ -96,6 +100,28 @@ export class DataCache {
     });
   }
 
+  async runtimeEvaluate(frameIndex: number, expression: string): Promise<Object> {
+    // Every evaluation we perform with xdebug's eval command is saved in a unique variable
+    // for later lookup.
+    const newIdentifier = `${EVAL_IDENTIFIER}${++this._evalIdentifierId}`;
+    const evaluatedResult = await this._socket.runtimeEvaluate(`${newIdentifier} = ${expression}`);
+    if (evaluatedResult.wasThrown) {
+      return evaluatedResult;
+    }
+    const id = getWatchContextObjectId(this._enableCount, frameIndex);
+    invariant(evaluatedResult.result != null);
+    // XDebug's eval returns xml without a `fullname` attribute.  When it returns paged or otherwise
+    // heirarchical data, we need a fullname to reference this data (e.g. for accessing properties),
+    // so we use the `newIdentifier` constructed above, which is the name of a variable that stores
+    // the value returned from eval.
+    evaluatedResult.result.$.fullname = newIdentifier;
+    const result = convertValue(id, evaluatedResult.result);
+    return {
+      result,
+      wasThrown: false,
+    };
+  }
+
   async evaluateOnCallFrame(frameIndex: number, expression: string): Promise<Object> {
     if (!this.isEnabled()) {
       throw new Error('Must be enabled to evaluate expression.');
@@ -129,6 +155,7 @@ export class DataCache {
   async getProperties(
     remoteId: Runtime$RemoteObjectId,
   ): Promise<Array<Runtime$PropertyDescriptor>> {
+    logger.log(`DataCache.getProperties call on ID: ${remoteId}`);
     const id = JSON.parse(remoteId);
     if (id.enableCount !== this._enableCount) {
       logger.logErrorAndThrow(`Got request for stale RemoteObjectId ${remoteId}`);

@@ -84,6 +84,7 @@ function pagedObjectId(objectId: ObjectId, fullname: string, elementRange: Eleme
   const result = copyObjectId(objectId);
   result.fullname = fullname;
   result.elementRange = elementRange;
+
   return result;
 }
 
@@ -91,6 +92,7 @@ function singlePageObjectId(objectId: ObjectId, fullname: string, page: number):
   const result = copyObjectId(objectId);
   result.fullname = fullname;
   result.page = page;
+
   return result;
 }
 

@@ -40,8 +40,8 @@ export class Connection {
     return this._dataCache.evaluateOnCallFrame(frameIndex, expression);
   }
 
-  eval(expression: string): Promise<Object> {
-    return this._socket.eval(expression);
+  runtimeEvaluate(frameIndex: number, expression: string): Promise<Object> {
+    return this._dataCache.runtimeEvaluate(frameIndex, expression);
   }
 
   setExceptionBreakpoint(exceptionName: string): Promise<string> {

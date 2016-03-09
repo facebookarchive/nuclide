@@ -130,6 +130,8 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       }
       // $FlowFixMe override instance method.
       connection.evaluateOnCallFrame = jasmine.createSpy('evaluateOnCallFrame').andReturn({});
+      // $FlowFixMe override instance method.
+      connection.runtimeEvaluate = jasmine.createSpy('runtimeEvaluate').andReturn({});
 
       const statusDispose = jasmine.createSpy('connection.onStatus.dispose' + connectionCount);
       // $FlowFixMe override instance method.
@@ -676,7 +678,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       expect(dummyConnection).not.toBeNull();
 
       await connectionMultiplexer.runtimeEvaluate(expression);
-      expect(dummyConnection.evaluateOnCallFrame).toHaveBeenCalledWith(0, expression);
+      expect(dummyConnection.runtimeEvaluate).toHaveBeenCalledWith(0, expression);
     });
   });
 

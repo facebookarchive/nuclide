@@ -46,8 +46,8 @@ export type DbgpContext = {
 
 export type DbgpProperty = {
   $: {
-    name: string;
-    fullname: string;
+    name?: string; // name and fullname are omitted when we get data back from the `eval` command.
+    fullname?: string;
     address: string;
     type: string;
 
@@ -272,7 +272,7 @@ class DbgpSocket {
   /**
    * Evaluate the expression in the debugger's current context.
    */
-  async eval(expr: string): Promise<EvaluationResult> {
+  async runtimeEvaluate(expr: string): Promise<EvaluationResult> {
     const response = await this._callDebugger('eval', `-- ${base64Encode(expr)}`);
     if (response.error && response.error.length > 0) {
       return {
@@ -281,7 +281,7 @@ class DbgpSocket {
       };
     }
     return {
-      result: response.property || [],
+      result: response.property[0] || [],
       wasThrown: false,
     };
   }

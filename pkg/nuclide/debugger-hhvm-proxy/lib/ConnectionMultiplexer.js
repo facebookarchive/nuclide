@@ -307,10 +307,10 @@ export class ConnectionMultiplexer {
 
   async runtimeEvaluate(expression: string): Promise<Object> {
     logger.log(`runtimeEvaluate() on dummy connection for: ${expression}`);
-    if (this._dummyConnection) {
+    if (this._dummyConnection != null) {
       // Global runtime evaluation on dummy connection does not care about
       // which frame it is being evaluated on so choose top frame here.
-      const result = await this._dummyConnection.evaluateOnCallFrame(0, expression);
+      const result = await this._dummyConnection.runtimeEvaluate(0, expression);
       this._reportEvaluationFailureIfNeeded(expression, result);
       return result;
     } else {
