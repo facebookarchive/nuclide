@@ -130,10 +130,11 @@ export class HhvmDebuggerProxyService {
 
   async dispose(): Promise<void> {
     logger.logInfo('Proxy: Ending session');
-    if (this._launchedScriptProcess != null) {
+    // We may want to wait for a launched script to exit for its exit code.
+    if (this._launchedScriptProcess != null && this._state === CLOSED) {
       await this._launchedScriptProcess;
-      this._launchedScriptProcess = null;
     }
+    this._launchedScriptProcess = null;
     this._clientCallback.dispose();
     if (this._translator) {
       this._translator.dispose();
