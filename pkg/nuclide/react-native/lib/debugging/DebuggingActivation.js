@@ -107,6 +107,12 @@ export class DebuggingActivation {
 
     this._pendingDebuggerProcessInfo = null;
     this._startDebuggerSession(debuggerService, pid);
+
+    // The node process is paused by default when we send SIGUSR1, so we automatically continue.
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'nuclide-debugger:continue-debugging',
+    );
   }
 
   _startDebuggerSession(debuggerService: RemoteControlService, pid: ?number): void {
