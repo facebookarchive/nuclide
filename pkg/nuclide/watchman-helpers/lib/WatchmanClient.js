@@ -24,7 +24,10 @@ import type {WatchmanSubscriptionOptions} from './WatchmanSubscription';
 type WatchmanSubscriptionResponse = {
   root: string;
   subscription: string;
-  files: Array<FileChange>;
+  files?: Array<FileChange>;
+  'state-enter'?: string;
+  'state-leave'?: string;
+  metadata?: Object;
 };
 
 export type FileChange = {
@@ -118,6 +121,17 @@ class WatchmanClient {
     const subscription = this._getSubscription(response.subscription);
     if (subscription == null) {
       logger.error('Subscription not found for response:!', response);
+      return;
+    }
+    if (!Array.isArray(response.files)) {
+      // TODO(most): use state messages to decide on when to send updates.
+      const stateEnter = response['state-enter'];
+      const stateLeave = response['state-leave'];
+      const stateMessage = stateEnter != null
+        ? `Entering ${stateEnter}`
+        : `Leaving ${stateLeave}`
+      ;
+      logger.info(`Subscription state: ${stateMessage}`);
       return;
     }
     subscription.emit('change', response.files);
