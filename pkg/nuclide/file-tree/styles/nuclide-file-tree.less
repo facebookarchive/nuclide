@@ -53,8 +53,14 @@
 }
 
 .nuclide-file-tree-toolbar-container {
-  width: 100%;
   display: flex;
+  /*
+   * Ensure this container is at least the height of its contents, same as `.tree-view`, so this
+   * element is always visible when its parent scroller is scrolled and, subsequently, calls to
+   * this element's `focus` method do not affect the scroller's scroll position.
+   */
+  min-height: -webkit-min-content;
+  width: 100%;
 }
 
 .nuclide-file-tree-toolbar-fader {

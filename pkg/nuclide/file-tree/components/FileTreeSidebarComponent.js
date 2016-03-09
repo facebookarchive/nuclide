@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 import FileTree from './FileTree';
 import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
 import FileTreeStore from '../lib/FileTreeStore';
@@ -32,6 +35,7 @@ class FileTreeSidebarComponent extends React.Component {
       shouldRenderToolbar: false,
     };
     this._disposables = new CompositeDisposable();
+    (this: any)._handleFocus = this._handleFocus.bind(this);
   }
 
   componentDidMount(): void {
@@ -46,6 +50,14 @@ class FileTreeSidebarComponent extends React.Component {
     this._disposables.dispose();
   }
 
+  _handleFocus(event: SyntheticEvent): void {
+    // Delegate focus to the FileTree component if this component gains focus because the FileTree
+    // matches the selectors targeted by themes to show the containing panel has focus.
+    if (event.target === ReactDOM.findDOMNode(this)) {
+      ReactDOM.findDOMNode(this.refs['fileTree']).focus();
+    }
+  }
+
   render() {
     const workingSetsStore = this._store.getWorkingSetsStore();
     let toolbar;
@@ -53,11 +65,14 @@ class FileTreeSidebarComponent extends React.Component {
       toolbar = <FileTreeToolbarComponent workingSetsStore={workingSetsStore} />;
     }
 
-
+    // Include `tabIndex` so this component can be focused by calling its native `focus` method.
     return (
-      <div className="nuclide-file-tree-toolbar-container">
+      <div
+        className="nuclide-file-tree-toolbar-container"
+        onFocus={this._handleFocus}
+        tabIndex={0}>
         {toolbar}
-        <FileTree nodeToKeepInView={this._store.getTrackedNode()} />
+        <FileTree nodeToKeepInView={this._store.getTrackedNode()} ref="fileTree" />
       </div>
     );
   }

@@ -12,24 +12,27 @@
 const NuclideSideBar = require('../lib/main');
 const {React} = require('react-for-atom');
 
-class SideBarView extends React.Component {
-  render() {
-    return <div className="side-bar-view">Howdy, Side Bar</div>;
-  }
-}
-
 class CoolerBarView extends React.Component {
   render() {
-    return <div className="cooler-bar-view">Bye, Side Bar</div>;
+    return <div className="cooler-bar-view" tabIndex={0}>Bye, Side Bar</div>;
   }
 }
 
-const SIDE_BAR = {
-  getComponent() { return SideBarView; },
-  onDidShow() {},
-  toggleCommand: 'side-bar-view:toggle',
-  viewId: 'side-bar-view',
-};
+class FocusDelegateView extends React.Component {
+  render() {
+    return (
+      <div className="focus-delegate-view" tabIndex={0}>
+        <div className="focus-delegate-view-delegate" tabIndex={0}></div>
+      </div>
+    );
+  }
+}
+
+class SideBarView extends React.Component {
+  render() {
+    return <div className="side-bar-view" tabIndex={0}>Howdy, Side Bar</div>;
+  }
+}
 
 const COOLER_BAR = {
   getComponent() { return CoolerBarView; },
@@ -38,8 +41,30 @@ const COOLER_BAR = {
   viewId: 'cooler-bar-view',
 };
 
+const FOCUS_DELEGATE = {
+  getComponent() { return FocusDelegateView; },
+  onDidShow() {},
+  toggleCommand: 'focus-delegate-view:toggle',
+  viewId: 'focus-delegate-view',
+};
+
+const SIDE_BAR = {
+  getComponent() { return SideBarView; },
+  onDidShow() {},
+  toggleCommand: 'side-bar-view:toggle',
+  viewId: 'side-bar-view',
+};
+
 describe('nuclide-side-bar main', () => {
   let workspaceElement;
+
+  function hideView(view) {
+    atom.commands.dispatch(
+      workspaceElement,
+      view.toggleCommand,
+      {display: false}
+    );
+  }
 
   function showView(view) {
     atom.commands.dispatch(
@@ -67,6 +92,40 @@ describe('nuclide-side-bar main', () => {
 
     // Should be present in the DOM.
     expect(document.querySelectorAll('.side-bar-view').length).toEqual(1);
+  });
+
+  it('focuses a view when its toggle event is dispatched', () => {
+    const sideBarService = NuclideSideBar.provideNuclideSideBar();
+    sideBarService.registerView(SIDE_BAR);
+
+    let didShow = false;
+    spyOn(SIDE_BAR, 'onDidShow').andCallFake(() => {
+      // Should be the active element.
+      expect(document.querySelector('.side-bar-view')).toEqual(document.activeElement);
+      didShow = true;
+    });
+
+    runs(() => {
+      // Do a full toggle, hide and then show, so focus logic is guaranteed to happen.
+      hideView(SIDE_BAR);
+      showView(SIDE_BAR);
+    });
+
+    waitsFor(() => {
+      return didShow;
+    }, 'The side bar should have been focused', 200);
+  });
+
+  it('blurs a view when one of its descendants has focus', () => {
+    const sideBarService = NuclideSideBar.provideNuclideSideBar();
+    sideBarService.registerView(FOCUS_DELEGATE);
+
+    // Give a descendant focus
+    document.querySelector('.focus-delegate-view-delegate').focus();
+    expect(document.activeElement).toEqual(document.querySelector('.focus-delegate-view-delegate'));
+
+    atom.commands.dispatch(workspaceElement, 'nuclide-side-bar:toggle-focus');
+    expect(document.activeElement).toEqual(atom.views.getView(atom.workspace.getActivePane()));
   });
 
   it('replaces a view object when another view is displayed', () => {

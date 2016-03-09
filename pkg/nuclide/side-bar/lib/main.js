@@ -79,6 +79,30 @@ function getActiveViewInstance(activeState: State): ?ViewInstance {
   }
 }
 
+/**
+ * Returns `true` if `element` or one of its descendants has focus. This is used to determine when
+ * to toggle focus between the side-bar's views and the active text editor. Views might have
+ * `tabindex` attributes on descendants, and so a view's descendants have to be searched for a
+ * potential `activeElement`.
+ */
+function elementHasOrContainsFocus(element: HTMLElement): boolean {
+  return document.activeElement === element || element.contains(document.activeElement);
+}
+
+function blurPanel(): void {
+  const child = ReactDOM.findDOMNode(panelComponent.getChildComponent());
+  if (elementHasOrContainsFocus(child)) {
+    atom.workspace.getActivePane().activate();
+  }
+}
+
+function focusPanel(): void {
+  const child = ReactDOM.findDOMNode(panelComponent.getChildComponent());
+  if (!elementHasOrContainsFocus(child)) {
+    child.focus();
+  }
+}
+
 function renderPanel(renderState: State, onDidRender?: () => mixed): void {
   const activeViewInstance = getActiveViewInstance(renderState);
   panelComponent = ReactDOM.render(
@@ -134,12 +158,15 @@ function toggleView(viewId: ?string, options?: {display: boolean}) {
     const activeViewInstance = getActiveViewInstance(state);
     let onDidShow;
     if (activeViewInstance != null) {
-      onDidShow = activeViewInstance.view.onDidShow;
+      onDidShow = function() {
+        focusPanel();
+        activeViewInstance.view.onDidShow();
+      };
     }
-
     renderPanel(state, onDidShow);
   } else {
     renderPanel(state);
+    blurPanel();
   }
 }
 
@@ -230,7 +257,7 @@ export function activate(deserializedState: ?Object) {
 
   disposables.add(atom.commands.add('atom-workspace', 'nuclide-side-bar:toggle-focus', () => {
     const child = ReactDOM.findDOMNode(panelComponent.getChildComponent());
-    if (document.activeElement === child) {
+    if (elementHasOrContainsFocus(child)) {
       atom.workspace.getActivePane().activate();
     } else {
       child.focus();
