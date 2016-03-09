@@ -29,12 +29,24 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
   }
 
   render(): ReactElement {
+    // TODO: smart fill the working directory textbox.
+    // TODO: make tab stop between textbox work.
     return (
       <div className="block">
         <label>Executable: </label>
         <AtomInput
-          ref="launchCommandLine"
+          ref="launchExecutable"
           placeholderText="Input the executable path you want to launch"
+        />
+        <label>Arguments: </label>
+        <AtomInput
+          ref="launchArguments"
+          placeholderText="Arguments to the executable"
+        />
+        <label>Working directory: </label>
+        <AtomInput
+          ref="launchWorkingDirectory"
+          placeholderText="Working directory for the launched executable"
         />
         <button className="btn" onClick={this._handleLaunchClick}>Launch</button>
       </div>
@@ -42,13 +54,16 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
   }
 
   _handleLaunchClick(): void {
-    const launchExecutable = this.refs['launchCommandLine'].getText();
+    // TODO: perform some validation for the input.
+    const launchExecutable = this.refs['launchExecutable'].getText().trim();
+    const launchArguments = this.refs['launchArguments'].getText().trim();
+    const launchWorkingDirectory = this.refs['launchWorkingDirectory'].getText().trim();
     // TODO: fill other fields from UI.
     const launchTarget = {
       executablePath: launchExecutable,
-      arguments: [],
+      arguments: launchArguments,
       environmentVariables: [],
-      workingDirectory: '.',
+      workingDirectory: launchWorkingDirectory,
     };
     // Fire and forget.
     this.props.actions.launchDebugger(launchTarget);

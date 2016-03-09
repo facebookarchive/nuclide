@@ -1,5 +1,6 @@
 "atom-workspace":
   "cmd-shift-y": "nuclide-debugger:toggle"
+  "cmd-shift-a": "nuclide-debugger:toggle-launch-attach"
   # Unfortunately F5 is taken by another package.
   "f8": "nuclide-debugger:continue-debugging"
   "shift-f5": "nuclide-debugger:stop-debugging"

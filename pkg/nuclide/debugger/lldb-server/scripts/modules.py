@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import file_manager
+from logging_helper import log_debug
 
 
 class ModuleSourcePathUpdater:

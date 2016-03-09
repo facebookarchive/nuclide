@@ -14,9 +14,24 @@ import child_process from 'child_process';
 import path from 'path';
 import utils from './utils';
 import WebSocket from 'ws';
-const {log, logError} = utils;
+const {log, logError, logInfo} = utils;
 import {ClientCallback} from './ClientCallback';
 import {AttachTargetInfo, LaunchTargetInfo} from './DebuggerRpcServiceInterface';
+import {observeStream} from '../../../commons';
+
+type AttachInfoArgsType = {
+  pid: string;
+  basepath: string;
+};
+
+type LaunchInfoArgsType = {
+  executable_path: string;
+  launch_arguments: string;
+  working_directory: string;
+  basepath: string;
+};
+
+type LaunchAttachArgsType = AttachInfoArgsType | LaunchInfoArgsType;
 
 export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>> {
   const {asyncExecute} = require('../../../commons');
@@ -42,12 +57,19 @@ export class DebuggerConnection {
   _clientCallback: ClientCallback;
   _lldbWebSocket: WebSocket;
   _lldbProcess: child_process$ChildProcess;
+  _argumentStreamSubscription: IDisposable;
 
-  constructor(lldbWebSocket: WebSocket, lldbProcess: child_process$ChildProcess) {
+  constructor(
+    lldbWebSocket: WebSocket,
+    lldbProcess: child_process$ChildProcess,
+    argumentStreamSubscription: IDisposable,
+  ) {
     this._clientCallback = new ClientCallback();
     this._lldbWebSocket = lldbWebSocket;
     this._lldbProcess = lldbProcess;
+    this._argumentStreamSubscription = argumentStreamSubscription;
     lldbWebSocket.on('message', this._handleLLDBMessage.bind(this));
+    lldbProcess.on('exit', this._handleLLDBExit.bind(this));
   }
 
   getServerMessageObservable(): Observable<string> {
@@ -57,6 +79,11 @@ export class DebuggerConnection {
   _handleLLDBMessage(message: string): void {
     log(`lldb message: ${message}`);
     this._clientCallback.sendMessage(message);
+  }
+
+  _handleLLDBExit(): void {
+    // Fire and forget.
+    this.dispose();
   }
 
   async sendCommand(message: string): Promise<void> {
@@ -70,7 +97,8 @@ export class DebuggerConnection {
   }
 
   async dispose(): Promise<void> {
-    log(`DebuggerConnection disposed`);
+    logInfo(`DebuggerConnection disposed`);
+    this._argumentStreamSubscription.dispose();
     this._clientCallback.dispose();
     this._lldbWebSocket.terminate();
     this._lldbProcess.kill();
@@ -81,38 +109,73 @@ export class DebuggerRpcService {
   constructor() {
   }
 
-  async attach(pid: number): Promise<DebuggerConnection> {
-    log(`attach process: ${pid}`);
-    const lldbProcess = this._attachDebuggerToProcess(pid);
+  async attach(attachInfo: AttachTargetInfo): Promise<DebuggerConnection> {
+    log(`attach process: ${JSON.stringify(attachInfo)}`);
+    const lldbProcess = this._spawnPythonBackend();
+    const inferiorArguments = {
+      pid: String(attachInfo.pid),
+      basepath: attachInfo.basepath ? attachInfo.basepath : '.',
+    };
+    const argumentStreamSubscription = this._sendArgumentsToPythonBackend(
+      lldbProcess,
+      inferiorArguments
+    );
     const lldbWebSocket = await this._connectWithLLDB(lldbProcess);
-    return new DebuggerConnection(lldbWebSocket, lldbProcess);
+    return new DebuggerConnection(lldbWebSocket, lldbProcess, argumentStreamSubscription);
   }
 
   async launch(launchInfo: LaunchTargetInfo): Promise<DebuggerConnection> {
     log(`launch process: ${JSON.stringify(launchInfo)}`);
-    const lldbProcess = this._launchExecutableUnderDebugger(launchInfo);
+    const lldbProcess = this._spawnPythonBackend();
+    const inferiorArguments = {
+      executable_path: launchInfo.executablePath,
+      launch_arguments: launchInfo.arguments,
+      working_directory: launchInfo.workingDirectory,
+      basepath: launchInfo.basepath ? launchInfo.basepath : '.',
+    };
+    const argumentStreamSubscription = this._sendArgumentsToPythonBackend(
+      lldbProcess,
+      inferiorArguments
+    );
     const lldbWebSocket = await this._connectWithLLDB(lldbProcess);
-    return new DebuggerConnection(lldbWebSocket, lldbProcess);
+    return new DebuggerConnection(lldbWebSocket, lldbProcess, argumentStreamSubscription);
   }
 
-  _attachDebuggerToProcess(pid: number): child_process$ChildProcess {
-    const args = ['-p', String(pid)];
-    return this._spawnPythonBackend(args);
+  _spawnPythonBackend(): child_process$ChildProcess {
+    const lldbPythonScriptPath = path.join(__dirname, '../scripts/main.py');
+    const python_args = [lldbPythonScriptPath, '--arguments_in_json'];
+    const options = {
+      cwd: path.dirname(lldbPythonScriptPath),
+      // FD[3] is used for sending arguments JSON blob.
+      stdio: ['pipe', 'pipe', 'pipe', 'pipe'],
+      detached: false, // When Atom is killed, clang_server.py should be killed, too.
+    };
+    logInfo(`spawn child_process: ${JSON.stringify(python_args)}`);
+    return child_process.spawn('python', python_args, options);
   }
 
-  _launchExecutableUnderDebugger(launchInfo: LaunchTargetInfo): child_process$ChildProcess {
-    const args = ['-e', launchInfo.executablePath];
-    return this._spawnPythonBackend(args);
-  }
-
-  _spawnPythonBackend(args: Array<string>): child_process$ChildProcess {
-    const lldbPath = path.join(__dirname, '../scripts/main.py');
-    args = [lldbPath, ...args];
-    if (this._basepath) {
-      args.push('--basepath', this._basepath);
-    }
-    log(`spawn child_process: ${JSON.stringify(args)}`);
-    return child_process.spawn('python', args);
+  _sendArgumentsToPythonBackend(
+    child: child_process$ChildProcess,
+    args: LaunchAttachArgsType
+  ): IDisposable {
+    const ARGUMENT_INPUT_FD = 3;
+    /* $FlowFixMe - update Flow defs for ChildProcess */
+    const argumentsStream = child.stdio[ARGUMENT_INPUT_FD];
+    // Make sure the bidirectional communication channel is set up before
+    // sending data.
+    argumentsStream.write('init\n');
+    return observeStream(argumentsStream).first().subscribe(text => {
+      if (text.startsWith('ready')) {
+        const args_in_json = JSON.stringify(args);
+        logInfo(`Sending ${args_in_json} to child_process`);
+        argumentsStream.write(`${args_in_json}\n`);
+      } else {
+        logError(`Get unknown initial data: ${text}.`);
+        child.kill();
+      }
+    },
+    error => logError(`argumentsStream error: ${JSON.stringify(error)}`)
+    );
   }
 
   _connectWithLLDB(lldbProcess: child_process$ChildProcess): Promise<WebSocket> {
@@ -152,6 +215,6 @@ export class DebuggerRpcService {
   }
 
   async dispose(): Promise<void> {
-    log(`DebuggerRpcService disposed`);
+    logInfo(`DebuggerRpcService disposed`);
   }
 }

@@ -13,14 +13,16 @@ import {Observable} from 'rx';
 
 export type AttachTargetInfo = {
   pid: number;
-  name: string
+  name: string;
+  basepath?: string;
 };
 
 export type LaunchTargetInfo = {
   executablePath: string;
-  arguments: Array<string>;
+  arguments: string;
   environmentVariables: ?Array<string>;
   workingDirectory: string;
+  basepath?: string
 };
 
 export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>> {
@@ -41,7 +43,7 @@ export class DebuggerConnection {
 }
 
 export class DebuggerRpcService {
-  async attach(pid: number): Promise<DebuggerConnection> {
+  async attach(attachInfo: AttachTargetInfo): Promise<DebuggerConnection> {
     throw new Error('Not implemented');
   }
   async launch(launchInfo: LaunchTargetInfo): Promise<DebuggerConnection> {

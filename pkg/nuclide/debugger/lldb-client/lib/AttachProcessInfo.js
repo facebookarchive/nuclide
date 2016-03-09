@@ -30,7 +30,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
 
   async debug(): Promise<DebuggerInstance> {
     const rpcService = this._getRpcService();
-    const connection = await rpcService.attach(this._targetInfo.pid);
+    if (this.basepath) {
+      this._targetInfo.basepath = this.basepath;
+    }
+    const connection = await rpcService.attach(this._targetInfo);
     rpcService.dispose();
     // Start websocket server with Chrome after attach completed.
     return new LldbDebuggerInstance(this, connection);

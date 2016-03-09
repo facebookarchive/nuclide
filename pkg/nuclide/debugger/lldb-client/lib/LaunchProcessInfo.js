@@ -30,6 +30,9 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
 
   async debug(): Promise<DebuggerInstance> {
     const rpcService = this._getRpcService();
+    if (this.basepath) {
+      this._launchTargetInfo.basepath = this.basepath;
+    }
     const connection = await rpcService.launch(this._launchTargetInfo);
     rpcService.dispose();
     // Start websocket server with Chrome after launch completed.
