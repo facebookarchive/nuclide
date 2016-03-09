@@ -9,7 +9,6 @@
       <div id="promo" class="section promoSection">
         {% for promo in site.data.promo %}
           {% include plugins/{{promo.type}}.html button_href=promo.href button_text=promo.text %}
-          <div class="gridClear"></div>
         {% endfor %}
       </div>
     </div>
