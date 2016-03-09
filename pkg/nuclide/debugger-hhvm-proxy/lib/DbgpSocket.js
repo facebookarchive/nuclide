@@ -11,7 +11,7 @@
 
 
 import logger from './utils';
-import {base64Decode} from './helpers';
+import {base64Decode, base64Encode} from './helpers';
 import {EventEmitter} from 'events';
 import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
 import type {Socket} from 'net';
@@ -267,6 +267,23 @@ class DbgpSocket {
   async setFeature(name: string, value: string): Promise<boolean> {
     const response = await this._callDebugger('feature_set', `-n ${name} -v ${value}`);
     return response.$.success !== '0';
+  }
+
+  /**
+   * Evaluate the expression in the debugger's current context.
+   */
+  async eval(expr: string): Promise<EvaluationResult> {
+    const response = await this._callDebugger('eval', `-- ${base64Encode(expr)}`);
+    if (response.error && response.error.length > 0) {
+      return {
+        error: response.error[0],
+        wasThrown: true,
+      };
+    }
+    return {
+      result: response.property || [],
+      wasThrown: false,
+    };
   }
 
   /**

@@ -18,6 +18,10 @@ export function base64Decode(value: string): string {
   return new Buffer(value, 'base64').toString();
 }
 
+export function base64Encode(value: string): string {
+  return new Buffer(value).toString('base64');
+}
+
 export function makeDbgpMessage(message: string): string {
   return String(message.length) + '\x00' + message + '\x00';
 }

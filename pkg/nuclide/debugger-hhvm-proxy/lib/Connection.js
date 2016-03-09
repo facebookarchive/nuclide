@@ -43,6 +43,10 @@ export class Connection {
     return this._dataCache.evaluateOnCallFrame(frameIndex, expression);
   }
 
+  eval(expression: string): Promise<Object> {
+    return this._socket.eval(expression);
+  }
+
   setExceptionBreakpoint(exceptionName: string): Promise<string> {
     return this._socket.setExceptionBreakpoint(exceptionName);
   }
