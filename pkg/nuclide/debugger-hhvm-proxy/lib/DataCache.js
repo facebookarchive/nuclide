@@ -127,6 +127,13 @@ export class DataCache {
       throw new Error('Must be enabled to evaluate expression.');
     }
 
+    // TODO(jonaldislarry): Currently xdebug provides no way to eval at arbitrary stack depths,
+    // it only supports the current stack frame.  To work around this, we special-case evaluation
+    // at the current stack depth.
+    if (frameIndex === 0) {
+      return await this.runtimeEvaluate(frameIndex, expression);
+    }
+
     const evaluatedResult = await this._socket.evaluateOnCallFrame(frameIndex, expression);
     if (evaluatedResult.wasThrown) {
       return evaluatedResult;
@@ -198,7 +205,12 @@ export class DataCache {
 
   async _getContextProperties(id: ObjectId): Promise<Array<Runtime$PropertyDescriptor>> {
     const properties = await this._socket.getContextProperties(id.frameIndex, id.contextId);
-    return convertProperties(id, properties);
+    // Some properties in the environment are created by us for internal use, so we filter them out.
+    const filteredProperties = properties.filter(property => {
+      invariant(property.$.fullname != null);
+      return !property.$.fullname.startsWith(EVAL_IDENTIFIER);
+    });
+    return convertProperties(id, filteredProperties);
   }
 }
 

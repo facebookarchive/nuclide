@@ -22,7 +22,7 @@ const {
 } = require('../lib/ObjectId');
 const { STATUS_BREAK, STATUS_RUNNING } = require('../lib/DbgpSocket');
 
-const PROPERTIES = ['property'];
+const PROPERTIES = [{$: {fullname: 'pizza'}}];
 const CONVERTED_PROPERTIES = ['converted-properties'];
 const EXPRESSION = ['expression'];
 
@@ -61,6 +61,7 @@ describe('debugger-hhvm-proxy DataCache', () => {
           id : '2',
         },
       ])),
+      getContextProperties: jasmine.createSpy().andReturn(Promise.resolve(PROPERTIES)),
     }: any): DbgpSocketType);
     statusCallback = null;
 
@@ -139,10 +140,6 @@ describe('debugger-hhvm-proxy DataCache', () => {
 
   it('getProperties - context', () => {
     waitsForPromise(async () => {
-      // $FlowFixMe override instance method.
-      socket.getContextProperties = jasmine.createSpy('getContextProperties').
-          andReturn(Promise.resolve(PROPERTIES));
-
       enable();
       const result = await cache.getProperties(contextRemoteId);
       expect(result).toEqual(CONVERTED_PROPERTIES);
