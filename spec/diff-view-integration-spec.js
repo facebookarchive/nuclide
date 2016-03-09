@@ -53,7 +53,7 @@ describe('Diff view integration test', () => {
       return document.querySelector('.diff-view-count');
     }
 
-    waitsFor('diff-count element to register in the toolbar', () => {
+    waitsFor('diff-count element to register in the toolbar', 10000, () => {
       return getDiffCountElement() != null;
     });
 
