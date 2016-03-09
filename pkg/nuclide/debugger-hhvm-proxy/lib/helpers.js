@@ -61,7 +61,7 @@ export function launchScriptToDebug(
   scriptPath: string,
   sendToOutputWindow: (text: string) => void,
 ): Promise<void> {
-  return new Promise((resolve, _) => {
+  return new Promise(resolve => {
     launchPhpScriptWithXDebugEnabled(scriptPath, text => {
       sendToOutputWindow(text);
       resolve();
