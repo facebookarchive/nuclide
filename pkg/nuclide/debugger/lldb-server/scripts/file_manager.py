@@ -87,41 +87,35 @@ class FileLike:
         raise NotImplementedError()
 
 
-class FunctionAssembly(FileLike):
-    def __init__(self, target, sbsymbol):
+class FrameAssemblyFile(FileLike):
+    '''Representation of assembly file of a stack frame.
+    '''
+    def __init__(self, target, frame):
         self._target = target
-        self.symbol = sbsymbol
+        self._frame = frame
 
     @property
     def script_id(self):
-        return '<ASM:' + hex(self.symbol.addr.GetLoadAddress(self._target)) + '>'
+        return '<ASM:' + hex(self._frame.GetFP()) + '>'
 
     @property
     def script_source(self):
-        return '\n'.join([
-            str(inst)
-            for inst in self.symbol.instructions
-        ])
+        return self._frame.Disassemble()
 
     @property
     def client_url(self):
         # Not using urlparse here as it does not handle unknown schemes well.
-        return 'lldb://asm/' + ('default' if self.symbol.name is None else urllib.quote(self.symbol.name))
+        return 'lldb://asm/' + hex(self._frame.GetFP())
 
     @property
     def server_obj(self):
-        return self.symbol
+        return hex(self._frame.GetFP())
 
-    def get_line_for_pc(self, pc):
-        """Get the instruction line of the current program counter."""
-        line_number = 0
-        for inst in self.symbol.GetInstructions(self._target):
-            # Get the smallest addr not greater than the program counter.
-            if inst.GetAddress().GetLoadAddress(self._target) >= pc.GetLoadAddress(self._target):
-                return line_number
-            else:
-                line_number += 1
-        return line_number
+    @property
+    def line_number(self):
+        '''Line number for this stack frame'''
+        line_entry = self._frame.GetLineEntry()
+        return line_entry.GetLine() if line_entry else 0
 
 
 class File(FileLike):
@@ -171,5 +165,5 @@ class File(FileLike):
 __all__ = [
     File,
     FileManager,
-    FunctionAssembly,
+    FrameAssemblyFile,
 ]

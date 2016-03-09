@@ -75,16 +75,14 @@ class LocationSerializer:
         serialized = self.from_line_entry(frame.line_entry)
         if serialized is not None:
             return serialized
-        elif frame.symbol.IsValid():
-            func = self._file_manager.register_filelike(
-                file_manager.FunctionAssembly(target, frame.symbol))
-            return {
-                'scriptId': func.script_id,
-                'columnNumber': 0,
-                'lineNumber': func.get_line_for_pc(frame.GetPCAddress()),
-            }
         else:
-            return None
+            assembly_file = self._file_manager.register_filelike(
+                file_manager.FrameAssemblyFile(target, frame))
+            return {
+                'scriptId': assembly_file.script_id,
+                'columnNumber': 0,
+                'lineNumber': assembly_file.line_number,
+            }
 
     def get_breakpoint_locations(self, breakpoint):
         """Serialize the locations of a breakpoint.
