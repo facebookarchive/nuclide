@@ -21,14 +21,13 @@ import {
 import {convertValue} from './values';
 import invariant from 'assert';
 
-import type {PropertyDescriptor} from './DataCache';
 import type {ObjectId} from './ObjectId';
 import type {DbgpProperty} from './DbgpSocket';
 
 function convertProperties(
   id: ObjectId,
   properties: Array<DbgpProperty>
-): Array<PropertyDescriptor> {
+): Array<Runtime$PropertyDescriptor> {
   logger.log('Got properties: ' + JSON.stringify(properties));
   return properties.map(property => convertProperty(id, property));
 }
@@ -36,7 +35,10 @@ function convertProperties(
 /**
  * Converts a DbgpProperty to a Chrome PropertyDescriptor.
  */
-function convertProperty(contextId: ObjectId, dbgpProperty: DbgpProperty): PropertyDescriptor {
+function convertProperty(
+  contextId: ObjectId,
+  dbgpProperty: DbgpProperty,
+): Runtime$PropertyDescriptor {
   logger.log('Converting to Chrome property: ' + JSON.stringify(dbgpProperty));
   const result = {
     configurable: false,
@@ -51,7 +53,7 @@ function convertProperty(contextId: ObjectId, dbgpProperty: DbgpProperty): Prope
  * Given an ObjectId for a multi page object, gets PropertyDescriptors
  * for the object's children.
  */
-function getPagedProperties(pagedId: ObjectId): Array<PropertyDescriptor> {
+function getPagedProperties(pagedId: ObjectId): Array<Runtime$PropertyDescriptor> {
   invariant(pagedId.elementRange);
   const pagesize = pagedId.elementRange.pagesize;
   const endIndex = endIndexOfObjectId(pagedId);

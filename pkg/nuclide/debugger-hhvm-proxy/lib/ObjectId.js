@@ -11,8 +11,6 @@
 
 import invariant from 'assert';
 
-import type {RemoteObjectId} from './DataCache';
-
 /*
  * An ElementRange identifies a range of child elements of a data value.
  * startIndex represents the index of the first element in the range.
@@ -66,7 +64,7 @@ function getWatchContextObjectId(enableCount: number, frameIndex: number): Objec
   return createContextObjectId(enableCount, frameIndex, WATCH_CONTEXT_ID);
 }
 
-function remoteObjectIdOfObjectId(id: ObjectId): RemoteObjectId {
+function remoteObjectIdOfObjectId(id: ObjectId): Runtime$RemoteObjectId {
   return JSON.stringify(id);
 }
 

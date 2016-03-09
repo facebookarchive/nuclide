@@ -26,40 +26,8 @@ import {
 import invariant from 'assert';
 import {convertValue} from './values.js';
 
-import type {DbgpContext} from './DbgpSocket';
+import type {DbgpContext, DbgpSocket} from './DbgpSocket';
 import type {ObjectId} from './ObjectId';
-
-// TODO: Move these Chrome types to a shared package.
-export type RemoteObjectId = string;
-
-// description wins over value in display
-export type RemoteObject = {
-  className?: string;
-  description?: string;
-  objectId?: RemoteObjectId;
-  subtype?: string; // [ "array" , "date" , "node" , "null" , "regexp" ]
-  type: string; // [ "boolean" , "function" , "number" , "object" , "string" , "undefined" ]
-  value?: any;
-};
-
-// scope.object.description shows on RHS
-export type Scope = {
-  object: RemoteObject;
-  type: string; // [ "catch" , "closure" , "global" , "local" , "with" ]
-};
-
-export type PropertyDescriptor = {
-  configurable: boolean;
-  enumerable: boolean;
-  get?: RemoteObject;
-  name: string;
-  set?: RemoteObject;
-  value?: RemoteObject;
-  wasThrown?: boolean;
-  writable?: boolean;
-};
-
-import type {DbgpSocket} from './DbgpSocket';
 
 const {
   STATUS_BREAK,
@@ -115,7 +83,7 @@ export class DataCache {
     this._enabled = true;
   }
 
-  async getScopesForFrame(frameIndex: number): Promise<Array<Scope>> {
+  async getScopesForFrame(frameIndex: number): Promise<Array<Debugger$Scope>> {
     if (!this.isEnabled()) {
       throw new Error('Must be enabled to get scopes.');
     }
@@ -146,7 +114,7 @@ export class DataCache {
     };
   }
 
-  _remoteObjectOfContext(frameIndex: number, context: DbgpContext): RemoteObject {
+  _remoteObjectOfContext(frameIndex: number, context: DbgpContext): Runtime$RemoteObject {
     return {
       description: context.name,
       type: 'object',
@@ -158,7 +126,9 @@ export class DataCache {
     return createContextObjectId(this._enableCount, frameIndex, context.id);
   }
 
-  async getProperties(remoteId: RemoteObjectId): Promise<Array<PropertyDescriptor>> {
+  async getProperties(
+    remoteId: Runtime$RemoteObjectId,
+  ): Promise<Array<Runtime$PropertyDescriptor>> {
     const id = JSON.parse(remoteId);
     if (id.enableCount !== this._enableCount) {
       logger.logErrorAndThrow(`Got request for stale RemoteObjectId ${remoteId}`);
@@ -177,7 +147,7 @@ export class DataCache {
     }
   }
 
-  async _getSinglePageOfProperties(id: ObjectId): Promise<Array<PropertyDescriptor>> {
+  async _getSinglePageOfProperties(id: ObjectId): Promise<Array<Runtime$PropertyDescriptor>> {
     let properties = null;
     const {fullname, page} = id;
     invariant(fullname != null);
@@ -199,13 +169,13 @@ export class DataCache {
     return convertProperties(id, properties);
   }
 
-  async _getContextProperties(id: ObjectId): Promise<Array<PropertyDescriptor>> {
+  async _getContextProperties(id: ObjectId): Promise<Array<Runtime$PropertyDescriptor>> {
     const properties = await this._socket.getContextProperties(id.frameIndex, id.contextId);
     return convertProperties(id, properties);
   }
 }
 
-function contextNameToScopeType(name: string): string {
+function contextNameToScopeType(name: string): Debugger$ScopeType {
   switch (name) {
     case 'Locals':
       return 'local';

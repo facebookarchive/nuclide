@@ -13,9 +13,6 @@ import {DbgpSocket} from './DbgpSocket';
 import {DataCache} from './DataCache';
 
 import type {Socket} from 'net';
-import type {Scope} from './DataCache';
-import type {PropertyDescriptor} from './DataCache';
-import type {RemoteObjectId} from './DataCache';
 
 let connectionCount = 1;
 
@@ -63,7 +60,7 @@ export class Connection {
     return this._socket.getStackFrames();
   }
 
-  getScopesForFrame(frameIndex: number): Promise<Array<Scope>> {
+  getScopesForFrame(frameIndex: number): Promise<Array<Debugger$Scope>> {
     return this._dataCache.getScopesForFrame(frameIndex);
   }
 
@@ -91,7 +88,7 @@ export class Connection {
     return this._socket.setFeature(name, value);
   }
 
-  getProperties(remoteId: RemoteObjectId): Promise<Array<PropertyDescriptor>> {
+  getProperties(remoteId: Runtime$RemoteObjectId): Promise<Array<Runtime$PropertyDescriptor>> {
     return this._dataCache.getProperties(remoteId);
   }
 

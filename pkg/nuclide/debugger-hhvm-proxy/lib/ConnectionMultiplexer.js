@@ -19,9 +19,6 @@ import {
 } from './ConnectionUtils';
 
 import type {Socket} from 'net';
-import type {Scope}from './DataCache';
-import type {PropertyDescriptor} from './DataCache';
-import type {RemoteObjectId} from './DataCache';
 import type {ExceptionState} from './BreakpointStore';
 const {BreakpointStore} = require('./BreakpointStore');
 const {DbgpConnector} = require('./DbgpConnector');
@@ -363,7 +360,7 @@ export class ConnectionMultiplexer {
     }
   }
 
-  getScopesForFrame(frameIndex: number): Promise<Array<Scope>> {
+  getScopesForFrame(frameIndex: number): Promise<Array<Debugger$Scope>> {
     if (this._enabledConnection) {
       return this._enabledConnection.getScopesForFrame(frameIndex);
     } else {
@@ -391,7 +388,7 @@ export class ConnectionMultiplexer {
     }
   }
 
-  getProperties(remoteId: RemoteObjectId): Promise<Array<PropertyDescriptor>> {
+  getProperties(remoteId: Runtime$RemoteObjectId): Promise<Array<Runtime$PropertyDescriptor>> {
     if (this._enabledConnection && this._status === STATUS_BREAK) {
       return this._enabledConnection.getProperties(remoteId);
     } else if (this._dummyConnection) {
