@@ -25,7 +25,7 @@ import type {
 import invariant from 'assert';
 import {GRAMMAR_SET} from './constants';
 import {DiagnosticsProviderBase} from '../../diagnostics/provider-base';
-import {trackTiming} from '../../analytics';
+import {track, trackTiming} from '../../analytics';
 import {array} from '../../commons';
 import {getLogger} from '../../logging';
 import {getDiagnostics} from './libclang';
@@ -103,6 +103,11 @@ class ClangDiagnosticsProvider {
       if (diagnostics == null || !this._hasSubscription.get(buffer)) {
         return;
       }
+      track('nuclide-clang-atom.fetch-diagnostics', {
+        filePath,
+        count: diagnostics.diagnostics.length.toString(),
+        accurateFlags: diagnostics.accurateFlags.toString(),
+      });
       const filePathToMessages = this._processDiagnostics(diagnostics, textEditor);
       this.invalidateBuffer(buffer);
       this._providerBase.publishMessageUpdate({filePathToMessages});
