@@ -114,8 +114,10 @@ def startDebugging(debugger, arguments):
         argument_list = split(str(arguments.launch_arguments)) \
             if arguments.launch_arguments else None
         # TODO: should we resolve symbol link?
-        executable_path = os.path.expanduser(str(arguments.executable_path))
-        working_directory = os.path.expanduser(str(arguments.working_directory))
+        executable_path = os.path.expanduser(str(arguments.executable_path)) \
+            if arguments.executable_path else None
+        working_directory = os.path.expanduser(str(arguments.working_directory)) \
+            if arguments.working_directory else None
         target = debugger.CreateTargetWithFileAndArch(
             executable_path,
             lldb.LLDB_ARCH_DEFAULT)
@@ -156,13 +158,15 @@ def main():
     is_attach = startDebugging(debugger, arguments)
 
     channel = NotificationChannel()
-    debugger_store = DebuggerStore(channel, debugger, str(getattr(arguments, 'basepath', '.')))
-    event_thread = LLDBListenerThread(debugger_store, is_attach=is_attach)
-    event_thread.start()
+    debugger_store = DebuggerStore(channel, debugger, is_attach, str(getattr(arguments, 'basepath', '.')))
 
     try:
         app = ChromeDevToolsDebuggerApp(debugger_store, getattr(arguments, 'port', 0))
         log_debug('Port: %s' % app.debug_server.server_port)
+
+        event_thread = LLDBListenerThread(debugger_store, app)
+        event_thread.start()
+
         if getattr(arguments, 'interactive', False):
             app.start_nonblocking()
             interactive_loop(debugger)
@@ -170,6 +174,12 @@ def main():
             app.start_blocking()
     except KeyboardInterrupt:  # Force app to exit on Ctrl-C.
         os._exit(1)
+
+    event_thread.join()
+    lldb.SBDebugger.Destroy(debugger)
+    lldb.SBDebugger.Terminate()
+    # TODO: investigate why we need os._exit() to terminate python process.
+    os._exit(0)
 
 
 if __name__ == '__main__':

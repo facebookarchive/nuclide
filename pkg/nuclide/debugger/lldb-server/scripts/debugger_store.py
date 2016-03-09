@@ -14,7 +14,7 @@ from thread_manager import ThreadManager
 class DebuggerStore:
     '''Provides a central place for all debugger related managers.
     '''
-    def __init__(self, channel, debugger, basepath='.'):
+    def __init__(self, channel, debugger, is_attach, basepath='.'):
         '''
         channel: channel to send client chrome notification message.
         debugger: lldb SBDebugger object.
@@ -22,6 +22,7 @@ class DebuggerStore:
 
         self._channel = channel
         self._debugger = debugger
+        self._is_attach = is_attach
         self._file_manager = FileManager(channel)
         self._remote_object_manager = RemoteObjectManager()
         self._location_serializer = serialize.LocationSerializer(
@@ -37,6 +38,10 @@ class DebuggerStore:
     @property
     def debugger(self):
         return self._debugger;
+
+    @property
+    def is_attach(self):
+        return self._is_attach
 
     @property
     def thread_manager(self):

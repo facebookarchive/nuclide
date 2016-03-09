@@ -16,17 +16,18 @@ class LLDBListenerThread(Thread):
     '''
     should_quit = False
 
-    def __init__(self, debugger_store, is_attach):
+    def __init__(self, debugger_store, app):
       Thread.__init__(self)
       self.daemon = True
       self._debugger_store = debugger_store
+      self._app = app
       self._listener = debugger_store.debugger.GetListener()
       # Send scriptPaused for each souce files.
       self._debugger_store.module_source_path_updater.modules_updated()
 
       process = debugger_store.debugger.GetSelectedTarget().process
       self._add_listener_to_process(process)
-      if is_attach:
+      if self._debugger_store.is_attach:
           self._broadcast_process_state(process)
       self._add_listener_to_target(process.target)
 
@@ -91,3 +92,10 @@ class LLDBListenerThread(Thread):
                     self._breakpoint_event(event)
                 elif lldb.SBWatchpoint.EventIsWatchpointEvent(event):
                     self._watchpoint_event(event)
+        # Event loop terminates, shutdown chrome server app.
+        self._app.shutdown()
+        # Detach/Kill inferior.
+        if self._debugger_store.is_attach:
+            self._debugger_store.debugger.GetSelectedTarget().process.Detach()
+        else:
+            self._debugger_store.debugger.GetSelectedTarget().process.Kill()

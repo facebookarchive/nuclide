@@ -113,6 +113,9 @@ class ChromeDevToolsDebuggerApp(object):
         thread.daemon = True
         thread.start()
 
+    def shutdown(self):
+        self.debug_server.shutdown()
+
 
 def __lldb_init_module(debugger, internal_dict):
     # Print the server port on lldb import.
