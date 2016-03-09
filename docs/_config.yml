@@ -1,7 +1,6 @@
 # Site settings
 permalink: /blog/:year/:month/:day/:title/
 title: Nuclide
-tagline: A unified IDE
 fbappid: ""
 gacode: "UA-44373548-2"
 description: A unified developer experience for web and mobile development, built as a single package on top of Atom to provide hackability and the support of an active community.
