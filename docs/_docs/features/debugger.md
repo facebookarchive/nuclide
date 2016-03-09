@@ -223,9 +223,13 @@ Hack and PHP code.
 *XDebug*
 
 In order for the Nuclide debugger to attach properly to the HHVM process, you must enable
-[XDebug](https://xdebug.org/) in your HHVM configuration. You do this by specifying
-[XDebug configuration](https://xdebug.org/docs/all_settings) information in a `.ini` file that will
-be passed to the HHVM executable. Here is an example `.ini` file that can be used:
+[XDebug](https://xdebug.org/) in your HHVM configuration.
+
+> Your remote server may already have the appropriate settings so that this step is not necessary.
+
+You do this by specifying [XDebug configuration](https://xdebug.org/docs/all_settings) information
+in a `.ini` file that will be passed to the HHVM executable. Here is an example `.ini` file that can
+be used:
 
 ```bash
 xdebug.enable = 1
@@ -239,9 +243,41 @@ xdebug.remote_port = 9000
 > the port in an ini file via `xdebug.remote_port`, make sure that setting matches what is in the
 > Nuclide setting.
 
-*Debugging*
+*Debugging: HHVM Toolbar*
 
-The [basic debugging information](#basics) generally apply to PHP and Hack projects.
+Nuclide provides an HHVM toolbar. You can launch the toolbar from the
+[Nuclide toolbar](/docs/features/toolbar/#buttons) or from the
+[command-palette](/docs/editor/basics/#command-palette) with `Nuclide HHVM Toolbar: Toggle`.
+
+> You have to have a Hack or PHP file open to successfully launch the toolbar.
+
+![](/static/images/docs/feature-debugger-languages-hack-php-hhvm-toolbar.png)
+
+Now you can choose between debugging a webserver or a script.
+
+![](/static/images/docs/feature-debugger-languages-hack-php-hhvm-toolbar-webserver-script.png)
+
+Set [breakpoints](#basics__breakpoints) in your code.
+
+Once you decide the type of debugging you plan to do, click `Attach`. This will bring up the
+debugger UI and stop at the first breakpoint you set.
+
+You can then follow the [basic debugging information](#basics) provided above and use the additional
+features of the Output Window, Evaluation and other HHVM-specific debugging settings as described
+below to debug your code.
+
+Here is an example of debugging a running HHVM server:
+
+![](/static/images/docs/feature-debugger-languages-hack-php-server-debugging.png)
+
+In both the script and server launching/attaching scenarios, the line at which you've set a
+breakpoint will highlight in blue when the breakpoint is hit. When this happens, execution of your
+code is paused and you can use the debugger to step, evaluate expressions, inspect the current
+callstack, etc.
+
+*Debugging: Command-Line*
+
+You can also debug without using the HHVM Toolbar by debugging directly from the command-line.
 
 1. Have a PHP or Hack file active in the [editing area](/docs/editor/basics/#editing-area).
 2. `cmd-shift-Y` to bring up the process attachment UI.
@@ -258,15 +294,6 @@ It should look similar to:
 7. Start Debugging.
     1. If you are debugging a server, you will need to send a request to that server in order for
     the server breakpoint to be hit.
-
-Here is an example of debugging a running HHVM server:
-
-![](/static/images/docs/feature-debugger-languages-hack-php-server-debugging.png)
-
-In both the script and server launching/attaching scenarios, the line at which you've set a
-breakpoint will highlight in blue when the breakpoint is hit. When this happens, execution of your
-code is paused and you can use the debugger to step, evaluate expressions, inspect the current
-callstack, etc.
 
 *Output Window*
 
