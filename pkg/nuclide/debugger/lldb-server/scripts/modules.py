@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import file_manager
-from logging_helper import log_debug
+from logging_helper import log_error
 
 
 class ModuleSourcePathUpdater:
@@ -21,14 +21,15 @@ class ModuleSourcePathUpdater:
         self._basepath = basepath
 
     def modules_updated(self):
+        # module.uuid seems to be not working on Linux so use module.GetUUIDString() instead.
         for module in self._target.modules:
             try:
-                if module.uuid not in self._registered_modules:
+                if module.GetUUIDString() not in self._registered_modules:
                     self._register_source_paths_for_module(module)
-                    self._registered_modules.add(module.uuid)
+                    self._registered_modules.add(module.GetUUIDString())
             except Exception as e:
                 # Some module does not have uuid.
-                log_debug('Can\'t register module: %s' % str(e))
+                log_error('Can\'t register module: %s' % str(e))
 
     def _register_source_paths_for_module(self, module):
         for comp_unit in module.compile_units:
