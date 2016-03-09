@@ -24,6 +24,7 @@ type Props = {
   disabled: boolean;
   initialValue: string;
   placeholderText: string;
+  tabIndex: string;
   onFocus: () => mixed;
   onClick: (event: SyntheticMouseEvent) => mixed;
   onDidChange: (text: string) => mixed;
@@ -51,6 +52,7 @@ class AtomInput extends React.Component {
     disabled: false,
     initialValue: '',
     placeholderText: null,
+    tabIndex: '-1',
     onClick: () => {},
     onDidChange: () => {},
     onFocus: () => {},
@@ -83,6 +85,7 @@ class AtomInput extends React.Component {
     if (placeholderText !== null) {
       textEditor.setPlaceholderText(placeholderText);
     }
+    this._getTextEditorElement().setAttribute('tabindex', this.props.tabIndex);
     if (this.props.disabled) {
       this._updateDisabledState(true);
     }
@@ -109,7 +112,7 @@ class AtomInput extends React.Component {
     if (isDisabled) {
       this._getTextEditorElement().removeAttribute('tabindex');
     } else {
-      this._getTextEditorElement().setAttribute('tabindex', '-1');
+      this._getTextEditorElement().setAttribute('tabindex', this.props.tabIndex);
     }
   }
 

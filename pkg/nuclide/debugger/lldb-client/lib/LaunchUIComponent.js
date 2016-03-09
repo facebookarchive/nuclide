@@ -31,24 +31,28 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
   render(): ReactElement {
     // TODO: smart fill the working directory textbox.
     // TODO: make tab stop between textbox work.
+    // Reserve tabIndex [1~10] to header portion of the UI so we start from "11" here.
     return (
       <div className="block">
         <label>Executable: </label>
         <AtomInput
           ref="launchExecutable"
+          tabIndex="11"
           placeholderText="Input the executable path you want to launch"
         />
         <label>Arguments: </label>
         <AtomInput
           ref="launchArguments"
+          tabIndex="12"
           placeholderText="Arguments to the executable"
         />
         <label>Working directory: </label>
         <AtomInput
           ref="launchWorkingDirectory"
+          tabIndex="13"
           placeholderText="Working directory for the launched executable"
         />
-        <button className="btn" onClick={this._handleLaunchClick}>Launch</button>
+        <button className="btn" tabIndex="14" onClick={this._handleLaunchClick}>Launch</button>
       </div>
     );
   }

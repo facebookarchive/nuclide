@@ -88,30 +88,32 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
 
     return (
       <div className="block padded">
-        <label className="inline-block">Connection: </label>
-        <NuclideDropdown
-          className="inline-block"
-          menuItems={connectionItems}
-          onSelectedChange={this._handleConnectionDropdownChange}
-          selectedIndex={this.state.connectionsDropdownIndex}
-          size="sm"
-        />
-        <label className="inline-block">Type: </label>
-        <NuclideDropdown
-          className="inline-block"
-          menuItems={debuggingTypeItems}
-          onSelectedChange={this._handleDebuggingTypeDropdownChange}
-          selectedIndex={this.state.debuggingTypeDropdownIndex}
-          size="sm"
-        />
-        <label className="inline-block">Action: </label>
-        <NuclideDropdown
-          className="inline-block"
-          menuItems={providerActions}
-          onSelectedChange={this._handleProviderActionsDropdownChange}
-          selectedIndex={this.state.providerActionsDropdownIndex}
-          size="sm"
-        />
+        <div className="launch-attach-header">
+          <label className="inline-block">Connection: </label>
+          <NuclideDropdown
+            className="inline-block"
+            menuItems={connectionItems}
+            onSelectedChange={this._handleConnectionDropdownChange}
+            selectedIndex={this.state.connectionsDropdownIndex}
+            size="sm"
+          />
+          <label className="inline-block">Type: </label>
+          <NuclideDropdown
+            className="inline-block"
+            menuItems={debuggingTypeItems}
+            onSelectedChange={this._handleDebuggingTypeDropdownChange}
+            selectedIndex={this.state.debuggingTypeDropdownIndex}
+            size="sm"
+          />
+          <label className="inline-block">Action: </label>
+          <NuclideDropdown
+            className="inline-block"
+            menuItems={providerActions}
+            onSelectedChange={this._handleProviderActionsDropdownChange}
+            selectedIndex={this.state.providerActionsDropdownIndex}
+            size="sm"
+          />
+        </div>
         <div>
           {this.state.element}
         </div>
