@@ -30,8 +30,8 @@ def serialize_value(value, add_object_func):
         add_object_func: function taking and returning a RemoteObject instance,
             that registers the object in an remote object manager.
     """
-    # Resolve dynamic type
-    if value.type.name == 'id':
+    # Resolve dynamic type.
+    if value.IsDynamic():
         value = value.dynamic
 
     for value_handler in VALUE_HANDLERS:
@@ -39,7 +39,7 @@ def serialize_value(value, add_object_func):
         if result is not None:
             return result
 
-    # primitive build-in types
+    # Treat as primitive build-in types.
     return {
         'type': 'object',
         'description': get_value_description(value),
@@ -54,35 +54,20 @@ class ValueHandler(object):
         return None
 
 
-class GenericObjCValueHandler(ValueHandler):
-    """ValueHandler for all Object-C types
+class ExpandableValueHandler(ValueHandler):
+    """ValueHandler for all expandable types with sub-fields.
     """
-    OBJC_TYPE_CLASSES = [
-        lldb.eTypeClassObjCInterface,
-        lldb.eTypeClassObjCObject,
-        # TODO[jeffreytan]: investigate if eTypeClassObjCObjectPointer should handled
-        # by GenericObjCValueHandler or DereferenceableValueHandler
-        lldb.eTypeClassObjCObjectPointer,
-    ]
-
     @classmethod
     def handle(cls, value, add_object_func):
-        if cls.can_handle_type(value.type):
-            obj = add_object_func(GenericClassSBValueRemoteObject(value, add_object_func))
+        if value.num_children > 0:
+            obj = add_object_func(ExpandableSBValueRemoteObject(value, add_object_func))
             return obj.serialized_value
         return None
 
-    @classmethod
-    def can_handle_type(cls, type_):
-        return (
-            type_.type in cls.OBJC_TYPE_CLASSES or
-            type_.type == lldb.eTypeClassTypedef and type_.name == 'id'
-        )
 
-
-class GenericClassSBValueRemoteObject(remote_objects.RemoteObject):
-    """Generic Class RemoteObject for C++/Object-C class/interface.
-    These objects have fields and derive their descriptions from object descriptions.
+class ExpandableSBValueRemoteObject(remote_objects.RemoteObject):
+    """Generic RemoteObject for expandable objects, like C++/ObjectC class/interface.
+    These objects have sub-fields and derive their descriptions from object descriptions.
     """
     def __init__(self, value, add_object_func):
         self._value = value
@@ -112,8 +97,8 @@ class GenericClassSBValueRemoteObject(remote_objects.RemoteObject):
         }
 
 
-class CppTypeValueHandler(ValueHandler):
-    """ValueHandler for C++ objects, like struct, class etc...
+class CppStructValueHandler(ValueHandler):
+    """ValueHandler for C++ struct type.
     """
     @classmethod
     def handle(cls, value, add_object_func):
@@ -122,15 +107,14 @@ class CppTypeValueHandler(ValueHandler):
                  (value.type.GetCanonicalType().type == lldb.eTypeClassStruct))):
             obj = add_object_func(CppStructSBValueRemoteObject(value, add_object_func))
             return obj.serialized_value
-        # TODO[jeffreytan]: support other C++ types like class/union/enumeration etc..
         return None
 
 
-class CppStructSBValueRemoteObject(GenericClassSBValueRemoteObject):
+class CppStructSBValueRemoteObject(ExpandableSBValueRemoteObject):
     """RemoteObject for C++ struct.
     """
     def __init__(self, value, add_object_func):
-        GenericClassSBValueRemoteObject.__init__(self, value, add_object_func)
+        ExpandableSBValueRemoteObject.__init__(self, value, add_object_func)
 
     @property
     def serialized_value(self):
@@ -199,7 +183,7 @@ class DereferenceableSBValueRemoteObject(remote_objects.RemoteObject):
 
 
 VALUE_HANDLERS = [
-    GenericObjCValueHandler(),
+    ExpandableValueHandler(),
     DereferenceableValueHandler(),
-    CppTypeValueHandler(),
+    CppStructValueHandler(),
 ]
