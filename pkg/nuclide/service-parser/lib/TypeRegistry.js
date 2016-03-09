@@ -252,9 +252,40 @@ export default class TypeRegistry {
       assert(typeof arg === 'string', 'Expected a string argument');
       return arg;
     };
-    const numberTransformer = arg => {
+    const numberMarshaller = arg => {
       // Unbox argument.
       if (arg instanceof Number) {
+        arg = arg.valueOf();
+      }
+      assert(typeof arg === 'number', 'Expected a number argument');
+      if (!Number.isFinite(arg)) {
+        if (arg === Number.NEGATIVE_INFINITY) {
+          arg = 'NEGATIVE_INFINITY';
+        } else if (arg === Number.POSITIVE_INFINITY) {
+          arg = 'POSITIVE_INFINITY';
+        } else {
+          arg = 'NaN';
+        }
+      }
+      return arg;
+    };
+    const numberUnmarshaller = arg => {
+      if (typeof arg === 'string') {
+        switch (arg) {
+          case 'NEGATIVE_INFINITY':
+            arg = Number.NEGATIVE_INFINITY;
+            break;
+          case 'POSITIVE_INFINITY':
+            arg = Number.POSITIVE_INFINITY;
+            break;
+          case 'NaN':
+            arg = Number.NaN;
+            break;
+          default:
+            // This will assert below
+            break;
+        }
+      } else if (arg instanceof Number) {
         arg = arg.valueOf();
       }
       assert(typeof arg === 'number', 'Expected a number argument');
@@ -273,7 +304,7 @@ export default class TypeRegistry {
 
     // Register these transformers
     this._registerKind('string', stringTransformer, stringTransformer);
-    this._registerKind('number', numberTransformer, numberTransformer);
+    this._registerKind('number', numberMarshaller, numberUnmarshaller);
     this._registerKind('boolean', booleanTransformer, booleanTransformer);
     this._registerKind('any', identityTransformer, identityTransformer);
     this._registerKind('mixed', identityTransformer, identityTransformer);

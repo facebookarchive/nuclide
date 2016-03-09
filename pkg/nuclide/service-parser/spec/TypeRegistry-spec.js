@@ -76,6 +76,36 @@ describe('TypeRegistry', () => {
         mixedType,
       );
       expect(num5).toBe(expected5);
+
+      const expected6 = Number.NEGATIVE_INFINITY;
+      const num6 = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected6, numberType),
+        numberType,
+      );
+      expect(num6).toBe(expected6);
+
+      const expected7 = Number.POSITIVE_INFINITY;
+      const num7 = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected7, numberType),
+        numberType,
+      );
+      expect(num7).toBe(expected7);
+
+      const expected8 = Number.POSITIVE_INFINITY;
+      const num8 = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected8, numberType),
+        numberType,
+      );
+      expect(num8).toBe(expected8);
+
+      // Marshalling an unexpected value throws.
+      let thrown = false;
+      try {
+        await typeRegistry.marshal(null, numberType);
+      } catch (e) {
+        thrown = true;
+      }
+      expect(thrown).toBe(true);
     });
   });
 
