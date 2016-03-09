@@ -45,8 +45,8 @@ const emptyFunction = () => {};
 /**
  * A form that is used to create a new connection profile.
  */
-/* eslint-disable react/prop-types */
 class CreateConnectionProfileForm extends React.Component<void, Props, void> {
+  props: Props;
 
   disposables: CompositeDisposable;
 
@@ -149,7 +149,5 @@ class CreateConnectionProfileForm extends React.Component<void, Props, void> {
     this.props.onCancel();
   }
 }
-
-/* eslint-enable react/prop-types */
 
 module.exports = CreateConnectionProfileForm;

@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/* eslint-disable react/prop-types */
-
 import type {LaunchAttachStore} from './LaunchAttachStore';
 import type {LaunchAttachActions} from './LaunchAttachActions';
 import type {AttachTargetInfo} from '../../lldb-server/lib/DebuggerRpcServiceInterface';
@@ -32,6 +30,7 @@ type StateType = {
 };
 
 export class AttachUIComponent extends React.Component<void, PropsType, StateType> {
+  props: PropsType;
   state: StateType;
 
   constructor(props: PropsType) {

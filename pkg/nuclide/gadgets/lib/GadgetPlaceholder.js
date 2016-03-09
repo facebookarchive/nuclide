@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/*eslint-disable react/prop-types */
-
 import createComponentItem from './createComponentItem';
 import {
   React,
@@ -26,8 +24,9 @@ type Props = {
 };
 
 class GadgetPlaceholder extends React.Component<void, Props, void> {
-
   element: HTMLElement;
+  props: Props;
+
   _expandedFlexScale: ?number;
 
   constructor(props: Props) {

@@ -52,7 +52,6 @@ type State = {
   selectedIndex: number;
 };
 
-/* eslint-disable react/prop-types */
 class SuggestionList extends React.Component {
   props: Props;
   state: State;

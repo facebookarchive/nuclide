@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/*eslint-disable react/prop-types */
-
 import {CompositeDisposable, Disposable} from 'atom';
 import {
   React,
@@ -26,6 +24,8 @@ type Props = {
 };
 
 export default class Webview extends React.Component<void, Props, void> {
+  props: Props;
+
   _disposables: CompositeDisposable;
 
   constructor(props: Object) {

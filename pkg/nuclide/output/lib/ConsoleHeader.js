@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/* eslint-disable react/prop-types */
-
 import {React} from 'react-for-atom';
 
 type Props = {
@@ -18,6 +16,7 @@ type Props = {
 };
 
 export default class ConsoleHeader extends React.Component<void, Props, void> {
+  props: Props;
 
   constructor(props: Props) {
     super(props);

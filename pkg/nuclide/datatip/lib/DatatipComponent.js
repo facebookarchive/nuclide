@@ -24,11 +24,13 @@ const IconsForAction = {
 type DatatipComponentProps = {
   action: string;
   actionTitle: string;
+  children?: any;
+  className?: string;
   onActionClick: Function;
 };
 
-/* eslint-disable react/prop-types */
 export class DatatipComponent extends React.Component {
+  props: DatatipComponentProps;
 
   constructor(props: DatatipComponentProps) {
     super(props);
@@ -70,4 +72,3 @@ export class DatatipComponent extends React.Component {
     );
   }
 }
-/* eslint-enable react/prop-types */

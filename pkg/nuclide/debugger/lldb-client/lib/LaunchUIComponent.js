@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/* eslint-disable react/prop-types */
-
 import type {LaunchAttachStore} from './LaunchAttachStore';
 import type {LaunchAttachActions} from './LaunchAttachActions';
 
@@ -23,6 +21,8 @@ type PropsType = {
 }
 
 export class LaunchUIComponent extends React.Component<void, PropsType, void> {
+  props: PropsType;
+
   constructor(props: PropsType) {
     super(props);
     (this: any)._handleLaunchClick = this._handleLaunchClick.bind(this);

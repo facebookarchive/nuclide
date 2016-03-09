@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/* eslint-disable react/prop-types */
-
 import type {Record} from './types';
 
 import {debounce} from '../../commons';
@@ -25,6 +23,7 @@ type Props = {
 };
 
 export default class Console extends React.Component<void, Props, void> {
+  props: Props;
 
   _isScrolledToBottom: boolean;
   _scrollPane: ?HTMLElement;

@@ -41,7 +41,6 @@ type Props = {
   onDidUpdateTextEditorElement: () => mixed;
 };
 
-/* eslint-disable react/prop-types */
 export default class DiffViewEditorPane extends React.Component {
   props: Props;
 

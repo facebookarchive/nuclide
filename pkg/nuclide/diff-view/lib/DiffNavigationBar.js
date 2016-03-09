@@ -27,7 +27,6 @@ type DiffNavigationBarProps = {
   onClick: (lineNumber: number, isAddedLine: boolean) => any;
 };
 
-/* eslint-disable react/prop-types */
 export default class DiffNavigationBar extends React.Component {
   props: DiffNavigationBarProps;
 

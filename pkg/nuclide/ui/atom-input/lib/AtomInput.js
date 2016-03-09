@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/*eslint-disable react/prop-types */
-
 const classNames = require('classnames');
 const {CompositeDisposable} = require('atom');
 const {
@@ -44,7 +42,9 @@ type State = {
  * An input field rendered as an <atom-text-editor mini />.
  */
 class AtomInput extends React.Component {
+  props: Props;
   state: State;
+
   _disposables: ?CompositeDisposable;
 
   static defaultProps = {

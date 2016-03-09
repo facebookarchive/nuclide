@@ -68,8 +68,8 @@ const WAITING_FOR_AUTHENTICATION = 4;
  * Component that manages the state transitions as the user connects to a
  * server.
  */
-/* eslint-disable react/prop-types */
 class ConnectionDialog extends React.Component {
+  props: Props;
   state: State;
 
   static defaultProps = {
@@ -240,7 +240,7 @@ class ConnectionDialog extends React.Component {
       } = connectionDetailsForm.getFormFields();
 
       let displayTitle = '';
-      if (indexOfSelectedConnectionProfile > -1) {
+      if (connectionProfiles != null && indexOfSelectedConnectionProfile > -1) {
         ({displayTitle} = connectionProfiles[indexOfSelectedConnectionProfile]);
       }
 
@@ -310,6 +310,5 @@ class ConnectionDialog extends React.Component {
     this.setState({indexOfSelectedConnectionProfile});
   }
 }
-/* eslint-enable react/prop-types */
 
 module.exports = ConnectionDialog;

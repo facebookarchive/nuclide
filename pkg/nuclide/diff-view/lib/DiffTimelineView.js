@@ -28,7 +28,6 @@ type DiffTimelineViewState = {
   revisionsState: ?RevisionsState;
 };
 
-/* eslint-disable react/prop-types */
 export default class DiffTimelineView extends React.Component {
   props: DiffTimelineViewProps;
   state: DiffTimelineViewState;

@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/* eslint-disable react/prop-types */
-
 import type {Record} from './types';
 
 import {React} from 'react-for-atom';
@@ -20,6 +18,7 @@ type Props = {
 };
 
 export default class RecordView extends React.Component<void, Props, void> {
+  props: Props;
 
   render(): ReactElement {
     const {record} = this.props;

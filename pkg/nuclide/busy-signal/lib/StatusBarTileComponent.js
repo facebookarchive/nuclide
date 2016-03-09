@@ -17,7 +17,6 @@ type Props = {
 
 const SPINNER = '\uF087';
 
-/* eslint-disable react/prop-types */
 export class StatusBarTileComponent extends React.Component {
   props: Props;
 

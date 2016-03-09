@@ -75,7 +75,6 @@ function initialEditorState(): EditorState {
 
 const EMPTY_FUNCTION = () => {};
 
-/* eslint-disable react/prop-types */
 class DiffViewComponent extends React.Component {
   props: Props;
   state: State;

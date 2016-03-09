@@ -22,9 +22,11 @@ type Props = {
 };
 
 /** Component to prompt the user for authentication information. */
-/* eslint-disable react/prop-types */
 export default class AuthenticationPrompt extends React.Component<void, Props, void> {
+  props: Props;
+
   _disposables: ?CompositeDisposable;
+
   constructor(props: Props) {
     super(props);
   }
@@ -95,4 +97,3 @@ export default class AuthenticationPrompt extends React.Component<void, Props, v
     return ReactDOM.findDOMNode(this.refs.password).value;
   }
 }
-/* eslint-enable react/prop-types */

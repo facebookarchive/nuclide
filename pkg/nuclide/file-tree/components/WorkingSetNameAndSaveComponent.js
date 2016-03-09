@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/*eslint-disable react/prop-types */
-
 import {React} from 'react-for-atom';
 import AtomInput from '../../ui/atom-input';
 import classnames from 'classnames';

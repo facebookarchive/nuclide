@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/*eslint-disable react/prop-types */
-
 import {React, ReactDOM} from 'react-for-atom';
 import {CompositeDisposable} from 'atom';
 import classnames from 'classnames';

@@ -15,8 +15,8 @@ type Props = {
   count: number;
 };
 
-/* eslint-disable react/prop-types */
 class DiffCountComponent extends React.Component {
+  props: Props;
 
   shouldComponentUpdate(nextProps: Props): boolean {
     return this.props.count !== nextProps.count;

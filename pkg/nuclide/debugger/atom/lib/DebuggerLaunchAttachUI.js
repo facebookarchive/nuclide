@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/*eslint-disable react/prop-types */
-
 import type {DebuggerProviderStore} from './DebuggerProviderStore';
 import type DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
 import type DebuggerActions from './DebuggerActions';
@@ -39,6 +37,7 @@ type StateType = {
 };
 
 export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, StateType> {
+  props: PropsType;
   state: StateType;
 
   constructor(props: PropsType) {

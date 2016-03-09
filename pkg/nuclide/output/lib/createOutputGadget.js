@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/* eslint-disable react/prop-types */
-
 import type Commands from './Commands';
 import type {Gadget} from '../../gadgets-interfaces';
 import type {AppState, Record} from './types';

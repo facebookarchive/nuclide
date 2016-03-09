@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/*eslint-disable react/prop-types */
-
 import {React} from 'react-for-atom';
 import ReactNativeServerStatus from './ReactNativeServerStatus';
 
@@ -21,6 +19,7 @@ type Props = {
 };
 
 export default class ReactNativeServerPanel extends React.Component<void, Props, void> {
+  props: Props;
 
   _storeSubscription: IDisposable;
 

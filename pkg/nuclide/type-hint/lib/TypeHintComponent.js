@@ -21,7 +21,6 @@ type TypeHintComponentState = {
   expandedNodes: Set<HintTree>;
 }
 
-/* eslint-disable react/prop-types */
 export class TypeHintComponent extends React.Component {
   props: TypeHintComponentProps;
   state: TypeHintComponentState;
@@ -93,4 +92,3 @@ export class TypeHintComponent extends React.Component {
     );
   }
 }
-/* eslint-enable react/prop-types */
