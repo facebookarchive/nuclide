@@ -1,5 +1,12 @@
 # Nuclide Changelog
 
+## v0.124.0
+
+Fixed:
+
+* Server Crash related to Mercurial / Watchman upgrade rollout.
+* Improved the support for multiple Nuclide windows in Working Sets.
+
 ## v0.123.0
 
 Added:
