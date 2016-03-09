@@ -50,4 +50,16 @@ describe('NuclideCheckbox', () => {
     //   expect(inputEl.checked).toBe(true);
     // Presumably this is because TestUtils deals only with synthetic events, not native ones.
   });
+
+  it('sets `indeterminate` on the element instance', () => {
+    const reactElement = createWithProps({
+      checked: false,
+      indeterminate: true,
+      label: 'click me!',
+      onChange() {},
+    });
+
+    const inputEl = TestUtils.findRenderedDOMComponentWithTag(reactElement, 'input');
+    expect(inputEl.indeterminate).toBe(true);
+  });
 });
