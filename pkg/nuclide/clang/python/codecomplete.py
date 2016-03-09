@@ -67,7 +67,8 @@ def _get_completions(translation_unit, absolute_path, line, column, prefix, cont
         unsaved_files.append((absolute_path, contents_as_str))
 
     results = translation_unit.codeComplete(
-        absolute_path, line, column, unsaved_files)
+        absolute_path, line, column, unsaved_files,
+        include_macros=True, include_brief_comments=True)
     if results is None:
         return []
 
@@ -134,12 +135,14 @@ def _processResult(completion_result):
             'kind': str(chunk.kind),
         })
 
+    briefComment = completion_string.briefComment
     return {
         'spelling': spelling,
         'chunks': chunks,
         'result_type': result_type,
         'first_token': _getFirstNonResultTypeTokenChunk(completion_string),
         'cursor_kind': _getKind(completion_result),
+        'brief_comment': briefComment and briefComment.spelling,
     }
 
 

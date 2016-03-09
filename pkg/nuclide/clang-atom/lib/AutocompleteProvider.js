@@ -232,7 +232,7 @@ class AutocompleteProvider {
         type,
         leftLabel: completion.result_type,
         rightLabel,
-        description: completion.result_type,
+        description: completion.brief_comment || completion.result_type,
       };
     });
   }

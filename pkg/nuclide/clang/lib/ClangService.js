@@ -194,10 +194,11 @@ export type ClangCompletion = {
     isPlaceHolder: boolean;
     kind?: string;
   }>;
-  first_token?: ?string;
-  result_type?: string;
-  spelling?: string;
-  cursor_kind?: string;
+  first_token: ?string;
+  result_type: string;
+  spelling: string;
+  cursor_kind: string;
+  brief_comment: ?string;
 };
 
 export type ClangCompletionsResult = {

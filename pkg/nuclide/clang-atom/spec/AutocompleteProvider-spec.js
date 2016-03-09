@@ -18,41 +18,47 @@ describe('AutocompleteProvider', () => {
 
   describe('@getCompletionBodyMultiLine', () => {
     it('converts method call with first argument being longest', () => {
-      const completion = {};
-      completion.chunks = [
-        {
-          spelling: 'ArgumentOne:',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'arg1',
-          isPlaceHolder: true,
-        },
-        {
-          spelling: ' ',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'arg2:',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'argTwo',
-          isPlaceHolder: true,
-        },
-        {
-          spelling: ' ',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'Argument3:',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'argument3',
-          isPlaceHolder: true,
-        },
-      ];
+      const completion = {
+        chunks: [
+          {
+            spelling: 'ArgumentOne:',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'arg1',
+            isPlaceHolder: true,
+          },
+          {
+            spelling: ' ',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'arg2:',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'argTwo',
+            isPlaceHolder: true,
+          },
+          {
+            spelling: ' ',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'Argument3:',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'argument3',
+            isPlaceHolder: true,
+          },
+        ],
+        first_token: null,
+        result_type: '',
+        spelling: '',
+        cursor_kind: '',
+        brief_comment: null,
+      };
 
       const body = getCompletionBodyMultiLine(
           completion,
@@ -67,53 +73,59 @@ describe('AutocompleteProvider', () => {
     });
 
     it('converts method call with third argument being longest', () => {
-      const completion = {};
-      completion.chunks = [
-        {
-          spelling: 'Arg1:',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'argumentOne',
-          isPlaceHolder: true,
-        },
-        {
-          spelling: ' ',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'arg2:',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'argTwo',
-          isPlaceHolder: true,
-        },
-        {
-          spelling: ' ',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'Argument3:',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'argument3',
-          isPlaceHolder: true,
-        },
-        {
-          spelling: ' ',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'test123',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'this_is_a_test_placeholder',
-          isPlaceHolder: true,
-        },
-      ];
+      const completion = {
+        chunks: [
+          {
+            spelling: 'Arg1:',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'argumentOne',
+            isPlaceHolder: true,
+          },
+          {
+            spelling: ' ',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'arg2:',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'argTwo',
+            isPlaceHolder: true,
+          },
+          {
+            spelling: ' ',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'Argument3:',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'argument3',
+            isPlaceHolder: true,
+          },
+          {
+            spelling: ' ',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'test123',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'this_is_a_test_placeholder',
+            isPlaceHolder: true,
+          },
+        ],
+        first_token: null,
+        result_type: '',
+        spelling: '',
+        cursor_kind: '',
+        brief_comment: null,
+      };
 
       const body = getCompletionBodyMultiLine(
           completion,
@@ -129,25 +141,31 @@ describe('AutocompleteProvider', () => {
     });
 
     it('calls getCompletionBodyMultiLine with odd number of non-empty chunks', () => {
-      const completion = {};
-      completion.chunks = [
-        {
-          spelling: 'ArgumentOne:',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'arg1',
-          isPlaceHolder: true,
-        },
-        {
-          spelling: ' ',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'arg2:',
-          isPlaceHolder: false,
-        },
-      ];
+      const completion = {
+        chunks: [
+          {
+            spelling: 'ArgumentOne:',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'arg1',
+            isPlaceHolder: true,
+          },
+          {
+            spelling: ' ',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'arg2:',
+            isPlaceHolder: false,
+          },
+        ],
+        first_token: null,
+        result_type: '',
+        spelling: '',
+        cursor_kind: '',
+        brief_comment: null,
+      };
 
       const body = getCompletionBodyMultiLine(
           completion,
@@ -158,29 +176,35 @@ describe('AutocompleteProvider', () => {
     });
 
     it('calls getCompletionBodyMultiLine with two non-placeholder chunks in a row', () => {
-      const completion = {};
-      completion.chunks = [
-        {
-          spelling: 'ArgumentOne:',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'arg1',
-          isPlaceHolder: true,
-        },
-        {
-          spelling: ' ',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'arg2',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'arg2:',
-          isPlaceHolder: false,
-        },
-      ];
+      const completion = {
+        chunks: [
+          {
+            spelling: 'ArgumentOne:',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'arg1',
+            isPlaceHolder: true,
+          },
+          {
+            spelling: ' ',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'arg2',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'arg2:',
+            isPlaceHolder: false,
+          },
+        ],
+        first_token: null,
+        result_type: '',
+        spelling: '',
+        cursor_kind: '',
+        brief_comment: null,
+      };
 
       const body = getCompletionBodyMultiLine(
           completion,
@@ -191,29 +215,35 @@ describe('AutocompleteProvider', () => {
     });
 
     it('calls getCompletionBodyMultiLine with two placeholder chunks in a row', () => {
-      const completion = {};
-      completion.chunks = [
-        {
-          spelling: 'ArgumentOne:',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'arg1',
-          isPlaceHolder: true,
-        },
-        {
-          spelling: '   ',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'arg2',
-          isPlaceHolder: true,
-        },
-        {
-          spelling: 'arg2:',
-          isPlaceHolder: false,
-        },
-      ];
+      const completion = {
+        chunks: [
+          {
+            spelling: 'ArgumentOne:',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'arg1',
+            isPlaceHolder: true,
+          },
+          {
+            spelling: '   ',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'arg2',
+            isPlaceHolder: true,
+          },
+          {
+            spelling: 'arg2:',
+            isPlaceHolder: false,
+          },
+        ],
+        first_token: null,
+        result_type: '',
+        spelling: '',
+        cursor_kind: '',
+        brief_comment: null,
+      };
 
       const body = getCompletionBodyMultiLine(
           completion,
@@ -226,42 +256,54 @@ describe('AutocompleteProvider', () => {
 
   describe('@getCompletionBodyInline', () => {
     it('converts method call with 2 arguments', () => {
-      const completion = {};
-      completion.chunks = [
-        {
-          spelling: 'ArgumentOne:',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'arg1',
-          isPlaceHolder: true,
-        },
-        {
-          spelling: ' ',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'arg2:',
-          isPlaceHolder: false,
-        },
-        {
-          spelling: 'argTwo',
-          isPlaceHolder: true,
-        },
-      ];
+      const completion = {
+        chunks: [
+          {
+            spelling: 'ArgumentOne:',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'arg1',
+            isPlaceHolder: true,
+          },
+          {
+            spelling: ' ',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'arg2:',
+            isPlaceHolder: false,
+          },
+          {
+            spelling: 'argTwo',
+            isPlaceHolder: true,
+          },
+        ],
+        first_token: null,
+        result_type: '',
+        spelling: '',
+        cursor_kind: '',
+        brief_comment: null,
+      };
 
       const body = getCompletionBodyInline(completion);
       expect(body).toBe('ArgumentOne:${1:arg1} arg2:${2:argTwo}');
     });
 
     it('converts short completion with no placeholders', () => {
-      const completion = {};
-      completion.chunks = [
-        {
-          spelling: 'self',
-          isPlaceHolder: false,
-        },
-      ];
+      const completion = {
+        chunks: [
+          {
+            spelling: 'self',
+            isPlaceHolder: false,
+          },
+        ],
+        first_token: null,
+        result_type: '',
+        spelling: '',
+        cursor_kind: '',
+        brief_comment: null,
+      };
 
       const body = getCompletionBodyInline(completion);
       expect(body).toBe('self');
