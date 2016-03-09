@@ -83,6 +83,10 @@ export class Connection {
     return this._socket.sendBreakCommand();
   }
 
+  setFeature(name: string, value: string): Promise<boolean> {
+    return this._socket.setFeature(name, value);
+  }
+
   getProperties(remoteId: RemoteObjectId): Promise<Array<PropertyDescriptor>> {
     return this._dataCache.getProperties(remoteId);
   }

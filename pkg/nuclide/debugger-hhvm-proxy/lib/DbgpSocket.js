@@ -262,6 +262,14 @@ class DbgpSocket {
   }
 
   /**
+   * Sets a given config setting in the debugger to a given value.
+   */
+  async setFeature(name: string, value: string): Promise<boolean> {
+    const response = await this._callDebugger('feature_set', `-n ${name} -v ${value}`);
+    return response.$.success !== '0';
+  }
+
+  /**
    * Returns the exception breakpoint id.
    */
   async setExceptionBreakpoint(exceptionName: string): Promise<string> {

@@ -141,7 +141,7 @@ export class ConnectionMultiplexer {
   async _handleDummyConnection(socket: Socket): Promise<void> {
     logger.log('ConnectionMultiplexer successfully got dummy connection.');
     const dummyConnection = new Connection(socket);
-    await this._handleOutputSetupForConnection(dummyConnection);
+    await this._handleSetupForConnection(dummyConnection);
 
     // Continue from loader breakpoint to hit xdebug_break()
     // which will load whole www repo for evaluation if possible.
@@ -180,7 +180,7 @@ export class ConnectionMultiplexer {
     } else {
       const connection = new Connection(socket);
       this._breakpointStore.addConnection(connection);
-      await this._handleOutputSetupForConnection(connection);
+      await this._handleSetupForConnection(connection);
 
       const info = {
         connection,
@@ -454,7 +454,8 @@ export class ConnectionMultiplexer {
     return new Error('No connection');
   }
 
-  async _handleOutputSetupForConnection(connection: Connection): Promise<void> {
+  async _handleSetupForConnection(connection: Connection): Promise<void> {
+    // Stdout/err commands.
     const stdoutRequestSucceeded = await connection.sendStdoutRequest();
     if (!stdoutRequestSucceeded) {
       logger.logError('HHVM returned failure for a stdout request');
@@ -465,5 +466,11 @@ export class ConnectionMultiplexer {
     }
     // TODO: Stderr redirection is not implemented in HHVM so we won't check this return value.
     await connection.sendStderrRequest();
+
+    // Set features.
+    const setFeatureSucceeded = await connection.setFeature('max_depth', '5');
+    if (!setFeatureSucceeded) {
+      logger.logError('HHVM returned failure for setting feature max_depth');
+    }
   }
 }
