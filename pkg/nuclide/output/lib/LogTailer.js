@@ -55,14 +55,14 @@ export class LogTailer {
   }
 
   _start(trackCall: boolean = true): void {
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-output:show');
+
     if (this._running) {
       return;
     }
     if (trackCall) {
       track(this._eventNames.start);
     }
-
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-output:show');
 
     this._running = true;
 
