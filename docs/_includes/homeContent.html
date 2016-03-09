@@ -1,7 +1,7 @@
 <div class="homeContainer">
   <div id="home_wrap" class="wrapper homeWrapper">
-    <div class="inner">
-      <img class="projectLogo" height="200" src="{{ site.baseurl }}/static/logo.png" alt="">
+    <div id="inner">
+      <img class="projectLogo" src="{{ site.baseurl }}/static/logo.png" alt="">
       <h1 id="project_title">{{ site.title }}</h1>
       <section id="intro">
         <p>{% if page.excerpt %}{{ page.excerpt | strip_html }}{% else %}{{ site.description }}{% endif %}</p>

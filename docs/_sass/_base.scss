@@ -165,6 +165,17 @@ h1, h2, h3, h4 {
   .homeWrapper {
     padding-top: 2em;
 
+      .wrapper {
+        margin: 0px auto;
+        max-width: $content-width;
+        padding: 0 20px;
+      }
+
+      img.projectLogo {
+        height: 100px;
+        margin-bottom: 0px;
+      }
+
       h1#project_title {
         font-family: $header-font-family;
         font-size: 300%;
