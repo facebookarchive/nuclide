@@ -4,6 +4,9 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
+import os
+import sys
+import urlparse
 import lldb
 from handler import HandlerDomain, UndefinedHandlerError, handler
 from logging_helper import log_debug
@@ -111,6 +114,14 @@ class DebuggerDomain(HandlerDomain):
 
     @handler()
     def setBreakpointByUrl(self, params):
+        # Buck generates long relative paths symbol file which caused breakpoint fail to bind(t9611206).
+        # To workaround this, we use filename instead of fullpath to set breakpoint on MacOS.
+        # TODO: revert this hack fix once buck fixed the source path issue.
+        if sys.platform == 'darwin':
+            parsed_url = urlparse.urlparse(params['url'])
+            return self._set_breakpoint_by_source_path(
+                str(os.path.basename(parsed_url.path)),
+                int(params['lineNumber']) + 1)
         filelike = self.debugger_store.file_manager.get_by_client_url(params['url'])
         if not filelike or not isinstance(filelike, file_manager.File):
             raise RuntimeError('Cannot find file for breakpoint.')
@@ -156,4 +167,13 @@ class DebuggerDomain(HandlerDomain):
             'breakpointId': str(breakpoint.id),
             'locations':
                 self.debugger_store.location_serializer.get_breakpoint_locations(breakpoint),
+        }
+
+    def _set_breakpoint_by_source_path(self, source_path, line):
+        breakpoint = self.debugger_store.debugger.GetSelectedTarget().BreakpointCreateByLocation(
+            source_path,
+            line)
+        return {
+            'breakpointId': str(breakpoint.id),
+            'locations': self.debugger_store.location_serializer.get_breakpoint_locations(breakpoint),
         }
