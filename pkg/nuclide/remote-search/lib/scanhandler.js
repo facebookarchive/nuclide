@@ -24,7 +24,7 @@ import path from 'path';
 import split from 'split';
 
 // This pattern is used for parsing the output of grep.
-const GREP_PARSE_PATTERN = /(.*):(\d*):(.*)/;
+const GREP_PARSE_PATTERN = /(.*?):(\d*):(.*)/;
 
 /**
  * Searches for all instances of a pattern in a directory.
