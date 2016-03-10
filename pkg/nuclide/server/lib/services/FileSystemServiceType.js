@@ -51,6 +51,8 @@ export type FileSystemService = {
    */
   mkdirp(path: string): Promise<boolean>;
 
+  chmod(path: string, mode: number): Promise<void>;
+
   /**
    * If no file (or directory) at the specified path exists, creates the parent
    * directories (if necessary) and then writes an empty file at the specified

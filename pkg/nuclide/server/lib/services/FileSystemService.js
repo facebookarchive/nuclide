@@ -71,6 +71,10 @@ export function mkdirp(path: string): Promise<boolean> {
   return fsPromise.mkdirp(path);
 }
 
+export function chmod(path: string, mode: number): Promise<void> {
+  return fsPromise.chmod(path, mode);
+}
+
 /**
  * If no file (or directory) at the specified path exists, creates the parent
  * directories (if necessary) and then writes an empty file at the specified

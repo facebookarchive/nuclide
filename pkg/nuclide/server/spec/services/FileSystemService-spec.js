@@ -409,6 +409,34 @@ describe('FileSystemService', () => {
       });
     });
   });
+
+  describe('chmod()', () => {
+    let dirPath = null;
+    let testFilePath = null;
+
+    beforeEach(() => {
+      dirPath = temp.mkdirSync('chmod_test');
+      testFilePath = path.join(dirPath, 'foo');
+      fs.writeFileSync(testFilePath, '');
+      fs.chmodSync(testFilePath, '0644');
+    });
+
+    afterEach(() => {
+      if (dirPath != null) {
+        service.rmdir(dirPath);
+      }
+    });
+
+    it('can change permissions', () => {
+      waitsForPromise(async () => {
+        invariant(testFilePath != null);
+        // chmod 0777
+        await service.chmod(testFilePath, 511);
+        expect(fs.statSync(testFilePath).mode % 512).toBe(511);
+      });
+    });
+  });
+
   afterEach(() => {
     invariant(testHelper);
     testHelper.stop();
