@@ -39,7 +39,7 @@ class FlowHyperclickProvider {
       return {
         range,
         callback() {
-          goToLocation(location.file, location.line, location.column);
+          goToLocation(location.file, location.point.line, location.point.column);
         },
       };
     } else {

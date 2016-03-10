@@ -47,7 +47,8 @@ describe('FlowRoot', () => {
     it('should return the location', () => {
       waitsForPromise(async () => {
         // Flow uses 1-based indexing, Atom uses 0-based.
-        expect(await runWith({path: file, line: 5, start: 8})).toEqual({file, line: 4, column: 7});
+        expect(await runWith({path: file, line: 5, start: 8}))
+          .toEqual({file, point: {line: 4, column: 7}});
       });
     });
 

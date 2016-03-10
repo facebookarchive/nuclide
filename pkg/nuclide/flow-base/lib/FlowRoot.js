@@ -86,8 +86,10 @@ export class FlowRoot {
       if (json['path']) {
         return {
           file: json['path'],
-          line: json['line'] - 1,
-          column: json['start'] - 1,
+          point: {
+            line: json['line'] - 1,
+            column: json['start'] - 1,
+          },
         };
       } else {
         return null;

@@ -39,10 +39,14 @@ export type MessageComponent = {
   end: number;
 }
 
-export type Loc = {
-  file: NuclideUri;
+export type Point = {
   line: number;
   column: number;
+}
+
+export type Loc = {
+  file: NuclideUri;
+  point: Point;
 }
 
 // If types are added here, make sure to also add them to FlowConstants.js. This needs to be the
