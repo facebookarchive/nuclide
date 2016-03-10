@@ -45,7 +45,11 @@ class _Task {
       const id = response['id'];
       this._emitter.emit(id, response);
     });
-    child.on('error', log);
+    child.on('error', buffer => {
+      log(buffer);
+      child.kill();
+      this._emitter.emit('error', buffer.toString());
+    });
     child.send({
       action: 'bootstrap',
       transpiler: require.resolve('../../node-transpiler'),
@@ -92,8 +96,12 @@ class _Task {
     };
 
     return new Promise((resolve, reject) => {
+      const errListener = error => {
+        reject(error);
+      };
       // Ensure the response listener is set up before the request is sent.
       this._emitter.once(requestId, response => {
+        this._emitter.removeListener('error', errListener);
         const err = response['error'];
         if (!err) {
           resolve(response['result']);
@@ -105,8 +113,13 @@ class _Task {
           reject(error);
         }
       });
+      this._emitter.once('error', errListener);
       this._child.send(request);
     });
+  }
+
+  onError(callback: (buffer: Buffer) => any): void {
+    this._child.on('error', callback);
   }
 
   dispose() {

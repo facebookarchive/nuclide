@@ -137,4 +137,19 @@ describe('Task', () => {
       });
     });
   });
+
+  it('calls onError upon error', () => {
+    const spy = jasmine.createSpy('exit');
+    const task = createTask();
+    task.onError(spy);
+    task._child.disconnect();
+    task.invokeRemoteMethod({
+      file: 'test',
+      method: null,
+      args: null,
+    });
+    waitsFor(() => {
+      return spy.callCount > 0;
+    });
+  });
 });

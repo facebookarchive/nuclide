@@ -17,9 +17,8 @@ export type FileSearchResult = {
   matchIndexes: Array<number>;
 };
 
-import {fileSearchForDirectory, FileSearch} from '../../path-search';
+import {fileSearchForDirectory} from '../../path-search';
 import {fsPromise} from '../../commons';
-const fileSearchers: Map<string, FileSearch> = new Map();
 
 /**
  * Performs a fuzzy file search in the specified directory.
@@ -28,32 +27,16 @@ export async function queryFuzzyFile(
   rootDirectory: NuclideUri,
   queryString: string
 ): Promise<Array<FileSearchResult>> {
-  let search = fileSearchers.get(rootDirectory);
-
-  if (search == null) {
-    const exists = await fsPromise.exists(rootDirectory);
-    if (!exists) {
-      throw new Error('Could not find directory to search : ' + rootDirectory);
-    }
-
-    const stat = await fsPromise.stat(rootDirectory);
-    if (!stat.isDirectory()) {
-      throw new Error('Provided path is not a directory : ' + rootDirectory);
-    }
-
-    search = await fileSearchForDirectory(rootDirectory);
-    fileSearchers.set(rootDirectory, search);
-  }
-
-  return await search.query(queryString);
+  const search = await fileSearchForDirectory(rootDirectory);
+  return search.query(queryString);
 }
 
 /**
  * @return whether this service can perform fuzzy file queries on the
  *   specified directory.
  */
-export async function isFuzzySearchAvailableFor(
-    rootDirectory: NuclideUri
+export function isFuzzySearchAvailableFor(
+  rootDirectory: NuclideUri
 ): Promise<boolean> {
-  return await fsPromise.exists(rootDirectory);
+  return fsPromise.exists(rootDirectory);
 }

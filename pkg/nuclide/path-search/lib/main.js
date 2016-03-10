@@ -12,6 +12,9 @@
 import type {Task} from '../../task';
 import type {FileSearchResult as FileSearchResultType} from './FileSearch';
 
+import {getLogger} from '../../logging';
+import {fsPromise} from '../../commons';
+
 export type FileSearchResult = FileSearchResultType;
 
 type DirectoryUri = string;
@@ -20,21 +23,31 @@ export type FileSearch = {
   dispose: () => void;
 };
 
+const logger = getLogger();
+
 /**
  * This is an object that lives in the main process that delegates calls to the
  * FileSearch in the forked process.
  */
 class MainProcessFileSearch {
-  _task: Task;
+  _task: ?Task;
   _directoryUri: DirectoryUri;
 
   constructor(task: Task, directoryUri: DirectoryUri) {
     this._task = task;
+    this._task.onError(buffer => {
+      logger.error('File search process crashed with message:', buffer.toString());
+      this.dispose();
+    });
     this._directoryUri = directoryUri;
   }
 
   async query(query: string): Promise<Array<FileSearchResult>> {
-    return this._task.invokeRemoteMethod({
+    const task = this._task;
+    if (task == null) {
+      throw new Error('Task has been disposed');
+    }
+    return task.invokeRemoteMethod({
       file: require.resolve('./FileSearch'),
       method: 'doSearch',
       args: [this._directoryUri, query],
@@ -42,10 +55,11 @@ class MainProcessFileSearch {
   }
 
   dispose() {
-    if (fileSearchForDirectoryUri[this._directoryUri] === this) {
+    if (this._task != null) {
       delete fileSearchForDirectoryUri[this._directoryUri];
+      this._task.dispose();
+      this._task = null;
     }
-    this._task.dispose();
   }
 }
 
@@ -68,9 +82,19 @@ async function newFileSearch(directoryUri: string): Promise<MainProcessFileSearc
  *
  * TODO(mbolin): Caller should also invoke dispose(), as appropriate.
  */
-export function fileSearchForDirectory(directoryUri: string): Promise<FileSearch> {
+export async function fileSearchForDirectory(directoryUri: string): Promise<FileSearch> {
   if (directoryUri in fileSearchForDirectoryUri) {
     return fileSearchForDirectoryUri[directoryUri];
+  }
+
+  const exists = await fsPromise.exists(directoryUri);
+  if (!exists) {
+    throw new Error('Could not find directory to search : ' + directoryUri);
+  }
+
+  const stat = await fsPromise.stat(directoryUri);
+  if (!stat.isDirectory()) {
+    throw new Error('Provided path is not a directory : ' + directoryUri);
   }
 
   const promise = newFileSearch(directoryUri);
