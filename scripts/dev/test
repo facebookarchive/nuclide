@@ -19,6 +19,12 @@ from datetime import datetime
 # Add the lib/ directory to $PYTHONPATH so library code can be imported.
 sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 
+try:
+    from fb.pre_setup import fb_pre_setup
+    fb_pre_setup()
+except ImportError as e:
+    pass
+
 # Parse the command-line arguments.
 from dependencies import check_dependencies
 import optparse

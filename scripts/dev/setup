@@ -24,11 +24,9 @@ from package_manager import NUCLIDE_PATH
 
 try:
     from fb.pre_setup import fb_pre_setup
-    logging.info('Running development pre-setup scripts...')
     fb_pre_setup()
-    logging.info('Development pre-setup scripts executed.')
 except ImportError as e:
-    fb_pre_setup = None
+    pass
 
 # Parse the command-line arguments.
 parser = optparse.OptionParser(usage='usage: %prog [options]',
