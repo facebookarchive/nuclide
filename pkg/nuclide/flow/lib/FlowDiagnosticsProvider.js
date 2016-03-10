@@ -55,13 +55,26 @@ const {JS_GRAMMARS} = require('./constants.js');
  * with which the usage disagrees. Note that these could occur in different
  * files.
  */
-function extractRange(message: MessageComponent): atom$Range {
+
+// Use `atom$Range | void` rather than `?atom$Range` to exclude `null`, so that the type is
+// compatible with the `range` property, which is an optional property rather than a nullable
+// property.
+function extractRange(message: MessageComponent): atom$Range | void {
   // It's unclear why the 1-based to 0-based indexing works the way that it
   // does, but this has the desired effect in the UI, in practice.
-  return new Range(
-    [message['line'] - 1, message['start'] - 1],
-    [message['endline'] - 1, message['end']]
-  );
+  const range = message.range;
+  if (range == null) {
+    return undefined;
+  } else {
+    return new Range(
+      [range.start.line - 1, range.start.column - 1],
+      [range.end.line - 1, range.end.column]
+    );
+  }
+}
+
+function extractPath(message: MessageComponent): NuclideUri | void {
+  return message.range == null ? undefined : message.range.file;
 }
 
 // A trace object is very similar to an error object.
@@ -69,7 +82,7 @@ function flowMessageToTrace(message: MessageComponent): Trace {
   return {
     type: 'Trace',
     text: message['descr'],
-    filePath: message['path'],
+    filePath: extractPath(message),
     range: extractRange(message),
   };
 }
@@ -79,7 +92,7 @@ function flowMessageToDiagnosticMessage(diagnostic: Diagnostic) {
 
   // The Flow type does not capture this, but the first message always has a path, and the
   // diagnostics package requires a FileDiagnosticMessage to have a path.
-  const path = flowMessage['path'];
+  const path = extractPath(flowMessage);
   invariant(path != null, 'Expected path to not be null or undefined');
 
   const diagnosticMessage: FileDiagnosticMessage = {

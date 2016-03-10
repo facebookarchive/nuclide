@@ -30,13 +30,18 @@ describe('FlowDiagnosticsProvider', () => {
         messageComponents: [
           {
             level: 'error',
-            path: testPath,
             descr: 'message',
-            line: 1,
-            endline: 2,
-            start: 3,
-            end: 4,
-            code: 0,
+            range: {
+              file: testPath,
+              start: {
+                line: 1,
+                column: 3,
+              },
+              end: {
+                line: 2,
+                column: 4,
+              },
+            },
           },
         ],
       }];
@@ -67,13 +72,18 @@ describe('FlowDiagnosticsProvider', () => {
         level: 'warning',
         messageComponents: [
           {
-            path: testPath,
             descr: 'message',
-            line: 1,
-            endline: 2,
-            start: 3,
-            end: 4,
-            code: 0,
+            range: {
+              file: testPath,
+              start: {
+                line: 1,
+                column: 3,
+              },
+              end: {
+                line: 2,
+                column: 4,
+              },
+            },
           },
         ],
       }];
@@ -98,13 +108,18 @@ describe('FlowDiagnosticsProvider', () => {
         level: 'warning',
         messageComponents: [
           {
-            path: 'notMyPath',
             descr: 'message',
-            line: 1,
-            endline: 2,
-            start: 3,
-            end: 4,
-            code: 0,
+            range: {
+              file: 'notMyPath',
+              start: {
+                line: 1,
+                column: 3,
+              },
+              end: {
+                line: 2,
+                column: 4,
+              },
+            },
           },
         ],
       }];
@@ -120,23 +135,33 @@ describe('FlowDiagnosticsProvider', () => {
         level: 'error',
         messageComponents: [
           {
-            path: testPath,
             descr: 'message',
-            line: 1,
-            endline: 2,
-            start: 3,
-            end: 4,
-            code: 0,
+            range: {
+              file: testPath,
+              start: {
+                line: 1,
+                column: 3,
+              },
+              end: {
+                line: 2,
+                column: 4,
+              },
+            },
           },
           {
             level: 'error',
-            path: 'otherPath',
             descr: 'more message',
-            line: 5,
-            endline: 6,
-            start: 7,
-            end: 8,
-            code: 0,
+            range: {
+              file: 'otherPath',
+              start: {
+                line: 5,
+                column: 7,
+              },
+              end: {
+                line: 6,
+                column: 8,
+              },
+            },
           },
         ],
       }];

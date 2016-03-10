@@ -31,12 +31,14 @@ export type Diagnostic = {
 }
 
 export type MessageComponent = {
-  path?: NuclideUri;
   descr: string;
-  line: number;
-  endline: number;
-  start: number;
-  end: number;
+  range: ?Range;
+}
+
+export type Range = {
+  file: NuclideUri;
+  start: Point;
+  end: Point;
 }
 
 export type Point = {

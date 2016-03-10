@@ -135,20 +135,28 @@ export function oldFlowStatusOutputToDiagnostics(
 function flowMessageComponentToMessageComponent(
   component: OldBaseFlowStatusErrorMessageComponent,
 ): MessageComponent {
-  let path = component['path'];
-  if (path == null || path === '') {
-    // Use a consistent 'falsy' value for the empty string, undefined, etc. Flow returns the
-    // empty string instead of null when there is no relevant path.
-    // TODO(t8644340) Remove this when Flow is fixed.
-    path = undefined;
+  const path = component.path;
+  let range = null;
+
+  // Flow returns the empty string instead of null when there is no relevant path. The upcoming
+  // format changes described elsewhere in this file fix the issue, but for now we must still work
+  // around it.
+  if (path != null && path !== '') {
+    range = {
+      file: path,
+      start: {
+        line: component.line,
+        column: component.start,
+      },
+      end: {
+        line: component.endline,
+        column: component.end,
+      },
+    };
   }
   return {
-    path,
-    descr: component['descr'],
-    line: component['line'],
-    endline: component['endline'],
-    start: component['start'],
-    end: component['end'],
+    descr: component.descr,
+    range,
   };
 }
 
