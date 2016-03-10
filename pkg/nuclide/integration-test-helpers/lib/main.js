@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +8,26 @@
  * the root directory of this source tree.
  */
 
-import {dispatchKeyboardEvent} from './event';
-import {copyFixture, copyMercurialFixture, setLocalProject} from './fixtures';
-import {activateAllPackages, deactivateAllPackages} from './package-utils';
-import {addRemoteProject, startNuclideServer, stopNuclideServer} from './remote-utils';
-import {waitsForFile} from './waitsForFile';
+var _event = require('./event');
+
+var _fixtures = require('./fixtures');
+
+var _packageUtils = require('./package-utils');
+
+var _remoteUtils = require('./remote-utils');
+
+var _waitsForFile = require('./waitsForFile');
 
 // Smallish, yet realistic testing window dimensions.
-const TEST_WINDOW_HEIGHT = 600;
-const TEST_WINDOW_WIDTH = 1000;
+var TEST_WINDOW_HEIGHT = 600;
+var TEST_WINDOW_WIDTH = 1000;
 
-function jasmineIntegrationTestSetup(): void {
+function jasmineIntegrationTestSetup() {
   // Allow jasmine to interact with the DOM.
   jasmine.attachToDOM(atom.views.getView(atom.workspace));
 
   // Set the testing window dimensions.
-  const styleCSS = `
-    height: ${TEST_WINDOW_HEIGHT}px;
-    width: ${TEST_WINDOW_WIDTH}px;
-  `;
+  var styleCSS = '\n    height: ' + TEST_WINDOW_HEIGHT + 'px;\n    width: ' + TEST_WINDOW_WIDTH + 'px;\n  ';
   document.querySelector('#jasmine-content').setAttribute('style', styleCSS);
 
   // Unmock timer functions.
@@ -35,15 +35,16 @@ function jasmineIntegrationTestSetup(): void {
 }
 
 module.exports = {
-  activateAllPackages,
-  addRemoteProject,
-  copyFixture,
-  copyMercurialFixture,
-  deactivateAllPackages,
-  dispatchKeyboardEvent,
-  jasmineIntegrationTestSetup,
-  setLocalProject,
-  startNuclideServer,
-  stopNuclideServer,
-  waitsForFile,
+  activateAllPackages: _packageUtils.activateAllPackages,
+  addRemoteProject: _remoteUtils.addRemoteProject,
+  copyFixture: _fixtures.copyFixture,
+  copyMercurialFixture: _fixtures.copyMercurialFixture,
+  deactivateAllPackages: _packageUtils.deactivateAllPackages,
+  dispatchKeyboardEvent: _event.dispatchKeyboardEvent,
+  jasmineIntegrationTestSetup: jasmineIntegrationTestSetup,
+  setLocalProject: _fixtures.setLocalProject,
+  startNuclideServer: _remoteUtils.startNuclideServer,
+  stopNuclideServer: _remoteUtils.stopNuclideServer,
+  waitsForFile: _waitsForFile.waitsForFile
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztxQkFXb0MsU0FBUzs7d0JBQ29CLFlBQVk7OzRCQUNwQixpQkFBaUI7OzJCQUNKLGdCQUFnQjs7NEJBQzNELGdCQUFnQjs7O0FBRzNDLElBQU0sa0JBQWtCLEdBQUcsR0FBRyxDQUFDO0FBQy9CLElBQU0saUJBQWlCLEdBQUcsSUFBSSxDQUFDOztBQUUvQixTQUFTLDJCQUEyQixHQUFTOztBQUUzQyxTQUFPLENBQUMsV0FBVyxDQUFDLElBQUksQ0FBQyxLQUFLLENBQUMsT0FBTyxDQUFDLElBQUksQ0FBQyxTQUFTLENBQUMsQ0FBQyxDQUFDOzs7QUFHeEQsTUFBTSxRQUFRLHNCQUNGLGtCQUFrQix3QkFDbkIsaUJBQWlCLFlBQzNCLENBQUM7QUFDRixVQUFRLENBQUMsYUFBYSxDQUFDLGtCQUFrQixDQUFDLENBQUMsWUFBWSxDQUFDLE9BQU8sRUFBRSxRQUFRLENBQUMsQ0FBQzs7O0FBRzNFLFNBQU8sQ0FBQyxZQUFZLEVBQUUsQ0FBQztDQUN4Qjs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHO0FBQ2YscUJBQW1CLG1DQUFBO0FBQ25CLGtCQUFnQiwrQkFBQTtBQUNoQixhQUFXLHVCQUFBO0FBQ1gsc0JBQW9CLGdDQUFBO0FBQ3BCLHVCQUFxQixxQ0FBQTtBQUNyQix1QkFBcUIsOEJBQUE7QUFDckIsNkJBQTJCLEVBQTNCLDJCQUEyQjtBQUMzQixpQkFBZSwyQkFBQTtBQUNmLG9CQUFrQixpQ0FBQTtBQUNsQixtQkFBaUIsZ0NBQUE7QUFDakIsY0FBWSw0QkFBQTtDQUNiLENBQUMiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB7ZGlzcGF0Y2hLZXlib2FyZEV2ZW50fSBmcm9tICcuL2V2ZW50JztcbmltcG9ydCB7Y29weUZpeHR1cmUsIGNvcHlNZXJjdXJpYWxGaXh0dXJlLCBzZXRMb2NhbFByb2plY3R9IGZyb20gJy4vZml4dHVyZXMnO1xuaW1wb3J0IHthY3RpdmF0ZUFsbFBhY2thZ2VzLCBkZWFjdGl2YXRlQWxsUGFja2FnZXN9IGZyb20gJy4vcGFja2FnZS11dGlscyc7XG5pbXBvcnQge2FkZFJlbW90ZVByb2plY3QsIHN0YXJ0TnVjbGlkZVNlcnZlciwgc3RvcE51Y2xpZGVTZXJ2ZXJ9IGZyb20gJy4vcmVtb3RlLXV0aWxzJztcbmltcG9ydCB7d2FpdHNGb3JGaWxlfSBmcm9tICcuL3dhaXRzRm9yRmlsZSc7XG5cbi8vIFNtYWxsaXNoLCB5ZXQgcmVhbGlzdGljIHRlc3Rpbmcgd2luZG93IGRpbWVuc2lvbnMuXG5jb25zdCBURVNUX1dJTkRPV19IRUlHSFQgPSA2MDA7XG5jb25zdCBURVNUX1dJTkRPV19XSURUSCA9IDEwMDA7XG5cbmZ1bmN0aW9uIGphc21pbmVJbnRlZ3JhdGlvblRlc3RTZXR1cCgpOiB2b2lkIHtcbiAgLy8gQWxsb3cgamFzbWluZSB0byBpbnRlcmFjdCB3aXRoIHRoZSBET00uXG4gIGphc21pbmUuYXR0YWNoVG9ET00oYXRvbS52aWV3cy5nZXRWaWV3KGF0b20ud29ya3NwYWNlKSk7XG5cbiAgLy8gU2V0IHRoZSB0ZXN0aW5nIHdpbmRvdyBkaW1lbnNpb25zLlxuICBjb25zdCBzdHlsZUNTUyA9IGBcbiAgICBoZWlnaHQ6ICR7VEVTVF9XSU5ET1dfSEVJR0hUfXB4O1xuICAgIHdpZHRoOiAke1RFU1RfV0lORE9XX1dJRFRIfXB4O1xuICBgO1xuICBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKCcjamFzbWluZS1jb250ZW50Jykuc2V0QXR0cmlidXRlKCdzdHlsZScsIHN0eWxlQ1NTKTtcblxuICAvLyBVbm1vY2sgdGltZXIgZnVuY3Rpb25zLlxuICBqYXNtaW5lLnVzZVJlYWxDbG9jaygpO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IHtcbiAgYWN0aXZhdGVBbGxQYWNrYWdlcyxcbiAgYWRkUmVtb3RlUHJvamVjdCxcbiAgY29weUZpeHR1cmUsXG4gIGNvcHlNZXJjdXJpYWxGaXh0dXJlLFxuICBkZWFjdGl2YXRlQWxsUGFja2FnZXMsXG4gIGRpc3BhdGNoS2V5Ym9hcmRFdmVudCxcbiAgamFzbWluZUludGVncmF0aW9uVGVzdFNldHVwLFxuICBzZXRMb2NhbFByb2plY3QsXG4gIHN0YXJ0TnVjbGlkZVNlcnZlcixcbiAgc3RvcE51Y2xpZGVTZXJ2ZXIsXG4gIHdhaXRzRm9yRmlsZSxcbn07XG4iXX0=

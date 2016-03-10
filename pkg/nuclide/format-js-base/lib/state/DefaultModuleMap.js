@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +8,16 @@
  * the root directory of this source tree.
  */
 
-const ModuleMap = require('./ModuleMap');
+var ModuleMap = require('./ModuleMap');
 
-const DefaultModuleMap = new ModuleMap({
+var DefaultModuleMap = new ModuleMap({
   paths: [],
   pathsToRelativize: [],
   aliases: require('../constants/commonAliases'),
   aliasesToRelativize: new Map(),
   builtIns: require('../constants/builtIns'),
-  builtInTypes: require('../constants/builtInTypes'),
+  builtInTypes: require('../constants/builtInTypes')
 });
 
 module.exports = DefaultModuleMap;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkRlZmF1bHRNb2R1bGVNYXAuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQVdBLElBQU0sU0FBUyxHQUFHLE9BQU8sQ0FBQyxhQUFhLENBQUMsQ0FBQzs7QUFFekMsSUFBTSxnQkFBZ0IsR0FBRyxJQUFJLFNBQVMsQ0FBQztBQUNyQyxPQUFLLEVBQUUsRUFBRTtBQUNULG1CQUFpQixFQUFFLEVBQUU7QUFDckIsU0FBTyxFQUFFLE9BQU8sQ0FBQyw0QkFBNEIsQ0FBQztBQUM5QyxxQkFBbUIsRUFBRSxJQUFJLEdBQUcsRUFBRTtBQUM5QixVQUFRLEVBQUUsT0FBTyxDQUFDLHVCQUF1QixDQUFDO0FBQzFDLGNBQVksRUFBRSxPQUFPLENBQUMsMkJBQTJCLENBQUM7Q0FDbkQsQ0FBQyxDQUFDOztBQUVILE1BQU0sQ0FBQyxPQUFPLEdBQUcsZ0JBQWdCLENBQUMiLCJmaWxlIjoiRGVmYXVsdE1vZHVsZU1hcC5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmNvbnN0IE1vZHVsZU1hcCA9IHJlcXVpcmUoJy4vTW9kdWxlTWFwJyk7XG5cbmNvbnN0IERlZmF1bHRNb2R1bGVNYXAgPSBuZXcgTW9kdWxlTWFwKHtcbiAgcGF0aHM6IFtdLFxuICBwYXRoc1RvUmVsYXRpdml6ZTogW10sXG4gIGFsaWFzZXM6IHJlcXVpcmUoJy4uL2NvbnN0YW50cy9jb21tb25BbGlhc2VzJyksXG4gIGFsaWFzZXNUb1JlbGF0aXZpemU6IG5ldyBNYXAoKSxcbiAgYnVpbHRJbnM6IHJlcXVpcmUoJy4uL2NvbnN0YW50cy9idWlsdElucycpLFxuICBidWlsdEluVHlwZXM6IHJlcXVpcmUoJy4uL2NvbnN0YW50cy9idWlsdEluVHlwZXMnKSxcbn0pO1xuXG5tb2R1bGUuZXhwb3J0cyA9IERlZmF1bHRNb2R1bGVNYXA7XG4iXX0=

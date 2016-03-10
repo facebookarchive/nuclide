@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -15,9 +14,10 @@ require('jasmine-node');
  * unspy is a ported utility from Atom's `spec-helper.coffee` that restores the
  * jasmine spied function on an object to its original value.
  */
-jasmine.unspy = function unspy(object: Object, methodName: string) {
+jasmine.unspy = function unspy(object, methodName) {
   if (!object[methodName].hasOwnProperty('originalValue')) {
     throw new Error('Not a spy');
   }
   object[methodName] = object[methodName].originalValue;
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInVuc3B5LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7QUFXQSxPQUFPLENBQUMsY0FBYyxDQUFDLENBQUM7Ozs7OztBQU14QixPQUFPLENBQUMsS0FBSyxHQUFHLFNBQVMsS0FBSyxDQUFDLE1BQWMsRUFBRSxVQUFrQixFQUFFO0FBQ2pFLE1BQUksQ0FBQyxNQUFNLENBQUMsVUFBVSxDQUFDLENBQUMsY0FBYyxDQUFDLGVBQWUsQ0FBQyxFQUFFO0FBQ3ZELFVBQU0sSUFBSSxLQUFLLENBQUMsV0FBVyxDQUFDLENBQUM7R0FDOUI7QUFDRCxRQUFNLENBQUMsVUFBVSxDQUFDLEdBQUcsTUFBTSxDQUFDLFVBQVUsQ0FBQyxDQUFDLGFBQWEsQ0FBQztDQUN2RCxDQUFDIiwiZmlsZSI6InVuc3B5LmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxucmVxdWlyZSgnamFzbWluZS1ub2RlJyk7XG5cbi8qKlxuICogdW5zcHkgaXMgYSBwb3J0ZWQgdXRpbGl0eSBmcm9tIEF0b20ncyBgc3BlYy1oZWxwZXIuY29mZmVlYCB0aGF0IHJlc3RvcmVzIHRoZVxuICogamFzbWluZSBzcGllZCBmdW5jdGlvbiBvbiBhbiBvYmplY3QgdG8gaXRzIG9yaWdpbmFsIHZhbHVlLlxuICovXG5qYXNtaW5lLnVuc3B5ID0gZnVuY3Rpb24gdW5zcHkob2JqZWN0OiBPYmplY3QsIG1ldGhvZE5hbWU6IHN0cmluZykge1xuICBpZiAoIW9iamVjdFttZXRob2ROYW1lXS5oYXNPd25Qcm9wZXJ0eSgnb3JpZ2luYWxWYWx1ZScpKSB7XG4gICAgdGhyb3cgbmV3IEVycm9yKCdOb3QgYSBzcHknKTtcbiAgfVxuICBvYmplY3RbbWV0aG9kTmFtZV0gPSBvYmplY3RbbWV0aG9kTmFtZV0ub3JpZ2luYWxWYWx1ZTtcbn07XG4iXX0=
