@@ -2,11 +2,11 @@
   href: docs/quick-start/getting-started/
   text: Getting Started
 - type: button
-  href: docs/editor/basics/
-  text: Code Editor
-- type: button
   href: docs/platforms/react-native/
   text: React Native
 - type: button
-  href: docs/languages/hack/
-  text: Hack
+  href: docs/platforms/ios/
+  text: iOS
+- type: button
+  href: docs/platforms/web-development/
+  text: Web
