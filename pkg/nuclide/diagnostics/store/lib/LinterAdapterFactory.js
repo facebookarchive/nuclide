@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+
+// Flow didn't like it when I tried import type here. This shouldn't affect
+// performance though, since LinterAdapter requires this anyway.
+
+var _providerBase = require('../../provider-base');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,50 +12,37 @@
  * the root directory of this source tree.
  */
 
-import type {LinterProvider} from '../../base';
-// Flow didn't like it when I tried import type here. This shouldn't affect
-// performance though, since LinterAdapter requires this anyway.
-import {DiagnosticsProviderBase} from '../../provider-base';
-import {LinterAdapter} from './LinterAdapter';
+var _LinterAdapter = require('./LinterAdapter');
 
-function createSingleAdapter(
-  provider: LinterProvider,
-  ProviderBase?: typeof DiagnosticsProviderBase,
-): ?LinterAdapter {
+function createSingleAdapter(provider, ProviderBase) {
   if (provider.disabledForNuclide) {
     return;
   }
-  const validationErrors = validateLinter(provider);
+  var validationErrors = validateLinter(provider);
   if (validationErrors.length === 0) {
-    return new LinterAdapter(provider, ProviderBase);
+    return new _LinterAdapter.LinterAdapter(provider, ProviderBase);
   } else {
-    const nameString = provider && provider.providerName ? ` (${provider.providerName})` : '';
-    let message = `nuclide-diagnostics-store found problems with a linter${nameString}. ` +
-      'Diagnostic messages from that linter will be unavailable.\n';
-    message += validationErrors.map(error => `- ${error}\n`).join('');
-    atom.notifications.addError(message, {dismissable: true});
+    var nameString = provider && provider.providerName ? ' (' + provider.providerName + ')' : '';
+    var message = 'nuclide-diagnostics-store found problems with a linter' + nameString + '. ' + 'Diagnostic messages from that linter will be unavailable.\n';
+    message += validationErrors.map(function (error) {
+      return '- ' + error + '\n';
+    }).join('');
+    atom.notifications.addError(message, { dismissable: true });
     return null;
   }
 }
 
-function addSingleAdapter(
-  adapters: Set<LinterAdapter>,
-  provider: LinterProvider,
-  ProviderBase?: typeof DiagnosticsProviderBase,
-): void {
-  const adapter: ?LinterAdapter = createSingleAdapter(provider);
+function addSingleAdapter(adapters, provider, ProviderBase) {
+  var adapter = createSingleAdapter(provider);
   if (adapter) {
     adapters.add(adapter);
   }
 }
 
-function createAdapters(
-  providers: LinterProvider | Array<LinterProvider>,
-  ProviderBase?: typeof DiagnosticsProviderBase,
-): Set<LinterAdapter> {
-  const adapters = new Set();
+function createAdapters(providers, ProviderBase) {
+  var adapters = new Set();
   if (Array.isArray(providers)) {
-    for (const provider of providers) {
+    for (var provider of providers) {
       addSingleAdapter(adapters, provider);
     }
   } else {
@@ -61,35 +51,23 @@ function createAdapters(
   return adapters;
 }
 
-function validateLinter(provider: LinterProvider): Array<string> {
-  const errors = [];
+function validateLinter(provider) {
+  var errors = [];
   validate(provider, 'Must not be undefined', errors);
 
   if (errors.length === 0) {
     validate(provider.grammarScopes, 'Must specify grammarScopes', errors);
     validate(Array.isArray(provider.grammarScopes), 'grammarScopes must be an Array', errors);
     if (errors.length === 0) {
-      for (const grammar of provider.grammarScopes) {
-        validate(
-          typeof grammar === 'string',
-          `Each grammarScope entry must be a string: ${grammar}`,
-          errors,
-        );
+      for (var grammar of provider.grammarScopes) {
+        validate(typeof grammar === 'string', 'Each grammarScope entry must be a string: ' + grammar, errors);
       }
     }
 
-    validate(
-      provider.scope === 'file' || provider.scope === 'project',
-      `Scope must be 'file' or 'project'; found '${provider.scope}'`,
-      errors,
-    );
+    validate(provider.scope === 'file' || provider.scope === 'project', 'Scope must be \'file\' or \'project\'; found \'' + provider.scope + '\'', errors);
 
     if (provider.scope === 'project') {
-      validate(
-        !provider.lintOnFly,
-        "lintOnFly must be false for a linter with 'project' scope",
-        errors,
-      );
+      validate(!provider.lintOnFly, "lintOnFly must be false for a linter with 'project' scope", errors);
     }
 
     validate(provider.lint, 'lint function must be specified', errors);
@@ -103,10 +81,11 @@ function validateLinter(provider: LinterProvider): Array<string> {
   return errors;
 }
 
-function validate(condition: mixed, msg: string, errors: Array<string>): void {
+function validate(condition, msg, errors) {
   if (!condition) {
     errors.push(msg);
   }
 }
 
-module.exports = { createAdapters, validateLinter };
+module.exports = { createAdapters: createAdapters, validateLinter: validateLinter };
+//# sourceMappingURL=data:application/json;base64,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SyxTQUFTLEVBQUU7QUFDaEMsY0FBUSxDQUNOLENBQUMsUUFBUSxDQUFDLFNBQVMsRUFDbkIsMkRBQTJELEVBQzNELE1BQU0sQ0FDUCxDQUFDO0tBQ0g7O0FBRUQsWUFBUSxDQUFDLFFBQVEsQ0FBQyxJQUFJLEVBQUUsaUNBQWlDLEVBQUUsTUFBTSxDQUFDLENBQUM7QUFDbkUsWUFBUSxDQUFDLE9BQU8sUUFBUSxDQUFDLElBQUksS0FBSyxVQUFVLEVBQUUseUJBQXlCLEVBQUUsTUFBTSxDQUFDLENBQUM7O0FBRWpGLFFBQUksUUFBUSxDQUFDLFlBQVksRUFBRTtBQUN6QixjQUFRLENBQUMsT0FBTyxRQUFRLENBQUMsWUFBWSxLQUFLLFFBQVEsRUFBRSwrQkFBK0IsRUFBRSxNQUFNLENBQUMsQ0FBQztLQUM5RjtHQUNGOztBQUVELFNBQU8sTUFBTSxDQUFDO0NBQ2Y7O0FBRUQsU0FBUyxRQUFRLENBQUMsU0FBZ0IsRUFBRSxHQUFXLEVBQUUsTUFBcUIsRUFBUTtBQUM1RSxNQUFJLENBQUMsU0FBUyxFQUFFO0FBQ2QsVUFBTSxDQUFDLElBQUksQ0FBQyxHQUFHLENBQUMsQ0FBQztHQUNsQjtDQUNGOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUcsRUFBRSxjQUFjLEVBQWQsY0FBYyxFQUFFLGNBQWMsRUFBZCxjQUFjLEVBQUUsQ0FBQyIsImZpbGUiOiJMaW50ZXJBZGFwdGVyRmFjdG9yeS5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtMaW50ZXJQcm92aWRlcn0gZnJvbSAnLi4vLi4vYmFzZSc7XG4vLyBGbG93IGRpZG4ndCBsaWtlIGl0IHdoZW4gSSB0cmllZCBpbXBvcnQgdHlwZSBoZXJlLiBUaGlzIHNob3VsZG4ndCBhZmZlY3Rcbi8vIHBlcmZvcm1hbmNlIHRob3VnaCwgc2luY2UgTGludGVyQWRhcHRlciByZXF1aXJlcyB0aGlzIGFueXdheS5cbmltcG9ydCB7RGlhZ25vc3RpY3NQcm92aWRlckJhc2V9IGZyb20gJy4uLy4uL3Byb3ZpZGVyLWJhc2UnO1xuaW1wb3J0IHtMaW50ZXJBZGFwdGVyfSBmcm9tICcuL0xpbnRlckFkYXB0ZXInO1xuXG5mdW5jdGlvbiBjcmVhdGVTaW5nbGVBZGFwdGVyKFxuICBwcm92aWRlcjogTGludGVyUHJvdmlkZXIsXG4gIFByb3ZpZGVyQmFzZT86IHR5cGVvZiBEaWFnbm9zdGljc1Byb3ZpZGVyQmFzZSxcbik6ID9MaW50ZXJBZGFwdGVyIHtcbiAgaWYgKHByb3ZpZGVyLmRpc2FibGVkRm9yTnVjbGlkZSkge1xuICAgIHJldHVybjtcbiAgfVxuICBjb25zdCB2YWxpZGF0aW9uRXJyb3JzID0gdmFsaWRhdGVMaW50ZXIocHJvdmlkZXIpO1xuICBpZiAodmFsaWRhdGlvbkVycm9ycy5sZW5ndGggPT09IDApIHtcbiAgICByZXR1cm4gbmV3IExpbnRlckFkYXB0ZXIocHJvdmlkZXIsIFByb3ZpZGVyQmFzZSk7XG4gIH0gZWxzZSB7XG4gICAgY29uc3QgbmFtZVN0cmluZyA9IHByb3ZpZGVyICYmIHByb3ZpZGVyLnByb3ZpZGVyTmFtZSA/IGAgKCR7cHJvdmlkZXIucHJvdmlkZXJOYW1lfSlgIDogJyc7XG4gICAgbGV0IG1lc3NhZ2UgPSBgbnVjbGlkZS1kaWFnbm9zdGljcy1zdG9yZSBmb3VuZCBwcm9ibGVtcyB3aXRoIGEgbGludGVyJHtuYW1lU3RyaW5nfS4gYCArXG4gICAgICAnRGlhZ25vc3RpYyBtZXNzYWdlcyBmcm9tIHRoYXQgbGludGVyIHdpbGwgYmUgdW5hdmFpbGFibGUuXFxuJztcbiAgICBtZXNzYWdlICs9IHZhbGlkYXRpb25FcnJvcnMubWFwKGVycm9yID0+IGAtICR7ZXJyb3J9XFxuYCkuam9pbignJyk7XG4gICAgYXRvbS5ub3RpZmljYXRpb25zLmFkZEVycm9yKG1lc3NhZ2UsIHtkaXNtaXNzYWJsZTogdHJ1ZX0pO1xuICAgIHJldHVybiBudWxsO1xuICB9XG59XG5cbmZ1bmN0aW9uIGFkZFNpbmdsZUFkYXB0ZXIoXG4gIGFkYXB0ZXJzOiBTZXQ8TGludGVyQWRhcHRlcj4sXG4gIHByb3ZpZGVyOiBMaW50ZXJQcm92aWRlcixcbiAgUHJvdmlkZXJCYXNlPzogdHlwZW9mIERpYWdub3N0aWNzUHJvdmlkZXJCYXNlLFxuKTogdm9pZCB7XG4gIGNvbnN0IGFkYXB0ZXI6ID9MaW50ZXJBZGFwdGVyID0gY3JlYXRlU2luZ2xlQWRhcHRlcihwcm92aWRlcik7XG4gIGlmIChhZGFwdGVyKSB7XG4gICAgYWRhcHRlcnMuYWRkKGFkYXB0ZXIpO1xuICB9XG59XG5cbmZ1bmN0aW9uIGNyZWF0ZUFkYXB0ZXJzKFxuICBwcm92aWRlcnM6IExpbnRlclByb3ZpZGVyIHwgQXJyYXk8TGludGVyUHJvdmlkZXI+LFxuICBQcm92aWRlckJhc2U/OiB0eXBlb2YgRGlhZ25vc3RpY3NQcm92aWRlckJhc2UsXG4pOiBTZXQ8TGludGVyQWRhcHRlcj4ge1xuICBjb25zdCBhZGFwdGVycyA9IG5ldyBTZXQoKTtcbiAgaWYgKEFycmF5LmlzQXJyYXkocHJvdmlkZXJzKSkge1xuICAgIGZvciAoY29uc3QgcHJvdmlkZXIgb2YgcHJvdmlkZXJzKSB7XG4gICAgICBhZGRTaW5nbGVBZGFwdGVyKGFkYXB0ZXJzLCBwcm92aWRlcik7XG4gICAgfVxuICB9IGVsc2Uge1xuICAgIGFkZFNpbmdsZUFkYXB0ZXIoYWRhcHRlcnMsIHByb3ZpZGVycyk7XG4gIH1cbiAgcmV0dXJuIGFkYXB0ZXJzO1xufVxuXG5mdW5jdGlvbiB2YWxpZGF0ZUxpbnRlcihwcm92aWRlcjogTGludGVyUHJvdmlkZXIpOiBBcnJheTxzdHJpbmc+IHtcbiAgY29uc3QgZXJyb3JzID0gW107XG4gIHZhbGlkYXRlKHByb3ZpZGVyLCAnTXVzdCBub3QgYmUgdW5kZWZpbmVkJywgZXJyb3JzKTtcblxuICBpZiAoZXJyb3JzLmxlbmd0aCA9PT0gMCkge1xuICAgIHZhbGlkYXRlKHByb3ZpZGVyLmdyYW1tYXJTY29wZXMsICdNdXN0IHNwZWNpZnkgZ3JhbW1hclNjb3BlcycsIGVycm9ycyk7XG4gICAgdmFsaWRhdGUoQXJyYXkuaXNBcnJheShwcm92aWRlci5ncmFtbWFyU2NvcGVzKSwgJ2dyYW1tYXJTY29wZXMgbXVzdCBiZSBhbiBBcnJheScsIGVycm9ycyk7XG4gICAgaWYgKGVycm9ycy5sZW5ndGggPT09IDApIHtcbiAgICAgIGZvciAoY29uc3QgZ3JhbW1hciBvZiBwcm92aWRlci5ncmFtbWFyU2NvcGVzKSB7XG4gICAgICAgIHZhbGlkYXRlKFxuICAgICAgICAgIHR5cGVvZiBncmFtbWFyID09PSAnc3RyaW5nJyxcbiAgICAgICAgICBgRWFjaCBncmFtbWFyU2NvcGUgZW50cnkgbXVzdCBiZSBhIHN0cmluZzogJHtncmFtbWFyfWAsXG4gICAgICAgICAgZXJyb3JzLFxuICAgICAgICApO1xuICAgICAgfVxuICAgIH1cblxuICAgIHZhbGlkYXRlKFxuICAgICAgcHJvdmlkZXIuc2NvcGUgPT09ICdmaWxlJyB8fCBwcm92aWRlci5zY29wZSA9PT0gJ3Byb2plY3QnLFxuICAgICAgYFNjb3BlIG11c3QgYmUgJ2ZpbGUnIG9yICdwcm9qZWN0JzsgZm91bmQgJyR7cHJvdmlkZXIuc2NvcGV9J2AsXG4gICAgICBlcnJvcnMsXG4gICAgKTtcblxuICAgIGlmIChwcm92aWRlci5zY29wZSA9PT0gJ3Byb2plY3QnKSB7XG4gICAgICB2YWxpZGF0ZShcbiAgICAgICAgIXByb3ZpZGVyLmxpbnRPbkZseSxcbiAgICAgICAgXCJsaW50T25GbHkgbXVzdCBiZSBmYWxzZSBmb3IgYSBsaW50ZXIgd2l0aCAncHJvamVjdCcgc2NvcGVcIixcbiAgICAgICAgZXJyb3JzLFxuICAgICAgKTtcbiAgICB9XG5cbiAgICB2YWxpZGF0ZShwcm92aWRlci5saW50LCAnbGludCBmdW5jdGlvbiBtdXN0IGJlIHNwZWNpZmllZCcsIGVycm9ycyk7XG4gICAgdmFsaWRhdGUodHlwZW9mIHByb3ZpZGVyLmxpbnQgPT09ICdmdW5jdGlvbicsICdsaW50IG11c3QgYmUgYSBmdW5jdGlvbicsIGVycm9ycyk7XG5cbiAgICBpZiAocHJvdmlkZXIucHJvdmlkZXJOYW1lKSB7XG4gICAgICB2YWxpZGF0ZSh0eXBlb2YgcHJvdmlkZXIucHJvdmlkZXJOYW1lID09PSAnc3RyaW5nJywgJ3Byb3ZpZGVyTmFtZSBtdXN0IGJlIGEgc3RyaW5nJywgZXJyb3JzKTtcbiAgICB9XG4gIH1cblxuICByZXR1cm4gZXJyb3JzO1xufVxuXG5mdW5jdGlvbiB2YWxpZGF0ZShjb25kaXRpb246IG1peGVkLCBtc2c6IHN0cmluZywgZXJyb3JzOiBBcnJheTxzdHJpbmc+KTogdm9pZCB7XG4gIGlmICghY29uZGl0aW9uKSB7XG4gICAgZXJyb3JzLnB1c2gobXNnKTtcbiAgfVxufVxuXG5tb2R1bGUuZXhwb3J0cyA9IHsgY3JlYXRlQWRhcHRlcnMsIHZhbGlkYXRlTGludGVyIH07XG4iXX0=

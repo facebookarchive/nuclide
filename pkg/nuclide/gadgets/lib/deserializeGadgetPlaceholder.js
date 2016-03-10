@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +8,9 @@
  * the root directory of this source tree.
  */
 
-module.exports = function deserializeGadgetPlaceholder(state: Object): HTMLElement {
+module.exports = function deserializeGadgetPlaceholder(state) {
   // Pane items are deserialized before the gadget providers have had a chance to register their
   // gadgets. Therefore, we need to create a placeholder item that we later replace.
   return require('./GadgetPlaceholder').deserialize(state);
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImRlc2VyaWFsaXplR2FkZ2V0UGxhY2Vob2xkZXIuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQVdBLE1BQU0sQ0FBQyxPQUFPLEdBQUcsU0FBUyw0QkFBNEIsQ0FBQyxLQUFhLEVBQWU7OztBQUdqRixTQUFPLE9BQU8sQ0FBQyxxQkFBcUIsQ0FBQyxDQUFDLFdBQVcsQ0FBQyxLQUFLLENBQUMsQ0FBQztDQUMxRCxDQUFDIiwiZmlsZSI6ImRlc2VyaWFsaXplR2FkZ2V0UGxhY2Vob2xkZXIuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5tb2R1bGUuZXhwb3J0cyA9IGZ1bmN0aW9uIGRlc2VyaWFsaXplR2FkZ2V0UGxhY2Vob2xkZXIoc3RhdGU6IE9iamVjdCk6IEhUTUxFbGVtZW50IHtcbiAgLy8gUGFuZSBpdGVtcyBhcmUgZGVzZXJpYWxpemVkIGJlZm9yZSB0aGUgZ2FkZ2V0IHByb3ZpZGVycyBoYXZlIGhhZCBhIGNoYW5jZSB0byByZWdpc3RlciB0aGVpclxuICAvLyBnYWRnZXRzLiBUaGVyZWZvcmUsIHdlIG5lZWQgdG8gY3JlYXRlIGEgcGxhY2Vob2xkZXIgaXRlbSB0aGF0IHdlIGxhdGVyIHJlcGxhY2UuXG4gIHJldHVybiByZXF1aXJlKCcuL0dhZGdldFBsYWNlaG9sZGVyJykuZGVzZXJpYWxpemUoc3RhdGUpO1xufTtcbiJdfQ==

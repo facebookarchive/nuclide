@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,51 +8,55 @@
  * the root directory of this source tree.
  */
 
-import type {LinterProvider} from '../../diagnostics/base';
-import type {TypeHintProvider as TypeHintProviderType} from '../../type-hint-interfaces';
+var _commons = require('../../commons');
 
-import {array} from '../../commons';
-import {GRAMMARS} from './constants';
+var _constants = require('./constants');
 
 module.exports = {
-  activate(): void {
-  },
+  activate: function activate() {},
 
-  getHyperclickProvider() {
+  getHyperclickProvider: function getHyperclickProvider() {
     return require('./HyperclickProvider');
   },
 
-  createAutocompleteProvider(): mixed {
-    const {trackOperationTiming} = require('../../analytics');
-    const getSuggestions = request => {
-      return trackOperationTiming(
-        'nuclide-ocaml:getAutocompleteSuggestions',
-        () => require('./AutoComplete').getAutocompleteSuggestions(request));
+  createAutocompleteProvider: function createAutocompleteProvider() {
+    var _require = require('../../analytics');
+
+    var trackOperationTiming = _require.trackOperationTiming;
+
+    var getSuggestions = function getSuggestions(request) {
+      return trackOperationTiming('nuclide-ocaml:getAutocompleteSuggestions', function () {
+        return require('./AutoComplete').getAutocompleteSuggestions(request);
+      });
     };
     return {
       selector: '.source.ocaml',
       inclusionPriority: 1,
       disableForSelector: '.source.ocaml .comment',
-      getSuggestions,
+      getSuggestions: getSuggestions
     };
   },
 
-  provideLinter(): LinterProvider {
-    const MerlinLinterProvider = require('./LinterProvider');
+  provideLinter: function provideLinter() {
+    var MerlinLinterProvider = require('./LinterProvider');
     return MerlinLinterProvider;
   },
 
-  createTypeHintProvider(): TypeHintProviderType {
-    const {TypeHintProvider} = require('./TypeHintProvider');
-    const typeHintProvider = new TypeHintProvider();
-    const typeHint = typeHintProvider.typeHint.bind(typeHintProvider);
+  createTypeHintProvider: function createTypeHintProvider() {
+    var _require2 = require('./TypeHintProvider');
+
+    var TypeHintProvider = _require2.TypeHintProvider;
+
+    var typeHintProvider = new TypeHintProvider();
+    var typeHint = typeHintProvider.typeHint.bind(typeHintProvider);
 
     return {
       inclusionPriority: 1,
       providerName: 'nuclide-ocaml',
-      selector: array.from(GRAMMARS).join(', '),
-      typeHint,
+      selector: _commons.array.from(_constants.GRAMMARS).join(', '),
+      typeHint: typeHint
     };
-  },
+  }
 
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozt1QkFjb0IsZUFBZTs7eUJBQ1osYUFBYTs7QUFFcEMsTUFBTSxDQUFDLE9BQU8sR0FBRztBQUNmLFVBQVEsRUFBQSxvQkFBUyxFQUNoQjs7QUFFRCx1QkFBcUIsRUFBQSxpQ0FBRztBQUN0QixXQUFPLE9BQU8sQ0FBQyxzQkFBc0IsQ0FBQyxDQUFDO0dBQ3hDOztBQUVELDRCQUEwQixFQUFBLHNDQUFVO21CQUNILE9BQU8sQ0FBQyxpQkFBaUIsQ0FBQzs7UUFBbEQsb0JBQW9CLFlBQXBCLG9CQUFvQjs7QUFDM0IsUUFBTSxjQUFjLEdBQUcsU0FBakIsY0FBYyxDQUFHLE9BQU8sRUFBSTtBQUNoQyxhQUFPLG9CQUFvQixDQUN6QiwwQ0FBMEMsRUFDMUM7ZUFBTSxPQUFPLENBQUMsZ0JBQWdCLENBQUMsQ0FBQywwQkFBMEIsQ0FBQyxPQUFPLENBQUM7T0FBQSxDQUFDLENBQUM7S0FDeEUsQ0FBQztBQUNGLFdBQU87QUFDTCxjQUFRLEVBQUUsZUFBZTtBQUN6Qix1QkFBaUIsRUFBRSxDQUFDO0FBQ3BCLHdCQUFrQixFQUFFLHdCQUF3QjtBQUM1QyxvQkFBYyxFQUFkLGNBQWM7S0FDZixDQUFDO0dBQ0g7O0FBRUQsZUFBYSxFQUFBLHlCQUFtQjtBQUM5QixRQUFNLG9CQUFvQixHQUFHLE9BQU8sQ0FBQyxrQkFBa0IsQ0FBQyxDQUFDO0FBQ3pELFdBQU8sb0JBQW9CLENBQUM7R0FDN0I7O0FBRUQsd0JBQXNCLEVBQUEsa0NBQXlCO29CQUNsQixPQUFPLENBQUMsb0JBQW9CLENBQUM7O1FBQWpELGdCQUFnQixhQUFoQixnQkFBZ0I7O0FBQ3ZCLFFBQU0sZ0JBQWdCLEdBQUcsSUFBSSxnQkFBZ0IsRUFBRSxDQUFDO0FBQ2hELFFBQU0sUUFBUSxHQUFHLGdCQUFnQixDQUFDLFFBQVEsQ0FBQyxJQUFJLENBQUMsZ0JBQWdCLENBQUMsQ0FBQzs7QUFFbEUsV0FBTztBQUNMLHVCQUFpQixFQUFFLENBQUM7QUFDcEIsa0JBQVksRUFBRSxlQUFlO0FBQzdCLGNBQVEsRUFBRSxlQUFNLElBQUkscUJBQVUsQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDO0FBQ3pDLGNBQVEsRUFBUixRQUFRO0tBQ1QsQ0FBQztHQUNIOztDQUVGLENBQUMiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtMaW50ZXJQcm92aWRlcn0gZnJvbSAnLi4vLi4vZGlhZ25vc3RpY3MvYmFzZSc7XG5pbXBvcnQgdHlwZSB7VHlwZUhpbnRQcm92aWRlciBhcyBUeXBlSGludFByb3ZpZGVyVHlwZX0gZnJvbSAnLi4vLi4vdHlwZS1oaW50LWludGVyZmFjZXMnO1xuXG5pbXBvcnQge2FycmF5fSBmcm9tICcuLi8uLi9jb21tb25zJztcbmltcG9ydCB7R1JBTU1BUlN9IGZyb20gJy4vY29uc3RhbnRzJztcblxubW9kdWxlLmV4cG9ydHMgPSB7XG4gIGFjdGl2YXRlKCk6IHZvaWQge1xuICB9LFxuXG4gIGdldEh5cGVyY2xpY2tQcm92aWRlcigpIHtcbiAgICByZXR1cm4gcmVxdWlyZSgnLi9IeXBlcmNsaWNrUHJvdmlkZXInKTtcbiAgfSxcblxuICBjcmVhdGVBdXRvY29tcGxldGVQcm92aWRlcigpOiBtaXhlZCB7XG4gICAgY29uc3Qge3RyYWNrT3BlcmF0aW9uVGltaW5nfSA9IHJlcXVpcmUoJy4uLy4uL2FuYWx5dGljcycpO1xuICAgIGNvbnN0IGdldFN1Z2dlc3Rpb25zID0gcmVxdWVzdCA9PiB7XG4gICAgICByZXR1cm4gdHJhY2tPcGVyYXRpb25UaW1pbmcoXG4gICAgICAgICdudWNsaWRlLW9jYW1sOmdldEF1dG9jb21wbGV0ZVN1Z2dlc3Rpb25zJyxcbiAgICAgICAgKCkgPT4gcmVxdWlyZSgnLi9BdXRvQ29tcGxldGUnKS5nZXRBdXRvY29tcGxldGVTdWdnZXN0aW9ucyhyZXF1ZXN0KSk7XG4gICAgfTtcbiAgICByZXR1cm4ge1xuICAgICAgc2VsZWN0b3I6ICcuc291cmNlLm9jYW1sJyxcbiAgICAgIGluY2x1c2lvblByaW9yaXR5OiAxLFxuICAgICAgZGlzYWJsZUZvclNlbGVjdG9yOiAnLnNvdXJjZS5vY2FtbCAuY29tbWVudCcsXG4gICAgICBnZXRTdWdnZXN0aW9ucyxcbiAgICB9O1xuICB9LFxuXG4gIHByb3ZpZGVMaW50ZXIoKTogTGludGVyUHJvdmlkZXIge1xuICAgIGNvbnN0IE1lcmxpbkxpbnRlclByb3ZpZGVyID0gcmVxdWlyZSgnLi9MaW50ZXJQcm92aWRlcicpO1xuICAgIHJldHVybiBNZXJsaW5MaW50ZXJQcm92aWRlcjtcbiAgfSxcblxuICBjcmVhdGVUeXBlSGludFByb3ZpZGVyKCk6IFR5cGVIaW50UHJvdmlkZXJUeXBlIHtcbiAgICBjb25zdCB7VHlwZUhpbnRQcm92aWRlcn0gPSByZXF1aXJlKCcuL1R5cGVIaW50UHJvdmlkZXInKTtcbiAgICBjb25zdCB0eXBlSGludFByb3ZpZGVyID0gbmV3IFR5cGVIaW50UHJvdmlkZXIoKTtcbiAgICBjb25zdCB0eXBlSGludCA9IHR5cGVIaW50UHJvdmlkZXIudHlwZUhpbnQuYmluZCh0eXBlSGludFByb3ZpZGVyKTtcblxuICAgIHJldHVybiB7XG4gICAgICBpbmNsdXNpb25Qcmlvcml0eTogMSxcbiAgICAgIHByb3ZpZGVyTmFtZTogJ251Y2xpZGUtb2NhbWwnLFxuICAgICAgc2VsZWN0b3I6IGFycmF5LmZyb20oR1JBTU1BUlMpLmpvaW4oJywgJyksXG4gICAgICB0eXBlSGludCxcbiAgICB9O1xuICB9LFxuXG59O1xuIl19

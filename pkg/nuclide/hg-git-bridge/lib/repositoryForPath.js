@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+var _commons = require('../../commons');
+
+/**
+ * @param aPath The NuclideUri of a file or directory for which you want to find
+ *   a Repository it belongs to.
+ * @return A Git or Hg repository the path belongs to, if any.
+ */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +14,21 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../remote-uri';
-import {array} from '../../commons';
-
-/**
- * @param aPath The NuclideUri of a file or directory for which you want to find
- *   a Repository it belongs to.
- * @return A Git or Hg repository the path belongs to, if any.
- */
-function repositoryForPath(aPath: NuclideUri): ?atom$Repository {
+function repositoryForPath(aPath) {
   // Calling atom.project.repositoryForDirectory gets the real path of the directory,
   // which requires a round-trip to the server for remote paths.
   // Instead, this function keeps filtering local.
-  const repositoryContainsPath = require('./repositoryContainsPath');
-  const repositories = array.compact(atom.project.getRepositories());
-  return array.find(
-    repositories,
-    repo => {
-      try {
-        return repositoryContainsPath(repo, aPath);
-      } catch (e) {
-        // The repo type is not supported.
-        return false;
-      }
-    },
-  );
+  var repositoryContainsPath = require('./repositoryContainsPath');
+  var repositories = _commons.array.compact(atom.project.getRepositories());
+  return _commons.array.find(repositories, function (repo) {
+    try {
+      return repositoryContainsPath(repo, aPath);
+    } catch (e) {
+      // The repo type is not supported.
+      return false;
+    }
+  });
 }
 
 module.exports = repositoryForPath;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInJlcG9zaXRvcnlGb3JQYXRoLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJ1QkFZb0IsZUFBZTs7Ozs7Ozs7Ozs7Ozs7OztBQU9uQyxTQUFTLGlCQUFpQixDQUFDLEtBQWlCLEVBQW9COzs7O0FBSTlELE1BQU0sc0JBQXNCLEdBQUcsT0FBTyxDQUFDLDBCQUEwQixDQUFDLENBQUM7QUFDbkUsTUFBTSxZQUFZLEdBQUcsZUFBTSxPQUFPLENBQUMsSUFBSSxDQUFDLE9BQU8sQ0FBQyxlQUFlLEVBQUUsQ0FBQyxDQUFDO0FBQ25FLFNBQU8sZUFBTSxJQUFJLENBQ2YsWUFBWSxFQUNaLFVBQUEsSUFBSSxFQUFJO0FBQ04sUUFBSTtBQUNGLGFBQU8sc0JBQXNCLENBQUMsSUFBSSxFQUFFLEtBQUssQ0FBQyxDQUFDO0tBQzVDLENBQUMsT0FBTyxDQUFDLEVBQUU7O0FBRVYsYUFBTyxLQUFLLENBQUM7S0FDZDtHQUNGLENBQ0YsQ0FBQztDQUNIOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUcsaUJBQWlCLENBQUMiLCJmaWxlIjoicmVwb3NpdG9yeUZvclBhdGguanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7TnVjbGlkZVVyaX0gZnJvbSAnLi4vLi4vcmVtb3RlLXVyaSc7XG5pbXBvcnQge2FycmF5fSBmcm9tICcuLi8uLi9jb21tb25zJztcblxuLyoqXG4gKiBAcGFyYW0gYVBhdGggVGhlIE51Y2xpZGVVcmkgb2YgYSBmaWxlIG9yIGRpcmVjdG9yeSBmb3Igd2hpY2ggeW91IHdhbnQgdG8gZmluZFxuICogICBhIFJlcG9zaXRvcnkgaXQgYmVsb25ncyB0by5cbiAqIEByZXR1cm4gQSBHaXQgb3IgSGcgcmVwb3NpdG9yeSB0aGUgcGF0aCBiZWxvbmdzIHRvLCBpZiBhbnkuXG4gKi9cbmZ1bmN0aW9uIHJlcG9zaXRvcnlGb3JQYXRoKGFQYXRoOiBOdWNsaWRlVXJpKTogP2F0b20kUmVwb3NpdG9yeSB7XG4gIC8vIENhbGxpbmcgYXRvbS5wcm9qZWN0LnJlcG9zaXRvcnlGb3JEaXJlY3RvcnkgZ2V0cyB0aGUgcmVhbCBwYXRoIG9mIHRoZSBkaXJlY3RvcnksXG4gIC8vIHdoaWNoIHJlcXVpcmVzIGEgcm91bmQtdHJpcCB0byB0aGUgc2VydmVyIGZvciByZW1vdGUgcGF0aHMuXG4gIC8vIEluc3RlYWQsIHRoaXMgZnVuY3Rpb24ga2VlcHMgZmlsdGVyaW5nIGxvY2FsLlxuICBjb25zdCByZXBvc2l0b3J5Q29udGFpbnNQYXRoID0gcmVxdWlyZSgnLi9yZXBvc2l0b3J5Q29udGFpbnNQYXRoJyk7XG4gIGNvbnN0IHJlcG9zaXRvcmllcyA9IGFycmF5LmNvbXBhY3QoYXRvbS5wcm9qZWN0LmdldFJlcG9zaXRvcmllcygpKTtcbiAgcmV0dXJuIGFycmF5LmZpbmQoXG4gICAgcmVwb3NpdG9yaWVzLFxuICAgIHJlcG8gPT4ge1xuICAgICAgdHJ5IHtcbiAgICAgICAgcmV0dXJuIHJlcG9zaXRvcnlDb250YWluc1BhdGgocmVwbywgYVBhdGgpO1xuICAgICAgfSBjYXRjaCAoZSkge1xuICAgICAgICAvLyBUaGUgcmVwbyB0eXBlIGlzIG5vdCBzdXBwb3J0ZWQuXG4gICAgICAgIHJldHVybiBmYWxzZTtcbiAgICAgIH1cbiAgICB9LFxuICApO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IHJlcG9zaXRvcnlGb3JQYXRoO1xuIl19

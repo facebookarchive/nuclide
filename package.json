@@ -23,9 +23,6 @@
   "homepage": "http://nuclide.io/",
   "license": "SEE LICENSE IN LICENSE",
   "main": "./lib/main.js",
-  "bin": {
-    "nuclide-start-server": "./pkg/nuclide/server/nuclide-start-server"
-  },
   "repository": "https://github.com/facebook/nuclide",
   "scripts": {
     "flow": "flow check --show-all-errors",
@@ -112,7 +109,6 @@
   "engines": {
     "atom": ">=1.1.0"
   },
-  "private": true,
   "package-deps": [
     "haskell-grammar",
     "highlight-selected",

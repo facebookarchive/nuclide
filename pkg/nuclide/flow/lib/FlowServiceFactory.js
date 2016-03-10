@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +10,42 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rx';
+exports.getFlowServiceByNuclideUri = getFlowServiceByNuclideUri;
+exports.getLocalFlowService = getLocalFlowService;
+exports.getServerStatusUpdates = getServerStatusUpdates;
+exports.getCurrentServiceInstances = getCurrentServiceInstances;
 
-import type {NuclideUri} from '../../remote-uri';
-import type {
-  ServerStatusUpdate,
-} from '../../flow-base';
-import typeof * as FlowService from '../../flow-base';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import invariant from 'assert';
-import {Subject} from 'rx';
+var _assert = require('assert');
 
-import {getServiceByNuclideUri} from '../../client';
+var _assert2 = _interopRequireDefault(_assert);
 
-const FLOW_SERVICE = 'FlowService';
+var _rx = require('rx');
 
-const serverStatusUpdates: Subject<ServerStatusUpdate> = new Subject();
+var _client = require('../../client');
 
-const serviceInstances = new Set();
+var FLOW_SERVICE = 'FlowService';
 
-export function getFlowServiceByNuclideUri(file: NuclideUri): FlowService {
+var serverStatusUpdates = new _rx.Subject();
+
+var serviceInstances = new Set();
+
+function getFlowServiceByNuclideUri(file) {
   return getFlowServiceByNullableUri(file);
 }
 
-export function getLocalFlowService(): FlowService {
+function getLocalFlowService() {
   return getFlowServiceByNullableUri(null);
 }
 
 /** Returns the FlowService for the given URI, or the local FlowService if the given URI is null. */
-function getFlowServiceByNullableUri(file: ?NuclideUri): FlowService {
-  const flowService: ?FlowService = getServiceByNuclideUri(FLOW_SERVICE, file);
-  invariant(flowService != null);
+function getFlowServiceByNullableUri(file) {
+  var flowService = (0, _client.getServiceByNuclideUri)(FLOW_SERVICE, file);
+  (0, _assert2['default'])(flowService != null);
   if (!serviceInstances.has(flowService)) {
     serviceInstances.add(flowService);
-    const statusUpdates: Observable<ServerStatusUpdate> = flowService.getServerStatusUpdates();
+    var statusUpdates = flowService.getServerStatusUpdates();
     // TODO Unsubscribe at some point. To do that, we need a hook into the service framework so we
     // can learn when a given service instance is gone. I would expect the service framework to send
     // onCompleted when it disconnects, but that seemingly doesn't happen. So, we should do this
@@ -54,10 +57,11 @@ function getFlowServiceByNullableUri(file: ?NuclideUri): FlowService {
   return flowService;
 }
 
-export function getServerStatusUpdates(): Observable<ServerStatusUpdate> {
+function getServerStatusUpdates() {
   return serverStatusUpdates.asObservable();
 }
 
-export function getCurrentServiceInstances(): Set<FlowService> {
+function getCurrentServiceInstances() {
   return new Set(serviceInstances);
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkZsb3dTZXJ2aWNlRmFjdG9yeS5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7O3NCQW1Cc0IsUUFBUTs7OztrQkFDUixJQUFJOztzQkFFVyxjQUFjOztBQUVuRCxJQUFNLFlBQVksR0FBRyxhQUFhLENBQUM7O0FBRW5DLElBQU0sbUJBQWdELEdBQUcsaUJBQWEsQ0FBQzs7QUFFdkUsSUFBTSxnQkFBZ0IsR0FBRyxJQUFJLEdBQUcsRUFBRSxDQUFDOztBQUU1QixTQUFTLDBCQUEwQixDQUFDLElBQWdCLEVBQWU7QUFDeEUsU0FBTywyQkFBMkIsQ0FBQyxJQUFJLENBQUMsQ0FBQztDQUMxQzs7QUFFTSxTQUFTLG1CQUFtQixHQUFnQjtBQUNqRCxTQUFPLDJCQUEyQixDQUFDLElBQUksQ0FBQyxDQUFDO0NBQzFDOzs7QUFHRCxTQUFTLDJCQUEyQixDQUFDLElBQWlCLEVBQWU7QUFDbkUsTUFBTSxXQUF5QixHQUFHLG9DQUF1QixZQUFZLEVBQUUsSUFBSSxDQUFDLENBQUM7QUFDN0UsMkJBQVUsV0FBVyxJQUFJLElBQUksQ0FBQyxDQUFDO0FBQy9CLE1BQUksQ0FBQyxnQkFBZ0IsQ0FBQyxHQUFHLENBQUMsV0FBVyxDQUFDLEVBQUU7QUFDdEMsb0JBQWdCLENBQUMsR0FBRyxDQUFDLFdBQVcsQ0FBQyxDQUFDO0FBQ2xDLFFBQU0sYUFBNkMsR0FBRyxXQUFXLENBQUMsc0JBQXNCLEVBQUUsQ0FBQzs7Ozs7OztBQU8zRixpQkFBYSxDQUFDLFNBQVMsQ0FBQyxtQkFBbUIsQ0FBQyxDQUFDO0dBQzlDO0FBQ0QsU0FBTyxXQUFXLENBQUM7Q0FDcEI7O0FBRU0sU0FBUyxzQkFBc0IsR0FBbUM7QUFDdkUsU0FBTyxtQkFBbUIsQ0FBQyxZQUFZLEVBQUUsQ0FBQztDQUMzQzs7QUFFTSxTQUFTLDBCQUEwQixHQUFxQjtBQUM3RCxTQUFPLElBQUksR0FBRyxDQUFDLGdCQUFnQixDQUFDLENBQUM7Q0FDbEMiLCJmaWxlIjoiRmxvd1NlcnZpY2VGYWN0b3J5LmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge09ic2VydmFibGV9IGZyb20gJ3J4JztcblxuaW1wb3J0IHR5cGUge051Y2xpZGVVcml9IGZyb20gJy4uLy4uL3JlbW90ZS11cmknO1xuaW1wb3J0IHR5cGUge1xuICBTZXJ2ZXJTdGF0dXNVcGRhdGUsXG59IGZyb20gJy4uLy4uL2Zsb3ctYmFzZSc7XG5pbXBvcnQgdHlwZW9mICogYXMgRmxvd1NlcnZpY2UgZnJvbSAnLi4vLi4vZmxvdy1iYXNlJztcblxuaW1wb3J0IGludmFyaWFudCBmcm9tICdhc3NlcnQnO1xuaW1wb3J0IHtTdWJqZWN0fSBmcm9tICdyeCc7XG5cbmltcG9ydCB7Z2V0U2VydmljZUJ5TnVjbGlkZVVyaX0gZnJvbSAnLi4vLi4vY2xpZW50JztcblxuY29uc3QgRkxPV19TRVJWSUNFID0gJ0Zsb3dTZXJ2aWNlJztcblxuY29uc3Qgc2VydmVyU3RhdHVzVXBkYXRlczogU3ViamVjdDxTZXJ2ZXJTdGF0dXNVcGRhdGU+ID0gbmV3IFN1YmplY3QoKTtcblxuY29uc3Qgc2VydmljZUluc3RhbmNlcyA9IG5ldyBTZXQoKTtcblxuZXhwb3J0IGZ1bmN0aW9uIGdldEZsb3dTZXJ2aWNlQnlOdWNsaWRlVXJpKGZpbGU6IE51Y2xpZGVVcmkpOiBGbG93U2VydmljZSB7XG4gIHJldHVybiBnZXRGbG93U2VydmljZUJ5TnVsbGFibGVVcmkoZmlsZSk7XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBnZXRMb2NhbEZsb3dTZXJ2aWNlKCk6IEZsb3dTZXJ2aWNlIHtcbiAgcmV0dXJuIGdldEZsb3dTZXJ2aWNlQnlOdWxsYWJsZVVyaShudWxsKTtcbn1cblxuLyoqIFJldHVybnMgdGhlIEZsb3dTZXJ2aWNlIGZvciB0aGUgZ2l2ZW4gVVJJLCBvciB0aGUgbG9jYWwgRmxvd1NlcnZpY2UgaWYgdGhlIGdpdmVuIFVSSSBpcyBudWxsLiAqL1xuZnVuY3Rpb24gZ2V0Rmxvd1NlcnZpY2VCeU51bGxhYmxlVXJpKGZpbGU6ID9OdWNsaWRlVXJpKTogRmxvd1NlcnZpY2Uge1xuICBjb25zdCBmbG93U2VydmljZTogP0Zsb3dTZXJ2aWNlID0gZ2V0U2VydmljZUJ5TnVjbGlkZVVyaShGTE9XX1NFUlZJQ0UsIGZpbGUpO1xuICBpbnZhcmlhbnQoZmxvd1NlcnZpY2UgIT0gbnVsbCk7XG4gIGlmICghc2VydmljZUluc3RhbmNlcy5oYXMoZmxvd1NlcnZpY2UpKSB7XG4gICAgc2VydmljZUluc3RhbmNlcy5hZGQoZmxvd1NlcnZpY2UpO1xuICAgIGNvbnN0IHN0YXR1c1VwZGF0ZXM6IE9ic2VydmFibGU8U2VydmVyU3RhdHVzVXBkYXRlPiA9IGZsb3dTZXJ2aWNlLmdldFNlcnZlclN0YXR1c1VwZGF0ZXMoKTtcbiAgICAvLyBUT0RPIFVuc3Vic2NyaWJlIGF0IHNvbWUgcG9pbnQuIFRvIGRvIHRoYXQsIHdlIG5lZWQgYSBob29rIGludG8gdGhlIHNlcnZpY2UgZnJhbWV3b3JrIHNvIHdlXG4gICAgLy8gY2FuIGxlYXJuIHdoZW4gYSBnaXZlbiBzZXJ2aWNlIGluc3RhbmNlIGlzIGdvbmUuIEkgd291bGQgZXhwZWN0IHRoZSBzZXJ2aWNlIGZyYW1ld29yayB0byBzZW5kXG4gICAgLy8gb25Db21wbGV0ZWQgd2hlbiBpdCBkaXNjb25uZWN0cywgYnV0IHRoYXQgc2VlbWluZ2x5IGRvZXNuJ3QgaGFwcGVuLiBTbywgd2Ugc2hvdWxkIGRvIHRoaXNcbiAgICAvLyBtYW51YWxseS4gSG93ZXZlciwgdGhlIGJvdW5kIG9uIHRoZSBudW1iZXIgb2Ygc2VydmljZXMgaXMgdGhlIG51bWJlciBvZiByZW1vdGUgY29ubmVjdGlvbnNcbiAgICAvLyBpbml0aWF0ZWQgZHVyaW5nIHRoaXMgTnVjbGlkZSBzZXNzaW9uLCBwbHVzIHRoZSBsb2NhbCBvbmUuIFNvIHdoaWxlIHRoaXMgaXMgYSBtZW1vcnkgbGVhayxcbiAgICAvLyBpdCdzIHZlcnkgc21hbGwuXG4gICAgc3RhdHVzVXBkYXRlcy5zdWJzY3JpYmUoc2VydmVyU3RhdHVzVXBkYXRlcyk7XG4gIH1cbiAgcmV0dXJuIGZsb3dTZXJ2aWNlO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gZ2V0U2VydmVyU3RhdHVzVXBkYXRlcygpOiBPYnNlcnZhYmxlPFNlcnZlclN0YXR1c1VwZGF0ZT4ge1xuICByZXR1cm4gc2VydmVyU3RhdHVzVXBkYXRlcy5hc09ic2VydmFibGUoKTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGdldEN1cnJlbnRTZXJ2aWNlSW5zdGFuY2VzKCk6IFNldDxGbG93U2VydmljZT4ge1xuICByZXR1cm4gbmV3IFNldChzZXJ2aWNlSW5zdGFuY2VzKTtcbn1cbiJdfQ==

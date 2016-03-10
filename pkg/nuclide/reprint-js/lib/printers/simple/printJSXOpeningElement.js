@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,48 +8,26 @@
  * the root directory of this source tree.
  */
 
-import type {JSXOpeningElement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
-
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
 /**
  * Note: A self closing tag gets its own scope, but a non-self closing tag will
  * use the scope opened up in the parent JSXElement.
  */
-function printJSXOpeningElement(print: Print, node: JSXOpeningElement): Lines {
+function printJSXOpeningElement(print, node) {
   // Easier to completely branch on self closing to handle slightly different
   // styles involved with scope breaks.
   if (node.selfClosing) {
-    return flatten([
-      '<',
-      markers.openScope,
-      markers.scopeIndent,
-      markers.noBreak,
-      print(node.name),
-      markers.scopeSpaceBreak,
-      node.attributes.map(a => [
-        print(a),
-        markers.scopeSpaceBreak,
-      ]),
-      markers.scopeDedent,
-      markers.closeScope,
-      '/>',
-    ]);
+    return flatten(['<', markers.openScope, markers.scopeIndent, markers.noBreak, print(node.name), markers.scopeSpaceBreak, node.attributes.map(function (a) {
+      return [print(a), markers.scopeSpaceBreak];
+    }), markers.scopeDedent, markers.closeScope, '/>']);
   } else {
-    return flatten([
-      '<',
-      markers.noBreak,
-      print(node.name),
-      node.attributes.map((a, i, arr) => [
-        i === 0 ? markers.scopeSpaceBreak : markers.empty,
-        print(a),
-        i < arr.length - 1 ? markers.scopeSpaceBreak : markers.empty,
-      ]),
-      '>',
-    ]);
+    return flatten(['<', markers.noBreak, print(node.name), node.attributes.map(function (a, i, arr) {
+      return [i === 0 ? markers.scopeSpaceBreak : markers.empty, print(a), i < arr.length - 1 ? markers.scopeSpaceBreak : markers.empty];
+    }), '>']);
   }
 }
 
 module.exports = printJSXOpeningElement;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50SlNYT3BlbmluZ0VsZW1lbnQuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQWNBLElBQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyxxQkFBcUIsQ0FBQyxDQUFDO0FBQy9DLElBQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyx5QkFBeUIsQ0FBQyxDQUFDOzs7Ozs7QUFNbkQsU0FBUyxzQkFBc0IsQ0FBQyxLQUFZLEVBQUUsSUFBdUIsRUFBUzs7O0FBRzVFLE1BQUksSUFBSSxDQUFDLFdBQVcsRUFBRTtBQUNwQixXQUFPLE9BQU8sQ0FBQyxDQUNiLEdBQUcsRUFDSCxPQUFPLENBQUMsU0FBUyxFQUNqQixPQUFPLENBQUMsV0FBVyxFQUNuQixPQUFPLENBQUMsT0FBTyxFQUNmLEtBQUssQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDLEVBQ2hCLE9BQU8sQ0FBQyxlQUFlLEVBQ3ZCLElBQUksQ0FBQyxVQUFVLENBQUMsR0FBRyxDQUFDLFVBQUEsQ0FBQzthQUFJLENBQ3ZCLEtBQUssQ0FBQyxDQUFDLENBQUMsRUFDUixPQUFPLENBQUMsZUFBZSxDQUN4QjtLQUFBLENBQUMsRUFDRixPQUFPLENBQUMsV0FBVyxFQUNuQixPQUFPLENBQUMsVUFBVSxFQUNsQixJQUFJLENBQ0wsQ0FBQyxDQUFDO0dBQ0osTUFBTTtBQUNMLFdBQU8sT0FBTyxDQUFDLENBQ2IsR0FBRyxFQUNILE9BQU8sQ0FBQyxPQUFPLEVBQ2YsS0FBSyxDQUFDLElBQUksQ0FBQyxJQUFJLENBQUMsRUFDaEIsSUFBSSxDQUFDLFVBQVUsQ0FBQyxHQUFHLENBQUMsVUFBQyxDQUFDLEVBQUUsQ0FBQyxFQUFFLEdBQUc7YUFBSyxDQUNqQyxDQUFDLEtBQUssQ0FBQyxHQUFHLE9BQU8sQ0FBQyxlQUFlLEdBQUcsT0FBTyxDQUFDLEtBQUssRUFDakQsS0FBSyxDQUFDLENBQUMsQ0FBQyxFQUNSLENBQUMsR0FBRyxHQUFHLENBQUMsTUFBTSxHQUFHLENBQUMsR0FBRyxPQUFPLENBQUMsZUFBZSxHQUFHLE9BQU8sQ0FBQyxLQUFLLENBQzdEO0tBQUEsQ0FBQyxFQUNGLEdBQUcsQ0FDSixDQUFDLENBQUM7R0FDSjtDQUNGOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUcsc0JBQXNCLENBQUMiLCJmaWxlIjoicHJpbnRKU1hPcGVuaW5nRWxlbWVudC5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtKU1hPcGVuaW5nRWxlbWVudH0gZnJvbSAnYXN0LXR5cGVzLWZsb3cnO1xuaW1wb3J0IHR5cGUge0xpbmVzLCBQcmludH0gZnJvbSAnLi4vLi4vdHlwZXMvY29tbW9uJztcblxuY29uc3QgZmxhdHRlbiA9IHJlcXVpcmUoJy4uLy4uL3V0aWxzL2ZsYXR0ZW4nKTtcbmNvbnN0IG1hcmtlcnMgPSByZXF1aXJlKCcuLi8uLi9jb25zdGFudHMvbWFya2VycycpO1xuXG4vKipcbiAqIE5vdGU6IEEgc2VsZiBjbG9zaW5nIHRhZyBnZXRzIGl0cyBvd24gc2NvcGUsIGJ1dCBhIG5vbi1zZWxmIGNsb3NpbmcgdGFnIHdpbGxcbiAqIHVzZSB0aGUgc2NvcGUgb3BlbmVkIHVwIGluIHRoZSBwYXJlbnQgSlNYRWxlbWVudC5cbiAqL1xuZnVuY3Rpb24gcHJpbnRKU1hPcGVuaW5nRWxlbWVudChwcmludDogUHJpbnQsIG5vZGU6IEpTWE9wZW5pbmdFbGVtZW50KTogTGluZXMge1xuICAvLyBFYXNpZXIgdG8gY29tcGxldGVseSBicmFuY2ggb24gc2VsZiBjbG9zaW5nIHRvIGhhbmRsZSBzbGlnaHRseSBkaWZmZXJlbnRcbiAgLy8gc3R5bGVzIGludm9sdmVkIHdpdGggc2NvcGUgYnJlYWtzLlxuICBpZiAobm9kZS5zZWxmQ2xvc2luZykge1xuICAgIHJldHVybiBmbGF0dGVuKFtcbiAgICAgICc8JyxcbiAgICAgIG1hcmtlcnMub3BlblNjb3BlLFxuICAgICAgbWFya2Vycy5zY29wZUluZGVudCxcbiAgICAgIG1hcmtlcnMubm9CcmVhayxcbiAgICAgIHByaW50KG5vZGUubmFtZSksXG4gICAgICBtYXJrZXJzLnNjb3BlU3BhY2VCcmVhayxcbiAgICAgIG5vZGUuYXR0cmlidXRlcy5tYXAoYSA9PiBbXG4gICAgICAgIHByaW50KGEpLFxuICAgICAgICBtYXJrZXJzLnNjb3BlU3BhY2VCcmVhayxcbiAgICAgIF0pLFxuICAgICAgbWFya2Vycy5zY29wZURlZGVudCxcbiAgICAgIG1hcmtlcnMuY2xvc2VTY29wZSxcbiAgICAgICcvPicsXG4gICAgXSk7XG4gIH0gZWxzZSB7XG4gICAgcmV0dXJuIGZsYXR0ZW4oW1xuICAgICAgJzwnLFxuICAgICAgbWFya2Vycy5ub0JyZWFrLFxuICAgICAgcHJpbnQobm9kZS5uYW1lKSxcbiAgICAgIG5vZGUuYXR0cmlidXRlcy5tYXAoKGEsIGksIGFycikgPT4gW1xuICAgICAgICBpID09PSAwID8gbWFya2Vycy5zY29wZVNwYWNlQnJlYWsgOiBtYXJrZXJzLmVtcHR5LFxuICAgICAgICBwcmludChhKSxcbiAgICAgICAgaSA8IGFyci5sZW5ndGggLSAxID8gbWFya2Vycy5zY29wZVNwYWNlQnJlYWsgOiBtYXJrZXJzLmVtcHR5LFxuICAgICAgXSksXG4gICAgICAnPicsXG4gICAgXSk7XG4gIH1cbn1cblxubW9kdWxlLmV4cG9ydHMgPSBwcmludEpTWE9wZW5pbmdFbGVtZW50O1xuIl19

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,36 +10,44 @@
  * the root directory of this source tree.
  */
 
-import type {
-  DatatipProvider,
-} from '../../datatip-interfaces';
+exports.activate = activate;
+exports.consumeDatatipProvider = consumeDatatipProvider;
+exports.deactivate = deactivate;
 
-const {Disposable} = require('atom');
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {DatatipManager} from './DatatipManager';
+var _assert = require('assert');
 
-let datatipManager: ?DatatipManager = null;
+var _assert2 = _interopRequireDefault(_assert);
 
-export function activate(state: ?any): void {
+var _DatatipManager = require('./DatatipManager');
+
+var _require = require('atom');
+
+var Disposable = _require.Disposable;
+
+var datatipManager = null;
+
+function activate(state) {
   if (datatipManager == null) {
-    datatipManager = new DatatipManager();
+    datatipManager = new _DatatipManager.DatatipManager();
   }
 }
 
-export function consumeDatatipProvider(provider: DatatipProvider): IDisposable {
-  invariant(datatipManager);
+function consumeDatatipProvider(provider) {
+  (0, _assert2['default'])(datatipManager);
   datatipManager.addProvider(provider);
-  return new Disposable(() => {
+  return new Disposable(function () {
     if (datatipManager != null) {
       datatipManager.removeProvider(provider);
     }
   });
 }
 
-export function deactivate() {
+function deactivate() {
   if (datatipManager != null) {
     datatipManager.dispose();
     datatipManager = null;
   }
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7O3NCQWdCc0IsUUFBUTs7Ozs4QkFFRCxrQkFBa0I7O2VBSDFCLE9BQU8sQ0FBQyxNQUFNLENBQUM7O0lBQTdCLFVBQVUsWUFBVixVQUFVOztBQUtqQixJQUFJLGNBQStCLEdBQUcsSUFBSSxDQUFDOztBQUVwQyxTQUFTLFFBQVEsQ0FBQyxLQUFXLEVBQVE7QUFDMUMsTUFBSSxjQUFjLElBQUksSUFBSSxFQUFFO0FBQzFCLGtCQUFjLEdBQUcsb0NBQW9CLENBQUM7R0FDdkM7Q0FDRjs7QUFFTSxTQUFTLHNCQUFzQixDQUFDLFFBQXlCLEVBQWU7QUFDN0UsMkJBQVUsY0FBYyxDQUFDLENBQUM7QUFDMUIsZ0JBQWMsQ0FBQyxXQUFXLENBQUMsUUFBUSxDQUFDLENBQUM7QUFDckMsU0FBTyxJQUFJLFVBQVUsQ0FBQyxZQUFNO0FBQzFCLFFBQUksY0FBYyxJQUFJLElBQUksRUFBRTtBQUMxQixvQkFBYyxDQUFDLGNBQWMsQ0FBQyxRQUFRLENBQUMsQ0FBQztLQUN6QztHQUNGLENBQUMsQ0FBQztDQUNKOztBQUVNLFNBQVMsVUFBVSxHQUFHO0FBQzNCLE1BQUksY0FBYyxJQUFJLElBQUksRUFBRTtBQUMxQixrQkFBYyxDQUFDLE9BQU8sRUFBRSxDQUFDO0FBQ3pCLGtCQUFjLEdBQUcsSUFBSSxDQUFDO0dBQ3ZCO0NBQ0YiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtcbiAgRGF0YXRpcFByb3ZpZGVyLFxufSBmcm9tICcuLi8uLi9kYXRhdGlwLWludGVyZmFjZXMnO1xuXG5jb25zdCB7RGlzcG9zYWJsZX0gPSByZXF1aXJlKCdhdG9tJyk7XG5pbXBvcnQgaW52YXJpYW50IGZyb20gJ2Fzc2VydCc7XG5cbmltcG9ydCB7RGF0YXRpcE1hbmFnZXJ9IGZyb20gJy4vRGF0YXRpcE1hbmFnZXInO1xuXG5sZXQgZGF0YXRpcE1hbmFnZXI6ID9EYXRhdGlwTWFuYWdlciA9IG51bGw7XG5cbmV4cG9ydCBmdW5jdGlvbiBhY3RpdmF0ZShzdGF0ZTogP2FueSk6IHZvaWQge1xuICBpZiAoZGF0YXRpcE1hbmFnZXIgPT0gbnVsbCkge1xuICAgIGRhdGF0aXBNYW5hZ2VyID0gbmV3IERhdGF0aXBNYW5hZ2VyKCk7XG4gIH1cbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGNvbnN1bWVEYXRhdGlwUHJvdmlkZXIocHJvdmlkZXI6IERhdGF0aXBQcm92aWRlcik6IElEaXNwb3NhYmxlIHtcbiAgaW52YXJpYW50KGRhdGF0aXBNYW5hZ2VyKTtcbiAgZGF0YXRpcE1hbmFnZXIuYWRkUHJvdmlkZXIocHJvdmlkZXIpO1xuICByZXR1cm4gbmV3IERpc3Bvc2FibGUoKCkgPT4ge1xuICAgIGlmIChkYXRhdGlwTWFuYWdlciAhPSBudWxsKSB7XG4gICAgICBkYXRhdGlwTWFuYWdlci5yZW1vdmVQcm92aWRlcihwcm92aWRlcik7XG4gICAgfVxuICB9KTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGRlYWN0aXZhdGUoKSB7XG4gIGlmIChkYXRhdGlwTWFuYWdlciAhPSBudWxsKSB7XG4gICAgZGF0YXRpcE1hbmFnZXIuZGlzcG9zZSgpO1xuICAgIGRhdGF0aXBNYW5hZ2VyID0gbnVsbDtcbiAgfVxufVxuIl19

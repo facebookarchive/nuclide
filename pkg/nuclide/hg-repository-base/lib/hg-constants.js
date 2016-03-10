@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _StatusCodeIdToNumber;
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,51 +12,38 @@
 
 /* @providesModule HgConstants */
 
-import type {
-  StatusCodeIdValue,
-  StatusCodeNumberValue,
-  HgStatusOptionValue,
-} from './HgService';
-
-const StatusCodeId: {[key: string]: StatusCodeIdValue} = {
+var StatusCodeId = {
   ADDED: 'A',
   CLEAN: 'C',
   IGNORED: 'I',
   MODIFIED: 'M',
   MISSING: '!', // (deleted by non-hg command, but still tracked)
   REMOVED: 'R',
-  UNTRACKED: '?',
+  UNTRACKED: '?'
 };
 
-const StatusCodeNumber: {[key: string]: StatusCodeNumberValue} = {
+var StatusCodeNumber = {
   ADDED: 1,
   CLEAN: 2,
   IGNORED: 3,
   MODIFIED: 4,
   MISSING: 5,
   REMOVED: 6,
-  UNTRACKED: 7,
+  UNTRACKED: 7
 };
 
-const StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = {
-  [StatusCodeId.ADDED]: StatusCodeNumber.ADDED,
-  [StatusCodeId.CLEAN]: StatusCodeNumber.CLEAN,
-  [StatusCodeId.IGNORED]: StatusCodeNumber.IGNORED,
-  [StatusCodeId.MODIFIED]: StatusCodeNumber.MODIFIED,
-  [StatusCodeId.MISSING]: StatusCodeNumber.MISSING,
-  [StatusCodeId.REMOVED]: StatusCodeNumber.REMOVED,
-  [StatusCodeId.UNTRACKED]: StatusCodeNumber.UNTRACKED,
-};
+var StatusCodeIdToNumber = (_StatusCodeIdToNumber = {}, _defineProperty(_StatusCodeIdToNumber, StatusCodeId.ADDED, StatusCodeNumber.ADDED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.CLEAN, StatusCodeNumber.CLEAN), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.IGNORED, StatusCodeNumber.IGNORED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.MODIFIED, StatusCodeNumber.MODIFIED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.MISSING, StatusCodeNumber.MISSING), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.REMOVED, StatusCodeNumber.REMOVED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.UNTRACKED, StatusCodeNumber.UNTRACKED), _StatusCodeIdToNumber);
 
-const HgStatusOption: {[key: string]: HgStatusOptionValue} = {
-  ONLY_NON_IGNORED: 1,  // only the output of `hg status`
-  ONLY_IGNORED: 2,      // only the output of `hg status --ignored`
-  ALL_STATUSES: 3,      // the output of `hg status --all`
-};
+var HgStatusOption = {
+  ONLY_NON_IGNORED: 1, // only the output of `hg status`
+  ONLY_IGNORED: 2, // only the output of `hg status --ignored`
+  ALL_STATUSES: 3 };
 
+// the output of `hg status --all`
 module.exports = {
-  HgStatusOption,
-  StatusCodeId,
-  StatusCodeIdToNumber,
-  StatusCodeNumber,
+  HgStatusOption: HgStatusOption,
+  StatusCodeId: StatusCodeId,
+  StatusCodeIdToNumber: StatusCodeIdToNumber,
+  StatusCodeNumber: StatusCodeNumber
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImhnLWNvbnN0YW50cy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7OztBQW1CQSxJQUFNLFlBQWdELEdBQUc7QUFDdkQsT0FBSyxFQUFFLEdBQUc7QUFDVixPQUFLLEVBQUUsR0FBRztBQUNWLFNBQU8sRUFBRSxHQUFHO0FBQ1osVUFBUSxFQUFFLEdBQUc7QUFDYixTQUFPLEVBQUUsR0FBRztBQUNaLFNBQU8sRUFBRSxHQUFHO0FBQ1osV0FBUyxFQUFFLEdBQUc7Q0FDZixDQUFDOztBQUVGLElBQU0sZ0JBQXdELEdBQUc7QUFDL0QsT0FBSyxFQUFFLENBQUM7QUFDUixPQUFLLEVBQUUsQ0FBQztBQUNSLFNBQU8sRUFBRSxDQUFDO0FBQ1YsVUFBUSxFQUFFLENBQUM7QUFDWCxTQUFPLEVBQUUsQ0FBQztBQUNWLFNBQU8sRUFBRSxDQUFDO0FBQ1YsV0FBUyxFQUFFLENBQUM7Q0FDYixDQUFDOztBQUVGLElBQU0sb0JBQXVFLHVFQUMxRSxZQUFZLENBQUMsS0FBSyxFQUFHLGdCQUFnQixDQUFDLEtBQUssMENBQzNDLFlBQVksQ0FBQyxLQUFLLEVBQUcsZ0JBQWdCLENBQUMsS0FBSywwQ0FDM0MsWUFBWSxDQUFDLE9BQU8sRUFBRyxnQkFBZ0IsQ0FBQyxPQUFPLDBDQUMvQyxZQUFZLENBQUMsUUFBUSxFQUFHLGdCQUFnQixDQUFDLFFBQVEsMENBQ2pELFlBQVksQ0FBQyxPQUFPLEVBQUcsZ0JBQWdCLENBQUMsT0FBTywwQ0FDL0MsWUFBWSxDQUFDLE9BQU8sRUFBRyxnQkFBZ0IsQ0FBQyxPQUFPLDBDQUMvQyxZQUFZLENBQUMsU0FBUyxFQUFHLGdCQUFnQixDQUFDLFNBQVMseUJBQ3JELENBQUM7O0FBRUYsSUFBTSxjQUFvRCxHQUFHO0FBQzNELGtCQUFnQixFQUFFLENBQUM7QUFDbkIsY0FBWSxFQUFFLENBQUM7QUFDZixjQUFZLEVBQUUsQ0FBQyxFQUNoQixDQUFDOzs7QUFFRixNQUFNLENBQUMsT0FBTyxHQUFHO0FBQ2YsZ0JBQWMsRUFBZCxjQUFjO0FBQ2QsY0FBWSxFQUFaLFlBQVk7QUFDWixzQkFBb0IsRUFBcEIsb0JBQW9CO0FBQ3BCLGtCQUFnQixFQUFoQixnQkFBZ0I7Q0FDakIsQ0FBQyIsImZpbGUiOiJoZy1jb25zdGFudHMuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG4vKiBAcHJvdmlkZXNNb2R1bGUgSGdDb25zdGFudHMgKi9cblxuaW1wb3J0IHR5cGUge1xuICBTdGF0dXNDb2RlSWRWYWx1ZSxcbiAgU3RhdHVzQ29kZU51bWJlclZhbHVlLFxuICBIZ1N0YXR1c09wdGlvblZhbHVlLFxufSBmcm9tICcuL0hnU2VydmljZSc7XG5cbmNvbnN0IFN0YXR1c0NvZGVJZDoge1trZXk6IHN0cmluZ106IFN0YXR1c0NvZGVJZFZhbHVlfSA9IHtcbiAgQURERUQ6ICdBJyxcbiAgQ0xFQU46ICdDJyxcbiAgSUdOT1JFRDogJ0knLFxuICBNT0RJRklFRDogJ00nLFxuICBNSVNTSU5HOiAnIScsIC8vIChkZWxldGVkIGJ5IG5vbi1oZyBjb21tYW5kLCBidXQgc3RpbGwgdHJhY2tlZClcbiAgUkVNT1ZFRDogJ1InLFxuICBVTlRSQUNLRUQ6ICc/Jyxcbn07XG5cbmNvbnN0IFN0YXR1c0NvZGVOdW1iZXI6IHtba2V5OiBzdHJpbmddOiBTdGF0dXNDb2RlTnVtYmVyVmFsdWV9ID0ge1xuICBBRERFRDogMSxcbiAgQ0xFQU46IDIsXG4gIElHTk9SRUQ6IDMsXG4gIE1PRElGSUVEOiA0LFxuICBNSVNTSU5HOiA1LFxuICBSRU1PVkVEOiA2LFxuICBVTlRSQUNLRUQ6IDcsXG59O1xuXG5jb25zdCBTdGF0dXNDb2RlSWRUb051bWJlcjoge1trZXk6IFN0YXR1c0NvZGVJZFZhbHVlXTogU3RhdHVzQ29kZU51bWJlclZhbHVlfSA9IHtcbiAgW1N0YXR1c0NvZGVJZC5BRERFRF06IFN0YXR1c0NvZGVOdW1iZXIuQURERUQsXG4gIFtTdGF0dXNDb2RlSWQuQ0xFQU5dOiBTdGF0dXNDb2RlTnVtYmVyLkNMRUFOLFxuICBbU3RhdHVzQ29kZUlkLklHTk9SRURdOiBTdGF0dXNDb2RlTnVtYmVyLklHTk9SRUQsXG4gIFtTdGF0dXNDb2RlSWQuTU9ESUZJRURdOiBTdGF0dXNDb2RlTnVtYmVyLk1PRElGSUVELFxuICBbU3RhdHVzQ29kZUlkLk1JU1NJTkddOiBTdGF0dXNDb2RlTnVtYmVyLk1JU1NJTkcsXG4gIFtTdGF0dXNDb2RlSWQuUkVNT1ZFRF06IFN0YXR1c0NvZGVOdW1iZXIuUkVNT1ZFRCxcbiAgW1N0YXR1c0NvZGVJZC5VTlRSQUNLRURdOiBTdGF0dXNDb2RlTnVtYmVyLlVOVFJBQ0tFRCxcbn07XG5cbmNvbnN0IEhnU3RhdHVzT3B0aW9uOiB7W2tleTogc3RyaW5nXTogSGdTdGF0dXNPcHRpb25WYWx1ZX0gPSB7XG4gIE9OTFlfTk9OX0lHTk9SRUQ6IDEsICAvLyBvbmx5IHRoZSBvdXRwdXQgb2YgYGhnIHN0YXR1c2BcbiAgT05MWV9JR05PUkVEOiAyLCAgICAgIC8vIG9ubHkgdGhlIG91dHB1dCBvZiBgaGcgc3RhdHVzIC0taWdub3JlZGBcbiAgQUxMX1NUQVRVU0VTOiAzLCAgICAgIC8vIHRoZSBvdXRwdXQgb2YgYGhnIHN0YXR1cyAtLWFsbGBcbn07XG5cbm1vZHVsZS5leHBvcnRzID0ge1xuICBIZ1N0YXR1c09wdGlvbixcbiAgU3RhdHVzQ29kZUlkLFxuICBTdGF0dXNDb2RlSWRUb051bWJlcixcbiAgU3RhdHVzQ29kZU51bWJlcixcbn07XG4iXX0=

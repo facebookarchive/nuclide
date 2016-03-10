@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+module.exports = require('../../../atom-npm').load(__dirname, 'NuclideCheckbox');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -8,8 +9,4 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
-import type NuclideCheckbox from './NuclideCheckbox';
-
-module.exports =
-  (require('../../../atom-npm').load(__dirname, 'NuclideCheckbox'): Class<NuclideCheckbox>);
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFhQSxNQUFNLENBQUMsT0FBTyxHQUNYLE9BQU8sQ0FBQyxtQkFBbUIsQ0FBQyxDQUFDLElBQUksQ0FBQyxTQUFTLEVBQUUsaUJBQWlCLENBQUMsQUFBeUIsQ0FBQyIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUgTnVjbGlkZUNoZWNrYm94IGZyb20gJy4vTnVjbGlkZUNoZWNrYm94JztcblxubW9kdWxlLmV4cG9ydHMgPVxuICAocmVxdWlyZSgnLi4vLi4vLi4vYXRvbS1ucG0nKS5sb2FkKF9fZGlybmFtZSwgJ051Y2xpZGVDaGVja2JveCcpOiBDbGFzczxOdWNsaWRlQ2hlY2tib3g+KTtcbiJdfQ==

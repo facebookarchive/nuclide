@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +10,41 @@
  * the root directory of this source tree.
  */
 
-import type {RemoteConnection} from '../../remote-connection/lib/RemoteConnection';
-import type {RemoteFile} from '../../remote-connection/lib/RemoteFile';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {getLogger} from '../../logging/';
-import invariant from 'assert';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-const logger = getLogger();
-const {CompositeDisposable, TextBuffer} = require('atom');
-const {track} = require('../../analytics');
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-class NuclideTextBuffer extends TextBuffer {
-  connection: RemoteConnection;
-  fileSubscriptions: CompositeDisposable;
-  /* $FlowFixMe */
-  file: ?RemoteFile;
-  conflict: boolean;
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  constructor(connection: RemoteConnection, params: any) {
-    super(params);
+var _logging = require('../../logging/');
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var logger = (0, _logging.getLogger)();
+
+var _require = require('atom');
+
+var CompositeDisposable = _require.CompositeDisposable;
+var TextBuffer = _require.TextBuffer;
+
+var _require2 = require('../../analytics');
+
+var track = _require2.track;
+
+var NuclideTextBuffer = (function (_TextBuffer) {
+  _inherits(NuclideTextBuffer, _TextBuffer);
+
+  function NuclideTextBuffer(connection, params) {
+    _classCallCheck(this, NuclideTextBuffer);
+
+    _get(Object.getPrototypeOf(NuclideTextBuffer.prototype), 'constructor', this).call(this, params);
     this.connection = connection;
     this.setPath(params.filePath);
-    const encoding: string = (atom.config.get('core.fileEncoding'): any);
+    var encoding = atom.config.get('core.fileEncoding');
     this.setEncoding(encoding);
   }
 
@@ -40,140 +54,156 @@ class NuclideTextBuffer extends TextBuffer {
   // However, when there is no key, it's not looked up in cache, but rather by
   // its path. This behavior ensures that when a connection is reestablished,
   // a buffer exists with that path. See https://github.com/atom/atom/pull/9968.
-  getId(): string {
-    return '';
-  }
 
-  setPath(filePath: string): void {
-    if (!this.connection) {
-      // If this.connection is not set, then the superclass constructor is still executing.
-      // NuclideTextBuffer's constructor will ensure setPath() is called once this.constructor
-      // is set.
-      return;
+  _createClass(NuclideTextBuffer, [{
+    key: 'getId',
+    value: function getId() {
+      return '';
     }
-    if (filePath === this.getPath()) {
-      return;
-    }
-    if (filePath) {
-      this.file = this.createFile(filePath);
-      if (this.file !== null) {
-        const file = this.file;
-        file.setEncoding(this.getEncoding());
-        this.subscribeToFile();
-      }
-    } else {
-      this.file = null;
-    }
-    this.emitter.emit('did-change-path', this.getPath());
-  }
-
-  createFile(filePath: string): RemoteFile {
-    return this.connection.createFile(filePath);
-  }
-
-  async saveAs(filePath: string): Promise<void> {
-    if (!filePath) {
-      throw new Error('Can\'t save buffer with no file path');
-    }
-
-    let success;
-    this.emitter.emit('will-save', {path: filePath});
-    this.setPath(filePath);
-    try {
-      invariant(this.file);
-      const file = this.file;
-      await file.write(this.getText());
-      this.cachedDiskContents = this.getText();
-      this.conflict = false;
-      /* $FlowFixMe Private Atom API */
-      this.emitModifiedStatusChanged(false);
-      this.emitter.emit('did-save', {path: filePath});
-      success = true;
-    } catch (e) {
-      // Timeouts occur quite frequently when the network is unstable.
-      // Demote these to 'error' level.
-      const logFunction = (/timeout/i).test(e.message) ? logger.error : logger.fatal;
-      logFunction('Failed to save remote file.', e);
-      atom.notifications.addError(`Failed to save remote file: ${e.message}`);
-      success = false;
-    }
-
-    track('remoteprojects-text-buffer-save-as', {
-      'remoteprojects-file-path': filePath,
-      'remoteprojects-save-success': success.toString(),
-    });
-  }
-
-  updateCachedDiskContentsSync(): void {
-    throw new Error('updateCachedDiskContentsSync isn\'t supported in NuclideTextBuffer');
-  }
-
-  subscribeToFile() {
-    if (this.fileSubscriptions) {
-      this.fileSubscriptions.dispose();
-    }
-    invariant(this.file);
-    this.fileSubscriptions = new CompositeDisposable();
-
-    this.fileSubscriptions.add(this.file.onDidChange(async () => {
-      const isModified = await this._isModified();
-      if (isModified) {
-        this.conflict = true;
-      }
-      const previousContents = this.cachedDiskContents;
-      /* $FlowFixMe Private Atom API */
-      await this.updateCachedDiskContents();
-      if (previousContents === this.cachedDiskContents) {
+  }, {
+    key: 'setPath',
+    value: function setPath(filePath) {
+      if (!this.connection) {
+        // If this.connection is not set, then the superclass constructor is still executing.
+        // NuclideTextBuffer's constructor will ensure setPath() is called once this.constructor
+        // is set.
         return;
       }
-      if (this.conflict) {
-        this.emitter.emit('did-conflict');
-      } else {
-        this.reload();
+      if (filePath === this.getPath()) {
+        return;
       }
-    }));
-
-    invariant(this.file);
-    this.fileSubscriptions.add(this.file.onDidDelete(() => {
-      const modified = this.getText() !== this.cachedDiskContents;
-      /* $FlowFixMe Private Atom API */
-      this.wasModifiedBeforeRemove = modified;
-      if (modified) {
-        /* $FlowFixMe Private Atom API */
-        this.updateCachedDiskContents();
+      if (filePath) {
+        this.file = this.createFile(filePath);
+        if (this.file !== null) {
+          var file = this.file;
+          file.setEncoding(this.getEncoding());
+          this.subscribeToFile();
+        }
       } else {
-        /* $FlowFixMe Private Atom API */
-        this.destroy();
+        this.file = null;
       }
-    }));
-
-    invariant(this.file);
-    this.fileSubscriptions.add(this.file.onDidRename(() => {
       this.emitter.emit('did-change-path', this.getPath());
-    }));
-
-    invariant(this.file);
-    this.fileSubscriptions.add(this.file.onWillThrowWatchError(errorObject => {
-      this.emitter.emit('will-throw-watch-error', errorObject);
-    }));
-  }
-
-  async _isModified(): Promise<boolean> {
-    if (!this.loaded) {
-      return false;
     }
-    if (this.file) {
-      const exists = await this.file.exists();
-      if (exists) {
-        return this.getText() !== this.cachedDiskContents;
-      } else {
-        return this.wasModifiedBeforeRemove != null ?
-          this.wasModifiedBeforeRemove : !this.isEmpty();
+  }, {
+    key: 'createFile',
+    value: function createFile(filePath) {
+      return this.connection.createFile(filePath);
+    }
+  }, {
+    key: 'saveAs',
+    value: _asyncToGenerator(function* (filePath) {
+      if (!filePath) {
+        throw new Error('Can\'t save buffer with no file path');
       }
-    } else {
-      return !this.isEmpty();
+
+      var success = undefined;
+      this.emitter.emit('will-save', { path: filePath });
+      this.setPath(filePath);
+      try {
+        (0, _assert2['default'])(this.file);
+        var file = this.file;
+        yield file.write(this.getText());
+        this.cachedDiskContents = this.getText();
+        this.conflict = false;
+        /* $FlowFixMe Private Atom API */
+        this.emitModifiedStatusChanged(false);
+        this.emitter.emit('did-save', { path: filePath });
+        success = true;
+      } catch (e) {
+        // Timeouts occur quite frequently when the network is unstable.
+        // Demote these to 'error' level.
+        var logFunction = /timeout/i.test(e.message) ? logger.error : logger.fatal;
+        logFunction('Failed to save remote file.', e);
+        atom.notifications.addError('Failed to save remote file: ' + e.message);
+        success = false;
+      }
+
+      track('remoteprojects-text-buffer-save-as', {
+        'remoteprojects-file-path': filePath,
+        'remoteprojects-save-success': success.toString()
+      });
+    })
+  }, {
+    key: 'updateCachedDiskContentsSync',
+    value: function updateCachedDiskContentsSync() {
+      throw new Error('updateCachedDiskContentsSync isn\'t supported in NuclideTextBuffer');
     }
-  }
-}
+  }, {
+    key: 'subscribeToFile',
+    value: function subscribeToFile() {
+      var _this = this;
+
+      if (this.fileSubscriptions) {
+        this.fileSubscriptions.dispose();
+      }
+      (0, _assert2['default'])(this.file);
+      this.fileSubscriptions = new CompositeDisposable();
+
+      this.fileSubscriptions.add(this.file.onDidChange(_asyncToGenerator(function* () {
+        var isModified = yield _this._isModified();
+        if (isModified) {
+          _this.conflict = true;
+        }
+        var previousContents = _this.cachedDiskContents;
+        /* $FlowFixMe Private Atom API */
+        yield _this.updateCachedDiskContents();
+        if (previousContents === _this.cachedDiskContents) {
+          return;
+        }
+        if (_this.conflict) {
+          _this.emitter.emit('did-conflict');
+        } else {
+          _this.reload();
+        }
+      })));
+
+      (0, _assert2['default'])(this.file);
+      this.fileSubscriptions.add(this.file.onDidDelete(function () {
+        var modified = _this.getText() !== _this.cachedDiskContents;
+        /* $FlowFixMe Private Atom API */
+        _this.wasModifiedBeforeRemove = modified;
+        if (modified) {
+          /* $FlowFixMe Private Atom API */
+          _this.updateCachedDiskContents();
+        } else {
+          /* $FlowFixMe Private Atom API */
+          _this.destroy();
+        }
+      }));
+
+      (0, _assert2['default'])(this.file);
+      this.fileSubscriptions.add(this.file.onDidRename(function () {
+        _this.emitter.emit('did-change-path', _this.getPath());
+      }));
+
+      (0, _assert2['default'])(this.file);
+      this.fileSubscriptions.add(this.file.onWillThrowWatchError(function (errorObject) {
+        _this.emitter.emit('will-throw-watch-error', errorObject);
+      }));
+    }
+  }, {
+    key: '_isModified',
+    value: _asyncToGenerator(function* () {
+      if (!this.loaded) {
+        return false;
+      }
+      if (this.file) {
+        var exists = yield this.file.exists();
+        if (exists) {
+          return this.getText() !== this.cachedDiskContents;
+        } else {
+          return this.wasModifiedBeforeRemove != null ? this.wasModifiedBeforeRemove : !this.isEmpty();
+        }
+      } else {
+        return !this.isEmpty();
+      }
+    })
+  }]);
+
+  return NuclideTextBuffer;
+})(TextBuffer);
 
 module.exports = NuclideTextBuffer;
+
+/* $FlowFixMe */
+//# sourceMappingURL=data:application/json;base64,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cUJBQXFCLENBQUMsVUFBQSxXQUFXLEVBQUk7QUFDeEUsY0FBSyxPQUFPLENBQUMsSUFBSSxDQUFDLHdCQUF3QixFQUFFLFdBQVcsQ0FBQyxDQUFDO09BQzFELENBQUMsQ0FBQyxDQUFDO0tBQ0w7Ozs2QkFFZ0IsYUFBcUI7QUFDcEMsVUFBSSxDQUFDLElBQUksQ0FBQyxNQUFNLEVBQUU7QUFDaEIsZUFBTyxLQUFLLENBQUM7T0FDZDtBQUNELFVBQUksSUFBSSxDQUFDLElBQUksRUFBRTtBQUNiLFlBQU0sTUFBTSxHQUFHLE1BQU0sSUFBSSxDQUFDLElBQUksQ0FBQyxNQUFNLEVBQUUsQ0FBQztBQUN4QyxZQUFJLE1BQU0sRUFBRTtBQUNWLGlCQUFPLElBQUksQ0FBQyxPQUFPLEVBQUUsS0FBSyxJQUFJLENBQUMsa0JBQWtCLENBQUM7U0FDbkQsTUFBTTtBQUNMLGlCQUFPLElBQUksQ0FBQyx1QkFBdUIsSUFBSSxJQUFJLEdBQ3pDLElBQUksQ0FBQyx1QkFBdUIsR0FBRyxDQUFDLElBQUksQ0FBQyxPQUFPLEVBQUUsQ0FBQztTQUNsRDtPQUNGLE1BQU07QUFDTCxlQUFPLENBQUMsSUFBSSxDQUFDLE9BQU8sRUFBRSxDQUFDO09BQ3hCO0tBQ0Y7OztTQTFKRyxpQkFBaUI7R0FBUyxVQUFVOztBQTZKMUMsTUFBTSxDQUFDLE9BQU8sR0FBRyxpQkFBaUIsQ0FBQyIsImZpbGUiOiJOdWNsaWRlVGV4dEJ1ZmZlci5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtSZW1vdGVDb25uZWN0aW9ufSBmcm9tICcuLi8uLi9yZW1vdGUtY29ubmVjdGlvbi9saWIvUmVtb3RlQ29ubmVjdGlvbic7XG5pbXBvcnQgdHlwZSB7UmVtb3RlRmlsZX0gZnJvbSAnLi4vLi4vcmVtb3RlLWNvbm5lY3Rpb24vbGliL1JlbW90ZUZpbGUnO1xuXG5pbXBvcnQge2dldExvZ2dlcn0gZnJvbSAnLi4vLi4vbG9nZ2luZy8nO1xuaW1wb3J0IGludmFyaWFudCBmcm9tICdhc3NlcnQnO1xuXG5jb25zdCBsb2dnZXIgPSBnZXRMb2dnZXIoKTtcbmNvbnN0IHtDb21wb3NpdGVEaXNwb3NhYmxlLCBUZXh0QnVmZmVyfSA9IHJlcXVpcmUoJ2F0b20nKTtcbmNvbnN0IHt0cmFja30gPSByZXF1aXJlKCcuLi8uLi9hbmFseXRpY3MnKTtcblxuY2xhc3MgTnVjbGlkZVRleHRCdWZmZXIgZXh0ZW5kcyBUZXh0QnVmZmVyIHtcbiAgY29ubmVjdGlvbjogUmVtb3RlQ29ubmVjdGlvbjtcbiAgZmlsZVN1YnNjcmlwdGlvbnM6IENvbXBvc2l0ZURpc3Bvc2FibGU7XG4gIC8qICRGbG93Rml4TWUgKi9cbiAgZmlsZTogP1JlbW90ZUZpbGU7XG4gIGNvbmZsaWN0OiBib29sZWFuO1xuXG4gIGNvbnN0cnVjdG9yKGNvbm5lY3Rpb246IFJlbW90ZUNvbm5lY3Rpb24sIHBhcmFtczogYW55KSB7XG4gICAgc3VwZXIocGFyYW1zKTtcbiAgICB0aGlzLmNvbm5lY3Rpb24gPSBjb25uZWN0aW9uO1xuICAgIHRoaXMuc2V0UGF0aChwYXJhbXMuZmlsZVBhdGgpO1xuICAgIGNvbnN0IGVuY29kaW5nOiBzdHJpbmcgPSAoYXRvbS5jb25maWcuZ2V0KCdjb3JlLmZpbGVFbmNvZGluZycpOiBhbnkpO1xuICAgIHRoaXMuc2V0RW5jb2RpbmcoZW5jb2RpbmcpO1xuICB9XG5cbiAgLy8gQXRvbSAxLjQuMCsgc2VyaWFsaXplcyBUZXh0QnVmZmVycyB3aXRoIHRoZSBJRCBnZW5lcmF0ZWQgYnkgYGdldElkYC4gV2hlblxuICAvLyBhIGJ1ZmZlciBpcyBkZXNlcmlhbGl6ZWQsIGl0IGlzIGxvb2tlZCB1cCBpbiB0aGUgYnVmZmVyIGNhY2hlIGJ5IHRoaXMga2V5LlxuICAvLyBUaGUgbG9naWMgdGhlcmUgaXMgc2V0dXAgdG8gY3JlYXRlIGEgbmV3IGJ1ZmZlciB3aGVuIHRoZXJlIGlzIGEgY2FjaGUgbWlzcy5cbiAgLy8gSG93ZXZlciwgd2hlbiB0aGVyZSBpcyBubyBrZXksIGl0J3Mgbm90IGxvb2tlZCB1cCBpbiBjYWNoZSwgYnV0IHJhdGhlciBieVxuICAvLyBpdHMgcGF0aC4gVGhpcyBiZWhhdmlvciBlbnN1cmVzIHRoYXQgd2hlbiBhIGNvbm5lY3Rpb24gaXMgcmVlc3RhYmxpc2hlZCxcbiAgLy8gYSBidWZmZXIgZXhpc3RzIHdpdGggdGhhdCBwYXRoLiBTZWUgaHR0cHM6Ly9naXRodWIuY29tL2F0b20vYXRvbS9wdWxsLzk5NjguXG4gIGdldElkKCk6IHN0cmluZyB7XG4gICAgcmV0dXJuICcnO1xuICB9XG5cbiAgc2V0UGF0aChmaWxlUGF0aDogc3RyaW5nKTogdm9pZCB7XG4gICAgaWYgKCF0aGlzLmNvbm5lY3Rpb24pIHtcbiAgICAgIC8vIElmIHRoaXMuY29ubmVjdGlvbiBpcyBub3Qgc2V0LCB0aGVuIHRoZSBzdXBlcmNsYXNzIGNvbnN0cnVjdG9yIGlzIHN0aWxsIGV4ZWN1dGluZy5cbiAgICAgIC8vIE51Y2xpZGVUZXh0QnVmZmVyJ3MgY29uc3RydWN0b3Igd2lsbCBlbnN1cmUgc2V0UGF0aCgpIGlzIGNhbGxlZCBvbmNlIHRoaXMuY29uc3RydWN0b3JcbiAgICAgIC8vIGlzIHNldC5cbiAgICAgIHJldHVybjtcbiAgICB9XG4gICAgaWYgKGZpbGVQYXRoID09PSB0aGlzLmdldFBhdGgoKSkge1xuICAgICAgcmV0dXJuO1xuICAgIH1cbiAgICBpZiAoZmlsZVBhdGgpIHtcbiAgICAgIHRoaXMuZmlsZSA9IHRoaXMuY3JlYXRlRmlsZShmaWxlUGF0aCk7XG4gICAgICBpZiAodGhpcy5maWxlICE9PSBudWxsKSB7XG4gICAgICAgIGNvbnN0IGZpbGUgPSB0aGlzLmZpbGU7XG4gICAgICAgIGZpbGUuc2V0RW5jb2RpbmcodGhpcy5nZXRFbmNvZGluZygpKTtcbiAgICAgICAgdGhpcy5zdWJzY3JpYmVUb0ZpbGUoKTtcbiAgICAgIH1cbiAgICB9IGVsc2Uge1xuICAgICAgdGhpcy5maWxlID0gbnVsbDtcbiAgICB9XG4gICAgdGhpcy5lbWl0dGVyLmVtaXQoJ2RpZC1jaGFuZ2UtcGF0aCcsIHRoaXMuZ2V0UGF0aCgpKTtcbiAgfVxuXG4gIGNyZWF0ZUZpbGUoZmlsZVBhdGg6IHN0cmluZyk6IFJlbW90ZUZpbGUge1xuICAgIHJldHVybiB0aGlzLmNvbm5lY3Rpb24uY3JlYXRlRmlsZShmaWxlUGF0aCk7XG4gIH1cblxuICBhc3luYyBzYXZlQXMoZmlsZVBhdGg6IHN0cmluZyk6IFByb21pc2U8dm9pZD4ge1xuICAgIGlmICghZmlsZVBhdGgpIHtcbiAgICAgIHRocm93IG5ldyBFcnJvcignQ2FuXFwndCBzYXZlIGJ1ZmZlciB3aXRoIG5vIGZpbGUgcGF0aCcpO1xuICAgIH1cblxuICAgIGxldCBzdWNjZXNzO1xuICAgIHRoaXMuZW1pdHRlci5lbWl0KCd3aWxsLXNhdmUnLCB7cGF0aDogZmlsZVBhdGh9KTtcbiAgICB0aGlzLnNldFBhdGgoZmlsZVBhdGgpO1xuICAgIHRyeSB7XG4gICAgICBpbnZhcmlhbnQodGhpcy5maWxlKTtcbiAgICAgIGNvbnN0IGZpbGUgPSB0aGlzLmZpbGU7XG4gICAgICBhd2FpdCBmaWxlLndyaXRlKHRoaXMuZ2V0VGV4dCgpKTtcbiAgICAgIHRoaXMuY2FjaGVkRGlza0NvbnRlbnRzID0gdGhpcy5nZXRUZXh0KCk7XG4gICAgICB0aGlzLmNvbmZsaWN0ID0gZmFsc2U7XG4gICAgICAvKiAkRmxvd0ZpeE1lIFByaXZhdGUgQXRvbSBBUEkgKi9cbiAgICAgIHRoaXMuZW1pdE1vZGlmaWVkU3RhdHVzQ2hhbmdlZChmYWxzZSk7XG4gICAgICB0aGlzLmVtaXR0ZXIuZW1pdCgnZGlkLXNhdmUnLCB7cGF0aDogZmlsZVBhdGh9KTtcbiAgICAgIHN1Y2Nlc3MgPSB0cnVlO1xuICAgIH0gY2F0Y2ggKGUpIHtcbiAgICAgIC8vIFRpbWVvdXRzIG9jY3VyIHF1aXRlIGZyZXF1ZW50bHkgd2hlbiB0aGUgbmV0d29yayBpcyB1bnN0YWJsZS5cbiAgICAgIC8vIERlbW90ZSB0aGVzZSB0byAnZXJyb3InIGxldmVsLlxuICAgICAgY29uc3QgbG9nRnVuY3Rpb24gPSAoL3RpbWVvdXQvaSkudGVzdChlLm1lc3NhZ2UpID8gbG9nZ2VyLmVycm9yIDogbG9nZ2VyLmZhdGFsO1xuICAgICAgbG9nRnVuY3Rpb24oJ0ZhaWxlZCB0byBzYXZlIHJlbW90ZSBmaWxlLicsIGUpO1xuICAgICAgYXRvbS5ub3RpZmljYXRpb25zLmFkZEVycm9yKGBGYWlsZWQgdG8gc2F2ZSByZW1vdGUgZmlsZTogJHtlLm1lc3NhZ2V9YCk7XG4gICAgICBzdWNjZXNzID0gZmFsc2U7XG4gICAgfVxuXG4gICAgdHJhY2soJ3JlbW90ZXByb2plY3RzLXRleHQtYnVmZmVyLXNhdmUtYXMnLCB7XG4gICAgICAncmVtb3RlcHJvamVjdHMtZmlsZS1wYXRoJzogZmlsZVBhdGgsXG4gICAgICAncmVtb3RlcHJvamVjdHMtc2F2ZS1zdWNjZXNzJzogc3VjY2Vzcy50b1N0cmluZygpLFxuICAgIH0pO1xuICB9XG5cbiAgdXBkYXRlQ2FjaGVkRGlza0NvbnRlbnRzU3luYygpOiB2b2lkIHtcbiAgICB0aHJvdyBuZXcgRXJyb3IoJ3VwZGF0ZUNhY2hlZERpc2tDb250ZW50c1N5bmMgaXNuXFwndCBzdXBwb3J0ZWQgaW4gTnVjbGlkZVRleHRCdWZmZXInKTtcbiAgfVxuXG4gIHN1YnNjcmliZVRvRmlsZSgpIHtcbiAgICBpZiAodGhpcy5maWxlU3Vic2NyaXB0aW9ucykge1xuICAgICAgdGhpcy5maWxlU3Vic2NyaXB0aW9ucy5kaXNwb3NlKCk7XG4gICAgfVxuICAgIGludmFyaWFudCh0aGlzLmZpbGUpO1xuICAgIHRoaXMuZmlsZVN1YnNjcmlwdGlvbnMgPSBuZXcgQ29tcG9zaXRlRGlzcG9zYWJsZSgpO1xuXG4gICAgdGhpcy5maWxlU3Vic2NyaXB0aW9ucy5hZGQodGhpcy5maWxlLm9uRGlkQ2hhbmdlKGFzeW5jICgpID0+IHtcbiAgICAgIGNvbnN0IGlzTW9kaWZpZWQgPSBhd2FpdCB0aGlzLl9pc01vZGlmaWVkKCk7XG4gICAgICBpZiAoaXNNb2RpZmllZCkge1xuICAgICAgICB0aGlzLmNvbmZsaWN0ID0gdHJ1ZTtcbiAgICAgIH1cbiAgICAgIGNvbnN0IHByZXZpb3VzQ29udGVudHMgPSB0aGlzLmNhY2hlZERpc2tDb250ZW50cztcbiAgICAgIC8qICRGbG93Rml4TWUgUHJpdmF0ZSBBdG9tIEFQSSAqL1xuICAgICAgYXdhaXQgdGhpcy51cGRhdGVDYWNoZWREaXNrQ29udGVudHMoKTtcbiAgICAgIGlmIChwcmV2aW91c0NvbnRlbnRzID09PSB0aGlzLmNhY2hlZERpc2tDb250ZW50cykge1xuICAgICAgICByZXR1cm47XG4gICAgICB9XG4gICAgICBpZiAodGhpcy5jb25mbGljdCkge1xuICAgICAgICB0aGlzLmVtaXR0ZXIuZW1pdCgnZGlkLWNvbmZsaWN0Jyk7XG4gICAgICB9IGVsc2Uge1xuICAgICAgICB0aGlzLnJlbG9hZCgpO1xuICAgICAgfVxuICAgIH0pKTtcblxuICAgIGludmFyaWFudCh0aGlzLmZpbGUpO1xuICAgIHRoaXMuZmlsZVN1YnNjcmlwdGlvbnMuYWRkKHRoaXMuZmlsZS5vbkRpZERlbGV0ZSgoKSA9PiB7XG4gICAgICBjb25zdCBtb2RpZmllZCA9IHRoaXMuZ2V0VGV4dCgpICE9PSB0aGlzLmNhY2hlZERpc2tDb250ZW50cztcbiAgICAgIC8qICRGbG93Rml4TWUgUHJpdmF0ZSBBdG9tIEFQSSAqL1xuICAgICAgdGhpcy53YXNNb2RpZmllZEJlZm9yZVJlbW92ZSA9IG1vZGlmaWVkO1xuICAgICAgaWYgKG1vZGlmaWVkKSB7XG4gICAgICAgIC8qICRGbG93Rml4TWUgUHJpdmF0ZSBBdG9tIEFQSSAqL1xuICAgICAgICB0aGlzLnVwZGF0ZUNhY2hlZERpc2tDb250ZW50cygpO1xuICAgICAgfSBlbHNlIHtcbiAgICAgICAgLyogJEZsb3dGaXhNZSBQcml2YXRlIEF0b20gQVBJICovXG4gICAgICAgIHRoaXMuZGVzdHJveSgpO1xuICAgICAgfVxuICAgIH0pKTtcblxuICAgIGludmFyaWFudCh0aGlzLmZpbGUpO1xuICAgIHRoaXMuZmlsZVN1YnNjcmlwdGlvbnMuYWRkKHRoaXMuZmlsZS5vbkRpZFJlbmFtZSgoKSA9PiB7XG4gICAgICB0aGlzLmVtaXR0ZXIuZW1pdCgnZGlkLWNoYW5nZS1wYXRoJywgdGhpcy5nZXRQYXRoKCkpO1xuICAgIH0pKTtcblxuICAgIGludmFyaWFudCh0aGlzLmZpbGUpO1xuICAgIHRoaXMuZmlsZVN1YnNjcmlwdGlvbnMuYWRkKHRoaXMuZmlsZS5vbldpbGxUaHJvd1dhdGNoRXJyb3IoZXJyb3JPYmplY3QgPT4ge1xuICAgICAgdGhpcy5lbWl0dGVyLmVtaXQoJ3dpbGwtdGhyb3ctd2F0Y2gtZXJyb3InLCBlcnJvck9iamVjdCk7XG4gICAgfSkpO1xuICB9XG5cbiAgYXN5bmMgX2lzTW9kaWZpZWQoKTogUHJvbWlzZTxib29sZWFuPiB7XG4gICAgaWYgKCF0aGlzLmxvYWRlZCkge1xuICAgICAgcmV0dXJuIGZhbHNlO1xuICAgIH1cbiAgICBpZiAodGhpcy5maWxlKSB7XG4gICAgICBjb25zdCBleGlzdHMgPSBhd2FpdCB0aGlzLmZpbGUuZXhpc3RzKCk7XG4gICAgICBpZiAoZXhpc3RzKSB7XG4gICAgICAgIHJldHVybiB0aGlzLmdldFRleHQoKSAhPT0gdGhpcy5jYWNoZWREaXNrQ29udGVudHM7XG4gICAgICB9IGVsc2Uge1xuICAgICAgICByZXR1cm4gdGhpcy53YXNNb2RpZmllZEJlZm9yZVJlbW92ZSAhPSBudWxsID9cbiAgICAgICAgICB0aGlzLndhc01vZGlmaWVkQmVmb3JlUmVtb3ZlIDogIXRoaXMuaXNFbXB0eSgpO1xuICAgICAgfVxuICAgIH0gZWxzZSB7XG4gICAgICByZXR1cm4gIXRoaXMuaXNFbXB0eSgpO1xuICAgIH1cbiAgfVxufVxuXG5tb2R1bGUuZXhwb3J0cyA9IE51Y2xpZGVUZXh0QnVmZmVyO1xuIl19
