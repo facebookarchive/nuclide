@@ -63,7 +63,11 @@ export function existingEditorForUri(path: NuclideUri): ?atom$TextEditor {
 }
 
 export async function loadBufferForUri(uri: NuclideUri): Promise<atom$TextBuffer> {
-  const buffer = bufferForUri(uri);
+  let buffer = existingBufferForUri(uri);
+  if (buffer != null) {
+    return buffer;
+  }
+  buffer = createBufferForUri(uri);
   try {
     await buffer.load();
     return buffer;
@@ -77,10 +81,15 @@ export async function loadBufferForUri(uri: NuclideUri): Promise<atom$TextBuffer
  * Returns an existing buffer for that uri, or create one if not existing.
  */
 export function bufferForUri(uri: NuclideUri): atom$TextBuffer {
-  let buffer = existingBufferForUri(uri);
+  const buffer = existingBufferForUri(uri);
   if (buffer != null) {
     return buffer;
   }
+  return createBufferForUri(uri);
+}
+
+function createBufferForUri(uri: NuclideUri): atom$TextBuffer {
+  let buffer;
   if (isLocal(uri)) {
     buffer = new TextBuffer({filePath: uri});
   } else {
