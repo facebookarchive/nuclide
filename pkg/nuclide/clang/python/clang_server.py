@@ -15,17 +15,19 @@ from ctypes import *
 from declarationlocation import get_declaration_location_and_spelling
 
 import json
+import getpass
 import hashlib
 import logging
 import os
 import re
 import sys
+import tempfile
 import time
 import traceback
 from logging import FileHandler
 from utils import is_header_file, resolve_file, range_dict, location_dict
 
-LOGGING_DIR = '/tmp/nuclide-clang-logs'
+LOGGING_DIR = 'nuclide-%s-logs/clang' % getpass.getuser()
 FD_FOR_READING = 3
 
 # Unfortunately Clang has no way of limiting autocompletion results, but set a reasonable limit
@@ -48,9 +50,14 @@ def log_filename(value):
 
 
 def set_up_logging(src):
-    if not os.path.exists(LOGGING_DIR):
-        os.mkdir(LOGGING_DIR)
-    handler = FileHandler(os.path.join(LOGGING_DIR, log_filename(src)))
+    # Be consistent with the main Nuclide logs.
+    if sys.platform == 'win32':
+        log_dir = os.path.join(tempfile.gettempdir(), LOGGING_DIR)
+    else:
+        log_dir = os.path.join('/tmp', LOGGING_DIR)
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    handler = FileHandler(os.path.join(log_dir, log_filename(src)))
     handler.setFormatter(logging.Formatter(
         'nuclide-clang-py %(asctime)s: [%(name)s] %(message)s'
     ))

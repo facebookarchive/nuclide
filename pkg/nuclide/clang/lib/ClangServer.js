@@ -287,18 +287,23 @@ export default class ClangServer {
   async createAsyncConnection(src: string): Promise<Connection> {
     return await new Promise(async (resolve, reject) => {
       const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = await _findClangServerArgs();
+      const env: any = {
+        PYTHONPATH: pythonPathEnv,
+      };
+      // Note: undefined values in `env` get serialized to the string "undefined".
+      // Thus we have to make sure the key only gets set for valid values.
+      if (libClangLibraryFile != null) {
+        // On Mac OSX El Capitan, bash seems to wipe out the `LD_LIBRARY_PATH` and
+        // `DYLD_LIBRARY_PATH` environment variables. So, set this env var which is read by
+        // clang_server.py to explicitly set the file path to load.
+        env.LIB_CLANG_LIBRARY_FILE = libClangLibraryFile;
+      }
       const options = {
         cwd: path.dirname(pathToLibClangServer),
         // The process should use its ordinary stderr for errors.
         stdio: ['pipe', null, 'pipe', 'pipe'],
         detached: false, // When Atom is killed, clang_server.py should be killed, too.
-        env: {
-          // On Mac OSX El Capitan, bash seems to wipe out the `LD_LIBRARY_PATH` and
-          // `DYLD_LIBRARY_PATH` environment variables. So, set this env var which is read by
-          // clang_server.py to explicitly set the file path to load.
-          LIB_CLANG_LIBRARY_FILE: libClangLibraryFile,
-          PYTHONPATH: pythonPathEnv,
-        },
+        env,
       };
 
       // Note that safeSpawn() often overrides options.env.PATH, but that only happens when
@@ -332,7 +337,7 @@ export default class ClangServer {
       // Make sure the bidirectional communication channel is set up before
       // resolving this Promise.
       child.stdout.once('data', function(data: Buffer) {
-        if (data.toString() === 'ack\n') {
+        if (data.toString().trim() === 'ack') {
           const result = {
             dispose: () => {
               if (childRunning) {
