@@ -48,7 +48,58 @@ type OldFlowStatusErrorMessageComponent = OldBaseFlowStatusErrorMessageComponent
 // Same as FlowStatusErrorMessageComponent, except without the 'level' field.
 type OldFlowStatusErrorOperation = OldBaseFlowStatusErrorMessageComponent;
 
+// New types for `flow status` v0.23.0 (or possibly v0.24.0, it has yet to be finalized)
+
+type NewFlowStatusOutput = {
+  passed: boolean;
+  flowVersion: string;
+  errors: Array<NewFlowStatusError>;
+};
+
+type NewFlowStatusError = {
+  level: 'error' | 'warning';
+  // e.g. parse, infer, maybe others?
+  kind: string;
+  message: Array<NewFlowStatusErrorMessageComponent>;
+  operation?: NewFlowStatusErrorMessageComponent;
+
+  // There is also an `extra` field where additional details about certain kinds of errors are
+  // provided. For now we will ignore these details.
+};
+
+type NewFlowStatusErrorMessageComponent = {
+  descr: string;
+  loc: FlowLoc;
+  // The old path, line, etc. fields also currently exist here, but they are deprecated in favor of
+  // `loc`.
+};
+
+type FlowLoc = {
+  // file path
+  source: string;
+  start: FlowPoint;
+  end: FlowPoint;
+}
+
+type FlowPoint = {
+  column: number;
+  line: number;
+  // total character offset
+  offset: number;
+};
+
 export function flowStatusOutputToDiagnostics(
+  root: string,
+  statusOutput: Object,
+): Diagnostics {
+  if (statusOutput['flowVersion'] != null) {
+    return newFlowStatusOutputToDiagnostics(root, statusOutput);
+  } else {
+    return oldFlowStatusOutputToDiagnostics(root, statusOutput);
+  }
+}
+
+export function oldFlowStatusOutputToDiagnostics(
   root: string,
   statusOutput: OldFlowStatusOutput,
 ): Diagnostics {
@@ -99,4 +150,11 @@ function flowMessageComponentToMessageComponent(
     start: component['start'],
     end: component['end'],
   };
+}
+
+export function newFlowStatusOutputToDiagnostics(
+  root: string,
+  statusOutput: NewFlowStatusOutput,
+): Diagnostics {
+  return (null: any);
 }
