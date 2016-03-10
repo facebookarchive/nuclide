@@ -1,3 +1,10 @@
+- title: Built-in Debugging
+  text: |
+        Building upon Chrome Developer Tools, Nuclide has first class debugging support for React
+        Native (shown here), Hack, Flow and other platforms. \\
+        [**Read More**](/docs/features/debugger)
+  image: images/docs/promo-rn-debugging.png
+
 - title: Remote Development
   text: |
         Connect to your remote servers, and get full access to the file tree within Nuclide. \\
