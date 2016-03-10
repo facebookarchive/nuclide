@@ -21,6 +21,7 @@ type Props = {
   indeterminate: boolean;
   label: string;
   onChange: (isChecked: boolean) => mixed;
+  onClick: (event: SyntheticEvent) => mixed;
 };
 
 /**
@@ -33,6 +34,8 @@ export default class NuclideCheckbox extends React.Component {
   static defaultProps = {
     disabled: false,
     indeterminate: false,
+    label: '',
+    onClick(event) {},
   };
 
   constructor(props: Object) {
@@ -69,7 +72,7 @@ export default class NuclideCheckbox extends React.Component {
 
   render(): ReactElement {
     return (
-      <label className="nuclide-ui-checkbox-label">
+      <label className="nuclide-ui-checkbox-label" onClick={this.props.onClick}>
         <input
           checked={this.props.checked}
           className="nuclide-ui-checkbox"

@@ -19,7 +19,7 @@ const {StatusCodeNumber} = require('../../hg-repository-base').hgConstants;
 const classnames = require('classnames');
 const {fileTypeClass} = require('../../atom-helpers');
 const {isContextClick} = require('../lib/FileTreeHelpers');
-const {TriStateCheckboxComponent} = require('./TriStateCheckboxComponent');
+const NuclideCheckbox = require('../../ui/checkbox');
 
 const {PropTypes} = React;
 
@@ -45,6 +45,7 @@ class FileEntryComponent extends React.Component {
   constructor(props: Object) {
     super(props);
     (this: any)._onClick = this._onClick.bind(this);
+    (this: any)._checkboxOnChange = this._checkboxOnChange.bind(this);
     (this: any)._checkboxOnClick = this._checkboxOnClick.bind(this);
     (this: any)._onMouseDown = this._onMouseDown.bind(this);
     (this: any)._onDoubleClick = this._onDoubleClick.bind(this);
@@ -101,8 +102,9 @@ class FileEntryComponent extends React.Component {
     }
 
     return (
-      <TriStateCheckboxComponent
-        checkedStatus={this.props.checkedStatus}
+      <NuclideCheckbox
+        checked={this.props.checkedStatus === 'checked'}
+        onChange={this._checkboxOnChange}
         onClick={this._checkboxOnClick}
       />
     );
@@ -139,13 +141,16 @@ class FileEntryComponent extends React.Component {
     }
   }
 
+  _checkboxOnChange(isChecked: boolean): void {
+    if (isChecked) {
+      getActions().checkNode(this.props.rootKey, this.props.nodeKey);
+    } else {
+      getActions().uncheckNode(this.props.rootKey, this.props.nodeKey);
+    }
+  }
+
   _checkboxOnClick(event: Event): void {
     event.stopPropagation();
-    if (this.props.checkedStatus === 'checked') {
-      getActions().uncheckNode(this.props.rootKey, this.props.nodeKey);
-    } else {
-      getActions().checkNode(this.props.rootKey, this.props.nodeKey);
-    }
   }
 }
 
