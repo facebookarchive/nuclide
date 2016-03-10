@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +8,9 @@
  * the root directory of this source tree.
  */
 
-import {getLogger} from '../../logging';
+var _logging = require('../../logging');
 
-const logger = getLogger();
+var logger = (0, _logging.getLogger)();
 
 // Use the pre-built, native module if available.
 // If not, use the fallback JS implementation.
@@ -21,3 +20,4 @@ try {
   logger.error('Failed to load native fuzzy matching. Falling back to JS implementation', e);
   module.exports = require('./FallbackMatcher');
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozt1QkFXd0IsZUFBZTs7QUFFdkMsSUFBTSxNQUFNLEdBQUcseUJBQVcsQ0FBQzs7OztBQUkzQixJQUFJO0FBQ0YsUUFBTSxDQUFDLE9BQU8sR0FBRyxPQUFPLENBQUMsMkJBQTJCLENBQUMsQ0FBQztDQUN2RCxDQUFDLE9BQU8sQ0FBQyxFQUFFO0FBQ1YsUUFBTSxDQUFDLEtBQUssQ0FBQyx5RUFBeUUsRUFBRSxDQUFDLENBQUMsQ0FBQztBQUMzRixRQUFNLENBQUMsT0FBTyxHQUFHLE9BQU8sQ0FBQyxtQkFBbUIsQ0FBQyxDQUFDO0NBQy9DIiwiZmlsZSI6Im1haW4uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQge2dldExvZ2dlcn0gZnJvbSAnLi4vLi4vbG9nZ2luZyc7XG5cbmNvbnN0IGxvZ2dlciA9IGdldExvZ2dlcigpO1xuXG4vLyBVc2UgdGhlIHByZS1idWlsdCwgbmF0aXZlIG1vZHVsZSBpZiBhdmFpbGFibGUuXG4vLyBJZiBub3QsIHVzZSB0aGUgZmFsbGJhY2sgSlMgaW1wbGVtZW50YXRpb24uXG50cnkge1xuICBtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoJy4uL1ZlbmRvckxpYi9mdXp6eS1uYXRpdmUnKTtcbn0gY2F0Y2ggKGUpIHtcbiAgbG9nZ2VyLmVycm9yKCdGYWlsZWQgdG8gbG9hZCBuYXRpdmUgZnV6enkgbWF0Y2hpbmcuIEZhbGxpbmcgYmFjayB0byBKUyBpbXBsZW1lbnRhdGlvbicsIGUpO1xuICBtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoJy4vRmFsbGJhY2tNYXRjaGVyJyk7XG59XG4iXX0=

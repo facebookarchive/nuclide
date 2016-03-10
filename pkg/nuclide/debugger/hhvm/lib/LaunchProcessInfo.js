@@ -1,5 +1,16 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +20,29 @@
  * the root directory of this source tree.
  */
 
-import {DebuggerProcessInfo} from '../../atom';
-import {HhvmDebuggerInstance} from './HhvmDebuggerInstance';
+var _atom = require('../../atom');
 
-import type {NuclideUri} from '../../../remote-uri';
+var _HhvmDebuggerInstance = require('./HhvmDebuggerInstance');
 
-export class LaunchProcessInfo extends DebuggerProcessInfo {
-  _launchTarget: string;
+var LaunchProcessInfo = (function (_DebuggerProcessInfo) {
+  _inherits(LaunchProcessInfo, _DebuggerProcessInfo);
 
-  constructor(targetUri: NuclideUri, launchTarget: string) {
-    super('hhvm', targetUri);
+  function LaunchProcessInfo(targetUri, launchTarget) {
+    _classCallCheck(this, LaunchProcessInfo);
+
+    _get(Object.getPrototypeOf(LaunchProcessInfo.prototype), 'constructor', this).call(this, 'hhvm', targetUri);
     this._launchTarget = launchTarget;
   }
 
-  async debug(): Promise<HhvmDebuggerInstance> {
-    return new HhvmDebuggerInstance(this, this._launchTarget);
-  }
-}
+  _createClass(LaunchProcessInfo, [{
+    key: 'debug',
+    value: _asyncToGenerator(function* () {
+      return new _HhvmDebuggerInstance.HhvmDebuggerInstance(this, this._launchTarget);
+    })
+  }]);
+
+  return LaunchProcessInfo;
+})(_atom.DebuggerProcessInfo);
+
+exports.LaunchProcessInfo = LaunchProcessInfo;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkxhdW5jaFByb2Nlc3NJbmZvLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7b0JBV2tDLFlBQVk7O29DQUNYLHdCQUF3Qjs7SUFJOUMsaUJBQWlCO1lBQWpCLGlCQUFpQjs7QUFHakIsV0FIQSxpQkFBaUIsQ0FHaEIsU0FBcUIsRUFBRSxZQUFvQixFQUFFOzBCQUg5QyxpQkFBaUI7O0FBSTFCLCtCQUpTLGlCQUFpQiw2Q0FJcEIsTUFBTSxFQUFFLFNBQVMsRUFBRTtBQUN6QixRQUFJLENBQUMsYUFBYSxHQUFHLFlBQVksQ0FBQztHQUNuQzs7ZUFOVSxpQkFBaUI7OzZCQVFqQixhQUFrQztBQUMzQyxhQUFPLCtDQUF5QixJQUFJLEVBQUUsSUFBSSxDQUFDLGFBQWEsQ0FBQyxDQUFDO0tBQzNEOzs7U0FWVSxpQkFBaUIiLCJmaWxlIjoiTGF1bmNoUHJvY2Vzc0luZm8uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQge0RlYnVnZ2VyUHJvY2Vzc0luZm99IGZyb20gJy4uLy4uL2F0b20nO1xuaW1wb3J0IHtIaHZtRGVidWdnZXJJbnN0YW5jZX0gZnJvbSAnLi9IaHZtRGVidWdnZXJJbnN0YW5jZSc7XG5cbmltcG9ydCB0eXBlIHtOdWNsaWRlVXJpfSBmcm9tICcuLi8uLi8uLi9yZW1vdGUtdXJpJztcblxuZXhwb3J0IGNsYXNzIExhdW5jaFByb2Nlc3NJbmZvIGV4dGVuZHMgRGVidWdnZXJQcm9jZXNzSW5mbyB7XG4gIF9sYXVuY2hUYXJnZXQ6IHN0cmluZztcblxuICBjb25zdHJ1Y3Rvcih0YXJnZXRVcmk6IE51Y2xpZGVVcmksIGxhdW5jaFRhcmdldDogc3RyaW5nKSB7XG4gICAgc3VwZXIoJ2hodm0nLCB0YXJnZXRVcmkpO1xuICAgIHRoaXMuX2xhdW5jaFRhcmdldCA9IGxhdW5jaFRhcmdldDtcbiAgfVxuXG4gIGFzeW5jIGRlYnVnKCk6IFByb21pc2U8SGh2bURlYnVnZ2VySW5zdGFuY2U+IHtcbiAgICByZXR1cm4gbmV3IEhodm1EZWJ1Z2dlckluc3RhbmNlKHRoaXMsIHRoaXMuX2xhdW5jaFRhcmdldCk7XG4gIH1cbn1cbiJdfQ==

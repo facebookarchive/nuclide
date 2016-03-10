@@ -1,68 +1,20 @@
-'use babel';
-/* @flow */
-
-/*
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- */
-
-import type {BlameForEditor} from '../../blame-base';
-
-import featureConfig from '../../feature-config';
-import {hgRepositoryForEditor} from './common';
-import {trackOperationTiming} from '../../analytics';
-
-let logger;
-function getLogger() {
-  if (!logger) {
-    logger = require('../../logging').getLogger();
-  }
-  return logger;
-}
-
-function canProvideBlameForEditor(editor: atom$TextEditor): boolean {
-  if (editor.isModified()) {
-    atom.notifications.addInfo(
-      'There is Hg blame information for this file, but only for saved changes. ' +
-      'Save, then try again.'
-    );
-    getLogger().info(
-      'nuclide-blame: Could not open Hg blame due to unsaved changes in file: ' +
-      String(editor.getPath())
-    );
-    return false;
-  }
-  const repo = hgRepositoryForEditor(editor);
-  return !!repo;
-}
-
-function getBlameForEditor(editor: atom$TextEditor): Promise<BlameForEditor> {
-  return trackOperationTiming(
-    'blame-provider-hg:getBlameForEditor',
-    () => doGetBlameForEditor(editor)
-  );
-}
-
-async function doGetBlameForEditor(editor: atom$TextEditor): Promise<BlameForEditor> {
-  const path = editor.getPath();
+var doGetBlameForEditor = _asyncToGenerator(function* (editor) {
+  var path = editor.getPath();
   if (!path) {
     return Promise.resolve(new Map());
   }
 
-  const repo = hgRepositoryForEditor(editor);
+  var repo = (0, _common.hgRepositoryForEditor)(editor);
   if (!repo) {
-    const message = `HgBlameProvider could not fetch blame for ${path}: no Hg repo found.`;
+    var message = 'HgBlameProvider could not fetch blame for ' + path + ': no Hg repo found.';
     getLogger().error(message);
     throw new Error(message);
   }
 
-  const blameInfo = await repo.getBlameAtHead(path);
+  var blameInfo = yield repo.getBlameAtHead(path);
   // TODO (t8045823) Convert the return type of ::getBlameAtHead to a Map when
   // the service framework supports a Map return type.
-  const useShortName = !(featureConfig.get('nuclide-blame-provider-hg.showVerboseBlame'));
+  var useShortName = !_featureConfig2['default'].get('nuclide-blame-provider-hg.showVerboseBlame');
   return formatBlameInfo(blameInfo, useShortName);
 }
 
@@ -73,32 +25,74 @@ async function doGetBlameForEditor(editor: atom$TextEditor): Promise<BlameForEdi
  * (The Firstname Lastname may not appear sometimes.) If `useShortName` is true, then the
  * author portion will contain only the username.
  */
-function formatBlameInfo(
-  rawBlameData: Map<string, string>,
-  useShortName: boolean
-): BlameForEditor {
-  const extractAuthor = useShortName ? shortenBlameName : identity;
+);
 
-  const blameForEditor = new Map();
-  rawBlameData.forEach((blameName, serializedLineNumber) => {
-    const lineNumber = parseInt(serializedLineNumber, 10);
-    const index = blameName.lastIndexOf(' ');
-    const changeSetId = blameName.substring(index + 1);
-    const fullAuthor = blameName.substring(0, index);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+var _featureConfig = require('../../feature-config');
+
+var _featureConfig2 = _interopRequireDefault(_featureConfig);
+
+var _common = require('./common');
+
+var _analytics = require('../../analytics');
+
+var logger = undefined;
+function getLogger() {
+  if (!logger) {
+    logger = require('../../logging').getLogger();
+  }
+  return logger;
+}
+
+function canProvideBlameForEditor(editor) {
+  if (editor.isModified()) {
+    atom.notifications.addInfo('There is Hg blame information for this file, but only for saved changes. ' + 'Save, then try again.');
+    getLogger().info('nuclide-blame: Could not open Hg blame due to unsaved changes in file: ' + String(editor.getPath()));
+    return false;
+  }
+  var repo = (0, _common.hgRepositoryForEditor)(editor);
+  return !!repo;
+}
+
+function getBlameForEditor(editor) {
+  return (0, _analytics.trackOperationTiming)('blame-provider-hg:getBlameForEditor', function () {
+    return doGetBlameForEditor(editor);
+  });
+}
+
+function formatBlameInfo(rawBlameData, useShortName) {
+  var extractAuthor = useShortName ? shortenBlameName : identity;
+
+  var blameForEditor = new Map();
+  rawBlameData.forEach(function (blameName, serializedLineNumber) {
+    var lineNumber = parseInt(serializedLineNumber, 10);
+    var index = blameName.lastIndexOf(' ');
+    var changeSetId = blameName.substring(index + 1);
+    var fullAuthor = blameName.substring(0, index);
 
     // The ChangeSet ID will be null for uncommitted local changes.
-    const blameInfo = {
+    var blameInfo = {
       author: extractAuthor(fullAuthor),
-      changeset: changeSetId !== 'null' ? changeSetId : null,
+      changeset: changeSetId !== 'null' ? changeSetId : null
     };
     blameForEditor.set(lineNumber, blameInfo);
   });
   return blameForEditor;
 }
 
-
 // Mercurial history emails can be invalid.
-const HG_EMAIL_REGEX = /\b([A-Za-z0-9._%+-]+)@[A-Za-z0-9.-]+\b/;
+var HG_EMAIL_REGEX = /\b([A-Za-z0-9._%+-]+)@[A-Za-z0-9.-]+\b/;
 /**
  * `hg blame` may return the 'user' name in a mix of formats:
  *   - foo@bar.com
@@ -108,30 +102,34 @@ const HG_EMAIL_REGEX = /\b([A-Za-z0-9._%+-]+)@[A-Za-z0-9.-]+\b/;
  * return the beginning part of the email, iff an email is present.
  * The examples above would become 'foo'.
  */
-function shortenBlameName(blameName: string): string {
-  const match = blameName.match(HG_EMAIL_REGEX);
+function shortenBlameName(blameName) {
+  var match = blameName.match(HG_EMAIL_REGEX);
   // Index 0 will be the whole email. Index 1 is the capture group.
   return match ? match[1] : blameName;
 }
 
 /** @return The input value. */
-function identity<T>(anything: T): T {
+function identity(anything) {
   return anything;
 }
 
-let getUrlForRevision;
+var getUrlForRevision = undefined;
 try {
-  const {getPhabricatorUrlForRevision} = require('./fb/FbHgBlameProvider');
+  var _require = require('./fb/FbHgBlameProvider');
+
+  var getPhabricatorUrlForRevision = _require.getPhabricatorUrlForRevision;
+
   getUrlForRevision = getPhabricatorUrlForRevision;
 } catch (e) {
   // Ignore case where FbHgBlameProvider is unavailable.
 }
 
 module.exports = {
-  canProvideBlameForEditor,
-  getBlameForEditor,
-  getUrlForRevision,
+  canProvideBlameForEditor: canProvideBlameForEditor,
+  getBlameForEditor: getBlameForEditor,
+  getUrlForRevision: getUrlForRevision,
   __test__: {
-    formatBlameInfo,
-  },
+    formatBlameInfo: formatBlameInfo
+  }
 };
+//# sourceMappingURL=data:application/json;base64,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RSxXQUFXLEtBQUssTUFBTSxHQUFHLFdBQVcsR0FBRyxJQUFJO0tBQ3ZELENBQUM7QUFDRixrQkFBYyxDQUFDLEdBQUcsQ0FBQyxVQUFVLEVBQUUsU0FBUyxDQUFDLENBQUM7R0FDM0MsQ0FBQyxDQUFDO0FBQ0gsU0FBTyxjQUFjLENBQUM7Q0FDdkI7OztBQUlELElBQU0sY0FBYyxHQUFHLHdDQUF3QyxDQUFDOzs7Ozs7Ozs7O0FBVWhFLFNBQVMsZ0JBQWdCLENBQUMsU0FBaUIsRUFBVTtBQUNuRCxNQUFNLEtBQUssR0FBRyxTQUFTLENBQUMsS0FBSyxDQUFDLGNBQWMsQ0FBQyxDQUFDOztBQUU5QyxTQUFPLEtBQUssR0FBRyxLQUFLLENBQUMsQ0FBQyxDQUFDLEdBQUcsU0FBUyxDQUFDO0NBQ3JDOzs7QUFHRCxTQUFTLFFBQVEsQ0FBSSxRQUFXLEVBQUs7QUFDbkMsU0FBTyxRQUFRLENBQUM7Q0FDakI7O0FBRUQsSUFBSSxpQkFBaUIsWUFBQSxDQUFDO0FBQ3RCLElBQUk7aUJBQ3FDLE9BQU8sQ0FBQyx3QkFBd0IsQ0FBQzs7TUFBakUsNEJBQTRCLFlBQTVCLDRCQUE0Qjs7QUFDbkMsbUJBQWlCLEdBQUcsNEJBQTRCLENBQUM7Q0FDbEQsQ0FBQyxPQUFPLENBQUMsRUFBRTs7Q0FFWDs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHO0FBQ2YsMEJBQXdCLEVBQXhCLHdCQUF3QjtBQUN4QixtQkFBaUIsRUFBakIsaUJBQWlCO0FBQ2pCLG1CQUFpQixFQUFqQixpQkFBaUI7QUFDakIsVUFBUSxFQUFFO0FBQ1IsbUJBQWUsRUFBZixlQUFlO0dBQ2hCO0NBQ0YsQ0FBQyIsImZpbGUiOiJIZ0JsYW1lUHJvdmlkZXIuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7QmxhbWVGb3JFZGl0b3J9IGZyb20gJy4uLy4uL2JsYW1lLWJhc2UnO1xuXG5pbXBvcnQgZmVhdHVyZUNvbmZpZyBmcm9tICcuLi8uLi9mZWF0dXJlLWNvbmZpZyc7XG5pbXBvcnQge2hnUmVwb3NpdG9yeUZvckVkaXRvcn0gZnJvbSAnLi9jb21tb24nO1xuaW1wb3J0IHt0cmFja09wZXJhdGlvblRpbWluZ30gZnJvbSAnLi4vLi4vYW5hbHl0aWNzJztcblxubGV0IGxvZ2dlcjtcbmZ1bmN0aW9uIGdldExvZ2dlcigpIHtcbiAgaWYgKCFsb2dnZXIpIHtcbiAgICBsb2dnZXIgPSByZXF1aXJlKCcuLi8uLi9sb2dnaW5nJykuZ2V0TG9nZ2VyKCk7XG4gIH1cbiAgcmV0dXJuIGxvZ2dlcjtcbn1cblxuZnVuY3Rpb24gY2FuUHJvdmlkZUJsYW1lRm9yRWRpdG9yKGVkaXRvcjogYXRvbSRUZXh0RWRpdG9yKTogYm9vbGVhbiB7XG4gIGlmIChlZGl0b3IuaXNNb2RpZmllZCgpKSB7XG4gICAgYXRvbS5ub3RpZmljYXRpb25zLmFkZEluZm8oXG4gICAgICAnVGhlcmUgaXMgSGcgYmxhbWUgaW5mb3JtYXRpb24gZm9yIHRoaXMgZmlsZSwgYnV0IG9ubHkgZm9yIHNhdmVkIGNoYW5nZXMuICcgK1xuICAgICAgJ1NhdmUsIHRoZW4gdHJ5IGFnYWluLidcbiAgICApO1xuICAgIGdldExvZ2dlcigpLmluZm8oXG4gICAgICAnbnVjbGlkZS1ibGFtZTogQ291bGQgbm90IG9wZW4gSGcgYmxhbWUgZHVlIHRvIHVuc2F2ZWQgY2hhbmdlcyBpbiBmaWxlOiAnICtcbiAgICAgIFN0cmluZyhlZGl0b3IuZ2V0UGF0aCgpKVxuICAgICk7XG4gICAgcmV0dXJuIGZhbHNlO1xuICB9XG4gIGNvbnN0IHJlcG8gPSBoZ1JlcG9zaXRvcnlGb3JFZGl0b3IoZWRpdG9yKTtcbiAgcmV0dXJuICEhcmVwbztcbn1cblxuZnVuY3Rpb24gZ2V0QmxhbWVGb3JFZGl0b3IoZWRpdG9yOiBhdG9tJFRleHRFZGl0b3IpOiBQcm9taXNlPEJsYW1lRm9yRWRpdG9yPiB7XG4gIHJldHVybiB0cmFja09wZXJhdGlvblRpbWluZyhcbiAgICAnYmxhbWUtcHJvdmlkZXItaGc6Z2V0QmxhbWVGb3JFZGl0b3InLFxuICAgICgpID0+IGRvR2V0QmxhbWVGb3JFZGl0b3IoZWRpdG9yKVxuICApO1xufVxuXG5hc3luYyBmdW5jdGlvbiBkb0dldEJsYW1lRm9yRWRpdG9yKGVkaXRvcjogYXRvbSRUZXh0RWRpdG9yKTogUHJvbWlzZTxCbGFtZUZvckVkaXRvcj4ge1xuICBjb25zdCBwYXRoID0gZWRpdG9yLmdldFBhdGgoKTtcbiAgaWYgKCFwYXRoKSB7XG4gICAgcmV0dXJuIFByb21pc2UucmVzb2x2ZShuZXcgTWFwKCkpO1xuICB9XG5cbiAgY29uc3QgcmVwbyA9IGhnUmVwb3NpdG9yeUZvckVkaXRvcihlZGl0b3IpO1xuICBpZiAoIXJlcG8pIHtcbiAgICBjb25zdCBtZXNzYWdlID0gYEhnQmxhbWVQcm92aWRlciBjb3VsZCBub3QgZmV0Y2ggYmxhbWUgZm9yICR7cGF0aH06IG5vIEhnIHJlcG8gZm91bmQuYDtcbiAgICBnZXRMb2dnZXIoKS5lcnJvcihtZXNzYWdlKTtcbiAgICB0aHJvdyBuZXcgRXJyb3IobWVzc2FnZSk7XG4gIH1cblxuICBjb25zdCBibGFtZUluZm8gPSBhd2FpdCByZXBvLmdldEJsYW1lQXRIZWFkKHBhdGgpO1xuICAvLyBUT0RPICh0ODA0NTgyMykgQ29udmVydCB0aGUgcmV0dXJuIHR5cGUgb2YgOjpnZXRCbGFtZUF0SGVhZCB0byBhIE1hcCB3aGVuXG4gIC8vIHRoZSBzZXJ2aWNlIGZyYW1ld29yayBzdXBwb3J0cyBhIE1hcCByZXR1cm4gdHlwZS5cbiAgY29uc3QgdXNlU2hvcnROYW1lID0gIShmZWF0dXJlQ29uZmlnLmdldCgnbnVjbGlkZS1ibGFtZS1wcm92aWRlci1oZy5zaG93VmVyYm9zZUJsYW1lJykpO1xuICByZXR1cm4gZm9ybWF0QmxhbWVJbmZvKGJsYW1lSW5mbywgdXNlU2hvcnROYW1lKTtcbn1cblxuLyoqXG4gKiBUYWtlcyBhIG1hcCByZXR1cm5lZCBieSBIZ1JlcG9zaXRvcnlDbGllbnQuZ2V0QmxhbWVBdEhlYWQoKSBhbmQgcmVmb3JtYXRzIGl0IGFzIGEgTWFwIG9mXG4gKiBsaW5lIG51bWJlcnMgdG8gYmxhbWUgaW5mbyB0byBkaXNwbGF5IGluIHRoZSBibGFtZSBndXR0ZXIuIElmIGB1c2VTaG9ydE5hbWVgIGlzIGZhbHNlLFxuICogVGhlIGJsYW1lIGluZm8gaXMgb2YgdGhlIGZvcm06IFwiRmlyc3RuYW1lIExhc3RuYW1lIDx1c2VybmFtZUBlbWFpbC5jb20+IENoYW5nZVNldElEXCIuXG4gKiAoVGhlIEZpcnN0bmFtZSBMYXN0bmFtZSBtYXkgbm90IGFwcGVhciBzb21ldGltZXMuKSBJZiBgdXNlU2hvcnROYW1lYCBpcyB0cnVlLCB0aGVuIHRoZVxuICogYXV0aG9yIHBvcnRpb24gd2lsbCBjb250YWluIG9ubHkgdGhlIHVzZXJuYW1lLlxuICovXG5mdW5jdGlvbiBmb3JtYXRCbGFtZUluZm8oXG4gIHJhd0JsYW1lRGF0YTogTWFwPHN0cmluZywgc3RyaW5nPixcbiAgdXNlU2hvcnROYW1lOiBib29sZWFuXG4pOiBCbGFtZUZvckVkaXRvciB7XG4gIGNvbnN0IGV4dHJhY3RBdXRob3IgPSB1c2VTaG9ydE5hbWUgPyBzaG9ydGVuQmxhbWVOYW1lIDogaWRlbnRpdHk7XG5cbiAgY29uc3QgYmxhbWVGb3JFZGl0b3IgPSBuZXcgTWFwKCk7XG4gIHJhd0JsYW1lRGF0YS5mb3JFYWNoKChibGFtZU5hbWUsIHNlcmlhbGl6ZWRMaW5lTnVtYmVyKSA9PiB7XG4gICAgY29uc3QgbGluZU51bWJlciA9IHBhcnNlSW50KHNlcmlhbGl6ZWRMaW5lTnVtYmVyLCAxMCk7XG4gICAgY29uc3QgaW5kZXggPSBibGFtZU5hbWUubGFzdEluZGV4T2YoJyAnKTtcbiAgICBjb25zdCBjaGFuZ2VTZXRJZCA9IGJsYW1lTmFtZS5zdWJzdHJpbmcoaW5kZXggKyAxKTtcbiAgICBjb25zdCBmdWxsQXV0aG9yID0gYmxhbWVOYW1lLnN1YnN0cmluZygwLCBpbmRleCk7XG5cbiAgICAvLyBUaGUgQ2hhbmdlU2V0IElEIHdpbGwgYmUgbnVsbCBmb3IgdW5jb21taXR0ZWQgbG9jYWwgY2hhbmdlcy5cbiAgICBjb25zdCBibGFtZUluZm8gPSB7XG4gICAgICBhdXRob3I6IGV4dHJhY3RBdXRob3IoZnVsbEF1dGhvciksXG4gICAgICBjaGFuZ2VzZXQ6IGNoYW5nZVNldElkICE9PSAnbnVsbCcgPyBjaGFuZ2VTZXRJZCA6IG51bGwsXG4gICAgfTtcbiAgICBibGFtZUZvckVkaXRvci5zZXQobGluZU51bWJlciwgYmxhbWVJbmZvKTtcbiAgfSk7XG4gIHJldHVybiBibGFtZUZvckVkaXRvcjtcbn1cblxuXG4vLyBNZXJjdXJpYWwgaGlzdG9yeSBlbWFpbHMgY2FuIGJlIGludmFsaWQuXG5jb25zdCBIR19FTUFJTF9SRUdFWCA9IC9cXGIoW0EtWmEtejAtOS5fJSstXSspQFtBLVphLXowLTkuLV0rXFxiLztcbi8qKlxuICogYGhnIGJsYW1lYCBtYXkgcmV0dXJuIHRoZSAndXNlcicgbmFtZSBpbiBhIG1peCBvZiBmb3JtYXRzOlxuICogICAtIGZvb0BiYXIuY29tXG4gKiAgIC0gYmFyQDU2YWJjMi0yNDM3OGZcbiAqICAgLSBGb28gQmFyIDxmb29AYmFyLmNvbT5cbiAqIFRoaXMgbWV0aG9kIHNob3J0ZW5zIHRoZSBuYW1lIGluIGBibGFtZU5hbWVgIHRvIGp1c3RcbiAqIHJldHVybiB0aGUgYmVnaW5uaW5nIHBhcnQgb2YgdGhlIGVtYWlsLCBpZmYgYW4gZW1haWwgaXMgcHJlc2VudC5cbiAqIFRoZSBleGFtcGxlcyBhYm92ZSB3b3VsZCBiZWNvbWUgJ2ZvbycuXG4gKi9cbmZ1bmN0aW9uIHNob3J0ZW5CbGFtZU5hbWUoYmxhbWVOYW1lOiBzdHJpbmcpOiBzdHJpbmcge1xuICBjb25zdCBtYXRjaCA9IGJsYW1lTmFtZS5tYXRjaChIR19FTUFJTF9SRUdFWCk7XG4gIC8vIEluZGV4IDAgd2lsbCBiZSB0aGUgd2hvbGUgZW1haWwuIEluZGV4IDEgaXMgdGhlIGNhcHR1cmUgZ3JvdXAuXG4gIHJldHVybiBtYXRjaCA/IG1hdGNoWzFdIDogYmxhbWVOYW1lO1xufVxuXG4vKiogQHJldHVybiBUaGUgaW5wdXQgdmFsdWUuICovXG5mdW5jdGlvbiBpZGVudGl0eTxUPihhbnl0aGluZzogVCk6IFQge1xuICByZXR1cm4gYW55dGhpbmc7XG59XG5cbmxldCBnZXRVcmxGb3JSZXZpc2lvbjtcbnRyeSB7XG4gIGNvbnN0IHtnZXRQaGFicmljYXRvclVybEZvclJldmlzaW9ufSA9IHJlcXVpcmUoJy4vZmIvRmJIZ0JsYW1lUHJvdmlkZXInKTtcbiAgZ2V0VXJsRm9yUmV2aXNpb24gPSBnZXRQaGFicmljYXRvclVybEZvclJldmlzaW9uO1xufSBjYXRjaCAoZSkge1xuICAvLyBJZ25vcmUgY2FzZSB3aGVyZSBGYkhnQmxhbWVQcm92aWRlciBpcyB1bmF2YWlsYWJsZS5cbn1cblxubW9kdWxlLmV4cG9ydHMgPSB7XG4gIGNhblByb3ZpZGVCbGFtZUZvckVkaXRvcixcbiAgZ2V0QmxhbWVGb3JFZGl0b3IsXG4gIGdldFVybEZvclJldmlzaW9uLFxuICBfX3Rlc3RfXzoge1xuICAgIGZvcm1hdEJsYW1lSW5mbyxcbiAgfSxcbn07XG4iXX0=

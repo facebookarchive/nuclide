@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +8,7 @@
  * the root directory of this source tree.
  */
 
-const cachedResultForTrack = Promise.resolve();
+var cachedResultForTrack = Promise.resolve();
 
 // This is a stubbed implementation that other packages use to record analytics data & performance.
 module.exports = {
@@ -19,7 +18,8 @@ module.exports = {
    * @param eventName Name of the event to be tracked.
    * @param values The object containing the data to track.
    */
-  track(eventName: string, values?: {[key: string]: string}): Promise<mixed> {
+  track: function track(eventName, values) {
     return cachedResultForTrack;
-  },
+  }
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImFuYWx5dGljcy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBV0EsSUFBTSxvQkFBb0IsR0FBRyxPQUFPLENBQUMsT0FBTyxFQUFFLENBQUM7OztBQUcvQyxNQUFNLENBQUMsT0FBTyxHQUFHOzs7Ozs7O0FBT2YsT0FBSyxFQUFBLGVBQUMsU0FBaUIsRUFBRSxNQUFnQyxFQUFrQjtBQUN6RSxXQUFPLG9CQUFvQixDQUFDO0dBQzdCO0NBQ0YsQ0FBQyIsImZpbGUiOiJhbmFseXRpY3MuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5jb25zdCBjYWNoZWRSZXN1bHRGb3JUcmFjayA9IFByb21pc2UucmVzb2x2ZSgpO1xuXG4vLyBUaGlzIGlzIGEgc3R1YmJlZCBpbXBsZW1lbnRhdGlvbiB0aGF0IG90aGVyIHBhY2thZ2VzIHVzZSB0byByZWNvcmQgYW5hbHl0aWNzIGRhdGEgJiBwZXJmb3JtYW5jZS5cbm1vZHVsZS5leHBvcnRzID0ge1xuXG4gIC8qKlxuICAgKiBUcmFjayBhIHNldCBvZiB2YWx1ZXMgYWdhaW5zdCBhIG5hbWVkIGV2ZW50LlxuICAgKiBAcGFyYW0gZXZlbnROYW1lIE5hbWUgb2YgdGhlIGV2ZW50IHRvIGJlIHRyYWNrZWQuXG4gICAqIEBwYXJhbSB2YWx1ZXMgVGhlIG9iamVjdCBjb250YWluaW5nIHRoZSBkYXRhIHRvIHRyYWNrLlxuICAgKi9cbiAgdHJhY2soZXZlbnROYW1lOiBzdHJpbmcsIHZhbHVlcz86IHtba2V5OiBzdHJpbmddOiBzdHJpbmd9KTogUHJvbWlzZTxtaXhlZD4ge1xuICAgIHJldHVybiBjYWNoZWRSZXN1bHRGb3JUcmFjaztcbiAgfSxcbn07XG4iXX0=

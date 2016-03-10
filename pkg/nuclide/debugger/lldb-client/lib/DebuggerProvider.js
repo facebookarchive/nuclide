@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _LLDBLaunchAttachProvider = require('./LLDBLaunchAttachProvider');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +8,12 @@
  * the root directory of this source tree.
  */
 
-import type {DebuggerLaunchAttachProvider} from '../../atom';
-import {LLDBLaunchAttachProvider} from './LLDBLaunchAttachProvider';
-
-function getLaunchAttachProvider(connection: string): ?DebuggerLaunchAttachProvider {
-  return new LLDBLaunchAttachProvider('Native', connection);
+function getLaunchAttachProvider(connection) {
+  return new _LLDBLaunchAttachProvider.LLDBLaunchAttachProvider('Native', connection);
 }
 
 module.exports = {
   name: 'lldb',
-  getLaunchAttachProvider,
+  getLaunchAttachProvider: getLaunchAttachProvider
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkRlYnVnZ2VyUHJvdmlkZXIuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IndDQVl1Qyw0QkFBNEI7Ozs7Ozs7Ozs7QUFFbkUsU0FBUyx1QkFBdUIsQ0FBQyxVQUFrQixFQUFpQztBQUNsRixTQUFPLHVEQUE2QixRQUFRLEVBQUUsVUFBVSxDQUFDLENBQUM7Q0FDM0Q7O0FBRUQsTUFBTSxDQUFDLE9BQU8sR0FBRztBQUNmLE1BQUksRUFBRSxNQUFNO0FBQ1oseUJBQXVCLEVBQXZCLHVCQUF1QjtDQUN4QixDQUFDIiwiZmlsZSI6IkRlYnVnZ2VyUHJvdmlkZXIuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7RGVidWdnZXJMYXVuY2hBdHRhY2hQcm92aWRlcn0gZnJvbSAnLi4vLi4vYXRvbSc7XG5pbXBvcnQge0xMREJMYXVuY2hBdHRhY2hQcm92aWRlcn0gZnJvbSAnLi9MTERCTGF1bmNoQXR0YWNoUHJvdmlkZXInO1xuXG5mdW5jdGlvbiBnZXRMYXVuY2hBdHRhY2hQcm92aWRlcihjb25uZWN0aW9uOiBzdHJpbmcpOiA/RGVidWdnZXJMYXVuY2hBdHRhY2hQcm92aWRlciB7XG4gIHJldHVybiBuZXcgTExEQkxhdW5jaEF0dGFjaFByb3ZpZGVyKCdOYXRpdmUnLCBjb25uZWN0aW9uKTtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSB7XG4gIG5hbWU6ICdsbGRiJyxcbiAgZ2V0TGF1bmNoQXR0YWNoUHJvdmlkZXIsXG59O1xuIl19

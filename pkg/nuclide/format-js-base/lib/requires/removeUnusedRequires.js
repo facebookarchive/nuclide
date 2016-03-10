@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,43 +8,35 @@
  * the root directory of this source tree.
  */
 
-import type {Collection} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
+var getDeclaredIdentifiers = require('../utils/getDeclaredIdentifiers');
+var getNamesFromID = require('../utils/getNamesFromID');
+var getNonDeclarationIdentifiers = require('../utils/getNonDeclarationIdentifiers');
+var hasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
+var isGlobal = require('../utils/isGlobal');
+var jscs = require('jscodeshift');
 
-const getDeclaredIdentifiers = require('../utils/getDeclaredIdentifiers');
-const getNamesFromID = require('../utils/getNamesFromID');
-const getNonDeclarationIdentifiers = require('../utils/getNonDeclarationIdentifiers');
-const hasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
-const isGlobal = require('../utils/isGlobal');
-const jscs = require('jscodeshift');
-
-function removeUnusedRequires(
-  root: Collection,
-  options: SourceOptions,
-): void {
-  const used = getNonDeclarationIdentifiers(root, options);
-  const nonRequires = getDeclaredIdentifiers(
-    root,
-    options,
-    [path => !hasOneRequireDeclaration(path.node)]
-  );
+function removeUnusedRequires(root, options) {
+  var used = getNonDeclarationIdentifiers(root, options);
+  var nonRequires = getDeclaredIdentifiers(root, options, [function (path) {
+    return !hasOneRequireDeclaration(path.node);
+  }]);
 
   // Remove unused requires.
-  root
-    .find(jscs.VariableDeclaration)
-    .filter(path => isGlobal(path))
-    .filter(path => hasOneRequireDeclaration(path.node))
-    .filter(path => {
-      const id = path.node.declarations[0].id;
-      const names = getNamesFromID(id);
-      for (const name of names) {
-        if (used.has(name) && !nonRequires.has(name)) {
-          return false;
-        }
+  root.find(jscs.VariableDeclaration).filter(function (path) {
+    return isGlobal(path);
+  }).filter(function (path) {
+    return hasOneRequireDeclaration(path.node);
+  }).filter(function (path) {
+    var id = path.node.declarations[0].id;
+    var names = getNamesFromID(id);
+    for (var _name of names) {
+      if (used.has(_name) && !nonRequires.has(_name)) {
+        return false;
       }
-      return true;
-    })
-    .remove();
+    }
+    return true;
+  }).remove();
 }
 
 module.exports = removeUnusedRequires;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInJlbW92ZVVudXNlZFJlcXVpcmVzLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7QUFjQSxJQUFNLHNCQUFzQixHQUFHLE9BQU8sQ0FBQyxpQ0FBaUMsQ0FBQyxDQUFDO0FBQzFFLElBQU0sY0FBYyxHQUFHLE9BQU8sQ0FBQyx5QkFBeUIsQ0FBQyxDQUFDO0FBQzFELElBQU0sNEJBQTRCLEdBQUcsT0FBTyxDQUFDLHVDQUF1QyxDQUFDLENBQUM7QUFDdEYsSUFBTSx3QkFBd0IsR0FBRyxPQUFPLENBQUMsbUNBQW1DLENBQUMsQ0FBQztBQUM5RSxJQUFNLFFBQVEsR0FBRyxPQUFPLENBQUMsbUJBQW1CLENBQUMsQ0FBQztBQUM5QyxJQUFNLElBQUksR0FBRyxPQUFPLENBQUMsYUFBYSxDQUFDLENBQUM7O0FBRXBDLFNBQVMsb0JBQW9CLENBQzNCLElBQWdCLEVBQ2hCLE9BQXNCLEVBQ2hCO0FBQ04sTUFBTSxJQUFJLEdBQUcsNEJBQTRCLENBQUMsSUFBSSxFQUFFLE9BQU8sQ0FBQyxDQUFDO0FBQ3pELE1BQU0sV0FBVyxHQUFHLHNCQUFzQixDQUN4QyxJQUFJLEVBQ0osT0FBTyxFQUNQLENBQUMsVUFBQSxJQUFJO1dBQUksQ0FBQyx3QkFBd0IsQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDO0dBQUEsQ0FBQyxDQUMvQyxDQUFDOzs7QUFHRixNQUFJLENBQ0QsSUFBSSxDQUFDLElBQUksQ0FBQyxtQkFBbUIsQ0FBQyxDQUM5QixNQUFNLENBQUMsVUFBQSxJQUFJO1dBQUksUUFBUSxDQUFDLElBQUksQ0FBQztHQUFBLENBQUMsQ0FDOUIsTUFBTSxDQUFDLFVBQUEsSUFBSTtXQUFJLHdCQUF3QixDQUFDLElBQUksQ0FBQyxJQUFJLENBQUM7R0FBQSxDQUFDLENBQ25ELE1BQU0sQ0FBQyxVQUFBLElBQUksRUFBSTtBQUNkLFFBQU0sRUFBRSxHQUFHLElBQUksQ0FBQyxJQUFJLENBQUMsWUFBWSxDQUFDLENBQUMsQ0FBQyxDQUFDLEVBQUUsQ0FBQztBQUN4QyxRQUFNLEtBQUssR0FBRyxjQUFjLENBQUMsRUFBRSxDQUFDLENBQUM7QUFDakMsU0FBSyxJQUFNLEtBQUksSUFBSSxLQUFLLEVBQUU7QUFDeEIsVUFBSSxJQUFJLENBQUMsR0FBRyxDQUFDLEtBQUksQ0FBQyxJQUFJLENBQUMsV0FBVyxDQUFDLEdBQUcsQ0FBQyxLQUFJLENBQUMsRUFBRTtBQUM1QyxlQUFPLEtBQUssQ0FBQztPQUNkO0tBQ0Y7QUFDRCxXQUFPLElBQUksQ0FBQztHQUNiLENBQUMsQ0FDRCxNQUFNLEVBQUUsQ0FBQztDQUNiOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUcsb0JBQW9CLENBQUMiLCJmaWxlIjoicmVtb3ZlVW51c2VkUmVxdWlyZXMuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7Q29sbGVjdGlvbn0gZnJvbSAnLi4vdHlwZXMvYXN0JztcbmltcG9ydCB0eXBlIHtTb3VyY2VPcHRpb25zfSBmcm9tICcuLi9vcHRpb25zL1NvdXJjZU9wdGlvbnMnO1xuXG5jb25zdCBnZXREZWNsYXJlZElkZW50aWZpZXJzID0gcmVxdWlyZSgnLi4vdXRpbHMvZ2V0RGVjbGFyZWRJZGVudGlmaWVycycpO1xuY29uc3QgZ2V0TmFtZXNGcm9tSUQgPSByZXF1aXJlKCcuLi91dGlscy9nZXROYW1lc0Zyb21JRCcpO1xuY29uc3QgZ2V0Tm9uRGVjbGFyYXRpb25JZGVudGlmaWVycyA9IHJlcXVpcmUoJy4uL3V0aWxzL2dldE5vbkRlY2xhcmF0aW9uSWRlbnRpZmllcnMnKTtcbmNvbnN0IGhhc09uZVJlcXVpcmVEZWNsYXJhdGlvbiA9IHJlcXVpcmUoJy4uL3V0aWxzL2hhc09uZVJlcXVpcmVEZWNsYXJhdGlvbicpO1xuY29uc3QgaXNHbG9iYWwgPSByZXF1aXJlKCcuLi91dGlscy9pc0dsb2JhbCcpO1xuY29uc3QganNjcyA9IHJlcXVpcmUoJ2pzY29kZXNoaWZ0Jyk7XG5cbmZ1bmN0aW9uIHJlbW92ZVVudXNlZFJlcXVpcmVzKFxuICByb290OiBDb2xsZWN0aW9uLFxuICBvcHRpb25zOiBTb3VyY2VPcHRpb25zLFxuKTogdm9pZCB7XG4gIGNvbnN0IHVzZWQgPSBnZXROb25EZWNsYXJhdGlvbklkZW50aWZpZXJzKHJvb3QsIG9wdGlvbnMpO1xuICBjb25zdCBub25SZXF1aXJlcyA9IGdldERlY2xhcmVkSWRlbnRpZmllcnMoXG4gICAgcm9vdCxcbiAgICBvcHRpb25zLFxuICAgIFtwYXRoID0+ICFoYXNPbmVSZXF1aXJlRGVjbGFyYXRpb24ocGF0aC5ub2RlKV1cbiAgKTtcblxuICAvLyBSZW1vdmUgdW51c2VkIHJlcXVpcmVzLlxuICByb290XG4gICAgLmZpbmQoanNjcy5WYXJpYWJsZURlY2xhcmF0aW9uKVxuICAgIC5maWx0ZXIocGF0aCA9PiBpc0dsb2JhbChwYXRoKSlcbiAgICAuZmlsdGVyKHBhdGggPT4gaGFzT25lUmVxdWlyZURlY2xhcmF0aW9uKHBhdGgubm9kZSkpXG4gICAgLmZpbHRlcihwYXRoID0+IHtcbiAgICAgIGNvbnN0IGlkID0gcGF0aC5ub2RlLmRlY2xhcmF0aW9uc1swXS5pZDtcbiAgICAgIGNvbnN0IG5hbWVzID0gZ2V0TmFtZXNGcm9tSUQoaWQpO1xuICAgICAgZm9yIChjb25zdCBuYW1lIG9mIG5hbWVzKSB7XG4gICAgICAgIGlmICh1c2VkLmhhcyhuYW1lKSAmJiAhbm9uUmVxdWlyZXMuaGFzKG5hbWUpKSB7XG4gICAgICAgICAgcmV0dXJuIGZhbHNlO1xuICAgICAgICB9XG4gICAgICB9XG4gICAgICByZXR1cm4gdHJ1ZTtcbiAgICB9KVxuICAgIC5yZW1vdmUoKTtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSByZW1vdmVVbnVzZWRSZXF1aXJlcztcbiJdfQ==
