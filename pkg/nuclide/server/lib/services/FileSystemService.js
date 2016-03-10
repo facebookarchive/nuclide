@@ -163,6 +163,7 @@ export async function copy(sourcePath: string, destinationPath: string): Promise
       error ? reject(error) : resolve();
     });
   });
+  await copyFilePermissions(sourcePath, destinationPath);
   return true;
 }
 
@@ -231,6 +232,21 @@ function mvPromise(sourcePath: string, destinationPath: string): Promise<void> {
   });
 }
 
+async function copyFilePermissions(sourcePath: string, destinationPath: string): Promise<void> {
+  let permissions = null;
+  try {
+    permissions = (await fsPromise.stat(sourcePath)).mode;
+  } catch (e) {
+    // If the file does not exist, then ENOENT will be thrown.
+    if (e.code !== 'ENOENT') {
+      throw e;
+    }
+  }
+  if (permissions != null) {
+    await fsPromise.chmod(destinationPath, permissions);
+  }
+}
+
 /**
  * The writeFile endpoint accepts the following query parameters:
  *
@@ -252,18 +268,7 @@ export async function writeFile(path: string, data: string,
     // We update the mode of the temp file rather than the destination file because
     // if we did the mv() then the chmod(), there would be a brief period between
     // those two operations where the destination file might have the wrong permissions.
-    let permissions = null;
-    try {
-      permissions = (await fsPromise.stat(path)).mode;
-    } catch (e) {
-      // If the file does not exist, then ENOENT will be thrown.
-      if (e.code !== 'ENOENT') {
-        throw e;
-      }
-    }
-    if (permissions != null) {
-      await fsPromise.chmod(tempFilePath, permissions);
-    }
+    await copyFilePermissions(path, tempFilePath);
 
     // TODO(mikeo): put renames into a queue so we don't write older save over new save.
     // Use mv as fs.rename doesn't work across partitions.

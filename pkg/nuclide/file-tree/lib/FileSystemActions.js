@@ -11,10 +11,7 @@
 
 import type FileTreeNode from './FileTreeNode';
 import type {HgRepositoryClient} from '../../hg-repository-client';
-import type {
-  RemoteDirectory,
-  RemoteFile,
-} from '../../remote-connection';
+import type {RemoteFile} from '../../remote-connection';
 
 import FileDialogComponent from '../components/FileDialogComponent';
 import FileTreeHelpers from './FileTreeHelpers';
@@ -28,7 +25,6 @@ import {File} from 'atom';
 import {getFileSystemServiceByNuclideUri} from '../../client';
 import {repositoryForPath} from '../../hg-git-bridge';
 
-import invariant from 'assert';
 import pathModule from 'path';
 
 let dialogComponent: ?ReactComponent;
