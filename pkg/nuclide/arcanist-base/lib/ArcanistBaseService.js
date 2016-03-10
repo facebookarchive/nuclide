@@ -106,7 +106,11 @@ async function _callArcDiff(
   // the editor set to `/bin/false` it will immediately exit with a failure and abort `arc diff`.
   env['EDITOR'] = 'false';
   // Don't change the checkout and answer no to all of Arcanist's questions.
-  const cmd = 'yes n | arc diff ' + quote(extraArcDiffArgs);
+  const cmd = [
+    // Mind the trailing comma in the command.
+    quote(['python', '-c', 'print "n\\n" * 50,']),
+    quote(['arc', 'diff'].concat(extraArcDiffArgs)),
+  ].join(' | ');
   const args: Array<string> = ['-c', cmd];
   const arcConfigDir = await findArcConfigDirectory(filePath);
   if (arcConfigDir == null) {
