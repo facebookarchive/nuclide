@@ -124,7 +124,11 @@ function logError(...args) {
 function monitorStreamErrors(process: child_process$ChildProcess, command, args, options): void {
   STREAM_NAMES.forEach(streamName => {
     // $FlowIssue
-    process[streamName].on('error', error => {
+    const stream = process[streamName];
+    if (stream == null) {
+      return;
+    }
+    stream.on('error', error => {
       // This can happen without the full execution of the command to fail,
       // but we want to learn about it.
       logError(

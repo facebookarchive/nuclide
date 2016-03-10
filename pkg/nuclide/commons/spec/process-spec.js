@@ -174,6 +174,16 @@ describe('nuclide-commons/process', () => {
           expect(exitCode).toBe(1);
         });
       });
+      it('checkOutput works with stdio ignore', () => {
+        waitsForPromise(async () => {
+          const {exitCode} = await processLib.checkOutput(
+            process.execPath,
+            ['-e', 'process.exit(0)'],
+            {stdio: ['ignore', 'pipe', 'pipe']},
+          );
+          expect(exitCode).toBe(0);
+        });
+      });
     }
   });
 
