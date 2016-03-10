@@ -47,13 +47,10 @@ in order to build, run and eventually debug your iOS app directly from Nuclide.
 
 ![](/static/images/docs/platform-ios-buck-build.png)
 
-> Debugging with Buck is currently not very useful. The debugger appears, but you are not able
-> set breakpoints appropriately, etc.
-
 ## Debugging
 
 Debugging native iOS applications is currently
-[not supported](/docs/features/debugger/#language-specific-debugging__ios).
+[supported using Buck](/docs/features/debugger/#language-specific-debugging__ios).
 
 ## Simulator Logs
 

@@ -31,15 +31,54 @@ If your React Native apps are primarily written in [Flow](/docs/languages/flow),
 
 ## Running applications
 
-Currently, the best way to run your React Native app during development is to run the React Native
-Packager and Server from Nuclide and your application from the command line.
+### Buck Integration
+
+> Buck Integration currently on works with React Native iOS apps. If you have an Android app, you
+> can still use the
+> [command-line](/docs/platforms/react-native/#running-applications__command-line) to run your
+> application.
+
+If you have built your React Native *iOS* application with Buck, you may be able to utilize the
+built-in Nuclide Buck integration to build and run your application.
+
+Bring up the [Buck build toolbar](/docs/features/toolbar/#buttons) from the Nuclide
+[toolbar](/docs/features/toolbar/) or go to the command palette and serach for
+`Nuclide Buck Toolbar: Toggle`.
+
+![](/static/images/docs/platform-react-native-running-buck-toolbar.png)
+
+In the Buck toolbar, enter a build target that you specified in your `.buckconfig` file. Nuclide
+will search for targets for you and populate a list; autocomplete of your targets will occur as
+you type.
+
+After you enter a valid target, the `React Native Server Mode` checkbox will appear, allowing you,
+when checked, to start the the React Native Server (i.e., Packager) when you run or debug your
+application.
+
+> There is currently a bug as to where you must have a project file open in order for the
+> `React Native Server Mode` checkbox to appear.
+
+Now you can click on `Build`, `Run` or `Debug`. `Build` will compile your Buck application.
+`Run` will run your Buck application. And `Debug` will bring up the
+[React Native debugger](/docs/features/debugger/#react-native).
+
+If you had checked the `React Native Server Mode` box, the React Native Server will also appear
+after pressing `Run` or `Debug`.
+
+![](/static/images/docs/platform-react-native-running-server.png)
+
+### Command-Line
+
+If you are not using [Buck](#running-applications__buck-integration), you can still run your React
+Native application during development. You run the React Native Packager and Server from Nuclide and
+your application from the command line.
 
 From the [command palette](/docs/editor/basics/#command-palette), choose
 `Nuclide React Native: Start Packager`
 
 ![](/static/images/docs/platform-react-native-running-server-command.png)
 
-![](/static/images/docs/platform-react-native-running-server.png)
+This will bring up the React Native server.
 
 Then at the command-line:
 
@@ -48,8 +87,6 @@ $ react-native run-ios
 $ react-native run-android
 ```
 
-> If you have built your React Native *iOS* application with Buck, you may be able to utilize the
-> built-in [Nuclide Buck integration](/docs/platforms/ios) to build and run your application.
 
 ## Debugging
 
