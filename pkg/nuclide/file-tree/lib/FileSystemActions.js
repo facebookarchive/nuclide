@@ -23,9 +23,9 @@ import {
   React,
   ReactDOM,
 } from 'react-for-atom';
-import RemoteUri from '../../remote-uri';
+import RemoteUri, {getPath} from '../../remote-uri';
 import {File} from 'atom';
-import {fsPromise} from '../../../nuclide/commons';
+import {getFileSystemServiceByNuclideUri} from '../../client';
 import {repositoryForPath} from '../../hg-git-bridge';
 
 import invariant from 'assert';
@@ -166,11 +166,8 @@ const FileSystemActions = {
       }
     }
     if (shouldFSRename) {
-      if (FileTreeHelpers.isLocalEntry(entry)) {
-        await fsPromise.rename(nodePath, newPath);
-      } else {
-        await ((entry: any): (RemoteDirectory | RemoteFile)).rename(newPath);
-      }
+      const service = getFileSystemServiceByNuclideUri(entry.getPath());
+      await service.rename(getPath(entry.getPath()), newPath);
     }
   },
 
@@ -184,20 +181,8 @@ const FileSystemActions = {
     const directory = file.getParent();
     const newFile = directory.getFile(newBasename);
     const newPath = newFile.getPath();
-    let exists = false;
-    if (FileTreeHelpers.isLocalEntry(file)) {
-      exists = await fsPromise.exists(newPath);
-      if (!exists) {
-        await fsPromise.copy(nodePath, newPath);
-      }
-    } else {
-      invariant(file.isFile());
-      const remoteFile = ((file: any): RemoteFile);
-      const newRemoteFile = ((newFile: any): RemoteFile);
-
-      const wasCopied = await remoteFile.copy(newRemoteFile.getLocalPath());
-      exists = !wasCopied;
-    }
+    const service = getFileSystemServiceByNuclideUri(newPath);
+    const exists = !(await service.copy(nodePath, getPath(newPath)));
     if (exists) {
       atom.notifications.addError(`'${newPath}' already exists.`);
       onDidConfirm(null);
