@@ -100,6 +100,17 @@ declare module 'rx' {
       resultSelector: (t: T, u: U, v: V) => W,
     ): Observable<W>;
 
+    // This is actually variadic, but we only support one or two other observables.
+    withLatestFrom<U, V>(
+      u: Observable<U>,
+      resultSelector: (t: T, u: U) => V,
+    ): Observable<V>;
+    withLatestFrom<U, V, W>(
+      u: Observable<U>,
+      v: Observable<V>,
+      resultSelector: (t: T, u: U, v: V) => W,
+    ): Observable<W>;
+
     concat(...sources: Observable<T>[]): Observable<T>;
 
     concatMap<U>(
