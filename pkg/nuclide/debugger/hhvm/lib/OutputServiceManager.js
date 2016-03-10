@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +10,16 @@
  * the root directory of this source tree.
  */
 
-import type OutputService from '../../../output/lib/OutputService';
+exports.setOutputService = setOutputService;
+exports.getOutputService = getOutputService;
 
-let outputServiceApi: ?OutputService = null;
+var outputServiceApi = null;
 
-export function setOutputService(api: OutputService): void {
+function setOutputService(api) {
   outputServiceApi = api;
 }
 
-export function getOutputService(): ?OutputService {
+function getOutputService() {
   return outputServiceApi;
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIk91dHB1dFNlcnZpY2VNYW5hZ2VyLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7OztBQWFBLElBQUksZ0JBQWdDLEdBQUcsSUFBSSxDQUFDOztBQUVyQyxTQUFTLGdCQUFnQixDQUFDLEdBQWtCLEVBQVE7QUFDekQsa0JBQWdCLEdBQUcsR0FBRyxDQUFDO0NBQ3hCOztBQUVNLFNBQVMsZ0JBQWdCLEdBQW1CO0FBQ2pELFNBQU8sZ0JBQWdCLENBQUM7Q0FDekIiLCJmaWxlIjoiT3V0cHV0U2VydmljZU1hbmFnZXIuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSBPdXRwdXRTZXJ2aWNlIGZyb20gJy4uLy4uLy4uL291dHB1dC9saWIvT3V0cHV0U2VydmljZSc7XG5cbmxldCBvdXRwdXRTZXJ2aWNlQXBpOiA/T3V0cHV0U2VydmljZSA9IG51bGw7XG5cbmV4cG9ydCBmdW5jdGlvbiBzZXRPdXRwdXRTZXJ2aWNlKGFwaTogT3V0cHV0U2VydmljZSk6IHZvaWQge1xuICBvdXRwdXRTZXJ2aWNlQXBpID0gYXBpO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gZ2V0T3V0cHV0U2VydmljZSgpOiA/T3V0cHV0U2VydmljZSB7XG4gIHJldHVybiBvdXRwdXRTZXJ2aWNlQXBpO1xufVxuIl19

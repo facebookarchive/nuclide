@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var flatten = require('../../utils/flatten');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +10,16 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printCommaSeparatedNodes(print: Print, nodes: Array<any>): Lines {
+function printCommaSeparatedNodes(print, nodes) {
   if (nodes.length === 0) {
     return [];
   }
-  return flatten([
-    markers.openScope,
-    markers.scopeIndent,
-    flatten(nodes.map((node, i, arr) => {
-      return flatten([
-        i > 0 ? [markers.space] : [],
-        markers.scopeBreak,
-        print(node),
-        i === arr.length - 1 ? [markers.scopeComma] : ',',
-        '',
-      ]);
-    })),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-  ]);
+  return flatten([markers.openScope, markers.scopeIndent, flatten(nodes.map(function (node, i, arr) {
+    return flatten([i > 0 ? [markers.space] : [], markers.scopeBreak, print(node), i === arr.length - 1 ? [markers.scopeComma] : ',', '']);
+  })), markers.scopeBreak, markers.scopeDedent, markers.closeScope]);
 }
 
 module.exports = printCommaSeparatedNodes;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50Q29tbWFTZXBhcmF0ZWROb2Rlcy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQWFBLElBQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyxxQkFBcUIsQ0FBQyxDQUFDOzs7Ozs7Ozs7O0FBQy9DLElBQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyx5QkFBeUIsQ0FBQyxDQUFDOztBQUVuRCxTQUFTLHdCQUF3QixDQUFDLEtBQVksRUFBRSxLQUFpQixFQUFTO0FBQ3hFLE1BQUksS0FBSyxDQUFDLE1BQU0sS0FBSyxDQUFDLEVBQUU7QUFDdEIsV0FBTyxFQUFFLENBQUM7R0FDWDtBQUNELFNBQU8sT0FBTyxDQUFDLENBQ2IsT0FBTyxDQUFDLFNBQVMsRUFDakIsT0FBTyxDQUFDLFdBQVcsRUFDbkIsT0FBTyxDQUFDLEtBQUssQ0FBQyxHQUFHLENBQUMsVUFBQyxJQUFJLEVBQUUsQ0FBQyxFQUFFLEdBQUcsRUFBSztBQUNsQyxXQUFPLE9BQU8sQ0FBQyxDQUNiLENBQUMsR0FBRyxDQUFDLEdBQUcsQ0FBQyxPQUFPLENBQUMsS0FBSyxDQUFDLEdBQUcsRUFBRSxFQUM1QixPQUFPLENBQUMsVUFBVSxFQUNsQixLQUFLLENBQUMsSUFBSSxDQUFDLEVBQ1gsQ0FBQyxLQUFLLEdBQUcsQ0FBQyxNQUFNLEdBQUcsQ0FBQyxHQUFHLENBQUMsT0FBTyxDQUFDLFVBQVUsQ0FBQyxHQUFHLEdBQUcsRUFDakQsRUFBRSxDQUNILENBQUMsQ0FBQztHQUNKLENBQUMsQ0FBQyxFQUNILE9BQU8sQ0FBQyxVQUFVLEVBQ2xCLE9BQU8sQ0FBQyxXQUFXLEVBQ25CLE9BQU8sQ0FBQyxVQUFVLENBQ25CLENBQUMsQ0FBQztDQUNKOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUcsd0JBQXdCLENBQUMiLCJmaWxlIjoicHJpbnRDb21tYVNlcGFyYXRlZE5vZGVzLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge0xpbmVzLCBQcmludH0gZnJvbSAnLi4vLi4vdHlwZXMvY29tbW9uJztcblxuY29uc3QgZmxhdHRlbiA9IHJlcXVpcmUoJy4uLy4uL3V0aWxzL2ZsYXR0ZW4nKTtcbmNvbnN0IG1hcmtlcnMgPSByZXF1aXJlKCcuLi8uLi9jb25zdGFudHMvbWFya2VycycpO1xuXG5mdW5jdGlvbiBwcmludENvbW1hU2VwYXJhdGVkTm9kZXMocHJpbnQ6IFByaW50LCBub2RlczogQXJyYXk8YW55Pik6IExpbmVzIHtcbiAgaWYgKG5vZGVzLmxlbmd0aCA9PT0gMCkge1xuICAgIHJldHVybiBbXTtcbiAgfVxuICByZXR1cm4gZmxhdHRlbihbXG4gICAgbWFya2Vycy5vcGVuU2NvcGUsXG4gICAgbWFya2Vycy5zY29wZUluZGVudCxcbiAgICBmbGF0dGVuKG5vZGVzLm1hcCgobm9kZSwgaSwgYXJyKSA9PiB7XG4gICAgICByZXR1cm4gZmxhdHRlbihbXG4gICAgICAgIGkgPiAwID8gW21hcmtlcnMuc3BhY2VdIDogW10sXG4gICAgICAgIG1hcmtlcnMuc2NvcGVCcmVhayxcbiAgICAgICAgcHJpbnQobm9kZSksXG4gICAgICAgIGkgPT09IGFyci5sZW5ndGggLSAxID8gW21hcmtlcnMuc2NvcGVDb21tYV0gOiAnLCcsXG4gICAgICAgICcnLFxuICAgICAgXSk7XG4gICAgfSkpLFxuICAgIG1hcmtlcnMuc2NvcGVCcmVhayxcbiAgICBtYXJrZXJzLnNjb3BlRGVkZW50LFxuICAgIG1hcmtlcnMuY2xvc2VTY29wZSxcbiAgXSk7XG59XG5cbm1vZHVsZS5leHBvcnRzID0gcHJpbnRDb21tYVNlcGFyYXRlZE5vZGVzO1xuIl19

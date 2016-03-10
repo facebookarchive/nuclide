@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +10,29 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider as HyperclickProviderType} from '../../hyperclick-interfaces';
+exports.activate = activate;
+exports.getHyperclickProvider = getHyperclickProvider;
+exports.getQuickOpenProvider = getQuickOpenProvider;
+exports.deactivate = deactivate;
 
-export function activate(state: ?Object) {
-}
+function activate(state) {}
 
-export function getHyperclickProvider(): HyperclickProviderType {
-  const {HyperclickProvider} = require('./HyperclickProvider');
-  const provider = new HyperclickProvider();
+function getHyperclickProvider() {
+  var _require = require('./HyperclickProvider');
+
+  var HyperclickProvider = _require.HyperclickProvider;
+
+  var provider = new HyperclickProvider();
   return {
     priority: 1, // Should be lower than all language-specific providers.
     providerName: 'nuclide-remote-ctags',
-    getSuggestionForWord: provider.getSuggestionForWord.bind(provider),
+    getSuggestionForWord: provider.getSuggestionForWord.bind(provider)
   };
 }
 
-export function getQuickOpenProvider() {
+function getQuickOpenProvider() {
   return require('./QuickOpenProvider');
 }
 
-export function deactivate() {
-}
+function deactivate() {}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFhTyxTQUFTLFFBQVEsQ0FBQyxLQUFjLEVBQUUsRUFDeEM7O0FBRU0sU0FBUyxxQkFBcUIsR0FBMkI7aUJBQ2pDLE9BQU8sQ0FBQyxzQkFBc0IsQ0FBQzs7TUFBckQsa0JBQWtCLFlBQWxCLGtCQUFrQjs7QUFDekIsTUFBTSxRQUFRLEdBQUcsSUFBSSxrQkFBa0IsRUFBRSxDQUFDO0FBQzFDLFNBQU87QUFDTCxZQUFRLEVBQUUsQ0FBQztBQUNYLGdCQUFZLEVBQUUsc0JBQXNCO0FBQ3BDLHdCQUFvQixFQUFFLFFBQVEsQ0FBQyxvQkFBb0IsQ0FBQyxJQUFJLENBQUMsUUFBUSxDQUFDO0dBQ25FLENBQUM7Q0FDSDs7QUFFTSxTQUFTLG9CQUFvQixHQUFHO0FBQ3JDLFNBQU8sT0FBTyxDQUFDLHFCQUFxQixDQUFDLENBQUM7Q0FDdkM7O0FBRU0sU0FBUyxVQUFVLEdBQUcsRUFDNUIiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtIeXBlcmNsaWNrUHJvdmlkZXIgYXMgSHlwZXJjbGlja1Byb3ZpZGVyVHlwZX0gZnJvbSAnLi4vLi4vaHlwZXJjbGljay1pbnRlcmZhY2VzJztcblxuZXhwb3J0IGZ1bmN0aW9uIGFjdGl2YXRlKHN0YXRlOiA/T2JqZWN0KSB7XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBnZXRIeXBlcmNsaWNrUHJvdmlkZXIoKTogSHlwZXJjbGlja1Byb3ZpZGVyVHlwZSB7XG4gIGNvbnN0IHtIeXBlcmNsaWNrUHJvdmlkZXJ9ID0gcmVxdWlyZSgnLi9IeXBlcmNsaWNrUHJvdmlkZXInKTtcbiAgY29uc3QgcHJvdmlkZXIgPSBuZXcgSHlwZXJjbGlja1Byb3ZpZGVyKCk7XG4gIHJldHVybiB7XG4gICAgcHJpb3JpdHk6IDEsIC8vIFNob3VsZCBiZSBsb3dlciB0aGFuIGFsbCBsYW5ndWFnZS1zcGVjaWZpYyBwcm92aWRlcnMuXG4gICAgcHJvdmlkZXJOYW1lOiAnbnVjbGlkZS1yZW1vdGUtY3RhZ3MnLFxuICAgIGdldFN1Z2dlc3Rpb25Gb3JXb3JkOiBwcm92aWRlci5nZXRTdWdnZXN0aW9uRm9yV29yZC5iaW5kKHByb3ZpZGVyKSxcbiAgfTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGdldFF1aWNrT3BlblByb3ZpZGVyKCkge1xuICByZXR1cm4gcmVxdWlyZSgnLi9RdWlja09wZW5Qcm92aWRlcicpO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gZGVhY3RpdmF0ZSgpIHtcbn1cbiJdfQ==

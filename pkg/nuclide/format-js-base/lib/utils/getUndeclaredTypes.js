@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +8,27 @@
  * the root directory of this source tree.
  */
 
-import type {Collection} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
-
-const getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
-const getDeclaredTypes = require('./getDeclaredTypes');
-const getNonDeclarationTypes = require('./getNonDeclarationTypes');
+var getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
+var getDeclaredTypes = require('./getDeclaredTypes');
+var getNonDeclarationTypes = require('./getNonDeclarationTypes');
 
 /**
  * This will get a list of all types that are used but undeclared.
  */
-function getUndeclaredTypes(
-  root: Collection,
-  options: SourceOptions
-): Set<string> {
-  const declaredIdentifiers = getDeclaredIdentifiers(root, options);
-  const declaredTypes = getDeclaredTypes(root, options);
+function getUndeclaredTypes(root, options) {
+  var declaredIdentifiers = getDeclaredIdentifiers(root, options);
+  var declaredTypes = getDeclaredTypes(root, options);
 
-  const undeclared = getNonDeclarationTypes(root);
+  var undeclared = getNonDeclarationTypes(root);
   // now remove anything that was declared
-  for (const name of declaredIdentifiers) {
-    undeclared.delete(name);
+  for (var _name of declaredIdentifiers) {
+    undeclared['delete'](_name);
   }
-  for (const name of declaredTypes) {
-    undeclared.delete(name);
+  for (var _name2 of declaredTypes) {
+    undeclared['delete'](_name2);
   }
   return undeclared;
 }
 
 module.exports = getUndeclaredTypes;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImdldFVuZGVjbGFyZWRUeXBlcy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBY0EsSUFBTSxzQkFBc0IsR0FBRyxPQUFPLENBQUMsMEJBQTBCLENBQUMsQ0FBQztBQUNuRSxJQUFNLGdCQUFnQixHQUFHLE9BQU8sQ0FBQyxvQkFBb0IsQ0FBQyxDQUFDO0FBQ3ZELElBQU0sc0JBQXNCLEdBQUcsT0FBTyxDQUFDLDBCQUEwQixDQUFDLENBQUM7Ozs7O0FBS25FLFNBQVMsa0JBQWtCLENBQ3pCLElBQWdCLEVBQ2hCLE9BQXNCLEVBQ1Q7QUFDYixNQUFNLG1CQUFtQixHQUFHLHNCQUFzQixDQUFDLElBQUksRUFBRSxPQUFPLENBQUMsQ0FBQztBQUNsRSxNQUFNLGFBQWEsR0FBRyxnQkFBZ0IsQ0FBQyxJQUFJLEVBQUUsT0FBTyxDQUFDLENBQUM7O0FBRXRELE1BQU0sVUFBVSxHQUFHLHNCQUFzQixDQUFDLElBQUksQ0FBQyxDQUFDOztBQUVoRCxPQUFLLElBQU0sS0FBSSxJQUFJLG1CQUFtQixFQUFFO0FBQ3RDLGNBQVUsVUFBTyxDQUFDLEtBQUksQ0FBQyxDQUFDO0dBQ3pCO0FBQ0QsT0FBSyxJQUFNLE1BQUksSUFBSSxhQUFhLEVBQUU7QUFDaEMsY0FBVSxVQUFPLENBQUMsTUFBSSxDQUFDLENBQUM7R0FDekI7QUFDRCxTQUFPLFVBQVUsQ0FBQztDQUNuQjs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHLGtCQUFrQixDQUFDIiwiZmlsZSI6ImdldFVuZGVjbGFyZWRUeXBlcy5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtDb2xsZWN0aW9ufSBmcm9tICcuLi90eXBlcy9hc3QnO1xuaW1wb3J0IHR5cGUge1NvdXJjZU9wdGlvbnN9IGZyb20gJy4uL29wdGlvbnMvU291cmNlT3B0aW9ucyc7XG5cbmNvbnN0IGdldERlY2xhcmVkSWRlbnRpZmllcnMgPSByZXF1aXJlKCcuL2dldERlY2xhcmVkSWRlbnRpZmllcnMnKTtcbmNvbnN0IGdldERlY2xhcmVkVHlwZXMgPSByZXF1aXJlKCcuL2dldERlY2xhcmVkVHlwZXMnKTtcbmNvbnN0IGdldE5vbkRlY2xhcmF0aW9uVHlwZXMgPSByZXF1aXJlKCcuL2dldE5vbkRlY2xhcmF0aW9uVHlwZXMnKTtcblxuLyoqXG4gKiBUaGlzIHdpbGwgZ2V0IGEgbGlzdCBvZiBhbGwgdHlwZXMgdGhhdCBhcmUgdXNlZCBidXQgdW5kZWNsYXJlZC5cbiAqL1xuZnVuY3Rpb24gZ2V0VW5kZWNsYXJlZFR5cGVzKFxuICByb290OiBDb2xsZWN0aW9uLFxuICBvcHRpb25zOiBTb3VyY2VPcHRpb25zXG4pOiBTZXQ8c3RyaW5nPiB7XG4gIGNvbnN0IGRlY2xhcmVkSWRlbnRpZmllcnMgPSBnZXREZWNsYXJlZElkZW50aWZpZXJzKHJvb3QsIG9wdGlvbnMpO1xuICBjb25zdCBkZWNsYXJlZFR5cGVzID0gZ2V0RGVjbGFyZWRUeXBlcyhyb290LCBvcHRpb25zKTtcblxuICBjb25zdCB1bmRlY2xhcmVkID0gZ2V0Tm9uRGVjbGFyYXRpb25UeXBlcyhyb290KTtcbiAgLy8gbm93IHJlbW92ZSBhbnl0aGluZyB0aGF0IHdhcyBkZWNsYXJlZFxuICBmb3IgKGNvbnN0IG5hbWUgb2YgZGVjbGFyZWRJZGVudGlmaWVycykge1xuICAgIHVuZGVjbGFyZWQuZGVsZXRlKG5hbWUpO1xuICB9XG4gIGZvciAoY29uc3QgbmFtZSBvZiBkZWNsYXJlZFR5cGVzKSB7XG4gICAgdW5kZWNsYXJlZC5kZWxldGUobmFtZSk7XG4gIH1cbiAgcmV0dXJuIHVuZGVjbGFyZWQ7XG59XG5cbm1vZHVsZS5leHBvcnRzID0gZ2V0VW5kZWNsYXJlZFR5cGVzO1xuIl19
