@@ -1,10 +1,11 @@
 {
   "name": "fuzzy-native",
-  "version": "0.2.2",
+  "version": "0.3.1",
   "description": "Native C++ implementation of a fuzzy string matcher.",
   "main": "lib/main.js",
   "scripts": {
     "test": "jasmine-node --captureExceptions spec",
+    "build": "node-pre-gyp build",
     "rebuild": "node-pre-gyp rebuild",
     "install": "node-pre-gyp install --fallback-to-build",
     "prepublish": "node tools/prepublish.js"
@@ -47,9 +48,9 @@
     "remote_path": "./hansonw/{module_name}/releases/download/v{version}/",
     "package_name": "{node_abi}-{platform}-{arch}.tar.gz"
   },
+  "gitHead": "0083d65cfee1c264751591722b44242d2074f5cd",
   "readme": "# fuzzy-native\n\n[![Build Status](https://travis-ci.org/hansonw/fuzzy-native.svg?branch=master)](https://travis-ci.org/hansonw/fuzzy-native)\n\nFuzzy string matching library package for Node. Implemented natively in C++ for speed with support for multithreading.\n\nThe scoring algorithm is heavily tuned for file paths, but should work for general strings.\n\n## API\n\n(from [main.js.flow](lib/main.js.flow))\n\n```\nexport type MatcherOptions = {\n  // Default: false\n  caseSensitive?: boolean,\n\n  // Default: infinite\n  maxResults?: number,\n\n  // Default: 1\n  numThreads?: number,\n\n  // Default: false\n  recordMatchIndexes?: boolean,\n}\n\nexport type MatchResult = {\n  value: string,\n\n  // A number in the range (0-1]. Higher scores are more relevant.\n  // 0 denotes \"no match\" and will never be returned.\n  score: number,\n\n  // Matching character index in `value` for each character in `query`.\n  // This can be costly, so this is only returned if `recordMatchIndexes` was set in `options`.\n  matchIndexes?: Array<number>,\n}\n\nexport class Matcher {\n  constructor(candidates: Array<string>) {}\n\n  // Returns all matching candidates (subject to `options`).\n  // Will be ordered by score, descending.\n  match: (query: string, options?: MatcherOptions) => Array<MatchResult>;\n\n  addCandidates: (candidates: Array<string>) => void;\n  removeCandidates: (candidates: Array<string>) => void;\n  setCandidates: (candidates: Array<string>) => void;\n}\n```\n\nSee also the [spec](spec/fuzzy-native-spec.js) for basic usage.\n\n## Scoring algorithm\n\nThe scoring algorithm is mostly borrowed from @wincent's excellent [command-t](https://github.com/wincent/command-t) vim plugin; most of the code is from [his implementation in  match.c](https://github.com/wincent/command-t/blob/master/ruby/command-t/match.c).\n\nRead [the source code](src/score_match.cpp) for a quick overview of how it works (the function `recursive_match`).\n\nNB: [score_match.cpp](src/score_match.cpp) and [score_match.h](src/score_match.h) have no dependencies besides the C/C++ stdlib and can easily be reused for other purposes.\n\nThere are a few notable additional optimizations:\n\n- Before running the recursive matcher, we first do a backwards scan through the haystack to see if the needle exists at all. At the same time, we compute the right-most match for each character in the needle to prune the search space.\n- For each candidate string, we pre-compute and store a bitmask of its letters in `MatcherBase`. We then compare this the \"letter bitmask\" of the query to quickly prune out non-matches.\n",
   "readmeFilename": "README.md",
-  "gitHead": "c5ad3c8eb72d0b66abb84fd72a2740cf4af99d37",
   "bugs": {
     "url": "https://github.com/hansonw/fuzzy-native/issues"
   },
@@ -57,7 +58,7 @@
   "bundleDependencies": [
     "node-pre-gyp"
   ],
-  "_id": "fuzzy-native@0.2.2",
-  "_shasum": "19ea9d6926f08054c5528f4b02c11f3784d1ddd5",
+  "_id": "fuzzy-native@0.3.1",
+  "_shasum": "762c693e3ce3045246f236602602b42822ad3967",
   "_from": "fuzzy-native@*"
 }
