@@ -511,12 +511,62 @@ the simulator and choose `Show Inspector`.
 
 ### iOS
 
-Currently, the extent of Nuclide support for iOS debugging is through
-[React Native](#language-specific-debugging__react-native). Debugging native
-Objective-C (e.g., `.m` files) or Swift (e.g., `.swift` files) projects is not supported.
+While Nuclide has support for iOS debugging is through
+[React Native](#language-specific-debugging__react-native), it also has support for debugging native
+[Objective-C](/docs/languages/objective-c) (e.g., `.m` files) applications.
 
-> We are working on being able to debug native Objective-C projects using
-> [Buck](https://buckbuild.com/).
+> Debugging Swift applications is currently not supported.
+
+*Buck*
+
+Currently, debugging Objective-C applications requires compiling your program with
+[Buck](https://buckbuild.com/).
+
+> Optimally it would be nice to run the application directly from XCode and attach to the
+> simulator process associated with that XCode project. However, due to `lldb` process conflict
+> issues, this is currently not possible.
+
+*Open your Project*
+
+Open your Objective-C project normally so that it appears in the
+[project explorer](/docs/editor/basics/#project-and-file-explorer).
+
+![](/static/images/docs/feature-debugger-languages-ios-project.png)
+
+*Bring up the Buck Toolbar*
+
+Using the [Nuclide toolbar](/docs/features/toolbar/#buttons) (or using the
+[command-palette](/docs/editor/basics/#command-palette) `Nuclide Buck Toolbar: Toggle`).
+
+![](/static/images/docs/feature-debugger-languages-ios-nuclide-toolbar-buck.png)
+
+![](/static/images/docs/feature-debugger-languages-ios-buck-toolbar.png)
+
+*Find Your Build Target*
+
+Nuclide will automatically search your `.buckconfig` file and find your build target. Once you
+find the appropriate target, choose it.
+
+![](/static/images/docs/feature-debugger-languages-ios-build-target.png)
+
+*Start Debugging*
+
+Set [breakpoints](/docs/features/debugger/#basics__breakpoints) in your Objective-C files and press
+the `Debug` button.
+
+You will see Buck starting to compile your application, the iOS simulator appear for your
+application, and then the debugger show and stopped on your first breakpoint.
+
+![](/static/images/docs/feature-debugger-languages-ios-debugger-breakpoint.png)
+
+And from here you can [debug normally](/docs/features/debugger/#basics__debugger).
+
+*LLDB Commands*
+
+Native iOS debugging uses [LLDB](http://lldb.llvm.org/) as its debugging backend. You can run LLDB
+commands directly in the Nuclide debugger [console](#basics__evaluation).
+
+![](/static/images/docs/feature-debugger-languages-ios-console.png)
 
 ### Android
 
