@@ -22,7 +22,7 @@ export type WorkingSetDefinition = {
 };
 
 export type {WorkingSetsStore};
-export type {ApplicabilitySortedDefinitions} from './workingSetsStore';
+export type {ApplicabilitySortedDefinitions} from './WorkingSetsStore';
 
 export {WorkingSet} from './WorkingSet';
 

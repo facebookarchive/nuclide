@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import typeof * as TestModuleType from './ToBeTested';
+import typeof * as TestModuleType from './toBeTested';
 
 import {uncachedRequire, clearRequireCache} from '../../test-helpers';
 
