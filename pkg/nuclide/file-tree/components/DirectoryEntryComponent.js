@@ -59,31 +59,40 @@ class DirectoryEntryComponent extends React.Component {
   }
 
   render(): ReactElement {
-    const outerClassName = classnames({
+    const outerClassName = classnames('directory entry list-nested-item', {
       'current-working-directory': this.props.isCwd,
       'collapsed': !this.props.isExpanded,
-      'directory entry list-nested-item': true,
       'expanded': this.props.isExpanded,
       'project-root': this.props.isRoot,
       'selected': this.props.isSelected,
-      'nuclide-file-tree-partial': this.props.checkedStatus === 'partial',
-      'nuclide-file-tree-checked': this.props.checkedStatus === 'checked',
-      'nuclide-file-tree-reset-coloring': this.props.checkedStatus === 'clear',
       'nuclide-file-tree-softened': this.props.soften,
     });
-    const listItemClassName = classnames({
-      'header list-item': true,
+    const listItemClassName = classnames('header list-item', {
       'loading': this.props.isLoading,
     });
 
     let statusClass;
-    const {vcsStatusCode} = this.props;
-    if (vcsStatusCode === StatusCodeNumber.MODIFIED) {
-      statusClass = 'status-modified';
-    } else if (vcsStatusCode === StatusCodeNumber.ADDED) {
-      statusClass = 'status-added';
+    if (this.props.checkedStatus === '') {
+      const {vcsStatusCode} = this.props;
+      if (vcsStatusCode === StatusCodeNumber.MODIFIED) {
+        statusClass = 'status-modified';
+      } else if (vcsStatusCode === StatusCodeNumber.ADDED) {
+        statusClass = 'status-added';
+      } else {
+        statusClass = '';
+      }
     } else {
-      statusClass = '';
+      switch (this.props.checkedStatus) {
+        case 'checked':
+          statusClass = 'status-added';
+          break;
+        case 'partial':
+          statusClass = 'status-modified';
+          break;
+        default:
+          statusClass = '';
+          break;
+      }
     }
 
     const iconName = this.props.isCwd ? 'briefcase' : 'file-directory';

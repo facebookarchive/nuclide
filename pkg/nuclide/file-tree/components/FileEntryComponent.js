@@ -56,22 +56,30 @@ class FileEntryComponent extends React.Component {
   }
 
   render(): ReactElement {
-    const outerClassName = classnames({
-      'entry file list-item': true,
+    const outerClassName = classnames('entry file list-item', {
       'selected': this.props.isSelected,
-      'nuclide-file-tree-checked': this.props.checkedStatus === 'checked',
-      'nuclide-file-tree-reset-coloring': this.props.checkedStatus === 'clear',
       'nuclide-file-tree-softened': this.props.soften,
     });
 
     let statusClass;
-    const {vcsStatusCode} = this.props;
-    if (vcsStatusCode === StatusCodeNumber.MODIFIED) {
-      statusClass = 'status-modified';
-    } else if (vcsStatusCode === StatusCodeNumber.ADDED) {
-      statusClass = 'status-added';
+    if (this.props.checkedStatus === '') {
+      const {vcsStatusCode} = this.props;
+      if (vcsStatusCode === StatusCodeNumber.MODIFIED) {
+        statusClass = 'status-modified';
+      } else if (vcsStatusCode === StatusCodeNumber.ADDED) {
+        statusClass = 'status-added';
+      } else {
+        statusClass = '';
+      }
     } else {
-      statusClass = '';
+      switch (this.props.checkedStatus) {
+        case 'checked':
+          statusClass = 'status-added';
+          break;
+        default:
+          statusClass = '';
+          break;
+      }
     }
 
     return (
