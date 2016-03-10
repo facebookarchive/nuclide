@@ -11,7 +11,7 @@
 
 /*eslint-disable no-var, prefer-const*/
 
-var rule = require('../fb-license-header');
+var rule = require('../license-header');
 var RuleTester = require('eslint').RuleTester;
 
 var SHEBANG = '#!/usr/bin/env node';
@@ -41,7 +41,7 @@ var ruleTester = new RuleTester({
   parser: 'babel-eslint',
 });
 
-ruleTester.run('fb-license-header', rule, {
+ruleTester.run('license-header', rule, {
   valid: [
     {code: [SHEBANG, USE_BABEL, FLOW, LINE, LICENSE].join('\n')},
     {code: [SHEBANG, USE_BABEL, NO_FLOW, LINE, LICENSE].join('\n')},

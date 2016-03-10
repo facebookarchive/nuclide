@@ -3,6 +3,6 @@
   "version": "0.0.3",
   "private": true,
   "scripts": {
-    "test": "node ../../pkg/nuclide/jasmine/bin/jasmine-node-transpiled test"
+    "test": "node ../../pkg/nuclide/jasmine/bin/jasmine-node-transpiled spec"
   }
 }

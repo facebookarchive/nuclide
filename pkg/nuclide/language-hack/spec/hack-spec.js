@@ -1,7 +1,7 @@
 'use babel';
 /* @flow */
 
-/*eslint-disable nuclide-internal/fb-license-header*/
+/*eslint-disable nuclide-internal/license-header*/
 import path from 'path';
 import invariant from 'assert';
 import grammarTest from 'atom-grammar-test';
