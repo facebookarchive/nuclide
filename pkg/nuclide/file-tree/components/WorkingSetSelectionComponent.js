@@ -16,7 +16,6 @@ import classnames from 'classnames';
 import type {WorkingSetDefinition} from '../../working-sets';
 import type {WorkingSetsStore} from '../../working-sets/lib/WorkingSetsStore';
 
-
 type Props = {
   workingSetsStore: WorkingSetsStore;
   onClose: () => void;
@@ -59,7 +58,6 @@ export class WorkingSetSelectionComponent extends React.Component {
       })
     );
 
-    (this: any)._lostFocus = this._lostFocus.bind(this);
     (this: any)._checkFocus = this._checkFocus.bind(this);
     (this: any)._toggleWorkingSet = this._toggleWorkingSet.bind(this);
     (this: any)._setSelectionIndex = this._setSelectionIndex.bind(this);
@@ -147,8 +145,7 @@ export class WorkingSetSelectionComponent extends React.Component {
       <div
         className="select-list"
         tabIndex="0"
-        onBlur={this._lostFocus}>
-
+        onBlur={this._checkFocus}>
         <ol className="list-group mark-active">
           {applicableDefinitions}
         </ol>
@@ -165,22 +162,13 @@ export class WorkingSetSelectionComponent extends React.Component {
     this.setState({selectionIndex});
   }
 
-  _lostFocus(): void {
-    setImmediate(this._checkFocus);
-  }
-
-  _checkFocus(): void {
+  _checkFocus(event: SyntheticFocusEvent): void {
     const node = ReactDOM.findDOMNode(this);
-    let element = document.activeElement;
-    while (element != null) {
-      if (element === node) {
-        return;
-      }
-
-      element = element.parentElement;
+    // If the next active element (`event.relatedTarget`) is not a descendant of this modal, close
+    // the modal.
+    if (!node.contains(event.relatedTarget)) {
+      this.props.onClose();
     }
-
-    this.props.onClose();
   }
 
   _toggleWorkingSet(name: string, active: boolean) {
@@ -196,16 +184,15 @@ export class WorkingSetSelectionComponent extends React.Component {
   }
 }
 
-
 type ApplicableDefinitionLineProps = {
-    def: WorkingSetDefinition;
-    index: number;
-    selected: boolean;
-    toggleWorkingSet: (name: string, active: boolean) => void;
-    onSelect: (index: number) => void;
-    onDeleteWorkingSet: (name: string) => void;
-    onEditWorkingSet: (name: string, uris: Array<string>) => void;
-}
+  def: WorkingSetDefinition;
+  index: number;
+  selected: boolean;
+  toggleWorkingSet: (name: string, active: boolean) => void;
+  onSelect: (index: number) => void;
+  onDeleteWorkingSet: (name: string) => void;
+  onEditWorkingSet: (name: string, uris: Array<string>) => void;
+};
 
 class ApplicableDefinitionLine extends React.Component {
   props: ApplicableDefinitionLineProps;
@@ -233,13 +220,15 @@ class ApplicableDefinitionLine extends React.Component {
         <div className="btn-group pull-right">
           <button
             className="btn icon icon-trashcan"
-            tabIndex="-1"
             onClick={this._deleteButtonOnClick}
+            tabIndex="-1"
+            title="Delete this working set"
           />
           <button
             className="btn icon icon-pencil"
-            tabIndex="-1"
             onClick={this._editButtonOnClick}
+            tabIndex="-1"
+            title="Edit this working set"
           />
         </div>
         <span>
@@ -265,9 +254,9 @@ class ApplicableDefinitionLine extends React.Component {
 }
 
 type NonApplicableDefinitionLineProps = {
-    def: WorkingSetDefinition;
-    onDeleteWorkingSet: (name: string) => void;
-}
+  def: WorkingSetDefinition;
+  onDeleteWorkingSet: (name: string) => void;
+};
 
 class NonApplicableDefinitionLine extends React.Component {
   props: NonApplicableDefinitionLineProps;
@@ -283,8 +272,9 @@ class NonApplicableDefinitionLine extends React.Component {
       <li className="clearfix">
         <button
           className="btn icon icon-trashcan pull-right"
-          tabIndex="-1"
           onClick={this._deleteButtonOnClick}
+          tabIndex="-1"
+          title="Delete this working set"
         />
         <span className="text-subtle">
           {this.props.def.name}
