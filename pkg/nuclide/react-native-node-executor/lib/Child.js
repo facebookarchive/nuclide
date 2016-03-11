@@ -32,8 +32,17 @@ export default class Child {
     const process$ = this._process$ = Rx.Observable.fromPromise(
       // TODO: The node location/path needs to be more configurable. We need to figure out a way to
       //   handle this across the board.
-      forkWithExecEnvironment(path.join(__dirname, 'executor.js'), [], {execPath})
+      forkWithExecEnvironment(
+        path.join(__dirname, 'executor.js'),
+        [],
+        {execPath, silent: true},
+      )
     );
+
+    // Pipe output from forked process. This just makes things easier to debug for us.
+    process$
+      .flatMapLatest(process => Rx.Observable.fromEvent(process.stdout, 'data'))
+      .subscribe(data => console.log(data.toString())); // eslint-disable-line no-console
 
     this._closed = process$.flatMap(process => Rx.Observable.fromEvent(process, 'close'))
       .first()
