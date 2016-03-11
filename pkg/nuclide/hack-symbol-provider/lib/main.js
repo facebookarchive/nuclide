@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import {HackSymbolProvider} from './HackSymbolProvider';
-type Provider = typeof HackSymbolProvider;
+import type {Provider} from '../../../nuclide/quick-open-interfaces';
 
 let providerInstance: ?Provider;
 function getProviderInstance(): Provider {
   if (providerInstance == null) {
+    const {HackSymbolProvider} = require('./HackSymbolProvider');
     providerInstance = {...HackSymbolProvider};
   }
   return providerInstance;
@@ -27,10 +27,6 @@ module.exports = {
   },
 
   activate(state: ?Object) {
-
   },
 
-  deactivate() {
-
-  },
 };
