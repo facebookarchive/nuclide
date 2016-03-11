@@ -186,8 +186,8 @@ class FlowDiagnosticsProvider {
        * own text and path.
        */
       for (const messageComponent of message.messageComponents) {
-        if (messageComponent.path != null) {
-          pathsForRoot.add(messageComponent.path);
+        if (messageComponent.range != null) {
+          pathsForRoot.add(messageComponent.range.file);
         }
       }
     }
