@@ -65,22 +65,13 @@ class Activation {
       }),
     );
 
-    const commandToCallback = {
-      build: () => this._actions.build(),
-      debug: () => this._actions.debug(),
-      run: () => this._actions.run(),
-      test: () => this._actions.test(),
-    };
-    for (const command in commandToCallback) {
-      const callback = commandToCallback[command];
-      this._disposables.add(
-        atom.commands.add(
-          'atom-workspace',
-          `nuclide-buck-toolbar:${command}`,
-          callback,
-        ),
-      );
-    }
+    const target = 'atom-workspace';
+    this._disposables.add(
+      atom.commands.add(target, 'nuclide-buck-toolbar:build', () => this._actions.build()),
+      atom.commands.add(target, 'nuclide-buck-toolbar:debug', () => this._actions.debug()),
+      atom.commands.add(target, 'nuclide-buck-toolbar:run', () => this._actions.run()),
+      atom.commands.add(target, 'nuclide-buck-toolbar:test', () => this._actions.test()),
+    );
   }
 
   consumeToolBar(getToolBar: (group: string) => Object): void {
