@@ -13,6 +13,7 @@
 import type {ServerReplyCallback} from './types';
 import type {EventEmitter} from 'events';
 
+import featureConfig from '../../feature-config';
 import {forkWithExecEnvironment} from '../../commons/lib/process';
 import path from 'path';
 import Rx from 'rx';
@@ -27,10 +28,11 @@ export default class Child {
   constructor(onReply: ServerReplyCallback, emitter: EventEmitter) {
     this._execScriptMessageId = -1;
 
+    const execPath = featureConfig.get('nuclide-react-native.pathToNode');
     const process$ = this._process$ = Rx.Observable.fromPromise(
       // TODO: The node location/path needs to be more configurable. We need to figure out a way to
       //   handle this across the board.
-      forkWithExecEnvironment(path.join(__dirname, 'executor.js'), [], {execPath: 'node'})
+      forkWithExecEnvironment(path.join(__dirname, 'executor.js'), [], {execPath})
     );
 
     this._closed = process$.flatMap(process => Rx.Observable.fromEvent(process, 'close'))

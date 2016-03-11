@@ -5,6 +5,14 @@
   "version": "0.0.0",
   "description": "React Native development tools",
   "nuclide": {
+    "config": {
+      "pathToNode": {
+        "title": "Path to Node Executable",
+        "type": "string",
+        "default": "node",
+        "description": "Absolute path to the node executable on your system. This will be used for executing JavaScript when debugging."
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },
