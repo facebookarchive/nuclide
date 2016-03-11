@@ -19,6 +19,7 @@ class BuckToolbarActions {
     BUILD: 'BUILD',
     DEBUG: 'DEBUG',
     RUN: 'RUN',
+    TEST: 'TEST',
     TOGGLE_PANEL_VISIBILITY: 'TOGGLE_PANEL_VISIBILITY',
     UPDATE_BUILD_TARGET: 'UPDATE_BUILD_TARGET',
     UPDATE_PANEL_VISIBILITY: 'UPDATE_PANEL_VISIBILITY',
@@ -78,6 +79,10 @@ class BuckToolbarActions {
 
   run(): void {
     this._dispatcher.dispatch({actionType: BuckToolbarActions.ActionType.RUN});
+  }
+
+  test(): void {
+    this._dispatcher.dispatch({actionType: BuckToolbarActions.ActionType.TEST});
   }
 
   debug(): void {

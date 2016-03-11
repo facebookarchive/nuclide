@@ -44,6 +44,8 @@ type InitialState = {
   isReactNativeServerMode?: boolean;
 };
 
+type BuckSubcommand = 'build' | 'install' | 'test';
+
 class BuckToolbarStore {
 
   _dispatcher: Dispatcher;
@@ -104,10 +106,13 @@ class BuckToolbarStore {
           this.emitChange();
           break;
         case BuckToolbarActions.ActionType.BUILD:
-          this._doBuild(false, false);
+          this._doBuild('build', /* debug */ false);
           break;
         case BuckToolbarActions.ActionType.RUN:
-          this._doBuild(true, false);
+          this._doBuild('install', /* debug */ false);
+          break;
+        case BuckToolbarActions.ActionType.TEST:
+          this._doBuild('test', /* debug */ false);
           break;
         case BuckToolbarActions.ActionType.DEBUG:
           this._doDebug();
@@ -273,7 +278,7 @@ class BuckToolbarStore {
       atom.views.getView(atom.workspace),
       'nuclide-debugger:stop-debugging');
 
-    const installResult = await this._doBuild(true, true);
+    const installResult = await this._doBuild('install', /* debug */ true);
     if (!installResult) {
       return;
     }
@@ -290,7 +295,7 @@ class BuckToolbarStore {
   }
 
   async _doBuild(
-    run: boolean,
+    subcommand: BuckSubcommand,
     debug: boolean,
   ): Promise<?{buckProject: BuckProject; buildTarget: string; pid: ?number}> {
     const buildTarget = this._buildTarget;
@@ -305,7 +310,7 @@ class BuckToolbarStore {
     }
 
     let appArgs = [];
-    if (run && this.isReactNativeServerMode()) {
+    if (subcommand === 'install' && this.isReactNativeServerMode()) {
       const serverCommand = await this._getReactNativeServerCommand();
       if (serverCommand) {
         this._reactNativeServerActions.startServer(serverCommand);
@@ -314,8 +319,7 @@ class BuckToolbarStore {
       }
     }
 
-    const command = `buck ${run ? 'install' : 'build'} ${buildTarget}`;
-    atom.notifications.addInfo(`${command} started.`);
+    atom.notifications.addInfo(`buck ${subcommand} ${buildTarget} started.`);
     const ws = await this._setupWebSocket(buckProject, buildTarget);
 
     this._buildProgress = 0;
@@ -323,7 +327,7 @@ class BuckToolbarStore {
     this.emitChange();
 
     const {pid} = await this._runBuckCommandInNewPane(
-        {buckProject, buildTarget, simulator, run, debug, command, appArgs});
+        {buckProject, buildTarget, simulator, subcommand, debug, appArgs});
 
     this._isBuilding = false;
     this.emitChange();
@@ -342,16 +346,16 @@ class BuckToolbarStore {
     buckProject: BuckProject;
     buildTarget: string;
     simulator: ?string;
-    run: boolean;
+    subcommand: string;
     debug: boolean;
-    command: string;
     appArgs: Array<string>;
   }): Promise<BuckRunDetails> {
-    const {buckProject, buildTarget, simulator, run, debug, command, appArgs} = buckParams;
+    const {buckProject, buildTarget, simulator, subcommand, debug, appArgs} = buckParams;
 
     const getRunCommandInNewPane = require('../../../process/output');
     const {runCommandInNewPane, disposable} = getRunCommandInNewPane();
 
+    const run = subcommand === 'install';
     const runProcessWithHandlers = async (dataHandlerOptions: ProcessOutputDataHandlers) => {
       const {stdout, stderr, error, exit} = dataHandlerOptions;
       let observable;
@@ -359,8 +363,12 @@ class BuckToolbarStore {
       if (run) {
         observable = await buckProject.installWithOutput(
             [buildTarget], simulator, {run, debug, appArgs});
-      } else {
+      } else if (subcommand === 'build') {
         observable = await buckProject.buildWithOutput([buildTarget]);
+      } else if (subcommand === 'test') {
+        observable = await buckProject.testWithOutput([buildTarget]);
+      } else {
+        throw Error(`Unknown subcommand: ${subcommand}`);
       }
       const onNext = (data: {stderr?: string; stdout?: string}) => {
         if (data.stdout) {
@@ -380,7 +388,7 @@ class BuckToolbarStore {
         // i.e. with exit code 0. Unfortunately an Observable cannot pass an
         // argument (e.g. an exit code) on completion.
         exit(0);
-        atom.notifications.addSuccess(`${command} succeeded.`);
+        atom.notifications.addSuccess(`buck ${subcommand} succeeded.`);
         disposable.dispose();
       };
       const subscription = observable.subscribe(onNext, onError, onExit);
@@ -416,7 +424,7 @@ class BuckToolbarStore {
       });
 
       runCommandInNewPane({
-        tabTitle: 'buck',
+        tabTitle: `buck ${subcommand} ${buildTarget}`,
         processOutputStore,
         processOutputHandler: handleBuckAnsiOutput,
         destroyExistingPane: true,

@@ -30,7 +30,8 @@ export type BuckRunOptions = dontRunOptions | doRunOptions;
 
 type BuckConfig = Object;
 type BaseBuckBuildOptions = {
-  install: boolean;
+  install?: boolean;
+  test?: boolean;
   simulator?: ?string;
   runOptions?: ?BuckRunOptions;
 };
@@ -175,7 +176,7 @@ export class BuckProject {
    * @return Promise that resolves to a build report.
    */
   build(buildTargets: Array<string>): Promise<any> {
-    return this._build(buildTargets, {install: false});
+    return this._build(buildTargets, {});
   }
 
   /**
@@ -250,7 +251,24 @@ export class BuckProject {
   buildWithOutput(
     buildTargets: Array<string>
   ): Observable<{stderr?: string; stdout?: string;}> {
-    return this._buildWithOutput(buildTargets, {install: false});
+    return this._buildWithOutput(buildTargets, {});
+  }
+
+  /**
+   * Same as `build`, but returns additional output via an Observable.
+   * @return An Observable with the following implementations:
+   *   onNext: Calls the Observer with successive strings from stdout and stderr.
+   *     Each update will be of the form: {stdout: string;} | {stderr: string;}
+   *     TODO: Use a union to exactly match `{stdout: string;} | {stderr: string;}` when the service
+   *     framework supports it. Use an object with optional keys to mimic the union.
+   *   onError: If the build fails, calls the Observer with the string output
+   *     from stderr.
+   *   onCompleted: Only called if the build completes successfully.
+   */
+  testWithOutput(
+    buildTargets: Array<string>
+  ): Observable<{stderr?: string; stdout?: string;}> {
+    return this._buildWithOutput(buildTargets, {test: true});
   }
 
   /**
@@ -304,10 +322,11 @@ export class BuckProject {
     const {
       install,
       simulator,
+      test,
     } = baseOptions;
     const runOptions = baseOptions.runOptions || {run: false};
 
-    let args = install ? ['install'] : ['build'];
+    let args = [test ? 'test' : (install ? 'install' : 'build')];
     args = args.concat(buildTargets);
 
     args.push('--keep-going');

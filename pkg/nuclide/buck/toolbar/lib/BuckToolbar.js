@@ -59,6 +59,7 @@ class BuckToolbar extends React.Component {
     (this: any)._requestOptions = this._requestOptions.bind(this);
     (this: any)._build = this._build.bind(this);
     (this: any)._run = this._run.bind(this);
+    (this: any)._test = this._test.bind(this);
     (this: any)._debug = this._debug.bind(this);
 
     this._buckToolbarActions = this.props.actions;
@@ -138,6 +139,7 @@ class BuckToolbar extends React.Component {
         <div className="btn-group btn-group-sm inline-block">
           <button onClick={this._build} disabled={disabled} className="btn">Build</button>
           <button onClick={this._run} disabled={disabled} className="btn">Run</button>
+          <button onClick={this._test} disabled={disabled} className="btn">Test</button>
           <button onClick={this._debug} disabled={disabled} className="btn">Debug</button>
         </div>
         {serverModeCheckbox}
@@ -171,6 +173,10 @@ class BuckToolbar extends React.Component {
 
   _run() {
     this._buckToolbarActions.run();
+  }
+
+  _test() {
+    this._buckToolbarActions.test();
   }
 
   _debug() {
