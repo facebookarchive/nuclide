@@ -59,19 +59,19 @@ class JsTestRunner(object):
         if self._run_in_band:
             # We run all tests in serial on Windows because Python's multiprocessing library has issues:
             # https://docs.python.org/2/library/multiprocessing.html#windows
-            parallel_tests = []
+            parallel_tests = None
             serial_tests = npm_tests + apm_tests
         else:
             # Currently, all tests appear to be able to be run in parallel. We keep this code
             # here in case we have to special-case any tests (on a short-term basis) to be run
             # serially after all of the parallel tests have finished.
-            parallel_tests = npm_tests + apm_tests
-            serial_tests = []
+            parallel_tests = npm_tests
+            serial_tests = apm_tests
 
         serial_tests += serial_only_tests
 
         if parallel_tests:
-            pool = Pool(processes=max(1, cpu_count() - 2))
+            pool = Pool(processes=max(1, cpu_count() - 1))
             results = [pool.apply_async(run_js_test, args=test_args) for test_args in parallel_tests]
             for async_result in results:
                 async_result.wait()
