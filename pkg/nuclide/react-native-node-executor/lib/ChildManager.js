@@ -36,9 +36,10 @@ export default class ChildManager {
     this._emitter = emitter;
   }
 
-  async createChild(): Promise<void> {
-    await this.killChild();
-    this._child = new Child(this._onReply, this._emitter);
+  _createChild(): void {
+    if (this._child == null) {
+      this._child = new Child(this._onReply, this._emitter);
+    }
   }
 
   async killChild(): Promise<void> {
@@ -66,7 +67,7 @@ export default class ChildManager {
   }
 
   async prepareJSRuntime(message: Object): Promise<void> {
-    await this.createChild();
+    this._createChild();
     this._onReply(message.id);
   }
 

@@ -7,7 +7,7 @@
  */
 
 'use strict';
-/* global __fbBatchedBridge */
+
 /* eslint-disable no-var */
 
 var vm = require('vm');
@@ -17,47 +17,36 @@ function doLog(data) {
   fs.appendFileSync('/tmp/nuclide-react-node-executor.log', data + '\n');
 }
 
-// these are required for the eval'd script to work
-global.window = global;
-var pureRequire = require;
-var rnRequire;
+var currentContext = null;
 
 // respond to ops
 var ops = {
   executeApplicationScript: function (id, data) {
-    global.require = null;
+    var globals = {
+      console: console,
+    };
     if (data.inject) {
       for (var name in data.inject) {
-        global[name] = JSON.parse(data.inject[name]);
+        globals[name] = JSON.parse(data.inject[name]);
       }
     }
+    currentContext = vm.createContext(globals);
+
     try {
       // The file name is dummy here. Without a file name, the source map is not used.
-      vm.runInThisContext(data.script, '/tmp/react-native.js');
+      vm.runInContext(data.script, currentContext, '/tmp/react-native.js');
     } catch (e) {
       doLog('Failed to exec script: ' + e);
     }
-    rnRequire = global.require;
-    // node-inspector needs to inject some code when the debugging session starts, which happens to
-    // include the following snippet:
-    // `require('module')._load(....)
-    // However, `module` module does not exist in the RN execution context, and so in order to make
-    // it work, we wrap the require function here and hard code `module` to use the vanilla require
-    // function.
-    global.require = function(moduleName) {
-      if (moduleName === 'module') {
-        return pureRequire(moduleName);
-      }
-      return rnRequire(moduleName);
-    };
+
     send(id);
   },
 
   call: function (id, data) {
     var returnValue = [[], [], [], [], []];
     try {
-      if (typeof __fbBatchedBridge === 'object') {
-        returnValue = __fbBatchedBridge[data.method].apply(null, data.arguments);
+      if (currentContext != null && typeof currentContext.__fbBatchedBridge === 'object') {
+        returnValue = currentContext.__fbBatchedBridge[data.method].apply(null, data.arguments);
       }
     } catch (e) {
       doLog('Failed while making a call ' + data.method + ':::' + e);
