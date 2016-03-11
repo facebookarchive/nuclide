@@ -67,6 +67,7 @@ class AtomComboBox extends React.Component {
      */
     requestOptions: PropTypes.func.isRequired,
     size: PropTypes.oneOf(['xs', 'sm', 'lg']),
+    width: PropTypes.number,
   };
 
   static defaultProps = {
@@ -74,6 +75,7 @@ class AtomComboBox extends React.Component {
     maxOptionCount: 10,
     onChange: emptyfunction,
     onSelect: emptyfunction,
+    width: 200,
   };
 
   constructor(props: Object) {
@@ -344,15 +346,23 @@ class AtomComboBox extends React.Component {
       );
     }
 
+    const {
+      initialTextInput,
+      placeholderText,
+      size,
+      width,
+    } = this.props;
     return (
-      <div className={'select-list popover-list popover-list-subtle ' + this.props.className}>
+      <div className={'select-list popover-list popover-list-subtle ' + this.props.className}
+           style={{width: `${width}px`}}>
         <AtomInput
-          initialValue={this.props.initialTextInput}
+          initialValue={initialTextInput}
           onBlur={this._handleInputBlur}
           onFocus={this._handleInputFocus}
-          placeholderText={this.props.placeholderText}
+          placeholderText={placeholderText}
           ref="freeformInput"
-          size={this.props.size}
+          size={size}
+          width={width}
         />
         {optionsContainer}
       </div>

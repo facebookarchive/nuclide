@@ -33,6 +33,7 @@ type Props = {
   onBlur: () => mixed;
   size: 'xs' | 'sm' | 'lg';
   unstyled: boolean;
+  width: number;
 };
 
 type State = {
@@ -58,6 +59,7 @@ class AtomInput extends React.Component {
     onFocus: () => {},
     onBlur: () => {},
     unstyled: false,
+    width: 200,
   };
 
   constructor(props: Props) {
@@ -129,10 +131,17 @@ class AtomInput extends React.Component {
         onClick={this.props.onClick}
         onFocus={this.props.onFocus}
         onKeyUp={this._analyzeKeyCodes}
-        onBlur={this.props.onBlur}>
+        onBlur={this.props.onBlur}
+        ref="editor">
         {this.state.value}
       </atom-text-editor>
     );
+  }
+
+  componentDidUpdate(prevProps: Object, prevState: Object): void {
+    if (prevProps.width !== this.props.width) {
+      this.refs['editor'].setWidth(this.props.width);
+    }
   }
 
   getText(): string {

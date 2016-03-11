@@ -25,6 +25,7 @@ const {
 const {onWorkspaceDidStopChangingActivePaneItem} = atomEventDebounce;
 const {PropTypes} = React;
 
+const BUCK_TARGET_INPUT_WIDTH = 400;
 const formatRequestOptionsErrorMessage = () => 'Invalid .buckconfig';
 
 class BuckToolbar extends React.Component {
@@ -126,6 +127,7 @@ class BuckToolbar extends React.Component {
           initialTextInput={this.props.store.getBuildTarget()}
           onChange={this._handleBuildTargetChange}
           placeholderText="Buck build target"
+          width={BUCK_TARGET_INPUT_WIDTH}
         />
         <SimulatorDropdown
           className="inline-block"
