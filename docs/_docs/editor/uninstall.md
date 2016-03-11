@@ -24,7 +24,7 @@ two ways to do that:
 * Re-activate through Atom's Settings page
   1. Go to `Atom > Preferences > Packages > tree-view`
   2. Click the "Enable" button
-    ![](/static/images/re-enable-atom-tree-view.png)
+    ![](/static/images/docs/editor-uninstall-reenable-atom-tree-view.png)
 
 * Edit your Atom 'config.cson' file
   1. Open '~/.atom/config.cson'

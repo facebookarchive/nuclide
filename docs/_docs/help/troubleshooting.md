@@ -158,4 +158,4 @@ If the Flow features are not working in Nuclide:
 If installed `flow` in a place not on your `$PATH` (e.g., unzipped it in your home directory which
 is not on your `$PATH`), then you either have to update your `$PATH` or explicitly specify it.
 
-!["Settings | Packages | Nuclide | Settings | nuclide-flow:Path to Flow Executable"](/static/images/settings-nuclide-flow-executable.png)  
+![](/static/images/help/troubleshooting-settings-nuclide-flow-executable.png)  
