@@ -13,6 +13,7 @@ import type {
   Diagnostics,
   Diagnostic,
   MessageComponent,
+  Range,
 } from './FlowService';
 
 // Types for the old `flow status` output -- v0.22 and below
@@ -69,7 +70,7 @@ type NewFlowStatusError = {
 
 type NewFlowStatusErrorMessageComponent = {
   descr: string;
-  loc: FlowLoc;
+  loc?: FlowLoc;
   // The old path, line, etc. fields also currently exist here, but they are deprecated in favor of
   // `loc`.
 };
@@ -164,5 +165,56 @@ export function newFlowStatusOutputToDiagnostics(
   root: string,
   statusOutput: NewFlowStatusOutput,
 ): Diagnostics {
-  return (null: any);
+  const errors: Array<NewFlowStatusError> = statusOutput.errors;
+  const messages: Array<Diagnostic> = errors.map((flowStatusError: NewFlowStatusError) => {
+    const flowMessageComponents: Array<NewFlowStatusErrorMessageComponent> =
+      flowStatusError.message;
+    const level = flowStatusError.level;
+
+    const messageComponents: Array<MessageComponent> =
+      flowMessageComponents.map(newFlowMessageComponentToMessageComponent);
+    const operation = flowStatusError.operation;
+    if (operation != null) {
+      const operationComponent = newFlowMessageComponentToMessageComponent(operation);
+      operationComponent.descr = 'See also: ' + operationComponent.descr;
+      messageComponents.push(operationComponent);
+    }
+
+    return {
+      level,
+      messageComponents,
+    };
+  });
+
+  return {
+    flowRoot: root,
+    messages,
+  };
+}
+
+function newFlowMessageComponentToMessageComponent(
+  component: NewFlowStatusErrorMessageComponent,
+): MessageComponent {
+  return {
+    descr: component.descr,
+    range: maybeFlowLocToRange(component.loc),
+  };
+}
+
+function maybeFlowLocToRange(loc: ?FlowLoc): ?Range {
+  return loc == null ? null : flowLocToRange(loc);
+}
+
+function flowLocToRange(loc: FlowLoc): Range {
+  return {
+    file: loc.source,
+    start: {
+      line: loc.start.line,
+      column: loc.start.column,
+    },
+    end: {
+      line: loc.end.line,
+      column: loc.end.column,
+    },
+  };
 }

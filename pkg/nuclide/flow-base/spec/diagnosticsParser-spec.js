@@ -58,6 +58,71 @@ const oldOutput = {
   ],
 };
 
+const newOutput = {
+  passed : false,
+  flowVersion : '0.23.0',
+  errors : [
+    {
+      operation : {
+        descr : 'assignment of property `bar`',
+        loc : {
+          start : {
+            offset : 104,
+            line : 13,
+            column : 5,
+          },
+          source : '/flow-test/src/test.js',
+          end : {
+            offset : 112,
+            line : 13,
+            column : 12,
+          },
+        },
+      },
+      message : [
+        {
+          descr : 'object literal',
+          loc : {
+            start : {
+              offset : 115,
+              line : 13,
+              column : 16,
+            },
+            source : '/flow-test/src/test.js',
+            end : {
+              line : 13,
+              offset : 117,
+              column : 17,
+            },
+          },
+        },
+        {
+          descr : 'This type is incompatible with',
+          path : '',
+        },
+        {
+          descr : 'union: object type(s)',
+          loc : {
+            end : {
+              line : 10,
+              offset : 87,
+              column : 10,
+            },
+            source : '/flow-test/src/test.js',
+            start : {
+              column : 8,
+              line : 10,
+              offset : 84,
+            },
+          },
+        },
+      ],
+      kind : 'infer',
+      level : 'error',
+    },
+  ],
+};
+
 const expected = {
   flowRoot: '/flow-test',
   messages: [
@@ -118,5 +183,9 @@ const expected = {
 describe('flowStatusOutputToDiagnostics', () => {
   it('converts the old status output', () => {
     expect(flowStatusOutputToDiagnostics('/flow-test', oldOutput)).toEqual(expected);
+  });
+
+  it('converts the new status output', () => {
+    expect(flowStatusOutputToDiagnostics('/flow-test', newOutput)).toEqual(expected);
   });
 });
