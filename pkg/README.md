@@ -114,3 +114,7 @@ relevant parts of the `package.json` file that set this up:
 ```
 
 Note that for packages whose test runner is `apm`, this is not necessary.
+
+## Sample packages
+
+`sample-*` packages aren't loaded as part of Nuclide. They exist to illustrate archetypal architecture and structure for a given feature.
