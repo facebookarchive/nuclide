@@ -62,3 +62,27 @@ curl https://registry.npmjs.org/node-pre-gyp/-/node-pre-gyp-0.6.18.tgz |
 ##### Source modifications:
 
 `require` and `require.resolve` paths were made relative, since the modules don't like in `node_modules`.
+
+The call to `this._frontendClient.sendEvent` on ln 26 of RuntimeAgent.js was changed from this:
+
+```js
+this._frontendClient.sendEvent('Runtime.executionContextCreated', {
+  context: {
+    id: 1,
+    isPageContext: true,
+    name: ''
+  }
+});
+```
+
+to this:
+
+```js
+this._frontendClient.sendEvent('Runtime.executionContextCreated', {
+  context: {
+    id: 1,
+    isPageContext: false,
+    name: 'node-inspector'
+  }
+});
+```
