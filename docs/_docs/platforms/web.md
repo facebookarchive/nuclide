@@ -2,7 +2,7 @@
 id: platform-web
 title: Web Development
 layout: docs
-permalink: /docs/platform/web/
+permalink: /docs/platforms/web/
 ---
 
 The development of modern websites makes use of both server-side and client-side web technologies.
