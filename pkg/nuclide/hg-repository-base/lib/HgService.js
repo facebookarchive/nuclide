@@ -49,6 +49,15 @@ const EVENT_DELAY_IN_MS = 1000;
 // We'll just report that the repository state changed, which should trigger a full client refresh.
 const FILES_CHANGED_LIMIT = 1000;
 
+// Mercurial (as of v3.7.2) [strips lines][1] matching the following prefix when a commit message is
+// created by an editor invoked by Mercurial. Because Nuclide is not invoked by Mercurial, Nuclide
+// must mimic the same stripping.
+//
+// Note: `(?m)` converts to `/m` in JavaScript-flavored RegExp to mean 'multiline'.
+//
+// [1] https://selenic.com/hg/file/3.7.2/mercurial/cmdutil.py#l2734
+const COMMIT_MESSAGE_STRIP_LINE = /^HG:.*(\n|$)/gm;
+
 /**
  * These are status codes used by Mercurial's output.
  * Documented in http://selenic.com/hg/help/status.
@@ -718,7 +727,8 @@ export class HgService {
     let tempFile = null;
     if (message != null) {
       tempFile = await fsPromise.tempfile();
-      await fsPromise.writeFile(tempFile, message);
+      const strippedMessage = message.replace(COMMIT_MESSAGE_STRIP_LINE, '');
+      await fsPromise.writeFile(tempFile, strippedMessage);
       args.push('-l', tempFile);
     }
     const execOptions = {
