@@ -19,66 +19,64 @@ type State = {
   outline: ?Object;
 };
 
-export function createOutlineViewClass(
-  outlines: Observable<?OutlineForUi>
-): Class<any> { // TODO(matthewwithanm): Should be subclass of `Class<React.Component>`
-  return class OutlineView extends React.Component {
-    state: State;
+type Props = {
+  outlines: Observable<?OutlineForUi>;
+};
 
-    static gadgetId = 'nuclide-outline-view';
-    static defaultLocation = 'right';
+export class OutlineView extends React.Component {
+  state: State;
+  props: Props;
 
-    subscription: ?IDisposable;
+  subscription: ?IDisposable;
 
-    constructor(props) {
-      super(props);
-      this.state = {outline: null};
-    }
+  constructor(props: Props) {
+    super(props);
+    this.state = {outline: null};
+  }
 
-    componentDidMount(): void {
-      invariant(this.subscription == null);
-      this.subscription = outlines.subscribe(outline => {
-        // If the outline view has focus, we don't want to re-render anything.
-        if (this !== atom.workspace.getActivePaneItem()) {
-          this.setState({outline});
-        }
-      });
-    }
-
-    componentWillUnmount(): void {
-      invariant(this.subscription != null);
-      this.subscription.dispose();
-      this.subscription = null;
-    }
-
-    render(): ?ReactElement {
-      let contents;
-      if (this.state.outline == null) {
-        contents = (
-          <span>
-            No outline available
-          </span>
-        );
-      } else {
-        contents = (
-          <OutlineViewComponent outline={this.state.outline} />
-        );
+  componentDidMount(): void {
+    invariant(this.subscription == null);
+    this.subscription = this.props.outlines.subscribe(outline => {
+      // If the outline view has focus, we don't want to re-render anything.
+      if (this !== atom.workspace.getActivePaneItem()) {
+        this.setState({outline});
       }
-      return (
-        <div className="pane-item padded nuclide-outline-view">
-          {contents}
-        </div>
+    });
+  }
+
+  componentWillUnmount(): void {
+    invariant(this.subscription != null);
+    this.subscription.dispose();
+    this.subscription = null;
+  }
+
+  render(): ?ReactElement {
+    let contents;
+    if (this.state.outline == null) {
+      contents = (
+        <span>
+          No outline available
+        </span>
+      );
+    } else {
+      contents = (
+        <OutlineViewComponent outline={this.state.outline} />
       );
     }
+    return (
+      <div className="pane-item padded nuclide-outline-view">
+        {contents}
+      </div>
+    );
+  }
 
-    getTitle(): string {
-      return 'Outline View';
-    }
+  getTitle(): string {
+    return 'Outline View';
+  }
 
-    getIconName(): string {
-      return 'list-unordered';
-    }
-  };
+  getIconName(): string {
+    return 'list-unordered';
+  }
 }
 
 class OutlineViewComponent extends React.Component {

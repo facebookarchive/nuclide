@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {GadgetsService} from '../../gadgets-interfaces';
-
 import {Observable} from 'rx';
 
 import {CompositeDisposable, Disposable} from 'atom';
@@ -18,7 +16,7 @@ import {CompositeDisposable, Disposable} from 'atom';
 import {event as commonsEvent} from '../../commons';
 const {observableFromSubscribeFunction} = commonsEvent;
 
-import {createOutlineViewClass} from './OutlineView';
+import {OutlineViewPanelState} from './OutlineViewPanel';
 import {ProviderRegistry} from './ProviderRegistry';
 
 import invariant from 'assert';
@@ -59,8 +57,6 @@ export type OutlineProvider = {
 class Activation {
   _disposables: CompositeDisposable;
 
-  _outline$: Observable<?OutlineForUi>;
-
   _providers: ProviderRegistry<OutlineProvider>;
 
   constructor(state: ?Object) {
@@ -82,7 +78,7 @@ class Activation {
 
     // We are over-subscribing a little bit here, but since outlines are typically cheap and fast to
     // generate that's okay for now.
-    this._outline$ = Observable.merge(
+    const outlines = Observable.merge(
         textEvent$,
         paneChange$
           .map(() => atom.workspace.getActiveTextEditor()),
@@ -94,16 +90,21 @@ class Activation {
           return this._outlineForEditor(editor);
         }
       });
+
+    const panel = new OutlineViewPanelState(outlines);
+    this._disposables.add(panel);
+
+    this._disposables.add(
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-outline-view:toggle',
+        panel.toggle.bind(panel),
+      )
+    );
   }
 
   dispose() {
     this._disposables.dispose();
-  }
-
-  consumeGadgetsService(gadgets: GadgetsService): IDisposable {
-    const OutlineView = createOutlineViewClass(this._outline$);
-    const disposable = gadgets.registerGadget((OutlineView: any));
-    return disposable;
   }
 
   consumeOutlineProvider(provider: OutlineProvider): IDisposable {
@@ -142,11 +143,6 @@ export function deactivate() {
     activation.dispose();
     activation = null;
   }
-}
-
-export function consumeGadgetsService(gadgets: GadgetsService): IDisposable {
-  invariant(activation != null);
-  return activation.consumeGadgetsService(gadgets);
 }
 
 export function consumeOutlineProvider(provider: OutlineProvider): IDisposable {
