@@ -23,6 +23,7 @@ import type {
 } from './types';
 import type {RevisionInfo} from '../../hg-repository-base/lib/HgService';
 import type {NuclideUri} from '../../remote-uri';
+import type {PhabricatorRevisionInfo} from '../../arcanist-client';
 
 import arcanist from '../../arcanist-client';
 import {CompositeDisposable, Emitter} from 'atom';
@@ -44,12 +45,22 @@ import {
   notifyFilesystemOverrideUserEdits,
 } from './notifications';
 import {bufferForUri} from '../../atom-helpers';
+import {getLogger} from '../../logging';
 
 const ACTIVE_FILE_UPDATE_EVENT = 'active-file-update';
 const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
 const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
 const DID_UPDATE_STATE_EVENT = 'did-update-state';
-const UPDATE_REVISION_TEMPLATE = '';
+
+function getRevisionUpdateMessage(phabricatorRevision: PhabricatorRevisionInfo): string {
+  return `
+
+# Updating ${phabricatorRevision.id}
+#
+# Enter a brief description of the changes included in this update.
+# The first line is used as subject, next lines as comment.
+`;
+}
 
 const FILE_CHANGE_DEBOUNCE_MS = 200;
 
@@ -512,20 +523,19 @@ class DiffViewModel {
       publishModeState: PublishModeState.AWAITING_PUBLISH,
     });
 
-    const {filePath} = this._activeFileState;
     try {
       switch (this._state.publishMode) {
         case PublishMode.CREATE:
-          await arcanist.createPhabricatorRevision(filePath, publishMessage);
+          await this._createPhabricatorRevision(publishMessage);
           break;
         case PublishMode.UPDATE:
-          await arcanist.updatePhabricatorRevision(filePath, publishMessage);
+          await this._updatePhabricatorRevision(publishMessage);
           break;
         default:
           throw new Error(`Unknown publish mode '${this._state.publishMode}'`);
       }
     } catch (error) {
-      notifyInternalError(error);
+      notifyInternalError(error, true /*persist the error (user dismissable)*/);
     } finally {
       this._setState({
         ...this._state,
@@ -533,6 +543,32 @@ class DiffViewModel {
         publishModeState: PublishModeState.READY,
       });
     }
+  }
+
+  async _createPhabricatorRevision(publishMessage: string): Promise<void> {
+    const {filePath} = this._activeFileState;
+    const lastCommitMessage = await this._loadActiveRepositoryLatestCommitMessage();
+    if (publishMessage !== lastCommitMessage) {
+      getLogger().info('Amending commit with the updated message');
+      invariant(this._activeRepositoryStack);
+      await this._activeRepositoryStack.amend(publishMessage);
+      atom.notifications.addSuccess('Commit amended with the updated message');
+    }
+    await arcanist.createPhabricatorRevision(filePath);
+    atom.notifications.addSuccess('Revision created');
+  }
+
+  async _updatePhabricatorRevision(publishMessage: string): Promise<void> {
+    const {filePath} = this._activeFileState;
+    const {phabricatorRevision} = await this._getActiveHeadRevisionDetails();
+    invariant(phabricatorRevision != null, 'A phabricator revision must exist to update!');
+    const updateTemplate = getRevisionUpdateMessage(phabricatorRevision).trim();
+    const userUpdateMessage = publishMessage.replace(updateTemplate, '').trim();
+    if (userUpdateMessage.length === 0) {
+      throw new Error('Cannot update revision with empty message');
+    }
+    await arcanist.updatePhabricatorRevision(filePath, userUpdateMessage);
+    atom.notifications.addSuccess(`Revision \`${phabricatorRevision.id}\` updated`);
   }
 
   _onWillSaveActiveBuffer(buffer: atom$TextBuffer): void {
@@ -615,6 +651,22 @@ class DiffViewModel {
       publishMessage: null,
       headRevision: null,
     });
+    const {headRevision, phabricatorRevision} = await this._getActiveHeadRevisionDetails();
+    this._setState({
+      ...this._state,
+      publishMode: phabricatorRevision != null ? PublishMode.UPDATE : PublishMode.CREATE,
+      publishModeState: PublishModeState.READY,
+      publishMessage: phabricatorRevision != null
+        ? getRevisionUpdateMessage(phabricatorRevision)
+        : headRevision.description,
+      headRevision,
+    });
+  }
+
+  async _getActiveHeadRevisionDetails(): Promise<{
+    headRevision: RevisionInfo;
+    phabricatorRevision: ?PhabricatorRevisionInfo;
+  }> {
     const revisionsState = await this.getActiveRevisionsState();
     if (revisionsState == null) {
       throw new Error('Cannot Load Publish View: No active file or repository');
@@ -622,18 +674,13 @@ class DiffViewModel {
     const {revisions} = revisionsState;
     invariant(revisions.length > 0, 'Diff View Error: Zero Revisions');
     const headRevision = revisions[revisions.length - 1];
-    const headMessage = headRevision.description;
-    // TODO(most): Use @mareksapota's utility when done.
-    const hasPhabricatorRevision = headMessage.indexOf('Differential Revision:') !== -1;
-    this._setState({
-      ...this._state,
-      publishMode: hasPhabricatorRevision ? PublishMode.UPDATE : PublishMode.CREATE,
-      publishModeState: PublishModeState.READY,
-      publishMessage: hasPhabricatorRevision
-        ? UPDATE_REVISION_TEMPLATE
-        : headMessage,
+    const phabricatorRevision = arcanist.getPhabricatorRevisionFromCommitMessage(
+      headRevision.description,
+    );
+    return {
       headRevision,
-    });
+      phabricatorRevision,
+    };
   }
 
   async _loadActiveRepositoryLatestCommitMessage(): Promise<string> {

@@ -15,10 +15,10 @@ import {getLogger} from '../../logging';
 
 const logger = getLogger();
 
-export function notifyInternalError(error: Error) {
+export function notifyInternalError(error: Error, dismissable?: boolean = false) {
   const errorMessage = 'Diff View Internal Error';
   logger.error(errorMessage, error);
-  atom.notifications.addError(errorMessage, {detail: error.message});
+  atom.notifications.addError(errorMessage, {detail: error.message, dismissable});
 }
 
 export function notifyFilesystemOverrideUserEdits(filePath: NuclideUri) {

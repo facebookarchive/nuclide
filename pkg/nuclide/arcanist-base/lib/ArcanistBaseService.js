@@ -12,7 +12,7 @@
 import type {NuclideUri} from '../../remote-uri';
 import invariant from 'assert';
 import {quote} from 'shell-quote';
-const {asyncExecute} = require('../../commons');
+const {asyncExecute, checkOutput} = require('../../commons');
 const logger = require('../../logging').getLogger();
 
 const ARC_CONFIG_FILE_NAME = '.arcconfig';
@@ -120,21 +120,23 @@ async function _callArcDiff(
     'cwd': arcConfigDir,
     'env': env,
   };
-  await asyncExecute('bash', args, options);
+  const {exitCode, stdout} = await checkOutput('bash', args, options);
+  if (exitCode !== 0) {
+    throw new Error(stdout);
+  }
 }
 
-export async function createPhabricatorRevision(
+export function createPhabricatorRevision(
+  filePath: NuclideUri,
+): Promise<void> {
+  return _callArcDiff(filePath, ['--verbatim']);
+}
+
+export function updatePhabricatorRevision(
   filePath: NuclideUri,
   message: string,
 ): Promise<void> {
-  await _callArcDiff(filePath, ['-m', message]);
-}
-
-export async function updatePhabricatorRevision(
-  filePath: NuclideUri,
-  message: string,
-): Promise<void> {
-  await _callArcDiff(filePath, ['-m', message]);
+  return _callArcDiff(filePath, ['-m', message]);
 }
 
 async function execArcLint(cwd: string, filePaths: Array<NuclideUri>, skip: Array<string>):

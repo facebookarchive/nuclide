@@ -67,12 +67,12 @@ async function findDiagnostics(
   return [].concat(...(await Promise.all(results)));
 }
 
-async function createPhabricatorRevision(filePath: NuclideUri, message: string): Promise<void> {
-  await getService(filePath).createPhabricatorRevision(filePath, message);
+function createPhabricatorRevision(filePath: NuclideUri): Promise<void> {
+  return getService(filePath).createPhabricatorRevision(filePath);
 }
 
-async function updatePhabricatorRevision(filePath: NuclideUri, message: string): Promise<void> {
-  await getService(filePath).updatePhabricatorRevision(filePath, message);
+function updatePhabricatorRevision(filePath: NuclideUri, message: string): Promise<void> {
+  return getService(filePath).updatePhabricatorRevision(filePath, message);
 }
 
 function getPhabricatorRevisionFromCommitMessage(commitMessage: string): ?PhabricatorRevisionInfo {
