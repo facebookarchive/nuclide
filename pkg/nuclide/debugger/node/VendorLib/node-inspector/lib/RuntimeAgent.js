@@ -26,8 +26,8 @@ RuntimeAgent.prototype = {
     this._frontendClient.sendEvent('Runtime.executionContextCreated', {
       context: {
         id: 1,
-        isPageContext: false,
-        name: 'node-inspector'
+        isPageContext: true,
+        name: ''
       }
     });
   },

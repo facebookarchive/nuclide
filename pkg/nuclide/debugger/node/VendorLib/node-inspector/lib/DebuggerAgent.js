@@ -44,7 +44,7 @@ DebuggerAgent.prototype = {
       this._onDebuggerConnect();
     }.bind(this);
 
-    if (this._debuggerClient.isConnected) {
+    if (this._debuggerClient.isReady) {
       process.nextTick(onConnect);
     } else {
       this._debuggerClient.on('connect', onConnect);
@@ -127,17 +127,7 @@ DebuggerAgent.prototype = {
   },
 
   _tryConnectInjector: function(done) {
-    this._injectorClient.once('inject', function() {
-      var cb = done;
-      done = function(){};
-      cb();
-    });
-    this._injectorClient.once('error', function(err) {
-      var cb = done;
-      done = function(){};
-      cb(err);
-    });
-    this._injectorClient.inject();
+    this._injectorClient.inject(done);
   },
 
   _restartFrameIfPaused: function(done) {
@@ -146,6 +136,7 @@ DebuggerAgent.prototype = {
     this.restartFrame({ callFrameId: 0 }, function(error, result) {
       if (error) return done(error);
 
+      result = result.result || result;
       if (result.stack_update_needs_step_in)
         this.stepInto({}, done);
       else
@@ -474,7 +465,7 @@ DebuggerAgent.prototype = {
   },
 
   setVariableValue: function(params, done) {
-    var version = this._debuggerClient.targetNodeVersion;
+    var version = this._debuggerClient.target.nodeVersion;
     if (!DebuggerAgent.nodeVersionHasSetVariableValue(version)) {
       done(
         'V8 engine in node version ' + version +

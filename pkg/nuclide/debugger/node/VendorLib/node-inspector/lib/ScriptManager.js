@@ -24,7 +24,8 @@ function ScriptManager(config, session) {
     _frontendClient: { value: session.frontendClient },
     _debuggerClient: { value: session.debuggerClient }
   });
-  self._registerDebuggerEventHandlers();
+  self._debuggerClient.on('afterCompile', self._onAfterCompile.bind(self));
+  self._debuggerClient.on('compileError', self._onCompileError.bind(self));
   return self;
 }
 
@@ -32,19 +33,6 @@ ScriptManager.prototype = Object.create(events.EventEmitter.prototype, {
   mainAppScript: { value: null, writable: true },
 
   realMainAppScript: { value: null, writable: true },
-
-  _registerDebuggerEventHandlers: {
-    value: function() {
-      this._debuggerClient.on(
-        'afterCompile',
-        this._onAfterCompile.bind(this)
-      );
-      this._debuggerClient.on(
-        'compileError',
-        this._onCompileError.bind(this)
-      );
-    }
-  },
 
   _onAfterCompile: {
     value: function(event) {
@@ -61,10 +49,17 @@ ScriptManager.prototype = Object.create(events.EventEmitter.prototype, {
 
   _onCompileError: {
     value: function(event) {
-      var version = this._debuggerClient.targetNodeVersion;
-      // Relative to https://github.com/joyent/node/issues/25266
-      if (semver.satisfies(version, '~0.12'))
-        this._onAfterCompile(event);
+      var cb = function() {
+        var version = this._debuggerClient.target.nodeVersion;
+        if (semver.satisfies(version, '~0.12'))
+          // Relative to https://github.com/joyent/node/issues/25266
+          this._onAfterCompile(event);
+      }.bind(this);
+
+      if (this._debuggerClient.isReady)
+        process.nextTick(cb);
+      else
+        this._debuggerClient.once('connect', cb);
     }
   },
 

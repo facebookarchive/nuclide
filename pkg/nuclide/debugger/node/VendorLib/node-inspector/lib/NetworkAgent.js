@@ -4,10 +4,15 @@ var dataUri = require('strong-data-uri');
 var inherits = require('util').inherits;
 var EventEmitter = require('events').EventEmitter;
 
-var injection = require('./Injections/NetworkAgent');
+var injection = require.resolve('./Injections/NetworkAgent');
 
 function NetworkAgent(config, session) {
-  this._noInject = config.inject === false;
+  try {
+    this._noInject = config.inject === false || config.inject.network === false;
+  } catch (e) {
+    this._noInject = false;
+  }
+
   this._debuggerClient = session.debuggerClient;
   this._frontendClient = session.frontendClient;
   this._injectorClient = session.injectorClient;
@@ -18,9 +23,7 @@ function NetworkAgent(config, session) {
   if (!this._noInject) this._injectorClient.on('inject', this._inject.bind(this));
 }
 
-NetworkAgent.prototype._inject = function(injected) {
-  if (!injected) return;
-
+NetworkAgent.prototype._inject = function() {
   this._translateEventToFrontend(
     'requestWillBeSent',
     'responseReceived',
@@ -35,8 +38,12 @@ NetworkAgent.prototype._inject = function(injected) {
   this._handleEvent('_loadingFailed', this._dumpRequestData.bind(this));
 
   this._injectorClient.injection(
-    injection,
-    {},
+    function(require, debug, options) {
+      require(options.injection)(require, debug, options);
+    },
+    {
+      injection: injection
+    },
     function(error, result) {
       this._injected = !error;
 
@@ -51,7 +58,6 @@ NetworkAgent.prototype._inject = function(injected) {
 NetworkAgent.prototype._translateEventToFrontend = function(eventNames) {
   Array.prototype.forEach.call(arguments, function(event) {
     event = 'Network.' + event;
-    this._debuggerClient.registerDebuggerEventHandlers(event);
     this._debuggerClient.on(event, function(message) {
       this._frontendClient.sendEvent(event, message);
     }.bind(this));
@@ -60,7 +66,6 @@ NetworkAgent.prototype._translateEventToFrontend = function(eventNames) {
 
 NetworkAgent.prototype._handleEvent = function(event, handle) {
   event = 'Network.' + event;
-  this._debuggerClient.registerDebuggerEventHandlers(event);
   this._debuggerClient.on(event, handle);
 };
 

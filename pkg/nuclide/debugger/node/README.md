@@ -13,7 +13,15 @@ The modifications are so `node-pre-gyp` doesn't try to compile `v8-debug` or `v8
 ```sh
 cd pkg/nuclide/debugger/node
 
-mkdir -p VendorLib/{v8-debug,v8-profiler}
+mkdir -p VendorLib/{node-inspector,v8-debug,v8-profiler}
+
+curl https://registry.npmjs.org/node-inspector/-/node-inspector-0.12.7.tgz |
+  tar -xz -C VendorLib/node-inspector --strip-components=1 \
+  --include='./package/LICENSE' \
+  --include='./package/package.json' \
+  --include='./package/lib/' \
+  --exclude='./package/lib/config.js' \
+  --exclude='./package/lib/debug-server.js'
 
 curl https://registry.npmjs.org/v8-debug/-/v8-debug-0.7.0.tgz |
   tar -xz -C resources/VendorLib/v8-debug --strip-components=1 \

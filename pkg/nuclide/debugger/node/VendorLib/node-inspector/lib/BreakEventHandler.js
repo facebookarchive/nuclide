@@ -18,7 +18,9 @@ function BreakEventHandler(config, session) {
   this._injectorClient = session.injectorClient;
   this._scriptManager = session.scriptManager;
   this._callFramesProvider = new CallFramesProvider(config, session);
-  this._registerDebuggerEventHandlers();
+
+  this._debuggerClient.on('break', this._onBreak.bind(this));
+  this._debuggerClient.on('exception', this._onBreak.bind(this));
 }
 
 var callbackForNextBreak;
@@ -41,11 +43,6 @@ Object.defineProperties(BreakEventHandler.prototype, {
   }
 });
 
-BreakEventHandler.prototype._registerDebuggerEventHandlers = function() {
-  this._debuggerClient.on('break', this._onBreak.bind(this));
-  this._debuggerClient.on('exception', this._onBreak.bind(this));
-};
-
 BreakEventHandler.prototype._onBreak = function(obj) {
   async.waterfall([
     this._handleInjectorClientBreak.bind(this, obj),
@@ -58,7 +55,7 @@ BreakEventHandler.prototype._onBreak = function(obj) {
     if (err && err !== true) {
       this._frontendClient.sendLogToConsole('error', err);
     }
-  });
+  }.bind(this));
 };
 
 BreakEventHandler.prototype._handleInjectorClientBreak = function(obj, cb) {

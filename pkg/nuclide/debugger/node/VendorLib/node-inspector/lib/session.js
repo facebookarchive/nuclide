@@ -18,7 +18,7 @@ function Session(config, debuggerPort, wsConnection) {
   this.scriptManager = new ScriptManager(config, this);
   this.breakEventHandler = new BreakEventHandler(config, this);
   this.frontendCommandHandler = new FrontendCommandHandler(config, this);
-  
+
   this.resourceTreeResolved = false;
   this.once('resource-tree-resolved', function() {
     this.resourceTreeResolved = true;
@@ -27,14 +27,20 @@ function Session(config, debuggerPort, wsConnection) {
   this.frontendClient.on('close', this.close.bind(this));
   this.debuggerClient.on('close', this._onDebuggerClientClose.bind(this));
   this.debuggerClient.on('error', this._onDebuggerClientError.bind(this));
-  this.injectorClient.on('error', this._onInjectorClientError.bind(this));
+
+  this._pingInterval = setInterval(function() {
+    wsConnection.ping(null, null, true);
+  }.bind(this), 1000);
 }
 
 inherits(Session, EventEmitter);
 
 Session.prototype.close = function() {
-  this.debuggerClient.close();
-  this.emit('close');
+  clearInterval(this._pingInterval);
+  if (this.debuggerClient.isConnected)
+    this.debuggerClient.close();
+  else
+    this.emit('close');
 };
 
 Session.prototype._onDebuggerClientClose = function(reason) {
@@ -48,11 +54,6 @@ Session.prototype._onDebuggerClientError = function(e) {
   if (e.helpString) {
     err += '\n' + e.helpString;
   }
-  this.frontendClient.sendLogToConsole('error', err);
-};
-
-Session.prototype._onInjectorClientError = function(e) {
-  var err = e.toString();
   this.frontendClient.sendLogToConsole('error', err);
 };
 

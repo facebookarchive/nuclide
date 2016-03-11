@@ -1,5 +1,5 @@
 // This function will be injected into the target process.
-module.exports = function(require, debug, options) {
+module.exports = function injection(require, debug, options) {
   var http = require('http'),
     https = require('https'),
     EventEmitter = require('events').EventEmitter;
@@ -226,8 +226,13 @@ module.exports = function(require, debug, options) {
 
     var requestInfo = constructRequestInfo(this);
 
+    // NOTE: if request was called as `http.request(options, cb)`
+    // then there is one action, which we can't detect in handleHttpResponse.
+    // We need to send this information to handleHttpResponse.
+    var willBeHandled = EventEmitter.listenerCount(this, 'response') > 0;
+
     this.once('socket', handleSocket.bind(this, requestInfo));
-    this.once('response', handleHttpResponse);
+    this.once('response', handleHttpResponse.bind(null, willBeHandled));
     this.once('error', handleFailure.bind(this, requestInfo));
     handleRequestData.call(this, requestInfo);
     handleAbort.call(this, requestInfo);
@@ -286,7 +291,7 @@ module.exports = function(require, debug, options) {
     });
   }
 
-  function handleHttpResponse(response) {
+  function handleHttpResponse(wasHandled, response) {
     var request = response.req;
     request.__inspector_timing__.receiveHeadersEnd();
 
@@ -295,7 +300,7 @@ module.exports = function(require, debug, options) {
     // Without our listener all data will be dumped, but we pause data by our listener.
     // Most simple solution here to `resume` data stream, instead of dump it,
     // otherwise we'll never get a data.
-    if (EventEmitter.listenerCount(request, 'response') === 0)
+    if (!wasHandled && EventEmitter.listenerCount(request, 'response') === 0)
       response.resume();
 
     var requestId = request.__inspector_ID__,
@@ -355,6 +360,9 @@ module.exports = function(require, debug, options) {
   debug.once('close', unwrapHttpRequests);
 
   function wrapHttpRequests() {
+    // We can't wrap only `onSocket` for handling all requests,
+    // there is one case, when `onSocket` will be never called
+    // (Agent + no free sockets)
     http.Agent.prototype.addRequest = function(req, options) {
       // NOTE: For node 0.10.*
       // We can't redefine options itself, this changes arguments
@@ -380,11 +388,22 @@ module.exports = function(require, debug, options) {
 
       if (!handledByAddRequest && !isUnixSocket) {
         options = debug.getFromFrame(1, 'options');
-        handleHttpRequest.call(this, {
-          host: options.host,
-          port: options.port,
-          path: this.path
-        });
+
+        if (!options || !(options instanceof Object)) {
+          console.error(
+            'Unexpected state in node-inspector network profiling.\n' +
+            'Something wrong with request `options` object in frame #1\n' +
+            'Current stackstace:', new Error().stack
+          );
+        } else {
+          handleHttpRequest.call(this, {
+            host: options.host,
+            port: options.port,
+            path: this.path
+          });
+        }
+
+        options = null;
       }
 
       return onSocket.apply(this, arguments);

@@ -142,6 +142,7 @@ FrontendClient.prototype.resumeEvents = function() {
  * @param {string} text
  */
 FrontendClient.prototype.sendLogToConsole = function(level, text) {
+  this.sendEvent('Console.showConsole');
   this.sendEvent(
     'Console.messageAdded',
     {

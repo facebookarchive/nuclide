@@ -24,6 +24,8 @@ function createFailingConnection(reason) {
 function DebuggerClient(debuggerPort) {
   this._conn = createFailingConnection('node-inspector server was restarted');
   this._port = debuggerPort;
+
+  this.target = null;
 }
 
 inherits(DebuggerClient, EventEmitter);
@@ -40,29 +42,23 @@ Object.defineProperties(DebuggerClient.prototype, {
     get: function() {
       return this._conn.connected;
     }
+  },
+
+  isReady: {
+    get: function() {
+      return this._conn.connected && !!this.target;
+    }
   }
 });
 
 DebuggerClient.prototype.connect = function() {
   this._conn = DebugConnection.attachDebugger(this._port);
 
-  this._conn.
-    on('connect', this._onConnectionOpen.bind(this)).
-    on('error', this.emit.bind(this, 'error')).
-    on('close', this._onConnectionClose.bind(this));
-
-  this.registerDebuggerEventHandlers('break', 'afterCompile', 'compileError', 'exception');
-};
-
-
-/**
- * @param {...string} eventNames
- */
-DebuggerClient.prototype.registerDebuggerEventHandlers = function(eventNames) {
-  for (var i in arguments) {
-    var name = arguments[i];
-    this._conn.on(name, this._emitDebuggerEvent.bind(this, name));
-  }
+  this._conn
+    .on('connect', this._onConnectionOpen.bind(this))
+    .on('error', this.emit.bind(this, 'error'))
+    .on('close', this._onConnectionClose.bind(this))
+    .on('event', function(obj) { this.emit(obj.event, obj.body); }.bind(this));
 };
 
 DebuggerClient.prototype._onConnectionOpen = function() {
@@ -70,8 +66,18 @@ DebuggerClient.prototype._onConnectionOpen = function() {
   // Send a dummy request so that we can read the state from the response.
   // We also need to get node version of the debugged process,
   // therefore the dummy request is `evaluate 'process.version'`
-  this.evaluateGlobal('process.version', function(error, result) {
-    this.targetNodeVersion = result;
+
+  var describeProgram = '(' + function() {
+    return {
+      pid: process.pid,
+      cwd: process.cwd(),
+      filename: process.mainModule ? process.mainModule.filename : process.argv[1],
+      nodeVersion: process.version
+    };
+  } + ')()';
+
+  this.evaluateGlobal(describeProgram, function(error, result) {
+    this.target = result;
     this.emit('connect');
   }.bind(this));
 };
@@ -81,15 +87,8 @@ DebuggerClient.prototype._onConnectionOpen = function() {
  */
 DebuggerClient.prototype._onConnectionClose = function(reason) {
   this._conn = createFailingConnection(reason);
+  this.target = null;
   this.emit('close', reason);
-};
-
-/**
- * @param {string} name
- * @param {Object} message
- */
-DebuggerClient.prototype._emitDebuggerEvent = function(name, message) {
-  this.emit(name, message.body);
 };
 
 /**
@@ -127,7 +126,10 @@ DebuggerClient.prototype.request = function(command, args, callback) {
 /**
  */
 DebuggerClient.prototype.close = function() {
-  this._conn.close();
+  if (this.isConnected)
+    this._conn.close();
+  else
+    this.emit('close');
 };
 
 /**
@@ -149,44 +151,14 @@ DebuggerClient.prototype.clearBreakpoint = function(breakpointId, done) {
  * @param {function(error, response)} done
  */
 DebuggerClient.prototype.evaluateGlobal = function(expression, done) {
-  // Note: we can't simply evaluate JSON.stringify(`expression`)
-  // because V8 debugger protocol truncates returned value to 80 characters
-  // The workaround is to split the serialized value into multiple pieces,
-  // each piece 80 characters long, send an array over the wire,
-  // and reconstruct the value back here
-  var code = 'JSON.stringify(' + expression + ').match(/.{1,80}/g).slice()';
   this.request(
     'evaluate',
     {
-      expression: code,
+      expression: 'JSON.stringify(' + expression + ')',
       global: true
     },
-    function _handleEvaluateResponse(err, result, refs) {
-      if (err) return done(err);
-
-      if (result.type != 'object' && result.className != 'Array') {
-        return done(
-          new Error(
-            'Evaluate returned unexpected result:' +
-              ' type: ' + result.type +
-              ' className: ' + result.className
-          )
-        );
-      }
-
-      var fullJsonString = result.properties
-        .filter(function isArrayIndex(p) { return /^\d+$/.test(p.name);})
-        .map(function resolvePropertyValue(p) { return refs[p.ref].value; })
-        .join('');
-
-      try {
-        done(null, JSON.parse(fullJsonString));
-      } catch (e) {
-        console.error('evaluateGlobal "%s" failed', expression);
-        console.error(e.stack);
-        console.error('--json-begin--\n%s--json-end--', fullJsonString);
-        done(e);
-      }
+    function _handleEvaluateResponse(err, result) {
+      done(err, JSON.parse(result.value));
     }
   );
 };

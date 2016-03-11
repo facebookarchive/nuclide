@@ -1,4 +1,6 @@
 var semver = require('semver');
+
+var injection = require.resolve('./Injections/ProfilerAgent');
 /**
  * @param {{inject}} config
  * @param {DebuggerClient} debuggerClient
@@ -6,7 +8,12 @@ var semver = require('semver');
  * @param {FrontendClient} frontendClient
 */
 function ProfilerAgent(config, session) {
-  this._noInject = config.inject === false;
+  try {
+    this._noInject = config.inject === false || config.inject.profiles === false;
+  } catch (e) {
+    this._noInject = false;
+  }
+
   this._injected = false;
   this._debuggerClient = session.debuggerClient;
   this._injectorClient = session.injectorClient;
@@ -21,22 +28,23 @@ function ProfilerAgent(config, session) {
 }
 
 ProfilerAgent.prototype._inject = function(injected) {
-  if (!injected) return;
-  
   this._translateEventToFrontend(
     'consoleProfileStarted',
     'consoleProfileFinished'
   );
 
   this._injectorClient.injection(
-    this.injection,
+    function(require, debug, options) {
+      require(options.injection)(require, debug, options);
+    },
     {
+      injection: injection,
       'v8-profiler': require.resolve('../../v8-profiler')
     },
     function(error, result) {
       this._injected = !error;
-      
-      if (error) this._frontendClient.sendLogToConsole('error', error.message || error);
+
+      if (error) return this._frontendClient.sendLogToConsole('error', error.message || error);
     }.bind(this)
   );
 };
@@ -47,7 +55,6 @@ ProfilerAgent.prototype._inject = function(injected) {
 ProfilerAgent.prototype._translateEventToFrontend = function(eventNames) {
   Array.prototype.forEach.call(arguments, function(event) {
     event = 'Profiler.' + event;
-    this._debuggerClient.registerDebuggerEventHandlers(event);
     this._debuggerClient.on(event, function(message) {
       this._frontendClient.sendEvent(event, message);
     }.bind(this));
@@ -68,7 +75,7 @@ ProfilerAgent.prototype._translateCommandToInjection = function(commandNames) {
 ProfilerAgent.prototype.enable = function(params, done) {
   done();
 
-  if (this._debuggerClient.targetNodeVersion) {
+  if (this._debuggerClient.isReady) {
     this._checkCompatibility();
   } else {
     this._debuggerClient.on('connect', this._checkCompatibility.bind(this));
@@ -76,7 +83,7 @@ ProfilerAgent.prototype.enable = function(params, done) {
 };
 
 ProfilerAgent.prototype._checkCompatibility = function() {
-  var version = this._debuggerClient.targetNodeVersion;
+  var version = this._debuggerClient.target.nodeVersion;
   var isCompatible = ProfilerAgent.nodeVersionIsCompatible(version);
   if (!isCompatible) {
     this._frontendClient.sendLogToConsole(
@@ -87,33 +94,6 @@ ProfilerAgent.prototype._checkCompatibility = function() {
       'Update Node to v0.11.13 or newer to get full support.'
     );
   }
-};
-
-ProfilerAgent.prototype.injection = function(require, debug, options) {
-  var path = require('path'),
-      profiler = require(options['v8-profiler']);
-
-  var profilingEnabled = false;
-
-  debug.register('Profiler.start', function(request, response) {
-    profiler.startProfiling();
-    profilingEnabled = true;
-  });
-
-  debug.register('Profiler.stop', function(request, response) {
-    var profile = profiler.stopProfiling();
-    profilingEnabled = false;
-    response.body = {profile: profile};
-    process.nextTick(function() {
-      profile.delete();
-    });
-  });
-
-  debug.on('close', function() {
-    if (profilingEnabled) profiler.stopProfiling();
-
-    profiler.deleteAllProfiles();
-  });
 };
 
 ProfilerAgent.nodeVersionIsCompatible = function(version) {

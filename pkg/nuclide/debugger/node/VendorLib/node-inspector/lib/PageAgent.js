@@ -47,7 +47,7 @@ extend(PageAgent.prototype, {
       this._session.emit('resource-tree-resolved');
     }.bind(this);
 
-    if (this._debuggerClient.isConnected) {
+    if (this._debuggerClient.isReady) {
       this._doGetResourceTree(params, cb);
     } else {
       this._debuggerClient.once(
@@ -58,18 +58,13 @@ extend(PageAgent.prototype, {
   },
 
   _doGetResourceTree: function(params, done) {
-    var describeProgram = '[process.cwd(), ' +
-      'process.mainModule ? process.mainModule.filename : process.argv[1]]';
+    var cwd = this._debuggerClient.target.cwd;
+    var filename = this._debuggerClient.target.filename;
 
     async.waterfall(
       [
-        this._debuggerClient.evaluateGlobal
-          .bind(this._debuggerClient, describeProgram),
-        function(evaluateResult, cb) {
-          cb(null, evaluateResult[0], evaluateResult[1]);
-        },
-        this._resolveMainAppScript.bind(this),
-        this._getResourceTreeForAppScript.bind(this)
+        this._resolveMainAppScript.bind(this, cwd, filename),
+        this._getResourceTreeForAppScript.bind(this, this._debuggerClient.target)
       ],
       done
     );
@@ -108,18 +103,18 @@ extend(PageAgent.prototype, {
     }.bind(this));
   },
 
-  _getResourceTreeForAppScript: function(startDirectory, mainAppScript, done) {
+  _getResourceTreeForAppScript: function(target, startDirectory, mainAppScript, done) {
     async.waterfall(
       [
         this._scriptStorage.findAllApplicationScripts
           .bind(this._scriptStorage, startDirectory, mainAppScript),
-        this._createResourceTreeResponse.bind(this, mainAppScript)
+        this._createResourceTreeResponse.bind(this, target, mainAppScript)
       ],
       done
     );
   },
 
-  _createResourceTreeResponse: function(mainAppScript, scriptFiles, done) {
+  _createResourceTreeResponse: function(target, mainAppScript, scriptFiles, done) {
     var resources = scriptFiles.map(function(filePath) {
       return {
         url: convert.v8NameToInspectorUrl(filePath),
@@ -133,18 +128,13 @@ extend(PageAgent.prototype, {
         frame: {
           id: 'nodeinspector-toplevel-frame',
           url: convert.v8NameToInspectorUrl(mainAppScript),
+          securityOrigin: 'node-inspector',
 
           // Front-end keeps a history of local modifications based
           // on loaderId. Ideally we should return such id that it remains
           // same as long as the the debugger process has the same content
           // of scripts and that changes when a new content is loaded.
-          //
-          // To keep things easy, we are returning an unique value for now.
-          // This means that every reload of node-inspector page discards
-          // the history of live-edit changes.
-          //
-          // Perhaps we can use PID as loaderId instead?
-          loaderId: createUniqueLoaderId(),
+          loaderId: target.pid,
           _isNodeInspectorScript: true
         },
         resources: resources
@@ -190,8 +180,3 @@ extend(PageAgent.prototype, {
 });
 
 exports.PageAgent = PageAgent;
-
-function createUniqueLoaderId() {
-  var randomPart = String(Math.random()).slice(2);
-  return Date.now() + '-' + randomPart;
-}

@@ -50,13 +50,6 @@ FrontendCommandHandler.prototype = {
     //  - DOMDebugger.setXHRBreakpoint
     //  - DOMDebugger.removeXHRBreakpoint
     this._registerNoopCommands(
-      // TODO(natthu): Investigate if this need to be implemented.
-      'Emulation.canEmulate',
-      'Worker.enable',
-      'ServiceWorker.enable',
-      'Emulation.setScriptExecutionDisabled',
-      'Page.setOverlayMessage',
-
       'Network.enable',
       'Network.setCacheDisabled',
       'Console.enable',
@@ -104,6 +97,7 @@ FrontendCommandHandler.prototype = {
     this._registerQuery('CSS.getSupportedCSSProperties', { cssProperties: []});
     this._registerQuery('Worker.canInspectWorkers', { result: false });
     this._registerQuery('Page.getScriptExecutionStatus', { result: 'enabled' });
+    this._registerQuery('IndexedDB.requestDatabaseNames', { databaseNames: [] });
   },
 
   _registerAgent: function(name, agent) {
