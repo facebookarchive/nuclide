@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import cpr from 'cpr';
+import fse from 'fs-extra';
 import path from 'path';
 import {mkdir} from './tempdir';
 
@@ -28,7 +28,7 @@ async function copyFixture(fixtureName: string, dirname: string): Promise<string
   // Recursively copy the contents of the fixture to the temp directory.
   await new Promise((resolve, reject) => {
     const sourceDirectory = path.join(dirname, 'fixtures', fixtureName);
-    cpr(sourceDirectory, tempDir, {overwrite: true}, (err: ?Error) => {
+    fse.copy(sourceDirectory, tempDir, (err: ?Error) => {
       if (err) {
         reject(err);
       } else {
