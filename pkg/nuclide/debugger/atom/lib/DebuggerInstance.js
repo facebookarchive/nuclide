@@ -14,6 +14,7 @@ import type {NuclideUri} from '../../../remote-uri';
 
 class DebuggerInstance {
   _processInfo: DebuggerProcessInfo;
+  onSessionEnd: ?(callback: () => void) => IDisposable;
 
   constructor(processInfo: DebuggerProcessInfo) {
     this._processInfo = processInfo;
@@ -35,11 +36,6 @@ class DebuggerInstance {
     throw new Error('abstract method');
   }
 
-  onSessionEnd(callback: () => void): {
-    dispose(): void;
-  } {
-    throw new Error('abstract method');
-  }
 }
 
 module.exports = DebuggerInstance;

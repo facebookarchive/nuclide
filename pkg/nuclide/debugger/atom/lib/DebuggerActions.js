@@ -13,6 +13,7 @@ const Constants = require('./Constants');
 const {CompositeDisposable} = require('atom');
 import {beginTimerTracking, failTimerTracking, endTimerTracking} from './AnalyticsHelper';
 import remoteUri from '../../../remote-uri';
+import invariant from 'assert';
 
 import type {Dispatcher} from 'flux';
 import type {
@@ -82,10 +83,10 @@ class DebuggerActions {
       data: debugSession,
     });
 
-    // TODO[jeffreytan]: currently only HHVM debugger implements this method
-    // investigate if LLDB/Node needs to implement it.
-    if (debugSession.onSessionEnd) {
-      this._disposables.add(debugSession.onSessionEnd(this._handleSessionEnd.bind(this)));
+    if (debugSession.onSessionEnd != null) {
+      const handler = this._handleSessionEnd.bind(this);
+      invariant(debugSession.onSessionEnd);
+      this._disposables.add(debugSession.onSessionEnd(handler));
     }
 
     const socketAddr = await debugSession.getWebsocketAddress();
