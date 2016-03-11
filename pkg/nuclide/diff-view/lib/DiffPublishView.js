@@ -9,25 +9,19 @@
  * the root directory of this source tree.
  */
 
-import AtomTextEditor from '../../ui/atom-text-editor';
 import type {RevisionInfo} from '../../hg-repository-base/lib/HgService';
 import type DiffViewModel from './DiffViewModel';
 import type {PublishModeType, PublishModeStateType} from './types';
 
+import arcanist from '../../arcanist-client';
+import AtomTextEditor from '../../ui/atom-text-editor';
 import classnames from 'classnames';
-import {React} from 'react-for-atom';
 import {PublishMode, PublishModeState} from './constants';
+import {React} from 'react-for-atom';
 
 type DiffRevisionViewProps = {
   revision: RevisionInfo;
 };
-
-// TODO(most): Use @mareksapota's utility when done.
-const DIFF_REVISION_REGEX = /Differential Revision: (.*)/;
-function getUrlFromMessage(message: string): ?string {
-  const diffMatch = DIFF_REVISION_REGEX.exec(message);
-  return (diffMatch == null) ? null : diffMatch[1];
-}
 
 class DiffRevisionView extends React.Component {
   props: DiffRevisionViewProps;
@@ -35,13 +29,13 @@ class DiffRevisionView extends React.Component {
   render(): ReactElement {
     const {hash, title, description} = this.props.revision;
     const tooltip = `${hash}: ${title}`;
-    const url = getUrlFromMessage(description);
+    const revision = arcanist.getPhabricatorRevisionFromCommitMessage(description);
 
-    return (url == null)
+    return (revision == null)
       ? <span />
       : (
-        <a href={url} title={tooltip}>
-          {url}
+        <a href={revision.url} title={tooltip}>
+          {revision.id}
         </a>
       );
   }
