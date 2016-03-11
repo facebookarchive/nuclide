@@ -23,6 +23,9 @@ function jasmineIntegrationTestSetup(): void {
   // Allow jasmine to interact with the DOM.
   jasmine.attachToDOM(atom.views.getView(atom.workspace));
 
+  // This prevents zombie buck/java processes from hanging the tests
+  process.env.NO_BUCKD = '1';
+
   // Set the testing window dimensions.
   const styleCSS = `
     height: ${TEST_WINDOW_HEIGHT}px;
