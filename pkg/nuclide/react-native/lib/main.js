@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {nuclide_debugger$Service} from '../../debugger/interfaces/service';
 import type {Activation as ActivationType} from './Activation';
 
 import invariant from 'assert';
@@ -25,4 +26,9 @@ export function deactivate(): void {
   invariant(activation != null);
   activation.dispose();
   activation = null;
+}
+
+export function provideNuclideDebugger(): nuclide_debugger$Service {
+  invariant(activation != null);
+  return activation.provideNuclideDebugger();
 }

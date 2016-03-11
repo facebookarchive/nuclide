@@ -16,14 +16,12 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationCommands": {
-    "atom-workspace": [
-      "nuclide-react-native:start-debugging",
-      "nuclide-react-native:stop-debugging",
-      "nuclide-react-native:start-packager",
-      "nuclide-react-native:stop-packager",
-      "nuclide-react-native:restart-packager",
-      "nuclide-react-native:reload-app"
-    ]
+  "providedServices": {
+    "nuclide-debugger-react-native-service": {
+      "description": "Debugger backend for React Native processes.",
+      "versions": {
+        "0.0.0": "provideNuclideDebugger"
+      }
+    }
   }
 }

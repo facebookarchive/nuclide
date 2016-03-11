@@ -32,6 +32,11 @@
         "0.0.0": "consumeNuclideDebugger"
       }
     },
+    "nuclide-debugger-react-native-service": {
+      "versions": {
+        "0.0.0": "consumeNuclideDebugger"
+      }
+    },
     "tool-bar": {
       "versions": {
         "^0.1.0": "consumeToolBar"

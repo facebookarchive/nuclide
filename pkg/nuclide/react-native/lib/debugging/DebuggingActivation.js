@@ -9,145 +9,86 @@
  * the root directory of this source tree.
  */
 
-import type RemoteControlService from '../../../debugger/atom/lib/RemoteControlService';
+import type DebuggerProcessInfo from '../../../debugger/atom/lib/DebuggerProcessInfo';
+import type {nuclide_debugger$Service} from '../../../debugger/interfaces/service';
 
-import {event as commonsEvent} from '../../../commons';
-import serviceHub from '../../../service-hub-plus';
-import {DebuggerProxyClient} from '../../../react-native-node-executor/lib/DebuggerProxyClient';
+import serviceHubPlus from '../../../service-hub-plus';
+import {ReactNativeDebuggerInstance} from './ReactNativeDebuggerInstance';
 import {ReactNativeProcessInfo} from './ReactNativeProcessInfo';
 import {CompositeDisposable, Disposable} from 'atom';
 import Rx from 'rx';
-
-const {observableFromSubscribeFunction} = commonsEvent;
 
 /**
  * Connects the executor to the debugger.
  */
 export class DebuggingActivation {
-
-  _connectionDisposables: ?IDisposable;
-  _disposables: CompositeDisposable;
-  _killOnSessionsEndedTimeoutId: ?number;
-  _pendingDebuggerProcessInfo: ?ReactNativeProcessInfo;
+  _disposables: IDisposable;
+  _startDebuggingDisposable: ?IDisposable;
 
   constructor() {
     this._disposables = new CompositeDisposable(
       atom.commands.add('atom-workspace', {
         'nuclide-react-native:start-debugging': () => this._startDebugging(),
-        'nuclide-react-native:stop-debugging': () => this._stopDebugging(),
       }),
-      new Disposable(() => this._stopDebugging()),
+      new Disposable(() => {
+        if (this._startDebuggingDisposable != null) {
+          this._startDebuggingDisposable.dispose();
+        }
+      }),
     );
   }
 
   dispose(): void {
     this._disposables.dispose();
-    if (this._connectionDisposables != null) {
-      this._connectionDisposables.dispose();
-    }
   }
 
   _startDebugging(): void {
-    this._stopDebugging();
+    if (this._startDebuggingDisposable != null) {
+      this._startDebuggingDisposable.dispose();
+    }
 
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
+    // Stop any current debugger and show the debugger view.
+    const workspace = atom.views.getView(atom.workspace);
+    atom.commands.dispatch(workspace, 'nuclide-debugger:stop-debugging');
+    atom.commands.dispatch(workspace, 'nuclide-debugger:show');
 
-    const client = new DebuggerProxyClient();
-    const service$ = Rx.Observable.fromPromise(
-      serviceHub.consumeFirstProvider('nuclide-debugger.remote')
+    const debuggerServiceStream = Rx.Observable.fromPromise(
+      serviceHubPlus.consumeFirstProvider('nuclide-debugger.remote')
     );
+    const processInfoLists = Rx.Observable.fromPromise(getProcessInfoList());
+    this._startDebuggingDisposable = debuggerServiceStream.combineLatest(processInfoLists)
+      .subscribe(([debuggerService, processInfoList]) => {
+        const processInfo = processInfoList[0];
+        if (processInfo != null) {
+          debuggerService.startDebugging(processInfo);
+        }
+      });
+  }
 
-    this._connectionDisposables = new CompositeDisposable(
-      new Disposable(() => client.disconnect()),
-      new Disposable(() => { this._pendingDebuggerProcessInfo = null; }),
+  provideNuclideDebugger(): nuclide_debugger$Service {
+    return {
+      name: 'React Native',
+      getProcessInfoList,
+      ReactNativeDebuggerInstance,
+    };
+  }
 
-      // Start debugging as soon as we get the service. We won't yet have a pid so we use an
-      // "unfinished" ProcessInfo instance, which we can later complete by calling `setPid()`
-      service$.subscribe(debuggerService => { this._startDebuggerSession(debuggerService, null); }),
+}
 
-      // Update the debugger whenever we get a new pid. (This happens whenever the user reloads the
-      // RN app.)
-      Rx.Observable.combineLatest(
-        service$,
-        observableFromSubscribeFunction(client.onDidEvalApplicationScript.bind(client)),
-      )
-        .subscribe(([debuggerService, pid]) => {
-          this._updateDebuggerSession(debuggerService, pid);
-        }),
+function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
+  // TODO(matthewwithanm): Use project root instead of first directory.
+  const currentProjectDir = atom.project.getDirectories()[0];
+
+  // TODO: Check if it's an RN app?
+  // TODO: Query packager for running RN app?
+
+  if (currentProjectDir == null) {
+    atom.notifications.addError(
+      'You must have an open project to debug a React Native application'
     );
-
-    client.connect();
+    return Promise.resolve([]);
   }
 
-  _stopDebugging(): void {
-    if (this._connectionDisposables == null) {
-      return;
-    }
-    this._connectionDisposables.dispose();
-    this._connectionDisposables = null;
-  }
-
-  /**
-   * Update the debugger once we receive a pid. When debugging is first started, this will mean
-   * updating the pending process info (which was created before we had a pid). After that, however,
-   * we can just build new process info objects and start debugging again. This is necessary because
-   * 1) we must create a ProcessInfo object in order to signal to the debugger that we're starting
-   * debugging and 2) once started, there's no way of telling the debugger to start a new session
-   * without creating a new ProcessInfo instance.
-   */
-  _updateDebuggerSession(debuggerService: RemoteControlService, pid: number): void {
-    const pendingProcessInfo = this._pendingDebuggerProcessInfo;
-    if (pendingProcessInfo != null) {
-      const currentPid = pendingProcessInfo.getPid();
-      if (currentPid == null) {
-        pendingProcessInfo.setPid(pid);
-        return;
-      }
-    }
-
-    this._pendingDebuggerProcessInfo = null;
-    this._startDebuggerSession(debuggerService, pid);
-
-    // The node process is paused by default when we send SIGUSR1, so we automatically continue.
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:continue-debugging',
-    );
-  }
-
-  _startDebuggerSession(debuggerService: RemoteControlService, pid: ?number): void {
-    clearTimeout(this._killOnSessionsEndedTimeoutId);
-
-    // TODO(matthewwithanm): Use project root instead of first directory.
-    const currentProjectDir = atom.project.getDirectories()[0];
-
-    if (currentProjectDir == null) {
-      atom.notifications.addError(
-        'You must have an open project to debug a React Native application'
-      );
-      return;
-    }
-
-    const targetUri = currentProjectDir.getPath();
-    const processInfo = new ReactNativeProcessInfo({
-      targetUri,
-      pid,
-      onAllSessionsEnded: () => {
-        // We have no way to differentiate between when all sessions have closed because the user
-        // closed the debugger and when all sessions have closed because the user has reloaded the
-        // RN app. So we wait a bit to kill the client to make sure a new session isn't going to be
-        // started (e.g. the user just reloaded the app).
-        // TODO: Create a custom DebuggerInstance class that wraps the creation of the client and
-        //       hides the fact that we have multiple sessions.
-        this._killOnSessionsEndedTimeoutId = setTimeout(this._stopDebugging.bind(this), 2000);
-      },
-    });
-
-    if (pid == null) {
-      this._pendingDebuggerProcessInfo = processInfo;
-    }
-
-    debuggerService.startDebugging(processInfo);
-  }
-
+  const targetUri = currentProjectDir.getPath();
+  return Promise.resolve([new ReactNativeProcessInfo(targetUri)]);
 }

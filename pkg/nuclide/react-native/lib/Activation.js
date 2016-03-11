@@ -9,17 +9,20 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
+import type {nuclide_debugger$Service} from '../../debugger/interfaces/service';
+
 import {DebuggingActivation} from './debugging/DebuggingActivation';
 import {PackagerActivation} from './packager/PackagerActivation';
 import {ShellActivation} from './shell/ShellActivation';
+import {CompositeDisposable} from 'atom';
 
 export class Activation {
-  _disposables: CompositeDisposable;
+  _debuggingActivation: DebuggingActivation;
+  _disposables: IDisposable;
 
   constructor(state: ?Object) {
     this._disposables = new CompositeDisposable(
-      new DebuggingActivation(),
+      this._debuggingActivation = new DebuggingActivation(),
       new PackagerActivation(),
       new ShellActivation(),
     );
@@ -27,6 +30,10 @@ export class Activation {
 
   dispose(): void {
     this._disposables.dispose();
+  }
+
+  provideNuclideDebugger(): nuclide_debugger$Service {
+    return this._debuggingActivation.provideNuclideDebugger();
   }
 
 }

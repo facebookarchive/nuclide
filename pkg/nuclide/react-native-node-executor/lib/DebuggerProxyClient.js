@@ -80,12 +80,18 @@ export class DebuggerProxyClient {
           }
           childManager.handleMessage(message);
         }),
-      Rx.Observable.fromEvent(ws, 'close').subscribe(() => {
-        this._killConnection();
+      // TODO: Add timeout
+      // If we can't connect, or get disconnected, keep trying to connect.
+      Rx.Observable.merge(
+        Rx.Observable.fromEvent(ws, 'error').filter(err => err.code === 'ECONNREFUSED'),
+        Rx.Observable.fromEvent(ws, 'close'),
+      )
+        .subscribe(() => {
+          this._killConnection();
 
-        // Keep attempting to connect.
-        setTimeout(this._tryToConnect.bind(this), 500);
-      }),
+          // Keep attempting to connect.
+          setTimeout(this._tryToConnect.bind(this), 500);
+        }),
       new Disposable(() => { ws.close(); }),
     );
   }

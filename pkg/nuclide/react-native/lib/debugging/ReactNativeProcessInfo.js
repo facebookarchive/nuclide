@@ -12,50 +12,18 @@
 import type {NuclideUri} from '../../../remote-uri';
 
 import {DebuggerProcessInfo} from '../../../debugger/atom';
-import {NodeDebuggerInstance} from '../../../debugger/node/lib/Service';
-
-type Options = {
-  targetUri: NuclideUri;
-  pid: ?number;
-  onAllSessionsEnded: () => void;
-};
+import {ReactNativeDebuggerInstance} from './ReactNativeDebuggerInstance';
 
 export class ReactNativeProcessInfo extends DebuggerProcessInfo {
 
-  _onAllSessionsEnded: () => void;
-  _pid: ?number;
-  _pidPromise: Promise<number>;
-  _sessionCount: number;
-  setPid: (pid: number) => void;
-
-  constructor(options: Options) {
-    super('react-native', options.targetUri);
-    this._sessionCount = 0;
-    this._onAllSessionsEnded = options.onAllSessionsEnded;
-    this._pidPromise = new Promise(resolve => {
-      this.setPid = pid => {
-        this._pid = pid;
-        resolve(pid);
-      };
-    });
-    if (options.pid != null) {
-      this.setPid(options.pid);
-    }
+  constructor(targetUri: NuclideUri) {
+    super('react-native', targetUri);
   }
 
-  async debug(): Promise<NodeDebuggerInstance> {
-    this._sessionCount += 1;
-    const pid = await this._pidPromise;
-
-    // Enable debugging in the process.
-    // See <https://nodejs.org/api/debugger.html#debugger_advanced_usage>
-    process.kill(pid, 'SIGUSR1');
-
+  debug(): Promise<ReactNativeDebuggerInstance> {
     // This is the port that the V8 debugger usually listens on.
     // TODO(matthewwithanm): Provide a way to override this in the UI.
-    const session = new NodeDebuggerInstance(this, 5858);
-    session.onSessionEnd(this._handleSessionEnd.bind(this));
-    return session;
+    return Promise.resolve(new ReactNativeDebuggerInstance(this, 5858));
   }
 
   compareDetails(other: DebuggerProcessInfo): number {
@@ -63,18 +31,7 @@ export class ReactNativeProcessInfo extends DebuggerProcessInfo {
   }
 
   displayString(): string {
-    return 'React Native';
-  }
-
-  getPid(): ?number {
-    return this._pid;
-  }
-
-  _handleSessionEnd(): void {
-    this._sessionCount -= 1;
-    if (this._sessionCount === 0) {
-      this._onAllSessionsEnded.call(null);
-    }
+    return this.getTargetUri();
   }
 
 }
