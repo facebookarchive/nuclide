@@ -76,11 +76,11 @@ export default class Child {
     await this._closed;
   }
 
-  execScript(script: string, inject: string, id: number) {
+  executeApplicationScript(script: string, inject: string, id: number) {
     this._execScriptMessageId = id;
     this._input$.onNext({
       id,
-      op: 'evalScript',
+      op: 'executeApplicationScript',
       data: {
         script,
         inject,

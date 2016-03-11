@@ -83,7 +83,7 @@ export default class ChildManager {
     const scriptUrl = url.format(parsedUrl);
     const script = await getScriptContents(scriptUrl);
     invariant(this._child);
-    this._child.execScript(script, message.inject, message.id);
+    this._child.executeApplicationScript(script, message.inject, message.id);
   }
 
   executeJSCall(message: Object) {

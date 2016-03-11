@@ -24,7 +24,7 @@ var rnRequire;
 
 // respond to ops
 var ops = {
-  evalScript: function (id, data) {
+  executeApplicationScript: function (id, data) {
     global.require = null;
     if (data.inject) {
       for (var name in data.inject) {
