@@ -6,7 +6,7 @@ permalink: /docs/platforms/android/
 ---
 
 Nuclide's support for Android is currently much more limited and basic than that for
-[iOS](/docs/platforms/ios). If you are a 
+[iOS](/docs/platforms/ios). If you are a
 [React Native](/docs/platforms/react-native) developer for Android, there is more
 full-featured support for the Flow or JavaScript side of your application. For debugging, there is
 currently built-in support for [ADB logs](#emulator-logs).
@@ -31,7 +31,8 @@ Android Studio. You can also use the command-line tools such as `adb` and `am`, 
 
 ## Debugging
 
-[Debugging](/docs/features/debugger/) native Android applications is currently not supported.
+Debugging Android applications is currently not supported except through the logs provided
+by Nuclide's [Android Debug Bridge (ADB) Logcat support](#emulator-logs).
 
 ## Emulator Logs
 

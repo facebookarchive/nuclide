@@ -216,8 +216,4 @@ language specific debugging workflows that require discussion and illustration.
 - [React Native](/docs/platforms/react-native/#debugging)
 - [Objective-C](/docs/languages/objective-c/#debugging)
 - [iOS](/docs/platforms/ios/#debugging)
-
-### Android
-
-Debugging Android applications is currently not supported except through the logs provided
-by Nuclide's [Android Debug Bridge (ADB) Logcat support](/docs/platform/android/emulator-logs).
+- [Android](/docs/platforms/android/#debugging)
