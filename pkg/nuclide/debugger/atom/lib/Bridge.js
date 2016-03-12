@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
+import type DebuggerModel from './DebuggerModel';
+
 const remoteUri = require('../../../remote-uri');
 const {CompositeDisposable, Disposable} = require('atom');
-
-import type BreakpointStoreType from './BreakpointStore';
 
 const INJECTED_CSS = [
   /* Force the inspector to scroll vertically on Atom ≥ 1.4.0 */
@@ -22,7 +22,7 @@ const INJECTED_CSS = [
 ].join('');
 
 class Bridge {
-  _breakpointStore: BreakpointStoreType;
+  _debuggerModel: DebuggerModel;
   _disposables: CompositeDisposable;
   // Contains disposable items should be disposed by
   // cleanup() method.
@@ -31,14 +31,14 @@ class Bridge {
   _webview: ?WebviewElement;
   _suppressBreakpointSync: boolean;
 
-  constructor(breakpointStore: BreakpointStoreType) {
-    this._breakpointStore = breakpointStore;
+  constructor(debuggerModel: DebuggerModel) {
+    this._debuggerModel = debuggerModel;
     this._cleanupDisposables = new CompositeDisposable();
     this._selectedCallFrameMarker = null;
     this._webview = null;
     this._suppressBreakpointSync = false;
     this._disposables = new CompositeDisposable(
-      breakpointStore.onChange(this._handleBreakpointStoreChange.bind(this)),
+      debuggerModel.getBreakpointStore().onChange(this._handleBreakpointStoreChange.bind(this)),
     );
   }
 
@@ -163,7 +163,7 @@ class Bridge {
     if (path) {
       try {
         this._suppressBreakpointSync = true;
-        this._breakpointStore.addBreakpoint(path, location.lineNumber);
+        this._debuggerModel.getBreakpointStore().addBreakpoint(path, location.lineNumber);
       } finally {
         this._suppressBreakpointSync = false;
       }
@@ -176,7 +176,7 @@ class Bridge {
     if (path) {
       try {
         this._suppressBreakpointSync = true;
-        this._breakpointStore.deleteBreakpoint(path, location.lineNumber);
+        this._debuggerModel.getBreakpointStore().deleteBreakpoint(path, location.lineNumber);
       } finally {
         this._suppressBreakpointSync = false;
       }
@@ -199,7 +199,7 @@ class Bridge {
     const webview = this._webview;
     if (webview && !this._suppressBreakpointSync) {
       const results = [];
-      this._breakpointStore.getAllBreakpoints().forEach((line, key) => {
+      this._debuggerModel.getBreakpointStore().getAllBreakpoints().forEach((line, key) => {
         results.push({
           sourceURL: remoteUri.nuclideUriToUri(key),
           lineNumber: line,

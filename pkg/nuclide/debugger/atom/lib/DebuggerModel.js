@@ -39,7 +39,7 @@ class DebuggerModel {
     this._actions = new DebuggerActions(this._dispatcher, this._store);
     this._breakpointStore = new BreakpointStore(state ? state.breakpoints : null);
     this._breakpointManager = new BreakpointManager(this._breakpointStore);
-    this._bridge = new Bridge(this._breakpointStore);
+    this._bridge = new Bridge(this);
     this._debuggerProviderStore = new DebuggerProviderStore(this._dispatcher, this._actions);
 
     this._disposables = new CompositeDisposable(

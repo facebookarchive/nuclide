@@ -11,8 +11,7 @@
 
 import invariant from 'assert';
 
-const BreakpointStore = require('../lib/BreakpointStore');
-const Bridge = require('../lib/Bridge');
+const DebuggerModel = require('../lib/DebuggerModel');
 const utils = require('./utils');
 const {array} = require('../../../commons');
 
@@ -59,6 +58,7 @@ class MockWebview {
 }
 
 describe('Bridge', () => {
+  let debuggerModel;
   let breakpointStore;
   let bridge;
   let editor;
@@ -106,8 +106,9 @@ describe('Bridge', () => {
       invariant(editorPath);
       path = editorPath;
       mockWebview = new MockWebview();
-      breakpointStore = new BreakpointStore();
-      bridge = new Bridge(breakpointStore);
+      debuggerModel = new DebuggerModel();
+      bridge = debuggerModel.getBridge();
+      breakpointStore = debuggerModel.getBreakpointStore();
       spyOn(breakpointStore, 'addBreakpoint').andCallThrough();
       spyOn(breakpointStore, 'deleteBreakpoint').andCallThrough();
       bridge.setWebviewElement(((mockWebview: any): WebviewElement));
