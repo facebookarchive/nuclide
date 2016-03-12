@@ -49,8 +49,10 @@ in order to build, run and eventually debug your iOS app directly from Nuclide.
 
 ## Debugging
 
-Debugging native iOS applications is currently
-[supported using Buck](/docs/features/debugger/#language-specific-debugging__ios).
+Debugging native [Objective-C](/docs/languages/objective-c/) iOS applications is
+[supported using Buck](/docs/languages/objective-c/#debugging).
+
+> [React Native](/docs/platforms/react-native/#debugging) is also supported.
 
 ## Simulator Logs
 
