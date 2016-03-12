@@ -36,7 +36,6 @@ Flow's integration into Nuclide provides you with productivity features such as:
 * [Autocomplete](#features__autocomplete)
 * [Jump to Definition](#features__jump-to-definition)
 * [Inline (mouse over) typehinting](#features__type-hinting)
-* [Debugging](/docs/features/debugger/#language-specific-debugging__node)
 
 > These features will not work properly unless you are working with Flow-enabled JavaScript since
 > they require a `.flowconfig` file in your project root and the ability to run the Flow
@@ -92,3 +91,9 @@ type hint, its associated variable will have motion in its highlight.
 Click the `x` to remove the pinned type hint.
 
 > Pinned type hints can be moved anywhere within the editor.
+
+## Debugging
+
+The debugging of Flow through Node is a cornerstone of Nuclide. It serves as the example for
+the [debugger](/docs/features/debugger/) at large, and is
+[described there](/docs/features/debugger/#basics).

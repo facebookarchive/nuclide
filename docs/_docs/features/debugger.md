@@ -210,12 +210,8 @@ While the [general process](#basics) for debugging in Nuclide is similar, there 
 language specific debugging workflows that require discussion and illustration.
 
 - [Hack and PHP](/docs/languages/hack/#debugging)
-
-### Node
-
-The [general Nuclide debugging section](#basics) is centered around debugging with Node. If your
-project is written in [Flow or JavaScript](/docs/languages/flow/), you can use Nuclide's Node
-debugging.
+- [Flow and JavaScript](/docs/languages/flow/#debugging) (The canonical example for debugging as
+  described [above](#basics)).
 
 ### C++
 
