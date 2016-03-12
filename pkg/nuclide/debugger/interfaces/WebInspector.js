@@ -60,6 +60,23 @@ declare class WebInspector$DebuggerModel {
   stepInto(): void;
   stepOut(): void;
 
+  selectedCallFrame(): ?WebInspector$CallFrame;
+  setSelectedCallFrame(callFrame: WebInspector$CallFrame): void;
+  callFrames: Array<WebInspector$CallFrame>;
+  evaluateOnSelectedCallFrame(
+    expression: string,
+    objectGroup: string,
+    includeCommandLineAPI: boolean,
+    doNotPauseOnExceptionsAndMuteConsole: boolean,
+    returnByValue: boolean,
+    generatePreview: boolean,
+    callback: (
+      remoteObject: ?Object,
+      wasThrown: boolean,
+      resultOrError: mixed
+    ) => void,
+  ): void;
+
   _parsedScriptSource(sourceUrl: string, sourceUrl: string): void;
 }
 
