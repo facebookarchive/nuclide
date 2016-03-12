@@ -45,7 +45,7 @@ class ThreadManager(object):
             'stopThreadId': process.GetSelectedThread().GetThreadID(),
             'threads': threads_array,
         }
-        self._debugger_store.channel.send_notification('Debugger.threadsUpdated', params)
+        self._debugger_store.chrome_channel.send_notification('Debugger.threadsUpdated', params)
 
     def get_thread_stack(self, thread):
         """Fetch serialized callstack for input thread."""

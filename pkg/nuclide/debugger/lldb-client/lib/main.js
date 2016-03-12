@@ -13,9 +13,16 @@ import type {
   nuclide_debugger$Service,
   NuclideDebuggerProvider,
 } from '../../interfaces/service';
+import type OutputService from '../../../output/lib/OutputService';
+
+import {setOutputService} from '../../common/lib/OutputServiceManager';
 
 module.exports = {
   activate(state: mixed): void {
+  },
+
+  consumeOutputService(api: OutputService): void {
+    setOutputService(api);
   },
 
   provideNuclideDebuggerLLDB(): nuclide_debugger$Service {

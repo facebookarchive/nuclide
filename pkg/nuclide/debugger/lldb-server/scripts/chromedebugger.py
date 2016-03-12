@@ -26,8 +26,7 @@ class DebuggerWebSocket(WebSocket):
     # List of HandlerDomainSets for the server to respond to reqs with.
     def __init__(self, *args, **kwargs):
         WebSocket.__init__(self, *args, **kwargs)
-        channel = self.debugger_store().channel
-        channel.setSocket(self)
+        self.debugger_store().chrome_channel.setSocket(self)
 
         common_domain_args = {
             'debugger_store': self.debugger_store()

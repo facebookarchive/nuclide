@@ -23,10 +23,12 @@ from collections import namedtuple
 from logging_helper import log_debug, log_error
 from event_thread import LLDBListenerThread
 from debugger_store import DebuggerStore
-from notification_channel import NotificationChannel
+from chrome_channel import ChromeChannel
+from ipc_channel import IpcChannel
+import time
 
 
-def parseArgs():
+def parse_args():
     '''Parse command line arguments.
 
     Most of the options are used for manual testing purpose.
@@ -81,12 +83,12 @@ def read_json_arguments_if_needed(arguments):
             arguments = json.loads(
                 arguments_input,
                 object_hook=lambda d: namedtuple('arguments', d.keys())(*d.values()))
+            log_debug('Parsed arguments: %s' % json.dumps(arguments))
             file.close()
         else:
             # Fail: did not receive proper initialization sequence.
             log_error('LLDB got unknown init line: %s' % init_line)
             sys.exit(2)
-    log_debug('Parsed arguments: %s' % json.dumps(arguments))
     return arguments
 
 
@@ -106,7 +108,7 @@ def interactive_loop(debugger):
             debugger.HandleCommand(command)
 
 
-def startDebugging(debugger, arguments):
+def start_debugging(debugger, arguments, ipc_channel):
     listener = lldb.SBListener('Chrome Dev Tools Listener')
     is_attach = True
     error = lldb.SBError()
@@ -147,18 +149,33 @@ def startDebugging(debugger, arguments):
         sys.exit('Unknown arguments: %s' % arguments)
 
     if error.Fail():
+        ipc_channel.send_output_message('error', error.description)
         sys.exit(error.description)
+    else:
+        if is_attach:
+            output = 'Successfully attached process.'
+        else:
+            output = 'Successfully launched process.'
+        ipc_channel.send_output_message('log', output)
 
     return is_attach
 
 
 def main():
-    arguments = parseArgs()
+    arguments = parse_args()
     debugger = lldb.SBDebugger.Create()
-    is_attach = startDebugging(debugger, arguments)
 
-    channel = NotificationChannel()
-    debugger_store = DebuggerStore(channel, debugger, is_attach, str(getattr(arguments, 'basepath', '.')))
+    is_interactive = getattr(arguments, 'interactive', False)
+    ipc_channel = IpcChannel(is_interactive)
+    is_attach = start_debugging(debugger, arguments, ipc_channel)
+
+    chrome_channel = ChromeChannel()
+    debugger_store = DebuggerStore(
+        debugger,
+        chrome_channel,
+        ipc_channel,
+        is_attach,
+        str(getattr(arguments, 'basepath', '.')))
 
     try:
         app = ChromeDevToolsDebuggerApp(debugger_store, getattr(arguments, 'port', 0))
@@ -167,7 +184,7 @@ def main():
         event_thread = LLDBListenerThread(debugger_store, app)
         event_thread.start()
 
-        if getattr(arguments, 'interactive', False):
+        if is_interactive:
             app.start_nonblocking()
             interactive_loop(debugger)
         else:

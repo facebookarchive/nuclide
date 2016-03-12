@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import {Observable} from 'rx';
 import type {
   DebuggerConnection as DebuggerConnectionType,
 } from '../../lldb-server/lib/DebuggerRpcServiceInterface';
@@ -16,6 +17,7 @@ import type {DebuggerProcessInfo} from '../../atom';
 
 import {EventEmitter} from 'events';
 import utils from './utils';
+import {getOutputService} from '../../common/lib/OutputServiceManager';
 import {DebuggerInstance} from '../../atom';
 const {log, logInfo, logError} = utils;
 const {translateMessageFromServer, translateMessageToServer} = require('./ChromeMessageRemoting');
@@ -55,6 +57,19 @@ export class LldbDebuggerInstance extends DebuggerInstance {
       this._handleServerError.bind(this),
       this._handleSessionEnd.bind(this)
     ));
+    this._registerOutputWindowLogging(connection.getOutputWindowObservable());
+  }
+
+  _registerOutputWindowLogging(userOutputStream: Observable<string>): void {
+    const api = getOutputService();
+    if (api != null) {
+      this._disposables.add(api.registerOutputProvider({
+        source: 'lldb debugger',
+        messages: userOutputStream.map(message => JSON.parse(message)),
+      }));
+    } else {
+      logError('Cannot get output window service.');
+    }
   }
 
   _handleServerMessage(message: string): void {

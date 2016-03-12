@@ -18,7 +18,7 @@ import type {nuclide_debugger$Service} from '../../interfaces/service';
 import type DebuggerInstance from './DebuggerInstance';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 
-type DebuggerMode = 'starting' | 'debugging' | 'stopped';
+type DebuggerMode = 'starting' | 'debugging' | 'stopping' | 'stopped';
 
 /**
  * Flux style Store holding all data used by the debugger plugin.

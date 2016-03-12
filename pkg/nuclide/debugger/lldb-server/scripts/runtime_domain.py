@@ -111,7 +111,7 @@ class RuntimeDomain(HandlerDomain):
             name = 'LLDB - %s (%d)' % (filename, pid)
         else:
             name = 'LLDB - no target'
-        self.debugger_store.channel.send_notification(
+        self.debugger_store.chrome_channel.send_notification(
             'Runtime.executionContextCreated',
             params={
                 'context': {

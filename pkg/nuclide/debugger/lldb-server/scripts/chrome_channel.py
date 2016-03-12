@@ -8,7 +8,7 @@ import json
 from logging_helper import log_debug
 
 
-class NotificationChannel:
+class ChromeChannel:
     '''Provides caching and flush capability for sending Chrome debugger notifications.
     '''
     def __init__(self):

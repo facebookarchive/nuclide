@@ -107,9 +107,14 @@ class DebuggerActions {
   }
 
   killDebugger() {
-    track(AnalyticsEvents.DEBUGGER_STOP);
-    endTimerTracking();
-    this._handleDebugModeEnd();
+    if (this._store.getDebuggerMode() === 'stopping') {
+      return;
+    }
+
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
+      data: 'stopping',
+    });
     const debugSession = this._store.getDebuggerProcess();
     if (debugSession != null) {
       debugSession.dispose();
@@ -126,6 +131,8 @@ class DebuggerActions {
       actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
       data: 'stopped',
     });
+    track(AnalyticsEvents.DEBUGGER_STOP);
+    endTimerTracking();
   }
 
   addService(service: nuclide_debugger$Service) {
@@ -215,12 +222,6 @@ class DebuggerActions {
   _handleDebugModeStart(): void {
     // Open the output window if it's not already opened.
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-output:show');
-  }
-
-  _handleDebugModeEnd(): void {
-    // Close the output window when we are done with debugging.
-    // TODO(jonaldislarry) don't close the window if it was open prior to debugging.
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-output:hide');
   }
 }
 

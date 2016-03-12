@@ -7,7 +7,7 @@
 from ..find_lldb import lldb
 from ..thread_manager import ThreadManager
 from ..debugger_store import DebuggerStore
-from mock_notification_channel import MockNotificationChannel
+from mock_chrome_channel import MockChromeChannel
 from test_executable import TestExecutable
 import os
 import shutil
@@ -36,8 +36,13 @@ class ThreadTestCase(unittest.TestCase):
             self.__class__.test_executable.executable_path,
             lldb.LLDB_ARCH_DEFAULT)
 
-        self.channel = MockNotificationChannel()
-        debugger_store = DebuggerStore(self.channel, self.lldb_debugger, '.')
+        self.chrome_channel = MockChromeChannel()
+        self.ipc_channel = MockIpcChannel()
+        debugger_store = DebuggerStore(
+            self.lldb_debugger,
+            self.chrome_channel,
+            self.ipc_channel,
+            is_attach=False)
         self.thread_manager = ThreadManager(debugger_store)
 
     def tearDown(self):
@@ -48,7 +53,7 @@ class ThreadTestCase(unittest.TestCase):
         self.lldb_debugger.GetTargetAtIndex(0).BreakpointCreateByName('main')
         self.lldb_debugger.GetSelectedTarget().LaunchSimple(None, None, os.getcwd())
         self.thread_manager.update(self.lldb_debugger.GetSelectedTarget().process)
-        for notification in self.channel.sent_notifications:
+        for notification in self.chrome_channel.sent_notifications:
             if notification['method'] == 'Debugger.threadsUpdated':
                 self.assertEquals(len(notification['params']['threads']), 1)
                 thread = notification['params']['threads'][0]

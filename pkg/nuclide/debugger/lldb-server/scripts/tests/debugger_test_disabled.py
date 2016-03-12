@@ -10,7 +10,8 @@ from ..debugger_domain import DebuggerDomain
 from ..thread_manager import CALL_STACK_OBJECT_GROUP
 from ..debugger_store import DebuggerStore
 from ..event_thread import LLDBListenerThread
-from mock_notification_channel import MockNotificationChannel
+from mock_chrome_channel import MockChromeChannel
+from mock_ipc_channel import MockIpcChannel
 from mock_remote_objects import MockRemoteObject
 from test_executable import TestExecutable
 import os
@@ -45,13 +46,18 @@ class DebuggerTestCase(unittest.TestCase):
 
         self.running_signal = threading.Event()
         self.stopped_signal = threading.Event()
-        self.channel = MockNotificationChannel(self.running_signal, self.stopped_signal)
-        self.debugger_store = DebuggerStore(self.channel, lldb_debugger)
+        self.chrome_channel = MockChromeChannel(self.running_signal, self.stopped_signal)
+        self.ipc_channel = MockIpcChannel()
+        self.debugger_store = DebuggerStore(
+            lldb_debugger,
+            self.chrome_channel,
+            self.ipc_channel,
+            is_attach=False)
         self.debugger = DebuggerDomain(None, debugger_store = self.debugger_store)
 
     def tearDown(self):
         self.target = None
-        self.channel = None
+        self.chrome_channel = None
         self.debugger_store = None
         self.debugger = None
         self.running_signal = None
@@ -110,7 +116,7 @@ class DebuggerTestCase(unittest.TestCase):
         self.assertEquals(frame.line_entry.line, 14)
 
         sent_breakpoint_notification = False
-        for notification in self.channel.sent_notifications:
+        for notification in self.chrome_channel.sent_notifications:
             if notification['method'] == 'Debugger.breakpointResolved':
                 sent_breakpoint_notification = True
                 break
@@ -200,7 +206,7 @@ class DebuggerTestCase(unittest.TestCase):
 
         self.wait_for_process_stop()
         scope = None
-        for notification in self.channel.sent_notifications:
+        for notification in self.chrome_channel.sent_notifications:
             print notification
             if notification['method'] != 'Debugger.paused':
                 continue

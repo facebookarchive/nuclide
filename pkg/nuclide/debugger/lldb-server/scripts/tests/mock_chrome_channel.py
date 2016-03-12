@@ -10,7 +10,7 @@ Mock module/function to swap in for chromedebugger's send_notifications.
 Captures notifications for later analysis.
 """
 
-class MockNotificationChannel(object):
+class MockChromeChannel(object):
 
     def __init__(self, running_signal, stopped_sigal):
         self._running_signal = running_signal

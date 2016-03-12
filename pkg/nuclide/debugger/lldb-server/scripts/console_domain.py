@@ -30,9 +30,9 @@ class ConsoleDomain(HandlerDomain):
             if self.last_message and self.last_message['text'] is message['text']:
                 self.last_message['repeatCount'] += 1
                 params = {'count': self.last_message['repeatCount']}
-                self.debugger_store.channel.send_notification('Console.messageRepeatCountUpdated', params)
+                self.debugger_store.chrome_channel.send_notification('Console.messageRepeatCountUpdated', params)
             else:
-                self.debugger_store.channel.send_notification('Console.messageAdded', {'message': message} )
+                self.debugger_store.chrome_channel.send_notification('Console.messageAdded', {'message': message} )
                 self.last_message = message
         self.messages = []
 
@@ -50,7 +50,7 @@ class ConsoleDomain(HandlerDomain):
     @handler()
     def clear_messages(self, params):
         self.messages = []
-        self.debugger_store.channel.send_notification('Console.messagesCleared')
+        self.debugger_store.chrome_channel.send_notification('Console.messagesCleared')
 
     def log(self, server, message):
         # Get either the last message in the queue or None.

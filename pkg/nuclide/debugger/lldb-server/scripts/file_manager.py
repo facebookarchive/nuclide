@@ -20,13 +20,13 @@ import urlparse
 
 
 class FileManager:
-    def __init__(self, channel):
+    def __init__(self, chrome_channel):
         """Initialize a File Manager for a given connection.
 
         Args:
-            channel (NotificationChannel): channel to send file notifications
+            chrome_channel (ChromeChannel): channel to send file notifications
         """
-        self.channel = channel
+        self.chrome_channel = chrome_channel
         self.registered_files = {}
         self.files_by_client_url = {}
 
@@ -43,7 +43,7 @@ class FileManager:
         if filelike.script_id not in self.registered_files:
             self.registered_files[filelike.script_id] = filelike
             self.files_by_client_url[filelike.client_url] = filelike
-            self.channel.send_notification('Debugger.scriptParsed', {
+            self.chrome_channel.send_notification('Debugger.scriptParsed', {
                 'scriptId': filelike.script_id,
                 'url': filelike.client_url,
                 'startLine': 0,

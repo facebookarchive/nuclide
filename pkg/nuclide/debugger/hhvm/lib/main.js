@@ -13,7 +13,7 @@ import type {HomeFragments} from '../../../home-interfaces';
 import type {nuclide_debugger$Service} from '../../interfaces/service';
 import type OutputService from '../../../output/lib/OutputService';
 
-import {setOutputService} from './OutputServiceManager';
+import {setOutputService} from '../../common/lib/OutputServiceManager';
 
 module.exports = {
   activate(state: mixed): void {

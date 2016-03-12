@@ -6,7 +6,7 @@
 
 from ..find_lldb import lldb
 from ..runtime_domain import RuntimeDomain
-from mock_notification_channel import MockNotificationChannel
+from mock_notification_channel import MockChromeChannel
 from mock_remote_objects import MockRemoteObject
 from pkg_resources import resource_string
 from test_executable import TestExecutable
@@ -19,7 +19,7 @@ class NoProcessMixin(object):
     def setUp(self):
         super(NoProcessMixin, self).setUp()
         self.debugger = lldb.SBDebugger.Create()
-        self.debugger_store = DebuggerStore(None, self.debugger)
+        self.debugger_store = DebuggerStore(self.debugger, None, None, is_attach=False)
         self.runtime_domain = RuntimeDomain(debugger_store = self.debugger_store)
 
 
@@ -52,8 +52,8 @@ class RealProcessMixin(object):
             None, None, os.getcwd())
         self.assertTrue(self.debugger.GetSelectedTarget().process.is_stopped)
 
-        mock_channel = MockNotificationChannel
-        self.debugger_store = DebuggerStore(mock_channel, self.debugger)
+        mock_channel = MockChromeChannel
+        self.debugger_store = DebuggerStore(self.debugger, mock_channel, None, is_attach=False)
         self.runtime_domain = RuntimeDomain(debugger_store = self.debugger_store)
 
     def tearDown(self):

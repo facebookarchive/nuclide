@@ -33,6 +33,9 @@ export class DebuggerConnection {
   getServerMessageObservable(): Observable<string> {
     throw new Error('Not implemented');
   }
+  getOutputWindowObservable(): Observable<string> {
+    throw new Error('Not implemented');
+  }
   async sendCommand(message: string): Promise<void> {
     throw new Error('Not implemented');
   }

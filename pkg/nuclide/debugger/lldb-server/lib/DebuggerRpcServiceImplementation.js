@@ -15,9 +15,9 @@ import path from 'path';
 import utils from './utils';
 import WebSocket from 'ws';
 const {log, logError, logInfo} = utils;
-import {ClientCallback} from './ClientCallback';
+import {ClientCallback} from '../../common/lib/ClientCallback';
 import {AttachTargetInfo, LaunchTargetInfo} from './DebuggerRpcServiceInterface';
-import {observeStream} from '../../../commons';
+import {observeStream, splitStream} from '../../../commons';
 
 type AttachInfoArgsType = {
   pid: string;
@@ -58,6 +58,7 @@ export class DebuggerConnection {
   _lldbWebSocket: WebSocket;
   _lldbProcess: child_process$ChildProcess;
   _argumentStreamSubscription: IDisposable;
+  _ipcChannelSubscription: IDisposable;
 
   constructor(
     lldbWebSocket: WebSocket,
@@ -70,15 +71,40 @@ export class DebuggerConnection {
     this._argumentStreamSubscription = argumentStreamSubscription;
     lldbWebSocket.on('message', this._handleLLDBMessage.bind(this));
     lldbProcess.on('exit', this._handleLLDBExit.bind(this));
+    this._ipcChannelSubscription = this._registerIpcChannel();
+  }
+
+  _registerIpcChannel(): IDisposable {
+    const IPC_CHANNEL_FD = 4;
+    /* $FlowFixMe - update Flow defs for ChildProcess */
+    const ipcStream = this._lldbProcess.stdio[IPC_CHANNEL_FD];
+    return splitStream(observeStream(ipcStream)).subscribe(
+      this._handleIpcMessage.bind(this),
+      error => logError(`ipcStream error: ${JSON.stringify(error)}`),
+    );
+  }
+
+  _handleIpcMessage(message: string): void {
+    log(`ipc message: ${message}`);
+    const messageJson = JSON.parse(message);
+    if (messageJson.type === 'Nuclide.userOutput') {
+      this._clientCallback.sendUserOutputMessage(JSON.stringify(messageJson.message));
+    } else {
+      logError(`Unknown message: ${message}`);
+    }
   }
 
   getServerMessageObservable(): Observable<string> {
     return this._clientCallback.getServerMessageObservable();
   }
 
+  getOutputWindowObservable(): Observable<string> {
+    return this._clientCallback.getOutputWindowObservable();
+  }
+
   _handleLLDBMessage(message: string): void {
     log(`lldb message: ${message}`);
-    this._clientCallback.sendMessage(message);
+    this._clientCallback.sendChromeMessage(message);
   }
 
   _handleLLDBExit(): void {
@@ -99,6 +125,7 @@ export class DebuggerConnection {
   async dispose(): Promise<void> {
     logInfo(`DebuggerConnection disposed`);
     this._argumentStreamSubscription.dispose();
+    this._ipcChannelSubscription.dispose();
     this._clientCallback.dispose();
     this._lldbWebSocket.terminate();
     this._lldbProcess.kill();
@@ -147,7 +174,8 @@ export class DebuggerRpcService {
     const options = {
       cwd: path.dirname(lldbPythonScriptPath),
       // FD[3] is used for sending arguments JSON blob.
-      stdio: ['pipe', 'pipe', 'pipe', 'pipe'],
+      // FD[4] is used as a ipc channel for output/atom notifications.
+      stdio: ['pipe', 'pipe', 'pipe', 'pipe', 'pipe'],
       detached: false, // When Atom is killed, clang_server.py should be killed, too.
     };
     logInfo(`spawn child_process: ${JSON.stringify(python_args)}`);

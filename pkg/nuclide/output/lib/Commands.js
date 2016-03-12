@@ -54,7 +54,7 @@ export default class Commands {
             },
           },
         }))
-        .subscribe(this._observer),
+        .subscribe(action => this._observer.onNext(action)),
     );
   }
 

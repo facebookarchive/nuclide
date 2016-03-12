@@ -45,7 +45,7 @@ class DebuggerDomain(HandlerDomain):
 
     @handler()
     def enable(self, params):
-        self.debugger_store.channel.enable()
+        self.debugger_store.chrome_channel.enable()
         return {}
 
     @handler()

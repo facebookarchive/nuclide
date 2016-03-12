@@ -18,7 +18,7 @@ import type {HhvmDebuggerProxyService as HhvmDebuggerProxyServiceType,}
 
 import invariant from 'assert';
 import {DebuggerInstance} from '../../atom';
-import {getOutputService} from './OutputServiceManager';
+import {getOutputService} from '../../common/lib/OutputServiceManager';
 
 const {log, logInfo, logError, setLogLevel} = utils;
 const featureConfig = require('../../../feature-config');
