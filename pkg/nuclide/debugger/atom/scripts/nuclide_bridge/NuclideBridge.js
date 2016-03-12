@@ -201,7 +201,22 @@ class NuclideBridge {
     // Sync any initial breakpoints to engine during loader breakpoint
     // and continue from it.
     this._syncBreakpoints();
-    this._continue();
+
+    // If we were to continue synchronously here, the debugger would no longer be paused when the
+    // remaining subscribers' callbacks were invoked. That's a violation of a pretty basic
+    // assumption (that the debugger will be paused when your paused event callback is called) so
+    // instead we wait until the next tick. If the debugger is still paused then, we continue. Not
+    // doing this results in an "Runtime.getProperties failed" error in node-inspector since that
+    // call is only valid during a paused state.
+    process.nextTick(() => {
+      const targetManager = WebInspector != null ? WebInspector.targetManager : null;
+      const mainTarget = targetManager != null ? targetManager.mainTarget() : null;
+      const debuggerModel = mainTarget != null ? mainTarget.debuggerModel : null;
+      const stillPaused = debuggerModel != null && debuggerModel.isPaused();
+      if (stillPaused) {
+        this._continue();
+      }
+    });
   }
 
   _handleDebuggerResumed(event: WebInspector$Event) {

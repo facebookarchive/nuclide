@@ -55,6 +55,7 @@ declare class WebInspector$DebuggerModel {
     DebuggerPaused: string;
   };
 
+  isPaused(): boolean;
   resume(): void;
   stepOver(): void;
   stepInto(): void;
