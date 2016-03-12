@@ -118,7 +118,7 @@ InjectorClient.prototype._findNMInScope = function(funcHandle, cb) {
 InjectorClient.prototype._inject = function(NM, cb) {
   var injectorServerPath = JSON.stringify(require.resolve('./InjectorServer'));
   var options = {
-    'v8-debug': require.resolve('../../v8-debug'),
+    'v8-debug': require.resolve('v8-debug'),
     'convert': require.resolve('./convert')
   };
   var injection = '(function (NM) {' +

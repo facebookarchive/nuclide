@@ -4,85 +4,45 @@ nuclide-debugger-node
 VendorLib
 ---------
 
-These are forks of [`node-inspector`](https://github.com/node-inspector/node-inspector), [`v8-debug`](https://github.com/node-inspector/v8-debug) and [`v8-profiler`](https://github.com/node-inspector/v8-profiler). `v8-debug` and `v8-profiler` have a modified version of [node-pre-gyp](https://github.com/mapbox/node-pre-gyp).
+Contains a fork of [`node-inspector`](https://github.com/node-inspector/node-inspector), and its relevant dependencies. `./scripts/make-vendorlib.sh` can be used to regenerate the `VendorLib` modules, so it's a good place to see how the bundled deps differ from their upstream counterparts. The modifications are:
 
-The modifications are so `node-pre-gyp` doesn't try to compile `v8-debug` or `v8-profiler`, but instead only returns one of the pre-built versions of either. For `nuclide-debugger-node` to work, we have to bundle these modified dependencies so that `apm install` / `apm rebuild` don't attempt to compile them. Since `v8-debug` and `v8-profiler` are not meant to be consumed by Atom/Electron, but rather by the node process you're trying to debug, it doesn't make sense to let `apm`/`npm` compile them.
+1. Unused files have been removed to keep the repo light.
+2. [`node-inspector`](https://github.com/node-inspector/node-inspector) has been slightly patched to conform with `nuclide-debugger`'s front-end.
+3. [`node-pre-gyp`](https://github.com/mapbox/node-pre-gyp) has been stubbed to point to [`pre-binding`](https://github.com/zertosh/pre-binding) instead. This allows [`v8-debug`](https://github.com/node-inspector/v8-debug) and [`v8-profiler`](https://github.com/node-inspector/v8-profiler) to work without attempting to rebuild themselves.
 
-##### The exact subset of files used here was gathered with:
+### Directory Structure
 
-```sh
-cd pkg/nuclide/debugger/node
-
-mkdir -p VendorLib/{node-inspector,v8-debug,v8-profiler}
-
-curl https://registry.npmjs.org/node-inspector/-/node-inspector-0.12.7.tgz |
-  tar -xz -C VendorLib/node-inspector --strip-components=1 \
-  --include='./package/LICENSE' \
-  --include='./package/package.json' \
-  --include='./package/lib/' \
-  --exclude='./package/lib/config.js' \
-  --exclude='./package/lib/debug-server.js'
-
-curl https://registry.npmjs.org/v8-debug/-/v8-debug-0.7.0.tgz |
-  tar -xz -C resources/VendorLib/v8-debug --strip-components=1 \
-  --exclude='./binding.gyp' \
-  --exclude='./build/debug/v0.6.2' \
-  --exclude='./src' \
-  --exclude='./tools/prepublish.js'
-
-curl https://registry.npmjs.org/v8-profiler/-/v8-profiler-5.5.0.tgz |
-  tar -xz -C resources/VendorLib/v8-profiler --strip-components=1 \
-  --exclude='./binding.gyp' \
-  --exclude='./src' \
-  --exclude='./tools/prepublish.js'
-
-mkdir -p resources/VendorLib/{v8-debug,v8-profiler}/node-pre-gyp
-
-curl https://registry.npmjs.org/node-pre-gyp/-/node-pre-gyp-0.6.18.tgz |
-  tar -xz -C resources/VendorLib/v8-debug/node-pre-gyp --strip-components=1 \
-  --include='./package/LICENSE' \
-  --include='./package/README.md' \
-  --include='./package/lib/pre-binding.js' \
-  --include='./package/lib/util/abi_crosswalk.json' \
-  --include='./package/lib/util/versioning.js' \
-  --include='./package/package.json'
-
-curl https://registry.npmjs.org/node-pre-gyp/-/node-pre-gyp-0.6.18.tgz |
-  tar -xz -C resources/VendorLib/v8-profiler/node-pre-gyp --strip-components=1 \
-  --include='./package/LICENSE' \
-  --include='./package/README.md' \
-  --include='./package/lib/pre-binding.js' \
-  --include='./package/lib/util/abi_crosswalk.json' \
-  --include='./package/lib/util/versioning.js' \
-  --include='./package/package.json'
+```
+VendorLib
+├── node-inspector
+└── node_modules
+    ├── async
+    ├── debug
+    ├── ms
+    ├── path-is-absolute
+    ├── strong
+    ├── truncate
+    ├── v8-debug
+    ├── v8-profiler
+    └── node-pre-gyp -> pre-binding
 ```
 
-**Important:** Both `v8-debug` and `v8-profiler` depend on `semver` (via `node-pre-gyp`).
+`semver` and `ws` are used by `node-inspector` but they're not included in `Vendorlib/node_modules` because `nuclide` includes them already.
 
-##### Source modifications:
+### Source Modifications
 
-`require` and `require.resolve` paths were made relative, since the modules don't like in `node_modules`.
-
-The call to `this._frontendClient.sendEvent` on ln 26 of RuntimeAgent.js was changed from this:
-
-```js
-this._frontendClient.sendEvent('Runtime.executionContextCreated', {
-  context: {
-    id: 1,
-    isPageContext: true,
-    name: ''
-  }
-});
-```
-
-to this:
-
-```js
-this._frontendClient.sendEvent('Runtime.executionContextCreated', {
-  context: {
-    id: 1,
-    isPageContext: false,
-    name: 'node-inspector'
-  }
-});
+```diff
+--- a/VendorLib/node-inspector/lib/RuntimeAgent.js
++++ b/VendorLib/node-inspector/lib/RuntimeAgent.js
+@@ -26,8 +26,8 @@
+     this._frontendClient.sendEvent('Runtime.executionContextCreated', {
+       context: {
+         id: 1,
+-        isPageContext: true,
+-        name: ''
++        isPageContext: false,
++        name: 'node-inspector'
+       }
+     });
+   },
 ```
