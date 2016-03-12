@@ -22,16 +22,17 @@ Nuclide toolbar.
 
 ## Basics
 
-Nuclide supports debugging for [multiple languages and platforms](#language-specific-debugging).
+Nuclide supports debugging for multiple [languages](#language-specific-debugging) and
+[platforms](#platform-specific-debugging).
 However, there are some basic debugging concepts that apply across all languages. Debugging a Node
 project will be used to help illustrate the points described here.
 
 ### Debuggable Target
 
-Specific details are provided for [each language or platform](#language-specific-debugging), but, in
-general, to begin debugging code in Nuclide, you need to either launch a debug process from within
-Nuclide (e.g., iOS from the Buck toolbar) or attach to a  currently running process (e.g., `node`)
-for debugging.
+Specific details are provided for each [language](#language-specific-debugging) or
+[platform](#platform-specific-debugging), but, in general, to begin debugging code in Nuclide, you
+need to either launch a debug process from within Nuclide (e.g., iOS from the Buck toolbar) or
+attach to a  currently running process (e.g., `node`) for debugging.
 
 *Example*
 
@@ -213,7 +214,11 @@ language specific debugging workflows that require discussion and illustration.
 - [Flow and JavaScript](/docs/languages/flow/#debugging) (The canonical example for debugging as
   described [above](#basics)).
 - [C++](/docs/languages/cpp/#debugging)
-- [React Native](/docs/platforms/react-native/#debugging)
 - [Objective-C](/docs/languages/objective-c/#debugging)
+
+
+## Platform Specific Debugging
+
+- [React Native](/docs/platforms/react-native/#debugging)
 - [iOS](/docs/platforms/ios/#debugging)
 - [Android](/docs/platforms/android/#debugging)
