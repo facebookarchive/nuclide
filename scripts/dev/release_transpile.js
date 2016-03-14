@@ -36,7 +36,8 @@ var glob = require('glob');
 var path = require('path');
 
 var basedir = path.join(__dirname, '../..');
-var serverBasedir = path.join(basedir, 'pkg/nuclide/server');
+var serverBasedir =
+  path.dirname(require.resolve('../../pkg/nuclide/server/package.json'));
 
 var services = require(path.join(serverBasedir, 'services-3.json'));
 try {

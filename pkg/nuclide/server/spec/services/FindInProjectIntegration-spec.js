@@ -33,16 +33,19 @@ describe('FindInProjectService-Integration', () => {
     const testHelper = new ServiceTestHelper();
 
     waitsForPromise(async () => {
+      const FIND_IN_PROJECT_SERVICE_PATH =
+        require.resolve('../../../remote-search/lib/FindInProjectService');
+
       // Start the integration test helper.
       await testHelper.start([{
         name: 'FindInProjectService',
-        definition: '../../../remote-search/lib/FindInProjectService.js',
-        implementation: '../../../remote-search/lib/FindInProjectService.js',
+        definition: FIND_IN_PROJECT_SERVICE_PATH,
+        implementation: FIND_IN_PROJECT_SERVICE_PATH,
       }]);
 
       const remoteService = testHelper.getRemoteService(
         'FindInProjectService',
-        '../../../remote-search/lib/FindInProjectService.js');
+        FIND_IN_PROJECT_SERVICE_PATH);
 
       // Search in the fixtures/basic directory.
       const connection = testHelper.getRemoteConnection();

@@ -10,7 +10,6 @@
  */
 
 import invariant from 'assert';
-import path from 'path';
 import {RemoteConnection} from '../../remote-connection';
 import {getServiceByNuclideUri} from '../../client';
 import {spawnSync} from 'child_process';
@@ -23,7 +22,7 @@ const DEFAULT_PORT = 9090;
  */
 export function startNuclideServer(): void {
   spawnSync(
-    path.join(__dirname, '../../server/nuclide-start-server'),
+    require.resolve('../../server/nuclide-start-server'),
     ['-k', `--port=${DEFAULT_PORT}`],
   );
 }

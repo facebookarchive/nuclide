@@ -49,7 +49,7 @@ export async function activateAllPackages(): Promise<Array<string>> {
   featureConfig.set('installRecommendedPackages', false);
 
   // Include the path to the nuclide package.
-  packageNames.push(path.join(__dirname, '../../../..'));
+  packageNames.push(path.dirname(require.resolve('../../../../package.json')));
   await Promise.all(packageNames.map(pack => atom.packages.activatePackage(pack)));
   return atom.packages.getActivePackages().map(pack => pack.name);
 }

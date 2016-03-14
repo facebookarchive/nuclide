@@ -88,8 +88,7 @@ const DebuggerInspector = React.createClass({
   },
 
   _getUrl(): string {
-    const packagePath = path.resolve(path.dirname(module.filename), '../');
-    return `${packagePath}/scripts/inspector.html?${this.props.socket}`;
+    return `${path.join(__dirname, '../scripts/inspector.html')}?${this.props.socket}`;
   },
 
   _handleClickClose() {

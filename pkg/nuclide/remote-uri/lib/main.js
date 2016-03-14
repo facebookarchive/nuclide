@@ -45,7 +45,7 @@ type ParsedRemoteUrl = {
 };
 
 import invariant from 'assert';
-import pathPackage from 'path';
+import pathModule from 'path';
 import url from 'url';
 
 const REMOTE_PATH_URI_PREFIX = 'nuclide://';
@@ -169,10 +169,10 @@ function join(uri: NuclideUri, ...relativePath: Array<string>): NuclideUri {
     return createRemoteUri(
       hostname,
       Number(port),
-      pathPackage.join.apply(null, relativePath));
+      pathModule.join.apply(null, relativePath));
   } else {
     relativePath.splice(0, 0, uri);
-    return pathPackage.join.apply(null, relativePath);
+    return pathModule.join.apply(null, relativePath);
   }
 }
 
@@ -182,10 +182,10 @@ function normalize(uri: NuclideUri): NuclideUri {
     return createRemoteUri(
       hostname,
       Number(port),
-      pathPackage.normalize(path)
+      pathModule.normalize(path)
     );
   } else {
-    return pathPackage.normalize(uri);
+    return pathModule.normalize(uri);
   }
 }
 
@@ -201,18 +201,18 @@ function relative(uri: NuclideUri, other: NuclideUri): string {
     throw new Error('Cannot relative urls on different hosts.');
   }
   if (remote) {
-    return pathPackage.relative(getPath(uri), getPath(other));
+    return pathModule.relative(getPath(uri), getPath(other));
   } else {
-    return pathPackage.relative(uri, other);
+    return pathModule.relative(uri, other);
   }
 }
 
 // TODO: Add optional ext parameter
 function basename(uri: NuclideUri): NuclideUri {
   if (isRemote(uri)) {
-    return pathPackage.basename(getPath(uri));
+    return pathModule.basename(getPath(uri));
   } else {
-    return pathPackage.basename(uri);
+    return pathModule.basename(uri);
   }
 }
 
@@ -222,10 +222,10 @@ function dirname(uri: NuclideUri): NuclideUri {
     return createRemoteUri(
       hostname,
       Number(port),
-      pathPackage.dirname(path)
+      pathModule.dirname(path)
     );
   } else {
-    return pathPackage.dirname(uri);
+    return pathModule.dirname(uri);
   }
 }
 

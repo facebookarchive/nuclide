@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import path from 'path';
 const Console = require('./Console');
 const NuclideUiDropdown = require('../../../ui/dropdown');
 const {PanelComponent} = require('../../../ui/panel');
@@ -18,7 +19,6 @@ const {
   ReactDOM,
 } = require('react-for-atom');
 const TestClassTree = require('./TestClassTree');
-const pathUtil = require('path');
 
 const {PropTypes} = React;
 
@@ -170,7 +170,7 @@ class TestRunnerPanel extends React.Component {
 
     let pathMsg;
     if (this.props.path) {
-      pathMsg = <span title={this.props.path}>{pathUtil.basename(this.props.path)}</span>;
+      pathMsg = <span title={this.props.path}>{path.basename(this.props.path)}</span>;
     }
 
     let dropdown;

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {sep: pathSeperator, normalize} = require('path');
+import path from 'path';
 const {realpathSync} = require('fs');
 
 /**
@@ -31,13 +31,13 @@ function containsPathSync(rootPath: string, checkPath: string): boolean {
     realCheckPath = checkPath;
   }
 
-  const normalizedRootPath = normalize(realRootPath);
-  const normalizedCheckPath = normalize(realCheckPath);
+  const normalizedRootPath = path.normalize(realRootPath);
+  const normalizedCheckPath = path.normalize(realCheckPath);
 
-  const rootPathNumberOfParts = normalizedRootPath.split(pathSeperator).length;
+  const rootPathNumberOfParts = normalizedRootPath.split(path.sep).length;
   // Extract the matching piece of the normalized path to compare with the root path.
-  const rootPathMatch = normalizedCheckPath.split(pathSeperator)
-    .slice(0, rootPathNumberOfParts).join(pathSeperator);
+  const rootPathMatch = normalizedCheckPath.split(path.sep)
+    .slice(0, rootPathNumberOfParts).join(path.sep);
   return rootPathMatch === normalizedRootPath;
 }
 

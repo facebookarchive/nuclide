@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {basename} from 'path';
+import path from 'path';
 import {React} from 'react-for-atom';
 import relativeDate from 'relative-date';
 
@@ -125,7 +125,7 @@ export const RecentFilesProvider: Provider = {
   },
 
   getComponentForItem(item: FileResult): ReactElement {
-    const filename = basename(item.path);
+    const filename = path.basename(item.path);
     const filePath = item.path.substring(0, item.path.lastIndexOf(filename));
     const date = item.timestamp == null ? null : new Date(item.timestamp);
     const datetime = date === null ? '' : date.toLocaleString();

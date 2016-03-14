@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from '../../remote-uri';
 
-import {dirname, join} from 'path';
+import path from 'path';
 import {findNearestFile, array, fsPromise} from '../../commons';
 import {getLogger} from '../../logging';
 
@@ -51,7 +51,7 @@ export class CtagsService {
       return Promise.resolve([]);
     }
 
-    const dir = dirname(this._tagsPath);
+    const dir = path.dirname(this._tagsPath);
     return new Promise((resolve, reject) => {
       ctags.findTags(this._tagsPath, query, options, async (error, tags: Array<Object>) => {
         if (error != null) {
@@ -59,7 +59,7 @@ export class CtagsService {
         } else {
           const processed = await Promise.all(tags.map(async tag => {
             // Convert relative paths to absolute ones.
-            tag.file = join(dir, tag.file);
+            tag.file = path.join(dir, tag.file);
             // Tag files are often not perfectly in sync - filter out missing files.
             if (await fsPromise.exists(tag.file)) {
               if (tag.fields != null) {
@@ -84,10 +84,10 @@ export class CtagsService {
   }
 }
 
-export async function getCtagsService(path: NuclideUri): Promise<?CtagsService> {
-  const dir = await findNearestFile(TAGS_FILENAME, dirname(path));
+export async function getCtagsService(uri: NuclideUri): Promise<?CtagsService> {
+  const dir = await findNearestFile(TAGS_FILENAME, path.dirname(uri));
   if (dir == null) {
     return null;
   }
-  return new CtagsService(join(dir, TAGS_FILENAME));
+  return new CtagsService(path.join(dir, TAGS_FILENAME));
 }

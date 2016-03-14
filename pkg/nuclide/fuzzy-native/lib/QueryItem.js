@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {basename} from 'path';
+import path from 'path';
 
 import type {QueryScore} from './QueryScore';
 
@@ -111,7 +111,7 @@ export default class QueryItem {
   constructor(filepath: string) {
     this._filepath = filepath;
     this._filepathLowercase = filepath.toLowerCase();
-    this._filename = basename(this._filepathLowercase);
+    this._filename = path.basename(this._filepathLowercase);
     this._importantCharacters = importantCharactersForString(this._filename);
   }
 

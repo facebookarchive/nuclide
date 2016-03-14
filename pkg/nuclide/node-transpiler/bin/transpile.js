@@ -17,15 +17,12 @@
  * Atom would.
  */
 
-if (process.argv.length !== 3) {
+var filePath = process.argv[2];
+
+if (typeof filePath !== 'string') {
   console.error('No file specified. Usage: <file>');
   process.exit(1);
 }
-
-var file = process.argv[2];
-var path = require('path');
-
-var filePath = path.resolve(process.env.PWD, file);
 
 var fs = require('fs');
 var sourceCode = fs.readFileSync(filePath);

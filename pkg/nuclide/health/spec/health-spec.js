@@ -44,8 +44,10 @@ describe('Health', () => {
       Object.keys(config).forEach(k =>
         featureConfig.setSchema(`nuclide-health.${k}`, config[k])
       );
+      const GADGETS_DIR =
+        path.dirname(require.resolve('../../gadgets/package.json'));
       await Promise.all([
-        atom.packages.activatePackage(path.join(__dirname, '..', '..', 'gadgets')),
+        atom.packages.activatePackage(GADGETS_DIR),
         atom.packages.activatePackage(path.join(__dirname, '..')),
       ]);
     });

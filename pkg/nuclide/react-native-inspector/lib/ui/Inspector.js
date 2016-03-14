@@ -41,10 +41,11 @@ class Inspector extends React.Component {
 
   _handleDidFinishLoad(event) {
     const element = ((event.target: any): WebviewElement);
-    const packageDirectory = path.resolve(__dirname, '../../');
     const requirePaths = require.cache[__filename].paths;
+    const inspectorDevTools =
+      path.join(__dirname, '../../VendorLib/dev-tools/standalone.js');
     element.executeJavaScript(
-      `initializeElementInspector(${toJsString(packageDirectory)}, ${toJsString(requirePaths)});`
+      `initializeElementInspector(${toJsString(inspectorDevTools)}, ${toJsString(requirePaths)});`
     );
   }
 }

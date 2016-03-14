@@ -17,7 +17,7 @@
 
 const mv = require('mv');
 const fs = require('fs');
-const pathUtil = require('path');
+const pathModule = require('path');
 const {fsPromise} = require('../../../commons');
 
 import type {FileWithStats} from './FileSystemServiceType';
@@ -87,7 +87,7 @@ export async function newFile(filePath: string): Promise<boolean> {
   if (isExistingFile) {
     return false;
   }
-  await fsPromise.mkdirp(pathUtil.dirname(filePath));
+  await fsPromise.mkdirp(pathModule.dirname(filePath));
   await fsPromise.writeFile(filePath, '');
   return true;
 }
@@ -104,7 +104,7 @@ export async function newFile(filePath: string): Promise<boolean> {
 export async function readdir(path: string): Promise<Array<FileWithStats>> {
   const files = await fsPromise.readdir(path);
   const entries = await Promise.all(files.map(async file => {
-    const fullpath = pathUtil.join(path, file);
+    const fullpath = pathModule.join(path, file);
     const lstats = await fsPromise.lstat(fullpath);
     if (!lstats.isSymbolicLink()) {
       return {file, stats: lstats, isSymbolicLink: false};

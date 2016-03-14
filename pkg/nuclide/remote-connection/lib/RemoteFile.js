@@ -15,7 +15,7 @@ import type {FileSystemService} from '../../server/lib/services/FileSystemServic
 import typeof * as FileWatcherService from '../../filewatcher-base';
 
 import invariant from 'assert';
-import pathUtil from 'path';
+import path from 'path';
 import crypto from 'crypto';
 import {Disposable, Emitter} from 'atom';
 import remoteUri from '../../remote-uri';
@@ -220,7 +220,7 @@ export class RemoteFile {
   }
 
   getBaseName(): string {
-    return pathUtil.basename(this._path);
+    return path.basename(this._path);
   }
 
   async create(): Promise<boolean> {
@@ -277,7 +277,7 @@ export class RemoteFile {
     const {path: localPath, protocol, host} = remoteUri.parse(this._path);
     invariant(protocol);
     invariant(host);
-    const directoryPath = protocol + '//' + host + pathUtil.dirname(localPath);
+    const directoryPath = protocol + '//' + host + path.dirname(localPath);
     return this._remote.createDirectory(directoryPath);
   }
 

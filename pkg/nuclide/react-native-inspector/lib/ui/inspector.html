@@ -91,9 +91,7 @@
       </div>
     </div>
     <script>
-      function initializeElementInspector(packageDirectory, requirePaths) {
-        const path = require('path');
-
+      function initializeElementInspector(inspectorDevTools, requirePaths) {
         // The paths used by Atom webviews' `require` aren't what you expect (i.e. they're not
         // based on the file location. Because of this, we pass the paths we want to use from the
         // JS host and patch it. That way, the standalone script will be able to find its
@@ -102,7 +100,7 @@
         require.cache[__filename].paths = requirePaths;
 
         // Start the element inspector.
-        require(path.join(packageDirectory, 'VendorLib/dev-tools/standalone.js'))
+        require(inspectorDevTools)
           .setContentDOMNode(document.getElementById('container'))
           .startServer();
       }
