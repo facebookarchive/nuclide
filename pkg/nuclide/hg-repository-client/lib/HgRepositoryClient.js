@@ -898,8 +898,8 @@ export default class HgRepositoryClient {
     return this._service.remove(filePath);
   }
 
-  add(filePath: string): Promise<void> {
-    return this._service.add(filePath);
+  add(filePaths: Array<NuclideUri>): Promise<void> {
+    return this._service.add(filePaths);
   }
 
   commit(message: string): Promise<void> {
@@ -908,6 +908,10 @@ export default class HgRepositoryClient {
 
   amend(message: ?string): Promise<void> {
     return this._service.amend(message);
+  }
+
+  revert(filePaths: Array<NuclideUri>): Promise<void> {
+    return this._service.revert(filePaths);
   }
 
   _getStatusOption(options: ?HgStatusCommandOptions): ?HgStatusOptionValue {

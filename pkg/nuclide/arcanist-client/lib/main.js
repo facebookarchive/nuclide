@@ -71,8 +71,12 @@ function createPhabricatorRevision(filePath: NuclideUri): Promise<void> {
   return getService(filePath).createPhabricatorRevision(filePath);
 }
 
-function updatePhabricatorRevision(filePath: NuclideUri, message: string): Promise<void> {
-  return getService(filePath).updatePhabricatorRevision(filePath, message);
+function updatePhabricatorRevision(
+  filePath: NuclideUri,
+  message: string,
+  allowUntracked: boolean,
+): Promise<void> {
+  return getService(filePath).updatePhabricatorRevision(filePath, message, allowUntracked);
 }
 
 function getPhabricatorRevisionFromCommitMessage(commitMessage: string): ?PhabricatorRevisionInfo {

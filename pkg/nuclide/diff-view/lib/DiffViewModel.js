@@ -33,6 +33,8 @@ import {
   CommitModeState,
   PublishMode,
   PublishModeState,
+  FileChangeStatus,
+  FileChangeStatusToPrefix,
 } from './constants';
 import invariant from 'assert';
 import {repositoryForPath} from '../../hg-git-bridge';
@@ -63,6 +65,7 @@ function getRevisionUpdateMessage(phabricatorRevision: PhabricatorRevisionInfo):
 }
 
 const FILE_CHANGE_DEBOUNCE_MS = 200;
+const MAX_DIALOG_FILE_STATUS_COUNT = 20;
 
 // Returns a string with all newline strings, '\\n', converted to literal newlines, '\n'.
 function convertNewlines(message: string): string {
@@ -78,6 +81,20 @@ function getInitialFileChangeState(): FileChangeState {
     newContents: '',
     compareRevisionInfo: null,
   };
+}
+
+function getFileStatusListMessage(fileChanges: Map<NuclideUri, FileChangeStatusValue>): string {
+  let message = '';
+  if (fileChanges.size < MAX_DIALOG_FILE_STATUS_COUNT) {
+    for (const [filePath, statusCode] of fileChanges) {
+      message += '\n'
+        + FileChangeStatusToPrefix[statusCode]
+        + atom.project.relativize(filePath);
+    }
+  } else {
+    message = `\n more than ${MAX_DIALOG_FILE_STATUS_COUNT} files (check using \`hg status\`)`;
+  }
+  return message;
 }
 
 type State = {
@@ -522,33 +539,117 @@ class DiffViewModel {
       publishMessage,
       publishModeState: PublishModeState.AWAITING_PUBLISH,
     });
-
+    const cleanResult = await this._promptToCleanDirtyChanges(publishMessage);
+    if (cleanResult == null) {
+      this._setState({
+        ...this._state,
+        publishModeState: PublishModeState.READY,
+      });
+      return;
+    }
+    const {amended, allowUntracked} = cleanResult;
     try {
       switch (this._state.publishMode) {
         case PublishMode.CREATE:
-          await this._createPhabricatorRevision(publishMessage);
+          // Create uses `verbatim` and `n` answer buffer
+          // and that implies that untracked files will be ignored.
+          await this._createPhabricatorRevision(publishMessage, amended);
+          invariant(this._activeRepositoryStack, 'No active repository stack');
+          // Invalidate the current revisions state because the current commit info has changed.
+          this._activeRepositoryStack.getRevisionsStatePromise();
           break;
         case PublishMode.UPDATE:
-          await this._updatePhabricatorRevision(publishMessage);
+          await this._updatePhabricatorRevision(publishMessage, allowUntracked);
           break;
         default:
           throw new Error(`Unknown publish mode '${this._state.publishMode}'`);
       }
+      // Populate Publish UI with the most recent data after a successful push.
+      this._loadModeState();
     } catch (error) {
       notifyInternalError(error, true /*persist the error (user dismissable)*/);
-    } finally {
       this._setState({
         ...this._state,
-        publishMessage,
         publishModeState: PublishModeState.READY,
       });
     }
   }
 
-  async _createPhabricatorRevision(publishMessage: string): Promise<void> {
+  async _promptToCleanDirtyChanges(
+    commitMessage: string,
+  ): Promise<?{allowUntracked: boolean; amended: boolean;}> {
+    const activeStack = this._activeRepositoryStack;
+    invariant(activeStack != null, 'No active repository stack when cleaning dirty changes');
+    const {dirtyFileChanges} = this._state;
+    let shouldAmend = false;
+    let amended = false;
+    let allowUntracked = false;
+    if (dirtyFileChanges.size === 0) {
+      return {
+        amended,
+        allowUntracked,
+      };
+    }
+    const untrackedChanges: Map<NuclideUri, FileChangeStatusValue> = new Map(
+      array.from(dirtyFileChanges.entries())
+        .filter(fileChange => fileChange[1] === FileChangeStatus.UNTRACKED)
+    );
+    if (untrackedChanges.size > 0) {
+      const untrackedChoice = atom.confirm({
+        message: 'You have untracked files in your working copy:',
+        detailedMessage: getFileStatusListMessage(untrackedChanges),
+        buttons: ['Cancel', 'Add', 'Allow Untracked'],
+      });
+      getLogger().info('Untracked changes choice:', untrackedChoice);
+      if (untrackedChoice === 0) /*Cancel*/ {
+        return null;
+      } else if (untrackedChoice === 1) /*Add*/ {
+        await activeStack.add(array.from(untrackedChanges.keys()));
+        shouldAmend = true;
+      } else if (untrackedChoice === 2) /*Allow Untracked*/ {
+        allowUntracked = true;
+      }
+    }
+    const revertableChanges: Map<NuclideUri, FileChangeStatusValue> = new Map(
+      array.from(dirtyFileChanges.entries())
+        .filter(fileChange => fileChange[1] !== FileChangeStatus.UNTRACKED)
+    );
+    if (revertableChanges.size > 0) {
+      const cleanChoice = atom.confirm({
+        message: 'You have uncommitted changes in your working copy:',
+        detailedMessage: getFileStatusListMessage(revertableChanges),
+        buttons: ['Cancel', 'Revert', 'Amend'],
+      });
+      getLogger().info('Dirty changes clean choice:', cleanChoice);
+      if (cleanChoice === 0) /*Cancel*/ {
+        return null;
+      } else if (cleanChoice === 1) /*Revert*/ {
+        const canRevertFilePaths: Array<NuclideUri> = array
+          .from(dirtyFileChanges.entries())
+          .filter(fileChange => fileChange[1] !== FileChangeStatus.UNTRACKED)
+          .map(fileChange => fileChange[0]);
+        await activeStack.revert(canRevertFilePaths);
+      } else if (cleanChoice === 2) /*Amend*/ {
+        shouldAmend = true;
+      }
+    }
+    if (shouldAmend) {
+      await activeStack.amend(commitMessage);
+      amended = true;
+    }
+    return {
+      amended,
+      allowUntracked,
+    };
+  }
+
+  async _createPhabricatorRevision(
+    publishMessage: string,
+    amended: boolean,
+  ): Promise<void> {
     const {filePath} = this._activeFileState;
     const lastCommitMessage = await this._loadActiveRepositoryLatestCommitMessage();
-    if (publishMessage !== lastCommitMessage) {
+    if (!amended && publishMessage !== lastCommitMessage) {
       getLogger().info('Amending commit with the updated message');
       invariant(this._activeRepositoryStack);
       await this._activeRepositoryStack.amend(publishMessage);
@@ -558,7 +659,10 @@ class DiffViewModel {
     atom.notifications.addSuccess('Revision created');
   }
 
-  async _updatePhabricatorRevision(publishMessage: string): Promise<void> {
+  async _updatePhabricatorRevision(
+    publishMessage: string,
+    allowUntracked: boolean,
+  ): Promise<void> {
     const {filePath} = this._activeFileState;
     const {phabricatorRevision} = await this._getActiveHeadRevisionDetails();
     invariant(phabricatorRevision != null, 'A phabricator revision must exist to update!');
@@ -567,7 +671,7 @@ class DiffViewModel {
     if (userUpdateMessage.length === 0) {
       throw new Error('Cannot update revision with empty message');
     }
-    await arcanist.updatePhabricatorRevision(filePath, userUpdateMessage);
+    await arcanist.updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked);
     atom.notifications.addSuccess(`Revision \`${phabricatorRevision.id}\` updated`);
   }
 

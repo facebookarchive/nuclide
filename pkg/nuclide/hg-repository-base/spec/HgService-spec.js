@@ -220,7 +220,7 @@ describe('HgService', () => {
         wasCalled = true;
       });
       waitsForPromise(async () => {
-        await hgService.add('file.txt');
+        await hgService.add(['file.txt']);
         expect(wasCalled).toBeTruthy();
       });
     });

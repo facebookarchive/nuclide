@@ -126,6 +126,14 @@ export default class RepositoryStack {
     return this._repository.amend(message);
   }
 
+  revert(filePaths: Array<NuclideUri>): Promise<void> {
+    return this._repository.revert(filePaths);
+  }
+
+  add(filePaths: Array<NuclideUri>): Promise<void> {
+    return this._repository.add(filePaths);
+  }
+
   /**
    * Update the file change state comparing the dirty filesystem status
    * to a selected commit.

@@ -1085,6 +1085,7 @@ declare class atom$Project {
   removePath(projectPath: string): void;
   getDirectories(): Array<atom$Directory>;
   relativizePath(): Array<string>; // [projectPath: ?string, relativePath: string]
+  relativize(filePath: string): string;
 
   // Private API
   findBufferForPath(path: string): ?atom$TextBuffer;

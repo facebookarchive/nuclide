@@ -763,6 +763,10 @@ export class HgService {
     return this._commitCode(message, extraArgs);
   }
 
+  revert(filePaths: Array<NuclideUri>): Promise<void> {
+    return this._runSimpleInWorkingDirectory('revert', filePaths);
+  }
+
   async _runSimpleInWorkingDirectory(
     action: string,
     args: Array<string>,
@@ -816,8 +820,8 @@ export class HgService {
    * Version a new file under Hg.
    * @param filePath Which file should be versioned.
    */
-  add(filePath: NuclideUri): Promise<void> {
-    return this._runSimpleInWorkingDirectory('add', [getPath(filePath)]);
+  add(filePaths: Array<NuclideUri>): Promise<void> {
+    return this._runSimpleInWorkingDirectory('add', filePaths);
   }
 
 }

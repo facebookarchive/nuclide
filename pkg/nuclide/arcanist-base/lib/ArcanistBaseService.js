@@ -134,8 +134,13 @@ export function createPhabricatorRevision(
 export function updatePhabricatorRevision(
   filePath: NuclideUri,
   message: string,
+  allowUntracked: boolean,
 ): Promise<void> {
-  return _callArcDiff(filePath, ['-m', message]);
+  const args = ['-m', message];
+  if (allowUntracked) {
+    args.push('--allow-untracked');
+  }
+  return _callArcDiff(filePath, args);
 }
 
 async function execArcLint(cwd: string, filePaths: Array<NuclideUri>, skip: Array<string>):
