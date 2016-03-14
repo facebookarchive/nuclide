@@ -24,12 +24,6 @@
         "default": 9000,
         "description": "Port for DBGP connection to HHVM."
       },
-      "endDebugWhenNoRequests": {
-        "title": "End Session When No Requests",
-        "type": "boolean",
-        "default": false,
-        "description": "Whether or not to end debug session when there is no http requests."
-      },
       "logLevel": {
         "title": "Log Level",
         "type": "string",

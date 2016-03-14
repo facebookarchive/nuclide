@@ -92,7 +92,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       xdebugPort: config.xdebugPort,
       targetUri: remoteUri.getPath(this.getTargetUri()),
       logLevel: config.logLevel,
-      endDebugWhenNoRequests: config.endDebugWhenNoRequests,
+      endDebugWhenNoRequests: false,
     };
     logInfo('Connection config: ' + JSON.stringify(config));
 
@@ -112,6 +112,9 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       connectionConfig.idekeyRegex = config.idekeyRegex;
     }
 
+    if (this._launchScriptPath) {
+      connectionConfig.endDebugWhenNoRequests = true;
+    }
     const attachResult = await proxy.attach(connectionConfig);
     logInfo('Attached to process. Attach message: ' + attachResult);
 
