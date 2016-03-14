@@ -67,7 +67,6 @@ class AtomInput extends React.Component {
     this.state = {
       value: props.initialValue,
     };
-
     (this: any)._analyzeKeyCodes = this._analyzeKeyCodes.bind(this);
   }
 
@@ -77,7 +76,6 @@ class AtomInput extends React.Component {
     // There does not appear to be any sort of infinite loop where calling
     // setState({value}) in response to onDidChange() causes another change
     // event.
-
     const textEditor = this.getTextEditor();
     disposables.add(textEditor.onDidChange(() => {
       this.setState({value: textEditor.getText()});
@@ -91,11 +89,23 @@ class AtomInput extends React.Component {
     if (this.props.disabled) {
       this._updateDisabledState(true);
     }
+
+    // Set the text editor's initial value and keep the cursor at the beginning of the line. Cursor
+    // position was documented in a test and is retained here after changes to how text is set in
+    // the text editor. (see focus-related spec in AtomInput-spec.js)
+    this.setText(this.state.value);
+    this.getTextEditor().moveToBeginningOfLine();
   }
 
   componentWillReceiveProps(nextProps: Object): void {
     if (nextProps.disabled !== this.props.disabled) {
       this._updateDisabledState(nextProps.disabled);
+    }
+  }
+
+  componentDidUpdate(prevProps: Object, prevState: Object): void {
+    if (prevProps.width !== this.props.width) {
+      this._getTextEditorElement().setWidth(this.props.width);
     }
   }
 
@@ -125,6 +135,10 @@ class AtomInput extends React.Component {
     });
 
     return (
+      // Because the contents of `<atom-text-editor>` elements are managed by its custom web
+      // component class when "Use Shadow DOM" is disabled, this element should never have children.
+      // If an element has no children, React guarantees it will never re-render the element (which
+      // would wipe out the web component's work in this case).
       <atom-text-editor
         class={className}
         mini
@@ -132,16 +146,8 @@ class AtomInput extends React.Component {
         onFocus={this.props.onFocus}
         onKeyUp={this._analyzeKeyCodes}
         onBlur={this.props.onBlur}
-        ref="editor">
-        {this.state.value}
-      </atom-text-editor>
+      />
     );
-  }
-
-  componentDidUpdate(prevProps: Object, prevState: Object): void {
-    if (prevProps.width !== this.props.width) {
-      this.refs['editor'].setWidth(this.props.width);
-    }
   }
 
   getText(): string {

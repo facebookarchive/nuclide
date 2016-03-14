@@ -599,6 +599,7 @@ declare class atom$TextEditor extends atom$Model {
   getCursorScreenPosition(): atom$Point;
   getCursorScreenPositions(): Array<atom$Point>;
   getLastCursor(): atom$Cursor;
+  moveToBeginningOfLine(): void;
   moveToEndOfLine(): void;
   moveToBottom(): void;
 
@@ -722,6 +723,9 @@ declare class atom$TextEditorElement extends HTMLElement {
   onDidAttach(callback: () => mixed): IDisposable;
   // Called when the editor is detached from the DOM.
   onDidDetach(callback: () => mixed): IDisposable;
+
+  // Undocumented Methods
+  setWidth(width: number): void;
 }
 
 declare class atom$ViewProvider {
