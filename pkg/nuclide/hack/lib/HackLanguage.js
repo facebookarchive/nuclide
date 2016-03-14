@@ -17,6 +17,7 @@ import type {
   HackDiagnostic,
   HackDefinitionResult,
   HackSearchPosition,
+  HackReference,
   HackReferencesResult,
 } from '../../hack-base/lib/HackService';
 import {TypeCoverageRegion} from './TypedRegions';
@@ -305,7 +306,7 @@ export class HackLanguage {
       || [];
   }
 
-  async getSymbolNameAtPosition(
+  async _getSymbolNameAtPosition(
     path: string,
     contents: string,
     lineNumber: number,
@@ -333,7 +334,7 @@ export class HackLanguage {
    * A thin wrapper around getSymbolNameAtPosition that waits for dependencies before reporting
    * that no symbol name can be resolved.
    */
-  async getSymbolNameAtPositionWithDependencies(
+  async _getSymbolNameAtPositionWithDependencies(
     path: string,
     contents: string,
     lineNumber: number,
@@ -341,7 +342,7 @@ export class HackLanguage {
     timeout: ?number,
   ): Promise<?HackSymbolNameResult> {
     return this._waitForDependencies(
-      () => this.getSymbolNameAtPosition(path, contents, lineNumber, column),
+      () => this._getSymbolNameAtPosition(path, contents, lineNumber, column),
       x => x != null,
       timeout,
     );
@@ -359,7 +360,7 @@ export class HackLanguage {
     }
     let symbol = null;
     try {
-      symbol = await this.getSymbolNameAtPosition(getPath(filePath), contents, lineNumber, column);
+      symbol = await this._getSymbolNameAtPosition(getPath(filePath), contents, lineNumber, column);
     } catch (err) {
       // Ignore the error.
       getLogger().warn('_getDefinitionFromSymbolName error:', err);
@@ -522,7 +523,7 @@ export class HackLanguage {
     return type;
   }
 
-  async getReferences(
+  async _getReferences(
     filePath: NuclideUri,
     contents: string,
     symbol: HackSymbolNameResult,
@@ -530,6 +531,29 @@ export class HackLanguage {
     const {getReferences} = getHackService(filePath);
     const referencesResult = await getReferences(filePath, symbol.name, symbol.type);
     return ((referencesResult: any): HackReferencesResult);
+  }
+
+  async findReferences(
+    filePath: NuclideUri,
+    contents: string,
+    line: number,
+    column: number
+  ): Promise<?{baseUri: string; symbolName: string; references: Array<HackReference>}> {
+    const symbol = await this._getSymbolNameAtPositionWithDependencies(
+      getPath(filePath),
+      contents,
+      line + 1,
+      column + 1
+    );
+    if (!symbol || !SYMBOL_TYPES_WITH_REFERENCES.has(symbol.type)) {
+      return null;
+    }
+    const referencesResult = await this._getReferences(filePath, contents, symbol);
+    if (!referencesResult) {
+      return null;
+    }
+    const {hackRoot, references} = referencesResult;
+    return {baseUri: hackRoot, symbolName: symbol.name, references};
   }
 
   getBasePath(): ?string {
@@ -592,6 +616,13 @@ const stringToSymbolType = {
   'method': SymbolType.METHOD,
   'local': SymbolType.LOCAL,
 };
+
+// Symbol types we can get references for.
+const SYMBOL_TYPES_WITH_REFERENCES = new Set([
+  SymbolType.CLASS,
+  SymbolType.FUNCTION,
+  SymbolType.METHOD,
+]);
 
 function getSymbolType(input: string) {
   let symbolType = stringToSymbolType[input];

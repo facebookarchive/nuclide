@@ -17,21 +17,13 @@ import invariant from 'assert';
 import {extractWordAtPosition} from '../../atom-helpers';
 import {HackLanguage} from './HackLanguage';
 import {getPath, isRemote} from '../../remote-uri';
-import {Disposable, Range} from 'atom';
-import {SymbolType} from '../../hack-common';
+import {Range} from 'atom';
 import {getHackService} from './utils';
 import {RemoteConnection} from '../../remote-connection';
 import {compareHackCompletions} from './utils';
 import {getConfig} from './config';
 
 const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
-
-// Symbol types we can get references for.
-const SYMBOL_TYPES_WITH_REFERENCES = new Set([
-  SymbolType.CLASS,
-  SymbolType.FUNCTION,
-  SymbolType.METHOD,
-]);
 
 
 /**
@@ -215,41 +207,12 @@ module.exports = {
     }
 
     const contents = editor.getText();
-    const symbol = await hackLanguage.getSymbolNameAtPositionWithDependencies(
-      getPath(filePath),
+    return await hackLanguage.findReferences(
+      filePath,
       contents,
-      line + 1,
-      column + 1
+      line,
+      column,
     );
-    if (!symbol || !SYMBOL_TYPES_WITH_REFERENCES.has(symbol.type)) {
-      return null;
-    }
-    const referencesResult = await hackLanguage.getReferences(filePath, contents, symbol);
-    if (!referencesResult) {
-      return null;
-    }
-    const {hackRoot, references} = referencesResult;
-    return {baseUri: hackRoot, symbolName: symbol.name, references};
-  },
-
-  async isFinishedLoadingDependencies(editor: atom$TextEditor): Promise<boolean> {
-    const hackLanguage = await getHackLanguageForUri(editor.getPath());
-    if (hackLanguage == null) {
-      return true;
-    }
-    return hackLanguage.isFinishedLoadingDependencies();
-  },
-
-  async onFinishedLoadingDependencies(
-    editor: atom$TextEditor,
-    callback: (() => mixed),
-  ): Promise<IDisposable> {
-    const hackLanguage = await getHackLanguageForUri(editor.getPath());
-    if (hackLanguage == null) {
-      callback();
-      return new Disposable(() => {});
-    }
-    return hackLanguage.onFinishedLoadingDependencies(callback);
   },
 
   getHackLanguageForUri,

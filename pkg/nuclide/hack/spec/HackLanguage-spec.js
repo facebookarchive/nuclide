@@ -170,7 +170,7 @@ class HackClass {}
         const fileContents = fs.readFileSync(filePath, 'utf8');
         const lineNumber = 15;
         const column = 26;
-        const symbol = await hackLanguage.getSymbolNameAtPosition(
+        const symbol = await hackLanguage._getSymbolNameAtPosition(
           filePath,
           fileContents,
           lineNumber,
