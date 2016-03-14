@@ -227,6 +227,10 @@ export class HackLanguage {
     path: NuclideUri,
     contents: string,
   ): Promise<Array<{message: HackDiagnostic;}>> {
+    if (this.isHackAvailable()) {
+      return await this._getServerDiagnostics(path);
+    }
+
     const {hostname, port, path: localPath} = parse(path);
     await this.updateFile(localPath, contents);
     const webWorkerMessage = {cmd: 'hh_check_file', args: [localPath]};
@@ -243,7 +247,7 @@ export class HackLanguage {
     return errors;
   }
 
-  async getServerDiagnostics(
+  async _getServerDiagnostics(
     filePath: NuclideUri,
   ): Promise<Array<{message: HackDiagnostic;}>> {
     const {getDiagnostics} = getHackService(filePath);

@@ -54,13 +54,7 @@ module.exports = {
     invariant(filePath);
     const contents = editor.getText();
 
-    let diagnostics;
-    if (hackLanguage.isHackAvailable()) {
-      diagnostics = await hackLanguage.getServerDiagnostics(filePath);
-    } else {
-      diagnostics = await hackLanguage.getDiagnostics(filePath, contents);
-    }
-    return diagnostics;
+    return await hackLanguage.getDiagnostics(filePath, contents);
   },
 
   async fetchCompletionsForEditor(editor: atom$TextEditor, prefix: string): Promise<Array<any>> {
