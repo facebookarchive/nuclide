@@ -11,7 +11,7 @@
 
 import path from 'path';
 import fs from 'fs';
-import HackLanguage from '../lib/HackLanguage';
+import {HackLanguage} from '../lib/HackLanguage';
 
 describe('HackLanguage', () => {
   let hackLanguage;

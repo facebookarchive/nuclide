@@ -15,7 +15,7 @@ import type {TypeHint} from '../../type-hint-interfaces';
 
 import invariant from 'assert';
 import {extractWordAtPosition} from '../../atom-helpers';
-import HackLanguage from './HackLanguage';
+import {HackLanguage} from './HackLanguage';
 import {getPath, isRemote} from '../../remote-uri';
 import {Disposable, Range} from 'atom';
 import {SymbolType} from '../../hack-common';

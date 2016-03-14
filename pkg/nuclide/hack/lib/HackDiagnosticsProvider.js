@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from '../../remote-uri';
 import type {BusySignalProviderBase} from '../../busy-signal-provider-base';
-import type HackLanguage from './HackLanguage';
+import type {HackLanguage} from './HackLanguage';
 import type {
   HackDiagnostic,
   SingleHackMessage,

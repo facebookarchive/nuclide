@@ -47,7 +47,7 @@ const MAX_HACK_WORKER_TEXT_SIZE = 10000;
  * and/or results from HackService (which would be executing hh_client on a supporting server)
  * and combining and/or selecting the results to give back to the requester.
  */
-module.exports = class HackLanguage {
+export class HackLanguage {
 
   _hhAvailable: boolean;
   _hackWorker: HackWorker;
@@ -568,7 +568,7 @@ module.exports = class HackLanguage {
     throw new Error('Timed out waiting for Hack dependencies');
   }
 
-};
+}
 
 const stringToCompletionType = {
   'id': CompletionType.ID,
