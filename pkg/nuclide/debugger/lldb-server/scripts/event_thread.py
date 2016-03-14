@@ -11,6 +11,21 @@ from threading import Thread
 from logging_helper import log_debug, log_error
 
 
+breakpoint_event_type_to_name_map = {
+    lldb.eBreakpointEventTypeAdded: 'Added',
+    lldb.eBreakpointEventTypeCommandChanged: 'Command Changed',
+    lldb.eBreakpointEventTypeConditionChanged: 'Condition Changed',
+    lldb.eBreakpointEventTypeDisabled: 'Disabled',
+    lldb.eBreakpointEventTypeEnabled: 'Enabled',
+    lldb.eBreakpointEventTypeIgnoreChanged: 'Ignore Changed',
+    lldb.eBreakpointEventTypeInvalidType: 'Invalid Type',
+    lldb.eBreakpointEventTypeLocationsAdded: 'Location Added',
+    lldb.eBreakpointEventTypeLocationsRemoved: 'Location Removed',
+    lldb.eBreakpointEventTypeLocationsResolved: 'Location Resolved',
+    lldb.eBreakpointEventTypeRemoved: 'Removed',
+    lldb.eBreakpointEventTypeThreadChanged: 'Thread Changed',
+}
+
 class LLDBListenerThread(Thread):
     '''Implement lldb event pumping and process state update.
     The process state updates are converted into Chrome debugger notification to update UI.
@@ -134,12 +149,25 @@ class LLDBListenerThread(Thread):
 
     def _handle_breakpoint_event(self, event):
         breakpoint = lldb.SBBreakpoint.GetBreakpointFromEvent(event)
-        for location in self._debugger_store.location_serializer.get_breakpoint_locations(breakpoint):
-            params = {
-                'breakpointId': str(breakpoint.id),
-                'location': location,
-            }
-            self._send_notification('Debugger.breakpointResolved', params)
+        event_type = lldb.SBBreakpoint.GetBreakpointEventTypeFromEvent(event)
+        log_debug('Breakpoint event: [%s] %s ' % (
+            breakpoint_event_type_to_name_map[event_type],
+            self._get_description_from_object(breakpoint)))
+        if event_type == lldb.eBreakpointEventTypeLocationsResolved:
+            for location in self._debugger_store.location_serializer.get_breakpoint_locations(breakpoint):
+                params = {
+                    'breakpointId': str(breakpoint.id),
+                    'location': location,
+                }
+                self._send_notification('Debugger.breakpointResolved', params)
+        else:
+          # TODO: handle other breakpoint event types.
+          pass
+
+    def _get_description_from_object(self, lldb_object):
+        description_stream = lldb.SBStream()
+        lldb_object.GetDescription(description_stream)
+        return description_stream.GetData()
 
     def _send_notification(self, method, params):
         self._debugger_store.chrome_channel.send_notification(method, params)
@@ -149,13 +177,10 @@ class LLDBListenerThread(Thread):
         pass
 
     def _handle_unknown_event(self, event):
-        description_stream = lldb.SBStream()
-        event.GetDescription(description_stream)
         log_error('Unknown event: %d %s %s' % (
             event.GetType(),
             lldb.SBEvent.GetCStringFromEvent(event),
-            description_stream.GetData()))
-
+            self._get_description_from_object(event)))
     def run(self):
         while not self.should_quit:
             event = lldb.SBEvent()
