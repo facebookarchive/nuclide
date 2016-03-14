@@ -77,9 +77,10 @@ class DiffCommitView extends React.Component {
       <div className="nuclide-diff-mode">
         <div className="message-editor-wrapper">
           <AtomTextEditor
-            ref="message"
             gutterHidden={true}
+            path=".HG_COMMIT_EDITMSG"
             readOnly={isLoading}
+            ref="message"
           />
         </div>
         <div className="nuclide-diff-view-toolbar nuclide-diff-view-toolbar-bottom">
