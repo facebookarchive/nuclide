@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import os from 'os';
 import {checkOutput, safeSpawn} from './process';
 
 const DEFAULT_JOIN_TIMEOUT = 5000;
@@ -49,7 +50,6 @@ export class ScribeProcess {
    *        for more information.
    */
   async write(message: string | Object, replacer?: ()=>mixed): Promise<void> {
-    const os = require('os');
     const child = await this._getOrCreateChildProcess();
     return new Promise((resolve, reject) => {
       child.stdin.write(`${JSON.stringify(message)}${os.EOL}`, resolve);

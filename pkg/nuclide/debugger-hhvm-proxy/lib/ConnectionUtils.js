@@ -12,6 +12,7 @@
 import logger from './utils';
 import {launchScriptForDummyConnection, uriToPath} from './helpers';
 import {fsPromise, findNearestFile} from '../../commons';
+import path from 'path';
 
 import type {Socket} from 'net';
 import type {ConnectionConfig} from './HhvmDebuggerProxyService';
@@ -25,7 +26,6 @@ async function getHackRoot(filePath: string): Promise<?string> {
 export async function setRootDirectoryUri(directoryUri: string): Promise {
   const hackRootDirectory = await getHackRoot(directoryUri);
   logger.log(`setRootDirectoryUri: from ${directoryUri} to ${hackRootDirectory}`);
-  const path = require('path');
   // TODO: make xdebug_includes.php path configurable from hhconfig.
   const hackDummyRequestFilePath = path.join(
     (hackRootDirectory ? hackRootDirectory : ''),

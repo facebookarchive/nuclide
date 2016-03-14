@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import path from 'path';
+
 import type {ClientCallback} from '../lib/ClientCallback';
 
 const FileCache = require('../lib/FileCache');
@@ -35,7 +37,6 @@ describe('debugger-hhvm-proxy FileCache', () => {
       .createSpy('getServerMessageObservable')
       .andReturn(observableSpy);
     cache = new FileCache(callback);
-    const path = require('path');
     const fixturesPath = path.join(__dirname, 'fixtures');
     filepath = path.join(fixturesPath, 'test.php');
   });

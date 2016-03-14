@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import child_process from 'child_process';
+import path from 'path';
 import {EventEmitter} from 'events';
 
 export type InvokeRemoteMethodParams = {
@@ -32,8 +34,8 @@ class _Task {
     this._id = 0;
     this._emitter = new EventEmitter();
     const options = {silent: true}; // Needed so stdout/stderr are available.
-    const child = this._child = require('child_process')
-        .fork(require('path').join(__dirname, '/bootstrap.js'), options);
+    const child = this._child = child_process
+        .fork(path.join(__dirname, '/bootstrap.js'), options);
     /*eslint-disable no-console*/
     const log = buffer => console.log(`TASK(${child.pid}): ${buffer}`);
     /*eslint-enable no-console*/

@@ -12,6 +12,9 @@
 import type {NuclideUri} from '../../remote-uri';
 import type {MerlinError, MerlinType} from './LocalMerlinService';
 
+import path from 'path';
+import readline from 'readline';
+
 import {
   checkOutput,
   findNearestFile,
@@ -59,12 +62,12 @@ export class MerlinProcess {
    *
    * @return a dummy cursor position on success
    */
-  async pushDotMerlinPath(path: NuclideUri): Promise<mixed> {
+  async pushDotMerlinPath(file: NuclideUri): Promise<mixed> {
     return await this._promiseQueue.submit(async (resolve, reject) => {
       const result = await this.runSingleCommand([
         'reset',
         'dot_merlin',
-        [path],
+        [file],
         'auto',
       ]);
       resolve(result);
@@ -113,7 +116,7 @@ export class MerlinProcess {
    *   {"file": "somepath", "pos": {"line": 41, "col": 5}}.
    */
   async locate(
-    path: NuclideUri,
+    file: NuclideUri,
     line: number,
     col: number,
     kind: string,
@@ -135,7 +138,7 @@ export class MerlinProcess {
       // Ocamlmerlin doesn't include a `file` field at all if the destination is
       // in the same file.
       if (!location.file) {
-        location.file = path;
+        location.file = file;
       }
 
       resolve(location);
@@ -143,7 +146,7 @@ export class MerlinProcess {
   }
 
   async enclosingType(
-    path: NuclideUri,
+    file: NuclideUri,
     line: number,
     col: number,
   ): Promise<Array<MerlinType>> {
@@ -154,7 +157,7 @@ export class MerlinProcess {
     });
   }
 
-  async complete(path: NuclideUri, line: number, col: number, prefix: string): Promise<mixed> {
+  async complete(file: NuclideUri, line: number, col: number, prefix: string): Promise<mixed> {
     return await this._promiseQueue.submit((resolve, reject) => {
       this.runSingleCommand([
         'complete',
@@ -186,8 +189,7 @@ export class MerlinProcess {
     const stdout = this._proc.stdout;
 
     return new Promise((resolve, reject) => {
-      const {createInterface} = require('readline');
-      const reader = createInterface({
+      const reader = readline.createInterface({
         input: stdout,
         terminal: false,
       });
@@ -244,7 +246,7 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
   const dotMerlinPath = await findNearestFile('.merlin', file);
 
   const options = {
-    cwd: (dotMerlinPath ? require('path').dirname(dotMerlinPath) : '.'),
+    cwd: (dotMerlinPath ? path.dirname(dotMerlinPath) : '.'),
   };
 
   logger.info('Spawning new ocamlmerlin process');

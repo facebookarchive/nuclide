@@ -12,7 +12,7 @@
 import type {HomeFragments} from '../../home-interfaces';
 import type DiffViewModelType from './DiffViewModel';
 
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Directory} from 'atom';
 import invariant from 'assert';
 import nuclideFeatures from '../../../../lib/nuclideFeatures';
 import {getFileTreePathFromTargetEvent} from './utils';
@@ -102,7 +102,6 @@ function activateFilePath(filePath: string): void {
 
 function projectsContainPath(checkPath: string): boolean {
   const {isRemote} = require('../../remote-uri');
-  const {Directory} = require('atom');
   return atom.project.getDirectories().some(directory => {
     const directoryPath = directory.getPath();
     if (!checkPath.startsWith(directoryPath)) {

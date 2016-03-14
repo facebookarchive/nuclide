@@ -12,6 +12,7 @@
 import type NuclideToolbarType from './NuclideToolbar';
 import type ProjectStoreType from './ProjectStore';
 
+import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
 
 class Activation {
@@ -24,7 +25,6 @@ class Activation {
   _state: Object;
 
   constructor(state: ?Object) {
-    const {CompositeDisposable} = require('atom');
     const ProjectStore = require('./ProjectStore');
 
     this._state = {
@@ -49,7 +49,6 @@ class Activation {
 
   consumeToolBar(getToolBar: (group: string) => Object): void {
     const hhvmIcon = require('./hhvmIcon');
-    const {Disposable} = require('atom');
     const toolBar = getToolBar('nuclide-buck-toolbar');
     const toolBarButton = toolBar.addButton({
       callback: 'nuclide-hhvm-toolbar:toggle',
@@ -65,7 +64,6 @@ class Activation {
   _createToolbar() {
     const NuclideToolbar = require('./NuclideToolbar');
     const item = document.createElement('div');
-    const {Disposable} = require('atom');
     const {
       React,
       ReactDOM,

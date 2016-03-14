@@ -11,6 +11,7 @@
 
 import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
 
+import path from 'path';
 import invariant from 'assert';
 import {GRAMMARS} from './constants';
 
@@ -40,7 +41,7 @@ module.exports = {
     }
 
     let kind = 'ml';
-    const extension = require('path').extname(file);
+    const extension = path.extname(file);
     if (EXTENSIONS.has(extension)) {
       kind = extension;
     }

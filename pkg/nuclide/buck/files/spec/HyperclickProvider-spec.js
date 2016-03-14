@@ -10,6 +10,7 @@
  */
 
 import {BuckProject} from '../../base/lib/BuckProject';
+import path from 'path';
 
 const {findTargetLocation, parseTarget} = require('../lib/HyperclickProvider');
 
@@ -17,7 +18,7 @@ describe('HyperclickProvider', () => {
   let projectPath: string = (null: any);
 
   beforeEach(() => {
-    projectPath = require('path').join(__dirname, 'fixtures/test-project') + '/';
+    projectPath = path.join(__dirname, 'fixtures/test-project') + '/';
     atom.project.setPaths([projectPath]);
   });
 

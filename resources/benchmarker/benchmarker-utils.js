@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import fs from 'fs';
+
 async function timedAsync<T>(
   promise: Promise<T>,
   waitUntilNoRequests: bool = true,
@@ -39,7 +41,6 @@ function timedSync<T>(func: () => T): {time: number; ret: T} {
 }
 
 function makeSizedFixture(location: string, size: number): void {
-  const fs = require('fs');
   const file = fs.openSync(location, 'w');
   const line = '// ------\n';
   const lineLength = line.length;

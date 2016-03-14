@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import crypto from 'crypto';
+
 const {replacePassword, getPassword, __test__} = require('../lib/main');
 const {
   runScriptInApmNode,
@@ -43,7 +45,6 @@ describe('Keytar Wrapper', () => {
 
   describe('*Password', () => {
     it('sets password in keychain', () => {
-      const crypto = require('crypto');
       const randomString = crypto.pseudoRandomBytes(32).toString('hex');
       replacePassword('nuclide-keytar-wrapper', 'fake user', randomString);
       expect(getPassword('nuclide-keytar-wrapper', 'fake user')).toEqual(randomString);

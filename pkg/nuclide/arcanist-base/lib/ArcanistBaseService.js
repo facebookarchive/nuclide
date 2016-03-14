@@ -12,6 +12,7 @@
 import type {NuclideUri} from '../../remote-uri';
 import invariant from 'assert';
 import {quote} from 'shell-quote';
+import path from 'path';
 const {asyncExecute, checkOutput} = require('../../commons');
 const logger = require('../../logging').getLogger();
 
@@ -49,7 +50,6 @@ export async function readArcConfig(fileName: NuclideUri): Promise<?any> {
     return null;
   }
   if (!arcProjectMap.has(arcConfigDirectory)) {
-    const path = require('path');
     const arcconfigFile = path.join(arcConfigDirectory, ARC_CONFIG_FILE_NAME);
     const contents = await require('../../commons').readFile(arcconfigFile, 'utf8');
     invariant(typeof contents === 'string');
@@ -66,7 +66,6 @@ export async function findArcProjectIdOfPath(fileName: NuclideUri): Promise<?str
 
 export async function getProjectRelativePath(fileName: NuclideUri): Promise<?string> {
   const arcPath = await findArcConfigDirectory(fileName);
-  const path = require('path');
   return arcPath && fileName ? path.relative(arcPath, fileName) : null;
 }
 
@@ -74,15 +73,15 @@ export async function findDiagnostics(pathToFiles: Array<NuclideUri>, skip: Arra
     Promise<Array<ArcDiagnostic>> {
   const arcConfigDirToFiles: Map<string, Array<string>> = new Map();
   await Promise.all(
-    pathToFiles.map(async path => {
-      const arcConfigDir = await findArcConfigDirectory(path);
+    pathToFiles.map(async file => {
+      const arcConfigDir = await findArcConfigDirectory(file);
       if (arcConfigDir) {
         let files = arcConfigDirToFiles.get(arcConfigDir);
         if (files == null) {
           files = [];
           arcConfigDirToFiles.set(arcConfigDir, files);
         }
-        files.push(path);
+        files.push(file);
       }
     })
   );
@@ -159,13 +158,13 @@ async function execArcLint(cwd: string, filePaths: Array<NuclideUri>, skip: Arra
       logger.error('Error parsing `arc lint` JSON output', result.stdout);
       return [];
     }
-    for (const path of Object.keys(json)) {
-      const errorsToAdd = json[path];
+    for (const file of Object.keys(json)) {
+      const errorsToAdd = json[file];
 
-      let errors = output.get(path);
+      let errors = output.get(file);
       if (errors == null) {
         errors = [];
-        output.set(path, errors);
+        output.set(file, errors);
       }
       for (const error of errorsToAdd) {
         errors.push(error);
@@ -174,15 +173,14 @@ async function execArcLint(cwd: string, filePaths: Array<NuclideUri>, skip: Arra
   }
 
   const lints = [];
-  const {relative} = require('path');
-  for (const path of filePaths) {
+  for (const file of filePaths) {
     // TODO(7876450): For some reason, this does not work for particular values of pathToFile.
     // Depending on the location of .arcconfig, we may get a key that is different from what `arc
     // lint` actually returns, and end up without any lints for this path.
-    const key = relative(cwd, path);
+    const key = path.relative(cwd, file);
     const rawLints = output.get(key);
     if (rawLints) {
-      for (const lint of convertLints(path, rawLints)) {
+      for (const lint of convertLints(file, rawLints)) {
         lints.push(lint);
       }
     }

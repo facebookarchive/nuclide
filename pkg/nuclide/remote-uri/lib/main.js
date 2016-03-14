@@ -46,6 +46,7 @@ type ParsedRemoteUrl = {
 
 import invariant from 'assert';
 import pathPackage from 'path';
+import url from 'url';
 
 const REMOTE_PATH_URI_PREFIX = 'nuclide://';
 
@@ -80,7 +81,7 @@ function createRemoteUri(hostname: string, remotePort: number, remotePath: strin
  *         }
  */
 function parse(uri: NuclideUri): ParsedUrl {
-  const parsedUri = require('url').parse(uri);
+  const parsedUri = url.parse(uri);
 
   invariant(parsedUri.path, `Nuclide URIs must contain paths, '${parsedUri.path}' found.`);
   let path = parsedUri.path;
@@ -235,7 +236,7 @@ function dirname(uri: NuclideUri): NuclideUri {
  * Returns null if not a valid file: URI.
  */
 function uriToNuclideUri(uri: string): ?string {
-  const urlParts = require('url').parse(uri, false);
+  const urlParts = url.parse(uri, false);
   if (urlParts.protocol === 'file:' && urlParts.path) { // only handle real files for now.
     return urlParts.path;
   } else if (isRemote(uri)) {

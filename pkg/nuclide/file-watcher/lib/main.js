@@ -9,15 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {CompositeDisposable as CompositeDisposableType} from 'atom';
-let subscriptions: ?CompositeDisposableType = null;
+import {CompositeDisposable} from 'atom';
+let subscriptions: ?CompositeDisposable = null;
 let watchers: ?Map = null;
 
 module.exports = {
 
   activate(state: ?Object): void {
-    const {CompositeDisposable} = require('atom');
-
     const _subscriptions = new CompositeDisposable();
     const _watchers = new Map();
 

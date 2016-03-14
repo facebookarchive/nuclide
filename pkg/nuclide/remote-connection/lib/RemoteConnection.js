@@ -16,6 +16,7 @@ import typeof * as FileWatcherServiceType from '../../filewatcher-base';
 import typeof * as SourceControlService from '../../server/lib/services/SourceControlService';
 
 import invariant from 'assert';
+import pathModule from 'path';
 import {RemoteDirectory} from './RemoteDirectory';
 import {ServerConnection} from './ServerConnection';
 
@@ -133,7 +134,7 @@ export class RemoteConnection {
 
   createDirectory(uri: string, symlink: boolean = false): RemoteDirectory {
     let {path} = remoteUri.parse(uri);
-    path = require('path').normalize(path);
+    path = pathModule.normalize(path);
 
     let entry = this._entries[path];
     if (
@@ -170,7 +171,7 @@ export class RemoteConnection {
 
   createFile(uri: string, symlink: boolean = false): RemoteFile {
     let {path} = remoteUri.parse(uri);
-    path = require('path').normalize(path);
+    path = pathModule.normalize(path);
 
     let entry = this._entries[path];
     if (

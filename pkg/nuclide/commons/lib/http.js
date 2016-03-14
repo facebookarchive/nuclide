@@ -12,6 +12,7 @@
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
+import url from 'url';
 
 /**
  * This is not complete: see https://www.npmjs.com/package/request for details.
@@ -53,8 +54,8 @@ type RequestOptions = {
 // a common practice to use that so we need to deal with it in regex.
 const contentTypeRe = /\s*\w+\/\w+\s*;\s*charset\s*=\s*([^\s]+)\s*/;
 
-function getProtocolModule(url: string): any {
-  const {protocol} = require('url').parse(url);
+function getProtocolModule(urlString: string): any {
+  const {protocol} = url.parse(urlString);
   if (protocol === 'http:') {
     return http;
   } else if (protocol === 'https:') {
@@ -78,18 +79,18 @@ module.exports = {
   /**
    * Send Http(s) GET request to given url and return the body as string.
    */
-  get(url: string, headers: ?Object, rejectUnauthorized: bool = true): Promise<string> {
+  get(urlString: string, headers: ?Object, rejectUnauthorized: bool = true): Promise<string> {
     return new Promise((resolve, reject) => {
       let body = '';
-      const options: Object = require('url').parse(url);
+      const options: Object = url.parse(urlString);
       if (!options.hostname) {
-        reject(new Error(`Unable to determine the domain name of ${url}`));
+        reject(new Error(`Unable to determine the domain name of ${urlString}`));
       }
       if (headers) {
         options.headers = headers;
       }
       options.rejectUnauthorized = rejectUnauthorized;
-      getProtocolModule(url).get(options, response => {
+      getProtocolModule(urlString).get(options, response => {
         if (response.statusCode < 200 || response.statusCode >= 300) {
           reject(`Bad status ${response.statusCode}`);
         } else {
@@ -180,10 +181,10 @@ module.exports = {
   /**
    * Send Http(s) GET request to given url and save the body to dest file.
    */
-  download(url: string, dest: string): Promise<void> {
+  download(urlString: string, dest: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const file = fs.createWriteStream(dest);
-      getProtocolModule(url).get(url, response => {
+      getProtocolModule(urlString).get(urlString, response => {
         if (response.statusCode < 200 || response.statusCode >= 300) {
           reject(`Bad status ${response.statusCode}`);
         } else {

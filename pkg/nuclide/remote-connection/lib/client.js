@@ -12,6 +12,7 @@
 import type {NuclideUri} from '../../remote-uri';
 import type {RemoteFile} from './RemoteFile';
 
+import {File} from 'atom';
 const {RemoteConnection} = require('./RemoteConnection');
 const {isRemote} = require('../../remote-uri');
 
@@ -24,7 +25,6 @@ module.exports = {
       }
       return connection.createFile(filePath);
     } else {
-      const {File} = require('atom');
       return new File(filePath);
     }
   },

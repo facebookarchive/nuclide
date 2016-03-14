@@ -17,6 +17,7 @@ import type {HhvmDebuggerProxyService as HhvmDebuggerProxyServiceType,}
     from '../../../debugger-hhvm-proxy/lib/HhvmDebuggerProxyService';
 
 import invariant from 'assert';
+import {CompositeDisposable} from 'atom';
 import {DebuggerInstance} from '../../atom';
 import {getOutputService} from '../../common/lib/OutputServiceManager';
 
@@ -59,7 +60,6 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
     this._proxy = null;
     this._server = null;
     this._webSocket = null;
-    const {CompositeDisposable} = require('atom');
     this._disposables = new CompositeDisposable();
     this._sessionEndCallback = null;
 

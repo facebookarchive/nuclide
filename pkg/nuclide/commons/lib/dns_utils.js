@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import dns from 'dns';
+
 type DnsFamily = 4 | 6;
 
 async function lookupPreferIpv6(host: string): Promise<string> {
@@ -24,7 +26,6 @@ async function lookupPreferIpv6(host: string): Promise<string> {
 
 function lookup(host: string, family: DnsFamily): Promise<string> {
   return new Promise((resolve, reject) => {
-    const dns = require('dns');
     dns.lookup(host, family, (error: ?Error, address: ?string) => {
       if (error) {
         reject(error);

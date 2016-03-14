@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import child_process from 'child_process';
+import url from 'url';
 import logger from './utils';
 import {parse} from 'shell-quote';
 
@@ -42,7 +44,7 @@ export function pathToUri(path: string): string {
 }
 
 export function uriToPath(uri: string): string {
-  const components = require('url').parse(uri);
+  const components = url.parse(uri);
   // Some filename returned from hhvm does not have protocol.
   if (components.protocol !== 'file:' && components.protocol !== null) {
     logger.logErrorAndThrow(`unexpected file protocol. Got: ${components.protocol}`);
@@ -77,7 +79,6 @@ function launchPhpScriptWithXDebugEnabled(
   scriptPath: string,
   sendToOutputWindowAndResolve?: (text: string) => void,
 ): child_process$ChildProcess {
-  const child_process = require('child_process');
   const scriptArgv = parse(scriptPath);
   const args = ['-c', 'xdebug.ini', ...scriptArgv];
   // TODO[jeffreytan]: make hhvm path configurable so that it will

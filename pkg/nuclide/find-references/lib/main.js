@@ -11,6 +11,7 @@
 
 import type {Reference} from './types';
 
+import crypto from 'crypto';
 import {CompositeDisposable} from 'atom';
 import {array} from '../../commons';
 import {track} from '../../analytics';
@@ -125,7 +126,6 @@ module.exports = {
         const view = await tryCreateView();
         if (view != null) {
           // Generate a unique identifier.
-          const crypto = require('crypto');
           const id = (crypto.randomBytes(8) || '').toString('hex');
           const uri = FIND_REFERENCES_URI + id;
           const disposable = atom.workspace.addOpener(newUri => {

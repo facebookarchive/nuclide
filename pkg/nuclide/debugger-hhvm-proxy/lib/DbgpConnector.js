@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import net from 'net';
 import logger from './utils';
 import {Emitter} from 'event-kit';
 import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
@@ -73,7 +74,7 @@ export class DbgpConnector {
 
     logger.log('Creating debug server on port ' + port);
 
-    const server = require('net').createServer();
+    const server = net.createServer();
 
     server.on('close', socket => logger.log('Closing port ' + port));
     server.listen(port, undefined, undefined, () => logger.log('Listening on port ' + port));

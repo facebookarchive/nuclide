@@ -19,6 +19,7 @@ import {EventEmitter} from 'events';
 import utils from './utils';
 import {getOutputService} from '../../common/lib/OutputServiceManager';
 import {DebuggerInstance} from '../../atom';
+import {CompositeDisposable} from 'atom';
 const {log, logInfo, logError} = utils;
 const {translateMessageFromServer, translateMessageToServer} = require('./ChromeMessageRemoting');
 const remoteUri = require('../../../remote-uri');
@@ -43,7 +44,6 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     this._attachPromise = null;
     this._chromeWebSocketServer = null;
     this._chromeWebSocket = null;
-    const {CompositeDisposable} = require('atom');
     this._disposables = new CompositeDisposable();
     this._emitter = new EventEmitter();
     this._registerConnection(connection);

@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import {Range} from 'atom';
 const {CompositeDisposable} = require('atom');
 
 import type {CodeFormatProvider} from './types';
@@ -54,7 +55,6 @@ class CodeFormatManager {
     } else {
       // Format selections should start at the begining of the line,
       // and include the last selected line end.
-      const {Range} = require('atom');
       formatRange = new Range(
           [selectionStart.row, 0],
           [selectionEnd.row + 1, 0],

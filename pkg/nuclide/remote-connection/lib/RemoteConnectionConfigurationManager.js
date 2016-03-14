@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import crypto from 'crypto';
 import invariant from 'assert';
 import {getLogger} from '../../logging';
 import type {ServerConnectionConfiguration} from './ServerConnection';
@@ -65,7 +66,6 @@ function encryptConfig(
   remoteProjectConfig: ServerConnectionConfiguration,
 ): SerializableServerConnectionConfiguration {
   const {replacePassword} = require('../../keytar-wrapper');
-  const crypto = require('crypto');
 
   const sha1 = crypto.createHash('sha1');
   sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
@@ -100,7 +100,6 @@ function decryptConfig(
   remoteProjectConfig: SerializableServerConnectionConfiguration,
 ): ServerConnectionConfiguration {
   const {getPassword} = require('../../keytar-wrapper');
-  const crypto = require('crypto');
 
   const sha1 = crypto.createHash('sha1');
   sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
@@ -139,8 +138,6 @@ function decryptConfig(
 }
 
 function decryptString(text: string, password: string, salt: string): string {
-  const crypto = require('crypto');
-
   const decipher = crypto.createDecipheriv(
       'aes-128-cbc',
       new Buffer(password, 'base64'),
@@ -153,7 +150,6 @@ function decryptString(text: string, password: string, salt: string): string {
 }
 
 function encryptString(text: string): {password: string; salt: string; encryptedString: string} {
-  const crypto = require('crypto');
   const password = crypto.randomBytes(16).toString('base64');
   const salt = crypto.randomBytes(16).toString('base64');
 

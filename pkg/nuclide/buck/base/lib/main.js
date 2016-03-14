@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import path from 'path';
+
 module.exports = {
   get BuckProject() {
     return require('./BuckProject');
@@ -18,6 +20,6 @@ module.exports = {
     // TODO(mbolin): Buck does have an option where the user can customize the
     // name of the build file: https://github.com/facebook/buck/issues/238.
     // This function will not work for those who use that option.
-    return require('path').basename(filePath) === 'BUCK';
+    return path.basename(filePath) === 'BUCK';
   },
 };
