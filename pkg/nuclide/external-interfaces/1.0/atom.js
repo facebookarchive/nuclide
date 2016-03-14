@@ -516,6 +516,7 @@ declare class atom$TextEditor extends atom$Model {
    * null.
    */
   getPath(): ?string;
+  insertNewline(): void;
   isModified(): boolean;
   isEmpty(): boolean;
   getEncoding(): buffer$Encoding;
