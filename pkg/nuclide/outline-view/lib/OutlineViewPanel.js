@@ -19,31 +19,41 @@ import {PanelComponent} from '../../ui/panel';
 
 import {OutlineView} from './OutlineView';
 
-const DEFAULT_WIDTH = 300; // px
-
 export class OutlineViewPanelState {
   _outlines: Observable<?OutlineForUi>;
   _outlineViewPanel: ?OutlineViewPanel;
   _width: number;
 
-  constructor(outlines: Observable<?OutlineForUi>) {
+  constructor(outlines: Observable<?OutlineForUi>, width: number, visible: boolean) {
     this._outlines = outlines;
     this._outlineViewPanel = null;
-    this._width = DEFAULT_WIDTH;
+    this._width = width;
+
+    if (visible) {
+      this._show();
+    }
   }
 
   dispose(): void {
-    if (this._isVisible()) {
+    if (this.isVisible()) {
       this._destroyPanel();
     }
   }
 
   toggle(): void {
-    if (this._isVisible()) {
+    if (this.isVisible()) {
       this._hide();
     } else {
       this._show();
     }
+  }
+
+  getWidth(): number {
+    return this._width;
+  }
+
+  isVisible(): boolean {
+    return this._outlineViewPanel != null;
   }
 
   _show(): void {
@@ -58,10 +68,6 @@ export class OutlineViewPanelState {
 
   _hide(): void {
     this._destroyPanel();
-  }
-
-  _isVisible(): boolean {
-    return this._outlineViewPanel != null;
   }
 
   _destroyPanel(): void {

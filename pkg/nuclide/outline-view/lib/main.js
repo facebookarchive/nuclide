@@ -54,12 +54,28 @@ export type OutlineProvider = {
   getOutline: (editor: TextEditor) => Promise<?Outline>;
 };
 
+type OutlineViewState = {
+  width: number;
+  visible: boolean;
+};
+
+const DEFAULT_WIDTH = 300; // px
+
+function makeDefaultState(): OutlineViewState {
+  return {
+    width: DEFAULT_WIDTH,
+    visible: false,
+  };
+}
+
 class Activation {
   _disposables: CompositeDisposable;
 
   _providers: ProviderRegistry<OutlineProvider>;
 
-  constructor(state: ?Object) {
+  _panel: OutlineViewPanelState;
+
+  constructor(state?: OutlineViewState = makeDefaultState()) {
     this._disposables = new CompositeDisposable();
 
     this._providers = new ProviderRegistry();
@@ -91,7 +107,7 @@ class Activation {
         }
       });
 
-    const panel = new OutlineViewPanelState(outlines);
+    const panel = this._panel = new OutlineViewPanelState(outlines, state.width, state.visible);
     this._disposables.add(panel);
 
     this._disposables.add(
@@ -105,6 +121,13 @@ class Activation {
 
   dispose() {
     this._disposables.dispose();
+  }
+
+  serialize(): OutlineViewState {
+    return {
+      visible: this._panel.isVisible(),
+      width: this._panel.getWidth(),
+    };
   }
 
   consumeOutlineProvider(provider: OutlineProvider): IDisposable {
@@ -132,7 +155,7 @@ class Activation {
 
 let activation: ?Activation = null;
 
-export function activate(state: ?Object) {
+export function activate(state: Object | void) {
   if (activation == null) {
     activation = new Activation(state);
   }
@@ -142,6 +165,12 @@ export function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;
+  }
+}
+
+export function serialize(): ?OutlineViewState {
+  if (activation != null) {
+    return activation.serialize();
   }
 }
 
