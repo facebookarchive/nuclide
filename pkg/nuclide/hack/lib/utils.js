@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from '../../remote-uri';
+import typeof * as HackService from '../../hack-base/lib/HackService';
 
 import {getServiceByNuclideUri} from '../../remote-connection';
 import invariant from 'assert';
@@ -61,7 +62,7 @@ function compareHackCompletions(token: string): (matchText1: string, matchText2:
   };
 }
 
-function getHackService(filePath: NuclideUri): Object {
+function getHackService(filePath: NuclideUri): HackService {
   const hackRegisteredService = getServiceByNuclideUri(HACK_SERVICE_NAME, filePath);
   invariant(hackRegisteredService);
   return hackRegisteredService;

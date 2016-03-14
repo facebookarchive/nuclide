@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import typeof * as HackService from '../../hack-base/lib/HackService';
+
 const {CompositeDisposable, Disposable} = require('atom');
 const {EventEmitter} = require('events');
 const {buckProjectRootForPath} = require('../../buck/commons');
@@ -68,7 +70,7 @@ class ProjectStore {
 
   @trackTiming('toolbar.isFileHHVMProject')
   async _isFileHHVMProject(fileUri: NuclideUri): Promise<boolean> {
-    const hackService = getServiceByNuclideUri('HackService', fileUri);
+    const hackService: ?HackService = (getServiceByNuclideUri('HackService', fileUri): any);
     return remoteUri.isRemote(fileUri)
       && hackService != null
       && await hackService.isFileInHackProject(fileUri);
