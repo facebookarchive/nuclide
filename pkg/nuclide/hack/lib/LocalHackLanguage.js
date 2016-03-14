@@ -106,10 +106,7 @@ export class LocalHackLanguage {
     contents: string,
     offset: number
   ): Promise<Array<CompletionResult>> {
-    // Calculate the offset of the cursor from the beginning of the file.
-    // Then insert AUTO332 in at this offset. (Hack uses this as a marker.)
-    const markedContents = contents.substring(0, offset) +
-        'AUTO332' + contents.substring(offset, contents.length);
+    const markedContents = markFileForCompletion(contents, offset);
     const localPath = getPath(filePath);
     await this.updateFile(localPath, markedContents);
     const webWorkerMessage = {cmd: 'hh_auto_complete', args: [localPath]};
@@ -424,31 +421,7 @@ export class LocalHackLanguage {
     const definitionResult = await getIdentifierDefinition(
       filePath, contents, lineNumber, column
     );
-    if (!definitionResult) {
-      return [];
-    }
-    const {definitions} = ((definitionResult: any): HackDefinitionResult);
-    return definitions.map(definition => {
-      let {name} = definition;
-      if (name.startsWith(':')) {
-        // XHP class name, usages omit the leading ':'.
-        name = name.substring(1);
-      }
-      const definitionIndex = lineText.indexOf(name);
-      if (
-        definitionIndex === -1 ||
-        definitionIndex >= column ||
-        !xhpCharRegex.test(lineText.substring(definitionIndex, column))
-      ) {
-        return definition;
-      } else {
-        return {
-          ...definition,
-          searchStartColumn: definitionIndex,
-          searchEndColumn: definitionIndex + definition.name.length,
-        };
-      }
-    });
+    return processDefinitionsForXhp(definitionResult, column, lineText);
   }
 
   async _getDefinitionFromStringParse(
@@ -647,7 +620,8 @@ function shouldDoServerCompletion(type: number): boolean {
   return serverCompletionTypes.has(type);
 }
 
-function processCompletions(completionsResponse: Array<HackCompletion>): Array<CompletionResult> {
+export function processCompletions(completionsResponse: Array<HackCompletion>):
+    Array<CompletionResult> {
   return completionsResponse.map(completion => {
     const {name, func_details: functionDetails} = completion;
     let {type} = completion;
@@ -667,5 +641,44 @@ function processCompletions(completionsResponse: Array<HackCompletion>): Array<C
       matchText: name,
       matchType: type,
     };
+  });
+}
+
+// Calculate the offset of the cursor from the beginning of the file.
+// Then insert AUTO332 in at this offset. (Hack uses this as a marker.)
+export function markFileForCompletion(contents: string, offset: number): string {
+  return contents.substring(0, offset) +
+      'AUTO332' + contents.substring(offset, contents.length);
+}
+
+export function processDefinitionsForXhp(
+  definitionResult: ?HackDefinitionResult,
+  column: number,
+  lineText: string,
+): Array<HackSearchPosition> {
+  if (!definitionResult) {
+    return [];
+  }
+  const {definitions} = definitionResult;
+  return definitions.map(definition => {
+    let {name} = definition;
+    if (name.startsWith(':')) {
+      // XHP class name, usages omit the leading ':'.
+      name = name.substring(1);
+    }
+    const definitionIndex = lineText.indexOf(name);
+    if (
+      definitionIndex === -1 ||
+      definitionIndex >= column ||
+      !xhpCharRegex.test(lineText.substring(definitionIndex, column))
+    ) {
+      return definition;
+    } else {
+      return {
+        ...definition,
+        searchStartColumn: definitionIndex,
+        searchEndColumn: definitionIndex + definition.name.length,
+      };
+    }
   });
 }
