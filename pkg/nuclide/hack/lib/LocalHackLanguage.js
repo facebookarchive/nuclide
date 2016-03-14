@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from '../../remote-uri';
+import type {CompletionResult} from './HackLanguage';
 import type {
   HackCompletionsResult,
   HackCompletion,
@@ -104,7 +105,7 @@ export class LocalHackLanguage {
     filePath: NuclideUri,
     contents: string,
     offset: number
-  ): Promise<Array<any>> {
+  ): Promise<Array<CompletionResult>> {
     // Calculate the offset of the cursor from the beginning of the file.
     // Then insert AUTO332 in at this offset. (Hack uses this as a marker.)
     const markedContents = contents.substring(0, offset) +
@@ -646,7 +647,7 @@ function shouldDoServerCompletion(type: number): boolean {
   return serverCompletionTypes.has(type);
 }
 
-function processCompletions(completionsResponse: Array<HackCompletion>): Array<any> {
+function processCompletions(completionsResponse: Array<HackCompletion>): Array<CompletionResult> {
   return completionsResponse.map(completion => {
     const {name, func_details: functionDetails} = completion;
     let {type} = completion;

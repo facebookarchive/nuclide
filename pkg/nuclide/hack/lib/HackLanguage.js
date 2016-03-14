@@ -19,6 +19,12 @@ import type {TypeCoverageRegion} from './TypedRegions';
 
 import {LocalHackLanguage} from './LocalHackLanguage';
 
+export type CompletionResult = {
+  matchSnippet: string;
+  matchText: string;
+  matchType: string;
+};
+
 /**
  * The HackLanguage is the controller that servers language requests by trying to get worker results
  * and/or results from HackService (which would be executing hh_client on a supporting server)
@@ -32,7 +38,7 @@ export type HackLanguage  = {
     filePath: NuclideUri,
     contents: string,
     offset: number
-  ): Promise<Array<any>>;
+  ): Promise<Array<CompletionResult>>;
 
   formatSource(
     contents: string,
