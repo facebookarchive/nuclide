@@ -6,9 +6,11 @@
 
 import logging
 import os
+import re
 import shutil
 import subprocess
 import sys
+import time
 
 from multiprocessing import Pool, cpu_count
 
@@ -82,7 +84,7 @@ class JsTestRunner(object):
             (test_runner, pkg_path, name) = test_args
             run_js_test(test_runner, pkg_path, name)
 
-def run_js_test(test_runner, pkg_path, name):
+def run_js_test(test_runner, pkg_path, name, apm_retry=True):
     """Run `apm test` or `npm test` in the given pkg_path."""
 
     logging.info('Running `%s test` in %s...', test_runner, pkg_path)
@@ -117,6 +119,11 @@ def run_js_test(test_runner, pkg_path, name):
             proc.returncode,
             '\n'.join(stdout),
         )
+        if test_runner == 'apm' and apm_retry and is_retryable_error('\n'.join(stdout)):
+            logging.info('RETRYING TEST: %s', name)
+            time.sleep(3)
+            run_js_test(test_runner, pkg_path, name, apm_retry=False)
+            return
         raise Exception('TEST FAILED: %s test %s (exit code: %d)' %
                         (test_runner, name, proc.returncode))
     else:
@@ -167,3 +174,9 @@ def run_integration_tests_with_clean_state(path_to_nuclide, named_tests):
         missing_tests = filter(lambda test: test not in ran_tests, named_tests)
         if (missing_tests):
             raise Exception('%s are not valid integration tests' % (','.join(missing_tests)))
+
+def is_retryable_error(output):
+    return bool(
+        re.search(r'Atom.app/atom: line 117: \d+ Segmentation fault: 11', output) or
+        re.search(r'Atom.app/atom: line 117: \d+ Abort trap: 6', output)
+    )
