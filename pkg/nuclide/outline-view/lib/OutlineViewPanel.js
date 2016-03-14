@@ -19,13 +19,17 @@ import {PanelComponent} from '../../ui/panel';
 
 import {OutlineView} from './OutlineView';
 
+const DEFAULT_WIDTH = 300; // px
+
 export class OutlineViewPanelState {
   _outlines: Observable<?OutlineForUi>;
   _outlineViewPanel: ?OutlineViewPanel;
+  _width: number;
 
   constructor(outlines: Observable<?OutlineForUi>) {
     this._outlines = outlines;
     this._outlineViewPanel = null;
+    this._width = DEFAULT_WIDTH;
   }
 
   dispose(): void {
@@ -45,7 +49,11 @@ export class OutlineViewPanelState {
   _show(): void {
     invariant(this._outlineViewPanel == null);
 
-    this._outlineViewPanel = new OutlineViewPanel(this._outlines);
+    this._outlineViewPanel = new OutlineViewPanel(
+      this._outlines,
+      this._width,
+      this._onResize.bind(this),
+    );
   }
 
   _hide(): void {
@@ -63,13 +71,21 @@ export class OutlineViewPanelState {
     outlineViewPanel.dispose();
     this._outlineViewPanel = null;
   }
+
+  _onResize(newWidth: number): void {
+    this._width = newWidth;
+  }
 }
 
 class OutlineViewPanel {
   _panelDOMElement: HTMLElement;
   _panel: atom$Panel;
 
-  constructor(outlines: Observable<?OutlineForUi>) {
+  constructor(
+    outlines: Observable<?OutlineForUi>,
+    initialWidth: number,
+    onResize: (width: number) => mixed,
+  ) {
     this._panelDOMElement = document.createElement('div');
     // Otherwise it does not fill the whole panel, which might be alright except it means that the
     // resize-handle doesn't extend all the way to the bottom.
@@ -79,7 +95,9 @@ class OutlineViewPanel {
       <div style={{height: '100%'}}>
         <OutlineViewHeader />
         <PanelComponent
-          dock="right">
+          dock="right"
+          initialLength={initialWidth}
+          onResize={onResize}>
           <OutlineView outlines={outlines} />
         </PanelComponent>
       </div>,
