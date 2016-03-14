@@ -62,6 +62,15 @@ declare module 'rx' {
 
     static just(value: T): Observable<T>;
 
+    static merge<T,U>(
+      source0: Observable<T>,
+      source1: Observable<U>,
+    ): Observable<T | U>;
+    static merge<T,U,V>(
+      source0: Observable<T>,
+      source1: Observable<U>,
+      source2: Observable<V>,
+    ): Observable<T | U | V>;
     static merge(sources: Observable<T>[]): Observable<T>;
     static merge(...sources: Observable<T>[]): Observable<T>;
 

@@ -12,14 +12,13 @@
 import utils from './utils';
 import type {ConnectionConfig} from '../../../debugger-hhvm-proxy';
 import type {DebuggerProcessInfo} from '../../atom';
-
-import type {HhvmDebuggerProxyService as HhvmDebuggerProxyServiceType,}
-    from '../../../debugger-hhvm-proxy/lib/HhvmDebuggerProxyService';
+import type {
+  HhvmDebuggerProxyService as HhvmDebuggerProxyServiceType,
+} from '../../../debugger-hhvm-proxy/lib/HhvmDebuggerProxyService';
 
 import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
 import {DebuggerInstance} from '../../atom';
-import {getOutputService} from '../../common/lib/OutputServiceManager';
+import {ObservableManager} from './ObservableManager';
 
 const {log, logInfo, logError, setLogLevel} = utils;
 const featureConfig = require('../../../feature-config');
@@ -28,11 +27,6 @@ const remoteUri = require('../../../remote-uri');
 const {Disposable} = require('atom');
 const WebSocketServer = require('ws').Server;
 const {stringifyError} = require('../../../commons').error;
-
-type NotificationMessage = {
-  type: 'info' | 'warning' | 'error' | 'fatalError';
-  message: string;
-};
 
 type HhvmDebuggerConfig = {
   scriptRegex: string;
@@ -50,9 +44,9 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
   _proxy: ?HhvmDebuggerProxyServiceType;
   _server: ?WebSocketServer;
   _webSocket: ?WebSocket;
-  _disposables: atom$CompositeDisposable;
   _launchScriptPath: ?string;
   _sessionEndCallback: ?() => void;
+  _observableManager: ?ObservableManager;
 
   constructor(processInfo: DebuggerProcessInfo, launchScriptPath: ?string) {
     super(processInfo);
@@ -60,9 +54,8 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
     this._proxy = null;
     this._server = null;
     this._webSocket = null;
-    this._disposables = new CompositeDisposable();
     this._sessionEndCallback = null;
-
+    this._observableManager = null;
     setLogLevel(getConfig().logLevel);
   }
 
@@ -74,18 +67,20 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
     invariant(service);
     const proxy = new service.HhvmDebuggerProxyService();
     this._proxy = proxy;
-    this._disposables.add(proxy);
-    this._disposables.add(proxy.getNotificationObservable().subscribe(
-      this._handleNotificationMessage.bind(this),
-      this._handleNotificationError.bind(this),
-      this._handleNotificationEnd.bind(this),
-    ));
-    this._disposables.add(proxy.getServerMessageObservable().subscribe(
-      this._handleServerMessage.bind(this),
-      this._handleServerError.bind(this),
-      this._handleServerEnd.bind(this)
-    ));
-    this._registerOutputWindowLogging(proxy);
+    this._observableManager = new ObservableManager(
+      proxy.getNotificationObservable(),
+      proxy.getServerMessageObservable(),
+      proxy.getOutputWindowObservable().map(message => {
+        const serverMessage = translateMessageFromServer(
+          remoteUri.getHostname(this.getTargetUri()),
+          remoteUri.getPort(this.getTargetUri()),
+          message,
+        );
+        return JSON.parse(serverMessage);
+      }),
+      this._sendServerMessageToChromeUi.bind(this),
+      this._endSession.bind(this),
+    );
 
     const config = getConfig();
     const connectionConfig: ConnectionConfig = {
@@ -158,92 +153,16 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
     return (new Disposable(() => this._sessionEndCallback = null));
   }
 
-  _handleServerMessage(message: string): void {
-    log('Recieved server message: ' + message);
+  _sendServerMessageToChromeUi(message: string): void {
     const webSocket = this._webSocket;
     if (webSocket != null) {
       webSocket.send(
         translateMessageFromServer(
           remoteUri.getHostname(this.getTargetUri()),
           remoteUri.getPort(this.getTargetUri()),
-          message));
-    }
-  }
-
-  _handleServerError(error: string): void {
-    logError('Received server error: ' + error);
-  }
-
-  _handleServerEnd(): void {
-    log('Server observerable ends.');
-  }
-
-  _handleNotificationMessage(message: NotificationMessage): void {
-    switch (message.type) {
-      case 'info':
-        log('Notification observerable info: ' + message.message);
-        atom.notifications.addInfo(message.message);
-        break;
-
-      case 'warning':
-        log('Notification observerable warning: ' + message.message);
-        atom.notifications.addWarning(message.message);
-        break;
-
-      case 'error':
-        logError('Notification observerable error: ' + message.message);
-        atom.notifications.addError(message.message);
-        break;
-
-      case 'fatalError':
-        logError('Notification observerable fatal error: ' + message.message);
-        atom.notifications.addFatalError(message.message);
-        break;
-
-      default:
-        logError('Unknown message: ' + JSON.stringify(message));
-        break;
-    }
-  }
-
-  _handleNotificationError(error: string): void {
-    logError('Notification observerable error: ' + error);
-  }
-
-  /**
-   * _endSession() must be called from _handleNotificationEnd()
-   * so that we can guarantee all notifications have been processed.
-   */
-  _handleNotificationEnd(): void {
-    log('Notification observerable ends.');
-    this._endSession();
-  }
-
-  _registerOutputWindowLogging(proxy: HhvmDebuggerProxyServiceType): void {
-    const api = getOutputService();
-    if (api != null) {
-      const outputWindowMessage$ = proxy.getOutputWindowObservable()
-        .map(message => {
-          const serverMessage = translateMessageFromServer(
-            remoteUri.getHostname(this.getTargetUri()),
-            remoteUri.getPort(this.getTargetUri()),
-            message,
-          );
-          return JSON.parse(serverMessage);
-        })
-        .filter(messageObj => messageObj.method === 'Console.messageAdded')
-        .map(messageObj => {
-          return {
-            level: messageObj.params.message.level,
-            text: messageObj.params.message.text,
-          };
-        });
-      this._disposables.add(api.registerOutputProvider({
-        source: 'hhvm debugger',
-        messages: outputWindowMessage$,
-      }));
-    } else {
-      logError('Cannot get output window service.');
+          message,
+        ),
+      );
     }
   }
 
@@ -274,7 +193,15 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
   }
 
   dispose() {
-    this._disposables.dispose();
+    if (this._proxy != null) {
+      this._proxy.dispose().then(() => {
+        if (this._observableManager != null) {
+          this._observableManager.dispose();
+          this._observableManager = null;
+        }
+      });
+      this._proxy = null;
+    }
     const webSocket = this._webSocket;
     if (webSocket) {
       logInfo('closing webSocket');
