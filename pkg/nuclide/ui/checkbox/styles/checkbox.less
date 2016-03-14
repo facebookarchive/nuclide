@@ -4,6 +4,15 @@
   margin-bottom: 0; // This is to override a default in bootstrap.
 }
 
+/*
+ * Checkbox styles originally copied from Atom's ['settings-view'][1] package.
+ *
+ * Note: 'settings-view' applies transitions to the checkmarks, but when applied to hundreds of
+ * checkboxes simultaenously as is the case in the 'nuclide-file-tree' package w/ Working Sets, they
+ * are too expensive to paint. The followings styles intentionally omit transitions.
+ *
+ * [1] https://github.com/atom/settings-view/blob/v0.232.6/styles/settings-view.less#L113
+ */
 .nuclide-ui-checkbox[type="checkbox"] {
   -webkit-appearance: none;
   display: inline-block;
@@ -17,7 +26,6 @@
   outline: 0;
   border-radius: @component-border-radius;
   background-color: @text-color-subtle;
-  transition: background-color .16s cubic-bezier(0.5, 0.15, 0.2, 1);
 
   &[disabled] {
     opacity: 0.65;
@@ -43,7 +51,6 @@
     background-color: @base-background-color;
     transform-origin: 0% 0%;
     opacity: 0;
-    transition: transform .1s cubic-bezier(0.5, 0.15, 0.2, 1), opacity .1s cubic-bezier(0.5, 0.15, 0.2, 1);
   }
   &:before {
     width: .45em;
@@ -53,7 +60,6 @@
     width: .9em;
     margin: -1px;
     transform: rotate(-45deg) scale(0);
-    transition-delay: .05s;
   }
 
   &:checked {
@@ -67,11 +73,9 @@
     }
     &:before {
       transform: rotate(225deg) scale(1);
-      transition-delay: .05s;
     }
     &:after {
       transform: rotate(-45deg) scale(1);
-      transition-delay: 0s;
     }
   }
 
