@@ -604,6 +604,7 @@ declare class atom$TextEditor extends atom$Model {
   moveToBottom(): void;
 
   // Selections
+  getSelectedText(): string;
   selectAll(): void;
   getSelectedBufferRange(): atom$Range;
   getSelections(): Array<atom$Selection>;
