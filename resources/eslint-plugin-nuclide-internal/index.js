@@ -15,11 +15,13 @@ module.exports = {
     'flow-object-type': require('./flow-object-type'),
     'import-type-style': require('./import-type-style'),
     'license-header': require('./license-header'),
+    'prefer-top-level-builtins': require('./prefer-top-level-builtins'),
   },
   rulesConfig: {
     'comment-style': 0,
     'flow-object-type': 0,
     'import-type-style': 0,
     'license-header': 0,
+    'prefer-top-level-builtins': 0,
   },
 };
