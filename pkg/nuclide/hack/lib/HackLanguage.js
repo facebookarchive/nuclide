@@ -668,3 +668,10 @@ function processCompletions(completionsResponse: Array<HackCompletion>): Array<a
     };
   });
 }
+
+export function createHackLanguage(
+    hhAvailable: boolean,
+    basePath: ?string,
+    initialFileUri: NuclideUri): HackLanguage {
+  return new HackLanguage(hhAvailable, basePath, initialFileUri);
+}

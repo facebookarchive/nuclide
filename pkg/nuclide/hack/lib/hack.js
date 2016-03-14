@@ -12,10 +12,11 @@
 import type {NuclideUri} from '../../remote-uri';
 import type {HackReference, HackDiagnostic} from '../../hack-base/lib/HackService';
 import type {TypeHint} from '../../type-hint-interfaces';
+import type {HackLanguage} from './HackLanguage';
 
 import invariant from 'assert';
 import {extractWordAtPosition} from '../../atom-helpers';
-import {HackLanguage} from './HackLanguage';
+import {createHackLanguage} from './HackLanguage';
 import {getPath, isRemote} from '../../remote-uri';
 import {Range} from 'atom';
 import {getHackService} from './utils';
@@ -254,7 +255,7 @@ async function createHackLanguageIfNotExisting(
 
     // If multiple calls were done asynchronously, then return the single-created HackLanguage.
     if (!uriToHackLanguage.has(key)) {
-      uriToHackLanguage.set(key, new HackLanguage(isHHAvailable, hackRoot, fileUri));
+      uriToHackLanguage.set(key, createHackLanguage(isHHAvailable, hackRoot, fileUri));
     }
   }
   return uriToHackLanguage.get(key);
