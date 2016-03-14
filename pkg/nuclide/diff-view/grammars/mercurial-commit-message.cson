@@ -14,7 +14,7 @@ patterns: [
         patterns: [
           {
             match: ".{68,}$"
-            name: "invalid.illegal.line-too-long.hg-commit"
+            name: "invalid.deprecated.line-too-long.hg-commit"
           }
         ]
       }
@@ -24,7 +24,7 @@ patterns: [
         patterns: [
           {
             match: ".{73,}$"
-            name: "invalid.illegal.line-too-long.hg-commit"
+            name: "invalid.deprecated.line-too-long.hg-commit"
           }
         ]
       }
