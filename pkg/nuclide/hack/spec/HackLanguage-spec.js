@@ -11,12 +11,12 @@
 
 import path from 'path';
 import fs from 'fs';
-import {HackLanguage} from '../lib/HackLanguage';
+import {LocalHackLanguage} from '../lib/LocalHackLanguage';
 
 describe('HackLanguage', () => {
   let hackLanguage;
   beforeEach(() => {
-    hackLanguage = new HackLanguage(false, '', '');
+    hackLanguage = new LocalHackLanguage(false, '', '');
   });
 
   afterEach(() => {
