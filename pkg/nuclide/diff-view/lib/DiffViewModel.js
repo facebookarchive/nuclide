@@ -714,6 +714,14 @@ class DiffViewModel {
   }
 
   async commit(message: string): Promise<void> {
+    if (message === '') {
+      atom.notifications.addError('Commit aborted', {detail: 'Commit message empty'});
+      return;
+    } else if (message === this._state.commitMessage) {
+      atom.notifications.addError('Commit aborted', {detail: 'Commit message unchanged'});
+      return;
+    }
+
     this._setState({
       ...this._state,
       commitMessage: message,
