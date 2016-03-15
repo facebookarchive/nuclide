@@ -322,10 +322,13 @@ class DiffViewModel {
     });
   }
 
-  setViewMode(viewMode: DiffModeType) {
+  setViewMode(viewMode: DiffModeType): void {
     if (viewMode === this._state.viewMode) {
       return;
     }
+    track('diff-view-switch-mode', {
+      viewMode,
+    });
     this._setState({
       ...this._state,
       viewMode,
@@ -562,6 +565,10 @@ class DiffViewModel {
       publishMessage,
       publishModeState: PublishModeState.AWAITING_PUBLISH,
     });
+    const {publishMode} = this._state;
+    track('diff-view-publish', {
+      publishMode,
+    });
     const cleanResult = await this._promptToCleanDirtyChanges(publishMessage);
     if (cleanResult == null) {
       this._setState({
@@ -572,7 +579,7 @@ class DiffViewModel {
     }
     const {amended, allowUntracked} = cleanResult;
     try {
-      switch (this._state.publishMode) {
+      switch (publishMode) {
         case PublishMode.CREATE:
           // Create uses `verbatim` and `n` answer buffer
           // and that implies that untracked files will be ignored.
@@ -585,7 +592,7 @@ class DiffViewModel {
           await this._updatePhabricatorRevision(publishMessage, allowUntracked);
           break;
         default:
-          throw new Error(`Unknown publish mode '${this._state.publishMode}'`);
+          throw new Error(`Unknown publish mode '${publishMode}'`);
       }
       // Populate Publish UI with the most recent data after a successful push.
       this._loadModeState();
@@ -840,6 +847,7 @@ class DiffViewModel {
     this._emitter.emit(DID_UPDATE_STATE_EVENT);
   }
 
+  @trackTiming('diff-view.commit')
   async commit(message: string): Promise<void> {
     if (message === '') {
       atom.notifications.addError('Commit aborted', {detail: 'Commit message empty'});
@@ -855,10 +863,15 @@ class DiffViewModel {
       commitModeState: CommitModeState.AWAITING_COMMIT,
     });
 
+    const {commitMode} = this._state;
+    track('diff-view-commit', {
+      commitMode,
+    });
+
     const activeStack = this._activeRepositoryStack;
     try {
       invariant(activeStack, 'No active repository stack');
-      switch (this._state.commitMode) {
+      switch (commitMode) {
         case CommitMode.COMMIT:
           await activeStack.commit(message);
           atom.notifications.addSuccess('Commit created');
@@ -888,6 +901,9 @@ class DiffViewModel {
   }
 
   setCommitMode(commitMode: CommitModeType): void {
+    track('diff-view-switch-commit-mode', {
+      commitMode,
+    });
     this._setState({
       ...this._state,
       commitMode,
