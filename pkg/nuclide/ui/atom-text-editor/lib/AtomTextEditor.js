@@ -11,6 +11,7 @@
 
 
 import invariant from 'assert';
+import classnames from 'classnames';
 import {
   React,
   ReactDOM,
@@ -74,12 +75,14 @@ class AtomTextEditor extends React.Component {
     path: PropTypes.string,
     readOnly: PropTypes.bool.isRequired,
     textBuffer: PropTypes.instanceOf(TextBuffer),
+    autoGrow: PropTypes.bool.isRequired,
   };
 
   static defaultProps = {
     gutterHidden: false,
     lineNumberGutterVisible: true,
     readOnly: false,
+    autoGrow: false,
   };
 
   componentDidMount(): void {
@@ -151,8 +154,11 @@ class AtomTextEditor extends React.Component {
   }
 
   render(): ReactElement {
+    const className = classnames('nuclide-text-editor-container', {
+      'no-auto-grow': !this.props.autoGrow,
+    });
     return (
-      <div className="nuclide-text-editor-container" />
+      <div className={className} />
     );
   }
 
