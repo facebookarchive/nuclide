@@ -20,6 +20,7 @@ const classnames = require('classnames');
 const {fileTypeClass} = require('../../atom-helpers');
 const {isContextClick} = require('../lib/FileTreeHelpers');
 const NuclideCheckbox = require('../../ui/checkbox');
+const semver = require('semver');
 
 const {PropTypes} = React;
 
@@ -127,7 +128,7 @@ class FileEntryComponent extends React.Component {
         getActions().selectSingleNode(this.props.rootKey, this.props.nodeKey);
       }
       if (this.props.usePreviewTabs) {
-        getActions().confirmNode(this.props.rootKey, this.props.nodeKey);
+        getActions().confirmNode(this.props.rootKey, this.props.nodeKey, /* pending */ true);
       }
     }
   }
@@ -143,7 +144,10 @@ class FileEntryComponent extends React.Component {
 
   _onDoubleClick(): void {
     if (this.props.usePreviewTabs) {
-      getActions().keepPreviewTab();
+      // This will no longer be needed once Nuclide will not officially support Atoms < 1.6.0
+      if (semver.lt(atom.getVersion(), '1.6.0-beta')) {
+        getActions().keepPreviewTab();
+      }
     } else {
       getActions().confirmNode(this.props.rootKey, this.props.nodeKey);
     }

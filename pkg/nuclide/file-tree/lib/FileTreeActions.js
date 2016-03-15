@@ -187,7 +187,7 @@ class FileTreeActions {
     });
   }
 
-  confirmNode(rootKey: string, nodeKey: string): void {
+  confirmNode(rootKey: string, nodeKey: string, preview: boolean = false): void {
     const isDirectory = FileTreeHelpers.isDirKey(nodeKey);
     if (isDirectory) {
       const actionType = this._store.isExpanded(rootKey, nodeKey) ?
@@ -204,6 +204,7 @@ class FileTreeActions {
         {
           activatePane: true,
           searchAllPanes: true,
+          preview,
         }
       );
     }
