@@ -80,6 +80,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
       logLevel: '',
       targetUri: '',
     };
+    spyOn(require('../lib/config'), 'getConfig').andReturn(config);
 
     const onAttach = jasmine.createSpy('onAttach').andCallFake(
       params => {
@@ -93,7 +94,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
       });
     const onClose = jasmine.createSpy('onClose');
 
-    const connector = new DbgpConnector(config);
+    const connector = new DbgpConnector();
     connector.listen();
     connector.onClose(onClose);
     connector.onAttach(onAttach);
@@ -123,10 +124,11 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
       logLevel: '',
       targetUri: '',
     };
+    spyOn(require('../lib/config'), 'getConfig').andReturn(config);
 
     const onClose = jasmine.createSpy('onClose');
 
-    const connector = new DbgpConnector(config);
+    const connector = new DbgpConnector();
     connector.listen();
     connector.onClose(onClose);
 
@@ -150,11 +152,12 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
       logLevel: '',
       targetUri: '',
     };
+    spyOn(require('../lib/config'), 'getConfig').andReturn(config);
 
     const onClose = jasmine.createSpy('onClose');
     const onError = jasmine.createSpy('onError');
 
-    const connector = new DbgpConnector(config);
+    const connector = new DbgpConnector();
     connector.listen();
     connector.onClose(onClose);
     connector.onError(onError);
@@ -189,11 +192,12 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
       logLevel: '',
       targetUri: '',
     };
+    spyOn(require('../lib/config'), 'getConfig').andReturn(config);
 
     const onClose = jasmine.createSpy('onClose');
     const onError = jasmine.createSpy('onError');
 
-    const connector = new DbgpConnector(config);
+    const connector = new DbgpConnector();
     connector.listen();
     connector.onClose(onClose);
     connector.onError(onError);

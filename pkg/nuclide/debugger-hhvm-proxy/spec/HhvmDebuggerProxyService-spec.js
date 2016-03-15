@@ -27,7 +27,7 @@ describe('debugger-hhvm-proxy proxy', () => {
       ['onSessionEnd', 'dispose', 'handleCommand']
     );
     MessageTranslator = spyOn(require('../lib/MessageTranslator'), 'MessageTranslator').andCallFake(
-      (socketArg, callback) => {
+      callback => {
         clientCallback = callback;
         return translater;
       });
@@ -52,6 +52,8 @@ describe('debugger-hhvm-proxy proxy', () => {
       scriptRegex: null,
       targetUri: '/tmp/foo.php',
     };
+    spyOn(require('../lib/config'), 'setConfig');
+    spyOn(require('../lib/config'), 'getConfig').andReturn(config);
 
     waitsForPromise(async () => {
       const proxy = new HhvmDebuggerProxyService();
@@ -78,10 +80,8 @@ describe('debugger-hhvm-proxy proxy', () => {
 
       const result = await connectionPromise;
 
-      expect(MessageTranslator).toHaveBeenCalledWith(
-        config,
-        clientCallback
-      );
+      expect(require('../lib/config').setConfig).toHaveBeenCalled();
+      expect(MessageTranslator).toHaveBeenCalledWith(clientCallback);
       expect(translater.onSessionEnd).toHaveBeenCalledWith(jasmine.any(Function));
 
       expect(result).toBe('HHVM connected');

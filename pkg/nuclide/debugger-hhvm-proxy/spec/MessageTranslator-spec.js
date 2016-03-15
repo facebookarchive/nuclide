@@ -19,13 +19,6 @@ describe('debugger-hhvm-proxy MessageTranslator', () => {
   let translater: any;
   let clientCallback: any;
 
-  const config = {
-    xdebugPort: 9000,
-    pid: null,
-    idekeyRegex: null,
-    scriptRegex: null,
-  };
-
   beforeEach(() => {
     connectionMultiplexer = jasmine.createSpyObj(
       'connectionMultiplexer',
@@ -40,7 +33,7 @@ describe('debugger-hhvm-proxy MessageTranslator', () => {
     const {MessageTranslator} = ((
       uncachedRequire(require, '../lib/MessageTranslator'): any
     ): {MessageTranslator: () => MessageTranslatorType});
-    translater = new MessageTranslator(config, clientCallback);
+    translater = new MessageTranslator(clientCallback);
   });
 
   afterEach(() => {
@@ -49,7 +42,7 @@ describe('debugger-hhvm-proxy MessageTranslator', () => {
   });
 
   it('constructor', () => {
-    expect(ConnectionMultiplexer).toHaveBeenCalledWith(config, clientCallback);
+    expect(ConnectionMultiplexer).toHaveBeenCalledWith(clientCallback);
     expect(connectionMultiplexer.onStatus).toHaveBeenCalled();
   });
 

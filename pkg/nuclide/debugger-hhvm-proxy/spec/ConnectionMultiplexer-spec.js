@@ -65,6 +65,8 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     connectionCount = 0;
     onStatus = jasmine.createSpy('onStatus');
 
+    spyOn(require('../lib/config'), 'getConfig').andReturn(config);
+
     socket = ((
       jasmine.createSpyObj('socket', ['on', 'end', 'destroy']): any
     ): Socket);
@@ -193,7 +195,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     const {ConnectionMultiplexer} = ((
       uncachedRequire(require, '../lib/ConnectionMultiplexer'): any
     ): {ConnectionMultiplexer: () => ConnectionMultiplexerType});
-    connectionMultiplexer = new ConnectionMultiplexer(config, clientCallback);
+    connectionMultiplexer = new ConnectionMultiplexer(clientCallback);
     connectionMultiplexer.onStatus(onStatus);
   });
 
@@ -211,7 +213,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   });
 
   function expectListen() {
-    expect(DbgpConnector).toHaveBeenCalledWith(config);
+    expect(DbgpConnector).toHaveBeenCalled();
     expect(connector.onAttach).toHaveBeenCalledWith(onDbgpConnectorAttach);
     expect(connector.onClose).toHaveBeenCalledWith(onDbgpConnectorClose);
     expect(connectionMultiplexer.getStatus()).toBe(STATUS_RUNNING);

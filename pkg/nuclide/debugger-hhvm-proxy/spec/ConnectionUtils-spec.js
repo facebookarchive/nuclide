@@ -87,9 +87,21 @@ function convertMessageIntoJson(payload: string): Object {
   return getDbgpMessageHandlerInstance().parseMessages(makeDbgpMessage(payload))[0];
 }
 
+const config = {
+  xdebugPort: 1234,
+  pid: 0,
+  idekeyRegex: 'username2',
+  scriptRegex: 'test2.php',
+  endDebugWhenNoRequests: true,
+  logLevel: 'info',
+  targetUri: 'target_uri',
+  hhvmBinaryPath: '/path/to/binary',
+};
+
 describe('debugger-hhvm-proxy ConnectionUtils', () => {
   beforeEach(() => {
     spyOn(require('../../commons').fsPromise, 'exists').andReturn(true);
+    spyOn(require('../lib/config'), 'getConfig').andReturn(config);
   });
 
   afterEach(() => {
@@ -97,25 +109,15 @@ describe('debugger-hhvm-proxy ConnectionUtils', () => {
   });
 
   describe('isCorrectConnection', () => {
-    const config = {
-      xdebugPort: 1234,
-      pid: 0,
-      idekeyRegex: 'username2',
-      scriptRegex: 'test2.php',
-      endDebugWhenNoRequests: true,
-      logLevel: 'info',
-      targetUri: 'target_uri',
-    };
-
     it('reject', () => {
       const message = convertMessageIntoJson(payload1);
-      const result = isCorrectConnection(config, message);
+      const result = isCorrectConnection(message);
       expect(result).toBe(false);
     });
 
     it('pass', () => {
       const message = convertMessageIntoJson(payload2);
-      const result = isCorrectConnection(config, message);
+      const result = isCorrectConnection(message);
       expect(result).toBe(true);
     });
   });

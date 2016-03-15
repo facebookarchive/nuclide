@@ -11,6 +11,7 @@
 
 import logger from './utils';
 import {Connection} from './Connection';
+import {getConfig} from './config';
 import {
   isDummyConnection,
   sendDummyRequest,
@@ -22,7 +23,6 @@ import type {Socket} from 'net';
 import type {ExceptionState} from './BreakpointStore';
 const {BreakpointStore} = require('./BreakpointStore');
 const {DbgpConnector} = require('./DbgpConnector');
-import type {ConnectionConfig} from './HhvmDebuggerProxyService';
 import {
   STATUS_STARTING,
   STATUS_STOPPING,
@@ -89,7 +89,6 @@ type EvaluationFailureResult = {
 // and if the DbgpConnector is closed. The DbgpConnector will likely only
 // close if HHVM crashes or is stopped.
 export class ConnectionMultiplexer {
-  _config: ConnectionConfig;
   _clientCallback: ClientCallback;
   _breakpointStore: BreakpointStore;
   _connectionStatusEmitter: EventEmitter;
@@ -100,8 +99,7 @@ export class ConnectionMultiplexer {
   _connector: ?DbgpConnector;
   _dummyRequestProcess: ?child_process$ChildProcess;
 
-  constructor(config: ConnectionConfig, clientCallback: ClientCallback) {
-    this._config = config;
+  constructor(clientCallback: ClientCallback) {
     this._clientCallback = clientCallback;
     this._status = STATUS_STARTING;
     this._connectionStatusEmitter = new EventEmitter();
@@ -119,7 +117,7 @@ export class ConnectionMultiplexer {
   }
 
   listen(): void {
-    const connector = new DbgpConnector(this._config);
+    const connector = new DbgpConnector();
     connector.onAttach(this._onAttach.bind(this));
     connector.onClose(this._disposeConnector.bind(this));
     connector.onError(this._handleAttachError.bind(this));
@@ -168,7 +166,7 @@ export class ConnectionMultiplexer {
 
   async _onAttach(params: {socket: Socket; message: Object}): Promise {
     const {socket, message} = params;
-    if (!isCorrectConnection(this._config, message)) {
+    if (!isCorrectConnection(message)) {
       failConnection(socket, 'Discarding connection ' + JSON.stringify(message));
       return;
     }
@@ -439,7 +437,7 @@ export class ConnectionMultiplexer {
 
   _checkForEnd(): void {
     if (this._connections.size === 0 &&
-       (!this._connector || this._config.endDebugWhenNoRequests)) {
+       (!this._connector || getConfig().endDebugWhenNoRequests)) {
       this._setStatus(STATUS_END);
     }
   }

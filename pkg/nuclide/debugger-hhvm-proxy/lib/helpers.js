@@ -12,6 +12,7 @@
 import child_process from 'child_process';
 import url from 'url';
 import logger from './utils';
+import {getConfig} from './config';
 import {parse} from 'shell-quote';
 
 export const DUMMY_FRAME_ID = 'Frame.0';
@@ -81,9 +82,8 @@ function launchPhpScriptWithXDebugEnabled(
 ): child_process$ChildProcess {
   const scriptArgv = parse(scriptPath);
   const args = ['-c', 'xdebug.ini', ...scriptArgv];
-  // TODO[jeffreytan]: make hhvm path configurable so that it will
-  // work for non-FB environment.
-  const proc = child_process.spawn('/usr/local/hphpi/bin/hhvm', args);
+  const {hhvmBinaryPath} = getConfig();
+  const proc = child_process.spawn(hhvmBinaryPath, args);
   logger.log(`child_process(${proc.pid}) spawned with xdebug enabled for: ${scriptPath}`);
 
   proc.stdout.on('data', chunk => {

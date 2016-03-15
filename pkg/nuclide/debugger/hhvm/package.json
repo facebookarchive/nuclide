@@ -24,6 +24,12 @@
         "default": 9000,
         "description": "Port for DBGP connection to HHVM."
       },
+      "hhvmBinaryPath": {
+        "title": "Path to HHVM binary",
+        "type": "string",
+        "default": "/usr/local/hphpi/bin/hhvm",
+        "description": "Path to the HHVM binary on your server."
+      },
       "logLevel": {
         "title": "Log Level",
         "type": "string",

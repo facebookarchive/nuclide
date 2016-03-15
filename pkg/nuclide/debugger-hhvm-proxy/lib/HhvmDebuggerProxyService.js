@@ -11,12 +11,13 @@
 
 import logger from './utils';
 import {launchScriptToDebug} from './helpers';
+import {clearConfig, setConfig} from './config';
 import {setRootDirectoryUri} from './ConnectionUtils';
 import {MessageTranslator} from './MessageTranslator';
 
 import type {Observable} from 'rx';
 
-export type ConnectionConfig = {
+export type HhvmDebuggerConfig = {
   xdebugPort: number;
   pid?: number;
   scriptRegex?: string;
@@ -24,6 +25,7 @@ export type ConnectionConfig = {
   endDebugWhenNoRequests?: boolean;
   logLevel: string;
   targetUri: string;
+  hhvmBinaryPath: string;
 };
 
 export type NotificationMessage = {
@@ -83,14 +85,15 @@ export class HhvmDebuggerProxyService {
     return this._clientCallback.getOutputWindowObservable();
   }
 
-  async attach(config: ConnectionConfig): Promise<string> {
+  async attach(config: HhvmDebuggerConfig): Promise<string> {
     logger.logInfo('Connecting config: ' + JSON.stringify(config));
 
+    setConfig(config);
     await setRootDirectoryUri(config.targetUri);
     logger.setLogLevel(config.logLevel);
     this._setState(CONNECTING);
 
-    this._translator = new MessageTranslator(config, this._clientCallback);
+    this._translator = new MessageTranslator(this._clientCallback);
     this._translator.onSessionEnd(() => { this._onEnd(); });
 
     this._setState(CONNECTED);
@@ -130,6 +133,7 @@ export class HhvmDebuggerProxyService {
 
   async dispose(): Promise<void> {
     logger.logInfo('Proxy: Ending session');
+    clearConfig();
     // We may want to wait for a launched script to exit for its exit code.
     if (this._launchedScriptProcess != null && this._state === CLOSED) {
       await this._launchedScriptProcess;

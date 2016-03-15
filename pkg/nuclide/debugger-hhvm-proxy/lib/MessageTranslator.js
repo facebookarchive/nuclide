@@ -19,7 +19,6 @@ const {RuntimeHandler} = require('./RuntimeHandler');
 const {ConnectionMultiplexer} = require('./ConnectionMultiplexer');
 import {ClientCallback} from './ClientCallback';
 
-import type {ConnectionConfig} from './HhvmDebuggerProxyService';
 import type Handler from './Handler';
 
 /**
@@ -34,12 +33,9 @@ export class MessageTranslator {
   _debuggerHandler: DebuggerHandler;
   _handlers: Map<string, Handler>;
 
-  constructor(
-    config: ConnectionConfig,
-    clientCallback: ClientCallback,
-  ) {
+  constructor(clientCallback: ClientCallback) {
     this._isDisposed = false;
-    this._connectionMultiplexer = new ConnectionMultiplexer(config, clientCallback);
+    this._connectionMultiplexer = new ConnectionMultiplexer(clientCallback);
     this._handlers = new Map();
     this._clientCallback = clientCallback;
     this._debuggerHandler = new DebuggerHandler(

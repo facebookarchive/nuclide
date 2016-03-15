@@ -10,7 +10,7 @@
  */
 
 import utils from './utils';
-import type {ConnectionConfig} from '../../../debugger-hhvm-proxy';
+import type {HhvmDebuggerConfig} from '../../../debugger-hhvm-proxy';
 import type {DebuggerProcessInfo} from '../../atom';
 import type {
   HhvmDebuggerProxyService as HhvmDebuggerProxyServiceType,
@@ -27,14 +27,6 @@ const remoteUri = require('../../../remote-uri');
 const {Disposable} = require('atom');
 const WebSocketServer = require('ws').Server;
 const {stringifyError} = require('../../../commons').error;
-
-type HhvmDebuggerConfig = {
-  scriptRegex: string;
-  idekeyRegex: string;
-  xdebugPort: number;
-  endDebugWhenNoRequests: boolean;
-  logLevel: string;
-};
 
 function getConfig(): HhvmDebuggerConfig {
   return (featureConfig.get('nuclide-debugger-hhvm'): any);
@@ -83,16 +75,18 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
     );
 
     const config = getConfig();
-    const connectionConfig: ConnectionConfig = {
+    const connectionConfig: HhvmDebuggerConfig = {
       xdebugPort: config.xdebugPort,
       targetUri: remoteUri.getPath(this.getTargetUri()),
       logLevel: config.logLevel,
       endDebugWhenNoRequests: false,
+      hhvmBinaryPath: config.hhvmBinaryPath,
     };
     logInfo('Connection config: ' + JSON.stringify(config));
 
     if (!isValidRegex(config.scriptRegex)) {
       // TODO: User facing error message?
+      invariant(config.scriptRegex != null);
       logError('nuclide-debugger-hhvm config scriptRegex is not a valid regular expression: '
         + config.scriptRegex);
     } else {
@@ -101,6 +95,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
 
     if (!isValidRegex(config.idekeyRegex)) {
       // TODO: User facing error message?
+      invariant(config.idekeyRegex != null);
       logError('nuclide-debugger-hhvm config idekeyRegex is not a valid regular expression: '
         + config.idekeyRegex);
     } else {
@@ -218,7 +213,10 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
 }
 
 // TODO: Move this to nuclide-commons.
-function isValidRegex(value: string): boolean {
+function isValidRegex(value: ?string): boolean {
+  if (value == null) {
+    return false;
+  }
   try {
     RegExp(value);
   } catch (e) {

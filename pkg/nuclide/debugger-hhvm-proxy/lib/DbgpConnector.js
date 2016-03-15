@@ -11,12 +11,12 @@
 
 import net from 'net';
 import logger from './utils';
+import {getConfig} from './config';
 import {Emitter} from 'event-kit';
 import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
 import {failConnection} from './ConnectionUtils';
 
 import type {Socket, Server} from 'net';
-import type {ConnectionConfig} from './HhvmDebuggerProxyService';
 /**
  * xdebugPort is the port to listen for dbgp connections on.
  *
@@ -45,13 +45,11 @@ const DBGP_ERROR_EVENT = 'dbgp-error-event';
  * then close the connection and continue waiting for a match.
  */
 export class DbgpConnector {
-  _config: ConnectionConfig;
   _server: ?Server;
   _emitter: Emitter;
   _messageHandler: DbgpMessageHandler;
 
-  constructor(config: ConnectionConfig) {
-    this._config = config;
+  constructor() {
     this._server = null;
     this._emitter = new Emitter();
     this._messageHandler = getDbgpMessageHandlerInstance();
@@ -70,7 +68,7 @@ export class DbgpConnector {
   }
 
   listen(): void {
-    const port = this._config.xdebugPort;
+    const port = getConfig().xdebugPort;
 
     logger.log('Creating debug server on port ' + port);
 
@@ -87,7 +85,7 @@ export class DbgpConnector {
   }
 
   _onSocketConnection(socket: Socket) {
-    const port = this._config.xdebugPort;
+    const port = getConfig().xdebugPort;
 
     logger.log('Connection on port ' + port);
     if (!this._checkListening(socket, 'Connection')) {
@@ -97,7 +95,7 @@ export class DbgpConnector {
   }
 
   _onServerError(error: Object): void {
-    const port = this._config.xdebugPort;
+    const port = getConfig().xdebugPort;
 
     let errorMessage;
     if (error.code === 'EADDRINUSE') {
@@ -142,7 +140,7 @@ export class DbgpConnector {
    */
   _checkListening(socket: Socket, message: string): boolean {
     if (!this.isListening()) {
-      const port = this._config.xdebugPort;
+      const port = getConfig().xdebugPort;
       logger.log('Ignoring ' + message + ' on port ' + port + ' after stopped connection.');
       return false;
     }

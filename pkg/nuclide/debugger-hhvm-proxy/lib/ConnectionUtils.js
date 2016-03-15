@@ -10,12 +10,12 @@
  */
 
 import logger from './utils';
+import {getConfig} from './config';
 import {launchScriptForDummyConnection, uriToPath} from './helpers';
 import {fsPromise, findNearestFile} from '../../commons';
 import path from 'path';
 
 import type {Socket} from 'net';
-import type {ConnectionConfig} from './HhvmDebuggerProxyService';
 
 let dummyRequestFilePath = 'php_only_xdebug_request.php';
 
@@ -53,8 +53,8 @@ export function failConnection(socket: Socket, errorMessage: string): void {
   socket.destroy();
 }
 
-export function isCorrectConnection(config: ConnectionConfig, message: Object): boolean {
-  const {pid, idekeyRegex, scriptRegex} = config;
+export function isCorrectConnection(message: Object): boolean {
+  const {pid, idekeyRegex, scriptRegex} = getConfig();
   if (!message || !message.init || !message.init.$) {
     logger.logError('Incorrect init');
     return false;
