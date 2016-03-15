@@ -13,11 +13,10 @@ import {ShellMessageManager} from './ShellMessageManager';
 
 export class ShellActivation {
 
-  _disposables: IDisposable;
   _shellManager: ShellMessageManager;
 
   constructor() {
-    // TODO: Enable following when RN changes land
+    // TODO: Enable following when RN changes land. Don't forget to call dispose in `dispose()`!
     // this._disposables = new CompositeDisposable(
     //   atom.commands.add('atom-workspace', {
     //     'nuclide-react-native:reload-app': () => this._reload(),
@@ -27,7 +26,6 @@ export class ShellActivation {
   }
 
   dispose(): void {
-    this._disposables.dispose();
   }
 
   _reload(): void {
