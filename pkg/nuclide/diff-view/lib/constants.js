@@ -9,9 +9,13 @@
  * the root directory of this source tree.
  */
 
-const {StatusCodeNumber: HgStatusCodeNumber} = require('../../hg-repository-base').hgConstants;
+const {
+  StatusCodeNumber: HgStatusCodeNumber,
+} = require('../../hg-repository-base').hgConstants;
 
-import type {StatusCodeNumberValue} from '../../hg-repository-base/lib/HgService';
+import type {
+  StatusCodeNumberValue,
+} from '../../hg-repository-base/lib/HgService';
 import type {
   CommitModeType,
   CommitModeStateType,

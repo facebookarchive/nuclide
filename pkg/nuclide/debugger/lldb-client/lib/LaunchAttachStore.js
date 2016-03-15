@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {AttachTargetInfo} from '../../lldb-server/lib/DebuggerRpcServiceInterface';
+import type {
+  AttachTargetInfo,
+} from '../../lldb-server/lib/DebuggerRpcServiceInterface';
 import type {Dispatcher} from 'flux';
 
 import {Disposable} from 'atom';

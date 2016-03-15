@@ -16,7 +16,9 @@ export type FileList = Array<{path: FilePath; timestamp: TimeStamp}>;
 const {CompositeDisposable} = require('atom');
 
 const {array} = require('../../commons');
-const {onWorkspaceDidStopChangingActivePaneItem} = require('../../atom-helpers').atomEventDebounce;
+const {
+  onWorkspaceDidStopChangingActivePaneItem,
+} = require('../../atom-helpers').atomEventDebounce;
 import {trackTiming} from '../../analytics';
 
 class RecentFilesService {

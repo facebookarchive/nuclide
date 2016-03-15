@@ -27,7 +27,9 @@ const BuckToolbarActions = require('./BuckToolbarActions');
 type BuckRunDetails = {
   pid?: number;
 };
-import type {ProcessOutputStore as ProcessOutputStoreType} from '../../../process/output-store';
+import type {
+  ProcessOutputStore as ProcessOutputStoreType,
+} from '../../../process/output-store';
 import type {ProcessOutputDataHandlers} from '../../../process/output-store/lib/types';
 import type {BuckProject} from '../../base/lib/BuckProject';
 import ReactNativeServerManager from './ReactNativeServerManager';

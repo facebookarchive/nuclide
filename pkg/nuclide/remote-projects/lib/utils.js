@@ -10,7 +10,9 @@
  */
 
 import type {NuclideUri} from '../../remote-uri';
-import type {RemoteConnectionConfiguration} from '../../remote-connection/lib/RemoteConnection';
+import type {
+  RemoteConnectionConfiguration,
+} from '../../remote-connection/lib/RemoteConnection';
 
 import invariant from 'assert';
 import {parse, createRemoteUri} from '../../remote-uri';

@@ -39,7 +39,8 @@ describe('FlowProcess', () => {
     // We need this level of indirection to ensure that if fakeAsyncExec is rebound, the new one
     // gets executed.
     const runFakeAsyncExec = (...args) => fakeAsyncExec(...args);
-    spyOn(require('../../commons/lib/process'), 'asyncExecute').andCallFake(runFakeAsyncExec);
+    spyOn(require('../../commons/lib/process'), 'asyncExecute')
+      .andCallFake(runFakeAsyncExec);
     fakeAsyncExec = jasmine.createSpy().andReturn({exitCode: FLOW_RETURN_CODES.ok});
 
     childSpy = {

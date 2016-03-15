@@ -11,7 +11,9 @@
 
 import type {LaunchAttachStore} from './LaunchAttachStore';
 import type {LaunchAttachActions} from './LaunchAttachActions';
-import type {AttachTargetInfo} from '../../lldb-server/lib/DebuggerRpcServiceInterface';
+import type {
+  AttachTargetInfo,
+} from '../../lldb-server/lib/DebuggerRpcServiceInterface';
 
 import {React} from 'react-for-atom';
 import classnames from 'classnames';

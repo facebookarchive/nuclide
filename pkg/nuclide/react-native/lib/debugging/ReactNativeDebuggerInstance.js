@@ -12,7 +12,9 @@
 import {event as commonsEvent} from '../../../commons';
 import {DebuggerInstance, DebuggerProcessInfo} from '../../../debugger/atom';
 import {Session} from '../../../debugger/node/lib/Session';
-import {DebuggerProxyClient} from '../../../react-native-node-executor/lib/DebuggerProxyClient';
+import {
+  DebuggerProxyClient,
+} from '../../../react-native-node-executor/lib/DebuggerProxyClient';
 import {CompositeDisposable} from 'atom';
 import Rx from 'rx';
 import {Server as WebSocketServer} from 'ws';
