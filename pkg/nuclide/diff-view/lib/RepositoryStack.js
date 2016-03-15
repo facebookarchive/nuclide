@@ -47,6 +47,7 @@ export default class RepositoryStack {
   _commitMergeFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _lastCommitMergeFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _repository: HgRepositoryClient;
+  _lastRevisionsState: ?RevisionsState;
   _revisionsStatePromise: ?Promise<RevisionsState>;
   _revisionsFileHistoryPromise: ?Promise<RevisionsFileHistory>;
   _lastRevisionsFileHistory: ?RevisionsFileHistory;
@@ -66,6 +67,7 @@ export default class RepositoryStack {
     this._revisionIdToFileChanges = new LRU({max: 100});
     this._selectedCompareCommitId = null;
     this._lastRevisionsFileHistory = null;
+    this._lastRevisionsState = null;
     this._serializedUpdateStatus = serializeAsyncCall(() => this._updateChangedStatus());
     const debouncedSerializedUpdateStatus = debounce(
       this._serializedUpdateStatus,
@@ -148,8 +150,23 @@ export default class RepositoryStack {
       this._revisionsStatePromise = null;
       return;
     }
+    const lastRevisionsState = this._lastRevisionsState;
     const revisionsState = await this.getRevisionsStatePromise();
-    this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
+    // The revisions haven't changed if the revisions' ids are the same.
+    // That's because commit ids are unique and incremental.
+    // Also, any write operation will update them.
+    // That way, we guarantee we only update the revisions state if the revisions are changed.
+    if (
+      lastRevisionsState == null ||
+      !array.equal(
+        lastRevisionsState.revisions,
+        revisionsState.revisions,
+        (revision1, revision2) => revision1.id === revision2.id,
+      )
+    ) {
+      this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
+    }
+    this._lastRevisionsState = revisionsState;
 
     // If the commits haven't changed ids, then thier diff haven't changed as well.
     let revisionsFileHistory = null;
