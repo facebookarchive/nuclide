@@ -34,3 +34,4 @@
   items:
   - id: advanced-building-from-source
   - id: advanced-custom-keybindings
+  - id: advanced-linter-package-compatibility

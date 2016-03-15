@@ -1,9 +1,5 @@
 # nuclide-diagnostics-store
 
-This page is for developers wishing to integrate with the `nuclide-diagnostics` Nuclide feature. If
-you simply want to view diagnostics in Atom, look at the
-[end-user docs](https://github.com/facebook/nuclide/tree/master/pkg/nuclide/diagnostics#readme).
-
 ## Overview
 
 `nuclide-diagnostics-store` is responsible for consuming diagnostics from providers and sending

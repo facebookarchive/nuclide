@@ -1,9 +1,5 @@
 # nuclide-diagnostics-provider-base
 
-This feature is for developers wishing to integrate with the `nuclide-diagnostics` feature. If you
-simply want to view diagnostics in Atom, look at the [end-user
-docs](https://github.com/facebook/nuclide/tree/master/pkg/nuclide/diagnostics#readme).
-
 This feature solves some common problems for diagnostics providers. It manages consumer
 subscriptions and also subscribes to the appropriate text editor events, such as file save.
 
