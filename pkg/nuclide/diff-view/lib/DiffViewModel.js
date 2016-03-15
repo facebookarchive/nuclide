@@ -108,7 +108,8 @@ type State = {
   headRevision: ?RevisionInfo;
   dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   commitMergeFileChanges: Map<NuclideUri, FileChangeStatusValue>;
-  compareFileChanges: Map<NuclideUri, FileChangeStatusValue>;
+  lastCommitMergeFileChanges: Map<NuclideUri, FileChangeStatusValue>;
+  selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>;
 };
 
 class DiffViewModel {
@@ -143,7 +144,8 @@ class DiffViewModel {
       headRevision: null,
       dirtyFileChanges: new Map(),
       commitMergeFileChanges: new Map(),
-      compareFileChanges: new Map(),
+      lastCommitMergeFileChanges: new Map(),
+      selectedFileChanges: new Map(),
     };
     this._updateRepositories();
     this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
@@ -221,7 +223,7 @@ class DiffViewModel {
       .from(this._repositoryStacks.values())
       .map(repositoryStack => repositoryStack.getDirtyFileChanges())
     );
-    this._updateCompareChangedStatus(dirtyFileChanges, null);
+    this._updateCompareChangedStatus(dirtyFileChanges);
   }
 
   _updateCommitMergeFileChanges(): void {
@@ -229,12 +231,21 @@ class DiffViewModel {
       .from(this._repositoryStacks.values())
       .map(repositoryStack => repositoryStack.getCommitMergeFileChanges())
     );
-    this._updateCompareChangedStatus(null, commitMergeFileChanges);
+    const lastCommitMergeFileChanges = map.union(...array
+      .from(this._repositoryStacks.values())
+      .map(repositoryStack => repositoryStack.getLastCommitMergeFileChanges())
+    );
+    this._updateCompareChangedStatus(
+      null,
+      commitMergeFileChanges,
+      lastCommitMergeFileChanges,
+    );
   }
 
   _updateCompareChangedStatus(
     dirtyFileChanges?: ?Map<NuclideUri, FileChangeStatusValue>,
     commitMergeFileChanges?: ?Map<NuclideUri, FileChangeStatusValue>,
+    lastCommitMergeFileChanges?: ?Map<NuclideUri, FileChangeStatusValue>,
   ): void {
     if (dirtyFileChanges == null) {
       dirtyFileChanges = this._state.dirtyFileChanges;
@@ -242,17 +253,29 @@ class DiffViewModel {
     if (commitMergeFileChanges == null) {
       commitMergeFileChanges = this._state.commitMergeFileChanges;
     }
-    let compareFileChanges = null;
-    if (this._state.viewMode === DiffMode.COMMIT_MODE) {
-      compareFileChanges = dirtyFileChanges;
-    } else {
-      compareFileChanges = commitMergeFileChanges;
+    if (lastCommitMergeFileChanges == null) {
+      lastCommitMergeFileChanges = this._state.lastCommitMergeFileChanges;
+    }
+    let selectedFileChanges;
+    switch (this._state.viewMode) {
+      case DiffMode.COMMIT_MODE:
+        selectedFileChanges = dirtyFileChanges;
+        break;
+      case DiffMode.BROWSE_MODE:
+        selectedFileChanges = commitMergeFileChanges;
+        break;
+      case DiffMode.PUBLISH_MODE:
+        selectedFileChanges = lastCommitMergeFileChanges;
+        break;
+      default:
+        throw new Error('Unrecognized view mode!');
     }
     this._setState({
       ...this._state,
       dirtyFileChanges,
       commitMergeFileChanges,
-      compareFileChanges,
+      lastCommitMergeFileChanges,
+      selectedFileChanges,
     });
   }
 

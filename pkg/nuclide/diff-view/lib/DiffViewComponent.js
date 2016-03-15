@@ -296,14 +296,14 @@ class DiffViewComponent extends React.Component {
 
   _renderTree(): void {
     const {diffModel} = this.props;
-    const {compareFileChanges} = diffModel.getState();
+    const {selectedFileChanges} = diffModel.getState();
     const {filePath} = diffModel.getActiveFileState();
     this._treeComponent = ReactDOM.render(
       (
         <div className="nuclide-diff-view-tree padded">
           <DiffViewTree
             activeFilePath={filePath}
-            fileChanges={compareFileChanges}
+            fileChanges={selectedFileChanges}
             diffModel={diffModel}
           />
         </div>
