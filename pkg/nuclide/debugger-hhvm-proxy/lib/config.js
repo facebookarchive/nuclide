@@ -25,7 +25,9 @@ export function getConfig(): HhvmDebuggerConfig {
 }
 
 export function setConfig(newConfig: HhvmDebuggerConfig): void {
-  Object.assign(config, newConfig);
+  config = {
+    ...newConfig,
+  };
 }
 
 export function clearConfig(): void {
