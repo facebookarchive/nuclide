@@ -60,8 +60,7 @@ function getRevisionUpdateMessage(phabricatorRevision: PhabricatorRevisionInfo):
 # Updating ${phabricatorRevision.id}
 #
 # Enter a brief description of the changes included in this update.
-# The first line is used as subject, next lines as comment.
-`;
+# The first line is used as subject, next lines as comment.`;
 }
 
 const FILE_CHANGE_DEBOUNCE_MS = 200;
@@ -881,7 +880,13 @@ class DiffViewModel {
           atom.notifications.addSuccess('Commit amended');
           break;
       }
-      // Force trigger an update to the revisions to update the UI state with the new comit info.
+
+      this._setState({
+        ...this._state,
+        commitModeState: CommitModeState.LOADING_COMMIT_MESSAGE,
+      });
+
+      // Force trigger an update to the revisions to update the UI state with the new commit info.
       activeStack.getRevisionsStatePromise();
     } catch (e) {
       atom.notifications.addError(
