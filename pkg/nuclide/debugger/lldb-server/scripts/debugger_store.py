@@ -7,7 +7,6 @@
 from file_manager import FileManager
 import serialize
 from remote_objects import RemoteObjectManager
-from modules import ModuleSourcePathUpdater
 from thread_manager import ThreadManager
 
 
@@ -28,8 +27,6 @@ class DebuggerStore:
         self._remote_object_manager = RemoteObjectManager()
         self._location_serializer = serialize.LocationSerializer(
             self._file_manager, basepath)
-        self._module_source_path_updater = ModuleSourcePathUpdater(
-            self._debugger.GetSelectedTarget(), self._file_manager, basepath)
         self._thread_manager = ThreadManager(self)
 
     @property
@@ -63,7 +60,3 @@ class DebuggerStore:
     @property
     def location_serializer(self):
         return self._location_serializer
-
-    @property
-    def module_source_path_updater(self):
-        return self._module_source_path_updater

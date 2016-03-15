@@ -242,16 +242,22 @@ class NuclideBridge {
     }
   }
 
-  // TODO[jeffreytan]: this is a hack to enable hhvm debugger
+  // TODO[jeffreytan]: this is a hack to enable hhvm/lldb debugger
   // setting breakpoints in non-parsed files.
   // Open issues:
-  // Any breakpoints in php file will shown as bound/resolved;
+  // Any breakpoints in this list will shown as bound/resolved;
   // needs to revisit the unresolved breakpoints detection logic.
   _parseBreakpointSources() {
     this._allBreakpoints.forEach(breakpoint => {
       const sourceUrl = breakpoint.sourceURL;
-      // TODO[jeffreytan]: investigate if we need to do the same for LLDB or not.
-      if (sourceUrl.endsWith('.php') || sourceUrl.endsWith('.hh')) {
+      if (sourceUrl.endsWith('.php') ||
+          sourceUrl.endsWith('.hh')  ||
+          sourceUrl.endsWith('.c') ||
+          sourceUrl.endsWith('.cpp') ||
+          sourceUrl.endsWith('.h') ||
+          sourceUrl.endsWith('.hpp') ||
+          sourceUrl.endsWith('.m') ||
+          sourceUrl.endsWith('.mm')) {
         const source = WebInspector.workspace.uiSourceCodeForOriginURL(sourceUrl);
         if (!source) {
           const target = WebInspector.targetManager.mainTarget();

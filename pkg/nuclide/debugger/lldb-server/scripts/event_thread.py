@@ -38,8 +38,6 @@ class LLDBListenerThread(Thread):
       self._debugger_store = debugger_store
       self._app = app
       self._listener = debugger_store.debugger.GetListener()
-      # Send scriptPaused for each souce files.
-      self._debugger_store.module_source_path_updater.modules_updated()
 
       process = debugger_store.debugger.GetSelectedTarget().process
       self._add_listener_to_process(process)
@@ -85,7 +83,6 @@ class LLDBListenerThread(Thread):
 
     def _handle_module_load_event(self, event):
         self._send_module_event_notification(event, is_load=True)
-        self._debugger_store.module_source_path_updater.modules_updated()
 
     def _handle_module_unload_event(self, event):
         self._send_module_event_notification(event, is_load=False)

@@ -61,14 +61,6 @@ class DebuggerDomain(HandlerDomain):
         return self.runtimeDomain.evaluate(params)
 
     @handler()
-    def getScriptSource(self, params):
-        filelike = self.debugger_store.file_manager.get_by_script_id(params['scriptId'])
-        if filelike:
-            return {'scriptSource': filelike.script_source}
-        else:
-            return {'scriptSource': '<Failed to fetch source.>'}
-
-    @handler()
     def pause(self, params):
         self.debugger_store.debugger.GetSelectedTarget().process.Stop()
         return {}
@@ -114,19 +106,10 @@ class DebuggerDomain(HandlerDomain):
 
     @handler()
     def setBreakpointByUrl(self, params):
-        # Buck generates long relative paths symbol file which caused breakpoint fail to bind(t9611206).
-        # To workaround this, we use filename instead of fullpath to set breakpoint on MacOS.
-        # TODO: revert this hack fix once buck fixed the source path issue.
-        if sys.platform == 'darwin':
-            parsed_url = urlparse.urlparse(params['url'])
-            return self._set_breakpoint_by_source_path(
-                str(os.path.basename(parsed_url.path)),
-                int(params['lineNumber']) + 1)
-        filelike = self.debugger_store.file_manager.get_by_client_url(params['url'])
-        if not filelike or not isinstance(filelike, file_manager.File):
-            raise RuntimeError('Cannot find file for breakpoint.')
-        return self._set_breakpoint_by_filespec(
-            filelike.server_obj,
+        # Use source file name to set breakpoint.
+        parsed_url = urlparse.urlparse(params['url'])
+        return self._set_breakpoint_by_source_path(
+            str(os.path.basename(parsed_url.path)),
             int(params['lineNumber']) + 1)
 
     @handler()
