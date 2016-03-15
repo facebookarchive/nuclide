@@ -108,9 +108,8 @@ def interactive_loop(debugger):
             debugger.HandleCommand(command)
 
 
-def start_debugging(debugger, arguments, ipc_channel):
+def start_debugging(debugger, arguments, ipc_channel, is_attach):
     listener = lldb.SBListener('Chrome Dev Tools Listener')
-    is_attach = True
     error = lldb.SBError()
     if getattr(arguments, 'executable_path', None):
         argument_list = split(str(arguments.launch_arguments)) \
@@ -120,9 +119,16 @@ def start_debugging(debugger, arguments, ipc_channel):
             if arguments.executable_path else None
         working_directory = os.path.expanduser(str(arguments.working_directory)) \
             if arguments.working_directory else None
-        target = debugger.CreateTargetWithFileAndArch(
-            executable_path,
-            lldb.LLDB_ARCH_DEFAULT)
+        target = debugger.CreateTarget(
+            executable_path,    # filename
+            None,               # target_triple
+            None,               # platform_name
+            True,               # add_dependent_modules
+            error)              # error
+        if error.Fail():
+            ipc_channel.send_output_message_sync('error', error.description)
+            sys.exit(error.description)
+
         # TODO: pass environment variables.
         target.Launch (listener,
                         argument_list,
@@ -134,7 +140,6 @@ def start_debugging(debugger, arguments, ipc_channel):
                         0,         # launch flags
                         True,      # Stop at entry
                         error)     # error
-        is_attach = False
     elif getattr(arguments, 'pname', None):
         target = debugger.CreateTarget(None)
         target.AttachToProcessWithName(
@@ -149,25 +154,25 @@ def start_debugging(debugger, arguments, ipc_channel):
         sys.exit('Unknown arguments: %s' % arguments)
 
     if error.Fail():
-        ipc_channel.send_output_message('error', error.description)
+        ipc_channel.send_output_message_sync('error', error.description)
         sys.exit(error.description)
     else:
         if is_attach:
             output = 'Successfully attached process.'
         else:
             output = 'Successfully launched process.'
-        ipc_channel.send_output_message('log', output)
-
-    return is_attach
+        ipc_channel.send_output_message_async('log', output)
 
 
 def main():
     arguments = parse_args()
     debugger = lldb.SBDebugger.Create()
 
+    is_attach = (getattr(arguments, 'executable_path', None) == None)
     is_interactive = getattr(arguments, 'interactive', False)
     ipc_channel = IpcChannel(is_interactive)
-    is_attach = start_debugging(debugger, arguments, ipc_channel)
+
+    start_debugging(debugger, arguments, ipc_channel, is_attach)
 
     chrome_channel = ChromeChannel()
     debugger_store = DebuggerStore(
@@ -179,6 +184,8 @@ def main():
 
     try:
         app = ChromeDevToolsDebuggerApp(debugger_store, getattr(arguments, 'port', 0))
+
+        # Tell IDE server is ready.
         log_debug('Port: %s' % app.debug_server.server_port)
 
         event_thread = LLDBListenerThread(debugger_store, app)

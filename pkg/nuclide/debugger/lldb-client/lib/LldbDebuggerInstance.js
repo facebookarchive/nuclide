@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import {Observable} from 'rx';
 import type {
   DebuggerConnection as DebuggerConnectionType,
 } from '../../lldb-server/lib/DebuggerRpcServiceInterface';
@@ -17,7 +16,6 @@ import type {DebuggerProcessInfo} from '../../atom';
 
 import {EventEmitter} from 'events';
 import utils from './utils';
-import {getOutputService} from '../../common/lib/OutputServiceManager';
 import {DebuggerInstance} from '../../atom';
 import {CompositeDisposable} from 'atom';
 const {log, logInfo, logError} = utils;
@@ -37,7 +35,11 @@ export class LldbDebuggerInstance extends DebuggerInstance {
   _disposables: atom$CompositeDisposable;
   _emitter: EventEmitter;
 
-  constructor(processInfo: DebuggerProcessInfo, connection: DebuggerConnectionType) {
+  constructor(
+    processInfo: DebuggerProcessInfo,
+    connection: DebuggerConnectionType,
+    outputDisposable: ?IDisposable,
+  ) {
     super(processInfo);
 
     this._debuggerConnection = null;
@@ -45,6 +47,9 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     this._chromeWebSocketServer = null;
     this._chromeWebSocket = null;
     this._disposables = new CompositeDisposable();
+    if (outputDisposable != null) {
+      this._disposables.add(outputDisposable);
+    }
     this._emitter = new EventEmitter();
     this._registerConnection(connection);
   }
@@ -57,19 +62,6 @@ export class LldbDebuggerInstance extends DebuggerInstance {
       this._handleServerError.bind(this),
       this._handleSessionEnd.bind(this)
     ));
-    this._registerOutputWindowLogging(connection.getOutputWindowObservable());
-  }
-
-  _registerOutputWindowLogging(userOutputStream: Observable<string>): void {
-    const api = getOutputService();
-    if (api != null) {
-      this._disposables.add(api.registerOutputProvider({
-        source: 'lldb debugger',
-        messages: userOutputStream.map(message => JSON.parse(message)),
-      }));
-    } else {
-      logError('Cannot get output window service.');
-    }
   }
 
   _handleServerMessage(message: string): void {

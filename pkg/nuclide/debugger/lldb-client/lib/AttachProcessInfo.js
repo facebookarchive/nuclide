@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+
 import type {DebuggerInstance} from '../../atom';
 import type {NuclideUri} from '../../../remote-uri';
 import type {
@@ -16,6 +17,7 @@ import type {
   DebuggerRpcService as DebuggerRpcServiceType,
 } from '../../lldb-server/lib/DebuggerRpcServiceInterface';
 
+import {registerOutputWindowLogging} from '../../common/lib/OutputServiceManager';
 import {DebuggerProcessInfo} from '../../atom';
 import invariant from 'assert';
 import {LldbDebuggerInstance} from './LldbDebuggerInstance';
@@ -33,10 +35,21 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     if (this.basepath) {
       this._targetInfo.basepath = this.basepath;
     }
-    const connection = await rpcService.attach(this._targetInfo);
-    rpcService.dispose();
-    // Start websocket server with Chrome after attach completed.
-    return new LldbDebuggerInstance(this, connection);
+
+    let debugSession = null;
+    let outputDisposable = registerOutputWindowLogging(rpcService.getOutputWindowObservable());
+    try {
+      const connection = await rpcService.attach(this._targetInfo);
+      rpcService.dispose();
+      // Start websocket server with Chrome after attach completed.
+      debugSession = new LldbDebuggerInstance(this, connection, outputDisposable);
+      outputDisposable = null;
+    } finally {
+      if (outputDisposable != null) {
+        outputDisposable.dispose();
+      }
+    }
+    return debugSession;
   }
 
   _getRpcService(): DebuggerRpcServiceType {

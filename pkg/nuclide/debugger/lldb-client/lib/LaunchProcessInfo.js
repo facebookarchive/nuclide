@@ -19,6 +19,7 @@ import type {
 import invariant from 'assert';
 import {DebuggerProcessInfo} from '../../atom';
 import {LldbDebuggerInstance} from './LldbDebuggerInstance';
+import {registerOutputWindowLogging} from '../../common/lib/OutputServiceManager';
 
 export class LaunchProcessInfo extends DebuggerProcessInfo {
   _launchTargetInfo: LaunchTargetInfo;
@@ -33,10 +34,21 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     if (this.basepath) {
       this._launchTargetInfo.basepath = this.basepath;
     }
-    const connection = await rpcService.launch(this._launchTargetInfo);
-    rpcService.dispose();
-    // Start websocket server with Chrome after launch completed.
-    return new LldbDebuggerInstance(this, connection);
+
+    let debugSession = null;
+    let outputDisposable = registerOutputWindowLogging(rpcService.getOutputWindowObservable());
+    try {
+      const connection = await rpcService.launch(this._launchTargetInfo);
+      rpcService.dispose();
+      // Start websocket server with Chrome after launch completed.
+      debugSession = new LldbDebuggerInstance(this, connection, outputDisposable);
+      outputDisposable = null;
+    } finally {
+      if (outputDisposable != null) {
+        outputDisposable.dispose();
+      }
+    }
+    return debugSession;
   }
 
   _getRpcService(): DebuggerRpcServiceType {

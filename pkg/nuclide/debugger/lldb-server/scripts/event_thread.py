@@ -96,7 +96,7 @@ class LLDBListenerThread(Thread):
             self._send_user_output('log', output)
 
     def _send_user_output(self, level, text):
-        self._debugger_store.ipc_channel.send_output_message(level, text)
+        self._debugger_store.ipc_channel.send_output_message_async(level, text)
 
     def _handle_process_event(self, event):
         # Ignore non-stopping events.

@@ -13,5 +13,8 @@ class MockIpcChannel(object):
     def __init__(self):
         pass
 
-    def send_output_message(self, level, text):
+    def send_output_message_sync(self, level, text):
+        pass
+
+    def send_output_message_async(self, level, text):
         pass
