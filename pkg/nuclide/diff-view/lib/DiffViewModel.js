@@ -580,7 +580,7 @@ class DiffViewModel {
   ): Promise<?{allowUntracked: boolean; amended: boolean;}> {
     const activeStack = this._activeRepositoryStack;
     invariant(activeStack != null, 'No active repository stack when cleaning dirty changes');
-    const {dirtyFileChanges} = this._state;
+    const dirtyFileChanges = activeStack.getDirtyFileChanges();
     let shouldAmend = false;
     let amended = false;
     let allowUntracked = false;
