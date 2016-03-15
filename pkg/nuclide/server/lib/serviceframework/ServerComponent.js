@@ -13,6 +13,8 @@ import {Observable} from 'rx';
 import {getDefinitions} from '../../../service-parser';
 import TypeRegistry from '../../../service-parser/lib/TypeRegistry';
 import {builtinLocation, voidType} from '../../../service-parser/lib/builtin-types';
+import {startTracking} from '../../../analytics';
+import type {TimingTracker} from '../../../analytics';
 import type {
   VoidType,
   FunctionType,
@@ -157,9 +159,15 @@ export default class ServerComponent {
     let callError;
     let hadError = false;
 
+    // Track timings of all function calls, method calls, and object creations.
+    // Note: for Observables we only track how long it takes to create the initial Observable.
+    let timingTracker: ?TimingTracker = null;
+
     try {
       switch (message.type) {
         case 'FunctionCall':
+          timingTracker = startTracking(`service-framework:${message.function}`);
+
           // Transform arguments and call function.
           const {
             localImplementation: fcLocalImplementation,
@@ -180,6 +188,9 @@ export default class ServerComponent {
           // Get the object.
           const mcObject = this._objectRegistry.get(message.objectId);
           invariant(mcObject != null);
+          timingTracker = startTracking(
+            `service-framework:${mcObject._interface}.${message.method}`
+          );
 
           // Get the method FunctionType description.
           const className = this._classesByName.get(mcObject._interface);
@@ -200,6 +211,8 @@ export default class ServerComponent {
           returnVal = mcObject[message.method].apply(mcObject, mcTransfomedArgs);
           break;
         case 'NewObject':
+          timingTracker = startTracking(`service-framework:new:${message.interface}`);
+
           const classDefinition = this._classesByName.get(message.interface);
           invariant(classDefinition != null);
           const {
@@ -231,6 +244,8 @@ export default class ServerComponent {
           // Get the object.
           const doObject = this._objectRegistry.get(message.objectId);
           invariant(doObject != null);
+
+          timingTracker = startTracking(`service-framework:dispose:${doObject._interface}`);
 
           // Remove the object from the registry, and scrub it's id.
           doObject._remoteId = undefined;
@@ -266,6 +281,13 @@ export default class ServerComponent {
 
     switch (returnType.kind) {
       case 'void':
+        if (timingTracker != null) {
+          if (callError != null) {
+            timingTracker.onError(callError);
+          } else {
+            timingTracker.onSuccess();
+          }
+        }
         break; // No need to send anything back to the user.
       case 'promise':
         // If there was an error executing the command, we send that back as a rejected promise.
@@ -294,6 +316,9 @@ export default class ServerComponent {
             hadError: false,
           };
           client.sendSocketMessage(resultMessage);
+          if (timingTracker != null) {
+            timingTracker.onSuccess();
+          }
         }, error => {
           const errorMessage: ErrorResponseMessage = {
             channel: 'service_framework3_rpc',
@@ -303,12 +328,20 @@ export default class ServerComponent {
             error: formatError(error),
           };
           client.sendSocketMessage(errorMessage);
+          if (timingTracker != null) {
+            timingTracker.onError(error);
+          }
         });
         break;
       case 'observable':
         // If there was an error executing the command, we send that back as an error Observable.
         if (hadError) {
           returnVal = Observable.throw(callError);
+          if (timingTracker != null && callError != null) {
+            timingTracker.onError(callError);
+          }
+        } else if (timingTracker != null) {
+          timingTracker.onSuccess();
         }
 
         // Ensure that the return value is an observable.
