@@ -4,6 +4,10 @@
   "main": "./lib/main",
   "version": "0.0.0",
   "description": "Demonstrates how to create an Atom package that opens a pane to a web page",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
   "activationCommands": {
     "atom-workspace": "sample-web-view:open-url"
   }
