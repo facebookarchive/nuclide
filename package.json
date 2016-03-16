@@ -24,7 +24,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "main": "./lib/main.js",
   "bin": {
-    "nuclide-start-server": "./pkg/nuclide/server/nuclide-start-server"
+    "nuclide-start-server": "./pkg/nuclide-server/nuclide-start-server"
   },
   "repository": "https://github.com/facebook/nuclide",
   "scripts": {
@@ -32,7 +32,7 @@
     "lint": "eslint",
     "lint-all": "eslint .",
     "fix-all": "eslint --fix .",
-    "service-parser-validate": "./pkg/nuclide/service-parser/bin/validate.js",
+    "service-parser-validate": "./pkg/nuclide-service-parser/bin/validate.js",
     "test": "npm run lint-all && npm run flow"
   },
   "dependencies": {

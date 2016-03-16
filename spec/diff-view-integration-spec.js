@@ -15,13 +15,13 @@ import {
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
   setLocalProject,
-} from '../pkg/nuclide/integration-test-helpers';
+} from '../pkg/nuclide-integration-test-helpers';
 import path from 'path';
 import invariant from 'assert';
 import {ReactDOM} from 'react-for-atom';
-import {getFileTreePathFromTargetEvent} from '../pkg/nuclide/diff-view/lib/utils';
+import {getFileTreePathFromTargetEvent} from '../pkg/nuclide-diff-view/lib/utils';
 
-import type DiffViewComponent from '../pkg/nuclide/diff-view/lib/DiffViewComponent';
+import type DiffViewComponent from '../pkg/nuclide-diff-view/lib/DiffViewComponent';
 
 describe('Diff view integration test', () => {
 

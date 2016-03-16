@@ -16,7 +16,7 @@ import {
   dispatchKeyboardEvent,
   jasmineIntegrationTestSetup,
   setLocalProject,
-} from '../pkg/nuclide/integration-test-helpers';
+} from '../pkg/nuclide-integration-test-helpers';
 
 import path from 'path';
 

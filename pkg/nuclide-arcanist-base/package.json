@@ -1,0 +1,14 @@
+{
+  "name": "nuclide-arcanist-base",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/ArcanistBaseService",
+  "version": "0.0.0",
+  "description": "Provides an API for working with arcanist projects",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "scripts": {
+    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+  }
+}

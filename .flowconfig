@@ -13,8 +13,8 @@
 .*/node_modules/sabor/.*
 
 [libs]
-./pkg/nuclide/external-interfaces/1.0/
-./pkg/nuclide/debugger/interfaces/WebInspector.js
+./pkg/nuclide-external-interfaces/1.0/
+./pkg/nuclide-debugger-interfaces/WebInspector.js
 
 [options]
 esproposal.class_static_fields=enable

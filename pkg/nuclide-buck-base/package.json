@@ -1,0 +1,15 @@
+{
+  "name": "nuclide-buck-base",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides API to work with Buck",
+  "nuclide": {
+    "excludeTestsFromContinuousIntegration": true,
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "scripts": {
+    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+  }
+}

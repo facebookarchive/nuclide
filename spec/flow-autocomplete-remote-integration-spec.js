@@ -17,11 +17,11 @@ import {
   jasmineIntegrationTestSetup,
   startNuclideServer,
   stopNuclideServer,
-} from '../pkg/nuclide/integration-test-helpers';
-import {join} from '../pkg/nuclide/remote-uri';
+} from '../pkg/nuclide-integration-test-helpers';
+import {join} from '../pkg/nuclide-remote-uri';
 import invariant from 'assert';
 
-import type {RemoteConnection} from '../pkg/nuclide/remote-connection';
+import type {RemoteConnection} from '../pkg/nuclide-remote-connection';
 
 describe('Remote Flow Autocomplete', () => {
   it('tests remote flow autocomplete example', () => {

@@ -1,0 +1,72 @@
+[
+  {
+    "implementation": "../nuclide-arcanist-base/lib/ArcanistBaseService.js",
+    "name": "ArcanistBaseService"
+  },
+  {
+    "implementation": "../nuclide-buck-base/lib/BuckProject.js",
+    "name": "BuckProject"
+  },
+  {
+    "definition": "lib/services/FileSystemService.def",
+    "implementation": "lib/services/FileSystemService.js",
+    "name": "FileSystemService"
+  },
+  {
+    "implementation": "../nuclide-clang/lib/ClangService.js",
+    "name": "ClangService"
+  },
+  {
+    "implementation": "../nuclide-flow-base/lib/FlowService.js",
+    "name": "FlowService"
+  },
+  {
+    "implementation": "../nuclide-fuzzy-file-search-service/lib/FuzzyFileSearchService.js",
+    "name": "FuzzyFileSearchService"
+  },
+  {
+    "implementation": "../nuclide-buck-base/lib/BuckUtils.js",
+    "name": "BuckUtils"
+  },
+  {
+    "implementation": "../nuclide-ocaml-base/lib/LocalMerlinService.js",
+    "name": "MerlinService"
+  },
+  {
+    "name": "InfoService",
+    "implementation": "lib/services/InfoService.js"
+  },
+  {
+    "implementation": "../nuclide-remote-search/lib/FindInProjectService.js",
+    "name": "FindInProjectService"
+  },
+  {
+    "implementation": "../nuclide-debugger-hhvm-proxy/lib/HhvmDebuggerProxyService.js",
+    "name": "HhvmDebuggerProxyService"
+  },
+  {
+    "implementation": "../nuclide-filewatcher-base/lib/FileWatcherService.js",
+    "name": "FileWatcherService"
+  },
+  {
+    "implementation": "lib/services/SourceControlService.js",
+    "name": "SourceControlService"
+  },
+  {
+    "implementation": "../nuclide-hack-base/lib/HackService.js",
+    "name": "HackService"
+  },
+  {
+    "implementation": "../nuclide-hg-repository-base/lib/HgService.js",
+    "name": "HgService"
+  },
+  {
+    "implementation": "../nuclide-remote-ctags-base/lib/CtagsService.js",
+    "name": "CtagsService"
+  },
+  {
+    "definition": "../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface.js",
+    "implementation": "../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceImplementation.js",
+    "name": "LLDBDebuggerRpcService"
+  }
+]

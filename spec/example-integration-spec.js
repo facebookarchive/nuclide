@@ -13,7 +13,7 @@ import {
   activateAllPackages,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
-} from '../pkg/nuclide/integration-test-helpers';
+} from '../pkg/nuclide-integration-test-helpers';
 
 describe('Example Integration Test', () => {
   it('tests my feature', () => {

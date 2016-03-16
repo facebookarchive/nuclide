@@ -14,7 +14,7 @@ import {
   copyMercurialFixture,
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
-} from '../pkg/nuclide/integration-test-helpers';
+} from '../pkg/nuclide-integration-test-helpers';
 
 describe('Blame context menu integration test', () => {
   it('has toggle blame option in the context menu', () => {

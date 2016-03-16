@@ -1,0 +1,13 @@
+{
+  "name": "nuclide-hack-base",
+  "repository": "https://github.com/facebook/nuclide",
+  "version": "0.0.0",
+  "description": "Provides API to work with Hack",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "scripts": {
+    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+  }
+}

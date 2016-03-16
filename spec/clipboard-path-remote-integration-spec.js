@@ -18,9 +18,9 @@ import {
   jasmineIntegrationTestSetup,
   startNuclideServer,
   stopNuclideServer,
-} from '../pkg/nuclide/integration-test-helpers';
+} from '../pkg/nuclide-integration-test-helpers';
 
-import {join} from '../pkg/nuclide/remote-uri';
+import {join} from '../pkg/nuclide-remote-uri';
 
 import invariant from 'assert';
 

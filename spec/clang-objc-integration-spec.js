@@ -16,7 +16,7 @@ import {
   dispatchKeyboardEvent,
   jasmineIntegrationTestSetup,
   waitsForFile,
-} from '../pkg/nuclide/integration-test-helpers';
+} from '../pkg/nuclide-integration-test-helpers';
 
 import invariant from 'assert';
 import {Point} from 'atom';

@@ -1,0 +1,15 @@
+{
+  "name": "nuclide-test-runner-interfaces",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Types used by test runner providers.",
+  "nuclide": {
+    "flowCheck": true,
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "scripts": {
+    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+  }
+}

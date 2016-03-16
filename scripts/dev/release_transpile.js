@@ -37,7 +37,7 @@ var path = require('path');
 
 var basedir = path.join(__dirname, '../..');
 var serverBasedir =
-  path.dirname(require.resolve('../../pkg/nuclide/server/package.json'));
+  path.dirname(require.resolve('../../pkg/nuclide-server/package.json'));
 
 var services = require(path.join(serverBasedir, 'services-3.json'));
 try {

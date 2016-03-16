@@ -1,0 +1,105 @@
+"use babel";
+import { Observable } from "rx";
+import { trackTiming } from "../../nuclide-analytics";
+
+module.exports = _client => {
+  remoteModule = {}
+  remoteModule.Vector2 = class {
+    static distance(arg0, arg1) {
+      return Promise.all([_client.marshal(arg0, {
+        location: {
+          type: "source",
+          fileName: "InterfaceService.def",
+          line: 3
+        },
+        kind: "named",
+        name: "Vector2"
+      }), _client.marshal(arg1, {
+        location: {
+          type: "source",
+          fileName: "InterfaceService.def",
+          line: 3
+        },
+        kind: "named",
+        name: "Vector2"
+      })]).then(args => _client.callRemoteFunction("Vector2/distance", "promise", args)).then(value => _client.unmarshal(value, {
+        location: {
+          type: "source",
+          fileName: "InterfaceService.def",
+          line: 3
+        },
+        kind: "number"
+      }));
+    }
+    constructor(arg0, arg1) {
+      this._idPromise = Promise.all([_client.marshal(arg0, {
+        location: {
+          type: "source",
+          fileName: "InterfaceService.def",
+          line: 2
+        },
+        kind: "number"
+      }), _client.marshal(arg1, {
+        location: {
+          type: "source",
+          fileName: "InterfaceService.def",
+          line: 2
+        },
+        kind: "nullable",
+        type: {
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 2
+          },
+          kind: "number"
+        }
+      })]).then(args => _client.createRemoteObject("Vector2", args))
+    }
+    @trackTiming("Vector2.len")
+    len() {
+      return Promise.all([]).then(args => this._idPromise.then(id => _client.callRemoteMethod(id, "len", "promise", args))).then(value => _client.unmarshal(value, {
+        location: {
+          type: "source",
+          fileName: "InterfaceService.def",
+          line: 4
+        },
+        kind: "number"
+      }));
+    }
+    watchChanges() {
+      return Observable.forkJoin(this._idPromise, Observable.concat().toArray()).concatMap(([id, args]) => _client.callRemoteMethod(id, "watchChanges", "observable", args)).concatMap(value => _client.unmarshal(value, {
+        location: {
+          type: "source",
+          fileName: "InterfaceService.def",
+          line: 6
+        },
+        kind: "number"
+      }));
+    }
+    dispose() {
+      return this._idPromise.then(id => {
+        this._idPromise = {
+          then: function () {
+            throw new Error("This Remote Object has been disposed.");
+          }
+        };
+        return _client.disposeRemoteObject(id);
+      });
+    }
+  }
+
+  remoteModule.getCurrentDirection = function () {
+    return Promise.all([]).then(args => _client.callRemoteFunction("InterfaceService/getCurrentDirection", "promise", args)).then(value => _client.unmarshal(value, {
+      location: {
+        type: "source",
+        fileName: "InterfaceService.def",
+        line: 12
+      },
+      kind: "named",
+      name: "Vector2"
+    }));
+  }
+
+  return remoteModule;
+}

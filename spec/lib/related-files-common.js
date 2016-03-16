@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {RemoteConnection} from '../../pkg/nuclide/remote-connection';
+import type {RemoteConnection} from '../../pkg/nuclide-remote-connection';
 
 import invariant from 'assert';
 
@@ -23,11 +23,11 @@ import {
   startNuclideServer,
   stopNuclideServer,
   waitsForFile,
-} from '../../pkg/nuclide/integration-test-helpers';
+} from '../../pkg/nuclide-integration-test-helpers';
 
-import {fsPromise} from '../../pkg/nuclide/commons';
-import {join} from '../../pkg/nuclide/remote-uri';
-import {tempdir} from '../../pkg/nuclide/test-helpers';
+import {fsPromise} from '../../pkg/nuclide-commons';
+import {join} from '../../pkg/nuclide-remote-uri';
+import {tempdir} from '../../pkg/nuclide-test-helpers';
 
 export function runTest(remote: boolean) {
   let connection: ?RemoteConnection;

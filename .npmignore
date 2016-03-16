@@ -2,7 +2,7 @@
 /.eslintrc
 /.flowconfig
 /docs
-/pkg/sample
+/pkg/sample-*
 /resources/benchmarker
 /scripts
 babel-cache

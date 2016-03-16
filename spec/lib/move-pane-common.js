@@ -15,7 +15,7 @@ import {
   deactivateAllPackages,
   dispatchKeyboardEvent,
   jasmineIntegrationTestSetup,
-} from '../../pkg/nuclide/integration-test-helpers';
+} from '../../pkg/nuclide-integration-test-helpers';
 
 export function testMovePaneDirection(
   direction: 'up' | 'down' | 'left' | 'right',

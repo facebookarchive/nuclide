@@ -1,0 +1,175 @@
+'use babel';
+/* @flow */
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+
+import logger from './utils';
+import {base64Decode} from './helpers';
+import {
+  remoteObjectIdOfObjectId,
+  pagedObjectId,
+  singlePageObjectId,
+} from './ObjectId';
+import invariant from 'assert';
+
+import type {DbgpProperty} from './DbgpSocket';
+import type {ObjectId} from './ObjectId';
+
+/**
+ * Converts a dbgp value to a Chrome RemoteObject.
+ */
+function convertValue(contextId: ObjectId, dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+  switch (dbgpProperty.$.type) {
+    case 'string':
+      return convertStringValue(dbgpProperty);
+    case 'int':
+      return convertIntValue(dbgpProperty);
+    case 'float':
+      return convertFloatValue(dbgpProperty);
+    case 'bool':
+      return convertBoolValue(dbgpProperty);
+    case 'null':
+      return convertNullValue(dbgpProperty);
+    case 'array':
+      return convertArrayValue(contextId, dbgpProperty);
+    case 'object':
+      return convertObjectValue(contextId, dbgpProperty);
+    default:
+      // TODO: Remaining property types - closure, hashmap, ...
+      return convertUnknownValue(dbgpProperty);
+  }
+}
+
+function convertStringValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+  let value;
+  if (dbgpProperty.hasOwnProperty('_')) {
+    // $FlowFixMe(peterhal)
+    value = dbgpProperty.$.encoding === 'base64' ? base64Decode(dbgpProperty._) :
+      `TODO: Non-base64 encoded string: ${JSON.stringify(dbgpProperty)}`;
+  } else {
+    // zero length strings have no dbgpProperty._ property
+    value = '';
+  }
+
+  return {
+    type: 'string',
+    value,
+  };
+}
+
+function convertIntValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+  const value = dbgpProperty.$.encoding === 'base64' ?
+    `TODO: Base64 encoded int: ${JSON.stringify(dbgpProperty)}`
+    : dbgpProperty._;
+  return {
+    type: 'number',
+    value,
+  };
+}
+
+function convertFloatValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+  const value = dbgpProperty.$.encoding === 'base64' ?
+    `TODO: Base64 encoded float: ${JSON.stringify(dbgpProperty)}`
+    : dbgpProperty._;
+  return {
+    type: 'number',
+    value,
+  };
+}
+
+function convertBoolValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+  invariant(dbgpProperty._ != null);
+  const value = dbgpProperty.$.encoding === 'base64'
+    ? `TODO: Base64 encoded bool: ${JSON.stringify(dbgpProperty)}`
+    : toBool(dbgpProperty._);
+  return {
+    type: 'boolean',
+    value,
+  };
+}
+
+function convertNullValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+  return {
+    type: 'undefined',
+    subtype: 'null',
+    value: null,
+  };
+}
+
+function convertArrayValue(contextId: ObjectId, dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+  const remoteId = getAggregateRemoteObjectId(contextId, dbgpProperty);
+  let description = `Array[${dbgpProperty.$.numchildren || 0}]`;
+  if (dbgpProperty.$.recursive != null) {
+    description = '* Recursive *';
+  }
+  return {
+    description,
+    type: 'object',
+    objectId: remoteId,
+  };
+}
+
+function convertObjectValue(contextId: ObjectId, dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+  const remoteId = getAggregateRemoteObjectId(contextId, dbgpProperty);
+  let description = dbgpProperty.$.classname;
+  if (dbgpProperty.$.recursive != null) {
+    description = '* Recursive *';
+  }
+  return {
+    description,
+    type: 'object',
+    objectId: remoteId,
+  };
+}
+
+function getAggregateRemoteObjectId(
+  contextId: ObjectId,
+  dbgpProperty: DbgpProperty
+): Runtime$RemoteObjectId {
+  // If the DbgpProperty represents an empty array or object, the `pagesize` and `numchildren`
+  // will be omitted so we handle this "zero" case specially.
+  const numchildren = Number(dbgpProperty.$.numchildren || 0);
+  const pagesize = Number(dbgpProperty.$.pagesize) || 0;
+  let pageCount = 0;
+  if (pagesize !== 0) {
+    pageCount = Math.trunc((numchildren + pagesize - 1) / pagesize) || 0;
+  }
+  logger.log(`numchildren: ${numchildren} pagesize: ${pagesize} pageCount ${pageCount}`);
+  if (pageCount > 1) {
+    const elementRange = {
+      pagesize,
+      startIndex: 0,
+      count: numchildren,
+    };
+    invariant(dbgpProperty.$.fullname != null);
+    return remoteObjectIdOfObjectId(
+      pagedObjectId(contextId, dbgpProperty.$.fullname, elementRange));
+  } else {
+    invariant(dbgpProperty.$.fullname != null);
+    return remoteObjectIdOfObjectId(singlePageObjectId(contextId, dbgpProperty.$.fullname, 0));
+  }
+}
+
+function convertUnknownValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+  return {
+    type: 'string',
+    value: 'TODO: unknown: ' + JSON.stringify(dbgpProperty),
+  };
+}
+
+function toBool(value: string): mixed {
+  switch (value) {
+    case '0': return false;
+    case '1': return true;
+    default: return 'Unexpected bool value: ' + value;
+  }
+}
+
+module.exports = {convertValue};

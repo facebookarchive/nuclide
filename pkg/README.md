@@ -62,9 +62,9 @@ Note that Atom packages have some special folders (`keymaps`, `styles`, etc.) wh
 contents are processed in a special way. Because Atom packages cannot be expressed
 as dependencies of other Atom packages, this makes it difficult to create a package for a
 reusable UI component with its own `styles`. As a workaround, we created the
-[`nuclide-atom-npm`](./nuclide/atom-npm) package, which makes it possible to create a
+[`nuclide-atom-npm`](./nuclide-atom-npm) package, which makes it possible to create a
 Node package with the structure and [most of the] functionality of an Atom package. See its
-[`README.md`](./nuclide/atom-npm/README.md) for details.
+[`README.md`](./nuclide-atom-npm/README.md) for details.
 
 For Nuclide, we strive for the majority of our packages to be Node packages. This makes code
 easier to reuse, and enables dependencies to be loaded synchronously and reliably (which is not
@@ -92,7 +92,7 @@ important to design tests such that they do not depend on any global, shared sta
 
 To run the tests for an individual package, invoke the test runner that corresponds to
 the `"nuclide/testRunner"` section of the `package.json` file (i.e., `npm test` or `apm test`).
-Note that the [nuclide-node-transpiler](./nuclide/node-transpiler) package creates some
+Note that the [nuclide-node-transpiler](./nuclide-node-transpiler) package creates some
 bootstrapping code for `npm test` so that it behaves more like `apm test`. In particular,
 files with the `'use babel'` pragma are automatically transpiled, and helper functions such as
 `fit()`, `fdescribe()`, and `waitsForPromise()` will be globally available. Here are the

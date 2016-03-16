@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-import {array} from '../pkg/nuclide/commons';
+import {array} from '../pkg/nuclide-commons';
 import {
   activateAllPackages,
   copyMercurialFixture,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
   setLocalProject,
-} from '../pkg/nuclide/integration-test-helpers';
+} from '../pkg/nuclide-integration-test-helpers';
 import path from 'path';
 
 describe('Blame gutter integration test', () => {
