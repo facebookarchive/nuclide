@@ -20,11 +20,11 @@ import {PanelComponent} from '../../nuclide-ui-panel';
 import {OutlineView} from './OutlineView';
 
 export class OutlineViewPanelState {
-  _outlines: Observable<?OutlineForUi>;
+  _outlines: Observable<OutlineForUi>;
   _outlineViewPanel: ?OutlineViewPanel;
   _width: number;
 
-  constructor(outlines: Observable<?OutlineForUi>, width: number, visible: boolean) {
+  constructor(outlines: Observable<OutlineForUi>, width: number, visible: boolean) {
     this._outlines = outlines;
     this._outlineViewPanel = null;
     this._width = width;
@@ -88,7 +88,7 @@ class OutlineViewPanel {
   _panel: atom$Panel;
 
   constructor(
-    outlines: Observable<?OutlineForUi>,
+    outlines: Observable<OutlineForUi>,
     initialWidth: number,
     onResize: (width: number) => mixed,
   ) {

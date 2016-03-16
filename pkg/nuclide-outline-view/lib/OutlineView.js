@@ -15,12 +15,15 @@ import type {OutlineForUi, OutlineTree} from '..';
 import {React} from 'react-for-atom';
 import invariant from 'assert';
 
+import {getLogger} from '../../nuclide-logging';
+const logger = getLogger();
+
 type State = {
-  outline: ?Object;
+  outline: OutlineForUi;
 };
 
 type Props = {
-  outlines: Observable<?OutlineForUi>;
+  outlines: Observable<OutlineForUi>;
 };
 
 export class OutlineView extends React.Component {
@@ -31,7 +34,11 @@ export class OutlineView extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    this.state = {outline: null};
+    this.state = {
+      outline: {
+        kind: 'empty',
+      },
+    };
   }
 
   componentDidMount(): void {
@@ -50,22 +57,10 @@ export class OutlineView extends React.Component {
     this.subscription = null;
   }
 
-  render(): ?ReactElement {
-    let contents;
-    if (this.state.outline == null) {
-      contents = (
-        <span>
-          No outline available
-        </span>
-      );
-    } else {
-      contents = (
-        <OutlineViewComponent outline={this.state.outline} />
-      );
-    }
+  render(): ReactElement {
     return (
       <div className="pane-item padded nuclide-outline-view">
-        {contents}
+        <OutlineViewComponent outline={this.state.outline} />
       </div>
     );
   }
@@ -79,39 +74,73 @@ export class OutlineView extends React.Component {
   }
 }
 
+type OutlineViewComponentProps = {
+  outline: OutlineForUi;
+}
+
 class OutlineViewComponent extends React.Component {
-  static propTypes = {
-    outline: React.PropTypes.object.isRequired,
-  };
+  props: OutlineViewComponentProps;
 
-  render(): ReactElement {
-    return (
-      <div>
-        {this.props.outline.outlineTrees.map(this._renderTree.bind(this))}
-      </div>
-    );
-  }
-
-  _renderTree(outline: OutlineTree): ReactElement {
-    const onClick = () => {
-      const editor: atom$TextEditor = this.props.outline.editor;
-      const pane = atom.workspace.paneForItem(editor);
-      if (pane == null) {
-        return;
-      }
-      pane.activate();
-      pane.activateItem(editor);
-      editor.setCursorBufferPosition(outline.startPosition);
-    };
-    return (
-      <ul className="list-tree">
-        <li className="list-nested-item">
-          <div className="list-item nuclide-outline-view-item" onClick={onClick}>
-            {outline.displayText}
+  render(): ?ReactElement {
+    const outline = this.props.outline;
+    switch (outline.kind) {
+      case 'empty':
+      case 'not-text-editor':
+        return null;
+      case 'no-provider':
+        return (
+          <span>
+            Outline view does not currently support {outline.grammar}.
+          </span>
+        );
+      case 'provider-no-outline':
+        return (
+          <span>
+            No outline available.
+          </span>
+        );
+      case 'outline':
+        return (
+          <div>
+            {renderTrees(outline.editor, outline.outline.outlineTrees)}
           </div>
-          {outline.children.map(this._renderTree.bind(this))}
-        </li>
-      </ul>
-    );
+        );
+      default:
+        const errorText = `Encountered unexpected outline kind ${outline.kind}`;
+        logger.error(errorText);
+        return (
+          <span>
+            Internal Error:<br />
+            {errorText}
+          </span>
+        );
+    }
   }
+
+}
+
+function renderTree(editor: atom$TextEditor, outline: OutlineTree): ReactElement {
+  const onClick = () => {
+    const pane = atom.workspace.paneForItem(editor);
+    if (pane == null) {
+      return;
+    }
+    pane.activate();
+    pane.activateItem(editor);
+    editor.setCursorBufferPosition(outline.startPosition);
+  };
+  return (
+    <ul className="list-tree">
+      <li className="list-nested-item">
+        <div className="list-item nuclide-outline-view-item" onClick={onClick}>
+          {outline.displayText}
+        </div>
+        {renderTrees(editor, outline.children)}
+      </li>
+    </ul>
+  );
+}
+
+function renderTrees(editor: atom$TextEditor, outlines: Array<OutlineTree>): Array<ReactElement> {
+  return outlines.map(outline => renderTree(editor, outline));
 }

@@ -32,10 +32,26 @@ export type Outline = {
 }
 
 /**
- * Includes additional information that is useful to the UI, but redundant for
+ * Includes additional information that is useful to the UI, but redundant or nonsensical for
  * providers to include in their responses.
  */
-export type OutlineForUi = Outline & {
+export type OutlineForUi = {
+  // The initial state at startup.
+  kind: 'empty';
+} | {
+  // The thing that currently has focus is not a text editor.
+  kind: 'not-text-editor';
+} | {
+  // Indicates that no provider is registered for the given grammar.
+  kind: 'no-provider';
+  // Human-readable name for the grammar.
+  grammar: string;
+} | {
+  // Indicates that a provider is registered but that it did not return an outline.
+  kind: 'provider-no-outline';
+} | {
+  kind: 'outline';
+  outline: Outline;
   /**
    * Use a TextEditor instead of a path so that:
    * - If there are multiple editors for a file, we always jump to outline item
@@ -94,14 +110,16 @@ class Activation {
 
     // We are over-subscribing a little bit here, but since outlines are typically cheap and fast to
     // generate that's okay for now.
-    const outlines = Observable.merge(
+    const outlines: Observable<OutlineForUi> = Observable.merge(
         textEvent$,
         paneChange$
           .map(() => atom.workspace.getActiveTextEditor()),
       )
       .flatMap(async editor => {
         if (editor == null) {
-          return null;
+          return {
+            kind: 'not-text-editor',
+          };
         } else {
           return this._outlineForEditor(editor);
         }
@@ -135,19 +153,26 @@ class Activation {
     return new Disposable(() => this._providers.removeProvider(provider));
   }
 
-  async _outlineForEditor(editor: atom$TextEditor): Promise<?OutlineForUi> {
+  async _outlineForEditor(editor: atom$TextEditor): Promise<OutlineForUi> {
     const scopeName = editor.getGrammar().scopeName;
+    const readableGrammarName = editor.getGrammar().name;
 
     const outlineProvider = this._providers.findProvider(scopeName);
     if (outlineProvider == null) {
-      return Promise.resolve(null);
+      return {
+        kind: 'no-provider',
+        grammar: readableGrammarName,
+      };
     }
     const outline: ?Outline = await outlineProvider.getOutline(editor);
     if (outline == null) {
-      return null;
+      return {
+        kind: 'provider-no-outline',
+      };
     }
     return {
-      ...outline,
+      kind: 'outline',
+      outline,
       editor,
     };
   }
