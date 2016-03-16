@@ -58,7 +58,6 @@ export type TextDiff = {
 export type HgDiffState = {
   revisionInfo: RevisionInfo;
   committedContents: string;
-  filesystemContents: string;
 };
 
 export type LineRangesWithOffsets = {

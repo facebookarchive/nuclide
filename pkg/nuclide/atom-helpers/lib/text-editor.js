@@ -64,10 +64,12 @@ export function existingEditorForUri(path: NuclideUri): ?atom$TextEditor {
 
 export async function loadBufferForUri(uri: NuclideUri): Promise<atom$TextBuffer> {
   let buffer = existingBufferForUri(uri);
-  if (buffer != null) {
+  if (buffer == null) {
+    buffer = createBufferForUri(uri);
+  }
+  if (buffer.loaded) {
     return buffer;
   }
-  buffer = createBufferForUri(uri);
   try {
     await buffer.load();
     return buffer;

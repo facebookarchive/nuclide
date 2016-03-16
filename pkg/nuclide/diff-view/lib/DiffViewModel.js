@@ -14,7 +14,6 @@ import type {
   FileChangeState,
   RevisionsState,
   FileChangeStatusValue,
-  HgDiffState,
   CommitModeType,
   CommitModeStateType,
   PublishModeType,
@@ -24,6 +23,12 @@ import type {
 import type {RevisionInfo} from '../../hg-repository-base/lib/HgService';
 import type {NuclideUri} from '../../remote-uri';
 import type {PhabricatorRevisionInfo} from '../../arcanist-client';
+
+type FileDiffState = {
+  revisionInfo: RevisionInfo;
+  committedContents: string;
+  filesystemContents: string;
+};
 
 import arcanist from '../../arcanist-client';
 import {CompositeDisposable, Emitter} from 'atom';
@@ -46,7 +51,7 @@ import {
   notifyInternalError,
   notifyFilesystemOverrideUserEdits,
 } from './notifications';
-import {bufferForUri} from '../../atom-helpers';
+import {bufferForUri, loadBufferForUri} from '../../atom-helpers';
 import {getLogger} from '../../logging';
 
 const ACTIVE_FILE_UPDATE_EVENT = 'active-file-update';
@@ -281,7 +286,7 @@ class DiffViewModel {
   async _updateChangedRevisions(
     repositoryStack: RepositoryStack,
     revisionsState: RevisionsState,
-    reloadFileDiff: boolean,
+    reloadFileDiffState: boolean,
   ): Promise<void> {
     if (repositoryStack !== this._activeRepositoryStack) {
       return;
@@ -293,14 +298,14 @@ class DiffViewModel {
 
     // Update the active file, if changed.
     const {filePath} = this._activeFileState;
-    if (!filePath || !reloadFileDiff) {
+    if (!filePath || !reloadFileDiffState) {
       return;
     }
     const {
       committedContents,
       filesystemContents,
       revisionInfo,
-    } = await this._fetchHgDiff(filePath);
+    } = await this._fetchFileDiff(filePath);
     await this._updateDiffStateIfChanged(
       filePath,
       committedContents,
@@ -363,12 +368,12 @@ class DiffViewModel {
       )));
     }
     activeSubscriptions.add(buffer.onDidChangeModified(
-      this._onDidBufferChangeModified.bind(this),
+      this.emitActiveBufferChangeModified.bind(this),
     ));
     // Modified events could be late that it doesn't capture the latest edits/ state changes.
     // Hence, it's safe to re-emit changes when stable from changes.
     activeSubscriptions.add(buffer.onDidStopChanging(
-      this._onDidBufferChangeModified.bind(this),
+      this.emitActiveBufferChangeModified.bind(this),
     ));
     // Update `savedContents` on buffer save requests.
     activeSubscriptions.add(buffer.onWillSave(
@@ -397,7 +402,7 @@ class DiffViewModel {
     );
   }
 
-  _onDidBufferChangeModified(): void {
+  emitActiveBufferChangeModified(): void {
     this._emitter.emit(ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT);
   }
 
@@ -479,24 +484,24 @@ class DiffViewModel {
     if (!filePath) {
       return;
     }
-    const hgDiffState = await this._fetchHgDiff(filePath);
+    const fileDiffState = await this._fetchFileDiff(filePath);
     await this._updateDiffState(
       filePath,
-      hgDiffState,
-      hgDiffState.filesystemContents,
+      fileDiffState,
+      fileDiffState.filesystemContents,
     );
   }
 
   async _updateDiffState(
     filePath: NuclideUri,
-    hgDiffState: HgDiffState,
+    fileDiffState: FileDiffState,
     savedContents: string,
   ): Promise<void> {
     const {
       committedContents: oldContents,
       filesystemContents: newContents,
       revisionInfo,
-    } = hgDiffState;
+    } = fileDiffState;
     const {hash, bookmarks} = revisionInfo;
     const newFileState = {
       filePath,
@@ -520,7 +525,7 @@ class DiffViewModel {
   }
 
   @trackTiming('diff-view.hg-state-update')
-  async _fetchHgDiff(filePath: NuclideUri): Promise<HgDiffState> {
+  async _fetchFileDiff(filePath: NuclideUri): Promise<FileDiffState> {
     // Calling atom.project.repositoryForDirectory gets the real path of the directory,
     // which is another round-trip and calls the repository providers to get an existing repository.
     // Instead, the first match of the filtering here is the only possible match.
@@ -537,7 +542,13 @@ class DiffViewModel {
       repositoryStack.fetchHgDiff(filePath),
       this._setActiveRepositoryStack(repositoryStack),
     ]);
-    return hgDiff;
+    // Intentionally fetch the filesystem contents after getting the committed contents
+    // to make sure we have the latest filesystem version.
+    const buffer = await loadBufferForUri(filePath);
+    return {
+      ...hgDiff,
+      filesystemContents: buffer.getText(),
+    };
   }
 
   async _setActiveRepositoryStack(repositoryStack: RepositoryStack): Promise<void> {

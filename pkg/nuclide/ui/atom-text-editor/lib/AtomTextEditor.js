@@ -75,6 +75,7 @@ class AtomTextEditor extends React.Component {
     path: PropTypes.string,
     readOnly: PropTypes.bool.isRequired,
     textBuffer: PropTypes.instanceOf(TextBuffer),
+    syncTextContents: PropTypes.bool.isRequired,
     autoGrow: PropTypes.bool.isRequired,
   };
 
@@ -83,6 +84,7 @@ class AtomTextEditor extends React.Component {
     lineNumberGutterVisible: true,
     readOnly: false,
     autoGrow: false,
+    syncTextContents: true,
   };
 
   componentDidMount(): void {
@@ -114,7 +116,9 @@ class AtomTextEditor extends React.Component {
       ) {
       const previousTextContents = this.getTextBuffer().getText();
       const textEditor = setupTextEditor(nextProps);
-      textEditor.setText(previousTextContents);
+      if (nextProps.syncTextContents) {
+        textEditor.setText(previousTextContents);
+      }
       this._updateTextEditor(textEditor);
       this._onDidUpdateTextEditorElement(nextProps);
     }

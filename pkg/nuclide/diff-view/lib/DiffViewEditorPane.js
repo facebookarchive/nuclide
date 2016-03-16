@@ -122,6 +122,7 @@ export default class DiffViewEditorPane extends React.Component {
             ref="editor"
             readOnly={this.props.readOnly}
             textBuffer={this.props.textBuffer}
+            syncTextContents={false}
           />
         </div>
       </div>
@@ -144,13 +145,8 @@ export default class DiffViewEditorPane extends React.Component {
   _updateDiffView(oldProps: Props): void {
     const newProps = this.props;
     const diffEditorUpdated = oldProps.textBuffer !== newProps.textBuffer;
-    // Cache latest disk contents for an accurate `isModified` functionality.
-    newProps.textBuffer.cachedDiskContents = this.props.savedContents;
-    if (diffEditorUpdated || oldProps.filePath !== newProps.filePath) {
-      // Loading a new file should clear the undo history.
-      this._setTextContent(newProps.filePath, newProps.initialTextContent, true /*clearHistory*/);
-    } else if (oldProps.initialTextContent !== this.props.initialTextContent) {
-      this._setTextContent(newProps.filePath, newProps.initialTextContent, false /*clearHistory*/);
+    if (diffEditorUpdated || oldProps.initialTextContent !== this.props.initialTextContent) {
+      this._setTextContent(newProps.filePath, newProps.initialTextContent);
     }
     if (diffEditorUpdated || oldProps.highlightedLines !== newProps.highlightedLines) {
       this._setHighlightedLines(newProps.highlightedLines);
@@ -168,9 +164,9 @@ export default class DiffViewEditorPane extends React.Component {
     this._diffViewEditor.scrollToScreenLine(screenLine);
   }
 
-  _setTextContent(filePath: string, text: string, clearHistory: boolean): void {
+  _setTextContent(filePath: string, text: string): void {
     invariant(this._diffViewEditor);
-    this._diffViewEditor.setFileContents(filePath, text, clearHistory);
+    this._diffViewEditor.setFileContents(filePath, text);
   }
 
   _setHighlightedLines(highlightedLines: HighlightedLines): void {

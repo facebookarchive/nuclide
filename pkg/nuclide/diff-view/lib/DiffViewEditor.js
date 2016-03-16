@@ -108,15 +108,10 @@ export default class DiffViewEditor {
     );
   }
 
-  setFileContents(filePath: string, contents: string, clearHistory: boolean): void {
+  setFileContents(filePath: string, contents: string): void {
     // The text is set via diffs to keep the cursor position.
     const buffer = this._editor.getBuffer();
-    if (clearHistory) {
-      // Mark the buffer as loaded, so `isModified` will work accurately.
-      buffer.loaded = true;
-      // `reload` will use the `cachedDiskContents` to set the text and clear the undo history.
-      buffer.reload(true);
-    } else {
+    if (buffer.getText() !== contents) {
       buffer.setTextViaDiff(contents);
     }
     const grammar = atom.grammars.selectGrammar(filePath, contents);

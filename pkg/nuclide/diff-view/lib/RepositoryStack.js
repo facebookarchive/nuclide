@@ -19,7 +19,6 @@ import type {NuclideUri} from '../../remote-uri';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import {HgStatusToFileChangeStatus, FileChangeStatus} from './constants';
-import {getFileSystemContents} from './utils';
 import {array, promises, debounce} from '../../commons';
 import {trackTiming} from '../../analytics';
 import {notifyInternalError} from './notifications';
@@ -411,10 +410,6 @@ export default class RepositoryStack {
       // If the file didn't exist on the previous revision, return empty contents.
       .then(contents => contents || '', _err => '');
 
-    // Intentionally fetch the filesystem contents after getting the committed contents
-    // to make sure we have the latest filesystem version.
-    const filesystemContents = await getFileSystemContents(filePath);
-
     const fetchedRevisionId = compareCommitId != null ? compareCommitId : commitId;
     const [revisionInfo] = revisions.filter(revision => revision.id === fetchedRevisionId);
     invariant(
@@ -423,7 +418,6 @@ export default class RepositoryStack {
     );
     return {
       committedContents,
-      filesystemContents,
       revisionInfo,
     };
   }

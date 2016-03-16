@@ -252,6 +252,7 @@ class DiffViewComponent extends React.Component {
     this._renderDiffView();
     if (this.state.filePath !== prevState.filePath) {
       this._scrollToFirstHighlightedLine();
+      this.props.diffModel.emitActiveBufferChangeModified();
     }
   }
 
