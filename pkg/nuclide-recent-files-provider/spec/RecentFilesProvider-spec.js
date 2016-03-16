@@ -29,6 +29,8 @@ const FILE_PATHS = [
 const FAKE_RECENT_FILES = FILE_PATHS.map((path, i) => ({
   path,
   timestamp: 1e8 - i * 1000,
+  matchIndexes: [],
+  score: 1,
 }));
 
 const FakeRecentFilesService = {
@@ -93,11 +95,22 @@ describe('RecentFilesProvider', () => {
     it('filters results according to the query string', () => {
       waitsForPromise(async () => {
         fakeGetProjectPathsImpl = () => [PROJECT_PATH];
-        expect(await provider.executeQuery('ba')).toEqual([
-          // 'foo/bla/foo.js' does not match 'ba', but `bar.js` and `baz.js` do:
-          FAKE_RECENT_FILES[1],
-          FAKE_RECENT_FILES[2],
-        ]);
+        // 'foo/bla/foo.js' does not match 'bba', but `bar.js` and `baz.js` do.
+        const results = await provider.executeQuery('bba');
+        // Do not cement exact scores or match indices in this test, since they are determined by
+        // Fuzzy-native. Jasmine 1.3 does not support `jasmine.objectContaining`,
+        // so we need to check the results manually:
+        expect(results.length).toEqual(2);
+
+        expect(results[0].path).toEqual(FAKE_RECENT_FILES[1].path);
+        expect(results[0].timestamp).toEqual(FAKE_RECENT_FILES[1].timestamp);
+        expect(results[0].matchIndexes).toBeDefined();
+        expect(results[0].score).toBeGreaterThan(0);
+
+        expect(results[1].path).toEqual(FAKE_RECENT_FILES[2].path);
+        expect(results[1].timestamp).toEqual(FAKE_RECENT_FILES[2].timestamp);
+        expect(results[1].matchIndexes).toBeDefined();
+        expect(results[1].score).toBeGreaterThan(0);
       });
     });
   });
