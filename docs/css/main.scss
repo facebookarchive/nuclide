@@ -20,7 +20,7 @@ $primary-bg:        {{ site.color.primary }};
 $secondary-bg:      {{ site.color.secondary }};
 $light-color:       {{ site.color.light }};
 $light-text-color:  {{ site.color.lighttext }};
-$nav-bg:            {{ site.color.nav }};
+$nav-bg:            {{ site.color.primary }};
 $nav-text:          {{ site.color.navtext }};
 $footer-bg:         #1F242A;
 $link-color:        {{ site.color.link }};

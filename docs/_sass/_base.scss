@@ -46,7 +46,7 @@ h1, h2, h3, h4 {
 
 // static positioning, by default.
 .headerBarContainer {
-  background: $nav-bg;
+  background: $primary-bg;
   color: $header-text;
   height: $header-height;
   opacity: 0.0;
@@ -69,7 +69,7 @@ h1, h2, h3, h4 {
     height: $header-height;
     margin: 0 auto;
     max-width: $content-width;
-    padding: 0 10px;
+    padding: 0 20px;
     position: relative;
     text-align: left;
 
@@ -163,7 +163,9 @@ h1, h2, h3, h4 {
   }
 
   .homeWrapper {
+    padding-bottom: 2em;
     padding-top: 2em;
+    text-align: left;
 
       .wrapper {
         margin: 0px auto;
@@ -171,9 +173,11 @@ h1, h2, h3, h4 {
         padding: 0 20px;
       }
 
-      img.projectLogo {
-        height: 100px;
-        margin-bottom: 0px;
+      .projectLogo {
+        img {
+          height: 100px;
+          margin-bottom: 0px;
+        }
       }
 
       h1#project_title {
@@ -209,13 +213,17 @@ h1, h2, h3, h4 {
 }
 
 
-img.projectLogo {
-  height: 100px;
-  margin-bottom: 0px;
+.projectLogo {
+  display: none;
+
+  img {
+    height: 100px;
+    margin-bottom: 0px;
+  }
 }
 
 section#intro {
-  margin: 70px 0;
+  margin: 40px 0;
 }
 
 .fbossFontLight {
@@ -266,31 +274,13 @@ a.blockButton {
 
 
 .promoSection {
-  margin: -25px 0 0;
-  text-align: center;
+  font-size: 125%;
+  line-height: 1.6em;
+  margin: 0;
 
-  .pluginBlock {
-    display: inline-block;
-    margin: 25px 0;
-
-    &.fb_iframe_widget_fluid {
-      display: inline-block;
-    }
-
-    &:last-of-type:not(.slideshowBlock) {
-      margin-bottom: 50px;
-    }
-
-    &.allShareBlock {
-      .pluginBlock {
-        margin: 0 12px;
-        width: auto;
-
-        &.fb-like {
-          top: -5px;
-        }
-      }
-    }
+  a {
+    border-bottom: 3px solid $light-color;
+    color: lighten($light-color, 20%);
   }
 }
 
@@ -664,9 +654,11 @@ a.blockButton {
     font-size: 250%;
   }
 
-  img.projectLogo {
-    margin-bottom: 10px;
-    height: 200px;
+  .projectLogo {
+    img {
+      margin-bottom: 10px;
+      height: 200px;
+    }
   }
 
   .headerBarContainer {
@@ -690,10 +682,6 @@ a.blockButton {
         }
       }
     }
-  }
-
-  .homeWrapper {
-    padding-top: 8em;
   }
 
   .gridBlock {
@@ -764,9 +752,37 @@ a.blockButton {
 }
 
 @media only screen and (min-width: 900px) {
+  .homeContainer {
+    .homeWrapper {
+      padding-bottom: 4em;
+      position: relative;
+
+      #inner {
+        box-sizing: border-box;
+        max-width: 600px;
+        padding-right: 40px;
+      }
+
+      .projectLogo {
+        align-items: center;
+        bottom: 0;
+        display: flex;
+        justify-content: flex-end;
+        left: 0;
+        padding: 2em 20px 4em;
+        position: absolute;
+        right: 20px;
+        top: 0;
+
+        img {
+          height: 100%;
+        }
+      }
+    }
+  }
+
   .headerBarContainer {
     .navigationWrapper {
-
       nav {
         padding: 0 1em;
         position: relative;
@@ -885,6 +901,14 @@ a.blockButton {
 }
 
 @media only screen and (min-width: 1200px) {
+  .homeContainer {
+    .homeWrapper {
+      #inner {
+        max-width: 750px;
+      }
+    }
+  }
+
   .headerBarContainer {
     header {
       max-width: 1100px;
@@ -895,10 +919,6 @@ a.blockButton {
     max-width: 1100px;
   }
 
-  .homeWrapper {
-    max-width: 900px;
-  }
-
   .mainContainer .mainWrapper {
     .post, .posts {
       width: 760px;
@@ -907,6 +927,16 @@ a.blockButton {
 }
 
 @media only screen and (min-width: 1500px) {
+  .homeContainer {
+    .homeWrapper {
+      #inner {
+        max-width: 1100px;
+        padding-bottom: 40px;
+        padding-top: 40px;
+      }
+    }
+  }
+
   .headerBarContainer {
     header {
       max-width: 1400px;
@@ -915,10 +945,6 @@ a.blockButton {
 
   .wrapper {
     max-width: 1400px;
-  }
-
-  .homeWrapper {
-    max-width: 900px;
   }
 
   .mainContainer .mainWrapper {
