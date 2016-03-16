@@ -22,7 +22,7 @@ type Props = {
   clearRecords: () => void;
 };
 
-export default class Console extends React.Component<void, Props, void> {
+export default class Console extends React.Component {
   props: Props;
 
   _isScrolledToBottom: boolean;

@@ -15,7 +15,7 @@ type Props = {
   clear: () => void;
 };
 
-export default class ConsoleHeader extends React.Component<void, Props, void> {
+export default class ConsoleHeader extends React.Component {
   props: Props;
 
   constructor(props: Props) {

@@ -18,7 +18,7 @@ type Props = {
   records: Array<Record>;
 };
 
-export default class OutputTable extends React.Component<void, Props, void> {
+export default class OutputTable extends React.Component {
   props: Props;
 
   render(): ?ReactElement {

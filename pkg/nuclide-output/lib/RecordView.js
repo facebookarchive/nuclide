@@ -17,7 +17,7 @@ type Props = {
   record: Record;
 };
 
-export default class RecordView extends React.Component<void, Props, void> {
+export default class RecordView extends React.Component {
   props: Props;
 
   render(): ReactElement {
