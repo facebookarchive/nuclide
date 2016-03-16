@@ -48,7 +48,7 @@ text box. Therefore, when you want to add a keyboard shortcut for an editor, add
 
 ### Platform Specific Bindings
 
-You can make your bindings platform specific with `.plarform-xxxxx` as part of your CSS selector.
+You can make your bindings platform specific with `.platform-xxxxx` as part of your CSS selector.
 For example the Nuclide `diff-view` CSON looks like this:
 
 ```
