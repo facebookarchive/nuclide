@@ -778,13 +778,14 @@ export class HgService {
     try {
       await this._hgAsyncExecute(cmd, options);
     } catch (e) {
+      const errorString = e.stderr || e.message || e.toString();
       getLogger().error(
         'hg %s failed with [%s] arguments: %s',
-        cmd,
+        action,
         args.toString(),
-        e.toString(),
+        errorString,
       );
-      throw e;
+      throw new Error(errorString);
     }
   }
 

@@ -22,6 +22,7 @@ class NuclideCustomPaneItem extends HTMLElement {
   _iconName: ?string;
   _uri: ?string;
   _allowSplit: boolean;
+  __component: ReactElement;
 
   initialize(options: NuclideCustomPaneItemOptions) {
     this._title = options.title;
@@ -29,8 +30,7 @@ class NuclideCustomPaneItem extends HTMLElement {
     this._uri = options.uri;
     this._allowSplit = !!options.allowSplit;
 
-    const component = this.__renderPaneItem(options);
-    ReactDOM.render(component, this);
+    this.__component = ReactDOM.render(this.__renderPaneItem(options), this);
   }
 
   /**
