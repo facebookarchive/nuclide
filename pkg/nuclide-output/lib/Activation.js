@@ -38,6 +38,25 @@ class Activation {
     );
     this._outputService = new OutputService(this._commands);
     this._disposables = new CompositeDisposable(
+      atom.contextMenu.add({
+        '.nuclide-output-record': [
+          {
+            label: 'Copy Message',
+            command: 'nuclide-output:copy-message',
+          },
+        ],
+      }),
+      atom.commands.add(
+        '.nuclide-output-record',
+        'nuclide-output:copy-message',
+        event => {
+          const el = event.target;
+          if (el == null || el.innerText == null) {
+            return;
+          }
+          atom.clipboard.write(el.innerText);
+        },
+      ),
       featureConfig.observe(
         'nuclide-output.maximumMessageCount',
         maxMessageCount => this._commands.setMaxMessageCount(maxMessageCount),
