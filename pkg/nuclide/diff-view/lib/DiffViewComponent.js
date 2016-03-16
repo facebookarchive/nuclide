@@ -129,6 +129,12 @@ class DiffViewComponent extends React.Component {
     const {diffModel} = this.props;
     this._subscriptions.add(diffModel.onActiveFileUpdates(this._updateLineDiffState));
     this._subscriptions.add(diffModel.onDidUpdateState(this._onModelStateChange));
+    this._subscriptions.add(atom.workspace.onDidChangeActivePaneItem(activeItem => {
+      if (activeItem != null && (activeItem: any).tagName === 'NUCLIDE-DIFF-VIEW') {
+        // Re-render on activation.
+        this.setState({});
+      }
+    }));
 
     this._paneContainer = createPaneContainer();
     // The changed files status tree takes 1/5 of the width and lives on the right most,
