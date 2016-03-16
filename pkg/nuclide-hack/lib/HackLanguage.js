@@ -18,6 +18,8 @@ import type {
 import type {TypeCoverageRegion} from './TypedRegions';
 
 import {LocalHackLanguage} from './LocalHackLanguage';
+import {ServerHackLanguage} from './ServerHackLanguage';
+import {getConfig} from './config';
 
 export type CompletionResult = {
   matchSnippet: string;
@@ -95,5 +97,7 @@ export function createHackLanguage(
     hhAvailable: boolean,
     basePath: ?string,
     initialFileUri: NuclideUri): HackLanguage {
-  return new LocalHackLanguage(hhAvailable, basePath, initialFileUri);
+  return getConfig().useIdeConnection
+    ? (new ServerHackLanguage(hhAvailable, basePath): HackLanguage)
+    : new LocalHackLanguage(hhAvailable, basePath, initialFileUri);
 }
