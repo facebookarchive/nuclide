@@ -1,5 +1,27 @@
 # Nuclide Changelog
 
+## v0.125.0
+
+### Added
+
+* Buck tests can now be triggered from,
+  - The "Test" button in the Buck toolbar, or
+  - via Atom commands (command palette or custom keyboard shortcut).
+* Diagnostic/linter results table columns are now resizable.
+* Settings for custom HHVM, RN node executable and Merlin (OCaml) paths.
+* Support Clang macros and brief comments for autocompletion.
+* Improvements to evaluation in the HHVM debugger.
+
+### Fixed
+
+* Improved the support for multiple windows in Working Sets.
+* Debugger doesn't refresh when reloading React Native apps.
+* Opening an already open remote file won't not discard all local changes.
+* Focus and blur side bar children (like file-tree).
+* Continued improvements to fuzzy file searching.
+* Remote search for matches with `:`.
+* Preview tab support for Atom 1.6.0+.
+
 ## v0.124.0
 
 Fixed:
