@@ -16,6 +16,9 @@ import {CompositeDisposable, Disposable} from 'atom';
 import {event as commonsEvent} from '../../nuclide-commons';
 const {observableFromSubscribeFunction} = commonsEvent;
 
+import {getLogger} from '../../nuclide-logging';
+const logger = getLogger();
+
 import {OutlineViewPanelState} from './OutlineViewPanel';
 import {ProviderRegistry} from './ProviderRegistry';
 
@@ -97,7 +100,8 @@ class Activation {
     this._providers = new ProviderRegistry();
 
     const textEvent$ = Observable.create(observer => {
-      const textEventDispatcher = require('../../nuclide-text-event-dispatcher').getInstance();
+      const textEventDispatcher =
+        require('../../nuclide-text-event-dispatcher').getInstance();
       return textEventDispatcher.onAnyFileChange(editor => observer.onNext(editor));
     });
 
@@ -164,7 +168,13 @@ class Activation {
         grammar: readableGrammarName,
       };
     }
-    const outline: ?Outline = await outlineProvider.getOutline(editor);
+    let outline: ?Outline;
+    try {
+      outline = await outlineProvider.getOutline(editor);
+    } catch (e) {
+      logger.error('Error in outline provider:', e);
+      outline = null;
+    }
     if (outline == null) {
       return {
         kind: 'provider-no-outline',
