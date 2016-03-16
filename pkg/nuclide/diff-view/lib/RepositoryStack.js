@@ -431,7 +431,7 @@ export default class RepositoryStack {
     const {revisions} = revisionsState;
 
     invariant(
-      revisions && revisions.indexOf(revision) !== -1,
+      revisions && array.find(revisions, check => check.id === revision.id),
       'Diff Viw Timeline: non-applicable selected revision',
     );
 
