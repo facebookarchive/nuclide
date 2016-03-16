@@ -15,6 +15,7 @@ import type {
   HackDiagnostic,
   HackSearchPosition,
   HackReference,
+  HackOutline,
 } from '../../nuclide-hack-base/lib/HackService';
 import {TypeCoverageRegion} from './TypedRegions';
 
@@ -106,6 +107,14 @@ export class ServerHackLanguage {
     const {getTypedRegions} = getHackService(filePath);
     const regions = await getTypedRegions(filePath);
     return convertTypedRegionsToCoverageRegions(regions);
+  }
+
+  async getOutline(
+    filePath: NuclideUri,
+    contents: string,
+  ): Promise<?HackOutline> {
+    // TBD
+    return null;
   }
 
   async getDefinition(

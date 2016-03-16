@@ -104,6 +104,17 @@ export type HackTypedRegion = {
   text: string;
 };
 
+export type HackOutlineItem = {
+  name: string;
+  // method, class, etc. consider using union of literals here if it starts being used.
+  type: string;
+  line: number;
+  char_start: number;
+  char_end: number;
+}
+
+export type HackOutline = Array<HackOutlineItem>;
+
 const HH_NEWLINE = '<?hh\n';
 const HH_STRICT_NEWLINE = '<?hh // strict\n';
 const HH_DIAGNOSTICS_DELAY_MS = 600;
@@ -386,6 +397,11 @@ export async function getTypedRegions(filePath: NuclideUri):
   }
   const {result} = hhResult;
   return (result: any);
+}
+
+export async function getOutline(contents: string): Promise<?HackOutline> {
+  // TODO return actual outline
+  return [];
 }
 
 /**

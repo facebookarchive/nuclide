@@ -68,6 +68,11 @@
       "versions": {
         "0.0.0": "createCodeHighlightProvider"
       }
+    },
+    "nuclide-outline-view": {
+      "versions": {
+        "0.0.0": "provideOutlines"
+      }
     }
   }
 }

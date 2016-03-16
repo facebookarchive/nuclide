@@ -10,7 +10,11 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {HackReference, HackDiagnostic} from '../../nuclide-hack-base/lib/HackService';
+import type {
+  HackReference,
+  HackDiagnostic,
+  HackOutline,
+} from '../../nuclide-hack-base/lib/HackService';
 import type {TypeHint} from '../../nuclide-type-hint-interfaces';
 import type {HackLanguage} from './HackLanguage';
 
@@ -149,6 +153,21 @@ module.exports = {
         range: matchData.range,
       };
     }
+  },
+
+  async outlineFromEditor(editor: atom$TextEditor): Promise<?HackOutline> {
+    const filePath = editor.getPath();
+    if (filePath == null) {
+      return  null;
+    }
+    const hackLanguage = await getHackLanguageForUri(filePath);
+    if (hackLanguage == null) {
+      return null;
+    }
+
+    const contents = editor.getText();
+
+    return await hackLanguage.getOutline(filePath, contents);
   },
 
   /**

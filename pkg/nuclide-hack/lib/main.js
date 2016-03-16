@@ -14,6 +14,7 @@ import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../nuclide-busy-signal-provider-base';
 import type {HyperclickProvider} from '../../hyperclick-interfaces';
+import type {OutlineProvider} from '../../nuclide-outline-view';
 
 import CodeHighlightProvider from './CodeHighlightProvider';
 import {CompositeDisposable} from 'atom';
@@ -24,6 +25,7 @@ import {
   setShowTypeCoverage,
 } from './config';
 import {TypeCoverageProvider} from './TypeCoverageProvider';
+import {OutlineViewProvider} from './OutlineViewProvider';
 import {onDidChange} from '../../nuclide-feature-config';
 import invariant from 'assert';
 
@@ -165,6 +167,16 @@ module.exports = {
       hackDiagnosticsProvider = null;
     }
     disableCoverageProvider();
+  },
+
+  provideOutlines(): OutlineProvider {
+    const provider = new OutlineViewProvider();
+    return {
+      grammarScopes: HACK_GRAMMARS,
+      priority: 1,
+      name: 'Hack',
+      getOutline: provider.getOutline.bind(provider),
+    };
   },
 };
 
