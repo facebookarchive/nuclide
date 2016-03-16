@@ -862,7 +862,12 @@ class DiffViewModel {
     if (message === '') {
       atom.notifications.addError('Commit aborted', {detail: 'Commit message empty'});
       return;
-    } else if (message === this._state.commitMessage) {
+    } else if (
+      this._state.commitMode === CommitMode.COMMIT
+      && message === this._state.commitMessage
+    ) {
+      // When creating a new commit, the initial commit message is created from a template. The
+      // message must differ from the template to be successful.
       atom.notifications.addError('Commit aborted', {detail: 'Commit message unchanged'});
       return;
     }
