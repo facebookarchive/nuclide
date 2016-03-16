@@ -273,12 +273,12 @@ export class LocalHackLanguage {
     return convertTypedRegionsToCoverageRegions(regions);
   }
 
-  async getOutline(
+  getOutline(
     filePath: NuclideUri,
     contents: string,
   ): Promise<?HackOutline> {
     const {getOutline} = getHackService(filePath);
-    return await getOutline(contents);
+    return getOutline(filePath, contents);
   }
 
   async getDefinition(

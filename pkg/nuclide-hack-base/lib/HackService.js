@@ -399,9 +399,18 @@ export async function getTypedRegions(filePath: NuclideUri):
   return (result: any);
 }
 
-export async function getOutline(contents: string): Promise<?HackOutline> {
-  // TODO return actual outline
-  return [];
+export async function getOutline(filePath: NuclideUri, contents: string): Promise<?HackOutline> {
+  const hhResult = await callHHClient(
+    /*args*/ ['--outline'],
+    /*errorStream*/ false,
+    /*outputJson*/ true,
+    /*processInput*/ contents,
+    filePath,
+  );
+  if (hhResult == null) {
+    return null;
+  }
+  return (hhResult.result: any);
 }
 
 /**
