@@ -16,7 +16,7 @@ var currentContext = null;
 
 // respond to ops
 var ops = {
-  executeApplicationScript: function (id, data) {
+  executeApplicationScript: function(id, data) {
     var globals = {
       console: console,
     };
@@ -37,7 +37,7 @@ var ops = {
     send(id);
   },
 
-  call: function (id, data) {
+  call: function(id, data) {
     var returnValue = [[], [], [], [], []];
     try {
       if (currentContext != null && typeof currentContext.__fbBatchedBridge === 'object') {
@@ -51,7 +51,7 @@ var ops = {
   },
 };
 
-process.on('message', function (payload) {
+process.on('message', function(payload) {
   if (!ops[payload.op]) {
     console.error('Unknown op' + payload.op + ' ' + payload);
     return;

@@ -14,7 +14,7 @@ const invariant = require('assert');
 const {addMatchers, diffJson, diffLines} = require('../lib/matchers');
 
 describe('matchers', () => {
-  beforeEach(function () {
+  beforeEach(function() {
     addMatchers(this);
   });
 

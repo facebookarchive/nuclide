@@ -17,7 +17,7 @@ const whitelistedComments = [
 ];
 
 function isWhitelisted(text) {
-  return whitelistedComments.some(function (regex) {
+  return whitelistedComments.some(function(regex) {
     return regex.test(text);
   });
 }
@@ -32,7 +32,7 @@ const identifiers = {};
  * Note that this only works for identifiers that appear in the current file.
  */
 function findIdentifiers(tokens) {
-  tokens.forEach(function (token) {
+  tokens.forEach(function(token) {
     if (token.type === 'Identifier') {
       identifiers[token.value] = true;
     }
@@ -81,7 +81,7 @@ module.exports = function(context) {
       }
     }
     // The first line need not start with '*'.
-    lines.slice(1).forEach(function (line) {
+    lines.slice(1).forEach(function(line) {
       // If the first non-whitespace character is not '*'.
       if (/^\s*[^*\s]/.test(line)) {
         context.report(node, 'Continuing comment lines should start with *');

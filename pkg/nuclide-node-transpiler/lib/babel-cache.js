@@ -98,7 +98,7 @@ function createOrFetchFromCache(sourceCode, filePath) {
       // Use mv as fs.rename doesn't work across partitions.
       var moveError = false;
       mv(info.path, transpiledFile, {mkdirp: true},
-        function (err) {
+        function(err) {
           if (err) {
             console.error('nuclide-node-transpiler: Error moving file: \'' +
               err.message + '\'. Stack trace:\n' + err.stack);

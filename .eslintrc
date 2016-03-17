@@ -210,6 +210,7 @@
     "sort-vars": 0,                       // sort variables within the same declaration block (off by default)
     "space-after-keywords": 1,            // require a space after certain keywords (off by default)
     "space-before-blocks": 1,             // require a space before blocks
+    "space-before-function-paren": [1, "never"], // require a space before function parenthesis
     "space-in-brackets": 0,               // require or disallow spaces inside brackets (off by default)
     "space-in-parens": 0,                 // require or disallow spaces inside parentheses (off by default)
     "space-infix-ops": 1,                 // require spaces around operators

@@ -17,7 +17,7 @@ import invariant from 'assert';
 
 const flowConfigDirCache = LRU({
   max: 10,
-  length: function (n) { return n.length; },
+  length: function(n) { return n.length; },
   maxAge: 1000 * 30, //30 seconds
 });
 const flowPathCache = LRU({
