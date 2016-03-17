@@ -139,7 +139,18 @@ class OutlineViewHeader extends React.Component {
       <div className="panel-heading">
         <span className="icon icon-list-unordered" />
         Outline View
+        <button
+          className="pull-right btn icon icon-x nuclide-outline-view-close-button"
+          onClick={hideOutlineView}
+        />
       </div>
     );
   }
+}
+
+function hideOutlineView() {
+  atom.commands.dispatch(
+    atom.views.getView(atom.workspace),
+    'nuclide-outline-view:hide'
+  );
 }
