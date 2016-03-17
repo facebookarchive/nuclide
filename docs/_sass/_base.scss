@@ -272,11 +272,12 @@ a.blockButton {
   }
 }
 
-
 .promoSection {
   font-size: 125%;
   line-height: 1.6em;
   margin: 0;
+  position: relative;
+  z-index: 99;
 
   a {
     border-bottom: 3px solid $light-color;
