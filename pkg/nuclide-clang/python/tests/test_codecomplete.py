@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import unittest
-import codecomplete
+from .. import codecomplete
 
 
 class CompletionCacheTestCase(unittest.TestCase):
