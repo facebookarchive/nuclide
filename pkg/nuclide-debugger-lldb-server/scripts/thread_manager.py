@@ -52,7 +52,7 @@ class ThreadManager(object):
         result = []
         for frame in thread.frames:
             # SBFrame.GetVariables(arguments, locals, statics, in_scope_only)
-            variables = frame.GetVariables(True, True, True, False)
+            variables = frame.GetVariables(True, True, False, True)
             local_variables = self._debugger_store.remote_object_manager.add_object(
                 ValueListRemoteObject(
                     variables,
