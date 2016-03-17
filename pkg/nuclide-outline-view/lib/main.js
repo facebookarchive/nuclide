@@ -186,6 +186,19 @@ class Activation {
       editor,
     };
   }
+
+  consumeToolBar(getToolBar: (group: string) => Object): void {
+    const toolBar = getToolBar('nuclide-outline-view');
+    toolBar.addButton({
+      icon: 'list-unordered',
+      callback: 'nuclide-outline-view:toggle',
+      tooltip: 'Toggle Outline View',
+      priority: 350, // Between diff view and test runner
+    });
+    this._disposables.add(new Disposable(() => {
+      toolBar.removeItems();
+    }));
+  }
 }
 
 let activation: ?Activation = null;
@@ -212,4 +225,9 @@ export function serialize(): ?OutlineViewState {
 export function consumeOutlineProvider(provider: OutlineProvider): IDisposable {
   invariant(activation != null);
   return activation.consumeOutlineProvider(provider);
+}
+
+export function consumeToolBar(getToolBar: (group: string) => Object): void {
+  invariant(activation != null);
+  activation.consumeToolBar(getToolBar);
 }
