@@ -14,9 +14,12 @@ import type {ServerReplyCallback} from './types';
 import type {EventEmitter} from 'events';
 
 import featureConfig from '../../nuclide-feature-config';
-import {forkWithExecEnvironment} from '../../nuclide-commons/lib/process';
+import {forkWithExecEnvironment, getOutputStream} from '../../nuclide-commons/lib/process';
+import {getLogger} from '../../nuclide-logging';
 import path from 'path';
 import Rx from 'rx';
+
+const logger = getLogger();
 
 export default class Child {
 
@@ -41,8 +44,19 @@ export default class Child {
 
     // Pipe output from forked process. This just makes things easier to debug for us.
     process$
-      .flatMapLatest(process => Rx.Observable.fromEvent(process.stdout, 'data'))
-      .subscribe(data => console.log(data.toString())); // eslint-disable-line no-console
+      .flatMapLatest(process => getOutputStream(process))
+      .subscribe(message => {
+        switch (message.kind) {
+          case 'error':
+            logger.error(message.error.message);
+            return;
+          case 'stderr':
+            logger.error(message.data.toString());
+            return;
+          case 'stdout':
+            logger.info(message.data.toString());
+        }
+      });
 
     this._closed = process$.flatMap(process => Rx.Observable.fromEvent(process, 'close'))
       .first()

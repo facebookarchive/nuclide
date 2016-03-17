@@ -8,14 +8,9 @@
 
 'use strict';
 
-/* eslint-disable no-var */
+/* eslint-disable no-var, no-console */
 
 var vm = require('vm');
-var fs = require('fs');
-
-function doLog(data) {
-  fs.appendFileSync('/tmp/nuclide-react-node-executor.log', data + '\n');
-}
 
 var currentContext = null;
 
@@ -36,7 +31,7 @@ var ops = {
       // The file name is dummy here. Without a file name, the source map is not used.
       vm.runInContext(data.script, currentContext, '/tmp/react-native.js');
     } catch (e) {
-      doLog('Failed to exec script: ' + e);
+      console.error('Failed to exec script: ' + e);
     }
 
     send(id);
@@ -49,7 +44,7 @@ var ops = {
         returnValue = currentContext.__fbBatchedBridge[data.method].apply(null, data.arguments);
       }
     } catch (e) {
-      doLog('Failed while making a call ' + data.method + ':::' + e);
+      console.error('Failed while making a call ' + data.method + ':::' + e);
     } finally {
       send(id, JSON.stringify(returnValue));
     }
@@ -58,7 +53,7 @@ var ops = {
 
 process.on('message', function (payload) {
   if (!ops[payload.op]) {
-    doLog('Unknown op' + payload.op + ' ' + payload);
+    console.error('Unknown op' + payload.op + ' ' + payload);
     return;
   }
   ops[payload.op](payload.id, payload.data);
