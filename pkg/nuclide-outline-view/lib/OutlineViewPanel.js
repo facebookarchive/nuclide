@@ -48,6 +48,18 @@ export class OutlineViewPanelState {
     }
   }
 
+  show(): void {
+    if (!this.isVisible()) {
+      this._show();
+    }
+  }
+
+  hide(): void {
+    if (this.isVisible()) {
+      this._hide();
+    }
+  }
+
   getWidth(): number {
     return this._width;
   }

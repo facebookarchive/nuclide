@@ -139,6 +139,20 @@ class Activation {
         panel.toggle.bind(panel),
       )
     );
+    this._disposables.add(
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-outline-view:show',
+        panel.show.bind(panel),
+      )
+    );
+    this._disposables.add(
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-outline-view:hide',
+        panel.hide.bind(panel),
+      )
+    );
   }
 
   dispose() {
