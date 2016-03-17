@@ -695,7 +695,7 @@ class DiffViewModel {
       await this._activeRepositoryStack.amend(publishMessage);
       atom.notifications.addSuccess('Commit amended with the updated message');
     }
-    await arcanist.createPhabricatorRevision(filePath);
+    await arcanist.createPhabricatorRevision(filePath).toPromise();
     atom.notifications.addSuccess('Revision created');
   }
 
@@ -711,7 +711,9 @@ class DiffViewModel {
     if (userUpdateMessage.length === 0) {
       throw new Error('Cannot update revision with empty message');
     }
-    await arcanist.updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked);
+    await arcanist
+      .updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked)
+      .toPromise();
     atom.notifications.addSuccess(`Revision \`${phabricatorRevision.id}\` updated`);
   }
 

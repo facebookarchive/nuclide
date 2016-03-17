@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {Observable} from 'rx';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import typeof * as ArcanistBaseService from '../../nuclide-arcanist-base';
 
@@ -67,7 +68,9 @@ async function findDiagnostics(
   return [].concat(...(await Promise.all(results)));
 }
 
-function createPhabricatorRevision(filePath: NuclideUri): Promise<void> {
+function createPhabricatorRevision(
+  filePath: NuclideUri
+): Observable<{stderr?: string; stdout?: string;}> {
   return getService(filePath).createPhabricatorRevision(filePath);
 }
 
@@ -75,7 +78,7 @@ function updatePhabricatorRevision(
   filePath: NuclideUri,
   message: string,
   allowUntracked: boolean,
-): Promise<void> {
+): Observable<{stderr?: string; stdout?: string;}> {
   return getService(filePath).updatePhabricatorRevision(filePath, message, allowUntracked);
 }
 

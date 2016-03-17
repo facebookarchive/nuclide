@@ -10,10 +10,12 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
+
 import invariant from 'assert';
-import {quote} from 'shell-quote';
+import {Observable} from 'rx';
 import path from 'path';
-const {asyncExecute, checkOutput} = require('../../nuclide-commons');
+import {quote} from 'shell-quote';
+const {asyncExecute, scriptSafeSpawnAndObserveOutput} = require('../../nuclide-commons');
 const logger = require('../../nuclide-logging').getLogger();
 
 const ARC_CONFIG_FILE_NAME = '.arcconfig';
@@ -96,10 +98,10 @@ export async function findDiagnostics(pathToFiles: Array<NuclideUri>, skip: Arra
   return [].concat(...(await Promise.all(results)));
 }
 
-async function _callArcDiff(
+function _callArcDiff(
   filePath: NuclideUri,
   extraArcDiffArgs: Array<string>,
-): Promise<void> {
+): Observable<{stderr?: string; stdout?: string;}> {
   const env = {...process.env};
   // Even with `--verbatim` Arcanist will sometimes launch and enditor in interactive mode.  With
   // the editor set to `/bin/false` it will immediately exit with a failure and abort `arc diff`.
@@ -111,23 +113,24 @@ async function _callArcDiff(
     quote(['arc', 'diff'].concat(extraArcDiffArgs)),
   ].join(' | ');
   const args: Array<string> = ['-c', cmd];
-  const arcConfigDir = await findArcConfigDirectory(filePath);
-  if (arcConfigDir == null) {
-    throw new Error('Failed to find Arcanist config.  Is this project set-up for Arcanist?');
-  }
-  const options = {
-    'cwd': arcConfigDir,
-    'env': env,
-  };
-  const {exitCode, stdout} = await checkOutput('bash', args, options);
-  if (exitCode !== 0) {
-    throw new Error(stdout);
-  }
+
+  return Observable
+    .fromPromise(findArcConfigDirectory(filePath))
+    .flatMap((arcConfigDir: ?string) => {
+      if (arcConfigDir == null) {
+        throw new Error('Failed to find Arcanist config.  Is this project set-up for Arcanist?');
+      }
+      const options = {
+        'cwd': arcConfigDir,
+        'env': env,
+      };
+      return scriptSafeSpawnAndObserveOutput('bash', args, options);
+    });
 }
 
 export function createPhabricatorRevision(
   filePath: NuclideUri,
-): Promise<void> {
+): Observable<{stderr?: string; stdout?: string;}> {
   return _callArcDiff(filePath, ['--verbatim']);
 }
 
@@ -135,7 +138,7 @@ export function updatePhabricatorRevision(
   filePath: NuclideUri,
   message: string,
   allowUntracked: boolean,
-): Promise<void> {
+): Observable<{stderr?: string; stdout?: string;}> {
   const args = ['-m', message];
   if (allowUntracked) {
     args.push('--allow-untracked');
