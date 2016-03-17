@@ -80,6 +80,22 @@ module.exports = {
     return requireFromCache('./text-editor').isTextEditor;
   },
 
+  get setPositionAndScroll() {
+    return requireFromCache('./text-editor').setPositionAndScroll;
+  },
+
+  get getViewOfEditor() {
+    return requireFromCache('./text-editor').getViewOfEditor;
+  },
+
+  get getScrollTop() {
+    return requireFromCache('./text-editor').getScrollTop;
+  },
+
+  get setScrollTop() {
+    return requireFromCache('./text-editor').setScrollTop;
+  },
+
   get extractWordAtPosition() {
     return requireFromCache('./extract-word-at-position');
   },

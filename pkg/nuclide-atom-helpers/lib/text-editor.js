@@ -112,3 +112,31 @@ function createBufferForUri(uri: NuclideUri): atom$TextBuffer {
 export function existingBufferForUri(uri: NuclideUri): ?atom$TextBuffer {
   return atom.project.findBufferForPath(uri);
 }
+
+export function getViewOfEditor(editor: atom$TextEditor): atom$TextEditorElement {
+  return atom.views.getView(editor);
+}
+
+export function getScrollTop(editor: atom$TextEditor): number {
+  return getViewOfEditor(editor).getScrollTop();
+}
+
+export function setScrollTop(editor: atom$TextEditor, scrollTop: number): void {
+  getViewOfEditor(editor).setScrollTop(scrollTop);
+}
+
+/**
+ * Does a best effort to set an editor pane to a given cursor position & scroll.
+ * Does not ensure that the current cursor position is visible.
+ *
+ * Can be used with editor.getCursorBufferPosition() & getScrollTop() to restore
+ * an editors cursor and scroll.
+ */
+export function setPositionAndScroll(
+  editor: atom$TextEditor,
+  position: atom$Point,
+  scrollTop: number,
+): void {
+  editor.setCursorBufferPosition(position, {autoscroll: false});
+  setScrollTop(editor, scrollTop);
+}
