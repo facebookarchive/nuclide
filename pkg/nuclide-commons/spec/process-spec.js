@@ -280,4 +280,35 @@ describe('nuclide-commons/process', () => {
     });
 
   });
+
+  describe('getOutputStream', () => {
+    it('captures stdout, stderr and exitCode', () => {
+      waitsForPromise(async () => {
+        const promise = processLib.safeSpawn(process.execPath,
+          ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);']);
+        const child = await promise;
+        const results = await processLib.getOutputStream(child).toArray().toPromise();
+        expect(results).toEqual([
+          {kind: 'stderr', data: 'stderr\n'},
+          {kind: 'stdout', data: 'std out\n'},
+          {kind: 'exit', exitCode: 42},
+        ]);
+      });
+    });
+
+    it('captures stdout, stderr and exitCode when passed a promise', () => {
+      waitsForPromise(async () => {
+        const promise = processLib.safeSpawn(process.execPath,
+          ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);']);
+        const results = await processLib.getOutputStream(promise).toArray().toPromise();
+        expect(results).toEqual([
+          {kind: 'stderr', data: 'stderr\n'},
+          {kind: 'stdout', data: 'std out\n'},
+          {kind: 'exit', exitCode: 42},
+        ]);
+      });
+    });
+
+  });
+
 });

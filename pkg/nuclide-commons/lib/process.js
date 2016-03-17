@@ -298,6 +298,28 @@ function observeProcessExit(
   );
 }
 
+function getOutputStream(
+  childProcess: child_process$ChildProcess | Promise<child_process$ChildProcess>,
+): Observable<ProcessMessage> {
+  return Observable.fromPromise(Promise.resolve(childProcess))
+    .flatMap(process => {
+      invariant(process != null, 'process has not yet been disposed');
+      // Use replay/connect on exit for the final concat.
+      // By default concat defers subscription until after the LHS completes.
+      const exit = Observable.fromEvent(process, 'exit').take(1).
+        map(exitCode => ({kind: 'exit', exitCode})).replay();
+      exit.connect();
+      const error = Observable.fromEvent(process, 'error').
+        takeUntil(exit).
+        map(errorObj => ({kind: 'error', error: errorObj}));
+      const stdout = splitStream(observeStream(process.stdout)).
+        map(data => ({kind: 'stdout', data}));
+      const stderr = splitStream(observeStream(process.stderr)).
+        map(data => ({kind: 'stderr', data}));
+      return stdout.merge(stderr).merge(error).concat(exit);
+    });
+}
+
 /**
  * Observe the stdout, stderr and exit code of a process.
  */
@@ -306,24 +328,7 @@ function observeProcess(
 ): Observable<ProcessMessage> {
   return Observable.using(
     () => new ProcessResource(createProcess()),
-    processResource => {
-      return processResource.getStream().flatMap(process => {
-        invariant(process != null, 'process has not yet been disposed');
-        // Use replay/connect on exit for the final concat.
-        // By default concat defers subscription until after the LHS completes.
-        const exit = Observable.fromEvent(process, 'exit').take(1).
-            map(exitCode => ({kind: 'exit', exitCode})).replay();
-        exit.connect();
-        const error = Observable.fromEvent(process, 'error').
-            takeUntil(exit).
-            map(errorObj => ({kind: 'error', error: errorObj}));
-        const stdout = splitStream(observeStream(process.stdout)).
-            map(data => ({kind: 'stdout', data}));
-        const stderr = splitStream(observeStream(process.stderr)).
-            map(data => ({kind: 'stderr', data}));
-        return stdout.merge(stderr).merge(error).concat(exit);
-      });
-    },
+    processResource => processResource.getStream().flatMap(getOutputStream),
   );
 }
 
@@ -479,6 +484,7 @@ module.exports = {
   createArgsForScriptCommand,
   checkOutput,
   forkWithExecEnvironment,
+  getOutputStream,
   safeSpawn,
   scriptSafeSpawn,
   scriptSafeSpawnAndObserveOutput,
