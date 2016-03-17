@@ -87,6 +87,11 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.getParent(remoteUri)).toBe('nuclide://fb.com:8000/usr');
   });
 
+  it('contains', () => {
+    expect(nuclideUri.contains('/usr/local', localUri)).toBe(true);
+    expect(nuclideUri.contains('nuclide://fb.com:8000/usr', remoteUri)).toBe(true);
+  });
+
   it('normalize', () => {
     expect(nuclideUri.normalize(localUri)).toBe(localUri);
     expect(nuclideUri.normalize(remoteUri)).toBe(remoteUri);

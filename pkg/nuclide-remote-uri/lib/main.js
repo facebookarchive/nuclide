@@ -257,6 +257,14 @@ function nuclideUriToUri(uri: NuclideUri): string {
   }
 }
 
+/**
+ * Returns true if child is equal to, or is a proper child of parent.
+ */
+function contains(parent: NuclideUri, child: NuclideUri): boolean {
+  return child.startsWith(parent)
+    && (child.length === parent.length || child[parent.length] === '/');
+}
+
 module.exports = {
   basename,
   dirname,
@@ -274,4 +282,5 @@ module.exports = {
   getParent,
   uriToNuclideUri,
   nuclideUriToUri,
+  contains,
 };
