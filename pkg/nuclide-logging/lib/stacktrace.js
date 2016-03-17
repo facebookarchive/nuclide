@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +10,11 @@
  * the root directory of this source tree.
  */
 
-import type {node$CallSite} from './types';
+exports['default'] = addPrepareStackTraceHook;
 
-type PrepareStackTraceFunction = (error: Error, frames: Array<node$CallSite>) => any;
+var PREPARE_STACK_TRACE_HOOKED_KEY = '_nuclide_error_stack_trace_hooked';
 
-const PREPARE_STACK_TRACE_HOOKED_KEY = '_nuclide_error_stack_trace_hooked';
-
-let hookedPrepareStackTrace: ?PrepareStackTraceFunction;
+var hookedPrepareStackTrace = undefined;
 
 /**
  * v8 provided a way to customize Error stacktrace generation by overwriting
@@ -28,60 +27,51 @@ let hookedPrepareStackTrace: ?PrepareStackTraceFunction;
  * This is required as Atom's builtin coffeescript package need to show coffeescript stacktrace by
  * customize Error.prepareStackTrace.
  */
-export default function addPrepareStackTraceHook(): void {
-  require('../../nuclide-commons').singleton.get(
-    PREPARE_STACK_TRACE_HOOKED_KEY,
-    () => {
-      hookedPrepareStackTrace = createHookedPrepareStackTrace(Error.prepareStackTrace
-        || defaultPrepareStackTrace);
 
-      // Hook Error.prepareStackTrace by leveraging get/set accessor. In this way, writing to
-      // Error.prepareStackTrace will put the new prepareStackTrace functions in a wrapper that
-      // calls the hook.
-      // $FlowIssue
-      Object.defineProperty(Error, 'prepareStackTrace', {
-        get() {
-          return hookedPrepareStackTrace;
-        },
-        set(newValue) {
-          hookedPrepareStackTrace = createHookedPrepareStackTrace(newValue
-            || defaultPrepareStackTrace);
-        },
-        enumerable: false,
-        configurable: true,
-      });
+function addPrepareStackTraceHook() {
+  require('../../nuclide-commons').singleton.get(PREPARE_STACK_TRACE_HOOKED_KEY, function () {
+    hookedPrepareStackTrace = createHookedPrepareStackTrace(Error.prepareStackTrace || defaultPrepareStackTrace);
 
-      // TODO (chenshen) t8789330.
-      // Atom added getRawStack to Error.prototype to get Error's structured stacktrace
-      // (https://github.com/atom/grim/blob/master/src/grim.coffee#L43). However, this
-      // doesn't work well with our customization of stacktrace. So here we temporarily
-      // walk around this by following hack, until https://github.com/atom/atom/issues/9641
-      // get addressed.
-      /* eslint-disable no-extend-native */
-      /* $FlowFixMe */
-      Error.prototype.getRawStack = null;
-      /* eslint-enable no-extend-native */
-      return true;
-    },
-  );
+    // Hook Error.prepareStackTrace by leveraging get/set accessor. In this way, writing to
+    // Error.prepareStackTrace will put the new prepareStackTrace functions in a wrapper that
+    // calls the hook.
+    // $FlowIssue
+    Object.defineProperty(Error, 'prepareStackTrace', {
+      get: function get() {
+        return hookedPrepareStackTrace;
+      },
+      set: function set(newValue) {
+        hookedPrepareStackTrace = createHookedPrepareStackTrace(newValue || defaultPrepareStackTrace);
+      },
+      enumerable: false,
+      configurable: true
+    });
+
+    // TODO (chenshen) t8789330.
+    // Atom added getRawStack to Error.prototype to get Error's structured stacktrace
+    // (https://github.com/atom/grim/blob/master/src/grim.coffee#L43). However, this
+    // doesn't work well with our customization of stacktrace. So here we temporarily
+    // walk around this by following hack, until https://github.com/atom/atom/issues/9641
+    // get addressed.
+    /* eslint-disable no-extend-native */
+    /* $FlowFixMe */
+    Error.prototype.getRawStack = null;
+    /* eslint-enable no-extend-native */
+    return true;
+  });
 }
 
 /**
  * Create a wrapper that calls to structuredStackTraceHook first, then return the result of
  * prepareStackTrace.
  */
-function createHookedPrepareStackTrace(
-  prepareStackTrace: PrepareStackTraceFunction,
-): PrepareStackTraceFunction {
+function createHookedPrepareStackTrace(prepareStackTrace) {
   // If the prepareStackTrace is already been hooked, just return it.
   if (prepareStackTrace.name === 'nuclideHookedPrepareStackTrace') {
     return prepareStackTrace;
   }
 
-  const hookedFunction = function nuclideHookedPrepareStackTrace(
-    error: Error,
-    frames: Array<node$CallSite>,
-  ): any {
+  var hookedFunction = function nuclideHookedPrepareStackTrace(error, frames) {
     structuredStackTraceHook(error, frames);
     return prepareStackTrace(error, frames);
   };
@@ -89,9 +79,9 @@ function createHookedPrepareStackTrace(
   return hookedFunction;
 }
 
-function structuredStackTraceHook(error: Error, frames: Array<node$CallSite>): void {
+function structuredStackTraceHook(error, frames) {
   // $FlowFixMe
-  error['stackTrace'] = frames.map(frame => {
+  error['stackTrace'] = frames.map(function (frame) {
     return {
       functionName: frame.getFunctionName(),
       methodName: frame.getMethodName(),
@@ -102,22 +92,24 @@ function structuredStackTraceHook(error: Error, frames: Array<node$CallSite>): v
       isTopLevel: frame.isToplevel(),
       isEval: frame.isEval(),
       isNative: frame.isNative(),
-      isConstructor: frame.isConstructor(),
+      isConstructor: frame.isConstructor()
     };
   });
 }
 
-function defaultPrepareStackTrace(error: Error, frames: Array<node$CallSite>): string {
-  let formattedStackTrace = error.message ? `${error.name}: ${error.message}` : `${error.name}`;
-  frames.forEach(frame => {
-    formattedStackTrace += `\n    at ${frame.toString()}`;
+function defaultPrepareStackTrace(error, frames) {
+  var formattedStackTrace = error.message ? error.name + ': ' + error.message : '' + error.name;
+  frames.forEach(function (frame) {
+    formattedStackTrace += '\n    at ' + frame.toString();
   });
   return formattedStackTrace;
 }
 
-export const __test__ = {
-  createHookedPrepareStackTrace,
-  resetPrepareStackTraceHooked() {
+var __test__ = {
+  createHookedPrepareStackTrace: createHookedPrepareStackTrace,
+  resetPrepareStackTraceHooked: function resetPrepareStackTraceHooked() {
     require('../../nuclide-commons').singleton.clear(PREPARE_STACK_TRACE_HOOKED_KEY);
-  },
+  }
 };
+exports.__test__ = __test__;
+//# sourceMappingURL=data:application/json;base64,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SUFBTSxRQUFRLEdBQUc7QUFDdEIsK0JBQTZCLEVBQTdCLDZCQUE2QjtBQUM3Qiw4QkFBNEIsRUFBQSx3Q0FBRztBQUM3QixXQUFPLENBQUMsdUJBQXVCLENBQUMsQ0FBQyxTQUFTLENBQUMsS0FBSyxDQUFDLDhCQUE4QixDQUFDLENBQUM7R0FDbEY7Q0FDRixDQUFDIiwiZmlsZSI6InN0YWNrdHJhY2UuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7bm9kZSRDYWxsU2l0ZX0gZnJvbSAnLi90eXBlcyc7XG5cbnR5cGUgUHJlcGFyZVN0YWNrVHJhY2VGdW5jdGlvbiA9IChlcnJvcjogRXJyb3IsIGZyYW1lczogQXJyYXk8bm9kZSRDYWxsU2l0ZT4pID0+IGFueTtcblxuY29uc3QgUFJFUEFSRV9TVEFDS19UUkFDRV9IT09LRURfS0VZID0gJ19udWNsaWRlX2Vycm9yX3N0YWNrX3RyYWNlX2hvb2tlZCc7XG5cbmxldCBob29rZWRQcmVwYXJlU3RhY2tUcmFjZTogP1ByZXBhcmVTdGFja1RyYWNlRnVuY3Rpb247XG5cbi8qKlxuICogdjggcHJvdmlkZWQgYSB3YXkgdG8gY3VzdG9taXplIEVycm9yIHN0YWNrdHJhY2UgZ2VuZXJhdGlvbiBieSBvdmVyd3JpdGluZ1xuICogRXJyb3IucHJlcGFyZVN0YWNrVHJhY2UgKGh0dHBzOi8vY29kZS5nb29nbGUuY29tL3Avdjgvd2lraS9KYXZhU2NyaXB0U3RhY2tUcmFjZUFwaSkuXG4gKiBIZXJlIHdlIGFkZGVkIGEgaG9vayB0byBFcnJvci5wcmVwYXJlU3RhY2tUcmFjZSB0byBhY2hpZXZlIGZvbGxvd2luZyBnb2FsczpcbiAqICAxKSBXaGVuZXZlciBgZXJyb3Iuc3RhY2tgIGlzIGNhbGxlZCwgZXJyb3Iuc3RhY2tUcmFjZSB3aWxsIGJlIGdlbmVyYXRlZC5cbiAqICAyKSBPdGhlciBtb2R1bGUncyBjdXN0b21pemF0aW9uIHRvIEVycm9yLnByZXBhcmVTdGFja1RyYWNlLCBubyBtYXR0ZXIgYmVmb3JlIG9yIGFmdGVyIHRoZSBob29rXG4gKiAgICAgaXMgYWRkZWQsIHdpbGwgc3RpbGwgd29yayBhcyBleHBlY3RlZC5cbiAqIEluIHRoaXMgd2F5LCBvdGhlciBtb2R1bGUgY291bGQgc3RpbGwgb3ZlcndyaXRlIEVycm9yLnByZXBhcmVTdGFja1RyYWNlIHRvIGN1c3RvbWl6ZSBzdGFja3RyYWNlLlxuICogVGhpcyBpcyByZXF1aXJlZCBhcyBBdG9tJ3MgYnVpbHRpbiBjb2ZmZWVzY3JpcHQgcGFja2FnZSBuZWVkIHRvIHNob3cgY29mZmVlc2NyaXB0IHN0YWNrdHJhY2UgYnlcbiAqIGN1c3RvbWl6ZSBFcnJvci5wcmVwYXJlU3RhY2tUcmFjZS5cbiAqL1xuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gYWRkUHJlcGFyZVN0YWNrVHJhY2VIb29rKCk6IHZvaWQge1xuICByZXF1aXJlKCcuLi8uLi9udWNsaWRlLWNvbW1vbnMnKS5zaW5nbGV0b24uZ2V0KFxuICAgIFBSRVBBUkVfU1RBQ0tfVFJBQ0VfSE9PS0VEX0tFWSxcbiAgICAoKSA9PiB7XG4gICAgICBob29rZWRQcmVwYXJlU3RhY2tUcmFjZSA9IGNyZWF0ZUhvb2tlZFByZXBhcmVTdGFja1RyYWNlKEVycm9yLnByZXBhcmVTdGFja1RyYWNlXG4gICAgICAgIHx8IGRlZmF1bHRQcmVwYXJlU3RhY2tUcmFjZSk7XG5cbiAgICAgIC8vIEhvb2sgRXJyb3IucHJlcGFyZVN0YWNrVHJhY2UgYnkgbGV2ZXJhZ2luZyBnZXQvc2V0IGFjY2Vzc29yLiBJbiB0aGlzIHdheSwgd3JpdGluZyB0b1xuICAgICAgLy8gRXJyb3IucHJlcGFyZVN0YWNrVHJhY2Ugd2lsbCBwdXQgdGhlIG5ldyBwcmVwYXJlU3RhY2tUcmFjZSBmdW5jdGlvbnMgaW4gYSB3cmFwcGVyIHRoYXRcbiAgICAgIC8vIGNhbGxzIHRoZSBob29rLlxuICAgICAgLy8gJEZsb3dJc3N1ZVxuICAgICAgT2JqZWN0LmRlZmluZVByb3BlcnR5KEVycm9yLCAncHJlcGFyZVN0YWNrVHJhY2UnLCB7XG4gICAgICAgIGdldCgpIHtcbiAgICAgICAgICByZXR1cm4gaG9va2VkUHJlcGFyZVN0YWNrVHJhY2U7XG4gICAgICAgIH0sXG4gICAgICAgIHNldChuZXdWYWx1ZSkge1xuICAgICAgICAgIGhvb2tlZFByZXBhcmVTdGFja1RyYWNlID0gY3JlYXRlSG9va2VkUHJlcGFyZVN0YWNrVHJhY2UobmV3VmFsdWVcbiAgICAgICAgICAgIHx8IGRlZmF1bHRQcmVwYXJlU3RhY2tUcmFjZSk7XG4gICAgICAgIH0sXG4gICAgICAgIGVudW1lcmFibGU6IGZhbHNlLFxuICAgICAgICBjb25maWd1cmFibGU6IHRydWUsXG4gICAgICB9KTtcblxuICAgICAgLy8gVE9ETyAoY2hlbnNoZW4pIHQ4Nzg5MzMwLlxuICAgICAgLy8gQXRvbSBhZGRlZCBnZXRSYXdTdGFjayB0byBFcnJvci5wcm90b3R5cGUgdG8gZ2V0IEVycm9yJ3Mgc3RydWN0dXJlZCBzdGFja3RyYWNlXG4gICAgICAvLyAoaHR0cHM6Ly9naXRodWIuY29tL2F0b20vZ3JpbS9ibG9iL21hc3Rlci9zcmMvZ3JpbS5jb2ZmZWUjTDQzKS4gSG93ZXZlciwgdGhpc1xuICAgICAgLy8gZG9lc24ndCB3b3JrIHdlbGwgd2l0aCBvdXIgY3VzdG9taXphdGlvbiBvZiBzdGFja3RyYWNlLiBTbyBoZXJlIHdlIHRlbXBvcmFyaWx5XG4gICAgICAvLyB3YWxrIGFyb3VuZCB0aGlzIGJ5IGZvbGxvd2luZyBoYWNrLCB1bnRpbCBodHRwczovL2dpdGh1Yi5jb20vYXRvbS9hdG9tL2lzc3Vlcy85NjQxXG4gICAgICAvLyBnZXQgYWRkcmVzc2VkLlxuICAgICAgLyogZXNsaW50LWRpc2FibGUgbm8tZXh0ZW5kLW5hdGl2ZSAqL1xuICAgICAgLyogJEZsb3dGaXhNZSAqL1xuICAgICAgRXJyb3IucHJvdG90eXBlLmdldFJhd1N0YWNrID0gbnVsbDtcbiAgICAgIC8qIGVzbGludC1lbmFibGUgbm8tZXh0ZW5kLW5hdGl2ZSAqL1xuICAgICAgcmV0dXJuIHRydWU7XG4gICAgfSxcbiAgKTtcbn1cblxuLyoqXG4gKiBDcmVhdGUgYSB3cmFwcGVyIHRoYXQgY2FsbHMgdG8gc3RydWN0dXJlZFN0YWNrVHJhY2VIb29rIGZpcnN0LCB0aGVuIHJldHVybiB0aGUgcmVzdWx0IG9mXG4gKiBwcmVwYXJlU3RhY2tUcmFjZS5cbiAqL1xuZnVuY3Rpb24gY3JlYXRlSG9va2VkUHJlcGFyZVN0YWNrVHJhY2UoXG4gIHByZXBhcmVTdGFja1RyYWNlOiBQcmVwYXJlU3RhY2tUcmFjZUZ1bmN0aW9uLFxuKTogUHJlcGFyZVN0YWNrVHJhY2VGdW5jdGlvbiB7XG4gIC8vIElmIHRoZSBwcmVwYXJlU3RhY2tUcmFjZSBpcyBhbHJlYWR5IGJlZW4gaG9va2VkLCBqdXN0IHJldHVybiBpdC5cbiAgaWYgKHByZXBhcmVTdGFja1RyYWNlLm5hbWUgPT09ICdudWNsaWRlSG9va2VkUHJlcGFyZVN0YWNrVHJhY2UnKSB7XG4gICAgcmV0dXJuIHByZXBhcmVTdGFja1RyYWNlO1xuICB9XG5cbiAgY29uc3QgaG9va2VkRnVuY3Rpb24gPSBmdW5jdGlvbiBudWNsaWRlSG9va2VkUHJlcGFyZVN0YWNrVHJhY2UoXG4gICAgZXJyb3I6IEVycm9yLFxuICAgIGZyYW1lczogQXJyYXk8bm9kZSRDYWxsU2l0ZT4sXG4gICk6IGFueSB7XG4gICAgc3RydWN0dXJlZFN0YWNrVHJhY2VIb29rKGVycm9yLCBmcmFtZXMpO1xuICAgIHJldHVybiBwcmVwYXJlU3RhY2tUcmFjZShlcnJvciwgZnJhbWVzKTtcbiAgfTtcblxuICByZXR1cm4gaG9va2VkRnVuY3Rpb247XG59XG5cbmZ1bmN0aW9uIHN0cnVjdHVyZWRTdGFja1RyYWNlSG9vayhlcnJvcjogRXJyb3IsIGZyYW1lczogQXJyYXk8bm9kZSRDYWxsU2l0ZT4pOiB2b2lkIHtcbiAgLy8gJEZsb3dGaXhNZVxuICBlcnJvclsnc3RhY2tUcmFjZSddID0gZnJhbWVzLm1hcChmcmFtZSA9PiB7XG4gICAgcmV0dXJuIHtcbiAgICAgIGZ1bmN0aW9uTmFtZTogZnJhbWUuZ2V0RnVuY3Rpb25OYW1lKCksXG4gICAgICBtZXRob2ROYW1lOiBmcmFtZS5nZXRNZXRob2ROYW1lKCksXG4gICAgICBmaWxlTmFtZTogZnJhbWUuZ2V0RmlsZU5hbWUoKSxcbiAgICAgIGxpbmVOdW1iZXI6IGZyYW1lLmdldExpbmVOdW1iZXIoKSxcbiAgICAgIGNvbHVtbk51bWJlcjogZnJhbWUuZ2V0Q29sdW1uTnVtYmVyKCksXG4gICAgICBldmFsT3JpZ2luOiBmcmFtZS5nZXRFdmFsT3JpZ2luKCksXG4gICAgICBpc1RvcExldmVsOiBmcmFtZS5pc1RvcGxldmVsKCksXG4gICAgICBpc0V2YWw6IGZyYW1lLmlzRXZhbCgpLFxuICAgICAgaXNOYXRpdmU6IGZyYW1lLmlzTmF0aXZlKCksXG4gICAgICBpc0NvbnN0cnVjdG9yOiBmcmFtZS5pc0NvbnN0cnVjdG9yKCksXG4gICAgfTtcbiAgfSk7XG59XG5cbmZ1bmN0aW9uIGRlZmF1bHRQcmVwYXJlU3RhY2tUcmFjZShlcnJvcjogRXJyb3IsIGZyYW1lczogQXJyYXk8bm9kZSRDYWxsU2l0ZT4pOiBzdHJpbmcge1xuICBsZXQgZm9ybWF0dGVkU3RhY2tUcmFjZSA9IGVycm9yLm1lc3NhZ2UgPyBgJHtlcnJvci5uYW1lfTogJHtlcnJvci5tZXNzYWdlfWAgOiBgJHtlcnJvci5uYW1lfWA7XG4gIGZyYW1lcy5mb3JFYWNoKGZyYW1lID0+IHtcbiAgICBmb3JtYXR0ZWRTdGFja1RyYWNlICs9IGBcXG4gICAgYXQgJHtmcmFtZS50b1N0cmluZygpfWA7XG4gIH0pO1xuICByZXR1cm4gZm9ybWF0dGVkU3RhY2tUcmFjZTtcbn1cblxuZXhwb3J0IGNvbnN0IF9fdGVzdF9fID0ge1xuICBjcmVhdGVIb29rZWRQcmVwYXJlU3RhY2tUcmFjZSxcbiAgcmVzZXRQcmVwYXJlU3RhY2tUcmFjZUhvb2tlZCgpIHtcbiAgICByZXF1aXJlKCcuLi8uLi9udWNsaWRlLWNvbW1vbnMnKS5zaW5nbGV0b24uY2xlYXIoUFJFUEFSRV9TVEFDS19UUkFDRV9IT09LRURfS0VZKTtcbiAgfSxcbn07XG4iXX0=

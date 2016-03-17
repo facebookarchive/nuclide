@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _LLDBLaunchAttachProvider = require('./LLDBLaunchAttachProvider');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +8,12 @@
  * the root directory of this source tree.
  */
 
-import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-atom';
-import {LLDBLaunchAttachProvider} from './LLDBLaunchAttachProvider';
-
-function getLaunchAttachProvider(connection: string): ?DebuggerLaunchAttachProvider {
-  return new LLDBLaunchAttachProvider('Native', connection);
+function getLaunchAttachProvider(connection) {
+  return new _LLDBLaunchAttachProvider.LLDBLaunchAttachProvider('Native', connection);
 }
 
 module.exports = {
   name: 'lldb',
-  getLaunchAttachProvider,
+  getLaunchAttachProvider: getLaunchAttachProvider
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkRlYnVnZ2VyUHJvdmlkZXIuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IndDQVl1Qyw0QkFBNEI7Ozs7Ozs7Ozs7QUFFbkUsU0FBUyx1QkFBdUIsQ0FBQyxVQUFrQixFQUFpQztBQUNsRixTQUFPLHVEQUE2QixRQUFRLEVBQUUsVUFBVSxDQUFDLENBQUM7Q0FDM0Q7O0FBRUQsTUFBTSxDQUFDLE9BQU8sR0FBRztBQUNmLE1BQUksRUFBRSxNQUFNO0FBQ1oseUJBQXVCLEVBQXZCLHVCQUF1QjtDQUN4QixDQUFDIiwiZmlsZSI6IkRlYnVnZ2VyUHJvdmlkZXIuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7RGVidWdnZXJMYXVuY2hBdHRhY2hQcm92aWRlcn0gZnJvbSAnLi4vLi4vbnVjbGlkZS1kZWJ1Z2dlci1hdG9tJztcbmltcG9ydCB7TExEQkxhdW5jaEF0dGFjaFByb3ZpZGVyfSBmcm9tICcuL0xMREJMYXVuY2hBdHRhY2hQcm92aWRlcic7XG5cbmZ1bmN0aW9uIGdldExhdW5jaEF0dGFjaFByb3ZpZGVyKGNvbm5lY3Rpb246IHN0cmluZyk6ID9EZWJ1Z2dlckxhdW5jaEF0dGFjaFByb3ZpZGVyIHtcbiAgcmV0dXJuIG5ldyBMTERCTGF1bmNoQXR0YWNoUHJvdmlkZXIoJ05hdGl2ZScsIGNvbm5lY3Rpb24pO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IHtcbiAgbmFtZTogJ2xsZGInLFxuICBnZXRMYXVuY2hBdHRhY2hQcm92aWRlcixcbn07XG4iXX0=

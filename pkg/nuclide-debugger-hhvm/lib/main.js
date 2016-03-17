@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _nuclideDebuggerCommonLibOutputServiceManager = require('../../nuclide-debugger-common/lib/OutputServiceManager');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,35 +8,29 @@
  * the root directory of this source tree.
  */
 
-import type {HomeFragments} from '../../nuclide-home-interfaces';
-import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/service';
-import type OutputService from '../../nuclide-output/lib/OutputService';
-
-import {setOutputService} from '../../nuclide-debugger-common/lib/OutputServiceManager';
-
 module.exports = {
-  activate(state: mixed): void {
+  activate: function activate(state) {},
+
+  consumeOutputService: function consumeOutputService(api) {
+    (0, _nuclideDebuggerCommonLibOutputServiceManager.setOutputService)(api);
   },
 
-  consumeOutputService(api: OutputService): void {
-    setOutputService(api);
-  },
-
-  provideNuclideDebuggerHhvm(): nuclide_debugger$Service {
-    const Service = require('./Service');
+  provideNuclideDebuggerHhvm: function provideNuclideDebuggerHhvm() {
+    var Service = require('./Service');
     return Service;
   },
 
-  getHomeFragments(): HomeFragments {
+  getHomeFragments: function getHomeFragments() {
     return {
       feature: {
         title: 'HHVM Debugger',
         icon: 'plug',
         description: 'Connect to a HHVM server process and debug Hack code from within Nuclide.',
-        command: 'nuclide-debugger:toggle',
+        command: 'nuclide-debugger:toggle'
       },
-      priority: 6,
+      priority: 6
     };
-  },
+  }
 
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IjREQWUrQix3REFBd0Q7Ozs7Ozs7Ozs7QUFFdkYsTUFBTSxDQUFDLE9BQU8sR0FBRztBQUNmLFVBQVEsRUFBQSxrQkFBQyxLQUFZLEVBQVEsRUFDNUI7O0FBRUQsc0JBQW9CLEVBQUEsOEJBQUMsR0FBa0IsRUFBUTtBQUM3Qyx3RUFBaUIsR0FBRyxDQUFDLENBQUM7R0FDdkI7O0FBRUQsNEJBQTBCLEVBQUEsc0NBQTZCO0FBQ3JELFFBQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyxXQUFXLENBQUMsQ0FBQztBQUNyQyxXQUFPLE9BQU8sQ0FBQztHQUNoQjs7QUFFRCxrQkFBZ0IsRUFBQSw0QkFBa0I7QUFDaEMsV0FBTztBQUNMLGFBQU8sRUFBRTtBQUNQLGFBQUssRUFBRSxlQUFlO0FBQ3RCLFlBQUksRUFBRSxNQUFNO0FBQ1osbUJBQVcsRUFBRSwyRUFBMkU7QUFDeEYsZUFBTyxFQUFFLHlCQUF5QjtPQUNuQztBQUNELGNBQVEsRUFBRSxDQUFDO0tBQ1osQ0FBQztHQUNIOztDQUVGLENBQUMiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtIb21lRnJhZ21lbnRzfSBmcm9tICcuLi8uLi9udWNsaWRlLWhvbWUtaW50ZXJmYWNlcyc7XG5pbXBvcnQgdHlwZSB7bnVjbGlkZV9kZWJ1Z2dlciRTZXJ2aWNlfSBmcm9tICcuLi8uLi9udWNsaWRlLWRlYnVnZ2VyLWludGVyZmFjZXMvc2VydmljZSc7XG5pbXBvcnQgdHlwZSBPdXRwdXRTZXJ2aWNlIGZyb20gJy4uLy4uL251Y2xpZGUtb3V0cHV0L2xpYi9PdXRwdXRTZXJ2aWNlJztcblxuaW1wb3J0IHtzZXRPdXRwdXRTZXJ2aWNlfSBmcm9tICcuLi8uLi9udWNsaWRlLWRlYnVnZ2VyLWNvbW1vbi9saWIvT3V0cHV0U2VydmljZU1hbmFnZXInO1xuXG5tb2R1bGUuZXhwb3J0cyA9IHtcbiAgYWN0aXZhdGUoc3RhdGU6IG1peGVkKTogdm9pZCB7XG4gIH0sXG5cbiAgY29uc3VtZU91dHB1dFNlcnZpY2UoYXBpOiBPdXRwdXRTZXJ2aWNlKTogdm9pZCB7XG4gICAgc2V0T3V0cHV0U2VydmljZShhcGkpO1xuICB9LFxuXG4gIHByb3ZpZGVOdWNsaWRlRGVidWdnZXJIaHZtKCk6IG51Y2xpZGVfZGVidWdnZXIkU2VydmljZSB7XG4gICAgY29uc3QgU2VydmljZSA9IHJlcXVpcmUoJy4vU2VydmljZScpO1xuICAgIHJldHVybiBTZXJ2aWNlO1xuICB9LFxuXG4gIGdldEhvbWVGcmFnbWVudHMoKTogSG9tZUZyYWdtZW50cyB7XG4gICAgcmV0dXJuIHtcbiAgICAgIGZlYXR1cmU6IHtcbiAgICAgICAgdGl0bGU6ICdISFZNIERlYnVnZ2VyJyxcbiAgICAgICAgaWNvbjogJ3BsdWcnLFxuICAgICAgICBkZXNjcmlwdGlvbjogJ0Nvbm5lY3QgdG8gYSBISFZNIHNlcnZlciBwcm9jZXNzIGFuZCBkZWJ1ZyBIYWNrIGNvZGUgZnJvbSB3aXRoaW4gTnVjbGlkZS4nLFxuICAgICAgICBjb21tYW5kOiAnbnVjbGlkZS1kZWJ1Z2dlcjp0b2dnbGUnLFxuICAgICAgfSxcbiAgICAgIHByaW9yaXR5OiA2LFxuICAgIH07XG4gIH0sXG5cbn07XG4iXX0=

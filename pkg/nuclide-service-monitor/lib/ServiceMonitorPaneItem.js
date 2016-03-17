@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +10,46 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideCustomPaneItemOptions} from '../../nuclide-ui-pane-item/lib/types';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {React} from 'react-for-atom';
-import ServiceMonitor from './ServiceMonitor';
-import NuclideCustomPaneItem from '../../nuclide-ui-pane-item';
-import {getServiceLogger} from '../../nuclide-client';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-class ServiceMonitorPaneItem extends NuclideCustomPaneItem {
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  __renderPaneItem(options: NuclideCustomPaneItemOptions) {
-    return (
-      <ServiceMonitor
-        serviceLogger={getServiceLogger()}
-      />
-    );
+var _reactForAtom = require('react-for-atom');
+
+var _ServiceMonitor = require('./ServiceMonitor');
+
+var _ServiceMonitor2 = _interopRequireDefault(_ServiceMonitor);
+
+var _nuclideUiPaneItem = require('../../nuclide-ui-pane-item');
+
+var _nuclideUiPaneItem2 = _interopRequireDefault(_nuclideUiPaneItem);
+
+var _nuclideClient = require('../../nuclide-client');
+
+var ServiceMonitorPaneItem = (function (_NuclideCustomPaneItem) {
+  _inherits(ServiceMonitorPaneItem, _NuclideCustomPaneItem);
+
+  function ServiceMonitorPaneItem() {
+    _classCallCheck(this, ServiceMonitorPaneItem);
+
+    _get(Object.getPrototypeOf(ServiceMonitorPaneItem.prototype), 'constructor', this).apply(this, arguments);
   }
-}
+
+  _createClass(ServiceMonitorPaneItem, [{
+    key: '__renderPaneItem',
+    value: function __renderPaneItem(options) {
+      return _reactForAtom.React.createElement(_ServiceMonitor2['default'], {
+        serviceLogger: (0, _nuclideClient.getServiceLogger)()
+      });
+    }
+  }]);
+
+  return ServiceMonitorPaneItem;
+})(_nuclideUiPaneItem2['default']);
 
 module.exports = document.registerElement('nuclide-service-monitor', {
-  prototype: ServiceMonitorPaneItem.prototype,
+  prototype: ServiceMonitorPaneItem.prototype
 });
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlNlcnZpY2VNb25pdG9yUGFuZUl0ZW0uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7OzRCQWFvQixnQkFBZ0I7OzhCQUNULGtCQUFrQjs7OztpQ0FDWCw0QkFBNEI7Ozs7NkJBQy9CLHNCQUFzQjs7SUFFL0Msc0JBQXNCO1lBQXRCLHNCQUFzQjs7V0FBdEIsc0JBQXNCOzBCQUF0QixzQkFBc0I7OytCQUF0QixzQkFBc0I7OztlQUF0QixzQkFBc0I7O1dBRVYsMEJBQUMsT0FBcUMsRUFBRTtBQUN0RCxhQUNFO0FBQ0UscUJBQWEsRUFBRSxzQ0FBa0IsQUFBQztRQUNsQyxDQUNGO0tBQ0g7OztTQVJHLHNCQUFzQjs7O0FBVzVCLE1BQU0sQ0FBQyxPQUFPLEdBQUcsUUFBUSxDQUFDLGVBQWUsQ0FBQyx5QkFBeUIsRUFBRTtBQUNuRSxXQUFTLEVBQUUsc0JBQXNCLENBQUMsU0FBUztDQUM1QyxDQUFDLENBQUMiLCJmaWxlIjoiU2VydmljZU1vbml0b3JQYW5lSXRlbS5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtOdWNsaWRlQ3VzdG9tUGFuZUl0ZW1PcHRpb25zfSBmcm9tICcuLi8uLi9udWNsaWRlLXVpLXBhbmUtaXRlbS9saWIvdHlwZXMnO1xuXG5pbXBvcnQge1JlYWN0fSBmcm9tICdyZWFjdC1mb3ItYXRvbSc7XG5pbXBvcnQgU2VydmljZU1vbml0b3IgZnJvbSAnLi9TZXJ2aWNlTW9uaXRvcic7XG5pbXBvcnQgTnVjbGlkZUN1c3RvbVBhbmVJdGVtIGZyb20gJy4uLy4uL251Y2xpZGUtdWktcGFuZS1pdGVtJztcbmltcG9ydCB7Z2V0U2VydmljZUxvZ2dlcn0gZnJvbSAnLi4vLi4vbnVjbGlkZS1jbGllbnQnO1xuXG5jbGFzcyBTZXJ2aWNlTW9uaXRvclBhbmVJdGVtIGV4dGVuZHMgTnVjbGlkZUN1c3RvbVBhbmVJdGVtIHtcblxuICBfX3JlbmRlclBhbmVJdGVtKG9wdGlvbnM6IE51Y2xpZGVDdXN0b21QYW5lSXRlbU9wdGlvbnMpIHtcbiAgICByZXR1cm4gKFxuICAgICAgPFNlcnZpY2VNb25pdG9yXG4gICAgICAgIHNlcnZpY2VMb2dnZXI9e2dldFNlcnZpY2VMb2dnZXIoKX1cbiAgICAgIC8+XG4gICAgKTtcbiAgfVxufVxuXG5tb2R1bGUuZXhwb3J0cyA9IGRvY3VtZW50LnJlZ2lzdGVyRWxlbWVudCgnbnVjbGlkZS1zZXJ2aWNlLW1vbml0b3InLCB7XG4gIHByb3RvdHlwZTogU2VydmljZU1vbml0b3JQYW5lSXRlbS5wcm90b3R5cGUsXG59KTtcbiJdfQ==

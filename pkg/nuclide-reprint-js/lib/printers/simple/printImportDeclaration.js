@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,68 +8,43 @@
  * the root directory of this source tree.
  */
 
-import type {ImportDeclaration} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var flatten = require('../../utils/flatten');
+var invariant = require('assert');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const invariant = require('assert');
-const markers = require('../../constants/markers');
-
-function printImportDeclaration(print: Print, node: ImportDeclaration): Lines {
-  let open = false;
-  const specifiers = node.specifiers.map((specifier, i, arr) => {
-    let parts = [];
+function printImportDeclaration(print, node) {
+  var open = false;
+  var specifiers = node.specifiers.map(function (specifier, i, arr) {
+    var parts = [];
 
     // Check if we should open.
     if (!open && specifier.type === 'ImportSpecifier') {
       open = true;
-      parts = parts.concat([
-        '{',
-      ]);
+      parts = parts.concat(['{']);
     }
 
     // Print the specifier.
-    parts = parts.concat([
-      markers.noBreak,
-      print(specifier),
-      markers.noBreak,
-    ]);
+    parts = parts.concat([markers.noBreak, print(specifier), markers.noBreak]);
 
     // Check if we should close. Note that it's important we be able to open
     // and then close within a single cycle of this loop.
     if (open && i === arr.length - 1) {
       open = false;
-      parts = parts.concat([
-        '}',
-      ]);
+      parts = parts.concat(['}']);
     }
 
     // Check if we should add a comma and space.
     if (i < arr.length - 1) {
-      parts = parts.concat([
-        markers.comma,
-        markers.space,
-      ]);
+      parts = parts.concat([markers.comma, markers.space]);
     }
 
     return parts;
   });
   invariant(!open, 'Import declaration left open somehow.');
-  return flatten([
-    'import',
-    markers.space,
-    // $FlowFixMe(kad): add importKind to ast-types-flow
-    node.importKind === 'type' ? ['type', markers.space] : markers.empty,
-    specifiers,
-    markers.space,
-    'from',
-    markers.noBreak,
-    markers.space,
-    print(node.source),
-    markers.noBreak,
-    ';',
-    markers.hardBreak,
-  ]);
+  return flatten(['import', markers.space,
+  // $FlowFixMe(kad): add importKind to ast-types-flow
+  node.importKind === 'type' ? ['type', markers.space] : markers.empty, specifiers, markers.space, 'from', markers.noBreak, markers.space, print(node.source), markers.noBreak, ';', markers.hardBreak]);
 }
 
 module.exports = printImportDeclaration;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50SW1wb3J0RGVjbGFyYXRpb24uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQWNBLElBQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyxxQkFBcUIsQ0FBQyxDQUFDO0FBQy9DLElBQU0sU0FBUyxHQUFHLE9BQU8sQ0FBQyxRQUFRLENBQUMsQ0FBQztBQUNwQyxJQUFNLE9BQU8sR0FBRyxPQUFPLENBQUMseUJBQXlCLENBQUMsQ0FBQzs7QUFFbkQsU0FBUyxzQkFBc0IsQ0FBQyxLQUFZLEVBQUUsSUFBdUIsRUFBUztBQUM1RSxNQUFJLElBQUksR0FBRyxLQUFLLENBQUM7QUFDakIsTUFBTSxVQUFVLEdBQUcsSUFBSSxDQUFDLFVBQVUsQ0FBQyxHQUFHLENBQUMsVUFBQyxTQUFTLEVBQUUsQ0FBQyxFQUFFLEdBQUcsRUFBSztBQUM1RCxRQUFJLEtBQUssR0FBRyxFQUFFLENBQUM7OztBQUdmLFFBQUksQ0FBQyxJQUFJLElBQUksU0FBUyxDQUFDLElBQUksS0FBSyxpQkFBaUIsRUFBRTtBQUNqRCxVQUFJLEdBQUcsSUFBSSxDQUFDO0FBQ1osV0FBSyxHQUFHLEtBQUssQ0FBQyxNQUFNLENBQUMsQ0FDbkIsR0FBRyxDQUNKLENBQUMsQ0FBQztLQUNKOzs7QUFHRCxTQUFLLEdBQUcsS0FBSyxDQUFDLE1BQU0sQ0FBQyxDQUNuQixPQUFPLENBQUMsT0FBTyxFQUNmLEtBQUssQ0FBQyxTQUFTLENBQUMsRUFDaEIsT0FBTyxDQUFDLE9BQU8sQ0FDaEIsQ0FBQyxDQUFDOzs7O0FBSUgsUUFBSSxJQUFJLElBQUksQ0FBQyxLQUFLLEdBQUcsQ0FBQyxNQUFNLEdBQUcsQ0FBQyxFQUFFO0FBQ2hDLFVBQUksR0FBRyxLQUFLLENBQUM7QUFDYixXQUFLLEdBQUcsS0FBSyxDQUFDLE1BQU0sQ0FBQyxDQUNuQixHQUFHLENBQ0osQ0FBQyxDQUFDO0tBQ0o7OztBQUdELFFBQUksQ0FBQyxHQUFHLEdBQUcsQ0FBQyxNQUFNLEdBQUcsQ0FBQyxFQUFFO0FBQ3RCLFdBQUssR0FBRyxLQUFLLENBQUMsTUFBTSxDQUFDLENBQ25CLE9BQU8sQ0FBQyxLQUFLLEVBQ2IsT0FBTyxDQUFDLEtBQUssQ0FDZCxDQUFDLENBQUM7S0FDSjs7QUFFRCxXQUFPLEtBQUssQ0FBQztHQUNkLENBQUMsQ0FBQztBQUNILFdBQVMsQ0FBQyxDQUFDLElBQUksRUFBRSx1Q0FBdUMsQ0FBQyxDQUFDO0FBQzFELFNBQU8sT0FBTyxDQUFDLENBQ2IsUUFBUSxFQUNSLE9BQU8sQ0FBQyxLQUFLOztBQUViLE1BQUksQ0FBQyxVQUFVLEtBQUssTUFBTSxHQUFHLENBQUMsTUFBTSxFQUFFLE9BQU8sQ0FBQyxLQUFLLENBQUMsR0FBRyxPQUFPLENBQUMsS0FBSyxFQUNwRSxVQUFVLEVBQ1YsT0FBTyxDQUFDLEtBQUssRUFDYixNQUFNLEVBQ04sT0FBTyxDQUFDLE9BQU8sRUFDZixPQUFPLENBQUMsS0FBSyxFQUNiLEtBQUssQ0FBQyxJQUFJLENBQUMsTUFBTSxDQUFDLEVBQ2xCLE9BQU8sQ0FBQyxPQUFPLEVBQ2YsR0FBRyxFQUNILE9BQU8sQ0FBQyxTQUFTLENBQ2xCLENBQUMsQ0FBQztDQUNKOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUcsc0JBQXNCLENBQUMiLCJmaWxlIjoicHJpbnRJbXBvcnREZWNsYXJhdGlvbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtJbXBvcnREZWNsYXJhdGlvbn0gZnJvbSAnYXN0LXR5cGVzLWZsb3cnO1xuaW1wb3J0IHR5cGUge0xpbmVzLCBQcmludH0gZnJvbSAnLi4vLi4vdHlwZXMvY29tbW9uJztcblxuY29uc3QgZmxhdHRlbiA9IHJlcXVpcmUoJy4uLy4uL3V0aWxzL2ZsYXR0ZW4nKTtcbmNvbnN0IGludmFyaWFudCA9IHJlcXVpcmUoJ2Fzc2VydCcpO1xuY29uc3QgbWFya2VycyA9IHJlcXVpcmUoJy4uLy4uL2NvbnN0YW50cy9tYXJrZXJzJyk7XG5cbmZ1bmN0aW9uIHByaW50SW1wb3J0RGVjbGFyYXRpb24ocHJpbnQ6IFByaW50LCBub2RlOiBJbXBvcnREZWNsYXJhdGlvbik6IExpbmVzIHtcbiAgbGV0IG9wZW4gPSBmYWxzZTtcbiAgY29uc3Qgc3BlY2lmaWVycyA9IG5vZGUuc3BlY2lmaWVycy5tYXAoKHNwZWNpZmllciwgaSwgYXJyKSA9PiB7XG4gICAgbGV0IHBhcnRzID0gW107XG5cbiAgICAvLyBDaGVjayBpZiB3ZSBzaG91bGQgb3Blbi5cbiAgICBpZiAoIW9wZW4gJiYgc3BlY2lmaWVyLnR5cGUgPT09ICdJbXBvcnRTcGVjaWZpZXInKSB7XG4gICAgICBvcGVuID0gdHJ1ZTtcbiAgICAgIHBhcnRzID0gcGFydHMuY29uY2F0KFtcbiAgICAgICAgJ3snLFxuICAgICAgXSk7XG4gICAgfVxuXG4gICAgLy8gUHJpbnQgdGhlIHNwZWNpZmllci5cbiAgICBwYXJ0cyA9IHBhcnRzLmNvbmNhdChbXG4gICAgICBtYXJrZXJzLm5vQnJlYWssXG4gICAgICBwcmludChzcGVjaWZpZXIpLFxuICAgICAgbWFya2Vycy5ub0JyZWFrLFxuICAgIF0pO1xuXG4gICAgLy8gQ2hlY2sgaWYgd2Ugc2hvdWxkIGNsb3NlLiBOb3RlIHRoYXQgaXQncyBpbXBvcnRhbnQgd2UgYmUgYWJsZSB0byBvcGVuXG4gICAgLy8gYW5kIHRoZW4gY2xvc2Ugd2l0aGluIGEgc2luZ2xlIGN5Y2xlIG9mIHRoaXMgbG9vcC5cbiAgICBpZiAob3BlbiAmJiBpID09PSBhcnIubGVuZ3RoIC0gMSkge1xuICAgICAgb3BlbiA9IGZhbHNlO1xuICAgICAgcGFydHMgPSBwYXJ0cy5jb25jYXQoW1xuICAgICAgICAnfScsXG4gICAgICBdKTtcbiAgICB9XG5cbiAgICAvLyBDaGVjayBpZiB3ZSBzaG91bGQgYWRkIGEgY29tbWEgYW5kIHNwYWNlLlxuICAgIGlmIChpIDwgYXJyLmxlbmd0aCAtIDEpIHtcbiAgICAgIHBhcnRzID0gcGFydHMuY29uY2F0KFtcbiAgICAgICAgbWFya2Vycy5jb21tYSxcbiAgICAgICAgbWFya2Vycy5zcGFjZSxcbiAgICAgIF0pO1xuICAgIH1cblxuICAgIHJldHVybiBwYXJ0cztcbiAgfSk7XG4gIGludmFyaWFudCghb3BlbiwgJ0ltcG9ydCBkZWNsYXJhdGlvbiBsZWZ0IG9wZW4gc29tZWhvdy4nKTtcbiAgcmV0dXJuIGZsYXR0ZW4oW1xuICAgICdpbXBvcnQnLFxuICAgIG1hcmtlcnMuc3BhY2UsXG4gICAgLy8gJEZsb3dGaXhNZShrYWQpOiBhZGQgaW1wb3J0S2luZCB0byBhc3QtdHlwZXMtZmxvd1xuICAgIG5vZGUuaW1wb3J0S2luZCA9PT0gJ3R5cGUnID8gWyd0eXBlJywgbWFya2Vycy5zcGFjZV0gOiBtYXJrZXJzLmVtcHR5LFxuICAgIHNwZWNpZmllcnMsXG4gICAgbWFya2Vycy5zcGFjZSxcbiAgICAnZnJvbScsXG4gICAgbWFya2Vycy5ub0JyZWFrLFxuICAgIG1hcmtlcnMuc3BhY2UsXG4gICAgcHJpbnQobm9kZS5zb3VyY2UpLFxuICAgIG1hcmtlcnMubm9CcmVhayxcbiAgICAnOycsXG4gICAgbWFya2Vycy5oYXJkQnJlYWssXG4gIF0pO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IHByaW50SW1wb3J0RGVjbGFyYXRpb247XG4iXX0=
