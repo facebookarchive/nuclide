@@ -153,31 +153,24 @@ describe('MarkerTracker', () => {
     checkRep(tracker);
   });
 
-  // This test passes in 1.3.2, but fails in 1.1.0. The root cause is that in 1.1.0, Markers are not
-  // destroyed when their TextBuffer is destroyed, whereas in 1.3.2 they are. Instead of working
-  // around it for 1.1.0 I want to disable this test temporarily. In theory we could leak Markers,
-  // but currently Arcanist, our only provider of fixes, invalidates its messages whenever a file is
-  // closed, which will cause the Marker to get cleaned up anyway.
+  it('should properly clean up when a text buffer is closed', () => {
+    tracker.addFileMessages([messageForInitiallyOpenFile]);
+    const marker = tracker._messageToMarker.get(messageForInitiallyOpenFile);
+    invariant(marker != null);
 
-  // Task to re-enable: t9754274
-  // it('should properly clean up when a text buffer is closed', () => {
-  //   tracker.addFileMessages([messageForInitiallyOpenFile]);
-  //   const marker = tracker._messageToMarker.get(messageForInitiallyOpenFile);
-  //   invariant(marker != null);
+    initiallyOpenEditor.destroy();
 
-  //   initiallyOpenEditor.destroy();
+    const messageSet = tracker._fileToMessages.get(initiallyOpenFilePath);
+    invariant(messageSet != null);
 
-  //   const messageSet = tracker._fileToMessages.get(initiallyOpenFilePath);
-  //   invariant(messageSet != null);
+    expect(messageSet.has(messageForInitiallyOpenFile)).toBeTruthy();
 
-  //   expect(messageSet.has(messageForInitiallyOpenFile)).toBeTruthy();
+    expect(tracker._messageToMarker.has(messageForInitiallyOpenFile)).toBeFalsy();
 
-  //   expect(tracker._messageToMarker.has(messageForInitiallyOpenFile)).toBeFalsy();
+    expect(marker.isDestroyed()).toBeTruthy();
 
-  //   expect(marker.isDestroyed()).toBeTruthy();
-
-  //   checkRep(tracker);
-  // });
+    checkRep(tracker);
+  });
 
   it('should clean up when disposed', () => {
     tracker.addFileMessages([messageForInitiallyOpenFile]);
