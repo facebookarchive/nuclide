@@ -31,9 +31,13 @@ const {observableFromSubscribeFunction} = commonsEvent;
  */
 export class ReactNativeDebuggerInstance extends DebuggerInstance {
   _disposables: CompositeDisposable;
+  _connected: Promise<void>;
 
   constructor(processInfo: DebuggerProcessInfo, debugPort: number) {
     super(processInfo);
+
+    let didConnect;
+    this._connected = new Promise(resolve => { didConnect = resolve; });
 
     // Once we have a connection from Nuclide (Chrome UI) and a pid, create a new debugging session.
     const session$ = uiConnection$
@@ -79,6 +83,8 @@ export class ReactNativeDebuggerInstance extends DebuggerInstance {
 
       session$.subscribe(),
 
+      pid$.first().subscribe(() => { didConnect(); }),
+
     );
   }
 
@@ -87,17 +93,7 @@ export class ReactNativeDebuggerInstance extends DebuggerInstance {
   }
 
   async getWebsocketAddress(): Promise<string> {
-    await new Promise(resolve => {
-      let resolved = false;
-      const subscription = pid$.first().subscribe(() => {
-        resolved = true;
-        this._disposables.remove(subscription);
-        resolve();
-      });
-      if (!resolved) {
-        this._disposables.add(subscription);
-      }
-    });
+    await this._connected;
 
     // TODO(natthu): Assign random port instead.
     return 'ws=localhost:8080/';
