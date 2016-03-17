@@ -42,6 +42,8 @@
 }
 
 .nuclide-output-record {
+  display: flex;
+  align-items: center;
   padding: @nuclide-output-padding;
   background-color: @nuclide-output-record-background-color-normal;
   border-radius: 0;
@@ -54,9 +56,8 @@
   }
 
   .icon {
-    float: left;
-    overflow: hidden;
     color: @nuclide-output-record-text-color-normal;
+    text-align: center;
   }
 
   &:first-child {

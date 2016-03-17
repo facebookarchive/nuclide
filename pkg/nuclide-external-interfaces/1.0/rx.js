@@ -201,6 +201,11 @@ declare module 'rx' {
 
     takeWhile(f: (value: T) => boolean): Observable<T>;
 
+    tap<T>(
+      onNext?: (value: T) => mixed,
+      onError?: (error: any) => mixed,
+      onCompleted?: () => mixed,
+    ): Observable<T>;
     tapOnError(onError: (error: any) => mixed, thisArg?: any): Observable<T>;
 
     throttle(duration: number): Observable<T>;

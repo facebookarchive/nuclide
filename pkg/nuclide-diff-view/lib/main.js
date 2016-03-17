@@ -9,8 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {HomeFragments} from '../../nuclide-home-interfaces';
 import type DiffViewModelType from './DiffViewModel';
+import type {HomeFragments} from '../../nuclide-home-interfaces';
+import type OutputService from '../../nuclide-output/lib/OutputService';
 
 import {CompositeDisposable, Directory} from 'atom';
 import invariant from 'assert';
@@ -249,6 +250,13 @@ module.exports = {
       invariant(subscriptions);
       subscriptions.add(changePathsSubscription);
     }));
+  },
+
+  consumeOutputService(api: OutputService): IDisposable {
+    return api.registerOutputProvider({
+      source: 'diff view',
+      messages: getDiffViewModel().getMessages(),
+    });
   },
 
   consumeToolBar(getToolBar: (group: string) => Object): void {

@@ -17,6 +17,11 @@
     }
   },
   "consumedServices": {
+    "nuclide-output": {
+      "versions": {
+        "0.0.0": "consumeOutputService"
+      }
+    },
     "phabricator-comments-ui.provider": {
       "versions": {
         "0.0.0": "consumeProvider"

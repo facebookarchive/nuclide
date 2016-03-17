@@ -47,6 +47,7 @@ import {track, trackTiming} from '../../nuclide-analytics';
 import {getFileSystemContents} from './utils';
 import {array, map, debounce} from '../../nuclide-commons';
 import RepositoryStack from './RepositoryStack';
+import Rx from 'rx';
 import {
   notifyInternalError,
   notifyFilesystemOverrideUserEdits,
@@ -129,6 +130,7 @@ class DiffViewModel {
   _repositorySubscriptions: Map<HgRepositoryClient, CompositeDisposable>;
   _isActive: boolean;
   _state: State;
+  _messages: Rx.Subject;
 
   constructor(uiProviders: Array<Object>) {
     this._uiProviders = uiProviders;
@@ -137,6 +139,7 @@ class DiffViewModel {
     this._repositoryStacks = new Map();
     this._repositorySubscriptions = new Map();
     this._isActive = false;
+    this._messages = new Rx.Subject();
     this._state = {
       viewMode: DiffMode.BROWSE_MODE,
       commitMessage: null,
@@ -317,6 +320,10 @@ class DiffViewModel {
   _onUpdateRevisionsState(revisionsState: RevisionsState): void {
     this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
     this._loadModeState();
+  }
+
+  getMessages(): Rx.Observable {
+    return this._messages;
   }
 
   setPublishMessage(publishMessage: string) {
@@ -695,8 +702,18 @@ class DiffViewModel {
       await this._activeRepositoryStack.amend(publishMessage);
       atom.notifications.addSuccess('Commit amended with the updated message');
     }
-    await arcanist.createPhabricatorRevision(filePath).toPromise();
-    atom.notifications.addSuccess('Revision created');
+    await arcanist.createPhabricatorRevision(filePath)
+      .tap(
+        (message: {stderr?: string; stdout?: string;}) => {
+          this._messages.onNext({
+            level: (message.stderr == null) ? 'info' : 'error',
+            text: message.stdout || message.stderr,
+          });
+        },
+        () => {},
+        () => { atom.notifications.addSuccess('Revision created'); },
+      )
+      .toPromise();
   }
 
   async _updatePhabricatorRevision(
@@ -711,10 +728,18 @@ class DiffViewModel {
     if (userUpdateMessage.length === 0) {
       throw new Error('Cannot update revision with empty message');
     }
-    await arcanist
-      .updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked)
+    await arcanist.updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked)
+      .tap(
+        (message: {stderr?: string; stdout?: string;}) => {
+          this._messages.onNext({
+            level: (message.stderr == null) ? 'info' : 'error',
+            text: message.stdout || message.stderr,
+          });
+        },
+        () => {},
+        () => { atom.notifications.addSuccess(`Revision \`${phabricatorRevision.id}\` updated`); }
+      )
       .toPromise();
-    atom.notifications.addSuccess(`Revision \`${phabricatorRevision.id}\` updated`);
   }
 
   _onWillSaveActiveBuffer(buffer: atom$TextBuffer): void {
