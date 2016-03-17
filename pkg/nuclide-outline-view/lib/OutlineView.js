@@ -130,7 +130,7 @@ function renderTree(editor: atom$TextEditor, outline: OutlineTree): ReactElement
     editor.setCursorBufferPosition(outline.startPosition);
   };
   return (
-    <ul className="list-tree">
+    <ul className="list-tree" key={getKeyForOutlineTree(outline)}>
       <li className="list-nested-item">
         <div className="list-item nuclide-outline-view-item" onClick={onClick}>
           {outline.displayText}
@@ -143,4 +143,8 @@ function renderTree(editor: atom$TextEditor, outline: OutlineTree): ReactElement
 
 function renderTrees(editor: atom$TextEditor, outlines: Array<OutlineTree>): Array<ReactElement> {
   return outlines.map(outline => renderTree(editor, outline));
+}
+
+function getKeyForOutlineTree(tree: OutlineTree): string {
+  return `${tree.displayText}:${tree.startPosition.row}:${tree.startPosition.column}`;
 }
