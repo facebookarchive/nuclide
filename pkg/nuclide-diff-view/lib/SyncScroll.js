@@ -33,9 +33,7 @@ export default class SyncScroll {
       // Note that `onDidChangeScrollTop` isn't technically in the public API.
       const {scrollElement} = editorInfo;
       const updateScrollPosition = () => this._scrollPositionChanged(i);
-      // $FlowFixMe Atom API backword compatability.
       subscriptions.add(scrollElement.onDidChangeScrollTop(updateScrollPosition));
-      // $FlowFixMe Atom API backword compatability.
       subscriptions.add(scrollElement.onDidChangeScrollLeft(updateScrollPosition));
     });
   }
@@ -54,7 +52,6 @@ export default class SyncScroll {
     }
     const {scrollElement: thisElement} = thisInfo;
     otherInfo.scrolling = true;
-    // $FlowFixMe Atom API backword compatability.
     otherElement.setScrollTop(thisElement.getScrollTop());
     // $FlowFixMe Atom API backword compatability.
     otherElement.setScrollLeft(thisElement.getScrollLeft());

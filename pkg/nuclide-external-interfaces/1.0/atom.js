@@ -484,20 +484,23 @@ type DecorateMarkerParams = {
   position?: 'head' | 'tail'; // Defaults to 'head' when unspecified.
 };
 
+type ChangeCursorPositionEvent = {
+  oldBufferPosition: atom$Point;
+  oldScreenPosition: atom$Point;
+  newBufferPosition: atom$Point;
+  newScreenPosition: atom$Point;
+  textChanged: boolean;
+  cursor: atom$Cursor;
+};
+
 declare class atom$TextEditor extends atom$Model {
   id: number;
 
   // Event Subscription
   onDidChange(callback: () => void): IDisposable;
   onDidStopChanging(callback: () => void): IDisposable;
-  onDidChangeCursorPosition(callback: (event: {
-    oldBufferPosition: atom$Point;
-    oldScreenPosition: atom$Point;
-    newBufferPosition: atom$Point;
-    newScreenPosition: atom$Point;
-    textChanged: boolean;
-    cursor: atom$Cursor;
-  }) => mixed): IDisposable;
+  onDidChangeCursorPosition(callback: (event: ChangeCursorPositionEvent) => mixed):
+    IDisposable;
   onDidDestroy(callback: () => mixed): IDisposable;
   onDidSave(callback: (event: {path: string}) => mixed): IDisposable;
   getBuffer(): atom$TextBuffer;
@@ -721,6 +724,12 @@ declare class atom$TextEditorElement extends HTMLElement {
     top: number;
   };
 
+  setScrollTop(scrollTop: number): void;
+  getScrollTop(): number;
+
+  onDidChangeScrollTop(callback: (scrollTop: number) => mixed): IDisposable;
+  onDidChangeScrollLeft(callback: (scrollLeft: number) => mixed): IDisposable;
+
   // Called when the editor is attached to the DOM.
   onDidAttach(callback: () => mixed): IDisposable;
   // Called when the editor is detached from the DOM.
@@ -771,23 +780,33 @@ type AddPaneItemEvent = {
   index: number;
 };
 
+type OnDidOpenEvent = {
+  uri: string;
+  item: mixed;
+  pane: atom$Pane;
+  index: number;
+};
+
+type AddTextEditorEvent = {
+  textEditor: atom$TextEditor;
+  pane: atom$Pane;
+  index: number;
+};
+
 declare class atom$Workspace {
   // Event Subscription
   observeTextEditors(callback: (editor: atom$TextEditor) => mixed): IDisposable;
+  onDidAddTextEditor(callback: (event: AddTextEditorEvent) => mixed): IDisposable;
   onDidChangeActivePaneItem(callback: (item: mixed) => mixed): IDisposable;
   onDidDestroyPaneItem(callback: (event: DestroyPaneItemEvent) => mixed): IDisposable;
   onDidAddPaneItem(callback: (event: AddPaneItemEvent) => mixed): IDisposable;
   observeActivePaneItem(callback: (item: ?mixed) => mixed): IDisposable;
+  onDidStopChangingActivePaneItem(callback: (item: ?mixed) => mixed): IDisposable;
   observePaneItems(callback: (item: mixed) => mixed): IDisposable;
   onWillDestroyPaneItem(
     callback: (event: {item: mixed; pane: mixed; index: number}) => mixed
   ): IDisposable;
-  onDidOpen(callback: (event: {
-    uri: string;
-    item: mixed;
-    pane: atom$Pane;
-    index: number;
-  }) => mixed): IDisposable;
+  onDidOpen(callback: (event: OnDidOpenEvent) => mixed): IDisposable;
 
   // Opening
   open(
