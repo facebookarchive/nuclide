@@ -64,6 +64,11 @@
         "0.0.0": "createTypeHintProvider"
       }
     },
+    "nuclide-evaluation-expression.provider": {
+      "versions": {
+        "0.0.0": "createEvaluationExpressionProvider"
+      }
+    },
     "nuclide-code-highlight.provider": {
       "versions": {
         "0.0.0": "createCodeHighlightProvider"

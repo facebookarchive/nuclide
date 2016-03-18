@@ -15,6 +15,7 @@ import type {
 } from '../../nuclide-busy-signal-provider-base';
 import type {HyperclickProvider} from '../../hyperclick-interfaces';
 import type {OutlineProvider} from '../../nuclide-outline-view';
+import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 
 import CodeHighlightProvider from './CodeHighlightProvider';
 import {CompositeDisposable} from 'atom';
@@ -145,6 +146,18 @@ module.exports = {
       highlight(editor: atom$TextEditor, position: atom$Point): Promise<Array<atom$Range>> {
         return codeHighlightProvider.highlight(editor, position);
       },
+    };
+  },
+
+  createEvaluationExpressionProvider(): NuclideEvaluationExpressionProvider {
+    const {HackEvaluationExpressionProvider} = require('./HackEvaluationExpressionProvider');
+    const evaluationExpressionProvider = new HackEvaluationExpressionProvider();
+    const getEvaluationExpression =
+      evaluationExpressionProvider.getEvaluationExpression.bind(evaluationExpressionProvider);
+    return {
+      selector: HACK_GRAMMARS_STRING,
+      name: PACKAGE_NAME,
+      getEvaluationExpression,
     };
   },
 
