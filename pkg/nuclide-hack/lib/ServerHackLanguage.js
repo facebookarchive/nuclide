@@ -127,12 +127,12 @@ export class ServerHackLanguage {
     return convertTypedRegionsToCoverageRegions(regions);
   }
 
-  async getOutline(
+  getOutline(
     filePath: NuclideUri,
     contents: string,
   ): Promise<?HackOutline> {
-    // TBD
-    return null;
+    const {getOutline} = getHackService(filePath);
+    return getOutline(filePath, contents);
   }
 
   async getDefinition(
