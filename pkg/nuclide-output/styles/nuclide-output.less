@@ -11,8 +11,9 @@
 @nuclide-output-record-background-color-warning: lighten(@background-color-warning, 25%);
 @nuclide-output-record-text-color-warning: darken(@text-color-warning, 40%);
 @nuclide-output-record-border-color-warning: @background-color-warning;
-@nuclide-output-vertical-padding: 0.2em;
-@nuclide-output-padding: @nuclide-output-vertical-padding 1em;
+@nuclide-output-record-vertical-padding: 1px;
+@nuclide-output-record-horizontal-padding: 5px;
+@nuclide-output-icon-size: 11px;
 
 // Console text should be smaller than normal text. Gotta fit more!
 @nuclide-output-record-font-size: @font-size * 0.9;
@@ -22,18 +23,28 @@
   flex-direction: column;
   width: 100%;
   background-color: @pane-item-background-color;
+
+  .icon {
+    vertical-align: middle;
+  }
 }
 
 .nuclide-output-record .icon:before,
-.nuclide-output-record pre {
+.nuclide-output-record pre,
+.nuclide-output atom-text-editor {
   font-size: @nuclide-output-record-font-size;
 }
 
 .nuclide-output-scroll-pane {
   position: relative;
   flex-grow: 1;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   background-color: @syntax-background-color;
+
+  // Hack: This ensures that the scrollbar appears on top of all of the records.
+  //       Without it, the atom-text-editors appear above the scrollbar.
+  transform: translate3d(0, 0, 0);
 }
 
 .nuclide-output-header {
@@ -44,13 +55,12 @@
 .nuclide-output-record {
   display: flex;
   align-items: center;
-  padding: @nuclide-output-padding;
+  padding: @nuclide-output-record-vertical-padding @nuclide-output-record-horizontal-padding;
   background-color: @nuclide-output-record-background-color-normal;
   border-radius: 0;
   border-top: @nuclide-output-border-size solid @nuclide-output-record-border-color-normal;
 
   pre {
-    padding: 0;
     background-color: transparent;
     color: @nuclide-output-record-text-color-normal;
   }
@@ -60,12 +70,28 @@
     text-align: center;
   }
 
+  .icon,
+  .icon::before {
+    font-size: @nuclide-output-icon-size;
+  }
+
+  .icon::before {
+    width: @nuclide-output-icon-size;
+    height: @nuclide-output-icon-size;
+  }
+
   &:first-child {
     border-top: none;
   }
 
   &:last-child {
     border-bottom: @nuclide-output-border-size solid @nuclide-output-record-border-color-normal;
+  }
+
+  &.level-info {
+    .icon {
+      color: fadeout(@syntax-text-color, 30%);
+    }
   }
 
   &.level-warning {
@@ -103,6 +129,54 @@
     .icon {
       color: @nuclide-output-record-border-color-error;
     }
+
   }
 
+  pre {
+    padding: 0;
+    background-color: transparent;
+  }
+
+  &.request {
+    display: flex;
+    background-color: @syntax-background-color;
+  }
+
+  &.request,
+  &.response {
+    opacity: 0.7;
+  }
+
+}
+
+.nuclide-output-input-wrapper {
+  display: flex;
+  background-color: @syntax-background-color;
+  padding: @nuclide-output-record-vertical-padding 0;
+  flex-grow: 1;
+}
+
+.nuclide-output-prompt {
+  display: flex;
+  padding: 5px @nuclide-output-record-horizontal-padding;
+  border-bottom: 1px solid @pane-item-border-color;
+  background-color: @syntax-background-color;
+  color: @syntax-text-color;
+}
+
+.nuclide-output-prompt-wrapper {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.nuclide-output-prompt-label {
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 0.8em;
+  padding-right: 1em;
+}
+
+.nuclide-output-text-editor-wrapper {
+  flex-grow: 1;
 }
