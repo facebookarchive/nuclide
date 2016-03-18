@@ -19,15 +19,28 @@ import {
 import {extractWordAtPosition} from '../../nuclide-atom-helpers';
 import {DebuggerMode} from './DebuggerStore';
 
-const SKIP_DATATIP = true;
-const WORD_REGEX = /\$\w+/gi;
+const GK_DEBUGGER_DATATIPS = 'nuclide_debugger_datatips';
+const GK_TIMEOUT = 1000;
+async function passesGK(): Promise<boolean> {
+  try {
+    const {gatekeeper} = require('../../fb-gatekeeper');
+    return Boolean(
+      await gatekeeper.asyncIsGkEnabled(GK_DEBUGGER_DATATIPS, GK_TIMEOUT)
+    );
+  } catch (e) {
+    return false;
+  }
+}
+
+// TODO fan out to language providers to get the actual expression range, then drop the `$` prefix.
+const DEFAULT_WORD_REGEX = /\$\w+/gi;
+
 export async function debuggerDatatip(
   model: DebuggerModel,
   editor: TextEditor,
   position: atom$Point,
 ): Promise<?Datatip> {
-  if (SKIP_DATATIP) {
-    // TODO replace with GK check.
+  if (!await passesGK()) {
     return null;
   }
   if (!model.getStore().getDebuggerMode() === DebuggerMode.PAUSED) {
@@ -38,7 +51,7 @@ export async function debuggerDatatip(
     return null;
   }
   // TODO get the identfier range under the cursor from the appropriate language provider.
-  const extractedIdentifier = extractWordAtPosition(editor, position, WORD_REGEX);
+  const extractedIdentifier = extractWordAtPosition(editor, position, DEFAULT_WORD_REGEX);
   if (extractedIdentifier == null) {
     return null;
   }
