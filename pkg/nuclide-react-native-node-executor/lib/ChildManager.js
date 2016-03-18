@@ -50,7 +50,7 @@ export default class ChildManager {
     this._child = null;
   }
 
-  handleMessage(message: Object) {
+  handleMessage(message: Object): void {
     if (message.replyID) {
       // getting cross-talk from another executor (probably Chrome)
       return;
@@ -58,36 +58,38 @@ export default class ChildManager {
 
     switch (message.method) {
       case 'prepareJSRuntime':
-        return this.prepareJSRuntime(message);
+        return this._prepareJSRuntime(message);
       case 'executeApplicationScript':
-        return this.executeApplicationScript(message);
+        return this._executeApplicationScript(message);
       default:
-        return this.executeJSCall(message);
+        return this._executeJSCall(message);
     }
   }
 
-  async prepareJSRuntime(message: Object): Promise<void> {
+  _prepareJSRuntime(message: Object): void {
     this._createChild();
     this._onReply(message.id);
   }
 
-  async executeApplicationScript(message: Object): Promise<void> {
-    if (!this._child) {
-      // Warn Child not initialized;
-      return;
-    }
-    const parsedUrl = url.parse(message.url, /* parseQueryString */ true);
-    invariant(parsedUrl.query);
-    parsedUrl.query.inlineSourceMap = true;
-    delete parsedUrl.search;
-    // $FlowIssue url.format() does not accept what url.parse() returns.
-    const scriptUrl = url.format(parsedUrl);
-    const script = await getScriptContents(scriptUrl);
-    invariant(this._child);
-    this._child.executeApplicationScript(script, message.inject, message.id);
+  _executeApplicationScript(message: Object): void {
+    (async () => {
+      if (!this._child) {
+        // Warn Child not initialized;
+        return;
+      }
+      const parsedUrl = url.parse(message.url, /* parseQueryString */ true);
+      invariant(parsedUrl.query);
+      parsedUrl.query.inlineSourceMap = true;
+      delete parsedUrl.search;
+      // $FlowIssue url.format() does not accept what url.parse() returns.
+      const scriptUrl = url.format(parsedUrl);
+      const script = await getScriptContents(scriptUrl);
+      invariant(this._child);
+      this._child.executeApplicationScript(script, message.inject, message.id);
+    })();
   }
 
-  executeJSCall(message: Object) {
+  _executeJSCall(message: Object): void {
     if (!this._child) {
       // Warn Child not initialized;
       return;
