@@ -15,6 +15,7 @@ import Rx from 'rx';
 
 type Props = {
   onSubmit: (value: string) => mixed;
+  scopeName: ?string;
 };
 
 const ENTER_KEY_CODE = 13;
@@ -70,10 +71,13 @@ export default class OutputTable extends React.Component {
   }
 
   render(): ?ReactElement {
+    const grammar = this.props.scopeName == null
+      ? null : atom.grammars.grammarForScopeName(this.props.scopeName);
     return (
       <div className="nuclide-console-input-wrapper">
         <AtomTextEditor
           ref={this._handleTextEditor}
+          grammar={grammar}
           gutterHidden
           autoGrow
           lineNumberGutterVisible={false}

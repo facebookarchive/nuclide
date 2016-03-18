@@ -48,7 +48,7 @@ export default class RecordView extends React.Component {
 
 function renderContent(record: Record): ReactElement {
   if (record.kind === 'request') {
-    return <CodeBlock text={record.text} />;
+    return <CodeBlock text={record.text} scopeName={record.scopeName} />;
   }
 
   // If there's not text, use a space to make sure the row doesn't collapse.

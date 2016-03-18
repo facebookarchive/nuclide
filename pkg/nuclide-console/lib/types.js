@@ -34,6 +34,7 @@ export type Record = {
   text: string;
   level: Level;
   source: string;
+  scopeName: ?string;
 };
 
 export type AppState = {
@@ -63,6 +64,7 @@ export type Executor = {
   name: string;
   execute(code: string): void;
   output: Rx.Observable<Response>;
+  scopeName?: string;
 };
 
 export type RegisterExecutorFunction = (executor: Executor) => IDisposable;

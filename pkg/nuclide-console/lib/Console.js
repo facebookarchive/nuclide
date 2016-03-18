@@ -91,13 +91,15 @@ export default class Console extends React.Component {
   }
 
   _renderPrompt(): ?ReactElement {
-    if (this.props.currentExecutor == null) {
+    const {currentExecutor} = this.props;
+    if (currentExecutor == null) {
       return;
     }
     return (
       <div className="nuclide-console-prompt">
         {this._renderPromptButton()}
         <InputArea
+          scopeName={currentExecutor.scopeName}
           onSubmit={this.props.execute}
         />
       </div>

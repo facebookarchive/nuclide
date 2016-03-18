@@ -125,6 +125,7 @@ describe('createStateStream', () => {
           source: 'Test',
           level: 'info',
           text: 'test',
+          scopeName: null,
         }];
         const initialState = {
           ...emptyAppState,

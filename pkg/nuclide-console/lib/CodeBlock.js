@@ -13,8 +13,8 @@ import AtomTextEditor from '../../nuclide-ui-atom-text-editor/lib/main';
 import {React} from 'react-for-atom';
 
 type Props = {
+  scopeName: ?string;
   text: string;
-  // TODO: Accept grammar
 };
 
 export default class CodeBlock extends React.Component {
@@ -48,10 +48,13 @@ export default class CodeBlock extends React.Component {
   }
 
   render() {
+    const grammar = this.props.scopeName == null
+      ? null : atom.grammars.grammarForScopeName(this.props.scopeName);
     return (
       <div className="nuclide-console-text-editor-wrapper">
         <AtomTextEditor
           ref={this._handleTextEditor}
+          grammar={grammar}
           readOnly
           gutterHidden
           autoGrow

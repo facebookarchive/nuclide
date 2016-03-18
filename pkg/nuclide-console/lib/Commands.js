@@ -38,6 +38,9 @@ export default class Commands {
     const currentExecutorId = getCurrentExecutorId(this._getState());
     invariant(currentExecutorId);
 
+    const executor = this._getState().executors.get(currentExecutorId);
+    invariant(executor != null);
+
     // TODO: Is this the best way to do this? Might want to go through nuclide-executors and have
     //       that register output sources?
     this._observer.onNext({
@@ -47,6 +50,7 @@ export default class Commands {
           kind: 'request',
           level: 'log',
           text: code,
+          scopeName: executor.scopeName,
         },
       },
     });
@@ -71,6 +75,7 @@ export default class Commands {
         ...message,
         kind: 'response',
         source: executor.id,
+        scopeName: null, // The output won't be in the language's grammar.
       })),
     });
   }
@@ -86,6 +91,7 @@ export default class Commands {
           ...message,
           kind: 'message',
           source: outputProvider.source,
+          scopeName: null,
         })),
     });
   }
