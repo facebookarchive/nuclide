@@ -1,0 +1,5 @@
+'.platform-darwin atom-workspace':
+  'cmd-alt-j': 'nuclide-output:toggle'
+
+'.platform-win32 atom-workspace, .platform-linux atom-workspace':
+  'ctrl-shift-j': 'nuclide-output:toggle'
