@@ -133,6 +133,12 @@ export type HackFormatSourceResult = {
   internal_error: boolean;
 };
 
+export type HackGetMethodNameResult = {
+  name: string;
+  result_type: 'class' | 'method' | 'function' | 'local';
+  pos: HackRange;
+};
+
 const HH_NEWLINE = '<?hh\n';
 const HH_STRICT_NEWLINE = '<?hh // strict\n';
 const HH_DIAGNOSTICS_DELAY_MS = 600;
@@ -488,6 +494,31 @@ export async function formatSource(
     return null;
   }
   const {result} = hhResult;
+  return (result: any);
+}
+
+
+export async function getMethodName(
+  filePath: NuclideUri,
+  contents: string,
+  line: number,
+  column: number,
+): Promise<?HackGetMethodNameResult> {
+  const hhResult = await callHHClient(
+    /*args*/ ['--get-method-name', contents, line, column],
+    /*errorStream*/ false,
+    /*outputJson*/ true,
+    /*processInput*/ null,
+    /*file*/ filePath,
+  );
+  if (!hhResult) {
+    return null;
+  }
+  const {result} = hhResult;
+  const name = (result: any).name;
+  if (name == null || name === '') {
+    return null;
+  }
   return (result: any);
 }
 

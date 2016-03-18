@@ -28,6 +28,8 @@ import {
   markFileForCompletion,
   processCompletions,
   processDefinitionsForXhp,
+  getSymbolType,
+  SYMBOL_TYPES_WITH_REFERENCES,
 } from './LocalHackLanguage';
 
 /**
@@ -169,7 +171,25 @@ export class ServerHackLanguage {
     line: number,
     column: number
   ): Promise<?{baseUri: string; symbolName: string; references: Array<HackReference>}> {
-    return null;
+    const {getMethodName, getReferences} = getHackService(filePath);
+
+    const getMethodNameResult = await getMethodName(filePath, contents, line + 1, column + 1);
+    if (getMethodNameResult == null) {
+      return null;
+    }
+    const symbolName = getMethodNameResult.name;
+    const symbolType = getSymbolType(getMethodNameResult.result_type);
+
+    if (!SYMBOL_TYPES_WITH_REFERENCES.has(symbolType)) {
+      return null;
+    }
+
+    const referencesResult = await getReferences(filePath, symbolName, symbolType);
+    if (!referencesResult) {
+      return null;
+    }
+    const {hackRoot, references} = referencesResult;
+    return {baseUri: hackRoot, symbolName, references};
   }
 
   getBasePath(): ?string {

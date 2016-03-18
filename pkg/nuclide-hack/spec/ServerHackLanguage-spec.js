@@ -19,6 +19,8 @@ import type {
   HackTypeAtPosResult,
   HackFindLvarRefsResult,
   HackFormatSourceResult,
+  HackGetMethodNameResult,
+  HackReferencesResult,
 } from '../../nuclide-hack-base/lib/HackService';
 
 import {uncachedRequire, clearRequireCache} from '../../nuclide-test-helpers';
@@ -43,6 +45,8 @@ describe('ServerHackLanguage', () => {
       'getTypeAtPos',
       'getSourceHighlights',
       'formatSource',
+      'getMethodName',
+      'getReferences',
     ]);
     spyOn(require('../lib/utils'), 'getHackService')
       .andReturn(mockService);
@@ -242,9 +246,63 @@ AUTO332class HackClass {}`);
 
   it('findReferences', () => {
     waitsForPromise(async () => {
+      const getMethodResult: HackGetMethodNameResult = {
+        name: 'item_name',
+        pos: {
+          filename: filePath,
+          line: 1,
+          char_start: 2,
+          char_end: 3,
+        },
+        result_type: 'method',
+      };
+      mockService.getMethodName.andReturn(getMethodResult);
+      const findResult: HackReferencesResult = {
+        hackRoot: basePath,
+        references: [
+          {
+            name: 'item_name',
+            filename: filePath,
+            line: 1,
+            char_start: 2,
+            char_end: 3,
+          },
+          {
+            name: 'item_name',
+            filename: filePath,
+            line: 11,
+            char_start: 4,
+            char_end: 7,
+          },
+        ],
+      };
+      mockService.getReferences.andReturn(findResult);
+
       const result = await hackLanguage.findReferences(filePath, contents, 1, 2);
-      // TODO
-      expect(result).toEqual(null);
+
+      expect(result).toEqual(
+        {
+          baseUri: '/tmp/project',
+          symbolName: 'item_name',
+          references: [
+            {
+              name: 'item_name',
+              filename: filePath,
+              line: 1,
+              char_start: 2,
+              char_end: 3,
+            },
+            {
+              name: 'item_name',
+              filename: filePath,
+              line: 11,
+              char_start: 4,
+              char_end: 7,
+            },
+          ],
+        });
+      expect(mockService.getMethodName).toHaveBeenCalledWith(filePath, contents, 2, 3);
+      expect(mockService.getReferences).toHaveBeenCalledWith(filePath, 'item_name', 2);
     });
   });
 

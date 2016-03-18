@@ -22,6 +22,7 @@ import type {
   HackReferencesResult,
   HackOutline,
 } from '../../nuclide-hack-base/lib/HackService';
+import type {SymbolTypeValue} from '../../nuclide-hack-common';
 import {TypeCoverageRegion} from './TypedRegions';
 
 import type {HackSymbolNameResult} from '../../nuclide-hack-base/lib/types';
@@ -607,13 +608,13 @@ const stringToSymbolType = {
 };
 
 // Symbol types we can get references for.
-const SYMBOL_TYPES_WITH_REFERENCES = new Set([
+export const SYMBOL_TYPES_WITH_REFERENCES = new Set([
   SymbolType.CLASS,
   SymbolType.FUNCTION,
   SymbolType.METHOD,
 ]);
 
-function getSymbolType(input: string) {
+export function getSymbolType(input: string): SymbolTypeValue {
   let symbolType = stringToSymbolType[input];
   if (typeof symbolType === 'undefined') {
     symbolType = SymbolType.METHOD;
