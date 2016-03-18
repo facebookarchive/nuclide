@@ -24,7 +24,7 @@ type State = {
   executors: Map<string, Executor>;
 };
 
-export default function createOutputGadget(
+export default function createConsoleGadget(
   state$: Rx.Observable<AppState>,
   commands: Commands,
 ): Gadget {
@@ -32,7 +32,7 @@ export default function createOutputGadget(
   class OutputGadget extends React.Component<void, void, State> {
     state: State;
 
-    static gadgetId = 'nuclide-output';
+    static gadgetId = 'nuclide-console';
     static defaultLocation = 'bottom';
 
     _state$Subscription: IDisposable;
@@ -47,7 +47,7 @@ export default function createOutputGadget(
     }
 
     getTitle(): string {
-      return 'Output';
+      return 'Console';
     }
 
     componentWillMount() {

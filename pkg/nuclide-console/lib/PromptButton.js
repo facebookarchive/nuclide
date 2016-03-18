@@ -38,8 +38,8 @@ export default class PromptButton extends React.Component {
 
   render(): ?ReactElement {
     return (
-      <span className="nuclide-output-prompt-wrapper" onClick={this._handleClick}>
-        <span className="nuclide-output-prompt-label">
+      <span className="nuclide-console-prompt-wrapper" onClick={this._handleClick}>
+        <span className="nuclide-console-prompt-label">
           {this.props.children}
         </span>
         <span className="icon icon-chevron-right"></span>

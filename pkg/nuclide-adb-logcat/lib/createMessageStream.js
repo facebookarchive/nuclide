@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Message} from '../../nuclide-output/lib/types';
+import type {Message} from '../../nuclide-console/lib/types';
 
 import createMessage from './createMessage';
 import parseLogcatMetadata from './parseLogcatMetadata';

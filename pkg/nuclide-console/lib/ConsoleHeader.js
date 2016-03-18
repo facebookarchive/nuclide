@@ -25,7 +25,7 @@ export default class ConsoleHeader extends React.Component {
 
   render(): ?ReactElement {
     return (
-      <div className="nuclide-output-header padded">
+      <div className="nuclide-console-header padded">
         <button
           className="btn btn-sm icon inline-block btn-secondary pull-right"
           onClick={this._handleClearButtonClick}>

@@ -1,0 +1,182 @@
+@import "ui-variables";
+
+@nuclide-console-border-size: 1px;
+@nuclide-console-table-background-color: @tab-background-color-active;
+@nuclide-console-record-background-color-normal: @syntax-background-color;
+@nuclide-console-record-text-color-normal: @syntax-text-color;
+@nuclide-console-record-border-color-normal: @base-border-color;
+@nuclide-console-record-background-color-error: lighten(@background-color-error, 25%);
+@nuclide-console-record-text-color-error: darken(@text-color-error, 40%);
+@nuclide-console-record-border-color-error: @background-color-error;
+@nuclide-console-record-background-color-warning: lighten(@background-color-warning, 25%);
+@nuclide-console-record-text-color-warning: darken(@text-color-warning, 40%);
+@nuclide-console-record-border-color-warning: @background-color-warning;
+@nuclide-console-record-vertical-padding: 1px;
+@nuclide-console-record-horizontal-padding: 5px;
+@nuclide-console-icon-size: 11px;
+
+// Console text should be smaller than normal text. Gotta fit more!
+@nuclide-console-record-font-size: @font-size * 0.9;
+
+.nuclide-console {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: @pane-item-background-color;
+
+  .icon {
+    vertical-align: middle;
+  }
+}
+
+.nuclide-console-record .icon:before,
+.nuclide-console-record pre,
+.nuclide-console atom-text-editor {
+  font-size: @nuclide-console-record-font-size;
+}
+
+.nuclide-console-scroll-pane {
+  position: relative;
+  flex-grow: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: @syntax-background-color;
+
+  // Hack: This ensures that the scrollbar appears on top of all of the records.
+  //       Without it, the atom-text-editors appear above the scrollbar.
+  transform: translate3d(0, 0, 0);
+}
+
+.nuclide-console-header {
+  flex-shrink: 0;
+  border-bottom: 1px solid @pane-item-border-color;
+}
+
+.nuclide-console-record {
+  display: flex;
+  align-items: center;
+  padding: @nuclide-console-record-vertical-padding @nuclide-console-record-horizontal-padding;
+  background-color: @nuclide-console-record-background-color-normal;
+  border-radius: 0;
+  border-top: @nuclide-console-border-size solid @nuclide-console-record-border-color-normal;
+
+  pre {
+    background-color: transparent;
+    color: @nuclide-console-record-text-color-normal;
+  }
+
+  .icon {
+    color: @nuclide-console-record-text-color-normal;
+    text-align: center;
+  }
+
+  .icon,
+  .icon::before {
+    font-size: @nuclide-console-icon-size;
+  }
+
+  .icon::before {
+    width: @nuclide-console-icon-size;
+    height: @nuclide-console-icon-size;
+  }
+
+  &:first-child {
+    border-top: none;
+  }
+
+  &:last-child {
+    border-bottom: @nuclide-console-border-size solid @nuclide-console-record-border-color-normal;
+  }
+
+  &.level-info {
+    .icon {
+      color: fadeout(@syntax-text-color, 30%);
+    }
+  }
+
+  &.level-warning {
+    background-color: @nuclide-console-record-background-color-warning;
+    border-color: @nuclide-console-record-border-color-warning;
+
+    // The border on both sides of the warning message should be the warning
+    // color unless it's a higher-level (error).
+    & + :not(.level-error) {
+      border-top-color: @nuclide-console-record-border-color-warning;
+    }
+
+    pre {
+      color: @nuclide-console-record-text-color-warning;
+    }
+
+    .icon {
+      color: @nuclide-console-record-border-color-warning;
+    }
+  }
+
+  &.level-error {
+    background-color: @nuclide-console-record-background-color-error;
+    border-color: @nuclide-console-record-border-color-error;
+
+    // The border on both sides of the error should be the error color.
+    & + .nuclide-console-record {
+      border-top-color: @nuclide-console-record-border-color-error;
+    }
+
+    pre {
+      color: @nuclide-console-record-text-color-error;
+    }
+
+    .icon {
+      color: @nuclide-console-record-border-color-error;
+    }
+
+  }
+
+  pre {
+    padding: 0;
+    background-color: transparent;
+  }
+
+  &.request {
+    display: flex;
+    background-color: @syntax-background-color;
+  }
+
+  &.request,
+  &.response {
+    opacity: 0.7;
+  }
+
+}
+
+.nuclide-console-input-wrapper {
+  display: flex;
+  background-color: @syntax-background-color;
+  padding: @nuclide-console-record-vertical-padding 0;
+  flex-grow: 1;
+}
+
+.nuclide-console-prompt {
+  display: flex;
+  padding: 5px @nuclide-console-record-horizontal-padding;
+  border-bottom: 1px solid @pane-item-border-color;
+  background-color: @syntax-background-color;
+  color: @syntax-text-color;
+}
+
+.nuclide-console-prompt-wrapper {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.nuclide-console-prompt-label {
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 0.8em;
+  padding-right: 1em;
+}
+
+.nuclide-console-text-editor-wrapper {
+  flex-grow: 1;
+}

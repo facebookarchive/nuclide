@@ -25,7 +25,7 @@ export default class RecordView extends React.Component {
   render(): ReactElement {
     const {record} = this.props;
     const classNames = classnames(
-      'nuclide-output-record',
+      'nuclide-console-record',
       `level-${record.level || 'log'}`,
       {
         request: record.kind === 'request',

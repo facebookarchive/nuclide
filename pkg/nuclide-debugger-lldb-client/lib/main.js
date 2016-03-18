@@ -13,7 +13,7 @@ import type {
   nuclide_debugger$Service,
   NuclideDebuggerProvider,
 } from '../../nuclide-debugger-interfaces/service';
-import type OutputService from '../../nuclide-output/lib/OutputService';
+import type OutputService from '../../nuclide-console/lib/OutputService';
 
 import {setOutputService} from '../../nuclide-debugger-common/lib/OutputServiceManager';
 

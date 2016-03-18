@@ -71,7 +71,7 @@ export default class OutputTable extends React.Component {
 
   render(): ?ReactElement {
     return (
-      <div className="nuclide-output-input-wrapper">
+      <div className="nuclide-console-input-wrapper">
         <AtomTextEditor
           ref={this._handleTextEditor}
           gutterHidden

@@ -49,7 +49,7 @@ export default class CodeBlock extends React.Component {
 
   render() {
     return (
-      <div className="nuclide-output-text-editor-wrapper">
+      <div className="nuclide-console-text-editor-wrapper">
         <AtomTextEditor
           ref={this._handleTextEditor}
           readOnly

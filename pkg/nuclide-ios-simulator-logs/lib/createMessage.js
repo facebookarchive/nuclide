@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {Level, Message} from '../../nuclide-output/lib/types';
+import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {AslLevel, AslRecord} from './types';
 
 /**
- * Convert a structured logcat entry into the format that nuclide-output wants.
+ * Convert a structured logcat entry into the format that nuclide-console wants.
  */
 export function createMessage(record: AslRecord): Message {
   return {

@@ -55,7 +55,7 @@ export class LogTailer {
   }
 
   _start(trackCall: boolean = true): void {
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-output:show');
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
 
     if (this._running) {
       return;

@@ -24,7 +24,7 @@ export default class OutputTable extends React.Component {
   render(): ?ReactElement {
     return (
       <div
-        className="nuclide-output-table-wrapper native-key-bindings"
+        className="nuclide-console-table-wrapper native-key-bindings"
         tabIndex="1">
         {this.props.records.map(this._renderRow, this)}
       </div>

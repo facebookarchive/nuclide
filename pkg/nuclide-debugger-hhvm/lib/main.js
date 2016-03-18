@@ -11,7 +11,7 @@
 
 import type {HomeFragments} from '../../nuclide-home-interfaces';
 import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/service';
-import type OutputService from '../../nuclide-output/lib/OutputService';
+import type OutputService from '../../nuclide-console/lib/OutputService';
 
 import {setOutputService} from '../../nuclide-debugger-common/lib/OutputServiceManager';
 

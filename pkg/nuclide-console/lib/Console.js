@@ -77,11 +77,11 @@ export default class Console extends React.Component {
 
   render(): ?ReactElement {
     return (
-      <div className="nuclide-output">
+      <div className="nuclide-console">
         <ConsoleHeader clear={this.props.clearRecords} />
         <div
           ref={this._handleScrollPane}
-          className="nuclide-output-scroll-pane"
+          className="nuclide-console-scroll-pane"
           onScroll={this._handleScroll}>
           <OutputTable records={this.props.records} />
           {this._renderPrompt()}
@@ -95,7 +95,7 @@ export default class Console extends React.Component {
       return;
     }
     return (
-      <div className="nuclide-output-prompt">
+      <div className="nuclide-console-prompt">
         {this._renderPromptButton()}
         <InputArea
           onSubmit={this.props.execute}

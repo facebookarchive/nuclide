@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type OutputService from '../../nuclide-output/lib/OutputService';
+import type OutputService from '../../nuclide-console/lib/OutputService';
 
-import {LogTailer} from '../../nuclide-output/lib/LogTailer';
+import {LogTailer} from '../../nuclide-console/lib/LogTailer';
 import {createMessageStream} from './createMessageStream';
 import {createProcessStream} from './createProcessStream';
 import {CompositeDisposable, Disposable} from 'atom';

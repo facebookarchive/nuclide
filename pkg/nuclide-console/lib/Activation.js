@@ -15,7 +15,7 @@ import type {AppState, RegisterExecutorFunction} from './types';
 import {CompositeDisposable, Disposable} from 'atom';
 import * as ActionTypes from './ActionTypes';
 import Commands from './Commands';
-import createOutputGadget from './createOutputGadget';
+import createConsoleGadget from './createConsoleGadget';
 import createStateStream from './createStateStream';
 import featureConfig from '../../nuclide-feature-config';
 import OutputService from './OutputService';
@@ -41,16 +41,16 @@ class Activation {
     this._outputService = new OutputService(this._commands);
     this._disposables = new CompositeDisposable(
       atom.contextMenu.add({
-        '.nuclide-output-record': [
+        '.nuclide-console-record': [
           {
             label: 'Copy Message',
-            command: 'nuclide-output:copy-message',
+            command: 'nuclide-console:copy-message',
           },
         ],
       }),
       atom.commands.add(
-        '.nuclide-output-record',
-        'nuclide-output:copy-message',
+        '.nuclide-console-record',
+        'nuclide-console:copy-message',
         event => {
           const el = event.target;
           if (el == null || el.innerText == null) {
@@ -60,7 +60,7 @@ class Activation {
         },
       ),
       featureConfig.observe(
-        'nuclide-output.maximumMessageCount',
+        'nuclide-console.maximumMessageCount',
         maxMessageCount => this._commands.setMaxMessageCount(maxMessageCount),
       ),
 
@@ -83,7 +83,7 @@ class Activation {
   }
 
   consumeGadgetsService(gadgetsApi: GadgetsService): IDisposable {
-    const OutputGadget = createOutputGadget(this._state$.asObservable(), this._commands);
+    const OutputGadget = createConsoleGadget(this._state$.asObservable(), this._commands);
     return gadgetsApi.registerGadget(((OutputGadget: any): Gadget));
   }
 

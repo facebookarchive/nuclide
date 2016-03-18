@@ -1,9 +1,9 @@
 {
-  "name": "nuclide-output",
+  "name": "nuclide-console",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main",
   "version": "0.0.0",
-  "description": "Aggregate and display output from various sources.",
+  "description": "Aggregate and display output from various sources and provide an user interface for REPL-like functionality.",
   "nuclide": {
     "config": {
       "maximumMessageCount": {
