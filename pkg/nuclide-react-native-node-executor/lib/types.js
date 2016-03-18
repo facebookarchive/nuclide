@@ -13,13 +13,13 @@ export type ServerReplyCallback = (replyId: number, result: ?Object) => void;
 
 // Output from executor.js
 
-type ExecutorResult = {
+export type ExecutorResult = {
   kind: 'result';
   replyId: number;
   result: ?Object;
 };
 
-type ExecutorError = {
+export type ExecutorError = {
   kind: 'error';
   message: string;
 };

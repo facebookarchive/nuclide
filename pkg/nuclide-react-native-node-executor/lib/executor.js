@@ -31,7 +31,7 @@ var ops = {
       // The file name is dummy here. Without a file name, the source map is not used.
       vm.runInContext(data.script, currentContext, '/tmp/react-native.js');
     } catch (e) {
-      console.error('Failed to exec script: ' + e);
+      sendError('Failed to exec script: ' + e);
     }
 
     sendResult(id);
@@ -44,7 +44,7 @@ var ops = {
         returnValue = currentContext.__fbBatchedBridge[data.method].apply(null, data.arguments);
       }
     } catch (e) {
-      console.error('Failed while making a call ' + data.method + ':::' + e);
+      sendError('Failed while making a call ' + data.method + ':::' + e);
     } finally {
       sendResult(id, JSON.stringify(returnValue));
     }
@@ -53,7 +53,7 @@ var ops = {
 
 process.on('message', function(payload) {
   if (!ops[payload.op]) {
-    console.error('Unknown op ' + payload.op + ' ' + JSON.stringify(payload));
+    sendError('Unknown op ' + payload.op + ' ' + JSON.stringify(payload));
     return;
   }
   ops[payload.op](payload.id, payload.data);
@@ -64,5 +64,12 @@ function sendResult(replyId, result) {
     kind: 'result',
     replyId,
     result: result,
+  });
+}
+
+function sendError(message) {
+  process.send({
+    kind: 'error',
+    message: message,
   });
 }

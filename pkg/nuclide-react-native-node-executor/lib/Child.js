@@ -10,7 +10,9 @@
  */
 
 import type {
+  ExecutorError,
   ExecutorResponse,
+  ExecutorResult,
   ExecutorRequest,
   RnRequest,
   ServerReplyCallback,
@@ -56,10 +58,9 @@ export default class Child {
             logger.error(message.error.message);
             return;
           case 'stderr':
-            logger.error(message.data.toString());
-            return;
           case 'stdout':
             logger.info(message.data.toString());
+            return;
         }
       });
 
@@ -77,8 +78,15 @@ export default class Child {
       ): Rx.Observable<ExecutorResponse>
     );
 
+    const result$ = (
+      (output$.filter(message => message.kind === 'result'): any): Rx.Observable<ExecutorResult>
+    );
+    const error$ = (
+      (output$.filter(message => message.kind === 'error'): any): Rx.Observable<ExecutorError>
+    );
+
     // Emit the eval_application_script event when we get the message that corresponds to it.
-    output$
+    result$
       .filter(
         message => message.kind === 'result' && message.replyId === this._execScriptMessageId
       )
@@ -90,12 +98,10 @@ export default class Child {
       });
 
     // Forward the output we get from the process to subscribers
-    output$
-      .filter(message => message.kind === 'result')
-      .subscribe(message => {
-        invariant(message.kind === 'result');
-        onReply(message.replyId, message.result);
-      });
+    result$.subscribe(message => { onReply(message.replyId, message.result); });
+
+    // Log the errors.
+    error$.subscribe(error => { logger.error(error.message); });
 
     // Buffer the messages until we have a process to send them to, then send them.
     const bufferedMessage$ = this._input$.takeUntil(process$).buffer(process$).flatMap(x => x);
