@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {HomeFragments} from '../../nuclide-home-interfaces';
+
 import {Observable} from 'rx';
 
 import {CompositeDisposable, Disposable} from 'atom';
@@ -246,4 +248,16 @@ export function consumeOutlineProvider(provider: OutlineProvider): IDisposable {
 export function consumeToolBar(getToolBar: (group: string) => Object): void {
   invariant(activation != null);
   activation.consumeToolBar(getToolBar);
+}
+
+export function getHomeFragments(): HomeFragments {
+  return {
+    feature: {
+      title: 'Outline View',
+      icon: 'list-unordered',
+      description: 'Displays major components of the current file (classes, methods, etc.)',
+      command: 'nuclide-outline-view:show',
+    },
+    priority: 2.5, // Between diff view and test runner
+  };
 }

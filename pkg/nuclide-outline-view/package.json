@@ -19,5 +19,12 @@
         "0.1.0": "consumeToolBar"
       }
     }
+  },
+  "providedServices": {
+    "nuclide-home.homeFragments": {
+      "versions": {
+        "0.0.0": "getHomeFragments"
+      }
+    }
   }
 }
