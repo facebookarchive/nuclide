@@ -348,6 +348,10 @@ declare class atom$Point {
   // TODO(t8220399): Change this to: `-1 | 0 | 1`.
   compare(other: atom$Point): number;
   isEqual(otherRange: atom$Point): boolean;
+  isLessThan(other: atom$Point): boolean;
+  isLessThanOrEqual(other: atom$Point): boolean;
+  isGreaterThan(other: atom$Point): boolean;
+  isGreaterThanOrEqual(other: atom$Point): boolean;
 
   // Operations
   translate(other: atom$Point | [number, number]): atom$Point;
