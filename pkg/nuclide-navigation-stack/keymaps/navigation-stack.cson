@@ -1,0 +1,3 @@
+'atom-workspace':
+  'ctrl-.': 'nuclide-navigation-stack:navigate-forwards'
+  'ctrl-,': 'nuclide-navigation-stack:navigate-backwards'

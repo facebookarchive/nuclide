@@ -10,6 +10,15 @@
  */
 
 import {CompositeDisposable} from 'atom';
+import {
+  isTextEditor,
+  projects,
+  getViewOfEditor,
+} from '../../nuclide-atom-helpers';
+import {NavigationStackController} from './NavigationStackController';
+import {trackOperationTiming} from '../../nuclide-analytics';
+
+const controller = new NavigationStackController();
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -20,6 +29,66 @@ class Activation {
 
   activate() {
 
+    const subscribeEditor = (editor: atom$TextEditor) => {
+      const cursorSubscription = editor.onDidChangeCursorPosition(
+        (event: ChangeCursorPositionEvent) => {
+          controller.updatePosition(editor, event.newBufferPosition);
+        });
+      const scrollSubscription = getViewOfEditor(editor).onDidChangeScrollTop(
+        scrollTop => {
+          controller.updateScroll(editor, scrollTop);
+        });
+      this._disposables.add(cursorSubscription);
+      this._disposables.add(scrollSubscription);
+      const destroySubscription = editor.onDidDestroy(() => {
+        controller.onDestroy(editor);
+        this._disposables.remove(cursorSubscription);
+        this._disposables.remove(scrollSubscription);
+        this._disposables.remove(destroySubscription);
+      });
+      this._disposables.add(destroySubscription);
+    };
+
+    const addEditor = (addEvent: AddTextEditorEvent) => {
+      const editor = addEvent.textEditor;
+      subscribeEditor(editor);
+      controller.onCreate(editor);
+    };
+
+    atom.workspace.getTextEditors().forEach(subscribeEditor);
+    this._disposables.add(atom.workspace.onDidAddTextEditor(addEditor));
+    this._disposables.add(atom.workspace.onDidOpen((event: OnDidOpenEvent) => {
+      if (isTextEditor(event.item)) {
+        controller.onOpen((event.item: any));
+      }
+    }));
+    this._disposables.add(atom.workspace.observeActivePaneItem(item => {
+      if (isTextEditor(item)) {
+        controller.onActivate((item: any));
+      }
+    }));
+    this._disposables.add(atom.workspace.onDidStopChangingActivePaneItem(item => {
+      if (isTextEditor(item)) {
+        controller.onActiveStopChanging((item: any));
+      }
+    }));
+    this._disposables.add(projects.onDidRemoveProjectPath(path => {
+      controller.removePath(
+        path, atom.project.getDirectories().map(directory => directory.getPath()));
+    }));
+
+    this._disposables.add(
+      atom.commands.add('atom-workspace',
+      'nuclide-navigation-stack:navigate-forwards', () => {
+        trackOperationTiming(
+          'nuclide-navigation-stack:forwards', () => controller.navigateForwards());
+      }));
+    this._disposables.add(
+      atom.commands.add('atom-workspace',
+      'nuclide-navigation-stack:navigate-backwards', () => {
+        trackOperationTiming(
+          'nuclide-navigation-stack:backwards', () => controller.navigateBackwards());
+      }));
   }
 
   dispose() {
