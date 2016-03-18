@@ -15,6 +15,8 @@ const ipc = require('ipc');
 import {beginTimerTracking, endTimerTracking} from '../../lib/AnalyticsHelper';
 
 const WebInspector: typeof WebInspector = window.WebInspector;
+// Re-use 'watch-group' since some backends throw when they encounted an unrecognized object group.
+const NUCLIDE_DEBUGGER_OBJECT_GROUP = 'watch-group';
 
 /**
   * Generates a string from a breakpoint that can be used in hashed
@@ -164,6 +166,9 @@ class NuclideBridge {
       case 'StepOut':
         this._stepOut();
         break;
+      case 'evaluateOnSelectedCallFrame':
+        this._evaluateOnSelectedCallFrame(args[0]);
+        break;
     }
   }
 
@@ -189,8 +194,31 @@ class NuclideBridge {
     });
   }
 
+  _evaluateOnSelectedCallFrame(expression: string): void {
+    const mainTarget = WebInspector.targetManager.mainTarget();
+    if (mainTarget == null) {
+      return;
+    }
+    mainTarget.debuggerModel.evaluateOnSelectedCallFrame(
+      expression,
+      NUCLIDE_DEBUGGER_OBJECT_GROUP,
+      false, /* includeCommandLineAPI */
+      true, /* doNotPauseOnExceptionsAndMuteConsole */
+      false,  /* returnByValue */
+      false, /* generatePreview */
+      (remoteObject, wasThrown, error) => {
+        ipc.sendToHost('notification', 'ExpressionEvaluationResponse', {
+          result: wasThrown ? null : remoteObject,
+          error:  wasThrown ? error : null,
+          expression,
+        });
+      },
+    );
+  }
+
   _handleDebuggerPaused(event: WebInspector$Event) {
     endTimerTracking();
+    ipc.sendToHost('notification', 'DebuggerPaused', {});
     ++this._debuggerPausedCount;
     if (this._debuggerPausedCount === 1) {
       this._handleLoaderBreakpoint();
