@@ -11,7 +11,7 @@
 
 import type TestRunnerControllerState from './TestRunnerController';
 import type {HomeFragments} from '../../nuclide-home-interfaces';
-import type {TestRunner} from '../../nuclide-test-runner-interfaces';
+import type {TestRunner} from '../../nuclide-test-runner/lib/interfaces';
 
 const {
   CompositeDisposable,
