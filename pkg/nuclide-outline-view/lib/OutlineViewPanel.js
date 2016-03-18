@@ -15,6 +15,7 @@ import type {OutlineForUi} from '..';
 import {React, ReactDOM} from 'react-for-atom';
 import invariant from 'assert';
 
+import {track} from '../../nuclide-analytics';
 import {PanelComponent} from '../../nuclide-ui-panel';
 
 import {OutlineView} from './OutlineView';
@@ -70,6 +71,8 @@ export class OutlineViewPanelState {
 
   _show(): void {
     invariant(this._outlineViewPanel == null);
+
+    track('nuclide-outline-view-show');
 
     this._outlineViewPanel = new OutlineViewPanel(
       this._outlines,
