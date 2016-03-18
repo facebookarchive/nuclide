@@ -10,7 +10,7 @@
  */
 
 import type {Observable} from 'rx';
-import type {OutlineForUi, OutlineTree} from './main';
+import type {OutlineForUi, OutlineTreeForUi} from './main';
 import type {TextToken} from '../../nuclide-tokenized-text';
 
 import {React} from 'react-for-atom';
@@ -114,7 +114,7 @@ class OutlineViewComponent extends React.Component {
       case 'outline':
         return (
           <div>
-            {renderTrees(outline.editor, outline.outline.outlineTrees)}
+            {renderTrees(outline.editor, outline.outlineTrees)}
           </div>
         );
       default:
@@ -131,7 +131,11 @@ class OutlineViewComponent extends React.Component {
 
 }
 
-function renderTree(editor: atom$TextEditor, outline: OutlineTree, index: number): ReactElement {
+function renderTree(
+  editor: atom$TextEditor,
+  outline: OutlineTreeForUi,
+  index: number,
+): ReactElement {
   const onClick = () => {
     const pane = atom.workspace.paneForItem(editor);
     if (pane == null) {
@@ -158,6 +162,9 @@ function renderTextToken(token: TextToken, index: number): ReactElement {
   return <span className={className} key={index}>{token.value}</span>;
 }
 
-function renderTrees(editor: atom$TextEditor, outlines: Array<OutlineTree>): Array<ReactElement> {
+function renderTrees(
+  editor: atom$TextEditor,
+  outlines: Array<OutlineTreeForUi>
+): Array<ReactElement> {
   return outlines.map((outline, index) => renderTree(editor, outline, index));
 }

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Outline, OutlineForUi} from '..';
+import type {Outline, OutlineForUi, OutlineTree, OutlineTreeForUi} from '..';
 import type {ProviderRegistry} from './ProviderRegistry';
 
 import {Observable} from 'rx';
@@ -62,8 +62,18 @@ async function outlineForEditor(
   }
   return {
     kind: 'outline',
-    outline,
+    outlineTrees: outline.outlineTrees.map(treeToUiTree),
     editor,
+  };
+}
+
+function treeToUiTree(outlineTree: OutlineTree): OutlineTreeForUi {
+  return {
+    tokenizedText: outlineTree.tokenizedText,
+    startPosition: outlineTree.startPosition,
+    endPosition: outlineTree.endPosition,
+    highlighted: false,
+    children: outlineTree.children.map(treeToUiTree),
   };
 }
 

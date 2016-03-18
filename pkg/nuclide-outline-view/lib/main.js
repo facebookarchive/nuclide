@@ -32,6 +32,14 @@ export type Outline = {
   outlineTrees: Array<OutlineTree>;
 }
 
+export type OutlineTreeForUi = {
+  tokenizedText: TokenizedText;
+  startPosition: atom$Point;
+  endPosition?: atom$Point;
+  children: Array<OutlineTreeForUi>;
+  highlighted: boolean;
+}
+
 /**
  * Includes additional information that is useful to the UI, but redundant or nonsensical for
  * providers to include in their responses.
@@ -52,7 +60,7 @@ export type OutlineForUi = {
   kind: 'provider-no-outline';
 } | {
   kind: 'outline';
-  outline: Outline;
+  outlineTrees: Array<OutlineTreeForUi>;
   /**
    * Use a TextEditor instead of a path so that:
    * - If there are multiple editors for a file, we always jump to outline item
