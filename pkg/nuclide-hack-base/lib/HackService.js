@@ -54,15 +54,17 @@ export type HackFunctionDetails = {
   params: Array<{name: string}>;
 };
 
+export type HackRange = {
+  filename: NuclideUri;
+  line: number;
+  char_start: number;
+  char_end: number;
+};
+
 export type HackCompletion = {
   name: string;
   type: string;
-  pos: {
-    filename: NuclideUri;
-    line: number;
-    char_start: number;
-    char_end: number;
-  };
+  pos: HackRange;
   func_details: ?HackFunctionDetails;
 };
 
@@ -114,6 +116,11 @@ export type HackOutlineItem = {
 }
 
 export type HackOutline = Array<HackOutlineItem>;
+
+export type HackTypeAtPosResult = {
+  type: string;
+  pos: HackRange;
+};
 
 const HH_NEWLINE = '<?hh\n';
 const HH_STRICT_NEWLINE = '<?hh // strict\n';
@@ -411,6 +418,26 @@ export async function getOutline(filePath: NuclideUri, contents: string): Promis
     return null;
   }
   return (hhResult.result: any);
+}
+
+export async function getTypeAtPos(
+  filePath: NuclideUri,
+  contents: string,
+  line: number,
+  column: number,
+): Promise<?HackTypeAtPosResult> {
+  const hhResult = await callHHClient(
+    /*args*/ ['--type-at-pos', contents, line, column],
+    /*errorStream*/ false,
+    /*outputJson*/ true,
+    /*processInput*/ null,
+    /*file*/ filePath,
+  );
+  if (!hhResult) {
+    return null;
+  }
+  const {result} = hhResult;
+  return (result: any);
 }
 
 /**

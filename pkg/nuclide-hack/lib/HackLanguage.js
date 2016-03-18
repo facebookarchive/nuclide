@@ -74,7 +74,7 @@ export type HackLanguage  = {
     ): Promise<Array<HackSearchPosition>>;
 
   getType(
-    path: string,
+    filePath: NuclideUri,
     contents: string,
     expression: string,
     lineNumber: number,

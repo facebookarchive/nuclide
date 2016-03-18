@@ -16,6 +16,7 @@ import type {
   HackDefinitionResult,
   HackDiagnosticsResult,
   HackTypedRegion,
+  HackTypeAtPosResult,
 } from '../../nuclide-hack-base/lib/HackService';
 
 import {uncachedRequire, clearRequireCache} from '../../nuclide-test-helpers';
@@ -25,7 +26,7 @@ const filePath = '/tmp/project/file.hh';
 const contents = `<?hh // strict
 class HackClass {}`;
 
-describe('Mocking Imports test suite', () => {
+describe('ServerHackLanguage', () => {
   let mockService: Object = (null: any);
   let hackLanguage: ServerHackLanguage = (null: any);
 
@@ -37,6 +38,7 @@ describe('Mocking Imports test suite', () => {
       'getDiagnostics',
       'getIdentifierDefinition',
       'getTypedRegions',
+      'getTypeAtPos',
     ]);
     spyOn(require('../lib/utils'), 'getHackService')
       .andReturn(mockService);
@@ -185,9 +187,21 @@ AUTO332class HackClass {}`);
 
   it('getType', () => {
     waitsForPromise(async () => {
-      const result = await hackLanguage.getType(filePath, contents, 'expr', 1, 2);
-      // TODO
-      expect(result).toEqual(null);
+      const serviceResult: HackTypeAtPosResult = {
+        type: 'hack-type',
+        pos: {
+          filename: filePath,
+          line: 1,
+          char_start: 2,
+          char_end:2,
+        },
+      };
+      mockService.getTypeAtPos.andReturn(serviceResult);
+
+      const result = await hackLanguage.getType(filePath, contents, '$expr', 1, 2);
+
+      expect(mockService.getTypeAtPos).toHaveBeenCalledWith(filePath, contents, 1, 2);
+      expect(result).toEqual(serviceResult.type);
     });
   });
 

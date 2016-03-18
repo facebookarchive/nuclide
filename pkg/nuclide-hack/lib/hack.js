@@ -140,11 +140,10 @@ module.exports = {
       return null;
     }
 
-    const path = getPath(filePath);
     const contents = editor.getText();
 
     const type = await hackLanguage.getType(
-      path, contents, matchData.wordMatch[0], position.row + 1, position.column + 1);
+      filePath, contents, matchData.wordMatch[0], position.row + 1, position.column + 1);
     if (!type || type === '_') {
       return null;
     } else {

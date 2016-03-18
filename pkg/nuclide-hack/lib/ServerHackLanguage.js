@@ -133,14 +133,18 @@ export class ServerHackLanguage {
   }
 
   async getType(
-    filePath: string,
+    filePath: NuclideUri,
     contents: string,
     expression: string,
     lineNumber: number,
     column: number,
   ): Promise<?string> {
-    // TODO
-    return null;
+    if (!expression.startsWith('$')) {
+      return null;
+    }
+    const {getTypeAtPos} = getHackService(filePath);
+    const result = await getTypeAtPos(filePath, contents, lineNumber, column);
+    return result == null ? null : result.type;
   }
 
   async findReferences(

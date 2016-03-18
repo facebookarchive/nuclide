@@ -495,17 +495,18 @@ export class LocalHackLanguage {
   }
 
   async getType(
-    path: string,
+    filePath: NuclideUri,
     contents: string,
     expression: string,
     lineNumber: number,
     column: number,
   ): Promise<?string> {
+    const localPath = getPath(filePath);
     if (!expression.startsWith('$')) {
       return null;
     }
-    await this.updateFile(path, contents);
-    const webWorkerMessage = {cmd: 'hh_infer_type', args: [path, lineNumber, column]};
+    await this.updateFile(localPath, contents);
+    const webWorkerMessage = {cmd: 'hh_infer_type', args: [localPath, lineNumber, column]};
     const {type} = await this._hackWorker.runWorkerTask(webWorkerMessage);
     return type;
   }

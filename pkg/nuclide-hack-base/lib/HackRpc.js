@@ -107,7 +107,7 @@ export class HackRpc {
     }).subscribe();
   }
 
-  call(args: Array<string>): Promise<string | Object> {
+  call(args: Array<any>): Promise<string | Object> {
     this._index++;
     const message = createCallMessage(this._index, args);
     const messageString = JSON.stringify(message);

@@ -40,7 +40,7 @@ const SYMBOL_FUNCTION_SEARCH_TYPES = Object.freeze([SearchResultType.FUNCTION]);
   * Executes hh_client with proper arguments returning the result string or json object.
   */
 export async function callHHClient(
-  args: Array<string>,
+  args: Array<any>,
   errorStream: boolean,
   outputJson: boolean,
   processInput: ?string,

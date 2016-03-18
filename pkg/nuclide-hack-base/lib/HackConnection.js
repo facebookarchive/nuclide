@@ -38,7 +38,7 @@ class HackConnection {
     });
   }
 
-  call(args: Array<string>): Promise<string | Object> {
+  call(args: Array<any>): Promise<string | Object> {
     if (this._rpc == null) {
       throw new Error('Attempting to call on disposed hack connection.');
     }
@@ -107,7 +107,7 @@ async function getHackConnection(filePath: string): Promise<?HackConnection> {
  * Executes hh_client with proper arguments returning the result string or json object.
  */
 export async function callHHClientUsingConnection(
- args: Array<string>,
+ args: Array<any>,
  processInput: ?string,
  filePath: string): Promise<?{hackRoot: string; result: string | Object}> {
 
