@@ -14,7 +14,10 @@ import http from 'http';
 import url from 'url';
 
 import Child from './Child';
-import type {ServerReplyCallback} from './types';
+import type {
+  RnRequest,
+  ServerReplyCallback,
+} from './types';
 import type {EventEmitter} from 'events';
 
 let logger;
@@ -50,7 +53,7 @@ export default class ChildManager {
     this._child = null;
   }
 
-  handleMessage(message: Object): void {
+  handleMessage(message: RnRequest): void {
     if (message.replyID) {
       // getting cross-talk from another executor (probably Chrome)
       return;
@@ -66,18 +69,24 @@ export default class ChildManager {
     }
   }
 
-  _prepareJSRuntime(message: Object): void {
+  _prepareJSRuntime(message: RnRequest): void {
     this._createChild();
     this._onReply(message.id);
   }
 
-  _executeApplicationScript(message: Object): void {
+  _executeApplicationScript(message: RnRequest): void {
     (async () => {
       if (!this._child) {
         // Warn Child not initialized;
         return;
       }
-      const parsedUrl = url.parse(message.url, /* parseQueryString */ true);
+
+      const {id: messageId, url: messageUrl, inject} = message;
+      invariant(messageId != null);
+      invariant(messageUrl != null);
+      invariant(inject != null);
+
+      const parsedUrl = url.parse(messageUrl, /* parseQueryString */ true);
       invariant(parsedUrl.query);
       parsedUrl.query.inlineSourceMap = true;
       delete parsedUrl.search;
@@ -85,11 +94,11 @@ export default class ChildManager {
       const scriptUrl = url.format(parsedUrl);
       const script = await getScriptContents(scriptUrl);
       invariant(this._child);
-      this._child.executeApplicationScript(script, message.inject, message.id);
+      this._child.executeApplicationScript(script, inject, messageId);
     })();
   }
 
-  _executeJSCall(message: Object): void {
+  _executeJSCall(message: RnRequest): void {
     if (!this._child) {
       // Warn Child not initialized;
       return;

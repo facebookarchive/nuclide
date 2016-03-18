@@ -34,7 +34,7 @@ var ops = {
       console.error('Failed to exec script: ' + e);
     }
 
-    send(id);
+    sendResult(id);
   },
 
   call: function(id, data) {
@@ -46,19 +46,23 @@ var ops = {
     } catch (e) {
       console.error('Failed while making a call ' + data.method + ':::' + e);
     } finally {
-      send(id, JSON.stringify(returnValue));
+      sendResult(id, JSON.stringify(returnValue));
     }
   },
 };
 
 process.on('message', function(payload) {
   if (!ops[payload.op]) {
-    console.error('Unknown op' + payload.op + ' ' + payload);
+    console.error('Unknown op ' + payload.op + ' ' + JSON.stringify(payload));
     return;
   }
   ops[payload.op](payload.id, payload.data);
 });
 
-function send(replyId, result) {
-  process.send({replyId: replyId, result: result});
+function sendResult(replyId, result) {
+  process.send({
+    kind: 'result',
+    replyId,
+    result: result,
+  });
 }

@@ -9,13 +9,18 @@
  * the root directory of this source tree.
  */
 
-
-import type {ServerReplyCallback} from './types';
+import type {
+  ExecutorResponse,
+  ExecutorRequest,
+  RnRequest,
+  ServerReplyCallback,
+} from './types';
 import type {EventEmitter} from 'events';
 
 import featureConfig from '../../nuclide-feature-config';
 import {forkWithExecEnvironment, getOutputStream} from '../../nuclide-commons/lib/process';
 import {getLogger} from '../../nuclide-logging';
+import invariant from 'assert';
 import path from 'path';
 import Rx from 'rx';
 
@@ -26,7 +31,7 @@ export default class Child {
   _closed: Promise<mixed>;
   _execScriptMessageId: number;
   _process$: Rx.Observable<child_process$ChildProcess>;
-  _input$: Rx.Subject<Object>;
+  _input$: Rx.Subject<ExecutorRequest>;
 
   constructor(onReply: ServerReplyCallback, emitter: EventEmitter) {
     this._execScriptMessageId = -1;
@@ -66,11 +71,17 @@ export default class Child {
     this._input$ = new Rx.Subject();
 
     // The messages we're receiving from the executor.
-    const output$ = process$.flatMap(process => Rx.Observable.fromEvent(process, 'message'));
+    const output$ = (
+      process$.flatMap(
+        process => Rx.Observable.fromEvent(process, 'message')
+      ): Rx.Observable<ExecutorResponse>
+    );
 
     // Emit the eval_application_script event when we get the message that corresponds to it.
     output$
-      .filter(message => message.replyId === this._execScriptMessageId)
+      .filter(
+        message => message.kind === 'result' && message.replyId === this._execScriptMessageId
+      )
       .first()
       .combineLatest(process$)
       .map(([, process]) => process.pid)
@@ -79,9 +90,12 @@ export default class Child {
       });
 
     // Forward the output we get from the process to subscribers
-    output$.subscribe(message => {
-      onReply(message.replyId, message.result);
-    });
+    output$
+      .filter(message => message.kind === 'result')
+      .subscribe(message => {
+        invariant(message.kind === 'result');
+        onReply(message.replyId, message.result);
+      });
 
     // Buffer the messages until we have a process to send them to, then send them.
     const bufferedMessage$ = this._input$.takeUntil(process$).buffer(process$).flatMap(x => x);
@@ -111,7 +125,8 @@ export default class Child {
     });
   }
 
-  execCall(payload: Object, id: number) {
+  execCall(payload: RnRequest, id: number) {
+    invariant(payload.method != null);
     this._input$.onNext({
       id,
       op: 'call',

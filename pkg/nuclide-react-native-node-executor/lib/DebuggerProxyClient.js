@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {RnRequest} from './types';
+
 import ChildManager from './ChildManager';
 import {CompositeDisposable, Disposable} from 'atom';
 import {EventEmitter} from 'events';
@@ -66,20 +68,22 @@ export class DebuggerProxyClient {
     const childManager = new ChildManager(onReply, this._emitter);
     this._children.add(childManager);
 
+    const rnMessages = (
+      Rx.Observable.fromEvent(ws, 'message').map(JSON.parse): Rx.Observable<RnRequest>
+    );
+
     this._wsDisposable = new CompositeDisposable(
       new Disposable(() => {
         childManager.killChild();
         this._children.delete(childManager);
       }),
-      Rx.Observable.fromEvent(ws, 'message')
-        .subscribe(rawMessage => {
-          const message = JSON.parse(rawMessage);
-          if (message.$close) {
-            this.disconnect();
-            return;
-          }
-          childManager.handleMessage(message);
-        }),
+      rnMessages.subscribe(message => {
+        if (message.$close) {
+          this.disconnect();
+          return;
+        }
+        childManager.handleMessage(message);
+      }),
       // TODO: Add timeout
       // If we can't connect, or get disconnected, keep trying to connect.
       Rx.Observable.merge(
