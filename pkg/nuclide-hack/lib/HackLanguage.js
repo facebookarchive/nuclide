@@ -50,7 +50,7 @@ export type HackLanguage  = {
   ): Promise<string>;
 
   highlightSource(
-    path: string,
+    path: NuclideUri,
     contents: string,
     line: number,
     col: number,

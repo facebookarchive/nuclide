@@ -17,6 +17,7 @@ import type {
   HackDiagnosticsResult,
   HackTypedRegion,
   HackTypeAtPosResult,
+  HackFindLvarRefsResult,
 } from '../../nuclide-hack-base/lib/HackService';
 
 import {uncachedRequire, clearRequireCache} from '../../nuclide-test-helpers';
@@ -39,6 +40,7 @@ describe('ServerHackLanguage', () => {
       'getIdentifierDefinition',
       'getTypedRegions',
       'getTypeAtPos',
+      'getSourceHighlights',
     ]);
     spyOn(require('../lib/utils'), 'getHackService')
       .andReturn(mockService);
@@ -110,9 +112,32 @@ AUTO332class HackClass {}`);
 
   it('highlightSource', () => {
     waitsForPromise(async () => {
-      const result = await hackLanguage.highlightSource(filePath, contents, 0, 0);
-      // TODO
-      expect(result).toEqual([]);
+      const serviceResults: HackFindLvarRefsResult = {
+        positions: [
+          {
+            filename: filePath,
+            line: 1,
+            char_start: 2,
+            char_end:2,
+          },
+          {
+            filename: filePath,
+            line: 2,
+            char_start: 4,
+            char_end:6,
+          },
+        ],
+        internal_error: false,
+      };
+      mockService.getSourceHighlights.andReturn(serviceResults);
+
+      const result = await hackLanguage.highlightSource(filePath, contents, 4, 6);
+
+      expect(mockService.getSourceHighlights).toHaveBeenCalledWith(filePath, contents, 4, 6);
+      expect(result).toEqual([
+        { start: { row: 0, column: 1 }, end: { row: 0, column: 2 } },
+        { start: { row: 1, column: 3 }, end: { row: 1, column: 6 } },
+      ]);
     });
   });
 

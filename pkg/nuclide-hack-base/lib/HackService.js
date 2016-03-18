@@ -122,6 +122,11 @@ export type HackTypeAtPosResult = {
   pos: HackRange;
 };
 
+export type HackFindLvarRefsResult = {
+  positions: Array<HackRange>;
+  internal_error: boolean;
+};
+
 const HH_NEWLINE = '<?hh\n';
 const HH_STRICT_NEWLINE = '<?hh // strict\n';
 const HH_DIAGNOSTICS_DELAY_MS = 600;
@@ -428,6 +433,26 @@ export async function getTypeAtPos(
 ): Promise<?HackTypeAtPosResult> {
   const hhResult = await callHHClient(
     /*args*/ ['--type-at-pos', contents, line, column],
+    /*errorStream*/ false,
+    /*outputJson*/ true,
+    /*processInput*/ null,
+    /*file*/ filePath,
+  );
+  if (!hhResult) {
+    return null;
+  }
+  const {result} = hhResult;
+  return (result: any);
+}
+
+export async function getSourceHighlights(
+  filePath: NuclideUri,
+  contents: string,
+  line: number,
+  column: number,
+): Promise<?HackFindLvarRefsResult> {
+  const hhResult = await callHHClient(
+    /*args*/ ['--find-lvar-refs', contents, line, column],
     /*errorStream*/ false,
     /*outputJson*/ true,
     /*processInput*/ null,

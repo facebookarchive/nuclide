@@ -206,13 +206,14 @@ export class LocalHackLanguage {
   }
 
   async highlightSource(
-    path: string,
+    filePath: NuclideUri,
     contents: string,
     line: number,
     col: number,
   ): Promise<Array<atom$Range>> {
-    await this.updateFile(path, contents);
-    const webWorkerMessage = {cmd: 'hh_find_lvar_refs', args: [path, line, col]};
+    const localPath = getPath(filePath);
+    await this.updateFile(localPath, contents);
+    const webWorkerMessage = {cmd: 'hh_find_lvar_refs', args: [localPath, line, col]};
     const response = await this._hackWorker.runWorkerTask(webWorkerMessage);
     return response.positions.map(
       position => new Range(

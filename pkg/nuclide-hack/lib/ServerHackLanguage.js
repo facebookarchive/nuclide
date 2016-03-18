@@ -14,11 +14,13 @@ import type {CompletionResult} from './HackLanguage';
 import type {
   HackDiagnostic,
   HackSearchPosition,
+  HackRange,
   HackReference,
   HackOutline,
 } from '../../nuclide-hack-base/lib/HackService';
 import {TypeCoverageRegion} from './TypedRegions';
 
+import {Range} from 'atom';
 import {getHackService} from './utils';
 import {getLogger} from '../../nuclide-logging';
 import {convertTypedRegionsToCoverageRegions} from './TypedRegions';
@@ -72,13 +74,17 @@ export class ServerHackLanguage {
   }
 
   async highlightSource(
-    filePath: string,
+    filePath: NuclideUri,
     contents: string,
     line: number,
     col: number,
   ): Promise<Array<atom$Range>> {
-    // TBD
-    return [];
+    const {getSourceHighlights} = getHackService(filePath);
+    const response = await getSourceHighlights(filePath, contents, line, col);
+    if (response == null) {
+      return [];
+    }
+    return response.positions.map(hackRangeToAtomRange);
   }
 
   async getDiagnostics(
@@ -163,5 +169,11 @@ export class ServerHackLanguage {
   isHackAvailable(): boolean {
     return this._hhAvailable;
   }
+}
 
+function hackRangeToAtomRange(position: HackRange): atom$Range {
+  return new Range(
+        [position.line - 1, position.char_start - 1],
+        [position.line - 1, position.char_end],
+      );
 }

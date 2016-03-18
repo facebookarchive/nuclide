@@ -21,7 +21,7 @@ import type {HackLanguage} from './HackLanguage';
 import invariant from 'assert';
 import {extractWordAtPosition} from '../../nuclide-atom-helpers';
 import {createHackLanguage} from './HackLanguage';
-import {getPath, isRemote} from '../../nuclide-remote-uri';
+import {isRemote} from '../../nuclide-remote-uri';
 import {Range} from 'atom';
 import {getHackService} from './utils';
 import {RemoteConnection} from '../../nuclide-remote-connection';
@@ -106,10 +106,12 @@ module.exports = {
     editor: atom$TextEditor,
     position: atom$Point,
   ): Promise<Array<atom$Range>> {
-    const hackLanguage = await getHackLanguageForUri(editor.getPath());
+    const filePath = editor.getPath();
+    const hackLanguage = await getHackLanguageForUri(filePath);
     if (!hackLanguage) {
       return [];
     }
+    invariant(filePath != null);
 
     const matchData = extractWordAtPosition(editor, position, HACK_WORD_REGEX);
     if (
@@ -121,7 +123,7 @@ module.exports = {
     }
 
     return hackLanguage.highlightSource(
-      getPath(editor.getPath() || ''),
+      filePath,
       editor.getText(),
       position.row + 1,
       position.column,
