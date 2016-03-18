@@ -40,6 +40,32 @@ describe('nuclide-ui-atom-text-editor', () => {
 
   });
 
+  describe('providing a grammar', () => {
+
+    let grammar1;
+    let grammar2;
+
+    beforeEach(() => {
+      grammar1 = atom.grammars.loadGrammarSync('grammars/ansi.cson');
+      grammar2 = atom.grammars.loadGrammarSync('spec/grammars/ansi2.cson');
+    });
+
+    afterEach(() => {
+      invariant(grammar1 != null);
+      atom.grammars.removeGrammarForScopeName(grammar1.scopeName);
+      invariant(grammar2 != null);
+      atom.grammars.removeGrammarForScopeName(grammar2.scopeName);
+    });
+
+    it('updates the underlying models grammar', () => {
+      const element = TestUtils.renderIntoDocument(
+        <AtomTextEditor path=".ansi" grammar={grammar2} />
+      );
+      expect(element.getModel().getGrammar().scopeName).toEqual('text.ansi2');
+    });
+
+  });
+
   describe('when `readOnly`', () => {
 
     let element;

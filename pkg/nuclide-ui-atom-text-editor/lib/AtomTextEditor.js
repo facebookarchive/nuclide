@@ -34,6 +34,10 @@ function setupTextEditor(props: Object): atom$TextEditor {
   };
   const textEditor = createTextEditor(textEditorParams);
 
+  if (props.grammar != null) {
+    textEditor.setGrammar(props.grammar);
+  }
+
   // As of the introduction of atom.workspace.buildTextEditor(), it is no longer possible to
   // subclass TextEditor to create a ReadOnlyTextEditor. Instead, the way to achieve this effect
   // is to create an ordinary TextEditor and then override any methods that would allow it to
@@ -72,6 +76,7 @@ class AtomTextEditor extends React.Component {
 
   static propTypes = {
     gutterHidden: PropTypes.bool.isRequired,
+    grammar: PropTypes.object,
     path: PropTypes.string,
     readOnly: PropTypes.bool.isRequired,
     textBuffer: PropTypes.instanceOf(TextBuffer),
@@ -127,6 +132,9 @@ class AtomTextEditor extends React.Component {
     }
     if (nextProps.gutterHidden !== this.props.gutterHidden) {
       this.getModel().setLineNumberGutterVisible(nextProps.gutterHidden);
+    }
+    if (nextProps.grammar !== this.props.grammar) {
+      this.getModel().setGrammar(nextProps.grammar);
     }
   }
 
