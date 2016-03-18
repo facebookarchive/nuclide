@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type {
+  NuclideEvaluationExpression,
+} from '../../nuclide-debugger-interfaces/service';
 import type {Datatip} from '../../nuclide-datatip-interfaces';
 import type DebuggerModel from './DebuggerModel';
 import type {EvaluationResult} from './Bridge';
@@ -32,8 +35,46 @@ async function passesGK(): Promise<boolean> {
   }
 }
 
-// TODO fan out to language providers to get the actual expression range, then drop the `$` prefix.
-const DEFAULT_WORD_REGEX = /\$\w+/gi;
+const DEFAULT_WORD_REGEX = /\w+/gi;
+function defaultGetEvaluationExpression(
+  editor: atom$TextEditor,
+  position: atom$Point,
+): Promise<?NuclideEvaluationExpression> {
+  const extractedIdentifier = extractWordAtPosition(editor, position, DEFAULT_WORD_REGEX);
+  if (extractedIdentifier == null) {
+    return Promise.resolve(null);
+  }
+  const {
+    wordMatch,
+    range,
+  } = extractedIdentifier;
+  const [expression] = wordMatch;
+  return Promise.resolve({
+    expression,
+    range,
+  });
+}
+
+async function getEvaluationExpression(
+  model: DebuggerModel,
+  editor: TextEditor,
+  position: atom$Point,
+): Promise<?NuclideEvaluationExpression> {
+  const {scopeName} = editor.getGrammar();
+  const allProviders = model.getStore().getEvaluationExpressionProviders();
+  let matchingProvider = null;
+  for (const provider of allProviders) {
+    const providerGrammars = provider.selector.split(/, ?/);
+    if (providerGrammars.indexOf(scopeName) !== -1) {
+      matchingProvider = provider;
+      break;
+    }
+  }
+  const expressionGetter = matchingProvider === null
+    ? defaultGetEvaluationExpression
+    : matchingProvider.getEvaluationExpression;
+  return expressionGetter(editor, position);
+}
 
 export async function debuggerDatatip(
   model: DebuggerModel,
@@ -50,21 +91,19 @@ export async function debuggerDatatip(
   if (activeEditor == null) {
     return null;
   }
-  // TODO get the identfier range under the cursor from the appropriate language provider.
-  const extractedIdentifier = extractWordAtPosition(editor, position, DEFAULT_WORD_REGEX);
-  if (extractedIdentifier == null) {
+  const evaluationExpression = await getEvaluationExpression(model, editor, position);
+  if (evaluationExpression == null) {
     return null;
   }
   const {
-    wordMatch,
+    expression,
     range,
-  } = extractedIdentifier;
-  const word = wordMatch[0];
-  if (word == null) {
+  } = evaluationExpression;
+  if (expression == null) {
     return null;
   }
   const evaluationResult: ?EvaluationResult =
-    await model.getBridge().evaluateOnSelectedCallFrame(word);
+    await model.getBridge().evaluateOnSelectedCallFrame(expression);
   if (evaluationResult == null) {
     return null;
   }
@@ -75,7 +114,7 @@ export async function debuggerDatatip(
   } = evaluationResult;
   const displayValue = resultType === 'object' ? description : value;
   return {
-    component: <div>{word} = {displayValue}</div>,
+    component: <div>{expression} = {displayValue}</div>,
     pinnable: false,
     range,
   };
