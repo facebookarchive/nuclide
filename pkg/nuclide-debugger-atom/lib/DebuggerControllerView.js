@@ -11,11 +11,11 @@
 
 const {React} = require('react-for-atom');
 const {PropTypes} = React;
-const BreakpointStore = require('./BreakpointStore');
+const BreakpointStore = require('./BreakpointStore.js');
 const DebuggerActions = require('./DebuggerActions');
 const DebuggerInspector = require('./DebuggerInspector');
 const DebuggerSessionSelector = require('./DebuggerSessionSelector');
-const DebuggerStore = require('./DebuggerStore');
+const {DebuggerStore} = require('./DebuggerStore');
 const Bridge = require('./Bridge');
 
 type State = {

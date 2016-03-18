@@ -13,7 +13,7 @@ import {DebuggerProviderStore} from './DebuggerProviderStore';
 const BreakpointManager = require('./BreakpointManager');
 const BreakpointStore = require('./BreakpointStore');
 const DebuggerActions = require('./DebuggerActions');
-const DebuggerStore = require('./DebuggerStore');
+const {DebuggerStore} = require('./DebuggerStore');
 const Bridge = require('./Bridge');
 const {CompositeDisposable} = require('atom');
 const {Dispatcher} = require('flux');

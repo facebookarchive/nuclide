@@ -11,7 +11,7 @@
 
 const DebuggerActions = require('./DebuggerActions');
 const DebuggerProcessInfo = require('./DebuggerProcessInfo');
-const DebuggerStore = require('./DebuggerStore');
+const {DebuggerStore} = require('./DebuggerStore');
 const {React} = require('react-for-atom');
 const {PropTypes} = React;
 

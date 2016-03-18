@@ -14,13 +14,14 @@ const {CompositeDisposable} = require('atom');
 import {beginTimerTracking, failTimerTracking, endTimerTracking} from './AnalyticsHelper';
 import remoteUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
+import {DebuggerMode} from './DebuggerStore';
 
 import type {Dispatcher} from 'flux';
 import type {
   nuclide_debugger$Service,
   NuclideDebuggerProvider,
 } from '../../nuclide-debugger-interfaces/service';
-import type DebuggerStoreType from './DebuggerStore';
+import type {DebuggerStore} from './DebuggerStore';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 import type BridgeType from './Bridge';
 import type DebuggerInstance from './DebuggerInstance';
@@ -42,10 +43,10 @@ const AnalyticsEvents = {
 class DebuggerActions {
   _disposables: CompositeDisposable;
   _dispatcher: Dispatcher;
-  _store: DebuggerStoreType;
+  _store: DebuggerStore;
   _bridge: BridgeType;
 
-  constructor(dispatcher: Dispatcher, store: DebuggerStoreType) {
+  constructor(dispatcher: Dispatcher, store: DebuggerStore) {
     this._disposables = new CompositeDisposable();
     this._dispatcher = dispatcher;
     this._store = store;
@@ -63,7 +64,7 @@ class DebuggerActions {
 
     this._dispatcher.dispatch({
       actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
-      data: 'starting',
+      data: DebuggerMode.STARTING,
     });
 
     try {
@@ -98,7 +99,7 @@ class DebuggerActions {
     });
     this._dispatcher.dispatch({
       actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
-      data: 'debugging',  // Debugger finished initializing and enterig debug mode.
+      data: DebuggerMode.RUNNING,  // Debugger finished initializing and entered debug mode.
     });
   }
 
@@ -107,13 +108,13 @@ class DebuggerActions {
   }
 
   killDebugger() {
-    if (this._store.getDebuggerMode() === 'stopping') {
+    if (this._store.getDebuggerMode() === DebuggerMode.STOPPING) {
       return;
     }
 
     this._dispatcher.dispatch({
       actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
-      data: 'stopping',
+      data: DebuggerMode.STOPPING,
     });
     const debugSession = this._store.getDebuggerProcess();
     if (debugSession != null) {
@@ -129,7 +130,7 @@ class DebuggerActions {
     });
     this._dispatcher.dispatch({
       actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
-      data: 'stopped',
+      data: DebuggerMode.STOPPED,
     });
     track(AnalyticsEvents.DEBUGGER_STOP);
     endTimerTracking();

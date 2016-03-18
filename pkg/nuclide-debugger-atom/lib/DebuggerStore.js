@@ -18,7 +18,14 @@ import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/s
 import type DebuggerInstance from './DebuggerInstance';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 
-type DebuggerMode = 'starting' | 'debugging' | 'stopping' | 'stopped';
+type DebuggerModeType = 'starting' | 'running' | 'paused' | 'stopping' | 'stopped';
+const DebuggerMode: {[key: string]: DebuggerModeType} = Object.freeze({
+  STARTING: 'starting',
+  RUNNING: 'running',
+  PAUSED: 'paused',
+  STOPPING: 'stopping',
+  STOPPED: 'stopped',
+});
 
 /**
  * Flux style Store holding all data used by the debugger plugin.
@@ -33,7 +40,7 @@ class DebuggerStore {
   _error: ?string;
   _services: Set<nuclide_debugger$Service>;
   _processSocket: ?string;
-  _debuggerMode: DebuggerMode;
+  _debuggerMode: DebuggerModeType;
 
   constructor(dispatcher: Dispatcher) {
     this._dispatcher = dispatcher;
@@ -44,7 +51,7 @@ class DebuggerStore {
     this._error = null;
     this._services = new Set();
     this._processSocket = null;
-    this._debuggerMode = 'stopped';
+    this._debuggerMode = DebuggerMode.STOPPED;
   }
 
   dispose() {
@@ -85,7 +92,7 @@ class DebuggerStore {
     return this._processSocket;
   }
 
-  getDebuggerMode(): DebuggerMode {
+  getDebuggerMode(): DebuggerModeType {
     return this._debuggerMode;
   }
 
@@ -93,6 +100,16 @@ class DebuggerStore {
     const emitter = this._eventEmitter;
     this._eventEmitter.on('change', callback);
     return new Disposable(() => emitter.removeListener('change', callback));
+  }
+
+  setDebuggerMode(newMode: DebuggerModeType): void {
+    this._debuggerMode = newMode;
+  // Using a setter is necessary to circumvent timing issues when using the dispatcher.
+    // TODO fix underlying dispatcher timing problem & move to proper Flux implementation.
+    // this._dispatcher.dispatch({
+    //   actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
+    //   data: newMode,
+    // });
   }
 
   _handlePayload(payload: Object) {
@@ -128,4 +145,7 @@ class DebuggerStore {
   }
 }
 
-module.exports = DebuggerStore;
+module.exports = {
+  DebuggerMode,
+  DebuggerStore,
+};

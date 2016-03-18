@@ -13,6 +13,7 @@ import type DebuggerModel from './DebuggerModel';
 
 const remoteUri = require('../../nuclide-remote-uri');
 const {CompositeDisposable, Disposable} = require('atom');
+import {DebuggerMode} from './DebuggerStore';
 
 const INJECTED_CSS = [
   /* Force the inspector to scroll vertically on Atom ≥ 1.4.0 */
@@ -105,7 +106,7 @@ class Bridge {
             this._openSourceLocation(event.args[1]);
             break;
           case 'DebuggerResumed':
-            this._setSelectedCallFrameLine(null);
+            this._handleDebuggerResumed();
             break;
           case 'BreakpointAdded':
             this._addBreakpoint(event.args[1]);
@@ -113,9 +114,21 @@ class Bridge {
           case 'BreakpointRemoved':
             this._removeBreakpoint(event.args[1]);
             break;
+          case 'DebuggerPaused':
+            this._handleDebuggerPaused(event.args[1]);
+            break;
         }
         break;
     }
+  }
+
+  _handleDebuggerPaused(additionalData: {sourceUrl?: string}): void {
+    this._debuggerModel.getStore().setDebuggerMode(DebuggerMode.PAUSED);
+  }
+
+  _handleDebuggerResumed(): void {
+    this._setSelectedCallFrameLine(null);
+    this._debuggerModel.getStore().setDebuggerMode(DebuggerMode.RUNNING);
   }
 
   _setSelectedCallFrameLine(nullableOptions: ?{sourceURL: string; lineNumber: number}) {
