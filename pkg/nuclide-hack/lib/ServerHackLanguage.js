@@ -69,8 +69,18 @@ export class ServerHackLanguage {
     startPosition: number,
     endPosition: number,
   ): Promise<string> {
-    // TBD
-    return contents;
+    const path = this._basePath;
+    if (path == null) {
+      throw new Error('No Hack provider for this file.');
+    }
+    const {formatSource} = getHackService(path);
+    const response = await formatSource(path, contents, startPosition, endPosition);
+    if (response == null) {
+      throw new Error('Error formatting hack source.');
+    } else if (response.error_message !== '') {
+      throw new Error(`Error formatting hack source: ${response.error_message}`);
+    }
+    return response.result;
   }
 
   async highlightSource(

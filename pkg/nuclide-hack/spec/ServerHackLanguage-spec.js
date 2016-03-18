@@ -18,6 +18,7 @@ import type {
   HackTypedRegion,
   HackTypeAtPosResult,
   HackFindLvarRefsResult,
+  HackFormatSourceResult,
 } from '../../nuclide-hack-base/lib/HackService';
 
 import {uncachedRequire, clearRequireCache} from '../../nuclide-test-helpers';
@@ -41,6 +42,7 @@ describe('ServerHackLanguage', () => {
       'getTypedRegions',
       'getTypeAtPos',
       'getSourceHighlights',
+      'formatSource',
     ]);
     spyOn(require('../lib/utils'), 'getHackService')
       .andReturn(mockService);
@@ -104,9 +106,17 @@ AUTO332class HackClass {}`);
 
   it('formatSource', () => {
     waitsForPromise(async () => {
+      const serviceResult: HackFormatSourceResult = {
+        error_message: '',
+        result: 'format-result',
+        internal_error: false,
+      };
+      mockService.formatSource.andReturn(serviceResult);
+
       const result = await hackLanguage.formatSource(contents, 0, contents.length);
-      // TODO
-      expect(result).toEqual(contents);
+
+      expect(mockService.formatSource).toHaveBeenCalledWith(basePath, contents, 0, contents.length);
+      expect(result).toEqual(serviceResult.result);
     });
   });
 

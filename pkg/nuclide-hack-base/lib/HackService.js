@@ -127,6 +127,12 @@ export type HackFindLvarRefsResult = {
   internal_error: boolean;
 };
 
+export type HackFormatSourceResult = {
+  error_message: string;
+  result: string;
+  internal_error: boolean;
+};
+
 const HH_NEWLINE = '<?hh\n';
 const HH_STRICT_NEWLINE = '<?hh // strict\n';
 const HH_DIAGNOSTICS_DELAY_MS = 600;
@@ -453,6 +459,26 @@ export async function getSourceHighlights(
 ): Promise<?HackFindLvarRefsResult> {
   const hhResult = await callHHClient(
     /*args*/ ['--find-lvar-refs', contents, line, column],
+    /*errorStream*/ false,
+    /*outputJson*/ true,
+    /*processInput*/ null,
+    /*file*/ filePath,
+  );
+  if (!hhResult) {
+    return null;
+  }
+  const {result} = hhResult;
+  return (result: any);
+}
+
+export async function formatSource(
+  filePath: NuclideUri,
+  contents: string,
+  startOffset: number,
+  endOffset: number,
+): Promise<?HackFormatSourceResult> {
+  const hhResult = await callHHClient(
+    /*args*/ ['--format', contents, startOffset, endOffset],
     /*errorStream*/ false,
     /*outputJson*/ true,
     /*processInput*/ null,
