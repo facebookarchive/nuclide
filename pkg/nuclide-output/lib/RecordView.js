@@ -11,6 +11,8 @@
 
 import type {Record} from './types';
 
+import CodeBlock from './CodeBlock';
+import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
 type Props = {
@@ -22,16 +24,20 @@ export default class RecordView extends React.Component {
 
   render(): ReactElement {
     const {record} = this.props;
-    const classes = [
+    const classNames = classnames(
       'nuclide-output-record',
-      `level-${record.level}`,
-    ];
+      `level-${record.level || 'log'}`,
+      {
+        request: record.kind === 'request',
+        response: record.kind === 'response',
+      },
+    );
 
     const iconName = getIconName(record);
     const icon = iconName ? <span className={`icon icon-${iconName}`} /> : null;
 
     return (
-      <div className={classes.join(' ')}>
+      <div className={classNames}>
         {icon}
         {renderContent(record)}
       </div>
@@ -41,12 +47,22 @@ export default class RecordView extends React.Component {
 }
 
 function renderContent(record: Record): ReactElement {
+  if (record.kind === 'request') {
+    return <CodeBlock text={record.text} />;
+  }
+
   // If there's not text, use a space to make sure the row doesn't collapse.
   const text = record.text || ' ';
   return <pre>{text}</pre>;
 }
 
 function getIconName(record: Record): ?string {
+  switch (record.kind) {
+    case 'request':
+      return 'chevron-right';
+    case 'response':
+      return 'arrow-small-left';
+  }
   switch (record.level) {
     case 'info':
       return 'info';

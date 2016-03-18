@@ -9,17 +9,24 @@
  * the root directory of this source tree.
  */
 
-import type {Record} from './types';
+import type {Record, Executor} from './types';
 
-import {debounce} from '../../nuclide-commons';
+import {array, debounce} from '../../nuclide-commons';
 import {React} from 'react-for-atom';
 import OutputTable from './OutputTable';
 import ConsoleHeader from './ConsoleHeader';
+import InputArea from './InputArea';
+import PromptButton from './PromptButton';
 import RecordView from './RecordView';
+import invariant from 'assert';
 
 type Props = {
   records: Array<Record>;
   clearRecords: () => void;
+  execute: (code: string) => void;
+  currentExecutor: ?Executor;
+  executors: Map<string, Executor>;
+  selectExecutor: (executorId: string) => void;
 };
 
 export default class Console extends React.Component {
@@ -50,6 +57,24 @@ export default class Console extends React.Component {
     }
   }
 
+  _renderPromptButton(): ReactElement {
+    invariant(this.props.currentExecutor != null);
+    const {currentExecutor} = this.props;
+    const options = array.from(this.props.executors.values())
+      .map(executor => ({
+        id: executor.id,
+        label: executor.name,
+      }));
+    return (
+      <PromptButton
+        value={currentExecutor.id}
+        onChange={this.props.selectExecutor}
+        options={options}
+        children={currentExecutor.name}
+      />
+    );
+  }
+
   render(): ?ReactElement {
     return (
       <div className="nuclide-output">
@@ -59,7 +84,22 @@ export default class Console extends React.Component {
           className="nuclide-output-scroll-pane"
           onScroll={this._handleScroll}>
           <OutputTable records={this.props.records} />
+          {this._renderPrompt()}
         </div>
+      </div>
+    );
+  }
+
+  _renderPrompt(): ?ReactElement {
+    if (this.props.currentExecutor == null) {
+      return;
+    }
+    return (
+      <div className="nuclide-output-prompt">
+        {this._renderPromptButton()}
+        <InputArea
+          onSubmit={this.props.execute}
+        />
       </div>
     );
   }

@@ -11,14 +11,17 @@
 
 import type Commands from './Commands';
 import type {Gadget} from '../../nuclide-gadgets-interfaces';
-import type {AppState, Record} from './types';
+import type {AppState, Record, Executor} from './types';
 import type Rx from 'rx';
 
 import Console from './Console';
 import {React} from 'react-for-atom';
+import getCurrentExecutorId from './getCurrentExecutorId';
 
 type State = {
+  currentExecutor: ?Executor;
   records: Array<Record>;
+  executors: Map<string, Executor>;
 };
 
 export default function createOutputGadget(
@@ -26,8 +29,7 @@ export default function createOutputGadget(
   commands: Commands,
 ): Gadget {
 
-  class OutputGadget extends React.Component {
-
+  class OutputGadget extends React.Component<void, void, State> {
     state: State;
 
     static gadgetId = 'nuclide-output';
@@ -38,6 +40,8 @@ export default function createOutputGadget(
     constructor(props: mixed) {
       super(props);
       this.state = {
+        currentExecutor: null,
+        executors: new Map(),
         records: [],
       };
     }
@@ -47,7 +51,16 @@ export default function createOutputGadget(
     }
 
     componentWillMount() {
-      this._state$Subscription = state$.subscribe(state => this.setState({records: state.records}));
+      this._state$Subscription = state$.subscribe(state => {
+        const currentExecutorId = getCurrentExecutorId(state);
+        const currentExecutor =
+          currentExecutorId != null ? state.executors.get(currentExecutorId) : null;
+        this.setState({
+          currentExecutor,
+          executors: state.executors,
+          records: state.records,
+        });
+      });
     }
 
     componentWillUnmount() {
@@ -57,8 +70,12 @@ export default function createOutputGadget(
     render(): ?ReactElement {
       return (
         <Console
-          clearRecords={() => commands.clearRecords()}
+          execute={code => commands.execute(code)}
+          selectExecutor={commands.selectExecutor.bind(commands)}
+          clearRecords={commands.clearRecords.bind(commands)}
+          currentExecutor={this.state.currentExecutor}
           records={this.state.records}
+          executors={this.state.executors}
         />
       );
     }
