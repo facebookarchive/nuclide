@@ -702,11 +702,17 @@ class DiffViewModel {
       await this._activeRepositoryStack.amend(publishMessage);
       atom.notifications.addSuccess('Commit amended with the updated message');
     }
+
+    // TODO(rossallen): Make nuclide-console inform the user there is new output rather than force
+    // it open like the following.
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
+
+    this._messages.onNext({level: 'log', text: 'Creating new revision...'});
     await arcanist.createPhabricatorRevision(filePath)
       .tap(
         (message: {stderr?: string; stdout?: string;}) => {
           this._messages.onNext({
-            level: (message.stderr == null) ? 'info' : 'error',
+            level: (message.stderr == null) ? 'log' : 'error',
             text: message.stdout || message.stderr,
           });
         },
@@ -728,11 +734,20 @@ class DiffViewModel {
     if (userUpdateMessage.length === 0) {
       throw new Error('Cannot update revision with empty message');
     }
+
+    // TODO(rossallen): Make nuclide-console inform the user there is new output rather than force
+    // it open like the following.
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
+
+    this._messages.onNext({
+      level: 'log',
+      text: `Updating revision \`${phabricatorRevision.id}\`...`,
+    });
     await arcanist.updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked)
       .tap(
         (message: {stderr?: string; stdout?: string;}) => {
           this._messages.onNext({
-            level: (message.stderr == null) ? 'info' : 'error',
+            level: (message.stderr == null) ? 'log' : 'error',
             text: message.stdout || message.stderr,
           });
         },
