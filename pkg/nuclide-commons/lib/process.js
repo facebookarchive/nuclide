@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import * as array from './array';
 import {
   execFile,
   fork,
@@ -104,11 +103,13 @@ async function createExecEnvironment(
   if (platformPath) {
     execEnv.PATH = platformPath;
   } else if (commonBinaryPaths.length) {
-    const paths = new Set([
-      ...execEnv.PATH.split(path.delimiter),
-      ...commonBinaryPaths,
-    ]);
-    execEnv.PATH = array.from(paths).join(path.delimiter);
+    const paths = execEnv.PATH.split(path.delimiter);
+    commonBinaryPaths.forEach(commonBinaryPath => {
+      if (paths.indexOf(commonBinaryPath) === -1) {
+        paths.push(commonBinaryPath);
+      }
+    });
+    execEnv.PATH = paths.join(path.delimiter);
   }
 
   return execEnv;
