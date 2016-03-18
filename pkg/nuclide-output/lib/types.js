@@ -37,6 +37,7 @@ export type Record = {
 };
 
 export type AppState = {
+  currentExecutorId: ?string;
   executors: Map<string, Executor>;
   maxMessageCount: number;
   records: Array<Record>;

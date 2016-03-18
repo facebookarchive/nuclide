@@ -91,6 +91,13 @@ export default class Commands {
     });
   }
 
+  selectExecutor(executorId: string): void {
+    this._observer.onNext({
+      type: ActionTypes.SELECT_EXECUTOR,
+      payload: {executorId},
+    });
+  }
+
   setMaxMessageCount(maxMessageCount: number): void {
     this._observer.onNext({
       type: ActionTypes.MAX_MESSAGE_COUNT_UPDATED,

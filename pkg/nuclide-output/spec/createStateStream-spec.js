@@ -16,6 +16,7 @@ import createStateStream from '../lib/createStateStream';
 import Rx from 'rx';
 
 const emptyAppState = {
+  currentExecutorId: null,
   maxMessageCount: Number.POSITIVE_INFINITY,
   executors: new Map(),
   providers: new Map(),

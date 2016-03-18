@@ -99,6 +99,7 @@ function deserializeAppState(rawState: ?Object): AppState {
   rawState = rawState || {};
   return {
     executors: new Map(),
+    currentExecutorId: null,
     records: rawState.records || [],
     providers: new Map(),
     providerSubscriptions: new Map(),

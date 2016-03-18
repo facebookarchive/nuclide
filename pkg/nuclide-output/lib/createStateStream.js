@@ -67,6 +67,13 @@ function accumulateState(state: AppState, action: Object): AppState {
         executors: new Map(state.executors).set(executor.id, executor),
       };
     }
+    case ActionTypes.SELECT_EXECUTOR: {
+      const {executorId} = action.payload;
+      return {
+        ...state,
+        currentExecutorId: executorId,
+      };
+    }
     case ActionTypes.SOURCE_REMOVED: {
       const {source} = action.payload;
       const providers = new Map(state.providers);
