@@ -9,13 +9,17 @@
  * the root directory of this source tree.
  */
 
+import type {Executor} from '../lib/types';
+
 import * as ActionTypes from '../lib/ActionTypes';
 import createStateStream from '../lib/createStateStream';
 import Rx from 'rx';
 
 const emptyAppState = {
   maxMessageCount: Number.POSITIVE_INFINITY,
+  executors: new Map(),
   providers: new Map(),
+  providerSubscriptions: new Map(),
   records: [],
 };
 
@@ -88,9 +92,9 @@ describe('createStateStream', () => {
         action$.onNext({
           type: ActionTypes.PROVIDER_REGISTERED,
           payload: {
-            outputProvider: {
+            recordProvider: {
               source: 'test',
-              messages: Rx.Observable.empty(),
+              records: Rx.Observable.empty(),
             },
           },
         });
@@ -116,6 +120,7 @@ describe('createStateStream', () => {
     beforeEach(() => {
       waitsForPromise(async () => {
         initialRecords = [{
+          kind: 'message',
           source: 'Test',
           level: 'info',
           text: 'test',
@@ -145,4 +150,83 @@ describe('createStateStream', () => {
 
   });
 
+  describe('executor registration', () => {
+    let initialExecutors;
+    let finalState;
+    let action$;
+    let state$;
+
+    beforeEach(() => {
+      initialExecutors = new Map([['a', createDummyExecutor('a')]]);
+      const initialState = {
+        ...emptyAppState,
+        executors: initialExecutors,
+      };
+      action$ = new Rx.Subject();
+      state$ = createStateStream(action$, initialState).publishLast();
+      state$.connect();
+    });
+
+    describe('REGISTER_EXECUTOR', () => {
+
+      beforeEach(() => {
+        waitsForPromise(async () => {
+          action$.onNext({
+            type: ActionTypes.REGISTER_EXECUTOR,
+            payload: {
+              executor:  createDummyExecutor('b'),
+            },
+          });
+          action$.onCompleted();
+          finalState = await state$.toPromise();
+        });
+      });
+
+      it('adds an executor', () => {
+        expect(finalState.executors.size).toBe(2);
+      });
+
+      it("doesn't mutate the original executor map", () => {
+        expect(initialExecutors.size).toBe(1);
+      });
+
+    });
+
+    describe('UNREGISTER_EXECUTOR', () => {
+
+      beforeEach(() => {
+        waitsForPromise(async () => {
+          action$.onNext({
+            type: ActionTypes.UNREGISTER_EXECUTOR,
+            payload: {
+              executor:  initialExecutors.get('a'),
+            },
+          });
+          action$.onCompleted();
+          finalState = await state$.toPromise();
+        });
+      });
+
+
+      it('removes an executor', () => {
+        expect(finalState.executors.size).toBe(0);
+      });
+
+      it("doesn't mutate the original executor map", () => {
+        expect(initialExecutors.size).toBe(1);
+      });
+
+    });
+
+  });
+
 });
+
+function createDummyExecutor(id: string): Executor {
+  return {
+    id,
+    name: id,
+    execute: (code: string) => {},
+    output: Rx.Observable.create(observer => {}),
+  };
+}

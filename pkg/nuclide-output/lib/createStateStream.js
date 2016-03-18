@@ -46,10 +46,12 @@ function accumulateState(state: AppState, action: Object): AppState {
       };
     }
     case ActionTypes.PROVIDER_REGISTERED: {
-      const {outputProvider} = action.payload;
+      const {recordProvider, subscription} = action.payload;
       return {
         ...state,
-        providers: new Map(state.providers).set(outputProvider.source, outputProvider),
+        providers: new Map(state.providers).set(recordProvider.source, recordProvider),
+        providerSubscriptions:
+          new Map(state.providerSubscriptions).set(recordProvider.source, subscription),
       };
     }
     case ActionTypes.RECORDS_CLEARED: {
@@ -58,13 +60,32 @@ function accumulateState(state: AppState, action: Object): AppState {
         records: [],
       };
     }
+    case ActionTypes.REGISTER_EXECUTOR: {
+      const {executor} = action.payload;
+      return {
+        ...state,
+        executors: new Map(state.executors).set(executor.id, executor),
+      };
+    }
     case ActionTypes.SOURCE_REMOVED: {
       const {source} = action.payload;
       const providers = new Map(state.providers);
+      const providerSubscriptions = new Map(state.providerSubscriptions);
       providers.delete(source);
+      providerSubscriptions.delete(source);
       return {
         ...state,
         providers,
+        providerSubscriptions,
+      };
+    }
+    case ActionTypes.UNREGISTER_EXECUTOR: {
+      const {executor} = action.payload;
+      const executors = new Map(state.executors);
+      executors.delete(executor.id);
+      return {
+        ...state,
+        executors,
       };
     }
   }

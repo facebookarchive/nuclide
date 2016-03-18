@@ -10,9 +10,9 @@
  */
 
 import type {GadgetsService, Gadget} from '../../nuclide-gadgets-interfaces';
-import type {AppState} from './types';
+import type {AppState, RegisterExecutorFunction} from './types';
 
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 import Commands from './Commands';
 import createOutputGadget from './createOutputGadget';
 import createStateStream from './createStateStream';
@@ -77,6 +77,15 @@ class Activation {
     return this._outputService;
   }
 
+  provideRegisterExecutor(): RegisterExecutorFunction {
+    return executor => {
+      this._commands.registerExecutor(executor);
+      return new Disposable(() => {
+        this._commands.unregisterExecutor(executor);
+      });
+    };
+  }
+
   serialize(): Object {
     const state = this._state$.getValue();
     return {
@@ -89,8 +98,10 @@ class Activation {
 function deserializeAppState(rawState: ?Object): AppState {
   rawState = rawState || {};
   return {
+    executors: new Map(),
     records: rawState.records || [],
     providers: new Map(),
+    providerSubscriptions: new Map(),
 
     // This value will be replaced with the value form the config. We just use `POSITIVE_INFINITY`
     // here to conform to the AppState type defintion.

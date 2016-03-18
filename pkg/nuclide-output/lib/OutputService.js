@@ -12,6 +12,8 @@
 import type Commands from './Commands';
 import type {OutputProvider} from './types';
 
+import {Disposable} from 'atom';
+
 export default class OutputService {
   _commands: Commands;
 
@@ -20,7 +22,10 @@ export default class OutputService {
   }
 
   registerOutputProvider(outputProvider: OutputProvider): IDisposable {
-    return this._commands.registerOutputProvider(outputProvider);
+    this._commands.registerOutputProvider(outputProvider);
+    return new Disposable(() => {
+      this._commands.removeSource(outputProvider.source);
+    });
   }
 
 }

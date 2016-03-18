@@ -10,6 +10,7 @@
  */
 
 import type ActivationType from './Activation';
+import type {RegisterExecutorFunction} from './types';
 import type {GadgetsService} from '../../nuclide-gadgets-interfaces';
 import type OutputService from './OutputService';
 
@@ -41,4 +42,9 @@ export function consumeGadgetsService(
 export function provideOutputService(): OutputService {
   invariant(activation);
   return activation.provideOutputService();
+}
+
+export function provideRegisterExecutor(): RegisterExecutorFunction {
+  invariant(activation);
+  return activation.provideRegisterExecutor();
 }
