@@ -11,8 +11,26 @@
 
 import type DebuggerModel from './DebuggerModel';
 
-const remoteUri = require('../../nuclide-remote-uri');
+type ExpressionResult = {
+  expression: string;
+  result: ?EvaluationResult;
+  error: ?Object;
+};
+
+export type EvaluationResult = {
+  _type: string;
+  // Either:
+  value?: string;
+  // Or:
+  _description? : string;
+};
+
+import Rx from 'rx';
+import invariant from 'assert';
 const {CompositeDisposable, Disposable} = require('atom');
+
+import {getLogger} from '../../nuclide-logging';
+const remoteUri = require('../../nuclide-remote-uri');
 import {DebuggerMode} from './DebuggerStore';
 
 const INJECTED_CSS = [
@@ -21,6 +39,16 @@ const INJECTED_CSS = [
   /* Force the contents of the mini console (on the bottom) to scroll vertically */
   '.insertion-point-sidebar#drawer-contents {overflow-y: auto;}',
 ].join('');
+
+async function promiseForBehaviorSubject<T>(subject: Rx.BehaviorSubject<T>): Promise<?T> {
+  try {
+    await subject.toPromise();
+  } catch (e) {
+    getLogger().warn('promiseForBehaviorSubject: Subject observed error.', e);
+    return null;
+  }
+  return subject.getValue();
+}
 
 class Bridge {
   _debuggerModel: DebuggerModel;
@@ -31,6 +59,8 @@ class Bridge {
   _selectedCallFrameMarker: ?atom$Marker;
   _webview: ?WebviewElement;
   _suppressBreakpointSync: boolean;
+  // Tracks requests for expression evaluation, keyed by the expression body.
+  _expressionsInFlight: Map<string, Rx.BehaviorSubject<?EvaluationResult>>;
 
   constructor(debuggerModel: DebuggerModel) {
     this._debuggerModel = debuggerModel;
@@ -41,6 +71,7 @@ class Bridge {
     this._disposables = new CompositeDisposable(
       debuggerModel.getBreakpointStore().onChange(this._handleBreakpointStoreChange.bind(this)),
     );
+    this._expressionsInFlight = new Map();
   }
 
   setWebviewElement(webview: WebviewElement) {
@@ -87,6 +118,44 @@ class Bridge {
     }
   }
 
+  async evaluateOnSelectedCallFrame(expression: string): Promise<?EvaluationResult> {
+    if (this._webview == null) {
+      return null;
+    }
+    let subject;
+    if (this._expressionsInFlight.has(expression)) {
+      subject = this._expressionsInFlight.get(expression);
+    } else {
+      subject = new Rx.BehaviorSubject();
+      this._expressionsInFlight.set(expression, subject);
+      invariant(this._webview != null);
+      this._webview.send('command', 'evaluateOnSelectedCallFrame', expression);
+    }
+    invariant(subject != null);
+    const result: EvaluationResult = (await promiseForBehaviorSubject(subject): any);
+    this._expressionsInFlight.delete(expression);
+    return result;
+  }
+
+  _handleExpressionEvaluationResponse(additionalData: ExpressionResult): void {
+    const {
+      expression,
+      result,
+      error,
+    } = additionalData;
+    const subject = this._expressionsInFlight.get(expression);
+    if (subject == null) {
+      // Nobody is listening for the result of this expression.
+      return;
+    }
+    if (error != null) {
+      subject.onError(error);
+    } else {
+      subject.onNext(result);
+      subject.onCompleted();
+    }
+  }
+
   _handleIpcMessage(stdEvent: Event): void {
     // addEventListener expects its callback to take an Event. I'm not sure how to reconcile it with
     // the type that is expected here.
@@ -116,6 +185,9 @@ class Bridge {
             break;
           case 'DebuggerPaused':
             this._handleDebuggerPaused(event.args[1]);
+            break;
+          case 'ExpressionEvaluationResponse':
+            this._handleExpressionEvaluationResponse(event.args[1]);
             break;
         }
         break;
@@ -227,6 +299,7 @@ class Bridge {
       this._webview.insertCSS(INJECTED_CSS);
     }
   }
+
 }
 
 module.exports = Bridge;
