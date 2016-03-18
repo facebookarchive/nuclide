@@ -23,3 +23,18 @@ export type NuclideDebuggerProvider = {
   name: string;
   getLaunchAttachProvider(connection: string): ?DebuggerLaunchAttachProvider;
 };
+
+export type NuclideEvaluationExpression = {
+  range: atom$Range;
+  expression: string;
+}
+
+export type NuclideEvaluationExpressionProvider = {
+  name: string;
+  // A comma-separated list of Atom grammars understood by the provider, e.g. 'source.js.jsx'
+  selector: string;
+  getEvaluationExpression(
+    editor: atom$TextEditor,
+    position: atom$Point,
+  ): Promise<?NuclideEvaluationExpression>;
+}

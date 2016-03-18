@@ -22,6 +22,11 @@
     }
   },
   "consumedServices": {
+    "nuclide-evaluation-expression.provider": {
+      "versions": {
+        "0.0.0": "consumeEvaluationExpressionProvider"
+      }
+    },
     "nuclide-debugger-lldb-client-service": {
       "versions": {
         "0.0.0": "consumeNuclideDebugger"

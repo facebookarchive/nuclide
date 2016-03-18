@@ -14,7 +14,10 @@ const {EventEmitter} = require('events');
 const Constants = require('./Constants');
 
 import type {Dispatcher} from 'flux';
-import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/service';
+import type {
+  nuclide_debugger$Service,
+  NuclideEvaluationExpressionProvider,
+} from '../../nuclide-debugger-interfaces/service';
 import type DebuggerInstance from './DebuggerInstance';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 
@@ -39,6 +42,7 @@ class DebuggerStore {
   _debuggerProcess: ?DebuggerInstance;
   _error: ?string;
   _services: Set<nuclide_debugger$Service>;
+  _evaluationExpressionProviders: Set<NuclideEvaluationExpressionProvider>;
   _processSocket: ?string;
   _debuggerMode: DebuggerModeType;
 
@@ -50,6 +54,7 @@ class DebuggerStore {
     this._debuggerProcess = null;
     this._error = null;
     this._services = new Set();
+    this._evaluationExpressionProviders = new Set();
     this._processSocket = null;
     this._debuggerMode = DebuggerMode.STOPPED;
   }
@@ -96,6 +101,10 @@ class DebuggerStore {
     return this._debuggerMode;
   }
 
+  getEvaluationExpressionProviders(): Set<NuclideEvaluationExpressionProvider> {
+    return this._evaluationExpressionProviders;
+  }
+
   onChange(callback: () => void): Disposable {
     const emitter = this._eventEmitter;
     this._eventEmitter.on('change', callback);
@@ -137,6 +146,18 @@ class DebuggerStore {
         break;
       case Constants.Actions.DEBUGGER_MODE_CHANGE:
         this._debuggerMode = payload.data;
+        break;
+      case Constants.Actions.ADD_EVALUATION_EXPRESSION_PROVIDER:
+        if (this._evaluationExpressionProviders.has(payload.data)) {
+          return;
+        }
+        this._evaluationExpressionProviders.add(payload.data);
+        break;
+      case Constants.Actions.REMOVE_EVALUATION_EXPRESSION_PROVIDER:
+        if (!this._evaluationExpressionProviders.has(payload.data)) {
+          return;
+        }
+        this._evaluationExpressionProviders.delete(payload.data);
         break;
       default:
         return;

@@ -12,6 +12,7 @@
 import type {
    nuclide_debugger$Service,
    NuclideDebuggerProvider,
+   NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type {SerializedBreakpoint} from './BreakpointStore';
 
@@ -306,6 +307,19 @@ module.exports = {
     return new Disposable(() => {
       if (activation) {
         activation.getModel().getActions().removeDebuggerProvider(provider);
+      }
+    });
+  },
+
+  consumeEvaluationExpressionProvider(
+    provider: NuclideEvaluationExpressionProvider
+  ): IDisposable {
+    if (activation) {
+      activation.getModel().getActions().addEvaluationExpressionProvider(provider);
+    }
+    return new Disposable(() => {
+      if (activation) {
+        activation.getModel().getActions().removeEvaluationExpressionProvider(provider);
       }
     });
   },

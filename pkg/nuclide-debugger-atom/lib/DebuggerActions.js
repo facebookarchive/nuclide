@@ -20,6 +20,7 @@ import type {Dispatcher} from 'flux';
 import type {
   nuclide_debugger$Service,
   NuclideDebuggerProvider,
+  NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type {DebuggerStore} from './DebuggerStore';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
@@ -160,6 +161,20 @@ class DebuggerActions {
   removeDebuggerProvider(provider: NuclideDebuggerProvider) {
     this._dispatcher.dispatch({
       actionType: Constants.Actions.REMOVE_DEBUGGER_PROVIDER,
+      data: provider,
+    });
+  }
+
+  addEvaluationExpressionProvider(provider: NuclideEvaluationExpressionProvider) {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.ADD_EVALUATION_EXPRESSION_PROVIDER,
+      data: provider,
+    });
+  }
+
+  removeEvaluationExpressionProvider(provider: NuclideEvaluationExpressionProvider) {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.REMOVE_EVALUATION_EXPRESSION_PROVIDER,
       data: provider,
     });
   }
