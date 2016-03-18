@@ -23,6 +23,11 @@ import {
   plain,
 } from '../../nuclide-tokenized-text';
 
+type Extent = {
+  startPosition: Point;
+  endPosition: Point;
+}
+
 export function astToOutline(ast: any): Array<FlowOutlineTree> {
   return itemsToTrees(ast.body);
 }
@@ -35,7 +40,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
   if (item == null) {
     return null;
   }
-  const location = getStartLocation(item);
+  const extent = getExtent(item);
   switch (item.type) {
     case 'FunctionDeclaration':
       return {
@@ -48,7 +53,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
           plain(')'),
         ],
         children: [],
-        startPosition: location,
+        ...extent,
       };
     case 'ClassDeclaration':
       return {
@@ -58,7 +63,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
           className(item.id.name),
         ],
         children: itemsToTrees(item.body.body),
-        startPosition: location,
+        ...extent,
       };
     case 'MethodDefinition':
       return {
@@ -69,7 +74,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
           plain(')'),
         ],
         children: [],
-        startPosition: location,
+        ...extent,
       };
     case 'ExportDeclaration':
       const tree = itemToTree(item.declaration);
@@ -83,7 +88,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
           ...tree.tokenizedText,
         ],
         children: tree.children,
-        startPosition: location,
+        ...extent,
       };
     case 'ExpressionStatement':
       return specOutline(item, /* describeOnly */ true);
@@ -105,12 +110,18 @@ function paramsTokenizedText(params: Array<any>): TokenizedText {
   return textElements;
 }
 
-function getStartLocation(item: any): Point {
+function getExtent(item: any): Extent {
   return {
-    // It definitely makes sense that the lines we get are 1-based and the columns are
-    // 0-based... convert to 0-based all around.
-    line: item.loc.start.line - 1,
-    column: item.loc.start.column,
+    startPosition: {
+      // It definitely makes sense that the lines we get are 1-based and the columns are
+      // 0-based... convert to 0-based all around.
+      line: item.loc.start.line - 1,
+      column: item.loc.start.column,
+    },
+    endPosition: {
+      line: item.loc.end.line - 1,
+      column: item.loc.end.column,
+    },
   };
 }
 
@@ -146,7 +157,7 @@ function specOutline(expressionStatement: any, describeOnly: boolean = false): ?
       string(description),
     ],
     children,
-    startPosition: getStartLocation(expressionStatement),
+    ...getExtent(expressionStatement),
   };
 }
 

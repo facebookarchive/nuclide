@@ -26,6 +26,10 @@ const expectedOutline = [
       line: 15,
       column: 0,
     },
+    endPosition: {
+      line: 19,
+      column: 1,
+    },
     children: [
       {
         tokenizedText: [
@@ -37,6 +41,10 @@ const expectedOutline = [
         startPosition: {
           line: 16,
           column: 2,
+        },
+        endPosition: {
+          line: 18,
+          column: 3,
         },
         children: [],
       },
@@ -58,6 +66,10 @@ const expectedOutline = [
       line: 21,
       column: 0,
     },
+    endPosition: {
+      line: 23,
+      column: 1,
+    },
     children: [],
   },
   {
@@ -70,6 +82,10 @@ const expectedOutline = [
       line: 25,
       column: 0,
     },
+    endPosition: {
+      line: 30,
+      column: 3,
+    },
     children: [
       {
         tokenizedText: [
@@ -80,6 +96,10 @@ const expectedOutline = [
         startPosition: {
           line: 27,
           column: 2,
+        },
+        endPosition: {
+          line: 29,
+          column: 5,
         },
         children: [],
       },
@@ -95,6 +115,10 @@ const expectedOutline = [
       line: 32,
       column: 0,
     },
+    endPosition: {
+      line: 35,
+      column: 3,
+    },
     children: [
       {
         tokenizedText: [
@@ -105,6 +129,10 @@ const expectedOutline = [
         startPosition: {
           line: 33,
           column: 2,
+        },
+        endPosition: {
+          line: 34,
+          column: 5,
         },
         children: [],
       },

@@ -71,6 +71,7 @@ export type FlowOutlineTree = {
   tokenizedText: TokenizedText;
   children: Array<FlowOutlineTree>;
   startPosition: Point;
+  endPosition: Point;
 };
 
 // The origin of this type is at nuclide-tokenized-text/lib/main.js
