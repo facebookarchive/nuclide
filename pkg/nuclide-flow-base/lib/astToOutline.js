@@ -9,8 +9,19 @@
  * the root directory of this source tree.
  */
 
-import type {FlowOutlineTree, FlowStartLocation} from '..';
+import type {FlowOutlineTree, FlowStartLocation} from './FlowService';
 import {array} from '../../nuclide-commons';
+
+import type {TokenizedText} from '../../nuclide-tokenized-text';
+import {
+  keyword,
+  className,
+  method,
+  param,
+  string,
+  whitespace,
+  plain,
+} from '../../nuclide-tokenized-text';
 
 export function astToOutline(ast: any): Array<FlowOutlineTree> {
   return itemsToTrees(ast.body);
@@ -28,19 +39,35 @@ function itemToTree(item: any): ?FlowOutlineTree {
   switch (item.type) {
     case 'FunctionDeclaration':
       return {
-        displayText: `function ${item.id.name}(${paramsString(item.params)})`,
+        tokenizedText: [
+          keyword('function'),
+          whitespace(' '),
+          method(item.id.name),
+          plain('('),
+          ...paramsTokenizedText(item.params),
+          plain(')'),
+        ],
         children: [],
         ...location,
       };
     case 'ClassDeclaration':
       return {
-        displayText: `class ${item.id.name}`,
+        tokenizedText: [
+          keyword('class'),
+          whitespace(' '),
+          className(item.id.name),
+        ],
         children: itemsToTrees(item.body.body),
         ...location,
       };
     case 'MethodDefinition':
       return {
-        displayText: `${item.key.name}(${paramsString(item.value.params)})`,
+        tokenizedText: [
+          method(item.key.name),
+          plain('('),
+          ...paramsTokenizedText(item.value.params),
+          plain(')'),
+        ],
         children: [],
         ...location,
       };
@@ -50,7 +77,11 @@ function itemToTree(item: any): ?FlowOutlineTree {
         return null;
       }
       return {
-        displayText: `export ${tree.displayText}`,
+        tokenizedText: [
+          keyword('export'),
+          whitespace(' '),
+          ...tree.tokenizedText,
+        ],
         children: tree.children,
         ...location,
       };
@@ -61,6 +92,19 @@ function itemToTree(item: any): ?FlowOutlineTree {
   }
 }
 
+function paramsTokenizedText(params: Array<any>): TokenizedText {
+  const textElements = [];
+  params.forEach((p, index) => {
+    textElements.push(param(p.name));
+    if (index < params.length - 1) {
+      textElements.push(plain(','));
+      textElements.push(whitespace(' '));
+    }
+  });
+
+  return textElements;
+}
+
 function getLocation(item: any): FlowStartLocation {
   return {
     // It definitely makes sense that the lines we get are 1-based and the columns are
@@ -68,10 +112,6 @@ function getLocation(item: any): FlowStartLocation {
     startLine: item.loc.start.line - 1,
     startColumn: item.loc.start.column,
   };
-}
-
-function paramsString(params: Array<any>): string {
-  return params.map(param => param.name).join(', ');
 }
 
 function specOutline(expressionStatement: any, describeOnly: boolean = false): ?FlowOutlineTree {
@@ -100,7 +140,11 @@ function specOutline(expressionStatement: any, describeOnly: boolean = false): ?
       .map(item => specOutline(item)));
   }
   return {
-    displayText: `${expression.callee.name} ${description}`,
+    tokenizedText: [
+      method(expression.callee.name),
+      whitespace(' '),
+      string(description),
+    ],
     children,
     ...getLocation(expressionStatement),
   };

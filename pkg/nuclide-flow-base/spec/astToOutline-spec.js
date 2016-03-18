@@ -11,16 +11,27 @@
 
 import {astToOutline} from '../lib/astToOutline';
 
-import ast from './fixtures/ast.json';
+import ast from './fixtures/ast';
 
 const expectedOutline = [
   {
-    displayText: 'export class Foo',
+    tokenizedText: [
+      {value: 'export', kind: 'keyword'},
+      {value: ' ', kind: 'whitespace'},
+      {value: 'class', kind: 'keyword'},
+      {value: ' ', kind: 'whitespace'},
+      {value: 'Foo', kind: 'class-name'},
+    ],
     startLine: 15,
     startColumn: 0,
     children: [
       {
-        displayText: 'bar(arg)',
+        tokenizedText: [
+          {value: 'bar', kind: 'method'},
+          {value: '(', kind: 'plain'},
+          {value: 'arg', kind: 'param'},
+          {value: ')', kind: 'plain'},
+        ],
         startLine: 16,
         startColumn: 2,
         children: [],
@@ -28,18 +39,36 @@ const expectedOutline = [
     ],
   },
   {
-    displayText: 'function baz(arg, a)',
+    tokenizedText: [
+      {value: 'function', kind: 'keyword'},
+      {value: ' ', kind: 'whitespace'},
+      {value: 'baz', kind: 'method'},
+      {value: '(', kind: 'plain'},
+      {value: 'arg', kind: 'param'},
+      {value: ',', kind: 'plain'},
+      {value: ' ', kind: 'whitespace'},
+      {value: 'a', kind: 'param'},
+      {value: ')', kind: 'plain'},
+    ],
     startLine: 21,
     startColumn: 0,
     children: [],
   },
   {
-    displayText: 'describe foo',
+    tokenizedText: [
+      {value: 'describe', kind: 'method'},
+      {value: ' ', kind: 'whitespace'},
+      {value: 'foo', kind: 'string'},
+    ],
     startLine: 25,
     startColumn: 0,
     children: [
       {
-        displayText: 'it should work',
+        tokenizedText: [
+          {value: 'it', kind: 'method'},
+          {value: ' ', kind: 'whitespace'},
+          {value: 'should work', kind: 'string'},
+        ],
         startLine: 27,
         startColumn: 2,
         children: [],
@@ -47,12 +76,20 @@ const expectedOutline = [
     ],
   },
   {
-    displayText: 'describe bar',
+    tokenizedText: [
+      {value: 'describe', kind: 'method'},
+      {value: ' ', kind: 'whitespace'},
+      {value: 'bar', kind: 'string'},
+    ],
     startLine: 32,
     startColumn: 0,
     children: [
       {
-        displayText: 'it should work with a normal function',
+        tokenizedText: [
+          {value: 'it', kind: 'method'},
+          {value: ' ', kind: 'whitespace'},
+          {value: 'should work with a normal function', kind: 'string'},
+        ],
         startLine: 33,
         startColumn: 2,
         children: [],

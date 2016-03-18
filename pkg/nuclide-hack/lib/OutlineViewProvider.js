@@ -11,6 +11,7 @@
 
 import type {Outline, OutlineTree} from '../../nuclide-outline-view';
 import type {HackOutline, HackOutlineItem} from '../../nuclide-hack-base/lib/HackService';
+import {plain} from '../../nuclide-tokenized-text';
 
 import {Point} from 'atom';
 import invariant from 'assert';
@@ -61,7 +62,7 @@ function addMethodsToClasses(hackOutline: HackOutline, classes: Map<string, Outl
 
       const methodOutline = {
         ...outlineTreeFromHackOutlineItem(item),
-        displayText: methodName,
+        tokenizedText: [plain(methodName)],
       };
 
       const classOutline = classes.get(className);
@@ -90,7 +91,7 @@ function sortOutline(outlineTrees: Array<OutlineTree>): void {
 
 function outlineTreeFromHackOutlineItem(item: HackOutlineItem): OutlineTree {
   return {
-    displayText: item.name,
+    tokenizedText: [plain(item.name)],
     startPosition: pointFromHackOutlineItem(item),
     children: [],
   };

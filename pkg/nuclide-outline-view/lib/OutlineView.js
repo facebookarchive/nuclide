@@ -10,7 +10,8 @@
  */
 
 import type {Observable} from 'rx';
-import type {OutlineForUi, OutlineTree} from '..';
+import type {OutlineForUi, OutlineTree} from './main';
+import type {TextToken} from '../../nuclide-tokenized-text';
 
 import {React} from 'react-for-atom';
 import invariant from 'assert';
@@ -24,6 +25,17 @@ type State = {
 
 type Props = {
   outlines: Observable<OutlineForUi>;
+};
+
+const TOKEN_KIND_TO_CLASS_NAME_MAP = {
+  'keyword': 'keyword',
+  'class-name': 'entity name class',
+  'constructor': 'entity name function',
+  'method': 'entity name function',
+  'param': 'variable',
+  'string': 'string',
+  'whitespace': '',
+  'plain': '',
 };
 
 export class OutlineView extends React.Component {
@@ -119,7 +131,7 @@ class OutlineViewComponent extends React.Component {
 
 }
 
-function renderTree(editor: atom$TextEditor, outline: OutlineTree): ReactElement {
+function renderTree(editor: atom$TextEditor, outline: OutlineTree, index: number): ReactElement {
   const onClick = () => {
     const pane = atom.workspace.paneForItem(editor);
     if (pane == null) {
@@ -130,10 +142,10 @@ function renderTree(editor: atom$TextEditor, outline: OutlineTree): ReactElement
     editor.setCursorBufferPosition(outline.startPosition);
   };
   return (
-    <ul className="list-tree" key={getKeyForOutlineTree(outline)}>
+    <ul className="list-tree" key={index}>
       <li className="list-nested-item">
         <div className="list-item nuclide-outline-view-item" onClick={onClick}>
-          {outline.displayText}
+          {outline.tokenizedText.map(renderTextToken)}
         </div>
         {renderTrees(editor, outline.children)}
       </li>
@@ -141,10 +153,11 @@ function renderTree(editor: atom$TextEditor, outline: OutlineTree): ReactElement
   );
 }
 
-function renderTrees(editor: atom$TextEditor, outlines: Array<OutlineTree>): Array<ReactElement> {
-  return outlines.map(outline => renderTree(editor, outline));
+function renderTextToken(token: TextToken, index: number): ReactElement {
+  const className = TOKEN_KIND_TO_CLASS_NAME_MAP[token.kind];
+  return <span className={className} key={index}>{token.value}</span>;
 }
 
-function getKeyForOutlineTree(tree: OutlineTree): string {
-  return `${tree.displayText}:${tree.startPosition.row}:${tree.startPosition.column}`;
+function renderTrees(editor: atom$TextEditor, outlines: Array<OutlineTree>): Array<ReactElement> {
+  return outlines.map((outline, index) => renderTree(editor, outline, index));
 }

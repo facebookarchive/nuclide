@@ -75,9 +75,32 @@ export type FlowStartLocation = {
 };
 
 export type FlowOutlineTree = FlowStartLocation & {
-  displayText: string;
+  tokenizedText: TokenizedText;
   children: Array<FlowOutlineTree>;
 };
+
+// The origin of this type is at nuclide-tokenized-text/lib/main.js
+// When updating update both locations!
+export type TokenKind = 'keyword'
+  | 'class-name'
+  | 'constructor'
+  | 'method'
+  | 'param'
+  | 'string'
+  | 'whitespace'
+  | 'plain'
+  ;
+
+// The origin of this type is at nuclide-tokenized-text/lib/main.js
+// When updating update both locations!
+export type TextToken = {
+  kind: TokenKind;
+  value: string;
+}
+
+// The origin of this type is at nuclide-tokenized-text/lib/main.js
+// When updating update both locations!
+export type TokenizedText = Array<TextToken>;
 
 import {FlowRoot} from './FlowRoot';
 

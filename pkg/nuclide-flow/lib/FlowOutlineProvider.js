@@ -24,6 +24,7 @@ import {
   getLocalFlowService,
 } from './FlowServiceFactory';
 
+
 export class FlowOutlineProvider {
   async getOutline(editor: atom$TextEditor): Promise<?Outline> {
     const filePath = editor.getPath();
@@ -53,7 +54,7 @@ function flowOutlineToNormalOutline(
 
 function flowTreeToNormalTree(flowTree): OutlineTree {
   return {
-    displayText: flowTree.displayText,
+    tokenizedText: flowTree.tokenizedText,
     startPosition: new Point(flowTree.startLine, flowTree.startColumn),
     children: flowTree.children.map(flowTreeToNormalTree),
   };

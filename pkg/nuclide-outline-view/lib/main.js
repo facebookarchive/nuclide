@@ -24,8 +24,10 @@ import {ProviderRegistry} from './ProviderRegistry';
 
 import invariant from 'assert';
 
+import type {TokenizedText} from '../../nuclide-tokenized-text';
+
 export type OutlineTree = {
-  displayText: string;
+  tokenizedText: TokenizedText;
   startPosition: atom$Point;
   children: Array<OutlineTree>;
 };

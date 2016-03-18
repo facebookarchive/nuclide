@@ -77,37 +77,37 @@ const sampleHackOutline = [
 const expectedOutline = {
   outlineTrees: [
     {
-      displayText: 'foo',
+      tokenizedText: [{kind: 'plain', value: 'foo'}],
       startPosition: new Point(178, 9),
       children: [],
     },
     {
-      displayText: 'Bar',
+      tokenizedText: [{kind: 'plain', value: 'Bar'}],
       startPosition: new Point(275, 12),
       children: [
         {
-          displayText: 'foo',
+          tokenizedText: [{kind: 'plain', value: 'foo'}],
           startPosition: new Point(278, 27),
           children: [],
         },
         {
-          displayText: 'baz',
+          tokenizedText: [{kind: 'plain', value: 'baz'}],
           startPosition: new Point(300, 25),
           children: [],
         },
       ],
     },
     {
-      displayText: 'Foo',
+      tokenizedText: [{kind: 'plain', value: 'Foo'}],
       startPosition: new Point(381, 12),
       children: [
         {
-          displayText: 'baz',
+          tokenizedText: [{kind: 'plain', value: 'baz'}],
           startPosition: new Point(382, 18),
           children: [],
         },
         {
-          displayText: 'bar',
+          tokenizedText: [{kind: 'plain', value: 'bar'}],
           startPosition: new Point(387, 18),
           children: [],
         },
@@ -121,7 +121,7 @@ function expectOutlinesToBeEqual(actual: Outline, expected: Outline): void {
 }
 
 function expectOutlineTreesToBeEqual(actual: OutlineTree, expected: OutlineTree): void {
-  expect(actual.displayText).toEqual(expected.displayText);
+  expect(actual.tokenizedText).toEqual(expected.tokenizedText);
   expect(actual.startPosition.isEqual(expected.startPosition)).toBeTruthy();
   expectOutlineTreeArraysToBeEqual(actual.children, expected.children);
 }
