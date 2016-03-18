@@ -11,18 +11,11 @@
 
 import type {HomeFragments} from '../../nuclide-home-interfaces';
 
-import {Observable} from 'rx';
-
 import {CompositeDisposable, Disposable} from 'atom';
-
-import {event as commonsEvent} from '../../nuclide-commons';
-const {observableFromSubscribeFunction} = commonsEvent;
-
-import {getLogger} from '../../nuclide-logging';
-const logger = getLogger();
 
 import {OutlineViewPanelState} from './OutlineViewPanel';
 import {ProviderRegistry} from './ProviderRegistry';
+import {createOutlines} from './createOutlines';
 
 import invariant from 'assert';
 
@@ -103,37 +96,11 @@ class Activation {
 
     this._providers = new ProviderRegistry();
 
-    const textEvent$ = Observable.create(observer => {
-      const textEventDispatcher =
-        require('../../nuclide-text-event-dispatcher').getInstance();
-      return textEventDispatcher.onAnyFileChange(editor => observer.onNext(editor));
-    });
-
-    const paneChange$ = observableFromSubscribeFunction(
-        atom.workspace.observeActivePaneItem.bind(atom.workspace),
-      )
-      // Delay the work on tab switch to keep tab switches snappy and avoid doing a bunch of
-      // computation if there are a lot of consecutive tab switches.
-      .debounce(200);
-
-    // We are over-subscribing a little bit here, but since outlines are typically cheap and fast to
-    // generate that's okay for now.
-    const outlines: Observable<OutlineForUi> = Observable.merge(
-        textEvent$,
-        paneChange$
-          .map(() => atom.workspace.getActiveTextEditor()),
-      )
-      .flatMap(async editor => {
-        if (editor == null) {
-          return {
-            kind: 'not-text-editor',
-          };
-        } else {
-          return this._outlineForEditor(editor);
-        }
-      });
-
-    const panel = this._panel = new OutlineViewPanelState(outlines, state.width, state.visible);
+    const panel = this._panel = new OutlineViewPanelState(
+      createOutlines(this._providers),
+      state.width,
+      state.visible
+    );
     this._disposables.add(panel);
 
     this._disposables.add(
@@ -173,36 +140,6 @@ class Activation {
   consumeOutlineProvider(provider: OutlineProvider): IDisposable {
     this._providers.addProvider(provider);
     return new Disposable(() => this._providers.removeProvider(provider));
-  }
-
-  async _outlineForEditor(editor: atom$TextEditor): Promise<OutlineForUi> {
-    const scopeName = editor.getGrammar().scopeName;
-    const readableGrammarName = editor.getGrammar().name;
-
-    const outlineProvider = this._providers.findProvider(scopeName);
-    if (outlineProvider == null) {
-      return {
-        kind: 'no-provider',
-        grammar: readableGrammarName,
-      };
-    }
-    let outline: ?Outline;
-    try {
-      outline = await outlineProvider.getOutline(editor);
-    } catch (e) {
-      logger.error('Error in outline provider:', e);
-      outline = null;
-    }
-    if (outline == null) {
-      return {
-        kind: 'provider-no-outline',
-      };
-    }
-    return {
-      kind: 'outline',
-      outline,
-      editor,
-    };
   }
 
   consumeToolBar(getToolBar: (group: string) => Object): void {
