@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {FlowOutlineTree, FlowStartLocation} from './FlowService';
+import type {FlowOutlineTree, Point} from '..';
 import {array} from '../../nuclide-commons';
 
 import type {TokenizedText} from '../../nuclide-tokenized-text';
@@ -35,7 +35,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
   if (item == null) {
     return null;
   }
-  const location = getLocation(item);
+  const location = getStartLocation(item);
   switch (item.type) {
     case 'FunctionDeclaration':
       return {
@@ -48,7 +48,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
           plain(')'),
         ],
         children: [],
-        ...location,
+        startPosition: location,
       };
     case 'ClassDeclaration':
       return {
@@ -58,7 +58,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
           className(item.id.name),
         ],
         children: itemsToTrees(item.body.body),
-        ...location,
+        startPosition: location,
       };
     case 'MethodDefinition':
       return {
@@ -69,7 +69,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
           plain(')'),
         ],
         children: [],
-        ...location,
+        startPosition: location,
       };
     case 'ExportDeclaration':
       const tree = itemToTree(item.declaration);
@@ -83,7 +83,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
           ...tree.tokenizedText,
         ],
         children: tree.children,
-        ...location,
+        startPosition: location,
       };
     case 'ExpressionStatement':
       return specOutline(item, /* describeOnly */ true);
@@ -105,12 +105,12 @@ function paramsTokenizedText(params: Array<any>): TokenizedText {
   return textElements;
 }
 
-function getLocation(item: any): FlowStartLocation {
+function getStartLocation(item: any): Point {
   return {
     // It definitely makes sense that the lines we get are 1-based and the columns are
     // 0-based... convert to 0-based all around.
-    startLine: item.loc.start.line - 1,
-    startColumn: item.loc.start.column,
+    line: item.loc.start.line - 1,
+    column: item.loc.start.column,
   };
 }
 
@@ -146,7 +146,7 @@ function specOutline(expressionStatement: any, describeOnly: boolean = false): ?
       string(description),
     ],
     children,
-    ...getLocation(expressionStatement),
+    startPosition: getStartLocation(expressionStatement),
   };
 }
 

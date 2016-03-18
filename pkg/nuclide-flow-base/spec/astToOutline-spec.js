@@ -22,8 +22,10 @@ const expectedOutline = [
       {value: ' ', kind: 'whitespace'},
       {value: 'Foo', kind: 'class-name'},
     ],
-    startLine: 15,
-    startColumn: 0,
+    startPosition: {
+      line: 15,
+      column: 0,
+    },
     children: [
       {
         tokenizedText: [
@@ -32,8 +34,10 @@ const expectedOutline = [
           {value: 'arg', kind: 'param'},
           {value: ')', kind: 'plain'},
         ],
-        startLine: 16,
-        startColumn: 2,
+        startPosition: {
+          line: 16,
+          column: 2,
+        },
         children: [],
       },
     ],
@@ -50,8 +54,10 @@ const expectedOutline = [
       {value: 'a', kind: 'param'},
       {value: ')', kind: 'plain'},
     ],
-    startLine: 21,
-    startColumn: 0,
+    startPosition: {
+      line: 21,
+      column: 0,
+    },
     children: [],
   },
   {
@@ -60,8 +66,10 @@ const expectedOutline = [
       {value: ' ', kind: 'whitespace'},
       {value: 'foo', kind: 'string'},
     ],
-    startLine: 25,
-    startColumn: 0,
+    startPosition: {
+      line: 25,
+      column: 0,
+    },
     children: [
       {
         tokenizedText: [
@@ -69,8 +77,10 @@ const expectedOutline = [
           {value: ' ', kind: 'whitespace'},
           {value: 'should work', kind: 'string'},
         ],
-        startLine: 27,
-        startColumn: 2,
+        startPosition: {
+          line: 27,
+          column: 2,
+        },
         children: [],
       },
     ],
@@ -81,8 +91,10 @@ const expectedOutline = [
       {value: ' ', kind: 'whitespace'},
       {value: 'bar', kind: 'string'},
     ],
-    startLine: 32,
-    startColumn: 0,
+    startPosition: {
+      line: 32,
+      column: 0,
+    },
     children: [
       {
         tokenizedText: [
@@ -90,8 +102,10 @@ const expectedOutline = [
           {value: ' ', kind: 'whitespace'},
           {value: 'should work with a normal function', kind: 'string'},
         ],
-        startLine: 33,
-        startColumn: 2,
+        startPosition: {
+          line: 33,
+          column: 2,
+        },
         children: [],
       },
     ],

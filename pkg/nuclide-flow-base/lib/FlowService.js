@@ -67,16 +67,10 @@ export type ServerStatusUpdate = {
   status: ServerStatusType;
 };
 
-export type FlowStartLocation = {
-  // Service framework can't serialize Point so we need a slightly different type from the canonical
-  // OutlineTree.
-  startLine: number;
-  startColumn: number;
-};
-
-export type FlowOutlineTree = FlowStartLocation & {
+export type FlowOutlineTree = {
   tokenizedText: TokenizedText;
   children: Array<FlowOutlineTree>;
+  startPosition: Point;
 };
 
 // The origin of this type is at nuclide-tokenized-text/lib/main.js
