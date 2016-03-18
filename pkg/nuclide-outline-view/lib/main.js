@@ -24,6 +24,7 @@ import type {TokenizedText} from '../../nuclide-tokenized-text';
 export type OutlineTree = {
   tokenizedText: TokenizedText;
   startPosition: atom$Point;
+  endPosition?: atom$Point;
   children: Array<OutlineTree>;
 };
 
