@@ -9,6 +9,11 @@
     "testRunner": "apm"
   },
   "providedServices": {
+    "nuclide-datatip.provider": {
+      "versions": {
+        "0.0.0": "createDatatipProvider"
+      }
+    },
     "nuclide-debugger.remote": {
       "versions": {
         "description": "Remote control for launching debugger.",

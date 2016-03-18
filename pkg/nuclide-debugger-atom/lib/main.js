@@ -20,6 +20,7 @@ import {CompositeDisposable, Disposable} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
 import RemoteControlService from './RemoteControlService';
 import DebuggerModel from './DebuggerModel';
+import {debuggerDatatip} from './DebuggerDatatip';
 import {
   React,
   ReactDOM,
@@ -29,6 +30,8 @@ import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
 export type SerializedState = {
   breakpoints: ?Array<SerializedBreakpoint>;
 };
+
+const DATATIP_PACKAGE_NAME = 'nuclide-debugger-datatip';
 
 function createDebuggerView(model: DebuggerModel): HTMLElement {
   const DebuggerControllerView = require('./DebuggerControllerView');
@@ -323,5 +326,21 @@ module.exports = {
 
   provideRemoteControlService(): RemoteControlService {
     return new RemoteControlService(() => activation ? activation.getModel() : null);
+  },
+
+  createDatatipProvider(): Object {
+    return {
+      // Eligibility is determined online, based on registered EvaluationExpression providers.
+      validForScope: (scope: string) => true,
+      providerName: DATATIP_PACKAGE_NAME,
+      inclusionPriority: 1,
+      datatip: (editor: TextEditor, position: atom$Point) => {
+        if (activation == null) {
+          return null;
+        }
+        const model = activation.getModel();
+        return debuggerDatatip(model, editor, position);
+      },
+    };
   },
 };
