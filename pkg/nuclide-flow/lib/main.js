@@ -14,6 +14,7 @@ import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../nuclide-busy-signal-provider-base';
 import type {OutlineProvider} from '../../nuclide-outline-view';
+import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 
 const invariant = require('assert');
 const {CompositeDisposable} = require('atom');
@@ -133,6 +134,18 @@ module.exports = {
       providerName: PACKAGE_NAME,
       inclusionPriority: 1,
       typeHint,
+    };
+  },
+
+  createEvaluationExpressionProvider(): NuclideEvaluationExpressionProvider {
+    const {FlowEvaluationExpressionProvider} = require('./FlowEvaluationExpressionProvider');
+    const evaluationExpressionProvider = new FlowEvaluationExpressionProvider();
+    const getEvaluationExpression =
+      evaluationExpressionProvider.getEvaluationExpression.bind(evaluationExpressionProvider);
+    return {
+      selector: GRAMMARS_STRING,
+      name: PACKAGE_NAME,
+      getEvaluationExpression,
     };
   },
 
