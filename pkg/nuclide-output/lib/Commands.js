@@ -12,6 +12,8 @@
 import type {AppState, Executor, OutputProvider, RecordProvider} from './types';
 
 import * as ActionTypes from './ActionTypes';
+import getCurrentExecutorId from './getCurrentExecutorId';
+import invariant from 'assert';
 
 export default class Commands {
 
@@ -26,6 +28,35 @@ export default class Commands {
   clearRecords(): void {
     this._observer.onNext({
       type: ActionTypes.RECORDS_CLEARED,
+    });
+  }
+
+  /**
+   * Execute the provided code using the current executor.
+   */
+  execute(code: string): void {
+    const currentExecutorId = getCurrentExecutorId(this._getState());
+    invariant(currentExecutorId);
+
+    // TODO: Is this the best way to do this? Might want to go through nuclide-executors and have
+    //       that register output sources?
+    this._observer.onNext({
+      type: ActionTypes.MESSAGE_RECEIVED,
+      payload: {
+        record: {
+          kind: 'request',
+          level: 'log',
+          text: code,
+        },
+      },
+    });
+
+    this._observer.onNext({
+      type: ActionTypes.EXECUTE,
+      payload: {
+        executorId: currentExecutorId,
+        code,
+      },
     });
   }
 

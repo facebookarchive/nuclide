@@ -13,11 +13,13 @@ import type {GadgetsService, Gadget} from '../../nuclide-gadgets-interfaces';
 import type {AppState, RegisterExecutorFunction} from './types';
 
 import {CompositeDisposable, Disposable} from 'atom';
+import * as ActionTypes from './ActionTypes';
 import Commands from './Commands';
 import createOutputGadget from './createOutputGadget';
 import createStateStream from './createStateStream';
 import featureConfig from '../../nuclide-feature-config';
 import OutputService from './OutputService';
+import invariant from 'assert';
 import Rx from 'rx';
 
 class Activation {
@@ -61,6 +63,18 @@ class Activation {
         'nuclide-output.maximumMessageCount',
         maxMessageCount => this._commands.setMaxMessageCount(maxMessageCount),
       ),
+
+      // Action side-effects
+      action$.subscribe(action => {
+        if (action.type !== ActionTypes.EXECUTE) {
+          return;
+        }
+        const {executorId, code} = action.payload;
+        const executors = this._state$.getValue().executors;
+        const executor = executors.get(executorId);
+        invariant(executor);
+        executor.execute(code);
+      }),
     );
   }
 

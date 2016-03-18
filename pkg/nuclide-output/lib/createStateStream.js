@@ -27,6 +27,10 @@ export default function createStateStream(
 
 function accumulateState(state: AppState, action: Object): AppState {
   switch (action.type) {
+    case ActionTypes.EXECUTE: {
+      // No-op. This is only for side-effects.
+      return state;
+    }
     case ActionTypes.MESSAGE_RECEIVED: {
       const {record} = action.payload;
       return {
