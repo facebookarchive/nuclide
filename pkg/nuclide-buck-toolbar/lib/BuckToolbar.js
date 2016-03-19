@@ -9,13 +9,12 @@
  * the root directory of this source tree.
  */
 
-const AtomComboBox = require('../../nuclide-ui-atom-combo-box');
 const {CompositeDisposable} = require('atom');
 const {React} = require('react-for-atom');
 const SimulatorDropdown = require('./SimulatorDropdown');
 const BuckToolbarActions = require('./BuckToolbarActions');
 const BuckToolbarStore = require('./BuckToolbarStore');
-import NuclideCheckbox from '../../nuclide-ui-checkbox';
+import {AtomComboBox, NuclideCheckbox} from '../../nuclide-ui';
 
 const {debounce} = require('../../nuclide-commons');
 const {

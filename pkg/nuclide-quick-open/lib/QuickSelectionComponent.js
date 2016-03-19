@@ -35,7 +35,7 @@ type Selection = {
   selectedItemIndex: number;
 };
 
-const AtomInput = require('../../nuclide-ui-atom-input');
+const {AtomInput, NuclideTabs} = require('../../nuclide-ui');
 const {CompositeDisposable, Emitter} = require('atom');
 const {
   debounce,
@@ -48,7 +48,6 @@ const {
 
 import SearchResultManager from './SearchResultManager';
 const searchResultManager = SearchResultManager.getInstance();
-const NuclideTabs = require('../../nuclide-ui-tabs');
 const {PropTypes} = React;
 const classnames = require('classnames');
 

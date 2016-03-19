@@ -23,7 +23,7 @@ type Props = {
   style: ?Object;
 };
 
-export default class Webview extends React.Component<void, Props, void> {
+class Webview extends React.Component<void, Props, void> {
   props: Props;
 
   _disposables: CompositeDisposable;
@@ -92,3 +92,5 @@ export default class Webview extends React.Component<void, Props, void> {
   }
 
 }
+
+module.exports = Webview;

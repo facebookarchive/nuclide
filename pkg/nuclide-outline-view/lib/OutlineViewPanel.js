@@ -16,8 +16,7 @@ import {React, ReactDOM} from 'react-for-atom';
 import invariant from 'assert';
 
 import {track} from '../../nuclide-analytics';
-import {PanelComponent} from '../../nuclide-ui-panel';
-
+import {PanelComponent} from '../../nuclide-ui';
 import {OutlineView} from './OutlineView';
 
 export class OutlineViewPanelState {
@@ -105,7 +104,7 @@ class OutlineViewPanel {
   constructor(
     outlines: Observable<OutlineForUi>,
     initialWidth: number,
-    onResize: (width: number) => mixed,
+    onResize: (width: number) => void,
   ) {
     this._panelDOMElement = document.createElement('div');
     // Otherwise it does not fill the whole panel, which might be alright except it means that the

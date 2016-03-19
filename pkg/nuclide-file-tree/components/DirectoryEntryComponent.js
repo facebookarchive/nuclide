@@ -19,7 +19,7 @@ const {StatusCodeNumber} = require('../../nuclide-hg-repository-base').hgConstan
 const classnames = require('classnames');
 const {getDisplayTitle} = require('../lib/FileTreeHelpers');
 const {isContextClick} = require('../lib/FileTreeHelpers');
-const NuclideCheckbox = require('../../nuclide-ui-checkbox');
+const {NuclideCheckbox} = require('../../nuclide-ui');
 
 const {PropTypes} = React;
 

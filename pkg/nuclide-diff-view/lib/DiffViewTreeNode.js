@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {LazyTreeNode} from '../../nuclide-ui-tree';
+import {LazyTreeNode} from '../../nuclide-ui';
 import {basename} from '../../nuclide-remote-uri';
 import {FileChangeStatusToPrefix} from './constants';
 
@@ -19,9 +19,9 @@ export default class DiffViewTreeNode extends LazyTreeNode {
 
   constructor(
     entry: FileChange,
-    parent: ?DiffViewTreeNode,
+    parent: ?LazyTreeNode,
     isContainer: boolean,
-    fetchChildren: (node: DiffViewTreeNode) => Promise
+    fetchChildren: (node: LazyTreeNode) => Promise
   ) {
     super(entry, parent, isContainer, fetchChildren);
   }

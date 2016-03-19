@@ -17,7 +17,7 @@ import type {
 
 import {React} from 'react-for-atom';
 import classnames from 'classnames';
-import AtomInput from '../../nuclide-ui-atom-input';
+import {AtomInput} from '../../nuclide-ui';
 
 type PropsType = {
   store: LaunchAttachStore;

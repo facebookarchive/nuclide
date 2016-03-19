@@ -14,7 +14,7 @@ import type {Logger} from '../../nuclide-logging/lib/types';
 const {CompositeDisposable} = require('atom');
 const {getLogger} = require('../../nuclide-logging');
 const {object} = require('../../nuclide-commons');
-const {PanelComponent} = require('../../nuclide-ui-panel');
+const {PanelComponent} = require('../../nuclide-ui');
 const {
   React,
   ReactDOM,

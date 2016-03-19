@@ -18,7 +18,7 @@ const {
 } = require('react-for-atom');
 const {PropTypes} = React;
 const path = require('path');
-const {PanelComponent} = require('../../nuclide-ui-panel');
+const {PanelComponent} = require('../../nuclide-ui');
 
 /**
  * Wrapper for Chrome Devtools frontend view.

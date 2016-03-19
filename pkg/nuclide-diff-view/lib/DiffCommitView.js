@@ -12,10 +12,9 @@
 import type {CommitModeStateType} from './types';
 import type DiffViewModel from './DiffViewModel';
 
-import AtomTextEditor from '../../nuclide-ui-atom-text-editor';
+import {AtomTextEditor, NuclideCheckbox} from '../../nuclide-ui';
 import classnames from 'classnames';
 import {CommitMode, CommitModeState} from './constants';
-import NuclideCheckbox from '../../nuclide-ui-checkbox';
 
 import {React} from 'react-for-atom';
 

@@ -19,7 +19,7 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 import DiffViewEditor from './DiffViewEditor';
-import AtomTextEditor from '../../nuclide-ui-atom-text-editor';
+import {AtomTextEditor} from '../../nuclide-ui';
 import invariant from 'assert';
 
 const CHANGE_DEBOUNCE_DELAY_MS = 5;

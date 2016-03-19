@@ -11,8 +11,8 @@
 
 import path from 'path';
 const Console = require('./Console');
-const NuclideUiDropdown = require('../../../nuclide-ui-dropdown');
-const {PanelComponent} = require('../../../nuclide-ui-panel');
+const {NuclideDropdown} = require('../../../nuclide-ui');
+const {PanelComponent} = require('../../../nuclide-ui');
 const {createPaneContainer} = require('../../../nuclide-atom-helpers');
 const {
   React,
@@ -178,7 +178,7 @@ class TestRunnerPanel extends React.Component {
       dropdown = <span className="inline-block text-warning">No registered test runners</span>;
     } else {
       dropdown = (
-        <NuclideUiDropdown
+        <NuclideDropdown
           className="inline-block"
           disabled={this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
           menuItems={this.props.testRunners.map(testRunner =>

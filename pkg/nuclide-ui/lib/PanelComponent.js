@@ -19,8 +19,6 @@ const {PropTypes} = React;
 
 const MINIMUM_LENGTH = 100;
 
-const emptyFunction = () => {};
-
 type State = {
   isResizing: boolean;
   length: number;
@@ -49,7 +47,7 @@ class PanelComponent extends React.Component {
   static defaultProps = {
     hidden: false,
     initialLength: 200,
-    onResize: emptyFunction,
+    onResize: width => {},
   };
 
   constructor(props: Object) {

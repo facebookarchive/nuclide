@@ -28,7 +28,7 @@ type Props = {
  * A checkbox component with an input checkbox and a label. We restrict the label to a string
  * to ensure this component is pure.
  */
-export default class NuclideCheckbox extends React.Component {
+class NuclideCheckbox extends React.Component {
   props: Props;
 
   static defaultProps = {
@@ -86,3 +86,5 @@ export default class NuclideCheckbox extends React.Component {
     );
   }
 }
+
+module.exports = NuclideCheckbox;

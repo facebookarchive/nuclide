@@ -20,18 +20,18 @@ const ENTER_KEY_CODE = 13;
 const ESCAPE_KEY_CODE = 27;
 
 type Props = {
-  className: string;
+  className?: string;
   disabled: boolean;
   initialValue: string;
-  placeholderText: string;
+  placeholderText?: string;
   tabIndex: string;
   onFocus: () => mixed;
   onClick: (event: SyntheticMouseEvent) => mixed;
   onDidChange: (text: string) => mixed;
-  onConfirm: () => mixed;
-  onCancel: () => mixed;
+  onConfirm?: () => mixed;
+  onCancel?: () => mixed;
   onBlur: () => mixed;
-  size: 'xs' | 'sm' | 'lg';
+  size?: 'xs' | 'sm' | 'lg';
   unstyled: boolean;
   width: number;
 };
@@ -52,10 +52,9 @@ class AtomInput extends React.Component {
   static defaultProps = {
     disabled: false,
     initialValue: '',
-    placeholderText: null,
     tabIndex: '-1',
-    onClick: () => {},
-    onDidChange: () => {},
+    onClick: event => {},
+    onDidChange: text => {},
     onFocus: () => {},
     onBlur: () => {},
     unstyled: false,
@@ -82,7 +81,7 @@ class AtomInput extends React.Component {
       this.props.onDidChange.call(null, textEditor.getText());
     }));
     const placeholderText = this.props.placeholderText;
-    if (placeholderText !== null) {
+    if (placeholderText != null) {
       textEditor.setPlaceholderText(placeholderText);
     }
     this._getTextEditorElement().setAttribute('tabindex', this.props.tabIndex);

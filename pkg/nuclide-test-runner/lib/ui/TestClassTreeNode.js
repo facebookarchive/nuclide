@@ -10,7 +10,7 @@
  */
 
 const Immutable = require('immutable');
-const {LazyTreeNode} = require('../../../nuclide-ui-tree');
+const {LazyTreeNode} = require('../../../nuclide-ui');
 
 class TestClassTreeNode extends LazyTreeNode {
 

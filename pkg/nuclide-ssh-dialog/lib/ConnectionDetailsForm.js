@@ -14,9 +14,9 @@ import type {
   NuclideRemoteConnectionParamsWithPassword,
 } from './connection-types';
 
-const AtomInput = require('../../nuclide-ui-atom-input');
+const {AtomInput} = require('../../nuclide-ui');
 const {CompositeDisposable} = require('atom');
-const RadioGroup = require('../../nuclide-ui-radiogroup');
+const {NuclideRadioGroup} = require('../../nuclide-ui');
 const {
   React,
   ReactDOM,
@@ -194,7 +194,7 @@ export default class ConnectionDetailsForm extends React.Component {
         </div>
         <div className="form-group">
           <label>Authentication method:</label>
-          <RadioGroup
+          <NuclideRadioGroup
             optionLabels={[
               passwordLabel,
               sshAgentLabel,

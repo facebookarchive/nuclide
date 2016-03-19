@@ -11,7 +11,7 @@
 
 import type {Reference} from '../types';
 
-const AtomInput = require('../../../nuclide-ui-atom-input');
+const {AtomInput} = require('../../../nuclide-ui');
 const {React} = require('react-for-atom');
 const {PropTypes} = React;
 

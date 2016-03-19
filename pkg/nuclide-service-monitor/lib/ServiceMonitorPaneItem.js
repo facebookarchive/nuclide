@@ -9,11 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideCustomPaneItemOptions} from '../../nuclide-ui-pane-item/lib/types';
+import type {
+  NuclideCustomPaneItemOptions,
+} from '../../nuclide-ui/lib/types';
 
 import {React} from 'react-for-atom';
 import ServiceMonitor from './ServiceMonitor';
-import NuclideCustomPaneItem from '../../nuclide-ui-pane-item';
+import {NuclideCustomPaneItem} from '../../nuclide-ui';
 import {getServiceLogger} from '../../nuclide-client';
 
 class ServiceMonitorPaneItem extends NuclideCustomPaneItem {
