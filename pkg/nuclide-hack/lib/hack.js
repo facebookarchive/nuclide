@@ -266,16 +266,18 @@ async function createHackLanguageIfNotExisting(
   if (!uriToHackLanguage.has(key)) {
     const service = getHackService(fileUri);
     const config = getConfig();
+    const useIdeConnection = config.useIdeConnection;
     const hackEnvironment = await service.getHackEnvironmentDetails(
       fileUri,
       config.hhClientPath,
-      config.useIdeConnection);
+      useIdeConnection);
     const isHHAvailable = hackEnvironment != null;
     const {hackRoot} = hackEnvironment || {};
 
     // If multiple calls were done asynchronously, then return the single-created HackLanguage.
     if (!uriToHackLanguage.has(key)) {
-      uriToHackLanguage.set(key, createHackLanguage(isHHAvailable, hackRoot, fileUri));
+      uriToHackLanguage.set(key,
+        createHackLanguage(isHHAvailable, hackRoot, fileUri, useIdeConnection));
     }
   }
   return uriToHackLanguage.get(key);
