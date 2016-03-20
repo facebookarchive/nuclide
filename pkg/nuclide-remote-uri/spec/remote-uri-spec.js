@@ -112,4 +112,9 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.relative(nuclideUri.dirname(localUri), localUri)).toBe('file');
     expect(nuclideUri.relative(localUri, nuclideUri.dirname(localUri))).toBe('..');
   });
+
+  it('nuclideUriToDisplayString', () => {
+    expect(nuclideUri.nuclideUriToDisplayString(localUri)).toBe(localUri);
+    expect(nuclideUri.nuclideUriToDisplayString(remoteUri)).toBe('fb.com//usr/local');
+  });
 });

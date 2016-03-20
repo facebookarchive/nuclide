@@ -54,6 +54,7 @@ const classnames = require('classnames');
 const {
   filterEmptyResults,
 } = require('./searchResultHelpers');
+const {nuclideUriToDisplayString} = require('../../nuclide-remote-uri');
 
 /**
  * Determine what the applicable shortcut for a given action is within this component's context.
@@ -669,7 +670,7 @@ export default class QuickSelectionComponent extends React.Component {
         if (showDirectories) {
           directoryLabel = (
             <div className="list-item">
-              <span className="icon icon-file-directory">{dirName}</span>
+              <span className="icon icon-file-directory">{nuclideUriToDisplayString(dirName)}</span>
             </div>
           );
         }

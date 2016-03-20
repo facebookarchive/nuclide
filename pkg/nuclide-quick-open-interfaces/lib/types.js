@@ -29,8 +29,10 @@ export type Provider = {
   getComponentForItem?: (item: FileResult) => ReactElement;
 };
 
+import type {NuclideUri} from '../../nuclide-remote-uri';
+
 export type FileResult = {
-  path: string;
+  path: NuclideUri;
   matchIndexes?: Array<number>;
   score?: number;
   // The original query that prompted this result, e.g. to highlight it in the UI.
@@ -48,7 +50,7 @@ export type ProviderResult = {
   results: Array<FileResult>;
 };
 
-export type DirectoryName = string;
+export type DirectoryName = NuclideUri;
 export type ServiceName = string;
 
 export type GroupedResult = {

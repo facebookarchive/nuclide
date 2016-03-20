@@ -265,6 +265,46 @@ function contains(parent: NuclideUri, child: NuclideUri): boolean {
     && (child.length === parent.length || child[parent.length] === '/');
 }
 
+const hostFormatters = [];
+
+// A formatter which may shorten hostnames.
+// Returns null if the formatter won't shorten the hostname.
+export type HostnameFormatter = (uri: NuclideUri) => ?string;
+
+// Registers a host formatter for nuclideUriToDisplayString
+function registerHostnameFormatter(formatter: HostnameFormatter):
+    {dispose: () => void} {
+  hostFormatters.push(formatter);
+  return {
+    dispose: () => {
+      const index = hostFormatters.indexOf(formatter);
+      if (index >= 0) {
+        hostFormatters.splice(index, 1);
+      }
+    },
+  };
+}
+
+/**
+ * NuclideUris should never be shown to humans.
+ * This function returns a human usable string.
+ */
+function nuclideUriToDisplayString(uri: NuclideUri): string {
+  if (isRemote(uri)) {
+    let hostname = getHostname(uri);
+    for (const formatter of hostFormatters) {
+      const formattedHostname = formatter(hostname);
+      if (formattedHostname) {
+        hostname = formattedHostname;
+        break;
+      }
+    }
+    return `${hostname}/${getPath(uri)}`;
+  } else {
+    return uri;
+  }
+}
+
 module.exports = {
   basename,
   dirname,
@@ -283,4 +323,6 @@ module.exports = {
   uriToNuclideUri,
   nuclideUriToUri,
   contains,
+  nuclideUriToDisplayString,
+  registerHostnameFormatter,
 };
