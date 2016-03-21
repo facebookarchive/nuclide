@@ -135,6 +135,7 @@ class LLDBListenerThread(Thread):
 
     def _send_paused_notification(self, process):
         self._debugger_store.thread_manager.update(process)
+        self._update_stop_thread(process)
         thread = process.GetSelectedThread()
         log_debug('thread.GetStopReason(): %s' % serialize.StopReason_to_string(thread.GetStopReason()))
         params = {
@@ -143,6 +144,19 @@ class LLDBListenerThread(Thread):
           "data": {},
         }
         self._send_notification('Debugger.paused', params)
+
+    def _update_stop_thread(self, process):
+        '''lldb on Linux has a bug of not setting stop thread correctly.
+        This method fixes this issue.
+        TODO: remove this when lldb fixes this on Linux.
+        '''
+        thread = process.GetSelectedThread()
+        if thread.GetStopReason() != lldb.eStopReasonNone:
+            return
+        for thread in process.threads:
+            if thread.GetStopReason() != lldb.eStopReasonNone:
+                process.SetSelectedThread(thread)
+                return
 
     def _handle_breakpoint_event(self, event):
         breakpoint = lldb.SBBreakpoint.GetBreakpointFromEvent(event)
