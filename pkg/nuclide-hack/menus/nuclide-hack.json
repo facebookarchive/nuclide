@@ -1,0 +1,18 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Hack",
+          "submenu": [
+            {
+              "label": "Toggle Type Coverage",
+              "command": "nuclide-hack:toggle-type-coverage"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Service Monitor...",
+          "command": "nuclide-service-monitor:show-monitor"
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 'menu': [
-  'label': 'Packages'
+  'label': 'Nuclide'
   'submenu': [
-    'label': 'Find References'
+    'label': 'Find References',
     'command': 'nuclide-find-references:activate'
   ]
 ]

@@ -1,0 +1,26 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "ADB Logcat",
+          "submenu": [
+            {
+              "label": "Start",
+              "command": "nuclide-adb-logcat:start"
+            },
+            {
+              "label": "Stop",
+              "command": "nuclide-adb-logcat:stop"
+            },
+            {
+              "label": "Restart",
+              "command": "nuclide-adb-logcat:restart"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

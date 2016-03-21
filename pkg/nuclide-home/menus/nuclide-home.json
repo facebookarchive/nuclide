@@ -1,0 +1,13 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Settings...",
+          "command": "nuclide-home:show-settings"
+        }
+      ]
+    }
+  ]
+}

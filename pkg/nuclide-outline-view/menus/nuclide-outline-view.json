@@ -1,0 +1,26 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Outline View",
+          "submenu": [
+            {
+              "label": "Toggle",
+              "command": "nuclide-outline-view:toggle"
+            },
+            {
+              "label": "Show",
+              "command": "nuclide-outline-view:show"
+            },
+            {
+              "label": "Hide",
+              "command": "nuclide-outline-view:hide"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

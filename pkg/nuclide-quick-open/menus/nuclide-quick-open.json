@@ -1,0 +1,13 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Quick Open (Omnisearch)",
+          "command": "nuclide-quick-open:find-anything-via-omni-search"
+        }
+      ]
+    }
+  ]
+}

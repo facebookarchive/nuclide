@@ -54,7 +54,7 @@ class Activation {
     this._disposables = new CompositeDisposable();
     this._disposables.add(
       atom.commands.add(
-        'body',
+        'atom-workspace',
         'nuclide-test-runner:toggle-panel',
         () => {
           this._getController().togglePanel();

@@ -1,6 +1,6 @@
 'menu': [
   {
-    'label': 'Packages'
+    'label': 'Nuclide'
     'submenu': [
       {
         'label': 'Working Sets'

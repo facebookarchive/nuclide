@@ -1,0 +1,16 @@
+'menu': [
+  {
+    'label': 'Nuclide'
+    'submenu': [
+      {
+        'label': 'Remote Projects',
+        'submenu': [
+          {
+            'label': 'Connect to Remote Project...',
+            'command': 'nuclide-remote-projects:connect'
+          }
+        ]
+      }
+    ]
+  }
+]

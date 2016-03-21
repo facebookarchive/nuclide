@@ -1,0 +1,26 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "iOS Simulator Logs",
+          "submenu": [
+            {
+              "label": "Start",
+              "command": "nuclide-ios-simulator-logs:start"
+            },
+            {
+              "label": "Stop",
+              "command": "nuclide-ios-simulator-logs:stop"
+            },
+            {
+              "label": "Restart",
+              "command": "nuclide-ios-simulator-logs:restart"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

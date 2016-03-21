@@ -1,4 +1,32 @@
 {
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Buck",
+          "submenu": [
+            {
+              "label": "Build",
+              "command": "nuclide-buck-toolbar:build"
+            },
+            {
+              "label": "Debug",
+              "command": "nuclide-buck-toolbar:debug"
+            },
+            {
+              "label": "Run",
+              "command": "nuclide-buck-toolbar:run"
+            },
+            {
+              "label": "Test",
+              "command": "nuclide-buck-toolbar:test"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "context-menu": {
     ".buck-toolbar": [
       {

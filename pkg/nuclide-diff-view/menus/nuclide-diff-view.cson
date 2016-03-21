@@ -4,10 +4,10 @@
 
 'menu': [
   {
-    'label': 'Packages'
+    'label': 'Nuclide'
     'submenu': [
       {
-        'label': 'Open Diff View',
+        'label': 'Open in Diff View...',
         'command': 'nuclide-diff-view:open',
       }
     ]

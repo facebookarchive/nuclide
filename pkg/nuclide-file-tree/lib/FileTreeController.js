@@ -78,7 +78,10 @@ class FileTreeController {
     this._subscriptions.add(
       atom.commands.add('atom-workspace', {
         // Pass undefined so the default parameter gets used.
+        // NOTE: This is specifically for use in Diff View, so don't expose a menu item.
+        /* eslint-disable nuclide-internal/command-menu-items */
         'nuclide-file-tree:reveal-text-editor': this._revealTextEditor.bind(this),
+        /* eslint-enable nuclide-internal/command-menu-items */
         'nuclide-file-tree:reveal-active-file': this.revealActiveFile.bind(this, undefined),
       })
     );

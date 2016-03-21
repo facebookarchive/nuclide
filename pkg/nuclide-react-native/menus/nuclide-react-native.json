@@ -1,0 +1,30 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "React Native",
+          "submenu": [
+            {
+              "label": "Start Debugging",
+              "command": "nuclide-react-native:start-debugging"
+            },
+            {
+              "label": "Start Packager",
+              "command": "nuclide-react-native:start-packager"
+            },
+            {
+              "label": "Stop Packager",
+              "command": "nuclide-react-native:stop-packager"
+            },
+            {
+              "label": "Restart Packager",
+              "command": "nuclide-react-native:restart-packager"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

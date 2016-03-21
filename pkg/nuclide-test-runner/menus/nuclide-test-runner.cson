@@ -1,5 +1,5 @@
 'menu': [
-  'label': 'Packages',
+  'label': 'Nuclide',
   'submenu': [
     'label': 'Test Runner',
     'submenu': [

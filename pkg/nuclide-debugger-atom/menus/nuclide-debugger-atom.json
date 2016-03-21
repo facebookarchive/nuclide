@@ -1,0 +1,50 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Debugger",
+          "submenu": [
+            {
+              "label": "Show",
+              "command": "nuclide-debugger:show"
+            },
+            {
+              "label": "Toggle",
+              "command": "nuclide-debugger:toggle"
+            },
+            {
+              "label": "Launch/Attach...",
+              "command": "nuclide-debugger:toggle-launch-attach"
+            },
+            {
+              "label": "Stop Debugging",
+              "command": "nuclide-debugger:stop-debugging"
+            },
+            {
+              "label": "Continue Debugging",
+              "command": "nuclide-debugger:continue-debugging"
+            },
+            {
+              "label": "Toggle Breakpoint",
+              "command": "nuclide-debugger:toggle-breakpoint"
+            },
+            {
+              "label": "Step Over",
+              "command": "nuclide-debugger:step-over"
+            },
+            {
+              "label": "Step Into",
+              "command": "nuclide-debugger:step-into"
+            },
+            {
+              "label": "Step Out",
+              "command": "nuclide-debugger:step-out"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

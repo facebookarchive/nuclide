@@ -4,6 +4,15 @@
     'submenu': [
       {'command': 'nuclide-file-tree:toggle', 'label': 'Toggle Tree View'}
     ]
+  },
+  {
+    'label': 'Nuclide',
+    'submenu': [
+      'label': 'File Tree',
+      'submenu': [
+        {label: 'Reveal Active File in File Tree', command: 'nuclide-file-tree:reveal-active-file'},
+      ]
+    ]
   }
 ]
 

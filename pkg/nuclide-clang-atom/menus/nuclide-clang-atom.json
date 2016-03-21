@@ -1,0 +1,18 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Clang",
+          "submenu": [
+            {
+              "label": "Clean and Rebuild",
+              "command": "nuclide-clang:clean-and-rebuild"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

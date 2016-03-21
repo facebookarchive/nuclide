@@ -1,0 +1,26 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Clipboard Helpers",
+          "submenu": [
+            {
+              "label": "Copy Absolute Path",
+              "command": "nuclide-clipboard-path:copy-absolute-path"
+            },
+            {
+              "label": "Copy Repository Relative Path",
+              "command": "nuclide-clipboard-path:copy-repository-relative-path"
+            },
+            {
+              "label": "Copy Project Relative Path",
+              "command": "nuclide-clipboard-path:copy-project-relative-path"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

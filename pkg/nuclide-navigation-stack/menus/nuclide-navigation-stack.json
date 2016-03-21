@@ -1,0 +1,22 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Navigation Stack",
+          "submenu": [
+            {
+              "label": "Navigate Forwards",
+              "command": "nuclide-navigation-stack:navigate-forwards"
+            },
+            {
+              "label": "Navigate Backwards",
+              "command": "nuclide-navigation-stack:navigate-backwards"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
