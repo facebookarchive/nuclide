@@ -141,4 +141,11 @@ export type FileSystemService = {
    */
   writeFile(path: string, data: string,
       options: ?{encoding?: string; mode?: number; flag?:string}): Promise<void>;
+
+    /**
+     * Gets the real path of a file path, with home directory expansion.
+     * It could be different than the given path if the file is a symlink
+     * or exists in a symlinked directory.
+     */
+  resolveRealPath(path: string): Promise<string>;
 };
