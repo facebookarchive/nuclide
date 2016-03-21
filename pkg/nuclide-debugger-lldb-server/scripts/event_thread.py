@@ -192,6 +192,7 @@ class LLDBListenerThread(Thread):
             event.GetType(),
             lldb.SBEvent.GetCStringFromEvent(event),
             self._get_description_from_object(event)))
+
     def run(self):
         while not self.should_quit:
             event = lldb.SBEvent()

@@ -248,7 +248,12 @@ export class DebuggerRpcService {
         }
       });
       lldbProcess.stderr.on('data', chunk => {
-        logError(`child process(${lldbProcess.pid}) stderr: ${chunk.toString()}`);
+        const errorMessage = chunk.toString();
+        this._clientCallback.sendUserOutputMessage(JSON.stringify({
+          level: 'error',
+          text: errorMessage,
+        }));
+        logError(`child process(${lldbProcess.pid}) stderr: ${errorMessage}`);
       });
       lldbProcess.on('error', () => {
         reject('lldb process error');
