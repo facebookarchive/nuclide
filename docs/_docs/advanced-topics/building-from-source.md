@@ -171,3 +171,9 @@ Verify the installation by:
 ## Windows
 
 Detailed Windows information coming soon.
+
+## Development Mode
+
+When you open Atom in development mode, either with the `atom --dev` from the command line or with
+the `View | Developer | Open in Dev Mode...` command from within the Atom menus, your linked version
+of Nuclide will load in place of any other version of Nuclide you might have installed.
