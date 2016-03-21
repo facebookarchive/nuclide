@@ -4,6 +4,7 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
+import os
 from file_manager import FileManager
 import serialize
 from remote_objects import RemoteObjectManager
@@ -25,9 +26,33 @@ class DebuggerStore:
         self._is_attach = is_attach
         self._file_manager = FileManager(chrome_channel)
         self._remote_object_manager = RemoteObjectManager()
+        basepath = self._resolve_basepath_heuristic(basepath)
+        print 'basepath: %s' % basepath
         self._location_serializer = serialize.LocationSerializer(
             self._file_manager, basepath)
         self._thread_manager = ThreadManager(self)
+
+    def _resolve_basepath_heuristic(self, basepath):
+        '''Buck emits relative path in the symbol file so we need a way to resolve all source from_filespec
+        into absolute path. This heuristic will try to guess the fbcode root repo from executable module path.
+        Note:
+        1. This only deals with process built from fbcode(which is the primary customer on Linux).
+        2. This assumes buck binary will be used as main executable instead of shared library.(which
+        should be addressed in future diffs).
+        3. It assumes buck built binaries will be running directly from fbcode sub-directories instead of
+        being deployed to some other folder. Hopefully this is true most of the time.
+        TODO: we need a better way to discover buck built root repo in long term.
+        '''
+        if basepath == '.':
+            target = self._debugger.GetSelectedTarget()
+            executable_dir_path = target.executable.GetDirectory()
+            executable_dir_path = os.path.realpath(os.path.normpath(os.path.expanduser(executable_dir_path)))
+            FBCODE_REPO_IDENTIFY_STRING = '/fbsource/fbcode/'
+            if FBCODE_REPO_IDENTIFY_STRING in executable_dir_path:
+                start_index = executable_dir_path.index(FBCODE_REPO_IDENTIFY_STRING)
+                end_index = start_index + len(FBCODE_REPO_IDENTIFY_STRING)
+                basepath = executable_dir_path[:end_index]
+        return basepath
 
     @property
     def chrome_channel(self):
