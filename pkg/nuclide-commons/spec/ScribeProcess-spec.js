@@ -26,8 +26,7 @@ async function getContentOfScribeCategory(category: string): Promise<Array<mixed
   const categoryFilePath = path.join(tempDir, category);
   const content = await fsPromise.readFile(categoryFilePath);
   const result = content.toString().split('\n')
-    .filter(item => (item.length > 0))
-    .map(item => JSON.parse(item));
+    .filter(item => (item.length > 0));
   return result;
 }
 
@@ -79,7 +78,7 @@ describe('scribe_cat test suites', () => {
 
     waitsForPromise(async () => {
       await Promise.all(firstPart.map(message => localScribeProcess.write(message)));
-      await localScribeProcess.write('abort');
+      await localScribeProcess.write(JSON.stringify('abort'));
       // Give some time to scribeProcess and wait for it resume.
       await sleep(100);
       await Promise.all(secondPart.map(message => localScribeProcess.write(message)));

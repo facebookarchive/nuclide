@@ -41,18 +41,13 @@ export class ScribeProcess {
   }
 
   /**
-   * Write an Object to scribe category using JSON.stringify.
-   *
-   * @param message the object to write.
-   * @param replacer optional replacer function which alters the behavior of the
-   *        stringification process. refer
-   *        https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify
-   *        for more information.
+   * Write a string to a Scribe category.
+   * Ensure newlines are properly escaped.
    */
-  async write(message: string | Object, replacer?: ()=>mixed): Promise<void> {
+  async write(message: string): Promise<void> {
     const child = await this._getOrCreateChildProcess();
     return new Promise((resolve, reject) => {
-      child.stdin.write(`${JSON.stringify(message)}${os.EOL}`, resolve);
+      child.stdin.write(`${message}${os.EOL}`, resolve);
     });
   }
 
