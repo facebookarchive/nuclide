@@ -10,15 +10,16 @@
  */
 
 import logger from './utils';
-import {launchScriptToDebug} from './helpers';
 import {clearConfig, setConfig} from './config';
 import {setRootDirectoryUri} from './ConnectionUtils';
 import {MessageTranslator} from './MessageTranslator';
 
 import type {Observable} from 'rx';
 
-export type HhvmDebuggerConfig = {
+export type HhvmDebuggerSessionConfig = {
   xdebugPort: number;
+  xdebugLaunchingPort?: number;
+  launchScriptPath?: string;
   pid?: number;
   scriptRegex?: string;
   idekeyRegex?: string;
@@ -51,25 +52,20 @@ const CLOSED = 'closed';
  * http://xdebug.org/docs-dbgp.php
  *
  * Usage:
- *    After construction, call onNotify() with a callback to receive Chrome
- *    Notifications.
- *    Call attach() to attach to the dbgp debuggee.
- *    After the promise returned by attach() is resolved, call sendCommand()
- *    to send Chrome Commands, and be prepared to receive notifications on the
- *    callback registered with onNotify().
+ *    Call debug(config) to attach to the dbgp debuggee, or launch a script specified in the config.
+ *    After the promise returned by debug() is resolved, call sendCommand() to send Chrome Commands,
+ *    and be prepared to receive notifications via the server notifications observable.
  */
 import {ClientCallback} from './ClientCallback';
 
 export class HhvmDebuggerProxyService {
   _state: string;
-  _launchedScriptProcess: ?Promise<void>;
   _translator: ?MessageTranslator;
   _clientCallback: ClientCallback;
 
   constructor() {
     this._state = INITIAL;
     this._translator = null;
-    this._launchedScriptProcess = null;
     this._clientCallback = new ClientCallback();
   }
 
@@ -85,7 +81,7 @@ export class HhvmDebuggerProxyService {
     return this._clientCallback.getOutputWindowObservable();
   }
 
-  async attach(config: HhvmDebuggerConfig): Promise<string> {
+  async debug(config: HhvmDebuggerSessionConfig): Promise<string> {
     logger.logInfo('Connecting config: ' + JSON.stringify(config));
 
     setConfig(config);
@@ -99,15 +95,6 @@ export class HhvmDebuggerProxyService {
     this._setState(CONNECTED);
 
     return 'HHVM connected';
-  }
-
-  async launchScript(scriptPath: string): Promise<string> {
-    logger.log('launchScript: ' + scriptPath);
-    this._launchedScriptProcess = launchScriptToDebug(
-      scriptPath,
-      text => this._clientCallback.sendUserMessage('outputWindow', {level: 'info', text}),
-    );
-    return 'Script launched';
   }
 
   async sendCommand(message: string): Promise<void> {
@@ -134,15 +121,12 @@ export class HhvmDebuggerProxyService {
   async dispose(): Promise<void> {
     logger.logInfo('Proxy: Ending session');
     clearConfig();
-    // We may want to wait for a launched script to exit for its exit code.
-    if (this._launchedScriptProcess != null && this._state === CLOSED) {
-      await this._launchedScriptProcess;
-    }
-    this._launchedScriptProcess = null;
-    this._clientCallback.dispose();
     if (this._translator) {
-      this._translator.dispose();
+      await this._translator.dispose();
       this._translator = null;
     }
+    // We dispose the ClientCallback last so that messages triggered by the disposal of other
+    // objects won't be lost.
+    this._clientCallback.dispose();
   }
 }

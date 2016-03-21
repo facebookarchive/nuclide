@@ -19,15 +19,21 @@
         "description": "Regular expression to filter connection idekey. Usually your OS user id."
       },
       "xdebugPort": {
-        "title": "DBGP Port",
+        "title": "DBGP Attach Port",
         "type": "number",
         "default": 9000,
-        "description": "Port for DBGP connection to HHVM."
+        "description": "Port for DBGP connection to HHVM running in server mode."
+      },
+      "xdebugLaunchingPort": {
+        "title": "DBGP Launch Port",
+        "type": "number",
+        "default": 10112,
+        "description": "Port for DBGP connection to HHVM used for launching scripts."
       },
       "hhvmBinaryPath": {
         "title": "Path to HHVM binary",
         "type": "string",
-        "default": "/usr/local/hphpi/bin/hhvm",
+        "default": "/usr/local/bin/php",
         "description": "Path to the HHVM binary on your server."
       },
       "logLevel": {

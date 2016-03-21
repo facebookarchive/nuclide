@@ -95,10 +95,10 @@ export class MessageTranslator {
     this._clientCallback.replyWithError(id, error);
   }
 
-  dispose(): void {
+  async dispose(): Promise<void> {
     if (!this._isDisposed) {
       this._isDisposed = true;
-      this._connectionMultiplexer.dispose();
+      await this._connectionMultiplexer.dispose();
     }
   }
 }

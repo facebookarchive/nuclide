@@ -10,11 +10,11 @@
  */
 
 import utils from './utils';
-import type {HhvmDebuggerConfig} from '../../nuclide-debugger-hhvm-proxy';
+import type {HhvmDebuggerSessionConfig} from '../../nuclide-debugger-hhvm-proxy';
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 import type {
   HhvmDebuggerProxyService as HhvmDebuggerProxyServiceType,
-} from '../../nuclide-debugger-hhvm-proxy';
+} from '../../nuclide-debugger-hhvm-proxy/lib/HhvmDebuggerProxyService';
 
 import invariant from 'assert';
 import {DebuggerInstance} from '../../nuclide-debugger-atom';
@@ -28,7 +28,7 @@ const {Disposable} = require('atom');
 const WebSocketServer = require('ws').Server;
 const {stringifyError} = require('../../nuclide-commons').error;
 
-function getConfig(): HhvmDebuggerConfig {
+function getConfig(): HhvmDebuggerSessionConfig {
   return (featureConfig.get('nuclide-debugger-hhvm'): any);
 }
 
@@ -75,7 +75,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
     );
 
     const config = getConfig();
-    const connectionConfig: HhvmDebuggerConfig = {
+    const sessionConfig: HhvmDebuggerSessionConfig = {
       xdebugPort: config.xdebugPort,
       targetUri: remoteUri.getPath(this.getTargetUri()),
       logLevel: config.logLevel,
@@ -90,7 +90,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       logError('nuclide-debugger-hhvm config scriptRegex is not a valid regular expression: '
         + config.scriptRegex);
     } else {
-      connectionConfig.scriptRegex = config.scriptRegex;
+      sessionConfig.scriptRegex = config.scriptRegex;
     }
 
     if (!isValidRegex(config.idekeyRegex)) {
@@ -99,13 +99,18 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       logError('nuclide-debugger-hhvm config idekeyRegex is not a valid regular expression: '
         + config.idekeyRegex);
     } else {
-      connectionConfig.idekeyRegex = config.idekeyRegex;
+      sessionConfig.idekeyRegex = config.idekeyRegex;
     }
 
-    if (this._launchScriptPath) {
-      connectionConfig.endDebugWhenNoRequests = true;
+    // Set config related to script launching.
+    if (this._launchScriptPath != null) {
+      invariant(config.xdebugLaunchingPort != null);
+      sessionConfig.xdebugPort = config.xdebugLaunchingPort;
+      sessionConfig.endDebugWhenNoRequests = true;
+      sessionConfig.launchScriptPath = this._launchScriptPath;
     }
-    const attachResult = await proxy.attach(connectionConfig);
+
+    const attachResult = await proxy.debug(sessionConfig);
     logInfo('Attached to process. Attach message: ' + attachResult);
 
     // setup web socket
@@ -131,11 +136,6 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       webSocket.on('message', this._onSocketMessage.bind(this));
       webSocket.on('error', this._onSocketError.bind(this));
       webSocket.on('close', this._onSocketClose.bind(this));
-
-      if (this._launchScriptPath) {
-        logInfo('launchScript: ' + this._launchScriptPath);
-        proxy.launchScript(this._launchScriptPath);
-      }
     });
 
     const result = 'ws=localhost:' + String(wsPort) + '/';

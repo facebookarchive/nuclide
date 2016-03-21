@@ -9,25 +9,27 @@
  * the root directory of this source tree.
  */
 
-import type {HhvmDebuggerConfig} from '..';
+import logger from './utils';
+import type {HhvmDebuggerSessionConfig} from './HhvmDebuggerProxyService';
 
-const defaultConfig: HhvmDebuggerConfig = {
+const defaultConfig: HhvmDebuggerSessionConfig = {
   xdebugPort: 9000,
   logLevel: 'INFO',
   targetUri: '',
-  hhvmBinaryPath: '/usr/local/hphpi/bin/hhvm',
+  hhvmBinaryPath: '/usr/local/bin/php',
 };
 
-let config: HhvmDebuggerConfig = defaultConfig;
+let config: HhvmDebuggerSessionConfig = defaultConfig;
 
-export function getConfig(): HhvmDebuggerConfig {
+export function getConfig(): HhvmDebuggerSessionConfig {
   return config;
 }
 
-export function setConfig(newConfig: HhvmDebuggerConfig): void {
+export function setConfig(newConfig: HhvmDebuggerSessionConfig): void {
   config = {
     ...newConfig,
   };
+  logger.log(`Config was set to ${JSON.stringify(config)}`);
 }
 
 export function clearConfig(): void {

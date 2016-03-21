@@ -10,6 +10,7 @@
  */
 
 import logger from './utils';
+import {launchScriptToDebug} from './helpers';
 import {Connection} from './Connection';
 import {getConfig} from './config';
 import {
@@ -98,6 +99,7 @@ export class ConnectionMultiplexer {
   _connections: Map<Connection, ConnectionInfo>;
   _connector: ?DbgpConnector;
   _dummyRequestProcess: ?child_process$ChildProcess;
+  _launchedScriptProcess: ?Promise<void>;
 
   constructor(clientCallback: ClientCallback) {
     this._clientCallback = clientCallback;
@@ -109,6 +111,7 @@ export class ConnectionMultiplexer {
     this._connector = null;
     this._dummyRequestProcess = null;
     this._breakpointStore = new BreakpointStore();
+    this._launchedScriptProcess = null;
   }
 
   onStatus(callback: (status: string) => mixed): IDisposable {
@@ -131,6 +134,14 @@ export class ConnectionMultiplexer {
       text: 'Pre-loading, please wait...',
     });
     this._dummyRequestProcess = sendDummyRequest();
+
+    const {launchScriptPath} = getConfig();
+    if (launchScriptPath != null) {
+      this._launchedScriptProcess = launchScriptToDebug(
+        launchScriptPath,
+        text => this._clientCallback.sendUserMessage('outputWindow', {level: 'info', text}),
+      );
+    }
   }
 
   async _handleDummyConnection(socket: Socket): Promise<void> {
@@ -396,9 +407,12 @@ export class ConnectionMultiplexer {
     }
   }
 
-  dispose(): void {
+  async dispose(): Promise<void> {
     for (const connection of this._connections.keys()) {
       this._removeConnection(connection);
+    }
+    if (this._launchedScriptProcess != null && this._status === STATUS_END) {
+      await this._launchedScriptProcess;
     }
     if (this._dummyRequestProcess) {
       this._dummyRequestProcess.kill('SIGKILL');

@@ -80,10 +80,8 @@ function launchPhpScriptWithXDebugEnabled(
   scriptPath: string,
   sendToOutputWindowAndResolve?: (text: string) => void,
 ): child_process$ChildProcess {
-  const scriptArgv = parse(scriptPath);
-  const args = ['-c', 'xdebug.ini', ...scriptArgv];
-  const {hhvmBinaryPath} = getConfig();
-  const proc = child_process.spawn(hhvmBinaryPath, args);
+  const args = parse(scriptPath);
+  const proc = child_process.spawn(getConfig().hhvmBinaryPath, args);
   logger.log(`child_process(${proc.pid}) spawned with xdebug enabled for: ${scriptPath}`);
 
   proc.stdout.on('data', chunk => {

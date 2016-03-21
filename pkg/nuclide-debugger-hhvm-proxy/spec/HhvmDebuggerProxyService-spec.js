@@ -76,7 +76,7 @@ describe('debugger-hhvm-proxy proxy', () => {
         onNotificationEnd,
       );
 
-      const connectionPromise = proxy.attach(config);
+      const connectionPromise = proxy.debug(config);
 
       const result = await connectionPromise;
 
@@ -93,9 +93,9 @@ describe('debugger-hhvm-proxy proxy', () => {
       clientCallback.replyToCommand(43, 'reply message');
       expect(onServerMessageNotify).toHaveBeenCalledWith('{"id":43,"result":"reply message"}');
 
-      proxy.dispose();
-      expect(onSessionEnd).toHaveBeenCalledWith();
-      expect(translater.dispose).toHaveBeenCalledWith();
+      await proxy.dispose();
+      expect(onSessionEnd).toHaveBeenCalled();
+      expect(translater.dispose).toHaveBeenCalled();
     });
   });
 });
