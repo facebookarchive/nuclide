@@ -13,6 +13,7 @@ import type {
   DebuggerProcessInfo,
   DebuggerLaunchAttachProvider,
 } from '../nuclide-debugger-atom';
+import type {NuclideUri} from '../nuclide-remote-uri';
 
 export type nuclide_debugger$Service = {
   name: string;
@@ -21,7 +22,7 @@ export type nuclide_debugger$Service = {
 
 export type NuclideDebuggerProvider = {
   name: string;
-  getLaunchAttachProvider(connection: string): ?DebuggerLaunchAttachProvider;
+  getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider;
 };
 
 export type NuclideEvaluationExpression = {

@@ -107,17 +107,17 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
           </table>
         </div>
         <div className="padded text-right">
+          <button className="btn" onClick={this._handleCancelButtonClick}>
+            Cancel
+          </button>
+          <button className="btn" onClick={this._updateAttachTargetList}>
+            Refresh
+          </button>
           <button
               className="btn btn-primary"
               onClick={this._handleAttachClick}
               disabled={this.state.selectedAttachTarget === null}>
             Attach
-          </button>
-          <button className="btn" onClick={this._updateAttachTargetList}>
-            Refresh
-          </button>
-          <button className="btn" onClick={this._handleCancelButtonClick}>
-            Cancel
           </button>
         </div>
       </div>

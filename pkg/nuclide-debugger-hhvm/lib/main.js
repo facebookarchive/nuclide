@@ -10,34 +10,34 @@
  */
 
 import type {HomeFragments} from '../../nuclide-home-interfaces';
-import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/service';
+import type {
+  nuclide_debugger$Service,
+  NuclideDebuggerProvider,
+} from '../../nuclide-debugger-interfaces/service';
 import type OutputService from '../../nuclide-console/lib/OutputService';
-
+import DebuggerProvider from './DebuggerProvider';
 import {setOutputService} from '../../nuclide-debugger-common/lib/OutputServiceManager';
 
-module.exports = {
-  activate(state: mixed): void {
-  },
+export function consumeOutputService(api: OutputService): void {
+  setOutputService(api);
+}
 
-  consumeOutputService(api: OutputService): void {
-    setOutputService(api);
-  },
+export function provideNuclideDebuggerHhvm(): nuclide_debugger$Service {
+  return require('./Service');
+}
 
-  provideNuclideDebuggerHhvm(): nuclide_debugger$Service {
-    const Service = require('./Service');
-    return Service;
-  },
+export function createDebuggerProvider(): NuclideDebuggerProvider {
+  return DebuggerProvider;
+}
 
-  getHomeFragments(): HomeFragments {
-    return {
-      feature: {
-        title: 'HHVM Debugger',
-        icon: 'plug',
-        description: 'Connect to a HHVM server process and debug Hack code from within Nuclide.',
-        command: 'nuclide-debugger:toggle',
-      },
-      priority: 6,
-    };
-  },
-
-};
+export function getHomeFragments(): HomeFragments {
+  return {
+    feature: {
+      title: 'HHVM Debugger',
+      icon: 'plug',
+      description: 'Connect to a HHVM server process and debug Hack code from within Nuclide.',
+      command: 'nuclide-debugger:toggle',
+    },
+    priority: 6,
+  };
+}
