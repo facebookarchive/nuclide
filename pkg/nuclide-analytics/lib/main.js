@@ -25,6 +25,15 @@ function track(eventName: string, values?: {[key: string]: mixed}): Promise<mixe
 }
 
 /**
+ * Track an analytics event and send it off immediately.
+ * The returned promise will resolve when the request completes (or reject on failure).
+ */
+function trackImmediate(eventName: string, values?: {[key: string]: mixed}): Promise<mixed> {
+  invariant(rawTrack);
+  return rawTrack(eventName, values || {}, true);
+}
+
+/**
  * An alternative interface for `track` that accepts a single event object. This is particularly
  * useful when dealing with streams (Observables).
  */
@@ -176,6 +185,7 @@ function trackOperationTiming<T>(eventName: string, operation: () => T): T {
 
 module.exports = {
   track,
+  trackImmediate,
   trackEvent,
   trackEvents,
   trackOperationTiming,

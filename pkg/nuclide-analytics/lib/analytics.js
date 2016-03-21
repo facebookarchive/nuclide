@@ -18,8 +18,13 @@ module.exports = {
    * Track a set of values against a named event.
    * @param eventName Name of the event to be tracked.
    * @param values The object containing the data to track.
+   * @param immediate Bypass batching. The resulting promise will resolve on upload.
    */
-  track(eventName: string, values?: {[key: string]: string}): Promise<mixed> {
+  track(
+    eventName: string,
+    values?: {[key: string]: string},
+    immediate?: boolean,
+  ): Promise<mixed> {
     return cachedResultForTrack;
   },
 };

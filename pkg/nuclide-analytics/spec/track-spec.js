@@ -30,7 +30,6 @@ describe('startTracking', () => {
     trackKey = null;
     trackValues = null;
 
-    // Intercept Parse API call.
     spyOn(track, 'track').andCallFake((key, values) => {
       trackKey = key;
       trackValues = values;
@@ -71,5 +70,22 @@ describe('startTracking', () => {
     expect(trackValues.eventName).toBe('st-error');
     expect(trackValues.error).toBe('1');
     expect(trackValues.exception).toBe('Error');
+  });
+});
+
+describe('trackImmediate', () => {
+  let spy;
+  beforeEach(() => {
+    spy = spyOn(track, 'track').andCallFake((key, values) => {
+      return Promise.resolve(1);
+    });
+  });
+
+  it('should call track with immediate = true', () => {
+    waitsForPromise(async () => {
+      const result = await main.trackImmediate('test', {});
+      expect(result).toBe(1);
+      expect(spy).toHaveBeenCalledWith('test', {}, true);
+    });
   });
 });
