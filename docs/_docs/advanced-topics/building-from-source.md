@@ -170,7 +170,10 @@ Verify the installation by:
 
 ## Windows
 
-Detailed Windows information coming soon.
+Building Nuclide from source is not currently supported on Windows.
+
+> It is possible to build Nuclide from source on Windows, but this is done with no guarantee of
+> success. The feature set will also be [limited](/docs/editor/setup/#windows).
 
 ## Development Mode
 

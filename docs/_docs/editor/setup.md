@@ -5,8 +5,10 @@ layout: docs
 permalink: /docs/editor/setup/
 ---
 
-There are two supported platforms for Nuclide, [Linux](#linux) and [Mac OS X](#mac). Nuclide can be
-installed on [Windows](#windows), but it is not fully supported; work is in progress.
+There are two supported platforms for Nuclide, [Linux](#linux) and [Mac OS X](#mac).
+
+> Nuclide can be installed on [Windows](#windows), but it is
+> [not fully supported](https://github.com/facebook/nuclide/issues/401).
 
 These instructions are for installing the released package of Nuclide. For advanced users, you can
 [build from source](/docs/advanced-topics/building-from-source), but this is not officially
@@ -108,7 +110,14 @@ Or you can go through the Atom Packages UI to install Atom:
 
 ## Windows
 
-Detailed instructions for Windows coming soon.
+Atom can be installed on Windows. Some features of Nuclide may work on Windows, but the full
+Nuclide experience is [not yet supported](https://github.com/facebook/nuclide/issues/321).
+
+> There has been anecdotal success in getting basic [remote development](/docs/features/remote)
+> functionality to work on Windows (seeing the directory tree, editing remote files, etc.). If you
+> have [Hack](/docs/languages/hack) or [Flow](/docs/languages/flow) on a remote server, it is
+> possible that you could get some of those language integrations to work as well. However, local
+> projects seem to be very broken.
 
 ## Post Installation
 

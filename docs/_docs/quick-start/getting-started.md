@@ -22,6 +22,8 @@ you can install Nuclide with one command:
 apm install nuclide
 ```
 
+> Nuclide is [not currently supported on Windows](/docs/editor/setup/#windows).
+
 While technically optional, in order for features such as [`Quick Open`](#quick-open) to work
 correctly, you will also need to install [`Watchman`](https://facebook.github.io/watchman/) and
 ensure it is on your `$PATH`. There are other
