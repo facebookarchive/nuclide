@@ -9,9 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type TestRunnerControllerState from './TestRunnerController';
 import type {HomeFragments} from '../../nuclide-home-interfaces';
-import type {TestRunner} from '../../nuclide-test-runner/lib/interfaces';
+import type {TestRunner} from './interfaces';
+import type {TestRunnerController as TestRunnerControllerType} from './TestRunnerController';
+import type {TestRunnerControllerState} from './TestRunnerController';
 
 const {
   CompositeDisposable,
@@ -42,21 +43,21 @@ function limitString(str: string, length?: number = 20): string {
 
 class Activation {
 
-  _controller: Object; // TODO: Should be `TestRunnerController`, but it is lazily required.
+  _controller: TestRunnerControllerType;
   _disposables: CompositeDisposable;
+  _initialState: ?TestRunnerControllerState;
   _testRunners: Set<TestRunner>;
 
   constructor(state: ?TestRunnerControllerState) {
+    this._initialState = state;
     this._testRunners = new Set();
-    const TestRunnerController = require('./TestRunnerController');
-    this._controller = new TestRunnerController(state, this._testRunners);
     this._disposables = new CompositeDisposable();
     this._disposables.add(
       atom.commands.add(
         'body',
         'nuclide-test-runner:toggle-panel',
         () => {
-          this._controller.togglePanel();
+          this._getController().togglePanel();
         }
       )
     );
@@ -67,7 +68,7 @@ class Activation {
         'nuclide-test-runner:run-tests',
         event => {
           const target = ((event.currentTarget: any): HTMLElement).querySelector('.name');
-          this._controller.runTests(target.dataset.path);
+          this._getController().runTests(target.dataset.path);
         }
       )
     );
@@ -78,7 +79,7 @@ class Activation {
         'nuclide-test-runner:run-tests',
         event => {
           const target = ((event.currentTarget: any): HTMLElement).querySelector('.name');
-          this._controller.runTests(target.dataset.path);
+          this._getController().runTests(target.dataset.path);
         }
       )
     );
@@ -96,6 +97,11 @@ class Activation {
         ],
       })
     );
+
+    // The panel should be visible because of the last serialized state, initialize it immediately.
+    if (state != null && state.panelVisible) {
+      this._getController();
+    }
   }
 
   addTestRunner(testRunner: TestRunner): ?Disposable {
@@ -105,11 +111,22 @@ class Activation {
     }
 
     this._testRunners.add(testRunner);
-    this._controller.didUpdateTestRunners();
+    // Tell the controller to re-render only if it exists so test runner services won't force
+    // construction if the panel is still invisible.
+    //
+    // TODO(rossallen): The control should be inverted here. The controller should listen for
+    // changes rather than be told about them.
+    if (this._controller != null) {
+      this._getController().didUpdateTestRunners();
+    }
 
     return new Disposable(() => {
       this._testRunners.delete(testRunner);
-      this._controller.didUpdateTestRunners();
+      // Tell the controller to re-render only if it exists so test runner services won't force
+      // construction if the panel is still invisible.
+      if (this._controller != null) {
+        this._getController().didUpdateTestRunners();
+      }
     });
   }
 
@@ -118,7 +135,7 @@ class Activation {
   }
 
   serialize(): Object {
-    return this._controller.serialize();
+    return this._getController().serialize();
   }
 
   _createRunTestsContextMenuItem(label: string): Object {
@@ -155,6 +172,16 @@ class Activation {
         return target != null && target.dataset.name != null && target.dataset.path != null;
       },
     };
+  }
+
+  _getController() {
+    let controller = this._controller;
+    if (controller == null) {
+      const {TestRunnerController} = require('./TestRunnerController');
+      controller = new TestRunnerController(this._initialState, this._testRunners);
+      this._controller = controller;
+    }
+    return controller;
   }
 
 }

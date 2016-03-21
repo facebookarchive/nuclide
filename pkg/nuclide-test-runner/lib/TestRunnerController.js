@@ -33,7 +33,7 @@ export type TestRunnerControllerState = {
   panelVisible?: boolean;
 };
 
-class TestRunnerController {
+export class TestRunnerController {
 
   _activeTestRunner: ?Object;
   _buffer: TextBuffer;
@@ -354,5 +354,3 @@ class TestRunnerController {
   }
 
 }
-
-module.exports = TestRunnerController;

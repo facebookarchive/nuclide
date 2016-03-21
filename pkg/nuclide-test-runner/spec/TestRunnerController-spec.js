@@ -11,7 +11,7 @@
 
 import type {TestRunner} from '../../nuclide-test-runner/lib/interfaces';
 
-const TestRunnerController = require('../lib/TestRunnerController');
+import {TestRunnerController} from '../lib/TestRunnerController';
 
 describe('TestRunnerController', () => {
 
