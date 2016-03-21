@@ -72,41 +72,4 @@ describe('startTracking', () => {
     expect(trackValues.error).toBe('1');
     expect(trackValues.exception).toBe('Error');
   });
-
-  it('batching', () => {
-    main.setBatching(true);
-
-    const timer = startTracking('st-error');
-    advanceClock(11);
-    timer.onSuccess();
-
-    expect(track.track).not.toHaveBeenCalled();
-    advanceClock(1000);
-
-    expect(track.track).toHaveBeenCalledWith(
-      'batch',
-      {
-        events : '[{"key":"performance",' +
-            '"values":{"duration":"11","eventName":"st-error","error":"0","exception":""}}]',
-      });
-    main.setBatching(false);
-  });
-
-  it('batching toggle', () => {
-    main.setBatching(true);
-
-    const timer = startTracking('st-error');
-    advanceClock(11);
-    timer.onSuccess();
-
-    expect(track.track).not.toHaveBeenCalled();
-    main.setBatching(false);
-
-    expect(track.track).toHaveBeenCalledWith(
-      'batch',
-      {
-        events : '[{"key":"performance",' +
-            '"values":{"duration":"11","eventName":"st-error","error":"0","exception":""}}]',
-      });
-  });
 });

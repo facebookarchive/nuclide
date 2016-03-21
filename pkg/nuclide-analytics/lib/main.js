@@ -12,49 +12,16 @@
 import type Rx from 'rx';
 
 import invariant from 'assert';
-import {singleton} from '../../nuclide-commons';
-import {AnalyticsBatcher} from './AnalyticsBatcher';
 import {track as rawTrack} from './track';
-
-const ANALYTICS_BATCHER = 'analytics-batcher';
 
 export type TrackingEvent = {
   type: string;
   data?: Object;
 };
 
-function getBatcher(): AnalyticsBatcher {
-  return singleton.get(
-    ANALYTICS_BATCHER, () => {
-      invariant(rawTrack);
-      return new AnalyticsBatcher(rawTrack);
-    });
-}
-
-function resetBatcher(): void {
-  getBatcher().dispose();
-  return singleton.clear(ANALYTICS_BATCHER);
-}
-
-let batching = false;
-
-function setBatching(newBatching: boolean): void {
-  if (batching !== newBatching) {
-    batching = newBatching;
-    if (!batching) {
-      resetBatcher();
-    }
-  }
-}
-
 function track(eventName: string, values?: {[key: string]: mixed}): Promise<mixed> {
   invariant(rawTrack);
-  if (!batching) {
-    return rawTrack(eventName, values || {});
-  } else {
-    getBatcher().track(eventName, values || {});
-    return Promise.resolve();
-  }
+  return rawTrack(eventName, values || {});
 }
 
 /**
@@ -215,5 +182,4 @@ module.exports = {
   startTracking,
   TimingTracker,
   trackTiming,
-  setBatching,
 };
