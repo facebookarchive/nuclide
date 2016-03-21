@@ -27,7 +27,6 @@ import {getHackService} from './utils';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import {compareHackCompletions} from './utils';
 import {getConfig} from './config';
-import {gatekeeper, GK_HACK_USE_PERSISTENT_CONNECTION} from '../../fb-gatekeeper';
 
 const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 
@@ -260,6 +259,15 @@ async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLanguage> {
   return await createHackLanguageIfNotExisting(key, uri);
 }
 
+async function passesGK(): Promise<boolean> {
+  try {
+    const {gatekeeper, GK_HACK_USE_PERSISTENT_CONNECTION} = require('../../fb-gatekeeper');
+    return await gatekeeper.asyncIsGkEnabled(GK_HACK_USE_PERSISTENT_CONNECTION) === true;
+  } catch (e) {
+    return false;
+  }
+}
+
 async function createHackLanguageIfNotExisting(
   key: string,
   fileUri: NuclideUri,
@@ -267,8 +275,7 @@ async function createHackLanguageIfNotExisting(
   if (!uriToHackLanguage.has(key)) {
     const service = getHackService(fileUri);
     const config = getConfig();
-    const useIdeConnection = config.useIdeConnection
-      || (await gatekeeper.asyncIsGkEnabled(GK_HACK_USE_PERSISTENT_CONNECTION) === true);
+    const useIdeConnection = config.useIdeConnection || (await passesGK());
     const hackEnvironment = await service.getHackEnvironmentDetails(
       fileUri,
       config.hhClientPath,
