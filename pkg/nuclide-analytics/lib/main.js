@@ -47,7 +47,7 @@ function setBatching(newBatching: boolean): void {
   }
 }
 
-function track(eventName: string, values?: {[key: string]: string}): Promise<mixed> {
+function track(eventName: string, values?: {[key: string]: mixed}): Promise<mixed> {
   invariant(rawTrack);
   if (!batching) {
     return rawTrack(eventName, values || {});

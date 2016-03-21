@@ -9,6 +9,11 @@
  * the root directory of this source tree.
  */
 
+export type TrackEvent = {
+  key: string;
+  values: {[key: string]: mixed};
+};
+
 // This extra module enables adding spies during testing.
 export let track;
 try {

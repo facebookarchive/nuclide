@@ -27,6 +27,9 @@ type RequestOptions = {
 
   headers?: {[name: string]: string};
 
+  /** Entity body for PATCH, POST and PUT requests. */
+  body?: string;
+
   /** Use this for application/x-www-form-urlencoded (URL-Encoded Forms). */
   form?: Object;
 

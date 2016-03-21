@@ -9,14 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type {TrackEvent} from './track';
+
 const BATCH_EVENT = 'batch';
 
 import {BatchProcessedQueue} from '../../nuclide-commons';
-
-type TrackEvent = {
-  key: string;
-  values: {[key: string]: string};
-};
 
 const REPORTING_PERIOD = 1000;
 
@@ -25,9 +22,9 @@ const REPORTING_PERIOD = 1000;
 //  Periodic reporting of successes and subsequent failures.
 export class AnalyticsBatcher {
   _queue: BatchProcessedQueue<TrackEvent>;
-  _track: (eventName: string, values: {[key: string]: string}) => Promise<mixed>;
+  _track: (eventName: string, values: {[key: string]: mixed}) => Promise<mixed>;
 
-  constructor(track: (eventName: string, values: {[key: string]: string}) => Promise<mixed>) {
+  constructor(track: (eventName: string, values: {[key: string]: mixed}) => Promise<mixed>) {
     this._track = track;
     this._queue = new BatchProcessedQueue(
       REPORTING_PERIOD,
@@ -40,7 +37,7 @@ export class AnalyticsBatcher {
     this._track(BATCH_EVENT, { events: JSON.stringify(events) });
   }
 
-  track(key: string, values: {[key: string]: string}): void {
+  track(key: string, values: {[key: string]: mixed}): void {
     this._queue.add({key, values});
   }
 
