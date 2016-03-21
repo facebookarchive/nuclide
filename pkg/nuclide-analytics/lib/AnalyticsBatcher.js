@@ -11,20 +11,17 @@
 
 import type {TrackEvent} from './track';
 
-const BATCH_EVENT = 'batch';
-
 import {BatchProcessedQueue} from '../../nuclide-commons';
 
 const REPORTING_PERIOD = 1000;
 
-// Features:
-//  Immediate reporting of first time failure.
-//  Periodic reporting of successes and subsequent failures.
+type TrackCallback = (events: Array<TrackEvent>) => Promise<void>;
+
 export class AnalyticsBatcher {
   _queue: BatchProcessedQueue<TrackEvent>;
-  _track: (eventName: string, values: {[key: string]: mixed}) => Promise<mixed>;
+  _track: TrackCallback;
 
-  constructor(track: (eventName: string, values: {[key: string]: mixed}) => Promise<mixed>) {
+  constructor(track: TrackCallback) {
     this._track = track;
     this._queue = new BatchProcessedQueue(
       REPORTING_PERIOD,
@@ -34,7 +31,7 @@ export class AnalyticsBatcher {
   }
 
   _handleBatch(events: Array<TrackEvent>): void {
-    this._track(BATCH_EVENT, { events: JSON.stringify(events) });
+    this._track(events);
   }
 
   track(key: string, values: {[key: string]: mixed}): void {

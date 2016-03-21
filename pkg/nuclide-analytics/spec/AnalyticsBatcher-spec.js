@@ -24,13 +24,14 @@ describe('analytics - AnalyticsBatcher', () => {
     advanceClock(999);
     expect(track).not.toHaveBeenCalled();
     advanceClock(1);
-    expect(track).toHaveBeenCalledWith('batch',
-      { events: '[{"key":"key1","values":{}},{"key":"key2","values":{"v1":"value1"}}]' });
+    expect(track).toHaveBeenCalledWith([
+      {'key':'key1','values':{}},
+      {'key':'key2','values':{'v1':'value1'}},
+    ]);
 
     batcher.track('key3');
     advanceClock(10000);
-    expect(track).toHaveBeenCalledWith('batch',
-      { events: '[{"key":"key3"}]' });
+    expect(track).toHaveBeenCalledWith([{'key':'key3'}]);
   });
 
   it('flush on dispose', () => {
@@ -42,8 +43,10 @@ describe('analytics - AnalyticsBatcher', () => {
     expect(track).not.toHaveBeenCalled();
 
     batcher.dispose();
-    expect(track).toHaveBeenCalledWith('batch',
-      { events: '[{"key":"key1","values":{}},{"key":"key2","values":{"v1":"value1"}}]' });
+    expect(track).toHaveBeenCalledWith([
+      {'key':'key1','values':{}},
+      {'key':'key2','values':{'v1':'value1'}},
+    ]);
   });
 
 });
