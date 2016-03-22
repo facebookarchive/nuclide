@@ -27,6 +27,8 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
+import remoteUri from '../../nuclide-remote-uri';
+import {ServerConnection} from '../../nuclide-remote-connection';
 
 export type SerializedState = {
   breakpoints: ?Array<SerializedBreakpoint>;
@@ -63,14 +65,18 @@ class Activation {
       this._model,
       atom.views.addViewProvider(DebuggerModel, createDebuggerView),
 
-      // Listen for removed projects and kill the associated debugger if it is attached.
-      atom.project.onDidChangePaths(projectPaths => {
+      // Listen for removed connections and kill the debugger if it is using that connection.
+      ServerConnection.onDidCloseServerConnection(connection => {
         const debuggerProcess = this._model.getStore().getDebuggerProcess();
         if (debuggerProcess == null) {
-          return;
+          return; // Nothing to do if we're not debugging.
         }
-        const debugeeProjectPath = debuggerProcess.getTargetUri();
-        if (projectPaths.indexOf(debugeeProjectPath) < 0) {
+        const debuggeeTargetUri = debuggerProcess.getTargetUri();
+        if (remoteUri.isLocal(debuggeeTargetUri)) {
+          return; // Nothing to do if our debug session is local.
+        }
+        if (remoteUri.getHostname(debuggeeTargetUri) === connection.getRemoteHostname()
+            && remoteUri.getPort(debuggeeTargetUri) === connection.getPort()) {
           this._model.getActions().killDebugger();
         }
       }),

@@ -12,6 +12,7 @@
 import {RemoteConnection} from './RemoteConnection';
 import {RemoteDirectory} from './RemoteDirectory';
 import {RemoteFile} from './RemoteFile';
+import {ServerConnection} from './ServerConnection';
 
 import {
   SshHandshake,
@@ -35,6 +36,7 @@ module.exports = {
   RemoteConnection,
   RemoteDirectory,
   RemoteFile,
+  ServerConnection,
   SshHandshake,
   decorateSshConnectionDelegateWithTracking,
   getFileForPath,
