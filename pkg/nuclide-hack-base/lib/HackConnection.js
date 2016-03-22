@@ -67,7 +67,7 @@ class HackConnection {
 }
 
 // Maps hack config dir to HackConnection
-const connections: Map<string, HackConnection> = new Map();
+const connections: Map<string, Promise<?HackConnection>> = new Map();
 
 async function getHackConnection(filePath: string): Promise<?HackConnection> {
   const command = await getHackCommand();
@@ -82,25 +82,35 @@ async function getHackConnection(filePath: string): Promise<?HackConnection> {
 
   let connection = connections.get(configDir);
   if (connection == null) {
-    logger.info(`Creating new hack connection for ${configDir}`);
-    const startServerResult = await checkOutput(command, ['start', configDir]);
-    logger.info(
-      `Hack connection start server results:\n${JSON.stringify(startServerResult, null, 2)}\n`);
-    if (startServerResult.exitCode !== 0 &&
-        startServerResult.exitCode !== HACK_SERVER_ALREADY_EXISTS_EXIT_CODE) {
-      return null;
-    }
-    const process = await safeSpawn(command, ['ide', configDir]);
-    observeStream(process.stdout).subscribe(text => {
-      logger.info(`Hack ide stdout: ${text}`);
-    });
-    observeStream(process.stderr).subscribe(text => {
-      logger.info(`Hack ide stderr: ${text}`);
-    });
-    connection = new HackConnection(configDir, process);
+    connection = createConnection(command, configDir);
     connections.set(configDir, connection);
+    connection.then(result => {
+      // If we fail to connect to hack, then retry on next request.
+      if (result == null) {
+        connections.delete(configDir);
+      }
+    });
   }
   return connection;
+}
+
+async function createConnection(command: string, configDir: string): Promise<?HackConnection> {
+  logger.info(`Creating new hack connection for ${configDir}`);
+  const startServerResult = await checkOutput(command, ['start', configDir]);
+  logger.info(
+    `Hack connection start server results:\n${JSON.stringify(startServerResult, null, 2)}\n`);
+  if (startServerResult.exitCode !== 0 &&
+      startServerResult.exitCode !== HACK_SERVER_ALREADY_EXISTS_EXIT_CODE) {
+    return null;
+  }
+  const process = await safeSpawn(command, ['ide', configDir]);
+  observeStream(process.stdout).subscribe(text => {
+    logger.info(`Hack ide stdout: ${text}`);
+  });
+  observeStream(process.stderr).subscribe(text => {
+    logger.info(`Hack ide stderr: ${text}`);
+  });
+  return new HackConnection(configDir, process);
 }
 
 /**
