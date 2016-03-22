@@ -26,7 +26,7 @@ export type HhvmDebuggerSessionConfig = {
   endDebugWhenNoRequests?: boolean;
   logLevel: string;
   targetUri: string;
-  hhvmBinaryPath: string;
+  phpRuntimePath: string;
 };
 
 export type NotificationMessage = {

@@ -95,7 +95,7 @@ const config = {
   endDebugWhenNoRequests: true,
   logLevel: 'info',
   targetUri: 'target_uri',
-  hhvmBinaryPath: '/path/to/binary',
+  phpRuntimePath: '/path/to/binary',
 };
 
 describe('debugger-hhvm-proxy ConnectionUtils', () => {

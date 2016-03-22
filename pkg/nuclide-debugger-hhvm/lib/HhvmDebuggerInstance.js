@@ -80,7 +80,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       targetUri: remoteUri.getPath(this.getTargetUri()),
       logLevel: config.logLevel,
       endDebugWhenNoRequests: false,
-      hhvmBinaryPath: config.hhvmBinaryPath,
+      phpRuntimePath: config.phpRuntimePath,
     };
     logInfo('Connection config: ' + JSON.stringify(config));
 

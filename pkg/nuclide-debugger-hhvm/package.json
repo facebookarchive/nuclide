@@ -30,11 +30,11 @@
         "default": 10112,
         "description": "Port for DBGP connection to HHVM used for launching scripts."
       },
-      "hhvmBinaryPath": {
-        "title": "Path to HHVM binary",
+      "phpRuntimePath": {
+        "title": "Path to your PHP runtime",
         "type": "string",
         "default": "/usr/local/bin/php",
-        "description": "Path to the HHVM binary on your server."
+        "description": "Path to the PHP runtime on your server."
       },
       "logLevel": {
         "title": "Log Level",

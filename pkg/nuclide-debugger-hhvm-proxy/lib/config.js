@@ -16,7 +16,7 @@ const defaultConfig: HhvmDebuggerSessionConfig = {
   xdebugPort: 9000,
   logLevel: 'INFO',
   targetUri: '',
-  hhvmBinaryPath: '/usr/local/bin/php',
+  phpRuntimePath: '/usr/local/bin/php',
 };
 
 let config: HhvmDebuggerSessionConfig = defaultConfig;
