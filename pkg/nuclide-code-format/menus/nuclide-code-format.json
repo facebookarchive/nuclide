@@ -1,0 +1,26 @@
+{
+  "menu": [
+    {
+      "label": "Edit",
+      "submenu": [
+        {
+          "label": "Text",
+          "submenu": [
+            {
+              "label": "Format Code",
+              "command": "nuclide-code-format:format-code"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "context-menu": {
+    "atom-text-editor": [
+      {
+        "label": "Format Code",
+        "command": "nuclide-code-format:format-code"
+      }
+    ]
+  }
+}

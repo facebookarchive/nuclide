@@ -1,0 +1,11 @@
+{
+  ".platform-darwin atom-text-editor": {
+    "cmd-alt-enter": "hyperclick:confirm-cursor"
+  },
+  ".platform-win32 atom-text-editor": {
+    "ctrl-alt-enter": "hyperclick:confirm-cursor"
+  },
+  ".platform-linux atom-text-editor": {
+    "ctrl-alt-enter": "hyperclick:confirm-cursor"
+  }
+}

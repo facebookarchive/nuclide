@@ -1,0 +1,10 @@
+{
+  ".platform-darwin atom-workspace": {
+    "alt-cmd-shift-d": "nuclide-diff-view:open",
+    "cmd-shift-e": "nuclide-diff-view:switch-to-editor"
+  },
+  ".platform-win32 atom-workspace, .platform-linux atom-workspace": {
+    "alt-ctrl-shift-d": "nuclide-diff-view:open",
+    "ctrl-shift-e": "nuclide-diff-view:switch-to-editor"
+  }
+}

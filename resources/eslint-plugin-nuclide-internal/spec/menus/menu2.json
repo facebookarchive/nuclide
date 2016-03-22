@@ -1,0 +1,27 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "test",
+          "submenu": [
+            {
+              "label": "nested menu",
+              "command": "good_command"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "View",
+      "submenu": [
+        {
+          "label": "test",
+          "command": "bad_command"
+        }
+      ]
+    }
+  ]
+}

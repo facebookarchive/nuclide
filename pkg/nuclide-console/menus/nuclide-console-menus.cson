@@ -1,4 +1,0 @@
-'context-menu':
-  '.nuclide-console-table-wrapper': [
-    {label: 'Copy', command: 'core:copy'},
-  ]

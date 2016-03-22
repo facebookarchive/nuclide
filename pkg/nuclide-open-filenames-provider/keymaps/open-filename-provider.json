@@ -1,0 +1,8 @@
+{
+  ".platform-darwin atom-workspace": {
+    "cmd-alt-o": "nuclide-open-filenames-provider:toggle-provider"
+  },
+  ".platform-win32 atom-workspace, .platform-linux atom-workspace": {
+    "ctrl-alt-o": "nuclide-open-filenames-provider:toggle-provider"
+  }
+}

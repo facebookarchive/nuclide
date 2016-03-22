@@ -1,0 +1,5 @@
+{
+  "atom-workspace": {
+    "ctrl-shift-cmd-c": "nuclide-remote-projects:connect"
+  }
+}

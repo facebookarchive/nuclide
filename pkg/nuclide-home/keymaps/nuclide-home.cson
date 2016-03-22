@@ -1,8 +1,0 @@
-'atom-workspace':
-  'ctrl-shift-h': 'nuclide-home:toggle'
-
-'.platform-darwin atom-workspace':
-  'alt-cmd-,': 'nuclide-home:show-settings'
-
-'.platform-win32 atom-workspace, .platform-linux atom-workspace':
-  'alt-ctrl-,': 'nuclide-home:show-settings'

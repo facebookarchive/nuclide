@@ -1,0 +1,7 @@
+{
+  "atom-workspace": {
+    "ctrl-shift-x": "nuclide-clipboard-path:copy-absolute-path",
+    "ctrl-alt-shift-x": "nuclide-clipboard-path:copy-project-relative-path",
+    "ctrl-alt-x": "nuclide-clipboard-path:copy-repository-relative-path"
+  }
+}

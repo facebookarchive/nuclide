@@ -1,0 +1,8 @@
+{
+  ".platform-darwin atom-workspace": {
+    "cmd-t": "nuclide-quick-open:find-anything-via-omni-search"
+  },
+  ".platform-win32 atom-workspace, .platform-linux atom-workspace": {
+    "ctrl-t": "nuclide-quick-open:find-anything-via-omni-search"
+  }
+}

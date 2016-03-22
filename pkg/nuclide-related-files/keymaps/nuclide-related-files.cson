@@ -1,2 +1,0 @@
-'atom-text-editor:not(.mini)':
-  'cmd-alt-n': 'nuclide-related-files:jump-to-next-related-file'

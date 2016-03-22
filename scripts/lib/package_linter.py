@@ -91,6 +91,7 @@ class PackageLinter(object):
 
         if not package['isNodePackage']:
             self.expect_field(package_name, package, 'testRunner', 'apm')
+            self.validate_json_extras(package)
         self.validate_dependencies(package)
         self.validate_babelrc(package)
 
@@ -172,6 +173,18 @@ class PackageLinter(object):
         if os.path.isfile(babelrc_path):
             self.report_error('Deprecated .babelrc file found at %s.', babelrc_path)
             return
+
+    def validate_json_extras(self, package):
+        # Only "grammars" are allowed to be cson.
+        for dirname in ['keymaps', 'menus', 'snippets', 'settings']:
+            dir_path = os.path.join(package['packageRootAbsolutePath'], dirname)
+            if not os.path.isdir(dir_path):
+                continue
+            for item in os.listdir(dir_path):
+                if item.endswith('.cson'):
+                    self.report_error(
+                        '%s should use a ".json" %s file instead of %s.',
+                        package['name'], item, dirname)
 
     def validate_dependencies(self, package):
         for field in DEPENDENCIES_FIELDS:

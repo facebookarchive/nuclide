@@ -1,0 +1,22 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Working Sets",
+          "submenu": [
+            {
+              "label": "Select active",
+              "command": "working-sets:select-active"
+            },
+            {
+              "label": "Toggle last selected",
+              "command": "working-sets:toggle-last-selected"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "atom-workspace": {
+    "cmd-shift-y": "nuclide-debugger:toggle",
+    "cmd-shift-a": "nuclide-debugger:toggle-launch-attach",
+    "f8": "nuclide-debugger:continue-debugging",
+    "shift-f5": "nuclide-debugger:stop-debugging",
+    "f10": "nuclide-debugger:step-over",
+    "f11": "nuclide-debugger:step-into",
+    "shift-f11": "nuclide-debugger:step-out",
+    "f9": "nuclide-debugger:toggle-breakpoint"
+  }
+}

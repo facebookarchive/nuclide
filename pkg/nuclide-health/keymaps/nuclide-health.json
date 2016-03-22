@@ -1,0 +1,5 @@
+{
+  "atom-workspace": {
+    "alt-ctrl-shift-h": "nuclide-health:toggle"
+  }
+}

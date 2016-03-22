@@ -1,3 +1,0 @@
-'.platform-darwin, .platform-linux, .platform-win32':
-  'alt-shift-d': 'nuclide-diagnostics-ui:toggle-table'
-  'alt-shift-a': 'nuclide-diagnostics-ui:fix-all-in-current-file'

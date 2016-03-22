@@ -1,0 +1,64 @@
+{
+  ".platform-darwin atom-workspace": {
+    "cmd-\\": "nuclide-file-tree:toggle",
+    "cmd-|": "nuclide-file-tree:reveal-active-file"
+  },
+  ".platform-win32 atom-workspace, .platform-linux atom-workspace": {
+    "ctrl-\\": "nuclide-file-tree:toggle",
+    "ctrl-|": "nuclide-file-tree:reveal-active-file"
+  },
+  ".nuclide-file-tree": {
+    "right": "nuclide-file-tree:expand-directory",
+    "ctrl-]": "nuclide-file-tree:expand-directory",
+    "left": "nuclide-file-tree:collapse-directory",
+    "ctrl-[": "nuclide-file-tree:collapse-directory",
+    "alt-ctrl-]": "nuclide-file-tree:recursive-expand-directory",
+    "alt-right": "nuclide-file-tree:recursive-expand-directory",
+    "alt-ctrl-[": "nuclide-file-tree:recursive-collapse-directory",
+    "alt-left": "nuclide-file-tree:recursive-collapse-directory",
+    "ctrl-{": "nuclide-file-tree:recursive-collapse-all",
+    "enter": "nuclide-file-tree:open-selected-entry",
+    "delete": "nuclide-file-tree:remove",
+    "backspace": "nuclide-file-tree:remove",
+    "home": "core:move-to-top",
+    "end": "core:move-to-bottom",
+    "a": "nuclide-file-tree:go-to-letter-a",
+    "b": "nuclide-file-tree:go-to-letter-b",
+    "c": "nuclide-file-tree:go-to-letter-c",
+    "d": "nuclide-file-tree:go-to-letter-d",
+    "e": "nuclide-file-tree:go-to-letter-e",
+    "f": "nuclide-file-tree:go-to-letter-f",
+    "g": "nuclide-file-tree:go-to-letter-g",
+    "h": "nuclide-file-tree:go-to-letter-h",
+    "i": "nuclide-file-tree:go-to-letter-i",
+    "j": "nuclide-file-tree:go-to-letter-j",
+    "k": "nuclide-file-tree:go-to-letter-k",
+    "l": "nuclide-file-tree:go-to-letter-l",
+    "m": "nuclide-file-tree:go-to-letter-m",
+    "n": "nuclide-file-tree:go-to-letter-n",
+    "o": "nuclide-file-tree:go-to-letter-o",
+    "p": "nuclide-file-tree:go-to-letter-p",
+    "q": "nuclide-file-tree:go-to-letter-q",
+    "r": "nuclide-file-tree:go-to-letter-r",
+    "s": "nuclide-file-tree:go-to-letter-s",
+    "t": "nuclide-file-tree:go-to-letter-t",
+    "u": "nuclide-file-tree:go-to-letter-u",
+    "v": "nuclide-file-tree:go-to-letter-v",
+    "w": "nuclide-file-tree:go-to-letter-w",
+    "x": "nuclide-file-tree:go-to-letter-x",
+    "y": "nuclide-file-tree:go-to-letter-y",
+    "z": "nuclide-file-tree:go-to-letter-z"
+  },
+  ".platform-darwin .nuclide-file-tree": {
+    "cmd-k right": "nuclide-file-tree:open-selected-entry-right",
+    "cmd-k left": "nuclide-file-tree:open-selected-entry-left",
+    "cmd-k up": "nuclide-file-tree:open-selected-entry-up",
+    "cmd-k down": "nuclide-file-tree:open-selected-entry-down"
+  },
+  ".platform-win32 .nuclide-file-tree, .platform-linux .nuclide-file-tree": {
+    "ctrl-k right": "nuclide-file-tree:open-selected-entry-right",
+    "ctrl-k left": "nuclide-file-tree:open-selected-entry-left",
+    "ctrl-k up": "nuclide-file-tree:open-selected-entry-up",
+    "ctrl-k down": "nuclide-file-tree:open-selected-entry-down"
+  }
+}

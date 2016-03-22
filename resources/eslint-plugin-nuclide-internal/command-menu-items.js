@@ -11,7 +11,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const season = require('season');
 
 const MISSING_MENU_ITEM_ERROR = 'All workspace-level Atom commands ' +
   'should have a corresponding "Nuclide" sub-menu item in the same package.';
@@ -52,8 +51,8 @@ function resolveValue(node, context) {
 
 const menuConfigCache = {};
 
-// Returns a list of all JSON/CSON configs in the "menus" subdirectory
-// of the package that owns `filePath`.
+// Returns a list of all JSON (we don't use CSON) configs in the "menus"
+// subdirectory of the package that owns `filePath`.
 function findMenuConfigs(filePath) {
   let dir = path.dirname(filePath);
   let parent = path.dirname(dir);
@@ -67,15 +66,14 @@ function findMenuConfigs(filePath) {
       const configs = [];
       menuConfigCache[menuDir] = configs;
       fs.readdirSync(menuDir).forEach(configFile => {
-        try {
-          const contents = fs.readFileSync(path.join(menuDir, configFile), 'utf-8');
-          if (configFile.endsWith('.json')) {
+        if (configFile.endsWith('.json')) {
+          const configFilePath = path.join(menuDir, configFile);
+          try {
+            const contents = fs.readFileSync(configFilePath, 'utf-8');
             configs.push(JSON.parse(contents));
-          } else if (configFile.endsWith('.cson')) {
-            configs.push(season.parse(contents));
+          } catch (e) {
+            // ignore
           }
-        } catch (e) {
-          // ignore
         }
       });
       return configs;
