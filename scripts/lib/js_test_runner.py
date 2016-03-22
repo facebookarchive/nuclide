@@ -177,6 +177,6 @@ def run_integration_tests_with_clean_state(path_to_nuclide, named_tests):
 
 def is_retryable_error(output):
     return bool(
-        re.search(r'Atom.app/atom: line 117: \d+ Segmentation fault: 11', output) or
-        re.search(r'Atom.app/atom: line 117: \d+ Abort trap: 6', output)
+        re.search(r'Atom\.app/atom:\s+line 117:\s+\d+\s+Segmentation fault: 11', output) or
+        re.search(r'Atom\.app/atom:\s+line 117:\s+\d+\s+Abort trap: 6', output)
     )
