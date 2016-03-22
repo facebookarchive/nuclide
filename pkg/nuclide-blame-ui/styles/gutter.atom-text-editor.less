@@ -1,4 +1,10 @@
 @import "ui-variables";
+@import "progress";
+
+.nuclide-blame {
+  display: flex;
+  width: 50px;
+}
 
 .nuclide-blame-ui-hash {
   color: @text-color-info;
@@ -10,4 +16,15 @@
 
 .nuclide-blame-ui-hash-clickable:hover {
   text-decoration: underline;
+}
+
+.nuclide-blame-ui-spinner {
+  // The gutter lives in a shadow element so it can't use the
+  // "loading-spinner-tiny" class directly - instead we copy the styles.
+  .loading-spinner-tiny;
+  align-self: center;
+  margin: 0 auto;
+  &::before, &::after {
+    box-sizing: border-box;
+  }
 }

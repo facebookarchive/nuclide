@@ -20,8 +20,6 @@ import {track, trackTiming} from '../../nuclide-analytics';
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
 
-const BLAME_GUTTER_DEFAULT_WIDTH = 50;
-const LOADING_SPINNER_ID = 'blame-loading-spinner';
 const MS_TO_WAIT_BEFORE_SPINNER = 2000;
 const CHANGESET_CSS_CLASS = 'nuclide-blame-ui-hash';
 const CLICKABLE_CHANGESET_CSS_CLASS = 'nuclide-blame-ui-hash-clickable';
@@ -57,7 +55,8 @@ export default class {
     this._changesetSpanClassName = CHANGESET_CSS_CLASS;
     this._bufferLineToDecoration = new Map();
     this._gutter = editor.addGutter({name: gutterName});
-    this._updateGutterWidthToPixelWidth(BLAME_GUTTER_DEFAULT_WIDTH);
+    const gutterView: HTMLElement = atom.views.getView(this._gutter);
+    gutterView.classList.add('nuclide-blame');
 
     // If getUrlForRevision() is available, add a single, top-level click handler for the gutter.
     if (typeof blameProvider.getUrlForRevision === 'function') {
@@ -65,7 +64,6 @@ export default class {
       this._changesetSpanClassName += ' ' + CLICKABLE_CHANGESET_CSS_CLASS;
 
       const onClick: (evt: Event) => Promise<void> = this._onClick.bind(this);
-      const gutterView: HTMLElement = atom.views.getView(this._gutter);
       gutterView.addEventListener('click', onClick);
       this._subscriptions.add(this._gutter.onDidDestroy(
           () => gutterView.removeEventListener('click', onClick)
@@ -144,7 +142,7 @@ export default class {
     this._loadingSpinnerTimeoutId = window.setTimeout(() => {
       this._loadingSpinnerIsPending = false;
       this._loadingSpinnerDiv = document.createElement('div');
-      this._loadingSpinnerDiv.id = LOADING_SPINNER_ID;
+      this._loadingSpinnerDiv.className = 'nuclide-blame-ui-spinner';
       const gutterView = atom.views.getView(this._gutter);
       gutterView.appendChild(this._loadingSpinnerDiv);
     }, MS_TO_WAIT_BEFORE_SPINNER);
@@ -207,11 +205,6 @@ export default class {
 
     // Update the width of the gutter according to the new contents.
     this._updateGutterWidthToCharacterLength(longestBlame);
-  }
-
-  _updateGutterWidthToPixelWidth(pixelWidth: number): void {
-    const gutterView = atom.views.getView(this._gutter);
-    gutterView.style.width = `${pixelWidth}px`;
   }
 
   _updateGutterWidthToCharacterLength(characters: number): void {
