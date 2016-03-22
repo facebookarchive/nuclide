@@ -122,6 +122,7 @@ export function getLogger(category: ?string): Logger {
 
 export type CategoryLogger = {
   log(message: string): void;
+  logTrace(message: string): void;
   logInfo(message: string): void;
   logError(message: string): void;
   logErrorAndThrow(message: string): void;
@@ -141,6 +142,10 @@ export function getCategoryLogger(category: string): CategoryLogger {
     if (logger.isLevelEnabled(level)) {
       logger[level](message);
     }
+  }
+
+  function logTrace(message: string): void {
+    logHelper('trace', message);
   }
 
   function log(message: string): void {
@@ -163,6 +168,7 @@ export function getCategoryLogger(category: string): CategoryLogger {
 
   return {
     log,
+    logTrace,
     logInfo,
     logError,
     logErrorAndThrow,

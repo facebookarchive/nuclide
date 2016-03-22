@@ -5,7 +5,10 @@
   "version": "0.0.0",
   "description": "Nuclide lldb debugging server",
   "nuclide": {
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "scripts": {
+    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
   }
 }

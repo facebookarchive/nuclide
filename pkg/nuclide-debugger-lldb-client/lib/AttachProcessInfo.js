@@ -21,6 +21,7 @@ import {registerOutputWindowLogging} from '../../nuclide-debugger-common/lib/Out
 import {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 import invariant from 'assert';
 import {LldbDebuggerInstance} from './LldbDebuggerInstance';
+import {getConfig} from './utils';
 
 export class AttachProcessInfo extends DebuggerProcessInfo {
   _targetInfo: AttachTargetInfo;
@@ -35,6 +36,7 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     if (this.basepath) {
       this._targetInfo.basepath = this.basepath;
     }
+    rpcService.setSettings({logLevel: getConfig().serverLogLevel});
 
     let debugSession = null;
     let outputDisposable = registerOutputWindowLogging(rpcService.getOutputWindowObservable());

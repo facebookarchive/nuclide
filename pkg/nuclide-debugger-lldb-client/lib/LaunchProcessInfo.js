@@ -20,6 +20,7 @@ import invariant from 'assert';
 import {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 import {LldbDebuggerInstance} from './LldbDebuggerInstance';
 import {registerOutputWindowLogging} from '../../nuclide-debugger-common/lib/OutputServiceManager';
+import {getConfig} from './utils';
 
 export class LaunchProcessInfo extends DebuggerProcessInfo {
   _launchTargetInfo: LaunchTargetInfo;
@@ -34,6 +35,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     if (this.basepath) {
       this._launchTargetInfo.basepath = this.basepath;
     }
+    rpcService.setSettings({logLevel: getConfig().serverLogLevel});
 
     let debugSession = null;
     let outputDisposable = registerOutputWindowLogging(rpcService.getOutputWindowObservable());

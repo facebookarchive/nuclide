@@ -15,10 +15,14 @@ import type {
 } from '../../nuclide-debugger-interfaces/service';
 import type OutputService from '../../nuclide-console/lib/OutputService';
 
+import logger from './utils';
+import {getConfig} from './utils';
 import {setOutputService} from '../../nuclide-debugger-common/lib/OutputServiceManager';
+
 
 module.exports = {
   activate(state: mixed): void {
+    logger.setLogLevel(getConfig().clientLogLevel);
   },
 
   consumeOutputService(api: OutputService): void {

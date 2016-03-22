@@ -74,7 +74,7 @@ class DebuggerWebSocket(WebSocket):
         return response
 
     def received_message(self, message):
-        log_debug('received_message: %s' % message.data);
+
         parsed = None
         try:
             parsed = json.loads(message.data)
@@ -82,10 +82,22 @@ class DebuggerWebSocket(WebSocket):
             # Print invalid JSON requests to stderr.
             log_error('Invalid JSON: %s' % message)
 
+        should_log = self._is_debugger_protocol(parsed)
+        if should_log:
+            log_debug('received_message: %s' % message.data);
+
         response = self._generate_response(parsed)
         response_in_json = json.dumps(response);
-        log_debug('response: %s' % response_in_json);
+        if should_log:
+            log_debug('response: %s' % response_in_json);
         self.send(response_in_json)
+
+    def _is_debugger_protocol(self, parsed):
+        return parsed is not None and ( \
+            parsed['method'].startswith('Debugger') or \
+            parsed['method'].startswith('Runtime') or \
+            parsed['method'].startswith('Console'))
+
 
 
 class ChromeDevToolsDebuggerApp(object):

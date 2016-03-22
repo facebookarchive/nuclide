@@ -5,6 +5,40 @@
   "version": "0.0.0",
   "description": "Nuclide lldb debugging client",
   "nuclide": {
+    "config": {
+      "clientLogLevel": {
+        "title": "Client Log Level",
+        "type": "string",
+        "default": "INFO",
+        "description": "Specify that level of logging from lldb debugger client",
+        "enum": [
+          "ALL",
+          "TRACE",
+          "DEBUG",
+          "INFO",
+          "WARN",
+          "ERROR",
+          "FATAL",
+          "OFF"
+        ]
+      },
+      "serverLogLevel": {
+        "title": "Server Log Level",
+        "type": "string",
+        "default": "DEBUG",
+        "description": "Specify that level of logging from lldb debugger server",
+        "enum": [
+          "ALL",
+          "TRACE",
+          "DEBUG",
+          "INFO",
+          "WARN",
+          "ERROR",
+          "FATAL",
+          "OFF"
+        ]
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

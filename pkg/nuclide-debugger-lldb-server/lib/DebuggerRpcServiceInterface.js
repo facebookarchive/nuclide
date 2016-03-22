@@ -25,6 +25,10 @@ export type LaunchTargetInfo = {
   basepath?: string
 };
 
+export type DebuggerSettings = {
+  logLevel: string;
+};
+
 export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>> {
   throw new Error('Not implemented');
 }
@@ -43,6 +47,9 @@ export class DebuggerConnection {
 }
 
 export class DebuggerRpcService {
+  setSettings(settings: DebuggerSettings): Promise<void> {
+    throw new Error('Not implemented');
+  }
   getOutputWindowObservable(): Observable<string> {
     throw new Error('Not implemented');
   }

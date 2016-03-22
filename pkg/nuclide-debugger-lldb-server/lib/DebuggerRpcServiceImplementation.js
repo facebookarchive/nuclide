@@ -9,15 +9,20 @@
  * the root directory of this source tree.
  */
 
+import type {
+  AttachTargetInfo,
+  LaunchTargetInfo,
+  DebuggerSettings,
+} from './DebuggerRpcServiceInterface';
+
 import {CompositeDisposable, Disposable} from 'event-kit';
 import {Observable} from 'rx';
 import child_process from 'child_process';
 import path from 'path';
 import utils from './utils';
 import WebSocket from 'ws';
-const {log, logError, logInfo} = utils;
+const {log, logTrace, logError, logInfo, setLogLevel} = utils;
 import {ClientCallback} from '../../nuclide-debugger-common/lib/ClientCallback';
-import {AttachTargetInfo, LaunchTargetInfo} from './DebuggerRpcServiceInterface';
 import {observeStream, splitStream} from '../../nuclide-commons';
 
 type AttachInfoArgsType = {
@@ -79,7 +84,7 @@ export class DebuggerConnection {
   }
 
   _handleLLDBMessage(message: string): void {
-    log(`lldb message: ${message}`);
+    logTrace(`lldb message: ${message}`);
     this._clientCallback.sendChromeMessage(message);
   }
 
@@ -91,7 +96,7 @@ export class DebuggerConnection {
   async sendCommand(message: string): Promise<void> {
     const lldbWebSocket = this._lldbWebSocket;
     if (lldbWebSocket) {
-      log(`forward client message to lldb: ${message}`);
+      logTrace(`forward client message to lldb: ${message}`);
       lldbWebSocket.send(message);
     } else {
       logError(`Why is not lldb socket available?`);
@@ -99,7 +104,7 @@ export class DebuggerConnection {
   }
 
   async dispose(): Promise<void> {
-    logInfo(`DebuggerConnection disposed`);
+    log(`DebuggerConnection disposed`);
     this._subscriptions.dispose();
   }
 }
@@ -113,6 +118,11 @@ export class DebuggerRpcService {
     this._subscriptions = new CompositeDisposable(
       new Disposable(() => this._clientCallback.dispose()),
     );
+  }
+
+  setSettings(settings: DebuggerSettings): Promise<void> {
+    setLogLevel(settings.logLevel);
+    return Promise.resolve();
   }
 
   getOutputWindowObservable(): Observable<string> {
@@ -167,7 +177,7 @@ export class DebuggerRpcService {
   }
 
   _handleIpcMessage(ipcStream: Object, message: string): void {
-    log(`ipc message: ${message}`);
+    logTrace(`ipc message: ${message}`);
     const messageJson = JSON.parse(message);
     if (messageJson.type === 'Nuclide.userOutput') {
       // Write response message to ipc for sync message.
