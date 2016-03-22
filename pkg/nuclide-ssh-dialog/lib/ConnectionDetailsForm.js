@@ -14,9 +14,9 @@ import type {
   NuclideRemoteConnectionParamsWithPassword,
 } from './connection-types';
 
-const {AtomInput} = require('../../nuclide-ui');
+const {AtomInput} = require('../../nuclide-ui/lib/AtomInput');
 const {CompositeDisposable} = require('atom');
-const {NuclideRadioGroup} = require('../../nuclide-ui');
+const {NuclideRadioGroup} = require('../../nuclide-ui/lib/NuclideRadioGroup');
 const {
   React,
   ReactDOM,

@@ -14,7 +14,7 @@ import type DiffViewModel from './DiffViewModel';
 import type {PublishModeType, PublishModeStateType} from './types';
 
 import arcanist from '../../nuclide-arcanist-client';
-import {AtomTextEditor} from '../../nuclide-ui';
+import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 import classnames from 'classnames';
 import {PublishMode, PublishModeState} from './constants';
 import {React} from 'react-for-atom';

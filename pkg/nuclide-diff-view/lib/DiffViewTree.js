@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {LazyTreeNode} from '../../nuclide-ui';
+import type {LazyTreeNode} from '../../nuclide-ui/lib/LazyTreeNode';
 import type {FileChange, FileChangeStatusValue} from './types';
 import type DiffViewModel from './DiffViewModel';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {fileTypeClass} from '../../nuclide-atom-helpers';
-import {TreeRootComponent} from '../../nuclide-ui';
+import {TreeRootComponent} from '../../nuclide-ui/lib/TreeRootComponent';
 import DiffViewTreeNode from './DiffViewTreeNode';
 import remoteUri from '../../nuclide-remote-uri';
 import Immutable from 'immutable';

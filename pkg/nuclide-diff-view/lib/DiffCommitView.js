@@ -12,7 +12,8 @@
 import type {CommitModeStateType} from './types';
 import type DiffViewModel from './DiffViewModel';
 
-import {AtomTextEditor, NuclideCheckbox} from '../../nuclide-ui';
+import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
+import {NuclideCheckbox} from '../../nuclide-ui/lib/NuclideCheckbox';
 import classnames from 'classnames';
 import {CommitMode, CommitModeState} from './constants';
 

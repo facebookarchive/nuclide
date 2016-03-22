@@ -70,7 +70,7 @@ function setupTextEditor(props: Object): atom$TextEditor {
   return textEditor;
 }
 
-class AtomTextEditor extends React.Component {
+export class AtomTextEditor extends React.Component {
   state: void;
   _textEditorElement: ?atom$TextEditorElement;
 
@@ -181,5 +181,3 @@ class AtomTextEditor extends React.Component {
   }
 
 }
-
-module.exports = AtomTextEditor;

@@ -11,8 +11,8 @@
 
 const {CompositeDisposable} = require('atom');
 const {EventEmitter} = require('events');
-const LazyTreeNode = require('./LazyTreeNode');
-const TreeNodeComponent = require('./TreeNodeComponent');
+const {LazyTreeNode} = require('./LazyTreeNode');
+const {TreeNodeComponent} = require('./TreeNodeComponent');
 const {forEachCachedNode} = require('./tree-node-traversals');
 const {
   React,
@@ -73,7 +73,7 @@ const FIRST_SELECTED_DESCENDANT_REF: string = 'firstSelectedDescendant';
 /**
  * Generic tree component that operates on LazyTreeNodes.
  */
-const TreeRootComponent = React.createClass({
+export const TreeRootComponent = React.createClass({
   _allKeys: (null: ?Array<string>),
   _emitter: (null: ?EventEmitter),
   _keyToNode: (null: ?{[key: string]: LazyTreeNode}),
@@ -672,5 +672,3 @@ const TreeRootComponent = React.createClass({
     }
   },
 });
-
-module.exports = TreeRootComponent;

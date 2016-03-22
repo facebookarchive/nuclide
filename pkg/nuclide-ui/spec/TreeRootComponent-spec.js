@@ -9,16 +9,16 @@
  * the root directory of this source tree.
  */
 
-import type LazyTreeNode from '../lib/LazyTreeNode';
+import type {LazyTreeNode} from '../lib/LazyTreeNode';
 
-const LazyTestTreeNode = require('./LazyTestTreeNode');
+const {LazyTestTreeNode} = require('./LazyTestTreeNode');
 const {
   React,
   ReactDOM,
   TestUtils,
 } = require('react-for-atom');
-const TreeNodeComponent = require('../lib/TreeNodeComponent');
-const TreeRootComponent = require('../lib/TreeRootComponent');
+const {TreeNodeComponent} = require('../lib/TreeNodeComponent');
+const {TreeRootComponent} = require('../lib/TreeRootComponent');
 const invariant = require('assert');
 
 function clickNodeWithLabel(component: TreeRootComponent, label: string): void {

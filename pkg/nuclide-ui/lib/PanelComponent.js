@@ -28,7 +28,7 @@ type State = {
  * A container for centralizing the logic for making panels scrollable,
  * resizeable, dockable, etc.
  */
-class PanelComponent extends React.Component {
+export class PanelComponent extends React.Component {
 
   _isMounted: boolean;
   _resizeSubscriptions: CompositeDisposable;
@@ -240,5 +240,3 @@ class PanelComponent extends React.Component {
     this.props.onResize.call(null, newSize);
   }
 }
-
-module.exports = PanelComponent;

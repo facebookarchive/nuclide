@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type LazyTreeNode from './LazyTreeNode';
+import type {LazyTreeNode} from './LazyTreeNode';
 
 module.exports = {
   /**

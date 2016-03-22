@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const AtomTextEditor = require('../lib/AtomTextEditor');
+const {AtomTextEditor} = require('../lib/AtomTextEditor');
 const {
   React,
   TestUtils,

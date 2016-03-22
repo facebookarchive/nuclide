@@ -10,10 +10,8 @@
  */
 
 const DiagnosticsPane = require('./DiagnosticsPane');
-const {
-  NuclideCheckbox,
-  PanelComponent,
-} = require('../../nuclide-ui');
+const {NuclideCheckbox} = require('../../nuclide-ui/lib/NuclideCheckbox');
+const {PanelComponent} = require('../../nuclide-ui/lib/PanelComponent');
 const {React} = require('react-for-atom');
 const {PropTypes} = React;
 

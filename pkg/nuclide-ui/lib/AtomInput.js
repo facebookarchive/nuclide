@@ -43,7 +43,7 @@ type State = {
 /**
  * An input field rendered as an <atom-text-editor mini />.
  */
-class AtomInput extends React.Component {
+export class AtomInput extends React.Component {
   props: Props;
   state: State;
 
@@ -189,5 +189,3 @@ class AtomInput extends React.Component {
     this._getTextEditorElement().focus();
   }
 }
-
-module.exports = AtomInput;

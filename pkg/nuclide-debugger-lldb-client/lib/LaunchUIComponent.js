@@ -13,7 +13,7 @@ import type {LaunchAttachStore} from './LaunchAttachStore';
 import type {LaunchAttachActions} from './LaunchAttachActions';
 
 import {React} from 'react-for-atom';
-import {AtomInput} from '../../nuclide-ui';
+import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 
 type PropsType = {
   store: LaunchAttachStore;

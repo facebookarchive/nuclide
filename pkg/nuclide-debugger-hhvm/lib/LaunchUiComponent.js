@@ -10,7 +10,7 @@
  */
 
 import {React} from 'react-for-atom';
-import {AtomInput} from '../../nuclide-ui';
+import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
 import remoteUri from '../../nuclide-remote-uri';
 import type {NuclideUri} from '../../nuclide-remote-uri';

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import NuclideCheckbox from '../lib/NuclideCheckbox';
+import {NuclideCheckbox} from '../lib/NuclideCheckbox';
 import {
   React,
   ReactDOM,

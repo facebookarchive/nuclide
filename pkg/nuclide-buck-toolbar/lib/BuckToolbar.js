@@ -14,7 +14,8 @@ const {React} = require('react-for-atom');
 const SimulatorDropdown = require('./SimulatorDropdown');
 const BuckToolbarActions = require('./BuckToolbarActions');
 const BuckToolbarStore = require('./BuckToolbarStore');
-import {AtomComboBox, NuclideCheckbox} from '../../nuclide-ui';
+import {AtomComboBox} from '../../nuclide-ui/lib/AtomComboBox';
+import {NuclideCheckbox} from '../../nuclide-ui/lib/NuclideCheckbox';
 
 const {debounce} = require('../../nuclide-commons');
 const {

@@ -15,7 +15,7 @@ import type {
 
 import {React} from 'react-for-atom';
 import ServiceMonitor from './ServiceMonitor';
-import {NuclideCustomPaneItem} from '../../nuclide-ui';
+import {NuclideCustomPaneItem} from '../../nuclide-ui/lib/NuclideCustomPaneItem';
 import {getServiceLogger} from '../../nuclide-client';
 
 class ServiceMonitorPaneItem extends NuclideCustomPaneItem {

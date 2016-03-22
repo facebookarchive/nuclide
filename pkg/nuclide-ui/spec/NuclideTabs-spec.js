@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const Tabs = require('../lib/NuclideTabs');
+const {NuclideTabs} = require('../lib/NuclideTabs');
 const {
   React,
   ReactDOM,
@@ -34,7 +34,7 @@ describe('NuclideCheckbox', () => {
       onActiveTabChange: onChange,
     };
     const component = renderIntoDocument(
-      <Tabs {...props} />
+      <NuclideTabs {...props} />
     );
     const node = scryRenderedDOMComponentsWithClass(
       component,
@@ -56,7 +56,7 @@ describe('NuclideCheckbox', () => {
       onActiveTabChange: onChange,
     };
     const component = renderIntoDocument(
-      <Tabs {...props} />
+      <NuclideTabs {...props} />
     );
     const node = scryRenderedDOMComponentsWithClass(
       component,

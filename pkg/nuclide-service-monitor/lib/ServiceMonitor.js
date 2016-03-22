@@ -11,7 +11,7 @@
 
 import type Item from '../../nuclide-remote-connection/lib/ServiceLogger';
 
-import {AtomInput} from '../../nuclide-ui';
+import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
 

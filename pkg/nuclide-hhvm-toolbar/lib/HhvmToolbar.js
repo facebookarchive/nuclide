@@ -10,7 +10,8 @@
  */
 
 import type DebuggerProcessInfo from '../../nuclide-debugger-atom/lib/DebuggerProcessInfo';
-const {AtomInput, NuclideDropdown} = require('../../nuclide-ui');
+const {AtomInput} = require('../../nuclide-ui/lib/AtomInput');
+const {NuclideDropdown} = require('../../nuclide-ui/lib/NuclideDropdown');
 const {React} = require('react-for-atom');
 const {PropTypes} = React;
 

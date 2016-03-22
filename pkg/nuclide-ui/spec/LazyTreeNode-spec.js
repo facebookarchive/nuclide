@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type LazyTreeNode from '../lib/LazyTreeNode';
+import type {LazyTreeNode} from '../lib/LazyTreeNode';
 
-const LazyTestTreeNode = require('./LazyTestTreeNode');
+const {LazyTestTreeNode} = require('./LazyTestTreeNode');
 const invariant = require('assert');
 
 describe('LazyTreeNode', () => {

@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {LazyTreeNode} from '../../../nuclide-ui';
+import type {LazyTreeNode} from '../../../nuclide-ui/lib/LazyTreeNode';
 
 const {React} = require('react-for-atom');
 const TestClassTreeNode = require('./TestClassTreeNode');
-const {TreeRootComponent} = require('../../../nuclide-ui');
+const {TreeRootComponent} = require('../../../nuclide-ui/lib/TreeRootComponent');
 
 const {PropTypes} = React;
 

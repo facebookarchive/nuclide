@@ -10,7 +10,7 @@
  */
 
 import {React} from 'react-for-atom';
-import {AtomInput} from '../../nuclide-ui';
+import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import classnames from 'classnames';
 
 type Props = {

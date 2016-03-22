@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const LazyTreeNode = require('./LazyTreeNode');
+const {LazyTreeNode} = require('./LazyTreeNode');
 const {
   PureRenderMixin,
   React,
@@ -28,7 +28,7 @@ const SPINNER = '\uF087';
 /**
  * Represents one entry in a TreeComponent.
  */
-class TreeNodeComponent extends React.Component {
+export class TreeNodeComponent extends React.Component {
   state: void;
 
   static propTypes = {
@@ -126,5 +126,3 @@ class TreeNodeComponent extends React.Component {
     this.props.onMouseDown(event, this.props.node);
   }
 }
-
-module.exports = TreeNodeComponent;

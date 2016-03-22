@@ -16,7 +16,7 @@ import {React, ReactDOM} from 'react-for-atom';
 import invariant from 'assert';
 
 import {track} from '../../nuclide-analytics';
-import {PanelComponent} from '../../nuclide-ui';
+import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
 import {OutlineView} from './OutlineView';
 
 export class OutlineViewPanelState {

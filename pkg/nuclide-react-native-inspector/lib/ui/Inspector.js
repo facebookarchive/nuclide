@@ -12,7 +12,7 @@
 import type {Gadget} from '../../../nuclide-gadgets-interfaces';
 import {React} from 'react-for-atom';
 import path from 'path';
-import {Webview} from '../../../nuclide-ui';
+import {Webview} from '../../../nuclide-ui/lib/Webview';
 import {toJsString} from '../../../nuclide-commons';
 
 class Inspector extends React.Component {

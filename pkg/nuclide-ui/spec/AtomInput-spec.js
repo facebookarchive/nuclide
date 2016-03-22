@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const AtomInput = require('../lib/AtomInput');
+const {AtomInput} = require('../lib/AtomInput');
 const {
   React,
   ReactDOM,

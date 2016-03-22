@@ -16,7 +16,7 @@ import {ReactDOM} from 'react-for-atom';
 
 import type {NuclideCustomPaneItemOptions} from './types';
 
-class NuclideCustomPaneItem extends HTMLElement {
+export class NuclideCustomPaneItem extends HTMLElement {
 
   _title: ?string;
   _iconName: ?string;
@@ -65,5 +65,3 @@ class NuclideCustomPaneItem extends HTMLElement {
     ReactDOM.unmountComponentAtNode(this);
   }
 }
-
-module.exports = NuclideCustomPaneItem;

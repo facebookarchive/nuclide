@@ -18,7 +18,7 @@ type ComboboxOption = {
 import Rx from 'rx';
 
 const {CompositeDisposable} = require('atom');
-const AtomInput = require('./AtomInput');
+const {AtomInput} = require('./AtomInput');
 const {
   React,
   ReactDOM,
@@ -46,7 +46,7 @@ type State = {
  * TODO use generic search provider
  * TODO move combobox to separate package.
  */
-class AtomComboBox extends React.Component {
+export class AtomComboBox extends React.Component {
   state: State;
   _updateSubscription: ?IDisposable;
   _subscriptions: ?CompositeDisposable;
@@ -370,5 +370,3 @@ class AtomComboBox extends React.Component {
   }
 
 }
-
-module.exports = AtomComboBox;

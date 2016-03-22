@@ -13,7 +13,7 @@ import type {DebuggerProviderStore} from './DebuggerProviderStore';
 import type DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
 import type DebuggerActions from './DebuggerActions';
 
-import {NuclideDropdown} from '../../nuclide-ui';
+import {NuclideDropdown} from '../../nuclide-ui/lib/NuclideDropdown';
 import {React} from 'react-for-atom';
 import remoteUri from '../../nuclide-remote-uri';
 

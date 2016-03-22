@@ -13,7 +13,7 @@ import type {ProcessOutputStore} from '../../nuclide-process-output-store';
 import type {ProcessOutputHandler} from './types';
 
 const {CompositeDisposable, TextBuffer} = require('atom');
-const {AtomTextEditor} = require('../../nuclide-ui');
+const {AtomTextEditor} = require('../../nuclide-ui/lib/AtomTextEditor');
 const {
   React,
   ReactDOM,

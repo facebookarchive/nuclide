@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-const LazyTreeNode = require('../lib/LazyTreeNode');
+const {LazyTreeNode} = require('../lib/LazyTreeNode');
 
-class LazyTestTreeNode extends LazyTreeNode {
+export class LazyTestTreeNode extends LazyTreeNode {
 
   constructor(
       item: any,
@@ -28,5 +28,3 @@ class LazyTestTreeNode extends LazyTreeNode {
   }
 
 }
-
-module.exports = LazyTestTreeNode;

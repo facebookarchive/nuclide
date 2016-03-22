@@ -35,7 +35,8 @@ type Selection = {
   selectedItemIndex: number;
 };
 
-const {AtomInput, NuclideTabs} = require('../../nuclide-ui');
+const {AtomInput} = require('../../nuclide-ui/lib/AtomInput');
+const {NuclideTabs} = require('../../nuclide-ui/lib/NuclideTabs');
 const {CompositeDisposable, Emitter} = require('atom');
 const {
   debounce,

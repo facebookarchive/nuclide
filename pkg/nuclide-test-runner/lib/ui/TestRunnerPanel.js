@@ -11,8 +11,8 @@
 
 import path from 'path';
 const Console = require('./Console');
-const {NuclideDropdown} = require('../../../nuclide-ui');
-const {PanelComponent} = require('../../../nuclide-ui');
+const {NuclideDropdown} = require('../../../nuclide-ui/lib/NuclideDropdown');
+const {PanelComponent} = require('../../../nuclide-ui/lib/PanelComponent');
 const {createPaneContainer} = require('../../../nuclide-atom-helpers');
 const {
   React,

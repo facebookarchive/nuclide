@@ -19,7 +19,7 @@ let uid = 0;
 /**
  * A managed radio group component. Accepts arbitrary React elements as labels.
  */
-const NuclideRadioGroup = React.createClass({
+export const NuclideRadioGroup = React.createClass({
 
   propTypes: {
     optionLabels: PropTypes.arrayOf(PropTypes.node).isRequired,
@@ -68,5 +68,3 @@ const NuclideRadioGroup = React.createClass({
     );
   },
 });
-
-module.exports = NuclideRadioGroup;

@@ -14,7 +14,7 @@ const emptyfunction = require('emptyfunction');
 
 const {PropTypes} = React;
 
-class NuclideDropdown extends React.Component {
+export class NuclideDropdown extends React.Component {
 
   static propTypes = {
     className: PropTypes.string.isRequired,
@@ -82,5 +82,3 @@ class NuclideDropdown extends React.Component {
     }
   }
 }
-
-module.exports = NuclideDropdown;

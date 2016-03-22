@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const NuclideRadioGroup = require('../lib/NuclideRadioGroup');
+const {NuclideRadioGroup} = require('../lib/NuclideRadioGroup');
 const {
   React,
   ReactDOM,

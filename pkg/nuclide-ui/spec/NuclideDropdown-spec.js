@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const NuclideDropdown = require('../lib/NuclideDropdown');
+const {NuclideDropdown} = require('../lib/NuclideDropdown');
 const {
   React,
   ReactDOM,

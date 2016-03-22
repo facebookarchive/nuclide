@@ -11,7 +11,7 @@
 
 import type Immutable from 'immutable';
 
-class LazyTreeNode {
+export class LazyTreeNode {
 
   // Protected
   __isContainer: boolean;
@@ -117,5 +117,3 @@ class LazyTreeNode {
   }
 
 }
-
-module.exports = LazyTreeNode;

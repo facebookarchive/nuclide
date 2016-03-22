@@ -51,7 +51,7 @@ const DELETE_BUTTON_TITLE_UNDELETABLE = 'Selected item can not be deleted';
  *  | +  |  - |
  *   ---------
  */
-class NuclideMutableListSelector extends React.Component<void, Props, void> {
+export class NuclideMutableListSelector extends React.Component<void, Props, void> {
   props: Props;
 
   _boundOnDeleteButtonClicked: mixed;
@@ -126,5 +126,3 @@ class NuclideMutableListSelector extends React.Component<void, Props, void> {
     );
   }
 }
-
-module.exports = NuclideMutableListSelector;
