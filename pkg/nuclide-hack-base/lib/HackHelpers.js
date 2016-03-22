@@ -89,6 +89,7 @@ export async function callHHClient(
     }
 
     const output = errorStream ? stderr : stdout;
+    logger.debug(`Hack output for ${allArgs}: ${output}`);
     if (!outputJson) {
       resolve({result: output, hackRoot});
       return;

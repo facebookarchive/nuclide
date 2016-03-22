@@ -124,7 +124,7 @@ export class HackRpc {
   }
 
   _handleMessage(messageString: string): void {
-    logger.debug(`Received Hack Rpc response: ${messageString}`);
+    // logger.debug(`Received Hack Rpc response: ${messageString}`);
     let messageObject;
     try {
       messageObject = JSON.parse(messageString);
@@ -155,7 +155,7 @@ export class HackRpc {
     } else {
       invariant(error != null);
       logger.debug(`Error ${JSON.stringify(error)} from Hack RPC ${id}`);
-      reject(error);
+      reject(new Error(JSON.stringify(error)));
     }
   }
 }

@@ -55,7 +55,7 @@ describe('HackRpc', () => {
         await result;
       } catch (e) {
         hadError = true;
-        expect(e.toString()).toEqual('error1');
+        expect(e.toString()).toEqual('Error: "error1"');
       }
       expect(hadError).toEqual(true);
     });

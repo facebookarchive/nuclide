@@ -32,7 +32,8 @@ class HackConnection {
     this._process = process;
     this._rpc = new HackRpc(new StreamTransport(process.stdin, process.stdout));
 
-    process.on('exit', () => {
+    process.on('exit', (code, signal) => {
+      logger.info(`Hack ide process exited with ${code}, ${signal}`);
       this._process = null;
       this.dispose();
     });
@@ -95,7 +96,8 @@ async function getHackConnection(filePath: string): Promise<?HackConnection> {
 }
 
 async function createConnection(command: string, configDir: string): Promise<?HackConnection> {
-  logger.info(`Creating new hack connection for ${configDir}`);
+  logger.info(`Creating new hack connection for ${configDir}: ${command}`);
+  logger.info(`Current PATH: ${process.env.PATH}`);
   const startServerResult = await checkOutput(command, ['start', configDir]);
   logger.info(
     `Hack connection start server results:\n${JSON.stringify(startServerResult, null, 2)}\n`);
@@ -103,14 +105,14 @@ async function createConnection(command: string, configDir: string): Promise<?Ha
       startServerResult.exitCode !== HACK_SERVER_ALREADY_EXISTS_EXIT_CODE) {
     return null;
   }
-  const process = await safeSpawn(command, ['ide', configDir]);
-  observeStream(process.stdout).subscribe(text => {
+  const childProcess = await safeSpawn(command, ['ide', configDir]);
+  observeStream(childProcess.stdout).subscribe(text => {
     logger.info(`Hack ide stdout: ${text}`);
   });
-  observeStream(process.stderr).subscribe(text => {
+  observeStream(childProcess.stderr).subscribe(text => {
     logger.info(`Hack ide stderr: ${text}`);
   });
-  return new HackConnection(configDir, process);
+  return new HackConnection(configDir, childProcess);
 }
 
 /**
