@@ -1130,9 +1130,6 @@ type TextBufferScanIterator = (arg: {
 
 declare class atom$TextBuffer {
   file: ?atom$File;
-  cachedDiskContents: ?string;
-  emitter: atom$Emitter;
-  refcount: number;
 
   // Mixin
   static deserialize: (state: Object, params: Object) => mixed;
@@ -1202,6 +1199,15 @@ declare class atom$TextBuffer {
   load(): Promise<void>;
 
   isInConflict(): boolean;
+
+  // Private APIs
+  cachedDiskContents: ?string;
+  emitter: atom$Emitter;
+  refcount: number;
+  wasModifiedBeforeRemove: boolean;
+  updateCachedDiskContents(flushCache?: boolean, callback?: () => mixed): Promise<void>;
+  emitModifiedStatusChanged(changed: boolean): void;
+  destroy(): void;
 }
 
 declare class atom$Notification {

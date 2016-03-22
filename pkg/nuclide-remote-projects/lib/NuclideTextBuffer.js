@@ -14,10 +14,10 @@ import type {RemoteFile} from '../../nuclide-remote-connection/lib/RemoteFile';
 
 import {getLogger} from '../../nuclide-logging';
 import invariant from 'assert';
+import {CompositeDisposable, TextBuffer} from 'atom';
+import {track} from '../../nuclide-analytics';
 
 const logger = getLogger();
-const {CompositeDisposable, TextBuffer} = require('atom');
-const {track} = require('../../nuclide-analytics');
 
 class NuclideTextBuffer extends TextBuffer {
   connection: RemoteConnection;
@@ -25,9 +25,11 @@ class NuclideTextBuffer extends TextBuffer {
   /* $FlowFixMe */
   file: ?RemoteFile;
   conflict: boolean;
+  _exists: boolean;
 
   constructor(connection: RemoteConnection, params: any) {
     super(params);
+    this._exists = true;
     this.connection = connection;
     this.setPath(params.filePath);
     const encoding: string = (atom.config.get('core.fileEncoding'): any);
@@ -80,12 +82,12 @@ class NuclideTextBuffer extends TextBuffer {
     this.emitter.emit('will-save', {path: filePath});
     this.setPath(filePath);
     try {
-      invariant(this.file);
       const file = this.file;
-      await file.write(this.getText());
-      this.cachedDiskContents = this.getText();
+      invariant(file, 'Cannot save an null file!');
+      const toSaveContents = this.getText();
+      await file.write(toSaveContents);
+      this.cachedDiskContents = toSaveContents;
       this.conflict = false;
-      /* $FlowFixMe Private Atom API */
       this.emitModifiedStatusChanged(false);
       this.emitter.emit('did-save', {path: filePath});
       success = true;
@@ -108,22 +110,34 @@ class NuclideTextBuffer extends TextBuffer {
     throw new Error('updateCachedDiskContentsSync isn\'t supported in NuclideTextBuffer');
   }
 
-  subscribeToFile() {
+  async updateCachedDiskContents(flushCache?: boolean, callback?: () => mixed): Promise<void> {
+    try {
+      await super.updateCachedDiskContents(flushCache, callback);
+      this._exists = true;
+    } catch (e) {
+      this._exists = false;
+      throw e;
+    }
+  }
+
+  subscribeToFile(): void {
     if (this.fileSubscriptions) {
       this.fileSubscriptions.dispose();
     }
-    invariant(this.file);
+    const file = this.file;
+    invariant(file, 'Cannot subscribe to no-file');
     this.fileSubscriptions = new CompositeDisposable();
 
-    this.fileSubscriptions.add(this.file.onDidChange(async () => {
-      const isModified = await this._isModified();
+    this.fileSubscriptions.add(file.onDidChange(async () => {
+      const isModified = this._isModified();
+      this.emitModifiedStatusChanged(isModified);
       if (isModified) {
         this.conflict = true;
       }
       const previousContents = this.cachedDiskContents;
-      /* $FlowFixMe Private Atom API */
       await this.updateCachedDiskContents();
       if (previousContents === this.cachedDiskContents) {
+        this.conflict = false;
         return;
       }
       if (this.conflict) {
@@ -133,42 +147,35 @@ class NuclideTextBuffer extends TextBuffer {
       }
     }));
 
-    invariant(this.file);
-    this.fileSubscriptions.add(this.file.onDidDelete(() => {
+    this.fileSubscriptions.add(file.onDidDelete(() => {
+      this._exists = false;
       const modified = this.getText() !== this.cachedDiskContents;
-      /* $FlowFixMe Private Atom API */
       this.wasModifiedBeforeRemove = modified;
       if (modified) {
-        /* $FlowFixMe Private Atom API */
         this.updateCachedDiskContents();
       } else {
-        /* $FlowFixMe Private Atom API */
         this.destroy();
       }
     }));
 
-    invariant(this.file);
-    this.fileSubscriptions.add(this.file.onDidRename(() => {
+    this.fileSubscriptions.add(file.onDidRename(() => {
       this.emitter.emit('did-change-path', this.getPath());
     }));
 
-    invariant(this.file);
-    this.fileSubscriptions.add(this.file.onWillThrowWatchError(errorObject => {
+    this.fileSubscriptions.add(file.onWillThrowWatchError(errorObject => {
       this.emitter.emit('will-throw-watch-error', errorObject);
     }));
   }
 
-  async _isModified(): Promise<boolean> {
+  _isModified(): boolean {
     if (!this.loaded) {
       return false;
     }
     if (this.file) {
-      const exists = await this.file.exists();
-      if (exists) {
+      if (this._exists) {
         return this.getText() !== this.cachedDiskContents;
       } else {
-        return this.wasModifiedBeforeRemove != null ?
-          this.wasModifiedBeforeRemove : !this.isEmpty();
+        return this.wasModifiedBeforeRemove ? !this.isEmpty() : false;
       }
     } else {
       return !this.isEmpty();
