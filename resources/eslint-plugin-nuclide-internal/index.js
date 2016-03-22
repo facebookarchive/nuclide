@@ -11,6 +11,7 @@
 
 module.exports = {
   rules: {
+    'command-menu-items': require('./command-menu-items'),
     'comment-style': require('./comment-style'),
     'flow-object-type': require('./flow-object-type'),
     'import-type-style': require('./import-type-style'),
@@ -18,6 +19,7 @@ module.exports = {
     'prefer-top-level-builtins': require('./prefer-top-level-builtins'),
   },
   rulesConfig: {
+    'command-menu-items': 0,
     'comment-style': 0,
     'flow-object-type': 0,
     'import-type-style': 0,

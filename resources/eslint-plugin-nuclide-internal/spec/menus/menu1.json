@@ -1,0 +1,22 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "test",
+          "command": "good_command2"
+        }
+      ]
+    },
+    {
+      "label": "Packages",
+      "submenu": [
+        {
+          "label": "test",
+          "command": "bad_command2"
+        }
+      ]
+    }
+  ]
+}
