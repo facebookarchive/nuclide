@@ -9,16 +9,15 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import http from 'http';
-import url from 'url';
-
-import Child from './Child';
 import type {
   RnRequest,
+  ExecutorResponse,
   ServerReplyCallback,
 } from './types';
 import type {EventEmitter} from 'events';
+
+import {executeRnRequests} from './executeRnRequests';
+import {Observable, Subject} from 'rx';
 
 let logger;
 function getLogger() {
@@ -30,95 +29,58 @@ function getLogger() {
 
 export default class ChildManager {
 
-  _child: ?Child;
   _onReply: ServerReplyCallback;
   _emitter: EventEmitter;
+
+  _executorSubscription: ?IDisposable;
+  _executorResponses: Observable<ExecutorResponse>;
+  _rnRequests: Subject<RnRequest>;
 
   constructor(onReply: ServerReplyCallback, emitter: EventEmitter) {
     this._onReply = onReply;
     this._emitter = emitter;
+    this._rnRequests = new Subject();
+    this._executorResponses = executeRnRequests(this._rnRequests);
   }
 
   _createChild(): void {
-    if (this._child == null) {
-      this._child = new Child(this._onReply, this._emitter);
-    }
-  }
-
-  async killChild(): Promise<void> {
-    if (!this._child) {
+    if (this._executorSubscription != null) {
       return;
     }
-    await this._child.kill();
-    this._child = null;
+
+    this._executorSubscription = this._executorResponses.subscribe(response => {
+      switch (response.kind) {
+        case 'result':
+          this._onReply(response.replyId, response.result);
+          return;
+        case 'error':
+          getLogger().error(response.message);
+          return;
+        case 'pid':
+          this._emitter.emit('eval_application_script', response.pid);
+          return;
+      }
+    });
   }
 
-  handleMessage(message: RnRequest): void {
-    if (message.replyID) {
+  killChild(): void {
+    if (!this._executorSubscription) {
+      return;
+    }
+    this._executorSubscription.dispose();
+    this._executorSubscription = null;
+  }
+
+  handleMessage(request: RnRequest): void {
+    if (request.replyID) {
       // getting cross-talk from another executor (probably Chrome)
       return;
     }
 
-    switch (message.method) {
-      case 'prepareJSRuntime':
-        return this._prepareJSRuntime(message);
-      case 'executeApplicationScript':
-        return this._executeApplicationScript(message);
-      default:
-        return this._executeJSCall(message);
-    }
-  }
-
-  _prepareJSRuntime(message: RnRequest): void {
+    // Make sure we have a worker to run the JS.
     this._createChild();
-    this._onReply(message.id);
+
+    this._rnRequests.onNext(request);
   }
 
-  _executeApplicationScript(message: RnRequest): void {
-    (async () => {
-      if (!this._child) {
-        // Warn Child not initialized;
-        return;
-      }
-
-      const {id: messageId, url: messageUrl, inject} = message;
-      invariant(messageId != null);
-      invariant(messageUrl != null);
-      invariant(inject != null);
-
-      const parsedUrl = url.parse(messageUrl, /* parseQueryString */ true);
-      invariant(parsedUrl.query);
-      parsedUrl.query.inlineSourceMap = true;
-      delete parsedUrl.search;
-      // $FlowIssue url.format() does not accept what url.parse() returns.
-      const scriptUrl = url.format(parsedUrl);
-      const script = await getScriptContents(scriptUrl);
-      invariant(this._child);
-      this._child.executeApplicationScript(script, inject, messageId);
-    })();
-  }
-
-  _executeJSCall(message: RnRequest): void {
-    if (!this._child) {
-      // Warn Child not initialized;
-      return;
-    }
-    this._child.execCall(message, message.id);
-  }
-}
-
-function getScriptContents(src): Promise<string> {
-  return new Promise((resolve, reject) => {
-    http.get(src, res => {
-      res.setEncoding('utf8');
-      let buff = '';
-      res.on('data', chunk => buff += chunk);
-      res.on('end', () => {
-        resolve(buff);
-      });
-    }).on('error', err => {
-      getLogger().error('Failed to get script from packager.');
-      reject(err);
-    });
-  });
 }

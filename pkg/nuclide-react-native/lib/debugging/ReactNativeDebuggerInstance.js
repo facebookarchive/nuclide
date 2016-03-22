@@ -15,7 +15,7 @@ import {Session} from '../../../nuclide-debugger-node/lib/Session';
 import {
   DebuggerProxyClient,
 } from '../../../nuclide-react-native-node-executor/lib/DebuggerProxyClient';
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 import Rx from 'rx';
 import {Server as WebSocketServer} from 'ws';
 
@@ -39,26 +39,20 @@ export class ReactNativeDebuggerInstance extends DebuggerInstance {
     let didConnect;
     this._connected = new Promise(resolve => { didConnect = resolve; });
 
-    // Once we have a connection from Nuclide (Chrome UI) and a pid, create a new debugging session.
-    const session$ = uiConnection$
-      .combineLatest(pid$)
-      .flatMapLatest(([ws, pid]) => {
-        const config = {
-          debugPort,
-          preload: false, // This makes the node inspector not load all the source files on startup.
-        };
-
-        return Rx.Observable.create(observer => {
-          // Creating a new Session is actually side-effecty.
-          const session = new Session(config, debugPort, ws);
-          observer.onNext(session);
-          return Rx.Disposable.create(() => { session.close(); });
-        });
-      })
-      .share();
+    const session$ = Rx.Observable.create(observer => (
+      // `Session` is particular about what order everything is closed in, so we manage it carefully
+      // here.
+      new CompositeDisposable(
+        uiConnection$
+          .combineLatest(pid$)
+          .flatMapLatest(([ws, pid]) => createSessionStream(ws, debugPort))
+          .subscribe(observer),
+        uiConnection$.connect(),
+        pid$.connect(),
+      )
+    ));
 
     this._disposables = new CompositeDisposable(
-
       // Tell the user if we can't connect to the debugger UI.
       uiConnection$.subscribeOnError(err => {
         atom.notifications.addError(
@@ -73,18 +67,9 @@ export class ReactNativeDebuggerInstance extends DebuggerInstance {
         this.dispose();
       }),
 
-      // Enable debugging in the process whenever we get a new pid.
-      // See <https://nodejs.org/api/debugger.html#debugger_advanced_usage> and
-      // <https://github.com/node-inspector/node-inspector#windows>
-      pid$.subscribe(pid => {
-        // $FlowIgnore This is an undocumented API. It's an alternative to the UNIX SIGUSR1 signal.
-        process._debugProcess(pid);
-      }),
-
-      session$.subscribe(),
-
       pid$.first().subscribe(() => { didConnect(); }),
 
+      session$.subscribe(),
     );
   }
 
@@ -116,7 +101,7 @@ const pid$ = Rx.Observable.using(
   },
   ({client}) => observableFromSubscribeFunction(client.onDidEvalApplicationScript.bind(client)),
 )
-.share();
+.publish();
 
 /**
  * Connections from the Chrome UI. There will only be one connection at a time. This stream won't
@@ -133,10 +118,25 @@ const uiConnection$ = Rx.Observable.using(
   },
   ({server}) => (
     Rx.Observable.merge(
-      Rx.Observable.fromEvent(server, 'close').flatMap(Rx.Observable.throw),
       Rx.Observable.fromEvent(server, 'error').flatMap(Rx.Observable.throw),
       Rx.Observable.fromEvent(server, 'connection'),
     )
+      .takeUntil(Rx.Observable.fromEvent(server, 'close'))
   ),
 )
-.share();
+.publish();
+
+function createSessionStream(ws: WebSocket, debugPort: number): Rx.Observable<Session> {
+  const config = {
+    debugPort,
+    // This makes the node inspector not load all the source files on startup:
+    preload: false,
+  };
+
+  return Rx.Observable.create(observer => {
+    // Creating a new Session is actually side-effecty.
+    const session = new Session(config, debugPort, ws);
+    observer.onNext(session);
+    return new Disposable(() => { session.close(); });
+  });
+}

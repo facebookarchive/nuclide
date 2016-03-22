@@ -24,31 +24,12 @@ export type ExecutorError = {
   message: string;
 };
 
-export type ExecutorResponse = ExecutorResult | ExecutorError;
-
-// Input to executor.js
-
-type EvaluateApplicationScriptExecutorRequest = {
-  id: number;
-  op: 'executeApplicationScript';
-  data: {
-    script: string;
-    inject: string;
-  };
+export type ExecutorPid = {
+  kind: 'pid';
+  pid: number;
 };
 
-type CallExecutorRequest = {
-  id: number;
-  op: 'call';
-  data: {
-    method: string;
-    arguments: ?Array<any>;
-  };
-};
-
-export type ExecutorRequest =
-  EvaluateApplicationScriptExecutorRequest
-  | CallExecutorRequest;
+export type ExecutorResponse = ExecutorResult | ExecutorError | ExecutorPid;
 
 // Requests coming from React Native
 
