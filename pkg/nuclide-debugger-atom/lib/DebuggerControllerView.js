@@ -102,6 +102,7 @@ const DebuggerControllerView = React.createClass({
   },
 
   _handleClickClose() {
+    this.props.actions.killDebugger();
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:toggle');
   },
 
