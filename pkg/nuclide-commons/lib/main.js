@@ -45,6 +45,7 @@ import typeof * as ArrayType from './array';
 import typeof * as ObjectType from './object';
 import typeof * as HttpType from './http';
 import typeof * as StringsType from './strings';
+import typeof * as RelativeDateType from './relativeDate';
 import typeof * as PathsType from './paths';
 import typeof * as PromiseExecutorsType from './PromiseExecutors';
 import typeof * as ExtendType from './extend';
@@ -156,6 +157,10 @@ module.exports = {
 
   get readFile() {
     return requireFileSystem().readFile;
+  },
+
+  get relativeDate(): RelativeDateType {
+    return requireFromCache('./relativeDate').relativeDate;
   },
 
   get toJsString() {

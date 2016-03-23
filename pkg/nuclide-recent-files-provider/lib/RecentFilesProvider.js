@@ -11,7 +11,6 @@
 
 import path from 'path';
 import {React} from 'react-for-atom';
-import relativeDate from 'relative-date';
 
 import type {
   FileResult,
@@ -19,7 +18,7 @@ import type {
   ProviderType,
 } from '../../nuclide-quick-open-interfaces';
 
-import {array} from '../../nuclide-commons';
+import {array, relativeDate} from '../../nuclide-commons';
 import {Matcher} from '../../nuclide-fuzzy-native';
 
 // Imported from nuclide-files-service, which is an apm package, preventing a direct import.
