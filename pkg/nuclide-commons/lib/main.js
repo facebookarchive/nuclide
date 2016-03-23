@@ -159,8 +159,8 @@ module.exports = {
     return requireFileSystem().readFile;
   },
 
-  get relativeDate(): RelativeDateType {
-    return requireFromCache('./relativeDate').relativeDate;
+  get relativeDate() {
+    return (requireFromCache('./relativeDate'): RelativeDateType).relativeDate;
   },
 
   get toJsString() {
