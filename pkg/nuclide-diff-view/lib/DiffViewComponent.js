@@ -303,7 +303,7 @@ class DiffViewComponent extends React.Component {
 
   _renderTree(): void {
     const {diffModel} = this.props;
-    const {selectedFileChanges} = diffModel.getState();
+    const {selectedFileChanges, showNonHgRepos} = diffModel.getState();
     const {filePath} = diffModel.getActiveFileState();
     this._treeComponent = ReactDOM.render(
       (
@@ -311,6 +311,7 @@ class DiffViewComponent extends React.Component {
           <DiffViewTree
             activeFilePath={filePath}
             fileChanges={selectedFileChanges}
+            showNonHgRepos={showNonHgRepos}
             diffModel={diffModel}
           />
         </div>

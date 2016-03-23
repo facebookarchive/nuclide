@@ -137,6 +137,7 @@ type State = {
   commitMergeFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   lastCommitMergeFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>;
+  showNonHgRepos: boolean;
 };
 
 class DiffViewModel {
@@ -175,6 +176,7 @@ class DiffViewModel {
       commitMergeFileChanges: new Map(),
       lastCommitMergeFileChanges: new Map(),
       selectedFileChanges: new Map(),
+      showNonHgRepos: true,
     };
     this._updateRepositories();
     this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
@@ -286,15 +288,28 @@ class DiffViewModel {
       lastCommitMergeFileChanges = this._state.lastCommitMergeFileChanges;
     }
     let selectedFileChanges;
+    let showNonHgRepos;
+    let activeRepositorySelector = () => true;
+    if (this._activeRepositoryStack != null) {
+      const projectDirectory = this._activeRepositoryStack.getRepository().getProjectDirectory();
+      activeRepositorySelector = (filePath: NuclideUri) =>
+        remoteUri.contains(projectDirectory, filePath);
+    }
     switch (this._state.viewMode) {
       case DiffMode.COMMIT_MODE:
-        selectedFileChanges = dirtyFileChanges;
-        break;
-      case DiffMode.BROWSE_MODE:
-        selectedFileChanges = commitMergeFileChanges;
+        // Commit mode only shows the changes of the active repository.
+        selectedFileChanges = map.filter(dirtyFileChanges, activeRepositorySelector);
+        showNonHgRepos = false;
         break;
       case DiffMode.PUBLISH_MODE:
-        selectedFileChanges = lastCommitMergeFileChanges;
+        // Publish mode only shows the changes of the active repository.
+        selectedFileChanges = map.filter(lastCommitMergeFileChanges, activeRepositorySelector);
+        showNonHgRepos = false;
+        break;
+      case DiffMode.BROWSE_MODE:
+        // Broswe mode shows all changes from all repositories.
+        selectedFileChanges = commitMergeFileChanges;
+        showNonHgRepos = true;
         break;
       default:
         throw new Error('Unrecognized view mode!');
@@ -305,6 +320,7 @@ class DiffViewModel {
       commitMergeFileChanges,
       lastCommitMergeFileChanges,
       selectedFileChanges,
+      showNonHgRepos,
     });
   }
 

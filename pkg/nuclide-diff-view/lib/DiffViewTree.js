@@ -27,6 +27,7 @@ import {array} from '../../nuclide-commons';
 import classnames from 'classnames';
 import {getFileTreePathFromTargetEvent} from './utils';
 import {getPath, basename} from '../../nuclide-remote-uri';
+import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 
 function labelClassNameForNode(node: LazyTreeNode): string {
   const classObj = {
@@ -75,6 +76,7 @@ type Props = {
   activeFilePath: ?NuclideUri;
   diffModel: DiffViewModel;
   fileChanges: Map<NuclideUri, FileChangeStatusValue>;
+  showNonHgRepos: boolean;
 };
 
 export default class DiffViewTree extends React.Component {
@@ -143,14 +145,21 @@ export default class DiffViewTree extends React.Component {
   }
 
   componentDidUpdate(): void {
-    const roots = atom.project.getDirectories().map(directory => {
-      return new DiffViewTreeNode(
-        {filePath: directory.getPath()},
-        null, /* null parent for roots */
-        true, /* isContainer */
-        this._rootChildrenFetcher.bind(this), /* root children fetcher */
-      );
-    });
+    const roots = array.compact(
+      atom.project.getDirectories().map(directory => {
+        const rootPath = directory.getPath();
+        const repository = repositoryForPath(rootPath);
+        if (!this.props.showNonHgRepos && (repository == null || repository.getType() !== 'hg')) {
+          return null;
+        }
+        return new DiffViewTreeNode(
+          {filePath: rootPath},
+          null, /* null parent for roots */
+          true, /* isContainer */
+          this._rootChildrenFetcher.bind(this), /* root children fetcher */
+        );
+      })
+    );
     const treeRoot = this.refs['tree'];
     const noOp = () => {};
     const selectFileNode = () => {
@@ -164,7 +173,7 @@ export default class DiffViewTree extends React.Component {
     const noChildrenFetcher = async () => Immutable.List.of();
     const {filePath: rootPath} = rootNode.getItem();
     const childNodes = [];
-    const {repositoryForPath} = require('../../nuclide-hg-git-bridge');
+
     const repository = repositoryForPath(rootPath);
     if (repository == null || repository.getType() !== 'hg') {
       const nodeName = `[X] Non-Mercurial Repository`;

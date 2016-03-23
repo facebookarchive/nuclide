@@ -22,3 +22,16 @@ export function union<T, X>(...maps: Array<Map<T, X>>): Map<T, X> {
   }
   return unionMap;
 }
+
+export function filter<T, X>(
+  map: Map<T, X>,
+  selector: (key: T, value: X) => boolean,
+): Map<T, X> {
+  const selected = new Map();
+  for (const [key, value] of map) {
+    if (selector(key, value)) {
+      selected.set(key, value);
+    }
+  }
+  return selected;
+}
