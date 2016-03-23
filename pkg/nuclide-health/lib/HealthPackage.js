@@ -80,12 +80,13 @@ export function deactivate() {
 }
 
 export function consumeToolBar(getToolBar: (group: string) => Object): void {
+  const priority = require('../../nuclide-commons').toolbar.farEndPriority(400);
   const toolBar = getToolBar('nuclide-health');
   toolBar.addButton({
     icon: 'dashboard',
     callback: 'nuclide-health:toggle',
     tooltip: 'Toggle Nuclide health stats',
-    priority: 900,
+    priority,
   });
   subscriptions.add(new Disposable(() => {
     toolBar.removeItems();

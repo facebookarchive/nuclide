@@ -223,6 +223,10 @@ module.exports = {
     return (requireFromCache('./once'): OnceType).once;
   },
 
+  get toolbar() {
+    return requireFromCache('./toolbar');
+  },
+
   get vcs(): VcsType {
     return requireFromCache('./vcs');
   },

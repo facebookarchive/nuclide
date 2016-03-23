@@ -68,15 +68,16 @@ function consumeGadgetsService(api: GadgetsService): IDisposable {
 }
 
 function consumeToolBar(getToolBar: (group: string) => Object): void {
+  const priority = require('../../nuclide-commons').toolbar.farEndPriority(500);
   const toolBar = getToolBar('nuclide-home');
   toolBar.addSpacer({
-    priority: 799,
+    priority: priority - 1,
   });
   toolBar.addButton({
     icon: 'gear',
     callback: 'nuclide-home:show-settings',
     tooltip: 'Open Nuclide Settings',
-    priority: 800,
+    priority,
   });
   subscriptions.add(new Disposable(() => {
     toolBar.removeItems();

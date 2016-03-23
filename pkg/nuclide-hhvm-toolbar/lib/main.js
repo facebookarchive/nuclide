@@ -55,6 +55,9 @@ class Activation {
       tooltip: 'Toggle HHVM Toolbar',
       priority: 500,
     })[0];
+    toolBar.addSpacer({
+      priority: 501,
+    });
     toolBarButton.innerHTML = hhvmIcon();
     this._disposables.add(
       new Disposable(() => { toolBar.removeItems(); }),
