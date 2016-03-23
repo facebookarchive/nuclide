@@ -191,6 +191,22 @@ describe('NavigationStackController test suite', () => {
     expect(controller.getLocations()).toEqual([startLocation, editor.location]);
   });
 
+  it('opt-in navigation', () => {
+    const editor = toEditor('filename', 10, 100);
+    const startLocation = {...editor.location};
+    controller.onActivate(editor);
+    controller.onActiveStopChanging(editor);
+
+    setPosition(editor, 11);
+    controller.updatePosition(editor, toPoint(11));
+    controller.onOptInNavigation(editor);
+    setScroll(editor, 110);
+    controller.updateScroll(editor, 110);
+
+    expect(controller.getIndex()).toEqual(1);
+    expect(controller.getLocations()).toEqual([startLocation, editor.location]);
+  });
+
   it('removePath', () => {
     const editor1 = toEditor('/a/f1', 10, 100);
     const location1 = editor1.location;

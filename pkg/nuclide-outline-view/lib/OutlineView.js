@@ -16,6 +16,7 @@ import type {TextToken} from '../../nuclide-tokenized-text';
 import {React} from 'react-for-atom';
 import invariant from 'assert';
 
+import {goToLocationInEditor} from '../../nuclide-atom-helpers';
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
 
@@ -143,7 +144,7 @@ function renderTree(
     }
     pane.activate();
     pane.activateItem(editor);
-    editor.setCursorBufferPosition(outline.startPosition);
+    goToLocationInEditor(editor, outline.startPosition.row, outline.startPosition.column);
   };
   return (
     <ul className="list-tree" key={index}>

@@ -69,7 +69,15 @@ module.exports = {
   },
 
   get goToLocation() {
-    return requireFromCache('./go-to-location');
+    return requireFromCache('./go-to-location').goToLocation;
+  },
+
+  get goToLocationInEditor() {
+    return requireFromCache('./go-to-location').goToLocationInEditor;
+  },
+
+  get observeNavigatingEditors() {
+    return requireFromCache('./go-to-location').observeNavigatingEditors;
   },
 
   get getPathToWorkspaceState() {

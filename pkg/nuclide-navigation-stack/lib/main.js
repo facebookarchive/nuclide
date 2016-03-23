@@ -17,6 +17,7 @@ import {
 } from '../../nuclide-atom-helpers';
 import {NavigationStackController} from './NavigationStackController';
 import {trackOperationTiming} from '../../nuclide-analytics';
+import {observeNavigatingEditors} from '../../nuclide-atom-helpers';
 
 const controller = new NavigationStackController();
 
@@ -75,6 +76,9 @@ class Activation {
     this._disposables.add(projects.onDidRemoveProjectPath(path => {
       controller.removePath(
         path, atom.project.getDirectories().map(directory => directory.getPath()));
+    }));
+    this._disposables.add(observeNavigatingEditors().subscribe(editor => {
+      controller.onOptInNavigation(editor);
     }));
 
     this._disposables.add(

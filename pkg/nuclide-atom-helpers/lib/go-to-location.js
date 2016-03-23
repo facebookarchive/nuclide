@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import {Subject} from 'rx';
+import type {Observable} from 'rx';
+
 // Opens the given file at the line/column.
 // By default will center the opened text editor.
 async function goToLocation(
@@ -28,4 +31,34 @@ async function goToLocation(
   return editor;
 }
 
-module.exports = goToLocation;
+
+
+const goToLocationSubject = new Subject();
+
+// Scrolls to the given line/column at the given editor
+// broadcasts the editor instance on an observable (subject) available
+// through the getGoToLocation
+function goToLocationInEditor(
+  editor: atom$TextEditor,
+  line: number,
+  column: number,
+  center: boolean = true
+): void {
+  editor.setCursorBufferPosition([line, column]);
+  if (center) {
+    editor.scrollToBufferPosition([line, column], {center: true});
+  }
+
+  goToLocationSubject.onNext(editor);
+}
+
+
+function observeNavigatingEditors(): Observable<atom$TextEditor> {
+  return goToLocationSubject;
+}
+
+module.exports = {
+  goToLocation,
+  goToLocationInEditor,
+  observeNavigatingEditors,
+};

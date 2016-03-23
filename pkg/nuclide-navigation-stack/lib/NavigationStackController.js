@@ -49,6 +49,9 @@ function log(message: string): void {
 // - atom.workspace.open of current file
 //     - position, open, scroll
 //
+// - nuclide-atom-helpers.goToLocationInEditor
+//     - position, onOptInNavigation, [scroll]
+//
 // In general, when we get a new event, if the editor is not the current,
 // then we push a new element on the nav stack; if the editor of the new event
 // does match the top of the nav stack, then we update the top of the nav stack
@@ -150,6 +153,17 @@ export class NavigationStackController {
   onActiveStopChanging(editor: atom$TextEditor): void {
     log(`onActivePaneStopChanging ${editor.getPath()}`);
     this._inActivate = false;
+  }
+
+  onOptInNavigation(editor: atom$TextEditor): void {
+    log(`onOptInNavigation ${editor.getPath()}`);
+
+    // Usually the setPosition would come before the onOptInNavigation
+    if (this._lastLocation == null) {
+
+    }
+    // Opt-in navigation is handled in the same way as a file open with no preceeding activation
+    this.onOpen(editor);
   }
 
   // When closing a project path, we remove all stack entries contained in that
