@@ -24,11 +24,18 @@ import RemoteUri, {getPath} from '../../nuclide-remote-uri';
 import {File} from 'atom';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
 
 import pathModule from 'path';
 
 let dialogComponent: ?ReactComponent;
 let dialogHostElement: ?HTMLElement;
+
+const legalStatusCodeForRename = new Set([
+  StatusCodeNumber.ADDED,
+  StatusCodeNumber.CLEAN,
+  StatusCodeNumber.MODIFIED,
+]);
 
 const FileSystemActions = {
   openAddFolderDialog(onDidConfirm: (filePath: ?string) => mixed): void {
@@ -154,10 +161,15 @@ const FileSystemActions = {
         shouldFSRename = false;
         await hgRepository.rename(entry.getPath(), newPath);
       } catch (e) {
-        atom.notifications.addError(
-          '`hg rename` failed, will try to move the file ignoring version control instead.  ' +
-          'Error: ' + e.toString(),
-        );
+        const filePath = entry.getPath();
+        const statuses = await hgRepository.getStatuses([filePath]);
+        const pathStatus = statuses.get(filePath);
+        if (legalStatusCodeForRename.has(pathStatus)) {
+          atom.notifications.addError(
+            '`hg rename` failed, will try to move the file ignoring version control instead.  ' +
+            'Error: ' + e.toString(),
+          );
+        }
         shouldFSRename = true;
       }
     }
