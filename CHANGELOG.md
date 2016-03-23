@@ -1,5 +1,28 @@
 # Nuclide Changelog
 
+## v0.126.0
+
+### Added
+
+* Outline view for Flow and Hack. Toggle with the outline icon on the toolbar, or with alt+o.
+* Forward/Backwards Navigation Stack with ctrl-, and ctrl-. (ctrl-< and ctrl-> on linux).
+* Diff View: Browse / Commit / Publish modes.
+* Diff View: Add output feedback when publishing or updating a diff / revision.
+* New “Nuclide” top-level menu.
+* Diff View: Persist Commit / Publish messages between mode switches
+* Diff View: Switching modes, changes the diff method to show relevant changes only.
+* Diff View: Open from file tree will select the nearest file change within that directory (or in the selected root).
+* Diff View: Opening from the toolbar defaults to diffing the current working root (File tree Suitcase icon).
+* Diff Tree: Show multiple repos changes in browse mode, while in Commit / Publish modes, show only the active repository's relevant changes.
+
+### Fixed
+
+* Diff View: Opening a changed file won't revert user changes nor clear undo history.
+* React Native debugger no longer pauses on loader breakpoint.
+* Performance and stability wins for PHP script debugging, approximately a 2s speedup when launching scripts.
+* Fix Remote “file changed on disk” notification without actual changes.
+* Fix file reloads, conflict popups or reverting user changes on flaky / slow network connections.
+
 ## v0.125.0
 
 ### Added
