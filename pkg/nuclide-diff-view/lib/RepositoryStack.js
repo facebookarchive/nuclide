@@ -10,7 +10,7 @@
  */
 
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {FileChangeStatusValue, HgDiffState, RevisionsState} from './types';
+import type {FileChangeStatusValue, HgDiffState, RevisionsState, DiffOptionType} from './types';
 import type {
   RevisionFileChanges,
   RevisionInfo,
@@ -18,7 +18,7 @@ import type {
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {CompositeDisposable, Emitter} from 'atom';
-import {HgStatusToFileChangeStatus, FileChangeStatus} from './constants';
+import {HgStatusToFileChangeStatus, FileChangeStatus, DiffOption} from './constants';
 import {array, promises, debounce} from '../../nuclide-commons';
 import {trackTiming} from '../../nuclide-analytics';
 import {notifyInternalError} from './notifications';
@@ -403,8 +403,27 @@ export default class RepositoryStack {
     return this._lastCommitMergeFileChanges;
   }
 
-  async fetchHgDiff(filePath: NuclideUri): Promise<HgDiffState> {
-    const {revisions, commitId, compareCommitId} = await this.getCachedRevisionsStatePromise();
+  async fetchHgDiff(filePath: NuclideUri, diffOption: DiffOptionType): Promise<HgDiffState> {
+    const revisionsState = await this.getCachedRevisionsStatePromise();
+    const {revisions, commitId} = revisionsState;
+    // When `compareCommitId` is null, the `HEAD` commit contents is compared
+    // to the filesystem, otherwise it compares that commit to filesystem.
+    let compareCommitId = null;
+    switch (diffOption) {
+      case DiffOption.DIRTY:
+        compareCommitId = null;
+        break;
+      case DiffOption.LAST_COMMIT:
+        compareCommitId = revisions.length <= 1
+          ? null
+          : revisions[revisions.length - 1].id;
+        break;
+      case DiffOption.COMPARE_COMMIT:
+        compareCommitId = revisionsState.compareCommitId;
+        break;
+      default:
+        throw new Error(`Invalid Diff Option: ${diffOption}`);
+    }
     const committedContents = await this._repository
       .fetchFileContentAtRevision(filePath, compareCommitId ? `${compareCommitId}` : null)
       // If the file didn't exist on the previous revision, return empty contents.

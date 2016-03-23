@@ -19,6 +19,7 @@ import type {
   PublishModeType,
   PublishModeStateType,
   DiffModeType,
+  DiffOptionType,
 } from './types';
 import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
 import type {NuclideUri} from '../../nuclide-remote-uri';
@@ -40,6 +41,7 @@ import arcanist from '../../nuclide-arcanist-client';
 import {CompositeDisposable, Emitter} from 'atom';
 import {
   DiffMode,
+  DiffOption,
   CommitMode,
   CommitModeState,
   PublishMode,
@@ -51,7 +53,7 @@ import invariant from 'assert';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {getFileSystemContents} from './utils';
-import {array, map, debounce} from '../../nuclide-commons';
+import {array, map, debounce, promises} from '../../nuclide-commons';
 import remoteUri from '../../nuclide-remote-uri';
 import RepositoryStack from './RepositoryStack';
 import Rx from 'rx';
@@ -61,6 +63,8 @@ import {
 } from './notifications';
 import {bufferForUri, loadBufferForUri} from '../../nuclide-atom-helpers';
 import {getLogger} from '../../nuclide-logging';
+
+const {serializeAsyncCall} = promises;
 
 const ACTIVE_FILE_UPDATE_EVENT = 'active-file-update';
 const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
@@ -93,6 +97,19 @@ function getInitialFileChangeState(): FileChangeState {
     newContents: '',
     compareRevisionInfo: null,
   };
+}
+
+function viewModeToDiffOption(viewMode: DiffModeType): DiffOptionType {
+  switch (viewMode) {
+    case DiffMode.COMMIT_MODE:
+      return DiffOption.DIRTY;
+    case DiffMode.PUBLISH_MODE:
+      return DiffOption.LAST_COMMIT;
+    case DiffMode.BROWSE_MODE:
+      return DiffOption.COMPARE_COMMIT;
+    default:
+      throw new Error('Unrecognized view mode!');
+  }
 }
 
 function getFileStatusListMessage(fileChanges: Map<NuclideUri, FileChangeStatusValue>): string {
@@ -154,6 +171,7 @@ class DiffViewModel {
   _isActive: boolean;
   _state: State;
   _messages: Rx.Subject;
+  _serializedUpdateActiveFileDiff: () => Promise<void>;
 
   constructor(uiProviders: Array<Object>) {
     this._uiProviders = uiProviders;
@@ -178,6 +196,7 @@ class DiffViewModel {
       selectedFileChanges: new Map(),
       showNonHgRepos: true,
     };
+    this._serializedUpdateActiveFileDiff = serializeAsyncCall(() => this._updateActiveFileDiff());
     this._updateRepositories();
     this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
     this._setActiveFileState(getInitialFileChangeState());
@@ -342,11 +361,30 @@ class DiffViewModel {
     if (!filePath || !reloadFileDiffState) {
       return;
     }
+    this._serializedUpdateActiveFileDiff();
+  }
+
+  async _updateActiveFileDiff(): Promise<void> {
+    const {filePath} = this._activeFileState;
+    if (!filePath) {
+      return;
+    }
+    // Capture the view state before the update starts.
+    const {viewMode, commitMode} = this._state;
     const {
       committedContents,
       filesystemContents,
       revisionInfo,
     } = await this._fetchFileDiff(filePath);
+    if (
+      this._activeFileState.filePath !== filePath ||
+      this._state.viewMode !== viewMode ||
+      this._state.commitMode !== commitMode
+    ) {
+      // The state have changed since the update started, and there must be another
+      // scheduled update. Hence, we return early to allow it to go through.
+      return;
+    }
     await this._updateDiffStateIfChanged(
       filePath,
       committedContents,
@@ -391,6 +429,7 @@ class DiffViewModel {
     });
     this._updateCompareChangedStatus();
     this._loadModeState(false);
+    this._serializedUpdateActiveFileDiff();
   }
 
   _loadModeState(resetState: boolean): void {
@@ -623,7 +662,7 @@ class DiffViewModel {
   async _fetchFileDiff(filePath: NuclideUri): Promise<FileDiffState> {
     const repositoryStack = this._getRepositoryStackForPath(filePath);
     const [hgDiff] = await Promise.all([
-      repositoryStack.fetchHgDiff(filePath),
+      repositoryStack.fetchHgDiff(filePath, viewModeToDiffOption(this._state.viewMode)),
       this._setActiveRepositoryStack(repositoryStack),
     ]);
     // Intentionally fetch the filesystem contents after getting the committed contents
