@@ -58,7 +58,7 @@ export function uriToPath(uri: string): string {
  * expressions in the REPL.
  */
 export function launchScriptForDummyConnection(scriptPath: string): child_process$ChildProcess {
-  return launchPhpScriptWithXDebugEnabled(scriptPath);
+  return launchPhpScriptWithXDebugEnabled(scriptPath, null, true);
 }
 
 /**
@@ -78,10 +78,16 @@ export function launchScriptToDebug(
 
 function launchPhpScriptWithXDebugEnabled(
   scriptPath: string,
-  sendToOutputWindowAndResolve?: (text: string) => void,
+  sendToOutputWindowAndResolve?: ?(text: string) => void,
+  isDummyConnection?: boolean, // TODO remove this, this is a hack, t10536025
 ): child_process$ChildProcess {
   const args = parse(scriptPath);
-  const proc = child_process.spawn(getConfig().phpRuntimePath, args);
+  let proc;
+  if (isDummyConnection) {
+    proc = child_process.spawn('/usr/local/hphpi/bin/hhvm', ['-c', 'xdebug.ini', ...args]);
+  } else {
+    proc = child_process.spawn(getConfig().phpRuntimePath, args);
+  }
   logger.log(`child_process(${proc.pid}) spawned with xdebug enabled for: ${scriptPath}`);
 
   proc.stdout.on('data', chunk => {
