@@ -22,6 +22,8 @@ export type PublishModeType = 'Create' | 'Update';
 
 export type PublishModeStateType = 'Ready' | 'Loading Publish Message' | 'Awaiting Publish';
 
+export type DiffOptionType = 'Dirty' | 'Last Commit' | 'Compare Commit';
+
 export type FileChangeStatusValue = 1 | 2 | 3 | 4 | 5;
 
 export type FileChange = {

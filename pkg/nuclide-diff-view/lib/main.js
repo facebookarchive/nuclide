@@ -9,14 +9,17 @@
  * the root directory of this source tree.
  */
 
-import type DiffViewModelType from './DiffViewModel';
+import type DiffViewModelType, {DiffEntityOptions} from './DiffViewModel';
 import type {HomeFragments} from '../../nuclide-home-interfaces';
 import type OutputService from '../../nuclide-console/lib/OutputService';
+import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 
 import {CompositeDisposable, Directory} from 'atom';
 import invariant from 'assert';
+import url from 'url';
 import nuclideFeatures from '../../../lib/nuclideFeatures';
 import {getFileTreePathFromTargetEvent} from './utils';
+import {getLogger} from '../../nuclide-logging';
 
 let diffViewModel: ?DiffViewModelType = null;
 let activeDiffView: ?{
@@ -31,17 +34,27 @@ const uiProviders = [];
 let subscriptions: ?CompositeDisposable = null;
 let toolBar: ?any = null;
 let changeCountElement: ?HTMLElement = null;
-let logger = null;
+let cwdApi: ?CwdApi = null;
 
-function getLogger() {
-  return logger || (logger = require('../../nuclide-logging').getLogger());
+function formatDiffViewUrl(diffEntityOptions?: ?DiffEntityOptions): string {
+  if (diffEntityOptions == null) {
+    diffEntityOptions = {file: ''};
+  }
+  return url.format({
+    protocol: 'atom',
+    host: 'nuclide',
+    pathname: 'diff-view',
+    slashes: true,
+    query: diffEntityOptions,
+  });
 }
+
 
 // To add a View as an Atom workspace pane, we return `DiffViewElement` which extends `HTMLElement`.
 // This pattetn is also followed with atom's TextEditor.
-function createView(entryPath: string): HTMLElement {
+function createView(diffEntityOptions: DiffEntityOptions): HTMLElement {
   if (activeDiffView) {
-    activateFilePath(entryPath);
+    activateDiffPath(diffEntityOptions);
     return activeDiffView.element;
   }
 
@@ -63,7 +76,7 @@ function createView(entryPath: string): HTMLElement {
     element: hostElement,
   };
   diffModel.activate();
-  activateFilePath(entryPath);
+  activateDiffPath(diffEntityOptions);
 
   const destroySubscription = hostElement.onDidDestroy(() => {
     ReactDOM.unmountComponentAtNode(hostElement);
@@ -93,12 +106,22 @@ function getDiffViewModel(): DiffViewModelType {
   return diffViewModel;
 }
 
-function activateFilePath(filePath: string): void {
-  if (!filePath.length || !diffViewModel) {
-    // The Diff View could be opened with no path at all.
+function activateDiffPath(diffEntityOptions: DiffEntityOptions): void {
+  if (diffViewModel == null) {
     return;
   }
-  diffViewModel.activateFile(filePath);
+  let validDiffEntityOptions = null;
+  if (diffEntityOptions.file || diffEntityOptions.directory) {
+    validDiffEntityOptions = diffEntityOptions;
+  } else if (cwdApi != null) {
+    const directory = cwdApi.getCwd();
+    if (directory != null) {
+      validDiffEntityOptions = {directory: directory.getPath()};
+    }
+  }
+  if (validDiffEntityOptions != null) {
+    diffViewModel.diffEntity(validDiffEntityOptions);
+  }
 }
 
 function projectsContainPath(checkPath: string): boolean {
@@ -143,7 +166,7 @@ module.exports = {
     subscriptions.add(atom.commands.add(
       'atom-workspace',
       'nuclide-diff-view:open',
-      () => atom.workspace.open(NUCLIDE_DIFF_VIEW_URI)
+      () => atom.workspace.open(formatDiffViewUrl()),
     ));
     // Listen for in-editor context menu item diff view open command.
     subscriptions.add(atom.commands.add(
@@ -154,8 +177,8 @@ module.exports = {
         if (!editor) {
           return getLogger().warn('No active text editor for diff view!');
         }
-        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + (editor.getPath() || ''));
-      }
+        atom.workspace.open(formatDiffViewUrl({file: editor.getPath() || ''}));
+      },
     ));
 
     // Listen for switching to editor mode for the active file.
@@ -177,7 +200,7 @@ module.exports = {
       'nuclide-diff-view:open-context',
       event => {
         const filePath = getFileTreePathFromTargetEvent(event);
-        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + (filePath || ''));
+        atom.workspace.open(formatDiffViewUrl({file: filePath || ''}));
       }
     ));
     subscriptions.add(atom.contextMenu.add({
@@ -196,7 +219,8 @@ module.exports = {
       '.tree-view .entry.directory.list-nested-item',
       'nuclide-diff-view:open-context',
       event => {
-        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI);
+        const directoryPath = getFileTreePathFromTargetEvent(event);
+        atom.workspace.open(formatDiffViewUrl({directory: directoryPath || ''}));
       }
     ));
     subscriptions.add(atom.contextMenu.add({
@@ -213,7 +237,8 @@ module.exports = {
     // The Diff View will open its main UI in a tab, like Atom's preferences and welcome pages.
     subscriptions.add(atom.workspace.addOpener(uri => {
       if (uri.startsWith(NUCLIDE_DIFF_VIEW_URI)) {
-        return createView(uri.slice(NUCLIDE_DIFF_VIEW_URI.length));
+        const {query: diffEntityOptions} = url.parse(uri, true);
+        return createView((diffEntityOptions: any));
       }
     }));
 
@@ -228,7 +253,7 @@ module.exports = {
 
       // If it's a local directory, it must be loaded with packages activation.
       if (projectsContainPath(activeFilePath)) {
-        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + activeFilePath);
+        atom.workspace.open(formatDiffViewUrl({file: activeFilePath}));
         return;
       }
       // If it's a remote directory, it should come on a path change event.
@@ -238,7 +263,7 @@ module.exports = {
         // rest of the listeners, which can stop the remote editing from being functional.
         try {
           if (projectsContainPath(activeFilePath)) {
-            atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + activeFilePath);
+            atom.workspace.open(formatDiffViewUrl({file: activeFilePath}));
             changePathsSubscription.dispose();
             invariant(subscriptions);
             subscriptions.remove(changePathsSubscription);
@@ -332,6 +357,10 @@ module.exports = {
     // TODO(most): Fix UI rendering and re-introduce: t8174332
     // uiProviders.push(provider);
     return;
+  },
+
+  consumeCwdApi(api: CwdApi): void {
+    cwdApi = api;
   },
 
   get __testDiffView() {

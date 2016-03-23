@@ -23,6 +23,7 @@ import type {
   FileChangeStatusValue,
   PublishModeType,
   PublishModeStateType,
+  DiffOptionType,
 } from './types';
 
 const GK_DIFF_VIEW_PUBLISH: string = 'nuclide_diff_view_publish';
@@ -44,6 +45,15 @@ const DiffMode = {
 
 // This is to work around flow's missing support of enums.
 (DiffMode: { [key: string]: DiffModeType });
+
+const DiffOption = {
+  DIRTY: 'Dirty',
+  LAST_COMMIT: 'Last Commit',
+  COMPARE_COMMIT: 'Compare Commit',
+};
+
+// This is to work around flow's missing support of enums.
+(DiffOption: { [key: string]: DiffOptionType });
 
 const CommitMode = {
   COMMIT: 'Commit',
@@ -79,7 +89,6 @@ const PublishModeState = {
 // This is to work around flow's missing support of enums.
 (PublishModeState: { [key: string]: PublishModeStateType });
 
-
 const HgStatusToFileChangeStatus : {[key: StatusCodeNumberValue]: FileChangeStatusValue} = {
   [HgStatusCodeNumber.ADDED]: FileChangeStatus.ADDED,
   [HgStatusCodeNumber.MODIFIED]: FileChangeStatus.MODIFIED,
@@ -98,6 +107,7 @@ const FileChangeStatusToPrefix: {[key: FileChangeStatusValue]: string} = {
 
 module.exports = {
   DiffMode,
+  DiffOption,
   CommitMode,
   CommitModeState,
   PublishMode,

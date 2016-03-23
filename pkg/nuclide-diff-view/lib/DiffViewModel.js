@@ -30,6 +30,12 @@ type FileDiffState = {
   filesystemContents: string;
 };
 
+export type DiffEntityOptions = {
+  file: NuclideUri;
+} | {
+  directory: NuclideUri;
+};
+
 import arcanist from '../../nuclide-arcanist-client';
 import {CompositeDisposable, Emitter} from 'atom';
 import {
@@ -46,6 +52,7 @@ import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {getFileSystemContents} from './utils';
 import {array, map, debounce} from '../../nuclide-commons';
+import remoteUri from '../../nuclide-remote-uri';
 import RepositoryStack from './RepositoryStack';
 import Rx from 'rx';
 import {
@@ -100,6 +107,21 @@ function getFileStatusListMessage(fileChanges: Map<NuclideUri, FileChangeStatusV
     message = `\n more than ${MAX_DIALOG_FILE_STATUS_COUNT} files (check using \`hg status\`)`;
   }
   return message;
+}
+
+function hgRepositoryForPath(filePath: NuclideUri): HgRepositoryClient {
+  // Calling atom.project.repositoryForDirectory gets the real path of the directory,
+  // which is another round-trip and calls the repository providers to get an existing repository.
+  // Instead, the first match of the filtering here is the only possible match.
+  const repository = repositoryForPath(filePath);
+  if (repository == null || repository.getType() !== 'hg') {
+    const type = repository ? repository.getType() : 'no repository';
+    throw new Error(
+      `Diff view only supports \`Mercurial\` repositories, ` +
+      `but found \`${type}\` at path: \`${filePath}\``
+    );
+  }
+  return (repository: any);
 }
 
 type State = {
@@ -373,8 +395,44 @@ class DiffViewModel {
     }
   }
 
-  activateFile(filePath: NuclideUri): void {
-    if (this._activeSubscriptions) {
+  _findFilePathToDiffInDirectory(directoryPath: NuclideUri): ?string {
+    const repositoryStack = this._getRepositoryStackForPath(directoryPath);
+    const hgRepository = repositoryStack.getRepository();
+    const projectDirectory = hgRepository.getProjectDirectory();
+
+    function getMatchingFileChange(
+      filePaths: Array<NuclideUri>,
+      parentPath: NuclideUri,
+    ): ?NuclideUri {
+      return filePaths.filter(filePath => remoteUri.contains(parentPath, filePath))[0];
+    }
+    const dirtyFilePaths = array.from(repositoryStack.getDirtyFileChanges().keys());
+    // Try to match dirty file changes in the selected directory,
+    // Then lookup for changes in the project directory if there is no active repository.
+    const matchedFilePaths = [
+      getMatchingFileChange(dirtyFilePaths, directoryPath),
+      this._activeRepositoryStack == null
+        ? getMatchingFileChange(dirtyFilePaths, projectDirectory)
+        : null,
+    ];
+    return matchedFilePaths[0] || matchedFilePaths[1];
+  }
+
+  diffEntity(entityOption: DiffEntityOptions): void {
+    let diffPath = null;
+    if (entityOption.file != null) {
+      diffPath = entityOption.file;
+    } else if (entityOption.directory != null) {
+      diffPath = this._findFilePathToDiffInDirectory(entityOption.directory);
+    }
+
+    if (diffPath == null) {
+      getLogger().error('Non diffable entity:', entityOption);
+      return;
+    }
+
+    const filePath = diffPath;
+    if (this._activeSubscriptions != null) {
       this._activeSubscriptions.dispose();
     }
     const activeSubscriptions = this._activeSubscriptions = new CompositeDisposable();
@@ -547,18 +605,7 @@ class DiffViewModel {
 
   @trackTiming('diff-view.hg-state-update')
   async _fetchFileDiff(filePath: NuclideUri): Promise<FileDiffState> {
-    // Calling atom.project.repositoryForDirectory gets the real path of the directory,
-    // which is another round-trip and calls the repository providers to get an existing repository.
-    // Instead, the first match of the filtering here is the only possible match.
-    const repository = repositoryForPath(filePath);
-    if (repository == null || repository.getType() !== 'hg') {
-      const type = repository ? repository.getType() : 'no repository';
-      throw new Error(`Diff view only supports \`Mercurial\` repositories, but found \`${type}\``);
-    }
-
-    const hgRepository: HgRepositoryClient = (repository: any);
-    const repositoryStack = this._repositoryStacks.get(hgRepository);
-    invariant(repositoryStack, 'There must be an repository stack for a given repository!');
+    const repositoryStack = this._getRepositoryStackForPath(filePath);
     const [hgDiff] = await Promise.all([
       repositoryStack.fetchHgDiff(filePath),
       this._setActiveRepositoryStack(repositoryStack),
@@ -570,6 +617,13 @@ class DiffViewModel {
       ...hgDiff,
       filesystemContents: buffer.getText(),
     };
+  }
+
+  _getRepositoryStackForPath(filePath: NuclideUri): RepositoryStack {
+    const hgRepository = hgRepositoryForPath(filePath);
+    const repositoryStack = this._repositoryStacks.get(hgRepository);
+    invariant(repositoryStack, 'There must be an repository stack for a given repository!');
+    return repositoryStack;
   }
 
   async _setActiveRepositoryStack(repositoryStack: RepositoryStack): Promise<void> {

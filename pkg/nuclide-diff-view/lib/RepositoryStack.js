@@ -464,6 +464,10 @@ export default class RepositoryStack {
     return this._emitter.on(CHANGE_REVISIONS_EVENT, callback);
   }
 
+  getRepository(): HgRepositoryClient {
+    return this._repository;
+  }
+
   dispose(): void {
     this._subscriptions.dispose();
     this._dirtyFileChanges.clear();
