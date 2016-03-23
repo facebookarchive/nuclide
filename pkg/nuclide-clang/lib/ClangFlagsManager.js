@@ -15,7 +15,7 @@ import invariant from 'assert';
 import path from 'path';
 import {parse} from 'shell-quote';
 import {trackTiming} from '../../nuclide-analytics';
-import {array, fsPromise, object} from '../../nuclide-commons';
+import {array, fsPromise} from '../../nuclide-commons';
 import {getLogger} from '../../nuclide-logging';
 import {BuckProject} from '../../nuclide-buck-base/lib/BuckProject';
 
@@ -28,6 +28,7 @@ const COMPILATION_DATABASE_FILE = 'compile_commands.json';
  */
 const DEFAULT_HEADERS_TARGET = '__default_headers__';
 const HEADER_EXTENSIONS = new Set(['.h', '.hh', '.hpp', '.hxx', '.h++']);
+const SOURCE_EXTENSIONS = new Set(['.c', '.cc', '.cpp', '.cxx', '.c++', 'm', 'mm']);
 
 const CLANG_FLAGS_THAT_TAKE_PATHS = new Set([
   '-F',
@@ -47,18 +48,19 @@ function isHeaderFile(filename: string): boolean {
   return HEADER_EXTENSIONS.has(path.extname(filename));
 }
 
+function isSourceFile(filename: string): boolean {
+  return SOURCE_EXTENSIONS.has(path.extname(filename));
+}
+
 class ClangFlagsManager {
   _buckUtils: BuckUtils;
   _cachedBuckProjects: Map<string, BuckProject>;
   _compilationDatabases: Set<string>;
   _realpathCache: Object;
-  pathToFlags: {[path: string]: ?Array<string>};
+  pathToFlags: Map<string, ?Array<string>>;
 
   constructor(buckUtils: BuckUtils) {
-    /**
-     * Keys are absolute paths. Values are space-delimited strings of flags.
-     */
-    this.pathToFlags = {};
+    this.pathToFlags = new Map();
     this._buckUtils = buckUtils;
     this._cachedBuckProjects = new Map();
     this._compilationDatabases = new Set();
@@ -66,7 +68,7 @@ class ClangFlagsManager {
   }
 
   reset() {
-    this.pathToFlags = {};
+    this.pathToFlags.clear();
     this._cachedBuckProjects.clear();
     this._compilationDatabases.clear();
     this._realpathCache = {};
@@ -102,12 +104,12 @@ class ClangFlagsManager {
    *     under the project root.
    */
   async getFlagsForSrc(src: string): Promise<?Array<string>> {
-    let flags = this.pathToFlags[src];
+    let flags = this.pathToFlags.get(src);
     if (flags !== undefined) {
       return flags;
     }
     flags = await this._getFlagsForSrcImpl(src);
-    this.pathToFlags[src] = flags;
+    this.pathToFlags.set(src, flags);
     return flags;
   }
 
@@ -121,7 +123,7 @@ class ClangFlagsManager {
     if (dbDir != null) {
       const dbFile = path.join(dbDir, COMPILATION_DATABASE_FILE);
       await this._loadFlagsFromCompilationDatabase(dbFile);
-      const flags = this._lookupFlagsForSrc(src);
+      const flags = this.pathToFlags.get(src);
       if (flags != null) {
         return flags;
       }
@@ -130,32 +132,16 @@ class ClangFlagsManager {
     const buckFlags = await this._loadFlagsFromBuck(src);
     if (isHeaderFile(src)) {
       // Accept flags from any source file in the target.
-      const keys = Object.keys(buckFlags);
-      if (keys.length > 0) {
-        return buckFlags[keys[0]];
+      if (buckFlags.size > 0) {
+        return buckFlags.values().next().value;
+      }
+      // Try finding flags for a related source file.
+      const sourceFile = await ClangFlagsManager._findSourceFileForHeader(src);
+      if (sourceFile != null) {
+        return this.getFlagsForSrc(sourceFile);
       }
     }
-    return this._lookupFlagsForSrc(src);
-  }
-
-  _lookupFlagsForSrc(src: string): ?Array<string> {
-    const flags = this.pathToFlags[src];
-    if (flags !== undefined) {
-      return flags;
-    }
-
-    // Header files typically don't have entries in the compilation database.
-    // As a simple heuristic, look for other files with the same extension.
-    const ext = src.lastIndexOf('.');
-    if (ext !== -1) {
-      const extLess = src.substring(0, ext + 1);
-      for (const file in this.pathToFlags) {
-        if (file.startsWith(extLess)) {
-          return this.pathToFlags[file];
-        }
-      }
-    }
-    return null;
+    return this.pathToFlags.get(src) || null;
   }
 
   async _loadFlagsFromCompilationDatabase(dbFile: string): Promise<void> {
@@ -174,7 +160,7 @@ class ClangFlagsManager {
         const filename = path.resolve(directory, file);
         if (await fsPromise.exists(filename)) {
           const realpath = await fsPromise.realpath(filename, this._realpathCache);
-          this.pathToFlags[realpath] = ClangFlagsManager.sanitizeCommand(file, args, directory);
+          this.pathToFlags.set(realpath, ClangFlagsManager.sanitizeCommand(file, args, directory));
         }
       }));
       this._compilationDatabases.add(dbFile);
@@ -183,17 +169,18 @@ class ClangFlagsManager {
     }
   }
 
-  async _loadFlagsFromBuck(src: string): Promise<{[key: string]: Array<string>}> {
+  async _loadFlagsFromBuck(src: string): Promise<Map<string, Array<string>>> {
+    const flags = new Map();
     const buckProject = await this._getBuckProject(src);
     if (!buckProject) {
-      return {};
+      return flags;
     }
 
     const target = (await buckProject.getOwner(src))
       .find(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
 
     if (target == null) {
-      return {};
+      return flags;
     }
 
     // TODO(mbolin): The architecture should be chosen from a dropdown menu like
@@ -229,16 +216,16 @@ class ClangFlagsManager {
     const compilationDatabaseJson = compilationDatabaseJsonBuffer.toString('utf8');
     const compilationDatabase = JSON.parse(compilationDatabaseJson);
 
-    const flags = {};
     compilationDatabase.forEach(item => {
       const {file} = item;
-      flags[file] = ClangFlagsManager.sanitizeCommand(
+      const fileFlags = ClangFlagsManager.sanitizeCommand(
         file,
         item.arguments,
         buckProjectRoot,
       );
+      flags.set(file, fileFlags);
+      this.pathToFlags.set(file, fileFlags);
     });
-    object.assign(this.pathToFlags, flags);
     return flags;
   }
 
@@ -294,6 +281,32 @@ class ClangFlagsManager {
     }
 
     return args;
+  }
+
+  static async _findSourceFileForHeader(header: string): Promise<?string> {
+    // Basic implementation: look at files in the same directory for paths
+    // with matching file names.
+    // TODO(#10028531): Scan through source files to find those that include
+    // the header file.
+    const dir = path.dirname(header);
+    const files = await fsPromise.readdir(dir);
+    const basename = ClangFlagsManager._getFileBasename(header);
+    for (const file of files) {
+      if (isSourceFile(file) && ClangFlagsManager._getFileBasename(file) === basename) {
+        return path.join(dir, file);
+      }
+    }
+    return null;
+  }
+
+  // Strip off the extension and conventional suffixes like "Internal" and "-inl".
+  static _getFileBasename(file: string): string {
+    let basename = path.basename(file);
+    const ext = basename.lastIndexOf('.');
+    if (ext !== -1) {
+      basename = basename.substr(0, ext);
+    }
+    return basename.replace(/(Internal|-inl)$/, '');
   }
 }
 

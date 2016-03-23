@@ -194,6 +194,24 @@ describe('ClangFlagsManager', () => {
 
       flags = await flagsManager.getFlagsForSrc('header.hpp');
       expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+
+      // When headers are not properly owned, we should look for source files
+      // in the same directory.
+      const spy = spyOn(buckProject, 'getOwner').andReturn(['//test:__default_headers__']);
+      const dir = path.join(__dirname, 'fixtures');
+      flags = await flagsManager.getFlagsForSrc(path.join(dir, 'testInternal.h'));
+      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+
+      flags = await flagsManager.getFlagsForSrc(path.join(dir, 'test-inl.h'));
+      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+
+      flags = await flagsManager.getFlagsForSrc(path.join(dir, 'test2.h'));
+      expect(flags).toBeNull();
+
+      // Make sure we don't try get flags for non-source files.
+      flags = await flagsManager.getFlagsForSrc(path.join(dir, 'compile_commands.h'));
+      expect(flags).toBeNull();
+      expect(spy).not.toHaveBeenCalledWith(path.join(dir, 'compile_commands.json'));
     });
   });
 
@@ -208,7 +226,6 @@ describe('ClangFlagsManager', () => {
       testFile = path.join(__dirname, 'fixtures', 'test.h');
       flags = await flagsManager.getFlagsForSrc(testFile);
       expect(flags).toEqual(['g++', '-fPIC', '-O3']);
-      expect(buckProject.build).not.toHaveBeenCalled();
 
       // Fall back to Buck if it's not in the compilation DB.
       testFile = path.join(__dirname, 'fixtures', 'test2.cpp');
