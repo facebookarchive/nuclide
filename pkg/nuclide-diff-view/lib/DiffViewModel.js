@@ -319,17 +319,24 @@ class DiffViewModel {
 
   _onUpdateRevisionsState(revisionsState: RevisionsState): void {
     this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
-    this._loadModeState();
+    this._loadModeState(true);
   }
 
   getMessages(): Rx.Observable {
     return this._messages;
   }
 
-  setPublishMessage(publishMessage: string) {
+  setPublishMessage(publishMessage: string): void {
     this._setState({
       ...this._state,
       publishMessage,
+    });
+  }
+
+  setCommitMessage(commitMessage: string): void {
+    this._setState({
+      ...this._state,
+      commitMessage,
     });
   }
 
@@ -345,10 +352,17 @@ class DiffViewModel {
       viewMode,
     });
     this._updateCompareChangedStatus();
-    this._loadModeState();
+    this._loadModeState(false);
   }
 
-  _loadModeState(): void {
+  _loadModeState(resetState: boolean): void {
+    if (resetState) {
+      this._setState({
+        ...this._state,
+        commitMessage: null,
+        publishMessage: null,
+      });
+    }
     switch (this._state.viewMode) {
       case DiffMode.COMMIT_MODE:
         this._loadCommitModeState();
@@ -612,7 +626,7 @@ class DiffViewModel {
           throw new Error(`Unknown publish mode '${publishMode}'`);
       }
       // Populate Publish UI with the most recent data after a successful push.
-      this._loadModeState();
+      this._loadModeState(true);
     } catch (error) {
       notifyInternalError(error, true /*persist the error (user dismissable)*/);
       this._setState({
@@ -806,15 +820,12 @@ class DiffViewModel {
       commitModeState: CommitModeState.LOADING_COMMIT_MESSAGE,
     });
 
-    let commitMessage;
+    let commitMessage = null;
     try {
-      if (this._state.commitMode === CommitMode.COMMIT) {
+      if (this._state.commitMessage != null) {
+        commitMessage = this._state.commitMessage;
+      } else if (this._state.commitMode === CommitMode.COMMIT) {
         commitMessage = await this._loadActiveRepositoryTemplateCommitMessage();
-        // Commit templates that include newline strings, '\\n' in JavaScript, need to convert their
-        // strings to literal newlines, '\n' in JavaScript, to be rendered as line breaks.
-        if (commitMessage != null) {
-          commitMessage = convertNewlines(commitMessage);
-        }
       } else {
         commitMessage = await this._loadActiveRepositoryLatestCommitMessage();
       }
@@ -830,6 +841,7 @@ class DiffViewModel {
   }
 
   async _loadPublishModeState(): Promise<void> {
+    let publishMessage = this._state.publishMessage;
     this._setState({
       ...this._state,
       publishMode: PublishMode.CREATE,
@@ -838,13 +850,16 @@ class DiffViewModel {
       headRevision: null,
     });
     const {headRevision, phabricatorRevision} = await this._getActiveHeadRevisionDetails();
+    if (publishMessage == null) {
+      publishMessage = phabricatorRevision != null
+        ? getRevisionUpdateMessage(phabricatorRevision)
+        : headRevision.description;
+    }
     this._setState({
       ...this._state,
       publishMode: phabricatorRevision != null ? PublishMode.UPDATE : PublishMode.CREATE,
       publishModeState: PublishModeState.READY,
-      publishMessage: phabricatorRevision != null
-        ? getRevisionUpdateMessage(phabricatorRevision)
-        : headRevision.description,
+      publishMessage,
       headRevision,
     });
   }
@@ -880,11 +895,17 @@ class DiffViewModel {
     return revisions[revisions.length - 1].description;
   }
 
-  _loadActiveRepositoryTemplateCommitMessage(): Promise<?string> {
+  async _loadActiveRepositoryTemplateCommitMessage(): Promise<?string> {
     if (this._activeRepositoryStack == null) {
       throw new Error('Diff View: No active file or repository open');
     }
-    return this._activeRepositoryStack.getTemplateCommitMessage();
+    let commitMessage = await this._activeRepositoryStack.getTemplateCommitMessage();
+    // Commit templates that include newline strings, '\\n' in JavaScript, need to convert their
+    // strings to literal newlines, '\n' in JavaScript, to be rendered as line breaks.
+    if (commitMessage != null) {
+      commitMessage = convertNewlines(commitMessage);
+    }
+    return commitMessage;
   }
 
   async getActiveRevisionsState(): Promise<?RevisionsState> {
@@ -903,14 +924,6 @@ class DiffViewModel {
   async commit(message: string): Promise<void> {
     if (message === '') {
       atom.notifications.addError('Commit aborted', {detail: 'Commit message empty'});
-      return;
-    } else if (
-      this._state.commitMode === CommitMode.COMMIT
-      && message === this._state.commitMessage
-    ) {
-      // When creating a new commit, the initial commit message is created from a template. The
-      // message must differ from the template to be successful.
-      atom.notifications.addError('Commit aborted', {detail: 'Commit message unchanged'});
       return;
     }
 
@@ -939,13 +952,9 @@ class DiffViewModel {
           break;
       }
 
-      this._setState({
-        ...this._state,
-        commitModeState: CommitModeState.LOADING_COMMIT_MESSAGE,
-      });
-
       // Force trigger an update to the revisions to update the UI state with the new commit info.
       activeStack.getRevisionsStatePromise();
+      this._loadModeState(true);
     } catch (e) {
       atom.notifications.addError(
         'Error creating commit',
@@ -964,15 +973,19 @@ class DiffViewModel {
   }
 
   setCommitMode(commitMode: CommitModeType): void {
+    if (this._state.commitMode === commitMode) {
+      return;
+    }
     track('diff-view-switch-commit-mode', {
       commitMode,
     });
     this._setState({
       ...this._state,
       commitMode,
+      commitMessage: null,
     });
     // When the commit mode changes, load the appropriate commit message.
-    this._loadCommitModeState();
+    this._loadModeState(true);
   }
 
   activate(): void {

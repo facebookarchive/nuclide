@@ -106,7 +106,11 @@ class DiffCommitView extends React.Component {
   }
 
   _onClickCommit(): void {
-    this.props.diffModel.commit(this.refs['message'].getTextBuffer().getText());
+    this.props.diffModel.commit(this._getCommitMessage());
+  }
+
+  _getCommitMessage(): string {
+    return this.refs['message'].getTextBuffer().getText();
   }
 
   _onToggleAmend(isChecked: boolean): void {
@@ -114,6 +118,17 @@ class DiffCommitView extends React.Component {
       ? CommitMode.AMEND
       : CommitMode.COMMIT
     );
+  }
+
+  componentWillUnmount(): void {
+    // Save the latest edited commit message for layout switches.
+    const message = this._getCommitMessage();
+    const {diffModel} = this.props;
+    // Let the component unmount before propagating the final message change to the model,
+    // So the subsequent change event avoids re-rendering this component.
+    process.nextTick(() => {
+      diffModel.setCommitMessage(message);
+    });
   }
 }
 
