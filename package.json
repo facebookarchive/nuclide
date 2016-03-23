@@ -37,8 +37,8 @@
   },
   "dependencies": {
     "atom-package-deps": "3.0.8",
-    "babel-core": "5.8.34",
-    "babel-runtime": "5.8.34",
+    "babel-core": "5.8.38",
+    "babel-runtime": "5.8.38",
     "chalk": "1.1.1",
     "classnames": "2.2.3",
     "connect": "3.4.1",
@@ -68,7 +68,6 @@
     "react": "0.14.7",
     "react-dom": "0.14.7",
     "react-for-atom": "0.14.7-0",
-    "relative-date": "1.1.2",
     "request": "2.69.0",
     "rimraf": "2.5.1",
     "rx": "3.1.1",
