@@ -1,5 +1,5 @@
 'use babel';
-/* @noflow */
+/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-// Originally adapted https://github.com/azer/relative-date
+// Originally adapted from https://github.com/azer/relative-date.
 // We're including it because of https://github.com/npm/npm/issues/12012
 
 const SECOND = 1000;
@@ -36,28 +36,31 @@ const formats = [
   [ Number.MAX_VALUE, 'years ago', YEAR ],
 ];
 
-export function relativeDate(input, reference) {
+export function relativeDate(
+  input: number | Date,
+  reference?: number | Date
+): string {
+  if (input instanceof Date) {
+    input = input.getTime();
+  }
   if (!reference) {
     reference = new Date().getTime();
   }
   if (reference instanceof Date) {
     reference = reference.getTime();
   }
-  if (input instanceof Date) {
-    input = input.getTime();
-  }
 
   const delta = reference - input;
-  let format;
 
-  for (let i = -1, len = formats.length; ++i < len; ) {
-    format = formats[i];
-    if (delta < format[0]) {
-      if (format[2] === undefined) {
-        return format[1];
+  for (const [limit, relativeFormat, remainder] of formats) {
+    if (delta < limit) {
+      if (typeof remainder === 'number') {
+        return Math.round(delta / remainder) + ' ' + relativeFormat;
       } else {
-        return Math.round(delta / format[2]) + ' ' + format[1];
+        return relativeFormat;
       }
     }
   }
+
+  throw new Error('This should never be reached.');
 }
