@@ -15,13 +15,19 @@ import invariant from 'assert';
 import path from 'path';
 import {parse} from 'shell-quote';
 import {trackTiming} from '../../nuclide-analytics';
-import {array, fsPromise} from '../../nuclide-commons';
+import {array, fsPromise, object} from '../../nuclide-commons';
 import {getLogger} from '../../nuclide-logging';
 import {BuckProject} from '../../nuclide-buck-base/lib/BuckProject';
 
 const logger = getLogger();
 
 const COMPILATION_DATABASE_FILE = 'compile_commands.json';
+/**
+ * Facebook puts all headers in a <target>:__default_headers__ build target by default.
+ * This target will never produce compilation flags, so make sure to ignore it.
+ */
+const DEFAULT_HEADERS_TARGET = '__default_headers__';
+const HEADER_EXTENSIONS = new Set(['.h', '.hh', '.hpp', '.hxx', '.h++']);
 
 const CLANG_FLAGS_THAT_TAKE_PATHS = new Set([
   '-F',
@@ -36,6 +42,10 @@ const SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS = new Set(
   array.from(CLANG_FLAGS_THAT_TAKE_PATHS)
     .filter(item => item.length === 2)
 );
+
+function isHeaderFile(filename: string): boolean {
+  return HEADER_EXTENSIONS.has(path.extname(filename));
+}
 
 class ClangFlagsManager {
   _buckUtils: BuckUtils;
@@ -117,7 +127,14 @@ class ClangFlagsManager {
       }
     }
 
-    await this._loadFlagsFromBuck(src);
+    const buckFlags = await this._loadFlagsFromBuck(src);
+    if (isHeaderFile(src)) {
+      // Accept flags from any source file in the target.
+      const keys = Object.keys(buckFlags);
+      if (keys.length > 0) {
+        return buckFlags[keys[0]];
+      }
+    }
     return this._lookupFlagsForSrc(src);
   }
 
@@ -166,15 +183,17 @@ class ClangFlagsManager {
     }
   }
 
-  async _loadFlagsFromBuck(src: string): Promise<void> {
+  async _loadFlagsFromBuck(src: string): Promise<{[key: string]: Array<string>}> {
     const buckProject = await this._getBuckProject(src);
     if (!buckProject) {
-      return;
+      return {};
     }
 
-    const targets = await buckProject.getOwner(src);
-    if (targets.length === 0) {
-      return;
+    const target = (await buckProject.getOwner(src))
+      .find(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
+
+    if (target == null) {
+      return {};
     }
 
     // TODO(mbolin): The architecture should be chosen from a dropdown menu like
@@ -190,7 +209,7 @@ class ClangFlagsManager {
     // now. Though once we start supporting ordinary .cpp files, then we
     // likely need to be even more careful about choosing the architecture
     // flavor.
-    const buildTarget = targets[0] + '#compilation-database,' + arch;
+    const buildTarget = target + '#compilation-database,' + arch;
 
     const buildReport = await buckProject.build([buildTarget]);
     if (!buildReport.success) {
@@ -209,13 +228,18 @@ class ClangFlagsManager {
     const compilationDatabaseJsonBuffer = await fsPromise.readFile(pathToCompilationDatabase);
     const compilationDatabaseJson = compilationDatabaseJsonBuffer.toString('utf8');
     const compilationDatabase = JSON.parse(compilationDatabaseJson);
+
+    const flags = {};
     compilationDatabase.forEach(item => {
       const {file} = item;
-      this.pathToFlags[file] = ClangFlagsManager.sanitizeCommand(
-          file,
-          item.arguments,
-          buckProjectRoot);
+      flags[file] = ClangFlagsManager.sanitizeCommand(
+        file,
+        item.arguments,
+        buckProjectRoot,
+      );
     });
+    object.assign(this.pathToFlags, flags);
+    return flags;
   }
 
   static parseArgumentsFromCommand(command: string): Array<string> {

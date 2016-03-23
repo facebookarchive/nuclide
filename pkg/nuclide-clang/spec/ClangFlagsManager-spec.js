@@ -21,7 +21,8 @@ describe('ClangFlagsManager', () => {
     flagsManager = new ClangFlagsManager(new BuckUtils());
     buckProject = {
       getOwner(src) {
-        return ['test'];
+        // Default header targets should be ignored.
+        return ['//test:__default_headers__', '//test'];
       },
       getPath() {
         return path.join(__dirname, 'fixtures');
@@ -30,11 +31,11 @@ describe('ClangFlagsManager', () => {
         return {
           success: true,
           results: {
-            'test#compilation-database,iphonesimulator-x86_64': {
+            '//test#compilation-database,iphonesimulator-x86_64': {
               output: 'compile_commands.json',
             },
             // For testing on non-Mac machines.
-            'test#compilation-database,default': {
+            '//test#compilation-database,default': {
               output: 'compile_commands.json',
             },
           },
@@ -188,10 +189,10 @@ describe('ClangFlagsManager', () => {
 
   it('gets flags for header files', () => {
     waitsForPromise(async () => {
-      let flags = await flagsManager.getFlagsForSrc('test.h');
+      let flags = await flagsManager.getFlagsForSrc('header.h');
       expect(flags).toEqual(['g++', '-fPIC', '-O3']);
 
-      flags = await flagsManager.getFlagsForSrc('test.hpp');
+      flags = await flagsManager.getFlagsForSrc('header.hpp');
       expect(flags).toEqual(['g++', '-fPIC', '-O3']);
     });
   });
