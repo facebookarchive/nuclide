@@ -52,6 +52,7 @@ describe('HackDiagnosticsProvider', () => {
               line: 1,
               start: 3,
               end: 4,
+              code: 1234,
             },
           ],
         },
@@ -59,7 +60,7 @@ describe('HackDiagnosticsProvider', () => {
 
       const expectedOutput = {
         scope: 'file',
-        providerName: 'Hack',
+        providerName: 'Hack: 1234',
         text: 'message',
         type: 'Error',
         filePath: testPath,
@@ -104,6 +105,7 @@ describe('HackDiagnosticsProvider', () => {
               line: 1,
               start: 3,
               end: 4,
+              code: 1234,
             },
             {
               path: 'otherPath',
@@ -111,6 +113,7 @@ describe('HackDiagnosticsProvider', () => {
               line: 5,
               start: 7,
               end: 8,
+              code: 4321,
             },
           ],
         },
@@ -118,7 +121,7 @@ describe('HackDiagnosticsProvider', () => {
 
       const expectedOutput = {
         scope: 'file',
-        providerName: 'Hack',
+        providerName: 'Hack: 1234',
         type: 'Error',
         text: 'message',
         filePath: testPath,

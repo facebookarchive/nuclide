@@ -77,7 +77,7 @@ function hackMessageToDiagnosticMessage(
   invariant(causeMessage.path != null);
   const diagnosticMessage: FileDiagnosticMessage = {
     scope: 'file',
-    providerName: 'Hack',
+    providerName: `Hack: ${hackMessages[0].code}`,
     type: 'Error',
     text: causeMessage.descr,
     filePath: causeMessage.path,
