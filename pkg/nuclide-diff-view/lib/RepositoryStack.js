@@ -416,7 +416,7 @@ export default class RepositoryStack {
       case DiffOption.LAST_COMMIT:
         compareCommitId = revisions.length <= 1
           ? null
-          : revisions[revisions.length - 1].id;
+          : revisions[revisions.length - 2].id;
         break;
       case DiffOption.COMPARE_COMMIT:
         compareCommitId = revisionsState.compareCommitId;
