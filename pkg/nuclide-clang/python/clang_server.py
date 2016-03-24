@@ -24,6 +24,7 @@ import sys
 import tempfile
 import time
 import traceback
+from distutils.version import LooseVersion
 from logging import FileHandler
 from utils import is_header_file, resolve_file, range_dict, location_dict
 
@@ -117,7 +118,22 @@ class Server:
         ("clang_getDiagnosticInSet",
             [POINTER(c_void_p), c_uint],
             POINTER(c_void_p)),
+
+        ("clang_getClangVersion",
+            [],
+            POINTER(c_void_p)),
+
+        ("clang_getCString",
+            [c_void_p],
+            c_char_p),
     ]
+
+    # New in Clang 3.8: not in the Python bindings yet.
+    # Should also be removed once upstreamed.
+    PARSE_CREATE_PREAMBLE_ON_FIRST_PARSE = 0x100
+
+    # Prefix of the string returned by clang_getClangVersion.
+    CLANG_VERSION_PREFIX = 'clang version'
 
     def __init__(self, src, input_stream, output_stream):
         self.src = src
@@ -130,6 +146,16 @@ class Server:
         conf = Config()
         self.custom_clang_lib = conf.lib
         self._register_custom_clang_functions()
+
+        # Cache the libclang version.
+        cxstr = self.custom_clang_lib.clang_getClangVersion()
+        version = self.custom_clang_lib.clang_getCString(cxstr)
+
+        if version.startswith(Server.CLANG_VERSION_PREFIX):
+            version = version[len(Server.CLANG_VERSION_PREFIX):]
+        else:
+            version = '3.7.0'
+        self.clang_version = LooseVersion(version)
 
     def run(self):
         input_stream = self.input_stream
@@ -351,13 +377,17 @@ class Server:
             TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION |
             TranslationUnit.PARSE_INCOMPLETE)
 
+        # Clang 3.8 comes with CXTranslationUnit_CreatePreambleOnFirstParse,
+        # which allows us to skip the forced reparse.
+        # Otherwise, we have have to force an immediate reparse to generate
+        # precompiled headers (necessary for fast autocompletion).
+        if self.clang_version >= LooseVersion('3.8'):
+            options |= Server.PARSE_CREATE_PREAMBLE_ON_FIRST_PARSE
+            self.cached_contents = unsaved_contents
+
         args = self._get_args_for_flags(flags)
         self.translation_unit = self.index.parse(
             self.src, args, self._make_files(unsaved_contents), options)
-        # Do not cache the contents after the initial compile!
-        # We need to trigger an immediate reparse for Clang to generate precompiled headers.
-        # TODO(#9832847): Use CXTranslationUnit_CreatePreambleOnFirstParse after Clang 3.8.
-        # self.cached_contents = unsaved_contents
         return self.translation_unit
 
     # Clang's API expects a list of (src, contents) pairs.
