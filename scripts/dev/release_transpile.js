@@ -54,7 +54,11 @@ var jsFiles = glob.sync(path.join(basedir, '**/*.js'), {
 });
 
 var excludes = services.map(function(service) {
-  return path.join(serverBasedir, service.implementation);
+  if (service.definition) {
+    return path.join(serverBasedir, service.definition);
+  } else {
+    return path.join(serverBasedir, service.implementation);
+  }
 });
 
 // Sanity checks:
