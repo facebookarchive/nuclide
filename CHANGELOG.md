@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.126.0
+
+* Fixes for the `left-pad`/`relative-date` npm unpublishing.
+
 ## v0.125.0
 
 ### Added
