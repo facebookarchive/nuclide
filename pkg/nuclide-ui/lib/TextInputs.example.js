@@ -9,9 +9,11 @@
  * the root directory of this source tree.
  */
 
+import {TextBuffer} from 'atom';
 import {React} from 'react-for-atom';
 import {Block} from './Block';
 import {AtomInput} from './AtomInput';
+import {AtomTextEditor} from './AtomTextEditor';
 
 const AtomInputExample = (): ReactElement => (
   <div>
@@ -67,6 +69,44 @@ const AtomInputExample = (): ReactElement => (
   </div>
 );
 
+const buffer1 = new TextBuffer({
+  text: '/**\n * Hi!\n */\n\n// I am a TextBuffer.\nconst a = 42;',
+});
+const buffer2 = new TextBuffer({
+  text: '/**\n * Hi!\n */\n\n// I am a read-only, gutter-less TextBuffer.\nconst a = 42;',
+});
+const editorWrapperStyle = {
+  display: 'flex',
+  flexGrow: 1,
+  height: '12em',
+  boxShadow: '0 0 20px 0 rgba(0, 0, 0, 0.3)',
+};
+
+const AtomTextEditorExample = (): ReactElement => (
+  <Block>
+    <div style={editorWrapperStyle}>
+      <AtomTextEditor
+        gutterHidden={false}
+        readOnly={false}
+        syncTextContents={false}
+        autoGrow={false}
+        path="aJavaScriptFile.js"
+        textBuffer={buffer1}
+      />
+    </div>
+    <div style={{...editorWrapperStyle, marginTop: '2em'}}>
+      <AtomTextEditor
+        gutterHidden={true}
+        readOnly={true}
+        syncTextContents={false}
+        autoGrow={false}
+        path="aJavaScriptFile.js"
+        textBuffer={buffer2}
+      />
+    </div>
+  </Block>
+);
+
 export const TextInputExamples = {
   sectionName: 'Text Inputs',
   description: '',
@@ -74,6 +114,10 @@ export const TextInputExamples = {
     {
       title: 'AtomInput',
       component: AtomInputExample,
+    },
+    {
+      title: 'AtomTextEditor',
+      component: AtomTextEditorExample,
     },
   ],
 };
