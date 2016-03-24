@@ -16,10 +16,12 @@ import {React} from 'react-for-atom';
 import {Button} from '../../nuclide-ui/lib/Button';
 import {ButtonExamples} from '../../nuclide-ui/lib/Button.example';
 import {ProgressIndicatorExamples} from '../../nuclide-ui/lib/ProgressIndicators.example';
+import {CheckboxExamples} from '../../nuclide-ui/lib/Checkbox.example';
 
 const playgroundComponents = [
   ButtonExamples,
   ProgressIndicatorExamples,
+  CheckboxExamples,
 ];
 
 type ComponentSpec = {
