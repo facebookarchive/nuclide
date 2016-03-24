@@ -24,8 +24,6 @@ const {
   ReactDOM,
 } = require('react-for-atom');
 
-const emptyfunction = require('emptyfunction');
-
 const {PropTypes} = React;
 
 type State = {
@@ -73,8 +71,8 @@ export class AtomComboBox extends React.Component {
   static defaultProps = {
     className: '',
     maxOptionCount: 10,
-    onChange: emptyfunction,
-    onSelect: emptyfunction,
+    onChange: (newValue: string) => {},
+    onSelect: (newValue: string) => {},
     width: 200,
   };
 

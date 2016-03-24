@@ -10,8 +10,6 @@
  */
 
 const {React} = require('react-for-atom');
-const emptyfunction = require('emptyfunction');
-
 const {PropTypes} = React;
 
 export class NuclideDropdown extends React.Component {
@@ -41,7 +39,7 @@ export class NuclideDropdown extends React.Component {
     disabled: false,
     selectedIndex: 0,
     menuItems: [],
-    onSelectedChange: emptyfunction,
+    onSelectedChange: (newIndex: number) => {},
     title: '',
   };
 

@@ -44,7 +44,6 @@
     "connect": "3.4.1",
     "dequeue": "1.0.5",
     "diff": "2.2.1",
-    "emptyfunction": "0.0.0",
     "event-kit": "2.0.0",
     "fb-watchman": "1.9.0",
     "fixed-data-table": "0.6.0",
