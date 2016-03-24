@@ -1,0 +1,84 @@
+'use babel';
+/* @flow */
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+import {React} from 'react-for-atom';
+import {Block} from './Block';
+import {NuclideTabs as Tabs} from './NuclideTabs';
+
+const tabs = [
+  {
+    name: 'one',
+    tabContent: <div>One</div>,
+  },
+  {
+    name: 'two',
+    tabContent: <div>Two</div>,
+  },
+  {
+    name: 'three',
+    tabContent: <div>Three</div>,
+  },
+  {
+    name: 'four',
+    tabContent: <div>Four</div>,
+  },
+  {
+    name: 'five',
+    tabContent: <div>Five</div>,
+  },
+];
+
+class TabExample extends React.Component {
+  state: {activeTabName: string};
+
+  constructor(props: any) {
+    super(props);
+    (this: any).handleTabChange = this.handleTabChange.bind(this);
+    this.state = {
+      activeTabName: 'one',
+    };
+  }
+
+  handleTabChange(newTabName: {name: string; tabContent: ReactElement;}): void {
+    this.setState({
+      activeTabName: newTabName.name,
+    });
+  }
+
+  render(): ReactElement {
+    const {activeTabName} = this.state;
+    return (
+      <Block>
+        <Tabs
+          tabs={tabs}
+          activeTabName={activeTabName}
+          triggeringEvent="onClick"
+          onActiveTabChange={this.handleTabChange}
+        />
+        <div style={{padding: '2em 0 2em 0'}}>
+          Showing content for tab "{activeTabName}".
+        </div>
+      </Block>
+    );
+  }
+}
+
+export const TabExamples = {
+  sectionName: 'Tabs',
+  description: '',
+  examples: [
+    {
+      title: '',
+      // $FlowIssue
+      component: TabExample,
+    },
+  ],
+};

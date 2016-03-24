@@ -17,11 +17,13 @@ import {Button} from '../../nuclide-ui/lib/Button';
 import {ButtonExamples} from '../../nuclide-ui/lib/Button.example';
 import {ProgressIndicatorExamples} from '../../nuclide-ui/lib/ProgressIndicators.example';
 import {CheckboxExamples} from '../../nuclide-ui/lib/Checkbox.example';
+import {TabExamples} from '../../nuclide-ui/lib/Tabs.example';
 
 const playgroundComponents = [
   ButtonExamples,
   ProgressIndicatorExamples,
   CheckboxExamples,
+  TabExamples,
 ];
 
 type ComponentSpec = {
