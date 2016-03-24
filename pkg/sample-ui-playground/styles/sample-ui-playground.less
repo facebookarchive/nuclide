@@ -1,15 +1,28 @@
 @import "ui-variables";
 @import "syntax-variables";
 
+@nuclide-ui-playground-background: lighten(@tool-panel-background-color, 2%);
+
 .nuclide-ui-playground {
+  background-color: @nuclide-ui-playground-background;
   overflow: auto;
   padding: 20px 0;
   width: 100%;
 
   h1 {
     color: @text-color-highlight;
-    font-weight: bold;
+    cursor: pointer;
     font-size: 1.6em;
+    font-weight: bold;
+    margin: 0;
+
+    &.nuclide-ui-playground-section-headline-collapsed {
+      color: @text-color;
+    }
+
+    &:hover {
+      color: @text-color-highlight;
+    }
   }
 
   h2 {
@@ -21,16 +34,19 @@
     font-size: 1.2em;
     margin: 0.5em 0;
   }
-
 }
 
-.nuclide-ui-playground-bordered {
+.nuclide-ui-playground-header {
+  padding: @component-padding;
+  text-align: right;
+}
+
+section.nuclide-ui-playground-section {
   padding: @component-padding * 2;
 }
 
-
 .nuclide-ui-playground-example {
-  background: lighten(@tool-panel-background-color, 2%);
+  background-color: @nuclide-ui-playground-background;
   border-radius: @component-border-radius;
   border: 1px solid @tool-panel-border-color;
   margin: @component-padding 0;
