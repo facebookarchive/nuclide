@@ -57,6 +57,12 @@ class ClangDiagnosticsProvider {
   _hasSubscription: WeakMap<atom$TextBuffer, boolean>;
   _subscriptions: atom$CompositeDisposable;
 
+  // When we open a file for the first time, make sure we pass 'clean' to getDiagnostics
+  // to reset any server state for the file.
+  // This is so the user can easily refresh the Clang + Buck state by reloading Atom.
+  // Note that we do not use the TextBuffer here, since a close/reopen is acceptable.
+  _openedFiles: Set<string>;
+
   constructor(busySignalProvider: BusySignalProviderBase) {
     const options = {
       grammarScopes: GRAMMAR_SET,
@@ -69,6 +75,7 @@ class ClangDiagnosticsProvider {
     this._bufferDiagnostics = new WeakMap();
     this._hasSubscription = new WeakMap();
     this._subscriptions = new CompositeDisposable();
+    this._openedFiles = new Set();
   }
 
   runDiagnostics(editor: atom$TextEditor): void {
@@ -98,7 +105,8 @@ class ClangDiagnosticsProvider {
     }
 
     try {
-      const diagnostics = await getDiagnostics(textEditor);
+      const diagnostics = await getDiagnostics(textEditor, !this._openedFiles.has(filePath));
+      this._openedFiles.add(filePath);
       // It's important to make sure that the buffer hasn't already been destroyed.
       if (diagnostics == null || !this._hasSubscription.get(buffer)) {
         return;

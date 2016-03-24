@@ -34,7 +34,10 @@ function getDefaultFlags(): ?Array<string> {
 
 module.exports = {
 
-  async getDiagnostics(editor: atom$TextEditor): Promise<?ClangCompileResult> {
+  async getDiagnostics(
+    editor: atom$TextEditor,
+    clean: boolean,
+  ): Promise<?ClangCompileResult> {
     const src = editor.getPath();
     const contents = editor.getText();
 
@@ -43,7 +46,7 @@ module.exports = {
     invariant(service);
 
     return service
-        .compile(src, contents, defaultFlags)
+        .compile(src, contents, clean, defaultFlags)
         .toPromise();
   },
 

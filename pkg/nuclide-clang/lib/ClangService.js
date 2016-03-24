@@ -240,12 +240,19 @@ export const ClangCursorTypes: {[key: ClangCursorType]: ClangCursorType} =
  * Compiles the specified source file (automatically determining the correct compilation flags).
  * It currently returns an Observable just to circumvent the 60s service timeout for Promises.
  * TODO(9519963): Stream back more detailed compile status message.
+ *
+ * If `clean` is provided, any existing Clang server for the file is restarted.
  */
 export function compile(
   src: NuclideUri,
   contents: string,
+  clean: boolean,
   defaultFlags?: Array<string>,
 ): Observable<?ClangCompileResult> {
+  if (clean && clangServers.get(src) != null) {
+    reset(src);
+  }
+
   return Observable.fromPromise(
     getClangServer(src)
       .makeRequest('compile', defaultFlags, {contents})
