@@ -126,7 +126,6 @@ def start_debugging(debugger, arguments, ipc_channel, is_attach):
             True,               # add_dependent_modules
             error)              # error
         if error.Fail():
-            ipc_channel.send_output_message_sync('error', error.description)
             sys.exit(error.description)
 
         # TODO: pass environment variables.
@@ -154,7 +153,6 @@ def start_debugging(debugger, arguments, ipc_channel, is_attach):
         sys.exit('Unknown arguments: %s' % arguments)
 
     if error.Fail():
-        ipc_channel.send_output_message_sync('error', error.description)
         sys.exit(error.description)
     else:
         if is_attach:
