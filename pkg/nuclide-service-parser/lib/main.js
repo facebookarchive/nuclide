@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getDefinitions = getDefinitions;
+exports.getProxy = getProxy;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +14,36 @@
  * the root directory of this source tree.
  */
 
-import {createOrFetchFromCache} from '../../nuclide-node-transpiler/lib/babel-cache';
-import fs from 'fs';
-import generateProxy from './proxy-generator';
-import parseServiceDefinition from './service-parser';
-import path from 'path';
-import invariant from 'assert';
-import Module from 'module';
+var _nuclideNodeTranspilerLibBabelCache = require('../../nuclide-node-transpiler/lib/babel-cache');
 
-import type {Definitions} from './types';
+var _fs = require('fs');
+
+var _fs2 = _interopRequireDefault(_fs);
+
+var _proxyGenerator = require('./proxy-generator');
+
+var _proxyGenerator2 = _interopRequireDefault(_proxyGenerator);
+
+var _serviceParser = require('./service-parser');
+
+var _serviceParser2 = _interopRequireDefault(_serviceParser);
+
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _module2 = require('module');
+
+var _module3 = _interopRequireDefault(_module2);
 
 /** Cache for definitions. */
-const definitionsCache: Map<string, Definitions> = new Map();
+var definitionsCache = new Map();
 /** Cache for remote proxies. */
-const proxiesCache: Map<string, {factory: Function; proxies: WeakMap}> = new Map();
+var proxiesCache = new Map();
 
 /**
  * Load the definitions, cached by their resolved file path.
@@ -31,13 +52,13 @@ const proxiesCache: Map<string, {factory: Function; proxies: WeakMap}> = new Map
  * @returns - The Definitions that represents the API of the definiition file.
  */
 // $FlowFixMe
-export function getDefinitions(definitionPath: string): Definitions {
-  const resolvedPath = resolvePath(definitionPath);
+
+function getDefinitions(definitionPath) {
+  var resolvedPath = resolvePath(definitionPath);
 
   // Cache definitions by the resolved file path they were loaded from.
   if (!definitionsCache.has(resolvedPath)) {
-    definitionsCache.set(resolvedPath,
-      parseServiceDefinition(resolvedPath, fs.readFileSync(resolvedPath, 'utf8')));
+    definitionsCache.set(resolvedPath, (0, _serviceParser2['default'])(resolvedPath, _fs2['default'].readFileSync(resolvedPath, 'utf8')));
   }
   return definitionsCache.get(resolvedPath);
 }
@@ -50,21 +71,22 @@ export function getDefinitions(definitionPath: string): Definitions {
  *   and unmarshal objects, as well as make RPC calls.
  * @returns - A proxy module that exports the API specified by the definition
  */
-export function getProxy(serviceName: string, definitionPath: string, clientObject: any): any {
-  const resolvedPath = resolvePath(definitionPath);
-  const defs = getDefinitions(definitionPath);
+
+function getProxy(serviceName, definitionPath, clientObject) {
+  var resolvedPath = resolvePath(definitionPath);
+  var defs = getDefinitions(definitionPath);
 
   // Cache proxy factory functions by the resolved definition file path.
   if (!proxiesCache.has(resolvedPath)) {
     // Transpile this code (since it will use anonymous classes and arrow functions).
-    const code = generateProxy(serviceName, defs);
-    const filename = path.parse(definitionPath).name + 'Proxy.js';
-    const transpiled = createOrFetchFromCache(code, filename);
+    var code = (0, _proxyGenerator2['default'])(serviceName, defs);
+    var filename = _path2['default'].parse(definitionPath).name + 'Proxy.js';
+    var transpiled = (0, _nuclideNodeTranspilerLibBabelCache.createOrFetchFromCache)(code, filename);
 
     // Load the module directly from a string,
-    const m = new Module();
+    var m = new _module3['default']();
     // as if it were a sibling to this file.
-    m.filename = m.id = path.join(__dirname, filename);
+    m.filename = m.id = _path2['default'].join(__dirname, filename);
     // $FlowIssue
     m.paths = module.paths;
     m._compile(transpiled, filename);
@@ -72,13 +94,13 @@ export function getProxy(serviceName: string, definitionPath: string, clientObje
     // Add the factory function to a cache.
     proxiesCache.set(resolvedPath, {
       factory: m.exports,
-      proxies: new WeakMap(),
+      proxies: new WeakMap()
     });
   }
 
   // Cache remote proxy modules by the (definition path, client object) tuple.
-  const cache = proxiesCache.get(resolvedPath);
-  invariant(cache != null);
+  var cache = proxiesCache.get(resolvedPath);
+  (0, _assert2['default'])(cache != null);
   if (!cache.proxies.has(clientObject)) {
     cache.proxies.set(clientObject, cache.factory(clientObject));
   }
@@ -91,13 +113,15 @@ export function getProxy(serviceName: string, definitionPath: string, clientObje
  * Note that `require('module')._resolveFilename(path, module)` is equivelent to
  * `require.resolve(path)` under the context of given module.
  */
-function resolvePath(definitionPath: string): string {
+function resolvePath(definitionPath) {
   // $FlowIssue
   return require('module')._resolveFilename(definitionPath, module.parent ? module.parent : module);
 }
 
 // Export caches for testing.
-export const __test__ = {
-  definitionsCache,
-  proxiesCache,
+var __test__ = {
+  definitionsCache: definitionsCache,
+  proxiesCache: proxiesCache
 };
+exports.__test__ = __test__;
+//# sourceMappingURL=data:application/json;base64,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Z0IsRUFBaEIsZ0JBQWdCO0FBQ2hCLGNBQVksRUFBWixZQUFZO0NBQ2IsQ0FBQyIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHtjcmVhdGVPckZldGNoRnJvbUNhY2hlfSBmcm9tICcuLi8uLi9udWNsaWRlLW5vZGUtdHJhbnNwaWxlci9saWIvYmFiZWwtY2FjaGUnO1xuaW1wb3J0IGZzIGZyb20gJ2ZzJztcbmltcG9ydCBnZW5lcmF0ZVByb3h5IGZyb20gJy4vcHJveHktZ2VuZXJhdG9yJztcbmltcG9ydCBwYXJzZVNlcnZpY2VEZWZpbml0aW9uIGZyb20gJy4vc2VydmljZS1wYXJzZXInO1xuaW1wb3J0IHBhdGggZnJvbSAncGF0aCc7XG5pbXBvcnQgaW52YXJpYW50IGZyb20gJ2Fzc2VydCc7XG5pbXBvcnQgTW9kdWxlIGZyb20gJ21vZHVsZSc7XG5cbmltcG9ydCB0eXBlIHtEZWZpbml0aW9uc30gZnJvbSAnLi90eXBlcyc7XG5cbi8qKiBDYWNoZSBmb3IgZGVmaW5pdGlvbnMuICovXG5jb25zdCBkZWZpbml0aW9uc0NhY2hlOiBNYXA8c3RyaW5nLCBEZWZpbml0aW9ucz4gPSBuZXcgTWFwKCk7XG4vKiogQ2FjaGUgZm9yIHJlbW90ZSBwcm94aWVzLiAqL1xuY29uc3QgcHJveGllc0NhY2hlOiBNYXA8c3RyaW5nLCB7ZmFjdG9yeTogRnVuY3Rpb247IHByb3hpZXM6IFdlYWtNYXB9PiA9IG5ldyBNYXAoKTtcblxuLyoqXG4gKiBMb2FkIHRoZSBkZWZpbml0aW9ucywgY2FjaGVkIGJ5IHRoZWlyIHJlc29sdmVkIGZpbGUgcGF0aC5cbiAqIEBwYXJhbSBkZWZpbml0aW9uUGF0aCAtIFRoZSBwYXRoIHRvIHRoZSBkZWZpbml0aW9uIGZpbGUsIHJlbGF0aXZlIHRvIHRoZSBtb2R1bGUgb2ZcbiAqICB0aGUgY2FsbGVyLlxuICogQHJldHVybnMgLSBUaGUgRGVmaW5pdGlvbnMgdGhhdCByZXByZXNlbnRzIHRoZSBBUEkgb2YgdGhlIGRlZmluaWl0aW9uIGZpbGUuXG4gKi9cbi8vICRGbG93Rml4TWVcbmV4cG9ydCBmdW5jdGlvbiBnZXREZWZpbml0aW9ucyhkZWZpbml0aW9uUGF0aDogc3RyaW5nKTogRGVmaW5pdGlvbnMge1xuICBjb25zdCByZXNvbHZlZFBhdGggPSByZXNvbHZlUGF0aChkZWZpbml0aW9uUGF0aCk7XG5cbiAgLy8gQ2FjaGUgZGVmaW5pdGlvbnMgYnkgdGhlIHJlc29sdmVkIGZpbGUgcGF0aCB0aGV5IHdlcmUgbG9hZGVkIGZyb20uXG4gIGlmICghZGVmaW5pdGlvbnNDYWNoZS5oYXMocmVzb2x2ZWRQYXRoKSkge1xuICAgIGRlZmluaXRpb25zQ2FjaGUuc2V0KHJlc29sdmVkUGF0aCxcbiAgICAgIHBhcnNlU2VydmljZURlZmluaXRpb24ocmVzb2x2ZWRQYXRoLCBmcy5yZWFkRmlsZVN5bmMocmVzb2x2ZWRQYXRoLCAndXRmOCcpKSk7XG4gIH1cbiAgcmV0dXJuIGRlZmluaXRpb25zQ2FjaGUuZ2V0KHJlc29sdmVkUGF0aCk7XG59XG5cbi8qKlxuICogR2V0IGEgcHJveHkgbW9kdWxlIGZvciBhIGdpdmVuIChzZXJ2aWNlLCBjbGllbnQpIHBhaXIuIFRoaXMgZnVuY3Rpb24gZ2VuZXJhdGVzXG4gKiB0aGUgZGVmaW5pdGlvbnMgaWYgdGhlIHRoZXkgZG9uJ3QgZXhpc3QsIGFuZCBjYWNoZXMgdGhlIHByb3h5IG1vZHVsZSBpZiBpdCBoYXNcbiAqIGFscmVhZHkgYmVlbiBnZW5lcmF0ZWQgYmVmb3JlLlxuICogQHBhcmFtIGNsaWVudE9iamVjdCB7Q2xpZW50Q29tcG9uZW50fSBUaGUgY2xpZW50IG9iamVjdCB0aGF0IG5lZWRzIHRvIGJlIGFibGUgdG8gbWFyaHNhbFxuICogICBhbmQgdW5tYXJzaGFsIG9iamVjdHMsIGFzIHdlbGwgYXMgbWFrZSBSUEMgY2FsbHMuXG4gKiBAcmV0dXJucyAtIEEgcHJveHkgbW9kdWxlIHRoYXQgZXhwb3J0cyB0aGUgQVBJIHNwZWNpZmllZCBieSB0aGUgZGVmaW5pdGlvblxuICovXG5leHBvcnQgZnVuY3Rpb24gZ2V0UHJveHkoc2VydmljZU5hbWU6IHN0cmluZywgZGVmaW5pdGlvblBhdGg6IHN0cmluZywgY2xpZW50T2JqZWN0OiBhbnkpOiBhbnkge1xuICBjb25zdCByZXNvbHZlZFBhdGggPSByZXNvbHZlUGF0aChkZWZpbml0aW9uUGF0aCk7XG4gIGNvbnN0IGRlZnMgPSBnZXREZWZpbml0aW9ucyhkZWZpbml0aW9uUGF0aCk7XG5cbiAgLy8gQ2FjaGUgcHJveHkgZmFjdG9yeSBmdW5jdGlvbnMgYnkgdGhlIHJlc29sdmVkIGRlZmluaXRpb24gZmlsZSBwYXRoLlxuICBpZiAoIXByb3hpZXNDYWNoZS5oYXMocmVzb2x2ZWRQYXRoKSkge1xuICAgIC8vIFRyYW5zcGlsZSB0aGlzIGNvZGUgKHNpbmNlIGl0IHdpbGwgdXNlIGFub255bW91cyBjbGFzc2VzIGFuZCBhcnJvdyBmdW5jdGlvbnMpLlxuICAgIGNvbnN0IGNvZGUgPSBnZW5lcmF0ZVByb3h5KHNlcnZpY2VOYW1lLCBkZWZzKTtcbiAgICBjb25zdCBmaWxlbmFtZSA9IHBhdGgucGFyc2UoZGVmaW5pdGlvblBhdGgpLm5hbWUgKyAnUHJveHkuanMnO1xuICAgIGNvbnN0IHRyYW5zcGlsZWQgPSBjcmVhdGVPckZldGNoRnJvbUNhY2hlKGNvZGUsIGZpbGVuYW1lKTtcblxuICAgIC8vIExvYWQgdGhlIG1vZHVsZSBkaXJlY3RseSBmcm9tIGEgc3RyaW5nLFxuICAgIGNvbnN0IG0gPSBuZXcgTW9kdWxlKCk7XG4gICAgLy8gYXMgaWYgaXQgd2VyZSBhIHNpYmxpbmcgdG8gdGhpcyBmaWxlLlxuICAgIG0uZmlsZW5hbWUgPSBtLmlkID0gcGF0aC5qb2luKF9fZGlybmFtZSwgZmlsZW5hbWUpO1xuICAgIC8vICRGbG93SXNzdWVcbiAgICBtLnBhdGhzID0gbW9kdWxlLnBhdGhzO1xuICAgIG0uX2NvbXBpbGUodHJhbnNwaWxlZCwgZmlsZW5hbWUpO1xuXG4gICAgLy8gQWRkIHRoZSBmYWN0b3J5IGZ1bmN0aW9uIHRvIGEgY2FjaGUuXG4gICAgcHJveGllc0NhY2hlLnNldChyZXNvbHZlZFBhdGgsIHtcbiAgICAgIGZhY3Rvcnk6IG0uZXhwb3J0cyxcbiAgICAgIHByb3hpZXM6IG5ldyBXZWFrTWFwKCksXG4gICAgfSk7XG4gIH1cblxuICAvLyBDYWNoZSByZW1vdGUgcHJveHkgbW9kdWxlcyBieSB0aGUgKGRlZmluaXRpb24gcGF0aCwgY2xpZW50IG9iamVjdCkgdHVwbGUuXG4gIGNvbnN0IGNhY2hlID0gcHJveGllc0NhY2hlLmdldChyZXNvbHZlZFBhdGgpO1xuICBpbnZhcmlhbnQoY2FjaGUgIT0gbnVsbCk7XG4gIGlmICghY2FjaGUucHJveGllcy5oYXMoY2xpZW50T2JqZWN0KSkge1xuICAgIGNhY2hlLnByb3hpZXMuc2V0KGNsaWVudE9iamVjdCwgY2FjaGUuZmFjdG9yeShjbGllbnRPYmplY3QpKTtcbiAgfVxuICByZXR1cm4gY2FjaGUucHJveGllcy5nZXQoY2xpZW50T2JqZWN0KTtcbn1cblxuLyoqXG4gKiBSZXNvbHZlIGRlZmluaXRpb25QYXRoIGJhc2VkIG9uIHRoZSBjYWxsZXIncyBtb2R1bGUsIGFuZCBmYWxsYmFjayB0b1xuICogdGhpcyBmaWxlJ3MgbW9kdWxlIGluIGNhc2UgbW9kdWxlLnBhcmVudCBkb2Vzbid0IGV4aXN0ICh3ZSBhcmUgdXNpbmcgcmVwbCkuXG4gKiBOb3RlIHRoYXQgYHJlcXVpcmUoJ21vZHVsZScpLl9yZXNvbHZlRmlsZW5hbWUocGF0aCwgbW9kdWxlKWAgaXMgZXF1aXZlbGVudCB0b1xuICogYHJlcXVpcmUucmVzb2x2ZShwYXRoKWAgdW5kZXIgdGhlIGNvbnRleHQgb2YgZ2l2ZW4gbW9kdWxlLlxuICovXG5mdW5jdGlvbiByZXNvbHZlUGF0aChkZWZpbml0aW9uUGF0aDogc3RyaW5nKTogc3RyaW5nIHtcbiAgLy8gJEZsb3dJc3N1ZVxuICByZXR1cm4gcmVxdWlyZSgnbW9kdWxlJykuX3Jlc29sdmVGaWxlbmFtZShkZWZpbml0aW9uUGF0aCwgbW9kdWxlLnBhcmVudCA/IG1vZHVsZS5wYXJlbnQgOiBtb2R1bGUpO1xufVxuXG4vLyBFeHBvcnQgY2FjaGVzIGZvciB0ZXN0aW5nLlxuZXhwb3J0IGNvbnN0IF9fdGVzdF9fID0ge1xuICBkZWZpbml0aW9uc0NhY2hlLFxuICBwcm94aWVzQ2FjaGUsXG59O1xuIl19

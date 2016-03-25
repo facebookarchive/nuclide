@@ -1,5 +1,17 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.flushLogsAndExit = flushLogsAndExit;
+exports.flushLogsAndAbort = flushLogsAndAbort;
+exports.updateConfig = updateConfig;
+exports.initialUpdateConfig = initialUpdateConfig;
+exports.getLogger = getLogger;
+exports.getCategoryLogger = getCategoryLogger;
+exports.getPathToLogFileForToday = getPathToLogFileForToday;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -16,29 +28,36 @@
  * To make sure we only have one instance of log4js logger initialized globally, we save the logger
  * to `global` object.
  */
-import addPrepareStackTraceHook from './stacktrace';
-import invariant from 'assert';
 
-import type {Logger} from './types';
+var _stacktrace = require('./stacktrace');
+
+var _stacktrace2 = _interopRequireDefault(_stacktrace);
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
 
 /* Listed in order of severity. */
-type Level = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 
-const DEFAULT_LOGGER_CATEGORY = 'nuclide';
-const INITIAL_UPDATE_CONFIG_KEY = '_initial_update_config_key_';
+var DEFAULT_LOGGER_CATEGORY = 'nuclide';
+var INITIAL_UPDATE_CONFIG_KEY = '_initial_update_config_key_';
 
-function getCategory(category: ?string): string {
+function getCategory(category) {
   return category ? category : DEFAULT_LOGGER_CATEGORY;
 }
 
-export function flushLogsAndExit(exitCode: number): void {
-  const log4js = require('log4js');
-  log4js.shutdown(() => process.exit(exitCode));
+function flushLogsAndExit(exitCode) {
+  var log4js = require('log4js');
+  log4js.shutdown(function () {
+    return process.exit(exitCode);
+  });
 }
 
-export function flushLogsAndAbort(): void {
-  const log4js = require('log4js');
-  log4js.shutdown(() => process.abort());
+function flushLogsAndAbort() {
+  var log4js = require('log4js');
+  log4js.shutdown(function () {
+    return process.abort();
+  });
 }
 
 /**
@@ -46,38 +65,43 @@ export function flushLogsAndAbort(): void {
  * log4js.getLogger() API internally should already provide singleton per category guarantee
  * see https://github.com/nomiddlename/log4js-node/blob/master/lib/log4js.js#L120 for details.
  */
-function getLog4jsLogger(category: string): Object {
-  const log4js = require('log4js');
+function getLog4jsLogger(category) {
+  var log4js = require('log4js');
   return log4js.getLogger(category);
 }
 
-export function updateConfig(config: any, options: any): void {
+function updateConfig(config, options) {
   // update config takes affect global to all existing and future loggers.
-  const log4js = require('log4js');
+  var log4js = require('log4js');
   log4js.configure(config, options);
 }
 
 // Create a lazy logger that will not initialize the underlying log4js logger until
 // `lazyLogger.$level(...)` is called. This way, another package could require nuclide-logging
 // during activation without worrying about introducing a significant startup cost.
-function createLazyLogger(category: string): Logger {
-  function createLazyLoggerMethod(level: Level): (...args: Array<any>) => mixed {
-    return function(...args: Array<any>) {
-      const logger = getLog4jsLogger(category);
-      invariant(logger);
+function createLazyLogger(category) {
+  function createLazyLoggerMethod(level) {
+    return function () {
+      var logger = getLog4jsLogger(category);
+      (0, _assert2['default'])(logger);
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
       logger[level].apply(logger, args);
     };
   }
 
-  function setLoggerLevelHelper(level: string): void {
-    const logger = getLog4jsLogger(category);
-    invariant(logger);
+  function setLoggerLevelHelper(level) {
+    var logger = getLog4jsLogger(category);
+    (0, _assert2['default'])(logger);
     logger.setLevel(level);
   }
 
-  function isLevelEnabledHelper(level: string): void {
-    const logger = getLog4jsLogger(category);
-    invariant(logger);
+  function isLevelEnabledHelper(level) {
+    var logger = getLog4jsLogger(category);
+    (0, _assert2['default'])(logger);
     return logger.isLevelEnabled(level);
   }
 
@@ -89,7 +113,7 @@ function createLazyLogger(category: string): Logger {
     trace: createLazyLoggerMethod('trace'),
     warn: createLazyLoggerMethod('warn'),
     isLevelEnabled: isLevelEnabledHelper,
-    setLevel: setLoggerLevelHelper,
+    setLevel: setLoggerLevelHelper
   };
 }
 
@@ -97,45 +121,35 @@ function createLazyLogger(category: string): Logger {
  * Push initial default config to log4js.
  * Execute only once.
  */
-export function initialUpdateConfig(): Promise<void> {
-  return require('../../nuclide-commons').singleton.get(
-    INITIAL_UPDATE_CONFIG_KEY,
-    async () => {
-      const defaultConfig = await require('./config').getDefaultConfig();
-      updateConfig(defaultConfig);
-    });
+
+function initialUpdateConfig() {
+  return require('../../nuclide-commons').singleton.get(INITIAL_UPDATE_CONFIG_KEY, _asyncToGenerator(function* () {
+    var defaultConfig = yield require('./config').getDefaultConfig();
+    updateConfig(defaultConfig);
+  }));
 }
 
 // Get Logger instance which is singleton per logger category.
-export function getLogger(category: ?string): Logger {
-  addPrepareStackTraceHook();
+
+function getLogger(category) {
+  (0, _stacktrace2['default'])();
   initialUpdateConfig();
 
-  const loggerCategory = getCategory(category);
-  return require('../../nuclide-commons').singleton.get(
-    loggerCategory,
-    () => {
-      return createLazyLogger(loggerCategory);
-    },
-  );
+  var loggerCategory = getCategory(category);
+  return require('../../nuclide-commons').singleton.get(loggerCategory, function () {
+    return createLazyLogger(loggerCategory);
+  });
 }
 
-export type CategoryLogger = {
-  log(message: string): void;
-  logInfo(message: string): void;
-  logError(message: string): void;
-  logErrorAndThrow(message: string): void;
-  setLogLevel(level: string): void;
-};
-
 // Utility function that returns a wrapper logger for input category.
-export function getCategoryLogger(category: string): CategoryLogger {
-  function setLogLevel(level: string): void {
+
+function getCategoryLogger(category) {
+  function setLogLevel(level) {
     getLogger(category).setLevel(level);
   }
 
-  function logHelper(level: string, message: string): void {
-    const logger = getLogger(category);
+  function logHelper(level, message) {
+    var logger = getLogger(category);
     // isLevelEnabled() is required to reduce the amount of logging to
     // log4js which greatly improves performance.
     if (logger.isLevelEnabled(level)) {
@@ -143,33 +157,34 @@ export function getCategoryLogger(category: string): CategoryLogger {
     }
   }
 
-  function log(message: string): void {
+  function log(message) {
     logHelper('debug', message);
   }
 
-  function logInfo(message: string): void {
+  function logInfo(message) {
     logHelper('info', message);
   }
 
-  function logError(message: string): void {
+  function logError(message) {
     logHelper('error', message);
   }
 
-  function logErrorAndThrow(message: string): void {
+  function logErrorAndThrow(message) {
     logError(message);
     logError(new Error().stack);
     throw new Error(message);
   }
 
   return {
-    log,
-    logInfo,
-    logError,
-    logErrorAndThrow,
-    setLogLevel,
+    log: log,
+    logInfo: logInfo,
+    logError: logError,
+    logErrorAndThrow: logErrorAndThrow,
+    setLogLevel: setLogLevel
   };
 }
 
-export function getPathToLogFileForToday(): string {
+function getPathToLogFileForToday() {
   return require('./config').getPathToLogFileForToday();
 }
+//# sourceMappingURL=data:application/json;base64,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QUFTLFFBQVEsQ0FBQyxPQUFlLEVBQVE7QUFDdkMsYUFBUyxDQUFDLE9BQU8sRUFBRSxPQUFPLENBQUMsQ0FBQztHQUM3Qjs7QUFFRCxXQUFTLGdCQUFnQixDQUFDLE9BQWUsRUFBUTtBQUMvQyxZQUFRLENBQUMsT0FBTyxDQUFDLENBQUM7QUFDbEIsWUFBUSxDQUFDLElBQUksS0FBSyxFQUFFLENBQUMsS0FBSyxDQUFDLENBQUM7QUFDNUIsVUFBTSxJQUFJLEtBQUssQ0FBQyxPQUFPLENBQUMsQ0FBQztHQUMxQjs7QUFFRCxTQUFPO0FBQ0wsT0FBRyxFQUFILEdBQUc7QUFDSCxXQUFPLEVBQVAsT0FBTztBQUNQLFlBQVEsRUFBUixRQUFRO0FBQ1Isb0JBQWdCLEVBQWhCLGdCQUFnQjtBQUNoQixlQUFXLEVBQVgsV0FBVztHQUNaLENBQUM7Q0FDSDs7QUFFTSxTQUFTLHdCQUF3QixHQUFXO0FBQ2pELFNBQU8sT0FBTyxDQUFDLFVBQVUsQ0FBQyxDQUFDLHdCQUF3QixFQUFFLENBQUM7Q0FDdkQiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbi8qKlxuICogVGhpcyBkZXNpZ25lZCBmb3IgbG9nZ2luZyBvbiBib3RoIE51Y2xpZGUgY2xpZW50IGFuZCBOdWNsaWRlIHNlcnZlci4gSXQgaXMgYmFzZWQgb24gW2xvZzRqc11cbiAqIChodHRwczovL3d3dy5ucG1qcy5jb20vcGFja2FnZS9sb2c0anMpIHdpdGggdGhlIGFiaWxpdHkgdG8gbGF6eSBpbml0aWFsaXplIGFuZCB1cGRhdGUgY29uZmlnXG4gKiBhZnRlciBpbml0aWFsaXplZC5cbiAqIFRvIG1ha2Ugc3VyZSB3ZSBvbmx5IGhhdmUgb25lIGluc3RhbmNlIG9mIGxvZzRqcyBsb2dnZXIgaW5pdGlhbGl6ZWQgZ2xvYmFsbHksIHdlIHNhdmUgdGhlIGxvZ2dlclxuICogdG8gYGdsb2JhbGAgb2JqZWN0LlxuICovXG5pbXBvcnQgYWRkUHJlcGFyZVN0YWNrVHJhY2VIb29rIGZyb20gJy4vc3RhY2t0cmFjZSc7XG5pbXBvcnQgaW52YXJpYW50IGZyb20gJ2Fzc2VydCc7XG5cbmltcG9ydCB0eXBlIHtMb2dnZXJ9IGZyb20gJy4vdHlwZXMnO1xuXG4vKiBMaXN0ZWQgaW4gb3JkZXIgb2Ygc2V2ZXJpdHkuICovXG50eXBlIExldmVsID0gJ3RyYWNlJyB8ICdkZWJ1ZycgfCAnaW5mbycgfCAnd2FybicgfCAnZXJyb3InIHwgJ2ZhdGFsJztcblxuY29uc3QgREVGQVVMVF9MT0dHRVJfQ0FURUdPUlkgPSAnbnVjbGlkZSc7XG5jb25zdCBJTklUSUFMX1VQREFURV9DT05GSUdfS0VZID0gJ19pbml0aWFsX3VwZGF0ZV9jb25maWdfa2V5Xyc7XG5cbmZ1bmN0aW9uIGdldENhdGVnb3J5KGNhdGVnb3J5OiA/c3RyaW5nKTogc3RyaW5nIHtcbiAgcmV0dXJuIGNhdGVnb3J5ID8gY2F0ZWdvcnkgOiBERUZBVUxUX0xPR0dFUl9DQVRFR09SWTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGZsdXNoTG9nc0FuZEV4aXQoZXhpdENvZGU6IG51bWJlcik6IHZvaWQge1xuICBjb25zdCBsb2c0anMgPSByZXF1aXJlKCdsb2c0anMnKTtcbiAgbG9nNGpzLnNodXRkb3duKCgpID0+IHByb2Nlc3MuZXhpdChleGl0Q29kZSkpO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gZmx1c2hMb2dzQW5kQWJvcnQoKTogdm9pZCB7XG4gIGNvbnN0IGxvZzRqcyA9IHJlcXVpcmUoJ2xvZzRqcycpO1xuICBsb2c0anMuc2h1dGRvd24oKCkgPT4gcHJvY2Vzcy5hYm9ydCgpKTtcbn1cblxuLyoqXG4gKiBHZXQgbG9nNGpzIGxvZ2dlciBpbnN0YW5jZSB3aGljaCBpcyBhbHNvIHNpbmdsZXRvbiBwZXIgY2F0ZWdvcnkuXG4gKiBsb2c0anMuZ2V0TG9nZ2VyKCkgQVBJIGludGVybmFsbHkgc2hvdWxkIGFscmVhZHkgcHJvdmlkZSBzaW5nbGV0b24gcGVyIGNhdGVnb3J5IGd1YXJhbnRlZVxuICogc2VlIGh0dHBzOi8vZ2l0aHViLmNvbS9ub21pZGRsZW5hbWUvbG9nNGpzLW5vZGUvYmxvYi9tYXN0ZXIvbGliL2xvZzRqcy5qcyNMMTIwIGZvciBkZXRhaWxzLlxuICovXG5mdW5jdGlvbiBnZXRMb2c0anNMb2dnZXIoY2F0ZWdvcnk6IHN0cmluZyk6IE9iamVjdCB7XG4gIGNvbnN0IGxvZzRqcyA9IHJlcXVpcmUoJ2xvZzRqcycpO1xuICByZXR1cm4gbG9nNGpzLmdldExvZ2dlcihjYXRlZ29yeSk7XG59XG5cbmV4cG9ydCBmdW5jdGlvbiB1cGRhdGVDb25maWcoY29uZmlnOiBhbnksIG9wdGlvbnM6IGFueSk6IHZvaWQge1xuICAvLyB1cGRhdGUgY29uZmlnIHRha2VzIGFmZmVjdCBnbG9iYWwgdG8gYWxsIGV4aXN0aW5nIGFuZCBmdXR1cmUgbG9nZ2Vycy5cbiAgY29uc3QgbG9nNGpzID0gcmVxdWlyZSgnbG9nNGpzJyk7XG4gIGxvZzRqcy5jb25maWd1cmUoY29uZmlnLCBvcHRpb25zKTtcbn1cblxuLy8gQ3JlYXRlIGEgbGF6eSBsb2dnZXIgdGhhdCB3aWxsIG5vdCBpbml0aWFsaXplIHRoZSB1bmRlcmx5aW5nIGxvZzRqcyBsb2dnZXIgdW50aWxcbi8vIGBsYXp5TG9nZ2VyLiRsZXZlbCguLi4pYCBpcyBjYWxsZWQuIFRoaXMgd2F5LCBhbm90aGVyIHBhY2thZ2UgY291bGQgcmVxdWlyZSBudWNsaWRlLWxvZ2dpbmdcbi8vIGR1cmluZyBhY3RpdmF0aW9uIHdpdGhvdXQgd29ycnlpbmcgYWJvdXQgaW50cm9kdWNpbmcgYSBzaWduaWZpY2FudCBzdGFydHVwIGNvc3QuXG5mdW5jdGlvbiBjcmVhdGVMYXp5TG9nZ2VyKGNhdGVnb3J5OiBzdHJpbmcpOiBMb2dnZXIge1xuICBmdW5jdGlvbiBjcmVhdGVMYXp5TG9nZ2VyTWV0aG9kKGxldmVsOiBMZXZlbCk6ICguLi5hcmdzOiBBcnJheTxhbnk+KSA9PiBtaXhlZCB7XG4gICAgcmV0dXJuIGZ1bmN0aW9uKC4uLmFyZ3M6IEFycmF5PGFueT4pIHtcbiAgICAgIGNvbnN0IGxvZ2dlciA9IGdldExvZzRqc0xvZ2dlcihjYXRlZ29yeSk7XG4gICAgICBpbnZhcmlhbnQobG9nZ2VyKTtcbiAgICAgIGxvZ2dlcltsZXZlbF0uYXBwbHkobG9nZ2VyLCBhcmdzKTtcbiAgICB9O1xuICB9XG5cbiAgZnVuY3Rpb24gc2V0TG9nZ2VyTGV2ZWxIZWxwZXIobGV2ZWw6IHN0cmluZyk6IHZvaWQge1xuICAgIGNvbnN0IGxvZ2dlciA9IGdldExvZzRqc0xvZ2dlcihjYXRlZ29yeSk7XG4gICAgaW52YXJpYW50KGxvZ2dlcik7XG4gICAgbG9nZ2VyLnNldExldmVsKGxldmVsKTtcbiAgfVxuXG4gIGZ1bmN0aW9uIGlzTGV2ZWxFbmFibGVkSGVscGVyKGxldmVsOiBzdHJpbmcpOiB2b2lkIHtcbiAgICBjb25zdCBsb2dnZXIgPSBnZXRMb2c0anNMb2dnZXIoY2F0ZWdvcnkpO1xuICAgIGludmFyaWFudChsb2dnZXIpO1xuICAgIHJldHVybiBsb2dnZXIuaXNMZXZlbEVuYWJsZWQobGV2ZWwpO1xuICB9XG5cbiAgcmV0dXJuIHtcbiAgICBkZWJ1ZzogY3JlYXRlTGF6eUxvZ2dlck1ldGhvZCgnZGVidWcnKSxcbiAgICBlcnJvcjogY3JlYXRlTGF6eUxvZ2dlck1ldGhvZCgnZXJyb3InKSxcbiAgICBmYXRhbDogY3JlYXRlTGF6eUxvZ2dlck1ldGhvZCgnZmF0YWwnKSxcbiAgICBpbmZvOiBjcmVhdGVMYXp5TG9nZ2VyTWV0aG9kKCdpbmZvJyksXG4gICAgdHJhY2U6IGNyZWF0ZUxhenlMb2dnZXJNZXRob2QoJ3RyYWNlJyksXG4gICAgd2FybjogY3JlYXRlTGF6eUxvZ2dlck1ldGhvZCgnd2FybicpLFxuICAgIGlzTGV2ZWxFbmFibGVkOiBpc0xldmVsRW5hYmxlZEhlbHBlcixcbiAgICBzZXRMZXZlbDogc2V0TG9nZ2VyTGV2ZWxIZWxwZXIsXG4gIH07XG59XG5cbi8qKlxuICogUHVzaCBpbml0aWFsIGRlZmF1bHQgY29uZmlnIHRvIGxvZzRqcy5cbiAqIEV4ZWN1dGUgb25seSBvbmNlLlxuICovXG5leHBvcnQgZnVuY3Rpb24gaW5pdGlhbFVwZGF0ZUNvbmZpZygpOiBQcm9taXNlPHZvaWQ+IHtcbiAgcmV0dXJuIHJlcXVpcmUoJy4uLy4uL251Y2xpZGUtY29tbW9ucycpLnNpbmdsZXRvbi5nZXQoXG4gICAgSU5JVElBTF9VUERBVEVfQ09ORklHX0tFWSxcbiAgICBhc3luYyAoKSA9PiB7XG4gICAgICBjb25zdCBkZWZhdWx0Q29uZmlnID0gYXdhaXQgcmVxdWlyZSgnLi9jb25maWcnKS5nZXREZWZhdWx0Q29uZmlnKCk7XG4gICAgICB1cGRhdGVDb25maWcoZGVmYXVsdENvbmZpZyk7XG4gICAgfSk7XG59XG5cbi8vIEdldCBMb2dnZXIgaW5zdGFuY2Ugd2hpY2ggaXMgc2luZ2xldG9uIHBlciBsb2dnZXIgY2F0ZWdvcnkuXG5leHBvcnQgZnVuY3Rpb24gZ2V0TG9nZ2VyKGNhdGVnb3J5OiA/c3RyaW5nKTogTG9nZ2VyIHtcbiAgYWRkUHJlcGFyZVN0YWNrVHJhY2VIb29rKCk7XG4gIGluaXRpYWxVcGRhdGVDb25maWcoKTtcblxuICBjb25zdCBsb2dnZXJDYXRlZ29yeSA9IGdldENhdGVnb3J5KGNhdGVnb3J5KTtcbiAgcmV0dXJuIHJlcXVpcmUoJy4uLy4uL251Y2xpZGUtY29tbW9ucycpLnNpbmdsZXRvbi5nZXQoXG4gICAgbG9nZ2VyQ2F0ZWdvcnksXG4gICAgKCkgPT4ge1xuICAgICAgcmV0dXJuIGNyZWF0ZUxhenlMb2dnZXIobG9nZ2VyQ2F0ZWdvcnkpO1xuICAgIH0sXG4gICk7XG59XG5cbmV4cG9ydCB0eXBlIENhdGVnb3J5TG9nZ2VyID0ge1xuICBsb2cobWVzc2FnZTogc3RyaW5nKTogdm9pZDtcbiAgbG9nSW5mbyhtZXNzYWdlOiBzdHJpbmcpOiB2b2lkO1xuICBsb2dFcnJvcihtZXNzYWdlOiBzdHJpbmcpOiB2b2lkO1xuICBsb2dFcnJvckFuZFRocm93KG1lc3NhZ2U6IHN0cmluZyk6IHZvaWQ7XG4gIHNldExvZ0xldmVsKGxldmVsOiBzdHJpbmcpOiB2b2lkO1xufTtcblxuLy8gVXRpbGl0eSBmdW5jdGlvbiB0aGF0IHJldHVybnMgYSB3cmFwcGVyIGxvZ2dlciBmb3IgaW5wdXQgY2F0ZWdvcnkuXG5leHBvcnQgZnVuY3Rpb24gZ2V0Q2F0ZWdvcnlMb2dnZXIoY2F0ZWdvcnk6IHN0cmluZyk6IENhdGVnb3J5TG9nZ2VyIHtcbiAgZnVuY3Rpb24gc2V0TG9nTGV2ZWwobGV2ZWw6IHN0cmluZyk6IHZvaWQge1xuICAgIGdldExvZ2dlcihjYXRlZ29yeSkuc2V0TGV2ZWwobGV2ZWwpO1xuICB9XG5cbiAgZnVuY3Rpb24gbG9nSGVscGVyKGxldmVsOiBzdHJpbmcsIG1lc3NhZ2U6IHN0cmluZyk6IHZvaWQge1xuICAgIGNvbnN0IGxvZ2dlciA9IGdldExvZ2dlcihjYXRlZ29yeSk7XG4gICAgLy8gaXNMZXZlbEVuYWJsZWQoKSBpcyByZXF1aXJlZCB0byByZWR1Y2UgdGhlIGFtb3VudCBvZiBsb2dnaW5nIHRvXG4gICAgLy8gbG9nNGpzIHdoaWNoIGdyZWF0bHkgaW1wcm92ZXMgcGVyZm9ybWFuY2UuXG4gICAgaWYgKGxvZ2dlci5pc0xldmVsRW5hYmxlZChsZXZlbCkpIHtcbiAgICAgIGxvZ2dlcltsZXZlbF0obWVzc2FnZSk7XG4gICAgfVxuICB9XG5cbiAgZnVuY3Rpb24gbG9nKG1lc3NhZ2U6IHN0cmluZyk6IHZvaWQge1xuICAgIGxvZ0hlbHBlcignZGVidWcnLCBtZXNzYWdlKTtcbiAgfVxuXG4gIGZ1bmN0aW9uIGxvZ0luZm8obWVzc2FnZTogc3RyaW5nKTogdm9pZCB7XG4gICAgbG9nSGVscGVyKCdpbmZvJywgbWVzc2FnZSk7XG4gIH1cblxuICBmdW5jdGlvbiBsb2dFcnJvcihtZXNzYWdlOiBzdHJpbmcpOiB2b2lkIHtcbiAgICBsb2dIZWxwZXIoJ2Vycm9yJywgbWVzc2FnZSk7XG4gIH1cblxuICBmdW5jdGlvbiBsb2dFcnJvckFuZFRocm93KG1lc3NhZ2U6IHN0cmluZyk6IHZvaWQge1xuICAgIGxvZ0Vycm9yKG1lc3NhZ2UpO1xuICAgIGxvZ0Vycm9yKG5ldyBFcnJvcigpLnN0YWNrKTtcbiAgICB0aHJvdyBuZXcgRXJyb3IobWVzc2FnZSk7XG4gIH1cblxuICByZXR1cm4ge1xuICAgIGxvZyxcbiAgICBsb2dJbmZvLFxuICAgIGxvZ0Vycm9yLFxuICAgIGxvZ0Vycm9yQW5kVGhyb3csXG4gICAgc2V0TG9nTGV2ZWwsXG4gIH07XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBnZXRQYXRoVG9Mb2dGaWxlRm9yVG9kYXkoKTogc3RyaW5nIHtcbiAgcmV0dXJuIHJlcXVpcmUoJy4vY29uZmlnJykuZ2V0UGF0aFRvTG9nRmlsZUZvclRvZGF5KCk7XG59XG4iXX0=

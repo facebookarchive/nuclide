@@ -1,60 +1,4 @@
-'use babel';
-/* @flow */
 
-/*
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- */
-
-import type {RevisionFileChanges} from './HgService';
-import type {NuclideUri} from '../../nuclide-remote-uri';
-
-const {asyncExecute} = require('../../nuclide-commons');
-const logger = require('../../nuclide-logging').getLogger();
-const path = require('path');
-import invariant from 'assert';
-
-const ALL_FILES_LABEL = 'files:';
-const FILE_ADDS_LABEL = 'file-adds:';
-const FILE_DELETES_LABEL = 'file-dels:';
-const FILE_COPIES_LABEL = 'file-copies:';
-const FILE_MODS_LABEL = 'file-mods:';
-const REVISION_FILE_CHANGES_TEMPLATE =
-`${ALL_FILES_LABEL} {files}
-${FILE_ADDS_LABEL} {file_adds}
-${FILE_DELETES_LABEL} {file_dels}
-${FILE_COPIES_LABEL} {file_copies}
-${FILE_MODS_LABEL} {file_mods}`;
-// Regex for: "new_file (previous_file", with two capture groups, one for each file.
-const COPIED_FILE_PAIR_REGEX = /(.+) \((.+)/;
-
-
-/**
- * @param filePath An absolute path to a file.
- * @param revision A string representation of the revision desired. See
- * Mercurial documentation for ways to specify a revision.
- * @param The working directory (aka root directory) of the Hg repository.
- * @return The content of the filePath at the given revision. Returns null
- * if the operation fails for whatever reason, including invalid input (e.g. if
- * you pass a filePath that does not exist at the given revision).
- */
-function fetchFileContentAtRevision(
-  filePath: NuclideUri,
-  revision: ?string,
-  workingDirectory: string,
-): Promise<?string> {
-  const args = ['cat', filePath];
-  if (revision) {
-    args.splice(1, 0, '--rev', revision);
-  }
-  const execOptions = {
-    cwd: workingDirectory,
-  };
-  return hgAsyncExecute(args, execOptions);
-}
 
 /**
  * @param revision A string representation of the revision desired. See
@@ -63,15 +7,13 @@ function fetchFileContentAtRevision(
  * if the operation fails for whatever reason, including invalid input (e.g. if
  * you pass an invalid revision).
  */
-async function fetchFilesChangedAtRevision(
-  revision: string,
-  workingDirectory: string,
-): Promise<?RevisionFileChanges> {
-  const args = ['log', '--template', REVISION_FILE_CHANGES_TEMPLATE, '--rev', revision];
-  const execOptions = {
-    cwd: workingDirectory,
+
+var fetchFilesChangedAtRevision = _asyncToGenerator(function* (revision, workingDirectory) {
+  var args = ['log', '--template', REVISION_FILE_CHANGES_TEMPLATE, '--rev', revision];
+  var execOptions = {
+    cwd: workingDirectory
   };
-  let output = await hgAsyncExecute(args, execOptions);
+  var output = yield hgAsyncExecute(args, execOptions);
   if (output) {
     output = parseRevisionFileChangeOutput(output, workingDirectory);
   }
@@ -83,41 +25,101 @@ async function fetchFilesChangedAtRevision(
  * @param workingDirectory The absolute path to the working directory of the hg repository.
  * @return A RevisionFileChanges object where the paths are all absolute paths.
  */
-function parseRevisionFileChangeOutput(
-  output: string,
-  workingDirectory: string,
-): RevisionFileChanges {
-  const lines = output.trim().split('\n');
-  let allFiles = lines[0].slice(ALL_FILES_LABEL.length + 1).trim();
+);
+
+var hgAsyncExecute = _asyncToGenerator(function* (args, execOptions) {
+  var output = undefined;
+  try {
+    output = yield asyncExecute('hg', args, execOptions);
+  } catch (e) {
+    logger.error('Hg command: failed with error: ', e.stderr);
+    return null;
+  }
+  return output.stdout;
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _require = require('../../nuclide-commons');
+
+var asyncExecute = _require.asyncExecute;
+
+var logger = require('../../nuclide-logging').getLogger();
+var path = require('path');
+
+var ALL_FILES_LABEL = 'files:';
+var FILE_ADDS_LABEL = 'file-adds:';
+var FILE_DELETES_LABEL = 'file-dels:';
+var FILE_COPIES_LABEL = 'file-copies:';
+var FILE_MODS_LABEL = 'file-mods:';
+var REVISION_FILE_CHANGES_TEMPLATE = ALL_FILES_LABEL + ' {files}\n' + FILE_ADDS_LABEL + ' {file_adds}\n' + FILE_DELETES_LABEL + ' {file_dels}\n' + FILE_COPIES_LABEL + ' {file_copies}\n' + FILE_MODS_LABEL + ' {file_mods}';
+// Regex for: "new_file (previous_file", with two capture groups, one for each file.
+var COPIED_FILE_PAIR_REGEX = /(.+) \((.+)/;
+
+/**
+ * @param filePath An absolute path to a file.
+ * @param revision A string representation of the revision desired. See
+ * Mercurial documentation for ways to specify a revision.
+ * @param The working directory (aka root directory) of the Hg repository.
+ * @return The content of the filePath at the given revision. Returns null
+ * if the operation fails for whatever reason, including invalid input (e.g. if
+ * you pass a filePath that does not exist at the given revision).
+ */
+function fetchFileContentAtRevision(filePath, revision, workingDirectory) {
+  var args = ['cat', filePath];
+  if (revision) {
+    args.splice(1, 0, '--rev', revision);
+  }
+  var execOptions = {
+    cwd: workingDirectory
+  };
+  return hgAsyncExecute(args, execOptions);
+}function parseRevisionFileChangeOutput(output, workingDirectory) {
+  var lines = output.trim().split('\n');
+  var allFiles = lines[0].slice(ALL_FILES_LABEL.length + 1).trim();
   allFiles = allFiles.length ? allFiles.split(' ') : [];
   allFiles = absolutizeAll(allFiles, workingDirectory);
 
-  let addedFiles = lines[1].slice(FILE_ADDS_LABEL.length + 1).trim();
+  var addedFiles = lines[1].slice(FILE_ADDS_LABEL.length + 1).trim();
   addedFiles = addedFiles.length ? addedFiles.split(' ') : [];
   addedFiles = absolutizeAll(addedFiles, workingDirectory);
 
-  let deletedFiles = lines[2].slice(FILE_DELETES_LABEL.length + 1).trim();
+  var deletedFiles = lines[2].slice(FILE_DELETES_LABEL.length + 1).trim();
   deletedFiles = deletedFiles.length ? deletedFiles.split(' ') : [];
   deletedFiles = absolutizeAll(deletedFiles, workingDirectory);
 
   // Copied files are in the form: new_file (previous_file)new_file2 (previous_file2)[...]
   // There is no space between entries.
-  let copiedFiles = lines[3].slice(FILE_COPIES_LABEL.length + 1).trim();
+  var copiedFiles = lines[3].slice(FILE_COPIES_LABEL.length + 1).trim();
   copiedFiles = copiedFiles.length ? copiedFiles.split(')') : [];
   // We expect the string to end with a ')', so the last entry in copiedFiles will
   // be an empty string. Remove this.
   copiedFiles.pop();
   // Parse the lines, now in the form: new_file (previous_file)
-  copiedFiles = copiedFiles.map(filePathPair => {
-    const fileNameMatches = filePathPair.match(COPIED_FILE_PAIR_REGEX);
-    invariant(fileNameMatches);
+  copiedFiles = copiedFiles.map(function (filePathPair) {
+    var fileNameMatches = filePathPair.match(COPIED_FILE_PAIR_REGEX);
+    (0, _assert2['default'])(fileNameMatches);
     return {
       from: absolutize(fileNameMatches[2], workingDirectory),
-      to: absolutize(fileNameMatches[1], workingDirectory),
+      to: absolutize(fileNameMatches[1], workingDirectory)
     };
   });
 
-  let modifiedFiles = lines[4].slice(FILE_MODS_LABEL.length + 1).trim();
+  var modifiedFiles = lines[4].slice(FILE_MODS_LABEL.length + 1).trim();
   modifiedFiles = modifiedFiles.length ? modifiedFiles.split(' ') : [];
   modifiedFiles = absolutizeAll(modifiedFiles, workingDirectory);
 
@@ -126,32 +128,23 @@ function parseRevisionFileChangeOutput(
     added: addedFiles,
     deleted: deletedFiles,
     copied: copiedFiles,
-    modified: modifiedFiles,
+    modified: modifiedFiles
   };
 }
 
-
-async function hgAsyncExecute(args: Array<string>, execOptions: any): Promise<any> {
-  let output;
-  try {
-    output = await asyncExecute('hg', args, execOptions);
-  } catch (e) {
-    logger.error('Hg command: failed with error: ', e.stderr);
-    return null;
-  }
-  return output.stdout;
-}
-
-function absolutize(filePath: string, workingDirectory: string): string {
+function absolutize(filePath, workingDirectory) {
   return path.join(workingDirectory, filePath);
 }
 
-function absolutizeAll(filePaths: Array<string>, workingDirectory: string) {
-  return filePaths.map(filePath => absolutize(filePath, workingDirectory));
+function absolutizeAll(filePaths, workingDirectory) {
+  return filePaths.map(function (filePath) {
+    return absolutize(filePath, workingDirectory);
+  });
 }
 
 module.exports = {
-  fetchFileContentAtRevision,
-  fetchFilesChangedAtRevision,
-  parseRevisionFileChangeOutput, // exposed for testing
-};
+  fetchFileContentAtRevision: fetchFileContentAtRevision,
+  fetchFilesChangedAtRevision: fetchFilesChangedAtRevision,
+  parseRevisionFileChangeOutput: parseRevisionFileChangeOutput };
+// exposed for testing
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImhnLXJldmlzaW9uLXN0YXRlLWhlbHBlcnMuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztJQWlFZSwyQkFBMkIscUJBQTFDLFdBQ0UsUUFBZ0IsRUFDaEIsZ0JBQXdCLEVBQ087QUFDL0IsTUFBTSxJQUFJLEdBQUcsQ0FBQyxLQUFLLEVBQUUsWUFBWSxFQUFFLDhCQUE4QixFQUFFLE9BQU8sRUFBRSxRQUFRLENBQUMsQ0FBQztBQUN0RixNQUFNLFdBQVcsR0FBRztBQUNsQixPQUFHLEVBQUUsZ0JBQWdCO0dBQ3RCLENBQUM7QUFDRixNQUFJLE1BQU0sR0FBRyxNQUFNLGNBQWMsQ0FBQyxJQUFJLEVBQUUsV0FBVyxDQUFDLENBQUM7QUFDckQsTUFBSSxNQUFNLEVBQUU7QUFDVixVQUFNLEdBQUcsNkJBQTZCLENBQUMsTUFBTSxFQUFFLGdCQUFnQixDQUFDLENBQUM7R0FDbEU7QUFDRCxTQUFPLE1BQU0sQ0FBQztDQUNmOzs7Ozs7Ozs7SUF1RGMsY0FBYyxxQkFBN0IsV0FBOEIsSUFBbUIsRUFBRSxXQUFnQixFQUFnQjtBQUNqRixNQUFJLE1BQU0sWUFBQSxDQUFDO0FBQ1gsTUFBSTtBQUNGLFVBQU0sR0FBRyxNQUFNLFlBQVksQ0FBQyxJQUFJLEVBQUUsSUFBSSxFQUFFLFdBQVcsQ0FBQyxDQUFDO0dBQ3RELENBQUMsT0FBTyxDQUFDLEVBQUU7QUFDVixVQUFNLENBQUMsS0FBSyxDQUFDLGlDQUFpQyxFQUFFLENBQUMsQ0FBQyxNQUFNLENBQUMsQ0FBQztBQUMxRCxXQUFPLElBQUksQ0FBQztHQUNiO0FBQ0QsU0FBTyxNQUFNLENBQUMsTUFBTSxDQUFDO0NBQ3RCOzs7Ozs7Ozs7Ozs7OztzQkE3SHFCLFFBQVE7Ozs7ZUFIUCxPQUFPLENBQUMsdUJBQXVCLENBQUM7O0lBQWhELFlBQVksWUFBWixZQUFZOztBQUNuQixJQUFNLE1BQU0sR0FBRyxPQUFPLENBQUMsdUJBQXVCLENBQUMsQ0FBQyxTQUFTLEVBQUUsQ0FBQztBQUM1RCxJQUFN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LDJCQUEyQjtBQUMzQiwrQkFBNkIsRUFBN0IsNkJBQTZCLEVBQzlCLENBQUMiLCJmaWxlIjoiaGctcmV2aXNpb24tc3RhdGUtaGVscGVycy5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtSZXZpc2lvbkZpbGVDaGFuZ2VzfSBmcm9tICcuL0hnU2VydmljZSc7XG5pbXBvcnQgdHlwZSB7TnVjbGlkZVVyaX0gZnJvbSAnLi4vLi4vbnVjbGlkZS1yZW1vdGUtdXJpJztcblxuY29uc3Qge2FzeW5jRXhlY3V0ZX0gPSByZXF1aXJlKCcuLi8uLi9udWNsaWRlLWNvbW1vbnMnKTtcbmNvbnN0IGxvZ2dlciA9IHJlcXVpcmUoJy4uLy4uL251Y2xpZGUtbG9nZ2luZycpLmdldExvZ2dlcigpO1xuY29uc3QgcGF0aCA9IHJlcXVpcmUoJ3BhdGgnKTtcbmltcG9ydCBpbnZhcmlhbnQgZnJvbSAnYXNzZXJ0JztcblxuY29uc3QgQUxMX0ZJTEVTX0xBQkVMID0gJ2ZpbGVzOic7XG5jb25zdCBGSUxFX0FERFNfTEFCRUwgPSAnZmlsZS1hZGRzOic7XG5jb25zdCBGSUxFX0RFTEVURVNfTEFCRUwgPSAnZmlsZS1kZWxzOic7XG5jb25zdCBGSUxFX0NPUElFU19MQUJFTCA9ICdmaWxlLWNvcGllczonO1xuY29uc3QgRklMRV9NT0RTX0xBQkVMID0gJ2ZpbGUtbW9kczonO1xuY29uc3QgUkVWSVNJT05fRklMRV9DSEFOR0VTX1RFTVBMQVRFID1cbmAke0FMTF9GSUxFU19MQUJFTH0ge2ZpbGVzfVxuJHtGSUxFX0FERFNfTEFCRUx9IHtmaWxlX2FkZHN9XG4ke0ZJTEVfREVMRVRFU19MQUJFTH0ge2ZpbGVfZGVsc31cbiR7RklMRV9DT1BJRVNfTEFCRUx9IHtmaWxlX2NvcGllc31cbiR7RklMRV9NT0RTX0xBQkVMfSB7ZmlsZV9tb2RzfWA7XG4vLyBSZWdleCBmb3I6IFwibmV3X2ZpbGUgKHByZXZpb3VzX2ZpbGVcIiwgd2l0aCB0d28gY2FwdHVyZSBncm91cHMsIG9uZSBmb3IgZWFjaCBmaWxlLlxuY29uc3QgQ09QSUVEX0ZJTEVfUEFJUl9SRUdFWCA9IC8oLispIFxcKCguKykvO1xuXG5cbi8qKlxuICogQHBhcmFtIGZpbGVQYXRoIEFuIGFic29sdXRlIHBhdGggdG8gYSBmaWxlLlxuICogQHBhcmFtIHJldmlzaW9uIEEgc3RyaW5nIHJlcHJlc2VudGF0aW9uIG9mIHRoZSByZXZpc2lvbiBkZXNpcmVkLiBTZWVcbiAqIE1lcmN1cmlhbCBkb2N1bWVudGF0aW9uIGZvciB3YXlzIHRvIHNwZWNpZnkgYSByZXZpc2lvbi5cbiAqIEBwYXJhbSBUaGUgd29ya2luZyBkaXJlY3RvcnkgKGFrYSByb290IGRpcmVjdG9yeSkgb2YgdGhlIEhnIHJlcG9zaXRvcnkuXG4gKiBAcmV0dXJuIFRoZSBjb250ZW50IG9mIHRoZSBmaWxlUGF0aCBhdCB0aGUgZ2l2ZW4gcmV2aXNpb24uIFJldHVybnMgbnVsbFxuICogaWYgdGhlIG9wZXJhdGlvbiBmYWlscyBmb3Igd2hhdGV2ZXIgcmVhc29uLCBpbmNsdWRpbmcgaW52YWxpZCBpbnB1dCAoZS5nLiBpZlxuICogeW91IHBhc3MgYSBmaWxlUGF0aCB0aGF0IGRvZXMgbm90IGV4aXN0IGF0IHRoZSBnaXZlbiByZXZpc2lvbikuXG4gKi9cbmZ1bmN0aW9uIGZldGNoRmlsZUNvbnRlbnRBdFJldmlzaW9uKFxuICBmaWxlUGF0aDogTnVjbGlkZVVyaSxcbiAgcmV2aXNpb246ID9zdHJpbmcsXG4gIHdvcmtpbmdEaXJlY3Rvcnk6IHN0cmluZyxcbik6IFByb21pc2U8P3N0cmluZz4ge1xuICBjb25zdCBhcmdzID0gWydjYXQnLCBmaWxlUGF0aF07XG4gIGlmIChyZXZpc2lvbikge1xuICAgIGFyZ3Muc3BsaWNlKDEsIDAsICctLXJldicsIHJldmlzaW9uKTtcbiAgfVxuICBjb25zdCBleGVjT3B0aW9ucyA9IHtcbiAgICBjd2Q6IHdvcmtpbmdEaXJlY3RvcnksXG4gIH07XG4gIHJldHVybiBoZ0FzeW5jRXhlY3V0ZShhcmdzLCBleGVjT3B0aW9ucyk7XG59XG5cbi8qKlxuICogQHBhcmFtIHJldmlzaW9uIEEgc3RyaW5nIHJlcHJlc2VudGF0aW9uIG9mIHRoZSByZXZpc2lvbiBkZXNpcmVkLiBTZWVcbiAqIE1lcmN1cmlhbCBkb2N1bWVudGF0aW9uIGZvciB3YXlzIHRvIHNwZWNpZnkgYSByZXZpc2lvbi5cbiAqIEByZXR1cm4gVGhlIGNvbnRlbnQgb2YgdGhlIGZpbGVQYXRoIGF0IHRoZSBnaXZlbiByZXZpc2lvbi4gUmV0dXJucyBudWxsXG4gKiBpZiB0aGUgb3BlcmF0aW9uIGZhaWxzIGZvciB3aGF0ZXZlciByZWFzb24sIGluY2x1ZGluZyBpbnZhbGlkIGlucHV0IChlLmcuIGlmXG4gKiB5b3UgcGFzcyBhbiBpbnZhbGlkIHJldmlzaW9uKS5cbiAqL1xuYXN5bmMgZnVuY3Rpb24gZmV0Y2hGaWxlc0NoYW5nZWRBdFJldmlzaW9uKFxuICByZXZpc2lvbjogc3RyaW5nLFxuICB3b3JraW5nRGlyZWN0b3J5OiBzdHJpbmcsXG4pOiBQcm9taXNlPD9SZXZpc2lvbkZpbGVDaGFuZ2VzPiB7XG4gIGNvbnN0IGFyZ3MgPSBbJ2xvZycsICctLXRlbXBsYXRlJywgUkVWSVNJT05fRklMRV9DSEFOR0VTX1RFTVBMQVRFLCAnLS1yZXYnLCByZXZpc2lvbl07XG4gIGNvbnN0IGV4ZWNPcHRpb25zID0ge1xuICAgIGN3ZDogd29ya2luZ0RpcmVjdG9yeSxcbiAgfTtcbiAgbGV0IG91dHB1dCA9IGF3YWl0IGhnQXN5bmNFeGVjdXRlKGFyZ3MsIGV4ZWNPcHRpb25zKTtcbiAgaWYgKG91dHB1dCkge1xuICAgIG91dHB1dCA9IHBhcnNlUmV2aXNpb25GaWxlQ2hhbmdlT3V0cHV0KG91dHB1dCwgd29ya2luZ0RpcmVjdG9yeSk7XG4gIH1cbiAgcmV0dXJuIG91dHB1dDtcbn1cblxuLyoqXG4gKiBAcGFyYW0gb3V0cHV0IFJhdyBvdXRwdXQgc3RyaW5nIGZyb20gJ2hnIGxvZycgY2FsbCBpbiBgZmV0Y2hGaWxlc0NoYW5nZWRBdFJldmlzaW9uYC5cbiAqIEBwYXJhbSB3b3JraW5nRGlyZWN0b3J5IFRoZSBhYnNvbHV0ZSBwYXRoIHRvIHRoZSB3b3JraW5nIGRpcmVjdG9yeSBvZiB0aGUgaGcgcmVwb3NpdG9yeS5cbiAqIEByZXR1cm4gQSBSZXZpc2lvbkZpbGVDaGFuZ2VzIG9iamVjdCB3aGVyZSB0aGUgcGF0aHMgYXJlIGFsbCBhYnNvbHV0ZSBwYXRocy5cbiAqL1xuZnVuY3Rpb24gcGFyc2VSZXZpc2lvbkZpbGVDaGFuZ2VPdXRwdXQoXG4gIG91dHB1dDogc3RyaW5nLFxuICB3b3JraW5nRGlyZWN0b3J5OiBzdHJpbmcsXG4pOiBSZXZpc2lvbkZpbGVDaGFuZ2VzIHtcbiAgY29uc3QgbGluZXMgPSBvdXRwdXQudHJpbSgpLnNwbGl0KCdcXG4nKTtcbiAgbGV0IGFsbEZpbGVzID0gbGluZXNbMF0uc2xpY2UoQUxMX0ZJTEVTX0xBQkVMLmxlbmd0aCArIDEpLnRyaW0oKTtcbiAgYWxsRmlsZXMgPSBhbGxGaWxlcy5sZW5ndGggPyBhbGxGaWxlcy5zcGxpdCgnICcpIDogW107XG4gIGFsbEZpbGVzID0gYWJzb2x1dGl6ZUFsbChhbGxGaWxlcywgd29ya2luZ0RpcmVjdG9yeSk7XG5cbiAgbGV0IGFkZGVkRmlsZXMgPSBsaW5lc1sxXS5zbGljZShGSUxFX0FERFNfTEFCRUwubGVuZ3RoICsgMSkudHJpbSgpO1xuICBhZGRlZEZpbGVzID0gYWRkZWRGaWxlcy5sZW5ndGggPyBhZGRlZEZpbGVzLnNwbGl0KCcgJykgOiBbXTtcbiAgYWRkZWRGaWxlcyA9IGFic29sdXRpemVBbGwoYWRkZWRGaWxlcywgd29ya2luZ0RpcmVjdG9yeSk7XG5cbiAgbGV0IGRlbGV0ZWRGaWxlcyA9IGxpbmVzWzJdLnNsaWNlKEZJTEVfREVMRVRFU19MQUJFTC5sZW5ndGggKyAxKS50cmltKCk7XG4gIGRlbGV0ZWRGaWxlcyA9IGRlbGV0ZWRGaWxlcy5sZW5ndGggPyBkZWxldGVkRmlsZXMuc3BsaXQoJyAnKSA6IFtdO1xuICBkZWxldGVkRmlsZXMgPSBhYnNvbHV0aXplQWxsKGRlbGV0ZWRGaWxlcywgd29ya2luZ0RpcmVjdG9yeSk7XG5cbiAgLy8gQ29waWVkIGZpbGVzIGFyZSBpbiB0aGUgZm9ybTogbmV3X2ZpbGUgKHByZXZpb3VzX2ZpbGUpbmV3X2ZpbGUyIChwcmV2aW91c19maWxlMilbLi4uXVxuICAvLyBUaGVyZSBpcyBubyBzcGFjZSBiZXR3ZWVuIGVudHJpZXMuXG4gIGxldCBjb3BpZWRGaWxlcyA9IGxpbmVzWzNdLnNsaWNlKEZJTEVfQ09QSUVTX0xBQkVMLmxlbmd0aCArIDEpLnRyaW0oKTtcbiAgY29waWVkRmlsZXMgPSBjb3BpZWRGaWxlcy5sZW5ndGggPyBjb3BpZWRGaWxlcy5zcGxpdCgnKScpIDogW107XG4gIC8vIFdlIGV4cGVjdCB0aGUgc3RyaW5nIHRvIGVuZCB3aXRoIGEgJyknLCBzbyB0aGUgbGFzdCBlbnRyeSBpbiBjb3BpZWRGaWxlcyB3aWxsXG4gIC8vIGJlIGFuIGVtcHR5IHN0cmluZy4gUmVtb3ZlIHRoaXMuXG4gIGNvcGllZEZpbGVzLnBvcCgpO1xuICAvLyBQYXJzZSB0aGUgbGluZXMsIG5vdyBpbiB0aGUgZm9ybTogbmV3X2ZpbGUgKHByZXZpb3VzX2ZpbGUpXG4gIGNvcGllZEZpbGVzID0gY29waWVkRmlsZXMubWFwKGZpbGVQYXRoUGFpciA9PiB7XG4gICAgY29uc3QgZmlsZU5hbWVNYXRjaGVzID0gZmlsZVBhdGhQYWlyLm1hdGNoKENPUElFRF9GSUxFX1BBSVJfUkVHRVgpO1xuICAgIGludmFyaWFudChmaWxlTmFtZU1hdGNoZXMpO1xuICAgIHJldHVybiB7XG4gICAgICBmcm9tOiBhYnNvbHV0aXplKGZpbGVOYW1lTWF0Y2hlc1syXSwgd29ya2luZ0RpcmVjdG9yeSksXG4gICAgICB0bzogYWJzb2x1dGl6ZShmaWxlTmFtZU1hdGNoZXNbMV0sIHdvcmtpbmdEaXJlY3RvcnkpLFxuICAgIH07XG4gIH0pO1xuXG4gIGxldCBtb2RpZmllZEZpbGVzID0gbGluZXNbNF0uc2xpY2UoRklMRV9NT0RTX0xBQkVMLmxlbmd0aCArIDEpLnRyaW0oKTtcbiAgbW9kaWZpZWRGaWxlcyA9IG1vZGlmaWVkRmlsZXMubGVuZ3RoID8gbW9kaWZpZWRGaWxlcy5zcGxpdCgnICcpIDogW107XG4gIG1vZGlmaWVkRmlsZXMgPSBhYnNvbHV0aXplQWxsKG1vZGlmaWVkRmlsZXMsIHdvcmtpbmdEaXJlY3RvcnkpO1xuXG4gIHJldHVybiB7XG4gICAgYWxsOiBhbGxGaWxlcyxcbiAgICBhZGRlZDogYWRkZWRGaWxlcyxcbiAgICBkZWxldGVkOiBkZWxldGVkRmlsZXMsXG4gICAgY29waWVkOiBjb3BpZWRGaWxlcyxcbiAgICBtb2RpZmllZDogbW9kaWZpZWRGaWxlcyxcbiAgfTtcbn1cblxuXG5hc3luYyBmdW5jdGlvbiBoZ0FzeW5jRXhlY3V0ZShhcmdzOiBBcnJheTxzdHJpbmc+LCBleGVjT3B0aW9uczogYW55KTogUHJvbWlzZTxhbnk+IHtcbiAgbGV0IG91dHB1dDtcbiAgdHJ5IHtcbiAgICBvdXRwdXQgPSBhd2FpdCBhc3luY0V4ZWN1dGUoJ2hnJywgYXJncywgZXhlY09wdGlvbnMpO1xuICB9IGNhdGNoIChlKSB7XG4gICAgbG9nZ2VyLmVycm9yKCdIZyBjb21tYW5kOiBmYWlsZWQgd2l0aCBlcnJvcjogJywgZS5zdGRlcnIpO1xuICAgIHJldHVybiBudWxsO1xuICB9XG4gIHJldHVybiBvdXRwdXQuc3Rkb3V0O1xufVxuXG5mdW5jdGlvbiBhYnNvbHV0aXplKGZpbGVQYXRoOiBzdHJpbmcsIHdvcmtpbmdEaXJlY3Rvcnk6IHN0cmluZyk6IHN0cmluZyB7XG4gIHJldHVybiBwYXRoLmpvaW4od29ya2luZ0RpcmVjdG9yeSwgZmlsZVBhdGgpO1xufVxuXG5mdW5jdGlvbiBhYnNvbHV0aXplQWxsKGZpbGVQYXRoczogQXJyYXk8c3RyaW5nPiwgd29ya2luZ0RpcmVjdG9yeTogc3RyaW5nKSB7XG4gIHJldHVybiBmaWxlUGF0aHMubWFwKGZpbGVQYXRoID0+IGFic29sdXRpemUoZmlsZVBhdGgsIHdvcmtpbmdEaXJlY3RvcnkpKTtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSB7XG4gIGZldGNoRmlsZUNvbnRlbnRBdFJldmlzaW9uLFxuICBmZXRjaEZpbGVzQ2hhbmdlZEF0UmV2aXNpb24sXG4gIHBhcnNlUmV2aXNpb25GaWxlQ2hhbmdlT3V0cHV0LCAvLyBleHBvc2VkIGZvciB0ZXN0aW5nXG59O1xuIl19

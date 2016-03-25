@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +10,18 @@
  * the root directory of this source tree.
  */
 
-import type {
-  ClangCompileResult,
-  ClangCompletionsResult,
-  ClangDeclarationResult,
-} from '../../nuclide-clang';
+var _nuclideFeatureConfig = require('../../nuclide-feature-config');
 
-import featureConfig from '../../nuclide-feature-config';
-import invariant from 'assert';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+var _nuclideFeatureConfig2 = _interopRequireDefault(_nuclideFeatureConfig);
 
-type NuclideClangConfig = {
-  enableDefaultFlags: boolean;
-  defaultFlags: Array<string>;
-};
+var _assert = require('assert');
 
-function getDefaultFlags(): ?Array<string> {
-  const config: NuclideClangConfig = (featureConfig.get('nuclide-clang-atom'): any);
+var _assert2 = _interopRequireDefault(_assert);
+
+var _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+
+function getDefaultFlags() {
+  var config = _nuclideFeatureConfig2['default'].get('nuclide-clang-atom');
   if (!config.enableDefaultFlags) {
     return null;
   }
@@ -34,86 +30,67 @@ function getDefaultFlags(): ?Array<string> {
 
 module.exports = {
 
-  async getDiagnostics(editor: atom$TextEditor): Promise<?ClangCompileResult> {
-    const src = editor.getPath();
-    const contents = editor.getText();
+  getDiagnostics: _asyncToGenerator(function* (editor) {
+    var src = editor.getPath();
+    var contents = editor.getText();
 
-    const defaultFlags = getDefaultFlags();
-    const service = getServiceByNuclideUri('ClangService', src);
-    invariant(service);
+    var defaultFlags = getDefaultFlags();
+    var service = (0, _nuclideRemoteConnection.getServiceByNuclideUri)('ClangService', src);
+    (0, _assert2['default'])(service);
 
-    return service
-        .compile(src, contents, defaultFlags)
-        .toPromise();
-  },
+    return service.compile(src, contents, defaultFlags).toPromise();
+  }),
 
-  async getCompletions(editor: atom$TextEditor, prefix: string): Promise<?ClangCompletionsResult> {
-    const src = editor.getPath();
-    const cursor = editor.getLastCursor();
+  getCompletions: _asyncToGenerator(function* (editor, prefix) {
+    var src = editor.getPath();
+    var cursor = editor.getLastCursor();
 
-    const line = cursor.getBufferRow();
-    const column = cursor.getBufferColumn();
-    const tokenStartColumn = column - prefix.length;
+    var line = cursor.getBufferRow();
+    var column = cursor.getBufferColumn();
+    var tokenStartColumn = column - prefix.length;
 
-    const defaultFlags = getDefaultFlags();
-    const service = getServiceByNuclideUri('ClangService', src);
-    invariant(service);
+    var defaultFlags = getDefaultFlags();
+    var service = (0, _nuclideRemoteConnection.getServiceByNuclideUri)('ClangService', src);
+    (0, _assert2['default'])(service);
 
-    return service
-      .getCompletions(
-        src,
-        editor.getText(),
-        line,
-        column,
-        tokenStartColumn,
-        prefix,
-        defaultFlags,
-      );
-  },
+    return service.getCompletions(src, editor.getText(), line, column, tokenStartColumn, prefix, defaultFlags);
+  }),
 
   /**
    * If a location can be found for the declaration, it will be available via
    * the 'location' field on the returned object.
    */
-  async getDeclaration(
-    editor: atom$TextEditor,
-    line: number,
-    column: number,
-  ): Promise<?ClangDeclarationResult> {
-    const src = editor.getPath();
-    const defaultFlags = getDefaultFlags();
+  getDeclaration: _asyncToGenerator(function* (editor, line, column) {
+    var src = editor.getPath();
+    var defaultFlags = getDefaultFlags();
 
-    const service = getServiceByNuclideUri('ClangService', src);
-    invariant(service);
+    var service = (0, _nuclideRemoteConnection.getServiceByNuclideUri)('ClangService', src);
+    (0, _assert2['default'])(service);
 
-    return service
-        .getDeclaration(src, editor.getText(), line, column, defaultFlags);
+    return service.getDeclaration(src, editor.getText(), line, column, defaultFlags);
+  }),
+
+  formatCode: function formatCode(editor, range) {
+    var fileUri = editor.getPath();
+    var buffer = editor.getBuffer();
+    var cursor = buffer.characterIndexForPosition(editor.getLastCursor().getBufferPosition());
+    var startIndex = buffer.characterIndexForPosition(range.start);
+    var endIndex = buffer.characterIndexForPosition(range.end);
+
+    var service = (0, _nuclideRemoteConnection.getServiceByNuclideUri)('ClangService', fileUri);
+    (0, _assert2['default'])(service);
+
+    return service.formatCode(fileUri, editor.getText(), cursor, startIndex, endIndex - startIndex);
   },
 
-  formatCode(editor: atom$TextEditor, range: atom$Range): Promise<{
-    newCursor: number;
-    formatted: string;
-  }> {
-    const fileUri = editor.getPath();
-    const buffer = editor.getBuffer();
-    const cursor = buffer.characterIndexForPosition(editor.getLastCursor().getBufferPosition());
-    const startIndex = buffer.characterIndexForPosition(range.start);
-    const endIndex = buffer.characterIndexForPosition(range.end);
-
-    const service = getServiceByNuclideUri('ClangService', fileUri);
-    invariant(service);
-
-    return service
-        .formatCode(fileUri, editor.getText(), cursor, startIndex, endIndex - startIndex);
-  },
-
-  reset(editor: atom$TextEditor) {
-    const src = editor.getPath();
+  reset: function reset(editor) {
+    var src = editor.getPath();
     if (src != null) {
-      const service = getServiceByNuclideUri('ClangService', src);
-      invariant(service);
+      var service = (0, _nuclideRemoteConnection.getServiceByNuclideUri)('ClangService', src);
+      (0, _assert2['default'])(service);
       return service.reset(src);
     }
-  },
+  }
 
 };
+//# sourceMappingURL=data:application/json;base64,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RyxNQUFNLENBQUMseUJBQXlCLENBQUMsS0FBSyxDQUFDLEtBQUssQ0FBQyxDQUFDO0FBQ2pFLFFBQU0sUUFBUSxHQUFHLE1BQU0sQ0FBQyx5QkFBeUIsQ0FBQyxLQUFLLENBQUMsR0FBRyxDQUFDLENBQUM7O0FBRTdELFFBQU0sT0FBTyxHQUFHLHFEQUF1QixjQUFjLEVBQUUsT0FBTyxDQUFDLENBQUM7QUFDaEUsNkJBQVUsT0FBTyxDQUFDLENBQUM7O0FBRW5CLFdBQU8sT0FBTyxDQUNULFVBQVUsQ0FBQyxPQUFPLEVBQUUsTUFBTSxDQUFDLE9BQU8sRUFBRSxFQUFFLE1BQU0sRUFBRSxVQUFVLEVBQUUsUUFBUSxHQUFHLFVBQVUsQ0FBQyxDQUFDO0dBQ3ZGOztBQUVELE9BQUssRUFBQSxlQUFDLE1BQXVCLEVBQUU7QUFDN0IsUUFBTSxHQUFHLEdBQUcsTUFBTSxDQUFDLE9BQU8sRUFBRSxDQUFDO0FBQzdCLFFBQUksR0FBRyxJQUFJLElBQUksRUFBRTtBQUNmLFVBQU0sT0FBTyxHQUFHLHFEQUF1QixjQUFjLEVBQUUsR0FBRyxDQUFDLENBQUM7QUFDNUQsK0JBQVUsT0FBTyxDQUFDLENBQUM7QUFDbkIsYUFBTyxPQUFPLENBQUMsS0FBSyxDQUFDLEdBQUcsQ0FBQyxDQUFDO0tBQzNCO0dBQ0Y7O0NBRUYsQ0FBQyIsImZpbGUiOiJsaWJjbGFuZy5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtcbiAgQ2xhbmdDb21waWxlUmVzdWx0LFxuICBDbGFuZ0NvbXBsZXRpb25zUmVzdWx0LFxuICBDbGFuZ0RlY2xhcmF0aW9uUmVzdWx0LFxufSBmcm9tICcuLi8uLi9udWNsaWRlLWNsYW5nJztcblxuaW1wb3J0IGZlYXR1cmVDb25maWcgZnJvbSAnLi4vLi4vbnVjbGlkZS1mZWF0dXJlLWNvbmZpZyc7XG5pbXBvcnQgaW52YXJpYW50IGZyb20gJ2Fzc2VydCc7XG5pbXBvcnQge2dldFNlcnZpY2VCeU51Y2xpZGVVcml9IGZyb20gJy4uLy4uL251Y2xpZGUtcmVtb3RlLWNvbm5lY3Rpb24nO1xuXG50eXBlIE51Y2xpZGVDbGFuZ0NvbmZpZyA9IHtcbiAgZW5hYmxlRGVmYXVsdEZsYWdzOiBib29sZWFuO1xuICBkZWZhdWx0RmxhZ3M6IEFycmF5PHN0cmluZz47XG59O1xuXG5mdW5jdGlvbiBnZXREZWZhdWx0RmxhZ3MoKTogP0FycmF5PHN0cmluZz4ge1xuICBjb25zdCBjb25maWc6IE51Y2xpZGVDbGFuZ0NvbmZpZyA9IChmZWF0dXJlQ29uZmlnLmdldCgnbnVjbGlkZS1jbGFuZy1hdG9tJyk6IGFueSk7XG4gIGlmICghY29uZmlnLmVuYWJsZURlZmF1bHRGbGFncykge1xuICAgIHJldHVybiBudWxsO1xuICB9XG4gIHJldHVybiBjb25maWcuZGVmYXVsdEZsYWdzO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IHtcblxuICBhc3luYyBnZXREaWFnbm9zdGljcyhlZGl0b3I6IGF0b20kVGV4dEVkaXRvcik6IFByb21pc2U8P0NsYW5nQ29tcGlsZVJlc3VsdD4ge1xuICAgIGNvbnN0IHNyYyA9IGVkaXRvci5nZXRQYXRoKCk7XG4gICAgY29uc3QgY29udGVudHMgPSBlZGl0b3IuZ2V0VGV4dCgpO1xuXG4gICAgY29uc3QgZGVmYXVsdEZsYWdzID0gZ2V0RGVmYXVsdEZsYWdzKCk7XG4gICAgY29uc3Qgc2VydmljZSA9IGdldFNlcnZpY2VCeU51Y2xpZGVVcmkoJ0NsYW5nU2VydmljZScsIHNyYyk7XG4gICAgaW52YXJpYW50KHNlcnZpY2UpO1xuXG4gICAgcmV0dXJuIHNlcnZpY2VcbiAgICAgICAgLmNvbXBpbGUoc3JjLCBjb250ZW50cywgZGVmYXVsdEZsYWdzKVxuICAgICAgICAudG9Qcm9taXNlKCk7XG4gIH0sXG5cbiAgYXN5bmMgZ2V0Q29tcGxldGlvbnMoZWRpdG9yOiBhdG9tJFRleHRFZGl0b3IsIHByZWZpeDogc3RyaW5nKTogUHJvbWlzZTw/Q2xhbmdDb21wbGV0aW9uc1Jlc3VsdD4ge1xuICAgIGNvbnN0IHNyYyA9IGVkaXRvci5nZXRQYXRoKCk7XG4gICAgY29uc3QgY3Vyc29yID0gZWRpdG9yLmdldExhc3RDdXJzb3IoKTtcblxuICAgIGNvbnN0IGxpbmUgPSBjdXJzb3IuZ2V0QnVmZmVyUm93KCk7XG4gICAgY29uc3QgY29sdW1uID0gY3Vyc29yLmdldEJ1ZmZlckNvbHVtbigpO1xuICAgIGNvbnN0IHRva2VuU3RhcnRDb2x1bW4gPSBjb2x1bW4gLSBwcmVmaXgubGVuZ3RoO1xuXG4gICAgY29uc3QgZGVmYXVsdEZsYWdzID0gZ2V0RGVmYXVsdEZsYWdzKCk7XG4gICAgY29uc3Qgc2VydmljZSA9IGdldFNlcnZpY2VCeU51Y2xpZGVVcmkoJ0NsYW5nU2VydmljZScsIHNyYyk7XG4gICAgaW52YXJpYW50KHNlcnZpY2UpO1xuXG4gICAgcmV0dXJuIHNlcnZpY2VcbiAgICAgIC5nZXRDb21wbGV0aW9ucyhcbiAgICAgICAgc3JjLFxuICAgICAgICBlZGl0b3IuZ2V0VGV4dCgpLFxuICAgICAgICBsaW5lLFxuICAgICAgICBjb2x1bW4sXG4gICAgICAgIHRva2VuU3RhcnRDb2x1bW4sXG4gICAgICAgIHByZWZpeCxcbiAgICAgICAgZGVmYXVsdEZsYWdzLFxuICAgICAgKTtcbiAgfSxcblxuICAvKipcbiAgICogSWYgYSBsb2NhdGlvbiBjYW4gYmUgZm91bmQgZm9yIHRoZSBkZWNsYXJhdGlvbiwgaXQgd2lsbCBiZSBhdmFpbGFibGUgdmlhXG4gICAqIHRoZSAnbG9jYXRpb24nIGZpZWxkIG9uIHRoZSByZXR1cm5lZCBvYmplY3QuXG4gICAqL1xuICBhc3luYyBnZXREZWNsYXJhdGlvbihcbiAgICBlZGl0b3I6IGF0b20kVGV4dEVkaXRvcixcbiAgICBsaW5lOiBudW1iZXIsXG4gICAgY29sdW1uOiBudW1iZXIsXG4gICk6IFByb21pc2U8P0NsYW5nRGVjbGFyYXRpb25SZXN1bHQ+IHtcbiAgICBjb25zdCBzcmMgPSBlZGl0b3IuZ2V0UGF0aCgpO1xuICAgIGNvbnN0IGRlZmF1bHRGbGFncyA9IGdldERlZmF1bHRGbGFncygpO1xuXG4gICAgY29uc3Qgc2VydmljZSA9IGdldFNlcnZpY2VCeU51Y2xpZGVVcmkoJ0NsYW5nU2VydmljZScsIHNyYyk7XG4gICAgaW52YXJpYW50KHNlcnZpY2UpO1xuXG4gICAgcmV0dXJuIHNlcnZpY2VcbiAgICAgICAgLmdldERlY2xhcmF0aW9uKHNyYywgZWRpdG9yLmdldFRleHQoKSwgbGluZSwgY29sdW1uLCBkZWZhdWx0RmxhZ3MpO1xuICB9LFxuXG4gIGZvcm1hdENvZGUoZWRpdG9yOiBhdG9tJFRleHRFZGl0b3IsIHJhbmdlOiBhdG9tJFJhbmdlKTogUHJvbWlzZTx7XG4gICAgbmV3Q3Vyc29yOiBudW1iZXI7XG4gICAgZm9ybWF0dGVkOiBzdHJpbmc7XG4gIH0+IHtcbiAgICBjb25zdCBmaWxlVXJpID0gZWRpdG9yLmdldFBhdGgoKTtcbiAgICBjb25zdCBidWZmZXIgPSBlZGl0b3IuZ2V0QnVmZmVyKCk7XG4gICAgY29uc3QgY3Vyc29yID0gYnVmZmVyLmNoYXJhY3RlckluZGV4Rm9yUG9zaXRpb24oZWRpdG9yLmdldExhc3RDdXJzb3IoKS5nZXRCdWZmZXJQb3NpdGlvbigpKTtcbiAgICBjb25zdCBzdGFydEluZGV4ID0gYnVmZmVyLmNoYXJhY3RlckluZGV4Rm9yUG9zaXRpb24ocmFuZ2Uuc3RhcnQpO1xuICAgIGNvbnN0IGVuZEluZGV4ID0gYnVmZmVyLmNoYXJhY3RlckluZGV4Rm9yUG9zaXRpb24ocmFuZ2UuZW5kKTtcblxuICAgIGNvbnN0IHNlcnZpY2UgPSBnZXRTZXJ2aWNlQnlOdWNsaWRlVXJpKCdDbGFuZ1NlcnZpY2UnLCBmaWxlVXJpKTtcbiAgICBpbnZhcmlhbnQoc2VydmljZSk7XG5cbiAgICByZXR1cm4gc2VydmljZVxuICAgICAgICAuZm9ybWF0Q29kZShmaWxlVXJpLCBlZGl0b3IuZ2V0VGV4dCgpLCBjdXJzb3IsIHN0YXJ0SW5kZXgsIGVuZEluZGV4IC0gc3RhcnRJbmRleCk7XG4gIH0sXG5cbiAgcmVzZXQoZWRpdG9yOiBhdG9tJFRleHRFZGl0b3IpIHtcbiAgICBjb25zdCBzcmMgPSBlZGl0b3IuZ2V0UGF0aCgpO1xuICAgIGlmIChzcmMgIT0gbnVsbCkge1xuICAgICAgY29uc3Qgc2VydmljZSA9IGdldFNlcnZpY2VCeU51Y2xpZGVVcmkoJ0NsYW5nU2VydmljZScsIHNyYyk7XG4gICAgICBpbnZhcmlhbnQoc2VydmljZSk7XG4gICAgICByZXR1cm4gc2VydmljZS5yZXNldChzcmMpO1xuICAgIH1cbiAgfSxcblxufTtcbiJdfQ==

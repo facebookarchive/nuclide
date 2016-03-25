@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +10,21 @@
  * the root directory of this source tree.
  */
 
-import type {ServerStatusType} from '..';
-
-export const ServerStatus = {
+var ServerStatus = {
   FAILED: 'failed',
   UNKNOWN: 'unknown',
-  NOT_RUNNING:  'not running',
+  NOT_RUNNING: 'not running',
   NOT_INSTALLED: 'not installed',
   BUSY: 'busy',
   INIT: 'init',
-  READY: 'ready',
+  READY: 'ready'
 };
 
+exports.ServerStatus = ServerStatus;
 // If we put this type on the definition, use sites will not see the individual properties in the
 // Server object for things like autocomplete. Worse, Flow will assume that *any* string key will
 // yield a valid ServerStatus result, so we won't get protection against typos. Adding this
 // assertion here ensures that all of the values are valid ServerStatus options, while yielding
 // better Flow behavior at use sites.
-(ServerStatus: { [key: string]: ServerStatusType });
+ServerStatus;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkZsb3dDb25zdGFudHMuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7O0FBYU8sSUFBTSxZQUFZLEdBQUc7QUFDMUIsUUFBTSxFQUFFLFFBQVE7QUFDaEIsU0FBTyxFQUFFLFNBQVM7QUFDbEIsYUFBVyxFQUFHLGFBQWE7QUFDM0IsZUFBYSxFQUFFLGVBQWU7QUFDOUIsTUFBSSxFQUFFLE1BQU07QUFDWixNQUFJLEVBQUUsTUFBTTtBQUNaLE9BQUssRUFBRSxPQUFPO0NBQ2YsQ0FBQzs7Ozs7Ozs7QUFPRixBQUFDLFlBQVksQ0FBdUMiLCJmaWxlIjoiRmxvd0NvbnN0YW50cy5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtTZXJ2ZXJTdGF0dXNUeXBlfSBmcm9tICcuLic7XG5cbmV4cG9ydCBjb25zdCBTZXJ2ZXJTdGF0dXMgPSB7XG4gIEZBSUxFRDogJ2ZhaWxlZCcsXG4gIFVOS05PV046ICd1bmtub3duJyxcbiAgTk9UX1JVTk5JTkc6ICAnbm90IHJ1bm5pbmcnLFxuICBOT1RfSU5TVEFMTEVEOiAnbm90IGluc3RhbGxlZCcsXG4gIEJVU1k6ICdidXN5JyxcbiAgSU5JVDogJ2luaXQnLFxuICBSRUFEWTogJ3JlYWR5Jyxcbn07XG5cbi8vIElmIHdlIHB1dCB0aGlzIHR5cGUgb24gdGhlIGRlZmluaXRpb24sIHVzZSBzaXRlcyB3aWxsIG5vdCBzZWUgdGhlIGluZGl2aWR1YWwgcHJvcGVydGllcyBpbiB0aGVcbi8vIFNlcnZlciBvYmplY3QgZm9yIHRoaW5ncyBsaWtlIGF1dG9jb21wbGV0ZS4gV29yc2UsIEZsb3cgd2lsbCBhc3N1bWUgdGhhdCAqYW55KiBzdHJpbmcga2V5IHdpbGxcbi8vIHlpZWxkIGEgdmFsaWQgU2VydmVyU3RhdHVzIHJlc3VsdCwgc28gd2Ugd29uJ3QgZ2V0IHByb3RlY3Rpb24gYWdhaW5zdCB0eXBvcy4gQWRkaW5nIHRoaXNcbi8vIGFzc2VydGlvbiBoZXJlIGVuc3VyZXMgdGhhdCBhbGwgb2YgdGhlIHZhbHVlcyBhcmUgdmFsaWQgU2VydmVyU3RhdHVzIG9wdGlvbnMsIHdoaWxlIHlpZWxkaW5nXG4vLyBiZXR0ZXIgRmxvdyBiZWhhdmlvciBhdCB1c2Ugc2l0ZXMuXG4oU2VydmVyU3RhdHVzOiB7IFtrZXk6IHN0cmluZ106IFNlcnZlclN0YXR1c1R5cGUgfSk7XG4iXX0=

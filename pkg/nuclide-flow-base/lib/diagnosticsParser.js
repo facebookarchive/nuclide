@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,90 +10,22 @@
  * the root directory of this source tree.
  */
 
-import type {
-  Diagnostics,
-  Diagnostic,
-  MessageComponent,
-  Range,
-} from '..';
-
 // Types for the old `flow status` output -- v0.22 and below
 
-type OldFlowStatusOutput = {
-  passed: boolean;
-  // This is not actually the Flow version; instead it is a build ID or something.
-  version?: string;
-  errors: Array<OldFlowStatusError>;
-};
-
-type OldFlowStatusError = {
-  kind: string;
-  operation?: OldFlowStatusErrorOperation;
-  message: Array<OldFlowStatusErrorMessageComponent>;
-};
-
-type OldBaseFlowStatusErrorMessageComponent = {
-  // If there is no path component, this is the empty string. We should make it null instead, in
-  // that case (t8644340)
-  path: string;
-  descr: string;
-  line: number;
-  start: number;
-  end: number;
-  endline: number;
-}
-
-type OldFlowStatusErrorMessageComponent = OldBaseFlowStatusErrorMessageComponent & {
-  level: 'error' | 'warning';
-};
-
 // Same as FlowStatusErrorMessageComponent, except without the 'level' field.
-type OldFlowStatusErrorOperation = OldBaseFlowStatusErrorMessageComponent;
 
 // New types for `flow status` v0.23.0 (or possibly v0.24.0, it has yet to be finalized)
 
-type NewFlowStatusOutput = {
-  passed: boolean;
-  flowVersion: string;
-  errors: Array<NewFlowStatusError>;
-};
+// There is also an `extra` field where additional details about certain kinds of errors are
+// provided. For now we will ignore these details.
 
-type NewFlowStatusError = {
-  level: 'error' | 'warning';
-  // e.g. parse, infer, maybe others?
-  kind: string;
-  message: Array<NewFlowStatusErrorMessageComponent>;
-  operation?: NewFlowStatusErrorMessageComponent;
+// The old path, line, etc. fields also currently exist here, but they are deprecated in favor of
+// `loc`.
+exports.flowStatusOutputToDiagnostics = flowStatusOutputToDiagnostics;
+exports.oldFlowStatusOutputToDiagnostics = oldFlowStatusOutputToDiagnostics;
+exports.newFlowStatusOutputToDiagnostics = newFlowStatusOutputToDiagnostics;
 
-  // There is also an `extra` field where additional details about certain kinds of errors are
-  // provided. For now we will ignore these details.
-};
-
-type NewFlowStatusErrorMessageComponent = {
-  descr: string;
-  loc?: FlowLoc;
-  // The old path, line, etc. fields also currently exist here, but they are deprecated in favor of
-  // `loc`.
-};
-
-type FlowLoc = {
-  // file path
-  source: string;
-  start: FlowPoint;
-  end: FlowPoint;
-}
-
-type FlowPoint = {
-  column: number;
-  line: number;
-  // total character offset
-  offset: number;
-};
-
-export function flowStatusOutputToDiagnostics(
-  root: string,
-  statusOutput: Object,
-): Diagnostics {
+function flowStatusOutputToDiagnostics(root, statusOutput) {
   if (statusOutput['flowVersion'] != null) {
     return newFlowStatusOutputToDiagnostics(root, statusOutput);
   } else {
@@ -100,44 +33,37 @@ export function flowStatusOutputToDiagnostics(
   }
 }
 
-export function oldFlowStatusOutputToDiagnostics(
-  root: string,
-  statusOutput: OldFlowStatusOutput,
-): Diagnostics {
-  const errors: Array<OldFlowStatusError> = statusOutput['errors'];
-  const messages: Array<Diagnostic> = errors.map((flowStatusError: OldFlowStatusError) => {
-    const flowMessageComponents: Array<OldFlowStatusErrorMessageComponent> =
-      flowStatusError['message'];
-    const level = flowMessageComponents[0]['level'];
+function oldFlowStatusOutputToDiagnostics(root, statusOutput) {
+  var errors = statusOutput['errors'];
+  var messages = errors.map(function (flowStatusError) {
+    var flowMessageComponents = flowStatusError['message'];
+    var level = flowMessageComponents[0]['level'];
 
-    const messageComponents: Array<MessageComponent> =
-      flowMessageComponents.map(flowMessageComponentToMessageComponent);
-    const operation = flowStatusError['operation'];
+    var messageComponents = flowMessageComponents.map(flowMessageComponentToMessageComponent);
+    var operation = flowStatusError['operation'];
     if (operation != null) {
       // The operation field provides additional context. I don't fully understand the motivation
       // behind separating it out, but prepending it with 'See also: ' and adding it to the end of
       // the messages is what the Flow team recommended.
-      const operationComponent = flowMessageComponentToMessageComponent(operation);
+      var operationComponent = flowMessageComponentToMessageComponent(operation);
       operationComponent.descr = 'See also: ' + operationComponent.descr;
       messageComponents.push(operationComponent);
     }
     return {
-      level,
-      messageComponents,
+      level: level,
+      messageComponents: messageComponents
     };
   });
 
   return {
     flowRoot: root,
-    messages: messages,
+    messages: messages
   };
 }
 
-function flowMessageComponentToMessageComponent(
-  component: OldBaseFlowStatusErrorMessageComponent,
-): MessageComponent {
-  const path = component.path;
-  let range = null;
+function flowMessageComponentToMessageComponent(component) {
+  var path = component.path;
+  var range = null;
 
   // Flow returns the empty string instead of null when there is no relevant path. The upcoming
   // format changes described elsewhere in this file fix the issue, but for now we must still work
@@ -147,74 +73,79 @@ function flowMessageComponentToMessageComponent(
       file: path,
       start: {
         line: component.line,
-        column: component.start,
+        column: component.start
       },
       end: {
         line: component.endline,
-        column: component.end,
-      },
+        column: component.end
+      }
     };
   }
   return {
     descr: component.descr,
-    range,
+    range: range
   };
 }
 
-export function newFlowStatusOutputToDiagnostics(
-  root: string,
-  statusOutput: NewFlowStatusOutput,
-): Diagnostics {
-  const errors: Array<NewFlowStatusError> = statusOutput.errors;
-  const messages: Array<Diagnostic> = errors.map((flowStatusError: NewFlowStatusError) => {
-    const flowMessageComponents: Array<NewFlowStatusErrorMessageComponent> =
-      flowStatusError.message;
-    const level = flowStatusError.level;
+function newFlowStatusOutputToDiagnostics(root, statusOutput) {
+  var errors = statusOutput.errors;
+  var messages = errors.map(function (flowStatusError) {
+    var flowMessageComponents = flowStatusError.message;
+    var level = flowStatusError.level;
 
-    const messageComponents: Array<MessageComponent> =
-      flowMessageComponents.map(newFlowMessageComponentToMessageComponent);
-    const operation = flowStatusError.operation;
+    var messageComponents = flowMessageComponents.map(newFlowMessageComponentToMessageComponent);
+    var operation = flowStatusError.operation;
     if (operation != null) {
-      const operationComponent = newFlowMessageComponentToMessageComponent(operation);
+      var operationComponent = newFlowMessageComponentToMessageComponent(operation);
       operationComponent.descr = 'See also: ' + operationComponent.descr;
       messageComponents.push(operationComponent);
     }
 
     return {
-      level,
-      messageComponents,
+      level: level,
+      messageComponents: messageComponents
     };
   });
 
   return {
     flowRoot: root,
-    messages,
+    messages: messages
   };
 }
 
-function newFlowMessageComponentToMessageComponent(
-  component: NewFlowStatusErrorMessageComponent,
-): MessageComponent {
+function newFlowMessageComponentToMessageComponent(component) {
   return {
     descr: component.descr,
-    range: maybeFlowLocToRange(component.loc),
+    range: maybeFlowLocToRange(component.loc)
   };
 }
 
-function maybeFlowLocToRange(loc: ?FlowLoc): ?Range {
+function maybeFlowLocToRange(loc) {
   return loc == null ? null : flowLocToRange(loc);
 }
 
-function flowLocToRange(loc: FlowLoc): Range {
+function flowLocToRange(loc) {
   return {
     file: loc.source,
     start: {
       line: loc.start.line,
-      column: loc.start.column,
+      column: loc.start.column
     },
     end: {
       line: loc.end.line,
-      column: loc.end.column,
-    },
+      column: loc.end.column
+    }
   };
 }
+
+// This is not actually the Flow version; instead it is a build ID or something.
+
+// If there is no path component, this is the empty string. We should make it null instead, in
+// that case (t8644340)
+
+// e.g. parse, infer, maybe others?
+
+// file path
+
+// total character offset
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImRpYWdub3N0aWNzUGFyc2VyLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQTJGTyxTQUFTLDZCQUE2QixDQUMzQyxJQUFZLEVBQ1osWUFBb0IsRUFDUDtBQUNiLE1BQUksWUFBWSxDQUFDLGFBQWEsQ0FBQyxJQUFJLElBQUksRUFBRTtBQUN2QyxXQUFPLGdDQUFnQyxDQUFDLElBQUksRUFBRSxZQUFZLENBQUMsQ0FBQztHQUM3RCxNQUFNO0FBQ0wsV0FBTyxnQ0FBZ0MsQ0FBQyxJQUFJLEVBQUUsWUFBWSxDQUFDLENBQUM7R0FDN0Q7Q0FDRjs7QUFFTSxTQUFTLGdDQUFnQyxDQUM5QyxJQUFZLEVBQ1osWUFBaUMsRUFDcEI7QUFDYixNQUFNLE1BQWlDLEdBQUcsWUFBWSxDQUFDLFFBQVEsQ0FBQyxDQUFDO0FBQ2pFLE1BQU0sUUFBMkIsR0FBRyxNQUFNLENBQUMsR0FBRyxDQUFDLFVBQUMsZUFBZSxFQUF5QjtBQUN0RixRQUFNLHFCQUFnRSxHQUNwRSxlQUFlLENBQUMsU0FBUyxDQUFDLENBQUM7QUFDN0IsUUFBTSxLQUFLLEdBQUcscUJBQXFCLENBQUMsQ0FBQyxDQUFDLENBQUMsT0FBTyxDQUFDLENBQUM7O0FBRWhELFFBQU0saUJBQTBDLEdBQzlDLHFCQUFxQixDQUFDLEdBQUcsQ0FBQyxzQ0FBc0MsQ0FBQyxDQUFDO0FBQ3BFLFFBQU0sU0FBUyxHQUFHLGVBQWUsQ0FBQyxXQUFXLENBQUMsQ0FBQztBQUMvQyxRQUFJLFNBQVMsSUFBSSxJQUFJLEVBQUU7Ozs7QUFJckIsVUFBTSxrQkFBa0IsR0FBRyxzQ0FBc0MsQ0FBQyxTQUFTLENBQUMsQ0FBQztBQUM3RSx3QkFBa0IsQ0FBQyxLQUFLLEdBQUcsWUFBWSxHQUFHLGtCQUFrQixDQUFDLEtBQUssQ0FBQztBQUNuRSx1QkFBaUIsQ0FBQyxJQUFJLENBQUMsa0JBQWtCLENBQUMsQ0FBQztLQUM1QztBQUNELFdBQU87QUFDTCxXQUFLLEVBQUwsS0FBSztBQUNMLHVCQUFpQixFQUFqQixpQkFBaUI7S0FDbEIsQ0FBQztHQUNILENBQUMsQ0FBQzs7QUFFSCxTQUFPO0FBQ0wsWUFBUSxFQUFFLElBQUk7QUFDZCxZQUFRLEVBQUUsUUFBUTtHQUNuQixDQUFDO0NBQ0g7O0FBRUQsU0FBUyxzQ0FBc0MsQ0FDN0MsU0FBaUQsRUFDL0I7QUFDbEIsTUFBTSxJQUFJLEdBQUcsU0FBUyxDQUFDLElBQUksQ0FBQztBQUM1QixNQUFJLEtBQUssR0FBRyxJQUFJLENBQUM7Ozs7O0FBS2pCLE1BQUksSUFBSSxJQUFJLElBQUksSUFBSSxJQUFJLEtBQUssRUFBRSxFQUFFO0FBQy9CLFNBQUssR0FBRztBQUNOLFVBQUksRUFBRSxJQUFJO0FBQ1YsV0FBSyxFQUFFO0FBQ0wsWUFBSSxFQUFFLFNBQVMsQ0FBQyxJQUFJO0FBQ3BCLGNBQU0sRUFBRSxTQUFTLENBQUMsS0FBSztPQUN4QjtBQUNELFNBQUcsRUFBRTtBQUNILFlBQUksRUFBRSxTQUFTLENBQUMsT0FBTztBQUN2QixjQUFNLEVBQUUsU0FBUyxDQUFDLEdBQUc7T0FDdEI7S0FDRixDQUFDO0dBQ0g7QUFDRCxTQUFPO0FBQ0wsU0FBSyxFQUFFLFNBQVMsQ0FBQyxLQUFLO0FBQ3RCLFNBQUssRUFBTCxLQUFLO0dBQ04sQ0FBQztDQUNIOztBQUVNLFNBQVMsZ0NBQWdDLENBQzlDLElBQVksRUFDWixZQUFpQyxFQUNwQjtBQUNiLE1BQU0sTUFBaUMsR0FBRyxZQUFZLENBQUMsTUFBTSxDQUFDO0FBQzlELE1BQU0sUUFBMkIsR0FBRyxNQUFNLENBQUMsR0FBRyxDQUFDLFVBQUMsZUFBZSxFQUF5QjtBQUN0RixRQUFNLHFCQUFnRSxHQUNwRSxlQUFlLENBQUMsT0FBTyxDQUFDO0FBQzFCLFFBQU0sS0FBSyxHQUFHLGVBQWUsQ0FBQyxLQUFLLENBQUM7O0FBRXBDLFFBQU0saUJBQTBDLEdBQzlDLHFCQUFxQixDQUFDLEdBQUcsQ0FBQyx5Q0FBeUMsQ0FBQyxDQUFDO0FBQ3ZFLFFBQU0sU0FBUyxHQUFHLGVBQWUsQ0FBQyxTQUFTLENBQUM7QUFDNUMsUUFBSSxTQUFTLElBQUksSUFBSSxFQUFFO0FBQ3JCLFVBQU0sa0JBQWtCLEdBQUcseUNBQXlDLENBQUMsU0FBUyxDQUFDLENBQUM7QUFDaEYsd0JBQWtCLENBQUMsS0FBSyxHQUFHLFlBQVksR0FBRyxrQkFBa0IsQ0FBQyxLQUFLLENBQUM7QUFDbkUsdUJBQWlCLENBQUMsSUFBSSxDQUFDLGtCQUFrQixDQUFDLENBQUM7S0FDNUM7O0FBRUQsV0FBTztBQUNMLFdBQUssRUFBTCxLQUFLO0FBQ0wsdUJBQWlCLEVBQWpCLGlCQUFpQjtLQUNsQixDQUFDO0dBQ0gsQ0FBQyxDQUFDOztBQUVILFNBQU87QUFDTCxZQUFRLEVBQUUsSUFBSTtBQUNkLFlBQVEsRUFBUixRQUFRO0dBQ1QsQ0FBQztDQUNIOztBQUVELFNBQVMseUNBQXlDLENBQ2hELFNBQTZDLEVBQzNCO0FBQ2xCLFNBQU87QUFDTCxTQUFLLEVBQUUsU0FBUyxDQUFDLEtBQUs7QUFDdEIsU0FBSyxFQUFFLG1CQUFtQixDQUFDLFNBQVMsQ0FBQyxHQUFHLENBQUM7R0FDMUMsQ0FBQztDQUNIOztBQUVELFNBQVMsbUJBQW1CLENBQUMsR0FBYSxFQUFVO0FBQ2xELFNBQU8sR0FBRyxJQUFJLElBQUksR0FBRyxJQUFJLEdBQUcsY0FBYyxDQUFDLEdBQUcsQ0FBQyxDQUFDO0NBQ2pEOztBQUVELFNBQVMsY0FBYyxDQUFDLEdBQVksRUFBUztBQUMzQyxTQUFPO0FBQ0wsUUFBSSxFQUFFLEdBQUcsQ0FBQyxNQUFNO0FBQ2hCLFNBQUssRUFBRTtBQUNMLFVBQUksRUFBRSxHQUFHLENBQUMsS0FBSyxDQUFDLElBQUk7QUFDcEIsWUFBTSxFQUFFLEdBQUcsQ0FBQyxLQUFLLENBQUMsTUFBTTtLQUN6QjtBQUNELE9BQUcsRUFBRTtBQUNILFVBQUksRUFBRSxHQUFHLENBQUMsR0FBRyxDQUFDLElBQUk7QUFDbEIsWUFBTSxFQUFFLEdBQUcsQ0FBQyxHQUFHLENBQUMsTUFBTTtLQUN2QjtHQUNGLENBQUM7Q0FDSCIsImZpbGUiOiJkaWFnbm9zdGljc1BhcnNlci5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtcbiAgRGlhZ25vc3RpY3MsXG4gIERpYWdub3N0aWMsXG4gIE1lc3NhZ2VDb21wb25lbnQsXG4gIFJhbmdlLFxufSBmcm9tICcuLic7XG5cbi8vIFR5cGVzIGZvciB0aGUgb2xkIGBmbG93IHN0YXR1c2Agb3V0cHV0IC0tIHYwLjIyIGFuZCBiZWxvd1xuXG50eXBlIE9sZEZsb3dTdGF0dXNPdXRwdXQgPSB7XG4gIHBhc3NlZDogYm9vbGVhbjtcbiAgLy8gVGhpcyBpcyBub3QgYWN0dWFsbHkgdGhlIEZsb3cgdmVyc2lvbjsgaW5zdGVhZCBpdCBpcyBhIGJ1aWxkIElEIG9yIHNvbWV0aGluZy5cbiAgdmVyc2lvbj86IHN0cmluZztcbiAgZXJyb3JzOiBBcnJheTxPbGRGbG93U3RhdHVzRXJyb3I+O1xufTtcblxudHlwZSBPbGRGbG93U3RhdHVzRXJyb3IgPSB7XG4gIGtpbmQ6IHN0cmluZztcbiAgb3BlcmF0aW9uPzogT2xkRmxvd1N0YXR1c0Vycm9yT3BlcmF0aW9uO1xuICBtZXNzYWdlOiBBcnJheTxPbGRGbG93U3RhdHVzRXJyb3JNZXNzYWdlQ29tcG9uZW50Pjtcbn07XG5cbnR5cGUgT2xkQmFzZUZsb3dTdGF0dXNFcnJvck1lc3NhZ2VDb21wb25lbnQgPSB7XG4gIC8vIElmIHRoZXJlIGlzIG5vIHBhdGggY29tcG9uZW50LCB0aGlzIGlzIHRoZSBlbXB0eSBzdHJpbmcuIFdlIHNob3VsZCBtYWtlIGl0IG51bGwgaW5zdGVhZCwgaW5cbiAgLy8gdGhhdCBjYXNlICh0ODY0NDM0MClcbiAgcGF0aDogc3RyaW5nO1xuICBkZXNjcjogc3RyaW5nO1xuICBsaW5lOiBudW1iZXI7XG4gIHN0YXJ0OiBudW1iZXI7XG4gIGVuZDogbnVtYmVyO1xuICBlbmRsaW5lOiBudW1iZXI7XG59XG5cbnR5cGUgT2xkRmxvd1N0YXR1c0Vycm9yTWVzc2FnZUNvbXBvbmVudCA9IE9sZEJhc2VGbG93U3RhdHVzRXJyb3JNZXNzYWdlQ29tcG9uZW50ICYge1xuICBsZXZlbDogJ2Vycm9yJyB8ICd3YXJuaW5nJztcbn07XG5cbi8vIFNhbWUgYXMgRmxvd1N0YXR1c0Vycm9yTWVzc2FnZUNvbXBvbmVudCwgZXhjZXB0IHdpdGhvdXQgdGhlICdsZXZlbCcgZmllbGQuXG50eXBlIE9sZEZsb3dTdGF0dXNFcnJvck9wZXJhdGlvbiA9IE9sZEJhc2VGbG93U3RhdHVzRXJyb3JNZXNzYWdlQ29tcG9uZW50O1xuXG4vLyBOZXcgdHlwZXMgZm9yIGBmbG93IHN0YXR1c2AgdjAuMjMuMCAob3IgcG9zc2libHkgdjAuMjQuMCwgaXQgaGFzIHlldCB0byBiZSBmaW5hbGl6ZWQpXG5cbnR5cGUgTmV3Rmxvd1N0YXR1c091dHB1dCA9IHtcbiAgcGFzc2VkOiBib29sZWFuO1xuICBmbG93VmVyc2lvbjogc3RyaW5nO1xuICBlcnJvcnM6IEFycmF5PE5ld0Zsb3dTdGF0dXNFcnJvcj47XG59O1xuXG50eXBlIE5ld0Zsb3dTdGF0dXNFcnJvciA9IHtcbiAgbGV2ZWw6ICdlcnJvcicgfCAnd2FybmluZyc7XG4gIC8vIGUuZy4gcGFyc2UsIGluZmVyLCBtYXliZSBvdGhlcnM/XG4gIGtpbmQ6IHN0cmluZztcbiAgbWVzc2FnZTogQXJyYXk8TmV3Rmxvd1N0YXR1c0Vycm9yTWVzc2FnZUNvbXBvbmVudD47XG4gIG9wZXJhdGlvbj86IE5ld0Zsb3dTdGF0dXNFcnJvck1lc3NhZ2VDb21wb25lbnQ7XG5cbiAgLy8gVGhlcmUgaXMgYWxzbyBhbiBgZXh0cmFgIGZpZWxkIHdoZXJlIGFkZGl0aW9uYWwgZGV0YWlscyBhYm91dCBjZXJ0YWluIGtpbmRzIG9mIGVycm9ycyBhcmVcbiAgLy8gcHJvdmlkZWQuIEZvciBub3cgd2Ugd2lsbCBpZ25vcmUgdGhlc2UgZGV0YWlscy5cbn07XG5cbnR5cGUgTmV3Rmxvd1N0YXR1c0Vycm9yTWVzc2FnZUNvbXBvbmVudCA9IHtcbiAgZGVzY3I6IHN0cmluZztcbiAgbG9jPzogRmxvd0xvYztcbiAgLy8gVGhlIG9sZCBwYXRoLCBsaW5lLCBldGMuIGZpZWxkcyBhbHNvIGN1cnJlbnRseSBleGlzdCBoZXJlLCBidXQgdGhleSBhcmUgZGVwcmVjYXRlZCBpbiBmYXZvciBvZlxuICAvLyBgbG9jYC5cbn07XG5cbnR5cGUgRmxvd0xvYyA9IHtcbiAgLy8gZmlsZSBwYXRoXG4gIHNvdXJjZTogc3RyaW5nO1xuICBzdGFydDogRmxvd1BvaW50O1xuICBlbmQ6IEZsb3dQb2ludDtcbn1cblxudHlwZSBGbG93UG9pbnQgPSB7XG4gIGNvbHVtbjogbnVtYmVyO1xuICBsaW5lOiBudW1iZXI7XG4gIC8vIHRvdGFsIGNoYXJhY3RlciBvZmZzZXRcbiAgb2Zmc2V0OiBudW1iZXI7XG59O1xuXG5leHBvcnQgZnVuY3Rpb24gZmxvd1N0YXR1c091dHB1dFRvRGlhZ25vc3RpY3MoXG4gIHJvb3Q6IHN0cmluZyxcbiAgc3RhdHVzT3V0cHV0OiBPYmplY3QsXG4pOiBEaWFnbm9zdGljcyB7XG4gIGlmIChzdGF0dXNPdXRwdXRbJ2Zsb3dWZXJzaW9uJ10gIT0gbnVsbCkge1xuICAgIHJldHVybiBuZXdGbG93U3RhdHVzT3V0cHV0VG9EaWFnbm9zdGljcyhyb290LCBzdGF0dXNPdXRwdXQpO1xuICB9IGVsc2Uge1xuICAgIHJldHVybiBvbGRGbG93U3RhdHVzT3V0cHV0VG9EaWFnbm9zdGljcyhyb290LCBzdGF0dXNPdXRwdXQpO1xuICB9XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBvbGRGbG93U3RhdHVzT3V0cHV0VG9EaWFnbm9zdGljcyhcbiAgcm9vdDogc3RyaW5nLFxuICBzdGF0dXNPdXRwdXQ6IE9sZEZsb3dTdGF0dXNPdXRwdXQsXG4pOiBEaWFnbm9zdGljcyB7XG4gIGNvbnN0IGVycm9yczogQXJyYXk8T2xkRmxvd1N0YXR1c0Vycm9yPiA9IHN0YXR1c091dHB1dFsnZXJyb3JzJ107XG4gIGNvbnN0IG1lc3NhZ2VzOiBBcnJheTxEaWFnbm9zdGljPiA9IGVycm9ycy5tYXAoKGZsb3dTdGF0dXNFcnJvcjogT2xkRmxvd1N0YXR1c0Vycm9yKSA9PiB7XG4gICAgY29uc3QgZmxvd01lc3NhZ2VDb21wb25lbnRzOiBBcnJheTxPbGRGbG93U3RhdHVzRXJyb3JNZXNzYWdlQ29tcG9uZW50PiA9XG4gICAgICBmbG93U3RhdHVzRXJyb3JbJ21lc3NhZ2UnXTtcbiAgICBjb25zdCBsZXZlbCA9IGZsb3dNZXNzYWdlQ29tcG9uZW50c1swXVsnbGV2ZWwnXTtcblxuICAgIGNvbnN0IG1lc3NhZ2VDb21wb25lbnRzOiBBcnJheTxNZXNzYWdlQ29tcG9uZW50PiA9XG4gICAgICBmbG93TWVzc2FnZUNvbXBvbmVudHMubWFwKGZsb3dNZXNzYWdlQ29tcG9uZW50VG9NZXNzYWdlQ29tcG9uZW50KTtcbiAgICBjb25zdCBvcGVyYXRpb24gPSBmbG93U3RhdHVzRXJyb3JbJ29wZXJhdGlvbiddO1xuICAgIGlmIChvcGVyYXRpb24gIT0gbnVsbCkge1xuICAgICAgLy8gVGhlIG9wZXJhdGlvbiBmaWVsZCBwcm92aWRlcyBhZGRpdGlvbmFsIGNvbnRleHQuIEkgZG9uJ3QgZnVsbHkgdW5kZXJzdGFuZCB0aGUgbW90aXZhdGlvblxuICAgICAgLy8gYmVoaW5kIHNlcGFyYXRpbmcgaXQgb3V0LCBidXQgcHJlcGVuZGluZyBpdCB3aXRoICdTZWUgYWxzbzogJyBhbmQgYWRkaW5nIGl0IHRvIHRoZSBlbmQgb2ZcbiAgICAgIC8vIHRoZSBtZXNzYWdlcyBpcyB3aGF0IHRoZSBGbG93IHRlYW0gcmVjb21tZW5kZWQuXG4gICAgICBjb25zdCBvcGVyYXRpb25Db21wb25lbnQgPSBmbG93TWVzc2FnZUNvbXBvbmVudFRvTWVzc2FnZUNvbXBvbmVudChvcGVyYXRpb24pO1xuICAgICAgb3BlcmF0aW9uQ29tcG9uZW50LmRlc2NyID0gJ1NlZSBhbHNvOiAnICsgb3BlcmF0aW9uQ29tcG9uZW50LmRlc2NyO1xuICAgICAgbWVzc2FnZUNvbXBvbmVudHMucHVzaChvcGVyYXRpb25Db21wb25lbnQpO1xuICAgIH1cbiAgICByZXR1cm4ge1xuICAgICAgbGV2ZWwsXG4gICAgICBtZXNzYWdlQ29tcG9uZW50cyxcbiAgICB9O1xuICB9KTtcblxuICByZXR1cm4ge1xuICAgIGZsb3dSb290OiByb290LFxuICAgIG1lc3NhZ2VzOiBtZXNzYWdlcyxcbiAgfTtcbn1cblxuZnVuY3Rpb24gZmxvd01lc3NhZ2VDb21wb25lbnRUb01lc3NhZ2VDb21wb25lbnQoXG4gIGNvbXBvbmVudDogT2xkQmFzZUZsb3dTdGF0dXNFcnJvck1lc3NhZ2VDb21wb25lbnQsXG4pOiBNZXNzYWdlQ29tcG9uZW50IHtcbiAgY29uc3QgcGF0aCA9IGNvbXBvbmVudC5wYXRoO1xuICBsZXQgcmFuZ2UgPSBudWxsO1xuXG4gIC8vIEZsb3cgcmV0dXJucyB0aGUgZW1wdHkgc3RyaW5nIGluc3RlYWQgb2YgbnVsbCB3aGVuIHRoZXJlIGlzIG5vIHJlbGV2YW50IHBhdGguIFRoZSB1cGNvbWluZ1xuICAvLyBmb3JtYXQgY2hhbmdlcyBkZXNjcmliZWQgZWxzZXdoZXJlIGluIHRoaXMgZmlsZSBmaXggdGhlIGlzc3VlLCBidXQgZm9yIG5vdyB3ZSBtdXN0IHN0aWxsIHdvcmtcbiAgLy8gYXJvdW5kIGl0LlxuICBpZiAocGF0aCAhPSBudWxsICYmIHBhdGggIT09ICcnKSB7XG4gICAgcmFuZ2UgPSB7XG4gICAgICBmaWxlOiBwYXRoLFxuICAgICAgc3RhcnQ6IHtcbiAgICAgICAgbGluZTogY29tcG9uZW50LmxpbmUsXG4gICAgICAgIGNvbHVtbjogY29tcG9uZW50LnN0YXJ0LFxuICAgICAgfSxcbiAgICAgIGVuZDoge1xuICAgICAgICBsaW5lOiBjb21wb25lbnQuZW5kbGluZSxcbiAgICAgICAgY29sdW1uOiBjb21wb25lbnQuZW5kLFxuICAgICAgfSxcbiAgICB9O1xuICB9XG4gIHJldHVybiB7XG4gICAgZGVzY3I6IGNvbXBvbmVudC5kZXNjcixcbiAgICByYW5nZSxcbiAgfTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIG5ld0Zsb3dTdGF0dXNPdXRwdXRUb0RpYWdub3N0aWNzKFxuICByb290OiBzdHJpbmcsXG4gIHN0YXR1c091dHB1dDogTmV3Rmxvd1N0YXR1c091dHB1dCxcbik6IERpYWdub3N0aWNzIHtcbiAgY29uc3QgZXJyb3JzOiBBcnJheTxOZXdGbG93U3RhdHVzRXJyb3I+ID0gc3RhdHVzT3V0cHV0LmVycm9ycztcbiAgY29uc3QgbWVzc2FnZXM6IEFycmF5PERpYWdub3N0aWM+ID0gZXJyb3JzLm1hcCgoZmxvd1N0YXR1c0Vycm9yOiBOZXdGbG93U3RhdHVzRXJyb3IpID0+IHtcbiAgICBjb25zdCBmbG93TWVzc2FnZUNvbXBvbmVudHM6IEFycmF5PE5ld0Zsb3dTdGF0dXNFcnJvck1lc3NhZ2VDb21wb25lbnQ+ID1cbiAgICAgIGZsb3dTdGF0dXNFcnJvci5tZXNzYWdlO1xuICAgIGNvbnN0IGxldmVsID0gZmxvd1N0YXR1c0Vycm9yLmxldmVsO1xuXG4gICAgY29uc3QgbWVzc2FnZUNvbXBvbmVudHM6IEFycmF5PE1lc3NhZ2VDb21wb25lbnQ+ID1cbiAgICAgIGZsb3dNZXNzYWdlQ29tcG9uZW50cy5tYXAobmV3Rmxvd01lc3NhZ2VDb21wb25lbnRUb01lc3NhZ2VDb21wb25lbnQpO1xuICAgIGNvbnN0IG9wZXJhdGlvbiA9IGZsb3dTdGF0dXNFcnJvci5vcGVyYXRpb247XG4gICAgaWYgKG9wZXJhdGlvbiAhPSBudWxsKSB7XG4gICAgICBjb25zdCBvcGVyYXRpb25Db21wb25lbnQgPSBuZXdGbG93TWVzc2FnZUNvbXBvbmVudFRvTWVzc2FnZUNvbXBvbmVudChvcGVyYXRpb24pO1xuICAgICAgb3BlcmF0aW9uQ29tcG9uZW50LmRlc2NyID0gJ1NlZSBhbHNvOiAnICsgb3BlcmF0aW9uQ29tcG9uZW50LmRlc2NyO1xuICAgICAgbWVzc2FnZUNvbXBvbmVudHMucHVzaChvcGVyYXRpb25Db21wb25lbnQpO1xuICAgIH1cblxuICAgIHJldHVybiB7XG4gICAgICBsZXZlbCxcbiAgICAgIG1lc3NhZ2VDb21wb25lbnRzLFxuICAgIH07XG4gIH0pO1xuXG4gIHJldHVybiB7XG4gICAgZmxvd1Jvb3Q6IHJvb3QsXG4gICAgbWVzc2FnZXMsXG4gIH07XG59XG5cbmZ1bmN0aW9uIG5ld0Zsb3dNZXNzYWdlQ29tcG9uZW50VG9NZXNzYWdlQ29tcG9uZW50KFxuICBjb21wb25lbnQ6IE5ld0Zsb3dTdGF0dXNFcnJvck1lc3NhZ2VDb21wb25lbnQsXG4pOiBNZXNzYWdlQ29tcG9uZW50IHtcbiAgcmV0dXJuIHtcbiAgICBkZXNjcjogY29tcG9uZW50LmRlc2NyLFxuICAgIHJhbmdlOiBtYXliZUZsb3dMb2NUb1JhbmdlKGNvbXBvbmVudC5sb2MpLFxuICB9O1xufVxuXG5mdW5jdGlvbiBtYXliZUZsb3dMb2NUb1JhbmdlKGxvYzogP0Zsb3dMb2MpOiA/UmFuZ2Uge1xuICByZXR1cm4gbG9jID09IG51bGwgPyBudWxsIDogZmxvd0xvY1RvUmFuZ2UobG9jKTtcbn1cblxuZnVuY3Rpb24gZmxvd0xvY1RvUmFuZ2UobG9jOiBGbG93TG9jKTogUmFuZ2Uge1xuICByZXR1cm4ge1xuICAgIGZpbGU6IGxvYy5zb3VyY2UsXG4gICAgc3RhcnQ6IHtcbiAgICAgIGxpbmU6IGxvYy5zdGFydC5saW5lLFxuICAgICAgY29sdW1uOiBsb2Muc3RhcnQuY29sdW1uLFxuICAgIH0sXG4gICAgZW5kOiB7XG4gICAgICBsaW5lOiBsb2MuZW5kLmxpbmUsXG4gICAgICBjb2x1bW46IGxvYy5lbmQuY29sdW1uLFxuICAgIH0sXG4gIH07XG59XG4iXX0=

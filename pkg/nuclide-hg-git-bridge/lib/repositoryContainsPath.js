@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +8,11 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
+var _atom = require('atom');
 
-import {Directory} from 'atom';
-import path from 'path';
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
 
 /**
  * @param repository Either a GitRepository or HgRepositoryClient.
@@ -21,21 +20,20 @@ import path from 'path';
  * @return boolean Whether the file path exists within the working directory
  *   (aka root directory) of the repository, or is the working directory.
  */
-function repositoryContainsPath(repository: atom$Repository, filePath: NuclideUri): boolean {
-  const workingDirectoryPath = repository.getWorkingDirectory();
+function repositoryContainsPath(repository, filePath) {
+  var workingDirectoryPath = repository.getWorkingDirectory();
   if (pathsAreEqual(workingDirectoryPath, filePath)) {
     return true;
   }
 
   if (repository.getType() === 'git') {
-    const rootGitProjectDirectory = new Directory(workingDirectoryPath);
+    var rootGitProjectDirectory = new _atom.Directory(workingDirectoryPath);
     return rootGitProjectDirectory.contains(filePath);
   } else if (repository.getType() === 'hg') {
-    const hgRepository = ((repository: any): HgRepositoryClient);
+    var hgRepository = repository;
     return hgRepository._workingDirectory.contains(filePath);
   }
-  throw new Error(
-    'repositoryContainsPath: Received an unrecognized repository type. Expected git or hg.');
+  throw new Error('repositoryContainsPath: Received an unrecognized repository type. Expected git or hg.');
 }
 
 /**
@@ -43,9 +41,9 @@ function repositoryContainsPath(repository: atom$Repository, filePath: NuclideUr
  * @param filePath2 An absolute file path.
  * @return Whether the file paths are equal, accounting for trailing slashes.
  */
-function pathsAreEqual(filePath1: string, filePath2: string): boolean {
-  return path.normalize(filePath1 + path.sep) === path.normalize(filePath2 + path.sep);
+function pathsAreEqual(filePath1, filePath2) {
+  return _path2['default'].normalize(filePath1 + _path2['default'].sep) === _path2['default'].normalize(filePath2 + _path2['default'].sep);
 }
 
-
 module.exports = repositoryContainsPath;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInJlcG9zaXRvcnlDb250YWluc1BhdGguanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztvQkFjd0IsTUFBTTs7b0JBQ2IsTUFBTTs7Ozs7Ozs7OztBQVF2QixTQUFTLHNCQUFzQixDQUFDLFVBQTJCLEVBQUUsUUFBb0IsRUFBVztBQUMxRixNQUFNLG9CQUFvQixHQUFHLFVBQVUsQ0FBQyxtQkFBbUIsRUFBRSxDQUFDO0FBQzlELE1BQUksYUFBYSxDQUFDLG9CQUFvQixFQUFFLFFBQVEsQ0FBQyxFQUFFO0FBQ2pELFdBQU8sSUFBSSxDQUFDO0dBQ2I7O0FBRUQsTUFBSSxVQUFVLENBQUMsT0FBTyxFQUFFLEtBQUssS0FBSyxFQUFFO0FBQ2xDLFFBQU0sdUJBQXVCLEdBQUcsb0JBQWMsb0JBQW9CLENBQUMsQ0FBQztBQUNwRSxXQUFPLHVCQUF1QixDQUFDLFFBQVEsQ0FBQyxRQUFRLENBQUMsQ0FBQztHQUNuRCxNQUFNLElBQUksVUFBVSxDQUFDLE9BQU8sRUFBRSxLQUFLLElBQUksRUFBRTtBQUN4QyxRQUFNLFlBQVksR0FBSyxVQUFVLEFBQTJCLENBQUM7QUFDN0QsV0FBTyxZQUFZLENBQUMsaUJBQWlCLENBQUMsUUFBUSxDQUFDLFFBQVEsQ0FBQyxDQUFDO0dBQzFEO0FBQ0QsUUFBTSxJQUFJLEtBQUssQ0FDYix1RkFBdUYsQ0FBQyxDQUFDO0NBQzVGOzs7Ozs7O0FBT0QsU0FBUyxhQUFhLENBQUMsU0FBaUIsRUFBRSxTQUFpQixFQUFXO0FBQ3BFLFNBQU8sa0JBQUssU0FBUyxDQUFDLFNBQVMsR0FBRyxrQkFBSyxHQUFHLENBQUMsS0FBSyxrQkFBSyxTQUFTLENBQUMsU0FBUyxHQUFHLGtCQUFLLEdBQUcsQ0FBQyxDQUFDO0NBQ3RGOztBQUdELE1BQU0sQ0FBQyxPQUFPLEdBQUcsc0JBQXNCLENBQUMiLCJmaWxlIjoicmVwb3NpdG9yeUNvbnRhaW5zUGF0aC5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtOdWNsaWRlVXJpfSBmcm9tICcuLi8uLi9udWNsaWRlLXJlbW90ZS11cmknO1xuaW1wb3J0IHR5cGUge0hnUmVwb3NpdG9yeUNsaWVudH0gZnJvbSAnLi4vLi4vbnVjbGlkZS1oZy1yZXBvc2l0b3J5LWNsaWVudCc7XG5cbmltcG9ydCB7RGlyZWN0b3J5fSBmcm9tICdhdG9tJztcbmltcG9ydCBwYXRoIGZyb20gJ3BhdGgnO1xuXG4vKipcbiAqIEBwYXJhbSByZXBvc2l0b3J5IEVpdGhlciBhIEdpdFJlcG9zaXRvcnkgb3IgSGdSZXBvc2l0b3J5Q2xpZW50LlxuICogQHBhcmFtIGZpbGVQYXRoIFRoZSBhYnNvbHV0ZSBmaWxlIHBhdGggb2YgaW50ZXJlc3QuXG4gKiBAcmV0dXJuIGJvb2xlYW4gV2hldGhlciB0aGUgZmlsZSBwYXRoIGV4aXN0cyB3aXRoaW4gdGhlIHdvcmtpbmcgZGlyZWN0b3J5XG4gKiAgIChha2Egcm9vdCBkaXJlY3RvcnkpIG9mIHRoZSByZXBvc2l0b3J5LCBvciBpcyB0aGUgd29ya2luZyBkaXJlY3RvcnkuXG4gKi9cbmZ1bmN0aW9uIHJlcG9zaXRvcnlDb250YWluc1BhdGgocmVwb3NpdG9yeTogYXRvbSRSZXBvc2l0b3J5LCBmaWxlUGF0aDogTnVjbGlkZVVyaSk6IGJvb2xlYW4ge1xuICBjb25zdCB3b3JraW5nRGlyZWN0b3J5UGF0aCA9IHJlcG9zaXRvcnkuZ2V0V29ya2luZ0RpcmVjdG9yeSgpO1xuICBpZiAocGF0aHNBcmVFcXVhbCh3b3JraW5nRGlyZWN0b3J5UGF0aCwgZmlsZVBhdGgpKSB7XG4gICAgcmV0dXJuIHRydWU7XG4gIH1cblxuICBpZiAocmVwb3NpdG9yeS5nZXRUeXBlKCkgPT09ICdnaXQnKSB7XG4gICAgY29uc3Qgcm9vdEdpdFByb2plY3REaXJlY3RvcnkgPSBuZXcgRGlyZWN0b3J5KHdvcmtpbmdEaXJlY3RvcnlQYXRoKTtcbiAgICByZXR1cm4gcm9vdEdpdFByb2plY3REaXJlY3RvcnkuY29udGFpbnMoZmlsZVBhdGgpO1xuICB9IGVsc2UgaWYgKHJlcG9zaXRvcnkuZ2V0VHlwZSgpID09PSAnaGcnKSB7XG4gICAgY29uc3QgaGdSZXBvc2l0b3J5ID0gKChyZXBvc2l0b3J5OiBhbnkpOiBIZ1JlcG9zaXRvcnlDbGllbnQpO1xuICAgIHJldHVybiBoZ1JlcG9zaXRvcnkuX3dvcmtpbmdEaXJlY3RvcnkuY29udGFpbnMoZmlsZVBhdGgpO1xuICB9XG4gIHRocm93IG5ldyBFcnJvcihcbiAgICAncmVwb3NpdG9yeUNvbnRhaW5zUGF0aDogUmVjZWl2ZWQgYW4gdW5yZWNvZ25pemVkIHJlcG9zaXRvcnkgdHlwZS4gRXhwZWN0ZWQgZ2l0IG9yIGhnLicpO1xufVxuXG4vKipcbiAqIEBwYXJhbSBmaWxlUGF0aDEgQW4gYWJvbHV0ZSBmaWxlIHBhdGguXG4gKiBAcGFyYW0gZmlsZVBhdGgyIEFuIGFic29sdXRlIGZpbGUgcGF0aC5cbiAqIEByZXR1cm4gV2hldGhlciB0aGUgZmlsZSBwYXRocyBhcmUgZXF1YWwsIGFjY291bnRpbmcgZm9yIHRyYWlsaW5nIHNsYXNoZXMuXG4gKi9cbmZ1bmN0aW9uIHBhdGhzQXJlRXF1YWwoZmlsZVBhdGgxOiBzdHJpbmcsIGZpbGVQYXRoMjogc3RyaW5nKTogYm9vbGVhbiB7XG4gIHJldHVybiBwYXRoLm5vcm1hbGl6ZShmaWxlUGF0aDEgKyBwYXRoLnNlcCkgPT09IHBhdGgubm9ybWFsaXplKGZpbGVQYXRoMiArIHBhdGguc2VwKTtcbn1cblxuXG5tb2R1bGUuZXhwb3J0cyA9IHJlcG9zaXRvcnlDb250YWluc1BhdGg7XG4iXX0=

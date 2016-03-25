@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,53 +10,7 @@
  * the root directory of this source tree.
  */
 
-export type Store = {
-  toggleProvider(service: Provider): void;
-}
+// The original query that prompted this result, e.g. to highlight it in the UI.
 
-export type ProviderType = 'DIRECTORY' | 'GLOBAL';
-
-export type Provider = {
-  executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>>;
-  getProviderType(): ProviderType;
-  getName(): string;
-  isRenderable(): boolean;
-  getTabTitle(): string;
-
-  getPromptText?: () => string;
-  getAction?: () => string;
-  getDebounceDelay?: () => number;
-  isEligibleForDirectory?: (directory: atom$Directory) => Promise<boolean>;
-  getComponentForItem?: (item: FileResult) => ReactElement;
-};
-
-export type FileResult = {
-  path: string;
-  matchIndexes?: Array<number>;
-  score?: number;
-  // The original query that prompted this result, e.g. to highlight it in the UI.
-  query?: string;
-  context?: string;
-  timestamp?: number;
-  // Jump to line/column if provided.
-  line?: number;
-  column?: number;
-};
-
-export type ProviderResult = {
-  error: ?Object;
-  loading: boolean;
-  results: Array<FileResult>;
-};
-
-export type DirectoryName = string;
-export type ServiceName = string;
-
-export type GroupedResult = {
-  [key: ServiceName]: {
-    results: {
-      [key: DirectoryName]: ProviderResult
-    };
-    title: string;
-  }
-};
+// Jump to line/column if provided.
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJ0eXBlcy5qcyIsInNvdXJjZXNDb250ZW50IjpbXX0=

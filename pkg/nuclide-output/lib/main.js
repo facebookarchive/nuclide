@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,36 +10,40 @@
  * the root directory of this source tree.
  */
 
-import type ActivationType from './Activation';
-import type {GadgetsService} from '../../nuclide-gadgets-interfaces';
-import type OutputService from './OutputService';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeGadgetsService = consumeGadgetsService;
+exports.provideOutputService = provideOutputService;
 
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let activation: ?ActivationType = null;
+var _assert = require('assert');
 
-export function activate(state: ?Object) {
+var _assert2 = _interopRequireDefault(_assert);
+
+var activation = null;
+
+function activate(state) {
   if (activation == null) {
-    const Activation = require('./Activation');
+    var Activation = require('./Activation');
     activation = new Activation(state);
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function consumeGadgetsService(
-  gadgetsApi: GadgetsService,
-): IDisposable {
-  invariant(activation);
+function consumeGadgetsService(gadgetsApi) {
+  (0, _assert2['default'])(activation);
   return activation.consumeGadgetsService(gadgetsApi);
 }
 
-export function provideOutputService(): OutputService {
-  invariant(activation);
+function provideOutputService() {
+  (0, _assert2['default'])(activation);
   return activation.provideOutputService();
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7OztzQkFlc0IsUUFBUTs7OztBQUU5QixJQUFJLFVBQTJCLEdBQUcsSUFBSSxDQUFDOztBQUVoQyxTQUFTLFFBQVEsQ0FBQyxLQUFjLEVBQUU7QUFDdkMsTUFBSSxVQUFVLElBQUksSUFBSSxFQUFFO0FBQ3RCLFFBQU0sVUFBVSxHQUFHLE9BQU8sQ0FBQyxjQUFjLENBQUMsQ0FBQztBQUMzQyxjQUFVLEdBQUcsSUFBSSxVQUFVLENBQUMsS0FBSyxDQUFDLENBQUM7R0FDcEM7Q0FDRjs7QUFFTSxTQUFTLFVBQVUsR0FBRztBQUMzQixNQUFJLFVBQVUsSUFBSSxJQUFJLEVBQUU7QUFDdEIsY0FBVSxDQUFDLE9BQU8sRUFBRSxDQUFDO0FBQ3JCLGNBQVUsR0FBRyxJQUFJLENBQUM7R0FDbkI7Q0FDRjs7QUFFTSxTQUFTLHFCQUFxQixDQUNuQyxVQUEwQixFQUNiO0FBQ2IsMkJBQVUsVUFBVSxDQUFDLENBQUM7QUFDdEIsU0FBTyxVQUFVLENBQUMscUJBQXFCLENBQUMsVUFBVSxDQUFDLENBQUM7Q0FDckQ7O0FBRU0sU0FBUyxvQkFBb0IsR0FBa0I7QUFDcEQsMkJBQVUsVUFBVSxDQUFDLENBQUM7QUFDdEIsU0FBTyxVQUFVLENBQUMsb0JBQW9CLEVBQUUsQ0FBQztDQUMxQyIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUgQWN0aXZhdGlvblR5cGUgZnJvbSAnLi9BY3RpdmF0aW9uJztcbmltcG9ydCB0eXBlIHtHYWRnZXRzU2VydmljZX0gZnJvbSAnLi4vLi4vbnVjbGlkZS1nYWRnZXRzLWludGVyZmFjZXMnO1xuaW1wb3J0IHR5cGUgT3V0cHV0U2VydmljZSBmcm9tICcuL091dHB1dFNlcnZpY2UnO1xuXG5pbXBvcnQgaW52YXJpYW50IGZyb20gJ2Fzc2VydCc7XG5cbmxldCBhY3RpdmF0aW9uOiA/QWN0aXZhdGlvblR5cGUgPSBudWxsO1xuXG5leHBvcnQgZnVuY3Rpb24gYWN0aXZhdGUoc3RhdGU6ID9PYmplY3QpIHtcbiAgaWYgKGFjdGl2YXRpb24gPT0gbnVsbCkge1xuICAgIGNvbnN0IEFjdGl2YXRpb24gPSByZXF1aXJlKCcuL0FjdGl2YXRpb24nKTtcbiAgICBhY3RpdmF0aW9uID0gbmV3IEFjdGl2YXRpb24oc3RhdGUpO1xuICB9XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBkZWFjdGl2YXRlKCkge1xuICBpZiAoYWN0aXZhdGlvbiAhPSBudWxsKSB7XG4gICAgYWN0aXZhdGlvbi5kaXNwb3NlKCk7XG4gICAgYWN0aXZhdGlvbiA9IG51bGw7XG4gIH1cbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGNvbnN1bWVHYWRnZXRzU2VydmljZShcbiAgZ2FkZ2V0c0FwaTogR2FkZ2V0c1NlcnZpY2UsXG4pOiBJRGlzcG9zYWJsZSB7XG4gIGludmFyaWFudChhY3RpdmF0aW9uKTtcbiAgcmV0dXJuIGFjdGl2YXRpb24uY29uc3VtZUdhZGdldHNTZXJ2aWNlKGdhZGdldHNBcGkpO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gcHJvdmlkZU91dHB1dFNlcnZpY2UoKTogT3V0cHV0U2VydmljZSB7XG4gIGludmFyaWFudChhY3RpdmF0aW9uKTtcbiAgcmV0dXJuIGFjdGl2YXRpb24ucHJvdmlkZU91dHB1dFNlcnZpY2UoKTtcbn1cbiJdfQ==
