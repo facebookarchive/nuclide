@@ -28,3 +28,16 @@ var pkgCopy = JSON.parse(JSON.stringify(pkg));
 delete pkgCopy.private;
 var newPackageJson = JSON.stringify(pkgCopy, null, 2) + '\n';
 fs.writeFileSync(packageJsonPath, newPackageJson);
+
+/**
+ * npm-shrinkwrap.json:
+ */
+try {
+  var prodShrinkwrapPath = require.resolve('../../npm-shrinkwrap.production.json');
+  var realShrinkwrapPath = require.resolve('../../npm-shrinkwrap.json');
+  fs.renameSync(prodShrinkwrapPath, realShrinkwrapPath);
+} catch (err) {
+  if (!/Error: Cannot find module/.test(err)) {
+    throw err;
+  }
+}
