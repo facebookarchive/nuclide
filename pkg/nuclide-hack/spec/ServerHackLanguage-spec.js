@@ -48,13 +48,11 @@ describe('ServerHackLanguage', () => {
       'getMethodName',
       'getReferences',
     ]);
-    spyOn(require('../lib/utils'), 'getHackService')
-      .andReturn(mockService);
 
     const ServerHackLanguageCtor =
       ((uncachedRequire(require, '../lib/ServerHackLanguage'): any): ServerHackLanguageType)
         .ServerHackLanguage;
-    hackLanguage = new ServerHackLanguageCtor(true, basePath);
+    hackLanguage = new ServerHackLanguageCtor((mockService: any), true, basePath);
   });
 
   it('isHackAvailable', () => {

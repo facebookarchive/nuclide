@@ -22,13 +22,13 @@ import type {
   HackReferencesResult,
   HackOutline,
 } from '../../nuclide-hack-base/lib/HackService';
+import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
 import type {SymbolTypeValue} from '../../nuclide-hack-common';
 import {TypeCoverageRegion} from './TypedRegions';
 
 import type {HackSymbolNameResult} from '../../nuclide-hack-base/lib/types';
 
 import {parse, createRemoteUri, getPath} from '../../nuclide-remote-uri';
-import {getHackService} from './utils';
 import {getLogger} from '../../nuclide-logging';
 import {array} from '../../nuclide-commons';
 import {Range, Emitter} from 'atom';
@@ -53,6 +53,7 @@ const MAX_HACK_WORKER_TEXT_SIZE = 10000;
  */
 export class LocalHackLanguage {
 
+  _hackService: HackService;
   _hhAvailable: boolean;
   _hackWorker: HackWorker;
   _pathContentsMap: Map<string, string>;
@@ -66,7 +67,13 @@ export class LocalHackLanguage {
    * `basePath` should be the directory where the .hhconfig file is located.
    * It should only be null if client is null.
    */
-  constructor(hhAvailable: boolean, basePath: ?string, initialFileUri: NuclideUri) {
+  constructor(
+      hackService: HackService,
+      hhAvailable: boolean,
+      basePath: ?string,
+      initialFileUri: NuclideUri
+  ) {
+    this._hackService = hackService;
     this._hhAvailable = hhAvailable;
     this._hackWorker = new HackWorker();
     this._pathContentsMap = new Map();
@@ -116,8 +123,7 @@ export class LocalHackLanguage {
     const completionType = getCompletionType(response.completion_type);
     let {completions} = response;
     if (shouldDoServerCompletion(completionType) || !completions.length) {
-      const {getCompletions} = getHackService(filePath);
-      const completionsResult = await getCompletions(filePath, markedContents);
+      const completionsResult = await this._hackService.getCompletions(filePath, markedContents);
       if (completionsResult) {
         completions = ((completionsResult: any): HackCompletionsResult).completions;
       }
@@ -146,8 +152,7 @@ export class LocalHackLanguage {
     }
 
     this._isFinishedLoadingDependencies = false;
-    const {getDependencies} = getHackService(this._initialFileUri);
-    const dependenciesResult = await getDependencies(
+    const dependenciesResult = await this._hackService.getDependencies(
       this._initialFileUri, response.deps
     );
     if (!dependenciesResult) {
@@ -251,10 +256,9 @@ export class LocalHackLanguage {
   async _getServerDiagnostics(
     filePath: NuclideUri,
   ): Promise<Array<{message: HackDiagnostic;}>> {
-    const {getDiagnostics} = getHackService(filePath);
     let diagnosticResult = null;
     try {
-      diagnosticResult = await getDiagnostics(filePath, '');
+      diagnosticResult = await this._hackService.getDiagnostics(filePath, '');
     } catch (err) {
       getLogger().error(err);
       return [];
@@ -270,8 +274,7 @@ export class LocalHackLanguage {
   async getTypeCoverage(
     filePath: NuclideUri,
   ): Promise<Array<TypeCoverageRegion>> {
-    const {getTypedRegions} = getHackService(filePath);
-    const regions = await getTypedRegions(filePath);
+    const regions = await this._hackService.getTypedRegions(filePath);
     return convertTypedRegionsToCoverageRegions(regions);
   }
 
@@ -279,8 +282,7 @@ export class LocalHackLanguage {
     filePath: NuclideUri,
     contents: string,
   ): Promise<?HackOutline> {
-    const {getOutline} = getHackService(filePath);
-    return getOutline(filePath, contents);
+    return this._hackService.getOutline(filePath, contents);
   }
 
   async getDefinition(
@@ -382,8 +384,8 @@ export class LocalHackLanguage {
     if (!symbol || !symbol.name) {
       return [];
     }
-    const {getDefinition} = getHackService(filePath);
-    const definitionResult = await getDefinition(filePath, symbol.name, symbol.type);
+    const definitionResult =
+      await this._hackService.getDefinition(filePath, symbol.name, symbol.type);
     if (!definitionResult) {
       return [];
     }
@@ -428,8 +430,7 @@ export class LocalHackLanguage {
       column: number,
       lineText: string,
   ): Promise<Array<HackSearchPosition>> {
-    const {getIdentifierDefinition} = getHackService(filePath);
-    const definitionResult = await getIdentifierDefinition(
+    const definitionResult = await this._hackService.getIdentifierDefinition(
       filePath, contents, lineNumber, column
     );
     return processDefinitionsForXhp(definitionResult, column, lineText);
@@ -444,8 +445,8 @@ export class LocalHackLanguage {
     if (!search) {
       return [];
     }
-    const {getDefinition} = getHackService(filePath);
-    const definitionResult = await getDefinition(filePath, search, SymbolType.UNKNOWN);
+    const definitionResult =
+      await this._hackService.getDefinition(filePath, search, SymbolType.UNKNOWN);
     if (!definitionResult) {
       return [];
     }
@@ -518,8 +519,8 @@ export class LocalHackLanguage {
     contents: string,
     symbol: HackSymbolNameResult,
   ): Promise<?HackReferencesResult> {
-    const {getReferences} = getHackService(filePath);
-    const referencesResult = await getReferences(filePath, symbol.name, symbol.type);
+    const referencesResult =
+      await this._hackService.getReferences(filePath, symbol.name, symbol.type);
     return ((referencesResult: any): HackReferencesResult);
   }
 

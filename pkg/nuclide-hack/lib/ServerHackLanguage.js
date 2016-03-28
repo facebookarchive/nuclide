@@ -18,10 +18,10 @@ import type {
   HackReference,
   HackOutline,
 } from '../../nuclide-hack-base/lib/HackService';
+import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
 import {TypeCoverageRegion} from './TypedRegions';
 
 import {Range} from 'atom';
-import {getHackService} from './utils';
 import {getLogger} from '../../nuclide-logging';
 import {convertTypedRegionsToCoverageRegions} from './TypedRegions';
 import {
@@ -37,13 +37,15 @@ import {
  */
 export class ServerHackLanguage {
 
+  _hackService: HackService;
   _hhAvailable: boolean;
   _basePath: ?string;
 
   /**
    * `basePath` should be the directory where the .hhconfig file is located.
    */
-  constructor(hhAvailable: boolean, basePath: ?string) {
+  constructor(hackService: HackService, hhAvailable: boolean, basePath: ?string) {
+    this._hackService = hackService;
     this._hhAvailable = hhAvailable;
     this._basePath = basePath;
   }
@@ -58,8 +60,7 @@ export class ServerHackLanguage {
   ): Promise<Array<CompletionResult>> {
     const markedContents = markFileForCompletion(contents, offset);
     let completions = [];
-    const {getCompletions} = getHackService(filePath);
-    const completionsResult = await getCompletions(filePath, markedContents);
+    const completionsResult = await this._hackService.getCompletions(filePath, markedContents);
     if (completionsResult) {
       completions = completionsResult.completions;
     }
@@ -75,8 +76,8 @@ export class ServerHackLanguage {
     if (path == null) {
       throw new Error('No Hack provider for this file.');
     }
-    const {formatSource} = getHackService(path);
-    const response = await formatSource(path, contents, startPosition, endPosition);
+    const response =
+      await this._hackService.formatSource(path, contents, startPosition, endPosition);
     if (response == null) {
       throw new Error('Error formatting hack source.');
     } else if (response.error_message !== '') {
@@ -91,8 +92,7 @@ export class ServerHackLanguage {
     line: number,
     col: number,
   ): Promise<Array<atom$Range>> {
-    const {getSourceHighlights} = getHackService(filePath);
-    const response = await getSourceHighlights(filePath, contents, line, col);
+    const response = await this._hackService.getSourceHighlights(filePath, contents, line, col);
     if (response == null) {
       return [];
     }
@@ -103,10 +103,9 @@ export class ServerHackLanguage {
     filePath: NuclideUri,
     contents: string,
   ): Promise<Array<{message: HackDiagnostic;}>> {
-    const {getDiagnostics} = getHackService(filePath);
     let diagnosticResult = null;
     try {
-      diagnosticResult = await getDiagnostics(filePath, contents);
+      diagnosticResult = await this._hackService.getDiagnostics(filePath, contents);
     } catch (err) {
       getLogger().error(err);
       return [];
@@ -122,8 +121,7 @@ export class ServerHackLanguage {
   async getTypeCoverage(
     filePath: NuclideUri,
   ): Promise<Array<TypeCoverageRegion>> {
-    const {getTypedRegions} = getHackService(filePath);
-    const regions = await getTypedRegions(filePath);
+    const regions = await this._hackService.getTypedRegions(filePath);
     return convertTypedRegionsToCoverageRegions(regions);
   }
 
@@ -131,8 +129,7 @@ export class ServerHackLanguage {
     filePath: NuclideUri,
     contents: string,
   ): Promise<?HackOutline> {
-    const {getOutline} = getHackService(filePath);
-    return getOutline(filePath, contents);
+    return this._hackService.getOutline(filePath, contents);
   }
 
   async getDefinition(
@@ -142,8 +139,7 @@ export class ServerHackLanguage {
     column: number,
     lineText: string
   ): Promise<Array<HackSearchPosition>> {
-    const {getIdentifierDefinition} = getHackService(filePath);
-    const definitionResult = await getIdentifierDefinition(
+    const definitionResult = await this._hackService.getIdentifierDefinition(
       filePath, contents, lineNumber, column
     );
     const identifierResult = processDefinitionsForXhp(definitionResult, column, lineText);
@@ -160,8 +156,7 @@ export class ServerHackLanguage {
     if (!expression.startsWith('$')) {
       return null;
     }
-    const {getTypeAtPos} = getHackService(filePath);
-    const result = await getTypeAtPos(filePath, contents, lineNumber, column);
+    const result = await this._hackService.getTypeAtPos(filePath, contents, lineNumber, column);
     return result == null ? null : result.type;
   }
 
@@ -171,9 +166,8 @@ export class ServerHackLanguage {
     line: number,
     column: number
   ): Promise<?{baseUri: string; symbolName: string; references: Array<HackReference>}> {
-    const {getMethodName, getReferences} = getHackService(filePath);
-
-    const getMethodNameResult = await getMethodName(filePath, contents, line + 1, column + 1);
+    const getMethodNameResult =
+      await this._hackService.getMethodName(filePath, contents, line + 1, column + 1);
     if (getMethodNameResult == null) {
       return null;
     }
@@ -184,7 +178,8 @@ export class ServerHackLanguage {
       return null;
     }
 
-    const referencesResult = await getReferences(filePath, symbolName, symbolType);
+    const referencesResult =
+      await this._hackService.getReferences(filePath, symbolName, symbolType);
     if (!referencesResult) {
       return null;
     }

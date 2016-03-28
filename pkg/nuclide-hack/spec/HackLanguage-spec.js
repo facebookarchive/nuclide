@@ -16,7 +16,11 @@ import {LocalHackLanguage} from '../lib/LocalHackLanguage';
 describe('HackLanguage', () => {
   let hackLanguage;
   beforeEach(() => {
-    hackLanguage = new LocalHackLanguage(false, '', '');
+    const mockService = jasmine.createSpyObj('HackService', [
+      'getDependencies',
+    ]);
+
+    hackLanguage = new LocalHackLanguage((mockService: any), false, '', '');
   });
 
   afterEach(() => {

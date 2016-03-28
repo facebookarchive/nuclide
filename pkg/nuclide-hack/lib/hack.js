@@ -286,7 +286,7 @@ async function createHackLanguageIfNotExisting(
     // If multiple calls were done asynchronously, then return the single-created HackLanguage.
     if (!uriToHackLanguage.has(key)) {
       uriToHackLanguage.set(key,
-        createHackLanguage(isHHAvailable, hackRoot, fileUri, useIdeConnection));
+        createHackLanguage(service, isHHAvailable, hackRoot, fileUri, useIdeConnection));
     }
   }
   return uriToHackLanguage.get(key);

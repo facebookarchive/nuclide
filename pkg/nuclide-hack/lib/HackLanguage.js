@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
+import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
 import type {
   HackDiagnostic,
   HackSearchPosition,
@@ -99,12 +100,13 @@ export type HackLanguage  = {
 }
 
 export function createHackLanguage(
+    hackService: HackService,
     hhAvailable: boolean,
     basePath: ?string,
     initialFileUri: NuclideUri,
     useIdeConnection: boolean,
 ): HackLanguage {
   return useIdeConnection
-    ? new ServerHackLanguage(hhAvailable, basePath)
-    : new LocalHackLanguage(hhAvailable, basePath, initialFileUri);
+    ? new ServerHackLanguage(hackService, hhAvailable, basePath)
+    : new LocalHackLanguage(hackService, hhAvailable, basePath, initialFileUri);
 }
