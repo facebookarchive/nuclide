@@ -121,9 +121,9 @@ function createHackLanguage(
     hhAvailable: boolean,
     basePath: ?string,
     initialFileUri: NuclideUri,
-    useIdeConnection: boolean,
+    useServerOnly: boolean,
 ): HackLanguage {
-  return useIdeConnection
+  return useServerOnly
     ? new ServerHackLanguage(hackService, hhAvailable, basePath)
     : new LocalHackLanguage(hackService, hhAvailable, basePath, initialFileUri);
 }
@@ -168,7 +168,7 @@ async function createHackLanguageIfNotExisting(
           hackEnvironment.isAvailable,
           hackEnvironment.hackRoot,
           fileUri,
-          hackEnvironment.useIdeConnection));
+          hackEnvironment.useServerOnly || hackEnvironment.useIdeConnection));
     }
   }
   return uriToHackLanguage.get(key);

@@ -77,6 +77,7 @@ export type HackEnvironment = {
   hackRoot: ?NuclideUri;
   hackCommand: ?string;
   isAvailable: boolean;
+  useServerOnly: boolean;
   useIdeConnection: boolean;
 };
 
@@ -105,6 +106,7 @@ export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<Ha
     hackRoot,
     hackCommand,
     isAvailable,
+    useServerOnly: config.useServerOnly,
     useIdeConnection,
   };
 }
