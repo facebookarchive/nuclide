@@ -83,9 +83,6 @@ function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
   // TODO: Query packager for running RN app?
 
   if (currentProjectDir == null) {
-    atom.notifications.addError(
-      'You must have an open project to debug a React Native application'
-    );
     return Promise.resolve([]);
   }
 
