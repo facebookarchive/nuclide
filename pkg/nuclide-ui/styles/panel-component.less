@@ -36,16 +36,6 @@
   display: flex;
   flex: 1 1 auto;
   overflow: auto;
-  /*
-   * Chromium on OS X with a Touchpad adds `overflow-scrolling: touch;` to containers with scrolling
-   * content, which creates large, extraneous layers in the nuclide-file-tree. Force a new wrapping
-   * layer by adding the following transform to prevent Chromium from creating those extraneous
-   * layers.
-   *
-   * This dramatically reduces the cost of layer tree updates ("Update Layer Tree" events in the
-   * devtools "Timeline" tab) that occur frequently while typing.
-   */
-  transform: translateZ(0);
 }
 
 .nuclide-ui-panel-component-resize-handle {
