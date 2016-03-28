@@ -15,6 +15,7 @@ import type {TextToken} from '../../nuclide-tokenized-text';
 
 import {React} from 'react-for-atom';
 import invariant from 'assert';
+import classnames from 'classnames';
 
 import {goToLocationInEditor} from '../../nuclide-atom-helpers';
 import {getLogger} from '../../nuclide-logging';
@@ -146,10 +147,16 @@ function renderTree(
     pane.activateItem(editor);
     goToLocationInEditor(editor, outline.startPosition.row, outline.startPosition.column);
   };
+
+  const classes = classnames(
+    'list-item',
+    'nuclide-outline-view-item',
+    { 'selected': outline.highlighted },
+  );
   return (
     <ul className="list-tree" key={index}>
       <li className="list-nested-item">
-        <div className="list-item nuclide-outline-view-item" onClick={onClick}>
+        <div className={classes} onClick={onClick}>
           {outline.tokenizedText.map(renderTextToken)}
         </div>
         {renderTrees(editor, outline.children)}
