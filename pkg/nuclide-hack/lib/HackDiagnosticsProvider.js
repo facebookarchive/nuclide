@@ -24,7 +24,8 @@ import type {
 } from '../../nuclide-diagnostics-base';
 
 import {trackTiming} from '../../nuclide-analytics';
-import {findDiagnostics, getHackLanguageForUri, getCachedHackLanguageForUri} from './hack';
+import {findDiagnostics} from './hack';
+import {getHackLanguageForUri, getCachedHackLanguageForUri} from './HackLanguage';
 import {array, promises} from '../../nuclide-commons';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import {Range} from 'atom';

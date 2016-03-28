@@ -18,7 +18,7 @@ import type {
 } from '../../nuclide-diagnostics-base';
 import type {TypeCoverageRegion} from './TypedRegions';
 
-import {getHackLanguageForUri} from './hack';
+import {getHackLanguageForUri} from './HackLanguage';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import {CompositeDisposable, Range} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';

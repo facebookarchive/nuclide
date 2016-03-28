@@ -9,39 +9,21 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {
   HackReference,
   HackDiagnostic,
   HackOutline,
 } from '../../nuclide-hack-base/lib/HackService';
 import type {TypeHint} from '../../nuclide-type-hint-interfaces';
-import type {HackLanguage} from './HackLanguage';
 
 import invariant from 'assert';
 import {extractWordAtPosition} from '../../nuclide-atom-helpers';
-import {createHackLanguage} from './HackLanguage';
-import {isRemote} from '../../nuclide-remote-uri';
+import {getHackLanguageForUri} from './HackLanguage';
 import {Range} from 'atom';
-import {RemoteConnection} from '../../nuclide-remote-connection';
-import {compareHackCompletions, getHackEnvironmentDetails} from './utils';
+import {compareHackCompletions} from './utils';
 
 const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 
-
-/**
- * This is responsible for managing (creating/disposing) multiple HackLanguage instances,
- * creating the designated HackService instances with the NuclideClient it needs per remote project.
- * Also, it deelegates the language feature request to the correct HackLanguage instance.
- */
-const uriToHackLanguage: Map<string, HackLanguage> = new Map();
-
-// dummy key into uriToHackLanguage for local projects.
-// Any non-remote NuclideUri will do.
-// TODO: I suspect we should key the local service off of the presence of a .hhconfig file
-// rather than having a single HackLanguage for all local requests. Regardless, we haven't tested
-// local hack services so save that for another day.
-const LOCAL_URI_KEY = 'local-hack-key';
 
 module.exports = {
 
@@ -227,53 +209,4 @@ module.exports = {
       column,
     );
   },
-
-  getHackLanguageForUri,
-  getCachedHackLanguageForUri,
 };
-
-// Returns null if we can't get the key at this time because the RemoteConnection is initializing.
-// This can happen on startup when reloading remote files.
-function getKeyOfUri(uri: NuclideUri): ?string {
-  const remoteConnection = RemoteConnection.getForUri(uri);
-  return remoteConnection == null ?
-    (isRemote(uri) ? null : LOCAL_URI_KEY) :
-    remoteConnection.getUriForInitialWorkingDirectory();
-}
-
-function getCachedHackLanguageForUri(uri: NuclideUri): ?HackLanguage {
-  const key = getKeyOfUri(uri);
-  return key == null ? null : uriToHackLanguage.get(uri);
-}
-
-async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLanguage> {
-  if (uri == null || uri.length === 0) {
-    return null;
-  }
-  const key = getKeyOfUri(uri);
-  if (key == null) {
-    return null;
-  }
-  return await createHackLanguageIfNotExisting(key, uri);
-}
-
-async function createHackLanguageIfNotExisting(
-  key: string,
-  fileUri: NuclideUri,
-): Promise<HackLanguage> {
-  if (!uriToHackLanguage.has(key)) {
-    const hackEnvironment = await getHackEnvironmentDetails(fileUri);
-
-    // If multiple calls were done asynchronously, then return the single-created HackLanguage.
-    if (!uriToHackLanguage.has(key)) {
-      uriToHackLanguage.set(key,
-        createHackLanguage(
-          hackEnvironment.hackService,
-          hackEnvironment.isAvailable,
-          hackEnvironment.hackRoot,
-          fileUri,
-          hackEnvironment.useIdeConnection));
-    }
-  }
-  return uriToHackLanguage.get(key);
-}

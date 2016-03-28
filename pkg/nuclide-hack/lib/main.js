@@ -42,7 +42,7 @@ let coverageProvider = null;
 module.exports = {
 
   activate() {
-    const {getCachedHackLanguageForUri} = require('./hack');
+    const {getCachedHackLanguageForUri} = require('./HackLanguage');
     const {projects} = require('../../nuclide-atom-helpers');
     subscriptions = new CompositeDisposable();
     subscriptions.add(projects.onDidRemoveProjectPath(projectPath => {

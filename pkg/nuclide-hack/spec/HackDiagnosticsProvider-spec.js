@@ -10,6 +10,7 @@
  */
 
 import {Range} from 'atom';
+import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 
 const testPath = 'myPath';
 
@@ -30,14 +31,20 @@ describe('HackDiagnosticsProvider', () => {
     fakeHackLanguages = [];
     fakeHackLanguages.push(createFakeHackLanguage('/hack/root1'));
     fakeHackLanguages.push(createFakeHackLanguage('/hack/root2'));
-    require('../lib/hack').getCachedHackLanguageForUri = uri =>
-      fakeHackLanguages.filter(fakeLanguage => uri.startsWith(fakeLanguage._uri))[0];
+    spyOn(require('../lib/HackLanguage'), 'getCachedHackLanguageForUri')
+      .andCallFake(uri =>
+      fakeHackLanguages.filter(fakeLanguage => uri.startsWith(fakeLanguage._uri))[0]);
     class FakeProviderBase { }
-    const HackDiagnosticsProvider = require('../lib/HackDiagnosticsProvider');
+    const HackDiagnosticsProvider
+      = (uncachedRequire(require, '../lib/HackDiagnosticsProvider'): any);
     hackDiagnosticsProvider = new HackDiagnosticsProvider(
       false,
       (FakeProviderBase: any),
     );
+  });
+
+  afterEach(() => {
+    clearRequireCache(require, '../lib/HackDiagnosticsProvider');
   });
 
   describe('processDiagnostics', () => {
