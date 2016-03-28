@@ -23,10 +23,8 @@ import {extractWordAtPosition} from '../../nuclide-atom-helpers';
 import {createHackLanguage} from './HackLanguage';
 import {isRemote} from '../../nuclide-remote-uri';
 import {Range} from 'atom';
-import {getHackService} from './utils';
 import {RemoteConnection} from '../../nuclide-remote-connection';
-import {compareHackCompletions} from './utils';
-import {getConfig} from './config';
+import {compareHackCompletions, getHackEnvironmentDetails} from './utils';
 
 const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 
@@ -259,34 +257,22 @@ async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLanguage> {
   return await createHackLanguageIfNotExisting(key, uri);
 }
 
-async function passesGK(): Promise<boolean> {
-  try {
-    const {gatekeeper, GK_HACK_USE_PERSISTENT_CONNECTION} = require('../../fb-gatekeeper');
-    return await gatekeeper.asyncIsGkEnabled(GK_HACK_USE_PERSISTENT_CONNECTION) === true;
-  } catch (e) {
-    return false;
-  }
-}
-
 async function createHackLanguageIfNotExisting(
   key: string,
   fileUri: NuclideUri,
 ): Promise<HackLanguage> {
   if (!uriToHackLanguage.has(key)) {
-    const service = getHackService(fileUri);
-    const config = getConfig();
-    const useIdeConnection = config.useIdeConnection || (await passesGK());
-    const hackEnvironment = await service.getHackEnvironmentDetails(
-      fileUri,
-      config.hhClientPath,
-      useIdeConnection);
-    const isHHAvailable = hackEnvironment != null;
-    const {hackRoot} = hackEnvironment || {};
+    const hackEnvironment = await getHackEnvironmentDetails(fileUri);
 
     // If multiple calls were done asynchronously, then return the single-created HackLanguage.
     if (!uriToHackLanguage.has(key)) {
       uriToHackLanguage.set(key,
-        createHackLanguage(service, isHHAvailable, hackRoot, fileUri, useIdeConnection));
+        createHackLanguage(
+          hackEnvironment.hackService,
+          hackEnvironment.isAvailable,
+          hackEnvironment.hackRoot,
+          fileUri,
+          hackEnvironment.useIdeConnection));
     }
   }
   return uriToHackLanguage.get(key);

@@ -12,6 +12,7 @@
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
 
+import {getConfig} from './config';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import invariant from 'assert';
 
@@ -23,7 +24,8 @@ const MATCH_PRIVATE_FUNCTION_PENALTY = -4;
 const MATCH_APLHABETICAL_SCORE = 1;
 const HACK_SERVICE_NAME = 'HackService';
 
-function compareHackCompletions(token: string): (matchText1: string, matchText2: string) => number {
+export function compareHackCompletions(token: string)
+    : (matchText1: string, matchText2: string) => number {
   const tokenLowerCase = token.toLowerCase();
 
   return (matchText1: string, matchText2: string) => {
@@ -62,14 +64,47 @@ function compareHackCompletions(token: string): (matchText1: string, matchText2:
   };
 }
 
+// Don't call this directly from outside this package.
+// Call getHackEnvironmentDetails instead.
 function getHackService(filePath: NuclideUri): HackService {
   const hackRegisteredService = getServiceByNuclideUri(HACK_SERVICE_NAME, filePath);
   invariant(hackRegisteredService);
   return hackRegisteredService;
 }
 
-
-module.exports = {
-  compareHackCompletions,
-  getHackService,
+export type HackEnvironment = {
+  hackService: HackService;
+  hackRoot: ?NuclideUri;
+  hackCommand: ?string;
+  isAvailable: boolean;
+  useIdeConnection: boolean;
 };
+
+async function passesGK(): Promise<boolean> {
+  try {
+    const {gatekeeper, GK_HACK_USE_PERSISTENT_CONNECTION} = require('../../fb-gatekeeper');
+    return await gatekeeper.asyncIsGkEnabled(GK_HACK_USE_PERSISTENT_CONNECTION) === true;
+  } catch (e) {
+    return false;
+  }
+}
+
+export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<HackEnvironment> {
+  const hackService = getHackService(fileUri);
+  const config = getConfig();
+  const useIdeConnection = config.useIdeConnection || (await passesGK());
+  const hackEnvironment = await hackService.getHackEnvironmentDetails(
+    fileUri,
+    config.hhClientPath,
+    useIdeConnection);
+  const isAvailable = hackEnvironment != null;
+  const {hackRoot, hackCommand} = hackEnvironment || {};
+
+  return {
+    hackService,
+    hackRoot,
+    hackCommand,
+    isAvailable,
+    useIdeConnection,
+  };
+}
