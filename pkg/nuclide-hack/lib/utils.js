@@ -81,10 +81,10 @@ export type HackEnvironment = {
   useIdeConnection: boolean;
 };
 
-async function passesGK(): Promise<boolean> {
+async function passesGK(gkid: string): Promise<boolean> {
   try {
-    const {gatekeeper, GK_HACK_USE_PERSISTENT_CONNECTION} = require('../../fb-gatekeeper');
-    return await gatekeeper.asyncIsGkEnabled(GK_HACK_USE_PERSISTENT_CONNECTION) === true;
+    const {gatekeeper} = require('../../fb-gatekeeper');
+    return await gatekeeper.asyncIsGkEnabled(gkid) === true;
   } catch (e) {
     return false;
   }
@@ -93,7 +93,10 @@ async function passesGK(): Promise<boolean> {
 export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<HackEnvironment> {
   const hackService = getHackService(fileUri);
   const config = getConfig();
-  const useIdeConnection = config.useIdeConnection || (await passesGK());
+  const useIdeConnection = config.useIdeConnection
+      || (await passesGK('nuclide_hack_use_persistent_connection'));
+  const useServerOnly = config.useServerOnly
+      || (await passesGK('nuclide_hack_use_server'));
   const hackEnvironment = await hackService.getHackEnvironmentDetails(
     fileUri,
     config.hhClientPath,
@@ -106,7 +109,7 @@ export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<Ha
     hackRoot,
     hackCommand,
     isAvailable,
-    useServerOnly: config.useServerOnly,
+    useServerOnly,
     useIdeConnection,
   };
 }
