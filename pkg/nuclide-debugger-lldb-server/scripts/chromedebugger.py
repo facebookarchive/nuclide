@@ -84,12 +84,12 @@ class DebuggerWebSocket(WebSocket):
 
         should_log = self._is_debugger_protocol(parsed)
         if should_log:
-            log_debug('received_message: %s' % message.data);
+            log_debug('received_message: %s' % message.data)
 
         response = self._generate_response(parsed)
-        response_in_json = json.dumps(response);
+        response_in_json = json.dumps(response, ensure_ascii=False)
         if should_log:
-            log_debug('response: %s' % response_in_json);
+            log_debug('response: %s' % response_in_json)
         self.send(response_in_json)
 
     def _is_debugger_protocol(self, parsed):

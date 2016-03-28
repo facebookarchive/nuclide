@@ -137,7 +137,10 @@ class LLDBListenerThread(Thread):
         self._debugger_store.thread_manager.update(process)
         self._update_stop_thread(process)
         thread = process.GetSelectedThread()
-        log_debug('thread.GetStopReason(): %s' % serialize.StopReason_to_string(thread.GetStopReason()))
+        output = 'Debugger paused at thread(%d) because of: %s' % (
+            thread.GetThreadID(),
+            serialize.StopReason_to_string(thread.GetStopReason()))
+        self._send_user_output('log', output)
         params = {
           "callFrames": self._debugger_store.thread_manager.get_thread_stack(thread),
           "reason": serialize.StopReason_to_string(thread.GetStopReason()),
