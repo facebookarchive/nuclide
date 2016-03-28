@@ -225,7 +225,7 @@ export async function getIdentifierDefinition(
   const hhResult = await callHHClient(
     // The `indetify-function` result is text, but passing --json option
     // will eliminate any hh status messages that's irrelevant.
-    /*args*/ ['--json', '--identify-function', `${line}:${column}`],
+    /*args*/ ['--json', '--identify-function', formatLineColumn(line, column)],
     /*errorStream*/ false,
     /*outputJson*/ false,
     /*processInput*/ contents,
@@ -464,10 +464,10 @@ export async function getSourceHighlights(
   column: number,
 ): Promise<?HackFindLvarRefsResult> {
   const hhResult = await callHHClient(
-    /*args*/ ['--find-lvar-refs', contents, line, column],
+    /*args*/ ['--find-lvar-refs', formatLineColumn(line, column)],
     /*errorStream*/ false,
     /*outputJson*/ true,
-    /*processInput*/ null,
+    /*processInput*/ contents,
     /*file*/ filePath,
   );
   if (!hhResult) {
@@ -484,10 +484,10 @@ export async function formatSource(
   endOffset: number,
 ): Promise<?HackFormatSourceResult> {
   const hhResult = await callHHClient(
-    /*args*/ ['--format', contents, startOffset, endOffset],
+    /*args*/ ['--format', startOffset, endOffset],
     /*errorStream*/ false,
     /*outputJson*/ true,
-    /*processInput*/ null,
+    /*processInput*/ contents,
     /*file*/ filePath,
   );
   if (!hhResult) {
@@ -505,10 +505,10 @@ export async function getMethodName(
   column: number,
 ): Promise<?HackGetMethodNameResult> {
   const hhResult = await callHHClient(
-    /*args*/ ['--get-method-name', contents, line, column],
+    /*args*/ ['--get-method-name', formatLineColumn(line, column)],
     /*errorStream*/ false,
     /*outputJson*/ true,
-    /*processInput*/ null,
+    /*processInput*/ contents,
     /*file*/ filePath,
   );
   if (!hhResult) {
@@ -540,4 +540,8 @@ export async function isFileInHackProject(fileUri: NuclideUri): Promise<boolean>
   const filePath = getPath(fileUri);
   const hhconfigPath = await findNearestFile('.hhconfig', path.dirname(filePath));
   return hhconfigPath != null;
+}
+
+function formatLineColumn(line: number, column: number): string {
+  return `${line}:${column}`;
 }
