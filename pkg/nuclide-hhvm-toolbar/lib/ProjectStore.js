@@ -9,14 +9,12 @@
  * the root directory of this source tree.
  */
 
-import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
-
+import {getHackEnvironmentDetails} from '../../nuclide-hack/lib/utils';
 const {CompositeDisposable, Disposable} = require('atom');
 const {EventEmitter} = require('events');
 const {buckProjectRootForPath} = require('../../nuclide-buck-commons');
 import {trackTiming} from '../../nuclide-analytics';
 import remoteUri from '../../nuclide-remote-uri';
-import {getServiceByNuclideUri} from '../../nuclide-client';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
@@ -70,7 +68,7 @@ class ProjectStore {
 
   @trackTiming('toolbar.isFileHHVMProject')
   async _isFileHHVMProject(fileUri: NuclideUri): Promise<boolean> {
-    const hackService: ?HackService = (getServiceByNuclideUri('HackService', fileUri): any);
+    const {hackService} = await getHackEnvironmentDetails(fileUri);
     return remoteUri.isRemote(fileUri)
       && hackService != null
       && await hackService.isFileInHackProject(fileUri);
