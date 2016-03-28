@@ -1,5 +1,38 @@
 # Nuclide Changelog
 
+## v0.127.0
+
+### Added
+
+* Outline view for Flow and Hack. Toggle with the outline icon on the toolbar, or with alt+o.
+* Forward/Backwards Navigation Stack with `ctrl-`, and `ctrl-`. (`ctrl-<` and `ctrl->` on linux).
+* New "Nuclide" top-level menu.
+* Diff View:
+  - Browse history & commit (hg only).
+  - Persist commit messages between mode switches.
+  - Switching modes changes the diff method to show relevant changes only.
+  - Open from file tree will select the nearest file change within that directory (or in the selected root).
+  - Opening from the toolbar defaults to diffing the current working root (File tree Suitcase icon).
+  - Show multiple repos changes in browse mode, while in Commit mode, show only the active repository's relevant changes.
+* nuclide-console messages can be copied to clipboard.
+
+### Fixed
+
+* Diff View: Opening a changed file won't revert user changes nor clear undo history.
+* React Native debugger no longer pauses on loader breakpoint.
+* Performance and stability wins for PHP script debugging, approximately a 2s speedup when launching scripts.
+* Fix Remote "file changed on disk" notification without actual changes.
+* Fix file reloads, conflict popups or reverting user changes on flaky / slow network connections.
+* C++: Significantly faster (~50%) initialization times on devservers.
+  - Improved feature coverage for header files in Buck projects.
+  - Restarting Atom now clears Clang server state (or try "Clean and Rebuild" from the Nuclide menu).
+* Static/out-of-scope variables are no longer shown in “locals” section of lldb debugger.
+
+### Changed
+
+* Toolbar icons split into two groups when you upgrade to tool-bar 0.3.0.
+* nuclide-output is now nuclide-console.
+
 ## v0.126.0
 
 * Fixes for the `left-pad`/`relative-date` npm unpublishing.

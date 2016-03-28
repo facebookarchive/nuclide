@@ -1,6 +1,6 @@
 {
   "name": "nuclide",
-  "version": "0.126.0",
+  "version": "0.127.0",
   "dependencies": {
     "acorn": {
       "version": "1.2.2",
