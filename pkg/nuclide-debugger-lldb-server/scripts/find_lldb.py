@@ -24,7 +24,7 @@ def _get_lldb_python_path():
     elif sys.platform.startswith('linux'):
         # Assume to be Facebook linux devserver.
         # TODO: make this configurable.
-        return '/mnt/gvfs/third-party2/lldb/b5c928011d9f1f372e3f58d4f0ef658372ce48f4/3.8.0.rc3/centos6-native/ff04b3a/lib/python2.7/site-packages'
+        return '/mnt/gvfs/third-party2/lldb/d51c341932343d3657b9fa997f3ed7d72775d98d/3.8.0.rc3/centos6-native/ff04b3a/lib/python2.7/site-packages'
     else:
         raise Exception('Failure to find lldb python binding: unknown platform.')
 
