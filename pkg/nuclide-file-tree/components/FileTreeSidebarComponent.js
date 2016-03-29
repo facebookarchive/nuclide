@@ -17,6 +17,7 @@ import FileTree from './FileTree';
 import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
 import FileTreeStore from '../lib/FileTreeStore';
 import {CompositeDisposable} from 'atom';
+import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
 
 type State = {
   shouldRenderToolbar: boolean;
@@ -72,7 +73,9 @@ class FileTreeSidebarComponent extends React.Component {
         onFocus={this._handleFocus}
         tabIndex={0}>
         {toolbar}
-        <FileTree nodeToKeepInView={this._store.getTrackedNode()} ref="fileTree" />
+        <PanelComponentScroller>
+          <FileTree nodeToKeepInView={this._store.getTrackedNode()} ref="fileTree" />
+        </PanelComponentScroller>
       </div>
     );
   }

@@ -10,6 +10,7 @@
  */
 
 const {CompositeDisposable} = require('atom');
+const {PanelComponentScroller} = require('./PanelComponentScroller');
 const {
   React,
   ReactDOM,
@@ -40,6 +41,11 @@ export class PanelComponent extends React.Component {
     dock: PropTypes.oneOf(['left', 'bottom', 'right']).isRequired,
     hidden: PropTypes.bool.isRequired,
     initialLength: PropTypes.number.isRequired,
+    /*
+     * When `true`, this component does not wrap its children in a scrolling container and instead
+     * provides a simple container with visible (the default in CSS) overflow. Default: false.
+     */
+    noScroll: PropTypes.bool.isRequired,
     onResize: PropTypes.func.isRequired,
     overflowX: PropTypes.string,
   };
@@ -47,6 +53,7 @@ export class PanelComponent extends React.Component {
   static defaultProps = {
     hidden: false,
     initialLength: 200,
+    noScroll: false,
     onResize: width => {},
   };
 
@@ -127,9 +134,15 @@ export class PanelComponent extends React.Component {
       React.Children.only(this.props.children),
       {ref: 'child'});
 
-    const scrollerStyle = {};
-    if (this.props.overflowX) {
-      scrollerStyle.overflowX = this.props.overflowX;
+    let wrappedContent;
+    if (this.props.noScroll) {
+      wrappedContent = content;
+    } else {
+      wrappedContent = (
+        <PanelComponentScroller overflowX={this.props.overflowX}>
+          {content}
+        </PanelComponentScroller>
+      );
     }
 
     // Use the `tree-view-resizer` class from Atom's [tree-view][1] because it is targeted by some
@@ -150,9 +163,7 @@ export class PanelComponent extends React.Component {
           onMouseDown={this._handleMouseDown}
           onDoubleClick={this._handleDoubleClick}
         />
-        <div className="nuclide-ui-panel-component-scroller" style={scrollerStyle}>
-          {content}
-        </div>
+        {wrappedContent}
         {resizeCursorOverlay}
       </div>
     );

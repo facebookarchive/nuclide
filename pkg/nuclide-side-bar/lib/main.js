@@ -110,7 +110,8 @@ function renderPanel(renderState: State, onDidRender?: () => mixed): void {
       dock="left"
       // Keep the side-bar hidden when there is no active view instance.
       hidden={(activeViewInstance == null) || renderState.hidden}
-      initialLength={renderState.initialLength}>
+      initialLength={renderState.initialLength}
+      noScroll>
       {activeViewInstance == null
         ? <div />
         : React.createElement(activeViewInstance.view.getComponent())}
