@@ -18,6 +18,7 @@ import FileTreeDispatcher from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeStore from './FileTreeStore';
 import Immutable from 'immutable';
+import semver from 'semver';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
@@ -187,7 +188,7 @@ class FileTreeActions {
     });
   }
 
-  confirmNode(rootKey: string, nodeKey: string, preview: boolean = false): void {
+  confirmNode(rootKey: string, nodeKey: string, pending: boolean = false): void {
     const isDirectory = FileTreeHelpers.isDirKey(nodeKey);
     if (isDirectory) {
       const actionType = this._store.isExpanded(rootKey, nodeKey) ?
@@ -204,16 +205,24 @@ class FileTreeActions {
         {
           activatePane: true,
           searchAllPanes: true,
-          preview,
+          pending,
         }
       );
     }
   }
 
   keepPreviewTab() {
-    const activePaneItem = atom.workspace.getActivePaneItem();
-    if (activePaneItem != null) {
-      atom.commands.dispatch(atom.views.getView(activePaneItem), 'tabs:keep-preview-tab');
+    // This will no longer be needed once Nuclide will not officially support Atoms < 1.6.0
+    if (semver.gte(atom.getVersion(), '1.6.0')) {
+      const activePane = atom.workspace.getActivePane();
+      if (activePane != null) {
+        activePane.clearPendingItem();
+      }
+    } else {
+      const activePaneItem = atom.workspace.getActivePaneItem();
+      if (activePaneItem != null) {
+        atom.commands.dispatch(atom.views.getView(activePaneItem), 'tabs:keep-preview-tab');
+      }
     }
   }
 

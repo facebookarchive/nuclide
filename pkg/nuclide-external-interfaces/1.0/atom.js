@@ -302,6 +302,7 @@ declare class atom$Pane {
   ): atom$Pane;
 
   // Undocumented Methods
+  clearPendingItem(): void;
   getFlexScale(): number;
   getParent(): Object;
   removeItem(item: Object, moved: ?boolean): void;

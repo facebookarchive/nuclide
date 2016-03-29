@@ -66,7 +66,7 @@ class Activation {
 
     // The use preview tabs setting was removed from 'tabs' package in atom 1.6 and moved to core
     // instead. Until Atoms <1.6.0 are supported we need to be ready for both
-    if (semver.gte(atom.getVersion(), '1.6.0-beta')) {
+    if (semver.gte(atom.getVersion(), '1.6.0')) {
       this._subscriptions.add(
         atom.config.observe(allowPendingPaneItems, this._setUsePreviewTabs.bind(this)),
       );
