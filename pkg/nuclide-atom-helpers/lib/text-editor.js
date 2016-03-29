@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,61 +10,12 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+exports.isTextEditor = isTextEditor;
+exports.createTextEditor = createTextEditor;
+exports.existingEditorForUri = existingEditorForUri;
 
-import invariant from 'assert';
-import {TextBuffer, TextEditor} from 'atom';
-// TODO(most): move to remote-connection/lib/RemoteTextBuffer.js
-import NuclideTextBuffer from '../../nuclide-remote-projects/lib/NuclideTextBuffer';
-import {isLocal} from '../../nuclide-remote-uri';
-import {RemoteConnection} from '../../nuclide-remote-connection';
-
-export function isTextEditor(item: ?any): boolean {
-  if (item == null) {
-    return false;
-  } else if (typeof atom.workspace.buildTextEditor === 'function') {
-    // If buildTextEditor is present, then accessing the TextEditor constructor will trigger a
-    // deprecation warning. Atom recommends testing for the existence of the public method of
-    // TextEditor that you are using as a proxy for whether the object is a TextEditor:
-    // https://github.com/atom/atom/commit/4d2d4c3. This is a fairly weak heuristic, so we test
-    // for a larger set of methods that are more likely unique to TextEditor as a better heuristic:
-    return typeof item.screenPositionForBufferPosition === 'function' &&
-      typeof item.scanInBufferRange === 'function' &&
-      typeof item.scopeDescriptorForBufferPosition === 'function';
-  } else {
-    return item instanceof TextEditor;
-  }
-}
-
-export function createTextEditor(textEditorParams: atom$TextEditorParams): TextEditor {
-  // Note that atom.workspace.buildTextEditor was introduced after the release of Atom 1.0.19.
-  // As of this change, calling the constructor of TextEditor directly is deprecated. Therefore,
-  // we must choose the appropriate code path based on which API is available.
-  if (atom.workspace.buildTextEditor) {
-    return atom.workspace.buildTextEditor(textEditorParams);
-  } else {
-    return new TextEditor(textEditorParams);
-  }
-}
-
-/**
- * Returns a text editor that has the given path open, or null if none exists. If there are multiple
- * text editors for this path, one is chosen arbitrarily.
- */
-export function existingEditorForUri(path: NuclideUri): ?atom$TextEditor {
-  // This isn't ideal but realistically iterating through even a few hundred editors shouldn't be a
-  // real problem. And if you have more than a few hundred you probably have bigger problems.
-  for (const editor of atom.workspace.getTextEditors()) {
-    if (editor.getPath() === path) {
-      return editor;
-    }
-  }
-
-  return null;
-}
-
-export async function loadBufferForUri(uri: NuclideUri): Promise<atom$TextBuffer> {
-  let buffer = existingBufferForUri(uri);
+var loadBufferForUri = _asyncToGenerator(function* (uri) {
+  var buffer = existingBufferForUri(uri);
   if (buffer == null) {
     buffer = createBufferForUri(uri);
   }
@@ -71,7 +23,7 @@ export async function loadBufferForUri(uri: NuclideUri): Promise<atom$TextBuffer
     return buffer;
   }
   try {
-    await buffer.load();
+    yield buffer.load();
     return buffer;
   } catch (error) {
     atom.project.removeBuffer(buffer);
@@ -82,46 +34,120 @@ export async function loadBufferForUri(uri: NuclideUri): Promise<atom$TextBuffer
 /**
  * Returns an existing buffer for that uri, or create one if not existing.
  */
-export function bufferForUri(uri: NuclideUri): atom$TextBuffer {
-  const buffer = existingBufferForUri(uri);
+);
+
+exports.loadBufferForUri = loadBufferForUri;
+exports.bufferForUri = bufferForUri;
+exports.existingBufferForUri = existingBufferForUri;
+exports.getViewOfEditor = getViewOfEditor;
+exports.getScrollTop = getScrollTop;
+exports.setScrollTop = setScrollTop;
+exports.setPositionAndScroll = setPositionAndScroll;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _atom = require('atom');
+
+// TODO(most): move to remote-connection/lib/RemoteTextBuffer.js
+
+var _nuclideRemoteProjectsLibNuclideTextBuffer = require('../../nuclide-remote-projects/lib/NuclideTextBuffer');
+
+var _nuclideRemoteProjectsLibNuclideTextBuffer2 = _interopRequireDefault(_nuclideRemoteProjectsLibNuclideTextBuffer);
+
+var _nuclideRemoteUri = require('../../nuclide-remote-uri');
+
+var _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+
+function isTextEditor(item) {
+  if (item == null) {
+    return false;
+  } else if (typeof atom.workspace.buildTextEditor === 'function') {
+    // If buildTextEditor is present, then accessing the TextEditor constructor will trigger a
+    // deprecation warning. Atom recommends testing for the existence of the public method of
+    // TextEditor that you are using as a proxy for whether the object is a TextEditor:
+    // https://github.com/atom/atom/commit/4d2d4c3. This is a fairly weak heuristic, so we test
+    // for a larger set of methods that are more likely unique to TextEditor as a better heuristic:
+    return typeof item.screenPositionForBufferPosition === 'function' && typeof item.scanInBufferRange === 'function' && typeof item.scopeDescriptorForBufferPosition === 'function';
+  } else {
+    return item instanceof _atom.TextEditor;
+  }
+}
+
+function createTextEditor(textEditorParams) {
+  // Note that atom.workspace.buildTextEditor was introduced after the release of Atom 1.0.19.
+  // As of this change, calling the constructor of TextEditor directly is deprecated. Therefore,
+  // we must choose the appropriate code path based on which API is available.
+  if (atom.workspace.buildTextEditor) {
+    return atom.workspace.buildTextEditor(textEditorParams);
+  } else {
+    return new _atom.TextEditor(textEditorParams);
+  }
+}
+
+/**
+ * Returns a text editor that has the given path open, or null if none exists. If there are multiple
+ * text editors for this path, one is chosen arbitrarily.
+ */
+
+function existingEditorForUri(path) {
+  // This isn't ideal but realistically iterating through even a few hundred editors shouldn't be a
+  // real problem. And if you have more than a few hundred you probably have bigger problems.
+  for (var editor of atom.workspace.getTextEditors()) {
+    if (editor.getPath() === path) {
+      return editor;
+    }
+  }
+
+  return null;
+}
+
+function bufferForUri(uri) {
+  var buffer = existingBufferForUri(uri);
   if (buffer != null) {
     return buffer;
   }
   return createBufferForUri(uri);
 }
 
-function createBufferForUri(uri: NuclideUri): atom$TextBuffer {
-  let buffer;
-  if (isLocal(uri)) {
-    buffer = new TextBuffer({filePath: uri});
+function createBufferForUri(uri) {
+  var buffer = undefined;
+  if ((0, _nuclideRemoteUri.isLocal)(uri)) {
+    buffer = new _atom.TextBuffer({ filePath: uri });
   } else {
-    const connection = RemoteConnection.getForUri(uri);
+    var connection = _nuclideRemoteConnection.RemoteConnection.getForUri(uri);
     if (connection == null) {
-      throw new Error(`RemoteConnection cannot be found for uri: ${uri}`);
+      throw new Error('RemoteConnection cannot be found for uri: ' + uri);
     }
-    buffer = new NuclideTextBuffer(connection, {filePath: uri});
+    buffer = new _nuclideRemoteProjectsLibNuclideTextBuffer2['default'](connection, { filePath: uri });
   }
   atom.project.addBuffer(buffer);
-  invariant(buffer);
+  (0, _assert2['default'])(buffer);
   return buffer;
 }
 
 /**
  * Returns an exsting buffer for that uri, or null if not existing.
  */
-export function existingBufferForUri(uri: NuclideUri): ?atom$TextBuffer {
+
+function existingBufferForUri(uri) {
   return atom.project.findBufferForPath(uri);
 }
 
-export function getViewOfEditor(editor: atom$TextEditor): atom$TextEditorElement {
+function getViewOfEditor(editor) {
   return atom.views.getView(editor);
 }
 
-export function getScrollTop(editor: atom$TextEditor): number {
+function getScrollTop(editor) {
   return getViewOfEditor(editor).getScrollTop();
 }
 
-export function setScrollTop(editor: atom$TextEditor, scrollTop: number): void {
+function setScrollTop(editor, scrollTop) {
   getViewOfEditor(editor).setScrollTop(scrollTop);
 }
 
@@ -132,11 +158,9 @@ export function setScrollTop(editor: atom$TextEditor, scrollTop: number): void {
  * Can be used with editor.getCursorBufferPosition() & getScrollTop() to restore
  * an editors cursor and scroll.
  */
-export function setPositionAndScroll(
-  editor: atom$TextEditor,
-  position: atom$Point,
-  scrollTop: number,
-): void {
-  editor.setCursorBufferPosition(position, {autoscroll: false});
+
+function setPositionAndScroll(editor, position, scrollTop) {
+  editor.setCursorBufferPosition(position, { autoscroll: false });
   setScrollTop(editor, scrollTop);
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInRleHQtZWRpdG9yLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7SUFnRXNCLGdCQUFnQixxQkFBL0IsV0FBZ0MsR0FBZSxFQUE0QjtBQUNoRixNQUFJLE1BQU0sR0FBRyxvQkFBb0IsQ0FBQyxHQUFHLENBQUMsQ0FBQztBQUN2QyxNQUFJLE1BQU0sSUFBSSxJQUFJLEVBQUU7QUFDbEIsVUFBTSxHQUFHLGtCQUFrQixDQUFDLEdBQUcsQ0FBQyxDQUFDO0dBQ2xDO0FBQ0QsTUFBSSxNQUFNLENBQUMsTUFBTSxFQUFFO0FBQ2pCLFdBQU8sTUFBTSxDQUFDO0dBQ2Y7QUFDRCxNQUFJO0FBQ0YsVUFBTSxNQUFNLENBQUMsSUFBSSxFQUFFLENBQUM7QUFDcEIsV0FBTyxNQUFNLENBQUM7R0FDZixDQUFDLE9BQU8sS0FBSyxFQUFFO0FBQ2QsUUFBSSxDQUFDLE9BQU8sQ0FBQyxZQUFZLENBQUMsTUFBTSxDQUFDLENBQUM7QUFDbEMsVUFBTSxLQUFLLENBQUM7R0FDYjtDQUNGOzs7Ozs7Ozs7Ozs7Ozs7Ozs7O3NCQWxFcUIsUUFBUTs7OztvQkFDTyxNQUFNOzs7O3lEQUViLHFEQUFxRDs7OztnQ0FDN0QsMEJBQTBCOzt1Q0FDakIsaUNBQWlDOztBQUV6RCxTQUFTLFlBQVksQ0FBQyxJQUFVLEVBQVc7QUFDaEQsTUFBSSxJQUFJLElBQUksSUFBSSxFQUFFO0FBQ2hCLFdBQU8sS0FBSyxDQUFDO0dBQ2QsTUFBTSxJQUFJLE9BQU8sSUFBSSxDQUFDLFNBQVMsQ0FBQyxlQUFlLEtBQUssVUFBVSxFQUFFOzs7Ozs7QUFNL0QsV0FBTyxPQUFPLElBQUksQ0FBQywrQkFBK0IsS0FBSyxVQUFVLElBQy9ELE9BQU8sSUFBSSxDQUFDLGlCQUFpQixLQUFLLFVBQVUsSUFDNUMsT0FBTyxJQUFJLENBQUMsZ0NBQWdDLEtBQUssVUFBVSxDQUFDO0dBQy9ELE1BQU07QUFDTCxXQUFPLElBQUksNEJBQXNCLENBQUM7R0FDbkM7Q0FDRjs7QUFFTSxTQUFTLGdCQUFnQixDQUFDLGdCQUF1QyxFQUFjOzs7O0FBSXBGLE1BQUksSUFBSSxDQUFDLFNBQVMsQ0FBQyxlQUFlLEVBQUU7QUFDbEMsV0FBTyxJQUFJLENBQUMsU0FBUyxDQUFDLGVBQWUsQ0FBQyxnQkFBZ0IsQ0FBQyxDQUFDO0dBQ3pELE1BQU07QUFDTCxXQUFPLHFCQUFlLGdCQUFnQixDQUFDLENBQUM7R0FDekM7Q0FDRjs7Ozs7OztBQU1NLFNBQVMsb0JBQW9CLENBQUMsSUFBZ0IsRUFBb0I7OztBQUd2RSxPQUFLLElBQU0sTUFBTSxJQUFJLElBQUksQ0FBQyxTQUFTLENBQUMsY0FBYyxFQUFFLEVBQUU7QUFDcEQsUUFBSSxNQUFNLENBQUMsT0FBTyxFQUFFLEtBQUssSUFBSSxFQUFFO0FBQzdCLGFBQU8sTUFBTSxDQUFDO0tBQ2Y7R0FDRjs7QUFFRCxTQUFPLElBQUksQ0FBQztDQUNiOztBQXNCTSxTQUFTLFlBQVksQ0FBQyxHQUFlLEVBQW1CO0FBQzdELE1BQU0sTUFBTSxHQUFHLG9CQUFvQixDQUFDLEdBQUcsQ0FBQyxDQUFDO0FBQ3pDLE1BQUksTUFBTSxJQUFJLElBQUksRUFBRTtBQUNsQixXQUFPLE1BQU0sQ0FBQztHQUNmO0FBQ0QsU0FBTyxrQkFBa0IsQ0FBQyxHQUFHLENBQUMsQ0FBQztDQUNoQzs7QUFFRCxTQUFTLGtCQUFrQixDQUFDLEdBQWUsRUFBbUI7QUFDNUQsTUFBSSxNQUFNLFlBQUEsQ0FBQztBQUNYLE1BQUksK0JBQVEsR0FBRyxDQUFDLEVBQUU7QUFDaEIsVUFBTSxHQUFHLHFCQUFlLEVBQUMsUUFBUSxFQUFFLEdBQUcsRUFBQyxDQUFDLENBQUM7R0FDMUMsTUFBTTtBQUNMLFFBQU0sVUFBVSxHQUFHLDBDQUFpQixTQUFTLENBQUMsR0FBRyxDQUFDLENBQUM7QUFDbkQsUUFBSSxVQUFVLElBQUksSUFBSSxFQUFFO0FBQ3RCLFlBQU0sSUFBSSxLQUFLLGdEQUE4QyxHQUFHLENBQUcsQ0FBQztLQUNyRTtBQUNELFVBQU0sR0FBRywyREFBc0IsVUFBVSxFQUFFLEVBQUMsUUFBUSxFQUFFLEdBQUcsRUFBQyxDQUFDLENBQUM7R0FDN0Q7QUFDRCxNQUFJLENBQUMsT0FBTyxDQUFDLFNBQVMsQ0FBQyxNQUFNLENBQUMsQ0FBQztBQUMvQiwyQkFBVSxNQUFNLENBQUMsQ0FBQztBQUNsQixTQUFPLE1BQU0sQ0FBQztDQUNmOzs7Ozs7QUFLTSxTQUFTLG9CQUFvQixDQUFDLEdBQWUsRUFBb0I7QUFDdEUsU0FBTyxJQUFJLENBQUMsT0FBTyxDQUFDLGlCQUFpQixDQUFDLEdBQUcsQ0FBQyxDQUFDO0NBQzVDOztBQUVNLFNBQVMsZUFBZSxDQUFDLE1BQXVCLEVBQTBCO0FBQy9FLFNBQU8sSUFBSSxDQUFDLEtBQUssQ0FBQyxPQUFPLENBQUMsTUFBTSxDQUFDLENBQUM7Q0FDbkM7O0FBRU0sU0FBUyxZQUFZLENBQUMsTUFBdUIsRUFBVTtBQUM1RCxTQUFPLGVBQWUsQ0FBQyxNQUFNLENBQUMsQ0FBQyxZQUFZLEVBQUUsQ0FBQztDQUMvQzs7QUFFTSxTQUFTLFlBQVksQ0FBQyxNQUF1QixFQUFFLFNBQWlCLEVBQVE7QUFDN0UsaUJBQWUsQ0FBQyxNQUFNLENBQUMsQ0FBQyxZQUFZLENBQUMsU0FBUyxDQUFDLENBQUM7Q0FDakQ7Ozs7Ozs7Ozs7QUFTTSxTQUFTLG9CQUFvQixDQUNsQyxNQUF1QixFQUN2QixRQUFvQixFQUNwQixTQUFpQixFQUNYO0FBQ04sUUFBTSxDQUFDLHVCQUF1QixDQUFDLFFBQVEsRUFBRSxFQUFDLFVBQVUsRUFBRSxLQUFLLEVBQUMsQ0FBQyxDQUFDO0FBQzlELGNBQVksQ0FBQyxNQUFNLEVBQUUsU0FBUyxDQUFDLENBQUM7Q0FDakMiLCJmaWxlIjoidGV4dC1lZGl0b3IuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7TnVjbGlkZVVyaX0gZnJvbSAnLi4vLi4vbnVjbGlkZS1yZW1vdGUtdXJpJztcblxuaW1wb3J0IGludmFyaWFudCBmcm9tICdhc3NlcnQnO1xuaW1wb3J0IHtUZXh0QnVmZmVyLCBUZXh0RWRpdG9yfSBmcm9tICdhdG9tJztcbi8vIFRPRE8obW9zdCk6IG1vdmUgdG8gcmVtb3RlLWNvbm5lY3Rpb24vbGliL1JlbW90ZVRleHRCdWZmZXIuanNcbmltcG9ydCBOdWNsaWRlVGV4dEJ1ZmZlciBmcm9tICcuLi8uLi9udWNsaWRlLXJlbW90ZS1wcm9qZWN0cy9saWIvTnVjbGlkZVRleHRCdWZmZXInO1xuaW1wb3J0IHtpc0xvY2FsfSBmcm9tICcuLi8uLi9udWNsaWRlLXJlbW90ZS11cmknO1xuaW1wb3J0IHtSZW1vdGVDb25uZWN0aW9ufSBmcm9tICcuLi8uLi9udWNsaWRlLXJlbW90ZS1jb25uZWN0aW9uJztcblxuZXhwb3J0IGZ1bmN0aW9uIGlzVGV4dEVkaXRvcihpdGVtOiA/YW55KTogYm9vbGVhbiB7XG4gIGlmIChpdGVtID09IG51bGwpIHtcbiAgICByZXR1cm4gZmFsc2U7XG4gIH0gZWxzZSBpZiAodHlwZW9mIGF0b20ud29ya3NwYWNlLmJ1aWxkVGV4dEVkaXRvciA9PT0gJ2Z1bmN0aW9uJykge1xuICAgIC8vIElmIGJ1aWxkVGV4dEVkaXRvciBpcyBwcmVzZW50LCB0aGVuIGFjY2Vzc2luZyB0aGUgVGV4dEVkaXRvciBjb25zdHJ1Y3RvciB3aWxsIHRyaWdnZXIgYVxuICAgIC8vIGRlcHJlY2F0aW9uIHdhcm5pbmcuIEF0b20gcmVjb21tZW5kcyB0ZXN0aW5nIGZvciB0aGUgZXhpc3RlbmNlIG9mIHRoZSBwdWJsaWMgbWV0aG9kIG9mXG4gICAgLy8gVGV4dEVkaXRvciB0aGF0IHlvdSBhcmUgdXNpbmcgYXMgYSBwcm94eSBmb3Igd2hldGhlciB0aGUgb2JqZWN0IGlzIGEgVGV4dEVkaXRvcjpcbiAgICAvLyBodHRwczovL2dpdGh1Yi5jb20vYXRvbS9hdG9tL2NvbW1pdC80ZDJkNGMzLiBUaGlzIGlzIGEgZmFpcmx5IHdlYWsgaGV1cmlzdGljLCBzbyB3ZSB0ZXN0XG4gICAgLy8gZm9yIGEgbGFyZ2VyIHNldCBvZiBtZXRob2RzIHRoYXQgYXJlIG1vcmUgbGlrZWx5IHVuaXF1ZSB0byBUZXh0RWRpdG9yIGFzIGEgYmV0dGVyIGhldXJpc3RpYzpcbiAgICByZXR1cm4gdHlwZW9mIGl0ZW0uc2NyZWVuUG9zaXRpb25Gb3JCdWZmZXJQb3NpdGlvbiA9PT0gJ2Z1bmN0aW9uJyAmJlxuICAgICAgdHlwZW9mIGl0ZW0uc2NhbkluQnVmZmVyUmFuZ2UgPT09ICdmdW5jdGlvbicgJiZcbiAgICAgIHR5cGVvZiBpdGVtLnNjb3BlRGVzY3JpcHRvckZvckJ1ZmZlclBvc2l0aW9uID09PSAnZnVuY3Rpb24nO1xuICB9IGVsc2Uge1xuICAgIHJldHVybiBpdGVtIGluc3RhbmNlb2YgVGV4dEVkaXRvcjtcbiAgfVxufVxuXG5leHBvcnQgZnVuY3Rpb24gY3JlYXRlVGV4dEVkaXRvcih0ZXh0RWRpdG9yUGFyYW1zOiBhdG9tJFRleHRFZGl0b3JQYXJhbXMpOiBUZXh0RWRpdG9yIHtcbiAgLy8gTm90ZSB0aGF0IGF0b20ud29ya3NwYWNlLmJ1aWxkVGV4dEVkaXRvciB3YXMgaW50cm9kdWNlZCBhZnRlciB0aGUgcmVsZWFzZSBvZiBBdG9tIDEuMC4xOS5cbiAgLy8gQXMgb2YgdGhpcyBjaGFuZ2UsIGNhbGxpbmcgdGhlIGNvbnN0cnVjdG9yIG9mIFRleHRFZGl0b3IgZGlyZWN0bHkgaXMgZGVwcmVjYXRlZC4gVGhlcmVmb3JlLFxuICAvLyB3ZSBtdXN0IGNob29zZSB0aGUgYXBwcm9wcmlhdGUgY29kZSBwYXRoIGJhc2VkIG9uIHdoaWNoIEFQSSBpcyBhdmFpbGFibGUuXG4gIGlmIChhdG9tLndvcmtzcGFjZS5idWlsZFRleHRFZGl0b3IpIHtcbiAgICByZXR1cm4gYXRvbS53b3Jrc3BhY2UuYnVpbGRUZXh0RWRpdG9yKHRleHRFZGl0b3JQYXJhbXMpO1xuICB9IGVsc2Uge1xuICAgIHJldHVybiBuZXcgVGV4dEVkaXRvcih0ZXh0RWRpdG9yUGFyYW1zKTtcbiAgfVxufVxuXG4vKipcbiAqIFJldHVybnMgYSB0ZXh0IGVkaXRvciB0aGF0IGhhcyB0aGUgZ2l2ZW4gcGF0aCBvcGVuLCBvciBudWxsIGlmIG5vbmUgZXhpc3RzLiBJZiB0aGVyZSBhcmUgbXVsdGlwbGVcbiAqIHRleHQgZWRpdG9ycyBmb3IgdGhpcyBwYXRoLCBvbmUgaXMgY2hvc2VuIGFyYml0cmFyaWx5LlxuICovXG5leHBvcnQgZnVuY3Rpb24gZXhpc3RpbmdFZGl0b3JGb3JVcmkocGF0aDogTnVjbGlkZVVyaSk6ID9hdG9tJFRleHRFZGl0b3Ige1xuICAvLyBUaGlzIGlzbid0IGlkZWFsIGJ1dCByZWFsaXN0aWNhbGx5IGl0ZXJhdGluZyB0aHJvdWdoIGV2ZW4gYSBmZXcgaHVuZHJlZCBlZGl0b3JzIHNob3VsZG4ndCBiZSBhXG4gIC8vIHJlYWwgcHJvYmxlbS4gQW5kIGlmIHlvdSBoYXZlIG1vcmUgdGhhbiBhIGZldyBodW5kcmVkIHlvdSBwcm9iYWJseSBoYXZlIGJpZ2dlciBwcm9ibGVtcy5cbiAgZm9yIChjb25zdCBlZGl0b3Igb2YgYXRvbS53b3Jrc3BhY2UuZ2V0VGV4dEVkaXRvcnMoKSkge1xuICAgIGlmIChlZGl0b3IuZ2V0UGF0aCgpID09PSBwYXRoKSB7XG4gICAgICByZXR1cm4gZWRpdG9yO1xuICAgIH1cbiAgfVxuXG4gIHJldHVybiBudWxsO1xufVxuXG5leHBvcnQgYXN5bmMgZnVuY3Rpb24gbG9hZEJ1ZmZlckZvclVyaSh1cmk6IE51Y2xpZGVVcmkpOiBQcm9taXNlPGF0b20kVGV4dEJ1ZmZlcj4ge1xuICBsZXQgYnVmZmVyID0gZXhpc3RpbmdCdWZmZXJGb3JVcmkodXJpKTtcbiAgaWYgKGJ1ZmZlciA9PSBudWxsKSB7XG4gICAgYnVmZmVyID0gY3JlYXRlQnVmZmVyRm9yVXJpKHVyaSk7XG4gIH1cbiAgaWYgKGJ1ZmZlci5sb2FkZWQpIHtcbiAgICByZXR1cm4gYnVmZmVyO1xuICB9XG4gIHRyeSB7XG4gICAgYXdhaXQgYnVmZmVyLmxvYWQoKTtcbiAgICByZXR1cm4gYnVmZmVyO1xuICB9IGNhdGNoIChlcnJvcikge1xuICAgIGF0b20ucHJvamVjdC5yZW1vdmVCdWZmZXIoYnVmZmVyKTtcbiAgICB0aHJvdyBlcnJvcjtcbiAgfVxufVxuXG4vKipcbiAqIFJldHVybnMgYW4gZXhpc3RpbmcgYnVmZmVyIGZvciB0aGF0IHVyaSwgb3IgY3JlYXRlIG9uZSBpZiBub3QgZXhpc3RpbmcuXG4gKi9cbmV4cG9ydCBmdW5jdGlvbiBidWZmZXJGb3JVcmkodXJpOiBOdWNsaWRlVXJpKTogYXRvbSRUZXh0QnVmZmVyIHtcbiAgY29uc3QgYnVmZmVyID0gZXhpc3RpbmdCdWZmZXJGb3JVcmkodXJpKTtcbiAgaWYgKGJ1ZmZlciAhPSBudWxsKSB7XG4gICAgcmV0dXJuIGJ1ZmZlcjtcbiAgfVxuICByZXR1cm4gY3JlYXRlQnVmZmVyRm9yVXJpKHVyaSk7XG59XG5cbmZ1bmN0aW9uIGNyZWF0ZUJ1ZmZlckZvclVyaSh1cmk6IE51Y2xpZGVVcmkpOiBhdG9tJFRleHRCdWZmZXIge1xuICBsZXQgYnVmZmVyO1xuICBpZiAoaXNMb2NhbCh1cmkpKSB7XG4gICAgYnVmZmVyID0gbmV3IFRleHRCdWZmZXIoe2ZpbGVQYXRoOiB1cml9KTtcbiAgfSBlbHNlIHtcbiAgICBjb25zdCBjb25uZWN0aW9uID0gUmVtb3RlQ29ubmVjdGlvbi5nZXRGb3JVcmkodXJpKTtcbiAgICBpZiAoY29ubmVjdGlvbiA9PSBudWxsKSB7XG4gICAgICB0aHJvdyBuZXcgRXJyb3IoYFJlbW90ZUNvbm5lY3Rpb24gY2Fubm90IGJlIGZvdW5kIGZvciB1cmk6ICR7dXJpfWApO1xuICAgIH1cbiAgICBidWZmZXIgPSBuZXcgTnVjbGlkZVRleHRCdWZmZXIoY29ubmVjdGlvbiwge2ZpbGVQYXRoOiB1cml9KTtcbiAgfVxuICBhdG9tLnByb2plY3QuYWRkQnVmZmVyKGJ1ZmZlcik7XG4gIGludmFyaWFudChidWZmZXIpO1xuICByZXR1cm4gYnVmZmVyO1xufVxuXG4vKipcbiAqIFJldHVybnMgYW4gZXhzdGluZyBidWZmZXIgZm9yIHRoYXQgdXJpLCBvciBudWxsIGlmIG5vdCBleGlzdGluZy5cbiAqL1xuZXhwb3J0IGZ1bmN0aW9uIGV4aXN0aW5nQnVmZmVyRm9yVXJpKHVyaTogTnVjbGlkZVVyaSk6ID9hdG9tJFRleHRCdWZmZXIge1xuICByZXR1cm4gYXRvbS5wcm9qZWN0LmZpbmRCdWZmZXJGb3JQYXRoKHVyaSk7XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBnZXRWaWV3T2ZFZGl0b3IoZWRpdG9yOiBhdG9tJFRleHRFZGl0b3IpOiBhdG9tJFRleHRFZGl0b3JFbGVtZW50IHtcbiAgcmV0dXJuIGF0b20udmlld3MuZ2V0VmlldyhlZGl0b3IpO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gZ2V0U2Nyb2xsVG9wKGVkaXRvcjogYXRvbSRUZXh0RWRpdG9yKTogbnVtYmVyIHtcbiAgcmV0dXJuIGdldFZpZXdPZkVkaXRvcihlZGl0b3IpLmdldFNjcm9sbFRvcCgpO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gc2V0U2Nyb2xsVG9wKGVkaXRvcjogYXRvbSRUZXh0RWRpdG9yLCBzY3JvbGxUb3A6IG51bWJlcik6IHZvaWQge1xuICBnZXRWaWV3T2ZFZGl0b3IoZWRpdG9yKS5zZXRTY3JvbGxUb3Aoc2Nyb2xsVG9wKTtcbn1cblxuLyoqXG4gKiBEb2VzIGEgYmVzdCBlZmZvcnQgdG8gc2V0IGFuIGVkaXRvciBwYW5lIHRvIGEgZ2l2ZW4gY3Vyc29yIHBvc2l0aW9uICYgc2Nyb2xsLlxuICogRG9lcyBub3QgZW5zdXJlIHRoYXQgdGhlIGN1cnJlbnQgY3Vyc29yIHBvc2l0aW9uIGlzIHZpc2libGUuXG4gKlxuICogQ2FuIGJlIHVzZWQgd2l0aCBlZGl0b3IuZ2V0Q3Vyc29yQnVmZmVyUG9zaXRpb24oKSAmIGdldFNjcm9sbFRvcCgpIHRvIHJlc3RvcmVcbiAqIGFuIGVkaXRvcnMgY3Vyc29yIGFuZCBzY3JvbGwuXG4gKi9cbmV4cG9ydCBmdW5jdGlvbiBzZXRQb3NpdGlvbkFuZFNjcm9sbChcbiAgZWRpdG9yOiBhdG9tJFRleHRFZGl0b3IsXG4gIHBvc2l0aW9uOiBhdG9tJFBvaW50LFxuICBzY3JvbGxUb3A6IG51bWJlcixcbik6IHZvaWQge1xuICBlZGl0b3Iuc2V0Q3Vyc29yQnVmZmVyUG9zaXRpb24ocG9zaXRpb24sIHthdXRvc2Nyb2xsOiBmYWxzZX0pO1xuICBzZXRTY3JvbGxUb3AoZWRpdG9yLCBzY3JvbGxUb3ApO1xufVxuIl19

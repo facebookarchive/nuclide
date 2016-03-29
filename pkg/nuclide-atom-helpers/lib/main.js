@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -10,8 +9,8 @@
  */
 
 // It's impactful to memoize our requires here since these commons are so often used.
-const requireCache: {[id: string]: any} = {};
-function requireFromCache(id: string): any {
+var requireCache = {};
+function requireFromCache(id) {
   if (!requireCache.hasOwnProperty(id)) {
     // $FlowIgnore
     requireCache[id] = require(id);
@@ -19,120 +18,209 @@ function requireFromCache(id: string): any {
   return requireCache[id];
 }
 
-module.exports = {
-  get projects() {
-    return requireFromCache('./projects');
+module.exports = Object.defineProperties({}, {
+  projects: {
+    get: function get() {
+      return requireFromCache('./projects');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get atomEventDebounce() {
-    return requireFromCache('./atom-event-debounce');
+  atomEventDebounce: {
+    get: function get() {
+      return requireFromCache('./atom-event-debounce');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get browser() {
-    return requireFromCache('./browser');
+  browser: {
+    get: function get() {
+      return requireFromCache('./browser');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get createScriptBufferedProcessWithEnv() {
-    return requireFromCache('./script-buffered-process').createScriptBufferedProcessWithEnv;
+  createScriptBufferedProcessWithEnv: {
+    get: function get() {
+      return requireFromCache('./script-buffered-process').createScriptBufferedProcessWithEnv;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get createPaneContainer() {
-    return requireFromCache('./create-pane-container');
+  createPaneContainer: {
+    get: function get() {
+      return requireFromCache('./create-pane-container');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get createTextEditor() {
-    return requireFromCache('./text-editor').createTextEditor;
+  createTextEditor: {
+    get: function get() {
+      return requireFromCache('./text-editor').createTextEditor;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get existingEditorForUri() {
-    return requireFromCache('./text-editor').existingEditorForUri;
+  existingEditorForUri: {
+    get: function get() {
+      return requireFromCache('./text-editor').existingEditorForUri;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get existingBufferForUri() {
-    return requireFromCache('./text-editor').existingBufferForUri;
+  existingBufferForUri: {
+    get: function get() {
+      return requireFromCache('./text-editor').existingBufferForUri;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get bufferForUri() {
-    return requireFromCache('./text-editor').bufferForUri;
+  bufferForUri: {
+    get: function get() {
+      return requireFromCache('./text-editor').bufferForUri;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get loadBufferForUri() {
-    return requireFromCache('./text-editor').loadBufferForUri;
+  loadBufferForUri: {
+    get: function get() {
+      return requireFromCache('./text-editor').loadBufferForUri;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get destroyPaneItemWithTitle() {
-    return requireFromCache('./destroy-pane-item');
+  destroyPaneItemWithTitle: {
+    get: function get() {
+      return requireFromCache('./destroy-pane-item');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get fileTypeClass() {
-    return requireFromCache('./file-type-class');
+  fileTypeClass: {
+    get: function get() {
+      return requireFromCache('./file-type-class');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get goToLocation() {
-    return requireFromCache('./go-to-location').goToLocation;
+  goToLocation: {
+    get: function get() {
+      return requireFromCache('./go-to-location').goToLocation;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get goToLocationInEditor() {
-    return requireFromCache('./go-to-location').goToLocationInEditor;
+  goToLocationInEditor: {
+    get: function get() {
+      return requireFromCache('./go-to-location').goToLocationInEditor;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get observeNavigatingEditors() {
-    return requireFromCache('./go-to-location').observeNavigatingEditors;
+  observeNavigatingEditors: {
+    get: function get() {
+      return requireFromCache('./go-to-location').observeNavigatingEditors;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get getPathToWorkspaceState() {
-    return requireFromCache('./workspace').getPathToWorkspaceState;
+  getPathToWorkspaceState: {
+    get: function get() {
+      return requireFromCache('./workspace').getPathToWorkspaceState;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get isTextEditor() {
-    return requireFromCache('./text-editor').isTextEditor;
+  isTextEditor: {
+    get: function get() {
+      return requireFromCache('./text-editor').isTextEditor;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get setPositionAndScroll() {
-    return requireFromCache('./text-editor').setPositionAndScroll;
+  setPositionAndScroll: {
+    get: function get() {
+      return requireFromCache('./text-editor').setPositionAndScroll;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get getViewOfEditor() {
-    return requireFromCache('./text-editor').getViewOfEditor;
+  getViewOfEditor: {
+    get: function get() {
+      return requireFromCache('./text-editor').getViewOfEditor;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get getScrollTop() {
-    return requireFromCache('./text-editor').getScrollTop;
+  getScrollTop: {
+    get: function get() {
+      return requireFromCache('./text-editor').getScrollTop;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get setScrollTop() {
-    return requireFromCache('./text-editor').setScrollTop;
+  setScrollTop: {
+    get: function get() {
+      return requireFromCache('./text-editor').setScrollTop;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get extractWordAtPosition() {
-    return requireFromCache('./extract-word-at-position');
+  extractWordAtPosition: {
+    get: function get() {
+      return requireFromCache('./extract-word-at-position');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get mouseListenerForTextEditor() {
-    return requireFromCache('./mouse-listener-for-text-editor');
+  mouseListenerForTextEditor: {
+    get: function get() {
+      return requireFromCache('./mouse-listener-for-text-editor');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get observeLanguageTextEditors() {
-    return requireFromCache('./observe-language-text-editors');
+  observeLanguageTextEditors: {
+    get: function get() {
+      return requireFromCache('./observe-language-text-editors');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get observeGrammarForTextEditors() {
-    return requireFromCache('./observe-grammar-for-text-editors');
+  observeGrammarForTextEditors: {
+    get: function get() {
+      return requireFromCache('./observe-grammar-for-text-editors');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get registerGrammarForFileExtension() {
-    return requireFromCache('./register-grammar-for-file-extension');
+  registerGrammarForFileExtension: {
+    get: function get() {
+      return requireFromCache('./register-grammar-for-file-extension');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get withLoadingNotification() {
-    return requireFromCache('./with-loading-notification');
+  withLoadingNotification: {
+    get: function get() {
+      return requireFromCache('./with-loading-notification');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get onWillDestroyTextBuffer(): (callback: (buffer: atom$TextBuffer) => mixed) => IDisposable {
-    return requireFromCache('./on-will-destroy-text-buffer');
+  onWillDestroyTextBuffer: {
+    get: function get() {
+      return requireFromCache('./on-will-destroy-text-buffer');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get addTooltip() {
-    return requireFromCache('./tooltip').addTooltip;
-  },
-};
+  addTooltip: {
+    get: function get() {
+      return requireFromCache('./tooltip').addTooltip;
+    },
+    configurable: true,
+    enumerable: true
+  }
+});
+//# sourceMappingURL=data:application/json;base64,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QUFHO0FBQ2pCLGFBQU8sZ0JBQWdCLENBQUMsZUFBZSxDQUFDLENBQUMsWUFBWSxDQUFDO0tBQ3ZEOzs7O0FBRUcsY0FBWTtTQUFBLGVBQUc7QUFDakIsYUFBTyxnQkFBZ0IsQ0FBQyxlQUFlLENBQUMsQ0FBQyxZQUFZLENBQUM7S0FDdkQ7Ozs7QUFFRyx1QkFBcUI7U0FBQSxlQUFHO0FBQzFCLGFBQU8sZ0JBQWdCLENBQUMsNEJBQTRCLENBQUMsQ0FBQztLQUN2RDs7OztBQUVHLDRCQUEwQjtTQUFBLGVBQUc7QUFDL0IsYUFBTyxnQkFBZ0IsQ0FBQyxrQ0FBa0MsQ0FBQyxDQUFDO0tBQzdEOzs7O0FBRUcsNEJBQTBCO1NBQUEsZUFBRztBQUMvQixhQUFPLGdCQUFnQixDQUFDLGlDQUFpQyxDQUFDLENBQUM7S0FDNUQ7Ozs7QUFFRyw4QkFBNEI7U0FBQSxlQUFHO0FBQ2pDLGFBQU8sZ0JBQWdCLENBQUMsb0NBQW9DLENBQUMsQ0FBQztLQUMvRDs7OztBQUVHLGlDQUErQjtTQUFBLGVBQUc7QUFDcEMsYUFBTyxnQkFBZ0IsQ0FBQyx1Q0FBdUMsQ0FBQyxDQUFDO0tBQ2xFOzs7O0FBRUcseUJBQXVCO1NBQUEsZUFBRztBQUM1QixhQUFPLGdCQUFnQixDQUFDLDZCQUE2QixDQUFDLENBQUM7S0FDeEQ7Ozs7QUFFRyx5QkFBdUI7U0FBQSxlQUFrRTtBQUMzRixhQUFPLGdCQUFnQixDQUFDLCtCQUErQixDQUFDLENBQUM7S0FDMUQ7Ozs7QUFFRyxZQUFVO1NBQUEsZUFBRztBQUNmLGFBQU8sZ0JBQWdCLENBQUMsV0FBVyxDQUFDLENBQUMsVUFBVSxDQUFDO0tBQ2pEOzs7O0VBQ0YsQ0FBQyIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuLy8gSXQncyBpbXBhY3RmdWwgdG8gbWVtb2l6ZSBvdXIgcmVxdWlyZXMgaGVyZSBzaW5jZSB0aGVzZSBjb21tb25zIGFyZSBzbyBvZnRlbiB1c2VkLlxuY29uc3QgcmVxdWlyZUNhY2hlOiB7W2lkOiBzdHJpbmddOiBhbnl9ID0ge307XG5mdW5jdGlvbiByZXF1aXJlRnJvbUNhY2hlKGlkOiBzdHJpbmcpOiBhbnkge1xuICBpZiAoIXJlcXVpcmVDYWNoZS5oYXNPd25Qcm9wZXJ0eShpZCkpIHtcbiAgICAvLyAkRmxvd0lnbm9yZVxuICAgIHJlcXVpcmVDYWNoZVtpZF0gPSByZXF1aXJlKGlkKTtcbiAgfVxuICByZXR1cm4gcmVxdWlyZUNhY2hlW2lkXTtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSB7XG4gIGdldCBwcm9qZWN0cygpIHtcbiAgICByZXR1cm4gcmVxdWlyZUZyb21DYWNoZSgnLi9wcm9qZWN0cycpO1xuICB9LFxuXG4gIGdldCBhdG9tRXZlbnREZWJvdW5jZSgpIHtcbiAgICByZXR1cm4gcmVxdWlyZUZyb21DYWNoZSgnLi9hdG9tLWV2ZW50LWRlYm91bmNlJyk7XG4gIH0sXG5cbiAgZ2V0IGJyb3dzZXIoKSB7XG4gICAgcmV0dXJuIHJlcXVpcmVGcm9tQ2FjaGUoJy4vYnJvd3NlcicpO1xuICB9LFxuXG4gIGdldCBjcmVhdGVTY3JpcHRCdWZmZXJlZFByb2Nlc3NXaXRoRW52KCkge1xuICAgIHJldHVybiByZXF1aXJlRnJvbUNhY2hlKCcuL3NjcmlwdC1idWZmZXJlZC1wcm9jZXNzJykuY3JlYXRlU2NyaXB0QnVmZmVyZWRQcm9jZXNzV2l0aEVudjtcbiAgfSxcblxuICBnZXQgY3JlYXRlUGFuZUNvbnRhaW5lcigpIHtcbiAgICByZXR1cm4gcmVxdWlyZUZyb21DYWNoZSgnLi9jcmVhdGUtcGFuZS1jb250YWluZXInKTtcbiAgfSxcblxuICBnZXQgY3JlYXRlVGV4dEVkaXRvcigpIHtcbiAgICByZXR1cm4gcmVxdWlyZUZyb21DYWNoZSgnLi90ZXh0LWVkaXRvcicpLmNyZWF0ZVRleHRFZGl0b3I7XG4gIH0sXG5cbiAgZ2V0IGV4aXN0aW5nRWRpdG9yRm9yVXJpKCkge1xuICAgIHJldHVybiByZXF1aXJlRnJvbUNhY2hlKCcuL3RleHQtZWRpdG9yJykuZXhpc3RpbmdFZGl0b3JGb3JVcmk7XG4gIH0sXG5cbiAgZ2V0IGV4aXN0aW5nQnVmZmVyRm9yVXJpKCkge1xuICAgIHJldHVybiByZXF1aXJlRnJvbUNhY2hlKCcuL3RleHQtZWRpdG9yJykuZXhpc3RpbmdCdWZmZXJGb3JVcmk7XG4gIH0sXG5cbiAgZ2V0IGJ1ZmZlckZvclVyaSgpIHtcbiAgICByZXR1cm4gcmVxdWlyZUZyb21DYWNoZSgnLi90ZXh0LWVkaXRvcicpLmJ1ZmZlckZvclVyaTtcbiAgfSxcblxuICBnZXQgbG9hZEJ1ZmZlckZvclVyaSgpIHtcbiAgICByZXR1cm4gcmVxdWlyZUZyb21DYWNoZSgnLi90ZXh0LWVkaXRvcicpLmxvYWRCdWZmZXJGb3JVcmk7XG4gIH0sXG5cbiAgZ2V0IGRlc3Ryb3lQYW5lSXRlbVdpdGhUaXRsZSgpIHtcbiAgICByZXR1cm4gcmVxdWlyZUZyb21DYWNoZSgnLi9kZXN0cm95LXBhbmUtaXRlbScpO1xuICB9LFxuXG4gIGdldCBmaWxlVHlwZUNsYXNzKCkge1xuICAgIHJldHVybiByZXF1aXJlRnJvbUNhY2hlKCcuL2ZpbGUtdHlwZS1jbGFzcycpO1xuICB9LFxuXG4gIGdldCBnb1RvTG9jYXRpb24oKSB7XG4gICAgcmV0dXJuIHJlcXVpcmVGcm9tQ2FjaGUoJy4vZ28tdG8tbG9jYXRpb24nKS5nb1RvTG9jYXRpb247XG4gIH0sXG5cbiAgZ2V0IGdvVG9Mb2NhdGlvbkluRWRpdG9yKCkge1xuICAgIHJldHVybiByZXF1aXJlRnJvbUNhY2hlKCcuL2dvLXRvLWxvY2F0aW9uJykuZ29Ub0xvY2F0aW9uSW5FZGl0b3I7XG4gIH0sXG5cbiAgZ2V0IG9ic2VydmVOYXZpZ2F0aW5nRWRpdG9ycygpIHtcbiAgICByZXR1cm4gcmVxdWlyZUZyb21DYWNoZSgnLi9nby10by1sb2NhdGlvbicpLm9ic2VydmVOYXZpZ2F0aW5nRWRpdG9ycztcbiAgfSxcblxuICBnZXQgZ2V0UGF0aFRvV29ya3NwYWNlU3RhdGUoKSB7XG4gICAgcmV0dXJuIHJlcXVpcmVGcm9tQ2FjaGUoJy4vd29ya3NwYWNlJykuZ2V0UGF0aFRvV29ya3NwYWNlU3RhdGU7XG4gIH0sXG5cbiAgZ2V0IGlzVGV4dEVkaXRvcigpIHtcbiAgICByZXR1cm4gcmVxdWlyZUZyb21DYWNoZSgnLi90ZXh0LWVkaXRvcicpLmlzVGV4dEVkaXRvcjtcbiAgfSxcblxuICBnZXQgc2V0UG9zaXRpb25BbmRTY3JvbGwoKSB7XG4gICAgcmV0dXJuIHJlcXVpcmVGcm9tQ2FjaGUoJy4vdGV4dC1lZGl0b3InKS5zZXRQb3NpdGlvbkFuZFNjcm9sbDtcbiAgfSxcblxuICBnZXQgZ2V0Vmlld09mRWRpdG9yKCkge1xuICAgIHJldHVybiByZXF1aXJlRnJvbUNhY2hlKCcuL3RleHQtZWRpdG9yJykuZ2V0Vmlld09mRWRpdG9yO1xuICB9LFxuXG4gIGdldCBnZXRTY3JvbGxUb3AoKSB7XG4gICAgcmV0dXJuIHJlcXVpcmVGcm9tQ2FjaGUoJy4vdGV4dC1lZGl0b3InKS5nZXRTY3JvbGxUb3A7XG4gIH0sXG5cbiAgZ2V0IHNldFNjcm9sbFRvcCgpIHtcbiAgICByZXR1cm4gcmVxdWlyZUZyb21DYWNoZSgnLi90ZXh0LWVkaXRvcicpLnNldFNjcm9sbFRvcDtcbiAgfSxcblxuICBnZXQgZXh0cmFjdFdvcmRBdFBvc2l0aW9uKCkge1xuICAgIHJldHVybiByZXF1aXJlRnJvbUNhY2hlKCcuL2V4dHJhY3Qtd29yZC1hdC1wb3NpdGlvbicpO1xuICB9LFxuXG4gIGdldCBtb3VzZUxpc3RlbmVyRm9yVGV4dEVkaXRvcigpIHtcbiAgICByZXR1cm4gcmVxdWlyZUZyb21DYWNoZSgnLi9tb3VzZS1saXN0ZW5lci1mb3ItdGV4dC1lZGl0b3InKTtcbiAgfSxcblxuICBnZXQgb2JzZXJ2ZUxhbmd1YWdlVGV4dEVkaXRvcnMoKSB7XG4gICAgcmV0dXJuIHJlcXVpcmVGcm9tQ2FjaGUoJy4vb2JzZXJ2ZS1sYW5ndWFnZS10ZXh0LWVkaXRvcnMnKTtcbiAgfSxcblxuICBnZXQgb2JzZXJ2ZUdyYW1tYXJGb3JUZXh0RWRpdG9ycygpIHtcbiAgICByZXR1cm4gcmVxdWlyZUZyb21DYWNoZSgnLi9vYnNlcnZlLWdyYW1tYXItZm9yLXRleHQtZWRpdG9ycycpO1xuICB9LFxuXG4gIGdldCByZWdpc3RlckdyYW1tYXJGb3JGaWxlRXh0ZW5zaW9uKCkge1xuICAgIHJldHVybiByZXF1aXJlRnJvbUNhY2hlKCcuL3JlZ2lzdGVyLWdyYW1tYXItZm9yLWZpbGUtZXh0ZW5zaW9uJyk7XG4gIH0sXG5cbiAgZ2V0IHdpdGhMb2FkaW5nTm90aWZpY2F0aW9uKCkge1xuICAgIHJldHVybiByZXF1aXJlRnJvbUNhY2hlKCcuL3dpdGgtbG9hZGluZy1ub3RpZmljYXRpb24nKTtcbiAgfSxcblxuICBnZXQgb25XaWxsRGVzdHJveVRleHRCdWZmZXIoKTogKGNhbGxiYWNrOiAoYnVmZmVyOiBhdG9tJFRleHRCdWZmZXIpID0+IG1peGVkKSA9PiBJRGlzcG9zYWJsZSB7XG4gICAgcmV0dXJuIHJlcXVpcmVGcm9tQ2FjaGUoJy4vb24td2lsbC1kZXN0cm95LXRleHQtYnVmZmVyJyk7XG4gIH0sXG5cbiAgZ2V0IGFkZFRvb2x0aXAoKSB7XG4gICAgcmV0dXJuIHJlcXVpcmVGcm9tQ2FjaGUoJy4vdG9vbHRpcCcpLmFkZFRvb2x0aXA7XG4gIH0sXG59O1xuIl19

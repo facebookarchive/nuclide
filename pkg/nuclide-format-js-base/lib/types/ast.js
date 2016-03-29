@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -10,6 +11,4 @@
  */
 
 // TODO: Figure out where these types actually come from.
-export type Collection = any;
-export type Node = any;
-export type NodePath = any;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJhc3QuanMiLCJzb3VyY2VzQ29udGVudCI6W119

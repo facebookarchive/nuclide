@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,33 +10,5 @@
  * the root directory of this source tree.
  */
 
-import type {
-  DebuggerProcessInfo,
-  DebuggerLaunchAttachProvider,
-} from '../nuclide-debugger-atom';
-import type {NuclideUri} from '../nuclide-remote-uri';
-
-export type nuclide_debugger$Service = {
-  name: string;
-  getProcessInfoList(): Promise<Array<DebuggerProcessInfo>>;
-};
-
-export type NuclideDebuggerProvider = {
-  name: string;
-  getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider;
-};
-
-export type NuclideEvaluationExpression = {
-  range: atom$Range;
-  expression: string;
-}
-
-export type NuclideEvaluationExpressionProvider = {
-  name: string;
-  // A comma-separated list of Atom grammars understood by the provider, e.g. 'source.js.jsx'
-  selector: string;
-  getEvaluationExpression(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression>;
-}
+// A comma-separated list of Atom grammars understood by the provider, e.g. 'source.js.jsx'
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJzZXJ2aWNlLmpzIiwic291cmNlc0NvbnRlbnQiOltdfQ==

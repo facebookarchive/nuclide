@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +10,36 @@
  * the root directory of this source tree.
  */
 
-import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/service';
-import type {Activation as ActivationType} from './Activation';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.provideNuclideDebugger = provideNuclideDebugger;
 
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let activation: ?ActivationType = null;
+var _assert = require('assert');
 
-export function activate(state: ?Object): void {
-  invariant(activation == null);
-  const {Activation} = require('./Activation');
+var _assert2 = _interopRequireDefault(_assert);
+
+var activation = null;
+
+function activate(state) {
+  (0, _assert2['default'])(activation == null);
+
+  var _require = require('./Activation');
+
+  var Activation = _require.Activation;
+
   activation = new Activation(state);
 }
 
-export function deactivate(): void {
-  invariant(activation != null);
+function deactivate() {
+  (0, _assert2['default'])(activation != null);
   activation.dispose();
   activation = null;
 }
 
-export function provideNuclideDebugger(): nuclide_debugger$Service {
-  invariant(activation != null);
+function provideNuclideDebugger() {
+  (0, _assert2['default'])(activation != null);
   return activation.provideNuclideDebugger();
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7O3NCQWNzQixRQUFROzs7O0FBRTlCLElBQUksVUFBMkIsR0FBRyxJQUFJLENBQUM7O0FBRWhDLFNBQVMsUUFBUSxDQUFDLEtBQWMsRUFBUTtBQUM3QywyQkFBVSxVQUFVLElBQUksSUFBSSxDQUFDLENBQUM7O2lCQUNULE9BQU8sQ0FBQyxjQUFjLENBQUM7O01BQXJDLFVBQVUsWUFBVixVQUFVOztBQUNqQixZQUFVLEdBQUcsSUFBSSxVQUFVLENBQUMsS0FBSyxDQUFDLENBQUM7Q0FDcEM7O0FBRU0sU0FBUyxVQUFVLEdBQVM7QUFDakMsMkJBQVUsVUFBVSxJQUFJLElBQUksQ0FBQyxDQUFDO0FBQzlCLFlBQVUsQ0FBQyxPQUFPLEVBQUUsQ0FBQztBQUNyQixZQUFVLEdBQUcsSUFBSSxDQUFDO0NBQ25COztBQUVNLFNBQVMsc0JBQXNCLEdBQTZCO0FBQ2pFLDJCQUFVLFVBQVUsSUFBSSxJQUFJLENBQUMsQ0FBQztBQUM5QixTQUFPLFVBQVUsQ0FBQyxzQkFBc0IsRUFBRSxDQUFDO0NBQzVDIiwiZmlsZSI6Im1haW4uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7bnVjbGlkZV9kZWJ1Z2dlciRTZXJ2aWNlfSBmcm9tICcuLi8uLi9udWNsaWRlLWRlYnVnZ2VyLWludGVyZmFjZXMvc2VydmljZSc7XG5pbXBvcnQgdHlwZSB7QWN0aXZhdGlvbiBhcyBBY3RpdmF0aW9uVHlwZX0gZnJvbSAnLi9BY3RpdmF0aW9uJztcblxuaW1wb3J0IGludmFyaWFudCBmcm9tICdhc3NlcnQnO1xuXG5sZXQgYWN0aXZhdGlvbjogP0FjdGl2YXRpb25UeXBlID0gbnVsbDtcblxuZXhwb3J0IGZ1bmN0aW9uIGFjdGl2YXRlKHN0YXRlOiA/T2JqZWN0KTogdm9pZCB7XG4gIGludmFyaWFudChhY3RpdmF0aW9uID09IG51bGwpO1xuICBjb25zdCB7QWN0aXZhdGlvbn0gPSByZXF1aXJlKCcuL0FjdGl2YXRpb24nKTtcbiAgYWN0aXZhdGlvbiA9IG5ldyBBY3RpdmF0aW9uKHN0YXRlKTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGRlYWN0aXZhdGUoKTogdm9pZCB7XG4gIGludmFyaWFudChhY3RpdmF0aW9uICE9IG51bGwpO1xuICBhY3RpdmF0aW9uLmRpc3Bvc2UoKTtcbiAgYWN0aXZhdGlvbiA9IG51bGw7XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBwcm92aWRlTnVjbGlkZURlYnVnZ2VyKCk6IG51Y2xpZGVfZGVidWdnZXIkU2VydmljZSB7XG4gIGludmFyaWFudChhY3RpdmF0aW9uICE9IG51bGwpO1xuICByZXR1cm4gYWN0aXZhdGlvbi5wcm92aWRlTnVjbGlkZURlYnVnZ2VyKCk7XG59XG4iXX0=

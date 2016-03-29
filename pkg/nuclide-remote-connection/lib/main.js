@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +8,19 @@
  * the root directory of this source tree.
  */
 
-import {RemoteConnection} from './RemoteConnection';
-import {RemoteDirectory} from './RemoteDirectory';
-import {RemoteFile} from './RemoteFile';
-import {ServerConnection} from './ServerConnection';
+var _RemoteConnection = require('./RemoteConnection');
 
-import {
-  SshHandshake,
-  decorateSshConnectionDelegateWithTracking,
-} from './SshHandshake';
+var _RemoteDirectory = require('./RemoteDirectory');
 
-import {getFileForPath} from './client';
+var _RemoteFile = require('./RemoteFile');
 
-import {
-  getService,
-  getServiceByNuclideUri,
-  getServiceLogger,
-} from './service-manager';
+var _ServerConnection = require('./ServerConnection');
+
+var _SshHandshake = require('./SshHandshake');
+
+var _client = require('./client');
+
+var _serviceManager = require('./service-manager');
 
 /**
  * Can't use `export {...} from '..';` because some tests depend on being able
@@ -33,14 +28,15 @@ import {
  */
 
 module.exports = {
-  RemoteConnection,
-  RemoteDirectory,
-  RemoteFile,
-  ServerConnection,
-  SshHandshake,
-  decorateSshConnectionDelegateWithTracking,
-  getFileForPath,
-  getService,
-  getServiceByNuclideUri,
-  getServiceLogger,
+  RemoteConnection: _RemoteConnection.RemoteConnection,
+  RemoteDirectory: _RemoteDirectory.RemoteDirectory,
+  RemoteFile: _RemoteFile.RemoteFile,
+  ServerConnection: _ServerConnection.ServerConnection,
+  SshHandshake: _SshHandshake.SshHandshake,
+  decorateSshConnectionDelegateWithTracking: _SshHandshake.decorateSshConnectionDelegateWithTracking,
+  getFileForPath: _client.getFileForPath,
+  getService: _serviceManager.getService,
+  getServiceByNuclideUri: _serviceManager.getServiceByNuclideUri,
+  getServiceLogger: _serviceManager.getServiceLogger
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztnQ0FXK0Isb0JBQW9COzsrQkFDckIsbUJBQW1COzswQkFDeEIsY0FBYzs7Z0NBQ1Isb0JBQW9COzs0QkFLNUMsZ0JBQWdCOztzQkFFTSxVQUFVOzs4QkFNaEMsbUJBQW1COzs7Ozs7O0FBTzFCLE1BQU0sQ0FBQyxPQUFPLEdBQUc7QUFDZixrQkFBZ0Isb0NBQUE7QUFDaEIsaUJBQWUsa0NBQUE7QUFDZixZQUFVLHdCQUFBO0FBQ1Ysa0JBQWdCLG9DQUFBO0FBQ2hCLGNBQVksNEJBQUE7QUFDWiwyQ0FBeUMseURBQUE7QUFDekMsZ0JBQWMsd0JBQUE7QUFDZCxZQUFVLDRCQUFBO0FBQ1Ysd0JBQXNCLHdDQUFBO0FBQ3RCLGtCQUFnQixrQ0FBQTtDQUNqQixDQUFDIiwiZmlsZSI6Im1haW4uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQge1JlbW90ZUNvbm5lY3Rpb259IGZyb20gJy4vUmVtb3RlQ29ubmVjdGlvbic7XG5pbXBvcnQge1JlbW90ZURpcmVjdG9yeX0gZnJvbSAnLi9SZW1vdGVEaXJlY3RvcnknO1xuaW1wb3J0IHtSZW1vdGVGaWxlfSBmcm9tICcuL1JlbW90ZUZpbGUnO1xuaW1wb3J0IHtTZXJ2ZXJDb25uZWN0aW9ufSBmcm9tICcuL1NlcnZlckNvbm5lY3Rpb24nO1xuXG5pbXBvcnQge1xuICBTc2hIYW5kc2hha2UsXG4gIGRlY29yYXRlU3NoQ29ubmVjdGlvbkRlbGVnYXRlV2l0aFRyYWNraW5nLFxufSBmcm9tICcuL1NzaEhhbmRzaGFrZSc7XG5cbmltcG9ydCB7Z2V0RmlsZUZvclBhdGh9IGZyb20gJy4vY2xpZW50JztcblxuaW1wb3J0IHtcbiAgZ2V0U2VydmljZSxcbiAgZ2V0U2VydmljZUJ5TnVjbGlkZVVyaSxcbiAgZ2V0U2VydmljZUxvZ2dlcixcbn0gZnJvbSAnLi9zZXJ2aWNlLW1hbmFnZXInO1xuXG4vKipcbiAqIENhbid0IHVzZSBgZXhwb3J0IHsuLi59IGZyb20gJy4uJztgIGJlY2F1c2Ugc29tZSB0ZXN0cyBkZXBlbmQgb24gYmVpbmcgYWJsZVxuICogdG8gbW9jayB0aGlzIG1vZHVsZS5cbiAqL1xuXG5tb2R1bGUuZXhwb3J0cyA9IHtcbiAgUmVtb3RlQ29ubmVjdGlvbixcbiAgUmVtb3RlRGlyZWN0b3J5LFxuICBSZW1vdGVGaWxlLFxuICBTZXJ2ZXJDb25uZWN0aW9uLFxuICBTc2hIYW5kc2hha2UsXG4gIGRlY29yYXRlU3NoQ29ubmVjdGlvbkRlbGVnYXRlV2l0aFRyYWNraW5nLFxuICBnZXRGaWxlRm9yUGF0aCxcbiAgZ2V0U2VydmljZSxcbiAgZ2V0U2VydmljZUJ5TnVjbGlkZVVyaSxcbiAgZ2V0U2VydmljZUxvZ2dlcixcbn07XG4iXX0=

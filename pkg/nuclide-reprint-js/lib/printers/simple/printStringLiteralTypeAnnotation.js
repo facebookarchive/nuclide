@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +8,11 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {StringLiteralTypeAnnotation} from 'ast-types-flow';
+var escapeStringLiteral = require('../../utils/escapeStringLiteral');
 
-const escapeStringLiteral = require('../../utils/escapeStringLiteral');
-
-function printStringLiteralTypeAnnotation(
-  print: Print,
-  node: StringLiteralTypeAnnotation,
-): Lines {
-  return [escapeStringLiteral(node.value, {quotes: 'single'})];
+function printStringLiteralTypeAnnotation(print, node) {
+  return [escapeStringLiteral(node.value, { quotes: 'single' })];
 }
 
 module.exports = printStringLiteralTypeAnnotation;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50U3RyaW5nTGl0ZXJhbFR5cGVBbm5vdGF0aW9uLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7QUFjQSxJQUFNLG1CQUFtQixHQUFHLE9BQU8sQ0FBQyxpQ0FBaUMsQ0FBQyxDQUFDOztBQUV2RSxTQUFTLGdDQUFnQyxDQUN2QyxLQUFZLEVBQ1osSUFBaUMsRUFDMUI7QUFDUCxTQUFPLENBQUMsbUJBQW1CLENBQUMsSUFBSSxDQUFDLEtBQUssRUFBRSxFQUFDLE1BQU0sRUFBRSxRQUFRLEVBQUMsQ0FBQyxDQUFDLENBQUM7Q0FDOUQ7O0FBRUQsTUFBTSxDQUFDLE9BQU8sR0FBRyxnQ0FBZ0MsQ0FBQyIsImZpbGUiOiJwcmludFN0cmluZ0xpdGVyYWxUeXBlQW5ub3RhdGlvbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtMaW5lcywgUHJpbnR9IGZyb20gJy4uLy4uL3R5cGVzL2NvbW1vbic7XG5pbXBvcnQgdHlwZSB7U3RyaW5nTGl0ZXJhbFR5cGVBbm5vdGF0aW9ufSBmcm9tICdhc3QtdHlwZXMtZmxvdyc7XG5cbmNvbnN0IGVzY2FwZVN0cmluZ0xpdGVyYWwgPSByZXF1aXJlKCcuLi8uLi91dGlscy9lc2NhcGVTdHJpbmdMaXRlcmFsJyk7XG5cbmZ1bmN0aW9uIHByaW50U3RyaW5nTGl0ZXJhbFR5cGVBbm5vdGF0aW9uKFxuICBwcmludDogUHJpbnQsXG4gIG5vZGU6IFN0cmluZ0xpdGVyYWxUeXBlQW5ub3RhdGlvbixcbik6IExpbmVzIHtcbiAgcmV0dXJuIFtlc2NhcGVTdHJpbmdMaXRlcmFsKG5vZGUudmFsdWUsIHtxdW90ZXM6ICdzaW5nbGUnfSldO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IHByaW50U3RyaW5nTGl0ZXJhbFR5cGVBbm5vdGF0aW9uO1xuIl19
