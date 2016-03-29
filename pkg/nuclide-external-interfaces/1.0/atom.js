@@ -123,6 +123,17 @@ declare class atom$Config {
 
 declare class atom$Cursor {
   // Event Subscription
+  onDidChangePosition(
+    callback: (event: {
+      oldBufferPosition: atom$Point;
+      oldScreenPosition: atom$Point;
+      newBufferPosition: atom$Point;
+      newScreenPosition: atom$Point;
+      textChanged: boolean;
+      Cursor: atom$Cursor;
+    }) => mixed,
+  ): IDisposable;
+
   // Managing Cursor Position
   getBufferRow(): number;
   getBufferColumn(): number;
