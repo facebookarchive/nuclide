@@ -1,0 +1,19 @@
+{
+  "name": "nuclide-python",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides support for Python in Nuclide",
+  "nuclide": {
+    "config": {
+      "pathToPython": {
+        "title": "Path to Python Executable",
+        "type": "string",
+        "default": "python",
+        "description": "Absolute path to the python executable on your system."
+      }
+    },
+    "packageType": "Atom",
+    "testRunner": "apm"
+  }
+}
