@@ -16,6 +16,7 @@ export type PythonConfig = {
 };
 
 export function getPythonPath(): string {
-  const config = ((featureConfig.get('nuclide-python'): any): PythonConfig);
-  return config.pathToPython;
+  const config = ((featureConfig.get('nuclide-python'): any): ?PythonConfig);
+  // config can be null in tests.
+  return config == null ? 'python' : config.pathToPython;
 }
