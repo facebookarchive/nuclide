@@ -21,6 +21,7 @@ import type {
 } from '../../nuclide-hg-repository-base/lib/HgService';
 
 import {CompositeDisposable, Emitter} from 'atom';
+import HgRepositoryClientAsync from './HgRepositoryClientAsync';
 import {
   StatusCodeId,
   StatusCodeIdToNumber,
@@ -107,6 +108,9 @@ export default class HgRepositoryClient {
   _serializedRefreshStatusesCache: () => Promise<void>;
 
   constructor(repoPath: string, hgService: HgService, options: HgRepositoryOptions) {
+    // $FlowIssue: `async` not able to be annotated on classes
+    this.async = new HgRepositoryClientAsync(this);
+
     this._path = repoPath;
     this._workingDirectory = options.workingDirectory;
     this._projectDirectory = options.projectRootDirectory;
@@ -259,7 +263,8 @@ export default class HgRepositoryClient {
   getShortHead(filePath: NuclideUri): string {
     if (!this._currentBookmark) {
       // Kick off a fetch to get the current bookmark. This is async.
-      this.fetchCurrentBookmark();
+      // $FlowIssue: `async` not able to be annotated on classes
+      this.async.getShortHead();
       return '';
     }
     return this._currentBookmark;
@@ -419,18 +424,13 @@ export default class HgRepositoryClient {
   }
 
   isStatusModified(status: ?number): boolean {
-    return (
-      status === StatusCodeNumber.MODIFIED ||
-      status === StatusCodeNumber.MISSING ||
-      status === StatusCodeNumber.REMOVED
-    );
+    // $FlowIssue: `async` not able to be annotated on classes
+    return this.async.isStatusModified(status);
   }
 
   isStatusNew(status: ?number): boolean {
-    return (
-      status === StatusCodeNumber.ADDED ||
-      status === StatusCodeNumber.UNTRACKED
-    );
+    // $FlowIssue: `async` not able to be annotated on classes
+    return this.async.isStatusNew(status);
   }
 
 
@@ -644,61 +644,27 @@ export default class HgRepositoryClient {
    */
 
   /**
+   * @deprecated Use {#async.getDiffStats} instead
+   *
    * Recommended method to use to get the diff stats of files in this repo.
    * @param path The file path to get the status for. If a path is not in the
    *   project, default "clean" stats will be returned.
    */
-  async getDiffStatsForPath(filePath: NuclideUri): Promise<{added: number; deleted: number;}> {
-    const cleanStats = {added: 0, deleted: 0};
-    if (!filePath) {
-      return cleanStats;
-    }
-
-    // Check the cache.
-    const cachedDiffInfo = this._hgDiffCache[filePath];
-    if (cachedDiffInfo) {
-      return {added: cachedDiffInfo.added, deleted: cachedDiffInfo.deleted};
-    }
-
-    // Fall back to a fetch.
-    const fetchedPathToDiffInfo = await this._updateDiffInfo([filePath]);
-    if (fetchedPathToDiffInfo) {
-      const diffInfo = fetchedPathToDiffInfo.get(filePath);
-      if (diffInfo != null) {
-        return {added: diffInfo.added, deleted: diffInfo.deleted};
-      }
-    }
-
-    return cleanStats;
+  getDiffStatsForPath(filePath: NuclideUri): Promise<{added: number; deleted: number;}> {
+    // $FlowIssue: `async` not able to be annotated on classes
+    return this.async.getDiffStats(filePath);
   }
 
   /**
+   * @deprecated Use {#async.getLineDiffs} instead
+   *
    * Recommended method to use to get the line diffs of files in this repo.
    * @param path The absolute file path to get the line diffs for. If the path \
    *   is not in the project, an empty Array will be returned.
    */
-  async getLineDiffsForPath(filePath: NuclideUri): Promise<Array<LineDiff>> {
-    const lineDiffs = [];
-    if (!filePath) {
-      return lineDiffs;
-    }
-
-    // Check the cache.
-    const cachedDiffInfo = this._hgDiffCache[filePath];
-    if (cachedDiffInfo) {
-      return cachedDiffInfo.lineDiffs;
-    }
-
-    // Fall back to a fetch.
-    const fetchedPathToDiffInfo = await this._updateDiffInfo([filePath]);
-    if (fetchedPathToDiffInfo != null) {
-      const diffInfo = fetchedPathToDiffInfo.get(filePath);
-      if (diffInfo != null) {
-        return diffInfo.lineDiffs;
-      }
-    }
-
-    return lineDiffs;
+  getLineDiffsForPath(filePath: NuclideUri): Promise<Array<LineDiff>> {
+    // $FlowIssue: `async` not able to be annotated on classes
+    return this.async.getLineDiffs(filePath);
   }
 
   /**
@@ -754,30 +720,19 @@ export default class HgRepositoryClient {
     return pathsToDiffInfo;
   }
 
-
   /**
-   *
-   * Section: Retrieving Bookmark (async methods)
-   *
-   */
-  async fetchCurrentBookmark(): Promise<string> {
-    let newlyFetchedBookmark = '';
-    try {
-      newlyFetchedBookmark = await this._service.fetchCurrentBookmark();
-    } catch (e) {
-      // Suppress the error. There are legitimate times when there may be no
-      // current bookmark, such as during a rebase. In this case, we just want
-      // to return an empty string if there is no current bookmark.
-    }
-    if (newlyFetchedBookmark !== this._currentBookmark) {
-      this._currentBookmark = newlyFetchedBookmark;
-      // The Atom status-bar uses this as a signal to refresh the 'shortHead'.
-      // There is currently no dedicated 'shortHeadDidChange' event.
-      this._emitter.emit('did-change-statuses');
-    }
-    return this._currentBookmark || '';
-  }
+  *
+  * Section: Retrieving Bookmark (async methods)
+  *
+  */
 
+  /*
+   * @deprecated Use {#async.getShortHead} instead
+   */
+  fetchCurrentBookmark(): Promise<string> {
+    // $FlowIssue: `async` not able to be annotated on classes
+    return this.async.getShortHead();
+  }
 
   /**
    *
@@ -796,11 +751,13 @@ export default class HgRepositoryClient {
   }
 
   /**
+   * @deprecated Use {#async.checkoutReference} instead
+   *
    * This is the async version of what checkoutReference() is meant to do.
    */
-  async checkoutRevision(reference: string, create: boolean): Promise<boolean> {
-    await this._service.checkout(reference, create);
-    return true;
+  checkoutRevision(reference: string, create: boolean): Promise<void> {
+    // $FlowIssue: `async` not able to be annotated on classes
+    return this.async.checkoutReference(reference, create);
   }
 
 
