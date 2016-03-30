@@ -18,6 +18,7 @@ import FileTreeDispatcher from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeStore from './FileTreeStore';
 import Immutable from 'immutable';
+import {object} from '../../nuclide-commons';
 import semver from 'semver';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 
@@ -200,19 +201,20 @@ class FileTreeActions {
         rootKey,
       });
     } else {
-      atom.workspace.open(
-        FileTreeHelpers.keyToPath(nodeKey),
-        {
-          activatePane: true,
-          searchAllPanes: true,
-          pending,
-        }
-      );
+      let openOptions = {
+        activatePane: true,
+        searchAllPanes: true,
+      };
+      // TODO: Make the following the default once Nuclide only supports Atom v1.6.0+
+      if (semver.gte(atom.getVersion(), '1.6.0')) {
+        openOptions = object.assign({}, openOptions, {pending: true});
+      }
+      atom.workspace.open(FileTreeHelpers.keyToPath(nodeKey), openOptions);
     }
   }
 
   keepPreviewTab() {
-    // This will no longer be needed once Nuclide will not officially support Atoms < 1.6.0
+    // TODO: Make the following the default once Nuclide only supports Atom v1.6.0+
     if (semver.gte(atom.getVersion(), '1.6.0')) {
       const activePane = atom.workspace.getActivePane();
       if (activePane != null) {

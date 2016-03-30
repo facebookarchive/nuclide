@@ -829,10 +829,11 @@ declare class atom$Workspace {
   open(
     uri?: string,
     options?: {
+      activePane?: boolean;
       initialLine?: number;
       initialColumn?: number;
+      pending?: boolean;
       split?: string;
-      activePane?: boolean;
       searchAllPanes?: boolean;
     }
   ): Promise<atom$TextEditor>;
