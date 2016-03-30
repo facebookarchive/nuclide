@@ -25,27 +25,49 @@ const logger = getLogger();
 
 const TAB_SWITCH_DELAY = 200; // ms
 export function createOutlines(providers: ProviderRegistry): Observable<OutlineForUi> {
-  return getTextEditorEvents()
-    .flatMap(async editor => {
-      let outline: OutlineForUi;
-      if (editor == null) {
-        outline = {
-          kind: 'not-text-editor',
-        };
-      } else {
-        outline = await outlineForEditor(providers, editor);
-      }
-      return {editor, outline};
-    })
-    .flatMapLatest(({editor, outline}) => {
-      if (outline.kind !== 'outline') {
-        return Observable.just(outline);
-      }
-      return getCursorPositions(editor)
-        .map(cursorLocation => {
-          return highlightCurrentNode(outline, cursorLocation);
-        });
+  const paneChanges = observableFromSubscribeFunction(
+      atom.workspace.observeActivePaneItem.bind(atom.workspace),
+    )
+    // Delay the work on tab switch to keep tab switches snappy and avoid doing a bunch of
+    // computation if there are a lot of consecutive tab switches.
+    .debounce(TAB_SWITCH_DELAY);
+
+  return paneChanges
+    .map(() => atom.workspace.getActiveTextEditor())
+    .flatMap(editor => outlinesForEditor(providers, editor));
+}
+
+function outlinesForEditor(
+  providers: ProviderRegistry,
+  editorArg: ?atom$TextEditor,
+): Observable<OutlineForUi> {
+  // needs to be const so the refinement holds in closures
+  const editor = editorArg;
+  if (editor == null) {
+    return Observable.just({
+      kind: 'not-text-editor',
     });
+  }
+
+  const editorEvents = Observable.concat(
+    // Emit one event at the beginning to trigger the computation of the initial outline
+    Observable.just(),
+    observableFromSubscribeFunction(editor.onDidStopChanging.bind(editor)),
+  );
+
+  const outlines = editorEvents.flatMap(() => outlineForEditor(providers, editor));
+
+  const highlightedOutlines = outlines.flatMapLatest(outline => {
+    if (outline.kind !== 'outline') {
+      return Observable.just(outline);
+    }
+    return getCursorPositions(editor)
+      .map(cursorLocation => {
+        return highlightCurrentNode(outline, cursorLocation);
+      });
+  });
+
+  return highlightedOutlines;
 }
 
 async function outlineForEditor(
@@ -126,27 +148,4 @@ function shouldHighlightNode(outlineTree: OutlineTreeForUi, cursorLocation: atom
   }
   return cursorLocation.isGreaterThanOrEqual(startPosition) &&
    cursorLocation.isLessThanOrEqual(endPosition);
-}
-
-// Emits a TextEditor whenever the active editor changes or whenever the text in the active editor
-// changes.
-function getTextEditorEvents(): Observable<atom$TextEditor> {
-  const textEvents = Observable.create(observer => {
-    const textEventDispatcher =
-      require('../../nuclide-text-event-dispatcher').getInstance();
-    return textEventDispatcher.onAnyFileChange(editor => observer.onNext(editor));
-  });
-
-  const paneChanges = observableFromSubscribeFunction(
-      atom.workspace.observeActivePaneItem.bind(atom.workspace),
-    )
-    // Delay the work on tab switch to keep tab switches snappy and avoid doing a bunch of
-    // computation if there are a lot of consecutive tab switches.
-    .debounce(TAB_SWITCH_DELAY);
-
-  return Observable.merge(
-    textEvents,
-    paneChanges
-      .map(() => atom.workspace.getActiveTextEditor())
-  );
 }
