@@ -114,11 +114,7 @@ class OutlineViewComponent extends React.Component {
           </span>
         );
       case 'outline':
-        return (
-          <div>
-            {renderTrees(outline.editor, outline.outlineTrees)}
-          </div>
-        );
+        return renderTrees(outline.editor, outline.outlineTrees);
       default:
         const errorText = `Encountered unexpected outline kind ${outline.kind}`;
         logger.error(errorText);
@@ -175,7 +171,9 @@ function renderTrees(
     return;
   }
   return (
-    <ul className="list-tree">
+    // Add `position: relative;` to let `li.selected` style position itself relative to the list
+    // tree rather than to its container.
+    <ul className="list-tree" style={{position: 'relative'}}>
       {outlines.map((outline, index) => renderTree(editor, outline, index))}
     </ul>
   );

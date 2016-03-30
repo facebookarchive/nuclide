@@ -17,6 +17,7 @@ import invariant from 'assert';
 
 import {track} from '../../nuclide-analytics';
 import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
+import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
 import {OutlineView} from './OutlineView';
 
 export class OutlineViewPanelState {
@@ -109,18 +110,26 @@ class OutlineViewPanel {
     this._panelDOMElement = document.createElement('div');
     // Otherwise it does not fill the whole panel, which might be alright except it means that the
     // resize-handle doesn't extend all the way to the bottom.
-    this._panelDOMElement.style.height = '100%';
+    //
+    // Use 'flex' to fit Atom v1.6.0+ and `height: inherit` to fit Atom <v1.6.0. The latter uses
+    // `height: 100%;` down the hierarchy and becomes innocuous in 1.6.0 because inheriting will
+    // give `height: auto;`.
+    this._panelDOMElement.style.display = 'flex';
+    this._panelDOMElement.style.height = 'inherit';
 
     ReactDOM.render(
-      <div style={{height: '100%'}}>
-        <OutlineViewHeader />
-        <PanelComponent
-          dock="right"
-          initialLength={initialWidth}
-          onResize={onResize}>
-          <OutlineView outlines={outlines} />
-        </PanelComponent>
-      </div>,
+      <PanelComponent
+        dock="right"
+        initialLength={initialWidth}
+        noScroll
+        onResize={onResize}>
+        <div style={{display: 'flex', 'flex-direction': 'column', 'width': '100%'}}>
+          <OutlineViewHeader />
+          <PanelComponentScroller>
+            <OutlineView outlines={outlines} />
+          </PanelComponentScroller>
+        </div>
+      </PanelComponent>,
       this._panelDOMElement,
     );
     this._panel = atom.workspace.addRightPanel({
@@ -138,12 +147,15 @@ class OutlineViewPanel {
 class OutlineViewHeader extends React.Component {
   render(): React.Element {
     return (
-      <div className="panel-heading">
+      // Because the container is flex, prevent this header from shrinking smaller than its
+      // contents. The default for flex children is to shrink as needed.
+      <div className="panel-heading" style={{'flex-shrink': 0}}>
         <span className="icon icon-list-unordered" />
         Outline View
         <button
-          className="pull-right btn icon icon-x nuclide-outline-view-close-button"
+          className="btn btn-xs icon icon-x pull-right nuclide-outline-view-close-button"
           onClick={hideOutlineView}
+          title="Hide Outline View"
         />
       </div>
     );
