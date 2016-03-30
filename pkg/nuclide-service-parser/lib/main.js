@@ -9,10 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {createOrFetchFromCache} from '../../nuclide-node-transpiler/lib/babel-cache';
 import fs from 'fs';
-import generateProxy from './proxy-generator';
-import parseServiceDefinition from './service-parser';
 import path from 'path';
 import invariant from 'assert';
 import Module from 'module';
@@ -36,6 +33,7 @@ export function getDefinitions(definitionPath: string): Definitions {
 
   // Cache definitions by the resolved file path they were loaded from.
   if (!definitionsCache.has(resolvedPath)) {
+    const {parseServiceDefinition} = require('./service-parser');
     definitionsCache.set(resolvedPath,
       parseServiceDefinition(resolvedPath, fs.readFileSync(resolvedPath, 'utf8')));
   }
@@ -56,6 +54,9 @@ export function getProxy(serviceName: string, definitionPath: string, clientObje
 
   // Cache proxy factory functions by the resolved definition file path.
   if (!proxiesCache.has(resolvedPath)) {
+    const {generateProxy} = require('./proxy-generator');
+    const {createOrFetchFromCache} = require('../../nuclide-node-transpiler/lib/babel-cache');
+
     // Transpile this code (since it will use anonymous classes and arrow functions).
     const code = generateProxy(serviceName, defs);
     const filename = path.parse(definitionPath).name + 'Proxy.js';
@@ -65,8 +66,7 @@ export function getProxy(serviceName: string, definitionPath: string, clientObje
     const m = new Module();
     // as if it were a sibling to this file.
     m.filename = m.id = path.join(__dirname, filename);
-    // $FlowIssue
-    m.paths = module.paths;
+    m.paths = ((module: any).paths: Array<string>);
     m._compile(transpiled, filename);
 
     // Add the factory function to a cache.
@@ -92,8 +92,7 @@ export function getProxy(serviceName: string, definitionPath: string, clientObje
  * `require.resolve(path)` under the context of given module.
  */
 function resolvePath(definitionPath: string): string {
-  // $FlowIssue
-  return require('module')._resolveFilename(definitionPath, module.parent ? module.parent : module);
+  return Module._resolveFilename(definitionPath, module.parent ? module.parent : module);
 }
 
 // Export caches for testing.

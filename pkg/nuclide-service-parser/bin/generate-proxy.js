@@ -16,8 +16,8 @@
 
 require('../../nuclide-node-transpiler');
 
-var parseServiceDefinition = require('../lib/service-parser');
-var generateProxy = require('../lib/proxy-generator').default;
+var parseServiceDefinition = require('../lib/service-parser').parseServiceDefinition;
+var generateProxy = require('../lib/proxy-generator').generateProxy;
 
 if (process.argv.length < 3) {
   console.error('Missing service definition file argument.');

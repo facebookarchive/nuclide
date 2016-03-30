@@ -11,13 +11,13 @@
 
 import {event as commonsEvent} from '../../../nuclide-commons';
 import {DebuggerInstance, DebuggerProcessInfo} from '../../../nuclide-debugger-atom';
-import {Session} from '../../../nuclide-debugger-node/lib/Session';
 import {
   DebuggerProxyClient,
 } from '../../../nuclide-react-native-node-executor/lib/DebuggerProxyClient';
 import {CompositeDisposable, Disposable} from 'atom';
 import Rx from 'rx';
 import {Server as WebSocketServer} from 'ws';
+import type {Session as SessionType} from '../../../nuclide-debugger-node/lib/Session';
 
 const {observableFromSubscribeFunction} = commonsEvent;
 
@@ -126,7 +126,7 @@ const uiConnection$ = Rx.Observable.using(
 )
 .publish();
 
-function createSessionStream(ws: WebSocket, debugPort: number): Rx.Observable<Session> {
+function createSessionStream(ws: WebSocket, debugPort: number): Rx.Observable<SessionType> {
   const config = {
     debugPort,
     // This makes the node inspector not load all the source files on startup:
@@ -135,6 +135,7 @@ function createSessionStream(ws: WebSocket, debugPort: number): Rx.Observable<Se
 
   return Rx.Observable.create(observer => {
     // Creating a new Session is actually side-effecty.
+    const {Session} = require('../../../nuclide-debugger-node/lib/Session');
     const session = new Session(config, debugPort, ws);
     observer.onNext(session);
     return new Disposable(() => { session.close(); });

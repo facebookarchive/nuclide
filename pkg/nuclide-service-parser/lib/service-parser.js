@@ -38,7 +38,7 @@ function isPrivateMemberName(name: string): boolean {
  * data over a network.
  * @param source - The string source of the definition file.
  */
-export default function parseServiceDefinition(fileName: string, source: string): Definitions {
+export function parseServiceDefinition(fileName: string, source: string): Definitions {
   return new ServiceParser(fileName).parseService(source);
 }
 

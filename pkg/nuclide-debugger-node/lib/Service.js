@@ -11,7 +11,6 @@
 
 const {Disposable} = require('atom');
 const WebSocketServer = require('ws').Server;
-const {Session} = require('./Session');
 
 import invariant from 'assert';
 import {DebuggerInstance, DebuggerProcessInfo} from '../../nuclide-debugger-atom';
@@ -49,6 +48,7 @@ class NodeDebuggerInstance extends DebuggerInstance {
           debugPort: this._debugPort,
           preload: false, // This makes the node inspector not load all the source files on startup.
         };
+        const {Session} = require('./Session');
         const session = new Session(config, this._debugPort, websocket);
         Rx.Observable.fromEvent(session, 'close').subscribe(this._close$);
       });

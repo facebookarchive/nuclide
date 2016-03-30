@@ -106,3 +106,24 @@ declare class http$fixed {
     callback: (response: http$fixed$IncomingMessage) => void
   ): http$fixed$ClientRequest;
 }
+
+declare class module$Module {
+  constructor(
+    id?: string,
+    parent?: string | module$Module
+  ): void;
+  id: ?string;
+  exports: any;
+  parent?: string | module$Module;
+  filename?: string;
+  loaded: boolean;
+  children: Array<module$Module>;
+  paths: Array<string>;
+  _compile: (content: string, filename: string) => void;
+
+  static _resolveFilename(filename: string, module: any): string;
+}
+
+declare module 'module' {
+  declare var exports: typeof module$Module;
+}

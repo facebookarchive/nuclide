@@ -9,10 +9,6 @@
  * the root directory of this source tree.
  */
 
-declare module 'module' {
-  declare function _resolveFilename(filename: string, module: any): string;
-}
-
 /**
  * `Definitions` encodes all of the information in a service defintion file that is required to
  * generate a remote proxy.

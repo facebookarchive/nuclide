@@ -62,7 +62,7 @@ const unmarshalCall = (...args) => t.callExpression(clientDotUnmarshalExpression
  * @param defs - The result of parsing the definition file.
  * @returns The proxy factory method.
  */
-export default function generateProxy(serviceName: string, defs: Definitions): string {
+export function generateProxy(serviceName: string, defs: Definitions): string {
   // Initialized remoteModule to empty object.
   const statements = [t.assignmentExpression('=', remoteModule, emptyObject)];
 

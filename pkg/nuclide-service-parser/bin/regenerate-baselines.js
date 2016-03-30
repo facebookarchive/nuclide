@@ -16,8 +16,8 @@
 
 require('../../nuclide-node-transpiler');
 
-var parseServiceDefinition = require('../lib/service-parser');
-var generateProxy = require('../lib/proxy-generator').default;
+var parseServiceDefinition = require('../lib/service-parser').parseServiceDefinition;
+var generateProxy = require('../lib/proxy-generator').generateProxy;
 
 var fs = require('fs');
 var path = require('path');

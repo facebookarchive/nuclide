@@ -10,10 +10,6 @@
  */
 
 import {React} from 'react-for-atom';
-import remote from 'remote';
-
-const Menu = remote.require('menu');
-const MenuItem = remote.require('menu-item');
 
 type PromptOption = {
   id: string;
@@ -48,6 +44,9 @@ export default class PromptButton extends React.Component {
   }
 
   _handleClick(event: SyntheticMouseEvent): void {
+    const remote = require('remote');
+    const Menu = remote.require('menu');
+    const MenuItem = remote.require('menu-item');
     const currentWindow = remote.getCurrentWindow();
     const menu = new Menu();
     // TODO: Sort alphabetically by label
