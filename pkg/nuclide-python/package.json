@@ -11,6 +11,12 @@
         "type": "string",
         "default": "python",
         "description": "Absolute path to the python executable on your system."
+      },
+      "showGlobalVariables": {
+        "title": "Show global variables",
+        "type": "boolean",
+        "default": true,
+        "description": "Show assignments to all global variables."
       }
     },
     "packageType": "Atom",

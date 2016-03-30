@@ -39,3 +39,5 @@ def load_package_configs():
 
 if __name__ == '__main__':
     print json.dumps(ast_to_outline(parse(sys.stdin.read())), indent=4)
+
+var = 42

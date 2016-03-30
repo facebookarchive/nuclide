@@ -28,6 +28,12 @@ import path from 'path';
 import {checkOutput} from '../../nuclide-commons';
 import {getPythonPath} from './config';
 
+const SHOW_NO_VARIABLES = 'none';
+const SHOW_CONSTANTS = 'constants';
+const SHOW_ALL_VARIABLES = 'all';
+
+type ShowVariableMode = 'none' | 'constants' | 'all';
+
 const logger = getLogger();
 
 type FunctionDefTree = {
@@ -114,22 +120,25 @@ export type PythonTree =
   | NameTree
   | ParamTree;
 
-export async function pythonTextToOutline(text: string): Promise<?Outline> {
+export async function pythonTextToOutline(
+  showGlobalVariables: boolean,
+  text: string
+): Promise<?Outline> {
   try {
     const tree = await getPythonTree(text);
-    return tree == null ? null : treeToOutline(tree);
+    return tree == null ? null : treeToOutline(showGlobalVariables, tree);
   } catch (e) {
     logger.error('Exception getting outline: ', e);
     return null;
   }
 }
 
-function treeToOutline(tree: PythonTree): ?Outline {
-  const showConstants = true;
+function treeToOutline(showGlobalVariables: boolean, tree: PythonTree): ?Outline {
   switch (tree.kind) {
     case 'Module':
       return {
-        outlineTrees: treesToOutlineTrees(showConstants, tree.body),
+        outlineTrees: treesToOutlineTrees(showGlobalVariables
+          ? SHOW_ALL_VARIABLES : SHOW_CONSTANTS, tree.body),
       };
     default:
       logger.error(`Cannot convert python tree kind ${tree.kind}`);
@@ -149,19 +158,22 @@ async function getPythonTree(text: string): Promise<?PythonTree> {
   return JSON.parse(result.stdout);
 }
 
-function treesToOutlineTrees(showConstants: boolean, trees: Array<PythonTree>): Array<OutlineTree> {
-  return ((trees.map(tree => treeToOutlineTree(showConstants, tree))
+function treesToOutlineTrees(
+  showVariables: ShowVariableMode,
+  trees: Array<PythonTree>
+): Array<OutlineTree> {
+  return ((trees.map(tree => treeToOutlineTree(showVariables, tree))
       .filter(outlineTree => outlineTree != null): any): Array<OutlineTree>);
 }
 
-function treeToOutlineTree(showConstants: boolean, tree: PythonTree): ?OutlineTree {
+function treeToOutlineTree(showVariables: ShowVariableMode, tree: PythonTree): ?OutlineTree {
   switch (tree.kind) {
     case 'FunctionDef':
       return functionDefToOutline(tree);
     case 'ClassDef':
       return classDefToOutline(tree);
     case 'Assign':
-      return showConstants ? assignToOutline(tree) : null;
+      return assignToOutline(showVariables, tree);
     case 'Expr':
     case 'For':
     case 'If':
@@ -176,7 +188,10 @@ function treeToOutlineTree(showConstants: boolean, tree: PythonTree): ?OutlineTr
   }
 }
 
-function assignToOutline(tree: AssignTree): ?OutlineTree {
+function assignToOutline(mode: ShowVariableMode, tree: AssignTree): ?OutlineTree {
+  if (mode === SHOW_NO_VARIABLES) {
+    return null;
+  }
   if (tree.targets.length !== 1) {
     return null;
   }
@@ -187,7 +202,7 @@ function assignToOutline(tree: AssignTree): ?OutlineTree {
   const id = target.id;
   // Only show initialization of constants, which according to python
   // style are all upper case.
-  if (id !== id.toUpperCase()) {
+  if (mode === SHOW_CONSTANTS && id !== id.toUpperCase()) {
     return null;
   }
   return {
@@ -200,7 +215,6 @@ function assignToOutline(tree: AssignTree): ?OutlineTree {
 }
 
 function classDefToOutline(tree: ClassDefTree): OutlineTree {
-  const showConstants = false;
   return {
     tokenizedText: [
       keyword('class'),
@@ -208,7 +222,7 @@ function classDefToOutline(tree: ClassDefTree): OutlineTree {
       method(tree.name),
     ],
     startPosition: treeToPoint(tree),
-    children: treesToOutlineTrees(showConstants, tree.body),
+    children: treesToOutlineTrees(SHOW_NO_VARIABLES, tree.body),
   };
 }
 

@@ -18,7 +18,7 @@ describe('Python outline', () => {
   it('conversion from JSON to outline', () => {
     waitsForPromise(async () => {
       const contents = await readFile(path.join(__dirname, './fixtures/t.py'), 'utf8');
-      const result = await pythonTextToOutline(contents);
+      const result = await pythonTextToOutline(true, contents);
       expect(result).toEqual(JSON.parse(expected));
     });
   });
@@ -172,6 +172,19 @@ const expected = `{
       ],
       "startPosition": {
         "row": 21,
+        "column": 0
+      },
+      "children": []
+    },
+    {
+      "tokenizedText": [
+        {
+          "kind": "plain",
+          "value": "var"
+        }
+      ],
+      "startPosition": {
+        "row": 42,
         "column": 0
       },
       "children": []

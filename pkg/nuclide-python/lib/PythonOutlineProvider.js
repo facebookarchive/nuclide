@@ -12,9 +12,10 @@
 import type {Outline} from '../../nuclide-outline-view';
 
 import {pythonTextToOutline} from './outline';
+import {getShowGlobalVariables} from './config';
 
 export class PythonOutlineProvider {
   async getOutline(editor: atom$TextEditor): Promise<?Outline> {
-    return pythonTextToOutline(editor.getText());
+    return pythonTextToOutline(getShowGlobalVariables(), editor.getText());
   }
 }

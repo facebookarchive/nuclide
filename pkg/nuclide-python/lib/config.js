@@ -13,10 +13,20 @@ import featureConfig from '../../nuclide-feature-config';
 
 export type PythonConfig = {
   pathToPython: string;
+  showGlobalVariables: boolean;
 };
 
+// config can be null in tests.
+function getConfig(): ?PythonConfig {
+  return ((featureConfig.get('nuclide-python'): any): ?PythonConfig);
+}
+
 export function getPythonPath(): string {
-  const config = ((featureConfig.get('nuclide-python'): any): ?PythonConfig);
-  // config can be null in tests.
+  const config = getConfig();
   return config == null ? 'python' : config.pathToPython;
+}
+
+export function getShowGlobalVariables(): boolean {
+  const config = getConfig();
+  return config == null ? true : config.showGlobalVariables;
 }
