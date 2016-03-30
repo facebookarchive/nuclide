@@ -34,7 +34,7 @@ export function createOutlines(providers: ProviderRegistry): Observable<OutlineF
 
   return paneChanges
     .map(() => atom.workspace.getActiveTextEditor())
-    .flatMap(editor => outlinesForEditor(providers, editor));
+    .flatMapLatest(editor => outlinesForEditor(providers, editor));
 }
 
 function outlinesForEditor(
