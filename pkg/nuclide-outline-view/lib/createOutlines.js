@@ -146,8 +146,12 @@ function shouldHighlightNode(outlineTree: OutlineTreeForUi, cursorLocation: atom
     return false;
   }
   if (outlineTree.children.length !== 0) {
-    // For now, only highlight leaf nodes.
-    return false;
+    const childStartPosition = outlineTree.children[0].startPosition;
+    // Since the parent is rendered in the list above the children, it doesn't really make sense to
+    // highlight it if you are below the start position of any child. However, if you are at the top
+    // of a class it does seem desirable to highlight it.
+    return cursorLocation.isGreaterThanOrEqual(startPosition) &&
+      cursorLocation.isLessThan(childStartPosition);
   }
   return cursorLocation.isGreaterThanOrEqual(startPosition) &&
    cursorLocation.isLessThanOrEqual(endPosition);
