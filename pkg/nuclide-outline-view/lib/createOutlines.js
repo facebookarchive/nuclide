@@ -13,9 +13,12 @@ import type {Outline, OutlineForUi, OutlineTree, OutlineTreeForUi} from '..';
 import type {ProviderRegistry} from './ProviderRegistry';
 
 import {Observable} from 'rx';
+import invariant from 'assert';
 
 import {event as commonsEvent} from '../../nuclide-commons';
 const {observableFromSubscribeFunction} = commonsEvent;
+
+import {getCursorPositions} from '../../nuclide-atom-helpers';
 
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
@@ -24,13 +27,24 @@ const TAB_SWITCH_DELAY = 200; // ms
 export function createOutlines(providers: ProviderRegistry): Observable<OutlineForUi> {
   return getTextEditorEvents()
     .flatMap(async editor => {
+      let outline: OutlineForUi;
       if (editor == null) {
-        return {
+        outline = {
           kind: 'not-text-editor',
         };
       } else {
-        return outlineForEditor(providers, editor);
+        outline = await outlineForEditor(providers, editor);
       }
+      return {editor, outline};
+    })
+    .flatMapLatest(({editor, outline}) => {
+      if (outline.kind !== 'outline') {
+        return Observable.just(outline);
+      }
+      return getCursorPositions(editor)
+        .map(cursorLocation => {
+          return highlightCurrentNode(outline, cursorLocation);
+        });
     });
 }
 
@@ -75,6 +89,43 @@ function treeToUiTree(outlineTree: OutlineTree): OutlineTreeForUi {
     highlighted: false,
     children: outlineTree.children.map(treeToUiTree),
   };
+}
+
+// Return an outline object with the node under the cursor highlighted. Does not mutate the
+// original.
+function highlightCurrentNode(outline: OutlineForUi, cursorLocation: atom$Point): OutlineForUi {
+  invariant(outline.kind === 'outline');
+  return {
+    ...outline,
+    outlineTrees: highlightCurrentNodeInTrees(outline.outlineTrees, cursorLocation),
+  };
+}
+
+function highlightCurrentNodeInTrees(
+  outlineTrees: Array<OutlineTreeForUi>,
+  cursorLocation: atom$Point
+): Array<OutlineTreeForUi> {
+  return outlineTrees.map(tree => {
+    return {
+      ...tree,
+      highlighted: shouldHighlightNode(tree, cursorLocation),
+      children: highlightCurrentNodeInTrees(tree.children, cursorLocation),
+    };
+  });
+}
+
+function shouldHighlightNode(outlineTree: OutlineTreeForUi, cursorLocation: atom$Point): boolean {
+  const startPosition = outlineTree.startPosition;
+  const endPosition = outlineTree.endPosition;
+  if (endPosition == null) {
+    return false;
+  }
+  if (outlineTree.children.length !== 0) {
+    // For now, only highlight leaf nodes.
+    return false;
+  }
+  return cursorLocation.isGreaterThanOrEqual(startPosition) &&
+   cursorLocation.isLessThanOrEqual(endPosition);
 }
 
 // Emits a TextEditor whenever the active editor changes or whenever the text in the active editor
