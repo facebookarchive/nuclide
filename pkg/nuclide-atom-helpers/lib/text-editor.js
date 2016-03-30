@@ -13,10 +13,15 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import invariant from 'assert';
 import {TextBuffer, TextEditor} from 'atom';
+import {Observable} from 'rx';
+
 // TODO(most): move to remote-connection/lib/RemoteTextBuffer.js
 import NuclideTextBuffer from '../../nuclide-remote-projects/lib/NuclideTextBuffer';
 import {isLocal} from '../../nuclide-remote-uri';
 import {RemoteConnection} from '../../nuclide-remote-connection';
+
+import {event as commonsEvent} from '../../nuclide-commons';
+const {observableFromSubscribeFunction} = commonsEvent;
 
 export function isTextEditor(item: ?any): boolean {
   if (item == null) {
@@ -139,4 +144,16 @@ export function setPositionAndScroll(
 ): void {
   editor.setCursorBufferPosition(position, {autoscroll: false});
   setScrollTop(editor, scrollTop);
+}
+
+export function getCursorPositions(editor: atom$TextEditor): Observable<atom$Point> {
+  // This will behave strangely in the face of multiple cursors. Consider supporting multiple
+  // cursors in the future.
+  const cursor = editor.getCursors()[0];
+  invariant(cursor != null);
+  return Observable.merge(
+    Observable.just(cursor.getBufferPosition()),
+    observableFromSubscribeFunction(cursor.onDidChangePosition.bind(cursor))
+      .map(event => event.newBufferPosition),
+  );
 }

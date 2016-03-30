@@ -100,6 +100,10 @@ module.exports = {
     return requireFromCache('./text-editor').getScrollTop;
   },
 
+  get getCursorPositions() {
+    return requireFromCache('./text-editor').getCursorPositions;
+  },
+
   get setScrollTop() {
     return requireFromCache('./text-editor').setScrollTop;
   },
