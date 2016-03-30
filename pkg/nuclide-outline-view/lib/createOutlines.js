@@ -67,7 +67,10 @@ function outlinesForEditor(
       });
   });
 
-  return highlightedOutlines;
+  return Observable.concat(
+    Observable.just({ kind: 'empty' }),
+    highlightedOutlines,
+  );
 }
 
 async function outlineForEditor(
