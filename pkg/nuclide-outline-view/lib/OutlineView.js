@@ -149,19 +149,16 @@ function renderTree(
   };
 
   const classes = classnames(
-    'list-item',
-    'nuclide-outline-view-item',
+    'list-nested-item',
     { 'selected': outline.highlighted },
   );
   return (
-    <ul className="list-tree" key={index}>
-      <li className="list-nested-item">
-        <div className={classes} onClick={onClick}>
-          {outline.tokenizedText.map(renderTextToken)}
-        </div>
-        {renderTrees(editor, outline.children)}
-      </li>
-    </ul>
+    <li className={classes} key={index}>
+      <div className="list-item nuclide-outline-view-item" onClick={onClick}>
+        {outline.tokenizedText.map(renderTextToken)}
+      </div>
+      {renderTrees(editor, outline.children)}
+    </li>
   );
 }
 
@@ -173,6 +170,13 @@ function renderTextToken(token: TextToken, index: number): ReactElement {
 function renderTrees(
   editor: atom$TextEditor,
   outlines: Array<OutlineTreeForUi>
-): Array<ReactElement> {
-  return outlines.map((outline, index) => renderTree(editor, outline, index));
+): ?ReactElement {
+  if (outlines.length === 0) {
+    return;
+  }
+  return (
+    <ul className="list-tree">
+      {outlines.map((outline, index) => renderTree(editor, outline, index))}
+    </ul>
+  );
 }
