@@ -444,10 +444,10 @@ export async function getTypeAtPos(
   column: number,
 ): Promise<?HackTypeAtPosResult> {
   const hhResult = await callHHClient(
-    /*args*/ ['--type-at-pos', contents, line, column],
+    /*args*/ ['--type-at-pos', formatLineColumn(line, column)],
     /*errorStream*/ false,
     /*outputJson*/ true,
-    /*processInput*/ null,
+    /*processInput*/ contents,
     /*file*/ filePath,
   );
   if (!hhResult) {
