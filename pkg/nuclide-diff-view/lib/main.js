@@ -158,6 +158,15 @@ function updateToolbarCount(diffViewButton: HTMLElement, count: number): void {
   ReactDOM.render(<DiffCountComponent count={count} />, changeCountElement);
 }
 
+function diffActiveTextEditor(): void {
+  const editor = atom.workspace.getActiveTextEditor();
+  if (editor == null) {
+    atom.workspace.open(formatDiffViewUrl());
+  } else {
+    atom.workspace.open(formatDiffViewUrl({file: editor.getPath() || ''}));
+  }
+}
+
 module.exports = {
 
   activate(state: ?any): void {
@@ -166,19 +175,13 @@ module.exports = {
     subscriptions.add(atom.commands.add(
       'atom-workspace',
       'nuclide-diff-view:open',
-      () => atom.workspace.open(formatDiffViewUrl()),
+      diffActiveTextEditor,
     ));
     // Listen for in-editor context menu item diff view open command.
     subscriptions.add(atom.commands.add(
       'atom-text-editor',
       'nuclide-diff-view:open',
-      () => {
-        const editor = atom.workspace.getActiveTextEditor();
-        if (!editor) {
-          return getLogger().warn('No active text editor for diff view!');
-        }
-        atom.workspace.open(formatDiffViewUrl({file: editor.getPath() || ''}));
-      },
+      diffActiveTextEditor,
     ));
 
     // Listen for switching to editor mode for the active file.

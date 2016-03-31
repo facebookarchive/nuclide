@@ -221,10 +221,13 @@ class DiffViewModel {
         repository => repository != null && repository.getType() === 'hg'
       )
     );
-    // Dispose removed projects repositories.
+    // Dispose removed projects repositories, if any.
     for (const [repository, repositoryStack] of this._repositoryStacks) {
       if (repositories.has(repository)) {
         continue;
+      }
+      if (this._activeRepositoryStack === repositoryStack) {
+        this._activeRepositoryStack = null;
       }
       repositoryStack.dispose();
       this._repositoryStacks.delete(repository);
@@ -234,6 +237,7 @@ class DiffViewModel {
       this._repositorySubscriptions.delete(repository);
     }
 
+    // Add the new project repositories, if any.
     for (const repository of repositories) {
       if (this._repositoryStacks.has(repository)) {
         continue;
@@ -242,6 +246,14 @@ class DiffViewModel {
       this._createRepositoryStack(hgRepository);
     }
 
+    // Update active repository stack, if needed.
+    // This will make sure we have a repository stack active whenever we have
+    // a mercurial repository added to the project.
+    if (this._activeRepositoryStack == null && this._repositoryStacks.size > 0) {
+      this._setActiveRepositoryStack(
+        array.from(this._repositoryStacks.values())[0],
+      );
+    }
     this._updateDirtyChangedStatus();
   }
 
@@ -482,7 +494,18 @@ class DiffViewModel {
     }
 
     if (diffPath == null) {
-      getLogger().error('Non diffable entity:', entityOption);
+      const repository = repositoryForPath(entityOption.file || entityOption.directory || '');
+      if (
+        repository != null &&
+        repository.getType() === 'hg' &&
+        this._repositoryStacks.has((repository: any))
+      ) {
+        const repositoryStack = this._repositoryStacks.get((repository: any));
+        invariant(repositoryStack);
+        this._setActiveRepositoryStack(repositoryStack);
+      } else {
+        getLogger().warn('Non diffable entity:', entityOption);
+      }
       return;
     }
 
