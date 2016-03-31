@@ -10,7 +10,7 @@
  */
 
 import ConnectionDetailsForm from './ConnectionDetailsForm';
-import {NuclideMutableListSelector} from '../../nuclide-ui/lib/NuclideMutableListSelector';
+import {MutableListSelector} from '../../nuclide-ui/lib/MutableListSelector';
 import {React} from 'react-for-atom';
 
 import type {
@@ -124,7 +124,7 @@ export default class ConnectionDetailsPrompt extends React.Component<void, Props
         <div className="row" style={{display: 'flex'}}>
           <div className="connection-profiles col-xs-3 inset-panel">
             <h6>Profiles</h6>
-            <NuclideMutableListSelector
+            <MutableListSelector
               items={listSelectorItems}
               idOfSelectedItem={idOfSelectedItem}
               onItemClicked={this._boundOnProfileClicked}
