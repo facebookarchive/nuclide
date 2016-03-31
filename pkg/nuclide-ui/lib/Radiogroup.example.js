@@ -11,7 +11,7 @@
 
 import {React} from 'react-for-atom';
 import {Block} from './Block';
-import {NuclideRadioGroup as RadioGroup} from './NuclideRadiogroup';
+import {RadioGroup} from './RadioGroup';
 
 const labels = [
   'choose',

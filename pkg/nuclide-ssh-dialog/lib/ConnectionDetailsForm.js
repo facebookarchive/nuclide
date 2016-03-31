@@ -16,7 +16,7 @@ import type {
 
 const {AtomInput} = require('../../nuclide-ui/lib/AtomInput');
 const {CompositeDisposable} = require('atom');
-const {NuclideRadioGroup} = require('../../nuclide-ui/lib/NuclideRadioGroup');
+const {RadioGroup} = require('../../nuclide-ui/lib/RadioGroup');
 const {
   React,
   ReactDOM,
@@ -194,7 +194,7 @@ export default class ConnectionDetailsForm extends React.Component {
         </div>
         <div className="form-group">
           <label>Authentication method:</label>
-          <NuclideRadioGroup
+          <RadioGroup
             optionLabels={[
               passwordLabel,
               sshAgentLabel,

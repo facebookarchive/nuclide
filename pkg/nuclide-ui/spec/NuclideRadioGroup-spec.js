@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {NuclideRadioGroup} = require('../lib/NuclideRadioGroup');
+const {RadioGroup} = require('../lib/RadioGroup');
 const {
   React,
   ReactDOM,
@@ -22,12 +22,12 @@ const {
   scryRenderedDOMComponentsWithTag,
 } = TestUtils;
 
-describe('NuclideRadioGroup', () => {
+describe('RadioGroup', () => {
 
   it('honors the selectedIndex param', () => {
     const props = {optionLabels: ['foo', 'bar'], selectedIndex: 1};
     const component = renderIntoDocument(
-      <NuclideRadioGroup {...props} />
+      <RadioGroup {...props} />
     );
     expect(component.props.selectedIndex).toBe(1);
 
@@ -43,7 +43,7 @@ describe('NuclideRadioGroup', () => {
   it('should use the correct, unique radio group name', () => {
     const props = {optionLabels: ['foo', 'bar'], selectedIndex: 1};
     const component = renderIntoDocument(
-      <NuclideRadioGroup {...props} />
+      <RadioGroup {...props} />
     );
     const radioInputs = scryRenderedDOMComponentsWithTag(
       component,
@@ -53,7 +53,7 @@ describe('NuclideRadioGroup', () => {
     expect(ReactDOM.findDOMNode(radioInputs[0]).getAttribute('name')).toEqual('radiogroup-1');
     expect(ReactDOM.findDOMNode(radioInputs[1]).getAttribute('name')).toEqual('radiogroup-1');
     const component2 = renderIntoDocument(
-      <NuclideRadioGroup {...props} />
+      <RadioGroup {...props} />
     );
     const radioInputs2 = scryRenderedDOMComponentsWithTag(
       component2,
@@ -73,7 +73,7 @@ describe('NuclideRadioGroup', () => {
       onSelectedChange: onSelectedChange,
     };
     const component = renderIntoDocument(
-      <NuclideRadioGroup {...props} />
+      <RadioGroup {...props} />
     );
     const radioInputs = scryRenderedDOMComponentsWithTag(
       component,
