@@ -21,8 +21,8 @@ class Activation {
   _disposables: CompositeDisposable;
 
   _providers: Set<TunnelVisionProvider>;
-  // non-null iff we are in tunnel vision mode. The set of providers to show when we exit tunnel
-  // vision mode.
+  // Non-null iff we have entered tunnel vision mode without explicitly exiting it. See
+  // _shouldRestore() and _enterTunnelVision() for a more detailed explanation.
   _restoreState: ?Set<TunnelVisionProvider>;
 
   constructor(state: ?Object) {
@@ -49,26 +49,43 @@ class Activation {
   }
 
   _toggleTunnelVision(): void {
-    if (this._isInTunnelVision()) {
+    if (this._shouldRestore()) {
       this._exitTunnelVision();
     } else {
       this._enterTunnelVision();
     }
   }
 
-  _isInTunnelVision() {
-    return this._restoreState != null;
+  _shouldRestore() {
+    if (this._restoreState == null) {
+      return false;
+    }
+    for (const provider of this._providers) {
+      if (provider.isVisible()) {
+        // If the user has manually shown any provider they have probably forgotten they are in
+        // tunnel vision mode, and intend to enter it.
+        return false;
+      }
+    }
+    return true;
   }
 
   _enterTunnelVision(): void {
-    const restoreState = new Set();
+    // This will be non-null if the user has entered tunnel vision without toggling it off, but has
+    // manually opened one or more of the providers. In that case, we want to re-enter tunnel
+    // vision, hiding the currently-visible providers, but when we exit we want to restore both the
+    // previously-hidden providers and the currently-visible providers.
+    let newRestoreState = this._restoreState;
+    if (newRestoreState == null) {
+      newRestoreState = new Set();
+    }
     for (const provider of this._providers) {
       if (provider.isVisible()) {
         provider.toggle();
-        restoreState.add(provider);
+        newRestoreState.add(provider);
       }
     }
-    this._restoreState = restoreState;
+    this._restoreState = newRestoreState;
   }
 
   _exitTunnelVision(): void {
