@@ -10,7 +10,7 @@
  */
 
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
-import {NuclideCheckbox} from '../../nuclide-ui/lib/NuclideCheckbox';
+import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import {CompositeDisposable} from 'atom';
 import {
   React,
@@ -106,7 +106,7 @@ class FileDialogComponent extends React.Component {
       const message = this.props.additionalOptions[name];
       const checked = this.state.options[name];
       const checkbox =
-        <NuclideCheckbox
+        <Checkbox
           key={name}
           checked={checked}
           onChange={this._handleAdditionalOptionChanged.bind(this, name)}

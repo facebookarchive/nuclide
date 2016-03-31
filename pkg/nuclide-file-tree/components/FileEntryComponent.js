@@ -19,7 +19,7 @@ const {StatusCodeNumber} = require('../../nuclide-hg-repository-base').hgConstan
 const classnames = require('classnames');
 const {fileTypeClass} = require('../../nuclide-atom-helpers');
 const {isContextClick} = require('../lib/FileTreeHelpers');
-const {NuclideCheckbox} = require('../../nuclide-ui/lib/NuclideCheckbox');
+const {Checkbox} = require('../../nuclide-ui/lib/Checkbox');
 
 const {PropTypes} = React;
 
@@ -110,7 +110,7 @@ class FileEntryComponent extends React.Component {
     }
 
     return (
-      <NuclideCheckbox
+      <Checkbox
         checked={this.props.checkedStatus === 'checked'}
         onChange={this._checkboxOnChange}
         onClick={this._checkboxOnClick}

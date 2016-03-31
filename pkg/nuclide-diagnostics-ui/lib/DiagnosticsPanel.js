@@ -10,7 +10,7 @@
  */
 
 const DiagnosticsPane = require('./DiagnosticsPane');
-const {NuclideCheckbox} = require('../../nuclide-ui/lib/NuclideCheckbox');
+const {Checkbox} = require('../../nuclide-ui/lib/Checkbox');
 const {PanelComponent} = require('../../nuclide-ui/lib/PanelComponent');
 const {React} = require('react-for-atom');
 const {PropTypes} = React;
@@ -137,7 +137,7 @@ class DiagnosticsPanel extends React.Component {
                 Warnings: {warningCount}
               </span>
               <span className="inline-block">
-                <NuclideCheckbox
+                <Checkbox
                   checked={this.props.filterByActiveTextEditor}
                   label="Show only diagnostics for current file"
                   onChange={this._onFilterByActiveTextEditorChange}

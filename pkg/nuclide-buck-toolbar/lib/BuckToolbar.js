@@ -15,7 +15,7 @@ const SimulatorDropdown = require('./SimulatorDropdown');
 const BuckToolbarActions = require('./BuckToolbarActions');
 const BuckToolbarStore = require('./BuckToolbarStore');
 import {AtomComboBox} from '../../nuclide-ui/lib/AtomComboBox';
-import {NuclideCheckbox} from '../../nuclide-ui/lib/NuclideCheckbox';
+import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 
 const {debounce} = require('../../nuclide-commons');
 const {
@@ -98,7 +98,7 @@ class BuckToolbar extends React.Component {
     if (buckToolbarStore.isReactNativeApp()) {
       serverModeCheckbox =
         <div className="inline-block">
-          <NuclideCheckbox
+          <Checkbox
             checked={buckToolbarStore.isReactNativeServerMode()}
             onChange={this._handleReactNativeServerModeChanged}
             label={'React Native Server Mode'}

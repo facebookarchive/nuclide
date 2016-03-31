@@ -23,7 +23,7 @@ const {
   scryRenderedDOMComponentsWithClass,
 } = TestUtils;
 
-describe('NuclideCheckbox', () => {
+describe('Checkbox', () => {
 
   it('notifies callback of tab changes', () => {
     const onChange = jasmine.createSpy('onChange');

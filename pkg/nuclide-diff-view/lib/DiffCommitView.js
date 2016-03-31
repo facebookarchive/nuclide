@@ -13,7 +13,7 @@ import type {CommitModeStateType} from './types';
 import type DiffViewModel from './DiffViewModel';
 
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
-import {NuclideCheckbox} from '../../nuclide-ui/lib/NuclideCheckbox';
+import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import classnames from 'classnames';
 import {CommitMode, CommitModeState} from './constants';
 
@@ -85,7 +85,7 @@ class DiffCommitView extends React.Component {
         </div>
         <div className="nuclide-diff-view-toolbar nuclide-diff-view-toolbar-bottom">
           <div className="nuclide-diff-view-toolbar-left">
-            <NuclideCheckbox
+            <Checkbox
               checked={this.props.commitMode === CommitMode.AMEND}
               disabled={isLoading}
               label="Amend"

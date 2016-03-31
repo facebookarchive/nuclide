@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {NuclideCheckbox} from '../lib/NuclideCheckbox';
+import {Checkbox} from '../lib/Checkbox';
 import {
   React,
   ReactDOM,
@@ -19,10 +19,10 @@ import {
 let hostEl;
 
 function createWithProps(props) {
-  return ReactDOM.render(<NuclideCheckbox {...props} />, hostEl);
+  return ReactDOM.render(<Checkbox {...props} />, hostEl);
 }
 
-describe('NuclideCheckbox', () => {
+describe('Checkbox', () => {
 
   beforeEach(() => {
     hostEl = document.createElement('div');

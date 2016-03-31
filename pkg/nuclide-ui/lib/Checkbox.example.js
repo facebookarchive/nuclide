@@ -11,14 +11,14 @@
 
 import {React} from 'react-for-atom';
 import {Block} from './Block';
-import {NuclideCheckbox} from './NuclideCheckbox';
+import {Checkbox} from './Checkbox';
 
 const NOOP = () => {};
 
 const CheckboxExample = (): ReactElement => (
   <div>
     <Block>
-      <NuclideCheckbox
+      <Checkbox
         checked={false}
         onClick={NOOP}
         onChange={NOOP}
@@ -26,7 +26,7 @@ const CheckboxExample = (): ReactElement => (
       />
     </Block>
     <Block>
-      <NuclideCheckbox
+      <Checkbox
         onClick={NOOP}
         onChange={NOOP}
         checked={true}
@@ -34,7 +34,7 @@ const CheckboxExample = (): ReactElement => (
       />
     </Block>
     <Block>
-      <NuclideCheckbox
+      <Checkbox
         onClick={NOOP}
         onChange={NOOP}
         disabled={true}
@@ -43,7 +43,7 @@ const CheckboxExample = (): ReactElement => (
       />
     </Block>
     <Block>
-      <NuclideCheckbox
+      <Checkbox
         onClick={NOOP}
         onChange={NOOP}
         checked={true}
@@ -52,7 +52,7 @@ const CheckboxExample = (): ReactElement => (
       />
     </Block>
     <Block>
-      <NuclideCheckbox
+      <Checkbox
         onClick={NOOP}
         onChange={NOOP}
         indeterminate={true}
