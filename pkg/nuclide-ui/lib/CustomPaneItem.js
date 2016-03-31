@@ -14,9 +14,9 @@
 import invariant from 'assert';
 import {ReactDOM} from 'react-for-atom';
 
-import type {NuclideCustomPaneItemOptions} from './types';
+import type {CustomPaneItemOptions} from './types';
 
-export class NuclideCustomPaneItem extends HTMLElement {
+export class CustomPaneItem extends HTMLElement {
 
   _title: ?string;
   _iconName: ?string;
@@ -24,7 +24,7 @@ export class NuclideCustomPaneItem extends HTMLElement {
   _allowSplit: boolean;
   __component: ReactElement;
 
-  initialize(options: NuclideCustomPaneItemOptions) {
+  initialize(options: CustomPaneItemOptions) {
     this._title = options.title;
     this._iconName = options.iconName;
     this._uri = options.uri;
@@ -40,7 +40,7 @@ export class NuclideCustomPaneItem extends HTMLElement {
    *
    * @return A React component that this element call ReactDOM.render() on.
    */
-  __renderPaneItem(options: NuclideCustomPaneItemOptions): ReactElement {
+  __renderPaneItem(options: CustomPaneItemOptions): ReactElement {
     throw new Error('Subclass should implement this method.');
   }
 

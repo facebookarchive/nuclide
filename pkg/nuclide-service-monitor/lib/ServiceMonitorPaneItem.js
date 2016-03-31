@@ -10,17 +10,17 @@
  */
 
 import type {
-  NuclideCustomPaneItemOptions,
+  CustomPaneItemOptions,
 } from '../../nuclide-ui/lib/types';
 
 import {React} from 'react-for-atom';
 import ServiceMonitor from './ServiceMonitor';
-import {NuclideCustomPaneItem} from '../../nuclide-ui/lib/NuclideCustomPaneItem';
+import {CustomPaneItem} from '../../nuclide-ui/lib/CustomPaneItem';
 import {getServiceLogger} from '../../nuclide-client';
 
-class ServiceMonitorPaneItem extends NuclideCustomPaneItem {
+class ServiceMonitorPaneItem extends CustomPaneItem {
 
-  __renderPaneItem(options: NuclideCustomPaneItemOptions) {
+  __renderPaneItem(options: CustomPaneItemOptions) {
     return (
       <ServiceMonitor
         serviceLogger={getServiceLogger()}

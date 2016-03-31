@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-export type NuclideCustomPaneItemOptions = {
+export type CustomPaneItemOptions = {
   title: string; // Title for the custom pane item being created.
   iconName?: string; // Optional string representing the octicon that is rendered next to the title.
   uri?: string;
