@@ -17,6 +17,7 @@ from shlex import split
 from chromedebugger import ChromeDevToolsDebuggerApp
 import argparse
 import sys
+import signal
 import os
 import json
 from collections import namedtuple
@@ -162,6 +163,18 @@ def start_debugging(debugger, arguments, ipc_channel, is_attach):
         ipc_channel.send_output_message_async('log', output)
 
 
+def register_signal_handler(lldb_debugger):
+    def handle_stop_debugging_signal(signum, frame):
+        log_debug('handle_stop_debugging_signal called')
+        if lldb_debugger.GetSelectedTarget() is not None and \
+            lldb_debugger.GetSelectedTarget().process is not None and \
+                lldb_debugger.GetSelectedTarget().process.state == \
+                lldb.eStateStopped:
+            lldb_debugger.GetSelectedTarget().process.Detach()
+        os._exit(0)
+    signal.signal(signal.SIGTERM, handle_stop_debugging_signal)
+
+
 def main():
     arguments = parse_args()
     debugger = lldb.SBDebugger.Create()
@@ -171,6 +184,7 @@ def main():
     ipc_channel = IpcChannel(is_interactive)
 
     start_debugging(debugger, arguments, ipc_channel, is_attach)
+    register_signal_handler(debugger)
 
     chrome_channel = ChromeChannel()
     debugger_store = DebuggerStore(
