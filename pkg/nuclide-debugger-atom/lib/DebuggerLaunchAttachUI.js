@@ -13,7 +13,7 @@ import type {DebuggerProviderStore} from './DebuggerProviderStore';
 import type DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
 import type DebuggerActions from './DebuggerActions';
 
-import {NuclideDropdown} from '../../nuclide-ui/lib/NuclideDropdown';
+import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
 import {React} from 'react-for-atom';
 import remoteUri from '../../nuclide-remote-uri';
 
@@ -90,7 +90,7 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
       <div className="block padded">
         <div className="launch-attach-header">
           <label className="inline-block">Connection: </label>
-          <NuclideDropdown
+          <Dropdown
             className="inline-block"
             menuItems={connectionItems}
             onSelectedChange={this._handleConnectionDropdownChange}
@@ -98,7 +98,7 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
             size="sm"
           />
           <label className="inline-block">Type: </label>
-          <NuclideDropdown
+          <Dropdown
             className="inline-block"
             menuItems={debuggingTypeItems}
             onSelectedChange={this._handleDebuggingTypeDropdownChange}
@@ -106,7 +106,7 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
             size="sm"
           />
           <label className="inline-block">Action: </label>
-          <NuclideDropdown
+          <Dropdown
             className="inline-block"
             menuItems={providerActions}
             onSelectedChange={this._handleProviderActionsDropdownChange}

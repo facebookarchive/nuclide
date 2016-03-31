@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {NuclideDropdown} = require('../lib/NuclideDropdown');
+const {Dropdown} = require('../lib/Dropdown');
 const {
   React,
   ReactDOM,
@@ -22,7 +22,7 @@ const {
   scryRenderedDOMComponentsWithTag,
 } = TestUtils;
 
-describe('NuclideDropdown', () => {
+describe('Dropdown', () => {
 
   it('honors the selectedIndex param', () => {
     const props = {
@@ -34,7 +34,7 @@ describe('NuclideDropdown', () => {
       onSelectedChange: () => {},
     };
     const component = renderIntoDocument(
-      <NuclideDropdown {...props} />
+      <Dropdown {...props} />
     );
 
     const select = scryRenderedDOMComponentsWithTag(component, 'select');
@@ -56,7 +56,7 @@ describe('NuclideDropdown', () => {
       onSelectedChange: onChange,
     };
     const component = renderIntoDocument(
-      <NuclideDropdown {...props} />
+      <Dropdown {...props} />
     );
 
     const select = scryRenderedDOMComponentsWithTag(component, 'select');

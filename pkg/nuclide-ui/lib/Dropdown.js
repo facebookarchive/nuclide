@@ -12,7 +12,7 @@
 const {React} = require('react-for-atom');
 const {PropTypes} = React;
 
-export class NuclideDropdown extends React.Component {
+export class Dropdown extends React.Component {
 
   static propTypes = {
     className: PropTypes.string.isRequired,

@@ -11,7 +11,7 @@
 
 import type DebuggerProcessInfo from '../../nuclide-debugger-atom/lib/DebuggerProcessInfo';
 const {AtomInput} = require('../../nuclide-ui/lib/AtomInput');
-const {NuclideDropdown} = require('../../nuclide-ui/lib/NuclideDropdown');
+const {Dropdown} = require('../../nuclide-ui/lib/Dropdown');
 const {React} = require('react-for-atom');
 const {PropTypes} = React;
 
@@ -81,7 +81,7 @@ class HhvmToolbar extends React.Component {
     const isDebugScript = this._isDebugScript(this.state.selectedIndex);
     return (
       <div className="buck-toolbar hhvm-toolbar block padded">
-        <NuclideDropdown
+        <Dropdown
           className="inline-block"
           menuItems={this._getMenuItems()}
           selectedIndex={this.state.selectedIndex}

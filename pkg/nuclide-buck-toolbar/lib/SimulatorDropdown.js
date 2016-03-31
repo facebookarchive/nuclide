@@ -10,7 +10,7 @@
  */
 
 const IosSimulator = require('./IosSimulator');
-const {NuclideDropdown} = require('../../nuclide-ui/lib/NuclideDropdown');
+const {Dropdown} = require('../../nuclide-ui/lib/Dropdown');
 const {React} = require('react-for-atom');
 
 const {PropTypes} = React;
@@ -66,7 +66,7 @@ class SimulatorDropdown extends React.Component {
     }
 
     return (
-      <NuclideDropdown
+      <Dropdown
         className={this.props.className}
         disabled={this.props.disabled}
         selectedIndex={this.state.selectedIndex}
