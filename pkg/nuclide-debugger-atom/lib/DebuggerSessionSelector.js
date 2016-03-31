@@ -58,8 +58,14 @@ const DebuggerSessionSelector = React.createClass({
         <h2>Attach to Process</h2>
         <div className="form">
           <div className="form-group">
-            <select className="form-control" onChange={this._handleSelectProcess}>
-              <option disabled selected={this.state.selectedProcess === null}>
+            <select
+              className="form-control"
+              onChange={this._handleSelectProcess}
+              value={this.state.selectedProcess == null
+                ? null
+                : this.state.processes.indexOf(this.state.selectedProcess)
+              }>
+              <option disabled>
                 Process ID
               </option>
               {this._renderProcessChoices()}
@@ -67,9 +73,9 @@ const DebuggerSessionSelector = React.createClass({
           </div>
           <div className="btn-toolbar form-group">
             <button
-                className="btn btn-primary"
-                onClick={this._handleClick}
-                disabled={this.state.selectedProcess === null}>
+              className="btn btn-primary"
+              onClick={this._handleClick}
+              disabled={this.state.selectedProcess === null}>
               Attach
             </button>
             <button className="btn" onClick={this._updateProcessList}>
@@ -91,10 +97,7 @@ const DebuggerSessionSelector = React.createClass({
   _renderProcessChoices(): ?Array<ReactElement> {
     return this.state.processes
       .map((item, index) =>
-        <option
-            key={item.toString()}
-            value={index}
-            selected={item === this.state.selectedProcess}>
+        <option key={item.toString()} value={index}>
           {item.toString()}
         </option>
       );
