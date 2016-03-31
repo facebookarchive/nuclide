@@ -34,7 +34,7 @@ type Props = {
 
 const DELETE_BUTTON_TITLE_DEFAULT = 'Delete selected item';
 const DELETE_BUTTON_TITLE_NONE = 'No item selected to delete';
-const DELETE_BUTTON_TITLE_UNDELETABLE = 'Selected item can not be deleted';
+const DELETE_BUTTON_TITLE_UNDELETABLE = 'Selected item cannot be deleted';
 
 /**
  * A generic component that displays selectable list items, and offers

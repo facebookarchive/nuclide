@@ -102,7 +102,7 @@ export class ConnectionHealthNotifier {
       this._heartbeatNetworkAwayCount++;
       if (this._heartbeatNetworkAwayCount >= HEARTBEAT_AWAY_REPORT_COUNT) {
         addHeartbeatNotification(HEARTBEAT_NOTIFICATION_WARNING, code,
-          `Nuclide server can not be reached at "${serverUri}".<br/>` +
+          `Nuclide server cannot be reached at "${serverUri}".<br/>` +
           'Check your network connection.',
           /*dismissable*/ true,
           /*askToReload*/ false);

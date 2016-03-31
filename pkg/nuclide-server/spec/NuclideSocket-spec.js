@@ -100,7 +100,7 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
       runs(() => expect(heartbeatErrorHandler.argsForCall[0][0].code).toBe('SERVER_CRASHED'));
     });
 
-    it('on ENOTFOUND, emits NETWORK_AWAY error, when the server can not be located', () => {
+    it('on ENOTFOUND, emits NETWORK_AWAY error, when the server cannot be located', () => {
       const heartbeatErrorHandler: Function = (jasmine.createSpy(): any);
       socket.on('heartbeat.error', heartbeatErrorHandler);
       socket._serverUri = 'http://not.existing.uri.conf:8657';
