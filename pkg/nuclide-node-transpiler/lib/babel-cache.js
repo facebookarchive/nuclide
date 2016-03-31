@@ -121,12 +121,10 @@ function createOrFetchFromCache(sourceCode, filePath) {
  */
 function createOptions(filePath) {
   // These options should be kept in sync with
-  // https://github.com/atom/atom/blob/master/src/babel.coffee.
-  //
-  // The one exception is regenerator vs. asyncToGenerator because we must use
-  // regenerator when targetting Node 0.10.x, but we can use asyncToGenerator
-  // when targetting io.js.
+  // https://github.com/atom/atom/blob/v1.6.1/static/babelrc.json
+  // https://github.com/atom/atom/blob/v1.6.1/src/babel.js
   return {
+    breakConfig: true,
     filename: filePath,
     sourceMap: 'inline',
     blacklist: [

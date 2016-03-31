@@ -34,14 +34,6 @@ function loadFile(module, filePath) {
 }
 
 function startTranspile() {
-  // While transpiling, babel's `regenerator` optional option relies on babel's runtime to get
-  // regeneratorRuntime and Promise. However, babel's `runtime` optional option will insert
-  // dependencies code to transpiled JavaScript, and dependencies of nuclide-server won't be able
-  // to load them. To walk around this, we create regeneratorRuntime and Promise to global variable.
-  if (global.regeneratorRuntime === undefined) {
-    global.regeneratorRuntime = require('babel-runtime/regenerator').default;
-  }
-
   Object.defineProperty(require.extensions, '.js', {
     enumerable: true,
     writable: false,
