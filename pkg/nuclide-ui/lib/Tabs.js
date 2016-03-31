@@ -16,7 +16,7 @@ const {PropTypes} = React;
 const {array} = require('../../nuclide-commons');
 const classnames = require('classnames');
 
-export const NuclideTabs = React.createClass({
+export const Tabs = React.createClass({
 
   propTypes: {
     tabs: PropTypes.arrayOf(PropTypes.shape({

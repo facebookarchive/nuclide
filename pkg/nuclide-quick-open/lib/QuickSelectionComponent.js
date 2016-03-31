@@ -36,7 +36,7 @@ type Selection = {
 };
 
 const {AtomInput} = require('../../nuclide-ui/lib/AtomInput');
-const {NuclideTabs} = require('../../nuclide-ui/lib/NuclideTabs');
+const {Tabs} = require('../../nuclide-ui/lib/Tabs');
 const {CompositeDisposable, Emitter} = require('atom');
 const {
   debounce,
@@ -573,7 +573,7 @@ export default class QuickSelectionComponent extends React.Component {
     });
     return (
       <div className="omnisearch-tabs">
-        <NuclideTabs
+        <Tabs
           tabs={tabs}
           activeTabName={this.state.activeTab.name}
           onActiveTabChange={this._boundHandleTabChange}
