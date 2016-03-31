@@ -44,7 +44,7 @@ type State = {
  * TODO use generic search provider
  * TODO move combobox to separate package.
  */
-export class AtomComboBox extends React.Component {
+export class Combobox extends React.Component {
   state: State;
   _updateSubscription: ?IDisposable;
   _subscriptions: ?CompositeDisposable;

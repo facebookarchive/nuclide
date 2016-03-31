@@ -14,7 +14,7 @@ const {React} = require('react-for-atom');
 const SimulatorDropdown = require('./SimulatorDropdown');
 const BuckToolbarActions = require('./BuckToolbarActions');
 const BuckToolbarStore = require('./BuckToolbarStore');
-import {AtomComboBox} from '../../nuclide-ui/lib/AtomComboBox';
+import {Combobox} from '../../nuclide-ui/lib/Combobox';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 
 const {debounce} = require('../../nuclide-commons');
@@ -117,7 +117,7 @@ class BuckToolbar extends React.Component {
       <div
         className="buck-toolbar padded tool-panel"
         hidden={!buckToolbarStore.isPanelVisible()}>
-        <AtomComboBox
+        <Combobox
           className="inline-block"
           ref="buildTarget"
           formatRequestOptionsErrorMessage={formatRequestOptionsErrorMessage}
