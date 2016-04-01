@@ -385,7 +385,7 @@ export default class RepositoryStack {
 
       mergeStatusPaths(added, FileChangeStatus.ADDED);
       mergeStatusPaths(modified, FileChangeStatus.MODIFIED);
-      mergeStatusPaths(deleted, FileChangeStatus.DELETED);
+      mergeStatusPaths(deleted, FileChangeStatus.REMOVED);
     }
 
     return mergedStatus;

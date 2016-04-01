@@ -29,13 +29,15 @@ import type {
 const GK_DIFF_VIEW_PUBLISH: string = 'nuclide_diff_view_publish';
 const TOOLBAR_VISIBLE_SETTING: string = 'nuclide-diff-view.toolbarVisible';
 
-const FileChangeStatus: {[key: string]: FileChangeStatusValue} = {
+const FileChangeStatus = {
   ADDED: 1,
   MODIFIED: 2,
   MISSING: 3,
   REMOVED: 4,
   UNTRACKED: 5,
 };
+
+(FileChangeStatus: { [key: string]: FileChangeStatusValue });
 
 const DiffMode = {
   BROWSE_MODE: 'Browse',
