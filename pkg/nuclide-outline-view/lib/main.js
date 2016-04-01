@@ -10,6 +10,7 @@
  */
 
 import type {HomeFragments} from '../../nuclide-home-interfaces';
+import type {TunnelVisionProvider} from '../../nuclide-tunnel-vision';
 
 import {CompositeDisposable, Disposable} from 'atom';
 
@@ -163,6 +164,14 @@ class Activation {
       toolBar.removeItems();
     }));
   }
+
+  getTunnelVisionProvider(): TunnelVisionProvider {
+    const panel = this._panel;
+    return {
+      isVisible: panel.isVisible.bind(panel),
+      toggle: panel.toggle.bind(panel),
+    };
+  }
 }
 
 let activation: ?Activation = null;
@@ -206,4 +215,9 @@ export function getHomeFragments(): HomeFragments {
     },
     priority: 2.5, // Between diff view and test runner
   };
+}
+
+export function getTunnelVisionProvider(): TunnelVisionProvider {
+  invariant(activation != null);
+  return activation.getTunnelVisionProvider();
 }
