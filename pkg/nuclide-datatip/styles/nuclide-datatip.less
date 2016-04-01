@@ -17,11 +17,12 @@
 }
 
 .nuclide-datatip-container {
+  background-color: @base-background-color;
   display: flex;
   position: relative;
   transition: background-color 0.15s ease;
   &:hover {
-    background-color: fade(@background-color-highlight, 50%);
+    background-color: mix(@base-background-color, @background-color-highlight, 50%);
   }
 }
 
@@ -29,7 +30,7 @@
   flex-grow: 1;
   padding: 0em 0.5em;
 
-  // Allow higher-level component to overide the cursor property on certain children.
+  // Allow higher-level component to override the cursor property on certain children.
   .list-tree {
     cursor: inherit;
   }
@@ -60,10 +61,10 @@ atom-text-editor::shadow {
     -webkit-animation: RotatingBackground 1s ease-in-out infinite reverse;
     background: linear-gradient(
       90deg,
-      fade(@background-color-selected, 100%),
-      fade(@background-color-selected, 0%),
-      fade(@background-color-selected, 100%),
-      fade(@background-color-selected, 0%)
+      @background-color-highlight,
+      @base-background-color,
+      @background-color-highlight,
+      @base-background-color
     );
     background-size: 300% 100%;
   }
