@@ -23,7 +23,7 @@ import {getCursorPositions} from '../../nuclide-atom-helpers';
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
 
-const TAB_SWITCH_DELAY = 200; // ms
+const TAB_SWITCH_DELAY = 100; // ms
 export function createOutlines(providers: ProviderRegistry): Observable<OutlineForUi> {
   const paneChanges = observableFromSubscribeFunction(
       atom.workspace.observeActivePaneItem.bind(atom.workspace),
