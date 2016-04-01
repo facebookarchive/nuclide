@@ -10,6 +10,7 @@
  */
 
 import type {DiagnosticUpdater, FileMessageUpdate} from '../../nuclide-diagnostics-base';
+import type {TunnelVisionProvider} from '../../nuclide-tunnel-vision';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
@@ -276,6 +277,19 @@ module.exports = {
     };
   },
 
+  getTunnelVisionProvider(): TunnelVisionProvider {
+    return {
+      isVisible(): boolean {
+        return bottomPanel != null && bottomPanel.isVisible();
+      },
+      toggle(): void {
+        atom.commands.dispatch(
+          atom.views.getView(atom.workspace),
+          'nuclide-diagnostics-ui:toggle-table'
+        );
+      },
+    };
+  },
 };
 
 function logPanelIsDisplayed() {

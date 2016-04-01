@@ -30,6 +30,11 @@
       "versions": {
         "0.0.0": "getHomeFragments"
       }
+    },
+    "nuclide-tunnel-vision": {
+      "versions": {
+        "0.0.0": "getTunnelVisionProvider"
+      }
     }
   }
 }
