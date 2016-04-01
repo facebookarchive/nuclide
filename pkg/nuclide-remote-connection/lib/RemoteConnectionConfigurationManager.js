@@ -28,6 +28,12 @@ type SerializableServerConnectionConfiguration = {
   clientKey?: string;
 };
 
+// Insecure configs are used for testing only.
+function isInsecure(config: ServerConnectionConfiguration): boolean {
+  return config.clientKey == null && config.clientCertificate == null
+      && config.certificateAuthorityCertificate == null;
+}
+
 const CONFIG_KEY_PREFIX = 'nuclide.nuclide-connection.config';
 
 export function getConnectionConfig(host: string): ?ServerConnectionConfiguration {
@@ -46,6 +52,12 @@ export function getConnectionConfig(host: string): ?ServerConnectionConfiguratio
 }
 
 export function setConnectionConfig(config: ServerConnectionConfiguration): void {
+  // Don't attempt to store insecure connections.
+  // Insecure connections are used for testing and will fail the encryption call below.
+  if (isInsecure(config)) {
+    return;
+  }
+
   try {
     atom.config.set(getAtomConfigKey(config.host), encryptConfig(config));
   } catch (e) {
