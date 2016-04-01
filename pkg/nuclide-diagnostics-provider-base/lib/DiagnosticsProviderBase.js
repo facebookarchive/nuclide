@@ -55,7 +55,7 @@ function getTextEventDispatcher() {
   return require('../../nuclide-text-event-dispatcher').getInstance();
 }
 
-class DiagnosticsProviderBase {
+export class DiagnosticsProviderBase {
   _textEventDispatcher: TextEventDispatcher;
 
   _emitter: Emitter;
@@ -163,5 +163,3 @@ class DiagnosticsProviderBase {
 function callbackOrNoop<T>(callback: ?(arg: T) => mixed): (arg: T) => mixed {
   return callback ? callback.bind(undefined) : () => { };
 }
-
-module.exports = DiagnosticsProviderBase;

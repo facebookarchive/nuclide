@@ -16,7 +16,6 @@ import {
   ReactDOM,
   TestUtils,
 } from 'react-for-atom';
-import nuclideRemoteConnection from '../../nuclide-remote-connection';
 import * as hackService from '../../nuclide-hack-symbol-provider/lib/getHackService';
 
 const TEST_DIR = '/test';
@@ -28,32 +27,33 @@ describe('QuickOpenProvider', () => {
 
   let QuickOpenProvider;
   beforeEach(() => {
-    spyOn(nuclideRemoteConnection, 'getServiceByNuclideUri').andReturn({
-      async getCtagsService() {
-        return {
-          async findTags(path, query): Promise<Array<CtagsResult>> {
-            return [
-              {
-                name: 'A',
-                file: '/path1/a',
-                lineNumber: 1,
-                kind: 'c',
-                pattern: '/^class A$/',
-              },
-              {
-                name: 'test::A',
-                file: '/test/a',
-                lineNumber: 2,
-                kind: '',
-                pattern: '/^struct A$/',
-              },
-            ];
-          },
-          dispose() {
-          },
-        };
-      },
-    });
+    spyOn(require('../../nuclide-remote-connection'), 'getServiceByNuclideUri')
+      .andReturn({
+        async getCtagsService() {
+          return {
+            async findTags(path, query): Promise<Array<CtagsResult>> {
+              return [
+                {
+                  name: 'A',
+                  file: '/path1/a',
+                  lineNumber: 1,
+                  kind: 'c',
+                  pattern: '/^class A$/',
+                },
+                {
+                  name: 'test::A',
+                  file: '/test/a',
+                  lineNumber: 2,
+                  kind: '',
+                  pattern: '/^struct A$/',
+                },
+              ];
+            },
+            dispose() {
+            },
+          };
+        },
+      });
     spyOn(hackService, 'getHackService').andReturn(null);
     QuickOpenProvider = require('../lib/QuickOpenProvider');
   });

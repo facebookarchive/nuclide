@@ -13,7 +13,7 @@ const {Disposable} = require('atom');
 
 const grammar = 'testgrammar';
 
-const DiagnosticsProviderBase = require('../lib/DiagnosticsProviderBase');
+import {DiagnosticsProviderBase} from '../lib/DiagnosticsProviderBase';
 
 describe('DiagnosticsProviderBase', () => {
   let providerBase: any;

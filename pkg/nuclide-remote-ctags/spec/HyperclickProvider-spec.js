@@ -13,7 +13,6 @@ import type {CtagsResult} from '../../nuclide-remote-ctags-base';
 
 import invariant from 'assert';
 import {Range} from 'atom';
-import nuclideRemoteConnection from '../../nuclide-remote-connection';
 import atomHelpers from '../../nuclide-atom-helpers';
 import {HyperclickProvider} from '../lib/HyperclickProvider';
 
@@ -32,31 +31,32 @@ describe('HyperclickProvider', () => {
     atomHelpers.goToLocation = jasmine.createSpy('goToLocation');
 
     // Mock the services we use.
-    spyOn(nuclideRemoteConnection, 'getServiceByNuclideUri').andCallFake(service => {
-      if (service === 'FileSystemService') {
-        return {
-          readFile() {
-            return new Buffer('function A\ntest\nclass A\n');
-          },
-        };
-      } else if (service === 'CtagsService') {
-        return {
-          getCtagsService() {
-            return {
-              async getTagsPath() {
-                return '/tags';
-              },
-              async findTags(path, query) {
-                return findTagsResult;
-              },
-              dispose() {},
-            };
-          },
-        };
-      } else {
-        throw new Error('Unexpected service call');
-      }
-    });
+    spyOn(require('../../nuclide-remote-connection'), 'getServiceByNuclideUri')
+      .andCallFake(service => {
+        if (service === 'FileSystemService') {
+          return {
+            readFile() {
+              return new Buffer('function A\ntest\nclass A\n');
+            },
+          };
+        } else if (service === 'CtagsService') {
+          return {
+            getCtagsService() {
+              return {
+                async getTagsPath() {
+                  return '/tags';
+                },
+                async findTags(path, query) {
+                  return findTagsResult;
+                },
+                dispose() {},
+              };
+            },
+          };
+        } else {
+          throw new Error('Unexpected service call');
+        }
+      });
 
     hyperclickProvider = new HyperclickProvider();
   });

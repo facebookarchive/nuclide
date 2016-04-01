@@ -12,10 +12,10 @@
 import type {HgService as HgServiceType} from '../../nuclide-hg-repository-base/lib/HgService';
 
 import {Directory} from 'atom';
-import
+import {
   HgRepositoryClient,
-  {MAX_INDIVIDUAL_CHANGED_PATHS,}
-from '../lib/HgRepositoryClient';
+  MAX_INDIVIDUAL_CHANGED_PATHS,
+} from '../lib/HgRepositoryClient';
 import MockHgService from '../../nuclide-hg-repository-base/spec/MockHgService';
 import {
   HgStatusOption,

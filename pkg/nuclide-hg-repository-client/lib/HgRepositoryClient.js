@@ -88,7 +88,7 @@ function filterForAllStatues() {
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {RemoteDirectory} from '../../nuclide-remote-connection';
 
-export default class HgRepositoryClient {
+export class HgRepositoryClient {
   _path: string;
   _workingDirectory: atom$Directory | RemoteDirectory;
   _projectDirectory: atom$Directory;

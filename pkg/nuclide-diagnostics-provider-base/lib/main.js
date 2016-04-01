@@ -9,6 +9,6 @@
  * the root directory of this source tree.
  */
 
-import DiagnosticsProviderBase from './DiagnosticsProviderBase';
+import {DiagnosticsProviderBase} from './DiagnosticsProviderBase';
 
-module.exports = {DiagnosticsProviderBase};
+export {DiagnosticsProviderBase};

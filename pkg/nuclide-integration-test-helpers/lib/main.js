@@ -19,7 +19,7 @@ import {waitsForFile} from './waitsForFile';
 const TEST_WINDOW_HEIGHT = 600;
 const TEST_WINDOW_WIDTH = 1000;
 
-function jasmineIntegrationTestSetup(): void {
+export function jasmineIntegrationTestSetup(): void {
   // Allow jasmine to interact with the DOM.
   jasmine.attachToDOM(atom.views.getView(atom.workspace));
 
@@ -37,14 +37,13 @@ function jasmineIntegrationTestSetup(): void {
   jasmine.useRealClock();
 }
 
-module.exports = {
+export {
   activateAllPackages,
   addRemoteProject,
   copyFixture,
   copyMercurialFixture,
   deactivateAllPackages,
   dispatchKeyboardEvent,
-  jasmineIntegrationTestSetup,
   setLocalProject,
   startNuclideServer,
   stopNuclideServer,

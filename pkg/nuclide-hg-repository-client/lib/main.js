@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import HgRepositoryClient from './HgRepositoryClient';
+import {HgRepositoryClient} from './HgRepositoryClient';
 
-module.exports = {
+export {
   HgRepositoryClient,
 };

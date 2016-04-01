@@ -21,15 +21,15 @@ import {
   getServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 
-module.exports = {
+export {
   getFileForPath,
   getService,
   getServiceLogger,
   getServiceByNuclideUri,
-
-  getFileSystemServiceByNuclideUri(uri: NuclideUri): FileSystemService {
-    const service = getServiceByNuclideUri('FileSystemService', uri);
-    invariant(service);
-    return service;
-  },
 };
+
+export function getFileSystemServiceByNuclideUri(uri: NuclideUri): FileSystemService {
+  const service = getServiceByNuclideUri('FileSystemService', uri);
+  invariant(service);
+  return service;
+}

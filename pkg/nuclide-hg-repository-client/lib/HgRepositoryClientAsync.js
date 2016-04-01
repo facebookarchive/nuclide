@@ -14,7 +14,7 @@ import type {
   LineDiff,
   StatusCodeNumberValue,
 } from '../../nuclide-hg-repository-base/lib/HgService';
-import type HgRepositoryClient from './HgRepositoryClient';
+import type {HgRepositoryClient} from './HgRepositoryClient';
 
 import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
 

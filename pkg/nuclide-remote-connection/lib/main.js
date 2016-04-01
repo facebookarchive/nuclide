@@ -27,12 +27,7 @@ import {
   getServiceLogger,
 } from './service-manager';
 
-/**
- * Can't use `export {...} from '..';` because some tests depend on being able
- * to mock this module.
- */
-
-module.exports = {
+export {
   RemoteConnection,
   RemoteDirectory,
   RemoteFile,
