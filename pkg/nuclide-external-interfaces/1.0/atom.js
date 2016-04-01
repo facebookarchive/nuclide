@@ -1107,6 +1107,9 @@ declare class atom$KeymapManager {
 declare class atom$MenuManager {
   add(items: Array<Object>): IDisposable;
   update(): void;
+
+  // Private API
+  template: Array<Object>;
 }
 
 declare class atom$Project {
