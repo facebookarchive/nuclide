@@ -836,11 +836,19 @@ class DiffViewModel {
     };
   }
 
+  _getArcanistFilePath(): string {
+    let {filePath} = this._activeFileState;
+    if (filePath === '' && this._activeRepositoryStack != null) {
+      filePath = this._activeRepositoryStack.getRepository().getProjectDirectory();
+    }
+    return filePath;
+  }
+
   async _createPhabricatorRevision(
     publishMessage: string,
     amended: boolean,
   ): Promise<void> {
-    const {filePath} = this._activeFileState;
+    const filePath = this._getArcanistFilePath();
     const lastCommitMessage = await this._loadActiveRepositoryLatestCommitMessage();
     if (!amended && publishMessage !== lastCommitMessage) {
       getLogger().info('Amending commit with the updated message');
@@ -872,7 +880,7 @@ class DiffViewModel {
     publishMessage: string,
     allowUntracked: boolean,
   ): Promise<void> {
-    const {filePath} = this._activeFileState;
+    const filePath = this._getArcanistFilePath();
     const {phabricatorRevision} = await this._getActiveHeadRevisionDetails();
     invariant(phabricatorRevision != null, 'A phabricator revision must exist to update!');
     const updateTemplate = getRevisionUpdateMessage(phabricatorRevision).trim();
