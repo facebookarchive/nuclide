@@ -14,7 +14,7 @@ import invariant from 'assert';
 const path = require('path');
 const fs = require('fs');
 const temp = require('temp').track();
-import {findNearestFile, expandHomeDir} from '../lib/filesystem';
+import {findNearestFile, expandHomeDir, getCommonAncestorDirectory} from '../lib/filesystem';
 
 describe('filesystem test suite', () => {
 
@@ -67,6 +67,19 @@ describe('filesystem test suite', () => {
 
     it('keeps ~def to ~def', () => {
       expect(expandHomeDir('~def')).toBe('~def');
+    });
+  });
+
+  describe('getCommonAncestorDirectory', () => {
+    it('gets the parent directory', () => {
+      expect(getCommonAncestorDirectory([
+        '/foo/bar.txt',
+        '/foo/baz/lol.txt',
+      ])).toBe('/foo');
+      expect(getCommonAncestorDirectory([
+        '/foo/bar/abc/def/abc.txt',
+        '/foo/bar/lol.txt',
+      ])).toBe('/foo/bar');
     });
   });
 

@@ -89,6 +89,15 @@ export async function findNearestFile(fileName: string, pathToDirectory: string)
   } while (true);
 }
 
+export function getCommonAncestorDirectory(filePaths: Array<string>): string {
+  let commonDirectoryPath = path.dirname(filePaths[0]);
+  while (filePaths.some(filePath => !filePath.startsWith(commonDirectoryPath))) {
+    commonDirectoryPath = path.dirname(commonDirectoryPath);
+  }
+  return commonDirectoryPath;
+}
+
+
 export function exists(filePath: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
     fs.exists(filePath, resolve);

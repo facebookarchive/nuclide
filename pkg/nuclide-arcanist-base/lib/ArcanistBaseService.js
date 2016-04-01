@@ -10,12 +10,29 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {RevisionFileChanges} from '../../nuclide-hg-repository-base/lib/HgService';
 
 import invariant from 'assert';
 import {Observable} from 'rx';
 import path from 'path';
 import {quote} from 'shell-quote';
-const {asyncExecute, scriptSafeSpawnAndObserveOutput} = require('../../nuclide-commons');
+import {
+  fsPromise,
+  asyncExecute,
+  findNearestFile,
+  scriptSafeSpawnAndObserveOutput,
+} from '../../nuclide-commons';
+import {
+  fetchFilesChangedAtRevision,
+} from '../../nuclide-hg-repository-base/lib/hg-revision-state-helpers';
+import {
+  expressionForRevisionsBeforeHead,
+} from '../../nuclide-hg-repository-base/lib/hg-revision-expression-helpers';
+import {
+  findHgRepository,
+} from '../../nuclide-source-control-helpers';
+
+
 const logger = require('../../nuclide-logging').getLogger();
 
 const ARC_CONFIG_FILE_NAME = '.arcconfig';
@@ -39,7 +56,6 @@ const arcProjectMap: Map<?NuclideUri, ?Object> = new Map();
 
 export async function findArcConfigDirectory(fileName: NuclideUri): Promise<?NuclideUri> {
   if (!arcConfigDirectoryMap.has(fileName)) {
-    const findNearestFile = require('../../nuclide-commons').findNearestFile;
     const result = await findNearestFile(ARC_CONFIG_FILE_NAME, fileName);
     arcConfigDirectoryMap.set(fileName, result);
   }
@@ -98,14 +114,47 @@ export async function findDiagnostics(pathToFiles: Array<NuclideUri>, skip: Arra
   return [].concat(...(await Promise.all(results)));
 }
 
+
+async function getMercurialHeadCommitChanges(filePath: string): Promise<?RevisionFileChanges> {
+  const hgRepoDetails = findHgRepository(filePath);
+  if (hgRepoDetails == null) {
+    return null;
+  }
+  const filesChanged = await fetchFilesChangedAtRevision(
+    expressionForRevisionsBeforeHead(0),
+    hgRepoDetails.workingDirectoryPath,
+  );
+  if (filesChanged == null) {
+    throw new Error('Failed to fetch commit changed files while diffing');
+  }
+  return filesChanged;
+}
+
+async function getCommitBasedArcConfigDirectory(filePath: string): Promise<?string> {
+  // TODO Support other source control types file changes (e.g. `git`).
+  const filesChanged = await getMercurialHeadCommitChanges(filePath);
+  if (filesChanged == null) {
+    throw new Error('Cannot find source control root to diff from');
+  }
+  let configLookupPath = null;
+  if (filesChanged.all.length > 0) {
+    configLookupPath = fsPromise.getCommonAncestorDirectory(filesChanged.all);
+  } else {
+    configLookupPath = filePath;
+  }
+  return await findArcConfigDirectory(configLookupPath);
+}
+
 function _callArcDiff(
   filePath: NuclideUri,
   extraArcDiffArgs: Array<string>,
 ): Observable<{stderr?: string; stdout?: string;}> {
-  const env = {...process.env};
   // Even with `--verbatim` Arcanist will sometimes launch and enditor in interactive mode.  With
   // the editor set to `/bin/false` it will immediately exit with a failure and abort `arc diff`.
-  env['EDITOR'] = 'false';
+  const env = {
+    ...process.env,
+    EDITOR: 'false',
+  };
   // Don't change the checkout and answer no to all of Arcanist's questions.
   const cmd = [
     // Mind the trailing comma in the command.
@@ -115,14 +164,14 @@ function _callArcDiff(
   const args: Array<string> = ['-c', cmd];
 
   return Observable
-    .fromPromise(findArcConfigDirectory(filePath))
+    .fromPromise(getCommitBasedArcConfigDirectory(filePath))
     .flatMap((arcConfigDir: ?string) => {
       if (arcConfigDir == null) {
         throw new Error('Failed to find Arcanist config.  Is this project set-up for Arcanist?');
       }
       const options = {
         'cwd': arcConfigDir,
-        'env': env,
+        env,
       };
       return scriptSafeSpawnAndObserveOutput('bash', args, options);
     });
