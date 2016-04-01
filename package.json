@@ -93,7 +93,7 @@
     "eslint-plugin-babel": "3.1.0",
     "eslint-plugin-flow-vars": "0.1.3",
     "eslint-plugin-jasmine": "1.6.0",
-    "eslint-plugin-nuclide-internal": "./resources/eslint-plugin-nuclide-internal",
+    "eslint-plugin-nuclide-internal": "file:resources/eslint-plugin-nuclide-internal",
     "eslint-plugin-react": "4.1.0",
     "fs-extra": "0.26.5",
     "jasmine-node": "1.14.5",
