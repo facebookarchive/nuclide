@@ -1,8 +1,9 @@
 @import 'ui-variables';
 
 .nuclide-outline-view {
-  width: 100%;
-  overflow: auto;
+  flex: 1;
+  /* Prevents this element from shrinking smaller than the width of its content */
+  min-width: -webkit-min-content;
 }
 
 .nuclide-outline-view-item {
