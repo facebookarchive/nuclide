@@ -168,7 +168,7 @@ function renderTrees(
   outlines: Array<OutlineTreeForUi>
 ): ?ReactElement {
   if (outlines.length === 0) {
-    return;
+    return null;
   }
   return (
     // Add `position: relative;` to let `li.selected` style position itself relative to the list
