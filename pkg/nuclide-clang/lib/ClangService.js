@@ -95,7 +95,7 @@ function getClangServer(
 //
 // Keep in sync with the clang Python binding (../fb/lib/python/clang/cindex.py)
 // The order of the keys matches the ordering in cindex.py.
-export const ClangCursorToDeclarationTypes = {
+export const ClangCursorToDeclarationTypes = Object.freeze({
   UNEXPOSED_DECL: '',
   STRUCT_DECL: 'Record',
   UNION_DECL: 'Record',
@@ -136,7 +136,7 @@ export const ClangCursorToDeclarationTypes = {
   OBJC_DYNAMIC_DECL: 'ObjCDynamic',
   CXX_ACCESS_SPEC_DECL: 'AccessSpec',
   OVERLOAD_CANDIDATE: 'Function',
-};
+});
 
 // TODO: Support enums in rpc3 framework.
 // export type ClangCursorType = $Enum<typeof ClangCursorToDeclarationTypes>;

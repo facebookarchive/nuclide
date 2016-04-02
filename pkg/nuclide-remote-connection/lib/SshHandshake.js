@@ -36,13 +36,13 @@ export type SshConnectionConfiguration = {
   displayTitle: string; // Name of the saved connection profile.
 }
 
-const SupportedMethods = {
+const SupportedMethods = Object.freeze({
   SSL_AGENT: 'SSL_AGENT',
   PASSWORD: 'PASSWORD',
   PRIVATE_KEY: 'PRIVATE_KEY',
-};
+});
 
-const ErrorType = {
+const ErrorType = Object.freeze({
   UNKNOWN: 'UNKNOWN',
   HOST_NOT_FOUND: 'HOST_NOT_FOUND',
   CANT_READ_PRIVATE_KEY: 'CANT_READ_PRIVATE_KEY',
@@ -52,7 +52,7 @@ const ErrorType = {
   DIRECTORY_NOT_FOUND: 'DIRECTORY_NOT_FOUND',
   SERVER_START_FAILED: 'SERVER_START_FAILED',
   SERVER_VERSION_MISMATCH: 'SERVER_VERSION_MISMATCH',
-};
+});
 
 export type SshHandshakeErrorType = 'UNKNOWN' | 'HOST_NOT_FOUND' | 'CANT_READ_PRIVATE_KEY' |
   'SSH_CONNECT_TIMEOUT' | 'SSH_CONNECT_FAILED' | 'SSH_AUTHENTICATION' | 'DIRECTORY_NOT_FOUND' |

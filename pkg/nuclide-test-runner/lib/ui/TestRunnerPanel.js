@@ -57,10 +57,10 @@ class TestRunnerPanel extends React.Component {
     testSuiteModel: PropTypes.object,
   };
 
-  static ExecutionState = {
+  static ExecutionState = Object.freeze({
     RUNNING: 0,
     STOPPED: 1,
-  };
+  });
 
   constructor(props: Object) {
     super(props);

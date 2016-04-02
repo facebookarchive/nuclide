@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
+module.exports = Object.freeze({
   NONE: 0,
   LOCAL: 1,
   CONNECTED: 2,
   DISCONNECTED: 3,
-};
+});

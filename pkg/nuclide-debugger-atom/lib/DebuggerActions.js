@@ -32,11 +32,11 @@ function track(...args: any) {
   trackFunc.apply(null, args);
 }
 
-const AnalyticsEvents = {
+const AnalyticsEvents = Object.freeze({
   DEBUGGER_START:       'debugger-start',
   DEBUGGER_START_FAIL:  'debugger-start-fail',
   DEBUGGER_STOP:        'debugger-stop',
-};
+});
 
 /**
  * Flux style action creator for actions that affect the debugger.

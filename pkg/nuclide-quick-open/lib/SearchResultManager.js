@@ -49,9 +49,9 @@ function getDefaultResult(): ProviderResult {
   };
 }
 
-const AnalyticsEvents = {
+const AnalyticsEvents = Object.freeze({
   QUERY_SOURCE_PROVIDER: 'quickopen-query-source-provider',
-};
+});
 
 const RESULTS_CHANGED = 'results_changed';
 const PROVIDERS_CHANGED = 'providers_changed';

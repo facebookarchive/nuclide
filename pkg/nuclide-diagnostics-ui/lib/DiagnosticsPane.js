@@ -33,10 +33,10 @@ const PROVIDER_NAME_COLUMN_WIDTH = 175;
 const FILE_PATH_COLUMN_WIDTH = 300;
 const RANGE_COLUMN_WIDTH = 50;
 
-const TypeToHighlightClassName = {
+const TypeToHighlightClassName = Object.freeze({
   ERROR: 'highlight-error',
   WARNING: 'highlight-warning',
-};
+});
 
 function locationColumnCellDataGetter(cellDataKey: 'range', diagnostic: DiagnosticMessage): string {
   return diagnostic.range ? (diagnostic.range.start.row + 1).toString() : '';

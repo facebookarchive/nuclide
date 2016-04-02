@@ -16,13 +16,13 @@ import type {TestRunStatus} from '../../nuclide-test-runner/lib/interfaces';
 /**
  * Status codes returned in the "status" field of the testing utility's JSON response.
  */
-const Status: {[key: string]: TestRunStatus} = {
+const Status: {[key: string]: TestRunStatus} = Object.freeze({
   PASSED: 1,
   FAILED: 2,
   SKIPPED: 3,
   FATAL: 4,
   TIMEOUT: 5,
-};
+});
 
 const StatusSymbol: {[key: TestRunStatus]: string} = {};
 StatusSymbol[Status.PASSED] = `${Ansi.GREEN}✓${Ansi.RESET}`;

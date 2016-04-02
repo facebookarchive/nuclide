@@ -17,7 +17,7 @@ import type {
   HgStatusOptionValue,
 } from './HgService';
 
-const StatusCodeId: {[key: string]: StatusCodeIdValue} = {
+const StatusCodeId: {[key: string]: StatusCodeIdValue} = Object.freeze({
   ADDED: 'A',
   CLEAN: 'C',
   IGNORED: 'I',
@@ -25,9 +25,9 @@ const StatusCodeId: {[key: string]: StatusCodeIdValue} = {
   MISSING: '!', // (deleted by non-hg command, but still tracked)
   REMOVED: 'R',
   UNTRACKED: '?',
-};
+});
 
-const StatusCodeNumber: {[key: string]: StatusCodeNumberValue} = {
+const StatusCodeNumber: {[key: string]: StatusCodeNumberValue} = Object.freeze({
   ADDED: 1,
   CLEAN: 2,
   IGNORED: 3,
@@ -35,7 +35,7 @@ const StatusCodeNumber: {[key: string]: StatusCodeNumberValue} = {
   MISSING: 5,
   REMOVED: 6,
   UNTRACKED: 7,
-};
+});
 
 const StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = {
   [StatusCodeId.ADDED]: StatusCodeNumber.ADDED,
@@ -47,11 +47,11 @@ const StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = 
   [StatusCodeId.UNTRACKED]: StatusCodeNumber.UNTRACKED,
 };
 
-const HgStatusOption: {[key: string]: HgStatusOptionValue} = {
+const HgStatusOption: {[key: string]: HgStatusOptionValue} = Object.freeze({
   ONLY_NON_IGNORED: 1,  // only the output of `hg status`
   ONLY_IGNORED: 2,      // only the output of `hg status --ignored`
   ALL_STATUSES: 3,      // the output of `hg status --all`
-};
+});
 
 module.exports = {
   HgStatusOption,

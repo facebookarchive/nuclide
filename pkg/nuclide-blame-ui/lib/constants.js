@@ -9,6 +9,6 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
+module.exports = Object.freeze({
   BLAME_DECORATION_CLASS: 'blame-decoration',
-};
+});

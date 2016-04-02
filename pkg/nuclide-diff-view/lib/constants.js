@@ -29,64 +29,64 @@ import type {
 const GK_DIFF_VIEW_PUBLISH: string = 'nuclide_diff_view_publish';
 const TOOLBAR_VISIBLE_SETTING: string = 'nuclide-diff-view.toolbarVisible';
 
-const FileChangeStatus = {
+const FileChangeStatus = Object.freeze({
   ADDED: 1,
   MODIFIED: 2,
   MISSING: 3,
   REMOVED: 4,
   UNTRACKED: 5,
-};
+});
 
 (FileChangeStatus: { [key: string]: FileChangeStatusValue });
 
-const DiffMode = {
+const DiffMode = Object.freeze({
   BROWSE_MODE: 'Browse',
   COMMIT_MODE: 'Commit',
   PUBLISH_MODE: 'Publish',
-};
+});
 
 // This is to work around flow's missing support of enums.
 (DiffMode: { [key: string]: DiffModeType });
 
-const DiffOption = {
+const DiffOption = Object.freeze({
   DIRTY: 'Dirty',
   LAST_COMMIT: 'Last Commit',
   COMPARE_COMMIT: 'Compare Commit',
-};
+});
 
 // This is to work around flow's missing support of enums.
 (DiffOption: { [key: string]: DiffOptionType });
 
-const CommitMode = {
+const CommitMode = Object.freeze({
   COMMIT: 'Commit',
   AMEND: 'Amend',
-};
+});
 
 // This is to work around flow's missing support of enums.
 (CommitMode: { [key: string]: CommitModeType });
 
-const CommitModeState = {
+const CommitModeState = Object.freeze({
   READY: 'Ready',
   LOADING_COMMIT_MESSAGE: 'Loading Commit Message',
   AWAITING_COMMIT: 'Awaiting Commit',
-};
+});
 
 // This is to work around flow's missing support of enums.
 (CommitModeState: { [key: string]: CommitModeStateType });
 
-const PublishMode = {
+const PublishMode = Object.freeze({
   CREATE: 'Create',
   UPDATE: 'Update',
-};
+});
 
 // This is to work around flow's missing support of enums.
 (PublishMode: { [key: string]: PublishModeType });
 
-const PublishModeState = {
+const PublishModeState = Object.freeze({
   READY: 'Ready',
   LOADING_PUBLISH_MESSAGE: 'Loading Publish Message',
   AWAITING_PUBLISH: 'Awaiting Publish',
-};
+});
 
 // This is to work around flow's missing support of enums.
 (PublishModeState: { [key: string]: PublishModeStateType });

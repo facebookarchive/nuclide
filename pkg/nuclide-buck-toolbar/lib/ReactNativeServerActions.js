@@ -46,9 +46,9 @@ export default class ReactNativeServerActions {
   }
 }
 
-ReactNativeServerActions.ActionType = {
+ReactNativeServerActions.ActionType = Object.freeze({
   START_NODE_EXECUTOR_SERVER: 'START_NODE_EXECUTOR_SERVER',
   START_SERVER: 'START_SERVER',
   STOP_SERVER: 'STOP_SERVER',
   RESTART_SERVER: 'RESTART_SERVER',
-};
+});

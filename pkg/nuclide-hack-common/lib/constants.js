@@ -20,24 +20,24 @@ export type SearchResultTypeValue = 0| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
  */
 module.exports = {
 
-  CompletionType: {
+  CompletionType: Object.freeze({
     ID        : 0,
     NEW       : 1,
     TYPE      : 2,
     CLASS_GET : 3,
     VAR       : 4,
     NONE      : 5,
-  },
+  }),
 
-  SymbolType: {
+  SymbolType: Object.freeze({
     CLASS    : 0,
     FUNCTION : 1,
     METHOD   : 2,
     LOCAL    : 3,
     UNKNOWN  : 4,
-  },
+  }),
 
-  SearchResultType: {
+  SearchResultType: Object.freeze({
     CLASS:          0,
     TYPEDEF:        1,
     METHOD:         2,
@@ -47,7 +47,7 @@ module.exports = {
     INTERFACE:      6,
     ABSTRACT_CLASS: 7,
     TRAIT:          8,
-  },
+  }),
 
   HACK_GRAMMARS,
   HACK_GRAMMARS_SET: new Set(HACK_GRAMMARS),

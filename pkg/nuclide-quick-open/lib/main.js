@@ -39,17 +39,17 @@ const MAX_SELECTION_LENGTH = 1000;
  * visible until it gets closed, either via file selection or cancellation.
  */
 let analyticsSessionId = null;
-const AnalyticsEvents = {
+const AnalyticsEvents = Object.freeze({
   CHANGE_SELECTION: 'quickopen-change-selection',
   CHANGE_TAB:       'quickopen-change-tab',
   CLOSE_PANEL:      'quickopen-close-panel',
   OPEN_PANEL:       'quickopen-open-panel',
   SELECT_FILE:      'quickopen-select-file',
-};
-const AnalyticsDebounceDelays = {
+});
+const AnalyticsDebounceDelays = Object.freeze({
   CHANGE_TAB: 100,
   CHANGE_SELECTION: 100,
-};
+});
 
 const trackProviderChange = debounce(providerName => {
   analyticsSessionId = analyticsSessionId || Date.now().toString();

@@ -9,6 +9,6 @@
  * the root directory of this source tree.
  */
 
-export const LaunchAttachActionCode = {
+export const LaunchAttachActionCode = Object.freeze({
   UPDATE_ATTACH_TARGET_LIST: 'UPDATE_ATTACH_TARGET_LIST',
-};
+});

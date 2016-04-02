@@ -13,10 +13,10 @@ const {Dispatcher} = require('flux');
 
 let quickopenDispatcher = null;
 class QuickSelectionDispatcher {
-  static ActionType = {
+  static ActionType = Object.freeze({
     ACTIVE_PROVIDER_CHANGED: 'ACTIVE_PROVIDER_CHANGED',
     QUERY: 'QUERY',
-  };
+  });
 
   static getInstance(): Dispatcher {
     if (!quickopenDispatcher) {

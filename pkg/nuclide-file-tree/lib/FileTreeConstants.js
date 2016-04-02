@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-exports.ActionType = {
+exports.ActionType = Object.freeze({
   COLLAPSE_NODE: 'COLLAPSE_NODE',
   COLLAPSE_NODE_DEEP: 'COLLAPSE_NODE_DEEP',
   CREATE_CHILD: 'CREATE_CHILD',
@@ -35,6 +35,6 @@ exports.ActionType = {
   FINISH_EDITING_WORKING_SET: 'FINISH_EDITING_WORKING_SET',
   CHECK_NODE: 'CHECK_NODE',
   UNCHECK_NODE: 'UNCHECK_NODE',
-};
+});
 
 exports.EVENT_HANDLER_SELECTOR = '.nuclide-file-tree-toolbar-container';

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const Actions = {
+const Actions = Object.freeze({
   SET_DEBUGGER_PROCESS: 'SET_DEBUGGER_PROCESS',
   SET_ERROR: 'SET_ERROR',
   ADD_SERVICE: 'ADD_SERVICE',
@@ -21,7 +21,7 @@ const Actions = {
   UPDATE_CONNECTIONS: 'UPDATE_CONNECTIONS',
   ADD_EVALUATION_EXPRESSION_PROVIDER: 'ADD_EVALUATION_EXPRESSION_PROVIDER',
   REMOVE_EVALUATION_EXPRESSION_PROVIDER: 'REMOVE_EVALUATION_EXPRESSION_PROVIDER',
-};
+});
 
 module.exports = {
   Actions,

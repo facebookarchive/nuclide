@@ -11,7 +11,7 @@
 
 import type {ServerStatusType} from '..';
 
-export const ServerStatus = {
+export const ServerStatus = Object.freeze({
   FAILED: 'failed',
   UNKNOWN: 'unknown',
   NOT_RUNNING:  'not running',
@@ -19,7 +19,7 @@ export const ServerStatus = {
   BUSY: 'busy',
   INIT: 'init',
   READY: 'ready',
-};
+});
 
 // If we put this type on the definition, use sites will not see the individual properties in the
 // Server object for things like autocomplete. Worse, Flow will assume that *any* string key will

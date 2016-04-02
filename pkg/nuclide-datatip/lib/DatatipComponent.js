@@ -11,10 +11,10 @@
 
 import {React} from 'react-for-atom';
 
-export const DATATIP_ACTIONS = {
+export const DATATIP_ACTIONS = Object.freeze({
   PIN: 'PIN',
   CLOSE: 'CLOSE',
-};
+});
 
 const IconsForAction = {
   [DATATIP_ACTIONS.PIN]: 'pin',

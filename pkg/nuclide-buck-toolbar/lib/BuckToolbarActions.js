@@ -15,7 +15,7 @@ class BuckToolbarActions {
 
   _dispatcher: Dispatcher;
 
-  static ActionType = {
+  static ActionType = Object.freeze({
     BUILD: 'BUILD',
     DEBUG: 'DEBUG',
     RUN: 'RUN',
@@ -26,7 +26,7 @@ class BuckToolbarActions {
     UPDATE_PROJECT: 'UPDATE_PROJECT',
     UPDATE_REACT_NATIVE_SERVER_MODE: 'UPDATE_REACT_NATIVE_SERVER_MODE',
     UPDATE_SIMULATOR: 'UPDATE_SIMULATOR',
-  };
+  });
 
   constructor(dispatcher: Dispatcher) {
     this._dispatcher = dispatcher;
