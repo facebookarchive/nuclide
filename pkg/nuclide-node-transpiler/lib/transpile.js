@@ -13,7 +13,7 @@
 /*eslint-disable no-var */
 
 var fs = require('fs');
-var createOrFetchFromCache = require('./babel-cache').createOrFetchFromCache;
+var createOrFetchFromCache;
 
 function startsWith(str, prefix) {
   return str.lastIndexOf(prefix, 0) === 0;
@@ -27,6 +27,9 @@ function loadFile(module, filePath) {
       !startsWith(sourceCode, "'use babel'")) {
     js = sourceCode;
   } else {
+    if (!createOrFetchFromCache) {
+      createOrFetchFromCache = require('./babel-cache').createOrFetchFromCache;
+    }
     js = createOrFetchFromCache(sourceCode, filePath);
   }
 

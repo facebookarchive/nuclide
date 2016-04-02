@@ -12,13 +12,16 @@
  */
 /*eslint-disable no-console, no-var */
 
-var babel = require('babel-core');
 var crypto = require('crypto');
 var fs = require('fs');
 var path = require('path');
-var temp = require('temp').track();
-var mv = require('mv');
 var cacheDir = createCacheDir();
+
+// lazy-requires: More often than not, everything we want to transpile is
+// already in the cache, so there is no need to load the expensive requires.
+var babel;
+var mv;
+var temp;
 
 /**
  * Tries to create a "babel-cache" directory if it does not already exist.
@@ -85,6 +88,7 @@ function createOrFetchFromCache(sourceCode, filePath) {
   // Asynchronously write the result to the cache. Write the file to a temp file first and then move
   // it so the write to the cache is atomic. Although Node is single-threaded, there could be
   // multiple Node processes running simulanesously that are using the cache.
+  if (!temp) { temp = require('temp').track(); }
   temp.open(/* prefix */ 'nuclide-node-transpiler', function(openError, info) {
     if (openError) {
       return;
@@ -95,6 +99,7 @@ function createOrFetchFromCache(sourceCode, filePath) {
         return;
       }
 
+      if (!mv) { mv = require('mv'); }
       // Use mv as fs.rename doesn't work across partitions.
       var moveError = false;
       mv(info.path, transpiledFile, {mkdirp: true},
@@ -190,6 +195,7 @@ function transpileFile(sourceCode, filePath) {
  * @return the transpiled code as a string.
  */
 function transpileFileWithOptions(sourceCode, options, filePath) {
+  if (!babel) { babel = require('babel-core'); }
   try {
     return babel.transform(sourceCode, options).code;
   } catch (e) {
