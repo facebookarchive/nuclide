@@ -3,7 +3,7 @@ import { Observable } from "rx";
 import { trackTiming } from "../../nuclide-analytics";
 
 module.exports = _client => {
-  remoteModule = {}
+  const remoteModule = {};
 
   remoteModule.UnionFunc = function (arg0, arg1) {
     return Promise.all([_client.marshal(arg0, {
