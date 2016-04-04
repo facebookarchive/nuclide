@@ -177,6 +177,9 @@ def run_integration_tests_with_clean_state(path_to_nuclide, named_tests):
 
 def is_retryable_error(output):
     return bool(
+        # Atom 1.5.3 for sure, maybe later ones too:
         re.search(r'Atom\.app/atom:\s+line 117:\s+\d+\s+Segmentation fault: 11', output) or
-        re.search(r'Atom\.app/atom:\s+line 117:\s+\d+\s+Abort trap: 6', output)
+        re.search(r'Atom\.app/atom:\s+line 117:\s+\d+\s+Abort trap: 6', output) or
+        # Atom 1.6.1 for sure:
+        re.search(r'Atom\.app/atom:\s+line 117:\s+\d+\s+Illegal instruction: 4', output)
     )
