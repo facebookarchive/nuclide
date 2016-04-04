@@ -1,5 +1,26 @@
 # Nuclide Changelog
 
+## v0.128.0
+
+### Added
+
+* Outline View:
+  * Python support.
+  * Show flow class fields.
+  * Highlight the current location of the cursor for JavaScript.
+
+### Fixed
+
+* Made a handful of small improvements to outline view, including improving the UX when outlines are computed slowly.
+* Datatip highlight color across themes.
+* Async Repository incompatibility with v1.7.0-beta.
+* Fix Diff View's tree highlighting deleted commit changes.
+
+### Changed
+
+* The "Nuclide" menu is now before "Window" and "Help".
+* Atom 1.6.1 is now the minimally required version.
+
 ## v0.127.0
 
 ### Added
