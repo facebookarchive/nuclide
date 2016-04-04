@@ -30,16 +30,11 @@ import type {ConfigEntry} from './index';
 import type {RequestMessage, ErrorResponseMessage, PromiseResponseMessage,
   ObservableResponseMessage} from './types';
 import type {SocketClient} from '../SocketClient';
+import {ObjectRegistry} from './ObjectRegistry';
 
 const logger = require('../../../nuclide-logging').getLogger();
 
 type FunctionImplementation = {localImplementation: Function; type: FunctionType};
-
-type RemoteObject = {
-  _interface: string;
-  _remoteId: ?number;
-  dispose: () => mixed;
-};
 
 export default class ServerComponent {
   _typeRegistry: TypeRegistry;
@@ -56,20 +51,14 @@ export default class ServerComponent {
    */
   _classesByName: Map<string, {localImplementation: any; definition: InterfaceDefinition}>;
 
-  _objectRegistry: Map<number, RemoteObject>;
-  _nextObjectId: number;
-
-  _subscriptions: Map<number, IDisposable>;
+  _objectRegistry: ObjectRegistry;
 
   constructor(services: Array<ConfigEntry>) {
     this._typeRegistry = new TypeRegistry();
     this._functionsByName = new Map();
     this._classesByName = new Map();
 
-    this._nextObjectId = 1;
-    this._objectRegistry = new Map();
-
-    this._subscriptions = new Map();
+    this._objectRegistry = new ObjectRegistry();
 
     // NuclideUri type requires no transformations (it is done on the client side).
     this._typeRegistry.registerType('NuclideUri', uri => uri, remotePath => remotePath);
@@ -111,19 +100,7 @@ export default class ServerComponent {
             });
 
             this._typeRegistry.registerType(name, async object => {
-              // If the object has already been assigned an id, return that id.
-              if (object._remoteId) {
-                return object._remoteId;
-              }
-
-              // Put the object in the registry.
-              object._interface = name;
-              const objectId = this._nextObjectId;
-              this._objectRegistry.set(objectId, object);
-              object._remoteId = objectId;
-              this._nextObjectId++;
-
-              return objectId;
+              return this._objectRegistry.add(name, object);
             }, async objectId => this._objectRegistry.get(objectId));
 
             // Register all of the static methods as remote functions.
@@ -241,15 +218,10 @@ export default class ServerComponent {
           returnVal = Promise.resolve(noObject);
           break;
         case 'DisposeObject':
-          // Get the object.
-          const doObject = this._objectRegistry.get(message.objectId);
-          invariant(doObject != null);
-
-          timingTracker = startTracking(`service-framework:dispose:${doObject._interface}`);
-
-          // Remove the object from the registry, and scrub it's id.
-          doObject._remoteId = undefined;
-          this._objectRegistry.delete(message.objectId);
+          const objectId = message.objectId;
+          const interfaceName = this._objectRegistry.get(objectId)._interface;
+          timingTracker = startTracking(`service-framework:dispose:${interfaceName}`);
+          await this._objectRegistry.disposeObject(objectId);
 
           // Call the object's local dispose function.
           returnType = {
@@ -257,18 +229,13 @@ export default class ServerComponent {
             type: voidType,
             location: builtinLocation,
           };
-          await doObject.dispose();
 
           // Return a void Promise
           returnVal = Promise.resolve();
           break;
         case 'DisposeObservable':
           // Dispose an in-progress observable, before it has naturally completed.
-          const subscription = this._subscriptions.get(requestId);
-          if (subscription != null) {
-            subscription.dispose();
-            this._subscriptions.delete(requestId);
-          }
+          this._objectRegistry.disposeSubscription(requestId);
           break;
         default:
           throw new Error(`Unkown message type ${message.type}`);
@@ -378,7 +345,7 @@ export default class ServerComponent {
             error: formatError(error),
           };
           client.sendSocketMessage(errorMessage);
-          this._subscriptions.delete(requestId);
+          this._objectRegistry.removeSubscription(requestId);
         }, completed => {
           const eventMessage: ObservableResponseMessage = {
             channel: 'service_framework3_rpc',
@@ -388,9 +355,9 @@ export default class ServerComponent {
             result: { type: 'completed' },
           };
           client.sendSocketMessage(eventMessage);
-          this._subscriptions.delete(requestId);
+          this._objectRegistry.removeSubscription(requestId);
         });
-        this._subscriptions.set(requestId, subscription);
+        this._objectRegistry.addSubscription(requestId, subscription);
         break;
       default:
         throw new Error(`Unkown return type ${returnType.kind}.`);
