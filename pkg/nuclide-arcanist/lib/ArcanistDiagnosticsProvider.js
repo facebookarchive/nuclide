@@ -99,7 +99,12 @@ export class ArcanistDiagnosticsProvider {
           text = diagnostic.text;
         }
         const maybeProperties = {};
-        if (diagnostic.original != null && diagnostic.replacement != null) {
+        if (diagnostic.original != null &&
+          diagnostic.replacement != null &&
+          // Sometimes linters set original and replacement to the same value. Obviously that won't
+          // fix anything.
+          diagnostic.original !== diagnostic.replacement
+        ) {
           maybeProperties.fix = {
             oldRange: this._getRangeForFix(diagnostic.row, diagnostic.col, diagnostic.original),
             newText: diagnostic.replacement,
