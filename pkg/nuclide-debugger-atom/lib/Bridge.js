@@ -174,6 +174,9 @@ class Bridge {
           case 'OpenSourceLocation':
             this._openSourceLocation(event.args[1]);
             break;
+          case 'ClearInterface':
+            this._handleClearInterface();
+            break;
           case 'DebuggerResumed':
             this._handleDebuggerResumed();
             break;
@@ -198,8 +201,11 @@ class Bridge {
     this._debuggerModel.getStore().setDebuggerMode(DebuggerMode.PAUSED);
   }
 
-  _handleDebuggerResumed(): void {
+  _handleClearInterface(): void {
     this._setSelectedCallFrameLine(null);
+  }
+
+  _handleDebuggerResumed(): void {
     this._debuggerModel.getStore().setDebuggerMode(DebuggerMode.RUNNING);
   }
 

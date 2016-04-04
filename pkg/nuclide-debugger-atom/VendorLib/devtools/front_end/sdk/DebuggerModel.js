@@ -86,6 +86,7 @@ WebInspector.DebuggerModel.Events = {
     DebuggerWasEnabled: "DebuggerWasEnabled",
     DebuggerWasDisabled: "DebuggerWasDisabled",
     DebuggerPaused: "DebuggerPaused",
+    ClearInterface: "ClearInterface",
     DebuggerResumed: "DebuggerResumed",
     ParsedScriptSource: "ParsedScriptSource",
     FailedToParseScriptSource: "FailedToParseScriptSource",

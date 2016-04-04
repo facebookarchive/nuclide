@@ -51,6 +51,7 @@ declare class WebInspector$UISourceCode {
 declare class WebInspector$DebuggerModel {
   static Events: {
     CallFrameSelected: string;
+    ClearInterface: string;
     DebuggerResumed: string;
     DebuggerPaused: string;
   };

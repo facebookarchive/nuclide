@@ -52,6 +52,12 @@ class NuclideBridge {
 
     WebInspector.targetManager.addModelListener(
       WebInspector.DebuggerModel,
+      WebInspector.DebuggerModel.Events.ClearInterface,
+      this._handleClearInterface,
+      this);
+
+    WebInspector.targetManager.addModelListener(
+      WebInspector.DebuggerModel,
       WebInspector.DebuggerModel.Events.DebuggerResumed,
       this._handleDebuggerResumed,
       this);
@@ -249,6 +255,10 @@ class NuclideBridge {
 
   _handleDebuggerResumed(event: WebInspector$Event) {
     ipc.sendToHost('notification', 'DebuggerResumed', {});
+  }
+
+  _handleClearInterface(event: WebInspector$Event) {
+    ipc.sendToHost('notification', 'ClearInterface', {});
   }
 
   _handleBreakpointAdded(event: WebInspector$Event) {

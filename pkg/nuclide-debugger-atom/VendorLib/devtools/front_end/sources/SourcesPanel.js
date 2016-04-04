@@ -456,6 +456,15 @@ WebInspector.SourcesPanel.prototype = {
 
     _clearInterface: function()
     {
+        var currentTarget = WebInspector.context.flavor(WebInspector.Target);
+        if (currentTarget != null)
+        {
+            currentTarget.debuggerModel.dispatchEventToListeners(
+                WebInspector.DebuggerModel.Events.ClearInterface,
+                this
+            );
+        }
+
         this.sidebarPanes.callstack.update(null);
         this.sidebarPanes.scopechain.update(null);
         this.sidebarPanes.jsBreakpoints.clearBreakpointHighlight();

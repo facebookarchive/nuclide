@@ -131,14 +131,14 @@ describe('Bridge', () => {
     });
   });
 
-  it('should remove decoration when resuming', () => {
+  it('should remove decoration when clear interface', () => {
     waitsFor(() => {
       return !!getCallFrameDecorationInRow(1);
     }, 'call frame highlight to appear', 100);
 
     runs(() => {
       expect(getCallFrameDecorationInRow(1)).toBeTruthy();
-      sendIpcNotification('DebuggerResumed');
+      sendIpcNotification('ClearInterface');
       expect(getCallFrameDecorationInRow(1)).toBeFalsy();
     });
   });
