@@ -22,9 +22,9 @@
         "0.0.0": "consumeOutputService"
       }
     },
-    "phabricator-comments-ui.provider": {
+    "nuclide-diff-view-ui.provider": {
       "versions": {
-        "0.0.0": "consumeProvider"
+        "0.0.0": "consumeUIProvider"
       }
     },
     "tool-bar": {

@@ -24,6 +24,10 @@ import type {
 import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {PhabricatorRevisionInfo} from '../../nuclide-arcanist-client';
+import type {
+  UIProvider,
+  UIElement,
+} from '../../nuclide-diff-ui-provider-interfaces';
 
 type FileDiffState = {
   revisionInfo: RevisionInfo;
@@ -165,7 +169,7 @@ class DiffViewModel {
   _activeFileState: FileChangeState;
   _activeRepositoryStack: ?RepositoryStack;
   _newEditor: ?TextEditor;
-  _uiProviders: Array<Object>;
+  _uiProviders: Array<UIProvider>;
   _repositoryStacks: Map<HgRepositoryClient, RepositoryStack>;
   _repositorySubscriptions: Map<HgRepositoryClient, CompositeDisposable>;
   _isActive: boolean;
@@ -173,10 +177,10 @@ class DiffViewModel {
   _messages: Rx.Subject;
   _serializedUpdateActiveFileDiff: () => Promise<void>;
 
-  constructor(uiProviders: Array<Object>) {
-    this._uiProviders = uiProviders;
+  constructor() {
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
+    this._uiProviders = [];
     this._repositoryStacks = new Map();
     this._repositorySubscriptions = new Map();
     this._isActive = false;
@@ -672,8 +676,7 @@ class DiffViewModel {
     this._setActiveFileState(newFileState);
     // TODO(most): Fix: this assumes that the editor contents aren't changed while
     // fetching the comments, that's okay now because we don't fetch them.
-    const inlineComponents = await this._fetchInlineComponents();
-    this._setActiveFileState({...newFileState, inlineComponents});
+    await this._updateInlineComponents();
   }
 
   _setActiveFileState(state: FileChangeState): void {
@@ -942,16 +945,34 @@ class DiffViewModel {
     return this._emitter.on(ACTIVE_FILE_UPDATE_EVENT, callback);
   }
 
-  @trackTiming('diff-view.fetch-comments')
-  async _fetchInlineComponents(): Promise<Array<Object>> {
+  async _updateInlineComponents(): Promise<void> {
     const {filePath} = this._activeFileState;
+    if (!filePath) {
+      return;
+    }
+    const inlineComponents = await this._fetchInlineComponents(filePath);
+    if (filePath !== this._activeFileState.filePath) {
+      return;
+    }
+    this._setActiveFileState({...this._activeFileState, inlineComponents});
+  }
+
+  @trackTiming('diff-view.fetch-comments')
+  async _fetchInlineComponents(filePath: NuclideUri): Promise<Array<UIElement>> {
+    // TODO(most): Fix UI rendering and re-introduce: t8174332
+    // provider.composeUiElements(filePath)
     const uiElementPromises = this._uiProviders.map(
-      provider => provider.composeUiElements(filePath)
+      provider => Promise.resolve([]),
     );
     const uiComponentLists = await Promise.all(uiElementPromises);
     // Flatten uiComponentLists from list of lists of components to a list of components.
     const uiComponents = [].concat.apply([], uiComponentLists);
     return uiComponents;
+  }
+
+  setUiProviders(uiProviders: Array<UIProvider>): void {
+    this._uiProviders = uiProviders;
+    this._updateInlineComponents().catch(notifyInternalError);
   }
 
   async _loadCommitModeState(): Promise<void> {

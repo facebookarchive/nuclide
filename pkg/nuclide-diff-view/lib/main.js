@@ -13,6 +13,9 @@ import type DiffViewModelType, {DiffEntityOptions} from './DiffViewModel';
 import type {HomeFragments} from '../../nuclide-home-interfaces';
 import type OutputService from '../../nuclide-console/lib/OutputService';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type {
+  UIProvider,
+} from '../../nuclide-diff-ui-provider-interfaces';
 
 import {CompositeDisposable, Directory} from 'atom';
 import invariant from 'assert';
@@ -29,7 +32,7 @@ let activeDiffView: ?{
 
 // This url style is the one Atom uses for the welcome and settings pages.
 const NUCLIDE_DIFF_VIEW_URI = 'atom://nuclide/diff-view';
-const uiProviders = [];
+const uiProviders: Array<UIProvider> = [];
 
 let subscriptions: ?CompositeDisposable = null;
 let toolBar: ?any = null;
@@ -97,9 +100,10 @@ function createView(diffEntityOptions: DiffEntityOptions): HTMLElement {
 }
 
 function getDiffViewModel(): DiffViewModelType {
-  if (!diffViewModel) {
+  if (diffViewModel == null) {
     const DiffViewModel = require('./DiffViewModel');
-    diffViewModel = new DiffViewModel(uiProviders);
+    diffViewModel = new DiffViewModel();
+    diffViewModel.setUiProviders(uiProviders);
     invariant(subscriptions);
     subscriptions.add(diffViewModel);
   }
@@ -356,9 +360,11 @@ module.exports = {
    * @return An array of InlineComments (defined above) to be rendered into the
    *         diff view
    */
-  consumeProvider(provider: Object) {
-    // TODO(most): Fix UI rendering and re-introduce: t8174332
-    // uiProviders.push(provider);
+  consumeUIProvider(provider: UIProvider) {
+    uiProviders.push(provider);
+    if (diffViewModel != null) {
+      diffViewModel.setUiProviders(uiProviders);
+    }
     return;
   },
 
