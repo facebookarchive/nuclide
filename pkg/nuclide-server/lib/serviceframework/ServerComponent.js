@@ -148,9 +148,8 @@ export default class ServerComponent {
             localImplementation: fcLocalImplementation,
             type: fcType,
           } = this._getFunctionImplemention(message.function);
-          const fcTransfomedArgs = await Promise.all(
-            message.args.map((arg, i) => this._typeRegistry.unmarshal(arg, fcType.argumentTypes[i]))
-          );
+          const fcTransfomedArgs =
+            await this._typeRegistry.unmarshalArguments(message.args, fcType.argumentTypes);
 
           // Invoke function and return the results.
           invariant(fcType.returnType.kind === 'void' ||
@@ -170,10 +169,8 @@ export default class ServerComponent {
           const mcType = className.definition.instanceMethods.get(message.method);
           invariant(mcType != null);
 
-          // Unmarshal arguments.
-          const mcTransfomedArgs = await Promise.all(
-            message.args.map((arg, i) => this._typeRegistry.unmarshal(arg, mcType.argumentTypes[i]))
-          );
+          const mcTransfomedArgs =
+            await this._typeRegistry.unmarshalArguments(message.args, mcType.argumentTypes);
 
           // Invoke message.
           invariant(mcType.returnType.kind === 'void' ||
@@ -190,9 +187,8 @@ export default class ServerComponent {
             definition: noDefinition,
           } = classDefinition;
 
-          // Transform arguments.
-          const noTransfomedArgs = await Promise.all(message.args.map((arg, i) =>
-            this._typeRegistry.unmarshal(arg, noDefinition.constructorArgs[i])));
+          const noTransfomedArgs =
+            await this._typeRegistry.unmarshalArguments(message.args, noDefinition.constructorArgs);
 
           // Create a new object and put it in the registry.
           const noObject = construct(noLocalImplementation, noTransfomedArgs);

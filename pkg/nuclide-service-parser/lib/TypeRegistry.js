@@ -234,6 +234,10 @@ export default class TypeRegistry {
     return Promise.resolve(this._unmarshal(value, type));
   }
 
+  unmarshalArguments(args: Array<any>, argTypes: Array<Type>): Promise<Array<any>> {
+    return Promise.all(args.map((arg, i) => this.unmarshal(arg, argTypes[i])));
+  }
+
   _unmarshal(value: any, type: Type): any {
     const kindMarshaller = this._kindMarshallers.get(type.kind);
     if (kindMarshaller == null) {
