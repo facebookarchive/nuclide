@@ -10,6 +10,7 @@
  */
 
 import type {Logger} from '../../nuclide-logging/lib/types';
+import type {TunnelVisionProvider} from '../../nuclide-tunnel-vision';
 
 const {CompositeDisposable} = require('atom');
 const {getLogger} = require('../../nuclide-logging');
@@ -289,5 +290,15 @@ export function serialize(): Object {
     activeViewId: state.activeViewId,
     hidden: state.hidden,
     initialLength: panelComponent.getLength(),
+  };
+}
+
+export function getTunnelVisionProvider(): TunnelVisionProvider {
+  const isVisible = () => !state.hidden;
+  return {
+    isVisible,
+    toggle(): void {
+      toggleView(state.activeViewId);
+    },
   };
 }
