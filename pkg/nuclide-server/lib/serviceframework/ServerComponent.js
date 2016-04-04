@@ -133,18 +133,16 @@ export default class ServerComponent {
 
     let returnVal: ?(Promise | Observable) = null;
     let returnType: PromiseType | ObservableType | VoidType = voidType;
-    let callError;
+    let callError: ?Error = null;
     let hadError = false;
 
     // Track timings of all function calls, method calls, and object creations.
     // Note: for Observables we only track how long it takes to create the initial Observable.
-    let timingTracker: ?TimingTracker = null;
+    const timingTracker: TimingTracker = startTracking(this.trackingIdOfMessage(message));
 
     try {
       switch (message.type) {
         case 'FunctionCall':
-          timingTracker = startTracking(`service-framework:${message.function}`);
-
           // Transform arguments and call function.
           const {
             localImplementation: fcLocalImplementation,
@@ -165,9 +163,6 @@ export default class ServerComponent {
           // Get the object.
           const mcObject = this._objectRegistry.get(message.objectId);
           invariant(mcObject != null);
-          timingTracker = startTracking(
-            `service-framework:${mcObject._interface}.${message.method}`
-          );
 
           // Get the method FunctionType description.
           const className = this._classesByName.get(mcObject._interface);
@@ -188,8 +183,6 @@ export default class ServerComponent {
           returnVal = mcObject[message.method].apply(mcObject, mcTransfomedArgs);
           break;
         case 'NewObject':
-          timingTracker = startTracking(`service-framework:new:${message.interface}`);
-
           const classDefinition = this._classesByName.get(message.interface);
           invariant(classDefinition != null);
           const {
@@ -219,8 +212,6 @@ export default class ServerComponent {
           break;
         case 'DisposeObject':
           const objectId = message.objectId;
-          const interfaceName = this._objectRegistry.get(objectId)._interface;
-          timingTracker = startTracking(`service-framework:dispose:${interfaceName}`);
           await this._objectRegistry.disposeObject(objectId);
 
           // Call the object's local dispose function.
@@ -248,12 +239,10 @@ export default class ServerComponent {
 
     switch (returnType.kind) {
       case 'void':
-        if (timingTracker != null) {
-          if (callError != null) {
-            timingTracker.onError(callError);
-          } else {
-            timingTracker.onSuccess();
-          }
+        if (hadError) {
+          timingTracker.onError(callError == null ? new Error() : callError);
+        } else {
+          timingTracker.onSuccess();
         }
         break; // No need to send anything back to the user.
       case 'promise':
@@ -283,9 +272,7 @@ export default class ServerComponent {
             hadError: false,
           };
           client.sendSocketMessage(resultMessage);
-          if (timingTracker != null) {
-            timingTracker.onSuccess();
-          }
+          timingTracker.onSuccess();
         }, error => {
           const errorMessage: ErrorResponseMessage = {
             channel: 'service_framework3_rpc',
@@ -295,19 +282,15 @@ export default class ServerComponent {
             error: formatError(error),
           };
           client.sendSocketMessage(errorMessage);
-          if (timingTracker != null) {
-            timingTracker.onError(error);
-          }
+          timingTracker.onError(error == null ? new Error() : error);
         });
         break;
       case 'observable':
         // If there was an error executing the command, we send that back as an error Observable.
         if (hadError) {
           returnVal = Observable.throw(callError);
-          if (timingTracker != null && callError != null) {
-            timingTracker.onError(callError);
-          }
-        } else if (timingTracker != null) {
+          timingTracker.onError(callError == null ? new Error() : callError);
+        } else {
           timingTracker.onSuccess();
         }
 
@@ -368,6 +351,26 @@ export default class ServerComponent {
     const result = this._functionsByName.get(name);
     invariant(result);
     return result;
+  }
+
+  trackingIdOfMessage(message: RequestMessage): string {
+    switch (message.type) {
+      case 'FunctionCall':
+        return `service-framework:${message.function}`;
+      case 'MethodCall':
+        const mcObject = this._objectRegistry.get(message.objectId);
+        invariant(mcObject != null);
+        return `service-framework:${mcObject._interface}.${message.method}`;
+      case 'NewObject':
+        return `service-framework:new:${message.interface}`;
+      case 'DisposeObject':
+        const interfaceName = this._objectRegistry.get(message.objectId)._interface;
+        return `service-framework:dispose:${interfaceName}`;
+      case 'DisposeObservable':
+        return `service-framework:disposeObservable`;
+      default:
+        throw new Error(`Unkown message type ${message.type}`);
+    }
   }
 }
 
