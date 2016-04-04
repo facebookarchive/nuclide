@@ -13,6 +13,7 @@ module.exports = {
   activate() {
     const {registerGrammarForFileExtension} = require('../../nuclide-atom-helpers');
     registerGrammarForFileExtension('source.python', 'BUCK');
+    registerGrammarForFileExtension('source.json', 'BUCK.autodeps');
     registerGrammarForFileExtension('source.ini', '.buckconfig');
   },
 

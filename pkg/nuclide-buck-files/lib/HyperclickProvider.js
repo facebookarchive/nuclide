@@ -13,10 +13,10 @@ type Target = {path: string; name: string};
 
 import type {BuckProject} from '../../nuclide-buck-base/lib/BuckProject';
 
-const {isBuckFile} = require('../../nuclide-buck-base');
 const {buckProjectRootForPath} = require('../../nuclide-buck-commons');
 const {fsPromise} = require('../../nuclide-commons');
 const {goToLocation, extractWordAtPosition} = require('../../nuclide-atom-helpers');
+const pathModule = require('path');
 
 import type {Point} from 'atom';
 
@@ -112,7 +112,8 @@ module.exports = {
       return null;
     }
 
-    if (!isBuckFile(absolutePath)) {
+    const baseName = pathModule.basename(absolutePath);
+    if (baseName !== 'BUCK' && baseName !== 'BUCK.autodeps') {
       return null;
     }
 
