@@ -260,24 +260,10 @@ export default class ServerComponent {
 
         // Send the result of the promise across the socket.
         returnVal.then(result => {
-          const resultMessage: PromiseResponseMessage = {
-            channel: 'service_framework3_rpc',
-            type: 'PromiseMessage',
-            requestId,
-            result,
-            hadError: false,
-          };
-          client.sendSocketMessage(resultMessage);
+          client.sendSocketMessage(createPromiseMessage(requestId, result));
           timingTracker.onSuccess();
         }, error => {
-          const errorMessage: ErrorResponseMessage = {
-            channel: 'service_framework3_rpc',
-            type: 'ErrorMessage',
-            requestId,
-            hadError: true,
-            error: formatError(error),
-          };
-          client.sendSocketMessage(errorMessage);
+          client.sendSocketMessage(createErrorMessage(requestId, error));
           timingTracker.onError(error == null ? new Error() : error);
         });
         break;
@@ -304,36 +290,12 @@ export default class ServerComponent {
 
         // Send the next, error, and completion events of the observable across the socket.
         const subscription = returnObservable.subscribe(data => {
-          const eventMessage: ObservableResponseMessage = {
-            channel: 'service_framework3_rpc',
-            type: 'ObservableMessage',
-            requestId,
-            hadError: false,
-            result: {
-              type: 'next',
-              data: data,
-            },
-          };
-          client.sendSocketMessage(eventMessage);
+          client.sendSocketMessage(createNextMessage(requestId, data));
         }, error => {
-          const errorMessage: ErrorResponseMessage = {
-            channel: 'service_framework3_rpc',
-            type: 'ErrorMessage',
-            requestId,
-            hadError: true,
-            error: formatError(error),
-          };
-          client.sendSocketMessage(errorMessage);
+          client.sendSocketMessage(createErrorMessage(requestId, error));
           this._objectRegistry.removeSubscription(requestId);
         }, completed => {
-          const eventMessage: ObservableResponseMessage = {
-            channel: 'service_framework3_rpc',
-            type: 'ObservableMessage',
-            requestId,
-            hadError: false,
-            result: { type: 'completed' },
-          };
-          client.sendSocketMessage(eventMessage);
+          client.sendSocketMessage(createCompletedMessage(requestId));
           this._objectRegistry.removeSubscription(requestId);
         });
         this._objectRegistry.addSubscription(requestId, subscription);
@@ -398,11 +360,54 @@ function isObservable(object: any): boolean {
   return Boolean(object && object.concatMap && object.subscribe);
 }
 
+function createPromiseMessage(requestId: number, result: any): PromiseResponseMessage {
+  return {
+    channel: 'service_framework3_rpc',
+    type: 'PromiseMessage',
+    requestId,
+    result,
+    hadError: false,
+  };
+}
+
+function createNextMessage(requestId: number, data: any): ObservableResponseMessage {
+  return {
+    channel: 'service_framework3_rpc',
+    type: 'ObservableMessage',
+    requestId,
+    hadError: false,
+    result: {
+      type: 'next',
+      data: data,
+    },
+  };
+}
+
+function createCompletedMessage(requestId: number): ObservableResponseMessage {
+  return {
+    channel: 'service_framework3_rpc',
+    type: 'ObservableMessage',
+    requestId,
+    hadError: false,
+    result: { type: 'completed' },
+  };
+}
+
+function createErrorMessage(requestId: number, error: any): ErrorResponseMessage {
+  return {
+    channel: 'service_framework3_rpc',
+    type: 'ErrorMessage',
+    requestId,
+    hadError: true,
+    error: formatError(error),
+  };
+}
+
 /**
  * Format the error before sending over the web socket.
  * TODO: This should be a custom marshaller registered in the TypeRegistry
  */
-function formatError(error): ?(Object | string) {
+function formatError(error: any): ?(Object | string) {
   if (error instanceof Error) {
     return {
       message: error.message,
