@@ -75,6 +75,7 @@ export class AtomTextEditor extends React.Component {
   _textEditorElement: ?atom$TextEditorElement;
 
   static propTypes = {
+    className: PropTypes.string,
     gutterHidden: PropTypes.bool.isRequired,
     grammar: PropTypes.object,
     path: PropTypes.string,
@@ -166,9 +167,13 @@ export class AtomTextEditor extends React.Component {
   }
 
   render(): ReactElement {
-    const className = classnames('nuclide-text-editor-container', {
-      'no-auto-grow': !this.props.autoGrow,
-    });
+    const className = classnames(
+      this.props.className,
+      'nuclide-text-editor-container',
+      {
+        'no-auto-grow': !this.props.autoGrow,
+      },
+    );
     return (
       <div className={className} />
     );

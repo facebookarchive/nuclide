@@ -36,7 +36,8 @@ class TypeHintManager {
   }
 
   async datatip(editor: TextEditor, position: atom$Point): Promise<?Datatip> {
-    const {scopeName} = editor.getGrammar();
+    const grammar = editor.getGrammar();
+    const {scopeName} = grammar;
     const [provider] = this._getMatchingProvidersForScopeName(scopeName);
     if (provider == null) {
       return null;
@@ -65,7 +66,7 @@ class TypeHintManager {
       'message': hint,
     });
     return {
-      component: <TypeHintComponent content={hintTree || hint} />,
+      component: <TypeHintComponent content={hintTree || hint} grammar={grammar} />,
       range,
     };
   }

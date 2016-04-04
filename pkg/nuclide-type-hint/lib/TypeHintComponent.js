@@ -11,10 +11,13 @@
 
 import type {HintTree} from '../../nuclide-type-hint-interfaces';
 
+import {TextBuffer} from 'atom';
 import {React} from 'react-for-atom';
+import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 
 type TypeHintComponentProps = {
   content: string | HintTree;
+  grammar: atom$Grammar;
 }
 
 type TypeHintComponentState = {
@@ -33,10 +36,20 @@ export class TypeHintComponent extends React.Component {
   }
 
   renderPrimitive(value: string): ReactElement {
+    const buffer = new TextBuffer(value);
+    const {grammar} = this.props;
     return (
-      <li className="list-item">
-        <span>{value}</span>
-      </li>
+      <div className="nuclide-type-hint-text-editor-container">
+        <AtomTextEditor
+          className="nuclide-type-hint-text-editor"
+          gutterHidden={true}
+          readOnly={true}
+          syncTextContents={false}
+          autoGrow={true}
+          grammar={grammar}
+          textBuffer={buffer}
+        />
+      </div>
     );
   }
 
@@ -82,12 +95,12 @@ export class TypeHintComponent extends React.Component {
   }
 
   render(): ReactElement {
-    const result = typeof this.props.content === 'string'
-      ? this.renderPrimitive(this.props.content)
-      : this.renderHierarchical(this.props.content);
+    if (typeof this.props.content === 'string') {
+      return this.renderPrimitive(this.props.content);
+    }
     return (
       <ul className="list-tree">
-        {result}
+        {this.renderHierarchical(this.props.content)}
       </ul>
     );
   }

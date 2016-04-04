@@ -15,6 +15,23 @@
   cursor: pointer;
 }
 
+.nuclide-type-hint-text-editor-container {
+  display: flex;
+  flex-grow: 1;
+  max-width: 60em;
+  overflow-x: scroll;
+}
+
+.nuclide-type-hint-text-editor atom-text-editor {
+  background-color: transparent;
+  min-width: 1em; // Hack to force the AtomTextEditor to properly size itself
+  padding: 2px 0 2px 4px;
+
+  &::shadow .editor-contents--private {
+    cursor: inherit!important; // Let the enclosing datatip override the cursor.
+  }
+}
+
 atom-text-editor::shadow .nuclide-type-hint-highlight-region > .region {
   background: @background-color-highlight;
 }
