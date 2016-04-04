@@ -1,0 +1,34 @@
+@import "ui-variables";
+
+.nuclide-ui-toolbar {
+  display: flex;
+  height: 26px;
+  line-height: 22px;
+  padding: 0 12.5px;
+}
+
+.nuclide-ui-toolbar--bottom {
+  border-top: 1px solid @pane-item-border-color;
+}
+
+.nuclide-ui-toolbar--top {
+  border-bottom: 1px solid @pane-item-border-color;
+}
+
+.nuclide-ui-toolbar__center,
+.nuclide-ui-toolbar__left,
+.nuclide-ui-toolbar__right {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.nuclide-ui-toolbar__center {
+  justify-content: center;
+}
+
+.nuclide-ui-toolbar__right {
+  justify-content: flex-end;
+}

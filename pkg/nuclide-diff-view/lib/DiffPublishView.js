@@ -18,6 +18,9 @@ import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 import classnames from 'classnames';
 import {PublishMode, PublishModeState} from './constants';
 import {React} from 'react-for-atom';
+import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
+import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
+import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
 
 type DiffRevisionViewProps = {
   revision: RevisionInfo;
@@ -137,14 +140,14 @@ class DiffPublishView extends React.Component {
             gutterHidden={true}
           />
         </div>
-        <div className="nuclide-diff-view-toolbar nuclide-diff-view-toolbar-bottom">
-          <div className="nuclide-diff-view-toolbar-left">
+        <Toolbar location="bottom">
+          <ToolbarLeft>
             {revisionView}
-          </div>
-          <div className="nuclide-diff-view-toolbar-right">
+          </ToolbarLeft>
+          <ToolbarRight>
             {publishButton}
-          </div>
-        </div>
+          </ToolbarRight>
+        </Toolbar>
       </div>
     );
   }

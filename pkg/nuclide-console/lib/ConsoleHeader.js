@@ -10,6 +10,8 @@
  */
 
 import {React} from 'react-for-atom';
+import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
+import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
 
 type Props = {
   clear: () => void;
@@ -23,21 +25,20 @@ export default class ConsoleHeader extends React.Component {
     (this: any)._handleClearButtonClick = this._handleClearButtonClick.bind(this);
   }
 
-  render(): ?ReactElement {
-    return (
-      <div className="nuclide-console-header padded">
-        <button
-          className="btn btn-sm icon inline-block btn-secondary pull-right"
-          onClick={this._handleClearButtonClick}>
-          Clear
-        </button>
-      </div>
-    );
-  }
-
-
   _handleClearButtonClick(event: SyntheticMouseEvent): void {
     this.props.clear();
+  }
+
+  render(): ?ReactElement {
+    return (
+      <Toolbar location="top">
+        <ToolbarRight>
+          <button className="btn btn-sm icon btn-secondary" onClick={this._handleClearButtonClick}>
+            Clear
+          </button>
+        </ToolbarRight>
+      </Toolbar>
+    );
   }
 
 }

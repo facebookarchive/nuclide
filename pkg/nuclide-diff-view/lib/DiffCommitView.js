@@ -16,8 +16,10 @@ import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import classnames from 'classnames';
 import {CommitMode, CommitModeState} from './constants';
-
 import {React} from 'react-for-atom';
+import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
+import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
+import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
 
 type Props = {
   commitMessage: ?string;
@@ -83,24 +85,24 @@ class DiffCommitView extends React.Component {
             ref="message"
           />
         </div>
-        <div className="nuclide-diff-view-toolbar nuclide-diff-view-toolbar-bottom">
-          <div className="nuclide-diff-view-toolbar-left">
+        <Toolbar location="bottom">
+          <ToolbarLeft>
             <Checkbox
               checked={this.props.commitMode === CommitMode.AMEND}
               disabled={isLoading}
               label="Amend"
               onChange={this._onToggleAmend}
             />
-          </div>
-          <div className="nuclide-diff-view-toolbar-right">
+          </ToolbarLeft>
+          <ToolbarRight>
             <button
               className={btnClassname}
               disabled={isLoading}
               onClick={this._onClickCommit}>
               {message}
             </button>
-          </div>
-        </div>
+          </ToolbarRight>
+        </Toolbar>
       </div>
     );
   }

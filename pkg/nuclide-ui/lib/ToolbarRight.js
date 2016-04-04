@@ -15,13 +15,10 @@ type Props = {
   children: ReactElement;
 };
 
-/**
- * Visually groups Buttons passed in as children.
- */
 /* eslint-disable react/prop-types */
-export const ButtonToolbar = (props: Props) => {
+export const ToolbarRight = (props: Props) => {
   return (
-    <div className="btn-toolbar">
+    <div className="nuclide-ui-toolbar__right">
       {props.children}
     </div>
   );

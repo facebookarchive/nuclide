@@ -9,19 +9,22 @@
  * the root directory of this source tree.
  */
 
+import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
 type Props = {
   children: ReactElement;
+  location?: 'top' | 'bottom';
 };
 
-/**
- * Visually groups Buttons passed in as children.
- */
 /* eslint-disable react/prop-types */
-export const ButtonToolbar = (props: Props) => {
+export const Toolbar = (props: Props) => {
+  const className = classnames('nuclide-ui-toolbar', {
+    [`nuclide-ui-toolbar--${props.location}`]: props.location != null,
+  });
+
   return (
-    <div className="btn-toolbar">
+    <div className={className}>
       {props.children}
     </div>
   );

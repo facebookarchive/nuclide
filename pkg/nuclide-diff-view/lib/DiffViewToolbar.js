@@ -12,9 +12,13 @@
 import type {DiffModeType} from './types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
+import classnames from 'classnames';
 import {DiffMode} from './constants';
 import {React} from 'react-for-atom';
-import classnames from 'classnames';
+import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
+import {ToolbarCenter} from '../../nuclide-ui/lib/ToolbarCenter';
+import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
+import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
 
 type Props = {
   diffMode: DiffModeType;
@@ -47,18 +51,18 @@ class DiffViewToolbar extends React.Component {
     });
 
     return (
-      <div className="nuclide-diff-view-toolbar nuclide-diff-view-toolbar-top">
-        <div className="nuclide-diff-view-toolbar-left">
+      <Toolbar location="top">
+        <ToolbarLeft>
           <div className="btn-group btn-group-sm">
             {modes}
           </div>
-        </div>
-        <div className="nuclide-diff-view-toolbar-center">
+        </ToolbarLeft>
+        <ToolbarCenter>
           {this.props.oldRevisionTitle == null ? '?' : this.props.oldRevisionTitle}
           {'...'}
           {this.props.newRevisionTitle == null ? '?' : this.props.newRevisionTitle}
-        </div>
-        <div className="nuclide-diff-view-toolbar-right">
+        </ToolbarCenter>
+        <ToolbarRight>
           <div className="btn-group btn-group-sm">
             <button
               className="btn"
@@ -67,8 +71,8 @@ class DiffViewToolbar extends React.Component {
               Goto Editor
             </button>
           </div>
-        </div>
-      </div>
+        </ToolbarRight>
+      </Toolbar>
     );
   }
 }
