@@ -99,9 +99,9 @@ export default class ServerComponent {
               definition,
             });
 
-            this._typeRegistry.registerType(name, async object => {
+            this._typeRegistry.registerType(name, object => {
               return this._objectRegistry.add(name, object);
-            }, async objectId => this._objectRegistry.get(objectId));
+            }, objectId => this._objectRegistry.get(objectId));
 
             // Register all of the static methods as remote functions.
             definition.staticMethods.forEach((funcType, funcName) => {

@@ -68,9 +68,9 @@ export default class ClientComponent {
             break;
           case 'interface':
             logger.debug(`Registering interface ${name}.`);
-            this._typeRegistry.registerType(name, async object => {
-              return await object._idPromise;
-            }, async objectId => {
+            this._typeRegistry.registerType(name, object => {
+              return object._idPromise;
+            }, objectId => {
               // Return a cached proxy, if one already exists, for this object.
               if (this._objectRegistry.has(objectId)) {
                 return this._objectRegistry.get(objectId);
