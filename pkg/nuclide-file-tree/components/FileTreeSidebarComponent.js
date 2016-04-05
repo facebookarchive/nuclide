@@ -15,7 +15,7 @@ import {
 } from 'react-for-atom';
 import FileTree from './FileTree';
 import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
-import FileTreeStore from '../lib/FileTreeStore';
+import {FileTreeStore} from '../lib/FileTreeStore';
 import {CompositeDisposable} from 'atom';
 import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
 
@@ -74,14 +74,14 @@ class FileTreeSidebarComponent extends React.Component {
         tabIndex={0}>
         {toolbar}
         <PanelComponentScroller>
-          <FileTree nodeToKeepInView={this._store.getTrackedNode()} ref="fileTree" />
+          <FileTree ref="fileTree" />
         </PanelComponentScroller>
       </div>
     );
   }
 
   _processExternalUpdate(): void {
-    const shouldRenderToolbar = this._store.getRootKeys().length !== 0;
+    const shouldRenderToolbar = !this._store.roots.isEmpty();
 
     if (shouldRenderToolbar !== this.state.shouldRenderToolbar) {
       this.setState({shouldRenderToolbar});

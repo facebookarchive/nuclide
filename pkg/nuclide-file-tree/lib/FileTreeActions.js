@@ -16,13 +16,15 @@ import {debounce} from '../../nuclide-commons';
 import {Disposable} from 'atom';
 import FileTreeDispatcher from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
-import FileTreeStore from './FileTreeStore';
+import {FileTreeStore} from './FileTreeStore';
 import Immutable from 'immutable';
 import {object} from '../../nuclide-commons';
 import semver from 'semver';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+import {hgConstants} from '../../nuclide-hg-repository-base';
 
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
+import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
 import type {WorkingSet} from '../../nuclide-working-sets';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore';
 
@@ -95,15 +97,10 @@ class FileTreeActions {
   // Makes sure a specific child exists for a given node. If it does not exist, temporarily
   // create it and initiate a fetch. This feature is exclusively for expanding to a node deep
   // in a tree.
-  ensureChildNode(rootKey: string, nodeKey: string, childKey: string): void {
-    if (this._store.getChildKeys(rootKey, nodeKey).indexOf(childKey) !== -1) {
-      return;
-    }
+  ensureChildNode(nodeKey: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.CREATE_CHILD,
-      rootKey,
+      actionType: ActionType.ENSURE_CHILD_NODE,
       nodeKey,
-      childKey,
     });
   }
 
@@ -120,20 +117,6 @@ class FileTreeActions {
       actionType: ActionType.COLLAPSE_NODE_DEEP,
       rootKey,
       nodeKey,
-    });
-  }
-
-  toggleSelectNode(rootKey: string, nodeKey: string): void {
-    let nodeKeys = this._store.getSelectedKeys(rootKey);
-    if (nodeKeys.has(nodeKey)) {
-      nodeKeys = nodeKeys.delete(nodeKey);
-    } else {
-      nodeKeys = nodeKeys.add(nodeKey);
-    }
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_SELECTED_NODES_FOR_ROOT,
-      rootKey,
-      nodeKeys,
     });
   }
 
@@ -180,19 +163,13 @@ class FileTreeActions {
     });
   }
 
-  selectSingleNode(rootKey: string, nodeKey: string): void {
-    const selectedKeysByRoot = {};
-    selectedKeysByRoot[rootKey] = new Immutable.Set([nodeKey]);
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_SELECTED_NODES_FOR_TREE,
-      selectedKeysByRoot,
-    });
-  }
-
   confirmNode(rootKey: string, nodeKey: string, pending: boolean = false): void {
-    const isDirectory = FileTreeHelpers.isDirKey(nodeKey);
-    if (isDirectory) {
-      const actionType = this._store.isExpanded(rootKey, nodeKey) ?
+    const node = this._store.getNode(rootKey, nodeKey);
+    if (node == null) {
+      return;
+    }
+    if (node.isContainer) {
+      const actionType = node.isExpanded ?
         ActionType.COLLAPSE_NODE :
         ActionType.EXPAND_NODE;
       this._dispatcher.dispatch({
@@ -240,7 +217,7 @@ class FileTreeActions {
     );
   }
 
-  setVcsStatuses(rootKey: string, vcsStatuses: {[path: string]: number}): void {
+  setVcsStatuses(rootKey: string, vcsStatuses: {[path: string]: StatusCodeNumberValue}): void {
     this._dispatcher.dispatch({
       actionType: ActionType.SET_VCS_STATUSES,
       rootKey,
@@ -349,6 +326,54 @@ class FileTreeActions {
     });
   }
 
+  setSelectedNode(rootKey: string, nodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_SELECTED_NODE,
+      rootKey,
+      nodeKey,
+    });
+  }
+
+  addSelectedNode(rootKey: string, nodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.ADD_SELECTED_NODE,
+      rootKey,
+      nodeKey,
+    });
+  }
+
+  unselectNode(rootKey: string, nodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.UNSELECT_NODE,
+      rootKey,
+      nodeKey,
+    });
+  }
+
+  moveSelectionUp(): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.MOVE_SELECTION_UP,
+    });
+  }
+
+  moveSelectionDown(): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.MOVE_SELECTION_DOWN,
+    });
+  }
+
+  moveSelectionToTop(): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.MOVE_SELECTION_TO_TOP,
+    });
+  }
+
+  moveSelectionToBottom(): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.MOVE_SELECTION_TO_BOTTOM,
+    });
+  }
+
   async _repositoryAdded(
     repo: atom$Repository,
     rootKeysForRepository: Immutable.Map<atom$Repository, Immutable.Set<string>>,
@@ -363,50 +388,15 @@ class FileTreeActions {
     // At this point, we assume that repo is a Nuclide HgRepositoryClient.
 
     // First, get the output of `hg status` for the repository.
-    const {hgConstants} = require('../../nuclide-hg-repository-base');
     // TODO(mbolin): Verify that all of this is set up correctly for remote files.
     const repoRoot = hgRepo.getWorkingDirectory();
     const statusCodeForPath = await hgRepo.getStatuses([repoRoot], {
       hgStatusOption: hgConstants.HgStatusOption.ONLY_NON_IGNORED,
     });
 
-    // From the initial result of `hg status`, record the status code for every file in
-    // statusCodeForPath in the statusesToReport map. If the file is modified, also mark every
-    // parent directory (up to the repository root) of that file as modified, as well. For now, we
-    // mark only new files, but not new directories.
-    const statusesToReport = {};
-    statusCodeForPath.forEach((statusCode, path) => {
-      if (hgRepo.isStatusModified(statusCode)) {
-        statusesToReport[path] = statusCode;
-
-        // For modified files, every parent directory should also be flagged as modified.
-        let nodeKey: string = path;
-        const keyForRepoRoot = FileTreeHelpers.dirPathToKey(repoRoot);
-        do {
-          const parentKey = FileTreeHelpers.getParentKey(nodeKey);
-          if (parentKey == null) {
-            break;
-          }
-
-          nodeKey = parentKey;
-          if (statusesToReport.hasOwnProperty(nodeKey)) {
-            // If there is already an entry for this parent file in the statusesToReport map, then
-            // there is no reason to continue exploring ancestor directories.
-            break;
-          } else {
-            statusesToReport[nodeKey] = hgConstants.StatusCodeNumber.MODIFIED;
-          }
-        } while (nodeKey !== keyForRepoRoot);
-      } else if (statusCode === hgConstants.StatusCodeNumber.ADDED) {
-        statusesToReport[path] = statusCode;
-      }
-    });
     for (const rootKeyForRepo of rootKeysForRepository.get(hgRepo)) {
-      this.setVcsStatuses(rootKeyForRepo, statusesToReport);
+      this.setVcsStatuses(rootKeyForRepo, statusCodeForPath);
     }
-
-    // TODO: Call getStatuses with <visible_nodes, hgConstants.HgStatusOption.ONLY_IGNORED>
-    // to determine which nodes in the tree need to be shown as ignored.
 
     // Now that the initial VCS statuses are set, subscribe to changes to the Repository so that the
     // VCS statuses are kept up to date.
@@ -428,14 +418,7 @@ class FileTreeActions {
     rootKeysForRepository: Immutable.Map<atom$Repository, Immutable.Set<string>>,
   ): void {
     for (const rootKey of rootKeysForRepository.get(repo)) {
-      const statusForNodeKey = {};
-      for (const fileTreeNode of this._store.getVisibleNodes(rootKey)) {
-        const {nodeKey} = fileTreeNode;
-        statusForNodeKey[nodeKey] = fileTreeNode.isContainer
-          ? repo.getDirectoryStatus(nodeKey)
-          : statusForNodeKey[nodeKey] = repo.getCachedPathStatus(nodeKey);
-      }
-      this.setVcsStatuses(rootKey, statusForNodeKey);
+      this.setVcsStatuses(rootKey, repo.getAllPathStatuses());
     }
   }
 

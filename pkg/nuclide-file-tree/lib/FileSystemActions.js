@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type FileTreeNode from './FileTreeNode';
+import type {FileTreeNode} from './FileTreeNode';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {RemoteFile} from '../../nuclide-remote-connection';
 
 import FileDialogComponent from '../components/FileDialogComponent';
 import FileTreeHelpers from './FileTreeHelpers';
-import FileTreeStore from './FileTreeStore';
+import {FileTreeStore} from './FileTreeStore';
 import {
   React,
   ReactDOM,
@@ -45,7 +45,7 @@ const FileSystemActions = {
     }
     this._openAddDialog(
       'folder',
-      node.getLocalPath() + '/',
+      node.localPath + '/',
       async (filePath: string, options: Object) => {
         // Prevent submission of a blank field from creating a directory.
         if (filePath === '') {
@@ -53,7 +53,7 @@ const FileSystemActions = {
         }
 
         // TODO: check if filePath is in rootKey and if not, find the rootKey it belongs to.
-        const directory = FileTreeHelpers.getDirectoryByKey(node.nodeKey);
+        const directory = FileTreeHelpers.getDirectoryByKey(node.uri);
         if (directory == null) {
           return;
         }
@@ -84,7 +84,7 @@ const FileSystemActions = {
     }
     this._openAddDialog(
       'file',
-      node.getLocalPath() + pathModule.sep,
+      node.localPath + pathModule.sep,
       async (filePath: string, options: {addToVCS?: boolean}) => {
         // Prevent submission of a blank field from creating a file.
         if (filePath === '') {
@@ -92,7 +92,7 @@ const FileSystemActions = {
         }
 
         // TODO: check if filePath is in rootKey and if not, find the rootKey it belongs to.
-        const directory = FileTreeHelpers.getDirectoryByKey(node.nodeKey);
+        const directory = FileTreeHelpers.getDirectoryByKey(node.uri);
         if (directory == null) {
           return;
         }
@@ -120,11 +120,11 @@ const FileSystemActions = {
   },
 
   _getHgRepositoryForNode(node: FileTreeNode): ?HgRepositoryClient {
-    const entry = FileTreeHelpers.getEntryByKey(node.nodeKey);
-    if (entry == null) {
-      return null;
+    const repository = node.repo;
+    if (repository != null && repository.getType() === 'hg') {
+      return ((repository: any): HgRepositoryClient);
     }
-    return this._getHgRepositoryForPath(entry.getPath());
+    return null;
   },
 
   _getHgRepositoryForPath(filePath: string): ?HgRepositoryClient {
@@ -140,7 +140,7 @@ const FileSystemActions = {
     nodePath: string,
     newBasename: string,
   ): Promise<void> {
-    const entry = FileTreeHelpers.getEntryByKey(node.nodeKey);
+    const entry = FileTreeHelpers.getEntryByKey(node.uri);
     if (entry == null) {
       // TODO: Connection could have been lost for remote file.
       return;
@@ -220,7 +220,7 @@ const FileSystemActions = {
     }
 
     const node = selectedNodes.first();
-    const nodePath = node.getLocalPath();
+    const nodePath = node.localPath;
     this._openDialog({
       iconClassName: 'icon-arrow-right',
       initialValue: pathModule.basename(nodePath),
@@ -246,7 +246,7 @@ const FileSystemActions = {
     }
 
     const node = selectedNodes.first();
-    const nodePath = node.getLocalPath();
+    const nodePath = node.localPath;
     let initialValue = pathModule.basename(nodePath);
     const ext = pathModule.extname(nodePath);
     initialValue = initialValue.substr(0, initialValue.length - ext.length) + '-copy' + ext;
@@ -260,7 +260,7 @@ const FileSystemActions = {
       initialValue: initialValue,
       message: <span>Enter the new path for the duplicate.</span>,
       onConfirm: (newBasename: string, options: {addToVCS?: boolean}) => {
-        const file = FileTreeHelpers.getFileByKey(node.nodeKey);
+        const file = FileTreeHelpers.getFileByKey(node.uri);
         if (file == null) {
           // TODO: Connection could have been lost for remote file.
           return;
@@ -288,16 +288,8 @@ const FileSystemActions = {
      * selected keys should be maintained as a flat list across all roots to maintain insertion
      * order.
      */
-    const nodeKey = store.getSelectedKeys().last();
-    if (nodeKey == null) {
-      return null;
-    }
-    const rootKey = store.getRootForKey(nodeKey);
-    if (rootKey == null) {
-      return null;
-    }
-    const node = store.getNode(rootKey, nodeKey);
-    return node.isContainer ? node : node.getParentNode();
+    const node = store.getSelectedNodes().first();
+    return node.isContainer ? node : node.parent;
   },
 
   _openAddDialog(

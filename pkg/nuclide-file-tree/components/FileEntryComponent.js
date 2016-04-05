@@ -9,40 +9,26 @@
  * the root directory of this source tree.
  */
 
-const FileTreeActions = require('../lib/FileTreeActions');
-const {
-  PureRenderMixin,
-  React,
-} = require('react-for-atom');
-const {StatusCodeNumber} = require('../../nuclide-hg-repository-base').hgConstants;
-
-const classnames = require('classnames');
-const {fileTypeClass} = require('../../nuclide-atom-helpers');
-const {isContextClick} = require('../lib/FileTreeHelpers');
-const {Checkbox} = require('../../nuclide-ui/lib/Checkbox');
-
-const {PropTypes} = React;
+import FileTreeActions from '../lib/FileTreeActions';
+import {React, ReactDOM} from 'react-for-atom';
+import classnames from 'classnames';
+import {fileTypeClass} from '../../nuclide-atom-helpers';
+import {isContextClick} from '../lib/FileTreeHelpers';
+import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
+import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
+import type {FileTreeNode} from '../lib/FileTreeNode';
 
 const getActions = FileTreeActions.getInstance;
 
-// Additional indent for nested tree nodes
-const INDENT_PER_LEVEL = 17;
+type Props = {
+  node: FileTreeNode;
+};
 
-class FileEntryComponent extends React.Component {
-  static propTypes = {
-    indentLevel: PropTypes.number.isRequired,
-    isSelected: PropTypes.bool.isRequired,
-    usePreviewTabs: PropTypes.bool.isRequired,
-    nodeKey: PropTypes.string.isRequired,
-    nodeName: PropTypes.string.isRequired,
-    nodePath: PropTypes.string.isRequired,
-    rootKey: PropTypes.string.isRequired,
-    vcsStatusCode: PropTypes.number,
-    checkedStatus: PropTypes.oneOf(['checked', 'clear', '']).isRequired,
-    soften: PropTypes.bool.isRequired,
-  };
+export class FileEntryComponent extends React.Component {
+  props: Props;
+  _animationFrameRequestId: ?number;
 
-  constructor(props: Object) {
+  constructor(props: Props) {
     super(props);
     (this: any)._onClick = this._onClick.bind(this);
     (this: any)._checkboxOnChange = this._checkboxOnChange.bind(this);
@@ -51,19 +37,38 @@ class FileEntryComponent extends React.Component {
     (this: any)._onDoubleClick = this._onDoubleClick.bind(this);
   }
 
-  shouldComponentUpdate(nextProps: Object, nextState: void) {
-    return PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
+  shouldComponentUpdate(nextProps: Props, nextState: void): boolean {
+    return this.props.node !== nextProps.node;
+  }
+
+  scrollTrackedIntoView(): void {
+    if (this.props.node.isTracked) {
+      if (this._animationFrameRequestId != null) {
+        return;
+      }
+
+      this._animationFrameRequestId = window.requestAnimationFrame(() => {
+        ReactDOM.findDOMNode(this).scrollIntoViewIfNeeded();
+        this._animationFrameRequestId = null;
+      });
+    }
+  }
+
+  componentWillUnmount(): void {
+    if (this._animationFrameRequestId != null) {
+      window.cancelAnimationFrame(this._animationFrameRequestId);
+    }
   }
 
   render(): ReactElement {
     const outerClassName = classnames('entry file list-item', {
-      'selected': this.props.isSelected,
-      'nuclide-file-tree-softened': this.props.soften,
+      'selected': this.props.node.isSelected,
+      'nuclide-file-tree-softened': this.props.node.shouldBeSoftened,
     });
 
     let statusClass;
-    if (this.props.checkedStatus === '') {
-      const {vcsStatusCode} = this.props;
+    if (!this.props.node.conf.isEditingWorkingSet) {
+      const vcsStatusCode = this.props.node.vcsStatusCode;
       if (vcsStatusCode === StatusCodeNumber.MODIFIED) {
         statusClass = 'status-modified';
       } else if (vcsStatusCode === StatusCodeNumber.ADDED) {
@@ -72,7 +77,7 @@ class FileEntryComponent extends React.Component {
         statusClass = '';
       }
     } else {
-      switch (this.props.checkedStatus) {
+      switch (this.props.node.checkedStatus) {
         case 'checked':
           statusClass = 'status-added';
           break;
@@ -85,19 +90,18 @@ class FileEntryComponent extends React.Component {
     return (
       <li
         className={`${outerClassName} ${statusClass}`}
-        style={{paddingLeft: this.props.indentLevel * INDENT_PER_LEVEL}}
         onClick={this._onClick}
         onMouseDown={this._onMouseDown}
         onDoubleClick={this._onDoubleClick}>
         <span
-          className={`icon name ${fileTypeClass(this.props.nodeName)}`}
-          data-name={this.props.nodeName}
-          data-path={this.props.nodePath}>
+          className={`icon name ${fileTypeClass(this.props.node.name)}`}
+          data-name={this.props.node.name}
+          data-path={this.props.node.uri}>
           {this._renderCheckbox()}
           <span
-            data-name={this.props.nodeName}
-            data-path={this.props.nodePath}>
-            {this.props.nodeName}
+            data-name={this.props.node.name}
+            data-path={this.props.node.uri}>
+            {this.props.node.name}
           </span>
         </span>
       </li>
@@ -105,13 +109,13 @@ class FileEntryComponent extends React.Component {
   }
 
   _renderCheckbox(): ?React.Element {
-    if (this.props.checkedStatus === '') {
+    if (!this.props.node.conf.isEditingWorkingSet) {
       return;
     }
 
     return (
       <Checkbox
-        checked={this.props.checkedStatus === 'checked'}
+        checked={this.props.node.checkedStatus === 'checked'}
         onChange={this._checkboxOnChange}
         onClick={this._checkboxOnClick}
       />
@@ -119,41 +123,51 @@ class FileEntryComponent extends React.Component {
   }
 
   _onClick(event: SyntheticMouseEvent) {
+    event.stopPropagation();
+
     const modifySelection = event.ctrlKey || event.metaKey;
     if (modifySelection) {
-      getActions().toggleSelectNode(this.props.rootKey, this.props.nodeKey);
-    } else {
-      if (!this.props.isSelected) {
-        getActions().selectSingleNode(this.props.rootKey, this.props.nodeKey);
+      if (this.props.node.isSelected) {
+        getActions().unselectNode(this.props.node.rootUri, this.props.node.uri);
+      } else {
+        getActions().addSelectedNode(this.props.node.rootUri, this.props.node.uri);
       }
-      if (this.props.usePreviewTabs) {
-        getActions().confirmNode(this.props.rootKey, this.props.nodeKey, /* pending */ true);
+    } else {
+      if (!this.props.node.isSelected) {
+        getActions().setSelectedNode(this.props.node.rootUri, this.props.node.uri);
+      }
+      if (this.props.node.conf.usePreviewTabs) {
+        getActions().confirmNode(this.props.node.rootUri, this.props.node.uri);
       }
     }
   }
 
   _onMouseDown(event: SyntheticMouseEvent) {
+    event.stopPropagation();
+
     // Select node on right-click (in order for context menu to behave correctly).
     if (isContextClick(event)) {
-      if (!this.props.isSelected) {
-        getActions().selectSingleNode(this.props.rootKey, this.props.nodeKey);
+      if (!this.props.node.isSelected) {
+        getActions().setSelectedNode(this.props.node.rootUri, this.props.node.uri);
       }
     }
   }
 
-  _onDoubleClick(): void {
-    if (this.props.usePreviewTabs) {
+  _onDoubleClick(event: SyntheticMouseEvent) {
+    event.stopPropagation();
+
+    if (this.props.node.conf.usePreviewTabs) {
       getActions().keepPreviewTab();
     } else {
-      getActions().confirmNode(this.props.rootKey, this.props.nodeKey);
+      getActions().confirmNode(this.props.node.rootUri, this.props.node.uri);
     }
   }
 
   _checkboxOnChange(isChecked: boolean): void {
     if (isChecked) {
-      getActions().checkNode(this.props.rootKey, this.props.nodeKey);
+      getActions().checkNode(this.props.node.rootUri, this.props.node.uri);
     } else {
-      getActions().uncheckNode(this.props.rootKey, this.props.nodeKey);
+      getActions().uncheckNode(this.props.node.rootUri, this.props.node.uri);
     }
   }
 
@@ -161,5 +175,3 @@ class FileEntryComponent extends React.Component {
     event.stopPropagation();
   }
 }
-
-module.exports = FileEntryComponent;

@@ -11,7 +11,7 @@
 
 import {CompositeDisposable} from 'atom';
 import {EVENT_HANDLER_SELECTOR} from './FileTreeConstants';
-import FileTreeStore from './FileTreeStore';
+import {FileTreeStore} from './FileTreeStore';
 
 import path from 'path';
 
@@ -46,7 +46,7 @@ class FileTreeContextMenu {
         command: 'nuclide-file-tree:set-current-working-root',
         shouldDisplay: () => {
           const node = this._store.getSingleSelectedNode();
-          return node != null && node.isRoot && this._store.hasCwd() && !node.isCwd();
+          return node != null && node.isRoot && this._store.hasCwd() && !node.isCwd;
         },
       },
       {
@@ -79,7 +79,7 @@ class FileTreeContextMenu {
       {
         label: 'New',
         shouldDisplay: () => {
-          return this._store.getSelectedKeys().size > 0;
+          return this._store.getSingleSelectedNode() != null;
         },
         submenu: [
           {
@@ -135,7 +135,7 @@ class FileTreeContextMenu {
         shouldDisplay: () => {
           const nodes = this._store.getSelectedNodes();
           // We can delete multiple nodes as long as no root node is selected
-          return nodes.size > 0 && nodes.every(node => !node.isRoot);
+          return nodes.size > 0 && nodes.every(node => node != null && !node.isRoot);
         },
       },
     ]);
@@ -196,7 +196,7 @@ class FileTreeContextMenu {
     const node = this._store.getSingleSelectedNode();
     return (
       node != null &&
-      path.isAbsolute(node.nodePath) &&
+      path.isAbsolute(node.uri) &&
       process.platform === platform
     );
   }

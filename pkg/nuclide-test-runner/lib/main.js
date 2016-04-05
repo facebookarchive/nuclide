@@ -85,7 +85,7 @@ class Activation {
     );
     this._disposables.add(
       atom.contextMenu.add({
-        '.tree-view .entry.directory.list-nested-item': [
+        '.tree-view .entry.directory.list-nested-item > .list-item': [
           {type: 'separator'},
           this._createRunTestsContextMenuItem('Run tests in'),
           {type: 'separator'},

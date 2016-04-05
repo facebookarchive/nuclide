@@ -223,7 +223,7 @@ module.exports = {
 
     // Listen for file tree context menu directory item events to open the diff view.
     subscriptions.add(atom.commands.add(
-      '.tree-view .entry.directory.list-nested-item',
+      '.tree-view .entry.directory.list-nested-item > .list-item',
       'nuclide-diff-view:open-context',
       event => {
         const directoryPath = getFileTreePathFromTargetEvent(event);
@@ -231,7 +231,7 @@ module.exports = {
       }
     ));
     subscriptions.add(atom.contextMenu.add({
-      '.tree-view .entry.directory.list-nested-item': [
+      '.tree-view .entry.directory.list-nested-item > .list-item': [
         {type: 'separator'},
         {
           label: 'Open in Diff View',

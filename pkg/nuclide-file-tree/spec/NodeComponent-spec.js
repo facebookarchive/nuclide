@@ -10,29 +10,48 @@
  */
 
 import FileTreeActions from '../lib/FileTreeActions';
-import DirectoryEntryComponent from '../components/DirectoryEntryComponent';
-import FileEntryComponent from '../components/FileEntryComponent';
+import {FileTreeNode} from '../lib/FileTreeNode';
+import {DirectoryEntryComponent} from '../components/DirectoryEntryComponent';
+import {FileEntryComponent} from '../components/FileEntryComponent';
+import {WorkingSet} from '../../nuclide-working-sets';
+import Immutable from 'immutable';
+
 import {
   React,
   ReactDOM,
   TestUtils,
 } from 'react-for-atom';
 
-function renderEntryComponentIntoDocument(componentKlass: Object, props: Object = {}) {
-  const componentProps = {
-    indentLevel: 0,
-    isContainer: false,
+function renderEntryComponentIntoDocument(
+  componentKlass: Object,
+  props: Object = {},
+  conf: Object = {}
+): void {
+  const nodeProps = {
     isExpanded: false,
     isLoading: false,
     isSelected: false,
-    nodeKey: '',
-    nodeName: '',
-    nodePath: '',
-    rootKey: '',
-    usePreviewTabs: false,
+    isCwd: false,
     ...props,
   };
-  return TestUtils.renderIntoDocument(React.createElement(componentKlass, componentProps));
+
+  const nodeConf = {
+    vcsStatuses: {},
+    workingSet: new WorkingSet(),
+    editedWorkingSet: new WorkingSet(),
+    hideIgnoredNames: true,
+    excludeVcsIgnoredPaths: true,
+    ignoredPatterns: new Immutable.Set(),
+    repositories: new Immutable.Set(),
+    usePreviewTabs: true,
+    isEditingWorkingSet: false,
+    openFilesWorkingSet: new WorkingSet(),
+    reposByRoot: {},
+    ...conf,
+  };
+
+  const node = new FileTreeNode(nodeProps, nodeConf);
+  return TestUtils.renderIntoDocument(React.createElement(componentKlass, {node}));
 }
 
 describe('DirectoryEntryComponent', () => {
@@ -47,11 +66,14 @@ describe('DirectoryEntryComponent', () => {
       const nodeComponent = renderEntryComponentIntoDocument(
         DirectoryEntryComponent,
         {
-          isRoot: false,
+          rootUri: '/a/',
+          uri: '/a/b/',
           isSelected: true,
         }
       );
-      const domNode = ReactDOM.findDOMNode(nodeComponent);
+
+      // The onClick is listened not by the <li> element, but by its first child.
+      const domNode = ReactDOM.findDOMNode(nodeComponent).children[0];
       TestUtils.Simulate.click(domNode);
       expect(actions.expandNode).toHaveBeenCalled();
     });
@@ -69,7 +91,11 @@ describe('FileEntryComponent', () => {
     it('does not expand on click when node is selected', () => {
       const nodeComponent = renderEntryComponentIntoDocument(
         FileEntryComponent,
-        {isSelected: true}
+        {
+          rootUri: '/a/',
+          uri: '/a/b',
+          isSelected: true,
+        }
       );
       const domNode = ReactDOM.findDOMNode(nodeComponent);
       TestUtils.Simulate.click(domNode);
@@ -86,6 +112,8 @@ describe('FileEntryComponent', () => {
       const nodeComponent = renderEntryComponentIntoDocument(
         FileEntryComponent,
         {
+          rootUri: '/a/',
+          uri: '/a/b',
           isSelected: true,
           usePreviewTabs: true,
         },

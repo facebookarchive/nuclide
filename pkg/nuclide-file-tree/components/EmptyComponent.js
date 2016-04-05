@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-const {React} = require('react-for-atom');
+import {React} from 'react-for-atom';
 
-class EmptyComponent extends React.Component {
+export class EmptyComponent extends React.Component {
 
   render(): ReactElement {
     return (
@@ -36,5 +36,3 @@ class EmptyComponent extends React.Component {
   }
 
 }
-
-module.exports = EmptyComponent;

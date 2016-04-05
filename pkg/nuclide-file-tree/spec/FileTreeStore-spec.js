@@ -12,7 +12,8 @@
 import {Directory} from 'atom';
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
-import FileTreeStore from '../lib/FileTreeStore';
+import {FileTreeStore} from '../lib/FileTreeStore';
+import type {FileTreeNode} from '../lib/FileTreeNode';
 
 import {fixtures} from '../../nuclide-test-helpers';
 import fs from 'fs';
@@ -92,13 +93,26 @@ describe('FileTreeStore', () => {
   const store: FileTreeStore = FileTreeStore.getInstance();
 
   /*
-   * `getChildKeys` is the public API used by UIs. It queues Promises, which are stored in the
-   * `isLoading` map. Fetch via the public API and return the **internal-only** Promise to enable
+   * Trigger the fetch through the **internal-only** API. Enables the
    * tests to await loading children.
    */
   function loadChildKeys(rootKey: string, nodeKey: string): Promise<void> {
-    store.getChildKeys(rootKey, nodeKey);
     return store._getLoading(nodeKey) || Promise.resolve();
+  }
+
+  function getNode(rootKey: string, nodeKey: string): FileTreeNode {
+    const node = store.getNode(rootKey, nodeKey);
+    invariant(node);
+    return node;
+  }
+
+  function shownChildren(rootKey: string, nodeKey: string): Array<FileTreeNode> {
+    const node = getNode(rootKey, nodeKey);
+    return node.children.filter(n => n.shouldBeShown).toArray();
+  }
+
+  function isExpanded(rootKey: string, nodeKey: string): boolean {
+    return getNode(rootKey, nodeKey).isExpanded;
   }
 
   beforeEach(() => {
@@ -144,80 +158,51 @@ describe('FileTreeStore', () => {
   it('should expand root keys as they are added', () => {
     const rootKey = pathModule.join(__dirname, 'fixtures') + '/';
     actions.setRootKeys([rootKey]);
-    const node = store.getNode(rootKey, rootKey);
-    expect(node.isExpanded()).toBe(true);
-  });
-
-  it('should consider non-existent keys collapsed', () => {
-    const rootKey = pathModule.join(__dirname, 'fixtures') + '/';
-    const node = store.getNode(rootKey, rootKey + 'asdf');
-    expect(node.isExpanded()).toBe(false);
+    const node = getNode(rootKey, rootKey);
+    expect(node.isExpanded).toBe(true);
   });
 
   it('toggles selected items', () => {
     actions.setRootKeys([dir1]);
-    actions.toggleSelectNode(dir1, dir1);
-    const node = store.getNode(dir1, dir1);
-    expect(node.isSelected()).toBe(true);
-    actions.toggleSelectNode(dir1, dir1);
-    expect(node.isSelected()).toBe(false);
+    actions.setSelectedNode(dir1, dir1);
+    let node = getNode(dir1, dir1);
+    expect(node.isSelected).toBe(true);
+    actions.unselectNode(dir1, dir1);
+    node = getNode(dir1, dir1);
+    expect(node.isSelected).toBe(false);
   });
 
   it('deselects items in other roots when a single node is selected', () => {
     actions.setRootKeys([dir1, dir2]);
-    actions.toggleSelectNode(dir1, dir1);
-    const node1 = store.getNode(dir1, dir1);
-    const node2 = store.getNode(dir2, dir2);
+    actions.setSelectedNode(dir1, dir1);
+    let node1 = getNode(dir1, dir1);
+    let node2 = getNode(dir2, dir2);
 
     // Node 1 is selected, node 2 is not selected
-    expect(node1.isSelected()).toBe(true);
-    expect(node2.isSelected()).toBe(false);
+    expect(node1.isSelected).toBe(true);
+    expect(node2.isSelected).toBe(false);
 
     // Selecting a single node, node2, deselects nodes in all other roots
-    actions.selectSingleNode(dir2, dir2);
-    expect(node1.isSelected()).toBe(false);
-    expect(node2.isSelected()).toBe(true);
-  });
-
-  describe('getSelectedKeys', () => {
-    beforeEach(() => {
-      /*
-       * Create two roots and select them both. It'll look like the following:
-       *
-       *   → **dir1**
-       *   → **dir2**
-       */
-      actions.setRootKeys([dir1, dir2]);
-      actions.toggleSelectNode(dir1, dir1);
-      actions.toggleSelectNode(dir2, dir2);
-    });
-
-    it('returns selected nodes from all roots when no argument is given', () => {
-      // Convert the `Immutable.Set` to a native `Array` for simpler use w/ Jasmine.
-      const selectedNodes = store.getSelectedKeys().toArray();
-      expect(selectedNodes).toEqual([dir1, dir2]);
-    });
-
-    it('returns selected nodes from a specific root', () => {
-      // Convert the `Immutable.Set` to a native `Array` for simpler use w/ Jasmine.
-      const selectedNodes = store.getSelectedKeys(dir1).toArray();
-      expect(selectedNodes).toEqual([dir1]);
-    });
+    actions.setSelectedNode(dir2, dir2);
+    node1 = getNode(dir1, dir1);
+    node2 = getNode(dir2, dir2);
+    expect(node1.isSelected).toBe(false);
+    expect(node2.isSelected).toBe(true);
   });
 
   describe('getSelectedNodes', () => {
     it('returns selected nodes from all roots', () => {
       actions.setRootKeys([dir1, dir2]);
-      actions.toggleSelectNode(dir1, dir1);
-      actions.toggleSelectNode(dir2, dir2);
+      actions.addSelectedNode(dir1, dir1);
+      actions.addSelectedNode(dir2, dir2);
 
       // Convert the `Immutable.Set` to a native `Array` for simpler use w/ Jasmine.
-      const selectedNodes = store.getSelectedNodes().map(node => node.nodeKey).toArray();
+      const selectedNodes = store.getSelectedNodes().map(node => node.uri).toArray();
       expect(selectedNodes).toEqual([dir1, dir2]);
     });
 
     it('returns an empty Set when no nodes are selected', () => {
-      const selectedNodes = store.getSelectedNodes().map(node => node.nodeKey).toArray();
+      const selectedNodes = store.getSelectedNodes().map(node => node.uri).toArray();
       expect(selectedNodes).toEqual([]);
     });
   });
@@ -238,17 +223,17 @@ describe('FileTreeStore', () => {
     });
 
     it('returns null when more than 1 node is selected', () => {
-      actions.toggleSelectNode(dir1, dir1);
-      actions.toggleSelectNode(dir2, dir2);
+      actions.addSelectedNode(dir1, dir1);
+      actions.addSelectedNode(dir2, dir2);
       expect(store.getSingleSelectedNode()).toBeNull();
     });
 
     it('returns a node when only 1 is selected', () => {
-      actions.toggleSelectNode(dir2, dir2);
+      actions.setSelectedNode(dir2, dir2);
       const singleSelectedNode = store.getSingleSelectedNode();
       expect(singleSelectedNode).not.toBeNull();
       invariant(singleSelectedNode);
-      expect(singleSelectedNode.nodeKey).toEqual(dir2);
+      expect(singleSelectedNode.uri).toEqual(dir2);
     });
   });
 
@@ -259,33 +244,38 @@ describe('FileTreeStore', () => {
 
       // Root is tracked after setting it.
       const trackedNode = store.getTrackedNode();
-      expect(trackedNode && trackedNode.nodeKey).toBe(dir1);
-      actions.selectSingleNode(dir1, dir1);
+      expect(trackedNode && trackedNode.uri).toBe(dir1);
+      actions.setSelectedNode(dir1, dir1);
 
       // New selection, which happens on user interaction via select and collapse, resets the
       // tracked node.
-      expect(store.getTrackedNode()).toBe(null);
+      expect(store.getTrackedNode()).toBe(getNode(dir1, dir1));
     });
   });
 
   describe('getChildKeys', () => {
     it("clears loading and expanded states when there's an error fetching children", () => {
       waitsForPromise(async () => {
+        spyOn(FileTreeHelpers, 'fetchChildren').andCallFake(() => {
+          return Promise.reject(new Error('This error **should** be thrown.'));
+        });
+
         actions.setRootKeys([dir1]);
-        actions.expandNode(dir1, fooTxt);
-        expect(store.isExpanded(dir1, fooTxt)).toBe(true);
-        store.getChildKeys(dir1, fooTxt);
-        expect(store.isLoading(dir1, fooTxt)).toBe(true);
+
+        let node = getNode(dir1, dir1);
+        expect(node.isExpanded).toBe(true);
+        expect(node.isLoading).toBe(true);
 
         try {
-          await loadChildKeys(fooTxt, fooTxt);
+          await loadChildKeys(dir1, dir1);
         } catch (e) {
           // This will always throw an exception, but that's irrelevant to this test. The side
           // effects after this try/catch capture the purpose of this test.
         }
 
-        expect(store.isExpanded(dir1, fooTxt)).toBe(false);
-        expect(store.isLoading(dir1, fooTxt)).toBe(false);
+        node = getNode(dir1, dir1);
+        expect(node.isExpanded).toBe(false);
+        expect(node.isLoading).toBe(false);
       });
     });
   });
@@ -298,7 +288,7 @@ describe('FileTreeStore', () => {
 
       await loadChildKeys(dir1, dir1);
 
-      expect(store.getChildKeys(dir1, dir1).length).toBe(0);
+      expect(shownChildren(dir1, dir1).length).toBe(0);
     });
   });
 
@@ -311,7 +301,8 @@ describe('FileTreeStore', () => {
       await loadChildKeys(dir1, dir1);
 
       actions.setIgnoredNames(['bar.*']);
-      expect(store.getChildKeys(dir1, dir1).length).toBe(1);
+
+      expect(shownChildren(dir1, dir1).length).toBe(1);
     });
   });
 
@@ -324,7 +315,7 @@ describe('FileTreeStore', () => {
 
       await loadChildKeys(dir1, dir1);
 
-      expect(store.getChildKeys(dir1, dir1).length).toBe(1);
+      expect(shownChildren(dir1, dir1).length).toBe(1);
     });
   });
 
@@ -345,14 +336,14 @@ describe('FileTreeStore', () => {
         await loadChildKeys(dir1, dir1);
 
         // Children should load but the subscription should fail.
-        expect(store.getCachedChildKeys(dir1, dir1)).toEqual([fooTxt]);
+        expect(shownChildren(dir1, dir1).map(n => n.uri)).toEqual([fooTxt]);
 
         // Add a new file, 'bar.baz', for which the store will not get a notification because
         // the subscription failed.
         const barBaz = pathModule.join(dir1, 'bar.baz');
         fs.writeFileSync(barBaz, '');
         await loadChildKeys(dir1, dir1);
-        expect(store.getCachedChildKeys(dir1, dir1)).toEqual([fooTxt]);
+        expect(shownChildren(dir1, dir1).map(n => n.uri)).toEqual([fooTxt]);
 
         // Collapsing and re-expanding a directory should forcibly fetch its children regardless of
         // whether a subscription is possible.
@@ -362,7 +353,7 @@ describe('FileTreeStore', () => {
 
         // The subscription should fail again, but the children should be refetched and match the
         // changed structure (i.e. include the new 'bar.baz' file).
-        expect(store.getCachedChildKeys(dir1, dir1)).toEqual([barBaz, fooTxt]);
+        expect(shownChildren(dir1, dir1).map(n => n.uri)).toEqual([barBaz, fooTxt]);
       });
     });
   });
@@ -374,10 +365,12 @@ describe('FileTreeStore', () => {
       actions.setExcludeVcsIgnoredPaths(true);
 
       const mockRepo = new MockRepository();
-      spyOn(store, '_repositoryForPath').andReturn(mockRepo);
+      store._updateConf(conf => {
+        conf.reposByRoot[dir1] = (mockRepo: any);
+      });
 
       await loadChildKeys(dir1, dir1);
-      expect(store.getCachedChildKeys(dir1, dir1).length).toBe(0);
+      expect(shownChildren(dir1, dir1).length).toBe(0);
     });
   });
 
@@ -388,10 +381,12 @@ describe('FileTreeStore', () => {
       actions.setExcludeVcsIgnoredPaths(false);
 
       const mockRepo = new MockRepository();
-      spyOn(store, '_repositoryForPath').andReturn(mockRepo);
+      store._updateConf(conf => {
+        conf.reposByRoot[dir1] = (mockRepo: any);
+      });
 
       await loadChildKeys(dir1, dir1);
-      expect(store.getCachedChildKeys(dir1, dir1).length).toBe(1);
+      expect(shownChildren(dir1, dir1).length).toBe(1);
     });
   });
 
@@ -409,7 +404,8 @@ describe('FileTreeStore', () => {
       // Await **internal-only** API because the public `expandNodeDeep` API does not
       // return the promise that can be awaited on
       await store._expandNodeDeep(dir3, dir3);
-      expect(store.getChildKeys(dir31, dir31).length).toBe(1);
+
+      expect(shownChildren(dir3, dir31).length).toBe(1);
     });
   });
 
@@ -427,9 +423,9 @@ describe('FileTreeStore', () => {
       // Await **internal-only** API because the public `expandNodeDeep` API does not
       // return the promise that can be awaited on
       await store._expandNodeDeep(dir3, dir3);
-      expect(store.isExpanded(dir3, dir31)).toBe(true);
+      expect(isExpanded(dir3, dir31)).toBe(true);
       actions.collapseNodeDeep(dir3, dir3);
-      expect(store.isExpanded(dir3, dir31)).toBe(false);
+      expect(isExpanded(dir3, dir31)).toBe(false);
     });
   });
 
@@ -451,8 +447,8 @@ describe('FileTreeStore', () => {
       // Await **internal-only** API because the public `expandNodeDeep` API does not
       // return the promise that can be awaited on
       await store._expandNodeDeep(dir3, dir3);
-      expect(store.isExpanded(dir3, dir31)).toBe(true);
-      expect(store.isExpanded(dir3, dir32)).toBe(false);
+      expect(isExpanded(dir3, dir31)).toBe(true);
+      expect(isExpanded(dir3, dir32)).toBe(false);
     });
   });
 });

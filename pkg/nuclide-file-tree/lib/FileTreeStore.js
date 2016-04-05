@@ -17,65 +17,31 @@ import type {
 
 import FileTreeDispatcher from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
-import FileTreeNode from './FileTreeNode';
+import {FileTreeNode} from './FileTreeNode';
 import Immutable from 'immutable';
 import {ActionType} from './FileTreeConstants';
-import {Disposable, Emitter} from 'atom';
+import {Emitter} from 'atom';
 import {Minimatch} from 'minimatch';
-import {repositoryContainsPath} from '../../nuclide-hg-git-bridge';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
-
-import {array} from '../../nuclide-commons';
+import invariant from 'assert';
 import {getLogger} from '../../nuclide-logging';
-import {object as objectUtil} from '../../nuclide-commons';
 import shell from 'shell';
-import memoize from 'lodash.memoize';
 
 import {WorkingSet} from '../../nuclide-working-sets';
 
 // Used to ensure the version we serialized is the same version we are deserializing.
 const VERSION = 1;
 
+import type {Directory} from './FileTreeHelpers';
 import type {Dispatcher} from 'flux';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore';
+import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
 
 
 type ActionPayload = Object;
 type ChangeListener = () => mixed;
-
-export type FileTreeNodeData = {
-  nodeKey: string;
-  rootKey: string;
-}
-
-type StoreData = {
-  cwdKey: ?string;
-  childKeyMap: { [key: string]: Array<string> };
-  isDirtyMap: { [key: string]: boolean };
-  expandedKeysByRoot: { [key: string]: Immutable.Set<string> };
-  trackedNode: ?FileTreeNodeData;
-  // Saves a list of child nodes that should be expande when a given key is expanded.
-  // Looks like: { rootKey: { nodeKey: [childKey1, childKey2] } }.
-  previouslyExpanded: { [rootKey: string]: Immutable.Map<string, Array<String>> };
-  isLoadingMap: { [key: string]: ?Promise };
-  rootKeys: Array<string>;
-  selectedKeysByRoot: { [key: string]: Immutable.OrderedSet<string> };
-  subscriptionMap: { [key: string]: Disposable };
-  vcsStatusesByRoot: { [key: string]: Immutable.Map<string, number> };
-  ignoredPatterns: Immutable.Set<Minimatch>;
-  hideIgnoredNames: boolean;
-  excludeVcsIgnoredPaths: boolean;
-  usePreviewTabs: boolean;
-  usePrefixNav: boolean;
-  repositories: Immutable.Set<atom$Repository>;
-  workingSet: WorkingSet;
-  openFilesWorkingSet: WorkingSet;
-  workingSetsStore: ?WorkingSetsStore;
-  isEditingWorkingSet: boolean;
-  editedWorkingSet: WorkingSet;
-};
 
 export type ExportStoreData = {
   childKeyMap: { [key: string]: Array<string> };
@@ -85,6 +51,34 @@ export type ExportStoreData = {
   version: number;
 };
 
+export type StoreConfigData = {
+    vcsStatuses: {[rootUri: NuclideUri]: {[path: NuclideUri]: StatusCodeNumberValue}};
+    workingSet: WorkingSet;
+    hideIgnoredNames: boolean;
+    excludeVcsIgnoredPaths: boolean;
+    ignoredPatterns: Immutable.Set<Minimatch>;
+    usePreviewTabs: boolean;
+    isEditingWorkingSet: boolean;
+    openFilesWorkingSet: WorkingSet;
+    reposByRoot: {[rootUri: NuclideUri]: atom$Repository};
+};
+
+export type NodeCheckedStatus = 'checked' | 'clear' | 'partial';
+
+
+const DEFAULT_CONF = {
+  vcsStatuses: {},
+  workingSet: new WorkingSet(),
+  editedWorkingSet: new WorkingSet(),
+  hideIgnoredNames: true,
+  excludeVcsIgnoredPaths: true,
+  ignoredPatterns: new Immutable.Set(),
+  usePreviewTabs: false,
+  isEditingWorkingSet: false,
+  openFilesWorkingSet: new WorkingSet(),
+  reposByRoot: {},
+};
+
 let instance: ?Object;
 
 /**
@@ -92,13 +86,22 @@ let instance: ?Object;
  * FileTreeStore and the only way to update the store is through methods on FileTreeActions. The
  * dispatcher is a mechanism through which FileTreeActions interfaces with FileTreeStore.
  */
-class FileTreeStore {
-  _data: StoreData;
+export class FileTreeStore {
+  roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>;
+  _conf: StoreConfigData; // The configuration for the file-tree. Avoid direct writing.
+  _workingSetsStore: ?WorkingSetsStore;
+  _usePrefixNav: boolean;
+  _isLoadingMap: Immutable.Map<NuclideUri, Promise<void>>;
+  _repositories: Immutable.Set<atom$Repository>;
+
   _dispatcher: Dispatcher;
   _emitter: Emitter;
   _logger: any;
-  _timer: ?Object;
-  _repositoryForPath: (path: NuclideUri) => ?atom$Repository;
+  _animationFrameRequestId: ?number;
+  _suppressChanges: boolean;
+  _cwdKey: ?NuclideUri;
+
+  usePrevNav: boolean;
 
   static getInstance(): FileTreeStore {
     if (!instance) {
@@ -107,15 +110,30 @@ class FileTreeStore {
     return instance;
   }
 
+  static dispose(): void {
+    if (instance != null) {
+      instance.dispose();
+    }
+
+    instance = null;
+  }
+
   constructor() {
-    this._data = this._getDefaults();
+    this.roots = new Immutable.OrderedMap();
     this._dispatcher = FileTreeDispatcher.getInstance();
     this._emitter = new Emitter();
     this._dispatcher.register(
       payload => this._onDispatch(payload)
     );
     this._logger = getLogger();
-    this._repositoryForPath = memoize(this._repositoryForPath);
+
+    this._usePrefixNav = false;
+    this._isLoadingMap = new Immutable.Map();
+    this._repositories = new Immutable.Set();
+
+    this._conf = DEFAULT_CONF;
+    global.FTConf = this._conf;
+    this._suppressChanges = false;
   }
 
   /**
@@ -125,21 +143,47 @@ class FileTreeStore {
    * [1]: https://atom.io/docs/latest/behind-atom-serialization-in-atom
    */
   exportData(): ExportStoreData {
-    const data = this._data;
-    // Grab the child keys of only the expanded nodes.
     const childKeyMap = {};
-    Object.keys(data.expandedKeysByRoot).forEach(rootKey => {
-      const expandedKeySet = data.expandedKeysByRoot[rootKey];
-      for (const nodeKey of expandedKeySet) {
-        childKeyMap[nodeKey] = data.childKeyMap[nodeKey];
-      }
+    const expandedKeysByRoot = {};
+    const selectedKeysByRoot = {};
+
+    this.roots.forEach(root => {
+      const expandedKeys = [];
+      const selectedKeys = [];
+
+      // Grab the data of only the expanded portion of the tree.
+      root.traverse(
+        node => {
+          if (node.isSelected) {
+            selectedKeys.push(node.uri);
+          }
+
+          if (!node.isExpanded) {
+            return false;
+          }
+
+          expandedKeys.push(node.uri);
+
+          if (!node.children.isEmpty()) {
+            childKeyMap[node.uri] = node.children.map(child => child.uri).toArray();
+          }
+
+          return true;
+        }
+      );
+
+      expandedKeysByRoot[root.uri] = expandedKeys;
+      selectedKeysByRoot[root.uri] = selectedKeys;
     });
+
+    const rootKeys = this.roots.map(root => root.uri).toArray();
+
     return {
       version: VERSION,
       childKeyMap: childKeyMap,
-      expandedKeysByRoot: mapValues(data.expandedKeysByRoot, keySet => keySet.toArray()),
-      rootKeys: data.rootKeys,
-      selectedKeysByRoot: mapValues(data.selectedKeysByRoot, keySet => keySet.toArray()),
+      expandedKeysByRoot,
+      rootKeys,
+      selectedKeysByRoot,
     };
   }
 
@@ -151,26 +195,48 @@ class FileTreeStore {
     if (data.version !== VERSION) {
       return;
     }
-    this._data = {
-      ...this._getDefaults(),
-      childKeyMap: data.childKeyMap,
-      expandedKeysByRoot: mapValues(data.expandedKeysByRoot, keys => new Immutable.Set(keys)),
-      rootKeys: data.rootKeys,
-      selectedKeysByRoot:
-        mapValues(data.selectedKeysByRoot, keys => new Immutable.OrderedSet(keys)),
+
+    const buildNode = (rootUri: string, uri: string) => {
+      const rootExpandedKeys = data.expandedKeysByRoot[rootUri] || [];
+      const rootSelectedKeys = data.selectedKeysByRoot[rootUri] || [];
+      const childrenUris = data.childKeyMap[uri] || [];
+      const children = FileTreeNode.childrenFromArray(
+        childrenUris.map(childUri => buildNode(rootUri, childUri))
+      );
+
+      const isExpanded = rootExpandedKeys.indexOf(uri) >= 0;
+      let isLoading = false;
+
+      if (isExpanded && FileTreeHelpers.isDirKey(uri)) {
+        this._fetchChildKeys(uri);
+        isLoading = true;
+      }
+
+      return new FileTreeNode({
+        uri,
+        rootUri,
+        isExpanded,
+        isSelected: rootSelectedKeys.indexOf(uri) >= 0,
+        isLoading,
+        isTracked: false,
+        children,
+        isCwd: false,
+        connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
+      },
+      this._conf);
     };
-    Object.keys(data.childKeyMap).forEach(nodeKey => {
-      this._addSubscription(nodeKey);
-      this._fetchChildKeys(nodeKey);
-    });
+
+    this._setRoots(new Immutable.OrderedMap(
+      data.rootKeys.map(rootUri => [rootUri, buildNode(rootUri, rootUri)])
+    ));
   }
 
   _setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {
-    this._set('excludeVcsIgnoredPaths', excludeVcsIgnoredPaths);
+    this._updateConf(conf => conf.excludeVcsIgnoredPaths = excludeVcsIgnoredPaths);
   }
 
   _setHideIgnoredNames(hideIgnoredNames: boolean): void {
-    this._set('hideIgnoredNames', hideIgnoredNames);
+    this._updateConf(conf => conf.hideIgnoredNames = hideIgnoredNames);
   }
 
   /**
@@ -194,34 +260,7 @@ class FileTreeStore {
         }
       })
       .filter(pattern => pattern != null);
-    this._set('ignoredPatterns', ignoredPatterns);
-  }
-
-  _getDefaults(): StoreData {
-    return {
-      cwdKey: null,
-      childKeyMap: {},
-      isDirtyMap: {},
-      expandedKeysByRoot: {},
-      trackedNode: null,
-      previouslyExpanded: {},
-      isLoadingMap: {},
-      rootKeys: [],
-      selectedKeysByRoot: {},
-      subscriptionMap: {},
-      vcsStatusesByRoot: {},
-      ignoredPatterns: Immutable.Set(),
-      hideIgnoredNames: true,
-      excludeVcsIgnoredPaths: true,
-      usePreviewTabs: false,
-      usePrefixNav: true,
-      repositories: Immutable.Set(),
-      workingSet: new WorkingSet(),
-      openFilesWorkingSet: new WorkingSet(),
-      workingSetsStore: null,
-      isEditingWorkingSet: false,
-      editedWorkingSet: new WorkingSet(),
-    };
+    this._updateConf(conf => conf.ignoredPatterns = ignoredPatterns);
   }
 
   _onDispatch(payload: ActionPayload): void {
@@ -259,22 +298,13 @@ class FileTreeStore {
         this._setUsePrefixNav(payload.usePrefixNav);
         break;
       case ActionType.COLLAPSE_NODE_DEEP:
-        this._purgeDirectoryWithinARoot(payload.rootKey, payload.nodeKey, /* unselect */false);
+        this._collapseNodeDeep(payload.rootKey, payload.nodeKey);
         break;
       case ActionType.SET_HIDE_IGNORED_NAMES:
         this._setHideIgnoredNames(payload.hideIgnoredNames);
         break;
       case ActionType.SET_IGNORED_NAMES:
         this._setIgnoredNames(payload.ignoredNames);
-        break;
-      case ActionType.SET_SELECTED_NODES_FOR_ROOT:
-        this._setSelectedKeys(payload.rootKey, payload.nodeKeys);
-        break;
-      case ActionType.SET_SELECTED_NODES_FOR_TREE:
-        this._setSelectedKeysByRoot(payload.selectedKeysByRoot);
-        break;
-      case ActionType.CREATE_CHILD:
-        this._createChild(payload.nodeKey, payload.childKey);
         break;
       case ActionType.SET_VCS_STATUSES:
         this._setVcsStatuses(payload.rootKey, payload.vcsStatuses);
@@ -303,133 +333,294 @@ class FileTreeStore {
       case ActionType.UNCHECK_NODE:
         this._uncheckNode(payload.rootKey, payload.nodeKey);
         break;
+
+      case ActionType.SET_SELECTED_NODE:
+        this._setSelectedNode(payload.rootKey, payload.nodeKey);
+        break;
+      case ActionType.ADD_SELECTED_NODE:
+        this._addSelectedNode(payload.rootKey, payload.nodeKey);
+        break;
+      case ActionType.UNSELECT_NODE:
+        this._unselectNode(payload.rootKey, payload.nodeKey);
+        break;
+      case ActionType.MOVE_SELECTION_UP:
+        this._moveSelectionUp();
+        break;
+      case ActionType.MOVE_SELECTION_DOWN:
+        this._moveSelectionDown();
+        break;
+      case ActionType.MOVE_SELECTION_TO_TOP:
+        this._moveSelectionToTop();
+        break;
+      case ActionType.MOVE_SELECTION_TO_BOTTOM:
+        this._moveSelectionToBottom();
+        break;
+      case ActionType.ENSURE_CHILD_NODE:
+        this._ensureChildNode(payload.nodeKey);
+        break;
     }
   }
 
   /**
-   * This is a private method because in Flux we should never externally write to the data store.
-   * Only by receiving actions (from dispatcher) should the data store be changed.
-   * Note: `_set` can be called multiple times within one iteration of an event loop without
-   * thrashing the UI because we are using setImmediate to batch change notifications, effectively
-   * letting our views re-render once for multiple consecutive writes.
-   */
-  _set(key: string, value: mixed, flush: boolean = false): void {
-    const oldData = this._data;
-    // Immutability for the win!
-    const newData = setProperty(this._data, key, value);
-    if (newData !== oldData) {
-      this._data = newData;
-      clearImmediate(this._timer);
-      if (flush) {
-        // If `flush` is true, emit the change immediately.
-        this._emitter.emit('change');
-      } else {
-        // If not flushing, de-bounce to prevent successive updates in the same event loop.
-        this._timer = setImmediate(() => {
-          this._emitter.emit('change');
-        });
+  * Use the predicate function to update one or more of the roots in the file tree
+  */
+  _updateRoots(predicate: (root: FileTreeNode) => FileTreeNode): void {
+    this._setRoots(this.roots.map(predicate));
+  }
+
+  /**
+  * Use the predicate to update a node (or a branch) of the file-tree
+  */
+  _updateNodeAtRoot(
+    rootKey: NuclideUri,
+    nodeKey: NuclideUri,
+    predicate: (node: FileTreeNode) => FileTreeNode,
+  ): void {
+    const root = this.roots.get(rootKey);
+    if (root == null) {
+      return;
+    }
+
+    const node = root.find(nodeKey);
+    if (node == null) {
+      return;
+    }
+
+    const roots = this.roots.set(rootKey, this._bubbleUp(node, predicate(node)));
+    this._setRoots(roots);
+  }
+
+  /**
+  * Update a node or a branch under any of the roots it was found at
+  */
+  _updateNodeAtAllRoots(
+    nodeKey: NuclideUri,
+    predicate: (node: FileTreeNode
+  ) => FileTreeNode): void {
+
+    const roots = this.roots.map(root => {
+      const node = root.find(nodeKey);
+      if (node == null) {
+        return root;
       }
+
+      return this._bubbleUp(node, predicate(node));
+    });
+
+    this._setRoots(roots);
+  }
+
+  /**
+  * Bubble the change up. The newNode is assumed to be prevNode after some manipulateion done to it
+  * therefore they are assumed to belong to the same parent.
+  *
+  * The method updates the child to the new node (which create a new parent instance) and call
+  * recursively for the parent update. Until there are no more parents and the new root is returned
+  *
+  * As the change bubbles up, and in addition to the change from the new child assignment, an
+  * optional predicate is also being applied to each newly created parent to support more complex
+  * change patterns.
+  */
+  _bubbleUp(
+    prevNode: FileTreeNode,
+    newNode: FileTreeNode,
+    postPredicate: (node: FileTreeNode) => FileTreeNode = (node => node),
+  ): FileTreeNode {
+    const parent = prevNode.parent;
+    if (parent == null) {
+      return newNode;
+    }
+
+    const newParent = postPredicate(parent.updateChild(newNode));
+    return this._bubbleUp(parent, newParent, postPredicate);
+  }
+
+  /**
+  * Updates the roots, maintains their sibling relationships and fires the change event.
+  */
+  _setRoots(roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>): void {
+    const changed = !Immutable.is(roots, this.roots);
+    if (changed) {
+      this.roots = roots;
+      let prevRoot = null;
+      roots.forEach(r => {
+        r.prevSibling = prevRoot;
+        if (prevRoot != null) {
+          prevRoot.nextSibling = r;
+        }
+        prevRoot = r;
+      });
+
+      if (prevRoot != null) {
+        prevRoot.nextSibling = null;
+      }
+
+      this._emitChange();
     }
   }
 
-  getTrackedNode(): ?FileTreeNodeData {
-    return this._data.trackedNode;
+  _emitChange(): void {
+    if (this._suppressChanges) {
+      return;
+    }
+
+    if (this._animationFrameRequestId != null) {
+      window.cancelAnimationFrame(this._animationFrameRequestId);
+    }
+
+    this._animationFrameRequestId = window.requestAnimationFrame(() => {
+      this._emitter.emit('change');
+      this._suppressChanges = true;
+      this._checkTrackedNode();
+      this._suppressChanges = false;
+      this._animationFrameRequestId = null;
+    });
+  }
+
+  /**
+  * Update the configuration for the file-tree. The direct writing to the this._conf should be
+  * avoided.
+  */
+  _updateConf(predicate: (conf: StoreConfigData) => mixed): void {
+    predicate(this._conf);
+    this._updateRoots(root => root.updateConf());
+  }
+
+  _setRootKeys(rootKeys: Array<NuclideUri>): void {
+    const rootNodes = rootKeys.map(rootUri => {
+      const root = this.roots.get(rootUri);
+      if (root != null) {
+        return root;
+      }
+
+      return new FileTreeNode({
+        uri: rootUri,
+        rootUri,
+        connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
+      }, this._conf);
+    });
+    this._setRoots(new Immutable.OrderedMap(rootNodes.map(root => [root.uri, root])));
+    this._setCwdKey(this._cwdKey);
+  }
+
+  getTrackedNode(): ?FileTreeNode {
+    // Locate the root containing the tracked node efficiently by using the child-derived
+    // containsTrackedNode property
+    const trackedRoot = this.roots.find(root => root.containsTrackedNode);
+    if (trackedRoot == null) {
+      return null;
+    }
+
+    let trackedNode;
+    // Likewise, within the root use the property to efficiently find the needed node
+    trackedRoot.traverse(
+      node => {
+        if (node.isTracked) {
+          trackedNode = node;
+        }
+
+        return trackedNode == null && node.containsTrackedNode;
+      }
+    );
+
+    return trackedNode;
   }
 
   getRepositories(): Immutable.Set<atom$Repository> {
-    return this._data.repositories;
+    return this._repositories;
   }
 
   getWorkingSet(): WorkingSet {
-    return this._data.workingSet;
-  }
-
-  getOpenFilesWorkingSet(): WorkingSet {
-    return this._data.openFilesWorkingSet;
+    return this._conf.workingSet;
   }
 
   getWorkingSetsStore(): ?WorkingSetsStore {
-    return this._data.workingSetsStore;
+    return this._workingSetsStore;
   }
 
-  getRootKeys(): Array<string> {
-    return this._data.rootKeys;
-  }
-
-  /**
-   * Returns the key of the *first* root node containing the given node.
-   */
-  getRootForKey(nodeKey: string): ?string {
-    return array.find(this._data.rootKeys, rootKey => nodeKey.startsWith(rootKey));
+  getRootKeys(): Array<NuclideUri> {
+    return this.roots.toArray().map(root => root.uri);
   }
 
   /**
    * Returns true if the store has no data, i.e. no roots, no children.
    */
   isEmpty(): boolean {
-    return this.getRootKeys().length === 0;
+    return this.roots.isEmpty();
   }
 
-  /**
-   * Note: We actually don't need rootKey (implementation detail) but we take it for consistency.
-   */
-  isLoading(rootKey: string, nodeKey: string): boolean {
-    return !!this._getLoading(nodeKey);
-  }
+  _setVcsStatuses(
+    rootKey: NuclideUri,
+    vcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue},
+  ): void {
+    // We can't build on the child-derived properties to maintain vcs statuses in the entire
+    // tree, since the reported VCS status may be for a node that is not yet present in the
+    // fetched tree, and so it it can't affect its parents statuses. To have the roots colored
+    // consistently we manually add all parents of all of the modified nodes up till the root
+    const enrichedVcsStatuses = {...vcsStatuses};
 
-  isExpanded(rootKey: string, nodeKey: string): boolean {
-    return this._getExpandedKeys(rootKey).has(nodeKey);
-  }
+    const ensurePresentParents = uri => {
+      if (uri === rootKey) {
+        return;
+      }
 
-  isRootKey(nodeKey: string): boolean {
-    return this._data.rootKeys.indexOf(nodeKey) !== -1;
-  }
+      let current = uri;
+      while (current !== rootKey) {
+        current = FileTreeHelpers.getParentKey(current);
 
-  isSelected(rootKey: string, nodeKey: string): boolean {
-    return this.getSelectedKeys(rootKey).has(nodeKey);
-  }
+        if (enrichedVcsStatuses[current] != null) {
+          return;
+        }
 
-  _setVcsStatuses(rootKey: string, vcsStatuses: {[path: string]: number}) {
-    const immutableVcsStatuses = new Immutable.Map(vcsStatuses);
-    if (!Immutable.is(immutableVcsStatuses, this._data.vcsStatusesByRoot[rootKey])) {
-      this._set(
-        'vcsStatusesByRoot',
-        setProperty(this._data.vcsStatusesByRoot, rootKey, immutableVcsStatuses)
-      );
+        enrichedVcsStatuses[current] = StatusCodeNumber.MODIFIED;
+      }
+    };
+
+    Object.keys(vcsStatuses).forEach(uri => {
+      const status = vcsStatuses[uri];
+      if (
+        status === StatusCodeNumber.MODIFIED ||
+        status === StatusCodeNumber.ADDED ||
+        status === StatusCodeNumber.REMOVED) {
+        ensurePresentParents(uri);
+      }
+    });
+
+    if (this._vcsStatusesAreDifferent(rootKey, enrichedVcsStatuses)) {
+      this._updateConf(conf => conf.vcsStatuses[rootKey] = enrichedVcsStatuses);
     }
   }
 
-  getVcsStatusCode(rootKey: string, nodeKey: string): ?number {
-    const map = this._data.vcsStatusesByRoot[rootKey];
-    if (map) {
-      return map.get(nodeKey);
-    } else {
-      return null;
+  _vcsStatusesAreDifferent(
+    rootKey: NuclideUri,
+    newVcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue}
+  ): boolean {
+    const currentStatuses = this._conf.vcsStatuses[rootKey];
+    if (currentStatuses == null || newVcsStatuses == null) {
+      if (currentStatuses !== newVcsStatuses) {
+        return true;
+      }
     }
+
+    const currentKeys = Object.keys(currentStatuses);
+    const newKeys = Object.keys(newVcsStatuses);
+    if (currentKeys.length !== newKeys.length) {
+      return true;
+    }
+
+    return newKeys.some(key => currentStatuses[key] !== newVcsStatuses[key]);
   }
 
-  _setUsePreviewTabs(usePreviewTabs: boolean) {
-    this._set('usePreviewTabs', usePreviewTabs);
+  _setUsePreviewTabs(usePreviewTabs: boolean): void {
+    this._updateConf(conf => conf.usePreviewTabs = usePreviewTabs);
   }
 
   _setUsePrefixNav(usePrefixNav: boolean) {
-    this._set('usePrefixNav', usePrefixNav);
-  }
-
-  usePreviewTabs(): boolean {
-    return this._data.usePreviewTabs;
+    this._usePrefixNav = usePrefixNav;
   }
 
   usePrefixNav(): boolean {
-    return this._data.usePrefixNav;
-  }
-
-  /**
-   * Returns known child keys for the given `nodeKey` but does not queue a fetch for missing
-   * children like `::getChildKeys`.
-   */
-  getCachedChildKeys(rootKey: string, nodeKey: string): Array<string> {
-    return this._omitHiddenPaths(this._data.childKeyMap[nodeKey] || []);
+    return this._usePrefixNav;
   }
 
   /**
@@ -438,148 +629,105 @@ class FileTreeStore {
    * return as promise, to make the caller oblivious to the way children were
    * fetched.
    */
-  promiseNodeChildKeys(rootKey: string, nodeKey: string): Promise {
-    const cachedChildKeys = this.getChildKeys(rootKey, nodeKey);
-    if (cachedChildKeys.length) {
-      return Promise.resolve(cachedChildKeys);
-    }
+  async promiseNodeChildKeys(rootKey: string, nodeKey: string): Promise<Array<NuclideUri>> {
+    const shownChildrenUris = node => {
+      return node.children.toArray().filter(n => n.shouldBeShown).map(n => n.uri);
+    };
 
-    const promise = this._getLoading(nodeKey) || Promise.resolve();
-    return promise.then(() => this.getCachedChildKeys(rootKey, nodeKey));
-  }
-
-  /**
-   * Returns known child keys for the given `nodeKey` and queues a fetch if children are missing.
-   */
-  getChildKeys(rootKey: string, nodeKey: string): Array<string> {
-    const childKeys = this._data.childKeyMap[nodeKey];
-    if (childKeys == null || this._data.isDirtyMap[nodeKey]) {
-      this._fetchChildKeys(nodeKey);
-    } else {
-      /*
-       * If no data needs to be fetched, wipe out the scrolling state because subsequent updates
-       * should no longer scroll the tree. The node will have already been flushed to the view and
-       * scrolled to.
-       */
-      this._checkTrackedNode();
-    }
-    return this._omitHiddenPaths(childKeys || []);
-  }
-
-  getSelectedKeys(rootKey?: string): Immutable.OrderedSet<string> {
-    let selectedKeys;
-    if (rootKey == null) {
-      selectedKeys = new Immutable.OrderedSet();
-      for (const root in this._data.selectedKeysByRoot) {
-        if (this._data.selectedKeysByRoot.hasOwnProperty(root)) {
-          selectedKeys = selectedKeys.merge(this._data.selectedKeysByRoot[root]);
-        }
-      }
-    } else {
-      // If the given `rootKey` has no selected keys, assign an empty set to maintain a non-null
-      // return value.
-      selectedKeys = this._data.selectedKeysByRoot[rootKey] || new Immutable.OrderedSet();
-    }
-    return selectedKeys;
-  }
-
-  /**
-   * Returns a list of the nodes that are currently visible/expanded in the file tree.
-   *
-   * This method returns an array synchronously (rather than an iterator) to ensure the caller
-   * gets a consistent snapshot of the current state of the file tree.
-   */
-  getVisibleNodes(rootKey: string): Array<FileTreeNode> {
-    // Do some basic checks to ensure that rootKey corresponds to a root and is expanded. If not,
-    // return the appropriate array.
-    if (!this.isRootKey(rootKey)) {
+    const node = this.getNode(rootKey, nodeKey);
+    if (node == null) {
       return [];
     }
-    if (!this.isExpanded(rootKey, rootKey)) {
-      return [this.getNode(rootKey, rootKey)];
+
+    if (!node.isLoading) {
+      return shownChildrenUris(node);
     }
 
-    // Note that we could cache the visibleNodes array so that we do not have to create it from
-    // scratch each time this is called, but it does not appear to be a bottleneck at present.
-    const visibleNodes = [];
-    const rootKeysForDirectoriesToExplore = [rootKey];
-    while (rootKeysForDirectoriesToExplore.length !== 0) {
-      const key = rootKeysForDirectoriesToExplore.pop();
-      visibleNodes.push(this.getNode(key, key));
-      const childKeys = this._data.childKeyMap[key];
-      if (childKeys == null || this._data.isDirtyMap[key]) {
-        // This is where getChildKeys() would fetch, but we do not want to do that.
-        // TODO: If key is in isDirtyMap, then retry when it is not dirty?
-        continue;
-      }
-
-      for (const childKey of childKeys) {
-        if (FileTreeHelpers.isDirKey(childKey)) {
-          if (this.isExpanded(rootKey, key)) {
-            rootKeysForDirectoriesToExplore.push(childKey);
-          }
-        } else {
-          visibleNodes.push(this.getNode(key, childKey));
-        }
-      }
-    }
-    return visibleNodes;
+    await this._fetchChildKeys(nodeKey);
+    return this.promiseNodeChildKeys(rootKey, nodeKey);
   }
 
   /**
-   * Returns all selected nodes across all roots in the tree.
-   */
-  getSelectedNodes(): Immutable.OrderedSet<FileTreeNode> {
-    let selectedNodes = new Immutable.OrderedSet();
-    this._data.rootKeys.forEach(rootKey => {
-      this.getSelectedKeys(rootKey).forEach(nodeKey => {
-        selectedNodes = selectedNodes.add(this.getNode(rootKey, nodeKey));
-      });
+  * Uses the .containsSelection child-derived property to efficiently build the list of the
+  * currently selected nodes
+  */
+  getSelectedNodes(): Immutable.List<FileTreeNode> {
+    const selectedNodes = [];
+    this.roots.forEach(root => {
+      root.traverse(
+        node => {
+          if (node.isSelected) {
+            selectedNodes.push(node);
+          }
+          return node.containsSelection;
+        },
+      );
     });
-    return selectedNodes;
+    return new Immutable.List(selectedNodes);
   }
 
+  /**
+  * Returns a node if it is the only one selected, or null otherwise
+  */
   getSingleSelectedNode(): ?FileTreeNode {
-    const selectedRoots = Object.keys(this._data.selectedKeysByRoot);
-    if (selectedRoots.length !== 1) {
-      // There is more than one root with selected nodes. No bueno.
+    const selectedNodes = this.getSelectedNodes();
+
+    if (selectedNodes.isEmpty() || selectedNodes.size > 1) {
       return null;
     }
-    const rootKey = selectedRoots[0];
-    const selectedKeys = this.getSelectedKeys(rootKey);
-    /*
-     * Note: This does not call `getSelectedNodes` to prevent creating nodes that would be thrown
-     * away if there is more than 1 selected node.
-     */
-    return (selectedKeys.size === 1) ? this.getNode(rootKey, selectedKeys.first()) : null;
+
+    return selectedNodes.first();
   }
 
-  getRootNode(rootKey: string): FileTreeNode {
-    return this.getNode(rootKey, rootKey);
-  }
+  getNode(rootKey: NuclideUri, nodeKey: NuclideUri): ?FileTreeNode {
+    const rootNode = this.roots.get(rootKey);
 
-  getNode(rootKey: string, nodeKey: string): FileTreeNode {
-    return new FileTreeNode(this, rootKey, nodeKey);
+    if (rootNode == null) {
+      return null;
+    }
+
+    return rootNode.find(nodeKey);
   }
 
   isEditingWorkingSet(): boolean {
-    return this._data.isEditingWorkingSet;
-  }
-
-  getEditedWorkingSet(): WorkingSet {
-    return this._data.editedWorkingSet;
-  }
-
-  _setEditedWorkingSet(editedWorkingSet: WorkingSet): void {
-    this._set('editedWorkingSet', editedWorkingSet);
+    return this._conf.isEditingWorkingSet;
   }
 
   /**
-   * If a fetch is not already in progress initiate a fetch now.
+  * Builds the edited working set from the partially-child-derived .checkedStatus property
+  */
+  getEditedWorkingSet(): WorkingSet {
+    const uris = [];
+
+    this.roots.forEach(root => root.traverse(
+      node => {
+        if (node.checkedStatus === 'partial') {
+          return true;
+        } else if (node.checkedStatus === 'checked') {
+          uris.push(node.uri);
+        }
+
+        return false;
+      }
+    ));
+
+    return new WorkingSet(uris);
+  }
+
+  isEditedWorkingSetEmpty(): boolean {
+    return this.roots.every(root => root.checkedStatus === 'clear');
+  }
+
+  /**
+   * Initiates the fetching of node's children if it's not already in the process.
+   * Clears the node's .isLoading property once the fetch is complete.
+   * Once the fetch is completed, clears the node's .isLoading property, builds the map of the
+   * node's children out of the fetched children URIs and a change subscription is created
+   * for the node to monitor future changes.
    */
-  _fetchChildKeys(nodeKey: string): Promise<void> {
+  _fetchChildKeys(nodeKey: NuclideUri): Promise<void> {
     const existingPromise = this._getLoading(nodeKey);
-    if (existingPromise) {
+    if (existingPromise != null) {
       return existingPromise;
     }
 
@@ -587,22 +735,64 @@ class FileTreeStore {
       .catch(error => {
         this._logger.error(`Unable to fetch children for "${nodeKey}".`);
         this._logger.error('Original error: ', error);
+
         // Collapse the node and clear its loading state on error so the
         // user can retry expanding it.
-        const rootKey = this.getRootForKey(nodeKey);
-        if (rootKey != null) {
-          this._collapseNode(rootKey, nodeKey);
-        }
+        this._updateNodeAtAllRoots(nodeKey, node =>
+          node.set({isExpanded: false, isLoading: false, children: new Immutable.OrderedMap()})
+        );
+
         this._clearLoading(nodeKey);
       })
       .then(childKeys => {
-        // If this node's root went away while the Promise was resolving, do
-        // no more work. This is no longer needed in the store.
-        if (this.getRootForKey(nodeKey) == null) {
-          return;
-        }
-        this._setChildKeys(nodeKey, childKeys);
-        this._addSubscription(nodeKey);
+        const childrenKeys = childKeys || [];
+        const directory = FileTreeHelpers.getDirectoryByKey(nodeKey);
+
+        // The node with URI === nodeKey might be present at several roots - update them all
+        this._updateNodeAtAllRoots(nodeKey, node => {
+          // Maintain the order fetched from the FS
+          const childrenNodes = childrenKeys.map(uri => {
+            const prevNode = node.find(uri);
+            // If we already had a child with this URI - keep it
+            if (prevNode != null) {
+              return prevNode;
+            }
+
+            return node.createChild({
+              uri,
+              isExpanded: false,
+              isSelected: false,
+              isLoading: false,
+              isCwd: false,
+              isTracked: false,
+              children: new Immutable.OrderedMap(),
+            });
+          });
+
+          const children = FileTreeNode.childrenFromArray(childrenNodes);
+          // In case previous subscription existed - dispose of it
+          if (node.subscription != null) {
+            node.subscription.dispose();
+          }
+          // and create a new subscription
+          const subscription = this._makeSubscription(nodeKey, directory);
+
+          // If the fetch indicated that some children were removed - dispose of all
+          // their subscriptions
+          const removedChildren = node.children.filter(n => !children.has(n.name));
+          removedChildren.forEach(c => {
+            c.traverse(n => {
+              if (n.subscription != null) {
+                n.subscription.dispose();
+              }
+
+              return true;
+            });
+          });
+
+          return node.set({isLoading: false, children, subscription});
+        });
+
         this._clearLoading(nodeKey);
       });
 
@@ -610,24 +800,41 @@ class FileTreeStore {
     return promise;
   }
 
-  _getLoading(nodeKey: string): ?Promise {
-    return this._data.isLoadingMap[nodeKey];
+  _makeSubscription(nodeKey: NuclideUri, directory: ?Directory): ?IDisposable {
+    if (directory == null) {
+      return null;
+    }
+
+    try {
+      // This call might fail if we try to watch a non-existing directory, or if permission denied.
+      return directory.onDidChange(() => {
+        this._fetchChildKeys(nodeKey);
+      });
+    } catch (ex) {
+      /*
+       * Log error and mark the directory as dirty so the failed subscription will be attempted
+       * again next time the directory is expanded.
+       */
+      this._logger.error(`Cannot subscribe to directory "${nodeKey}"`, ex);
+      return null;
+    }
   }
 
-  _setLoading(nodeKey: string, value: Promise): void {
-    this._set('isLoadingMap', setProperty(this._data.isLoadingMap, nodeKey, value));
+  _getLoading(nodeKey: NuclideUri): ?Promise<void> {
+    return this._isLoadingMap.get(nodeKey);
   }
 
-  isCwd(nodeKey: string): boolean {
-    return nodeKey === this._data.cwdKey;
+  _setLoading(nodeKey: NuclideUri, value: Promise<void>): void {
+    this._isLoadingMap = this._isLoadingMap.set(nodeKey, value);
   }
 
   hasCwd(): boolean {
-    return this._data.cwdKey != null;
+    return this._cwdKey != null;
   }
 
-  _setCwdKey(rootKey: ?string): void {
-    this._set('cwdKey', rootKey);
+  _setCwdKey(cwdKey: ?NuclideUri): void {
+    this._cwdKey = cwdKey;
+    this._updateRoots(root => root.setIsCwd(root.uri === cwdKey));
   }
 
   /**
@@ -636,35 +843,33 @@ class FileTreeStore {
    */
   _checkTrackedNode(): void {
     if (
-      this._data.trackedNode != null &&
       /*
        * The loading map being empty is a heuristic for when loading has completed. It is inexact
        * because the loading might be unrelated to the tracked node, however it is cheap and false
        * positives will only last until loading is complete or until the user clicks another node in
        * the tree.
        */
-      objectUtil.isEmpty(this._data.isLoadingMap)
+      this._isLoadingMap.isEmpty()
     ) {
       // Loading has completed. Allow scrolling to proceed as usual.
-      this._set('trackedNode', null);
+      this._clearTrackedNode();
     }
   }
 
-  _clearLoading(nodeKey: string): void {
-    this._set('isLoadingMap', deleteProperty(this._data.isLoadingMap, nodeKey));
-    this._checkTrackedNode();
+  _clearLoading(nodeKey: NuclideUri): void {
+    this._isLoadingMap = this._isLoadingMap.delete(nodeKey);
   }
 
   async _deleteSelectedNodes(): Promise<void> {
     const selectedNodes = this.getSelectedNodes();
     await Promise.all(selectedNodes.map(async node => {
-      const entry = FileTreeHelpers.getEntryByKey(node.nodeKey);
+      const entry = FileTreeHelpers.getEntryByKey(node.uri);
 
       if (entry == null) {
         return;
       }
       const path = entry.getPath();
-      const repository = repositoryForPath(path);
+      const repository = node.repo;
       if (repository != null && repository.getType() === 'hg') {
         const hgRepository = ((repository: any): HgRepositoryClient);
         try {
@@ -689,7 +894,7 @@ class FileTreeStore {
       if (FileTreeHelpers.isLocalEntry(entry)) {
         // TODO: This special-case can be eliminated once `delete()` is added to `Directory`
         // and `File`.
-        shell.moveItemToTrash(node.nodePath);
+        shell.moveItemToTrash(FileTreeHelpers.keyToPath(node.uri));
       } else {
         const remoteFile = ((entry: any): (RemoteFile | RemoteDirectory));
         await remoteFile.delete();
@@ -697,39 +902,34 @@ class FileTreeStore {
     }));
   }
 
-  _expandNode(rootKey: string, nodeKey: string): void {
-    this._setExpandedKeys(rootKey, this._getExpandedKeys(rootKey).add(nodeKey));
-    // If we have child nodes that should also be expanded, expand them now.
-    let previouslyExpanded = this._getPreviouslyExpanded(rootKey);
-    if (previouslyExpanded.has(nodeKey)) {
-      for (const childKey of previouslyExpanded.get(nodeKey)) {
-        this._expandNode(rootKey, childKey);
-      }
-      // Clear the previouslyExpanded list since we're done with it.
-      previouslyExpanded = previouslyExpanded.delete(nodeKey);
-      this._setPreviouslyExpanded(rootKey, previouslyExpanded);
-    }
+  _expandNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    this._updateNodeAtRoot(rootKey, nodeKey, node => {
+      return node.setIsExpanded(true).setRecursive(
+        n => !n.isContainer || !n.isExpanded ? n : null,
+        n => {
+          if (n.isContainer && n.isExpanded) {
+            this._fetchChildKeys(n.uri);
+            return n.setIsLoading(true);
+          }
+
+          return n;
+        }
+      );
+    });
   }
 
   /**
    * Performes a deep BFS scanning expand of contained nodes.
    * returns - a promise fulfilled when the expand operation is finished
    */
-  _expandNodeDeep(rootKey: string, nodeKey: string): Promise<void> {
+  _expandNodeDeep(rootKey: NuclideUri, nodeKey: NuclideUri): Promise<void> {
     // Stop the traversal after 100 nodes were added to the tree
     const itNodes = new FileTreeStoreBfsIterator(this, rootKey, nodeKey, /* limit*/ 100);
     const promise = new Promise(resolve => {
       const expand = () => {
         const traversedNodeKey = itNodes.traversedNode();
         if (traversedNodeKey) {
-          this._setExpandedKeys(rootKey, this._getExpandedKeys(rootKey).add(traversedNodeKey));
-          /**
-           * Even if there were previously expanded nodes it doesn't matter as
-           * we'll expand all of the children.
-           */
-          let previouslyExpanded = this._getPreviouslyExpanded(rootKey);
-          previouslyExpanded = previouslyExpanded.delete(traversedNodeKey);
-          this._setPreviouslyExpanded(rootKey, previouslyExpanded);
+          this._expandNode(rootKey, traversedNodeKey);
 
           const nextPromise = itNodes.next();
           if (nextPromise) {
@@ -746,496 +946,362 @@ class FileTreeStore {
     return promise;
   }
 
-  /**
-   * When we collapse a node we need to do some cleanup removing subscriptions and selection.
-   */
-  _collapseNode(rootKey: string, nodeKey: string): void {
-    const childKeys = this._data.childKeyMap[nodeKey];
-    let selectedKeys = this._data.selectedKeysByRoot[rootKey];
-    const expandedChildKeys = [];
-    if (childKeys) {
-      childKeys.forEach(childKey => {
-        // Unselect each child.
-        if (selectedKeys && selectedKeys.has(childKey)) {
-          selectedKeys = selectedKeys.delete(childKey);
-          /*
-           * Set the selected keys *before* the recursive `_collapseNode` call so each call stores
-           * its changes and isn't wiped out by the next call by keeping an outdated `selectedKeys`
-           * in the call stack.
-           */
-          this._setSelectedKeys(rootKey, selectedKeys);
-        }
-        // Collapse each child directory.
-        if (FileTreeHelpers.isDirKey(childKey)) {
-          if (this.isExpanded(rootKey, childKey)) {
-            expandedChildKeys.push(childKey);
-            this._collapseNode(rootKey, childKey);
+  _collapseNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    this._updateNodeAtRoot(rootKey, nodeKey, node => {
+      // Clear all selected nodes under the node being collapsed and dispose their subscriptions
+      return node.setRecursive(
+        childNode => {
+          if (childNode.isExpanded) {
+            return null;
+          }
+          return childNode;
+        },
+        childNode => {
+          if (childNode.subscription != null) {
+            childNode.subscription.dispose();
+          }
+
+          if (childNode.uri === node.uri) {
+            return childNode.set({isExpanded: false, subscription: null});
+          } else {
+            return childNode.set({isSelected: false, subscription: null});
           }
         }
-      });
+      );
+    });
+  }
+
+  _collapseNodeDeep(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    this._updateNodeAtRoot(rootKey, nodeKey, node => {
+      invariant(node.isExpanded);
+      return node.setRecursive(
+        /* prePredicate */ null,
+        childNode => {
+          if (childNode.subscription != null) {
+            childNode.subscription.dispose();
+          }
+
+          if (childNode !== node) {
+            return childNode.set({isExpanded: false, isSelected: false, subscription: null});
+          } else {
+            return childNode.set({isExpanded: false, subscription: null});
+          }
+        },
+      );
+    });
+  }
+
+  /**
+  * Selects a single node and tracks it.
+  */
+  _setSelectedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    this._clearSelection();
+    this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsSelected(true));
+    this._setTrackedNode(rootKey, nodeKey);
+  }
+
+  _addSelectedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsSelected(true));
+  }
+
+  _unselectNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsSelected(false));
+  }
+
+  /**
+  * Moves the selection one node down. In case several nodes were selected, the topmost (first in
+  * the natural visual order) is considered to be the reference point for the move.
+  */
+  _moveSelectionDown(): void {
+    if (this.roots.isEmpty()) {
+      return;
     }
-    /*
-     * Save the list of expanded child nodes so next time we expand this node we can expand these
-     * children.
-     */
-    let previouslyExpanded = this._getPreviouslyExpanded(rootKey);
-    if (expandedChildKeys.length !== 0) {
-      previouslyExpanded = previouslyExpanded.set(nodeKey, expandedChildKeys);
+
+    const selectedNodes = this.getSelectedNodes();
+
+    let nodeToSelect;
+    if (selectedNodes.isEmpty()) {
+      nodeToSelect = this.roots.first();
     } else {
-      previouslyExpanded = previouslyExpanded.delete(nodeKey);
+      const selectedNode = selectedNodes.first();
+      nodeToSelect = selectedNode.findNext();
     }
-    this._setPreviouslyExpanded(rootKey, previouslyExpanded);
-    this._setExpandedKeys(rootKey, this._getExpandedKeys(rootKey).delete(nodeKey));
-    this._removeSubscription(rootKey, nodeKey);
-  }
 
-  _getPreviouslyExpanded(rootKey: string): Immutable.Map<string, Array<string>> {
-    return this._data.previouslyExpanded[rootKey] || new Immutable.Map();
-  }
-
-  _setPreviouslyExpanded(rootKey: string,
-    previouslyExpanded: Immutable.Map<string, Array<string>>): void {
-    this._set(
-      'previouslyExpanded',
-      setProperty(this._data.previouslyExpanded, rootKey, previouslyExpanded)
-    );
-  }
-
-  _getExpandedKeys(rootKey: string): Immutable.Set<string> {
-    return this._data.expandedKeysByRoot[rootKey] || new Immutable.Set();
+    if (nodeToSelect != null) {
+      this._setSelectedNode(nodeToSelect.rootUri, nodeToSelect.uri);
+    }
   }
 
   /**
-   * This is just exposed so it can be mocked in the tests. Not ideal, but a lot less messy than the
-   * alternatives. For example, passing options when constructing an instance of a singleton would
-   * make future invocations of `getInstance` unpredictable.
-   */
-  _repositoryForPath(path: NuclideUri): ?atom$Repository {
-    return this.getRepositories().find(repo => repositoryContainsPath(repo, path));
+  * Moves the selection one node up. In case several nodes were selected, the topmost (first in
+  * the natural visual order) is considered to be the reference point for the move.
+  */
+  _moveSelectionUp(): void {
+    if (this.roots.isEmpty()) {
+      return;
+    }
+
+    const selectedNodes = this.getSelectedNodes();
+
+    let nodeToSelect;
+    if (selectedNodes.isEmpty()) {
+      nodeToSelect = this.roots.last().findLastRecursiveChild();
+    } else {
+      const selectedNode = selectedNodes.first();
+      nodeToSelect = selectedNode.findPrevious();
+    }
+
+    if (nodeToSelect != null) {
+      this._setSelectedNode(nodeToSelect.rootUri, nodeToSelect.uri);
+    }
   }
 
-  _setExpandedKeys(rootKey: string, expandedKeys: Immutable.Set<string>): void {
-    this._set(
-      'expandedKeysByRoot',
-      setProperty(this._data.expandedKeysByRoot, rootKey, expandedKeys)
-    );
+  _moveSelectionToTop(): void {
+    if (this.roots.isEmpty()) {
+      return;
+    }
+
+    let nodeToSelect = this.roots.first();
+    if (nodeToSelect != null && !nodeToSelect.shouldBeShown) {
+      nodeToSelect = nodeToSelect.findNext();
+    }
+
+    if (nodeToSelect != null) {
+      this._setSelectedNode(nodeToSelect.uri, nodeToSelect.uri);
+    }
   }
 
-  _deleteSelectedKeys(rootKey: string): void {
-    this._set('selectedKeysByRoot', deleteProperty(this._data.selectedKeysByRoot, rootKey));
+  _moveSelectionToBottom(): void {
+    if (this.roots.isEmpty()) {
+      return;
+    }
+
+    const lastRoot = this.roots.last();
+    const lastChild = lastRoot.findLastRecursiveChild();
+    this._setSelectedNode(lastChild.rootUri, lastChild.uri);
   }
 
-  _setSelectedKeys(rootKey: string, selectedKeys: Immutable.OrderedSet<string>): void {
-    /*
-     * New selection means previous node should not be kept in view. Do this without de-bouncing
-     * because the previous state is irrelevant. If the user chose a new selection, the previous one
-     * should not be scrolled into view.
-     */
-    this._set('trackedNode', null);
-    this._set(
-      'selectedKeysByRoot',
-      setProperty(this._data.selectedKeysByRoot, rootKey, selectedKeys)
-    );
-  }
-
-  /**
-   * Sets the selected keys in all roots of the tree. The selected keys of root keys not in
-   * `selectedKeysByRoot` are deleted (the root is left with no selection).
-   */
-  _setSelectedKeysByRoot(selectedKeysByRoot: {[key: string]: Immutable.OrderedSet<string>}): void {
-    this.getRootKeys().forEach(rootKey => {
-      if (selectedKeysByRoot.hasOwnProperty(rootKey)) {
-        this._setSelectedKeys(rootKey, selectedKeysByRoot[rootKey]);
-      } else {
-        this._deleteSelectedKeys(rootKey);
-      }
+  _clearSelection(): void {
+    this._updateRoots(root => {
+      return root.setRecursive(
+        node => node.containsSelection ? null : node,
+        node => node.setIsSelected(false),
+      );
     });
   }
 
-  _setRootKeys(rootKeys: Array<string>): void {
-    const oldRootKeys = this._data.rootKeys;
-    const newRootKeys = new Immutable.Set(rootKeys);
-    const removedRootKeys = new Immutable.Set(oldRootKeys).subtract(newRootKeys);
-    removedRootKeys.forEach(this._purgeRoot.bind(this));
-    this._set('rootKeys', rootKeys);
+  _setRootKeys(rootKeys: Array<NuclideUri>): void {
+    const rootNodes = rootKeys.map(rootUri => {
+      const root = this.roots.get(rootUri);
+      if (root != null) {
+        return root;
+      }
+
+      return new FileTreeNode({
+        uri: rootUri,
+        rootUri,
+        connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
+      }, this._conf);
+    });
+
+    const roots = new Immutable.OrderedMap(rootNodes.map(root => [root.uri, root]));
+    const removedRoots = this.roots.filter(root => !roots.has(root.uri));
+    removedRoots.forEach(root => root.traverse(
+      node => node.isExpanded,
+      node => {
+        if (node.subscription != null) {
+          node.subscription.dispose();
+        }
+      }
+    ));
+    this._setRoots(roots);
+
+    // Just in case there's a race between the update of the root keys and the cwdKey and the cwdKey
+    // is set too early - set it again. If there was no race - it's a noop.
+    this._setCwdKey(this._cwdKey);
   }
 
   /**
-   * Sets a single child node. It's useful when expanding to a deeply nested node.
-   */
-  _createChild(nodeKey: string, childKey: string): void {
-    this._setChildKeys(nodeKey, [childKey]);
-    /*
-     * Mark the node as dirty so its ancestors are fetched again on reload of the tree.
-     */
-    this._set('isDirtyMap', setProperty(this._data.isDirtyMap, nodeKey, true));
-  }
+  * Makes sure a certain child node is present in the file tree, creating all its ancestors, if
+  * needed and scheduling a chilld key fetch. Used by the reveal active file functionality.
+  */
+  _ensureChildNode(nodeKey: NuclideUri): void {
+    let firstRootUri;
 
-  _setChildKeys(nodeKey: string, childKeys: Array<string>): void {
-    const oldChildKeys = this._data.childKeyMap[nodeKey];
-    if (oldChildKeys) {
-      const newChildKeys = new Immutable.Set(childKeys);
-      const removedDirectoryKeys = new Immutable.Set(oldChildKeys)
-        .subtract(newChildKeys)
-        .filter(FileTreeHelpers.isDirKey);
-      removedDirectoryKeys.forEach(this._purgeDirectory.bind(this));
-    }
-    this._set('childKeyMap', setProperty(this._data.childKeyMap, nodeKey, childKeys));
-  }
-
-  _onDirectoryChange(nodeKey: string): void {
-    this._fetchChildKeys(nodeKey);
-  }
-
-  _addSubscription(nodeKey: string): void {
-    const directory = FileTreeHelpers.getDirectoryByKey(nodeKey);
-    if (!directory) {
-      return;
-    }
-
-    /*
-     * Remove the directory's dirty marker regardless of whether a subscription already exists
-     * because there is nothing further making it dirty.
-     */
-    this._set('isDirtyMap', deleteProperty(this._data.isDirtyMap, nodeKey));
-
-    // Don't create a new subscription if one already exists.
-    if (this._data.subscriptionMap[nodeKey]) {
-      return;
-    }
-
-    let subscription;
-    try {
-      // This call might fail if we try to watch a non-existing directory, or if permission denied.
-      subscription = directory.onDidChange(() => {
-        this._onDirectoryChange(nodeKey);
-      });
-    } catch (ex) {
-      /*
-       * Log error and mark the directory as dirty so the failed subscription will be attempted
-       * again next time the directory is expanded.
-       */
-      this._logger.error(`Cannot subscribe to directory "${nodeKey}"`, ex);
-      this._set('isDirtyMap', setProperty(this._data.isDirtyMap, nodeKey));
-      return;
-    }
-    this._set('subscriptionMap', setProperty(this._data.subscriptionMap, nodeKey, subscription));
-  }
-
-  _removeSubscription(rootKey: string, nodeKey: string): void {
-    let hasRemainingSubscribers;
-    const subscription = this._data.subscriptionMap[nodeKey];
-
-    if (subscription != null) {
-      hasRemainingSubscribers = this._data.rootKeys.some(otherRootKey => (
-        otherRootKey !== rootKey && this.isExpanded(otherRootKey, nodeKey)
-      ));
-      if (!hasRemainingSubscribers) {
-        subscription.dispose();
-        this._set('subscriptionMap', deleteProperty(this._data.subscriptionMap, nodeKey));
+    const expandNode = node => {
+      if (node.isExpanded && node.subscription != null) {
+        return node;
       }
-    }
 
-    if (subscription == null || hasRemainingSubscribers === false) {
-      // Since we're no longer getting notifications when the directory contents change, assume the
-      // child list is dirty.
-      this._set('isDirtyMap', setProperty(this._data.isDirtyMap, nodeKey, true));
-    }
-  }
-
-  _removeAllSubscriptions(nodeKey: string): void {
-    const subscription = this._data.subscriptionMap[nodeKey];
-    if (subscription) {
-      subscription.dispose();
-      this._set('subscriptionMap', deleteProperty(this._data.subscriptionMap, nodeKey));
-    }
-  }
-
-  _purgeNode(rootKey: string, nodeKey: string, unselect: boolean): void {
-    const expandedKeys = this._getExpandedKeys(rootKey);
-    if (expandedKeys.has(nodeKey)) {
-      this._setExpandedKeys(rootKey, expandedKeys.delete(nodeKey));
-    }
-
-    if (unselect) {
-      const selectedKeys = this.getSelectedKeys(rootKey);
-      if (selectedKeys.has(nodeKey)) {
-        this._setSelectedKeys(rootKey, selectedKeys.delete(nodeKey));
+      if (node.subscription != null) {
+        node.subscription.dispose();
       }
-    }
 
-    const previouslyExpanded = this._getPreviouslyExpanded(rootKey);
-    if (previouslyExpanded.has(nodeKey)) {
-      this._setPreviouslyExpanded(rootKey, previouslyExpanded.delete(nodeKey));
+      const directory = FileTreeHelpers.getDirectoryByKey(node.uri);
+      const subscription = this._makeSubscription(node.uri, directory);
+      return node.set({subscription, isExpanded: true});
+    };
+
+    this._updateRoots(root => {
+      if (!nodeKey.startsWith(root.uri)) {
+        return root;
+      }
+
+      if (firstRootUri == null) {
+        firstRootUri = root.uri;
+      }
+
+      const deepest = root.findDeepest(nodeKey);
+      if (deepest == null) {
+        return root;
+      }
+
+      if (deepest.uri === nodeKey) {
+        return this._bubbleUp(
+          deepest,
+          deepest,
+          expandNode,
+        );
+      }
+
+      const parents = [];
+      let currentParentUri = FileTreeHelpers.getParentKey(nodeKey);
+      while (currentParentUri !== deepest.uri) {
+        parents.push(currentParentUri);
+        currentParentUri = FileTreeHelpers.getParentKey(currentParentUri);
+      }
+
+      let currentChild = deepest.createChild({uri: nodeKey});
+
+      parents.forEach(currentUri => {
+        this._fetchChildKeys(currentUri);
+        const parent = deepest.createChild({
+          uri: currentUri,
+          isLoading: true,
+          isExpanded: true,
+          children: FileTreeNode.childrenFromArray([currentChild]),
+        });
+
+        currentChild = parent;
+      });
+
+      this._fetchChildKeys(deepest.uri);
+      return this._bubbleUp(
+        deepest,
+        deepest.set({
+          isLoading: true,
+          isExpanded: true,
+          children: deepest.children.set(currentChild.name, currentChild),
+        }),
+        expandNode,
+      );
+    });
+
+    if (firstRootUri != null) {
+      this._setSelectedNode(firstRootUri, nodeKey);
     }
   }
 
-  _purgeDirectoryWithinARoot(rootKey: string, nodeKey: string, unselect: boolean): void {
-    const childKeys = this._data.childKeyMap[nodeKey];
-    if (childKeys) {
-      childKeys.forEach(childKey => {
-        if (FileTreeHelpers.isDirKey(childKey)) {
-          this._purgeDirectoryWithinARoot(rootKey, childKey, /* unselect */ true);
-        }
-      });
-    }
-    this._removeSubscription(rootKey, nodeKey);
-    this._purgeNode(rootKey, nodeKey, unselect);
-  }
+  _clearTrackedNode(): void {
+    this._updateRoots(root => {
+      if (!root.containsTrackedNode) {
+        return root;
+      }
 
-  // This is called when a dirctory is physically removed from disk. When we purge a directory,
-  // we need to purge it's child directories also. Purging removes stuff from the data store
-  // including list of child nodes, subscriptions, expanded directories and selected directories.
-  _purgeDirectory(nodeKey: string): void {
-    const childKeys = this._data.childKeyMap[nodeKey];
-    if (childKeys) {
-      childKeys.forEach(childKey => {
-        if (FileTreeHelpers.isDirKey(childKey)) {
-          this._purgeDirectory(childKey);
-        }
-      });
-      this._set('childKeyMap', deleteProperty(this._data.childKeyMap, nodeKey));
-    }
-
-    this._removeAllSubscriptions(nodeKey);
-    this.getRootKeys().forEach(rootKey => {
-      this._purgeNode(rootKey, nodeKey, /* unselect */ true);
+      return root.setRecursive(
+        node => node.containsTrackedNode ? null : node,
+        node => node.setIsTracked(false),
+      );
     });
   }
 
-  // TODO: Should we clean up isLoadingMap? It contains promises which cannot be cancelled, so this
-  // might be tricky.
-  _purgeRoot(rootKey: string): void {
-    const expandedKeys = this._data.expandedKeysByRoot[rootKey];
-    if (expandedKeys) {
-      expandedKeys.forEach(nodeKey => {
-        this._removeSubscription(rootKey, nodeKey);
-      });
-      this._set('expandedKeysByRoot', deleteProperty(this._data.expandedKeysByRoot, rootKey));
-    }
-    this._set('selectedKeysByRoot', deleteProperty(this._data.selectedKeysByRoot, rootKey));
-    // Remove all child keys so that on re-addition of this root the children will be fetched again.
-    const childKeys = this._data.childKeyMap[rootKey];
-    if (childKeys) {
-      childKeys.forEach(childKey => {
-        if (FileTreeHelpers.isDirKey(childKey)) {
-          this._set('childKeyMap', deleteProperty(this._data.childKeyMap, childKey));
-        }
-      });
-      this._set('childKeyMap', deleteProperty(this._data.childKeyMap, rootKey));
-    }
-    this._set('vcsStatusesByRoot', deleteProperty(this._data.vcsStatusesByRoot, rootKey));
-  }
-
-  _setTrackedNode(rootKey: string, nodeKey: string): void {
-    // Flush the value to ensure clients see the value at least once and scroll appropriately.
-    this._set('trackedNode', {nodeKey, rootKey}, true);
+  _setTrackedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    this._clearTrackedNode();
+    this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsTracked(true));
   }
 
   _setRepositories(repositories: Immutable.Set<atom$Repository>): void {
-    this._set('repositories', repositories);
-
-    // Whenever a new set of repositories comes in, invalidate our paths cache by resetting its
-    // `cache` property (created by lodash.memoize) to an empty map.
-    this._repositoryForPath.cache = new Map();
+    this._repositories = repositories;
+    this._updateConf(conf => {
+      const reposByRoot = {};
+      this.roots.forEach(root => {
+        reposByRoot[root.uri] = repositoryForPath(root.uri);
+      });
+    });
   }
 
   _setWorkingSet(workingSet: WorkingSet): void {
-    this._set('workingSet', workingSet);
+    this._updateConf(conf => conf.workingSet = workingSet);
   }
 
   _setOpenFilesWorkingSet(openFilesWorkingSet: WorkingSet): void {
-    this._set('openFilesWorkingSet', openFilesWorkingSet);
+    this._updateConf(conf => conf.openFilesWorkingSet = openFilesWorkingSet);
   }
 
   _setWorkingSetsStore(workingSetsStore: ?WorkingSetsStore): void {
-    this._set('workingSetsStore', workingSetsStore);
+    this._workingSetsStore = workingSetsStore;
   }
 
-  _startEditingWorkingSet(editedWorkingSet: WorkingSet): void {
-    if (!this._data.isEditingWorkingSet) {
-      this._set('isEditingWorkingSet', true);
-      this._setEditedWorkingSet(editedWorkingSet);
-    }
+  _startEditingWorkingSet(): void {
+    this._updateRoots(root =>
+      root.setRecursive(null, node => node.setCheckedStatus('clear'))
+    );
+    this._updateConf(conf => conf.isEditingWorkingSet = true);
   }
 
   _finishEditingWorkingSet(): void {
-    if (this._data.isEditingWorkingSet) {
-      this._set('isEditingWorkingSet', false);
-      this._setEditedWorkingSet(new WorkingSet());
-    }
+    this._updateRoots(root =>
+      root.setRecursive(null, node => node.setCheckedStatus('clear'))
+    );
+    this._updateConf(conf => conf.isEditingWorkingSet = false);
   }
 
-  _checkNode(rootKey: string, nodeKey: string): void {
-    if (!this._data.isEditingWorkingSet) {
+  _checkNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    if (!this._conf.isEditingWorkingSet) {
       return;
     }
 
-    const editedWorkingSet = this._data.editedWorkingSet.append(nodeKey);
+    this._updateNodeAtRoot(rootKey, nodeKey, node => {
+      return node.setRecursive(
+        n => n.checkedStatus === 'checked' ? n : null,
+        n => n.setCheckedStatus('checked'),
+      );
+    });
+  }
 
-    const node = this.getNode(rootKey, nodeKey);
-    if (node.isRoot) {
-      this._setEditedWorkingSet(editedWorkingSet);
+  _uncheckNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    if (!this._conf.isEditingWorkingSet) {
       return;
     }
 
-    const parent = node.getParentNode();
-    const childrenKeys = this.getCachedChildKeys(rootKey, parent.nodeKey);
-    if (childrenKeys.every(ck => editedWorkingSet.containsFile(ck))) {
-      this._checkNode(rootKey, parent.nodeKey);
-    } else {
-      this._setEditedWorkingSet(editedWorkingSet);
-    }
-  }
-
-  _uncheckNode(rootKey: string, nodeKey: string): void {
-    if (!this._data.isEditingWorkingSet) {
-      return;
-    }
-
-    const node = this.getNode(rootKey, nodeKey);
-    if (node.isRoot) {
-      this._setEditedWorkingSet(this._data.editedWorkingSet.remove(nodeKey));
-      return;
-    }
-
-    const parent = node.getParentNode();
-    if (this._data.editedWorkingSet.containsFile(parent.nodeKey)) {
-      this._uncheckNode(rootKey, parent.nodeKey);
-      const childrenKeys = this.getCachedChildKeys(rootKey, parent.nodeKey);
-      const siblingsKeys = childrenKeys.filter(ck => ck !== nodeKey);
-
-      this._setEditedWorkingSet(this._data.editedWorkingSet.append(...siblingsKeys));
-    } else {
-      this._setEditedWorkingSet(this._data.editedWorkingSet.remove(nodeKey));
-    }
-  }
-
-  _omitHiddenPaths(nodeKeys: Array<string>): Array<string> {
-    if (
-      !this._data.hideIgnoredNames &&
-      !this._data.excludeVcsIgnoredPaths &&
-      this._data.workingSet.isEmpty()
-    ) {
-      return nodeKeys;
-    }
-
-    return nodeKeys.filter(nodeKey => !this._shouldHidePath(nodeKey));
-  }
-
-  _shouldHidePath(nodeKey: string): boolean {
-    const isIgnoredPath = this._isIgnoredPath(nodeKey);
-    if (isIgnoredPath) {
-      return true;
-    }
-
-    const isExcludedFromWs = this._isExcludedFromWorkingSet(nodeKey);
-    return isExcludedFromWs && this._isExcludedFromOpenFilesWorkingSet(nodeKey);
-  }
-
-  _isIgnoredPath(nodeKey: string): boolean {
-    const {hideIgnoredNames, excludeVcsIgnoredPaths, ignoredPatterns} = this._data;
-
-    if (hideIgnoredNames && matchesSome(nodeKey, ignoredPatterns)) {
-      return true;
-    }
-    if (excludeVcsIgnoredPaths && isVcsIgnored(nodeKey, this._repositoryForPath(nodeKey))) {
-      return true;
-    }
-
-    return false;
-  }
-
-  _isExcludedFromWorkingSet(nodeKey: string): boolean {
-    const {workingSet, isEditingWorkingSet} = this._data;
-
-    if (!isEditingWorkingSet) {
-      if (FileTreeHelpers.isDirKey(nodeKey)) {
-        return !workingSet.containsDir(nodeKey);
-      } else {
-        return !workingSet.containsFile(nodeKey);
-      }
-    }
-
-    return false;
-  }
-
-  _isExcludedFromOpenFilesWorkingSet(nodeKey: string): boolean {
-    const {openFilesWorkingSet, isEditingWorkingSet} = this._data;
-
-    if (isEditingWorkingSet) {
-      return false;
-    }
-
-    if (openFilesWorkingSet.isEmpty()) {
-      return true;
-    }
-
-    if (FileTreeHelpers.isDirKey(nodeKey)) {
-      return !openFilesWorkingSet.containsDir(nodeKey);
-    } else {
-      return !openFilesWorkingSet.containsFile(nodeKey);
-    }
+    this._updateNodeAtRoot(rootKey, nodeKey, node => {
+      return node.setRecursive(
+        n => n.checkedStatus === 'clear' ? n : null,
+        n => n.setCheckedStatus('clear'),
+      );
+    });
   }
 
   reset(): void {
-    const subscriptionMap = this._data.subscriptionMap;
-    for (const nodeKey of Object.keys(subscriptionMap)) {
-      const subscription = subscriptionMap[nodeKey];
-      if (subscription) {
-        subscription.dispose();
-      }
-    }
+    this.roots.forEach(root => {
+      root.traverse(n => {
+        if (n.subscription != null) {
+          n.subscription.dispose();
+        }
+
+        return true;
+      });
+    });
 
     // Reset data store.
-    this._data = this._getDefaults();
+    this._conf = DEFAULT_CONF;
+    this._setRoots(new Immutable.OrderedMap());
   }
 
   subscribe(listener: ChangeListener): IDisposable {
     return this._emitter.on('change', listener);
   }
 }
-
-// A helper to delete a property in an object using shallow copy rather than mutation
-function deleteProperty(object: Object, key: string): Object {
-  if (!object.hasOwnProperty(key)) {
-    return object;
-  }
-  const newObject = {...object};
-  delete newObject[key];
-  return newObject;
-}
-
-// A helper to set a property in an object using shallow copy rather than mutation
-function setProperty(object: Object, key: string, newValue: mixed): Object {
-  const oldValue = object[key];
-  if (oldValue === newValue) {
-    return object;
-  }
-  const newObject = {...object};
-  newObject[key] = newValue;
-  return newObject;
-}
-
-// Create a new object by mapping over the properties of a given object, calling the given
-// function on each one.
-function mapValues(object: Object, fn: Function): Object {
-  const newObject = {};
-  Object.keys(object).forEach(key => {
-    newObject[key] = fn(object[key], key);
-  });
-  return newObject;
-}
-
-// Determine whether the given string matches any of a set of patterns.
-function matchesSome(str: string, patterns: Immutable.Set<Minimatch>) {
-  return patterns.some(pattern => pattern.match(str));
-}
-
-function isVcsIgnored(nodeKey: string, repo: ?atom$Repository) {
-  return repo && repo.isProjectAtRoot() && repo.isPathIgnored(nodeKey);
-}
-
 
 /**
  * Performs a breadth-first iteration over the directories of the tree starting
@@ -1247,9 +1313,9 @@ function isVcsIgnored(nodeKey: string, repo: ?atom$Repository) {
  */
 class FileTreeStoreBfsIterator {
   _fileTreeStore: FileTreeStore;
-  _rootKey: string;
-  _nodesToTraverse: Array<string>;
-  _currentlyTraversedNode: ?string;
+  _rootKey: NuclideUri;
+  _nodesToTraverse: Array<NuclideUri>;
+  _currentlyTraversedNode: ?NuclideUri;
   _limit: number;
   _numNodesTraversed: number;
   _promise: ?Promise<void>;
@@ -1257,8 +1323,8 @@ class FileTreeStoreBfsIterator {
 
   constructor(
       fileTreeStore: FileTreeStore,
-      rootKey: string,
-      nodeKey: string,
+      rootKey: NuclideUri,
+      nodeKey: NuclideUri,
       limit: number) {
     this._fileTreeStore = fileTreeStore;
     this._rootKey = rootKey;
@@ -1270,7 +1336,7 @@ class FileTreeStoreBfsIterator {
     this._count = 0;
   }
 
-  _handlePromiseResolution(childrenKeys: Array<string>): void {
+  _handlePromiseResolution(childrenKeys: Array<NuclideUri>): void {
     this._numNodesTraversed += childrenKeys.length;
     if (this._numNodesTraversed < this._limit) {
       const nextLevelNodes = childrenKeys.filter(childKey => FileTreeHelpers.isDirKey(childKey));
@@ -1301,5 +1367,3 @@ class FileTreeStoreBfsIterator {
     return this._currentlyTraversedNode;
   }
 }
-
-module.exports = FileTreeStore;

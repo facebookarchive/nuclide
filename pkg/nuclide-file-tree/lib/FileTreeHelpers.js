@@ -22,7 +22,7 @@ import pathModule from 'path';
 import url from 'url';
 import crypto from 'crypto';
 
-type Directory = LocalDirectory | RemoteDirectory;
+export type Directory = LocalDirectory | RemoteDirectory;
 type File = LocalFile | RemoteFile;
 type Entry = LocalDirectory | RemoteDirectory | LocalFile | RemoteFile;
 

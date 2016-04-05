@@ -16,7 +16,7 @@ import invariant from 'assert';
 import {addTooltip} from '../../nuclide-atom-helpers';
 import {WorkingSetSelectionComponent} from './WorkingSetSelectionComponent';
 import {WorkingSetNameAndSaveComponent} from './WorkingSetNameAndSaveComponent';
-import FileTreeStore from '../lib/FileTreeStore';
+import {FileTreeStore} from '../lib/FileTreeStore';
 import FileTreeActions from '../lib/FileTreeActions';
 import {WorkingSet} from '../../nuclide-working-sets';
 
@@ -38,7 +38,6 @@ export class FileTreeToolbarComponent extends React.Component {
   _disposables: CompositeDisposable;
   _inProcessOfClosingSelection: boolean;
   _prevName: string;
-  _store: FileTreeStore;
   _actions: FileTreeActions;
   _closeWorkingSetsSelector: ?() => void;
   state: State;
@@ -98,7 +97,7 @@ export class FileTreeToolbarComponent extends React.Component {
 
   render(): React.Element {
     const workingSet = this._store.getWorkingSet();
-    const editedWorkingSet = this._store.getEditedWorkingSet();
+    const editedWorkingSetIsEmpty = this._store.isEditedWorkingSetEmpty();
     const isEditingWorkingSet = this._store.isEditingWorkingSet();
 
     let selectWorkingSetButton;
@@ -113,7 +112,7 @@ export class FileTreeToolbarComponent extends React.Component {
     }
 
     let workingSetNameAndSave;
-    if (!editedWorkingSet.isEmpty()) {
+    if (isEditingWorkingSet && !editedWorkingSetIsEmpty) {
       workingSetNameAndSave = (
         <WorkingSetNameAndSaveComponent
           isEditing={this.state.isUpdatingExistingWorkingSet}
@@ -194,9 +193,9 @@ export class FileTreeToolbarComponent extends React.Component {
   _saveWorkingSet(name: string): void {
     const workingSetsStore = this._store.getWorkingSetsStore();
     invariant(workingSetsStore);
+
     const editedWorkingSet = this._store.getEditedWorkingSet();
     this._finishEditingWorkingSet();
-
     workingSetsStore.saveWorkingSet(name, editedWorkingSet);
     workingSetsStore.activate(name);
   }

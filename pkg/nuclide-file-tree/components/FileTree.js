@@ -9,27 +9,21 @@
  * the root directory of this source tree.
  */
 
-import type {FileTreeNodeData} from '../lib/FileTreeStore';
 
-import FileTreeStore from '../lib/FileTreeStore';
+import {FileTreeStore} from '../lib/FileTreeStore';
 import {React} from 'react-for-atom';
-import RootNodeComponent from './RootNodeComponent';
-import EmptyComponent from './EmptyComponent';
+import {DirectoryEntryComponent} from './DirectoryEntryComponent';
+import {EmptyComponent} from './EmptyComponent';
 import {track} from '../../nuclide-analytics';
 import {once} from '../../nuclide-commons';
 import classnames from 'classnames';
 
-type Props = {
-  nodeToKeepInView: ?FileTreeNodeData;
-};
-
 class FileTree extends React.Component {
-  props: Props;
   state: Object;
   _store: FileTreeStore;
 
   static trackFirstRender = once(() => {
-    const rootKeysLength = FileTreeStore.getInstance().getRootKeys().length;
+    const rootKeysLength = FileTreeStore.getInstance().roots.size;
     // Wait using `setTimeout` and not `process.nextTick` or `setImmediate`
     // because those queue tasks in the current and next turn of the event loop
     // respectively. Since `setTimeout` gets preempted by them, it works great
@@ -51,19 +45,17 @@ class FileTree extends React.Component {
 
   componentDidMount(): void {
     FileTree.trackFirstRender(this);
+    this._scrollToTrackedNodeIfNeeded();
   }
 
-  componentDidUpdate(prevProps: Props, prevState: Object): void {
-    if (prevProps.nodeToKeepInView != null) {
-      /*
-       * Scroll the node into view one final time after being reset to ensure final render is
-       * complete before scrolling. Because the node is in `prevProps`, check for its existence
-       * before scrolling it.
-       */
-      const refNode = this.refs[prevProps.nodeToKeepInView.rootKey];
-      if (refNode != null) {
-        refNode.scrollNodeIntoViewIfNeeded(prevProps.nodeToKeepInView.nodeKey);
-      }
+  componentDidUpdate(): void {
+    this._scrollToTrackedNodeIfNeeded();
+  }
+
+  _scrollToTrackedNodeIfNeeded(): void {
+    const trackedChild = this.refs['tracked'];
+    if (trackedChild != null) {
+      trackedChild.scrollTrackedIntoView();
     }
   }
 
@@ -82,31 +74,27 @@ class FileTree extends React.Component {
     );
   }
 
-  _renderChildren(): ReactElement | Array<ReactElement> {
-    const workingSet = this._store.getWorkingSet();
-    const isEditingWorkingSet = this._store.isEditingWorkingSet();
+  _renderChildren(): ReactElement {
+    const roots = FileTreeStore.getInstance().roots;
 
-    const rootKeys: Array<string> = FileTreeStore.getInstance().getRootKeys()
-      .filter(rK =>  {
-        if (workingSet == null || isEditingWorkingSet) {
-          return true;
-        }
-
-        return workingSet.containsDir(rK);
-      });
-    if (rootKeys.length === 0) {
+    if (roots.isEmpty()) {
       return <EmptyComponent />;
     }
-    return rootKeys.map((rootKey, index) => {
-      return (
-        <RootNodeComponent
-          key={index.toString()}
-          ref={rootKey}
-          rootNode={FileTreeStore.getInstance().getRootNode(rootKey)}
-          rootKey={rootKey}
-        />
-      );
-    });
+
+    const children = roots.filter(root => root.shouldBeShown)
+      .toArray()
+      .map((root, index) => {
+        if (root.containsTrackedNode) {
+          return <DirectoryEntryComponent key={index} node={root} ref="tracked" />;
+        } else {
+          return <DirectoryEntryComponent key={index} node={root} />;
+        }
+      });
+    return (
+      <ul className="list-tree has-collapsable-children">
+        {children}
+      </ul>
+    );
   }
 }
 
