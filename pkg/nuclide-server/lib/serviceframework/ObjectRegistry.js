@@ -11,40 +11,56 @@
 
 import invariant from 'assert';
 
+type ObjectRegistration = {
+  interface: string;
+  remoteId: number;
+  object: RemoteObject;
+};
+
+// All remotable objects have some set of named functions,
+// and they also have a dispose method.
 export type RemoteObject = {
-  _interface: string;
-  _remoteId: ?number;
-  dispose: () => mixed;
+  [id:string]: Function;
+  dispose: () => void;
 };
 
 // Handles lifetimes of marshalling wrappers remote objects.
 export class ObjectRegistry {
-  _objectRegistry: Map<number, RemoteObject>;
+  _registrationsById: Map<number, ObjectRegistration>;
+  _registrationsByObject: Map<RemoteObject, ObjectRegistration>;
   _nextObjectId: number;
   _subscriptions: Map<number, IDisposable>;
 
   constructor() {
     this._nextObjectId = 1;
-    this._objectRegistry = new Map();
+    this._registrationsById = new Map();
+    this._registrationsByObject = new Map();
     this._subscriptions = new Map();
   }
 
   get(remoteId: number): RemoteObject {
-    const result = this._objectRegistry.get(remoteId);
+    return this._getRegistration(remoteId).object;
+  }
+
+  _getRegistration(remoteId: number): ObjectRegistration {
+    const result = this._registrationsById.get(remoteId);
     invariant(result != null);
     return result;
   }
 
-  async disposeObject(remoteId: number): Promise<void> {
-    const doObject = this._objectRegistry.get(remoteId);
-    invariant(doObject != null);
+  getInterface(remoteId: number): string {
+    return this._getRegistration(remoteId).interface;
+  }
 
-    // Remove the object from the registry, and scrub it's id.
-    doObject._remoteId = undefined;
-    this._objectRegistry.delete(remoteId);
+  async disposeObject(remoteId: number): Promise<void> {
+    const registration = this._getRegistration(remoteId);
+    const object = registration.object;
+
+    this._registrationsById.delete(remoteId);
+    this._registrationsByObject.delete(object);
 
     // Call the object's local dispose function.
-    await doObject.dispose();
+    await object.dispose();
   }
 
   disposeSubscription(requestId: number): void {
@@ -56,18 +72,23 @@ export class ObjectRegistry {
 
   // Put the object in the registry.
   add(interfaceName: string, object: Object): number {
-    if (object._remoteId != null) {
-      invariant(object._interface === interfaceName);
-      return object._remoteId;
+    const existingRegistration = this._registrationsByObject.get(object);
+    if (existingRegistration != null) {
+      invariant(existingRegistration.interface === interfaceName);
+      return existingRegistration.remoteId;
     }
 
     const objectId = this._nextObjectId;
     this._nextObjectId++;
 
-    object._interface = interfaceName;
-    object._remoteId = objectId;
+    const registration = {
+      interface: interfaceName,
+      remoteId: objectId,
+      object,
+    };
 
-    this._objectRegistry.set(objectId, object);
+    this._registrationsById.set(objectId, registration);
+    this._registrationsByObject.set(object, registration);
 
     return objectId;
   }

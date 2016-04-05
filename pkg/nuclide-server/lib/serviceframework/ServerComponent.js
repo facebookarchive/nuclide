@@ -225,7 +225,8 @@ export default class ServerComponent {
       const object = this._objectRegistry.get(call.objectId);
       invariant(object != null);
 
-      const classDefinition = this._classesByName.get(object._interface);
+      const interfaceName = this._objectRegistry.getInterface(call.objectId);
+      const classDefinition = this._classesByName.get(interfaceName);
       invariant(classDefinition != null);
       const type = classDefinition.definition.instanceMethods.get(call.method);
       invariant(type != null);
@@ -309,13 +310,12 @@ export default class ServerComponent {
       case 'FunctionCall':
         return `service-framework:${message.function}`;
       case 'MethodCall':
-        const object = this._objectRegistry.get(message.objectId);
-        invariant(object != null);
-        return `service-framework:${object._interface}.${message.method}`;
+        const callInterface = this._objectRegistry.getInterface(message.objectId);
+        return `service-framework:${callInterface}.${message.method}`;
       case 'NewObject':
         return `service-framework:new:${message.interface}`;
       case 'DisposeObject':
-        const interfaceName = this._objectRegistry.get(message.objectId)._interface;
+        const interfaceName = this._objectRegistry.getInterface(message.objectId);
         return `service-framework:dispose:${interfaceName}`;
       case 'DisposeObservable':
         return `service-framework:disposeObservable`;
