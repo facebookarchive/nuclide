@@ -168,6 +168,7 @@ class Activation {
   getTunnelVisionProvider(): TunnelVisionProvider {
     const panel = this._panel;
     return {
+      name: 'nuclide-outline-view',
       isVisible: panel.isVisible.bind(panel),
       toggle: panel.toggle.bind(panel),
     };

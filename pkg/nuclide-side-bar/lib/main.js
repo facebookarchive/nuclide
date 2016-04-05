@@ -296,6 +296,7 @@ export function serialize(): Object {
 export function getTunnelVisionProvider(): TunnelVisionProvider {
   const isVisible = () => !state.hidden;
   return {
+    name: 'nuclide-side-bar',
     isVisible,
     toggle(): void {
       toggleView(state.activeViewId);

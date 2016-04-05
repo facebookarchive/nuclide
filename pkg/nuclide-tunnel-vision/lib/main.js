@@ -14,6 +14,8 @@ import invariant from 'assert';
 import {TunnelVision} from './TunnelVision';
 
 export type TunnelVisionProvider = {
+  // Should be the unique to all providers. Recommended to be the package name.
+  name: string;
   isVisible: () => boolean;
   toggle: () => void;
 };

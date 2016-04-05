@@ -279,6 +279,7 @@ module.exports = {
 
   getTunnelVisionProvider(): TunnelVisionProvider {
     return {
+      name: 'nuclide-diagnostics-ui',
       isVisible(): boolean {
         return bottomPanel != null && bottomPanel.isVisible();
       },

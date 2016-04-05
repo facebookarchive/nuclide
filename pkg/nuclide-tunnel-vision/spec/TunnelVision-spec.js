@@ -18,8 +18,8 @@ describe('TunnelVision', () => {
 
   beforeEach(() => {
     tunnelVision = new TunnelVision();
-    provider1 = new FakeProvider();
-    provider2 = new FakeProvider();
+    provider1 = new FakeProvider('provider1');
+    provider2 = new FakeProvider('provider2');
 
     tunnelVision.consumeTunnelVisionProvider(provider1);
     tunnelVision.consumeTunnelVisionProvider(provider2);
@@ -81,9 +81,11 @@ describe('TunnelVision', () => {
 
 class FakeProvider {
   _isVisible: boolean;
+  name: string;
 
-  constructor() {
+  constructor(name: string) {
     this._isVisible = true;
+    this.name = name;
   }
 
   isVisible(): boolean {
