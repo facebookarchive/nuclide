@@ -9,9 +9,13 @@
  * the root directory of this source tree.
  */
 
+import type {
+  ServerConnectionConfiguration,
+} from '../../nuclide-remote-connection/lib/ServerConnection';
+
 import invariant from 'assert';
 import NuclideTextBuffer from '../lib/NuclideTextBuffer';
-import {RemoteFile, RemoteConnection} from '../../nuclide-remote-connection';
+import {RemoteFile, ServerConnection} from '../../nuclide-remote-connection';
 
 describe('NuclideTextBuffer', () => {
 
@@ -20,12 +24,11 @@ describe('NuclideTextBuffer', () => {
   const filePath = __filename;
 
   beforeEach(() => {
-    const server: any = {
-      getRemoteHost() {
-        return 'most.fb.com:9090';
-      },
+    const config: ServerConnectionConfiguration = {
+      host: 'most.fb.com',
+      port: 9090,
     };
-    connection = new RemoteConnection(server, '/', ''/*displayTitle*/);
+    connection = new ServerConnection(config);
     // Mock watcher service handlers registry.
     // $FlowFixMe override instance method.
     connection._addHandlersForEntry = () => {};
@@ -39,8 +42,8 @@ describe('NuclideTextBuffer', () => {
     buffer.setPath(filePath);
     expect(buffer.file instanceof RemoteFile).toBe(true);
     invariant(buffer.file);
-    /* eslint-disable no-path-concat */
+  /* eslint-disable no-path-concat */
     expect(buffer.file.getPath()).toBe('nuclide://most.fb.com:9090' + filePath);
-    /* eslint-enable no-path-concat */
+  /* eslint-enable no-path-concat */
   });
 });

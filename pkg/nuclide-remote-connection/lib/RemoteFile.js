@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {RemoteConnection} from './RemoteConnection';
+import type {ServerConnection} from './ServerConnection';
 import type {RemoteDirectory} from './RemoteDirectory';
 import type {FileSystemService} from '../../nuclide-server/lib/services/FileSystemServiceType';
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-base';
@@ -32,18 +32,18 @@ export class RemoteFile {
   _localPath: string;
   _path: string;
   _realpath: ?string;
-  _remote: RemoteConnection;
+  _server: ServerConnection;
   _subscriptionCount: number;
   _watchSubscription: ?IDisposable;
   _digest: ?string;
   _symlink: boolean;
 
   constructor(
-    remote: RemoteConnection,
+    server: ServerConnection,
     remotePath: string,
     symlink: boolean = false,
   ) {
-    this._remote = remote;
+    this._server = server;
     const {path: localPath} = remoteUri.parse(remotePath);
     this._localPath = localPath;
     this._path = remotePath;
@@ -278,7 +278,11 @@ export class RemoteFile {
     invariant(protocol);
     invariant(host);
     const directoryPath = protocol + '//' + host + path.dirname(localPath);
-    return this._remote.createDirectory(directoryPath);
+    const remoteConnection = this._server.getRemoteConnectionForUri(this._path);
+    const hgRepositoryDescription = remoteConnection != null ?
+      remoteConnection.getHgRepositoryDescription() :
+      null;
+    return this._server.createDirectory(directoryPath, hgRepositoryDescription);
   }
 
   isSymbolicLink(): boolean {
@@ -290,6 +294,6 @@ export class RemoteFile {
   }
 
   _getService(serviceName: string): any {
-    return this._remote.getService(serviceName);
+    return this._server.getService(serviceName);
   }
 }

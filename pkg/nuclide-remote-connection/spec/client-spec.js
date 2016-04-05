@@ -9,8 +9,10 @@
  * the root directory of this source tree.
  */
 
+import type {ServerConnectionConfiguration} from '../lib/ServerConnection';
+
 const {getFileForPath} = require('../lib/client');
-const {RemoteConnection, RemoteFile} = require('..');
+const {ServerConnection, RemoteFile} = require('..');
 const {File} = require('atom');
 
 describe('getFileForPath()', () => {
@@ -19,18 +21,16 @@ describe('getFileForPath()', () => {
   let connection = null;
 
   beforeEach(() => {
-    spyOn(RemoteConnection, 'getForUri').andCallFake(uri => {
+    spyOn(ServerConnection, 'getForUri').andCallFake(uri => {
       if (!uri.startsWith(connectedRemoteUri)) {
         return null;
       }
       if (!connection) {
-        const server: any = {
-          getRemoteHost() {
-            return 'server';
-          },
+        const config: ServerConnectionConfiguration = {
+          host: 'server',
           port: 123,
         };
-        connection = new RemoteConnection(server, ''/*path*/, ''/*displayTitle*/);
+        connection = new ServerConnection(config);
         // $FlowFixMe Skip the usage of the watcher service.
         connection._addHandlersForEntry = () => {};
       }

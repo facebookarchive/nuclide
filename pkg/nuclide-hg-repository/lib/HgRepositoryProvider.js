@@ -49,16 +49,16 @@ function getRepositoryDescription(
     ) {
       return null;
     }
-    const remoteConnection = directory._remote;
+    const serverConnection = directory._server;
     const {repoPath, originURL, workingDirectoryPath} = repositoryDescription;
     const workingDirectoryLocalPath = workingDirectoryPath;
     // These paths are all relative to the remote fs. We need to turn these into URIs.
-    const repoUri = remoteConnection.getUriOfRemotePath(repoPath);
-    const workingDirectoryUri = remoteConnection.getUriOfRemotePath(workingDirectoryPath);
+    const repoUri = serverConnection.getUriOfRemotePath(repoPath);
+    const workingDirectoryUri = serverConnection.getUriOfRemotePath(workingDirectoryPath);
     return {
       originURL,
       repoPath: repoUri,
-      workingDirectory: new RemoteDirectory(remoteConnection, workingDirectoryUri),
+      workingDirectory: new RemoteDirectory(serverConnection, workingDirectoryUri),
       workingDirectoryLocalPath,
     };
   } else {

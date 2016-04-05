@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {RemoteConnection} from '../../nuclide-remote-connection/lib/RemoteConnection';
+import type {ServerConnection} from '../../nuclide-remote-connection/lib/ServerConnection';
 import type {RemoteFile} from '../../nuclide-remote-connection/lib/RemoteFile';
 
 import {getLogger} from '../../nuclide-logging';
@@ -20,17 +20,17 @@ import {track} from '../../nuclide-analytics';
 const logger = getLogger();
 
 class NuclideTextBuffer extends TextBuffer {
-  connection: RemoteConnection;
+  _connection: ServerConnection;
   fileSubscriptions: CompositeDisposable;
   /* $FlowFixMe */
   file: ?RemoteFile;
   conflict: boolean;
   _exists: boolean;
 
-  constructor(connection: RemoteConnection, params: any) {
+  constructor(connection: ServerConnection, params: any) {
     super(params);
     this._exists = true;
-    this.connection = connection;
+    this._connection = connection;
     this.setPath(params.filePath);
     const encoding: string = (atom.config.get('core.fileEncoding'): any);
     this.setEncoding(encoding);
@@ -47,8 +47,8 @@ class NuclideTextBuffer extends TextBuffer {
   }
 
   setPath(filePath: string): void {
-    if (!this.connection) {
-      // If this.connection is not set, then the superclass constructor is still executing.
+    if (!this._connection) {
+      // If this._connection is not set, then the superclass constructor is still executing.
       // NuclideTextBuffer's constructor will ensure setPath() is called once this.constructor
       // is set.
       return;
@@ -70,7 +70,7 @@ class NuclideTextBuffer extends TextBuffer {
   }
 
   createFile(filePath: string): RemoteFile {
-    return this.connection.createFile(filePath);
+    return this._connection.createFile(filePath);
   }
 
   async saveAs(filePath: string): Promise<void> {

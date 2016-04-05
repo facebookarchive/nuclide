@@ -14,10 +14,10 @@ import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers
 
 import typeof * as FileWatcherServiceType from '../../nuclide-filewatcher-base';
 import typeof * as SourceControlService from '../../nuclide-server/lib/services/SourceControlService';
+import type {RemoteFile} from './RemoteFile';
+import type {RemoteDirectory} from './RemoteDirectory';
 
 import invariant from 'assert';
-import pathModule from 'path';
-import {RemoteDirectory} from './RemoteDirectory';
 import {ServerConnection} from './ServerConnection';
 
 const {CompositeDisposable, Disposable} = require('atom');
@@ -25,7 +25,6 @@ const remoteUri = require('../../nuclide-remote-uri');
 const logger = require('../../nuclide-logging').getLogger();
 const {EventEmitter} = require('events');
 
-const {RemoteFile} = require('./RemoteFile');
 const {getConnectionConfig} =
   require('./RemoteConnectionConfigurationManager');
 
@@ -51,7 +50,6 @@ const _emitter: EventEmitter = new EventEmitter();
 // Nuclide behaves badly when remote directories are opened which are parent/child of each other.
 // And there needn't be a 1:1 relationship between RemoteConnections and hg repos.
 export class RemoteConnection {
-  _entries: {[path: string]: RemoteFile | RemoteDirectory};
   _cwd: string; // Path to remote directory user should start in upon connection.
   _subscriptions: CompositeDisposable;
   _hgRepositoryDescription: ?HgRepositoryDescription;
@@ -67,7 +65,6 @@ export class RemoteConnection {
 
   // Do NOT call this directly. Use findOrCreate instead.
   constructor(connection: ServerConnection, cwd: string, displayTitle: string) {
-    this._entries = {};
     this._cwd = cwd;
     this._subscriptions = new CompositeDisposable();
     this._hgRepositoryDescription = null;
@@ -133,35 +130,7 @@ export class RemoteConnection {
   }
 
   createDirectory(uri: string, symlink: boolean = false): RemoteDirectory {
-    let {path} = remoteUri.parse(uri);
-    path = pathModule.normalize(path);
-
-    let entry = this._entries[path];
-    if (
-      !entry ||
-      entry.getLocalPath() !== path ||
-      entry.isSymbolicLink() !== symlink
-    ) {
-      this._entries[path] = entry = new RemoteDirectory(
-        this,
-        this.getUriOfRemotePath(path),
-        symlink,
-        {hgRepositoryDescription: this._hgRepositoryDescription}
-      );
-      // TODO: We should add the following line to keep the cache up-to-date.
-      // We need to implement onDidRename and onDidDelete in RemoteDirectory
-      // first. It's ok that we don't add the handlers for now since we have
-      // the check `entry.getLocalPath() !== path` above.
-      //
-      // this._addHandlersForEntry(entry);
-    }
-
-    invariant(entry instanceof RemoteDirectory);
-    if (!entry.isDirectory()) {
-      throw new Error('Path is not a directory:' + uri);
-    }
-
-    return entry;
+    return this._connection.createDirectory(uri, this._hgRepositoryDescription, symlink);
   }
 
   // A workaround before Atom 2.0: see ::getHgRepoInfo of main.js.
@@ -169,45 +138,12 @@ export class RemoteConnection {
     this._hgRepositoryDescription = hgRepositoryDescription;
   }
 
-  createFile(uri: string, symlink: boolean = false): RemoteFile {
-    let {path} = remoteUri.parse(uri);
-    path = pathModule.normalize(path);
-
-    let entry = this._entries[path];
-    if (
-      !entry ||
-      entry.getLocalPath() !== path ||
-      entry.isSymbolicLink() !== symlink
-    ) {
-      this._entries[path] = entry = new RemoteFile(
-        this,
-        this.getUriOfRemotePath(path),
-        symlink,
-      );
-      this._addHandlersForEntry(entry);
-    }
-
-    invariant(entry instanceof RemoteFile);
-    if (entry.isDirectory()) {
-      throw new Error('Path is not a file');
-    }
-
-    return entry;
+  getHgRepositoryDescription(): ?HgRepositoryDescription {
+    return this._hgRepositoryDescription;
   }
 
-  _addHandlersForEntry(entry: RemoteFile | RemoteDirectory): void {
-    const oldPath = entry.getLocalPath();
-    /* $FlowFixMe */
-    const renameSubscription = entry.onDidRename(() => {
-      delete this._entries[oldPath];
-      this._entries[entry.getLocalPath()] = entry;
-    });
-    /* $FlowFixMe */
-    const deleteSubscription = entry.onDidDelete(() => {
-      delete this._entries[entry.getLocalPath()];
-      renameSubscription.dispose();
-      deleteSubscription.dispose();
-    });
+  createFile(uri: string, symlink: boolean = false): RemoteFile {
+    return this._connection.createFile(uri, symlink);
   }
 
   async _initialize(): Promise<RemoteConnection> {

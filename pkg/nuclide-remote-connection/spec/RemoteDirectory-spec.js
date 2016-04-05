@@ -151,7 +151,7 @@ describe('RemoteDirectory::getParent()', () => {
       'nuclide://example.com:9090/path/to/directory');
     expect(remoteDirectory.getParent()).toBe(parentDirectory);
     expect(connectionMock.createDirectory).toHaveBeenCalledWith(
-        'nuclide://example.com:9090/path/to');
+        'nuclide://example.com:9090/path/to', null);
   });
 });
 

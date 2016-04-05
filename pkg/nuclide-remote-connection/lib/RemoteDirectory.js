@@ -10,7 +10,7 @@
  */
 
 import type {FileSystemService} from '../../nuclide-server/lib/services/FileSystemServiceType';
-import type {RemoteConnection} from './RemoteConnection';
+import type {ServerConnection} from './ServerConnection';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
 import type {RemoteFile} from './RemoteFile';
 
@@ -34,7 +34,7 @@ export class RemoteDirectory {
   }
 
   _watchSubscription: ?IDisposable;
-  _remote: RemoteConnection;
+  _server: ServerConnection;
   _uri: string;
   _emitter: atom$Emitter;
   _subscriptionCount: number;
@@ -47,13 +47,13 @@ export class RemoteDirectory {
    * @param uri should be of the form "nuclide://example.com:9090/path/to/directory".
    */
   constructor(
-    remote: RemoteConnection,
+    server: ServerConnection,
     uri: string,
     symlink: boolean = false,
     options: ?any,
   ) {
     Object.defineProperty(this, MARKER_PROPERTY_FOR_REMOTE_DIRECTORY, {value: true});
-    this._remote = remote;
+    this._server = server;
     this._uri = uri;
     this._emitter = new Emitter();
     this._subscriptionCount = 0;
@@ -187,18 +187,18 @@ export class RemoteDirectory {
       return this;
     } else {
       const uri = this._host + path.normalize(path.join(this._localPath, '..'));
-      return this._remote.createDirectory(uri);
+      return this._server.createDirectory(uri, this._hgRepositoryDescription);
     }
   }
 
   getFile(filename: string): RemoteFile {
     const uri = this._host + path.join(this._localPath, filename);
-    return this._remote.createFile(uri);
+    return this._server.createFile(uri);
   }
 
   getSubdirectory(dirname: string): RemoteDirectory {
     const uri = this._host + path.join(this._localPath, dirname);
-    return this._remote.createDirectory(uri);
+    return this._server.createDirectory(uri, this._hgRepositoryDescription);
   }
 
   async create(): Promise<boolean> {
@@ -268,9 +268,9 @@ export class RemoteDirectory {
       const uri = this._host + path.join(this._localPath, entry.file);
       const symlink = entry.isSymbolicLink;
       if (entry.stats && entry.stats.isFile()) {
-        files.push(this._remote.createFile(uri, symlink));
+        files.push(this._server.createFile(uri, symlink));
       } else {
-        directories.push(this._remote.createDirectory(uri, symlink));
+        directories.push(this._server.createDirectory(uri, this._hgRepositoryDescription, symlink));
       }
     });
     callback(null, directories.concat(files));
@@ -313,6 +313,6 @@ export class RemoteDirectory {
   }
 
   _getService(serviceName: string): any {
-    return this._remote.getService(serviceName);
+    return this._server.getService(serviceName);
   }
 }

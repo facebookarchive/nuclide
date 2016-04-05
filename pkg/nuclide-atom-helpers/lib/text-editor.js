@@ -104,7 +104,7 @@ function createBufferForUri(uri: NuclideUri): atom$TextBuffer {
     if (connection == null) {
       throw new Error(`RemoteConnection cannot be found for uri: ${uri}`);
     }
-    buffer = new NuclideTextBuffer(connection, {filePath: uri});
+    buffer = new NuclideTextBuffer(connection.getConnection(), {filePath: uri});
   }
   atom.project.addBuffer(buffer);
   invariant(buffer);

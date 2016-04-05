@@ -97,7 +97,7 @@ function getDirectoryByKey(key: string): ?Directory {
     if (connection == null) {
       return null;
     }
-    return new RemoteDirectory(connection, path);
+    return new RemoteDirectory(connection.getConnection(), path);
   } else {
     return new LocalDirectory(path);
   }
@@ -113,7 +113,7 @@ function getFileByKey(key: string): ?File {
       return;
     }
 
-    return new RemoteFile(connection, path);
+    return new RemoteFile(connection.getConnection(), path);
   } else {
     return new LocalFile(path);
   }

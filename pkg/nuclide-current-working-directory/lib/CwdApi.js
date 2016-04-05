@@ -75,7 +75,7 @@ function getDirectory(path: ?string): ?Directory {
     if (connection == null) {
       return null;
     }
-    return new RemoteDirectory(connection, path);
+    return new RemoteDirectory(connection.getConnection(), path);
   }
   return new LocalDirectory(path);
 }

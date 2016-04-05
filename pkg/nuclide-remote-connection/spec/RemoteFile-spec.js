@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {RemoteConnection} from '..';
+import type {ServerConnection} from '..';
 
 import invariant from 'assert';
 const fs = require('fs');
@@ -409,34 +409,35 @@ describe('RemoteFile', () => {
   });
 
   describe('RemoteFile::getParent()', () => {
-    let remote: RemoteConnection = (null: any);
+    let server: ServerConnection = (null: any);
 
     beforeEach(() => {
-      remote = ({
+      server = ({
         createDirectory: () => {},
+        getRemoteConnectionForUri: () => null,
       }: any);
     });
 
     it('gets the parent directory for a file in a root directory', () => {
       const parentDirectory = jasmine.createSpy('RemoteDirectory');
-      spyOn(remote, 'createDirectory').andReturn(parentDirectory);
+      spyOn(server, 'createDirectory').andReturn(parentDirectory);
 
       const filePath = 'nuclide://foo.bar.com:8084/foo.txt';
-      const file = new RemoteFile(remote, filePath);
+      const file = new RemoteFile(server, filePath);
       expect(file.getParent()).toBe(parentDirectory);
-      expect(remote.createDirectory).toHaveBeenCalledWith(
-          'nuclide://foo.bar.com:8084/');
+      expect(server.createDirectory).toHaveBeenCalledWith(
+          'nuclide://foo.bar.com:8084/', null);
     });
 
     it('gets the parent directory for a file in a non-root directory', () => {
       const parentDirectory = jasmine.createSpy('RemoteDirectory');
-      spyOn(remote, 'createDirectory').andReturn(parentDirectory);
+      spyOn(server, 'createDirectory').andReturn(parentDirectory);
 
       const filePath = 'nuclide://foo.bar.com:8084/a/foo.txt';
-      const file = new RemoteFile(remote, filePath);
+      const file = new RemoteFile(server, filePath);
       expect(file.getParent()).toBe(parentDirectory);
-      expect(remote.createDirectory).toHaveBeenCalledWith(
-          'nuclide://foo.bar.com:8084/a');
+      expect(server.createDirectory).toHaveBeenCalledWith(
+          'nuclide://foo.bar.com:8084/a', null);
     });
   });
 });

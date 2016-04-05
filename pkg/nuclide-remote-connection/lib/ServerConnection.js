@@ -9,15 +9,20 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {RemoteConnection} from './RemoteConnection';
+import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
 
 import invariant from 'assert';
+import pathModule from 'path';
 import ClientComponent from '../../nuclide-server/lib/serviceframework/ClientComponent';
 import {loadServicesConfig} from '../../nuclide-server/lib/serviceframework/config';
 import {getProxy} from '../../nuclide-service-parser';
 import ServiceFramework from '../../nuclide-server/lib/serviceframework/index';
 import {setConnectionConfig} from './RemoteConnectionConfigurationManager';
 import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
+import {RemoteFile} from './RemoteFile';
+import {RemoteDirectory} from './RemoteDirectory';
 
 import {Disposable} from 'atom';
 import {parse as parseRemoteUri} from '../../nuclide-remote-uri';
@@ -48,6 +53,7 @@ const _emitter: EventEmitter = new EventEmitter();
 // A ServerConnection keeps a list of RemoteConnections - one for each open directory on the remote
 // machine. Once all RemoteConnections have been closed, then the ServerConnection will close.
 class ServerConnection {
+  _entries: {[path: string]: RemoteFile | RemoteDirectory};
   _config: ServerConnectionConfiguration;
   _closed: boolean;
   _healthNotifier: ?ConnectionHealthNotifier;
@@ -74,6 +80,7 @@ class ServerConnection {
 
   // Do NOT call this from outside this class. Use ServerConnection.getOrCreate() instead.
   constructor(config: ServerConnectionConfiguration) {
+    this._entries = {};
     this._config = config;
     this._closed = false;
     this._healthNotifier = null;
@@ -112,6 +119,83 @@ class ServerConnection {
 
   getPathOfUri(uri: string): string {
     return parseRemoteUri(uri).path;
+  }
+
+  createDirectory(
+    uri: NuclideUri,
+    hgRepositoryDescription: ?HgRepositoryDescription,
+    symlink: boolean = false
+  ): RemoteDirectory {
+    let {path} = parseRemoteUri(uri);
+    path = pathModule.normalize(path);
+
+    let entry = this._entries[path];
+    if (
+      !entry ||
+      entry.getLocalPath() !== path ||
+      entry.isSymbolicLink() !== symlink
+    ) {
+      this._entries[path] = entry = new RemoteDirectory(
+        this,
+        this.getUriOfRemotePath(path),
+        symlink,
+        {hgRepositoryDescription},
+      );
+      // TODO: We should add the following line to keep the cache up-to-date.
+      // We need to implement onDidRename and onDidDelete in RemoteDirectory
+      // first. It's ok that we don't add the handlers for now since we have
+      // the check `entry.getLocalPath() !== path` above.
+      //
+      // this._addHandlersForEntry(entry);
+    }
+
+    invariant(entry instanceof RemoteDirectory);
+    if (!entry.isDirectory()) {
+      throw new Error('Path is not a directory:' + uri);
+    }
+
+    return entry;
+  }
+
+  createFile(uri: NuclideUri, symlink: boolean = false): RemoteFile {
+    let {path} = parseRemoteUri(uri);
+    path = pathModule.normalize(path);
+
+    let entry = this._entries[path];
+    if (
+      !entry ||
+      entry.getLocalPath() !== path ||
+      entry.isSymbolicLink() !== symlink
+    ) {
+      this._entries[path] = entry = new RemoteFile(
+        this,
+        this.getUriOfRemotePath(path),
+        symlink,
+      );
+      this._addHandlersForEntry(entry);
+    }
+
+    invariant(entry instanceof RemoteFile);
+    if (entry.isDirectory()) {
+      throw new Error('Path is not a file');
+    }
+
+    return entry;
+  }
+
+  _addHandlersForEntry(entry: RemoteFile | RemoteDirectory): void {
+    const oldPath = entry.getLocalPath();
+    /* $FlowFixMe */
+    const renameSubscription = entry.onDidRename(() => {
+      delete this._entries[oldPath];
+      this._entries[entry.getLocalPath()] = entry;
+    });
+    /* $FlowFixMe */
+    const deleteSubscription = entry.onDidDelete(() => {
+      delete this._entries[entry.getLocalPath()];
+      renameSubscription.dispose();
+      deleteSubscription.dispose();
+    });
   }
 
   async initialize(): Promise<void> {
@@ -240,8 +324,23 @@ class ServerConnection {
     });
   }
 
+  static getForUri(uri: NuclideUri): ?ServerConnection {
+    const {hostname} = parseRemoteUri(uri);
+    if (hostname == null) {
+      return null;
+    }
+    return ServerConnection.getByHostname(hostname);
+  }
+
   static getByHostname(hostname: string): ?ServerConnection {
     return ServerConnection._connections.get(hostname);
+  }
+
+  getRemoteConnectionForUri(uri: NuclideUri): ?RemoteConnection {
+    const {path} = parseRemoteUri(uri);
+    return this.getConnections().filter(connection => {
+      return path.startsWith(connection.getPathForInitialWorkingDirectory());
+    })[0];
   }
 
   getConnections(): Array<RemoteConnection> {

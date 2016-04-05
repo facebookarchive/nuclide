@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {RemoteConnection} from '..';
+import type {ServerConnection} from '..';
 
 import fsPlus from 'fs-plus';
 import {fsPromise} from '../../nuclide-commons';
@@ -35,10 +35,11 @@ fsPromise.copy = async function(src, dst) {
   return true;
 };
 
-const connectionMock: RemoteConnection & { getFsService(): Object } = ({
+const connectionMock: ServerConnection & { getFsService(): Object } = ({
   getFsService: () => fsPromise,
   createDirectory: uri => new RemoteDirectory(connectionMock, uri),
   createFile: uri => new RemoteFile(connectionMock, uri),
+  getRemoteConnectionForUri: () => null,
   getService: (serviceName: string) => {
     if (serviceName === 'FileSystemService') {
       return fsPromise;
