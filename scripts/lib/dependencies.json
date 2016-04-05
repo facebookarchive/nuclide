@@ -2,9 +2,9 @@
   "atom": {
     "clientOnly": true,
     "dependency": "Atom",
-    "version": "1.6.1",
-    "url": "https://github.com/atom/atom/releases/download/v1.6.1/atom-mac.zip",
-    "shasum": "23f552f6f1ffdca0908f8718e819a830746ec0e6590ac9312d894a3911680dab"
+    "version": "1.6.2",
+    "url": "https://github.com/atom/atom/releases/download/v1.6.2/atom-mac.zip",
+    "shasum": "4eede180ec23e318510403c8d9b00cc7b081f86ae8c8ed75ef52a18b6f9dee8a"
   },
   "flow": {
     "clientOnly": false,
