@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {TunnelVisionProvider} from '..';
+import type {TunnelVisionProvider, TunnelVisionState} from '..';
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
@@ -22,29 +22,60 @@ export class TunnelVision {
   // _shouldRestore() and _enterTunnelVision() for a more detailed explanation.
   _restoreState: ?Set<TunnelVisionProvider>;
 
-  constructor(state: ?Object) {
+  // Set of names for providers that were hidden when Nuclide last exited, but have not yet been
+  // consumed.
+  _deserializationState: ?Set<string>;
+
+  constructor(state: ?TunnelVisionState) {
     this._disposables = new CompositeDisposable();
     this._providers = new Set();
     this._restoreState = null;
+    if (state != null && state.restoreState != null) {
+      this._deserializationState = new Set(state.restoreState);
+    }
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
+  serialize(): TunnelVisionState {
+    let restoreState = null;
+    if (this._restoreState != null) {
+      restoreState = Array.from(this._restoreState, provider => provider.name);
+    }
+    return {
+      restoreState,
+    };
+  }
+
   consumeTunnelVisionProvider(provider: TunnelVisionProvider): IDisposable {
     this._providers.add(provider);
+    if (this._deserializationState != null && this._deserializationState.has(provider.name)) {
+      this._addToRestoreState(provider);
+    }
     return new Disposable(() => {
       this._providers.delete(provider);
     });
   }
 
   toggleTunnelVision(): void {
+    // Once the user has interacted with tunnel vision it would be weird if another package loading
+    // triggered a change in the state.
+    this._deserializationState = null;
     if (this._shouldRestore()) {
       this._exitTunnelVision();
     } else {
       this._enterTunnelVision();
     }
+  }
+
+  _addToRestoreState(provider: TunnelVisionProvider): void {
+    let restoreState = this._restoreState;
+    if (restoreState == null) {
+      this._restoreState = restoreState = new Set();
+    }
+    restoreState.add(provider);
   }
 
   _shouldRestore(): boolean {

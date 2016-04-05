@@ -20,9 +20,14 @@ export type TunnelVisionProvider = {
   toggle: () => void;
 };
 
+export type TunnelVisionState = {
+  // Serialize the restore state via an array of provider names.
+  restoreState: ?Array<string>;
+}
+
 let tunnelVision: ?TunnelVision = null;
 
-export function activate(state: ?Object) {
+export function activate(state: ?TunnelVisionState) {
   if (tunnelVision == null) {
     tunnelVision = new TunnelVision(state);
     atom.commands.add(
@@ -38,6 +43,11 @@ export function deactivate() {
     tunnelVision.dispose();
     tunnelVision = null;
   }
+}
+
+export function serialize(): TunnelVisionState {
+  invariant(tunnelVision != null);
+  return tunnelVision.serialize();
 }
 
 export function consumeTunnelVisionProvider(provider: TunnelVisionProvider): IDisposable {

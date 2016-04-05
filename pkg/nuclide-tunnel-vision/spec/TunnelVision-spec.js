@@ -17,7 +17,7 @@ describe('TunnelVision', () => {
   let provider2: FakeProvider = (null: any);
 
   beforeEach(() => {
-    tunnelVision = new TunnelVision();
+    tunnelVision = new TunnelVision(undefined);
     provider1 = new FakeProvider('provider1');
     provider2 = new FakeProvider('provider2');
   });
@@ -77,6 +77,108 @@ describe('TunnelVision', () => {
       // previously hidden. So we shoudl restore provider2 (hidden on first entry) and provider1
       // (hidden on second entry)
       tunnelVision.toggleTunnelVision();
+      expect(provider1.isVisible()).toBeTruthy();
+      expect(provider2.isVisible()).toBeTruthy();
+    });
+
+    it('should serialize properly when not in tunnel-vision mode', () => {
+      expect(tunnelVision.serialize()).toEqual({
+        restoreState: null,
+      });
+    });
+
+    it('should serialize properly when in tunnel-vision mode', () => {
+      provider1.toggle();
+      tunnelVision.toggleTunnelVision();
+      expect(tunnelVision.serialize()).toEqual({
+        restoreState: ['provider2'],
+      });
+    });
+  });
+
+  describe('deserialization', () => {
+    it('should properly deserialize from a non-tunnel-vision state', () => {
+      tunnelVision = new TunnelVision({ restoreState: null });
+      tunnelVision.consumeTunnelVisionProvider(provider1);
+      tunnelVision.consumeTunnelVisionProvider(provider2);
+
+      tunnelVision.toggleTunnelVision();
+
+      expect(provider1.isVisible()).toBeFalsy();
+      expect(provider2.isVisible()).toBeFalsy();
+    });
+
+    it('should properly deserialize from a tunnel-vision state', () => {
+      // Simulate the providers serializing their own state -- they would start out hidden if we
+      // exited Nuclide in tunnel-vision.
+      provider1.toggle();
+      provider2.toggle();
+      expect(provider1.isVisible()).toBeFalsy();
+      expect(provider2.isVisible()).toBeFalsy();
+
+      tunnelVision = new TunnelVision({
+        restoreState: ['provider1', 'provider2'],
+      });
+      tunnelVision.consumeTunnelVisionProvider(provider1);
+      tunnelVision.consumeTunnelVisionProvider(provider2);
+
+      tunnelVision.toggleTunnelVision();
+      expect(provider1.isVisible()).toBeTruthy();
+      expect(provider2.isVisible()).toBeTruthy();
+    });
+
+    it('should discard serialized state once it receives a toggle command', () => {
+      provider1.toggle();
+      provider2.toggle();
+      expect(provider1.isVisible()).toBeFalsy();
+      expect(provider2.isVisible()).toBeFalsy();
+
+      tunnelVision = new TunnelVision({
+        restoreState: ['provider1', 'provider2'],
+      });
+      tunnelVision.consumeTunnelVisionProvider(provider1);
+
+      tunnelVision.toggleTunnelVision();
+
+      expect(provider1.isVisible()).toBeTruthy();
+      expect(provider2.isVisible()).toBeFalsy();
+
+      // Now it would be weird if this somehow bumped us back into a tunnel vision state. This
+      // shouldn't happen very often, though, since usually all providers will get registered at
+      // startup.
+      tunnelVision.consumeTunnelVisionProvider(provider2);
+
+      expect(provider1.isVisible()).toBeTruthy();
+      expect(provider2.isVisible()).toBeFalsy();
+
+      tunnelVision.toggleTunnelVision();
+
+      expect(provider1.isVisible()).toBeFalsy();
+      expect(provider2.isVisible()).toBeFalsy();
+    });
+
+    it("should behave sanely if a provider doesn't serialize its toggled state", () => {
+      provider1.toggle();
+      // Don't toggle provider2 -- so it starts open.
+      expect(provider1.isVisible()).toBeFalsy();
+      expect(provider2.isVisible()).toBeTruthy();
+
+      // Exited in tunnel vision mode -- it had hidden both providers
+      tunnelVision = new TunnelVision({
+        restoreState: ['provider1', 'provider2'],
+      });
+      tunnelVision.consumeTunnelVisionProvider(provider1);
+      tunnelVision.consumeTunnelVisionProvider(provider2);
+
+      tunnelVision.toggleTunnelVision();
+
+      // It should hide provider2 and enter a tunnel vision state where it will restore both
+
+      expect(provider1.isVisible()).toBeFalsy();
+      expect(provider2.isVisible()).toBeFalsy();
+
+      tunnelVision.toggleTunnelVision();
+
       expect(provider1.isVisible()).toBeTruthy();
       expect(provider2.isVisible()).toBeTruthy();
     });
