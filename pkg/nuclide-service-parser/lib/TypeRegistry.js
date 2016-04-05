@@ -35,11 +35,10 @@ import {objectType, dateType, regExpType, bufferType, fsStatsType} from './built
  * In the interest of a performance, a transformer should only return a Promise if necessary.
  * (Promise objects and Promise.all are very expensive operations in large numbers).
  */
-export type Transformer<T> =
-  (value: T, type: Type, context: MarshallingContext) => (T | Promise<T>);
-export type NamedTransformer<T> = (value: T, context: MarshallingContext) => (T | Promise<T>);
-
-export type MarshallingContext = any;
+export type Transformer<MarshallingContext> =
+  (value: any, type: Type, context: MarshallingContext) => (any | Promise<any>);
+export type NamedTransformer<MarshallingContext>
+  = (value: any, context: MarshallingContext) => (any | Promise<any>);
 
 // Equivalent to Promise.all, but avoids wrappers if nothing is actually a promise.
 // Input must be homogenously typed.
@@ -115,18 +114,21 @@ function objectToStats(jsonStats: Object): fs.Stats {
  * another file. It also allows the ability to add new primitives, ranging from Buffer to NuclideUri
  * that are not handled at the transport layer. The key concept is that marshalling functions can
  * be recursive, calling other marshalling functions, ending at the primitives.
+ *
+ * The MarshallingContext is opaque to the TypeRegistry and allows for adding per-connection
+ * context to marshalling transformations.
  */
-export default class TypeRegistry {
+export default class TypeRegistry<MarshallingContext> {
   /** Store marshallers and and unmarshallers, index by the kind of the type. */
   _kindMarshallers: Map<string, {
-      marshaller: Transformer;
-      unmarshaller: Transformer;
+      marshaller: Transformer<MarshallingContext>;
+      unmarshaller: Transformer<MarshallingContext>;
     }>;
 
   /** Store marshallers and and unmarshallers, index by the name of the type. */
   _namedMarshallers: Map<string, {
-      marshaller: NamedTransformer;
-      unmarshaller: NamedTransformer;
+      marshaller: NamedTransformer<MarshallingContext>;
+      unmarshaller: NamedTransformer<MarshallingContext>;
     }>;
 
   constructor() {
@@ -175,7 +177,11 @@ export default class TypeRegistry {
       (value, type, context) => Promise.resolve(null));
   }
 
-  _registerKind(kind: string, marshaller: Transformer, unmarshaller: Transformer): void {
+  _registerKind(
+    kind: string,
+    marshaller: Transformer<MarshallingContext>,
+    unmarshaller: Transformer<MarshallingContext>
+  ): void {
     invariant(!this._kindMarshallers.has(kind));
     this._kindMarshallers.set(kind, {marshaller, unmarshaller});
   }
@@ -190,8 +196,8 @@ export default class TypeRegistry {
    */
   registerType(
     typeName: string,
-    marshaller: NamedTransformer,
-    unmarshaller: NamedTransformer,
+    marshaller: NamedTransformer<MarshallingContext>,
+    unmarshaller: NamedTransformer<MarshallingContext>,
   ): void {
     if (this._namedMarshallers.has(typeName)) {
       throw new Error(`A type by the name ${typeName} has already been registered.`);

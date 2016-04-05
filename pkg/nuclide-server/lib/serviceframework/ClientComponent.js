@@ -27,13 +27,15 @@ import type {RequestMessage, CallRemoteFunctionMessage, CreateRemoteObjectMessag
 
 const logger = require('../../../nuclide-logging').getLogger();
 
+type MarshallingContext = Map<number, any>;
+
 export default class ClientComponent {
   _rpcRequestId: number;
   _emitter: EventEmitter;
   _socket: NuclideSocket;
 
-  _typeRegistry: TypeRegistry;
-  _objectRegistry: Map<number, any>;
+  _typeRegistry: TypeRegistry<MarshallingContext>;
+  _objectRegistry: MarshallingContext;
 
   constructor(socket: NuclideSocket, services: Array<ConfigEntry>) {
     this._emitter = new EventEmitter();
