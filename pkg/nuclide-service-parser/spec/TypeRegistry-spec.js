@@ -17,6 +17,9 @@ import type {
   ArrayType,
   ObjectType,
   NullableType,
+  BooleanType,
+  UnionType,
+  IntersectionType,
 } from '../lib/types';
 
 import {
@@ -33,9 +36,11 @@ import {
 } from '../lib/builtin-types';
 
 describe('TypeRegistry', () => {
-  let typeRegistry: any;
+  let typeRegistry: TypeRegistry = (null: any);
+  let context;
   beforeEach(() => {
     typeRegistry = new TypeRegistry();
+    context = {};
   });
 
   it('Can serialize / deserialize basic primitive types', () => {
@@ -44,56 +49,64 @@ describe('TypeRegistry', () => {
 
       const expected1 = 'Hello World';
       const str1 = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected1, stringType),
+        context,
+        await typeRegistry.marshal(context, expected1, stringType),
         stringType,
       );
       expect(str1).toBe(expected1);
 
       const expected2 = 312213;
       const num2 = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected2, numberType),
+        context,
+        await typeRegistry.marshal(context, expected2, numberType),
         numberType,
       );
       expect(num2).toBe(expected2);
 
       const expected3 = false;
       const bool3 = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected3, booleanType),
+        context,
+        await typeRegistry.marshal(context, expected3, booleanType),
         booleanType,
       );
       expect(bool3).toBe(expected3);
 
       const expected4 = false;
       const bool4 = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected4, anyType),
+        context,
+        await typeRegistry.marshal(context, expected4, anyType),
         anyType,
       );
       expect(bool4).toBe(expected4);
 
       const expected5 = 42;
       const num5 = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected5, mixedType),
+        context,
+        await typeRegistry.marshal(context, expected5, mixedType),
         mixedType,
       );
       expect(num5).toBe(expected5);
 
       const expected6 = Number.NEGATIVE_INFINITY;
       const num6 = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected6, numberType),
+        context,
+        await typeRegistry.marshal(context, expected6, numberType),
         numberType,
       );
       expect(num6).toBe(expected6);
 
       const expected7 = Number.POSITIVE_INFINITY;
       const num7 = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected7, numberType),
+        context,
+        await typeRegistry.marshal(context, expected7, numberType),
         numberType,
       );
       expect(num7).toBe(expected7);
 
       const expected8 = Number.POSITIVE_INFINITY;
       const num8 = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected8, numberType),
+        context,
+        await typeRegistry.marshal(context, expected8, numberType),
         numberType,
       );
       expect(num8).toBe(expected8);
@@ -101,7 +114,7 @@ describe('TypeRegistry', () => {
       // Marshalling an unexpected value throws.
       let thrown = false;
       try {
-        await typeRegistry.marshal(null, numberType);
+        await typeRegistry.marshal(context, null, numberType);
       } catch (e) {
         thrown = true;
       }
@@ -120,7 +133,8 @@ describe('TypeRegistry', () => {
 
       const expected1 = 'Hello World';
       const str1 = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected1, stringLiteralType),
+        context,
+        await typeRegistry.marshal(context, expected1, stringLiteralType),
         stringLiteralType,
       );
       expect(str1).toBe(expected1);
@@ -132,19 +146,21 @@ describe('TypeRegistry', () => {
       };
       const expected2 = 312213;
       const num2 = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected2, numberLiteralType),
+        context,
+        await typeRegistry.marshal(context, expected2, numberLiteralType),
         numberLiteralType,
       );
       expect(num2).toBe(expected2);
 
-      const falseLiteralType = {
+      const falseLiteralType: BooleanType = {
         location: builtinLocation,
-        kind: 'boolean-literal',
+        kind: 'boolean',
         value: false,
       };
       const expected3 = false;
       const bool3 = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected3, falseLiteralType),
+        context,
+        await typeRegistry.marshal(context, expected3, falseLiteralType),
         falseLiteralType,
       );
       expect(bool3).toBe(expected3);
@@ -152,7 +168,7 @@ describe('TypeRegistry', () => {
       // Marshalling an unexpected value throws.
       let thrown = false;
       try {
-        await typeRegistry.marshal(42, falseLiteralType);
+        await typeRegistry.marshal(context, 42, falseLiteralType);
       } catch (e) {
         thrown = true;
       }
@@ -166,22 +182,26 @@ describe('TypeRegistry', () => {
 
       const expected1 = { a: 42, b: { c: 'str' }};
       const object1 = await typeRegistry.unmarshal(
-          await typeRegistry.marshal(expected1, objectType), objectType);
+          context,
+          await typeRegistry.marshal(context, expected1, objectType), objectType);
       expect(object1).toBe(expected1);
 
       const expected2 = new Date();
       const date2 = await typeRegistry.unmarshal(
-          await typeRegistry.marshal(expected2, dateType), dateType);
+          context,
+          await typeRegistry.marshal(context, expected2, dateType), dateType);
       expect(date2.getTime()).toBe(expected2.getTime());
 
       const expected3 = /nuclide/ig;
       const regex3 = await typeRegistry.unmarshal(
-          await typeRegistry.marshal(expected3, regExpType), regExpType);
+          context,
+          await typeRegistry.marshal(context, expected3, regExpType), regExpType);
       expect(regex3.source).toBe(expected3.source);
 
       const expected4 = new Buffer('test buffer data.');
       const buf4: Buffer = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected4, bufferType), bufferType);
+        context,
+        await typeRegistry.marshal(context, expected4, bufferType), bufferType);
       expect(expected4.equals(buf4)).toBeTruthy();
     });
   });
@@ -197,7 +217,10 @@ describe('TypeRegistry', () => {
         kind: 'array',
         type: bufferType,
       };
-      const result = await typeRegistry.unmarshal(await typeRegistry.marshal(expected, type), type);
+      const result = await typeRegistry.unmarshal(
+        context,
+        await typeRegistry.marshal(context, expected, type),
+        type);
       expect(result.length).toBe(2);
       expect(result[0].equals(expected[0])).toBeTruthy();
       expect(result[1].equals(expected[1])).toBeTruthy();
@@ -236,7 +259,8 @@ describe('TypeRegistry', () => {
       };
       const expected2 = { a: null, b: new Buffer('test') };
       const result2 = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected2, customObjectType),
+        context,
+        await typeRegistry.marshal(context, expected2, customObjectType),
         customObjectType
       );
       expect(result2.a).toBeNull();
@@ -255,7 +279,8 @@ describe('TypeRegistry', () => {
         kind: 'named',
         name: 'ValueTypeA',
       };
-      const result = await typeRegistry.unmarshal(await typeRegistry.marshal(data, type), type);
+      const result = await typeRegistry.unmarshal(
+        context, await typeRegistry.marshal(context, data, type), type);
       expect(result.valueA).toBe(data.valueA);
       expect(result.valueB).toBeNull();
       expect(result.hasOwnProperty('valueC')).toBeFalsy();
@@ -273,7 +298,8 @@ describe('TypeRegistry', () => {
         kind: 'nullable',
         type: stringType,
       };
-      const result = await typeRegistry.unmarshal(await typeRegistry.marshal(data, type), type);
+      const result = await typeRegistry.unmarshal(
+        context, await typeRegistry.marshal(context, data, type), type);
       expect(result).toBe(null);
     });
   });
@@ -282,28 +308,31 @@ describe('TypeRegistry', () => {
     waitsForPromise(async () => {
       invariant(typeRegistry);
 
-      const type = {
+      const type: UnionType = {
         location: builtinLocation,
         kind: 'union',
         types: [a1, a2, a3],
       };
 
       const data1 = 'bork';
-      const result1 = await typeRegistry.unmarshal(await typeRegistry.marshal(data1, type), type);
+      const result1 = await typeRegistry.unmarshal(
+        context, await typeRegistry.marshal(context, data1, type), type);
       expect(result1).toBe(data1);
 
       const data2 = 'bork!';
-      const result2 = await typeRegistry.unmarshal(await typeRegistry.marshal(data2, type), type);
+      const result2 = await typeRegistry.unmarshal(
+        context, await typeRegistry.marshal(context, data2, type), type);
       expect(result2).toBe(data2);
 
       const data3 = 42;
-      const result3 = await typeRegistry.unmarshal(await typeRegistry.marshal(data3, type), type);
+      const result3 = await typeRegistry.unmarshal(
+        context, await typeRegistry.marshal(context, data3, type), type);
       expect(result3).toBe(data3);
 
       const data4 = 'not bork!';
       let thrown = false;
       try {
-        await typeRegistry.marshal(data4, type);
+        await typeRegistry.marshal(context, data4, type);
       } catch (e) {
         thrown = true;
       }
@@ -375,7 +404,7 @@ describe('TypeRegistry', () => {
         ],
       };
 
-      const type = {
+      const type: UnionType = {
         location: builtinLocation,
         kind: 'union',
         types: [o1, o2, o3],
@@ -383,26 +412,30 @@ describe('TypeRegistry', () => {
       };
 
       const data1 = {kind: 'bork', n: 42};
-      const result1 = await typeRegistry.unmarshal(await typeRegistry.marshal(data1, type), type);
+      const result1 = await typeRegistry.unmarshal(
+        context, await typeRegistry.marshal(context, data1, type), type);
       expect(result1).toEqual(data1);
 
       const data2 = {kind: 'bork!', s: 'hello'};
-      const result2 = await typeRegistry.unmarshal(await typeRegistry.marshal(data2, type), type);
+      const result2 = await typeRegistry.unmarshal(
+        context, await typeRegistry.marshal(context, data2, type), type);
       expect(result2).toEqual(data2);
 
       const data3 = {kind: 42, b: true};
-      const result3 = await typeRegistry.unmarshal(await typeRegistry.marshal(data3, type), type);
+      const result3 = await typeRegistry.unmarshal(
+        context, await typeRegistry.marshal(context, data3, type), type);
       expect(result3).toEqual(data3);
 
       // Ensure no extra fields are accidentally marshalled.
       const data4 = {kind: 'bork', n: 42, s: 'hello', b: true};
-      const result4 = await typeRegistry.unmarshal(await typeRegistry.marshal(data4, type), type);
+      const result4 = await typeRegistry.unmarshal(
+        context, await typeRegistry.marshal(context, data4, type), type);
       expect(result4).toEqual(data1);
 
       const data5 = {kind: 'not bork!'};
       let thrown = false;
       try {
-        await typeRegistry.marshal(data5, type);
+        await typeRegistry.marshal(context, data5, type);
       } catch (e) {
         thrown = true;
       }
@@ -448,7 +481,7 @@ describe('TypeRegistry', () => {
         ],
       };
 
-      const type = {
+      const type: IntersectionType = {
         location: builtinLocation,
         kind: 'intersection',
         types: [o1, o2],
@@ -460,12 +493,14 @@ describe('TypeRegistry', () => {
       };
 
       const data1 = {x: 5, y: 6, s: 'asdf'};
-      const result1 = await typeRegistry.unmarshal(await typeRegistry.marshal(data1, type), type);
+      const result1 = await typeRegistry.unmarshal(
+        context, await typeRegistry.marshal(context, data1, type), type);
       expect(result1).toEqual(data1);
 
       // Ensure no extra fields are accidentally marshalled.
       const data4 = {x: 5, y: 6, s: 'asdf', b: true};
-      const result4 = await typeRegistry.unmarshal(await typeRegistry.marshal(data4, type), type);
+      const result4 = await typeRegistry.unmarshal(
+        context, await typeRegistry.marshal(context, data4, type), type);
       expect(result4).toEqual(data1);
     });
   });
@@ -479,7 +514,7 @@ describe('TypeRegistry', () => {
       }
       const {heapUsed} = process.memoryUsage();
       const startTime = Date.now();
-      const result = await typeRegistry.marshal(testArray, {
+      const result = await typeRegistry.marshal(context, testArray, {
         location: builtinLocation,
         kind: 'array',
         type: stringType,

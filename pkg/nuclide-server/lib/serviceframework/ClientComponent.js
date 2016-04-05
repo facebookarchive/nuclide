@@ -94,10 +94,10 @@ export default class ClientComponent {
 
   // Delegate marshalling to the type registry.
   marshal(...args: any): any {
-    return this._typeRegistry.marshal(...args);
+    return this._typeRegistry.marshal(this._objectRegistry, ...args);
   }
   unmarshal(...args: any): any {
-    return this._typeRegistry.unmarshal(...args);
+    return this._typeRegistry.unmarshal(this._objectRegistry, ...args);
   }
   registerType(...args: any): void {
     return this._typeRegistry.registerType(...args);

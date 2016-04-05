@@ -103,9 +103,9 @@ export default class ServerComponent {
               definition,
             });
 
-            this._typeRegistry.registerType(name, object => {
-              return this._objectRegistry.add(name, object);
-            }, objectId => this._objectRegistry.get(objectId));
+            this._typeRegistry.registerType(name, (object, context: ObjectRegistry) => {
+              return context.add(name, object);
+            }, (objectId, context: ObjectRegistry) => context.get(objectId));
 
             // Register all of the static methods as remote functions.
             definition.staticMethods.forEach((funcType, funcName) => {
@@ -151,7 +151,8 @@ export default class ServerComponent {
 
       // Marshal the result, to send over the network.
       invariant(returnVal != null);
-      returnVal = returnVal.then(value => this._typeRegistry.marshal(value, type));
+      returnVal = returnVal.then(value => this._typeRegistry.marshal(
+        this._objectRegistry, value, type));
 
       // Send the result of the promise across the socket.
       returnVal.then(result => {
@@ -174,8 +175,8 @@ export default class ServerComponent {
       }
 
       // Marshal the result, to send over the network.
-      result = result.concatMap(
-          value => this._typeRegistry.marshal(value, elementType));
+      result = result.concatMap(value => this._typeRegistry.marshal(
+        this._objectRegistry, value, elementType));
 
       // Send the next, error, and completion events of the observable across the socket.
       const subscription = result.subscribe(data => {
@@ -212,8 +213,8 @@ export default class ServerComponent {
         localImplementation,
         type,
       } = this._getFunctionImplemention(call.function);
-      const marshalledArgs =
-        await this._typeRegistry.unmarshalArguments(call.args, type.argumentTypes);
+      const marshalledArgs = await this._typeRegistry.unmarshalArguments(
+        this._objectRegistry, call.args, type.argumentTypes);
 
       return returnValue(
         localImplementation.apply(this, marshalledArgs),
@@ -229,8 +230,8 @@ export default class ServerComponent {
       const type = classDefinition.definition.instanceMethods.get(call.method);
       invariant(type != null);
 
-      const marshalledArgs =
-        await this._typeRegistry.unmarshalArguments(call.args, type.argumentTypes);
+      const marshalledArgs = await this._typeRegistry.unmarshalArguments(
+        this._objectRegistry, call.args, type.argumentTypes);
 
       return returnValue(
         object[call.method].apply(object, marshalledArgs),
@@ -246,7 +247,7 @@ export default class ServerComponent {
       } = classDefinition;
 
       const marshalledArgs = await this._typeRegistry.unmarshalArguments(
-        constructorMessage.args, definition.constructorArgs);
+        this._objectRegistry, constructorMessage.args, definition.constructorArgs);
 
       // Create a new object and put it in the registry.
       const newObject = construct(localImplementation, marshalledArgs);
