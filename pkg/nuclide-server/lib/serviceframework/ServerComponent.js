@@ -16,10 +16,7 @@ import {builtinLocation, voidType} from '../../../nuclide-service-parser/lib/bui
 import {startTracking} from '../../../nuclide-analytics';
 import type {TimingTracker} from '../../../nuclide-analytics';
 import type {
-  VoidType,
   FunctionType,
-  PromiseType,
-  ObservableType,
   Definition,
   InterfaceDefinition,
   Type,
@@ -27,8 +24,15 @@ import type {
 import invariant from 'assert';
 import type {ConfigEntry} from './index';
 
-import type {RequestMessage, ErrorResponseMessage, PromiseResponseMessage,
-  ObservableResponseMessage} from './types';
+import type {
+  RequestMessage,
+  ErrorResponseMessage,
+  PromiseResponseMessage,
+  ObservableResponseMessage,
+  CallRemoteFunctionMessage,
+  CallRemoteMethodMessage,
+  CreateRemoteObjectMessage,
+} from './types';
 import type {SocketClient} from '../SocketClient';
 import {ObjectRegistry} from './ObjectRegistry';
 
@@ -131,177 +135,165 @@ export default class ServerComponent {
   async handleMessage(client: SocketClient, message: RequestMessage): Promise<void> {
     const requestId = message.requestId;
 
-    let returnVal: ?(Promise | Observable) = null;
-    let returnType: PromiseType | ObservableType | VoidType = voidType;
-    let callError: ?Error = null;
-    let hadError = false;
-
     // Track timings of all function calls, method calls, and object creations.
     // Note: for Observables we only track how long it takes to create the initial Observable.
+    // while for Promises we track the length of time it takes to resolve or reject.
+    // For returning void, we track the time for the call to complete.
     const timingTracker: TimingTracker = startTracking(this.trackingIdOfMessage(message));
 
+    const returnPromise = (candidate: any, type: Type) => {
+      let returnVal = candidate;
+      // Ensure that the return value is a promise.
+      if (!isThenable(returnVal)) {
+        returnVal = Promise.reject(
+          new Error('Expected a Promise, but the function returned something else.'));
+      }
+
+      // Marshal the result, to send over the network.
+      invariant(returnVal != null);
+      returnVal = returnVal.then(value => this._typeRegistry.marshal(value, type));
+
+      // Send the result of the promise across the socket.
+      returnVal.then(result => {
+        client.sendSocketMessage(createPromiseMessage(requestId, result));
+        timingTracker.onSuccess();
+      }, error => {
+        client.sendSocketMessage(createErrorMessage(requestId, error));
+        timingTracker.onError(error == null ? new Error() : error);
+      });
+    };
+
+    const returnObservable = (returnVal: any, elementType: Type) => {
+      let result: Observable;
+      // Ensure that the return value is an observable.
+      if (!isObservable(returnVal)) {
+        result = Observable.throw(new Error(
+          'Expected an Observable, but the function returned something else.'));
+      } else {
+        result = returnVal;
+      }
+
+      // Marshal the result, to send over the network.
+      result = result.concatMap(
+          value => this._typeRegistry.marshal(value, elementType));
+
+      // Send the next, error, and completion events of the observable across the socket.
+      const subscription = result.subscribe(data => {
+        client.sendSocketMessage(createNextMessage(requestId, data));
+      }, error => {
+        client.sendSocketMessage(createErrorMessage(requestId, error));
+        this._objectRegistry.removeSubscription(requestId);
+      }, completed => {
+        client.sendSocketMessage(createCompletedMessage(requestId));
+        this._objectRegistry.removeSubscription(requestId);
+      });
+      this._objectRegistry.addSubscription(requestId, subscription);
+    };
+
+    // Returns true if a promise was returned.
+    const returnValue = (value: any, type: Type) => {
+      switch (type.kind) {
+        case 'void':
+          break; // No need to send anything back to the user.
+        case 'promise':
+          returnPromise(value, type.type);
+          return true;
+        case 'observable':
+          returnObservable(value, type.type);
+          break;
+        default:
+          throw new Error(`Unkown return type ${type.kind}.`);
+      }
+      return false;
+    };
+
+    const callFunction = async (call: CallRemoteFunctionMessage) => {
+      const {
+        localImplementation,
+        type,
+      } = this._getFunctionImplemention(call.function);
+      const marshalledArgs =
+        await this._typeRegistry.unmarshalArguments(call.args, type.argumentTypes);
+
+      return returnValue(
+        localImplementation.apply(this, marshalledArgs),
+        type.returnType);
+    };
+
+    const callMethod = async (call: CallRemoteMethodMessage) => {
+      const object = this._objectRegistry.get(call.objectId);
+      invariant(object != null);
+
+      const classDefinition = this._classesByName.get(object._interface);
+      invariant(classDefinition != null);
+      const type = classDefinition.definition.instanceMethods.get(call.method);
+      invariant(type != null);
+
+      const marshalledArgs =
+        await this._typeRegistry.unmarshalArguments(call.args, type.argumentTypes);
+
+      return returnValue(
+        object[call.method].apply(object, marshalledArgs),
+        type.returnType);
+    };
+
+    const callConstructor = async (constructorMessage: CreateRemoteObjectMessage) => {
+      const classDefinition = this._classesByName.get(constructorMessage.interface);
+      invariant(classDefinition != null);
+      const {
+        localImplementation,
+        definition,
+      } = classDefinition;
+
+      const marshalledArgs = await this._typeRegistry.unmarshalArguments(
+        constructorMessage.args, definition.constructorArgs);
+
+      // Create a new object and put it in the registry.
+      const newObject = construct(localImplementation, marshalledArgs);
+
+      // Return the object, which will automatically be converted to an id through the
+      // marshalling system.
+      returnPromise(
+        Promise.resolve(newObject),
+        {
+          kind: 'named',
+          name: constructorMessage.interface,
+          location: builtinLocation,
+        });
+    };
+
+    // Here's the main message handler ...
     try {
+      let returnedPromise = false;
       switch (message.type) {
         case 'FunctionCall':
-          // Transform arguments and call function.
-          const {
-            localImplementation: fcLocalImplementation,
-            type: fcType,
-          } = this._getFunctionImplemention(message.function);
-          const fcTransfomedArgs =
-            await this._typeRegistry.unmarshalArguments(message.args, fcType.argumentTypes);
-
-          // Invoke function and return the results.
-          invariant(fcType.returnType.kind === 'void' ||
-            fcType.returnType.kind === 'promise' ||
-            fcType.returnType.kind === 'observable');
-          returnType = (fcType.returnType: PromiseType | ObservableType | VoidType);
-          returnVal = fcLocalImplementation.apply(this, fcTransfomedArgs);
+          returnedPromise = await callFunction(message);
           break;
         case 'MethodCall':
-          // Get the object.
-          const mcObject = this._objectRegistry.get(message.objectId);
-          invariant(mcObject != null);
-
-          // Get the method FunctionType description.
-          const className = this._classesByName.get(mcObject._interface);
-          invariant(className != null);
-          const mcType = className.definition.instanceMethods.get(message.method);
-          invariant(mcType != null);
-
-          const mcTransfomedArgs =
-            await this._typeRegistry.unmarshalArguments(message.args, mcType.argumentTypes);
-
-          // Invoke message.
-          invariant(mcType.returnType.kind === 'void' ||
-            mcType.returnType.kind === 'promise' ||
-            mcType.returnType.kind === 'observable');
-          returnType = (mcType.returnType: PromiseType | ObservableType | VoidType);
-          returnVal = mcObject[message.method].apply(mcObject, mcTransfomedArgs);
+          returnedPromise = await callMethod(message);
           break;
         case 'NewObject':
-          const classDefinition = this._classesByName.get(message.interface);
-          invariant(classDefinition != null);
-          const {
-            localImplementation: noLocalImplementation,
-            definition: noDefinition,
-          } = classDefinition;
-
-          const noTransfomedArgs =
-            await this._typeRegistry.unmarshalArguments(message.args, noDefinition.constructorArgs);
-
-          // Create a new object and put it in the registry.
-          const noObject = construct(noLocalImplementation, noTransfomedArgs);
-
-          // Return the object, which will automatically be converted to an id through the
-          // marshalling system.
-          returnType = {
-            kind: 'promise',
-            type: {
-              kind: 'named',
-              name: message.interface,
-              location: builtinLocation,
-            },
-            location: builtinLocation,
-          };
-          returnVal = Promise.resolve(noObject);
+          await callConstructor(message);
+          returnedPromise = true;
           break;
         case 'DisposeObject':
-          const objectId = message.objectId;
-          await this._objectRegistry.disposeObject(objectId);
-
-          // Call the object's local dispose function.
-          returnType = {
-            kind: 'promise',
-            type: voidType,
-            location: builtinLocation,
-          };
-
-          // Return a void Promise
-          returnVal = Promise.resolve();
+          await this._objectRegistry.disposeObject(message.objectId);
+          returnPromise(Promise.resolve(), voidType);
+          returnedPromise = true;
           break;
         case 'DisposeObservable':
-          // Dispose an in-progress observable, before it has naturally completed.
           this._objectRegistry.disposeSubscription(requestId);
           break;
         default:
           throw new Error(`Unkown message type ${message.type}`);
       }
+      if (!returnedPromise) {
+        timingTracker.onSuccess();
+      }
     } catch (e) {
       logger.error(e != null ? e.message : e);
-      callError = e;
-      hadError = true;
-    }
-
-    switch (returnType.kind) {
-      case 'void':
-        if (hadError) {
-          timingTracker.onError(callError == null ? new Error() : callError);
-        } else {
-          timingTracker.onSuccess();
-        }
-        break; // No need to send anything back to the user.
-      case 'promise':
-        // If there was an error executing the command, we send that back as a rejected promise.
-        if (hadError) {
-          returnVal = Promise.reject(callError);
-        }
-
-        // Ensure that the return value is a promise.
-        if (!isThenable(returnVal)) {
-          returnVal = Promise.reject(
-            new Error('Expected a Promise, but the function returned something else.'));
-        }
-
-        // Marshal the result, to send over the network.
-        invariant(returnVal != null);
-        // $FlowIssue
-        returnVal = returnVal.then(value => this._typeRegistry.marshal(value, returnType.type));
-
-        // Send the result of the promise across the socket.
-        returnVal.then(result => {
-          client.sendSocketMessage(createPromiseMessage(requestId, result));
-          timingTracker.onSuccess();
-        }, error => {
-          client.sendSocketMessage(createErrorMessage(requestId, error));
-          timingTracker.onError(error == null ? new Error() : error);
-        });
-        break;
-      case 'observable':
-        // If there was an error executing the command, we send that back as an error Observable.
-        if (hadError) {
-          returnVal = Observable.throw(callError);
-          timingTracker.onError(callError == null ? new Error() : callError);
-        } else {
-          timingTracker.onSuccess();
-        }
-
-        // Ensure that the return value is an observable.
-        if (!isObservable(returnVal)) {
-          returnVal = Observable.throw(new Error(
-            'Expected an Observable, but the function returned something else.'));
-        }
-        let returnObservable: Observable = (returnVal : any);
-
-        // Marshal the result, to send over the network.
-        returnObservable = returnObservable.concatMap(
-            // $FlowIssue
-            value => this._typeRegistry.marshal(value, returnType.type));
-
-        // Send the next, error, and completion events of the observable across the socket.
-        const subscription = returnObservable.subscribe(data => {
-          client.sendSocketMessage(createNextMessage(requestId, data));
-        }, error => {
-          client.sendSocketMessage(createErrorMessage(requestId, error));
-          this._objectRegistry.removeSubscription(requestId);
-        }, completed => {
-          client.sendSocketMessage(createCompletedMessage(requestId));
-          this._objectRegistry.removeSubscription(requestId);
-        });
-        this._objectRegistry.addSubscription(requestId, subscription);
-        break;
-      default:
-        throw new Error(`Unkown return type ${returnType.kind}.`);
+      timingTracker.onError(e == null ? new Error() : e);
+      client.sendSocketMessage(createErrorMessage(requestId, e));
     }
   }
 
@@ -316,9 +308,9 @@ export default class ServerComponent {
       case 'FunctionCall':
         return `service-framework:${message.function}`;
       case 'MethodCall':
-        const mcObject = this._objectRegistry.get(message.objectId);
-        invariant(mcObject != null);
-        return `service-framework:${mcObject._interface}.${message.method}`;
+        const object = this._objectRegistry.get(message.objectId);
+        invariant(object != null);
+        return `service-framework:${object._interface}.${message.method}`;
       case 'NewObject':
         return `service-framework:new:${message.interface}`;
       case 'DisposeObject':
@@ -327,7 +319,7 @@ export default class ServerComponent {
       case 'DisposeObservable':
         return `service-framework:disposeObservable`;
       default:
-        throw new Error(`Unkown message type ${message.type}`);
+        throw new Error(`Unknown message type ${message.type}`);
     }
   }
 }
