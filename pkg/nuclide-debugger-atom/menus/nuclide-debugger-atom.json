@@ -11,6 +11,10 @@
               "command": "nuclide-debugger:show"
             },
             {
+              "label": "Hide",
+              "command": "nuclide-debugger:hide"
+            },
+            {
               "label": "Toggle",
               "command": "nuclide-debugger:toggle"
             },

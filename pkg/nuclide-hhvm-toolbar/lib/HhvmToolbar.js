@@ -131,12 +131,6 @@ class HhvmToolbar extends React.Component {
    * Use void here to explictly disallow async function in react component.
    */
   _debug(): void {
-    // Stop any existing debugging sessions, as install hangs if an existing
-    // app that's being overwritten is being debugged.
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:stop-debugging');
-
     // TODO: is this.props.targetFilePath best one for targetUri?
     let processInfo = null;
     if (this._isDebugScript(this.state.selectedIndex)) {

@@ -59,7 +59,7 @@ class DebuggerActions {
     });
     beginTimerTracking('nuclide-debugger-atom:startDebugging');
 
-    this.killDebugger(); // Kill the existing session.
+    this.stopDebugging(); // stop existing session.
     this.setError(null);
     this._handleDebugModeStart();
 
@@ -108,7 +108,7 @@ class DebuggerActions {
     this.killDebugger();
   }
 
-  killDebugger() {
+  stopDebugging() {
     if (this._store.getDebuggerMode() === DebuggerMode.STOPPING) {
       return;
     }
@@ -135,6 +135,11 @@ class DebuggerActions {
     });
     track(AnalyticsEvents.DEBUGGER_STOP);
     endTimerTracking();
+  }
+
+  killDebugger() {
+    this.stopDebugging();
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:hide');
   }
 
   addService(service: nuclide_debugger$Service) {

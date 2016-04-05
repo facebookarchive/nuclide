@@ -89,6 +89,9 @@ class Activation {
         'nuclide-debugger:show': this._show.bind(this),
       }),
       atom.commands.add('atom-workspace', {
+        'nuclide-debugger:hide': this._hide.bind(this),
+      }),
+      atom.commands.add('atom-workspace', {
         'nuclide-debugger:continue-debugging': this._continue.bind(this),
       }),
       atom.commands.add('atom-workspace', {
@@ -161,6 +164,10 @@ class Activation {
     this._getPanel().show();
   }
 
+  _hide() {
+    this._getPanel().hide();
+  }
+
   _continue() {
     // TODO(jeffreytan): when we figured out the launch lifecycle story
     // we may bind this to start-debugging too.
@@ -168,7 +175,7 @@ class Activation {
   }
 
   _stop() {
-    this._model.getActions().killDebugger();
+    this._model.getActions().stopDebugging();
   }
 
   _stepOver() {
