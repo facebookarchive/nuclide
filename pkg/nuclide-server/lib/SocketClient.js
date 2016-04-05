@@ -15,6 +15,7 @@ import invariant from 'assert';
 
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
+import {ObjectRegistry} from './serviceframework/ObjectRegistry';
 
 // Server side analog to (parts of) NuclideSocket
 // Handles JSON messaging and reconnect.
@@ -23,6 +24,7 @@ export class SocketClient {
   _socket: ?ws$WebSocket;
   _messageQueue: Array<{data: string}>;
   _serverComponent: ServiceFramework.ServerComponent;
+  _objectRegistry: ObjectRegistry;
 
   constructor(
       clientId: string,
@@ -31,6 +33,7 @@ export class SocketClient {
     this.id = clientId;
     this._socket = null;
     this._messageQueue = [];
+    this._objectRegistry = new ObjectRegistry();
     this._serverComponent = serverComponent;
     this._connect(socket);
   }
@@ -97,5 +100,9 @@ export class SocketClient {
         }
       }
     });
+  }
+
+  getMarshallingContext(): ObjectRegistry {
+    return this._objectRegistry;
   }
 }

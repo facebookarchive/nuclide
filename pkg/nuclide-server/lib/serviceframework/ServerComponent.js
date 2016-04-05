@@ -23,6 +23,7 @@ import type {
 } from '../../../nuclide-service-parser/lib/types';
 import invariant from 'assert';
 import type {ConfigEntry} from './index';
+import type {ObjectRegistry} from './ObjectRegistry';
 
 import type {
   RequestMessage,
@@ -34,7 +35,6 @@ import type {
   CreateRemoteObjectMessage,
 } from './types';
 import type {SocketClient} from '../SocketClient';
-import {ObjectRegistry} from './ObjectRegistry';
 
 const logger = require('../../../nuclide-logging').getLogger();
 
@@ -55,14 +55,10 @@ export default class ServerComponent {
    */
   _classesByName: Map<string, {localImplementation: any; definition: InterfaceDefinition}>;
 
-  _objectRegistry: ObjectRegistry;
-
   constructor(services: Array<ConfigEntry>) {
     this._typeRegistry = new TypeRegistry();
     this._functionsByName = new Map();
     this._classesByName = new Map();
-
-    this._objectRegistry = new ObjectRegistry();
 
     // NuclideUri type requires no transformations (it is done on the client side).
     this._typeRegistry.registerType('NuclideUri', uri => uri, remotePath => remotePath);
@@ -134,12 +130,14 @@ export default class ServerComponent {
 
   async handleMessage(client: SocketClient, message: RequestMessage): Promise<void> {
     const requestId = message.requestId;
+    const marshallingContext = client.getMarshallingContext();
 
     // Track timings of all function calls, method calls, and object creations.
     // Note: for Observables we only track how long it takes to create the initial Observable.
     // while for Promises we track the length of time it takes to resolve or reject.
     // For returning void, we track the time for the call to complete.
-    const timingTracker: TimingTracker = startTracking(this.trackingIdOfMessage(message));
+    const timingTracker: TimingTracker
+      = startTracking(trackingIdOfMessage(marshallingContext, message));
 
     const returnPromise = (candidate: any, type: Type) => {
       let returnVal = candidate;
@@ -152,7 +150,7 @@ export default class ServerComponent {
       // Marshal the result, to send over the network.
       invariant(returnVal != null);
       returnVal = returnVal.then(value => this._typeRegistry.marshal(
-        this._objectRegistry, value, type));
+        marshallingContext, value, type));
 
       // Send the result of the promise across the socket.
       returnVal.then(result => {
@@ -176,19 +174,19 @@ export default class ServerComponent {
 
       // Marshal the result, to send over the network.
       result = result.concatMap(value => this._typeRegistry.marshal(
-        this._objectRegistry, value, elementType));
+        marshallingContext, value, elementType));
 
       // Send the next, error, and completion events of the observable across the socket.
       const subscription = result.subscribe(data => {
         client.sendSocketMessage(createNextMessage(requestId, data));
       }, error => {
         client.sendSocketMessage(createErrorMessage(requestId, error));
-        this._objectRegistry.removeSubscription(requestId);
+        marshallingContext.removeSubscription(requestId);
       }, completed => {
         client.sendSocketMessage(createCompletedMessage(requestId));
-        this._objectRegistry.removeSubscription(requestId);
+        marshallingContext.removeSubscription(requestId);
       });
-      this._objectRegistry.addSubscription(requestId, subscription);
+      marshallingContext.addSubscription(requestId, subscription);
     };
 
     // Returns true if a promise was returned.
@@ -214,7 +212,7 @@ export default class ServerComponent {
         type,
       } = this._getFunctionImplemention(call.function);
       const marshalledArgs = await this._typeRegistry.unmarshalArguments(
-        this._objectRegistry, call.args, type.argumentTypes);
+        marshallingContext, call.args, type.argumentTypes);
 
       return returnValue(
         localImplementation.apply(this, marshalledArgs),
@@ -222,17 +220,17 @@ export default class ServerComponent {
     };
 
     const callMethod = async (call: CallRemoteMethodMessage) => {
-      const object = this._objectRegistry.get(call.objectId);
+      const object = marshallingContext.get(call.objectId);
       invariant(object != null);
 
-      const interfaceName = this._objectRegistry.getInterface(call.objectId);
+      const interfaceName = marshallingContext.getInterface(call.objectId);
       const classDefinition = this._classesByName.get(interfaceName);
       invariant(classDefinition != null);
       const type = classDefinition.definition.instanceMethods.get(call.method);
       invariant(type != null);
 
       const marshalledArgs = await this._typeRegistry.unmarshalArguments(
-        this._objectRegistry, call.args, type.argumentTypes);
+        marshallingContext, call.args, type.argumentTypes);
 
       return returnValue(
         object[call.method].apply(object, marshalledArgs),
@@ -248,7 +246,7 @@ export default class ServerComponent {
       } = classDefinition;
 
       const marshalledArgs = await this._typeRegistry.unmarshalArguments(
-        this._objectRegistry, constructorMessage.args, definition.constructorArgs);
+        marshallingContext, constructorMessage.args, definition.constructorArgs);
 
       // Create a new object and put it in the registry.
       const newObject = construct(localImplementation, marshalledArgs);
@@ -279,12 +277,12 @@ export default class ServerComponent {
           returnedPromise = true;
           break;
         case 'DisposeObject':
-          await this._objectRegistry.disposeObject(message.objectId);
+          await marshallingContext.disposeObject(message.objectId);
           returnPromise(Promise.resolve(), voidType);
           returnedPromise = true;
           break;
         case 'DisposeObservable':
-          this._objectRegistry.disposeSubscription(requestId);
+          marshallingContext.disposeSubscription(requestId);
           break;
         default:
           throw new Error(`Unkown message type ${message.type}`);
@@ -304,24 +302,24 @@ export default class ServerComponent {
     invariant(result);
     return result;
   }
+}
 
-  trackingIdOfMessage(message: RequestMessage): string {
-    switch (message.type) {
-      case 'FunctionCall':
-        return `service-framework:${message.function}`;
-      case 'MethodCall':
-        const callInterface = this._objectRegistry.getInterface(message.objectId);
-        return `service-framework:${callInterface}.${message.method}`;
-      case 'NewObject':
-        return `service-framework:new:${message.interface}`;
-      case 'DisposeObject':
-        const interfaceName = this._objectRegistry.getInterface(message.objectId);
-        return `service-framework:dispose:${interfaceName}`;
-      case 'DisposeObservable':
-        return `service-framework:disposeObservable`;
-      default:
-        throw new Error(`Unknown message type ${message.type}`);
-    }
+function trackingIdOfMessage(registry: ObjectRegistry, message: RequestMessage): string {
+  switch (message.type) {
+    case 'FunctionCall':
+      return `service-framework:${message.function}`;
+    case 'MethodCall':
+      const callInterface = registry.getInterface(message.objectId);
+      return `service-framework:${callInterface}.${message.method}`;
+    case 'NewObject':
+      return `service-framework:new:${message.interface}`;
+    case 'DisposeObject':
+      const interfaceName = registry.getInterface(message.objectId);
+      return `service-framework:dispose:${interfaceName}`;
+    case 'DisposeObservable':
+      return `service-framework:disposeObservable`;
+    default:
+      throw new Error(`Unknown message type ${message.type}`);
   }
 }
 
