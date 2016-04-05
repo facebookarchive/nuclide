@@ -1,5 +1,13 @@
-'use babel';
-/* @flow */
+
+
+module.exports = {
+  activate: function activate(state) {},
+
+  provideNuclideDebuggerNode: function provideNuclideDebuggerNode() {
+    var Service = require('./Service');
+    return Service;
+  }
+};
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -8,15 +16,4 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
-import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/service';
-
-module.exports = {
-  activate(state: mixed): void {
-  },
-
-  provideNuclideDebuggerNode(): nuclide_debugger$Service {
-    const Service = require('./Service');
-    return Service;
-  },
-};
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFhQSxNQUFNLENBQUMsT0FBTyxHQUFHO0FBQ2YsVUFBUSxFQUFBLGtCQUFDLEtBQVksRUFBUSxFQUM1Qjs7QUFFRCw0QkFBMEIsRUFBQSxzQ0FBNkI7QUFDckQsUUFBTSxPQUFPLEdBQUcsT0FBTyxDQUFDLFdBQVcsQ0FBQyxDQUFDO0FBQ3JDLFdBQU8sT0FBTyxDQUFDO0dBQ2hCO0NBQ0YsQ0FBQyIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge251Y2xpZGVfZGVidWdnZXIkU2VydmljZX0gZnJvbSAnLi4vLi4vbnVjbGlkZS1kZWJ1Z2dlci1pbnRlcmZhY2VzL3NlcnZpY2UnO1xuXG5tb2R1bGUuZXhwb3J0cyA9IHtcbiAgYWN0aXZhdGUoc3RhdGU6IG1peGVkKTogdm9pZCB7XG4gIH0sXG5cbiAgcHJvdmlkZU51Y2xpZGVEZWJ1Z2dlck5vZGUoKTogbnVjbGlkZV9kZWJ1Z2dlciRTZXJ2aWNlIHtcbiAgICBjb25zdCBTZXJ2aWNlID0gcmVxdWlyZSgnLi9TZXJ2aWNlJyk7XG4gICAgcmV0dXJuIFNlcnZpY2U7XG4gIH0sXG59O1xuIl19

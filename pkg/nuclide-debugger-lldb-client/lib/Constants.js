@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,6 +10,8 @@
  * the root directory of this source tree.
  */
 
-export const LaunchAttachActionCode = Object.freeze({
-  UPDATE_ATTACH_TARGET_LIST: 'UPDATE_ATTACH_TARGET_LIST',
+var LaunchAttachActionCode = Object.freeze({
+  UPDATE_ATTACH_TARGET_LIST: 'UPDATE_ATTACH_TARGET_LIST'
 });
+exports.LaunchAttachActionCode = LaunchAttachActionCode;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkNvbnN0YW50cy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7QUFXTyxJQUFNLHNCQUFzQixHQUFHLE1BQU0sQ0FBQyxNQUFNLENBQUM7QUFDbEQsMkJBQXlCLEVBQUUsMkJBQTJCO0NBQ3ZELENBQUMsQ0FBQyIsImZpbGUiOiJDb25zdGFudHMuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5leHBvcnQgY29uc3QgTGF1bmNoQXR0YWNoQWN0aW9uQ29kZSA9IE9iamVjdC5mcmVlemUoe1xuICBVUERBVEVfQVRUQUNIX1RBUkdFVF9MSVNUOiAnVVBEQVRFX0FUVEFDSF9UQVJHRVRfTElTVCcsXG59KTtcbiJdfQ==

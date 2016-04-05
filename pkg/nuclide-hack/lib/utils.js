@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +10,71 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
+exports.compareHackCompletions = compareHackCompletions;
 
-import {getConfig} from './config';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import invariant from 'assert';
+var passesGK = _asyncToGenerator(function* (gkid) {
+  try {
+    var _require = require('../../fb-gatekeeper');
 
-const MATCH_PREFIX_CASE_SENSITIVE_SCORE = 6;
-const MATCH_PREFIX_CASE_INSENSITIVE_SCORE = 4;
-const MATCH_TOKEN_CASE_SENSITIVE_SCORE = 2;
-const MATCH_TOKEN_CASE_INSENSITIVE_SCORE = 0;
-const MATCH_PRIVATE_FUNCTION_PENALTY = -4;
-const MATCH_APLHABETICAL_SCORE = 1;
-const HACK_SERVICE_NAME = 'HackService';
+    var gatekeeper = _require.gatekeeper;
 
-export function compareHackCompletions(token: string)
-    : (matchText1: string, matchText2: string) => number {
-  const tokenLowerCase = token.toLowerCase();
+    return (yield gatekeeper.asyncIsGkEnabled(gkid)) === true;
+  } catch (e) {
+    return false;
+  }
+});
 
-  return (matchText1: string, matchText2: string) => {
-    const matchTexts = [matchText1, matchText2];
-    const scores = matchTexts.map((matchText, i) => {
+var getHackEnvironmentDetails = _asyncToGenerator(function* (fileUri) {
+  var hackService = getHackService(fileUri);
+  var config = (0, _config.getConfig)();
+  var useIdeConnection = config.useIdeConnection || (yield passesGK('nuclide_hack_use_persistent_connection'));
+  var useServerOnly = config.useServerOnly || (yield passesGK('nuclide_hack_use_server'));
+  var hackEnvironment = yield hackService.getHackEnvironmentDetails(fileUri, config.hhClientPath, useIdeConnection);
+  var isAvailable = hackEnvironment != null;
+
+  var _ref = hackEnvironment || {};
+
+  var hackRoot = _ref.hackRoot;
+  var hackCommand = _ref.hackCommand;
+
+  return {
+    hackService: hackService,
+    hackRoot: hackRoot,
+    hackCommand: hackCommand,
+    isAvailable: isAvailable,
+    useServerOnly: useServerOnly,
+    useIdeConnection: useIdeConnection
+  };
+});
+
+exports.getHackEnvironmentDetails = getHackEnvironmentDetails;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+var _config = require('./config');
+
+var _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var MATCH_PREFIX_CASE_SENSITIVE_SCORE = 6;
+var MATCH_PREFIX_CASE_INSENSITIVE_SCORE = 4;
+var MATCH_TOKEN_CASE_SENSITIVE_SCORE = 2;
+var MATCH_TOKEN_CASE_INSENSITIVE_SCORE = 0;
+var MATCH_PRIVATE_FUNCTION_PENALTY = -4;
+var MATCH_APLHABETICAL_SCORE = 1;
+var HACK_SERVICE_NAME = 'HackService';
+
+function compareHackCompletions(token) {
+  var tokenLowerCase = token.toLowerCase();
+
+  return function (matchText1, matchText2) {
+    var matchTexts = [matchText1, matchText2];
+    var scores = matchTexts.map(function (matchText, i) {
       if (matchText.startsWith(token)) {
         // Matches starting with the prefix gets the highest score.
         return MATCH_PREFIX_CASE_SENSITIVE_SCORE;
@@ -39,7 +83,7 @@ export function compareHackCompletions(token: string)
         return MATCH_PREFIX_CASE_INSENSITIVE_SCORE;
       }
 
-      let score;
+      var score = undefined;
       if (matchText.indexOf(token) !== -1) {
         // Small score for a match that contains the token case-sensitive.
         score = MATCH_TOKEN_CASE_SENSITIVE_SCORE;
@@ -66,50 +110,9 @@ export function compareHackCompletions(token: string)
 
 // Don't call this directly from outside this package.
 // Call getHackEnvironmentDetails instead.
-function getHackService(filePath: NuclideUri): HackService {
-  const hackRegisteredService = getServiceByNuclideUri(HACK_SERVICE_NAME, filePath);
-  invariant(hackRegisteredService);
+function getHackService(filePath) {
+  var hackRegisteredService = (0, _nuclideRemoteConnection.getServiceByNuclideUri)(HACK_SERVICE_NAME, filePath);
+  (0, _assert2['default'])(hackRegisteredService);
   return hackRegisteredService;
 }
-
-export type HackEnvironment = {
-  hackService: HackService;
-  hackRoot: ?NuclideUri;
-  hackCommand: ?string;
-  isAvailable: boolean;
-  useServerOnly: boolean;
-  useIdeConnection: boolean;
-};
-
-async function passesGK(gkid: string): Promise<boolean> {
-  try {
-    const {gatekeeper} = require('../../fb-gatekeeper');
-    return await gatekeeper.asyncIsGkEnabled(gkid) === true;
-  } catch (e) {
-    return false;
-  }
-}
-
-export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<HackEnvironment> {
-  const hackService = getHackService(fileUri);
-  const config = getConfig();
-  const useIdeConnection = config.useIdeConnection
-      || (await passesGK('nuclide_hack_use_persistent_connection'));
-  const useServerOnly = config.useServerOnly
-      || (await passesGK('nuclide_hack_use_server'));
-  const hackEnvironment = await hackService.getHackEnvironmentDetails(
-    fileUri,
-    config.hhClientPath,
-    useIdeConnection);
-  const isAvailable = hackEnvironment != null;
-  const {hackRoot, hackCommand} = hackEnvironment || {};
-
-  return {
-    hackService,
-    hackRoot,
-    hackCommand,
-    isAvailable,
-    useServerOnly,
-    useIdeConnection,
-  };
-}
+//# sourceMappingURL=data:application/json;base64,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SSxTQUFTLENBQUMsVUFBVSxDQUFDLEdBQUcsQ0FBQyxFQUFFO0FBQzdCLGFBQUssSUFBSSw4QkFBOEIsQ0FBQztPQUN6QztBQUNELGFBQU8sS0FBSyxDQUFDO0tBQ2QsQ0FBQyxDQUFDOztBQUVILFFBQUksVUFBVSxDQUFDLENBQUMsQ0FBQyxHQUFHLFVBQVUsQ0FBQyxDQUFDLENBQUMsRUFBRTtBQUNqQyxZQUFNLENBQUMsQ0FBQyxDQUFDLElBQUksd0JBQXdCLENBQUM7S0FDdkMsTUFBTTtBQUNMLFlBQU0sQ0FBQyxDQUFDLENBQUMsSUFBSSx3QkFBd0IsQ0FBQztLQUN2QztBQUNELFdBQU8sTUFBTSxDQUFDLENBQUMsQ0FBQyxHQUFHLE1BQU0sQ0FBQyxDQUFDLENBQUMsQ0FBQztHQUM5QixDQUFDO0NBQ0g7Ozs7QUFJRCxTQUFTLGNBQWMsQ0FBQyxRQUFvQixFQUFlO0FBQ3pELE1BQU0scUJBQXFCLEdBQUcscURBQXVCLGlCQUFpQixFQUFFLFFBQVEsQ0FBQyxDQUFDO0FBQ2xGLDJCQUFVLHFCQUFxQixDQUFDLENBQUM7QUFDakMsU0FBTyxxQkFBcUIsQ0FBQztDQUM5QiIsImZpbGUiOiJ1dGlscy5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtOdWNsaWRlVXJpfSBmcm9tICcuLi8uLi9udWNsaWRlLXJlbW90ZS11cmknO1xuaW1wb3J0IHR5cGVvZiAqIGFzIEhhY2tTZXJ2aWNlIGZyb20gJy4uLy4uL251Y2xpZGUtaGFjay1iYXNlL2xpYi9IYWNrU2VydmljZSc7XG5cbmltcG9ydCB7Z2V0Q29uZmlnfSBmcm9tICcuL2NvbmZpZyc7XG5pbXBvcnQge2dldFNlcnZpY2VCeU51Y2xpZGVVcml9IGZyb20gJy4uLy4uL251Y2xpZGUtcmVtb3RlLWNvbm5lY3Rpb24nO1xuaW1wb3J0IGludmFyaWFudCBmcm9tICdhc3NlcnQnO1xuXG5jb25zdCBNQVRDSF9QUkVGSVhfQ0FTRV9TRU5TSVRJVkVfU0NPUkUgPSA2O1xuY29uc3QgTUFUQ0hfUFJFRklYX0NBU0VfSU5TRU5TSVRJVkVfU0NPUkUgPSA0O1xuY29uc3QgTUFUQ0hfVE9LRU5fQ0FTRV9TRU5TSVRJVkVfU0NPUkUgPSAyO1xuY29uc3QgTUFUQ0hfVE9LRU5fQ0FTRV9JTlNFTlNJVElWRV9TQ09SRSA9IDA7XG5jb25zdCBNQVRDSF9QUklWQVRFX0ZVTkNUSU9OX1BFTkFMVFkgPSAtNDtcbmNvbnN0IE1BVENIX0FQTEhBQkVUSUNBTF9TQ09SRSA9IDE7XG5jb25zdCBIQUNLX1NFUlZJQ0VfTkFNRSA9ICdIYWNrU2VydmljZSc7XG5cbmV4cG9ydCBmdW5jdGlvbiBjb21wYXJlSGFja0NvbXBsZXRpb25zKHRva2VuOiBzdHJpbmcpXG4gICAgOiAobWF0Y2hUZXh0MTogc3RyaW5nLCBtYXRjaFRleHQyOiBzdHJpbmcpID0+IG51bWJlciB7XG4gIGNvbnN0IHRva2VuTG93ZXJDYXNlID0gdG9rZW4udG9Mb3dlckNhc2UoKTtcblxuICByZXR1cm4gKG1hdGNoVGV4dDE6IHN0cmluZywgbWF0Y2hUZXh0Mjogc3RyaW5nKSA9PiB7XG4gICAgY29uc3QgbWF0Y2hUZXh0cyA9IFttYXRjaFRleHQxLCBtYXRjaFRleHQyXTtcbiAgICBjb25zdCBzY29yZXMgPSBtYXRjaFRleHRzLm1hcCgobWF0Y2hUZXh0LCBpKSA9PiB7XG4gICAgICBpZiAobWF0Y2hUZXh0LnN0YXJ0c1dpdGgodG9rZW4pKSB7XG4gICAgICAgIC8vIE1hdGNoZXMgc3RhcnRpbmcgd2l0aCB0aGUgcHJlZml4IGdldHMgdGhlIGhpZ2hlc3Qgc2NvcmUuXG4gICAgICAgIHJldHVybiBNQVRDSF9QUkVGSVhfQ0FTRV9TRU5TSVRJVkVfU0NPUkU7XG4gICAgICB9IGVsc2UgaWYgKG1hdGNoVGV4dC50b0xvd2VyQ2FzZSgpLnN0YXJ0c1dpdGgodG9rZW5Mb3dlckNhc2UpKSB7XG4gICAgICAgIC8vIElnbm9yZSBjYXNlIHNjb3JlIG1hdGNoZXMgZ2V0cyBhIGdvb2Qgc2NvcmUuXG4gICAgICAgIHJldHVybiBNQVRDSF9QUkVGSVhfQ0FTRV9JTlNFTlNJVElWRV9TQ09SRTtcbiAgICAgIH1cblxuICAgICAgbGV0IHNjb3JlO1xuICAgICAgaWYgKG1hdGNoVGV4dC5pbmRleE9mKHRva2VuKSAhPT0gLTEpIHtcbiAgICAgICAgLy8gU21hbGwgc2NvcmUgZm9yIGEgbWF0Y2ggdGhhdCBjb250YWlucyB0aGUgdG9rZW4gY2FzZS1zZW5zaXRpdmUuXG4gICAgICAgIHNjb3JlID0gTUFUQ0hfVE9LRU5fQ0FTRV9TRU5TSVRJVkVfU0NPUkU7XG4gICAgICB9IGVsc2Uge1xuICAgICAgICAvLyBaZXJvIHNjb3JlIGZvciBhIG1hdGNoIHRoYXQgY29udGFpbnMgdGhlIHRva2VuIHdpdGhvdXQgY2FzZS1zZW5zaXRpdmUgbWF0Y2hpbmcuXG4gICAgICAgIHNjb3JlID0gTUFUQ0hfVE9LRU5fQ0FTRV9JTlNFTlNJVElWRV9TQ09SRTtcbiAgICAgIH1cblxuICAgICAgLy8gUHJpdmF0ZSBmdW5jdGlvbnMgZ2V0cyBuZWdhdGl2ZSBzY29yZS5cbiAgICAgIGlmIChtYXRjaFRleHQuc3RhcnRzV2l0aCgnXycpKSB7XG4gICAgICAgIHNjb3JlICs9IE1BVENIX1BSSVZBVEVfRlVOQ1RJT05fUEVOQUxUWTtcbiAgICAgIH1cbiAgICAgIHJldHVybiBzY29yZTtcbiAgICB9KTtcbiAgICAvLyBGaW5hbGx5LCBjb25zaWRlciB0aGUgYWxwaGFiZXRpY2FsIG9yZGVyLCBidXQgbm90IGhpZ2hlciB0aGFuIGFueSBvdGhlciBzY29yZS5cbiAgICBpZiAobWF0Y2hUZXh0c1swXSA8IG1hdGNoVGV4dHNbMV0pIHtcbiAgICAgIHNjb3Jlc1swXSArPSBNQVRDSF9BUExIQUJFVElDQUxfU0NPUkU7XG4gICAgfSBlbHNlIHtcbiAgICAgIHNjb3Jlc1sxXSArPSBNQVRDSF9BUExIQUJFVElDQUxfU0NPUkU7XG4gICAgfVxuICAgIHJldHVybiBzY29yZXNbMV0gLSBzY29yZXNbMF07XG4gIH07XG59XG5cbi8vIERvbid0IGNhbGwgdGhpcyBkaXJlY3RseSBmcm9tIG91dHNpZGUgdGhpcyBwYWNrYWdlLlxuLy8gQ2FsbCBnZXRIYWNrRW52aXJvbm1lbnREZXRhaWxzIGluc3RlYWQuXG5mdW5jdGlvbiBnZXRIYWNrU2VydmljZShmaWxlUGF0aDogTnVjbGlkZVVyaSk6IEhhY2tTZXJ2aWNlIHtcbiAgY29uc3QgaGFja1JlZ2lzdGVyZWRTZXJ2aWNlID0gZ2V0U2VydmljZUJ5TnVjbGlkZVVyaShIQUNLX1NFUlZJQ0VfTkFNRSwgZmlsZVBhdGgpO1xuICBpbnZhcmlhbnQoaGFja1JlZ2lzdGVyZWRTZXJ2aWNlKTtcbiAgcmV0dXJuIGhhY2tSZWdpc3RlcmVkU2VydmljZTtcbn1cblxuZXhwb3J0IHR5cGUgSGFja0Vudmlyb25tZW50ID0ge1xuICBoYWNrU2VydmljZTogSGFja1NlcnZpY2U7XG4gIGhhY2tSb290OiA/TnVjbGlkZVVyaTtcbiAgaGFja0NvbW1hbmQ6ID9zdHJpbmc7XG4gIGlzQXZhaWxhYmxlOiBib29sZWFuO1xuICB1c2VTZXJ2ZXJPbmx5OiBib29sZWFuO1xuICB1c2VJZGVDb25uZWN0aW9uOiBib29sZWFuO1xufTtcblxuYXN5bmMgZnVuY3Rpb24gcGFzc2VzR0soZ2tpZDogc3RyaW5nKTogUHJvbWlzZTxib29sZWFuPiB7XG4gIHRyeSB7XG4gICAgY29uc3Qge2dhdGVrZWVwZXJ9ID0gcmVxdWlyZSgnLi4vLi4vZmItZ2F0ZWtlZXBlcicpO1xuICAgIHJldHVybiBhd2FpdCBnYXRla2VlcGVyLmFzeW5jSXNHa0VuYWJsZWQoZ2tpZCkgPT09IHRydWU7XG4gIH0gY2F0Y2ggKGUpIHtcbiAgICByZXR1cm4gZmFsc2U7XG4gIH1cbn1cblxuZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIGdldEhhY2tFbnZpcm9ubWVudERldGFpbHMoZmlsZVVyaTogTnVjbGlkZVVyaSk6IFByb21pc2U8SGFja0Vudmlyb25tZW50PiB7XG4gIGNvbnN0IGhhY2tTZXJ2aWNlID0gZ2V0SGFja1NlcnZpY2UoZmlsZVVyaSk7XG4gIGNvbnN0IGNvbmZpZyA9IGdldENvbmZpZygpO1xuICBjb25zdCB1c2VJZGVDb25uZWN0aW9uID0gY29uZmlnLnVzZUlkZUNvbm5lY3Rpb25cbiAgICAgIHx8IChhd2FpdCBwYXNzZXNHSygnbnVjbGlkZV9oYWNrX3VzZV9wZXJzaXN0ZW50X2Nvbm5lY3Rpb24nKSk7XG4gIGNvbnN0IHVzZVNlcnZlck9ubHkgPSBjb25maWcudXNlU2VydmVyT25seVxuICAgICAgfHwgKGF3YWl0IHBhc3Nlc0dLKCdudWNsaWRlX2hhY2tfdXNlX3NlcnZlcicpKTtcbiAgY29uc3QgaGFja0Vudmlyb25tZW50ID0gYXdhaXQgaGFja1NlcnZpY2UuZ2V0SGFja0Vudmlyb25tZW50RGV0YWlscyhcbiAgICBmaWxlVXJpLFxuICAgIGNvbmZpZy5oaENsaWVudFBhdGgsXG4gICAgdXNlSWRlQ29ubmVjdGlvbik7XG4gIGNvbnN0IGlzQXZhaWxhYmxlID0gaGFja0Vudmlyb25tZW50ICE9IG51bGw7XG4gIGNvbnN0IHtoYWNrUm9vdCwgaGFja0NvbW1hbmR9ID0gaGFja0Vudmlyb25tZW50IHx8IHt9O1xuXG4gIHJldHVybiB7XG4gICAgaGFja1NlcnZpY2UsXG4gICAgaGFja1Jvb3QsXG4gICAgaGFja0NvbW1hbmQsXG4gICAgaXNBdmFpbGFibGUsXG4gICAgdXNlU2VydmVyT25seSxcbiAgICB1c2VJZGVDb25uZWN0aW9uLFxuICB9O1xufVxuIl19

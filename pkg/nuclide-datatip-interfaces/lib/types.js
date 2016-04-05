@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +10,6 @@
  * the root directory of this source tree.
  */
 
-export type Datatip = {
-  component: ReactElement;
-  range: atom$Range;
-  pinnable?: boolean;
-}
-
-export type DatatipProvider = {
-  datatip(editor: atom$TextEditor, bufferPosition: atom$Point): Promise<?Datatip>;
-  inclusionPriority: number;
-  validForScope(scopeName: string): boolean;
-  // A unique name for the provider to be used for analytics.
-  // It is recommended that it be the name of the provider's package.
-  providerName: string;
-};
+// A unique name for the provider to be used for analytics.
+// It is recommended that it be the name of the provider's package.
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJ0eXBlcy5qcyIsInNvdXJjZXNDb250ZW50IjpbXX0=

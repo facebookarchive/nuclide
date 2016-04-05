@@ -1,5 +1,20 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _path4 = require('path');
+
+var _path5 = _interopRequireDefault(_path4);
+
+var _url = require('url');
+
+var _url2 = _interopRequireDefault(_url);
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -14,52 +29,18 @@
 //
 // This package creates, queries and decomposes NuclideUris.
 
-export type NuclideUri = string;
+var REMOTE_PATH_URI_PREFIX = 'nuclide://';
 
-type ParsedUrl = {
-  auth: ?string;
-  href: string;
-  host: ?string;
-  hostname: ?string;
-  path: string;
-  pathname: string;
-  port: ?string;
-  protocol: ?string;
-  query: ?any;
-  search: ?string;
-  slashes: ?boolean;
-};
-
-type ParsedRemoteUrl = {
-  auth: ?string;
-  href: string;
-  host: ?string;
-  hostname: string;
-  path: string;
-  pathname: string;
-  port: string;
-  protocol: ?string;
-  query: ?any;
-  search: ?string;
-  slashes: ?boolean;
-};
-
-import invariant from 'assert';
-import pathModule from 'path';
-import url from 'url';
-
-const REMOTE_PATH_URI_PREFIX = 'nuclide://';
-
-function isRemote(uri: NuclideUri): boolean {
+function isRemote(uri) {
   return uri.startsWith(REMOTE_PATH_URI_PREFIX);
 }
 
-function isLocal(uri: NuclideUri): boolean {
+function isLocal(uri) {
   return !isRemote(uri);
 }
 
-function createRemoteUri(hostname: string, remotePort: number, remotePath: string): string {
-  return `nuclide://${hostname}:${remotePort}${remotePath}`;
+function createRemoteUri(hostname, remotePort, remotePath) {
+  return 'nuclide://' + hostname + ':' + remotePort + remotePath;
 }
 
 /**
@@ -80,22 +61,19 @@ function createRemoteUri(hostname: string, remotePort: number, remotePath: strin
  *           ...
  *         }
  */
-function parse(uri: NuclideUri): ParsedUrl {
-  const parsedUri = url.parse(uri);
+function parse(uri) {
+  var parsedUri = _url2['default'].parse(uri);
 
-  invariant(parsedUri.path, `Nuclide URIs must contain paths, '${parsedUri.path}' found.`);
-  let path = parsedUri.path;
+  (0, _assert2['default'])(parsedUri.path, 'Nuclide URIs must contain paths, \'' + parsedUri.path + '\' found.');
+  var path = parsedUri.path;
   // `url.parse` treates the first '#' character as the beginning of the `hash` attribute. That
   // feature is not used in Nuclide and is instead treated as part of the path.
   if (parsedUri.hash != null) {
     path += parsedUri.hash;
   }
 
-  invariant(
-    parsedUri.pathname,
-    `Nuclide URIs must contain pathnamess, '${parsedUri.pathname}' found.`
-  );
-  let pathname = parsedUri.pathname;
+  (0, _assert2['default'])(parsedUri.pathname, 'Nuclide URIs must contain pathnamess, \'' + parsedUri.pathname + '\' found.');
+  var pathname = parsedUri.pathname;
   // `url.parse` treates the first '#' character as the beginning of the `hash` attribute. That
   // feature is not used in Nuclide and is instead treated as part of the pathname.
   if (parsedUri.hash != null) {
@@ -115,23 +93,17 @@ function parse(uri: NuclideUri): ParsedUrl {
     protocol: parsedUri.protocol,
     query: parsedUri.query,
     search: parsedUri.search,
-    slashes: parsedUri.slashes,
+    slashes: parsedUri.slashes
   };
 }
 
-function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
+function parseRemoteUri(remoteUri) {
   if (!isRemote(remoteUri)) {
     throw new Error('Expected remote uri. Got ' + remoteUri);
   }
-  const parsedUri = parse(remoteUri);
-  invariant(
-    parsedUri.hostname,
-    `Remote Nuclide URIs must contain hostnames, '${parsedUri.hostname}' found.`
-  );
-  invariant(
-    parsedUri.port,
-    `Remote Nuclide URIs must have port numbers, '${parsedUri.port}' found.`
-  );
+  var parsedUri = parse(remoteUri);
+  (0, _assert2['default'])(parsedUri.hostname, 'Remote Nuclide URIs must contain hostnames, \'' + parsedUri.hostname + '\' found.');
+  (0, _assert2['default'])(parsedUri.port, 'Remote Nuclide URIs must have port numbers, \'' + parsedUri.port + '\' found.');
 
   // Explicitly copying object properties appeases Flow's "maybe" type handling. Using the `...`
   // operator causes null/undefined errors, and `Object.assign` bypasses type checking.
@@ -146,86 +118,93 @@ function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
     protocol: parsedUri.protocol,
     query: parsedUri.query,
     search: parsedUri.search,
-    slashes: parsedUri.slashes,
+    slashes: parsedUri.slashes
   };
 }
 
-function getPath(uri: NuclideUri): string {
+function getPath(uri) {
   return parse(uri).path;
 }
 
-function getHostname(remoteUri: NuclideUri): string {
+function getHostname(remoteUri) {
   return parseRemoteUri(remoteUri).hostname;
 }
 
-function getPort(remoteUri: NuclideUri): number {
+function getPort(remoteUri) {
   return Number(parseRemoteUri(remoteUri).port);
 }
 
-function join(uri: NuclideUri, ...relativePath: Array<string>): NuclideUri {
+function join(uri) {
+  for (var _len = arguments.length, relativePath = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    relativePath[_key - 1] = arguments[_key];
+  }
+
   if (isRemote(uri)) {
-    const {hostname, port, path} = parseRemoteUri(uri);
-    relativePath.splice(0, 0, path);
-    return createRemoteUri(
-      hostname,
-      Number(port),
-      pathModule.join.apply(null, relativePath));
+    var _parseRemoteUri = parseRemoteUri(uri);
+
+    var _hostname = _parseRemoteUri.hostname;
+    var _port = _parseRemoteUri.port;
+    var _path = _parseRemoteUri.path;
+
+    relativePath.splice(0, 0, _path);
+    return createRemoteUri(_hostname, Number(_port), _path5['default'].join.apply(null, relativePath));
   } else {
     relativePath.splice(0, 0, uri);
-    return pathModule.join.apply(null, relativePath);
+    return _path5['default'].join.apply(null, relativePath);
   }
 }
 
-function normalize(uri: NuclideUri): NuclideUri {
+function normalize(uri) {
   if (isRemote(uri)) {
-    const {hostname, port, path} = parseRemoteUri(uri);
-    return createRemoteUri(
-      hostname,
-      Number(port),
-      pathModule.normalize(path)
-    );
+    var _parseRemoteUri2 = parseRemoteUri(uri);
+
+    var _hostname2 = _parseRemoteUri2.hostname;
+    var _port2 = _parseRemoteUri2.port;
+    var _path2 = _parseRemoteUri2.path;
+
+    return createRemoteUri(_hostname2, Number(_port2), _path5['default'].normalize(_path2));
   } else {
-    return pathModule.normalize(uri);
+    return _path5['default'].normalize(uri);
   }
 }
 
-function getParent(uri: NuclideUri): NuclideUri {
+function getParent(uri) {
   // TODO: Is this different than dirname?
   return normalize(join(uri, '..'));
 }
 
-function relative(uri: NuclideUri, other: NuclideUri): string {
-  const remote = isRemote(uri);
-  if (remote !== isRemote(other) ||
-      (remote && getHostname(uri) !== getHostname(other))) {
+function relative(uri, other) {
+  var remote = isRemote(uri);
+  if (remote !== isRemote(other) || remote && getHostname(uri) !== getHostname(other)) {
     throw new Error('Cannot relative urls on different hosts.');
   }
   if (remote) {
-    return pathModule.relative(getPath(uri), getPath(other));
+    return _path5['default'].relative(getPath(uri), getPath(other));
   } else {
-    return pathModule.relative(uri, other);
+    return _path5['default'].relative(uri, other);
   }
 }
 
 // TODO: Add optional ext parameter
-function basename(uri: NuclideUri): NuclideUri {
+function basename(uri) {
   if (isRemote(uri)) {
-    return pathModule.basename(getPath(uri));
+    return _path5['default'].basename(getPath(uri));
   } else {
-    return pathModule.basename(uri);
+    return _path5['default'].basename(uri);
   }
 }
 
-function dirname(uri: NuclideUri): NuclideUri {
+function dirname(uri) {
   if (isRemote(uri)) {
-    const {hostname, port, path} = parseRemoteUri(uri);
-    return createRemoteUri(
-      hostname,
-      Number(port),
-      pathModule.dirname(path)
-    );
+    var _parseRemoteUri3 = parseRemoteUri(uri);
+
+    var _hostname3 = _parseRemoteUri3.hostname;
+    var _port3 = _parseRemoteUri3.port;
+    var _path3 = _parseRemoteUri3.path;
+
+    return createRemoteUri(_hostname3, Number(_port3), _path5['default'].dirname(_path3));
   } else {
-    return pathModule.dirname(uri);
+    return _path5['default'].dirname(uri);
   }
 }
 
@@ -235,9 +214,10 @@ function dirname(uri: NuclideUri): NuclideUri {
  *
  * Returns null if not a valid file: URI.
  */
-function uriToNuclideUri(uri: string): ?string {
-  const urlParts = url.parse(uri, false);
-  if (urlParts.protocol === 'file:' && urlParts.path) { // only handle real files for now.
+function uriToNuclideUri(uri) {
+  var urlParts = _url2['default'].parse(uri, false);
+  if (urlParts.protocol === 'file:' && urlParts.path) {
+    // only handle real files for now.
     return urlParts.path;
   } else if (isRemote(uri)) {
     return uri;
@@ -249,7 +229,7 @@ function uriToNuclideUri(uri: string): ?string {
 /**
  * Converts local paths to file: URI's. Leaves remote URI's alone.
  */
-function nuclideUriToUri(uri: NuclideUri): string {
+function nuclideUriToUri(uri) {
   if (isRemote(uri)) {
     return uri;
   } else {
@@ -260,28 +240,25 @@ function nuclideUriToUri(uri: NuclideUri): string {
 /**
  * Returns true if child is equal to, or is a proper child of parent.
  */
-function contains(parent: NuclideUri, child: NuclideUri): boolean {
-  return child.startsWith(parent)
-    && (child.length === parent.length || child[parent.length] === '/');
+function contains(parent, child) {
+  return child.startsWith(parent) && (child.length === parent.length || child[parent.length] === '/');
 }
 
-const hostFormatters = [];
+var hostFormatters = [];
 
 // A formatter which may shorten hostnames.
 // Returns null if the formatter won't shorten the hostname.
-export type HostnameFormatter = (uri: NuclideUri) => ?string;
 
 // Registers a host formatter for nuclideUriToDisplayString
-function registerHostnameFormatter(formatter: HostnameFormatter):
-    {dispose: () => void} {
+function registerHostnameFormatter(formatter) {
   hostFormatters.push(formatter);
   return {
-    dispose: () => {
-      const index = hostFormatters.indexOf(formatter);
+    dispose: function dispose() {
+      var index = hostFormatters.indexOf(formatter);
       if (index >= 0) {
         hostFormatters.splice(index, 1);
       }
-    },
+    }
   };
 }
 
@@ -289,40 +266,41 @@ function registerHostnameFormatter(formatter: HostnameFormatter):
  * NuclideUris should never be shown to humans.
  * This function returns a human usable string.
  */
-function nuclideUriToDisplayString(uri: NuclideUri): string {
+function nuclideUriToDisplayString(uri) {
   if (isRemote(uri)) {
-    let hostname = getHostname(uri);
-    for (const formatter of hostFormatters) {
-      const formattedHostname = formatter(hostname);
+    var _hostname4 = getHostname(uri);
+    for (var formatter of hostFormatters) {
+      var formattedHostname = formatter(_hostname4);
       if (formattedHostname) {
-        hostname = formattedHostname;
+        _hostname4 = formattedHostname;
         break;
       }
     }
-    return `${hostname}/${getPath(uri)}`;
+    return _hostname4 + '/' + getPath(uri);
   } else {
     return uri;
   }
 }
 
 module.exports = {
-  basename,
-  dirname,
-  isRemote,
-  isLocal,
-  createRemoteUri,
-  parse,
-  parseRemoteUri,
-  getPath,
-  getHostname,
-  getPort,
-  join,
-  relative,
-  normalize,
-  getParent,
-  uriToNuclideUri,
-  nuclideUriToUri,
-  contains,
-  nuclideUriToDisplayString,
-  registerHostnameFormatter,
+  basename: basename,
+  dirname: dirname,
+  isRemote: isRemote,
+  isLocal: isLocal,
+  createRemoteUri: createRemoteUri,
+  parse: parse,
+  parseRemoteUri: parseRemoteUri,
+  getPath: getPath,
+  getHostname: getHostname,
+  getPort: getPort,
+  join: join,
+  relative: relative,
+  normalize: normalize,
+  getParent: getParent,
+  uriToNuclideUri: uriToNuclideUri,
+  nuclideUriToUri: nuclideUriToUri,
+  contains: contains,
+  nuclideUriToDisplayString: nuclideUriToDisplayString,
+  registerHostnameFormatter: registerHostnameFormatter
 };
+//# sourceMappingURL=data:application/json;base64,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LEVBQVIsUUFBUTtBQUNSLFNBQU8sRUFBUCxPQUFPO0FBQ1AsVUFBUSxFQUFSLFFBQVE7QUFDUixTQUFPLEVBQVAsT0FBTztBQUNQLGlCQUFlLEVBQWYsZUFBZTtBQUNmLE9BQUssRUFBTCxLQUFLO0FBQ0wsZ0JBQWMsRUFBZCxjQUFjO0FBQ2QsU0FBTyxFQUFQLE9BQU87QUFDUCxhQUFXLEVBQVgsV0FBVztBQUNYLFNBQU8sRUFBUCxPQUFPO0FBQ1AsTUFBSSxFQUFKLElBQUk7QUFDSixVQUFRLEVBQVIsUUFBUTtBQUNSLFdBQVMsRUFBVCxTQUFTO0FBQ1QsV0FBUyxFQUFULFNBQVM7QUFDVCxpQkFBZSxFQUFmLGVBQWU7QUFDZixpQkFBZSxFQUFmLGVBQWU7QUFDZixVQUFRLEVBQVIsUUFBUTtBQUNSLDJCQUF5QixFQUF6Qix5QkFBeUI7QUFDekIsMkJBQXlCLEVBQXpCLHlCQUF5QjtDQUMxQixDQUFDIiwiZmlsZSI6Im1haW4uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG4vLyBOdWNsaWRlVXJpJ3MgYXJlIGVpdGhlciBhIGxvY2FsIGZpbGUgcGF0aCwgb3IgYSBVUklcbi8vIG9mIHRoZSBmb3JtIG51Y2xpZGU6Ly88aG9zdD46PHBvcnQ+PHBhdGg+XG4vL1xuLy8gVGhpcyBwYWNrYWdlIGNyZWF0ZXMsIHF1ZXJpZXMgYW5kIGRlY29tcG9zZXMgTnVjbGlkZVVyaXMuXG5cbmV4cG9ydCB0eXBlIE51Y2xpZGVVcmkgPSBzdHJpbmc7XG5cbnR5cGUgUGFyc2VkVXJsID0ge1xuICBhdXRoOiA/c3RyaW5nO1xuICBocmVmOiBzdHJpbmc7XG4gIGhvc3Q6ID9zdHJpbmc7XG4gIGhvc3RuYW1lOiA/c3RyaW5nO1xuICBwYXRoOiBzdHJpbmc7XG4gIHBhdGhuYW1lOiBzdHJpbmc7XG4gIHBvcnQ6ID9zdHJpbmc7XG4gIHByb3RvY29sOiA/c3RyaW5nO1xuICBxdWVyeTogP2FueTtcbiAgc2VhcmNoOiA/c3RyaW5nO1xuICBzbGFzaGVzOiA/Ym9vbGVhbjtcbn07XG5cbnR5cGUgUGFyc2VkUmVtb3RlVXJsID0ge1xuICBhdXRoOiA/c3RyaW5nO1xuICBocmVmOiBzdHJpbmc7XG4gIGhvc3Q6ID9zdHJpbmc7XG4gIGhvc3RuYW1lOiBzdHJpbmc7XG4gIHBhdGg6IHN0cmluZztcbiAgcGF0aG5hbWU6IHN0cmluZztcbiAgcG9ydDogc3RyaW5nO1xuICBwcm90b2NvbDogP3N0cmluZztcbiAgcXVlcnk6ID9hbnk7XG4gIHNlYXJjaDogP3N0cmluZztcbiAgc2xhc2hlczogP2Jvb2xlYW47XG59O1xuXG5pbXBvcnQgaW52YXJpYW50IGZyb20gJ2Fzc2VydCc7XG5pbXBvcnQgcGF0aE1vZHVsZSBmcm9tICdwYXRoJztcbmltcG9ydCB1cmwgZnJvbSAndXJsJztcblxuY29uc3QgUkVNT1RFX1BBVEhfVVJJX1BSRUZJWCA9ICdudWNsaWRlOi8vJztcblxuZnVuY3Rpb24gaXNSZW1vdGUodXJpOiBOdWNsaWRlVXJpKTogYm9vbGVhbiB7XG4gIHJldHVybiB1cmkuc3RhcnRzV2l0aChSRU1PVEVfUEFUSF9VUklfUFJFRklYKTtcbn1cblxuZnVuY3Rpb24gaXNMb2NhbCh1cmk6IE51Y2xpZGVVcmkpOiBib29sZWFuIHtcbiAgcmV0dXJuICFpc1JlbW90ZSh1cmkpO1xufVxuXG5mdW5jdGlvbiBjcmVhdGVSZW1vdGVVcmkoaG9zdG5hbWU6IHN0cmluZywgcmVtb3RlUG9ydDogbnVtYmVyLCByZW1vdGVQYXRoOiBzdHJpbmcpOiBzdHJpbmcge1xuICByZXR1cm4gYG51Y2xpZGU6Ly8ke2hvc3RuYW1lfToke3JlbW90ZVBvcnR9JHtyZW1vdGVQYXRofWA7XG59XG5cbi8qKlxuICogUGFyc2VzIGB1cmlgIHdpdGggTm9kZSdzIGB1cmwucGFyc2VgIGFuZCBjYWxscyBgZGVjb2RlVVJJYCBvbiBgaHJlZmAsIGBwYXRoYCwgYW5kIGBwYXRobmFtZWAgb2ZcbiAqIHRoZSBwYXJzZWQgVVJMIG9iamVjdC5cbiAqXG4gKiAqIGB1cmwucGFyc2VgIHNlZW1zIHRvIGFwcGx5IGVuY29kZVVSSSB0byB0aGUgVVJMLCBhbmQgd2UgdHlwaWNhbGx5IGRvbid0IHdhbnQgdGhpcyBiZWhhdmlvci5cbiAqICogTnVjbGlkZSBVUklzIGRpc2FsbG93IHVzZSBvZiB0aGUgYGhhc2hgIGF0dHJpYnV0ZSwgYW5kIGFueSBoYXNoIGNoYXJhY3RlcnMgYXJlIGludGVycHJldGVkIGFzXG4gKiAgIGFzIGxpdGVyYWwgaGFzaGVzLlxuICpcbiAqICAgRm9yIGV4YW1wbGU6XG4gKlxuICogICAgICAgcGFyc2UoJ251Y2xpZGU6Ly9mLmNvOjEyMy9wYXRoL3RvLyNmb28udHh0IycpXG4gKiAgICAgICA+XG4gKiAgICAgICAgIHtcbiAqICAgICAgICAgICAuLi5cbiAqICAgICAgICAgICBwYXRoOiAnL3BhdGgvdG8vI2Zvby50eHQjJyxcbiAqICAgICAgICAgICAuLi5cbiAqICAgICAgICAgfVxuICovXG5mdW5jdGlvbiBwYXJzZSh1cmk6IE51Y2xpZGVVcmkpOiBQYXJzZWRVcmwge1xuICBjb25zdCBwYXJzZWRVcmkgPSB1cmwucGFyc2UodXJpKTtcblxuICBpbnZhcmlhbnQocGFyc2VkVXJpLnBhdGgsIGBOdWNsaWRlIFVSSXMgbXVzdCBjb250YWluIHBhdGhzLCAnJHtwYXJzZWRVcmkucGF0aH0nIGZvdW5kLmApO1xuICBsZXQgcGF0aCA9IHBhcnNlZFVyaS5wYXRoO1xuICAvLyBgdXJsLnBhcnNlYCB0cmVhdGVzIHRoZSBmaXJzdCAnIycgY2hhcmFjdGVyIGFzIHRoZSBiZWdpbm5pbmcgb2YgdGhlIGBoYXNoYCBhdHRyaWJ1dGUuIFRoYXRcbiAgLy8gZmVhdHVyZSBpcyBub3QgdXNlZCBpbiBOdWNsaWRlIGFuZCBpcyBpbnN0ZWFkIHRyZWF0ZWQgYXMgcGFydCBvZiB0aGUgcGF0aC5cbiAgaWYgKHBhcnNlZFVyaS5oYXNoICE9IG51bGwpIHtcbiAgICBwYXRoICs9IHBhcnNlZFVyaS5oYXNoO1xuICB9XG5cbiAgaW52YXJpYW50KFxuICAgIHBhcnNlZFVyaS5wYXRobmFtZSxcbiAgICBgTnVjbGlkZSBVUklzIG11c3QgY29udGFpbiBwYXRobmFtZXNzLCAnJHtwYXJzZWRVcmkucGF0aG5hbWV9JyBmb3VuZC5gXG4gICk7XG4gIGxldCBwYXRobmFtZSA9IHBhcnNlZFVyaS5wYXRobmFtZTtcbiAgLy8gYHVybC5wYXJzZWAgdHJlYXRlcyB0aGUgZmlyc3QgJyMnIGNoYXJhY3RlciBhcyB0aGUgYmVnaW5uaW5nIG9mIHRoZSBgaGFzaGAgYXR0cmlidXRlLiBUaGF0XG4gIC8vIGZlYXR1cmUgaXMgbm90IHVzZWQgaW4gTnVjbGlkZSBhbmQgaXMgaW5zdGVhZCB0cmVhdGVkIGFzIHBhcnQgb2YgdGhlIHBhdGhuYW1lLlxuICBpZiAocGFyc2VkVXJpLmhhc2ggIT0gbnVsbCkge1xuICAgIHBhdGhuYW1lICs9IHBhcnNlZFVyaS5oYXNoO1xuICB9XG5cbiAgLy8gRXhwbGljaXRseSBjb3B5aW5nIG9iamVjdCBwcm9wZXJ0aWVzIGFwcGVhc2VzIEZsb3cncyBcIm1heWJlXCIgdHlwZSBoYW5kbGluZy4gVXNpbmcgdGhlIGAuLi5gXG4gIC8vIG9wZXJhdG9yIGNhdXNlcyBudWxsL3VuZGVmaW5lZCBlcnJvcnMsIGFuZCBgT2JqZWN0LmFzc2lnbmAgYnlwYXNzZXMgdHlwZSBjaGVja2luZy5cbiAgcmV0dXJuIHtcbiAgICBhdXRoOiBwYXJzZWRVcmkuYXV0aCxcbiAgICBob3N0OiBwYXJzZWRVcmkuaG9zdCxcbiAgICBob3N0bmFtZTogcGFyc2VkVXJpLmhvc3RuYW1lLFxuICAgIGhyZWY6IGRlY29kZVVSSShwYXJzZWRVcmkuaHJlZiksXG4gICAgcGF0aDogZGVjb2RlVVJJKHBhdGgpLFxuICAgIHBhdGhuYW1lOiBkZWNvZGVVUkkocGF0aG5hbWUpLFxuICAgIHBvcnQ6IHBhcnNlZFVyaS5wb3J0LFxuICAgIHByb3RvY29sOiBwYXJzZWRVcmkucHJvdG9jb2wsXG4gICAgcXVlcnk6IHBhcnNlZFVyaS5xdWVyeSxcbiAgICBzZWFyY2g6IHBhcnNlZFVyaS5zZWFyY2gsXG4gICAgc2xhc2hlczogcGFyc2VkVXJpLnNsYXNoZXMsXG4gIH07XG59XG5cbmZ1bmN0aW9uIHBhcnNlUmVtb3RlVXJpKHJlbW90ZVVyaTogTnVjbGlkZVVyaSk6IFBhcnNlZFJlbW90ZVVybCB7XG4gIGlmICghaXNSZW1vdGUocmVtb3RlVXJpKSkge1xuICAgIHRocm93IG5ldyBFcnJvcignRXhwZWN0ZWQgcmVtb3RlIHVyaS4gR290ICcgKyByZW1vdGVVcmkpO1xuICB9XG4gIGNvbnN0IHBhcnNlZFVyaSA9IHBhcnNlKHJlbW90ZVVyaSk7XG4gIGludmFyaWFudChcbiAgICBwYXJzZWRVcmkuaG9zdG5hbWUsXG4gICAgYFJlbW90ZSBOdWNsaWRlIFVSSXMgbXVzdCBjb250YWluIGhvc3RuYW1lcywgJyR7cGFyc2VkVXJpLmhvc3RuYW1lfScgZm91bmQuYFxuICApO1xuICBpbnZhcmlhbnQoXG4gICAgcGFyc2VkVXJpLnBvcnQsXG4gICAgYFJlbW90ZSBOdWNsaWRlIFVSSXMgbXVzdCBoYXZlIHBvcnQgbnVtYmVycywgJyR7cGFyc2VkVXJpLnBvcnR9JyBmb3VuZC5gXG4gICk7XG5cbiAgLy8gRXhwbGljaXRseSBjb3B5aW5nIG9iamVjdCBwcm9wZXJ0aWVzIGFwcGVhc2VzIEZsb3cncyBcIm1heWJlXCIgdHlwZSBoYW5kbGluZy4gVXNpbmcgdGhlIGAuLi5gXG4gIC8vIG9wZXJhdG9yIGNhdXNlcyBudWxsL3VuZGVmaW5lZCBlcnJvcnMsIGFuZCBgT2JqZWN0LmFzc2lnbmAgYnlwYXNzZXMgdHlwZSBjaGVja2luZy5cbiAgcmV0dXJuIHtcbiAgICBhdXRoOiBwYXJzZWRVcmkuYXV0aCxcbiAgICBob3N0OiBwYXJzZWRVcmkuaG9zdCxcbiAgICBob3N0bmFtZTogcGFyc2VkVXJpLmhvc3RuYW1lLFxuICAgIGhyZWY6IHBhcnNlZFVyaS5ocmVmLFxuICAgIHBhdGg6IHBhcnNlZFVyaS5wYXRoLFxuICAgIHBhdGhuYW1lOiBwYXJzZWRVcmkucGF0aG5hbWUsXG4gICAgcG9ydDogcGFyc2VkVXJpLnBvcnQsXG4gICAgcHJvdG9jb2w6IHBhcnNlZFVyaS5wcm90b2NvbCxcbiAgICBxdWVyeTogcGFyc2VkVXJpLnF1ZXJ5LFxuICAgIHNlYXJjaDogcGFyc2VkVXJpLnNlYXJjaCxcbiAgICBzbGFzaGVzOiBwYXJzZWRVcmkuc2xhc2hlcyxcbiAgfTtcbn1cblxuZnVuY3Rpb24gZ2V0UGF0aCh1cmk6IE51Y2xpZGVVcmkpOiBzdHJpbmcge1xuICByZXR1cm4gcGFyc2UodXJpKS5wYXRoO1xufVxuXG5mdW5jdGlvbiBnZXRIb3N0bmFtZShyZW1vdGVVcmk6IE51Y2xpZGVVcmkpOiBzdHJpbmcge1xuICByZXR1cm4gcGFyc2VSZW1vdGVVcmkocmVtb3RlVXJpKS5ob3N0bmFtZTtcbn1cblxuZnVuY3Rpb24gZ2V0UG9ydChyZW1vdGVVcmk6IE51Y2xpZGVVcmkpOiBudW1iZXIge1xuICByZXR1cm4gTnVtYmVyKHBhcnNlUmVtb3RlVXJpKHJlbW90ZVVyaSkucG9ydCk7XG59XG5cbmZ1bmN0aW9uIGpvaW4odXJpOiBOdWNsaWRlVXJpLCAuLi5yZWxhdGl2ZVBhdGg6IEFycmF5PHN0cmluZz4pOiBOdWNsaWRlVXJpIHtcbiAgaWYgKGlzUmVtb3RlKHVyaSkpIHtcbiAgICBjb25zdCB7aG9zdG5hbWUsIHBvcnQsIHBhdGh9ID0gcGFyc2VSZW1vdGVVcmkodXJpKTtcbiAgICByZWxhdGl2ZVBhdGguc3BsaWNlKDAsIDAsIHBhdGgpO1xuICAgIHJldHVybiBjcmVhdGVSZW1vdGVVcmkoXG4gICAgICBob3N0bmFtZSxcbiAgICAgIE51bWJlcihwb3J0KSxcbiAgICAgIHBhdGhNb2R1bGUuam9pbi5hcHBseShudWxsLCByZWxhdGl2ZVBhdGgpKTtcbiAgfSBlbHNlIHtcbiAgICByZWxhdGl2ZVBhdGguc3BsaWNlKDAsIDAsIHVyaSk7XG4gICAgcmV0dXJuIHBhdGhNb2R1bGUuam9pbi5hcHBseShudWxsLCByZWxhdGl2ZVBhdGgpO1xuICB9XG59XG5cbmZ1bmN0aW9uIG5vcm1hbGl6ZSh1cmk6IE51Y2xpZGVVcmkpOiBOdWNsaWRlVXJpIHtcbiAgaWYgKGlzUmVtb3RlKHVyaSkpIHtcbiAgICBjb25zdCB7aG9zdG5hbWUsIHBvcnQsIHBhdGh9ID0gcGFyc2VSZW1vdGVVcmkodXJpKTtcbiAgICByZXR1cm4gY3JlYXRlUmVtb3RlVXJpKFxuICAgICAgaG9zdG5hbWUsXG4gICAgICBOdW1iZXIocG9ydCksXG4gICAgICBwYXRoTW9kdWxlLm5vcm1hbGl6ZShwYXRoKVxuICAgICk7XG4gIH0gZWxzZSB7XG4gICAgcmV0dXJuIHBhdGhNb2R1bGUubm9ybWFsaXplKHVyaSk7XG4gIH1cbn1cblxuZnVuY3Rpb24gZ2V0UGFyZW50KHVyaTogTnVjbGlkZVVyaSk6IE51Y2xpZGVVcmkge1xuICAvLyBUT0RPOiBJcyB0aGlzIGRpZmZlcmVudCB0aGFuIGRpcm5hbWU/XG4gIHJldHVybiBub3JtYWxpemUoam9pbih1cmksICcuLicpKTtcbn1cblxuZnVuY3Rpb24gcmVsYXRpdmUodXJpOiBOdWNsaWRlVXJpLCBvdGhlcjogTnVjbGlkZVVyaSk6IHN0cmluZyB7XG4gIGNvbnN0IHJlbW90ZSA9IGlzUmVtb3RlKHVyaSk7XG4gIGlmIChyZW1vdGUgIT09IGlzUmVtb3RlKG90aGVyKSB8fFxuICAgICAgKHJlbW90ZSAmJiBnZXRIb3N0bmFtZSh1cmkpICE9PSBnZXRIb3N0bmFtZShvdGhlcikpKSB7XG4gICAgdGhyb3cgbmV3IEVycm9yKCdDYW5ub3QgcmVsYXRpdmUgdXJscyBvbiBkaWZmZXJlbnQgaG9zdHMuJyk7XG4gIH1cbiAgaWYgKHJlbW90ZSkge1xuICAgIHJldHVybiBwYXRoTW9kdWxlLnJlbGF0aXZlKGdldFBhdGgodXJpKSwgZ2V0UGF0aChvdGhlcikpO1xuICB9IGVsc2Uge1xuICAgIHJldHVybiBwYXRoTW9kdWxlLnJlbGF0aXZlKHVyaSwgb3RoZXIpO1xuICB9XG59XG5cbi8vIFRPRE86IEFkZCBvcHRpb25hbCBleHQgcGFyYW1ldGVyXG5mdW5jdGlvbiBiYXNlbmFtZSh1cmk6IE51Y2xpZGVVcmkpOiBOdWNsaWRlVXJpIHtcbiAgaWYgKGlzUmVtb3RlKHVyaSkpIHtcbiAgICByZXR1cm4gcGF0aE1vZHVsZS5iYXNlbmFtZShnZXRQYXRoKHVyaSkpO1xuICB9IGVsc2Uge1xuICAgIHJldHVybiBwYXRoTW9kdWxlLmJhc2VuYW1lKHVyaSk7XG4gIH1cbn1cblxuZnVuY3Rpb24gZGlybmFtZSh1cmk6IE51Y2xpZGVVcmkpOiBOdWNsaWRlVXJpIHtcbiAgaWYgKGlzUmVtb3RlKHVyaSkpIHtcbiAgICBjb25zdCB7aG9zdG5hbWUsIHBvcnQsIHBhdGh9ID0gcGFyc2VSZW1vdGVVcmkodXJpKTtcbiAgICByZXR1cm4gY3JlYXRlUmVtb3RlVXJpKFxuICAgICAgaG9zdG5hbWUsXG4gICAgICBOdW1iZXIocG9ydCksXG4gICAgICBwYXRoTW9kdWxlLmRpcm5hbWUocGF0aClcbiAgICApO1xuICB9IGVsc2Uge1xuICAgIHJldHVybiBwYXRoTW9kdWxlLmRpcm5hbWUodXJpKTtcbiAgfVxufVxuXG4vKipcbiAqIHVyaSBpcyBlaXRoZXIgYSBmaWxlOiB1cmksIG9yIGEgbnVjbGlkZTogdXJpLlxuICogbXVzdCBjb252ZXJ0IGZpbGU6IHVyaSdzIHRvIGp1c3QgYSBwYXRoIGZvciBhdG9tLlxuICpcbiAqIFJldHVybnMgbnVsbCBpZiBub3QgYSB2YWxpZCBmaWxlOiBVUkkuXG4gKi9cbmZ1bmN0aW9uIHVyaVRvTnVjbGlkZVVyaSh1cmk6IHN0cmluZyk6ID9zdHJpbmcge1xuICBjb25zdCB1cmxQYXJ0cyA9IHVybC5wYXJzZSh1cmksIGZhbHNlKTtcbiAgaWYgKHVybFBhcnRzLnByb3RvY29sID09PSAnZmlsZTonICYmIHVybFBhcnRzLnBhdGgpIHsgLy8gb25seSBoYW5kbGUgcmVhbCBmaWxlcyBmb3Igbm93LlxuICAgIHJldHVybiB1cmxQYXJ0cy5wYXRoO1xuICB9IGVsc2UgaWYgKGlzUmVtb3RlKHVyaSkpIHtcbiAgICByZXR1cm4gdXJpO1xuICB9IGVsc2Uge1xuICAgIHJldHVybiBudWxsO1xuICB9XG59XG5cbi8qKlxuICogQ29udmVydHMgbG9jYWwgcGF0aHMgdG8gZmlsZTogVVJJJ3MuIExlYXZlcyByZW1vdGUgVVJJJ3MgYWxvbmUuXG4gKi9cbmZ1bmN0aW9uIG51Y2xpZGVVcmlUb1VyaSh1cmk6IE51Y2xpZGVVcmkpOiBzdHJpbmcge1xuICBpZiAoaXNSZW1vdGUodXJpKSkge1xuICAgIHJldHVybiB1cmk7XG4gIH0gZWxzZSB7XG4gICAgcmV0dXJuICdmaWxlOi8vJyArIHVyaTtcbiAgfVxufVxuXG4vKipcbiAqIFJldHVybnMgdHJ1ZSBpZiBjaGlsZCBpcyBlcXVhbCB0bywgb3IgaXMgYSBwcm9wZXIgY2hpbGQgb2YgcGFyZW50LlxuICovXG5mdW5jdGlvbiBjb250YWlucyhwYXJlbnQ6IE51Y2xpZGVVcmksIGNoaWxkOiBOdWNsaWRlVXJpKTogYm9vbGVhbiB7XG4gIHJldHVybiBjaGlsZC5zdGFydHNXaXRoKHBhcmVudClcbiAgICAmJiAoY2hpbGQubGVuZ3RoID09PSBwYXJlbnQubGVuZ3RoIHx8IGNoaWxkW3BhcmVudC5sZW5ndGhdID09PSAnLycpO1xufVxuXG5jb25zdCBob3N0Rm9ybWF0dGVycyA9IFtdO1xuXG4vLyBBIGZvcm1hdHRlciB3aGljaCBtYXkgc2hvcnRlbiBob3N0bmFtZXMuXG4vLyBSZXR1cm5zIG51bGwgaWYgdGhlIGZvcm1hdHRlciB3b24ndCBzaG9ydGVuIHRoZSBob3N0bmFtZS5cbmV4cG9ydCB0eXBlIEhvc3RuYW1lRm9ybWF0dGVyID0gKHVyaTogTnVjbGlkZVVyaSkgPT4gP3N0cmluZztcblxuLy8gUmVnaXN0ZXJzIGEgaG9zdCBmb3JtYXR0ZXIgZm9yIG51Y2xpZGVVcmlUb0Rpc3BsYXlTdHJpbmdcbmZ1bmN0aW9uIHJlZ2lzdGVySG9zdG5hbWVGb3JtYXR0ZXIoZm9ybWF0dGVyOiBIb3N0bmFtZUZvcm1hdHRlcik6XG4gICAge2Rpc3Bvc2U6ICgpID0+IHZvaWR9IHtcbiAgaG9zdEZvcm1hdHRlcnMucHVzaChmb3JtYXR0ZXIpO1xuICByZXR1cm4ge1xuICAgIGRpc3Bvc2U6ICgpID0+IHtcbiAgICAgIGNvbnN0IGluZGV4ID0gaG9zdEZvcm1hdHRlcnMuaW5kZXhPZihmb3JtYXR0ZXIpO1xuICAgICAgaWYgKGluZGV4ID49IDApIHtcbiAgICAgICAgaG9zdEZvcm1hdHRlcnMuc3BsaWNlKGluZGV4LCAxKTtcbiAgICAgIH1cbiAgICB9LFxuICB9O1xufVxuXG4vKipcbiAqIE51Y2xpZGVVcmlzIHNob3VsZCBuZXZlciBiZSBzaG93biB0byBodW1hbnMuXG4gKiBUaGlzIGZ1bmN0aW9uIHJldHVybnMgYSBodW1hbiB1c2FibGUgc3RyaW5nLlxuICovXG5mdW5jdGlvbiBudWNsaWRlVXJpVG9EaXNwbGF5U3RyaW5nKHVyaTogTnVjbGlkZVVyaSk6IHN0cmluZyB7XG4gIGlmIChpc1JlbW90ZSh1cmkpKSB7XG4gICAgbGV0IGhvc3RuYW1lID0gZ2V0SG9zdG5hbWUodXJpKTtcbiAgICBmb3IgKGNvbnN0IGZvcm1hdHRlciBvZiBob3N0Rm9ybWF0dGVycykge1xuICAgICAgY29uc3QgZm9ybWF0dGVkSG9zdG5hbWUgPSBmb3JtYXR0ZXIoaG9zdG5hbWUpO1xuICAgICAgaWYgKGZvcm1hdHRlZEhvc3RuYW1lKSB7XG4gICAgICAgIGhvc3RuYW1lID0gZm9ybWF0dGVkSG9zdG5hbWU7XG4gICAgICAgIGJyZWFrO1xuICAgICAgfVxuICAgIH1cbiAgICByZXR1cm4gYCR7aG9zdG5hbWV9LyR7Z2V0UGF0aCh1cmkpfWA7XG4gIH0gZWxzZSB7XG4gICAgcmV0dXJuIHVyaTtcbiAgfVxufVxuXG5tb2R1bGUuZXhwb3J0cyA9IHtcbiAgYmFzZW5hbWUsXG4gIGRpcm5hbWUsXG4gIGlzUmVtb3RlLFxuICBpc0xvY2FsLFxuICBjcmVhdGVSZW1vdGVVcmksXG4gIHBhcnNlLFxuICBwYXJzZVJlbW90ZVVyaSxcbiAgZ2V0UGF0aCxcbiAgZ2V0SG9zdG5hbWUsXG4gIGdldFBvcnQsXG4gIGpvaW4sXG4gIHJlbGF0aXZlLFxuICBub3JtYWxpemUsXG4gIGdldFBhcmVudCxcbiAgdXJpVG9OdWNsaWRlVXJpLFxuICBudWNsaWRlVXJpVG9VcmksXG4gIGNvbnRhaW5zLFxuICBudWNsaWRlVXJpVG9EaXNwbGF5U3RyaW5nLFxuICByZWdpc3Rlckhvc3RuYW1lRm9ybWF0dGVyLFxufTtcbiJdfQ==

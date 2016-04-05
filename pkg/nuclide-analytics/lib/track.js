@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +10,12 @@
  * the root directory of this source tree.
  */
 
-export type TrackEvent = {
-  key: string;
-  values: {[key: string]: mixed};
-};
-
 // This extra module enables adding spies during testing.
-export let track;
+var track = undefined;
+exports.track = track;
 try {
-  track = require('../fb/analytics').track;
+  exports.track = track = require('../fb/analytics').track;
 } catch (e) {
-  track = require('./analytics').track;
+  exports.track = track = require('./analytics').track;
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInRyYWNrLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7QUFpQk8sSUFBSSxLQUFLLFlBQUEsQ0FBQzs7QUFDakIsSUFBSTtBQUNGLFVBRlMsS0FBSyxHQUVkLEtBQUssR0FBRyxPQUFPLENBQUMsaUJBQWlCLENBQUMsQ0FBQyxLQUFLLENBQUM7Q0FDMUMsQ0FBQyxPQUFPLENBQUMsRUFBRTtBQUNWLFVBSlMsS0FBSyxHQUlkLEtBQUssR0FBRyxPQUFPLENBQUMsYUFBYSxDQUFDLENBQUMsS0FBSyxDQUFDO0NBQ3RDIiwiZmlsZSI6InRyYWNrLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuZXhwb3J0IHR5cGUgVHJhY2tFdmVudCA9IHtcbiAga2V5OiBzdHJpbmc7XG4gIHZhbHVlczoge1trZXk6IHN0cmluZ106IG1peGVkfTtcbn07XG5cbi8vIFRoaXMgZXh0cmEgbW9kdWxlIGVuYWJsZXMgYWRkaW5nIHNwaWVzIGR1cmluZyB0ZXN0aW5nLlxuZXhwb3J0IGxldCB0cmFjaztcbnRyeSB7XG4gIHRyYWNrID0gcmVxdWlyZSgnLi4vZmIvYW5hbHl0aWNzJykudHJhY2s7XG59IGNhdGNoIChlKSB7XG4gIHRyYWNrID0gcmVxdWlyZSgnLi9hbmFseXRpY3MnKS50cmFjaztcbn1cbiJdfQ==

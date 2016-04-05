@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +12,24 @@
  * the root directory of this source tree.
  */
 
-import BaseSession from '../VendorLib/node-inspector/lib/session';
-import {inherits} from 'util';
+var _VendorLibNodeInspectorLibSession = require('../VendorLib/node-inspector/lib/session');
+
+var _VendorLibNodeInspectorLibSession2 = _interopRequireDefault(_VendorLibNodeInspectorLibSession);
+
+var _util = require('util');
 
 /**
  * A custom version of node-inspector's Session that ignores commands that we don't support. (We
  * do this here so we can pull in new versions of node-inspector without having to worry about what
  * modifications we've made to the source.)
  */
-function CustomSession(config: Object, debuggerPort: number, wsConnection: ws$WebSocket): void {
-  BaseSession.call(this, config, debuggerPort, wsConnection);
-  this.frontendCommandHandler._registerNoopCommands(
-    'Emulation.canEmulate',
-    'Network.setMonitoringXHREnabled',
-    'Worker.enable',
-    'ServiceWorker.enable',
-    'Emulation.setScriptExecutionDisabled',
-    'Page.setOverlayMessage',
-  );
+function CustomSession(config, debuggerPort, wsConnection) {
+  _VendorLibNodeInspectorLibSession2['default'].call(this, config, debuggerPort, wsConnection);
+  this.frontendCommandHandler._registerNoopCommands('Emulation.canEmulate', 'Network.setMonitoringXHREnabled', 'Worker.enable', 'ServiceWorker.enable', 'Emulation.setScriptExecutionDisabled', 'Page.setOverlayMessage');
 }
 
-inherits(CustomSession, BaseSession);
+(0, _util.inherits)(CustomSession, _VendorLibNodeInspectorLibSession2['default']);
 
-export const Session = ((CustomSession: any): Class<BaseSession>);
+var Session = CustomSession;
+exports.Session = Session;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlNlc3Npb24uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Z0RBV3dCLHlDQUF5Qzs7OztvQkFDMUMsTUFBTTs7Ozs7OztBQU83QixTQUFTLGFBQWEsQ0FBQyxNQUFjLEVBQUUsWUFBb0IsRUFBRSxZQUEwQixFQUFRO0FBQzdGLGdEQUFZLElBQUksQ0FBQyxJQUFJLEVBQUUsTUFBTSxFQUFFLFlBQVksRUFBRSxZQUFZLENBQUMsQ0FBQztBQUMzRCxNQUFJLENBQUMsc0JBQXNCLENBQUMscUJBQXFCLENBQy9DLHNCQUFzQixFQUN0QixpQ0FBaUMsRUFDakMsZUFBZSxFQUNmLHNCQUFzQixFQUN0QixzQ0FBc0MsRUFDdEMsd0JBQXdCLENBQ3pCLENBQUM7Q0FDSDs7QUFFRCxvQkFBUyxhQUFhLGdEQUFjLENBQUM7O0FBRTlCLElBQU0sT0FBTyxHQUFLLGFBQWEsQUFBMkIsQ0FBQyIsImZpbGUiOiJTZXNzaW9uLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IEJhc2VTZXNzaW9uIGZyb20gJy4uL1ZlbmRvckxpYi9ub2RlLWluc3BlY3Rvci9saWIvc2Vzc2lvbic7XG5pbXBvcnQge2luaGVyaXRzfSBmcm9tICd1dGlsJztcblxuLyoqXG4gKiBBIGN1c3RvbSB2ZXJzaW9uIG9mIG5vZGUtaW5zcGVjdG9yJ3MgU2Vzc2lvbiB0aGF0IGlnbm9yZXMgY29tbWFuZHMgdGhhdCB3ZSBkb24ndCBzdXBwb3J0LiAoV2VcbiAqIGRvIHRoaXMgaGVyZSBzbyB3ZSBjYW4gcHVsbCBpbiBuZXcgdmVyc2lvbnMgb2Ygbm9kZS1pbnNwZWN0b3Igd2l0aG91dCBoYXZpbmcgdG8gd29ycnkgYWJvdXQgd2hhdFxuICogbW9kaWZpY2F0aW9ucyB3ZSd2ZSBtYWRlIHRvIHRoZSBzb3VyY2UuKVxuICovXG5mdW5jdGlvbiBDdXN0b21TZXNzaW9uKGNvbmZpZzogT2JqZWN0LCBkZWJ1Z2dlclBvcnQ6IG51bWJlciwgd3NDb25uZWN0aW9uOiB3cyRXZWJTb2NrZXQpOiB2b2lkIHtcbiAgQmFzZVNlc3Npb24uY2FsbCh0aGlzLCBjb25maWcsIGRlYnVnZ2VyUG9ydCwgd3NDb25uZWN0aW9uKTtcbiAgdGhpcy5mcm9udGVuZENvbW1hbmRIYW5kbGVyLl9yZWdpc3Rlck5vb3BDb21tYW5kcyhcbiAgICAnRW11bGF0aW9uLmNhbkVtdWxhdGUnLFxuICAgICdOZXR3b3JrLnNldE1vbml0b3JpbmdYSFJFbmFibGVkJyxcbiAgICAnV29ya2VyLmVuYWJsZScsXG4gICAgJ1NlcnZpY2VXb3JrZXIuZW5hYmxlJyxcbiAgICAnRW11bGF0aW9uLnNldFNjcmlwdEV4ZWN1dGlvbkRpc2FibGVkJyxcbiAgICAnUGFnZS5zZXRPdmVybGF5TWVzc2FnZScsXG4gICk7XG59XG5cbmluaGVyaXRzKEN1c3RvbVNlc3Npb24sIEJhc2VTZXNzaW9uKTtcblxuZXhwb3J0IGNvbnN0IFNlc3Npb24gPSAoKEN1c3RvbVNlc3Npb246IGFueSk6IENsYXNzPEJhc2VTZXNzaW9uPik7XG4iXX0=

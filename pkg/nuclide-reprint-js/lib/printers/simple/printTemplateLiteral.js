@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,35 +8,20 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {TemplateLiteral} from 'ast-types-flow';
+var markers = require('../../constants/markers');
+var wrapExpression = require('../../wrappers/simple/wrapExpression');
 
-const markers = require('../../constants/markers');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
+function printTemplateLiteral(print, node) {
+  var wrap = function wrap(x) {
+    return wrapExpression(print, node, x);
+  };
+  var quasis = node.quasis;
+  var expressions = node.expressions;
 
-function printTemplateLiteral(print: Print, node: TemplateLiteral): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  const {quasis, expressions} = node;
-  return wrap([
-    '`',
-    quasis.map((q, i) => [
-      i > 0
-        ? [
-          '${',
-          markers.openScope,
-          markers.scopeIndent,
-          markers.scopeBreak,
-          print(expressions[i - 1]),
-          markers.scopeBreak,
-          markers.scopeDedent,
-          markers.closeScope,
-          '}',
-        ]
-        : markers.empty,
-      print(q),
-    ]),
-    '`',
-  ]);
+  return wrap(['`', quasis.map(function (q, i) {
+    return [i > 0 ? ['${', markers.openScope, markers.scopeIndent, markers.scopeBreak, print(expressions[i - 1]), markers.scopeBreak, markers.scopeDedent, markers.closeScope, '}'] : markers.empty, print(q)];
+  }), '`']);
 }
 
 module.exports = printTemplateLiteral;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50VGVtcGxhdGVMaXRlcmFsLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7QUFjQSxJQUFNLE9BQU8sR0FBRyxPQUFPLENBQUMseUJBQXlCLENBQUMsQ0FBQztBQUNuRCxJQUFNLGNBQWMsR0FBRyxPQUFPLENBQUMsc0NBQXNDLENBQUMsQ0FBQzs7QUFFdkUsU0FBUyxvQkFBb0IsQ0FBQyxLQUFZLEVBQUUsSUFBcUIsRUFBUztBQUN4RSxNQUFNLElBQUksR0FBRyxTQUFQLElBQUksQ0FBRyxDQUFDO1dBQUksY0FBYyxDQUFDLEtBQUssRUFBRSxJQUFJLEVBQUUsQ0FBQyxDQUFDO0dBQUEsQ0FBQztNQUMxQyxNQUFNLEdBQWlCLElBQUksQ0FBM0IsTUFBTTtNQUFFLFdBQVcsR0FBSSxJQUFJLENBQW5CLFdBQVc7O0FBQzFCLFNBQU8sSUFBSSxDQUFDLENBQ1YsR0FBRyxFQUNILE1BQU0sQ0FBQyxHQUFHLENBQUMsVUFBQyxDQUFDLEVBQUUsQ0FBQztXQUFLLENBQ25CLENBQUMsR0FBRyxDQUFDLEdBQ0QsQ0FDQSxJQUFJLEVBQ0osT0FBTyxDQUFDLFNBQVMsRUFDakIsT0FBTyxDQUFDLFdBQVcsRUFDbkIsT0FBTyxDQUFDLFVBQVUsRUFDbEIsS0FBSyxDQUFDLFdBQVcsQ0FBQyxDQUFDLEdBQUcsQ0FBQyxDQUFDLENBQUMsRUFDekIsT0FBTyxDQUFDLFVBQVUsRUFDbEIsT0FBTyxDQUFDLFdBQVcsRUFDbkIsT0FBTyxDQUFDLFVBQVUsRUFDbEIsR0FBRyxDQUNKLEdBQ0MsT0FBTyxDQUFDLEtBQUssRUFDakIsS0FBSyxDQUFDLENBQUMsQ0FBQyxDQUNUO0dBQUEsQ0FBQyxFQUNGLEdBQUcsQ0FDSixDQUFDLENBQUM7Q0FDSjs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHLG9CQUFvQixDQUFDIiwiZmlsZSI6InByaW50VGVtcGxhdGVMaXRlcmFsLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge0xpbmVzLCBQcmludH0gZnJvbSAnLi4vLi4vdHlwZXMvY29tbW9uJztcbmltcG9ydCB0eXBlIHtUZW1wbGF0ZUxpdGVyYWx9IGZyb20gJ2FzdC10eXBlcy1mbG93JztcblxuY29uc3QgbWFya2VycyA9IHJlcXVpcmUoJy4uLy4uL2NvbnN0YW50cy9tYXJrZXJzJyk7XG5jb25zdCB3cmFwRXhwcmVzc2lvbiA9IHJlcXVpcmUoJy4uLy4uL3dyYXBwZXJzL3NpbXBsZS93cmFwRXhwcmVzc2lvbicpO1xuXG5mdW5jdGlvbiBwcmludFRlbXBsYXRlTGl0ZXJhbChwcmludDogUHJpbnQsIG5vZGU6IFRlbXBsYXRlTGl0ZXJhbCk6IExpbmVzIHtcbiAgY29uc3Qgd3JhcCA9IHggPT4gd3JhcEV4cHJlc3Npb24ocHJpbnQsIG5vZGUsIHgpO1xuICBjb25zdCB7cXVhc2lzLCBleHByZXNzaW9uc30gPSBub2RlO1xuICByZXR1cm4gd3JhcChbXG4gICAgJ2AnLFxuICAgIHF1YXNpcy5tYXAoKHEsIGkpID0+IFtcbiAgICAgIGkgPiAwXG4gICAgICAgID8gW1xuICAgICAgICAgICckeycsXG4gICAgICAgICAgbWFya2Vycy5vcGVuU2NvcGUsXG4gICAgICAgICAgbWFya2Vycy5zY29wZUluZGVudCxcbiAgICAgICAgICBtYXJrZXJzLnNjb3BlQnJlYWssXG4gICAgICAgICAgcHJpbnQoZXhwcmVzc2lvbnNbaSAtIDFdKSxcbiAgICAgICAgICBtYXJrZXJzLnNjb3BlQnJlYWssXG4gICAgICAgICAgbWFya2Vycy5zY29wZURlZGVudCxcbiAgICAgICAgICBtYXJrZXJzLmNsb3NlU2NvcGUsXG4gICAgICAgICAgJ30nLFxuICAgICAgICBdXG4gICAgICAgIDogbWFya2Vycy5lbXB0eSxcbiAgICAgIHByaW50KHEpLFxuICAgIF0pLFxuICAgICdgJyxcbiAgXSk7XG59XG5cbm1vZHVsZS5leHBvcnRzID0gcHJpbnRUZW1wbGF0ZUxpdGVyYWw7XG4iXX0=

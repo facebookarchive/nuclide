@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +10,24 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+exports.notifyInternalError = notifyInternalError;
+exports.notifyFilesystemOverrideUserEdits = notifyFilesystemOverrideUserEdits;
 
-import {getLogger} from '../../nuclide-logging';
+var _nuclideLogging = require('../../nuclide-logging');
 
-const logger = getLogger();
+var logger = (0, _nuclideLogging.getLogger)();
 
-export function notifyInternalError(error: Error, dismissable?: boolean = false) {
-  const errorMessage = 'Diff View Internal Error';
+function notifyInternalError(error) {
+  var dismissable = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
+  var errorMessage = 'Diff View Internal Error';
   logger.error(errorMessage, error);
-  atom.notifications.addError(errorMessage, {detail: error.message, dismissable});
+  atom.notifications.addError(errorMessage, { detail: error.message, dismissable: dismissable });
 }
 
-export function notifyFilesystemOverrideUserEdits(filePath: NuclideUri) {
-  const message = `Diff View Override<br/>
-The filesystem contents of the active file have changed, overriding user changes for file:<br/>
-\`${filePath}\`
-`;
+function notifyFilesystemOverrideUserEdits(filePath) {
+  var message = 'Diff View Override<br/>\nThe filesystem contents of the active file have changed, overriding user changes for file:<br/>\n`' + filePath + '`\n';
   logger.warn(message);
   atom.notifications.addWarning(message);
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm5vdGlmaWNhdGlvbnMuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7OzhCQWF3Qix1QkFBdUI7O0FBRS9DLElBQU0sTUFBTSxHQUFHLGdDQUFXLENBQUM7O0FBRXBCLFNBQVMsbUJBQW1CLENBQUMsS0FBWSxFQUFpQztNQUEvQixXQUFxQix5REFBRyxLQUFLOztBQUM3RSxNQUFNLFlBQVksR0FBRywwQkFBMEIsQ0FBQztBQUNoRCxRQUFNLENBQUMsS0FBSyxDQUFDLFlBQVksRUFBRSxLQUFLLENBQUMsQ0FBQztBQUNsQyxNQUFJLENBQUMsYUFBYSxDQUFDLFFBQVEsQ0FBQyxZQUFZLEVBQUUsRUFBQyxNQUFNLEVBQUUsS0FBSyxDQUFDLE9BQU8sRUFBRSxXQUFXLEVBQVgsV0FBVyxFQUFDLENBQUMsQ0FBQztDQUNqRjs7QUFFTSxTQUFTLGlDQUFpQyxDQUFDLFFBQW9CLEVBQUU7QUFDdEUsTUFBTSxPQUFPLG1JQUVYLFFBQVEsUUFDWCxDQUFDO0FBQ0EsUUFBTSxDQUFDLElBQUksQ0FBQyxPQUFPLENBQUMsQ0FBQztBQUNyQixNQUFJLENBQUMsYUFBYSxDQUFDLFVBQVUsQ0FBQyxPQUFPLENBQUMsQ0FBQztDQUN4QyIsImZpbGUiOiJub3RpZmljYXRpb25zLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge051Y2xpZGVVcml9IGZyb20gJy4uLy4uL251Y2xpZGUtcmVtb3RlLXVyaSc7XG5cbmltcG9ydCB7Z2V0TG9nZ2VyfSBmcm9tICcuLi8uLi9udWNsaWRlLWxvZ2dpbmcnO1xuXG5jb25zdCBsb2dnZXIgPSBnZXRMb2dnZXIoKTtcblxuZXhwb3J0IGZ1bmN0aW9uIG5vdGlmeUludGVybmFsRXJyb3IoZXJyb3I6IEVycm9yLCBkaXNtaXNzYWJsZT86IGJvb2xlYW4gPSBmYWxzZSkge1xuICBjb25zdCBlcnJvck1lc3NhZ2UgPSAnRGlmZiBWaWV3IEludGVybmFsIEVycm9yJztcbiAgbG9nZ2VyLmVycm9yKGVycm9yTWVzc2FnZSwgZXJyb3IpO1xuICBhdG9tLm5vdGlmaWNhdGlvbnMuYWRkRXJyb3IoZXJyb3JNZXNzYWdlLCB7ZGV0YWlsOiBlcnJvci5tZXNzYWdlLCBkaXNtaXNzYWJsZX0pO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gbm90aWZ5RmlsZXN5c3RlbU92ZXJyaWRlVXNlckVkaXRzKGZpbGVQYXRoOiBOdWNsaWRlVXJpKSB7XG4gIGNvbnN0IG1lc3NhZ2UgPSBgRGlmZiBWaWV3IE92ZXJyaWRlPGJyLz5cblRoZSBmaWxlc3lzdGVtIGNvbnRlbnRzIG9mIHRoZSBhY3RpdmUgZmlsZSBoYXZlIGNoYW5nZWQsIG92ZXJyaWRpbmcgdXNlciBjaGFuZ2VzIGZvciBmaWxlOjxici8+XG5cXGAke2ZpbGVQYXRofVxcYFxuYDtcbiAgbG9nZ2VyLndhcm4obWVzc2FnZSk7XG4gIGF0b20ubm90aWZpY2F0aW9ucy5hZGRXYXJuaW5nKG1lc3NhZ2UpO1xufVxuIl19

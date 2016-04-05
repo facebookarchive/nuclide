@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.jasmineIntegrationTestSetup = jasmineIntegrationTestSetup;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +11,21 @@
  * the root directory of this source tree.
  */
 
-import {dispatchKeyboardEvent} from './event';
-import {copyFixture, copyMercurialFixture, setLocalProject} from './fixtures';
-import {activateAllPackages, deactivateAllPackages} from './package-utils';
-import {addRemoteProject, startNuclideServer, stopNuclideServer} from './remote-utils';
-import {waitsForFile} from './waitsForFile';
+var _event = require('./event');
+
+var _fixtures = require('./fixtures');
+
+var _packageUtils = require('./package-utils');
+
+var _remoteUtils = require('./remote-utils');
+
+var _waitsForFile = require('./waitsForFile');
 
 // Smallish, yet realistic testing window dimensions.
-const TEST_WINDOW_HEIGHT = 600;
-const TEST_WINDOW_WIDTH = 1000;
+var TEST_WINDOW_HEIGHT = 600;
+var TEST_WINDOW_WIDTH = 1000;
 
-export function jasmineIntegrationTestSetup(): void {
+function jasmineIntegrationTestSetup() {
   // Allow jasmine to interact with the DOM.
   jasmine.attachToDOM(atom.views.getView(atom.workspace));
 
@@ -27,25 +33,21 @@ export function jasmineIntegrationTestSetup(): void {
   process.env.NO_BUCKD = '1';
 
   // Set the testing window dimensions.
-  const styleCSS = `
-    height: ${TEST_WINDOW_HEIGHT}px;
-    width: ${TEST_WINDOW_WIDTH}px;
-  `;
+  var styleCSS = '\n    height: ' + TEST_WINDOW_HEIGHT + 'px;\n    width: ' + TEST_WINDOW_WIDTH + 'px;\n  ';
   document.querySelector('#jasmine-content').setAttribute('style', styleCSS);
 
   // Unmock timer functions.
   jasmine.useRealClock();
 }
 
-export {
-  activateAllPackages,
-  addRemoteProject,
-  copyFixture,
-  copyMercurialFixture,
-  deactivateAllPackages,
-  dispatchKeyboardEvent,
-  setLocalProject,
-  startNuclideServer,
-  stopNuclideServer,
-  waitsForFile,
-};
+exports.activateAllPackages = _packageUtils.activateAllPackages;
+exports.addRemoteProject = _remoteUtils.addRemoteProject;
+exports.copyFixture = _fixtures.copyFixture;
+exports.copyMercurialFixture = _fixtures.copyMercurialFixture;
+exports.deactivateAllPackages = _packageUtils.deactivateAllPackages;
+exports.dispatchKeyboardEvent = _event.dispatchKeyboardEvent;
+exports.setLocalProject = _fixtures.setLocalProject;
+exports.startNuclideServer = _remoteUtils.startNuclideServer;
+exports.stopNuclideServer = _remoteUtils.stopNuclideServer;
+exports.waitsForFile = _waitsForFile.waitsForFile;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7OztxQkFXb0MsU0FBUzs7d0JBQ29CLFlBQVk7OzRCQUNwQixpQkFBaUI7OzJCQUNKLGdCQUFnQjs7NEJBQzNELGdCQUFnQjs7O0FBRzNDLElBQU0sa0JBQWtCLEdBQUcsR0FBRyxDQUFDO0FBQy9CLElBQU0saUJBQWlCLEdBQUcsSUFBSSxDQUFDOztBQUV4QixTQUFTLDJCQUEyQixHQUFTOztBQUVsRCxTQUFPLENBQUMsV0FBVyxDQUFDLElBQUksQ0FBQyxLQUFLLENBQUMsT0FBTyxDQUFDLElBQUksQ0FBQyxTQUFTLENBQUMsQ0FBQyxDQUFDOzs7QUFHeEQsU0FBTyxDQUFDLEdBQUcsQ0FBQyxRQUFRLEdBQUcsR0FBRyxDQUFDOzs7QUFHM0IsTUFBTSxRQUFRLHNCQUNGLGtCQUFrQix3QkFDbkIsaUJBQWlCLFlBQzNCLENBQUM7QUFDRixVQUFRLENBQUMsYUFBYSxDQUFDLGtCQUFrQixDQUFDLENBQUMsWUFBWSxDQUFDLE9BQU8sRUFBRSxRQUFRLENBQUMsQ0FBQzs7O0FBRzNFLFNBQU8sQ0FBQyxZQUFZLEVBQUUsQ0FBQztDQUN4Qjs7UUFHQyxtQkFBbUI7UUFDbkIsZ0JBQWdCO1FBQ2hCLFdBQVc7UUFDWCxvQkFBb0I7UUFDcEIscUJBQXFCO1FBQ3JCLHFCQUFxQjtRQUNyQixlQUFlO1FBQ2Ysa0JBQWtCO1FBQ2xCLGlCQUFpQjtRQUNqQixZQUFZIiwiZmlsZSI6Im1haW4uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQge2Rpc3BhdGNoS2V5Ym9hcmRFdmVudH0gZnJvbSAnLi9ldmVudCc7XG5pbXBvcnQge2NvcHlGaXh0dXJlLCBjb3B5TWVyY3VyaWFsRml4dHVyZSwgc2V0TG9jYWxQcm9qZWN0fSBmcm9tICcuL2ZpeHR1cmVzJztcbmltcG9ydCB7YWN0aXZhdGVBbGxQYWNrYWdlcywgZGVhY3RpdmF0ZUFsbFBhY2thZ2VzfSBmcm9tICcuL3BhY2thZ2UtdXRpbHMnO1xuaW1wb3J0IHthZGRSZW1vdGVQcm9qZWN0LCBzdGFydE51Y2xpZGVTZXJ2ZXIsIHN0b3BOdWNsaWRlU2VydmVyfSBmcm9tICcuL3JlbW90ZS11dGlscyc7XG5pbXBvcnQge3dhaXRzRm9yRmlsZX0gZnJvbSAnLi93YWl0c0ZvckZpbGUnO1xuXG4vLyBTbWFsbGlzaCwgeWV0IHJlYWxpc3RpYyB0ZXN0aW5nIHdpbmRvdyBkaW1lbnNpb25zLlxuY29uc3QgVEVTVF9XSU5ET1dfSEVJR0hUID0gNjAwO1xuY29uc3QgVEVTVF9XSU5ET1dfV0lEVEggPSAxMDAwO1xuXG5leHBvcnQgZnVuY3Rpb24gamFzbWluZUludGVncmF0aW9uVGVzdFNldHVwKCk6IHZvaWQge1xuICAvLyBBbGxvdyBqYXNtaW5lIHRvIGludGVyYWN0IHdpdGggdGhlIERPTS5cbiAgamFzbWluZS5hdHRhY2hUb0RPTShhdG9tLnZpZXdzLmdldFZpZXcoYXRvbS53b3Jrc3BhY2UpKTtcblxuICAvLyBUaGlzIHByZXZlbnRzIHpvbWJpZSBidWNrL2phdmEgcHJvY2Vzc2VzIGZyb20gaGFuZ2luZyB0aGUgdGVzdHNcbiAgcHJvY2Vzcy5lbnYuTk9fQlVDS0QgPSAnMSc7XG5cbiAgLy8gU2V0IHRoZSB0ZXN0aW5nIHdpbmRvdyBkaW1lbnNpb25zLlxuICBjb25zdCBzdHlsZUNTUyA9IGBcbiAgICBoZWlnaHQ6ICR7VEVTVF9XSU5ET1dfSEVJR0hUfXB4O1xuICAgIHdpZHRoOiAke1RFU1RfV0lORE9XX1dJRFRIfXB4O1xuICBgO1xuICBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKCcjamFzbWluZS1jb250ZW50Jykuc2V0QXR0cmlidXRlKCdzdHlsZScsIHN0eWxlQ1NTKTtcblxuICAvLyBVbm1vY2sgdGltZXIgZnVuY3Rpb25zLlxuICBqYXNtaW5lLnVzZVJlYWxDbG9jaygpO1xufVxuXG5leHBvcnQge1xuICBhY3RpdmF0ZUFsbFBhY2thZ2VzLFxuICBhZGRSZW1vdGVQcm9qZWN0LFxuICBjb3B5Rml4dHVyZSxcbiAgY29weU1lcmN1cmlhbEZpeHR1cmUsXG4gIGRlYWN0aXZhdGVBbGxQYWNrYWdlcyxcbiAgZGlzcGF0Y2hLZXlib2FyZEV2ZW50LFxuICBzZXRMb2NhbFByb2plY3QsXG4gIHN0YXJ0TnVjbGlkZVNlcnZlcixcbiAgc3RvcE51Y2xpZGVTZXJ2ZXIsXG4gIHdhaXRzRm9yRmlsZSxcbn07XG4iXX0=

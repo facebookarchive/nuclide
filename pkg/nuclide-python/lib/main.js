@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var PYTHON_GRAMMARS = ['source.python'];
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +10,23 @@
  * the root directory of this source tree.
  */
 
-import type {OutlineProvider} from '../../nuclide-outline-view';
-
-const PYTHON_GRAMMARS = ['source.python'];
-
 module.exports = {
-  activate() {
-  },
+  activate: function activate() {},
 
-  provideOutlines(): OutlineProvider {
-    const {PythonOutlineProvider} = require('./PythonOutlineProvider');
-    const provider = new PythonOutlineProvider();
+  provideOutlines: function provideOutlines() {
+    var _require = require('./PythonOutlineProvider');
+
+    var PythonOutlineProvider = _require.PythonOutlineProvider;
+
+    var provider = new PythonOutlineProvider();
     return {
       grammarScopes: PYTHON_GRAMMARS,
       priority: 1,
       name: 'Python',
-      getOutline: provider.getOutline.bind(provider),
+      getOutline: provider.getOutline.bind(provider)
     };
   },
 
-  deactivate() {
-  },
+  deactivate: function deactivate() {}
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFhQSxJQUFNLGVBQWUsR0FBRyxDQUFDLGVBQWUsQ0FBQyxDQUFDOzs7Ozs7Ozs7O0FBRTFDLE1BQU0sQ0FBQyxPQUFPLEdBQUc7QUFDZixVQUFRLEVBQUEsb0JBQUcsRUFDVjs7QUFFRCxpQkFBZSxFQUFBLDJCQUFvQjttQkFDRCxPQUFPLENBQUMseUJBQXlCLENBQUM7O1FBQTNELHFCQUFxQixZQUFyQixxQkFBcUI7O0FBQzVCLFFBQU0sUUFBUSxHQUFHLElBQUkscUJBQXFCLEVBQUUsQ0FBQztBQUM3QyxXQUFPO0FBQ0wsbUJBQWEsRUFBRSxlQUFlO0FBQzlCLGNBQVEsRUFBRSxDQUFDO0FBQ1gsVUFBSSxFQUFFLFFBQVE7QUFDZCxnQkFBVSxFQUFFLFFBQVEsQ0FBQyxVQUFVLENBQUMsSUFBSSxDQUFDLFFBQVEsQ0FBQztLQUMvQyxDQUFDO0dBQ0g7O0FBRUQsWUFBVSxFQUFBLHNCQUFHLEVBQ1o7Q0FDRixDQUFDIiwiZmlsZSI6Im1haW4uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7T3V0bGluZVByb3ZpZGVyfSBmcm9tICcuLi8uLi9udWNsaWRlLW91dGxpbmUtdmlldyc7XG5cbmNvbnN0IFBZVEhPTl9HUkFNTUFSUyA9IFsnc291cmNlLnB5dGhvbiddO1xuXG5tb2R1bGUuZXhwb3J0cyA9IHtcbiAgYWN0aXZhdGUoKSB7XG4gIH0sXG5cbiAgcHJvdmlkZU91dGxpbmVzKCk6IE91dGxpbmVQcm92aWRlciB7XG4gICAgY29uc3Qge1B5dGhvbk91dGxpbmVQcm92aWRlcn0gPSByZXF1aXJlKCcuL1B5dGhvbk91dGxpbmVQcm92aWRlcicpO1xuICAgIGNvbnN0IHByb3ZpZGVyID0gbmV3IFB5dGhvbk91dGxpbmVQcm92aWRlcigpO1xuICAgIHJldHVybiB7XG4gICAgICBncmFtbWFyU2NvcGVzOiBQWVRIT05fR1JBTU1BUlMsXG4gICAgICBwcmlvcml0eTogMSxcbiAgICAgIG5hbWU6ICdQeXRob24nLFxuICAgICAgZ2V0T3V0bGluZTogcHJvdmlkZXIuZ2V0T3V0bGluZS5iaW5kKHByb3ZpZGVyKSxcbiAgICB9O1xuICB9LFxuXG4gIGRlYWN0aXZhdGUoKSB7XG4gIH0sXG59O1xuIl19

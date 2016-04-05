@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +10,19 @@
  * the root directory of this source tree.
  */
 
-import type {AppState} from './types';
+exports['default'] = getCurrentExecutorId;
 
-import {array} from '../../nuclide-commons';
+var _nuclideCommons = require('../../nuclide-commons');
 
-export default function getCurrentExecutorId(state: AppState): ?string {
-  let {currentExecutorId} = state;
+function getCurrentExecutorId(state) {
+  var currentExecutorId = state.currentExecutorId;
+
   if (currentExecutorId == null) {
-    const firstExecutor = array.from(state.executors.values())[0];
+    var firstExecutor = _nuclideCommons.array.from(state.executors.values())[0];
     currentExecutorId = firstExecutor && firstExecutor.id;
   }
   return currentExecutorId;
 }
+
+module.exports = exports['default'];
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImdldEN1cnJlbnRFeGVjdXRvcklkLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7OztxQkFld0Isb0JBQW9COzs4QkFGeEIsdUJBQXVCOztBQUU1QixTQUFTLG9CQUFvQixDQUFDLEtBQWUsRUFBVztNQUNoRSxpQkFBaUIsR0FBSSxLQUFLLENBQTFCLGlCQUFpQjs7QUFDdEIsTUFBSSxpQkFBaUIsSUFBSSxJQUFJLEVBQUU7QUFDN0IsUUFBTSxhQUFhLEdBQUcsc0JBQU0sSUFBSSxDQUFDLEtBQUssQ0FBQyxTQUFTLENBQUMsTUFBTSxFQUFFLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQztBQUM5RCxxQkFBaUIsR0FBRyxhQUFhLElBQUksYUFBYSxDQUFDLEVBQUUsQ0FBQztHQUN2RDtBQUNELFNBQU8saUJBQWlCLENBQUM7Q0FDMUIiLCJmaWxlIjoiZ2V0Q3VycmVudEV4ZWN1dG9ySWQuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7QXBwU3RhdGV9IGZyb20gJy4vdHlwZXMnO1xuXG5pbXBvcnQge2FycmF5fSBmcm9tICcuLi8uLi9udWNsaWRlLWNvbW1vbnMnO1xuXG5leHBvcnQgZGVmYXVsdCBmdW5jdGlvbiBnZXRDdXJyZW50RXhlY3V0b3JJZChzdGF0ZTogQXBwU3RhdGUpOiA/c3RyaW5nIHtcbiAgbGV0IHtjdXJyZW50RXhlY3V0b3JJZH0gPSBzdGF0ZTtcbiAgaWYgKGN1cnJlbnRFeGVjdXRvcklkID09IG51bGwpIHtcbiAgICBjb25zdCBmaXJzdEV4ZWN1dG9yID0gYXJyYXkuZnJvbShzdGF0ZS5leGVjdXRvcnMudmFsdWVzKCkpWzBdO1xuICAgIGN1cnJlbnRFeGVjdXRvcklkID0gZmlyc3RFeGVjdXRvciAmJiBmaXJzdEV4ZWN1dG9yLmlkO1xuICB9XG4gIHJldHVybiBjdXJyZW50RXhlY3V0b3JJZDtcbn1cbiJdfQ==

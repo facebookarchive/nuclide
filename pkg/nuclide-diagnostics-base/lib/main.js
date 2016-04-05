@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,37 +10,9 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rx';
-import type {NuclideUri} from '../../nuclide-remote-uri';
-
-import type {TextEdit} from '../../nuclide-textedit';
-
-export type InvalidationMessage = {
-  scope: 'file';
-  filePaths: Array<NuclideUri>;
-} | {
-  scope: 'project';
-} | {
-  scope: 'all';
-};
-
-export type MessageUpdateCallback = (update: DiagnosticProviderUpdate) => mixed;
-export type MessageInvalidationCallback = (message: InvalidationMessage) => mixed;
-
 // TODO figure out how to allow the diagnostic consumer to poll (for example, if
 // it was just activated and wants diagnostic messages without having to wait
 // for an event to occur)
-export type CallbackDiagnosticProvider = {
-  onMessageUpdate: (callback: MessageUpdateCallback) => IDisposable;
-  onMessageInvalidation: (callback: MessageInvalidationCallback) => IDisposable;
-};
-
-export type ObservableDiagnosticProvider = {
-  updates: Observable<DiagnosticProviderUpdate>;
-  invalidations: Observable<InvalidationMessage>;
-}
-
-export type DiagnosticProvider = CallbackDiagnosticProvider | ObservableDiagnosticProvider;
 
 // Implicit invalidation semantics:
 //
@@ -48,115 +21,33 @@ export type DiagnosticProvider = CallbackDiagnosticProvider | ObservableDiagnost
 //
 // - All previous 'project' scope messages are invalidated whenever
 // projectMessages is populated.
-export type DiagnosticProviderUpdate = {
-  filePathToMessages?: Map<NuclideUri, Array<FileDiagnosticMessage>>;
-  projectMessages?: Array<ProjectDiagnosticMessage>;
-};
 
-export type MessageType = 'Error' | 'Warning';
-
-export type Trace = {
-  type: 'Trace';
-  text?: string;
-  html?: string;
-  filePath?: NuclideUri;
-  range?: atom$Range;
-};
-
-export type FileDiagnosticMessage = {
-  scope: 'file';
-  providerName: string;
-  type: MessageType;
-  filePath: NuclideUri;
-  text?: string;
-  html?: string;
-  range?: atom$Range;
-  trace?: Array<Trace>;
-  fix?: TextEdit;
-};
-
-export type ProjectDiagnosticMessage = {
-  scope: 'project';
-  providerName: string;
-  type: MessageType;
-  text?: string;
-  html?: string;
-  range?: atom$Range;
-  trace?: Array<Trace>;
-};
-
-export type FileMessageUpdate = {
-  filePath: NuclideUri;
-  messages: Array<FileDiagnosticMessage>;
-};
-
-export type DiagnosticMessage = FileDiagnosticMessage | ProjectDiagnosticMessage;
-
-export type DiagnosticUpdater = {
-  onFileMessagesDidUpdate:
-    (callback: (update: FileMessageUpdate) => mixed, filePath: NuclideUri) => IDisposable;
-  onProjectMessagesDidUpdate:
-    (callback: (messages: Array<ProjectDiagnosticMessage>) => mixed) => IDisposable;
-  onAllMessagesDidUpdate:
-    (callback: (messages: Array<DiagnosticMessage>) => mixed) => IDisposable;
-  applyFix: (message: FileDiagnosticMessage) => void;
-  applyFixesForFile: (file: NuclideUri) => void;
-};
-
-const DiagnosticStore = require('./DiagnosticStore');
+var DiagnosticStore = require('./DiagnosticStore');
 
 /**
  * Linter APIs, for compatibility with the Atom linter package.
  */
 
-export type LinterTrace = {
-  type: 'Trace';
-  text?: string;
-  html?: string;
-  filePath: string;
-  range?: atom$Range;
-};
-
-export type LinterMessage = {
-  type: 'Error' | 'Warning';
-  text?: string;
-  html?: string;
-  filePath?: NuclideUri;
-  range?: atom$Range;
-  trace?: Array<LinterTrace>;
-  fix?: {
-    range: atom$Range;
-    newText: string;
-    oldText?: string;
-  };
-};
-
-export type LinterProvider = {
-  /**
-   * Extension: Allows a provider to include a display name that will be shown with its messages.
-   */
-  providerName?: string;
-  /**
-   * In the official Linter API, the providerName is just "name".
-   */
-  name?: string;
-  /**
-   * Extension: Intended for developers who want to provide both interfaces to cater towards people
-   * who use only the `linter` package. This way you can provide both, but tell Nuclide to ignore
-   * the `linter` provider so that duplicate results do not appear.
-   */
-  disabledForNuclide?: boolean;
-  grammarScopes: Array<string>;
-  /**
-   * Extension: Overrides `grammarScopes` and triggers the linter on changes to any file, rather
-   * than just files with specific grammar scopes.
-   */
-  allGrammarScopes?: boolean;
-  scope: 'file' | 'project';
-  lintOnFly: boolean;
-  lint: (textEditor: TextEditor) => Promise<Array<LinterMessage>>;
-};
-
 module.exports = {
-  DiagnosticStore,
+  DiagnosticStore: DiagnosticStore
 };
+
+/**
+ * Extension: Allows a provider to include a display name that will be shown with its messages.
+ */
+
+/**
+ * In the official Linter API, the providerName is just "name".
+ */
+
+/**
+ * Extension: Intended for developers who want to provide both interfaces to cater towards people
+ * who use only the `linter` package. This way you can provide both, but tell Nuclide to ignore
+ * the `linter` provider so that duplicate results do not appear.
+ */
+
+/**
+ * Extension: Overrides `grammarScopes` and triggers the linter on changes to any file, rather
+ * than just files with specific grammar scopes.
+ */
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBeUdBLElBQU0sZUFBZSxHQUFHLE9BQU8sQ0FBQyxtQkFBbUIsQ0FBQyxDQUFDOzs7Ozs7QUFzRHJELE1BQU0sQ0FBQyxPQUFPLEdBQUc7QUFDZixpQkFBZSxFQUFmLGVBQWU7Q0FDaEIsQ0FBQyIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge09ic2VydmFibGV9IGZyb20gJ3J4JztcbmltcG9ydCB0eXBlIHtOdWNsaWRlVXJpfSBmcm9tICcuLi8uLi9udWNsaWRlLXJlbW90ZS11cmknO1xuXG5pbXBvcnQgdHlwZSB7VGV4dEVkaXR9IGZyb20gJy4uLy4uL251Y2xpZGUtdGV4dGVkaXQnO1xuXG5leHBvcnQgdHlwZSBJbnZhbGlkYXRpb25NZXNzYWdlID0ge1xuICBzY29wZTogJ2ZpbGUnO1xuICBmaWxlUGF0aHM6IEFycmF5PE51Y2xpZGVVcmk+O1xufSB8IHtcbiAgc2NvcGU6ICdwcm9qZWN0Jztcbn0gfCB7XG4gIHNjb3BlOiAnYWxsJztcbn07XG5cbmV4cG9ydCB0eXBlIE1lc3NhZ2VVcGRhdGVDYWxsYmFjayA9ICh1cGRhdGU6IERpYWdub3N0aWNQcm92aWRlclVwZGF0ZSkgPT4gbWl4ZWQ7XG5leHBvcnQgdHlwZSBNZXNzYWdlSW52YWxpZGF0aW9uQ2FsbGJhY2sgPSAobWVzc2FnZTogSW52YWxpZGF0aW9uTWVzc2FnZSkgPT4gbWl4ZWQ7XG5cbi8vIFRPRE8gZmlndXJlIG91dCBob3cgdG8gYWxsb3cgdGhlIGRpYWdub3N0aWMgY29uc3VtZXIgdG8gcG9sbCAoZm9yIGV4YW1wbGUsIGlmXG4vLyBpdCB3YXMganVzdCBhY3RpdmF0ZWQgYW5kIHdhbnRzIGRpYWdub3N0aWMgbWVzc2FnZXMgd2l0aG91dCBoYXZpbmcgdG8gd2FpdFxuLy8gZm9yIGFuIGV2ZW50IHRvIG9jY3VyKVxuZXhwb3J0IHR5cGUgQ2FsbGJhY2tEaWFnbm9zdGljUHJvdmlkZXIgPSB7XG4gIG9uTWVzc2FnZVVwZGF0ZTogKGNhbGxiYWNrOiBNZXNzYWdlVXBkYXRlQ2FsbGJhY2spID0+IElEaXNwb3NhYmxlO1xuICBvbk1lc3NhZ2VJbnZhbGlkYXRpb246IChjYWxsYmFjazogTWVzc2FnZUludmFsaWRhdGlvbkNhbGxiYWNrKSA9PiBJRGlzcG9zYWJsZTtcbn07XG5cbmV4cG9ydCB0eXBlIE9ic2VydmFibGVEaWFnbm9zdGljUHJvdmlkZXIgPSB7XG4gIHVwZGF0ZXM6IE9ic2VydmFibGU8RGlhZ25vc3RpY1Byb3ZpZGVyVXBkYXRlPjtcbiAgaW52YWxpZGF0aW9uczogT2JzZXJ2YWJsZTxJbnZhbGlkYXRpb25NZXNzYWdlPjtcbn1cblxuZXhwb3J0IHR5cGUgRGlhZ25vc3RpY1Byb3ZpZGVyID0gQ2FsbGJhY2tEaWFnbm9zdGljUHJvdmlkZXIgfCBPYnNlcnZhYmxlRGlhZ25vc3RpY1Byb3ZpZGVyO1xuXG4vLyBJbXBsaWNpdCBpbnZhbGlkYXRpb24gc2VtYW50aWNzOlxuLy9cbi8vIC0gUHJldmlvdXMgJ2ZpbGUnIHNjb3BlIG1lc3NhZ2VzIGFyZSBpbnZhbGlkYXRlZCBpZiBhbmQgb25seSBpZlxuLy8gZmlsZVBhdGhUb01lc3NhZ2VzIGNvbnRhaW5zIHRoZWlyIGtleSBhcyBhIHBhdGguXG4vL1xuLy8gLSBBbGwgcHJldmlvdXMgJ3Byb2plY3QnIHNjb3BlIG1lc3NhZ2VzIGFyZSBpbnZhbGlkYXRlZCB3aGVuZXZlclxuLy8gcHJvamVjdE1lc3NhZ2VzIGlzIHBvcHVsYXRlZC5cbmV4cG9ydCB0eXBlIERpYWdub3N0aWNQcm92aWRlclVwZGF0ZSA9IHtcbiAgZmlsZVBhdGhUb01lc3NhZ2VzPzogTWFwPE51Y2xpZGVVcmksIEFycmF5PEZpbGVEaWFnbm9zdGljTWVzc2FnZT4+O1xuICBwcm9qZWN0TWVzc2FnZXM/OiBBcnJheTxQcm9qZWN0RGlhZ25vc3RpY01lc3NhZ2U+O1xufTtcblxuZXhwb3J0IHR5cGUgTWVzc2FnZVR5cGUgPSAnRXJyb3InIHwgJ1dhcm5pbmcnO1xuXG5leHBvcnQgdHlwZSBUcmFjZSA9IHtcbiAgdHlwZTogJ1RyYWNlJztcbiAgdGV4dD86IHN0cmluZztcbiAgaHRtbD86IHN0cmluZztcbiAgZmlsZVBhdGg/OiBOdWNsaWRlVXJpO1xuICByYW5nZT86IGF0b20kUmFuZ2U7XG59O1xuXG5leHBvcnQgdHlwZSBGaWxlRGlhZ25vc3RpY01lc3NhZ2UgPSB7XG4gIHNjb3BlOiAnZmlsZSc7XG4gIHByb3ZpZGVyTmFtZTogc3RyaW5nO1xuICB0eXBlOiBNZXNzYWdlVHlwZTtcbiAgZmlsZVBhdGg6IE51Y2xpZGVVcmk7XG4gIHRleHQ/OiBzdHJpbmc7XG4gIGh0bWw/OiBzdHJpbmc7XG4gIHJhbmdlPzogYXRvbSRSYW5nZTtcbiAgdHJhY2U/OiBBcnJheTxUcmFjZT47XG4gIGZpeD86IFRleHRFZGl0O1xufTtcblxuZXhwb3J0IHR5cGUgUHJvamVjdERpYWdub3N0aWNNZXNzYWdlID0ge1xuICBzY29wZTogJ3Byb2plY3QnO1xuICBwcm92aWRlck5hbWU6IHN0cmluZztcbiAgdHlwZTogTWVzc2FnZVR5cGU7XG4gIHRleHQ/OiBzdHJpbmc7XG4gIGh0bWw/OiBzdHJpbmc7XG4gIHJhbmdlPzogYXRvbSRSYW5nZTtcbiAgdHJhY2U/OiBBcnJheTxUcmFjZT47XG59O1xuXG5leHBvcnQgdHlwZSBGaWxlTWVzc2FnZVVwZGF0ZSA9IHtcbiAgZmlsZVBhdGg6IE51Y2xpZGVVcmk7XG4gIG1lc3NhZ2VzOiBBcnJheTxGaWxlRGlhZ25vc3RpY01lc3NhZ2U+O1xufTtcblxuZXhwb3J0IHR5cGUgRGlhZ25vc3RpY01lc3NhZ2UgPSBGaWxlRGlhZ25vc3RpY01lc3NhZ2UgfCBQcm9qZWN0RGlhZ25vc3RpY01lc3NhZ2U7XG5cbmV4cG9ydCB0eXBlIERpYWdub3N0aWNVcGRhdGVyID0ge1xuICBvbkZpbGVNZXNzYWdlc0RpZFVwZGF0ZTpcbiAgICAoY2FsbGJhY2s6ICh1cGRhdGU6IEZpbGVNZXNzYWdlVXBkYXRlKSA9PiBtaXhlZCwgZmlsZVBhdGg6IE51Y2xpZGVVcmkpID0+IElEaXNwb3NhYmxlO1xuICBvblByb2plY3RNZXNzYWdlc0RpZFVwZGF0ZTpcbiAgICAoY2FsbGJhY2s6IChtZXNzYWdlczogQXJyYXk8UHJvamVjdERpYWdub3N0aWNNZXNzYWdlPikgPT4gbWl4ZWQpID0+IElEaXNwb3NhYmxlO1xuICBvbkFsbE1lc3NhZ2VzRGlkVXBkYXRlOlxuICAgIChjYWxsYmFjazogKG1lc3NhZ2VzOiBBcnJheTxEaWFnbm9zdGljTWVzc2FnZT4pID0+IG1peGVkKSA9PiBJRGlzcG9zYWJsZTtcbiAgYXBwbHlGaXg6IChtZXNzYWdlOiBGaWxlRGlhZ25vc3RpY01lc3NhZ2UpID0+IHZvaWQ7XG4gIGFwcGx5Rml4ZXNGb3JGaWxlOiAoZmlsZTogTnVjbGlkZVVyaSkgPT4gdm9pZDtcbn07XG5cbmNvbnN0IERpYWdub3N0aWNTdG9yZSA9IHJlcXVpcmUoJy4vRGlhZ25vc3RpY1N0b3JlJyk7XG5cbi8qKlxuICogTGludGVyIEFQSXMsIGZvciBjb21wYXRpYmlsaXR5IHdpdGggdGhlIEF0b20gbGludGVyIHBhY2thZ2UuXG4gKi9cblxuZXhwb3J0IHR5cGUgTGludGVyVHJhY2UgPSB7XG4gIHR5cGU6ICdUcmFjZSc7XG4gIHRleHQ/OiBzdHJpbmc7XG4gIGh0bWw/OiBzdHJpbmc7XG4gIGZpbGVQYXRoOiBzdHJpbmc7XG4gIHJhbmdlPzogYXRvbSRSYW5nZTtcbn07XG5cbmV4cG9ydCB0eXBlIExpbnRlck1lc3NhZ2UgPSB7XG4gIHR5cGU6ICdFcnJvcicgfCAnV2FybmluZyc7XG4gIHRleHQ/OiBzdHJpbmc7XG4gIGh0bWw/OiBzdHJpbmc7XG4gIGZpbGVQYXRoPzogTnVjbGlkZVVyaTtcbiAgcmFuZ2U/OiBhdG9tJFJhbmdlO1xuICB0cmFjZT86IEFycmF5PExpbnRlclRyYWNlPjtcbiAgZml4Pzoge1xuICAgIHJhbmdlOiBhdG9tJFJhbmdlO1xuICAgIG5ld1RleHQ6IHN0cmluZztcbiAgICBvbGRUZXh0Pzogc3RyaW5nO1xuICB9O1xufTtcblxuZXhwb3J0IHR5cGUgTGludGVyUHJvdmlkZXIgPSB7XG4gIC8qKlxuICAgKiBFeHRlbnNpb246IEFsbG93cyBhIHByb3ZpZGVyIHRvIGluY2x1ZGUgYSBkaXNwbGF5IG5hbWUgdGhhdCB3aWxsIGJlIHNob3duIHdpdGggaXRzIG1lc3NhZ2VzLlxuICAgKi9cbiAgcHJvdmlkZXJOYW1lPzogc3RyaW5nO1xuICAvKipcbiAgICogSW4gdGhlIG9mZmljaWFsIExpbnRlciBBUEksIHRoZSBwcm92aWRlck5hbWUgaXMganVzdCBcIm5hbWVcIi5cbiAgICovXG4gIG5hbWU/OiBzdHJpbmc7XG4gIC8qKlxuICAgKiBFeHRlbnNpb246IEludGVuZGVkIGZvciBkZXZlbG9wZXJzIHdobyB3YW50IHRvIHByb3ZpZGUgYm90aCBpbnRlcmZhY2VzIHRvIGNhdGVyIHRvd2FyZHMgcGVvcGxlXG4gICAqIHdobyB1c2Ugb25seSB0aGUgYGxpbnRlcmAgcGFja2FnZS4gVGhpcyB3YXkgeW91IGNhbiBwcm92aWRlIGJvdGgsIGJ1dCB0ZWxsIE51Y2xpZGUgdG8gaWdub3JlXG4gICAqIHRoZSBgbGludGVyYCBwcm92aWRlciBzbyB0aGF0IGR1cGxpY2F0ZSByZXN1bHRzIGRvIG5vdCBhcHBlYXIuXG4gICAqL1xuICBkaXNhYmxlZEZvck51Y2xpZGU/OiBib29sZWFuO1xuICBncmFtbWFyU2NvcGVzOiBBcnJheTxzdHJpbmc+O1xuICAvKipcbiAgICogRXh0ZW5zaW9uOiBPdmVycmlkZXMgYGdyYW1tYXJTY29wZXNgIGFuZCB0cmlnZ2VycyB0aGUgbGludGVyIG9uIGNoYW5nZXMgdG8gYW55IGZpbGUsIHJhdGhlclxuICAgKiB0aGFuIGp1c3QgZmlsZXMgd2l0aCBzcGVjaWZpYyBncmFtbWFyIHNjb3Blcy5cbiAgICovXG4gIGFsbEdyYW1tYXJTY29wZXM/OiBib29sZWFuO1xuICBzY29wZTogJ2ZpbGUnIHwgJ3Byb2plY3QnO1xuICBsaW50T25GbHk6IGJvb2xlYW47XG4gIGxpbnQ6ICh0ZXh0RWRpdG9yOiBUZXh0RWRpdG9yKSA9PiBQcm9taXNlPEFycmF5PExpbnRlck1lc3NhZ2U+Pjtcbn07XG5cbm1vZHVsZS5leHBvcnRzID0ge1xuICBEaWFnbm9zdGljU3RvcmUsXG59O1xuIl19

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,36 +10,44 @@
  * the root directory of this source tree.
  */
 
-import type {
-  DatatipProvider,
-} from '../../nuclide-datatip-interfaces';
+exports.activate = activate;
+exports.consumeDatatipProvider = consumeDatatipProvider;
+exports.deactivate = deactivate;
 
-const {Disposable} = require('atom');
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {DatatipManager} from './DatatipManager';
+var _assert = require('assert');
 
-let datatipManager: ?DatatipManager = null;
+var _assert2 = _interopRequireDefault(_assert);
 
-export function activate(state: ?any): void {
+var _DatatipManager = require('./DatatipManager');
+
+var _require = require('atom');
+
+var Disposable = _require.Disposable;
+
+var datatipManager = null;
+
+function activate(state) {
   if (datatipManager == null) {
-    datatipManager = new DatatipManager();
+    datatipManager = new _DatatipManager.DatatipManager();
   }
 }
 
-export function consumeDatatipProvider(provider: DatatipProvider): IDisposable {
-  invariant(datatipManager);
+function consumeDatatipProvider(provider) {
+  (0, _assert2['default'])(datatipManager);
   datatipManager.addProvider(provider);
-  return new Disposable(() => {
+  return new Disposable(function () {
     if (datatipManager != null) {
       datatipManager.removeProvider(provider);
     }
   });
 }
 
-export function deactivate() {
+function deactivate() {
   if (datatipManager != null) {
     datatipManager.dispose();
     datatipManager = null;
   }
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7O3NCQWdCc0IsUUFBUTs7Ozs4QkFFRCxrQkFBa0I7O2VBSDFCLE9BQU8sQ0FBQyxNQUFNLENBQUM7O0lBQTdCLFVBQVUsWUFBVixVQUFVOztBQUtqQixJQUFJLGNBQStCLEdBQUcsSUFBSSxDQUFDOztBQUVwQyxTQUFTLFFBQVEsQ0FBQyxLQUFXLEVBQVE7QUFDMUMsTUFBSSxjQUFjLElBQUksSUFBSSxFQUFFO0FBQzFCLGtCQUFjLEdBQUcsb0NBQW9CLENBQUM7R0FDdkM7Q0FDRjs7QUFFTSxTQUFTLHNCQUFzQixDQUFDLFFBQXlCLEVBQWU7QUFDN0UsMkJBQVUsY0FBYyxDQUFDLENBQUM7QUFDMUIsZ0JBQWMsQ0FBQyxXQUFXLENBQUMsUUFBUSxDQUFDLENBQUM7QUFDckMsU0FBTyxJQUFJLFVBQVUsQ0FBQyxZQUFNO0FBQzFCLFFBQUksY0FBYyxJQUFJLElBQUksRUFBRTtBQUMxQixvQkFBYyxDQUFDLGNBQWMsQ0FBQyxRQUFRLENBQUMsQ0FBQztLQUN6QztHQUNGLENBQUMsQ0FBQztDQUNKOztBQUVNLFNBQVMsVUFBVSxHQUFHO0FBQzNCLE1BQUksY0FBYyxJQUFJLElBQUksRUFBRTtBQUMxQixrQkFBYyxDQUFDLE9BQU8sRUFBRSxDQUFDO0FBQ3pCLGtCQUFjLEdBQUcsSUFBSSxDQUFDO0dBQ3ZCO0NBQ0YiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtcbiAgRGF0YXRpcFByb3ZpZGVyLFxufSBmcm9tICcuLi8uLi9udWNsaWRlLWRhdGF0aXAtaW50ZXJmYWNlcyc7XG5cbmNvbnN0IHtEaXNwb3NhYmxlfSA9IHJlcXVpcmUoJ2F0b20nKTtcbmltcG9ydCBpbnZhcmlhbnQgZnJvbSAnYXNzZXJ0JztcblxuaW1wb3J0IHtEYXRhdGlwTWFuYWdlcn0gZnJvbSAnLi9EYXRhdGlwTWFuYWdlcic7XG5cbmxldCBkYXRhdGlwTWFuYWdlcjogP0RhdGF0aXBNYW5hZ2VyID0gbnVsbDtcblxuZXhwb3J0IGZ1bmN0aW9uIGFjdGl2YXRlKHN0YXRlOiA/YW55KTogdm9pZCB7XG4gIGlmIChkYXRhdGlwTWFuYWdlciA9PSBudWxsKSB7XG4gICAgZGF0YXRpcE1hbmFnZXIgPSBuZXcgRGF0YXRpcE1hbmFnZXIoKTtcbiAgfVxufVxuXG5leHBvcnQgZnVuY3Rpb24gY29uc3VtZURhdGF0aXBQcm92aWRlcihwcm92aWRlcjogRGF0YXRpcFByb3ZpZGVyKTogSURpc3Bvc2FibGUge1xuICBpbnZhcmlhbnQoZGF0YXRpcE1hbmFnZXIpO1xuICBkYXRhdGlwTWFuYWdlci5hZGRQcm92aWRlcihwcm92aWRlcik7XG4gIHJldHVybiBuZXcgRGlzcG9zYWJsZSgoKSA9PiB7XG4gICAgaWYgKGRhdGF0aXBNYW5hZ2VyICE9IG51bGwpIHtcbiAgICAgIGRhdGF0aXBNYW5hZ2VyLnJlbW92ZVByb3ZpZGVyKHByb3ZpZGVyKTtcbiAgICB9XG4gIH0pO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gZGVhY3RpdmF0ZSgpIHtcbiAgaWYgKGRhdGF0aXBNYW5hZ2VyICE9IG51bGwpIHtcbiAgICBkYXRhdGlwTWFuYWdlci5kaXNwb3NlKCk7XG4gICAgZGF0YXRpcE1hbmFnZXIgPSBudWxsO1xuICB9XG59XG4iXX0=

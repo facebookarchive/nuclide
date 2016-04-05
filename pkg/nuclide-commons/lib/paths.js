@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +8,13 @@
  * the root directory of this source tree.
  */
 
-const path = require('path');
+var path = require('path');
 
 /**
  * @param filePath A file path.
  * @return The file path with a trailing separator, if it doesn't already have one.
  */
-function ensureTrailingSeparator(filePath: string): string {
+function ensureTrailingSeparator(filePath) {
   if (filePath.endsWith(path.sep)) {
     return filePath;
   } else {
@@ -24,5 +23,6 @@ function ensureTrailingSeparator(filePath: string): string {
 }
 
 module.exports = {
-  ensureTrailingSeparator,
+  ensureTrailingSeparator: ensureTrailingSeparator
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInBhdGhzLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7QUFXQSxJQUFNLElBQUksR0FBRyxPQUFPLENBQUMsTUFBTSxDQUFDLENBQUM7Ozs7OztBQU03QixTQUFTLHVCQUF1QixDQUFDLFFBQWdCLEVBQVU7QUFDekQsTUFBSSxRQUFRLENBQUMsUUFBUSxDQUFDLElBQUksQ0FBQyxHQUFHLENBQUMsRUFBRTtBQUMvQixXQUFPLFFBQVEsQ0FBQztHQUNqQixNQUFNO0FBQ0wsV0FBTyxRQUFRLEdBQUcsSUFBSSxDQUFDLEdBQUcsQ0FBQztHQUM1QjtDQUNGOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUc7QUFDZix5QkFBdUIsRUFBdkIsdUJBQXVCO0NBQ3hCLENBQUMiLCJmaWxlIjoicGF0aHMuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5jb25zdCBwYXRoID0gcmVxdWlyZSgncGF0aCcpO1xuXG4vKipcbiAqIEBwYXJhbSBmaWxlUGF0aCBBIGZpbGUgcGF0aC5cbiAqIEByZXR1cm4gVGhlIGZpbGUgcGF0aCB3aXRoIGEgdHJhaWxpbmcgc2VwYXJhdG9yLCBpZiBpdCBkb2Vzbid0IGFscmVhZHkgaGF2ZSBvbmUuXG4gKi9cbmZ1bmN0aW9uIGVuc3VyZVRyYWlsaW5nU2VwYXJhdG9yKGZpbGVQYXRoOiBzdHJpbmcpOiBzdHJpbmcge1xuICBpZiAoZmlsZVBhdGguZW5kc1dpdGgocGF0aC5zZXApKSB7XG4gICAgcmV0dXJuIGZpbGVQYXRoO1xuICB9IGVsc2Uge1xuICAgIHJldHVybiBmaWxlUGF0aCArIHBhdGguc2VwO1xuICB9XG59XG5cbm1vZHVsZS5leHBvcnRzID0ge1xuICBlbnN1cmVUcmFpbGluZ1NlcGFyYXRvcixcbn07XG4iXX0=

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +10,33 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rx';
-import type OutputService from '../../nuclide-console/lib/OutputService';
+exports.setOutputService = setOutputService;
+exports.getOutputService = getOutputService;
+exports.registerOutputWindowLogging = registerOutputWindowLogging;
 
-let outputServiceApi: ?OutputService = null;
+var outputServiceApi = null;
 
-export function setOutputService(api: OutputService): void {
+function setOutputService(api) {
   outputServiceApi = api;
 }
 
-export function getOutputService(): ?OutputService {
+function getOutputService() {
   return outputServiceApi;
 }
 
 // TODO: refactor this function to work with other providers(like hhvm).
-export function registerOutputWindowLogging(userOutputStream: Observable<string>): ?IDisposable {
-  const api = getOutputService();
-  let outputDisposable = null;
+
+function registerOutputWindowLogging(userOutputStream) {
+  var api = getOutputService();
+  var outputDisposable = null;
   if (api != null) {
     outputDisposable = api.registerOutputProvider({
       source: 'lldb debugger',
-      messages: userOutputStream.map(message => JSON.parse(message)),
+      messages: userOutputStream.map(function (message) {
+        return JSON.parse(message);
+      })
     });
   }
   return outputDisposable;
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIk91dHB1dFNlcnZpY2VNYW5hZ2VyLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7QUFjQSxJQUFJLGdCQUFnQyxHQUFHLElBQUksQ0FBQzs7QUFFckMsU0FBUyxnQkFBZ0IsQ0FBQyxHQUFrQixFQUFRO0FBQ3pELGtCQUFnQixHQUFHLEdBQUcsQ0FBQztDQUN4Qjs7QUFFTSxTQUFTLGdCQUFnQixHQUFtQjtBQUNqRCxTQUFPLGdCQUFnQixDQUFDO0NBQ3pCOzs7O0FBR00sU0FBUywyQkFBMkIsQ0FBQyxnQkFBb0MsRUFBZ0I7QUFDOUYsTUFBTSxHQUFHLEdBQUcsZ0JBQWdCLEVBQUUsQ0FBQztBQUMvQixNQUFJLGdCQUFnQixHQUFHLElBQUksQ0FBQztBQUM1QixNQUFJLEdBQUcsSUFBSSxJQUFJLEVBQUU7QUFDZixvQkFBZ0IsR0FBRyxHQUFHLENBQUMsc0JBQXNCLENBQUM7QUFDNUMsWUFBTSxFQUFFLGVBQWU7QUFDdkIsY0FBUSxFQUFFLGdCQUFnQixDQUFDLEdBQUcsQ0FBQyxVQUFBLE9BQU87ZUFBSSxJQUFJLENBQUMsS0FBSyxDQUFDLE9BQU8sQ0FBQztPQUFBLENBQUM7S0FDL0QsQ0FBQyxDQUFDO0dBQ0o7QUFDRCxTQUFPLGdCQUFnQixDQUFDO0NBQ3pCIiwiZmlsZSI6Ik91dHB1dFNlcnZpY2VNYW5hZ2VyLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge09ic2VydmFibGV9IGZyb20gJ3J4JztcbmltcG9ydCB0eXBlIE91dHB1dFNlcnZpY2UgZnJvbSAnLi4vLi4vbnVjbGlkZS1jb25zb2xlL2xpYi9PdXRwdXRTZXJ2aWNlJztcblxubGV0IG91dHB1dFNlcnZpY2VBcGk6ID9PdXRwdXRTZXJ2aWNlID0gbnVsbDtcblxuZXhwb3J0IGZ1bmN0aW9uIHNldE91dHB1dFNlcnZpY2UoYXBpOiBPdXRwdXRTZXJ2aWNlKTogdm9pZCB7XG4gIG91dHB1dFNlcnZpY2VBcGkgPSBhcGk7XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBnZXRPdXRwdXRTZXJ2aWNlKCk6ID9PdXRwdXRTZXJ2aWNlIHtcbiAgcmV0dXJuIG91dHB1dFNlcnZpY2VBcGk7XG59XG5cbi8vIFRPRE86IHJlZmFjdG9yIHRoaXMgZnVuY3Rpb24gdG8gd29yayB3aXRoIG90aGVyIHByb3ZpZGVycyhsaWtlIGhodm0pLlxuZXhwb3J0IGZ1bmN0aW9uIHJlZ2lzdGVyT3V0cHV0V2luZG93TG9nZ2luZyh1c2VyT3V0cHV0U3RyZWFtOiBPYnNlcnZhYmxlPHN0cmluZz4pOiA/SURpc3Bvc2FibGUge1xuICBjb25zdCBhcGkgPSBnZXRPdXRwdXRTZXJ2aWNlKCk7XG4gIGxldCBvdXRwdXREaXNwb3NhYmxlID0gbnVsbDtcbiAgaWYgKGFwaSAhPSBudWxsKSB7XG4gICAgb3V0cHV0RGlzcG9zYWJsZSA9IGFwaS5yZWdpc3Rlck91dHB1dFByb3ZpZGVyKHtcbiAgICAgIHNvdXJjZTogJ2xsZGIgZGVidWdnZXInLFxuICAgICAgbWVzc2FnZXM6IHVzZXJPdXRwdXRTdHJlYW0ubWFwKG1lc3NhZ2UgPT4gSlNPTi5wYXJzZShtZXNzYWdlKSksXG4gICAgfSk7XG4gIH1cbiAgcmV0dXJuIG91dHB1dERpc3Bvc2FibGU7XG59XG4iXX0=

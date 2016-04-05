@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+var _nuclideCommons = require('../../nuclide-commons');
+
+/**
+ * @param aPath The NuclideUri of a file or directory for which you want to find
+ *   a Repository it belongs to.
+ * @return A Git or Hg repository the path belongs to, if any.
+ */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +14,21 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import {array} from '../../nuclide-commons';
-
-/**
- * @param aPath The NuclideUri of a file or directory for which you want to find
- *   a Repository it belongs to.
- * @return A Git or Hg repository the path belongs to, if any.
- */
-function repositoryForPath(aPath: NuclideUri): ?atom$Repository {
+function repositoryForPath(aPath) {
   // Calling atom.project.repositoryForDirectory gets the real path of the directory,
   // which requires a round-trip to the server for remote paths.
   // Instead, this function keeps filtering local.
-  const repositoryContainsPath = require('./repositoryContainsPath');
-  const repositories = array.compact(atom.project.getRepositories());
-  return array.find(
-    repositories,
-    repo => {
-      try {
-        return repositoryContainsPath(repo, aPath);
-      } catch (e) {
-        // The repo type is not supported.
-        return false;
-      }
-    },
-  );
+  var repositoryContainsPath = require('./repositoryContainsPath');
+  var repositories = _nuclideCommons.array.compact(atom.project.getRepositories());
+  return _nuclideCommons.array.find(repositories, function (repo) {
+    try {
+      return repositoryContainsPath(repo, aPath);
+    } catch (e) {
+      // The repo type is not supported.
+      return false;
+    }
+  });
 }
 
 module.exports = repositoryForPath;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInJlcG9zaXRvcnlGb3JQYXRoLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI4QkFZb0IsdUJBQXVCOzs7Ozs7Ozs7Ozs7Ozs7O0FBTzNDLFNBQVMsaUJBQWlCLENBQUMsS0FBaUIsRUFBb0I7Ozs7QUFJOUQsTUFBTSxzQkFBc0IsR0FBRyxPQUFPLENBQUMsMEJBQTBCLENBQUMsQ0FBQztBQUNuRSxNQUFNLFlBQVksR0FBRyxzQkFBTSxPQUFPLENBQUMsSUFBSSxDQUFDLE9BQU8sQ0FBQyxlQUFlLEVBQUUsQ0FBQyxDQUFDO0FBQ25FLFNBQU8sc0JBQU0sSUFBSSxDQUNmLFlBQVksRUFDWixVQUFBLElBQUksRUFBSTtBQUNOLFFBQUk7QUFDRixhQUFPLHNCQUFzQixDQUFDLElBQUksRUFBRSxLQUFLLENBQUMsQ0FBQztLQUM1QyxDQUFDLE9BQU8sQ0FBQyxFQUFFOztBQUVWLGFBQU8sS0FBSyxDQUFDO0tBQ2Q7R0FDRixDQUNGLENBQUM7Q0FDSDs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHLGlCQUFpQixDQUFDIiwiZmlsZSI6InJlcG9zaXRvcnlGb3JQYXRoLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge051Y2xpZGVVcml9IGZyb20gJy4uLy4uL251Y2xpZGUtcmVtb3RlLXVyaSc7XG5pbXBvcnQge2FycmF5fSBmcm9tICcuLi8uLi9udWNsaWRlLWNvbW1vbnMnO1xuXG4vKipcbiAqIEBwYXJhbSBhUGF0aCBUaGUgTnVjbGlkZVVyaSBvZiBhIGZpbGUgb3IgZGlyZWN0b3J5IGZvciB3aGljaCB5b3Ugd2FudCB0byBmaW5kXG4gKiAgIGEgUmVwb3NpdG9yeSBpdCBiZWxvbmdzIHRvLlxuICogQHJldHVybiBBIEdpdCBvciBIZyByZXBvc2l0b3J5IHRoZSBwYXRoIGJlbG9uZ3MgdG8sIGlmIGFueS5cbiAqL1xuZnVuY3Rpb24gcmVwb3NpdG9yeUZvclBhdGgoYVBhdGg6IE51Y2xpZGVVcmkpOiA/YXRvbSRSZXBvc2l0b3J5IHtcbiAgLy8gQ2FsbGluZyBhdG9tLnByb2plY3QucmVwb3NpdG9yeUZvckRpcmVjdG9yeSBnZXRzIHRoZSByZWFsIHBhdGggb2YgdGhlIGRpcmVjdG9yeSxcbiAgLy8gd2hpY2ggcmVxdWlyZXMgYSByb3VuZC10cmlwIHRvIHRoZSBzZXJ2ZXIgZm9yIHJlbW90ZSBwYXRocy5cbiAgLy8gSW5zdGVhZCwgdGhpcyBmdW5jdGlvbiBrZWVwcyBmaWx0ZXJpbmcgbG9jYWwuXG4gIGNvbnN0IHJlcG9zaXRvcnlDb250YWluc1BhdGggPSByZXF1aXJlKCcuL3JlcG9zaXRvcnlDb250YWluc1BhdGgnKTtcbiAgY29uc3QgcmVwb3NpdG9yaWVzID0gYXJyYXkuY29tcGFjdChhdG9tLnByb2plY3QuZ2V0UmVwb3NpdG9yaWVzKCkpO1xuICByZXR1cm4gYXJyYXkuZmluZChcbiAgICByZXBvc2l0b3JpZXMsXG4gICAgcmVwbyA9PiB7XG4gICAgICB0cnkge1xuICAgICAgICByZXR1cm4gcmVwb3NpdG9yeUNvbnRhaW5zUGF0aChyZXBvLCBhUGF0aCk7XG4gICAgICB9IGNhdGNoIChlKSB7XG4gICAgICAgIC8vIFRoZSByZXBvIHR5cGUgaXMgbm90IHN1cHBvcnRlZC5cbiAgICAgICAgcmV0dXJuIGZhbHNlO1xuICAgICAgfVxuICAgIH0sXG4gICk7XG59XG5cbm1vZHVsZS5leHBvcnRzID0gcmVwb3NpdG9yeUZvclBhdGg7XG4iXX0=

@@ -1,5 +1,29 @@
-'use babel';
-/* @flow */
+var getProcessInfoList = _asyncToGenerator(function* () {
+  log('Getting process info list');
+
+  var remoteUri = require('../../nuclide-remote-uri');
+  // TODO: Currently first remote dir only.
+  var remoteDirectoryPath = atom.project.getDirectories().map(function (directoryPath) {
+    return directoryPath.getPath();
+  }).filter(function (directoryPath) {
+    return remoteUri.isRemote(directoryPath);
+  })[0];
+
+  if (remoteDirectoryPath) {
+    var _require = require('./AttachProcessInfo');
+
+    var AttachProcessInfo = _require.AttachProcessInfo;
+
+    return [new AttachProcessInfo(remoteDirectoryPath)];
+  } else {
+    log('No remote dirs getting process info list');
+    return [];
+  }
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +33,14 @@
  * the root directory of this source tree.
  */
 
-import utils from './utils';
-const {log} = utils;
+var _utils = require('./utils');
 
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
+var _utils2 = _interopRequireDefault(_utils);
 
-async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
-  log('Getting process info list');
-
-  const remoteUri = require('../../nuclide-remote-uri');
-  // TODO: Currently first remote dir only.
-  const remoteDirectoryPath = atom.project.getDirectories()
-    .map(directoryPath => directoryPath.getPath())
-    .filter(directoryPath => remoteUri.isRemote(directoryPath))[0];
-
-  if (remoteDirectoryPath) {
-    const {AttachProcessInfo} = require('./AttachProcessInfo');
-    return [(new AttachProcessInfo(remoteDirectoryPath): DebuggerProcessInfo)];
-  } else {
-    log('No remote dirs getting process info list');
-    return [];
-  }
-}
+var log = _utils2['default'].log;
 
 module.exports = {
   name: 'hhvm',
-  getProcessInfoList,
+  getProcessInfoList: getProcessInfoList
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlNlcnZpY2UuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IklBZ0JlLGtCQUFrQixxQkFBakMsYUFBeUU7QUFDdkUsS0FBRyxDQUFDLDJCQUEyQixDQUFDLENBQUM7O0FBRWpDLE1BQU0sU0FBUyxHQUFHLE9BQU8sQ0FBQywwQkFBMEIsQ0FBQyxDQUFDOztBQUV0RCxNQUFNLG1CQUFtQixHQUFHLElBQUksQ0FBQyxPQUFPLENBQUMsY0FBYyxFQUFFLENBQ3RELEdBQUcsQ0FBQyxVQUFBLGFBQWE7V0FBSSxhQUFhLENBQUMsT0FBTyxFQUFFO0dBQUEsQ0FBQyxDQUM3QyxNQUFNLENBQUMsVUFBQSxhQUFhO1dBQUksU0FBUyxDQUFDLFFBQVEsQ0FBQyxhQUFhLENBQUM7R0FBQSxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUM7O0FBRWpFLE1BQUksbUJBQW1CLEVBQUU7bUJBQ0ssT0FBTyxDQUFDLHFCQUFxQixDQUFDOztRQUFuRCxpQkFBaUIsWUFBakIsaUJBQWlCOztBQUN4QixXQUFPLENBQUUsSUFBSSxpQkFBaUIsQ0FBQyxtQkFBbUIsQ0FBQyxDQUF1QixDQUFDO0dBQzVFLE1BQU07QUFDTCxPQUFHLENBQUMsMENBQTBDLENBQUMsQ0FBQztBQUNoRCxXQUFPLEVBQUUsQ0FBQztHQUNYO0NBQ0Y7Ozs7Ozs7Ozs7Ozs7O3FCQXJCaUIsU0FBUzs7OztJQUNwQixHQUFHLHNCQUFILEdBQUc7O0FBc0JWLE1BQU0sQ0FBQyxPQUFPLEdBQUc7QUFDZixNQUFJLEVBQUUsTUFBTTtBQUNaLG9CQUFrQixFQUFsQixrQkFBa0I7Q0FDbkIsQ0FBQyIsImZpbGUiOiJTZXJ2aWNlLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHV0aWxzIGZyb20gJy4vdXRpbHMnO1xuY29uc3Qge2xvZ30gPSB1dGlscztcblxuaW1wb3J0IHR5cGUge0RlYnVnZ2VyUHJvY2Vzc0luZm99IGZyb20gJy4uLy4uL251Y2xpZGUtZGVidWdnZXItYXRvbSc7XG5cbmFzeW5jIGZ1bmN0aW9uIGdldFByb2Nlc3NJbmZvTGlzdCgpOiBQcm9taXNlPEFycmF5PERlYnVnZ2VyUHJvY2Vzc0luZm8+PiB7XG4gIGxvZygnR2V0dGluZyBwcm9jZXNzIGluZm8gbGlzdCcpO1xuXG4gIGNvbnN0IHJlbW90ZVVyaSA9IHJlcXVpcmUoJy4uLy4uL251Y2xpZGUtcmVtb3RlLXVyaScpO1xuICAvLyBUT0RPOiBDdXJyZW50bHkgZmlyc3QgcmVtb3RlIGRpciBvbmx5LlxuICBjb25zdCByZW1vdGVEaXJlY3RvcnlQYXRoID0gYXRvbS5wcm9qZWN0LmdldERpcmVjdG9yaWVzKClcbiAgICAubWFwKGRpcmVjdG9yeVBhdGggPT4gZGlyZWN0b3J5UGF0aC5nZXRQYXRoKCkpXG4gICAgLmZpbHRlcihkaXJlY3RvcnlQYXRoID0+IHJlbW90ZVVyaS5pc1JlbW90ZShkaXJlY3RvcnlQYXRoKSlbMF07XG5cbiAgaWYgKHJlbW90ZURpcmVjdG9yeVBhdGgpIHtcbiAgICBjb25zdCB7QXR0YWNoUHJvY2Vzc0luZm99ID0gcmVxdWlyZSgnLi9BdHRhY2hQcm9jZXNzSW5mbycpO1xuICAgIHJldHVybiBbKG5ldyBBdHRhY2hQcm9jZXNzSW5mbyhyZW1vdGVEaXJlY3RvcnlQYXRoKTogRGVidWdnZXJQcm9jZXNzSW5mbyldO1xuICB9IGVsc2Uge1xuICAgIGxvZygnTm8gcmVtb3RlIGRpcnMgZ2V0dGluZyBwcm9jZXNzIGluZm8gbGlzdCcpO1xuICAgIHJldHVybiBbXTtcbiAgfVxufVxuXG5tb2R1bGUuZXhwb3J0cyA9IHtcbiAgbmFtZTogJ2hodm0nLFxuICBnZXRQcm9jZXNzSW5mb0xpc3QsXG59O1xuIl19
