@@ -12,6 +12,7 @@
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {RemoteConnection} from './RemoteConnection';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
+import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
 
 import invariant from 'assert';
 import pathModule from 'path';
@@ -208,7 +209,7 @@ class ServerConnection {
     await client.testConnection();
 
     // Do version check.
-    const infoService = this.getService('InfoService');
+    const infoService: InfoService = this.getService('InfoService');
     const serverVersion = await infoService.getServerVersion();
 
     const clientVersion = getVersion();

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import typeof * as InfoService from '../../lib/services/InfoService';
+
 import ServiceTestHelper from './ServiceTestHelper';
 import {getVersion} from '../../../nuclide-version';
 import invariant from 'assert';
@@ -23,7 +25,7 @@ describe('InfoService', () => {
   it('Returns the correct version number', () => {
     waitsForPromise(async () => {
       invariant(testHelper);
-      const service =
+      const service: InfoService =
           testHelper.getRemoteService('InfoService', '../../lib/services/InfoService.js');
 
       const version = await service.getServerVersion();

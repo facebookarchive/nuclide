@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
 import type {HomeFragments} from '../../nuclide-home-interfaces';
 import type {
   RemoteConnectionConfiguration,
@@ -116,7 +117,7 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
 
     buttonToActions.set(buttons[0], () => connection.close());
     buttonToActions.set(buttons[1], async () => {
-      await connection.getService('InfoService').shutdownServer();
+      await (connection.getService('InfoService'): InfoService).shutdownServer();
       connection.close();
       return;
     });
