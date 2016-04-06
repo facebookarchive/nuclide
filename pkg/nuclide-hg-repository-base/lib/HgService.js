@@ -245,6 +245,79 @@ export class HgService {
   }
 
   async _subscribeToWatchman(): Promise<void> {
+    let arcBuildSubscription = null;
+
+    const hgIgnoreChange = () => {
+      // There are three events that may outdate the status of ignored files.
+      // 1. The .hgignore file changes. In this case, we want to run a fresh 'hg status -i'.
+      // 2. A file is added that meets the criteria under .hgignore. In this case, we can
+      //    scope the 'hg status -i' call to just the added file.
+      // 3. A file that was previously ignored, has been deleted. (A bit debatable in this
+      //    case what ::isPathIgnored should return if the file doesn't exist. But let's
+      //    at least keep the local cache updated.) In this case, we just want to remove
+      //    the deleted file if it is in the cache.
+      // Case 1 is covered by the response to WATCHMAN_SUBSCRIPTION_NAME_HGIGNORE firing.
+      // Cases 2 and 3 are covered by the response to WATCHMAN_SUBSCRIPTION_NAME_PRIMARY firing.
+      this._delayedEventManager.addEvent(
+        this._hgIgnoreFileDidChange.bind(this),
+        EVENT_DELAY_IN_MS,
+      );
+    };
+
+    const lockFileChange = exists => {
+      if (exists) {
+        // TODO: Implement a timer to unset this, in case watchman update
+        // fails to notify of the removal of the lock. I haven't seen this
+        // in practice but it's better to be safe.
+        this._lockFileHeld = true;
+        // The lock being created is a definitive start to a Mercurial action/arc build.
+        // Block the effects from any dirstate change, which is a fuzzier signal.
+        this._shouldUseDirstate = false;
+        this._delayedEventManager.setCanAcceptEvents(false);
+        this._delayedEventManager.cancelAllEvents();
+      } else {
+        this._lockFileHeld = false;
+        this._delayedEventManager.setCanAcceptEvents(true);
+        // The lock being deleted is a definitive end to a Mercurial action/arc build.
+        // Block the effects from any dirstate change, which is a fuzzier signal.
+        this._shouldUseDirstate = false;
+      }
+      this._hgLockDidChange(exists);
+    };
+
+    const dirStateChange = () => {
+      // We don't know whether the change to the dirstate is at the middle or end
+      // of a Mercurial action. But we would rather have false positives (ignore
+      // some user-generated events that occur near a Mercurial event) than false
+      // negatives (register irrelevant Mercurial events).
+      // Each time this watchman update fires, we will make the LocalHgService
+      // ignore events for a certain grace period.
+
+      // A lock file is a more reliable signal, so defer to it.
+      if (this._lockFileHeld) {
+        return;
+      }
+
+      this._shouldUseDirstate = true;
+      this._delayedEventManager.setCanAcceptEvents(false);
+      this._delayedEventManager.cancelAllEvents();
+
+      // Using a local variable here to allow better type refinement.
+      let allowEventsAgain = this._allowEventsAgain;
+      if (!allowEventsAgain) {
+        allowEventsAgain = debounce(() => {
+          if (this._shouldUseDirstate) {
+            this._delayedEventManager.setCanAcceptEvents(true);
+            this._hgDirstateDidChange();
+          }
+        },
+        EVENT_DELAY_IN_MS,
+        /* immediate */ false);
+        this._allowEventsAgain = allowEventsAgain;
+      }
+      allowEventsAgain();
+    };
+
     // Using a local variable here to allow better type refinement.
     const watchmanClient = new WatchmanClient();
     this._watchmanClient = watchmanClient;
@@ -319,7 +392,6 @@ export class HgService {
 
     // Subscribe to changes to a file that appears to be the 'arc build' lock file.
     const arcBuildLockFile = getArcBuildLockFile();
-    let arcBuildSubscription = null;
     if (arcBuildLockFile != null) {
       arcBuildSubscription = await watchmanClient.watchDirectoryRecursive(
         workingDirectory,
@@ -365,79 +437,10 @@ export class HgService {
         EVENT_DELAY_IN_MS,
       );
     });
-    const hgIgnoreChange = () => {
-      // There are three events that may outdate the status of ignored files.
-      // 1. The .hgignore file changes. In this case, we want to run a fresh 'hg status -i'.
-      // 2. A file is added that meets the criteria under .hgignore. In this case, we can
-      //    scope the 'hg status -i' call to just the added file.
-      // 3. A file that was previously ignored, has been deleted. (A bit debatable in this
-      //    case what ::isPathIgnored should return if the file doesn't exist. But let's
-      //    at least keep the local cache updated.) In this case, we just want to remove
-      //    the deleted file if it is in the cache.
-      // Case 1 is covered by the response to WATCHMAN_SUBSCRIPTION_NAME_HGIGNORE firing.
-      // Cases 2 and 3 are covered by the response to WATCHMAN_SUBSCRIPTION_NAME_PRIMARY firing.
-      this._delayedEventManager.addEvent(
-        this._hgIgnoreFileDidChange.bind(this),
-        EVENT_DELAY_IN_MS,
-      );
-    };
 
-    const lockFileChange = exists => {
-      if (exists) {
-        // TODO: Implement a timer to unset this, in case watchman update
-        // fails to notify of the removal of the lock. I haven't seen this
-        // in practice but it's better to be safe.
-        this._lockFileHeld = true;
-        // The lock being created is a definitive start to a Mercurial action/arc build.
-        // Block the effects from any dirstate change, which is a fuzzier signal.
-        this._shouldUseDirstate = false;
-        this._delayedEventManager.setCanAcceptEvents(false);
-        this._delayedEventManager.cancelAllEvents();
-      } else {
-        this._lockFileHeld = false;
-        this._delayedEventManager.setCanAcceptEvents(true);
-        // The lock being deleted is a definitive end to a Mercurial action/arc build.
-        // Block the effects from any dirstate change, which is a fuzzier signal.
-        this._shouldUseDirstate = false;
-      }
-      this._hgLockDidChange(exists);
-    };
     if (arcBuildSubscription != null) {
       arcBuildSubscription.on('change', lockFileChange);
     }
-
-    const dirStateChange = () => {
-      // We don't know whether the change to the dirstate is at the middle or end
-      // of a Mercurial action. But we would rather have false positives (ignore
-      // some user-generated events that occur near a Mercurial event) than false
-      // negatives (register irrelevant Mercurial events).
-      // Each time this watchman update fires, we will make the LocalHgService
-      // ignore events for a certain grace period.
-
-      // A lock file is a more reliable signal, so defer to it.
-      if (this._lockFileHeld) {
-        return;
-      }
-
-      this._shouldUseDirstate = true;
-      this._delayedEventManager.setCanAcceptEvents(false);
-      this._delayedEventManager.cancelAllEvents();
-
-      // Using a local variable here to allow better type refinement.
-      let allowEventsAgain = this._allowEventsAgain;
-      if (!allowEventsAgain) {
-        allowEventsAgain = debounce(() => {
-          if (this._shouldUseDirstate) {
-            this._delayedEventManager.setCanAcceptEvents(true);
-            this._hgDirstateDidChange();
-          }
-        },
-        EVENT_DELAY_IN_MS,
-        /* immediate */ false);
-        this._allowEventsAgain = allowEventsAgain;
-      }
-      allowEventsAgain();
-    };
 
     hgBookmarkSubscription.on('change', this._hgBookmarkDidChange.bind(this));
   }
