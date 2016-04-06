@@ -304,4 +304,8 @@ export class RemoteConnection {
   getService(serviceName: string): any {
     return this._connection.getService(serviceName);
   }
+
+  isOnlyConnection(): boolean {
+    return this._connection.getConnections().length === 1;
+  }
 }

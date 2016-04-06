@@ -106,7 +106,7 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
     closeOpenFilesForRemoteProject(connection.getConfig());
 
     const hostname = connection.getRemoteHostname();
-    if (RemoteConnection.getByHostname(hostname).length > 1) {
+    if (!connection.isOnlyConnection()) {
       logger.info('Remaining remote projects using Nuclide Server - no prompt to shutdown');
       connection.close();
       return;
