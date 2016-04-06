@@ -260,6 +260,8 @@ class Activation {
       const panel = atom.workspace.addRightPanel({
         item: this._model,
         visible: false,
+        // Move this left of the toolbar, when it is on the right.
+        priority: 150,
       });
       // Flow doesn't track non-null when assigning into nullable directly.
       this._panel = panel;
