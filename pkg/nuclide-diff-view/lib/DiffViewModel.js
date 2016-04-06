@@ -865,18 +865,8 @@ class DiffViewModel {
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
 
     this._messages.onNext({level: 'log', text: 'Creating new revision...'});
-    await arcanist.createPhabricatorRevision(filePath)
-      .tap(
-        (message: {stderr?: string; stdout?: string;}) => {
-          this._messages.onNext({
-            level: (message.stderr == null) ? 'log' : 'error',
-            text: message.stdout || message.stderr,
-          });
-        },
-        () => {},
-        () => { atom.notifications.addSuccess('Revision created'); },
-      )
-      .toPromise();
+    const stream = arcanist.createPhabricatorRevision(filePath);
+    await this._processArcanistOutput(stream, 'Revision created');
   }
 
   async _updatePhabricatorRevision(
@@ -900,16 +890,104 @@ class DiffViewModel {
       level: 'log',
       text: `Updating revision \`${phabricatorRevision.id}\`...`,
     });
-    await arcanist.updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked)
+    const stream = arcanist.updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked);
+    await this._processArcanistOutput(
+      stream,
+      `Revision \`${phabricatorRevision.id}\` updated`,
+    );
+  }
+
+  async _processArcanistOutput(stream: Rx.Observable, successMsg: string): Promise<void> {
+    stream = stream
+      // Split stream into single lines.
+      .flatMap((message: {stderr?: string; stdout?: string}) => {
+        const lines = [];
+        for (const fd of ['stderr', 'stdout']) {
+          let out = message[fd];
+          if (out != null) {
+            out = out.replace(/\n$/, '');
+            for (const line of out.split('\n')) {
+              lines.push({[fd]: line});
+            }
+          }
+        }
+        return lines;
+      })
+      // Unpack JSON
+      .flatMap((message: {stderr?: string; stdout?: string}) => {
+        const stdout = message.stdout;
+        const messages = [];
+        if (stdout != null) {
+          let decodedJSON = null;
+          try {
+            decodedJSON = JSON.parse(stdout);
+          } catch (err) {
+            messages.push({type: 'phutil:out', message: stdout + '\n'});
+            getLogger().error('Invalid JSON encountered: ' + stdout);
+          }
+          if (decodedJSON != null) {
+            messages.push(decodedJSON);
+          }
+        }
+        if (message.stderr != null) {
+          messages.push({type: 'phutil:err', message: message.stderr + '\n'});
+        }
+        return messages;
+      })
+      // Process message type.
+      .flatMap((decodedJSON: {type: string; message: string}) => {
+        const messages = [];
+        switch (decodedJSON.type) {
+          case 'phutil:out':
+          case 'phutil:out:raw':
+            messages.push({level: 'log', text: decodedJSON.message});
+            break;
+          case 'phutil:err':
+            messages.push({level: 'error', text: decodedJSON.message});
+            break;
+          default:
+            getLogger().info(
+              'Unhandled message type:',
+              decodedJSON.type,
+              'Message payload:',
+              decodedJSON.message,
+            );
+            break;
+        }
+        return messages;
+      })
+      // Split messages on new line characters.
+      .flatMap((message: {level: string; text: string}) => {
+        const splitMessages = [];
+        // Split on newlines without removing new line characters.  This will remove empty
+        // strings but that's OK.
+        for (const part of message.text.split(/^/m)) {
+          splitMessages.push({level: message.level, text: part});
+        }
+        return splitMessages;
+      });
+    const levelStreams = [];
+    for (const level of ['log', 'error']) {
+      const levelStream = stream
+        .filter(
+          (message: {level: string; text: string}) => message.level === level
+        )
+        .share();
+      const breaks = levelStream.filter(message => message.text.endsWith('\n'));
+      levelStreams.push(levelStream.buffer(breaks));
+    }
+    await Rx.Observable.merge(...levelStreams)
       .tap(
-        (message: {stderr?: string; stdout?: string;}) => {
-          this._messages.onNext({
-            level: (message.stderr == null) ? 'log' : 'error',
-            text: message.stdout || message.stderr,
-          });
+        (messages: Array<{level: string; text: string}>) => {
+          if (messages.length > 0) {
+            this._messages.onNext({
+              level: messages[0].level,
+              text: messages.map(message => message.text).join(''),
+            });
+          }
         },
         () => {},
-        () => { atom.notifications.addSuccess(`Revision \`${phabricatorRevision.id}\` updated`); }
+        () => { atom.notifications.addSuccess(successMsg); }
       )
       .toPromise();
   }

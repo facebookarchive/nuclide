@@ -15,7 +15,6 @@ import type {RevisionFileChanges} from '../../nuclide-hg-repository-base/lib/HgS
 import invariant from 'assert';
 import {Observable} from 'rx';
 import path from 'path';
-import {quote} from 'shell-quote';
 import {
   fsPromise,
   asyncExecute,
@@ -149,19 +148,7 @@ function _callArcDiff(
   filePath: NuclideUri,
   extraArcDiffArgs: Array<string>,
 ): Observable<{stderr?: string; stdout?: string;}> {
-  // Even with `--verbatim` Arcanist will sometimes launch and enditor in interactive mode.  With
-  // the editor set to `/bin/false` it will immediately exit with a failure and abort `arc diff`.
-  const env = {
-    ...process.env,
-    EDITOR: 'false',
-  };
-  // Don't change the checkout and answer no to all of Arcanist's questions.
-  const cmd = [
-    // Mind the trailing comma in the command.
-    quote(['python', '-c', 'print "n\\n" * 50,']),
-    quote(['arc', 'diff'].concat(extraArcDiffArgs)),
-  ].join(' | ');
-  const args: Array<string> = ['-c', cmd];
+  const args = ['diff', '--json'].concat(extraArcDiffArgs);
 
   return Observable
     .fromPromise(getCommitBasedArcConfigDirectory(filePath))
@@ -171,9 +158,8 @@ function _callArcDiff(
       }
       const options = {
         'cwd': arcConfigDir,
-        env,
       };
-      return scriptSafeSpawnAndObserveOutput('bash', args, options);
+      return scriptSafeSpawnAndObserveOutput('arc', args, options);
     });
 }
 
