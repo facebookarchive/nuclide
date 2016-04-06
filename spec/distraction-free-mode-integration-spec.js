@@ -15,7 +15,7 @@ import {
   deactivateAllPackages,
 } from '../pkg/nuclide-integration-test-helpers';
 
-describe('nuclide-tunnel-vision', () => {
+describe('nuclide-distraction-free-mode', () => {
   it('hides and shows things as expected', () => {
     waitsForPromise({timeout: 60000}, async () => {
       // Configure some jasmine specific things for integration testing.
@@ -28,10 +28,10 @@ describe('nuclide-tunnel-vision', () => {
       atom.commands.dispatch(commandTarget, 'nuclide-outline-view:show');
       expect(isOutlineViewVisible()).toBeTruthy();
 
-      atom.commands.dispatch(commandTarget, 'nuclide-tunnel-vision:toggle');
+      atom.commands.dispatch(commandTarget, 'nuclide-distraction-free-mode:toggle');
       expect(isOutlineViewVisible()).toBeFalsy();
 
-      atom.commands.dispatch(commandTarget, 'nuclide-tunnel-vision:toggle');
+      atom.commands.dispatch(commandTarget, 'nuclide-distraction-free-mode:toggle');
       expect(isOutlineViewVisible()).toBeTruthy();
 
       // Deactivate nuclide packages.

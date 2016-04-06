@@ -10,7 +10,7 @@
  */
 
 import type {DiagnosticUpdater, FileMessageUpdate} from '../../nuclide-diagnostics-base';
-import type {TunnelVisionProvider} from '../../nuclide-tunnel-vision';
+import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
@@ -276,7 +276,7 @@ export function getHomeFragments(): HomeFragments {
   };
 }
 
-export function getTunnelVisionProvider(): TunnelVisionProvider {
+export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
   return {
     name: 'nuclide-diagnostics-ui',
     isVisible(): boolean {

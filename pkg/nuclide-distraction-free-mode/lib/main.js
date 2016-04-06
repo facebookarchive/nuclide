@@ -12,31 +12,31 @@
 import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
 
-import {TunnelVision} from './TunnelVision';
+import {DistractionFreeMode} from './DistractionFreeMode';
 
-export type TunnelVisionProvider = {
+export type DistractionFreeModeProvider = {
   // Should be the unique to all providers. Recommended to be the package name.
   name: string;
   isVisible: () => boolean;
   toggle: () => void;
 };
 
-export type TunnelVisionState = {
+export type DistractionFreeModeState = {
   // Serialize the restore state via an array of provider names.
   restoreState: ?Array<string>;
 }
 
 class Activation {
   _disposables: CompositeDisposable;
-  _tunnelVision: TunnelVision;
+  _tunnelVision: DistractionFreeMode;
 
-  constructor(state: ?TunnelVisionState) {
+  constructor(state: ?DistractionFreeModeState) {
     this._disposables = new CompositeDisposable();
-    this._tunnelVision = new TunnelVision(state);
+    this._tunnelVision = new DistractionFreeMode(state);
     this._disposables.add(atom.commands.add(
       atom.views.getView(atom.workspace),
-      'nuclide-tunnel-vision:toggle',
-      this._tunnelVision.toggleTunnelVision.bind(this._tunnelVision),
+      'nuclide-distraction-free-mode:toggle',
+      this._tunnelVision.toggleDistractionFreeMode.bind(this._tunnelVision),
     ));
   }
 
@@ -44,20 +44,20 @@ class Activation {
     this._disposables.dispose();
   }
 
-  serialize(): TunnelVisionState {
+  serialize(): DistractionFreeModeState {
     return this._tunnelVision.serialize();
   }
 
-  consumeTunnelVisionProvider(provider: TunnelVisionProvider): IDisposable {
-    return this._tunnelVision.consumeTunnelVisionProvider(provider);
+  consumeDistractionFreeModeProvider(provider: DistractionFreeModeProvider): IDisposable {
+    return this._tunnelVision.consumeDistractionFreeModeProvider(provider);
   }
 
   consumeToolBar(getToolBar: (group: string) => Object): void {
-    const toolBar = getToolBar('nuclide-tunnel-vision');
+    const toolBar = getToolBar('nuclide-distraction-free-mode');
     toolBar.addButton({
       icon: 'eye',
-      callback: 'nuclide-tunnel-vision:toggle',
-      tooltip: 'Toggle tunnel vision',
+      callback: 'nuclide-distraction-free-mode:toggle',
+      tooltip: 'Toggle distraction-free mode',
       priority: 600,
     });
     this._disposables.add(new Disposable(() => {
@@ -68,7 +68,7 @@ class Activation {
 
 let activation: ?Activation = null;
 
-export function activate(state: ?TunnelVisionState) {
+export function activate(state: ?DistractionFreeModeState) {
   if (activation == null) {
     activation = new Activation(state);
   }
@@ -81,14 +81,16 @@ export function deactivate() {
   }
 }
 
-export function serialize(): TunnelVisionState {
+export function serialize(): DistractionFreeModeState {
   invariant(activation != null);
   return activation.serialize();
 }
 
-export function consumeTunnelVisionProvider(provider: TunnelVisionProvider): IDisposable {
+export function consumeDistractionFreeModeProvider(
+  provider: DistractionFreeModeProvider
+): IDisposable {
   invariant(activation != null);
-  return activation.consumeTunnelVisionProvider(provider);
+  return activation.consumeDistractionFreeModeProvider(provider);
 }
 
 export function consumeToolBar(getToolBar: (group: string) => Object): void {

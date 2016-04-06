@@ -1,5 +1,5 @@
 {
-  "name": "nuclide-tunnel-vision",
+  "name": "nuclide-distraction-free-mode",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main",
   "version": "0.0.0",
@@ -9,9 +9,9 @@
     "testRunner": "apm"
   },
   "consumedServices": {
-    "nuclide-tunnel-vision": {
+    "nuclide-distraction-free-mode": {
       "versions": {
-        "0.0.0": "consumeTunnelVisionProvider"
+        "0.0.0": "consumeDistractionFreeModeProvider"
       }
     },
     "tool-bar": {

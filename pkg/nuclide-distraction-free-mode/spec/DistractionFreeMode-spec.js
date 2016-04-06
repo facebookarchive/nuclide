@@ -9,34 +9,34 @@
  * the root directory of this source tree.
  */
 
-import {TunnelVision} from '../lib/TunnelVision';
+import {DistractionFreeMode} from '../lib/DistractionFreeMode';
 
-describe('TunnelVision', () => {
-  let tunnelVision: TunnelVision = (null: any);
+describe('DistractionFreeMode', () => {
+  let distractionFreeMode: DistractionFreeMode = (null: any);
   let provider1: FakeProvider = (null: any);
   let provider2: FakeProvider = (null: any);
 
   beforeEach(() => {
-    tunnelVision = new TunnelVision(undefined);
+    distractionFreeMode = new DistractionFreeMode(undefined);
     provider1 = new FakeProvider('provider1');
     provider2 = new FakeProvider('provider2');
   });
 
   describe('during a Nuclide session', () => {
     beforeEach(() => {
-      tunnelVision.consumeTunnelVisionProvider(provider1);
-      tunnelVision.consumeTunnelVisionProvider(provider2);
+      distractionFreeMode.consumeDistractionFreeModeProvider(provider1);
+      distractionFreeMode.consumeDistractionFreeModeProvider(provider2);
     });
 
     it('should hide the providers', () => {
-      tunnelVision.toggleTunnelVision();
+      distractionFreeMode.toggleDistractionFreeMode();
       expect(provider1.isVisible()).toBeFalsy();
       expect(provider2.isVisible()).toBeFalsy();
     });
 
     it('should show the providers again', () => {
-      tunnelVision.toggleTunnelVision();
-      tunnelVision.toggleTunnelVision();
+      distractionFreeMode.toggleDistractionFreeMode();
+      distractionFreeMode.toggleDistractionFreeMode();
       expect(provider1.isVisible()).toBeTruthy();
       expect(provider2.isVisible()).toBeTruthy();
     });
@@ -46,83 +46,83 @@ describe('TunnelVision', () => {
       expect(provider1.isVisible()).toBeFalsy();
       expect(provider2.isVisible()).toBeTruthy();
 
-      tunnelVision.toggleTunnelVision();
+      distractionFreeMode.toggleDistractionFreeMode();
 
       expect(provider1.isVisible()).toBeFalsy();
       expect(provider2.isVisible()).toBeFalsy();
 
-      tunnelVision.toggleTunnelVision();
+      distractionFreeMode.toggleDistractionFreeMode();
       expect(provider1.isVisible()).toBeFalsy();
       expect(provider2.isVisible()).toBeTruthy();
     });
 
-    it('should re-enter tunnel vision if a provider is manually opened', () => {
+    it('should re-enter distraction-free mode if a provider is manually opened', () => {
       provider1.toggle();
       expect(provider1.isVisible()).toBeFalsy();
       expect(provider2.isVisible()).toBeTruthy();
 
-      // Enter tunnel vision
-      tunnelVision.toggleTunnelVision();
+      // Enter distraction-free mode
+      distractionFreeMode.toggleDistractionFreeMode();
 
       // User manually opens something
       provider1.toggle();
 
-      // Since something is open, the intent is probably to get back into the tunnel vision state.
+      // Since something is open, the intent is probably to get back into the distraction-free mode.
       // So, the provider should be hidden.
-      tunnelVision.toggleTunnelVision();
+      distractionFreeMode.toggleDistractionFreeMode();
       expect(provider1.isVisible()).toBeFalsy();
       expect(provider2.isVisible()).toBeFalsy();
 
-      // Now they are leaving tunnel vision. We should restore all the providers that we have
-      // previously hidden. So we shoudl restore provider2 (hidden on first entry) and provider1
-      // (hidden on second entry)
-      tunnelVision.toggleTunnelVision();
+      // Now they are leaving distraction-free mode. We should restore all the providers that we
+      // have previously hidden. So we shoudl restore provider2 (hidden on first entry) and
+      // provider1 (hidden on second entry)
+      distractionFreeMode.toggleDistractionFreeMode();
       expect(provider1.isVisible()).toBeTruthy();
       expect(provider2.isVisible()).toBeTruthy();
     });
 
-    it('should serialize properly when not in tunnel-vision mode', () => {
-      expect(tunnelVision.serialize()).toEqual({
+    it('should serialize properly when not in distraction-free-mode mode', () => {
+      expect(distractionFreeMode.serialize()).toEqual({
         restoreState: null,
       });
     });
 
-    it('should serialize properly when in tunnel-vision mode', () => {
+    it('should serialize properly when in distraction-free-mode mode', () => {
       provider1.toggle();
-      tunnelVision.toggleTunnelVision();
-      expect(tunnelVision.serialize()).toEqual({
+      distractionFreeMode.toggleDistractionFreeMode();
+      expect(distractionFreeMode.serialize()).toEqual({
         restoreState: ['provider2'],
       });
     });
   });
 
   describe('deserialization', () => {
-    it('should properly deserialize from a non-tunnel-vision state', () => {
-      tunnelVision = new TunnelVision({ restoreState: null });
-      tunnelVision.consumeTunnelVisionProvider(provider1);
-      tunnelVision.consumeTunnelVisionProvider(provider2);
+    it('should properly deserialize from a non-distraction-free-mode state', () => {
+      distractionFreeMode = new DistractionFreeMode({ restoreState: null });
+      distractionFreeMode.consumeDistractionFreeModeProvider(provider1);
+      distractionFreeMode.consumeDistractionFreeModeProvider(provider2);
 
-      tunnelVision.toggleTunnelVision();
+      distractionFreeMode.toggleDistractionFreeMode();
 
       expect(provider1.isVisible()).toBeFalsy();
       expect(provider2.isVisible()).toBeFalsy();
     });
 
-    it('should properly deserialize from a tunnel-vision state', () => {
+    it('should properly deserialize from a distraction-free-mode state', () => {
       // Simulate the providers serializing their own state -- they would start out hidden if we
-      // exited Nuclide in tunnel-vision.
+      // exited Nuclide in distraction-free-mode.
       provider1.toggle();
       provider2.toggle();
       expect(provider1.isVisible()).toBeFalsy();
       expect(provider2.isVisible()).toBeFalsy();
 
-      tunnelVision = new TunnelVision({
+      distractionFreeMode = new DistractionFreeMode({
         restoreState: ['provider1', 'provider2'],
       });
-      tunnelVision.consumeTunnelVisionProvider(provider1);
-      tunnelVision.consumeTunnelVisionProvider(provider2);
+      distractionFreeMode.consumeDistractionFreeModeProvider(provider1);
+      distractionFreeMode.consumeDistractionFreeModeProvider(provider2);
 
-      tunnelVision.toggleTunnelVision();
+      distractionFreeMode.toggleDistractionFreeMode();
       expect(provider1.isVisible()).toBeTruthy();
       expect(provider2.isVisible()).toBeTruthy();
     });
@@ -133,25 +133,25 @@ describe('TunnelVision', () => {
       expect(provider1.isVisible()).toBeFalsy();
       expect(provider2.isVisible()).toBeFalsy();
 
-      tunnelVision = new TunnelVision({
+      distractionFreeMode = new DistractionFreeMode({
         restoreState: ['provider1', 'provider2'],
       });
-      tunnelVision.consumeTunnelVisionProvider(provider1);
+      distractionFreeMode.consumeDistractionFreeModeProvider(provider1);
 
-      tunnelVision.toggleTunnelVision();
+      distractionFreeMode.toggleDistractionFreeMode();
 
       expect(provider1.isVisible()).toBeTruthy();
       expect(provider2.isVisible()).toBeFalsy();
 
-      // Now it would be weird if this somehow bumped us back into a tunnel vision state. This
+      // Now it would be weird if this somehow bumped us back into distraction-free mode. This
       // shouldn't happen very often, though, since usually all providers will get registered at
       // startup.
-      tunnelVision.consumeTunnelVisionProvider(provider2);
+      distractionFreeMode.consumeDistractionFreeModeProvider(provider2);
 
       expect(provider1.isVisible()).toBeTruthy();
       expect(provider2.isVisible()).toBeFalsy();
 
-      tunnelVision.toggleTunnelVision();
+      distractionFreeMode.toggleDistractionFreeMode();
 
       expect(provider1.isVisible()).toBeFalsy();
       expect(provider2.isVisible()).toBeFalsy();
@@ -163,21 +163,21 @@ describe('TunnelVision', () => {
       expect(provider1.isVisible()).toBeFalsy();
       expect(provider2.isVisible()).toBeTruthy();
 
-      // Exited in tunnel vision mode -- it had hidden both providers
-      tunnelVision = new TunnelVision({
+      // Exited in distraction-free mode -- it had hidden both providers
+      distractionFreeMode = new DistractionFreeMode({
         restoreState: ['provider1', 'provider2'],
       });
-      tunnelVision.consumeTunnelVisionProvider(provider1);
-      tunnelVision.consumeTunnelVisionProvider(provider2);
+      distractionFreeMode.consumeDistractionFreeModeProvider(provider1);
+      distractionFreeMode.consumeDistractionFreeModeProvider(provider2);
 
-      tunnelVision.toggleTunnelVision();
+      distractionFreeMode.toggleDistractionFreeMode();
 
-      // It should hide provider2 and enter a tunnel vision state where it will restore both
+      // It should hide provider2 and enter a distraction-free mode where it will restore both
 
       expect(provider1.isVisible()).toBeFalsy();
       expect(provider2.isVisible()).toBeFalsy();
 
-      tunnelVision.toggleTunnelVision();
+      distractionFreeMode.toggleDistractionFreeMode();
 
       expect(provider1.isVisible()).toBeTruthy();
       expect(provider2.isVisible()).toBeTruthy();

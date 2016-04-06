@@ -10,7 +10,7 @@
  */
 
 import type {Logger} from '../../nuclide-logging/lib/types';
-import type {TunnelVisionProvider} from '../../nuclide-tunnel-vision';
+import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 
 const {CompositeDisposable} = require('atom');
 const {getLogger} = require('../../nuclide-logging');
@@ -293,7 +293,7 @@ export function serialize(): Object {
   };
 }
 
-export function getTunnelVisionProvider(): TunnelVisionProvider {
+export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
   const isVisible = () => !state.hidden;
   return {
     name: 'nuclide-side-bar',

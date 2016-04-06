@@ -10,7 +10,7 @@
  */
 
 import type {HomeFragments} from '../../nuclide-home-interfaces';
-import type {TunnelVisionProvider} from '../../nuclide-tunnel-vision';
+import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 
 import {CompositeDisposable, Disposable} from 'atom';
 
@@ -165,7 +165,7 @@ class Activation {
     }));
   }
 
-  getTunnelVisionProvider(): TunnelVisionProvider {
+  getDistractionFreeModeProvider(): DistractionFreeModeProvider {
     const panel = this._panel;
     return {
       name: 'nuclide-outline-view',
@@ -218,7 +218,7 @@ export function getHomeFragments(): HomeFragments {
   };
 }
 
-export function getTunnelVisionProvider(): TunnelVisionProvider {
+export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
   invariant(activation != null);
-  return activation.getTunnelVisionProvider();
+  return activation.getDistractionFreeModeProvider();
 }
