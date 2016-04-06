@@ -21,6 +21,7 @@ import {
 } from 'react-for-atom';
 import {extractWordAtPosition} from '../../nuclide-atom-helpers';
 import {DebuggerMode} from './DebuggerStore';
+import {DebuggerDatatipComponent} from './DebuggerDatatipComponent';
 
 const GK_DEBUGGER_DATATIPS = 'nuclide_debugger_datatips';
 const GK_TIMEOUT = 1000;
@@ -107,14 +108,9 @@ export async function debuggerDatatip(
   if (evaluationResult == null) {
     return null;
   }
-  const {
-    _type: resultType,
-    value,
-    _description: description,
-  } = evaluationResult;
-  const displayValue = resultType === 'object' ? description : value;
   return {
-    component: <div>{expression} = {displayValue}</div>,
+    component:
+      <DebuggerDatatipComponent expression={expression} evaluationResult={evaluationResult} />,
     pinnable: false,
     range,
   };
