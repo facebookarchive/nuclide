@@ -18,7 +18,7 @@ import {Observable} from 'rx';
 // TODO(most): move to remote-connection/lib/RemoteTextBuffer.js
 import NuclideTextBuffer from '../../nuclide-remote-projects/lib/NuclideTextBuffer';
 import {isLocal} from '../../nuclide-remote-uri';
-import {RemoteConnection} from '../../nuclide-remote-connection';
+import {ServerConnection} from '../../nuclide-remote-connection';
 
 import {event as commonsEvent} from '../../nuclide-commons';
 const {observableFromSubscribeFunction} = commonsEvent;
@@ -100,11 +100,11 @@ function createBufferForUri(uri: NuclideUri): atom$TextBuffer {
   if (isLocal(uri)) {
     buffer = new TextBuffer({filePath: uri});
   } else {
-    const connection = RemoteConnection.getForUri(uri);
+    const connection = ServerConnection.getForUri(uri);
     if (connection == null) {
-      throw new Error(`RemoteConnection cannot be found for uri: ${uri}`);
+      throw new Error(`ServerConnection cannot be found for uri: ${uri}`);
     }
-    buffer = new NuclideTextBuffer(connection.getConnection(), {filePath: uri});
+    buffer = new NuclideTextBuffer(connection, {filePath: uri});
   }
   atom.project.addBuffer(buffer);
   invariant(buffer);

@@ -176,7 +176,6 @@ function deleteDummyRemoteRootDirectories() {
  * for the same file, because Atom doesn't cache pending opener promises.
  */
 async function createEditorForNuclide(
-  connection: RemoteConnection,
   uri: NuclideUri,
 ): Promise<TextEditor> {
   try {
@@ -289,15 +288,16 @@ module.exports = {
         const connection = RemoteConnection.getForUri(uri);
         // On Atom restart, it tries to open the uri path as a file tab because it's not a local
         // directory. We can't let that create a file with the initial working directory path.
-        if (connection && uri !== connection.getUriForInitialWorkingDirectory()) {
-          if (pendingFiles[uri]) {
-            return pendingFiles[uri];
-          }
-          const textEditorPromise = pendingFiles[uri] = createEditorForNuclide(connection, uri);
-          const removeFromCache = () => delete pendingFiles[uri];
-          textEditorPromise.then(removeFromCache, removeFromCache);
-          return textEditorPromise;
+        if (connection && uri === connection.getUriForInitialWorkingDirectory()) {
+          return;
         }
+        if (pendingFiles[uri]) {
+          return pendingFiles[uri];
+        }
+        const textEditorPromise = pendingFiles[uri] = createEditorForNuclide(uri);
+        const removeFromCache = () => delete pendingFiles[uri];
+        textEditorPromise.then(removeFromCache, removeFromCache);
+        return textEditorPromise;
       }
     }));
 
