@@ -945,6 +945,8 @@ class DiffViewModel {
           case 'phutil:err':
             messages.push({level: 'error', text: decodedJSON.message});
             break;
+          case 'error':
+            throw new Error(decodedJSON.message);
           default:
             getLogger().info(
               'Unhandled message type:',

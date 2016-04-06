@@ -28,21 +28,28 @@ describe('DiffViewModel', () => {
     return {stdout: JSON.stringify({type: 'phutil:out', message})};
   }
 
-  function testInput(
+  async function testInput(
+    input: Array<{stdout?: string; stderr?: string}>,
+    expectedOutput: Array<{level: string; text: string}>,
+  ): Promise<void> {
+    const stream = Rx.Observable.from(input);
+    invariant(messages != null);
+    const resultStream = messages.take(expectedOutput.length).toArray().toPromise();
+    invariant(model != null);
+    await model._processArcanistOutput(stream, 'success');
+    const result = await resultStream;
+    expect((messages: any).onNext.callCount).toEqual(expectedOutput.length);
+    while (result.length > 0) {
+      expect(result.pop()).toEqual(expectedOutput.pop());
+    }
+  }
+
+  function testInputSync(
     input: Array<{stdout?: string; stderr?: string}>,
     expectedOutput: Array<{level: string; text: string}>,
   ): void {
     waitsForPromise(async () => {
-      const stream = Rx.Observable.from(input);
-      invariant(messages != null);
-      const resultStream = messages.take(expectedOutput.length).toArray().toPromise();
-      invariant(model != null);
-      await model._processArcanistOutput(stream, 'success');
-      const result = await resultStream;
-      expect((messages: any).onNext.callCount).toEqual(expectedOutput.length);
-      while (result.length > 0) {
-        expect(result.pop()).toEqual(expectedOutput.pop());
-      }
+      await testInput(input, expectedOutput);
     });
   }
 
@@ -54,7 +61,7 @@ describe('DiffViewModel', () => {
       {level: 'log', text: 'hello\n'},
       {level: 'log', text: 'another line\n'},
     ];
-    testInput(input, output);
+    testInputSync(input, output);
   });
 
   it('can handle non-JSON input', () => {
@@ -69,7 +76,7 @@ describe('DiffViewModel', () => {
       {level: 'log', text: 'bar\n'},
       {level: 'log', text: 'baz\n'},
     ];
-    testInput(input, output);
+    testInputSync(input, output);
   });
 
   it('works with multiple lines stuck together', () => {
@@ -85,7 +92,7 @@ describe('DiffViewModel', () => {
       {level: 'log', text: 'foobar\n'},
       {level: 'log', text: 'baz\n'},
     ];
-    testInput(input, output);
+    testInputSync(input, output);
   });
 
   it('works with stderr', () => {
@@ -98,6 +105,24 @@ describe('DiffViewModel', () => {
       {level: 'error', text: 'world\n'},
       {level: 'error', text: 'more text here\n'},
     ];
-    testInput(input, output);
+    testInputSync(input, output);
+  });
+
+  it('can handle errors', () => {
+    waitsForPromise(async () => {
+      const input = [
+        {stdout: JSON.stringify({type: 'error', message: 'Hello!'})},
+      ];
+      const output = [];
+      let error = null;
+      try {
+        await testInput(input, output);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).not.toBeNull('No exception thrown');
+      invariant(error != null);
+      expect(error.message).toEqual('Hello!');
+    });
   });
 });
