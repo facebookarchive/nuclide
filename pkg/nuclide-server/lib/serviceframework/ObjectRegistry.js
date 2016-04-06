@@ -10,6 +10,10 @@
  */
 
 import invariant from 'assert';
+import {array} from '../../../nuclide-commons';
+import {getLogger} from '../../../nuclide-logging';
+
+const logger = getLogger();
 
 type ObjectRegistration = {
   interface: string;
@@ -103,5 +107,29 @@ export class ObjectRegistry {
       this._subscriptions.delete(requestId);
     }
     return subscription;
+  }
+
+  // Disposes all object in the registry
+  async dispose(): Promise<void> {
+    const ids = array.from(this._registrationsById.keys());
+    logger.info(`Disposing ${ids.length} registrations`);
+
+    await Promise.all(ids.map(async id => {
+      try {
+        await this.disposeObject(id);
+      } catch (e) {
+        logger.error(`Error disposing marshalled object.`, e);
+      }
+    }));
+
+    const subscriptions = array.from(this._subscriptions.keys());
+    logger.info(`Disposing ${subscriptions.length} subscriptions`);
+    for (const id of subscriptions) {
+      try {
+        this.disposeSubscription(id);
+      } catch (e) {
+        logger.error(`Error disposing subscription`, e);
+      }
+    }
   }
 }
