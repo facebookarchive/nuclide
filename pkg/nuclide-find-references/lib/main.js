@@ -115,92 +115,88 @@ function enableForEditor(editor: TextEditor): void {
   elem.classList.add('enable-nuclide-find-references');
 }
 
-module.exports = {
-
-  activate(state: ?any): void {
-    subscriptions = new CompositeDisposable();
-    subscriptions.add(atom.commands.add(
-      'atom-text-editor',
-      'nuclide-find-references:activate',
-      async () => {
-        const view = await tryCreateView();
-        if (view != null) {
-          // Generate a unique identifier.
-          const id = (crypto.randomBytes(8) || '').toString('hex');
-          const uri = FIND_REFERENCES_URI + id;
-          const disposable = atom.workspace.addOpener(newUri => {
-            if (uri === newUri) {
-              return view;
-            }
-          });
-          atom.workspace.open(uri);
-          // The new tab opens instantly, so this is no longer needed.
-          disposable.dispose();
-        }
-      }
-    ));
-
-    // Mark text editors with a working provider with a special CSS class.
-    // This ensures the context menu option only appears in supported projects.
-    subscriptions.add(atom.workspace.observeTextEditors(async editor => {
-      const path = editor.getPath();
-      if (!path || supportedProviders.get(editor)) {
-        return;
-      }
-      let supported = await Promise.all(providers.map(
-        async provider => {
-          if (await provider.isEditorSupported(editor)) {
-            return provider;
-          }
-          return null;
-        },
-      ));
-      supported = array.compact(supported);
-      if (supported.length) {
-        enableForEditor(editor);
-      }
-      supportedProviders.set(editor, supported);
-      if (subscriptions) {
-        const disposable = editor.onDidDestroy(() => {
-          supportedProviders.delete(editor);
-          if (subscriptions) {
-            subscriptions.remove(disposable);
+export function activate(state: ?any): void {
+  subscriptions = new CompositeDisposable();
+  subscriptions.add(atom.commands.add(
+    'atom-text-editor',
+    'nuclide-find-references:activate',
+    async () => {
+      const view = await tryCreateView();
+      if (view != null) {
+        // Generate a unique identifier.
+        const id = (crypto.randomBytes(8) || '').toString('hex');
+        const uri = FIND_REFERENCES_URI + id;
+        const disposable = atom.workspace.addOpener(newUri => {
+          if (uri === newUri) {
+            return view;
           }
         });
-        subscriptions.add(disposable);
+        atom.workspace.open(uri);
+        // The new tab opens instantly, so this is no longer needed.
+        disposable.dispose();
       }
-    }));
-
-    // Enable text copy from the symbol reference view
-    subscriptions.add(atom.commands.add(
-      'nuclide-find-references-view',
-      'core:copy',
-      () => {
-        const selectedText = window.getSelection().toString();
-        atom.clipboard.write(selectedText);
-      }
-    ));
-  },
-
-  deactivate(): void {
-    if (subscriptions) {
-      subscriptions.dispose();
-      subscriptions = null;
     }
-    providers = [];
-  },
+  ));
 
-  consumeProvider(provider: FindReferencesProvider): void {
-    providers.push(provider);
-    // Editors are often open before providers load, so update existing ones too.
-    supportedProviders.forEach(async (supported, editor) => {
-      if (await provider.isEditorSupported(editor)) {
-        if (!supported.length) {
-          enableForEditor(editor);
+  // Mark text editors with a working provider with a special CSS class.
+  // This ensures the context menu option only appears in supported projects.
+  subscriptions.add(atom.workspace.observeTextEditors(async editor => {
+    const path = editor.getPath();
+    if (!path || supportedProviders.get(editor)) {
+      return;
+    }
+    let supported = await Promise.all(providers.map(
+      async provider => {
+        if (await provider.isEditorSupported(editor)) {
+          return provider;
         }
-        supported.push(provider);
-      }
-    });
-  },
+        return null;
+      },
+    ));
+    supported = array.compact(supported);
+    if (supported.length) {
+      enableForEditor(editor);
+    }
+    supportedProviders.set(editor, supported);
+    if (subscriptions) {
+      const disposable = editor.onDidDestroy(() => {
+        supportedProviders.delete(editor);
+        if (subscriptions) {
+          subscriptions.remove(disposable);
+        }
+      });
+      subscriptions.add(disposable);
+    }
+  }));
 
-};
+  // Enable text copy from the symbol reference view
+  subscriptions.add(atom.commands.add(
+    'nuclide-find-references-view',
+    'core:copy',
+    () => {
+      const selectedText = window.getSelection().toString();
+      atom.clipboard.write(selectedText);
+    }
+  ));
+}
+
+export function deactivate(): void {
+  if (subscriptions) {
+    subscriptions.dispose();
+    subscriptions = null;
+  }
+  providers = [];
+}
+
+export function consumeProvider(provider: FindReferencesProvider): void {
+  providers.push(provider);
+  // Editors are often open before providers load, so update existing ones too.
+  supportedProviders.forEach(async (supported, editor) => {
+    if (await provider.isEditorSupported(editor)) {
+      if (!supported.length) {
+        enableForEditor(editor);
+      }
+      supported.push(provider);
+    }
+  });
+}

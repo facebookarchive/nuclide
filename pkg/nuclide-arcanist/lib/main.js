@@ -32,35 +32,33 @@ function getBusySignalProvider(): BusySignalProviderBaseType {
   return busySignalProvider;
 }
 
-module.exports = {
-  activate(): void {
-    if (subscriptions) {
-      return;
-    }
+export function activate(): void {
+  if (subscriptions) {
+    return;
+  }
 
-    subscriptions = new CompositeDisposable();
+  subscriptions = new CompositeDisposable();
 
-    const {registerGrammarForFileExtension} = require('../../nuclide-atom-helpers');
-    registerGrammarForFileExtension('source.json', '.arcconfig');
-  },
+  const {registerGrammarForFileExtension} = require('../../nuclide-atom-helpers');
+  registerGrammarForFileExtension('source.json', '.arcconfig');
+}
 
-  dactivate(): void {
-    if (subscriptions) {
-      subscriptions.dispose();
-      subscriptions = null;
-    }
-    busySignalProvider = null;
-  },
+export function dactivate(): void {
+  if (subscriptions) {
+    subscriptions.dispose();
+    subscriptions = null;
+  }
+  busySignalProvider = null;
+}
 
-  provideBusySignal(): BusySignalProvider {
-    return getBusySignalProvider();
-  },
+export function provideBusySignal(): BusySignalProvider {
+  return getBusySignalProvider();
+}
 
-  provideDiagnostics() {
-    const {ArcanistDiagnosticsProvider} = require('./ArcanistDiagnosticsProvider');
-    const provider = new ArcanistDiagnosticsProvider(getBusySignalProvider());
-    invariant(subscriptions != null);
-    subscriptions.add(provider);
-    return provider;
-  },
-};
+export function provideDiagnostics() {
+  const {ArcanistDiagnosticsProvider} = require('./ArcanistDiagnosticsProvider');
+  const provider = new ArcanistDiagnosticsProvider(getBusySignalProvider());
+  invariant(subscriptions != null);
+  subscriptions.add(provider);
+  return provider;
+}

@@ -14,20 +14,18 @@ import RelatedFileFinder from './RelatedFileFinder';
 
 let jumpToRelatedFile: ?JumpToRelatedFile = null;
 
-module.exports = {
-  activate() {
-    // Make it a const for Flow
-    const local = jumpToRelatedFile = new JumpToRelatedFile(new RelatedFileFinder());
+export function activate() {
+  // Make it a const for Flow
+  const local = jumpToRelatedFile = new JumpToRelatedFile(new RelatedFileFinder());
 
-    atom.workspace.observeTextEditors(textEditor => {
-      local.enableInTextEditor(textEditor);
-    });
-  },
+  atom.workspace.observeTextEditors(textEditor => {
+    local.enableInTextEditor(textEditor);
+  });
+}
 
-  deactivate() {
-    if (jumpToRelatedFile) {
-      jumpToRelatedFile.dispose();
-      jumpToRelatedFile = null;
-    }
-  },
-};
+export function deactivate() {
+  if (jumpToRelatedFile) {
+    jumpToRelatedFile.dispose();
+    jumpToRelatedFile = null;
+  }
+}

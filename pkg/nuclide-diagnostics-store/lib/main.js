@@ -68,92 +68,92 @@ let consumeLegacyLinters = false;
 let lintOnTheFly = false;
 const allLinterAdapters = new Set();
 
-module.exports = {
-  activate(state: ?Object): void {
-    if (!disposables) {
-      disposables = new CompositeDisposable();
-    }
+export function activate(state: ?Object): void {
+  if (!disposables) {
+    disposables = new CompositeDisposable();
+  }
 
-    // Returns mixed so a cast is necessary.
-    consumeLegacyLinters = ((featureConfig.get(legacyLinterSetting): any): boolean);
-    featureConfig.observe(legacyLinterSetting, newValue => {
-      // To make this really solid, we should also probably trigger the linter
-      // for the active text editor. Possibly more trouble than it's worth,
-      // though, since this may be a temporary option.
-      consumeLegacyLinters = newValue;
-      allLinterAdapters.forEach(adapter => adapter.setEnabled(newValue));
+  // Returns mixed so a cast is necessary.
+  consumeLegacyLinters = ((featureConfig.get(legacyLinterSetting): any): boolean);
+  featureConfig.observe(legacyLinterSetting, newValue => {
+    // To make this really solid, we should also probably trigger the linter
+    // for the active text editor. Possibly more trouble than it's worth,
+    // though, since this may be a temporary option.
+    consumeLegacyLinters = newValue;
+    allLinterAdapters.forEach(adapter => adapter.setEnabled(newValue));
+  });
+
+  lintOnTheFly = ((featureConfig.get(legacyLintOnTheFlySetting): any): boolean);
+  featureConfig.observe(legacyLintOnTheFlySetting, newValue => {
+    lintOnTheFly = newValue;
+    allLinterAdapters.forEach(adapter => adapter.setLintOnFly(newValue));
+  });
+}
+
+export function consumeLinterProvider(
+  provider: LinterProvider | Array<LinterProvider>,
+): IDisposable {
+  const {createAdapters} = require('./LinterAdapterFactory');
+  const newAdapters = createAdapters(provider);
+  const adapterDisposables = new CompositeDisposable();
+  for (const adapter of newAdapters) {
+    adapter.setEnabled(consumeLegacyLinters);
+    adapter.setLintOnFly(lintOnTheFly);
+    allLinterAdapters.add(adapter);
+    const diagnosticDisposable = this.consumeDiagnosticsProviderV1(adapter);
+    const adapterDisposable = new Disposable(() => {
+      diagnosticDisposable.dispose();
+      adapter.dispose();
+      allLinterAdapters.delete(adapter);
     });
+    adapterDisposables.add(adapterDisposable);
+    addDisposable(adapter);
+  }
+  return adapterDisposables;
+}
 
-    lintOnTheFly = ((featureConfig.get(legacyLintOnTheFlySetting): any): boolean);
-    featureConfig.observe(legacyLintOnTheFlySetting, newValue => {
-      lintOnTheFly = newValue;
-      allLinterAdapters.forEach(adapter => adapter.setLintOnFly(newValue));
-    });
-  },
+export function consumeDiagnosticsProviderV1(provider: CallbackDiagnosticProvider): IDisposable {
+  // Register the diagnostic store for updates from the new provider.
+  const observableProvider = {
+    updates: observableFromSubscribeFunction(provider.onMessageUpdate.bind(provider)),
+    invalidations: observableFromSubscribeFunction(provider.onMessageInvalidation.bind(provider)),
+  };
+  const disposable = this.consumeDiagnosticsProviderV2(observableProvider);
+  addDisposable(disposable);
+  return disposable;
+}
 
-  consumeLinterProvider(provider: LinterProvider | Array<LinterProvider>): IDisposable {
-    const {createAdapters} = require('./LinterAdapterFactory');
-    const newAdapters = createAdapters(provider);
-    const adapterDisposables = new CompositeDisposable();
-    for (const adapter of newAdapters) {
-      adapter.setEnabled(consumeLegacyLinters);
-      adapter.setLintOnFly(lintOnTheFly);
-      allLinterAdapters.add(adapter);
-      const diagnosticDisposable = this.consumeDiagnosticsProviderV1(adapter);
-      const adapterDisposable = new Disposable(() => {
-        diagnosticDisposable.dispose();
-        adapter.dispose();
-        allLinterAdapters.delete(adapter);
-      });
-      adapterDisposables.add(adapterDisposable);
-      addDisposable(adapter);
-    }
-    return adapterDisposables;
-  },
+export function consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvider): IDisposable {
+  const compositeDisposable = new CompositeDisposable();
+  const store = getDiagnosticStore();
 
-  consumeDiagnosticsProviderV1(provider: CallbackDiagnosticProvider): IDisposable {
-    // Register the diagnostic store for updates from the new provider.
-    const observableProvider = {
-      updates: observableFromSubscribeFunction(provider.onMessageUpdate.bind(provider)),
-      invalidations: observableFromSubscribeFunction(provider.onMessageInvalidation.bind(provider)),
-    };
-    const disposable = this.consumeDiagnosticsProviderV2(observableProvider);
-    addDisposable(disposable);
-    return disposable;
-  },
+  compositeDisposable.add(
+    provider.updates.subscribe(update => store.updateMessages(provider, update))
+  );
+  compositeDisposable.add(
+    provider.invalidations.subscribe(
+      invalidation => store.invalidateMessages(provider, invalidation)
+    )
+  );
+  compositeDisposable.add(new Disposable(() => {
+    store.invalidateMessages(provider, { scope: 'all' });
+  }));
 
-  consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvider): IDisposable {
-    const compositeDisposable = new CompositeDisposable();
-    const store = getDiagnosticStore();
+  return compositeDisposable;
+}
 
-    compositeDisposable.add(
-      provider.updates.subscribe(update => store.updateMessages(provider, update))
-    );
-    compositeDisposable.add(
-      provider.invalidations.subscribe(
-        invalidation => store.invalidateMessages(provider, invalidation)
-      )
-    );
-    compositeDisposable.add(new Disposable(() => {
-      store.invalidateMessages(provider, { scope: 'all' });
-    }));
+export function provideDiagnosticUpdates(): DiagnosticUpdater {
+  return getDiagnosticUpdater();
+}
 
-    return compositeDisposable;
-  },
-
-  provideDiagnosticUpdates(): DiagnosticUpdater {
-    return getDiagnosticUpdater();
-  },
-
-  deactivate() {
-    if (disposables) {
-      disposables.dispose();
-      disposables = null;
-    }
-    if (diagnosticStore) {
-      diagnosticStore.dispose();
-      diagnosticStore = null;
-    }
-    diagnosticUpdater = null;
-  },
-};
+export function deactivate() {
+  if (disposables) {
+    disposables.dispose();
+    disposables = null;
+  }
+  if (diagnosticStore) {
+    diagnosticStore.dispose();
+    diagnosticStore = null;
+  }
+  diagnosticUpdater = null;
+}

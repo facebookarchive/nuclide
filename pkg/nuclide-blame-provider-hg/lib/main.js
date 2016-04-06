@@ -13,14 +13,12 @@ import type {BlameProvider} from '../../nuclide-blame-base';
 
 let blameProvider;
 
-module.exports = {
-  activate(state: ?Object): void {
-  },
+export function activate(state: ?Object): void {
+}
 
-  provideHgBlameProvider(): BlameProvider {
-    if (!blameProvider) {
-      blameProvider = require('./HgBlameProvider');
-    }
-    return blameProvider;
-  },
-};
+export function provideHgBlameProvider(): BlameProvider {
+  if (!blameProvider) {
+    blameProvider = require('./HgBlameProvider');
+  }
+  return blameProvider;
+}

@@ -9,18 +9,16 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  activate() {
-    const {registerGrammarForFileExtension} = require('../../nuclide-atom-helpers');
-    registerGrammarForFileExtension('source.python', 'BUCK');
-    registerGrammarForFileExtension('source.json', 'BUCK.autodeps');
-    registerGrammarForFileExtension('source.ini', '.buckconfig');
-  },
+export function activate() {
+  const {registerGrammarForFileExtension} = require('../../nuclide-atom-helpers');
+  registerGrammarForFileExtension('source.python', 'BUCK');
+  registerGrammarForFileExtension('source.json', 'BUCK.autodeps');
+  registerGrammarForFileExtension('source.ini', '.buckconfig');
+}
 
-  deactivate() {
-  },
+export function deactivate() {
+}
 
-  getHyperclickProvider() {
-    return require('./HyperclickProvider');
-  },
-};
+export function getHyperclickProvider() {
+  return require('./HyperclickProvider');
+}

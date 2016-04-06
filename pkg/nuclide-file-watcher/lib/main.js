@@ -13,42 +13,39 @@ import {CompositeDisposable} from 'atom';
 let subscriptions: ?CompositeDisposable = null;
 let watchers: ?Map = null;
 
-module.exports = {
+export function activate(state: ?Object): void {
+  const _subscriptions = new CompositeDisposable();
+  const _watchers = new Map();
 
-  activate(state: ?Object): void {
-    const _subscriptions = new CompositeDisposable();
-    const _watchers = new Map();
-
-    _subscriptions.add(atom.workspace.observeTextEditors(editor => {
-      if (_watchers.has(editor)) {
-        return;
-      }
-
-      const FileWatcher = require('./FileWatcher');
-      const fileWatcher = new FileWatcher(editor);
-      _watchers.set(editor, fileWatcher);
-
-      _subscriptions.add(editor.onDidDestroy(() => {
-        fileWatcher.destroy();
-        _watchers.delete(editor);
-      }));
-    }));
-
-    watchers = _watchers;
-    subscriptions = _subscriptions;
-
-    // Disable the file-watcher package from showing the promot, if installed.
-    atom.config.set('file-watcher.promptWhenFileHasChangedOnDisk', false);
-  },
-
-  deactivate(): void {
-    if (subscriptions == null || watchers == null) {
+  _subscriptions.add(atom.workspace.observeTextEditors(editor => {
+    if (_watchers.has(editor)) {
       return;
     }
-    for (const fileWatcher of watchers.values()) {
+
+    const FileWatcher = require('./FileWatcher');
+    const fileWatcher = new FileWatcher(editor);
+    _watchers.set(editor, fileWatcher);
+
+    _subscriptions.add(editor.onDidDestroy(() => {
       fileWatcher.destroy();
-    }
-    subscriptions.dispose();
-    subscriptions = null;
-  },
-};
+      _watchers.delete(editor);
+    }));
+  }));
+
+  watchers = _watchers;
+  subscriptions = _subscriptions;
+
+  // Disable the file-watcher package from showing the promot, if installed.
+  atom.config.set('file-watcher.promptWhenFileHasChangedOnDisk', false);
+}
+
+export function deactivate(): void {
+  if (subscriptions == null || watchers == null) {
+    return;
+  }
+  for (const fileWatcher of watchers.values()) {
+    fileWatcher.destroy();
+  }
+  subscriptions.dispose();
+  subscriptions = null;
+}

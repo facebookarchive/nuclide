@@ -12,10 +12,10 @@
 import type {GadgetsService} from '../../nuclide-gadgets-interfaces';
 import type {HomeFragments} from '../../nuclide-home-interfaces';
 
-const {CompositeDisposable, Disposable} = require('atom');
-const featureConfig = require('../../nuclide-feature-config');
-const Immutable = require('immutable');
-const Rx = require('rx');
+import {CompositeDisposable, Disposable} from 'atom';
+import featureConfig from '../../nuclide-feature-config';
+import Immutable from 'immutable';
+import Rx from 'rx';
 
 let subscriptions: CompositeDisposable = (null: any);
 let gadgetsApi: ?GadgetsService = null;
@@ -24,7 +24,7 @@ let gadgetsApi: ?GadgetsService = null;
 const allHomeFragmentsStream: Rx.BehaviorSubject<Immutable.Set<HomeFragments>> =
   new Rx.BehaviorSubject(Immutable.Set());
 
-function activate(state: ?Object): void {
+export function activate(state: ?Object): void {
   considerDisplayingHome();
   subscriptions = new CompositeDisposable();
   subscriptions.add(
@@ -34,7 +34,7 @@ function activate(state: ?Object): void {
   );
 }
 
-function setHomeFragments(homeFragments: HomeFragments): Disposable {
+export function setHomeFragments(homeFragments: HomeFragments): Disposable {
   allHomeFragmentsStream.onNext(allHomeFragmentsStream.getValue().add(homeFragments));
   return new Disposable(() => {
     allHomeFragmentsStream.onNext(allHomeFragmentsStream.getValue().remove(homeFragments));
@@ -51,14 +51,14 @@ function considerDisplayingHome() {
   }
 }
 
-function deactivate(): void {
+export function deactivate(): void {
   gadgetsApi = null;
   allHomeFragmentsStream.onNext(Immutable.Set());
   subscriptions.dispose();
   subscriptions = (null: any);
 }
 
-function consumeGadgetsService(api: GadgetsService): IDisposable {
+export function consumeGadgetsService(api: GadgetsService): IDisposable {
   const createHomePaneItem = require('./createHomePaneItem');
   gadgetsApi = api;
   const gadget = createHomePaneItem(allHomeFragmentsStream);
@@ -67,7 +67,7 @@ function consumeGadgetsService(api: GadgetsService): IDisposable {
   return disposable;
 }
 
-function consumeToolBar(getToolBar: (group: string) => Object): void {
+export function consumeToolBar(getToolBar: (group: string) => Object): void {
   const priority = require('../../nuclide-commons').toolbar.farEndPriority(500);
   const toolBar = getToolBar('nuclide-home');
   toolBar.addSpacer({
@@ -83,11 +83,3 @@ function consumeToolBar(getToolBar: (group: string) => Object): void {
     toolBar.removeItems();
   }));
 }
-
-module.exports = {
-  activate,
-  setHomeFragments,
-  deactivate,
-  consumeGadgetsService,
-  consumeToolBar,
-};

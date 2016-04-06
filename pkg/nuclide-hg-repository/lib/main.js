@@ -9,14 +9,11 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
+export function activate(state: any): void {
+  // TODO(mbolin): Add activation code here.
+}
 
-  activate(state: any): void {
-    // TODO(mbolin): Add activation code here.
-  },
-
-  createHgRepositoryProvider() {
-    const {HgRepositoryProvider} = require('./HgRepositoryProvider');
-    return new HgRepositoryProvider();
-  },
-};
+export function createHgRepositoryProvider() {
+  const {HgRepositoryProvider} = require('./HgRepositoryProvider');
+  return new HgRepositoryProvider();
+}

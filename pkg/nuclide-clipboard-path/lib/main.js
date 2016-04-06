@@ -9,10 +9,9 @@
  * the root directory of this source tree.
  */
 
-
-const {CompositeDisposable} = require('atom');
-const {getPath} = require('../../nuclide-remote-uri');
-const {trackOperationTiming} = require('../../nuclide-analytics');
+import {CompositeDisposable} from 'atom';
+import {getPath} from '../../nuclide-remote-uri';
+import {trackOperationTiming} from '../../nuclide-analytics';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
@@ -151,18 +150,15 @@ class Activation {
 
 let activation: ?Activation = null;
 
-module.exports = {
+export function activate(state: ?mixed): void {
+  if (!activation) {
+    activation = new Activation();
+  }
+}
 
-  activate(state: ?mixed): void {
-    if (!activation) {
-      activation = new Activation();
-    }
-  },
-
-  deactivate(): void {
-    if (activation) {
-      activation.dispose();
-      activation = null;
-    }
-  },
-};
+export function deactivate(): void {
+  if (activation) {
+    activation.dispose();
+    activation = null;
+  }
+}

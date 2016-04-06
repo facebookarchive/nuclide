@@ -226,91 +226,89 @@ function disableTreeViewPackage() {
   }
 }
 
-module.exports = {
-  activate(state: ?FileTreeControllerState): void {
-    invariant(activation == null);
-    // Disable Atom's bundled 'tree-view' package. If this activation is happening during the
-    // normal startup activation, the `onDidActivateInitialPackages` handler below must unload the
-    // 'tree-view' because it will have been loaded during startup.
+export function activate(state: ?FileTreeControllerState): void {
+  invariant(activation == null);
+  // Disable Atom's bundled 'tree-view' package. If this activation is happening during the
+  // normal startup activation, the `onDidActivateInitialPackages` handler below must unload the
+  // 'tree-view' because it will have been loaded during startup.
+  disableTreeViewPackage();
+
+  // Disabling and unloading Atom's bundled 'tree-view' must happen after activation because this
+  // package's `activate` is called during an traversal of all initial packages to activate.
+  // Disabling a package during the traversal has no effect if this is a startup load because
+  // `PackageManager` does not re-load the list of packages to activate after each iteration.
+  onDidActivateDisposable = atom.packages.onDidActivateInitialPackages(() => {
     disableTreeViewPackage();
+    onDidActivateDisposable.dispose();
+  });
 
-    // Disabling and unloading Atom's bundled 'tree-view' must happen after activation because this
-    // package's `activate` is called during an traversal of all initial packages to activate.
-    // Disabling a package during the traversal has no effect if this is a startup load because
-    // `PackageManager` does not re-load the list of packages to activate after each iteration.
-    onDidActivateDisposable = atom.packages.onDidActivateInitialPackages(() => {
-      disableTreeViewPackage();
-      onDidActivateDisposable.dispose();
-    });
+  deserializedState = state;
+  activation = new Activation(deserializedState);
+}
 
-    deserializedState = state;
-    activation = new Activation(deserializedState);
-  },
+export function deactivate() {
+  const nuclideFeatures = require('../../../lib/nuclideFeatures');
 
-  deactivate() {
-    const nuclideFeatures = require('../../../lib/nuclideFeatures');
+  // Re-enable Atom's bundled 'tree-view' when this package is disabled to leave the user's
+  // environment the way this package found it.
+  if (nuclideFeatures.isFeatureDisabled('nuclide-file-tree')
+    && atom.packages.isPackageDisabled('tree-view')) {
+    atom.packages.enablePackage('tree-view');
+  }
 
-    // Re-enable Atom's bundled 'tree-view' when this package is disabled to leave the user's
-    // environment the way this package found it.
-    if (nuclideFeatures.isFeatureDisabled('nuclide-file-tree')
-      && atom.packages.isPackageDisabled('tree-view')) {
-      atom.packages.enablePackage('tree-view');
-    }
+  if (sideBarDisposable != null) {
+    sideBarDisposable.dispose();
+  }
 
-    if (sideBarDisposable != null) {
-      sideBarDisposable.dispose();
-    }
+  if (!onDidActivateDisposable.disposed) {
+    onDidActivateDisposable.dispose();
+  }
 
-    if (!onDidActivateDisposable.disposed) {
-      onDidActivateDisposable.dispose();
-    }
+  if (activation) {
+    activation.dispose();
+    activation = null;
+  }
+}
 
-    if (activation) {
-      activation.dispose();
-      activation = null;
-    }
-  },
+export function serialize(): ?FileTreeControllerState {
+  if (activation) {
+    return activation.serialize();
+  }
+}
 
-  serialize(): ?FileTreeControllerState {
-    if (activation) {
-      return activation.serialize();
-    }
-  },
+export function consumeNuclideSideBar(sidebar: NuclideSideBarService): IDisposable {
+  invariant(activation);
 
-  consumeNuclideSideBar(sidebar: NuclideSideBarService): IDisposable {
-    invariant(activation);
+  sidebar.registerView({
+    getComponent() { return require('../components/FileTreeSidebarComponent'); },
+    onDidShow() {
+      // If "Reveal File on Switch" is enabled, ensure the scroll position is synced to where the
+      // user expects when the side bar shows the file tree.
+      if (featureConfig.get(REVEAL_FILE_ON_SWITCH_SETTING)) {
+        atom.commands.dispatch(
+          atom.views.getView(atom.workspace),
+          'nuclide-file-tree:reveal-active-file'
+        );
+      }
+    },
+    toggleCommand: 'nuclide-file-tree:toggle',
+    viewId: 'nuclide-file-tree',
+  });
 
-    sidebar.registerView({
-      getComponent() { return require('../components/FileTreeSidebarComponent'); },
-      onDidShow() {
-        // If "Reveal File on Switch" is enabled, ensure the scroll position is synced to where the
-        // user expects when the side bar shows the file tree.
-        if (featureConfig.get(REVEAL_FILE_ON_SWITCH_SETTING)) {
-          atom.commands.dispatch(
-            atom.views.getView(atom.workspace),
-            'nuclide-file-tree:reveal-active-file'
-          );
-        }
-      },
-      toggleCommand: 'nuclide-file-tree:toggle',
-      viewId: 'nuclide-file-tree',
-    });
+  sideBarDisposable = new Disposable(() => {
+    sidebar.destroyView('nuclide-file-tree');
+  });
 
-    sideBarDisposable = new Disposable(() => {
-      sidebar.destroyView('nuclide-file-tree');
-    });
+  return sideBarDisposable;
+}
 
-    return sideBarDisposable;
-  },
+export function consumeWorkingSetsStore(workingSetsStore: WorkingSetsStore): ?IDisposable {
+  invariant(activation);
 
-  consumeWorkingSetsStore(workingSetsStore: WorkingSetsStore): ?IDisposable {
-    invariant(activation);
+  return activation.consumeWorkingSetsStore(workingSetsStore);
+}
 
-    return activation.consumeWorkingSetsStore(workingSetsStore);
-  },
-
-  consumeCwdApi(cwdApi: CwdApi): IDisposable {
-    invariant(activation);
-    return activation.consumeCwdApi(cwdApi);
-  },
-};
+export function consumeCwdApi(cwdApi: CwdApi): IDisposable {
+  invariant(activation);
+  return activation.consumeCwdApi(cwdApi);
+}

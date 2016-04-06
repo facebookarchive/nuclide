@@ -134,30 +134,28 @@ class Activation {
 
 let activation: ?Activation = null;
 
-module.exports = {
-  activate(state: ?Object) {
-    if (!activation) {
-      activation = new Activation(state);
-    }
-  },
+export function activate(state: ?Object) {
+  if (!activation) {
+    activation = new Activation(state);
+  }
+}
 
-  consumeToolBar(getToolBar: (group: string) => Object): void {
-    invariant(activation);
-    return activation.consumeToolBar(getToolBar);
-  },
+export function consumeToolBar(getToolBar: (group: string) => Object): void {
+  invariant(activation);
+  return activation.consumeToolBar(getToolBar);
+}
 
-  deactivate() {
-    if (activation) {
-      activation.dispose();
-      activation = null;
-    }
-  },
+export function deactivate() {
+  if (activation) {
+    activation.dispose();
+    activation = null;
+  }
+}
 
-  serialize(): Object {
-    if (activation) {
-      return activation.serialize();
-    } else {
-      return {};
-    }
-  },
-};
+export function serialize(): Object {
+  if (activation) {
+    return activation.serialize();
+  } else {
+    return {};
+  }
+}

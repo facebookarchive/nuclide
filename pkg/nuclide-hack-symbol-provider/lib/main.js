@@ -20,13 +20,9 @@ function getProviderInstance(): Provider {
   return providerInstance;
 }
 
-module.exports = {
+export function registerProvider(): Provider {
+  return getProviderInstance();
+}
 
-  registerProvider(): Provider {
-    return getProviderInstance();
-  },
-
-  activate(state: ?Object) {
-  },
-
-};
+export function activate(state: ?Object) {
+}

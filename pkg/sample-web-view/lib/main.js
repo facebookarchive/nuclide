@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {CompositeDisposable} = require('atom');
+import {CompositeDisposable} from 'atom';
 
 const URI_PREFIX = 'sample-web-view:';
 
@@ -57,18 +57,15 @@ class Activation {
 
 let activation: ?Activation = null;
 
-module.exports = {
+export function activate(state: ?Object): void {
+  if (!activation) {
+    activation = new Activation(state);
+  }
+}
 
-  activate(state: ?Object): void {
-    if (!activation) {
-      activation = new Activation(state);
-    }
-  },
-
-  deactivate(): void {
-    if (activation) {
-      activation.dispose();
-      activation = null;
-    }
-  },
-};
+export function deactivate(): void {
+  if (activation) {
+    activation.dispose();
+    activation = null;
+  }
+}

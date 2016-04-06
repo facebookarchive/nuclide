@@ -9,11 +9,9 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  activate(state: ?Object): void {
-  },
+export function activate(state: ?Object): void {
+}
 
-  getBlameGutter() {
-    return require('./BlameGutter');
-  },
-};
+export function getBlameGutter() {
+  return require('./BlameGutter');
+}

@@ -84,19 +84,17 @@ function initSearch(projectPaths: Array<string>): void {
   projectRoots = newProjectRoots;
 }
 
-module.exports = {
-  registerProvider(): Provider {
-    return getProviderInstance();
-  },
+export function registerProvider(): Provider {
+  return getProviderInstance();
+}
 
-  activate(state: ?Object) {
-    getActivation();
-  },
+export function activate(state: ?Object) {
+  getActivation();
+}
 
-  deactivate() {
-    if (activation) {
-      activation.dispose();
-      activation = null;
-    }
-  },
-};
+export function deactivate() {
+  if (activation) {
+    activation.dispose();
+    activation = null;
+  }
+}

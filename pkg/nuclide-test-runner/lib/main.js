@@ -14,10 +14,7 @@ import type {TestRunner} from './interfaces';
 import type {TestRunnerController as TestRunnerControllerType} from './TestRunnerController';
 import type {TestRunnerControllerState} from './TestRunnerController';
 
-const {
-  CompositeDisposable,
-  Disposable,
-} = require('atom');
+import {CompositeDisposable, Disposable} from 'atom';
 
 let logger;
 function getLogger() {
@@ -189,54 +186,50 @@ class Activation {
 let activation: ?Activation;
 let toolBar: ?any = null;
 
-module.exports = {
+export function activate(state: ?Object): void {
+  if (!activation) {
+    activation = new Activation(state);
+  }
+}
 
-  activate(state: ?Object): void {
-    if (!activation) {
-      activation = new Activation(state);
-    }
-  },
+export function deactivate(): void {
+  if (activation) {
+    activation.dispose();
+    activation = null;
+  }
+  if (toolBar) {
+    toolBar.removeItems();
+  }
+}
 
-  deactivate(): void {
-    if (activation) {
-      activation.dispose();
-      activation = null;
-    }
-    if (toolBar) {
-      toolBar.removeItems();
-    }
-  },
+export function serialize(): Object {
+  return activation ? activation.serialize() : {};
+}
 
-  serialize(): Object {
-    return activation ? activation.serialize() : {};
-  },
+export function consumeTestRunner(testRunner: TestRunner): ?Disposable {
+  if (activation) {
+    return activation.addTestRunner(testRunner);
+  }
+}
 
-  consumeTestRunner(testRunner: TestRunner): ?Disposable {
-    if (activation) {
-      return activation.addTestRunner(testRunner);
-    }
-  },
+export function consumeToolBar(getToolBar: (group: string) => Object): void {
+  toolBar = getToolBar('nuclide-test-runner');
+  toolBar.addButton({
+    icon: 'checklist',
+    callback: 'nuclide-test-runner:toggle-panel',
+    tooltip: 'Toggle Test Runner',
+    priority: 400,
+  });
+}
 
-  consumeToolBar(getToolBar: (group: string) => Object): void {
-    toolBar = getToolBar('nuclide-test-runner');
-    toolBar.addButton({
+export function getHomeFragments(): HomeFragments {
+  return {
+    feature: {
+      title: 'Test Runner',
       icon: 'checklist',
-      callback: 'nuclide-test-runner:toggle-panel',
-      tooltip: 'Toggle Test Runner',
-      priority: 400,
-    });
-  },
-
-  getHomeFragments(): HomeFragments {
-    return {
-      feature: {
-        title: 'Test Runner',
-        icon: 'checklist',
-        description: 'Run tests directly from Nuclide by right-mouse-clicking on the file.',
-        command: 'nuclide-test-runner:toggle-panel',
-      },
-      priority: 2,
-    };
-  },
-
-};
+      description: 'Run tests directly from Nuclide by right-mouse-clicking on the file.',
+      command: 'nuclide-test-runner:toggle-panel',
+    },
+    priority: 2,
+  };
+}

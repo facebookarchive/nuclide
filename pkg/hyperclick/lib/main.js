@@ -15,50 +15,50 @@ import type HyperclickType from './Hyperclick';
 let hyperclick: ?HyperclickType = null;
 import {Disposable} from 'atom';
 
-module.exports = {
-  activate() {
-    const Hyperclick = require('./Hyperclick');
-    hyperclick = new Hyperclick();
+export function activate() {
+  const Hyperclick = require('./Hyperclick');
+  hyperclick = new Hyperclick();
 
-    // FB-only: override the symbols-view "Go To Declaration" context menu item
-    // with the Hyperclick "confirm-cursor" command.
-    // TODO(hansonw): Remove when symbols-view has a proper API.
-    try {
-      const {overrideGoToDeclaration} = require('./fb/overrideGoToDeclaration');
-      overrideGoToDeclaration();
-    } catch (e) {
-      // Ignore.
-    }
-  },
+  // FB-only: override the symbols-view "Go To Declaration" context menu item
+  // with the Hyperclick "confirm-cursor" command.
+  // TODO(hansonw): Remove when symbols-view has a proper API.
+  try {
+    const {overrideGoToDeclaration} = require('./fb/overrideGoToDeclaration');
+    overrideGoToDeclaration();
+  } catch (e) {
+    // Ignore.
+  }
+}
 
-  deactivate() {
-    if (hyperclick != null) {
-      hyperclick.dispose();
-      hyperclick = null;
-    }
-  },
+export function deactivate() {
+  if (hyperclick != null) {
+    hyperclick.dispose();
+    hyperclick = null;
+  }
+}
 
-  consumeProvider(provider: HyperclickProvider | Array<HyperclickProvider>): ?Disposable {
-    if (hyperclick != null) {
-      hyperclick.consumeProvider(provider);
-      return new Disposable(() => {
-        if (hyperclick != null) {
-          hyperclick.removeProvider(provider);
-        }
-      });
-    }
-  },
-
-  /**
-   * A TextEditor whose creation is announced via atom.workspace.observeTextEditors() will be
-   * observed by default by hyperclick. However, if a TextEditor is created via some other means,
-   * (such as a building block for a piece of UI), then it must be observed explicitly.
-   */
-  observeTextEditor(): (textEditor: atom$TextEditor) => void {
-    return (textEditor: atom$TextEditor) => {
+export function consumeProvider(
+  provider: HyperclickProvider | Array<HyperclickProvider>,
+): ?Disposable {
+  if (hyperclick != null) {
+    hyperclick.consumeProvider(provider);
+    return new Disposable(() => {
       if (hyperclick != null) {
-        hyperclick.observeTextEditor(textEditor);
+        hyperclick.removeProvider(provider);
       }
-    };
-  },
-};
+    });
+  }
+}
+
+/**
+ * A TextEditor whose creation is announced via atom.workspace.observeTextEditors() will be
+ * observed by default by hyperclick. However, if a TextEditor is created via some other means,
+ * (such as a building block for a piece of UI), then it must be observed explicitly.
+ */
+export function observeTextEditor(): (textEditor: atom$TextEditor) => void {
+  return (textEditor: atom$TextEditor) => {
+    if (hyperclick != null) {
+      hyperclick.observeTextEditor(textEditor);
+    }
+  };
+}

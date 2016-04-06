@@ -15,45 +15,42 @@ import type {TypeHintProvider as TypeHintProviderType} from '../../nuclide-type-
 import {array} from '../../nuclide-commons';
 import {GRAMMARS} from './constants';
 
-module.exports = {
-  activate(): void {
-  },
+export function activate(): void {
+}
 
-  getHyperclickProvider() {
-    return require('./HyperclickProvider');
-  },
+export function getHyperclickProvider() {
+  return require('./HyperclickProvider');
+}
 
-  createAutocompleteProvider(): mixed {
-    const {trackOperationTiming} = require('../../nuclide-analytics');
-    const getSuggestions = request => {
-      return trackOperationTiming(
-        'nuclide-ocaml:getAutocompleteSuggestions',
-        () => require('./AutoComplete').getAutocompleteSuggestions(request));
-    };
-    return {
-      selector: '.source.ocaml',
-      inclusionPriority: 1,
-      disableForSelector: '.source.ocaml .comment',
-      getSuggestions,
-    };
-  },
+export function createAutocompleteProvider(): mixed {
+  const {trackOperationTiming} = require('../../nuclide-analytics');
+  const getSuggestions = request => {
+    return trackOperationTiming(
+      'nuclide-ocaml:getAutocompleteSuggestions',
+      () => require('./AutoComplete').getAutocompleteSuggestions(request));
+  };
+  return {
+    selector: '.source.ocaml',
+    inclusionPriority: 1,
+    disableForSelector: '.source.ocaml .comment',
+    getSuggestions,
+  };
+}
 
-  provideLinter(): LinterProvider {
-    const MerlinLinterProvider = require('./LinterProvider');
-    return MerlinLinterProvider;
-  },
+export function provideLinter(): LinterProvider {
+  const MerlinLinterProvider = require('./LinterProvider');
+  return MerlinLinterProvider;
+}
 
-  createTypeHintProvider(): TypeHintProviderType {
-    const {TypeHintProvider} = require('./TypeHintProvider');
-    const typeHintProvider = new TypeHintProvider();
-    const typeHint = typeHintProvider.typeHint.bind(typeHintProvider);
+export function createTypeHintProvider(): TypeHintProviderType {
+  const {TypeHintProvider} = require('./TypeHintProvider');
+  const typeHintProvider = new TypeHintProvider();
+  const typeHint = typeHintProvider.typeHint.bind(typeHintProvider);
 
-    return {
-      inclusionPriority: 1,
-      providerName: 'nuclide-ocaml',
-      selector: array.from(GRAMMARS).join(', '),
-      typeHint,
-    };
-  },
-
-};
+  return {
+    inclusionPriority: 1,
+    providerName: 'nuclide-ocaml',
+    selector: array.from(GRAMMARS).join(', '),
+    typeHint,
+  };
+}

@@ -15,46 +15,42 @@ import invariant from 'assert';
 
 import type TypeHintManagerType from './TypeHintManager';
 
-const {Disposable} = require('atom');
+import {Disposable} from 'atom';
 
 let typeHintManager: ?TypeHintManagerType = null;
 
 const PACKAGE_NAME = 'nuclide-type-hint';
 
-module.exports = {
+export function activate(state: ?any): void {
+  if (!typeHintManager) {
+    const TypeHintManager = require('./TypeHintManager');
+    typeHintManager = new TypeHintManager();
+  }
+}
 
-  activate(state: ?any): void {
-    if (!typeHintManager) {
-      const TypeHintManager = require('./TypeHintManager');
-      typeHintManager = new TypeHintManager();
+export function consumeTypehintProvider(provider: TypeHintProvider): IDisposable {
+  invariant(typeHintManager);
+  typeHintManager.addProvider(provider);
+  return new Disposable(() => {
+    if (typeHintManager != null) {
+      typeHintManager.removeProvider(provider);
     }
-  },
+  });
+}
 
-  consumeTypehintProvider(provider: TypeHintProvider): IDisposable {
-    invariant(typeHintManager);
-    typeHintManager.addProvider(provider);
-    return new Disposable(() => {
-      if (typeHintManager != null) {
-        typeHintManager.removeProvider(provider);
-      }
-    });
-  },
+export function createDatatipProvider(): Object {
+  invariant(typeHintManager);
+  const datatip = typeHintManager.datatip.bind(typeHintManager);
+  return {
+    validForScope: () => true, // TODO
+    providerName: PACKAGE_NAME,
+    inclusionPriority: 1,
+    datatip,
+  };
+}
 
-  createDatatipProvider(): Object {
-    invariant(typeHintManager);
-    const datatip = typeHintManager.datatip.bind(typeHintManager);
-    return {
-      validForScope: () => true, // TODO
-      providerName: PACKAGE_NAME,
-      inclusionPriority: 1,
-      datatip,
-    };
-  },
-
-  deactivate() {
-    if (typeHintManager) {
-      typeHintManager = null;
-    }
-  },
-
-};
+export function deactivate() {
+  if (typeHintManager) {
+    typeHintManager = null;
+  }
+}

@@ -190,27 +190,25 @@ class Activation {
 
 let activation: ?Activation;
 
-module.exports = {
-  activate(state: ?Object): void {
-    if (!activation) {
-      activation = new Activation();
-    }
-  },
+export function activate(state: ?Object): void {
+  if (!activation) {
+    activation = new Activation();
+  }
+}
 
-  deactivate() {
-    if (activation) {
-      activation.dispose();
-      activation = null;
-    }
-  },
+export function deactivate() {
+  if (activation) {
+    activation.dispose();
+    activation = null;
+  }
+}
 
-  consumeBlameGutterClass(blameGutter: BlameGutterClass): IDisposable {
-    invariant(activation);
-    return activation.consumeBlameGutterClass(blameGutter);
-  },
+export function consumeBlameGutterClass(blameGutter: BlameGutterClass): IDisposable {
+  invariant(activation);
+  return activation.consumeBlameGutterClass(blameGutter);
+}
 
-  consumeBlameProvider(provider: BlameProvider): IDisposable {
-    invariant(activation);
-    return activation.consumeBlameProvider(provider);
-  },
-};
+export function consumeBlameProvider(provider: BlameProvider): IDisposable {
+  invariant(activation);
+  return activation.consumeBlameProvider(provider);
+}

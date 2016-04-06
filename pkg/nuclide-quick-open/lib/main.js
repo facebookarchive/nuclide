@@ -278,48 +278,46 @@ function getActivation(): Activation {
 
 let listeners: ?CompositeDisposable = null;
 
-module.exports = {
-  activate(): void {
-    listeners = new CompositeDisposable();
-    listeners.add(
-      atom.commands.add('atom-workspace', {
-        'nuclide-quick-open:find-anything-via-omni-search': () => {
-          getActivation().toggleOmniSearchProvider();
-        },
-      }),
-    );
-    getActivation();
-  },
-
-  registerProvider(service: Provider ): IDisposable {
-    return getSearchResultManager().registerProvider(service);
-  },
-
-  registerStore() {
-    return getSearchResultManager();
-  },
-
-  getHomeFragments(): HomeFragments {
-    return {
-      feature: {
-        title: 'Quick Open',
-        icon: 'search',
-        description: 'A powerful search box to quickly find local and remote files and content.',
-        command: 'nuclide-quick-open:find-anything-via-omni-search',
+export function activate(): void {
+  listeners = new CompositeDisposable();
+  listeners.add(
+    atom.commands.add('atom-workspace', {
+      'nuclide-quick-open:find-anything-via-omni-search': () => {
+        getActivation().toggleOmniSearchProvider();
       },
-      priority: 10,
-    };
-  },
+    }),
+  );
+  getActivation();
+}
 
-  deactivate(): void {
-    if (activation) {
-      activation.dispose();
-      activation = null;
-    }
-    if (listeners) {
-      listeners.dispose();
-      listeners = null;
-    }
-    getSearchResultManager().dispose();
-  },
-};
+export function registerProvider(service: Provider): IDisposable {
+  return getSearchResultManager().registerProvider(service);
+}
+
+export function registerStore() {
+  return getSearchResultManager();
+}
+
+export function getHomeFragments(): HomeFragments {
+  return {
+    feature: {
+      title: 'Quick Open',
+      icon: 'search',
+      description: 'A powerful search box to quickly find local and remote files and content.',
+      command: 'nuclide-quick-open:find-anything-via-omni-search',
+    },
+    priority: 10,
+  };
+}
+
+export function deactivate(): void {
+  if (activation) {
+    activation.dispose();
+    activation = null;
+  }
+  if (listeners) {
+    listeners.dispose();
+    listeners = null;
+  }
+  getSearchResultManager().dispose();
+}

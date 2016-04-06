@@ -20,21 +20,19 @@ import {getConfig} from './utils';
 import {setOutputService} from '../../nuclide-debugger-common/lib/OutputServiceManager';
 
 
-module.exports = {
-  activate(state: mixed): void {
-    logger.setLogLevel(getConfig().clientLogLevel);
-  },
+export function activate(state: mixed): void {
+  logger.setLogLevel(getConfig().clientLogLevel);
+}
 
-  consumeOutputService(api: OutputService): void {
-    setOutputService(api);
-  },
+export function consumeOutputService(api: OutputService): void {
+  setOutputService(api);
+}
 
-  provideNuclideDebuggerLLDB(): nuclide_debugger$Service {
-    const Service = require('./Service');
-    return Service;
-  },
+export function provideNuclideDebuggerLLDB(): nuclide_debugger$Service {
+  const Service = require('./Service');
+  return Service;
+}
 
-  createDebuggerProvider(): NuclideDebuggerProvider {
-    return require('./DebuggerProvider');
-  },
-};
+export function createDebuggerProvider(): NuclideDebuggerProvider {
+  return require('./DebuggerProvider');
+}

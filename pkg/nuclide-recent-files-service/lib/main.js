@@ -11,10 +11,7 @@
 
 import invariant from 'assert';
 
-const {
-  CompositeDisposable,
-  Disposable,
-} = require('atom');
+import {CompositeDisposable, Disposable} from 'atom';
 
 import type RecentFilesServiceType from './RecentFilesService';
 
@@ -42,31 +39,27 @@ class Activation {
 
 let activation: ?Activation = null;
 
-module.exports = {
+export function activate(state: ?Object): void {
+  if (activation == null) {
+    activation = new Activation(state);
+  }
+}
 
-  activate(state: ?Object): void {
-    if (activation == null) {
-      activation = new Activation(state);
-    }
-  },
+export function provideRecentFilesService(): RecentFilesServiceType {
+  invariant(activation);
+  return activation.getService();
+}
 
-  provideRecentFilesService(): RecentFilesServiceType {
-    invariant(activation);
-    return activation.getService();
-  },
+export function serialize(): Object {
+  invariant(activation);
+  return {
+    filelist: activation.getService().getRecentFiles(),
+  };
+}
 
-  serialize(): Object {
-    invariant(activation);
-    return {
-      filelist: activation.getService().getRecentFiles(),
-    };
-  },
-
-  deactivate(): void {
-    if (activation) {
-      activation.dispose();
-      activation = null;
-    }
-  },
-
-};
+export function deactivate(): void {
+  if (activation) {
+    activation.dispose();
+    activation = null;
+  }
+}

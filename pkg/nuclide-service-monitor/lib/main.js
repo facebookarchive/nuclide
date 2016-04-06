@@ -18,42 +18,39 @@ const NUCLIDE_SERVICE_MONITOR_URI = 'nuclide-service-monitor://view';
 
 let subscriptions: ?CompositeDisposable;
 
-module.exports = {
+export function activate(state: ?Object): void {
+  invariant(!subscriptions);
+  subscriptions = new CompositeDisposable();
 
-  activate(state: ?Object): void {
-    invariant(!subscriptions);
-    subscriptions = new CompositeDisposable();
+  subscriptions.add(
+    atom.commands.add(
+      'atom-workspace',
+      'nuclide-service-monitor:show-monitor',
+      () => {
+        atom.workspace.open(NUCLIDE_SERVICE_MONITOR_URI);
+        track('nuclide-service-monitor:open');
+      }
+    )
+  );
 
-    subscriptions.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-service-monitor:show-monitor',
-        () => {
-          atom.workspace.open(NUCLIDE_SERVICE_MONITOR_URI);
-          track('nuclide-service-monitor:open');
-        }
-      )
-    );
+  subscriptions.add(
+    atom.workspace.addOpener(uriToOpen => {
+      if (uriToOpen !== NUCLIDE_SERVICE_MONITOR_URI) {
+        return;
+      }
 
-    subscriptions.add(
-      atom.workspace.addOpener(uriToOpen => {
-        if (uriToOpen !== NUCLIDE_SERVICE_MONITOR_URI) {
-          return;
-        }
+      const pane = new ServiceMonitorPaneItem();
+      pane.initialize({
+        title: 'Nuclide Services',
+        initialProps: {},
+      });
+      return pane;
+    })
+  );
+}
 
-        const pane = new ServiceMonitorPaneItem();
-        pane.initialize({
-          title: 'Nuclide Services',
-          initialProps: {},
-        });
-        return pane;
-      })
-    );
-  },
-
-  deactivate(): void {
-    invariant(subscriptions);
-    subscriptions.dispose();
-    subscriptions = null;
-  },
-};
+export function deactivate(): void {
+  invariant(subscriptions);
+  subscriptions.dispose();
+  subscriptions = null;
+}

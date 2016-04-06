@@ -82,18 +82,15 @@ class Activation {
 
 let activation: ?Activation = null;
 
-module.exports = {
+export function activate(state: ?mixed): void {
+  if (!activation) {
+    activation = new Activation();
+  }
+}
 
-  activate(state: ?mixed): void {
-    if (!activation) {
-      activation = new Activation();
-    }
-  },
-
-  deactivate(): void {
-    if (activation) {
-      activation.dispose();
-      activation = null;
-    }
-  },
-};
+export function deactivate(): void {
+  if (activation) {
+    activation.dispose();
+    activation = null;
+  }
+}

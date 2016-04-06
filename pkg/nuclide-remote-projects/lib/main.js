@@ -229,154 +229,154 @@ async function reloadRemoteProjects(
   }
 }
 
-module.exports = {
-  activate(state: ?{remoteProjectsConfig: SerializableRemoteConnectionConfiguration[]}): void {
-    const subscriptions = new CompositeDisposable();
+export function activate(
+  state: ?{remoteProjectsConfig: SerializableRemoteConnectionConfiguration[]},
+): void {
+  const subscriptions = new CompositeDisposable();
 
-    const RemoteProjectsController = require('./RemoteProjectsController');
-    controller = new RemoteProjectsController();
+  const RemoteProjectsController = require('./RemoteProjectsController');
+  controller = new RemoteProjectsController();
 
-    subscriptions.add(RemoteConnection.onDidAddRemoteConnection(connection => {
-      addRemoteFolderToProject(connection);
+  subscriptions.add(RemoteConnection.onDidAddRemoteConnection(connection => {
+    addRemoteFolderToProject(connection);
 
 
-      // On Atom restart, it tries to open uri paths as local `TextEditor` pane items.
-      // Here, Nuclide reloads the remote project files that have empty text editors open.
-      const config = connection.getConfig();
-      const openInstances = getOpenFileEditorForRemoteProject(config);
-      for (const openInstance of openInstances) {
-        // Keep the original open editor item with a unique name until the remote buffer is loaded,
-        // Then, we are ready to replace it with the remote tab in the same pane.
-        const {pane, editor, uri, filePath} = openInstance;
+    // On Atom restart, it tries to open uri paths as local `TextEditor` pane items.
+    // Here, Nuclide reloads the remote project files that have empty text editors open.
+    const config = connection.getConfig();
+    const openInstances = getOpenFileEditorForRemoteProject(config);
+    for (const openInstance of openInstances) {
+      // Keep the original open editor item with a unique name until the remote buffer is loaded,
+      // Then, we are ready to replace it with the remote tab in the same pane.
+      const {pane, editor, uri, filePath} = openInstance;
 
-        // Skip restoring the editer who has remote content loaded.
-        if (isRemoteBufferInitialized(editor)) {
-          continue;
-        }
-
-        // Here, a unique uri is picked to the pending open pane item to maintain the pane layout.
-        // Otherwise, the open won't be completed because there exists a pane item with the same
-        // uri.
-        /* $FlowFixMe */
-        editor.getBuffer().file.path = `${uri}.to-close`;
-        // Cleanup the old pane item on successful opening or when no connection could be
-        // established.
-        const cleanupBuffer = () => {
-          pane.removeItem(editor);
-          editor.destroy();
-        };
-        if (filePath === config.cwd) {
-          cleanupBuffer();
-        } else {
-          // If we clean up the buffer before the `openUriInPane` finishes,
-          // the pane will be closed, because it could have no other items.
-          // So we must clean up after.
-          atom.workspace.openURIInPane(uri, pane).then(cleanupBuffer, cleanupBuffer);
-        }
+      // Skip restoring the editer who has remote content loaded.
+      if (isRemoteBufferInitialized(editor)) {
+        continue;
       }
-    }));
 
-    subscriptions.add(atom.commands.add(
-        'atom-workspace',
-        'nuclide-remote-projects:connect',
-        () => require('../../nuclide-ssh-dialog').openConnectionDialog()
-    ));
-
-    // Subscribe opener before restoring the remote projects.
-    subscriptions.add(atom.workspace.addOpener((uri = '') => {
-      if (uri.startsWith('nuclide:')) {
-        const connection = RemoteConnection.getForUri(uri);
-        // On Atom restart, it tries to open the uri path as a file tab because it's not a local
-        // directory. We can't let that create a file with the initial working directory path.
-        if (connection && uri === connection.getUriForInitialWorkingDirectory()) {
-          return;
-        }
-        if (pendingFiles[uri]) {
-          return pendingFiles[uri];
-        }
-        const textEditorPromise = pendingFiles[uri] = createEditorForNuclide(uri);
-        const removeFromCache = () => delete pendingFiles[uri];
-        textEditorPromise.then(removeFromCache, removeFromCache);
-        return textEditorPromise;
+      // Here, a unique uri is picked to the pending open pane item to maintain the pane layout.
+      // Otherwise, the open won't be completed because there exists a pane item with the same
+      // uri.
+      /* $FlowFixMe */
+      editor.getBuffer().file.path = `${uri}.to-close`;
+      // Cleanup the old pane item on successful opening or when no connection could be
+      // established.
+      const cleanupBuffer = () => {
+        pane.removeItem(editor);
+        editor.destroy();
+      };
+      if (filePath === config.cwd) {
+        cleanupBuffer();
+      } else {
+        // If we clean up the buffer before the `openUriInPane` finishes,
+        // the pane will be closed, because it could have no other items.
+        // So we must clean up after.
+        atom.workspace.openURIInPane(uri, pane).then(cleanupBuffer, cleanupBuffer);
       }
-    }));
-
-    // If RemoteDirectoryProvider is called before this, and it failed
-    // to provide a RemoteDirectory for a
-    // given URI, Atom will create a generic Directory to wrap that. We want
-    // to delete these instead, because those directories aren't valid/useful
-    // if they are not true RemoteDirectory objects (connected to a real
-    // real remote folder).
-    deleteDummyRemoteRootDirectories();
-
-    // Attempt to reload previously open projects.
-    const remoteProjectsConfig = state && state.remoteProjectsConfig;
-    if (remoteProjectsConfig != null) {
-      reloadRemoteProjects(remoteProjectsConfig);
     }
-    packageSubscriptions = subscriptions;
-  },
+  }));
 
-  consumeStatusBar(statusBar: atom$StatusBar): void {
-    if (controller) {
-      controller.consumeStatusBar(statusBar);
+  subscriptions.add(atom.commands.add(
+      'atom-workspace',
+      'nuclide-remote-projects:connect',
+      () => require('../../nuclide-ssh-dialog').openConnectionDialog()
+  ));
+
+  // Subscribe opener before restoring the remote projects.
+  subscriptions.add(atom.workspace.addOpener((uri = '') => {
+    if (uri.startsWith('nuclide:')) {
+      const connection = RemoteConnection.getForUri(uri);
+      // On Atom restart, it tries to open the uri path as a file tab because it's not a local
+      // directory. We can't let that create a file with the initial working directory path.
+      if (connection && uri === connection.getUriForInitialWorkingDirectory()) {
+        return;
+      }
+      if (pendingFiles[uri]) {
+        return pendingFiles[uri];
+      }
+      const textEditorPromise = pendingFiles[uri] = createEditorForNuclide(uri);
+      const removeFromCache = () => delete pendingFiles[uri];
+      textEditorPromise.then(removeFromCache, removeFromCache);
+      return textEditorPromise;
     }
-  },
+  }));
 
-  // TODO: All of the elements of the array are non-null, but it does not seem possible to convince
-  // Flow of that.
-  serialize(): {remoteProjectsConfig: Array<?SerializableRemoteConnectionConfiguration>} {
-    const remoteProjectsConfig: Array<?SerializableRemoteConnectionConfiguration> =
-      getRemoteRootDirectories()
-        .map((directory: atom$Directory): ?SerializableRemoteConnectionConfiguration => {
-          const connection = RemoteConnection.getForUri(directory.getPath());
-          return connection ?
-            createSerializableRemoteConnectionConfiguration(connection.getConfig()) : null;
-        })
-        .filter((config: ?SerializableRemoteConnectionConfiguration) => config != null);
-    return {
-      remoteProjectsConfig,
-    };
-  },
+  // If RemoteDirectoryProvider is called before this, and it failed
+  // to provide a RemoteDirectory for a
+  // given URI, Atom will create a generic Directory to wrap that. We want
+  // to delete these instead, because those directories aren't valid/useful
+  // if they are not true RemoteDirectory objects (connected to a real
+  // real remote folder).
+  deleteDummyRemoteRootDirectories();
 
-  deactivate(): void {
-    if (packageSubscriptions) {
-      packageSubscriptions.dispose();
-      packageSubscriptions = null;
-    }
+  // Attempt to reload previously open projects.
+  const remoteProjectsConfig = state && state.remoteProjectsConfig;
+  if (remoteProjectsConfig != null) {
+    reloadRemoteProjects(remoteProjectsConfig);
+  }
+  packageSubscriptions = subscriptions;
+}
 
-    if (controller != null) {
-      controller.destroy();
-      controller = null;
-    }
-  },
+export function consumeStatusBar(statusBar: atom$StatusBar): void {
+  if (controller) {
+    controller.consumeStatusBar(statusBar);
+  }
+}
 
-  createRemoteDirectoryProvider(): RemoteDirectoryProviderT {
-    const RemoteDirectoryProvider = require('./RemoteDirectoryProvider');
-    return new RemoteDirectoryProvider();
-  },
+// TODO: All of the elements of the array are non-null, but it does not seem possible to convince
+// Flow of that.
+export function serialize(
+): {remoteProjectsConfig: Array<?SerializableRemoteConnectionConfiguration>} {
+  const remoteProjectsConfig: Array<?SerializableRemoteConnectionConfiguration> =
+    getRemoteRootDirectories()
+      .map((directory: atom$Directory): ?SerializableRemoteConnectionConfiguration => {
+        const connection = RemoteConnection.getForUri(directory.getPath());
+        return connection ?
+          createSerializableRemoteConnectionConfiguration(connection.getConfig()) : null;
+      })
+      .filter((config: ?SerializableRemoteConnectionConfiguration) => config != null);
+  return {
+    remoteProjectsConfig,
+  };
+}
 
-  createRemoteDirectorySearcher(): RemoteDirectorySearcherT {
-    const {getServiceByNuclideUri} = require('../../nuclide-client');
-    const {RemoteDirectory} = require('../../nuclide-remote-connection');
-    const RemoteDirectorySearcher = require('./RemoteDirectorySearcher');
-    return new RemoteDirectorySearcher((dir: RemoteDirectory) => {
-      const service = getServiceByNuclideUri('FindInProjectService', dir.getPath());
-      invariant(service);
-      return (service: FindInProjectService);
-    });
-  },
+export function deactivate(): void {
+  if (packageSubscriptions) {
+    packageSubscriptions.dispose();
+    packageSubscriptions = null;
+  }
 
-  getHomeFragments(): HomeFragments {
-    return {
-      feature: {
-        title: 'Remote Connection',
-        icon: 'cloud-upload',
-        description: 'Connect to a remote server to edit files.',
-        command: 'nuclide-remote-projects:connect',
-      },
-      priority: 8,
-    };
-  },
+  if (controller != null) {
+    controller.destroy();
+    controller = null;
+  }
+}
 
-};
+export function createRemoteDirectoryProvider(): RemoteDirectoryProviderT {
+  const RemoteDirectoryProvider = require('./RemoteDirectoryProvider');
+  return new RemoteDirectoryProvider();
+}
+
+export function createRemoteDirectorySearcher(): RemoteDirectorySearcherT {
+  const {getServiceByNuclideUri} = require('../../nuclide-client');
+  const {RemoteDirectory} = require('../../nuclide-remote-connection');
+  const RemoteDirectorySearcher = require('./RemoteDirectorySearcher');
+  return new RemoteDirectorySearcher((dir: RemoteDirectory) => {
+    const service = getServiceByNuclideUri('FindInProjectService', dir.getPath());
+    invariant(service);
+    return (service: FindInProjectService);
+  });
+}
+
+export function getHomeFragments(): HomeFragments {
+  return {
+    feature: {
+      title: 'Remote Connection',
+      icon: 'cloud-upload',
+      description: 'Connect to a remote server to edit files.',
+      command: 'nuclide-remote-projects:connect',
+    },
+    priority: 8,
+  };
+}
