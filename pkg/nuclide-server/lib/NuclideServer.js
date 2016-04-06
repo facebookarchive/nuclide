@@ -155,6 +155,20 @@ class NuclideServer {
     }
   }
 
+  static closeConnection(client: SocketClient): void {
+    logger.info(`Closing client: #${client.id}`);
+    if (NuclideServer._theServer != null) {
+      NuclideServer._theServer._closeConnection(client);
+    }
+  }
+
+  _closeConnection(client: SocketClient): void {
+    if (this._clients.get(client.id) === client) {
+      this._clients.delete(client.id);
+      client.dispose();
+    }
+  }
+
   connect(): Promise {
     return new Promise((resolve, reject) => {
       this._webServer.on('listening', () => {

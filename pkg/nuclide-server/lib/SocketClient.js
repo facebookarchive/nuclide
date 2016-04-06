@@ -21,6 +21,7 @@ import {ObjectRegistry} from './serviceframework/ObjectRegistry';
 // Handles JSON messaging and reconnect.
 export class SocketClient {
   id: string;
+  _isDisposed: boolean;
   _socket: ?ws$WebSocket;
   _messageQueue: Array<{data: string}>;
   _serverComponent: ServiceFramework.ServerComponent;
@@ -31,6 +32,7 @@ export class SocketClient {
       serverComponent: ServiceFramework.ServerComponent,
       socket: ws$WebSocket) {
     this.id = clientId;
+    this._isDisposed = false;
     this._socket = null;
     this._messageQueue = [];
     this._objectRegistry = new ObjectRegistry();
@@ -75,12 +77,22 @@ export class SocketClient {
   }
 
   _onSocketMessage(message: any): void {
+    if (this._isDisposed) {
+      logger.error(`Received socket message after connection closed`, new Error());
+      return;
+    }
+
     const parsedMessage: Object = JSON.parse(message);
     invariant(parsedMessage.protocol && parsedMessage.protocol === SERVICE_FRAMEWORK3_CHANNEL);
     this._serverComponent.handleMessage(this, parsedMessage);
   }
 
   sendSocketMessage(data: any): void {
+    if (this._isDisposed) {
+      logger.error(`Attempt to send socket message after connection closed`, new Error());
+      return;
+    }
+
     // Wrap the data in an object, because if `data` is a primitive data type,
     // finding it in an array would return the first matching item, not necessarily
     // the same inserted item.
@@ -104,5 +116,11 @@ export class SocketClient {
 
   getMarshallingContext(): ObjectRegistry {
     return this._objectRegistry;
+  }
+
+  dispose(): void {
+    this._isDisposed = true;
+    this._close();
+    this._objectRegistry.dispose();
   }
 }
