@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
 
 import {TunnelVision} from './TunnelVision';
@@ -51,6 +51,19 @@ class Activation {
   consumeTunnelVisionProvider(provider: TunnelVisionProvider): IDisposable {
     return this._tunnelVision.consumeTunnelVisionProvider(provider);
   }
+
+  consumeToolBar(getToolBar: (group: string) => Object): void {
+    const toolBar = getToolBar('nuclide-tunnel-vision');
+    toolBar.addButton({
+      icon: 'eye',
+      callback: 'nuclide-tunnel-vision:toggle',
+      tooltip: 'Toggle tunnel vision',
+      priority: 600,
+    });
+    this._disposables.add(new Disposable(() => {
+      toolBar.removeItems();
+    }));
+  }
 }
 
 let activation: ?Activation = null;
@@ -76,4 +89,9 @@ export function serialize(): TunnelVisionState {
 export function consumeTunnelVisionProvider(provider: TunnelVisionProvider): IDisposable {
   invariant(activation != null);
   return activation.consumeTunnelVisionProvider(provider);
+}
+
+export function consumeToolBar(getToolBar: (group: string) => Object): void {
+  invariant(activation != null);
+  activation.consumeToolBar(getToolBar);
 }
