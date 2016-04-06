@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
 
 import {TunnelVision} from './TunnelVision';
@@ -25,31 +26,54 @@ export type TunnelVisionState = {
   restoreState: ?Array<string>;
 }
 
-let tunnelVision: ?TunnelVision = null;
+class Activation {
+  _disposables: CompositeDisposable;
+  _tunnelVision: TunnelVision;
 
-export function activate(state: ?TunnelVisionState) {
-  if (tunnelVision == null) {
-    tunnelVision = new TunnelVision(state);
-    atom.commands.add(
+  constructor(state: ?TunnelVisionState) {
+    this._disposables = new CompositeDisposable();
+    this._tunnelVision = new TunnelVision(state);
+    this._disposables.add(atom.commands.add(
       atom.views.getView(atom.workspace),
       'nuclide-tunnel-vision:toggle',
-      tunnelVision.toggleTunnelVision.bind(tunnelVision),
-    );
+      this._tunnelVision.toggleTunnelVision.bind(this._tunnelVision),
+    ));
+  }
+
+  dispose(): void {
+    this._disposables.dispose();
+  }
+
+  serialize(): TunnelVisionState {
+    return this._tunnelVision.serialize();
+  }
+
+  consumeTunnelVisionProvider(provider: TunnelVisionProvider): IDisposable {
+    return this._tunnelVision.consumeTunnelVisionProvider(provider);
+  }
+}
+
+let activation: ?Activation = null;
+
+export function activate(state: ?TunnelVisionState) {
+  if (activation == null) {
+    activation = new Activation(state);
   }
 }
 
 export function deactivate() {
-  if (tunnelVision != null) {
-    tunnelVision = null;
+  if (activation != null) {
+    activation.dispose();
+    activation = null;
   }
 }
 
 export function serialize(): TunnelVisionState {
-  invariant(tunnelVision != null);
-  return tunnelVision.serialize();
+  invariant(activation != null);
+  return activation.serialize();
 }
 
 export function consumeTunnelVisionProvider(provider: TunnelVisionProvider): IDisposable {
-  invariant(tunnelVision != null);
-  return tunnelVision.consumeTunnelVisionProvider(provider);
+  invariant(activation != null);
+  return activation.consumeTunnelVisionProvider(provider);
 }
