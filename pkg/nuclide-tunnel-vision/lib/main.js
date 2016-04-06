@@ -40,7 +40,6 @@ export function activate(state: ?TunnelVisionState) {
 
 export function deactivate() {
   if (tunnelVision != null) {
-    tunnelVision.dispose();
     tunnelVision = null;
   }
 }

@@ -12,11 +12,9 @@
 import type {TunnelVisionProvider, TunnelVisionState} from '..';
 
 import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
+import {Disposable} from 'atom';
 
 export class TunnelVision {
-  _disposables: CompositeDisposable;
-
   _providers: Set<TunnelVisionProvider>;
   // Non-null iff we have entered tunnel vision mode without explicitly exiting it. See
   // _shouldRestore() and _enterTunnelVision() for a more detailed explanation.
@@ -27,16 +25,11 @@ export class TunnelVision {
   _deserializationState: ?Set<string>;
 
   constructor(state: ?TunnelVisionState) {
-    this._disposables = new CompositeDisposable();
     this._providers = new Set();
     this._restoreState = null;
     if (state != null && state.restoreState != null) {
       this._deserializationState = new Set(state.restoreState);
     }
-  }
-
-  dispose() {
-    this._disposables.dispose();
   }
 
   serialize(): TunnelVisionState {
