@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
 import type {HomeFragments} from '../../nuclide-home-interfaces';
 import type {
   RemoteConnectionConfiguration,
@@ -106,21 +105,22 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
     closeOpenFilesForRemoteProject(connection.getConfig());
 
     const hostname = connection.getRemoteHostname();
+    const closeConnection = (shutdownIfLast: boolean) => {
+      connection.close(shutdownIfLast);
+    };
+
     if (!connection.isOnlyConnection()) {
       logger.info('Remaining remote projects using Nuclide Server - no prompt to shutdown');
-      connection.close();
+      const shutdownIfLast = false;
+      closeConnection(shutdownIfLast);
       return;
     }
 
     const buttons = ['Keep It', 'Shutdown'];
     const buttonToActions = new Map();
 
-    buttonToActions.set(buttons[0], () => connection.close());
-    buttonToActions.set(buttons[1], async () => {
-      await (connection.getService('InfoService'): InfoService).shutdownServer();
-      connection.close();
-      return;
-    });
+    buttonToActions.set(buttons[0], () => closeConnection(/* shutdownIfLast */ false));
+    buttonToActions.set(buttons[1], () => closeConnection(/* shutdownIfLast */ true));
 
     if (featureConfig.get(
       'nuclide-remote-projects.shutdownServerAfterDisconnection',

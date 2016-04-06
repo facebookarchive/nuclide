@@ -147,6 +147,7 @@ export class RemoteConnection {
   }
 
   async _initialize(): Promise<RemoteConnection> {
+    const attemptShutdown = false;
     // Must add first to prevent the ServerConnection from going away
     // in a possible race.
     this._connection.addConnection(this);
@@ -161,7 +162,7 @@ export class RemoteConnection {
             RemoteConnection.getByHostnameAndPath(this.getRemoteHostname(), resolvedPath);
         invariant(this !== existingConnection);
         if (existingConnection != null) {
-          this.close();
+          this.close(attemptShutdown);
           return existingConnection;
         }
 
@@ -174,7 +175,7 @@ export class RemoteConnection {
       _emitter.emit('did-add', this);
       this._watchRootProjectDirectory();
     } catch (e) {
-      this.close();
+      this.close(attemptShutdown);
       throw e;
     }
     return this;
@@ -224,8 +225,8 @@ export class RemoteConnection {
     this._subscriptions.add(subscription);
   }
 
-  close(): void {
-    this._connection.removeConnection(this);
+  close(shutdownIfLast: boolean): void {
+    this._connection.removeConnection(this, shutdownIfLast);
     _emitter.emit('did-close', this);
   }
 

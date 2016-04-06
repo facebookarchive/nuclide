@@ -209,8 +209,7 @@ class ServerConnection {
     await client.testConnection();
 
     // Do version check.
-    const infoService: InfoService = this.getService('InfoService');
-    const serverVersion = await infoService.getServerVersion();
+    const serverVersion = await this._getInfoService().getServerVersion();
 
     const clientVersion = getVersion();
     if (clientVersion !== serverVersion) {
@@ -302,11 +301,18 @@ class ServerConnection {
     this._connections.push(connection);
   }
 
-  removeConnection(connection: RemoteConnection): void {
+  async removeConnection(connection: RemoteConnection, shutdownIfLast: boolean): Promise<void> {
     invariant(this._connections.indexOf(connection) !== -1,
       'Attempt to remove a non-existent RemoteConnection');
     this._connections.splice(this._connections.indexOf(connection), 1);
     if (this._connections.length === 0) {
+      if (shutdownIfLast) {
+        // The await here is subtle, it ensures that the shutdown call is sent
+        // on the socket before the socket is closed on the next line.
+        // TODO: Ideally we'd not Promise.all() for argument lists which do not
+        // contain any remote interfaces rather than await here.
+        await this._getInfoService().shutdownServer();
+      }
       this.close();
     }
   }
@@ -356,6 +362,10 @@ class ServerConnection {
 
   getSocket(): NuclideSocket {
     return this.getClient().getSocket();
+  }
+
+  _getInfoService(): InfoService {
+    return this.getService('InfoService');
   }
 }
 

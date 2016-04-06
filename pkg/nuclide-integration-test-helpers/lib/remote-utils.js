@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
-
 import invariant from 'assert';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import {getServiceByNuclideUri} from '../../nuclide-client';
@@ -47,6 +45,9 @@ export async function stopNuclideServer(connection: RemoteConnection): Promise<v
     getServiceByNuclideUri('FlowService', connection.getUriForInitialWorkingDirectory());
   invariant(service);
   service.dispose();
-  await (connection.getService('InfoService'): InfoService).shutdownServer();
-  connection.close();
+  // If this ever fires, either ensure that your test closes all RemoteConnections
+  // or we can add a force shutdown method to ServerConnection.
+  invariant(connection.isOnlyConnection());
+  const attemptShutdown = true;
+  connection.close(attemptShutdown);
 }
