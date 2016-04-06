@@ -14,6 +14,7 @@ import type {Datatip} from '../../nuclide-datatip-interfaces';
 import {React} from 'react-for-atom';
 
 const {extractWordAtPosition} = require('../../nuclide-atom-helpers');
+import {SampleDatatipComponent} from './SampleDatatipComponent';
 
 const WORD_REGEX = /\w+/gi;
 
@@ -28,7 +29,7 @@ export async function datatip(editor: TextEditor, position: atom$Point): Promise
   } = extractedWord;
   const word = wordMatch[0] == null ? 'N/A' : wordMatch[0];
   return {
-    component: <div>I am a Datatip for "{word}"</div>,
+    component: <SampleDatatipComponent word={word} />,
     range,
   };
 }
