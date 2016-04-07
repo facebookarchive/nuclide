@@ -29,7 +29,10 @@ def load_dependencies():
 def check_dependency(binary, expected_version):
     # Since flow v0.18.1 `--version` was deprecated in favor a `version` command
     cmd = [binary, '--version'] if binary != 'flow' else [binary, 'version']
-    actual_version = utils.check_output(cmd).rstrip()
+    try:
+        actual_version = utils.check_output(cmd).rstrip()
+    except OSError as e:
+        raise Exception('Error while running %s: %s' % (binary, str(e), ))
     if actual_version != expected_version:
         raise Exception(('Incorrect %s version. Found %s, expected %s. ' +
                          'Use the --no-version option to ignore this test.') %
