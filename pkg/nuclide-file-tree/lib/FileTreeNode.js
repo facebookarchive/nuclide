@@ -10,7 +10,7 @@
  */
 
 
-import {isDirKey, keyToName, buildHashKey} from './FileTreeHelpers';
+import {isDirKey, keyToName, keyToPath, buildHashKey} from './FileTreeHelpers';
 import {isRemote, parse} from '../../nuclide-remote-uri';
 import Immutable from 'immutable';
 import path from 'path';
@@ -615,7 +615,7 @@ export class FileTreeNode {
       hashKey: buildHashKey(uri),
       isContainer,
       relativePath: uri.slice(rootUri.length),
-      localPath: isRemote(uri) ? parse(uri).pathname : uri,
+      localPath: keyToPath(isRemote(uri) ? parse(uri).pathname : uri),
       shouldBeShown: this._deriveShouldBeShown(uri, rootUri, isContainer, repo, conf),
       shouldBeSoftened: this._deriveShouldBeSoftened(uri, isContainer, conf),
       vcsStatusCode: rootVcsStatuses[uri] || StatusCodeNumber.CLEAN,
