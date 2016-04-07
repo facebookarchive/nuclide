@@ -390,7 +390,9 @@ class FileTreeActions {
     // First, get the output of `hg status` for the repository.
     // TODO(mbolin): Verify that all of this is set up correctly for remote files.
     const repoRoot = hgRepo.getWorkingDirectory();
-    const statusCodeForPath = await hgRepo.getStatuses([repoRoot], {
+    const repoProjects = atom.project.getPaths().filter(projPath => projPath.startsWith(repoRoot));
+
+    const statusCodeForPath = await hgRepo.getStatuses(repoProjects, {
       hgStatusOption: hgConstants.HgStatusOption.ONLY_NON_IGNORED,
     });
 
