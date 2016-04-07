@@ -21,6 +21,13 @@
       }
     }
   },
+  "providedServices": {
+    "nuclide-file-tree.context-menu": {
+      "versions": {
+        "0.1.0": "getContextMenuForFileTree"
+      }
+    }
+  },
   "nuclide": {
     "config": {
       "revealFileOnSwitch": {

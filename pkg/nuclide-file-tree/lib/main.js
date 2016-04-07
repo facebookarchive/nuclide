@@ -10,6 +10,7 @@
  */
 
 import type {FileTreeControllerState} from './FileTreeController';
+import type FileTreeContextMenu from './FileTreeContextMenu';
 import type FileTreeControllerType from './FileTreeController';
 import type {NuclideSideBarService} from '../../nuclide-side-bar';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
@@ -197,6 +198,11 @@ class Activation {
     this._fileTreeController.setUsePreviewTabs(usePreviewTabs);
   }
 
+  getContextMenu(): FileTreeContextMenu {
+    invariant(this._fileTreeController);
+    return this._fileTreeController.getContextMenu();
+  }
+
   _deactivate() {
     // Guard against deactivate being called twice
     this._fileTreeController.destroy();
@@ -274,6 +280,11 @@ export function serialize(): ?FileTreeControllerState {
   if (activation) {
     return activation.serialize();
   }
+}
+
+export function getContextMenuForFileTree(): FileTreeContextMenu {
+  invariant(activation);
+  return activation.getContextMenu();
 }
 
 export function consumeNuclideSideBar(sidebar: NuclideSideBarService): IDisposable {

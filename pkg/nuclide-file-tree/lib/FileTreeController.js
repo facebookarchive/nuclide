@@ -156,6 +156,10 @@ class FileTreeController {
     this._actions.moveSelectionToBottom();
   }
 
+  getContextMenu(): FileTreeContextMenu {
+    return this._contextMenu;
+  }
+
   _handlePrefixKeypress(letter: string): void {
     if (!this._store.usePrefixNav()) {
       return;
