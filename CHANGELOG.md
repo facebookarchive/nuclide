@@ -1,5 +1,10 @@
 # Nuclide Changelog
 
+## v0.129.0
+
+* Fixes an issue where the Diff View would fetch Mercurial data even if not visible.
+* Fixes an issue where Mercurial commands would inherit personal user settings resulting in unexpected behavior when standard commands where aliased with flags.
+
 ## v0.128.0
 
 ### Added
