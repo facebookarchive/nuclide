@@ -306,7 +306,10 @@ function _createProcessStream(
         .subscribe(observer),
       new Disposable(() => { disposed = true; maybeKill(); }),
     );
-  }).share();
+  });
+  // TODO: We should really `.share()` this observable, but there seem to be issues with that and
+  //   `.retry()` in Rx 3 and 4. Once we upgrade to Rx5, we should share this observable and verify
+  //   that our retry logic (e.g. in adb-logcat) works.
 }
 
 function createProcessStream(

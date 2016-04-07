@@ -37,7 +37,7 @@ export function executeRnRequests(rnRequests: Observable<RnRequest>): Observable
         silent: true,
       },
     )
-  ));
+  )).share();
 
   return Observable.merge(
     workerProcess.map(process => ({

@@ -329,6 +329,34 @@ describe('nuclide-commons/process', () => {
       });
     });
 
+    it('can be retried', () => {
+      waitsForPromise(async () => {
+        const createProcess = jasmine.createSpy().andCallFake(
+          () => processLib.safeSpawn('fakeCommand')
+        );
+        try {
+          await processLib.createProcessStream(createProcess)
+            .retryWhen(errors => (
+              errors.scan(
+                (errorCount, err) => {
+                  // If this is the third time the process has errored (i.e. the have already been
+                  // two errors before), stop retrying. (We try 3 times because because Rx 3 and 4
+                  // have bugs with retrying shared observables that would give false negatives for
+                  // this test if we only tried twice.)
+                  if (errorCount === 2) {
+                    throw err;
+                  }
+                  return errorCount + 1;
+                },
+                0,
+              )
+            ))
+            .toPromise();
+        } catch (err) {}
+        expect(createProcess.callCount).toEqual(3);
+      });
+    });
+
   });
 
 });
