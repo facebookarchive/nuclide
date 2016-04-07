@@ -259,11 +259,12 @@ function scriptSafeSpawnAndObserveOutput(
  * Creates an observable with the following properties:
  *
  * 1. It contains a process that's created using the provided factory upon subscription.
- * 2. It doesn't complete until the process exits.
+ * 2. It doesn't complete until the process exits (or errors).
  * 3. The process is killed when there are no more subscribers.
  */
-function createProcessStream(
+function _createProcessStream(
   createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
+  throwOnError: boolean,
 ): Observable<child_process$ChildProcess> {
   return Observable.create(observer => {
     const promise = Promise.resolve(createProcess());
@@ -284,6 +285,12 @@ function createProcessStream(
 
     const processStream = Observable.fromPromise(promise);
 
+    const errors = throwOnError
+      ? processStream.flatMapLatest(p => (
+        Observable.fromEvent(p, 'error').flatMap(err => Observable.throw(err))
+      ))
+      : Observable.empty();
+
     const exit = processStream
       .flatMap(p => Observable.fromEvent(p, 'exit', (code, signal) => signal))
       // An exit signal from SIGUSR1 doesn't actually exit the process, so skip that.
@@ -293,12 +300,19 @@ function createProcessStream(
     return new CompositeDisposable(
       // A version of processStream that never completes...
       Observable.merge(processStream, Observable.create(() => {}))
+        .merge(errors)
         // ...which we take until the process exits.
         .takeUntil(exit)
         .subscribe(observer),
       new Disposable(() => { disposed = true; maybeKill(); }),
     );
   }).share();
+}
+
+function createProcessStream(
+  createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
+): Observable<child_process$ChildProcess> {
+  return _createProcessStream(createProcess, true);
 }
 
 /**
@@ -308,7 +322,7 @@ function createProcessStream(
 function observeProcessExit(
   createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
 ): Observable<number> {
-  return createProcessStream(createProcess)
+  return _createProcessStream(createProcess, false)
     .flatMap(process => Observable.fromEvent(process, 'exit').take(1));
 }
 
@@ -340,7 +354,7 @@ function getOutputStream(
 function observeProcess(
   createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
 ): Observable<ProcessMessage> {
-  return createProcessStream(createProcess).flatMap(getOutputStream);
+  return _createProcessStream(createProcess, false).flatMap(getOutputStream);
 }
 
 /**

@@ -311,4 +311,24 @@ describe('nuclide-commons/process', () => {
 
   });
 
+  describe('createProcessStream', () => {
+
+    it('errors when the process does', () => {
+      waitsForPromise(async () => {
+        const createProcess = () => processLib.safeSpawn('fakeCommand');
+        const processStream = processLib.createProcessStream(createProcess);
+        let error;
+        try {
+          await processStream.toPromise();
+        } catch (err) {
+          error = err;
+        }
+        expect(error).toBeDefined();
+        invariant(error);
+        expect(error.code).toBe('ENOENT');
+      });
+    });
+
+  });
+
 });
