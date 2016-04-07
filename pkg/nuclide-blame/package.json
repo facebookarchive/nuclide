@@ -18,6 +18,11 @@
       "versions": {
         "0.0.0": "consumeBlameGutterClass"
       }
+    },
+    "nuclide-file-tree.context-menu": {
+      "versions": {
+        "0.1.0": "addItemsToFileTreeContextMenu"
+      }
     }
   }
 }

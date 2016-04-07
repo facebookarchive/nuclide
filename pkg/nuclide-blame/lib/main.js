@@ -10,6 +10,8 @@
  */
 
 import type {BlameProvider} from '../../nuclide-blame-base';
+import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
+import type {FileTreeNode} from '../../nuclide-file-tree/lib/FileTreeNode';
 
 import {CompositeDisposable, Disposable} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
@@ -21,6 +23,8 @@ const PACKAGES_MISSING_MESSAGE =
   - at least one blame provider
 
 You are missing one of these.`;
+
+const TOGGLE_BLAME_FILE_TREE_CONTEXT_MENU_PRIORITY = 2000;
 
 type BlameGutter = {
   destroy: () => void;
@@ -185,8 +189,55 @@ class Activation {
       }
     });
   }
+
+  addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
+    const menuItemDescriptions = new CompositeDisposable();
+    menuItemDescriptions.add(
+      atom.commands.add(
+        'atom-workspace',
+        /* eslint-disable nuclide-internal/command-menu-items */
+        // This does not belong in a menu because it should not be a public command:
+        // it should be a callback, but ContextMenuManager forces our hand.
+        'nuclide-blame:toggle-blame-file-tree',
+        /* eslint-enable nuclide-internal/command-menu-items */
+        async () => {
+          const {goToLocation} = require('../../nuclide-atom-helpers');
+          findBlameableNodes(contextMenu).forEach(async node => {
+            const editor = await goToLocation(node.uri);
+            atom.commands.dispatch(atom.views.getView(editor), 'nuclide-blame:toggle-blame');
+          });
+        },
+      ),
+      contextMenu.addItemToSourceControlMenu(
+        {
+          label: 'Toggle Blame',
+          command: 'nuclide-blame:toggle-blame-file-tree',
+          shouldDisplay() {
+            return findBlameableNodes(contextMenu).length > 0;
+          },
+        },
+        TOGGLE_BLAME_FILE_TREE_CONTEXT_MENU_PRIORITY,
+      ),
+    );
+    this._packageDisposables.add(menuItemDescriptions);
+    return menuItemDescriptions;
+  }
 }
 
+/**
+ * @return list of nodes against which "Toggle Blame" is an appropriate action. Currently, this
+ *   blindly returns all files, but it would be better to limit it to files that are part of an
+ *   Hg repository.
+ */
+function findBlameableNodes(contextMenu: FileTreeContextMenu): Array<FileTreeNode> {
+  const nodes = [];
+  for (const node of contextMenu.getSelectedNodes()) {
+    if (!node.isContainer) {
+      nodes.push(node);
+    }
+  }
+  return nodes;
+}
 
 let activation: ?Activation;
 
@@ -211,4 +262,9 @@ export function consumeBlameGutterClass(blameGutter: BlameGutterClass): IDisposa
 export function consumeBlameProvider(provider: BlameProvider): IDisposable {
   invariant(activation);
   return activation.consumeBlameProvider(provider);
+}
+
+export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
+  invariant(activation);
+  return activation.addItemsToFileTreeContextMenu(contextMenu);
 }
