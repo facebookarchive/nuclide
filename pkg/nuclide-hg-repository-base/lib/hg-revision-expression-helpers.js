@@ -11,6 +11,7 @@
 
 import type {RevisionInfo} from './HgService';
 
+import {hgAsyncExecute} from './hg-utils';
 import invariant from 'assert';
 
 const logger = require('../../nuclide-logging').getLogger();
@@ -87,17 +88,20 @@ export async function fetchCommonAncestorOfHeadAndRevision(
   revision: string,
   workingDirectory: string,
 ): Promise<string> {
-  const {asyncExecute} = require('../../nuclide-commons');
-
   const ancestorExpression = expressionForCommonAncestor(revision);
   // shell-escape does not wrap '{rev}' in quotes unless it is double-quoted.
-  const args = ['log', '--template', '{rev}', '--rev', ancestorExpression];
+  const args = [
+    'log',
+    '--template', '{rev}',
+    '--rev', ancestorExpression,
+    '--limit', '1',
+  ];
   const options = {
     cwd: workingDirectory,
   };
 
   try {
-    const {stdout: ancestorRevisionNumber} = await asyncExecute('hg', args, options);
+    const {stdout: ancestorRevisionNumber} = await hgAsyncExecute(args, options);
     return ancestorRevisionNumber;
   } catch (e) {
     logger.warn('Failed to get hg common ancestor: ', e.stderr, e.command);
@@ -121,12 +125,11 @@ export async function fetchRevisionInfoBetweenRevisions(
   revisionTo: string,
   workingDirectory: string,
 ): Promise<Array<RevisionInfo>> {
-  const {asyncExecute} = require('../../nuclide-commons');
-
   const revisionExpression = `${revisionFrom}::${revisionTo}`;
   const revisionLogArgs = [
     'log', '--template', REVISION_INFO_TEMPLATE,
     '--rev', revisionExpression,
+    '--limit', '20',
   ];
   const bookmarksArgs = ['bookmarks'];
   const options = {
@@ -135,8 +138,8 @@ export async function fetchRevisionInfoBetweenRevisions(
 
   try {
     const [revisionsResult, bookmarksResult] = await Promise.all([
-      asyncExecute('hg', revisionLogArgs, options),
-      asyncExecute('hg', bookmarksArgs, options),
+      hgAsyncExecute(revisionLogArgs, options),
+      hgAsyncExecute(bookmarksArgs, options),
     ]);
     const revisionsInfo = parseRevisionInfoOutput(revisionsResult.stdout);
     const bookmarksInfo = parseBookmarksOutput(bookmarksResult.stdout);

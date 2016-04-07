@@ -12,9 +12,8 @@
 import type {RevisionFileChanges} from './HgService';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
-const {asyncExecute} = require('../../nuclide-commons');
-const logger = require('../../nuclide-logging').getLogger();
-const path = require('path');
+import {hgAsyncExecute} from './hg-utils';
+import path from 'path';
 import invariant from 'assert';
 
 const ALL_FILES_LABEL = 'files:';
@@ -41,7 +40,7 @@ const COPIED_FILE_PAIR_REGEX = /(.+) \((.+)/;
  * if the operation fails for whatever reason, including invalid input (e.g. if
  * you pass a filePath that does not exist at the given revision).
  */
-function fetchFileContentAtRevision(
+async function fetchFileContentAtRevision(
   filePath: NuclideUri,
   revision: ?string,
   workingDirectory: string,
@@ -53,7 +52,8 @@ function fetchFileContentAtRevision(
   const execOptions = {
     cwd: workingDirectory,
   };
-  return hgAsyncExecute(args, execOptions);
+  const {stdout: contents} = await hgAsyncExecute(args, execOptions);
+  return contents;
 }
 
 /**
@@ -67,15 +67,20 @@ async function fetchFilesChangedAtRevision(
   revision: string,
   workingDirectory: string,
 ): Promise<?RevisionFileChanges> {
-  const args = ['log', '--template', REVISION_FILE_CHANGES_TEMPLATE, '--rev', revision];
+  const args = [
+    'log',
+    '--template', REVISION_FILE_CHANGES_TEMPLATE,
+    '--rev', revision,
+    '--limit', '1',
+  ];
   const execOptions = {
     cwd: workingDirectory,
   };
-  let output = await hgAsyncExecute(args, execOptions);
-  if (output) {
-    output = parseRevisionFileChangeOutput(output, workingDirectory);
+  const {stdout} = await hgAsyncExecute(args, execOptions);
+  if (!stdout) {
+    return null;
   }
-  return output;
+  return parseRevisionFileChangeOutput(stdout, workingDirectory);
 }
 
 /**
@@ -128,18 +133,6 @@ function parseRevisionFileChangeOutput(
     copied: copiedFiles,
     modified: modifiedFiles,
   };
-}
-
-
-async function hgAsyncExecute(args: Array<string>, execOptions: any): Promise<any> {
-  let output;
-  try {
-    output = await asyncExecute('hg', args, execOptions);
-  } catch (e) {
-    logger.error('Hg command: failed with error: ', e.stderr);
-    return null;
-  }
-  return output.stdout;
 }
 
 function absolutize(filePath: string, workingDirectory: string): string {

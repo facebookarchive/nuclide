@@ -712,6 +712,9 @@ class DiffViewModel {
       return;
     }
     this._activeRepositoryStack = repositoryStack;
+    if (!this._isActive) {
+      return;
+    }
     const revisionsState = await repositoryStack.getCachedRevisionsStatePromise();
     this._updateChangedRevisions(repositoryStack, revisionsState, false);
   }
@@ -1150,7 +1153,7 @@ class DiffViewModel {
   }
 
   async getActiveRevisionsState(): Promise<?RevisionsState> {
-    if (this._activeRepositoryStack == null) {
+    if (this._activeRepositoryStack == null || !this._isActive) {
       return null;
     }
     return await this._activeRepositoryStack.getCachedRevisionsStatePromise();

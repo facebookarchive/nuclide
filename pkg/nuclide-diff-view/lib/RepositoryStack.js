@@ -283,6 +283,9 @@ export default class RepositoryStack {
 
   @trackTiming('diff-view.fetch-revisions-state')
   async _fetchRevisionsState(): Promise<RevisionsState> {
+    if (!this._isActive) {
+      throw new Error('Diff View should not fetch revisions while not active');
+    }
     // While rebasing, the common ancestor of `HEAD` and `BASE`
     // may be not applicable, but that's defined once the rebase is done.
     // Hence, we need to retry fetching the revision info (depending on the common ancestor)
