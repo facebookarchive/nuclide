@@ -16,15 +16,28 @@ from multiprocessing import Pool, cpu_count
 
 
 class JsTestRunner(object):
-    def __init__(self, package_manager, include_apm=True, packages_to_test=[], verbose=False, run_in_band=False):
+    def __init__(
+        self,
+        package_manager,
+        include_apm=True,
+        packages_to_test=[],
+        verbose=False,
+        run_in_band=False,
+        continue_on_errors=False,
+    ):
         self._package_manager = package_manager
         self._include_apm = include_apm
         self._packages_to_test = packages_to_test
         self._run_in_band = run_in_band
         self._verbose = verbose
+        self._continue_on_errors = continue_on_errors
 
     def run_integration_tests(self):
-        run_integration_tests_with_clean_state(self._package_manager.get_nuclide_path(), self._packages_to_test)
+        run_integration_tests_with_clean_state(
+            self._package_manager.get_nuclide_path(),
+            self._packages_to_test,
+            self._continue_on_errors,
+        )
 
     def run_tests(self):
         apm_tests = []
@@ -74,7 +87,13 @@ class JsTestRunner(object):
 
         if parallel_tests:
             pool = Pool(processes=max(1, cpu_count() - 1))
-            results = [pool.apply_async(run_js_test, args=test_args) for test_args in parallel_tests]
+            results = [
+                pool.apply_async(
+                    run_js_test,
+                    args=test_args,
+                    kwds={'continue_on_errors': self._continue_on_errors},
+                ) for test_args in parallel_tests
+            ]
             for async_result in results:
                 async_result.wait()
                 if not async_result.successful():
@@ -82,9 +101,21 @@ class JsTestRunner(object):
 
         for test_args in serial_tests:
             (test_runner, pkg_path, name) = test_args
-            run_js_test(test_runner, pkg_path, name)
+            run_js_test(
+                test_runner,
+                pkg_path,
+                name,
+                continue_on_errors=self._continue_on_errors,
+            )
 
-def run_js_test(test_runner, pkg_path, name, apm_retry=True):
+
+def run_js_test(
+    test_runner,
+    pkg_path,
+    name,
+    apm_retry=True,
+    continue_on_errors=False,
+):
     """Run `apm test` or `npm test` in the given pkg_path."""
 
     logging.info('Running `%s test` in %s...', test_runner, pkg_path)
@@ -122,16 +153,28 @@ def run_js_test(test_runner, pkg_path, name, apm_retry=True):
         if test_runner == 'apm' and apm_retry and is_retryable_error('\n'.join(stdout)):
             logging.info('RETRYING TEST: %s', name)
             time.sleep(3)
-            run_js_test(test_runner, pkg_path, name, apm_retry=False)
+            run_js_test(
+                test_runner,
+                pkg_path,
+                name,
+                apm_retry=False,
+                continue_on_errors=continue_on_errors,
+            )
             return
-        raise Exception('TEST FAILED: %s test %s (exit code: %d)' %
-                        (test_runner, name, proc.returncode))
+        if not continue_on_errors:
+            raise Exception('TEST FAILED: %s test %s (exit code: %d)' %
+                            (test_runner, name, proc.returncode))
     else:
         logging.info('TEST PASSED: %s', name)
 
-def run_integration_tests_with_clean_state(path_to_nuclide, named_tests):
+
+def run_integration_tests_with_clean_state(
+    path_to_nuclide,
+    named_tests,
+    continue_on_errors,
+):
     test_dir = os.path.join(path_to_nuclide, 'spec')
-    test_dir_backup = os.path.join(path_to_nuclide, 'spec-backup');
+    test_dir_backup = os.path.join(path_to_nuclide, 'spec-backup')
 
     # Copy test_dir and its contents to backup so we can restore it later.
     shutil.copytree(test_dir, test_dir_backup)
@@ -161,7 +204,12 @@ def run_integration_tests_with_clean_state(path_to_nuclide, named_tests):
                     shutil.copy(os.path.join(root, name), dest)
 
                     # Run test.
-                    run_js_test('apm', path_to_nuclide, os.path.basename(dest))
+                    run_js_test(
+                        'apm',
+                        path_to_nuclide,
+                        os.path.basename(dest),
+                        continue_on_errors=continue_on_errors,
+                    )
 
                     # Remove file.
                     os.remove(dest)
