@@ -35,6 +35,7 @@ import {
   STATUS_STDOUT,
   STATUS_STDERR,
   COMMAND_RUN,
+  COMMAND_STOP,
 } from './DbgpSocket';
 import {EventEmitter} from 'events';
 import invariant from 'assert';
@@ -224,7 +225,7 @@ export class ConnectionMultiplexer {
       case STATUS_STOPPING:
         // TODO: May want to enable post-mortem features?
         connectionInfo.status = status;
-        connection.sendContinuationCommand(COMMAND_RUN);
+        connection.sendContinuationCommand(COMMAND_STOP);
         return;
       case STATUS_RUNNING:
         connectionInfo.status = status;
@@ -242,9 +243,13 @@ export class ConnectionMultiplexer {
         }
         break;
       case STATUS_ERROR:
+        let message = 'The debugger encountered a problem and the connection had to be shut down.';
+        if (args[0] != null) {
+          message = `${message}  Error message: ${args[0]}`;
+        }
         this._clientCallback.sendUserMessage('notification', {
           type: 'error',
-          message: 'The debugger encountered a problem and the connection had to be shut down.',
+          message,
         });
         this._removeConnection(connection);
         break;

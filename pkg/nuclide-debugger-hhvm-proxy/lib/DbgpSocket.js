@@ -108,11 +108,11 @@ class DbgpSocket {
       .attachEvent(this._emitter, DBGP_SOCKET_STATUS_EVENT, callback);
   }
 
-  _onError(error: {code: number}): void {
+  _onError(error: {code: string}): void {
     // Not sure if hhvm is alive or not
     // do not set _isClosed flag so that detach will be sent before dispose().
     logger.logError('socket error ' + error.code);
-    this._emitStatus(STATUS_ERROR);
+    this._emitStatus(STATUS_ERROR, error.code);
   }
 
   _onEnd(): void {
@@ -127,10 +127,10 @@ class DbgpSocket {
     let responses = [];
     try {
       responses = this._messageHandler.parseMessages(message);
-    } catch (_) {
+    } catch (e) {
       // If message parsing fails, then our contract with HHVM is violated and we need to kill the
       // connection.
-      this._emitStatus(STATUS_ERROR);
+      this._emitStatus(STATUS_ERROR, e.message);
       return;
     }
     responses.forEach(r => {

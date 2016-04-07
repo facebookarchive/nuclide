@@ -83,7 +83,7 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
 
   it('error', () => {
     onError({code: 42});
-    expect(onStatus).toHaveBeenCalledWith(STATUS_ERROR);
+    expect(onStatus).toHaveBeenCalledWith(STATUS_ERROR, 42);
   });
 
   it('end', () => {
