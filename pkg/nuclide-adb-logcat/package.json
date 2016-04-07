@@ -6,7 +6,15 @@
   "description": "A nuclide-output provider for adb logcat",
   "nuclide": {
     "packageType": "Atom",
-    "testRunner": "apm"
+    "testRunner": "apm",
+    "config": {
+      "pathToAdb": {
+        "title": "Path to adb (Android Debug Bridge) executable",
+        "type": "string",
+        "default": "adb",
+        "description": "Absolute path to the adb executable on your system."
+      }
+    }
   },
   "activationCommands": {
     "atom-workspace": [

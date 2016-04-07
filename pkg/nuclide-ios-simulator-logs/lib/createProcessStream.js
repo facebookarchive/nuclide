@@ -10,6 +10,7 @@
  */
 
 import {observeProcess, safeSpawn} from '../../nuclide-commons';
+import featureConfig from '../../nuclide-feature-config';
 import invariant from 'assert';
 import os from 'os';
 import path from 'path';
@@ -75,9 +76,12 @@ function tailDeviceLogs(udid: string): Promise<child_process$ChildProcess> {
     udid,
     'asl',
   );
-  return safeSpawn('syslog', [
-    '-w',
-    '-F', 'xml',
-    '-d', logDir,
-  ]);
+  return safeSpawn(
+    ((featureConfig.get('nuclide-ios-simulator-logs.pathToSyslog'): any): string),
+    [
+      '-w',
+      '-F', 'xml',
+      '-d', logDir,
+    ],
+  );
 }

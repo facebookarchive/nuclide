@@ -10,6 +10,7 @@
  */
 
 import {observeProcess, safeSpawn} from '../../nuclide-commons';
+import featureConfig from '../../nuclide-feature-config';
 import Rx from 'rx';
 
 export function createProcessStream(): Rx.Observable<string> {
@@ -32,5 +33,8 @@ export function createProcessStream(): Rx.Observable<string> {
 }
 
 function spawnAdbLogcat(): Promise<child_process$ChildProcess> {
-  return safeSpawn('adb', ['logcat', '-v', 'long', '-T', '1']);
+  return safeSpawn(
+    ((featureConfig.get('nuclide-adb-logcat.pathToAdb'): any): string),
+    ['logcat', '-v', 'long', '-T', '1']
+  );
 }

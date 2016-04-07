@@ -24,6 +24,12 @@
           "backboardd"
         ],
         "description": "Exclude messages sent by these senders from the output window"
+      },
+      "pathToSyslog": {
+        "title": "Path to syslog executable",
+        "type": "string",
+        "default": "syslog",
+        "description": "Absolute path to the syslog executable on your system."
       }
     }
   },
