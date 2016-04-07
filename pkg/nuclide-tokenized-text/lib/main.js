@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,63 +10,56 @@
  * the root directory of this source tree.
  */
 
+// This type is duplicated in nuclide-flow-base/lib/FlowService.js
+// When updating update both locations!
 
 // This type is duplicated in nuclide-flow-base/lib/FlowService.js
 // When updating update both locations!
-export type TokenKind = 'keyword'
-  | 'class-name'
-  | 'constructor'
-  | 'method'
-  | 'param'
-  | 'string'
-  | 'whitespace'
-  | 'plain'
-  ;
 
 // This type is duplicated in nuclide-flow-base/lib/FlowService.js
 // When updating update both locations!
-export type TextToken = {
-  kind: TokenKind;
-  value: string;
-}
+exports.keyword = keyword;
+exports.className = className;
+exports.constructor = constructor;
+exports.method = method;
+exports.param = param;
+exports.string = string;
+exports.whitespace = whitespace;
+exports.plain = plain;
 
-// This type is duplicated in nuclide-flow-base/lib/FlowService.js
-// When updating update both locations!
-export type TokenizedText = Array<TextToken>;
-
-export function keyword(value: string): TextToken {
+function keyword(value) {
   return _buildToken('keyword', value);
 }
 
-export function className(value: string): TextToken {
+function className(value) {
   return _buildToken('class-name', value);
 }
 
-export function constructor(value: string): TextToken {
+function constructor(value) {
   return _buildToken('constructor', value);
 }
 
-export function method(value: string): TextToken {
+function method(value) {
   return _buildToken('method', value);
 }
 
-export function param(value: string): TextToken {
+function param(value) {
   return _buildToken('param', value);
 }
 
-export function string(value: string): TextToken {
+function string(value) {
   return _buildToken('string', value);
 }
 
-export function whitespace(value: string): TextToken {
+function whitespace(value) {
   return _buildToken('whitespace', value);
 }
 
-export function plain(value: string): TextToken {
+function plain(value) {
   return _buildToken('plain', value);
 }
 
-
-function _buildToken(kind: TokenKind, value: string): TextToken {
-  return {kind, value};
+function _buildToken(kind, value) {
+  return { kind: kind, value: value };
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFtQ08sU0FBUyxPQUFPLENBQUMsS0FBYSxFQUFhO0FBQ2hELFNBQU8sV0FBVyxDQUFDLFNBQVMsRUFBRSxLQUFLLENBQUMsQ0FBQztDQUN0Qzs7QUFFTSxTQUFTLFNBQVMsQ0FBQyxLQUFhLEVBQWE7QUFDbEQsU0FBTyxXQUFXLENBQUMsWUFBWSxFQUFFLEtBQUssQ0FBQyxDQUFDO0NBQ3pDOztBQUVNLFNBQVMsV0FBVyxDQUFDLEtBQWEsRUFBYTtBQUNwRCxTQUFPLFdBQVcsQ0FBQyxhQUFhLEVBQUUsS0FBSyxDQUFDLENBQUM7Q0FDMUM7O0FBRU0sU0FBUyxNQUFNLENBQUMsS0FBYSxFQUFhO0FBQy9DLFNBQU8sV0FBVyxDQUFDLFFBQVEsRUFBRSxLQUFLLENBQUMsQ0FBQztDQUNyQzs7QUFFTSxTQUFTLEtBQUssQ0FBQyxLQUFhLEVBQWE7QUFDOUMsU0FBTyxXQUFXLENBQUMsT0FBTyxFQUFFLEtBQUssQ0FBQyxDQUFDO0NBQ3BDOztBQUVNLFNBQVMsTUFBTSxDQUFDLEtBQWEsRUFBYTtBQUMvQyxTQUFPLFdBQVcsQ0FBQyxRQUFRLEVBQUUsS0FBSyxDQUFDLENBQUM7Q0FDckM7O0FBRU0sU0FBUyxVQUFVLENBQUMsS0FBYSxFQUFhO0FBQ25ELFNBQU8sV0FBVyxDQUFDLFlBQVksRUFBRSxLQUFLLENBQUMsQ0FBQztDQUN6Qzs7QUFFTSxTQUFTLEtBQUssQ0FBQyxLQUFhLEVBQWE7QUFDOUMsU0FBTyxXQUFXLENBQUMsT0FBTyxFQUFFLEtBQUssQ0FBQyxDQUFDO0NBQ3BDOztBQUdELFNBQVMsV0FBVyxDQUFDLElBQWUsRUFBRSxLQUFhLEVBQWE7QUFDOUQsU0FBTyxFQUFDLElBQUksRUFBSixJQUFJLEVBQUUsS0FBSyxFQUFMLEtBQUssRUFBQyxDQUFDO0NBQ3RCIiwiZmlsZSI6Im1haW4uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5cbi8vIFRoaXMgdHlwZSBpcyBkdXBsaWNhdGVkIGluIG51Y2xpZGUtZmxvdy1iYXNlL2xpYi9GbG93U2VydmljZS5qc1xuLy8gV2hlbiB1cGRhdGluZyB1cGRhdGUgYm90aCBsb2NhdGlvbnMhXG5leHBvcnQgdHlwZSBUb2tlbktpbmQgPSAna2V5d29yZCdcbiAgfCAnY2xhc3MtbmFtZSdcbiAgfCAnY29uc3RydWN0b3InXG4gIHwgJ21ldGhvZCdcbiAgfCAncGFyYW0nXG4gIHwgJ3N0cmluZydcbiAgfCAnd2hpdGVzcGFjZSdcbiAgfCAncGxhaW4nXG4gIDtcblxuLy8gVGhpcyB0eXBlIGlzIGR1cGxpY2F0ZWQgaW4gbnVjbGlkZS1mbG93LWJhc2UvbGliL0Zsb3dTZXJ2aWNlLmpzXG4vLyBXaGVuIHVwZGF0aW5nIHVwZGF0ZSBib3RoIGxvY2F0aW9ucyFcbmV4cG9ydCB0eXBlIFRleHRUb2tlbiA9IHtcbiAga2luZDogVG9rZW5LaW5kO1xuICB2YWx1ZTogc3RyaW5nO1xufVxuXG4vLyBUaGlzIHR5cGUgaXMgZHVwbGljYXRlZCBpbiBudWNsaWRlLWZsb3ctYmFzZS9saWIvRmxvd1NlcnZpY2UuanNcbi8vIFdoZW4gdXBkYXRpbmcgdXBkYXRlIGJvdGggbG9jYXRpb25zIVxuZXhwb3J0IHR5cGUgVG9rZW5pemVkVGV4dCA9IEFycmF5PFRleHRUb2tlbj47XG5cbmV4cG9ydCBmdW5jdGlvbiBrZXl3b3JkKHZhbHVlOiBzdHJpbmcpOiBUZXh0VG9rZW4ge1xuICByZXR1cm4gX2J1aWxkVG9rZW4oJ2tleXdvcmQnLCB2YWx1ZSk7XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBjbGFzc05hbWUodmFsdWU6IHN0cmluZyk6IFRleHRUb2tlbiB7XG4gIHJldHVybiBfYnVpbGRUb2tlbignY2xhc3MtbmFtZScsIHZhbHVlKTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGNvbnN0cnVjdG9yKHZhbHVlOiBzdHJpbmcpOiBUZXh0VG9rZW4ge1xuICByZXR1cm4gX2J1aWxkVG9rZW4oJ2NvbnN0cnVjdG9yJywgdmFsdWUpO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gbWV0aG9kKHZhbHVlOiBzdHJpbmcpOiBUZXh0VG9rZW4ge1xuICByZXR1cm4gX2J1aWxkVG9rZW4oJ21ldGhvZCcsIHZhbHVlKTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIHBhcmFtKHZhbHVlOiBzdHJpbmcpOiBUZXh0VG9rZW4ge1xuICByZXR1cm4gX2J1aWxkVG9rZW4oJ3BhcmFtJywgdmFsdWUpO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gc3RyaW5nKHZhbHVlOiBzdHJpbmcpOiBUZXh0VG9rZW4ge1xuICByZXR1cm4gX2J1aWxkVG9rZW4oJ3N0cmluZycsIHZhbHVlKTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIHdoaXRlc3BhY2UodmFsdWU6IHN0cmluZyk6IFRleHRUb2tlbiB7XG4gIHJldHVybiBfYnVpbGRUb2tlbignd2hpdGVzcGFjZScsIHZhbHVlKTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIHBsYWluKHZhbHVlOiBzdHJpbmcpOiBUZXh0VG9rZW4ge1xuICByZXR1cm4gX2J1aWxkVG9rZW4oJ3BsYWluJywgdmFsdWUpO1xufVxuXG5cbmZ1bmN0aW9uIF9idWlsZFRva2VuKGtpbmQ6IFRva2VuS2luZCwgdmFsdWU6IHN0cmluZyk6IFRleHRUb2tlbiB7XG4gIHJldHVybiB7a2luZCwgdmFsdWV9O1xufVxuIl19

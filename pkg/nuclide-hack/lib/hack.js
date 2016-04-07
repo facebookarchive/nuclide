@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,204 +12,174 @@
  * the root directory of this source tree.
  */
 
-import type {
-  HackReference,
-  HackDiagnostic,
-  HackOutline,
-} from '../../nuclide-hack-base/lib/HackService';
-import type {TypeHint} from '../../nuclide-type-hint-interfaces';
+var _assert = require('assert');
 
-import invariant from 'assert';
-import {extractWordAtPosition} from '../../nuclide-atom-helpers';
-import {getHackLanguageForUri} from './HackLanguage';
-import {Range} from 'atom';
-import {compareHackCompletions} from './utils';
+var _assert2 = _interopRequireDefault(_assert);
 
-const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
+var _nuclideAtomHelpers = require('../../nuclide-atom-helpers');
 
+var _HackLanguage = require('./HackLanguage');
+
+var _atom = require('atom');
+
+var _utils = require('./utils');
+
+var HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 
 module.exports = {
 
-  async findDiagnostics(
-    editor: atom$TextEditor,
-  ): Promise<Array<{message: HackDiagnostic;}>> {
-    const filePath = editor.getPath();
-    const hackLanguage = await getHackLanguageForUri(filePath);
+  findDiagnostics: _asyncToGenerator(function* (editor) {
+    var filePath = editor.getPath();
+    var hackLanguage = yield (0, _HackLanguage.getHackLanguageForUri)(filePath);
     if (!hackLanguage || !filePath) {
       return [];
     }
 
-    invariant(filePath);
-    const contents = editor.getText();
+    (0, _assert2['default'])(filePath);
+    var contents = editor.getText();
 
-    return await hackLanguage.getDiagnostics(filePath, contents);
-  },
+    return yield hackLanguage.getDiagnostics(filePath, contents);
+  }),
 
-  async fetchCompletionsForEditor(editor: atom$TextEditor, prefix: string): Promise<Array<any>> {
-    const hackLanguage = await getHackLanguageForUri(editor.getPath());
-    const filePath = editor.getPath();
+  fetchCompletionsForEditor: _asyncToGenerator(function* (editor, prefix) {
+    var hackLanguage = yield (0, _HackLanguage.getHackLanguageForUri)(editor.getPath());
+    var filePath = editor.getPath();
     if (!hackLanguage || !filePath) {
       return [];
     }
 
-    invariant(filePath);
-    const contents = editor.getText();
-    const cursor = editor.getLastCursor();
-    const offset = editor.getBuffer().characterIndexForPosition(cursor.getBufferPosition());
+    (0, _assert2['default'])(filePath);
+    var contents = editor.getText();
+    var cursor = editor.getLastCursor();
+    var offset = editor.getBuffer().characterIndexForPosition(cursor.getBufferPosition());
     // The returned completions may have unrelated results, even though the offset is set on the end
     // of the prefix.
-    const completions = await hackLanguage.getCompletions(filePath, contents, offset);
+    var completions = yield hackLanguage.getCompletions(filePath, contents, offset);
     // Filter out the completions that do not contain the prefix as a token in the match text case
     // insentively.
-    const tokenLowerCase = prefix.toLowerCase();
+    var tokenLowerCase = prefix.toLowerCase();
 
-    const hackCompletionsCompartor = compareHackCompletions(prefix);
-    return completions
-      .filter(completion => completion.matchText.toLowerCase().indexOf(tokenLowerCase) >= 0)
-      // Sort the auto-completions based on a scoring function considering:
-      // case sensitivity, position in the completion, private functions and alphabetical order.
-      .sort((completion1, completion2) =>
-        hackCompletionsCompartor(completion1.matchText, completion2.matchText));
-  },
+    var hackCompletionsCompartor = (0, _utils.compareHackCompletions)(prefix);
+    return completions.filter(function (completion) {
+      return completion.matchText.toLowerCase().indexOf(tokenLowerCase) >= 0;
+    })
+    // Sort the auto-completions based on a scoring function considering:
+    // case sensitivity, position in the completion, private functions and alphabetical order.
+    .sort(function (completion1, completion2) {
+      return hackCompletionsCompartor(completion1.matchText, completion2.matchText);
+    });
+  }),
 
-  async formatSourceFromEditor(editor: atom$TextEditor, range: atom$Range): Promise<string> {
-    const buffer = editor.getBuffer();
-    const filePath = editor.getPath();
-    const hackLanguage = await getHackLanguageForUri(filePath);
+  formatSourceFromEditor: _asyncToGenerator(function* (editor, range) {
+    var buffer = editor.getBuffer();
+    var filePath = editor.getPath();
+    var hackLanguage = yield (0, _HackLanguage.getHackLanguageForUri)(filePath);
     if (!hackLanguage || !filePath) {
       return buffer.getTextInRange(range);
     }
 
-    const startPosition = buffer.characterIndexForPosition(range.start);
-    const endPosition = buffer.characterIndexForPosition(range.end);
-    return await hackLanguage.formatSource(buffer.getText(), startPosition + 1, endPosition + 1);
-  },
+    var startPosition = buffer.characterIndexForPosition(range.start);
+    var endPosition = buffer.characterIndexForPosition(range.end);
+    return yield hackLanguage.formatSource(buffer.getText(), startPosition + 1, endPosition + 1);
+  }),
 
-  async codeHighlightFromEditor(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<Array<atom$Range>> {
-    const filePath = editor.getPath();
-    const hackLanguage = await getHackLanguageForUri(filePath);
+  codeHighlightFromEditor: _asyncToGenerator(function* (editor, position) {
+    var filePath = editor.getPath();
+    var hackLanguage = yield (0, _HackLanguage.getHackLanguageForUri)(filePath);
     if (!hackLanguage) {
       return [];
     }
-    invariant(filePath != null);
+    (0, _assert2['default'])(filePath != null);
 
-    const matchData = extractWordAtPosition(editor, position, HACK_WORD_REGEX);
-    if (
-      !matchData ||
-      !matchData.wordMatch.length ||
-      !matchData.wordMatch[0].startsWith('$')
-    ) {
+    var matchData = (0, _nuclideAtomHelpers.extractWordAtPosition)(editor, position, HACK_WORD_REGEX);
+    if (!matchData || !matchData.wordMatch.length || !matchData.wordMatch[0].startsWith('$')) {
       return [];
     }
 
-    return hackLanguage.highlightSource(
-      filePath,
-      editor.getText(),
-      position.row + 1,
-      position.column,
-    );
-  },
+    return hackLanguage.highlightSource(filePath, editor.getText(), position.row + 1, position.column);
+  }),
 
-  async typeHintFromEditor(editor: atom$TextEditor, position: atom$Point): Promise<?TypeHint> {
-    const filePath = editor.getPath();
-    const hackLanguage = await getHackLanguageForUri(filePath);
+  typeHintFromEditor: _asyncToGenerator(function* (editor, position) {
+    var filePath = editor.getPath();
+    var hackLanguage = yield (0, _HackLanguage.getHackLanguageForUri)(filePath);
     if (!hackLanguage || !filePath) {
       return null;
     }
 
-    const matchData = extractWordAtPosition(editor, position, HACK_WORD_REGEX);
+    var matchData = (0, _nuclideAtomHelpers.extractWordAtPosition)(editor, position, HACK_WORD_REGEX);
     if (!matchData) {
       return null;
     }
 
-    const contents = editor.getText();
+    var contents = editor.getText();
 
-    const type = await hackLanguage.getType(
-      filePath, contents, matchData.wordMatch[0], position.row + 1, position.column + 1);
+    var type = yield hackLanguage.getType(filePath, contents, matchData.wordMatch[0], position.row + 1, position.column + 1);
     if (!type || type === '_') {
       return null;
     } else {
       return {
         hint: type,
-        range: matchData.range,
+        range: matchData.range
       };
     }
-  },
+  }),
 
-  async outlineFromEditor(editor: atom$TextEditor): Promise<?HackOutline> {
-    const filePath = editor.getPath();
+  outlineFromEditor: _asyncToGenerator(function* (editor) {
+    var filePath = editor.getPath();
     if (filePath == null) {
-      return  null;
+      return null;
     }
-    const hackLanguage = await getHackLanguageForUri(filePath);
+    var hackLanguage = yield (0, _HackLanguage.getHackLanguageForUri)(filePath);
     if (hackLanguage == null) {
       return null;
     }
 
-    const contents = editor.getText();
+    var contents = editor.getText();
 
-    return await hackLanguage.getOutline(filePath, contents);
-  },
+    return yield hackLanguage.getOutline(filePath, contents);
+  }),
 
   /**
    * If a location can be found for the declaration, the return value will
    * resolve to an object with these fields: file, line, column.
    */
-  async findDefinition(
-    editor: atom$TextEditor,
-    line: number,
-    column: number,
-  ): Promise<?Array<Object>> {
-    const hackLanguage = await getHackLanguageForUri(editor.getPath());
-    const filePath = editor.getPath();
+  findDefinition: _asyncToGenerator(function* (editor, line, column) {
+    var hackLanguage = yield (0, _HackLanguage.getHackLanguageForUri)(editor.getPath());
+    var filePath = editor.getPath();
     if (!hackLanguage || !filePath) {
       return null;
     }
 
-    const contents = editor.getText();
-    const buffer = editor.getBuffer();
-    const lineText = buffer.lineForRow(line);
-    const positions = await hackLanguage.getDefinition(
-      filePath, contents, line + 1, column + 1, lineText
-    );
+    var contents = editor.getText();
+    var buffer = editor.getBuffer();
+    var lineText = buffer.lineForRow(line);
+    var positions = yield hackLanguage.getDefinition(filePath, contents, line + 1, column + 1, lineText);
     if (positions.length === 0) {
       return null;
     }
-    return positions.map(position => {
-      let range = null;
+    return positions.map(function (position) {
+      var range = null;
       // If the search string was expanded to include more than a valid regex php word.
       // e.g. in case of XHP tags, the start and end column are provided to underline the full range
       // to visit its definition.
       if (position.searchStartColumn && position.searchEndColumn) {
-        range = new Range([line, position.searchStartColumn], [line, position.searchEndColumn]);
+        range = new _atom.Range([line, position.searchStartColumn], [line, position.searchEndColumn]);
       }
-      return {
-        ...position,
-        range,
-      };
+      return _extends({}, position, {
+        range: range
+      });
     });
-  },
+  }),
 
-  async findReferences(
-    editor: atom$TextEditor,
-    line: number,
-    column: number
-  ): Promise<?{baseUri: string; symbolName: string; references: Array<HackReference>}> {
-    const filePath = editor.getPath();
-    const hackLanguage = await getHackLanguageForUri(filePath);
+  findReferences: _asyncToGenerator(function* (editor, line, column) {
+    var filePath = editor.getPath();
+    var hackLanguage = yield (0, _HackLanguage.getHackLanguageForUri)(filePath);
     if (!hackLanguage || !filePath) {
       return null;
     }
 
-    const contents = editor.getText();
-    return await hackLanguage.findReferences(
-      filePath,
-      contents,
-      line,
-      column,
-    );
-  },
+    var contents = editor.getText();
+    return yield hackLanguage.findReferences(filePath, contents, line, column);
+  })
 };
+//# sourceMappingURL=data:application/json;base64,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QUFNLGdCQUFjLG9CQUFBLFdBQ2xCLE1BQXVCLEVBQ3ZCLElBQVksRUFDWixNQUFjLEVBQ3FFO0FBQ25GLFFBQU0sUUFBUSxHQUFHLE1BQU0sQ0FBQyxPQUFPLEVBQUUsQ0FBQztBQUNsQyxRQUFNLFlBQVksR0FBRyxNQUFNLHlDQUFzQixRQUFRLENBQUMsQ0FBQztBQUMzRCxRQUFJLENBQUMsWUFBWSxJQUFJLENBQUMsUUFBUSxFQUFFO0FBQzlCLGFBQU8sSUFBSSxDQUFDO0tBQ2I7O0FBRUQsUUFBTSxRQUFRLEdBQUcsTUFBTSxDQUFDLE9BQU8sRUFBRSxDQUFDO0FBQ2xDLFdBQU8sTUFBTSxZQUFZLENBQUMsY0FBYyxDQUN0QyxRQUFRLEVBQ1IsUUFBUSxFQUNSLElBQUksRUFDSixNQUFNLENBQ1AsQ0FBQztHQUNILENBQUE7Q0FDRixDQUFDIiwiZmlsZSI6ImhhY2suanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7XG4gIEhhY2tSZWZlcmVuY2UsXG4gIEhhY2tEaWFnbm9zdGljLFxuICBIYWNrT3V0bGluZSxcbn0gZnJvbSAnLi4vLi4vbnVjbGlkZS1oYWNrLWJhc2UvbGliL0hhY2tTZXJ2aWNlJztcbmltcG9ydCB0eXBlIHtUeXBlSGludH0gZnJvbSAnLi4vLi4vbnVjbGlkZS10eXBlLWhpbnQtaW50ZXJmYWNlcyc7XG5cbmltcG9ydCBpbnZhcmlhbnQgZnJvbSAnYXNzZXJ0JztcbmltcG9ydCB7ZXh0cmFjdFdvcmRBdFBvc2l0aW9ufSBmcm9tICcuLi8uLi9udWNsaWRlLWF0b20taGVscGVycyc7XG5pbXBvcnQge2dldEhhY2tMYW5ndWFnZUZvclVyaX0gZnJvbSAnLi9IYWNrTGFuZ3VhZ2UnO1xuaW1wb3J0IHtSYW5nZX0gZnJvbSAnYXRvbSc7XG5pbXBvcnQge2NvbXBhcmVIYWNrQ29tcGxldGlvbnN9IGZyb20gJy4vdXRpbHMnO1xuXG5jb25zdCBIQUNLX1dPUkRfUkVHRVggPSAvW2EtekEtWjAtOV8kXSsvZztcblxuXG5tb2R1bGUuZXhwb3J0cyA9IHtcblxuICBhc3luYyBmaW5kRGlhZ25vc3RpY3MoXG4gICAgZWRpdG9yOiBhdG9tJFRleHRFZGl0b3IsXG4gICk6IFByb21pc2U8QXJyYXk8e21lc3NhZ2U6IEhhY2tEaWFnbm9zdGljO30+PiB7XG4gICAgY29uc3QgZmlsZVBhdGggPSBlZGl0b3IuZ2V0UGF0aCgpO1xuICAgIGNvbnN0IGhhY2tMYW5ndWFnZSA9IGF3YWl0IGdldEhhY2tMYW5ndWFnZUZvclVyaShmaWxlUGF0aCk7XG4gICAgaWYgKCFoYWNrTGFuZ3VhZ2UgfHwgIWZpbGVQYXRoKSB7XG4gICAgICByZXR1cm4gW107XG4gICAgfVxuXG4gICAgaW52YXJpYW50KGZpbGVQYXRoKTtcbiAgICBjb25zdCBjb250ZW50cyA9IGVkaXRvci5nZXRUZXh0KCk7XG5cbiAgICByZXR1cm4gYXdhaXQgaGFja0xhbmd1YWdlLmdldERpYWdub3N0aWNzKGZpbGVQYXRoLCBjb250ZW50cyk7XG4gIH0sXG5cbiAgYXN5bmMgZmV0Y2hDb21wbGV0aW9uc0ZvckVkaXRvcihlZGl0b3I6IGF0b20kVGV4dEVkaXRvciwgcHJlZml4OiBzdHJpbmcpOiBQcm9taXNlPEFycmF5PGFueT4+IHtcbiAgICBjb25zdCBoYWNrTGFuZ3VhZ2UgPSBhd2FpdCBnZXRIYWNrTGFuZ3VhZ2VGb3JVcmkoZWRpdG9yLmdldFBhdGgoKSk7XG4gICAgY29uc3QgZmlsZVBhdGggPSBlZGl0b3IuZ2V0UGF0aCgpO1xuICAgIGlmICghaGFja0xhbmd1YWdlIHx8ICFmaWxlUGF0aCkge1xuICAgICAgcmV0dXJuIFtdO1xuICAgIH1cblxuICAgIGludmFyaWFudChmaWxlUGF0aCk7XG4gICAgY29uc3QgY29udGVudHMgPSBlZGl0b3IuZ2V0VGV4dCgpO1xuICAgIGNvbnN0IGN1cnNvciA9IGVkaXRvci5nZXRMYXN0Q3Vyc29yKCk7XG4gICAgY29uc3Qgb2Zmc2V0ID0gZWRpdG9yLmdldEJ1ZmZlcigpLmNoYXJhY3RlckluZGV4Rm9yUG9zaXRpb24oY3Vyc29yLmdldEJ1ZmZlclBvc2l0aW9uKCkpO1xuICAgIC8vIFRoZSByZXR1cm5lZCBjb21wbGV0aW9ucyBtYXkgaGF2ZSB1bnJlbGF0ZWQgcmVzdWx0cywgZXZlbiB0aG91Z2ggdGhlIG9mZnNldCBpcyBzZXQgb24gdGhlIGVuZFxuICAgIC8vIG9mIHRoZSBwcmVmaXguXG4gICAgY29uc3QgY29tcGxldGlvbnMgPSBhd2FpdCBoYWNrTGFuZ3VhZ2UuZ2V0Q29tcGxldGlvbnMoZmlsZVBhdGgsIGNvbnRlbnRzLCBvZmZzZXQpO1xuICAgIC8vIEZpbHRlciBvdXQgdGhlIGNvbXBsZXRpb25zIHRoYXQgZG8gbm90IGNvbnRhaW4gdGhlIHByZWZpeCBhcyBhIHRva2VuIGluIHRoZSBtYXRjaCB0ZXh0IGNhc2VcbiAgICAvLyBpbnNlbnRpdmVseS5cbiAgICBjb25zdCB0b2tlbkxvd2VyQ2FzZSA9IHByZWZpeC50b0xvd2VyQ2FzZSgpO1xuXG4gICAgY29uc3QgaGFja0NvbXBsZXRpb25zQ29tcGFydG9yID0gY29tcGFyZUhhY2tDb21wbGV0aW9ucyhwcmVmaXgpO1xuICAgIHJldHVybiBjb21wbGV0aW9uc1xuICAgICAgLmZpbHRlcihjb21wbGV0aW9uID0+IGNvbXBsZXRpb24ubWF0Y2hUZXh0LnRvTG93ZXJDYXNlKCkuaW5kZXhPZih0b2tlbkxvd2VyQ2FzZSkgPj0gMClcbiAgICAgIC8vIFNvcnQgdGhlIGF1dG8tY29tcGxldGlvbnMgYmFzZWQgb24gYSBzY29yaW5nIGZ1bmN0aW9uIGNvbnNpZGVyaW5nOlxuICAgICAgLy8gY2FzZSBzZW5zaXRpdml0eSwgcG9zaXRpb24gaW4gdGhlIGNvbXBsZXRpb24sIHByaXZhdGUgZnVuY3Rpb25zIGFuZCBhbHBoYWJldGljYWwgb3JkZXIuXG4gICAgICAuc29ydCgoY29tcGxldGlvbjEsIGNvbXBsZXRpb24yKSA9PlxuICAgICAgICBoYWNrQ29tcGxldGlvbnNDb21wYXJ0b3IoY29tcGxldGlvbjEubWF0Y2hUZXh0LCBjb21wbGV0aW9uMi5tYXRjaFRleHQpKTtcbiAgfSxcblxuICBhc3luYyBmb3JtYXRTb3VyY2VGcm9tRWRpdG9yKGVkaXRvcjogYXRvbSRUZXh0RWRpdG9yLCByYW5nZTogYXRvbSRSYW5nZSk6IFByb21pc2U8c3RyaW5nPiB7XG4gICAgY29uc3QgYnVmZmVyID0gZWRpdG9yLmdldEJ1ZmZlcigpO1xuICAgIGNvbnN0IGZpbGVQYXRoID0gZWRpdG9yLmdldFBhdGgoKTtcbiAgICBjb25zdCBoYWNrTGFuZ3VhZ2UgPSBhd2FpdCBnZXRIYWNrTGFuZ3VhZ2VGb3JVcmkoZmlsZVBhdGgpO1xuICAgIGlmICghaGFja0xhbmd1YWdlIHx8ICFmaWxlUGF0aCkge1xuICAgICAgcmV0dXJuIGJ1ZmZlci5nZXRUZXh0SW5SYW5nZShyYW5nZSk7XG4gICAgfVxuXG4gICAgY29uc3Qgc3RhcnRQb3NpdGlvbiA9IGJ1ZmZlci5jaGFyYWN0ZXJJbmRleEZvclBvc2l0aW9uKHJhbmdlLnN0YXJ0KTtcbiAgICBjb25zdCBlbmRQb3NpdGlvbiA9IGJ1ZmZlci5jaGFyYWN0ZXJJbmRleEZvclBvc2l0aW9uKHJhbmdlLmVuZCk7XG4gICAgcmV0dXJuIGF3YWl0IGhhY2tMYW5ndWFnZS5mb3JtYXRTb3VyY2UoYnVmZmVyLmdldFRleHQoKSwgc3RhcnRQb3NpdGlvbiArIDEsIGVuZFBvc2l0aW9uICsgMSk7XG4gIH0sXG5cbiAgYXN5bmMgY29kZUhpZ2hsaWdodEZyb21FZGl0b3IoXG4gICAgZWRpdG9yOiBhdG9tJFRleHRFZGl0b3IsXG4gICAgcG9zaXRpb246IGF0b20kUG9pbnQsXG4gICk6IFByb21pc2U8QXJyYXk8YXRvbSRSYW5nZT4+IHtcbiAgICBjb25zdCBmaWxlUGF0aCA9IGVkaXRvci5nZXRQYXRoKCk7XG4gICAgY29uc3QgaGFja0xhbmd1YWdlID0gYXdhaXQgZ2V0SGFja0xhbmd1YWdlRm9yVXJpKGZpbGVQYXRoKTtcbiAgICBpZiAoIWhhY2tMYW5ndWFnZSkge1xuICAgICAgcmV0dXJuIFtdO1xuICAgIH1cbiAgICBpbnZhcmlhbnQoZmlsZVBhdGggIT0gbnVsbCk7XG5cbiAgICBjb25zdCBtYXRjaERhdGEgPSBleHRyYWN0V29yZEF0UG9zaXRpb24oZWRpdG9yLCBwb3NpdGlvbiwgSEFDS19XT1JEX1JFR0VYKTtcbiAgICBpZiAoXG4gICAgICAhbWF0Y2hEYXRhIHx8XG4gICAgICAhbWF0Y2hEYXRhLndvcmRNYXRjaC5sZW5ndGggfHxcbiAgICAgICFtYXRjaERhdGEud29yZE1hdGNoWzBdLnN0YXJ0c1dpdGgoJyQnKVxuICAgICkge1xuICAgICAgcmV0dXJuIFtdO1xuICAgIH1cblxuICAgIHJldHVybiBoYWNrTGFuZ3VhZ2UuaGlnaGxpZ2h0U291cmNlKFxuICAgICAgZmlsZVBhdGgsXG4gICAgICBlZGl0b3IuZ2V0VGV4dCgpLFxuICAgICAgcG9zaXRpb24ucm93ICsgMSxcbiAgICAgIHBvc2l0aW9uLmNvbHVtbixcbiAgICApO1xuICB9LFxuXG4gIGFzeW5jIHR5cGVIaW50RnJvbUVkaXRvcihlZGl0b3I6IGF0b20kVGV4dEVkaXRvciwgcG9zaXRpb246IGF0b20kUG9pbnQpOiBQcm9taXNlPD9UeXBlSGludD4ge1xuICAgIGNvbnN0IGZpbGVQYXRoID0gZWRpdG9yLmdldFBhdGgoKTtcbiAgICBjb25zdCBoYWNrTGFuZ3VhZ2UgPSBhd2FpdCBnZXRIYWNrTGFuZ3VhZ2VGb3JVcmkoZmlsZVBhdGgpO1xuICAgIGlmICghaGFja0xhbmd1YWdlIHx8ICFmaWxlUGF0aCkge1xuICAgICAgcmV0dXJuIG51bGw7XG4gICAgfVxuXG4gICAgY29uc3QgbWF0Y2hEYXRhID0gZXh0cmFjdFdvcmRBdFBvc2l0aW9uKGVkaXRvciwgcG9zaXRpb24sIEhBQ0tfV09SRF9SRUdFWCk7XG4gICAgaWYgKCFtYXRjaERhdGEpIHtcbiAgICAgIHJldHVybiBudWxsO1xuICAgIH1cblxuICAgIGNvbnN0IGNvbnRlbnRzID0gZWRpdG9yLmdldFRleHQoKTtcblxuICAgIGNvbnN0IHR5cGUgPSBhd2FpdCBoYWNrTGFuZ3VhZ2UuZ2V0VHlwZShcbiAgICAgIGZpbGVQYXRoLCBjb250ZW50cywgbWF0Y2hEYXRhLndvcmRNYXRjaFswXSwgcG9zaXRpb24ucm93ICsgMSwgcG9zaXRpb24uY29sdW1uICsgMSk7XG4gICAgaWYgKCF0eXBlIHx8IHR5cGUgPT09ICdfJykge1xuICAgICAgcmV0dXJuIG51bGw7XG4gICAgfSBlbHNlIHtcbiAgICAgIHJldHVybiB7XG4gICAgICAgIGhpbnQ6IHR5cGUsXG4gICAgICAgIHJhbmdlOiBtYXRjaERhdGEucmFuZ2UsXG4gICAgICB9O1xuICAgIH1cbiAgfSxcblxuICBhc3luYyBvdXRsaW5lRnJvbUVkaXRvcihlZGl0b3I6IGF0b20kVGV4dEVkaXRvcik6IFByb21pc2U8P0hhY2tPdXRsaW5lPiB7XG4gICAgY29uc3QgZmlsZVBhdGggPSBlZGl0b3IuZ2V0UGF0aCgpO1xuICAgIGlmIChmaWxlUGF0aCA9PSBudWxsKSB7XG4gICAgICByZXR1cm4gIG51bGw7XG4gICAgfVxuICAgIGNvbnN0IGhhY2tMYW5ndWFnZSA9IGF3YWl0IGdldEhhY2tMYW5ndWFnZUZvclVyaShmaWxlUGF0aCk7XG4gICAgaWYgKGhhY2tMYW5ndWFnZSA9PSBudWxsKSB7XG4gICAgICByZXR1cm4gbnVsbDtcbiAgICB9XG5cbiAgICBjb25zdCBjb250ZW50cyA9IGVkaXRvci5nZXRUZXh0KCk7XG5cbiAgICByZXR1cm4gYXdhaXQgaGFja0xhbmd1YWdlLmdldE91dGxpbmUoZmlsZVBhdGgsIGNvbnRlbnRzKTtcbiAgfSxcblxuICAvKipcbiAgICogSWYgYSBsb2NhdGlvbiBjYW4gYmUgZm91bmQgZm9yIHRoZSBkZWNsYXJhdGlvbiwgdGhlIHJldHVybiB2YWx1ZSB3aWxsXG4gICAqIHJlc29sdmUgdG8gYW4gb2JqZWN0IHdpdGggdGhlc2UgZmllbGRzOiBmaWxlLCBsaW5lLCBjb2x1bW4uXG4gICAqL1xuICBhc3luYyBmaW5kRGVmaW5pdGlvbihcbiAgICBlZGl0b3I6IGF0b20kVGV4dEVkaXRvcixcbiAgICBsaW5lOiBudW1iZXIsXG4gICAgY29sdW1uOiBudW1iZXIsXG4gICk6IFByb21pc2U8P0FycmF5PE9iamVjdD4+IHtcbiAgICBjb25zdCBoYWNrTGFuZ3VhZ2UgPSBhd2FpdCBnZXRIYWNrTGFuZ3VhZ2VGb3JVcmkoZWRpdG9yLmdldFBhdGgoKSk7XG4gICAgY29uc3QgZmlsZVBhdGggPSBlZGl0b3IuZ2V0UGF0aCgpO1xuICAgIGlmICghaGFja0xhbmd1YWdlIHx8ICFmaWxlUGF0aCkge1xuICAgICAgcmV0dXJuIG51bGw7XG4gICAgfVxuXG4gICAgY29uc3QgY29udGVudHMgPSBlZGl0b3IuZ2V0VGV4dCgpO1xuICAgIGNvbnN0IGJ1ZmZlciA9IGVkaXRvci5nZXRCdWZmZXIoKTtcbiAgICBjb25zdCBsaW5lVGV4dCA9IGJ1ZmZlci5saW5lRm9yUm93KGxpbmUpO1xuICAgIGNvbnN0IHBvc2l0aW9ucyA9IGF3YWl0IGhhY2tMYW5ndWFnZS5nZXREZWZpbml0aW9uKFxuICAgICAgZmlsZVBhdGgsIGNvbnRlbnRzLCBsaW5lICsgMSwgY29sdW1uICsgMSwgbGluZVRleHRcbiAgICApO1xuICAgIGlmIChwb3NpdGlvbnMubGVuZ3RoID09PSAwKSB7XG4gICAgICByZXR1cm4gbnVsbDtcbiAgICB9XG4gICAgcmV0dXJuIHBvc2l0aW9ucy5tYXAocG9zaXRpb24gPT4ge1xuICAgICAgbGV0IHJhbmdlID0gbnVsbDtcbiAgICAgIC8vIElmIHRoZSBzZWFyY2ggc3RyaW5nIHdhcyBleHBhbmRlZCB0byBpbmNsdWRlIG1vcmUgdGhhbiBhIHZhbGlkIHJlZ2V4IHBocCB3b3JkLlxuICAgICAgLy8gZS5nLiBpbiBjYXNlIG9mIFhIUCB0YWdzLCB0aGUgc3RhcnQgYW5kIGVuZCBjb2x1bW4gYXJlIHByb3ZpZGVkIHRvIHVuZGVybGluZSB0aGUgZnVsbCByYW5nZVxuICAgICAgLy8gdG8gdmlzaXQgaXRzIGRlZmluaXRpb24uXG4gICAgICBpZiAocG9zaXRpb24uc2VhcmNoU3RhcnRDb2x1bW4gJiYgcG9zaXRpb24uc2VhcmNoRW5kQ29sdW1uKSB7XG4gICAgICAgIHJhbmdlID0gbmV3IFJhbmdlKFtsaW5lLCBwb3NpdGlvbi5zZWFyY2hTdGFydENvbHVtbl0sIFtsaW5lLCBwb3NpdGlvbi5zZWFyY2hFbmRDb2x1bW5dKTtcbiAgICAgIH1cbiAgICAgIHJldHVybiB7XG4gICAgICAgIC4uLnBvc2l0aW9uLFxuICAgICAgICByYW5nZSxcbiAgICAgIH07XG4gICAgfSk7XG4gIH0sXG5cbiAgYXN5bmMgZmluZFJlZmVyZW5jZXMoXG4gICAgZWRpdG9yOiBhdG9tJFRleHRFZGl0b3IsXG4gICAgbGluZTogbnVtYmVyLFxuICAgIGNvbHVtbjogbnVtYmVyXG4gICk6IFByb21pc2U8P3tiYXNlVXJpOiBzdHJpbmc7IHN5bWJvbE5hbWU6IHN0cmluZzsgcmVmZXJlbmNlczogQXJyYXk8SGFja1JlZmVyZW5jZT59PiB7XG4gICAgY29uc3QgZmlsZVBhdGggPSBlZGl0b3IuZ2V0UGF0aCgpO1xuICAgIGNvbnN0IGhhY2tMYW5ndWFnZSA9IGF3YWl0IGdldEhhY2tMYW5ndWFnZUZvclVyaShmaWxlUGF0aCk7XG4gICAgaWYgKCFoYWNrTGFuZ3VhZ2UgfHwgIWZpbGVQYXRoKSB7XG4gICAgICByZXR1cm4gbnVsbDtcbiAgICB9XG5cbiAgICBjb25zdCBjb250ZW50cyA9IGVkaXRvci5nZXRUZXh0KCk7XG4gICAgcmV0dXJuIGF3YWl0IGhhY2tMYW5ndWFnZS5maW5kUmVmZXJlbmNlcyhcbiAgICAgIGZpbGVQYXRoLFxuICAgICAgY29udGVudHMsXG4gICAgICBsaW5lLFxuICAgICAgY29sdW1uLFxuICAgICk7XG4gIH0sXG59O1xuIl19

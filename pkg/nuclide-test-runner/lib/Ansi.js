@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +8,13 @@
  * the root directory of this source tree.
  */
 
-const Ansi = Object.freeze({
-  BLUE: '\u001B[34m',
-  GREEN: '\u001B[32m',
-  RED: '\u001B[31m',
-  RESET: '\u001B[39m',
-  YELLOW: '\u001B[33m',
+var Ansi = Object.freeze({
+  BLUE: '\u001b[34m',
+  GREEN: '\u001b[32m',
+  RED: '\u001b[31m',
+  RESET: '\u001b[39m',
+  YELLOW: '\u001b[33m'
 });
 
 module.exports = Ansi;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkFuc2kuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQVdBLElBQU0sSUFBSSxHQUFHLE1BQU0sQ0FBQyxNQUFNLENBQUM7QUFDekIsTUFBSSxFQUFFLFlBQVk7QUFDbEIsT0FBSyxFQUFFLFlBQVk7QUFDbkIsS0FBRyxFQUFFLFlBQVk7QUFDakIsT0FBSyxFQUFFLFlBQVk7QUFDbkIsUUFBTSxFQUFFLFlBQVk7Q0FDckIsQ0FBQyxDQUFDOztBQUVILE1BQU0sQ0FBQyxPQUFPLEdBQUcsSUFBSSxDQUFDIiwiZmlsZSI6IkFuc2kuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5jb25zdCBBbnNpID0gT2JqZWN0LmZyZWV6ZSh7XG4gIEJMVUU6ICdcXHUwMDFCWzM0bScsXG4gIEdSRUVOOiAnXFx1MDAxQlszMm0nLFxuICBSRUQ6ICdcXHUwMDFCWzMxbScsXG4gIFJFU0VUOiAnXFx1MDAxQlszOW0nLFxuICBZRUxMT1c6ICdcXHUwMDFCWzMzbScsXG59KTtcblxubW9kdWxlLmV4cG9ydHMgPSBBbnNpO1xuIl19

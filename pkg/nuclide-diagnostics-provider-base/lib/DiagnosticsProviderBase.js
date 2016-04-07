@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,73 +10,28 @@
  * the root directory of this source tree.
  */
 
-import type {
-  DiagnosticProviderUpdate,
-  InvalidationMessage,
-  MessageInvalidationCallback,
-  MessageUpdateCallback,
-} from '../../nuclide-diagnostics-base';
-import type {TextEventDispatcher} from '../../nuclide-text-event-dispatcher';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-type ProviderBaseOptions = {
-  /** The callback by which a provider is notified of text events, such as a file save. */
-  onTextEditorEvent?: (editor: TextEditor) => mixed;
-  /**
-   * The callback by which a provider is notified that a new consumer has subscribed to diagnostic
-   * updates.
-   */
-  onNewUpdateSubscriber?: (callback: MessageUpdateCallback) => mixed;
-  /**
-   * The callback by which a provider is notified that a new consumer has subscribed to diagnostic
-   * invalidations.
-   */
-  onNewInvalidateSubscriber?: (callback: MessageInvalidationCallback) => mixed;
-  /**
-   * If true, this will cause onTextEditorEvent to get called more often -- approximately whenever
-   * the user stops typing. If false, it will get called only when the user saves.
-   */
-  shouldRunOnTheFly?: boolean;
-  /**
-   * The following two options specify which grammars the provider is interested in. Most providers
-   * will include a set of grammarScopes, and will therefore get notifications only about
-   * TextEditors that are associated with those grammarScopes. Instead, a provider may set
-   * enableForAllGrammars to true, and then it will get notified of changes in all TextEditors. If
-   * enableForAllGrammars is true, it overrides the grammars in grammarScopes.
-   */
-  grammarScopes?: Set<string>;
-  enableForAllGrammars?: boolean;
-}
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const UPDATE_EVENT = 'update';
-const INVALIDATE_EVENT = 'invalidate';
+var UPDATE_EVENT = 'update';
+var INVALIDATE_EVENT = 'invalidate';
 
-const {CompositeDisposable, Emitter} = require('atom');
+var _require = require('atom');
+
+var CompositeDisposable = _require.CompositeDisposable;
+var Emitter = _require.Emitter;
 
 function getTextEventDispatcher() {
   return require('../../nuclide-text-event-dispatcher').getInstance();
 }
 
-export class DiagnosticsProviderBase {
-  _textEventDispatcher: TextEventDispatcher;
+var DiagnosticsProviderBase = (function () {
+  function DiagnosticsProviderBase(options) {
+    var textEventDispatcher = arguments.length <= 1 || arguments[1] === undefined ? getTextEventDispatcher() : arguments[1];
 
-  _emitter: Emitter;
+    _classCallCheck(this, DiagnosticsProviderBase);
 
-  _grammarScopes: Set<string>;
-  _allGrammarScopes: ?boolean;
-
-  _currentEventSubscription: ?IDisposable;
-
-  _disposables: atom$CompositeDisposable;
-
-  // callbacks provided by client
-  _textEventCallback: (editor: TextEditor) => mixed;
-  _newUpdateSubscriberCallback: (callback: MessageUpdateCallback) => mixed;
-  _newInvalidateSubscriberCallback: (callback: MessageInvalidationCallback) => mixed;
-
-  constructor(
-    options: ProviderBaseOptions,
-    textEventDispatcher?: TextEventDispatcher = getTextEventDispatcher(),
-  ) {
     this._textEventDispatcher = textEventDispatcher;
     this._emitter = new Emitter();
     this._disposables = new CompositeDisposable();
@@ -94,72 +50,117 @@ export class DiagnosticsProviderBase {
    * Subscribes to the appropriate event depending on whether we should run on
    * the fly or not.
    */
-  _subscribeToTextEditorEvent(shouldRunOnTheFly: boolean) {
-    this._disposeEventSubscription();
-    const dispatcher = this._textEventDispatcher;
-    let subscription;
-    if (shouldRunOnTheFly) {
-      if (this._allGrammarScopes) {
-        subscription = dispatcher.onAnyFileChange(this._textEventCallback);
+
+  _createClass(DiagnosticsProviderBase, [{
+    key: '_subscribeToTextEditorEvent',
+    value: function _subscribeToTextEditorEvent(shouldRunOnTheFly) {
+      this._disposeEventSubscription();
+      var dispatcher = this._textEventDispatcher;
+      var subscription = undefined;
+      if (shouldRunOnTheFly) {
+        if (this._allGrammarScopes) {
+          subscription = dispatcher.onAnyFileChange(this._textEventCallback);
+        } else {
+          subscription = dispatcher.onFileChange(this._grammarScopes, this._textEventCallback);
+        }
       } else {
-        subscription = dispatcher.onFileChange(this._grammarScopes, this._textEventCallback);
+        if (this._allGrammarScopes) {
+          subscription = dispatcher.onAnyFileSave(this._textEventCallback);
+        } else {
+          subscription = dispatcher.onFileSave(this._grammarScopes, this._textEventCallback);
+        }
       }
-    } else {
-      if (this._allGrammarScopes) {
-        subscription = dispatcher.onAnyFileSave(this._textEventCallback);
-      } else {
-        subscription = dispatcher.onFileSave(this._grammarScopes, this._textEventCallback);
+      this._currentEventSubscription = subscription;
+    }
+  }, {
+    key: 'setRunOnTheFly',
+    value: function setRunOnTheFly(runOnTheFly) {
+      this._subscribeToTextEditorEvent(runOnTheFly);
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._emitter.dispose();
+      this._disposables.dispose();
+      this._disposeEventSubscription();
+    }
+  }, {
+    key: '_disposeEventSubscription',
+    value: function _disposeEventSubscription() {
+      if (this._currentEventSubscription) {
+        this._currentEventSubscription.dispose();
+        this._currentEventSubscription = null;
       }
     }
-    this._currentEventSubscription = subscription;
-  }
 
-  setRunOnTheFly(runOnTheFly: boolean) {
-    this._subscribeToTextEditorEvent(runOnTheFly);
-  }
+    /**
+     * Clients can call these methods to publish messages
+     */
 
-  dispose(): void {
-    this._emitter.dispose();
-    this._disposables.dispose();
-    this._disposeEventSubscription();
-  }
-
-  _disposeEventSubscription(): void {
-    if (this._currentEventSubscription) {
-      this._currentEventSubscription.dispose();
-      this._currentEventSubscription = null;
+  }, {
+    key: 'publishMessageUpdate',
+    value: function publishMessageUpdate(update) {
+      this._emitter.emit(UPDATE_EVENT, update);
     }
-  }
+  }, {
+    key: 'publishMessageInvalidation',
+    value: function publishMessageInvalidation(message) {
+      this._emitter.emit(INVALIDATE_EVENT, message);
+    }
 
-  /**
-   * Clients can call these methods to publish messages
-   */
+    /**
+     * Clients should delegate to these
+     */
 
-  publishMessageUpdate(update: DiagnosticProviderUpdate): void {
-    this._emitter.emit(UPDATE_EVENT, update);
-  }
+  }, {
+    key: 'onMessageUpdate',
+    value: function onMessageUpdate(callback) {
+      var disposable = this._emitter.on(UPDATE_EVENT, callback);
+      this._newUpdateSubscriberCallback(callback);
+      return disposable;
+    }
+  }, {
+    key: 'onMessageInvalidation',
+    value: function onMessageInvalidation(callback) {
+      var disposable = this._emitter.on(INVALIDATE_EVENT, callback);
+      this._newInvalidateSubscriberCallback(callback);
+      return disposable;
+    }
+  }]);
 
-  publishMessageInvalidation(message: InvalidationMessage): void {
-    this._emitter.emit(INVALIDATE_EVENT, message);
-  }
+  return DiagnosticsProviderBase;
+})();
 
-  /**
-   * Clients should delegate to these
-   */
+exports.DiagnosticsProviderBase = DiagnosticsProviderBase;
 
-  onMessageUpdate(callback: MessageUpdateCallback): IDisposable {
-    const disposable = this._emitter.on(UPDATE_EVENT, callback);
-    this._newUpdateSubscriberCallback(callback);
-    return disposable;
-  }
-
-  onMessageInvalidation(callback: MessageInvalidationCallback): IDisposable {
-    const disposable = this._emitter.on(INVALIDATE_EVENT, callback);
-    this._newInvalidateSubscriberCallback(callback);
-    return disposable;
-  }
+function callbackOrNoop(callback) {
+  return callback ? callback.bind(undefined) : function () {};
 }
 
-function callbackOrNoop<T>(callback: ?(arg: T) => mixed): (arg: T) => mixed {
-  return callback ? callback.bind(undefined) : () => { };
-}
+/** The callback by which a provider is notified of text events, such as a file save. */
+
+/**
+ * The callback by which a provider is notified that a new consumer has subscribed to diagnostic
+ * updates.
+ */
+
+/**
+ * The callback by which a provider is notified that a new consumer has subscribed to diagnostic
+ * invalidations.
+ */
+
+/**
+ * If true, this will cause onTextEditorEvent to get called more often -- approximately whenever
+ * the user stops typing. If false, it will get called only when the user saves.
+ */
+
+/**
+ * The following two options specify which grammars the provider is interested in. Most providers
+ * will include a set of grammarScopes, and will therefore get notifications only about
+ * TextEditors that are associated with those grammarScopes. Instead, a provider may set
+ * enableForAllGrammars to true, and then it will get notified of changes in all TextEditors. If
+ * enableForAllGrammars is true, it overrides the grammars in grammarScopes.
+ */
+
+// callbacks provided by client
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkRpYWdub3N0aWNzUHJvdmlkZXJCYXNlLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7QUFnREEsSUFBTSxZQUFZLEdBQUcsUUFBUSxDQUFDO0FBQzlCLElBQU0sZ0JBQWdCLEdBQUcsWUFBWSxDQUFDOztlQUVDLE9BQU8sQ0FBQyxNQUFNLENBQUM7O0lBQS9DLG1CQUFtQixZQUFuQixtQkFBbUI7SUFBRSxPQUFPLFlBQVAsT0FBTzs7QUFFbkMsU0FBUyxzQkFBc0IsR0FBRztBQUNoQyxTQUFPLE9BQU8sQ0FBQyxxQ0FBcUMsQ0FBQyxDQUFDLFdBQVcsRUFBRSxDQUFDO0NBQ3JFOztJQUVZLHVCQUF1QjtBQWlCdkIsV0FqQkEsdUJBQXVCLENBa0JoQyxPQUE0QixFQUU1QjtRQURBLG1CQUF5Qyx5REFBRyxzQkFBc0IsRUFBRTs7MEJBbkIzRCx1QkFBdUI7O0FBcUJoQyxRQUFJLENBQUMsb0JBQW9CLEdBQUcsbUJBQW1CLENBQUM7QUFDaEQsUUFBSSxDQUFDLFFBQVEsR0FBRyxJQUFJLE9BQU8sRUFBRSxDQUFDO0FBQzlCLFFBQUksQ0FBQyxZQUFZLEdBQUcsSUFBSSxtQkFBbUIsRUFBRSxDQUFDOztBQUU5QyxRQUFJLENBQUMsa0JBQWtCLEdBQUcsY0FBYyxDQUFDLE9BQU8sQ0FBQyxpQkFBaUIsQ0FBQyxDQUFDO0FBQ3BFLFFBQUksQ0FBQyw0QkFBNEIsR0FBRyxjQUFjLENBQUMsT0FBTyxDQUFDLHFCQUFxQixDQUFDLENBQUM7QUFDbEYsUUFBSSxDQUFDLGdDQUFnQyxHQUFHLGNBQWMsQ0FBQyxPQUFPLENBQUMseUJBQXlCLENBQUMsQ0FBQzs7O0FBRzFGLFFBQUksQ0FBQyxjQUFjLEdBQUcsSUFBSSxHQUFHLENBQUMsT0FBTyxDQUFDLGFBQWEsQ0FBQyxDQUFDO0FBQ3JELFFBQUksQ0FBQyxpQkFBaUIsR0FBRyxDQUFDLENBQUMsT0FBTyxDQUFDLG9CQUFvQixDQUFDO0FBQ3hELFFBQUksQ0FBQywyQkFBMkIsQ0FBQyxDQUFDLENBQUMsT0FBTyxDQUFDLGlCQUFpQixDQUFDLENBQUM7R0FDL0Q7Ozs7Ozs7ZUFqQ1UsdUJBQXVCOztXQXVDUCxxQ0FBQyxpQkFBMEIsRUFBRTtBQUN0RCxVQUFJLENBQUMseUJBQXlCLEVBQUUsQ0FBQztBQUNqQyxVQUFNLFVBQVUsR0FBRyxJQUFJLENBQUMsb0JBQW9CLENBQUM7QUFDN0MsVUFBSSxZQUFZLFlBQUEsQ0FBQztBQUNqQixVQUFJLGlCQUFpQixFQUFFO0FBQ3JCLFlBQUksSUFBSSxDQUFDLGlCQUFpQixFQUFFO0FBQzFCLHNCQUFZLEdBQUcsVUFBVSxDQUFDLGVBQWUsQ0FBQyxJQUFJLENBQUMsa0JBQWtCLENBQUMsQ0FBQztTQUNwRSxNQUFNO0FBQ0wsc0JBQVksR0FBRyxVQUFVLENBQUMsWUFBWSxDQUFDLElBQUksQ0FBQyxjQUFjLEVBQUUsSUFBSSxDQUFDLGtCQUFrQixDQUFDLENBQUM7U0FDdEY7T0FDRixNQUFNO0FBQ0wsWUFBSSxJQUFJLENBQUMsaUJBQWlCLEVBQUU7QUFDMUIsc0JBQVksR0FBRyxVQUFVLENBQUMsYUFBYSxDQUFDLElBQUksQ0FBQyxrQkFBa0IsQ0FBQyxDQUFDO1NBQ2xFLE1BQU07QUFDTCxzQkFBWSxHQUFHLFVBQVUsQ0FBQyxVQUFVLENBQUMsSUFBSSxDQUFDLGNBQWMsRUFBRSxJQUFJLENBQUMsa0JBQWtCLENBQUMsQ0FBQztTQUNwRjtPQUNGO0FBQ0QsVUFBSSxDQUFDLHlCQUF5QixHQUFHLFlBQVksQ0FBQztLQUMvQzs7O1dBRWEsd0JBQUMsV0FBb0IsRUFBRTtBQUNuQyxVQUFJLENBQUMsMkJBQTJCLENBQUMsV0FBVyxDQUFDLENBQUM7S0FDL0M7OztXQUVNLG1CQUFTO0FBQ2QsVUFBSSxDQUFDLFFBQVEsQ0FBQyxPQUFPLEVBQUUsQ0FBQztBQUN4QixVQUFJLENBQUMsWUFBWSxDQUFDLE9BQU8sRUFBRSxDQUFDO0FBQzVCLFVBQUksQ0FBQyx5QkFBeUIsRUFBRSxDQUFDO0tBQ2xDOzs7V0FFd0IscUNBQVM7QUFDaEMsVUFBSSxJQUFJLENBQUMseUJBQXlCLEVBQUU7QUFDbEMsWUFBSSxDQUFDLHlCQUF5QixDQUFDLE9BQU8sRUFBRSxDQUFDO0FBQ3pDLFlBQUksQ0FBQyx5QkFBeUIsR0FBRyxJQUFJLENBQUM7T0FDdkM7S0FDRjs7Ozs7Ozs7V0FNbUIsOEJBQUMsTUFBZ0MsRUFBUTtBQUMzRCxVQUFJLENBQUMsUUFBUSxDQUFDLElBQUksQ0FBQyxZQUFZLEVBQUUsTUFBTSxDQUFDLENBQUM7S0FDMUM7OztXQUV5QixvQ0FBQyxPQUE0QixFQUFRO0FBQzdELFVBQUksQ0FBQyxRQUFRLENBQUMsSUFBSSxDQUFDLGdCQUFnQixFQUFFLE9BQU8sQ0FBQyxDQUFDO0tBQy9DOzs7Ozs7OztXQU1jLHlCQUFDLFFBQStCLEVBQWU7QUFDNUQsVUFBTSxVQUFVLEdBQUcsSUFBSSxDQUFDLFFBQVEsQ0FBQyxFQUFFLENBQUMsWUFBWSxFQUFFLFFBQVEsQ0FBQyxDQUFDO0FBQzVELFVBQUksQ0FBQyw0QkFBNEIsQ0FBQyxRQUFRLENBQUMsQ0FBQztBQUM1QyxhQUFPLFVBQVUsQ0FBQztLQUNuQjs7O1dBRW9CLCtCQUFDLFFBQXFDLEVBQWU7QUFDeEUsVUFBTSxVQUFVLEdBQUcsSUFBSSxDQUFDLFFBQVEsQ0FBQyxFQUFFLENBQUMsZ0JBQWdCLEVBQUUsUUFBUSxDQUFDLENBQUM7QUFDaEUsVUFBSSxDQUFDLGdDQUFnQyxDQUFDLFFBQVEsQ0FBQyxDQUFDO0FBQ2hELGFBQU8sVUFBVSxDQUFDO0tBQ25COzs7U0F0R1UsdUJBQXVCOzs7OztBQXlHcEMsU0FBUyxjQUFjLENBQUksUUFBNEIsRUFBcUI7QUFDMUUsU0FBTyxRQUFRLEdBQUcsUUFBUSxDQUFDLElBQUksQ0FBQyxTQUFTLENBQUMsR0FBRyxZQUFNLEVBQUcsQ0FBQztDQUN4RCIsImZpbGUiOiJEaWFnbm9zdGljc1Byb3ZpZGVyQmFzZS5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtcbiAgRGlhZ25vc3RpY1Byb3ZpZGVyVXBkYXRlLFxuICBJbnZhbGlkYXRpb25NZXNzYWdlLFxuICBNZXNzYWdlSW52YWxpZGF0aW9uQ2FsbGJhY2ssXG4gIE1lc3NhZ2VVcGRhdGVDYWxsYmFjayxcbn0gZnJvbSAnLi4vLi4vbnVjbGlkZS1kaWFnbm9zdGljcy1iYXNlJztcbmltcG9ydCB0eXBlIHtUZXh0RXZlbnREaXNwYXRjaGVyfSBmcm9tICcuLi8uLi9udWNsaWRlLXRleHQtZXZlbnQtZGlzcGF0Y2hlcic7XG5cbnR5cGUgUHJvdmlkZXJCYXNlT3B0aW9ucyA9IHtcbiAgLyoqIFRoZSBjYWxsYmFjayBieSB3aGljaCBhIHByb3ZpZGVyIGlzIG5vdGlmaWVkIG9mIHRleHQgZXZlbnRzLCBzdWNoIGFzIGEgZmlsZSBzYXZlLiAqL1xuICBvblRleHRFZGl0b3JFdmVudD86IChlZGl0b3I6IFRleHRFZGl0b3IpID0+IG1peGVkO1xuICAvKipcbiAgICogVGhlIGNhbGxiYWNrIGJ5IHdoaWNoIGEgcHJvdmlkZXIgaXMgbm90aWZpZWQgdGhhdCBhIG5ldyBjb25zdW1lciBoYXMgc3Vic2NyaWJlZCB0byBkaWFnbm9zdGljXG4gICAqIHVwZGF0ZXMuXG4gICAqL1xuICBvbk5ld1VwZGF0ZVN1YnNjcmliZXI/OiAoY2FsbGJhY2s6IE1lc3NhZ2VVcGRhdGVDYWxsYmFjaykgPT4gbWl4ZWQ7XG4gIC8qKlxuICAgKiBUaGUgY2FsbGJhY2sgYnkgd2hpY2ggYSBwcm92aWRlciBpcyBub3RpZmllZCB0aGF0IGEgbmV3IGNvbnN1bWVyIGhhcyBzdWJzY3JpYmVkIHRvIGRpYWdub3N0aWNcbiAgICogaW52YWxpZGF0aW9ucy5cbiAgICovXG4gIG9uTmV3SW52YWxpZGF0ZVN1YnNjcmliZXI/OiAoY2FsbGJhY2s6IE1lc3NhZ2VJbnZhbGlkYXRpb25DYWxsYmFjaykgPT4gbWl4ZWQ7XG4gIC8qKlxuICAgKiBJZiB0cnVlLCB0aGlzIHdpbGwgY2F1c2Ugb25UZXh0RWRpdG9yRXZlbnQgdG8gZ2V0IGNhbGxlZCBtb3JlIG9mdGVuIC0tIGFwcHJveGltYXRlbHkgd2hlbmV2ZXJcbiAgICogdGhlIHVzZXIgc3RvcHMgdHlwaW5nLiBJZiBmYWxzZSwgaXQgd2lsbCBnZXQgY2FsbGVkIG9ubHkgd2hlbiB0aGUgdXNlciBzYXZlcy5cbiAgICovXG4gIHNob3VsZFJ1bk9uVGhlRmx5PzogYm9vbGVhbjtcbiAgLyoqXG4gICAqIFRoZSBmb2xsb3dpbmcgdHdvIG9wdGlvbnMgc3BlY2lmeSB3aGljaCBncmFtbWFycyB0aGUgcHJvdmlkZXIgaXMgaW50ZXJlc3RlZCBpbi4gTW9zdCBwcm92aWRlcnNcbiAgICogd2lsbCBpbmNsdWRlIGEgc2V0IG9mIGdyYW1tYXJTY29wZXMsIGFuZCB3aWxsIHRoZXJlZm9yZSBnZXQgbm90aWZpY2F0aW9ucyBvbmx5IGFib3V0XG4gICAqIFRleHRFZGl0b3JzIHRoYXQgYXJlIGFzc29jaWF0ZWQgd2l0aCB0aG9zZSBncmFtbWFyU2NvcGVzLiBJbnN0ZWFkLCBhIHByb3ZpZGVyIG1heSBzZXRcbiAgICogZW5hYmxlRm9yQWxsR3JhbW1hcnMgdG8gdHJ1ZSwgYW5kIHRoZW4gaXQgd2lsbCBnZXQgbm90aWZpZWQgb2YgY2hhbmdlcyBpbiBhbGwgVGV4dEVkaXRvcnMuIElmXG4gICAqIGVuYWJsZUZvckFsbEdyYW1tYXJzIGlzIHRydWUsIGl0IG92ZXJyaWRlcyB0aGUgZ3JhbW1hcnMgaW4gZ3JhbW1hclNjb3Blcy5cbiAgICovXG4gIGdyYW1tYXJTY29wZXM/OiBTZXQ8c3RyaW5nPjtcbiAgZW5hYmxlRm9yQWxsR3JhbW1hcnM/OiBib29sZWFuO1xufVxuXG5jb25zdCBVUERBVEVfRVZFTlQgPSAndXBkYXRlJztcbmNvbnN0IElOVkFMSURBVEVfRVZFTlQgPSAnaW52YWxpZGF0ZSc7XG5cbmNvbnN0IHtDb21wb3NpdGVEaXNwb3NhYmxlLCBFbWl0dGVyfSA9IHJlcXVpcmUoJ2F0b20nKTtcblxuZnVuY3Rpb24gZ2V0VGV4dEV2ZW50RGlzcGF0Y2hlcigpIHtcbiAgcmV0dXJuIHJlcXVpcmUoJy4uLy4uL251Y2xpZGUtdGV4dC1ldmVudC1kaXNwYXRjaGVyJykuZ2V0SW5zdGFuY2UoKTtcbn1cblxuZXhwb3J0IGNsYXNzIERpYWdub3N0aWNzUHJvdmlkZXJCYXNlIHtcbiAgX3RleHRFdmVudERpc3BhdGNoZXI6IFRleHRFdmVudERpc3BhdGNoZXI7XG5cbiAgX2VtaXR0ZXI6IEVtaXR0ZXI7XG5cbiAgX2dyYW1tYXJTY29wZXM6IFNldDxzdHJpbmc+O1xuICBfYWxsR3JhbW1hclNjb3BlczogP2Jvb2xlYW47XG5cbiAgX2N1cnJlbnRFdmVudFN1YnNjcmlwdGlvbjogP0lEaXNwb3NhYmxlO1xuXG4gIF9kaXNwb3NhYmxlczogYXRvbSRDb21wb3NpdGVEaXNwb3NhYmxlO1xuXG4gIC8vIGNhbGxiYWNrcyBwcm92aWRlZCBieSBjbGllbnRcbiAgX3RleHRFdmVudENhbGxiYWNrOiAoZWRpdG9yOiBUZXh0RWRpdG9yKSA9PiBtaXhlZDtcbiAgX25ld1VwZGF0ZVN1YnNjcmliZXJDYWxsYmFjazogKGNhbGxiYWNrOiBNZXNzYWdlVXBkYXRlQ2FsbGJhY2spID0+IG1peGVkO1xuICBfbmV3SW52YWxpZGF0ZVN1YnNjcmliZXJDYWxsYmFjazogKGNhbGxiYWNrOiBNZXNzYWdlSW52YWxpZGF0aW9uQ2FsbGJhY2spID0+IG1peGVkO1xuXG4gIGNvbnN0cnVjdG9yKFxuICAgIG9wdGlvbnM6IFByb3ZpZGVyQmFzZU9wdGlvbnMsXG4gICAgdGV4dEV2ZW50RGlzcGF0Y2hlcj86IFRleHRFdmVudERpc3BhdGNoZXIgPSBnZXRUZXh0RXZlbnREaXNwYXRjaGVyKCksXG4gICkge1xuICAgIHRoaXMuX3RleHRFdmVudERpc3BhdGNoZXIgPSB0ZXh0RXZlbnREaXNwYXRjaGVyO1xuICAgIHRoaXMuX2VtaXR0ZXIgPSBuZXcgRW1pdHRlcigpO1xuICAgIHRoaXMuX2Rpc3Bvc2FibGVzID0gbmV3IENvbXBvc2l0ZURpc3Bvc2FibGUoKTtcblxuICAgIHRoaXMuX3RleHRFdmVudENhbGxiYWNrID0gY2FsbGJhY2tPck5vb3Aob3B0aW9ucy5vblRleHRFZGl0b3JFdmVudCk7XG4gICAgdGhpcy5fbmV3VXBkYXRlU3Vic2NyaWJlckNhbGxiYWNrID0gY2FsbGJhY2tPck5vb3Aob3B0aW9ucy5vbk5ld1VwZGF0ZVN1YnNjcmliZXIpO1xuICAgIHRoaXMuX25ld0ludmFsaWRhdGVTdWJzY3JpYmVyQ2FsbGJhY2sgPSBjYWxsYmFja09yTm9vcChvcHRpb25zLm9uTmV3SW52YWxpZGF0ZVN1YnNjcmliZXIpO1xuXG4gICAgLy8gVGhlIFNldCBjb25zdHJ1Y3RvciBjcmVhdGVzIGFuIGVtcHR5IFNldCBpZiBwYXNzZWQgbnVsbCBvciB1bmRlZmluZWQuXG4gICAgdGhpcy5fZ3JhbW1hclNjb3BlcyA9IG5ldyBTZXQob3B0aW9ucy5ncmFtbWFyU2NvcGVzKTtcbiAgICB0aGlzLl9hbGxHcmFtbWFyU2NvcGVzID0gISFvcHRpb25zLmVuYWJsZUZvckFsbEdyYW1tYXJzO1xuICAgIHRoaXMuX3N1YnNjcmliZVRvVGV4dEVkaXRvckV2ZW50KCEhb3B0aW9ucy5zaG91bGRSdW5PblRoZUZseSk7XG4gIH1cblxuICAvKipcbiAgICogU3Vic2NyaWJlcyB0byB0aGUgYXBwcm9wcmlhdGUgZXZlbnQgZGVwZW5kaW5nIG9uIHdoZXRoZXIgd2Ugc2hvdWxkIHJ1biBvblxuICAgKiB0aGUgZmx5IG9yIG5vdC5cbiAgICovXG4gIF9zdWJzY3JpYmVUb1RleHRFZGl0b3JFdmVudChzaG91bGRSdW5PblRoZUZseTogYm9vbGVhbikge1xuICAgIHRoaXMuX2Rpc3Bvc2VFdmVudFN1YnNjcmlwdGlvbigpO1xuICAgIGNvbnN0IGRpc3BhdGNoZXIgPSB0aGlzLl90ZXh0RXZlbnREaXNwYXRjaGVyO1xuICAgIGxldCBzdWJzY3JpcHRpb247XG4gICAgaWYgKHNob3VsZFJ1bk9uVGhlRmx5KSB7XG4gICAgICBpZiAodGhpcy5fYWxsR3JhbW1hclNjb3Blcykge1xuICAgICAgICBzdWJzY3JpcHRpb24gPSBkaXNwYXRjaGVyLm9uQW55RmlsZUNoYW5nZSh0aGlzLl90ZXh0RXZlbnRDYWxsYmFjayk7XG4gICAgICB9IGVsc2Uge1xuICAgICAgICBzdWJzY3JpcHRpb24gPSBkaXNwYXRjaGVyLm9uRmlsZUNoYW5nZSh0aGlzLl9ncmFtbWFyU2NvcGVzLCB0aGlzLl90ZXh0RXZlbnRDYWxsYmFjayk7XG4gICAgICB9XG4gICAgfSBlbHNlIHtcbiAgICAgIGlmICh0aGlzLl9hbGxHcmFtbWFyU2NvcGVzKSB7XG4gICAgICAgIHN1YnNjcmlwdGlvbiA9IGRpc3BhdGNoZXIub25BbnlGaWxlU2F2ZSh0aGlzLl90ZXh0RXZlbnRDYWxsYmFjayk7XG4gICAgICB9IGVsc2Uge1xuICAgICAgICBzdWJzY3JpcHRpb24gPSBkaXNwYXRjaGVyLm9uRmlsZVNhdmUodGhpcy5fZ3JhbW1hclNjb3BlcywgdGhpcy5fdGV4dEV2ZW50Q2FsbGJhY2spO1xuICAgICAgfVxuICAgIH1cbiAgICB0aGlzLl9jdXJyZW50RXZlbnRTdWJzY3JpcHRpb24gPSBzdWJzY3JpcHRpb247XG4gIH1cblxuICBzZXRSdW5PblRoZUZseShydW5PblRoZUZseTogYm9vbGVhbikge1xuICAgIHRoaXMuX3N1YnNjcmliZVRvVGV4dEVkaXRvckV2ZW50KHJ1bk9uVGhlRmx5KTtcbiAgfVxuXG4gIGRpc3Bvc2UoKTogdm9pZCB7XG4gICAgdGhpcy5fZW1pdHRlci5kaXNwb3NlKCk7XG4gICAgdGhpcy5fZGlzcG9zYWJsZXMuZGlzcG9zZSgpO1xuICAgIHRoaXMuX2Rpc3Bvc2VFdmVudFN1YnNjcmlwdGlvbigpO1xuICB9XG5cbiAgX2Rpc3Bvc2VFdmVudFN1YnNjcmlwdGlvbigpOiB2b2lkIHtcbiAgICBpZiAodGhpcy5fY3VycmVudEV2ZW50U3Vic2NyaXB0aW9uKSB7XG4gICAgICB0aGlzLl9jdXJyZW50RXZlbnRTdWJzY3JpcHRpb24uZGlzcG9zZSgpO1xuICAgICAgdGhpcy5fY3VycmVudEV2ZW50U3Vic2NyaXB0aW9uID0gbnVsbDtcbiAgICB9XG4gIH1cblxuICAvKipcbiAgICogQ2xpZW50cyBjYW4gY2FsbCB0aGVzZSBtZXRob2RzIHRvIHB1Ymxpc2ggbWVzc2FnZXNcbiAgICovXG5cbiAgcHVibGlzaE1lc3NhZ2VVcGRhdGUodXBkYXRlOiBEaWFnbm9zdGljUHJvdmlkZXJVcGRhdGUpOiB2b2lkIHtcbiAgICB0aGlzLl9lbWl0dGVyLmVtaXQoVVBEQVRFX0VWRU5ULCB1cGRhdGUpO1xuICB9XG5cbiAgcHVibGlzaE1lc3NhZ2VJbnZhbGlkYXRpb24obWVzc2FnZTogSW52YWxpZGF0aW9uTWVzc2FnZSk6IHZvaWQge1xuICAgIHRoaXMuX2VtaXR0ZXIuZW1pdChJTlZBTElEQVRFX0VWRU5ULCBtZXNzYWdlKTtcbiAgfVxuXG4gIC8qKlxuICAgKiBDbGllbnRzIHNob3VsZCBkZWxlZ2F0ZSB0byB0aGVzZVxuICAgKi9cblxuICBvbk1lc3NhZ2VVcGRhdGUoY2FsbGJhY2s6IE1lc3NhZ2VVcGRhdGVDYWxsYmFjayk6IElEaXNwb3NhYmxlIHtcbiAgICBjb25zdCBkaXNwb3NhYmxlID0gdGhpcy5fZW1pdHRlci5vbihVUERBVEVfRVZFTlQsIGNhbGxiYWNrKTtcbiAgICB0aGlzLl9uZXdVcGRhdGVTdWJzY3JpYmVyQ2FsbGJhY2soY2FsbGJhY2spO1xuICAgIHJldHVybiBkaXNwb3NhYmxlO1xuICB9XG5cbiAgb25NZXNzYWdlSW52YWxpZGF0aW9uKGNhbGxiYWNrOiBNZXNzYWdlSW52YWxpZGF0aW9uQ2FsbGJhY2spOiBJRGlzcG9zYWJsZSB7XG4gICAgY29uc3QgZGlzcG9zYWJsZSA9IHRoaXMuX2VtaXR0ZXIub24oSU5WQUxJREFURV9FVkVOVCwgY2FsbGJhY2spO1xuICAgIHRoaXMuX25ld0ludmFsaWRhdGVTdWJzY3JpYmVyQ2FsbGJhY2soY2FsbGJhY2spO1xuICAgIHJldHVybiBkaXNwb3NhYmxlO1xuICB9XG59XG5cbmZ1bmN0aW9uIGNhbGxiYWNrT3JOb29wPFQ+KGNhbGxiYWNrOiA/KGFyZzogVCkgPT4gbWl4ZWQpOiAoYXJnOiBUKSA9PiBtaXhlZCB7XG4gIHJldHVybiBjYWxsYmFjayA/IGNhbGxiYWNrLmJpbmQodW5kZWZpbmVkKSA6ICgpID0+IHsgfTtcbn1cbiJdfQ==

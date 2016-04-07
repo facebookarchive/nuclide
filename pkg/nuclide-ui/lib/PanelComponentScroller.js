@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +10,16 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-
-type Props = {
-  children: React.Element;
-  overflowX: ?string;
-};
+var _reactForAtom = require('react-for-atom');
 
 /*eslint-disable react/prop-types */
-export const PanelComponentScroller = (props: Props): React.Element => {
-  const style = (props.overflowX == null) ? null : {overflowX: props.overflowX};
-  return (
-    <div className="nuclide-ui-panel-component-scroller" style={style}>
-      {props.children}
-    </div>
+var PanelComponentScroller = function PanelComponentScroller(props) {
+  var style = props.overflowX == null ? null : { overflowX: props.overflowX };
+  return _reactForAtom.React.createElement(
+    'div',
+    { className: 'nuclide-ui-panel-component-scroller', style: style },
+    props.children
   );
 };
+exports.PanelComponentScroller = PanelComponentScroller;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlBhbmVsQ29tcG9uZW50U2Nyb2xsZXIuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7OzRCQVdvQixnQkFBZ0I7OztBQVE3QixJQUFNLHNCQUFzQixHQUFHLFNBQXpCLHNCQUFzQixDQUFJLEtBQUssRUFBMkI7QUFDckUsTUFBTSxLQUFLLEdBQUcsQUFBQyxLQUFLLENBQUMsU0FBUyxJQUFJLElBQUksR0FBSSxJQUFJLEdBQUcsRUFBQyxTQUFTLEVBQUUsS0FBSyxDQUFDLFNBQVMsRUFBQyxDQUFDO0FBQzlFLFNBQ0U7O01BQUssU0FBUyxFQUFDLHFDQUFxQyxFQUFDLEtBQUssRUFBRSxLQUFLLEFBQUM7SUFDL0QsS0FBSyxDQUFDLFFBQVE7R0FDWCxDQUNOO0NBQ0gsQ0FBQyIsImZpbGUiOiJQYW5lbENvbXBvbmVudFNjcm9sbGVyLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHtSZWFjdH0gZnJvbSAncmVhY3QtZm9yLWF0b20nO1xuXG50eXBlIFByb3BzID0ge1xuICBjaGlsZHJlbjogUmVhY3QuRWxlbWVudDtcbiAgb3ZlcmZsb3dYOiA/c3RyaW5nO1xufTtcblxuLyplc2xpbnQtZGlzYWJsZSByZWFjdC9wcm9wLXR5cGVzICovXG5leHBvcnQgY29uc3QgUGFuZWxDb21wb25lbnRTY3JvbGxlciA9IChwcm9wczogUHJvcHMpOiBSZWFjdC5FbGVtZW50ID0+IHtcbiAgY29uc3Qgc3R5bGUgPSAocHJvcHMub3ZlcmZsb3dYID09IG51bGwpID8gbnVsbCA6IHtvdmVyZmxvd1g6IHByb3BzLm92ZXJmbG93WH07XG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9XCJudWNsaWRlLXVpLXBhbmVsLWNvbXBvbmVudC1zY3JvbGxlclwiIHN0eWxlPXtzdHlsZX0+XG4gICAgICB7cHJvcHMuY2hpbGRyZW59XG4gICAgPC9kaXY+XG4gICk7XG59O1xuIl19

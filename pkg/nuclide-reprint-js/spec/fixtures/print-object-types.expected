@@ -1,8 +1,0 @@
-type x = {foo: string};
-type x = {foo?: string, bar?: number};
-type x = {
-  foo: string,
-  bar: number,
-  baz: string,
-  buz: ?{foo: string, bar: string},
-};

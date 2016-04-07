@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +8,14 @@
  * the root directory of this source tree.
  */
 
-import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-atom';
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import {LLDBLaunchAttachProvider} from './LLDBLaunchAttachProvider';
+var _LLDBLaunchAttachProvider = require('./LLDBLaunchAttachProvider');
 
-function getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
-  return new LLDBLaunchAttachProvider('Native', connection);
+function getLaunchAttachProvider(connection) {
+  return new _LLDBLaunchAttachProvider.LLDBLaunchAttachProvider('Native', connection);
 }
 
 module.exports = {
   name: 'lldb',
-  getLaunchAttachProvider,
+  getLaunchAttachProvider: getLaunchAttachProvider
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkRlYnVnZ2VyUHJvdmlkZXIuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozt3Q0FhdUMsNEJBQTRCOztBQUVuRSxTQUFTLHVCQUF1QixDQUFDLFVBQXNCLEVBQWlDO0FBQ3RGLFNBQU8sdURBQTZCLFFBQVEsRUFBRSxVQUFVLENBQUMsQ0FBQztDQUMzRDs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHO0FBQ2YsTUFBSSxFQUFFLE1BQU07QUFDWix5QkFBdUIsRUFBdkIsdUJBQXVCO0NBQ3hCLENBQUMiLCJmaWxlIjoiRGVidWdnZXJQcm92aWRlci5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtEZWJ1Z2dlckxhdW5jaEF0dGFjaFByb3ZpZGVyfSBmcm9tICcuLi8uLi9udWNsaWRlLWRlYnVnZ2VyLWF0b20nO1xuaW1wb3J0IHR5cGUge051Y2xpZGVVcml9IGZyb20gJy4uLy4uL251Y2xpZGUtcmVtb3RlLXVyaSc7XG5pbXBvcnQge0xMREJMYXVuY2hBdHRhY2hQcm92aWRlcn0gZnJvbSAnLi9MTERCTGF1bmNoQXR0YWNoUHJvdmlkZXInO1xuXG5mdW5jdGlvbiBnZXRMYXVuY2hBdHRhY2hQcm92aWRlcihjb25uZWN0aW9uOiBOdWNsaWRlVXJpKTogP0RlYnVnZ2VyTGF1bmNoQXR0YWNoUHJvdmlkZXIge1xuICByZXR1cm4gbmV3IExMREJMYXVuY2hBdHRhY2hQcm92aWRlcignTmF0aXZlJywgY29ubmVjdGlvbik7XG59XG5cbm1vZHVsZS5leHBvcnRzID0ge1xuICBuYW1lOiAnbGxkYicsXG4gIGdldExhdW5jaEF0dGFjaFByb3ZpZGVyLFxufTtcbiJdfQ==

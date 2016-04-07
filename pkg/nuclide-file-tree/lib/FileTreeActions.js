@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,449 +8,497 @@
  * the root directory of this source tree.
  */
 
-import type {Dispatcher} from 'flux';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {ActionType} from './FileTreeConstants';
-import {debounce} from '../../nuclide-commons';
-import {Disposable} from 'atom';
-import FileTreeDispatcher from './FileTreeDispatcher';
-import FileTreeHelpers from './FileTreeHelpers';
-import FileTreeStore from './FileTreeStore';
-import Immutable from 'immutable';
-import {object} from '../../nuclide-commons';
-import semver from 'semver';
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {WorkingSet} from '../../nuclide-working-sets';
-import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
+var _FileTreeConstants = require('./FileTreeConstants');
 
-let instance: ?Object;
+var _nuclideCommons = require('../../nuclide-commons');
+
+var _atom = require('atom');
+
+var _FileTreeDispatcher = require('./FileTreeDispatcher');
+
+var _FileTreeDispatcher2 = _interopRequireDefault(_FileTreeDispatcher);
+
+var _FileTreeHelpers = require('./FileTreeHelpers');
+
+var _FileTreeHelpers2 = _interopRequireDefault(_FileTreeHelpers);
+
+var _FileTreeStore = require('./FileTreeStore');
+
+var _FileTreeStore2 = _interopRequireDefault(_FileTreeStore);
+
+var _immutable = require('immutable');
+
+var _immutable2 = _interopRequireDefault(_immutable);
+
+var _semver = require('semver');
+
+var _semver2 = _interopRequireDefault(_semver);
+
+var _nuclideHgGitBridge = require('../../nuclide-hg-git-bridge');
+
+var instance = undefined;
 
 /**
  * Implements the Flux pattern for our file tree. All state for the file tree will be kept in
  * FileTreeStore and the only way to update the store is through methods on FileTreeActions. The
  * dispatcher is a mechanism through which FileTreeActions interfaces with FileTreeStore.
  */
-class FileTreeActions {
-  _dispatcher: Dispatcher;
-  _store: FileTreeStore;
-  _subscriptionForRepository: Immutable.Map<atom$Repository, Disposable>;
 
-  static getInstance(): FileTreeActions {
-    if (!instance) {
-      instance = new FileTreeActions();
+var FileTreeActions = (function () {
+  _createClass(FileTreeActions, null, [{
+    key: 'getInstance',
+    value: function getInstance() {
+      if (!instance) {
+        instance = new FileTreeActions();
+      }
+      return instance;
     }
-    return instance;
+  }]);
+
+  function FileTreeActions() {
+    _classCallCheck(this, FileTreeActions);
+
+    this._dispatcher = _FileTreeDispatcher2['default'].getInstance();
+    this._store = _FileTreeStore2['default'].getInstance();
+    this._subscriptionForRepository = new _immutable2['default'].Map();
   }
 
-  constructor() {
-    this._dispatcher = FileTreeDispatcher.getInstance();
-    this._store = FileTreeStore.getInstance();
-    this._subscriptionForRepository = new Immutable.Map();
-  }
-
-  setCwd(rootKey: ?string): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_CWD,
-      rootKey,
-    });
-  }
-
-  setRootKeys(rootKeys: Array<string>): void {
-    const existingRootKeySet: Immutable.Set<string> = new Immutable.Set(this._store.getRootKeys());
-    const addedRootKeys: Immutable.Set<string> =
-      new Immutable.Set(rootKeys).subtract(existingRootKeySet);
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_ROOT_KEYS,
-      rootKeys,
-    });
-    for (const rootKey of addedRootKeys) {
-      this.expandNode(rootKey, rootKey);
-    }
-  }
-
-  expandNode(rootKey: string, nodeKey: string): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.EXPAND_NODE,
-      rootKey,
-      nodeKey,
-    });
-  }
-
-  expandNodeDeep(rootKey: string, nodeKey: string): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.EXPAND_NODE_DEEP,
-      rootKey,
-      nodeKey,
-    });
-  }
-
-  deleteSelectedNodes(): void {
-    this._dispatcher.dispatch({actionType: ActionType.DELETE_SELECTED_NODES});
-  }
-
-  // Makes sure a specific child exists for a given node. If it does not exist, temporarily
-  // create it and initiate a fetch. This feature is exclusively for expanding to a node deep
-  // in a tree.
-  ensureChildNode(rootKey: string, nodeKey: string, childKey: string): void {
-    if (this._store.getChildKeys(rootKey, nodeKey).indexOf(childKey) !== -1) {
-      return;
-    }
-    this._dispatcher.dispatch({
-      actionType: ActionType.CREATE_CHILD,
-      rootKey,
-      nodeKey,
-      childKey,
-    });
-  }
-
-  collapseNode(rootKey: string, nodeKey: string): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.COLLAPSE_NODE,
-      rootKey,
-      nodeKey,
-    });
-  }
-
-  collapseNodeDeep(rootKey: string, nodeKey: string): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.COLLAPSE_NODE_DEEP,
-      rootKey,
-      nodeKey,
-    });
-  }
-
-  toggleSelectNode(rootKey: string, nodeKey: string): void {
-    let nodeKeys = this._store.getSelectedKeys(rootKey);
-    if (nodeKeys.has(nodeKey)) {
-      nodeKeys = nodeKeys.delete(nodeKey);
-    } else {
-      nodeKeys = nodeKeys.add(nodeKey);
-    }
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_SELECTED_NODES_FOR_ROOT,
-      rootKey,
-      nodeKeys,
-    });
-  }
-
-  setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_EXCLUDE_VCS_IGNORED_PATHS,
-      excludeVcsIgnoredPaths,
-    });
-  }
-
-  setHideIgnoredNames(hideIgnoredNames: boolean): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_HIDE_IGNORED_NAMES,
-      hideIgnoredNames,
-    });
-  }
-
-  setIgnoredNames(ignoredNames: Array<string>): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_IGNORED_NAMES,
-      ignoredNames,
-    });
-  }
-
-  setTrackedNode(rootKey: string, nodeKey: string): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_TRACKED_NODE,
-      nodeKey,
-      rootKey,
-    });
-  }
-
-  setUsePreviewTabs(usePreviewTabs: boolean): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_USE_PREVIEW_TABS,
-      usePreviewTabs,
-    });
-  }
-
-  setUsePrefixNav(usePrefixNav: boolean): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_USE_PREFIX_NAV,
-      usePrefixNav,
-    });
-  }
-
-  selectSingleNode(rootKey: string, nodeKey: string): void {
-    const selectedKeysByRoot = {};
-    selectedKeysByRoot[rootKey] = new Immutable.Set([nodeKey]);
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_SELECTED_NODES_FOR_TREE,
-      selectedKeysByRoot,
-    });
-  }
-
-  confirmNode(rootKey: string, nodeKey: string, pending: boolean = false): void {
-    const isDirectory = FileTreeHelpers.isDirKey(nodeKey);
-    if (isDirectory) {
-      const actionType = this._store.isExpanded(rootKey, nodeKey) ?
-        ActionType.COLLAPSE_NODE :
-        ActionType.EXPAND_NODE;
+  _createClass(FileTreeActions, [{
+    key: 'setCwd',
+    value: function setCwd(rootKey) {
       this._dispatcher.dispatch({
-        actionType: actionType,
-        nodeKey,
-        rootKey,
+        actionType: _FileTreeConstants.ActionType.SET_CWD,
+        rootKey: rootKey
       });
-    } else {
-      let openOptions = {
-        activatePane: true,
-        searchAllPanes: true,
-      };
+    }
+  }, {
+    key: 'setRootKeys',
+    value: function setRootKeys(rootKeys) {
+      var existingRootKeySet = new _immutable2['default'].Set(this._store.getRootKeys());
+      var addedRootKeys = new _immutable2['default'].Set(rootKeys).subtract(existingRootKeySet);
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.SET_ROOT_KEYS,
+        rootKeys: rootKeys
+      });
+      for (var rootKey of addedRootKeys) {
+        this.expandNode(rootKey, rootKey);
+      }
+    }
+  }, {
+    key: 'expandNode',
+    value: function expandNode(rootKey, nodeKey) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.EXPAND_NODE,
+        rootKey: rootKey,
+        nodeKey: nodeKey
+      });
+    }
+  }, {
+    key: 'expandNodeDeep',
+    value: function expandNodeDeep(rootKey, nodeKey) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.EXPAND_NODE_DEEP,
+        rootKey: rootKey,
+        nodeKey: nodeKey
+      });
+    }
+  }, {
+    key: 'deleteSelectedNodes',
+    value: function deleteSelectedNodes() {
+      this._dispatcher.dispatch({ actionType: _FileTreeConstants.ActionType.DELETE_SELECTED_NODES });
+    }
+
+    // Makes sure a specific child exists for a given node. If it does not exist, temporarily
+    // create it and initiate a fetch. This feature is exclusively for expanding to a node deep
+    // in a tree.
+  }, {
+    key: 'ensureChildNode',
+    value: function ensureChildNode(rootKey, nodeKey, childKey) {
+      if (this._store.getChildKeys(rootKey, nodeKey).indexOf(childKey) !== -1) {
+        return;
+      }
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.CREATE_CHILD,
+        rootKey: rootKey,
+        nodeKey: nodeKey,
+        childKey: childKey
+      });
+    }
+  }, {
+    key: 'collapseNode',
+    value: function collapseNode(rootKey, nodeKey) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.COLLAPSE_NODE,
+        rootKey: rootKey,
+        nodeKey: nodeKey
+      });
+    }
+  }, {
+    key: 'collapseNodeDeep',
+    value: function collapseNodeDeep(rootKey, nodeKey) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.COLLAPSE_NODE_DEEP,
+        rootKey: rootKey,
+        nodeKey: nodeKey
+      });
+    }
+  }, {
+    key: 'toggleSelectNode',
+    value: function toggleSelectNode(rootKey, nodeKey) {
+      var nodeKeys = this._store.getSelectedKeys(rootKey);
+      if (nodeKeys.has(nodeKey)) {
+        nodeKeys = nodeKeys['delete'](nodeKey);
+      } else {
+        nodeKeys = nodeKeys.add(nodeKey);
+      }
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.SET_SELECTED_NODES_FOR_ROOT,
+        rootKey: rootKey,
+        nodeKeys: nodeKeys
+      });
+    }
+  }, {
+    key: 'setExcludeVcsIgnoredPaths',
+    value: function setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.SET_EXCLUDE_VCS_IGNORED_PATHS,
+        excludeVcsIgnoredPaths: excludeVcsIgnoredPaths
+      });
+    }
+  }, {
+    key: 'setHideIgnoredNames',
+    value: function setHideIgnoredNames(hideIgnoredNames) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.SET_HIDE_IGNORED_NAMES,
+        hideIgnoredNames: hideIgnoredNames
+      });
+    }
+  }, {
+    key: 'setIgnoredNames',
+    value: function setIgnoredNames(ignoredNames) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.SET_IGNORED_NAMES,
+        ignoredNames: ignoredNames
+      });
+    }
+  }, {
+    key: 'setTrackedNode',
+    value: function setTrackedNode(rootKey, nodeKey) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.SET_TRACKED_NODE,
+        nodeKey: nodeKey,
+        rootKey: rootKey
+      });
+    }
+  }, {
+    key: 'setUsePreviewTabs',
+    value: function setUsePreviewTabs(usePreviewTabs) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.SET_USE_PREVIEW_TABS,
+        usePreviewTabs: usePreviewTabs
+      });
+    }
+  }, {
+    key: 'setUsePrefixNav',
+    value: function setUsePrefixNav(usePrefixNav) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.SET_USE_PREFIX_NAV,
+        usePrefixNav: usePrefixNav
+      });
+    }
+  }, {
+    key: 'selectSingleNode',
+    value: function selectSingleNode(rootKey, nodeKey) {
+      var selectedKeysByRoot = {};
+      selectedKeysByRoot[rootKey] = new _immutable2['default'].Set([nodeKey]);
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.SET_SELECTED_NODES_FOR_TREE,
+        selectedKeysByRoot: selectedKeysByRoot
+      });
+    }
+  }, {
+    key: 'confirmNode',
+    value: function confirmNode(rootKey, nodeKey) {
+      var pending = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
+
+      var isDirectory = _FileTreeHelpers2['default'].isDirKey(nodeKey);
+      if (isDirectory) {
+        var actionType = this._store.isExpanded(rootKey, nodeKey) ? _FileTreeConstants.ActionType.COLLAPSE_NODE : _FileTreeConstants.ActionType.EXPAND_NODE;
+        this._dispatcher.dispatch({
+          actionType: actionType,
+          nodeKey: nodeKey,
+          rootKey: rootKey
+        });
+      } else {
+        var openOptions = {
+          activatePane: true,
+          searchAllPanes: true
+        };
+        // TODO: Make the following the default once Nuclide only supports Atom v1.6.0+
+        if (_semver2['default'].gte(atom.getVersion(), '1.6.0')) {
+          openOptions = _nuclideCommons.object.assign({}, openOptions, { pending: true });
+        }
+        atom.workspace.open(_FileTreeHelpers2['default'].keyToPath(nodeKey), openOptions);
+      }
+    }
+  }, {
+    key: 'keepPreviewTab',
+    value: function keepPreviewTab() {
       // TODO: Make the following the default once Nuclide only supports Atom v1.6.0+
-      if (semver.gte(atom.getVersion(), '1.6.0')) {
-        openOptions = object.assign({}, openOptions, {pending: true});
-      }
-      atom.workspace.open(FileTreeHelpers.keyToPath(nodeKey), openOptions);
-    }
-  }
-
-  keepPreviewTab() {
-    // TODO: Make the following the default once Nuclide only supports Atom v1.6.0+
-    if (semver.gte(atom.getVersion(), '1.6.0')) {
-      const activePane = atom.workspace.getActivePane();
-      if (activePane != null) {
-        activePane.clearPendingItem();
-      }
-    } else {
-      const activePaneItem = atom.workspace.getActivePaneItem();
-      if (activePaneItem != null) {
-        atom.commands.dispatch(atom.views.getView(activePaneItem), 'tabs:keep-preview-tab');
+      if (_semver2['default'].gte(atom.getVersion(), '1.6.0')) {
+        var activePane = atom.workspace.getActivePane();
+        if (activePane != null) {
+          activePane.clearPendingItem();
+        }
+      } else {
+        var activePaneItem = atom.workspace.getActivePaneItem();
+        if (activePaneItem != null) {
+          atom.commands.dispatch(atom.views.getView(activePaneItem), 'tabs:keep-preview-tab');
+        }
       }
     }
-  }
-
-  openSelectedEntrySplit(
-    nodeKey: string,
-    orientation: atom$PaneSplitOrientation,
-    side: atom$PaneSplitSide
-  ): void {
-    const pane = atom.workspace.getActivePane();
-    atom.workspace.openURIInPane(
-      FileTreeHelpers.keyToPath(nodeKey),
-      pane.split(orientation, side)
-    );
-  }
-
-  setVcsStatuses(rootKey: string, vcsStatuses: {[path: string]: number}): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_VCS_STATUSES,
-      rootKey,
-      vcsStatuses,
-    });
-  }
-
-  /**
-   * Updates the root repositories to match the provided directories.
-   */
-  async updateRepositories(rootDirectories: Array<atom$Directory>): Promise<void> {
-    const rootKeys = rootDirectories.map(
-      directory => FileTreeHelpers.dirPathToKey(directory.getPath())
-    );
-    const rootRepos: Array<?atom$Repository> = await Promise.all(rootDirectories.map(
-      directory => repositoryForPath(directory.getPath())
-    ));
-
-    // t7114196: Given the current implementation of HgRepositoryClient, each root directory will
-    // always correspond to a unique instance of HgRepositoryClient. Ideally, if multiple subfolders
-    // of an Hg repo are used as project roots in Atom, only one HgRepositoryClient should be
-    // created.
-
-    // Group all of the root keys by their repository, excluding any that don't belong to a
-    // repository.
-    const rootKeysForRepository = Immutable.List(rootKeys)
-      .groupBy((rootKey, index) => rootRepos[index])
-      .filter((v, k) => k != null)
-      .map(v => new Immutable.Set(v));
-
-    const prevRepos = this._store.getRepositories();
-
-    // Let the store know we have some new repos!
-    const nextRepos: Immutable.Set<atom$Repository> =
-      new Immutable.Set(rootKeysForRepository.keys());
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_REPOSITORIES,
-      repositories: nextRepos,
-    });
-
-    const removedRepos = prevRepos.subtract(nextRepos);
-    const addedRepos = nextRepos.subtract(prevRepos);
-
-
-    // TODO: Rewrite `_repositoryAdded` to return the subscription instead of adding it to a map as
-    //       a side effect. The map can be created here with something like
-    //       `subscriptions = Immutable.Map(repos).map(this._repositoryAdded)`. Since
-    //       `_repositoryAdded` will no longer be about side effects, it should then be renamed.
-    //       `_repositoryRemoved` could probably be inlined here. That would leave this function as
-    //       the only one doing side-effects.
-
-    // Unsubscribe from removedRepos.
-    removedRepos.forEach(repo => this._repositoryRemoved(repo, rootKeysForRepository));
-
-    // Create subscriptions for addedRepos.
-    addedRepos.forEach(repo => this._repositoryAdded(repo, rootKeysForRepository));
-  }
-
-  updateWorkingSet(workingSet: WorkingSet): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_WORKING_SET,
-      workingSet,
-    });
-  }
-
-  updateOpenFilesWorkingSet(openFilesWorkingSet: WorkingSet): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_OPEN_FILES_WORKING_SET,
-      openFilesWorkingSet,
-    });
-  }
-
-  updateWorkingSetsStore(workingSetsStore: ?WorkingSetsStore): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.SET_WORKING_SETS_STORE,
-      workingSetsStore,
-    });
-  }
-
-  startEditingWorkingSet(editedWorkingSet: WorkingSet): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.START_EDITING_WORKING_SET,
-      editedWorkingSet,
-    });
-  }
-
-  finishEditingWorkingSet(): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.FINISH_EDITING_WORKING_SET,
-    });
-  }
-
-  checkNode(rootKey: string, nodeKey: string): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.CHECK_NODE,
-      rootKey,
-      nodeKey,
-    });
-  }
-
-  uncheckNode(rootKey: string, nodeKey: string): void {
-    this._dispatcher.dispatch({
-      actionType: ActionType.UNCHECK_NODE,
-      rootKey,
-      nodeKey,
-    });
-  }
-
-  async _repositoryAdded(
-    repo: atom$Repository,
-    rootKeysForRepository: Immutable.Map<atom$Repository, Immutable.Set<string>>,
-  ): Promise<void> {
-    // For now, we only support HgRepository objects.
-    if (repo.getType() !== 'hg') {
-      return;
+  }, {
+    key: 'openSelectedEntrySplit',
+    value: function openSelectedEntrySplit(nodeKey, orientation, side) {
+      var pane = atom.workspace.getActivePane();
+      atom.workspace.openURIInPane(_FileTreeHelpers2['default'].keyToPath(nodeKey), pane.split(orientation, side));
+    }
+  }, {
+    key: 'setVcsStatuses',
+    value: function setVcsStatuses(rootKey, vcsStatuses) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.SET_VCS_STATUSES,
+        rootKey: rootKey,
+        vcsStatuses: vcsStatuses
+      });
     }
 
-    const hgRepo = ((repo: any): HgRepositoryClient);
+    /**
+     * Updates the root repositories to match the provided directories.
+     */
+  }, {
+    key: 'updateRepositories',
+    value: _asyncToGenerator(function* (rootDirectories) {
+      var _this = this;
 
-    // At this point, we assume that repo is a Nuclide HgRepositoryClient.
+      var rootKeys = rootDirectories.map(function (directory) {
+        return _FileTreeHelpers2['default'].dirPathToKey(directory.getPath());
+      });
+      var rootRepos = yield Promise.all(rootDirectories.map(function (directory) {
+        return (0, _nuclideHgGitBridge.repositoryForPath)(directory.getPath());
+      }));
 
-    // First, get the output of `hg status` for the repository.
-    const {hgConstants} = require('../../nuclide-hg-repository-base');
-    // TODO(mbolin): Verify that all of this is set up correctly for remote files.
-    const repoRoot = hgRepo.getWorkingDirectory();
-    const statusCodeForPath = await hgRepo.getStatuses([repoRoot], {
-      hgStatusOption: hgConstants.HgStatusOption.ONLY_NON_IGNORED,
-    });
+      // t7114196: Given the current implementation of HgRepositoryClient, each root directory will
+      // always correspond to a unique instance of HgRepositoryClient. Ideally, if multiple subfolders
+      // of an Hg repo are used as project roots in Atom, only one HgRepositoryClient should be
+      // created.
 
-    // From the initial result of `hg status`, record the status code for every file in
-    // statusCodeForPath in the statusesToReport map. If the file is modified, also mark every
-    // parent directory (up to the repository root) of that file as modified, as well. For now, we
-    // mark only new files, but not new directories.
-    const statusesToReport = {};
-    statusCodeForPath.forEach((statusCode, path) => {
-      if (hgRepo.isStatusModified(statusCode)) {
-        statusesToReport[path] = statusCode;
+      // Group all of the root keys by their repository, excluding any that don't belong to a
+      // repository.
+      var rootKeysForRepository = _immutable2['default'].List(rootKeys).groupBy(function (rootKey, index) {
+        return rootRepos[index];
+      }).filter(function (v, k) {
+        return k != null;
+      }).map(function (v) {
+        return new _immutable2['default'].Set(v);
+      });
 
-        // For modified files, every parent directory should also be flagged as modified.
-        let nodeKey: string = path;
-        const keyForRepoRoot = FileTreeHelpers.dirPathToKey(repoRoot);
-        do {
-          const parentKey = FileTreeHelpers.getParentKey(nodeKey);
-          if (parentKey == null) {
-            break;
-          }
+      var prevRepos = this._store.getRepositories();
 
-          nodeKey = parentKey;
-          if (statusesToReport.hasOwnProperty(nodeKey)) {
-            // If there is already an entry for this parent file in the statusesToReport map, then
-            // there is no reason to continue exploring ancestor directories.
-            break;
-          } else {
-            statusesToReport[nodeKey] = hgConstants.StatusCodeNumber.MODIFIED;
-          }
-        } while (nodeKey !== keyForRepoRoot);
-      } else if (statusCode === hgConstants.StatusCodeNumber.ADDED) {
-        statusesToReport[path] = statusCode;
+      // Let the store know we have some new repos!
+      var nextRepos = new _immutable2['default'].Set(rootKeysForRepository.keys());
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.SET_REPOSITORIES,
+        repositories: nextRepos
+      });
+
+      var removedRepos = prevRepos.subtract(nextRepos);
+      var addedRepos = nextRepos.subtract(prevRepos);
+
+      // TODO: Rewrite `_repositoryAdded` to return the subscription instead of adding it to a map as
+      //       a side effect. The map can be created here with something like
+      //       `subscriptions = Immutable.Map(repos).map(this._repositoryAdded)`. Since
+      //       `_repositoryAdded` will no longer be about side effects, it should then be renamed.
+      //       `_repositoryRemoved` could probably be inlined here. That would leave this function as
+      //       the only one doing side-effects.
+
+      // Unsubscribe from removedRepos.
+      removedRepos.forEach(function (repo) {
+        return _this._repositoryRemoved(repo, rootKeysForRepository);
+      });
+
+      // Create subscriptions for addedRepos.
+      addedRepos.forEach(function (repo) {
+        return _this._repositoryAdded(repo, rootKeysForRepository);
+      });
+    })
+  }, {
+    key: 'updateWorkingSet',
+    value: function updateWorkingSet(workingSet) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.SET_WORKING_SET,
+        workingSet: workingSet
+      });
+    }
+  }, {
+    key: 'updateOpenFilesWorkingSet',
+    value: function updateOpenFilesWorkingSet(openFilesWorkingSet) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.SET_OPEN_FILES_WORKING_SET,
+        openFilesWorkingSet: openFilesWorkingSet
+      });
+    }
+  }, {
+    key: 'updateWorkingSetsStore',
+    value: function updateWorkingSetsStore(workingSetsStore) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.SET_WORKING_SETS_STORE,
+        workingSetsStore: workingSetsStore
+      });
+    }
+  }, {
+    key: 'startEditingWorkingSet',
+    value: function startEditingWorkingSet(editedWorkingSet) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.START_EDITING_WORKING_SET,
+        editedWorkingSet: editedWorkingSet
+      });
+    }
+  }, {
+    key: 'finishEditingWorkingSet',
+    value: function finishEditingWorkingSet() {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.FINISH_EDITING_WORKING_SET
+      });
+    }
+  }, {
+    key: 'checkNode',
+    value: function checkNode(rootKey, nodeKey) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.CHECK_NODE,
+        rootKey: rootKey,
+        nodeKey: nodeKey
+      });
+    }
+  }, {
+    key: 'uncheckNode',
+    value: function uncheckNode(rootKey, nodeKey) {
+      this._dispatcher.dispatch({
+        actionType: _FileTreeConstants.ActionType.UNCHECK_NODE,
+        rootKey: rootKey,
+        nodeKey: nodeKey
+      });
+    }
+  }, {
+    key: '_repositoryAdded',
+    value: _asyncToGenerator(function* (repo, rootKeysForRepository) {
+      // For now, we only support HgRepository objects.
+      if (repo.getType() !== 'hg') {
+        return;
       }
-    });
-    for (const rootKeyForRepo of rootKeysForRepository.get(hgRepo)) {
-      this.setVcsStatuses(rootKeyForRepo, statusesToReport);
-    }
 
-    // TODO: Call getStatuses with <visible_nodes, hgConstants.HgStatusOption.ONLY_IGNORED>
-    // to determine which nodes in the tree need to be shown as ignored.
+      var hgRepo = repo;
 
-    // Now that the initial VCS statuses are set, subscribe to changes to the Repository so that the
-    // VCS statuses are kept up to date.
-    const subscription = hgRepo.onDidChangeStatuses(
+      // At this point, we assume that repo is a Nuclide HgRepositoryClient.
+
+      // First, get the output of `hg status` for the repository.
+
+      var _require = require('../../nuclide-hg-repository-base');
+
+      var hgConstants = _require.hgConstants;
+
+      // TODO(mbolin): Verify that all of this is set up correctly for remote files.
+      var repoRoot = hgRepo.getWorkingDirectory();
+      var statusCodeForPath = yield hgRepo.getStatuses([repoRoot], {
+        hgStatusOption: hgConstants.HgStatusOption.ONLY_NON_IGNORED
+      });
+
+      // From the initial result of `hg status`, record the status code for every file in
+      // statusCodeForPath in the statusesToReport map. If the file is modified, also mark every
+      // parent directory (up to the repository root) of that file as modified, as well. For now, we
+      // mark only new files, but not new directories.
+      var statusesToReport = {};
+      statusCodeForPath.forEach(function (statusCode, path) {
+        if (hgRepo.isStatusModified(statusCode)) {
+          statusesToReport[path] = statusCode;
+
+          // For modified files, every parent directory should also be flagged as modified.
+          var nodeKey = path;
+          var keyForRepoRoot = _FileTreeHelpers2['default'].dirPathToKey(repoRoot);
+          do {
+            var parentKey = _FileTreeHelpers2['default'].getParentKey(nodeKey);
+            if (parentKey == null) {
+              break;
+            }
+
+            nodeKey = parentKey;
+            if (statusesToReport.hasOwnProperty(nodeKey)) {
+              // If there is already an entry for this parent file in the statusesToReport map, then
+              // there is no reason to continue exploring ancestor directories.
+              break;
+            } else {
+              statusesToReport[nodeKey] = hgConstants.StatusCodeNumber.MODIFIED;
+            }
+          } while (nodeKey !== keyForRepoRoot);
+        } else if (statusCode === hgConstants.StatusCodeNumber.ADDED) {
+          statusesToReport[path] = statusCode;
+        }
+      });
+      for (var rootKeyForRepo of rootKeysForRepository.get(hgRepo)) {
+        this.setVcsStatuses(rootKeyForRepo, statusesToReport);
+      }
+
+      // TODO: Call getStatuses with <visible_nodes, hgConstants.HgStatusOption.ONLY_IGNORED>
+      // to determine which nodes in the tree need to be shown as ignored.
+
+      // Now that the initial VCS statuses are set, subscribe to changes to the Repository so that the
+      // VCS statuses are kept up to date.
+      var subscription = hgRepo.onDidChangeStatuses(
       // t8227570: If the user is a "nervous saver," many onDidChangeStatuses will get fired in
       // succession. We should probably explore debouncing this in HgRepositoryClient itself.
-      debounce(
-        this._onDidChangeStatusesForRepository.bind(this, hgRepo, rootKeysForRepository),
-        /* wait */ 1000,
-        /* immediate */ false,
-      )
-    );
+      (0, _nuclideCommons.debounce)(this._onDidChangeStatusesForRepository.bind(this, hgRepo, rootKeysForRepository),
+      /* wait */1000,
+      /* immediate */false));
 
-    this._subscriptionForRepository = this._subscriptionForRepository.set(hgRepo, subscription);
-  }
+      this._subscriptionForRepository = this._subscriptionForRepository.set(hgRepo, subscription);
+    })
+  }, {
+    key: '_onDidChangeStatusesForRepository',
+    value: function _onDidChangeStatusesForRepository(repo, rootKeysForRepository) {
+      for (var rootKey of rootKeysForRepository.get(repo)) {
+        var statusForNodeKey = {};
+        for (var fileTreeNode of this._store.getVisibleNodes(rootKey)) {
+          var nodeKey = fileTreeNode.nodeKey;
 
-  _onDidChangeStatusesForRepository(
-    repo: HgRepositoryClient,
-    rootKeysForRepository: Immutable.Map<atom$Repository, Immutable.Set<string>>,
-  ): void {
-    for (const rootKey of rootKeysForRepository.get(repo)) {
-      const statusForNodeKey = {};
-      for (const fileTreeNode of this._store.getVisibleNodes(rootKey)) {
-        const {nodeKey} = fileTreeNode;
-        statusForNodeKey[nodeKey] = fileTreeNode.isContainer
-          ? repo.getDirectoryStatus(nodeKey)
-          : statusForNodeKey[nodeKey] = repo.getCachedPathStatus(nodeKey);
+          statusForNodeKey[nodeKey] = fileTreeNode.isContainer ? repo.getDirectoryStatus(nodeKey) : statusForNodeKey[nodeKey] = repo.getCachedPathStatus(nodeKey);
+        }
+        this.setVcsStatuses(rootKey, statusForNodeKey);
       }
-      this.setVcsStatuses(rootKey, statusForNodeKey);
     }
-  }
+  }, {
+    key: '_repositoryRemoved',
+    value: function _repositoryRemoved(repo) {
+      var disposable = this._subscriptionForRepository.get(repo);
+      if (!disposable) {
+        // There is a small chance that the add/remove of the Repository could happen so quickly that
+        // the entry for the repo in _subscriptionForRepository has not been set yet.
+        // TODO: Report a soft error for this.
+        return;
+      }
 
-  _repositoryRemoved(repo: atom$Repository) {
-    const disposable = this._subscriptionForRepository.get(repo);
-    if (!disposable) {
-      // There is a small chance that the add/remove of the Repository could happen so quickly that
-      // the entry for the repo in _subscriptionForRepository has not been set yet.
-      // TODO: Report a soft error for this.
-      return;
+      this._subscriptionForRepository = this._subscriptionForRepository['delete'](repo);
+      disposable.dispose();
     }
+  }]);
 
-    this._subscriptionForRepository = this._subscriptionForRepository.delete(repo);
-    disposable.dispose();
-  }
-
-}
+  return FileTreeActions;
+})();
 
 module.exports = FileTreeActions;
+//# sourceMappingURL=data:application/json;base64,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QixDQUFDLE9BQU8sQ0FBQyxHQUFHLElBQUksQ0FBQyxtQkFBbUIsQ0FBQyxPQUFPLENBQUMsQ0FBQztTQUNuRTtBQUNELFlBQUksQ0FBQyxjQUFjLENBQUMsT0FBTyxFQUFFLGdCQUFnQixDQUFDLENBQUM7T0FDaEQ7S0FDRjs7O1dBRWlCLDRCQUFDLElBQXFCLEVBQUU7QUFDeEMsVUFBTSxVQUFVLEdBQUcsSUFBSSxDQUFDLDBCQUEwQixDQUFDLEdBQUcsQ0FBQyxJQUFJLENBQUMsQ0FBQztBQUM3RCxVQUFJLENBQUMsVUFBVSxFQUFFOzs7O0FBSWYsZUFBTztPQUNSOztBQUVELFVBQUksQ0FBQywwQkFBMEIsR0FBRyxJQUFJLENBQUMsMEJBQTBCLFVBQU8sQ0FBQyxJQUFJLENBQUMsQ0FBQztBQUMvRSxnQkFBVSxDQUFDLE9BQU8sRUFBRSxDQUFDO0tBQ3RCOzs7U0FoYUcsZUFBZTs7O0FBb2FyQixNQUFNLENBQUMsT0FBTyxHQUFHLGVBQWUsQ0FBQyIsImZpbGUiOiJGaWxlVHJlZUFjdGlvbnMuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7RGlzcGF0Y2hlcn0gZnJvbSAnZmx1eCc7XG5cbmltcG9ydCB7QWN0aW9uVHlwZX0gZnJvbSAnLi9GaWxlVHJlZUNvbnN0YW50cyc7XG5pbXBvcnQge2RlYm91bmNlfSBmcm9tICcuLi8uLi9udWNsaWRlLWNvbW1vbnMnO1xuaW1wb3J0IHtEaXNwb3NhYmxlfSBmcm9tICdhdG9tJztcbmltcG9ydCBGaWxlVHJlZURpc3BhdGNoZXIgZnJvbSAnLi9GaWxlVHJlZURpc3BhdGNoZXInO1xuaW1wb3J0IEZpbGVUcmVlSGVscGVycyBmcm9tICcuL0ZpbGVUcmVlSGVscGVycyc7XG5pbXBvcnQgRmlsZVRyZWVTdG9yZSBmcm9tICcuL0ZpbGVUcmVlU3RvcmUnO1xuaW1wb3J0IEltbXV0YWJsZSBmcm9tICdpbW11dGFibGUnO1xuaW1wb3J0IHtvYmplY3R9IGZyb20gJy4uLy4uL251Y2xpZGUtY29tbW9ucyc7XG5pbXBvcnQgc2VtdmVyIGZyb20gJ3NlbXZlcic7XG5pbXBvcnQge3JlcG9zaXRvcnlGb3JQYXRofSBmcm9tICcuLi8uLi9udWNsaWRlLWhnLWdpdC1icmlkZ2UnO1xuXG5pbXBvcnQgdHlwZSB7SGdSZXBvc2l0b3J5Q2xpZW50fSBmcm9tICcuLi8uLi9udWNsaWRlLWhnLXJlcG9zaXRvcnktY2xpZW50JztcbmltcG9ydCB0eXBlIHtXb3JraW5nU2V0fSBmcm9tICcuLi8uLi9udWNsaWRlLXdvcmtpbmctc2V0cyc7XG5pbXBvcnQgdHlwZSB7V29ya2luZ1NldHNTdG9yZX0gZnJvbSAnLi4vLi4vbnVjbGlkZS13b3JraW5nLXNldHMvbGliL1dvcmtpbmdTZXRzU3RvcmUnO1xuXG5cbmxldCBpbnN0YW5jZTogP09iamVjdDtcblxuLyoqXG4gKiBJbXBsZW1lbnRzIHRoZSBGbHV4IHBhdHRlcm4gZm9yIG91ciBmaWxlIHRyZWUuIEFsbCBzdGF0ZSBmb3IgdGhlIGZpbGUgdHJlZSB3aWxsIGJlIGtlcHQgaW5cbiAqIEZpbGVUcmVlU3RvcmUgYW5kIHRoZSBvbmx5IHdheSB0byB1cGRhdGUgdGhlIHN0b3JlIGlzIHRocm91Z2ggbWV0aG9kcyBvbiBGaWxlVHJlZUFjdGlvbnMuIFRoZVxuICogZGlzcGF0Y2hlciBpcyBhIG1lY2hhbmlzbSB0aHJvdWdoIHdoaWNoIEZpbGVUcmVlQWN0aW9ucyBpbnRlcmZhY2VzIHdpdGggRmlsZVRyZWVTdG9yZS5cbiAqL1xuY2xhc3MgRmlsZVRyZWVBY3Rpb25zIHtcbiAgX2Rpc3BhdGNoZXI6IERpc3BhdGNoZXI7XG4gIF9zdG9yZTogRmlsZVRyZWVTdG9yZTtcbiAgX3N1YnNjcmlwdGlvbkZvclJlcG9zaXRvcnk6IEltbXV0YWJsZS5NYXA8YXRvbSRSZXBvc2l0b3J5LCBEaXNwb3NhYmxlPjtcblxuICBzdGF0aWMgZ2V0SW5zdGFuY2UoKTogRmlsZVRyZWVBY3Rpb25zIHtcbiAgICBpZiAoIWluc3RhbmNlKSB7XG4gICAgICBpbnN0YW5jZSA9IG5ldyBGaWxlVHJlZUFjdGlvbnMoKTtcbiAgICB9XG4gICAgcmV0dXJuIGluc3RhbmNlO1xuICB9XG5cbiAgY29uc3RydWN0b3IoKSB7XG4gICAgdGhpcy5fZGlzcGF0Y2hlciA9IEZpbGVUcmVlRGlzcGF0Y2hlci5nZXRJbnN0YW5jZSgpO1xuICAgIHRoaXMuX3N0b3JlID0gRmlsZVRyZWVTdG9yZS5nZXRJbnN0YW5jZSgpO1xuICAgIHRoaXMuX3N1YnNjcmlwdGlvbkZvclJlcG9zaXRvcnkgPSBuZXcgSW1tdXRhYmxlLk1hcCgpO1xuICB9XG5cbiAgc2V0Q3dkKHJvb3RLZXk6ID9zdHJpbmcpOiB2b2lkIHtcbiAgICB0aGlzLl9kaXNwYXRjaGVyLmRpc3BhdGNoKHtcbiAgICAgIGFjdGlvblR5cGU6IEFjdGlvblR5cGUuU0VUX0NXRCxcbiAgICAgIHJvb3RLZXksXG4gICAgfSk7XG4gIH1cblxuICBzZXRSb290S2V5cyhyb290S2V5czogQXJyYXk8c3RyaW5nPik6IHZvaWQge1xuICAgIGNvbnN0IGV4aXN0aW5nUm9vdEtleVNldDogSW1tdXRhYmxlLlNldDxzdHJpbmc+ID0gbmV3IEltbXV0YWJsZS5TZXQodGhpcy5fc3RvcmUuZ2V0Um9vdEtleXMoKSk7XG4gICAgY29uc3QgYWRkZWRSb290S2V5czogSW1tdXRhYmxlLlNldDxzdHJpbmc+ID1cbiAgICAgIG5ldyBJbW11dGFibGUuU2V0KHJvb3RLZXlzKS5zdWJ0cmFjdChleGlzdGluZ1Jvb3RLZXlTZXQpO1xuICAgIHRoaXMuX2Rpc3BhdGNoZXIuZGlzcGF0Y2goe1xuICAgICAgYWN0aW9uVHlwZTogQWN0aW9uVHlwZS5TRVRfUk9PVF9LRVlTLFxuICAgICAgcm9vdEtleXMsXG4gICAgfSk7XG4gICAgZm9yIChjb25zdCByb290S2V5IG9mIGFkZGVkUm9vdEtleXMpIHtcbiAgICAgIHRoaXMuZXhwYW5kTm9kZShyb290S2V5LCByb290S2V5KTtcbiAgICB9XG4gIH1cblxuICBleHBhbmROb2RlKHJvb3RLZXk6IHN0cmluZywgbm9kZUtleTogc3RyaW5nKTogdm9pZCB7XG4gICAgdGhpcy5fZGlzcGF0Y2hlci5kaXNwYXRjaCh7XG4gICAgICBhY3Rpb25UeXBlOiBBY3Rpb25UeXBlLkVYUEFORF9OT0RFLFxuICAgICAgcm9vdEtleSxcbiAgICAgIG5vZGVLZXksXG4gICAgfSk7XG4gIH1cblxuICBleHBhbmROb2RlRGVlcChyb290S2V5OiBzdHJpbmcsIG5vZGVLZXk6IHN0cmluZyk6IHZvaWQge1xuICAgIHRoaXMuX2Rpc3BhdGNoZXIuZGlzcGF0Y2goe1xuICAgICAgYWN0aW9uVHlwZTogQWN0aW9uVHlwZS5FWFBBTkRfTk9ERV9ERUVQLFxuICAgICAgcm9vdEtleSxcbiAgICAgIG5vZGVLZXksXG4gICAgfSk7XG4gIH1cblxuICBkZWxldGVTZWxlY3RlZE5vZGVzKCk6IHZvaWQge1xuICAgIHRoaXMuX2Rpc3BhdGNoZXIuZGlzcGF0Y2goe2FjdGlvblR5cGU6IEFjdGlvblR5cGUuREVMRVRFX1NFTEVDVEVEX05PREVTfSk7XG4gIH1cblxuICAvLyBNYWtlcyBzdXJlIGEgc3BlY2lmaWMgY2hpbGQgZXhpc3RzIGZvciBhIGdpdmVuIG5vZGUuIElmIGl0IGRvZXMgbm90IGV4aXN0LCB0ZW1wb3JhcmlseVxuICAvLyBjcmVhdGUgaXQgYW5kIGluaXRpYXRlIGEgZmV0Y2guIFRoaXMgZmVhdHVyZSBpcyBleGNsdXNpdmVseSBmb3IgZXhwYW5kaW5nIHRvIGEgbm9kZSBkZWVwXG4gIC8vIGluIGEgdHJlZS5cbiAgZW5zdXJlQ2hpbGROb2RlKHJvb3RLZXk6IHN0cmluZywgbm9kZUtleTogc3RyaW5nLCBjaGlsZEtleTogc3RyaW5nKTogdm9pZCB7XG4gICAgaWYgKHRoaXMuX3N0b3JlLmdldENoaWxkS2V5cyhyb290S2V5LCBub2RlS2V5KS5pbmRleE9mKGNoaWxkS2V5KSAhPT0gLTEpIHtcbiAgICAgIHJldHVybjtcbiAgICB9XG4gICAgdGhpcy5fZGlzcGF0Y2hlci5kaXNwYXRjaCh7XG4gICAgICBhY3Rpb25UeXBlOiBBY3Rpb25UeXBlLkNSRUFURV9DSElMRCxcbiAgICAgIHJvb3RLZXksXG4gICAgICBub2RlS2V5LFxuICAgICAgY2hpbGRLZXksXG4gICAgfSk7XG4gIH1cblxuICBjb2xsYXBzZU5vZGUocm9vdEtleTogc3RyaW5nLCBub2RlS2V5OiBzdHJpbmcpOiB2b2lkIHtcbiAgICB0aGlzLl9kaXNwYXRjaGVyLmRpc3BhdGNoKHtcbiAgICAgIGFjdGlvblR5cGU6IEFjdGlvblR5cGUuQ09MTEFQU0VfTk9ERSxcbiAgICAgIHJvb3RLZXksXG4gICAgICBub2RlS2V5LFxuICAgIH0pO1xuICB9XG5cbiAgY29sbGFwc2VOb2RlRGVlcChyb290S2V5OiBzdHJpbmcsIG5vZGVLZXk6IHN0cmluZyk6IHZvaWQge1xuICAgIHRoaXMuX2Rpc3BhdGNoZXIuZGlzcGF0Y2goe1xuICAgICAgYWN0aW9uVHlwZTogQWN0aW9uVHlwZS5DT0xMQVBTRV9OT0RFX0RFRVAsXG4gICAgICByb290S2V5LFxuICAgICAgbm9kZUtleSxcbiAgICB9KTtcbiAgfVxuXG4gIHRvZ2dsZVNlbGVjdE5vZGUocm9vdEtleTogc3RyaW5nLCBub2RlS2V5OiBzdHJpbmcpOiB2b2lkIHtcbiAgICBsZXQgbm9kZUtleXMgPSB0aGlzLl9zdG9yZS5nZXRTZWxlY3RlZEtleXMocm9vdEtleSk7XG4gICAgaWYgKG5vZGVLZXlzLmhhcyhub2RlS2V5KSkge1xuICAgICAgbm9kZUtleXMgPSBub2RlS2V5cy5kZWxldGUobm9kZUtleSk7XG4gICAgfSBlbHNlIHtcbiAgICAgIG5vZGVLZXlzID0gbm9kZUtleXMuYWRkKG5vZGVLZXkpO1xuICAgIH1cbiAgICB0aGlzLl9kaXNwYXRjaGVyLmRpc3BhdGNoKHtcbiAgICAgIGFjdGlvblR5cGU6IEFjdGlvblR5cGUuU0VUX1NFTEVDVEVEX05PREVTX0ZPUl9ST09ULFxuICAgICAgcm9vdEtleSxcbiAgICAgIG5vZGVLZXlzLFxuICAgIH0pO1xuICB9XG5cbiAgc2V0RXhjbHVkZVZjc0lnbm9yZWRQYXRocyhleGNsdWRlVmNzSWdub3JlZFBhdGhzOiBib29sZWFuKTogdm9pZCB7XG4gICAgdGhpcy5fZGlzcGF0Y2hlci5kaXNwYXRjaCh7XG4gICAgICBhY3Rpb25UeXBlOiBBY3Rpb25UeXBlLlNFVF9FWENMVURFX1ZDU19JR05PUkVEX1BBVEhTLFxuICAgICAgZXhjbHVkZVZjc0lnbm9yZWRQYXRocyxcbiAgICB9KTtcbiAgfVxuXG4gIHNldEhpZGVJZ25vcmVkTmFtZXMoaGlkZUlnbm9yZWROYW1lczogYm9vbGVhbik6IHZvaWQge1xuICAgIHRoaXMuX2Rpc3BhdGNoZXIuZGlzcGF0Y2goe1xuICAgICAgYWN0aW9uVHlwZTogQWN0aW9uVHlwZS5TRVRfSElERV9JR05PUkVEX05BTUVTLFxuICAgICAgaGlkZUlnbm9yZWROYW1lcyxcbiAgICB9KTtcbiAgfVxuXG4gIHNldElnbm9yZWROYW1lcyhpZ25vcmVkTmFtZXM6IEFycmF5PHN0cmluZz4pOiB2b2lkIHtcbiAgICB0aGlzLl9kaXNwYXRjaGVyLmRpc3BhdGNoKHtcbiAgICAgIGFjdGlvblR5cGU6IEFjdGlvblR5cGUuU0VUX0lHTk9SRURfTkFNRVMsXG4gICAgICBpZ25vcmVkTmFtZXMsXG4gICAgfSk7XG4gIH1cblxuICBzZXRUcmFja2VkTm9kZShyb290S2V5OiBzdHJpbmcsIG5vZGVLZXk6IHN0cmluZyk6IHZvaWQge1xuICAgIHRoaXMuX2Rpc3BhdGNoZXIuZGlzcGF0Y2goe1xuICAgICAgYWN0aW9uVHlwZTogQWN0aW9uVHlwZS5TRVRfVFJBQ0tFRF9OT0RFLFxuICAgICAgbm9kZUtleSxcbiAgICAgIHJvb3RLZXksXG4gICAgfSk7XG4gIH1cblxuICBzZXRVc2VQcmV2aWV3VGFicyh1c2VQcmV2aWV3VGFiczogYm9vbGVhbik6IHZvaWQge1xuICAgIHRoaXMuX2Rpc3BhdGNoZXIuZGlzcGF0Y2goe1xuICAgICAgYWN0aW9uVHlwZTogQWN0aW9uVHlwZS5TRVRfVVNFX1BSRVZJRVdfVEFCUyxcbiAgICAgIHVzZVByZXZpZXdUYWJzLFxuICAgIH0pO1xuICB9XG5cbiAgc2V0VXNlUHJlZml4TmF2KHVzZVByZWZpeE5hdjogYm9vbGVhbik6IHZvaWQge1xuICAgIHRoaXMuX2Rpc3BhdGNoZXIuZGlzcGF0Y2goe1xuICAgICAgYWN0aW9uVHlwZTogQWN0aW9uVHlwZS5TRVRfVVNFX1BSRUZJWF9OQVYsXG4gICAgICB1c2VQcmVmaXhOYXYsXG4gICAgfSk7XG4gIH1cblxuICBzZWxlY3RTaW5nbGVOb2RlKHJvb3RLZXk6IHN0cmluZywgbm9kZUtleTogc3RyaW5nKTogdm9pZCB7XG4gICAgY29uc3Qgc2VsZWN0ZWRLZXlzQnlSb290ID0ge307XG4gICAgc2VsZWN0ZWRLZXlzQnlSb290W3Jvb3RLZXldID0gbmV3IEltbXV0YWJsZS5TZXQoW25vZGVLZXldKTtcbiAgICB0aGlzLl9kaXNwYXRjaGVyLmRpc3BhdGNoKHtcbiAgICAgIGFjdGlvblR5cGU6IEFjdGlvblR5cGUuU0VUX1NFTEVDVEVEX05PREVTX0ZPUl9UUkVFLFxuICAgICAgc2VsZWN0ZWRLZXlzQnlSb290LFxuICAgIH0pO1xuICB9XG5cbiAgY29uZmlybU5vZGUocm9vdEtleTogc3RyaW5nLCBub2RlS2V5OiBzdHJpbmcsIHBlbmRpbmc6IGJvb2xlYW4gPSBmYWxzZSk6IHZvaWQge1xuICAgIGNvbnN0IGlzRGlyZWN0b3J5ID0gRmlsZVRyZWVIZWxwZXJzLmlzRGlyS2V5KG5vZGVLZXkpO1xuICAgIGlmIChpc0RpcmVjdG9yeSkge1xuICAgICAgY29uc3QgYWN0aW9uVHlwZSA9IHRoaXMuX3N0b3JlLmlzRXhwYW5kZWQocm9vdEtleSwgbm9kZUtleSkgP1xuICAgICAgICBBY3Rpb25UeXBlLkNPTExBUFNFX05PREUgOlxuICAgICAgICBBY3Rpb25UeXBlLkVYUEFORF9OT0RFO1xuICAgICAgdGhpcy5fZGlzcGF0Y2hlci5kaXNwYXRjaCh7XG4gICAgICAgIGFjdGlvblR5cGU6IGFjdGlvblR5cGUsXG4gICAgICAgIG5vZGVLZXksXG4gICAgICAgIHJvb3RLZXksXG4gICAgICB9KTtcbiAgICB9IGVsc2Uge1xuICAgICAgbGV0IG9wZW5PcHRpb25zID0ge1xuICAgICAgICBhY3RpdmF0ZVBhbmU6IHRydWUsXG4gICAgICAgIHNlYXJjaEFsbFBhbmVzOiB0cnVlLFxuICAgICAgfTtcbiAgICAgIC8vIFRPRE86IE1ha2UgdGhlIGZvbGxvd2luZyB0aGUgZGVmYXVsdCBvbmNlIE51Y2xpZGUgb25seSBzdXBwb3J0cyBBdG9tIHYxLjYuMCtcbiAgICAgIGlmIChzZW12ZXIuZ3RlKGF0b20uZ2V0VmVyc2lvbigpLCAnMS42LjAnKSkge1xuICAgICAgICBvcGVuT3B0aW9ucyA9IG9iamVjdC5hc3NpZ24oe30sIG9wZW5PcHRpb25zLCB7cGVuZGluZzogdHJ1ZX0pO1xuICAgICAgfVxuICAgICAgYXRvbS53b3Jrc3BhY2Uub3BlbihGaWxlVHJlZUhlbHBlcnMua2V5VG9QYXRoKG5vZGVLZXkpLCBvcGVuT3B0aW9ucyk7XG4gICAgfVxuICB9XG5cbiAga2VlcFByZXZpZXdUYWIoKSB7XG4gICAgLy8gVE9ETzogTWFrZSB0aGUgZm9sbG93aW5nIHRoZSBkZWZhdWx0IG9uY2UgTnVjbGlkZSBvbmx5IHN1cHBvcnRzIEF0b20gdjEuNi4wK1xuICAgIGlmIChzZW12ZXIuZ3RlKGF0b20uZ2V0VmVyc2lvbigpLCAnMS42LjAnKSkge1xuICAgICAgY29uc3QgYWN0aXZlUGFuZSA9IGF0b20ud29ya3NwYWNlLmdldEFjdGl2ZVBhbmUoKTtcbiAgICAgIGlmIChhY3RpdmVQYW5lICE9IG51bGwpIHtcbiAgICAgICAgYWN0aXZlUGFuZS5jbGVhclBlbmRpbmdJdGVtKCk7XG4gICAgICB9XG4gICAgfSBlbHNlIHtcbiAgICAgIGNvbnN0IGFjdGl2ZVBhbmVJdGVtID0gYXRvbS53b3Jrc3BhY2UuZ2V0QWN0aXZlUGFuZUl0ZW0oKTtcbiAgICAgIGlmIChhY3RpdmVQYW5lSXRlbSAhPSBudWxsKSB7XG4gICAgICAgIGF0b20uY29tbWFuZHMuZGlzcGF0Y2goYXRvbS52aWV3cy5nZXRWaWV3KGFjdGl2ZVBhbmVJdGVtKSwgJ3RhYnM6a2VlcC1wcmV2aWV3LXRhYicpO1xuICAgICAgfVxuICAgIH1cbiAgfVxuXG4gIG9wZW5TZWxlY3RlZEVudHJ5U3BsaXQoXG4gICAgbm9kZUtleTogc3RyaW5nLFxuICAgIG9yaWVudGF0aW9uOiBhdG9tJFBhbmVTcGxpdE9yaWVudGF0aW9uLFxuICAgIHNpZGU6IGF0b20kUGFuZVNwbGl0U2lkZVxuICApOiB2b2lkIHtcbiAgICBjb25zdCBwYW5lID0gYXRvbS53b3Jrc3BhY2UuZ2V0QWN0aXZlUGFuZSgpO1xuICAgIGF0b20ud29ya3NwYWNlLm9wZW5VUklJblBhbmUoXG4gICAgICBGaWxlVHJlZUhlbHBlcnMua2V5VG9QYXRoKG5vZGVLZXkpLFxuICAgICAgcGFuZS5zcGxpdChvcmllbnRhdGlvbiwgc2lkZSlcbiAgICApO1xuICB9XG5cbiAgc2V0VmNzU3RhdHVzZXMocm9vdEtleTogc3RyaW5nLCB2Y3NTdGF0dXNlczoge1twYXRoOiBzdHJpbmddOiBudW1iZXJ9KTogdm9pZCB7XG4gICAgdGhpcy5fZGlzcGF0Y2hlci5kaXNwYXRjaCh7XG4gICAgICBhY3Rpb25UeXBlOiBBY3Rpb25UeXBlLlNFVF9WQ1NfU1RBVFVTRVMsXG4gICAgICByb290S2V5LFxuICAgICAgdmNzU3RhdHVzZXMsXG4gICAgfSk7XG4gIH1cblxuICAvKipcbiAgICogVXBkYXRlcyB0aGUgcm9vdCByZXBvc2l0b3JpZXMgdG8gbWF0Y2ggdGhlIHByb3ZpZGVkIGRpcmVjdG9yaWVzLlxuICAgKi9cbiAgYXN5bmMgdXBkYXRlUmVwb3NpdG9yaWVzKHJvb3REaXJlY3RvcmllczogQXJyYXk8YXRvbSREaXJlY3Rvcnk+KTogUHJvbWlzZTx2b2lkPiB7XG4gICAgY29uc3Qgcm9vdEtleXMgPSByb290RGlyZWN0b3JpZXMubWFwKFxuICAgICAgZGlyZWN0b3J5ID0+IEZpbGVUcmVlSGVscGVycy5kaXJQYXRoVG9LZXkoZGlyZWN0b3J5LmdldFBhdGgoKSlcbiAgICApO1xuICAgIGNvbnN0IHJvb3RSZXBvczogQXJyYXk8P2F0b20kUmVwb3NpdG9yeT4gPSBhd2FpdCBQcm9taXNlLmFsbChyb290RGlyZWN0b3JpZXMubWFwKFxuICAgICAgZGlyZWN0b3J5ID0+IHJlcG9zaXRvcnlGb3JQYXRoKGRpcmVjdG9yeS5nZXRQYXRoKCkpXG4gICAgKSk7XG5cbiAgICAvLyB0NzExNDE5NjogR2l2ZW4gdGhlIGN1cnJlbnQgaW1wbGVtZW50YXRpb24gb2YgSGdSZXBvc2l0b3J5Q2xpZW50LCBlYWNoIHJvb3QgZGlyZWN0b3J5IHdpbGxcbiAgICAvLyBhbHdheXMgY29ycmVzcG9uZCB0byBhIHVuaXF1ZSBpbnN0YW5jZSBvZiBIZ1JlcG9zaXRvcnlDbGllbnQuIElkZWFsbHksIGlmIG11bHRpcGxlIHN1YmZvbGRlcnNcbiAgICAvLyBvZiBhbiBIZyByZXBvIGFyZSB1c2VkIGFzIHByb2plY3Qgcm9vdHMgaW4gQXRvbSwgb25seSBvbmUgSGdSZXBvc2l0b3J5Q2xpZW50IHNob3VsZCBiZVxuICAgIC8vIGNyZWF0ZWQuXG5cbiAgICAvLyBHcm91cCBhbGwgb2YgdGhlIHJvb3Qga2V5cyBieSB0aGVpciByZXBvc2l0b3J5LCBleGNsdWRpbmcgYW55IHRoYXQgZG9uJ3QgYmVsb25nIHRvIGFcbiAgICAvLyByZXBvc2l0b3J5LlxuICAgIGNvbnN0IHJvb3RLZXlzRm9yUmVwb3NpdG9yeSA9IEltbXV0YWJsZS5MaXN0KHJvb3RLZXlzKVxuICAgICAgLmdyb3VwQnkoKHJvb3RLZXksIGluZGV4KSA9PiByb290UmVwb3NbaW5kZXhdKVxuICAgICAgLmZpbHRlcigodiwgaykgPT4gayAhPSBudWxsKVxuICAgICAgLm1hcCh2ID0+IG5ldyBJbW11dGFibGUuU2V0KHYpKTtcblxuICAgIGNvbnN0IHByZXZSZXBvcyA9IHRoaXMuX3N0b3JlLmdldFJlcG9zaXRvcmllcygpO1xuXG4gICAgLy8gTGV0IHRoZSBzdG9yZSBrbm93IHdlIGhhdmUgc29tZSBuZXcgcmVwb3MhXG4gICAgY29uc3QgbmV4dFJlcG9zOiBJbW11dGFibGUuU2V0PGF0b20kUmVwb3NpdG9yeT4gPVxuICAgICAgbmV3IEltbXV0YWJsZS5TZXQocm9vdEtleXNGb3JSZXBvc2l0b3J5LmtleXMoKSk7XG4gICAgdGhpcy5fZGlzcGF0Y2hlci5kaXNwYXRjaCh7XG4gICAgICBhY3Rpb25UeXBlOiBBY3Rpb25UeXBlLlNFVF9SRVBPU0lUT1JJRVMsXG4gICAgICByZXBvc2l0b3JpZXM6IG5leHRSZXBvcyxcbiAgICB9KTtcblxuICAgIGNvbnN0IHJlbW92ZWRSZXBvcyA9IHByZXZSZXBvcy5zdWJ0cmFjdChuZXh0UmVwb3MpO1xuICAgIGNvbnN0IGFkZGVkUmVwb3MgPSBuZXh0UmVwb3Muc3VidHJhY3QocHJldlJlcG9zKTtcblxuXG4gICAgLy8gVE9ETzogUmV3cml0ZSBgX3JlcG9zaXRvcnlBZGRlZGAgdG8gcmV0dXJuIHRoZSBzdWJzY3JpcHRpb24gaW5zdGVhZCBvZiBhZGRpbmcgaXQgdG8gYSBtYXAgYXNcbiAgICAvLyAgICAgICBhIHNpZGUgZWZmZWN0LiBUaGUgbWFwIGNhbiBiZSBjcmVhdGVkIGhlcmUgd2l0aCBzb21ldGhpbmcgbGlrZVxuICAgIC8vICAgICAgIGBzdWJzY3JpcHRpb25zID0gSW1tdXRhYmxlLk1hcChyZXBvcykubWFwKHRoaXMuX3JlcG9zaXRvcnlBZGRlZClgLiBTaW5jZVxuICAgIC8vICAgICAgIGBfcmVwb3NpdG9yeUFkZGVkYCB3aWxsIG5vIGxvbmdlciBiZSBhYm91dCBzaWRlIGVmZmVjdHMsIGl0IHNob3VsZCB0aGVuIGJlIHJlbmFtZWQuXG4gICAgLy8gICAgICAgYF9yZXBvc2l0b3J5UmVtb3ZlZGAgY291bGQgcHJvYmFibHkgYmUgaW5saW5lZCBoZXJlLiBUaGF0IHdvdWxkIGxlYXZlIHRoaXMgZnVuY3Rpb24gYXNcbiAgICAvLyAgICAgICB0aGUgb25seSBvbmUgZG9pbmcgc2lkZS1lZmZlY3RzLlxuXG4gICAgLy8gVW5zdWJzY3JpYmUgZnJvbSByZW1vdmVkUmVwb3MuXG4gICAgcmVtb3ZlZFJlcG9zLmZvckVhY2gocmVwbyA9PiB0aGlzLl9yZXBvc2l0b3J5UmVtb3ZlZChyZXBvLCByb290S2V5c0ZvclJlcG9zaXRvcnkpKTtcblxuICAgIC8vIENyZWF0ZSBzdWJzY3JpcHRpb25zIGZvciBhZGRlZFJlcG9zLlxuICAgIGFkZGVkUmVwb3MuZm9yRWFjaChyZXBvID0+IHRoaXMuX3JlcG9zaXRvcnlBZGRlZChyZXBvLCByb290S2V5c0ZvclJlcG9zaXRvcnkpKTtcbiAgfVxuXG4gIHVwZGF0ZVdvcmtpbmdTZXQod29ya2luZ1NldDogV29ya2luZ1NldCk6IHZvaWQge1xuICAgIHRoaXMuX2Rpc3BhdGNoZXIuZGlzcGF0Y2goe1xuICAgICAgYWN0aW9uVHlwZTogQWN0aW9uVHlwZS5TRVRfV09SS0lOR19TRVQsXG4gICAgICB3b3JraW5nU2V0LFxuICAgIH0pO1xuICB9XG5cbiAgdXBkYXRlT3BlbkZpbGVzV29ya2luZ1NldChvcGVuRmlsZXNXb3JraW5nU2V0OiBXb3JraW5nU2V0KTogdm9pZCB7XG4gICAgdGhpcy5fZGlzcGF0Y2hlci5kaXNwYXRjaCh7XG4gICAgICBhY3Rpb25UeXBlOiBBY3Rpb25UeXBlLlNFVF9PUEVOX0ZJTEVTX1dPUktJTkdfU0VULFxuICAgICAgb3BlbkZpbGVzV29ya2luZ1NldCxcbiAgICB9KTtcbiAgfVxuXG4gIHVwZGF0ZVdvcmtpbmdTZXRzU3RvcmUod29ya2luZ1NldHNTdG9yZTogP1dvcmtpbmdTZXRzU3RvcmUpOiB2b2lkIHtcbiAgICB0aGlzLl9kaXNwYXRjaGVyLmRpc3BhdGNoKHtcbiAgICAgIGFjdGlvblR5cGU6IEFjdGlvblR5cGUuU0VUX1dPUktJTkdfU0VUU19TVE9SRSxcbiAgICAgIHdvcmtpbmdTZXRzU3RvcmUsXG4gICAgfSk7XG4gIH1cblxuICBzdGFydEVkaXRpbmdXb3JraW5nU2V0KGVkaXRlZFdvcmtpbmdTZXQ6IFdvcmtpbmdTZXQpOiB2b2lkIHtcbiAgICB0aGlzLl9kaXNwYXRjaGVyLmRpc3BhdGNoKHtcbiAgICAgIGFjdGlvblR5cGU6IEFjdGlvblR5cGUuU1RBUlRfRURJVElOR19XT1JLSU5HX1NFVCxcbiAgICAgIGVkaXRlZFdvcmtpbmdTZXQsXG4gICAgfSk7XG4gIH1cblxuICBmaW5pc2hFZGl0aW5nV29ya2luZ1NldCgpOiB2b2lkIHtcbiAgICB0aGlzLl9kaXNwYXRjaGVyLmRpc3BhdGNoKHtcbiAgICAgIGFjdGlvblR5cGU6IEFjdGlvblR5cGUuRklOSVNIX0VESVRJTkdfV09SS0lOR19TRVQsXG4gICAgfSk7XG4gIH1cblxuICBjaGVja05vZGUocm9vdEtleTogc3RyaW5nLCBub2RlS2V5OiBzdHJpbmcpOiB2b2lkIHtcbiAgICB0aGlzLl9kaXNwYXRjaGVyLmRpc3BhdGNoKHtcbiAgICAgIGFjdGlvblR5cGU6IEFjdGlvblR5cGUuQ0hFQ0tfTk9ERSxcbiAgICAgIHJvb3RLZXksXG4gICAgICBub2RlS2V5LFxuICAgIH0pO1xuICB9XG5cbiAgdW5jaGVja05vZGUocm9vdEtleTogc3RyaW5nLCBub2RlS2V5OiBzdHJpbmcpOiB2b2lkIHtcbiAgICB0aGlzLl9kaXNwYXRjaGVyLmRpc3BhdGNoKHtcbiAgICAgIGFjdGlvblR5cGU6IEFjdGlvblR5cGUuVU5DSEVDS19OT0RFLFxuICAgICAgcm9vdEtleSxcbiAgICAgIG5vZGVLZXksXG4gICAgfSk7XG4gIH1cblxuICBhc3luYyBfcmVwb3NpdG9yeUFkZGVkKFxuICAgIHJlcG86IGF0b20kUmVwb3NpdG9yeSxcbiAgICByb290S2V5c0ZvclJlcG9zaXRvcnk6IEltbXV0YWJsZS5NYXA8YXRvbSRSZXBvc2l0b3J5LCBJbW11dGFibGUuU2V0PHN0cmluZz4+LFxuICApOiBQcm9taXNlPHZvaWQ+IHtcbiAgICAvLyBGb3Igbm93LCB3ZSBvbmx5IHN1cHBvcnQgSGdSZXBvc2l0b3J5IG9iamVjdHMuXG4gICAgaWYgKHJlcG8uZ2V0VHlwZSgpICE9PSAnaGcnKSB7XG4gICAgICByZXR1cm47XG4gICAgfVxuXG4gICAgY29uc3QgaGdSZXBvID0gKChyZXBvOiBhbnkpOiBIZ1JlcG9zaXRvcnlDbGllbnQpO1xuXG4gICAgLy8gQXQgdGhpcyBwb2ludCwgd2UgYXNzdW1lIHRoYXQgcmVwbyBpcyBhIE51Y2xpZGUgSGdSZXBvc2l0b3J5Q2xpZW50LlxuXG4gICAgLy8gRmlyc3QsIGdldCB0aGUgb3V0cHV0IG9mIGBoZyBzdGF0dXNgIGZvciB0aGUgcmVwb3NpdG9yeS5cbiAgICBjb25zdCB7aGdDb25zdGFudHN9ID0gcmVxdWlyZSgnLi4vLi4vbnVjbGlkZS1oZy1yZXBvc2l0b3J5LWJhc2UnKTtcbiAgICAvLyBUT0RPKG1ib2xpbik6IFZlcmlmeSB0aGF0IGFsbCBvZiB0aGlzIGlzIHNldCB1cCBjb3JyZWN0bHkgZm9yIHJlbW90ZSBmaWxlcy5cbiAgICBjb25zdCByZXBvUm9vdCA9IGhnUmVwby5nZXRXb3JraW5nRGlyZWN0b3J5KCk7XG4gICAgY29uc3Qgc3RhdHVzQ29kZUZvclBhdGggPSBhd2FpdCBoZ1JlcG8uZ2V0U3RhdHVzZXMoW3JlcG9Sb290XSwge1xuICAgICAgaGdTdGF0dXNPcHRpb246IGhnQ29uc3RhbnRzLkhnU3RhdHVzT3B0aW9uLk9OTFlfTk9OX0lHTk9SRUQsXG4gICAgfSk7XG5cbiAgICAvLyBGcm9tIHRoZSBpbml0aWFsIHJlc3VsdCBvZiBgaGcgc3RhdHVzYCwgcmVjb3JkIHRoZSBzdGF0dXMgY29kZSBmb3IgZXZlcnkgZmlsZSBpblxuICAgIC8vIHN0YXR1c0NvZGVGb3JQYXRoIGluIHRoZSBzdGF0dXNlc1RvUmVwb3J0IG1hcC4gSWYgdGhlIGZpbGUgaXMgbW9kaWZpZWQsIGFsc28gbWFyayBldmVyeVxuICAgIC8vIHBhcmVudCBkaXJlY3RvcnkgKHVwIHRvIHRoZSByZXBvc2l0b3J5IHJvb3QpIG9mIHRoYXQgZmlsZSBhcyBtb2RpZmllZCwgYXMgd2VsbC4gRm9yIG5vdywgd2VcbiAgICAvLyBtYXJrIG9ubHkgbmV3IGZpbGVzLCBidXQgbm90IG5ldyBkaXJlY3Rvcmllcy5cbiAgICBjb25zdCBzdGF0dXNlc1RvUmVwb3J0ID0ge307XG4gICAgc3RhdHVzQ29kZUZvclBhdGguZm9yRWFjaCgoc3RhdHVzQ29kZSwgcGF0aCkgPT4ge1xuICAgICAgaWYgKGhnUmVwby5pc1N0YXR1c01vZGlmaWVkKHN0YXR1c0NvZGUpKSB7XG4gICAgICAgIHN0YXR1c2VzVG9SZXBvcnRbcGF0aF0gPSBzdGF0dXNDb2RlO1xuXG4gICAgICAgIC8vIEZvciBtb2RpZmllZCBmaWxlcywgZXZlcnkgcGFyZW50IGRpcmVjdG9yeSBzaG91bGQgYWxzbyBiZSBmbGFnZ2VkIGFzIG1vZGlmaWVkLlxuICAgICAgICBsZXQgbm9kZUtleTogc3RyaW5nID0gcGF0aDtcbiAgICAgICAgY29uc3Qga2V5Rm9yUmVwb1Jvb3QgPSBGaWxlVHJlZUhlbHBlcnMuZGlyUGF0aFRvS2V5KHJlcG9Sb290KTtcbiAgICAgICAgZG8ge1xuICAgICAgICAgIGNvbnN0IHBhcmVudEtleSA9IEZpbGVUcmVlSGVscGVycy5nZXRQYXJlbnRLZXkobm9kZUtleSk7XG4gICAgICAgICAgaWYgKHBhcmVudEtleSA9PSBudWxsKSB7XG4gICAgICAgICAgICBicmVhaztcbiAgICAgICAgICB9XG5cbiAgICAgICAgICBub2RlS2V5ID0gcGFyZW50S2V5O1xuICAgICAgICAgIGlmIChzdGF0dXNlc1RvUmVwb3J0Lmhhc093blByb3BlcnR5KG5vZGVLZXkpKSB7XG4gICAgICAgICAgICAvLyBJZiB0aGVyZSBpcyBhbHJlYWR5IGFuIGVudHJ5IGZvciB0aGlzIHBhcmVudCBmaWxlIGluIHRoZSBzdGF0dXNlc1RvUmVwb3J0IG1hcCwgdGhlblxuICAgICAgICAgICAgLy8gdGhlcmUgaXMgbm8gcmVhc29uIHRvIGNvbnRpbnVlIGV4cGxvcmluZyBhbmNlc3RvciBkaXJlY3Rvcmllcy5cbiAgICAgICAgICAgIGJyZWFrO1xuICAgICAgICAgIH0gZWxzZSB7XG4gICAgICAgICAgICBzdGF0dXNlc1RvUmVwb3J0W25vZGVLZXldID0gaGdDb25zdGFudHMuU3RhdHVzQ29kZU51bWJlci5NT0RJRklFRDtcbiAgICAgICAgICB9XG4gICAgICAgIH0gd2hpbGUgKG5vZGVLZXkgIT09IGtleUZvclJlcG9Sb290KTtcbiAgICAgIH0gZWxzZSBpZiAoc3RhdHVzQ29kZSA9PT0gaGdDb25zdGFudHMuU3RhdHVzQ29kZU51bWJlci5BRERFRCkge1xuICAgICAgICBzdGF0dXNlc1RvUmVwb3J0W3BhdGhdID0gc3RhdHVzQ29kZTtcbiAgICAgIH1cbiAgICB9KTtcbiAgICBmb3IgKGNvbnN0IHJvb3RLZXlGb3JSZXBvIG9mIHJvb3RLZXlzRm9yUmVwb3NpdG9yeS5nZXQoaGdSZXBvKSkge1xuICAgICAgdGhpcy5zZXRWY3NTdGF0dXNlcyhyb290S2V5Rm9yUmVwbywgc3RhdHVzZXNUb1JlcG9ydCk7XG4gICAgfVxuXG4gICAgLy8gVE9ETzogQ2FsbCBnZXRTdGF0dXNlcyB3aXRoIDx2aXNpYmxlX25vZGVzLCBoZ0NvbnN0YW50cy5IZ1N0YXR1c09wdGlvbi5PTkxZX0lHTk9SRUQ+XG4gICAgLy8gdG8gZGV0ZXJtaW5lIHdoaWNoIG5vZGVzIGluIHRoZSB0cmVlIG5lZWQgdG8gYmUgc2hvd24gYXMgaWdub3JlZC5cblxuICAgIC8vIE5vdyB0aGF0IHRoZSBpbml0aWFsIFZDUyBzdGF0dXNlcyBhcmUgc2V0LCBzdWJzY3JpYmUgdG8gY2hhbmdlcyB0byB0aGUgUmVwb3NpdG9yeSBzbyB0aGF0IHRoZVxuICAgIC8vIFZDUyBzdGF0dXNlcyBhcmUga2VwdCB1cCB0byBkYXRlLlxuICAgIGNvbnN0IHN1YnNjcmlwdGlvbiA9IGhnUmVwby5vbkRpZENoYW5nZVN0YXR1c2VzKFxuICAgICAgLy8gdDgyMjc1NzA6IElmIHRoZSB1c2VyIGlzIGEgXCJuZXJ2b3VzIHNhdmVyLFwiIG1hbnkgb25EaWRDaGFuZ2VTdGF0dXNlcyB3aWxsIGdldCBmaXJlZCBpblxuICAgICAgLy8gc3VjY2Vzc2lvbi4gV2Ugc2hvdWxkIHByb2JhYmx5IGV4cGxvcmUgZGVib3VuY2luZyB0aGlzIGluIEhnUmVwb3NpdG9yeUNsaWVudCBpdHNlbGYuXG4gICAgICBkZWJvdW5jZShcbiAgICAgICAgdGhpcy5fb25EaWRDaGFuZ2VTdGF0dXNlc0ZvclJlcG9zaXRvcnkuYmluZCh0aGlzLCBoZ1JlcG8sIHJvb3RLZXlzRm9yUmVwb3NpdG9yeSksXG4gICAgICAgIC8qIHdhaXQgKi8gMTAwMCxcbiAgICAgICAgLyogaW1tZWRpYXRlICovIGZhbHNlLFxuICAgICAgKVxuICAgICk7XG5cbiAgICB0aGlzLl9zdWJzY3JpcHRpb25Gb3JSZXBvc2l0b3J5ID0gdGhpcy5fc3Vic2NyaXB0aW9uRm9yUmVwb3NpdG9yeS5zZXQoaGdSZXBvLCBzdWJzY3JpcHRpb24pO1xuICB9XG5cbiAgX29uRGlkQ2hhbmdlU3RhdHVzZXNGb3JSZXBvc2l0b3J5KFxuICAgIHJlcG86IEhnUmVwb3NpdG9yeUNsaWVudCxcbiAgICByb290S2V5c0ZvclJlcG9zaXRvcnk6IEltbXV0YWJsZS5NYXA8YXRvbSRSZXBvc2l0b3J5LCBJbW11dGFibGUuU2V0PHN0cmluZz4+LFxuICApOiB2b2lkIHtcbiAgICBmb3IgKGNvbnN0IHJvb3RLZXkgb2Ygcm9vdEtleXNGb3JSZXBvc2l0b3J5LmdldChyZXBvKSkge1xuICAgICAgY29uc3Qgc3RhdHVzRm9yTm9kZUtleSA9IHt9O1xuICAgICAgZm9yIChjb25zdCBmaWxlVHJlZU5vZGUgb2YgdGhpcy5fc3RvcmUuZ2V0VmlzaWJsZU5vZGVzKHJvb3RLZXkpKSB7XG4gICAgICAgIGNvbnN0IHtub2RlS2V5fSA9IGZpbGVUcmVlTm9kZTtcbiAgICAgICAgc3RhdHVzRm9yTm9kZUtleVtub2RlS2V5XSA9IGZpbGVUcmVlTm9kZS5pc0NvbnRhaW5lclxuICAgICAgICAgID8gcmVwby5nZXREaXJlY3RvcnlTdGF0dXMobm9kZUtleSlcbiAgICAgICAgICA6IHN0YXR1c0Zvck5vZGVLZXlbbm9kZUtleV0gPSByZXBvLmdldENhY2hlZFBhdGhTdGF0dXMobm9kZUtleSk7XG4gICAgICB9XG4gICAgICB0aGlzLnNldFZjc1N0YXR1c2VzKHJvb3RLZXksIHN0YXR1c0Zvck5vZGVLZXkpO1xuICAgIH1cbiAgfVxuXG4gIF9yZXBvc2l0b3J5UmVtb3ZlZChyZXBvOiBhdG9tJFJlcG9zaXRvcnkpIHtcbiAgICBjb25zdCBkaXNwb3NhYmxlID0gdGhpcy5fc3Vic2NyaXB0aW9uRm9yUmVwb3NpdG9yeS5nZXQocmVwbyk7XG4gICAgaWYgKCFkaXNwb3NhYmxlKSB7XG4gICAgICAvLyBUaGVyZSBpcyBhIHNtYWxsIGNoYW5jZSB0aGF0IHRoZSBhZGQvcmVtb3ZlIG9mIHRoZSBSZXBvc2l0b3J5IGNvdWxkIGhhcHBlbiBzbyBxdWlja2x5IHRoYXRcbiAgICAgIC8vIHRoZSBlbnRyeSBmb3IgdGhlIHJlcG8gaW4gX3N1YnNjcmlwdGlvbkZvclJlcG9zaXRvcnkgaGFzIG5vdCBiZWVuIHNldCB5ZXQuXG4gICAgICAvLyBUT0RPOiBSZXBvcnQgYSBzb2Z0IGVycm9yIGZvciB0aGlzLlxuICAgICAgcmV0dXJuO1xuICAgIH1cblxuICAgIHRoaXMuX3N1YnNjcmlwdGlvbkZvclJlcG9zaXRvcnkgPSB0aGlzLl9zdWJzY3JpcHRpb25Gb3JSZXBvc2l0b3J5LmRlbGV0ZShyZXBvKTtcbiAgICBkaXNwb3NhYmxlLmRpc3Bvc2UoKTtcbiAgfVxuXG59XG5cbm1vZHVsZS5leHBvcnRzID0gRmlsZVRyZWVBY3Rpb25zO1xuIl19
