@@ -93,7 +93,7 @@ function requireFileSystem(): FilesystemType {
   return requireFromCache('./filesystem');
 }
 
-function requrePromiseExecutors(): PromiseExecutorsType {
+function requirePromiseExecutors(): PromiseExecutorsType {
   return requireFromCache('./PromiseExecutors');
 }
 
@@ -204,11 +204,11 @@ module.exports = {
   },
 
   get PromisePool() {
-    return requrePromiseExecutors().PromisePool;
+    return requirePromiseExecutors().PromisePool;
   },
 
   get PromiseQueue() {
-    return requrePromiseExecutors().PromiseQueue;
+    return requirePromiseExecutors().PromiseQueue;
   },
 
   get extend(): ExtendType {
