@@ -98,6 +98,8 @@ export class DirectoryEntryComponent extends React.Component {
         statusClass = 'status-modified';
       } else if (vcsStatusCode === StatusCodeNumber.ADDED) {
         statusClass = 'status-added';
+      } else if (this.props.node.isIgnored) {
+        statusClass = 'status-ignored';
       } else {
         statusClass = '';
       }

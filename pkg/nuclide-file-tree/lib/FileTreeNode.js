@@ -177,6 +177,7 @@ export class FileTreeNode {
   shouldBeSoftened: boolean;
   vcsStatusCode: StatusCodeNumberValue;
   repo: ?atom$Repository;
+  isIgnored: boolean;
 
   // Derived from children
   containsSelection: boolean;
@@ -313,6 +314,7 @@ export class FileTreeNode {
     this.shouldBeSoftened = derived.shouldBeSoftened;
     this.vcsStatusCode = derived.vcsStatusCode;
     this.repo = derived.repo;
+    this.isIgnored = derived.isIgnored;
   }
 
   /**
@@ -344,6 +346,7 @@ export class FileTreeNode {
       shouldBeShown: this.shouldBeShown,
       shouldBeSoftened: this.shouldBeSoftened,
       vcsStatusCode: this.vcsStatusCode,
+      isIgnored: this.isIgnored,
     };
   }
 
@@ -608,6 +611,7 @@ export class FileTreeNode {
     const isContainer = isDirKey(uri);
     const rootVcsStatuses = conf.vcsStatuses[rootUri] || {};
     const repo = conf.reposByRoot[rootUri];
+    const isIgnored = this._deriveIsIgnored(uri, rootUri, repo, conf);
 
     return {
       isRoot: uri === rootUri,
@@ -616,7 +620,8 @@ export class FileTreeNode {
       isContainer,
       relativePath: uri.slice(rootUri.length),
       localPath: keyToPath(isRemote(uri) ? parse(uri).pathname : uri),
-      shouldBeShown: this._deriveShouldBeShown(uri, rootUri, isContainer, repo, conf),
+      isIgnored,
+      shouldBeShown: this._deriveShouldBeShown(uri, rootUri, isContainer, repo, conf, isIgnored),
       shouldBeSoftened: this._deriveShouldBeSoftened(uri, isContainer, conf),
       vcsStatusCode: rootVcsStatuses[uri] || StatusCodeNumber.CLEAN,
       repo,
@@ -629,9 +634,13 @@ export class FileTreeNode {
     isContainer: boolean,
     repo: ?atom$Repository,
     conf: StoreConfigData,
+    isIgnored: boolean,
   ): boolean {
-    const isIgnored = this._deriveIsIgnored(uri, rootUri, repo, conf);
-    if (isIgnored) {
+    if (isIgnored && conf.excludeVcsIgnoredPaths) {
+      return false;
+    }
+
+    if (conf.hideIgnoredNames && conf.ignoredPatterns.some(pattern => pattern.match(uri))) {
       return false;
     }
 
@@ -654,14 +663,7 @@ export class FileTreeNode {
     repo: ?atom$Repository,
     conf: StoreConfigData
   ): boolean {
-    const {hideIgnoredNames, excludeVcsIgnoredPaths, ignoredPatterns} = conf;
-
-    if (hideIgnoredNames && ignoredPatterns.some(pattern => pattern.match(uri))) {
-      return true;
-    }
-
     if (
-      excludeVcsIgnoredPaths &&
       repo != null &&
       repo.isProjectAtRoot() &&
       repo.isPathIgnored(uri)
