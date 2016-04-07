@@ -10,9 +10,19 @@
   color: @text-color-subtle;
 }
 
+// Actual borders or outlines on line decorations are subject to
+// positioning issues (fixable) and tiling-related clipping issues (not fixable).
+// Use a gradient to simulate a pseudo-border.
+@backgroundColor: fade(@background-color-info, 30%);
+@pseudoBorderColor: fade(@background-color-info, 80%);
 .nuclide-current-line-highlight {
-  background-color: fade(@background-color-info, 30%);
-  border-color: fade(@background-color-info, 80%);
-  border-style: solid;
-  border-width: 1px;
+  background: linear-gradient(
+    to bottom,
+    @pseudoBorderColor 0%,
+    @pseudoBorderColor 5%,
+    @backgroundColor 5%,
+    @backgroundColor 95%,
+    @pseudoBorderColor 95%,
+    @pseudoBorderColor 100%
+  )
 }
