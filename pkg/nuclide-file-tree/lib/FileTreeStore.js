@@ -1227,6 +1227,7 @@ export class FileTreeStore {
       this.roots.forEach(root => {
         reposByRoot[root.uri] = repositoryForPath(root.uri);
       });
+      conf.reposByRoot = reposByRoot;
     });
   }
 
