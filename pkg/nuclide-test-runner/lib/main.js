@@ -40,7 +40,7 @@ function limitString(str: string, length?: number = 20): string {
 
 class Activation {
 
-  _controller: TestRunnerControllerType;
+  _controller: ?TestRunnerControllerType;
   _disposables: CompositeDisposable;
   _initialState: ?TestRunnerControllerState;
   _testRunners: Set<TestRunner>;
