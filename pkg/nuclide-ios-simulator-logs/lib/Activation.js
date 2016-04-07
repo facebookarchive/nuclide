@@ -17,12 +17,28 @@ import {createProcessStream} from './createProcessStream';
 import {CompositeDisposable, Disposable} from 'atom';
 import Rx from 'rx';
 
+const NOENT_ERROR_DESCRIPTION = `**Troubleshooting Tips**
+1. Make sure that syslog is installed
+2. If it is installed, update the "Path to syslog" setting in the "nuclide-ios-simulator-logs"
+   section of your Atom settings.`;
+
 class Activation {
   _disposables: CompositeDisposable;
   _logTailer: LogTailer;
 
   constructor(state: ?Object) {
-    const message$ = Rx.Observable.defer(() => createMessageStream(createProcessStream()));
+    const message$ = Rx.Observable.defer(() => createMessageStream(createProcessStream()))
+      .tapOnError(err => {
+        if (err.code === 'ENOENT') {
+          atom.notifications.addError(
+            "syslog wasn't found on your path!",
+            {
+              dismissable: true,
+              description: NOENT_ERROR_DESCRIPTION,
+            },
+          );
+        }
+      });
 
     this._logTailer = new LogTailer(message$, {
       start: 'ios-simulator-logs:start',

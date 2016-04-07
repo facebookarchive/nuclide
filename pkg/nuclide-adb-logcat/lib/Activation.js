@@ -17,6 +17,11 @@ import {LogTailer} from '../../nuclide-console/lib/LogTailer';
 import {CompositeDisposable, Disposable} from 'atom';
 import Rx from 'rx';
 
+const NOENT_ERROR_DESCRIPTION = `**Troubleshooting Tips**
+1. Make sure that adb is installed
+2. If it is installed, update the "Path to adb" setting in the "nuclide-adb-logcat" section of your
+   Atom settings.`;
+
 class Activation {
   _disposables: CompositeDisposable;
   _logTailer: LogTailer;
@@ -25,8 +30,29 @@ class Activation {
     const message$ = Rx.Observable.defer(() =>
       createMessageStream(
         createProcessStream()
-          .retry(3)
-          .tapOnError(() => {
+          // Retry 3 times (unless we get a ENOENT)
+          .retryWhen(errors => (
+            errors.scan(
+              (errCount, err) => {
+                if (isNoEntError(err) || errCount >= 2) {
+                  throw err;
+                }
+                return errCount + 1;
+              },
+              0,
+            )
+          ))
+          .tapOnError(err => {
+            if (isNoEntError(err)) {
+              atom.notifications.addError(
+                "adb wasn't found on your path!",
+                {
+                  dismissable: true,
+                  description: NOENT_ERROR_DESCRIPTION,
+                },
+              );
+              return;
+            }
             atom.notifications.addError(
               'adb logcat has crashed 3 times.'
               + ' You can manually restart it using the "Nuclide Adb Logcat: Start" command.'
@@ -63,5 +89,7 @@ class Activation {
     this._disposables.dispose();
   }
 }
+
+const isNoEntError = err => (err: any).code === 'ENOENT';
 
 module.exports = Activation;
