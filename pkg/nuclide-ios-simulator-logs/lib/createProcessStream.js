@@ -19,6 +19,12 @@ import Rx from 'rx';
 export function createProcessStream(): Rx.Observable<string> {
   // Get a list of devices and their states from `xcrun simctl`.
   const simctlOutput$ = observeProcess(spawnSimctlList)
+    .map(event => {
+      if (event.kind === 'error') {
+        throw event.error;
+      }
+      return event;
+    })
     .filter(event => event.kind === 'stdout')
     .map(event => (invariant(event.data != null), event.data))
     .reduce((acc, next) => acc + next, '')

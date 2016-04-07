@@ -16,6 +16,9 @@ import Rx from 'rx';
 export function createProcessStream(): Rx.Observable<string> {
   return observeProcess(spawnAdbLogcat)
     .map(event => {
+      if (event.kind === 'error') {
+        throw event.error;
+      }
       if (event.kind === 'exit') {
         throw new Error('adb logcat exited unexpectedly');
       }
