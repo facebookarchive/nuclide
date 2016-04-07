@@ -196,6 +196,10 @@ export class TestRunnerController {
     }
   }
 
+  isVisible(): boolean {
+    return this._state.panelVisible;
+  }
+
   /**
    * Adds an end-of-line character to `text` and appends the resulting string to this controller's
    * text buffer.

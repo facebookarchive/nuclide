@@ -10,10 +10,12 @@
  */
 
 import type {HomeFragments} from '../../nuclide-home-interfaces';
+import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {TestRunner} from './interfaces';
 import type {TestRunnerController as TestRunnerControllerType} from './TestRunnerController';
 import type {TestRunnerControllerState} from './TestRunnerController';
 
+import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 
 let logger;
@@ -127,6 +129,18 @@ class Activation {
     });
   }
 
+  getDistractionFreeModeProvider(): DistractionFreeModeProvider {
+    return {
+      name: 'nuclide-test-runner',
+      isVisible: () => {
+        return this._controller != null && this._controller.isVisible();
+      },
+      toggle: () => {
+        this._getController().togglePanel();
+      },
+    };
+  }
+
   dispose(): void {
     this._disposables.dispose();
   }
@@ -232,4 +246,9 @@ export function getHomeFragments(): HomeFragments {
     },
     priority: 2,
   };
+}
+
+export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
+  invariant(activation != null);
+  return activation.getDistractionFreeModeProvider();
 }
