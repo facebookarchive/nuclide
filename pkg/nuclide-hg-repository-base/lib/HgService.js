@@ -30,7 +30,8 @@ import {
   fetchFileContentAtRevision,
   fetchFilesChangedAtRevision,
 } from './hg-revision-state-helpers';
-import {fsPromise, asyncExecute, createArgsForScriptCommand} from '../../nuclide-commons';
+import {hgAsyncExecute} from './hg-utils';
+import {fsPromise} from '../../nuclide-commons';
 import {getPath} from '../../nuclide-remote-uri';
 
 import {readArcConfig} from '../../nuclide-arcanist-base';
@@ -196,6 +197,11 @@ export class HgService {
     if (this._dirstateDelayedEventManager) {
       this._dirstateDelayedEventManager.dispose();
     }
+  }
+
+  // Wrapper to help mocking during tests.
+  _hgAsyncExecute(args: Array<string>, options: any): Promise<any> {
+    return hgAsyncExecute(args, options);
   }
 
   /**
@@ -544,41 +550,6 @@ export class HgService {
       );
     }
     return absolutePathToDiffInfo;
-  }
-
-  /**
-   * Calls out to asyncExecute using the 'hg' command.
-   * @param options as specified by http://nodejs.org/api/child_process.html. Additional options:
-   *   - NO_HGPLAIN set if the $HGPLAIN environment variable should not be used.
-   *   - TTY_OUTPUT set if the command should be run as if it were attached to a tty.
-   */
-  async _hgAsyncExecute(args: Array<string>, options: any): Promise<any> {
-    if (!options['NO_HGPLAIN']) {
-      // Setting HGPLAIN=1 overrides any custom aliases a user has defined.
-      if (options.env) {
-        options.env['HGPLAIN'] = 1;
-      } else {
-        const {assign} = require('../../nuclide-commons').object;
-        const env = {'HGPLAIN': 1};
-        assign(env, process.env);
-        options.env = env;
-      }
-    }
-
-    let cmd;
-    if (options['TTY_OUTPUT']) {
-      cmd = 'script';
-      args = createArgsForScriptCommand('hg', args);
-    } else {
-      cmd = 'hg';
-    }
-    try {
-      return await asyncExecute(cmd, args, options);
-    } catch (e) {
-      getLogger().error(`Error executing hg command: ${JSON.stringify(args)} ` +
-          `options: ${JSON.stringify(options)} ${JSON.stringify(e)}`);
-      throw e;
-    }
   }
 
   /**
