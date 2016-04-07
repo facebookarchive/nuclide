@@ -10,6 +10,7 @@
  */
 
 import type DiffViewModelType, {DiffEntityOptions} from './DiffViewModel';
+import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {HomeFragments} from '../../nuclide-home-interfaces';
 import type OutputService from '../../nuclide-console/lib/OutputService';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
@@ -32,6 +33,7 @@ let activeDiffView: ?{
 
 // This url style is the one Atom uses for the welcome and settings pages.
 const NUCLIDE_DIFF_VIEW_URI = 'atom://nuclide/diff-view';
+const DIFF_VIEW_FILE_TREE_CONTEXT_MENU_PRIORITY = 1000;
 const uiProviders: Array<UIProvider> = [];
 
 let subscriptions: ?CompositeDisposable = null;
@@ -210,16 +212,6 @@ module.exports = {
         atom.workspace.open(formatDiffViewUrl({file: filePath || ''}));
       }
     ));
-    subscriptions.add(atom.contextMenu.add({
-      '.tree-view .entry.file.list-item': [
-        {type: 'separator'},
-        {
-          label: 'Open in Diff View',
-          command: 'nuclide-diff-view:open-context',
-        },
-        {type: 'separator'},
-      ],
-    }));
 
     // Listen for file tree context menu directory item events to open the diff view.
     subscriptions.add(atom.commands.add(
@@ -230,16 +222,6 @@ module.exports = {
         atom.workspace.open(formatDiffViewUrl({directory: directoryPath || ''}));
       }
     ));
-    subscriptions.add(atom.contextMenu.add({
-      '.tree-view .entry.directory.list-nested-item > .list-item': [
-        {type: 'separator'},
-        {
-          label: 'Open in Diff View',
-          command: 'nuclide-diff-view:open-context',
-        },
-        {type: 'separator'},
-      ],
-    }));
 
     // The Diff View will open its main UI in a tab, like Atom's preferences and welcome pages.
     subscriptions.add(atom.workspace.addOpener(uri => {
@@ -370,6 +352,20 @@ module.exports = {
 
   consumeCwdApi(api: CwdApi): void {
     cwdApi = api;
+  },
+
+  addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
+    invariant(subscriptions);
+    const menuItemDescriptions = new CompositeDisposable();
+    menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu(
+      {
+        label: 'Open in Diff View',
+        command: 'nuclide-diff-view:open-context',
+      },
+      DIFF_VIEW_FILE_TREE_CONTEXT_MENU_PRIORITY,
+    ));
+    subscriptions.add(menuItemDescriptions);
+    return menuItemDescriptions;
   },
 
   get __testDiffView() {

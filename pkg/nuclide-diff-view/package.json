@@ -36,6 +36,11 @@
       "versions": {
         "0.0.0": "consumeCwdApi"
       }
+    },
+    "nuclide-file-tree.context-menu": {
+      "versions": {
+        "0.1.0": "addItemsToFileTreeContextMenu"
+      }
     }
   },
   "providedServices": {
