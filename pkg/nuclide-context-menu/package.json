@@ -1,0 +1,11 @@
+{
+  "name": "nuclide-context-menu",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/ContextMenu",
+  "version": "0.0.0",
+  "description": "Register context menu items in priority order.",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  }
+}
