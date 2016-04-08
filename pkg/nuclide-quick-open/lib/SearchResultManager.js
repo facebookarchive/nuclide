@@ -37,7 +37,6 @@ import {
 import QuickSelectionDispatcher from './QuickSelectionDispatcher';
 import QuickSelectionActions from './QuickSelectionActions';
 
-const assign = Object.assign || require('object-assign');
 const {performance} = global;
 
 function getDefaultResult(): ProviderResult {
@@ -468,7 +467,7 @@ class SearchResultManager {
         partial[providerName] = resultForProvider;
         omniSearchResults.push(partial);
       }
-      return assign.apply({}, omniSearchResults);
+      return Object.assign.apply(null, omniSearchResults);
     }
     // TODO replace `partial` with computed property whenever Flow supports it.
     const partial = {};
