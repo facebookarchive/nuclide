@@ -19,6 +19,7 @@ import {Disposable, CompositeDisposable} from 'atom';
 import invariant from 'assert';
 
 import featureConfig from '../../nuclide-feature-config';
+import {nuclideFeatures} from '../../../lib/nuclide-features';
 
 import {WorkingSet} from '../../nuclide-working-sets';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore';
@@ -253,8 +254,6 @@ export function activate(state: ?FileTreeControllerState): void {
 }
 
 export function deactivate() {
-  const nuclideFeatures = require('../../../lib/nuclideFeatures');
-
   // Re-enable Atom's bundled 'tree-view' when this package is disabled to leave the user's
   // environment the way this package found it.
   if (nuclideFeatures.isFeatureDisabled('nuclide-file-tree')

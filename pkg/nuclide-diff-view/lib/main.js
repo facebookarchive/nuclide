@@ -21,7 +21,7 @@ import type {
 import {CompositeDisposable, Directory} from 'atom';
 import invariant from 'assert';
 import url from 'url';
-import nuclideFeatures from '../../../lib/nuclideFeatures';
+import {nuclideFeatures} from '../../../lib/nuclide-features';
 import {getFileTreePathFromTargetEvent} from './utils';
 import {getLogger} from '../../nuclide-logging';
 

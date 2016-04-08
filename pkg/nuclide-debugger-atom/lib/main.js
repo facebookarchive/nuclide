@@ -30,6 +30,16 @@ import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
 import remoteUri from '../../nuclide-remote-uri';
 import {ServerConnection} from '../../nuclide-remote-connection';
 
+import DebuggerProcessInfo from './DebuggerProcessInfo';
+import DebuggerInstance from './DebuggerInstance';
+import DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
+
+export {
+  DebuggerProcessInfo,
+  DebuggerInstance,
+  DebuggerLaunchAttachProvider,
+};
+
 export type SerializedState = {
   breakpoints: ?Array<SerializedBreakpoint>;
 };
@@ -275,101 +285,93 @@ class Activation {
 let activation = null;
 let toolBar: ?any = null;
 
-module.exports = {
-  activate(state: ?SerializedState) {
-    if (!activation) {
-      activation = new Activation(state);
-    }
-  },
+export function activate(state: ?SerializedState) {
+  if (!activation) {
+    activation = new Activation(state);
+  }
+}
 
-  serialize(): SerializedState {
-    if (activation) {
-      return activation.serialize();
-    } else {
-      return {
-        breakpoints: null,
-      };
-    }
-  },
-
-  deactivate() {
-    if (activation) {
-      activation.dispose();
-      activation = null;
-    }
-    if (toolBar) {
-      toolBar.removeItems();
-    }
-  },
-
-  consumeNuclideDebugger(service: nuclide_debugger$Service): Disposable {
-    if (activation) {
-      activation.getModel().getActions().addService(service);
-    }
-    return new Disposable(() => {
-      if (activation) {
-        activation.getModel().getActions().removeService(service);
-      }
-    });
-  },
-
-  consumeDebuggerProvider(
-    provider: NuclideDebuggerProvider
-  ): IDisposable {
-    if (activation) {
-      activation.getModel().getActions().addDebuggerProvider(provider);
-    }
-    return new Disposable(() => {
-      if (activation) {
-        activation.getModel().getActions().removeDebuggerProvider(provider);
-      }
-    });
-  },
-
-  consumeEvaluationExpressionProvider(
-    provider: NuclideEvaluationExpressionProvider
-  ): IDisposable {
-    if (activation) {
-      activation.getModel().getActions().addEvaluationExpressionProvider(provider);
-    }
-    return new Disposable(() => {
-      if (activation) {
-        activation.getModel().getActions().removeEvaluationExpressionProvider(provider);
-      }
-    });
-  },
-
-  DebuggerProcessInfo: require('./DebuggerProcessInfo'),
-  DebuggerInstance: require('./DebuggerInstance'),
-  DebuggerLaunchAttachProvider: require('./DebuggerLaunchAttachProvider'),
-
-  consumeToolBar(getToolBar: (group: string) => Object): void {
-    toolBar = getToolBar('nuclide-debugger');
-    toolBar.addButton({
-      icon: 'plug',
-      callback: 'nuclide-debugger:toggle',
-      tooltip: 'Toggle Debugger',
-      priority: 100,
-    });
-  },
-
-  provideRemoteControlService(): RemoteControlService {
-    return new RemoteControlService(() => activation ? activation.getModel() : null);
-  },
-
-  createDatatipProvider(): Object {
+export function serialize(): SerializedState {
+  if (activation) {
+    return activation.serialize();
+  } else {
     return {
-      // Eligibility is determined online, based on registered EvaluationExpression providers.
-      validForScope: (scope: string) => true,
-      providerName: DATATIP_PACKAGE_NAME,
-      inclusionPriority: 1,
-      datatip: (editor: TextEditor, position: atom$Point) => {
-        if (activation == null) {
-          return null;
-        }
-        const model = activation.getModel();
-        return debuggerDatatip(model, editor, position);
-      },
+      breakpoints: null,
     };
-  },
-};
+  }
+}
+
+export function deactivate() {
+  if (activation) {
+    activation.dispose();
+    activation = null;
+  }
+  if (toolBar) {
+    toolBar.removeItems();
+  }
+}
+
+export function consumeNuclideDebugger(service: nuclide_debugger$Service): Disposable {
+  if (activation) {
+    activation.getModel().getActions().addService(service);
+  }
+  return new Disposable(() => {
+    if (activation) {
+      activation.getModel().getActions().removeService(service);
+    }
+  });
+}
+
+export function consumeDebuggerProvider(provider: NuclideDebuggerProvider): IDisposable {
+  if (activation) {
+    activation.getModel().getActions().addDebuggerProvider(provider);
+  }
+  return new Disposable(() => {
+    if (activation) {
+      activation.getModel().getActions().removeDebuggerProvider(provider);
+    }
+  });
+}
+
+export function consumeEvaluationExpressionProvider(
+  provider: NuclideEvaluationExpressionProvider,
+): IDisposable {
+  if (activation) {
+    activation.getModel().getActions().addEvaluationExpressionProvider(provider);
+  }
+  return new Disposable(() => {
+    if (activation) {
+      activation.getModel().getActions().removeEvaluationExpressionProvider(provider);
+    }
+  });
+}
+
+export function consumeToolBar(getToolBar: (group: string) => Object): void {
+  toolBar = getToolBar('nuclide-debugger');
+  toolBar.addButton({
+    icon: 'plug',
+    callback: 'nuclide-debugger:toggle',
+    tooltip: 'Toggle Debugger',
+    priority: 100,
+  });
+}
+
+export function provideRemoteControlService(): RemoteControlService {
+  return new RemoteControlService(() => activation ? activation.getModel() : null);
+}
+
+export function createDatatipProvider(): Object {
+  return {
+    // Eligibility is determined online, based on registered EvaluationExpression providers.
+    validForScope: (scope: string) => true,
+    providerName: DATATIP_PACKAGE_NAME,
+    inclusionPriority: 1,
+    datatip: (editor: TextEditor, position: atom$Point) => {
+      if (activation == null) {
+        return null;
+      }
+      const model = activation.getModel();
+      return debuggerDatatip(model, editor, position);
+    },
+  };
+}
