@@ -58,6 +58,7 @@ export class PackagerActivation {
         .subscribe(commandInfo => {
           if (commandInfo == null) {
             atom.notifications.addError("Couldn't find a React Native project", {
+              dismissable: true,
               description:
                 'Make sure that one of the folders in your Atom project (or its ancestor)' +
                 ' contains either a package.json with a "react-native" dependency, or a' +
