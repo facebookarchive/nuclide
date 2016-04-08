@@ -42,7 +42,6 @@ export default async function runCommand(args: Array<string>): Promise<ExitCode>
   }
 
   const markdownFile = resolvePath(argv._[0]);
-  const outputFile = argv.out == null ? `${markdownFile}.html` : resolvePath(argv.out);
 
   const textEditor = await atom.workspace.open(markdownFile);
   await atom.packages.activatePackage('markdown-preview');
@@ -78,7 +77,7 @@ export default async function runCommand(args: Array<string>): Promise<ExitCode>
   // That said, although this attribute improves things, the resulting styles still do not match
   // exactly what you see in Atom. I think this is due to the translation of <atom-text-editor>
   // to <pre> elements, which seems a little off.
-  const html = `
+  const html = `\
 <!DOCTYPE html>
 <html>
   <head>
@@ -87,12 +86,15 @@ export default async function runCommand(args: Array<string>): Promise<ExitCode>
       <style>${styles}</style>
   </head>
   <body class="markdown-preview" data-use-github-style>${htmlBody}</body>
-</html>
-`;
+</html>`;
 
-  // Currently, we are still having problems with console.log(),
-  // so we rely exclusively on the --out flag to decide where to write output.
-  fs.writeFileSync(outputFile, html);
+  if (argv.out == null) {
+    console.log(html);
+  } else {
+    const outputFile = resolvePath(argv.out);
+    fs.writeFileSync(outputFile, html);
+  }
+
   return 0;
 }
 

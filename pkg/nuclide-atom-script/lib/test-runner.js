@@ -69,7 +69,7 @@ export default async function runTest(params: TestRunnerParams): Promise<ExitCod
   global.atom = params.buildAtomEnvironment(atomEnvParams);
 
   // Set up the console before running any user code.
-  instrumentConsole(args['stdout']);
+  const notifyWhenStdoutHasBeenFlushed = await instrumentConsole(args['stdout']);
 
   const pathArg = args['path'];
   if (typeof pathArg !== 'string') {
@@ -82,7 +82,9 @@ export default async function runTest(params: TestRunnerParams): Promise<ExitCod
   const handler = require(entryPoint);
 
   try {
-    return await handler(args['args']);
+    const exitCode = await handler(args['args']);
+    await notifyWhenStdoutHasBeenFlushed();
+    return exitCode;
   } catch (e) {
     console.error(e);
     return 1;

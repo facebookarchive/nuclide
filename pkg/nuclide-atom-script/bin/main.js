@@ -6,6 +6,22 @@
  * the root directory of this source tree.
  */
 
+/*
+ * This script expects at least one argument, which is the path to the JavaScript
+ * file to run as an Atom test. All subsequent arguments will be forwarded to the
+ * function exported by the JavaScript file to run.
+ *
+ * Unfortunately, due to https://github.com/atom/atom/issues/10952, we need to introduce some
+ * machinery so that the only bytes written to stdout are those passed to `console.log()` by
+ * the code executed by the JavaScript file. To achieve this, we create a UNIX domain socket
+ * whose location we pass to Atom so we can redefine `console.log()` to write to the UNIX
+ * domain socket. In turn, data received by the socket is forwarded to the stdout of this process.
+ *
+ * It would probably be simpler to redirect `console.log()` to write to file descriptor 3
+ * and then pipe that to stdout, but that appears to cause Atom to crash due to complaints
+ * about writing to a "guarded file descriptor."
+ */
+
 // NOTE: This file is run as-is from Node, which is why we do not use let or Flow types.
 /* eslint-disable no-var, no-console */
 
@@ -54,11 +70,17 @@ function runAtom() {
   ];
 
   var atomTest = child_process.spawn('atom', args);
-  // Currently, we forward stdout and stderr from the Atom process to stderr so
-  // that the stdout is only what is written by `console.log()` in the Atom process.
-  var writeToStderr = process.stderr.write.bind(process.stderr);
-  atomTest.stdout.on('data', writeToStderr);
-  atomTest.stderr.on('data', writeToStderr);
+  if (process.env['DEBUG_ATOM_SCRIPT'] != null) {
+    // When the DEBUG_ATOM_SCRIPT environment variable is set, we forward stdout and stderr from
+    // the Atom process to stderr so that the stdout is only what is written by `console.log()`
+    // in the Atom process.
+    var writeToStderr = process.stderr.write.bind(process.stderr);
+    atomTest.stdout.on('data', writeToStderr);
+    atomTest.stderr.on('data', writeToStderr);
+  }
+
+  // TODO(mbolin): Before exiting, we should make sure that everything that was written
+  // to the UNIX domain socket has been flushed.
   atomTest.on('close', exit);
 }
 

@@ -8,21 +8,5 @@
  * the root directory of this source tree.
  */
 
-/*
- * This script expects at least one argument, which is the path to the JavaScript
- * file to run as an Atom test. All subsequent arguments will be forwarded to the
- * function exported by the JavaScript file to run.
- *
- * Unfortunately, due to https://github.com/atom/atom/issues/10952, we need to introduce some
- * machinery so that the only bytes written to stdout are those passed to `console.log()` by
- * the code executed by the JavaScript file. To achieve this, we create a UNIX domain socket
- * whose location we pass to Atom so we can redefine `console.log()` to write to the UNIX
- * domain socket. In turn, data received by the socket is forwarded to the stdout of this process.
- *
- * It would probably be simpler to redirect `console.log()` to write to file descriptor 3
- * and then pipe that to stdout, but that appears to cause Atom to crash due to complaints
- * about writing to a "guarded file descriptor."
- */
-
 var main = require('./main');
 main();
