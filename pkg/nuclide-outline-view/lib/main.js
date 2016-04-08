@@ -23,7 +23,10 @@ import invariant from 'assert';
 import type {TokenizedText} from '../../nuclide-tokenized-text';
 
 export type OutlineTree = {
-  tokenizedText: TokenizedText;
+  // Must be one or the other. If both are present, tokenizedText is preferred.
+  plainText?: string;
+  tokenizedText?: TokenizedText;
+
   startPosition: atom$Point;
   endPosition?: atom$Point;
   children: Array<OutlineTree>;
@@ -34,7 +37,9 @@ export type Outline = {
 };
 
 export type OutlineTreeForUi = {
-  tokenizedText: TokenizedText;
+  plainText?: string;
+  tokenizedText?: TokenizedText;
+
   startPosition: atom$Point;
   endPosition?: atom$Point;
   children: Array<OutlineTreeForUi>;

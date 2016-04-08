@@ -108,6 +108,7 @@ async function outlineForEditor(
 
 function treeToUiTree(outlineTree: OutlineTree): OutlineTreeForUi {
   return {
+    plainText: outlineTree.plainText,
     tokenizedText: outlineTree.tokenizedText,
     startPosition: outlineTree.startPosition,
     endPosition: outlineTree.endPosition,

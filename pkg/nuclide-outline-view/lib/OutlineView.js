@@ -151,11 +151,21 @@ function renderTree(
   return (
     <li className={classes} key={index}>
       <div className="list-item nuclide-outline-view-item" onClick={onClick}>
-        {outline.tokenizedText.map(renderTextToken)}
+        {renderItemText(outline)}
       </div>
       {renderTrees(editor, outline.children)}
     </li>
   );
+}
+
+function renderItemText(outline: OutlineTreeForUi): Array<ReactElement> | string {
+  if (outline.tokenizedText != null) {
+    return outline.tokenizedText.map(renderTextToken);
+  } else if (outline.plainText != null) {
+    return outline.plainText;
+  } else {
+    return 'Missing text';
+  }
 }
 
 function renderTextToken(token: TextToken, index: number): ReactElement {
