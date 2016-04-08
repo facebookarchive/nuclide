@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-const {array} = require('../../nuclide-commons');
 import type DebuggerModel from './DebuggerModel';
 import type DebuggerProcessInfo from './DebuggerProcessInfo';
 
@@ -39,7 +38,7 @@ class RemoteControlService {
     const model = modelNullable;
     return model.getStore().getProcessInfoList('lldb')
       .then(processes => {
-        const process = array.find(processes, p => p.pid === pid);
+        const process = processes.find(p => p.pid === pid);
         if (process) {
           process.basepath = basepath;
           model.getActions().startDebugging(process);
@@ -56,7 +55,7 @@ class RemoteControlService {
     }
     return model.getStore().getProcessInfoList('node')
       .then(processes => {
-        const proc = array.find(processes, p => p.pid === pid);
+        const proc = processes.find(p => p.pid === pid);
         if (proc) {
           model.getActions().startDebugging(proc);
         } else {

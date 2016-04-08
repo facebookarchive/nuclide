@@ -11,7 +11,7 @@
 
 import {locationToString} from './builtin-types';
 import invariant from 'assert';
-import {array, set} from '../../nuclide-commons';
+import {set} from '../../nuclide-commons';
 
 import type {
   Definitions,
@@ -400,7 +400,7 @@ export function validateDefinitions(definitions: Definitions): void {
   }
 
   function getObjectFieldByName(type: ObjectType, fieldName: string): ObjectField {
-    const result = array.find(type.fields, field => field.name === fieldName);
+    const result = type.fields.find(field => field.name === fieldName);
     invariant(result != null);
     return result;
   }

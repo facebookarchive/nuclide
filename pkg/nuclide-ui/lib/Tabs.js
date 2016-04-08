@@ -13,7 +13,6 @@ const {React} = require('react-for-atom');
 
 const {PropTypes} = React;
 
-const {array} = require('../../nuclide-commons');
 const classnames = require('classnames');
 
 export const Tabs = React.createClass({
@@ -37,7 +36,7 @@ export const Tabs = React.createClass({
   _handleTabChange(selectedTabName: string) {
     if (typeof this.props.onActiveTabChange === 'function') {
       this.props.onActiveTabChange(
-        array.find(this.props.tabs, tab => tab.name === selectedTabName)
+        this.props.tabs.find(tab => tab.name === selectedTabName)
       );
     }
   },

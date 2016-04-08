@@ -30,7 +30,6 @@ import type {HackSymbolNameResult} from '../../nuclide-hack-base/lib/types';
 
 import {parse, createRemoteUri, getPath} from '../../nuclide-remote-uri';
 import {getLogger} from '../../nuclide-logging';
-import {array} from '../../nuclide-commons';
 import {Range, Emitter} from 'atom';
 import HackWorker from './HackWorker';
 import {CompletionType, SymbolType} from '../../nuclide-hack-common';
@@ -316,8 +315,8 @@ export class LocalHackLanguage {
     // We now have results from all 4 sources.
     // Choose the best results to show to the user.
     const definitionResults = [identifierResult].concat(heuristicResults);
-    return array.find(definitionResults, definitionResult => definitionResult.length === 1)
-      || array.find(definitionResults, definitionResult => definitionResult.length > 1)
+    return definitionResults.find(definitionResult => definitionResult.length === 1)
+      || definitionResults.find(definitionResult => definitionResult.length > 1)
       || [];
   }
 

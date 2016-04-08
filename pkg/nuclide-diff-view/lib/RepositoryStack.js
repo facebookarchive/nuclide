@@ -238,7 +238,7 @@ export default class RepositoryStack {
     // Prioritize the cached compaereCommitId, if it exists.
     // The user could have selected that from the timeline view.
     let compareCommitId = this._selectedCompareCommitId;
-    if (!array.find(revisions, revision => revision.id === compareCommitId)) {
+    if (!revisions.find(revision => revision.id === compareCommitId)) {
       // Invalidate if there there is no longer a revision with that id.
       compareCommitId = null;
     }
@@ -453,7 +453,7 @@ export default class RepositoryStack {
     const {revisions} = revisionsState;
 
     invariant(
-      revisions && array.find(revisions, check => check.id === revision.id),
+      revisions && revisions.find(check => check.id === revision.id),
       'Diff Viw Timeline: non-applicable selected revision',
     );
 

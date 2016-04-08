@@ -14,8 +14,6 @@ import invariant from 'assert';
 import vm from 'vm';
 import fs from 'fs';
 
-import {array} from '../../nuclide-commons';
-
 import type {
   Type,
   ObjectType,
@@ -342,7 +340,7 @@ export default class TypeRegistry<MarshallingContext> {
   _registerUnions(): void {
     const unionLiteralTransformer = (arg, type) => {
       invariant(type.kind === 'union');
-      const alternate = array.find(type.types, element => {
+      const alternate = type.types.find(element => {
         invariant(element.kind === 'string-literal' || element.kind === 'number-literal'
             || element.kind === 'boolean-literal');
         return (arg === element.value);
@@ -589,7 +587,7 @@ export default class TypeRegistry<MarshallingContext> {
 }
 
 function getObjectFieldByName(type: ObjectType, fieldName: string): ObjectField {
-  const result = array.find(type.fields, field => field.name === fieldName);
+  const result = type.fields.find(field => field.name === fieldName);
   invariant(result != null);
   return result;
 }
@@ -600,7 +598,7 @@ function findAlternate(arg: Object, type: UnionType): ObjectType {
   const discriminant = arg[discriminantField];
   invariant(discriminant != null);
   const alternates: Array<ObjectType> = (type.types: any);
-  const result = array.find(alternates, alternate => {
+  const result = alternates.find(alternate => {
     invariant(alternate.kind === 'object');
     const alternateType = getObjectFieldByName(alternate, discriminantField).type;
     invariant(alternateType.kind === 'string-literal' || alternateType.kind === 'number-literal'

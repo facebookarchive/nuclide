@@ -19,7 +19,6 @@ import {NavigationStack} from './NavigationStack';
 import invariant from 'assert';
 import {contains} from '../../nuclide-remote-uri';
 import {getPathOfLocation, getLocationOfEditor, editorOfLocation} from './Location';
-import {array} from '../../nuclide-commons';
 
 function log(message: string): void {
   // Uncomment this to debug
@@ -173,7 +172,7 @@ export class NavigationStackController {
     this._navigationStack.filter(location => {
       const uri = getPathOfLocation(location);
       return uri == null || !contains(removedPath, uri)
-        || array.find(remainingDirectories, directory => contains(directory, uri)) != null;
+        || remainingDirectories.find(directory => contains(directory, uri)) != null;
     });
   }
 

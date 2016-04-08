@@ -13,7 +13,6 @@ import invariant from 'assert';
 
 const DebuggerModel = require('../lib/DebuggerModel');
 const utils = require('./utils');
-const {array} = require('../../nuclide-commons');
 
 class MockWebview {
   _listeners: Map<string, Set<Function>>;
@@ -68,8 +67,7 @@ describe('Bridge', () => {
   function getCallFrameDecorationInRow(row: number): ?atom$Decoration {
     const decorationArrays = editor.decorationsForScreenRowRange(row, row);
     for (const key in decorationArrays) {
-      const result = array.find(
-        decorationArrays[key],
+      const result = decorationArrays[key].find(
         item => item.getProperties().class === 'nuclide-current-line-highlight',
       );
       if (result !== undefined) {

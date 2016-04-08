@@ -11,24 +11,6 @@
 
 /**
  * Instance method of Array as defined by
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find.
- * Because we do not want to add elements to Array.prototype, we make this a
- * static method that takes the Array (which would be the receiver if it were an
- * instance method) as the first argument.
- * @param array The array to search.
- * @param Function to execute on each value in the array.
- * @param Object to use as `this` when executing `callback`.
- */
-export function find<T>(
-    array: Array<T>,
-    callback: (element: T, index: number, array: Array<T>) => mixed,
-    thisArg?: mixed): ?T {
-  const resultIndex = findIndex(array, callback, thisArg);
-  return resultIndex >= 0 ? array[resultIndex] : undefined;
-}
-
-/**
- * Instance method of Array as defined by
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex.
  * Because we do not want to add elements to Array.prototype, we make this a
  * static method that takes the Array (which would be the receiver if it were an
