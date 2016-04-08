@@ -14,7 +14,6 @@ import type {ClangCompletion} from '../../nuclide-clang';
 import {Point} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
 import {ClangCursorToDeclarationTypes} from '../../nuclide-clang';
-import {array} from '../../nuclide-commons';
 import {getCompletions} from './libclang';
 
 const MAX_LINE_LENGTH = 120;
@@ -206,8 +205,7 @@ class AutocompleteProvider {
       // Ideally we'd use the replacement prefix, but this is a hard problem in C++:
       //   e.g. min<decltype(x)>(x, y) is a perfectly valid function call.
       if (completion.cursor_kind === 'OVERLOAD_CANDIDATE') {
-        const curParamIndex = array.findIndex(
-          completion.chunks,
+        const curParamIndex = completion.chunks.findIndex(
           x => x.kind === 'CurrentParameter',
         );
         if (curParamIndex !== -1) {

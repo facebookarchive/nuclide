@@ -16,7 +16,6 @@ import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService'
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
 
-import {array} from '../../nuclide-commons';
 import classnames from 'classnames';
 
 type DiffTimelineViewProps = {
@@ -96,8 +95,7 @@ class RevisionsTimelineComponent extends React.Component {
   render(): ReactElement {
     const {revisions, compareRevisionId} = this.props;
     const latestToOldestRevisions = revisions.slice().reverse();
-    const selectedIndex = array.findIndex(
-      latestToOldestRevisions,
+    const selectedIndex = latestToOldestRevisions.findIndex(
       revision => revision.id === compareRevisionId
     );
 

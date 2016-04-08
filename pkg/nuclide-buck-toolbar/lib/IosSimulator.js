@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {array, asyncExecute} = require('../../nuclide-commons');
+const {asyncExecute} = require('../../nuclide-commons');
 
 export type Device = {
   name: string;
@@ -66,8 +66,7 @@ async function getDevices(): Promise<Device[]> {
 }
 
 function selectDevice(devices: Device[]): number {
-  const bootedDeviceIndex = array.findIndex(
-    devices,
+  const bootedDeviceIndex = devices.findIndex(
     device => device.state === DeviceState.Booted
   );
   if (bootedDeviceIndex > -1) {
