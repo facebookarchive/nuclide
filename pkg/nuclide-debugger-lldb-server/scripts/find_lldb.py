@@ -11,20 +11,25 @@ This should be imported before any module that tries to import lldb.
 import os
 import subprocess
 import sys
-from logging_helper import log_debug
+from logging_helper import log_debug, log_error
 
 
 def _get_lldb_python_path():
     if sys.platform == 'darwin':
-        # Update pythonpath with likely location in the active Xcode app bundle.
-        developer_dir = subprocess.check_output(['xcode-select', '--print-path'])
-        return os.path.join(
-            developer_dir.strip(),
-            '../SharedFrameworks/LLDB.framework/Resources/Python')
+        try:
+            # Update pythonpath with likely location in the active Xcode app bundle.
+            developer_dir = subprocess.check_output(['xcode-select', '--print-path'])
+            return os.path.join(
+                developer_dir.strip(),
+                '../SharedFrameworks/LLDB.framework/Resources/Python')
+        except:
+            log_error('Cannot find lldb: make sure you have Xcode installed or lldb in the path.')
+            os._exit(2)
     elif sys.platform.startswith('linux'):
         # Assume to be Facebook linux devserver.
         # TODO: make this configurable.
-        return '/mnt/gvfs/third-party2/lldb/d51c341932343d3657b9fa997f3ed7d72775d98d/3.8.0.rc3/centos6-native/ff04b3a/lib/python2.7/site-packages'
+        return '/mnt/gvfs/third-party2/lldb/d51c341932343d3657b9fa997f3ed7d72775d98d/' \
+            '3.8.0.rc3/centos6-native/ff04b3a/lib/python2.7/site-packages'
     else:
         raise Exception('Failure to find lldb python binding: unknown platform.')
 
