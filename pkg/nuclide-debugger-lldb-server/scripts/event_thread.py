@@ -25,6 +25,8 @@ breakpoint_event_type_to_name_map = {
     lldb.eBreakpointEventTypeRemoved: 'Removed',
     lldb.eBreakpointEventTypeThreadChanged: 'Thread Changed',
 }
+MAX_STOP_REASON_DESCRIPTION_LENGTH = 1024
+
 
 class LLDBListenerThread(Thread):
     '''Implement lldb event pumping and process state update.
@@ -33,24 +35,24 @@ class LLDBListenerThread(Thread):
     should_quit = False
 
     def __init__(self, debugger_store, app):
-      Thread.__init__(self)
-      self.daemon = True
-      self._debugger_store = debugger_store
-      self._app = app
-      self._listener = debugger_store.debugger.GetListener()
+        Thread.__init__(self)
+        self.daemon = True
+        self._debugger_store = debugger_store
+        self._app = app
+        self._listener = debugger_store.debugger.GetListener()
 
-      process = debugger_store.debugger.GetSelectedTarget().process
-      self._add_listener_to_process(process)
+        process = debugger_store.debugger.GetSelectedTarget().process
+        self._add_listener_to_process(process)
 
-      # LLDB will not emit any stopping event during attach.
-      # Linux lldb has a bug of not emitting stopping event during launch.
-      if self._debugger_store.is_attach or sys.platform.startswith('linux'):
-          if process.state != lldb.eStateStopped:
-              # Instead of using assert() which will crash debugger log an error message
-              # and tolerate this non-fatal situation.
-              log_error('Inferior should be stopped after attach or linux launch')
-          self._send_paused_notification(process)
-      self._add_listener_to_target(process.target)
+        # LLDB will not emit any stopping event during attach.
+        # Linux lldb has a bug of not emitting stopping event during launch.
+        if self._debugger_store.is_attach or sys.platform.startswith('linux'):
+            if process.state != lldb.eStateStopped:
+                # Instead of using assert() which will crash debugger log an error message
+                # and tolerate this non-fatal situation.
+                log_error('Inferior should be stopped after attach or linux launch')
+            self._send_paused_notification(process)
+        self._add_listener_to_target(process.target)
 
     def _add_listener_to_target(self, target):
         # Listen for breakpoint/watchpoint events (Added/Removed/Disabled/etc).
@@ -139,7 +141,7 @@ class LLDBListenerThread(Thread):
         thread = process.GetSelectedThread()
         output = 'Debugger paused at thread(%d) because of: %s' % (
             thread.GetThreadID(),
-            serialize.StopReason_to_string(thread.GetStopReason()))
+            thread.GetStopDescription(MAX_STOP_REASON_DESCRIPTION_LENGTH))
         self._send_user_output('log', output)
         params = {
           "callFrames": self._debugger_store.thread_manager.get_thread_stack(thread),
@@ -168,15 +170,16 @@ class LLDBListenerThread(Thread):
             breakpoint_event_type_to_name_map[event_type],
             self._get_description_from_object(breakpoint)))
         if event_type == lldb.eBreakpointEventTypeLocationsResolved:
-            for location in self._debugger_store.location_serializer.get_breakpoint_locations(breakpoint):
+            for location in \
+                    self._debugger_store.location_serializer.get_breakpoint_locations(breakpoint):
                 params = {
                     'breakpointId': str(breakpoint.id),
                     'location': location,
                 }
                 self._send_notification('Debugger.breakpointResolved', params)
         else:
-          # TODO: handle other breakpoint event types.
-          pass
+            # TODO: handle other breakpoint event types.
+            pass
 
     def _get_description_from_object(self, lldb_object):
         description_stream = lldb.SBStream()
@@ -204,7 +207,8 @@ class LLDBListenerThread(Thread):
                     self._handle_target_event(event)
                 elif lldb.SBProcess.EventIsProcessEvent(event):
                     self._handle_process_event(event)
-                # Even though Breakpoints are registered on SBTarget lldb.SBTarget.EventIsTargetEvent()
+                # Even though Breakpoints are registered on SBTarget
+                # lldb.SBTarget.EventIsTargetEvent()
                 # will return false for breakpoint events so handle them here.
                 elif lldb.SBBreakpoint.EventIsBreakpointEvent(event):
                     self._handle_breakpoint_event(event)
