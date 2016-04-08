@@ -9,7 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type {Outline, OutlineProvider} from '../../nuclide-outline-view';
+
 import {CompositeDisposable} from 'atom';
+
+import {getOutline} from './JSONOutlineProvider';
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -36,4 +40,15 @@ export function deactivate(): void {
     activation.dispose();
     activation = null;
   }
+}
+
+export function provideOutlines(): OutlineProvider {
+  return {
+    grammarScopes: ['source.json'],
+    priority: 1,
+    name: 'Nuclide JSON',
+    getOutline(editor: atom$TextEditor): Promise<?Outline> {
+      return Promise.resolve(getOutline(editor.getText()));
+    },
+  };
 }
