@@ -69,6 +69,7 @@ class DebuggerActions {
     });
 
     try {
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
       const debugSession = await processInfo.debug();
       await this._waitForChromeConnection(debugSession);
     } catch (err) {
@@ -105,7 +106,7 @@ class DebuggerActions {
   }
 
   _handleSessionEnd(): void {
-    this.killDebugger();
+    this.stopDebugging();
   }
 
   stopDebugging() {
@@ -139,7 +140,9 @@ class DebuggerActions {
 
   killDebugger() {
     this.stopDebugging();
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:hide');
+    if (this._store.getDebuggerProcess() === null) {
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:hide');
+    }
   }
 
   addService(service: nuclide_debugger$Service) {
