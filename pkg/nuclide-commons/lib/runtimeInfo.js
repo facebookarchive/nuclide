@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import {assign} from './object';
 import {
   getAtomVersion,
   getNuclideVersion,
@@ -60,9 +59,11 @@ function getCacheableRuntimeInformation(): RuntimeInformation {
 }
 
 export function getRuntimeInformation(): RuntimeInformation {
-  const runtimeInformation = assign({}, getCacheableRuntimeInformation());
-  runtimeInformation.sessionId = session.id;
-  runtimeInformation.timestamp = Date.now();
-  runtimeInformation.uptime = Math.floor(process.uptime() * 1000);
+  const runtimeInformation = {
+    ...getCacheableRuntimeInformation(),
+    sessionId: session.id,
+    timestamp: Date.now(),
+    uptime: Math.floor(process.uptime() * 1000),
+  };
   return runtimeInformation;
 }

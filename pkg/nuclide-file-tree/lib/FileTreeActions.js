@@ -18,7 +18,6 @@ import FileTreeDispatcher from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import {FileTreeStore} from './FileTreeStore';
 import Immutable from 'immutable';
-import {object} from '../../nuclide-commons';
 import semver from 'semver';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {hgConstants} from '../../nuclide-hg-repository-base';
@@ -184,7 +183,7 @@ class FileTreeActions {
       };
       // TODO: Make the following the default once Nuclide only supports Atom v1.6.0+
       if (semver.gte(atom.getVersion(), '1.6.0')) {
-        openOptions = object.assign({}, openOptions, {pending: true});
+        openOptions = {...openOptions, pending: true};
       }
       atom.workspace.open(FileTreeHelpers.keyToPath(nodeKey), openOptions);
     }

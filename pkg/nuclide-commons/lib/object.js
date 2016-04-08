@@ -19,24 +19,6 @@ export function isEmpty(obj: Object): boolean {
   return true;
 }
 
-function copyProperties(src: ?Object, dest: Object): void {
-  if (src == null) {
-    return;
-  }
-  for (const key in src) {
-    dest[key] = src[key];
-  }
-}
-
-/**
- * Modeled after Object.assign():
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
- */
-export function assign(target: Object, ...sources: Array<?Object>): Object {
-  sources.forEach(source => copyProperties(source, target));
-  return target;
-}
-
 /**
  * Constructs an enumeration with keys equal to their value.
  * e.g. keyMirror({a: null, b: null}) => {a: 'a', b: 'b'}

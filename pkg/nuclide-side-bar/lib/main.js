@@ -14,7 +14,6 @@ import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-m
 
 const {CompositeDisposable} = require('atom');
 const {getLogger} = require('../../nuclide-logging');
-const {object} = require('../../nuclide-commons');
 const {PanelComponent} = require('../../nuclide-ui/lib/PanelComponent');
 const {
   React,
@@ -271,7 +270,7 @@ export function activate(deserializedState: ?Object) {
   item.style.display = 'flex';
   item.style.height = 'inherit';
   panel = atom.workspace.addLeftPanel({item});
-  state = object.assign({}, getDefaultState(), deserializedState);
+  state = {...getDefaultState(), ...deserializedState};
 
   // Initializes `panelComponent` so it does not need to be considered nullable.
   renderPanel(state);

@@ -32,7 +32,6 @@ export default class DiffViewEditor {
   }
 
   renderInlineComponents(elements: Array<InlineComponent>): Promise<Array<RenderedComponent>> {
-    const {object} = require('../../nuclide-commons');
     const components = [];
     const renderPromises = [];
     const scrollToRow = this._scrollToRow.bind(this);
@@ -45,7 +44,7 @@ export default class DiffViewEditor {
         scrollToRow,
       };
       // TODO(most): OMG, this mutates React props for the created component!!
-      object.assign(node.props.helpers, helpers);
+      Object.assign(node.props.helpers, helpers);
       const container = document.createElement('div');
       let component;
       const didRenderPromise = new Promise((res, rej) => {

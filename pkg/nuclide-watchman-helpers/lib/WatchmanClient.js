@@ -11,7 +11,7 @@
 
 import path from 'path';
 import watchman from 'fb-watchman';
-import {object, promises} from '../../nuclide-commons';
+import {promises} from '../../nuclide-commons';
 import {getWatchmanBinaryPath} from './path';
 import WatchmanSubscription from './WatchmanSubscription';
 import {getLogger} from '../../nuclide-logging';
@@ -152,10 +152,10 @@ class WatchmanClient {
         relative_path: relativePath,
       } = await this._watchProject(localDirectoryPath);
       const clock = await this._clock(watchRoot);
-      const options: WatchmanSubscriptionOptions = object.assign({
+      const options: WatchmanSubscriptionOptions = Object.assign({}, {
         fields: ['name', 'new', 'exists', 'mode'],
         since: clock,
-      }, subscriptionOptions || {});
+      }, subscriptionOptions);
       if (relativePath && !options.expression) {
         // Passing an 'undefined' expression causes an exception in fb-watchman.
         options.expression = ['dirname', relativePath];
