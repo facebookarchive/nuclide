@@ -40,6 +40,11 @@ WebInspector.CallStackSidebarPane = function()
     asyncCheckbox.addEventListener("click", consumeEvent, false);
     WebInspector.settings.enableAsyncStackTraces.addChangeListener(this._asyncStackTracesStateChanged, this);
     WebInspector.settings.skipStackFramesPattern.addChangeListener(this._blackboxingStateChanged, this);
+    WebInspector.targetManager.addModelListener(
+       WebInspector.DebuggerModel,
+       WebInspector.DebuggerModel.Events.SelectedThreadChanged,
+       this._handleSelectedThreadChange,
+       this);
 }
 
 /** @enum {string} */
@@ -54,20 +59,19 @@ WebInspector.CallStackSidebarPane.prototype = {
      */
     update: function(details)
     {
-        this.callFrameList.detach();
-        this.callFrameList.clear();
-        this.bodyElement.removeChildren();
+        this._clear();
 
         if (!details) {
             var infoElement = this.bodyElement.createChild("div", "callstack-info");
             infoElement.textContent = WebInspector.UIString("Not Paused");
             return;
         }
+        this._updateHelper(details.callFrames, details.asyncStackTrace);
+    },
 
+    _updateHelper: function(callFrames, asyncStackTrace)
+    {
         this.callFrameList.show(this.bodyElement);
-        this._target = details.target();
-        var callFrames = details.callFrames;
-        var asyncStackTrace = details.asyncStackTrace;
 
         delete this._statusMessageElement;
         delete this._hiddenCallFramesMessageElement;
@@ -102,6 +106,24 @@ WebInspector.CallStackSidebarPane.prototype = {
             this.bodyElement.insertBefore(element, this.bodyElement.firstChild);
             this._hiddenCallFramesMessageElement = element;
         }
+    },
+
+    _clear: function()
+    {
+        this.callFrameList.detach();
+        this.callFrameList.clear();
+        this.bodyElement.removeChildren();
+    },
+
+    _handleSelectedThreadChange: function()
+    {
+        this._getActiveDebuggerModel().threadStore.getActiveThreadStack(this._onStackFramesFetched.bind(this));
+    },
+
+    _onStackFramesFetched: function(callframes)
+    {
+        this._clear();
+        this._updateHelper(callframes);
     },
 
     /**
@@ -235,15 +257,25 @@ WebInspector.CallStackSidebarPane.prototype = {
 
     _blackboxingStateChanged: function()
     {
-        if (!this._target)
+        var debuggerModel = this._getActiveDebuggerModel();
+        if (!debuggerModel)
             return;
-        var details = this._target.debuggerModel.debuggerPausedDetails();
+        var details = debuggerModel.debuggerPausedDetails();
         if (!details)
             return;
         this.update(details);
-        var selectedCallFrame = this._target.debuggerModel.selectedCallFrame();
+        var selectedCallFrame = debuggerModel.selectedCallFrame();
         if (selectedCallFrame)
             this.setSelectedCallFrame(selectedCallFrame);
+    },
+
+    _getActiveDebuggerModel: function()
+    {
+        var activeTarget = WebInspector.targetManager.selectedTarget();
+        if (!activeTarget) {
+            return null;
+        }
+        return activeTarget.debuggerModel;
     },
 
     /**
@@ -337,18 +369,22 @@ WebInspector.CallStackSidebarPane.prototype = {
     /**
      * @return {number}
      */
-    _selectedCallFrameIndex: function()
-    {
-        var selectedCallFrame = this._target.debuggerModel.selectedCallFrame();
-        if (!selectedCallFrame)
-            return -1;
-        for (var i = 0; i < this.callFrames.length; ++i) {
-            var callFrame = this.callFrames[i];
-            if (callFrame._callFrame === selectedCallFrame)
-                return i;
-        }
-        return -1;
-    },
+     _selectedCallFrameIndex: function()
+     {
+         var debuggerModel = this._getActiveDebuggerModel();
+         if (debuggerModel)
+         {
+             var selectedCallFrame = debuggerModel.selectedCallFrame();
+             if (!selectedCallFrame)
+                 return -1;
+             for (var i = 0; i < this.callFrames.length; ++i) {
+                 var callFrame = this.callFrames[i];
+                 if (callFrame._callFrame === selectedCallFrame)
+                     return i;
+             }
+         }
+         return -1;
+     },
 
     /**
      * @param {!WebInspector.CallStackSidebarPane.CallFrame} callFrame

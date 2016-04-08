@@ -589,6 +589,13 @@ WebInspector.TargetManager.prototype = {
         return this._targets[0] || null;
     },
 
+    selectedTarget: function()
+    {
+        // TODO[jeffreytan]: make this work when we support
+        // multiple processes debugging.
+        return this._targets[0] || null;
+    },
+
     __proto__: WebInspector.Object.prototype
 }
 

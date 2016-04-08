@@ -50,6 +50,8 @@ WebInspector.DebuggerModel = function(target)
     /** @type {!WebInspector.Object} */
     this._breakpointResolvedEventTarget = new WebInspector.Object();
 
+    this.threadStore = new WebInspector.DebuggerModel.ThreadStore(this);
+
     this._isPausing = false;
     WebInspector.settings.pauseOnExceptionEnabled.addChangeListener(this._pauseOnExceptionStateChanged, this);
     WebInspector.settings.pauseOnCaughtException.addChangeListener(this._pauseOnExceptionStateChanged, this);
@@ -94,6 +96,8 @@ WebInspector.DebuggerModel.Events = {
     CallFrameSelected: "CallFrameSelected",
     ConsoleCommandEvaluatedInSelectedCallFrame: "ConsoleCommandEvaluatedInSelectedCallFrame",
     PromiseUpdated: "PromiseUpdated",
+    ThreadsUpdated: "ThreadsUpdated",
+    SelectedThreadChanged: "SelectedThreadChanged",
 }
 
 /** @enum {string} */
@@ -234,6 +238,17 @@ WebInspector.DebuggerModel.prototype = {
         this._agent.pause();
     },
 
+    selectThread: function(threadId)
+    {
+        this._agent.selectThread(threadId);
+        this.threadStore.selectThread(threadId);
+    },
+
+    getThreadStack: function(threadId, callback)
+    {
+        this._agent.getThreadStack(threadId, callback);
+    },
+
     /**
      * @param {string} url
      * @param {number} lineNumber
@@ -320,6 +335,11 @@ WebInspector.DebuggerModel.prototype = {
     _breakpointResolved: function(breakpointId, location)
     {
         this._breakpointResolvedEventTarget.dispatchEventToListeners(breakpointId, WebInspector.DebuggerModel.Location.fromPayload(this.target(), location));
+    },
+
+    _threadsUpdated: function(eventData)
+    {
+        this.threadStore.update(eventData);
     },
 
     _globalObjectCleared: function()
@@ -832,6 +852,20 @@ WebInspector.DebuggerDispatcher.prototype = {
     breakpointResolved: function(breakpointId, location)
     {
         this._debuggerModel._breakpointResolved(breakpointId, location);
+    },
+
+    /**
+     * @override
+     * @param {integer} threadId
+     * @param {string} details
+     */
+    threadsUpdated: function(owningProcessId, stopThreadId, threads_payload)
+    {
+        this._debuggerModel._threadsUpdated({
+            'owningProcessId': owningProcessId,
+            'stopThreadId': stopThreadId,
+            'threads': threads_payload,
+        });
     },
 
     /**

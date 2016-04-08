@@ -44,7 +44,8 @@
         "NetworkRequest.js",
         "PaintProfiler.js",
         "HeapProfilerModel.js",
-        "../SupportedCSSProperties.js"
+        "../SupportedCSSProperties.js",
+        "ThreadStore.js"
     ],
     "skip_compilation": [
         "../InspectorBackendCommands.js",
