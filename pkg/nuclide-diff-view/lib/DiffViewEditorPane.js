@@ -107,8 +107,7 @@ export default class DiffViewEditorPane extends React.Component {
   componentWillUnmount(): void {
     this._subscriptions.dispose();
     if (this._diffViewEditor != null) {
-      const textEditor = this.getEditorModel();
-      textEditor.destroy();
+      this._diffViewEditor.destroy();
       this._diffViewEditor = null;
     }
     this._isMounted = false;

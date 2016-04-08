@@ -226,6 +226,12 @@ module.exports = {
     // The Diff View will open its main UI in a tab, like Atom's preferences and welcome pages.
     subscriptions.add(atom.workspace.addOpener(uri => {
       if (uri.startsWith(NUCLIDE_DIFF_VIEW_URI)) {
+        if (!require('semver').gte(atom.getVersion(), '1.6.1')) {
+          throw new Error(
+            'Outdated Atom version<br/>\n' +
+            '**Nuclide\'s Diff View require Atom 1.6.1 or later**',
+          );
+        }
         const {query: diffEntityOptions} = url.parse(uri, true);
         return createView((diffEntityOptions: any));
       }

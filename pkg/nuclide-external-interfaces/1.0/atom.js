@@ -499,6 +499,10 @@ type DecorateMarkerParams = {
   type: 'overlay';
   item: Object;
   position?: 'head' | 'tail'; // Defaults to 'head' when unspecified.
+} | {
+  type: 'block';
+  item: HTMLElement;
+  position?: 'before' | 'after'; // Defaults to 'before' when unspecified.
 };
 
 type ChangeCursorPositionEvent = {
@@ -590,6 +594,7 @@ declare class atom$TextEditor extends atom$Model {
     startScreenRow: number,
     endScreenRow: number,
   ): {[markerId: string]: Array<Object>};
+  getDecorations(options?: {class: string}): Array<atom$Decoration>;
 
   // Markers
   markBufferPosition(position: atom$Point | Array<number>): atom$Marker;

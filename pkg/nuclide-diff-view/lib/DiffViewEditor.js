@@ -9,48 +9,26 @@
  * the root directory of this source tree.
  */
 
-import type {InlineComponent, RenderedComponent, LineRangesWithOffsets, OffsetMap} from './types';
+import type {InlineComponent, RenderedComponent, OffsetMap} from './types';
 
 import {Range} from 'atom';
-import {buildLineRangesWithOffsets} from './editor-utils';
 import {ReactDOM} from 'react-for-atom';
-import {getLogger} from '../../nuclide-logging';
-
-const logger = getLogger();
 
 /**
  * The DiffViewEditor manages the lifecycle of the two editors used in the diff view,
  * and controls its rendering of highlights and offsets.
  */
 export default class DiffViewEditor {
-  _editor: Object;
-  _editorElement: Object;
-  _markers: Array<atom$Marker>;
-  _lineOffsets: OffsetMap;
-  _originalBuildScreenLines: (startBufferRow: number, endBufferRow: number) => mixed;
+  _editor: atom$TextEditor;;
+  _editorElement: atom$TextEditorElement;
+  _highlightMarkers: Array<atom$Marker>;
+  _offsetMarkers: Array<atom$Marker>;
 
   constructor(editorElement: atom$TextEditorElement) {
     this._editorElement = editorElement;
     this._editor = editorElement.getModel();
-
-    this._markers = [];
-    this._lineOffsets = new Map();
-
-    // Ugly Hack to the display buffer to allow fake soft wrapped lines,
-    // to create the non-numbered empty space needed between real text buffer lines.
-    // $FlowFixMe use of non-official API.
-    this._originalBuildScreenLines = this._editor.displayBuffer.buildScreenLines;
-    // $FlowFixMe use of non-official API.
-    this._editor.displayBuffer.checkScreenLinesInvariant = () => {};
-    // $FlowFixMe use of non-official API.
-    this._editor.displayBuffer.buildScreenLines =
-      (...args) => this._buildScreenLinesWithOffsets.apply(this, args);
-
-    // There is no editor API to cancel foldability, but deep inside the line state creation,
-    // it uses those functions to determine if a line is foldable or not.
-    // For Diff View, folding breaks offsets, hence we need to make it unfoldable.
-    // $FlowFixMe use of non-official API.
-    this._editor.isFoldableAtScreenRow = this._editor.isFoldableAtBufferRow = row => false;
+    this._highlightMarkers = [];
+    this._offsetMarkers = [];
   }
 
   renderInlineComponents(elements: Array<InlineComponent>): Promise<Array<RenderedComponent>> {
@@ -66,6 +44,7 @@ export default class DiffViewEditor {
       const helpers = {
         scrollToRow,
       };
+      // TODO(most): OMG, this mutates React props for the created component!!
       object.assign(node.props.helpers, helpers);
       const container = document.createElement('div');
       let component;
@@ -131,11 +110,14 @@ export default class DiffViewEditor {
    * @param removedLines An array of buffer line numbers that should be highlighted as removed.
    */
   setHighlightedLines(addedLines: Array<number> = [], removedLines: Array<number> = []) {
-    for (const marker of this._markers) {
+    for (const marker of this._highlightMarkers) {
       marker.destroy();
     }
-    this._markers = addedLines.map(lineNumber => this._createLineMarker(lineNumber, 'insert'))
-        .concat(removedLines.map(lineNumber => this._createLineMarker(lineNumber, 'delete')));
+    this._highlightMarkers = addedLines.map(
+      lineNumber => this._createLineMarker(lineNumber, 'insert')
+    ).concat(removedLines.map(
+      lineNumber => this._createLineMarker(lineNumber, 'delete')
+    ));
   }
 
   /**
@@ -144,65 +126,37 @@ export default class DiffViewEditor {
   *    Could be a value of: ['insert', 'delete'].
    */
   _createLineMarker(lineNumber: number, type: string): atom$Marker {
-    const screenPosition =
-      this._editor.screenPositionForBufferPosition({row: lineNumber, column: 0});
     const range = new Range(
-        screenPosition,
-        [screenPosition.row, this._editor.lineTextForScreenRow(screenPosition.row).length],
-        // TODO: highlight the full line when the mapping between buffer lines to screen line is
-        //   implemented.
-        // {row: screenPosition.row + 1, column: 0}
+      [lineNumber, 0],
+      [lineNumber + 1, 0],
     );
-    const marker = this._editor.markScreenRange(range, {invalidate: 'never'});
+    const marker = this._editor.markBufferRange(range, {invalidate: 'never'});
     this._editor.decorateMarker(marker, {type: 'highlight', class: `diff-view-${type}`});
     return marker;
   }
 
   setOffsets(lineOffsets: OffsetMap): void {
-    this._lineOffsets = lineOffsets;
-    // When the diff view is editable: upon edits in the new editor, the old editor needs to update
-    // its rendering state to show the offset wrapped lines.
-    // This isn't a public API, but came from a discussion on the Atom public channel.
-    this._editor.displayBuffer.updateAllScreenLines();
-    const component = this._editorElement.component || {};
-    const {presenter} = component;
-    if (!presenter) {
-      logger.error('No text editor presenter is wired up to the Diff View text editor!');
-      return;
+    this._offsetMarkers.forEach(marker => marker.destroy());
+    this._offsetMarkers = [];
+    const lineHeight = this._editor.getLineHeightInPixels();
+    for (const [lineNumber, offsetLines] of lineOffsets) {
+      const blockItem = document.createElement('div');
+      blockItem.style.minHeight = (offsetLines * lineHeight) + 'px';
+      const marker = this._editor.markBufferPosition([lineNumber, 0], {invalidate: 'never'});
+      this._editor.decorateMarker(
+        marker,
+        {type: 'block', item: blockItem, position: 'after'},
+      );
+      this._offsetMarkers.push(marker);
     }
-    if (typeof presenter.updateState === 'function') {
-      // Atom until v1.0.18 has updateState to force re-rendering of editor state.
-      // This is needed to request a full re-render from the editor.
-      presenter.updateState();
-    }
-    // Atom master after v1.0.18 has will know when it has changed lines or decorations,
-    // and will auto-update.
   }
 
-  _buildScreenLinesWithOffsets(
-    startBufferRow: number,
-    endBufferRow: number
-  ): LineRangesWithOffsets {
-    // HACK! Enabling `softWrapped` lines would greatly complicate the offset screen line mapping
-    // needed to render the offset lines for the Diff View.
-    // Hence, we need to disable the original screen line from returning soft-wrapped lines.
-    const {displayBuffer} = this._editor;
-    displayBuffer.softWrapped = false;
-    const {regions, screenLines} = this._originalBuildScreenLines.apply(displayBuffer, arguments);
-    displayBuffer.softWrapped = true;
-    if (this._lineOffsets.size === 0) {
-      return {regions, screenLines};
-    }
-
-    return buildLineRangesWithOffsets(screenLines, this._lineOffsets, startBufferRow, endBufferRow,
-      () => {
-        const copy = screenLines[0].copy();
-        copy.token = [];
-        copy.text = '';
-        copy.tags = [];
-        return copy;
-      }
-    );
+  destroy(): void {
+    this._highlightMarkers.forEach(marker => marker.destroy());
+    this._highlightMarkers = [];
+    this._offsetMarkers.forEach(marker => marker.destroy());
+    this._offsetMarkers = [];
+    this._editor.destroy();
   }
 
   _scrollToRow(row: number): void {
