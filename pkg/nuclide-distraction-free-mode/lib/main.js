@@ -13,6 +13,7 @@ import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
 
 import {DistractionFreeMode} from './DistractionFreeMode';
+import {getBuiltinProviders} from './BuiltinProviders';
 
 export type DistractionFreeModeProvider = {
   // Should be the unique to all providers. Recommended to be the package name.
@@ -71,6 +72,9 @@ let activation: ?Activation = null;
 export function activate(state: ?DistractionFreeModeState) {
   if (activation == null) {
     activation = new Activation(state);
+    for (const provider of getBuiltinProviders()) {
+      activation.consumeDistractionFreeModeProvider(provider);
+    }
   }
 }
 
