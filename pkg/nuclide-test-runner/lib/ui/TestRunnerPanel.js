@@ -13,6 +13,9 @@ import path from 'path';
 const Console = require('./Console');
 const {Dropdown} = require('../../../nuclide-ui/lib/Dropdown');
 const {PanelComponent} = require('../../../nuclide-ui/lib/PanelComponent');
+const {Toolbar} = require('../../../nuclide-ui/lib/Toolbar');
+const {ToolbarLeft} = require('../../../nuclide-ui/lib/ToolbarLeft');
+const {ToolbarRight} = require('../../../nuclide-ui/lib/ToolbarRight');
 const {createPaneContainer} = require('../../../nuclide-atom-helpers');
 const {
   React,
@@ -179,7 +182,7 @@ class TestRunnerPanel extends React.Component {
     } else {
       dropdown = (
         <Dropdown
-          className="inline-block"
+          className="inline-block nuclide-test-runner__runner-dropdown"
           disabled={this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
           menuItems={this.props.testRunners.map(testRunner =>
             ({label: testRunner.label, value: testRunner.label})
@@ -196,27 +199,29 @@ class TestRunnerPanel extends React.Component {
     return (
       <PanelComponent dock="bottom">
         <div className="nuclide-test-runner-panel">
-          <nav className="nuclide-test-runner-panel-toolbar block">
-            {dropdown}
-            {runStopButton}
-            <button
-              className="btn btn-subtle btn-sm icon icon-trashcan inline-block"
-              disabled={this.isDisabled() ||
-                this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
-              onClick={this.props.onClickClear}
-              title="Clear Output">
-            </button>
-            {pathMsg}
-            <div className="pull-right">
+          <Toolbar location="top">
+            <ToolbarLeft>
+              {dropdown}
+              {runStopButton}
+              <button
+                className="btn btn-sm icon icon-trashcan inline-block"
+                disabled={this.isDisabled() ||
+                  this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
+                onClick={this.props.onClickClear}
+                title="Clear Output">
+              </button>
+              {pathMsg}
+            </ToolbarLeft>
+            <ToolbarRight>
               {runMsg}
               <progress className="inline-block" max="100" {...progressAttrs} />
               <button
                 onClick={this.props.onClickClose}
-                className="btn btn-subtle btn-sm icon icon-x inline-block"
+                className="btn btn-sm icon icon-x inline-block"
                 title="Close Panel">
               </button>
-            </div>
-          </nav>
+            </ToolbarRight>
+          </Toolbar>
           <div className="nuclide-test-runner-console" ref="paneContainer"></div>
         </div>
       </PanelComponent>

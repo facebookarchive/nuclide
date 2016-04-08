@@ -12,6 +12,7 @@
 import type {LazyTreeNode} from '../../../nuclide-ui/lib/LazyTreeNode';
 
 const {React} = require('react-for-atom');
+const {PanelComponentScroller} = require('../../../nuclide-ui/lib/PanelComponentScroller');
 const TestClassTreeNode = require('./TestClassTreeNode');
 const {TreeRootComponent} = require('../../../nuclide-ui/lib/TreeRootComponent');
 
@@ -43,8 +44,8 @@ class TestClassTree extends React.Component {
 
   render() {
     const emptyRenderMessage = (
-      <div className="nuclide-tree-root-placeholder">
-        <h3>Running tests</h3>
+      <div>
+        <h5>Running tests</h5>
         <ol>
           <li>Open the file you want to test</li>
           <li>Choose the appropriate runner from the dropdown</li>
@@ -54,15 +55,19 @@ class TestClassTree extends React.Component {
     );
 
     return (
-      <TreeRootComponent
-        elementToRenderWhenEmpty={emptyRenderMessage}
-        eventHandlerSelector=".nuclide-test-runner-tree"
-        initialRoots={[]}
-        labelClassNameForNode={labelClassNameForNode}
-        onKeepSelection={() => {}}
-        ref="tree"
-        rowClassNameForNode={this.rowClassNameForNode}
-      />
+      <PanelComponentScroller>
+        <div className="padded">
+          <TreeRootComponent
+            elementToRenderWhenEmpty={emptyRenderMessage}
+            eventHandlerSelector=".nuclide-test-runner-tree"
+            initialRoots={[]}
+            labelClassNameForNode={labelClassNameForNode}
+            onKeepSelection={() => {}}
+            ref="tree"
+            rowClassNameForNode={this.rowClassNameForNode}
+          />
+        </div>
+      </PanelComponentScroller>
     );
   }
 
