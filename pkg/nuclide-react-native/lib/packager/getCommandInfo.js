@@ -47,6 +47,35 @@ export async function getCommandInfo(): Promise<?CommandInfo> {
 }
 
 async function getCommandFromNodePackage(dir: string): Promise<?CommandInfo> {
+  return (await getCommandFromNodeModules(dir)) || (await getCommandFromReactNative(dir));
+}
+
+/**
+ * Look in the nearest node_modules directory for react-native and extract the packager script if
+ * it's found.
+ */
+async function getCommandFromNodeModules(dir: string): Promise<?CommandInfo> {
+  const nodeModulesParent = await findNearestFile('node_modules', dir);
+  if (nodeModulesParent == null) {
+    return null;
+  }
+  const packagerScriptPath =
+    path.join(nodeModulesParent, 'node_modules', 'react-native', 'packager', 'packager.sh');
+  const packagerScriptExists = await fsPromise.exists(packagerScriptPath);
+  if (!packagerScriptExists) {
+    return null;
+  }
+  return {
+    cwd: nodeModulesParent,
+    command: packagerScriptPath,
+  };
+}
+
+/**
+ * See if this is React Native itself and, if so, return the command to run the packager. This is
+ * special cased so that the bundled examples work out of the box.
+ */
+async function getCommandFromReactNative(dir: string): Promise<?CommandInfo> {
   const projectRoot = await findNearestFile('package.json', dir);
   if (projectRoot == null) {
     return null;
@@ -54,25 +83,13 @@ async function getCommandFromNodePackage(dir: string): Promise<?CommandInfo> {
   const filePath = path.join(projectRoot, 'package.json');
   const content = await fsPromise.readFile(filePath);
   const parsed = JSON.parse(content);
-  const isReactNativeProject = parsed.dependencies && parsed.dependencies['react-native'];
   const isReactNative = parsed.name === 'react-native';
 
-  if (!isReactNativeProject && !isReactNative) {
+  if (!isReactNative) {
     return null;
   }
 
-  // Figure out where the packager script is. We special case react-native itself so that the
-  // bundled examples work out of the box.
-  // TODO(matthewwithanm): In the future, agree on a specifically named scripts field in
-  // package.json and use that?
-  let packagerScriptPath;
-  if (isReactNativeProject) {
-    packagerScriptPath =
-      path.join(projectRoot, 'node_modules', 'react-native', 'packager', 'packager.sh');
-  } else {
-    packagerScriptPath = path.join(projectRoot, 'packager', 'packager.sh');
-  }
-
+  const packagerScriptPath = path.join(projectRoot, 'packager', 'packager.sh');
   const packagerScriptExists = await fsPromise.exists(packagerScriptPath);
   if (!packagerScriptExists) {
     return null;

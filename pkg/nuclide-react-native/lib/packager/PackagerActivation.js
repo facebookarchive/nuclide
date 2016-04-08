@@ -61,7 +61,7 @@ export class PackagerActivation {
               dismissable: true,
               description:
                 'Make sure that one of the folders in your Atom project (or its ancestor)' +
-                ' contains either a package.json with a "react-native" dependency, or a' +
+                ' contains a "node_modules" directory with react-native installed, or a' +
                 ' .buckconfig file with a "[react-native]" section that has a "server" key.',
             });
             return;
