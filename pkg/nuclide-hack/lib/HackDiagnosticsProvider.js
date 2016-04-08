@@ -26,7 +26,7 @@ import type {
 import {trackTiming} from '../../nuclide-analytics';
 import {findDiagnostics} from './hack';
 import {getHackLanguageForUri, getCachedHackLanguageForUri} from './HackLanguage';
-import {array, promises} from '../../nuclide-commons';
+import {promises} from '../../nuclide-commons';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import {Range} from 'atom';
 import invariant from 'assert';
@@ -194,7 +194,7 @@ class HackDiagnosticsProvider {
     if (!filePaths) {
       return [];
     }
-    return array.from(filePaths);
+    return Array.from(filePaths);
   }
 
   _receivedNewUpdateSubscriber(callback: MessageUpdateCallback): void {

@@ -82,7 +82,7 @@ class DebuggerStore {
    */
   getProcessInfoList(serviceName?: string): Promise<Array<DebuggerProcessInfoType>> {
     return Promise.all(
-        require('../../nuclide-commons').array.from(this._services)
+        Array.from(this._services)
           .map(service => {
             if (!serviceName || service.name === serviceName) {
               return service.getProcessInfoList();

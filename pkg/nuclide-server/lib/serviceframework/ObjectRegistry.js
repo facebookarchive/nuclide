@@ -10,7 +10,6 @@
  */
 
 import invariant from 'assert';
-import {array} from '../../../nuclide-commons';
 import {getLogger} from '../../../nuclide-logging';
 
 const logger = getLogger();
@@ -111,7 +110,7 @@ export class ObjectRegistry {
 
   // Disposes all object in the registry
   async dispose(): Promise<void> {
-    const ids = array.from(this._registrationsById.keys());
+    const ids = Array.from(this._registrationsById.keys());
     logger.info(`Disposing ${ids.length} registrations`);
 
     await Promise.all(ids.map(async id => {
@@ -122,7 +121,7 @@ export class ObjectRegistry {
       }
     }));
 
-    const subscriptions = array.from(this._subscriptions.keys());
+    const subscriptions = Array.from(this._subscriptions.keys());
     logger.info(`Disposing ${subscriptions.length} subscriptions`);
     for (const id of subscriptions) {
       try {

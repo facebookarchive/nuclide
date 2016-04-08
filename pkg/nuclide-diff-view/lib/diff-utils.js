@@ -11,8 +11,6 @@
 
 import type {TextDiff, OffsetMap} from './types';
 
-import {array} from '../../nuclide-commons';
-
 type ChunkPiece = {
   added: number;
   removed: number;
@@ -126,7 +124,7 @@ function _computeOffsets(
 
 export function getLineCountWithOffsets(contents: string, offsets: OffsetMap): number {
   const linesCount = contents.split(/\r\n|\n/).length;
-  return array.from(offsets.values())
+  return Array.from(offsets.values())
     .reduce((count, offsetLines) => count + offsetLines, linesCount);
 }
 

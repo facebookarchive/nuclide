@@ -13,8 +13,6 @@ import type ModuleMap from '../../nuclide-format-js-base/lib/state/ModuleMap';
 import type {SourceOptions} from '../../nuclide-format-js-base/lib/options/SourceOptions';
 import type {TransformKey} from '../../nuclide-format-js-base/lib/types/transforms';
 
-const NuclideCommons = require('../../nuclide-commons');
-
 const featureConfig = require('../../nuclide-feature-config');
 const formatJSBase = require('../../nuclide-format-js-base');
 
@@ -34,13 +32,11 @@ export type Settings = {
   runOnSave: boolean;
 };
 
-const arrayFrom = NuclideCommons.array.from;
-
 const {createModuleMap} = formatJSBase;
 // We need this in array formats.
-const defaultAliases = arrayFrom(formatJSBase.defaultAliases);
-const defaultBuiltIns = arrayFrom(formatJSBase.defaultBuiltIns);
-const defaultBuiltInTypes = arrayFrom(formatJSBase.defaultBuiltInTypes);
+const defaultAliases = Array.from(formatJSBase.defaultAliases);
+const defaultBuiltIns = Array.from(formatJSBase.defaultBuiltIns);
+const defaultBuiltInTypes = Array.from(formatJSBase.defaultBuiltInTypes);
 
 /**
  * Observes the relevant Nuclide package settings.

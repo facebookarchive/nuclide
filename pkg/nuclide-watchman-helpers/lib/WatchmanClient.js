@@ -11,7 +11,7 @@
 
 import path from 'path';
 import watchman from 'fb-watchman';
-import {object, array, promises} from '../../nuclide-commons';
+import {object, promises} from '../../nuclide-commons';
 import {getWatchmanBinaryPath} from './path';
 import WatchmanSubscription from './WatchmanSubscription';
 import {getLogger} from '../../nuclide-logging';
@@ -93,7 +93,7 @@ class WatchmanClient {
   }
 
   async _restoreSubscriptions(): Promise<void> {
-    const watchSubscriptions = array.from(this._subscriptions.values());
+    const watchSubscriptions = Array.from(this._subscriptions.values());
     await Promise.all(watchSubscriptions.map(async (subscription: WatchmanSubscription) => {
       await this._watchProject(subscription.path);
       // We have already missed the change events from the disconnect time,

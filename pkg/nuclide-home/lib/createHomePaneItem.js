@@ -18,7 +18,6 @@ const {React} = require('react-for-atom');
 const HomeFeatureComponent = require('./HomeFeatureComponent');
 const NuclideLogo = require('./NuclideLogo');
 
-const arrayFrom = require('../../nuclide-commons').array.from;
 const featureConfig = require('../../nuclide-feature-config');
 
 const DEFAULT_WELCOME = (
@@ -74,7 +73,7 @@ function createHomePaneItem(
     render() {
       const welcomes = [];
       const features = [];
-      const sortedHomeFragments = arrayFrom(this.state.allHomeFragments).sort(
+      const sortedHomeFragments = Array.from(this.state.allHomeFragments).sort(
         (fragmentA, fragmentB) => (fragmentB.priority || 0) - (fragmentA.priority || 0)
       );
       sortedHomeFragments.forEach(fragment => {

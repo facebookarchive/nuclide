@@ -10,7 +10,6 @@
  */
 
 import {Range} from 'atom';
-import {array} from '../../nuclide-commons';
 import ClangDiagnosticsProvider from '../lib/ClangDiagnosticsProvider';
 
 describe('ClangDiagnosticsProvider', () => {
@@ -115,7 +114,7 @@ describe('ClangDiagnosticsProvider', () => {
           accurateFlags: true,
         }, fakeEditor);
 
-      expect(array.from(filePathToMessages)).toEqual([
+      expect(Array.from(filePathToMessages)).toEqual([
         [
           TEST_PATH2,
           [

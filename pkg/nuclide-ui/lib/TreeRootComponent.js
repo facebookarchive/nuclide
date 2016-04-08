@@ -390,10 +390,9 @@ export const TreeRootComponent = React.createClass({
   },
 
   serialize(): TreeComponentState {
-    const {from} = require('../../nuclide-commons').array;
     return {
-      expandedNodeKeys: from(this.state.expandedKeys),
-      selectedNodeKeys: from(this.state.selectedKeys),
+      expandedNodeKeys: Array.from(this.state.expandedKeys),
+      selectedNodeKeys: Array.from(this.state.selectedKeys),
     };
   },
 

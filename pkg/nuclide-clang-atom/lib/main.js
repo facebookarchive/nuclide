@@ -19,7 +19,6 @@ import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
 import type ClangDiagnosticsProvider from './ClangDiagnosticsProvider';
 
 import {CompositeDisposable} from 'atom';
-import {array} from '../../nuclide-commons';
 import {GRAMMAR_SET, PACKAGE_NAME} from './constants';
 
 let busySignalProvider: ?BusySignalProviderBaseType = null;
@@ -90,7 +89,7 @@ export function createTypeHintProvider(): TypeHintProviderType {
   return {
     inclusionPriority: 1,
     providerName: PACKAGE_NAME,
-    selector: array.from(GRAMMAR_SET).join(', '),
+    selector: Array.from(GRAMMAR_SET).join(', '),
     typeHint,
   };
 }

@@ -10,14 +10,13 @@
  */
 
 import {trackOperationTiming} from '../../nuclide-analytics';
-import {array} from '../../nuclide-commons';
 import {GRAMMAR_SET} from './constants';
 import {getLogger} from '../../nuclide-logging';
 
 import libclang from './libclang';
 
 module.exports = {
-  selector: array.from(GRAMMAR_SET).join(', '),
+  selector: Array.from(GRAMMAR_SET).join(', '),
   inclusionPriority: 1,
   formatEntireFile(editor: atom$TextEditor, range: atom$Range): Promise<{
     newCursor: number;

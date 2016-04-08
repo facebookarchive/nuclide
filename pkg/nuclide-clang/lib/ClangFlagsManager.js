@@ -15,7 +15,7 @@ import invariant from 'assert';
 import path from 'path';
 import {parse} from 'shell-quote';
 import {trackTiming} from '../../nuclide-analytics';
-import {array, fsPromise} from '../../nuclide-commons';
+import {fsPromise} from '../../nuclide-commons';
 import {getLogger} from '../../nuclide-logging';
 import {BuckProject} from '../../nuclide-buck-base/lib/BuckProject';
 
@@ -40,7 +40,7 @@ const CLANG_FLAGS_THAT_TAKE_PATHS = new Set([
 ]);
 
 const SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS = new Set(
-  array.from(CLANG_FLAGS_THAT_TAKE_PATHS)
+  Array.from(CLANG_FLAGS_THAT_TAKE_PATHS)
     .filter(item => item.length === 2)
 );
 

@@ -15,7 +15,6 @@ export type FileList = Array<{path: FilePath; timestamp: TimeStamp}>;
 
 const {CompositeDisposable} = require('atom');
 
-const {array} = require('../../nuclide-commons');
 const {
   onWorkspaceDidStopChangingActivePaneItem,
 } = require('../../nuclide-atom-helpers').atomEventDebounce;
@@ -58,7 +57,7 @@ class RecentFilesService {
    */
   @trackTiming()
   getRecentFiles(): FileList {
-    return array.from(this._fileList).reverse().map(pair =>
+    return Array.from(this._fileList).reverse().map(pair =>
       ({
         path: pair[0],
         timestamp: pair[1],

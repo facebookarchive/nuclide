@@ -182,7 +182,7 @@ export default class DiffViewTree extends React.Component {
       );
     } else {
       const {fileChanges} = this.props;
-      const filePaths = array.from(fileChanges.keys())
+      const filePaths = Array.from(fileChanges.keys())
         .sort((filePath1, filePath2) =>
           remoteUri.basename(filePath1).toLowerCase().localeCompare(
             remoteUri.basename(filePath2).toLowerCase()

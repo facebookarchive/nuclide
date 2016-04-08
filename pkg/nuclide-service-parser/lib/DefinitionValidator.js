@@ -372,7 +372,7 @@ export function validateDefinitions(definitions: Definitions): void {
         }
       }, null);
 
-    const validFields = array.from(possibleFields).
+    const validFields = Array.from(possibleFields).
         filter(fieldName => isValidDiscriminantField(alternates, fieldName));
     if (validFields.length > 0) {
       // If there are multiple valid discriminant fields, we just pick the first.

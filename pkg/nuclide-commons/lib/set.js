@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import {from} from './array';
 export function intersect<T>(a: Set<T>, b: Set<T>): Set<T> {
-
-  return new Set(from(a).filter(e => b.has(e)));
+  return new Set(Array.from(a).filter(e => b.has(e)));
 }

@@ -26,7 +26,6 @@ import invariant from 'assert';
 import {GRAMMAR_SET} from './constants';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import {track, trackTiming} from '../../nuclide-analytics';
-import {array} from '../../nuclide-commons';
 import {getLogger} from '../../nuclide-logging';
 import {getDiagnostics} from './libclang';
 import {CompositeDisposable, Range} from 'atom';
@@ -119,7 +118,7 @@ class ClangDiagnosticsProvider {
       const filePathToMessages = this._processDiagnostics(diagnostics, textEditor);
       this.invalidateBuffer(buffer);
       this._providerBase.publishMessageUpdate({filePathToMessages});
-      this._bufferDiagnostics.set(buffer, array.from(filePathToMessages.keys()));
+      this._bufferDiagnostics.set(buffer, Array.from(filePathToMessages.keys()));
     } catch (error) {
       getLogger().error(error);
     }

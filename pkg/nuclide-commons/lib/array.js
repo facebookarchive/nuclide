@@ -10,53 +10,6 @@
  */
 
 /**
- * Static method as defined by
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from.
- * @param arrayLike An array-like or iterable object to convert to an array.
- * @param mapFn Map function to call on every element of the array.
- * @param thisArg Value to use as `this` when executing `mapFn`.
- */
-// $FlowIssue
-export function from<T, U>(
-  arrayLike: Iterable | {length: number},
-  mapFn?: (original: T) => U,
-  thisArg?: mixed
-) : Array<U> {
-  if (mapFn === undefined) {
-    mapFn = function(arg) { return arg; };
-  }
-
-  // Note that Symbol is not defined when running on Node 0.10.x.
-  if (typeof Symbol !== 'undefined' &&
-      typeof arrayLike === 'object' &&
-      typeof arrayLike[Symbol.iterator] === 'function') {
-    const array = [];
-    // $FlowIssue: property @@iterator not found
-    for (const value of arrayLike) {
-      array.push(mapFn.call(thisArg, value));
-    }
-    return array;
-  } else if (typeof arrayLike.next === 'function') {
-    const array = [];
-    // $FlowIssue: property @@iterator not found
-    for (const value of arrayLike) {
-      array.push(mapFn.call(thisArg, value));
-    }
-    return array;
-  } else if ('length' in arrayLike) {
-    return Array.prototype.map.call(arrayLike, mapFn, thisArg);
-  } else if (arrayLike instanceof Set) {
-    // Backup logic to handle the es6-collections case.
-    return from(arrayLike.values(), mapFn, thisArg);
-  } else if (arrayLike instanceof Map) {
-    // Backup logic to handle the es6-collections case.
-    return from(arrayLike.entries(), mapFn, thisArg);
-  } else {
-    throw Error(`${arrayLike} must be an array-like or iterable object to convert to an array.`);
-  }
-}
-
-/**
  * Instance method of Array as defined by
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find.
  * Because we do not want to add elements to Array.prototype, we make this a

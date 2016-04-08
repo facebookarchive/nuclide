@@ -15,7 +15,6 @@ import {plain} from '../../nuclide-tokenized-text';
 
 import {Point} from 'atom';
 import invariant from 'assert';
-import {array} from '../../nuclide-commons';
 import {outlineFromEditor} from './hack';
 
 export class OutlineViewProvider {
@@ -35,7 +34,7 @@ export function outlineFromHackOutline(hackOutline: HackOutline): Outline {
 
   const functions = extractFunctions(hackOutline);
 
-  const outlineTrees = array.from(classes.values()).concat(functions);
+  const outlineTrees = Array.from(classes.values()).concat(functions);
   sortOutline(outlineTrees);
 
   return {

@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import {array} from '../../nuclide-commons';
 import * as ActionTypes from '../lib/ActionTypes';
 import createStateStream from '../lib/createStateStream';
 import getInitialState from '../lib/getInitialState';
@@ -55,7 +54,7 @@ describe('createStateStream', () => {
     });
     const state$ = createStateStream(action$, initialState);
     const gadgets = state$.getValue().get('gadgets');
-    expect(array.from(gadgets.keys())).toEqual(['other']);
+    expect(Array.from(gadgets.keys())).toEqual(['other']);
   });
 
 });

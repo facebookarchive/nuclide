@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import {array} from '../pkg/nuclide-commons';
 import {
   activateAllPackages,
   copyMercurialFixture,
@@ -48,7 +47,7 @@ describe('Blame gutter integration test', () => {
     });
 
     waitsFor('blame information to populate', 10000, () => {
-      blameEntries = array.from(blameGutter.querySelectorAll('.blame-decoration'));
+      blameEntries = Array.from(blameGutter.querySelectorAll('.blame-decoration'));
       return blameEntries.length;
     });
 
@@ -56,7 +55,7 @@ describe('Blame gutter integration test', () => {
       expect(blameEntries.length).toBe(6);
 
       blameEntries.map(blameEntry => {
-        return array.from(blameEntry.querySelectorAll('span')).map(spans => spans.innerHTML);
+        return Array.from(blameEntry.querySelectorAll('span')).map(spans => spans.innerHTML);
       }).forEach((textContents, i) => {
         const name = textContents[0];
         const commitHash = textContents[1];

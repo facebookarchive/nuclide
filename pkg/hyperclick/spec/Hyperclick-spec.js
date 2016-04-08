@@ -14,7 +14,6 @@
 import type {HyperclickProvider} from '../../hyperclick-interfaces';
 import type HyperclickForTextEditor from '../lib/HyperclickForTextEditor';
 
-import {array} from '../../nuclide-commons';
 import {Point, Range} from 'atom';
 import Hyperclick from '../lib/Hyperclick';
 import invariant from 'assert';
@@ -33,7 +32,7 @@ describe('Hyperclick', () => {
     jasmine.attachToDOM(textEditorView);
 
     hyperclick = new Hyperclick();
-    hyperclickForTextEditor = array.from(hyperclick._hyperclickForTextEditors)[0];
+    hyperclickForTextEditor = Array.from(hyperclick._hyperclickForTextEditors)[0];
   }));
 
   afterEach(() => {

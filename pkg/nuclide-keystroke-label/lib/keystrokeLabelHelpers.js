@@ -13,8 +13,6 @@
  * adapted from https://github.com/atom/underscore-plus/blob/master/src/underscore-plus.coffee
  */
 
-const {array} = require('../../nuclide-commons');
-
 const MAC_MODIFIER_KEYMAP = {
   alt: '\u2325',
   cmd: '\u2318',
@@ -133,7 +131,7 @@ function humanizeKeystroke(keystroke: string, platform: ?string): string {
         keys.push(humanizeKey(key, platform));
       }
     }
-    keys = array.from(new Set(flatten(keys)));
+    keys = Array.from(new Set(flatten(keys)));
     humanizedKeystrokes.push(keys.join(separator));
   }
   return humanizedKeystrokes.join(' ');

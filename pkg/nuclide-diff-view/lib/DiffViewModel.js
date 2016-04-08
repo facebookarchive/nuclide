@@ -57,7 +57,7 @@ import invariant from 'assert';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {getFileSystemContents} from './utils';
-import {array, map, debounce, promises} from '../../nuclide-commons';
+import {map, debounce, promises} from '../../nuclide-commons';
 import remoteUri from '../../nuclide-remote-uri';
 import RepositoryStack from './RepositoryStack';
 import Rx from 'rx';
@@ -255,7 +255,7 @@ class DiffViewModel {
     // a mercurial repository added to the project.
     if (this._activeRepositoryStack == null && this._repositoryStacks.size > 0) {
       this._setActiveRepositoryStack(
-        array.from(this._repositoryStacks.values())[0],
+        Array.from(this._repositoryStacks.values())[0],
       );
     }
     this._updateDirtyChangedStatus();
@@ -285,20 +285,20 @@ class DiffViewModel {
   }
 
   _updateDirtyChangedStatus(): void {
-    const dirtyFileChanges = map.union(...array
-      .from(this._repositoryStacks.values())
+    const dirtyFileChanges = map.union(
+      ...Array.from(this._repositoryStacks.values())
       .map(repositoryStack => repositoryStack.getDirtyFileChanges())
     );
     this._updateCompareChangedStatus(dirtyFileChanges);
   }
 
   _updateCommitMergeFileChanges(): void {
-    const commitMergeFileChanges = map.union(...array
-      .from(this._repositoryStacks.values())
+    const commitMergeFileChanges = map.union(
+      ...Array.from(this._repositoryStacks.values())
       .map(repositoryStack => repositoryStack.getCommitMergeFileChanges())
     );
-    const lastCommitMergeFileChanges = map.union(...array
-      .from(this._repositoryStacks.values())
+    const lastCommitMergeFileChanges = map.union(
+      ...Array.from(this._repositoryStacks.values())
       .map(repositoryStack => repositoryStack.getLastCommitMergeFileChanges())
     );
     this._updateCompareChangedStatus(
@@ -477,7 +477,7 @@ class DiffViewModel {
     ): ?NuclideUri {
       return filePaths.filter(filePath => remoteUri.contains(parentPath, filePath))[0];
     }
-    const dirtyFilePaths = array.from(repositoryStack.getDirtyFileChanges().keys());
+    const dirtyFilePaths = Array.from(repositoryStack.getDirtyFileChanges().keys());
     // Try to match dirty file changes in the selected directory,
     // Then lookup for changes in the project directory if there is no active repository.
     const matchedFilePaths = [
@@ -790,7 +790,7 @@ class DiffViewModel {
       };
     }
     const untrackedChanges: Map<NuclideUri, FileChangeStatusValue> = new Map(
-      array.from(dirtyFileChanges.entries())
+      Array.from(dirtyFileChanges.entries())
         .filter(fileChange => fileChange[1] === FileChangeStatus.UNTRACKED)
     );
     if (untrackedChanges.size > 0) {
@@ -803,14 +803,14 @@ class DiffViewModel {
       if (untrackedChoice === 0) /*Cancel*/ {
         return null;
       } else if (untrackedChoice === 1) /*Add*/ {
-        await activeStack.add(array.from(untrackedChanges.keys()));
+        await activeStack.add(Array.from(untrackedChanges.keys()));
         shouldAmend = true;
       } else if (untrackedChoice === 2) /*Allow Untracked*/ {
         allowUntracked = true;
       }
     }
     const revertableChanges: Map<NuclideUri, FileChangeStatusValue> = new Map(
-      array.from(dirtyFileChanges.entries())
+      Array.from(dirtyFileChanges.entries())
         .filter(fileChange => fileChange[1] !== FileChangeStatus.UNTRACKED)
     );
     if (revertableChanges.size > 0) {
@@ -823,8 +823,8 @@ class DiffViewModel {
       if (cleanChoice === 0) /*Cancel*/ {
         return null;
       } else if (cleanChoice === 1) /*Revert*/ {
-        const canRevertFilePaths: Array<NuclideUri> = array
-          .from(dirtyFileChanges.entries())
+        const canRevertFilePaths: Array<NuclideUri> =
+          Array.from(dirtyFileChanges.entries())
           .filter(fileChange => fileChange[1] !== FileChangeStatus.UNTRACKED)
           .map(fileChange => fileChange[0]);
         await activeStack.revert(canRevertFilePaths);

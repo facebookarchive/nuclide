@@ -32,7 +32,6 @@ import {
   Emitter,
 } from 'atom';
 import {
-  array,
   debounce,
 } from '../../nuclide-commons';
 import QuickSelectionDispatcher from './QuickSelectionDispatcher';
@@ -503,7 +502,7 @@ class SearchResultManager {
 
   getRenderableProviders(): Array<ProviderSpec> {
     // Only render tabs for providers that are eligible for at least one directory.
-    const eligibleDirectoryProviders = array.from(this._registeredProviders[DIRECTORY_KEY].values())
+    const eligibleDirectoryProviders = Array.from(this._registeredProviders[DIRECTORY_KEY].values())
       .filter(provider => {
         for (const providers of this._providersByDirectory.values()) {
           if (providers.has(provider)) {
@@ -512,7 +511,7 @@ class SearchResultManager {
         }
         return false;
       });
-    const tabs = array.from(this._registeredProviders[GLOBAL_KEY].values())
+    const tabs = Array.from(this._registeredProviders[GLOBAL_KEY].values())
       .concat(eligibleDirectoryProviders)
       .filter(provider => provider.isRenderable())
       .map(this._bakeProvider)

@@ -27,7 +27,7 @@ import type {
 import {trackTiming} from '../../nuclide-analytics';
 
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
-const {promises, array} = require('../../nuclide-commons');
+const {promises} = require('../../nuclide-commons');
 const {RequestSerializer} = promises;
 const {DiagnosticsProviderBase} = require('../../nuclide-diagnostics-provider-base');
 
@@ -200,7 +200,7 @@ class FlowDiagnosticsProvider {
     if (!filePaths) {
       return [];
     }
-    return array.from(filePaths);
+    return Array.from(filePaths);
   }
 
   _receivedNewUpdateSubscriber(callback: MessageUpdateCallback): void {
@@ -286,7 +286,7 @@ class FlowDiagnosticsProvider {
     }
     this._providerBase.publishMessageInvalidation({
       scope: 'file',
-      filePaths: array.from(pathsToInvalidate),
+      filePaths: Array.from(pathsToInvalidate),
     });
   }
 }

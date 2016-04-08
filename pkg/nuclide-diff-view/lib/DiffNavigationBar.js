@@ -11,7 +11,6 @@
 
 import type {OffsetMap} from './types';
 
-import {array} from '../../nuclide-commons';
 import {React} from 'react-for-atom';
 import {getLineCountWithOffsets, getOffsetLineNumber} from './diff-utils';
 import classnames from 'classnames';
@@ -61,8 +60,8 @@ export default class DiffNavigationBar extends React.Component {
       removedLine => [getOffsetLineNumber(removedLine, oldOffsets), removedLine]
     ));
     // Interset the added and removed lines maps, taking the values of the added lines.
-    const changedLinesWithOffsets = new Map(array
-      .from(addedLinesWithOffsets.keys())
+    const changedLinesWithOffsets = new Map(
+      Array.from(addedLinesWithOffsets.keys())
       .filter(addedLineWithOffset => removedLinesWithOffsets.has(addedLineWithOffset))
       .map(changedLineWithOffset => [
         changedLineWithOffset,

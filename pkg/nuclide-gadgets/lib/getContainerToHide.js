@@ -13,7 +13,6 @@ import type {PaneItemContainer} from '../types/PaneItemContainer';
 
 import {TextEditor} from 'atom';
 import getResizableContainers from './getResizableContainers';
-import {array} from '../../nuclide-commons';
 
 const containsTextEditor = pane => pane.getItems().some(item => item instanceof TextEditor);
 
@@ -25,7 +24,7 @@ export default function getContainerToHide(pane: PaneItemContainer): ?PaneItemCo
   let containerToHide = null;
 
   // The top-most container isn't resizable so exclude that immediately.
-  const resizableContainers = array.from(getResizableContainers(pane)).slice(0, -1);
+  const resizableContainers = Array.from(getResizableContainers(pane)).slice(0, -1);
 
   // Find the highest resizable container that doesn't contain a text editor. If the very first
   // container has a text editor, use it anyway (we gotta hide something!)

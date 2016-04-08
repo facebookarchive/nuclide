@@ -11,12 +11,10 @@
 
 import type {AppState} from './types';
 
-import {array} from '../../nuclide-commons';
-
 export default function getCurrentExecutorId(state: AppState): ?string {
   let {currentExecutorId} = state;
   if (currentExecutorId == null) {
-    const firstExecutor = array.from(state.executors.values())[0];
+    const firstExecutor = Array.from(state.executors.values())[0];
     currentExecutorId = firstExecutor && firstExecutor.id;
   }
   return currentExecutorId;

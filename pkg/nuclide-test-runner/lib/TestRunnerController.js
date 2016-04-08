@@ -24,7 +24,6 @@ const TestRunModel = require('./TestRunModel');
 const TestRunnerPanel = require('./ui/TestRunnerPanel');
 const TestSuiteModel = require('./TestSuiteModel');
 
-const {array} = require('../../nuclide-commons');
 const logger = require('../../nuclide-logging').getLogger();
 const os = require('os');
 const {track} = require('../../nuclide-analytics');
@@ -325,7 +324,7 @@ export class TestRunnerController {
         // `TestRunnerPanel` expects an Array so it can render the test runners in a dropdown and
         // maintain a selected index. `Set` maintains items in insertion order, so the ordering is
         // determinate on each render.
-        testRunners={array.from(this._testRunners)}
+        testRunners={Array.from(this._testRunners)}
         testSuiteModel={this._testSuiteModel}
       />,
       root,

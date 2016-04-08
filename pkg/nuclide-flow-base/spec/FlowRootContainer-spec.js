@@ -15,8 +15,6 @@ import invariant from 'assert';
 
 import {uncachedRequire} from '../../nuclide-test-helpers';
 
-import {array} from '../../nuclide-commons';
-
 describe('FlowRootContainer', () => {
 
   let flowRootContainer: FlowRootContainerType = (null: any);
@@ -49,9 +47,9 @@ describe('FlowRootContainer', () => {
 
   it('should return all roots', () => {
     waitsForPromise(async () => {
-      expect(array.from(flowRootContainer.getAllRoots())).toEqual([]);
+      expect(Array.from(flowRootContainer.getAllRoots())).toEqual([]);
       const flowRoot = await flowRootContainer.getRootForPath('foo');
-      expect(array.from(flowRootContainer.getAllRoots())).toEqual([flowRoot]);
+      expect(Array.from(flowRootContainer.getAllRoots())).toEqual([flowRoot]);
     });
   });
 

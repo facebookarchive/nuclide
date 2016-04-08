@@ -12,7 +12,6 @@
 import type {LinterProvider} from '../../nuclide-diagnostics-base';
 import type {TypeHintProvider as TypeHintProviderType} from '../../nuclide-type-hint-interfaces';
 
-import {array} from '../../nuclide-commons';
 import {GRAMMARS} from './constants';
 
 export function activate(): void {
@@ -50,7 +49,7 @@ export function createTypeHintProvider(): TypeHintProviderType {
   return {
     inclusionPriority: 1,
     providerName: 'nuclide-ocaml',
-    selector: array.from(GRAMMARS).join(', '),
+    selector: Array.from(GRAMMARS).join(', '),
     typeHint,
   };
 }

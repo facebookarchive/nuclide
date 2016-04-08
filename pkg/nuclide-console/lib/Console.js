@@ -11,7 +11,7 @@
 
 import type {Record, Executor} from './types';
 
-import {array, debounce} from '../../nuclide-commons';
+import {debounce} from '../../nuclide-commons';
 import {React} from 'react-for-atom';
 import OutputTable from './OutputTable';
 import ConsoleHeader from './ConsoleHeader';
@@ -60,7 +60,7 @@ export default class Console extends React.Component {
   _renderPromptButton(): ReactElement {
     invariant(this.props.currentExecutor != null);
     const {currentExecutor} = this.props;
-    const options = array.from(this.props.executors.values())
+    const options = Array.from(this.props.executors.values())
       .map(executor => ({
         id: executor.id,
         label: executor.name,

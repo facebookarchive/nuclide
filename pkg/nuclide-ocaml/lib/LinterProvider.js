@@ -14,13 +14,12 @@ import type {LinterMessage} from '../../nuclide-diagnostics-base';
 
 import {GRAMMARS} from './constants';
 import {trackOperationTiming} from '../../nuclide-analytics';
-import {array} from '../../nuclide-commons';
 import {Range} from 'atom';
 import {getServiceByNuclideUri} from '../../nuclide-client';
 
 module.exports = {
   name: 'nuclide-ocaml',
-  grammarScopes: array.from(GRAMMARS),
+  grammarScopes: Array.from(GRAMMARS),
   scope: 'file',
   lintOnFly: false,
 

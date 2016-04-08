@@ -15,8 +15,6 @@ import {uncachedRequire, spyOnGetterValue} from '../../nuclide-test-helpers';
 import {Range} from 'atom';
 import featureConfig from '../../nuclide-feature-config';
 
-import {array} from '../../nuclide-commons';
-
 const TYPE_HINT_PROVIDER = '../lib/FlowTypeHintProvider';
 
 describe('FlowTypeHintProvider', () => {
@@ -124,8 +122,8 @@ describe('getTypeHintTree', () => {
     return {
       kind: 'FunT',
       funType: {
-        paramNames: array.from(paramToType.keys()),
-        paramTypes: array.from(paramToType.values()),
+        paramNames: Array.from(paramToType.keys()),
+        paramTypes: Array.from(paramToType.values()),
         returnType,
       },
     };
