@@ -29,6 +29,7 @@ import {
 import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
 import remoteUri from '../../nuclide-remote-uri';
 import {ServerConnection} from '../../nuclide-remote-connection';
+import {passesGK} from '../../nuclide-debugger-common/lib/utils';
 
 import DebuggerProcessInfo from './DebuggerProcessInfo';
 import DebuggerInstance from './DebuggerInstance';
@@ -45,6 +46,8 @@ export type SerializedState = {
 };
 
 const DATATIP_PACKAGE_NAME = 'nuclide-debugger-datatip';
+const GK_DEBUGGER_LAUNCH_ATTACH_UI = 'nuclide_debugger_launch_attach_ui';
+const GK_TIMEOUT = 1000;
 
 function createDebuggerView(model: DebuggerModel): HTMLElement {
   const DebuggerControllerView = require('./DebuggerControllerView');
@@ -161,12 +164,17 @@ class Activation {
     return this._model;
   }
 
-  _toggle() {
-    const panel = this._getPanel();
-    if (panel.isVisible()) {
-      panel.hide();
+  async _toggle() {
+    const passedNewUIGK = await passesGK(GK_DEBUGGER_LAUNCH_ATTACH_UI, GK_TIMEOUT);
+    if (passedNewUIGK) {
+      this._toggleLaunchAttachDialog();
     } else {
-      panel.show();
+      const panel = this._getPanel();
+      if (panel.isVisible()) {
+        panel.hide();
+      } else {
+        panel.show();
+      }
     }
   }
 
