@@ -44,7 +44,6 @@ import typeof * as MapType from './map';
 import typeof * as ArrayType from './array';
 import typeof * as ObjectType from './object';
 import typeof * as HttpType from './http';
-import typeof * as StringsType from './strings';
 import typeof * as RelativeDateType from './relativeDate';
 import typeof * as PathsType from './paths';
 import typeof * as PromiseExecutorsType from './PromiseExecutors';
@@ -193,10 +192,6 @@ module.exports = {
 
   get httpPromise(): HttpType {
     return requireFromCache('./http');
-  },
-
-  get strings(): StringsType {
-    return requireFromCache('./strings');
   },
 
   get paths(): PathsType {
