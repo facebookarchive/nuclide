@@ -10,8 +10,6 @@
  */
 
 import {SshHandshake} from '../../nuclide-remote-connection';
-import {extend} from '../../nuclide-commons';
-const {immutableExtend} = extend;
 import {validateFormInputs} from '../lib/form-validation-utils';
 
 describe('validateFormInputs', () => {
@@ -27,25 +25,27 @@ describe('validateFormInputs', () => {
     defaultServerCommand = 'defaultcommand';
     connectionProfileBase = {
       username: 'testuser',
+      password: '',
       server: 'test@test.com',
       cwd: '/Test',
       sshPort: '22',
+      pathToPrivateKey: '',
       remoteServerCommand: defaultServerCommand,
     };
-    minimumValidParamsWithPrivateKey = immutableExtend(
+    minimumValidParamsWithPrivateKey = Object.assign({},
       connectionProfileBase,
       {
         authMethod: SshHandshake.SupportedMethods.PRIVATE_KEY,
         pathToPrivateKey: '/Test',
       },
     );
-    minimumValidParamsWithPassword = immutableExtend(
+    minimumValidParamsWithPassword = Object.assign({},
       connectionProfileBase,
       {
         authMethod: SshHandshake.SupportedMethods.PASSWORD,
       },
     );
-    minimumValidParamsWithSshAgent = immutableExtend(
+    minimumValidParamsWithSshAgent = Object.assign({},
       connectionProfileBase,
       {authMethod: SshHandshake.SupportedMethods.SSL_AGENT},
     );
@@ -111,7 +111,7 @@ describe('validateFormInputs', () => {
   });
 
   it('rejects a profile if a Username is missing.', () => {
-    minimumValidParamsWithPrivateKey.username = null;
+    minimumValidParamsWithPrivateKey.username = '';
     const resultFromNullUsername: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
@@ -129,7 +129,7 @@ describe('validateFormInputs', () => {
   });
 
   it('rejects a profile if a Server is missing.', () => {
-    minimumValidParamsWithPrivateKey.server = null;
+    minimumValidParamsWithPrivateKey.server = '';
     const resultFromNullServer: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
@@ -147,7 +147,7 @@ describe('validateFormInputs', () => {
   });
 
   it('rejects a profile if an Initial Directory is missing.', () => {
-    minimumValidParamsWithPrivateKey.cwd = null;
+    minimumValidParamsWithPrivateKey.cwd = '';
     const resultFromNullCwd: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
@@ -165,7 +165,7 @@ describe('validateFormInputs', () => {
   });
 
   it('rejects a profile if an SSH Port is missing.', () => {
-    minimumValidParamsWithPrivateKey.sshPort = null;
+    minimumValidParamsWithPrivateKey.sshPort = '';
     const resultFromNullSshPort: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
@@ -201,14 +201,6 @@ describe('validateFormInputs', () => {
   });
 
   it('rejects a profile if the Authentication Method selected is "Private Key", and a Private Key File is missing', () => { //eslint-disable-line max-len
-    minimumValidParamsWithPrivateKey.pathToPrivateKey = null;
-    const resultFromNullPathToPrivateKey: any = validateFormInputs(
-      validProfileName,
-      minimumValidParamsWithPrivateKey,
-      defaultServerCommand,
-    );
-    expect(resultFromNullPathToPrivateKey.errorMessage).not.toBeNull();
-
     minimumValidParamsWithPrivateKey.pathToPrivateKey = '';
     const resultFromEmptyPathToPrivateKey: any = validateFormInputs(
       validProfileName,

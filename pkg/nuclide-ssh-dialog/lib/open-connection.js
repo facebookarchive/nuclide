@@ -21,7 +21,7 @@ import {getLogger} from '../../nuclide-logging';
 
 import type {RemoteConnection} from '../../nuclide-remote-connection';
 import type {NuclideRemoteConnectionProfile} from './connection-types';
-import {extend, PromiseQueue} from '../../nuclide-commons';
+import {PromiseQueue} from '../../nuclide-commons';
 
 const logger = getLogger();
 let dialogPromiseQueue: ?PromiseQueue = null;
@@ -136,7 +136,7 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
     // to the ConnectionDialog will not.
     // Note: the `cleanupSubscriptionFunc` is called when the dialog closes:
     // `onConnect`, `onError`, or `onCancel`.
-    const baseDialogProps = extend.immutableExtend({
+    const baseDialogProps = Object.assign({}, {
       // Select the default connection profile, which should always be index 0.
       indexOfInitiallySelectedConnectionProfile: 0,
       onAddProfileClicked,
@@ -172,7 +172,7 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
       (newProfiles: ?Array<NuclideRemoteConnectionProfile>) => {
         compositeConnectionProfiles = newProfiles ? [defaultConnectionProfile].concat(newProfiles) :
             [defaultConnectionProfile];
-        const newDialogProps = extend.immutableExtend(
+        const newDialogProps = Object.assign({},
           baseDialogProps,
           {connectionProfiles: compositeConnectionProfiles},
         );
@@ -180,7 +180,7 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
       }
     );
 
-    const initialDialogProps = extend.immutableExtend(
+    const initialDialogProps = Object.assign({},
       baseDialogProps,
       {connectionProfiles: compositeConnectionProfiles},
     );

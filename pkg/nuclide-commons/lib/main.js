@@ -47,7 +47,6 @@ import typeof * as HttpType from './http';
 import typeof * as RelativeDateType from './relativeDate';
 import typeof * as PathsType from './paths';
 import typeof * as PromiseExecutorsType from './PromiseExecutors';
-import typeof * as ExtendType from './extend';
 import typeof * as DebounceType from './debounce';
 import typeof * as OnceType from './once';
 import typeof * as VcsType from './vcs';
@@ -204,10 +203,6 @@ module.exports = {
 
   get PromiseQueue() {
     return requirePromiseExecutors().PromiseQueue;
-  },
-
-  get extend(): ExtendType {
-    return requireFromCache('./extend');
   },
 
   get debounce() {
