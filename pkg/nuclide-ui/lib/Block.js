@@ -13,7 +13,7 @@ import {React} from 'react-for-atom';
 
 type Props = {
   children: ReactElement
-}
+};
 
 /** A Block. */
 /* eslint-disable react/prop-types */

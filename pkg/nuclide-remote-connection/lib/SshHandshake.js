@@ -34,7 +34,7 @@ export type SshConnectionConfiguration = {
   authMethod: string; // Which of the authentication methods in `SupportedMethods` to use.
   password: string; // for simple password-based authentication
   displayTitle: string; // Name of the saved connection profile.
-}
+};
 
 const SupportedMethods = Object.freeze({
   SSL_AGENT: 'SSL_AGENT',

@@ -20,7 +20,7 @@ type Props = {
   value?: number;
   /** Determines the scaling of `value`. `min` is implicitly set to `0`. */
   max?: number;
-}
+};
 
 /** A Progressbar for showing deterministic progress. */
 /* eslint-disable react/prop-types */

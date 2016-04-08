@@ -16,7 +16,7 @@ export type Device = {
   udid: string;
   state: string;
   os: string;
-}
+};
 
 const DeviceState = {
   Creating: 'Creating',

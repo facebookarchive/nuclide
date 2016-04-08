@@ -37,7 +37,7 @@ type PanelProps = {
   onFilterByActiveTextEditorChange: (isChecked: boolean) => void;
   warnAboutLinter: boolean;
   disableLinter: () => void;
-}
+};
 
 function createDiagnosticsPanel(
   diagnosticUpdater: DiagnosticUpdater,

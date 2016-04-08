@@ -12,7 +12,7 @@
 export type HintTree = {
   value: string;
   children?: Array<HintTree>;
-}
+};
 
 export type TypeHint = {
   /**

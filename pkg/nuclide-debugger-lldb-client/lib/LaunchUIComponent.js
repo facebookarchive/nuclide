@@ -18,7 +18,7 @@ import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 type PropsType = {
   store: LaunchAttachStore;
   actions: LaunchAttachActions;
-}
+};
 
 export class LaunchUIComponent extends React.Component<void, PropsType, void> {
   props: PropsType;

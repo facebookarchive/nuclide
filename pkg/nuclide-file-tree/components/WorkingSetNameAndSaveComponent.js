@@ -19,11 +19,11 @@ type Props = {
   onUpdate: (prevName: string, name: string) => void;
   onSave: (name: string) => void;
   onCancel: () => void;
-}
+};
 
 type State = {
   name: string;
-}
+};
 
 export class WorkingSetNameAndSaveComponent extends React.Component {
   props: Props;

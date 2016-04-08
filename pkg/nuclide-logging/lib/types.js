@@ -21,7 +21,7 @@ export type node$CallSite = {
   isEval(): boolean;
   isNative(): boolean;
   isConstructor(): boolean;
-}
+};
 
 export type Logger = {
   debug(...args: Array<any>): mixed;
@@ -32,7 +32,7 @@ export type Logger = {
   warn(...args: Array<any>): mixed;
   isLevelEnabled(level: string): mixed;
   setLevel(level: string): mixed;
-}
+};
 
 export type LoggingEvent = {
   startTime: Date;
@@ -47,8 +47,8 @@ export type LoggingEvent = {
   };
   storageKey?: string;
   runtime?: any;
-}
+};
 
 export type LoggingAppender = {
   appenders: any;
-}
+};

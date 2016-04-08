@@ -113,7 +113,7 @@ export type HackOutlineItem = {
   line: number;
   char_start: number;
   char_end: number;
-}
+};
 
 export type HackOutline = Array<HackOutlineItem>;
 

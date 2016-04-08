@@ -17,7 +17,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 
 type PropsType = {
   targetUri: NuclideUri;
-}
+};
 export class LaunchUiComponent extends React.Component<void, PropsType, void> {
   props: PropsType;
 

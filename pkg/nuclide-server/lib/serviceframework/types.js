@@ -21,7 +21,7 @@ export type CallRemoteFunctionMessage = {
   function: string;
   requestId: number;
   args: Array<any>;
-}
+};
 
 export type CreateRemoteObjectMessage = {
   protocol: 'service_framework3_rpc';
@@ -29,7 +29,7 @@ export type CreateRemoteObjectMessage = {
   interface: string;
   requestId: number;
   args: Array<any>;
-}
+};
 
 export type CallRemoteMethodMessage = {
   protocol: 'service_framework3_rpc';
@@ -38,7 +38,7 @@ export type CallRemoteMethodMessage = {
   requestId: number;
   objectId: number;
   args: Array<any>;
-}
+};
 
 export type DisposeRemoteObjectMessage = {
   protocol: 'service_framework3_rpc';
@@ -51,7 +51,7 @@ export type DisposeObservableMessage = {
   protocol: 'service_framework3_rpc';
   type: 'DisposeObservable';
   requestId: number;
-}
+};
 
 // Encodes the structure of messages that can be sent from the server to the client.
 export type ResponseMessage =
@@ -75,6 +75,6 @@ export type ObservableResponseMessage = {
   type: 'ObservableMessage';
   requestId: number;
   result: ObservableResult;
-}
+};
 
 export type ObservableResult = { type: 'completed'; } | { type: 'next'; data: any };

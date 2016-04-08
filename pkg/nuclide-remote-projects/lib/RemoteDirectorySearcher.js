@@ -16,7 +16,7 @@ import typeof * as FindInProjectService from '../../nuclide-remote-search';
 type RemoteDirectorySearch = {
   then: (onFullfilled: any, onRejected: any) => Promise<any>;
   cancel: () => void;
-}
+};
 
 class RemoteDirectorySearcher {
   _serviceProvider: (dir: RemoteDirectory) => FindInProjectService;

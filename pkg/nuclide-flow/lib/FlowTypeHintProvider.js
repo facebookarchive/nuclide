@@ -78,7 +78,7 @@ export class FlowTypeHintProvider {
 type HintTree = {
   value: string;
   children?: Array<HintTree>;
-}
+};
 
 export function getTypeHintTree(typeHint: ?string): ?HintTree {
   if (!typeHint) {

@@ -100,7 +100,7 @@ export type HackLanguage  = {
 
   isHackAvailable(): boolean;
 
-}
+};
 
 /**
  * This is responsible for managing (creating/disposing) multiple HackLanguage instances,

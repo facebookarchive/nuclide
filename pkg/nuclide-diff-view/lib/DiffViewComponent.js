@@ -51,7 +51,7 @@ type EditorState = {
     removed: Array<number>;
   };
   inlineElements: Array<InlineComponent>;
-}
+};
 
 type State = {
   filePath: NuclideUri;

@@ -59,7 +59,7 @@ export type FunctionType = {
   kind: 'function';
   argumentTypes: Array<Type>;
   returnType: Type;
-}
+};
 
 // Primitive types.
 export type AnyType = { location: Location; kind: 'any' };

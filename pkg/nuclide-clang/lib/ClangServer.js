@@ -84,7 +84,7 @@ type Connection = {
   process: child_process$ChildProcess;
   readableStream: stream$Readable;
   writableStream: stream$Writable;
-}
+};
 
 // List of supported methods. Keep in sync with the Python server.
 type ClangServerRequest =

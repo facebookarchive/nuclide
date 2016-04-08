@@ -26,7 +26,7 @@ declare class Worker {
 type IDBDatabase = {
   close: () => void;
   transaction: (key: string) => any;
-}
+};
 
 type CreateInterfaceOptions = {
   input: stream$Readable;
@@ -34,7 +34,7 @@ type CreateInterfaceOptions = {
   completer?: (line: string) => [Array<string>, string];
   terminal?: boolean;
   historySize?: number;
-}
+};
 
 declare module 'readline' {
   declare class Interface {

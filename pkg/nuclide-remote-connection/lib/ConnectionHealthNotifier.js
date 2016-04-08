@@ -25,7 +25,7 @@ const HEARTBEAT_NOTIFICATION_WARNING = 2;
 type HeartbeatNotification = {
   notification: atom$Notification;
   code: string;
-}
+};
 
 // Provides feedback to the user of the health of a NuclideSocket.
 export class ConnectionHealthNotifier {

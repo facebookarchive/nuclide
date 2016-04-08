@@ -20,7 +20,7 @@ type Props = {
   /** The contents of the ButtonGroup; Generally, an instance of `Button`. */
   children: ReactElement;
   className?: string;
-}
+};
 
 export const ButtonGroupSizes = Object.freeze({
   EXTRA_SMALL: 'EXTRA_SMALL',

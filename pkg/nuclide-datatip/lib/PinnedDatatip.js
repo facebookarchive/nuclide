@@ -16,7 +16,7 @@ import type {
 type Position = {
   x: number;
   y: number;
-}
+};
 
 import {CompositeDisposable, Disposable} from 'atom';
 import {

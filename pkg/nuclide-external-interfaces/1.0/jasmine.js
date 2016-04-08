@@ -102,11 +102,11 @@ type JasmineEnvironment = {
 
 type JasmineSpec = {
   addMatchers(matchersPrototype: {[methodName: string]: (expected: any) => boolean}): void;
-}
+};
 
 type JasmineMatchers = {
   message: () => string;
-}
+};
 
 // Jasmine global
 declare var jasmine: {

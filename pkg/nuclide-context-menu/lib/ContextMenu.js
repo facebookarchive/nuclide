@@ -16,28 +16,28 @@ type Item = {
   type: 'item';
   item: atom$ContextMenuItem;
   priority: number;
-}
+};
 
 type Menu = {
   type: 'menu';
   menu: ContextMenu;
   priority: number;
-}
+};
 
-type InternalItem = Item | Menu
+type InternalItem = Item | Menu;
 
 type RootMenuOptions = {
   type: 'root';
   cssSelector: string;
-}
+};
 
 type SubmenuOptions = {
   type: 'submenu';
   label: string;
   parent: ContextMenu;
-}
+};
 
-type MenuOptions = RootMenuOptions | SubmenuOptions
+type MenuOptions = RootMenuOptions | SubmenuOptions;
 
 /**
  * This class represents a collection of context menu items that have been registered with Atom's

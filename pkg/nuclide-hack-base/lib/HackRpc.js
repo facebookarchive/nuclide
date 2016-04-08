@@ -21,7 +21,7 @@ type CallMessage = {
   type: 'call';
   id: number;
   args: any; // Typically Array<string | Object>
-}
+};
 
 type ResponseError = {
   code?: number;

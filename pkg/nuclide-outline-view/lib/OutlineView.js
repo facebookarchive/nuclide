@@ -90,7 +90,7 @@ export class OutlineView extends React.Component {
 
 type OutlineViewComponentProps = {
   outline: OutlineForUi;
-}
+};
 
 class OutlineViewComponent extends React.Component {
   props: OutlineViewComponentProps;

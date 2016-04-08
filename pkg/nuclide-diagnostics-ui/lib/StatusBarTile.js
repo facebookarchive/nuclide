@@ -25,7 +25,7 @@ const {PropTypes} = React;
 type DiagnosticCount = {
   errorCount: number;
   warningCount: number;
-}
+};
 
 // Stick this to the left of remote-projects (-99)
 const STATUS_BAR_PRIORITY = -99.5;

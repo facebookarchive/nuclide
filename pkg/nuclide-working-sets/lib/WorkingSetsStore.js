@@ -21,7 +21,7 @@ import type {WorkingSetDefinition} from '..';
 export type ApplicabilitySortedDefinitions = {
   applicable: Array<WorkingSetDefinition>;
   notApplicable: Array<WorkingSetDefinition>;
-}
+};
 
 const NEW_WORKING_SET_EVENT = 'new-working-set';
 const NEW_DEFINITIONS_EVENT = 'new-definitions';

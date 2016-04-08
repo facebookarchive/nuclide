@@ -12,7 +12,7 @@
 type Provider = {
   priority: number;
   grammarScopes: Array<string>;
-}
+};
 
 export class ProviderRegistry<T: Provider> {
   _providers: Set<T>;

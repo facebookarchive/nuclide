@@ -18,11 +18,11 @@ import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 type TypeHintComponentProps = {
   content: string | HintTree;
   grammar: atom$Grammar;
-}
+};
 
 type TypeHintComponentState = {
   expandedNodes: Set<HintTree>;
-}
+};
 
 export class TypeHintComponent extends React.Component {
   props: TypeHintComponentProps;

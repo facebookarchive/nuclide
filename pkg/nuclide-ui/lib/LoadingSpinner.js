@@ -17,7 +17,7 @@ type Props = {
   className? : string;
   /** The size of the LoadingSpinner. Defaults to MEDIUM. */
   size?: LoadingSpinnerSize;
-}
+};
 
 export const LoadingSpinnerSizes = Object.freeze({
   EXTRA_SMALL: 'EXTRA_SMALL',

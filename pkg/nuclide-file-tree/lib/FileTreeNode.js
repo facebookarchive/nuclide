@@ -30,7 +30,7 @@ export type FileTreeChildNodeOptions = {
   isTracked?: boolean;
   children?: Immutable.OrderedMap<string, FileTreeNode>;
   subscription?: ?IDisposable;
-}
+};
 
 // Ideally the type here would be FileTreeChildNodeOptions & {rootUri},
 // but flow doesn't handle it well
@@ -46,7 +46,7 @@ export type FileTreeNodeOptions = {
   connectionTitle?: string;
   checkedStatus?: NodeCheckedStatus;
   subscription?: ?IDisposable;
-}
+};
 
 type DefaultFileTreeNodeOptions = {
   isExpanded: boolean;
@@ -58,7 +58,7 @@ type DefaultFileTreeNodeOptions = {
   connectionTitle: string;
   checkedStatus: NodeCheckedStatus;
   subscription: ?IDisposable;
-}
+};
 
 const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
   isExpanded: false,
@@ -81,7 +81,7 @@ export type ImmutableNodeSettableFields = {
   children?: Immutable.OrderedMap<string, FileTreeNode>;
   checkedStatus?: NodeCheckedStatus;
   subscription?: ?IDisposable;
-}
+};
 
 
 /**

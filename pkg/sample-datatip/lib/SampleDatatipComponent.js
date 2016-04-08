@@ -13,7 +13,7 @@ import {React} from 'react-for-atom';
 
 type DatatipComponentProps = {
   word: string;
-}
+};
 
 /* eslint-disable react/prop-types */
 export const SampleDatatipComponent = (props: DatatipComponentProps) => {

@@ -31,7 +31,7 @@ export type OutlineTree = {
 
 export type Outline = {
   outlineTrees: Array<OutlineTree>;
-}
+};
 
 export type OutlineTreeForUi = {
   tokenizedText: TokenizedText;
@@ -39,7 +39,7 @@ export type OutlineTreeForUi = {
   endPosition?: atom$Point;
   children: Array<OutlineTreeForUi>;
   highlighted: boolean;
-}
+};
 
 /**
  * Includes additional information that is useful to the UI, but redundant or nonsensical for
@@ -69,7 +69,7 @@ export type OutlineForUi = {
    * - Jumping to outline item locations works for new, unsaved files.
    */
   editor: atom$TextEditor;
-}
+};
 
 export type OutlineProvider = {
   name: string;

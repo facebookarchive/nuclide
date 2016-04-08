@@ -31,21 +31,21 @@ export type CreatePaneItemAction = {
 
 export type DeactivateAction = {
   type: 'DEACTIVATE';
-}
+};
 
 export type DestroyPaneItemAction = {
   type: 'DESTROY_PANE_ITEM';
   payload: {
     item: Object;
   };
-}
+};
 
 export type RegisterGadgetAction = {
   type: 'REGISTER_GADGET';
   payload: {
     gadget: Object;
   };
-}
+};
 
 export type UnregisterGadgetAction = {
   type: 'UNREGISTER_GADGET';

@@ -690,7 +690,8 @@
     },
     "eslint-plugin-flow-vars": {
       "version": "0.3.0",
-      "from": "eslint-plugin-flow-vars@0.3.0"
+      "from": "eslint-plugin-flow-vars@0.3.0",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-flow-vars/-/eslint-plugin-flow-vars-0.3.0.tgz"
     },
     "eslint-plugin-jasmine": {
       "version": "1.8.1",
@@ -698,7 +699,7 @@
       "resolved": "https://registry.npmjs.org/eslint-plugin-jasmine/-/eslint-plugin-jasmine-1.8.1.tgz"
     },
     "eslint-plugin-nuclide-internal": {
-      "version": "0.0.7",
+      "version": "0.0.8",
       "from": "resources/eslint-plugin-nuclide-internal",
       "resolved": "file:resources/eslint-plugin-nuclide-internal"
     },

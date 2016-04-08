@@ -16,7 +16,7 @@ import {React} from 'react-for-atom';
 type DebuggerDatatipComponentProps = {
   expression: string;
   evaluationResult: EvaluationResult;
-}
+};
 
 function renderObject(evaluationResult: EvaluationResult): ?string {
   const {

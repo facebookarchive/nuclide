@@ -28,28 +28,28 @@ export type Diagnostics = {
 export type Diagnostic = {
   level: string;
   messageComponents: Array<MessageComponent>;
-}
+};
 
 export type MessageComponent = {
   descr: string;
   range: ?Range;
-}
+};
 
 export type Range = {
   file: NuclideUri;
   start: Point;
   end: Point;
-}
+};
 
 export type Point = {
   line: number;
   column: number;
-}
+};
 
 export type Loc = {
   file: NuclideUri;
   point: Point;
-}
+};
 
 // If types are added here, make sure to also add them to FlowConstants.js. This needs to be the
 // canonical type definition so that we can use these in the service framework.
@@ -91,7 +91,7 @@ export type TokenKind = 'keyword'
 export type TextToken = {
   kind: TokenKind;
   value: string;
-}
+};
 
 // The origin of this type is at nuclide-tokenized-text/lib/main.js
 // When updating update both locations!

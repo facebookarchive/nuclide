@@ -22,7 +22,7 @@ type MessageRecord = {
   disposable: IDisposable;
   // The number of messages outstanding
   count: number;
-}
+};
 
 export class DedupedBusySignalProviderBase extends BusySignalProviderBase {
 

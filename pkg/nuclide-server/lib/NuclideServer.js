@@ -33,7 +33,7 @@ type NuclideServerOptions = {
   serverCertificate?: Buffer;
   certificateAuthorityCertificate?: Buffer;
   trackEventLoop?: boolean;
-}
+};
 
 class NuclideServer {
   static _theServer: ?NuclideServer;

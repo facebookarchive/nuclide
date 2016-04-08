@@ -37,7 +37,7 @@ type ComponentSpec = {
     title: string;
     component: ReactComponent | () => ReactElement;
   }>;
-}
+};
 
 type State = {
   collapsedSections: Set<string>;

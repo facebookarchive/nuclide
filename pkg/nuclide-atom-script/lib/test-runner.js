@@ -29,7 +29,7 @@ type TestRunnerParams = {
 
   /** Unclear what the contract of this is, but we will not be using it. */
   legacyTestRunner: () => void;
-}
+};
 
 type BuildAtomEnvironmentParams = {
   applicationDelegate: Object;
@@ -37,7 +37,7 @@ type BuildAtomEnvironmentParams = {
   document: Object;
   configDirPath?: string;
   enablePersistence?: boolean;
-}
+};
 
 export type ExitCode = number;
 

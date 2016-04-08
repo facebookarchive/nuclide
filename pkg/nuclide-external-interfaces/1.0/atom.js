@@ -54,7 +54,7 @@ declare class atom$CompositeDisposable {
 
 type atom$ConfigType =
   'boolean' | 'string' | 'integer' | 'number' |
-  'array' | 'object' | 'color' | 'any'
+  'array' | 'object' | 'color' | 'any';
 
 type atom$ConfigSchema = {
   default?: mixed;
@@ -65,7 +65,7 @@ type atom$ConfigSchema = {
   properties?: Object;
   title?: string;
   type: Array<atom$ConfigType> | atom$ConfigType;
-}
+};
 
 declare class atom$Config {
   // Config Subscription
@@ -395,13 +395,13 @@ declare class atom$Range {
 type RawStatusBarTile = {
   item: HTMLElement;
   priority: number;
-}
+};
 
 type atom$StatusBarTile = {
   getPriority(): number;
   getItem(): HTMLElement;
   destroy(): void;
-}
+};
 
 declare class atom$ScopeDescriptor {
   constructor(object: {scopes: Array<string>}): void;
@@ -460,7 +460,7 @@ type atom$TooltipsAddOptions = {
   container?: string | false;
   delay?: number | {show: number; hide: number};
   placement?: 'top' | 'bottom' | 'left' | 'right' | 'auto';
-}
+};
 
 declare class atom$TooltipManager {
   add(
@@ -476,7 +476,7 @@ type InsertTextOptions = {
   autoDecreaseIndent: boolean;
   normalizeLineEndings: ?boolean;
   undo: string;
-}
+};
 
 type DecorateMarkerParams = {
   type: 'line';
@@ -935,7 +935,7 @@ type atom$ContextMenuItem = {
   submenu?: Array<atom$ContextMenuItem>;
   type?: string;
   visible?: boolean;
-}
+};
 
 declare class atom$Deserializer {
   name: string;
@@ -1287,7 +1287,7 @@ type atom$UnhandledErrorEvent = {
   url: string;
   line: number;
   column: number;
-}
+};
 
 // The properties of this type match the properties of the `atom` global.
 // This list is not complete.
@@ -1339,7 +1339,7 @@ type AtomGlobal = {
   // Undocumented Methods
   getConfigDirPath(): string;
   showSaveDialogSync(options: Object): string;
-}
+};
 
 declare var atom: AtomGlobal;
 
@@ -1428,7 +1428,7 @@ type atom$AutocompleteRequest = {
   scopeDescriptor: string;
   prefix: string;
   activatedManually: boolean;
-}
+};
 
 type atom$AutocompleteProvider = {
   selector: string;
@@ -1437,7 +1437,7 @@ type atom$AutocompleteProvider = {
   disableForSelector?: string;
   inclusionPriority?: number;
   excludeLowerPriority?: boolean;
-}
+};
 
 // Undocumented API.
 declare class atom$Token {

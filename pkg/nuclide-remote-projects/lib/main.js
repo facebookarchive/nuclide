@@ -36,7 +36,7 @@ type SerializableRemoteConnectionConfiguration = {
   host: string;
   cwd: string;
   displayTitle: string;
-}
+};
 
 let packageSubscriptions: ?CompositeDisposable = null;
 let controller: ?RemoteProjectsControllerT = null;

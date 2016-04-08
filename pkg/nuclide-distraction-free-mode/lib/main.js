@@ -25,7 +25,7 @@ export type DistractionFreeModeProvider = {
 export type DistractionFreeModeState = {
   // Serialize the restore state via an array of provider names.
   restoreState: ?Array<string>;
-}
+};
 
 class Activation {
   _disposables: CompositeDisposable;

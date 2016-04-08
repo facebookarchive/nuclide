@@ -19,7 +19,7 @@ export type Item = {
   isLocal: boolean;
   args: Array<mixed>;
   argInfo: ?string;
-}
+};
 
 const NEW_ITEM_EVENT = 'NEW_ITEM_EVENT';
 

@@ -37,7 +37,7 @@ export type CallbackDiagnosticProvider = {
 export type ObservableDiagnosticProvider = {
   updates: Observable<DiagnosticProviderUpdate>;
   invalidations: Observable<InvalidationMessage>;
-}
+};
 
 export type DiagnosticProvider = CallbackDiagnosticProvider | ObservableDiagnosticProvider;
 

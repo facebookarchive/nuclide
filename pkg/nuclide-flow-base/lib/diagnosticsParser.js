@@ -40,7 +40,7 @@ type OldBaseFlowStatusErrorMessageComponent = {
   start: number;
   end: number;
   endline: number;
-}
+};
 
 type OldFlowStatusErrorMessageComponent = OldBaseFlowStatusErrorMessageComponent & {
   level: 'error' | 'warning';
@@ -80,7 +80,7 @@ type FlowLoc = {
   source: string;
   start: FlowPoint;
   end: FlowPoint;
-}
+};
 
 type FlowPoint = {
   column: number;

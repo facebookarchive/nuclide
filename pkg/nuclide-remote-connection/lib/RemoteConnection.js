@@ -39,7 +39,7 @@ export type RemoteConnectionConfiguration = {
   certificateAuthorityCertificate?: Buffer; // certificate of certificate authority.
   clientCertificate?: Buffer; // client certificate for https connection.
   clientKey?: Buffer; // key for https connection.
-}
+};
 
 const _emitter: EventEmitter = new EventEmitter();
 

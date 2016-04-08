@@ -11,7 +11,7 @@
 
 export type Store = {
   toggleProvider(service: Provider): void;
-}
+};
 
 export type ProviderType = 'DIRECTORY' | 'GLOBAL';
 

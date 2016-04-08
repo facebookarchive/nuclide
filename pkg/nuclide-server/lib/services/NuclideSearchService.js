@@ -11,7 +11,7 @@
 
 type ProviderInfo = {
   name: string;
-}
+};
 
 type SearchQueryResult = {
   line: number;
@@ -22,11 +22,11 @@ type SearchQueryResult = {
   scope: string;
   additionalInfo: string;
   action: string;
-}
+};
 
 type SearchResponse = {
   results: Array<SearchQueryResult>;
-}
+};
 
 import invariant from 'assert';
 import type {FileSearchResult} from '../../../nuclide-path-search';

@@ -268,5 +268,6 @@
     "nuclide-internal/import-type-style": 1,
     "nuclide-internal/license-header": 2,
     "nuclide-internal/prefer-top-level-builtins": 1,
+    "nuclide-internal/type-alias-semi": 1,
   }
 }

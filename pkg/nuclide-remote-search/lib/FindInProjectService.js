@@ -26,7 +26,7 @@ export type search$Match = {
 export type search$FileResult = {
   filePath: NuclideUri;
   matches: Array<search$Match>;
-}
+};
 
 export function findInProjectSearch(directory: NuclideUri, regex: RegExp, subdirs: Array<string>):
     Observable<search$FileResult> {

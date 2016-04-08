@@ -28,7 +28,7 @@ export type NuclideDebuggerProvider = {
 export type NuclideEvaluationExpression = {
   range: atom$Range;
   expression: string;
-}
+};
 
 export type NuclideEvaluationExpressionProvider = {
   name: string;
@@ -38,4 +38,4 @@ export type NuclideEvaluationExpressionProvider = {
     editor: atom$TextEditor,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression>;
-}
+};

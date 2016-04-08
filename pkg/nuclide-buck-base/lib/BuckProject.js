@@ -24,7 +24,7 @@ export type doRunOptions = {
   run: true;
   debug: boolean;
   appArgs: Array<string>;
-}
+};
 
 export type BuckRunOptions = dontRunOptions | doRunOptions;
 

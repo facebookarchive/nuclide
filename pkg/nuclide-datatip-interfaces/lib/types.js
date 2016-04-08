@@ -13,7 +13,7 @@ export type Datatip = {
   component: ReactElement;
   range: atom$Range;
   pinnable?: boolean;
-}
+};
 
 export type DatatipProvider = {
   datatip(editor: atom$TextEditor, bufferPosition: atom$Point): Promise<?Datatip>;

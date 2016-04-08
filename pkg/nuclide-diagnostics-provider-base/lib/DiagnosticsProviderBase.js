@@ -44,7 +44,7 @@ type ProviderBaseOptions = {
    */
   grammarScopes?: Set<string>;
   enableForAllGrammars?: boolean;
-}
+};
 
 const UPDATE_EVENT = 'update';
 const INVALIDATE_EVENT = 'invalidate';

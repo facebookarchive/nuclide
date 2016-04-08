@@ -21,7 +21,7 @@ import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScrolle
 
 type State = {
   shouldRenderToolbar: boolean;
-}
+};
 
 class FileTreeSidebarComponent extends React.Component {
   _store: FileTreeStore;

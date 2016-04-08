@@ -20,7 +20,7 @@ const DIFFERENTIAL_REVISION_REGEX = /^Differential Revision:\s*(\D+\/[dD]([1-9][
 export type PhabricatorRevisionInfo = {
   url: string;
   id: string;
-}
+};
 
 function getService(fileName: NuclideUri): ArcanistBaseService {
   const {getServiceByNuclideUri} = require('../../nuclide-client');

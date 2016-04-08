@@ -24,8 +24,8 @@ export type BusySignalMessageDone = {
   status: 'done';
   // Cancel the busy signal with this identifier.
   id: number;
-}
+};
 
 export type BusySignalProvider = {
   messages: Observable<BusySignalMessage>;
-}
+};

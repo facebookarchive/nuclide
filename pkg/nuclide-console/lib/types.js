@@ -19,7 +19,7 @@ type MessageKind = 'message' | 'request' | 'response';
 type Response = {
   text: string;
   level: Level;
-}
+};
 
 // A regular message, emitted by output providers.
 export type Message = {
