@@ -5,6 +5,14 @@
   "version": "0.0.0",
   "description": "Hide the cruft and focus on your code",
   "nuclide": {
+    "config": {
+      "hideToolBar": {
+        "title": "Hide the tool-bar",
+        "description": "Requires restart to take effect. Note: this will hide the toolbar button so you will not be able to use it to leave distraction-free-mode!",
+        "type": "boolean",
+        "default": false
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

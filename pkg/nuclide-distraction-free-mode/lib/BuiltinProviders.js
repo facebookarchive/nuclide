@@ -11,6 +11,22 @@
 
 import type {DistractionFreeModeProvider} from '..';
 
+import featureConfig from '../../nuclide-feature-config';
+
 export function getBuiltinProviders(): Array<DistractionFreeModeProvider> {
-  return [];
+  const providers = [];
+  if (featureConfig.get('nuclide-distraction-free-mode.hideToolBar')) {
+    providers.push(toolBarProvider);
+  }
+  return providers;
 }
+
+const toolBarProvider = {
+  name: 'tool-bar',
+  isVisible(): boolean {
+    return Boolean(atom.config.get('tool-bar.visible'));
+  },
+  toggle(): void {
+    atom.config.set('tool-bar.visible', !this.isVisible());
+  },
+};
