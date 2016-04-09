@@ -12,7 +12,14 @@
 import type {Outline} from '../../nuclide-outline-view';
 
 import {Point} from 'atom';
-import {parse as babelParse} from 'babel-core';
+
+let babelCore = null;
+function babelParse(text: string): Object {
+  if (babelCore == null) {
+    babelCore = require('babel-core');
+  }
+  return babelCore.parse(text);
+}
 
 export function getOutline(text: string): ?Outline {
   // This fucks up the positions but without it, babel won't parse the text as an expression
