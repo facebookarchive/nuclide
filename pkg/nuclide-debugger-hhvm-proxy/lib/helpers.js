@@ -81,7 +81,13 @@ function launchPhpScriptWithXDebugEnabled(
   sendToOutputWindowAndResolve?: (text: string) => void,
 ): child_process$ChildProcess {
   const args = parse(scriptPath);
-  const proc = child_process.spawn(getConfig().phpRuntimePath, args);
+  const {existsSync} = require('fs-plus');
+  let modifiedArgs = args;
+  // TODO: will remove when t10747769 is resolved.
+  if (existsSync('fb/cli.hdf')) {
+    modifiedArgs = ['-c', 'fb/cli.hdf', ...args];
+  }
+  const proc = child_process.spawn(getConfig().phpRuntimePath, modifiedArgs);
   logger.log(`child_process(${proc.pid}) spawned with xdebug enabled for: ${scriptPath}`);
 
   proc.stdout.on('data', chunk => {

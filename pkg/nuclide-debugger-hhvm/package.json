@@ -33,7 +33,7 @@
       "phpRuntimePath": {
         "title": "Path to your PHP runtime",
         "type": "string",
-        "default": "/usr/local/bin/php",
+        "default": "/usr/local/hphpi/bin/hhvm",
         "description": "Path to the PHP runtime on your server."
       },
       "logLevel": {
