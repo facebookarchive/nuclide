@@ -49,7 +49,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   let clientCallback: any;
 
   const config = {
-    xdebugPort: 9000,
+    xdebugAttachPort: 9000,
     pid: null,
     idekeyRegex: null,
     scriptRegex: null,

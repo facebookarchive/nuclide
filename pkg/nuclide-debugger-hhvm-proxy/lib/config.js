@@ -13,7 +13,8 @@ import logger from './utils';
 import type {HhvmDebuggerSessionConfig} from './HhvmDebuggerProxyService';
 
 const defaultConfig: HhvmDebuggerSessionConfig = {
-  xdebugPort: 9000,
+  xdebugAttachPort: 9000,
+  xdebugLaunchingPort: 10112,
   logLevel: 'INFO',
   targetUri: '',
   phpRuntimePath: '/usr/local/bin/php',

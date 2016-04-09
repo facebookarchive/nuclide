@@ -76,7 +76,8 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
 
     const config = getConfig();
     const sessionConfig: HhvmDebuggerSessionConfig = {
-      xdebugPort: config.xdebugPort,
+      xdebugAttachPort: config.xdebugAttachPort,
+      xdebugLaunchingPort: config.xdebugLaunchingPort,
       targetUri: remoteUri.getPath(this.getTargetUri()),
       logLevel: config.logLevel,
       endDebugWhenNoRequests: false,
@@ -105,7 +106,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
     // Set config related to script launching.
     if (this._launchScriptPath != null) {
       invariant(config.xdebugLaunchingPort != null);
-      sessionConfig.xdebugPort = config.xdebugLaunchingPort;
+      sessionConfig.xdebugAttachPort = config.xdebugLaunchingPort;
       sessionConfig.endDebugWhenNoRequests = true;
       sessionConfig.launchScriptPath = this._launchScriptPath;
     }

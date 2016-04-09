@@ -88,7 +88,7 @@ function convertMessageIntoJson(payload: string): Object {
 }
 
 const config = {
-  xdebugPort: 1234,
+  xdebugAttachPort: 1234,
   pid: 0,
   idekeyRegex: 'username2',
   scriptRegex: 'test2.php',

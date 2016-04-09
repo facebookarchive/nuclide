@@ -46,7 +46,7 @@ describe('debugger-hhvm-proxy proxy', () => {
     const port = 7782;
 
     const config = {
-      xdebugPort: port,
+      xdebugAttachPort: port,
       pid: null,
       idekeyRegex: null,
       scriptRegex: null,

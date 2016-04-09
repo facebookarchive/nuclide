@@ -76,7 +76,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
     const port = 7779;
 
     const config = {
-      xdebugPort: port,
+      xdebugAttachPort: port,
       logLevel: '',
       targetUri: '',
     };
@@ -94,7 +94,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
       });
     const onClose = jasmine.createSpy('onClose');
 
-    const connector = new DbgpConnector();
+    const connector = new DbgpConnector(port);
     connector.listen();
     connector.onClose(onClose);
     connector.onAttach(onAttach);
@@ -120,7 +120,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
     const port = 7781;
 
     const config = {
-      xdebugPort: port,
+      xdebugAttachPort: port,
       logLevel: '',
       targetUri: '',
     };
@@ -128,7 +128,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
 
     const onClose = jasmine.createSpy('onClose');
 
-    const connector = new DbgpConnector();
+    const connector = new DbgpConnector(port);
     connector.listen();
     connector.onClose(onClose);
 
@@ -148,7 +148,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
   it('connection error - EADDRINUSE', () => {
     const port = 7781;
     const config = {
-      xdebugPort: port,
+      xdebugAttachPort: port,
       logLevel: '',
       targetUri: '',
     };
@@ -157,7 +157,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
     const onClose = jasmine.createSpy('onClose');
     const onError = jasmine.createSpy('onError');
 
-    const connector = new DbgpConnector();
+    const connector = new DbgpConnector(port);
     connector.listen();
     connector.onClose(onClose);
     connector.onError(onError);
@@ -188,7 +188,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
   it('connection error - unknown error', () => {
     const port = 7781;
     const config = {
-      xdebugPort: port,
+      xdebugAttachPort: port,
       logLevel: '',
       targetUri: '',
     };
@@ -197,7 +197,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
     const onClose = jasmine.createSpy('onClose');
     const onError = jasmine.createSpy('onError');
 
-    const connector = new DbgpConnector();
+    const connector = new DbgpConnector(port);
     connector.listen();
     connector.onClose(onClose);
     connector.onError(onError);

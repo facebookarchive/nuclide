@@ -11,14 +11,13 @@
 
 import net from 'net';
 import logger from './utils';
-import {getConfig} from './config';
 import {Emitter} from 'event-kit';
 import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
 import {failConnection} from './ConnectionUtils';
 
 import type {Socket, Server} from 'net';
 /**
- * xdebugPort is the port to listen for dbgp connections on.
+ * xdebugAttachPort is the port to listen for dbgp connections on.
  *
  * If present scriptRegex must be a valid RegExp. Only dbgp connections whose script
  * path matches scriptRegex will be accepted. Dbgp connections which do not match
@@ -48,11 +47,13 @@ export class DbgpConnector {
   _server: ?Server;
   _emitter: Emitter;
   _messageHandler: DbgpMessageHandler;
+  _port: number;
 
-  constructor() {
+  constructor(port: number) {
     this._server = null;
     this._emitter = new Emitter();
     this._messageHandler = getDbgpMessageHandlerInstance();
+    this._port = port;
   }
 
   onAttach(callback: (params: {socket: Socket; message: Object}) => Promise): IDisposable {
@@ -68,14 +69,17 @@ export class DbgpConnector {
   }
 
   listen(): void {
-    const port = getConfig().xdebugPort;
-
-    logger.log('Creating debug server on port ' + port);
+    logger.log('Creating debug server on port ' + this._port);
 
     const server = net.createServer();
 
-    server.on('close', socket => logger.log('Closing port ' + port));
-    server.listen(port, undefined, undefined, () => logger.log('Listening on port ' + port));
+    server.on('close', socket => logger.log('Closing port ' + this._port));
+    server.listen(
+      this._port,
+      undefined, // Hostname.
+      undefined, // Backlog -- the maximum length of the queue of pending connections.
+      () => logger.log('Listening on port ' + this._port),
+    );
 
     server.on('error', error => this._onServerError(error));
     server.on('connection', socket => this._onSocketConnection(socket));
@@ -85,9 +89,7 @@ export class DbgpConnector {
   }
 
   _onSocketConnection(socket: Socket) {
-    const port = getConfig().xdebugPort;
-
-    logger.log('Connection on port ' + port);
+    logger.log('Connection on port ' + this._port);
     if (!this._checkListening(socket, 'Connection')) {
       return;
     }
@@ -95,11 +97,10 @@ export class DbgpConnector {
   }
 
   _onServerError(error: Object): void {
-    const port = getConfig().xdebugPort;
-
     let errorMessage;
     if (error.code === 'EADDRINUSE') {
-      errorMessage = `Can't start debugging because port ${port} is being used by another process. `
+      errorMessage =
+        `Can't start debugging because port ${this._port} is being used by another process. `
         + `Try running 'killall node' on your devserver and then restarting Nuclide.`;
     } else {
       errorMessage = `Unknown debugger socket error: ${error.code}.`;
@@ -140,8 +141,7 @@ export class DbgpConnector {
    */
   _checkListening(socket: Socket, message: string): boolean {
     if (!this.isListening()) {
-      const port = getConfig().xdebugPort;
-      logger.log('Ignoring ' + message + ' on port ' + port + ' after stopped connection.');
+      logger.log('Ignoring ' + message + ' on port ' + this._port + ' after stopped connection.');
       return false;
     }
     return true;

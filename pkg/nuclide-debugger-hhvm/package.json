@@ -18,7 +18,7 @@
         "default": "",
         "description": "Regular expression to filter connection idekey. Usually your OS user id."
       },
-      "xdebugPort": {
+      "xdebugAttachPort": {
         "title": "DBGP Attach Port",
         "type": "number",
         "default": 9000,

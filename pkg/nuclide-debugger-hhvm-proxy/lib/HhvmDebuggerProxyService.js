@@ -17,8 +17,8 @@ import {MessageTranslator} from './MessageTranslator';
 import type {Observable} from 'rx';
 
 export type HhvmDebuggerSessionConfig = {
-  xdebugPort: number;
-  xdebugLaunchingPort?: number;
+  xdebugAttachPort: number;
+  xdebugLaunchingPort: number;
   launchScriptPath?: string;
   pid?: number;
   scriptRegex?: string;

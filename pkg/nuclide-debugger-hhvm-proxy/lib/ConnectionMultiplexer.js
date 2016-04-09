@@ -88,7 +88,7 @@ type EvaluationFailureResult = {
 // commands will go to the enabled connection.
 //
 // The ConnectionMultiplexer will close only if there are no connections
-// and if the DbgpConnector is closed. The DbgpConnector will likely only
+// and if either the attach or launch DbgpConnectors are closed. The DbgpConnectors will likely only
 // close if HHVM crashes or is stopped.
 export class ConnectionMultiplexer {
   _clientCallback: ClientCallback;
@@ -98,7 +98,8 @@ export class ConnectionMultiplexer {
   _enabledConnection: ?Connection;
   _dummyConnection: ?Connection;
   _connections: Map<Connection, ConnectionInfo>;
-  _connector: ?DbgpConnector;
+  _attachConnector: ?DbgpConnector;
+  _launchConnector: ?DbgpConnector;
   _dummyRequestProcess: ?child_process$ChildProcess;
   _launchedScriptProcess: ?Promise<void>;
 
@@ -109,7 +110,8 @@ export class ConnectionMultiplexer {
     this._enabledConnection = null;
     this._dummyConnection = null;
     this._connections = new Map();
-    this._connector = null;
+    this._attachConnector = null;
+    this._launchConnector = null;
     this._dummyRequestProcess = null;
     this._breakpointStore = new BreakpointStore();
     this._launchedScriptProcess = null;
@@ -121,14 +123,26 @@ export class ConnectionMultiplexer {
   }
 
   listen(): void {
-    const connector = new DbgpConnector();
-    connector.onAttach(this._onAttach.bind(this));
-    connector.onClose(this._disposeConnector.bind(this));
-    connector.onError(this._handleAttachError.bind(this));
-    this._connector = connector;
-    this._status = STATUS_RUNNING;
+    const {xdebugAttachPort, xdebugLaunchingPort, launchScriptPath} = getConfig();
+    if (launchScriptPath == null) {
+      // When in attach mode we are guaranteed that the two ports are not equal.
+      invariant(xdebugAttachPort !== xdebugLaunchingPort, 'xdebug ports are equal in attach mode');
+      // In this case we need to listen for incoming connections to attach to, as well as on the
+      // port that the dummy connection will use.
+      this._attachConnector = this._setupConnector(
+        xdebugAttachPort,
+        this._disposeAttachConnector.bind(this),
+      );
+    }
 
-    connector.listen();
+    // If we are only doing script debugging, then the dummy connection listener's port can also be
+    // used to listen for the script's xdebug requests.
+    this._launchConnector = this._setupConnector(
+      xdebugLaunchingPort,
+      this._disposeLaunchConnector.bind(this),
+    );
+
+    this._status = STATUS_RUNNING;
 
     this._clientCallback.sendUserMessage('console', {
       level: 'warning',
@@ -136,13 +150,21 @@ export class ConnectionMultiplexer {
     });
     this._dummyRequestProcess = sendDummyRequest();
 
-    const {launchScriptPath} = getConfig();
     if (launchScriptPath != null) {
       this._launchedScriptProcess = launchScriptToDebug(
         launchScriptPath,
         text => this._clientCallback.sendUserMessage('outputWindow', {level: 'info', text}),
       );
     }
+  }
+
+  _setupConnector(port: number, disposeConnector: () => void): DbgpConnector {
+    const connector = new DbgpConnector(port);
+    connector.onAttach(this._onAttach.bind(this));
+    connector.onClose(disposeConnector);
+    connector.onError(this._handleAttachError.bind(this));
+    connector.listen();
+    return connector;
   }
 
   async _handleDummyConnection(socket: Socket): Promise<void> {
@@ -422,7 +444,8 @@ export class ConnectionMultiplexer {
     if (this._dummyRequestProcess) {
       this._dummyRequestProcess.kill('SIGKILL');
     }
-    this._disposeConnector();
+    this._disposeLaunchConnector();
+    this._disposeAttachConnector();
   }
 
   _removeConnection(connection: Connection): void {
@@ -444,11 +467,21 @@ export class ConnectionMultiplexer {
     this._setStatus(STATUS_RUNNING);
   }
 
-  _disposeConnector(): void {
+  _disposeAttachConnector(): void {
     // Avoid recursion with connector's onClose event.
-    const connector = this._connector;
-    if (connector) {
-      this._connector = null;
+    const connector = this._attachConnector;
+    if (connector != null) {
+      this._attachConnector = null;
+      connector.dispose();
+    }
+    this._checkForEnd();
+  }
+
+  _disposeLaunchConnector(): void {
+    // Avoid recursion with connector's onClose event.
+    const connector = this._launchConnector;
+    if (connector != null) {
+      this._launchConnector = null;
       connector.dispose();
     }
     this._checkForEnd();
@@ -456,7 +489,9 @@ export class ConnectionMultiplexer {
 
   _checkForEnd(): void {
     if (this._connections.size === 0 &&
-       (!this._connector || getConfig().endDebugWhenNoRequests)) {
+      (this._attachConnector == null ||
+        this._launchConnector == null ||
+        getConfig().endDebugWhenNoRequests)) {
       this._setStatus(STATUS_END);
     }
   }
