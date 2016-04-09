@@ -15,7 +15,6 @@ type Props = {
   children: ReactElement;
 };
 
-/* eslint-disable react/prop-types */
 export const ToolbarRight = (props: Props) => {
   return (
     <div className="nuclide-ui-toolbar__right">

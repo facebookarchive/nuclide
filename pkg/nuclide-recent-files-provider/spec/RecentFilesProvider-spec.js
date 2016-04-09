@@ -42,14 +42,15 @@ let fakeGetProjectPathsImpl = () => [];
 const fakeGetProjectPaths = () => fakeGetProjectPathsImpl();
 
 
-/* eslint-disable react/prop-types */
 // Per https://github.com/facebook/react/issues/4692#issuecomment-163029873
 class Wrapper extends React.Component {
+  props: {
+    children?: any;
+  };
   render(): ReactElement {
     return <div>{this.props.children}</div>;
   }
 }
-/* eslint-enable react/prop-types */
 
 describe('RecentFilesProvider', () => {
 

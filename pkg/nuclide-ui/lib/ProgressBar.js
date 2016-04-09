@@ -23,7 +23,6 @@ type Props = {
 };
 
 /** A Progressbar for showing deterministic progress. */
-/* eslint-disable react/prop-types */
 export const ProgressBar = (props: Props) => (
   <progress value={props.value} max={props.max} {...props} />
 );

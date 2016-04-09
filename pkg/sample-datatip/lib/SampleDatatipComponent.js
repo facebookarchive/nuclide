@@ -15,7 +15,6 @@ type DatatipComponentProps = {
   word: string;
 };
 
-/* eslint-disable react/prop-types */
 export const SampleDatatipComponent = (props: DatatipComponentProps) => {
   return <div>I am a Datatip for "{props.word}"</div>;
 };

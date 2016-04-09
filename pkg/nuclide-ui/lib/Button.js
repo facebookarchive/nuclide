@@ -61,7 +61,6 @@ const ButtonTypeClassnames = Object.freeze({
 /**
  * Generic Button wrapper.
  */
-/* eslint-disable react/prop-types */
 export const Button = (props: Props) => {
   const {
     icon,

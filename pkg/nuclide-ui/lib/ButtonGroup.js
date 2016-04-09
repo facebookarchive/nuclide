@@ -37,7 +37,6 @@ const ButtonGroupSizeClassnames = Object.freeze({
 /**
  * Visually groups Buttons passed in as children.
  */
-/* eslint-disable react/prop-types */
 export const ButtonGroup = (props: Props) => {
   const {
     size,

@@ -16,7 +16,6 @@ type Props = {
 };
 
 /** A Block. */
-/* eslint-disable react/prop-types */
 export const Block = (props: Props) => (
   <div className="block">{props.children}</div>
 );

@@ -18,7 +18,6 @@ type Props = {
 /**
  * Visually groups Buttons passed in as children.
  */
-/* eslint-disable react/prop-types */
 export const ButtonToolbar = (props: Props) => {
   return (
     <div className="btn-toolbar">

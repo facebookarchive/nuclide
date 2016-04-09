@@ -16,7 +16,6 @@ type Props = {
   overflowX: ?string;
 };
 
-/*eslint-disable react/prop-types */
 export const PanelComponentScroller = (props: Props): React.Element => {
   const style = (props.overflowX == null) ? null : {overflowX: props.overflowX};
   return (

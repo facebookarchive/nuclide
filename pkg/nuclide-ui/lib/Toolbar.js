@@ -17,7 +17,6 @@ type Props = {
   location?: 'top' | 'bottom';
 };
 
-/* eslint-disable react/prop-types */
 export const Toolbar = (props: Props) => {
   const className = classnames('nuclide-ui-toolbar', {
     [`nuclide-ui-toolbar--${props.location}`]: props.location != null,

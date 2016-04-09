@@ -36,7 +36,6 @@ const LoadingSpinnerClassnames = Object.freeze({
 /**
  * Shows an indefinite, animated LoadingSpinner.
  */
-/* eslint-disable react/prop-types */
 export const LoadingSpinner = (props: Props): ReactElement => {
   const {
     className,
