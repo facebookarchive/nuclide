@@ -68,6 +68,8 @@ class Activation {
         event => {
           const target = ((event.currentTarget: any): HTMLElement).querySelector('.name');
           this._getController().runTests(target.dataset.path);
+          // Ensure ancestors of this element don't attempt to run tests as well.
+          event.stopPropagation();
         }
       )
     );
@@ -79,6 +81,8 @@ class Activation {
         event => {
           const target = ((event.currentTarget: any): HTMLElement).querySelector('.name');
           this._getController().runTests(target.dataset.path);
+          // Ensure ancestors of this element don't attempt to run tests as well.
+          event.stopPropagation();
         }
       )
     );
