@@ -389,6 +389,7 @@ declare class atom$Range {
   isEmpty(): boolean;
   isEqual(otherRange: atom$Range): boolean;
   containsPoint(point: atom$Point, exclusive?: boolean): boolean;
+  containsRange(other: atom$Range, exclusive?: boolean): boolean;
   serialize(): Array<Array<number>>;
 }
 
