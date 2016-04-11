@@ -52,8 +52,12 @@ export class SocketClient {
         // but its close event is sent asynchronously.
         if (this._socket === socket) {
           this._socket = null;
+          logger.info('Client #%s socket close recieved on open socket!', this.id);
+        } else {
+          logger.info('Client #%s socket close received on orphaned socket!', this.id);
         }
-        logger.info('Client #%s closing a socket!', this.id);
+      } else {
+        logger.info('Client #%s recieved socket close on already closed socket!', this.id);
       }
     });
   }
