@@ -295,23 +295,27 @@ class Activation {
 }
 
 function createDatatipProvider(): DatatipProvider {
-  return {
-    // Eligibility is determined online, based on registered EvaluationExpression providers.
-    validForScope: (scope: string) => true,
-    providerName: DATATIP_PACKAGE_NAME,
-    inclusionPriority: 1,
-    datatip: (editor: TextEditor, position: atom$Point) => {
-      if (activation == null) {
-        return Promise.resolve(null);
-      }
-      const model = activation.getModel();
-      return debuggerDatatip(model, editor, position);
-    },
-  };
+  if (datatipProvider == null) {
+    datatipProvider = {
+      // Eligibility is determined online, based on registered EvaluationExpression providers.
+      validForScope: (scope: string) => true,
+      providerName: DATATIP_PACKAGE_NAME,
+      inclusionPriority: 1,
+      datatip: (editor: TextEditor, position: atom$Point) => {
+        if (activation == null) {
+          return Promise.resolve(null);
+        }
+        const model = activation.getModel();
+        return debuggerDatatip(model, editor, position);
+      },
+    };
+  }
+  return datatipProvider;
 }
 
 let activation = null;
 let toolBar: ?any = null;
+let datatipProvider: ?DatatipProvider;
 
 export function activate(state: ?SerializedState) {
   if (!activation) {
@@ -407,5 +411,8 @@ export function createDatatipProvider(): Object {
 export function consumeDatatipService(service: DatatipService): IDisposable {
   const provider = createDatatipProvider();
   service.addProvider(provider);
-  return new Disposable(() => service.removeProvider(provider));
+  const disposable = new Disposable(() => service.removeProvider(provider));
+  invariant(activation);
+  activation._disposables.add(disposable);
+  return disposable;
 }
