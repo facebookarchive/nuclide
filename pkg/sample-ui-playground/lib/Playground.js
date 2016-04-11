@@ -20,6 +20,7 @@ import {CheckboxExamples} from '../../nuclide-ui/lib/Checkbox.example';
 import {TabExamples} from '../../nuclide-ui/lib/Tabs.example';
 import {RadioGroupExamples} from '../../nuclide-ui/lib/RadioGroup.example';
 import {TextInputExamples} from '../../nuclide-ui/lib/TextInputs.example';
+import {ToolbarExamples} from '../../nuclide-ui/lib/Toolbar.example';
 
 const playgroundComponents = [
   ButtonExamples,
@@ -28,6 +29,7 @@ const playgroundComponents = [
   TabExamples,
   RadioGroupExamples,
   TextInputExamples,
+  ToolbarExamples,
 ];
 
 type ComponentSpec = {
