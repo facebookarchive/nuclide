@@ -84,7 +84,7 @@ export async function debuggerDatatip(
   if (!await passesGK()) {
     return null;
   }
-  if (!model.getStore().getDebuggerMode() === DebuggerMode.PAUSED) {
+  if (model.getStore().getDebuggerMode() !== DebuggerMode.PAUSED) {
     return null;
   }
   const activeEditor = atom.workspace.getActiveTextEditor();
