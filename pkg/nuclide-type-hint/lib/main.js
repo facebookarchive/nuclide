@@ -17,48 +17,76 @@ import type {
 import type TypeHintManagerType from './TypeHintManager';
 
 import invariant from 'assert';
-import {Disposable} from 'atom';
-
-let typeHintManager: ?TypeHintManagerType = null;
+import {
+  CompositeDisposable,
+  Disposable,
+} from 'atom';
 
 const PACKAGE_NAME = 'nuclide-type-hint';
 
-function createDatatipProvider(): DatatipProvider {
-  invariant(typeHintManager);
-  const datatip = typeHintManager.datatip.bind(typeHintManager);
-  return {
-    validForScope: () => true, // TODO
-    providerName: PACKAGE_NAME,
-    inclusionPriority: 1,
-    datatip,
-  };
-}
+class Activation {
+  _disposables: CompositeDisposable;
+  datatipService: ?DatatipService;
+  typeHintManager: ?TypeHintManagerType;
 
-export function activate(state: ?any): void {
-  if (!typeHintManager) {
-    const TypeHintManager = require('./TypeHintManager');
-    typeHintManager = new TypeHintManager();
+  constructor(state: ?any) {
+    this._disposables = new CompositeDisposable();
+    if (this.typeHintManager == null) {
+      const TypeHintManager = require('./TypeHintManager');
+      this.typeHintManager = new TypeHintManager();
+    }
+  }
+
+  consumeTypehintProvider(provider: TypeHintProvider): IDisposable {
+    invariant(this.typeHintManager);
+    this.typeHintManager.addProvider(provider);
+    return new Disposable(() => {
+      if (this.typeHintManager != null) {
+        this.typeHintManager.removeProvider(provider);
+      }
+    });
+  }
+
+  consumeDatatipService(service: DatatipService): IDisposable {
+    invariant(this.typeHintManager);
+    const datatip = this.typeHintManager.datatip.bind(this.typeHintManager);
+    const datatipProvider: DatatipProvider = {
+      validForScope: () => true,
+      providerName: PACKAGE_NAME,
+      inclusionPriority: 1,
+      datatip,
+    };
+    this.datatipService = service;
+    service.addProvider(datatipProvider);
+    const disposable = new Disposable(() => service.removeProvider(datatipProvider));
+    this._disposables.add(disposable);
+    return disposable;
+  }
+
+  dispose(): void {
+    this._disposables.dispose();
   }
 }
 
+let activation: ?Activation = null;
+
+export function activate(state: ?any): void {
+  activation = new Activation(state);
+}
+
 export function consumeTypehintProvider(provider: TypeHintProvider): IDisposable {
-  invariant(typeHintManager);
-  typeHintManager.addProvider(provider);
-  return new Disposable(() => {
-    if (typeHintManager != null) {
-      typeHintManager.removeProvider(provider);
-    }
-  });
+  invariant(activation);
+  return activation.consumeTypehintProvider(provider);
 }
 
 export function consumeDatatipService(service: DatatipService): IDisposable {
-  const provider = createDatatipProvider();
-  service.addProvider(provider);
-  return new Disposable(() => service.removeProvider(provider));
+  invariant(activation);
+  return activation.consumeDatatipService(service);
 }
 
-export function deactivate() {
-  if (typeHintManager) {
-    typeHintManager = null;
+export function deactivate(): void {
+  if (activation != null) {
+    activation.dispose();
+    activation = null;
   }
 }
