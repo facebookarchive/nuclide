@@ -306,13 +306,11 @@ class ServerConnection {
       'Attempt to remove a non-existent RemoteConnection');
     this._connections.splice(this._connections.indexOf(connection), 1);
     if (this._connections.length === 0) {
-      if (shutdownIfLast) {
-        // The await here is subtle, it ensures that the shutdown call is sent
-        // on the socket before the socket is closed on the next line.
-        // TODO: Ideally we'd not Promise.all() for argument lists which do not
-        // contain any remote interfaces rather than await here.
-        await this._getInfoService().shutdownServer();
-      }
+      // The await here is subtle, it ensures that the shutdown call is sent
+      // on the socket before the socket is closed on the next line.
+      // TODO: Ideally we'd not Promise.all() for argument lists which do not
+      // contain any remote interfaces rather than await here.
+      await this._getInfoService().closeConnection(shutdownIfLast);
       this.close();
     }
   }

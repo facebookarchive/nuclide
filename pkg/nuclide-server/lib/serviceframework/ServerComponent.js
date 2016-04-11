@@ -215,7 +215,7 @@ export default class ServerComponent {
         marshallingContext, call.args, type.argumentTypes);
 
       return returnValue(
-        localImplementation.apply(this, marshalledArgs),
+        localImplementation.apply(client, marshalledArgs),
         type.returnType);
     };
 
