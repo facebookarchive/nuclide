@@ -46,6 +46,10 @@ export default function createConsoleGadget(
       };
     }
 
+    getIconName(): string {
+      return 'terminal';
+    }
+
     getTitle(): string {
       return 'Console';
     }
