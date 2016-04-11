@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {InlineComponent, RenderedComponent, OffsetMap} from './types';
+import type {OffsetMap} from './types';
+import type {UIElement} from '../../nuclide-diff-ui-provider-interfaces';
 
 import {Range} from 'atom';
 import {ReactDOM} from 'react-for-atom';
@@ -23,59 +24,39 @@ export default class DiffViewEditor {
   _editorElement: atom$TextEditorElement;
   _highlightMarkers: Array<atom$Marker>;
   _offsetMarkers: Array<atom$Marker>;
+  _uiElementsMarkers: Array<atom$Marker>;
 
   constructor(editorElement: atom$TextEditorElement) {
     this._editorElement = editorElement;
     this._editor = editorElement.getModel();
     this._highlightMarkers = [];
     this._offsetMarkers = [];
+    this._uiElementsMarkers = [];
   }
 
-  renderInlineComponents(elements: Array<InlineComponent>): Promise<Array<RenderedComponent>> {
-    const components = [];
-    const renderPromises = [];
-    const scrollToRow = this._scrollToRow.bind(this);
-    elements.forEach(element => {
+  setUIElements(elements: Array<UIElement>): void {
+    for (const marker of this._uiElementsMarkers) {
+      marker.destroy();
+    }
+    this._uiElementsMarkers = elements.map(element => {
       const {node, bufferRow} = element;
-      if (!node.props.helpers) {
-        node.props.helpers = {};
-      }
-      const helpers = {
-        scrollToRow,
-      };
       // TODO(most): OMG, this mutates React props for the created component!!
-      Object.assign(node.props.helpers, helpers);
+      Object.assign(node.props.helpers, {
+        scrollToRow: this._scrollToRow.bind(this),
+      });
       const container = document.createElement('div');
-      let component;
-      const didRenderPromise = new Promise((res, rej) => {
-        component = ReactDOM.render(node, container, () => {
-          res();
-        });
-      });
-      renderPromises.push(didRenderPromise);
-      components.push({
-        bufferRow,
-        // $FlowFixMe(most)
-        component,
-        container,
-      });
-    });
-    return Promise.all(renderPromises).then(() => components);
-  }
-
-  attachInlineComponents(elements: Array<RenderedComponent>): void {
-    elements.forEach(element => {
-      const {bufferRow, container} = element;
+      ReactDOM.render(node, container);
       // an overlay marker at a buffer range with row x renders under row x + 1
       // so, use range at bufferRow - 1 to actually display at bufferRow
       const range = [[bufferRow - 1, 0], [bufferRow - 1, 0]];
       const marker = this._editor.markBufferRange(range, {invalidate: 'never'});
-      this._editor.decorateMarker(marker, {type: 'overlay', item: container});
+      this._editor.decorateMarker(marker, {
+        type: 'block',
+        item: container,
+        position: 'after',
+      });
+      return marker;
     });
-  }
-
-  getLineHeightInPixels(): number {
-    return this._editor.getLineHeightInPixels();
   }
 
   scrollToScreenLine(screenLine: number): void {
@@ -155,10 +136,15 @@ export default class DiffViewEditor {
     this._highlightMarkers = [];
     this._offsetMarkers.forEach(marker => marker.destroy());
     this._offsetMarkers = [];
+    this._uiElementsMarkers.forEach(marker => marker.destroy());
+    this._uiElementsMarkers = [];
     this._editor.destroy();
   }
 
   _scrollToRow(row: number): void {
-    this._editor.scrollToBufferPosition([row, 0]);
+    this._editor.scrollToBufferPosition(
+      [row, 0],
+      {center: true},
+    );
   }
 }

@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {FileChangeState, InlineComponent, OffsetMap, DiffModeType} from './types';
+import type {FileChangeState, OffsetMap, DiffModeType} from './types';
+import type {
+  UIElement,
+} from '../../nuclide-diff-ui-provider-interfaces';
 import type DiffViewModel from './DiffViewModel';
 import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
 import type {NuclideUri} from '../../nuclide-remote-uri';
@@ -50,7 +53,7 @@ type EditorState = {
     added: Array<number>;
     removed: Array<number>;
   };
-  inlineElements: Array<InlineComponent>;
+  inlineElements: Array<UIElement>;
 };
 
 type State = {
@@ -107,7 +110,6 @@ class DiffViewComponent extends React.Component {
       newEditorState: initialEditorState(),
     };
     (this: any)._onModelStateChange = this._onModelStateChange.bind(this);
-    (this: any)._handleNewOffsets = this._handleNewOffsets.bind(this);
     (this: any)._updateLineDiffState = this._updateLineDiffState.bind(this);
     (this: any)._onChangeNewTextEditor = this._onChangeNewTextEditor.bind(this);
     (this: any)._onTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
@@ -332,7 +334,6 @@ class DiffViewComponent extends React.Component {
           savedContents={oldState.text}
           initialTextContent={oldState.text}
           inlineElements={oldState.inlineElements}
-          handleNewOffsets={this._handleNewOffsets}
           readOnly={true}
           onChange={EMPTY_FUNCTION}
           onDidUpdateTextEditorElement={EMPTY_FUNCTION}
@@ -350,7 +351,6 @@ class DiffViewComponent extends React.Component {
           initialTextContent={newState.text}
           savedContents={newState.savedContents}
           inlineElements={newState.inlineElements}
-          handleNewOffsets={this._handleNewOffsets}
           onDidUpdateTextEditorElement={this._onDidUpdateTextEditorElement}
           readOnly={false}
           onChange={this._onChangeNewTextEditor}
@@ -444,19 +444,6 @@ class DiffViewComponent extends React.Component {
     atom.commands.dispatch(diffViewNode, 'nuclide-diff-view:switch-to-editor');
   }
 
-  _handleNewOffsets(offsetsFromComponents: Map): void {
-    const oldLineOffsets = new Map(this.state.oldEditorState.offsets);
-    const newLineOffsets = new Map(this.state.newEditorState.offsets);
-    offsetsFromComponents.forEach((offsetAmount, row) => {
-      newLineOffsets.set(row, (newLineOffsets.get(row) || 0) + offsetAmount);
-      oldLineOffsets.set(row, (oldLineOffsets.get(row) || 0) + offsetAmount);
-    });
-    this.setState({
-      oldEditorState: {...this.state.oldEditorState, offsets: oldLineOffsets},
-      newEditorState: {...this.state.newEditorState, offsets: newLineOffsets},
-    });
-  }
-
   _onChangeNewTextEditor(newContents: string): void {
     this.props.diffModel.setNewContents(newContents);
   }
@@ -482,6 +469,7 @@ class DiffViewComponent extends React.Component {
     const {addedLines, removedLines, oldLineOffsets, newLineOffsets} =
       computeDiff(oldContents, newContents);
 
+    // TODO(most): Sync the used comment vertical space on both editors.
     const oldEditorState = {
       revisionTitle: fromRevisionTitle,
       text: oldContents,

@@ -11,6 +11,7 @@
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {UIElement} from '../../nuclide-diff-ui-provider-interfaces';
 
 export type DiffModeType = 'Browse' | 'Commit' | 'Publish';
 
@@ -39,7 +40,7 @@ export type FileChangeState = {
   fromRevisionTitle: string;
   toRevisionTitle: string;
   compareRevisionInfo: ?RevisionInfo;
-  inlineComponents?: Array<InlineComponent>;
+  inlineComponents?: Array<UIElement>;
 };
 
 export type RevisionsState = {
@@ -70,15 +71,4 @@ export type LineRangesWithOffsets = {
 export type HighlightedLines = {
   added: Array<number>;
   removed: Array<number>;
-};
-
-export type InlineComponent = {
-  node: ReactElement;
-  bufferRow: number;
-};
-
-export type RenderedComponent = {
-  container: HTMLElement;
-  component: ReactComponent;
-  bufferRow: number;
 };

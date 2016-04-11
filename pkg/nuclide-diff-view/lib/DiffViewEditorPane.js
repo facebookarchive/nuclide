@@ -10,13 +10,13 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {HighlightedLines, OffsetMap, InlineComponent} from './types';
+import type {HighlightedLines, OffsetMap} from './types';
+import type {UIElement} from '../../nuclide-diff-ui-provider-interfaces';
 
 import {CompositeDisposable} from 'atom';
 import {debounce} from '../../nuclide-commons';
 import {
   React,
-  ReactDOM,
 } from 'react-for-atom';
 import DiffViewEditor from './DiffViewEditor';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
@@ -34,8 +34,7 @@ type Props = {
   };
   initialTextContent: string;
   savedContents: string;
-  inlineElements: Array<InlineComponent>;
-  handleNewOffsets: (newOffsets: OffsetMap) => any;
+  inlineElements: Array<UIElement>;
   readOnly: boolean;
   onChange: (newContents: string) => any;
   onDidUpdateTextEditorElement: () => mixed;
@@ -178,49 +177,12 @@ export default class DiffViewEditorPane extends React.Component {
     this._diffViewEditor.setOffsets(offsets);
   }
 
-  async _renderComponentsInline(elements: Array<Object>): Promise {
-    const diffViewEditor = this._diffViewEditor;
-    invariant(diffViewEditor);
-    const components = await diffViewEditor.renderInlineComponents(elements);
+  _renderComponentsInline(elements: Array<UIElement>): void {
     if (!this._isMounted || elements.length === 0) {
       return;
     }
-
-    diffViewEditor.attachInlineComponents(components);
-    const offsetsFromComponents = new Map();
-
-    // TODO(gendron):
-    // The React components aren't actually rendered in the DOM until the
-    // associated decorations are attached to the TextEditor.
-    // (see DiffViewEditor.attachInlineComponents)
-    // There's no easy way to listen for this event, so just wait 0.5s per component.
-    setTimeout(() => {
-      if (!this._isMounted) {
-        return;
-      }
-      const editorWidth = this.getEditorDomElement().clientWidth;
-      components.forEach(element => {
-        const domNode = ReactDOM.findDOMNode(element.component);
-        // get the height of the component after it has been rendered in the DOM
-        const componentHeight = domNode.clientHeight;
-        const lineHeight = diffViewEditor.getLineHeightInPixels();
-
-        // TODO(gendron):
-        // Set the width of the overlay so that it won't resize when we
-        // type comment replies into the text editor.
-        domNode.style.width = (editorWidth - 70) + 'px';
-
-        // calculate the number of lines we need to insert in the buffer to make room
-        // for the component to be displayed
-        const offset = Math.ceil(componentHeight / lineHeight);
-        const offsetRow = element.bufferRow;
-        offsetsFromComponents.set(offsetRow, offset);
-
-        // PhabricatorCommentsList is rendered with visibility: hidden.
-        domNode.style.visibility = 'visible';
-      });
-      this.props.handleNewOffsets(offsetsFromComponents);
-    }, components.length * 500);
+    invariant(this._diffViewEditor, 'diffViewEditor has not been setup yet.');
+    this._diffViewEditor.setUIElements(elements);
   }
 
   getEditorModel(): atom$TextEditor {
