@@ -16,7 +16,6 @@ import type {Datatip} from '../../nuclide-datatip-interfaces';
 import type DebuggerModel from './DebuggerModel';
 import type {EvaluationResult} from './Bridge';
 
-import Rx from 'rx';
 import {extractWordAtPosition} from '../../nuclide-atom-helpers';
 import {injectObservableAsProps} from '../../nuclide-ui/lib/HOC';
 import {DebuggerMode} from './DebuggerStore';
@@ -102,18 +101,21 @@ export async function debuggerDatatip(
   if (expression == null) {
     return null;
   }
-  const evaluationResult: ?EvaluationResult =
-    await model.getBridge().evaluateOnSelectedCallFrame(expression);
-  if (evaluationResult == null) {
+  const evaluation = model.getWatchExpressionStore().evaluateWatchExpression(expression);
+  // Avoid creating a datatip if the evaluation fails
+  const evaluationResult: ?EvaluationResult = await evaluation.take(1).toPromise();
+  if (evaluationResult === null) {
     return null;
   }
-  const propStream = Rx.Observable.just({expression, evaluationResult});
+  const propStream = evaluation
+    .filter(result => result != null)
+    .map(result => ({expression, evaluationResult: result}));
   return {
     component: injectObservableAsProps(
       propStream,
       DebuggerDatatipComponent,
     ),
-    pinnable: false,
+    pinnable: true,
     range,
   };
 }

@@ -14,6 +14,7 @@ const BreakpointManager = require('./BreakpointManager');
 const BreakpointStore = require('./BreakpointStore');
 const DebuggerActions = require('./DebuggerActions');
 const {DebuggerStore} = require('./DebuggerStore');
+const {WatchExpressionStore} = require('./WatchExpressionStore');
 const Bridge = require('./Bridge');
 const {CompositeDisposable} = require('atom');
 const {Dispatcher} = require('flux');
@@ -30,6 +31,7 @@ class DebuggerModel {
   _breakpointStore: BreakpointStore;
   _dispatcher: Dispatcher;
   _store: DebuggerStore;
+  _watchExpressionStore: WatchExpressionStore;
   _debuggerProviderStore: DebuggerProviderStore;
   _bridge: Bridge;
 
@@ -41,6 +43,7 @@ class DebuggerModel {
     this._breakpointManager = new BreakpointManager(this._breakpointStore);
     this._bridge = new Bridge(this);
     this._debuggerProviderStore = new DebuggerProviderStore(this._dispatcher, this._actions);
+    this._watchExpressionStore = new WatchExpressionStore(this._bridge);
 
     this._disposables = new CompositeDisposable(
       this._store,
@@ -49,6 +52,7 @@ class DebuggerModel {
       this._breakpointManager,
       this._bridge,
       this._debuggerProviderStore,
+      this._watchExpressionStore,
     );
   }
 
@@ -62,6 +66,10 @@ class DebuggerModel {
 
   getStore(): DebuggerStore {
     return this._store;
+  }
+
+  getWatchExpressionStore(): WatchExpressionStore {
+    return this._watchExpressionStore;
   }
 
   getDebuggerProviderStore(): DebuggerProviderStore {
