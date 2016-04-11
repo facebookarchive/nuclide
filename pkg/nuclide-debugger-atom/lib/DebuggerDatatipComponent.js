@@ -62,22 +62,10 @@ const valueRenderers = [
   renderDefault,
 ];
 
-export function makeDebuggerDatatipComponent(
-  expression: string,
-  evaluationResult: EvaluationResult
-): ReactClass {
-  return () => (
-    <DebuggerDatatipComponent
-      expression={expression}
-      evaluationResult={evaluationResult}
-    />
-  );
-}
-
-class DebuggerDatatipComponent extends React.Component {
+export class DebuggerDatatipComponent extends React.Component {
   props: DebuggerDatatipComponentProps;
 
-  render(): ReactElement {
+  render(): ?ReactElement {
     const {
       expression,
       evaluationResult,

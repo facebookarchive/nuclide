@@ -16,9 +16,11 @@ import type {Datatip} from '../../nuclide-datatip-interfaces';
 import type DebuggerModel from './DebuggerModel';
 import type {EvaluationResult} from './Bridge';
 
+import Rx from 'rx';
 import {extractWordAtPosition} from '../../nuclide-atom-helpers';
+import {injectObservableAsProps} from '../../nuclide-ui/lib/HOC';
 import {DebuggerMode} from './DebuggerStore';
-import {makeDebuggerDatatipComponent} from './DebuggerDatatipComponent';
+import {DebuggerDatatipComponent} from './DebuggerDatatipComponent';
 
 const GK_DEBUGGER_DATATIPS = 'nuclide_debugger_datatips';
 const GK_TIMEOUT = 1000;
@@ -105,8 +107,12 @@ export async function debuggerDatatip(
   if (evaluationResult == null) {
     return null;
   }
+  const propStream = Rx.Observable.just({expression, evaluationResult});
   return {
-    component: makeDebuggerDatatipComponent(expression, evaluationResult),
+    component: injectObservableAsProps(
+      propStream,
+      DebuggerDatatipComponent,
+    ),
     pinnable: false,
     range,
   };
