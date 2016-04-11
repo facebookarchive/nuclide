@@ -9,11 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {
-  DatatipProvider,
-} from '../../nuclide-datatip-interfaces';
 
-const {Disposable} = require('atom');
 import invariant from 'assert';
 
 import {DatatipManager} from './DatatipManager';
@@ -26,14 +22,9 @@ export function activate(state: ?any): void {
   }
 }
 
-export function consumeDatatipProvider(provider: DatatipProvider): IDisposable {
+export function provideDatatipService(): DatatipManager {
   invariant(datatipManager);
-  datatipManager.addProvider(provider);
-  return new Disposable(() => {
-    if (datatipManager != null) {
-      datatipManager.removeProvider(provider);
-    }
-  });
+  return datatipManager;
 }
 
 export function deactivate() {

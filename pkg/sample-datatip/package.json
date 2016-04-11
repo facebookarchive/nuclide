@@ -8,10 +8,10 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "providedServices": {
+  "consumedServices": {
     "nuclide-datatip.provider": {
       "versions": {
-        "0.0.0": "createDatatipProvider"
+        "0.0.0": "consumeDatatipService"
       }
     }
   }

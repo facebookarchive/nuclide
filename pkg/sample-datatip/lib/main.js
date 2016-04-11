@@ -9,13 +9,17 @@
  * the root directory of this source tree.
  */
 
-import type {DatatipProvider} from '../../nuclide-datatip-interfaces';
+import type {
+  DatatipProvider,
+  DatatipService,
+} from '../../nuclide-datatip-interfaces';
 
+import {Disposable} from 'atom';
 import {datatip} from './SampleDatatip';
 
 const PACKAGE_NAME = 'sample-datatip';
 
-export function createDatatipProvider(): DatatipProvider {
+function createDatatipProvider(): DatatipProvider {
   return {
     // show the sample datatip for every type of file
     validForScope: (scope: string) => true,
@@ -23,4 +27,10 @@ export function createDatatipProvider(): DatatipProvider {
     inclusionPriority: 1,
     datatip,
   };
+}
+
+export function consumeDatatipService(service: DatatipService): IDisposable {
+  const provider = createDatatipProvider();
+  service.addProvider(provider);
+  return new Disposable(() => service.removeProvider(provider));
 }
