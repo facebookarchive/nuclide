@@ -63,6 +63,7 @@ import typeof * as RuntimeInfoType from './runtimeInfo';
 import typeof * as ScribeProcessType from './ScribeProcess';
 import typeof * as BatchProcessedQueueType from './BatchProcessedQueue';
 import typeof * as ExtendableErrorType from './ExtendableError';
+import typeof * as ObservablesType from './observables';
 import type {Environment as EnvironmentType} from './environment';
 
 // It's impactful to memoize our requires here since these commons are so often used.
@@ -77,6 +78,10 @@ function requireFromCache(id: string): any {
 
 function requirePromises(): PromisesType {
   return requireFromCache('./promises');
+}
+
+function requireObservables(): ObservablesType {
+  return requireFromCache('./observables');
 }
 
 function requireProcess(): ProcessType {
@@ -231,6 +236,10 @@ module.exports = {
 
   get promises() {
     return requirePromises();
+  },
+
+  get observables() {
+    return requireObservables();
   },
 
   get regexp(): RegExpType {
