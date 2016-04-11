@@ -24,7 +24,14 @@ type TypeHintComponentState = {
   expandedNodes: Set<HintTree>;
 };
 
-export class TypeHintComponent extends React.Component {
+export function makeTypeHintComponent(
+  content: string | HintTree,
+  grammar: atom$Grammar,
+): ReactClass {
+  return () => <TypeHintComponent content={content} grammar={grammar} />;
+}
+
+class TypeHintComponent extends React.Component {
   props: TypeHintComponentProps;
   state: TypeHintComponentState;
 
@@ -95,12 +102,13 @@ export class TypeHintComponent extends React.Component {
   }
 
   render(): ReactElement {
-    if (typeof this.props.content === 'string') {
-      return this.renderPrimitive(this.props.content);
+    const {content} = this.props;
+    if (typeof content === 'string') {
+      return this.renderPrimitive(content);
     }
     return (
       <ul className="list-tree">
-        {this.renderHierarchical(this.props.content)}
+        {this.renderHierarchical(content)}
       </ul>
     );
   }

@@ -59,7 +59,7 @@ export class PinnedDatatip {
   _mouseDisposable: ?IDisposable;
   _subscriptions: atom$CompositeDisposable;
   _range: atom$Range;
-  _component: ReactElement;
+  _component: ReactClass;
   _editor: TextEditor;
   _hostElement: HTMLElement;
   _boundDispose: Function;
@@ -73,8 +73,8 @@ export class PinnedDatatip {
     editor: TextEditor,
     onDispose: (pinnedDatatip: PinnedDatatip) => void) {
     const {
-      range,
       component,
+      range,
     } = datatip;
     this._subscriptions = new CompositeDisposable();
     this._subscriptions.add(new Disposable(() => onDispose(this)));
@@ -186,7 +186,7 @@ export class PinnedDatatip {
     const {
       _editor,
       _range,
-      _component,
+      _component: ProvidedComponent,
       _hostElement,
       _isDragging,
       _isHovering,
@@ -200,7 +200,7 @@ export class PinnedDatatip {
         onActionClick={this._boundDispose}
         onMouseDown={this._boundHandleMouseDown}
         onClickCapture={this._boundHandleCapturedClick}>
-        {_component}
+        <ProvidedComponent />
       </DatatipComponent>,
       _hostElement,
     );

@@ -13,14 +13,10 @@ import type {TypeHintProvider} from '../../nuclide-type-hint-interfaces';
 import type {Datatip} from '../../nuclide-datatip-interfaces';
 
 import invariant from 'assert';
-import {
-  React,
-} from 'react-for-atom';
-
 import {array} from '../../nuclide-commons';
 import {track, trackOperationTiming} from '../../nuclide-analytics';
 
-import {TypeHintComponent} from './TypeHintComponent';
+import {makeTypeHintComponent} from './TypeHintComponent';
 
 class TypeHintManager {
   _typeHintProviders: Array<TypeHintProvider>;
@@ -66,7 +62,7 @@ class TypeHintManager {
       'message': hint,
     });
     return {
-      component: <TypeHintComponent content={hintTree || hint} grammar={grammar} />,
+      component: makeTypeHintComponent(hintTree || hint, grammar),
       range,
     };
   }

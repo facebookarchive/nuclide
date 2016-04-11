@@ -10,7 +10,7 @@
  */
 
 export type Datatip = {
-  component: ReactElement;
+  component: ReactClass;
   range: atom$Range;
   pinnable?: boolean;
 };

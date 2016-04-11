@@ -16,12 +16,9 @@ import type {Datatip} from '../../nuclide-datatip-interfaces';
 import type DebuggerModel from './DebuggerModel';
 import type {EvaluationResult} from './Bridge';
 
-import {
-  React,
-} from 'react-for-atom';
 import {extractWordAtPosition} from '../../nuclide-atom-helpers';
 import {DebuggerMode} from './DebuggerStore';
-import {DebuggerDatatipComponent} from './DebuggerDatatipComponent';
+import {makeDebuggerDatatipComponent} from './DebuggerDatatipComponent';
 
 const GK_DEBUGGER_DATATIPS = 'nuclide_debugger_datatips';
 const GK_TIMEOUT = 1000;
@@ -109,8 +106,7 @@ export async function debuggerDatatip(
     return null;
   }
   return {
-    component:
-      <DebuggerDatatipComponent expression={expression} evaluationResult={evaluationResult} />,
+    component: makeDebuggerDatatipComponent(expression, evaluationResult),
     pinnable: false,
     range,
   };
