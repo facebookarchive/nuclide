@@ -247,7 +247,7 @@ export class DatatipManager {
     }
     const renderedProviders = nonEmptyDatatips.map(datatip => {
       const {
-        component,
+        component: ProvidedComponent,
         name,
         action,
         actionTitle,
@@ -258,7 +258,7 @@ export class DatatipManager {
           actionTitle={actionTitle}
           onActionClick={this._handlePinClicked.bind(this, editor, datatip)}
           key={name}>
-          {component}
+          <ProvidedComponent />
         </DatatipComponent>
       );
     });
