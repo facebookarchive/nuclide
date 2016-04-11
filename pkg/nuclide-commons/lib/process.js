@@ -24,6 +24,7 @@ import {observeStream, splitStream} from './stream';
 import {CompositeDisposable, Disposable} from 'event-kit';
 import {Observable} from 'rx';
 import invariant from 'assert';
+import {quote} from 'shell-quote';
 
 let platformPathPromise: ?Promise<string>;
 
@@ -180,23 +181,19 @@ async function forkWithExecEnvironment(
   return child;
 }
 
-const isOsX = process.platform === 'darwin';
-
 /**
  * Takes the command and args that you would normally pass to `spawn()` and returns `newArgs` such
  * that you should call it with `spawn('script', newArgs)` to run the original command/args pair
  * under `script`.
  */
 function createArgsForScriptCommand(command: string, args?: Array<string> = []): Array<string> {
-  if (isOsX) {
+  if (process.platform === 'darwin') {
     // On OS X, script takes the program to run and its arguments as varargs at the end.
     return ['-q', '/dev/null', command].concat(args);
   } else {
     // On Linux, script takes the command to run as the -c parameter.
-    // TODO: Shell escape every element in allArgs.
     const allArgs = [command].concat(args);
-    const commandAsItsOwnArg = allArgs.join(' ');
-    return ['-q', '/dev/null', '-c', commandAsItsOwnArg];
+    return ['-q', '/dev/null', '-c', quote(allArgs)];
   }
 }
 
