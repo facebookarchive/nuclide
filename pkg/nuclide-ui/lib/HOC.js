@@ -19,6 +19,8 @@ import {React} from 'react-for-atom';
  * `<FooComponent val={42} />`.
  *
  * The resulting component re-renders on updates to the observable.
+ * The wrapped component is guaranteed to render only if the observable has resolved;
+ * otherwise, the wrapper component renders `null`.
  */
 export function injectObservableAsProps<T : ReactClass>(
   stream: Observable<{[key: string]: any}>,
@@ -28,15 +30,18 @@ export function injectObservableAsProps<T : ReactClass>(
   return class extends React.Component {
     _subscription: ?IDisposable;
     state: {[key: string]: any};
+    _resolved: boolean;
 
     constructor(props) {
       super(props);
       this._subscription = null;
       this.state = {};
+      this._resolved = false;
     }
 
     componentDidMount(): void {
       this._subscription = stream.subscribe(newState => {
+        this._resolved = true;
         this.setState(newState);
       });
     }
@@ -48,6 +53,9 @@ export function injectObservableAsProps<T : ReactClass>(
     }
 
     render(): ?ReactElement {
+      if (!this._resolved) {
+        return null;
+      }
       const props = {
         ...this.props,
         ...this.state,
