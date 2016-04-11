@@ -1,5 +1,33 @@
 # Nuclide Changelog
 
+## v0.130.0
+
+### Added
+
+* Distraction-Free-Mode:
+  - Hide things the file tree and outline view to focus on your code.
+  - Toggle Distraction-Free-Mode from the toolbar's eye icon (or trigger the `nuclide-distraction-free-mode:toggle` command).
+* Debugging:
+  - Native/C++ debugging for remote devserver.
+  - Datatips while debugging, hover over identifiers to display their value. Value datatips can be pinned and will update while debugging.
+* Settings for specifying the paths of `adb` and `syslog`.
+* Source Control context menu in the file tree.
+* Support for `BUCK.autodeps` files.
+* Enable open files ouside of file-tree in remote server.
+* Outline view for JSON files.
+
+### Fixed
+
+* User-visible errors (with troubleshooting tips) are now raised when adb and syslog aren't on the `PATH` and you try to run them.
+* Made PHP debugger less crashy when stepping, setting breakpoints, and more.
+* Text no longer jumps around while stepping in the debugger.
+
+### Changed
+
+* File-tree scrolling performance was improved.
+* Hide debugger panel after stop debugging.
+* Nuclide will not load at all in Atom <1.3.0.
+
 ## v0.129.0
 
 * Fixes an issue where the Diff View would fetch Mercurial data even if not visible.
