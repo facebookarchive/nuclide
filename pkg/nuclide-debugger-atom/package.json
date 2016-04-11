@@ -9,11 +9,6 @@
     "testRunner": "apm"
   },
   "providedServices": {
-    "nuclide-datatip.provider": {
-      "versions": {
-        "0.0.0": "createDatatipProvider"
-      }
-    },
     "nuclide-debugger.remote": {
       "versions": {
         "description": "Remote control for launching debugger.",
@@ -22,6 +17,11 @@
     }
   },
   "consumedServices": {
+    "nuclide-datatip.provider": {
+      "versions": {
+        "0.0.0": "consumeDatatipService"
+      }
+    },
     "nuclide-evaluation-expression.provider": {
       "versions": {
         "0.0.0": "consumeEvaluationExpressionProvider"

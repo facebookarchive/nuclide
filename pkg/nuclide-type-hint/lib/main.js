@@ -10,16 +10,29 @@
  */
 
 import type {TypeHintProvider} from '../../nuclide-type-hint-interfaces';
-
-import invariant from 'assert';
-
+import type {
+  DatatipProvider,
+  DatatipService,
+} from '../../nuclide-datatip-interfaces';
 import type TypeHintManagerType from './TypeHintManager';
 
+import invariant from 'assert';
 import {Disposable} from 'atom';
 
 let typeHintManager: ?TypeHintManagerType = null;
 
 const PACKAGE_NAME = 'nuclide-type-hint';
+
+function createDatatipProvider(): DatatipProvider {
+  invariant(typeHintManager);
+  const datatip = typeHintManager.datatip.bind(typeHintManager);
+  return {
+    validForScope: () => true, // TODO
+    providerName: PACKAGE_NAME,
+    inclusionPriority: 1,
+    datatip,
+  };
+}
 
 export function activate(state: ?any): void {
   if (!typeHintManager) {
@@ -38,15 +51,10 @@ export function consumeTypehintProvider(provider: TypeHintProvider): IDisposable
   });
 }
 
-export function createDatatipProvider(): Object {
-  invariant(typeHintManager);
-  const datatip = typeHintManager.datatip.bind(typeHintManager);
-  return {
-    validForScope: () => true, // TODO
-    providerName: PACKAGE_NAME,
-    inclusionPriority: 1,
-    datatip,
-  };
+export function consumeDatatipService(service: DatatipService): IDisposable {
+  const provider = createDatatipProvider();
+  service.addProvider(provider);
+  return new Disposable(() => service.removeProvider(provider));
 }
 
 export function deactivate() {

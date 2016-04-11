@@ -15,6 +15,10 @@ import type {
    NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type {SerializedBreakpoint} from './BreakpointStore';
+import type {
+  DatatipProvider,
+  DatatipService,
+} from '../../nuclide-datatip-interfaces';
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
@@ -290,6 +294,22 @@ class Activation {
   }
 }
 
+function createDatatipProvider(): DatatipProvider {
+  return {
+    // Eligibility is determined online, based on registered EvaluationExpression providers.
+    validForScope: (scope: string) => true,
+    providerName: DATATIP_PACKAGE_NAME,
+    inclusionPriority: 1,
+    datatip: (editor: TextEditor, position: atom$Point) => {
+      if (activation == null) {
+        return Promise.resolve(null);
+      }
+      const model = activation.getModel();
+      return debuggerDatatip(model, editor, position);
+    },
+  };
+}
+
 let activation = null;
 let toolBar: ?any = null;
 
@@ -382,4 +402,10 @@ export function createDatatipProvider(): Object {
       return debuggerDatatip(model, editor, position);
     },
   };
+}
+
+export function consumeDatatipService(service: DatatipService): IDisposable {
+  const provider = createDatatipProvider();
+  service.addProvider(provider);
+  return new Disposable(() => service.removeProvider(provider));
 }

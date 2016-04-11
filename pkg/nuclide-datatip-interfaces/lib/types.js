@@ -23,3 +23,8 @@ export type DatatipProvider = {
   // It is recommended that it be the name of the provider's package.
   providerName: string;
 };
+
+export type DatatipService = {
+  addProvider(provider: DatatipProvider): void;
+  removeProvider(provider: DatatipProvider): void;
+};
