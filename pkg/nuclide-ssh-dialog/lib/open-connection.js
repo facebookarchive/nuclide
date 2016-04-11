@@ -136,7 +136,7 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
     // to the ConnectionDialog will not.
     // Note: the `cleanupSubscriptionFunc` is called when the dialog closes:
     // `onConnect`, `onError`, or `onCancel`.
-    const baseDialogProps = Object.assign({}, {
+    const baseDialogProps = {
       // Select the default connection profile, which should always be index 0.
       indexOfInitiallySelectedConnectionProfile: 0,
       onAddProfileClicked,
@@ -164,7 +164,8 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
           }
         }
       },
-    }, props);
+      ...props,
+    };
 
     // If/when the saved connection profiles change, we want to re-render the dialog
     // with the new set of connection profiles.
@@ -172,18 +173,18 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
       (newProfiles: ?Array<NuclideRemoteConnectionProfile>) => {
         compositeConnectionProfiles = newProfiles ? [defaultConnectionProfile].concat(newProfiles) :
             [defaultConnectionProfile];
-        const newDialogProps = Object.assign({},
-          baseDialogProps,
-          {connectionProfiles: compositeConnectionProfiles},
-        );
+        const newDialogProps = {
+          ...baseDialogProps,
+          connectionProfiles: compositeConnectionProfiles,
+        };
         ReactDOM.render(<ConnectionDialog {...newDialogProps} />, hostEl);
       }
     );
 
-    const initialDialogProps = Object.assign({},
-      baseDialogProps,
-      {connectionProfiles: compositeConnectionProfiles},
-    );
+    const initialDialogProps = {
+      ...baseDialogProps,
+      connectionProfiles: compositeConnectionProfiles,
+    };
     ReactDOM.render(<ConnectionDialog {...initialDialogProps} />, hostEl);
   });
 }

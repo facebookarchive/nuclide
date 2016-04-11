@@ -79,7 +79,7 @@ describe('FileTreeHelpers', () => {
 
     beforeEach(() => {
       // Clone path module, then override all functions with the Windows version
-      originalPathModule = Object.assign({}, pathModule);
+      originalPathModule = {...pathModule};
       Object.assign(pathModule, pathModule.win32);
     });
 

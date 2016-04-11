@@ -93,6 +93,7 @@
     "eslint-plugin-flow-vars": "0.3.0",
     "eslint-plugin-jasmine": "1.8.1",
     "eslint-plugin-nuclide-internal": "file:resources/eslint-plugin-nuclide-internal",
+    "eslint-plugin-prefer-object-spread": "1.1.0",
     "eslint-plugin-react": "4.3.0",
     "fs-extra": "0.26.7",
     "jasmine-node": "1.14.5",

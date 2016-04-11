@@ -32,23 +32,19 @@ describe('validateFormInputs', () => {
       pathToPrivateKey: '',
       remoteServerCommand: defaultServerCommand,
     };
-    minimumValidParamsWithPrivateKey = Object.assign({},
-      connectionProfileBase,
-      {
-        authMethod: SshHandshake.SupportedMethods.PRIVATE_KEY,
-        pathToPrivateKey: '/Test',
-      },
-    );
-    minimumValidParamsWithPassword = Object.assign({},
-      connectionProfileBase,
-      {
-        authMethod: SshHandshake.SupportedMethods.PASSWORD,
-      },
-    );
-    minimumValidParamsWithSshAgent = Object.assign({},
-      connectionProfileBase,
-      {authMethod: SshHandshake.SupportedMethods.SSL_AGENT},
-    );
+    minimumValidParamsWithPrivateKey = {
+      ...connectionProfileBase,
+      authMethod: SshHandshake.SupportedMethods.PRIVATE_KEY,
+      pathToPrivateKey: '/Test',
+    };
+    minimumValidParamsWithPassword = {
+      ...connectionProfileBase,
+      authMethod: SshHandshake.SupportedMethods.PASSWORD,
+    };
+    minimumValidParamsWithSshAgent = {
+      ...connectionProfileBase,
+      authMethod: SshHandshake.SupportedMethods.SSL_AGENT,
+    };
   });
 
   /**

@@ -152,10 +152,11 @@ class WatchmanClient {
         relative_path: relativePath,
       } = await this._watchProject(localDirectoryPath);
       const clock = await this._clock(watchRoot);
-      const options: WatchmanSubscriptionOptions = Object.assign({}, {
+      const options: WatchmanSubscriptionOptions = {
+        ...subscriptionOptions,
         fields: ['name', 'new', 'exists', 'mode'],
         since: clock,
-      }, subscriptionOptions);
+      };
       if (relativePath && !options.expression) {
         // Passing an 'undefined' expression causes an exception in fb-watchman.
         options.expression = ['dirname', relativePath];

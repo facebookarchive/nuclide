@@ -703,6 +703,11 @@
       "from": "resources/eslint-plugin-nuclide-internal",
       "resolved": "file:resources/eslint-plugin-nuclide-internal"
     },
+    "eslint-plugin-prefer-object-spread": {
+      "version": "1.1.0",
+      "from": "eslint-plugin-prefer-object-spread@1.1.0",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-prefer-object-spread/-/eslint-plugin-prefer-object-spread-1.1.0.tgz"
+    },
     "eslint-plugin-react": {
       "version": "4.3.0",
       "from": "eslint-plugin-react@4.3.0",
