@@ -102,7 +102,7 @@ const DebuggerControllerView = React.createClass({
   },
 
   _handleClickClose() {
-    this.props.actions.killDebugger();
+    this.props.actions.stopDebugging();
   },
 
   _updateStateFromStore(store?: DebuggerStore) {

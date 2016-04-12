@@ -71,7 +71,7 @@ class DebuggerActions {
       failTimerTracking(err);
       track(AnalyticsEvents.DEBUGGER_START_FAIL, {});
       this.setError('Failed to start debugger process: ' + err);
-      this.killDebugger();
+      this.stopDebugging();
     }
   }
 
@@ -110,7 +110,8 @@ class DebuggerActions {
 
   _handleSessionEnd(debuggerInstance: DebuggerInstance): void {
     if (this._store.getDebuggerInstance() === debuggerInstance) {
-      this.killDebugger();
+      this._setDebuggerInstance(null); // Prevent DebuggerInstance to be disposed again.
+      this.stopDebugging();
     } else {
       // Do nothing, because either:
       // 1. Another DebuggerInstnace is alive. or
@@ -135,13 +136,9 @@ class DebuggerActions {
     this._setDebuggerMode(DebuggerMode.STOPPED);
     track(AnalyticsEvents.DEBUGGER_STOP);
     endTimerTracking();
-  }
 
-  killDebugger() {
-    this.stopDebugging();
-    if (this._store.getDebuggerInstance() === null) {
-      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:hide');
-    }
+    invariant(this._store.getDebuggerInstance() === null);
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:hide');
   }
 
   addService(service: nuclide_debugger$Service) {

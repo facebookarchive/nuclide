@@ -94,7 +94,7 @@ class Activation {
         }
         if (remoteUri.getHostname(debuggeeTargetUri) === connection.getRemoteHostname()
             && remoteUri.getPort(debuggeeTargetUri) === connection.getPort()) {
-          this._model.getActions().killDebugger();
+          this._model.getActions().stopDebugging();
         }
       }),
 

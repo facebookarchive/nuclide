@@ -92,7 +92,7 @@ const DebuggerInspector = React.createClass({
   },
 
   _handleClickClose() {
-    this.props.actions.killDebugger();
+    this.props.actions.stopDebugging();
   },
 
   _handleClickDevTools() {
