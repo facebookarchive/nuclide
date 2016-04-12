@@ -21,6 +21,7 @@ import {TabExamples} from '../../nuclide-ui/lib/Tabs.example';
 import {RadioGroupExamples} from '../../nuclide-ui/lib/RadioGroup.example';
 import {TextInputExamples} from '../../nuclide-ui/lib/TextInputs.example';
 import {ToolbarExamples} from '../../nuclide-ui/lib/Toolbar.example';
+import {DiagnosticsExamples} from '../../nuclide-ui/lib/Diagnostics.example';
 
 const playgroundComponents = [
   ButtonExamples,
@@ -30,6 +31,7 @@ const playgroundComponents = [
   RadioGroupExamples,
   TextInputExamples,
   ToolbarExamples,
+  DiagnosticsExamples,
 ];
 
 type ComponentSpec = {
