@@ -180,6 +180,9 @@ class Bridge {
           case 'DebuggerResumed':
             this._handleDebuggerResumed();
             break;
+          case 'LoaderBreakpointResumed':
+            this._handleLoaderBreakpointResumed();
+            break;
           case 'BreakpointAdded':
             this._addBreakpoint(event.args[1]);
             break;
@@ -209,6 +212,10 @@ class Bridge {
 
   _handleDebuggerResumed(): void {
     this._debuggerModel.getStore().setDebuggerMode(DebuggerMode.RUNNING);
+  }
+
+  _handleLoaderBreakpointResumed(): void {
+    this._debuggerModel.getStore().loaderBreakpointResumed();
   }
 
   _setSelectedCallFrameLine(nullableOptions: ?{sourceURL: string; lineNumber: number}) {

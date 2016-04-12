@@ -24,7 +24,6 @@ import type {
 } from '../../nuclide-debugger-interfaces/service';
 import type {DebuggerStore, DebuggerModeType} from './DebuggerStore';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
-import type BridgeType from './Bridge';
 import type DebuggerInstance from './DebuggerInstance';
 
 function track(...args: any) {
@@ -45,7 +44,6 @@ class DebuggerActions {
   _disposables: CompositeDisposable;
   _dispatcher: Dispatcher;
   _store: DebuggerStore;
-  _bridge: BridgeType;
 
   constructor(dispatcher: Dispatcher, store: DebuggerStore) {
     this._disposables = new CompositeDisposable();
@@ -99,6 +97,9 @@ class DebuggerActions {
     });
     // Debugger finished initializing and entered debug mode.
     this._setDebuggerMode(DebuggerMode.RUNNING);
+
+    // Wait for 'resume' event from Bridge.js to guarantee we've passed the loader breakpoint.
+    await this._store.loaderBreakpointResumePromise;
   }
 
   _setDebuggerInstance(debuggerInstance: ?DebuggerInstance): void {

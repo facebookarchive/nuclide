@@ -45,6 +45,9 @@ class DebuggerStore {
   _evaluationExpressionProviders: Set<NuclideEvaluationExpressionProvider>;
   _processSocket: ?string;
   _debuggerMode: DebuggerModeType;
+  _onLoaderBreakpointResume: () => void;
+  _loaderBreakpointPromiseReject: () => void;
+  loaderBreakpointResumePromise: Promise<void>;
 
   constructor(dispatcher: Dispatcher) {
     this._dispatcher = dispatcher;
@@ -57,6 +60,10 @@ class DebuggerStore {
     this._evaluationExpressionProviders = new Set();
     this._processSocket = null;
     this._debuggerMode = DebuggerMode.STOPPED;
+    this.loaderBreakpointResumePromise = new Promise((resolve, reject) => {
+      this._onLoaderBreakpointResume = resolve;
+      this._loaderBreakpointPromiseReject = reject;
+    });
   }
 
   dispose() {
@@ -65,6 +72,10 @@ class DebuggerStore {
     if (this._debuggerInstance) {
       this._debuggerInstance.dispose();
     }
+  }
+
+  loaderBreakpointResumed(): void {
+    this._onLoaderBreakpointResume(); // Resolves onLoaderBreakpointResumePromise.
   }
 
   getDebuggerInstance(): ?DebuggerInstance {
@@ -146,6 +157,13 @@ class DebuggerStore {
         break;
       case Constants.Actions.DEBUGGER_MODE_CHANGE:
         this._debuggerMode = payload.data;
+        if (this._debuggerMode === DebuggerMode.STOPPED) {
+          this._loaderBreakpointPromiseReject();
+          this.loaderBreakpointResumePromise = new Promise((resolve, reject) => {
+            this._onLoaderBreakpointResume = resolve;
+            this._loaderBreakpointPromiseReject = reject;
+          });
+        }
         break;
       case Constants.Actions.ADD_EVALUATION_EXPRESSION_PROVIDER:
         if (this._evaluationExpressionProviders.has(payload.data)) {

@@ -77,7 +77,7 @@ class RemoteControlService {
     if (model == null) {
       throw new Error('Package is not activated.');
     }
-    const session = model.getStore().getDebuggerProcess();
+    const session = model.getStore().getDebuggerInstance();
     return session != null && session.getProviderName() === providerName;
   }
 
@@ -86,7 +86,7 @@ class RemoteControlService {
     if (model == null) {
       throw new Error('Package is not activated.');
     }
-    model.getActions().killDebugger();
+    model.getActions().stopDebugging();
   }
 }
 

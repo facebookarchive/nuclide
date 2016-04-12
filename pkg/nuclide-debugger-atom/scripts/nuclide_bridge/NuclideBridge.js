@@ -251,6 +251,8 @@ class NuclideBridge {
         this._continue();
       }
     });
+
+    ipc.sendToHost('notification', 'LoaderBreakpointResumed', {});
   }
 
   _handleDebuggerResumed(event: WebInspector$Event) {

@@ -100,7 +100,7 @@ export class HhvmDebuggerProxyService {
   async sendCommand(message: string): Promise<void> {
     logger.logInfo('Recieved command: ' + message);
     if (this._translator) {
-      this._translator.handleCommand(message);
+      await this._translator.handleCommand(message);
     }
   }
 
