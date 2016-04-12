@@ -11,24 +11,11 @@
 
 import type {Outline} from '../../nuclide-outline-view';
 
-import {Point} from 'atom';
-
-let babelCore = null;
-function babelParse(text: string): Object {
-  if (babelCore == null) {
-    babelCore = require('babel-core');
-  }
-  return babelCore.parse(text);
-}
+import {parseJSON, babelPosToPoint} from './parsing';
 
 export function getOutline(text: string): ?Outline {
-  // This fucks up the positions but without it, babel won't parse the text as an expression
-  const textWithParens = '(\n' + text + '\n)';
-  let expression;
-  try {
-    const ast = babelParse(textWithParens);
-    expression = ast.body[0].expression;
-  } catch (e) {
+  const expression = parseJSON(text);
+  if (expression == null) {
     return null;
   }
   if (expression.type === 'ObjectExpression') {
@@ -48,10 +35,4 @@ export function getOutline(text: string): ?Outline {
     return { outlineTrees };
   }
   return null;
-}
-
-function babelPosToPoint(pos: { line: number; column: number }): atom$Point {
-  // Need to subtract 2: one to move from 1-indexed to 0-indexed, another to account for the open
-  // paren we had to add on the first line.
-  return new Point(pos.line - 2, pos.column);
 }
