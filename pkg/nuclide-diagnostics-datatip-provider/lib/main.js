@@ -14,14 +14,18 @@ import type {
   DatatipProvider,
   DatatipService,
 } from '../../nuclide-datatip-interfaces';
+import type {
+  DiagnosticUpdater,
+  FileMessageUpdate,
+  FileDiagnosticMessage,
+} from '../../nuclide-diagnostics-base';
 
 import {
   CompositeDisposable,
   Disposable,
-  Range,
 } from 'atom';
 import invariant from 'assert';
-import {DiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
+import {makeDiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
 
 const DATATIP_PACKAGE_NAME = 'nuclide-diagnostics-datatip';
 const DEBUG = true;
@@ -30,10 +34,24 @@ export async function datatip(editor: TextEditor, position: atom$Point): Promise
   if (DEBUG) {
     return null;
   }
+  invariant(fileDiagnostics);
+  const messagesForFile = fileDiagnostics.get(editor);
+  if (messagesForFile == null) {
+    return null;
+  }
+  const messagesAtPosition = messagesForFile.filter(
+    message => message.range != null && message.range.containsPoint(position)
+  );
+  if (messagesAtPosition.length === 0) {
+    return null;
+  }
+  const [message] = messagesAtPosition;
+  const {range} = message;
+  invariant(range);
   return {
-    component: DiagnosticsDatatipComponent,
+    component: makeDiagnosticsDatatipComponent(message),
     pinnable: false,
-    range: new Range(position, position),
+    range: range,
   };
 }
 
@@ -57,9 +75,37 @@ export function consumeDatatipService(service: DatatipService): IDisposable {
 }
 
 let disposables: ?CompositeDisposable = null;
+let fileDiagnostics: ?WeakMap<TextEditor, Array<FileDiagnosticMessage>> = null;
 
 export function activate(state: ?mixed): void {
   disposables = new CompositeDisposable();
+  fileDiagnostics = new WeakMap();
+}
+
+export function consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
+  invariant(disposables);
+  disposables.add(atom.workspace.observeTextEditors((editor: TextEditor) => {
+    invariant(fileDiagnostics);
+    const filePath = editor.getPath();
+    if (!filePath) {
+      return;
+    }
+    fileDiagnostics.set(editor, []);
+    const callback = (update: FileMessageUpdate) => {
+      invariant(fileDiagnostics);
+      fileDiagnostics.set(editor, update.messages);
+    };
+    const disposable = diagnosticUpdater.onFileMessagesDidUpdate(callback, filePath);
+
+    editor.onDidDestroy(() => {
+      disposable.dispose();
+      if (fileDiagnostics != null) {
+        fileDiagnostics.delete(editor);
+      }
+    });
+    invariant(disposables);
+    disposables.add(disposable);
+  }));
 }
 
 export function deactivate(): void {
@@ -67,4 +113,5 @@ export function deactivate(): void {
     disposables.dispose();
     disposables = null;
   }
+  fileDiagnostics = null;
 }

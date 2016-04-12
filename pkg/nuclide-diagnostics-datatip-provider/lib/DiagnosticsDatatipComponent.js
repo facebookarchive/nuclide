@@ -9,18 +9,38 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+import type {
+  FileDiagnosticMessage,
+} from '../../nuclide-diagnostics-base';
 
-type DiagnosticsDatatipComponentProps = {};
+import {goToLocation} from '../../nuclide-atom-helpers';
+import {React} from 'react-for-atom';
+import {DiagnosticsMessage} from '../../nuclide-ui/lib/DiagnosticsMessage';
+
+type DiagnosticsDatatipComponentProps = {
+  message: FileDiagnosticMessage;
+};
+
+const NOOP = () => {};
 
 export class DiagnosticsDatatipComponent extends React.Component {
   props: DiagnosticsDatatipComponentProps;
 
   render(): ReactElement {
+    // Remove the `fix` property to prevent the fix button from showing up (for now).
+    const message = {...this.props.message, fix: undefined};
     return (
-      <div>
-        I'm a DiagnosticsDatatipComponent.
+      <div className="nuclide-diagnostics-datatip">
+        <DiagnosticsMessage
+          message={message}
+          goToLocation={goToLocation}
+          fixer={NOOP}
+        />
       </div>
     );
   }
+}
+
+export function makeDiagnosticsDatatipComponent(message: FileDiagnosticMessage): ReactClass {
+  return () => <DiagnosticsDatatipComponent message={message} />;
 }

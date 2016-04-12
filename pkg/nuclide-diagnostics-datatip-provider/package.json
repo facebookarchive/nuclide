@@ -10,6 +10,11 @@
   },
   "private": true,
   "consumedServices": {
+    "nuclide-diagnostics": {
+      "versions": {
+        "0.0.0": "consumeDiagnosticUpdates"
+      }
+    },
     "nuclide-datatip.provider": {
       "versions": {
         "0.0.0": "consumeDatatipService"
