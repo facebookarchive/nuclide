@@ -118,8 +118,8 @@ export type HackOutlineItem = {
 export type HackOutline = Array<HackOutlineItem>;
 
 export type HackTypeAtPosResult = {
-  type: string;
-  pos: HackRange;
+  type: ?string;
+  pos: ?HackRange;
 };
 
 export type HackFindLvarRefsResult = {
