@@ -11,6 +11,7 @@
 
 import type {HyperclickProvider, HyperclickSuggestion} from '../../hyperclick-interfaces';
 
+import semver from 'semver';
 import path from 'path';
 import shell from 'shell';
 
@@ -62,7 +63,7 @@ function getSuggestionForWord(
 // Exported for testing. We could derive the token from the json text and the range, but since
 // hyperclick provides it we may as well use it.
 export function getPackageUrlForRange(json: string, token: string, range: atom$Range): ?string {
-  if (isDependency(json, range)) {
+  if (isNPMDependency(json, range)) {
     // Strip off the quotes
     const packageName = token.substring(1, token.length - 1);
     return getPackageUrl(packageName);
@@ -83,7 +84,7 @@ function getPackageUrl(packageName: string): string {
   return `https://www.npmjs.com/package/${packageName}/`;
 }
 
-function isDependency(json: string, range: atom$Range): boolean {
+function isNPMDependency(json: string, range: atom$Range): boolean {
   const ast = parseJSON(json);
   if (ast == null) {
     // parse error
@@ -93,11 +94,34 @@ function isDependency(json: string, range: atom$Range): boolean {
 
   return pathToNode != null &&
     pathToNode.length === 2 &&
-    DEPENDENCY_PROPERTIES.has(pathToNode[0]);
+    DEPENDENCY_PROPERTIES.has(pathToNode[0].key.value) &&
+    isNPMVersion(pathToNode[1].value);
 }
 
-// return an array of property names
-function getPathToNodeForRange(objectExpression: Object, range: atom$Range): ?Array<string> {
+function isNPMVersion(valueASTNode: Object): boolean {
+  if (valueASTNode.type !== 'Literal') {
+    return false;
+  }
+
+  const value = valueASTNode.value;
+
+  if (typeof value !== 'string') {
+    return false;
+  }
+
+  // Eventually it would be nice to do something reasonable with these but for now let's just stick
+  // with npm-only.
+  if (!semver.valid(value)) {
+    return false;
+  }
+
+  // We aren't guaranteed at this point that it's a valid npm package in the registry but we've
+  // covered most cases.
+  return true;
+}
+
+// return an array of property AST nodes
+function getPathToNodeForRange(objectExpression: Object, range: atom$Range): ?Array<Object> {
   const properties = objectExpression.properties;
   if (properties == null) {
     return null;
@@ -107,13 +131,13 @@ function getPathToNodeForRange(objectExpression: Object, range: atom$Range): ?Ar
     if (propertyRange.containsRange(range)) {
       const keyRange = babelLocToRange(property.key.loc);
       if (keyRange.isEqual(range)) {
-        return [property.key.value];
+        return [property];
       }
       const subPath = getPathToNodeForRange(property.value, range);
       if (subPath == null) {
         return null;
       }
-      subPath.unshift(property.key.value);
+      subPath.unshift(property);
       return subPath;
     }
   }

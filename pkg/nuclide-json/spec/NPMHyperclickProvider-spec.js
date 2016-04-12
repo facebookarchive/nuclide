@@ -16,12 +16,16 @@ import {getPackageUrlForRange} from '../lib/NPMHyperclickProvider';
 const sampleJSON =
 `{
   "someProperty": {
-    "thing": 5
+    "thing": "0.0.0"
   },
   "dependencies": {
-    "npm-package": {
+    "npm-package": "0.0.0",
+    "something-else": {
       "what-is-this": "0.0.0"
-    }
+    },
+    "git-url": "git://github.com/user/project.git",
+    "file-path": "file:some/path",
+    "http-url": "http://asdf.asdf"
   }
 }`;
 
@@ -36,12 +40,46 @@ describe('getPackageUrlForRange', () => {
     ).toEqual('https://www.npmjs.com/package/npm-package/');
   });
 
+  it('should not provide a URL for a dependency with a non-literal property', () => {
+    expect(
+      getPackageUrlForRange(
+        sampleJSON,
+        '"something-else"',
+        new Range([6, 4], [6, 20])
+      )
+    ).toBeNull();
+  });
+
   it('should not provide a URL for a nested property in a dependency', () => {
     expect(
       getPackageUrlForRange(
         sampleJSON,
         '"what-is-this"',
-        new Range([6, 6], [6, 20])
+        new Range([7, 6], [7, 20])
+      )
+    ).toBeNull();
+  });
+
+  it('should not provide a URL for a dependency with a non-semver version', () => {
+    expect(
+      getPackageUrlForRange(
+        sampleJSON,
+        '"git-url"',
+        new Range([9, 4], [9, 13])
+      )
+    ).toBeNull();
+    expect(
+      getPackageUrlForRange(
+        sampleJSON,
+        '"file-path"',
+        new Range([10, 4], [10, 15])
+      )
+    ).toBeNull();
+    expect(
+      getPackageUrlForRange(
+        sampleJSON,
+        '"http-url"',
+        new Range([11, 4], [11, 14])
       )
     ).toBeNull();
   });
