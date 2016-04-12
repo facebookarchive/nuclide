@@ -11,7 +11,7 @@
 
 import type {TestRunner, Message} from '../../nuclide-test-runner/lib/interfaces';
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {Observable} from 'rx';
+import {Observable} from 'rx';
 import invariant from 'assert';
 
 const Ansi = require('./Ansi');
@@ -35,12 +35,14 @@ export type TestRunnerControllerState = {
 export class TestRunnerController {
 
   _activeTestRunner: ?Object;
+  _attachDebuggerBeforeRunning: boolean;
   _buffer: TextBuffer;
   _executionState: number;
   _panel: ?atom$Panel;
   _path: ?string;
   _root: ?Element;
   _run: ?TestRunModel;
+  _runningTest: boolean;
   _state: Object;
   _testRunners: Set<TestRunner>;
   _testRunnerPanel: ?TestRunnerPanel;
@@ -61,6 +63,7 @@ export class TestRunnerController {
     (this: any).hidePanel = this.hidePanel.bind(this);
     (this: any).stopTests = this.stopTests.bind(this);
     (this: any)._handleClickRun = this._handleClickRun.bind(this);
+    (this: any)._onDebuggerCheckboxChanged = this._onDebuggerCheckboxChanged.bind(this);
 
     // TODO: Use the ReadOnlyTextBuffer class from nuclide-atom-text-editor when it is exported.
     this._buffer = new TextBuffer();
@@ -69,6 +72,8 @@ export class TestRunnerController {
 
     this._executionState = TestRunnerPanel.ExecutionState.STOPPED;
     this._testRunners = testRunners;
+    this._attachDebuggerBeforeRunning = false;
+    this._runningTest = false;
     this._renderPanel();
   }
 
@@ -150,6 +155,20 @@ export class TestRunnerController {
       return;
     }
 
+    // If the test runner is debuggable, and the user has checked the box, then we will launch
+    // the debugger before running the tests.  We do not handle killing the debugger.
+    if (this._isSelectedTestRunnerDebuggable() && this._attachDebuggerBeforeRunning) {
+      const isAttached = await this._isDebuggerAttached(selectedTestRunner.debuggerProviderName);
+      if (!isAttached) {
+        await selectedTestRunner.attachDebugger(testPath);
+      }
+    }
+
+    // If the user has cancelled the test run while control was yielded, we should not run the test.
+    if (!this._runningTest) {
+      return;
+    }
+
     this.clearOutput();
     this._runTestRunnerServiceForPath(
       selectedTestRunner.runTest(testPath),
@@ -166,9 +185,30 @@ export class TestRunnerController {
     this._renderPanel();
   }
 
-  stopTests(): void {
-    this._stopListening();
+  _isSelectedTestRunnerDebuggable(): boolean {
+    if (this._testRunnerPanel == null) {
+      return false;
+    }
+    const selectedTestRunner = this._testRunnerPanel.getSelectedTestRunner();
+    return selectedTestRunner != null && selectedTestRunner.attachDebugger != null;
+  }
 
+  async _isDebuggerAttached(debuggerProviderName: string): Promise<boolean> {
+    const debuggerService = await require('../../nuclide-service-hub-plus')
+      .consumeFirstProvider('nuclide-debugger.remote');
+    return debuggerService.isInDebuggingMode(debuggerProviderName);
+  }
+
+  stopTests(): void {
+    // Resume the debugger if needed.
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'nuclide-debugger:continue-debugging',
+    );
+    if (this._runTestsSubscription != null) {
+      this._runTestsSubscription.dispose();
+    }
+    this._stopListening();
     // Respond in the UI immediately and assume the process is properly killed.
     this._setExecutionState(TestRunnerPanel.ExecutionState.STOPPED);
   }
@@ -212,7 +252,13 @@ export class TestRunnerController {
     this._buffer.append(`${text}${os.EOL}`, {undo: 'skip'});
   }
 
+  _onDebuggerCheckboxChanged(isChecked: boolean): void {
+    this._attachDebuggerBeforeRunning = isChecked;
+    this._renderPanel();
+  }
+
   _handleClickRun(event: SyntheticMouseEvent): void {
+    this._runningTest = true;
     // Don't pass a reference to `runTests` directly because the callback receives a mouse event as
     // its argument. `runTests` needs to be called with no arguments.
     this.runTests();
@@ -312,12 +358,14 @@ export class TestRunnerController {
 
     this._testRunnerPanel = ReactDOM.render(
       <TestRunnerPanel
+        attachDebuggerBeforeRunning={this._attachDebuggerBeforeRunning}
         buffer={this._buffer}
         executionState={this._executionState}
         onClickClear={this.clearOutput}
         onClickClose={this.hidePanel}
         onClickRun={this._handleClickRun}
         onClickStop={this.stopTests}
+        onDebuggerCheckboxChanged={this._onDebuggerCheckboxChanged}
         path={this._path}
         progressValue={progressValue}
         runDuration={this._run && this._run.getDuration()}
@@ -337,6 +385,7 @@ export class TestRunnerController {
   }
 
   _stopListening(): void {
+    this._runningTest = false;
     if (this._run && (this._run.dispose != null)) {
       try {
         const dispose = this._run.dispose;

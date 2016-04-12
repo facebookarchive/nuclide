@@ -16,6 +16,7 @@ const {PanelComponent} = require('../../../nuclide-ui/lib/PanelComponent');
 const {Toolbar} = require('../../../nuclide-ui/lib/Toolbar');
 const {ToolbarLeft} = require('../../../nuclide-ui/lib/ToolbarLeft');
 const {ToolbarRight} = require('../../../nuclide-ui/lib/ToolbarRight');
+const {Checkbox} = require('../../../nuclide-ui/lib/Checkbox');
 const {createPaneContainer} = require('../../../nuclide-atom-helpers');
 const {
   React,
@@ -45,12 +46,14 @@ class TestRunnerPanel extends React.Component {
   setSelectedTestRunnerIndex: Function;
 
   static propTypes = {
+    attachDebuggerBeforeRunning: PropTypes.bool,
     buffer: PropTypes.object.isRequired,
     executionState: PropTypes.number.isRequired,
     onClickClear: PropTypes.func.isRequired,
     onClickClose: PropTypes.func.isRequired,
     onClickRun: PropTypes.func.isRequired,
     onClickStop: PropTypes.func.isRequired,
+    onDebuggerCheckboxChanged: PropTypes.func,
     path: PropTypes.string,
     progressValue: PropTypes.number,
     runDuration: PropTypes.number,
@@ -196,6 +199,17 @@ class TestRunnerPanel extends React.Component {
       );
     }
 
+    let attachDebuggerCheckbox = null;
+    if (this.props.attachDebuggerBeforeRunning != null) {
+      attachDebuggerCheckbox = (
+        <Checkbox
+          checked={this.props.attachDebuggerBeforeRunning}
+          label="Enable Debugger"
+          onChange={this.props.onDebuggerCheckboxChanged}
+        />
+      );
+    }
+
     return (
       <PanelComponent dock="bottom">
         <div className="nuclide-test-runner-panel">
@@ -203,6 +217,7 @@ class TestRunnerPanel extends React.Component {
             <ToolbarLeft>
               {dropdown}
               {runStopButton}
+              {attachDebuggerCheckbox}
               <button
                 className="btn btn-sm icon icon-trashcan inline-block"
                 disabled={this.isDisabled() ||

@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {Observable} from 'rx';
+
 /**
  * Test run status values as defined in
  * {@link https://phabricator.fb.com/diffusion/E/browse/tfb/trunk/www/flib/intern/testinfra/model/TR_Result.php TR_Result}.
@@ -79,4 +82,7 @@ export type Message = StartMessage | SummaryMessage |
 
 export type TestRunner = {
   label: string;
+  runTest: (filePath: NuclideUri) => Observable<Message>;
+  attachDebugger?: (filePath: NuclideUri) => Promise<void>;
+  debuggerProviderName?: string;
 };

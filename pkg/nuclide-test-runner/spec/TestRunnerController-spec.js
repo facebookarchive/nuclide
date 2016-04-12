@@ -10,10 +10,13 @@
  */
 
 import type {TestRunner} from '../../nuclide-test-runner/lib/interfaces';
+import {Observable} from 'rx';
 
 import {TestRunnerController} from '../lib/TestRunnerController';
 
 describe('TestRunnerController', () => {
+
+  const TEST_RUNNER = {getByUri() {}, label: '', runTest() { return Observable.empty(); }};
 
   let testRunners: Set<TestRunner> = (null: any);
 
@@ -44,7 +47,7 @@ describe('TestRunnerController', () => {
 
     it('forces the panel to be shown', () => {
       // The controller needs at least one test runner to run tests.
-      testRunners.add({getByUri() {}, label: ''});
+      testRunners.add(TEST_RUNNER);
       // Start with `panelVisible: false` to ensure the panel is initially hidden.
       const controller = new TestRunnerController({panelVisible: false}, testRunners);
       expect(atom.workspace.getBottomPanels().length).toEqual(0);
@@ -62,10 +65,7 @@ describe('TestRunnerController', () => {
     // not force a render if the panel is still supposed to be hidden.
     it('does not create a panel if `panelVisible` is false', () => {
       const controller = new TestRunnerController({panelVisible: false}, testRunners);
-      testRunners.add({
-        getByUri() {},
-        label: '',
-      });
+      testRunners.add(TEST_RUNNER);
       controller.didUpdateTestRunners();
       expect(atom.workspace.getBottomPanels().length).toEqual(0);
     });
