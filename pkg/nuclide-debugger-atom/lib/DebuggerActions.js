@@ -87,7 +87,7 @@ class DebuggerActions {
     });
 
     if (debugSession.onSessionEnd != null) {
-      const handler = this._handleSessionEnd.bind(this);
+      const handler = this._handleSessionEnd.bind(this, debugSession);
       invariant(debugSession.onSessionEnd);
       this._disposables.add(debugSession.onSessionEnd(handler));
     }
@@ -105,8 +105,14 @@ class DebuggerActions {
     });
   }
 
-  _handleSessionEnd(): void {
-    this.stopDebugging();
+  _handleSessionEnd(debuggerInstance: DebuggerInstance): void {
+    if (this._store.getDebuggerProcess() === debuggerInstance) {
+      this.killDebugger();
+    } else {
+      // Do nothing, because either:
+      // 1. Another DebuggerInstnace is alive. or
+      // 2. DebuggerInstance has been disposed.
+    }
   }
 
   stopDebugging() {
