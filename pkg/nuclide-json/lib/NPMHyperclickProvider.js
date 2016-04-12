@@ -63,13 +63,15 @@ function getSuggestionForWord(
 // Exported for testing. We could derive the token from the json text and the range, but since
 // hyperclick provides it we may as well use it.
 export function getPackageUrlForRange(json: string, token: string, range: atom$Range): ?string {
-  if (isNPMDependency(json, range)) {
-    // Strip off the quotes
-    const packageName = token.substring(1, token.length - 1);
-    return getPackageUrl(packageName);
-  } else {
+  const version = getDependencyVersion(json, range);
+  if (version == null) {
     return null;
   }
+
+  // Strip off the quotes
+  const packageName = token.substring(1, token.length - 1);
+
+  return getPackageUrl(packageName, version);
 }
 
 function isPackageJson(textEditor: atom$TextEditor): boolean {
@@ -80,44 +82,40 @@ function isPackageJson(textEditor: atom$TextEditor): boolean {
     path.basename(filePath) === 'package.json';
 }
 
-function getPackageUrl(packageName: string): string {
-  return `https://www.npmjs.com/package/${packageName}/`;
+function getPackageUrl(packageName: string, version: string): ?string {
+  if (semver.valid(version)) {
+    return `https://www.npmjs.com/package/${packageName}/`;
+  }
+
+  return null;
 }
 
-function isNPMDependency(json: string, range: atom$Range): boolean {
+// Return the version string, if it exists
+function getDependencyVersion(json: string, range: atom$Range): ?string {
   const ast = parseJSON(json);
   if (ast == null) {
     // parse error
-    return false;
+    return null;
   }
   const pathToNode = getPathToNodeForRange(ast, range);
 
-  return pathToNode != null &&
+  if (pathToNode != null &&
     pathToNode.length === 2 &&
     DEPENDENCY_PROPERTIES.has(pathToNode[0].key.value) &&
-    isNPMVersion(pathToNode[1].value);
+    isValidVersion(pathToNode[1].value)
+  ) {
+    const valueNode = pathToNode[1].value;
+    if (isValidVersion(valueNode)) {
+      return valueNode.value;
+    } else {
+      return null;
+    }
+  }
+  return null;
 }
 
-function isNPMVersion(valueASTNode: Object): boolean {
-  if (valueASTNode.type !== 'Literal') {
-    return false;
-  }
-
-  const value = valueASTNode.value;
-
-  if (typeof value !== 'string') {
-    return false;
-  }
-
-  // Eventually it would be nice to do something reasonable with these but for now let's just stick
-  // with npm-only.
-  if (!semver.valid(value)) {
-    return false;
-  }
-
-  // We aren't guaranteed at this point that it's a valid npm package in the registry but we've
-  // covered most cases.
-  return true;
+function isValidVersion(valueASTNode: Object): boolean {
+  return valueASTNode.type === 'Literal' && typeof valueASTNode.value === 'string';
 }
 
 // return an array of property AST nodes
