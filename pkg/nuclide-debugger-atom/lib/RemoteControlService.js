@@ -69,7 +69,24 @@ class RemoteControlService {
     if (model == null) {
       throw new Error('Package is not activated.');
     }
-    model.getActions().startDebugging(processInfo);
+    await model.getActions().startDebugging(processInfo);
+  }
+
+  isInDebuggingMode(providerName: string): boolean {
+    const model = this._getModel();
+    if (model == null) {
+      throw new Error('Package is not activated.');
+    }
+    const session = model.getStore().getDebuggerProcess();
+    return session != null && session.getProviderName() === providerName;
+  }
+
+  killDebugger(): void {
+    const model = this._getModel();
+    if (model == null) {
+      throw new Error('Package is not activated.');
+    }
+    model.getActions().killDebugger();
   }
 }
 

@@ -24,6 +24,10 @@ class DebuggerInstance {
     return this._processInfo;
   }
 
+  getProviderName(): string {
+    return this._processInfo.getServiceName();
+  }
+
   getTargetUri(): NuclideUri {
     return this._processInfo.getTargetUri();
   }
