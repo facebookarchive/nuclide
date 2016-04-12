@@ -56,7 +56,6 @@ function plainTextForDiagnostic(message: FileDiagnosticMessage): string {
 /**
  * Visually groups Buttons passed in as children.
  */
-/* eslint-disable react/prop-types */
 export const DiagnosticsMessage = (props: DiagnosticsMessageProps) => {
   const {
       message,

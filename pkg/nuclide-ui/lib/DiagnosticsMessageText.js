@@ -18,7 +18,6 @@ type DiagnosticsMessageTextProps = {
   };
 };
 
-/* eslint-disable react/prop-types */
 export const DiagnosticsMessageText = (props: DiagnosticsMessageTextProps) => {
   const {
     message,

@@ -22,7 +22,6 @@ type DiagnosticsTraceItemProps = {
 };
 
 // TODO move LESS styles to nuclide-ui
-/* eslint-disable react/prop-types */
 export const DiagnosticsTraceItem = (props: DiagnosticsTraceItemProps) => {
   const {
     trace,

@@ -54,7 +54,6 @@ function renderMessage(
 }
 
 // TODO move LESS styles to nuclide-ui
-/* eslint-disable react/prop-types */
 export const DiagnosticsPopup = (props: DiagnosticsPopupProps) => {
   const {
     fixer,
