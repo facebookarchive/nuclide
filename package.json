@@ -108,13 +108,13 @@
   },
   "private": true,
   "package-deps": [
+    "tool-bar",
     "haskell-grammar",
     "highlight-selected",
     "language-babel",
     "language-ini",
     "language-ocaml",
     "language-thrift",
-    "sort-lines",
-    "tool-bar"
+    "sort-lines"
   ]
 }
