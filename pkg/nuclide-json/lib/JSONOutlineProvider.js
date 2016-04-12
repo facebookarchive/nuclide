@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,49 +10,51 @@
  * the root directory of this source tree.
  */
 
-import type {Outline} from '../../nuclide-outline-view';
+exports.getOutline = getOutline;
 
-import {Point} from 'atom';
+var _atom = require('atom');
 
-let babelCore = null;
-function babelParse(text: string): Object {
+var babelCore = null;
+function babelParse(text) {
   if (babelCore == null) {
     babelCore = require('babel-core');
   }
   return babelCore.parse(text);
 }
 
-export function getOutline(text: string): ?Outline {
+function getOutline(text) {
   // This fucks up the positions but without it, babel won't parse the text as an expression
-  const textWithParens = '(\n' + text + '\n)';
-  let expression;
+  var textWithParens = '(\n' + text + '\n)';
+  var expression = undefined;
   try {
-    const ast = babelParse(textWithParens);
+    var ast = babelParse(textWithParens);
     expression = ast.body[0].expression;
   } catch (e) {
     return null;
   }
   if (expression.type === 'ObjectExpression') {
-    const outlineTrees = expression.properties
-      // Filter out property keys that aren't string literals, such as computed properties. They
-      // aren't valid JSON but nothing actually enforces that we are getting valid JSON and we are
-      // using a full JS parser so we have to handle cases like this.
-      .filter(prop => prop.key.type === 'Literal' && typeof prop.key.value === 'string')
-      .map(prop => {
-        return {
-          plainText: prop.key.value,
-          startPosition: babelPosToPoint(prop.loc.start),
-          endPosition: babelPosToPoint(prop.loc.end),
-          children: [],
-        };
-      });
-    return { outlineTrees };
+    var outlineTrees = expression.properties
+    // Filter out property keys that aren't string literals, such as computed properties. They
+    // aren't valid JSON but nothing actually enforces that we are getting valid JSON and we are
+    // using a full JS parser so we have to handle cases like this.
+    .filter(function (prop) {
+      return prop.key.type === 'Literal' && typeof prop.key.value === 'string';
+    }).map(function (prop) {
+      return {
+        plainText: prop.key.value,
+        startPosition: babelPosToPoint(prop.loc.start),
+        endPosition: babelPosToPoint(prop.loc.end),
+        children: []
+      };
+    });
+    return { outlineTrees: outlineTrees };
   }
   return null;
 }
 
-function babelPosToPoint(pos: { line: number; column: number }): atom$Point {
+function babelPosToPoint(pos) {
   // Need to subtract 2: one to move from 1-indexed to 0-indexed, another to account for the open
   // paren we had to add on the first line.
-  return new Point(pos.line - 2, pos.column);
+  return new _atom.Point(pos.line - 2, pos.column);
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkpTT05PdXRsaW5lUHJvdmlkZXIuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7b0JBYW9CLE1BQU07O0FBRTFCLElBQUksU0FBUyxHQUFHLElBQUksQ0FBQztBQUNyQixTQUFTLFVBQVUsQ0FBQyxJQUFZLEVBQVU7QUFDeEMsTUFBSSxTQUFTLElBQUksSUFBSSxFQUFFO0FBQ3JCLGFBQVMsR0FBRyxPQUFPLENBQUMsWUFBWSxDQUFDLENBQUM7R0FDbkM7QUFDRCxTQUFPLFNBQVMsQ0FBQyxLQUFLLENBQUMsSUFBSSxDQUFDLENBQUM7Q0FDOUI7O0FBRU0sU0FBUyxVQUFVLENBQUMsSUFBWSxFQUFZOztBQUVqRCxNQUFNLGNBQWMsR0FBRyxLQUFLLEdBQUcsSUFBSSxHQUFHLEtBQUssQ0FBQztBQUM1QyxNQUFJLFVBQVUsWUFBQSxDQUFDO0FBQ2YsTUFBSTtBQUNGLFFBQU0sR0FBRyxHQUFHLFVBQVUsQ0FBQyxjQUFjLENBQUMsQ0FBQztBQUN2QyxjQUFVLEdBQUcsR0FBRyxDQUFDLElBQUksQ0FBQyxDQUFDLENBQUMsQ0FBQyxVQUFVLENBQUM7R0FDckMsQ0FBQyxPQUFPLENBQUMsRUFBRTtBQUNWLFdBQU8sSUFBSSxDQUFDO0dBQ2I7QUFDRCxNQUFJLFVBQVUsQ0FBQyxJQUFJLEtBQUssa0JBQWtCLEVBQUU7QUFDMUMsUUFBTSxZQUFZLEdBQUcsVUFBVSxDQUFDLFVBQVU7Ozs7S0FJdkMsTUFBTSxDQUFDLFVBQUEsSUFBSTthQUFJLElBQUksQ0FBQyxHQUFHLENBQUMsSUFBSSxLQUFLLFNBQVMsSUFBSSxPQUFPLElBQUksQ0FBQyxHQUFHLENBQUMsS0FBSyxLQUFLLFFBQVE7S0FBQSxDQUFDLENBQ2pGLEdBQUcsQ0FBQyxVQUFBLElBQUksRUFBSTtBQUNYLGFBQU87QUFDTCxpQkFBUyxFQUFFLElBQUksQ0FBQyxHQUFHLENBQUMsS0FBSztBQUN6QixxQkFBYSxFQUFFLGVBQWUsQ0FBQyxJQUFJLENBQUMsR0FBRyxDQUFDLEtBQUssQ0FBQztBQUM5QyxtQkFBVyxFQUFFLGVBQWUsQ0FBQyxJQUFJLENBQUMsR0FBRyxDQUFDLEdBQUcsQ0FBQztBQUMxQyxnQkFBUSxFQUFFLEVBQUU7T0FDYixDQUFDO0tBQ0gsQ0FBQyxDQUFDO0FBQ0wsV0FBTyxFQUFFLFlBQVksRUFBWixZQUFZLEVBQUUsQ0FBQztHQUN6QjtBQUNELFNBQU8sSUFBSSxDQUFDO0NBQ2I7O0FBRUQsU0FBUyxlQUFlLENBQUMsR0FBcUMsRUFBYzs7O0FBRzFFLFNBQU8sZ0JBQVUsR0FBRyxDQUFDLElBQUksR0FBRyxDQUFDLEVBQUUsR0FBRyxDQUFDLE1BQU0sQ0FBQyxDQUFDO0NBQzVDIiwiZmlsZSI6IkpTT05PdXRsaW5lUHJvdmlkZXIuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7T3V0bGluZX0gZnJvbSAnLi4vLi4vbnVjbGlkZS1vdXRsaW5lLXZpZXcnO1xuXG5pbXBvcnQge1BvaW50fSBmcm9tICdhdG9tJztcblxubGV0IGJhYmVsQ29yZSA9IG51bGw7XG5mdW5jdGlvbiBiYWJlbFBhcnNlKHRleHQ6IHN0cmluZyk6IE9iamVjdCB7XG4gIGlmIChiYWJlbENvcmUgPT0gbnVsbCkge1xuICAgIGJhYmVsQ29yZSA9IHJlcXVpcmUoJ2JhYmVsLWNvcmUnKTtcbiAgfVxuICByZXR1cm4gYmFiZWxDb3JlLnBhcnNlKHRleHQpO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gZ2V0T3V0bGluZSh0ZXh0OiBzdHJpbmcpOiA/T3V0bGluZSB7XG4gIC8vIFRoaXMgZnVja3MgdXAgdGhlIHBvc2l0aW9ucyBidXQgd2l0aG91dCBpdCwgYmFiZWwgd29uJ3QgcGFyc2UgdGhlIHRleHQgYXMgYW4gZXhwcmVzc2lvblxuICBjb25zdCB0ZXh0V2l0aFBhcmVucyA9ICcoXFxuJyArIHRleHQgKyAnXFxuKSc7XG4gIGxldCBleHByZXNzaW9uO1xuICB0cnkge1xuICAgIGNvbnN0IGFzdCA9IGJhYmVsUGFyc2UodGV4dFdpdGhQYXJlbnMpO1xuICAgIGV4cHJlc3Npb24gPSBhc3QuYm9keVswXS5leHByZXNzaW9uO1xuICB9IGNhdGNoIChlKSB7XG4gICAgcmV0dXJuIG51bGw7XG4gIH1cbiAgaWYgKGV4cHJlc3Npb24udHlwZSA9PT0gJ09iamVjdEV4cHJlc3Npb24nKSB7XG4gICAgY29uc3Qgb3V0bGluZVRyZWVzID0gZXhwcmVzc2lvbi5wcm9wZXJ0aWVzXG4gICAgICAvLyBGaWx0ZXIgb3V0IHByb3BlcnR5IGtleXMgdGhhdCBhcmVuJ3Qgc3RyaW5nIGxpdGVyYWxzLCBzdWNoIGFzIGNvbXB1dGVkIHByb3BlcnRpZXMuIFRoZXlcbiAgICAgIC8vIGFyZW4ndCB2YWxpZCBKU09OIGJ1dCBub3RoaW5nIGFjdHVhbGx5IGVuZm9yY2VzIHRoYXQgd2UgYXJlIGdldHRpbmcgdmFsaWQgSlNPTiBhbmQgd2UgYXJlXG4gICAgICAvLyB1c2luZyBhIGZ1bGwgSlMgcGFyc2VyIHNvIHdlIGhhdmUgdG8gaGFuZGxlIGNhc2VzIGxpa2UgdGhpcy5cbiAgICAgIC5maWx0ZXIocHJvcCA9PiBwcm9wLmtleS50eXBlID09PSAnTGl0ZXJhbCcgJiYgdHlwZW9mIHByb3Aua2V5LnZhbHVlID09PSAnc3RyaW5nJylcbiAgICAgIC5tYXAocHJvcCA9PiB7XG4gICAgICAgIHJldHVybiB7XG4gICAgICAgICAgcGxhaW5UZXh0OiBwcm9wLmtleS52YWx1ZSxcbiAgICAgICAgICBzdGFydFBvc2l0aW9uOiBiYWJlbFBvc1RvUG9pbnQocHJvcC5sb2Muc3RhcnQpLFxuICAgICAgICAgIGVuZFBvc2l0aW9uOiBiYWJlbFBvc1RvUG9pbnQocHJvcC5sb2MuZW5kKSxcbiAgICAgICAgICBjaGlsZHJlbjogW10sXG4gICAgICAgIH07XG4gICAgICB9KTtcbiAgICByZXR1cm4geyBvdXRsaW5lVHJlZXMgfTtcbiAgfVxuICByZXR1cm4gbnVsbDtcbn1cblxuZnVuY3Rpb24gYmFiZWxQb3NUb1BvaW50KHBvczogeyBsaW5lOiBudW1iZXI7IGNvbHVtbjogbnVtYmVyIH0pOiBhdG9tJFBvaW50IHtcbiAgLy8gTmVlZCB0byBzdWJ0cmFjdCAyOiBvbmUgdG8gbW92ZSBmcm9tIDEtaW5kZXhlZCB0byAwLWluZGV4ZWQsIGFub3RoZXIgdG8gYWNjb3VudCBmb3IgdGhlIG9wZW5cbiAgLy8gcGFyZW4gd2UgaGFkIHRvIGFkZCBvbiB0aGUgZmlyc3QgbGluZS5cbiAgcmV0dXJuIG5ldyBQb2ludChwb3MubGluZSAtIDIsIHBvcy5jb2x1bW4pO1xufVxuIl19

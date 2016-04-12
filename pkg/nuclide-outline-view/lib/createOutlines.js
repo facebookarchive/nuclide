@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,151 +10,146 @@
  * the root directory of this source tree.
  */
 
-import type {Outline, OutlineForUi, OutlineTree, OutlineTreeForUi} from '..';
-import type {ProviderRegistry} from './ProviderRegistry';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import {Observable} from 'rx';
-import invariant from 'assert';
+exports.createOutlines = createOutlines;
 
-import {event as commonsEvent} from '../../nuclide-commons';
-const {observableFromSubscribeFunction} = commonsEvent;
+var outlineForEditor = _asyncToGenerator(function* (providers, editor) {
+  var scopeName = editor.getGrammar().scopeName;
+  var readableGrammarName = editor.getGrammar().name;
 
-import {getCursorPositions} from '../../nuclide-atom-helpers';
-
-import {getLogger} from '../../nuclide-logging';
-const logger = getLogger();
-
-const TAB_SWITCH_DELAY = 100; // ms
-export function createOutlines(providers: ProviderRegistry): Observable<OutlineForUi> {
-  const paneChanges = observableFromSubscribeFunction(
-      atom.workspace.observeActivePaneItem.bind(atom.workspace),
-    )
-    // Delay the work on tab switch to keep tab switches snappy and avoid doing a bunch of
-    // computation if there are a lot of consecutive tab switches.
-    .debounce(TAB_SWITCH_DELAY);
-
-  return paneChanges
-    .map(() => atom.workspace.getActiveTextEditor())
-    .flatMapLatest(editor => outlinesForEditor(providers, editor));
-}
-
-function outlinesForEditor(
-  providers: ProviderRegistry,
-  editorArg: ?atom$TextEditor,
-): Observable<OutlineForUi> {
-  // needs to be const so the refinement holds in closures
-  const editor = editorArg;
-  if (editor == null) {
-    return Observable.just({
-      kind: 'not-text-editor',
-    });
-  }
-
-  const editorEvents = Observable.concat(
-    // Emit one event at the beginning to trigger the computation of the initial outline
-    Observable.just(),
-    observableFromSubscribeFunction(editor.onDidStopChanging.bind(editor)),
-  );
-
-  const outlines = editorEvents.flatMap(() => outlineForEditor(providers, editor));
-
-  const highlightedOutlines = outlines.flatMapLatest(outline => {
-    if (outline.kind !== 'outline') {
-      return Observable.just(outline);
-    }
-    return getCursorPositions(editor)
-      .map(cursorLocation => {
-        return highlightCurrentNode(outline, cursorLocation);
-      });
-  });
-
-  return Observable.concat(
-    Observable.just({ kind: 'empty' }),
-    highlightedOutlines,
-  );
-}
-
-async function outlineForEditor(
-  providers: ProviderRegistry,
-  editor: atom$TextEditor
-): Promise<OutlineForUi> {
-  const scopeName = editor.getGrammar().scopeName;
-  const readableGrammarName = editor.getGrammar().name;
-
-  const outlineProvider = providers.findProvider(scopeName);
+  var outlineProvider = providers.findProvider(scopeName);
   if (outlineProvider == null) {
     return {
       kind: 'no-provider',
-      grammar: readableGrammarName,
+      grammar: readableGrammarName
     };
   }
-  let outline: ?Outline;
+  var outline = undefined;
   try {
-    outline = await outlineProvider.getOutline(editor);
+    outline = yield outlineProvider.getOutline(editor);
   } catch (e) {
     logger.error('Error in outline provider:', e);
     outline = null;
   }
   if (outline == null) {
     return {
-      kind: 'provider-no-outline',
+      kind: 'provider-no-outline'
     };
   }
   return {
     kind: 'outline',
     outlineTrees: outline.outlineTrees.map(treeToUiTree),
-    editor,
+    editor: editor
   };
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+var _rx = require('rx');
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _nuclideCommons = require('../../nuclide-commons');
+
+var _nuclideAtomHelpers = require('../../nuclide-atom-helpers');
+
+var _nuclideLogging = require('../../nuclide-logging');
+
+var observableFromSubscribeFunction = _nuclideCommons.event.observableFromSubscribeFunction;
+
+var logger = (0, _nuclideLogging.getLogger)();
+
+var TAB_SWITCH_DELAY = 100; // ms
+
+function createOutlines(providers) {
+  var paneChanges = observableFromSubscribeFunction(atom.workspace.observeActivePaneItem.bind(atom.workspace))
+  // Delay the work on tab switch to keep tab switches snappy and avoid doing a bunch of
+  // computation if there are a lot of consecutive tab switches.
+  .debounce(TAB_SWITCH_DELAY);
+
+  return paneChanges.map(function () {
+    return atom.workspace.getActiveTextEditor();
+  }).flatMapLatest(function (editor) {
+    return outlinesForEditor(providers, editor);
+  });
 }
 
-function treeToUiTree(outlineTree: OutlineTree): OutlineTreeForUi {
+function outlinesForEditor(providers, editorArg) {
+  // needs to be const so the refinement holds in closures
+  var editor = editorArg;
+  if (editor == null) {
+    return _rx.Observable.just({
+      kind: 'not-text-editor'
+    });
+  }
+
+  var editorEvents = _rx.Observable.concat(
+  // Emit one event at the beginning to trigger the computation of the initial outline
+  _rx.Observable.just(), observableFromSubscribeFunction(editor.onDidStopChanging.bind(editor)));
+
+  var outlines = editorEvents.flatMap(function () {
+    return outlineForEditor(providers, editor);
+  });
+
+  var highlightedOutlines = outlines.flatMapLatest(function (outline) {
+    if (outline.kind !== 'outline') {
+      return _rx.Observable.just(outline);
+    }
+    return (0, _nuclideAtomHelpers.getCursorPositions)(editor).map(function (cursorLocation) {
+      return highlightCurrentNode(outline, cursorLocation);
+    });
+  });
+
+  return _rx.Observable.concat(_rx.Observable.just({ kind: 'empty' }), highlightedOutlines);
+}
+
+function treeToUiTree(outlineTree) {
   return {
     plainText: outlineTree.plainText,
     tokenizedText: outlineTree.tokenizedText,
     startPosition: outlineTree.startPosition,
     endPosition: outlineTree.endPosition,
     highlighted: false,
-    children: outlineTree.children.map(treeToUiTree),
+    children: outlineTree.children.map(treeToUiTree)
   };
 }
 
 // Return an outline object with the node under the cursor highlighted. Does not mutate the
 // original.
-function highlightCurrentNode(outline: OutlineForUi, cursorLocation: atom$Point): OutlineForUi {
-  invariant(outline.kind === 'outline');
-  return {
-    ...outline,
-    outlineTrees: highlightCurrentNodeInTrees(outline.outlineTrees, cursorLocation),
-  };
-}
-
-function highlightCurrentNodeInTrees(
-  outlineTrees: Array<OutlineTreeForUi>,
-  cursorLocation: atom$Point
-): Array<OutlineTreeForUi> {
-  return outlineTrees.map(tree => {
-    return {
-      ...tree,
-      highlighted: shouldHighlightNode(tree, cursorLocation),
-      children: highlightCurrentNodeInTrees(tree.children, cursorLocation),
-    };
+function highlightCurrentNode(outline, cursorLocation) {
+  (0, _assert2['default'])(outline.kind === 'outline');
+  return _extends({}, outline, {
+    outlineTrees: highlightCurrentNodeInTrees(outline.outlineTrees, cursorLocation)
   });
 }
 
-function shouldHighlightNode(outlineTree: OutlineTreeForUi, cursorLocation: atom$Point): boolean {
-  const startPosition = outlineTree.startPosition;
-  const endPosition = outlineTree.endPosition;
+function highlightCurrentNodeInTrees(outlineTrees, cursorLocation) {
+  return outlineTrees.map(function (tree) {
+    return _extends({}, tree, {
+      highlighted: shouldHighlightNode(tree, cursorLocation),
+      children: highlightCurrentNodeInTrees(tree.children, cursorLocation)
+    });
+  });
+}
+
+function shouldHighlightNode(outlineTree, cursorLocation) {
+  var startPosition = outlineTree.startPosition;
+  var endPosition = outlineTree.endPosition;
   if (endPosition == null) {
     return false;
   }
   if (outlineTree.children.length !== 0) {
-    const childStartPosition = outlineTree.children[0].startPosition;
+    var childStartPosition = outlineTree.children[0].startPosition;
     // Since the parent is rendered in the list above the children, it doesn't really make sense to
     // highlight it if you are below the start position of any child. However, if you are at the top
     // of a class it does seem desirable to highlight it.
-    return cursorLocation.isGreaterThanOrEqual(startPosition) &&
-      cursorLocation.isLessThan(childStartPosition);
+    return cursorLocation.isGreaterThanOrEqual(startPosition) && cursorLocation.isLessThan(childStartPosition);
   }
-  return cursorLocation.isGreaterThanOrEqual(startPosition) &&
-   cursorLocation.isLessThanOrEqual(endPosition);
+  return cursorLocation.isGreaterThanOrEqual(startPosition) && cursorLocation.isLessThanOrEqual(endPosition);
 }
+//# sourceMappingURL=data:application/json;base64,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O0FBQ3RELGNBQVEsRUFBRSwyQkFBMkIsQ0FBQyxJQUFJLENBQUMsUUFBUSxFQUFFLGNBQWMsQ0FBQztPQUNwRTtHQUNILENBQUMsQ0FBQztDQUNKOztBQUVELFNBQVMsbUJBQW1CLENBQUMsV0FBNkIsRUFBRSxjQUEwQixFQUFXO0FBQy9GLE1BQU0sYUFBYSxHQUFHLFdBQVcsQ0FBQyxhQUFhLENBQUM7QUFDaEQsTUFBTSxXQUFXLEdBQUcsV0FBVyxDQUFDLFdBQVcsQ0FBQztBQUM1QyxNQUFJLFdBQVcsSUFBSSxJQUFJLEVBQUU7QUFDdkIsV0FBTyxLQUFLLENBQUM7R0FDZDtBQUNELE1BQUksV0FBVyxDQUFDLFFBQVEsQ0FBQyxNQUFNLEtBQUssQ0FBQyxFQUFFO0FBQ3JDLFFBQU0sa0JBQWtCLEdBQUcsV0FBVyxDQUFDLFFBQVEsQ0FBQyxDQUFDLENBQUMsQ0FBQyxhQUFhLENBQUM7Ozs7QUFJakUsV0FBTyxjQUFjLENBQUMsb0JBQW9CLENBQUMsYUFBYSxDQUFDLElBQ3ZELGNBQWMsQ0FBQyxVQUFVLENBQUMsa0JBQWtCLENBQUMsQ0FBQztHQUNqRDtBQUNELFNBQU8sY0FBYyxDQUFDLG9CQUFvQixDQUFDLGFBQWEsQ0FBQyxJQUN4RCxjQUFjLENBQUMsaUJBQWlCLENBQUMsV0FBVyxDQUFDLENBQUM7Q0FDaEQiLCJmaWxlIjoiY3JlYXRlT3V0bGluZXMuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7T3V0bGluZSwgT3V0bGluZUZvclVpLCBPdXRsaW5lVHJlZSwgT3V0bGluZVRyZWVGb3JVaX0gZnJvbSAnLi4nO1xuaW1wb3J0IHR5cGUge1Byb3ZpZGVyUmVnaXN0cnl9IGZyb20gJy4vUHJvdmlkZXJSZWdpc3RyeSc7XG5cbmltcG9ydCB7T2JzZXJ2YWJsZX0gZnJvbSAncngnO1xuaW1wb3J0IGludmFyaWFudCBmcm9tICdhc3NlcnQnO1xuXG5pbXBvcnQge2V2ZW50IGFzIGNvbW1vbnNFdmVudH0gZnJvbSAnLi4vLi4vbnVjbGlkZS1jb21tb25zJztcbmNvbnN0IHtvYnNlcnZhYmxlRnJvbVN1YnNjcmliZUZ1bmN0aW9ufSA9IGNvbW1vbnNFdmVudDtcblxuaW1wb3J0IHtnZXRDdXJzb3JQb3NpdGlvbnN9IGZyb20gJy4uLy4uL251Y2xpZGUtYXRvbS1oZWxwZXJzJztcblxuaW1wb3J0IHtnZXRMb2dnZXJ9IGZyb20gJy4uLy4uL251Y2xpZGUtbG9nZ2luZyc7XG5jb25zdCBsb2dnZXIgPSBnZXRMb2dnZXIoKTtcblxuY29uc3QgVEFCX1NXSVRDSF9ERUxBWSA9IDEwMDsgLy8gbXNcbmV4cG9ydCBmdW5jdGlvbiBjcmVhdGVPdXRsaW5lcyhwcm92aWRlcnM6IFByb3ZpZGVyUmVnaXN0cnkpOiBPYnNlcnZhYmxlPE91dGxpbmVGb3JVaT4ge1xuICBjb25zdCBwYW5lQ2hhbmdlcyA9IG9ic2VydmFibGVGcm9tU3Vic2NyaWJlRnVuY3Rpb24oXG4gICAgICBhdG9tLndvcmtzcGFjZS5vYnNlcnZlQWN0aXZlUGFuZUl0ZW0uYmluZChhdG9tLndvcmtzcGFjZSksXG4gICAgKVxuICAgIC8vIERlbGF5IHRoZSB3b3JrIG9uIHRhYiBzd2l0Y2ggdG8ga2VlcCB0YWIgc3dpdGNoZXMgc25hcHB5IGFuZCBhdm9pZCBkb2luZyBhIGJ1bmNoIG9mXG4gICAgLy8gY29tcHV0YXRpb24gaWYgdGhlcmUgYXJlIGEgbG90IG9mIGNvbnNlY3V0aXZlIHRhYiBzd2l0Y2hlcy5cbiAgICAuZGVib3VuY2UoVEFCX1NXSVRDSF9ERUxBWSk7XG5cbiAgcmV0dXJuIHBhbmVDaGFuZ2VzXG4gICAgLm1hcCgoKSA9PiBhdG9tLndvcmtzcGFjZS5nZXRBY3RpdmVUZXh0RWRpdG9yKCkpXG4gICAgLmZsYXRNYXBMYXRlc3QoZWRpdG9yID0+IG91dGxpbmVzRm9yRWRpdG9yKHByb3ZpZGVycywgZWRpdG9yKSk7XG59XG5cbmZ1bmN0aW9uIG91dGxpbmVzRm9yRWRpdG9yKFxuICBwcm92aWRlcnM6IFByb3ZpZGVyUmVnaXN0cnksXG4gIGVkaXRvckFyZzogP2F0b20kVGV4dEVkaXRvcixcbik6IE9ic2VydmFibGU8T3V0bGluZUZvclVpPiB7XG4gIC8vIG5lZWRzIHRvIGJlIGNvbnN0IHNvIHRoZSByZWZpbmVtZW50IGhvbGRzIGluIGNsb3N1cmVzXG4gIGNvbnN0IGVkaXRvciA9IGVkaXRvckFyZztcbiAgaWYgKGVkaXRvciA9PSBudWxsKSB7XG4gICAgcmV0dXJuIE9ic2VydmFibGUuanVzdCh7XG4gICAgICBraW5kOiAnbm90LXRleHQtZWRpdG9yJyxcbiAgICB9KTtcbiAgfVxuXG4gIGNvbnN0IGVkaXRvckV2ZW50cyA9IE9ic2VydmFibGUuY29uY2F0KFxuICAgIC8vIEVtaXQgb25lIGV2ZW50IGF0IHRoZSBiZWdpbm5pbmcgdG8gdHJpZ2dlciB0aGUgY29tcHV0YXRpb24gb2YgdGhlIGluaXRpYWwgb3V0bGluZVxuICAgIE9ic2VydmFibGUuanVzdCgpLFxuICAgIG9ic2VydmFibGVGcm9tU3Vic2NyaWJlRnVuY3Rpb24oZWRpdG9yLm9uRGlkU3RvcENoYW5naW5nLmJpbmQoZWRpdG9yKSksXG4gICk7XG5cbiAgY29uc3Qgb3V0bGluZXMgPSBlZGl0b3JFdmVudHMuZmxhdE1hcCgoKSA9PiBvdXRsaW5lRm9yRWRpdG9yKHByb3ZpZGVycywgZWRpdG9yKSk7XG5cbiAgY29uc3QgaGlnaGxpZ2h0ZWRPdXRsaW5lcyA9IG91dGxpbmVzLmZsYXRNYXBMYXRlc3Qob3V0bGluZSA9PiB7XG4gICAgaWYgKG91dGxpbmUua2luZCAhPT0gJ291dGxpbmUnKSB7XG4gICAgICByZXR1cm4gT2JzZXJ2YWJsZS5qdXN0KG91dGxpbmUpO1xuICAgIH1cbiAgICByZXR1cm4gZ2V0Q3Vyc29yUG9zaXRpb25zKGVkaXRvcilcbiAgICAgIC5tYXAoY3Vyc29yTG9jYXRpb24gPT4ge1xuICAgICAgICByZXR1cm4gaGlnaGxpZ2h0Q3VycmVudE5vZGUob3V0bGluZSwgY3Vyc29yTG9jYXRpb24pO1xuICAgICAgfSk7XG4gIH0pO1xuXG4gIHJldHVybiBPYnNlcnZhYmxlLmNvbmNhdChcbiAgICBPYnNlcnZhYmxlLmp1c3QoeyBraW5kOiAnZW1wdHknIH0pLFxuICAgIGhpZ2hsaWdodGVkT3V0bGluZXMsXG4gICk7XG59XG5cbmFzeW5jIGZ1bmN0aW9uIG91dGxpbmVGb3JFZGl0b3IoXG4gIHByb3ZpZGVyczogUHJvdmlkZXJSZWdpc3RyeSxcbiAgZWRpdG9yOiBhdG9tJFRleHRFZGl0b3Jcbik6IFByb21pc2U8T3V0bGluZUZvclVpPiB7XG4gIGNvbnN0IHNjb3BlTmFtZSA9IGVkaXRvci5nZXRHcmFtbWFyKCkuc2NvcGVOYW1lO1xuICBjb25zdCByZWFkYWJsZUdyYW1tYXJOYW1lID0gZWRpdG9yLmdldEdyYW1tYXIoKS5uYW1lO1xuXG4gIGNvbnN0IG91dGxpbmVQcm92aWRlciA9IHByb3ZpZGVycy5maW5kUHJvdmlkZXIoc2NvcGVOYW1lKTtcbiAgaWYgKG91dGxpbmVQcm92aWRlciA9PSBudWxsKSB7XG4gICAgcmV0dXJuIHtcbiAgICAgIGtpbmQ6ICduby1wcm92aWRlcicsXG4gICAgICBncmFtbWFyOiByZWFkYWJsZUdyYW1tYXJOYW1lLFxuICAgIH07XG4gIH1cbiAgbGV0IG91dGxpbmU6ID9PdXRsaW5lO1xuICB0cnkge1xuICAgIG91dGxpbmUgPSBhd2FpdCBvdXRsaW5lUHJvdmlkZXIuZ2V0T3V0bGluZShlZGl0b3IpO1xuICB9IGNhdGNoIChlKSB7XG4gICAgbG9nZ2VyLmVycm9yKCdFcnJvciBpbiBvdXRsaW5lIHByb3ZpZGVyOicsIGUpO1xuICAgIG91dGxpbmUgPSBudWxsO1xuICB9XG4gIGlmIChvdXRsaW5lID09IG51bGwpIHtcbiAgICByZXR1cm4ge1xuICAgICAga2luZDogJ3Byb3ZpZGVyLW5vLW91dGxpbmUnLFxuICAgIH07XG4gIH1cbiAgcmV0dXJuIHtcbiAgICBraW5kOiAnb3V0bGluZScsXG4gICAgb3V0bGluZVRyZWVzOiBvdXRsaW5lLm91dGxpbmVUcmVlcy5tYXAodHJlZVRvVWlUcmVlKSxcbiAgICBlZGl0b3IsXG4gIH07XG59XG5cbmZ1bmN0aW9uIHRyZWVUb1VpVHJlZShvdXRsaW5lVHJlZTogT3V0bGluZVRyZWUpOiBPdXRsaW5lVHJlZUZvclVpIHtcbiAgcmV0dXJuIHtcbiAgICBwbGFpblRleHQ6IG91dGxpbmVUcmVlLnBsYWluVGV4dCxcbiAgICB0b2tlbml6ZWRUZXh0OiBvdXRsaW5lVHJlZS50b2tlbml6ZWRUZXh0LFxuICAgIHN0YXJ0UG9zaXRpb246IG91dGxpbmVUcmVlLnN0YXJ0UG9zaXRpb24sXG4gICAgZW5kUG9zaXRpb246IG91dGxpbmVUcmVlLmVuZFBvc2l0aW9uLFxuICAgIGhpZ2hsaWdodGVkOiBmYWxzZSxcbiAgICBjaGlsZHJlbjogb3V0bGluZVRyZWUuY2hpbGRyZW4ubWFwKHRyZWVUb1VpVHJlZSksXG4gIH07XG59XG5cbi8vIFJldHVybiBhbiBvdXRsaW5lIG9iamVjdCB3aXRoIHRoZSBub2RlIHVuZGVyIHRoZSBjdXJzb3IgaGlnaGxpZ2h0ZWQuIERvZXMgbm90IG11dGF0ZSB0aGVcbi8vIG9yaWdpbmFsLlxuZnVuY3Rpb24gaGlnaGxpZ2h0Q3VycmVudE5vZGUob3V0bGluZTogT3V0bGluZUZvclVpLCBjdXJzb3JMb2NhdGlvbjogYXRvbSRQb2ludCk6IE91dGxpbmVGb3JVaSB7XG4gIGludmFyaWFudChvdXRsaW5lLmtpbmQgPT09ICdvdXRsaW5lJyk7XG4gIHJldHVybiB7XG4gICAgLi4ub3V0bGluZSxcbiAgICBvdXRsaW5lVHJlZXM6IGhpZ2hsaWdodEN1cnJlbnROb2RlSW5UcmVlcyhvdXRsaW5lLm91dGxpbmVUcmVlcywgY3Vyc29yTG9jYXRpb24pLFxuICB9O1xufVxuXG5mdW5jdGlvbiBoaWdobGlnaHRDdXJyZW50Tm9kZUluVHJlZXMoXG4gIG91dGxpbmVUcmVlczogQXJyYXk8T3V0bGluZVRyZWVGb3JVaT4sXG4gIGN1cnNvckxvY2F0aW9uOiBhdG9tJFBvaW50XG4pOiBBcnJheTxPdXRsaW5lVHJlZUZvclVpPiB7XG4gIHJldHVybiBvdXRsaW5lVHJlZXMubWFwKHRyZWUgPT4ge1xuICAgIHJldHVybiB7XG4gICAgICAuLi50cmVlLFxuICAgICAgaGlnaGxpZ2h0ZWQ6IHNob3VsZEhpZ2hsaWdodE5vZGUodHJlZSwgY3Vyc29yTG9jYXRpb24pLFxuICAgICAgY2hpbGRyZW46IGhpZ2hsaWdodEN1cnJlbnROb2RlSW5UcmVlcyh0cmVlLmNoaWxkcmVuLCBjdXJzb3JMb2NhdGlvbiksXG4gICAgfTtcbiAgfSk7XG59XG5cbmZ1bmN0aW9uIHNob3VsZEhpZ2hsaWdodE5vZGUob3V0bGluZVRyZWU6IE91dGxpbmVUcmVlRm9yVWksIGN1cnNvckxvY2F0aW9uOiBhdG9tJFBvaW50KTogYm9vbGVhbiB7XG4gIGNvbnN0IHN0YXJ0UG9zaXRpb24gPSBvdXRsaW5lVHJlZS5zdGFydFBvc2l0aW9uO1xuICBjb25zdCBlbmRQb3NpdGlvbiA9IG91dGxpbmVUcmVlLmVuZFBvc2l0aW9uO1xuICBpZiAoZW5kUG9zaXRpb24gPT0gbnVsbCkge1xuICAgIHJldHVybiBmYWxzZTtcbiAgfVxuICBpZiAob3V0bGluZVRyZWUuY2hpbGRyZW4ubGVuZ3RoICE9PSAwKSB7XG4gICAgY29uc3QgY2hpbGRTdGFydFBvc2l0aW9uID0gb3V0bGluZVRyZWUuY2hpbGRyZW5bMF0uc3RhcnRQb3NpdGlvbjtcbiAgICAvLyBTaW5jZSB0aGUgcGFyZW50IGlzIHJlbmRlcmVkIGluIHRoZSBsaXN0IGFib3ZlIHRoZSBjaGlsZHJlbiwgaXQgZG9lc24ndCByZWFsbHkgbWFrZSBzZW5zZSB0b1xuICAgIC8vIGhpZ2hsaWdodCBpdCBpZiB5b3UgYXJlIGJlbG93IHRoZSBzdGFydCBwb3NpdGlvbiBvZiBhbnkgY2hpbGQuIEhvd2V2ZXIsIGlmIHlvdSBhcmUgYXQgdGhlIHRvcFxuICAgIC8vIG9mIGEgY2xhc3MgaXQgZG9lcyBzZWVtIGRlc2lyYWJsZSB0byBoaWdobGlnaHQgaXQuXG4gICAgcmV0dXJuIGN1cnNvckxvY2F0aW9uLmlzR3JlYXRlclRoYW5PckVxdWFsKHN0YXJ0UG9zaXRpb24pICYmXG4gICAgICBjdXJzb3JMb2NhdGlvbi5pc0xlc3NUaGFuKGNoaWxkU3RhcnRQb3NpdGlvbik7XG4gIH1cbiAgcmV0dXJuIGN1cnNvckxvY2F0aW9uLmlzR3JlYXRlclRoYW5PckVxdWFsKHN0YXJ0UG9zaXRpb24pICYmXG4gICBjdXJzb3JMb2NhdGlvbi5pc0xlc3NUaGFuT3JFcXVhbChlbmRQb3NpdGlvbik7XG59XG4iXX0=

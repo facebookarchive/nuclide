@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.activate = activate;
+exports.createHgRepositoryProvider = createHgRepositoryProvider;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +12,15 @@
  * the root directory of this source tree.
  */
 
-export function activate(state: any): void {
+function activate(state) {
   // TODO(mbolin): Add activation code here.
 }
 
-export function createHgRepositoryProvider() {
-  const {HgRepositoryProvider} = require('./HgRepositoryProvider');
+function createHgRepositoryProvider() {
+  var _require = require('./HgRepositoryProvider');
+
+  var HgRepositoryProvider = _require.HgRepositoryProvider;
+
   return new HgRepositoryProvider();
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7QUFXTyxTQUFTLFFBQVEsQ0FBQyxLQUFVLEVBQVE7O0NBRTFDOztBQUVNLFNBQVMsMEJBQTBCLEdBQUc7aUJBQ1osT0FBTyxDQUFDLHdCQUF3QixDQUFDOztNQUF6RCxvQkFBb0IsWUFBcEIsb0JBQW9COztBQUMzQixTQUFPLElBQUksb0JBQW9CLEVBQUUsQ0FBQztDQUNuQyIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuZXhwb3J0IGZ1bmN0aW9uIGFjdGl2YXRlKHN0YXRlOiBhbnkpOiB2b2lkIHtcbiAgLy8gVE9ETyhtYm9saW4pOiBBZGQgYWN0aXZhdGlvbiBjb2RlIGhlcmUuXG59XG5cbmV4cG9ydCBmdW5jdGlvbiBjcmVhdGVIZ1JlcG9zaXRvcnlQcm92aWRlcigpIHtcbiAgY29uc3Qge0hnUmVwb3NpdG9yeVByb3ZpZGVyfSA9IHJlcXVpcmUoJy4vSGdSZXBvc2l0b3J5UHJvdmlkZXInKTtcbiAgcmV0dXJuIG5ldyBIZ1JlcG9zaXRvcnlQcm92aWRlcigpO1xufVxuIl19

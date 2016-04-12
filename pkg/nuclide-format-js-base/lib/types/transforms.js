@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -12,11 +13,4 @@
 /**
  * These are all of the transforms that may be run via `transform`.
  */
-export type TransformKey =
-  'nuclide.fixHeader' |
-  'requires.transferComments' |
-  'requires.removeUnusedRequires' |
-  'requires.addMissingRequires' |
-  'requires.removeUnusedTypes' |
-  'requires.addMissingTypes' |
-  'requires.formatRequires';
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJ0cmFuc2Zvcm1zLmpzIiwic291cmNlc0NvbnRlbnQiOltdfQ==

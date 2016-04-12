@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,42 +10,46 @@
  * the root directory of this source tree.
  */
 
-import type ActivationType from './Activation';
-import type {RegisterExecutorFunction} from './types';
-import type {GadgetsService} from '../../nuclide-gadgets-interfaces';
-import type OutputService from './OutputService';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeGadgetsService = consumeGadgetsService;
+exports.provideOutputService = provideOutputService;
+exports.provideRegisterExecutor = provideRegisterExecutor;
 
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let activation: ?ActivationType = null;
+var _assert = require('assert');
 
-export function activate(state: ?Object) {
+var _assert2 = _interopRequireDefault(_assert);
+
+var activation = null;
+
+function activate(state) {
   if (activation == null) {
-    const Activation = require('./Activation');
+    var Activation = require('./Activation');
     activation = new Activation(state);
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function consumeGadgetsService(
-  gadgetsApi: GadgetsService,
-): IDisposable {
-  invariant(activation);
+function consumeGadgetsService(gadgetsApi) {
+  (0, _assert2['default'])(activation);
   return activation.consumeGadgetsService(gadgetsApi);
 }
 
-export function provideOutputService(): OutputService {
-  invariant(activation);
+function provideOutputService() {
+  (0, _assert2['default'])(activation);
   return activation.provideOutputService();
 }
 
-export function provideRegisterExecutor(): RegisterExecutorFunction {
-  invariant(activation);
+function provideRegisterExecutor() {
+  (0, _assert2['default'])(activation);
   return activation.provideRegisterExecutor();
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7c0JBZ0JzQixRQUFROzs7O0FBRTlCLElBQUksVUFBMkIsR0FBRyxJQUFJLENBQUM7O0FBRWhDLFNBQVMsUUFBUSxDQUFDLEtBQWMsRUFBRTtBQUN2QyxNQUFJLFVBQVUsSUFBSSxJQUFJLEVBQUU7QUFDdEIsUUFBTSxVQUFVLEdBQUcsT0FBTyxDQUFDLGNBQWMsQ0FBQyxDQUFDO0FBQzNDLGNBQVUsR0FBRyxJQUFJLFVBQVUsQ0FBQyxLQUFLLENBQUMsQ0FBQztHQUNwQztDQUNGOztBQUVNLFNBQVMsVUFBVSxHQUFHO0FBQzNCLE1BQUksVUFBVSxJQUFJLElBQUksRUFBRTtBQUN0QixjQUFVLENBQUMsT0FBTyxFQUFFLENBQUM7QUFDckIsY0FBVSxHQUFHLElBQUksQ0FBQztHQUNuQjtDQUNGOztBQUVNLFNBQVMscUJBQXFCLENBQ25DLFVBQTBCLEVBQ2I7QUFDYiwyQkFBVSxVQUFVLENBQUMsQ0FBQztBQUN0QixTQUFPLFVBQVUsQ0FBQyxxQkFBcUIsQ0FBQyxVQUFVLENBQUMsQ0FBQztDQUNyRDs7QUFFTSxTQUFTLG9CQUFvQixHQUFrQjtBQUNwRCwyQkFBVSxVQUFVLENBQUMsQ0FBQztBQUN0QixTQUFPLFVBQVUsQ0FBQyxvQkFBb0IsRUFBRSxDQUFDO0NBQzFDOztBQUVNLFNBQVMsdUJBQXVCLEdBQTZCO0FBQ2xFLDJCQUFVLFVBQVUsQ0FBQyxDQUFDO0FBQ3RCLFNBQU8sVUFBVSxDQUFDLHVCQUF1QixFQUFFLENBQUM7Q0FDN0MiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIEFjdGl2YXRpb25UeXBlIGZyb20gJy4vQWN0aXZhdGlvbic7XG5pbXBvcnQgdHlwZSB7UmVnaXN0ZXJFeGVjdXRvckZ1bmN0aW9ufSBmcm9tICcuL3R5cGVzJztcbmltcG9ydCB0eXBlIHtHYWRnZXRzU2VydmljZX0gZnJvbSAnLi4vLi4vbnVjbGlkZS1nYWRnZXRzLWludGVyZmFjZXMnO1xuaW1wb3J0IHR5cGUgT3V0cHV0U2VydmljZSBmcm9tICcuL091dHB1dFNlcnZpY2UnO1xuXG5pbXBvcnQgaW52YXJpYW50IGZyb20gJ2Fzc2VydCc7XG5cbmxldCBhY3RpdmF0aW9uOiA/QWN0aXZhdGlvblR5cGUgPSBudWxsO1xuXG5leHBvcnQgZnVuY3Rpb24gYWN0aXZhdGUoc3RhdGU6ID9PYmplY3QpIHtcbiAgaWYgKGFjdGl2YXRpb24gPT0gbnVsbCkge1xuICAgIGNvbnN0IEFjdGl2YXRpb24gPSByZXF1aXJlKCcuL0FjdGl2YXRpb24nKTtcbiAgICBhY3RpdmF0aW9uID0gbmV3IEFjdGl2YXRpb24oc3RhdGUpO1xuICB9XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBkZWFjdGl2YXRlKCkge1xuICBpZiAoYWN0aXZhdGlvbiAhPSBudWxsKSB7XG4gICAgYWN0aXZhdGlvbi5kaXNwb3NlKCk7XG4gICAgYWN0aXZhdGlvbiA9IG51bGw7XG4gIH1cbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGNvbnN1bWVHYWRnZXRzU2VydmljZShcbiAgZ2FkZ2V0c0FwaTogR2FkZ2V0c1NlcnZpY2UsXG4pOiBJRGlzcG9zYWJsZSB7XG4gIGludmFyaWFudChhY3RpdmF0aW9uKTtcbiAgcmV0dXJuIGFjdGl2YXRpb24uY29uc3VtZUdhZGdldHNTZXJ2aWNlKGdhZGdldHNBcGkpO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gcHJvdmlkZU91dHB1dFNlcnZpY2UoKTogT3V0cHV0U2VydmljZSB7XG4gIGludmFyaWFudChhY3RpdmF0aW9uKTtcbiAgcmV0dXJuIGFjdGl2YXRpb24ucHJvdmlkZU91dHB1dFNlcnZpY2UoKTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIHByb3ZpZGVSZWdpc3RlckV4ZWN1dG9yKCk6IFJlZ2lzdGVyRXhlY3V0b3JGdW5jdGlvbiB7XG4gIGludmFyaWFudChhY3RpdmF0aW9uKTtcbiAgcmV0dXJuIGFjdGl2YXRpb24ucHJvdmlkZVJlZ2lzdGVyRXhlY3V0b3IoKTtcbn1cbiJdfQ==

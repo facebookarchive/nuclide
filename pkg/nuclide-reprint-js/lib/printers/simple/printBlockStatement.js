@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +8,17 @@
  * the root directory of this source tree.
  */
 
-import type {BlockStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var markers = require('../../constants/markers');
+var printArrayOfStatements = require('../common/printArrayOfStatements');
+var printComments = require('../common/printComments');
+var wrapStatement = require('../../wrappers/simple/wrapStatement');
 
-const markers = require('../../constants/markers');
-const printArrayOfStatements = require('../common/printArrayOfStatements');
-const printComments = require('../common/printComments');
-const wrapStatement = require('../../wrappers/simple/wrapStatement');
-
-function printBlockStatement(print: Print, node: BlockStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
-  return wrap([
-    '{',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    printComments(node.innerComments),
-    printArrayOfStatements(print, node.body),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-    '}',
-  ]);
+function printBlockStatement(print, node) {
+  var wrap = function wrap(x) {
+    return wrapStatement(print, node, x);
+  };
+  return wrap(['{', markers.openScope, markers.scopeIndent, markers.scopeBreak, printComments(node.innerComments), printArrayOfStatements(print, node.body), markers.scopeBreak, markers.scopeDedent, markers.closeScope, '}']);
 }
 
 module.exports = printBlockStatement;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50QmxvY2tTdGF0ZW1lbnQuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQWNBLElBQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyx5QkFBeUIsQ0FBQyxDQUFDO0FBQ25ELElBQU0sc0JBQXNCLEdBQUcsT0FBTyxDQUFDLGtDQUFrQyxDQUFDLENBQUM7QUFDM0UsSUFBTSxhQUFhLEdBQUcsT0FBTyxDQUFDLHlCQUF5QixDQUFDLENBQUM7QUFDekQsSUFBTSxhQUFhLEdBQUcsT0FBTyxDQUFDLHFDQUFxQyxDQUFDLENBQUM7O0FBRXJFLFNBQVMsbUJBQW1CLENBQUMsS0FBWSxFQUFFLElBQW9CLEVBQVM7QUFDdEUsTUFBTSxJQUFJLEdBQUcsU0FBUCxJQUFJLENBQUcsQ0FBQztXQUFJLGFBQWEsQ0FBQyxLQUFLLEVBQUUsSUFBSSxFQUFFLENBQUMsQ0FBQztHQUFBLENBQUM7QUFDaEQsU0FBTyxJQUFJLENBQUMsQ0FDVixHQUFHLEVBQ0gsT0FBTyxDQUFDLFNBQVMsRUFDakIsT0FBTyxDQUFDLFdBQVcsRUFDbkIsT0FBTyxDQUFDLFVBQVUsRUFDbEIsYUFBYSxDQUFDLElBQUksQ0FBQyxhQUFhLENBQUMsRUFDakMsc0JBQXNCLENBQUMsS0FBSyxFQUFFLElBQUksQ0FBQyxJQUFJLENBQUMsRUFDeEMsT0FBTyxDQUFDLFVBQVUsRUFDbEIsT0FBTyxDQUFDLFdBQVcsRUFDbkIsT0FBTyxDQUFDLFVBQVUsRUFDbEIsR0FBRyxDQUNKLENBQUMsQ0FBQztDQUNKOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUcsbUJBQW1CLENBQUMiLCJmaWxlIjoicHJpbnRCbG9ja1N0YXRlbWVudC5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtCbG9ja1N0YXRlbWVudH0gZnJvbSAnYXN0LXR5cGVzLWZsb3cnO1xuaW1wb3J0IHR5cGUge0xpbmVzLCBQcmludH0gZnJvbSAnLi4vLi4vdHlwZXMvY29tbW9uJztcblxuY29uc3QgbWFya2VycyA9IHJlcXVpcmUoJy4uLy4uL2NvbnN0YW50cy9tYXJrZXJzJyk7XG5jb25zdCBwcmludEFycmF5T2ZTdGF0ZW1lbnRzID0gcmVxdWlyZSgnLi4vY29tbW9uL3ByaW50QXJyYXlPZlN0YXRlbWVudHMnKTtcbmNvbnN0IHByaW50Q29tbWVudHMgPSByZXF1aXJlKCcuLi9jb21tb24vcHJpbnRDb21tZW50cycpO1xuY29uc3Qgd3JhcFN0YXRlbWVudCA9IHJlcXVpcmUoJy4uLy4uL3dyYXBwZXJzL3NpbXBsZS93cmFwU3RhdGVtZW50Jyk7XG5cbmZ1bmN0aW9uIHByaW50QmxvY2tTdGF0ZW1lbnQocHJpbnQ6IFByaW50LCBub2RlOiBCbG9ja1N0YXRlbWVudCk6IExpbmVzIHtcbiAgY29uc3Qgd3JhcCA9IHggPT4gd3JhcFN0YXRlbWVudChwcmludCwgbm9kZSwgeCk7XG4gIHJldHVybiB3cmFwKFtcbiAgICAneycsXG4gICAgbWFya2Vycy5vcGVuU2NvcGUsXG4gICAgbWFya2Vycy5zY29wZUluZGVudCxcbiAgICBtYXJrZXJzLnNjb3BlQnJlYWssXG4gICAgcHJpbnRDb21tZW50cyhub2RlLmlubmVyQ29tbWVudHMpLFxuICAgIHByaW50QXJyYXlPZlN0YXRlbWVudHMocHJpbnQsIG5vZGUuYm9keSksXG4gICAgbWFya2Vycy5zY29wZUJyZWFrLFxuICAgIG1hcmtlcnMuc2NvcGVEZWRlbnQsXG4gICAgbWFya2Vycy5jbG9zZVNjb3BlLFxuICAgICd9JyxcbiAgXSk7XG59XG5cbm1vZHVsZS5leHBvcnRzID0gcHJpbnRCbG9ja1N0YXRlbWVudDtcbiJdfQ==

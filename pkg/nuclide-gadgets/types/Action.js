@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,55 +10,5 @@
  * the root directory of this source tree.
  */
 
-export type Action =
-  CreatePaneItemAction |
-  DestroyPaneItemAction |
-  RegisterGadgetAction |
-  DeactivateAction |
-  UnregisterGadgetAction |
-  UpdatePaneItemAction;
-
 // The duplication of string literals here is necessary to make the disjoint unions work properly.
-export type CreatePaneItemAction = {
-  type: 'CREATE_PANE_ITEM';
-  payload: {
-    component?: ReactComponent;
-    gadgetId: string;
-    item: Object;
-    props?: Object;
-    isNew: boolean;
-  };
-};
-
-export type DeactivateAction = {
-  type: 'DEACTIVATE';
-};
-
-export type DestroyPaneItemAction = {
-  type: 'DESTROY_PANE_ITEM';
-  payload: {
-    item: Object;
-  };
-};
-
-export type RegisterGadgetAction = {
-  type: 'REGISTER_GADGET';
-  payload: {
-    gadget: Object;
-  };
-};
-
-export type UnregisterGadgetAction = {
-  type: 'UNREGISTER_GADGET';
-  payload: {
-    gadgetId: string;
-  };
-};
-
-export type UpdatePaneItemAction = {
-  type: 'UPDATE_PANE_ITEM';
-  payload: {
-    item: Object;
-    props: Object;
-  };
-};
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJBY3Rpb24uanMiLCJzb3VyY2VzQ29udGVudCI6W119

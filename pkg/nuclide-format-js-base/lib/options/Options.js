@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _require = require('../../../nuclide-remote-uri');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,33 +8,27 @@
  * the root directory of this source tree.
  */
 
-import type {ModuleMapOptions} from './ModuleMapOptions';
-import type {RequireOptions} from './RequireOptions';
-import type {SourceOptions} from './SourceOptions';
+var getPath = _require.getPath;
 
-const {getPath} = require('../../../nuclide-remote-uri');
-const invariant = require('assert');
-const path = require('path');
+var invariant = require('assert');
+var path = require('path');
 
 /**
  * Valides the options used to construct a module map.
  */
-function validateModuleMapOptions(options: ModuleMapOptions): void {
+function validateModuleMapOptions(options) {
   invariant(options, 'Invalid (undefined) ModuleMapOptions given.');
 
   // Validate presence of correct fields.
   invariant(options.paths, '`paths` must be provided.');
   invariant(options.pathsToRelativize, '`pathsToRelativze` must be provided.');
   invariant(options.aliases, '`aliases` must be provided.');
-  invariant(
-    options.aliasesToRelativize,
-    '`aliasesToRelativze` must be provided.'
-  );
+  invariant(options.aliasesToRelativize, '`aliasesToRelativze` must be provided.');
   invariant(options.builtIns, '`builtIns` must be provided.');
   invariant(options.builtInTypes, '`builtInTypes` must be provided.');
 
   // TODO: Use let.
-  let filePath;
+  var filePath = undefined;
   for (filePath of options.paths) {
     invariant(isAbsolute(filePath), 'All paths must be absolute.');
   }
@@ -47,39 +40,34 @@ function validateModuleMapOptions(options: ModuleMapOptions): void {
 /**
  * Valides the options used to get requires out of a module map.
  */
-function validateRequireOptions(options: RequireOptions): void {
+function validateRequireOptions(options) {
   invariant(options, 'Invalid (undefined) RequireOptions given.');
 }
 
 /**
  * Validates the options given as input to transform.
  */
-function validateSourceOptions(options: SourceOptions): void {
+function validateSourceOptions(options) {
   invariant(options, 'Invalid (undefined) SourceOptions given.');
   if (options.sourcePath != null) {
-    invariant(
-      isAbsolute(options.sourcePath),
-      'If a "sourcePath" is given it must be an absolute path.'
-    );
+    invariant(isAbsolute(options.sourcePath), 'If a "sourcePath" is given it must be an absolute path.');
   }
-  invariant(
-    options.moduleMap,
-    'A "moduleMap" must be provided in order to transform the source.'
-  );
+  invariant(options.moduleMap, 'A "moduleMap" must be provided in order to transform the source.');
 }
 
 /**
  * Small helper function to validate that a path is absolute. We also need to
  * allow remote nuclide files.
  */
-function isAbsolute(sourcePath: string): boolean {
+function isAbsolute(sourcePath) {
   return path.isAbsolute(getPath(sourcePath));
 }
 
-const Options = {
-  validateModuleMapOptions,
-  validateRequireOptions,
-  validateSourceOptions,
+var Options = {
+  validateModuleMapOptions: validateModuleMapOptions,
+  validateRequireOptions: validateRequireOptions,
+  validateSourceOptions: validateSourceOptions
 };
 
 module.exports = Options;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIk9wdGlvbnMuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6ImVBZWtCLE9BQU8sQ0FBQyw2QkFBNkIsQ0FBQzs7Ozs7Ozs7OztJQUFqRCxPQUFPLFlBQVAsT0FBTzs7QUFDZCxJQUFNLFNBQVMsR0FBRyxPQUFPLENBQUMsUUFBUSxDQUFDLENBQUM7QUFDcEMsSUFBTSxJQUFJLEdBQUcsT0FBTyxDQUFDLE1BQU0sQ0FBQyxDQUFDOzs7OztBQUs3QixTQUFTLHdCQUF3QixDQUFDLE9BQXlCLEVBQVE7QUFDakUsV0FBUyxDQUFDLE9BQU8sRUFBRSw2Q0FBNkMsQ0FBQyxDQUFDOzs7QUFHbEUsV0FBUyxDQUFDLE9BQU8sQ0FBQyxLQUFLLEVBQUUsMkJBQTJCLENBQUMsQ0FBQztBQUN0RCxXQUFTLENBQUMsT0FBTyxDQUFDLGlCQUFpQixFQUFFLHNDQUFzQyxDQUFDLENBQUM7QUFDN0UsV0FBUyxDQUFDLE9BQU8sQ0FBQyxPQUFPLEVBQUUsNkJBQTZCLENBQUMsQ0FBQztBQUMxRCxXQUFTLENBQ1AsT0FBTyxDQUFDLG1CQUFtQixFQUMzQix3Q0FBd0MsQ0FDekMsQ0FBQztBQUNGLFdBQVMsQ0FBQyxPQUFPLENBQUMsUUFBUSxFQUFFLDhCQUE4QixDQUFDLENBQUM7QUFDNUQsV0FBUyxDQUFDLE9BQU8sQ0FBQyxZQUFZLEVBQUUsa0NBQWtDLENBQUMsQ0FBQzs7O0FBR3BFLE1BQUksUUFBUSxZQUFBLENBQUM7QUFDYixPQUFLLFFBQVEsSUFBSSxPQUFPLENBQUMsS0FBSyxFQUFFO0FBQzlCLGFBQVMsQ0FBQyxVQUFVLENBQUMsUUFBUSxDQUFDLEVBQUUsNkJBQTZCLENBQUMsQ0FBQztHQUNoRTtBQUNELE9BQUssUUFBUSxJQUFJLE9BQU8sQ0FBQyxpQkFBaUIsRUFBRTtBQUMxQyxhQUFTLENBQUMsVUFBVSxDQUFDLFFBQVEsQ0FBQyxFQUFFLDZCQUE2QixDQUFDLENBQUM7R0FDaEU7Q0FDRjs7Ozs7QUFLRCxTQUFTLHNCQUFzQixDQUFDLE9BQXVCLEVBQVE7QUFDN0QsV0FBUyxDQUFDLE9BQU8sRUFBRSwyQ0FBMkMsQ0FBQyxDQUFDO0NBQ2pFOzs7OztBQUtELFNBQVMscUJBQXFCLENBQUMsT0FBc0IsRUFBUTtBQUMzRCxXQUFTLENBQUMsT0FBTyxFQUFFLDBDQUEwQyxDQUFDLENBQUM7QUFDL0QsTUFBSSxPQUFPLENBQUMsVUFBVSxJQUFJLElBQUksRUFBRTtBQUM5QixhQUFTLENBQ1AsVUFBVSxDQUFDLE9BQU8sQ0FBQyxVQUFVLENBQUMsRUFDOUIseURBQXlELENBQzFELENBQUM7R0FDSDtBQUNELFdBQVMsQ0FDUCxPQUFPLENBQUMsU0FBUyxFQUNqQixrRUFBa0UsQ0FDbkUsQ0FBQztDQUNIOzs7Ozs7QUFNRCxTQUFTLFVBQVUsQ0FBQyxVQUFrQixFQUFXO0FBQy9DLFNBQU8sSUFBSSxDQUFDLFVBQVUsQ0FBQyxPQUFPLENBQUMsVUFBVSxDQUFDLENBQUMsQ0FBQztDQUM3Qzs7QUFFRCxJQUFNLE9BQU8sR0FBRztBQUNkLDBCQUF3QixFQUF4Qix3QkFBd0I7QUFDeEIsd0JBQXNCLEVBQXRCLHNCQUFzQjtBQUN0Qix1QkFBcUIsRUFBckIscUJBQXFCO0NBQ3RCLENBQUM7O0FBRUYsTUFBTSxDQUFDLE9BQU8sR0FBRyxPQUFPLENBQUMiLCJmaWxlIjoiT3B0aW9ucy5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtNb2R1bGVNYXBPcHRpb25zfSBmcm9tICcuL01vZHVsZU1hcE9wdGlvbnMnO1xuaW1wb3J0IHR5cGUge1JlcXVpcmVPcHRpb25zfSBmcm9tICcuL1JlcXVpcmVPcHRpb25zJztcbmltcG9ydCB0eXBlIHtTb3VyY2VPcHRpb25zfSBmcm9tICcuL1NvdXJjZU9wdGlvbnMnO1xuXG5jb25zdCB7Z2V0UGF0aH0gPSByZXF1aXJlKCcuLi8uLi8uLi9udWNsaWRlLXJlbW90ZS11cmknKTtcbmNvbnN0IGludmFyaWFudCA9IHJlcXVpcmUoJ2Fzc2VydCcpO1xuY29uc3QgcGF0aCA9IHJlcXVpcmUoJ3BhdGgnKTtcblxuLyoqXG4gKiBWYWxpZGVzIHRoZSBvcHRpb25zIHVzZWQgdG8gY29uc3RydWN0IGEgbW9kdWxlIG1hcC5cbiAqL1xuZnVuY3Rpb24gdmFsaWRhdGVNb2R1bGVNYXBPcHRpb25zKG9wdGlvbnM6IE1vZHVsZU1hcE9wdGlvbnMpOiB2b2lkIHtcbiAgaW52YXJpYW50KG9wdGlvbnMsICdJbnZhbGlkICh1bmRlZmluZWQpIE1vZHVsZU1hcE9wdGlvbnMgZ2l2ZW4uJyk7XG5cbiAgLy8gVmFsaWRhdGUgcHJlc2VuY2Ugb2YgY29ycmVjdCBmaWVsZHMuXG4gIGludmFyaWFudChvcHRpb25zLnBhdGhzLCAnYHBhdGhzYCBtdXN0IGJlIHByb3ZpZGVkLicpO1xuICBpbnZhcmlhbnQob3B0aW9ucy5wYXRoc1RvUmVsYXRpdml6ZSwgJ2BwYXRoc1RvUmVsYXRpdnplYCBtdXN0IGJlIHByb3ZpZGVkLicpO1xuICBpbnZhcmlhbnQob3B0aW9ucy5hbGlhc2VzLCAnYGFsaWFzZXNgIG11c3QgYmUgcHJvdmlkZWQuJyk7XG4gIGludmFyaWFudChcbiAgICBvcHRpb25zLmFsaWFzZXNUb1JlbGF0aXZpemUsXG4gICAgJ2BhbGlhc2VzVG9SZWxhdGl2emVgIG11c3QgYmUgcHJvdmlkZWQuJ1xuICApO1xuICBpbnZhcmlhbnQob3B0aW9ucy5idWlsdElucywgJ2BidWlsdEluc2AgbXVzdCBiZSBwcm92aWRlZC4nKTtcbiAgaW52YXJpYW50KG9wdGlvbnMuYnVpbHRJblR5cGVzLCAnYGJ1aWx0SW5UeXBlc2AgbXVzdCBiZSBwcm92aWRlZC4nKTtcblxuICAvLyBUT0RPOiBVc2UgbGV0LlxuICBsZXQgZmlsZVBhdGg7XG4gIGZvciAoZmlsZVBhdGggb2Ygb3B0aW9ucy5wYXRocykge1xuICAgIGludmFyaWFudChpc0Fic29sdXRlKGZpbGVQYXRoKSwgJ0FsbCBwYXRocyBtdXN0IGJlIGFic29sdXRlLicpO1xuICB9XG4gIGZvciAoZmlsZVBhdGggb2Ygb3B0aW9ucy5wYXRoc1RvUmVsYXRpdml6ZSkge1xuICAgIGludmFyaWFudChpc0Fic29sdXRlKGZpbGVQYXRoKSwgJ0FsbCBwYXRocyBtdXN0IGJlIGFic29sdXRlLicpO1xuICB9XG59XG5cbi8qKlxuICogVmFsaWRlcyB0aGUgb3B0aW9ucyB1c2VkIHRvIGdldCByZXF1aXJlcyBvdXQgb2YgYSBtb2R1bGUgbWFwLlxuICovXG5mdW5jdGlvbiB2YWxpZGF0ZVJlcXVpcmVPcHRpb25zKG9wdGlvbnM6IFJlcXVpcmVPcHRpb25zKTogdm9pZCB7XG4gIGludmFyaWFudChvcHRpb25zLCAnSW52YWxpZCAodW5kZWZpbmVkKSBSZXF1aXJlT3B0aW9ucyBnaXZlbi4nKTtcbn1cblxuLyoqXG4gKiBWYWxpZGF0ZXMgdGhlIG9wdGlvbnMgZ2l2ZW4gYXMgaW5wdXQgdG8gdHJhbnNmb3JtLlxuICovXG5mdW5jdGlvbiB2YWxpZGF0ZVNvdXJjZU9wdGlvbnMob3B0aW9uczogU291cmNlT3B0aW9ucyk6IHZvaWQge1xuICBpbnZhcmlhbnQob3B0aW9ucywgJ0ludmFsaWQgKHVuZGVmaW5lZCkgU291cmNlT3B0aW9ucyBnaXZlbi4nKTtcbiAgaWYgKG9wdGlvbnMuc291cmNlUGF0aCAhPSBudWxsKSB7XG4gICAgaW52YXJpYW50KFxuICAgICAgaXNBYnNvbHV0ZShvcHRpb25zLnNvdXJjZVBhdGgpLFxuICAgICAgJ0lmIGEgXCJzb3VyY2VQYXRoXCIgaXMgZ2l2ZW4gaXQgbXVzdCBiZSBhbiBhYnNvbHV0ZSBwYXRoLidcbiAgICApO1xuICB9XG4gIGludmFyaWFudChcbiAgICBvcHRpb25zLm1vZHVsZU1hcCxcbiAgICAnQSBcIm1vZHVsZU1hcFwiIG11c3QgYmUgcHJvdmlkZWQgaW4gb3JkZXIgdG8gdHJhbnNmb3JtIHRoZSBzb3VyY2UuJ1xuICApO1xufVxuXG4vKipcbiAqIFNtYWxsIGhlbHBlciBmdW5jdGlvbiB0byB2YWxpZGF0ZSB0aGF0IGEgcGF0aCBpcyBhYnNvbHV0ZS4gV2UgYWxzbyBuZWVkIHRvXG4gKiBhbGxvdyByZW1vdGUgbnVjbGlkZSBmaWxlcy5cbiAqL1xuZnVuY3Rpb24gaXNBYnNvbHV0ZShzb3VyY2VQYXRoOiBzdHJpbmcpOiBib29sZWFuIHtcbiAgcmV0dXJuIHBhdGguaXNBYnNvbHV0ZShnZXRQYXRoKHNvdXJjZVBhdGgpKTtcbn1cblxuY29uc3QgT3B0aW9ucyA9IHtcbiAgdmFsaWRhdGVNb2R1bGVNYXBPcHRpb25zLFxuICB2YWxpZGF0ZVJlcXVpcmVPcHRpb25zLFxuICB2YWxpZGF0ZVNvdXJjZU9wdGlvbnMsXG59O1xuXG5tb2R1bGUuZXhwb3J0cyA9IE9wdGlvbnM7XG4iXX0=

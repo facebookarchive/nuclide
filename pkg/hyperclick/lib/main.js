@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +10,44 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from '../../hyperclick-interfaces';
-import type HyperclickType from './Hyperclick';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeProvider = consumeProvider;
+exports.observeTextEditor = observeTextEditor;
 
-let hyperclick: ?HyperclickType = null;
-import {Disposable} from 'atom';
+var _atom = require('atom');
 
-export function activate() {
-  const Hyperclick = require('./Hyperclick');
+var hyperclick = null;
+
+function activate() {
+  var Hyperclick = require('./Hyperclick');
   hyperclick = new Hyperclick();
 
   // FB-only: override the symbols-view "Go To Declaration" context menu item
   // with the Hyperclick "confirm-cursor" command.
   // TODO(hansonw): Remove when symbols-view has a proper API.
   try {
-    const {overrideGoToDeclaration} = require('./fb/overrideGoToDeclaration');
+    var _require = require('./fb/overrideGoToDeclaration');
+
+    var overrideGoToDeclaration = _require.overrideGoToDeclaration;
+
     overrideGoToDeclaration();
   } catch (e) {
     // Ignore.
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (hyperclick != null) {
     hyperclick.dispose();
     hyperclick = null;
   }
 }
 
-export function consumeProvider(
-  provider: HyperclickProvider | Array<HyperclickProvider>,
-): ?Disposable {
+function consumeProvider(provider) {
   if (hyperclick != null) {
     hyperclick.consumeProvider(provider);
-    return new Disposable(() => {
+    return new _atom.Disposable(function () {
       if (hyperclick != null) {
         hyperclick.removeProvider(provider);
       }
@@ -55,10 +60,12 @@ export function consumeProvider(
  * observed by default by hyperclick. However, if a TextEditor is created via some other means,
  * (such as a building block for a piece of UI), then it must be observed explicitly.
  */
-export function observeTextEditor(): (textEditor: atom$TextEditor) => void {
-  return (textEditor: atom$TextEditor) => {
+
+function observeTextEditor() {
+  return function (textEditor) {
     if (hyperclick != null) {
       hyperclick.observeTextEditor(textEditor);
     }
   };
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7b0JBZXlCLE1BQU07O0FBRC9CLElBQUksVUFBMkIsR0FBRyxJQUFJLENBQUM7O0FBR2hDLFNBQVMsUUFBUSxHQUFHO0FBQ3pCLE1BQU0sVUFBVSxHQUFHLE9BQU8sQ0FBQyxjQUFjLENBQUMsQ0FBQztBQUMzQyxZQUFVLEdBQUcsSUFBSSxVQUFVLEVBQUUsQ0FBQzs7Ozs7QUFLOUIsTUFBSTttQkFDZ0MsT0FBTyxDQUFDLDhCQUE4QixDQUFDOztRQUFsRSx1QkFBdUIsWUFBdkIsdUJBQXVCOztBQUM5QiwyQkFBdUIsRUFBRSxDQUFDO0dBQzNCLENBQUMsT0FBTyxDQUFDLEVBQUU7O0dBRVg7Q0FDRjs7QUFFTSxTQUFTLFVBQVUsR0FBRztBQUMzQixNQUFJLFVBQVUsSUFBSSxJQUFJLEVBQUU7QUFDdEIsY0FBVSxDQUFDLE9BQU8sRUFBRSxDQUFDO0FBQ3JCLGNBQVUsR0FBRyxJQUFJLENBQUM7R0FDbkI7Q0FDRjs7QUFFTSxTQUFTLGVBQWUsQ0FDN0IsUUFBd0QsRUFDM0M7QUFDYixNQUFJLFVBQVUsSUFBSSxJQUFJLEVBQUU7QUFDdEIsY0FBVSxDQUFDLGVBQWUsQ0FBQyxRQUFRLENBQUMsQ0FBQztBQUNyQyxXQUFPLHFCQUFlLFlBQU07QUFDMUIsVUFBSSxVQUFVLElBQUksSUFBSSxFQUFFO0FBQ3RCLGtCQUFVLENBQUMsY0FBYyxDQUFDLFFBQVEsQ0FBQyxDQUFDO09BQ3JDO0tBQ0YsQ0FBQyxDQUFDO0dBQ0o7Q0FDRjs7Ozs7Ozs7QUFPTSxTQUFTLGlCQUFpQixHQUEwQztBQUN6RSxTQUFPLFVBQUMsVUFBVSxFQUFzQjtBQUN0QyxRQUFJLFVBQVUsSUFBSSxJQUFJLEVBQUU7QUFDdEIsZ0JBQVUsQ0FBQyxpQkFBaUIsQ0FBQyxVQUFVLENBQUMsQ0FBQztLQUMxQztHQUNGLENBQUM7Q0FDSCIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge0h5cGVyY2xpY2tQcm92aWRlcn0gZnJvbSAnLi4vLi4vaHlwZXJjbGljay1pbnRlcmZhY2VzJztcbmltcG9ydCB0eXBlIEh5cGVyY2xpY2tUeXBlIGZyb20gJy4vSHlwZXJjbGljayc7XG5cbmxldCBoeXBlcmNsaWNrOiA/SHlwZXJjbGlja1R5cGUgPSBudWxsO1xuaW1wb3J0IHtEaXNwb3NhYmxlfSBmcm9tICdhdG9tJztcblxuZXhwb3J0IGZ1bmN0aW9uIGFjdGl2YXRlKCkge1xuICBjb25zdCBIeXBlcmNsaWNrID0gcmVxdWlyZSgnLi9IeXBlcmNsaWNrJyk7XG4gIGh5cGVyY2xpY2sgPSBuZXcgSHlwZXJjbGljaygpO1xuXG4gIC8vIEZCLW9ubHk6IG92ZXJyaWRlIHRoZSBzeW1ib2xzLXZpZXcgXCJHbyBUbyBEZWNsYXJhdGlvblwiIGNvbnRleHQgbWVudSBpdGVtXG4gIC8vIHdpdGggdGhlIEh5cGVyY2xpY2sgXCJjb25maXJtLWN1cnNvclwiIGNvbW1hbmQuXG4gIC8vIFRPRE8oaGFuc29udyk6IFJlbW92ZSB3aGVuIHN5bWJvbHMtdmlldyBoYXMgYSBwcm9wZXIgQVBJLlxuICB0cnkge1xuICAgIGNvbnN0IHtvdmVycmlkZUdvVG9EZWNsYXJhdGlvbn0gPSByZXF1aXJlKCcuL2ZiL292ZXJyaWRlR29Ub0RlY2xhcmF0aW9uJyk7XG4gICAgb3ZlcnJpZGVHb1RvRGVjbGFyYXRpb24oKTtcbiAgfSBjYXRjaCAoZSkge1xuICAgIC8vIElnbm9yZS5cbiAgfVxufVxuXG5leHBvcnQgZnVuY3Rpb24gZGVhY3RpdmF0ZSgpIHtcbiAgaWYgKGh5cGVyY2xpY2sgIT0gbnVsbCkge1xuICAgIGh5cGVyY2xpY2suZGlzcG9zZSgpO1xuICAgIGh5cGVyY2xpY2sgPSBudWxsO1xuICB9XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBjb25zdW1lUHJvdmlkZXIoXG4gIHByb3ZpZGVyOiBIeXBlcmNsaWNrUHJvdmlkZXIgfCBBcnJheTxIeXBlcmNsaWNrUHJvdmlkZXI+LFxuKTogP0Rpc3Bvc2FibGUge1xuICBpZiAoaHlwZXJjbGljayAhPSBudWxsKSB7XG4gICAgaHlwZXJjbGljay5jb25zdW1lUHJvdmlkZXIocHJvdmlkZXIpO1xuICAgIHJldHVybiBuZXcgRGlzcG9zYWJsZSgoKSA9PiB7XG4gICAgICBpZiAoaHlwZXJjbGljayAhPSBudWxsKSB7XG4gICAgICAgIGh5cGVyY2xpY2sucmVtb3ZlUHJvdmlkZXIocHJvdmlkZXIpO1xuICAgICAgfVxuICAgIH0pO1xuICB9XG59XG5cbi8qKlxuICogQSBUZXh0RWRpdG9yIHdob3NlIGNyZWF0aW9uIGlzIGFubm91bmNlZCB2aWEgYXRvbS53b3Jrc3BhY2Uub2JzZXJ2ZVRleHRFZGl0b3JzKCkgd2lsbCBiZVxuICogb2JzZXJ2ZWQgYnkgZGVmYXVsdCBieSBoeXBlcmNsaWNrLiBIb3dldmVyLCBpZiBhIFRleHRFZGl0b3IgaXMgY3JlYXRlZCB2aWEgc29tZSBvdGhlciBtZWFucyxcbiAqIChzdWNoIGFzIGEgYnVpbGRpbmcgYmxvY2sgZm9yIGEgcGllY2Ugb2YgVUkpLCB0aGVuIGl0IG11c3QgYmUgb2JzZXJ2ZWQgZXhwbGljaXRseS5cbiAqL1xuZXhwb3J0IGZ1bmN0aW9uIG9ic2VydmVUZXh0RWRpdG9yKCk6ICh0ZXh0RWRpdG9yOiBhdG9tJFRleHRFZGl0b3IpID0+IHZvaWQge1xuICByZXR1cm4gKHRleHRFZGl0b3I6IGF0b20kVGV4dEVkaXRvcikgPT4ge1xuICAgIGlmIChoeXBlcmNsaWNrICE9IG51bGwpIHtcbiAgICAgIGh5cGVyY2xpY2sub2JzZXJ2ZVRleHRFZGl0b3IodGV4dEVkaXRvcik7XG4gICAgfVxuICB9O1xufVxuIl19

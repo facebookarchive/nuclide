@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +10,14 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+var _reactForAtom = require('react-for-atom');
 
-type Props = {
-  children: ReactElement;
-};
-
-export const ToolbarCenter = (props: Props) => {
-  return (
-    <div className="nuclide-ui-toolbar__center">
-      {props.children}
-    </div>
+var ToolbarCenter = function ToolbarCenter(props) {
+  return _reactForAtom.React.createElement(
+    'div',
+    { className: 'nuclide-ui-toolbar__center' },
+    props.children
   );
 };
+exports.ToolbarCenter = ToolbarCenter;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlRvb2xiYXJDZW50ZXIuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7OzRCQVdvQixnQkFBZ0I7O0FBTTdCLElBQU0sYUFBYSxHQUFHLFNBQWhCLGFBQWEsQ0FBSSxLQUFLLEVBQVk7QUFDN0MsU0FDRTs7TUFBSyxTQUFTLEVBQUMsNEJBQTRCO0lBQ3hDLEtBQUssQ0FBQyxRQUFRO0dBQ1gsQ0FDTjtDQUNILENBQUMiLCJmaWxlIjoiVG9vbGJhckNlbnRlci5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB7UmVhY3R9IGZyb20gJ3JlYWN0LWZvci1hdG9tJztcblxudHlwZSBQcm9wcyA9IHtcbiAgY2hpbGRyZW46IFJlYWN0RWxlbWVudDtcbn07XG5cbmV4cG9ydCBjb25zdCBUb29sYmFyQ2VudGVyID0gKHByb3BzOiBQcm9wcykgPT4ge1xuICByZXR1cm4gKFxuICAgIDxkaXYgY2xhc3NOYW1lPVwibnVjbGlkZS11aS10b29sYmFyX19jZW50ZXJcIj5cbiAgICAgIHtwcm9wcy5jaGlsZHJlbn1cbiAgICA8L2Rpdj5cbiAgKTtcbn07XG4iXX0=

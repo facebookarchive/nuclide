@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,109 +8,114 @@
  * the root directory of this source tree.
  */
 
-const {React} = require('react-for-atom');
-const {PropTypes} = React;
-const BreakpointStore = require('./BreakpointStore.js');
-const DebuggerActions = require('./DebuggerActions');
-const DebuggerInspector = require('./DebuggerInspector');
-const DebuggerSessionSelector = require('./DebuggerSessionSelector');
-const {DebuggerStore} = require('./DebuggerStore');
-const Bridge = require('./Bridge');
+var _require = require('react-for-atom');
 
-type State = {
-  processSocket: ?string;
-  debuggerStoreChangeListener?: IDisposable;
-};
+var React = _require.React;
+var PropTypes = React.PropTypes;
 
-function getStateFromStore(store: DebuggerStore): State {
+var BreakpointStore = require('./BreakpointStore.js');
+var DebuggerActions = require('./DebuggerActions');
+var DebuggerInspector = require('./DebuggerInspector');
+var DebuggerSessionSelector = require('./DebuggerSessionSelector');
+
+var _require2 = require('./DebuggerStore');
+
+var DebuggerStore = _require2.DebuggerStore;
+
+var Bridge = require('./Bridge');
+
+function getStateFromStore(store) {
   return {
-    processSocket: store.getProcessSocket(),
+    processSocket: store.getProcessSocket()
   };
 }
 
-const DebuggerControllerView = React.createClass({
+var DebuggerControllerView = React.createClass({
+  displayName: 'DebuggerControllerView',
+
   propTypes: {
     actions: PropTypes.instanceOf(DebuggerActions).isRequired,
     breakpointStore: PropTypes.instanceOf(BreakpointStore).isRequired,
     store: PropTypes.instanceOf(DebuggerStore).isRequired,
-    bridge: PropTypes.instanceOf(Bridge).isRequired,
+    bridge: PropTypes.instanceOf(Bridge).isRequired
   },
 
-  getInitialState(): State {
+  getInitialState: function getInitialState() {
     return getStateFromStore(this.props.store);
   },
 
-  componentWillMount() {
+  componentWillMount: function componentWillMount() {
     this.setState({
-      debuggerStoreChangeListener: this.props.store.onChange(this._updateStateFromStore),
+      debuggerStoreChangeListener: this.props.store.onChange(this._updateStateFromStore)
     });
     this._updateStateFromStore();
   },
 
-  componentWillUnmount() {
-    const listener = this.state.debuggerStoreChangeListener;
+  componentWillUnmount: function componentWillUnmount() {
+    var listener = this.state.debuggerStoreChangeListener;
     if (listener != null) {
       listener.dispose();
     }
   },
 
-  componentWillReceiveProps(nextProps: {store: DebuggerStore}) {
-    const listener = this.state.debuggerStoreChangeListener;
+  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+    var listener = this.state.debuggerStoreChangeListener;
     if (listener != null) {
       listener.dispose();
     }
     this.setState({
-      debuggerStoreChangeListener: nextProps.store.onChange(this._updateStateFromStore),
+      debuggerStoreChangeListener: nextProps.store.onChange(this._updateStateFromStore)
     });
     this._updateStateFromStore(nextProps.store);
   },
 
-  render(): ?ReactElement {
+  render: function render() {
     if (this.state.processSocket) {
-      return (
-        <DebuggerInspector
-          actions={this.props.actions}
-          bridge={this.props.bridge}
-          breakpointStore={this.props.breakpointStore}
-          socket={this.state.processSocket}
-        />
-      );
+      return React.createElement(DebuggerInspector, {
+        actions: this.props.actions,
+        bridge: this.props.bridge,
+        breakpointStore: this.props.breakpointStore,
+        socket: this.state.processSocket
+      });
     }
-    const closeButton = (
-      <button
-        title="Close"
-        className="icon icon-x nuclide-debugger-root-close-button"
-        onClick={this._handleClickClose}
-      />
-    );
+    var closeButton = React.createElement('button', {
+      title: 'Close',
+      className: 'icon icon-x nuclide-debugger-root-close-button',
+      onClick: this._handleClickClose
+    });
     if (this.props.store.getDebuggerMode() === 'starting') {
-      return (
-        <div className="padded">
-          {closeButton}
-          <p>Starting Debugger</p>
-          <progress className="starting"></progress>
-        </div>
+      return React.createElement(
+        'div',
+        { className: 'padded' },
+        closeButton,
+        React.createElement(
+          'p',
+          null,
+          'Starting Debugger'
+        ),
+        React.createElement('progress', { className: 'starting' })
       );
     }
-    return (
-      <div>
-        {closeButton}
-        <DebuggerSessionSelector store={this.props.store} actions={this.props.actions} />
-      </div>
+    return React.createElement(
+      'div',
+      null,
+      closeButton,
+      React.createElement(DebuggerSessionSelector, { store: this.props.store, actions: this.props.actions })
     );
   },
 
-  _handleClickClose() {
+  _handleClickClose: function _handleClickClose() {
     this.props.actions.killDebugger();
   },
 
-  _updateStateFromStore(store?: DebuggerStore) {
+  _updateStateFromStore: function _updateStateFromStore(store) {
     if (store != null) {
       this.setState(getStateFromStore(store));
     } else {
       this.setState(getStateFromStore(this.props.store));
     }
-  },
+  }
 });
 
 module.exports = DebuggerControllerView;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkRlYnVnZ2VyQ29udHJvbGxlclZpZXcuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztlQVdnQixPQUFPLENBQUMsZ0JBQWdCLENBQUM7O0lBQWxDLEtBQUssWUFBTCxLQUFLO0lBQ0wsU0FBUyxHQUFJLEtBQUssQ0FBbEIsU0FBUzs7QUFDaEIsSUFBTSxlQUFlLEdBQUcsT0FBTyxDQUFDLHNCQUFzQixDQUFDLENBQUM7QUFDeEQsSUFBTSxlQUFlLEdBQUcsT0FBTyxDQUFDLG1CQUFtQixDQUFDLENBQUM7QUFDckQsSUFBTSxpQkFBaUIsR0FBRyxPQUFPLENBQUMscUJBQXFCLENBQUMsQ0FBQztBQUN6RCxJQUFNLHVCQUF1QixHQUFHLE9BQU8sQ0FBQywyQkFBMkIsQ0FBQyxDQUFDOztnQkFDN0MsT0FBTyxDQUFDLGlCQUFpQixDQUFDOztJQUEzQyxhQUFhLGFBQWIsYUFBYTs7QUFDcEIsSUFBTSxNQUFNLEdBQUcsT0FBTyxDQUFDLFVBQVUsQ0FBQyxDQUFDOztBQU9uQyxTQUFTLGlCQUFpQixDQUFDLEtBQW9CLEVBQVM7QUFDdEQsU0FBTztBQUNMLGlCQUFhLEVBQUUsS0FBSyxDQUFDLGdCQUFnQixFQUFFO0dBQ3hDLENBQUM7Q0FDSDs7QUFFRCxJQUFNLHNCQUFzQixHQUFHLEtBQUssQ0FBQyxXQUFXLENBQUM7OztBQUMvQyxXQUFTLEVBQUU7QUFDVCxXQUFPLEVBQUUsU0FBUyxDQUFDLFVBQVUsQ0FBQyxlQUFlLENBQUMsQ0FBQyxVQUFVO0FBQ3pELG1CQUFlLEVBQUUsU0FBUyxDQUFDLFVBQVUsQ0FBQyxlQUFlLENBQUMsQ0FBQyxVQUFVO0FBQ2pFLFNBQUssRUFBRSxTQUFTLENBQUMsVUFBVSxDQUFDLGFBQWEsQ0FBQyxDQUFDLFVBQVU7QUFDckQsVUFBTSxFQUFFLFNBQVMsQ0FBQyxVQUFVLENBQUMsTUFBTSxDQUFDLENBQUMsVUFBVTtHQUNoRDs7QUFFRCxpQkFBZSxFQUFBLDJCQUFVO0FBQ3ZCLFdBQU8saUJBQWlCLENBQUMs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bnRyb2xsZXJWaWV3LmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuY29uc3Qge1JlYWN0fSA9IHJlcXVpcmUoJ3JlYWN0LWZvci1hdG9tJyk7XG5jb25zdCB7UHJvcFR5cGVzfSA9IFJlYWN0O1xuY29uc3QgQnJlYWtwb2ludFN0b3JlID0gcmVxdWlyZSgnLi9CcmVha3BvaW50U3RvcmUuanMnKTtcbmNvbnN0IERlYnVnZ2VyQWN0aW9ucyA9IHJlcXVpcmUoJy4vRGVidWdnZXJBY3Rpb25zJyk7XG5jb25zdCBEZWJ1Z2dlckluc3BlY3RvciA9IHJlcXVpcmUoJy4vRGVidWdnZXJJbnNwZWN0b3InKTtcbmNvbnN0IERlYnVnZ2VyU2Vzc2lvblNlbGVjdG9yID0gcmVxdWlyZSgnLi9EZWJ1Z2dlclNlc3Npb25TZWxlY3RvcicpO1xuY29uc3Qge0RlYnVnZ2VyU3RvcmV9ID0gcmVxdWlyZSgnLi9EZWJ1Z2dlclN0b3JlJyk7XG5jb25zdCBCcmlkZ2UgPSByZXF1aXJlKCcuL0JyaWRnZScpO1xuXG50eXBlIFN0YXRlID0ge1xuICBwcm9jZXNzU29ja2V0OiA/c3RyaW5nO1xuICBkZWJ1Z2dlclN0b3JlQ2hhbmdlTGlzdGVuZXI/OiBJRGlzcG9zYWJsZTtcbn07XG5cbmZ1bmN0aW9uIGdldFN0YXRlRnJvbVN0b3JlKHN0b3JlOiBEZWJ1Z2dlclN0b3JlKTogU3RhdGUge1xuICByZXR1cm4ge1xuICAgIHByb2Nlc3NTb2NrZXQ6IHN0b3JlLmdldFByb2Nlc3NTb2NrZXQoKSxcbiAgfTtcbn1cblxuY29uc3QgRGVidWdnZXJDb250cm9sbGVyVmlldyA9IFJlYWN0LmNyZWF0ZUNsYXNzKHtcbiAgcHJvcFR5cGVzOiB7XG4gICAgYWN0aW9uczogUHJvcFR5cGVzLmluc3RhbmNlT2YoRGVidWdnZXJBY3Rpb25zKS5pc1JlcXVpcmVkLFxuICAgIGJyZWFrcG9pbnRTdG9yZTogUHJvcFR5cGVzLmluc3RhbmNlT2YoQnJlYWtwb2ludFN0b3JlKS5pc1JlcXVpcmVkLFxuICAgIHN0b3JlOiBQcm9wVHlwZXMuaW5zdGFuY2VPZihEZWJ1Z2dlclN0b3JlKS5pc1JlcXVpcmVkLFxuICAgIGJyaWRnZTogUHJvcFR5cGVzLmluc3RhbmNlT2YoQnJpZGdlKS5pc1JlcXVpcmVkLFxuICB9LFxuXG4gIGdldEluaXRpYWxTdGF0ZSgpOiBTdGF0ZSB7XG4gICAgcmV0dXJuIGdldFN0YXRlRnJvbVN0b3JlKHRoaXMucHJvcHMuc3RvcmUpO1xuICB9LFxuXG4gIGNvbXBvbmVudFdpbGxNb3VudCgpIHtcbiAgICB0aGlzLnNldFN0YXRlKHtcbiAgICAgIGRlYnVnZ2VyU3RvcmVDaGFuZ2VMaXN0ZW5lcjogdGhpcy5wcm9wcy5zdG9yZS5vbkNoYW5nZSh0aGlzLl91cGRhdGVTdGF0ZUZyb21TdG9yZSksXG4gICAgfSk7XG4gICAgdGhpcy5fdXBkYXRlU3RhdGVGcm9tU3RvcmUoKTtcbiAgfSxcblxuICBjb21wb25lbnRXaWxsVW5tb3VudCgpIHtcbiAgICBjb25zdCBsaXN0ZW5lciA9IHRoaXMuc3RhdGUuZGVidWdnZXJTdG9yZUNoYW5nZUxpc3RlbmVyO1xuICAgIGlmIChsaXN0ZW5lciAhPSBudWxsKSB7XG4gICAgICBsaXN0ZW5lci5kaXNwb3NlKCk7XG4gICAgfVxuICB9LFxuXG4gIGNvbXBvbmVudFdpbGxSZWNlaXZlUHJvcHMobmV4dFByb3BzOiB7c3RvcmU6IERlYnVnZ2VyU3RvcmV9KSB7XG4gICAgY29uc3QgbGlzdGVuZXIgPSB0aGlzLnN0YXRlLmRlYnVnZ2VyU3RvcmVDaGFuZ2VMaXN0ZW5lcjtcbiAgICBpZiAobGlzdGVuZXIgIT0gbnVsbCkge1xuICAgICAgbGlzdGVuZXIuZGlzcG9zZSgpO1xuICAgIH1cbiAgICB0aGlzLnNldFN0YXRlKHtcbiAgICAgIGRlYnVnZ2VyU3RvcmVDaGFuZ2VMaXN0ZW5lcjogbmV4dFByb3BzLnN0b3JlLm9uQ2hhbmdlKHRoaXMuX3VwZGF0ZVN0YXRlRnJvbVN0b3JlKSxcbiAgICB9KTtcbiAgICB0aGlzLl91cGRhdGVTdGF0ZUZyb21TdG9yZShuZXh0UHJvcHMuc3RvcmUpO1xuICB9LFxuXG4gIHJlbmRlcigpOiA/UmVhY3RFbGVtZW50IHtcbiAgICBpZiAodGhpcy5zdGF0ZS5wcm9jZXNzU29ja2V0KSB7XG4gICAgICByZXR1cm4gKFxuICAgICAgICA8RGVidWdnZXJJbnNwZWN0b3JcbiAgICAgICAgICBhY3Rpb25zPXt0aGlzLnByb3BzLmFjdGlvbnN9XG4gICAgICAgICAgYnJpZGdlPXt0aGlzLnByb3BzLmJyaWRnZX1cbiAgICAgICAgICBicmVha3BvaW50U3RvcmU9e3RoaXMucHJvcHMuYnJlYWtwb2ludFN0b3JlfVxuICAgICAgICAgIHNvY2tldD17dGhpcy5zdGF0ZS5wcm9jZXNzU29ja2V0fVxuICAgICAgICAvPlxuICAgICAgKTtcbiAgICB9XG4gICAgY29uc3QgY2xvc2VCdXR0b24gPSAoXG4gICAgICA8YnV0dG9uXG4gICAgICAgIHRpdGxlPVwiQ2xvc2VcIlxuICAgICAgICBjbGFzc05hbWU9XCJpY29uIGljb24teCBudWNsaWRlLWRlYnVnZ2VyLXJvb3QtY2xvc2UtYnV0dG9uXCJcbiAgICAgICAgb25DbGljaz17dGhpcy5faGFuZGxlQ2xpY2tDbG9zZX1cbiAgICAgIC8+XG4gICAgKTtcbiAgICBpZiAodGhpcy5wcm9wcy5zdG9yZS5nZXREZWJ1Z2dlck1vZGUoKSA9PT0gJ3N0YXJ0aW5nJykge1xuICAgICAgcmV0dXJuIChcbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwYWRkZWRcIj5cbiAgICAgICAgICB7Y2xvc2VCdXR0b259XG4gICAgICAgICAgPHA+U3RhcnRpbmcgRGVidWdnZXI8L3A+XG4gICAgICAgICAgPHByb2dyZXNzIGNsYXNzTmFtZT1cInN0YXJ0aW5nXCI+PC9wcm9ncmVzcz5cbiAgICAgICAgPC9kaXY+XG4gICAgICApO1xuICAgIH1cbiAgICByZXR1cm4gKFxuICAgICAgPGRpdj5cbiAgICAgICAge2Nsb3NlQnV0dG9ufVxuICAgICAgICA8RGVidWdnZXJTZXNzaW9uU2VsZWN0b3Igc3RvcmU9e3RoaXMucHJvcHMuc3RvcmV9IGFjdGlvbnM9e3RoaXMucHJvcHMuYWN0aW9uc30gLz5cbiAgICAgIDwvZGl2PlxuICAgICk7XG4gIH0sXG5cbiAgX2hhbmRsZUNsaWNrQ2xvc2UoKSB7XG4gICAgdGhpcy5wcm9wcy5hY3Rpb25zLmtpbGxEZWJ1Z2dlcigpO1xuICB9LFxuXG4gIF91cGRhdGVTdGF0ZUZyb21TdG9yZShzdG9yZT86IERlYnVnZ2VyU3RvcmUpIHtcbiAgICBpZiAoc3RvcmUgIT0gbnVsbCkge1xuICAgICAgdGhpcy5zZXRTdGF0ZShnZXRTdGF0ZUZyb21TdG9yZShzdG9yZSkpO1xuICAgIH0gZWxzZSB7XG4gICAgICB0aGlzLnNldFN0YXRlKGdldFN0YXRlRnJvbVN0b3JlKHRoaXMucHJvcHMuc3RvcmUpKTtcbiAgICB9XG4gIH0sXG59KTtcblxubW9kdWxlLmV4cG9ydHMgPSBEZWJ1Z2dlckNvbnRyb2xsZXJWaWV3O1xuIl19
