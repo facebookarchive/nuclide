@@ -20,6 +20,7 @@ import {goToLocation as atomGoToLocation} from '../../nuclide-atom-helpers';
 
 import invariant from 'assert';
 
+import {DiagnosticsMessageText} from '../../nuclide-ui/lib/DiagnosticsMessageText';
 const {track} = require('../../nuclide-analytics');
 const {
   React,
@@ -312,7 +313,9 @@ function createElementForMessage(
   return (
     <div>
       {header}
-      <div>{createMessageSpan(message)}</div>
+      <div>
+        <DiagnosticsMessageText message={message} />
+      </div>
       {traceElements}
     </div>
   );
@@ -366,20 +369,10 @@ function createElementForTrace(
   }
   return (
     <div>
-      {createMessageSpan(trace)}
+      <DiagnosticsMessageText message={trace} />
       {locSpan}
     </div>
   );
-}
-
-function createMessageSpan(message: {html?: string; text?: string}): ReactElement {
-  if (message.html != null) {
-    return <span dangerouslySetInnerHTML={{__html: message.html}} />;
-  } else if (message.text != null) {
-    return <span>{message.text}</span>;
-  } else {
-    return <span>Diagnostic lacks message.</span>;
-  }
 }
 
 class DiagnosticsPopup extends React.Component {
