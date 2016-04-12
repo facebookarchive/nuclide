@@ -19,6 +19,7 @@ const {BLAME_DECORATION_CLASS} = require('./constants');
 import {track, trackTiming} from '../../nuclide-analytics';
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
+import shell from 'shell';
 
 const MS_TO_WAIT_BEFORE_SPINNER = 2000;
 const CHANGESET_CSS_CLASS = 'nuclide-blame-ui-hash';
@@ -97,7 +98,7 @@ export default class {
     const url = await blameProvider.getUrlForRevision(this._editor, changeset);
     if (url) {
       // Note that 'shell' is not the public 'shell' package on npm but an Atom built-in.
-      require('shell').openExternal(url);
+      shell.openExternal(url);
     } else {
       atom.notifications.addWarning(`No URL found for ${changeset}.`);
     }

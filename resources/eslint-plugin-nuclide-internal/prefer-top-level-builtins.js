@@ -25,7 +25,8 @@ const NODE_BUILTINS = new Set([
 ]);
 
 const ATOM_BUILTINS = new Set([
-  'atom',
+  'atom', 'callbacks-registry', 'clipboard', 'crash-reporter', 'ipc', 'remote',
+  'shell', 'web-frame',
 ]);
 
 module.exports = function(context) {

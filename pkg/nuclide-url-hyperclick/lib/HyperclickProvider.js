@@ -12,6 +12,7 @@
 import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
 
 import {Range} from 'atom';
+import shell from 'shell';
 
 // "urlregexp" uses the "g" flag. Since we only care about the first result,
 // we make a copy of it w/o the "g" flag so we don't have to reset `lastIndex`
@@ -55,7 +56,6 @@ export class HyperclickProvider {
     return {
       range: urlRange,
       callback: () => {
-        const {openExternal} = require('shell');
         let validUrl;
         if (url.startsWith('http://') || url.startsWith('https://')) {
           validUrl = url;
@@ -64,7 +64,7 @@ export class HyperclickProvider {
           // open properly.
           validUrl = 'http://' + url;
         }
-        openExternal(validUrl);
+        shell.openExternal(validUrl);
       },
     };
   }

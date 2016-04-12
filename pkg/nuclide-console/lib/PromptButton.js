@@ -10,6 +10,7 @@
  */
 
 import {React} from 'react-for-atom';
+import remote from 'remote';
 
 type PromptOption = {
   id: string;
@@ -44,7 +45,6 @@ export default class PromptButton extends React.Component {
   }
 
   _handleClick(event: SyntheticMouseEvent): void {
-    const remote = require('remote');
     const Menu = remote.require('menu');
     const MenuItem = remote.require('menu-item');
     const currentWindow = remote.getCurrentWindow();
