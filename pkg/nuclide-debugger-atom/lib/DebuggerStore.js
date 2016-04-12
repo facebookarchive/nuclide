@@ -39,7 +39,7 @@ class DebuggerStore {
   _dispatcherToken: any;
 
   // Stored values
-  _debuggerProcess: ?DebuggerInstance;
+  _debuggerInstance: ?DebuggerInstance;
   _error: ?string;
   _services: Set<nuclide_debugger$Service>;
   _evaluationExpressionProviders: Set<NuclideEvaluationExpressionProvider>;
@@ -51,7 +51,7 @@ class DebuggerStore {
     this._eventEmitter = new EventEmitter();
     this._dispatcherToken = this._dispatcher.register(this._handlePayload.bind(this));
 
-    this._debuggerProcess = null;
+    this._debuggerInstance = null;
     this._error = null;
     this._services = new Set();
     this._evaluationExpressionProviders = new Set();
@@ -62,13 +62,13 @@ class DebuggerStore {
   dispose() {
     this._eventEmitter.removeAllListeners();
     this._dispatcher.unregister(this._dispatcherToken);
-    if (this._debuggerProcess) {
-      this._debuggerProcess.dispose();
+    if (this._debuggerInstance) {
+      this._debuggerInstance.dispose();
     }
   }
 
-  getDebuggerProcess(): ?DebuggerInstance {
-    return this._debuggerProcess;
+  getDebuggerInstance(): ?DebuggerInstance {
+    return this._debuggerInstance;
   }
 
   getError(): ?string {
@@ -141,8 +141,8 @@ class DebuggerStore {
       case Constants.Actions.SET_ERROR:
         this._error = payload.data;
         break;
-      case Constants.Actions.SET_DEBUGGER_PROCESS:
-        this._debuggerProcess = payload.data;
+      case Constants.Actions.SET_DEBUGGER_INSTANCE:
+        this._debuggerInstance = payload.data;
         break;
       case Constants.Actions.DEBUGGER_MODE_CHANGE:
         this._debuggerMode = payload.data;

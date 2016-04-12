@@ -70,8 +70,8 @@ class DebuggerActions {
 
     try {
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-      const debugSession = await processInfo.debug();
-      await this._waitForChromeConnection(debugSession);
+      const debuggerInstance = await processInfo.debug();
+      await this._waitForChromeConnection(debuggerInstance);
     } catch (err) {
       failTimerTracking(err);
       track(AnalyticsEvents.DEBUGGER_START_FAIL, {});
@@ -80,19 +80,15 @@ class DebuggerActions {
     }
   }
 
-  async _waitForChromeConnection(debugSession: DebuggerInstance): Promise<void> {
-    this._dispatcher.dispatch({
-      actionType: Constants.Actions.SET_DEBUGGER_PROCESS,
-      data: debugSession,
-    });
-
-    if (debugSession.onSessionEnd != null) {
-      const handler = this._handleSessionEnd.bind(this, debugSession);
-      invariant(debugSession.onSessionEnd);
-      this._disposables.add(debugSession.onSessionEnd(handler));
+  async _waitForChromeConnection(debuggerInstance: DebuggerInstance): Promise<void> {
+    this._setDebuggerInstance(debuggerInstance);
+    if (debuggerInstance.onSessionEnd != null) {
+      const handler = this._handleSessionEnd.bind(this, debuggerInstance);
+      invariant(debuggerInstance.onSessionEnd);
+      this._disposables.add(debuggerInstance.onSessionEnd(handler));
     }
 
-    const socketAddr = await debugSession.getWebsocketAddress();
+    const socketAddr = await debuggerInstance.getWebsocketAddress();
     endTimerTracking();
 
     this._dispatcher.dispatch({
@@ -105,8 +101,15 @@ class DebuggerActions {
     });
   }
 
+  _setDebuggerInstance(debuggerInstance: ?DebuggerInstance): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.SET_DEBUGGER_INSTANCE,
+      data: debuggerInstance,
+    });
+  }
+
   _handleSessionEnd(debuggerInstance: DebuggerInstance): void {
-    if (this._store.getDebuggerProcess() === debuggerInstance) {
+    if (this._store.getDebuggerInstance() === debuggerInstance) {
       this.killDebugger();
     } else {
       // Do nothing, because either:
@@ -124,13 +127,10 @@ class DebuggerActions {
       actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
       data: DebuggerMode.STOPPING,
     });
-    const debugSession = this._store.getDebuggerProcess();
-    if (debugSession != null) {
-      debugSession.dispose();
-      this._dispatcher.dispatch({
-        actionType: Constants.Actions.SET_DEBUGGER_PROCESS,
-        data: null,
-      });
+    const debuggerInstance = this._store.getDebuggerInstance();
+    if (debuggerInstance != null) {
+      debuggerInstance.dispose();
+      this._setDebuggerInstance(null);
     }
     this._dispatcher.dispatch({
       actionType: Constants.Actions.SET_PROCESS_SOCKET,
@@ -146,7 +146,7 @@ class DebuggerActions {
 
   killDebugger() {
     this.stopDebugging();
-    if (this._store.getDebuggerProcess() === null) {
+    if (this._store.getDebuggerInstance() === null) {
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:hide');
     }
   }

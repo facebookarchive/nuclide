@@ -84,7 +84,7 @@ class Activation {
 
       // Listen for removed connections and kill the debugger if it is using that connection.
       ServerConnection.onDidCloseServerConnection(connection => {
-        const debuggerProcess = this._model.getStore().getDebuggerProcess();
+        const debuggerProcess = this._model.getStore().getDebuggerInstance();
         if (debuggerProcess == null) {
           return; // Nothing to do if we're not debugging.
         }
