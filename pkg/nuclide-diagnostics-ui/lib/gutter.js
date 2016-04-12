@@ -21,6 +21,7 @@ import {goToLocation as atomGoToLocation} from '../../nuclide-atom-helpers';
 import invariant from 'assert';
 
 import {DiagnosticsMessageText} from '../../nuclide-ui/lib/DiagnosticsMessageText';
+import {DiagnosticsTraceItem} from '../../nuclide-ui/lib/DiagnosticsTraceItem';
 const {track} = require('../../nuclide-analytics');
 const {
   React,
@@ -308,7 +309,13 @@ function createElementForMessage(
     </div>
   );
   const traceElements = message.trace
-    ? message.trace.map(traceItem => createElementForTrace(traceItem, goToLocation))
+    ? message.trace.map((traceItem, i) =>
+      <DiagnosticsTraceItem
+        key={i}
+        trace={traceItem}
+        goToLocation={goToLocation}
+      />
+    )
     : null;
   return (
     <div>
@@ -346,33 +353,6 @@ function plainTextForDiagnostic(message: FileDiagnosticMessage): string {
   }
   const trace = message.trace != null ? message.trace : [];
   return [message, ...trace].map(plainTextForItem).join('\n');
-}
-
-function createElementForTrace(
-  trace: Trace,
-  goToLocation: (path: string, line: number) => mixed,
-): ReactElement {
-  let locSpan = null;
-  // Local variable so that the type refinement holds in the onClick handler.
-  const path = trace.filePath;
-  if (path) {
-    const [, relativePath] = atom.project.relativizePath(path);
-    let locString = relativePath;
-    if (trace.range) {
-      locString += `:${trace.range.start.row + 1}`;
-    }
-    const onClick = () => {
-      track('diagnostics-gutter-goto-location');
-      goToLocation(path, Math.max(trace.range ? trace.range.start.row : 0, 0));
-    };
-    locSpan = <span>: <a href="#" onClick={onClick}>{locString}</a></span>;
-  }
-  return (
-    <div>
-      <DiagnosticsMessageText message={trace} />
-      {locSpan}
-    </div>
-  );
 }
 
 class DiagnosticsPopup extends React.Component {
