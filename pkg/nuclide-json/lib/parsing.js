@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Point} from 'atom';
+import {Point, Range} from 'atom';
 
 let babelCore = null;
 function babelParse(text: string): Object {
@@ -18,6 +18,16 @@ function babelParse(text: string): Object {
   }
   return babelCore.parse(text);
 }
+
+type BabelPos = {
+  line: number;
+  column: number;
+};
+
+type BabelLoc = {
+  start: BabelPos;
+  end: BabelPos;
+};
 
 /**
  * Returns a Babel Expression AST node, or null if the parse does not succeed.
@@ -33,8 +43,12 @@ export function parseJSON(json: string): ?Object {
   }
 }
 
-export function babelPosToPoint(pos: { line: number; column: number }): atom$Point {
+export function babelPosToPoint(pos: BabelPos): atom$Point {
   // Need to subtract 2: one to move from 1-indexed to 0-indexed, another to account for the open
   // paren we had to add on the first line.
   return new Point(pos.line - 2, pos.column);
+}
+
+export function babelLocToRange(loc: BabelLoc): atom$Range {
+  return new Range(babelPosToPoint(loc.start), babelPosToPoint(loc.end));
 }

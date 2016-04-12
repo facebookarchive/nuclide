@@ -9,11 +9,13 @@
  * the root directory of this source tree.
  */
 
+import type {HyperclickProvider} from '../../hyperclick-interfaces';
 import type {Outline, OutlineProvider} from '../../nuclide-outline-view';
 
 import {CompositeDisposable} from 'atom';
 
 import {getOutline} from './JSONOutlineProvider';
+import {getNPMHyperclickProvider} from './NPMHyperclickProvider';
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -51,4 +53,8 @@ export function provideOutlines(): OutlineProvider {
       return Promise.resolve(getOutline(editor.getText()));
     },
   };
+}
+
+export function getHyperclickProvider(): HyperclickProvider {
+  return getNPMHyperclickProvider();
 }
