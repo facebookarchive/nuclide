@@ -22,7 +22,7 @@ import type {
   NuclideDebuggerProvider,
   NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
-import type {DebuggerStore} from './DebuggerStore';
+import type {DebuggerStore, DebuggerModeType} from './DebuggerStore';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 import type BridgeType from './Bridge';
 import type DebuggerInstance from './DebuggerInstance';
@@ -62,12 +62,7 @@ class DebuggerActions {
     this.stopDebugging(); // stop existing session.
     this.setError(null);
     this._handleDebugModeStart();
-
-    this._dispatcher.dispatch({
-      actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
-      data: DebuggerMode.STARTING,
-    });
-
+    this._setDebuggerMode(DebuggerMode.STARTING);
     try {
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
       const debuggerInstance = await processInfo.debug();
@@ -78,6 +73,13 @@ class DebuggerActions {
       this.setError('Failed to start debugger process: ' + err);
       this.killDebugger();
     }
+  }
+
+  _setDebuggerMode(debuggerMode: DebuggerModeType): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
+      data: debuggerMode,
+    });
   }
 
   async _waitForChromeConnection(debuggerInstance: DebuggerInstance): Promise<void> {
@@ -95,10 +97,8 @@ class DebuggerActions {
       actionType: Constants.Actions.SET_PROCESS_SOCKET,
       data: socketAddr,
     });
-    this._dispatcher.dispatch({
-      actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
-      data: DebuggerMode.RUNNING,  // Debugger finished initializing and entered debug mode.
-    });
+    // Debugger finished initializing and entered debug mode.
+    this._setDebuggerMode(DebuggerMode.RUNNING);
   }
 
   _setDebuggerInstance(debuggerInstance: ?DebuggerInstance): void {
@@ -122,11 +122,7 @@ class DebuggerActions {
     if (this._store.getDebuggerMode() === DebuggerMode.STOPPING) {
       return;
     }
-
-    this._dispatcher.dispatch({
-      actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
-      data: DebuggerMode.STOPPING,
-    });
+    this._setDebuggerMode(DebuggerMode.STOPPING);
     const debuggerInstance = this._store.getDebuggerInstance();
     if (debuggerInstance != null) {
       debuggerInstance.dispose();
@@ -136,10 +132,7 @@ class DebuggerActions {
       actionType: Constants.Actions.SET_PROCESS_SOCKET,
       data: null,
     });
-    this._dispatcher.dispatch({
-      actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
-      data: DebuggerMode.STOPPED,
-    });
+    this._setDebuggerMode(DebuggerMode.STOPPED);
     track(AnalyticsEvents.DEBUGGER_STOP);
     endTimerTracking();
   }

@@ -21,7 +21,7 @@ import type {
 import type DebuggerInstance from './DebuggerInstance';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 
-type DebuggerModeType = 'starting' | 'running' | 'paused' | 'stopping' | 'stopped';
+export type DebuggerModeType = 'starting' | 'running' | 'paused' | 'stopping' | 'stopped';
 const DebuggerMode: {[key: string]: DebuggerModeType} = Object.freeze({
   STARTING: 'starting',
   RUNNING: 'running',
