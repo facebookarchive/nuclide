@@ -13,17 +13,15 @@ import type {
   FileMessageUpdate,
   FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-base';
-
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import {goToLocation as atomGoToLocation} from '../../nuclide-atom-helpers';
 
-import {DiagnosticsMessage} from '../../nuclide-ui/lib/DiagnosticsMessage';
-const {track} = require('../../nuclide-analytics');
-const {
+import {
   React,
   ReactDOM,
-} = require('react-for-atom');
-const {PropTypes} = React;
+} from 'react-for-atom';
+import {goToLocation as atomGoToLocation} from '../../nuclide-atom-helpers';
+import {track} from '../../nuclide-analytics';
+import {DiagnosticsPopup} from './DiagnosticsPopup';
 
 const GUTTER_ID = 'nuclide-diagnostics-gutter';
 
@@ -212,25 +210,7 @@ function showPopupFor(
     item: HTMLElement,
     goToLocation: (filePath: NuclideUri, line: number) => mixed,
     fixer: (message: FileDiagnosticMessage) => void,
-    ): HTMLElement {
-  const children = messages.map((message, index) => {
-    const diagnosticTypeClass = message.type === 'Error'
-      ? 'nuclide-diagnostics-gutter-ui-popup-error'
-      : 'nuclide-diagnostics-gutter-ui-popup-warning';
-    // native-key-bindings and tabIndex=-1 are both needed to allow copying the text in the popup.
-    const classes =
-      `native-key-bindings nuclide-diagnostics-gutter-ui-popup-diagnostic ${diagnosticTypeClass}`;
-    return (
-      <div className={classes} key={index} tabIndex={-1}>
-        <DiagnosticsMessage
-          fixer={fixer}
-          goToLocation={goToLocation}
-          key={index}
-          message={message}
-        />
-      </div>
-    );
-  });
+  ): HTMLElement {
   // The popup will be an absolutely positioned child element of <atom-workspace> so that it appears
   // on top of everything.
   const workspaceElement = atom.views.getView(atom.workspace);
@@ -240,18 +220,25 @@ function showPopupFor(
   // Move it down vertically so it does not end up under the mouse pointer.
   const {top, left} = item.getBoundingClientRect();
 
-  // TODO(ssorallen): Remove the `children` prop when Flow is able to associate JSX children with
-  //   the prop named `children`. JSX children overwrite the prop of the same name, so do that for
-  //   now to appease both ESLint and Flow.
-  //
-  //   https://github.com/facebook/flow/issues/1355#issuecomment-178883891
+  const trackedFixer = (...args) => {
+    fixer(...args);
+    track('diagnostics-gutter-autofix');
+  };
+  const trackedGoToLocation = (...args) => {
+    goToLocation(...args);
+    track('diagnostics-gutter-goto-location');
+  };
+
   ReactDOM.render(
-    <DiagnosticsPopup children={children} left={left} top={top}>
-      {children}
-    </DiagnosticsPopup>,
+    <DiagnosticsPopup
+      left={left}
+      top={top}
+      messages={messages}
+      fixer={trackedFixer}
+      goToLocation={trackedGoToLocation}
+    />,
     hostElement
   );
-
   // Check to see whether the popup is within the bounds of the TextEditor. If not, display it above
   // the glyph rather than below it.
   const editor = itemToEditor.get(item);
@@ -276,23 +263,5 @@ function showPopupFor(
         'diagnostics-message': message.text || message.html || '',
       });
     });
-  }
-}
-
-class DiagnosticsPopup extends React.Component {
-  static propTypes = {
-    children: PropTypes.node.isRequired,
-    left: PropTypes.number.isRequired,
-    top: PropTypes.number.isRequired,
-  };
-
-  render() {
-    return (
-      <div
-        className="nuclide-diagnostics-gutter-ui-popup"
-        style={{left: this.props.left + 'px', top: this.props.top + 'px'}}>
-        {this.props.children}
-      </div>
-    );
   }
 }
