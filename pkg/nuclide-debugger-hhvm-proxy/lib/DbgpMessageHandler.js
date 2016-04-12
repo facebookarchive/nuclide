@@ -64,7 +64,7 @@ export class DbgpMessageHandler {
     if (prevIncompletedMessage && components.length !== 0) {
       logger.logErrorAndThrow(
         `Error: got extra messages without completing previous message. ` +
-        `Previous message was: ${prevIncompletedMessage}. ` +
+        `Previous message was: ${JSON.stringify(prevIncompletedMessage)}. ` +
         `Remaining components: ${JSON.stringify(components)}`,
       );
     }
