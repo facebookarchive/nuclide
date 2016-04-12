@@ -24,9 +24,9 @@ def get_declaration_location_and_spelling(translation_unit, absolute_path, line,
         log('No cursor')
         return None
 
-    # OBJC_INTERFACE_DECL extends all the way from @interface to @end; don't
-    # allow clicking on it.
-    if cursor.kind.is_declaration():
+    # Don't allow clicks/tooltips on most declarations, as their content is usually obvious.
+    # Make an exception for variable declarations, as these can often have auto types.
+    if cursor.kind != CursorKind.VAR_DECL and cursor.kind.is_declaration():
         log('Ignoring declaration')
         return None
 
