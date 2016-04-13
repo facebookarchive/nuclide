@@ -18,6 +18,7 @@ import path from 'path';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {StoreConfigData, NodeCheckedStatus} from './FileTreeStore';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {WorkingSet} from '../../nuclide-working-sets';
 import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
 
 
@@ -58,7 +59,6 @@ type DefaultFileTreeNodeOptions = {
   isTracked: boolean;
   children: Immutable.OrderedMap<string, FileTreeNode>;
   connectionTitle: string;
-  checkedStatus: NodeCheckedStatus;
   subscription: ?IDisposable;
   highlightedText: string;
   matchesFilter: boolean;
@@ -72,7 +72,6 @@ const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
   isTracked: false,
   children: new Immutable.OrderedMap(),
   connectionTitle: '',
-  checkedStatus: 'clear',
   subscription: null,
   highlightedText: '',
   matchesFilter: true,
@@ -85,7 +84,6 @@ export type ImmutableNodeSettableFields = {
   isCwd?: boolean;
   isTracked?: boolean;
   children?: Immutable.OrderedMap<string, FileTreeNode>;
-  checkedStatus?: NodeCheckedStatus;
   subscription?: ?IDisposable;
   highlightedText?: string;
   matchesFilter?: boolean;
@@ -170,7 +168,6 @@ export class FileTreeNode {
   isCwd: boolean;
   children: Immutable.OrderedMap<string, FileTreeNode>;
   connectionTitle: string;
-  checkedStatus: NodeCheckedStatus;  // For nodes with children - derived from children
   subscription: ?IDisposable;
   highlightedText: string;
   matchesFilter: boolean;
@@ -187,6 +184,7 @@ export class FileTreeNode {
   vcsStatusCode: StatusCodeNumberValue;
   repo: ?atom$Repository;
   isIgnored: boolean;
+  checkedStatus: NodeCheckedStatus;
 
   // Derived from children
   containsSelection: boolean;
@@ -235,8 +233,6 @@ export class FileTreeNode {
   *   Additionally calculates the properties derived from children and assigns them to this instance
   */
   _handleChildren(): void {
-    let allChildrenChecked = true;
-    let hasCheckedDescendants = false;
     let containsSelection = this.isSelected;
     let containsTrackedNode = this.isTracked;
     let containsFilterMatches = this.matchesFilter;
@@ -252,17 +248,8 @@ export class FileTreeNode {
       }
       prevChild = c;
 
-      if (allChildrenChecked && c.checkedStatus !== 'checked') {
-        allChildrenChecked = false;
-      }
-
       if (c.containsFilterMatches) {
         containsFilterMatches = true;
-      }
-
-      if (!hasCheckedDescendants &&
-        (c.checkedStatus === 'checked' || c.checkedStatus === 'partial')) {
-        hasCheckedDescendants = true;
       }
 
       if (!containsSelection && c.containsSelection) {
@@ -279,16 +266,6 @@ export class FileTreeNode {
     });
     if (prevChild != null) {
       prevChild.nextSibling = null;
-    }
-
-    if (!this.children.isEmpty()) {
-      if (allChildrenChecked) {
-        this.checkedStatus = 'checked';
-      } else if (hasCheckedDescendants) {
-        this.checkedStatus = 'partial';
-      } else {
-        this.checkedStatus = 'clear';
-      }
     }
 
     this.containsSelection = containsSelection;
@@ -316,7 +293,6 @@ export class FileTreeNode {
     this.isCwd = o.isCwd !== undefined ? o.isCwd : D.isCwd;
     this.children = o.children !== undefined ? o.children : D.children;
     this.connectionTitle = o.connectionTitle !== undefined ? o.connectionTitle : D.connectionTitle;
-    this.checkedStatus = o.checkedStatus !== undefined ? o.checkedStatus : D.checkedStatus;
     this.subscription = o.subscription !== undefined ? o.subscription : D.subscription;
     this.highlightedText = o.highlightedText !== undefined ? o.highlightedText : D.highlightedText;
     this.matchesFilter = o.matchesFilter !== undefined ? o.matchesFilter : D.matchesFilter;
@@ -339,6 +315,7 @@ export class FileTreeNode {
     this.vcsStatusCode = derived.vcsStatusCode;
     this.repo = derived.repo;
     this.isIgnored = derived.isIgnored;
+    this.checkedStatus = derived.checkedStatus;
   }
 
   /**
@@ -357,7 +334,6 @@ export class FileTreeNode {
       isCwd: this.isCwd,
       children: this.children,
       connectionTitle: this.connectionTitle,
-      checkedStatus: this.checkedStatus,
       subscription: this.subscription,
       highlightedText: this.highlightedText,
       matchesFilter: this.matchesFilter,
@@ -373,6 +349,7 @@ export class FileTreeNode {
       shouldBeSoftened: this.shouldBeSoftened,
       vcsStatusCode: this.vcsStatusCode,
       isIgnored: this.isIgnored,
+      checkedStatus: this.checkedStatus,
     };
   }
 
@@ -400,10 +377,6 @@ export class FileTreeNode {
     return this.set({children});
   }
 
-  setCheckedStatus(checkedStatus: NodeCheckedStatus): FileTreeNode {
-    return this.set({checkedStatus});
-  }
-
   /**
   * Notifies the node about the change that happened in the configuration object. Will trigger
   * the complete reconstruction of the entire tree branch
@@ -423,7 +396,6 @@ export class FileTreeNode {
       ...this._buildOptions(),
       isCwd: false,
       connectionTitle: '',
-      checkedStatus: (this.checkedStatus === 'partial') ? 'clear' : this.checkedStatus,
       children: new Immutable.OrderedMap(),
       ...options,
     },
@@ -638,6 +610,7 @@ export class FileTreeNode {
     const rootVcsStatuses = conf.vcsStatuses[rootUri] || {};
     const repo = conf.reposByRoot[rootUri];
     const isIgnored = this._deriveIsIgnored(uri, rootUri, repo, conf);
+    const checkedStatus = this._deriveCheckedStatus(uri, isContainer, conf.editedWorkingSet);
 
     return {
       isRoot: uri === rootUri,
@@ -651,7 +624,30 @@ export class FileTreeNode {
       shouldBeSoftened: this._deriveShouldBeSoftened(uri, isContainer, conf),
       vcsStatusCode: rootVcsStatuses[uri] || StatusCodeNumber.CLEAN,
       repo,
+      checkedStatus,
     };
+  }
+
+  _deriveCheckedStatus(
+    uri: NuclideUri,
+    isContainer: boolean,
+    editedWorkingSet: WorkingSet,
+  ): NodeCheckedStatus {
+    if (editedWorkingSet.isEmpty()) {
+      return 'clear';
+    }
+
+    if (isContainer) {
+      if (editedWorkingSet.containsFile(uri)) {
+        return 'checked';
+      } else if (editedWorkingSet.containsDir(uri)) {
+        return 'partial';
+      } else {
+        return 'clear';
+      }
+    }
+
+    return editedWorkingSet.containsFile(uri) ? 'checked' : 'clear';
   }
 
   _deriveShouldBeShown(
@@ -740,9 +736,6 @@ export class FileTreeNode {
       return false;
     }
     if (props.isExpanded !== undefined && this.isExpanded !== props.isExpanded) {
-      return false;
-    }
-    if (props.checkedStatus !== undefined && this.checkedStatus !== props.checkedStatus) {
       return false;
     }
     if (props.isLoading !== undefined && this.isLoading !== props.isLoading) {

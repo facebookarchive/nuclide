@@ -63,6 +63,7 @@ export type StoreConfigData = {
     isEditingWorkingSet: boolean;
     openFilesWorkingSet: WorkingSet;
     reposByRoot: {[rootUri: NuclideUri]: atom$Repository};
+    editedWorkingSet: WorkingSet;
 };
 
 export type NodeCheckedStatus = 'checked' | 'clear' | 'partial';
@@ -709,21 +710,7 @@ export class FileTreeStore {
   * Builds the edited working set from the partially-child-derived .checkedStatus property
   */
   getEditedWorkingSet(): WorkingSet {
-    const uris = [];
-
-    this.roots.forEach(root => root.traverse(
-      node => {
-        if (node.checkedStatus === 'partial') {
-          return true;
-        } else if (node.checkedStatus === 'checked') {
-          uris.push(node.uri);
-        }
-
-        return false;
-      }
-    ));
-
-    return new WorkingSet(uris);
+    return this._conf.editedWorkingSet;
   }
 
   isEditedWorkingSetEmpty(): boolean {
@@ -1333,18 +1320,18 @@ export class FileTreeStore {
     this._workingSetsStore = workingSetsStore;
   }
 
-  _startEditingWorkingSet(): void {
-    this._updateRoots(root =>
-      root.setRecursive(null, node => node.setCheckedStatus('clear'))
-    );
-    this._updateConf(conf => conf.isEditingWorkingSet = true);
+  _startEditingWorkingSet(editedWorkingSet: WorkingSet): void {
+    this._updateConf(conf => {
+      conf.editedWorkingSet = editedWorkingSet;
+      conf.isEditingWorkingSet = true;
+    });
   }
 
   _finishEditingWorkingSet(): void {
-    this._updateRoots(root =>
-      root.setRecursive(null, node => node.setCheckedStatus('clear'))
-    );
-    this._updateConf(conf => conf.isEditingWorkingSet = false);
+    this._updateConf(conf => {
+      conf.isEditingWorkingSet = false;
+      conf.editedWorkingSet = new WorkingSet();
+    });
   }
 
   _checkNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
@@ -1352,11 +1339,26 @@ export class FileTreeStore {
       return;
     }
 
-    this._updateNodeAtRoot(rootKey, nodeKey, node => {
-      return node.setRecursive(
-        n => n.checkedStatus === 'checked' ? n : null,
-        n => n.setCheckedStatus('checked'),
-      );
+    let node = this.getNode(rootKey, nodeKey);
+    if (node == null) {
+      return;
+    }
+
+    let uriToAppend = nodeKey; // Workaround flow's (over)aggressive nullability detection
+
+    const allChecked = nodeParent => {
+      return nodeParent.children.every(c => {
+        return !c.shouldBeShown || c.checkedStatus === 'checked' || c === node;
+      });
+    };
+
+    while (node.parent != null && allChecked(node.parent)) {
+      node = node.parent;
+      uriToAppend = node.uri;
+    }
+
+    this._updateConf(conf => {
+      conf.editedWorkingSet = conf.editedWorkingSet.append(uriToAppend);
     });
   }
 
@@ -1365,11 +1367,29 @@ export class FileTreeStore {
       return;
     }
 
-    this._updateNodeAtRoot(rootKey, nodeKey, node => {
-      return node.setRecursive(
-        n => n.checkedStatus === 'clear' ? n : null,
-        n => n.setCheckedStatus('clear'),
-      );
+    let node = this.getNode(rootKey, nodeKey);
+    if (node == null) {
+      return;
+    }
+
+    const nodesToAppend = [];
+    let uriToRemove = nodeKey;
+
+    while (node.parent != null && node.parent.checkedStatus === 'checked') {
+      const parent = node.parent; // Workaround flow's (over)aggressive nullability detection
+      parent.children.forEach(c => {
+        if (c !== node) {
+          nodesToAppend.push(c);
+        }
+      });
+
+      node = parent;
+      uriToRemove = node.uri;
+    }
+
+    this._updateConf(conf => {
+      const urisToAppend = nodesToAppend.map(n => n.uri);
+      conf.editedWorkingSet = conf.editedWorkingSet.remove(uriToRemove).append(...urisToAppend);
     });
   }
 
