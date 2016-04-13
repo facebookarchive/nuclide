@@ -14,12 +14,12 @@ const RuleTester = require('eslint').RuleTester;
 
 const ATOM_BUILTIN_ERROR = {
   message: 'Atom builtin modules should be imported top-level.',
-  nodeType: 'CallExpression',
+  type: 'CallExpression',
 };
 
 const NODE_BUILTIN_ERROR = {
   message: 'Node builtin modules should be imported top-level.',
-  nodeType: 'CallExpression',
+  type: 'CallExpression',
 };
 
 const ruleTester = new RuleTester();

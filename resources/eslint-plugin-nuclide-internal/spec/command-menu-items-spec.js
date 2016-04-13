@@ -38,7 +38,7 @@ ruleTester.run('command-menu-items', rule, {
       code: 'atom.commands.add("atom-workspace", "command", cb)',
       errors: [{
         error: rule.MISSING_MENU_ITEM_ERROR + ' (command)',
-        nodeType: 'Literal',
+        type: 'Literal',
       }],
     },
     {
@@ -46,11 +46,11 @@ ruleTester.run('command-menu-items', rule, {
       errors: [
         {
           error: rule.MISSING_MENU_ITEM_ERROR + ' (a)',
-          nodeType: 'Literal',
+          type: 'Literal',
         },
         {
           error: rule.MISSING_MENU_ITEM_ERROR + ' (b)',
-          nodeType: 'Literal',
+          type: 'Literal',
         },
       ],
     },
@@ -58,7 +58,7 @@ ruleTester.run('command-menu-items', rule, {
       code: 'var x = "command"; atom.commands.add("atom-workspace", x, cb)',
       errors: [{
         error: rule.COMMAND_LITERAL_ERROR,
-        nodeType: 'Identifier',
+        type: 'Identifier',
       }],
     },
     {
@@ -66,7 +66,7 @@ ruleTester.run('command-menu-items', rule, {
       filename: path.join(__dirname, 'test.js'),
       errors: [{
         error: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command)',
-        nodeType: 'Literal',
+        type: 'Literal',
       }],
     },
     {
@@ -74,7 +74,7 @@ ruleTester.run('command-menu-items', rule, {
       filename: path.join(__dirname, 'test.js'),
       errors: [{
         error: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command2)',
-        nodeType: 'Literal',
+        type: 'Literal',
       }],
     },
   ],

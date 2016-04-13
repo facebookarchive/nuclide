@@ -28,14 +28,14 @@ ruleTester.run('type-alias-semi', rule, {
       code: 'type T = {}',
       errors: [{
         message: 'Missing semicolon.',
-        nodeType: 'TypeAlias',
+        type: 'TypeAlias',
       }],
     },
     {
       code: 'type T = TT',
       errors: [{
         message: 'Missing semicolon.',
-        nodeType: 'TypeAlias',
+        type: 'TypeAlias',
       }],
     },
   ],
