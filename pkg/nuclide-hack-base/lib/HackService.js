@@ -17,7 +17,6 @@ import invariant from 'assert';
 import {SymbolType, SearchResultType} from '../../nuclide-hack-common';
 import {
   callHHClient,
-  symbolTypeToSearchTypes,
   getSearchResults,
 } from './HackHelpers';
 import {setHackCommand, setUseIde, getHackExecOptions} from './hack-config';
@@ -201,19 +200,6 @@ export async function getCompletions(
     hackRoot,
     completions,
   };
-}
-
-/**
- * Gets the hh_client definition of the query with a given symbol type.
- */
-export async function getDefinition(
-  file: NuclideUri,
-  query: string,
-  symbolType: SymbolTypeValue,
-): Promise<?HackDefinitionResult> {
-  const searchTypes = symbolTypeToSearchTypes(symbolType);
-  const searchResponse = await getSearchResults(file, query, searchTypes);
-  return selectDefinitionSearchResults(searchResponse, query);
 }
 
 export async function getIdentifierDefinition(

@@ -11,11 +11,11 @@
 
 import type {HackSearchPosition} from './HackService';
 import type {HackSearchResult, HHSearchPosition} from './types';
-import type {SearchResultTypeValue, SymbolTypeValue} from '../../nuclide-hack-common';
+import type {SearchResultTypeValue} from '../../nuclide-hack-common';
 
 import invariant from 'assert';
 import {checkOutput, PromiseQueue} from '../../nuclide-commons';
-import {SearchResultType, SymbolType} from '../../nuclide-hack-common';
+import {SearchResultType} from '../../nuclide-hack-common';
 import {getHackExecOptions, getUseIde} from './hack-config';
 import {callHHClientUsingConnection} from './HackConnection';
 
@@ -25,16 +25,6 @@ const logger = require('../../nuclide-logging').getLogger();
 
 let hhPromiseQueue: ?PromiseQueue = null;
 const pendingSearchPromises: Map<string, Promise> = new Map();
-
-const SYMBOL_CLASS_SEARCH_TYPES = Object.freeze([
-  SearchResultType.CLASS,
-  SearchResultType.ABSTRACT_CLASS,
-  SearchResultType.TRAIT,
-  SearchResultType.TYPEDEF,
-  SearchResultType.INTERFACE,
-]);
-const SYMBOL_METHOD_SEARCH_TYPES = Object.freeze([SearchResultType.METHOD]);
-const SYMBOL_FUNCTION_SEARCH_TYPES = Object.freeze([SearchResultType.FUNCTION]);
 
  /**
   * Executes hh_client with proper arguments returning the result string or json object.
@@ -205,20 +195,5 @@ function getSearchType(info: string): SearchResultTypeValue {
       }
       return SearchResultType.CLASS;
     }
-  }
-}
-
-export function symbolTypeToSearchTypes(
-  symbolType: SymbolTypeValue,
-): ?Array<SearchResultTypeValue> {
-  switch (symbolType) {
-    case SymbolType.CLASS:
-      return SYMBOL_CLASS_SEARCH_TYPES;
-    case SymbolType.METHOD:
-      return SYMBOL_METHOD_SEARCH_TYPES;
-    case SymbolType.FUNCTION:
-      return SYMBOL_FUNCTION_SEARCH_TYPES;
-    default:
-      return null;
   }
 }
