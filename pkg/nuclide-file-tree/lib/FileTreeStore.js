@@ -30,6 +30,7 @@ import {getLogger} from '../../nuclide-logging';
 import shell from 'shell';
 
 import {WorkingSet} from '../../nuclide-working-sets';
+import {track} from '../../nuclide-analytics';
 
 // Used to ensure the version we serialized is the same version we are deserializing.
 const VERSION = 1;
@@ -470,11 +471,21 @@ export class FileTreeStore {
     }
 
     this._animationFrameRequestId = window.requestAnimationFrame(() => {
+      const {performance} = global;
+      const renderStart = performance.now();
+      const childrenCount = this.roots.reduce((sum, root) => sum + root.shownChildrenBelow, 0);
+
       this._emitter.emit('change');
       this._suppressChanges = true;
       this._checkTrackedNode();
       this._suppressChanges = false;
       this._animationFrameRequestId = null;
+
+      const duration = (performance.now() - renderStart).toString();
+      track('filetree-root-node-component-render', {
+        'filetree-root-node-component-render-duration': duration,
+        'filetree-root-node-component-rendered-child-count': childrenCount,
+      });
     });
   }
 
