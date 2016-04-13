@@ -12,6 +12,10 @@
 const DiagnosticsPane = require('./DiagnosticsPane');
 const {Checkbox} = require('../../nuclide-ui/lib/Checkbox');
 const {PanelComponent} = require('../../nuclide-ui/lib/PanelComponent');
+const {Toolbar} = require('../../nuclide-ui/lib/Toolbar');
+const {ToolbarCenter} = require('../../nuclide-ui/lib/ToolbarCenter');
+const {ToolbarLeft} = require('../../nuclide-ui/lib/ToolbarLeft');
+const {ToolbarRight} = require('../../nuclide-ui/lib/ToolbarRight');
 const {React} = require('react-for-atom');
 const {PropTypes} = React;
 
@@ -103,14 +107,16 @@ class DiagnosticsPanel extends React.Component {
     let linterWarning = null;
     if (this.props.warnAboutLinter) {
       linterWarning = (
-        <div className="nuclide-diagnostics-pane-linter-warning">
-          <span>
-            nuclide-diagnostics is not compatible with the linter package. We recommend that
-            you <a onClick={this.props.disableLinter}>disable the linter package</a>.&nbsp;
-            <a href="http://nuclide.io/docs/advanced-topics/linter-package-compatibility/">
-            Learn More</a>.
-          </span>
-        </div>
+        <Toolbar>
+          <ToolbarCenter>
+            <span className="inline-block highlight-info">
+              nuclide-diagnostics is not compatible with the linter package. We recommend that
+              you&nbsp;<a onClick={this.props.disableLinter}>disable the linter package</a>.&nbsp;
+              <a href="http://nuclide.io/docs/advanced-topics/linter-package-compatibility/">
+              Learn More</a>.
+            </span>
+          </ToolbarCenter>
+        </Toolbar>
       );
     }
 
@@ -124,12 +130,13 @@ class DiagnosticsPanel extends React.Component {
         ref="panel"
         dock="bottom"
         initialLength={panelHeight}
+        noScroll={true}
         onResize={this.props.onResize}
         overflowX="hidden">
         <div>
           {linterWarning}
-          <div className="nuclide-diagnostics-pane-nav">
-            <div className="nuclide-diagnostics-pane-nav-left">
+          <Toolbar>
+            <ToolbarLeft>
               <span className={errorSpanClassName}>
                 Errors: {errorCount}
               </span>
@@ -143,16 +150,16 @@ class DiagnosticsPanel extends React.Component {
                   onChange={this._onFilterByActiveTextEditorChange}
                 />
               </span>
-            </div>
-            <div className="nuclide-diagnostics-pane-nav-right">
+            </ToolbarLeft>
+            <ToolbarRight>
               {shortcutSpan}
               <button
                 onClick={this.props.onDismiss}
                 className="btn btn-subtle btn-sm icon icon-x inline-block"
                 title="Close Panel"
               />
-            </div>
-          </div>
+            </ToolbarRight>
+          </Toolbar>
           <DiagnosticsPane
             showFileName={!this.props.filterByActiveTextEditor}
             diagnostics={diagnostics}
