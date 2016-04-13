@@ -13,7 +13,6 @@ import featureConfig from '../../nuclide-feature-config';
 
 type HackConfig = {
   hhClientPath: string;
-  useServerOnly: boolean;
   useIdeConnection: boolean;
   showTypeCoverage: boolean;
 };

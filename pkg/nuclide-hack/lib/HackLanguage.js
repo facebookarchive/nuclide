@@ -19,7 +19,6 @@ import type {
 } from '../../nuclide-hack-base/lib/HackService';
 import type {TypeCoverageRegion} from './TypedRegions';
 
-import {LocalHackLanguage} from './LocalHackLanguage';
 import {ServerHackLanguage} from './ServerHackLanguage';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import {isRemote} from '../../nuclide-remote-uri';
@@ -120,12 +119,8 @@ function createHackLanguage(
     hackService: HackService,
     hhAvailable: boolean,
     basePath: ?string,
-    initialFileUri: NuclideUri,
-    useServerOnly: boolean,
 ): HackLanguage {
-  return useServerOnly
-    ? new ServerHackLanguage(hackService, hhAvailable, basePath)
-    : new LocalHackLanguage(hackService, hhAvailable, basePath, initialFileUri);
+  return new ServerHackLanguage(hackService, hhAvailable, basePath);
 }
 
 // Returns null if we can't get the key at this time because the RemoteConnection is initializing.
@@ -166,9 +161,7 @@ async function createHackLanguageIfNotExisting(
         createHackLanguage(
           hackEnvironment.hackService,
           hackEnvironment.isAvailable,
-          hackEnvironment.hackRoot,
-          fileUri,
-          hackEnvironment.useServerOnly || hackEnvironment.useIdeConnection));
+          hackEnvironment.hackRoot));
     }
   }
   return uriToHackLanguage.get(key);

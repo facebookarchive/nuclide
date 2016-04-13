@@ -12,12 +12,6 @@
         "default": "",
         "description": "Primarily for testing new versions of hh_client."
       },
-      "useServerOnly": {
-        "title": "Always use hh_client instead of hh_ide.js.",
-        "type": "boolean",
-        "default": false,
-        "description": "In Development: For use by Hack/Nuclide team only."
-      },
       "useIdeConnection": {
         "title": "Use persistent IDE connection to hh_client",
         "type": "boolean",

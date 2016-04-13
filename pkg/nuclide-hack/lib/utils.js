@@ -77,7 +77,6 @@ export type HackEnvironment = {
   hackRoot: ?NuclideUri;
   hackCommand: ?string;
   isAvailable: boolean;
-  useServerOnly: boolean;
   useIdeConnection: boolean;
 };
 
@@ -95,8 +94,6 @@ export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<Ha
   const config = getConfig();
   const useIdeConnection = config.useIdeConnection
       || (await passesGK('nuclide_hack_use_persistent_connection'));
-  const useServerOnly = config.useServerOnly
-      || (await passesGK('nuclide_hack_use_server'));
   const hackEnvironment = await hackService.getHackEnvironmentDetails(
     fileUri,
     config.hhClientPath,
@@ -109,7 +106,6 @@ export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<Ha
     hackRoot,
     hackCommand,
     isAvailable,
-    useServerOnly,
     useIdeConnection,
   };
 }
