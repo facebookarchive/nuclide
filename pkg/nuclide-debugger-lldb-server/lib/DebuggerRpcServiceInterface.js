@@ -25,8 +25,9 @@ export type LaunchTargetInfo = {
   basepath?: string
 };
 
-export type DebuggerSettings = {
+export type DebuggerConfig = {
   logLevel: string;
+  pythonBinaryPath: string;
 };
 
 export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>> {
@@ -40,14 +41,14 @@ export class DebuggerConnection {
   async sendCommand(message: string): Promise<void> {
     throw new Error('Not implemented');
   }
-  // $FlowFixMe
   async dispose(): Promise<void> {
     throw new Error('Not implemented');
   }
 }
 
 export class DebuggerRpcService {
-  setSettings(settings: DebuggerSettings): Promise<void> {
+  // $FlowIssue - t10814652.
+  constructor(config: DebuggerConfig) {
     throw new Error('Not implemented');
   }
   getOutputWindowObservable(): Observable<string> {

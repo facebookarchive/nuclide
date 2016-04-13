@@ -36,7 +36,6 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     if (this.basepath) {
       this._targetInfo.basepath = this.basepath;
     }
-    rpcService.setSettings({logLevel: getConfig().serverLogLevel});
 
     let debugSession = null;
     let outputDisposable = registerOutputWindowLogging(rpcService.getOutputWindowObservable());
@@ -55,11 +54,15 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
   }
 
   _getRpcService(): DebuggerRpcServiceType {
+    const debuggerConfig = {
+      logLevel: getConfig().serverLogLevel,
+      pythonBinaryPath: getConfig().pythonBinaryPath,
+    };
     const {getServiceByNuclideUri} = require('../../nuclide-client');
     const service =
       getServiceByNuclideUri('LLDBDebuggerRpcService', this.getTargetUri());
     invariant(service);
-    return new service.DebuggerRpcService();
+    return new service.DebuggerRpcService(debuggerConfig);
   }
 
   get pid(): number {

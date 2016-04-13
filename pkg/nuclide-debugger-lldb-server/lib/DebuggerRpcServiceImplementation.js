@@ -12,7 +12,7 @@
 import type {
   AttachTargetInfo,
   LaunchTargetInfo,
-  DebuggerSettings,
+  DebuggerConfig,
 } from './DebuggerRpcServiceInterface';
 
 import {CompositeDisposable, Disposable} from 'event-kit';
@@ -111,18 +111,16 @@ export class DebuggerConnection {
 
 export class DebuggerRpcService {
   _clientCallback: ClientCallback;
+  _config: DebuggerConfig;
   _subscriptions: CompositeDisposable;
 
-  constructor() {
+  constructor(config: DebuggerConfig) {
     this._clientCallback = new ClientCallback();
+    this._config = config;
+    setLogLevel(config.logLevel);
     this._subscriptions = new CompositeDisposable(
       new Disposable(() => this._clientCallback.dispose()),
     );
-  }
-
-  setSettings(settings: DebuggerSettings): Promise<void> {
-    setLogLevel(settings.logLevel);
-    return Promise.resolve();
   }
 
   getOutputWindowObservable(): Observable<string> {
@@ -131,7 +129,6 @@ export class DebuggerRpcService {
 
   async attach(attachInfo: AttachTargetInfo): Promise<DebuggerConnection> {
     log(`attach process: ${JSON.stringify(attachInfo)}`);
-
     const inferiorArguments = {
       pid: String(attachInfo.pid),
       basepath: attachInfo.basepath ? attachInfo.basepath : '.',
@@ -203,7 +200,11 @@ export class DebuggerRpcService {
       detached: false, // When Atom is killed, clang_server.py should be killed, too.
     };
     logInfo(`spawn child_process: ${JSON.stringify(python_args)}`);
-    const lldbProcess = child_process.spawn('python', python_args, options);
+    const lldbProcess = child_process.spawn(
+      this._config.pythonBinaryPath,
+      python_args,
+      options,
+    );
     this._subscriptions.add(new Disposable(() => lldbProcess.kill()));
     return lldbProcess;
   }
