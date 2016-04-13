@@ -12,9 +12,8 @@
 import type {HackSearchResult} from './types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
-import {fsPromise, promises, findNearestFile} from '../../nuclide-commons';
-import invariant from 'assert';
-import {SymbolType, SearchResultType} from '../../nuclide-hack-common';
+import {promises, findNearestFile} from '../../nuclide-commons';
+import {SymbolType} from '../../nuclide-hack-common';
 import {
   callHHClient,
   getSearchResults,
@@ -138,8 +137,6 @@ export type HackGetMethodNameResult = {
   pos: HackRange;
 };
 
-const HH_NEWLINE = '<?hh\n';
-const HH_STRICT_NEWLINE = '<?hh // strict\n';
 const HH_DIAGNOSTICS_DELAY_MS = 600;
 const HH_CLIENT_MAX_TRIES = 10;
 
@@ -226,77 +223,6 @@ export async function getIdentifierDefinition(
   }
   const searchResponse = await getSearchResults(file, identifier);
   return selectDefinitionSearchResults(searchResponse, identifier);
-}
-
-/**
- * Fetches the dependencies needed by the hack worker to cache
- * for faster hack features response times.
- * Returns a map of file paths to file contents.
- */
-export async function getDependencies(
-  filePath: NuclideUri,
-  dependenciesInfo: Array<{name: string; type: string}>,
-): Promise<?{
-  hackRoot: NuclideUri;
-  dependencies: Map<string, string>;
-}> {
-  const dependencies = new Map();
-  const dependencyPaths = new Set();
-  let hackRoot = '';
-  // hh_server currently is single threaded and processes one request at a time.
-  // Hence, we fetch the dependencies one-by-one, without Promise.all for the hack search
-  // to unblock user-requested hack language features and failry treat other usages of hh_client.
-  /* eslint-disable babel/no-await-in-loop */
-  for (const dependency of dependenciesInfo) {
-    let dependencyName = dependency.name;
-    if (dependencyName.startsWith('\\')) {
-      dependencyName = dependencyName.substring(1);
-    }
-    let filter;
-    if (dependency.type === 'class') {
-      filter = [
-        SearchResultType.CLASS,
-        SearchResultType.ABSTRACT_CLASS,
-        SearchResultType.TRAIT,
-        SearchResultType.TYPEDEF,
-        SearchResultType.INTERFACE,
-      ];
-    } else {
-      filter = [SearchResultType.FUNCTION];
-    }
-
-    const searchResponse = await getSearchResults(filePath, dependencyName, filter);
-    if (searchResponse == null) {
-      continue;
-    }
-    invariant(searchResponse);
-    const {result: searchResults} = searchResponse;
-    hackRoot = searchResponse.hackRoot;
-    await Promise.all(searchResults.map(async location => {
-      const {name, path: resultPath} = location;
-      if (name !== dependencyName || dependencyPaths.has(resultPath)) {
-        return;
-      }
-      dependencyPaths.add(resultPath);
-      let contents = await fsPromise.readFile(resultPath, 'utf8');
-      if (!contents.startsWith('<?hh')) {
-        return;
-      }
-      // This turns anything we're adding into decl mode, so that it uses less memory.
-      // Ideally, hh_server should do this, and strip the method/function bodies.
-      if (contents.startsWith(HH_NEWLINE)) {
-        contents = '<?hh // decl\n' + contents.substring(HH_NEWLINE.length);
-      } else if (contents.startsWith(HH_STRICT_NEWLINE)) {
-        contents = '<?hh // decl\n' + contents.substring(HH_STRICT_NEWLINE.length);
-      }
-      dependencies.set(resultPath, contents);
-    }));
-  }
-  /* eslint-enable babel/no-await-in-loop */
-  return {
-    hackRoot,
-    dependencies,
-  };
 }
 
 export async function getReferences(
