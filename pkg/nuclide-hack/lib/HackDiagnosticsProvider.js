@@ -24,7 +24,6 @@ import type {
 } from '../../nuclide-diagnostics-base';
 
 import {trackTiming} from '../../nuclide-analytics';
-import {findDiagnostics} from './hack';
 import {getHackLanguageForUri, getCachedHackLanguageForUri} from './HackLanguage';
 import {promises} from '../../nuclide-commons';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
@@ -242,6 +241,21 @@ class HackDiagnosticsProvider {
   dispose() {
     this._providerBase.dispose();
   }
+}
+
+async function findDiagnostics(
+  editor: atom$TextEditor,
+): Promise<Array<{message: HackDiagnostic;}>> {
+  const filePath = editor.getPath();
+  const hackLanguage = await getHackLanguageForUri(filePath);
+  if (!hackLanguage || !filePath) {
+    return [];
+  }
+
+  invariant(filePath);
+  const contents = editor.getText();
+
+  return await hackLanguage.getDiagnostics(filePath, contents);
 }
 
 module.exports = HackDiagnosticsProvider;

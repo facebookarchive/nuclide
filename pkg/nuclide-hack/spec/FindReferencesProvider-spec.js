@@ -9,11 +9,14 @@
  * the root directory of this source tree.
  */
 
+import typeof * as FindReferencesProviderType from '../lib/FindReferencesProvider';
+
 import {Point} from 'atom';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
-import hack from '../lib/hack';
+import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 
 describe('FindReferencesProvider', () => {
+  const contents = 'contents';
   // Create a fake editor
   const mockEditor = (({
     getGrammar() {
@@ -22,33 +25,38 @@ describe('FindReferencesProvider', () => {
     getPath() {
       return '/test/test.php';
     },
+    getText() {
+      return contents;
+    },
   }: any): atom$TextEditor);
 
-  let FindReferencesProvider;
+  let FindReferencesProvider: FindReferencesProviderType = (null: any);
   beforeEach(() => {
-    spyOn(hack, 'findReferences').andReturn({
-      baseUri: '/test/',
-      symbolName: 'TestClass::testFunction',
-      references: [
-        {
-          name: 'TestClass::testFunction',
-          filename: '/test/file1.php',
-          line: 13,
-          char_start: 5,
-          char_end: 7,
-        },
-        {
-          name: 'TestClass::testFunction',
-          filename: '/test/file2.php',
-          line: 11,
-          char_start: 1,
-          char_end: 3,
-        },
-      ],
-    });
-
-    // Can't load this until `hack` is mocked
-    FindReferencesProvider = require('../lib/FindReferencesProvider');
+    const mockLanguage = {
+      findReferences: jasmine.createSpy('findReferences').andReturn({
+        baseUri: '/test/',
+        symbolName: 'TestClass::testFunction',
+        references: [
+          {
+            name: 'TestClass::testFunction',
+            filename: '/test/file1.php',
+            line: 13,
+            char_start: 5,
+            char_end: 7,
+          },
+          {
+            name: 'TestClass::testFunction',
+            filename: '/test/file2.php',
+            line: 11,
+            char_start: 1,
+            char_end: 3,
+          },
+        ],
+      }),
+    };
+    spyOn(require('../lib/HackLanguage'), 'getHackLanguageForUri')
+      .andReturn(mockLanguage);
+    FindReferencesProvider = (uncachedRequire(require, '../lib/FindReferencesProvider'): any);
   });
 
   it('should be able to return references', () => {
@@ -74,5 +82,10 @@ describe('FindReferencesProvider', () => {
         ],
       });
     });
+  });
+
+  afterEach(() => {
+    jasmine.unspy(require('../lib/HackLanguage'), 'getHackLanguageForUri');
+    clearRequireCache(require, '../lib/FindReferencesProvider');
   });
 });

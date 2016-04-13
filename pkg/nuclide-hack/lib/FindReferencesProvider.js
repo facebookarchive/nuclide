@@ -12,10 +12,14 @@
 // We can't pull in nuclide-find-references as a dependency, unfortunately.
 // import type {FindReferencesReturn} from 'nuclide-find-references';
 
-import {findReferences} from './hack';
+import type {
+  HackReference,
+} from '../../nuclide-hack-base/lib/HackService';
+
 import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';
 import {trackOperationTiming} from '../../nuclide-analytics';
 import {withLoadingNotification} from '../../nuclide-atom-helpers';
+import {getHackLanguageForUri} from './HackLanguage';
 
 async function doFindReferences(
   textEditor: atom$TextEditor,
@@ -59,6 +63,26 @@ async function doFindReferences(
     referencedSymbolName: symbolName,
     references,
   };
+}
+
+async function findReferences(
+  editor: atom$TextEditor,
+  line: number,
+  column: number
+): Promise<?{baseUri: string; symbolName: string; references: Array<HackReference>}> {
+  const filePath = editor.getPath();
+  const hackLanguage = await getHackLanguageForUri(filePath);
+  if (!hackLanguage || !filePath) {
+    return null;
+  }
+
+  const contents = editor.getText();
+  return await hackLanguage.findReferences(
+    filePath,
+    contents,
+    line,
+    column,
+  );
 }
 
 module.exports = {

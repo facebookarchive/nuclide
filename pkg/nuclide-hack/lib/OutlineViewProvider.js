@@ -12,10 +12,10 @@
 import type {Outline, OutlineTree} from '../../nuclide-outline-view';
 import type {HackOutline, HackOutlineItem} from '../../nuclide-hack-base/lib/HackService';
 import {plain} from '../../nuclide-tokenized-text';
+import {getHackLanguageForUri} from './HackLanguage';
 
 import {Point} from 'atom';
 import invariant from 'assert';
-import {outlineFromEditor} from './hack';
 
 export class OutlineViewProvider {
   async getOutline(editor: atom$TextEditor): Promise<?Outline> {
@@ -98,4 +98,19 @@ function outlineTreeFromHackOutlineItem(item: HackOutlineItem): OutlineTree {
 
 function pointFromHackOutlineItem(item: HackOutlineItem): atom$Point {
   return new Point(item.line - 1, item.char_start - 1);
+}
+
+async function outlineFromEditor(editor: atom$TextEditor): Promise<?HackOutline> {
+  const filePath = editor.getPath();
+  if (filePath == null) {
+    return  null;
+  }
+  const hackLanguage = await getHackLanguageForUri(filePath);
+  if (hackLanguage == null) {
+    return null;
+  }
+
+  const contents = editor.getText();
+
+  return await hackLanguage.getOutline(filePath, contents);
 }

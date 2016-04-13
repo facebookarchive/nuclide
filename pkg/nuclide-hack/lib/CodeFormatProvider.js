@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {formatSourceFromEditor} from './hack';
 import {trackTiming} from '../../nuclide-analytics';
+import {getHackLanguageForUri} from './HackLanguage';
 
 class CodeFormatProvider {
 
@@ -19,6 +19,19 @@ class CodeFormatProvider {
     return formatSourceFromEditor(editor, range);
   }
 
+}
+
+async function formatSourceFromEditor(editor: atom$TextEditor, range: atom$Range): Promise<string> {
+  const buffer = editor.getBuffer();
+  const filePath = editor.getPath();
+  const hackLanguage = await getHackLanguageForUri(filePath);
+  if (!hackLanguage || !filePath) {
+    return buffer.getTextInRange(range);
+  }
+
+  const startPosition = buffer.characterIndexForPosition(range.start);
+  const endPosition = buffer.characterIndexForPosition(range.end);
+  return await hackLanguage.formatSource(buffer.getText(), startPosition + 1, endPosition + 1);
 }
 
 module.exports = CodeFormatProvider;
