@@ -17,12 +17,9 @@ import type {
 import type {TypeHint} from '../../nuclide-type-hint-interfaces';
 
 import invariant from 'assert';
-import {extractWordAtPosition} from '../../nuclide-atom-helpers';
 import {getHackLanguageForUri} from './HackLanguage';
 import {Range} from 'atom';
-import {compareHackCompletions} from './utils';
-
-const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
+import {compareHackCompletions, getIdentifierAndRange, getIdentifierAtPosition} from './utils';
 
 
 module.exports = {
@@ -93,12 +90,8 @@ module.exports = {
     }
     invariant(filePath != null);
 
-    const matchData = extractWordAtPosition(editor, position, HACK_WORD_REGEX);
-    if (
-      !matchData ||
-      !matchData.wordMatch.length ||
-      !matchData.wordMatch[0].startsWith('$')
-    ) {
+    const id = getIdentifierAtPosition(editor, position);
+    if (id == null || !id.startsWith('$')) {
       return [];
     }
 
@@ -117,21 +110,21 @@ module.exports = {
       return null;
     }
 
-    const matchData = extractWordAtPosition(editor, position, HACK_WORD_REGEX);
-    if (!matchData) {
+    const match = getIdentifierAndRange(editor, position);
+    if (match == null) {
       return null;
     }
 
     const contents = editor.getText();
 
     const type = await hackLanguage.getType(
-      filePath, contents, matchData.wordMatch[0], position.row + 1, position.column + 1);
+      filePath, contents, match.id, position.row + 1, position.column + 1);
     if (!type || type === '_') {
       return null;
     } else {
       return {
         hint: type,
-        range: matchData.range,
+        range: match.range,
       };
     }
   },

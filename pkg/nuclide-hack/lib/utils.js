@@ -15,6 +15,7 @@ import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
 import {getConfig} from './config';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import invariant from 'assert';
+import {extractWordAtPosition} from '../../nuclide-atom-helpers';
 
 const MATCH_PREFIX_CASE_SENSITIVE_SCORE = 6;
 const MATCH_PREFIX_CASE_INSENSITIVE_SCORE = 4;
@@ -62,6 +63,22 @@ export function compareHackCompletions(token: string)
     }
     return scores[1] - scores[0];
   };
+}
+
+const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
+
+export function getIdentifierAndRange(
+  editor: atom$TextEditor,
+  position: atom$Point
+): ?{id: string; range: atom$Range} {
+  const matchData = extractWordAtPosition(editor, position, HACK_WORD_REGEX);
+  return (matchData == null || matchData.wordMatch.length === 0) ? null
+      : {id: matchData.wordMatch[0], range: matchData.range};
+}
+
+export function getIdentifierAtPosition(editor: atom$TextEditor, position: atom$Point): ?string {
+  const result = getIdentifierAndRange(editor, position);
+  return result == null ? null : result.id;
 }
 
 // Don't call this directly from outside this package.
