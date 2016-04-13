@@ -214,4 +214,19 @@ describe('BuckProject', () => {
     });
 
   });
+
+  describe('getBuildFile()', () => {
+    it('gets the build file', () => {
+      waitsForPromise({timeout: TIMEOUT}, async () => {
+        const projectDir = copyProject('buck-query-project');
+        const buckProject = new BuckProject({rootPath: projectDir});
+
+        let file = await buckProject.getBuildFile('//examples:one');
+        expect(file).toBe(path.join(projectDir, 'examples', 'BUCK'));
+
+        file = await buckProject.getBuildFile('//nonexistent:');
+        expect(file).toBe(null);
+      });
+    });
+  });
 });

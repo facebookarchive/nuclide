@@ -87,6 +87,22 @@ export class BuckProject {
   }
 
   /**
+   * Gets the build file for the specified target.
+   */
+  async getBuildFile(targetName: string): Promise<?string> {
+    try {
+      const result = await this.query(`buildfile(${targetName})`);
+      if (result.length === 0) {
+        return null;
+      }
+      return path.join(this._rootPath, result[0]);
+    } catch (e) {
+      logger.error(`No build file for target ${targetName}`, e);
+      return null;
+    }
+  }
+
+  /**
    * This syntax is not supported yet, but the return type is:
    * Promise<{stdout: string; stderr: string; exitCode: number}>
    *
