@@ -18,6 +18,7 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 import classnames from  'classnames';
+import {filterName} from '../lib/FileTreeFilterHelper';
 import {isContextClick} from '../lib/FileTreeHelpers';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
@@ -25,7 +26,6 @@ import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constant
 import {FileEntryComponent} from './FileEntryComponent';
 
 const getActions = FileTreeActions.getInstance;
-
 
 type Props = {
   node: FileTreeNode;
@@ -118,6 +118,10 @@ export class DirectoryEntryComponent extends React.Component {
     }
 
     const iconName = node.isCwd ? 'briefcase' : 'file-directory';
+    let name = node.name;
+    if (!node.isRoot) {
+      name = filterName(name, node.highlightedText, node.isSelected);
+    }
 
     return (
       <li
@@ -136,7 +140,7 @@ export class DirectoryEntryComponent extends React.Component {
             <span
               data-name={node.name}
               data-path={node.uri}>
-              {node.name}
+              {name}
             </span>
           </span>
           {this._renderConnectionTitle()}

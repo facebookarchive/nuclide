@@ -45,6 +45,8 @@ describe('FileTreeNode', () => {
     expect(node.isCwd).toBe(false);
     expect(node.isTracked).toBe(false);
     expect(node.children.isEmpty()).toBe(true);
+    expect(node.highlightedText).toEqual('');
+    expect(node.matchesFilter).toBeTruthy();
   });
 
   it('properly sets the supplied properties', () => {
@@ -68,6 +70,8 @@ describe('FileTreeNode', () => {
     expect(node.isCwd).toBe(true);
     expect(node.isTracked).toBe(true);
     expect(node.children).toBe(children);
+    expect(node.highlightedText).toEqual('');
+    expect(node.matchesFilter).toBeTruthy();
   });
 
   it('derives properties', () => {
@@ -85,6 +89,8 @@ describe('FileTreeNode', () => {
     expect(node.shouldBeShown).toBe(true);
     expect(node.checkedStatus).toBe('clear');
     expect(node.shouldBeSoftened).toBe(false);
+    expect(node.highlightedText).toEqual('');
+    expect(node.matchesFilter).toBeTruthy();
   });
 
   it('preserves instance on non-modifying updates', () => {

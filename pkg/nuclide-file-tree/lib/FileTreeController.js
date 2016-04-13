@@ -36,8 +36,8 @@ export type FileTreeControllerState = {
   tree: ExportStoreData;
 };
 
-const NOT_LETTERS = /[^a-zA-Z]/g;
-const PREFIX_RESET_DELAY = 500;
+const VALID_FILTER_CHARS = '!#./0123456789:;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
+  '_abcdefghijklmnopqrstuvwxyz~';
 
 class FileTreeController {
   _actions: FileTreeActions;
@@ -48,8 +48,6 @@ class FileTreeController {
   _store: FileTreeStore;
   _subscriptions: CompositeDisposable;
   _subscriptionForRepository: Immutable.Map<atom$Repository, IDisposable>;
-  _prefix: string;
-  _prefixTimeout: ?number;
 
   constructor(state: ?FileTreeControllerState) {
     this._actions = FileTreeActions.getInstance();
@@ -80,9 +78,15 @@ class FileTreeController {
         'nuclide-file-tree:reveal-active-file': this.revealActiveFile.bind(this, undefined),
       })
     );
-    const letterKeyBindings = {};
-    const zCharCode = 'z'.charCodeAt(0);
-    for (let c = 'a'.charCodeAt(0); c <= zCharCode; c++) {
+    const letterKeyBindings = {
+      'nuclide-file-tree:remove-letter':
+        this._handleRemoveLetterKeypress.bind(this),
+      'nuclide-file-tree:clear-filter':
+        this._handleClearFilter.bind(this),
+    };
+    for (let i = 0, c = VALID_FILTER_CHARS.charCodeAt(0);
+         i < VALID_FILTER_CHARS.length;
+         i++, c = VALID_FILTER_CHARS.charCodeAt(i)) {
       const char = String.fromCharCode(c);
       letterKeyBindings[`nuclide-file-tree:go-to-letter-${char}`] =
         this._handlePrefixKeypress.bind(this, char);
@@ -136,8 +140,6 @@ class FileTreeController {
       this._store.loadData(state.tree);
     }
     this._contextMenu = new FileTreeContextMenu();
-    this._prefixTimeout = null;
-    this._prefix = '';
   }
 
   _moveUp(): void {
@@ -160,42 +162,23 @@ class FileTreeController {
     return this._contextMenu;
   }
 
+  _handleClearFilter(): void {
+    this._store.clearFilter();
+  }
+
   _handlePrefixKeypress(letter: string): void {
     if (!this._store.usePrefixNav()) {
       return;
     }
-    if (this._prefixTimeout != null) {
-      clearTimeout(this._prefixTimeout);
-      this._prefixTimeout = null;
-    }
-    const prefix = this._prefix + letter;
-    if (this._didRevealNodeStartingWith(prefix)) {
-      // Only append the prefix string if a match exists to allow for typos.
-      this._prefix = prefix;
-    }
-    this._prefixTimeout = setTimeout(
-      () => {
-        this._prefix = '';
-        this._prefixTimeout = null;
-      },
-      PREFIX_RESET_DELAY
-    );
+
+    this._store.addFilterLetter(letter);
   }
 
-  // Returns whether a node matching the prefix was successfully selected.
-  _didRevealNodeStartingWith(prefix: string): boolean {
-    const firstSelectedNode = this._store.getSelectedNodes().first();
-    if (firstSelectedNode == null || firstSelectedNode.isRoot) {
-      return false;
+  _handleRemoveLetterKeypress(): void {
+    if (!this._store.usePrefixNav()) {
+      return;
     }
-    const targetNode = firstSelectedNode.parent.children.find(n =>
-      n.name.toLowerCase().replace(NOT_LETTERS, '').startsWith(prefix)
-    );
-    if (targetNode == null) {
-      return false;
-    }
-    this.revealNodeKey(targetNode.uri);
-    return true;
+    this._store.removeFilterLetter();
   }
 
   _openAndRevealFilePath(filePath: ?string): void {
@@ -227,9 +210,9 @@ class FileTreeController {
   _revealTextEditor(event: Event): void {
     const editorElement = ((event.target: any): atom$TextEditorElement);
     if (
-      editorElement == null
-      || typeof editorElement.getModel !== 'function'
-      || !isTextEditor(editorElement.getModel())
+      editorElement == null ||
+      typeof editorElement.getModel !== 'function' ||
+      !isTextEditor(editorElement.getModel())
     ) {
       return;
     }
@@ -361,9 +344,9 @@ class FileTreeController {
   _collapseSelection(deep: boolean = false): void {
     const selectedNodes = this._store.getSelectedNodes();
     const firstSelectedNode = selectedNodes.first();
-    if (selectedNodes.size === 1
-      && !firstSelectedNode.isRoot
-      && !(firstSelectedNode.isContainer && firstSelectedNode.isExpanded)) {
+    if (selectedNodes.size === 1 &&
+      !firstSelectedNode.isRoot &&
+      !(firstSelectedNode.isContainer && firstSelectedNode.isExpanded)) {
       /*
        * Select the parent of the selection if the following criteria are met:
        *   * Only 1 node is selected
@@ -437,6 +420,8 @@ class FileTreeController {
    * Expands all selected directory nodes.
    */
   _expandSelection(deep: boolean): void {
+    this._handleClearFilter();
+
     this._store.getSelectedNodes().forEach(node => {
       // Only directories can be expanded. Skip non-directory nodes.
       if (!node.isContainer) {
@@ -466,6 +451,7 @@ class FileTreeController {
   }
 
   _openSelectedEntry(): void {
+    this._handleClearFilter();
     const singleSelectedNode = this._store.getSingleSelectedNode();
     // Only perform the default action if a single node is selected.
     if (singleSelectedNode != null) {
@@ -562,7 +548,6 @@ class FileTreeController {
     }
     this._store.reset();
     this._contextMenu.dispose();
-    clearTimeout(this._prefixTimeout);
   }
 
   serialize(): FileTreeControllerState {

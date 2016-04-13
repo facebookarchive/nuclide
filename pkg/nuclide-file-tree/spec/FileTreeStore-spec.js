@@ -280,6 +280,67 @@ describe('FileTreeStore', () => {
     });
   });
 
+  describe('this._filter', () => {
+    let node;
+
+    beforeEach(() => {
+      actions.setRootKeys([dir1]);
+      node = getNode(dir1, dir1);
+    });
+
+    function checkNode(name, matches) {
+      node = getNode(dir1, dir1);
+      expect(node.highlightedText).toEqual(name);
+      expect(node.matchesFilter).toEqual(matches);
+    }
+
+    function updateFilter() {
+      expect(store.getFilter()).toEqual('');
+      actions.setRootKeys([dir1]);
+      checkNode('', true);
+      store.addFilterLetter(node.name);
+      expect(store.getFilter()).toEqual(node.name);
+      checkNode(node.name, true);
+    }
+
+    function doubleFilter() {
+      updateFilter(node);
+      store.addFilterLetter(node.name);
+      expect(store.getFilter()).toEqual(node.name + node.name);
+      checkNode('', false);
+    }
+
+    function clearFilter() {
+      updateFilter(node);
+      store.addFilterLetter('t');
+      checkNode('', false);
+      store.clearFilter();
+      checkNode('', true);
+    }
+
+    it('should update when a letter is added', () => {
+      updateFilter(node);
+      store.clearFilter();
+    });
+
+    it('should not match when filter does not equal name', () => {
+      doubleFilter(node);
+      store.clearFilter();
+    });
+
+    it('should clear the filter, and return matching to normal', () => {
+      node = getNode(dir1, dir1);
+      clearFilter(node);
+    });
+
+    it('should remove filter letter', () => {
+      updateFilter(node);
+      store.removeFilterLetter();
+      checkNode(node.name.substr(0, node.name.length - 1), true);
+      store.clearFilter();
+    });
+  });
+
   it('omits hidden nodes', () => {
     waitsForPromise(async () => {
       actions.setRootKeys([dir1]);

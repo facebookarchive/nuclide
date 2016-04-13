@@ -13,6 +13,7 @@ import FileTreeActions from '../lib/FileTreeActions';
 import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
 import {fileTypeClass} from '../../nuclide-atom-helpers';
+import {filterName} from '../lib/FileTreeFilterHelper';
 import {isContextClick} from '../lib/FileTreeHelpers';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
@@ -61,25 +62,26 @@ export class FileEntryComponent extends React.Component {
   }
 
   render(): ReactElement {
+    const node = this.props.node;
     const outerClassName = classnames('entry file list-item', {
-      'selected': this.props.node.isSelected,
-      'nuclide-file-tree-softened': this.props.node.shouldBeSoftened,
+      'selected': node.isSelected,
+      'nuclide-file-tree-softened': node.shouldBeSoftened,
     });
 
     let statusClass;
-    if (!this.props.node.conf.isEditingWorkingSet) {
-      const vcsStatusCode = this.props.node.vcsStatusCode;
+    if (!node.conf.isEditingWorkingSet) {
+      const vcsStatusCode = node.vcsStatusCode;
       if (vcsStatusCode === StatusCodeNumber.MODIFIED) {
         statusClass = 'status-modified';
       } else if (vcsStatusCode === StatusCodeNumber.ADDED) {
         statusClass = 'status-added';
-      } else if (this.props.node.isIgnored) {
+      } else if (node.isIgnored) {
         statusClass = 'status-ignored';
       } else {
         statusClass = '';
       }
     } else {
-      switch (this.props.node.checkedStatus) {
+      switch (node.checkedStatus) {
         case 'checked':
           statusClass = 'status-added';
           break;
@@ -89,6 +91,10 @@ export class FileEntryComponent extends React.Component {
       }
     }
 
+
+
+    const name = filterName(node.name, node.highlightedText, node.isSelected);
+
     return (
       <li
         className={`${outerClassName} ${statusClass}`}
@@ -96,14 +102,14 @@ export class FileEntryComponent extends React.Component {
         onMouseDown={this._onMouseDown}
         onDoubleClick={this._onDoubleClick}>
         <span
-          className={`icon name ${fileTypeClass(this.props.node.name)}`}
-          data-name={this.props.node.name}
-          data-path={this.props.node.uri}>
+          className={`icon name ${fileTypeClass(node.name)}`}
+          data-name={node.name}
+          data-path={node.uri}>
           {this._renderCheckbox()}
           <span
-            data-name={this.props.node.name}
-            data-path={this.props.node.uri}>
-            {this.props.node.name}
+            data-name={node.name}
+            data-path={node.uri}>
+            {name}
           </span>
         </span>
       </li>

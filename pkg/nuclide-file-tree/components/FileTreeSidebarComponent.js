@@ -14,6 +14,7 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 import FileTree from './FileTree';
+import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
 import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import {CompositeDisposable} from 'atom';
@@ -63,7 +64,17 @@ class FileTreeSidebarComponent extends React.Component {
     const workingSetsStore = this._store.getWorkingSetsStore();
     let toolbar;
     if (this.state.shouldRenderToolbar && workingSetsStore != null) {
-      toolbar = <FileTreeToolbarComponent workingSetsStore={workingSetsStore} />;
+      toolbar = [
+        <FileTreeSideBarFilterComponent
+          key="filter"
+          filter={this._store.getFilter()}
+          found={this._store.getFilterFound()}
+        />,
+        <FileTreeToolbarComponent
+          key="toolbar"
+          workingSetsStore={workingSetsStore}
+        />,
+      ];
     }
 
     // Include `tabIndex` so this component can be focused by calling its native `focus` method.

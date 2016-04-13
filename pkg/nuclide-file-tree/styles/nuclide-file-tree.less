@@ -45,6 +45,27 @@
   }
 }
 
+.nuclide-file-tree-filter {
+  &.not-found {
+    color: @text-color-error;
+  }
+  font-weight: bold;
+  position: absolute;
+  top: @component-padding;
+  left: @component-padding;
+  z-index: 1;
+  background: @overlay-background-color;
+  padding: @component-padding/2 @component-padding;
+  border: 1px solid @overlay-border-color;
+  transition: opacity 0.5s;
+  display: none;
+}
+
+.nuclide-file-tree-entry-highlight {
+  background: @background-color-highlight;
+  border-radius: @component-border-radius;
+}
+
 .nuclide-file-tree-toolbar {
   position: absolute;
   right: 30px;

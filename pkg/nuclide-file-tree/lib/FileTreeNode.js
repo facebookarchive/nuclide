@@ -46,6 +46,8 @@ export type FileTreeNodeOptions = {
   connectionTitle?: string;
   checkedStatus?: NodeCheckedStatus;
   subscription?: ?IDisposable;
+  highlightedText?: string;
+  matchesFilter?: boolean;
 };
 
 type DefaultFileTreeNodeOptions = {
@@ -58,6 +60,8 @@ type DefaultFileTreeNodeOptions = {
   connectionTitle: string;
   checkedStatus: NodeCheckedStatus;
   subscription: ?IDisposable;
+  highlightedText: string;
+  matchesFilter: boolean;
 };
 
 const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
@@ -70,6 +74,8 @@ const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
   connectionTitle: '',
   checkedStatus: 'clear',
   subscription: null,
+  highlightedText: '',
+  matchesFilter: true,
 };
 
 export type ImmutableNodeSettableFields = {
@@ -81,8 +87,9 @@ export type ImmutableNodeSettableFields = {
   children?: Immutable.OrderedMap<string, FileTreeNode>;
   checkedStatus?: NodeCheckedStatus;
   subscription?: ?IDisposable;
+  highlightedText?: string;
+  matchesFilter?: boolean;
 };
-
 
 /**
 * OVERVIEW
@@ -165,6 +172,8 @@ export class FileTreeNode {
   connectionTitle: string;
   checkedStatus: NodeCheckedStatus;  // For nodes with children - derived from children
   subscription: ?IDisposable;
+  highlightedText: string;
+  matchesFilter: boolean;
 
   // Derived
   isRoot: boolean;
@@ -182,7 +191,7 @@ export class FileTreeNode {
   // Derived from children
   containsSelection: boolean;
   containsTrackedNode: boolean;
-
+  containsFilterMatches: boolean;
 
   /**
   * The children property is an OrderedMap instance keyed by child's name property.
@@ -229,6 +238,7 @@ export class FileTreeNode {
     let hasCheckedDescendants = false;
     let containsSelection = this.isSelected;
     let containsTrackedNode = this.isTracked;
+    let containsFilterMatches = this.matchesFilter;
 
     let prevChild = null;
     this.children.forEach(c => {
@@ -242,6 +252,10 @@ export class FileTreeNode {
 
       if (allChildrenChecked && c.checkedStatus !== 'checked') {
         allChildrenChecked = false;
+      }
+
+      if (c.containsFilterMatches) {
+        containsFilterMatches = true;
       }
 
       if (!hasCheckedDescendants &&
@@ -273,6 +287,7 @@ export class FileTreeNode {
 
     this.containsSelection = containsSelection;
     this.containsTrackedNode = containsTrackedNode;
+    this.containsFilterMatches = containsFilterMatches;
   }
 
   /**
@@ -296,6 +311,8 @@ export class FileTreeNode {
     this.connectionTitle = o.connectionTitle !== undefined ? o.connectionTitle : D.connectionTitle;
     this.checkedStatus = o.checkedStatus !== undefined ? o.checkedStatus : D.checkedStatus;
     this.subscription = o.subscription !== undefined ? o.subscription : D.subscription;
+    this.highlightedText = o.highlightedText !== undefined ? o.highlightedText : D.highlightedText;
+    this.matchesFilter = o.matchesFilter !== undefined ? o.matchesFilter : D.matchesFilter;
   }
 
   /**
@@ -335,6 +352,8 @@ export class FileTreeNode {
       connectionTitle: this.connectionTitle,
       checkedStatus: this.checkedStatus,
       subscription: this.subscription,
+      highlightedText: this.highlightedText,
+      matchesFilter: this.matchesFilter,
 
       // Derived fields
       isRoot: this.isRoot,
@@ -728,6 +747,13 @@ export class FileTreeNode {
     if (props.subscription !== undefined && this.subscription !== props.subscription) {
       return false;
     }
+    if (props.highlightedText !== undefined && this.highlightedText !== props.highlightedText) {
+      return false;
+    }
+    if (props.matchesFilter !== undefined && this.matchesFilter !== props.matchesFilter) {
+      return false;
+    }
+
     if (props.children !== undefined &&
       props.children !== this.children &&
       !Immutable.is(this.children, props.children)) {

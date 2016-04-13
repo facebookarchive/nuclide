@@ -21,6 +21,7 @@ import {FileTreeNode} from './FileTreeNode';
 import Immutable from 'immutable';
 import {ActionType} from './FileTreeConstants';
 import {Emitter} from 'atom';
+import {matchesFilter} from './FileTreeFilterHelper';
 import {Minimatch} from 'minimatch';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
@@ -100,8 +101,7 @@ export class FileTreeStore {
   _animationFrameRequestId: ?number;
   _suppressChanges: boolean;
   _cwdKey: ?NuclideUri;
-
-  usePrevNav: boolean;
+  _filter: string;
 
   static getInstance(): FileTreeStore {
     if (!instance) {
@@ -134,6 +134,7 @@ export class FileTreeStore {
     this._conf = DEFAULT_CONF;
     global.FTConf = this._conf;
     this._suppressChanges = false;
+    this._filter = '';
   }
 
   /**
@@ -837,6 +838,61 @@ export class FileTreeStore {
     this._updateRoots(root => root.setIsCwd(root.uri === cwdKey));
   }
 
+  getFilter(): string {
+    return this._filter;
+  }
+
+  addFilterLetter(letter: string): void {
+    this._filter = this._filter + letter;
+    this._updateRoots(root => {
+      return root.setRecursive(
+        node => node.containsFilterMatches ? null : node,
+        node => {
+          return matchesFilter(node.name, this._filter) ? node.set({
+            highlightedText: this._filter,
+            matchesFilter: true,
+          }) : node.set({highlightedText: '', matchesFilter: false});
+        },
+      );
+    });
+    this._selectFirstFilter();
+    this._emitChange();
+  }
+
+  clearFilter(): void {
+    this._filter = '';
+    this._updateRoots(root => {
+      return root.setRecursive(
+        node => node.containsFilterMatches ? null : node,
+        node => node.set({highlightedText: '', matchesFilter: true}),
+      );
+    });
+  }
+
+  removeFilterLetter(): void {
+    this._filter = this._filter.substr(0, this._filter.length - 1);
+    if (this._filter.length) {
+      this._updateRoots(root => {
+        return root.setRecursive(
+          node => null,
+          node => {
+            return matchesFilter(node.name, this._filter) ? node.set({
+              highlightedText: this._filter,
+              matchesFilter: true,
+            }) : node.set({highlightedText: '', matchesFilter: false});
+          },
+        );
+      });
+      this._emitChange();
+    } else {
+      this.clearFilter();
+    }
+  }
+
+  getFilterFound(): boolean {
+    return this.roots.some(root => root.containsFilterMatches);
+  }
+
   /**
    * Resets the node to be kept in view if no more data is being awaited. Safe to call many times
    * because it only changes state if a node is being tracked.
@@ -1008,6 +1064,21 @@ export class FileTreeStore {
     this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsSelected(false));
   }
 
+  _selectFirstFilter(): void {
+    let node = this.getSingleSelectedNode();
+    // if the current node matches the filter do nothing
+    if (node != null && node.matchesFilter) {
+      return;
+    }
+
+    this._moveSelectionDown();
+    node = this.getSingleSelectedNode();
+    // if the selection does not find anything up go down
+    if (node != null && !node.matchesFilter) {
+      this._moveSelectionUp();
+    }
+  }
+
   /**
   * Moves the selection one node down. In case several nodes were selected, the topmost (first in
   * the natural visual order) is considered to be the reference point for the move.
@@ -1025,6 +1096,10 @@ export class FileTreeStore {
     } else {
       const selectedNode = selectedNodes.first();
       nodeToSelect = selectedNode.findNext();
+    }
+
+    while (nodeToSelect != null && !nodeToSelect.matchesFilter) {
+      nodeToSelect = nodeToSelect.findNext();
     }
 
     if (nodeToSelect != null) {
@@ -1049,6 +1124,10 @@ export class FileTreeStore {
     } else {
       const selectedNode = selectedNodes.first();
       nodeToSelect = selectedNode.findPrevious();
+    }
+
+    while (nodeToSelect != null && !nodeToSelect.matchesFilter) {
+      nodeToSelect = nodeToSelect.findPrevious();
     }
 
     if (nodeToSelect != null) {
