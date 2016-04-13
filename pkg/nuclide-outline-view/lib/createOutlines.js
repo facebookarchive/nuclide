@@ -51,7 +51,7 @@ function outlinesForEditor(
 
   const editorEvents = Observable.concat(
     // Emit one event at the beginning to trigger the computation of the initial outline
-    Observable.of(),
+    Observable.of(null),
     observableFromSubscribeFunction(editor.onDidStopChanging.bind(editor)),
   );
 
