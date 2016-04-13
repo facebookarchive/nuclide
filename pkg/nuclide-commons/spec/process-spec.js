@@ -270,7 +270,7 @@ describe('nuclide-commons/process', () => {
         const subscription = processLib.observeProcess(() => promise).subscribe(() => {});
 
         // Unsubscribe before the process is "created".
-        subscription.dispose();
+        subscription.unsubscribe();
 
         // Make sure the process is killed when we get it.
         advanceClock(20000);

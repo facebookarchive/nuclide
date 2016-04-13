@@ -9,12 +9,13 @@
  * the root directory of this source tree.
  */
 
+import {DisposableSubscription} from '../../../nuclide-commons';
 import {getCommandInfo} from './getCommandInfo';
 import ReactNativeServerActions from './ReactNativeServerActions';
 import ReactNativeServerManager from './ReactNativeServerManager';
 import {CompositeDisposable, Disposable} from 'atom';
 import {Dispatcher} from 'flux';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 /**
  * Runs the server in the appropriate place. This class encapsulates all the state of the packager
@@ -54,20 +55,22 @@ export class PackagerActivation {
     this._stop();
 
     this._connectionDisposables = new CompositeDisposable(
-      Rx.Observable.fromPromise(getCommandInfo())
-        .subscribe(commandInfo => {
-          if (commandInfo == null) {
-            atom.notifications.addError("Couldn't find a React Native project", {
-              dismissable: true,
-              description:
-                'Make sure that one of the folders in your Atom project (or its ancestor)' +
-                ' contains a "node_modules" directory with react-native installed, or a' +
-                ' .buckconfig file with a "[react-native]" section that has a "server" key.',
-            });
-            return;
-          }
-          this._actions.startServer(commandInfo);
-        }),
+      new DisposableSubscription(
+        Rx.Observable.fromPromise(getCommandInfo())
+          .subscribe(commandInfo => {
+            if (commandInfo == null) {
+              atom.notifications.addError("Couldn't find a React Native project", {
+                dismissable: true,
+                description:
+                  'Make sure that one of the folders in your Atom project (or its ancestor)' +
+                  ' contains a "node_modules" directory with react-native installed, or a' +
+                  ' .buckconfig file with a "[react-native]" section that has a "server" key.',
+              });
+              return;
+            }
+            this._actions.startServer(commandInfo);
+          }),
+      ),
       new Disposable(() => this._actions.stopServer()),
     );
   }

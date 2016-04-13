@@ -12,7 +12,7 @@
 import invariant from 'assert';
 
 import DiffViewModel from '../lib/DiffViewModel';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 describe('DiffViewModel', () => {
   let model = null;
@@ -21,7 +21,7 @@ describe('DiffViewModel', () => {
   beforeEach(() => {
     model = new DiffViewModel([]);
     messages = model.getMessages();
-    spyOn(messages, 'onNext').andCallThrough();
+    spyOn(messages, 'next').andCallThrough();
   });
 
   function stdoutLine(message: string): {stdout?: string; stderr?: string} {
@@ -38,7 +38,7 @@ describe('DiffViewModel', () => {
     invariant(model != null);
     await model._processArcanistOutput(stream, 'success');
     const result = await resultStream;
-    expect((messages: any).onNext.callCount).toEqual(expectedOutput.length);
+    expect((messages: any).next.callCount).toEqual(expectedOutput.length);
     while (result.length > 0) {
       expect(result.pop()).toEqual(expectedOutput.pop());
     }

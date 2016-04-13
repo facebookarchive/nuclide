@@ -9,9 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type Rx from 'rx';
+import type Rx from '@reactivex/rxjs';
 
 import invariant from 'assert';
+import {DisposableSubscription} from '../../nuclide-commons';
 import {track as rawTrack} from './track';
 
 export type TrackingEvent = {
@@ -45,7 +46,7 @@ function trackEvent(event: TrackingEvent): Promise<mixed> {
  * Track each event in a stream of TrackingEvents.
  */
 function trackEvents(events: Rx.Observable<TrackingEvent>): IDisposable {
-  return events.forEach(trackEvent);
+  return new DisposableSubscription(events.subscribe(trackEvent));
 }
 
 /**

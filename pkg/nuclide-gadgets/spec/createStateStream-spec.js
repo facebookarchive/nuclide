@@ -13,23 +13,24 @@ import * as ActionTypes from '../lib/ActionTypes';
 import createStateStream from '../lib/createStateStream';
 import getInitialState from '../lib/getInitialState';
 import Immutable from 'immutable';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 describe('createStateStream', () => {
 
   it('registers a gadget', () => {
     const gadgetId = 'gadget-id-value';
     const gadget = {gadgetId};
-    const action$ = Rx.Observable.of({
+    const action$ = new Rx.Subject();
+    const state$ = createStateStream(action$, getInitialState());
+    action$.next({
       type: ActionTypes.REGISTER_GADGET,
       payload: {gadget},
     });
-    const state$ = createStateStream(action$, getInitialState());
     expect(state$.getValue().get('gadgets').get(gadgetId)).toBe(gadget);
   });
 
   it('clears the gadget list on deactivation', () => {
-    const action$ = Rx.Observable.of({type: ActionTypes.DEACTIVATE});
+    const action$ = new Rx.Subject();
     const initialState = Immutable.Map({
       gadgets: Immutable.Map({
         a: {gadgetId: 'a'},
@@ -37,15 +38,13 @@ describe('createStateStream', () => {
       }),
     });
     const state$ = createStateStream(action$, initialState);
+    action$.next({type: ActionTypes.DEACTIVATE});
     expect(state$.getValue().get('gadgets').size).toBe(0);
   });
 
   it('removes unregistered gadgets', () => {
     const gadgetId = 'gadget-id-value';
-    const action$ = Rx.Observable.of({
-      type: ActionTypes.UNREGISTER_GADGET,
-      payload: {gadgetId},
-    });
+    const action$ = new Rx.Subject();
     const initialState = Immutable.Map({
       gadgets: Immutable.Map({
         'gadget-id-value': {gadgetId},
@@ -53,6 +52,10 @@ describe('createStateStream', () => {
       }),
     });
     const state$ = createStateStream(action$, initialState);
+    action$.next({
+      type: ActionTypes.UNREGISTER_GADGET,
+      payload: {gadgetId},
+    });
     const gadgets = state$.getValue().get('gadgets');
     expect(Array.from(gadgets.keys())).toEqual(['other']);
   });

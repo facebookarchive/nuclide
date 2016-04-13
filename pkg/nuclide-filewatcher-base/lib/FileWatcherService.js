@@ -15,7 +15,7 @@ import type {FileChange} from '../../nuclide-watchman-helpers/lib/WatchmanClient
 
 import invariant from 'assert';
 import path from 'path';
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 import {EventEmitter} from 'events';
 import {fsPromise} from '../../nuclide-commons';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
@@ -71,7 +71,7 @@ function watchEntity(
     watchEntry.subscriptionCount++;
 
     const {eventEmitter} = watchEntry;
-    const watcherObservable = Observable.merge(watchEvents.map(watchEvent =>
+    const watcherObservable = Observable.merge(...watchEvents.map(watchEvent =>
       Observable.fromEvent(
         eventEmitter,
         watchEvent,
@@ -81,8 +81,10 @@ function watchEntity(
       )
     ));
 
-    watcherObservable.subscribeOnCompleted(() => {
-      unwatchEntity(watchedEntities, realPath);
+    watcherObservable.subscribe({
+      complete() {
+        unwatchEntity(watchedEntities, realPath);
+      },
     });
 
     return watcherObservable;
@@ -127,7 +129,7 @@ export function watchDirectoryRecursive(
 
     return Observable.create(observer => {
       // Notify success watcher setup.
-      observer.onNext('SUCCESS');
+      observer.next('SUCCESS');
 
       return () => unwatchDirectoryRecursive(directoryPath);
     });

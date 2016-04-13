@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rx';
+import type {Observable} from '@reactivex/rxjs';
 import type {ServerStatusUpdate} from '..';
 
-import {Subject} from 'rx';
+import {Subject} from '@reactivex/rxjs';
 
 import {findFlowConfigDir} from './FlowHelpers';
 import {FlowRoot} from './FlowRoot';
@@ -44,7 +44,7 @@ export class FlowRootContainer {
     let instance = this._flowRootMap.get(rootPath);
     if (!instance) {
       instance = new FlowRoot(rootPath);
-      this._flowRoot$.onNext(instance);
+      this._flowRoot$.next(instance);
     }
     return instance;
   }

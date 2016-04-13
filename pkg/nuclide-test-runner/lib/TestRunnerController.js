@@ -11,7 +11,7 @@
 
 import type {TestRunner, Message} from '../../nuclide-test-runner/lib/interfaces';
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import {Observable} from 'rx';
+import type {Observable} from '@reactivex/rxjs';
 import invariant from 'assert';
 
 const Ansi = require('./Ansi');
@@ -267,7 +267,7 @@ export class TestRunnerController {
   _runTestRunnerServiceForPath(testRun: Observable<Message>, path: NuclideUri, label: string):
       void {
     const subscription = testRun
-      .doOnNext((message: Message) => {
+      .do((message: Message) => {
         switch (message.kind) {
           case 'summary':
             this._testSuiteModel = new TestSuiteModel(message.summaryInfo);

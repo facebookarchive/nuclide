@@ -11,7 +11,7 @@
 
 import type {BusySignalMessage, BusySignalMessageBusy} from '../../nuclide-busy-signal-interfaces';
 
-import {Subject} from 'rx';
+import {Subject} from '@reactivex/rxjs';
 
 import {MessageStore} from '../lib/MessageStore';
 
@@ -46,26 +46,25 @@ describe('MessageStore', () => {
   });
 
   it('should publish messages it receives', () => {
-    messagePublisher.onNext(sampleMessage);
+    messagePublisher.next(sampleMessage);
     expect(getLastResult()).toEqual([sampleMessage]);
   });
 
   it('should remove invalidated messages', () => {
-    messagePublisher.onNext(sampleMessage);
-    // $FlowIssue(>= 0.19.0) #8813014
-    messagePublisher.onNext({...sampleMessage, status: 'done'});
+    messagePublisher.next(sampleMessage);
+    messagePublisher.next({id: 0, status: 'done', message: 'foobar'});
     expect(getLastResult()).toEqual([]);
   });
 
   it('should allow multiple messages from a single provider', () => {
     const firstMessage = sampleMessage;
-    const secondMessage = {...sampleMessage, id: 1};
-    messagePublisher.onNext(firstMessage);
-    messagePublisher.onNext(secondMessage);
+    const secondMessage = {id: 1, status: 'busy', message: 'foobar'};
+    messagePublisher.next(firstMessage);
+    messagePublisher.next(secondMessage);
     // Message order within a provider is respected.
     expect(getLastResult()).toEqual([firstMessage, secondMessage]);
-    messagePublisher.onNext({...sampleMessage, status: 'done'});
-    messagePublisher.onNext({id: 1, status: 'done'});
+    messagePublisher.next({id: 0, status: 'done', message: 'foobar'});
+    messagePublisher.next({id: 1, status: 'done'});
     expect(getLastResult()).toEqual([]);
   });
 
@@ -74,10 +73,10 @@ describe('MessageStore', () => {
     messageStore.consumeProvider({
       messages: otherPublisher,
     });
-    messagePublisher.onNext(sampleMessage);
-    otherPublisher.onNext(sampleMessage);
+    messagePublisher.next(sampleMessage);
+    otherPublisher.next(sampleMessage);
     expect(getLastResult()).toEqual([sampleMessage, sampleMessage]);
-    messagePublisher.onNext({...sampleMessage, status: 'done'});
+    messagePublisher.next({id: 0, status: 'done', message: 'foobar'});
     expect(getLastResult()).toEqual([sampleMessage]);
   });
 });

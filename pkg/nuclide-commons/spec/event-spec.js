@@ -77,7 +77,7 @@ describe('observableFromSubscribeFunction', () => {
 
     invariant(disposable != null);
     expect(disposable.dispose).not.toHaveBeenCalled();
-    subscription.dispose();
+    subscription.unsubscribe();
     expect(disposable.dispose).toHaveBeenCalled();
 
     expect(callback).toBeNull();
@@ -87,7 +87,7 @@ describe('observableFromSubscribeFunction', () => {
     expect(callback).not.toBeNull();
 
     expect(disposable.dispose).not.toHaveBeenCalled();
-    subscription.dispose();
+    subscription.unsubscribe();
     expect(disposable.dispose).toHaveBeenCalled();
   });
 });

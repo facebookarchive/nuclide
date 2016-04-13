@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Observable, Subject} from 'rx';
+import {Observable, Subject} from '@reactivex/rxjs';
 import type {DiffInfo, StatusCodeIdValue} from '../lib/HgService';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 

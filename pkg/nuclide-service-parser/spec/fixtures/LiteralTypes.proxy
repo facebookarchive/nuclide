@@ -1,5 +1,5 @@
 "use babel";
-import { Observable } from "rx";
+import { Observable } from "@reactivex/rxjs";
 import { trackTiming } from "../../nuclide-analytics";
 
 module.exports = _client => {

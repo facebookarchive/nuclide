@@ -15,7 +15,7 @@ import type {
   BusySignalMessageBusy,
 } from '../../nuclide-busy-signal-interfaces';
 
-import {Observable, BehaviorSubject} from 'rx';
+import {Observable, BehaviorSubject} from '@reactivex/rxjs';
 import {Disposable} from 'atom';
 import invariant from 'assert';
 
@@ -33,7 +33,7 @@ export class MessageStore {
     const subscription =
       provider.messages.subscribe(message => this._processUpdate(provider, message));
     return new Disposable(() => {
-      subscription.dispose();
+      subscription.unsubscribe();
       this._currentMessages.delete(provider);
       this._publishMessages();
     });
@@ -65,6 +65,6 @@ export class MessageStore {
         messages.push(message);
       }
     }
-    this._messageStream.onNext(messages);
+    this._messageStream.next(messages);
   }
 }

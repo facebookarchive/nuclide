@@ -18,7 +18,7 @@ import DelayedEventManager from './DelayedEventManager';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 
 import {HgStatusOption} from './hg-constants';
-import {Observable, Subject} from 'rx';
+import {Observable, Subject} from '@reactivex/rxjs';
 import {parseHgBlameOutput} from './hg-blame-output-parser';
 import {parseMultiFileHgDiffUnifiedOutput} from './hg-diff-output-parser';
 import {
@@ -184,10 +184,10 @@ export class HgService {
   }
 
   async dispose(): Promise<void> {
-    this._filesDidChangeObserver.onCompleted();
-    this._hgIgnoreFileDidChangeObserver.onCompleted();
-    this._hgRepoStateDidChangeObserver.onCompleted();
-    this._hgBookmarkDidChangeObserver.onCompleted();
+    this._filesDidChangeObserver.complete();
+    this._hgIgnoreFileDidChangeObserver.complete();
+    this._hgRepoStateDidChangeObserver.complete();
+    this._hgBookmarkDidChangeObserver.complete();
     if (this._hgDirWatcher != null) {
       this._hgDirWatcher.close();
       this._hgDirWatcher = null;
@@ -469,11 +469,11 @@ export class HgService {
 
     const workingDirectory = this._workingDirectory;
     const changedFiles = fileChanges.map(change => path.join(workingDirectory, change.name));
-    this._filesDidChangeObserver.onNext(changedFiles);
+    this._filesDidChangeObserver.next(changedFiles);
   }
 
   _hgIgnoreFileDidChange(): void {
-    this._hgIgnoreFileDidChangeObserver.onNext();
+    this._hgIgnoreFileDidChangeObserver.next();
   }
 
   _hgLockDidChange(lockExists: boolean): void {
@@ -487,11 +487,11 @@ export class HgService {
   }
 
   _emitHgRepoStateChanged(): void {
-    this._hgRepoStateDidChangeObserver.onNext();
+    this._hgRepoStateDidChangeObserver.next();
   }
 
   _hgBookmarkDidChange(): void {
-    this._hgBookmarkDidChangeObserver.onNext();
+    this._hgBookmarkDidChangeObserver.next();
   }
 
   /**

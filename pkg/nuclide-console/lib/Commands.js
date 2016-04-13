@@ -26,7 +26,7 @@ export default class Commands {
   }
 
   clearRecords(): void {
-    this._observer.onNext({
+    this._observer.next({
       type: ActionTypes.RECORDS_CLEARED,
     });
   }
@@ -43,7 +43,7 @@ export default class Commands {
 
     // TODO: Is this the best way to do this? Might want to go through nuclide-executors and have
     //       that register output sources?
-    this._observer.onNext({
+    this._observer.next({
       type: ActionTypes.MESSAGE_RECEIVED,
       payload: {
         record: {
@@ -55,7 +55,7 @@ export default class Commands {
       },
     });
 
-    this._observer.onNext({
+    this._observer.next({
       type: ActionTypes.EXECUTE,
       payload: {
         executorId: currentExecutorId,
@@ -65,7 +65,7 @@ export default class Commands {
   }
 
   registerExecutor(executor: Executor): void {
-    this._observer.onNext({
+    this._observer.next({
       type: ActionTypes.REGISTER_EXECUTOR,
       payload: {executor},
     });
@@ -105,9 +105,9 @@ export default class Commands {
         type: ActionTypes.MESSAGE_RECEIVED,
         payload: {record},
       }))
-      .subscribe(action => this._observer.onNext(action));
+      .subscribe(action => this._observer.next(action));
 
-    this._observer.onNext({
+    this._observer.next({
       type: ActionTypes.PROVIDER_REGISTERED,
       payload: {
         recordProvider,
@@ -121,29 +121,29 @@ export default class Commands {
     if (subscription == null) {
       return;
     }
-    subscription.dispose();
-    this._observer.onNext({
+    subscription.unsubscribe();
+    this._observer.next({
       type: ActionTypes.SOURCE_REMOVED,
       payload: {source},
     });
   }
 
   selectExecutor(executorId: string): void {
-    this._observer.onNext({
+    this._observer.next({
       type: ActionTypes.SELECT_EXECUTOR,
       payload: {executorId},
     });
   }
 
   setMaxMessageCount(maxMessageCount: number): void {
-    this._observer.onNext({
+    this._observer.next({
       type: ActionTypes.MAX_MESSAGE_COUNT_UPDATED,
       payload: {maxMessageCount},
     });
   }
 
   unregisterExecutor(executor: Executor): void {
-    this._observer.onNext({
+    this._observer.next({
       type: ActionTypes.UNREGISTER_EXECUTOR,
       payload: {executor},
     });

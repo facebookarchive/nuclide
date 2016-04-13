@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Observable, Subject} from 'rx';
+import {Observable, Subject} from '@reactivex/rxjs';
 
 export class Counter {
   _count: number;
@@ -28,7 +28,7 @@ export class Counter {
     // Add this counter to global list.
     Counter._counters.push(this);
     // Broadcast that this counter was created.
-    Counter._newCounters.onNext(this);
+    Counter._newCounters.next(this);
   }
   // Get the current value of a counter.
   async getCount(): Promise<number> {
@@ -37,7 +37,7 @@ export class Counter {
   // Add the specified value to the counter's count.
   async addCount(x: number): Promise<void> {
     // Broadcast an event.
-    this._changes.onNext({
+    this._changes.next({
       type: 'add',
       oldValue: this._count,
       newValue: this._count + x,
@@ -55,7 +55,7 @@ export class Counter {
     // Remove this counter from the global list.
     Counter._counters.splice(Counter._counters.indexOf(this), 1);
     // Signal that the changes stream is over.
-    this._changes.onCompleted();
+    this._changes.complete();
   }
 
   /** Static Methods */

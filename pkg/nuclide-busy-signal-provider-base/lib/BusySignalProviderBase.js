@@ -11,11 +11,11 @@
 
 import type {BusySignalMessage} from '../../nuclide-busy-signal-interfaces';
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {Observable} from 'rx';
+import type {Observable} from '@reactivex/rxjs';
 
 import {Disposable, CompositeDisposable} from 'atom';
 
-import {Subject} from 'rx';
+import {Subject} from '@reactivex/rxjs';
 import invariant from 'assert';
 
 import {promises} from '../../nuclide-commons';
@@ -72,9 +72,9 @@ export class BusySignalProviderBase {
 
   _displayMessage(message: string): IDisposable {
     const {busy, done} = this._nextMessagePair(message);
-    this._messages.onNext(busy);
+    this._messages.next(busy);
     return new Disposable(() => {
-      this._messages.onNext(done);
+      this._messages.next(done);
     });
   }
 

@@ -110,8 +110,16 @@ module.exports = {
     return requireProcess().asyncExecute;
   },
 
+  get bufferUntil() {
+    return requireStream().bufferUntil;
+  },
+
   get checkOutput() {
     return requireProcess().checkOutput;
+  },
+
+  get CompositeSubscription() {
+    return requireStream().CompositeSubscription;
   },
 
   get createArgsForScriptCommand() {
@@ -124,6 +132,10 @@ module.exports = {
 
   get denodeify() {
     return requirePromises().denodeify;
+  },
+
+  get DisposableSubscription() {
+    return requireStream().DisposableSubscription;
   },
 
   get forkWithExecEnvironment() {

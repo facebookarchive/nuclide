@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {Subject} from 'rx';
-import type {Observable} from 'rx';
+import {Subject} from '@reactivex/rxjs';
+import type {Observable} from '@reactivex/rxjs';
 
 // Opens the given file at the line/column.
 // By default will center the opened text editor.
@@ -49,7 +49,7 @@ function goToLocationInEditor(
     editor.scrollToBufferPosition([line, column], {center: true});
   }
 
-  goToLocationSubject.onNext(editor);
+  goToLocationSubject.next(editor);
 }
 
 

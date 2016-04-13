@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rx';
+import type {Observable} from '@reactivex/rxjs';
 import type OutputService from '../../nuclide-console/lib/OutputService';
 
 let outputServiceApi: ?OutputService = null;

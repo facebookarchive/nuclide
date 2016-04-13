@@ -10,7 +10,7 @@
  */
 
 import {HackRpc} from '../lib/HackRpc';
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 
 class MockTransport {
   sentMessages: Array<string>;

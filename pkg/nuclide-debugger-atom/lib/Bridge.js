@@ -25,7 +25,7 @@ export type EvaluationResult = {
   _description? : string;
 };
 
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 import invariant from 'assert';
 const {CompositeDisposable, Disposable} = require('atom');
 
@@ -149,10 +149,10 @@ class Bridge {
       return;
     }
     if (error != null) {
-      subject.onError(error);
+      subject.error(error);
     } else {
-      subject.onNext(result);
-      subject.onCompleted();
+      subject.next(result);
+      subject.complete();
     }
   }
 

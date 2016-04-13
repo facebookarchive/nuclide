@@ -11,7 +11,7 @@
 
 import createAtomCommands from './createAtomCommands';
 import type Immutable from 'immutable';
-import type Rx from 'rx';
+import type Rx from '@reactivex/rxjs';
 import type Commands from './Commands';
 
 /**
@@ -21,12 +21,12 @@ import type Commands from './Commands';
 export default function syncAtomCommands(
   gadget$: Rx.Observable<Immutable.Map>,
   appCommands: Commands,
-): IDisposable {
+): rx$ISubscription {
   let atomCommands: ?IDisposable;
 
   return gadget$
     .distinctUntilChanged()
-    .forEach(gadgets => {
+    .subscribe(gadgets => {
       // Add Atom commands idempotently...
       // Dispose of the previous commands.
       if (atomCommands != null) {

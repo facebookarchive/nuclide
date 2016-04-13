@@ -11,10 +11,10 @@
 
 import type {Message} from '../../nuclide-console/lib/types';
 
+import {CompositeSubscription} from '../../nuclide-commons';
 import createMessage from './createMessage';
 import parseLogcatMetadata from './parseLogcatMetadata';
-import {CompositeDisposable} from 'atom';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 export default function createMessageStream(
   line$: Rx.Observable<string>,
@@ -36,7 +36,7 @@ export default function createMessageStream(
         buffer.pop();
       }
 
-      observer.onNext({
+      observer.next({
         metadata: prevMetadata,
         message: buffer.join('\n'),
       });
@@ -46,8 +46,7 @@ export default function createMessageStream(
 
     const sharedLine$ = line$.share();
 
-    return new CompositeDisposable(
-
+    return new CompositeSubscription(
       // Buffer incoming lines.
       sharedLine$.subscribe(
         // onNext
@@ -71,21 +70,20 @@ export default function createMessageStream(
         // onError
         error => {
           flush();
-          observer.onError(error);
+          observer.error(error);
         },
 
         // onCompleted
         () => {
           flush();
-          observer.onCompleted();
+          observer.complete();
         },
       ),
 
       // We know *for certain* that we have a complete entry once we see the metadata for the next
       // one. But what if the next one takes a long time to happen? After a certain point, we need
       // to just assume we have the complete entry and move on.
-      sharedLine$.debounce(200).subscribe(flush),
-
+      sharedLine$.debounceTime(200).subscribe(flush),
     );
 
   })

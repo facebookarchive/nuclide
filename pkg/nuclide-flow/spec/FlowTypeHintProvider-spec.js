@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import {Observable} from 'rx';
-
 import {uncachedRequire, spyOnGetterValue} from '../../nuclide-test-helpers';
 import {Range} from 'atom';
 import featureConfig from '../../nuclide-feature-config';
@@ -32,7 +30,7 @@ describe('FlowTypeHintProvider', () => {
     // will not be spies
     jasmine.unspy(require('../../nuclide-atom-helpers'), 'extractWordAtPosition');
     jasmine.unspy(featureConfig, 'get');
-    jasmine.unspy(require('../../nuclide-client'), 'getServiceByNuclideUri');
+    jasmine.unspy(require('../lib/FlowServiceFactory'), 'getFlowServiceByNuclideUri');
   });
 
   async function runWith(enabled, result, word) {
@@ -43,8 +41,7 @@ describe('FlowTypeHintProvider', () => {
         return false;
       }
     });
-    spyOn(require('../../nuclide-client'), 'getServiceByNuclideUri').andReturn({
-      getServerStatusUpdates() { return Observable.empty(); },
+    spyOn(require('../lib/FlowServiceFactory'), 'getFlowServiceByNuclideUri').andReturn({
       flowGetType() { return Promise.resolve(result); },
     });
     spyOnGetterValue(require('../../nuclide-atom-helpers'), 'extractWordAtPosition')

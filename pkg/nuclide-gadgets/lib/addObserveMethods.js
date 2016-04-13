@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
+import {DisposableSubscription} from '../../nuclide-commons';
 
 type Comparer = (a: mixed, b: mixed) => boolean;
 type SubscribeCallback = (...args: Array<mixed>) => mixed;
@@ -97,11 +98,13 @@ function createObserveFunction(comparer: Comparer = strictEquals): Result {
   // Wrap each callback so that we don't leak the fact that subscribe is implemented with
   // observables (by accepting Observers as well as callbacks).
   return {
-    observe: callback => distinctValue$.subscribe(value => callback(value)),
+    observe: callback => new DisposableSubscription(
+      distinctValue$.subscribe(value => callback(value))
+    ),
     notify(getValue) {
       // Don't calculate the next value unless somebody's listening.
-      if (value$.hasObservers()) {
-        value$.onNext(getValue());
+      if (value$.observers.length) {
+        value$.next(getValue());
       }
     },
   };

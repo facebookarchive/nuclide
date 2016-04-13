@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rx';
+import type {Observable} from '@reactivex/rxjs';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {
@@ -18,7 +18,7 @@ import type {
 import typeof * as FlowService from '../../nuclide-flow-base';
 
 import invariant from 'assert';
-import {Subject} from 'rx';
+import {Subject} from '@reactivex/rxjs';
 
 import {getServiceByNuclideUri} from '../../nuclide-client';
 

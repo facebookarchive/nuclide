@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rx';
+import type {Observable} from '@reactivex/rxjs';
 import type {OutlineForUi, OutlineTreeForUi} from './main';
 import type {TextToken} from '../../nuclide-tokenized-text';
 
@@ -44,7 +44,7 @@ export class OutlineView extends React.Component {
   state: State;
   props: Props;
 
-  subscription: ?IDisposable;
+  subscription: ?rx$ISubscription;
 
   constructor(props: Props) {
     super(props);
@@ -67,7 +67,7 @@ export class OutlineView extends React.Component {
 
   componentWillUnmount(): void {
     invariant(this.subscription != null);
-    this.subscription.dispose();
+    this.subscription.unsubscribe();
     this.subscription = null;
   }
 

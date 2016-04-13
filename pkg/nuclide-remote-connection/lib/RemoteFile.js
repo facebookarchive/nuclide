@@ -34,7 +34,7 @@ export class RemoteFile {
   _realpath: ?string;
   _server: ServerConnection;
   _subscriptionCount: number;
-  _watchSubscription: ?IDisposable;
+  _watchSubscription: ?rx$ISubscription;
   _digest: ?string;
   _symlink: boolean;
 
@@ -141,7 +141,7 @@ export class RemoteFile {
 
   _unsubscribeFromNativeChangeEvents(): void {
     if (this._watchSubscription) {
-      this._watchSubscription.dispose();
+      this._watchSubscription.unsubscribe();
       this._watchSubscription = null;
     }
   }

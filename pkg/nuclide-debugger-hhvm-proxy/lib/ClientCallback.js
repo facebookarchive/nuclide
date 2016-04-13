@@ -10,7 +10,7 @@
  */
 
 import logger from './utils';
-import {Observable, Subject} from 'rx';
+import {Observable, Subject} from '@reactivex/rxjs';
 
 import type {NotificationMessage} from '..';
 
@@ -60,7 +60,7 @@ export class ClientCallback {
     logger.log(`sendUserMessage(${type}): ${JSON.stringify(message)}`);
     switch (type) {
       case 'notification':
-        this._notificationObservable.onNext({
+        this._notificationObservable.next({
           type: message.type,
           message: message.message,
         });
@@ -105,12 +105,12 @@ export class ClientCallback {
   _sendJsonObject(observable: Observable<string>, value: Object): void {
     const message = JSON.stringify(value);
     logger.log('Sending JSON: ' + message);
-    ((observable : any) : Subject).onNext(message);
+    ((observable : any) : Subject).next(message);
   }
 
   dispose(): void {
-    this._notificationObservable.onCompleted();
-    this._serverMessageObservable.onCompleted();
-    this._outputWindowObservable.onCompleted();
+    this._notificationObservable.complete();
+    this._serverMessageObservable.complete();
+    this._outputWindowObservable.complete();
   }
 }

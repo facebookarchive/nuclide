@@ -19,10 +19,10 @@ describe('debugger-hhvm-proxy ClientCallback', () => {
 
   beforeEach(() => {
     observableSpy = jasmine.createSpyObj('serverMessageObservable', [
-      'onNext',
-      'onCompleted',
+      'next',
+      'complete',
     ]);
-    spyOn(require('rx'), 'Subject').andReturn(observableSpy);
+    spyOn(require('@reactivex/rxjs'), 'Subject').andReturn(observableSpy);
     const {ClientCallback} = ((
       uncachedRequire(require, '../lib/ClientCallback'): any
     ): {ClientCallback: () => ClientCallbackType});
@@ -35,27 +35,27 @@ describe('debugger-hhvm-proxy ClientCallback', () => {
 
   it('sendMethod: no args', () => {
     clientCallback.sendMethod(observableSpy, 'method1');
-    expect(observableSpy.onNext).toHaveBeenCalledWith('{"method":"method1"}');
+    expect(observableSpy.next).toHaveBeenCalledWith('{"method":"method1"}');
   });
 
   it('sendMethod: args', () => {
     clientCallback.sendMethod(observableSpy, 'method1', { arg1: 12 });
-    expect(observableSpy.onNext).toHaveBeenCalledWith('{"method":"method1","params":{"arg1":12}}');
+    expect(observableSpy.next).toHaveBeenCalledWith('{"method":"method1","params":{"arg1":12}}');
   });
 
   it('replyWithError', () => {
     clientCallback.replyWithError(42, 'error-msg');
-    expect(observableSpy.onNext).toHaveBeenCalledWith('{"id":42,"result":{},"error":"error-msg"}');
+    expect(observableSpy.next).toHaveBeenCalledWith('{"id":42,"result":{},"error":"error-msg"}');
   });
 
   it('replyToCommand: no-error', () => {
     clientCallback.replyToCommand(42, {result:'value'});
-    expect(observableSpy.onNext).toHaveBeenCalledWith('{"id":42,"result":{"result":"value"}}');
+    expect(observableSpy.next).toHaveBeenCalledWith('{"id":42,"result":{"result":"value"}}');
   });
 
   it('replyToCommand: error', () => {
     clientCallback.replyToCommand(42, {result:'value'}, 'error-msg');
-    expect(observableSpy.onNext).toHaveBeenCalledWith(
+    expect(observableSpy.next).toHaveBeenCalledWith(
       '{"id":42,"result":{"result":"value"},"error":"error-msg"}');
   });
 
@@ -65,11 +65,11 @@ describe('debugger-hhvm-proxy ClientCallback', () => {
       message: 'error message',
     };
     clientCallback.sendUserMessage('notification', message);
-    expect(observableSpy.onNext).toHaveBeenCalledWith(message);
+    expect(observableSpy.next).toHaveBeenCalledWith(message);
   });
 
   it('dispose', () => {
     clientCallback.dispose();
-    expect(observableSpy.onCompleted).toHaveBeenCalled();
+    expect(observableSpy.complete).toHaveBeenCalled();
   });
 });

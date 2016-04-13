@@ -32,7 +32,7 @@ export class ObjectRegistry {
   _registrationsById: Map<number, ObjectRegistration>;
   _registrationsByObject: Map<RemoteObject, ObjectRegistration>;
   _nextObjectId: number;
-  _subscriptions: Map<number, IDisposable>;
+  _subscriptions: Map<number, rx$ISubscription>;
 
   constructor() {
     this._nextObjectId = 1;
@@ -69,7 +69,7 @@ export class ObjectRegistry {
   disposeSubscription(requestId: number): void {
     const subscription = this.removeSubscription(requestId);
     if (subscription != null) {
-      subscription.dispose();
+      subscription.unsubscribe();
     }
   }
 
@@ -96,11 +96,11 @@ export class ObjectRegistry {
     return objectId;
   }
 
-  addSubscription(requestId: number, subscription: IDisposable): void {
+  addSubscription(requestId: number, subscription: rx$ISubscription): void {
     this._subscriptions.set(requestId, subscription);
   }
 
-  removeSubscription(requestId: number): ?IDisposable {
+  removeSubscription(requestId: number): ?rx$ISubscription {
     const subscription = this._subscriptions.get(requestId);
     if (subscription != null) {
       this._subscriptions.delete(requestId);
@@ -125,6 +125,7 @@ export class ObjectRegistry {
     logger.info(`Disposing ${subscriptions.length} subscriptions`);
     for (const id of subscriptions) {
       try {
+
         this.disposeSubscription(id);
       } catch (e) {
         logger.error(`Error disposing subscription`, e);

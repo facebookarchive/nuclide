@@ -23,7 +23,7 @@ import {
   React,
   ReactDOM,
 } from 'react-for-atom';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 import invariant from 'assert';
 
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
@@ -56,7 +56,7 @@ export class PinnedDatatip {
   _hostElement: HTMLElement;
   _marker: ?atom$Marker;
   _rangeDecoration: ?atom$Decoration;
-  _mouseDisposable: ?IDisposable;
+  _mouseSubscription: ?rx$ISubscription;
   _subscriptions: atom$CompositeDisposable;
   _range: atom$Range;
   _component: ReactClass;
@@ -139,9 +139,9 @@ export class PinnedDatatip {
   }
 
   _ensureMouseSubscriptionDisposed(): void {
-    if (this._mouseDisposable != null) {
-      this._mouseDisposable.dispose();
-      this._mouseDisposable = null;
+    if (this._mouseSubscription != null) {
+      this._mouseSubscription.unsubscribe();
+      this._mouseSubscription = null;
     }
   }
 
@@ -152,12 +152,12 @@ export class PinnedDatatip {
       y: evt.clientY - this._offset.y,
     };
     this._ensureMouseSubscriptionDisposed();
-    this._mouseDisposable =
-      documentMouseMove$().takeUntil(documentMouseUp$()).subscribe(Rx.Observer.create(
+    this._mouseSubscription =
+      documentMouseMove$().takeUntil(documentMouseUp$()).subscribe(
       (e: MouseEvent) => {this.handleGlobalMouseMove(e);},
       (error: any) => {},
       () => {this.handleGlobalMouseUp();},
-    ));
+    );
   }
 
   handleCapturedClick(event: SyntheticEvent): void {
@@ -245,8 +245,8 @@ export class PinnedDatatip {
     if (this._marker != null) {
       this._marker.destroy();
     }
-    if (this._mouseDisposable != null) {
-      this._mouseDisposable.dispose();
+    if (this._mouseSubscription != null) {
+      this._mouseSubscription.unsubscribe();
     }
     ReactDOM.unmountComponentAtNode(this._hostElement);
     this._hostElement.remove();

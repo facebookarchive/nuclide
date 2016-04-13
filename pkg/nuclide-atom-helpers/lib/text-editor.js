@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import invariant from 'assert';
 import {TextBuffer, TextEditor} from 'atom';
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 
 // TODO(most): move to remote-connection/lib/RemoteTextBuffer.js
 import NuclideTextBuffer from '../../nuclide-remote-projects/lib/NuclideTextBuffer';
@@ -152,7 +152,7 @@ export function getCursorPositions(editor: atom$TextEditor): Observable<atom$Poi
   const cursor = editor.getCursors()[0];
   invariant(cursor != null);
   return Observable.merge(
-    Observable.just(cursor.getBufferPosition()),
+    Observable.of(cursor.getBufferPosition()),
     observableFromSubscribeFunction(cursor.onDidChangePosition.bind(cursor))
       .map(event => event.newBufferPosition),
   );

@@ -16,7 +16,7 @@ import type {
 } from './DebuggerRpcServiceInterface';
 
 import {CompositeDisposable, Disposable} from 'event-kit';
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 import child_process from 'child_process';
 import path from 'path';
 import utils from './utils';

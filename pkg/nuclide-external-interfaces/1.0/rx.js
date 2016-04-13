@@ -10,15 +10,26 @@
 // `declare interface` syntax.
 // FIXME(samgoldman) Remove this once Subject<T> can mixin Observer<T>
 interface rx$IObserver<T> {
-  onNext(value: T): mixed;
-  onError(error: any): mixed;
-  onCompleted(): mixed;
+  next(value: T): mixed;
+  error(error: any): mixed;
+  complete(): mixed;
 }
 
-declare module 'rx' {
-  declare class Observable<T> {
-    static catch(...sources: Observable<T>[]): Observable<T>;
+// FIXME: Technically at least one of these is required.
+interface PartialObserver<T> {
+  next?: (value: T) => mixed;
+  error?: (errror: any) => mixed;
+  complete?: () => mixed;
+}
 
+interface rx$ISubscription {
+  unsubscribe(): void;
+}
+
+type TeardownLogic = rx$ISubscription | () => void;
+
+declare module '@reactivex/rxjs' {
+  declare class Observable<T> {
     // This is actually variadic, but we only support one or two other observables.
     static combineLatest<T, U>(t: Observable<T>, u: Observable<U>): Observable<[T, U]>;
     static combineLatest<T, U, V>(
@@ -41,7 +52,7 @@ declare module 'rx' {
     static concat(...sources: Observable<T>[]): Observable<T>;
 
     static create(
-      subscribe: (observer: Observer<T>) => IDisposable | Function | void
+      subscribe: (observer: Observer<T>) => rx$ISubscription | Function | void
     ): Observable<T>;
 
     static defer(observableFactory: () => Observable<T>): Observable<T>;
@@ -54,13 +65,17 @@ declare module 'rx' {
       selector?: () => T,
     ): Observable<T>;
 
+    static fromEventPattern(
+      addHandler: (handler: () => void) => void,
+      removeHandler: (handler: () => void) => void,
+      selector?: () => T,
+    ): Observable<T>;
+
     static fromPromise(promise: Promise<T>): Observable<T>;
 
     static empty(): Observable<any>;
 
     static interval(period: number): Observable<number>;
-
-    static just(value: T): Observable<T>;
 
     static merge<T,U>(
       source0: Observable<T>,
@@ -78,23 +93,18 @@ declare module 'rx' {
 
     static of(...values: T[]): Observable<T>;
 
-    static return(value: T): Observable<T>;
-
     static throw(error: any): Observable<any>;
-    static throwError(error: any): Observable<any>;
 
-    static using<Resource: IDisposable>(
+    static using<Resource: rx$ISubscription>(
       resourceFactory: () => Resource,
       observableFactory: (resource: Resource) => Observable<T>,
     ): Observable<T>;
 
-    amb(other: Observable<T>): Observable<T>;
+    race(other: Observable<T>): Observable<T>;
 
     buffer(bufferBoundaries: Observable<any>): Observable<Array<T>>;
 
-    doOnNext(f: (value: T) => mixed): Observable<T>;
-
-    catch(secondOrHandler: Observable<T> | (error: any) => Observable<T>): Observable<T>;
+    catch<U>(selector: (err: any, caught: Observable<T>) => Observable<U>): Observable<U>;
 
     // This is actually variadic, but we only support one or two other observables.
     combineLatest<U>(u: Observable<U>): Observable<[T, U]>;
@@ -126,41 +136,42 @@ declare module 'rx' {
       f: (value: T) => Observable<U> | Promise<U> | Iterable<U>
     ): Observable<U>;
 
-    debounce(duration: number): Observable<T>;
+    debounceTime(duration: number): Observable<T>;
 
     delay(dueTime: number): Observable<T>;
 
     distinctUntilChanged(): Observable<T>;
 
-    doOnError(onError: (error: any) => mixed, thisArg?: any): Observable<T>;
-
     filter(predicate: (value: T) => boolean): Observable<T>;
 
     finally(f: () => mixed): Observable<T>;
 
-    first(): Observable<T>;
+    first(
+      predicate?: (value: T, index: number, source: Observable<T>) => boolean,
+    ): Observable<T>;
+    first<U>(
+      predicate: ?(value: T, index: number, source: Observable<T>) => boolean,
+      resultSelector: (value: T, index: number) => U,
+    ): Observable<U>;
+    first<U>(
+      predicate: ?(value: T, index: number, source: Observable<T>) => boolean,
+      resultSelector: ?(value: T, index: number) => U,
+      defaultValue: U,
+    ): Observable<U>;
 
     flatMap<U>(
       f: (value: T) => Observable<U> | Promise<U> | Iterable<U>
     ): Observable<U>;
 
-    flatMapLatest<U>(
+    switchMap<U>(
       f: (value: T) => Observable<U> | Promise<U> | Iterable<U>
     ): Observable<U>;
-
-    forEach(
-      onNext?: (value: T) => mixed,
-      onError?: (error: any) => mixed,
-      onCompleted?: () => mixed,
-    ): IDisposable;
 
     map<U>(f: (value: T) => U): Observable<U>;
 
     merge(other: Observable<T>): Observable<T>;
 
     mergeAll(): T; // assumption: T is Observable
-
-    pausableBuffered(pauser: Observable<boolean>): Observable<T>;
 
     publish(): ConnectableObservable<T>;
 
@@ -176,7 +187,7 @@ declare module 'rx' {
       seed: U,
     ): Observable<U>;
 
-    replay(): ConnectableObservable<T>;
+    publishReplay(): ConnectableObservable<T>;
 
     retry(retryCount: number): Observable<T>;
 
@@ -193,22 +204,24 @@ declare module 'rx' {
 
     skipUntil(other: Observable<any> | Promise<any>): Observable<T>;
 
-    skipUntilWithTime(startTime: Date | number): Observable<T>;
-
     take(count: number): Observable<T>;
 
     takeUntil(other: Observable<any>): Observable<T>;
 
     takeWhile(f: (value: T) => boolean): Observable<T>;
 
-    tap<T>(
+    do(
       onNext?: (value: T) => mixed,
       onError?: (error: any) => mixed,
       onCompleted?: () => mixed,
     ): Observable<T>;
-    tapOnError(onError: (error: any) => mixed, thisArg?: any): Observable<T>;
+    do(observer: {
+      next?: (value: T) => mixed;
+      error?: (error: any) => mixed;
+      complete?: () => mixed;
+    }): Observable<T>;
 
-    throttle(duration: number): Observable<T>;
+    throttleTime(duration: number): Observable<T>;
 
     timeout(dueTime: number, other?: Observable<T>): Observable<T>;
 
@@ -220,16 +233,12 @@ declare module 'rx' {
       onNext?: (value: T) => mixed,
       onError?: (error: any) => mixed,
       onCompleted?: () => mixed,
-    ): IDisposable;
-    subscribe(observer: rx$IObserver<T>): IDisposable;
-
-    subscribeOnNext(onNext: (value: T) => mixed): IDisposable;
-    subscribeOnError(onError: (error: any) => mixed): IDisposable;
-    subscribeOnCompleted(onCompleted: () => mixed): IDisposable;
+    ): Subscription;
+    subscribe(observer: PartialObserver<T>): Subscription;
   }
 
   declare class ConnectableObservable<T> extends Observable<T> {
-    connect(): IDisposable;
+    connect(): Subscription;
     refCount(): Observable<T>;
   }
 
@@ -242,11 +251,11 @@ declare module 'rx' {
 
     asObserver(): Observer<T>;
 
-    onNext(value: T): mixed;
+    next(value: T): mixed;
 
-    onError(error: any): mixed;
+    error(error: any): mixed;
 
-    onCompleted(): mixed;
+    complete(): mixed;
   }
 
   // FIXME(samgoldman) should be `mixins Observable<T>, Observer<T>`
@@ -254,15 +263,14 @@ declare module 'rx' {
   declare class Subject<T> extends Observable<T> {
     asObservable(): Observable<T>;
 
-    hasObservers(): boolean;
+    observers: Array<Observer<T>>;
 
-    dispose(): void;
+    unsubscribe(): void;
 
     // Copied from Observer<T>
-    asObserver(): Observer<T>;
-    onNext(value: T): mixed;
-    onError(error: any): mixed;
-    onCompleted(): mixed;
+    next(value: T): mixed;
+    error(error: any): mixed;
+    complete(): mixed;
   }
 
   declare class BehaviorSubject<T> extends Subject<T> {
@@ -277,5 +285,10 @@ declare module 'rx' {
 
   declare class Disposable {
     static create(action: () => mixed): IDisposable;
+  }
+
+  declare class Subscription {
+    unsubscribe(): void;
+    add(teardown: TeardownLogic): Subscription;
   }
 }

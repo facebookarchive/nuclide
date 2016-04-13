@@ -15,7 +15,7 @@ import {createProcessStream} from './createProcessStream';
 import createMessageStream from './createMessageStream';
 import {LogTailer} from '../../nuclide-console/lib/LogTailer';
 import {CompositeDisposable, Disposable} from 'atom';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 const NOENT_ERROR_DESCRIPTION = `**Troubleshooting Tips**
 1. Make sure that adb is installed
@@ -42,21 +42,23 @@ class Activation {
               0,
             )
           ))
-          .tapOnError(err => {
-            if (isNoEntError(err)) {
+          .do({
+            error(err) {
+              if (isNoEntError(err)) {
+                atom.notifications.addError(
+                  "adb wasn't found on your path!",
+                  {
+                    dismissable: true,
+                    description: NOENT_ERROR_DESCRIPTION,
+                  },
+                );
+                return;
+              }
               atom.notifications.addError(
-                "adb wasn't found on your path!",
-                {
-                  dismissable: true,
-                  description: NOENT_ERROR_DESCRIPTION,
-                },
+                'adb logcat has crashed 3 times.'
+                + ' You can manually restart it using the "Nuclide Adb Logcat: Start" command.'
               );
-              return;
-            }
-            atom.notifications.addError(
-              'adb logcat has crashed 3 times.'
-              + ' You can manually restart it using the "Nuclide Adb Logcat: Start" command.'
-            );
+            },
           })
       )
     );

@@ -11,6 +11,7 @@
 
 import type {ExecutorResponse, RnRequest} from './types';
 
+import {CompositeSubscription} from '../../nuclide-commons';
 import featureConfig from '../../nuclide-feature-config';
 import {
   createProcessStream,
@@ -18,9 +19,8 @@ import {
   getOutputStream,
 } from '../../nuclide-commons/lib/process';
 import {getLogger} from '../../nuclide-logging';
-import {CompositeDisposable} from 'atom';
 import path from 'path';
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 
 const logger = getLogger();
 
@@ -53,7 +53,7 @@ export function executeRnRequests(rnRequests: Observable<RnRequest>): Observable
     ),
 
     Observable.create(() => (
-      new CompositeDisposable(
+      new CompositeSubscription(
         // Send the incoming requests to the worker process for evaluation.
         rnRequests
           .withLatestFrom(workerProcess, (r, p) => ([r, p]))
@@ -61,7 +61,7 @@ export function executeRnRequests(rnRequests: Observable<RnRequest>): Observable
 
         // Pipe output from forked process. This just makes things easier to debug for us.
         workerProcess
-          .flatMapLatest(process => getOutputStream(process))
+          .switchMap(process => getOutputStream(process))
           .subscribe(message => {
             switch (message.kind) {
               case 'error':

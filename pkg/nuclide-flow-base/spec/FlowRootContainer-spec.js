@@ -63,7 +63,7 @@ describe('FlowRootContainer', () => {
 
       const flowRoot = await flowRootContainer.getRootForPath('foo');
       invariant(flowRoot != null);
-      flowRoot._process._serverStatus.onNext('failed');
+      flowRoot._process._serverStatus.next('failed');
 
       expect(await resultsPromise).toEqual([
         {

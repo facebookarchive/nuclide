@@ -11,18 +11,16 @@
 
 import type {Message} from '../../nuclide-console/lib/types';
 
+import {bufferUntil} from '../../nuclide-commons';
 import featureConfig from '../../nuclide-feature-config';
 import {createMessage} from './createMessage';
 import plist from 'plist';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 export function createMessageStream(line$: Rx.Observable<string>): Rx.Observable<Message> {
-  const sharedLine$ = line$.share();
 
-  return sharedLine$
-    // Group the lines into valid plist strings.
-    .buffer(sharedLine$.filter(line => line.trim() === '</plist>'))
-
+  // Group the lines into valid plist strings.
+  return bufferUntil(line$, line => line.trim() === '</plist>')
     // Don't include empty buffers. This happens if the stream completes since we opened a new
     // buffer when the previous record ended.
     .filter(lines => lines.length > 1)

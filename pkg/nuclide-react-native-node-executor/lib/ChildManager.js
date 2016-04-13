@@ -17,7 +17,7 @@ import type {
 import type {EventEmitter} from 'events';
 
 import {executeRnRequests} from './executeRnRequests';
-import {Observable, Subject} from 'rx';
+import {Observable, Subject} from '@reactivex/rxjs';
 
 let logger;
 function getLogger() {
@@ -32,7 +32,7 @@ export default class ChildManager {
   _onReply: ServerReplyCallback;
   _emitter: EventEmitter;
 
-  _executorSubscription: ?IDisposable;
+  _executorSubscription: ?rx$ISubscription;
   _executorResponses: Observable<ExecutorResponse>;
   _rnRequests: Subject<RnRequest>;
 
@@ -67,7 +67,7 @@ export default class ChildManager {
     if (!this._executorSubscription) {
       return;
     }
-    this._executorSubscription.dispose();
+    this._executorSubscription.unsubscribe();
     this._executorSubscription = null;
   }
 
@@ -80,7 +80,7 @@ export default class ChildManager {
     // Make sure we have a worker to run the JS.
     this._createChild();
 
-    this._rnRequests.onNext(request);
+    this._rnRequests.next(request);
   }
 
 }

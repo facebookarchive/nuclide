@@ -33,7 +33,7 @@ export class RemoteDirectory {
     return directory[MARKER_PROPERTY_FOR_REMOTE_DIRECTORY] === true;
   }
 
-  _watchSubscription: ?IDisposable;
+  _watchSubscription: ?rx$ISubscription;
   _server: ServerConnection;
   _uri: string;
   _emitter: atom$Emitter;
@@ -122,7 +122,7 @@ export class RemoteDirectory {
 
   _unsubscribeFromNativeChangeEvents(): void {
     if (this._watchSubscription) {
-      this._watchSubscription.dispose();
+      this._watchSubscription.unsubscribe();
       this._watchSubscription = null;
     }
   }

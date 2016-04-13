@@ -12,7 +12,7 @@
 import type Commands from './Commands';
 import type {Gadget} from '../../nuclide-gadgets-interfaces';
 import type {AppState, Record, Executor} from './types';
-import type Rx from 'rx';
+import type Rx from '@reactivex/rxjs';
 
 import Console from './Console';
 import {React} from 'react-for-atom';
@@ -35,7 +35,7 @@ export default function createConsoleGadget(
     static gadgetId = 'nuclide-console';
     static defaultLocation = 'bottom';
 
-    _state$Subscription: IDisposable;
+    _state$Subscription: rx$ISubscription;
 
     constructor(props: mixed) {
       super(props);
@@ -68,7 +68,7 @@ export default function createConsoleGadget(
     }
 
     componentWillUnmount() {
-      this._state$Subscription.dispose();
+      this._state$Subscription.unsubscribe();
     }
 
     render(): ?ReactElement {

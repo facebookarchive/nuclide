@@ -11,7 +11,7 @@
 
 import {observeProcess, safeSpawn} from '../../nuclide-commons';
 import featureConfig from '../../nuclide-feature-config';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 export function createProcessStream(): Rx.Observable<string> {
   return observeProcess(spawnAdbLogcat)

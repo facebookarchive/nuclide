@@ -15,7 +15,7 @@ import type {ServerStatusType} from '..';
 
 import invariant from 'assert';
 
-import {BehaviorSubject, Observable} from 'rx';
+import {BehaviorSubject, Observable} from '@reactivex/rxjs';
 
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
@@ -80,7 +80,7 @@ export class FlowProcess {
   }
 
   dispose(): void {
-    this._serverStatus.onCompleted();
+    this._serverStatus.complete();
     if (this._startedServer && getStopFlowOnExit()) {
       // The default, SIGTERM, does not reliably kill the flow servers.
       this._startedServer.kill('SIGKILL');
@@ -93,7 +93,7 @@ export class FlowProcess {
    */
   allowServerRestart(): void {
     if (this._serverStatus.getValue() === ServerStatus.FAILED) {
-      this._serverStatus.onNext(ServerStatus.UNKNOWN);
+      this._serverStatus.next(ServerStatus.UNKNOWN);
     }
   }
 
@@ -170,7 +170,7 @@ export class FlowProcess {
       // pattern.
       if (code === 2 && signal === null) {
         logger.error('Flow server unexpectedly exited', this._root);
-        this._serverStatus.onNext(ServerStatus.FAILED);
+        this._serverStatus.next(ServerStatus.FAILED);
       }
     });
     this._startedServer = serverProcess;
@@ -239,7 +239,7 @@ export class FlowProcess {
     // Avoid duplicate updates and avoid moving the status away from FAILED, to let any existing
     // work die out when the server fails.
     if (status !== currentStatus && currentStatus !== ServerStatus.FAILED) {
-      this._serverStatus.onNext(status);
+      this._serverStatus.next(status);
     }
   }
 
@@ -254,7 +254,7 @@ export class FlowProcess {
       /* eslint-disable babel/no-await-in-loop */
       await this._rawExecFlow(['status']).catch(() => null);
       // Wait 1 second
-      await Observable.just(null).delay(1000).toPromise();
+      await Observable.of(null).delay(1000).toPromise();
       /* eslint-enable babel/no-await-in-loop */
     }
   }
@@ -269,11 +269,11 @@ export class FlowProcess {
       .map(() => true)
       .timeout(
         SERVER_READY_TIMEOUT_MS,
-        Observable.just(false),
+        Observable.of(false),
       )
       // If the stream is completed timeout will not return its default value and we will see an
       // EmptyError. So, provide a defaultValue here so the promise resolves.
-      .first({defaultValue: false})
+      .first(null, null, false)
       .toPromise();
   }
 

@@ -13,7 +13,7 @@ import {CompositeDisposable} from 'atom';
 import {getOutputService} from '../../nuclide-debugger-common/lib/OutputServiceManager';
 import utils from './utils';
 const {log, logError} = utils;
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 
 type NotificationMessage = {
   type: 'info' | 'warning' | 'error' | 'fatalError';
@@ -74,7 +74,9 @@ export class ObservableManager {
     const sharedOutputWindow = this._outputWindowMessages.share();
     Observable
       .merge(sharedNotifications, sharedServerMessages, sharedOutputWindow)
-      .subscribeOnCompleted(this._onCompleted.bind(this));
+      .subscribe({
+        complete: this._onCompleted.bind(this),
+      });
   }
 
   _registerOutputWindowLogging(): void {
@@ -89,7 +91,9 @@ export class ObservableManager {
           };
         });
       const shared = messages.share();
-      shared.subscribeOnCompleted(this._handleOutputWindowEnd.bind(this));
+      shared.subscribe({
+        complete: this._handleOutputWindowEnd.bind(this),
+      });
       this._disposables.add(api.registerOutputProvider({
         source: 'hhvm debugger',
         messages: shared,

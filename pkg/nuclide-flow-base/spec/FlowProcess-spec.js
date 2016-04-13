@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rx';
+import type {Observable} from '@reactivex/rxjs';
 
 import type {ServerStatusType} from '..';
 import type {FlowProcess as FlowProcessType} from '../lib/FlowProcess';
@@ -138,7 +138,7 @@ describe('FlowProcess', () => {
 
   describe('server state updates', () => {
     let currentStatus: string = (null: any);
-    let subscription: IDisposable = (null: any);
+    let subscription: rx$ISubscription = (null: any);
     let statusUpdates: Observable<ServerStatusType> = (null: any);
 
     beforeEach(() => {
@@ -150,7 +150,7 @@ describe('FlowProcess', () => {
     });
 
     afterEach(() => {
-      subscription.dispose();
+      subscription.unsubscribe();
     });
 
     it('should start as unknown', () => {

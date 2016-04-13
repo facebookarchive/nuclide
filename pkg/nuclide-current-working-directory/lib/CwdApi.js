@@ -13,7 +13,7 @@ import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
 import {RemoteConnection, RemoteDirectory} from '../../nuclide-remote-connection';
 import RemoteUri from '../../nuclide-remote-uri';
 import {CompositeDisposable, Directory as LocalDirectory} from 'atom';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 type Directory = LocalDirectory | RemoteDirectory;
 
@@ -34,7 +34,7 @@ export class CwdApi {
       atom.project.onDidChangePaths(() => {
         const currentPath = this._cwdPath$.getValue();
         if (currentPath == null || !isValidCwdPath(currentPath)) {
-          this._cwdPath$.onNext(this._getDefaultCwdPath());
+          this._cwdPath$.next(this._getDefaultCwdPath());
         }
       }),
     );
@@ -44,7 +44,7 @@ export class CwdApi {
     if (!isValidCwdPath(path)) {
       throw new Error(`Path is not a project root: ${path}`);
     }
-    this._cwdPath$.onNext(path);
+    this._cwdPath$.next(path);
   }
 
   observeCwd(callback: (directory: ?Directory) => void): IDisposable {

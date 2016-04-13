@@ -13,7 +13,7 @@ import type {Executor} from '../lib/types';
 
 import * as ActionTypes from '../lib/ActionTypes';
 import createStateStream from '../lib/createStateStream';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 const emptyAppState = {
   currentExecutorId: null,
@@ -42,7 +42,7 @@ describe('createStateStream', () => {
         const state$ = createStateStream(action$, initialState).publishLast();
         state$.connect();
         for (let i = 0; i < 5; i++) {
-          action$.onNext({
+          action$.next({
             type: ActionTypes.MESSAGE_RECEIVED,
             payload: {
               record: {
@@ -52,7 +52,7 @@ describe('createStateStream', () => {
             },
           });
         }
-        action$.onCompleted();
+        action$.complete();
         finalState = await state$.toPromise();
       });
     });
@@ -90,7 +90,7 @@ describe('createStateStream', () => {
         const action$ = new Rx.Subject();
         const state$ = createStateStream(action$, initialState).publishLast();
         state$.connect();
-        action$.onNext({
+        action$.next({
           type: ActionTypes.PROVIDER_REGISTERED,
           payload: {
             recordProvider: {
@@ -99,7 +99,7 @@ describe('createStateStream', () => {
             },
           },
         });
-        action$.onCompleted();
+        action$.complete();
         finalState = await state$.toPromise();
       });
     });
@@ -134,10 +134,10 @@ describe('createStateStream', () => {
         const action$ = new Rx.Subject();
         const state$ = createStateStream(action$, initialState).publishLast();
         state$.connect();
-        action$.onNext({
+        action$.next({
           type: ActionTypes.RECORDS_CLEARED,
         });
-        action$.onCompleted();
+        action$.complete();
         finalState = await state$.toPromise();
       });
     });
@@ -173,13 +173,13 @@ describe('createStateStream', () => {
 
       beforeEach(() => {
         waitsForPromise(async () => {
-          action$.onNext({
+          action$.next({
             type: ActionTypes.REGISTER_EXECUTOR,
             payload: {
               executor:  createDummyExecutor('b'),
             },
           });
-          action$.onCompleted();
+          action$.complete();
           finalState = await state$.toPromise();
         });
       });
@@ -198,13 +198,13 @@ describe('createStateStream', () => {
 
       beforeEach(() => {
         waitsForPromise(async () => {
-          action$.onNext({
+          action$.next({
             type: ActionTypes.UNREGISTER_EXECUTOR,
             payload: {
               executor:  initialExecutors.get('a'),
             },
           });
-          action$.onCompleted();
+          action$.complete();
           finalState = await state$.toPromise();
         });
       });

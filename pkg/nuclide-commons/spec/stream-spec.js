@@ -10,7 +10,7 @@
  */
 
 import {splitStream, observeStream} from '..';
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 import Stream from 'stream';
 
 describe('nuclide-commons/stream', () => {

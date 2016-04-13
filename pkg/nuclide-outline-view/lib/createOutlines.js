@@ -12,7 +12,7 @@
 import type {Outline, OutlineForUi, OutlineTree, OutlineTreeForUi} from '..';
 import type {ProviderRegistry} from './ProviderRegistry';
 
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 import invariant from 'assert';
 
 import {event as commonsEvent} from '../../nuclide-commons';
@@ -30,11 +30,11 @@ export function createOutlines(providers: ProviderRegistry): Observable<OutlineF
     )
     // Delay the work on tab switch to keep tab switches snappy and avoid doing a bunch of
     // computation if there are a lot of consecutive tab switches.
-    .debounce(TAB_SWITCH_DELAY);
+    .debounceTime(TAB_SWITCH_DELAY);
 
   return paneChanges
     .map(() => atom.workspace.getActiveTextEditor())
-    .flatMapLatest(editor => outlinesForEditor(providers, editor));
+    .switchMap(editor => outlinesForEditor(providers, editor));
 }
 
 function outlinesForEditor(
@@ -44,22 +44,22 @@ function outlinesForEditor(
   // needs to be const so the refinement holds in closures
   const editor = editorArg;
   if (editor == null) {
-    return Observable.just({
+    return Observable.of({
       kind: 'not-text-editor',
     });
   }
 
   const editorEvents = Observable.concat(
     // Emit one event at the beginning to trigger the computation of the initial outline
-    Observable.just(),
+    Observable.of(),
     observableFromSubscribeFunction(editor.onDidStopChanging.bind(editor)),
   );
 
   const outlines = editorEvents.flatMap(() => outlineForEditor(providers, editor));
 
-  const highlightedOutlines = outlines.flatMapLatest(outline => {
+  const highlightedOutlines = outlines.switchMap(outline => {
     if (outline.kind !== 'outline') {
-      return Observable.just(outline);
+      return Observable.of(outline);
     }
     return getCursorPositions(editor)
       .map(cursorLocation => {
@@ -68,7 +68,7 @@ function outlinesForEditor(
   });
 
   return Observable.concat(
-    Observable.just({ kind: 'empty' }),
+    Observable.of({ kind: 'empty' }),
     highlightedOutlines,
   );
 }

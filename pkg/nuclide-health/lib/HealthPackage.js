@@ -16,7 +16,7 @@ import type {HealthStats} from './types';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import os from 'os';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 // Imports from other Nuclide packages.
 import {track} from '../../nuclide-analytics';
@@ -163,7 +163,7 @@ function updateViews(): void {
 
   const stats = getHealthStats();
   analyticsBuffer.push(stats);
-  paneItemState$.onNext({stats, activeHandleObjects: getActiveHandles()});
+  paneItemState$.next({stats, activeHandleObjects: getActiveHandles()});
   if (currentConfig.viewTimeout) {
     if (viewTimeout !== null) {
       clearTimeout(viewTimeout);

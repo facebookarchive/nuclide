@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 
 export type AttachTargetInfo = {
   pid: number;

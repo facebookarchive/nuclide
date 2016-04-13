@@ -14,7 +14,7 @@ import featureConfig from '../../nuclide-feature-config';
 import invariant from 'assert';
 import os from 'os';
 import path from 'path';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 export function createProcessStream(): Rx.Observable<string> {
   // Get a list of devices and their states from `xcrun simctl`.

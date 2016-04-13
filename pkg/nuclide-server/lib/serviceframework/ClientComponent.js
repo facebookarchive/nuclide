@@ -15,7 +15,7 @@ import type {ConfigEntry} from './index';
 import invariant from 'assert';
 import {EventEmitter} from 'events';
 import NuclideSocket from '../NuclideSocket';
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 import {SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} from '../config';
 
 import TypeRegistry from '../../../nuclide-service-parser/lib/TypeRegistry';
@@ -235,30 +235,32 @@ export default class ClientComponent {
             message.requestId.toString(),
             (hadError: boolean, error: ?Error, result: ?ObservableResult) => {
               if (hadError) {
-                observer.onError(decodeError(error));
+                observer.error(decodeError(error));
               } else {
                 invariant(result);
                 if (result.type === 'completed') {
-                  observer.onCompleted();
+                  observer.complete();
                 } else if (result.type === 'next') {
-                  observer.onNext(result.data);
+                  observer.next(result.data);
                 }
               }
             });
 
           // Observable dispose function, which is called on subscription dipsose, on stream
           // completion, and on stream error.
-          return () => {
-            this._emitter.removeAllListeners(message.requestId.toString());
+          return {
+            unsubscribe: () => {
+              this._emitter.removeAllListeners(message.requestId.toString());
 
-            // Send a message to server to call the dispose function of
-            // the remote Observable subscription.
-            const disposeMessage: DisposeObservableMessage = {
-              protocol: 'service_framework3_rpc',
-              type: 'DisposeObservable',
-              requestId: message.requestId,
-            };
-            this._socket.send(disposeMessage);
+              // Send a message to server to call the dispose function of
+              // the remote Observable subscription.
+              const disposeMessage: DisposeObservableMessage = {
+                protocol: 'service_framework3_rpc',
+                type: 'DisposeObservable',
+                requestId: message.requestId,
+              };
+              this._socket.send(disposeMessage);
+            },
           };
         });
 

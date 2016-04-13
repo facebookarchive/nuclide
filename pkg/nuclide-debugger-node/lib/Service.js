@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-const {Disposable} = require('atom');
 const WebSocketServer = require('ws').Server;
 
 import invariant from 'assert';
 import {DebuggerInstance, DebuggerProcessInfo} from '../../nuclide-debugger-atom';
-import Rx from 'rx';
+import {DisposableSubscription} from '../../nuclide-commons';
+import Rx from '@reactivex/rxjs';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
@@ -57,8 +57,8 @@ class NodeDebuggerInstance extends DebuggerInstance {
     return Promise.resolve(`ws=localhost:${wsPort}/`);
   }
 
-  onSessionEnd(callback: () => mixed): Disposable {
-    return this._close$.first().subscribe(callback);
+  onSessionEnd(callback: () => mixed): IDisposable {
+    return new DisposableSubscription(this._close$.first().subscribe(callback));
   }
 }
 

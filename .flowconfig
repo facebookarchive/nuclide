@@ -6,6 +6,7 @@
 .*/node_modules/babel-types/.*
 # ignore module src to prefer declaration
 .*/node_modules/rx/.*
+.*/node_modules/@reactivex/rxjs/.*
 # ignore module src to prefer declaration
 .*/node_modules/react/react.js
 # Annotated with `@flow` but has errors

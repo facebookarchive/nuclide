@@ -397,7 +397,7 @@ class BuckToolbarStore {
 
       return {
         kill() {
-          subscription.dispose();
+          subscription.unsubscribe();
           disposable.dispose();
         },
       };

@@ -11,7 +11,7 @@
 
 import type {Gadget} from '../../nuclide-gadgets-interfaces';
 import type {HomeFragments} from '../../nuclide-home-interfaces';
-import type Rx from 'rx';
+import type Rx from '@reactivex/rxjs';
 
 const Immutable = require('immutable');
 const {React} = require('react-for-atom');
@@ -53,7 +53,7 @@ function createHomePaneItem(
       allHomeFragments: Immutable.Set<string, ReactElement>;
     };
 
-    _homeFragmentsSubscription: IDisposable;
+    _homeFragmentsSubscription: rx$ISubscription;
 
     constructor(...args) {
       super(...args);
@@ -63,7 +63,7 @@ function createHomePaneItem(
     }
 
     componentDidMount() {
-      this._homeFragmentsSubscription = allHomeFragmentsStream.forEach(
+      this._homeFragmentsSubscription = allHomeFragmentsStream.subscribe(
         allHomeFragments => this.setState({allHomeFragments}),
       );
 
@@ -127,7 +127,7 @@ function createHomePaneItem(
       featureConfig.set('nuclide-home.showHome', false);
 
       if (this._homeFragmentsSubscription) {
-        this._homeFragmentsSubscription.dispose();
+        this._homeFragmentsSubscription.unsubscribe();
       }
     }
 

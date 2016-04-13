@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type Rx from 'rx';
+import type Rx from '@reactivex/rxjs';
 
 export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug';
 
@@ -43,7 +43,7 @@ export type AppState = {
   maxMessageCount: number;
   records: Array<Record>;
   providers: Map<string, OutputProvider>;
-  providerSubscriptions: Map<string, IDisposable>;
+  providerSubscriptions: Map<string, rx$ISubscription>;
 };
 
 export type OutputProvider = {

@@ -11,7 +11,7 @@
 
 import {React, ReactDOM} from 'react-for-atom';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 type Props = {
   onSubmit: (value: string) => mixed;

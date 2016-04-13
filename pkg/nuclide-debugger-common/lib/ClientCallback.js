@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Observable, Subject} from 'rx';
+import {Observable, Subject} from '@reactivex/rxjs';
 
 export class ClientCallback {
   _serverMessageObservable: Subject;  // For server messages.
@@ -29,15 +29,15 @@ export class ClientCallback {
   }
 
   sendChromeMessage(message: string): void {
-    this._serverMessageObservable.onNext(message);
+    this._serverMessageObservable.next(message);
   }
 
   sendUserOutputMessage(message: string): void {
-    this._userOutputObservable.onNext(message);
+    this._userOutputObservable.next(message);
   }
 
   dispose(): void {
-    this._serverMessageObservable.onCompleted();
-    this._userOutputObservable.onCompleted();
+    this._serverMessageObservable.complete();
+    this._userOutputObservable.complete();
   }
 }

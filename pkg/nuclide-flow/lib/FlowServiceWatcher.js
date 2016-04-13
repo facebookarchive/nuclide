@@ -14,7 +14,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import {getServerStatusUpdates} from './FlowServiceFactory';
 
 export class FlowServiceWatcher {
-  _subscription: IDisposable;
+  _subscription: rx$ISubscription;
 
   constructor() {
     this._subscription = getServerStatusUpdates()
@@ -25,7 +25,7 @@ export class FlowServiceWatcher {
   }
 
   dispose(): void {
-    this._subscription.dispose();
+    this._subscription.unsubscribe();
   }
 
   _handleFailure(pathToRoot: NuclideUri): void {

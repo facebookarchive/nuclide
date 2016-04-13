@@ -12,17 +12,13 @@
 import type {AppState} from './types';
 
 import * as ActionTypes from './ActionTypes';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 export default function createStateStream(
   action$: Rx.Observable<Object>,
   initialState: AppState,
-): Rx.BehaviorSubject<AppState> {
-  const state$ = new Rx.BehaviorSubject(initialState);
-  action$.scan(accumulateState, initialState)
-    .throttle(100)
-    .subscribe(state$);
-  return state$;
+): Rx.Observable<AppState> {
+  return action$.scan(accumulateState, initialState);
 }
 
 function accumulateState(state: AppState, action: Object): AppState {

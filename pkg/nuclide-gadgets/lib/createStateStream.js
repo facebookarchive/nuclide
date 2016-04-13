@@ -13,7 +13,7 @@ import type {Action} from '../types/Action';
 
 import * as ActionTypes from './ActionTypes';
 import Immutable from 'immutable';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 /**
  * Convert a stream of actions into a stream of application states.

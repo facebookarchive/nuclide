@@ -11,7 +11,7 @@
 
 import featureConfig from '../../nuclide-feature-config';
 import {createMessageStream} from '../lib/createMessageStream';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 describe('createMessageStream', () => {
 

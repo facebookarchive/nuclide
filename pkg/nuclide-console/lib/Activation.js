@@ -12,6 +12,7 @@
 import type {GadgetsService, Gadget} from '../../nuclide-gadgets-interfaces';
 import type {AppState, RegisterExecutorFunction} from './types';
 
+import {DisposableSubscription} from '../../nuclide-commons';
 import {CompositeDisposable, Disposable} from 'atom';
 import * as ActionTypes from './ActionTypes';
 import Commands from './Commands';
@@ -20,7 +21,7 @@ import createStateStream from './createStateStream';
 import featureConfig from '../../nuclide-feature-config';
 import OutputService from './OutputService';
 import invariant from 'assert';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 class Activation {
   _commands: Commands;
@@ -30,12 +31,16 @@ class Activation {
 
   constructor(rawState: ?Object) {
     const action$ = new Rx.Subject();
-    this._state$ = createStateStream(
+    const initialState = deserializeAppState(rawState);
+    this._state$ = new Rx.BehaviorSubject(initialState);
+    createStateStream(
       action$.asObservable(),
-      deserializeAppState(rawState),
-    );
+      initialState,
+    )
+      .throttleTime(100)
+      .subscribe(this._state$);
     this._commands = new Commands(
-      action$.asObserver(),
+      action$,
       () => this._state$.getValue(),
     );
     this._outputService = new OutputService(this._commands);
@@ -65,16 +70,18 @@ class Activation {
       ),
 
       // Action side-effects
-      action$.subscribe(action => {
-        if (action.type !== ActionTypes.EXECUTE) {
-          return;
-        }
-        const {executorId, code} = action.payload;
-        const executors = this._state$.getValue().executors;
-        const executor = executors.get(executorId);
-        invariant(executor);
-        executor.execute(code);
-      }),
+      new DisposableSubscription(
+        action$.subscribe(action => {
+          if (action.type !== ActionTypes.EXECUTE) {
+            return;
+          }
+          const {executorId, code} = action.payload;
+          const executors = this._state$.getValue().executors;
+          const executor = executors.get(executorId);
+          invariant(executor);
+          executor.execute(code);
+        })
+      ),
     );
   }
 

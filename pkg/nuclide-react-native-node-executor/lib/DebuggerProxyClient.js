@@ -11,10 +11,11 @@
 
 import type {RnRequest} from './types';
 
+import {DisposableSubscription} from '../../nuclide-commons';
 import ChildManager from './ChildManager';
 import {CompositeDisposable, Disposable} from 'atom';
 import {EventEmitter} from 'events';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 import WebSocket from 'ws';
 
 const EXECUTOR_PORT = 8081;
@@ -77,25 +78,29 @@ export class DebuggerProxyClient {
         childManager.killChild();
         this._children.delete(childManager);
       }),
-      rnMessages.subscribe(message => {
-        if (message.$close) {
-          this.disconnect();
-          return;
-        }
-        childManager.handleMessage(message);
-      }),
+      new DisposableSubscription(
+        rnMessages.subscribe(message => {
+          if (message.$close) {
+            this.disconnect();
+            return;
+          }
+          childManager.handleMessage(message);
+        })
+      ),
       // TODO: Add timeout
       // If we can't connect, or get disconnected, keep trying to connect.
-      Rx.Observable.merge(
-        Rx.Observable.fromEvent(ws, 'error').filter(err => err.code === 'ECONNREFUSED'),
-        Rx.Observable.fromEvent(ws, 'close'),
-      )
-        .subscribe(() => {
-          this._killConnection();
+      new DisposableSubscription(
+        Rx.Observable.merge(
+          Rx.Observable.fromEvent(ws, 'error').filter(err => err.code === 'ECONNREFUSED'),
+          Rx.Observable.fromEvent(ws, 'close'),
+        )
+          .subscribe(() => {
+            this._killConnection();
 
-          // Keep attempting to connect.
-          setTimeout(this._tryToConnect.bind(this), 500);
-        }),
+            // Keep attempting to connect.
+            setTimeout(this._tryToConnect.bind(this), 500);
+          })
+      ),
       new Disposable(() => { ws.close(); }),
     );
   }

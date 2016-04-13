@@ -15,7 +15,7 @@ import {checkOutput, object, promises} from '../../nuclide-commons';
 import {BuckUtils} from '../../nuclide-buck-base/lib/BuckUtils';
 import LRUCache from 'lru-cache';
 import os from 'os';
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 import ClangFlagsManager from './ClangFlagsManager';
 import ClangServer from './ClangServer';
 

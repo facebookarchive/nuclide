@@ -15,7 +15,7 @@ import {LogTailer} from '../../nuclide-console/lib/LogTailer';
 import {createMessageStream} from './createMessageStream';
 import {createProcessStream} from './createProcessStream';
 import {CompositeDisposable, Disposable} from 'atom';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 const NOENT_ERROR_DESCRIPTION = `**Troubleshooting Tips**
 1. Make sure that syslog is installed
@@ -28,16 +28,18 @@ class Activation {
 
   constructor(state: ?Object) {
     const message$ = Rx.Observable.defer(() => createMessageStream(createProcessStream()))
-      .tapOnError(err => {
-        if (err.code === 'ENOENT') {
-          atom.notifications.addError(
-            "syslog wasn't found on your path!",
-            {
-              dismissable: true,
-              description: NOENT_ERROR_DESCRIPTION,
-            },
-          );
-        }
+      .do({
+        error(err) {
+          if (err.code === 'ENOENT') {
+            atom.notifications.addError(
+              "syslog wasn't found on your path!",
+              {
+                dismissable: true,
+                description: NOENT_ERROR_DESCRIPTION,
+              },
+            );
+          }
+        },
       });
 
     this._logTailer = new LogTailer(message$, {

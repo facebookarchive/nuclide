@@ -13,12 +13,11 @@ import child_process from 'child_process';
 import path from 'path';
 import {PromiseQueue} from './PromiseExecutors';
 
-import type {Observer} from 'rx';
+import type {Observer} from '@reactivex/rxjs';
 import type {ProcessMessage, process$asyncExecuteRet} from '..';
 
-import {observeStream, splitStream} from './stream';
-import {CompositeDisposable, Disposable} from 'event-kit';
-import {Observable} from 'rx';
+import {CompositeSubscription, observeStream, splitStream} from './stream';
+import {Observable} from '@reactivex/rxjs';
 import invariant from 'assert';
 import {quote} from 'shell-quote';
 
@@ -221,20 +220,20 @@ function scriptSafeSpawnAndObserveOutput(
       childProcess = proc;
 
       childProcess.stdout.on('data', data => {
-        observer.onNext({stdout: data.toString()});
+        observer.next({stdout: data.toString()});
       });
 
       let stderr = '';
       childProcess.stderr.on('data', data => {
         stderr += data;
-        observer.onNext({stderr: data.toString()});
+        observer.next({stderr: data.toString()});
       });
 
       childProcess.on('exit', (exitCode: number) => {
         if (exitCode !== 0) {
-          observer.onError(stderr);
+          observer.error(stderr);
         } else {
-          observer.onCompleted();
+          observer.complete();
         }
         childProcess = null;
       });
@@ -279,7 +278,7 @@ function _createProcessStream(
     const processStream = Observable.fromPromise(promise);
 
     const errors = throwOnError
-      ? processStream.flatMapLatest(p => (
+      ? processStream.switchMap(p => (
         Observable.fromEvent(p, 'error').flatMap(err => Observable.throw(err))
       ))
       : Observable.empty();
@@ -288,16 +287,16 @@ function _createProcessStream(
       .flatMap(p => Observable.fromEvent(p, 'exit', (code, signal) => signal))
       // An exit signal from SIGUSR1 doesn't actually exit the process, so skip that.
       .filter(signal => signal !== 'SIGUSR1')
-      .tap(() => { exited = true; });
+      .do(() => { exited = true; });
 
-    return new CompositeDisposable(
+    return new CompositeSubscription(
       // A version of processStream that never completes...
       Observable.merge(processStream, Observable.create(() => {}))
         .merge(errors)
         // ...which we take until the process exits.
         .takeUntil(exit)
         .subscribe(observer),
-      new Disposable(() => { disposed = true; maybeKill(); }),
+      () => { disposed = true; maybeKill(); },
     );
   });
   // TODO: We should really `.share()` this observable, but there seem to be issues with that and
@@ -331,7 +330,7 @@ function getOutputStream(
       // Use replay/connect on exit for the final concat.
       // By default concat defers subscription until after the LHS completes.
       const exit = Observable.fromEvent(process, 'exit').take(1).
-        map(exitCode => ({kind: 'exit', exitCode})).replay();
+        map(exitCode => ({kind: 'exit', exitCode})).publishReplay();
       exit.connect();
       const error = Observable.fromEvent(process, 'error').
         takeUntil(exit).

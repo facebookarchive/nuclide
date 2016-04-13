@@ -9,13 +9,12 @@
  * the root directory of this source tree.
  */
 
-import {event as commonsEvent} from '../../../nuclide-commons';
+import {CompositeSubscription, event as commonsEvent} from '../../../nuclide-commons';
 import {DebuggerInstance, DebuggerProcessInfo} from '../../../nuclide-debugger-atom';
 import {
   DebuggerProxyClient,
 } from '../../../nuclide-react-native-node-executor/lib/DebuggerProxyClient';
-import {CompositeDisposable, Disposable} from 'atom';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 import {Server as WebSocketServer} from 'ws';
 import type {Session as SessionType} from '../../../nuclide-debugger-node/lib/Session';
 
@@ -30,7 +29,7 @@ const {observableFromSubscribeFunction} = commonsEvent;
  * 2. Debugging the node process.
  */
 export class ReactNativeDebuggerInstance extends DebuggerInstance {
-  _disposables: CompositeDisposable;
+  _subscriptions: rx$ISubscription;
   _connected: Promise<void>;
 
   constructor(processInfo: DebuggerProcessInfo, debugPort: number) {
@@ -42,29 +41,32 @@ export class ReactNativeDebuggerInstance extends DebuggerInstance {
     const session$ = Rx.Observable.create(observer => (
       // `Session` is particular about what order everything is closed in, so we manage it carefully
       // here.
-      new CompositeDisposable(
+      new CompositeSubscription(
         uiConnection$
           .combineLatest(pid$)
-          .flatMapLatest(([ws, pid]) => createSessionStream(ws, debugPort))
+          .switchMap(([ws, pid]) => createSessionStream(ws, debugPort))
           .subscribe(observer),
         uiConnection$.connect(),
         pid$.connect(),
       )
     ));
 
-    this._disposables = new CompositeDisposable(
+    this._subscriptions = new CompositeSubscription(
       // Tell the user if we can't connect to the debugger UI.
-      uiConnection$.subscribeOnError(err => {
-        atom.notifications.addError(
-          'Error connecting to debugger UI.',
-          {
-            detail: 'Make sure that port 8080 is open.',
-            stack: err.stack,
-            dismissable: true,
-          },
-        );
+      // $FlowIssue: Flow has a problem with us not returning from the error handler for some reason
+      uiConnection$.subscribe({
+        error(err) {
+          atom.notifications.addError(
+            'Error connecting to debugger UI.',
+            {
+              detail: 'Make sure that port 8080 is open.',
+              stack: err.stack,
+              dismissable: true,
+            },
+          );
 
-        this.dispose();
+          this.dispose();
+        },
       }),
 
       pid$.first().subscribe(() => { didConnect(); }),
@@ -74,7 +76,7 @@ export class ReactNativeDebuggerInstance extends DebuggerInstance {
   }
 
   dispose(): void {
-    this._disposables.dispose();
+    this._subscriptions.unsubscribe();
   }
 
   async getWebsocketAddress(): Promise<string> {
@@ -96,7 +98,7 @@ const pid$ = Rx.Observable.using(
     client.connect();
     return {
       client,
-      dispose: () => { client.disconnect(); },
+      unsubscribe: () => { client.disconnect(); },
     };
   },
   ({client}) => observableFromSubscribeFunction(client.onDidEvalApplicationScript.bind(client)),
@@ -113,7 +115,7 @@ const uiConnection$ = Rx.Observable.using(
     const server = new WebSocketServer({port: 8080});
     return {
       server,
-      dispose: () => { server.close(); },
+      unsubscribe: () => { server.close(); },
     };
   },
   ({server}) => (
@@ -137,7 +139,7 @@ function createSessionStream(ws: WebSocket, debugPort: number): Rx.Observable<Se
     // Creating a new Session is actually side-effecty.
     const {Session} = require('../../../nuclide-debugger-node/lib/Session');
     const session = new Session(config, debugPort, ws);
-    observer.onNext(session);
-    return new Disposable(() => { session.close(); });
+    observer.next(session);
+    return () => { session.close(); };
   });
 }

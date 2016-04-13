@@ -36,6 +36,7 @@
     "test": "npm run lint-all && npm run flow"
   },
   "dependencies": {
+    "@reactivex/rxjs": "5.0.0-beta.6",
     "atom-package-deps": "4.0.1",
     "babel-core": "5.8.38",
     "babel-runtime": "5.8.38",
@@ -68,8 +69,6 @@
     "react-for-atom": "0.14.7-0",
     "request": "2.70.0",
     "rimraf": "2.5.2",
-    "rx": "3.1.1",
-    "rx-dom": "7.0.3",
     "season": "5.3.0",
     "semver": "5.1.0",
     "shallowequal": "0.2.2",

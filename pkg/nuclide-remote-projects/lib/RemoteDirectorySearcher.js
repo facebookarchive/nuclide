@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Observable, ReplaySubject} from 'rx';
+import {Observable, ReplaySubject} from '@reactivex/rxjs';
 const {RemoteDirectory} = require('../../nuclide-remote-connection');
 import typeof * as FindInProjectService from '../../nuclide-remote-search';
 
@@ -48,7 +48,7 @@ class RemoteDirectorySearcher {
 
     // Create a subject that we can use to track search completion.
     const searchCompletion = new ReplaySubject();
-    searchCompletion.onNext();
+    searchCompletion.next();
 
     const subscription = searchStream.subscribe(next => {
       options.didMatch(next);
@@ -59,9 +59,9 @@ class RemoteDirectorySearcher {
       seenFiles.add(next.filePath);
       options.didSearchPaths(seenFiles.size);
     }, error => {
-      searchCompletion.onError(error);
+      searchCompletion.error(error);
     }, () => {
-      searchCompletion.onCompleted();
+      searchCompletion.complete();
     });
 
     // Return a promise that resolves on search completion.
@@ -70,7 +70,7 @@ class RemoteDirectorySearcher {
       then: completionPromise.then.bind(completionPromise),
       cancel() {
         // Cancel the subscription, which should also kill the grep process.
-        subscription.dispose();
+        subscription.unsubscribe();
       },
     };
   }

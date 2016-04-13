@@ -15,7 +15,7 @@ import type {HomeFragments} from '../../nuclide-home-interfaces';
 import {CompositeDisposable, Disposable} from 'atom';
 import featureConfig from '../../nuclide-feature-config';
 import Immutable from 'immutable';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 let subscriptions: CompositeDisposable = (null: any);
 let gadgetsApi: ?GadgetsService = null;
@@ -35,9 +35,9 @@ export function activate(state: ?Object): void {
 }
 
 export function setHomeFragments(homeFragments: HomeFragments): Disposable {
-  allHomeFragmentsStream.onNext(allHomeFragmentsStream.getValue().add(homeFragments));
+  allHomeFragmentsStream.next(allHomeFragmentsStream.getValue().add(homeFragments));
   return new Disposable(() => {
-    allHomeFragmentsStream.onNext(allHomeFragmentsStream.getValue().remove(homeFragments));
+    allHomeFragmentsStream.next(allHomeFragmentsStream.getValue().remove(homeFragments));
   });
 }
 
@@ -53,7 +53,7 @@ function considerDisplayingHome() {
 
 export function deactivate(): void {
   gadgetsApi = null;
-  allHomeFragmentsStream.onNext(Immutable.Set());
+  allHomeFragmentsStream.next(Immutable.Set());
   subscriptions.dispose();
   subscriptions = (null: any);
 }

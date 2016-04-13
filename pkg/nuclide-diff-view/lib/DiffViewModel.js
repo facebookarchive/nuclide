@@ -57,10 +57,10 @@ import invariant from 'assert';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {getFileSystemContents} from './utils';
-import {map, debounce, promises} from '../../nuclide-commons';
+import {bufferUntil, map, debounce, promises} from '../../nuclide-commons';
 import remoteUri from '../../nuclide-remote-uri';
 import RepositoryStack from './RepositoryStack';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 import {
   notifyInternalError,
   notifyFilesystemOverrideUserEdits,
@@ -867,7 +867,7 @@ class DiffViewModel {
     // it open like the following.
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
 
-    this._messages.onNext({level: 'log', text: 'Creating new revision...'});
+    this._messages.next({level: 'log', text: 'Creating new revision...'});
     const stream = arcanist.createPhabricatorRevision(filePath);
     await this._processArcanistOutput(stream, 'Revision created');
   }
@@ -889,7 +889,7 @@ class DiffViewModel {
     // it open like the following.
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
 
-    this._messages.onNext({
+    this._messages.next({
       level: 'log',
       text: `Updating revision \`${phabricatorRevision.id}\`...`,
     });
@@ -978,14 +978,13 @@ class DiffViewModel {
           (message: {level: string; text: string}) => message.level === level
         )
         .share();
-      const breaks = levelStream.filter(message => message.text.endsWith('\n'));
-      levelStreams.push(levelStream.buffer(breaks));
+      levelStreams.push(bufferUntil(levelStream, message => message.text.endsWith('\n')));
     }
     await Rx.Observable.merge(...levelStreams)
-      .tap(
+      .do(
         (messages: Array<{level: string; text: string}>) => {
           if (messages.length > 0) {
-            this._messages.onNext({
+            this._messages.next({
               level: messages[0].level,
               text: messages.map(message => message.text).join(''),
             });

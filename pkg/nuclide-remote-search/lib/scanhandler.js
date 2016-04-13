@@ -14,7 +14,7 @@ import type {
   search$Match,
 } from '..';
 
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 
 import {
   fsPromise,
@@ -72,12 +72,11 @@ function searchInSubdir(
   const vcsargs = (regex.ignoreCase ? ['-i'] : []).concat(['-n', regex.source]);
   const grepargs = (regex.ignoreCase ? ['-i'] : []).concat(['-rHn', '-e', regex.source, '.']);
   const cmdDir = path.join(directory, subdir);
-  const linesSource = Observable.catch(
-    getLinesFromCommand('hg', ['wgrep'].concat(vcsargs), cmdDir),
-    getLinesFromCommand('git', ['grep'].concat(vcsargs), cmdDir),
-    getLinesFromCommand('grep', grepargs, cmdDir),
-    Observable.throw(new Error('Failed to execute a grep search.'))
-  );
+  const linesSource =
+    getLinesFromCommand('hg', ['wgrep'].concat(vcsargs), cmdDir)
+    .catch(() => getLinesFromCommand('git', ['grep'].concat(vcsargs), cmdDir))
+    .catch(() => getLinesFromCommand('grep', grepargs, cmdDir))
+    .catch(() => Observable.throw(new Error('Failed to execute a grep search.')));
 
   // Transform lines into file matches.
   return linesSource.flatMap(line => {
@@ -132,10 +131,10 @@ function getLinesFromCommand(command: string, args: Array<string>, localDirector
       proc = child;
 
       // Reject on error.
-      proc.on('error', observer.onError.bind(observer));
+      proc.on('error', observer.error.bind(observer));
 
       // Call the callback on each line.
-      proc.stdout.pipe(split()).on('data', observer.onNext.bind(observer));
+      proc.stdout.pipe(split()).on('data', observer.next.bind(observer));
 
       // Keep a running string of stderr, in case we need to throw an error.
       let stderr = '';
@@ -149,13 +148,13 @@ function getLinesFromCommand(command: string, args: Array<string>, localDirector
       proc.on('close', (code, signal) => {
         exited = true;
         if (signal || code <= 1) {
-          observer.onCompleted();
+          observer.complete();
         } else {
-          observer.onError(new Error(stderr));
+          observer.error(new Error(stderr));
         }
       });
     }).catch(error => {
-      observer.onError(error);
+      observer.error(error);
     });
 
     // Kill the search process on dispose.

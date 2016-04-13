@@ -10,7 +10,7 @@
  */
 
 import type {HealthStats} from './types';
-import type Rx from 'rx';
+import type Rx from '@reactivex/rxjs';
 
 import HealthPaneItemComponent from './ui/HealthPaneItemComponent';
 import {React} from 'react-for-atom';
@@ -28,7 +28,7 @@ export default function createHealthGadget(state$: Rx.Observable<?State>): Class
 
     state: State;
 
-    _stateSubscription: IDisposable;
+    _stateSubscription: rx$ISubscription;
 
     constructor(...args) {
       super(...args);
@@ -36,11 +36,11 @@ export default function createHealthGadget(state$: Rx.Observable<?State>): Class
     }
 
     componentDidMount() {
-      this._stateSubscription = state$.forEach(state => this.setState(state || {}));
+      this._stateSubscription = state$.subscribe(state => this.setState(state || {}));
     }
 
     componentWillUnmount() {
-      this._stateSubscription.dispose();
+      this._stateSubscription.unsubscribe();
     }
 
     getTitle(): string {

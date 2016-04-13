@@ -12,8 +12,7 @@
 import type {Message} from './types';
 
 import {track} from '../../nuclide-analytics';
-import {CompositeDisposable} from 'atom';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 type EventNames = {
   start: string;
@@ -28,7 +27,7 @@ type EventNames = {
  */
 export class LogTailer {
   _eventNames: EventNames;
-  _disposables: ?IDisposable;
+  _subscription: ?rx$ISubscription;
   _input$: Rx.Observable<Message>;
   _message$: Rx.Subject<Message>;
   _running: boolean;
@@ -66,19 +65,16 @@ export class LogTailer {
 
     this._running = true;
 
-    if (this._disposables != null) {
-      this._disposables.dispose();
+    if (this._subscription != null) {
+      this._subscription.unsubscribe();
     }
 
-    this._disposables = new CompositeDisposable(
-      this._input$
-        .subscribe(
-          message => { this._message$.onNext(message); },
-          err => {
-            this._stop(false);
-            track(this._eventNames.error, {message: err.message});
-          }
-        ),
+    this._subscription = this._input$.subscribe(
+      message => { this._message$.next(message); },
+      err => {
+        this._stop(false);
+        track(this._eventNames.error, {message: err.message});
+      }
     );
   }
 

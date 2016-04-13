@@ -16,9 +16,9 @@ import {
   CompositeDisposable,
   Disposable,
 } from 'atom';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 import invariant from 'assert';
-import {observables} from '../../nuclide-commons';
+import {DisposableSubscription, observables} from '../../nuclide-commons';
 const {incompleteObservableFromPromise} = observables;
 
 type Expression = string;
@@ -50,9 +50,11 @@ export class WatchExpressionStore {
     subject: Rx.BehaviorSubject<?EvaluationResult>,
   ): void {
     this._previousEvaluationSubscriptions.add(
-      incompleteObservableFromPromise(
-        this._bridge.evaluateOnSelectedCallFrame(expression)
-      ).subscribe(subject)
+      new DisposableSubscription(
+        incompleteObservableFromPromise(
+          this._bridge.evaluateOnSelectedCallFrame(expression)
+        ).subscribe(subject)
+      )
     );
   }
 
@@ -78,7 +80,7 @@ export class WatchExpressionStore {
     this._previousEvaluationSubscriptions.dispose();
     this._previousEvaluationSubscriptions = new CompositeDisposable();
     for (const [expression, subject] of this._watchExpressions) {
-      if (!subject.hasObservers()) {
+      if (subject.observers.length === 0) {
         // Nobody is watching this expression anymore.
         this._watchExpressions.delete(expression);
         continue;

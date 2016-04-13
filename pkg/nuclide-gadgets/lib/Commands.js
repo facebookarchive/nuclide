@@ -44,10 +44,10 @@ export default class Commands {
   }
 
   deactivate(): void {
-    this._observer.onNext({
+    this._observer.next({
       type: ActionTypes.DEACTIVATE,
     });
-    this._observer.onCompleted();
+    this._observer.complete();
   }
 
   destroyGadget(gadgetId: string): void {
@@ -65,7 +65,7 @@ export default class Commands {
 
     ReactDOM.unmountComponentAtNode(item.element);
 
-    this._observer.onNext({
+    this._observer.next({
       type: ActionTypes.DESTROY_PANE_ITEM,
       payload: {item},
     });
@@ -89,7 +89,7 @@ export default class Commands {
     const GadgetComponent = gadget;
     const item = createComponentItem(<GadgetComponent {...props} />);
 
-    this._observer.onNext({
+    this._observer.next({
       type: ActionTypes.CREATE_PANE_ITEM,
       payload: {
         component: GadgetComponent,
@@ -138,7 +138,7 @@ export default class Commands {
     // Wrap the gadget so it has Atom-specific stuff.
     gadget = wrapGadget(gadget);
 
-    this._observer.onNext({
+    this._observer.next({
       type: ActionTypes.REGISTER_GADGET,
       payload: {gadget},
     });
@@ -192,7 +192,7 @@ export default class Commands {
           );
 
           // $FlowIssue(t10268095)
-          this._observer.onNext({
+          this._observer.next({
             type: ActionTypes.UPDATE_PANE_ITEM,
             payload: {
               item,
@@ -317,7 +317,7 @@ export default class Commands {
   }
 
   unregisterGadget(gadgetId: string): void {
-    this._observer.onNext({
+    this._observer.next({
       type: ActionTypes.UNREGISTER_GADGET,
       payload: {gadgetId},
     });

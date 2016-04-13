@@ -16,14 +16,14 @@ import serviceHubPlus from '../../../nuclide-service-hub-plus';
 import {ReactNativeDebuggerInstance} from './ReactNativeDebuggerInstance';
 import {ReactNativeProcessInfo} from './ReactNativeProcessInfo';
 import {CompositeDisposable, Disposable} from 'atom';
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 /**
  * Connects the executor to the debugger.
  */
 export class DebuggingActivation {
   _disposables: IDisposable;
-  _startDebuggingDisposable: ?IDisposable;
+  _startDebuggingSubscription: ?rx$ISubscription;
 
   constructor() {
     this._disposables = new CompositeDisposable(
@@ -31,8 +31,8 @@ export class DebuggingActivation {
         'nuclide-react-native:start-debugging': () => this._startDebugging(),
       }),
       new Disposable(() => {
-        if (this._startDebuggingDisposable != null) {
-          this._startDebuggingDisposable.dispose();
+        if (this._startDebuggingSubscription != null) {
+          this._startDebuggingSubscription.unsubscribe();
         }
       }),
     );
@@ -43,8 +43,8 @@ export class DebuggingActivation {
   }
 
   _startDebugging(): void {
-    if (this._startDebuggingDisposable != null) {
-      this._startDebuggingDisposable.dispose();
+    if (this._startDebuggingSubscription != null) {
+      this._startDebuggingSubscription.unsubscribe();
     }
 
     // Stop any current debugger and show the debugger view.
@@ -56,7 +56,7 @@ export class DebuggingActivation {
       serviceHubPlus.consumeFirstProvider('nuclide-debugger.remote')
     );
     const processInfoLists = Rx.Observable.fromPromise(getProcessInfoList());
-    this._startDebuggingDisposable = debuggerServiceStream.combineLatest(processInfoLists)
+    this._startDebuggingSubscription = debuggerServiceStream.combineLatest(processInfoLists)
       .subscribe(([debuggerService, processInfoList]) => {
         const processInfo = processInfoList[0];
         if (processInfo != null) {

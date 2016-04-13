@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 
 // Contains services that let us test marshalling of Errors.
 
@@ -47,8 +47,7 @@ export function observableErrorCode(code: number): Observable<number> {
 
 function createErrorObservable(error: any): Observable<number> {
   return Observable.create(observer => {
-    observer.onError(error);
-    return {dispose() {}};
+    observer.error(error);
   });
 }
 

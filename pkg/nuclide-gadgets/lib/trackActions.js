@@ -10,7 +10,7 @@
  */
 
 import type {Action} from '../types/Action';
-import type Rx from 'rx';
+import type Rx from '@reactivex/rxjs';
 import type {TrackingEvent} from '../../nuclide-analytics';
 
 import invariant from 'assert';

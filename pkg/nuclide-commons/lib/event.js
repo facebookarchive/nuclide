@@ -12,7 +12,7 @@
 import type {EventEmitter} from 'events';
 
 import {Disposable} from 'event-kit';
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 
 /**
  * Add an event listener an return a disposable for removing it. Note that this function assumes
@@ -34,5 +34,8 @@ type SubscribeCallback<T> = (item: T) => any;
 type SubscribeFunction<T> = (callback: SubscribeCallback<T>) => IDisposable;
 
 export function observableFromSubscribeFunction<T>(fn: SubscribeFunction<T>): Observable<T> {
-  return Observable.create(observer => fn(observer.onNext.bind(observer)));
+  return Observable.create(observer => {
+    const disposable = fn(observer.next.bind(observer));
+    return () => { disposable.dispose(); };
+  });
 }

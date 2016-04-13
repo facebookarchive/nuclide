@@ -11,7 +11,7 @@
 
 import type {ServerStatusUpdate} from '../../nuclide-flow-base';
 
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 
 import typeof * as FlowServiceFactoryType from '../lib/FlowServiceFactory';
 

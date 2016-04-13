@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {RevisionFileChanges} from '../../nuclide-hg-repository-base/lib/HgService';
 
 import invariant from 'assert';
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 import path from 'path';
 import {
   fsPromise,

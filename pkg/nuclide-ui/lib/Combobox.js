@@ -15,7 +15,7 @@ type ComboboxOption = {
   matchIndex: number;
 };
 
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 
 const {CompositeDisposable} = require('atom');
 const {AtomInput} = require('./AtomInput');
@@ -46,7 +46,7 @@ type State = {
  */
 export class Combobox extends React.Component {
   state: State;
-  _updateSubscription: ?IDisposable;
+  _updateSubscription: ?rx$ISubscription;
   _subscriptions: ?CompositeDisposable;
 
   static propTypes = {
@@ -117,14 +117,14 @@ export class Combobox extends React.Component {
       this._subscriptions.dispose();
     }
     if (this._updateSubscription != null) {
-      this._updateSubscription.dispose();
+      this._updateSubscription.unsubscribe();
     }
   }
 
   requestUpdate(): void {
     // Cancel pending update.
     if (this._updateSubscription != null) {
-      this._updateSubscription.dispose();
+      this._updateSubscription.unsubscribe();
     }
 
     this.setState({error: null, loadingOptions: true});
