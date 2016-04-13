@@ -308,6 +308,14 @@ class FileTreeContextMenu {
     return this._sourceControlMenu.addItem(item, priority);
   }
 
+  /**
+   * This is appropriate to use as the target for a command that is triggered exclusively by an
+   * item in the file tree context menu.
+   */
+  getCSSSelectorForFileTree(): string {
+    return '.nuclide-file-tree-toolbar-container';
+  }
+
   getSelectedNodes(): Immutable.OrderedSet<FileTreeNode> {
     return this._store.getSelectedNodes();
   }

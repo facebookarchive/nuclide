@@ -194,7 +194,7 @@ class Activation {
     const menuItemDescriptions = new CompositeDisposable();
     menuItemDescriptions.add(
       atom.commands.add(
-        'atom-workspace',
+        contextMenu.getCSSSelectorForFileTree(),
         /* eslint-disable nuclide-internal/command-menu-items */
         // This does not belong in a menu because it should not be a public command:
         // it should be a callback, but ContextMenuManager forces our hand.
