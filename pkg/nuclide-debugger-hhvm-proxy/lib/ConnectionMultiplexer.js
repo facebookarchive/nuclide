@@ -517,9 +517,16 @@ export class ConnectionMultiplexer {
     await connection.sendStderrRequest();
 
     // Set features.
-    const setFeatureSucceeded = await connection.setFeature('max_depth', '5');
+    // max_depth sets the depth that the debugger engine respects when
+    // returning hierarchical data.
+    let setFeatureSucceeded = await connection.setFeature('max_depth', '5');
     if (!setFeatureSucceeded) {
       logger.logError('HHVM returned failure for setting feature max_depth');
+    }
+    // show_hidden allows the client to request data from private class members.
+    setFeatureSucceeded = await connection.setFeature('show_hidden', '1');
+    if (!setFeatureSucceeded) {
+      logger.logError('HHVM returned failure for setting feature show_hidden');
     }
   }
 }
