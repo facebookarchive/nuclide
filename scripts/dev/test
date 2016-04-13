@@ -6,121 +6,89 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
-# Set up the logging early on in the process.
 import logging
-logging.basicConfig(level=logging.INFO, format='%(message)s')
-
-# Do other ordinary imports.
+import optparse
 import os
 import os.path
+import subprocess
 import sys
 from datetime import datetime
+
+# Set up the logging early on in the process.
+logging.basicConfig(level=logging.INFO, format='%(message)s')
 
 # Add the lib/ directory to $PYTHONPATH so library code can be imported.
 sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 
+from dependencies import check_dependencies
+from js_test_runner import JsTestRunner
+from package_manager import PackageManager, NUCLIDE_PATH
+
 try:
     from fb.pre_setup import fb_pre_setup
     fb_pre_setup()
-except ImportError as e:
+except ImportError as _:
     pass
 
 # Parse the command-line arguments.
-from dependencies import check_dependencies
-import optparse
-parser = optparse.OptionParser(usage='usage: %prog [options] [package-names or integration-tests]',
-                               description='Run all tests for Nuclide. ' +
-                               'Can explicitly list individual packages or integration-tests to run.')
-
-parser.add_option('--no-module-cycle-check', action='store_true', default=False, help='Skip `./module_cycle_check` step')
-parser.add_option('--verbose', action='store_true', default=False, help='Verbose output')
-parser.add_option('--no-atom', action='store_true', default=False, help='Exclude packages that depend on Atom')
-parser.add_option('--run-in-band', action='store_true', default=False, help='Run tests in a single process')
-parser.add_option('--no-version', action='store_true', default=False, help='Ignore mismatched versions of Atom/npm/node/apm')
-parser.add_option('--run-integration-tests', action='store_true', default=False, help='Only run tests in Nuclide/spec')
-parser.add_option('--continue-on-errors', action='store_true', help='Run all tests, regardless of failures')
+parser = optparse.OptionParser(
+    usage='usage: %prog [options] [package-names or integration-tests]',
+    description='Run all tests for Nuclide. '
+                'Can explicitly list individual packages or integration-tests '
+                'to run.')
+parser.add_option('--no-module-cycle-check', action='store_true', default=False,
+                  help='Skip `./module_cycle_check` step')
+parser.add_option('--verbose', action='store_true', default=False,
+                  help='Verbose output')
+parser.add_option('--no-atom', action='store_true', default=False,
+                  help='Exclude packages that depend on Atom')
+parser.add_option('--run-in-band', action='store_true', default=False,
+                  help='Run tests in a single process')
+parser.add_option('--no-version', action='store_true', default=False,
+                  help='Ignore mismatched versions of Atom/npm/node/apm')
+parser.add_option('--run-integration-tests', action='store_true', default=False,
+                  help='Only run tests in Nuclide/spec')
+parser.add_option('--continue-on-errors', action='store_true',
+                  help='Run all tests, regardless of failures')
 
 options, args = parser.parse_args(sys.argv[1:])
 
-run_in_band = options.run_in_band
-verbose = options.verbose
-
-# When testing the server packages, only `node` and `npm` need to be on the $PATH.
-include_apm = not options.no_atom
-
-should_version_check = not options.no_version
-if should_version_check:
-    check_dependencies(include_apm)
-
-# Run ./lint_packages first because it is cheap to run and catches a lot of errors.
-import subprocess
-try:
-    subprocess.check_call([
-        os.path.join(os.path.dirname(__file__), 'lint_packages'),
-    ])
-except subprocess.CalledProcessError:
-    sys.exit(1)
-
-# Run ./module_cycle_check
-if not options.no_module_cycle_check:
+def run(name, cmd):
     try:
-        subprocess.check_call([
-            os.path.join(os.path.dirname(__file__), 'module_cycle_check'),
-        ])
+        start = datetime.now()
+        logging.info('Running %s...', name)
+        subprocess.check_call(cmd, cwd=NUCLIDE_PATH)
     except subprocess.CalledProcessError:
+        logging.info('!!! FAILED %s !!!', name)
         sys.exit(1)
-
-# Create the constructor args for JsTestRunner.
-from package_manager import PackageManager, NUCLIDE_PATH
-package_manager = PackageManager()
+    finally:
+        end = datetime.now()
+        logging.info('%s took %s seconds.', name, (end - start).seconds)
 
 # Some tests compare created files and all their properties to an oracle. If
 # they are created with a different umask, then the permissions are different
 # and the tests fail.
 os.umask(022)
 
-# Validate explicit package names if given
-if not options.run_integration_tests:
-    for package_name in args:
-        if not package_manager.is_local_dependency(package_name):
-            raise Exception('%s is not a valid nuclide package name' % (package_name))
-
-# Create and run JsTestRunner.
-from js_test_runner import JsTestRunner
+package_manager = PackageManager()
 test_runner = JsTestRunner(
     package_manager,
-    include_apm,
+    not options.no_atom,
     args,
-    verbose,
-    run_in_band,
+    options.verbose,
+    options.run_in_band,
     options.continue_on_errors,
 )
 
-def run_eslint():
-    try:
-        start = datetime.now()
-        logging.info('Running eslint...')
-        subprocess.check_call(
-            ['node_modules/.bin/eslint', '--max-warnings=0', '.'],
-            cwd=NUCLIDE_PATH)
-    except subprocess.CalledProcessError:
-        sys.exit(1)
-    finally:
-        logging.info('eslint took %s seconds.', (datetime.now() - start).seconds)
-
-def run_flow_check():
-    try:
-        start = datetime.now()
-        logging.info('Running flow check...')
-        subprocess.check_call(['flow', 'check', '--show-all-errors'], cwd=NUCLIDE_PATH)
-    except subprocess.CalledProcessError:
-        sys.exit(1)
-    finally:
-        logging.info('flow check took %s seconds.', (datetime.now() - start).seconds)
+if not options.no_version:
+    check_dependencies(not options.no_atom)
 
 if options.run_integration_tests:
     test_runner.run_integration_tests()
 else:
-    run_eslint()
-    run_flow_check()
+    run('lint_packages', ['scripts/dev/lint_packages'])
+    run('eslint', ['node_modules/.bin/eslint', '--max-warnings=0', '.'])
+    run('flow', ['flow', 'check', '--show-all-errors'])
+    if not options.no_module_cycle_check:
+        run('module_cycle_check', ['scripts/dev/module_cycle_check'])
     test_runner.run_tests()

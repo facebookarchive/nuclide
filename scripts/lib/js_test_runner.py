@@ -40,6 +40,11 @@ class JsTestRunner(object):
         )
 
     def run_tests(self):
+        for package_name in self._packages_to_test:
+            if not self._package_manager.is_local_dependency(package_name):
+                raise Exception(
+                    '%s is not a valid nuclide package name' % package_name)
+
         apm_tests = []
         npm_tests = []
         serial_only_tests = []
