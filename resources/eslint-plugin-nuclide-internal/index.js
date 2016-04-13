@@ -13,6 +13,7 @@ module.exports = {
   rules: {
     'command-menu-items': require('./command-menu-items'),
     'comment-style': require('./comment-style'),
+    'consistent-import-name': require('./consistent-import-name'),
     'import-type-style': require('./import-type-style'),
     'license-header': require('./license-header'),
     'prefer-top-level-builtins': require('./prefer-top-level-builtins'),
@@ -21,6 +22,7 @@ module.exports = {
   rulesConfig: {
     'command-menu-items': 0,
     'comment-style': 0,
+    'consistent-import-name': 0,
     'import-type-style': 0,
     'license-header': 0,
     'prefer-top-level-builtins': 0,

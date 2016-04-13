@@ -10,7 +10,7 @@
  */
 
 import BaseSession from '../VendorLib/node-inspector/lib/session';
-import {inherits} from 'util';
+import util from 'util';
 
 /**
  * A custom version of node-inspector's Session that ignores commands that we don't support. (We
@@ -29,6 +29,6 @@ function CustomSession(config: Object, debuggerPort: number, wsConnection: ws$We
   );
 }
 
-inherits(CustomSession, BaseSession);
+util.inherits(CustomSession, BaseSession);
 
 export const Session = ((CustomSession: any): Class<BaseSession>);

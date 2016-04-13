@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {Stats} from 'fs';
+import fs from 'fs';
 
 export type FileWithStats = {
   file: string;
-  stats: ?Stats;
+  stats: ?fs.Stats;
   isSymbolicLink: boolean;
 };
 
@@ -33,7 +33,7 @@ export type FileSystemService = {
    * The lstat endpoint is the same as the stat endpoint except it will return
    * the stat of a link instead of the file the link points to.
    */
-  lstat(path: string): Promise<Stats>;
+  lstat(path: string): Promise<fs.Stats>;
 
   /**
    * Creates a new directory with the given path.
@@ -114,7 +114,7 @@ export type FileSystemService = {
    * }
    *
    */
-  stat(path: string): Promise<Stats>;
+  stat(path: string): Promise<fs.Stats>;
 
   /**
    * Removes files. Does not fail if the file doesn't exist.

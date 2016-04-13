@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {spawn} from 'child_process';
+import child_process from 'child_process';
 import split from 'split';
 
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
@@ -23,7 +23,7 @@ function getFilesFromCommand(
   return new Promise((resolve, reject) => {
     // Use `spawn` here to process the, possibly huge, output of the file listing.
 
-    const proc = spawn(command, args, {cwd: localDirectory});
+    const proc = child_process.spawn(command, args, {cwd: localDirectory});
 
     proc.on('error', reject);
 

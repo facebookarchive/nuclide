@@ -10,7 +10,7 @@
  */
 
 import path from 'path';
-const {realpathSync} = require('fs');
+import fs from 'fs';
 
 /**
  * Returns if the `rootPath` directory contains the `checkPath` which could be:
@@ -24,8 +24,8 @@ function containsPathSync(rootPath: string, checkPath: string): boolean {
   let realRootPath = null;
   let realCheckPath = null;
   try {
-    realRootPath = realpathSync(rootPath);
-    realCheckPath = realpathSync(checkPath);
+    realRootPath = fs.realpathSync(rootPath);
+    realCheckPath = fs.realpathSync(checkPath);
   } catch (e) {
     realRootPath = rootPath;
     realCheckPath = checkPath;

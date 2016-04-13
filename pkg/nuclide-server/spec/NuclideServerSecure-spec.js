@@ -11,12 +11,12 @@
 
 const fs = require('fs');
 const path = require('path');
-const {execSync} = require('child_process');
 const NuclideServer = require('../lib/NuclideServer');
 import ClientComponent from '../lib/serviceframework/ClientComponent';
 import {loadServicesConfig} from '../lib/serviceframework/config';
 import NuclideSocket from '../lib/NuclideSocket';
 import invariant from 'assert';
+import child_process from 'child_process';
 
 let server;
 let socket;
@@ -64,7 +64,8 @@ describe('Nuclide Secure Server test suite', () => {
 });
 
 function generateCertificates() {
-  const json = JSON.parse(execSync(`${gen_certs_path} -s localhost`).toString('utf8'));
+  const out = child_process.execSync(`${gen_certs_path} -s localhost`).toString('utf8');
+  const json = JSON.parse(out);
   ca_cert_path = json.ca_cert;
   server_cert_path = json.server_cert;
   server_key_path = json.server_key;

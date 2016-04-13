@@ -9,23 +9,23 @@
  * the root directory of this source tree.
  */
 
-const path = require('path');
-const {spawnSync} = require('child_process');
+import child_process from 'child_process';
+import path from 'path';
 
-function getApmNodePath() {
+function getApmNodePath(): string {
   const apmDir = path.dirname(atom.packages.getApmPath());
   return path.normalize(path.join(apmDir, 'node'));
 }
 
-function getApmNodeModulesPath() {
+function getApmNodeModulesPath(): string {
   const apmDir = path.dirname(atom.packages.getApmPath());
   return path.normalize(path.join(apmDir, '..', 'node_modules'));
 }
 
-function runScriptInApmNode(script: string) {
+function runScriptInApmNode(script: string): string {
   const args = ['-e', script];
   const options = {env: {NODE_PATH: getApmNodeModulesPath()}};
-  const output = spawnSync(getApmNodePath(), args, options);
+  const output = child_process.spawnSync(getApmNodePath(), args, options);
   return output.stdout.toString();
 }
 

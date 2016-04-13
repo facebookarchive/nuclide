@@ -11,8 +11,7 @@
 
 import {splitStream, observeStream} from '..';
 import {Observable} from 'rx';
-// $FlowIssue - Missing API
-import {PassThrough} from 'stream';
+import Stream from 'stream';
 
 describe('nuclide-commons/stream', () => {
 
@@ -27,7 +26,8 @@ describe('nuclide-commons/stream', () => {
   it('observeStream', () => {
     waitsForPromise(async () => {
       const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
-      const stream = new PassThrough();
+      // $FlowIssue - Missing API
+      const stream = new Stream.PassThrough();
       const promise = observeStream(stream).toArray().toPromise();
       input.forEach(value => { stream.write(value, 'utf8'); });
       stream.end();
@@ -38,7 +38,8 @@ describe('nuclide-commons/stream', () => {
 
   it('observeStream - error', () => {
     waitsForPromise(async () => {
-      const stream = new PassThrough();
+      // $FlowIssue - Missing API
+      const stream = new Stream.PassThrough();
       const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
       const output = [];
       const promise = new Promise((resolve, reject) => {

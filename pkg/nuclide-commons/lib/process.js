@@ -9,11 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {
-  execFile,
-  fork,
-  spawn,
-} from 'child_process';
+import child_process from 'child_process';
 import path from 'path';
 import {PromiseQueue} from './PromiseExecutors';
 
@@ -55,7 +51,7 @@ function getPlatformPath(): Promise<string> {
     // bug, filed against Atom Linter here: https://github.com/AtomLinter/Linter/issues/150
     // TODO(jjiaa): remove this hack when the Atom issue is closed
     platformPathPromise = new Promise((resolve, reject) => {
-      execFile('/usr/libexec/path_helper', ['-s'], (error, stdout, stderr) => {
+      child_process.execFile('/usr/libexec/path_helper', ['-s'], (error, stdout, stderr) => {
         if (error) {
           reject(error);
         } else {
@@ -157,7 +153,7 @@ async function safeSpawn(
   options?: Object = {},
 ): Promise<child_process$ChildProcess> {
   options.env = await createExecEnvironment(options.env || process.env, COMMON_BINARY_PATHS);
-  const child = spawn(command, args, options);
+  const child = child_process.spawn(command, args, options);
   monitorStreamErrors(child, command, args, options);
   child.on('error', error => {
     logError('error with command:', command, args, options, 'error:', error);
@@ -174,7 +170,7 @@ async function forkWithExecEnvironment(
     ...options,
     env: await createExecEnvironment(options.env || process.env, COMMON_BINARY_PATHS),
   };
-  const child = fork(modulePath, args, forkOptions);
+  const child = child_process.fork(modulePath, args, forkOptions);
   child.on('error', error => {
     logError('error from module:', modulePath, args, options, 'error:', error);
   });
@@ -389,7 +385,7 @@ function checkOutput(
     if (localOptions.pipedCommand) {
       // If a second command is given, pipe stdout of first to stdin of second. String output
       // returned in this function's Promise will be stderr/stdout of the second command.
-      firstChild = spawn(command, args, localOptions);
+      firstChild = child_process.spawn(command, args, localOptions);
       monitorStreamErrors(firstChild, command, args, localOptions);
       firstChildStderr = '';
 
@@ -408,7 +404,11 @@ function checkOutput(
         firstChildStderr += data;
       });
 
-      lastChild = spawn(localOptions.pipedCommand, localOptions.pipedArgs, localOptions);
+      lastChild = child_process.spawn(
+        localOptions.pipedCommand,
+        localOptions.pipedArgs,
+        localOptions
+      );
       monitorStreamErrors(lastChild, command, args, localOptions);
       // pipe() normally pauses the writer when the reader errors (closes).
       // This is not how UNIX pipes work: if the reader closes, the writer needs
@@ -419,7 +419,7 @@ function checkOutput(
       });
       firstChild.stdout.pipe(lastChild.stdin);
     } else {
-      lastChild = spawn(command, args, localOptions);
+      lastChild = child_process.spawn(command, args, localOptions);
       monitorStreamErrors(lastChild, command, args, localOptions);
       firstChild = lastChild;
     }

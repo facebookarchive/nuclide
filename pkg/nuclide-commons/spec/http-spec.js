@@ -9,18 +9,16 @@
  * the root directory of this source tree.
  */
 
-import type {Server} from 'http';
-
 const invariant = require('assert');
 const fs = require('fs');
 const {fsPromise, httpPromise} = require('..');
 const http = require('http');
 const path = require('path');
-let server: ?Server;
+let server: ?http.Server;
 let port;
 
 
-function createSimpleServer(): Server {
+function createSimpleServer(): http.Server {
   // $FlowIssue
   server = http.createServer((req, res) => {
     const fileName = path.basename(req.url);

@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-nuclide-internal",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "private": true,
   "scripts": {
     "test": "node ../../pkg/nuclide-jasmine/bin/jasmine-node-transpiled spec"

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {readdirSync} = require('fs');
+import fs from 'fs';
 const {readFile} = require('../../nuclide-commons').fsPromise;
 const {reprint} = require('..');
 
@@ -22,7 +22,7 @@ function getTests() {
   if (only.size > 0) {
     return only;
   }
-  const files = readdirSync('./spec/fixtures/');
+  const files = fs.readdirSync('./spec/fixtures/');
   const tests = new Set();
   for (const file of files) {
     if (/\.test$/.test(file)) {
