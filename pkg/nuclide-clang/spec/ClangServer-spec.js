@@ -12,6 +12,7 @@
 import invariant from 'assert';
 import fs from 'fs';
 import path from 'path';
+import {Subject} from '@reactivex/rxjs';
 import ClangServer from '../lib/ClangServer';
 
 const TEST_FILE = path.join(__dirname, 'fixtures', 'test.cpp');
@@ -19,8 +20,9 @@ const FILE_CONTENTS = fs.readFileSync(TEST_FILE).toString('utf8');
 
 // The test file doesn't need any special flags.
 const mockFlagsManager = ({
+  subject: new Subject(),
   async getFlagsForSrc() {
-    return [];
+    return {flags: [], onChange: this.subject};
   },
 }: any);
 
@@ -187,7 +189,10 @@ describe('ClangServer', () => {
       expect(response.accurateFlags).toBe(false);
 
       // Retry should go through.
-      spyOn(flagsManager, 'getFlagsForSrc').andReturn(Promise.resolve([]));
+      spyOn(flagsManager, 'getFlagsForSrc').andReturn(Promise.resolve({
+        flags: [],
+        onChange: new Subject(),
+      }));
       response = await server.makeRequest('compile', null, {
         contents: FILE_CONTENTS,
       });

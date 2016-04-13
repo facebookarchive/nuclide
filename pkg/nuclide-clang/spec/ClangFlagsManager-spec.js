@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+import {EventEmitter} from 'events';
+import fs from 'fs';
 import path from 'path';
 import {BuckUtils} from '../../nuclide-buck-base/lib/BuckUtils';
 import ClangFlagsManager from '../lib/ClangFlagsManager';
@@ -26,6 +29,9 @@ describe('ClangFlagsManager', () => {
       },
       getPath() {
         return path.join(__dirname, 'fixtures');
+      },
+      getBuildFile() {
+        return path.join(__dirname, 'fixtures', 'BUCK');
       },
       build() {
         return {
@@ -156,19 +162,19 @@ describe('ClangFlagsManager', () => {
 
   it('gets flags for a source file', () => {
     waitsForPromise(async () => {
-      let flags = await flagsManager.getFlagsForSrc('test.cpp');
-      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+      let result = await flagsManager.getFlagsForSrc('test.cpp');
+      expect(result && result.flags).toEqual(['g++', '-fPIC', '-O3']);
 
       // Make sure this is cached.
       spyOn(buckProject, 'build').andCallThrough();
-      flags = await flagsManager.getFlagsForSrc('test.cpp');
-      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+      result = await flagsManager.getFlagsForSrc('test.cpp');
+      expect(result && result.flags).toEqual(['g++', '-fPIC', '-O3']);
       expect(buckProject.build).not.toHaveBeenCalled();
 
       // Make sure cache gets reset.
       flagsManager.reset();
-      flags = await flagsManager.getFlagsForSrc('test.cpp');
-      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+      result = await flagsManager.getFlagsForSrc('test.cpp');
+      expect(result && result.flags).toEqual(['g++', '-fPIC', '-O3']);
       expect(buckProject.build).toHaveBeenCalled();
     });
   });
@@ -177,40 +183,40 @@ describe('ClangFlagsManager', () => {
     waitsForPromise(async () => {
       // Unowned projects shouldn't invoke Buck again.
       buckProject.getOwner = () => [];
-      let flags = await flagsManager.getFlagsForSrc('test');
-      expect(flags).toBe(null);
+      let result = await flagsManager.getFlagsForSrc('test');
+      expect(result && result.flags).toBe(null);
 
       spyOn(buckProject, 'getOwner').andCallThrough();
-      flags = await flagsManager.getFlagsForSrc('test');
-      expect(flags).toBe(null);
+      result = await flagsManager.getFlagsForSrc('test');
+      expect(result && result.flags).toBe(null);
       expect(buckProject.getOwner).not.toHaveBeenCalled();
     });
   });
 
   it('gets flags for header files', () => {
     waitsForPromise(async () => {
-      let flags = await flagsManager.getFlagsForSrc('header.h');
-      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+      let result = await flagsManager.getFlagsForSrc('header.h');
+      expect(result && result.flags).toEqual(['g++', '-fPIC', '-O3']);
 
-      flags = await flagsManager.getFlagsForSrc('header.hpp');
-      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+      result = await flagsManager.getFlagsForSrc('header.hpp');
+      expect(result && result.flags).toEqual(['g++', '-fPIC', '-O3']);
 
       // When headers are not properly owned, we should look for source files
       // in the same directory.
       const spy = spyOn(buckProject, 'getOwner').andReturn(['//test:__default_headers__']);
       const dir = path.join(__dirname, 'fixtures');
-      flags = await flagsManager.getFlagsForSrc(path.join(dir, 'testInternal.h'));
-      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+      result = await flagsManager.getFlagsForSrc(path.join(dir, 'testInternal.h'));
+      expect(result && result.flags).toEqual(['g++', '-fPIC', '-O3']);
 
-      flags = await flagsManager.getFlagsForSrc(path.join(dir, 'test-inl.h'));
-      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+      result = await flagsManager.getFlagsForSrc(path.join(dir, 'test-inl.h'));
+      expect(result && result.flags).toEqual(['g++', '-fPIC', '-O3']);
 
-      flags = await flagsManager.getFlagsForSrc(path.join(dir, 'test2.h'));
-      expect(flags).toBeNull();
+      result = await flagsManager.getFlagsForSrc(path.join(dir, 'test2.h'));
+      expect(result && result.flags).toBeNull();
 
       // Make sure we don't try get flags for non-source files.
-      flags = await flagsManager.getFlagsForSrc(path.join(dir, 'compile_commands.h'));
-      expect(flags).toBeNull();
+      result = await flagsManager.getFlagsForSrc(path.join(dir, 'compile_commands.h'));
+      expect(result && result.flags).toBeNull();
       expect(spy).not.toHaveBeenCalledWith(path.join(dir, 'compile_commands.json'));
     });
   });
@@ -219,19 +225,19 @@ describe('ClangFlagsManager', () => {
     waitsForPromise(async () => {
       spyOn(buckProject, 'build').andCallThrough();
       let testFile = path.join(__dirname, 'fixtures', 'test.cpp');
-      let flags = await flagsManager.getFlagsForSrc(testFile);
-      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+      let result = await flagsManager.getFlagsForSrc(testFile);
+      expect(result && result.flags).toEqual(['g++', '-fPIC', '-O3']);
       expect(buckProject.build).not.toHaveBeenCalled();
 
       testFile = path.join(__dirname, 'fixtures', 'test.h');
-      flags = await flagsManager.getFlagsForSrc(testFile);
-      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+      result = await flagsManager.getFlagsForSrc(testFile);
+      expect(result && result.flags).toEqual(['g++', '-fPIC', '-O3']);
 
       // Fall back to Buck if it's not in the compilation DB.
       testFile = path.join(__dirname, 'fixtures', 'test2.cpp');
-      flags = await flagsManager.getFlagsForSrc(testFile);
+      result = await flagsManager.getFlagsForSrc(testFile);
       expect(buckProject.build).toHaveBeenCalled();
-      expect(flags).toEqual(null);
+      expect(result && result.flags).toEqual(null);
     });
   });
 
@@ -239,6 +245,57 @@ describe('ClangFlagsManager', () => {
     // shell-quote is pretty safe; just make sure we ignore unexpected Objects like operators.
     expect(ClangFlagsManager.parseArgumentsFromCommand('test "a\\" b c" \'a b\' || x'))
       .toEqual(['test', 'a" b c', 'a b']);
+  });
+
+  it('allows observation of flag changes', () => {
+    waitsForPromise(async () => {
+      // Create a mock file watcher.
+      const watcher: any = new EventEmitter();
+      watcher.close = jasmine.createSpy('watcher.close');
+      let changedCallback = null;
+      const watchSpy = spyOn(fs, 'watch').andCallFake((file, _options, cb) => {
+        changedCallback = cb;
+        return watcher;
+      });
+
+      spyOn(buckProject, 'build').andCallThrough();
+      const testFile = path.join(__dirname, 'fixtures', 'test.cpp');
+      const result = await flagsManager.getFlagsForSrc(testFile);
+      invariant(result != null);
+
+      const changedSpy = jasmine.createSpy('changed');
+      const obs = result.changes.subscribe(changedSpy);
+
+      expect(changedSpy).not.toHaveBeenCalled();
+      invariant(changedCallback != null);
+
+      // Ignore changes to other files.
+      changedCallback('change', 'otherfile');
+      expect(changedSpy).not.toHaveBeenCalled();
+
+      changedCallback('change', 'compile_commands.json');
+      expect(changedSpy).toHaveBeenCalled();
+
+      // Make sure only one file watcher is created.
+      const result2 = await flagsManager.getFlagsForSrc(testFile);
+      invariant(result2 != null);
+      const obs2 = result2.changes.subscribe(() => {});
+      expect(watchSpy.calls.length).toBe(1);
+
+      // File watcher should be destroyed on dispose.
+      obs.unsubscribe();
+      obs2.unsubscribe();
+      expect(watcher.close).toHaveBeenCalled();
+    });
+  });
+
+  it('can guess locations of build files', () => {
+    waitsForPromise(async () => {
+      const file = await ClangFlagsManager._guessBuildFile(
+        path.join(__dirname, 'fixtures', 'a.cpp'),
+      );
+      expect(file).toBe(path.join(__dirname, 'fixtures', 'compile_commands.json'));
+    });
   });
 
 });

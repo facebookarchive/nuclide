@@ -159,7 +159,12 @@ export default class ClangServer {
       return this._flagsPromise;
     }
     this._flagsPromise = this._clangFlagsManager.getFlagsForSrc(this._src)
-      .catch(e => {
+      .then(result => {
+        if (result) {
+          return result.flags;
+        }
+        return null;
+      }, e => {
         logger.error(
           `clang-server: Could not get flags for ${this._src} (retry ${this._flagsRetries})`, e);
         if (this._flagsRetries < FLAGS_RETRY_LIMIT) {

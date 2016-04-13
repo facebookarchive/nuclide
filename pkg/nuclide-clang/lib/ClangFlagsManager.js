@@ -12,7 +12,9 @@
 import type {BuckUtils} from '../../nuclide-buck-base/lib/BuckUtils';
 
 import invariant from 'assert';
+import fs from 'fs';
 import path from 'path';
+import {Observable} from '@reactivex/rxjs';
 import {parse} from 'shell-quote';
 import {trackTiming} from '../../nuclide-analytics';
 import {fsPromise} from '../../nuclide-commons';
@@ -52,12 +54,22 @@ function isSourceFile(filename: string): boolean {
   return SOURCE_EXTENSIONS.has(path.extname(filename));
 }
 
+export type ClangFlags = {
+  flags: ?Array<string>;
+  // Emits file change events for the underlying flags file.
+  // (rename, change)
+  changes: Observable<string>;
+};
+
 class ClangFlagsManager {
   _buckUtils: BuckUtils;
   _cachedBuckProjects: Map<string, BuckProject>;
   _compilationDatabases: Set<string>;
   _realpathCache: Object;
-  pathToFlags: Map<string, ?Array<string>>;
+  pathToFlags: Map<string, ?ClangFlags>;
+
+  // Watch config files (TARGETS/BUCK/compile_commands.json) for changes.
+  _flagFileObservables: Map<string, Observable<string>>;
 
   constructor(buckUtils: BuckUtils) {
     this.pathToFlags = new Map();
@@ -65,6 +77,7 @@ class ClangFlagsManager {
     this._cachedBuckProjects = new Map();
     this._compilationDatabases = new Set();
     this._realpathCache = {};
+    this._flagFileObservables = new Map();
   }
 
   reset() {
@@ -72,6 +85,7 @@ class ClangFlagsManager {
     this._cachedBuckProjects.clear();
     this._compilationDatabases.clear();
     this._realpathCache = {};
+    this._flagFileObservables.clear();
   }
 
   async _getBuckProject(src: string): Promise<?BuckProject> {
@@ -103,7 +117,7 @@ class ClangFlagsManager {
    *     about the src file. For example, null will be returned if src is not
    *     under the project root.
    */
-  async getFlagsForSrc(src: string): Promise<?Array<string>> {
+  async getFlagsForSrc(src: string): Promise<?ClangFlags> {
     let flags = this.pathToFlags.get(src);
     if (flags !== undefined) {
       return flags;
@@ -114,7 +128,7 @@ class ClangFlagsManager {
   }
 
   @trackTiming('nuclide-clang.get-flags')
-  async _getFlagsForSrcImpl(src: string): Promise<?Array<string>> {
+  async _getFlagsForSrcImpl(src: string): Promise<?ClangFlags> {
     // Look for a manually provided compilation database.
     const dbDir = await fsPromise.findNearestFile(
       COMPILATION_DATABASE_FILE,
@@ -141,7 +155,22 @@ class ClangFlagsManager {
         return this.getFlagsForSrc(sourceFile);
       }
     }
-    return this.pathToFlags.get(src) || null;
+
+    const flags = this.pathToFlags.get(src);
+    if (flags != null) {
+      return flags;
+    }
+
+    // Even if we can't get flags, try to watch the build file in case they get added.
+    const buildFile = await ClangFlagsManager._guessBuildFile(src);
+    if (buildFile != null) {
+      return {
+        flags: null,
+        changes: this._watchFlagFile(buildFile),
+      };
+    }
+
+    return null;
   }
 
   async _loadFlagsFromCompilationDatabase(dbFile: string): Promise<void> {
@@ -153,6 +182,7 @@ class ClangFlagsManager {
       const contents = await fsPromise.readFile(dbFile);
       const data = JSON.parse(contents);
       invariant(data instanceof Array);
+      const changes = this._watchFlagFile(dbFile);
       await Promise.all(data.map(async entry => {
         const {command, file} = entry;
         const directory = await fsPromise.realpath(entry.directory, this._realpathCache);
@@ -160,7 +190,10 @@ class ClangFlagsManager {
         const filename = path.resolve(directory, file);
         if (await fsPromise.exists(filename)) {
           const realpath = await fsPromise.realpath(filename, this._realpathCache);
-          this.pathToFlags.set(realpath, ClangFlagsManager.sanitizeCommand(file, args, directory));
+          this.pathToFlags.set(realpath, {
+            flags: ClangFlagsManager.sanitizeCommand(file, args, directory),
+            changes,
+          });
         }
       }));
       this._compilationDatabases.add(dbFile);
@@ -169,7 +202,7 @@ class ClangFlagsManager {
     }
   }
 
-  async _loadFlagsFromBuck(src: string): Promise<Map<string, Array<string>>> {
+  async _loadFlagsFromBuck(src: string): Promise<Map<string, ClangFlags>> {
     const flags = new Map();
     const buckProject = await this._getBuckProject(src);
     if (!buckProject) {
@@ -216,17 +249,66 @@ class ClangFlagsManager {
     const compilationDatabaseJson = compilationDatabaseJsonBuffer.toString('utf8');
     const compilationDatabase = JSON.parse(compilationDatabaseJson);
 
+    const buildFile = await buckProject.getBuildFile(target);
+    const changes = buildFile == null ? Observable.empty() : this._watchFlagFile(buildFile);
     compilationDatabase.forEach(item => {
       const {file} = item;
-      const fileFlags = ClangFlagsManager.sanitizeCommand(
-        file,
-        item.arguments,
-        buckProjectRoot,
-      );
-      flags.set(file, fileFlags);
-      this.pathToFlags.set(file, fileFlags);
+      const result = {
+        flags: ClangFlagsManager.sanitizeCommand(
+          file,
+          item.arguments,
+          buckProjectRoot,
+        ),
+        changes,
+      };
+      flags.set(file, result);
+      this.pathToFlags.set(file, result);
     });
     return flags;
+  }
+
+  _watchFlagFile(flagFile: string): Observable<string> {
+    const existing = this._flagFileObservables.get(flagFile);
+    if (existing != null) {
+      return existing;
+    }
+    const flagFileDir = path.dirname(flagFile);
+    const flagFileBase = path.basename(flagFile);
+    const observable = Observable.create(obs => {
+      const watcher = fs.watch(flagFileDir, {}, (event, filename) => {
+        if (filename === flagFileBase) {
+          obs.next(event);
+        }
+      });
+      watcher.on('error', err => {
+        logger.error(`Could not watch file ${flagFile}`, err);
+        obs.error(err);
+      });
+      return {
+        unsubscribe() {
+          watcher.close();
+        },
+      };
+    }).share();
+    this._flagFileObservables.set(flagFile, observable);
+    return observable;
+  }
+
+  // The file may be new. Look for a nearby BUCK or TARGETS file.
+  static async _guessBuildFile(file: string): Promise<?string> {
+    const dir = path.dirname(file);
+    let bestMatch = null;
+    await Promise.all(['BUCK', 'TARGETS', 'compile_commands.json'].map(async name => {
+      const nearestDir = await fsPromise.findNearestFile(name, dir);
+      if (nearestDir != null) {
+        const match = path.join(nearestDir, name);
+        // Return the closest (most specific) match.
+        if (bestMatch == null || match.length > bestMatch.length) {
+          bestMatch = match;
+        }
+      }
+    }));
+    return bestMatch;
   }
 
   static parseArgumentsFromCommand(command: string): Array<string> {
