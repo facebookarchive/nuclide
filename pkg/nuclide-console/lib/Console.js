@@ -84,8 +84,8 @@ export default class Console extends React.Component {
           className="nuclide-console-scroll-pane"
           onScroll={this._handleScroll}>
           <OutputTable records={this.props.records} />
-          {this._renderPrompt()}
         </div>
+        {this._renderPrompt()}
       </div>
     );
   }
