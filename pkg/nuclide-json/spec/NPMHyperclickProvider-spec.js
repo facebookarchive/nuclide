@@ -25,7 +25,9 @@ const sampleJSON =
     },
     "git-url": "git://github.com/user/project.git",
     "file-path": "file:some/path",
-    "http-url": "http://asdf.asdf"
+    "http-url": "http://asdf.asdf",
+    "github": "facebook/nuclide#v0.130.0",
+    "github-prefix": "github:facebook/nuclide"
   }
 }`;
 
@@ -82,6 +84,23 @@ describe('getPackageUrlForRange', () => {
         new Range([11, 4], [11, 14])
       )
     ).toBeNull();
+  });
+
+  it('should provide a URL for a github dependency', () => {
+    expect(
+      getPackageUrlForRange(
+        sampleJSON,
+        '"github"',
+        new Range([12, 4], [12, 12])
+      )
+    ).toEqual('https://github.com/facebook/nuclide/tree/v0.130.0');
+    expect(
+      getPackageUrlForRange(
+        sampleJSON,
+        '"github-prefix"',
+        new Range([13, 4], [13, 19])
+      )
+    ).toEqual('https://github.com/facebook/nuclide');
   });
 
   it('should not provide a URL for the "dependencies" string itself', () => {

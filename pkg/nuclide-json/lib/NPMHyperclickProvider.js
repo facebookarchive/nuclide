@@ -87,6 +87,22 @@ function getPackageUrl(packageName: string, version: string): ?string {
     return `https://www.npmjs.com/package/${packageName}/`;
   }
 
+  // - optionally prefixed with 'github:' (but don't capture that)
+  // - all captured together:
+  //   - username: alphanumeric characters, plus underscores and dashes
+  //   - slash
+  //   - repo name: same as username
+  // - optionally followed by a revision:
+  //   - starts with a hash (not captured)
+  //   - then alphanumeric characters, underscores, dashes, periods (captured)
+  const githubRegex = /^(?:github:)?([\w-]+\/[\w-]+)(?:#([\w-.]+))?$/;
+  const githubMatch = version.match(githubRegex);
+  if (githubMatch != null) {
+    const commit = githubMatch[2];
+    const commitSuffix = commit == null ? '' : `/tree/${commit}`;
+    return `https://github.com/${githubMatch[1]}${commitSuffix}`;
+  }
+
   return null;
 }
 
