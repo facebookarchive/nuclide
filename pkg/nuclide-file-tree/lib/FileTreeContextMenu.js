@@ -38,11 +38,12 @@ type MenuItemSeparator = {
 type MenuItemDefinition = MenuItemSingle | MenuItemGroup | MenuItemSeparator;
 
 const NEW_MENU_PRIORITY = 0;
-const SOURCE_CONTROL_MENU_PRIORITY = 150;
-const ADD_PROJECT_MENU_PRIORITY = 100;
-const MODIFY_FILE_MENU_PRIORITY = 200;
-const SPLIT_MENU_PRIORITY = 300;
-const SHOW_IN_MENU_PRIORITY = 400;
+const ADD_PROJECT_MENU_PRIORITY = 1000;
+const SOURCE_CONTROL_MENU_PRIORITY = 2000;
+const MODIFY_FILE_MENU_PRIORITY = 3000;
+const SPLIT_MENU_PRIORITY = 4000;
+const TEST_SECTION_PRIORITY = 5000;
+const SHOW_IN_MENU_PRIORITY = 6000;
 
 /**
  * This context menu wrapper exists to address some of the limitations in the ContextMenuManager:
@@ -291,6 +292,16 @@ class FileTreeContextMenu {
       },
     ],
     SHOW_IN_MENU_PRIORITY);
+  }
+
+  /**
+   * @param priority must be an integer in the range [0, 1000).
+   */
+  addItemToTestSection(item: atom$ContextMenuItem, priority: number): IDisposable {
+    if (priority < 0 || priority >= 1000) {
+      throw Error(`Illegal priority value: ${priority}`);
+    }
+    return this._contextMenu.addItem(item, TEST_SECTION_PRIORITY + priority);
   }
 
   addItemToSourceControlMenu(item: atom$ContextMenuItem, priority: number): IDisposable {

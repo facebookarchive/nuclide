@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {HomeFragments} from '../../nuclide-home-interfaces';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {TestRunner} from './interfaces';
@@ -17,6 +18,8 @@ import type {TestRunnerControllerState} from './TestRunnerController';
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
+
+const FILE_TREE_CONTEXT_MENU_PRIORITY = 200;
 
 let logger;
 function getLogger() {
@@ -86,25 +89,38 @@ class Activation {
         }
       )
     );
-    this._disposables.add(
-      atom.contextMenu.add({
-        '.tree-view .entry.directory.list-nested-item > .list-item': [
-          {type: 'separator'},
-          this._createRunTestsContextMenuItem('Run tests in'),
-          {type: 'separator'},
-        ],
-        '.tree-view .entry.file.list-item': [
-          {type: 'separator'},
-          this._createRunTestsContextMenuItem('Run tests at'),
-          {type: 'separator'},
-        ],
-      })
-    );
 
     // The panel should be visible because of the last serialized state, initialize it immediately.
     if (state != null && state.panelVisible) {
       this._getController();
     }
+  }
+
+  addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
+    const fileItem = this._createRunTestsContextMenuItem(/* isForFile */ true, contextMenu);
+    const directoryItem = this._createRunTestsContextMenuItem(/* isForFile */ false, contextMenu);
+
+    // Create a separator menu item that displays if either the file or directory item displays.
+    invariant(fileItem.shouldDisplay);
+    const fileItemShouldDisplay = fileItem.shouldDisplay.bind(fileItem);
+    invariant(directoryItem.shouldDisplay);
+    const directoryItemShouldDisplay = directoryItem.shouldDisplay.bind(directoryItem);
+    const separatorShouldDisplay = (event: MouseEvent) => {
+      return fileItemShouldDisplay(event) || directoryItemShouldDisplay(event);
+    };
+    const separator = {
+      type: 'separator',
+      shouldDisplay: separatorShouldDisplay,
+    };
+
+    const menuItemSubscriptions = new CompositeDisposable();
+    menuItemSubscriptions.add(
+      contextMenu.addItemToTestSection(fileItem, FILE_TREE_CONTEXT_MENU_PRIORITY),
+      contextMenu.addItemToTestSection(directoryItem, FILE_TREE_CONTEXT_MENU_PRIORITY + 1),
+      contextMenu.addItemToTestSection(separator, FILE_TREE_CONTEXT_MENU_PRIORITY + 2),
+    );
+    this._disposables.add(menuItemSubscriptions);
+    return menuItemSubscriptions;
   }
 
   addTestRunner(testRunner: TestRunner): ?Disposable {
@@ -153,12 +169,31 @@ class Activation {
     return this._getController().serialize();
   }
 
-  _createRunTestsContextMenuItem(label: string): Object {
+  _createRunTestsContextMenuItem(
+    isForFile: boolean,
+    contextMenu: FileTreeContextMenu,
+  ): atom$ContextMenuItem {
+    let label;
+    let shouldDisplayItem;
+    if (isForFile) {
+      label = 'Run tests at';
+      shouldDisplayItem = event => {
+        const node = contextMenu.getSingleSelectedNode();
+        return node != null && !node.isContainer;
+      };
+    } else {
+      label = 'Run tests in';
+      shouldDisplayItem = event => {
+        const node = contextMenu.getSingleSelectedNode();
+        return node != null && node.isContainer;
+      };
+    }
+
     return {
       // Intentionally **not** an arrow function because Atom sets the context when calling this and
       // allows dynamically setting values by assigning to `this`.
       created: function(event) {
-        let target = event.target;
+        let target = (((event.target): any): HTMLElement);
         if (target.dataset.name === undefined) {
           // If the event did not happen on the `name` span, search for it in the descendants.
           target = target.querySelector('.name');
@@ -177,7 +212,11 @@ class Activation {
           return false;
         }
 
-        let target = event.target;
+        if (!shouldDisplayItem(event)) {
+          return false;
+        }
+
+        let target = (((event.target): any): HTMLElement);
         if (target.dataset.name === undefined) {
           // If the event did not happen on the `name` span, search for it in the descendants.
           target = target.querySelector('.name');
@@ -228,6 +267,11 @@ export function consumeTestRunner(testRunner: TestRunner): ?Disposable {
   if (activation) {
     return activation.addTestRunner(testRunner);
   }
+}
+
+export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
+  invariant(activation);
+  return activation.addItemsToFileTreeContextMenu(contextMenu);
 }
 
 export function consumeToolBar(getToolBar: (group: string) => Object): void {
