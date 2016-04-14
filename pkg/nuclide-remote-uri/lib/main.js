@@ -83,7 +83,10 @@ function createRemoteUri(hostname: string, remotePort: number, remotePath: strin
 function parse(uri: NuclideUri): ParsedUrl {
   const parsedUri = url.parse(uri);
 
-  invariant(parsedUri.path, `Nuclide URIs must contain paths, '${parsedUri.path}' found.`);
+  invariant(
+    parsedUri.path,
+    `Nuclide URIs must contain paths, '${parsedUri.path}' found while parsing '${uri}'`
+  );
   let path = parsedUri.path;
   // `url.parse` treates the first '#' character as the beginning of the `hash` attribute. That
   // feature is not used in Nuclide and is instead treated as part of the path.
@@ -93,7 +96,7 @@ function parse(uri: NuclideUri): ParsedUrl {
 
   invariant(
     parsedUri.pathname,
-    `Nuclide URIs must contain pathnamess, '${parsedUri.pathname}' found.`
+    `Nuclide URIs must contain pathnamess, '${parsedUri.pathname}' found while parsing '${uri}'`
   );
   let pathname = parsedUri.pathname;
   // `url.parse` treates the first '#' character as the beginning of the `hash` attribute. That
@@ -126,11 +129,13 @@ function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
   const parsedUri = parse(remoteUri);
   invariant(
     parsedUri.hostname,
-    `Remote Nuclide URIs must contain hostnames, '${parsedUri.hostname}' found.`
+    `Remote Nuclide URIs must contain hostnames, '${parsedUri.hostname}' found ` +
+    `while parsing '${remoteUri}'`
   );
   invariant(
     parsedUri.port,
-    `Remote Nuclide URIs must have port numbers, '${parsedUri.port}' found.`
+    `Remote Nuclide URIs must have port numbers, '${parsedUri.port}' found ` +
+    `while parsing '${remoteUri}'`
   );
 
   // Explicitly copying object properties appeases Flow's "maybe" type handling. Using the `...`
@@ -198,7 +203,7 @@ function relative(uri: NuclideUri, other: NuclideUri): string {
   const remote = isRemote(uri);
   if (remote !== isRemote(other) ||
       (remote && getHostname(uri) !== getHostname(other))) {
-    throw new Error('Cannot relative urls on different hosts.');
+    throw new Error(`Cannot relative urls on different hosts: ${uri} and ${other}`);
   }
   if (remote) {
     return pathModule.relative(getPath(uri), getPath(other));
