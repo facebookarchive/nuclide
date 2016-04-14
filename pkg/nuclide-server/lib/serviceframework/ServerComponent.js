@@ -410,6 +410,10 @@ function formatError(error: any): ?(Object | string) {
   } else if (error === undefined) {
     return undefined;
   } else {
-    return `Unknown Error: ${error.toString()}`;
+    try {
+      return `Unknown Error: ${JSON.stringify(error, null, 2)}`;
+    } catch (jsonError) {
+      return `Unknown Error: ${error.toString()}`;
+    }
   }
 }
