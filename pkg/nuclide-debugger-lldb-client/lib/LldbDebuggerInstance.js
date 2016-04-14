@@ -24,6 +24,7 @@ const remoteUri = require('../../nuclide-remote-uri');
 const {Disposable} = require('atom');
 const WebSocketServer = require('ws').Server;
 const {stringifyError} = require('../../nuclide-commons').error;
+import {DisposableSubscription} from '../../nuclide-commons';
 
 const SESSION_END_EVENT = 'session-end-event';
 
@@ -57,11 +58,12 @@ export class LldbDebuggerInstance extends DebuggerInstance {
   _registerConnection(connection: DebuggerConnectionType): void {
     this._debuggerConnection = connection;
     this._disposables.add(connection);
-    this._disposables.add(connection.getServerMessageObservable().subscribe(
-      this._handleServerMessage.bind(this),
-      this._handleServerError.bind(this),
-      this._handleSessionEnd.bind(this)
-    ));
+    this._disposables.add(new DisposableSubscription(
+      connection.getServerMessageObservable().subscribe(
+        this._handleServerMessage.bind(this),
+        this._handleServerError.bind(this),
+        this._handleSessionEnd.bind(this)
+    )));
   }
 
   _handleServerMessage(message: string): void {
