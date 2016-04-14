@@ -130,6 +130,13 @@ module.exports = {
     return requireProcess().createExecEnvironment;
   },
 
+  /**
+   * IMPORTANT: You should almost never use this!! See `./promises.js`.
+   */
+  get Deferred() {
+    return requirePromises().Deferred;
+  },
+
   get denodeify() {
     return requirePromises().denodeify;
   },

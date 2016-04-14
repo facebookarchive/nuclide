@@ -213,6 +213,26 @@ function serializeAsyncCall<T>(asyncFun: () => Promise<T>): () => Promise<T> {
   };
 }
 
+/**
+ * Provides a promise along with methods to change its state. Our version of the non-standard
+ * `Promise.defer()`.
+ *
+ * IMPORTANT: This should almost never be used!! Instead, use the Promise constructor. See
+ *  <https://github.com/petkaantonov/bluebird/wiki/Promise-anti-patterns#the-deferred-anti-pattern>
+ */
+class Deferred<T> {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+  reject: (error: Error) => void;
+
+  constructor() {
+    this.promise = new Promise((resolve, reject) => {
+      this.resolve = resolve;
+      this.reject = reject;
+    });
+  }
+}
+
 const promises = module.exports = {
 
   /**
@@ -258,6 +278,8 @@ const promises = module.exports = {
       next(0);
     });
   },
+
+  Deferred,
 
   denodeify(f: (...args: Array<any>) => any): (...args: Array<any>) => Promise<any> {
     return function(...args: Array<any>) {
