@@ -251,6 +251,9 @@ export async function getDefinition(
 
   // Results in the current file, have filename set to empty string.
   const result: HackDefinition = (hhResult.result: any);
+  if (result == null) {
+    return null;
+  }
   if (result.definition_pos != null && result.definition_pos.filename === '') {
     result.definition_pos.filename = file;
   }
