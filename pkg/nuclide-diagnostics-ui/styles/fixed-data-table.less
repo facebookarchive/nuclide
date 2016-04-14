@@ -16,6 +16,9 @@
  */
 .public_fixedDataTable_main {
   border-color: @inset-panel-border-color;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
 }
 
 .public_fixedDataTable_header .public_fixedDataTableCell_main {
@@ -28,123 +31,51 @@
   border-color: @inset-panel-border-color;
 }
 
-.public_fixedDataTable_horizontalScrollbar .public_Scrollbar_mainHorizontal {
-  background-color: #fff;
-}
-
 /**
  * Table cell.
  */
 .public_fixedDataTableCell_main {
   border-color: transparent;
-}
-
-.public_fixedDataTableCell_highlighted {
-  background-color: #f4f4f4;
+  display: inline-block;
 }
 
 .public_fixedDataTableCell_cellContent {
   padding: 4px 8px;
-}
-
-.public_fixedDataTableCell_columnResizerKnob {
-  background-color: #0284ff;
-}
-
-/**
- * Column resizer line.
- */
-.public_fixedDataTableColumnResizerLine_main {
-  border-color: #0284ff;
-}
-
-/**
- * Table row.
- */
-.public_fixedDataTableRow_fixedColumnsDivider {
-  border-color: @inset-panel-border-color;
-}
-
-/**
- * Scrollbars.
- */
-
-/* Touching the scroll-track directly makes the scroll-track bolder */
-.public_Scrollbar_main.public_Scrollbar_mainActive,
-.public_Scrollbar_main:hover {
-  background-color: rgba(255, 255, 255, 0.8);
-}
-
-.public_Scrollbar_main.public_Scrollbar_mainActive,
-.public_Scrollbar_main:hover {
-  background-color: rgba(255, 255, 255, 0.8);
-}
-
-.public_Scrollbar_mainOpaque,
-.public_Scrollbar_mainOpaque.public_Scrollbar_mainActive,
-.public_Scrollbar_mainOpaque:hover {
-  background-color: #fff;
-}
-
-.public_Scrollbar_face:after {
-  background-color: #c2c2c2;
-}
-
-.public_Scrollbar_main:hover .public_Scrollbar_face:after,
-.public_Scrollbar_mainActive .public_Scrollbar_face:after,
-.public_Scrollbar_faceActive:after {
-  background-color: #7d7d7d;
+  word-break: break-all;
 }
 
 /** fixedDataTableCellGroupLayout */
 
 .fixedDataTableCellGroupLayout_cellGroup {
-  -webkit-backface-visibility: hidden;
-          backface-visibility: hidden;
-  left: 0;
+  flex-shrink: 0;
   overflow: hidden;
-  position: absolute;
-  top: 0;
   white-space: nowrap;
 }
 
 .fixedDataTableCellGroupLayout_cellGroup > .public_fixedDataTableCell_main {
   display: inline-block;
+  height: inherit;
   vertical-align: top;
   white-space: normal;
-}
-
-.fixedDataTableCellGroupLayout_cellGroupWrapper {
-  position: absolute;
-  top: 0;
 }
 
 /** fixedDataTableCellLayout */
 
 .fixedDataTableCellLayout_main {
-  border-right-style: solid;
-  border-right-width: 1px;
-  border-width: 0 1px 0 0;
+  border-style: solid;
+  border-width: 0 1px 1px 0;
   display: block;
   overflow: hidden;
-  position: absolute;
   white-space: normal;
 }
 
-.fixedDataTableCellLayout_lastChild {
-  border-width: 0 1px 1px 0;
-}
-
-.fixedDataTableCellLayout_alignRight {
-  text-align: right;
-}
-
-.fixedDataTableCellLayout_alignCenter {
-  text-align: center;
+.fixedDataTableCellLayout_main:last-child {
+  border-right-width: 0;
 }
 
 .fixedDataTableCellLayout_wrap1 {
   display: table;
+  height: inherit;
 }
 
 .fixedDataTableCellLayout_wrap2 {
@@ -156,65 +87,14 @@
   vertical-align: middle;
 }
 
-.fixedDataTableCellLayout_columnResizerContainer {
-  position: absolute;
-  right: 0px;
-  width: 6px;
-  z-index: 1;
-}
-
-.fixedDataTableCellLayout_columnResizerContainer:hover {
-  cursor: ew-resize;
-}
-
-.fixedDataTableCellLayout_columnResizerContainer:hover .fixedDataTableCellLayout_columnResizerKnob {
-  visibility: visible;
-}
-
-.fixedDataTableCellLayout_columnResizerKnob {
-  position: absolute;
-  right: 0px;
-  visibility: hidden;
-  width: 4px;
-}
-
-/** fixedDataTableColumnResizerLineLayout */
-
-.fixedDataTableColumnResizerLineLayout_mouseArea {
-  cursor: ew-resize;
-  position: absolute;
-  right: -5px;
-  width: 12px;
-}
-
-.fixedDataTableColumnResizerLineLayout_main {
-  border-right-style: solid;
-  border-right-width: 1px;
-  position: absolute;
-  z-index: 10;
-}
-
-body[dir="rtl"] .fixedDataTableColumnResizerLineLayout_main {
-  /* the resizer line is in the wrong position in RTL with no easy fix.
-   * Disabling is more useful than displaying it.
-   * #167 (github) should look into this and come up with a permanent fix.
-   */
-  display: none !important;
-}
-
-.fixedDataTableColumnResizerLineLayout_hiddenElem {
-  display: none !important;
-}
-
 /** fixedDataTableLayout */
 
 .fixedDataTableLayout_main {
   background-color: @inset-panel-background-color;
-  border-color: @inset-panel-border-color;
-  border-style: solid;
-  border-width: 1px 0 0 0;
-  overflow: hidden;
-  position: relative;
+  border-width: 0;
+  display: flex;
+  flex: 1;
+  min-height: 0;
 }
 
 .fixedDataTableLayout_header {
@@ -222,145 +102,17 @@ body[dir="rtl"] .fixedDataTableColumnResizerLineLayout_main {
   border-bottom-width: 1px;
 }
 
-.fixedDataTableLayout_footer .public_fixedDataTableCell_main {
-  border-top-style: solid;
-  border-top-width: 1px;
-}
-
-.fixedDataTableLayout_topShadow,
-.fixedDataTableLayout_bottomShadow {
-  display: none;
-}
-
-.fixedDataTableLayout_rowsContainer {
-  overflow: hidden;
-  position: relative;
-}
-
-.fixedDataTableLayout_horizontalScrollbar {
-  bottom: 0;
-  position: absolute;
-}
-
 /** fixedDataTableRowLayout */
 
 .fixedDataTableRowLayout_main {
   overflow: hidden;
-  position: absolute;
-  top: 0;
-}
-
-.fixedDataTableRowLayout_body {
-  left: 0;
-  position: absolute;
-  top: 0;
-}
-
-.fixedDataTableRowLayout_fixedColumnsDivider {
-  -webkit-backface-visibility: hidden;
-          backface-visibility: hidden;
-  border-left-style: solid;
-  border-left-width: 1px;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 0;
 }
 
 .fixedDataTableRowLayout_rowWrapper {
-  position: absolute;
   top: 0;
   cursor: pointer;
 }
 
-/** ScrollbarLayout */
-
-.ScrollbarLayout_main {
-  outline: none;
-  overflow: hidden;
-  position: absolute;
-  -webkit-transition-duration: 250ms;
-          transition-duration: 250ms;
-  -webkit-transition-timing-function: ease;
-          transition-timing-function: ease;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
-}
-
-.ScrollbarLayout_mainVertical {
-  bottom: 0;
-  right: 0;
-  top: 0;
-  -webkit-transition-property: background-color width;
-          transition-property: background-color width;
-  width: 15px;
-}
-
-.ScrollbarLayout_mainVertical.public_Scrollbar_mainActive,
-.ScrollbarLayout_mainVertical:hover {
-  width: 17px;
-}
-
-.ScrollbarLayout_mainHorizontal {
-  bottom: 0;
-  height: 15px;
-  left: 0;
-  -webkit-transition-property: background-color height;
-          transition-property: background-color height;
-}
-
-/* Touching the scroll-track directly makes the scroll-track bolder */
-.ScrollbarLayout_mainHorizontal.public_Scrollbar_mainActive,
-.ScrollbarLayout_mainHorizontal:hover {
-  height: 17px;
-}
-
-.ScrollbarLayout_face {
-  left: 0;
-  overflow: hidden;
-  position: absolute;
-  z-index: 1;
-}
-
-/**
- * This selector renders the "nub" of the scrollface. The nub must
- * be rendered as pseudo-element so that it won't receive any UI events then
- * we can get the correct `event.offsetX` and `event.offsetY` from the
- * scrollface element while dragging it.
- */
-.ScrollbarLayout_face:after {
-  border-radius: 6px;
-  content: '';
-  display: block;
-  position: absolute;
-  -webkit-transition: background-color 250ms ease;
-          transition: background-color 250ms ease;
-}
-
-.ScrollbarLayout_faceHorizontal {
-  bottom: 0;
-  left: 0;
-  top: 0;
-}
-
-.ScrollbarLayout_faceHorizontal:after {
-  bottom: 4px;
-  left: 0;
-  top: 4px;
-  width: 100%;
-}
-
-.ScrollbarLayout_faceVertical {
-  left: 0;
-  right: 0;
-  top: 0;
-}
-
-.ScrollbarLayout_faceVertical:after {
-  height: 100%;
-  left: 4px;
-  right: 4px;
-  top: 0;
+.nuclide-diagnostics-pane__actionable {
+  cursor: pointer;
 }

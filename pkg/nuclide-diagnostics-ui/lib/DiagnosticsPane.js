@@ -11,27 +11,29 @@
 
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-base';
 
-const {Column, Table} = require('fixed-data-table');
-const {React} = require('react-for-atom');
-const {PropTypes} = React;
-
-import {track} from '../../nuclide-analytics';
+import {fileColumnCellDataGetter} from './paneUtils';
 import {goToLocation} from '../../nuclide-atom-helpers';
-
-const {fileColumnCellDataGetter} = require('./paneUtils');
+import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
+import {React} from 'react-for-atom';
+import {track} from '../../nuclide-analytics';
 
 type textAndType = {text: string; isPlainText: boolean};
 
+const {PropTypes} = React;
 const DEFAULT_LINE_TEXT_HEIGHT = 15;
 const PIXELS_PER_CHAR = 6;
 const MAX_ROW_LINES = 3;
 const ROW_HORIZONTAL_PADDING = 16;
 const ROW_VERTICAL_PADDING = 8;
 
-const TYPE_COLUMN_WIDTH = 75;
+const TYPE_COLUMN_WIDTH = 80;
 const PROVIDER_NAME_COLUMN_WIDTH = 175;
 const FILE_PATH_COLUMN_WIDTH = 300;
 const RANGE_COLUMN_WIDTH = 50;
+
+// Maximum number of results to render in the table before truncating and displaying a "Max results
+// reached" message.
+const MAX_RESULTS_COUNT = 1000;
 
 const TypeToHighlightClassName = Object.freeze({
   ERROR: 'highlight-error',
@@ -56,16 +58,14 @@ function sourceColumnCellDataGetter(
 function plainTextColumnCellRenderer(text: string): ReactElement {
   // For consistency with messageColumnCellDataGetter(), render plaintext in a <span> so that
   // everything lines up.
-  return <span className="nuclide-fixed-data-cell">{text}</span>;
+  return <span>{text}</span>;
 }
 
 function typeColumnCellRenderer(text: string): ReactElement {
   const highlightClassName = TypeToHighlightClassName[text.toUpperCase()] || 'highlight';
   return (
-    <span className="nuclide-fixed-data-cell">
-      <span className={highlightClassName}>
-        {text}
-      </span>
+    <span className={highlightClassName}>
+      {text}
     </span>
   );
 }
@@ -99,9 +99,7 @@ function messageColumnCellRenderer(message: textAndType): ReactElement {
   if (message.isPlainText) {
     return plainTextColumnCellRenderer(message.text);
   } else {
-    return (
-      <span className="nuclide-fixed-data-cell" dangerouslySetInnerHTML={{__html: message.text}} />
-    );
+    return <span dangerouslySetInnerHTML={{__html: message.text}}></span>;
   }
 }
 
@@ -124,9 +122,36 @@ function onRowClick(
   goToLocation(uri, line, column);
 }
 
+type CellProps = {
+  children: React.Element;
+  style?: Object;
+  title?: string;
+};
+
+/*
+ * Returns markup similar to that produced by fixed-data-table v0.6.0.
+ */
+function Cell(props: CellProps): ReactElement {
+  return (
+    <div
+      className="fixedDataTableCellLayout_main public_fixedDataTableCell_main"
+      style={props.style}
+      title={props.title}>
+      <div className="fixedDataTableCellLayout_wrap1 public_fixedDataTableCell_wrap1">
+        <div className="fixedDataTableCellLayout_wrap2 public_fixedDataTableCell_wrap2">
+          <div className="fixedDataTableCellLayout_wrap3 public_fixedDataTableCell_wrap3">
+            <div className="public_fixedDataTableCell_cellContent">
+              {props.children}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 class DiagnosticsPane extends React.Component {
   static propTypes = {
-    height: PropTypes.number.isRequired,
     diagnostics: PropTypes.array.isRequired,
     showFileName: PropTypes.bool,
     width: PropTypes.number.isRequired,
@@ -136,10 +161,8 @@ class DiagnosticsPane extends React.Component {
 
   constructor(props: mixed) {
     super(props);
-    (this: any)._onColumnResizeEndCallback = this._onColumnResizeEndCallback.bind(this);
     (this: any)._rowGetter = this._rowGetter.bind(this);
     (this: any)._rowHeightGetter = this._rowHeightGetter.bind(this);
-    (this: any)._renderHeader = this._renderHeader.bind(this);
     (this: any)._getMessageWidth = this._getMessageWidth.bind(this);
 
     this.state = {
@@ -161,15 +184,6 @@ class DiagnosticsPane extends React.Component {
       - this.state.widths.range;
   }
 
-  _onColumnResizeEndCallback(newColumnWidth: number, columnKey: string): void {
-    this.setState(({widths}) => ({
-      widths: {
-        ...widths,
-        [columnKey]: newColumnWidth,
-      },
-    }));
-  }
-
   _rowGetter(rowIndex: number): DiagnosticMessage {
     return this.props.diagnostics[rowIndex];
   }
@@ -183,81 +197,75 @@ class DiagnosticsPane extends React.Component {
     return messageMaxLinesOfText * DEFAULT_LINE_TEXT_HEIGHT + ROW_VERTICAL_PADDING;
   }
 
-  _renderHeader(label: ?string, cellDataKey: string): ReactElement {
-    // TODO(ehzhang): Figure out why an onClick added to this <span> does not fire.
-    return (
-      <span>{label}</span>
-    );
-  }
-
   render(): ReactElement {
-    let fileColumn = null;
-    if (this.props.showFileName) {
-      fileColumn = (
-        <Column
-          align="left"
-          cellDataGetter={fileColumnCellDataGetter}
-          cellRenderer={plainTextColumnCellRenderer}
-          dataKey="filePath"
-          headerRenderer={this._renderHeader}
-          isResizable={true}
-          label="File"
-          width={this.state.widths.filePath}
-        />
+    const diagnosticCells = [];
+    for (
+      let index = 0;
+      index < Math.min(MAX_RESULTS_COUNT, this.props.diagnostics.length);
+      index++
+    ) {
+      const diag = this.props.diagnostics[index];
+      diagnosticCells.push(
+        <div
+          className="fixedDataTableCellGroupLayout_cellGroup nuclide-diagnostics-pane__actionable"
+          key={index}
+          onClick={e => { onRowClick(e, index, diag); }}
+          style={{height: this._rowHeightGetter(index)}}>
+          <Cell style={{width: `${this.state.widths.type}px`}}>
+            {typeColumnCellRenderer(typeColumnCellDataGetter('type', diag))}
+          </Cell>
+          <Cell style={{width: `${this.state.widths.providerName}px`}}>
+            {plainTextColumnCellRenderer(sourceColumnCellDataGetter('providerName', diag))}
+          </Cell>
+          {this.props.showFileName
+            ? <Cell
+                style={{width: `${this.state.widths.filePath}px`}}
+                title={plainTextColumnCellRenderer(fileColumnCellDataGetter('filePath', diag))}>
+                {plainTextColumnCellRenderer(fileColumnCellDataGetter('filePath', diag))}
+              </Cell>
+            : null
+          }
+          <Cell style={{width: `${this.state.widths.range}px`}}>
+            {plainTextColumnCellRenderer(locationColumnCellDataGetter('range', diag))}
+          </Cell>
+          <Cell style={{width: `${this._getMessageWidth()}px`}}>
+            {messageColumnCellRenderer(messageColumnCellDataGetter('message', diag))}
+          </Cell>
+        </div>
       );
     }
+
+    if (this.props.diagnostics.length > MAX_RESULTS_COUNT) {
+      diagnosticCells.push(
+        <div className="fixedDataTableCellGroupLayout_cellGroup" key="maxResultsMessage">
+          <div className="public_fixedDataTableCell_cellContent text-center">
+            <em>Max results ({MAX_RESULTS_COUNT}) reached. Fix diagnostics or show only diagnostics
+            for the current file to view more.</em>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <Table
-        height={this.props.height}
-        headerHeight={30}
-        isColumnResizing={false}
-        onRowClick={onRowClick}
-        onColumnResizeEndCallback={this._onColumnResizeEndCallback}
-        overflowX="hidden"
-        overflowY="auto"
-        ref="table"
-        rowGetter={this._rowGetter}
-        rowHeight={DEFAULT_LINE_TEXT_HEIGHT + ROW_VERTICAL_PADDING}
-        rowHeightGetter={this._rowHeightGetter}
-        rowsCount={this.props.diagnostics.length}
-        width={this.props.width}>
-        <Column
-          align="left"
-          cellDataGetter={typeColumnCellDataGetter}
-          cellRenderer={typeColumnCellRenderer}
-          dataKey="type"
-          isResizable={true}
-          label="Type"
-          width={this.state.widths.type}
-        />
-        <Column
-          align="left"
-          cellDataGetter={sourceColumnCellDataGetter}
-          cellRenderer={plainTextColumnCellRenderer}
-          dataKey="providerName"
-          isResizable={true}
-          label="Source"
-          width={this.state.widths.providerName}
-        />
-        {fileColumn}
-        <Column
-          align="left"
-          cellDataGetter={locationColumnCellDataGetter}
-          cellRenderer={plainTextColumnCellRenderer}
-          dataKey="range"
-          isResizable={true}
-          label="Line"
-          width={this.state.widths.range}
-        />
-        <Column
-          align="left"
-          cellDataGetter={messageColumnCellDataGetter}
-          cellRenderer={messageColumnCellRenderer}
-          dataKey="message"
-          label="Description"
-          width={this._getMessageWidth()}
-        />
-      </Table>
+      <div className="fixedDataTableLayout_main">
+        <div className="public_fixedDataTable_main">
+          <div className="public_fixedDataTable_header">
+            <div className="fixedDataTableCellGroupLayout_cellGroup" style={{height: '30px'}}>
+              <Cell style={{width: `${this.state.widths.type}px`}}>Type</Cell>
+              <Cell style={{width: `${this.state.widths.providerName}px`}}>Source</Cell>
+              {this.props.showFileName
+                ? <Cell style={{width: `${this.state.widths.filePath}px`}}>File</Cell>
+                : null
+              }
+              <Cell style={{width: `${this.state.widths.range}px`}}>Line</Cell>
+              <Cell style={{width: `${this._getMessageWidth()}px`}}>Description</Cell>
+            </div>
+          </div>
+          <PanelComponentScroller flexDirection="column">
+            {diagnosticCells}
+          </PanelComponentScroller>
+        </div>
+      </div>
     );
   }
 }

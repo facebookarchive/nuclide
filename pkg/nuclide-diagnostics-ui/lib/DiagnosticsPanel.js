@@ -21,12 +21,6 @@ const {PropTypes} = React;
 
 import {track} from '../../nuclide-analytics';
 
-// This must match the value in diagnostics-table.less.
-const PANEL_HEADER_HEIGHT_IN_PX = 28;
-
-// This must match the value in panel-component.less.
-const RESIZE_HANDLER_HEIGHT_IN_PX = 4;
-
 let keyboardShortcut: ?string = null;
 function getKeyboardShortcut(): string {
   if (keyboardShortcut != null) {
@@ -44,7 +38,6 @@ function getKeyboardShortcut(): string {
   }
   return keyboardShortcut;
 }
-
 
 /**
  * Dismissable panel that displays the diagnostics from nuclide-diagnostics-store.
@@ -89,17 +82,13 @@ class DiagnosticsPanel extends React.Component {
       }
     });
 
-    const panelHeight = this.props.height;
-    const paneHeight = panelHeight - PANEL_HEADER_HEIGHT_IN_PX - RESIZE_HANDLER_HEIGHT_IN_PX;
-
     const shortcut = getKeyboardShortcut();
     let shortcutSpan = null;
-    if (shortcut) {
+    if (shortcut !== '') {
       shortcutSpan = (
         <span className="text-subtle inline-block">
-          Use <kbd className="key-binding key-binding-sm text-highlight">
-          {getKeyboardShortcut()}
-          </kbd> to toggle this panel.
+          Use <kbd className="key-binding key-binding-sm text-highlight">{shortcut}</kbd> to toggle
+          this panel.
         </span>
       );
     }
@@ -129,13 +118,13 @@ class DiagnosticsPanel extends React.Component {
       <PanelComponent
         ref="panel"
         dock="bottom"
-        initialLength={panelHeight}
+        initialLength={this.props.height}
         noScroll={true}
         onResize={this.props.onResize}
         overflowX="hidden">
-        <div>
+        <div style={{display: 'flex', flex: 1, flexDirection: 'column'}}>
           {linterWarning}
-          <Toolbar>
+          <Toolbar location="top">
             <ToolbarLeft>
               <span className={errorSpanClassName}>
                 Errors: {errorCount}
@@ -163,7 +152,6 @@ class DiagnosticsPanel extends React.Component {
           <DiagnosticsPane
             showFileName={!this.props.filterByActiveTextEditor}
             diagnostics={diagnostics}
-            height={paneHeight}
             width={this.props.width}
           />
         </div>

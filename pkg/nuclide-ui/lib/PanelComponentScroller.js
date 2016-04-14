@@ -9,17 +9,23 @@
  * the root directory of this source tree.
  */
 
+import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
 type Props = {
   children: React.Element;
-  overflowX: ?string;
+  flexDirection?: 'column';
+  overflowX?: string;
 };
 
 export const PanelComponentScroller = (props: Props): React.Element => {
   const style = (props.overflowX == null) ? null : {overflowX: props.overflowX};
+  const className = classnames('nuclide-ui-panel-component-scroller', {
+    'nuclide-ui-panel-component-scroller--column': (props.flexDirection === 'column'),
+  });
+
   return (
-    <div className="nuclide-ui-panel-component-scroller" style={style}>
+    <div className={className} style={style}>
       {props.children}
     </div>
   );
