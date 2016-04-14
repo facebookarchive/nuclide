@@ -25,7 +25,6 @@ import {matchesFilter} from './FileTreeFilterHelper';
 import {Minimatch} from 'minimatch';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
-import invariant from 'assert';
 import {getLogger} from '../../nuclide-logging';
 import shell from 'shell';
 
@@ -1027,7 +1026,6 @@ export class FileTreeStore {
 
   _collapseNodeDeep(rootKey: NuclideUri, nodeKey: NuclideUri): void {
     this._updateNodeAtRoot(rootKey, nodeKey, node => {
-      invariant(node.isExpanded);
       return node.setRecursive(
         /* prePredicate */ null,
         childNode => {
