@@ -13,7 +13,7 @@
 
 import type {Observable} from '@reactivex/rxjs';
 
-import type {BusySignalMessageBusy} from '../../nuclide-busy-signal-interfaces';
+import type {BusySignalMessageBusy} from './types';
 
 import {
   React,

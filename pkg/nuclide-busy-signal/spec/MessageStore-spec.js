@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalMessage, BusySignalMessageBusy} from '../../nuclide-busy-signal-interfaces';
+import type {
+  BusySignalMessage,
+  BusySignalMessageBusy,
+} from '../lib/types';
 
 import {Subject} from '@reactivex/rxjs';
 

@@ -12,7 +12,7 @@
 import type {TypeHint} from '../../nuclide-type-hint-interfaces';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
-} from '../../nuclide-busy-signal-provider-base';
+} from '../../nuclide-busy-signal';
 import type {HyperclickProvider} from '../../hyperclick-interfaces';
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
@@ -192,7 +192,7 @@ export function provideOutlines(): OutlineProvider {
 
 function provideBusySignal(): BusySignalProviderBaseType {
   if (busySignalProvider == null) {
-    const {BusySignalProviderBase} = require('../../nuclide-busy-signal-provider-base');
+    const {BusySignalProviderBase} = require('../../nuclide-busy-signal');
     busySignalProvider = new BusySignalProviderBase();
   }
   return busySignalProvider;

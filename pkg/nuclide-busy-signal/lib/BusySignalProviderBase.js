@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalMessage} from '../../nuclide-busy-signal-interfaces';
+import type {BusySignalMessage} from './types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {Observable} from '@reactivex/rxjs';
 

@@ -9,13 +9,27 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalProvider} from '../../nuclide-busy-signal-interfaces';
-
+import type {BusySignalProvider} from './types';
 import type {StatusBarTile as StatusBarTileType} from './StatusBarTile';
 
 import {Disposable, CompositeDisposable} from 'atom';
 import invariant from 'assert';
 import {MessageStore} from './MessageStore';
+
+import {BusySignalProviderBase} from './BusySignalProviderBase';
+import {DedupedBusySignalProviderBase} from './DedupedBusySignalProviderBase';
+
+export {
+  BusySignalProviderBase,
+  DedupedBusySignalProviderBase,
+};
+
+export type {
+  BusySignalMessage,
+  BusySignalMessageBusy,
+  BusySignalMessageDone,
+  BusySignalProvider,
+} from  './types';
 
 class Activation {
   _statusBarTile: ?StatusBarTileType;

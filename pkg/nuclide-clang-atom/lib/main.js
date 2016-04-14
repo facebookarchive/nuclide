@@ -13,7 +13,7 @@ import type {HyperclickProvider} from '../../hyperclick-interfaces';
 import type {TypeHintProvider as TypeHintProviderType} from '../../nuclide-type-hint-interfaces';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
-} from '../../nuclide-busy-signal-provider-base';
+} from '../../nuclide-busy-signal';
 import type {DiagnosticProvider} from '../../nuclide-diagnostics-base';
 import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
 import type ClangDiagnosticsProvider from './ClangDiagnosticsProvider';
@@ -27,7 +27,7 @@ let subscriptions: ?CompositeDisposable = null;
 
 function getBusySignalProvider(): BusySignalProviderBaseType {
   if (!busySignalProvider) {
-    const {BusySignalProviderBase} = require('../../nuclide-busy-signal-provider-base');
+    const {BusySignalProviderBase} = require('../../nuclide-busy-signal');
     busySignalProvider = new BusySignalProviderBase();
   }
   return busySignalProvider;

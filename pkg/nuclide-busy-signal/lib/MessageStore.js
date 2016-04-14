@@ -13,7 +13,7 @@ import type {
   BusySignalProvider,
   BusySignalMessage,
   BusySignalMessageBusy,
-} from '../../nuclide-busy-signal-interfaces';
+} from './types';
 
 import {Observable, BehaviorSubject} from '@reactivex/rxjs';
 import {Disposable} from 'atom';

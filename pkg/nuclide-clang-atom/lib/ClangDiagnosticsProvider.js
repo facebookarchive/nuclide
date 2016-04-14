@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalProviderBase} from '../../nuclide-busy-signal-provider-base';
+import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {
   ClangCompileResult,

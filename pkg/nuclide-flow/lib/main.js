@@ -12,7 +12,7 @@
 import type {HyperclickProvider} from '../../hyperclick-interfaces';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
-} from '../../nuclide-busy-signal-provider-base';
+} from '../../nuclide-busy-signal';
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 
@@ -91,7 +91,7 @@ export function getHyperclickProvider(): HyperclickProvider {
 
 export function provideBusySignal(): BusySignalProviderBaseType {
   if (!busySignalProvider) {
-    const {DedupedBusySignalProviderBase} = require('../../nuclide-busy-signal-provider-base');
+    const {DedupedBusySignalProviderBase} = require('../../nuclide-busy-signal');
     busySignalProvider = new DedupedBusySignalProviderBase();
   }
   return busySignalProvider;
