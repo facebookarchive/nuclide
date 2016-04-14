@@ -14,6 +14,7 @@ import type Rx from '@reactivex/rxjs';
 import invariant from 'assert';
 import {DisposableSubscription} from '../../nuclide-commons';
 import {track as rawTrack} from './track';
+import {HistogramTracker} from './HistogramTracker';
 
 export type TrackingEvent = {
   type: string;
@@ -193,4 +194,5 @@ module.exports = {
   startTracking,
   TimingTracker,
   trackTiming,
+  HistogramTracker,
 };

@@ -19,7 +19,7 @@ import os from 'os';
 import Rx from '@reactivex/rxjs';
 
 // Imports from other Nuclide packages.
-import {track} from '../../nuclide-analytics';
+import {track, HistogramTracker} from '../../nuclide-analytics';
 import {atomEventDebounce} from '../../nuclide-atom-helpers';
 import featureConfig from '../../nuclide-feature-config';
 
@@ -38,6 +38,7 @@ let keyEditorId = 0;
 let keyDownTime = 0;
 let keyLatency = 0;
 let lastKeyLatency = 0;
+let keyLatencyHistogram: ?HistogramTracker = null;
 
 let paneItemState$: ?Rx.BehaviorSubject = null;
 
@@ -60,6 +61,13 @@ export function activate(state: ?Object) {
   timeActiveEditorKeys();
   updateViews();
   updateAnalytics();
+
+  keyLatencyHistogram = new HistogramTracker(
+    'keypress-latency',
+    /* maxValue */ 500,
+    /* buckets */ 25,
+    /* intervalSeconds */ 60,
+  );
 }
 
 export function deactivate() {
@@ -76,6 +84,10 @@ export function deactivate() {
   if (activeEditorSubscriptions) {
     activeEditorSubscriptions.dispose();
     activeEditorSubscriptions = null;
+  }
+  if (keyLatencyHistogram != null) {
+    keyLatencyHistogram.dispose();
+    keyLatencyHistogram = null;
   }
 }
 
@@ -138,6 +150,9 @@ function timeActiveEditorKeys(): void {
   const stopKeyClock = () => {
     if (editor && editor.id && keyEditorId === editor.id && keyDownTime) {
       keyLatency = Date.now() - keyDownTime;
+      if (keyLatencyHistogram != null) {
+        keyLatencyHistogram.track(keyLatency);
+      }
       // Reset so that subsequent non-key-initiated buffer updates don't produce silly big numbers.
       keyDownTime = 0;
     }
