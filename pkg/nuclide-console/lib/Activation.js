@@ -37,7 +37,7 @@ class Activation {
       action$.asObservable(),
       initialState,
     )
-      .throttleTime(100)
+      .sampleTime(100)
       .subscribe(this._state$);
     this._commands = new Commands(
       action$,

@@ -187,6 +187,10 @@ declare module '@reactivex/rxjs' {
       seed: U,
     ): Observable<U>;
 
+    sample(notifier: Observable<any>): Observable<T>;
+
+    sampleTime(delay: number): Observable<T>;
+
     publishReplay(): ConnectableObservable<T>;
 
     retry(retryCount: number): Observable<T>;

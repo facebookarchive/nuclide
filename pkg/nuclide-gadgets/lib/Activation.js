@@ -48,7 +48,7 @@ class Activation {
             )
           )
           .merge(gadget$)
-          .throttleTime(100)
+          .sampleTime(100)
           .subscribe(() => this.commands.renderPaneItems())
       ),
 
