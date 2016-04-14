@@ -10,6 +10,7 @@
  */
 
 import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
+import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {Range} from 'atom';
 import {goToLocation} from '../../nuclide-atom-helpers';
@@ -18,7 +19,7 @@ import {getHackLanguageForUri} from './HackLanguage';
 
 import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';
 
-class HyperclickProvider {
+export class HyperclickProvider {
 
   @trackTiming('hack.get-definition')
   async getSuggestionForWord(
@@ -42,7 +43,7 @@ class HyperclickProvider {
     const newRange = locations
       .map(location => location.range)
       .filter(locationRange => locationRange != null)
-      [0];
+      [0] || range;
     const callbacks = locations.map(location => {
       return {
         title: `${location.name} : ${location.scope}`,
@@ -52,7 +53,7 @@ class HyperclickProvider {
       };
     });
     return {
-      range: newRange || range,
+      range: newRange,
       callback: callbacks.length === 1 ? callbacks[0].callback : callbacks,
     };
   }
@@ -66,10 +67,17 @@ async function findDefinition(
   editor: atom$TextEditor,
   line: number,
   column: number,
-): Promise<?Array<Object>> {
+): Promise<?Array<{
+  path: NuclideUri;
+  line: number;
+  column: number;
+  name: string;
+  scope: string;
+  range: ?atom$Range;
+}>> {
   const hackLanguage = await getHackLanguageForUri(editor.getPath());
   const filePath = editor.getPath();
-  if (!hackLanguage || !filePath) {
+  if (hackLanguage == null || filePath == null) {
     return null;
   }
 
@@ -96,5 +104,3 @@ async function findDefinition(
     };
   });
 }
-
-module.exports = HyperclickProvider;

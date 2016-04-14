@@ -90,7 +90,7 @@ export function createAutocompleteProvider(): atom$AutocompleteProvider {
 }
 
 export function getHyperclickProvider(): HyperclickProvider {
-  const HackHyperclickProvider = require('./HyperclickProvider');
+  const HackHyperclickProvider = require('./HyperclickProvider').HyperclickProvider;
   const hackHyperclickProvider = new HackHyperclickProvider();
   const getSuggestionForWord =
       hackHyperclickProvider.getSuggestionForWord.bind(hackHyperclickProvider);
