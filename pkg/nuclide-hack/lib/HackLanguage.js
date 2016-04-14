@@ -13,7 +13,6 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
 import type {
   HackDiagnostic,
-  HackSearchPosition,
   HackReference,
   HackOutline,
 } from '../../nuclide-hack-base/lib/HackService';
@@ -28,6 +27,18 @@ export type CompletionResult = {
   matchSnippet: string;
   matchText: string;
   matchType: string;
+};
+
+export type DefinitionResult = {
+  path: NuclideUri;
+  line: number;
+  column: number;
+  name: string;
+  length: number;
+  scope: string;
+  additionalInfo: string;
+  searchStartColumn?: number;
+  searchEndColumn?: number;
 };
 
 /**
@@ -73,7 +84,7 @@ export type HackLanguage  = {
       lineNumber: number,
       column: number,
       lineText: string
-    ): Promise<Array<HackSearchPosition>>;
+    ): Promise<Array<DefinitionResult>>;
 
   getType(
     filePath: NuclideUri,

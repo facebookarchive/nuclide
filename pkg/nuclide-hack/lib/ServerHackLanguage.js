@@ -10,11 +10,11 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {CompletionResult} from './HackLanguage';
+import type {CompletionResult, DefinitionResult} from './HackLanguage';
 import type {
   HackCompletion,
-  HackDefinitionResult,
   HackDiagnostic,
+  HackDefinitionResult,
   HackSearchPosition,
   HackRange,
   HackReference,
@@ -135,7 +135,7 @@ export class ServerHackLanguage {
     lineNumber: number,
     column: number,
     lineText: string
-  ): Promise<Array<HackSearchPosition>> {
+  ): Promise<Array<DefinitionResult>> {
     const definitionResult = await this._hackService.getIdentifierDefinition(
       filePath, contents, lineNumber, column
     );
@@ -260,12 +260,12 @@ function processDefinitionsForXhp(
   definitionResult: ?HackDefinitionResult,
   column: number,
   lineText: string,
-): Array<HackSearchPosition> {
+): Array<DefinitionResult> {
   if (!definitionResult) {
     return [];
   }
   const {definitions} = definitionResult;
-  return definitions.map(definition => {
+  return definitions.map((definition: HackSearchPosition) => {
     let {name} = definition;
     if (name.startsWith(':')) {
       // XHP class name, usages omit the leading ':'.
@@ -277,7 +277,7 @@ function processDefinitionsForXhp(
       definitionIndex >= column ||
       !xhpCharRegex.test(lineText.substring(definitionIndex, column))
     ) {
-      return definition;
+      return { ...definition };
     } else {
       return {
         ...definition,
