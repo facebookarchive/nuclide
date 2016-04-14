@@ -43,7 +43,7 @@ class RemoteDirectorySearcher {
     const services = directories.map(dir => this._serviceProvider(dir));
 
     // Start the search in each directory, and merge the resulting streams.
-    const searchStream = Observable.merge(directories.map((dir, index) =>
+    const searchStream = Observable.merge(...directories.map((dir, index) =>
       services[index].findInProjectSearch(dir.getPath(), regex, options.inclusions)));
 
     // Create a subject that we can use to track search completion.

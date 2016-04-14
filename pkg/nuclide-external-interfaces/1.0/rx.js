@@ -86,7 +86,6 @@ declare module '@reactivex/rxjs' {
       source1: Observable<U>,
       source2: Observable<V>,
     ): Observable<T | U | V>;
-    static merge(sources: Observable<T>[]): Observable<T>;
     static merge(...sources: Observable<T>[]): Observable<T>;
 
     static never(): Observable<void>;
