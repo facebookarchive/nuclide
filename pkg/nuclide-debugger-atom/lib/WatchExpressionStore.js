@@ -80,7 +80,7 @@ export class WatchExpressionStore {
     this._previousEvaluationSubscriptions.dispose();
     this._previousEvaluationSubscriptions = new CompositeDisposable();
     for (const [expression, subject] of this._watchExpressions) {
-      if (subject.observers.length === 0) {
+      if (subject.observers == null || subject.observers.length === 0) {
         // Nobody is watching this expression anymore.
         this._watchExpressions.delete(expression);
         continue;
