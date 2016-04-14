@@ -46,7 +46,6 @@ class DebuggerStore {
   _processSocket: ?string;
   _debuggerMode: DebuggerModeType;
   _onLoaderBreakpointResume: () => void;
-  _loaderBreakpointPromiseReject: () => void;
   loaderBreakpointResumePromise: Promise<void>;
 
   constructor(dispatcher: Dispatcher) {
@@ -60,9 +59,8 @@ class DebuggerStore {
     this._evaluationExpressionProviders = new Set();
     this._processSocket = null;
     this._debuggerMode = DebuggerMode.STOPPED;
-    this.loaderBreakpointResumePromise = new Promise((resolve, reject) => {
+    this.loaderBreakpointResumePromise = new Promise(resolve => {
       this._onLoaderBreakpointResume = resolve;
-      this._loaderBreakpointPromiseReject = reject;
     });
   }
 
@@ -158,10 +156,8 @@ class DebuggerStore {
       case Constants.Actions.DEBUGGER_MODE_CHANGE:
         this._debuggerMode = payload.data;
         if (this._debuggerMode === DebuggerMode.STOPPED) {
-          this._loaderBreakpointPromiseReject();
-          this.loaderBreakpointResumePromise = new Promise((resolve, reject) => {
+          this.loaderBreakpointResumePromise = new Promise(resolve => {
             this._onLoaderBreakpointResume = resolve;
-            this._loaderBreakpointPromiseReject = reject;
           });
         }
         break;
