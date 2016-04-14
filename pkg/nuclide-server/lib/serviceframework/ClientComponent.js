@@ -215,7 +215,7 @@ export default class ClientComponent {
         return new Promise((resolve, reject) => {
           this._socket.send(message);
           this._emitter.once(message.requestId.toString(), (hadError, error, result) => {
-            hadError ? reject(decodeError(error)) : resolve(result);
+            hadError ? reject(decodeError(message, error)) : resolve(result);
           });
 
           setTimeout(() => {
@@ -235,7 +235,7 @@ export default class ClientComponent {
             message.requestId.toString(),
             (hadError: boolean, error: ?Error, result: ?ObservableResult) => {
               if (hadError) {
-                observer.error(decodeError(error));
+                observer.error(decodeError(message, error));
               } else {
                 invariant(result);
                 if (result.type === 'completed') {
@@ -297,10 +297,11 @@ export default class ClientComponent {
 }
 
 // TODO: This should be a custom marshaller registered in the TypeRegistry
-function decodeError(encodedError: ?(Object | string)): ?(Error | string) {
+function decodeError(message: Object, encodedError: ?(Object | string)): ?(Error | string) {
   if (encodedError != null && typeof encodedError === 'object') {
     const resultError = new Error();
-    resultError.message = encodedError.message;
+    resultError.message =
+      `Remote Error: ${encodedError.message} processing message ${JSON.stringify(message)}`;
     // $FlowIssue - some Errors (notably file operations) have a code.
     resultError.code = encodedError.code;
     resultError.stack = encodedError.stack;
