@@ -20,19 +20,10 @@ import {extractWordAtPosition} from '../../nuclide-atom-helpers';
 import {injectObservableAsProps} from '../../nuclide-ui/lib/HOC';
 import {DebuggerMode} from './DebuggerStore';
 import {DebuggerDatatipComponent} from './DebuggerDatatipComponent';
+import {passesGK} from '../../nuclide-commons';
 
 const GK_DEBUGGER_DATATIPS = 'nuclide_debugger_datatips';
 const GK_TIMEOUT = 1000;
-async function passesGK(): Promise<boolean> {
-  try {
-    const {gatekeeper} = require('../../fb-gatekeeper');
-    return Boolean(
-      await gatekeeper.asyncIsGkEnabled(GK_DEBUGGER_DATATIPS, GK_TIMEOUT)
-    );
-  } catch (e) {
-    return false;
-  }
-}
 
 const DEFAULT_WORD_REGEX = /\w+/gi;
 function defaultGetEvaluationExpression(
@@ -80,7 +71,7 @@ export async function debuggerDatatip(
   editor: TextEditor,
   position: atom$Point,
 ): Promise<?Datatip> {
-  if (!await passesGK()) {
+  if (!await passesGK(GK_DEBUGGER_DATATIPS, GK_TIMEOUT)) {
     return null;
   }
   if (model.getStore().getDebuggerMode() !== DebuggerMode.PAUSED) {

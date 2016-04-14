@@ -16,6 +16,7 @@ import {getConfig} from './config';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import invariant from 'assert';
 import {extractWordAtPosition} from '../../nuclide-atom-helpers';
+import {passesGK} from '../../nuclide-commons';
 
 const MATCH_PREFIX_CASE_SENSITIVE_SCORE = 6;
 const MATCH_PREFIX_CASE_INSENSITIVE_SCORE = 4;
@@ -96,15 +97,6 @@ export type HackEnvironment = {
   isAvailable: boolean;
   useIdeConnection: boolean;
 };
-
-async function passesGK(gkid: string): Promise<boolean> {
-  try {
-    const {gatekeeper} = require('../../fb-gatekeeper');
-    return await gatekeeper.asyncIsGkEnabled(gkid) === true;
-  } catch (e) {
-    return false;
-  }
-}
 
 export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<HackEnvironment> {
   const hackService = getHackService(fileUri);

@@ -33,7 +33,7 @@ import {
 import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
 import remoteUri from '../../nuclide-remote-uri';
 import {ServerConnection} from '../../nuclide-remote-connection';
-import {passesGK} from '../../nuclide-debugger-common/lib/utils';
+import {passesGK} from '../../nuclide-commons';
 
 import DebuggerProcessInfo from './DebuggerProcessInfo';
 import DebuggerInstance from './DebuggerInstance';

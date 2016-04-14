@@ -307,4 +307,8 @@ module.exports = {
   get ExtendableError(): ExtendableErrorType {
     return requireFromCache('./ExtendableError');
   },
+
+  get passesGK(): (gatekeeperName: string, timeout?: number) => Promise<boolean> {
+    return requireFromCache('./gatekeeper').passesGK;
+  },
 };

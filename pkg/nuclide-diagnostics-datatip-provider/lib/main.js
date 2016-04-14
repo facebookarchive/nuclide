@@ -26,24 +26,15 @@ import {
 } from 'atom';
 import invariant from 'assert';
 import {makeDiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
+import {passesGK} from '../../nuclide-commons';
 
 
 const GK_DEBUGGER_DATATIPS = 'nuclide_diagnostics_datatips';
 const GK_TIMEOUT = 1000;
-async function passesGK(): Promise<boolean> {
-  try {
-    const {gatekeeper} = require('../../fb-gatekeeper');
-    return Boolean(
-      await gatekeeper.asyncIsGkEnabled(GK_DEBUGGER_DATATIPS, GK_TIMEOUT)
-    );
-  } catch (e) {
-    return false;
-  }
-}
 
 const DATATIP_PACKAGE_NAME = 'nuclide-diagnostics-datatip';
 export async function datatip(editor: TextEditor, position: atom$Point): Promise<?Datatip> {
-  if (!await passesGK()) {
+  if (!await passesGK(GK_DEBUGGER_DATATIPS, GK_TIMEOUT)) {
     return null;
   }
   invariant(fileDiagnostics);
