@@ -23,7 +23,7 @@ import utils from './utils';
 import WebSocket from 'ws';
 const {log, logTrace, logError, logInfo, setLogLevel} = utils;
 import {ClientCallback} from '../../nuclide-debugger-common/lib/ClientCallback';
-import {observeStream, splitStream} from '../../nuclide-commons';
+import {observeStream, splitStream, DisposableSubscription} from '../../nuclide-commons';
 
 type AttachInfoArgsType = {
   pid: string;
@@ -167,10 +167,11 @@ export class DebuggerRpcService {
     const IPC_CHANNEL_FD = 4;
     /* $FlowFixMe - update Flow defs for ChildProcess */
     const ipcStream = lldbProcess.stdio[IPC_CHANNEL_FD];
-    this._subscriptions.add(splitStream(observeStream(ipcStream)).subscribe(
-      this._handleIpcMessage.bind(this, ipcStream),
-      error => logError(`ipcStream error: ${JSON.stringify(error)}`),
-    ));
+    this._subscriptions.add(new DisposableSubscription(
+      splitStream(observeStream(ipcStream)).subscribe(
+        this._handleIpcMessage.bind(this, ipcStream),
+        error => logError(`ipcStream error: ${JSON.stringify(error)}`),
+    )));
   }
 
   _handleIpcMessage(ipcStream: Object, message: string): void {
@@ -219,19 +220,20 @@ export class DebuggerRpcService {
     // Make sure the bidirectional communication channel is set up before
     // sending data.
     argumentsStream.write('init\n');
-    this._subscriptions.add(observeStream(argumentsStream).first().subscribe(
-      text => {
-        if (text.startsWith('ready')) {
-          const args_in_json = JSON.stringify(args);
-          logInfo(`Sending ${args_in_json} to child_process`);
-          argumentsStream.write(`${args_in_json}\n`);
-        } else {
-          logError(`Get unknown initial data: ${text}.`);
-          child.kill();
-        }
-      },
-      error => logError(`argumentsStream error: ${JSON.stringify(error)}`)
-    ));
+    this._subscriptions.add(new DisposableSubscription(
+      observeStream(argumentsStream).first().subscribe(
+        text => {
+          if (text.startsWith('ready')) {
+            const args_in_json = JSON.stringify(args);
+            logInfo(`Sending ${args_in_json} to child_process`);
+            argumentsStream.write(`${args_in_json}\n`);
+          } else {
+            logError(`Get unknown initial data: ${text}.`);
+            child.kill();
+          }
+        },
+        error => logError(`argumentsStream error: ${JSON.stringify(error)}`)
+    )));
   }
 
   _connectWithLLDB(lldbProcess: child_process$ChildProcess): Promise<WebSocket> {
