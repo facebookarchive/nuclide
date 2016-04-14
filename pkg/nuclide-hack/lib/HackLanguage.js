@@ -41,6 +41,15 @@ export type DefinitionResult = {
   searchEndColumn?: number;
 };
 
+export type Definition = {
+  name: string;
+  path: NuclideUri;
+  line: number;
+  column: number;
+  // Range in the input where the symbol reference occurs.
+  queryRange: atom$Range;
+};
+
 /**
  * The HackLanguage is the controller that servers language requests by trying to get worker results
  * and/or results from HackService (which would be executing hh_client on a supporting server)
@@ -85,6 +94,13 @@ export type HackLanguage  = {
       column: number,
       lineText: string
     ): Promise<Array<DefinitionResult>>;
+
+  getIdeDefinition(
+      filePath: NuclideUri,
+      contents: string,
+      lineNumber: number,
+      column: number
+    ): Promise<?Definition>;
 
   getType(
     filePath: NuclideUri,

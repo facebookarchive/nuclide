@@ -16,6 +16,7 @@ import {goToLocation} from '../../nuclide-atom-helpers';
 import {trackTiming} from '../../nuclide-analytics';
 import {getHackLanguageForUri} from './HackLanguage';
 import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';
+import {passesGK} from '../../nuclide-commons';
 import invariant from 'assert';
 
 export class HyperclickProvider {
@@ -41,41 +42,54 @@ export class HyperclickProvider {
     const line = range.start.row;
     const column = range.start.column;
     const contents = editor.getText();
-    const buffer = editor.getBuffer();
-    const lineText = buffer.lineForRow(line);
-    const definitions = await hackLanguage.getDefinition(
-      filePath, contents, line + 1, column + 1, lineText
-    );
-
-    if (definitions.length === 0) {
-      return null;
-    }
-
-    // Optionally use the range returned from the definition matches, if any.
-    // When the word regex isn't good enough for matching ranges (e.g. in case of XHP),
-    // the only non-null returned results would be for the xhp range.
-    // Hence, considered the most accurate range for the definition result(s).
-    let newRange = range;
-    const locationResult = definitions.filter(
-      definition => definition.searchStartColumn != null && definition.searchEndColumn != null)[0];
-    if (locationResult != null) {
-      invariant(locationResult.searchStartColumn != null && locationResult.searchEndColumn != null);
-      newRange = new Range(
-        [line, locationResult.searchStartColumn],
-        [line, locationResult.searchEndColumn]);
-    }
-
-    const callbacks = definitions.map(location => {
-      return {
-        title: `${location.name} : ${location.scope}`,
+    if (await passesGK('nuclide_hack_ide_get_definition')) {
+      const definition = await hackLanguage.getIdeDefinition(
+        filePath, contents, line + 1, column + 1);
+      return definition == null ? null : {
+        range: definition.queryRange,
         callback() {
-          goToLocation(location.path, location.line, location.column);
+          goToLocation(definition.path, definition.line - 1, definition.column - 1);
         },
       };
-    });
-    return {
-      range: newRange,
-      callback: callbacks.length === 1 ? callbacks[0].callback : callbacks,
-    };
+    } else {
+      // TODO: Remove this once the GK is at 100%
+      const buffer = editor.getBuffer();
+      const lineText = buffer.lineForRow(line);
+      const definitions = await hackLanguage.getDefinition(
+        filePath, contents, line + 1, column + 1, lineText
+      );
+
+      if (definitions.length === 0) {
+        return null;
+      }
+
+      // Optionally use the range returned from the definition matches, if any.
+      // When the word regex isn't good enough for matching ranges (e.g. in case of XHP),
+      // the only non-null returned results would be for the xhp range.
+      // Hence, considered the most accurate range for the definition result(s).
+      let newRange = range;
+      const locationResult = definitions.filter(definition =>
+        definition.searchStartColumn != null && definition.searchEndColumn != null)[0];
+      if (locationResult != null) {
+        invariant(locationResult.searchStartColumn != null
+          && locationResult.searchEndColumn != null);
+        newRange = new Range(
+          [line, locationResult.searchStartColumn],
+          [line, locationResult.searchEndColumn]);
+      }
+
+      const callbacks = definitions.map(location => {
+        return {
+          title: `${location.name} : ${location.scope}`,
+          callback() {
+            goToLocation(location.path, location.line, location.column);
+          },
+        };
+      });
+      return {
+        range: newRange,
+        callback: callbacks.length === 1 ? callbacks[0].callback : callbacks,
+      };
+    }
   }
 }

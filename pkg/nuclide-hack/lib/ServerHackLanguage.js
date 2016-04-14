@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {CompletionResult, DefinitionResult} from './HackLanguage';
+import type {CompletionResult, DefinitionResult, Definition} from './HackLanguage';
 import type {
   HackCompletion,
   HackDiagnostic,
@@ -31,6 +31,7 @@ import {SymbolType} from '../../nuclide-hack-common';
 
 /**
  * Serves language requests from HackService.
+ * Note that all line/column values are 1 based.
  */
 export class ServerHackLanguage {
 
@@ -141,6 +142,26 @@ export class ServerHackLanguage {
     );
     const identifierResult = processDefinitionsForXhp(definitionResult, column, lineText);
     return identifierResult.length === 1 ? identifierResult : [];
+  }
+
+  async getIdeDefinition(
+    filePath: NuclideUri,
+    contents: string,
+    lineNumber: number,
+    column: number
+  ): Promise<?Definition> {
+    const definition =
+      await this._hackService.getDefinition(filePath, contents, lineNumber, column);
+    if (definition == null || definition.definition_pos == null) {
+      return null;
+    }
+    return {
+      name: definition.name,
+      path: definition.definition_pos.filename,
+      line: definition.definition_pos.line,
+      column: definition.definition_pos.char_start,
+      queryRange: hackRangeToAtomRange(definition.pos),
+    };
   }
 
   async getType(

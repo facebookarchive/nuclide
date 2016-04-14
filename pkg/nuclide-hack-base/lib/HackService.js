@@ -52,6 +52,7 @@ export type HackFunctionDetails = {
   params: Array<{name: string}>;
 };
 
+// Note that all line/column values are 1-based.
 export type HackRange = {
   filename: NuclideUri;
   line: number;
@@ -134,6 +135,12 @@ export type HackFormatSourceResult = {
 export type HackGetMethodNameResult = {
   name: string;
   result_type: 'class' | 'method' | 'function' | 'local';
+  pos: HackRange;
+};
+
+export type HackDefinition = {
+  definition_pos: ?HackRange;
+  name: string;
   pos: HackRange;
 };
 
@@ -223,6 +230,34 @@ export async function getIdentifierDefinition(
   }
   const searchResponse = await getSearchResults(file, identifier);
   return selectDefinitionSearchResults(searchResponse, identifier);
+}
+
+export async function getDefinition(
+  file: NuclideUri,
+  contents: string,
+  line: number,
+  column: number,
+): Promise<?HackDefinition> {
+  const hhResult = await callHHClient(
+    /*args*/ ['--ide-get-definition', formatLineColumn(line, column)],
+    /*errorStream*/ false,
+    /*outputJson*/ true,
+    /*processInput*/ contents,
+    /*cwd*/ file,
+  );
+  if (hhResult == null) {
+    return null;
+  }
+
+  // Results in the current file, have filename set to empty string.
+  const result: HackDefinition = (hhResult.result: any);
+  if (result.definition_pos != null && result.definition_pos.filename === '') {
+    result.definition_pos.filename = file;
+  }
+  if (result.pos.filename === '') {
+    result.pos.filename = file;
+  }
+  return result;
 }
 
 export async function getReferences(
