@@ -13,6 +13,9 @@
 import {array} from '../../nuclide-commons';
 import {normalizePathUri, dedupeNormalizedUris, splitUri, isUriBelow} from './uri';
 import invariant from 'assert';
+import {getLogger} from '../../nuclide-logging';
+const logger = getLogger();
+
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
@@ -55,8 +58,16 @@ export class WorkingSet {
   }
 
   constructor(uris: Array<NuclideUri> = []) {
-    this._uris = dedupeNormalizedUris(uris.map(normalizePathUri));
-    this._root = this._buildDirTree(this._uris);
+    try {
+      this._uris = dedupeNormalizedUris(uris.map(normalizePathUri));
+      this._root = this._buildDirTree(this._uris);
+    } catch (e) {
+      logger.error(
+        'Failed to initialize a WorkingSet with URIs ' + uris.join(',') + '. ' + e.message
+      );
+      this._uris = [];
+      this._root = null;
+    }
   }
 
   containsFile(uri: NuclideUri) : boolean {
@@ -64,8 +75,13 @@ export class WorkingSet {
       return true;
     }
 
-    const tokens = splitUri(normalizePathUri(uri));
-    return this._containsPathFor(tokens, /* mustHaveLeaf */ true);
+    try {
+      const tokens = splitUri(normalizePathUri(uri));
+      return this._containsPathFor(tokens, /* mustHaveLeaf */ true);
+    } catch (e) {
+      logger.error(e);
+      return true;
+    }
   }
 
   containsDir(uri: NuclideUri): boolean {
@@ -73,8 +89,13 @@ export class WorkingSet {
       return true;
     }
 
-    const tokens = splitUri(normalizePathUri(uri));
-    return this._containsPathFor(tokens, /* mustHaveLeaf */ false);
+    try {
+      const tokens = splitUri(normalizePathUri(uri));
+      return this._containsPathFor(tokens, /* mustHaveLeaf */ false);
+    } catch (e) {
+      logger.error(e);
+      return true;
+    }
   }
 
   isEmpty(): boolean {
@@ -90,9 +111,14 @@ export class WorkingSet {
   }
 
   remove(rootUri: NuclideUri): WorkingSet {
-    const normalizedRoot = normalizePathUri(rootUri);
-    const uris = this._uris.filter(uri => !isUriBelow(normalizedRoot, uri));
-    return new WorkingSet(uris);
+    try {
+      const normalizedRoot = normalizePathUri(rootUri);
+      const uris = this._uris.filter(uri => !isUriBelow(normalizedRoot, uri));
+      return new WorkingSet(uris);
+    } catch (e) {
+      logger.error(e);
+      return this;
+    }
   }
 
   equals(other: WorkingSet): boolean {
