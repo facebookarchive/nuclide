@@ -15,11 +15,9 @@ import {
   deactivateAllPackages,
   dispatchKeyboardEvent,
   jasmineIntegrationTestSetup,
-  waitsForFile,
+  waitsForFile, waitsForFilePosition,
 } from '../pkg/nuclide-integration-test-helpers';
 
-import invariant from 'assert';
-import {Point} from 'atom';
 import path from 'path';
 
 /**
@@ -106,14 +104,9 @@ describe('Clang Integration Test (objc)', () => {
       dispatchKeyboardEvent('enter', document.activeElement, {cmd: true, alt: true});
     });
 
-    waitsForFile('FoundationStub.h');
+    waitsForFilePosition('FoundationStub.h', 45, 12);
 
     runs(() => {
-      // Definition of NSLog
-      const editor = atom.workspace.getActiveTextEditor();
-      invariant(editor);
-      expect(editor.getCursorBufferPosition()).toEqual(new Point(45, 12));
-
       // Deactivate nuclide packages.
       deactivateAllPackages();
     });

@@ -13,7 +13,7 @@ import {dispatchKeyboardEvent} from './event';
 import {copyFixture, copyMercurialFixture, setLocalProject} from './fixtures';
 import {activateAllPackages, deactivateAllPackages} from './package-utils';
 import {addRemoteProject, startNuclideServer, stopNuclideServer} from './remote-utils';
-import {waitsForFile} from './waitsForFile';
+import {waitsForFile, waitsForFilePosition} from './waitsForFile';
 
 // Smallish, yet realistic testing window dimensions.
 const TEST_WINDOW_HEIGHT = 600;
@@ -48,4 +48,5 @@ export {
   startNuclideServer,
   stopNuclideServer,
   waitsForFile,
+  waitsForFilePosition,
 };

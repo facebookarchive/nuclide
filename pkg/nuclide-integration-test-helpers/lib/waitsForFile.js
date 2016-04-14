@@ -28,3 +28,25 @@ export function waitsForFile(filename: string, timeoutMs: number = 10000): void 
     return path.basename(editorPath) === filename;
   });
 }
+
+export function waitsForFilePosition(
+  filename: string,
+  row: number,
+  column: number,
+  timeoutMs: number = 10000
+): void {
+  waitsFor(`${filename} to become active at ${row}:${column}`, timeoutMs, () => {
+    const editor = atom.workspace.getActiveTextEditor();
+    if (editor == null) {
+      return false;
+    }
+    const editorPath = editor.getPath();
+    if (editorPath == null) {
+      return false;
+    }
+    const pos = editor.getCursorBufferPosition();
+    return path.basename(editorPath) === filename
+      && pos.row === row
+      && pos.column === column;
+  });
+}

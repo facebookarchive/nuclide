@@ -14,12 +14,11 @@ import {
   copyFixture,
   deactivateAllPackages,
   dispatchKeyboardEvent,
-  waitsForFile,
+  waitsForFilePosition,
   jasmineIntegrationTestSetup,
   setLocalProject,
 } from '../pkg/nuclide-integration-test-helpers';
 import path from 'path';
-import invariant from 'assert';
 
 describe('Flow Hyperclick', () => {
   it('tests flow hyperclick example', () => {
@@ -57,16 +56,7 @@ describe('Flow Hyperclick', () => {
       dispatchKeyboardEvent('enter', document.activeElement, {cmd: true, alt: true});
     });
 
-    waitsForFile('Foo.js');
-
-    runs(() => {
-      const editor = atom.workspace.getActiveTextEditor();
-      invariant(editor != null);
-      const pos = editor.getCursorBufferPosition();
-      expect(pos.row).toBe(11);
-      expect(pos.column).toBeGreaterThan(1);
-      expect(pos.column).toBeLessThan(6);
-    });
+    waitsForFilePosition('Foo.js', 11, 2);
 
     waitsForPromise(async () => {
       deactivateAllPackages();
