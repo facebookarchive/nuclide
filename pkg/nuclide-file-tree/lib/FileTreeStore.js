@@ -594,7 +594,11 @@ export class FileTreeStore {
         status === StatusCodeNumber.MODIFIED ||
         status === StatusCodeNumber.ADDED ||
         status === StatusCodeNumber.REMOVED) {
-        ensurePresentParents(uri);
+        try { // An invalid URI might cause an exception to be thrown
+          ensurePresentParents(uri);
+        } catch (e) {
+          this._logger.error(`Error enriching the VCS statuses for ${uri}`, e);
+        }
       }
     });
 
