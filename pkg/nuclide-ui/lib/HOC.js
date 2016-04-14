@@ -28,7 +28,7 @@ export function injectObservableAsProps<T : ReactClass>(
 ): T {
   // $FlowIssue The return type is guaranteed to be the same as the type of ComposedComponent.
   return class extends React.Component {
-    _subscription: ?IDisposable;
+    _subscription: ?rx$ISubscription;
     state: {[key: string]: any};
     _resolved: boolean;
 
@@ -48,7 +48,7 @@ export function injectObservableAsProps<T : ReactClass>(
 
     componentWillUnmount(): void {
       if (this._subscription != null) {
-        this._subscription.dispose();
+        this._subscription.unsubscribe();
       }
     }
 
