@@ -223,7 +223,7 @@ declare module '@reactivex/rxjs' {
 
     throttleTime(duration: number): Observable<T>;
 
-    timeout(dueTime: number, other?: Observable<T>): Observable<T>;
+    timeout(due: number | Date, errorToSend?: any): Observable<T>;
 
     toArray(): Observable<T[]>;
 
