@@ -25,12 +25,12 @@ export type EvaluationResult = {
   _description? : string;
 };
 
-import Rx from '@reactivex/rxjs';
 import invariant from 'assert';
 const {CompositeDisposable, Disposable} = require('atom');
 
 import {getLogger} from '../../nuclide-logging';
 const remoteUri = require('../../nuclide-remote-uri');
+import {Deferred} from '../../nuclide-commons';
 import {DebuggerMode} from './DebuggerStore';
 
 const INJECTED_CSS = [
@@ -39,16 +39,6 @@ const INJECTED_CSS = [
   /* Force the contents of the mini console (on the bottom) to scroll vertically */
   '.insertion-point-sidebar#drawer-contents {overflow-y: auto;}',
 ].join('');
-
-async function promiseForBehaviorSubject<T>(subject: Rx.BehaviorSubject<T>): Promise<?T> {
-  try {
-    await subject.toPromise();
-  } catch (e) {
-    getLogger().warn('promiseForBehaviorSubject: Subject observed error.', e);
-    return null;
-  }
-  return subject.getValue();
-}
 
 class Bridge {
   _debuggerModel: DebuggerModel;
@@ -60,7 +50,7 @@ class Bridge {
   _webview: ?WebviewElement;
   _suppressBreakpointSync: boolean;
   // Tracks requests for expression evaluation, keyed by the expression body.
-  _expressionsInFlight: Map<string, Rx.BehaviorSubject<?EvaluationResult>>;
+  _expressionsInFlight: Map<string, Deferred<?EvaluationResult>>;
 
   constructor(debuggerModel: DebuggerModel) {
     this._debuggerModel = debuggerModel;
@@ -122,17 +112,23 @@ class Bridge {
     if (this._webview == null) {
       return null;
     }
-    let subject;
+    let deferred;
     if (this._expressionsInFlight.has(expression)) {
-      subject = this._expressionsInFlight.get(expression);
+      deferred = this._expressionsInFlight.get(expression);
     } else {
-      subject = new Rx.BehaviorSubject();
-      this._expressionsInFlight.set(expression, subject);
+      deferred = new Deferred();
+      this._expressionsInFlight.set(expression, deferred);
       invariant(this._webview != null);
       this._webview.send('command', 'evaluateOnSelectedCallFrame', expression);
     }
-    invariant(subject != null);
-    const result: EvaluationResult = (await promiseForBehaviorSubject(subject): any);
+    invariant(deferred != null);
+    let result;
+    try {
+      result = await deferred.promise;
+    } catch (e) {
+      getLogger().warn('evaluateOnSelectedCallFrame: Error getting result.', e);
+      result = null;
+    }
     this._expressionsInFlight.delete(expression);
     return result;
   }
@@ -143,16 +139,15 @@ class Bridge {
       result,
       error,
     } = additionalData;
-    const subject = this._expressionsInFlight.get(expression);
-    if (subject == null) {
+    const deferred = this._expressionsInFlight.get(expression);
+    if (deferred == null) {
       // Nobody is listening for the result of this expression.
       return;
     }
     if (error != null) {
-      subject.error(error);
+      deferred.reject(error);
     } else {
-      subject.next(result);
-      subject.complete();
+      deferred.resolve(result);
     }
   }
 
