@@ -232,12 +232,12 @@ declare module '@reactivex/rxjs' {
 
     toPromise(): Promise<T>;
 
+    subscribe(observer: PartialObserver<T>): Subscription;
     subscribe(
       onNext?: (value: T) => mixed,
       onError?: (error: any) => mixed,
       onCompleted?: () => mixed,
     ): Subscription;
-    subscribe(observer: PartialObserver<T>): Subscription;
   }
 
   declare class ConnectableObservable<T> extends Observable<T> {
