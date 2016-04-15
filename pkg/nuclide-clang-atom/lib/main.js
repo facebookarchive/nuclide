@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from '../../hyperclick-interfaces';
+import type {HyperclickProvider} from '../../hyperclick';
 import type {TypeHintProvider as TypeHintProviderType} from '../../nuclide-type-hint-interfaces';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,

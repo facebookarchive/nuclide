@@ -134,9 +134,8 @@ describe('HyperclickProvider', () => {
         new Range([0, 0], [0, 1]),
       );
       invariant(result);
+      invariant(typeof result.callback === 'function');
 
-      expect(result.callback instanceof Function).toBe(true);
-      /* $FlowIssue: Flow can't resolve the union type here */
       await result.callback();
       expect(atomHelpers.goToLocation).toHaveBeenCalledWith('/test', 1, 0);
     });

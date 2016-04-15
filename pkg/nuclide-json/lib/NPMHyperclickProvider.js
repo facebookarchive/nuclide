@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider, HyperclickSuggestion} from '../../hyperclick-interfaces';
+import type {
+  HyperclickProvider,
+  HyperclickSuggestion,
+} from '../../hyperclick';
 
 import semver from 'semver';
 import path from 'path';

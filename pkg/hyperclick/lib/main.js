@@ -9,8 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from '../../hyperclick-interfaces';
+import type {HyperclickProvider} from './types';
 import type HyperclickType from './Hyperclick';
+
+export type {
+  HyperclickProvider,
+  HyperclickSuggestion,
+} from './types';
 
 let hyperclick: ?HyperclickType = null;
 import {Disposable} from 'atom';

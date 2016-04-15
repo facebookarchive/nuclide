@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
+import type {HyperclickSuggestion} from './types';
 
 import type Hyperclick from './Hyperclick';
 import type {TimingTracker} from '../../nuclide-analytics';

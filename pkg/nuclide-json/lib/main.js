@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from '../../hyperclick-interfaces';
+import type {HyperclickProvider} from '../../hyperclick';
 import type {Outline, OutlineProvider} from '../../nuclide-outline-view';
 
 import {CompositeDisposable} from 'atom';

@@ -75,7 +75,7 @@ class SuggestionList extends React.Component {
     const suggestion = suggestionList.getSuggestion();
     invariant(suggestion);
     // TODO(nmote): This is assuming `suggestion.callback` is always an Array, which is not true
-    //   according to hyperclick-interfaces/types. It can also be a function.
+    //   according to hyperclick/lib/types. It can also be a function.
     this._items = ((suggestion.callback: any):
         Array<{rightLabel?: string; title: string; callback: () => mixed}>);
     this._textEditor = suggestionList.getTextEditor();

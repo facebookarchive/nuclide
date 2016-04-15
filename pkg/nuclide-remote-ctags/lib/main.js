@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider as HyperclickProviderType} from '../../hyperclick-interfaces';
+import type {
+  HyperclickProvider as HyperclickProviderType,
+} from '../../hyperclick';
 
 export function activate(state: ?Object) {
 }

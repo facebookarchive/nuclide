@@ -11,7 +11,6 @@ import sys
 
 PACKAGE_NAME_WHITELIST = [
     'hyperclick', # we want to upstream this to atom, so do not require nuclide- prefix
-    'hyperclick-interfaces',
 ]
 DEPENDENCIES_FIELDS = [
     'dependencies',

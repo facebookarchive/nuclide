@@ -11,7 +11,7 @@
 
 /* eslint-env browser */
 
-import type {HyperclickProvider} from '../../hyperclick-interfaces';
+import type {HyperclickProvider} from '../lib/types';
 import type HyperclickForTextEditor from '../lib/HyperclickForTextEditor';
 
 import {Point, Range} from 'atom';

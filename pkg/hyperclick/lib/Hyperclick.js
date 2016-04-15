@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickSuggestion, HyperclickProvider} from '../../hyperclick-interfaces';
+import type {
+  HyperclickSuggestion,
+  HyperclickProvider,
+} from './types';
 
 import HyperclickForTextEditor from './HyperclickForTextEditor';
 import SuggestionList from './SuggestionList';
