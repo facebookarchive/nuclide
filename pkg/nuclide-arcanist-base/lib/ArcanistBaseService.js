@@ -160,7 +160,7 @@ function _callArcDiff(
         'cwd': arcConfigDir,
       };
       return scriptSafeSpawnAndObserveOutput('arc', args, options);
-    });
+    }).share();
 }
 
 export function createPhabricatorRevision(
