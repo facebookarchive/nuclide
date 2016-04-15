@@ -864,7 +864,7 @@ export class FileTreeStore {
     this._filter = '';
     this._updateRoots(root => {
       return root.setRecursive(
-        node => node.containsFilterMatches ? null : node,
+        node => null,
         node => node.set({highlightedText: '', matchesFilter: true}),
       );
     });
