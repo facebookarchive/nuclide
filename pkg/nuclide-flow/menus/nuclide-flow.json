@@ -1,0 +1,18 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Flow",
+          "submenu": [
+            {
+              "label": "Restart Flow Server",
+              "command": "nuclide-flow:restart-flow-server"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

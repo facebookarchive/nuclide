@@ -1,0 +1,26 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Diagnostics",
+          "submenu": [
+            {
+              "label": "Toggle Table",
+              "command": "nuclide-diagnostics-ui:toggle-table"
+            },
+            {
+              "label": "Show Table",
+              "command": "nuclide-diagnostics-ui:show-table"
+            },
+            {
+              "label": "Fix All in Current File",
+              "command": "nuclide-diagnostics-ui:fix-all-in-current-file"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

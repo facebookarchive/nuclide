@@ -1,0 +1,13 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Toggle Distraction Free Mode",
+          "command": "nuclide-distraction-free-mode:toggle"
+        }
+      ]
+    }
+  ]
+}

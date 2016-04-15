@@ -139,7 +139,14 @@ module.exports = function(context) {
       return;
     }
 
-    if (resolveValue(args[0], context) !== 'atom-workspace') {
+    const firstValue = resolveValue(args[0], context);
+    if (firstValue == null) {
+      // Another common pattern for atom.commands.add. Be lazy and just get the string..
+      const stringValue = context.getSourceCode().getText(args[0]);
+      if (stringValue.replace(/\s/g, '') !== 'atom.views.getView(atom.workspace)') {
+        return;
+      }
+    } else if (firstValue !== 'atom-workspace') {
       return;
     }
 
