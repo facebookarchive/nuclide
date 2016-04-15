@@ -111,7 +111,6 @@ class DebuggerActions {
 
   _handleSessionEnd(debuggerInstance: DebuggerInstance): void {
     if (this._store.getDebuggerInstance() === debuggerInstance) {
-      this._setDebuggerInstance(null); // Prevent DebuggerInstance to be disposed again.
       this.stopDebugging();
     } else {
       // Do nothing, because either:
