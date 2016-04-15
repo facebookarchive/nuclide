@@ -12,6 +12,8 @@
 import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
 
+import {track} from '../../nuclide-analytics';
+
 import {DistractionFreeMode} from './DistractionFreeMode';
 import {getBuiltinProviders} from './BuiltinProviders';
 
@@ -37,7 +39,10 @@ class Activation {
     this._disposables.add(atom.commands.add(
       atom.views.getView(atom.workspace),
       'nuclide-distraction-free-mode:toggle',
-      this._tunnelVision.toggleDistractionFreeMode.bind(this._tunnelVision),
+      () => {
+        track('distraction-free-mode:toggle');
+        this._tunnelVision.toggleDistractionFreeMode();
+      }
     ));
   }
 
