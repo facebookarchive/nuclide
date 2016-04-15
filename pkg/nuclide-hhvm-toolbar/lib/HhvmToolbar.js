@@ -14,6 +14,13 @@ const {AtomInput} = require('../../nuclide-ui/lib/AtomInput');
 const {Dropdown} = require('../../nuclide-ui/lib/Dropdown');
 const {React} = require('react-for-atom');
 const {PropTypes} = React;
+import {
+  Button,
+} from '../../nuclide-ui/lib/Button';
+import {
+  ButtonGroup,
+  ButtonGroupSizes,
+} from '../../nuclide-ui/lib/ButtonGroup';
 
 const WEB_SERVER_OPTION = {label: 'WebServer', value: 0};
 const SCRIPT_OPTION = {label: 'Script', value: 1};
@@ -97,13 +104,11 @@ class HhvmToolbar extends React.Component {
             size="sm"
           />
         </div>
-        <div className="btn-group btn-group-sm inline-block">
-          <button
-            onClick={this._debug}
-            className="btn">
+        <ButtonGroup size={ButtonGroupSizes.SMALL} className="inline-block">
+          <Button onClick={this._debug}>
             {isDebugScript ? 'Launch' : 'Attach'}
-          </button>
-        </div>
+          </Button>
+        </ButtonGroup>
       </div>
     );
   }

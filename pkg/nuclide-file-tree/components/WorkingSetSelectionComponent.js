@@ -9,12 +9,14 @@
  * the root directory of this source tree.
  */
 
-import {React, ReactDOM} from 'react-for-atom';
-import {CompositeDisposable} from 'atom';
-import classnames from 'classnames';
-
 import type {WorkingSetDefinition} from '../../nuclide-working-sets';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore';
+
+import classnames from 'classnames';
+import {CompositeDisposable} from 'atom';
+import {React, ReactDOM} from 'react-for-atom';
+import {Button} from '../../nuclide-ui/lib/Button';
+import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
 
 type Props = {
   workingSetsStore: WorkingSetsStore;
@@ -217,20 +219,20 @@ class ApplicableDefinitionLine extends React.Component {
         className={classnames(classes)}
         onMouseOver={() => this.props.onSelect(this.props.index)}
         onClick={this._lineOnClick}>
-        <div className="btn-group pull-right">
-          <button
-            className="btn icon icon-trashcan"
+        <ButtonGroup className="pull-right">
+          <Button
+            icon="trashcan"
             onClick={this._deleteButtonOnClick}
             tabIndex="-1"
             title="Delete this working set"
           />
-          <button
-            className="btn icon icon-pencil"
+          <Button
+            icon="pencil"
             onClick={this._editButtonOnClick}
             tabIndex="-1"
             title="Edit this working set"
           />
-        </div>
+        </ButtonGroup>
         <span>
           {this.props.def.name}
         </span>
@@ -270,8 +272,9 @@ class NonApplicableDefinitionLine extends React.Component {
   render(): React.Element {
     return (
       <li className="clearfix">
-        <button
-          className="btn icon icon-trashcan pull-right"
+        <Button
+          className="pull-right"
+          icon="trashcan"
           onClick={this._deleteButtonOnClick}
           tabIndex="-1"
           title="Delete this working set"

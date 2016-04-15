@@ -11,6 +11,7 @@
 
 import {React} from 'react-for-atom';
 import ReactNativeServerStatus from './ReactNativeServerStatus';
+import {Button} from '../../../nuclide-ui/lib/Button';
 
 type Props = {
   store: ReactNativeServerStatus;
@@ -42,16 +43,18 @@ export default class ReactNativeServerPanel extends React.Component<void, Props,
     return (
       <div className="inset-panel padded">
         <div className="inline-block">
-          <button
-            className="btn icon icon-primitive-square inline-block-tight"
+          <Button
+            className="inline-block-tight"
+            icon="primitive-square"
             onClick={this.props.stopServer}>
             Stop
-          </button>
-          <button
-            className="btn icon icon-sync inline-block-tight"
+          </Button>
+          <Button
+            className="inline-block-tight"
+            icon="sync"
             onClick={this.props.restartServer}>
             Restart
-          </button>
+          </Button>
         </div>
         <span className="inline-block">Status: {status}</span>
       </div>

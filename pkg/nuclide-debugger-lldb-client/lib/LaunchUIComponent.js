@@ -14,6 +14,7 @@ import type {LaunchAttachActions} from './LaunchAttachActions';
 
 import {React} from 'react-for-atom';
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
+import {Button} from '../../nuclide-ui/lib/Button';
 
 type PropsType = {
   store: LaunchAttachStore;
@@ -52,7 +53,7 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
           tabIndex="13"
           placeholderText="Working directory for the launched executable"
         />
-        <button className="btn" tabIndex="14" onClick={this._handleLaunchClick}>Launch</button>
+        <Button tabIndex="14" onClick={this._handleLaunchClick}>Launch</Button>
       </div>
     );
   }

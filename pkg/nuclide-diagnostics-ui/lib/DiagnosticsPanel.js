@@ -18,6 +18,10 @@ const {ToolbarLeft} = require('../../nuclide-ui/lib/ToolbarLeft');
 const {ToolbarRight} = require('../../nuclide-ui/lib/ToolbarRight');
 const {React} = require('react-for-atom');
 const {PropTypes} = React;
+import {
+  Button,
+  ButtonSizes,
+} from '../../nuclide-ui/lib/Button';
 
 import {track} from '../../nuclide-analytics';
 
@@ -142,9 +146,11 @@ class DiagnosticsPanel extends React.Component {
             </ToolbarLeft>
             <ToolbarRight>
               {shortcutSpan}
-              <button
+              <Button
                 onClick={this.props.onDismiss}
-                className="btn btn-subtle btn-sm icon icon-x inline-block"
+                icon="x"
+                size={ButtonSizes.SMALL}
+                className="inline-block"
                 title="Close Panel"
               />
             </ToolbarRight>

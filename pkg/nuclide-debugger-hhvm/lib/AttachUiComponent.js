@@ -11,6 +11,11 @@
 
 import {React} from 'react-for-atom';
 import {AttachProcessInfo} from './AttachProcessInfo';
+import {
+  Button,
+  ButtonTypes,
+} from '../../nuclide-ui/lib/Button';
+
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 type PropsType = {
@@ -30,14 +35,12 @@ export class AttachUiComponent extends React.Component<void, PropsType, void> {
     return (
       <div className="block">
         <div className="padded text-right">
-          <button className="btn" onClick={this._handleCancelButtonClick}>
-            Cancel
-          </button>
-          <button
-              className="btn btn-primary"
-              onClick={this._handleAttachButtonClick}>
+          <Button onClick={this._handleCancelButtonClick}>Cancel</Button>
+          <Button
+            buttonType={ButtonTypes.PRIMARY}
+            onClick={this._handleAttachButtonClick}>
             Attach
-          </button>
+          </Button>
         </div>
       </div>
     );

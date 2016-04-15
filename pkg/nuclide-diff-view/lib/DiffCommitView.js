@@ -17,6 +17,11 @@ import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import classnames from 'classnames';
 import {CommitMode, CommitModeState} from './constants';
 import {React} from 'react-for-atom';
+import {
+  Button,
+  ButtonSizes,
+  ButtonTypes,
+} from '../../nuclide-ui/lib/Button';
 import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
 import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
 import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
@@ -72,7 +77,7 @@ class DiffCommitView extends React.Component {
       message = 'Commit';
     }
 
-    const btnClassname = classnames('btn btn-sm btn-success pull-right', {
+    const btnClassname = classnames('pull-right', {
       'btn-progress': isLoading,
     });
     return (
@@ -95,12 +100,14 @@ class DiffCommitView extends React.Component {
             />
           </ToolbarLeft>
           <ToolbarRight>
-            <button
+            <Button
               className={btnClassname}
+              size={ButtonSizes.SMALL}
+              buttonType={ButtonTypes.SUCCESS}
               disabled={isLoading}
               onClick={this._onClickCommit}>
               {message}
-            </button>
+            </Button>
           </ToolbarRight>
         </Toolbar>
       </div>

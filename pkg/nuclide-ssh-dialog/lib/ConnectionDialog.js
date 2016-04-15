@@ -31,6 +31,13 @@ import {
   decorateSshConnectionDelegateWithTracking,
 } from '../../nuclide-remote-connection';
 const logger = require('../../nuclide-logging').getLogger();
+import {
+  Button,
+  ButtonTypes,
+} from '../../nuclide-ui/lib/Button';
+import {
+  ButtonGroup,
+} from '../../nuclide-ui/lib/ButtonGroup';
 
 type Props = {
   // The list of connection profiles that will be displayed.
@@ -180,14 +187,14 @@ class ConnectionDialog extends React.Component {
           {content}
         </div>
         <div className="padded text-right">
-          <div className="btn-group">
-            <button className="btn" onClick={this.cancel}>
+          <ButtonGroup>
+            <Button onClick={this.cancel}>
               Cancel
-            </button>
-            <button className="btn btn-primary" onClick={this.ok} disabled={isOkDisabled}>
+            </Button>
+            <Button buttonType={ButtonTypes.PRIMARY} onClick={this.ok} disabled={isOkDisabled}>
               {okButtonText}
-            </button>
-          </div>
+            </Button>
+          </ButtonGroup>
         </div>
       </atom-panel>
     );

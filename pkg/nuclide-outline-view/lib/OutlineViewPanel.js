@@ -18,6 +18,10 @@ import invariant from 'assert';
 import {track} from '../../nuclide-analytics';
 import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
 import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
+import {
+  Button,
+  ButtonSizes,
+} from '../../nuclide-ui/lib/Button';
 import {OutlineView} from './OutlineView';
 
 export class OutlineViewPanelState {
@@ -152,8 +156,10 @@ class OutlineViewHeader extends React.Component {
       <div className="panel-heading" style={{'flex-shrink': 0}}>
         <span className="icon icon-list-unordered" />
         Outline View
-        <button
-          className="btn btn-xs icon icon-x pull-right nuclide-outline-view-close-button"
+        <Button
+          className="pull-right nuclide-outline-view-close-button"
+          size={ButtonSizes.EXTRA_SMALL}
+          icon="x"
           onClick={hideOutlineView}
           title="Hide Outline View"
         />

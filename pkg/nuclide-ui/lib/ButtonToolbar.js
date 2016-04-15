@@ -9,9 +9,11 @@
  * the root directory of this source tree.
  */
 
+import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
 type Props = {
+  className? : string;
   children: ReactElement;
 };
 
@@ -19,9 +21,13 @@ type Props = {
  * Visually groups Buttons passed in as children.
  */
 export const ButtonToolbar = (props: Props) => {
+  const {
+    children,
+    className,
+  } = props;
   return (
-    <div className="btn-toolbar">
-      {props.children}
+    <div className={classnames('btn-toolbar', className)}>
+      {children}
     </div>
   );
 };

@@ -18,6 +18,10 @@ import type {
 import {React} from 'react-for-atom';
 import classnames from 'classnames';
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
+import {
+  Button,
+  ButtonTypes,
+} from '../../nuclide-ui/lib/Button';
 
 type PropsType = {
   store: LaunchAttachStore;
@@ -107,18 +111,18 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
           </table>
         </div>
         <div className="padded text-right">
-          <button className="btn" onClick={this._handleCancelButtonClick}>
+          <Button onClick={this._handleCancelButtonClick}>
             Cancel
-          </button>
-          <button className="btn" onClick={this._updateAttachTargetList}>
+          </Button>
+          <Button onClick={this._updateAttachTargetList}>
             Refresh
-          </button>
-          <button
-              className="btn btn-primary"
+          </Button>
+          <Button
+              buttonType={ButtonTypes.PRIMARY}
               onClick={this._handleAttachClick}
               disabled={this.state.selectedAttachTarget === null}>
             Attach
-          </button>
+          </Button>
         </div>
       </div>
     );

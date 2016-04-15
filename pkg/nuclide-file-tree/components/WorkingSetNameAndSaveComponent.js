@@ -9,9 +9,13 @@
  * the root directory of this source tree.
  */
 
+import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
-import classnames from 'classnames';
+import {
+  Button,
+  ButtonTypes,
+} from '../../nuclide-ui/lib/Button';
 
 type Props = {
   isEditing: boolean;
@@ -69,17 +73,16 @@ export class WorkingSetNameAndSaveComponent extends React.Component {
             onCancel={this.props.onCancel}
           />
         </div>
-        <button
+        <Button
+          buttonType={ButtonTypes.SUCCESS}
           className={classnames({
-            'btn': true,
-            'btn-success': true,
             'inline-block-tight': true,
             'disabled': this.state.name === '',
             'nuclide-file-tree-toolbar-icon': true,
           })}
           onClick={this._saveWorkingSet}>
           <span className="icon icon-check nuclide-file-tree-toolbar-icon" />
-        </button>
+        </Button>
         {setNameText}
       </div>
     );

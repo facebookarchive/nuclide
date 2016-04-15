@@ -24,6 +24,13 @@ import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
 import {validateFormInputs} from './form-validation-utils';
+import {
+  Button,
+  ButtonTypes,
+} from '../../nuclide-ui/lib/Button';
+import {
+  ButtonGroup,
+} from '../../nuclide-ui/lib/ButtonGroup';
 
 type Props = {
   // A function called when the "Cancel" button is clicked.
@@ -103,14 +110,14 @@ class CreateConnectionProfileForm extends React.Component<void, Props, void> {
             onCancel={emptyFunction}
           />
           <div className="padded text-right">
-            <div className="btn-group">
-              <button className="btn" onClick={this._clickCancel}>
+            <ButtonGroup>
+              <Button onClick={this._clickCancel}>
                 Cancel
-              </button>
-              <button className="btn btn-primary" onClick={this._clickSave}>
+              </Button>
+              <Button buttonType={ButtonTypes.PRIMARY} onClick={this._clickSave}>
                 Save
-              </button>
-            </div>
+              </Button>
+            </ButtonGroup>
           </div>
         </div>
       </atom-panel>

@@ -15,6 +15,13 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import classnames from 'classnames';
 import {DiffMode} from './constants';
 import {React} from 'react-for-atom';
+import {
+  Button,
+} from '../../nuclide-ui/lib/Button';
+import {
+  ButtonGroup,
+  ButtonGroupSizes,
+} from '../../nuclide-ui/lib/ButtonGroup';
 import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
 import {ToolbarCenter} from '../../nuclide-ui/lib/ToolbarCenter';
 import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
@@ -37,25 +44,25 @@ class DiffViewToolbar extends React.Component {
     const hasActiveFile = filePath != null && filePath.length > 0;
     const modes = Object.keys(DiffMode).map(modeId => {
       const modeValue = DiffMode[modeId];
-      const className = classnames('btn', {
+      const className = classnames({
         'selected': modeValue === diffMode,
       });
       return (
-        <button
+        <Button
           key={modeValue}
           className={className}
           onClick={() => this.props.onSwitchMode(modeValue)}>
           {modeValue}
-        </button>
+        </Button>
       );
     });
 
     return (
       <Toolbar location="top">
         <ToolbarLeft>
-          <div className="btn-group btn-group-sm">
+          <ButtonGroup size={ButtonGroupSizes.SMALL}>
             {modes}
-          </div>
+          </ButtonGroup>
         </ToolbarLeft>
         <ToolbarCenter>
           {this.props.oldRevisionTitle == null ? '?' : this.props.oldRevisionTitle}
@@ -63,14 +70,13 @@ class DiffViewToolbar extends React.Component {
           {this.props.newRevisionTitle == null ? '?' : this.props.newRevisionTitle}
         </ToolbarCenter>
         <ToolbarRight>
-          <div className="btn-group btn-group-sm">
-            <button
-              className="btn"
+          <ButtonGroup size={ButtonGroupSizes.SMALL}>
+            <Button
               disabled={!hasActiveFile}
               onClick={this.props.onSwitchToEditor}>
               Goto Editor
-            </button>
-          </div>
+            </Button>
+          </ButtonGroup>
         </ToolbarRight>
       </Toolbar>
     );

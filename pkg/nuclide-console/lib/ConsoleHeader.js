@@ -12,6 +12,10 @@
 import {React} from 'react-for-atom';
 import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
 import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
+import {
+  Button,
+  ButtonSizes,
+} from '../../nuclide-ui/lib/Button';
 
 type Props = {
   clear: () => void;
@@ -33,9 +37,11 @@ export default class ConsoleHeader extends React.Component {
     return (
       <Toolbar location="top">
         <ToolbarRight>
-          <button className="btn btn-sm icon btn-secondary" onClick={this._handleClearButtonClick}>
+          <Button
+            size={ButtonSizes.SMALL}
+            onClick={this._handleClearButtonClick}>
             Clear
-          </button>
+          </Button>
         </ToolbarRight>
       </Toolbar>
     );

@@ -19,6 +19,7 @@ import {WorkingSetNameAndSaveComponent} from './WorkingSetNameAndSaveComponent';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import FileTreeActions from '../lib/FileTreeActions';
 import {WorkingSet} from '../../nuclide-working-sets';
+import {Button} from '../../nuclide-ui/lib/Button';
 
 import type {WorkingSetsStore} from '../../nuclide-working-sets';
 
@@ -246,22 +247,24 @@ class SelectWorkingSetButton extends React.Component {
   };
 
   render(): React.Element {
+    const {
+      highlight,
+      onClick,
+      onFocus,
+    } = this.props;
     return (
-      <button
-        className={classnames({
-          btn: true,
-          selected: this.props.highlight,
-        })}
+      <Button
+        selected={highlight}
         ref={addTooltip({
           title: 'Select Working Sets',
           delay: 500,
           placement: 'bottom',
           keyBindingCommand: 'working-sets:select-active',
         })}
-        onClick={this.props.onClick}
-        onFocus={this.props.onFocus}>
+        onClick={onClick}
+        onFocus={onFocus}>
         <span className="icon icon-list-unordered nuclide-file-tree-toolbar-icon" />
-      </button>
+      </Button>
     );
   }
 }
@@ -273,26 +276,27 @@ class DefineWorkingSetButton extends React.Component {
   };
 
   render(): React.Element {
+    const {
+      isActive,
+      onClick,
+    } = this.props;
     return (
-      <button
-        className={classnames({
-          btn: true,
-          selected: this.props.isActive,
-        })}
+      <Button
+        selected={isActive}
         ref={addTooltip({
-          title: this.props.isActive ? 'Cancel' : 'Define a Working Set',
+          title: isActive ? 'Cancel' : 'Define a Working Set',
           delay: 500,
           placement: 'bottom',
         })}
-        onClick={this.props.onClick}>
+        onClick={onClick}>
         <span className={classnames({
           icon: true,
-          'icon-plus': !this.props.isActive,
-          'icon-dash': this.props.isActive,
+          'icon-plus': !isActive,
+          'icon-dash': isActive,
           'nuclide-file-tree-toolbar-icon': true,
         })}
         />
-      </button>
+      </Button>
     );
   }
 }

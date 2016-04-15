@@ -18,6 +18,11 @@ import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 import classnames from 'classnames';
 import {PublishMode, PublishModeState} from './constants';
 import {React} from 'react-for-atom';
+import {
+  Button,
+  ButtonSizes,
+  ButtonTypes,
+} from '../../nuclide-ui/lib/Button';
 import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
 import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
 import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
@@ -123,12 +128,14 @@ class DiffPublishView extends React.Component {
     }
 
     const publishButton = (
-      <button
-        className={classnames('btn btn-sm btn-success', {'btn-progress': isBusy})}
+      <Button
+        className={classnames({'btn-progress': isBusy})}
+        size={ButtonSizes.SMALL}
+        buttonType={ButtonTypes.SUCCESS}
         onClick={this._onClickPublish}
         disabled={isBusy}>
         {publishMessage}
-      </button>
+      </Button>
     );
 
     return (

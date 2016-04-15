@@ -13,6 +13,14 @@ import {React} from 'react-for-atom';
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
 import remoteUri from '../../nuclide-remote-uri';
+import {
+  Button,
+  ButtonTypes,
+} from '../../nuclide-ui/lib/Button';
+import {
+  ButtonGroup,
+} from '../../nuclide-ui/lib/ButtonGroup';
+
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 type PropsType = {
@@ -38,16 +46,16 @@ export class LaunchUiComponent extends React.Component<void, PropsType, void> {
           placeholderText="/path/to/my/script.php arg1 arg2"
           initialValue={this._getActiveFilePath()}
         />
-        <div className="padded text-right">
-          <button className="btn" onClick={this._handleCancelButtonClick}>
+        <ButtonGroup className="padded text-right">
+          <Button onClick={this._handleCancelButtonClick}>
             Cancel
-          </button>
-          <button
-              className="btn btn-primary"
-              onClick={this._handleLaunchButtonClick}>
+          </Button>
+          <Button
+            buttonType={ButtonTypes.PRIMARY}
+            onClick={this._handleLaunchButtonClick}>
             Launch
-          </button>
-        </div>
+          </Button>
+        </ButtonGroup>
       </div>
     );
   }

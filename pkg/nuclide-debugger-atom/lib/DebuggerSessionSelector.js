@@ -14,6 +14,11 @@ const DebuggerProcessInfo = require('./DebuggerProcessInfo');
 const {DebuggerStore} = require('./DebuggerStore');
 const {React} = require('react-for-atom');
 const {PropTypes} = React;
+import {
+  Button,
+  ButtonTypes,
+} from '../../nuclide-ui/lib/Button';
+import {ButtonToolbar} from '../../nuclide-ui/lib/ButtonToolbar';
 
 type State = {
   selectedProcess: ?DebuggerProcessInfo;
@@ -71,17 +76,17 @@ const DebuggerSessionSelector = React.createClass({
               {this._renderProcessChoices()}
             </select>
           </div>
-          <div className="btn-toolbar form-group">
-            <button
-              className="btn btn-primary"
+          <ButtonToolbar className="form-group">
+            <Button
+              buttonType={ButtonTypes.PRIMARY}
               onClick={this._handleClick}
               disabled={this.state.selectedProcess === null}>
               Attach
-            </button>
-            <button className="btn" onClick={this._updateProcessList}>
+            </Button>
+            <Button onClick={this._updateProcessList}>
               Refresh List
-            </button>
-          </div>
+            </Button>
+          </ButtonToolbar>
         </div>
       </section>
     );

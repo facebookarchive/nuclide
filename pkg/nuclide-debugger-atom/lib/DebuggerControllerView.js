@@ -17,6 +17,7 @@ const DebuggerInspector = require('./DebuggerInspector');
 const DebuggerSessionSelector = require('./DebuggerSessionSelector');
 const {DebuggerStore} = require('./DebuggerStore');
 const Bridge = require('./Bridge');
+import {Button} from '../../nuclide-ui/lib/Button';
 
 type State = {
   processSocket: ?string;
@@ -78,9 +79,10 @@ const DebuggerControllerView = React.createClass({
       );
     }
     const closeButton = (
-      <button
+      <Button
         title="Close"
-        className="icon icon-x nuclide-debugger-root-close-button"
+        icon="x"
+        className="nuclide-debugger-root-close-button"
         onClick={this._handleClickClose}
       />
     );

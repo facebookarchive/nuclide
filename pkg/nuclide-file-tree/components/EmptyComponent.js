@@ -10,22 +10,25 @@
  */
 
 import {React} from 'react-for-atom';
+import {Button} from '../../nuclide-ui/lib/Button';
 
 export class EmptyComponent extends React.Component {
 
   render(): ReactElement {
     return (
       <div className="padded">
-        <button
+        <Button
           onClick={() => this.runCommand('application:add-project-folder')}
-          className="btn btn-block icon icon-device-desktop">
+          icon="device-desktop"
+          className="btn-block">
           Add Project Folder
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => this.runCommand('nuclide-remote-projects:connect')}
-          className="btn btn-block icon icon-cloud-upload">
+          icon="cloud-upload"
+          className="btn-block">
           Add Remote Project Folder
-        </button>
+        </Button>
       </div>
 
     );

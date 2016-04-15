@@ -19,6 +19,10 @@ const {
 const {PropTypes} = React;
 const path = require('path');
 const {PanelComponent} = require('../../nuclide-ui/lib/PanelComponent');
+import {
+  Button,
+  ButtonTypes,
+} from '../../nuclide-ui/lib/Button';
 
 /**
  * Wrapper for Chrome Devtools frontend view.
@@ -40,16 +44,15 @@ const DebuggerInspector = React.createClass({
       <PanelComponent initialLength={500} dock="right">
         <div className="inspector">
           <div className="control-bar" ref="controlBar">
-            <button
+            <Button
               title="Detach from the current process."
-              className="icon icon-x"
-              style={{color: 'red'}}
+              icon="x"
+              buttonType={ButtonTypes.ERROR}
               onClick={this._handleClickClose}
             />
-            <button
+            <Button
               title="(Debug) Open Web Inspector for the debugger frame."
-              className="icon icon-gear"
-              style={{color: 'grey'}}
+              icon="gear"
               onClick={this._handleClickDevTools}
             />
           </div>

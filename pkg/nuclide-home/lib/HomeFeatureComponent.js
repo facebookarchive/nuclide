@@ -11,6 +11,10 @@
 
 const {React} = require('react-for-atom');
 const {PropTypes} = React;
+import {
+  Button,
+  ButtonSizes,
+} from '../../nuclide-ui/lib/Button';
 
 class HomeFeatureComponent extends React.Component {
   static propTypes = {
@@ -29,11 +33,12 @@ class HomeFeatureComponent extends React.Component {
       <details className="nuclide-home-card">
         <summary className={`nuclide-home-summary icon icon-${this.props.icon}`}>
           {title}
-          {command ? <button
-            className="pull-right btn btn-sm nuclide-home-tryit"
+          {command ? <Button
+            className="pull-right nuclide-home-tryit"
+            size={ButtonSizes.SMALL}
             onClick={() => atom.commands.dispatch(atom.views.getView(atom.workspace), command)}>
             Try it
-          </button> : null}
+          </Button> : null}
         </summary>
         <div className="nuclide-home-detail">
           {this.props.description}

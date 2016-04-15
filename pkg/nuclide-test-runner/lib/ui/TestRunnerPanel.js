@@ -17,6 +17,11 @@ const {Toolbar} = require('../../../nuclide-ui/lib/Toolbar');
 const {ToolbarLeft} = require('../../../nuclide-ui/lib/ToolbarLeft');
 const {ToolbarRight} = require('../../../nuclide-ui/lib/ToolbarRight');
 const {Checkbox} = require('../../../nuclide-ui/lib/Checkbox');
+import {
+  Button,
+  ButtonSizes,
+  ButtonTypes,
+} from '../../../nuclide-ui/lib/Button';
 const {createPaneContainer} = require('../../../nuclide-atom-helpers');
 const {
   React,
@@ -29,10 +34,6 @@ const {PropTypes} = React;
 type State = {
   selectedTestRunnerIndex: number;
 };
-
-function runStopButtonClassName(icon: string, className: string): string {
-  return `btn btn-sm icon inline-block icon-${icon} ${className}`;
-}
 
 class TestRunnerPanel extends React.Component {
   state: State;
@@ -127,24 +128,24 @@ class TestRunnerPanel extends React.Component {
     switch (this.props.executionState) {
       case TestRunnerPanel.ExecutionState.RUNNING:
         runStopButton = (
-          <button
-            className={runStopButtonClassName('primitive-square', 'btn-error')}
+          <Button
+            icon="primitive-square"
+            buttonType={ButtonTypes.ERROR}
             onClick={this.props.onClickStop}>
             Stop
-          </button>
+          </Button>
         );
         break;
       case TestRunnerPanel.ExecutionState.STOPPED:
         const initialTest = this.props.path === undefined;
         runStopButton = (
-          <button
-            className={
-              runStopButtonClassName(initialTest ? 'playback-play' : 'sync', 'btn-primary')
-            }
+          <Button
+            icon={initialTest ? 'playback-play' : 'sync'}
+            buttonType={ButtonTypes.PRIMARY}
             disabled={this.isDisabled()}
             onClick={this.props.onClickRun}>
             {initialTest ? 'Test' : 'Re-Test'}
-          </button>
+          </Button>
         );
         break;
     }
@@ -218,23 +219,27 @@ class TestRunnerPanel extends React.Component {
               {dropdown}
               {runStopButton}
               {attachDebuggerCheckbox}
-              <button
-                className="btn btn-sm icon icon-trashcan inline-block"
+              <Button
+                size={ButtonSizes.SMALL}
+                icon="trashcan"
+                className="trashcan inline-block"
                 disabled={this.isDisabled() ||
                   this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
                 onClick={this.props.onClickClear}
                 title="Clear Output">
-              </button>
+              </Button>
               {pathMsg}
             </ToolbarLeft>
             <ToolbarRight>
               {runMsg}
               <progress className="inline-block" max="100" {...progressAttrs} />
-              <button
+              <Button
                 onClick={this.props.onClickClose}
-                className="btn btn-sm icon icon-x inline-block"
+                className="inline-block"
+                icon="x"
+                size={ButtonSizes.SMALL}
                 title="Close Panel">
-              </button>
+              </Button>
             </ToolbarRight>
           </Toolbar>
           <div className="nuclide-test-runner-console" ref="paneContainer"></div>

@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
-const {React} = require('react-for-atom');
+import {React} from 'react-for-atom';
+import {Button} from './Button';
+import {ButtonGroup} from './ButtonGroup';
 
 type NuclideListSelectorItem = {
   deletable?: boolean;
@@ -106,21 +108,19 @@ export class MutableListSelector extends React.Component<void, Props, void> {
           </ol>
         </div>
         <div className="text-right">
-          <div className="btn-group">
-            <button
-              className="btn"
+          <ButtonGroup>
+          <Button
               disabled={selectedItem == null || selectedItem.deletable === false}
               onClick={this._boundOnDeleteButtonClicked}
               title={deleteButtonTitle}>
               -
-            </button>
-            <button
-              className="btn"
+            </Button>
+            <Button
               onClick={this.props.onAddButtonClicked}
               title="Create new item">
               +
-            </button>
-          </div>
+            </Button>
+          </ButtonGroup>
         </div>
       </div>
     );

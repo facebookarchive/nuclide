@@ -16,6 +16,13 @@ const BuckToolbarActions = require('./BuckToolbarActions');
 const BuckToolbarStore = require('./BuckToolbarStore');
 import {Combobox} from '../../nuclide-ui/lib/Combobox';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
+import {
+  Button,
+} from '../../nuclide-ui/lib/Button';
+import {
+  ButtonGroup,
+  ButtonGroupSizes,
+} from '../../nuclide-ui/lib/ButtonGroup';
 
 const {debounce} = require('../../nuclide-commons');
 const {
@@ -136,12 +143,12 @@ class BuckToolbar extends React.Component {
           title="Choose target device"
           onSelectedSimulatorChange={this._handleSimulatorChange}
         />
-        <div className="btn-group btn-group-sm inline-block">
-          <button onClick={this._build} disabled={disabled} className="btn">Build</button>
-          <button onClick={this._run} disabled={disabled} className="btn">Run</button>
-          <button onClick={this._test} disabled={disabled} className="btn">Test</button>
-          <button onClick={this._debug} disabled={disabled} className="btn">Debug</button>
-        </div>
+        <ButtonGroup className="inline-block" size={ButtonGroupSizes.SMALL}>
+          <Button onClick={this._build} disabled={disabled}>Build</Button>
+          <Button onClick={this._run} disabled={disabled}>Run</Button>
+          <Button onClick={this._test} disabled={disabled}>Test</Button>
+          <Button onClick={this._debug} disabled={disabled}>Debug</Button>
+        </ButtonGroup>
         {serverModeCheckbox}
         {progressBar}
       </div>
