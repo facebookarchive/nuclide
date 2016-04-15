@@ -96,6 +96,10 @@ function searchInSubdir(
     if (!matchTextResult) {
       return [];
     }
+
+    // IMPORTANT: reset the regex for the next search
+    regex.lastIndex = 0;
+
     const matchText = matchTextResult[0];
     const matchIndex = matchTextResult.index;
 
