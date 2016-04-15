@@ -17,6 +17,7 @@ import {React} from 'react-for-atom';
 import invariant from 'assert';
 import classnames from 'classnames';
 
+import {track} from '../../nuclide-analytics';
 import {goToLocationInEditor} from '../../nuclide-atom-helpers';
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
@@ -139,6 +140,7 @@ function renderTree(
     if (pane == null) {
       return;
     }
+    track('nuclide-outline-view:go-to-location');
     pane.activate();
     pane.activateItem(editor);
     goToLocationInEditor(editor, outline.startPosition.row, outline.startPosition.column);
