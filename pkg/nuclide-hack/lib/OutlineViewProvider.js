@@ -11,7 +11,12 @@
 
 import type {Outline, OutlineTree} from '../../nuclide-outline-view';
 import type {HackOutline, HackOutlineItem} from '../../nuclide-hack-base/lib/HackService';
-import {plain} from '../../nuclide-tokenized-text';
+import {
+  className,
+  keyword,
+  method,
+  whitespace,
+} from '../../nuclide-tokenized-text';
 import {getHackLanguageForUri} from './HackLanguage';
 
 import {Point} from 'atom';
@@ -56,16 +61,13 @@ function addMethodsToClasses(hackOutline: HackOutline, classes: Map<string, Outl
   for (const item of hackOutline) {
     if (item.type === 'method' || item.type === 'static method') {
       // TODO handle bad input
-      const [className, methodName] = item.name.split('::');
+      const [classId, methodName] = item.name.split('::');
       invariant(methodName != null, `Expected method name to include '::', got '${item.name}'`);
 
-      const methodOutline = {
-        ...outlineTreeFromHackOutlineItem(item),
-        tokenizedText: [plain(methodName)],
-      };
+      const methodOutline = outlineTreeFromHackOutlineItem(item);
 
-      const classOutline = classes.get(className);
-      invariant(classOutline != null, `Missing class ${className}`);
+      const classOutline = classes.get(classId);
+      invariant(classOutline != null, `Missing class ${classId}`);
       classOutline.children.push(methodOutline);
     }
   }
@@ -89,8 +91,37 @@ function sortOutline(outlineTrees: Array<OutlineTree>): void {
 }
 
 function outlineTreeFromHackOutlineItem(item: HackOutlineItem): OutlineTree {
+  const text = [];
+  switch (item.type) {
+    case 'static method':
+    case 'method':
+      const [, methodName] = item.name.split('::');
+      invariant(methodName != null, `Expected method name to include '::', got '${item.name}'`);
+
+      if (item.type === 'static method') {
+        text.push(keyword('static'));
+        text.push(whitespace(' '));
+      }
+      text.push(keyword('function'));
+      text.push(whitespace(' '));
+      text.push(method(methodName));
+      break;
+    case 'function':
+      text.push(keyword('function'));
+      text.push(whitespace(' '));
+      text.push(method(item.name));
+      break;
+    case 'class':
+      text.push(keyword('class'));
+      text.push(whitespace(' '));
+      text.push(className(item.name));
+      break;
+    default:
+      throw new Error(`Unrecognized item type ${item.type}`);
+  }
+
   return {
-    tokenizedText: [plain(item.name)],
+    tokenizedText: text,
     startPosition: pointFromHackOutlineItem(item),
     children: [],
   };

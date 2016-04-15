@@ -107,8 +107,7 @@ export type HackTypedRegion = {
 
 export type HackOutlineItem = {
   name: string;
-  // method, class, etc. consider using union of literals here if it starts being used.
-  type: string;
+  type: 'class' | 'method' | 'static method' | 'function';
   line: number;
   char_start: number;
   char_end: number;

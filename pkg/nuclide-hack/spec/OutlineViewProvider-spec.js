@@ -77,37 +77,67 @@ const sampleHackOutline = [
 const expectedOutline = {
   outlineTrees: [
     {
-      tokenizedText: [{kind: 'plain', value: 'foo'}],
+      tokenizedText: [
+        {kind: 'keyword', value: 'function'},
+        {kind: 'whitespace', value: ' '},
+        {kind: 'method', value: 'foo'},
+      ],
       startPosition: new Point(178, 9),
       children: [],
     },
     {
-      tokenizedText: [{kind: 'plain', value: 'Bar'}],
+      tokenizedText: [
+        {kind: 'keyword', value: 'class'},
+        {kind: 'whitespace', value: ' '},
+        {kind: 'class-name', value: 'Bar'},
+      ],
       startPosition: new Point(275, 12),
       children: [
         {
-          tokenizedText: [{kind: 'plain', value: 'foo'}],
+          tokenizedText: [
+            {kind: 'keyword', value: 'function'},
+            {kind: 'whitespace', value: ' '},
+            {kind: 'method', value: 'foo'},
+          ],
           startPosition: new Point(278, 27),
           children: [],
         },
         {
-          tokenizedText: [{kind: 'plain', value: 'baz'}],
+          tokenizedText: [
+            {kind: 'keyword', value: 'static'},
+            {kind: 'whitespace', value: ' '},
+            {kind: 'keyword', value: 'function'},
+            {kind: 'whitespace', value: ' '},
+            {kind: 'method', value: 'baz'},
+          ],
           startPosition: new Point(300, 25),
           children: [],
         },
       ],
     },
     {
-      tokenizedText: [{kind: 'plain', value: 'Foo'}],
+      tokenizedText: [
+        {kind: 'keyword', value: 'class'},
+        {kind: 'whitespace', value: ' '},
+        {kind: 'class-name', value: 'Foo'},
+      ],
       startPosition: new Point(381, 12),
       children: [
         {
-          tokenizedText: [{kind: 'plain', value: 'baz'}],
+          tokenizedText: [
+            {kind: 'keyword', value: 'function'},
+            {kind: 'whitespace', value: ' '},
+            {kind: 'method', value: 'baz'},
+          ],
           startPosition: new Point(382, 18),
           children: [],
         },
         {
-          tokenizedText: [{kind: 'plain', value: 'bar'}],
+          tokenizedText: [
+            {kind: 'keyword', value: 'function'},
+            {kind: 'whitespace', value: ' '},
+            {kind: 'method', value: 'bar'},
+          ],
           startPosition: new Point(387, 18),
           children: [],
         },
