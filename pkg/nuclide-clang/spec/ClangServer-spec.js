@@ -22,7 +22,7 @@ const FILE_CONTENTS = fs.readFileSync(TEST_FILE).toString('utf8');
 const mockFlagsManager = ({
   subject: new Subject(),
   async getFlagsForSrc() {
-    return {flags: [], onChange: this.subject};
+    return {flags: [], changes: this.subject};
   },
 }: any);
 
@@ -191,7 +191,7 @@ describe('ClangServer', () => {
       // Retry should go through.
       spyOn(flagsManager, 'getFlagsForSrc').andReturn(Promise.resolve({
         flags: [],
-        onChange: new Subject(),
+        changes: new Subject(),
       }));
       response = await server.makeRequest('compile', null, {
         contents: FILE_CONTENTS,
@@ -283,6 +283,19 @@ describe('ClangServer', () => {
         column: 2,
       });
       expect(response).not.toBe(null);
+    });
+  });
+
+  it('detects changes in the flags file', () => {
+    waitsForPromise(async () => {
+      const server = new ClangServer(mockFlagsManager, TEST_FILE);
+      await server.makeRequest('compile', null, {
+        contents: FILE_CONTENTS,
+      });
+      expect(server.getFlagsChanged()).toBe(false);
+
+      mockFlagsManager.subject.next('change');
+      expect(server.getFlagsChanged()).toBe(true);
     });
   });
 

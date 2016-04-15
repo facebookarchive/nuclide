@@ -106,6 +106,10 @@ export default class ClangServer {
   _flagsPromise: ?Promise<?Array<string>>;
   _flagsRetries: number;
 
+  // Detect when flags have changed so we can alert the client.
+  _flagsChanged: boolean;
+  _flagsChangedSubscription: ?rx$ISubscription;
+
   constructor(clangFlagsManager: ClangFlagsManager, src: string) {
     this._src = src;
     this._clangFlagsManager = clangFlagsManager;
@@ -116,6 +120,8 @@ export default class ClangServer {
     this._getAsyncConnection = promises.serializeAsyncCall(this._getAsyncConnectionImpl.bind(this));
     this._disposed = false;
     this._flagsRetries = 0;
+    this._flagsChanged = false;
+    this._flagsChangedSubscription = null;
   }
 
   dispose() {
@@ -152,6 +158,10 @@ export default class ClangServer {
       this._asyncConnection.dispose();
     }
     this._emitter.removeAllListeners();
+    if (this._flagsChangedSubscription != null) {
+      this._flagsChangedSubscription.unsubscribe();
+      this._flagsChangedSubscription = null;
+    }
   }
 
   getFlags(): Promise<?Array<string>> {
@@ -161,6 +171,12 @@ export default class ClangServer {
     this._flagsPromise = this._clangFlagsManager.getFlagsForSrc(this._src)
       .then(result => {
         if (result) {
+          this._flagsChangedSubscription = result.changes.subscribe(() => {
+            this._flagsChanged = true;
+          }, () => {
+            // Will be automatically unsubscribed here.
+            this._flagsChangedSubscription = null;
+          });
           return result.flags;
         }
         return null;
@@ -173,6 +189,10 @@ export default class ClangServer {
         }
       });
     return this._flagsPromise;
+  }
+
+  getFlagsChanged(): boolean {
+    return this._flagsChanged;
   }
 
   async makeRequest(
