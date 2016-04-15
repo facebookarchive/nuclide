@@ -14,6 +14,7 @@ import {getOutputService} from '../../nuclide-debugger-common/lib/OutputServiceM
 import utils from './utils';
 const {log, logError} = utils;
 import {Observable} from '@reactivex/rxjs';
+import {DisposableSubscription} from '../../nuclide-commons';
 
 type NotificationMessage = {
   type: 'info' | 'warning' | 'error' | 'fatalError';
@@ -57,16 +58,16 @@ export class ObservableManager {
   }
 
   _subscribe(): void {
-    this._disposables.add(this._notifications.subscribe(
+    this._disposables.add(new DisposableSubscription(this._notifications.subscribe(
       this._handleNotificationMessage.bind(this),
       this._handleNotificationError.bind(this),
       this._handleNotificationEnd.bind(this),
-    ));
-    this._disposables.add(this._serverMessages.subscribe(
+    )));
+    this._disposables.add(new DisposableSubscription(this._serverMessages.subscribe(
       this._handleServerMessage.bind(this),
       this._handleServerError.bind(this),
       this._handleServerEnd.bind(this),
-    ));
+    )));
     this._registerOutputWindowLogging();
     // Register a merged observable from shared streams that we can listen to for the onComplete.
     const sharedNotifications = this._notifications.share();
