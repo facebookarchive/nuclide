@@ -12,11 +12,19 @@ Nuclide provides support for C++ developers.
 
 ## Supported Compilers
 
-Beyond basic syntax highlighting and a generic autocomplete, in order to get the full features for
-a C++ project, you must build your project with either [Buck](http://buckbuild.com) or the
-combination of [CMake](https://cmake.org/) and
-[Clang](http://clang.llvm.org/)/[GNU Compiler](https://gcc.gnu.org/) with the
-[`CMAKE_EXPORT_COMPILE_COMMANDS`](http://clang.llvm.org/docs/JSONCompilationDatabase.html) flag.
+In order to get the full features for a C++ project beyond basic syntax highlighting
+and a generic autocomplete, you must have the following prerequisites installed:
+
+1. A compatible build system. You must have one of:
+     * [Buck](http://buckbuild.com) (with no additional setup required!)
+     * [CMake](https://cmake.org/) - you will also have to generate a compilation database with the
+       [`CMAKE_EXPORT_COMPILE_COMMANDS`](http://clang.llvm.org/docs/JSONCompilationDatabase.html)
+       option via command-line and place it / symlink it in your project root.
+       Note that Nuclide does *not* provide any additional CMake integration at the moment.
+     * You can also manually create a compliant
+       [`compile_commands.json`](http://clang.llvm.org/docs/JSONCompilationDatabase.html)
+       in your project root.
+2. [Clang](http://clang.llvm.org/) version 3.6 or higher (we recommend 3.8+)
 
 ### Installing CMake and Clang
 
@@ -30,11 +38,12 @@ Linux and Mac.
 Clang is generally provided by default on all major Linux distributions. You can use your packaging
 system to install it (e.g., `sudo apt-get install clang libclang`)
 
+Note that **version 3.6 or higher is required**. We recommend 3.8 or above for best results.
+
 > You can [build clang from source](http://clang.llvm.org/get_started.html) on Linux as well.
 
 On a Mac, install clang by installing [Xcode](https://developer.apple.com/xcode/).
-
-> Xcode is required because one of its commands is used to find the Clang library `libclang`
+Xcode 7 bundles libclang 3.7 by default.
 
 *Verify Install*
 
