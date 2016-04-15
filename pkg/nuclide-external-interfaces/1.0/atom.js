@@ -20,6 +20,7 @@ declare class atom$Package {
   path: string;
   activateTime: number;
   mainModule: any;
+  metadata: Object;
   name: string;
   loadTime: number;
   getType(): 'atom' | 'textmate' | 'theme';
