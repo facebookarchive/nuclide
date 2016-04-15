@@ -50,6 +50,7 @@ fs.writeFileSync(gitIgnorePath, gitIgnoreLines.join('\n'));
 var pkgCopy = JSON.parse(JSON.stringify(pkg));
 delete pkgCopy.bin;
 delete pkgCopy.private;
+pkgCopy.main = './lib/main.js';
 var newPackageJson = JSON.stringify(pkgCopy, null, 2) + '\n';
 fs.writeFileSync(packageJsonPath, newPackageJson);
 

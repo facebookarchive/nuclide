@@ -26,6 +26,7 @@ var pkg = JSON.parse(packageJson);
  */
 var pkgCopy = JSON.parse(JSON.stringify(pkg));
 delete pkgCopy.private;
+pkgCopy.main = './lib/main.js';
 var newPackageJson = JSON.stringify(pkgCopy, null, 2) + '\n';
 fs.writeFileSync(packageJsonPath, newPackageJson);
 
