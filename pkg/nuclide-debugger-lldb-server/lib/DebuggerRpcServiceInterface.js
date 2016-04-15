@@ -28,6 +28,7 @@ export type LaunchTargetInfo = {
 export type DebuggerConfig = {
   logLevel: string;
   pythonBinaryPath: string;
+  buckConfigRootFile: string;
 };
 
 export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>> {

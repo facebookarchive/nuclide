@@ -131,7 +131,7 @@ export class DebuggerRpcService {
     log(`attach process: ${JSON.stringify(attachInfo)}`);
     const inferiorArguments = {
       pid: String(attachInfo.pid),
-      basepath: attachInfo.basepath ? attachInfo.basepath : '.',
+      basepath: attachInfo.basepath ? attachInfo.basepath : this._config.buckConfigRootFile,
     };
     return await this._startDebugging(inferiorArguments);
   }
@@ -142,7 +142,7 @@ export class DebuggerRpcService {
       executable_path: launchInfo.executablePath,
       launch_arguments: launchInfo.arguments,
       working_directory: launchInfo.workingDirectory,
-      basepath: launchInfo.basepath ? launchInfo.basepath : '.',
+      basepath: launchInfo.basepath ? launchInfo.basepath : this._config.buckConfigRootFile,
     };
     return await this._startDebugging(inferiorArguments);
   }

@@ -43,6 +43,12 @@
         "type": "string",
         "default": "/usr/bin/python",
         "description": "Path to the python binary used to run the LLDB backend."
+      },
+      "buckConfigRootFile": {
+        "title": "Buck Build Root",
+        "type": "string",
+        "default": ".",
+        "description": "Path of the buck config root directory. The source file paths in debug symbol will be relative to this directory."
       }
     },
     "packageType": "Atom",

@@ -56,6 +56,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     const debuggerConfig = {
       logLevel: getConfig().serverLogLevel,
       pythonBinaryPath: getConfig().pythonBinaryPath,
+      buckConfigRootFile: getConfig().buckConfigRootFile,
     };
     const {getServiceByNuclideUri} = require('../../nuclide-client');
     const service = getServiceByNuclideUri('LLDBDebuggerRpcService', this.getTargetUri());
