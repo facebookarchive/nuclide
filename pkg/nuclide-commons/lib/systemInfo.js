@@ -45,12 +45,20 @@ export async function getClangVersion(): Promise<string> {
 
 export function getRuntimePath(): string {
   // "resourcesPath" only exists in Atom. It's as close as you can get to
-  // Atom's path without having to manually clean some string for different
-  // environments. In the general case, it looks like this:
+  // Atom's path. In the general case, it looks like this:
   // Mac: "/Applications/Atom.app/Contents/Resources"
   // Linux: "/usr/share/atom/resources"
+  // Windows: "C:\\Users\\asuarez\\AppData\\Local\\atom\\app-1.6.2\\resources"
+  //          "C:\Atom\resources"
   if (global.atom && typeof process.resourcesPath === 'string') {
-    return (process: any).resourcesPath;
+    const resourcesPath = process.resourcesPath;
+    if (os.platform() === 'darwin') {
+      return resourcesPath.replace(/\/Contents\/Resources$/, '');
+    } else if (os.platform() === 'linux') {
+      return resourcesPath.replace(/\/resources$/, '');
+    } else {
+      return resourcesPath.replace(/[\\]+resources$/, '');
+    }
   } else {
     return process.execPath;
   }
