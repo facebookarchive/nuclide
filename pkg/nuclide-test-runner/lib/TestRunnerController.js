@@ -325,7 +325,7 @@ export class TestRunnerController {
         this._setExecutionState(TestRunnerPanel.ExecutionState.STOPPED);
       })
       .subscribe();
-    this._run = new TestRunModel(label, subscription.dispose.bind(subscription));
+    this._run = new TestRunModel(label, subscription.unsubscribe.bind(subscription));
   }
 
   _setExecutionState(executionState: number): void {
