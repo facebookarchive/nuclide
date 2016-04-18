@@ -128,7 +128,7 @@ export default class RepositoryStack {
     return this._repository.commit(message);
   }
 
-  amend(message: string): Promise<void> {
+  amend(message: ?string): Promise<void> {
     return this._repository.amend(message);
   }
 

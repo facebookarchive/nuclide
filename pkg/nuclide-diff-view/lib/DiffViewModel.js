@@ -44,6 +44,7 @@ export type DiffEntityOptions = {
 
 import arcanist from '../../nuclide-arcanist-client';
 import {CompositeDisposable, Emitter} from 'atom';
+import shell from 'shell';
 import {
   DiffMode,
   DiffOption,
@@ -146,6 +147,27 @@ function hgRepositoryForPath(filePath: NuclideUri): HgRepositoryClient {
   return (repository: any);
 }
 
+function notifyRevisionStatus(
+  phabRevision: ?PhabricatorRevisionInfo,
+  statusMessage: string,
+): void {
+  let message = `Revision ${statusMessage}`;
+  if (phabRevision == null) {
+    atom.notifications.addSuccess(message);
+    return;
+  }
+  const {id, url} = phabRevision;
+  message = `Revision '${id}' ${statusMessage}`;
+  atom.notifications.addSuccess(message, {
+    dismissable: true,
+    buttons: [{
+      className: 'icon icon-globe',
+      onDidClick() { shell.openExternal(url); },
+      text: 'Open in Phabricator',
+    }],
+  });
+}
+
 type State = {
   viewMode: DiffModeType;
   commitMessage: ?string;
@@ -175,7 +197,7 @@ class DiffViewModel {
   _repositorySubscriptions: Map<HgRepositoryClient, CompositeDisposable>;
   _isActive: boolean;
   _state: State;
-  _messages: Rx.Subject;
+  _publishUpdates: Rx.Subject;
   _serializedUpdateActiveFileDiff: () => Promise<void>;
 
   constructor() {
@@ -186,7 +208,7 @@ class DiffViewModel {
     this._repositoryStacks = new Map();
     this._repositorySubscriptions = new Map();
     this._isActive = false;
-    this._messages = new Rx.Subject();
+    this._publishUpdates = new Rx.Subject();
     this._state = {
       viewMode: DiffMode.BROWSE_MODE,
       commitMessage: null,
@@ -414,10 +436,6 @@ class DiffViewModel {
   _onUpdateRevisionsState(revisionsState: RevisionsState): void {
     this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
     this._loadModeState(true);
-  }
-
-  getMessages(): Rx.Observable {
-    return this._messages;
   }
 
   setPublishMessage(publishMessage: string): void {
@@ -659,6 +677,10 @@ class DiffViewModel {
     return this._activeFileState;
   }
 
+  getPublishUpdates(): Rx.Subject {
+    return this._publishUpdates;
+  }
+
   async _updateActiveDiffState(filePath: NuclideUri): Promise<void> {
     if (!filePath) {
       return;
@@ -756,7 +778,8 @@ class DiffViewModel {
     track('diff-view-publish', {
       publishMode,
     });
-    const cleanResult = await this._promptToCleanDirtyChanges(publishMessage);
+    const commitMessage = publishMode === PublishMode.CREATE ? publishMessage : null;
+    const cleanResult = await this._promptToCleanDirtyChanges(commitMessage);
     if (cleanResult == null) {
       this._setState({
         ...this._state,
@@ -770,30 +793,37 @@ class DiffViewModel {
         case PublishMode.CREATE:
           // Create uses `verbatim` and `n` answer buffer
           // and that implies that untracked files will be ignored.
-          await this._createPhabricatorRevision(publishMessage, amended);
-          invariant(this._activeRepositoryStack, 'No active repository stack');
-          // Invalidate the current revisions state because the current commit info has changed.
-          this._activeRepositoryStack.getRevisionsStatePromise();
+          const createdPhabricatorRevision = await this._createPhabricatorRevision(
+            publishMessage,
+            amended,
+          );
+          notifyRevisionStatus(createdPhabricatorRevision, 'created');
           break;
         case PublishMode.UPDATE:
-          await this._updatePhabricatorRevision(publishMessage, allowUntracked);
+          const updatedPhabricatorRevision = await this._updatePhabricatorRevision(
+            publishMessage,
+            allowUntracked,
+          );
+          notifyRevisionStatus(updatedPhabricatorRevision, 'updated');
           break;
         default:
           throw new Error(`Unknown publish mode '${publishMode}'`);
       }
+      // Wait a bit until the user sees the success push message.
+      await promises.awaitMilliSeconds(2000);
       // Populate Publish UI with the most recent data after a successful push.
       this._loadModeState(true);
     } catch (error) {
       notifyInternalError(error, true /*persist the error (user dismissable)*/);
       this._setState({
         ...this._state,
-        publishModeState: PublishModeState.READY,
+        publishModeState: PublishModeState.PUBLISH_ERROR,
       });
     }
   }
 
   async _promptToCleanDirtyChanges(
-    commitMessage: string,
+    commitMessage: ?string,
   ): Promise<?{allowUntracked: boolean; amended: boolean;}> {
     const activeStack = this._activeRepositoryStack;
     invariant(activeStack != null, 'No active repository stack when cleaning dirty changes');
@@ -871,29 +901,30 @@ class DiffViewModel {
   async _createPhabricatorRevision(
     publishMessage: string,
     amended: boolean,
-  ): Promise<void> {
+  ): Promise<?PhabricatorRevisionInfo> {
     const filePath = this._getArcanistFilePath();
     const lastCommitMessage = await this._loadActiveRepositoryLatestCommitMessage();
+    const activeRepositoryStack = this._activeRepositoryStack;
+    invariant(activeRepositoryStack, 'No active repository stack');
     if (!amended && publishMessage !== lastCommitMessage) {
       getLogger().info('Amending commit with the updated message');
-      invariant(this._activeRepositoryStack);
-      await this._activeRepositoryStack.amend(publishMessage);
+      await activeRepositoryStack.amend(publishMessage);
       atom.notifications.addSuccess('Commit amended with the updated message');
     }
 
-    // TODO(rossallen): Make nuclide-console inform the user there is new output rather than force
-    // it open like the following.
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
-
-    this._messages.next({level: 'log', text: 'Creating new revision...'});
+    this._publishUpdates.next({level: 'log', text: 'Creating new revision...\n'});
     const stream = arcanist.createPhabricatorRevision(filePath);
-    await this._processArcanistOutput(stream, 'Revision created');
+    await this._processArcanistOutput(stream);
+    // Invalidate the current revisions state because the current commit info has changed.
+    activeRepositoryStack.getRevisionsStatePromise();
+    const {phabricatorRevision}  = await this._getActiveHeadRevisionDetails();
+    return phabricatorRevision;
   }
 
   async _updatePhabricatorRevision(
     publishMessage: string,
     allowUntracked: boolean,
-  ): Promise<void> {
+  ): Promise<PhabricatorRevisionInfo> {
     const filePath = this._getArcanistFilePath();
     const {phabricatorRevision} = await this._getActiveHeadRevisionDetails();
     invariant(phabricatorRevision != null, 'A phabricator revision must exist to update!');
@@ -903,22 +934,16 @@ class DiffViewModel {
       throw new Error('Cannot update revision with empty message');
     }
 
-    // TODO(rossallen): Make nuclide-console inform the user there is new output rather than force
-    // it open like the following.
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
-
-    this._messages.next({
+    this._publishUpdates.next({
       level: 'log',
-      text: `Updating revision \`${phabricatorRevision.id}\`...`,
+      text: `Updating revision \`${phabricatorRevision.id}\`...\n`,
     });
     const stream = arcanist.updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked);
-    await this._processArcanistOutput(
-      stream,
-      `Revision \`${phabricatorRevision.id}\` updated`,
-    );
+    await this._processArcanistOutput(stream);
+    return phabricatorRevision;
   }
 
-  async _processArcanistOutput(stream: Rx.Observable, successMsg: string): Promise<void> {
+  async _processArcanistOutput(stream: Rx.Observable): Promise<void> {
     stream = stream
       // Split stream into single lines.
       .flatMap((message: {stderr?: string; stdout?: string}) => {
@@ -1002,14 +1027,12 @@ class DiffViewModel {
       .do(
         (messages: Array<{level: string; text: string}>) => {
           if (messages.length > 0) {
-            this._messages.next({
+            this._publishUpdates.next({
               level: messages[0].level,
               text: messages.map(message => message.text).join(''),
             });
           }
         },
-        () => {},
-        () => { atom.notifications.addSuccess(successMsg); }
       )
       .toPromise();
   }
@@ -1102,6 +1125,13 @@ class DiffViewModel {
   }
 
   async _loadPublishModeState(): Promise<void> {
+    const {publishModeState} = this._state;
+    if (
+      publishModeState === PublishModeState.AWAITING_PUBLISH ||
+      publishModeState === PublishModeState.PUBLISH_ERROR
+    ) {
+      return;
+    }
     let publishMessage = this._state.publishMessage;
     this._setState({
       ...this._state,

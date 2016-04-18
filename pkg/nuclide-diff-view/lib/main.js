@@ -12,7 +12,6 @@
 import type DiffViewModelType, {DiffEntityOptions} from './DiffViewModel';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {HomeFragments} from '../../nuclide-home-interfaces';
-import type OutputService from '../../nuclide-console/lib/OutputService';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {
   UIProvider,
@@ -322,13 +321,6 @@ module.exports = {
       invariant(subscriptions);
       subscriptions.add(changePathsSubscription);
     }));
-  },
-
-  consumeOutputService(api: OutputService): IDisposable {
-    return api.registerOutputProvider({
-      source: 'diff view',
-      messages: getDiffViewModel().getMessages(),
-    });
   },
 
   consumeToolBar(getToolBar: (group: string) => Object): void {

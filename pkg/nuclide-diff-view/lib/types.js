@@ -21,7 +21,12 @@ export type CommitModeStateType = 'Ready' | 'Loading Commit Message' | 'Awaiting
 
 export type PublishModeType = 'Create' | 'Update';
 
-export type PublishModeStateType = 'Ready' | 'Loading Publish Message' | 'Awaiting Publish';
+export type PublishModeStateType =
+  'Ready'
+  | 'Loading Publish Message'
+  | 'Awaiting Publish'
+  | 'Publish Error'
+;
 
 export type DiffOptionType = 'Dirty' | 'Last Commit' | 'Compare Commit';
 

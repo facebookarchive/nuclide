@@ -95,6 +95,7 @@ export const PublishModeState = Object.freeze({
   READY: 'Ready',
   LOADING_PUBLISH_MESSAGE: 'Loading Publish Message',
   AWAITING_PUBLISH: 'Awaiting Publish',
+  PUBLISH_ERROR: 'Publish Error',
 });
 
 // This is to work around flow's missing support of enums.

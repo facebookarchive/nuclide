@@ -20,7 +20,7 @@ describe('DiffViewModel', () => {
 
   beforeEach(() => {
     model = new DiffViewModel([]);
-    messages = model.getMessages();
+    messages = model.getPublishUpdates();
     spyOn(messages, 'next').andCallThrough();
   });
 

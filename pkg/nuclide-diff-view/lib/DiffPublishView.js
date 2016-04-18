@@ -26,6 +26,8 @@ import {
 import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
 import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
 import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
+import {CompositeDisposable, TextBuffer} from 'atom';
+import {DisposableSubscription} from '../../nuclide-commons';
 
 type DiffRevisionViewProps = {
   revision: RevisionInfo;
@@ -59,14 +61,30 @@ type Props = {
 
 class DiffPublishView extends React.Component {
   props: Props;
-
-  constructor(props: Props) {
-    super(props);
-    (this: any)._onClickPublish = this._onClickPublish.bind(this);
-  }
+  _textBuffer: TextBuffer;
+  _subscriptions: CompositeDisposable;
 
   componentDidMount(): void {
+    (this: any)._onClickPublish = this._onClickPublish.bind(this);
+    this._textBuffer = new TextBuffer();
+    this._subscriptions = new CompositeDisposable();
+
+    this._subscriptions.add(
+      new DisposableSubscription(
+        this.props.diffModel
+          .getPublishUpdates()
+          .subscribe(this._onPublishUpdate.bind(this))
+      )
+    );
     this._setPublishText();
+  }
+
+  _onPublishUpdate(message: Object): void {
+    this._textBuffer.append(message.text);
+    const updatesEditor = this.refs['publishUpdates'];
+    if (updatesEditor != null) {
+      updatesEditor.getElement().scrollToBottom();
+    }
   }
 
   componentDidUpdate(prevProps: Props): void {
@@ -76,6 +94,7 @@ class DiffPublishView extends React.Component {
   }
 
   componentWillUnmount(): void {
+    this._subscriptions.dispose();
     // Save the latest edited publish message for layout switches.
     const message = this._getPublishMessage();
     const {diffModel} = this.props;
@@ -87,15 +106,24 @@ class DiffPublishView extends React.Component {
   }
 
   _setPublishText(): void {
-    this.refs['message'].getTextBuffer().setText(this.props.message || '');
+    const messageEditor = this.refs['message'];
+    if (messageEditor != null) {
+      messageEditor.getTextBuffer().setText(this.props.message || '');
+    }
   }
 
   _onClickPublish(): void {
+    this._textBuffer.setText('');
     this.props.diffModel.publishDiff(this._getPublishMessage());
   }
 
   _getPublishMessage(): string {
-    return this.refs['message'].getTextBuffer().getText();
+    const messageEditor = this.refs['message'];
+    if (messageEditor != null) {
+      return messageEditor.getTextBuffer().getText();
+    } else {
+      return this.props.message || '';
+    }
   }
 
   render(): ReactElement {
@@ -108,6 +136,31 @@ class DiffPublishView extends React.Component {
 
     let isBusy;
     let publishMessage;
+    let statusEditor = null;
+
+    const getStreamStatusEditor = () => {
+      return (
+        <AtomTextEditor
+          ref="publishUpdates"
+          textBuffer={this._textBuffer}
+          readOnly={true}
+          syncTextContents={false}
+          gutterHidden={true}
+        />
+      );
+    };
+
+    const getPublishMessageEditor = () => {
+      return (
+        <AtomTextEditor
+          ref="message"
+          readOnly={isBusy}
+          syncTextContents={false}
+          gutterHidden={true}
+        />
+      );
+    };
+
     switch (publishModeState) {
       case PublishModeState.READY:
         isBusy = false;
@@ -116,14 +169,22 @@ class DiffPublishView extends React.Component {
         } else {
           publishMessage = 'Update Phabricator Revision';
         }
+        statusEditor = getPublishMessageEditor();
         break;
       case PublishModeState.LOADING_PUBLISH_MESSAGE:
         isBusy = true;
         publishMessage = 'Loading...';
+        statusEditor = getPublishMessageEditor();
         break;
       case PublishModeState.AWAITING_PUBLISH:
         isBusy = true;
         publishMessage = 'Publishing...';
+        statusEditor = getStreamStatusEditor();
+        break;
+      case PublishModeState.PUBLISH_ERROR:
+        isBusy = false;
+        statusEditor = getStreamStatusEditor();
+        publishMessage = 'Fixed? - Retry Publishing';
         break;
     }
 
@@ -141,11 +202,7 @@ class DiffPublishView extends React.Component {
     return (
       <div className="nuclide-diff-mode">
         <div className="message-editor-wrapper">
-          <AtomTextEditor
-            ref="message"
-            readOnly={isBusy}
-            gutterHidden={true}
-          />
+          {statusEditor}
         </div>
         <Toolbar location="bottom">
           <ToolbarLeft>

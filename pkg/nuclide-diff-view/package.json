@@ -17,11 +17,6 @@
     }
   },
   "consumedServices": {
-    "nuclide-output": {
-      "versions": {
-        "0.0.0": "consumeOutputService"
-      }
-    },
     "nuclide-diff-view-ui.provider": {
       "versions": {
         "0.0.0": "consumeUIProvider"
