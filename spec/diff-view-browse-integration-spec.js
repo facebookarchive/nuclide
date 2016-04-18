@@ -23,7 +23,7 @@ import {getFileTreePathFromTargetEvent} from '../pkg/nuclide-diff-view/lib/utils
 
 import type DiffViewComponent from '../pkg/nuclide-diff-view/lib/DiffViewComponent';
 
-describe('Diff view integration test', () => {
+describe('Diff View Browse Mode Integration Test', () => {
 
   let repoPath: string = (null: any);
 
@@ -45,34 +45,6 @@ describe('Diff view integration test', () => {
     deactivateAllPackages();
   });
 
-  it('tests diff files count', () => {
-    const textEditor = atom.workspace.getActiveTextEditor();
-    invariant(textEditor, 'no active text editor!');
-
-    function getDiffCountElement() {
-      return document.querySelector('.diff-view-count');
-    }
-
-    waitsFor('diff-count element to register in the toolbar', 30000, () => {
-      return getDiffCountElement() != null;
-    });
-
-    runs(() => {
-      // Initially we have no changed files so the diff view tool-bar counter should be empty.
-      expect(getDiffCountElement().innerText).toEqual('');
-
-      textEditor.setText('cg');
-      textEditor.save();
-    });
-
-    waitsFor('uncommited file changes tool-bar counter to update', 10000, () => {
-      return getDiffCountElement().innerText;
-    });
-
-    runs(() => {
-      expect(getDiffCountElement().innerText).toEqual('1');
-    });
-  });
 
   function getDiffViewComponent(): DiffViewComponent {
     const diffViewPackage = atom.packages.getActivePackage('nuclide-diff-view');

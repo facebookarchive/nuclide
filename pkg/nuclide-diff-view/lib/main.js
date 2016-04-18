@@ -24,6 +24,7 @@ import url from 'url';
 import {nuclideFeatures} from '../../../lib/nuclide-features';
 import {getFileTreePathFromTargetEvent} from './utils';
 import {getLogger} from '../../nuclide-logging';
+import {DiffMode, CommitMode} from './constants';
 
 let diffViewModel: ?DiffViewModelType = null;
 let activeDiffView: ?{
@@ -34,6 +35,10 @@ let activeDiffView: ?{
 // This url style is the one Atom uses for the welcome and settings pages.
 const NUCLIDE_DIFF_VIEW_URI = 'atom://nuclide/diff-view';
 const DIFF_VIEW_FILE_TREE_CONTEXT_MENU_PRIORITY = 1000;
+const COMMIT_FILE_TREE_CONTEXT_MENU_PRIORITY = 1100;
+const AMEND_FILE_TREE_CONTEXT_MENU_PRIORITY = 1200;
+const PUBLISH_FILE_TREE_CONTEXT_MENU_PRIORITY = 1300;
+
 const uiProviders: Array<UIProvider> = [];
 
 let subscriptions: ?CompositeDisposable = null;
@@ -116,18 +121,13 @@ function activateDiffPath(diffEntityOptions: DiffEntityOptions): void {
   if (diffViewModel == null) {
     return;
   }
-  let validDiffEntityOptions = null;
-  if (diffEntityOptions.file || diffEntityOptions.directory) {
-    validDiffEntityOptions = diffEntityOptions;
-  } else if (cwdApi != null) {
+  if (!diffEntityOptions.file && !diffEntityOptions.directory && cwdApi != null) {
     const directory = cwdApi.getCwd();
     if (directory != null) {
-      validDiffEntityOptions = {directory: directory.getPath()};
+      diffEntityOptions.directory = directory.getPath();
     }
   }
-  if (validDiffEntityOptions != null) {
-    diffViewModel.diffEntity(validDiffEntityOptions);
-  }
+  diffViewModel.diffEntity(diffEntityOptions);
 }
 
 function projectsContainPath(checkPath: string): boolean {
@@ -164,31 +164,79 @@ function updateToolbarCount(diffViewButton: HTMLElement, count: number): void {
   ReactDOM.render(<DiffCountComponent count={count} />, changeCountElement);
 }
 
-function diffActiveTextEditor(): void {
+function diffActivePath(diffOptions?: Object): void {
   const editor = atom.workspace.getActiveTextEditor();
   if (editor == null) {
-    atom.workspace.open(formatDiffViewUrl());
+    atom.workspace.open(formatDiffViewUrl(diffOptions));
   } else {
-    atom.workspace.open(formatDiffViewUrl({file: editor.getPath() || ''}));
+    atom.workspace.open(formatDiffViewUrl({
+      file: editor.getPath() || '',
+      ...diffOptions,
+    }));
   }
+}
+
+// Listen for file tree context menu file item events to open the diff view.
+function addFileTreeCommands(commandName: string, diffOptions?: Object): void {
+  invariant(subscriptions);
+  subscriptions.add(atom.commands.add(
+    '.tree-view .entry.file.list-item',
+    commandName,
+    event => {
+      const filePath = getFileTreePathFromTargetEvent(event);
+      atom.workspace.open(formatDiffViewUrl({
+        file: filePath || '',
+        ...diffOptions,
+      }));
+    }
+  ));
+
+  subscriptions.add(atom.commands.add(
+    '.tree-view .entry.directory.list-nested-item > .list-item',
+    commandName,
+    event => {
+      const directoryPath = getFileTreePathFromTargetEvent(event);
+      atom.workspace.open(formatDiffViewUrl({
+        directory: directoryPath || '',
+        ...diffOptions,
+      }));
+    }
+  ));
+}
+
+function addActivePathCommands(commandName: string, diffOptions?: Object) {
+  invariant(subscriptions);
+  const boundDiffActivePath = diffActivePath.bind(null, diffOptions);
+  subscriptions.add(atom.commands.add(
+    'atom-workspace',
+    commandName,
+    boundDiffActivePath,
+  ));
+  // Listen for in-editor context menu item diff view open command.
+  subscriptions.add(atom.commands.add(
+    'atom-text-editor',
+    commandName,
+    boundDiffActivePath,
+  ));
 }
 
 module.exports = {
 
-  activate(state: ?any): void {
+  activate(state: any): void {
     subscriptions = new CompositeDisposable();
     // Listen for menu item workspace diff view open command.
-    subscriptions.add(atom.commands.add(
-      'atom-workspace',
-      'nuclide-diff-view:open',
-      diffActiveTextEditor,
-    ));
-    // Listen for in-editor context menu item diff view open command.
-    subscriptions.add(atom.commands.add(
-      'atom-text-editor',
-      'nuclide-diff-view:open',
-      diffActiveTextEditor,
-    ));
+    addActivePathCommands('nuclide-diff-view:open');
+    addActivePathCommands('nuclide-diff-view:commit', {
+      viewMode: DiffMode.COMMIT_MODE,
+      commitMode: CommitMode.COMMIT,
+    });
+    addActivePathCommands('nuclide-diff-view:amend', {
+      viewMode: DiffMode.COMMIT_MODE,
+      commitMode: CommitMode.AMEND,
+    });
+    addActivePathCommands('nuclide-diff-view:publish', {
+      viewMode: DiffMode.PUBLISH_MODE,
+    });
 
     // Listen for switching to editor mode for the active file.
     subscriptions.add(atom.commands.add(
@@ -203,25 +251,18 @@ module.exports = {
       }
     ));
 
-    // Listen for file tree context menu file item events to open the diff view.
-    subscriptions.add(atom.commands.add(
-      '.tree-view .entry.file.list-item',
-      'nuclide-diff-view:open-context',
-      event => {
-        const filePath = getFileTreePathFromTargetEvent(event);
-        atom.workspace.open(formatDiffViewUrl({file: filePath || ''}));
-      }
-    ));
-
-    // Listen for file tree context menu directory item events to open the diff view.
-    subscriptions.add(atom.commands.add(
-      '.tree-view .entry.directory.list-nested-item > .list-item',
-      'nuclide-diff-view:open-context',
-      event => {
-        const directoryPath = getFileTreePathFromTargetEvent(event);
-        atom.workspace.open(formatDiffViewUrl({directory: directoryPath || ''}));
-      }
-    ));
+    addFileTreeCommands('nuclide-diff-view:open-context');
+    addFileTreeCommands('nuclide-diff-view:commit-context', {
+      viewMode: DiffMode.COMMIT_MODE,
+      commitMode: CommitMode.COMMIT,
+    });
+    addFileTreeCommands('nuclide-diff-view:amend-context', {
+      viewMode: DiffMode.COMMIT_MODE,
+      commitMode: CommitMode.AMEND,
+    });
+    addFileTreeCommands('nuclide-diff-view:publish-context', {
+      viewMode: DiffMode.PUBLISH_MODE,
+    });
 
     // The Diff View will open its main UI in a tab, like Atom's preferences and welcome pages.
     subscriptions.add(atom.workspace.addOpener(uri => {
@@ -237,18 +278,29 @@ module.exports = {
       }
     }));
 
-    if (!state || !state.activeFilePath) {
+    if (state == null) {
       return;
     }
 
     // Wait for all source control providers to register.
     subscriptions.add(nuclideFeatures.onDidActivateInitialFeatures(() => {
-      invariant(state);
-      const {activeFilePath} = state;
+      const {activeFilePath, viewMode, commitMode} = state;
+
+      function restoreActiveDiffView() {
+        if (atom.specMode) {
+          // Restore conflicts with diff view testing.
+          return;
+        }
+        atom.workspace.open(formatDiffViewUrl({
+          file: activeFilePath,
+          viewMode,
+          commitMode,
+        }));
+      }
 
       // If it's a local directory, it must be loaded with packages activation.
-      if (projectsContainPath(activeFilePath)) {
-        atom.workspace.open(formatDiffViewUrl({file: activeFilePath}));
+      if (!activeFilePath || projectsContainPath(activeFilePath)) {
+        restoreActiveDiffView();
         return;
       }
       // If it's a remote directory, it should come on a path change event.
@@ -258,7 +310,7 @@ module.exports = {
         // rest of the listeners, which can stop the remote editing from being functional.
         try {
           if (projectsContainPath(activeFilePath)) {
-            atom.workspace.open(formatDiffViewUrl({file: activeFilePath}));
+            restoreActiveDiffView();
             changePathsSubscription.dispose();
             invariant(subscriptions);
             subscriptions.remove(changePathsSubscription);
@@ -303,8 +355,8 @@ module.exports = {
         icon: 'git-branch',
         description: (
           <span>
-            Launches an editable side-by-side view of the output of the Mercurial
-            <code>hg diff</code> command, showing pending changes to be committed.
+            Launches an editable side-by-side compare view across mercurial dirty and commits
+            changes, allowing committing and pushing changes to phabricator.
           </span>
         ),
         command: 'nuclide-diff-view:open',
@@ -318,8 +370,11 @@ module.exports = {
       return {};
     }
     const {filePath} = diffViewModel.getActiveFileState();
+    const {viewMode, commitMode} = diffViewModel.getState();
     return {
       activeFilePath: filePath,
+      viewMode,
+      commitMode,
     };
   },
 
@@ -369,6 +424,27 @@ module.exports = {
         command: 'nuclide-diff-view:open-context',
       },
       DIFF_VIEW_FILE_TREE_CONTEXT_MENU_PRIORITY,
+    ));
+    menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu(
+      {
+        label: 'Commit',
+        command: 'nuclide-diff-view:commit-context',
+      },
+      COMMIT_FILE_TREE_CONTEXT_MENU_PRIORITY,
+    ));
+    menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu(
+      {
+        label: 'Amend',
+        command: 'nuclide-diff-view:amend-context',
+      },
+      AMEND_FILE_TREE_CONTEXT_MENU_PRIORITY,
+    ));
+    menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu(
+      {
+        label: 'Publish to Phabricator',
+        command: 'nuclide-diff-view:publish-context',
+      },
+      PUBLISH_FILE_TREE_CONTEXT_MENU_PRIORITY,
     ));
     subscriptions.add(menuItemDescriptions);
     return menuItemDescriptions;

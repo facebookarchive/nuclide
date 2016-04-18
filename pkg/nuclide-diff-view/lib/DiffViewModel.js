@@ -36,9 +36,10 @@ type FileDiffState = {
 };
 
 export type DiffEntityOptions = {
-  file: NuclideUri;
-} | {
-  directory: NuclideUri;
+  file?: NuclideUri;
+  directory?: NuclideUri;
+  viewMode?: DiffModeType;
+  commitMode?: CommitModeType;
 };
 
 import arcanist from '../../nuclide-arcanist-client';
@@ -165,7 +166,7 @@ class DiffViewModel {
 
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
-  _activeSubscriptions: ?CompositeDisposable;
+  _activeSubscriptions: CompositeDisposable;
   _activeFileState: FileChangeState;
   _activeRepositoryStack: ?RepositoryStack;
   _newEditor: ?TextEditor;
@@ -180,6 +181,7 @@ class DiffViewModel {
   constructor() {
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
+    this._activeSubscriptions = new CompositeDisposable();
     this._uiProviders = [];
     this._repositoryStacks = new Map();
     this._repositorySubscriptions = new Map();
@@ -432,7 +434,7 @@ class DiffViewModel {
     });
   }
 
-  setViewMode(viewMode: DiffModeType): void {
+  setViewMode(viewMode: DiffModeType, loadModeState?: boolean = true): void {
     if (viewMode === this._state.viewMode) {
       return;
     }
@@ -444,7 +446,9 @@ class DiffViewModel {
       viewMode,
     });
     this._updateCompareChangedStatus();
-    this._loadModeState(false);
+    if (loadModeState) {
+      this._loadModeState(false);
+    }
     this._serializedUpdateActiveFileDiff();
   }
 
@@ -479,12 +483,10 @@ class DiffViewModel {
     }
     const dirtyFilePaths = Array.from(repositoryStack.getDirtyFileChanges().keys());
     // Try to match dirty file changes in the selected directory,
-    // Then lookup for changes in the project directory if there is no active repository.
+    // Then lookup for changes in the project directory.
     const matchedFilePaths = [
       getMatchingFileChange(dirtyFilePaths, directoryPath),
-      this._activeRepositoryStack == null
-        ? getMatchingFileChange(dirtyFilePaths, projectDirectory)
-        : null,
+      getMatchingFileChange(dirtyFilePaths, projectDirectory),
     ];
     return matchedFilePaths[0] || matchedFilePaths[1];
   }
@@ -497,7 +499,9 @@ class DiffViewModel {
       diffPath = this._findFilePathToDiffInDirectory(entityOption.directory);
     }
 
-    if (diffPath == null) {
+    if (diffPath != null) {
+      this._diffFilePath(diffPath);
+    } else {
       const repository = repositoryForPath(entityOption.file || entityOption.directory || '');
       if (
         repository != null &&
@@ -508,36 +512,50 @@ class DiffViewModel {
         invariant(repositoryStack);
         this._setActiveRepositoryStack(repositoryStack);
       } else {
-        getLogger().warn('Non diffable entity:', entityOption);
+        getLogger().error('Non diffable entity:', entityOption);
       }
+    }
+    const {viewMode, commitMode} = entityOption;
+    if (viewMode === this._state.viewMode && commitMode === this._state.commitMode) {
       return;
     }
-
-    const filePath = diffPath;
-    if (this._activeSubscriptions != null) {
-      this._activeSubscriptions.dispose();
+    if (viewMode ===  DiffMode.COMMIT_MODE) {
+      invariant(commitMode, 'DIFF: Commit Mode not set!');
+      this.setViewMode(DiffMode.COMMIT_MODE, false);
+      this.setCommitMode(commitMode, false);
+      this._loadModeState(true);
+    } else if (viewMode) {
+      this.setViewMode(viewMode);
     }
-    const activeSubscriptions = this._activeSubscriptions = new CompositeDisposable();
+  }
+
+
+  _diffFilePath(filePath: NuclideUri): void {
+    if (filePath === this._activeFileState.filePath) {
+      return;
+    }
+    this._activeSubscriptions.dispose();
+    this._activeSubscriptions = new CompositeDisposable();
     // TODO(most): Show progress indicator: t8991676
     const buffer = bufferForUri(filePath);
     const {file} = buffer;
     if (file != null) {
-      activeSubscriptions.add(file.onDidChange(debounce(
+      this._activeSubscriptions.add(file.onDidChange(debounce(
         () => this._onDidFileChange(filePath).catch(notifyInternalError),
         FILE_CHANGE_DEBOUNCE_MS,
         false,
       )));
     }
-    activeSubscriptions.add(buffer.onDidChangeModified(
+    this._activeSubscriptions.add(buffer.onDidChangeModified(
       this.emitActiveBufferChangeModified.bind(this),
     ));
     // Modified events could be late that it doesn't capture the latest edits/ state changes.
     // Hence, it's safe to re-emit changes when stable from changes.
-    activeSubscriptions.add(buffer.onDidStopChanging(
+    this._activeSubscriptions.add(buffer.onDidStopChanging(
       this.emitActiveBufferChangeModified.bind(this),
     ));
     // Update `savedContents` on buffer save requests.
-    activeSubscriptions.add(buffer.onWillSave(
+    this._activeSubscriptions.add(buffer.onWillSave(
       () => this._onWillSaveActiveBuffer(buffer),
     ));
     track('diff-view-open-file', {filePath});
@@ -1215,7 +1233,7 @@ class DiffViewModel {
     return this._state;
   }
 
-  setCommitMode(commitMode: CommitModeType): void {
+  setCommitMode(commitMode: CommitModeType, loadModeState?: boolean = true): void {
     if (this._state.commitMode === commitMode) {
       return;
     }
@@ -1227,8 +1245,10 @@ class DiffViewModel {
       commitMode,
       commitMessage: null,
     });
-    // When the commit mode changes, load the appropriate commit message.
-    this._loadModeState(true);
+    if (loadModeState) {
+      // When the commit mode changes, load the appropriate commit message.
+      this._loadModeState(true);
+    }
   }
 
   activate(): void {
@@ -1258,10 +1278,7 @@ class DiffViewModel {
       subscription.dispose();
     }
     this._repositorySubscriptions.clear();
-    if (this._activeSubscriptions != null) {
-      this._activeSubscriptions.dispose();
-      this._activeSubscriptions = null;
-    }
+    this._activeSubscriptions.dispose();
   }
 }
 
