@@ -21,11 +21,17 @@ import Immutable from 'immutable';
 import semver from 'semver';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {hgConstants} from '../../nuclide-hg-repository-base';
+import {getLogger} from '../../nuclide-logging';
+import remoteUri from '../../nuclide-remote-uri';
 
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
+import type {
+  HgRepositoryClient,
+  HgRepositoryClientAsync,
+} from '../../nuclide-hg-repository-client';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
 import type {WorkingSet} from '../../nuclide-working-sets';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore';
+import type {NuclideUri} from '../../nuclide-remote-uri';
 
 
 let instance: ?Object;
@@ -374,52 +380,87 @@ class FileTreeActions {
   }
 
   async _repositoryAdded(
-    repo: atom$Repository,
+    repo: atom$GitRepository | HgRepositoryClient,
     rootKeysForRepository: Immutable.Map<atom$Repository, Immutable.Set<string>>,
   ): Promise<void> {
-    // For now, we only support HgRepository objects.
-    if (repo.getType() !== 'hg') {
+    // We support HgRepositoryClient and GitRepositoryAsync objects.
+    if ((repo.getType() !== 'hg' && repo.getType() !== 'git') || repo.async == null) {
       return;
     }
+    const asyncRepo: atom$GitRepositoryAsync | HgRepositoryClientAsync = (repo: any).async;
+    await asyncRepo.refreshStatus();
+    const statusCodeForPath = this._getCachedPathStatuses(repo);
 
-    const hgRepo = ((repo: any): HgRepositoryClient);
-
-    // At this point, we assume that repo is a Nuclide HgRepositoryClient.
-
-    // First, get the output of `hg status` for the repository.
-    // TODO(mbolin): Verify that all of this is set up correctly for remote files.
-    const repoRoot = hgRepo.getWorkingDirectory();
-    const repoProjects = atom.project.getPaths().filter(projPath => projPath.startsWith(repoRoot));
-
-    const statusCodeForPath = await hgRepo.getStatuses(repoProjects, {
-      hgStatusOption: hgConstants.HgStatusOption.ONLY_NON_IGNORED,
-    });
-
-    for (const rootKeyForRepo of rootKeysForRepository.get(hgRepo)) {
+    for (const rootKeyForRepo of rootKeysForRepository.get(repo)) {
       this.setVcsStatuses(rootKeyForRepo, statusCodeForPath);
     }
-
     // Now that the initial VCS statuses are set, subscribe to changes to the Repository so that the
     // VCS statuses are kept up to date.
-    const subscription = hgRepo.onDidChangeStatuses(
+    const subscription = asyncRepo.onDidChangeStatus(
       // t8227570: If the user is a "nervous saver," many onDidChangeStatuses will get fired in
       // succession. We should probably explore debouncing this in HgRepositoryClient itself.
       debounce(
-        this._onDidChangeStatusesForRepository.bind(this, hgRepo, rootKeysForRepository),
+        this._onDidChangeStatusesForRepository.bind(this, repo, rootKeysForRepository),
         /* wait */ 1000,
         /* immediate */ false,
-      )
+      ),
     );
 
-    this._subscriptionForRepository = this._subscriptionForRepository.set(hgRepo, subscription);
+    this._subscriptionForRepository = this._subscriptionForRepository.set(repo, subscription);
+  }
+
+  /**
+   * Fetches a consistent object map from absolute file paths to
+   * their corresponding `StatusCodeNumber` for easy representation with the file tree.
+   */
+  _getCachedPathStatuses(
+    repo: atom$GitRepository | HgRepositoryClient,
+  ): {[filePath: NuclideUri]: StatusCodeNumberValue} {
+    const asyncRepo: atom$GitRepositoryAsync | HgRepositoryClientAsync = (repo: any).async;
+    const statuses = asyncRepo.getCachedPathStatuses();
+    let relativeCodePaths;
+    if (asyncRepo.getType() === 'hg') {
+      // `hg` already comes from `HgRepositoryClient` in `StatusCodeNumber` format.
+      relativeCodePaths = statuses;
+    } else {
+      relativeCodePaths = {};
+      // Transform `git` bit numbers to `StatusCodeNumber` format.
+      const {StatusCodeNumber} = hgConstants;
+      for (const relativePath in statuses) {
+        const gitStatusNumber = statuses[relativePath];
+        let statusCode;
+        if (asyncRepo.isStatusNew(gitStatusNumber)) {
+          statusCode = StatusCodeNumber.UNTRACKED;
+        } else if (asyncRepo.isStatusStaged(gitStatusNumber)) {
+          statusCode = StatusCodeNumber.ADDED;
+        } else if (asyncRepo.isStatusModified(gitStatusNumber)) {
+          statusCode = StatusCodeNumber.MODIFIED;
+        } else if (asyncRepo.isStatusIgnored(gitStatusNumber)) {
+          statusCode = StatusCodeNumber.IGNORED;
+        } else if (asyncRepo.isStatusDeleted(gitStatusNumber)) {
+          statusCode = StatusCodeNumber.REMOVED;
+        } else {
+          getLogger().warn(`Unrecognized git status number ${gitStatusNumber}`);
+          statusCode = StatusCodeNumber.MODIFIED;
+        }
+        relativeCodePaths[relativePath] = statusCode;
+      }
+    }
+    const repoRoot = repo.getWorkingDirectory();
+    const absoluteCodePaths = {};
+    for (const relativePath in relativeCodePaths) {
+      const absolutePath = remoteUri.join(repoRoot, relativePath);
+      absoluteCodePaths[absolutePath] = relativeCodePaths[relativePath];
+    }
+    return absoluteCodePaths;
   }
 
   _onDidChangeStatusesForRepository(
-    repo: HgRepositoryClient,
+    repo: atom$GitRepository | HgRepositoryClient,
     rootKeysForRepository: Immutable.Map<atom$Repository, Immutable.Set<string>>,
   ): void {
     for (const rootKey of rootKeysForRepository.get(repo)) {
-      this.setVcsStatuses(rootKey, repo.getAllPathStatuses());
+      this.setVcsStatuses(rootKey, this._getCachedPathStatuses(repo));
     }
   }
 

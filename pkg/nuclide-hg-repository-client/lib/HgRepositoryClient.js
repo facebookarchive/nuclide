@@ -364,8 +364,12 @@ export class HgRepositoryClient {
     // because the repo does not track itself.
     // We want to represent the fact that it's not part of the tracked contents,
     // so we manually add an exception for it via the _isPathWithinHgRepo check.
-    return (this._hgStatusCache[filePath] === StatusCodeId.IGNORED) ||
-        this._isPathWithinHgRepo(filePath);
+    const cachedPathStatus = this._hgStatusCache[filePath];
+    if (!cachedPathStatus) {
+      return this._isPathWithinHgRepo(filePath);
+    } else {
+      return this.isStatusIgnored(StatusCodeIdToNumber[cachedPathStatus]);
+    }
   }
 
   /**
@@ -431,6 +435,11 @@ export class HgRepositoryClient {
   isStatusNew(status: ?number): boolean {
     // $FlowIssue: `async` not able to be annotated on classes
     return this.async.isStatusNew(status);
+  }
+
+  isStatusIgnored(status: ?number): boolean {
+    // $FlowIssue: `async` not able to be annotated on classes
+    return this.async.isStatusIgnored(status);
   }
 
 

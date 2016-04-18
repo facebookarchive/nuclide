@@ -16,7 +16,10 @@ import type {
 } from '../../nuclide-hg-repository-base/lib/HgService';
 import type {HgRepositoryClient} from './HgRepositoryClient';
 
-import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
+import {
+  StatusCodeNumber,
+  HgStatusOption,
+} from '../../nuclide-hg-repository-base/lib/hg-constants';
 
 /*
  * Delegate to the passed in HgRepositoryClient.
@@ -27,6 +30,14 @@ export default class HgRepositoryClientAsync {
 
   constructor(client: HgRepositoryClient) {
     this._client = client;
+  }
+
+  getType(): string {
+    return this._client.getType();
+  }
+
+  getWorkingDirectory(): string {
+    return this._client.getWorkingDirectory();
   }
 
   checkoutReference(reference: string, create: boolean): Promise<void> {
@@ -115,13 +126,46 @@ export default class HgRepositoryClientAsync {
     return lineDiffs;
   }
 
+  async refreshStatus(): Promise<void> {
+    const repoRoot = this._client.getWorkingDirectory();
+    const repoProjects = atom.project.getPaths().filter(projPath => projPath.startsWith(repoRoot));
+    await this._client.getStatuses(repoProjects, {
+      hgStatusOption: HgStatusOption.ONLY_NON_IGNORED,
+    });
+  }
+
+  /**
+   * Return relative paths to status code number values object.
+   * matching `GitRepositoryAsync` implementation.
+   */
+  getCachedPathStatuses(): {[filePath: string]: StatusCodeNumberValue} {
+    const absoluteCodePaths = this._client.getAllPathStatuses();
+    const relativeCodePaths = {};
+    for (const absolutePath in absoluteCodePaths) {
+      const relativePath = this._client.relativize(absolutePath);
+      relativeCodePaths[relativePath] = absoluteCodePaths[absolutePath];
+    }
+    return relativeCodePaths;
+  }
+
   isPathIgnored(filePath: ?NuclideUri): Promise<boolean> {
     return Promise.resolve(this._client.isPathIgnored(filePath));
   }
 
+  isStatusStaged(status: ?number): boolean {
+    return false;
+  }
+
+  isStatusIgnored(status: ?number): boolean {
+    return status === StatusCodeNumber.IGNORED;
+  }
+
   isStatusModified(status: ?number): boolean {
+    return status === StatusCodeNumber.MODIFIED;
+  }
+
+  isStatusDeleted(status: ?number): boolean {
     return (
-      status === StatusCodeNumber.MODIFIED ||
       status === StatusCodeNumber.MISSING ||
       status === StatusCodeNumber.REMOVED
     );

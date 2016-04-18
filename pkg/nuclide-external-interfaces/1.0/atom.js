@@ -1024,6 +1024,15 @@ declare class atom$File {
 }
 
 declare class atom$GitRepository extends atom$Repository {
+  async: atom$GitRepositoryAsync;
+}
+
+declare class atom$GitRepositoryAsync extends atom$Repository {
+  getCachedPathStatuses(): {[filePath: string]: number};
+  refreshStatus(): Promise<void>;
+  isStatusIgnored(status: number): boolean;
+  isStatusStaged(status: number): boolean;
+  isStatusDeleted(status: number): boolean;
 }
 
 declare class atom$Grammar {

@@ -10,7 +10,9 @@
  */
 
 import {HgRepositoryClient} from './HgRepositoryClient';
+import HgRepositoryClientAsync from './HgRepositoryClientAsync';
 
 export {
   HgRepositoryClient,
+  HgRepositoryClientAsync,
 };

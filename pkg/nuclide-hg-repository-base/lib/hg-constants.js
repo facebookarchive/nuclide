@@ -27,7 +27,7 @@ const StatusCodeId: {[key: string]: StatusCodeIdValue} = Object.freeze({
   UNTRACKED: '?',
 });
 
-const StatusCodeNumber: {[key: string]: StatusCodeNumberValue} = Object.freeze({
+const StatusCodeNumber = Object.freeze({
   ADDED: 1,
   CLEAN: 2,
   IGNORED: 3,
@@ -36,6 +36,9 @@ const StatusCodeNumber: {[key: string]: StatusCodeNumberValue} = Object.freeze({
   REMOVED: 6,
   UNTRACKED: 7,
 });
+
+// This is to work around flow's missing support of enums.
+(StatusCodeNumber: { [key: string]: StatusCodeNumberValue });
 
 const StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = {
   [StatusCodeId.ADDED]: StatusCodeNumber.ADDED,
