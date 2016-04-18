@@ -9,26 +9,6 @@ patterns: [
     name: "meta.scope.message.hg-commit"
     patterns: [
       {
-        begin: "\\G"
-        end: "^(?!\\G)"
-        patterns: [
-          {
-            match: ".{68,}$"
-            name: "invalid.deprecated.line-too-long.hg-commit"
-          }
-        ]
-      }
-      {
-        begin: "^(?!\\G|HG:)"
-        end: "\\n"
-        patterns: [
-          {
-            match: ".{73,}$"
-            name: "invalid.deprecated.line-too-long.hg-commit"
-          }
-        ]
-      }
-      {
         include: "#comment"
       }
     ]
