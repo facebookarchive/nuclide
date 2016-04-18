@@ -32,7 +32,7 @@ function setupTextEditor(props: Object): atom$TextEditor {
     buffer: textBuffer,
     lineNumberGutterVisible: !props.gutterHidden,
   };
-  const textEditor = createTextEditor(textEditorParams);
+  const textEditor: atom$TextEditor = createTextEditor(textEditorParams);
 
   if (props.grammar != null) {
     textEditor.setGrammar(props.grammar);

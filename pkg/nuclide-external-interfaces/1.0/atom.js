@@ -570,6 +570,7 @@ declare class atom$TextEditor extends atom$Model {
   insertText(text: string): atom$Range | boolean;
   delete: () => void;
   backspace: () => void;
+  duplicateLines: () => void;
 
   // History
   // TextEditor Coordinates
