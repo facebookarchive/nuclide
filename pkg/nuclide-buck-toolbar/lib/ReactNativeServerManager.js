@@ -110,7 +110,7 @@ export default class ReactNativeServerManager {
 
       return Promise.resolve({
         kill() {
-          subscription.dispose();
+          subscription.unsubscribe();
           disposable.dispose();
         },
       });
