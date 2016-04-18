@@ -517,9 +517,7 @@ class DiffViewModel {
       diffPath = this._findFilePathToDiffInDirectory(entityOption.directory);
     }
 
-    if (diffPath != null) {
-      this._diffFilePath(diffPath);
-    } else {
+    if (diffPath == null) {
       const repository = repositoryForPath(entityOption.file || entityOption.directory || '');
       if (
         repository != null &&
@@ -529,21 +527,31 @@ class DiffViewModel {
         const repositoryStack = this._repositoryStacks.get((repository: any));
         invariant(repositoryStack);
         this._setActiveRepositoryStack(repositoryStack);
+      } else if (this._activeRepositoryStack == null) {
+        // This can only happen none of the project folders are Mercurial repositories.
+        // However, this is caught earlier with a better error message.
+        throw new Error(
+          'No active repository stack and non-diffable entity:' +
+          JSON.stringify(entityOption)
+        );
       } else {
         getLogger().error('Non diffable entity:', entityOption);
       }
     }
     const {viewMode, commitMode} = entityOption;
-    if (viewMode === this._state.viewMode && commitMode === this._state.commitMode) {
-      return;
+    if (viewMode !== this._state.viewMode || commitMode !== this._state.commitMode) {
+      if (viewMode ===  DiffMode.COMMIT_MODE) {
+        invariant(commitMode, 'DIFF: Commit Mode not set!');
+        this.setViewMode(DiffMode.COMMIT_MODE, false);
+        this.setCommitMode(commitMode, false);
+        this._loadModeState(true);
+      } else if (viewMode) {
+        this.setViewMode(viewMode);
+      }
     }
-    if (viewMode ===  DiffMode.COMMIT_MODE) {
-      invariant(commitMode, 'DIFF: Commit Mode not set!');
-      this.setViewMode(DiffMode.COMMIT_MODE, false);
-      this.setCommitMode(commitMode, false);
-      this._loadModeState(true);
-    } else if (viewMode) {
-      this.setViewMode(viewMode);
+    if (diffPath != null) {
+      // Diff the file after setting the view mode to compare against the right thing.
+      this._diffFilePath(diffPath);
     }
   }
 
