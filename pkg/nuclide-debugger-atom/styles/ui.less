@@ -2,9 +2,13 @@
 
 @min-width: 400px;
 
+.nuclide-debugger-container {
+  display: flex;
+}
+
 .nuclide-debugger-root {
   display: flex;
-  height: inherit;
+  flex-direction: column;
 }
 
 .nuclide-debugger-root progress.starting {
@@ -49,6 +53,16 @@
   width: 100%;
   height: 100%;
   min-width: @min-width;
+}
+
+
+.nuclide-debugger-container-old {
+  display: flex;
+  flex-grow: 3;
+}
+
+.nuclide-debugger-container-new {
+  flex-grow: 1;
 }
 
 /*

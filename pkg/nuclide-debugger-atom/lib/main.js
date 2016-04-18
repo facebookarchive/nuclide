@@ -51,19 +51,30 @@ export type SerializedState = {
 
 const DATATIP_PACKAGE_NAME = 'nuclide-debugger-datatip';
 const GK_DEBUGGER_LAUNCH_ATTACH_UI = 'nuclide_debugger_launch_attach_ui';
-const GK_TIMEOUT = 1000;
+const GK_DEBUGGER_UI_REVAMP = 'nuclide_debugger_ui_revamp';
+const GK_TIMEOUT = 5000;
 
-function createDebuggerView(model: DebuggerModel): HTMLElement {
+function createDebuggerView(model: DebuggerModel, useRevampedUi: boolean): HTMLElement {
   const DebuggerControllerView = require('./DebuggerControllerView');
   const elem = document.createElement('div');
-  elem.className = 'nuclide-debugger-root';
+  elem.className = 'nuclide-debugger-container';
   ReactDOM.render(
-    <DebuggerControllerView
-      store={model.getStore()}
-      bridge = {model.getBridge()}
-      actions={model.getActions()}
-      breakpointStore={model.getBreakpointStore()}
-    />,
+    <div className="nuclide-debugger-root">
+      <div className="nuclide-debugger-container-old">
+        <DebuggerControllerView
+          store={model.getStore()}
+          bridge = {model.getBridge()}
+          actions={model.getActions()}
+          breakpointStore={model.getBreakpointStore()}
+        />
+      </div>
+      {useRevampedUi ?
+        <div className="nuclide-debugger-container-new">
+          TODO
+        </div>
+        : null
+      }
+    </div>,
     elem);
   return elem;
 }
@@ -80,8 +91,6 @@ class Activation {
     this._launchAttachDialog = null;
     this._disposables = new CompositeDisposable(
       this._model,
-      atom.views.addViewProvider(DebuggerModel, createDebuggerView),
-
       // Listen for removed connections and kill the debugger if it is using that connection.
       ServerConnection.onDidCloseServerConnection(connection => {
         const debuggerProcess = this._model.getStore().getDebuggerInstance();
@@ -148,6 +157,22 @@ class Activation {
       }),
     );
     (this: any)._hideLaunchAttachDialog = this._hideLaunchAttachDialog.bind(this);
+    this._setupView();
+  }
+
+  async _setupView(): Promise<void> {
+    let useRevampedUi;
+    try {
+      useRevampedUi = await passesGK(GK_DEBUGGER_UI_REVAMP, GK_TIMEOUT);
+    } catch (e) {
+      useRevampedUi = false;
+    }
+    this._disposables.add(
+      atom.views.addViewProvider(
+        DebuggerModel,
+        (model: DebuggerModel) => createDebuggerView(model, useRevampedUi)
+      )
+    );
   }
 
   serialize(): SerializedState {
@@ -317,7 +342,7 @@ let activation = null;
 let toolBar: ?any = null;
 let datatipProvider: ?DatatipProvider;
 
-export function activate(state: ?SerializedState) {
+export function activate(state: ?SerializedState): void {
   if (!activation) {
     activation = new Activation(state);
   }
