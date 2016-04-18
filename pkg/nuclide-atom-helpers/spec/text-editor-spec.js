@@ -10,18 +10,10 @@
  */
 
 import {
-  createTextEditor,
   existingEditorForUri,
   existingBufferForUri,
   bufferForUri,
 } from '..';
-
-describe('createTextEditor', () => {
-  it('returns a text editor', () => {
-    const textEditor = createTextEditor(/* params */ {});
-    expect(atom.workspace.isTextEditor(textEditor)).toBe(true);
-  });
-});
 
 describe('existingEditorForUri', () => {
   const file1 = '/tmp/file1.txt';

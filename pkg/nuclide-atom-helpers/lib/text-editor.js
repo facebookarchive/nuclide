@@ -12,7 +12,7 @@
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import invariant from 'assert';
-import {TextBuffer, TextEditor} from 'atom';
+import {TextBuffer} from 'atom';
 import {Observable} from '@reactivex/rxjs';
 
 // TODO(most): move to remote-connection/lib/RemoteTextBuffer.js
@@ -22,17 +22,6 @@ import {ServerConnection} from '../../nuclide-remote-connection';
 
 import {event as commonsEvent} from '../../nuclide-commons';
 const {observableFromSubscribeFunction} = commonsEvent;
-
-export function createTextEditor(textEditorParams: atom$TextEditorParams): TextEditor {
-  // Note that atom.workspace.buildTextEditor was introduced after the release of Atom 1.0.19.
-  // As of this change, calling the constructor of TextEditor directly is deprecated. Therefore,
-  // we must choose the appropriate code path based on which API is available.
-  if (atom.workspace.buildTextEditor) {
-    return atom.workspace.buildTextEditor(textEditorParams);
-  } else {
-    return new TextEditor(textEditorParams);
-  }
-}
 
 /**
  * Returns a text editor that has the given path open, or null if none exists. If there are multiple

@@ -857,7 +857,7 @@ declare class atom$Workspace {
   ): Promise<atom$TextEditor>;
   isTextEditor(item: ?mixed): boolean;
   /* Optional method because this was added post-1.0. */
-  buildTextEditor?: ((params: atom$TextEditorParams) => atom$TextEditor);
+  buildTextEditor: ((params: atom$TextEditorParams) => atom$TextEditor);
   reopenItem(): Promise<?atom$TextEditor>;
   addOpener(callback: (uri: string) => any): IDisposable;
 

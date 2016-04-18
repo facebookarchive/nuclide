@@ -19,7 +19,7 @@ import type RemoteDirectorySearcherT from './RemoteDirectorySearcher';
 import type RemoteProjectsControllerT from './RemoteProjectsController';
 import typeof * as FindInProjectService from '../../nuclide-remote-search';
 
-import {createTextEditor, loadBufferForUri} from '../../nuclide-atom-helpers';
+import {loadBufferForUri} from '../../nuclide-atom-helpers';
 import {getLogger} from '../../nuclide-logging';
 import {getOpenFileEditorForRemoteProject} from './utils';
 import featureConfig from '../../nuclide-feature-config';
@@ -180,7 +180,7 @@ async function createEditorForNuclide(
 ): Promise<TextEditor> {
   try {
     const buffer = await loadBufferForUri(uri);
-    return createTextEditor({buffer});
+    return atom.workspace.buildTextEditor({buffer});
   } catch (err) {
     logger.warn('buffer load issue:', err);
     atom.notifications.addError(`Failed to open ${uri}: ${err.message}`);

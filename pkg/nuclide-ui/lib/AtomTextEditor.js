@@ -17,7 +17,6 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 import {TextBuffer} from 'atom';
-import {createTextEditor} from '../../nuclide-atom-helpers';
 
 const {PropTypes} = React;
 const doNothing = () => {};
@@ -32,7 +31,7 @@ function setupTextEditor(props: Object): atom$TextEditor {
     buffer: textBuffer,
     lineNumberGutterVisible: !props.gutterHidden,
   };
-  const textEditor: atom$TextEditor = createTextEditor(textEditorParams);
+  const textEditor: atom$TextEditor = atom.workspace.buildTextEditor(textEditorParams);
 
   if (props.grammar != null) {
     textEditor.setGrammar(props.grammar);

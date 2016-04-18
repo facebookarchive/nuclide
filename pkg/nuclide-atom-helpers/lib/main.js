@@ -40,10 +40,6 @@ module.exports = {
     return requireFromCache('./create-pane-container');
   },
 
-  get createTextEditor() {
-    return requireFromCache('./text-editor').createTextEditor;
-  },
-
   get existingEditorForUri() {
     return requireFromCache('./text-editor').existingEditorForUri;
   },
