@@ -17,8 +17,6 @@ import ini from 'ini';
 import path from 'path';
 import {BuckUtils} from '../../../nuclide-buck-base/lib/BuckUtils';
 
-const {findNearestFile} = fsPromise;
-
 /**
  * Get the command that will run the packager server based on the current workspace.
  * TODO: We need to have a solid concept of an "active project" that's consistent across Nuclide
@@ -55,7 +53,7 @@ async function getCommandFromNodePackage(dir: string): Promise<?CommandInfo> {
  * it's found.
  */
 async function getCommandFromNodeModules(dir: string): Promise<?CommandInfo> {
-  const nodeModulesParent = await findNearestFile('node_modules', dir);
+  const nodeModulesParent = await fsPromise.findNearestFile('node_modules', dir);
   if (nodeModulesParent == null) {
     return null;
   }
@@ -76,7 +74,7 @@ async function getCommandFromNodeModules(dir: string): Promise<?CommandInfo> {
  * special cased so that the bundled examples work out of the box.
  */
 async function getCommandFromReactNative(dir: string): Promise<?CommandInfo> {
-  const projectRoot = await findNearestFile('package.json', dir);
+  const projectRoot = await fsPromise.findNearestFile('package.json', dir);
   if (projectRoot == null) {
     return null;
   }

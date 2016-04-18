@@ -9,15 +9,15 @@
  * the root directory of this source tree.
  */
 
-const path = require('path');
-const mkdirpLib = require('mkdirp');
-const rimraf = require('rimraf');
-
 import fs from 'fs-plus';
 import invariant from 'assert';
+import mkdirpLib from 'mkdirp';
+import path from 'path';
+import rimraf from 'rimraf';
+import temp from 'temp';
 import {checkOutput} from './process';
 
-export function isRoot(filePath: string): boolean {
+function isRoot(filePath: string): boolean {
   return path.dirname(filePath) === filePath;
 }
 
@@ -27,9 +27,9 @@ export function isRoot(filePath: string): boolean {
  * @param prefix optinal prefix for the temp directory name.
  * @return path to a temporary directory.
  */
-export function tempdir(prefix: string = ''): Promise<string> {
+function tempdir(prefix: string = ''): Promise<string> {
   return new Promise((resolve, reject) => {
-    require('temp').mkdir(prefix, (err, dirPath) => {
+    temp.mkdir(prefix, (err, dirPath) => {
       if (err) {
         reject(err);
       } else {
@@ -43,9 +43,9 @@ export function tempdir(prefix: string = ''): Promise<string> {
  * @return path to a temporary file. The caller is responsible for cleaning up
  *     the file.
  */
-export function tempfile(options: any): Promise<string> {
+function tempfile(options: any): Promise<string> {
   return new Promise((resolve, reject) => {
-    require('temp').open(options, (err, info) => {
+    temp.open(options, (err, info) => {
       if (err) {
         reject(err);
       } else {
@@ -69,7 +69,7 @@ export function tempfile(options: any): Promise<string> {
  *   file.
  * @return directory that contains the nearest file or null.
  */
-export async function findNearestFile(fileName: string, pathToDirectory: string): Promise<?string> {
+async function findNearestFile(fileName: string, pathToDirectory: string): Promise<?string> {
   // TODO(5586355): If this becomes a bottleneck, we should consider memoizing
   // this function. The downside would be that if someone added a closer file
   // with fileName to pathToFile (or deleted the one that was cached), then we
@@ -89,7 +89,7 @@ export async function findNearestFile(fileName: string, pathToDirectory: string)
   } while (true);
 }
 
-export function getCommonAncestorDirectory(filePaths: Array<string>): string {
+function getCommonAncestorDirectory(filePaths: Array<string>): string {
   let commonDirectoryPath = path.dirname(filePaths[0]);
   while (filePaths.some(filePath => !filePath.startsWith(commonDirectoryPath))) {
     commonDirectoryPath = path.dirname(commonDirectoryPath);
@@ -98,7 +98,7 @@ export function getCommonAncestorDirectory(filePaths: Array<string>): string {
 }
 
 
-export function exists(filePath: string): Promise<boolean> {
+function exists(filePath: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
     fs.exists(filePath, resolve);
   });
@@ -111,7 +111,7 @@ export function exists(filePath: string): Promise<boolean> {
  * directories were created for some prefix of the given path.
  * @return true if the path was created; false if it already existed.
  */
-export async function mkdirp(filePath: string): Promise<boolean> {
+async function mkdirp(filePath: string): Promise<boolean> {
   const isExistingDirectory = await exists(filePath);
   if (isExistingDirectory) {
     return false;
@@ -131,7 +131,7 @@ export async function mkdirp(filePath: string): Promise<boolean> {
 /**
  * Removes directories even if they are non-empty. Does not fail if the directory doesn't exist.
  */
-export async function rmdir(filePath: string): Promise {
+async function rmdir(filePath: string): Promise {
   return new Promise((resolve, reject) => {
     rimraf(filePath, err => {
       if (err) {
@@ -143,7 +143,7 @@ export async function rmdir(filePath: string): Promise {
   });
 }
 
-export function expandHomeDir(filePath: string): string {
+function expandHomeDir(filePath: string): string {
   const {HOME} = process.env;
   let resolvedPath = null;
   if (filePath === '~') {
@@ -158,7 +158,7 @@ export function expandHomeDir(filePath: string): string {
 }
 
 /** @return true only if we are sure directoryPath is on NFS. */
-export async function isNfs(entityPath: string): Promise<boolean> {
+async function isNfs(entityPath: string): Promise<boolean> {
   if (process.platform === 'linux' || process.platform === 'darwin') {
     const {stdout, exitCode} = await checkOutput('stat', ['-f', '-L', '-c', '%T', entityPath]);
     if (exitCode === 0) {
@@ -177,7 +177,7 @@ export async function isNfs(entityPath: string): Promise<boolean> {
  * with the same functionality, but returns a Promise rather than taking a callback. This isn't
  * quite as efficient as Q's implementation of denodeify, but it's considerably less code.
  */
-function denodeifyFsMethod(methodName: string): () => Promise {
+function _denodeifyFsMethod(methodName: string): () => Promise {
   return function(...args): Promise {
     const method = fs[methodName];
     return new Promise((resolve, reject) => {
@@ -188,16 +188,29 @@ function denodeifyFsMethod(methodName: string): () => Promise {
   };
 }
 
-export const copy = denodeifyFsMethod('copy');
-export const chmod = denodeifyFsMethod('chmod');
-export const lstat = denodeifyFsMethod('lstat');
-export const mkdir = denodeifyFsMethod('mkdir');
-export const readdir = denodeifyFsMethod('readdir');
-export const readFile = denodeifyFsMethod('readFile');
-export const readlink = denodeifyFsMethod('readlink');
-export const realpath = denodeifyFsMethod('realpath');
-export const rename = denodeifyFsMethod('rename');
-export const stat = denodeifyFsMethod('stat');
-export const symlink = denodeifyFsMethod('symlink');
-export const unlink = denodeifyFsMethod('unlink');
-export const writeFile = denodeifyFsMethod('writeFile');
+export const fsPromise = {
+  isRoot,
+  tempdir,
+  tempfile,
+  findNearestFile,
+  getCommonAncestorDirectory,
+  exists,
+  mkdirp,
+  rmdir,
+  expandHomeDir,
+  isNfs,
+
+  copy: _denodeifyFsMethod('copy'),
+  chmod: _denodeifyFsMethod('chmod'),
+  lstat: _denodeifyFsMethod('lstat'),
+  mkdir: _denodeifyFsMethod('mkdir'),
+  readdir: _denodeifyFsMethod('readdir'),
+  readFile: _denodeifyFsMethod('readFile'),
+  readlink: _denodeifyFsMethod('readlink'),
+  realpath: _denodeifyFsMethod('realpath'),
+  rename: _denodeifyFsMethod('rename'),
+  stat: _denodeifyFsMethod('stat'),
+  symlink: _denodeifyFsMethod('symlink'),
+  unlink: _denodeifyFsMethod('unlink'),
+  writeFile: _denodeifyFsMethod('writeFile'),
+};

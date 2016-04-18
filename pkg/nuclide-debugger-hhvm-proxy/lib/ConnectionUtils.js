@@ -12,7 +12,7 @@
 import logger from './utils';
 import {getConfig} from './config';
 import {launchScriptForDummyConnection, uriToPath} from './helpers';
-import {fsPromise, findNearestFile} from '../../nuclide-commons';
+import {fsPromise} from '../../nuclide-commons';
 import path from 'path';
 
 import type {Socket} from 'net';
@@ -20,7 +20,7 @@ import type {Socket} from 'net';
 let dummyRequestFilePath = 'php_only_xdebug_request.php';
 
 async function getHackRoot(filePath: string): Promise<?string> {
-  return await findNearestFile('.hhconfig', filePath);
+  return await fsPromise.findNearestFile('.hhconfig', filePath);
 }
 
 export async function setRootDirectoryUri(directoryUri: string): Promise {

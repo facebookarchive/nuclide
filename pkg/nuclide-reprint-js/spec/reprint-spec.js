@@ -10,7 +10,7 @@
  */
 
 import fs from 'fs';
-const {readFile} = require('../../nuclide-commons').fsPromise;
+import {fsPromise} from '../../nuclide-commons';
 const {reprint} = require('..');
 
 // Helpful for debugging.
@@ -38,9 +38,9 @@ describe('reprint', () => {
       const testPath = 'spec/fixtures/' + name + '.test';
       const expectedPath = 'spec/fixtures/' + name + '.expected';
       waitsForPromise(async () => {
-        const fileContents = await readFile(testPath, 'utf8');
+        const fileContents = await fsPromise.readFile(testPath, 'utf8');
         const actual = reprint(fileContents).source;
-        const expected = await readFile(expectedPath, 'utf8');
+        const expected = await fsPromise.readFile(expectedPath, 'utf8');
         // Helpful for debugging
         // firstDifference(actual, expected);
         expect(actual).toBe(expected);

@@ -9,14 +9,15 @@
  * the root directory of this source tree.
  */
 
+import fs from 'fs';
 import invariant from 'assert';
+import path from 'path';
+import temp from 'temp';
+import {fsPromise} from '../lib/fsPromise';
 
-const path = require('path');
-const fs = require('fs');
-const temp = require('temp').track();
-import {findNearestFile, expandHomeDir, getCommonAncestorDirectory} from '../lib/filesystem';
+describe('fsPromise test suite', () => {
 
-describe('filesystem test suite', () => {
+  temp.track();
 
   describe('findNearestFile()', () => {
     let dirPath: any;
@@ -35,21 +36,21 @@ describe('filesystem test suite', () => {
 
     it('find the file if given the exact directory', () => {
       waitsForPromise(async () => {
-        const foundPath = await findNearestFile(fileName, dirPath);
+        const foundPath = await fsPromise.findNearestFile(fileName, dirPath);
         expect(foundPath).toBe(dirPath);
       });
     });
 
     it('find the file if given a nested directory', () => {
       waitsForPromise(async () => {
-        const foundPath = await findNearestFile(fileName, nestedDirPath);
+        const foundPath = await fsPromise.findNearestFile(fileName, nestedDirPath);
         expect(foundPath).toBe(dirPath);
       });
     });
 
     it('does not find the file if not existing', () => {
       waitsForPromise(async () => {
-        const foundPath = await findNearestFile('non-existent.txt', nestedDirPath);
+        const foundPath = await fsPromise.findNearestFile('non-existent.txt', nestedDirPath);
         expect(foundPath).toBe(null);
       });
     });
@@ -57,26 +58,26 @@ describe('filesystem test suite', () => {
 
   describe('expandHomeDir()', () => {
     it('expands ~ to HOME', () => {
-      expect(expandHomeDir('~')).toBe(process.env.HOME);
+      expect(fsPromise.expandHomeDir('~')).toBe(process.env.HOME);
     });
 
     it('expands ~/ to HOME', () => {
       invariant(process.env.HOME != null);
-      expect(expandHomeDir('~/abc')).toBe(path.join(process.env.HOME, 'abc'));
+      expect(fsPromise.expandHomeDir('~/abc')).toBe(path.join(process.env.HOME, 'abc'));
     });
 
     it('keeps ~def to ~def', () => {
-      expect(expandHomeDir('~def')).toBe('~def');
+      expect(fsPromise.expandHomeDir('~def')).toBe('~def');
     });
   });
 
   describe('getCommonAncestorDirectory', () => {
     it('gets the parent directory', () => {
-      expect(getCommonAncestorDirectory([
+      expect(fsPromise.getCommonAncestorDirectory([
         '/foo/bar.txt',
         '/foo/baz/lol.txt',
       ])).toBe('/foo');
-      expect(getCommonAncestorDirectory([
+      expect(fsPromise.getCommonAncestorDirectory([
         '/foo/bar/abc/def/abc.txt',
         '/foo/bar/lol.txt',
       ])).toBe('/foo/bar');

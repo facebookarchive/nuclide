@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {findNearestFile, checkOutput} from '../../nuclide-commons';
+import {fsPromise, checkOutput} from '../../nuclide-commons';
 const logger = require('../../nuclide-logging').getLogger();
 
 const HACK_CONFIG_FILE_NAME = '.hhconfig';
@@ -28,7 +28,7 @@ let useConnection = false;
 * If this returns null, then it is not safe to run hack.
 */
 export function findHackConfigDir(localFile: string): Promise<?string> {
-  return findNearestFile(HACK_CONFIG_FILE_NAME, localFile);
+  return fsPromise.findNearestFile(HACK_CONFIG_FILE_NAME, localFile);
 }
 
 // Returns the empty string on failure

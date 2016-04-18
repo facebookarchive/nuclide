@@ -11,6 +11,7 @@
 
 import path from 'path';
 import ini from 'ini';
+import {fsPromise} from '../../nuclide-commons';
 
 import type {HgRepositoryDescription} from '..';
 
@@ -47,8 +48,7 @@ function findHgRepository(directoryPath: string): ?HgRepositoryDescription {
 }
 
 function isRootDir(directoryPath: string): boolean {
-  const {isRoot} = require('../../nuclide-commons').fsPromise;
-  return isRoot(directoryPath);
+  return fsPromise.isRoot(directoryPath);
 }
 
 function getParentDir(directoryPath: string): string {

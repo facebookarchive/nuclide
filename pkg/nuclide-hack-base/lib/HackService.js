@@ -12,7 +12,7 @@
 import type {HackSearchResult} from './types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
-import {promises, findNearestFile} from '../../nuclide-commons';
+import {promises, fsPromise} from '../../nuclide-commons';
 import {SymbolType} from '../../nuclide-hack-common';
 import {
   callHHClient,
@@ -487,7 +487,7 @@ export async function isAvailableForDirectoryHack(rootDirectory: NuclideUri): Pr
  */
 export async function isFileInHackProject(fileUri: NuclideUri): Promise<boolean> {
   const filePath = getPath(fileUri);
-  const hhconfigPath = await findNearestFile('.hhconfig', path.dirname(filePath));
+  const hhconfigPath = await fsPromise.findNearestFile('.hhconfig', path.dirname(filePath));
   return hhconfigPath != null;
 }
 

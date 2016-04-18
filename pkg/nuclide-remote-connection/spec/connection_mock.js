@@ -25,7 +25,6 @@ fsPromise.newFile = async function(path) {
   return true;
 };
 
-// $FlowIgnore mock override.
 fsPromise.copy = async function(src, dst) {
   await new Promise((resolve, reject) => {
     fsPlus.copy(src, dst, error => {

@@ -18,7 +18,6 @@ import path from 'path';
 import {
   fsPromise,
   asyncExecute,
-  findNearestFile,
   scriptSafeSpawnAndObserveOutput,
 } from '../../nuclide-commons';
 import {
@@ -55,7 +54,7 @@ const arcProjectMap: Map<?NuclideUri, ?Object> = new Map();
 
 export async function findArcConfigDirectory(fileName: NuclideUri): Promise<?NuclideUri> {
   if (!arcConfigDirectoryMap.has(fileName)) {
-    const result = await findNearestFile(ARC_CONFIG_FILE_NAME, fileName);
+    const result = await fsPromise.findNearestFile(ARC_CONFIG_FILE_NAME, fileName);
     arcConfigDirectoryMap.set(fileName, result);
   }
   return arcConfigDirectoryMap.get(fileName);
@@ -68,7 +67,7 @@ export async function readArcConfig(fileName: NuclideUri): Promise<?any> {
   }
   if (!arcProjectMap.has(arcConfigDirectory)) {
     const arcconfigFile = path.join(arcConfigDirectory, ARC_CONFIG_FILE_NAME);
-    const contents = await require('../../nuclide-commons').readFile(arcconfigFile, 'utf8');
+    const contents = await fsPromise.readFile(arcconfigFile, 'utf8');
     invariant(typeof contents === 'string');
     const result = JSON.parse(contents);
     arcProjectMap.set(arcConfigDirectory, result);

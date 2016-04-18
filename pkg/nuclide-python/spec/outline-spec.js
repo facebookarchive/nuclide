@@ -10,14 +10,14 @@
  */
 
 import path from 'path';
-import {readFile} from '../../nuclide-commons';
+import {fsPromise} from '../../nuclide-commons';
 import {pythonTextToOutline} from '../lib/outline';
 
 describe('Python outline', () => {
 
   it('conversion from JSON to outline', () => {
     waitsForPromise(async () => {
-      const contents = await readFile(path.join(__dirname, './fixtures/t.py'), 'utf8');
+      const contents = await fsPromise.readFile(path.join(__dirname, './fixtures/t.py'), 'utf8');
       const result = await pythonTextToOutline(true, contents);
       expect(result).toEqual(JSON.parse(expected));
     });

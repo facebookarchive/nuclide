@@ -10,7 +10,7 @@
  */
 
 const path = require('path');
-const {asyncExecute, findNearestFile} = require('../../nuclide-commons');
+const {asyncExecute, fsPromise} = require('../../nuclide-commons');
 const LRU = require('lru-cache');
 
 import invariant from 'assert';
@@ -161,7 +161,8 @@ function getStopFlowOnExit(): boolean {
 
 function findFlowConfigDir(localFile: string): Promise<?string> {
   if (!flowConfigDirCache.has(localFile)) {
-    flowConfigDirCache.set(localFile, findNearestFile('.flowconfig', path.dirname(localFile)));
+    const flowConfigDir = fsPromise.findNearestFile('.flowconfig', path.dirname(localFile));
+    flowConfigDirCache.set(localFile, flowConfigDir);
   }
   return flowConfigDirCache.get(localFile);
 }

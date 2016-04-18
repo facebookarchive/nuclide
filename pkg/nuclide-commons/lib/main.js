@@ -37,7 +37,7 @@ export type ErrorMessage = {
 
 import typeof * as ProcessType from './process';
 import typeof * as StreamType from './stream';
-import typeof * as FilesystemType from './filesystem';
+import typeof * as FSPromiseType from './fsPromise';
 import typeof * as ToJsStringType from './toJsString';
 import typeof * as SetType from './set';
 import typeof * as MapType from './map';
@@ -90,10 +90,6 @@ function requireProcess(): ProcessType {
 
 function requireStream(): StreamType {
   return requireFromCache('./stream');
-}
-
-function requireFileSystem(): FilesystemType {
-  return requireFromCache('./filesystem');
 }
 
 function requirePromiseExecutors(): PromiseExecutorsType {
@@ -177,20 +173,12 @@ module.exports = {
     return requireProcess().observeProcess;
   },
 
-  get readFile() {
-    return requireFileSystem().readFile;
-  },
-
   get relativeDate() {
     return (requireFromCache('./relativeDate'): RelativeDateType).relativeDate;
   },
 
   get toJsString() {
     return (requireFromCache('./toJsString'): ToJsStringType).toJsString;
-  },
-
-  get findNearestFile() {
-    return requireFileSystem().findNearestFile;
   },
 
   get array(): ArrayType {
@@ -209,8 +197,8 @@ module.exports = {
     return requireFromCache('./object');
   },
 
-  get fsPromise(): FilesystemType {
-    return requireFromCache('./filesystem');
+  get fsPromise(): FSPromiseType.fsPromise {
+    return (requireFromCache('./fsPromise'): FSPromiseType).fsPromise;
   },
 
   get httpPromise(): HttpType {

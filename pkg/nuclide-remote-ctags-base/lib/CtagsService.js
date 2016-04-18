@@ -12,7 +12,7 @@
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import path from 'path';
-import {findNearestFile, array, fsPromise} from '../../nuclide-commons';
+import {array, fsPromise} from '../../nuclide-commons';
 import {getLogger} from '../../nuclide-logging';
 
 const TAGS_FILENAME = 'tags';
@@ -85,7 +85,7 @@ export class CtagsService {
 }
 
 export async function getCtagsService(uri: NuclideUri): Promise<?CtagsService> {
-  const dir = await findNearestFile(TAGS_FILENAME, path.dirname(uri));
+  const dir = await fsPromise.findNearestFile(TAGS_FILENAME, path.dirname(uri));
   if (dir == null) {
     return null;
   }

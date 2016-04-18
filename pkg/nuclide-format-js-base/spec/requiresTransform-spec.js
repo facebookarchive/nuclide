@@ -13,7 +13,7 @@ const DefaultModuleMap = require('../lib/state/DefaultModuleMap');
 
 const jscodeshift = require('jscodeshift');
 const printRoot = require('../lib/utils/printRoot');
-const {readFile} = require('../../nuclide-commons').fsPromise;
+const {fsPromise} = require('../../nuclide-commons');
 const requiresTransform = require('../lib/requires/transform');
 
 const TESTS = [
@@ -80,13 +80,13 @@ describe('requiresTransform', () => {
       const expectedPath = 'spec/fixtures/requires/' + name + '.expected';
 
       waitsForPromise(async () => {
-        const test = await readFile(testPath, 'utf8');
+        const test = await fsPromise.readFile(testPath, 'utf8');
 
         const root = jscodeshift(test);
         requiresTransform(root, SOURCE_OPTIONS);
         const actual = printRoot(root);
 
-        const expected = await readFile(expectedPath, 'utf8');
+        const expected = await fsPromise.readFile(expectedPath, 'utf8');
         expect(actual).toBe(expected);
       });
     });

@@ -17,7 +17,7 @@ import readline from 'readline';
 
 import {
   checkOutput,
-  findNearestFile,
+  fsPromise,
   safeSpawn,
   PromiseQueue,
 } from '../../nuclide-commons';
@@ -243,7 +243,7 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
     return null;
   }
 
-  const dotMerlinPath = await findNearestFile('.merlin', file);
+  const dotMerlinPath = await fsPromise.findNearestFile('.merlin', file);
 
   const options = {
     cwd: (dotMerlinPath ? path.dirname(dotMerlinPath) : '.'),

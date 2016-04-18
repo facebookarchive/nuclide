@@ -10,7 +10,9 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
+import {fsPromise} from '../../nuclide-commons';
 import invariant from 'assert';
+
 const buckProjectDirectoryByPath: {[filePath: NuclideUri]: NuclideUri} = {};
 
 export class BuckUtils {
@@ -22,8 +24,7 @@ export class BuckUtils {
   async getBuckProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {
     let directory = buckProjectDirectoryByPath[filePath];
     if (!directory) {
-      const {findNearestFile} = require('../../nuclide-commons').fsPromise;
-      directory = await findNearestFile('.buckconfig', filePath);
+      directory = await fsPromise.findNearestFile('.buckconfig', filePath);
       if (directory === null) {
         return null;
       } else {
