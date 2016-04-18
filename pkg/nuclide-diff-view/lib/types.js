@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
 import type {UIElement} from '../../nuclide-diff-ui-provider-interfaces';
 
-export type DiffModeType = 'Browse' | 'Commit' | 'Publish';
+export type DiffModeType = '1. Browse' | '2. Commit' | '3. Publish';
 
 export type CommitModeType = 'Commit' | 'Amend';
 

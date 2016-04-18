@@ -13,7 +13,7 @@ import type {DiffModeType} from './types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import classnames from 'classnames';
-import {DiffMode} from './constants';
+import {DiffMode, DiffModeIcon} from './constants';
 import {React} from 'react-for-atom';
 import {
   Button,
@@ -42,26 +42,39 @@ class DiffViewToolbar extends React.Component {
   render(): ReactElement {
     const {diffMode, filePath} = this.props;
     const hasActiveFile = filePath != null && filePath.length > 0;
-    const modes = Object.keys(DiffMode).map(modeId => {
+    const diffModeIds = Object.keys(DiffMode);
+    const modeElements = [];
+    for (let i = 0; i < diffModeIds.length; i++) {
+      const modeId = diffModeIds[i];
       const modeValue = DiffMode[modeId];
       const className = classnames({
         'selected': modeValue === diffMode,
       });
-      return (
+      modeElements.push(
         <Button
           key={modeValue}
+          icon={DiffModeIcon[modeId]}
           className={className}
           onClick={() => this.props.onSwitchMode(modeValue)}>
           {modeValue}
         </Button>
       );
-    });
+      if (i !== diffModeIds.length - 1) {
+        const toolbarSeperatorClass = classnames(
+          'nuclide-diff-view-toolbar-seperator',
+          'pull-left',
+          'icon icon-playback-fast-forward',
+          'status status-added',
+        );
+        modeElements.push(<span className={toolbarSeperatorClass} />);
+      }
+    }
 
     return (
       <Toolbar location="top">
         <ToolbarLeft>
           <ButtonGroup size={ButtonGroupSizes.SMALL}>
-            {modes}
+            {modeElements}
           </ButtonGroup>
         </ToolbarLeft>
         <ToolbarCenter>
