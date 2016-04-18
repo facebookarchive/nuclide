@@ -190,6 +190,7 @@ describe('nuclide-commons/process', () => {
   describe('process.safeSpawn', () => {
     it('should not crash the process on an error', () => {
       waitsForPromise(async () => {
+        spyOn(console, 'error'); // suppress error printing
         const child = await processLib.safeSpawn('fakeCommand');
         expect(child).not.toBe(null);
         expect(child.listeners('error').length).toBeGreaterThan(0);
@@ -256,6 +257,8 @@ describe('nuclide-commons/process', () => {
 
     it("kills the process when it becomes ready if you unsubscribe before it's returned", () => {
       waitsForPromise(async () => {
+        spyOn(console, 'log'); // suppress log printing
+
         // A process that lasts ten seconds.
         const process = mockSpawn(cb => {
           setTimeout(() => cb(0), 10000);
@@ -315,6 +318,7 @@ describe('nuclide-commons/process', () => {
 
     it('errors when the process does', () => {
       waitsForPromise(async () => {
+        spyOn(console, 'error'); // suppress error printing
         const createProcess = () => processLib.safeSpawn('fakeCommand');
         const processStream = processLib.createProcessStream(createProcess);
         let error;
@@ -331,6 +335,7 @@ describe('nuclide-commons/process', () => {
 
     it('can be retried', () => {
       waitsForPromise(async () => {
+        spyOn(console, 'error'); // suppress error printing
         const createProcess = jasmine.createSpy().andCallFake(
           () => processLib.safeSpawn('fakeCommand')
         );
