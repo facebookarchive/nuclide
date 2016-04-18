@@ -854,6 +854,7 @@ declare class atom$Workspace {
       searchAllPanes?: boolean;
     }
   ): Promise<atom$TextEditor>;
+  isTextEditor(item: ?mixed): boolean;
   /* Optional method because this was added post-1.0. */
   buildTextEditor?: ((params: atom$TextEditorParams) => atom$TextEditor);
   reopenItem(): Promise<?atom$TextEditor>;

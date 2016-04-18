@@ -21,7 +21,6 @@ import FileTreeHelpers from './FileTreeHelpers';
 import {FileTreeStore} from './FileTreeStore';
 import Immutable from 'immutable';
 import {track} from '../../nuclide-analytics';
-import {isTextEditor} from '../../nuclide-atom-helpers';
 
 import os from 'os';
 import shell from 'shell';
@@ -212,7 +211,7 @@ class FileTreeController {
     if (
       editorElement == null ||
       typeof editorElement.getModel !== 'function' ||
-      !isTextEditor(editorElement.getModel())
+      !atom.workspace.isTextEditor(editorElement.getModel())
     ) {
       return;
     }

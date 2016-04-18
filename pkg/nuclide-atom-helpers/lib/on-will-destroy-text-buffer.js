@@ -9,13 +9,12 @@
  * the root directory of this source tree.
  */
 
-import {isTextEditor} from './text-editor';
 import invariant from 'assert';
 
 export default function onWillDestroyTextBuffer(callback: (buffer: atom$TextBuffer) => mixed)
     : IDisposable {
   return atom.workspace.onWillDestroyPaneItem(({item}) => {
-    if (!isTextEditor(item)) {
+    if (!atom.workspace.isTextEditor(item)) {
       return;
     }
 

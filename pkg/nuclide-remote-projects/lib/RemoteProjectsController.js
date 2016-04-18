@@ -17,7 +17,6 @@ const {
 } = require('react-for-atom');
 const {CompositeDisposable, Disposable} = require('atom');
 const StatusBarTile = require('./ui/StatusBarTile');
-const {isTextEditor} = require('../../nuclide-atom-helpers');
 const remoteUri = require('../../nuclide-remote-uri');
 const ConnectionState = require('./ConnectionState');
 
@@ -53,7 +52,7 @@ class RemoteProjectsController {
   _updateConnectionStatus(paneItem: Object): void {
     this._disposeSubscription();
 
-    if (!isTextEditor(paneItem)) {
+    if (!atom.workspace.isTextEditor(paneItem)) {
       this._renderStatusBar(ConnectionState.NONE);
       return;
     }

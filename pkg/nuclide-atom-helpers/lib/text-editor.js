@@ -23,23 +23,6 @@ import {ServerConnection} from '../../nuclide-remote-connection';
 import {event as commonsEvent} from '../../nuclide-commons';
 const {observableFromSubscribeFunction} = commonsEvent;
 
-export function isTextEditor(item: ?any): boolean {
-  if (item == null) {
-    return false;
-  } else if (typeof atom.workspace.buildTextEditor === 'function') {
-    // If buildTextEditor is present, then accessing the TextEditor constructor will trigger a
-    // deprecation warning. Atom recommends testing for the existence of the public method of
-    // TextEditor that you are using as a proxy for whether the object is a TextEditor:
-    // https://github.com/atom/atom/commit/4d2d4c3. This is a fairly weak heuristic, so we test
-    // for a larger set of methods that are more likely unique to TextEditor as a better heuristic:
-    return typeof item.screenPositionForBufferPosition === 'function' &&
-      typeof item.scanInBufferRange === 'function' &&
-      typeof item.scopeDescriptorForBufferPosition === 'function';
-  } else {
-    return item instanceof TextEditor;
-  }
-}
-
 export function createTextEditor(textEditorParams: atom$TextEditorParams): TextEditor {
   // Note that atom.workspace.buildTextEditor was introduced after the release of Atom 1.0.19.
   // As of this change, calling the constructor of TextEditor directly is deprecated. Therefore,

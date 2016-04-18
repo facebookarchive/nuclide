@@ -27,7 +27,6 @@ import {
 const {debounce} = require('../../nuclide-commons');
 const {
   atomEventDebounce,
-  isTextEditor,
 } = require('../../nuclide-atom-helpers');
 const {onWorkspaceDidStopChangingActivePaneItem} = atomEventDebounce;
 const {PropTypes} = React;
@@ -87,7 +86,7 @@ class BuckToolbar extends React.Component {
   }
 
   _onActivePaneItemChanged(item: ?Object) {
-    if (!isTextEditor(item)) {
+    if (!atom.workspace.isTextEditor(item)) {
       return;
     }
     const textEditor: TextEditor = ((item: any): TextEditor);

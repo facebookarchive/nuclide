@@ -20,8 +20,6 @@ import {parse, createRemoteUri} from '../../nuclide-remote-uri';
 const NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
 const NUCLIDE_PROTOCOL_PREFIX_LENGTH = NUCLIDE_PROTOCOL_PREFIX.length;
 
-import {isTextEditor} from '../../nuclide-atom-helpers';
-
 export type OpenFileEditorInstance = {
   pane: atom$Pane;
   editor: atom$TextEditor;
@@ -57,7 +55,7 @@ export function* getOpenFileEditorForRemoteProject(
   for (const pane of atom.workspace.getPanes()) {
     const paneItems = pane.getItems();
     for (const paneItem of paneItems) {
-      if (!isTextEditor(paneItem) || !paneItem.getURI()) {
+      if (!atom.workspace.isTextEditor(paneItem) || !paneItem.getURI()) {
         // Ignore non-text editors and new editors with empty uris / paths.
         continue;
       }

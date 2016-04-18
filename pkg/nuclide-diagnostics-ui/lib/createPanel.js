@@ -17,7 +17,6 @@ import type {
 const invariant = require('assert');
 const {debounce} = require('../../nuclide-commons');
 const {compareMessagesByFile} = require('./paneUtils');
-const {isTextEditor} = require('../../nuclide-atom-helpers');
 const {
   React,
   ReactDOM,
@@ -97,7 +96,7 @@ function createDiagnosticsPanel(
   }
 
   const activePaneItemSubscription = atom.workspace.onDidChangeActivePaneItem(paneItem => {
-    if (isTextEditor(paneItem)) {
+    if (atom.workspace.isTextEditor(paneItem)) {
       const textEditor: atom$TextEditor = (paneItem: any);
       props.pathToActiveTextEditor = textEditor ? textEditor.getPath() : null;
       if (props.filterByActiveTextEditor) {

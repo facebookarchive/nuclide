@@ -84,10 +84,6 @@ module.exports = {
     return requireFromCache('./workspace').getPathToWorkspaceState;
   },
 
-  get isTextEditor() {
-    return requireFromCache('./text-editor').isTextEditor;
-  },
-
   get setPositionAndScroll() {
     return requireFromCache('./text-editor').setPositionAndScroll;
   },

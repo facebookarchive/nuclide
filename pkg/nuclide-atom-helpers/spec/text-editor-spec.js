@@ -11,24 +11,15 @@
 
 import {
   createTextEditor,
-  isTextEditor,
   existingEditorForUri,
   existingBufferForUri,
   bufferForUri,
 } from '..';
 
-describe('isTextEditor', () => {
-  it('returns appropriate value for various inputs', () => {
-    expect(isTextEditor(null)).toBe(false);
-    expect(isTextEditor(undefined)).toBe(false);
-    expect(isTextEditor(42)).toBe(false);
-    expect(isTextEditor(false)).toBe(false);
-    expect(isTextEditor('TextEditor')).toBe(false);
-    expect(isTextEditor([])).toBe(false);
-    expect(isTextEditor({})).toBe(false);
-
+describe('createTextEditor', () => {
+  it('returns a text editor', () => {
     const textEditor = createTextEditor(/* params */ {});
-    expect(isTextEditor(textEditor)).toBe(true);
+    expect(atom.workspace.isTextEditor(textEditor)).toBe(true);
   });
 });
 

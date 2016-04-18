@@ -11,7 +11,6 @@
 
 import {CompositeDisposable} from 'atom';
 import {
-  isTextEditor,
   projects,
   getViewOfEditor,
 } from '../../nuclide-atom-helpers';
@@ -60,17 +59,17 @@ class Activation {
     atom.workspace.getTextEditors().forEach(subscribeEditor);
     this._disposables.add(atom.workspace.onDidAddTextEditor(addEditor));
     this._disposables.add(atom.workspace.onDidOpen((event: OnDidOpenEvent) => {
-      if (isTextEditor(event.item)) {
+      if (atom.workspace.isTextEditor(event.item)) {
         controller.onOpen((event.item: any));
       }
     }));
     this._disposables.add(atom.workspace.observeActivePaneItem(item => {
-      if (isTextEditor(item)) {
+      if (atom.workspace.isTextEditor(item)) {
         controller.onActivate((item: any));
       }
     }));
     this._disposables.add(atom.workspace.onDidStopChangingActivePaneItem(item => {
-      if (isTextEditor(item)) {
+      if (atom.workspace.isTextEditor(item)) {
         controller.onActiveStopChanging((item: any));
       }
     }));
