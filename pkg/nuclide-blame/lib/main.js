@@ -15,6 +15,7 @@ import type {FileTreeNode} from '../../nuclide-file-tree/lib/FileTreeNode';
 
 import {CompositeDisposable, Disposable} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
+import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import invariant from 'assert';
 
 const PACKAGES_MISSING_MESSAGE =
@@ -225,14 +226,16 @@ class Activation {
 }
 
 /**
- * @return list of nodes against which "Toggle Blame" is an appropriate action. Currently, this
- *   blindly returns all files, but it would be better to limit it to files that are part of an
- *   Hg repository.
+ * @return list of nodes against which "Toggle Blame" is an appropriate action.
  */
 function findBlameableNodes(contextMenu: FileTreeContextMenu): Array<FileTreeNode> {
   const nodes = [];
   for (const node of contextMenu.getSelectedNodes()) {
-    if (!node.isContainer) {
+    if (node == null || !node.uri) {
+      continue;
+    }
+    const repo = repositoryForPath(node.uri);
+    if (!node.isContainer && repo != null && repo.getType() === 'hg') {
       nodes.push(node);
     }
   }

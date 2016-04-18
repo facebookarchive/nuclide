@@ -22,6 +22,7 @@ import invariant from 'assert';
 import url from 'url';
 import {nuclideFeatures} from '../../../lib/nuclide-features';
 import {getFileTreePathFromTargetEvent} from './utils';
+import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {getLogger} from '../../nuclide-logging';
 import {DiffMode, CommitMode} from './constants';
 
@@ -175,6 +176,27 @@ function diffActivePath(diffOptions?: Object): void {
   }
 }
 
+function isActiveEditorDiffable(): boolean {
+  const editor = atom.workspace.getActiveTextEditor();
+  if (editor == null) {
+    return false;
+  }
+  return isPathDiffable(editor.getPath());
+}
+
+function shouldDisplayDiffTreeItem(contextMenu: FileTreeContextMenu): boolean {
+  const node = contextMenu.getSingleSelectedNode();
+  return node != null && isPathDiffable(node.uri);
+}
+
+function isPathDiffable(filePath: ?string): boolean {
+  if (filePath == null || filePath.length === 0) {
+    return false;
+  }
+  const repository = repositoryForPath(filePath);
+  return repository != null && repository.getType() === 'hg';
+}
+
 // Listen for file tree context menu file item events to open the diff view.
 function addFileTreeCommands(commandName: string, diffOptions?: Object): void {
   invariant(subscriptions);
@@ -236,6 +258,38 @@ module.exports = {
     addActivePathCommands('nuclide-diff-view:publish', {
       viewMode: DiffMode.PUBLISH_MODE,
     });
+
+    // Context Menu Items.
+    subscriptions.add(atom.contextMenu.add({
+      'atom-text-editor': [
+        {type: 'separator'},
+        {
+          label: 'Source Control',
+          submenu: [
+            {
+              label: 'Open in Diff View',
+              command: 'nuclide-diff-view:open',
+            },
+            {
+              label: 'Commit',
+              command: 'nuclide-diff-view:commit',
+            },
+            {
+              label: 'Amend',
+              command: 'nuclide-diff-view:amend',
+            },
+            {
+              label: 'Publish to Phabricator',
+              command: 'nuclide-diff-view:publish',
+            },
+          ],
+          shouldDisplay() {
+            return isActiveEditorDiffable();
+          },
+        },
+        {type: 'separator'},
+      ],
+    }));
 
     // Listen for switching to editor mode for the active file.
     subscriptions.add(atom.commands.add(
@@ -414,6 +468,9 @@ module.exports = {
       {
         label: 'Open in Diff View',
         command: 'nuclide-diff-view:open-context',
+        shouldDisplay() {
+          return shouldDisplayDiffTreeItem(contextMenu);
+        },
       },
       DIFF_VIEW_FILE_TREE_CONTEXT_MENU_PRIORITY,
     ));
@@ -421,6 +478,9 @@ module.exports = {
       {
         label: 'Commit',
         command: 'nuclide-diff-view:commit-context',
+        shouldDisplay() {
+          return shouldDisplayDiffTreeItem(contextMenu);
+        },
       },
       COMMIT_FILE_TREE_CONTEXT_MENU_PRIORITY,
     ));
@@ -428,6 +488,9 @@ module.exports = {
       {
         label: 'Amend',
         command: 'nuclide-diff-view:amend-context',
+        shouldDisplay() {
+          return shouldDisplayDiffTreeItem(contextMenu);
+        },
       },
       AMEND_FILE_TREE_CONTEXT_MENU_PRIORITY,
     ));
@@ -435,6 +498,9 @@ module.exports = {
       {
         label: 'Publish to Phabricator',
         command: 'nuclide-diff-view:publish-context',
+        shouldDisplay() {
+          return shouldDisplayDiffTreeItem(contextMenu);
+        },
       },
       PUBLISH_FILE_TREE_CONTEXT_MENU_PRIORITY,
     ));
