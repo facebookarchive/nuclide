@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {CommitModeType, DiffModeType} from './types';
 import type DiffViewModelType, {DiffEntityOptions} from './DiffViewModel';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {HomeFragments} from '../../nuclide-home-interfaces';
@@ -25,6 +27,15 @@ import {getFileTreePathFromTargetEvent} from './utils';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {getLogger} from '../../nuclide-logging';
 import {DiffMode, CommitMode} from './constants';
+
+type SerializedDiffViewState = {
+  visible: false;
+} | {
+  visible: true;
+  activeFilePath: NuclideUri;
+  viewMode: DiffModeType;
+  commitMode: CommitModeType;
+};
 
 let diffViewModel: ?DiffViewModelType = null;
 let activeDiffView: ?{
@@ -243,7 +254,7 @@ function addActivePathCommands(commandName: string, diffOptions?: Object) {
 
 module.exports = {
 
-  activate(state: any): void {
+  activate(state: ?SerializedDiffViewState): void {
     subscriptions = new CompositeDisposable();
     // Listen for menu item workspace diff view open command.
     addActivePathCommands('nuclide-diff-view:open');
@@ -331,19 +342,14 @@ module.exports = {
       }
     }));
 
-    if (state == null) {
+    if (state == null || !state.visible) {
       return;
     }
 
+    const {activeFilePath, viewMode, commitMode} = state;
     // Wait for all source control providers to register.
     subscriptions.add(nuclideFeatures.onDidActivateInitialFeatures(() => {
-      const {activeFilePath, viewMode, commitMode} = state;
-
       function restoreActiveDiffView() {
-        if (atom.specMode) {
-          // Restore conflicts with diff view testing.
-          return;
-        }
         atom.workspace.open(formatDiffViewUrl({
           file: activeFilePath,
           viewMode,
@@ -411,13 +417,16 @@ module.exports = {
     };
   },
 
-  serialize(): ?Object {
+  serialize(): SerializedDiffViewState {
     if (!activeDiffView || !diffViewModel) {
-      return {};
+      return {
+        visible: false,
+      };
     }
     const {filePath} = diffViewModel.getActiveFileState();
     const {viewMode, commitMode} = diffViewModel.getState();
     return {
+      visible: true,
       activeFilePath: filePath,
       viewMode,
       commitMode,
