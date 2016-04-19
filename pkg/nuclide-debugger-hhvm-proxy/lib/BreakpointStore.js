@@ -24,6 +24,7 @@ const PAUSE_ALL_EXCEPTION_NAME = '*';
 const EXCEPTION_PAUSE_STATE_ALL = 'all';
 
 const {
+  STATUS_STOPPING,
   STATUS_STOPPED,
   STATUS_ERROR,
   STATUS_END,
@@ -138,6 +139,7 @@ export class BreakpointStore {
     this._connections.set(connection, map);
     connection.onStatus(status => {
       switch (status) {
+        case STATUS_STOPPING:
         case STATUS_STOPPED:
         case STATUS_ERROR:
         case STATUS_END:
