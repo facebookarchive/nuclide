@@ -1133,13 +1133,6 @@ class DiffViewModel {
   }
 
   async _loadPublishModeState(): Promise<void> {
-    const {publishModeState} = this._state;
-    if (
-      publishModeState === PublishModeState.AWAITING_PUBLISH ||
-      publishModeState === PublishModeState.PUBLISH_ERROR
-    ) {
-      return;
-    }
     let publishMessage = this._state.publishMessage;
     this._setState({
       ...this._state,
