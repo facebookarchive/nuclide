@@ -28,7 +28,7 @@ import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constant
 
 import pathModule from 'path';
 
-let dialogComponent: ?ReactComponent;
+let dialogComponent: ?React.Component;
 let dialogHostElement: ?HTMLElement;
 
 const legalStatusCodeForRename = new Set([

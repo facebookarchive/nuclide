@@ -254,7 +254,7 @@ export const TreeRootComponent = React.createClass({
     atom.contextMenu.add(contextMenuObj);
   },
 
-  render(): ?ReactElement {
+  render(): ?React.Element {
     if (this.state.roots.length === 0) {
       return this.props.elementToRenderWhenEmpty;
     }

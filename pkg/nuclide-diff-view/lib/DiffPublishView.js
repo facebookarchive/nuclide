@@ -36,7 +36,7 @@ type DiffRevisionViewProps = {
 class DiffRevisionView extends React.Component {
   props: DiffRevisionViewProps;
 
-  render(): ReactElement {
+  render(): React.Element {
     const {hash, title, description} = this.props.revision;
     const tooltip = `${hash}: ${title}`;
     const revision = arcanist.getPhabricatorRevisionFromCommitMessage(description);
@@ -126,7 +126,7 @@ class DiffPublishView extends React.Component {
     }
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     const {publishModeState, publishMode, headRevision} = this.props;
 
     let revisionView;

@@ -81,7 +81,7 @@ const messageWithTrace: FileDiagnosticMessage = {
   ],
 };
 
-const DiagnosticMessageWarningExample = (): ReactElement => (
+const DiagnosticMessageWarningExample = (): React.Element => (
   <div>
     <Block>
       <DiagnosticsMessage
@@ -93,7 +93,7 @@ const DiagnosticMessageWarningExample = (): ReactElement => (
   </div>
 );
 
-const DiagnosticMessageErrorExample = (): ReactElement => (
+const DiagnosticMessageErrorExample = (): React.Element => (
   <div>
     <Block>
       <DiagnosticsMessage
@@ -105,7 +105,7 @@ const DiagnosticMessageErrorExample = (): ReactElement => (
   </div>
 );
 
-const DiagnosticMessageFixableExample = (): ReactElement => (
+const DiagnosticMessageFixableExample = (): React.Element => (
   <div>
     <Block>
       <DiagnosticsMessage
@@ -117,7 +117,7 @@ const DiagnosticMessageFixableExample = (): ReactElement => (
   </div>
 );
 
-const DiagnosticMessageTraceExample = (): ReactElement => (
+const DiagnosticMessageTraceExample = (): React.Element => (
   <div>
     <Block>
       <DiagnosticsMessage

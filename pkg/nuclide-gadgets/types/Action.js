@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import {React} from 'react-for-atom';
+
 export type Action =
   CreatePaneItemAction |
   DestroyPaneItemAction |
@@ -21,7 +23,7 @@ export type Action =
 export type CreatePaneItemAction = {
   type: 'CREATE_PANE_ITEM';
   payload: {
-    component?: ReactComponent;
+    component?: React.Component;
     gadgetId: string;
     item: Object;
     props?: Object;

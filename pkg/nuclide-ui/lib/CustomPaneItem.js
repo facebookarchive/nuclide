@@ -12,7 +12,7 @@
 /* eslint-env browser */
 
 import invariant from 'assert';
-import {ReactDOM} from 'react-for-atom';
+import {React, ReactDOM} from 'react-for-atom';
 
 import type {CustomPaneItemOptions} from './types';
 
@@ -22,7 +22,7 @@ export class CustomPaneItem extends HTMLElement {
   _iconName: ?string;
   _uri: ?string;
   _allowSplit: boolean;
-  __component: ReactElement;
+  __component: React.Element;
 
   initialize(options: CustomPaneItemOptions) {
     this._title = options.title;
@@ -40,7 +40,7 @@ export class CustomPaneItem extends HTMLElement {
    *
    * @return A React component that this element call ReactDOM.render() on.
    */
-  __renderPaneItem(options: CustomPaneItemOptions): ReactElement {
+  __renderPaneItem(options: CustomPaneItemOptions): React.Element {
     throw new Error('Subclass should implement this method.');
   }
 

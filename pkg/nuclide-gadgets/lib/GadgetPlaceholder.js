@@ -54,7 +54,7 @@ class GadgetPlaceholder extends React.Component<void, Props, void> {
     return this.props.rawInitialGadgetState;
   }
 
-  render(): ?ReactElement {
+  render(): ?React.Element {
     // TODO: Make some nice placeholder? It happens so fast it may not be worth it.
     return <div />;
   }

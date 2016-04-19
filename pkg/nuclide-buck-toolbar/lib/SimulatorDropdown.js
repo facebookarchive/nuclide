@@ -60,7 +60,7 @@ class SimulatorDropdown extends React.Component {
     this.setState({menuItems, selectedIndex});
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     if (this.state.menuItems.length === 0) {
       return <span />;
     }

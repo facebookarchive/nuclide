@@ -19,15 +19,15 @@ const path = require('path');
 
 type Key = number | string;
 
-function renderSubsequence(seq: string, props: Object): ?ReactElement {
+function renderSubsequence(seq: string, props: Object): ?React.Element {
   return seq.length === 0 ? null : <span {...props}>{seq}</span>;
 }
 
-function renderUnmatchedSubsequence(seq: string, key: Key): ?ReactElement {
+function renderUnmatchedSubsequence(seq: string, key: Key): ?React.Element {
   return renderSubsequence(seq, {key});
 }
 
-function renderMatchedSubsequence(seq: string, key: Key): ?ReactElement {
+function renderMatchedSubsequence(seq: string, key: Key): ?React.Element {
   return renderSubsequence(
     seq,
     {
@@ -43,7 +43,7 @@ class FileResultComponent {
     item: FileResult,
     serviceName: string,
     dirName: string
-  ): ReactElement {
+  ): React.Element {
     // Trim the `dirName` off the `filePath` since that's shown by the group
     let filePath = item.path;
     let matchIndexes = item.matchIndexes || [];

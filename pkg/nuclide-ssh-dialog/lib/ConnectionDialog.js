@@ -143,7 +143,7 @@ class ConnectionDialog extends React.Component {
     this.setState({indexOfSelectedConnectionProfile});
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     const mode = this.state.mode;
     let content;
     let isOkDisabled;

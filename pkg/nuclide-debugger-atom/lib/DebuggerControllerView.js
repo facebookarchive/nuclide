@@ -67,7 +67,7 @@ const DebuggerControllerView = React.createClass({
     this._updateStateFromStore(nextProps.store);
   },
 
-  render(): ?ReactElement {
+  render(): ?React.Element {
     if (this.state.processSocket) {
       return (
         <DebuggerInspector

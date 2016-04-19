@@ -57,7 +57,7 @@ export default class Console extends React.Component {
     }
   }
 
-  _renderPromptButton(): ReactElement {
+  _renderPromptButton(): React.Element {
     invariant(this.props.currentExecutor != null);
     const {currentExecutor} = this.props;
     const options = Array.from(this.props.executors.values())
@@ -75,7 +75,7 @@ export default class Console extends React.Component {
     );
   }
 
-  render(): ?ReactElement {
+  render(): ?React.Element {
     return (
       <div className="nuclide-console">
         <ConsoleHeader clear={this.props.clearRecords} />
@@ -90,7 +90,7 @@ export default class Console extends React.Component {
     );
   }
 
-  _renderPrompt(): ?ReactElement {
+  _renderPrompt(): ?React.Element {
     const {currentExecutor} = this.props;
     if (currentExecutor == null) {
       return;
@@ -127,7 +127,7 @@ export default class Console extends React.Component {
     this._autoscroll();
   }
 
-  _renderRow(record: Record, index: number): ReactElement {
+  _renderRow(record: Record, index: number): React.Element {
     return <RecordView key={index} record={record} />;
   }
 

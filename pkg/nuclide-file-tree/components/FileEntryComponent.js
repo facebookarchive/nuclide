@@ -61,7 +61,7 @@ export class FileEntryComponent extends React.Component {
     }
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     const node = this.props.node;
     const outerClassName = classnames('entry file list-item', {
       'selected': node.isSelected,

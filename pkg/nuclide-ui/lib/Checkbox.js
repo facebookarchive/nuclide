@@ -70,7 +70,7 @@ export class Checkbox extends React.Component {
     ReactDOM.findDOMNode(this.refs['input']).indeterminate = this.props.indeterminate;
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     return (
       <label className="nuclide-ui-checkbox-label" onClick={this.props.onClick}>
         <input

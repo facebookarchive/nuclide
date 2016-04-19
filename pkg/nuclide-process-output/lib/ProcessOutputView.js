@@ -73,7 +73,7 @@ class ProcessOutputView extends React.Component<void, Props, void> {
     this._disposables.dispose();
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     return (
       <div className="nuclide-process-output-view">
         {this.props.processOutputViewTopElement}

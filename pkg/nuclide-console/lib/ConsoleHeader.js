@@ -33,7 +33,7 @@ export default class ConsoleHeader extends React.Component {
     this.props.clear();
   }
 
-  render(): ?ReactElement {
+  render(): ?React.Element {
     return (
       <Toolbar location="top">
         <ToolbarRight>

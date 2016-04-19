@@ -100,7 +100,7 @@ export const HackSymbolProvider: Provider = {
     return ((results: any): Array<FileResult>);
   },
 
-  getComponentForItem(uncastedItem: FileResult): ReactElement {
+  getComponentForItem(uncastedItem: FileResult): React.Element {
     const item = ((uncastedItem: any): HackSearchPosition);
     const filePath = item.path;
     const filename = path.basename(filePath);

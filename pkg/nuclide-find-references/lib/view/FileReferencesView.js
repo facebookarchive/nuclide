@@ -36,7 +36,7 @@ const FileReferencesView = React.createClass({
     atom.workspace.open(this.props.uri);
   },
 
-  render(): ReactElement {
+  render(): React.Element {
     const groups = this.props.refGroups.map((group: ReferenceGroup, i) => {
       const previewText = this.props.previewText[i];
       const ranges = group.references.map((ref, j) => {

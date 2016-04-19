@@ -14,7 +14,7 @@ import {React} from 'react-for-atom';
 
 type Props = {
   className? : string;
-  children: ReactElement;
+  children: React.Element;
 };
 
 /**

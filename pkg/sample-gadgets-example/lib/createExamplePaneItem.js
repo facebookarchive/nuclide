@@ -15,7 +15,7 @@ export class ExamplePaneItem extends React.Component {
   static gadgetId = 'sample-gadget';
   static defaultLocation = 'right';
 
-  render(): ReactElement {
+  render(): React.Element {
     return (
       <div className="pane-item padded sample-gadgets-pane">
         The simplest possible Gadget.

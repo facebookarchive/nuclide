@@ -50,7 +50,7 @@ function createHomePaneItem(
     static gadgetId = 'nuclide-home';
 
     state: {
-      allHomeFragments: Immutable.Set<string, ReactElement>;
+      allHomeFragments: Immutable.Set<string, React.Element>;
     };
 
     _homeFragmentsSubscription: rx$ISubscription;

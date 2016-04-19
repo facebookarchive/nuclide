@@ -12,6 +12,8 @@
 import type {ProcessOutputStore} from '../../nuclide-process-output-store';
 import type {ProcessOutputHandler} from './types';
 
+import {React} from 'react-for-atom';
+
 export type RunCommandOptions = {
   /* A title for the tab of the newly opened pane. */
   tabTitle: string;
@@ -23,7 +25,7 @@ export type RunCommandOptions = {
    */
   processOutputHandler?: ProcessOutputHandler;
   /* An optional React component that will be placed at the top of the process output view. */
-  processOutputViewTopElement?: ReactElement;
+  processOutputViewTopElement?: React.Element;
   /* If true, before opening the new tab, it will close any existing tab with the same title. */
   destroyExistingPane?: boolean;
 };
@@ -44,7 +46,7 @@ const PROCESS_OUTPUT_VIEW_TOP_ELEMENT = 'nuclide-processOutputViewTopElement';
 type CreateProcessOutputViewOptions = {
   'nuclide-processOutputHandler': ?ProcessOutputHandler;
   'nuclide-processOutputStore': ProcessOutputStore;
-  'nuclide-processOutputViewTopElement': ?ReactElement;
+  'nuclide-processOutputViewTopElement': ?React.Element;
 };
 
 let subscriptions: ?CompositeDisposable;

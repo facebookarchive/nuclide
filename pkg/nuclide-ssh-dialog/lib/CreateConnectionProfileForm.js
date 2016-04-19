@@ -83,7 +83,7 @@ class CreateConnectionProfileForm extends React.Component<void, Props, void> {
    * remote server command. The remote server command will only be saved if the
    * user changes it from this default.
    */
-  render(): ReactElement {
+  render(): React.Element {
     const initialFields = this.props.initialFormFields;
 
     return (

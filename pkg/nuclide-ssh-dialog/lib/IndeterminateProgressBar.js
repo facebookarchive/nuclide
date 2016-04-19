@@ -16,7 +16,7 @@ import {React} from 'react-for-atom';
  * server.
  */
 export default class IndeterminateProgressBar extends React.Component {
-  render(): ReactElement {
+  render(): React.Element {
     return (
       <div className="block text-center padded">
         <span className="loading loading-spinner-medium inline-block"></span>

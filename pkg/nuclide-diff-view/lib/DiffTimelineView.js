@@ -52,7 +52,7 @@ export default class DiffTimelineView extends React.Component {
     });
   }
 
-  render(): ?ReactElement {
+  render(): ?React.Element {
     let content = null;
     const {revisionsState} = this.state;
     if (revisionsState == null) {
@@ -92,7 +92,7 @@ type RevisionsComponentProps = {
 class RevisionsTimelineComponent extends React.Component {
   props: RevisionsComponentProps;
 
-  render(): ReactElement {
+  render(): React.Element {
     const {revisions, compareRevisionId} = this.props;
     const latestToOldestRevisions = revisions.slice().reverse();
     const selectedIndex = latestToOldestRevisions.findIndex(
@@ -131,7 +131,7 @@ type RevisionTimelineNodeProps = {
 class RevisionTimelineNode extends React.Component {
   props: RevisionTimelineNodeProps;
 
-  render(): ReactElement {
+  render(): React.Element {
     const {revision, index, selectedIndex, revisionsCount} = this.props;
     const {bookmarks, title, author, hash, date} = revision;
     const revisionClassName = classnames({

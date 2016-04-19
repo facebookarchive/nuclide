@@ -83,7 +83,7 @@ class HhvmToolbar extends React.Component {
     this.refs.debugTarget.setText(this._getDebugTarget(selectedIndex, nextProps.targetFilePath));
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     const debugTarget = this._getDebugTarget(this.state.selectedIndex, this.props.targetFilePath);
     const isDebugScript = this._isDebugScript(this.state.selectedIndex);
     return (

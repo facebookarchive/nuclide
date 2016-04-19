@@ -13,6 +13,7 @@ import type NuclideToolbarType from './NuclideToolbar';
 import type ProjectStoreType from './ProjectStore';
 
 import {CompositeDisposable, Disposable} from 'atom';
+import {React, ReactDOM} from 'react-for-atom';
 import invariant from 'assert';
 
 class Activation {
@@ -67,10 +68,6 @@ class Activation {
   _createToolbar() {
     const NuclideToolbar = require('./NuclideToolbar');
     const item = document.createElement('div');
-    const {
-      React,
-      ReactDOM,
-    } = require('react-for-atom');
 
     this._nuclideToolbar = ReactDOM.render(
       <NuclideToolbar
@@ -115,7 +112,6 @@ class Activation {
 
   dispose() {
     if (this._nuclideToolbar) {
-      const {ReactDOM} = require('react-for-atom');
       const toolbarNode = ReactDOM.findDOMNode(this._nuclideToolbar);
       // If the toolbar is currently hidden for some reason, then toolbarNode will be null.
       if (toolbarNode) {

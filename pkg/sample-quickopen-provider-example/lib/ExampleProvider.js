@@ -112,7 +112,7 @@ const ExampleProvider: Provider = {
    * Useful for overriding the default view of a quick-open result.
    */
   // var {React} = require('react-for-atom');
-  // getComponentForItem(item: FileResult): ReactElement {
+  // getComponentForItem(item: FileResult): React.Element {
   //   var {
   //     matchIndexes,
   //     path,

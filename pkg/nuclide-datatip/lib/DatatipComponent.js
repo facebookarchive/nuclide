@@ -41,7 +41,7 @@ export class DatatipComponent extends React.Component {
     this.props.onActionClick();
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     const {
       className,
       children,

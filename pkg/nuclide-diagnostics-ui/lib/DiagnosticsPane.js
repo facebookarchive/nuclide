@@ -55,13 +55,13 @@ function sourceColumnCellDataGetter(
   return diagnostic.providerName;
 }
 
-function plainTextColumnCellRenderer(text: string): ReactElement {
+function plainTextColumnCellRenderer(text: string): React.Element {
   // For consistency with messageColumnCellDataGetter(), render plaintext in a <span> so that
   // everything lines up.
   return <span>{text}</span>;
 }
 
-function typeColumnCellRenderer(text: string): ReactElement {
+function typeColumnCellRenderer(text: string): React.Element {
   const highlightClassName = TypeToHighlightClassName[text.toUpperCase()] || 'highlight';
   return (
     <span className={highlightClassName}>
@@ -95,7 +95,7 @@ function messageColumnCellDataGetter(
   };
 }
 
-function messageColumnCellRenderer(message: textAndType): ReactElement {
+function messageColumnCellRenderer(message: textAndType): React.Element {
   if (message.isPlainText) {
     return plainTextColumnCellRenderer(message.text);
   } else {
@@ -131,7 +131,7 @@ type CellProps = {
 /*
  * Returns markup similar to that produced by fixed-data-table v0.6.0.
  */
-function Cell(props: CellProps): ReactElement {
+function Cell(props: CellProps): React.Element {
   return (
     <div
       className="fixedDataTableCellLayout_main public_fixedDataTableCell_main"
@@ -197,7 +197,7 @@ class DiagnosticsPane extends React.Component {
     return messageMaxLinesOfText * DEFAULT_LINE_TEXT_HEIGHT + ROW_VERTICAL_PADDING;
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     const diagnosticCells = [];
     for (
       let index = 0;

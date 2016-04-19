@@ -54,7 +54,7 @@ class NuclideToolbar extends React.Component {
     });
   }
 
-  render(): ?ReactElement {
+  render(): ?React.Element {
     if (this.state.projectType === 'Hhvm') {
       const HhvmToolbar = require('./HhvmToolbar');
       return (

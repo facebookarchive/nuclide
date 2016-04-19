@@ -31,7 +31,7 @@ export class AttachUiComponent extends React.Component<void, PropsType, void> {
     (this: any)._handleAttachButtonClick = this._handleAttachButtonClick.bind(this);
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     return (
       <div className="block">
         <div className="padded text-right">

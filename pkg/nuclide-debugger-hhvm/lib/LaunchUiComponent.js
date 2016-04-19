@@ -36,7 +36,7 @@ export class LaunchUiComponent extends React.Component<void, PropsType, void> {
     (this: any)._handleLaunchButtonClick = this._handleLaunchButtonClick.bind(this);
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     return (
       <div className="block">
         <label>Command: </label>

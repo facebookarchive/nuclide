@@ -26,7 +26,7 @@ const NOOP = () => {};
 export class DiagnosticsDatatipComponent extends React.Component {
   props: DiagnosticsDatatipComponentProps;
 
-  render(): ReactElement {
+  render(): React.Element {
     // Remove the `fix` property to prevent the fix button from showing up (for now).
     const message = {...this.props.message, fix: undefined};
     return (

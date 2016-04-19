@@ -112,7 +112,7 @@ export default class DiffViewEditorPane extends React.Component {
     this._isMounted = false;
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     return (
       <div className="nuclide-diff-editor-container">
         <div className="nuclide-diff-editor-wrapper">

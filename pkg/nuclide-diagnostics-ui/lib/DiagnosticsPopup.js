@@ -31,7 +31,7 @@ function renderMessage(
   goToLocation: (filePath: NuclideUri, line: number) => mixed,
   message: FileDiagnosticMessage,
   index: number
-): ReactElement {
+): React.Element {
   const className = classnames(
     // native-key-bindings and tabIndex=-1 are both needed to allow copying the text in the popup.
     'native-key-bindings',

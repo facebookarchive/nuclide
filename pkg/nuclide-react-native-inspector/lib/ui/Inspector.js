@@ -27,7 +27,7 @@ class Inspector extends React.Component {
     return 'React Native Inspector';
   }
 
-  render(): ?ReactElement {
+  render(): ?React.Element {
     return (
       <Webview
         style={{width: '100%', height: '100%'}}

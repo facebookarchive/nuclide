@@ -71,7 +71,7 @@ export default function createConsoleGadget(
       this._state$Subscription.unsubscribe();
     }
 
-    render(): ?ReactElement {
+    render(): ?React.Element {
       return (
         <Console
           execute={code => commands.execute(code)}

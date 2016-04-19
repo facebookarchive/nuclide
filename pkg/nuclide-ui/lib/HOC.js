@@ -52,7 +52,7 @@ export function injectObservableAsProps<T : ReactClass>(
       }
     }
 
-    render(): ?ReactElement {
+    render(): ?React.Element {
       if (!this._resolved) {
         return null;
       }

@@ -15,7 +15,7 @@ import {ButtonGroup} from './ButtonGroup';
 import {ButtonToolbar} from './ButtonToolbar';
 import {Block} from './Block';
 
-const ButtonSizeExample = (): ReactElement => (
+const ButtonSizeExample = (): React.Element => (
   <Block>
     <Button className="inline-block" size="EXTRA_SMALL">extra_small</Button>
     <Button className="inline-block" size="SMALL">small</Button>
@@ -24,7 +24,7 @@ const ButtonSizeExample = (): ReactElement => (
   </Block>
 );
 
-const ButtonColorExample = (): ReactElement => (
+const ButtonColorExample = (): React.Element => (
   <div>
     <Block>
       <ButtonGroup>
@@ -48,7 +48,7 @@ const ButtonColorExample = (): ReactElement => (
   </div>
 );
 
-const ButtonIconExample = (): ReactElement => (
+const ButtonIconExample = (): React.Element => (
   <Block>
     <ButtonGroup>
       <Button icon="gear"></Button>
@@ -61,7 +61,7 @@ const ButtonIconExample = (): ReactElement => (
   </Block>
 );
 
-const ButtonGroupExample = (): ReactElement => (
+const ButtonGroupExample = (): React.Element => (
   <div>
     <Block>
       <ButtonGroup size="EXTRA_SMALL">
@@ -94,7 +94,7 @@ const ButtonGroupExample = (): ReactElement => (
   </div>
 );
 
-const ButtonToolbarExample = (): ReactElement => (
+const ButtonToolbarExample = (): React.Element => (
   <div>
     <Block>
       <ButtonToolbar>

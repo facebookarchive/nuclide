@@ -94,7 +94,7 @@ export default class ConnectionDetailsPrompt extends React.Component<void, Props
     }
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     // If there are profiles, pre-fill the form with the information from the
     // specified selected profile.
     const prefilledConnectionParams = this.getPrefilledConnectionParams() || {};

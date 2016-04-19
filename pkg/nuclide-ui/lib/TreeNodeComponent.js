@@ -59,7 +59,7 @@ export class TreeNodeComponent extends React.Component {
     return PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     const rowClassNameObj: {[key: string]: boolean} = {
       // Support for selectors in the "file-icons" package.
       // @see {@link https://atom.io/packages/file-icons|file-icons}

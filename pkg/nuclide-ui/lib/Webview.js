@@ -59,7 +59,7 @@ export class Webview extends React.Component<void, Props, void> {
     this._disposables.dispose();
   }
 
-  render(): ?ReactElement {
+  render(): ?React.Element {
     return (
       <webview className={this.props.className} style={this.props.style} />
     );

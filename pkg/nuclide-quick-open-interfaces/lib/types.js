@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import {React} from 'react-for-atom';
+
 export type Store = {
   toggleProvider(service: Provider): void;
 };
@@ -26,7 +28,7 @@ export type Provider = {
   getAction?: () => string;
   getDebounceDelay?: () => number;
   isEligibleForDirectory?: (directory: atom$Directory) => Promise<boolean>;
-  getComponentForItem?: (item: FileResult) => ReactElement;
+  getComponentForItem?: (item: FileResult) => React.Element;
 };
 
 import type {NuclideUri} from '../../nuclide-remote-uri';

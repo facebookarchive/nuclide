@@ -27,7 +27,7 @@ export default class HealthPaneItemComponent extends React.Component {
     activeHandleObjects: PropTypes.arrayOf(PropTypes.object).isRequired,
   };
 
-  render(): ReactElement {
+  render(): React.Element {
 
     const sections = {
       'Stats':

@@ -48,7 +48,7 @@ const FilePreview = React.createClass({
     ]);
   },
 
-  render(): ReactElement {
+  render(): React.Element {
     const lineNumbers = [];
     for (let i = this.props.startLine; i <= this.props.endLine; i++) {
       lineNumbers.push(

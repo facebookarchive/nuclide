@@ -31,7 +31,7 @@ export default class AuthenticationPrompt extends React.Component<void, Props, v
     super(props);
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     // Instructions may contain newlines that need to be converted to <br> tags.
     const safeHtml = this.props.instructions
         .replace(/&/g, '&amp;')

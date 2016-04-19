@@ -24,7 +24,7 @@ export class StatusBarTileComponent extends React.Component {
     super(props);
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     const classes = ['nuclide-busy-signal-status-bar'];
     if (this.props.busy) {
       classes.push('nuclide-busy-signal-status-bar-busy');

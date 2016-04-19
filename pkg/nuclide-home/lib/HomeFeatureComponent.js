@@ -27,7 +27,7 @@ class HomeFeatureComponent extends React.Component {
     command: PropTypes.string,
   };
 
-  render(): ReactElement {
+  render(): React.Element {
     const {title, command} = this.props;
     return (
       <details className="nuclide-home-card">

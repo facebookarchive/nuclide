@@ -461,7 +461,7 @@ export default class QuickSelectionComponent extends React.Component {
     return this.state.resultsByService[serviceName].results[directory].results[itemIndex];
   }
 
-  componentForItem(item: any, serviceName: string, dirName: string): ReactElement {
+  componentForItem(item: any, serviceName: string, dirName: string): React.Element {
     return searchResultManager.getRendererForProvider(serviceName)(
       item,
       serviceName,
@@ -554,7 +554,7 @@ export default class QuickSelectionComponent extends React.Component {
     this.refs['queryInput'].focus();
   }
 
-  _renderTabs(): ReactElement {
+  _renderTabs(): React.Element {
     const tabs = this.state.renderableProviders.map(tab => {
       let keyBinding = null;//TODO
       const humanizedKeybinding = _findKeybindingForAction(tab.action || '', this._modalNode);
@@ -582,7 +582,7 @@ export default class QuickSelectionComponent extends React.Component {
     );
   }
 
-  _renderEmptyMessage(message: string | ReactElement): ReactElement {
+  _renderEmptyMessage(message: string | React.Element): React.Element {
     return (
       <ul className="background-message centered">
         <li>{message}</li>
@@ -603,7 +603,7 @@ export default class QuickSelectionComponent extends React.Component {
     return true;
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     let numTotalResultsRendered = 0;
     const isOmniSearchActive = this.state.activeTab.name === 'OmniSearchResultProvider';
     let numQueriesOutstanding = 0;

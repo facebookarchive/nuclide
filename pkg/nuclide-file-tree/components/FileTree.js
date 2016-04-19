@@ -59,7 +59,7 @@ class FileTree extends React.Component {
     }
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     const classes = {
       'nuclide-file-tree': true,
       'focusable-panel': true,
@@ -74,7 +74,7 @@ class FileTree extends React.Component {
     );
   }
 
-  _renderChildren(): ReactElement {
+  _renderChildren(): React.Element {
     const roots = FileTreeStore.getInstance().roots;
 
     if (roots.isEmpty()) {

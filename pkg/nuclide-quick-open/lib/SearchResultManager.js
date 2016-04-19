@@ -21,11 +21,13 @@ import type {
 
 import type {Dispatcher} from 'flux';
 
-type ResultRenderer = (item: FileResult, serviceName: string, dirName: string) => ReactElement;
+type ResultRenderer =
+  (item: FileResult, serviceName: string, dirName: string) => React.Element;
 
 import invariant from 'assert';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
+import {React} from 'react-for-atom';
 import {
   CompositeDisposable,
   Disposable,

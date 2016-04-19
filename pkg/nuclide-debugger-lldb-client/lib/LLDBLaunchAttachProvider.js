@@ -33,7 +33,7 @@ export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     return ['Attach', 'Launch'];
   }
 
-  getComponent(action: string): ?ReactElement {
+  getComponent(action: string): ?React.Element {
     if (action === 'Launch') {
       return <LaunchUIComponent store={this._store} actions={this._actions} />;
     } else if (action === 'Attach') {

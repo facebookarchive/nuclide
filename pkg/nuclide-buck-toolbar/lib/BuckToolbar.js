@@ -97,7 +97,7 @@ class BuckToolbar extends React.Component {
     return this._buckToolbarStore.loadAliases();
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     const buckToolbarStore = this._buckToolbarStore;
     const disabled = !buckToolbarStore.getBuildTarget() || buckToolbarStore.isBuilding();
     let serverModeCheckbox;

@@ -14,7 +14,7 @@ import {Block} from './Block';
 import {ProgressBar} from './ProgressBar';
 import {LoadingSpinner} from './LoadingSpinner';
 
-const ProgressBarExample = (): ReactElement => (
+const ProgressBarExample = (): React.Element => (
   <div>
     <Block>
       <ProgressBar />
@@ -31,7 +31,7 @@ const ProgressBarExample = (): ReactElement => (
   </div>
 );
 
-const LoadingSpinnerExample = (): ReactElement => (
+const LoadingSpinnerExample = (): React.Element => (
   <div>
     <Block>
       <LoadingSpinner size="EXTRA_SMALL" />

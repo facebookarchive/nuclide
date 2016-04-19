@@ -76,7 +76,7 @@ export class DirectoryEntryComponent extends React.Component {
     }
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     const node = this.props.node;
 
     const outerClassName = classnames('directory entry list-nested-item', {
@@ -181,7 +181,7 @@ export class DirectoryEntryComponent extends React.Component {
     );
   }
 
-  _renderChildren(): ?ReactElement {
+  _renderChildren(): ?React.Element {
     if (!this.props.node.isExpanded) {
       return;
     }

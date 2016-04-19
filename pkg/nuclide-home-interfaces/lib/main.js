@@ -9,14 +9,16 @@
  * the root directory of this source tree.
  */
 
+import {React} from 'react-for-atom';
+
 export type HomeFragments = {
   // A string that a package can publish to the main part of the home panel. This allows for
   // customized welcome messages, but should be used judiciously.
-  welcome?: ReactElement;
+  welcome?: React.Element;
   feature?: {
     title: string;
     icon: string;
-    description: ReactElement | string;
+    description: React.Element | string;
     command?: string;
   };
   priority?: number;

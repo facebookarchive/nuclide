@@ -11,6 +11,8 @@
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
+import {React} from 'react-for-atom';
+
 let uniqueKeySeed = 0;
 
 /**
@@ -59,7 +61,7 @@ class DebuggerLaunchAttachProvider {
   /**
    * Returns the UI component for input debug action.
    */
-  getComponent(action: string): ?ReactElement {
+  getComponent(action: string): ?React.Element {
     throw new Error('abstract method');
   }
 

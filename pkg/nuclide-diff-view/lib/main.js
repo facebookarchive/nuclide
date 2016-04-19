@@ -20,6 +20,7 @@ import type {
 } from '../../nuclide-diff-ui-provider-interfaces';
 
 import {CompositeDisposable, Directory} from 'atom';
+import {React, ReactDOM} from 'react-for-atom';
 import invariant from 'assert';
 import url from 'url';
 import {nuclideFeatures} from '../../../lib/nuclide-features';
@@ -39,7 +40,7 @@ type SerializedDiffViewState = {
 
 let diffViewModel: ?DiffViewModelType = null;
 let activeDiffView: ?{
-  component: ReactComponent;
+  component: React.Component;
   element: HTMLElement;
 }  = null;
 
@@ -78,11 +79,6 @@ function createView(diffEntityOptions: DiffEntityOptions): HTMLElement {
     activateDiffPath(diffEntityOptions);
     return activeDiffView.element;
   }
-
-  const {
-    React,
-    ReactDOM,
-  } = require('react-for-atom');
   const DiffViewElement = require('./DiffViewElement');
   const DiffViewComponent = require('./DiffViewComponent');
 
@@ -167,10 +163,6 @@ function updateToolbarCount(diffViewButton: HTMLElement, count: number): void {
   } else {
     diffViewButton.classList.remove('positive-count');
   }
-  const {
-    React,
-    ReactDOM,
-  } = require('react-for-atom');
   const DiffCountComponent = require('./DiffCountComponent');
   ReactDOM.render(<DiffCountComponent count={count} />, changeCountElement);
 }
@@ -400,7 +392,6 @@ module.exports = {
   },
 
   getHomeFragments(): HomeFragments {
-    const {React} = require('react-for-atom');
     return {
       feature: {
         title: 'Diff View',

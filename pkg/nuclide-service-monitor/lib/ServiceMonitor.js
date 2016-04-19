@@ -63,7 +63,7 @@ export default class ServiceMonitor extends React.Component {
   // TODO(t8579654): Use FixedDataTable.
   // TODO(t8579695): Make it possible to click on a row and console.dir() the arguments so that they
   // can be inspected.
-  render(): ReactElement {
+  render(): React.Element {
     const rows = [];
     const serviceFilter = this.state.serviceFilter.toLowerCase();
     for (const item of this.props.serviceLogger) {

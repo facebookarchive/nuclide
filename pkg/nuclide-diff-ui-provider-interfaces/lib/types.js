@@ -9,8 +9,10 @@
  * the root directory of this source tree.
  */
 
+import {React} from 'react-for-atom';
+
 export type UIElement = {
-  node: ReactElement;
+  node: React.Element;
   bufferRow: number;
 };
 

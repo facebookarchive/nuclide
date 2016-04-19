@@ -39,7 +39,7 @@ type Props = {
 class DiffViewToolbar extends React.Component {
   props: Props;
 
-  render(): ReactElement {
+  render(): React.Element {
     const {diffMode, filePath} = this.props;
     const hasActiveFile = filePath != null && filePath.length > 0;
     const diffModeIds = Object.keys(DiffMode);

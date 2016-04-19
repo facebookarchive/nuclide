@@ -22,7 +22,7 @@ type Props = {
 export default class RecordView extends React.Component {
   props: Props;
 
-  render(): ReactElement {
+  render(): React.Element {
     const {record} = this.props;
     const classNames = classnames(
       'nuclide-console-record',
@@ -46,7 +46,7 @@ export default class RecordView extends React.Component {
 
 }
 
-function renderContent(record: Record): ReactElement {
+function renderContent(record: Record): React.Element {
   if (record.kind === 'request') {
     return <CodeBlock text={record.text} scopeName={record.scopeName} />;
   }

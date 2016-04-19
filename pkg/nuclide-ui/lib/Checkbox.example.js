@@ -15,7 +15,7 @@ import {Checkbox} from './Checkbox';
 
 const NOOP = () => {};
 
-const CheckboxExample = (): ReactElement => (
+const CheckboxExample = (): React.Element => (
   <div>
     <Block>
       <Checkbox

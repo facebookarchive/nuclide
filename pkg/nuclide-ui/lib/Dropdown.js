@@ -48,7 +48,7 @@ export class Dropdown extends React.Component {
     (this: any)._onChange = this._onChange.bind(this);
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     const options = this.props.menuItems.map(item =>
       <option key={item.value} value={item.value}>{item.label}</option>
     );

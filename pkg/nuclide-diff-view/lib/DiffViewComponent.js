@@ -92,7 +92,7 @@ class DiffViewComponent extends React.Component {
   _bottomRightPane: atom$Pane;
   _timelineComponent: ?DiffTimelineView;
   _treePane: atom$Pane;
-  _treeComponent: ReactComponent;
+  _treeComponent: React.Component;
   _navigationPane: atom$Pane;
   _navigationComponent: DiffNavigationBar;
   _commitComponent: ?DiffCommitView;
@@ -414,7 +414,7 @@ class DiffViewComponent extends React.Component {
     this._subscriptions.dispose();
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     let toolbarComponent = null;
     if (this.state.toolbarVisible) {
       const {viewMode} = this.props.diffModel.getState();

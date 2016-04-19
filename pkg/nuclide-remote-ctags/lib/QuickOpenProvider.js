@@ -70,7 +70,7 @@ module.exports = ({
     return false;
   },
 
-  getComponentForItem(uncastedItem: FileResult): ReactElement {
+  getComponentForItem(uncastedItem: FileResult): React.Element {
     const item = ((uncastedItem: any): Result);
     const path = relative(item.dir, item.path);
     let kind, icon;

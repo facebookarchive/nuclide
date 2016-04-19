@@ -27,7 +27,7 @@ type Props = {
   size?: ButtonSize;
   className?: string;
   /** The button's content; generally a string. */
-  children: ReactElement;
+  children: React.Element;
 };
 
 export const ButtonSizes = Object.freeze({

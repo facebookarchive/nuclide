@@ -71,7 +71,7 @@ const FindReferencesView = React.createClass({
     }
   },
 
-  render(): ReactElement {
+  render(): React.Element {
     const children = this.state.references.map((fileRefs, i) =>
       <FileReferencesView
         key={i}

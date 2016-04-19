@@ -65,7 +65,7 @@ const valueRenderers = [
 export class DebuggerDatatipComponent extends React.Component {
   props: DebuggerDatatipComponentProps;
 
-  render(): ?ReactElement {
+  render(): ?React.Element {
     const {
       expression,
       evaluationResult,

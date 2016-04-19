@@ -114,7 +114,7 @@ export default class ConnectionDetailsForm extends React.Component {
     );
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     const activeAuthMethod = authMethods[this.state.selectedAuthMethodIndex];
     // We need native-key-bindings so that delete works and we need
     // _onKeyUp so that escape and enter work

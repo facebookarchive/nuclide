@@ -42,7 +42,7 @@ class TypeHintComponent extends React.Component {
     };
   }
 
-  renderPrimitive(value: string): ReactElement {
+  renderPrimitive(value: string): React.Element {
     const buffer = new TextBuffer(value);
     const {grammar} = this.props;
     return (
@@ -71,7 +71,7 @@ class TypeHintComponent extends React.Component {
     this.forceUpdate();
   }
 
-  renderHierarchical(tree: HintTree): ReactElement {
+  renderHierarchical(tree: HintTree): React.Element {
     if (tree.children == null) {
       return this.renderPrimitive(tree.value);
     }
@@ -101,7 +101,7 @@ class TypeHintComponent extends React.Component {
     );
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     const {content} = this.props;
     if (typeof content === 'string') {
       return this.renderPrimitive(content);

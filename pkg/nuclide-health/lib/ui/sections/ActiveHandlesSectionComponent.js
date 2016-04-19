@@ -43,7 +43,7 @@ export default class ActiveHandlesSectionComponent extends React.Component {
     return topLevelHandles;
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     if (!this.props.activeHandleObjects || this.props.activeHandleObjects.length === 0) {
       return <div />;
     }

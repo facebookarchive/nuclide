@@ -33,7 +33,7 @@ type StateType = {
   connectionsDropdownIndex: number;
   debuggingTypeDropdownIndex: number;
   providerActionsDropdownIndex: number;
-  element: ?ReactElement;
+  element: ?React.Element;
 };
 
 export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, StateType> {
@@ -70,7 +70,7 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
     this.state.connectionsUpdatedDisposable.dispose();
   }
 
-  render(): ReactElement {
+  render(): React.Element {
     const connectionItems = this.state.connections.map((connection, index) => ({
       label: remoteUri.isRemote(connection) ? remoteUri.getHostname(connection) : connection,
       value: index,
