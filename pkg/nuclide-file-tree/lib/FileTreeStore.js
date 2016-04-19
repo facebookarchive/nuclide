@@ -495,7 +495,23 @@ export class FileTreeStore {
   */
   _updateConf(predicate: (conf: StoreConfigData) => mixed): void {
     predicate(this._conf);
-    this._updateRoots(root => root.updateConf());
+    this._updateRoots(root => {
+      return root.updateConf().setRecursive(
+        // Remove selection from hidden nodes under this root
+        node => node.containsSelection && node.containsHidden ? null : node,
+        node => {
+          if (node.shouldBeShown) {
+            return node;
+          }
+
+          // The node is hidden - unselect all nodes under it if there are any
+          return node.setRecursive(
+            subNode => subNode.containsSelection ? null : subNode,
+            subNode => subNode.setIsSelected(false),
+          );
+        }
+      );
+    });
   }
 
   _setRootKeys(rootKeys: Array<NuclideUri>): void {

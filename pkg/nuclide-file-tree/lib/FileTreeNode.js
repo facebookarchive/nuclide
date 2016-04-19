@@ -191,6 +191,7 @@ export class FileTreeNode {
   containsTrackedNode: boolean;
   containsFilterMatches: boolean;
   shownChildrenBelow: number;
+  containsHidden: boolean;
 
   /**
   * The children property is an OrderedMap instance keyed by child's name property.
@@ -237,6 +238,7 @@ export class FileTreeNode {
     let containsTrackedNode = this.isTracked;
     let containsFilterMatches = this.matchesFilter;
     let shownChildrenBelow = this.shouldBeShown ? 1 : 0;
+    let containsHidden = !this.shouldBeShown;
 
     let prevChild = null;
     this.children.forEach(c => {
@@ -263,6 +265,10 @@ export class FileTreeNode {
       if (this.shouldBeShown && this.isExpanded) {
         shownChildrenBelow += c.shownChildrenBelow;
       }
+
+      if (!containsHidden && c.containsHidden) {
+        containsHidden = true;
+      }
     });
     if (prevChild != null) {
       prevChild.nextSibling = null;
@@ -272,6 +278,7 @@ export class FileTreeNode {
     this.containsTrackedNode = containsTrackedNode;
     this.containsFilterMatches = containsFilterMatches;
     this.shownChildrenBelow = shownChildrenBelow;
+    this.containsHidden = containsHidden;
   }
 
   /**
