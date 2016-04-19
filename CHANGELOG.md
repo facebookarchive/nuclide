@@ -1,5 +1,25 @@
 # Nuclide Changelog
 
+## v0.131.0
+
+### Added
+
+* cmd+click on npm packages in `package.json` files to open the package's page on npmjs.com.
+* The file tree will now highlight changes from local git repositories.
+* Test runner "Run in Debug Mode" checkbox.
+
+### Fixed
+
+* UX improvements for the Console window.
+* UX improvements for Commit / Amend / Publish.
+* Remote "Search in Directory" now finds all results.
+
+### Changed
+
+* Improved search in the file-tree. Contributed by Alexander Juarez (@alexjuarez).
+* C++: Hover over 'auto' variable declarations to reveal their type.
+* C++: Automatically update include paths when `TARGETS` files change.
+
 ## v0.130.0
 
 ### Added

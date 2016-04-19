@@ -1,6 +1,6 @@
 {
   "name": "nuclide",
-  "version": "0.130.0",
+  "version": "0.131.0",
   "dependencies": {
     "@reactivex/rxjs": {
       "version": "5.0.0-beta.6",
