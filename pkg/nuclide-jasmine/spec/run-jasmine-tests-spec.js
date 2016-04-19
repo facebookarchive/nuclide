@@ -23,6 +23,12 @@ describe('Jasmine transpile test suite', () => {
   });
 });
 
+describe('Jasmine environment', () => {
+  it('sets the correct NODE_ENV', () => {
+    expect(process.env.NODE_ENV).toEqual('test');
+  });
+});
+
 describe('Jasmine waitsForPromise test suite', () => {
   beforeEach(() => jasmine.useRealClock());
 

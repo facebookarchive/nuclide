@@ -10,22 +10,15 @@
  * the root directory of this source tree.
  */
 
-/*eslint-disable no-var, prefer-const, no-console*/
+/*eslint-disable no-console*/
 
-// Jasmine-node test runner with es6/es7 auto transpiling support.
+// jasmine-node test runner with Atom test globals and babel transpiling support.
 
-// Set NODE_ENV here since `jasmine-node/lib/jasmine-node/cli.js` doesn't set it up.
-if (!process.env.NODE_ENV) {
-  process.env.NODE_ENV = 'test';
-}
-
-// Set this up before we call the jasmine cli.js. The jasmine cli.js does this same
-// trick, but neglects to respect the exit code, so we beat the to the punch.
-function onExit(code) {
-  process.removeListener('exit', onExit);
+// Set this up before we call jasmine-node. jasmine-node does this same trick,
+// but neglects to respect the exit code, so we beat it the to the punch.
+process.once('exit', code => {
   process.exit(code);
-}
-process.on('exit', onExit);
+});
 
 // Load nuclide-node-transpiler to start transpiling.
 require('../../nuclide-node-transpiler');
@@ -38,10 +31,10 @@ require('../lib/unspy');
 require('../lib/faketimer');
 
 try {
-  // This loads the CLI for Jasmine.
+  // This loads the CLI for jasmine-node.
   require('jasmine-node/bin/jasmine-node');
 } catch (e) {
-  // Note that the process.exit(1) works now because of the onExit handler
+  // Note that the process.exit(1) works now because of the "exit" handler
   // installed at the start of this script.
   console.error(e.toString());
   console.error(e.stack);
