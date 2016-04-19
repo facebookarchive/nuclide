@@ -233,8 +233,7 @@ export type ClangDeclarationInfoResult = {
   info?: Array<ClangDeclaration>;
 };
 
-export const ClangCursorTypes: {[key: ClangCursorType]: ClangCursorType} =
-  object.keyMirror(ClangCursorToDeclarationTypes);
+export const ClangCursorTypes = object.keyMirror(ClangCursorToDeclarationTypes);
 
 /**
  * Compiles the specified source file (automatically determining the correct compilation flags).
