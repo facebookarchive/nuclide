@@ -184,7 +184,9 @@ class DebuggerActions {
   }
 
   setError(error: ?string) {
-    require('../../nuclide-logging').getLogger().error(error);
+    if (error != null) {
+      require('../../nuclide-logging').getLogger().error(error);
+    }
     this._dispatcher.dispatch({
       actionType: Constants.Actions.SET_ERROR,
       data: error,
