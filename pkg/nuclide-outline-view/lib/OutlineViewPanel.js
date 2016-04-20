@@ -127,7 +127,7 @@ class OutlineViewPanel {
         initialLength={initialWidth}
         noScroll
         onResize={onResize}>
-        <div style={{display: 'flex', 'flex-direction': 'column', 'width': '100%'}}>
+        <div style={{display: 'flex', flexDirection: 'column', 'width': '100%'}}>
           <OutlineViewHeader />
           <PanelComponentScroller>
             <OutlineView outlines={outlines} />
@@ -153,7 +153,7 @@ class OutlineViewHeader extends React.Component {
     return (
       // Because the container is flex, prevent this header from shrinking smaller than its
       // contents. The default for flex children is to shrink as needed.
-      <div className="panel-heading" style={{'flex-shrink': 0}}>
+      <div className="panel-heading" style={{flexShrink: 0}}>
         <span className="icon icon-list-unordered" />
         Outline View
         <Button

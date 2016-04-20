@@ -40,6 +40,7 @@ describe('TreeNodeComponent', () => {
       onClickArrow: () => {},
       onDoubleClick: () => {},
       onMouseDown: () => {},
+      path: '',
     };
 
     spyOn(props, 'onClick');

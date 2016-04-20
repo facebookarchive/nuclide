@@ -25,9 +25,8 @@ const {
 describe('RadioGroup', () => {
 
   it('honors the selectedIndex param', () => {
-    const props = {optionLabels: ['foo', 'bar'], selectedIndex: 1};
     const component = renderIntoDocument(
-      <RadioGroup {...props} />
+      <RadioGroup optionLabels={['foo', 'bar']} selectedIndex={1} />
     );
     expect(component.props.selectedIndex).toBe(1);
 
@@ -35,8 +34,9 @@ describe('RadioGroup', () => {
       component,
       'input'
     );
-    expect(ReactDOM.findDOMNode(radioInputs[0]).hasAttribute('checked')).toBe(false);
-    expect(ReactDOM.findDOMNode(radioInputs[1]).hasAttribute('checked')).toBe(true);
+
+    expect(ReactDOM.findDOMNode(radioInputs[0]).checked).toBe(false);
+    expect(ReactDOM.findDOMNode(radioInputs[1]).checked).toBe(true);
   });
 
 
