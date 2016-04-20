@@ -19,7 +19,7 @@ import invariant from 'assert';
 const WebInspector: typeof WebInspector = window.WebInspector;
 
 const UnresolvedBreakpointsComponent = React.createClass({
-  _changeHandler: {dispose: () => {}},
+  _changeHandler: ({dispose: () => {}}: IDisposable),
 
   componentWillMount() {
     this._changeHandler = NuclideBridge.onUnresolvedBreakpointsChanged(this._updateState);

@@ -13,7 +13,7 @@
 /* eslint-disable no-unused-vars */
 
 interface IDisposable {
-  dispose(): void;
+  dispose(): mixed;
 }
 
 declare class Worker {
