@@ -88,7 +88,8 @@ type Connection = {
 
 // List of supported methods. Keep in sync with the Python server.
 type ClangServerRequest =
-  'compile' | 'get_completions' | 'get_declaration' | 'get_declaration_info';
+  'compile' | 'get_completions' | 'get_declaration' | 'get_declaration_info' |
+  'get_outline';
 
 export default class ClangServer {
 

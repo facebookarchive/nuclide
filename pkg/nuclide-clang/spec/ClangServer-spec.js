@@ -17,6 +17,28 @@ import ClangServer from '../lib/ClangServer';
 
 const TEST_FILE = path.join(__dirname, 'fixtures', 'test.cpp');
 const FILE_CONTENTS = fs.readFileSync(TEST_FILE).toString('utf8');
+const EXPECTED_FILE_OUTLINE = [
+  {
+    name: 'f',
+    extent: {
+      start: {line: 0, column: 0},
+      end: {line: 1, column: 1},
+    },
+    cursor_kind: 'FUNCTION_DECL',
+    params: [],
+    tparams: [],
+  },
+  {
+    name: 'main',
+    extent: {
+      start: {line: 3, column: 0},
+      end: {line: 7, column: 1},
+    },
+    cursor_kind: 'FUNCTION_DECL',
+    params: [],
+    tparams: [],
+  },
+];
 
 // The test file doesn't need any special flags.
 const mockFlagsManager = ({
@@ -164,6 +186,12 @@ describe('ClangServer', () => {
       expect(info[0].type).toBe('FUNCTION_DECL');
       // May not be consistent between clang versions.
       expect(info[0].cursor_usr).not.toBe(null);
+
+      response = await server.makeRequest('get_outline', null, {
+        contents: FILE_CONTENTS,
+      });
+      invariant(response);
+      expect(response.outline).toEqual(EXPECTED_FILE_OUTLINE);
     });
   });
 

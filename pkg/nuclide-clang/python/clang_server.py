@@ -13,6 +13,7 @@ from clang.cindex import *
 from codecomplete import CompletionCache
 from ctypes import *
 from declarationlocation import get_declaration_location_and_spelling
+import outline
 
 import json
 import getpass
@@ -191,6 +192,8 @@ class Server:
                 self.get_declaration(request, response)
             elif method == 'get_declaration_info':
                 self.get_declaration_info(request, response)
+            elif method == 'get_outline':
+                self.get_outline(request, response)
             else:
                 response[
                     'error'] = 'Unknown method to clang_server.py: %s.' % method
@@ -357,6 +360,16 @@ class Server:
                     break
             return base_name + ' (' + name + ')'
         return name
+
+    def get_outline(self, request, response):
+        contents = request['contents']
+        flags = request['flags']
+        # Note that this does /not/ update the translation unit.
+        # This is intentional, as we do not want to block autocomplete.
+        translation_unit = self._get_translation_unit(contents, flags)
+        if not translation_unit:
+            return
+        response['outline'] = outline.get_outline(translation_unit, self.src)
 
     def _get_translation_unit(self, unsaved_contents, flags=None):
         '''
