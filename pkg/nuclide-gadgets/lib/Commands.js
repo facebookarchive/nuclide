@@ -247,7 +247,7 @@ export default class Commands {
 
     // Replace the placeholder with the real item. We'll add the real item first and then
     // remove the old one so that we don't risk dropping down to zero items.
-    pane.addItem(realItem, index + 1);
+    pane.addItem(realItem, {index: index + 1});
     pane.destroyItem(item);
     if (active) {
       pane.setActiveItem(realItem);

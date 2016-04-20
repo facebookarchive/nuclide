@@ -287,7 +287,7 @@ type atom$PaneSplitSide = 'before' | 'after';
 
 declare class atom$Pane {
   // Items
-  addItem(item: Object, index?: number): Object;
+  addItem(item: Object, options?: {index?: number; pending?: boolean}): Object;
   getItems(): Array<Object>;
   getActiveItem(): ?Object;
   itemAtIndex(index: number): ?Object;
