@@ -26,7 +26,7 @@ function renderEntryComponentIntoDocument(
   componentKlass: Object,
   props: Object = {},
   conf: Object = {}
-): void {
+): HTMLElement {
   const nodeProps = {
     isExpanded: false,
     isLoading: false,

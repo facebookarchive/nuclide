@@ -22,7 +22,7 @@ import type {
 } from '../../nuclide-hack-base/lib/HackService';
 import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
 import type {SymbolTypeValue} from '../../nuclide-hack-common';
-import {TypeCoverageRegion} from './TypedRegions';
+import type {TypeCoverageRegion} from './TypedRegions';
 
 import {Range} from 'atom';
 import {getLogger} from '../../nuclide-logging';

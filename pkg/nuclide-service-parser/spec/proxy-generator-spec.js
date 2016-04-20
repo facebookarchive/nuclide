@@ -18,7 +18,7 @@ import {parseServiceDefinition} from '../lib/service-parser';
 import path from 'path';
 import {__test__} from '../lib/proxy-generator';
 
-import {Type} from '../lib/types';
+import type {Type} from '../lib/types';
 
 import {builtinLocation} from '../lib/builtin-types';
 

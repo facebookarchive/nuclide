@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 import logger from './utils';
 import type {Connection} from './Connection';
 
@@ -112,6 +114,7 @@ export class BreakpointStore {
         const [connection, map] = entry;
         if (map.has(breakpointId)) {
           const connectionIdPromise = map.get(breakpointId);
+          invariant(connectionIdPromise != null);
           map.delete(breakpointId);
           // Ensure we've removed from the connection's map before awaiting.
           return (async () => connection.removeBreakpoint(await connectionIdPromise))();
