@@ -17,9 +17,11 @@ import type {
 import HyperclickForTextEditor from './HyperclickForTextEditor';
 import SuggestionList from './SuggestionList';
 import SuggestionListElement from './SuggestionListElement';
-import getWordTextAndRange from './get-word-text-and-range';
-import {defaultWordRegExpForEditor} from './hyperclick-utils';
-import {array} from '../../nuclide-commons';
+import {
+  defaultWordRegExpForEditor,
+  getWordTextAndRange,
+} from './hyperclick-utils';
+
 import {trackOperationTiming} from '../../nuclide-analytics';
 
 /**
@@ -40,7 +42,7 @@ async function findTruthyReturnValue(fns: Array<void | () => Promise<any>>): Pro
  * Construct this object to enable Hyperclick in the Atom workspace.
  * Call `dispose` to disable the feature.
  */
-class Hyperclick {
+export default class Hyperclick {
   _consumedProviders: Array<HyperclickProvider>;
   _suggestionList: SuggestionList;
   _suggestionListViewSubscription: IDisposable;
@@ -117,7 +119,10 @@ class Hyperclick {
   }
 
   _removeSingleProvider(provider: HyperclickProvider): void {
-    array.remove(this._consumedProviders, provider);
+    const index = this._consumedProviders.indexOf(provider);
+    if (index >= 0) {
+      this._consumedProviders.splice(index, 1);
+    }
   }
 
   /**
@@ -161,5 +166,3 @@ function getProviderName(provider: HyperclickProvider): string {
     return 'unnamed-hyperclick-provider';
   }
 }
-
-module.exports = Hyperclick;

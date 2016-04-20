@@ -17,6 +17,7 @@ export type HyperclickProvider = {
     text: string,
     range: atom$Range,
   ) => Promise<?HyperclickSuggestion>;
+
   wordRegExp?: RegExp;
 
   // Use this to provide a suggestion if it can have non-contiguous ranges.

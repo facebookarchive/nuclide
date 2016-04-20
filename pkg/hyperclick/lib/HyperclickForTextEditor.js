@@ -10,15 +10,15 @@
  */
 
 import type {HyperclickSuggestion} from './types';
-
 import type Hyperclick from './Hyperclick';
 import type {TimingTracker} from '../../nuclide-analytics';
 
-import {Disposable, CompositeDisposable, Point} from 'atom';
+import {CompositeDisposable, Disposable, Point} from 'atom';
+import {getWordTextAndRange} from './hyperclick-utils';
+import invariant from 'assert';
+
 import {trackTiming, startTracking} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
-import getWordTextAndRange from './get-word-text-and-range';
-import invariant from 'assert';
 
 const logger = getLogger();
 
@@ -42,6 +42,7 @@ export default class HyperclickForTextEditor {
   _onKeyUp: (event: SyntheticKeyboardEvent) => void;
   _subscriptions: atom$CompositeDisposable;
   _isDestroyed: boolean;
+  _isLoading: boolean;
   _loadingTracker: ?TimingTracker;
 
   constructor(textEditor: atom$TextEditor, hyperclick: Hyperclick) {
@@ -77,6 +78,7 @@ export default class HyperclickForTextEditor {
     }));
 
     this._isDestroyed = false;
+    this._isLoading = false;
     this._loadingTracker = null;
   }
 
@@ -112,7 +114,7 @@ export default class HyperclickForTextEditor {
   }
 
   _onMouseMove(event: MouseEvent): void {
-    if (this._isLoading()) {
+    if (this._isLoading) {
       // Show the loading cursor.
       this._textEditorView.classList.add('hyperclick-loading');
     }
@@ -207,6 +209,7 @@ export default class HyperclickForTextEditor {
       return;
     }
 
+    this._isLoading = true;
     this._loadingTracker = startTracking('hyperclick-loading');
 
     try {
@@ -329,11 +332,8 @@ export default class HyperclickForTextEditor {
     return process.platform === 'darwin' ? event.metaKey : event.ctrlKey;
   }
 
-  _isLoading(): boolean {
-    return this._loadingTracker != null;
-  }
-
   _doneLoading(): void {
+    this._isLoading = false;
     this._loadingTracker = null;
     this._textEditorView.classList.remove('hyperclick-loading');
   }

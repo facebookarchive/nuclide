@@ -10,18 +10,18 @@
  */
 
 import type {HyperclickProvider} from './types';
-import type HyperclickType from './Hyperclick';
 
 export type {
   HyperclickProvider,
   HyperclickSuggestion,
 } from './types';
 
-let hyperclick: ?HyperclickType = null;
 import {Disposable} from 'atom';
+import Hyperclick from './Hyperclick';
+
+let hyperclick: ?Hyperclick = null;
 
 export function activate() {
-  const Hyperclick = require('./Hyperclick');
   hyperclick = new Hyperclick();
 
   // FB-only: override the symbols-view "Go To Declaration" context menu item

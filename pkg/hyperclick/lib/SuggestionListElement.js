@@ -14,10 +14,7 @@
 import type SuggestionListType from './SuggestionList';
 
 import {CompositeDisposable, Disposable} from 'atom';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import {React, ReactDOM} from 'react-for-atom';
 import invariant from 'assert';
 
 /**
@@ -214,6 +211,6 @@ class SuggestionList extends React.Component {
   }
 }
 
-module.exports = SuggestionListElement = document.registerElement('hyperclick-suggestion-list', {
+export default document.registerElement('hyperclick-suggestion-list', {
   prototype: SuggestionListElement.prototype,
 });
