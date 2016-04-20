@@ -13,6 +13,9 @@
 .*/node_modules/fixed-data-table/internal/.*
 .*/node_modules/sabor/.*
 
+# issues with JSON
+.*/node_modules/json5/.*json
+
 [libs]
 ./pkg/nuclide-external-interfaces/1.0/
 ./pkg/nuclide-debugger-interfaces/WebInspector.js
