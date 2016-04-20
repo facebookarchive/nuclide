@@ -63,10 +63,15 @@ class ProcessOutputView extends React.Component<void, Props, void> {
   }
 
   _handleBufferChange(): void {
-    const el = ReactDOM.findDOMNode(this);
-    // TODO(natthu): Consider scrolling conditionally i.e. don't scroll if user has scrolled up the
-    //               output pane.
-    el.scrollTop = el.scrollHeight;
+    const el = this.refs['process-output-editor'];
+    const model = el && el.getModel();
+    if (model != null) {
+      const shouldScroll =
+        model.getScrollHeight() - (model.getHeight() + model.getScrollTop()) <= 5;
+      if (shouldScroll) {
+        model.scrollToBottom();
+      }
+    }
   }
 
   componentWillUnmount() {
