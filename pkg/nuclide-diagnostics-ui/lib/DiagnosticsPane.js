@@ -220,7 +220,7 @@ class DiagnosticsPane extends React.Component {
           {this.props.showFileName
             ? <Cell
                 style={{width: `${this.state.widths.filePath}px`}}
-                title={plainTextColumnCellRenderer(fileColumnCellDataGetter('filePath', diag))}>
+                title={fileColumnCellDataGetter('filePath', diag)}>
                 {plainTextColumnCellRenderer(fileColumnCellDataGetter('filePath', diag))}
               </Cell>
             : null
