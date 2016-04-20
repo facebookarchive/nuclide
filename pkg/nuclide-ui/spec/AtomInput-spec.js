@@ -15,9 +15,9 @@ const {
   ReactDOM,
 } = require('react-for-atom');
 
-let reactElement;
+let reactElement: any;
 
-function createWithProps(props: any) {
+function createWithProps(props: any): any {
   const hostEl = document.createElement('div');
   return ReactDOM.render(<AtomInput {...props} />, hostEl);
 }
