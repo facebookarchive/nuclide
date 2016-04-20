@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +10,10 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+exports.existingEditorForUri = existingEditorForUri;
 
-import invariant from 'assert';
-import {TextBuffer} from 'atom';
-import {Observable} from '@reactivex/rxjs';
-
-// TODO(most): move to remote-connection/lib/RemoteTextBuffer.js
-import NuclideTextBuffer from '../../nuclide-remote-projects/lib/NuclideTextBuffer';
-import {isLocal} from '../../nuclide-remote-uri';
-import {ServerConnection} from '../../nuclide-remote-connection';
-
-import {event as commonsEvent} from '../../nuclide-commons';
-const {observableFromSubscribeFunction} = commonsEvent;
-
-/**
- * Returns a text editor that has the given path open, or null if none exists. If there are multiple
- * text editors for this path, one is chosen arbitrarily.
- */
-export function existingEditorForUri(path: NuclideUri): ?atom$TextEditor {
-  // This isn't ideal but realistically iterating through even a few hundred editors shouldn't be a
-  // real problem. And if you have more than a few hundred you probably have bigger problems.
-  for (const editor of atom.workspace.getTextEditors()) {
-    if (editor.getPath() === path) {
-      return editor;
-    }
-  }
-
-  return null;
-}
-
-export async function loadBufferForUri(uri: NuclideUri): Promise<atom$TextBuffer> {
-  let buffer = existingBufferForUri(uri);
+var loadBufferForUri = _asyncToGenerator(function* (uri) {
+  var buffer = existingBufferForUri(uri);
   if (buffer == null) {
     buffer = createBufferForUri(uri);
   }
@@ -48,7 +21,7 @@ export async function loadBufferForUri(uri: NuclideUri): Promise<atom$TextBuffer
     return buffer;
   }
   try {
-    await buffer.load();
+    yield buffer.load();
     return buffer;
   } catch (error) {
     atom.project.removeBuffer(buffer);
@@ -59,46 +32,101 @@ export async function loadBufferForUri(uri: NuclideUri): Promise<atom$TextBuffer
 /**
  * Returns an existing buffer for that uri, or create one if not existing.
  */
-export function bufferForUri(uri: NuclideUri): atom$TextBuffer {
-  const buffer = existingBufferForUri(uri);
+);
+
+exports.loadBufferForUri = loadBufferForUri;
+exports.bufferForUri = bufferForUri;
+exports.existingBufferForUri = existingBufferForUri;
+exports.getViewOfEditor = getViewOfEditor;
+exports.getScrollTop = getScrollTop;
+exports.setScrollTop = setScrollTop;
+exports.setPositionAndScroll = setPositionAndScroll;
+exports.getCursorPositions = getCursorPositions;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _atom = require('atom');
+
+var _reactivexRxjs = require('@reactivex/rxjs');
+
+// TODO(most): move to remote-connection/lib/RemoteTextBuffer.js
+
+var _nuclideRemoteProjectsLibNuclideTextBuffer = require('../../nuclide-remote-projects/lib/NuclideTextBuffer');
+
+var _nuclideRemoteProjectsLibNuclideTextBuffer2 = _interopRequireDefault(_nuclideRemoteProjectsLibNuclideTextBuffer);
+
+var _nuclideRemoteUri = require('../../nuclide-remote-uri');
+
+var _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+
+var _nuclideCommons = require('../../nuclide-commons');
+
+var observableFromSubscribeFunction = _nuclideCommons.event.observableFromSubscribeFunction;
+
+/**
+ * Returns a text editor that has the given path open, or null if none exists. If there are multiple
+ * text editors for this path, one is chosen arbitrarily.
+ */
+
+function existingEditorForUri(path) {
+  // This isn't ideal but realistically iterating through even a few hundred editors shouldn't be a
+  // real problem. And if you have more than a few hundred you probably have bigger problems.
+  for (var editor of atom.workspace.getTextEditors()) {
+    if (editor.getPath() === path) {
+      return editor;
+    }
+  }
+
+  return null;
+}
+
+function bufferForUri(uri) {
+  var buffer = existingBufferForUri(uri);
   if (buffer != null) {
     return buffer;
   }
   return createBufferForUri(uri);
 }
 
-function createBufferForUri(uri: NuclideUri): atom$TextBuffer {
-  let buffer;
-  if (isLocal(uri)) {
-    buffer = new TextBuffer({filePath: uri});
+function createBufferForUri(uri) {
+  var buffer = undefined;
+  if ((0, _nuclideRemoteUri.isLocal)(uri)) {
+    buffer = new _atom.TextBuffer({ filePath: uri });
   } else {
-    const connection = ServerConnection.getForUri(uri);
+    var connection = _nuclideRemoteConnection.ServerConnection.getForUri(uri);
     if (connection == null) {
-      throw new Error(`ServerConnection cannot be found for uri: ${uri}`);
+      throw new Error('ServerConnection cannot be found for uri: ' + uri);
     }
-    buffer = new NuclideTextBuffer(connection, {filePath: uri});
+    buffer = new _nuclideRemoteProjectsLibNuclideTextBuffer2['default'](connection, { filePath: uri });
   }
   atom.project.addBuffer(buffer);
-  invariant(buffer);
+  (0, _assert2['default'])(buffer);
   return buffer;
 }
 
 /**
  * Returns an exsting buffer for that uri, or null if not existing.
  */
-export function existingBufferForUri(uri: NuclideUri): ?atom$TextBuffer {
+
+function existingBufferForUri(uri) {
   return atom.project.findBufferForPath(uri);
 }
 
-export function getViewOfEditor(editor: atom$TextEditor): atom$TextEditorElement {
+function getViewOfEditor(editor) {
   return atom.views.getView(editor);
 }
 
-export function getScrollTop(editor: atom$TextEditor): number {
+function getScrollTop(editor) {
   return getViewOfEditor(editor).getScrollTop();
 }
 
-export function setScrollTop(editor: atom$TextEditor, scrollTop: number): void {
+function setScrollTop(editor, scrollTop) {
   getViewOfEditor(editor).setScrollTop(scrollTop);
 }
 
@@ -109,23 +137,19 @@ export function setScrollTop(editor: atom$TextEditor, scrollTop: number): void {
  * Can be used with editor.getCursorBufferPosition() & getScrollTop() to restore
  * an editors cursor and scroll.
  */
-export function setPositionAndScroll(
-  editor: atom$TextEditor,
-  position: atom$Point,
-  scrollTop: number,
-): void {
-  editor.setCursorBufferPosition(position, {autoscroll: false});
+
+function setPositionAndScroll(editor, position, scrollTop) {
+  editor.setCursorBufferPosition(position, { autoscroll: false });
   setScrollTop(editor, scrollTop);
 }
 
-export function getCursorPositions(editor: atom$TextEditor): Observable<atom$Point> {
+function getCursorPositions(editor) {
   // This will behave strangely in the face of multiple cursors. Consider supporting multiple
   // cursors in the future.
-  const cursor = editor.getCursors()[0];
-  invariant(cursor != null);
-  return Observable.merge(
-    Observable.of(cursor.getBufferPosition()),
-    observableFromSubscribeFunction(cursor.onDidChangePosition.bind(cursor))
-      .map(event => event.newBufferPosition),
-  );
+  var cursor = editor.getCursors()[0];
+  (0, _assert2['default'])(cursor != null);
+  return _reactivexRxjs.Observable.merge(_reactivexRxjs.Observable.of(cursor.getBufferPosition()), observableFromSubscribeFunction(cursor.onDidChangePosition.bind(cursor)).map(function (event) {
+    return event.newBufferPosition;
+  }));
 }
+//# sourceMappingURL=data:application/json;base64,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aUIsRUFBUTtBQUM3RSxpQkFBZSxDQUFDLE1BQU0sQ0FBQyxDQUFDLFlBQVksQ0FBQyxTQUFTLENBQUMsQ0FBQztDQUNqRDs7Ozs7Ozs7OztBQVNNLFNBQVMsb0JBQW9CLENBQ2xDLE1BQXVCLEVBQ3ZCLFFBQW9CLEVBQ3BCLFNBQWlCLEVBQ1g7QUFDTixRQUFNLENBQUMsdUJBQXVCLENBQUMsUUFBUSxFQUFFLEVBQUMsVUFBVSxFQUFFLEtBQUssRUFBQyxDQUFDLENBQUM7QUFDOUQsY0FBWSxDQUFDLE1BQU0sRUFBRSxTQUFTLENBQUMsQ0FBQztDQUNqQzs7QUFFTSxTQUFTLGtCQUFrQixDQUFDLE1BQXVCLEVBQTBCOzs7QUFHbEYsTUFBTSxNQUFNLEdBQUcsTUFBTSxDQUFDLFVBQVUsRUFBRSxDQUFDLENBQUMsQ0FBQyxDQUFDO0FBQ3RDLDJCQUFVLE1BQU0sSUFBSSxJQUFJLENBQUMsQ0FBQztBQUMxQixTQUFPLDBCQUFXLEtBQUssQ0FDckIsMEJBQVcsRUFBRSxDQUFDLE1BQU0sQ0FBQyxpQkFBaUIsRUFBRSxDQUFDLEVBQ3pDLCtCQUErQixDQUFDLE1BQU0sQ0FBQyxtQkFBbUIsQ0FBQyxJQUFJLENBQUMsTUFBTSxDQUFDLENBQUMsQ0FDckUsR0FBRyxDQUFDLFVBQUEsS0FBSztXQUFJLEtBQUssQ0FBQyxpQkFBaUI7R0FBQSxDQUFDLENBQ3pDLENBQUM7Q0FDSCIsImZpbGUiOiJ0ZXh0LWVkaXRvci5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtOdWNsaWRlVXJpfSBmcm9tICcuLi8uLi9udWNsaWRlLXJlbW90ZS11cmknO1xuXG5pbXBvcnQgaW52YXJpYW50IGZyb20gJ2Fzc2VydCc7XG5pbXBvcnQge1RleHRCdWZmZXJ9IGZyb20gJ2F0b20nO1xuaW1wb3J0IHtPYnNlcnZhYmxlfSBmcm9tICdAcmVhY3RpdmV4L3J4anMnO1xuXG4vLyBUT0RPKG1vc3QpOiBtb3ZlIHRvIHJlbW90ZS1jb25uZWN0aW9uL2xpYi9SZW1vdGVUZXh0QnVmZmVyLmpzXG5pbXBvcnQgTnVjbGlkZVRleHRCdWZmZXIgZnJvbSAnLi4vLi4vbnVjbGlkZS1yZW1vdGUtcHJvamVjdHMvbGliL051Y2xpZGVUZXh0QnVmZmVyJztcbmltcG9ydCB7aXNMb2NhbH0gZnJvbSAnLi4vLi4vbnVjbGlkZS1yZW1vdGUtdXJpJztcbmltcG9ydCB7U2VydmVyQ29ubmVjdGlvbn0gZnJvbSAnLi4vLi4vbnVjbGlkZS1yZW1vdGUtY29ubmVjdGlvbic7XG5cbmltcG9ydCB7ZXZlbnQgYXMgY29tbW9uc0V2ZW50fSBmcm9tICcuLi8uLi9udWNsaWRlLWNvbW1vbnMnO1xuY29uc3Qge29ic2VydmFibGVGcm9tU3Vic2NyaWJlRnVuY3Rpb259ID0gY29tbW9uc0V2ZW50O1xuXG4vKipcbiAqIFJldHVybnMgYSB0ZXh0IGVkaXRvciB0aGF0IGhhcyB0aGUgZ2l2ZW4gcGF0aCBvcGVuLCBvciBudWxsIGlmIG5vbmUgZXhpc3RzLiBJZiB0aGVyZSBhcmUgbXVsdGlwbGVcbiAqIHRleHQgZWRpdG9ycyBmb3IgdGhpcyBwYXRoLCBvbmUgaXMgY2hvc2VuIGFyYml0cmFyaWx5LlxuICovXG5leHBvcnQgZnVuY3Rpb24gZXhpc3RpbmdFZGl0b3JGb3JVcmkocGF0aDogTnVjbGlkZVVyaSk6ID9hdG9tJFRleHRFZGl0b3Ige1xuICAvLyBUaGlzIGlzbid0IGlkZWFsIGJ1dCByZWFsaXN0aWNhbGx5IGl0ZXJhdGluZyB0aHJvdWdoIGV2ZW4gYSBmZXcgaHVuZHJlZCBlZGl0b3JzIHNob3VsZG4ndCBiZSBhXG4gIC8vIHJlYWwgcHJvYmxlbS4gQW5kIGlmIHlvdSBoYXZlIG1vcmUgdGhhbiBhIGZldyBodW5kcmVkIHlvdSBwcm9iYWJseSBoYXZlIGJpZ2dlciBwcm9ibGVtcy5cbiAgZm9yIChjb25zdCBlZGl0b3Igb2YgYXRvbS53b3Jrc3BhY2UuZ2V0VGV4dEVkaXRvcnMoKSkge1xuICAgIGlmIChlZGl0b3IuZ2V0UGF0aCgpID09PSBwYXRoKSB7XG4gICAgICByZXR1cm4gZWRpdG9yO1xuICAgIH1cbiAgfVxuXG4gIHJldHVybiBudWxsO1xufVxuXG5leHBvcnQgYXN5bmMgZnVuY3Rpb24gbG9hZEJ1ZmZlckZvclVyaSh1cmk6IE51Y2xpZGVVcmkpOiBQcm9taXNlPGF0b20kVGV4dEJ1ZmZlcj4ge1xuICBsZXQgYnVmZmVyID0gZXhpc3RpbmdCdWZmZXJGb3JVcmkodXJpKTtcbiAgaWYgKGJ1ZmZlciA9PSBudWxsKSB7XG4gICAgYnVmZmVyID0gY3JlYXRlQnVmZmVyRm9yVXJpKHVyaSk7XG4gIH1cbiAgaWYgKGJ1ZmZlci5sb2FkZWQpIHtcbiAgICByZXR1cm4gYnVmZmVyO1xuICB9XG4gIHRyeSB7XG4gICAgYXdhaXQgYnVmZmVyLmxvYWQoKTtcbiAgICByZXR1cm4gYnVmZmVyO1xuICB9IGNhdGNoIChlcnJvcikge1xuICAgIGF0b20ucHJvamVjdC5yZW1vdmVCdWZmZXIoYnVmZmVyKTtcbiAgICB0aHJvdyBlcnJvcjtcbiAgfVxufVxuXG4vKipcbiAqIFJldHVybnMgYW4gZXhpc3RpbmcgYnVmZmVyIGZvciB0aGF0IHVyaSwgb3IgY3JlYXRlIG9uZSBpZiBub3QgZXhpc3RpbmcuXG4gKi9cbmV4cG9ydCBmdW5jdGlvbiBidWZmZXJGb3JVcmkodXJpOiBOdWNsaWRlVXJpKTogYXRvbSRUZXh0QnVmZmVyIHtcbiAgY29uc3QgYnVmZmVyID0gZXhpc3RpbmdCdWZmZXJGb3JVcmkodXJpKTtcbiAgaWYgKGJ1ZmZlciAhPSBudWxsKSB7XG4gICAgcmV0dXJuIGJ1ZmZlcjtcbiAgfVxuICByZXR1cm4gY3JlYXRlQnVmZmVyRm9yVXJpKHVyaSk7XG59XG5cbmZ1bmN0aW9uIGNyZWF0ZUJ1ZmZlckZvclVyaSh1cmk6IE51Y2xpZGVVcmkpOiBhdG9tJFRleHRCdWZmZXIge1xuICBsZXQgYnVmZmVyO1xuICBpZiAoaXNMb2NhbCh1cmkpKSB7XG4gICAgYnVmZmVyID0gbmV3IFRleHRCdWZmZXIoe2ZpbGVQYXRoOiB1cml9KTtcbiAgfSBlbHNlIHtcbiAgICBjb25zdCBjb25uZWN0aW9uID0gU2VydmVyQ29ubmVjdGlvbi5nZXRGb3JVcmkodXJpKTtcbiAgICBpZiAoY29ubmVjdGlvbiA9PSBudWxsKSB7XG4gICAgICB0aHJvdyBuZXcgRXJyb3IoYFNlcnZlckNvbm5lY3Rpb24gY2Fubm90IGJlIGZvdW5kIGZvciB1cmk6ICR7dXJpfWApO1xuICAgIH1cbiAgICBidWZmZXIgPSBuZXcgTnVjbGlkZVRleHRCdWZmZXIoY29ubmVjdGlvbiwge2ZpbGVQYXRoOiB1cml9KTtcbiAgfVxuICBhdG9tLnByb2plY3QuYWRkQnVmZmVyKGJ1ZmZlcik7XG4gIGludmFyaWFudChidWZmZXIpO1xuICByZXR1cm4gYnVmZmVyO1xufVxuXG4vKipcbiAqIFJldHVybnMgYW4gZXhzdGluZyBidWZmZXIgZm9yIHRoYXQgdXJpLCBvciBudWxsIGlmIG5vdCBleGlzdGluZy5cbiAqL1xuZXhwb3J0IGZ1bmN0aW9uIGV4aXN0aW5nQnVmZmVyRm9yVXJpKHVyaTogTnVjbGlkZVVyaSk6ID9hdG9tJFRleHRCdWZmZXIge1xuICByZXR1cm4gYXRvbS5wcm9qZWN0LmZpbmRCdWZmZXJGb3JQYXRoKHVyaSk7XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBnZXRWaWV3T2ZFZGl0b3IoZWRpdG9yOiBhdG9tJFRleHRFZGl0b3IpOiBhdG9tJFRleHRFZGl0b3JFbGVtZW50IHtcbiAgcmV0dXJuIGF0b20udmlld3MuZ2V0VmlldyhlZGl0b3IpO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gZ2V0U2Nyb2xsVG9wKGVkaXRvcjogYXRvbSRUZXh0RWRpdG9yKTogbnVtYmVyIHtcbiAgcmV0dXJuIGdldFZpZXdPZkVkaXRvcihlZGl0b3IpLmdldFNjcm9sbFRvcCgpO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gc2V0U2Nyb2xsVG9wKGVkaXRvcjogYXRvbSRUZXh0RWRpdG9yLCBzY3JvbGxUb3A6IG51bWJlcik6IHZvaWQge1xuICBnZXRWaWV3T2ZFZGl0b3IoZWRpdG9yKS5zZXRTY3JvbGxUb3Aoc2Nyb2xsVG9wKTtcbn1cblxuLyoqXG4gKiBEb2VzIGEgYmVzdCBlZmZvcnQgdG8gc2V0IGFuIGVkaXRvciBwYW5lIHRvIGEgZ2l2ZW4gY3Vyc29yIHBvc2l0aW9uICYgc2Nyb2xsLlxuICogRG9lcyBub3QgZW5zdXJlIHRoYXQgdGhlIGN1cnJlbnQgY3Vyc29yIHBvc2l0aW9uIGlzIHZpc2libGUuXG4gKlxuICogQ2FuIGJlIHVzZWQgd2l0aCBlZGl0b3IuZ2V0Q3Vyc29yQnVmZmVyUG9zaXRpb24oKSAmIGdldFNjcm9sbFRvcCgpIHRvIHJlc3RvcmVcbiAqIGFuIGVkaXRvcnMgY3Vyc29yIGFuZCBzY3JvbGwuXG4gKi9cbmV4cG9ydCBmdW5jdGlvbiBzZXRQb3NpdGlvbkFuZFNjcm9sbChcbiAgZWRpdG9yOiBhdG9tJFRleHRFZGl0b3IsXG4gIHBvc2l0aW9uOiBhdG9tJFBvaW50LFxuICBzY3JvbGxUb3A6IG51bWJlcixcbik6IHZvaWQge1xuICBlZGl0b3Iuc2V0Q3Vyc29yQnVmZmVyUG9zaXRpb24ocG9zaXRpb24sIHthdXRvc2Nyb2xsOiBmYWxzZX0pO1xuICBzZXRTY3JvbGxUb3AoZWRpdG9yLCBzY3JvbGxUb3ApO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gZ2V0Q3Vyc29yUG9zaXRpb25zKGVkaXRvcjogYXRvbSRUZXh0RWRpdG9yKTogT2JzZXJ2YWJsZTxhdG9tJFBvaW50PiB7XG4gIC8vIFRoaXMgd2lsbCBiZWhhdmUgc3RyYW5nZWx5IGluIHRoZSBmYWNlIG9mIG11bHRpcGxlIGN1cnNvcnMuIENvbnNpZGVyIHN1cHBvcnRpbmcgbXVsdGlwbGVcbiAgLy8gY3Vyc29ycyBpbiB0aGUgZnV0dXJlLlxuICBjb25zdCBjdXJzb3IgPSBlZGl0b3IuZ2V0Q3Vyc29ycygpWzBdO1xuICBpbnZhcmlhbnQoY3Vyc29yICE9IG51bGwpO1xuICByZXR1cm4gT2JzZXJ2YWJsZS5tZXJnZShcbiAgICBPYnNlcnZhYmxlLm9mKGN1cnNvci5nZXRCdWZmZXJQb3NpdGlvbigpKSxcbiAgICBvYnNlcnZhYmxlRnJvbVN1YnNjcmliZUZ1bmN0aW9uKGN1cnNvci5vbkRpZENoYW5nZVBvc2l0aW9uLmJpbmQoY3Vyc29yKSlcbiAgICAgIC5tYXAoZXZlbnQgPT4gZXZlbnQubmV3QnVmZmVyUG9zaXRpb24pLFxuICApO1xufVxuIl19

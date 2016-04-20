@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,48 +12,40 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
+var _classnames = require('classnames');
 
-type LoadingSpinnerSize = 'EXTRA_SMALL' | 'SMALL' | 'MEDIUM' | 'LARGE';
-type Props = {
-  className? : string;
-  /** The size of the LoadingSpinner. Defaults to MEDIUM. */
-  size?: LoadingSpinnerSize;
-};
+var _classnames2 = _interopRequireDefault(_classnames);
 
-export const LoadingSpinnerSizes = Object.freeze({
+var _reactForAtom = require('react-for-atom');
+
+var LoadingSpinnerSizes = Object.freeze({
   EXTRA_SMALL: 'EXTRA_SMALL',
   SMALL: 'SMALL',
   MEDIUM: 'MEDIUM',
-  LARGE: 'LARGE',
+  LARGE: 'LARGE'
 });
 
-const LoadingSpinnerClassnames = Object.freeze({
+exports.LoadingSpinnerSizes = LoadingSpinnerSizes;
+var LoadingSpinnerClassnames = Object.freeze({
   EXTRA_SMALL: 'loading-spinner-tiny',
   SMALL: 'loading-spinner-small',
   MEDIUM: 'loading-spinner-medium',
-  LARGE: 'loading-spinner-large',
+  LARGE: 'loading-spinner-large'
 });
 
 /**
  * Shows an indefinite, animated LoadingSpinner.
  */
-export const LoadingSpinner = (props: Props): React.Element => {
-  const {
-    className,
-    size,
-  } = props;
-  const safeSize = size != null && LoadingSpinnerSizes.hasOwnProperty(size)
-    ? size
-    : LoadingSpinnerSizes.MEDIUM;
-  const sizeClassname = LoadingSpinnerClassnames[safeSize];
-  const newClassName = classnames(
-    className,
-    'loading',
-    sizeClassname,
-  );
-  return (
-    <div className={newClassName} />
-  );
+var LoadingSpinner = function LoadingSpinner(props) {
+  var className = props.className;
+  var size = props.size;
+
+  var safeSize = size != null && LoadingSpinnerSizes.hasOwnProperty(size) ? size : LoadingSpinnerSizes.MEDIUM;
+  var sizeClassname = LoadingSpinnerClassnames[safeSize];
+  var newClassName = (0, _classnames2['default'])(className, 'loading', sizeClassname);
+  return _reactForAtom.React.createElement('div', { className: newClassName });
 };
+exports.LoadingSpinner = LoadingSpinner;
+
+/** The size of the LoadingSpinner. Defaults to MEDIUM. */
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkxvYWRpbmdTcGlubmVyLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7OzBCQVd1QixZQUFZOzs7OzRCQUNmLGdCQUFnQjs7QUFTN0IsSUFBTSxtQkFBbUIsR0FBRyxNQUFNLENBQUMsTUFBTSxDQUFDO0FBQy9DLGFBQVcsRUFBRSxhQUFhO0FBQzFCLE9BQUssRUFBRSxPQUFPO0FBQ2QsUUFBTSxFQUFFLFFBQVE7QUFDaEIsT0FBSyxFQUFFLE9BQU87Q0FDZixDQUFDLENBQUM7OztBQUVILElBQU0sd0JBQXdCLEdBQUcsTUFBTSxDQUFDLE1BQU0sQ0FBQztBQUM3QyxhQUFXLEVBQUUsc0JBQXNCO0FBQ25DLE9BQUssRUFBRSx1QkFBdUI7QUFDOUIsUUFBTSxFQUFFLHdCQUF3QjtBQUNoQyxPQUFLLEVBQUUsdUJBQXVCO0NBQy9CLENBQUMsQ0FBQzs7Ozs7QUFLSSxJQUFNLGNBQWMsR0FBRyxTQUFqQixjQUFjLENBQUksS0FBSyxFQUEyQjtNQUUzRCxTQUFTLEdBRVAsS0FBSyxDQUZQLFNBQVM7TUFDVCxJQUFJLEdBQ0YsS0FBSyxDQURQLElBQUk7O0FBRU4sTUFBTSxRQUFRLEdBQUcsSUFBSSxJQUFJLElBQUksSUFBSSxtQkFBbUIsQ0FBQyxjQUFjLENBQUMsSUFBSSxDQUFDLEdBQ3JFLElBQUksR0FDSixtQkFBbUIsQ0FBQyxNQUFNLENBQUM7QUFDL0IsTUFBTSxhQUFhLEdBQUcsd0JBQXdCLENBQUMsUUFBUSxDQUFDLENBQUM7QUFDekQsTUFBTSxZQUFZLEdBQUcsNkJBQ25CLFNBQVMsRUFDVCxTQUFTLEVBQ1QsYUFBYSxDQUNkLENBQUM7QUFDRixTQUNFLDJDQUFLLFNBQVMsRUFBRSxZQUFZLEFBQUMsR0FBRyxDQUNoQztDQUNILENBQUMiLCJmaWxlIjoiTG9hZGluZ1NwaW5uZXIuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgY2xhc3NuYW1lcyBmcm9tICdjbGFzc25hbWVzJztcbmltcG9ydCB7UmVhY3R9IGZyb20gJ3JlYWN0LWZvci1hdG9tJztcblxudHlwZSBMb2FkaW5nU3Bpbm5lclNpemUgPSAnRVhUUkFfU01BTEwnIHwgJ1NNQUxMJyB8ICdNRURJVU0nIHwgJ0xBUkdFJztcbnR5cGUgUHJvcHMgPSB7XG4gIGNsYXNzTmFtZT8gOiBzdHJpbmc7XG4gIC8qKiBUaGUgc2l6ZSBvZiB0aGUgTG9hZGluZ1NwaW5uZXIuIERlZmF1bHRzIHRvIE1FRElVTS4gKi9cbiAgc2l6ZT86IExvYWRpbmdTcGlubmVyU2l6ZTtcbn07XG5cbmV4cG9ydCBjb25zdCBMb2FkaW5nU3Bpbm5lclNpemVzID0gT2JqZWN0LmZyZWV6ZSh7XG4gIEVYVFJBX1NNQUxMOiAnRVhUUkFfU01BTEwnLFxuICBTTUFMTDogJ1NNQUxMJyxcbiAgTUVESVVNOiAnTUVESVVNJyxcbiAgTEFSR0U6ICdMQVJHRScsXG59KTtcblxuY29uc3QgTG9hZGluZ1NwaW5uZXJDbGFzc25hbWVzID0gT2JqZWN0LmZyZWV6ZSh7XG4gIEVYVFJBX1NNQUxMOiAnbG9hZGluZy1zcGlubmVyLXRpbnknLFxuICBTTUFMTDogJ2xvYWRpbmctc3Bpbm5lci1zbWFsbCcsXG4gIE1FRElVTTogJ2xvYWRpbmctc3Bpbm5lci1tZWRpdW0nLFxuICBMQVJHRTogJ2xvYWRpbmctc3Bpbm5lci1sYXJnZScsXG59KTtcblxuLyoqXG4gKiBTaG93cyBhbiBpbmRlZmluaXRlLCBhbmltYXRlZCBMb2FkaW5nU3Bpbm5lci5cbiAqL1xuZXhwb3J0IGNvbnN0IExvYWRpbmdTcGlubmVyID0gKHByb3BzOiBQcm9wcyk6IFJlYWN0LkVsZW1lbnQgPT4ge1xuICBjb25zdCB7XG4gICAgY2xhc3NOYW1lLFxuICAgIHNpemUsXG4gIH0gPSBwcm9wcztcbiAgY29uc3Qgc2FmZVNpemUgPSBzaXplICE9IG51bGwgJiYgTG9hZGluZ1NwaW5uZXJTaXplcy5oYXNPd25Qcm9wZXJ0eShzaXplKVxuICAgID8gc2l6ZVxuICAgIDogTG9hZGluZ1NwaW5uZXJTaXplcy5NRURJVU07XG4gIGNvbnN0IHNpemVDbGFzc25hbWUgPSBMb2FkaW5nU3Bpbm5lckNsYXNzbmFtZXNbc2FmZVNpemVdO1xuICBjb25zdCBuZXdDbGFzc05hbWUgPSBjbGFzc25hbWVzKFxuICAgIGNsYXNzTmFtZSxcbiAgICAnbG9hZGluZycsXG4gICAgc2l6ZUNsYXNzbmFtZSxcbiAgKTtcbiAgcmV0dXJuIChcbiAgICA8ZGl2IGNsYXNzTmFtZT17bmV3Q2xhc3NOYW1lfSAvPlxuICApO1xufTtcbiJdfQ==

@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +12,26 @@
  * the root directory of this source tree.
  */
 
-import BaseSession from '../VendorLib/node-inspector/lib/session';
-import util from 'util';
+var _VendorLibNodeInspectorLibSession = require('../VendorLib/node-inspector/lib/session');
+
+var _VendorLibNodeInspectorLibSession2 = _interopRequireDefault(_VendorLibNodeInspectorLibSession);
+
+var _util = require('util');
+
+var _util2 = _interopRequireDefault(_util);
 
 /**
  * A custom version of node-inspector's Session that ignores commands that we don't support. (We
  * do this here so we can pull in new versions of node-inspector without having to worry about what
  * modifications we've made to the source.)
  */
-function CustomSession(config: Object, debuggerPort: number, wsConnection: ws$WebSocket): void {
-  BaseSession.call(this, config, debuggerPort, wsConnection);
-  this.frontendCommandHandler._registerNoopCommands(
-    'Emulation.canEmulate',
-    'Network.setMonitoringXHREnabled',
-    'Worker.enable',
-    'ServiceWorker.enable',
-    'Emulation.setScriptExecutionDisabled',
-    'Page.setOverlayMessage',
-  );
+function CustomSession(config, debuggerPort, wsConnection) {
+  _VendorLibNodeInspectorLibSession2['default'].call(this, config, debuggerPort, wsConnection);
+  this.frontendCommandHandler._registerNoopCommands('Emulation.canEmulate', 'Network.setMonitoringXHREnabled', 'Worker.enable', 'ServiceWorker.enable', 'Emulation.setScriptExecutionDisabled', 'Page.setOverlayMessage');
 }
 
-util.inherits(CustomSession, BaseSession);
+_util2['default'].inherits(CustomSession, _VendorLibNodeInspectorLibSession2['default']);
 
-export const Session = ((CustomSession: any): Class<BaseSession>);
+var Session = CustomSession;
+exports.Session = Session;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlNlc3Npb24uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Z0RBV3dCLHlDQUF5Qzs7OztvQkFDaEQsTUFBTTs7Ozs7Ozs7O0FBT3ZCLFNBQVMsYUFBYSxDQUFDLE1BQWMsRUFBRSxZQUFvQixFQUFFLFlBQTBCLEVBQVE7QUFDN0YsZ0RBQVksSUFBSSxDQUFDLElBQUksRUFBRSxNQUFNLEVBQUUsWUFBWSxFQUFFLFlBQVksQ0FBQyxDQUFDO0FBQzNELE1BQUksQ0FBQyxzQkFBc0IsQ0FBQyxxQkFBcUIsQ0FDL0Msc0JBQXNCLEVBQ3RCLGlDQUFpQyxFQUNqQyxlQUFlLEVBQ2Ysc0JBQXNCLEVBQ3RCLHNDQUFzQyxFQUN0Qyx3QkFBd0IsQ0FDekIsQ0FBQztDQUNIOztBQUVELGtCQUFLLFFBQVEsQ0FBQyxhQUFhLGdEQUFjLENBQUM7O0FBRW5DLElBQU0sT0FBTyxHQUFLLGFBQWEsQUFBMkIsQ0FBQyIsImZpbGUiOiJTZXNzaW9uLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IEJhc2VTZXNzaW9uIGZyb20gJy4uL1ZlbmRvckxpYi9ub2RlLWluc3BlY3Rvci9saWIvc2Vzc2lvbic7XG5pbXBvcnQgdXRpbCBmcm9tICd1dGlsJztcblxuLyoqXG4gKiBBIGN1c3RvbSB2ZXJzaW9uIG9mIG5vZGUtaW5zcGVjdG9yJ3MgU2Vzc2lvbiB0aGF0IGlnbm9yZXMgY29tbWFuZHMgdGhhdCB3ZSBkb24ndCBzdXBwb3J0LiAoV2VcbiAqIGRvIHRoaXMgaGVyZSBzbyB3ZSBjYW4gcHVsbCBpbiBuZXcgdmVyc2lvbnMgb2Ygbm9kZS1pbnNwZWN0b3Igd2l0aG91dCBoYXZpbmcgdG8gd29ycnkgYWJvdXQgd2hhdFxuICogbW9kaWZpY2F0aW9ucyB3ZSd2ZSBtYWRlIHRvIHRoZSBzb3VyY2UuKVxuICovXG5mdW5jdGlvbiBDdXN0b21TZXNzaW9uKGNvbmZpZzogT2JqZWN0LCBkZWJ1Z2dlclBvcnQ6IG51bWJlciwgd3NDb25uZWN0aW9uOiB3cyRXZWJTb2NrZXQpOiB2b2lkIHtcbiAgQmFzZVNlc3Npb24uY2FsbCh0aGlzLCBjb25maWcsIGRlYnVnZ2VyUG9ydCwgd3NDb25uZWN0aW9uKTtcbiAgdGhpcy5mcm9udGVuZENvbW1hbmRIYW5kbGVyLl9yZWdpc3Rlck5vb3BDb21tYW5kcyhcbiAgICAnRW11bGF0aW9uLmNhbkVtdWxhdGUnLFxuICAgICdOZXR3b3JrLnNldE1vbml0b3JpbmdYSFJFbmFibGVkJyxcbiAgICAnV29ya2VyLmVuYWJsZScsXG4gICAgJ1NlcnZpY2VXb3JrZXIuZW5hYmxlJyxcbiAgICAnRW11bGF0aW9uLnNldFNjcmlwdEV4ZWN1dGlvbkRpc2FibGVkJyxcbiAgICAnUGFnZS5zZXRPdmVybGF5TWVzc2FnZScsXG4gICk7XG59XG5cbnV0aWwuaW5oZXJpdHMoQ3VzdG9tU2Vzc2lvbiwgQmFzZVNlc3Npb24pO1xuXG5leHBvcnQgY29uc3QgU2Vzc2lvbiA9ICgoQ3VzdG9tU2Vzc2lvbjogYW55KTogQ2xhc3M8QmFzZVNlc3Npb24+KTtcbiJdfQ==

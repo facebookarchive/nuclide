@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +8,14 @@
  * the root directory of this source tree.
  */
 
-import type {Collection} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
+var getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
+var getJSXIdentifiers = require('./getJSXIdentifiers');
 
-const getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
-const getJSXIdentifiers = require('./getJSXIdentifiers');
-
-function getUndeclaredJSXIdentifiers(
-  root: Collection,
-  options: SourceOptions
-): Set<string> {
-  const declaredIdentifiers = getDeclaredIdentifiers(root, options);
-  const jsxIdentifiers = getJSXIdentifiers(root);
-  const undeclared = new Set();
-  for (const id of jsxIdentifiers) {
+function getUndeclaredJSXIdentifiers(root, options) {
+  var declaredIdentifiers = getDeclaredIdentifiers(root, options);
+  var jsxIdentifiers = getJSXIdentifiers(root);
+  var undeclared = new Set();
+  for (var id of jsxIdentifiers) {
     if (!declaredIdentifiers.has(id)) {
       undeclared.add(id);
     }
@@ -31,3 +24,4 @@ function getUndeclaredJSXIdentifiers(
 }
 
 module.exports = getUndeclaredJSXIdentifiers;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImdldFVuZGVjbGFyZWRKU1hJZGVudGlmaWVycy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBY0EsSUFBTSxzQkFBc0IsR0FBRyxPQUFPLENBQUMsMEJBQTBCLENBQUMsQ0FBQztBQUNuRSxJQUFNLGlCQUFpQixHQUFHLE9BQU8sQ0FBQyxxQkFBcUIsQ0FBQyxDQUFDOztBQUV6RCxTQUFTLDJCQUEyQixDQUNsQyxJQUFnQixFQUNoQixPQUFzQixFQUNUO0FBQ2IsTUFBTSxtQkFBbUIsR0FBRyxzQkFBc0IsQ0FBQyxJQUFJLEVBQUUsT0FBTyxDQUFDLENBQUM7QUFDbEUsTUFBTSxjQUFjLEdBQUcsaUJBQWlCLENBQUMsSUFBSSxDQUFDLENBQUM7QUFDL0MsTUFBTSxVQUFVLEdBQUcsSUFBSSxHQUFHLEVBQUUsQ0FBQztBQUM3QixPQUFLLElBQU0sRUFBRSxJQUFJLGNBQWMsRUFBRTtBQUMvQixRQUFJLENBQUMsbUJBQW1CLENBQUMsR0FBRyxDQUFDLEVBQUUsQ0FBQyxFQUFFO0FBQ2hDLGdCQUFVLENBQUMsR0FBRyxDQUFDLEVBQUUsQ0FBQyxDQUFDO0tBQ3BCO0dBQ0Y7QUFDRCxTQUFPLFVBQVUsQ0FBQztDQUNuQjs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHLDJCQUEyQixDQUFDIiwiZmlsZSI6ImdldFVuZGVjbGFyZWRKU1hJZGVudGlmaWVycy5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtDb2xsZWN0aW9ufSBmcm9tICcuLi90eXBlcy9hc3QnO1xuaW1wb3J0IHR5cGUge1NvdXJjZU9wdGlvbnN9IGZyb20gJy4uL29wdGlvbnMvU291cmNlT3B0aW9ucyc7XG5cbmNvbnN0IGdldERlY2xhcmVkSWRlbnRpZmllcnMgPSByZXF1aXJlKCcuL2dldERlY2xhcmVkSWRlbnRpZmllcnMnKTtcbmNvbnN0IGdldEpTWElkZW50aWZpZXJzID0gcmVxdWlyZSgnLi9nZXRKU1hJZGVudGlmaWVycycpO1xuXG5mdW5jdGlvbiBnZXRVbmRlY2xhcmVkSlNYSWRlbnRpZmllcnMoXG4gIHJvb3Q6IENvbGxlY3Rpb24sXG4gIG9wdGlvbnM6IFNvdXJjZU9wdGlvbnNcbik6IFNldDxzdHJpbmc+IHtcbiAgY29uc3QgZGVjbGFyZWRJZGVudGlmaWVycyA9IGdldERlY2xhcmVkSWRlbnRpZmllcnMocm9vdCwgb3B0aW9ucyk7XG4gIGNvbnN0IGpzeElkZW50aWZpZXJzID0gZ2V0SlNYSWRlbnRpZmllcnMocm9vdCk7XG4gIGNvbnN0IHVuZGVjbGFyZWQgPSBuZXcgU2V0KCk7XG4gIGZvciAoY29uc3QgaWQgb2YganN4SWRlbnRpZmllcnMpIHtcbiAgICBpZiAoIWRlY2xhcmVkSWRlbnRpZmllcnMuaGFzKGlkKSkge1xuICAgICAgdW5kZWNsYXJlZC5hZGQoaWQpO1xuICAgIH1cbiAgfVxuICByZXR1cm4gdW5kZWNsYXJlZDtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSBnZXRVbmRlY2xhcmVkSlNYSWRlbnRpZmllcnM7XG4iXX0=

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,112 +10,98 @@
  * the root directory of this source tree.
  */
 
-import type {
-  StatusCodeNumberValue,
-} from '../../nuclide-hg-repository-base/lib/HgService';
+var _Object$freeze, _Object$freeze2;
 
-import type {
-  CommitModeType,
-  CommitModeStateType,
-  DiffModeType,
-  FileChangeStatusValue,
-  PublishModeType,
-  PublishModeStateType,
-  DiffOptionType,
-} from './types';
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-import {
-  hgConstants,
-} from '../../nuclide-hg-repository-base';
+var _nuclideHgRepositoryBase = require('../../nuclide-hg-repository-base');
 
-const {StatusCodeNumber: HgStatusCodeNumber} = hgConstants;
+var HgStatusCodeNumber = _nuclideHgRepositoryBase.hgConstants.StatusCodeNumber;
+var GK_DIFF_VIEW_PUBLISH = 'nuclide_diff_view_publish';
+exports.GK_DIFF_VIEW_PUBLISH = GK_DIFF_VIEW_PUBLISH;
+var TOOLBAR_VISIBLE_SETTING = 'nuclide-diff-view.toolbarVisible';
 
-export const GK_DIFF_VIEW_PUBLISH = 'nuclide_diff_view_publish';
-export const TOOLBAR_VISIBLE_SETTING = 'nuclide-diff-view.toolbarVisible';
-
-export const FileChangeStatus = Object.freeze({
+exports.TOOLBAR_VISIBLE_SETTING = TOOLBAR_VISIBLE_SETTING;
+var FileChangeStatus = Object.freeze({
   ADDED: 1,
   MODIFIED: 2,
   MISSING: 3,
   REMOVED: 4,
-  UNTRACKED: 5,
+  UNTRACKED: 5
 });
 
-(FileChangeStatus: { [key: string]: FileChangeStatusValue });
+exports.FileChangeStatus = FileChangeStatus;
+FileChangeStatus;
 
-export const DiffMode = Object.freeze({
+var DiffMode = Object.freeze({
   BROWSE_MODE: '1. Browse',
   COMMIT_MODE: '2. Commit',
-  PUBLISH_MODE: '3. Publish',
+  PUBLISH_MODE: '3. Publish'
 });
 
+exports.DiffMode = DiffMode;
 // This is to work around flow's missing support of enums.
-(DiffMode: { [key: string]: DiffModeType });
+DiffMode;
 
-export const DiffModeIcon = Object.freeze({
+var DiffModeIcon = Object.freeze({
   BROWSE_MODE: 'versions',
   COMMIT_MODE: 'git-branch',
-  PUBLISH_MODE: 'repo-push',
+  PUBLISH_MODE: 'repo-push'
 });
 
-export const DiffOption = Object.freeze({
+exports.DiffModeIcon = DiffModeIcon;
+var DiffOption = Object.freeze({
   DIRTY: 'Dirty',
   LAST_COMMIT: 'Last Commit',
-  COMPARE_COMMIT: 'Compare Commit',
+  COMPARE_COMMIT: 'Compare Commit'
 });
 
+exports.DiffOption = DiffOption;
 // This is to work around flow's missing support of enums.
-(DiffOption: { [key: string]: DiffOptionType });
+DiffOption;
 
-export const CommitMode = Object.freeze({
+var CommitMode = Object.freeze({
   COMMIT: 'Commit',
-  AMEND: 'Amend',
+  AMEND: 'Amend'
 });
 
+exports.CommitMode = CommitMode;
 // This is to work around flow's missing support of enums.
-(CommitMode: { [key: string]: CommitModeType });
+CommitMode;
 
-export const CommitModeState = Object.freeze({
+var CommitModeState = Object.freeze({
   READY: 'Ready',
   LOADING_COMMIT_MESSAGE: 'Loading Commit Message',
-  AWAITING_COMMIT: 'Awaiting Commit',
+  AWAITING_COMMIT: 'Awaiting Commit'
 });
 
+exports.CommitModeState = CommitModeState;
 // This is to work around flow's missing support of enums.
-(CommitModeState: { [key: string]: CommitModeStateType });
+CommitModeState;
 
-export const PublishMode = Object.freeze({
+var PublishMode = Object.freeze({
   CREATE: 'Create',
-  UPDATE: 'Update',
+  UPDATE: 'Update'
 });
 
+exports.PublishMode = PublishMode;
 // This is to work around flow's missing support of enums.
-(PublishMode: { [key: string]: PublishModeType });
+PublishMode;
 
-export const PublishModeState = Object.freeze({
+var PublishModeState = Object.freeze({
   READY: 'Ready',
   LOADING_PUBLISH_MESSAGE: 'Loading Publish Message',
   AWAITING_PUBLISH: 'Awaiting Publish',
-  PUBLISH_ERROR: 'Publish Error',
+  PUBLISH_ERROR: 'Publish Error'
 });
 
+exports.PublishModeState = PublishModeState;
 // This is to work around flow's missing support of enums.
-(PublishModeState: { [key: string]: PublishModeStateType });
+PublishModeState;
 
-export const HgStatusToFileChangeStatus
-  : {[key: StatusCodeNumberValue]: FileChangeStatusValue} = Object.freeze({
-    [HgStatusCodeNumber.ADDED]: FileChangeStatus.ADDED,
-    [HgStatusCodeNumber.MODIFIED]: FileChangeStatus.MODIFIED,
-    [HgStatusCodeNumber.MISSING]: FileChangeStatus.MISSING,
-    [HgStatusCodeNumber.REMOVED]: FileChangeStatus.REMOVED,
-    [HgStatusCodeNumber.UNTRACKED]: FileChangeStatus.UNTRACKED,
-  }
-);
+var HgStatusToFileChangeStatus = Object.freeze((_Object$freeze = {}, _defineProperty(_Object$freeze, HgStatusCodeNumber.ADDED, FileChangeStatus.ADDED), _defineProperty(_Object$freeze, HgStatusCodeNumber.MODIFIED, FileChangeStatus.MODIFIED), _defineProperty(_Object$freeze, HgStatusCodeNumber.MISSING, FileChangeStatus.MISSING), _defineProperty(_Object$freeze, HgStatusCodeNumber.REMOVED, FileChangeStatus.REMOVED), _defineProperty(_Object$freeze, HgStatusCodeNumber.UNTRACKED, FileChangeStatus.UNTRACKED), _Object$freeze));
 
-export const FileChangeStatusToPrefix: {[key: FileChangeStatusValue]: string} = Object.freeze({
-  [FileChangeStatus.ADDED]: '[A] ',
-  [FileChangeStatus.MODIFIED]: '[M] ',
-  [FileChangeStatus.MISSING]: '[!] ',
-  [FileChangeStatus.REMOVED]: '[D] ',
-  [FileChangeStatus.UNTRACKED]: '[?] ',
-});
+exports.HgStatusToFileChangeStatus = HgStatusToFileChangeStatus;
+var FileChangeStatusToPrefix = Object.freeze((_Object$freeze2 = {}, _defineProperty(_Object$freeze2, FileChangeStatus.ADDED, '[A] '), _defineProperty(_Object$freeze2, FileChangeStatus.MODIFIED, '[M] '), _defineProperty(_Object$freeze2, FileChangeStatus.MISSING, '[!] '), _defineProperty(_Object$freeze2, FileChangeStatus.REMOVED, '[D] '), _defineProperty(_Object$freeze2, FileChangeStatus.UNTRACKED, '[?] '), _Object$freeze2));
+exports.FileChangeStatusToPrefix = FileChangeStatusToPrefix;
+//# sourceMappingURL=data:application/json;base64,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QixDQUFDLE9BQU8sRUFBRyxNQUFNLG9DQUNqQyxnQkFBZ0IsQ0FBQyxTQUFTLEVBQUcsTUFBTSxvQkFDcEMsQ0FBQyIsImZpbGUiOiJjb25zdGFudHMuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7XG4gIFN0YXR1c0NvZGVOdW1iZXJWYWx1ZSxcbn0gZnJvbSAnLi4vLi4vbnVjbGlkZS1oZy1yZXBvc2l0b3J5LWJhc2UvbGliL0hnU2VydmljZSc7XG5cbmltcG9ydCB0eXBlIHtcbiAgQ29tbWl0TW9kZVR5cGUsXG4gIENvbW1pdE1vZGVTdGF0ZVR5cGUsXG4gIERpZmZNb2RlVHlwZSxcbiAgRmlsZUNoYW5nZVN0YXR1c1ZhbHVlLFxuICBQdWJsaXNoTW9kZVR5cGUsXG4gIFB1Ymxpc2hNb2RlU3RhdGVUeXBlLFxuICBEaWZmT3B0aW9uVHlwZSxcbn0gZnJvbSAnLi90eXBlcyc7XG5cbmltcG9ydCB7XG4gIGhnQ29uc3RhbnRzLFxufSBmcm9tICcuLi8uLi9udWNsaWRlLWhnLXJlcG9zaXRvcnktYmFzZSc7XG5cbmNvbnN0IHtTdGF0dXNDb2RlTnVtYmVyOiBIZ1N0YXR1c0NvZGVOdW1iZXJ9ID0gaGdDb25zdGFudHM7XG5cbmV4cG9ydCBjb25zdCBHS19ESUZGX1ZJRVdfUFVCTElTSCA9ICdudWNsaWRlX2RpZmZfdmlld19wdWJsaXNoJztcbmV4cG9ydCBjb25zdCBUT09MQkFSX1ZJU0lCTEVfU0VUVElORyA9ICdudWNsaWRlLWRpZmYtdmlldy50b29sYmFyVmlzaWJsZSc7XG5cbmV4cG9ydCBjb25zdCBGaWxlQ2hhbmdlU3RhdHVzID0gT2JqZWN0LmZyZWV6ZSh7XG4gIEFEREVEOiAxLFxuICBNT0RJRklFRDogMixcbiAgTUlTU0lORzogMyxcbiAgUkVNT1ZFRDogNCxcbiAgVU5UUkFDS0VEOiA1LFxufSk7XG5cbihGaWxlQ2hhbmdlU3RhdHVzOiB7IFtrZXk6IHN0cmluZ106IEZpbGVDaGFuZ2VTdGF0dXNWYWx1ZSB9KTtcblxuZXhwb3J0IGNvbnN0IERpZmZNb2RlID0gT2JqZWN0LmZyZWV6ZSh7XG4gIEJST1dTRV9NT0RFOiAnMS4gQnJvd3NlJyxcbiAgQ09NTUlUX01PREU6ICcyLiBDb21taXQnLFxuICBQVUJMSVNIX01PREU6ICczLiBQdWJsaXNoJyxcbn0pO1xuXG4vLyBUaGlzIGlzIHRvIHdvcmsgYXJvdW5kIGZsb3cncyBtaXNzaW5nIHN1cHBvcnQgb2YgZW51bXMuXG4oRGlmZk1vZGU6IHsgW2tleTogc3RyaW5nXTogRGlmZk1vZGVUeXBlIH0pO1xuXG5leHBvcnQgY29uc3QgRGlmZk1vZGVJY29uID0gT2JqZWN0LmZyZWV6ZSh7XG4gIEJST1dTRV9NT0RFOiAndmVyc2lvbnMnLFxuICBDT01NSVRfTU9ERTogJ2dpdC1icmFuY2gnLFxuICBQVUJMSVNIX01PREU6ICdyZXBvLXB1c2gnLFxufSk7XG5cbmV4cG9ydCBjb25zdCBEaWZmT3B0aW9uID0gT2JqZWN0LmZyZWV6ZSh7XG4gIERJUlRZOiAnRGlydHknLFxuICBMQVNUX0NPTU1JVDogJ0xhc3QgQ29tbWl0JyxcbiAgQ09NUEFSRV9DT01NSVQ6ICdDb21wYXJlIENvbW1pdCcsXG59KTtcblxuLy8gVGhpcyBpcyB0byB3b3JrIGFyb3VuZCBmbG93J3MgbWlzc2luZyBzdXBwb3J0IG9mIGVudW1zLlxuKERpZmZPcHRpb246IHsgW2tleTogc3RyaW5nXTogRGlmZk9wdGlvblR5cGUgfSk7XG5cbmV4cG9ydCBjb25zdCBDb21taXRNb2RlID0gT2JqZWN0LmZyZWV6ZSh7XG4gIENPTU1JVDogJ0NvbW1pdCcsXG4gIEFNRU5EOiAnQW1lbmQnLFxufSk7XG5cbi8vIFRoaXMgaXMgdG8gd29yayBhcm91bmQgZmxvdydzIG1pc3Npbmcgc3VwcG9ydCBvZiBlbnVtcy5cbihDb21taXRNb2RlOiB7IFtrZXk6IHN0cmluZ106IENvbW1pdE1vZGVUeXBlIH0pO1xuXG5leHBvcnQgY29uc3QgQ29tbWl0TW9kZVN0YXRlID0gT2JqZWN0LmZyZWV6ZSh7XG4gIFJFQURZOiAnUmVhZHknLFxuICBMT0FESU5HX0NPTU1JVF9NRVNTQUdFOiAnTG9hZGluZyBDb21taXQgTWVzc2FnZScsXG4gIEFXQUlUSU5HX0NPTU1JVDogJ0F3YWl0aW5nIENvbW1pdCcsXG59KTtcblxuLy8gVGhpcyBpcyB0byB3b3JrIGFyb3VuZCBmbG93J3MgbWlzc2luZyBzdXBwb3J0IG9mIGVudW1zLlxuKENvbW1pdE1vZGVTdGF0ZTogeyBba2V5OiBzdHJpbmddOiBDb21taXRNb2RlU3RhdGVUeXBlIH0pO1xuXG5leHBvcnQgY29uc3QgUHVibGlzaE1vZGUgPSBPYmplY3QuZnJlZXplKHtcbiAgQ1JFQVRFOiAnQ3JlYXRlJyxcbiAgVVBEQVRFOiAnVXBkYXRlJyxcbn0pO1xuXG4vLyBUaGlzIGlzIHRvIHdvcmsgYXJvdW5kIGZsb3cncyBtaXNzaW5nIHN1cHBvcnQgb2YgZW51bXMuXG4oUHVibGlzaE1vZGU6IHsgW2tleTogc3RyaW5nXTogUHVibGlzaE1vZGVUeXBlIH0pO1xuXG5leHBvcnQgY29uc3QgUHVibGlzaE1vZGVTdGF0ZSA9IE9iamVjdC5mcmVlemUoe1xuICBSRUFEWTogJ1JlYWR5JyxcbiAgTE9BRElOR19QVUJMSVNIX01FU1NBR0U6ICdMb2FkaW5nIFB1Ymxpc2ggTWVzc2FnZScsXG4gIEFXQUlUSU5HX1BVQkxJU0g6ICdBd2FpdGluZyBQdWJsaXNoJyxcbiAgUFVCTElTSF9FUlJPUjogJ1B1Ymxpc2ggRXJyb3InLFxufSk7XG5cbi8vIFRoaXMgaXMgdG8gd29yayBhcm91bmQgZmxvdydzIG1pc3Npbmcgc3VwcG9ydCBvZiBlbnVtcy5cbihQdWJsaXNoTW9kZVN0YXRlOiB7IFtrZXk6IHN0cmluZ106IFB1Ymxpc2hNb2RlU3RhdGVUeXBlIH0pO1xuXG5leHBvcnQgY29uc3QgSGdTdGF0dXNUb0ZpbGVDaGFuZ2VTdGF0dXNcbiAgOiB7W2tleTogU3RhdHVzQ29kZU51bWJlclZhbHVlXTogRmlsZUNoYW5nZVN0YXR1c1ZhbHVlfSA9IE9iamVjdC5mcmVlemUoe1xuICAgIFtIZ1N0YXR1c0NvZGVOdW1iZXIuQURERURdOiBGaWxlQ2hhbmdlU3RhdHVzLkFEREVELFxuICAgIFtIZ1N0YXR1c0NvZGVOdW1iZXIuTU9ESUZJRURdOiBGaWxlQ2hhbmdlU3RhdHVzLk1PRElGSUVELFxuICAgIFtIZ1N0YXR1c0NvZGVOdW1iZXIuTUlTU0lOR106IEZpbGVDaGFuZ2VTdGF0dXMuTUlTU0lORyxcbiAgICBbSGdTdGF0dXNDb2RlTnVtYmVyLlJFTU9WRURdOiBGaWxlQ2hhbmdlU3RhdHVzLlJFTU9WRUQsXG4gICAgW0hnU3RhdHVzQ29kZU51bWJlci5VTlRSQUNLRURdOiBGaWxlQ2hhbmdlU3RhdHVzLlVOVFJBQ0tFRCxcbiAgfVxuKTtcblxuZXhwb3J0IGNvbnN0IEZpbGVDaGFuZ2VTdGF0dXNUb1ByZWZpeDoge1trZXk6IEZpbGVDaGFuZ2VTdGF0dXNWYWx1ZV06IHN0cmluZ30gPSBPYmplY3QuZnJlZXplKHtcbiAgW0ZpbGVDaGFuZ2VTdGF0dXMuQURERURdOiAnW0FdICcsXG4gIFtGaWxlQ2hhbmdlU3RhdHVzLk1PRElGSUVEXTogJ1tNXSAnLFxuICBbRmlsZUNoYW5nZVN0YXR1cy5NSVNTSU5HXTogJ1shXSAnLFxuICBbRmlsZUNoYW5nZVN0YXR1cy5SRU1PVkVEXTogJ1tEXSAnLFxuICBbRmlsZUNoYW5nZVN0YXR1cy5VTlRSQUNLRURdOiAnWz9dICcsXG59KTtcbiJdfQ==

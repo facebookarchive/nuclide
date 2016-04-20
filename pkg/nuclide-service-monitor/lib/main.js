@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,48 +14,48 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
-import ServiceMonitorPaneItem from './ServiceMonitorPaneItem';
-import invariant from 'assert';
-import {track} from '../../nuclide-analytics';
+var _atom = require('atom');
 
-const NUCLIDE_SERVICE_MONITOR_URI = 'nuclide-service-monitor://view';
+var _ServiceMonitorPaneItem = require('./ServiceMonitorPaneItem');
 
-let subscriptions: ?CompositeDisposable;
+var _ServiceMonitorPaneItem2 = _interopRequireDefault(_ServiceMonitorPaneItem);
 
-export function activate(state: ?Object): void {
-  invariant(!subscriptions);
-  subscriptions = new CompositeDisposable();
+var _assert = require('assert');
 
-  subscriptions.add(
-    atom.commands.add(
-      'atom-workspace',
-      'nuclide-service-monitor:show-monitor',
-      () => {
-        atom.workspace.open(NUCLIDE_SERVICE_MONITOR_URI);
-        track('nuclide-service-monitor:open');
-      }
-    )
-  );
+var _assert2 = _interopRequireDefault(_assert);
 
-  subscriptions.add(
-    atom.workspace.addOpener(uriToOpen => {
-      if (uriToOpen !== NUCLIDE_SERVICE_MONITOR_URI) {
-        return;
-      }
+var _nuclideAnalytics = require('../../nuclide-analytics');
 
-      const pane = new ServiceMonitorPaneItem();
-      pane.initialize({
-        title: 'Nuclide Services',
-        initialProps: {},
-      });
-      return pane;
-    })
-  );
+var NUCLIDE_SERVICE_MONITOR_URI = 'nuclide-service-monitor://view';
+
+var subscriptions = undefined;
+
+function activate(state) {
+  (0, _assert2['default'])(!subscriptions);
+  subscriptions = new _atom.CompositeDisposable();
+
+  subscriptions.add(atom.commands.add('atom-workspace', 'nuclide-service-monitor:show-monitor', function () {
+    atom.workspace.open(NUCLIDE_SERVICE_MONITOR_URI);
+    (0, _nuclideAnalytics.track)('nuclide-service-monitor:open');
+  }));
+
+  subscriptions.add(atom.workspace.addOpener(function (uriToOpen) {
+    if (uriToOpen !== NUCLIDE_SERVICE_MONITOR_URI) {
+      return;
+    }
+
+    var pane = new _ServiceMonitorPaneItem2['default']();
+    pane.initialize({
+      title: 'Nuclide Services',
+      initialProps: {}
+    });
+    return pane;
+  }));
 }
 
-export function deactivate(): void {
-  invariant(subscriptions);
+function deactivate() {
+  (0, _assert2['default'])(subscriptions);
   subscriptions.dispose();
   subscriptions = null;
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7OztvQkFXa0MsTUFBTTs7c0NBQ0wsMEJBQTBCOzs7O3NCQUN2QyxRQUFROzs7O2dDQUNWLHlCQUF5Qjs7QUFFN0MsSUFBTSwyQkFBMkIsR0FBRyxnQ0FBZ0MsQ0FBQzs7QUFFckUsSUFBSSxhQUFtQyxZQUFBLENBQUM7O0FBRWpDLFNBQVMsUUFBUSxDQUFDLEtBQWMsRUFBUTtBQUM3QywyQkFBVSxDQUFDLGFBQWEsQ0FBQyxDQUFDO0FBQzFCLGVBQWEsR0FBRywrQkFBeUIsQ0FBQzs7QUFFMUMsZUFBYSxDQUFDLEdBQUcsQ0FDZixJQUFJLENBQUMsUUFBUSxDQUFDLEdBQUcsQ0FDZixnQkFBZ0IsRUFDaEIsc0NBQXNDLEVBQ3RDLFlBQU07QUFDSixRQUFJLENBQUMsU0FBUyxDQUFDLElBQUksQ0FBQywyQkFBMkIsQ0FBQyxDQUFDO0FBQ2pELGlDQUFNLDhCQUE4QixDQUFDLENBQUM7R0FDdkMsQ0FDRixDQUNGLENBQUM7O0FBRUYsZUFBYSxDQUFDLEdBQUcsQ0FDZixJQUFJLENBQUMsU0FBUyxDQUFDLFNBQVMsQ0FBQyxVQUFBLFNBQVMsRUFBSTtBQUNwQyxRQUFJLFNBQVMsS0FBSywyQkFBMkIsRUFBRTtBQUM3QyxhQUFPO0tBQ1I7O0FBRUQsUUFBTSxJQUFJLEdBQUcseUNBQTRCLENBQUM7QUFDMUMsUUFBSSxDQUFDLFVBQVUsQ0FBQztBQUNkLFdBQUssRUFBRSxrQkFBa0I7QUFDekIsa0JBQVksRUFBRSxFQUFFO0tBQ2pCLENBQUMsQ0FBQztBQUNILFdBQU8sSUFBSSxDQUFDO0dBQ2IsQ0FBQyxDQUNILENBQUM7Q0FDSDs7QUFFTSxTQUFTLFVBQVUsR0FBUztBQUNqQywyQkFBVSxhQUFhLENBQUMsQ0FBQztBQUN6QixlQUFhLENBQUMsT0FBTyxFQUFFLENBQUM7QUFDeEIsZUFBYSxHQUFHLElBQUksQ0FBQztDQUN0QiIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHtDb21wb3NpdGVEaXNwb3NhYmxlfSBmcm9tICdhdG9tJztcbmltcG9ydCBTZXJ2aWNlTW9uaXRvclBhbmVJdGVtIGZyb20gJy4vU2VydmljZU1vbml0b3JQYW5lSXRlbSc7XG5pbXBvcnQgaW52YXJpYW50IGZyb20gJ2Fzc2VydCc7XG5pbXBvcnQge3RyYWNrfSBmcm9tICcuLi8uLi9udWNsaWRlLWFuYWx5dGljcyc7XG5cbmNvbnN0IE5VQ0xJREVfU0VSVklDRV9NT05JVE9SX1VSSSA9ICdudWNsaWRlLXNlcnZpY2UtbW9uaXRvcjovL3ZpZXcnO1xuXG5sZXQgc3Vic2NyaXB0aW9uczogP0NvbXBvc2l0ZURpc3Bvc2FibGU7XG5cbmV4cG9ydCBmdW5jdGlvbiBhY3RpdmF0ZShzdGF0ZTogP09iamVjdCk6IHZvaWQge1xuICBpbnZhcmlhbnQoIXN1YnNjcmlwdGlvbnMpO1xuICBzdWJzY3JpcHRpb25zID0gbmV3IENvbXBvc2l0ZURpc3Bvc2FibGUoKTtcblxuICBzdWJzY3JpcHRpb25zLmFkZChcbiAgICBhdG9tLmNvbW1hbmRzLmFkZChcbiAgICAgICdhdG9tLXdvcmtzcGFjZScsXG4gICAgICAnbnVjbGlkZS1zZXJ2aWNlLW1vbml0b3I6c2hvdy1tb25pdG9yJyxcbiAgICAgICgpID0+IHtcbiAgICAgICAgYXRvbS53b3Jrc3BhY2Uub3BlbihOVUNMSURFX1NFUlZJQ0VfTU9OSVRPUl9VUkkpO1xuICAgICAgICB0cmFjaygnbnVjbGlkZS1zZXJ2aWNlLW1vbml0b3I6b3BlbicpO1xuICAgICAgfVxuICAgIClcbiAgKTtcblxuICBzdWJzY3JpcHRpb25zLmFkZChcbiAgICBhdG9tLndvcmtzcGFjZS5hZGRPcGVuZXIodXJpVG9PcGVuID0+IHtcbiAgICAgIGlmICh1cmlUb09wZW4gIT09IE5VQ0xJREVfU0VSVklDRV9NT05JVE9SX1VSSSkge1xuICAgICAgICByZXR1cm47XG4gICAgICB9XG5cbiAgICAgIGNvbnN0IHBhbmUgPSBuZXcgU2VydmljZU1vbml0b3JQYW5lSXRlbSgpO1xuICAgICAgcGFuZS5pbml0aWFsaXplKHtcbiAgICAgICAgdGl0bGU6ICdOdWNsaWRlIFNlcnZpY2VzJyxcbiAgICAgICAgaW5pdGlhbFByb3BzOiB7fSxcbiAgICAgIH0pO1xuICAgICAgcmV0dXJuIHBhbmU7XG4gICAgfSlcbiAgKTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGRlYWN0aXZhdGUoKTogdm9pZCB7XG4gIGludmFyaWFudChzdWJzY3JpcHRpb25zKTtcbiAgc3Vic2NyaXB0aW9ucy5kaXNwb3NlKCk7XG4gIHN1YnNjcmlwdGlvbnMgPSBudWxsO1xufVxuIl19

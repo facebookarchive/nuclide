@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,70 +10,69 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {
-  RemoteConnectionConfiguration,
-} from '../../nuclide-remote-connection/lib/RemoteConnection';
+exports.sanitizeNuclideUri = sanitizeNuclideUri;
+exports.getOpenFileEditorForRemoteProject = getOpenFileEditorForRemoteProject;
 
-import invariant from 'assert';
-import {parse, createRemoteUri} from '../../nuclide-remote-uri';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
-const NUCLIDE_PROTOCOL_PREFIX_LENGTH = NUCLIDE_PROTOCOL_PREFIX.length;
+var _assert = require('assert');
 
-export type OpenFileEditorInstance = {
-  pane: atom$Pane;
-  editor: atom$TextEditor;
-  uri: NuclideUri;
-  filePath: string;
-};
+var _assert2 = _interopRequireDefault(_assert);
+
+var _nuclideRemoteUri = require('../../nuclide-remote-uri');
+
+var NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
+var NUCLIDE_PROTOCOL_PREFIX_LENGTH = NUCLIDE_PROTOCOL_PREFIX.length;
 
 /**
  * Clean a nuclide URI from the prepended absolute path prefixes and fix
  * the broken uri, in the sense that it's nuclide:/server:897/path/to/dir instead of
  * nuclide://server:897/path/to/dir because Atom called path.normalize() on the directory uri.
  */
-export function sanitizeNuclideUri(uri: string): string {
+
+function sanitizeNuclideUri(uri) {
   // Remove the leading absolute path prepended to the file paths
   // between atom reloads.
-  const protocolIndex = uri.indexOf(NUCLIDE_PROTOCOL_PREFIX);
+  var protocolIndex = uri.indexOf(NUCLIDE_PROTOCOL_PREFIX);
   if (protocolIndex > 0) {
     uri = uri.substring(protocolIndex);
   }
   // Add the missing slash, if removed through a path.normalize() call.
-  if (uri.startsWith(NUCLIDE_PROTOCOL_PREFIX) &&
-      uri[NUCLIDE_PROTOCOL_PREFIX_LENGTH] !== '/' /*protocol missing last slash*/) {
+  if (uri.startsWith(NUCLIDE_PROTOCOL_PREFIX) && uri[NUCLIDE_PROTOCOL_PREFIX_LENGTH] !== '/' /*protocol missing last slash*/) {
 
-    uri = uri.substring(0, NUCLIDE_PROTOCOL_PREFIX_LENGTH) +
-        '/' + uri.substring(NUCLIDE_PROTOCOL_PREFIX_LENGTH);
-  }
+      uri = uri.substring(0, NUCLIDE_PROTOCOL_PREFIX_LENGTH) + '/' + uri.substring(NUCLIDE_PROTOCOL_PREFIX_LENGTH);
+    }
   return uri;
 }
 
-export function* getOpenFileEditorForRemoteProject(
-  connectionConfig: RemoteConnectionConfiguration,
-): Iterator<OpenFileEditorInstance> {
-  for (const pane of atom.workspace.getPanes()) {
-    const paneItems = pane.getItems();
-    for (const paneItem of paneItems) {
+function* getOpenFileEditorForRemoteProject(connectionConfig) {
+  for (var _pane of atom.workspace.getPanes()) {
+    var paneItems = _pane.getItems();
+    for (var paneItem of paneItems) {
       if (!atom.workspace.isTextEditor(paneItem) || !paneItem.getURI()) {
         // Ignore non-text editors and new editors with empty uris / paths.
         continue;
       }
-      const uri = sanitizeNuclideUri(paneItem.getURI());
-      const {hostname: fileHostname, path: filePath} = parse(uri);
-      if (fileHostname === connectionConfig.host && filePath.startsWith(connectionConfig.cwd)) {
-        invariant(fileHostname);
+      var _uri = sanitizeNuclideUri(paneItem.getURI());
+
+      var _parse = (0, _nuclideRemoteUri.parse)(_uri);
+
+      var fileHostname = _parse.hostname;
+      var _filePath = _parse.path;
+
+      if (fileHostname === connectionConfig.host && _filePath.startsWith(connectionConfig.cwd)) {
+        (0, _assert2['default'])(fileHostname);
         yield {
-          pane,
+          pane: _pane,
           editor: paneItem,
           // While restore opened files, the remote port might have been changed if the server
           // restarted after upgrade or user killed it. So we need to create a new uri using
           // the right port.
-          uri: createRemoteUri(fileHostname, connectionConfig.port, filePath),
-          filePath,
+          uri: (0, _nuclideRemoteUri.createRemoteUri)(fileHostname, connectionConfig.port, _filePath),
+          filePath: _filePath
         };
       }
     }
   }
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInV0aWxzLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7O3NCQWdCc0IsUUFBUTs7OztnQ0FDTywwQkFBMEI7O0FBRS9ELElBQU0sdUJBQXVCLEdBQUcsV0FBVyxDQUFDO0FBQzVDLElBQU0sOEJBQThCLEdBQUcsdUJBQXVCLENBQUMsTUFBTSxDQUFDOzs7Ozs7OztBQWMvRCxTQUFTLGtCQUFrQixDQUFDLEdBQVcsRUFBVTs7O0FBR3RELE1BQU0sYUFBYSxHQUFHLEdBQUcsQ0FBQyxPQUFPLENBQUMsdUJBQXVCLENBQUMsQ0FBQztBQUMzRCxNQUFJLGFBQWEsR0FBRyxDQUFDLEVBQUU7QUFDckIsT0FBRyxHQUFHLEdBQUcsQ0FBQyxTQUFTLENBQUMsYUFBYSxDQUFDLENBQUM7R0FDcEM7O0FBRUQsTUFBSSxHQUFHLENBQUMsVUFBVSxDQUFDLHVCQUF1QixDQUFDLElBQ3ZDLEdBQUcsQ0FBQyw4QkFBOEIsQ0FBQyxLQUFLLEdBQUcsa0NBQWtDOztBQUUvRSxTQUFHLEdBQUcsR0FBRyxDQUFDLFNBQVMsQ0FBQyxDQUFDLEVBQUUsOEJBQThCLENBQUMsR0FDbEQsR0FBRyxHQUFHLEdBQUcsQ0FBQyxTQUFTLENBQUMsOEJBQThCLENBQUMsQ0FBQztLQUN6RDtBQUNELFNBQU8sR0FBRyxDQUFDO0NBQ1o7O0FBRU0sVUFBVSxpQ0FBaUMsQ0FDaEQsZ0JBQStDLEVBQ2I7QUFDbEMsT0FBSyxJQUFNLEtBQUksSUFBSSxJQUFJLENBQUMsU0FBUyxDQUFDLFFBQVEsRUFBRSxFQUFFO0FBQzVDLFFBQU0sU0FBUyxHQUFHLEtBQUksQ0FBQyxRQUFRLEVBQUUsQ0FBQztBQUNsQyxTQUFLLElBQU0sUUFBUSxJQUFJLFNBQVMsRUFBRTtBQUNoQyxVQUFJLENBQUMsSUFBSSxDQUFDLFNBQVMsQ0FBQyxZQUFZLENBQUMsUUFBUSxDQUFDLElBQUksQ0FBQyxRQUFRLENBQUMsTUFBTSxFQUFFLEVBQUU7O0FBRWhFLGlCQUFTO09BQ1Y7QUFDRCxVQUFNLElBQUcsR0FBRyxrQkFBa0IsQ0FBQyxRQUFRLENBQUMsTUFBTSxFQUFFLENBQUMsQ0FBQzs7bUJBQ0QsNkJBQU0sSUFBRyxDQUFDOztVQUExQyxZQUFZLFVBQXRCLFFBQVE7VUFBc0IsU0FBUSxVQUFkLElBQUk7O0FBQ25DLFVBQUksWUFBWSxLQUFLLGdCQUFnQixDQUFDLElBQUksSUFBSSxTQUFRLENBQUMsVUFBVSxDQUFDLGdCQUFnQixDQUFDLEdBQUcsQ0FBQyxFQUFFO0FBQ3ZGLGlDQUFVLFlBQVksQ0FBQyxDQUFDO0FBQ3hCLGNBQU07QUFDSixjQUFJLEVBQUosS0FBSTtBQUNKLGdCQUFNLEVBQUUsUUFBUTs7OztBQUloQixhQUFHLEVBQUUsdUNBQWdCLFlBQVksRUFBRSxnQkFBZ0IsQ0FBQyxJQUFJLEVBQUUsU0FBUSxDQUFDO0FBQ25FLGtCQUFRLEVBQVIsU0FBUTtTQUNULENBQUM7T0FDSDtLQUNGO0dBQ0Y7Q0FDRiIsImZpbGUiOiJ1dGlscy5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtOdWNsaWRlVXJpfSBmcm9tICcuLi8uLi9udWNsaWRlLXJlbW90ZS11cmknO1xuaW1wb3J0IHR5cGUge1xuICBSZW1vdGVDb25uZWN0aW9uQ29uZmlndXJhdGlvbixcbn0gZnJvbSAnLi4vLi4vbnVjbGlkZS1yZW1vdGUtY29ubmVjdGlvbi9saWIvUmVtb3RlQ29ubmVjdGlvbic7XG5cbmltcG9ydCBpbnZhcmlhbnQgZnJvbSAnYXNzZXJ0JztcbmltcG9ydCB7cGFyc2UsIGNyZWF0ZVJlbW90ZVVyaX0gZnJvbSAnLi4vLi4vbnVjbGlkZS1yZW1vdGUtdXJpJztcblxuY29uc3QgTlVDTElERV9QUk9UT0NPTF9QUkVGSVggPSAnbnVjbGlkZTovJztcbmNvbnN0IE5VQ0xJREVfUFJPVE9DT0xfUFJFRklYX0xFTkdUSCA9IE5VQ0xJREVfUFJPVE9DT0xfUFJFRklYLmxlbmd0aDtcblxuZXhwb3J0IHR5cGUgT3BlbkZpbGVFZGl0b3JJbnN0YW5jZSA9IHtcbiAgcGFuZTogYXRvbSRQYW5lO1xuICBlZGl0b3I6IGF0b20kVGV4dEVkaXRvcjtcbiAgdXJpOiBOdWNsaWRlVXJpO1xuICBmaWxlUGF0aDogc3RyaW5nO1xufTtcblxuLyoqXG4gKiBDbGVhbiBhIG51Y2xpZGUgVVJJIGZyb20gdGhlIHByZXBlbmRlZCBhYnNvbHV0ZSBwYXRoIHByZWZpeGVzIGFuZCBmaXhcbiAqIHRoZSBicm9rZW4gdXJpLCBpbiB0aGUgc2Vuc2UgdGhhdCBpdCdzIG51Y2xpZGU6L3NlcnZlcjo4OTcvcGF0aC90by9kaXIgaW5zdGVhZCBvZlxuICogbnVjbGlkZTovL3NlcnZlcjo4OTcvcGF0aC90by9kaXIgYmVjYXVzZSBBdG9tIGNhbGxlZCBwYXRoLm5vcm1hbGl6ZSgpIG9uIHRoZSBkaXJlY3RvcnkgdXJpLlxuICovXG5leHBvcnQgZnVuY3Rpb24gc2FuaXRpemVOdWNsaWRlVXJpKHVyaTogc3RyaW5nKTogc3RyaW5nIHtcbiAgLy8gUmVtb3ZlIHRoZSBsZWFkaW5nIGFic29sdXRlIHBhdGggcHJlcGVuZGVkIHRvIHRoZSBmaWxlIHBhdGhzXG4gIC8vIGJldHdlZW4gYXRvbSByZWxvYWRzLlxuICBjb25zdCBwcm90b2NvbEluZGV4ID0gdXJpLmluZGV4T2YoTlVDTElERV9QUk9UT0NPTF9QUkVGSVgpO1xuICBpZiAocHJvdG9jb2xJbmRleCA+IDApIHtcbiAgICB1cmkgPSB1cmkuc3Vic3RyaW5nKHByb3RvY29sSW5kZXgpO1xuICB9XG4gIC8vIEFkZCB0aGUgbWlzc2luZyBzbGFzaCwgaWYgcmVtb3ZlZCB0aHJvdWdoIGEgcGF0aC5ub3JtYWxpemUoKSBjYWxsLlxuICBpZiAodXJpLnN0YXJ0c1dpdGgoTlVDTElERV9QUk9UT0NPTF9QUkVGSVgpICYmXG4gICAgICB1cmlbTlVDTElERV9QUk9UT0NPTF9QUkVGSVhfTEVOR1RIXSAhPT0gJy8nIC8qcHJvdG9jb2wgbWlzc2luZyBsYXN0IHNsYXNoKi8pIHtcblxuICAgIHVyaSA9IHVyaS5zdWJzdHJpbmcoMCwgTlVDTElERV9QUk9UT0NPTF9QUkVGSVhfTEVOR1RIKSArXG4gICAgICAgICcvJyArIHVyaS5zdWJzdHJpbmcoTlVDTElERV9QUk9UT0NPTF9QUkVGSVhfTEVOR1RIKTtcbiAgfVxuICByZXR1cm4gdXJpO1xufVxuXG5leHBvcnQgZnVuY3Rpb24qIGdldE9wZW5GaWxlRWRpdG9yRm9yUmVtb3RlUHJvamVjdChcbiAgY29ubmVjdGlvbkNvbmZpZzogUmVtb3RlQ29ubmVjdGlvbkNvbmZpZ3VyYXRpb24sXG4pOiBJdGVyYXRvcjxPcGVuRmlsZUVkaXRvckluc3RhbmNlPiB7XG4gIGZvciAoY29uc3QgcGFuZSBvZiBhdG9tLndvcmtzcGFjZS5nZXRQYW5lcygpKSB7XG4gICAgY29uc3QgcGFuZUl0ZW1zID0gcGFuZS5nZXRJdGVtcygpO1xuICAgIGZvciAoY29uc3QgcGFuZUl0ZW0gb2YgcGFuZUl0ZW1zKSB7XG4gICAgICBpZiAoIWF0b20ud29ya3NwYWNlLmlzVGV4dEVkaXRvcihwYW5lSXRlbSkgfHwgIXBhbmVJdGVtLmdldFVSSSgpKSB7XG4gICAgICAgIC8vIElnbm9yZSBub24tdGV4dCBlZGl0b3JzIGFuZCBuZXcgZWRpdG9ycyB3aXRoIGVtcHR5IHVyaXMgLyBwYXRocy5cbiAgICAgICAgY29udGludWU7XG4gICAgICB9XG4gICAgICBjb25zdCB1cmkgPSBzYW5pdGl6ZU51Y2xpZGVVcmkocGFuZUl0ZW0uZ2V0VVJJKCkpO1xuICAgICAgY29uc3Qge2hvc3RuYW1lOiBmaWxlSG9zdG5hbWUsIHBhdGg6IGZpbGVQYXRofSA9IHBhcnNlKHVyaSk7XG4gICAgICBpZiAoZmlsZUhvc3RuYW1lID09PSBjb25uZWN0aW9uQ29uZmlnLmhvc3QgJiYgZmlsZVBhdGguc3RhcnRzV2l0aChjb25uZWN0aW9uQ29uZmlnLmN3ZCkpIHtcbiAgICAgICAgaW52YXJpYW50KGZpbGVIb3N0bmFtZSk7XG4gICAgICAgIHlpZWxkIHtcbiAgICAgICAgICBwYW5lLFxuICAgICAgICAgIGVkaXRvcjogcGFuZUl0ZW0sXG4gICAgICAgICAgLy8gV2hpbGUgcmVzdG9yZSBvcGVuZWQgZmlsZXMsIHRoZSByZW1vdGUgcG9ydCBtaWdodCBoYXZlIGJlZW4gY2hhbmdlZCBpZiB0aGUgc2VydmVyXG4gICAgICAgICAgLy8gcmVzdGFydGVkIGFmdGVyIHVwZ3JhZGUgb3IgdXNlciBraWxsZWQgaXQuIFNvIHdlIG5lZWQgdG8gY3JlYXRlIGEgbmV3IHVyaSB1c2luZ1xuICAgICAgICAgIC8vIHRoZSByaWdodCBwb3J0LlxuICAgICAgICAgIHVyaTogY3JlYXRlUmVtb3RlVXJpKGZpbGVIb3N0bmFtZSwgY29ubmVjdGlvbkNvbmZpZy5wb3J0LCBmaWxlUGF0aCksXG4gICAgICAgICAgZmlsZVBhdGgsXG4gICAgICAgIH07XG4gICAgICB9XG4gICAgfVxuICB9XG59XG4iXX0=

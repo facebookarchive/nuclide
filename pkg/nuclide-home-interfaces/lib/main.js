@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +10,8 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+var _reactForAtom = require('react-for-atom');
 
-export type HomeFragments = {
-  // A string that a package can publish to the main part of the home panel. This allows for
-  // customized welcome messages, but should be used judiciously.
-  welcome?: React.Element;
-  feature?: {
-    title: string;
-    icon: string;
-    description: React.Element | string;
-    command?: string;
-  };
-  priority?: number;
-};
+// A string that a package can publish to the main part of the home panel. This allows for
+// customized welcome messages, but should be used judiciously.
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7OzRCQVdvQixnQkFBZ0IiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB7UmVhY3R9IGZyb20gJ3JlYWN0LWZvci1hdG9tJztcblxuZXhwb3J0IHR5cGUgSG9tZUZyYWdtZW50cyA9IHtcbiAgLy8gQSBzdHJpbmcgdGhhdCBhIHBhY2thZ2UgY2FuIHB1Ymxpc2ggdG8gdGhlIG1haW4gcGFydCBvZiB0aGUgaG9tZSBwYW5lbC4gVGhpcyBhbGxvd3MgZm9yXG4gIC8vIGN1c3RvbWl6ZWQgd2VsY29tZSBtZXNzYWdlcywgYnV0IHNob3VsZCBiZSB1c2VkIGp1ZGljaW91c2x5LlxuICB3ZWxjb21lPzogUmVhY3QuRWxlbWVudDtcbiAgZmVhdHVyZT86IHtcbiAgICB0aXRsZTogc3RyaW5nO1xuICAgIGljb246IHN0cmluZztcbiAgICBkZXNjcmlwdGlvbjogUmVhY3QuRWxlbWVudCB8IHN0cmluZztcbiAgICBjb21tYW5kPzogc3RyaW5nO1xuICB9O1xuICBwcmlvcml0eT86IG51bWJlcjtcbn07XG4iXX0=

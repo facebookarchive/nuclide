@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +10,5 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-
-export type UIElement = {
-  node: React.Element;
-  bufferRow: number;
-};
-
-export type UIProvider = {
-  composeUiElements: (filePath: string) => Promise<Array<UIElement>>;
-};
+var _reactForAtom = require('react-for-atom');
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInR5cGVzLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs0QkFXb0IsZ0JBQWdCIiwiZmlsZSI6InR5cGVzLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHtSZWFjdH0gZnJvbSAncmVhY3QtZm9yLWF0b20nO1xuXG5leHBvcnQgdHlwZSBVSUVsZW1lbnQgPSB7XG4gIG5vZGU6IFJlYWN0LkVsZW1lbnQ7XG4gIGJ1ZmZlclJvdzogbnVtYmVyO1xufTtcblxuZXhwb3J0IHR5cGUgVUlQcm92aWRlciA9IHtcbiAgY29tcG9zZVVpRWxlbWVudHM6IChmaWxlUGF0aDogc3RyaW5nKSA9PiBQcm9taXNlPEFycmF5PFVJRWxlbWVudD4+O1xufTtcbiJdfQ==

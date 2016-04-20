@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,57 +10,9 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+var _reactForAtom = require('react-for-atom');
 
-export type Store = {
-  toggleProvider(service: Provider): void;
-};
+// The original query that prompted this result, e.g. to highlight it in the UI.
 
-export type ProviderType = 'DIRECTORY' | 'GLOBAL';
-
-export type Provider = {
-  executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>>;
-  getProviderType(): ProviderType;
-  getName(): string;
-  isRenderable(): boolean;
-  getTabTitle(): string;
-
-  getPromptText?: () => string;
-  getAction?: () => string;
-  getDebounceDelay?: () => number;
-  isEligibleForDirectory?: (directory: atom$Directory) => Promise<boolean>;
-  getComponentForItem?: (item: FileResult) => React.Element;
-};
-
-import type {NuclideUri} from '../../nuclide-remote-uri';
-
-export type FileResult = {
-  path: NuclideUri;
-  matchIndexes?: Array<number>;
-  score?: number;
-  // The original query that prompted this result, e.g. to highlight it in the UI.
-  query?: string;
-  context?: string;
-  timestamp?: number;
-  // Jump to line/column if provided.
-  line?: number;
-  column?: number;
-};
-
-export type ProviderResult = {
-  error: ?Object;
-  loading: boolean;
-  results: Array<FileResult>;
-};
-
-export type DirectoryName = NuclideUri;
-export type ServiceName = string;
-
-export type GroupedResult = {
-  [key: ServiceName]: {
-    results: {
-      [key: DirectoryName]: ProviderResult
-    };
-    title: string;
-  }
-};
+// Jump to line/column if provided.
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInR5cGVzLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs0QkFXb0IsZ0JBQWdCIiwiZmlsZSI6InR5cGVzLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHtSZWFjdH0gZnJvbSAncmVhY3QtZm9yLWF0b20nO1xuXG5leHBvcnQgdHlwZSBTdG9yZSA9IHtcbiAgdG9nZ2xlUHJvdmlkZXIoc2VydmljZTogUHJvdmlkZXIpOiB2b2lkO1xufTtcblxuZXhwb3J0IHR5cGUgUHJvdmlkZXJUeXBlID0gJ0RJUkVDVE9SWScgfCAnR0xPQkFMJztcblxuZXhwb3J0IHR5cGUgUHJvdmlkZXIgPSB7XG4gIGV4ZWN1dGVRdWVyeShxdWVyeTogc3RyaW5nLCBkaXJlY3Rvcnk/OiBhdG9tJERpcmVjdG9yeSk6IFByb21pc2U8QXJyYXk8RmlsZVJlc3VsdD4+O1xuICBnZXRQcm92aWRlclR5cGUoKTogUHJvdmlkZXJUeXBlO1xuICBnZXROYW1lKCk6IHN0cmluZztcbiAgaXNSZW5kZXJhYmxlKCk6IGJvb2xlYW47XG4gIGdldFRhYlRpdGxlKCk6IHN0cmluZztcblxuICBnZXRQcm9tcHRUZXh0PzogKCkgPT4gc3RyaW5nO1xuICBnZXRBY3Rpb24/OiAoKSA9PiBzdHJpbmc7XG4gIGdldERlYm91bmNlRGVsYXk/OiAoKSA9PiBudW1iZXI7XG4gIGlzRWxpZ2libGVGb3JEaXJlY3Rvcnk/OiAoZGlyZWN0b3J5OiBhdG9tJERpcmVjdG9yeSkgPT4gUHJvbWlzZTxib29sZWFuPjtcbiAgZ2V0Q29tcG9uZW50Rm9ySXRlbT86IChpdGVtOiBGaWxlUmVzdWx0KSA9PiBSZWFjdC5FbGVtZW50O1xufTtcblxuaW1wb3J0IHR5cGUge051Y2xpZGVVcml9IGZyb20gJy4uLy4uL251Y2xpZGUtcmVtb3RlLXVyaSc7XG5cbmV4cG9ydCB0eXBlIEZpbGVSZXN1bHQgPSB7XG4gIHBhdGg6IE51Y2xpZGVVcmk7XG4gIG1hdGNoSW5kZXhlcz86IEFycmF5PG51bWJlcj47XG4gIHNjb3JlPzogbnVtYmVyO1xuICAvLyBUaGUgb3JpZ2luYWwgcXVlcnkgdGhhdCBwcm9tcHRlZCB0aGlzIHJlc3VsdCwgZS5nLiB0byBoaWdobGlnaHQgaXQgaW4gdGhlIFVJLlxuICBxdWVyeT86IHN0cmluZztcbiAgY29udGV4dD86IHN0cmluZztcbiAgdGltZXN0YW1wPzogbnVtYmVyO1xuICAvLyBKdW1wIHRvIGxpbmUvY29sdW1uIGlmIHByb3ZpZGVkLlxuICBsaW5lPzogbnVtYmVyO1xuICBjb2x1bW4/OiBudW1iZXI7XG59O1xuXG5leHBvcnQgdHlwZSBQcm92aWRlclJlc3VsdCA9IHtcbiAgZXJyb3I6ID9PYmplY3Q7XG4gIGxvYWRpbmc6IGJvb2xlYW47XG4gIHJlc3VsdHM6IEFycmF5PEZpbGVSZXN1bHQ+O1xufTtcblxuZXhwb3J0IHR5cGUgRGlyZWN0b3J5TmFtZSA9IE51Y2xpZGVVcmk7XG5leHBvcnQgdHlwZSBTZXJ2aWNlTmFtZSA9IHN0cmluZztcblxuZXhwb3J0IHR5cGUgR3JvdXBlZFJlc3VsdCA9IHtcbiAgW2tleTogU2VydmljZU5hbWVdOiB7XG4gICAgcmVzdWx0czoge1xuICAgICAgW2tleTogRGlyZWN0b3J5TmFtZV06IFByb3ZpZGVyUmVzdWx0XG4gICAgfTtcbiAgICB0aXRsZTogc3RyaW5nO1xuICB9XG59O1xuIl19

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,85 +10,84 @@
  * the root directory of this source tree.
  */
 
-import type {
-  HyperclickProvider,
-  HyperclickSuggestion,
-} from '../../hyperclick';
+exports.getNPMHyperclickProvider = getNPMHyperclickProvider;
+exports.getPackageUrlForRange = getPackageUrlForRange;
 
-import semver from 'semver';
-import path from 'path';
-import shell from 'shell';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {parseJSON, babelLocToRange} from './parsing';
+var _semver = require('semver');
 
-const DEPENDENCY_PROPERTIES = new Set([
-  'dependencies',
-  'devDependencies',
-  'optionalDependencies',
-]);
+var _semver2 = _interopRequireDefault(_semver);
 
-export function getNPMHyperclickProvider(): HyperclickProvider {
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
+var _shell = require('shell');
+
+var _shell2 = _interopRequireDefault(_shell);
+
+var _parsing = require('./parsing');
+
+var DEPENDENCY_PROPERTIES = new Set(['dependencies', 'devDependencies', 'optionalDependencies']);
+
+function getNPMHyperclickProvider() {
   return npmHyperclickProvider;
 }
 
-const npmHyperclickProvider = {
+var npmHyperclickProvider = {
   priority: 1,
   providerName: 'npm-package-json',
-  getSuggestionForWord,
+  getSuggestionForWord: getSuggestionForWord,
   // Capture just text in quotes
-  wordRegExp: /"[^"]*"/g,
+  wordRegExp: /"[^"]*"/g
 };
 
-function getSuggestionForWord(
-  textEditor: atom$TextEditor,
-  text: string,
-  range: atom$Range
-): Promise<?HyperclickSuggestion> {
+function getSuggestionForWord(textEditor, text, range) {
 
   if (text === '' || !isPackageJson(textEditor)) {
     return Promise.resolve(null);
   }
 
-  const packageUrl = getPackageUrlForRange(textEditor.getText(), text, range);
+  var packageUrl = getPackageUrlForRange(textEditor.getText(), text, range);
 
   if (packageUrl == null) {
     return Promise.resolve(null);
   }
 
-  const suggestion: HyperclickSuggestion = {
-    range,
-    callback: () => {
-      shell.openExternal(packageUrl);
-    },
+  var suggestion = {
+    range: range,
+    callback: function callback() {
+      _shell2['default'].openExternal(packageUrl);
+    }
   };
   return Promise.resolve(suggestion);
 }
 
 // Exported for testing. We could derive the token from the json text and the range, but since
 // hyperclick provides it we may as well use it.
-export function getPackageUrlForRange(json: string, token: string, range: atom$Range): ?string {
-  const version = getDependencyVersion(json, range);
+
+function getPackageUrlForRange(json, token, range) {
+  var version = getDependencyVersion(json, range);
   if (version == null) {
     return null;
   }
 
   // Strip off the quotes
-  const packageName = token.substring(1, token.length - 1);
+  var packageName = token.substring(1, token.length - 1);
 
   return getPackageUrl(packageName, version);
 }
 
-function isPackageJson(textEditor: atom$TextEditor): boolean {
-  const scopeName = textEditor.getGrammar().scopeName;
-  const filePath = textEditor.getPath();
-  return scopeName === 'source.json' &&
-    filePath != null &&
-    path.basename(filePath) === 'package.json';
+function isPackageJson(textEditor) {
+  var scopeName = textEditor.getGrammar().scopeName;
+  var filePath = textEditor.getPath();
+  return scopeName === 'source.json' && filePath != null && _path2['default'].basename(filePath) === 'package.json';
 }
 
-function getPackageUrl(packageName: string, version: string): ?string {
-  if (semver.valid(version)) {
-    return `https://www.npmjs.com/package/${packageName}/`;
+function getPackageUrl(packageName, version) {
+  if (_semver2['default'].valid(version)) {
+    return 'https://www.npmjs.com/package/' + packageName + '/';
   }
 
   // - optionally prefixed with 'github:' (but don't capture that)
@@ -98,32 +98,28 @@ function getPackageUrl(packageName: string, version: string): ?string {
   // - optionally followed by a revision:
   //   - starts with a hash (not captured)
   //   - then alphanumeric characters, underscores, dashes, periods (captured)
-  const githubRegex = /^(?:github:)?([\w-]+\/[\w-]+)(?:#([\w-.]+))?$/;
-  const githubMatch = version.match(githubRegex);
+  var githubRegex = /^(?:github:)?([\w-]+\/[\w-]+)(?:#([\w-.]+))?$/;
+  var githubMatch = version.match(githubRegex);
   if (githubMatch != null) {
-    const commit = githubMatch[2];
-    const commitSuffix = commit == null ? '' : `/tree/${commit}`;
-    return `https://github.com/${githubMatch[1]}${commitSuffix}`;
+    var commit = githubMatch[2];
+    var commitSuffix = commit == null ? '' : '/tree/' + commit;
+    return 'https://github.com/' + githubMatch[1] + commitSuffix;
   }
 
   return null;
 }
 
 // Return the version string, if it exists
-function getDependencyVersion(json: string, range: atom$Range): ?string {
-  const ast = parseJSON(json);
+function getDependencyVersion(json, range) {
+  var ast = (0, _parsing.parseJSON)(json);
   if (ast == null) {
     // parse error
     return null;
   }
-  const pathToNode = getPathToNodeForRange(ast, range);
+  var pathToNode = getPathToNodeForRange(ast, range);
 
-  if (pathToNode != null &&
-    pathToNode.length === 2 &&
-    DEPENDENCY_PROPERTIES.has(pathToNode[0].key.value) &&
-    isValidVersion(pathToNode[1].value)
-  ) {
-    const valueNode = pathToNode[1].value;
+  if (pathToNode != null && pathToNode.length === 2 && DEPENDENCY_PROPERTIES.has(pathToNode[0].key.value) && isValidVersion(pathToNode[1].value)) {
+    var valueNode = pathToNode[1].value;
     if (isValidVersion(valueNode)) {
       return valueNode.value;
     } else {
@@ -133,24 +129,24 @@ function getDependencyVersion(json: string, range: atom$Range): ?string {
   return null;
 }
 
-function isValidVersion(valueASTNode: Object): boolean {
+function isValidVersion(valueASTNode) {
   return valueASTNode.type === 'Literal' && typeof valueASTNode.value === 'string';
 }
 
 // return an array of property AST nodes
-function getPathToNodeForRange(objectExpression: Object, range: atom$Range): ?Array<Object> {
-  const properties = objectExpression.properties;
+function getPathToNodeForRange(objectExpression, range) {
+  var properties = objectExpression.properties;
   if (properties == null) {
     return null;
   }
-  for (const property of properties) {
-    const propertyRange = babelLocToRange(property.loc);
+  for (var property of properties) {
+    var propertyRange = (0, _parsing.babelLocToRange)(property.loc);
     if (propertyRange.containsRange(range)) {
-      const keyRange = babelLocToRange(property.key.loc);
+      var keyRange = (0, _parsing.babelLocToRange)(property.key.loc);
       if (keyRange.isEqual(range)) {
         return [property];
       }
-      const subPath = getPathToNodeForRange(property.value, range);
+      var subPath = getPathToNodeForRange(property.value, range);
       if (subPath == null) {
         return null;
       }
@@ -160,3 +156,4 @@ function getPathToNodeForRange(objectExpression: Object, range: atom$Range): ?Ar
   }
   return null;
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIk5QTUh5cGVyY2xpY2tQcm92aWRlci5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7OztzQkFnQm1CLFFBQVE7Ozs7b0JBQ1YsTUFBTTs7OztxQkFDTCxPQUFPOzs7O3VCQUVnQixXQUFXOztBQUVwRCxJQUFNLHFCQUFxQixHQUFHLElBQUksR0FBRyxDQUFDLENBQ3BDLGNBQWMsRUFDZCxpQkFBaUIsRUFDakIsc0JBQXNCLENBQ3ZCLENBQUMsQ0FBQzs7QUFFSSxTQUFTLHdCQUF3QixHQUF1QjtBQUM3RCxTQUFPLHFCQUFxQixDQUFDO0NBQzlCOztBQUVELElBQU0scUJBQXFCLEdBQUc7QUFDNUIsVUFBUSxFQUFFLENBQUM7QUFDWCxjQUFZLEVBQUUsa0JBQWtCO0FBQ2hDLHNCQUFvQixFQUFwQixvQkFBb0I7O0FBRXBCLFlBQVUsRUFBRSxVQUFVO0NBQ3ZCLENBQUM7O0FBRUYsU0FBUyxvQkFBb0IsQ0FDM0IsVUFBMkIsRUFDM0IsSUFBWSxFQUNaLEtBQWlCLEVBQ2U7O0FBRWhDLE1BQUksSUFBSSxLQUFLLEVBQUUsSUFBSSxDQUFDLGFBQWEsQ0FBQyxVQUFVLENBQUMsRUFBRTtBQUM3QyxXQUFPLE9BQU8sQ0FBQyxPQUFPLENBQUMsSUFBSSxDQUFDLENBQUM7R0FDOUI7O0FBRUQsTUFBTSxVQUFVLEdBQUcscUJBQXFCLENBQUMsVUFBVSxDQUFDLE9BQU8sRUFBRSxFQUFFLElBQUksRUFBRSxLQUFLLENBQUMsQ0FBQzs7QUFFNUUsTUFBSSxVQUFVLElBQUksSUFBSSxFQUFFO0FBQ3RCLFdBQU8sT0FBTyxDQUFDLE9BQU8sQ0FBQyxJQUFJLENBQUMsQ0FBQztHQUM5Qjs7QUFFRCxNQUFNLFVBQWdDLEdBQUc7QUFDdkMsU0FBSyxFQUFMLEtBQUs7QUFDTCxZQUFRLEVBQUUsb0JBQU07QUFDZCx5QkFBTSxZQUFZLENBQUMsVUFBVSxDQUFDLENBQUM7S0FDaEM7R0FDRixDQUFDO0FBQ0YsU0FBTyxPQUFPLENBQUMsT0FBTyxDQUFD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QUFJLElBQUksRUFBRTtBQUN0QixXQUFPLElBQUksQ0FBQztHQUNiO0FBQ0QsT0FBSyxJQUFNLFFBQVEsSUFBSSxVQUFVLEVBQUU7QUFDakMsUUFBTSxhQUFhLEdBQUcsOEJBQWdCLFFBQVEsQ0FBQyxHQUFHLENBQUMsQ0FBQztBQUNwRCxRQUFJLGFBQWEsQ0FBQyxhQUFhLENBQUMsS0FBSyxDQUFDLEVBQUU7QUFDdEMsVUFBTSxRQUFRLEdBQUcsOEJBQWdCLFFBQVEsQ0FBQyxHQUFHLENBQUMsR0FBRyxDQUFDLENBQUM7QUFDbkQsVUFBSSxRQUFRLENBQUMsT0FBTyxDQUFDLEtBQUssQ0FBQyxFQUFFO0FBQzNCLGVBQU8sQ0FBQyxRQUFRLENBQUMsQ0FBQztPQUNuQjtBQUNELFVBQU0sT0FBTyxHQUFHLHFCQUFxQixDQUFDLFFBQVEsQ0FBQyxLQUFLLEVBQUUsS0FBSyxDQUFDLENBQUM7QUFDN0QsVUFBSSxPQUFPLElBQUksSUFBSSxFQUFFO0FBQ25CLGVBQU8sSUFBSSxDQUFDO09BQ2I7QUFDRCxhQUFPLENBQUMsT0FBTyxDQUFDLFFBQVEsQ0FBQyxDQUFDO0FBQzFCLGFBQU8sT0FBTyxDQUFDO0tBQ2hCO0dBQ0Y7QUFDRCxTQUFPLElBQUksQ0FBQztDQUNiIiwiZmlsZSI6Ik5QTUh5cGVyY2xpY2tQcm92aWRlci5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtcbiAgSHlwZXJjbGlja1Byb3ZpZGVyLFxuICBIeXBlcmNsaWNrU3VnZ2VzdGlvbixcbn0gZnJvbSAnLi4vLi4vaHlwZXJjbGljayc7XG5cbmltcG9ydCBzZW12ZXIgZnJvbSAnc2VtdmVyJztcbmltcG9ydCBwYXRoIGZyb20gJ3BhdGgnO1xuaW1wb3J0IHNoZWxsIGZyb20gJ3NoZWxsJztcblxuaW1wb3J0IHtwYXJzZUpTT04sIGJhYmVsTG9jVG9SYW5nZX0gZnJvbSAnLi9wYXJzaW5nJztcblxuY29uc3QgREVQRU5ERU5DWV9QUk9QRVJUSUVTID0gbmV3IFNldChbXG4gICdkZXBlbmRlbmNpZXMnLFxuICAnZGV2RGVwZW5kZW5jaWVzJyxcbiAgJ29wdGlvbmFsRGVwZW5kZW5jaWVzJyxcbl0pO1xuXG5leHBvcnQgZnVuY3Rpb24gZ2V0TlBNSHlwZXJjbGlja1Byb3ZpZGVyKCk6IEh5cGVyY2xpY2tQcm92aWRlciB7XG4gIHJldHVybiBucG1IeXBlcmNsaWNrUHJvdmlkZXI7XG59XG5cbmNvbnN0IG5wbUh5cGVyY2xpY2tQcm92aWRlciA9IHtcbiAgcHJpb3JpdHk6IDEsXG4gIHByb3ZpZGVyTmFtZTogJ25wbS1wYWNrYWdlLWpzb24nLFxuICBnZXRTdWdnZXN0aW9uRm9yV29yZCxcbiAgLy8gQ2FwdHVyZSBqdXN0IHRleHQgaW4gcXVvdGVzXG4gIHdvcmRSZWdFeHA6IC9cIlteXCJdKlwiL2csXG59O1xuXG5mdW5jdGlvbiBnZXRTdWdnZXN0aW9uRm9yV29yZChcbiAgdGV4dEVkaXRvcjogYXRvbSRUZXh0RWRpdG9yLFxuICB0ZXh0OiBzdHJpbmcsXG4gIHJhbmdlOiBhdG9tJFJhbmdlXG4pOiBQcm9taXNlPD9IeXBlcmNsaWNrU3VnZ2VzdGlvbj4ge1xuXG4gIGlmICh0ZXh0ID09PSAnJyB8fCAhaXNQYWNrYWdlSnNvbih0ZXh0RWRpdG9yKSkge1xuICAgIHJldHVybiBQcm9taXNlLnJlc29sdmUobnVsbCk7XG4gIH1cblxuICBjb25zdCBwYWNrYWdlVXJsID0gZ2V0UGFja2FnZVVybEZvclJhbmdlKHRleHRFZGl0b3IuZ2V0VGV4dCgpLCB0ZXh0LCByYW5nZSk7XG5cbiAgaWYgKHBhY2thZ2VVcmwgPT0gbnVsbCkge1xuICAgIHJldHVybiBQcm9taXNlLnJlc29sdmUobnVsbCk7XG4gIH1cblxuICBjb25zdCBzdWdnZXN0aW9uOiBIeXBlcmNsaWNrU3VnZ2VzdGlvbiA9IHtcbiAgICByYW5nZSxcbiAgICBjYWxsYmFjazogKCkgPT4ge1xuICAgICAgc2hlbGwub3BlbkV4dGVybmFsKHBhY2thZ2VVcmwpO1xuICAgIH0sXG4gIH07XG4gIHJldHVybiBQcm9taXNlLnJlc29sdmUoc3VnZ2VzdGlvbik7XG59XG5cbi8vIEV4cG9ydGVkIGZvciB0ZXN0aW5nLiBXZSBjb3VsZCBkZXJpdmUgdGhlIHRva2VuIGZyb20gdGhlIGpzb24gdGV4dCBhbmQgdGhlIHJhbmdlLCBidXQgc2luY2Vcbi8vIGh5cGVyY2xpY2sgcHJvdmlkZXMgaXQgd2UgbWF5IGFzIHdlbGwgdXNlIGl0LlxuZXhwb3J0IGZ1bmN0aW9uIGdldFBhY2thZ2VVcmxGb3JSYW5nZShqc29uOiBzdHJpbmcsIHRva2VuOiBzdHJpbmcsIHJhbmdlOiBhdG9tJFJhbmdlKTogP3N0cmluZyB7XG4gIGNvbnN0IHZlcnNpb24gPSBnZXREZXBlbmRlbmN5VmVyc2lvbihqc29uLCByYW5nZSk7XG4gIGlmICh2ZXJzaW9uID09IG51bGwpIHtcbiAgICByZXR1cm4gbnVsbDtcbiAgfVxuXG4gIC8vIFN0cmlwIG9mZiB0aGUgcXVvdGVzXG4gIGNvbnN0IHBhY2thZ2VOYW1lID0gdG9rZW4uc3Vic3RyaW5nKDEsIHRva2VuLmxlbmd0aCAtIDEpO1xuXG4gIHJldHVybiBnZXRQYWNrYWdlVXJsKHBhY2thZ2VOYW1lLCB2ZXJzaW9uKTtcbn1cblxuZnVuY3Rpb24gaXNQYWNrYWdlSnNvbih0ZXh0RWRpdG9yOiBhdG9tJFRleHRFZGl0b3IpOiBib29sZWFuIHtcbiAgY29uc3Qgc2NvcGVOYW1lID0gdGV4dEVkaXRvci5nZXRHcmFtbWFyKCkuc2NvcGVOYW1lO1xuICBjb25zdCBmaWxlUGF0aCA9IHRleHRFZGl0b3IuZ2V0UGF0aCgpO1xuICByZXR1cm4gc2NvcGVOYW1lID09PSAnc291cmNlLmpzb24nICYmXG4gICAgZmlsZVBhdGggIT0gbnVsbCAmJlxuICAgIHBhdGguYmFzZW5hbWUoZmlsZVBhdGgpID09PSAncGFja2FnZS5qc29uJztcbn1cblxuZnVuY3Rpb24gZ2V0UGFja2FnZVVybChwYWNrYWdlTmFtZTogc3RyaW5nLCB2ZXJzaW9uOiBzdHJpbmcpOiA/c3RyaW5nIHtcbiAgaWYgKHNlbXZlci52YWxpZCh2ZXJzaW9uKSkge1xuICAgIHJldHVybiBgaHR0cHM6Ly93d3cubnBtanMuY29tL3BhY2thZ2UvJHtwYWNrYWdlTmFtZX0vYDtcbiAgfVxuXG4gIC8vIC0gb3B0aW9uYWxseSBwcmVmaXhlZCB3aXRoICdnaXRodWI6JyAoYnV0IGRvbid0IGNhcHR1cmUgdGhhdClcbiAgLy8gLSBhbGwgY2FwdHVyZWQgdG9nZXRoZXI6XG4gIC8vICAgLSB1c2VybmFtZTogYWxwaGFudW1lcmljIGNoYXJhY3RlcnMsIHBsdXMgdW5kZXJzY29yZXMgYW5kIGRhc2hlc1xuICAvLyAgIC0gc2xhc2hcbiAgLy8gICAtIHJlcG8gbmFtZTogc2FtZSBhcyB1c2VybmFtZVxuICAvLyAtIG9wdGlvbmFsbHkgZm9sbG93ZWQgYnkgYSByZXZpc2lvbjpcbiAgLy8gICAtIHN0YXJ0cyB3aXRoIGEgaGFzaCAobm90IGNhcHR1cmVkKVxuICAvLyAgIC0gdGhlbiBhbHBoYW51bWVyaWMgY2hhcmFjdGVycywgdW5kZXJzY29yZXMsIGRhc2hlcywgcGVyaW9kcyAoY2FwdHVyZWQpXG4gIGNvbnN0IGdpdGh1YlJlZ2V4ID0gL14oPzpnaXRodWI6KT8oW1xcdy1dK1xcL1tcXHctXSspKD86IyhbXFx3LS5dKykpPyQvO1xuICBjb25zdCBnaXRodWJNYXRjaCA9IHZlcnNpb24ubWF0Y2goZ2l0aHViUmVnZXgpO1xuICBpZiAoZ2l0aHViTWF0Y2ggIT0gbnVsbCkge1xuICAgIGNvbnN0IGNvbW1pdCA9IGdpdGh1Yk1hdGNoWzJdO1xuICAgIGNvbnN0IGNvbW1pdFN1ZmZpeCA9IGNvbW1pdCA9PSBudWxsID8gJycgOiBgL3RyZWUvJHtjb21taXR9YDtcbiAgICByZXR1cm4gYGh0dHBzOi8vZ2l0aHViLmNvbS8ke2dpdGh1Yk1hdGNoWzFdfSR7Y29tbWl0U3VmZml4fWA7XG4gIH1cblxuICByZXR1cm4gbnVsbDtcbn1cblxuLy8gUmV0dXJuIHRoZSB2ZXJzaW9uIHN0cmluZywgaWYgaXQgZXhpc3RzXG5mdW5jdGlvbiBnZXREZXBlbmRlbmN5VmVyc2lvbihqc29uOiBzdHJpbmcsIHJhbmdlOiBhdG9tJFJhbmdlKTogP3N0cmluZyB7XG4gIGNvbnN0IGFzdCA9IHBhcnNlSlNPTihqc29uKTtcbiAgaWYgKGFzdCA9PSBudWxsKSB7XG4gICAgLy8gcGFyc2UgZXJyb3JcbiAgICByZXR1cm4gbnVsbDtcbiAgfVxuICBjb25zdCBwYXRoVG9Ob2RlID0gZ2V0UGF0aFRvTm9kZUZvclJhbmdlKGFzdCwgcmFuZ2UpO1xuXG4gIGlmIChwYXRoVG9Ob2RlICE9IG51bGwgJiZcbiAgICBwYXRoVG9Ob2RlLmxlbmd0aCA9PT0gMiAmJlxuICAgIERFUEVOREVOQ1lfUFJPUEVSVElFUy5oYXMocGF0aFRvTm9kZVswXS5rZXkudmFsdWUpICYmXG4gICAgaXNWYWxpZFZlcnNpb24ocGF0aFRvTm9kZVsxXS52YWx1ZSlcbiAgKSB7XG4gICAgY29uc3QgdmFsdWVOb2RlID0gcGF0aFRvTm9kZVsxXS52YWx1ZTtcbiAgICBpZiAoaXNWYWxpZFZlcnNpb24odmFsdWVOb2RlKSkge1xuICAgICAgcmV0dXJuIHZhbHVlTm9kZS52YWx1ZTtcbiAgICB9IGVsc2Uge1xuICAgICAgcmV0dXJuIG51bGw7XG4gICAgfVxuICB9XG4gIHJldHVybiBudWxsO1xufVxuXG5mdW5jdGlvbiBpc1ZhbGlkVmVyc2lvbih2YWx1ZUFTVE5vZGU6IE9iamVjdCk6IGJvb2xlYW4ge1xuICByZXR1cm4gdmFsdWVBU1ROb2RlLnR5cGUgPT09ICdMaXRlcmFsJyAmJiB0eXBlb2YgdmFsdWVBU1ROb2RlLnZhbHVlID09PSAnc3RyaW5nJztcbn1cblxuLy8gcmV0dXJuIGFuIGFycmF5IG9mIHByb3BlcnR5IEFTVCBub2Rlc1xuZnVuY3Rpb24gZ2V0UGF0aFRvTm9kZUZvclJhbmdlKG9iamVjdEV4cHJlc3Npb246IE9iamVjdCwgcmFuZ2U6IGF0b20kUmFuZ2UpOiA/QXJyYXk8T2JqZWN0PiB7XG4gIGNvbnN0IHByb3BlcnRpZXMgPSBvYmplY3RFeHByZXNzaW9uLnByb3BlcnRpZXM7XG4gIGlmIChwcm9wZXJ0aWVzID09IG51bGwpIHtcbiAgICByZXR1cm4gbnVsbDtcbiAgfVxuICBmb3IgKGNvbnN0IHByb3BlcnR5IG9mIHByb3BlcnRpZXMpIHtcbiAgICBjb25zdCBwcm9wZXJ0eVJhbmdlID0gYmFiZWxMb2NUb1JhbmdlKHByb3BlcnR5LmxvYyk7XG4gICAgaWYgKHByb3BlcnR5UmFuZ2UuY29udGFpbnNSYW5nZShyYW5nZSkpIHtcbiAgICAgIGNvbnN0IGtleVJhbmdlID0gYmFiZWxMb2NUb1JhbmdlKHByb3BlcnR5LmtleS5sb2MpO1xuICAgICAgaWYgKGtleVJhbmdlLmlzRXF1YWwocmFuZ2UpKSB7XG4gICAgICAgIHJldHVybiBbcHJvcGVydHldO1xuICAgICAgfVxuICAgICAgY29uc3Qgc3ViUGF0aCA9IGdldFBhdGhUb05vZGVGb3JSYW5nZShwcm9wZXJ0eS52YWx1ZSwgcmFuZ2UpO1xuICAgICAgaWYgKHN1YlBhdGggPT0gbnVsbCkge1xuICAgICAgICByZXR1cm4gbnVsbDtcbiAgICAgIH1cbiAgICAgIHN1YlBhdGgudW5zaGlmdChwcm9wZXJ0eSk7XG4gICAgICByZXR1cm4gc3ViUGF0aDtcbiAgICB9XG4gIH1cbiAgcmV0dXJuIG51bGw7XG59XG4iXX0=

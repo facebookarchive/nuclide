@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,57 +10,7 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-
-export type Action =
-  CreatePaneItemAction |
-  DestroyPaneItemAction |
-  RegisterGadgetAction |
-  DeactivateAction |
-  UnregisterGadgetAction |
-  UpdatePaneItemAction;
+var _reactForAtom = require('react-for-atom');
 
 // The duplication of string literals here is necessary to make the disjoint unions work properly.
-export type CreatePaneItemAction = {
-  type: 'CREATE_PANE_ITEM';
-  payload: {
-    component?: React.Component;
-    gadgetId: string;
-    item: Object;
-    props?: Object;
-    isNew: boolean;
-  };
-};
-
-export type DeactivateAction = {
-  type: 'DEACTIVATE';
-};
-
-export type DestroyPaneItemAction = {
-  type: 'DESTROY_PANE_ITEM';
-  payload: {
-    item: Object;
-  };
-};
-
-export type RegisterGadgetAction = {
-  type: 'REGISTER_GADGET';
-  payload: {
-    gadget: Object;
-  };
-};
-
-export type UnregisterGadgetAction = {
-  type: 'UNREGISTER_GADGET';
-  payload: {
-    gadgetId: string;
-  };
-};
-
-export type UpdatePaneItemAction = {
-  type: 'UPDATE_PANE_ITEM';
-  payload: {
-    item: Object;
-    props: Object;
-  };
-};
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkFjdGlvbi5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7NEJBV29CLGdCQUFnQiIsImZpbGUiOiJBY3Rpb24uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQge1JlYWN0fSBmcm9tICdyZWFjdC1mb3ItYXRvbSc7XG5cbmV4cG9ydCB0eXBlIEFjdGlvbiA9XG4gIENyZWF0ZVBhbmVJdGVtQWN0aW9uIHxcbiAgRGVzdHJveVBhbmVJdGVtQWN0aW9uIHxcbiAgUmVnaXN0ZXJHYWRnZXRBY3Rpb24gfFxuICBEZWFjdGl2YXRlQWN0aW9uIHxcbiAgVW5yZWdpc3RlckdhZGdldEFjdGlvbiB8XG4gIFVwZGF0ZVBhbmVJdGVtQWN0aW9uO1xuXG4vLyBUaGUgZHVwbGljYXRpb24gb2Ygc3RyaW5nIGxpdGVyYWxzIGhlcmUgaXMgbmVjZXNzYXJ5IHRvIG1ha2UgdGhlIGRpc2pvaW50IHVuaW9ucyB3b3JrIHByb3Blcmx5LlxuZXhwb3J0IHR5cGUgQ3JlYXRlUGFuZUl0ZW1BY3Rpb24gPSB7XG4gIHR5cGU6ICdDUkVBVEVfUEFORV9JVEVNJztcbiAgcGF5bG9hZDoge1xuICAgIGNvbXBvbmVudD86IFJlYWN0LkNvbXBvbmVudDtcbiAgICBnYWRnZXRJZDogc3RyaW5nO1xuICAgIGl0ZW06IE9iamVjdDtcbiAgICBwcm9wcz86IE9iamVjdDtcbiAgICBpc05ldzogYm9vbGVhbjtcbiAgfTtcbn07XG5cbmV4cG9ydCB0eXBlIERlYWN0aXZhdGVBY3Rpb24gPSB7XG4gIHR5cGU6ICdERUFDVElWQVRFJztcbn07XG5cbmV4cG9ydCB0eXBlIERlc3Ryb3lQYW5lSXRlbUFjdGlvbiA9IHtcbiAgdHlwZTogJ0RFU1RST1lfUEFORV9JVEVNJztcbiAgcGF5bG9hZDoge1xuICAgIGl0ZW06IE9iamVjdDtcbiAgfTtcbn07XG5cbmV4cG9ydCB0eXBlIFJlZ2lzdGVyR2FkZ2V0QWN0aW9uID0ge1xuICB0eXBlOiAnUkVHSVNURVJfR0FER0VUJztcbiAgcGF5bG9hZDoge1xuICAgIGdhZGdldDogT2JqZWN0O1xuICB9O1xufTtcblxuZXhwb3J0IHR5cGUgVW5yZWdpc3RlckdhZGdldEFjdGlvbiA9IHtcbiAgdHlwZTogJ1VOUkVHSVNURVJfR0FER0VUJztcbiAgcGF5bG9hZDoge1xuICAgIGdhZGdldElkOiBzdHJpbmc7XG4gIH07XG59O1xuXG5leHBvcnQgdHlwZSBVcGRhdGVQYW5lSXRlbUFjdGlvbiA9IHtcbiAgdHlwZTogJ1VQREFURV9QQU5FX0lURU0nO1xuICBwYXlsb2FkOiB7XG4gICAgaXRlbTogT2JqZWN0O1xuICAgIHByb3BzOiBPYmplY3Q7XG4gIH07XG59O1xuIl19

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,47 +10,53 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {getServerStatusUpdates} from './FlowServiceFactory';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export class FlowServiceWatcher {
-  _subscription: rx$ISubscription;
+var _FlowServiceFactory = require('./FlowServiceFactory');
 
-  constructor() {
-    this._subscription = getServerStatusUpdates()
-      .filter(({status}) => status === 'failed')
-      .subscribe(({pathToRoot}) => {
-        this._handleFailure(pathToRoot);
-      });
+var FlowServiceWatcher = (function () {
+  function FlowServiceWatcher() {
+    var _this = this;
+
+    _classCallCheck(this, FlowServiceWatcher);
+
+    this._subscription = (0, _FlowServiceFactory.getServerStatusUpdates)().filter(function (_ref) {
+      var status = _ref.status;
+      return status === 'failed';
+    }).subscribe(function (_ref2) {
+      var pathToRoot = _ref2.pathToRoot;
+
+      _this._handleFailure(pathToRoot);
+    });
   }
 
-  dispose(): void {
-    this._subscription.unsubscribe();
-  }
-
-  _handleFailure(pathToRoot: NuclideUri): void {
-    const failureMessage = `Flow has failed in '${pathToRoot}'.<br/><br/>` +
-      'Flow features will be disabled for the remainder of this Nuclide session. ' +
-      'You may re-enable them by clicking below or by running the "Restart Flow Server" command ' +
-      'from the command palette later.'
-    ;
-    const notification = atom.notifications.addError(
-      failureMessage,
-      {
+  _createClass(FlowServiceWatcher, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._subscription.unsubscribe();
+    }
+  }, {
+    key: '_handleFailure',
+    value: function _handleFailure(pathToRoot) {
+      var failureMessage = 'Flow has failed in \'' + pathToRoot + '\'.<br/><br/>' + 'Flow features will be disabled for the remainder of this Nuclide session. ' + 'You may re-enable them by clicking below or by running the "Restart Flow Server" command ' + 'from the command palette later.';
+      var notification = atom.notifications.addError(failureMessage, {
         dismissable: true,
         buttons: [{
           className: 'icon icon-zap',
-          onDidClick() {
+          onDidClick: function onDidClick() {
             notification.dismiss();
-            atom.commands.dispatch(
-              atom.views.getView(atom.workspace),
-              'nuclide-flow:restart-flow-server',
-            );
+            atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-flow:restart-flow-server');
           },
-          text: 'Restart Flow Server',
-        }],
-      }
-    );
-  }
-}
+          text: 'Restart Flow Server'
+        }]
+      });
+    }
+  }]);
+
+  return FlowServiceWatcher;
+})();
+
+exports.FlowServiceWatcher = FlowServiceWatcher;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkZsb3dTZXJ2aWNlV2F0Y2hlci5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7O2tDQWFxQyxzQkFBc0I7O0lBRTlDLGtCQUFrQjtBQUdsQixXQUhBLGtCQUFrQixHQUdmOzs7MEJBSEgsa0JBQWtCOztBQUkzQixRQUFJLENBQUMsYUFBYSxHQUFHLGlEQUF3QixDQUMxQyxNQUFNLENBQUMsVUFBQyxJQUFRO1VBQVAsTUFBTSxHQUFQLElBQVEsQ0FBUCxNQUFNO2FBQU0sTUFBTSxLQUFLLFFBQVE7S0FBQSxDQUFDLENBQ3pDLFNBQVMsQ0FBQyxVQUFDLEtBQVksRUFBSztVQUFoQixVQUFVLEdBQVgsS0FBWSxDQUFYLFVBQVU7O0FBQ3JCLFlBQUssY0FBYyxDQUFDLFVBQVUsQ0FBQyxDQUFDO0tBQ2pDLENBQUMsQ0FBQztHQUNOOztlQVRVLGtCQUFrQjs7V0FXdEIsbUJBQVM7QUFDZCxVQUFJLENBQUMsYUFBYSxDQUFDLFdBQVcsRUFBRSxDQUFDO0tBQ2xDOzs7V0FFYSx3QkFBQyxVQUFzQixFQUFRO0FBQzNDLFVBQU0sY0FBYyxHQUFHLDBCQUF1QixVQUFVLHFCQUN0RCw0RUFBNEUsR0FDNUUsMkZBQTJGLEdBQzNGLGlDQUFpQyxDQUNsQztBQUNELFVBQU0sWUFBWSxHQUFHLElBQUksQ0FBQyxhQUFhLENBQUMsUUFBUSxDQUM5QyxjQUFjLEVBQ2Q7QUFDRSxtQkFBVyxFQUFFLElBQUk7QUFDakIsZUFBTyxFQUFFLENBQUM7QUFDUixtQkFBUyxFQUFFLGVBQWU7QUFDMUIsb0JBQVUsRUFBQSxzQkFBRztBQUNYLHdCQUFZLENBQUMsT0FBTyxFQUFFLENBQUM7QUFDdkIsZ0JBQUksQ0FBQyxRQUFRLENBQUMsUUFBUSxDQUNwQixJQUFJLENBQUMsS0FBSyxDQUFDLE9BQU8sQ0FBQyxJQUFJLENBQUMsU0FBUyxDQUFDLEVBQ2xDLGtDQUFrQyxDQUNuQyxDQUFDO1dBQ0g7QUFDRCxjQUFJLEVBQUUscUJBQXFCO1NBQzVCLENBQUM7T0FDSCxDQUNGLENBQUM7S0FDSDs7O1NBdENVLGtCQUFrQiIsImZpbGUiOiJGbG93U2VydmljZVdhdGNoZXIuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7TnVjbGlkZVVyaX0gZnJvbSAnLi4vLi4vbnVjbGlkZS1yZW1vdGUtdXJpJztcblxuaW1wb3J0IHtnZXRTZXJ2ZXJTdGF0dXNVcGRhdGVzfSBmcm9tICcuL0Zsb3dTZXJ2aWNlRmFjdG9yeSc7XG5cbmV4cG9ydCBjbGFzcyBGbG93U2VydmljZVdhdGNoZXIge1xuICBfc3Vic2NyaXB0aW9uOiByeCRJU3Vic2NyaXB0aW9uO1xuXG4gIGNvbnN0cnVjdG9yKCkge1xuICAgIHRoaXMuX3N1YnNjcmlwdGlvbiA9IGdldFNlcnZlclN0YXR1c1VwZGF0ZXMoKVxuICAgICAgLmZpbHRlcigoe3N0YXR1c30pID0+IHN0YXR1cyA9PT0gJ2ZhaWxlZCcpXG4gICAgICAuc3Vic2NyaWJlKCh7cGF0aFRvUm9vdH0pID0+IHtcbiAgICAgICAgdGhpcy5faGFuZGxlRmFpbHVyZShwYXRoVG9Sb290KTtcbiAgICAgIH0pO1xuICB9XG5cbiAgZGlzcG9zZSgpOiB2b2lkIHtcbiAgICB0aGlzLl9zdWJzY3JpcHRpb24udW5zdWJzY3JpYmUoKTtcbiAgfVxuXG4gIF9oYW5kbGVGYWlsdXJlKHBhdGhUb1Jvb3Q6IE51Y2xpZGVVcmkpOiB2b2lkIHtcbiAgICBjb25zdCBmYWlsdXJlTWVzc2FnZSA9IGBGbG93IGhhcyBmYWlsZWQgaW4gJyR7cGF0aFRvUm9vdH0nLjxici8+PGJyLz5gICtcbiAgICAgICdGbG93IGZlYXR1cmVzIHdpbGwgYmUgZGlzYWJsZWQgZm9yIHRoZSByZW1haW5kZXIgb2YgdGhpcyBOdWNsaWRlIHNlc3Npb24uICcgK1xuICAgICAgJ1lvdSBtYXkgcmUtZW5hYmxlIHRoZW0gYnkgY2xpY2tpbmcgYmVsb3cgb3IgYnkgcnVubmluZyB0aGUgXCJSZXN0YXJ0IEZsb3cgU2VydmVyXCIgY29tbWFuZCAnICtcbiAgICAgICdmcm9tIHRoZSBjb21tYW5kIHBhbGV0dGUgbGF0ZXIuJ1xuICAgIDtcbiAgICBjb25zdCBub3RpZmljYXRpb24gPSBhdG9tLm5vdGlmaWNhdGlvbnMuYWRkRXJyb3IoXG4gICAgICBmYWlsdXJlTWVzc2FnZSxcbiAgICAgIHtcbiAgICAgICAgZGlzbWlzc2FibGU6IHRydWUsXG4gICAgICAgIGJ1dHRvbnM6IFt7XG4gICAgICAgICAgY2xhc3NOYW1lOiAnaWNvbiBpY29uLXphcCcsXG4gICAgICAgICAgb25EaWRDbGljaygpIHtcbiAgICAgICAgICAgIG5vdGlmaWNhdGlvbi5kaXNtaXNzKCk7XG4gICAgICAgICAgICBhdG9tLmNvbW1hbmRzLmRpc3BhdGNoKFxuICAgICAgICAgICAgICBhdG9tLnZpZXdzLmdldFZpZXcoYXRvbS53b3Jrc3BhY2UpLFxuICAgICAgICAgICAgICAnbnVjbGlkZS1mbG93OnJlc3RhcnQtZmxvdy1zZXJ2ZXInLFxuICAgICAgICAgICAgKTtcbiAgICAgICAgICB9LFxuICAgICAgICAgIHRleHQ6ICdSZXN0YXJ0IEZsb3cgU2VydmVyJyxcbiAgICAgICAgfV0sXG4gICAgICB9XG4gICAgKTtcbiAgfVxufVxuIl19

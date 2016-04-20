@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.parseJSON = parseJSON;
+exports.babelPosToPoint = babelPosToPoint;
+exports.babelLocToRange = babelLocToRange;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,46 +13,38 @@
  * the root directory of this source tree.
  */
 
-import {Point, Range} from 'atom';
+var _atom = require('atom');
 
-let babelCore = null;
-function babelParse(text: string): Object {
+var babelCore = null;
+function babelParse(text) {
   if (babelCore == null) {
     babelCore = require('babel-core');
   }
   return babelCore.parse(text);
 }
 
-type BabelPos = {
-  line: number;
-  column: number;
-};
-
-type BabelLoc = {
-  start: BabelPos;
-  end: BabelPos;
-};
-
 /**
  * Returns a Babel Expression AST node, or null if the parse does not succeed.
  */
-export function parseJSON(json: string): ?Object {
+
+function parseJSON(json) {
   // This fucks up the positions but without it, babel won't parse the text as an expression
-  const jsonWithParens = '(\n' + json + '\n)';
+  var jsonWithParens = '(\n' + json + '\n)';
   try {
-    const ast = babelParse(jsonWithParens);
+    var ast = babelParse(jsonWithParens);
     return ast.body[0].expression;
   } catch (e) {
     return null;
   }
 }
 
-export function babelPosToPoint(pos: BabelPos): atom$Point {
+function babelPosToPoint(pos) {
   // Need to subtract 2: one to move from 1-indexed to 0-indexed, another to account for the open
   // paren we had to add on the first line.
-  return new Point(pos.line - 2, pos.column);
+  return new _atom.Point(pos.line - 2, pos.column);
 }
 
-export function babelLocToRange(loc: BabelLoc): atom$Range {
-  return new Range(babelPosToPoint(loc.start), babelPosToPoint(loc.end));
+function babelLocToRange(loc) {
+  return new _atom.Range(babelPosToPoint(loc.start), babelPosToPoint(loc.end));
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInBhcnNpbmcuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7O29CQVcyQixNQUFNOztBQUVqQyxJQUFJLFNBQVMsR0FBRyxJQUFJLENBQUM7QUFDckIsU0FBUyxVQUFVLENBQUMsSUFBWSxFQUFVO0FBQ3hDLE1BQUksU0FBUyxJQUFJLElBQUksRUFBRTtBQUNyQixhQUFTLEdBQUcsT0FBTyxDQUFDLFlBQVksQ0FBQyxDQUFDO0dBQ25DO0FBQ0QsU0FBTyxTQUFTLENBQUMsS0FBSyxDQUFDLElBQUksQ0FBQyxDQUFDO0NBQzlCOzs7Ozs7QUFlTSxTQUFTLFNBQVMsQ0FBQyxJQUFZLEVBQVc7O0FBRS9DLE1BQU0sY0FBYyxHQUFHLEtBQUssR0FBRyxJQUFJLEdBQUcsS0FBSyxDQUFDO0FBQzVDLE1BQUk7QUFDRixRQUFNLEdBQUcsR0FBRyxVQUFVLENBQUMsY0FBYyxDQUFDLENBQUM7QUFDdkMsV0FBTyxHQUFHLENBQUMsSUFBSSxDQUFDLENBQUMsQ0FBQyxDQUFDLFVBQVUsQ0FBQztHQUMvQixDQUFDLE9BQU8sQ0FBQyxFQUFFO0FBQ1YsV0FBTyxJQUFJLENBQUM7R0FDYjtDQUNGOztBQUVNLFNBQVMsZUFBZSxDQUFDLEdBQWEsRUFBYzs7O0FBR3pELFNBQU8sZ0JBQVUsR0FBRyxDQUFDLElBQUksR0FBRyxDQUFDLEVBQUUsR0FBRyxDQUFDLE1BQU0sQ0FBQyxDQUFDO0NBQzVDOztBQUVNLFNBQVMsZUFBZSxDQUFDLEdBQWEsRUFBYztBQUN6RCxTQUFPLGdCQUFVLGVBQWUsQ0FBQyxHQUFHLENBQUMsS0FBSyxDQUFDLEVBQUUsZUFBZSxDQUFDLEdBQUcsQ0FBQyxHQUFHLENBQUMsQ0FBQyxDQUFDO0NBQ3hFIiwiZmlsZSI6InBhcnNpbmcuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQge1BvaW50LCBSYW5nZX0gZnJvbSAnYXRvbSc7XG5cbmxldCBiYWJlbENvcmUgPSBudWxsO1xuZnVuY3Rpb24gYmFiZWxQYXJzZSh0ZXh0OiBzdHJpbmcpOiBPYmplY3Qge1xuICBpZiAoYmFiZWxDb3JlID09IG51bGwpIHtcbiAgICBiYWJlbENvcmUgPSByZXF1aXJlKCdiYWJlbC1jb3JlJyk7XG4gIH1cbiAgcmV0dXJuIGJhYmVsQ29yZS5wYXJzZSh0ZXh0KTtcbn1cblxudHlwZSBCYWJlbFBvcyA9IHtcbiAgbGluZTogbnVtYmVyO1xuICBjb2x1bW46IG51bWJlcjtcbn07XG5cbnR5cGUgQmFiZWxMb2MgPSB7XG4gIHN0YXJ0OiBCYWJlbFBvcztcbiAgZW5kOiBCYWJlbFBvcztcbn07XG5cbi8qKlxuICogUmV0dXJucyBhIEJhYmVsIEV4cHJlc3Npb24gQVNUIG5vZGUsIG9yIG51bGwgaWYgdGhlIHBhcnNlIGRvZXMgbm90IHN1Y2NlZWQuXG4gKi9cbmV4cG9ydCBmdW5jdGlvbiBwYXJzZUpTT04oanNvbjogc3RyaW5nKTogP09iamVjdCB7XG4gIC8vIFRoaXMgZnVja3MgdXAgdGhlIHBvc2l0aW9ucyBidXQgd2l0aG91dCBpdCwgYmFiZWwgd29uJ3QgcGFyc2UgdGhlIHRleHQgYXMgYW4gZXhwcmVzc2lvblxuICBjb25zdCBqc29uV2l0aFBhcmVucyA9ICcoXFxuJyArIGpzb24gKyAnXFxuKSc7XG4gIHRyeSB7XG4gICAgY29uc3QgYXN0ID0gYmFiZWxQYXJzZShqc29uV2l0aFBhcmVucyk7XG4gICAgcmV0dXJuIGFzdC5ib2R5WzBdLmV4cHJlc3Npb247XG4gIH0gY2F0Y2ggKGUpIHtcbiAgICByZXR1cm4gbnVsbDtcbiAgfVxufVxuXG5leHBvcnQgZnVuY3Rpb24gYmFiZWxQb3NUb1BvaW50KHBvczogQmFiZWxQb3MpOiBhdG9tJFBvaW50IHtcbiAgLy8gTmVlZCB0byBzdWJ0cmFjdCAyOiBvbmUgdG8gbW92ZSBmcm9tIDEtaW5kZXhlZCB0byAwLWluZGV4ZWQsIGFub3RoZXIgdG8gYWNjb3VudCBmb3IgdGhlIG9wZW5cbiAgLy8gcGFyZW4gd2UgaGFkIHRvIGFkZCBvbiB0aGUgZmlyc3QgbGluZS5cbiAgcmV0dXJuIG5ldyBQb2ludChwb3MubGluZSAtIDIsIHBvcy5jb2x1bW4pO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gYmFiZWxMb2NUb1JhbmdlKGxvYzogQmFiZWxMb2MpOiBhdG9tJFJhbmdlIHtcbiAgcmV0dXJuIG5ldyBSYW5nZShiYWJlbFBvc1RvUG9pbnQobG9jLnN0YXJ0KSwgYmFiZWxQb3NUb1BvaW50KGxvYy5lbmQpKTtcbn1cbiJdfQ==

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,6 +10,7 @@
  * the root directory of this source tree.
  */
 
-import {DiagnosticsProviderBase} from './DiagnosticsProviderBase';
+var _DiagnosticsProviderBase = require('./DiagnosticsProviderBase');
 
-export {DiagnosticsProviderBase};
+exports.DiagnosticsProviderBase = _DiagnosticsProviderBase.DiagnosticsProviderBase;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7O3VDQVdzQywyQkFBMkI7O1FBRXpELHVCQUF1QiIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHtEaWFnbm9zdGljc1Byb3ZpZGVyQmFzZX0gZnJvbSAnLi9EaWFnbm9zdGljc1Byb3ZpZGVyQmFzZSc7XG5cbmV4cG9ydCB7RGlhZ25vc3RpY3NQcm92aWRlckJhc2V9O1xuIl19
