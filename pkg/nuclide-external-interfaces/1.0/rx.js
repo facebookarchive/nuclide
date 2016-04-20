@@ -234,9 +234,9 @@ declare module '@reactivex/rxjs' {
 
     subscribe(observer: PartialObserver<T>): Subscription;
     subscribe(
-      onNext?: (value: T) => mixed,
-      onError?: (error: any) => mixed,
-      onCompleted?: () => mixed,
+      onNext: ?(value: T) => mixed,
+      onError: ?(error: any) => mixed,
+      onCompleted: ?() => mixed,
     ): Subscription;
   }
 

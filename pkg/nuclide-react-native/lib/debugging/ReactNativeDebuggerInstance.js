@@ -53,9 +53,9 @@ export class ReactNativeDebuggerInstance extends DebuggerInstance {
 
     this._subscriptions = new CompositeSubscription(
       // Tell the user if we can't connect to the debugger UI.
-      // $FlowIssue: Flow has a problem with us not returning from the error handler for some reason
-      uiConnection$.subscribe({
-        error(err) {
+      uiConnection$.subscribe(
+        null,
+        err => {
           atom.notifications.addError(
             'Error connecting to debugger UI.',
             {
@@ -67,7 +67,7 @@ export class ReactNativeDebuggerInstance extends DebuggerInstance {
 
           this.dispose();
         },
-      }),
+      ),
 
       pid$.first().subscribe(() => { didConnect(); }),
 
