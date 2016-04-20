@@ -6,17 +6,12 @@ Hyperclick is triggered by two events:
 - `<alt>` or `<alt-mousemove>` underlines clickable text under the mouse.
 - `<alt-mousedown>` performs the action associated with the clickable text.
 - `<cmd-alt-enter>` performs the action on the text under the cursor.
--
 
 ## Known Providers
 
-* 'nuclide-buck-files' [Nuclide](https://atom.io/packages/nuclide) feature
-* 'nuclide-clang-atom' Nuclide feature
-* 'nuclide-flow' Nuclide feature
-* 'nuclide-hack' Nuclide feature
-* 'nuclide-ocaml' Nuclide feature
-* 'js-hyperclick' Nuclide feature - Jump to variable definitions, including when imported/required from another file
-* 'php-hyperclick' Locate php classes with the help of composer, and open the file
+* [Nuclide](https://atom.io/packages/nuclide) features like nuclide-buck-files, nuclide-clang-atom, nuclide-flow, nuclide-hack and nuclide-ocaml.
+* [js-hyperclick](https://atom.io/packages/js-hyperclick) Jump to variable definitions, including when imported/required from another file
+* [hyperclick-php](https://atom.io/packages/hyperclick-php) Locate php classes with the help of composer, and open the file
 
 ## Demo
 
@@ -45,22 +40,22 @@ Declare the provider callback in the `package.json` (e.g. `getProvider`).
 Define the provider callback in `lib/main.js`.
 
 ```js
-module.exports = {
-  getProvider() {
-    return {
-      getSuggestionForWord(textEditor: TextEditor, text: string, range: Range):
-          ?HyperclickSuggestion {
-        return {
-          // The range(s) to underline as a visual cue for clicking.
-          range,
-          // The function to call when the underlined text is clicked.
-          callback() {},
-        };
-      },
-    };
-  },
-};
-
+export function getProvider() {
+  return {
+    getSuggestionForWord(
+      textEditor: TextEditor,
+      text: string,
+      range: Range
+    ): ?HyperclickSuggestion {
+      return {
+        // The range(s) to underline as a visual cue for clicking.
+        range,
+        // The function to call when the underlined text is clicked.
+        callback() {},
+      };
+    },
+  };
+}
 ```
 
 ### Details
