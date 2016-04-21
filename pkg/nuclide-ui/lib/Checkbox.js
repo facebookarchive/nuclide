@@ -35,7 +35,7 @@ export class Checkbox extends React.Component {
     disabled: false,
     indeterminate: false,
     label: '',
-    onClick(event) {},
+    onClick(event): mixed {},
   };
 
   constructor(props: Object) {

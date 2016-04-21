@@ -22,7 +22,7 @@ export class CustomPaneItem extends HTMLElement {
   _iconName: ?string;
   _uri: ?string;
   _allowSplit: boolean;
-  __component: React.Element;
+  __component: React.Component;
 
   initialize(options: CustomPaneItemOptions) {
     this._title = options.title;
@@ -61,7 +61,7 @@ export class CustomPaneItem extends HTMLElement {
     return this._allowSplit;
   }
 
-  detachedCallback() {
+  detachedCallback(): mixed {
     ReactDOM.unmountComponentAtNode(this);
   }
 }
