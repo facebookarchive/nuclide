@@ -20,6 +20,8 @@ import type {Session as SessionType} from '../../../nuclide-debugger-node/lib/Se
 
 const {observableFromSubscribeFunction} = commonsEvent;
 
+const PORT = 38913;
+
 /**
  * This class represents a React Native debugging session in Nuclide. Debugging React Native
  * consists of the following:
@@ -59,7 +61,7 @@ export class ReactNativeDebuggerInstance extends DebuggerInstance {
           atom.notifications.addError(
             'Error connecting to debugger UI.',
             {
-              detail: 'Make sure that port 8080 is open.',
+              detail: `Make sure that port ${PORT} is open.`,
               stack: err.stack,
               dismissable: true,
             },
@@ -83,7 +85,7 @@ export class ReactNativeDebuggerInstance extends DebuggerInstance {
     await this._connected;
 
     // TODO(natthu): Assign random port instead.
-    return 'ws=localhost:8080/';
+    return `ws=localhost:${PORT}/`;
   }
 
 }
@@ -112,7 +114,7 @@ const pid$ = Rx.Observable.using(
 const uiConnection$ = Rx.Observable.using(
   () => {
     // TODO(natthu): Assign random port instead.
-    const server = new WebSocketServer({port: 8080});
+    const server = new WebSocketServer({port: PORT});
     return {
       server,
       unsubscribe: () => { server.close(); },
