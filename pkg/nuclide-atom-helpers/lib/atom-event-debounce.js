@@ -25,7 +25,8 @@ import {
   debounce,
 } from '../../nuclide-commons';
 
-const DEFAULT_DEBOUNCE_INTERVAL_MS = 100;
+const DEFAULT_PANE_DEBOUNCE_INTERVAL_MS = 100;
+const DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS = 300;
 
 /**
  * Similar to Atom's Workspace::onDidChangeActivePaneItem
@@ -35,17 +36,45 @@ const DEFAULT_DEBOUNCE_INTERVAL_MS = 100;
  */
 export function onWorkspaceDidStopChangingActivePaneItem(
     callback: (item: mixed) => any,
-    debounceInterval: number = DEFAULT_DEBOUNCE_INTERVAL_MS
+    debounceInterval: number = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS
   ): IDisposable {
   const debouncedFunction = debounce(callback, debounceInterval, /* immediate */ false);
   return atom.workspace.onDidChangeActivePaneItem(debouncedFunction);
 }
 
 export function observeActivePaneItemDebounced(
-  debounceInterval: number = DEFAULT_DEBOUNCE_INTERVAL_MS,
+  debounceInterval: number = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS,
 ): Observable<mixed> {
   return commonsEvent.observableFromSubscribeFunction(callback => {
     return atom.workspace.observeActivePaneItem(callback);
   })
+  .debounceTime(debounceInterval);
+}
+
+export function observeActiveEditorsDebounced(
+  debounceInterval: number = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS,
+): Observable<?atom$TextEditor> {
+  return observeActivePaneItemDebounced(debounceInterval)
+    .map(paneItem => {
+      if (atom.workspace.isTextEditor(paneItem)) {
+        // Flow cannot understand the type refinement provided by the isTextEditor function, so we
+        // have to cast.
+        return (paneItem: any);
+      }
+      return null;
+    });
+}
+
+export function observeEditorChangesDebounced(
+  editor: atom$TextEditor,
+  debounceInterval: number = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS,
+): Observable<void> {
+  return Observable.concat(
+    // Emit one event at the beginning in keeping with the observe* methods in the Atom API.
+    Observable.of(undefined),
+    commonsEvent.observableFromSubscribeFunction(callback => editor.onDidChange(callback)),
+  )
+  // Debounce manually rather than using editor.onDidStopChanging so that the debounce time is
+  // configurable.
   .debounceTime(debounceInterval);
 }

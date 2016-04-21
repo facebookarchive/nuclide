@@ -14,18 +14,25 @@ import {Observable} from '@reactivex/rxjs';
 import {
   onWorkspaceDidStopChangingActivePaneItem,
   observeActivePaneItemDebounced,
+  observeActiveEditorsDebounced,
+  observeEditorChangesDebounced,
 } from '../lib/atom-event-debounce';
 import {activatePaneItem} from '../lib/workspace';
 
 import {event as commonsEvent} from '../../nuclide-commons';
 const {observableFromSubscribeFunction} = commonsEvent;
 
+// Shorter than the default so the tests don't run long.
 const DEBOUNCE_INTERVAL = 10;
+// Longer than DEBOUNCE_INTERVAL so when we wait for this amount of time, a debounced event will be
+// emitted.
+const SLEEP_INTERVAL = 15;
 
 describe('pane item change events', ()  => {
   let editor1: atom$TextEditor = (null: any);
   let editor2: atom$TextEditor = (null: any);
   let editor3: atom$TextEditor = (null: any);
+  let nonEditor: Object = (null: any);
   let activePaneItems: Observable<mixed> = (null: any);
 
   beforeEach(() => {
@@ -37,6 +44,16 @@ describe('pane item change events', ()  => {
       editor3 = await atom.workspace.open();
       editor2 = await atom.workspace.open();
       editor1 = await atom.workspace.open();
+
+      const pane = atom.workspace.getActivePane();
+      nonEditor = {
+        // Ordinarily we would have to provide an element or register a view, but since we are just
+        // testing the model here and not actually rendering anything Atom doesn't complain. If
+        // these tests start failing because Atom can't find a view, look here.
+        getTitle() { return 'foo'; },
+      };
+      pane.addItem(nonEditor);
+
       activatePaneItem(editor1);
     });
   });
@@ -69,7 +86,7 @@ describe('pane item change events', ()  => {
           .toArray()
           .toPromise();
 
-        await sleep(15);
+        await sleep(SLEEP_INTERVAL);
 
         activatePaneItem(editor2);
         activatePaneItem(editor3);
@@ -104,13 +121,73 @@ describe('pane item change events', ()  => {
           .toArray()
           .toPromise();
 
-        await sleep(15);
+        await sleep(SLEEP_INTERVAL);
 
         activatePaneItem(editor2);
         activatePaneItem(editor3);
 
         expect(await itemsPromise).toEqual([editor1, editor3]);
       });
+    });
+  });
+
+  describe('observeActiveEditorsDebounced', () => {
+    let activeEditors: Observable<?atom$TextEditor> = (null: any);
+    beforeEach(() => {
+      activeEditors = observeActiveEditorsDebounced(DEBOUNCE_INTERVAL);
+    });
+
+    it('should return null if the item is not an editor', () => {
+      waitsForPromise(async () => {
+        const itemsPromise = activeEditors
+          .take(3)
+          .toArray()
+          .toPromise();
+
+        await sleep(SLEEP_INTERVAL);
+        activatePaneItem(nonEditor);
+        await sleep(SLEEP_INTERVAL);
+        activatePaneItem(editor2);
+
+        expect(await itemsPromise).toEqual([editor1, null, editor2]);
+      });
+    });
+  });
+});
+
+describe('observeEditorChangesDebounced', () => {
+  let editor: atom$TextEditor = (null: any);
+  let editorChanges: Observable<void> = (null: any);
+
+  beforeEach(() => {
+    waitsForPromise(async () => {
+      jasmine.useRealClock();
+      editor = await atom.workspace.open();
+      editorChanges = observeEditorChangesDebounced(editor, DEBOUNCE_INTERVAL);
+    });
+  });
+
+  it('emits one event immediately', () => {
+    waitsForPromise(async () => {
+      expect(await editorChanges.take(1).toPromise()).toBeUndefined();
+    });
+  });
+
+  it('debounces changes', () => {
+    waitsForPromise(async () => {
+      const eventsPromise = editorChanges
+        .takeUntil(
+          Observable.of(null).delay(50)
+        )
+        .toArray()
+        .toPromise();
+
+      await sleep(SLEEP_INTERVAL);
+
+      editor.insertNewline();
+      editor.insertNewline();
+
+      expect((await eventsPromise).length).toBe(2);
     });
   });
 });
