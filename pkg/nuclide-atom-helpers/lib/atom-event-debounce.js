@@ -18,17 +18,22 @@
  * This file provides methods to do this.
  */
 
-const {debounce} = require('../../nuclide-commons');
+import {Observable} from '@reactivex/rxjs';
+
+import {
+  event as commonsEvent,
+  debounce,
+} from '../../nuclide-commons';
 
 const DEFAULT_DEBOUNCE_INTERVAL_MS = 100;
 
 /**
  * Similar to Atom's Workspace::onDidChangeActivePaneItem
- * (https://atom.io/docs/api/v1.0.2/Workspace#instance-onDidChangeActivePaneItem),
+ * (https://atom.io/docs/api/latest/Workspace#instance-onDidChangeActivePaneItem),
  * with the addition of a debounce interval.
  * @param debounceInterval The number of milliseconds to debounce.
  */
-function onWorkspaceDidStopChangingActivePaneItem(
+export function onWorkspaceDidStopChangingActivePaneItem(
     callback: (item: mixed) => any,
     debounceInterval: number = DEFAULT_DEBOUNCE_INTERVAL_MS
   ): IDisposable {
@@ -36,6 +41,11 @@ function onWorkspaceDidStopChangingActivePaneItem(
   return atom.workspace.onDidChangeActivePaneItem(debouncedFunction);
 }
 
-module.exports = {
-  onWorkspaceDidStopChangingActivePaneItem,
-};
+export function observeActivePaneItemDebounced(
+  debounceInterval: number = DEFAULT_DEBOUNCE_INTERVAL_MS,
+): Observable<mixed> {
+  return commonsEvent.observableFromSubscribeFunction(callback => {
+    return atom.workspace.observeActivePaneItem(callback);
+  })
+  .debounceTime(debounceInterval);
+}
