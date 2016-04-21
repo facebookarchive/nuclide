@@ -26,7 +26,7 @@ const {onWorkspaceDidStopChangingActivePaneItem} =
 class RemoteProjectsController {
   _disposables: CompositeDisposable;
   _statusBarDiv: ?HTMLElement;
-  _statusBarTile: ?atom$StatusBarTile;
+  _statusBarTile: ?StatusBarTile;
   _statusSubscription: ?Disposable;
 
   constructor() {
@@ -126,13 +126,15 @@ class RemoteProjectsController {
       return;
     }
 
-    this._statusBarTile = ReactDOM.render(
+    const component = ReactDOM.render(
       <StatusBarTile
         connectionState={connectionState}
         fileUri={fileUri}
       />,
       this._statusBarDiv,
     );
+    invariant(component instanceof StatusBarTile);
+    this._statusBarTile = component;
   }
 
   destroy(): void {
