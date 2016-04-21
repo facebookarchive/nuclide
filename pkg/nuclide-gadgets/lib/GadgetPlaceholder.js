@@ -74,7 +74,7 @@ class GadgetPlaceholder extends React.Component<void, Props, void> {
     };
   }
 
-  static deserialize(state): HTMLElement {
+  static deserialize(state): React.Component {
     return createComponentItem(<GadgetPlaceholder {...state.data} />);
   }
 }

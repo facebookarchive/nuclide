@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
-module.exports = function deserializeGadgetPlaceholder(state: Object): HTMLElement {
+import {React} from 'react-for-atom';
+
+module.exports = function deserializeGadgetPlaceholder(state: Object): React.Component {
   // Pane items are deserialized before the gadget providers have had a chance to register their
   // gadgets. Therefore, we need to create a placeholder item that we later replace.
   return require('./GadgetPlaceholder').deserialize(state);
