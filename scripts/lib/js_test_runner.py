@@ -229,10 +229,13 @@ def run_integration_tests_with_clean_state(
             raise Exception('%s are not valid integration tests' % (','.join(missing_tests)))
 
 def is_retryable_error(output):
-    return bool(
+    errors = [
         # Atom 1.5.3 for sure, maybe later ones too:
-        re.search(r'Atom\.app/atom:\s+line 117:\s+\d+\s+Segmentation fault: 11', output) or
-        re.search(r'Atom\.app/atom:\s+line 117:\s+\d+\s+Abort trap: 6', output) or
+        r'Atom\.app/atom:\s+line 117:\s+\d+\s+Segmentation fault: 11',
+        r'Atom\.app/atom:\s+line 117:\s+\d+\s+Abort trap: 6',
         # Atom 1.6.1 for sure:
-        re.search(r'Atom\.app/atom:\s+line 117:\s+\d+\s+Illegal instruction: 4', output)
-    )
+        r'Atom\.app/atom:\s+line 117:\s+\d+\s+Illegal instruction: 4',
+        # Atom 1.6.2 for sure:
+        r'Atom\.app/atom:\s+line 117:\s+\d+\s+Bus error: 10',
+    ]
+    return any(re.search(error, output) for error in errors)
