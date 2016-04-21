@@ -9,18 +9,28 @@
 /*eslint-disable no-unused-vars */
 
 declare class ws$Server extends events$EventEmitter {
-  constructor(options: {server: http$fixed$Server}): void;
+  // TODO properly type the options object
+  constructor(options: Object): void;
   close(): void;
 }
 
 declare class ws$WebSocket extends events$EventEmitter {
-  send(message: string, ack: (error: ?Object) => void): void;
+  static Server: Class<ws$Server>;
+
+  // Largely derived from https://github.com/websockets/ws/blob/master/doc/ws.md
+
+  onopen?: () => mixed;
+  onclose?: () => mixed;
+  onerror?: () => mixed;
+
+  send(message: string, ack?: (error: ?Object) => void): void;
   close(): void;
+  terminate(): void;
 }
 
 /**
  * {@https://github.com/websockets/ws}
  */
 declare module 'ws' {
-  declare class Server extends ws$Server {}
+  declare var exports: Class<ws$WebSocket>;
 }

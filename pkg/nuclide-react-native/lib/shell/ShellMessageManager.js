@@ -16,7 +16,7 @@ const WS_URL = `ws://localhost:${EXECUTOR_PORT}/message?role=interface&name=Nucl
 
 export class ShellMessageManager {
   _url: string;
-  _ws: WebSocket;
+  _ws: ?WebSocket;
 
   constructor() {
     this._url = WS_URL;

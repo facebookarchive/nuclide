@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import {Server as WebSocketServer} from 'ws';
+import WebSocket from 'ws';
 import {EventEmitter} from 'events';
 import http from 'http';
 import ChildManager from './ChildManager';
@@ -23,7 +23,7 @@ export default class ExecutorServer {
   _children: Set<ChildManager>;
   _emitter: EventEmitter;
   _webServer: http.Server;
-  _webSocketServer: WebSocketServer;
+  _webSocketServer: WebSocket.Server;
 
   constructor(port: number) {
     this._initWebServer(port);
@@ -46,7 +46,7 @@ export default class ExecutorServer {
   }
 
   _initWebSocketServer() {
-    this._webSocketServer = new WebSocketServer({
+    this._webSocketServer = new WebSocket.Server({
       server: this._webServer,
       path: REACT_NATIVE_DEBUGGER_PROXY_URL,
     });

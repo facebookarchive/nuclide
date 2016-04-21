@@ -15,7 +15,7 @@ import {
   DebuggerProxyClient,
 } from '../../../nuclide-react-native-node-executor/lib/DebuggerProxyClient';
 import Rx from '@reactivex/rxjs';
-import {Server as WebSocketServer} from 'ws';
+import WebSocket from 'ws';
 import type {Session as SessionType} from '../../../nuclide-debugger-node/lib/Session';
 
 const {observableFromSubscribeFunction} = commonsEvent;
@@ -114,7 +114,7 @@ const pid$ = Rx.Observable.using(
 const uiConnection$ = Rx.Observable.using(
   () => {
     // TODO(natthu): Assign random port instead.
-    const server = new WebSocketServer({port: PORT});
+    const server = new WebSocket.Server({port: PORT});
     return {
       server,
       unsubscribe: () => { server.close(); },
