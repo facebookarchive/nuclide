@@ -153,6 +153,8 @@ class Activation {
   _customizeModalElement() {
     const modalElement = ((this._searchPanel.getItem().parentNode: any): HTMLElement);
     modalElement.style.setProperty('margin-left', '0');
+    modalElement.style.setProperty('max-width', 'none');
+    modalElement.style.setProperty('position', 'absolute');
     modalElement.style.setProperty('width', 'auto');
     modalElement.style.setProperty('left', MODAL_MARGIN + 'px');
     modalElement.style.setProperty('right', MODAL_MARGIN + 'px');
