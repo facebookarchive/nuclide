@@ -103,6 +103,7 @@ class ProcessOutputView extends React.Component<void, Props, void> {
       <ProcessOutputView {...props} />,
       container,
     );
+    // $FlowIgnore -- an Atom-ism
     component.element = container;
     return component;
   }

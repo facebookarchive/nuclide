@@ -194,7 +194,6 @@ async function createEditorForNuclide(
  */
 function isRemoteBufferInitialized(editor: TextEditor): boolean {
   const buffer = editor.getBuffer();
-  // $FlowIssue: https://github.com/facebook/flow/issues/1375
   if (buffer && buffer.constructor.name === 'NuclideTextBuffer') {
     return true;
   }

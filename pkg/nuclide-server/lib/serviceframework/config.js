@@ -18,11 +18,9 @@ const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
  * Load service configs, and resolve all of the paths to absolute paths.
  */
 export function loadServicesConfig(): Array<ConfigEntry> {
-  // $FlowIssue - This path is not recognized.
   const publicServices = createServiceConfigObject(require('../../services-3.json'));
   let privateServices = [];
   try {
-    // $FlowIssue - This path is not recognized.
     privateServices = createServiceConfigObject(require('../../fb/fb-services-3.json'));
   } catch (e) {
     // This file may not exist.

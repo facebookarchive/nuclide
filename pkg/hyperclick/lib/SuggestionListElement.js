@@ -29,7 +29,8 @@ class SuggestionListElement extends HTMLElement {
     return this;
   }
 
-  attachedCallback() {
+  // $FlowIssue -- readonly props: t10620219
+  attachedCallback(): mixed {
     ReactDOM.render(<SuggestionList suggestionList={this._model} />, this);
   }
 

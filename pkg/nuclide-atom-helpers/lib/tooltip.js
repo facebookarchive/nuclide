@@ -33,6 +33,7 @@ export function addTooltip(options: atom$TooltipsAddOptions): (elementRef: React
     }
 
     if (elementRef != null) {
+      // $FlowFixMe -- findDOMNode takes a React.Component or an HTMLElement.
       const node = ReactDOM.findDOMNode(elementRef);
 
       prevRefDisposable = atom.tooltips.add(

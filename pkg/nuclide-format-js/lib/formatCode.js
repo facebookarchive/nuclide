@@ -33,6 +33,7 @@ async function formatCode(options: SourceOptions, editor: ?TextEditor): Promise<
   // Reprint transform.
   if (featureConfig.get('nuclide-format-js.reprint')) {
     const {reprint} = require('../../nuclide-reprint-js');
+    // $FlowFixMe(kad) -- this seems to conflate an class instance with an ordinary object.
     const reprintResult = reprint(source, {
       maxLineLength: 80,
       useSpaces: true,

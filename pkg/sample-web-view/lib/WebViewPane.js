@@ -29,6 +29,7 @@ class WebViewPane extends HTMLElement {
   //
   // This is probably confusing for Flow because it cannot tell which properties are defined during
   // initialization since this is not the constructor.
+  // $FlowIssue -- read-only props: t10620219
   createdCallback(): mixed {
     this._title = 'Loading...';
     this._subscriptions = new CompositeDisposable();

@@ -48,7 +48,6 @@ export class DebuggerConnection {
 }
 
 export class DebuggerRpcService {
-  // $FlowIssue - t10814652.
   constructor(config: DebuggerConfig) {
     throw new Error('Not implemented');
   }

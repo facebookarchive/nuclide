@@ -28,6 +28,7 @@ export default function createComponentItem(reactElement: React.Element): React.
   // Add the element as a property of the mounted component. This is a special property that Atom's
   // view registry knows to look for. (See [View Resolution
   // Algorithm](https://atom.io/docs/api/v1.2.4/ViewRegistry#instance-getView) for more details.)
+  // $FlowIgnore -- this is not standard and probably not worth supporting widely.
   mountedComponent.element = container;
 
   return mountedComponent;

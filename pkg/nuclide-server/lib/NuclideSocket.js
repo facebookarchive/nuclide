@@ -162,6 +162,7 @@ class NuclideSocket extends EventEmitter {
     // WebSocket inherits from EventEmitter, and doesn't dispose the listeners on close.
     // Here, I added an expando property function to allow disposing those listeners on the created
     // instance.
+    // $FlowFixMe -- no expandos
     websocket.dispose = () => {
       websocket.removeListener('open', onSocketOpen);
       websocket.removeListener('close', onSocketClose);
@@ -179,6 +180,7 @@ class NuclideSocket extends EventEmitter {
   _cleanWebSocket() {
     const websocket = this._websocket;
     if (websocket != null) {
+      // $FlowFixMe -- no expandos
       websocket.dispose();
       websocket.close();
       this._websocket = null;
