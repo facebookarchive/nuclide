@@ -12,10 +12,16 @@
 import type {CommandInfo} from './types';
 
 import {fsPromise} from '../../../nuclide-commons';
+import featureConfig from '../../../nuclide-feature-config';
 import * as RemoteUri from '../../../nuclide-remote-uri';
 import ini from 'ini';
 import path from 'path';
 import {BuckUtils} from '../../../nuclide-buck-base/lib/BuckUtils';
+
+type PartialCommandInfo = {
+  command: string;
+  args: Array<string>;
+};
 
 /**
  * Get the command that will run the packager server based on the current workspace.
@@ -57,15 +63,14 @@ async function getCommandFromNodeModules(dir: string): Promise<?CommandInfo> {
   if (nodeModulesParent == null) {
     return null;
   }
-  const packagerScriptPath =
-    path.join(nodeModulesParent, 'node_modules', 'react-native', 'packager', 'packager.sh');
-  const packagerScriptExists = await fsPromise.exists(packagerScriptPath);
-  if (!packagerScriptExists) {
-    return null;
-  }
-  return {
+
+  const command = await getCommandForCli(
+    path.join(nodeModulesParent, 'node_modules', 'react-native')
+  );
+
+  return command == null ? null : {
+    ...command,
     cwd: nodeModulesParent,
-    command: packagerScriptPath,
   };
 }
 
@@ -87,15 +92,11 @@ async function getCommandFromReactNative(dir: string): Promise<?CommandInfo> {
     return null;
   }
 
-  const packagerScriptPath = path.join(projectRoot, 'packager', 'packager.sh');
-  const packagerScriptExists = await fsPromise.exists(packagerScriptPath);
-  if (!packagerScriptExists) {
-    return null;
-  }
+  const command = await getCommandForCli(projectRoot);
 
-  return {
+  return command == null ? null : {
+    ...command,
     cwd: projectRoot,
-    command: packagerScriptPath,
   };
 }
 
@@ -117,5 +118,17 @@ async function getCommandFromBuck(dir: string): Promise<?CommandInfo> {
   return {
     cwd: projectRoot,
     command: section.server,
+  };
+}
+
+async function getCommandForCli(pathToReactNative: string): Promise<?PartialCommandInfo> {
+  const cliPath = path.join(pathToReactNative, 'local-cli', 'cli.js');
+  const cliExists = await fsPromise.exists(cliPath);
+  if (!cliExists) {
+    return null;
+  }
+  return {
+    command: ((featureConfig.get('nuclide-react-native.pathToNode'): any): string),
+    args: [cliPath, 'start'],
   };
 }

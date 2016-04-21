@@ -90,10 +90,10 @@ export default class ReactNativeServerManager {
 
     const runProcessWithHandlers = (dataHandlerOptions: ProcessOutputDataHandlers) => {
       const {stdout, stderr, error, exit} = dataHandlerOptions;
-      const {command, cwd} = commandInfo;
+      const {command, cwd, args} = commandInfo;
       invariant(command);
       invariant(cwd);
-      const observable = scriptSafeSpawnAndObserveOutput(command, [], {cwd});
+      const observable = scriptSafeSpawnAndObserveOutput(command, args || [], {cwd});
       const onNext = (data: {stdout?: string; stderr?: string}) => {
         if (data.stdout) {
           stdout(data.stdout);
