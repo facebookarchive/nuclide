@@ -103,10 +103,12 @@ describe('TreeRootComponent', () => {
     hostEl = document.createElement('div');
     hostEl.className = 'test';
     renderComponent = componentProps => {
-      return ReactDOM.render(
+      const component = ReactDOM.render(
         <TreeRootComponent {...componentProps} />,
         hostEl
       );
+      invariant(component instanceof TreeRootComponent);
+      return component;
     };
 
     props = {

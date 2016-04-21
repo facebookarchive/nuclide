@@ -356,7 +356,7 @@ export class TestRunnerController {
       progressValue = 100;
     }
 
-    this._testRunnerPanel = ReactDOM.render(
+    const component = ReactDOM.render(
       <TestRunnerPanel
         attachDebuggerBeforeRunning={this._attachDebuggerBeforeRunning}
         buffer={this._buffer}
@@ -378,6 +378,8 @@ export class TestRunnerController {
       root,
       didRender
     );
+    invariant(component instanceof TestRunnerPanel);
+    this._testRunnerPanel = component;
 
     if (!this._panel) {
       this._panel = atom.workspace.addBottomPanel({item: root, visible: this._state.panelVisible});

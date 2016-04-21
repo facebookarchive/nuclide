@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
 import {
   React,
   ReactDOM,
@@ -43,12 +44,14 @@ xdescribe('QuickSelectionComponent', () => {
     document.body.appendChild(componentRoot);
 
     const testProvider = new TestQuickSelectionProvider({});
-    component = ReactDOM.render(
+    const untypedComponent = ReactDOM.render(
       <QuickSelectionComponent
         provider={testProvider}
       />,
       componentRoot
     );
+    invariant(untypedComponent instanceof QuickSelectionComponent);
+    component = untypedComponent;
   });
 
   afterEach(() => {
@@ -66,12 +69,14 @@ xdescribe('QuickSelectionComponent', () => {
       component.onItemsChanged(newItems => {
         resolve(component);
       });
-      component = ReactDOM.render(
+      const untypedComponent = ReactDOM.render(
         <QuickSelectionComponent
           provider={new TestQuickSelectionProvider(items)}
         />,
         componentRoot
       );
+      invariant(untypedComponent instanceof QuickSelectionComponent);
+      component = untypedComponent;
       window.advanceClock(250);
 
       component.clear();

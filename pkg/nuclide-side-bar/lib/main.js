@@ -12,6 +12,7 @@
 import type {Logger} from '../../nuclide-logging/lib/types';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 
+import invariant from 'assert';
 const {CompositeDisposable} = require('atom');
 const {getLogger} = require('../../nuclide-logging');
 const {PanelComponent} = require('../../nuclide-ui/lib/PanelComponent');
@@ -105,7 +106,7 @@ function focusPanel(): void {
 
 function renderPanel(renderState: State, onDidRender?: () => mixed): void {
   const activeViewInstance = getActiveViewInstance(renderState);
-  panelComponent = ReactDOM.render(
+  const component = ReactDOM.render(
     <PanelComponent
       dock="left"
       // Keep the side-bar hidden when there is no active view instance.
@@ -119,6 +120,8 @@ function renderPanel(renderState: State, onDidRender?: () => mixed): void {
     item,
     onDidRender
   );
+  invariant(component instanceof PanelComponent);
+  panelComponent = component;
 }
 
 function toggleView(viewId: ?string, options?: {display: boolean}) {

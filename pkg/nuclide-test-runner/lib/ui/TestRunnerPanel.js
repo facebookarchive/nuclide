@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
 import path from 'path';
 const Console = require('./Console');
 const {Dropdown} = require('../../../nuclide-ui/lib/Dropdown');
@@ -264,13 +265,15 @@ class TestRunnerPanel extends React.Component {
   }
 
   renderTree() {
-    this._tree = ReactDOM.render(
+    const component = ReactDOM.render(
       <TestClassTree
         isRunning={this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
         testSuiteModel={this.props.testSuiteModel}
       />,
       atom.views.getView(this._leftPane).querySelector('.item-views')
     );
+    invariant(component instanceof TestClassTree);
+    this._tree = component;
   }
 
   renderConsole() {

@@ -270,7 +270,7 @@ class DiffViewComponent extends React.Component {
       commitMode,
       commitModeState,
     } = this.props.diffModel.getState();
-    this._commitComponent = ReactDOM.render(
+    const component = ReactDOM.render(
       <DiffCommitView
         commitMessage={commitMessage}
         commitMode={commitMode}
@@ -281,6 +281,8 @@ class DiffViewComponent extends React.Component {
       />,
       this._getPaneElement(this._bottomRightPane),
     );
+    invariant(component instanceof DiffCommitView);
+    this._commitComponent = component;
   }
 
   _renderPublishView(): void {
@@ -291,7 +293,7 @@ class DiffViewComponent extends React.Component {
       publishMessage,
       headRevision,
     } = diffModel.getState();
-    this._publishComponent = ReactDOM.render(
+    const component = ReactDOM.render(
       <DiffPublishView
         publishModeState={publishModeState}
         message={publishMessage}
@@ -301,6 +303,8 @@ class DiffViewComponent extends React.Component {
       />,
       this._getPaneElement(this._bottomRightPane),
     );
+    invariant(component instanceof DiffPublishView);
+    this._publishComponent = component;
   }
 
   _renderTree(): void {
@@ -324,7 +328,7 @@ class DiffViewComponent extends React.Component {
 
   _renderEditors(): void {
     const {filePath, oldEditorState: oldState, newEditorState: newState} = this.state;
-    this._oldEditorComponent = ReactDOM.render(
+    const oldEditorComponent = ReactDOM.render(
         <DiffViewEditorPane
           headerTitle={oldState.revisionTitle}
           textBuffer={this._readonlyBuffer}
@@ -340,8 +344,10 @@ class DiffViewComponent extends React.Component {
         />,
         this._getPaneElement(this._oldEditorPane),
     );
+    invariant(oldEditorComponent instanceof DiffViewEditorPane);
+    this._oldEditorComponent = oldEditorComponent;
     const textBuffer = bufferForUri(filePath);
-    this._newEditorComponent = ReactDOM.render(
+    const newEditorComponent = ReactDOM.render(
         <DiffViewEditorPane
           headerTitle={newState.revisionTitle}
           textBuffer={textBuffer}
@@ -357,6 +363,8 @@ class DiffViewComponent extends React.Component {
         />,
         this._getPaneElement(this._newEditorPane),
     );
+    invariant(newEditorComponent instanceof DiffViewEditorPane);
+    this._newEditorComponent = newEditorComponent;
   }
 
   _onDidUpdateTextEditorElement(): void {
@@ -364,13 +372,15 @@ class DiffViewComponent extends React.Component {
   }
 
   _renderTimelineView(): void {
-    this._timelineComponent = ReactDOM.render(
+    const component = ReactDOM.render(
       <DiffTimelineView
         diffModel={this.props.diffModel}
         onSelectionChange={this._onTimelineChangeRevision}
       />,
       this._getPaneElement(this._bottomRightPane),
     );
+    invariant(component instanceof DiffTimelineView);
+    this._timelineComponent = component;
   }
 
   _renderNavigation(): void {
@@ -378,7 +388,7 @@ class DiffViewComponent extends React.Component {
     const {offsets: oldOffsets, highlightedLines: oldLines, text: oldContents} = oldEditorState;
     const {offsets: newOffsets, highlightedLines: newLines, text: newContents} = newEditorState;
     const navigationPaneElement = this._getPaneElement(this._navigationPane);
-    this._navigationComponent = ReactDOM.render(
+    const component = ReactDOM.render(
       <DiffNavigationBar
         elementHeight={navigationPaneElement.clientHeight}
         addedLines={newLines.added}
@@ -391,6 +401,8 @@ class DiffViewComponent extends React.Component {
       />,
       navigationPaneElement,
     );
+    invariant(component instanceof DiffNavigationBar);
+    this._navigationComponent = component;
   }
 
   _onNavigationClick(lineNumber: number, isAddedLine: boolean): void {

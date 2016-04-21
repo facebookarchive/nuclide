@@ -14,6 +14,7 @@ import type {
 } from '../../nuclide-quick-open-interfaces';
 import type {HomeFragments} from '../../nuclide-home-interfaces';
 
+import invariant from 'assert';
 import {
   React,
   ReactDOM,
@@ -167,8 +168,8 @@ class Activation {
     this._searchComponent = this._render();
   }
 
-  _render() {
-    return ReactDOM.render(
+  _render(): QuickSelectionComponent {
+    const component = ReactDOM.render(
       <QuickSelectionComponent
         activeProvider={this._currentProvider}
         onProviderChange={this.handleActiveProviderChange.bind(this)}
@@ -176,6 +177,8 @@ class Activation {
       />,
       this._reactDiv
     );
+    invariant(component instanceof QuickSelectionComponent);
+    return component;
   }
 
   handleActiveProviderChange(newProviderName: string): void {

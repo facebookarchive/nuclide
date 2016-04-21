@@ -69,12 +69,14 @@ class Activation {
     const NuclideToolbar = require('./NuclideToolbar');
     const item = document.createElement('div');
 
-    this._nuclideToolbar = ReactDOM.render(
+    const component = ReactDOM.render(
       <NuclideToolbar
         projectStore={this._projectStore}
       />,
       item
     );
+    invariant(component instanceof NuclideToolbar);
+    this._nuclideToolbar = component;
 
     const panel = atom.workspace.addTopPanel({
       item,

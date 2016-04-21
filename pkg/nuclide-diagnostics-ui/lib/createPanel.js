@@ -92,7 +92,9 @@ function createDiagnosticsPanel(
       diagnosticsNeedSorting = false;
     }
 
-    diagnosticsPanel = ReactDOM.render(<DiagnosticsPanel {...props} />, item);
+    const component = ReactDOM.render(<DiagnosticsPanel {...props} />, item);
+    invariant(component instanceof DiagnosticsPanel);
+    diagnosticsPanel = component;
   }
 
   const activePaneItemSubscription = atom.workspace.onDidChangeActivePaneItem(paneItem => {
