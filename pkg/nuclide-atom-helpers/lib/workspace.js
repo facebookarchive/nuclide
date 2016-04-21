@@ -10,6 +10,7 @@
  */
 
 import path from 'path';
+import invariant from 'assert';
 
 /**
  * @return The path to the JSON file on disk where the workspace state is stored.
@@ -30,4 +31,11 @@ export function getPathToWorkspaceState(): ?string {
     'storage',
     getStateKey(atom.project.getPaths(), 'editor'),
   );
+}
+
+export function activatePaneItem(paneItem: Object): void {
+  const pane = atom.workspace.paneForItem(paneItem);
+  invariant(pane != null);
+  pane.activate();
+  pane.activateItem(paneItem);
 }

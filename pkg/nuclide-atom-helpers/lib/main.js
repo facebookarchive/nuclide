@@ -80,6 +80,10 @@ module.exports = {
     return requireFromCache('./workspace').getPathToWorkspaceState;
   },
 
+  get activatePaneItem() {
+    return requireFromCache('./workspace').activatePaneItem;
+  },
+
   get setPositionAndScroll() {
     return requireFromCache('./text-editor').setPositionAndScroll;
   },
