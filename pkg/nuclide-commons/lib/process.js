@@ -290,8 +290,9 @@ function _createProcessStream(
       .do(() => { exited = true; });
 
     return new CompositeSubscription(
-      // A version of processStream that never completes...
-      Observable.merge(processStream, Observable.create(() => {}))
+      processStream
+        // A version of processStream that never completes...
+        .merge(Observable.never())
         .merge(errors)
         // ...which we take until the process exits.
         .takeUntil(exit)
