@@ -355,6 +355,7 @@ export class FileTreeNode {
       shouldBeShown: this.shouldBeShown,
       shouldBeSoftened: this.shouldBeSoftened,
       vcsStatusCode: this.vcsStatusCode,
+      repo: this.repo,
       isIgnored: this.isIgnored,
       checkedStatus: this.checkedStatus,
     };
