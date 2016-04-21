@@ -1,18 +1,13 @@
 [include]
 
 [ignore]
-# becomes first-level dependency with npm3
-.*/node_modules/fbjs/lib/.*
-.*/node_modules/babel-types/.*
-# ignore module src to prefer declaration
-.*/node_modules/rx/.*
+# ignore module source to prefer declaration
 .*/node_modules/@reactivex/rxjs/.*
-# ignore module src to prefer declaration
 .*/node_modules/react/react.js
-# Annotated with `@flow` but has errors
-.*/node_modules/fixed-data-table/internal/.*
+# annotated with `@flow` but have errors
+.*/node_modules/babel-types/.*
+.*/node_modules/fbjs/lib/.*
 .*/node_modules/sabor/.*
-
 # issues with JSON
 .*/node_modules/json5/.*json
 
