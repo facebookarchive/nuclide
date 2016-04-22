@@ -1,5 +1,11 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getConfig = getConfig;
+exports.getShowTypeCoverage = getShowTypeCoverage;
+exports.setShowTypeCoverage = setShowTypeCoverage;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +15,25 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../nuclide-feature-config';
+var _nuclideFeatureConfig = require('../../nuclide-feature-config');
 
-type HackConfig = {
-  hhClientPath: string;
-  useIdeConnection: boolean;
-  showTypeCoverage: boolean;
-};
+var _nuclideFeatureConfig2 = _interopRequireDefault(_nuclideFeatureConfig);
 
-export const HACK_CONFIG_PATH = 'nuclide-hack';
-export const SHOW_TYPE_COVERAGE_CONFIG_PATH = HACK_CONFIG_PATH + '.showTypeCoverage';
+var HACK_CONFIG_PATH = 'nuclide-hack';
+exports.HACK_CONFIG_PATH = HACK_CONFIG_PATH;
+var SHOW_TYPE_COVERAGE_CONFIG_PATH = HACK_CONFIG_PATH + '.showTypeCoverage';
 
-export function getConfig(): HackConfig {
-  return (featureConfig.get(HACK_CONFIG_PATH): any);
+exports.SHOW_TYPE_COVERAGE_CONFIG_PATH = SHOW_TYPE_COVERAGE_CONFIG_PATH;
+
+function getConfig() {
+  return _nuclideFeatureConfig2['default'].get(HACK_CONFIG_PATH);
 }
 
-export function getShowTypeCoverage(): boolean {
+function getShowTypeCoverage() {
   return getConfig().showTypeCoverage;
 }
 
-export function setShowTypeCoverage(value: boolean): void {
-  featureConfig.set(SHOW_TYPE_COVERAGE_CONFIG_PATH, value);
+function setShowTypeCoverage(value) {
+  _nuclideFeatureConfig2['default'].set(SHOW_TYPE_COVERAGE_CONFIG_PATH, value);
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImNvbmZpZy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7OztvQ0FXMEIsOEJBQThCOzs7O0FBUWpELElBQU0sZ0JBQWdCLEdBQUcsY0FBYyxDQUFDOztBQUN4QyxJQUFNLDhCQUE4QixHQUFHLGdCQUFnQixHQUFHLG1CQUFtQixDQUFDOzs7O0FBRTlFLFNBQVMsU0FBUyxHQUFlO0FBQ3RDLFNBQVEsa0NBQWMsR0FBRyxDQUFDLGdCQUFnQixDQUFDLENBQU87Q0FDbkQ7O0FBRU0sU0FBUyxtQkFBbUIsR0FBWTtBQUM3QyxTQUFPLFNBQVMsRUFBRSxDQUFDLGdCQUFnQixDQUFDO0NBQ3JDOztBQUVNLFNBQVMsbUJBQW1CLENBQUMsS0FBYyxFQUFRO0FBQ3hELG9DQUFjLEdBQUcsQ0FBQyw4QkFBOEIsRUFBRSxLQUFLLENBQUMsQ0FBQztDQUMxRCIsImZpbGUiOiJjb25maWcuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgZmVhdHVyZUNvbmZpZyBmcm9tICcuLi8uLi9udWNsaWRlLWZlYXR1cmUtY29uZmlnJztcblxudHlwZSBIYWNrQ29uZmlnID0ge1xuICBoaENsaWVudFBhdGg6IHN0cmluZztcbiAgdXNlSWRlQ29ubmVjdGlvbjogYm9vbGVhbjtcbiAgc2hvd1R5cGVDb3ZlcmFnZTogYm9vbGVhbjtcbn07XG5cbmV4cG9ydCBjb25zdCBIQUNLX0NPTkZJR19QQVRIID0gJ251Y2xpZGUtaGFjayc7XG5leHBvcnQgY29uc3QgU0hPV19UWVBFX0NPVkVSQUdFX0NPTkZJR19QQVRIID0gSEFDS19DT05GSUdfUEFUSCArICcuc2hvd1R5cGVDb3ZlcmFnZSc7XG5cbmV4cG9ydCBmdW5jdGlvbiBnZXRDb25maWcoKTogSGFja0NvbmZpZyB7XG4gIHJldHVybiAoZmVhdHVyZUNvbmZpZy5nZXQoSEFDS19DT05GSUdfUEFUSCk6IGFueSk7XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBnZXRTaG93VHlwZUNvdmVyYWdlKCk6IGJvb2xlYW4ge1xuICByZXR1cm4gZ2V0Q29uZmlnKCkuc2hvd1R5cGVDb3ZlcmFnZTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIHNldFNob3dUeXBlQ292ZXJhZ2UodmFsdWU6IGJvb2xlYW4pOiB2b2lkIHtcbiAgZmVhdHVyZUNvbmZpZy5zZXQoU0hPV19UWVBFX0NPVkVSQUdFX0NPTkZJR19QQVRILCB2YWx1ZSk7XG59XG4iXX0=

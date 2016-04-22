@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _StatusCodeIdToNumber;
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,54 +12,41 @@
 
 /* @providesModule HgConstants */
 
-import type {
-  StatusCodeIdValue,
-  StatusCodeNumberValue,
-  HgStatusOptionValue,
-} from './HgService';
-
-const StatusCodeId: {[key: string]: StatusCodeIdValue} = Object.freeze({
+var StatusCodeId = Object.freeze({
   ADDED: 'A',
   CLEAN: 'C',
   IGNORED: 'I',
   MODIFIED: 'M',
   MISSING: '!', // (deleted by non-hg command, but still tracked)
   REMOVED: 'R',
-  UNTRACKED: '?',
+  UNTRACKED: '?'
 });
 
-const StatusCodeNumber = Object.freeze({
+var StatusCodeNumber = Object.freeze({
   ADDED: 1,
   CLEAN: 2,
   IGNORED: 3,
   MODIFIED: 4,
   MISSING: 5,
   REMOVED: 6,
-  UNTRACKED: 7,
+  UNTRACKED: 7
 });
 
 // This is to work around flow's missing support of enums.
-(StatusCodeNumber: { [key: string]: StatusCodeNumberValue });
+StatusCodeNumber;
 
-const StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = {
-  [StatusCodeId.ADDED]: StatusCodeNumber.ADDED,
-  [StatusCodeId.CLEAN]: StatusCodeNumber.CLEAN,
-  [StatusCodeId.IGNORED]: StatusCodeNumber.IGNORED,
-  [StatusCodeId.MODIFIED]: StatusCodeNumber.MODIFIED,
-  [StatusCodeId.MISSING]: StatusCodeNumber.MISSING,
-  [StatusCodeId.REMOVED]: StatusCodeNumber.REMOVED,
-  [StatusCodeId.UNTRACKED]: StatusCodeNumber.UNTRACKED,
-};
+var StatusCodeIdToNumber = (_StatusCodeIdToNumber = {}, _defineProperty(_StatusCodeIdToNumber, StatusCodeId.ADDED, StatusCodeNumber.ADDED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.CLEAN, StatusCodeNumber.CLEAN), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.IGNORED, StatusCodeNumber.IGNORED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.MODIFIED, StatusCodeNumber.MODIFIED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.MISSING, StatusCodeNumber.MISSING), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.REMOVED, StatusCodeNumber.REMOVED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.UNTRACKED, StatusCodeNumber.UNTRACKED), _StatusCodeIdToNumber);
 
-const HgStatusOption: {[key: string]: HgStatusOptionValue} = Object.freeze({
-  ONLY_NON_IGNORED: 1,  // only the output of `hg status`
-  ONLY_IGNORED: 2,      // only the output of `hg status --ignored`
-  ALL_STATUSES: 3,      // the output of `hg status --all`
-});
+var HgStatusOption = Object.freeze({
+  ONLY_NON_IGNORED: 1, // only the output of `hg status`
+  ONLY_IGNORED: 2, // only the output of `hg status --ignored`
+  ALL_STATUSES: 3 });
 
+// the output of `hg status --all`
 module.exports = {
-  HgStatusOption,
-  StatusCodeId,
-  StatusCodeIdToNumber,
-  StatusCodeNumber,
+  HgStatusOption: HgStatusOption,
+  StatusCodeId: StatusCodeId,
+  StatusCodeIdToNumber: StatusCodeIdToNumber,
+  StatusCodeNumber: StatusCodeNumber
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImhnLWNvbnN0YW50cy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7OztBQW1CQSxJQUFNLFlBQWdELEdBQUcsTUFBTSxDQUFDLE1BQU0sQ0FBQztBQUNyRSxPQUFLLEVBQUUsR0FBRztBQUNWLE9BQUssRUFBRSxHQUFHO0FBQ1YsU0FBTyxFQUFFLEdBQUc7QUFDWixVQUFRLEVBQUUsR0FBRztBQUNiLFNBQU8sRUFBRSxHQUFHO0FBQ1osU0FBTyxFQUFFLEdBQUc7QUFDWixXQUFTLEVBQUUsR0FBRztDQUNmLENBQUMsQ0FBQzs7QUFFSCxJQUFNLGdCQUFnQixHQUFHLE1BQU0sQ0FBQyxNQUFNLENBQUM7QUFDckMsT0FBSyxFQUFFLENBQUM7QUFDUixPQUFLLEVBQUUsQ0FBQztBQUNSLFNBQU8sRUFBRSxDQUFDO0FBQ1YsVUFBUSxFQUFFLENBQUM7QUFDWCxTQUFPLEVBQUUsQ0FBQztBQUNWLFNBQU8sRUFBRSxDQUFDO0FBQ1YsV0FBUyxFQUFFLENBQUM7Q0FDYixDQUFDLENBQUM7OztBQUdILEFBQUMsZ0JBQWdCLENBQTRDOztBQUU3RCxJQUFNLG9CQUF1RSx1RUFDMUUsWUFBWSxDQUFDLEtBQUssRUFBRyxnQkFBZ0IsQ0FBQyxLQUFLLDBDQUMzQyxZQUFZLENBQUMsS0FBSyxFQUFHLGdCQUFnQixDQUFDLEtBQUssMENBQzNDLFlBQVksQ0FBQyxPQUFPLEVBQUcsZ0JBQWdCLENBQUMsT0FBTywwQ0FDL0MsWUFBWSxDQUFDLFFBQVEsRUFBRyxnQkFBZ0IsQ0FBQyxRQUFRLDBDQUNqRCxZQUFZLENBQUMsT0FBTyxFQUFHLGdCQUFnQixDQUFDLE9BQU8sMENBQy9DLFlBQVksQ0FBQyxPQUFPLEVBQUcsZ0JBQWdCLENBQUMsT0FBTywwQ0FDL0MsWUFBWSxDQUFDLFNBQVMsRUFBRyxnQkFBZ0IsQ0FBQyxTQUFTLHlCQUNyRCxDQUFDOztBQUVGLElBQU0sY0FBb0QsR0FBRyxNQUFNLENBQUMsTUFBTSxDQUFDO0FBQ3pFLGtCQUFnQixFQUFFLENBQUM7QUFDbkIsY0FBWSxFQUFFLENBQUM7QUFDZixjQUFZLEVBQUUsQ0FBQyxFQUNoQixDQUFDLENBQUM7OztBQUVILE1BQU0sQ0FBQyxPQUFPLEdBQUc7QUFDZixnQkFBYyxFQUFkLGNBQWM7QUFDZCxjQUFZLEVBQVosWUFBWTtBQUNaLHNCQUFvQixFQUFwQixvQkFBb0I7QUFDcEIsa0JBQWdCLEVBQWhCLGdCQUFnQjtDQUNqQixDQUFDIiwiZmlsZSI6ImhnLWNvbnN0YW50cy5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbi8qIEBwcm92aWRlc01vZHVsZSBIZ0NvbnN0YW50cyAqL1xuXG5pbXBvcnQgdHlwZSB7XG4gIFN0YXR1c0NvZGVJZFZhbHVlLFxuICBTdGF0dXNDb2RlTnVtYmVyVmFsdWUsXG4gIEhnU3RhdHVzT3B0aW9uVmFsdWUsXG59IGZyb20gJy4vSGdTZXJ2aWNlJztcblxuY29uc3QgU3RhdHVzQ29kZUlkOiB7W2tleTogc3RyaW5nXTogU3RhdHVzQ29kZUlkVmFsdWV9ID0gT2JqZWN0LmZyZWV6ZSh7XG4gIEFEREVEOiAnQScsXG4gIENMRUFOOiAnQycsXG4gIElHTk9SRUQ6ICdJJyxcbiAgTU9ESUZJRUQ6ICdNJyxcbiAgTUlTU0lORzogJyEnLCAvLyAoZGVsZXRlZCBieSBub24taGcgY29tbWFuZCwgYnV0IHN0aWxsIHRyYWNrZWQpXG4gIFJFTU9WRUQ6ICdSJyxcbiAgVU5UUkFDS0VEOiAnPycsXG59KTtcblxuY29uc3QgU3RhdHVzQ29kZU51bWJlciA9IE9iamVjdC5mcmVlemUoe1xuICBBRERFRDogMSxcbiAgQ0xFQU46IDIsXG4gIElHTk9SRUQ6IDMsXG4gIE1PRElGSUVEOiA0LFxuICBNSVNTSU5HOiA1LFxuICBSRU1PVkVEOiA2LFxuICBVTlRSQUNLRUQ6IDcsXG59KTtcblxuLy8gVGhpcyBpcyB0byB3b3JrIGFyb3VuZCBmbG93J3MgbWlzc2luZyBzdXBwb3J0IG9mIGVudW1zLlxuKFN0YXR1c0NvZGVOdW1iZXI6IHsgW2tleTogc3RyaW5nXTogU3RhdHVzQ29kZU51bWJlclZhbHVlIH0pO1xuXG5jb25zdCBTdGF0dXNDb2RlSWRUb051bWJlcjoge1trZXk6IFN0YXR1c0NvZGVJZFZhbHVlXTogU3RhdHVzQ29kZU51bWJlclZhbHVlfSA9IHtcbiAgW1N0YXR1c0NvZGVJZC5BRERFRF06IFN0YXR1c0NvZGVOdW1iZXIuQURERUQsXG4gIFtTdGF0dXNDb2RlSWQuQ0xFQU5dOiBTdGF0dXNDb2RlTnVtYmVyLkNMRUFOLFxuICBbU3RhdHVzQ29kZUlkLklHTk9SRURdOiBTdGF0dXNDb2RlTnVtYmVyLklHTk9SRUQsXG4gIFtTdGF0dXNDb2RlSWQuTU9ESUZJRURdOiBTdGF0dXNDb2RlTnVtYmVyLk1PRElGSUVELFxuICBbU3RhdHVzQ29kZUlkLk1JU1NJTkddOiBTdGF0dXNDb2RlTnVtYmVyLk1JU1NJTkcsXG4gIFtTdGF0dXNDb2RlSWQuUkVNT1ZFRF06IFN0YXR1c0NvZGVOdW1iZXIuUkVNT1ZFRCxcbiAgW1N0YXR1c0NvZGVJZC5VTlRSQUNLRURdOiBTdGF0dXNDb2RlTnVtYmVyLlVOVFJBQ0tFRCxcbn07XG5cbmNvbnN0IEhnU3RhdHVzT3B0aW9uOiB7W2tleTogc3RyaW5nXTogSGdTdGF0dXNPcHRpb25WYWx1ZX0gPSBPYmplY3QuZnJlZXplKHtcbiAgT05MWV9OT05fSUdOT1JFRDogMSwgIC8vIG9ubHkgdGhlIG91dHB1dCBvZiBgaGcgc3RhdHVzYFxuICBPTkxZX0lHTk9SRUQ6IDIsICAgICAgLy8gb25seSB0aGUgb3V0cHV0IG9mIGBoZyBzdGF0dXMgLS1pZ25vcmVkYFxuICBBTExfU1RBVFVTRVM6IDMsICAgICAgLy8gdGhlIG91dHB1dCBvZiBgaGcgc3RhdHVzIC0tYWxsYFxufSk7XG5cbm1vZHVsZS5leHBvcnRzID0ge1xuICBIZ1N0YXR1c09wdGlvbixcbiAgU3RhdHVzQ29kZUlkLFxuICBTdGF0dXNDb2RlSWRUb051bWJlcixcbiAgU3RhdHVzQ29kZU51bWJlcixcbn07XG4iXX0=

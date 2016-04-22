@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,71 +10,79 @@
  * the root directory of this source tree.
  */
 
-const Ansi = require('./Ansi');
-
-import type {TestRunStatus} from '../../nuclide-test-runner/lib/interfaces';
-
 /**
  * Status codes returned in the "status" field of the testing utility's JSON response.
  */
-const Status: {[key: string]: TestRunStatus} = Object.freeze({
+var Ansi = require('./Ansi');
+
+var Status = Object.freeze({
   PASSED: 1,
   FAILED: 2,
   SKIPPED: 3,
   FATAL: 4,
-  TIMEOUT: 5,
+  TIMEOUT: 5
 });
 
-const StatusSymbol: {[key: TestRunStatus]: string} = {};
-StatusSymbol[Status.PASSED] = `${Ansi.GREEN}✓${Ansi.RESET}`;
-StatusSymbol[Status.FAILED] = `${Ansi.RED}✗${Ansi.RESET}`;
-StatusSymbol[Status.SKIPPED] = `${Ansi.YELLOW}?${Ansi.RESET}`;
-StatusSymbol[Status.FATAL] = `${Ansi.RED}✘${Ansi.RESET}`;
-StatusSymbol[Status.TIMEOUT] = `${Ansi.BLUE}✉${Ansi.RESET}`;
+var StatusSymbol = {};
+StatusSymbol[Status.PASSED] = Ansi.GREEN + '✓' + Ansi.RESET;
+StatusSymbol[Status.FAILED] = Ansi.RED + '✗' + Ansi.RESET;
+StatusSymbol[Status.SKIPPED] = Ansi.YELLOW + '?' + Ansi.RESET;
+StatusSymbol[Status.FATAL] = Ansi.RED + '✘' + Ansi.RESET;
+StatusSymbol[Status.TIMEOUT] = Ansi.BLUE + '✉' + Ansi.RESET;
 
-const StatusMessage: {[key: TestRunStatus]: string} = {};
-StatusMessage[Status.PASSED] = `${Ansi.GREEN}(PASS)${Ansi.RESET}`;
-StatusMessage[Status.FAILED] = `${Ansi.RED}(FAIL)${Ansi.RESET}`;
-StatusMessage[Status.SKIPPED] = `${Ansi.YELLOW}(SKIP)${Ansi.RESET}`;
-StatusMessage[Status.FATAL] = `${Ansi.RED}(FATAL)${Ansi.RESET}`;
-StatusMessage[Status.TIMEOUT] = `${Ansi.BLUE}(TIMEOUT)${Ansi.RESET}`;
+var StatusMessage = {};
+StatusMessage[Status.PASSED] = Ansi.GREEN + '(PASS)' + Ansi.RESET;
+StatusMessage[Status.FAILED] = Ansi.RED + '(FAIL)' + Ansi.RESET;
+StatusMessage[Status.SKIPPED] = Ansi.YELLOW + '(SKIP)' + Ansi.RESET;
+StatusMessage[Status.FATAL] = Ansi.RED + '(FATAL)' + Ansi.RESET;
+StatusMessage[Status.TIMEOUT] = Ansi.BLUE + '(TIMEOUT)' + Ansi.RESET;
 
-class TestRunModel {
+var TestRunModel = (function () {
+  _createClass(TestRunModel, null, [{
+    key: 'Status',
+    value: Status,
+    enumerable: true
+  }]);
 
-  static Status: {[key: string]: TestRunStatus} = Status;
+  function TestRunModel(label, dispose) {
+    _classCallCheck(this, TestRunModel);
 
-  startTime: ?number;
-  endTime: ?number;
-  label: string;
-  dispose: ?() => void;
-
-  constructor(label: string, dispose: () => void) {
     this.label = label;
     this.dispose = dispose;
   }
 
-  getDuration(): ?number {
-    if (this.startTime && this.endTime) {
-      return this.endTime - this.startTime;
+  _createClass(TestRunModel, [{
+    key: 'getDuration',
+    value: function getDuration() {
+      if (this.startTime && this.endTime) {
+        return this.endTime - this.startTime;
+      }
     }
-  }
+  }, {
+    key: 'start',
+    value: function start() {
+      this.startTime = Date.now();
+    }
+  }, {
+    key: 'stop',
+    value: function stop() {
+      this.endTime = Date.now();
+    }
 
-  start(): void {
-    this.startTime = Date.now();
-  }
+    /**
+     * @return A summary of the test run including its name, its duration, and whether it passed,
+     * failed, skipped, etc.
+     */
+  }], [{
+    key: 'formatStatusMessage',
+    value: function formatStatusMessage(name, duration, status) {
+      var durationStr = duration.toFixed(3);
+      return '      ' + StatusSymbol[status] + ' ' + name + ' ' + durationStr + 's ' + StatusMessage[status];
+    }
+  }]);
 
-  stop(): void {
-    this.endTime = Date.now();
-  }
-
-  /**
-   * @return A summary of the test run including its name, its duration, and whether it passed,
-   * failed, skipped, etc.
-   */
-  static formatStatusMessage(name: string, duration: number, status: TestRunStatus): string {
-    const durationStr = duration.toFixed(3);
-    return `      ${StatusSymbol[status]} ${name} ${durationStr}s ${StatusMessage[status]}`;
-  }
-}
+  return TestRunModel;
+})();
 
 module.exports = TestRunModel;
+//# sourceMappingURL=data:application/json;base64,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QUFJLFNBQUksV0FBVyxVQUFLLGFBQWEsQ0FBQyxNQUFNLENBQUMsQ0FBRztLQUN6Rjs7O1NBbkNHLFlBQVk7OztBQXNDbEIsTUFBTSxDQUFDLE9BQU8sR0FBRyxZQUFZLENBQUMiLCJmaWxlIjoiVGVzdFJ1bk1vZGVsLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuY29uc3QgQW5zaSA9IHJlcXVpcmUoJy4vQW5zaScpO1xuXG5pbXBvcnQgdHlwZSB7VGVzdFJ1blN0YXR1c30gZnJvbSAnLi4vLi4vbnVjbGlkZS10ZXN0LXJ1bm5lci9saWIvaW50ZXJmYWNlcyc7XG5cbi8qKlxuICogU3RhdHVzIGNvZGVzIHJldHVybmVkIGluIHRoZSBcInN0YXR1c1wiIGZpZWxkIG9mIHRoZSB0ZXN0aW5nIHV0aWxpdHkncyBKU09OIHJlc3BvbnNlLlxuICovXG5jb25zdCBTdGF0dXM6IHtba2V5OiBzdHJpbmddOiBUZXN0UnVuU3RhdHVzfSA9IE9iamVjdC5mcmVlemUoe1xuICBQQVNTRUQ6IDEsXG4gIEZBSUxFRDogMixcbiAgU0tJUFBFRDogMyxcbiAgRkFUQUw6IDQsXG4gIFRJTUVPVVQ6IDUsXG59KTtcblxuY29uc3QgU3RhdHVzU3ltYm9sOiB7W2tleTogVGVzdFJ1blN0YXR1c106IHN0cmluZ30gPSB7fTtcblN0YXR1c1N5bWJvbFtTdGF0dXMuUEFTU0VEXSA9IGAke0Fuc2kuR1JFRU594pyTJHtBbnNpLlJFU0VUfWA7XG5TdGF0dXNTeW1ib2xbU3RhdHVzLkZBSUxFRF0gPSBgJHtBbnNpLlJFRH3inJcke0Fuc2kuUkVTRVR9YDtcblN0YXR1c1N5bWJvbFtTdGF0dXMuU0tJUFBFRF0gPSBgJHtBbnNpLllFTExPV30/JHtBbnNpLlJFU0VUfWA7XG5TdGF0dXNTeW1ib2xbU3RhdHVzLkZBVEFMXSA9IGAke0Fuc2kuUkVEfeKcmCR7QW5zaS5SRVNFVH1gO1xuU3RhdHVzU3ltYm9sW1N0YXR1cy5USU1FT1VUXSA9IGAke0Fuc2kuQkxVRX3inIkke0Fuc2kuUkVTRVR9YDtcblxuY29uc3QgU3RhdHVzTWVzc2FnZToge1trZXk6IFRlc3RSdW5TdGF0dXNdOiBzdHJpbmd9ID0ge307XG5TdGF0dXNNZXNzYWdlW1N0YXR1cy5QQVNTRURdID0gYCR7QW5zaS5HUkVFTn0oUEFTUykke0Fuc2kuUkVTRVR9YDtcblN0YXR1c01lc3NhZ2VbU3RhdHVzLkZBSUxFRF0gPSBgJHtBbnNpLlJFRH0oRkFJTCkke0Fuc2kuUkVTRVR9YDtcblN0YXR1c01lc3NhZ2VbU3RhdHVzLlNLSVBQRURdID0gYCR7QW5zaS5ZRUxMT1d9KFNLSVApJHtBbnNpLlJFU0VUfWA7XG5TdGF0dXNNZXNzYWdlW1N0YXR1cy5GQVRBTF0gPSBgJHtBbnNpLlJFRH0oRkFUQUwpJHtBbnNpLlJFU0VUfWA7XG5TdGF0dXNNZXNzYWdlW1N0YXR1cy5USU1FT1VUXSA9IGAke0Fuc2kuQkxVRX0oVElNRU9VVCkke0Fuc2kuUkVTRVR9YDtcblxuY2xhc3MgVGVzdFJ1bk1vZGVsIHtcblxuICBzdGF0aWMgU3RhdHVzOiB7W2tleTogc3RyaW5nXTogVGVzdFJ1blN0YXR1c30gPSBTdGF0dXM7XG5cbiAgc3RhcnRUaW1lOiA/bnVtYmVyO1xuICBlbmRUaW1lOiA/bnVtYmVyO1xuICBsYWJlbDogc3RyaW5nO1xuICBkaXNwb3NlOiA/KCkgPT4gdm9pZDtcblxuICBjb25zdHJ1Y3RvcihsYWJlbDogc3RyaW5nLCBkaXNwb3NlOiAoKSA9PiB2b2lkKSB7XG4gICAgdGhpcy5sYWJlbCA9IGxhYmVsO1xuICAgIHRoaXMuZGlzcG9zZSA9IGRpc3Bvc2U7XG4gIH1cblxuICBnZXREdXJhdGlvbigpOiA/bnVtYmVyIHtcbiAgICBpZiAodGhpcy5zdGFydFRpbWUgJiYgdGhpcy5lbmRUaW1lKSB7XG4gICAgICByZXR1cm4gdGhpcy5lbmRUaW1lIC0gdGhpcy5zdGFydFRpbWU7XG4gICAgfVxuICB9XG5cbiAgc3RhcnQoKTogdm9pZCB7XG4gICAgdGhpcy5zdGFydFRpbWUgPSBEYXRlLm5vdygpO1xuICB9XG5cbiAgc3RvcCgpOiB2b2lkIHtcbiAgICB0aGlzLmVuZFRpbWUgPSBEYXRlLm5vdygpO1xuICB9XG5cbiAgLyoqXG4gICAqIEByZXR1cm4gQSBzdW1tYXJ5IG9mIHRoZSB0ZXN0IHJ1biBpbmNsdWRpbmcgaXRzIG5hbWUsIGl0cyBkdXJhdGlvbiwgYW5kIHdoZXRoZXIgaXQgcGFzc2VkLFxuICAgKiBmYWlsZWQsIHNraXBwZWQsIGV0Yy5cbiAgICovXG4gIHN0YXRpYyBmb3JtYXRTdGF0dXNNZXNzYWdlKG5hbWU6IHN0cmluZywgZHVyYXRpb246IG51bWJlciwgc3RhdHVzOiBUZXN0UnVuU3RhdHVzKTogc3RyaW5nIHtcbiAgICBjb25zdCBkdXJhdGlvblN0ciA9IGR1cmF0aW9uLnRvRml4ZWQoMyk7XG4gICAgcmV0dXJuIGAgICAgICAke1N0YXR1c1N5bWJvbFtzdGF0dXNdfSAke25hbWV9ICR7ZHVyYXRpb25TdHJ9cyAke1N0YXR1c01lc3NhZ2Vbc3RhdHVzXX1gO1xuICB9XG59XG5cbm1vZHVsZS5leHBvcnRzID0gVGVzdFJ1bk1vZGVsO1xuIl19

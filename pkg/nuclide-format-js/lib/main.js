@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,42 +10,49 @@
  * the root directory of this source tree.
  */
 
-import type {SourceOptions} from '../../nuclide-format-js-base/lib/options/SourceOptions';
-import type {Settings} from './settings';
+exports.activate = activate;
+exports.deactivate = deactivate;
 
-import {CompositeDisposable} from 'atom';
+var _atom = require('atom');
 
-let subscriptions: ?CompositeDisposable = null;
+var subscriptions = null;
 
-export function activate(state: ?Object): void {
+function activate(state) {
   if (subscriptions) {
     return;
   }
 
-  const formatCode = require('./formatCode');
-  const { calculateOptions, observeSettings } = require('./settings');
+  var formatCode = require('./formatCode');
 
-  const localSubscriptions = new CompositeDisposable();
-  localSubscriptions.add(atom.commands.add(
-    'atom-text-editor',
-    'nuclide-format-js:format',
-    // Atom prevents in-command modification to text editor content.
-    () => process.nextTick(() => formatCode(options))
-  ));
+  var _require = require('./settings');
+
+  var calculateOptions = _require.calculateOptions;
+  var observeSettings = _require.observeSettings;
+
+  var localSubscriptions = new _atom.CompositeDisposable();
+  localSubscriptions.add(atom.commands.add('atom-text-editor', 'nuclide-format-js:format',
+  // Atom prevents in-command modification to text editor content.
+  function () {
+    return process.nextTick(function () {
+      return formatCode(options);
+    });
+  }));
 
   // Keep settings up to date with Nuclide config and precalculate options.
-  let settings: Settings;
-  let options: SourceOptions;
-  localSubscriptions.add(observeSettings(newSettings => {
+  var settings = undefined;
+  var options = undefined;
+  localSubscriptions.add(observeSettings(function (newSettings) {
     settings = newSettings;
     options = calculateOptions(settings);
   }));
 
   // Format code on save if settings say so
-  localSubscriptions.add(atom.workspace.observeTextEditors(editor => {
-    localSubscriptions.add(editor.onDidSave(() => {
+  localSubscriptions.add(atom.workspace.observeTextEditors(function (editor) {
+    localSubscriptions.add(editor.onDidSave(function () {
       if (settings.runOnSave) {
-        process.nextTick(() => formatCode(options, editor));
+        process.nextTick(function () {
+          return formatCode(options, editor);
+        });
       }
     }));
   }));
@@ -53,9 +61,10 @@ export function activate(state: ?Object): void {
   subscriptions = localSubscriptions;
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (subscriptions) {
     subscriptions.dispose();
     subscriptions = null;
   }
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7O29CQWNrQyxNQUFNOztBQUV4QyxJQUFJLGFBQW1DLEdBQUcsSUFBSSxDQUFDOztBQUV4QyxTQUFTLFFBQVEsQ0FBQyxLQUFjLEVBQVE7QUFDN0MsTUFBSSxhQUFhLEVBQUU7QUFDakIsV0FBTztHQUNSOztBQUVELE1BQU0sVUFBVSxHQUFHLE9BQU8sQ0FBQyxjQUFjLENBQUMsQ0FBQzs7aUJBQ0csT0FBTyxDQUFDLFlBQVksQ0FBQzs7TUFBM0QsZ0JBQWdCLFlBQWhCLGdCQUFnQjtNQUFFLGVBQWUsWUFBZixlQUFlOztBQUV6QyxNQUFNLGtCQUFrQixHQUFHLCtCQUF5QixDQUFDO0FBQ3JELG9CQUFrQixDQUFDLEdBQUcsQ0FBQyxJQUFJLENBQUMsUUFBUSxDQUFDLEdBQUcsQ0FDdEMsa0JBQWtCLEVBQ2xCLDBCQUEwQjs7QUFFMUI7V0FBTSxPQUFPLENBQUMsUUFBUSxDQUFDO2FBQU0sVUFBVSxDQUFDLE9BQU8sQ0FBQztLQUFBLENBQUM7R0FBQSxDQUNsRCxDQUFDLENBQUM7OztBQUdILE1BQUksUUFBa0IsWUFBQSxDQUFDO0FBQ3ZCLE1BQUksT0FBc0IsWUFBQSxDQUFDO0FBQzNCLG9CQUFrQixDQUFDLEdBQUcsQ0FBQyxlQUFlLENBQUMsVUFBQSxXQUFXLEVBQUk7QUFDcEQsWUFBUSxHQUFHLFdBQVcsQ0FBQztBQUN2QixXQUFPLEdBQUcsZ0JBQWdCLENBQUMsUUFBUSxDQUFDLENBQUM7R0FDdEMsQ0FBQyxDQUFDLENBQUM7OztBQUdKLG9CQUFrQixDQUFDLEdBQUcsQ0FBQyxJQUFJLENBQUMsU0FBUyxDQUFDLGtCQUFrQixDQUFDLFVBQUEsTUFBTSxFQUFJO0FBQ2pFLHNCQUFrQixDQUFDLEdBQUcsQ0FBQyxNQUFNLENBQUMsU0FBUyxDQUFDLFlBQU07QUFDNUMsVUFBSSxRQUFRLENBQUMsU0FBUyxFQUFFO0FBQ3RCLGVBQU8sQ0FBQyxRQUFRLENBQUM7aUJBQU0sVUFBVSxDQUFDLE9BQU8sRUFBRSxNQUFNLENBQUM7U0FBQSxDQUFDLENBQUM7T0FDckQ7S0FDRixDQUFDLENBQUMsQ0FBQztHQUNMLENBQUMsQ0FBQyxDQUFDOzs7QUFHSixlQUFhLEdBQUcsa0JBQWtCLENBQUM7Q0FDcEM7O0FBRU0sU0FBUyxVQUFVLEdBQVM7QUFDakMsTUFBSSxhQUFhLEVBQUU7QUFDakIsaUJBQWEsQ0FBQyxPQUFPLEVBQUUsQ0FBQztBQUN4QixpQkFBYSxHQUFHLElBQUksQ0FBQztHQUN0QjtDQUNGIiwiZmlsZSI6Im1haW4uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7U291cmNlT3B0aW9uc30gZnJvbSAnLi4vLi4vbnVjbGlkZS1mb3JtYXQtanMtYmFzZS9saWIvb3B0aW9ucy9Tb3VyY2VPcHRpb25zJztcbmltcG9ydCB0eXBlIHtTZXR0aW5nc30gZnJvbSAnLi9zZXR0aW5ncyc7XG5cbmltcG9ydCB7Q29tcG9zaXRlRGlzcG9zYWJsZX0gZnJvbSAnYXRvbSc7XG5cbmxldCBzdWJzY3JpcHRpb25zOiA/Q29tcG9zaXRlRGlzcG9zYWJsZSA9IG51bGw7XG5cbmV4cG9ydCBmdW5jdGlvbiBhY3RpdmF0ZShzdGF0ZTogP09iamVjdCk6IHZvaWQge1xuICBpZiAoc3Vic2NyaXB0aW9ucykge1xuICAgIHJldHVybjtcbiAgfVxuXG4gIGNvbnN0IGZvcm1hdENvZGUgPSByZXF1aXJlKCcuL2Zvcm1hdENvZGUnKTtcbiAgY29uc3QgeyBjYWxjdWxhdGVPcHRpb25zLCBvYnNlcnZlU2V0dGluZ3MgfSA9IHJlcXVpcmUoJy4vc2V0dGluZ3MnKTtcblxuICBjb25zdCBsb2NhbFN1YnNjcmlwdGlvbnMgPSBuZXcgQ29tcG9zaXRlRGlzcG9zYWJsZSgpO1xuICBsb2NhbFN1YnNjcmlwdGlvbnMuYWRkKGF0b20uY29tbWFuZHMuYWRkKFxuICAgICdhdG9tLXRleHQtZWRpdG9yJyxcbiAgICAnbnVjbGlkZS1mb3JtYXQtanM6Zm9ybWF0JyxcbiAgICAvLyBBdG9tIHByZXZlbnRzIGluLWNvbW1hbmQgbW9kaWZpY2F0aW9uIHRvIHRleHQgZWRpdG9yIGNvbnRlbnQuXG4gICAgKCkgPT4gcHJvY2Vzcy5uZXh0VGljaygoKSA9PiBmb3JtYXRDb2RlKG9wdGlvbnMpKVxuICApKTtcblxuICAvLyBLZWVwIHNldHRpbmdzIHVwIHRvIGRhdGUgd2l0aCBOdWNsaWRlIGNvbmZpZyBhbmQgcHJlY2FsY3VsYXRlIG9wdGlvbnMuXG4gIGxldCBzZXR0aW5nczogU2V0dGluZ3M7XG4gIGxldCBvcHRpb25zOiBTb3VyY2VPcHRpb25zO1xuICBsb2NhbFN1YnNjcmlwdGlvbnMuYWRkKG9ic2VydmVTZXR0aW5ncyhuZXdTZXR0aW5ncyA9PiB7XG4gICAgc2V0dGluZ3MgPSBuZXdTZXR0aW5ncztcbiAgICBvcHRpb25zID0gY2FsY3VsYXRlT3B0aW9ucyhzZXR0aW5ncyk7XG4gIH0pKTtcblxuICAvLyBGb3JtYXQgY29kZSBvbiBzYXZlIGlmIHNldHRpbmdzIHNheSBzb1xuICBsb2NhbFN1YnNjcmlwdGlvbnMuYWRkKGF0b20ud29ya3NwYWNlLm9ic2VydmVUZXh0RWRpdG9ycyhlZGl0b3IgPT4ge1xuICAgIGxvY2FsU3Vic2NyaXB0aW9ucy5hZGQoZWRpdG9yLm9uRGlkU2F2ZSgoKSA9PiB7XG4gICAgICBpZiAoc2V0dGluZ3MucnVuT25TYXZlKSB7XG4gICAgICAgIHByb2Nlc3MubmV4dFRpY2soKCkgPT4gZm9ybWF0Q29kZShvcHRpb25zLCBlZGl0b3IpKTtcbiAgICAgIH1cbiAgICB9KSk7XG4gIH0pKTtcblxuICAvLyBXb3JrIGFyb3VuZCBmbG93IHJlZmluZW1lbnRzLlxuICBzdWJzY3JpcHRpb25zID0gbG9jYWxTdWJzY3JpcHRpb25zO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gZGVhY3RpdmF0ZSgpOiB2b2lkIHtcbiAgaWYgKHN1YnNjcmlwdGlvbnMpIHtcbiAgICBzdWJzY3JpcHRpb25zLmRpc3Bvc2UoKTtcbiAgICBzdWJzY3JpcHRpb25zID0gbnVsbDtcbiAgfVxufVxuIl19

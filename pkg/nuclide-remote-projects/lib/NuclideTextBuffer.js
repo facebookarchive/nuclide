@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +10,37 @@
  * the root directory of this source tree.
  */
 
-import type {ServerConnection} from '../../nuclide-remote-connection/lib/ServerConnection';
-import type {RemoteFile} from '../../nuclide-remote-connection/lib/RemoteFile';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {getLogger} from '../../nuclide-logging';
-import invariant from 'assert';
-import {CompositeDisposable, TextBuffer} from 'atom';
-import {track} from '../../nuclide-analytics';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-const logger = getLogger();
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-class NuclideTextBuffer extends TextBuffer {
-  _connection: ServerConnection;
-  fileSubscriptions: CompositeDisposable;
-  /* $FlowFixMe */
-  file: ?RemoteFile;
-  conflict: boolean;
-  _exists: boolean;
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  constructor(connection: ServerConnection, params: any) {
-    super(params);
+var _nuclideLogging = require('../../nuclide-logging');
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _atom = require('atom');
+
+var _nuclideAnalytics = require('../../nuclide-analytics');
+
+var logger = (0, _nuclideLogging.getLogger)();
+
+var NuclideTextBuffer = (function (_TextBuffer) {
+  _inherits(NuclideTextBuffer, _TextBuffer);
+
+  function NuclideTextBuffer(connection, params) {
+    _classCallCheck(this, NuclideTextBuffer);
+
+    _get(Object.getPrototypeOf(NuclideTextBuffer.prototype), 'constructor', this).call(this, params);
     this._exists = true;
     this._connection = connection;
     this.setPath(params.filePath);
-    const encoding: string = (atom.config.get('core.fileEncoding'): any);
+    var encoding = atom.config.get('core.fileEncoding');
     this.setEncoding(encoding);
   }
 
@@ -42,145 +50,163 @@ class NuclideTextBuffer extends TextBuffer {
   // However, when there is no key, it's not looked up in cache, but rather by
   // its path. This behavior ensures that when a connection is reestablished,
   // a buffer exists with that path. See https://github.com/atom/atom/pull/9968.
-  getId(): string {
-    return '';
-  }
 
-  setPath(filePath: string): void {
-    if (!this._connection) {
-      // If this._connection is not set, then the superclass constructor is still executing.
-      // NuclideTextBuffer's constructor will ensure setPath() is called once this.constructor
-      // is set.
-      return;
+  _createClass(NuclideTextBuffer, [{
+    key: 'getId',
+    value: function getId() {
+      return '';
     }
-    if (filePath === this.getPath()) {
-      return;
-    }
-    if (filePath) {
-      this.file = this.createFile(filePath);
-      if (this.file !== null) {
-        const file = this.file;
-        file.setEncoding(this.getEncoding());
-        this.subscribeToFile();
-      }
-    } else {
-      this.file = null;
-    }
-    this.emitter.emit('did-change-path', this.getPath());
-  }
-
-  createFile(filePath: string): RemoteFile {
-    return this._connection.createFile(filePath);
-  }
-
-  async saveAs(filePath: string): Promise<void> {
-    if (!filePath) {
-      throw new Error('Can\'t save buffer with no file path');
-    }
-
-    let success;
-    this.emitter.emit('will-save', {path: filePath});
-    this.setPath(filePath);
-    try {
-      const file = this.file;
-      invariant(file, 'Cannot save an null file!');
-      const toSaveContents = this.getText();
-      await file.write(toSaveContents);
-      this.cachedDiskContents = toSaveContents;
-      this.conflict = false;
-      this.emitModifiedStatusChanged(false);
-      this.emitter.emit('did-save', {path: filePath});
-      success = true;
-    } catch (e) {
-      // Timeouts occur quite frequently when the network is unstable.
-      // Demote these to 'error' level.
-      const logFunction = (/timeout/i).test(e.message) ? logger.error : logger.fatal;
-      logFunction('Failed to save remote file.', e);
-      atom.notifications.addError(`Failed to save remote file: ${e.message}`);
-      success = false;
-    }
-
-    track('remoteprojects-text-buffer-save-as', {
-      'remoteprojects-file-path': filePath,
-      'remoteprojects-save-success': success.toString(),
-    });
-  }
-
-  updateCachedDiskContentsSync(): void {
-    throw new Error('updateCachedDiskContentsSync isn\'t supported in NuclideTextBuffer');
-  }
-
-  async updateCachedDiskContents(flushCache?: boolean, callback?: () => mixed): Promise<void> {
-    try {
-      await super.updateCachedDiskContents(flushCache, callback);
-      this._exists = true;
-    } catch (e) {
-      this._exists = false;
-      throw e;
-    }
-  }
-
-  subscribeToFile(): void {
-    if (this.fileSubscriptions) {
-      this.fileSubscriptions.dispose();
-    }
-    const file = this.file;
-    invariant(file, 'Cannot subscribe to no-file');
-    this.fileSubscriptions = new CompositeDisposable();
-
-    this.fileSubscriptions.add(file.onDidChange(async () => {
-      const isModified = this._isModified();
-      this.emitModifiedStatusChanged(isModified);
-      if (isModified) {
-        this.conflict = true;
-      }
-      const previousContents = this.cachedDiskContents;
-      await this.updateCachedDiskContents();
-      if (previousContents === this.cachedDiskContents) {
-        this.conflict = false;
+  }, {
+    key: 'setPath',
+    value: function setPath(filePath) {
+      if (!this._connection) {
+        // If this._connection is not set, then the superclass constructor is still executing.
+        // NuclideTextBuffer's constructor will ensure setPath() is called once this.constructor
+        // is set.
         return;
       }
-      if (this.conflict) {
-        this.emitter.emit('did-conflict');
-      } else {
-        this.reload();
+      if (filePath === this.getPath()) {
+        return;
       }
-    }));
-
-    this.fileSubscriptions.add(file.onDidDelete(() => {
-      this._exists = false;
-      const modified = this.getText() !== this.cachedDiskContents;
-      this.wasModifiedBeforeRemove = modified;
-      if (modified) {
-        this.updateCachedDiskContents();
+      if (filePath) {
+        this.file = this.createFile(filePath);
+        if (this.file !== null) {
+          var file = this.file;
+          file.setEncoding(this.getEncoding());
+          this.subscribeToFile();
+        }
       } else {
-        this.destroy();
+        this.file = null;
       }
-    }));
-
-    this.fileSubscriptions.add(file.onDidRename(() => {
       this.emitter.emit('did-change-path', this.getPath());
-    }));
-
-    this.fileSubscriptions.add(file.onWillThrowWatchError(errorObject => {
-      this.emitter.emit('will-throw-watch-error', errorObject);
-    }));
-  }
-
-  _isModified(): boolean {
-    if (!this.loaded) {
-      return false;
     }
-    if (this.file) {
-      if (this._exists) {
-        return this.getText() !== this.cachedDiskContents;
-      } else {
-        return this.wasModifiedBeforeRemove ? !this.isEmpty() : false;
+  }, {
+    key: 'createFile',
+    value: function createFile(filePath) {
+      return this._connection.createFile(filePath);
+    }
+  }, {
+    key: 'saveAs',
+    value: _asyncToGenerator(function* (filePath) {
+      if (!filePath) {
+        throw new Error('Can\'t save buffer with no file path');
       }
-    } else {
-      return !this.isEmpty();
+
+      var success = undefined;
+      this.emitter.emit('will-save', { path: filePath });
+      this.setPath(filePath);
+      try {
+        var file = this.file;
+        (0, _assert2['default'])(file, 'Cannot save an null file!');
+        var toSaveContents = this.getText();
+        yield file.write(toSaveContents);
+        this.cachedDiskContents = toSaveContents;
+        this.conflict = false;
+        this.emitModifiedStatusChanged(false);
+        this.emitter.emit('did-save', { path: filePath });
+        success = true;
+      } catch (e) {
+        // Timeouts occur quite frequently when the network is unstable.
+        // Demote these to 'error' level.
+        var logFunction = /timeout/i.test(e.message) ? logger.error : logger.fatal;
+        logFunction('Failed to save remote file.', e);
+        atom.notifications.addError('Failed to save remote file: ' + e.message);
+        success = false;
+      }
+
+      (0, _nuclideAnalytics.track)('remoteprojects-text-buffer-save-as', {
+        'remoteprojects-file-path': filePath,
+        'remoteprojects-save-success': success.toString()
+      });
+    })
+  }, {
+    key: 'updateCachedDiskContentsSync',
+    value: function updateCachedDiskContentsSync() {
+      throw new Error('updateCachedDiskContentsSync isn\'t supported in NuclideTextBuffer');
     }
-  }
-}
+  }, {
+    key: 'updateCachedDiskContents',
+    value: _asyncToGenerator(function* (flushCache, callback) {
+      try {
+        yield _get(Object.getPrototypeOf(NuclideTextBuffer.prototype), 'updateCachedDiskContents', this).call(this, flushCache, callback);
+        this._exists = true;
+      } catch (e) {
+        this._exists = false;
+        throw e;
+      }
+    })
+  }, {
+    key: 'subscribeToFile',
+    value: function subscribeToFile() {
+      var _this = this;
+
+      if (this.fileSubscriptions) {
+        this.fileSubscriptions.dispose();
+      }
+      var file = this.file;
+      (0, _assert2['default'])(file, 'Cannot subscribe to no-file');
+      this.fileSubscriptions = new _atom.CompositeDisposable();
+
+      this.fileSubscriptions.add(file.onDidChange(_asyncToGenerator(function* () {
+        var isModified = _this._isModified();
+        _this.emitModifiedStatusChanged(isModified);
+        if (isModified) {
+          _this.conflict = true;
+        }
+        var previousContents = _this.cachedDiskContents;
+        yield _this.updateCachedDiskContents();
+        if (previousContents === _this.cachedDiskContents) {
+          _this.conflict = false;
+          return;
+        }
+        if (_this.conflict) {
+          _this.emitter.emit('did-conflict');
+        } else {
+          _this.reload();
+        }
+      })));
+
+      this.fileSubscriptions.add(file.onDidDelete(function () {
+        _this._exists = false;
+        var modified = _this.getText() !== _this.cachedDiskContents;
+        _this.wasModifiedBeforeRemove = modified;
+        if (modified) {
+          _this.updateCachedDiskContents();
+        } else {
+          _this.destroy();
+        }
+      }));
+
+      this.fileSubscriptions.add(file.onDidRename(function () {
+        _this.emitter.emit('did-change-path', _this.getPath());
+      }));
+
+      this.fileSubscriptions.add(file.onWillThrowWatchError(function (errorObject) {
+        _this.emitter.emit('will-throw-watch-error', errorObject);
+      }));
+    }
+  }, {
+    key: '_isModified',
+    value: function _isModified() {
+      if (!this.loaded) {
+        return false;
+      }
+      if (this.file) {
+        if (this._exists) {
+          return this.getText() !== this.cachedDiskContents;
+        } else {
+          return this.wasModifiedBeforeRemove ? !this.isEmpty() : false;
+        }
+      } else {
+        return !this.isEmpty();
+      }
+    }
+  }]);
+
+  return NuclideTextBuffer;
+})(_atom.TextBuffer);
 
 module.exports = NuclideTextBuffer;
+
+/* $FlowFixMe */
+//# sourceMappingURL=data:application/json;base64,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QUMsV0FBVyxDQUFDLFlBQU07QUFDaEQsY0FBSyxPQUFPLENBQUMsSUFBSSxDQUFDLGlCQUFpQixFQUFFLE1BQUssT0FBTyxFQUFFLENBQUMsQ0FBQztPQUN0RCxDQUFDLENBQUMsQ0FBQzs7QUFFSixVQUFJLENBQUMsaUJBQWlCLENBQUMsR0FBRyxDQUFDLElBQUksQ0FBQyxxQkFBcUIsQ0FBQyxVQUFBLFdBQVcsRUFBSTtBQUNuRSxjQUFLLE9BQU8sQ0FBQyxJQUFJLENBQUMsd0JBQXdCLEVBQUUsV0FBVyxDQUFDLENBQUM7T0FDMUQsQ0FBQyxDQUFDLENBQUM7S0FDTDs7O1dBRVUsdUJBQVk7QUFDckIsVUFBSSxDQUFDLElBQUksQ0FBQyxNQUFNLEVBQUU7QUFDaEIsZUFBTyxLQUFLLENBQUM7T0FDZDtBQUNELFVBQUksSUFBSSxDQUFDLElBQUksRUFBRTtBQUNiLFlBQUksSUFBSSxDQUFDLE9BQU8sRUFBRTtBQUNoQixpQkFBTyxJQUFJLENBQUMsT0FBTyxFQUFFLEtBQUssSUFBSSxDQUFDLGtCQUFrQixDQUFDO1NBQ25ELE1BQU07QUFDTCxpQkFBTyxJQUFJLENBQUMsdUJBQXVCLEdBQUcsQ0FBQyxJQUFJLENBQUMsT0FBTyxFQUFFLEdBQUcsS0FBSyxDQUFDO1NBQy9EO09BQ0YsTUFBTTtBQUNMLGVBQU8sQ0FBQyxJQUFJLENBQUMsT0FBTyxFQUFFLENBQUM7T0FDeEI7S0FDRjs7O1NBaktHLGlCQUFpQjs7O0FBb0t2QixNQUFNLENBQUMsT0FBTyxHQUFHLGlCQUFpQixDQUFDIiwiZmlsZSI6Ik51Y2xpZGVUZXh0QnVmZmVyLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge1NlcnZlckNvbm5lY3Rpb259IGZyb20gJy4uLy4uL251Y2xpZGUtcmVtb3RlLWNvbm5lY3Rpb24vbGliL1NlcnZlckNvbm5lY3Rpb24nO1xuaW1wb3J0IHR5cGUge1JlbW90ZUZpbGV9IGZyb20gJy4uLy4uL251Y2xpZGUtcmVtb3RlLWNvbm5lY3Rpb24vbGliL1JlbW90ZUZpbGUnO1xuXG5pbXBvcnQge2dldExvZ2dlcn0gZnJvbSAnLi4vLi4vbnVjbGlkZS1sb2dnaW5nJztcbmltcG9ydCBpbnZhcmlhbnQgZnJvbSAnYXNzZXJ0JztcbmltcG9ydCB7Q29tcG9zaXRlRGlzcG9zYWJsZSwgVGV4dEJ1ZmZlcn0gZnJvbSAnYXRvbSc7XG5pbXBvcnQge3RyYWNrfSBmcm9tICcuLi8uLi9udWNsaWRlLWFuYWx5dGljcyc7XG5cbmNvbnN0IGxvZ2dlciA9IGdldExvZ2dlcigpO1xuXG5jbGFzcyBOdWNsaWRlVGV4dEJ1ZmZlciBleHRlbmRzIFRleHRCdWZmZXIge1xuICBfY29ubmVjdGlvbjogU2VydmVyQ29ubmVjdGlvbjtcbiAgZmlsZVN1YnNjcmlwdGlvbnM6IENvbXBvc2l0ZURpc3Bvc2FibGU7XG4gIC8qICRGbG93Rml4TWUgKi9cbiAgZmlsZTogP1JlbW90ZUZpbGU7XG4gIGNvbmZsaWN0OiBib29sZWFuO1xuICBfZXhpc3RzOiBib29sZWFuO1xuXG4gIGNvbnN0cnVjdG9yKGNvbm5lY3Rpb246IFNlcnZlckNvbm5lY3Rpb24sIHBhcmFtczogYW55KSB7XG4gICAgc3VwZXIocGFyYW1zKTtcbiAgICB0aGlzLl9leGlzdHMgPSB0cnVlO1xuICAgIHRoaXMuX2Nvbm5lY3Rpb24gPSBjb25uZWN0aW9uO1xuICAgIHRoaXMuc2V0UGF0aChwYXJhbXMuZmlsZVBhdGgpO1xuICAgIGNvbnN0IGVuY29kaW5nOiBzdHJpbmcgPSAoYXRvbS5jb25maWcuZ2V0KCdjb3JlLmZpbGVFbmNvZGluZycpOiBhbnkpO1xuICAgIHRoaXMuc2V0RW5jb2RpbmcoZW5jb2RpbmcpO1xuICB9XG5cbiAgLy8gQXRvbSAxLjQuMCsgc2VyaWFsaXplcyBUZXh0QnVmZmVycyB3aXRoIHRoZSBJRCBnZW5lcmF0ZWQgYnkgYGdldElkYC4gV2hlblxuICAvLyBhIGJ1ZmZlciBpcyBkZXNlcmlhbGl6ZWQsIGl0IGlzIGxvb2tlZCB1cCBpbiB0aGUgYnVmZmVyIGNhY2hlIGJ5IHRoaXMga2V5LlxuICAvLyBUaGUgbG9naWMgdGhlcmUgaXMgc2V0dXAgdG8gY3JlYXRlIGEgbmV3IGJ1ZmZlciB3aGVuIHRoZXJlIGlzIGEgY2FjaGUgbWlzcy5cbiAgLy8gSG93ZXZlciwgd2hlbiB0aGVyZSBpcyBubyBrZXksIGl0J3Mgbm90IGxvb2tlZCB1cCBpbiBjYWNoZSwgYnV0IHJhdGhlciBieVxuICAvLyBpdHMgcGF0aC4gVGhpcyBiZWhhdmlvciBlbnN1cmVzIHRoYXQgd2hlbiBhIGNvbm5lY3Rpb24gaXMgcmVlc3RhYmxpc2hlZCxcbiAgLy8gYSBidWZmZXIgZXhpc3RzIHdpdGggdGhhdCBwYXRoLiBTZWUgaHR0cHM6Ly9naXRodWIuY29tL2F0b20vYXRvbS9wdWxsLzk5NjguXG4gIGdldElkKCk6IHN0cmluZyB7XG4gICAgcmV0dXJuICcnO1xuICB9XG5cbiAgc2V0UGF0aChmaWxlUGF0aDogc3RyaW5nKTogdm9pZCB7XG4gICAgaWYgKCF0aGlzLl9jb25uZWN0aW9uKSB7XG4gICAgICAvLyBJZiB0aGlzLl9jb25uZWN0aW9uIGlzIG5vdCBzZXQsIHRoZW4gdGhlIHN1cGVyY2xhc3MgY29uc3RydWN0b3IgaXMgc3RpbGwgZXhlY3V0aW5nLlxuICAgICAgLy8gTnVjbGlkZVRleHRCdWZmZXIncyBjb25zdHJ1Y3RvciB3aWxsIGVuc3VyZSBzZXRQYXRoKCkgaXMgY2FsbGVkIG9uY2UgdGhpcy5jb25zdHJ1Y3RvclxuICAgICAgLy8gaXMgc2V0LlxuICAgICAgcmV0dXJuO1xuICAgIH1cbiAgICBpZiAoZmlsZVBhdGggPT09IHRoaXMuZ2V0UGF0aCgpKSB7XG4gICAgICByZXR1cm47XG4gICAgfVxuICAgIGlmIChmaWxlUGF0aCkge1xuICAgICAgdGhpcy5maWxlID0gdGhpcy5jcmVhdGVGaWxlKGZpbGVQYXRoKTtcbiAgICAgIGlmICh0aGlzLmZpbGUgIT09IG51bGwpIHtcbiAgICAgICAgY29uc3QgZmlsZSA9IHRoaXMuZmlsZTtcbiAgICAgICAgZmlsZS5zZXRFbmNvZGluZyh0aGlzLmdldEVuY29kaW5nKCkpO1xuICAgICAgICB0aGlzLnN1YnNjcmliZVRvRmlsZSgpO1xuICAgICAgfVxuICAgIH0gZWxzZSB7XG4gICAgICB0aGlzLmZpbGUgPSBudWxsO1xuICAgIH1cbiAgICB0aGlzLmVtaXR0ZXIuZW1pdCgnZGlkLWNoYW5nZS1wYXRoJywgdGhpcy5nZXRQYXRoKCkpO1xuICB9XG5cbiAgY3JlYXRlRmlsZShmaWxlUGF0aDogc3RyaW5nKTogUmVtb3RlRmlsZSB7XG4gICAgcmV0dXJuIHRoaXMuX2Nvbm5lY3Rpb24uY3JlYXRlRmlsZShmaWxlUGF0aCk7XG4gIH1cblxuICBhc3luYyBzYXZlQXMoZmlsZVBhdGg6IHN0cmluZyk6IFByb21pc2U8dm9pZD4ge1xuICAgIGlmICghZmlsZVBhdGgpIHtcbiAgICAgIHRocm93IG5ldyBFcnJvcignQ2FuXFwndCBzYXZlIGJ1ZmZlciB3aXRoIG5vIGZpbGUgcGF0aCcpO1xuICAgIH1cblxuICAgIGxldCBzdWNjZXNzO1xuICAgIHRoaXMuZW1pdHRlci5lbWl0KCd3aWxsLXNhdmUnLCB7cGF0aDogZmlsZVBhdGh9KTtcbiAgICB0aGlzLnNldFBhdGgoZmlsZVBhdGgpO1xuICAgIHRyeSB7XG4gICAgICBjb25zdCBmaWxlID0gdGhpcy5maWxlO1xuICAgICAgaW52YXJpYW50KGZpbGUsICdDYW5ub3Qgc2F2ZSBhbiBudWxsIGZpbGUhJyk7XG4gICAgICBjb25zdCB0b1NhdmVDb250ZW50cyA9IHRoaXMuZ2V0VGV4dCgpO1xuICAgICAgYXdhaXQgZmlsZS53cml0ZSh0b1NhdmVDb250ZW50cyk7XG4gICAgICB0aGlzLmNhY2hlZERpc2tDb250ZW50cyA9IHRvU2F2ZUNvbnRlbnRzO1xuICAgICAgdGhpcy5jb25mbGljdCA9IGZhbHNlO1xuICAgICAgdGhpcy5lbWl0TW9kaWZpZWRTdGF0dXNDaGFuZ2VkKGZhbHNlKTtcbiAgICAgIHRoaXMuZW1pdHRlci5lbWl0KCdkaWQtc2F2ZScsIHtwYXRoOiBmaWxlUGF0aH0pO1xuICAgICAgc3VjY2VzcyA9IHRydWU7XG4gICAgfSBjYXRjaCAoZSkge1xuICAgICAgLy8gVGltZW91dHMgb2NjdXIgcXVpdGUgZnJlcXVlbnRseSB3aGVuIHRoZSBuZXR3b3JrIGlzIHVuc3RhYmxlLlxuICAgICAgLy8gRGVtb3RlIHRoZXNlIHRvICdlcnJvcicgbGV2ZWwuXG4gICAgICBjb25zdCBsb2dGdW5jdGlvbiA9ICgvdGltZW91dC9pKS50ZXN0KGUubWVzc2FnZSkgPyBsb2dnZXIuZXJyb3IgOiBsb2dnZXIuZmF0YWw7XG4gICAgICBsb2dGdW5jdGlvbignRmFpbGVkIHRvIHNhdmUgcmVtb3RlIGZpbGUuJywgZSk7XG4gICAgICBhdG9tLm5vdGlmaWNhdGlvbnMuYWRkRXJyb3IoYEZhaWxlZCB0byBzYXZlIHJlbW90ZSBmaWxlOiAke2UubWVzc2FnZX1gKTtcbiAgICAgIHN1Y2Nlc3MgPSBmYWxzZTtcbiAgICB9XG5cbiAgICB0cmFjaygncmVtb3RlcHJvamVjdHMtdGV4dC1idWZmZXItc2F2ZS1hcycsIHtcbiAgICAgICdyZW1vdGVwcm9qZWN0cy1maWxlLXBhdGgnOiBmaWxlUGF0aCxcbiAgICAgICdyZW1vdGVwcm9qZWN0cy1zYXZlLXN1Y2Nlc3MnOiBzdWNjZXNzLnRvU3RyaW5nKCksXG4gICAgfSk7XG4gIH1cblxuICB1cGRhdGVDYWNoZWREaXNrQ29udGVudHNTeW5jKCk6IHZvaWQge1xuICAgIHRocm93IG5ldyBFcnJvcigndXBkYXRlQ2FjaGVkRGlza0NvbnRlbnRzU3luYyBpc25cXCd0IHN1cHBvcnRlZCBpbiBOdWNsaWRlVGV4dEJ1ZmZlcicpO1xuICB9XG5cbiAgYXN5bmMgdXBkYXRlQ2FjaGVkRGlza0NvbnRlbnRzKGZsdXNoQ2FjaGU/OiBib29sZWFuLCBjYWxsYmFjaz86ICgpID0+IG1peGVkKTogUHJvbWlzZTx2b2lkPiB7XG4gICAgdHJ5IHtcbiAgICAgIGF3YWl0IHN1cGVyLnVwZGF0ZUNhY2hlZERpc2tDb250ZW50cyhmbHVzaENhY2hlLCBjYWxsYmFjayk7XG4gICAgICB0aGlzLl9leGlzdHMgPSB0cnVlO1xuICAgIH0gY2F0Y2ggKGUpIHtcbiAgICAgIHRoaXMuX2V4aXN0cyA9IGZhbHNlO1xuICAgICAgdGhyb3cgZTtcbiAgICB9XG4gIH1cblxuICBzdWJzY3JpYmVUb0ZpbGUoKTogdm9pZCB7XG4gICAgaWYgKHRoaXMuZmlsZVN1YnNjcmlwdGlvbnMpIHtcbiAgICAgIHRoaXMuZmlsZVN1YnNjcmlwdGlvbnMuZGlzcG9zZSgpO1xuICAgIH1cbiAgICBjb25zdCBmaWxlID0gdGhpcy5maWxlO1xuICAgIGludmFyaWFudChmaWxlLCAnQ2Fubm90IHN1YnNjcmliZSB0byBuby1maWxlJyk7XG4gICAgdGhpcy5maWxlU3Vic2NyaXB0aW9ucyA9IG5ldyBDb21wb3NpdGVEaXNwb3NhYmxlKCk7XG5cbiAgICB0aGlzLmZpbGVTdWJzY3JpcHRpb25zLmFkZChmaWxlLm9uRGlkQ2hhbmdlKGFzeW5jICgpID0+IHtcbiAgICAgIGNvbnN0IGlzTW9kaWZpZWQgPSB0aGlzLl9pc01vZGlmaWVkKCk7XG4gICAgICB0aGlzLmVtaXRNb2RpZmllZFN0YXR1c0NoYW5nZWQoaXNNb2RpZmllZCk7XG4gICAgICBpZiAoaXNNb2RpZmllZCkge1xuICAgICAgICB0aGlzLmNvbmZsaWN0ID0gdHJ1ZTtcbiAgICAgIH1cbiAgICAgIGNvbnN0IHByZXZpb3VzQ29udGVudHMgPSB0aGlzLmNhY2hlZERpc2tDb250ZW50cztcbiAgICAgIGF3YWl0IHRoaXMudXBkYXRlQ2FjaGVkRGlza0NvbnRlbnRzKCk7XG4gICAgICBpZiAocHJldmlvdXNDb250ZW50cyA9PT0gdGhpcy5jYWNoZWREaXNrQ29udGVudHMpIHtcbiAgICAgICAgdGhpcy5jb25mbGljdCA9IGZhbHNlO1xuICAgICAgICByZXR1cm47XG4gICAgICB9XG4gICAgICBpZiAodGhpcy5jb25mbGljdCkge1xuICAgICAgICB0aGlzLmVtaXR0ZXIuZW1pdCgnZGlkLWNvbmZsaWN0Jyk7XG4gICAgICB9IGVsc2Uge1xuICAgICAgICB0aGlzLnJlbG9hZCgpO1xuICAgICAgfVxuICAgIH0pKTtcblxuICAgIHRoaXMuZmlsZVN1YnNjcmlwdGlvbnMuYWRkKGZpbGUub25EaWREZWxldGUoKCkgPT4ge1xuICAgICAgdGhpcy5fZXhpc3RzID0gZmFsc2U7XG4gICAgICBjb25zdCBtb2RpZmllZCA9IHRoaXMuZ2V0VGV4dCgpICE9PSB0aGlzLmNhY2hlZERpc2tDb250ZW50cztcbiAgICAgIHRoaXMud2FzTW9kaWZpZWRCZWZvcmVSZW1vdmUgPSBtb2RpZmllZDtcbiAgICAgIGlmIChtb2RpZmllZCkge1xuICAgICAgICB0aGlzLnVwZGF0ZUNhY2hlZERpc2tDb250ZW50cygpO1xuICAgICAgfSBlbHNlIHtcbiAgICAgICAgdGhpcy5kZXN0cm95KCk7XG4gICAgICB9XG4gICAgfSkpO1xuXG4gICAgdGhpcy5maWxlU3Vic2NyaXB0aW9ucy5hZGQoZmlsZS5vbkRpZFJlbmFtZSgoKSA9PiB7XG4gICAgICB0aGlzLmVtaXR0ZXIuZW1pdCgnZGlkLWNoYW5nZS1wYXRoJywgdGhpcy5nZXRQYXRoKCkpO1xuICAgIH0pKTtcblxuICAgIHRoaXMuZmlsZVN1YnNjcmlwdGlvbnMuYWRkKGZpbGUub25XaWxsVGhyb3dXYXRjaEVycm9yKGVycm9yT2JqZWN0ID0+IHtcbiAgICAgIHRoaXMuZW1pdHRlci5lbWl0KCd3aWxsLXRocm93LXdhdGNoLWVycm9yJywgZXJyb3JPYmplY3QpO1xuICAgIH0pKTtcbiAgfVxuXG4gIF9pc01vZGlmaWVkKCk6IGJvb2xlYW4ge1xuICAgIGlmICghdGhpcy5sb2FkZWQpIHtcbiAgICAgIHJldHVybiBmYWxzZTtcbiAgICB9XG4gICAgaWYgKHRoaXMuZmlsZSkge1xuICAgICAgaWYgKHRoaXMuX2V4aXN0cykge1xuICAgICAgICByZXR1cm4gdGhpcy5nZXRUZXh0KCkgIT09IHRoaXMuY2FjaGVkRGlza0NvbnRlbnRzO1xuICAgICAgfSBlbHNlIHtcbiAgICAgICAgcmV0dXJuIHRoaXMud2FzTW9kaWZpZWRCZWZvcmVSZW1vdmUgPyAhdGhpcy5pc0VtcHR5KCkgOiBmYWxzZTtcbiAgICAgIH1cbiAgICB9IGVsc2Uge1xuICAgICAgcmV0dXJuICF0aGlzLmlzRW1wdHkoKTtcbiAgICB9XG4gIH1cbn1cblxubW9kdWxlLmV4cG9ydHMgPSBOdWNsaWRlVGV4dEJ1ZmZlcjtcbiJdfQ==

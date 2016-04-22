@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,221 +10,184 @@
  * the root directory of this source tree.
  */
 
-import type {HomeFragments} from '../../nuclide-home-interfaces';
-import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {CompositeDisposable, Disposable} from 'atom';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.serialize = serialize;
+exports.consumeOutlineProvider = consumeOutlineProvider;
+exports.consumeToolBar = consumeToolBar;
+exports.getHomeFragments = getHomeFragments;
+exports.getDistractionFreeModeProvider = getDistractionFreeModeProvider;
 
-import {OutlineViewPanelState} from './OutlineViewPanel';
-import {ProviderRegistry} from './ProviderRegistry';
-import {createOutlines} from './createOutlines';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import invariant from 'assert';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-import type {TokenizedText} from '../../nuclide-tokenized-text';
+var _atom = require('atom');
 
-export type OutlineTree = {
-  // Must be one or the other. If both are present, tokenizedText is preferred.
-  plainText?: string;
-  tokenizedText?: TokenizedText;
+var _OutlineViewPanel = require('./OutlineViewPanel');
 
-  startPosition: atom$Point;
-  endPosition?: atom$Point;
-  children: Array<OutlineTree>;
-};
+var _ProviderRegistry = require('./ProviderRegistry');
 
-export type Outline = {
-  outlineTrees: Array<OutlineTree>;
-};
+var _createOutlines = require('./createOutlines');
 
-export type OutlineTreeForUi = {
-  plainText?: string;
-  tokenizedText?: TokenizedText;
+var _assert = require('assert');
 
-  startPosition: atom$Point;
-  endPosition?: atom$Point;
-  children: Array<OutlineTreeForUi>;
-  highlighted: boolean;
-};
+var _assert2 = _interopRequireDefault(_assert);
 
 /**
  * Includes additional information that is useful to the UI, but redundant or nonsensical for
  * providers to include in their responses.
  */
-export type OutlineForUi = {
-  // The initial state at startup.
-  kind: 'empty';
-} | {
-  // The thing that currently has focus is not a text editor.
-  kind: 'not-text-editor';
-} | {
-  // Indicates that no provider is registered for the given grammar.
-  kind: 'no-provider';
-  // Human-readable name for the grammar.
-  grammar: string;
-} | {
-  // Indicates that a provider is registered but that it did not return an outline.
-  kind: 'provider-no-outline';
-} | {
-  kind: 'outline';
-  outlineTrees: Array<OutlineTreeForUi>;
-  /**
-   * Use a TextEditor instead of a path so that:
-   * - If there are multiple editors for a file, we always jump to outline item
-   *   locations in the correct editor.
-   * - Jumping to outline item locations works for new, unsaved files.
-   */
-  editor: atom$TextEditor;
-};
 
-export type OutlineProvider = {
-  name: string;
-  // If there are multiple providers for a given grammar, the one with the highest priority will be
-  // used.
-  priority: number;
-  grammarScopes: Array<string>;
-  getOutline: (editor: TextEditor) => Promise<?Outline>;
-};
+var DEFAULT_WIDTH = 300; // px
 
-type OutlineViewState = {
-  width: number;
-  visible: boolean;
-};
-
-const DEFAULT_WIDTH = 300; // px
-
-function makeDefaultState(): OutlineViewState {
+function makeDefaultState() {
   return {
     width: DEFAULT_WIDTH,
-    visible: false,
+    visible: false
   };
 }
 
-class Activation {
-  _disposables: CompositeDisposable;
+var Activation = (function () {
+  function Activation() {
+    var state = arguments.length <= 0 || arguments[0] === undefined ? makeDefaultState() : arguments[0];
 
-  _providers: ProviderRegistry<OutlineProvider>;
+    _classCallCheck(this, Activation);
 
-  _panel: OutlineViewPanelState;
+    this._disposables = new _atom.CompositeDisposable();
 
-  constructor(state?: OutlineViewState = makeDefaultState()) {
-    this._disposables = new CompositeDisposable();
+    this._providers = new _ProviderRegistry.ProviderRegistry();
 
-    this._providers = new ProviderRegistry();
-
-    const panel = this._panel = new OutlineViewPanelState(
-      createOutlines(this._providers),
-      state.width,
-      state.visible
-    );
+    var panel = this._panel = new _OutlineViewPanel.OutlineViewPanelState((0, _createOutlines.createOutlines)(this._providers), state.width, state.visible);
     this._disposables.add(panel);
 
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-outline-view:toggle',
-        panel.toggle.bind(panel),
-      )
-    );
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-outline-view:show',
-        panel.show.bind(panel),
-      )
-    );
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-outline-view:hide',
-        panel.hide.bind(panel),
-      )
-    );
+    this._disposables.add(atom.commands.add('atom-workspace', 'nuclide-outline-view:toggle', panel.toggle.bind(panel)));
+    this._disposables.add(atom.commands.add('atom-workspace', 'nuclide-outline-view:show', panel.show.bind(panel)));
+    this._disposables.add(atom.commands.add('atom-workspace', 'nuclide-outline-view:hide', panel.hide.bind(panel)));
   }
 
-  dispose() {
-    this._disposables.dispose();
-  }
+  _createClass(Activation, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }, {
+    key: 'serialize',
+    value: function serialize() {
+      return {
+        visible: this._panel.isVisible(),
+        width: this._panel.getWidth()
+      };
+    }
+  }, {
+    key: 'consumeOutlineProvider',
+    value: function consumeOutlineProvider(provider) {
+      var _this = this;
 
-  serialize(): OutlineViewState {
-    return {
-      visible: this._panel.isVisible(),
-      width: this._panel.getWidth(),
-    };
-  }
+      this._providers.addProvider(provider);
+      return new _atom.Disposable(function () {
+        return _this._providers.removeProvider(provider);
+      });
+    }
+  }, {
+    key: 'consumeToolBar',
+    value: function consumeToolBar(getToolBar) {
+      var toolBar = getToolBar('nuclide-outline-view');
+      toolBar.addButton({
+        icon: 'list-unordered',
+        callback: 'nuclide-outline-view:toggle',
+        tooltip: 'Toggle Outline View',
+        priority: 350 });
+      // Between diff view and test runner
+      this._disposables.add(new _atom.Disposable(function () {
+        toolBar.removeItems();
+      }));
+    }
+  }, {
+    key: 'getDistractionFreeModeProvider',
+    value: function getDistractionFreeModeProvider() {
+      var panel = this._panel;
+      return {
+        name: 'nuclide-outline-view',
+        isVisible: panel.isVisible.bind(panel),
+        toggle: panel.toggle.bind(panel)
+      };
+    }
+  }]);
 
-  consumeOutlineProvider(provider: OutlineProvider): IDisposable {
-    this._providers.addProvider(provider);
-    return new Disposable(() => this._providers.removeProvider(provider));
-  }
+  return Activation;
+})();
 
-  consumeToolBar(getToolBar: (group: string) => Object): void {
-    const toolBar = getToolBar('nuclide-outline-view');
-    toolBar.addButton({
-      icon: 'list-unordered',
-      callback: 'nuclide-outline-view:toggle',
-      tooltip: 'Toggle Outline View',
-      priority: 350, // Between diff view and test runner
-    });
-    this._disposables.add(new Disposable(() => {
-      toolBar.removeItems();
-    }));
-  }
+var activation = null;
 
-  getDistractionFreeModeProvider(): DistractionFreeModeProvider {
-    const panel = this._panel;
-    return {
-      name: 'nuclide-outline-view',
-      isVisible: panel.isVisible.bind(panel),
-      toggle: panel.toggle.bind(panel),
-    };
-  }
-}
-
-let activation: ?Activation = null;
-
-export function activate(state: Object | void) {
+function activate(state) {
   if (activation == null) {
     activation = new Activation(state);
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function serialize(): ?OutlineViewState {
+function serialize() {
   if (activation != null) {
     return activation.serialize();
   }
 }
 
-export function consumeOutlineProvider(provider: OutlineProvider): IDisposable {
-  invariant(activation != null);
+function consumeOutlineProvider(provider) {
+  (0, _assert2['default'])(activation != null);
   return activation.consumeOutlineProvider(provider);
 }
 
-export function consumeToolBar(getToolBar: (group: string) => Object): void {
-  invariant(activation != null);
+function consumeToolBar(getToolBar) {
+  (0, _assert2['default'])(activation != null);
   activation.consumeToolBar(getToolBar);
 }
 
-export function getHomeFragments(): HomeFragments {
+function getHomeFragments() {
   return {
     feature: {
       title: 'Outline View',
       icon: 'list-unordered',
       description: 'Displays major components of the current file (classes, methods, etc.)',
-      command: 'nuclide-outline-view:show',
+      command: 'nuclide-outline-view:show'
     },
-    priority: 2.5, // Between diff view and test runner
-  };
+    priority: 2.5 };
 }
 
-export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
-  invariant(activation != null);
+// Between diff view and test runner
+
+function getDistractionFreeModeProvider() {
+  (0, _assert2['default'])(activation != null);
   return activation.getDistractionFreeModeProvider();
 }
+
+// Must be one or the other. If both are present, tokenizedText is preferred.
+
+// The initial state at startup.
+
+// The thing that currently has focus is not a text editor.
+
+// Indicates that no provider is registered for the given grammar.
+
+// Human-readable name for the grammar.
+
+// Indicates that a provider is registered but that it did not return an outline.
+
+/**
+ * Use a TextEditor instead of a path so that:
+ * - If there are multiple editors for a file, we always jump to outline item
+ *   locations in the correct editor.
+ * - Jumping to outline item locations works for new, unsaved files.
+ */
+
+// If there are multiple providers for a given grammar, the one with the highest priority will be
+// used.
+//# sourceMappingURL=data:application/json;base64,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Q3JGLGFBQU8sRUFBRSwyQkFBMkI7S0FDckM7QUFDRCxZQUFRLEVBQUUsR0FBRyxFQUNkLENBQUM7Q0FDSDs7OztBQUVNLFNBQVMsOEJBQThCLEdBQWdDO0FBQzVFLDJCQUFVLFVBQVUsSUFBSSxJQUFJLENBQUMsQ0FBQztBQUM5QixTQUFPLFVBQVUsQ0FBQyw4QkFBOEIsRUFBRSxDQUFDO0NBQ3BEIiwiZmlsZSI6Im1haW4uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7SG9tZUZyYWdtZW50c30gZnJvbSAnLi4vLi4vbnVjbGlkZS1ob21lLWludGVyZmFjZXMnO1xuaW1wb3J0IHR5cGUge0Rpc3RyYWN0aW9uRnJlZU1vZGVQcm92aWRlcn0gZnJvbSAnLi4vLi4vbnVjbGlkZS1kaXN0cmFjdGlvbi1mcmVlLW1vZGUnO1xuXG5pbXBvcnQge0NvbXBvc2l0ZURpc3Bvc2FibGUsIERpc3Bvc2FibGV9IGZyb20gJ2F0b20nO1xuXG5pbXBvcnQge091dGxpbmVWaWV3UGFuZWxTdGF0ZX0gZnJvbSAnLi9PdXRsaW5lVmlld1BhbmVsJztcbmltcG9ydCB7UHJvdmlkZXJSZWdpc3RyeX0gZnJvbSAnLi9Qcm92aWRlclJlZ2lzdHJ5JztcbmltcG9ydCB7Y3JlYXRlT3V0bGluZXN9IGZyb20gJy4vY3JlYXRlT3V0bGluZXMnO1xuXG5pbXBvcnQgaW52YXJpYW50IGZyb20gJ2Fzc2VydCc7XG5cbmltcG9ydCB0eXBlIHtUb2tlbml6ZWRUZXh0fSBmcm9tICcuLi8uLi9udWNsaWRlLXRva2VuaXplZC10ZXh0JztcblxuZXhwb3J0IHR5cGUgT3V0bGluZVRyZWUgPSB7XG4gIC8vIE11c3QgYmUgb25lIG9yIHRoZSBvdGhlci4gSWYgYm90aCBhcmUgcHJlc2VudCwgdG9rZW5pemVkVGV4dCBpcyBwcmVmZXJyZWQuXG4gIHBsYWluVGV4dD86IHN0cmluZztcbiAgdG9rZW5pemVkVGV4dD86IFRva2VuaXplZFRleHQ7XG5cbiAgc3RhcnRQb3NpdGlvbjogYXRvbSRQb2ludDtcbiAgZW5kUG9zaXRpb24/OiBhdG9tJFBvaW50O1xuICBjaGlsZHJlbjogQXJyYXk8T3V0bGluZVRyZWU+O1xufTtcblxuZXhwb3J0IHR5cGUgT3V0bGluZSA9IHtcbiAgb3V0bGluZVRyZWVzOiBBcnJheTxPdXRsaW5lVHJlZT47XG59O1xuXG5leHBvcnQgdHlwZSBPdXRsaW5lVHJlZUZvclVpID0ge1xuICBwbGFpblRleHQ/OiBzdHJpbmc7XG4gIHRva2VuaXplZFRleHQ/OiBUb2tlbml6ZWRUZXh0O1xuXG4gIHN0YXJ0UG9zaXRpb246IGF0b20kUG9pbnQ7XG4gIGVuZFBvc2l0aW9uPzogYXRvbSRQb2ludDtcbiAgY2hpbGRyZW46IEFycmF5PE91dGxpbmVUcmVlRm9yVWk+O1xuICBoaWdobGlnaHRlZDogYm9vbGVhbjtcbn07XG5cbi8qKlxuICogSW5jbHVkZXMgYWRkaXRpb25hbCBpbmZvcm1hdGlvbiB0aGF0IGlzIHVzZWZ1bCB0byB0aGUgVUksIGJ1dCByZWR1bmRhbnQgb3Igbm9uc2Vuc2ljYWwgZm9yXG4gKiBwcm92aWRlcnMgdG8gaW5jbHVkZSBpbiB0aGVpciByZXNwb25zZXMuXG4gKi9cbmV4cG9ydCB0eXBlIE91dGxpbmVGb3JVaSA9IHtcbiAgLy8gVGhlIGluaXRpYWwgc3RhdGUgYXQgc3RhcnR1cC5cbiAga2luZDogJ2VtcHR5Jztcbn0gfCB7XG4gIC8vIFRoZSB0aGluZyB0aGF0IGN1cnJlbnRseSBoYXMgZm9jdXMgaXMgbm90IGEgdGV4dCBlZGl0b3IuXG4gIGtpbmQ6ICdub3QtdGV4dC1lZGl0b3InO1xufSB8IHtcbiAgLy8gSW5kaWNhdGVzIHRoYXQgbm8gcHJvdmlkZXIgaXMgcmVnaXN0ZXJlZCBmb3IgdGhlIGdpdmVuIGdyYW1tYXIuXG4gIGtpbmQ6ICduby1wcm92aWRlcic7XG4gIC8vIEh1bWFuLXJlYWRhYmxlIG5hbWUgZm9yIHRoZSBncmFtbWFyLlxuICBncmFtbWFyOiBzdHJpbmc7XG59IHwge1xuICAvLyBJbmRpY2F0ZXMgdGhhdCBhIHByb3ZpZGVyIGlzIHJlZ2lzdGVyZWQgYnV0IHRoYXQgaXQgZGlkIG5vdCByZXR1cm4gYW4gb3V0bGluZS5cbiAga2luZDogJ3Byb3ZpZGVyLW5vLW91dGxpbmUnO1xufSB8IHtcbiAga2luZDogJ291dGxpbmUnO1xuICBvdXRsaW5lVHJlZXM6IEFycmF5PE91dGxpbmVUcmVlRm9yVWk+O1xuICAvKipcbiAgICogVXNlIGEgVGV4dEVkaXRvciBpbnN0ZWFkIG9mIGEgcGF0aCBzbyB0aGF0OlxuICAgKiAtIElmIHRoZXJlIGFyZSBtdWx0aXBsZSBlZGl0b3JzIGZvciBhIGZpbGUsIHdlIGFsd2F5cyBqdW1wIHRvIG91dGxpbmUgaXRlbVxuICAgKiAgIGxvY2F0aW9ucyBpbiB0aGUgY29ycmVjdCBlZGl0b3IuXG4gICAqIC0gSnVtcGluZyB0byBvdXRsaW5lIGl0ZW0gbG9jYXRpb25zIHdvcmtzIGZvciBuZXcsIHVuc2F2ZWQgZmlsZXMuXG4gICAqL1xuICBlZGl0b3I6IGF0b20kVGV4dEVkaXRvcjtcbn07XG5cbmV4cG9ydCB0eXBlIE91dGxpbmVQcm92aWRlciA9IHtcbiAgbmFtZTogc3RyaW5nO1xuICAvLyBJZiB0aGVyZSBhcmUgbXVsdGlwbGUgcHJvdmlkZXJzIGZvciBhIGdpdmVuIGdyYW1tYXIsIHRoZSBvbmUgd2l0aCB0aGUgaGlnaGVzdCBwcmlvcml0eSB3aWxsIGJlXG4gIC8vIHVzZWQuXG4gIHByaW9yaXR5OiBudW1iZXI7XG4gIGdyYW1tYXJTY29wZXM6IEFycmF5PHN0cmluZz47XG4gIGdldE91dGxpbmU6IChlZGl0b3I6IFRleHRFZGl0b3IpID0+IFByb21pc2U8P091dGxpbmU+O1xufTtcblxudHlwZSBPdXRsaW5lVmlld1N0YXRlID0ge1xuICB3aWR0aDogbnVtYmVyO1xuICB2aXNpYmxlOiBib29sZWFuO1xufTtcblxuY29uc3QgREVGQVVMVF9XSURUSCA9IDMwMDsgLy8gcHhcblxuZnVuY3Rpb24gbWFrZURlZmF1bHRTdGF0ZSgpOiBPdXRsaW5lVmlld1N0YXRlIHtcbiAgcmV0dXJuIHtcbiAgICB3aWR0aDogREVGQVVMVF9XSURUSCxcbiAgICB2aXNpYmxlOiBmYWxzZSxcbiAgfTtcbn1cblxuY2xhc3MgQWN0aXZhdGlvbiB7XG4gIF9kaXNwb3NhYmxlczogQ29tcG9zaXRlRGlzcG9zYWJsZTtcblxuICBfcHJvdmlkZXJzOiBQcm92aWRlclJlZ2lzdHJ5PE91dGxpbmVQcm92aWRlcj47XG5cbiAgX3BhbmVsOiBPdXRsaW5lVmlld1BhbmVsU3RhdGU7XG5cbiAgY29uc3RydWN0b3Ioc3RhdGU/OiBPdXRsaW5lVmlld1N0YXRlID0gbWFrZURlZmF1bHRTdGF0ZSgpKSB7XG4gICAgdGhpcy5fZGlzcG9zYWJsZXMgPSBuZXcgQ29tcG9zaXRlRGlzcG9zYWJsZSgpO1xuXG4gICAgdGhpcy5fcHJvdmlkZXJzID0gbmV3IFByb3ZpZGVyUmVnaXN0cnkoKTtcblxuICAgIGNvbnN0IHBhbmVsID0gdGhpcy5fcGFuZWwgPSBuZXcgT3V0bGluZVZpZXdQYW5lbFN0YXRlKFxuICAgICAgY3JlYXRlT3V0bGluZXModGhpcy5fcHJvdmlkZXJzKSxcbiAgICAgIHN0YXRlLndpZHRoLFxuICAgICAgc3RhdGUudmlzaWJsZVxuICAgICk7XG4gICAgdGhpcy5fZGlzcG9zYWJsZXMuYWRkKHBhbmVsKTtcblxuICAgIHRoaXMuX2Rpc3Bvc2FibGVzLmFkZChcbiAgICAgIGF0b20uY29tbWFuZHMuYWRkKFxuICAgICAgICAnYXRvbS13b3Jrc3BhY2UnLFxuICAgICAgICAnbnVjbGlkZS1vdXRsaW5lLXZpZXc6dG9nZ2xlJyxcbiAgICAgICAgcGFuZWwudG9nZ2xlLmJpbmQocGFuZWwpLFxuICAgICAgKVxuICAgICk7XG4gICAgdGhpcy5fZGlzcG9zYWJsZXMuYWRkKFxuICAgICAgYXRvbS5jb21tYW5kcy5hZGQoXG4gICAgICAgICdhdG9tLXdvcmtzcGFjZScsXG4gICAgICAgICdudWNsaWRlLW91dGxpbmUtdmlldzpzaG93JyxcbiAgICAgICAgcGFuZWwuc2hvdy5iaW5kKHBhbmVsKSxcbiAgICAgIClcbiAgICApO1xuICAgIHRoaXMuX2Rpc3Bvc2FibGVzLmFkZChcbiAgICAgIGF0b20uY29tbWFuZHMuYWRkKFxuICAgICAgICAnYXRvbS13b3Jrc3BhY2UnLFxuICAgICAgICAnbnVjbGlkZS1vdXRsaW5lLXZpZXc6aGlkZScsXG4gICAgICAgIHBhbmVsLmhpZGUuYmluZChwYW5lbCksXG4gICAgICApXG4gICAgKTtcbiAgfVxuXG4gIGRpc3Bvc2UoKSB7XG4gICAgdGhpcy5fZGlzcG9zYWJsZXMuZGlzcG9zZSgpO1xuICB9XG5cbiAgc2VyaWFsaXplKCk6IE91dGxpbmVWaWV3U3RhdGUge1xuICAgIHJldHVybiB7XG4gICAgICB2aXNpYmxlOiB0aGlzLl9wYW5lbC5pc1Zpc2libGUoKSxcbiAgICAgIHdpZHRoOiB0aGlzLl9wYW5lbC5nZXRXaWR0aCgpLFxuICAgIH07XG4gIH1cblxuICBjb25zdW1lT3V0bGluZVByb3ZpZGVyKHByb3ZpZGVyOiBPdXRsaW5lUHJvdmlkZXIpOiBJRGlzcG9zYWJsZSB7XG4gICAgdGhpcy5fcHJvdmlkZXJzLmFkZFByb3ZpZGVyKHByb3ZpZGVyKTtcbiAgICByZXR1cm4gbmV3IERpc3Bvc2FibGUoKCkgPT4gdGhpcy5fcHJvdmlkZXJzLnJlbW92ZVByb3ZpZGVyKHByb3ZpZGVyKSk7XG4gIH1cblxuICBjb25zdW1lVG9vbEJhcihnZXRUb29sQmFyOiAoZ3JvdXA6IHN0cmluZykgPT4gT2JqZWN0KTogdm9pZCB7XG4gICAgY29uc3QgdG9vbEJhciA9IGdldFRvb2xCYXIoJ251Y2xpZGUtb3V0bGluZS12aWV3Jyk7XG4gICAgdG9vbEJhci5hZGRCdXR0b24oe1xuICAgICAgaWNvbjogJ2xpc3QtdW5vcmRlcmVkJyxcbiAgICAgIGNhbGxiYWNrOiAnbnVjbGlkZS1vdXRsaW5lLXZpZXc6dG9nZ2xlJyxcbiAgICAgIHRvb2x0aXA6ICdUb2dnbGUgT3V0bGluZSBWaWV3JyxcbiAgICAgIHByaW9yaXR5OiAzNTAsIC8vIEJldHdlZW4gZGlmZiB2aWV3IGFuZCB0ZXN0IHJ1bm5lclxuICAgIH0pO1xuICAgIHRoaXMuX2Rpc3Bvc2FibGVzLmFkZChuZXcgRGlzcG9zYWJsZSgoKSA9PiB7XG4gICAgICB0b29sQmFyLnJlbW92ZUl0ZW1zKCk7XG4gICAgfSkpO1xuICB9XG5cbiAgZ2V0RGlzdHJhY3Rpb25GcmVlTW9kZVByb3ZpZGVyKCk6IERpc3RyYWN0aW9uRnJlZU1vZGVQcm92aWRlciB7XG4gICAgY29uc3QgcGFuZWwgPSB0aGlzLl9wYW5lbDtcbiAgICByZXR1cm4ge1xuICAgICAgbmFtZTogJ251Y2xpZGUtb3V0bGluZS12aWV3JyxcbiAgICAgIGlzVmlzaWJsZTogcGFuZWwuaXNWaXNpYmxlLmJpbmQocGFuZWwpLFxuICAgICAgdG9nZ2xlOiBwYW5lbC50b2dnbGUuYmluZChwYW5lbCksXG4gICAgfTtcbiAgfVxufVxuXG5sZXQgYWN0aXZhdGlvbjogP0FjdGl2YXRpb24gPSBudWxsO1xuXG5leHBvcnQgZnVuY3Rpb24gYWN0aXZhdGUoc3RhdGU6IE9iamVjdCB8IHZvaWQpIHtcbiAgaWYgKGFjdGl2YXRpb24gPT0gbnVsbCkge1xuICAgIGFjdGl2YXRpb24gPSBuZXcgQWN0aXZhdGlvbihzdGF0ZSk7XG4gIH1cbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGRlYWN0aXZhdGUoKSB7XG4gIGlmIChhY3RpdmF0aW9uICE9IG51bGwpIHtcbiAgICBhY3RpdmF0aW9uLmRpc3Bvc2UoKTtcbiAgICBhY3RpdmF0aW9uID0gbnVsbDtcbiAgfVxufVxuXG5leHBvcnQgZnVuY3Rpb24gc2VyaWFsaXplKCk6ID9PdXRsaW5lVmlld1N0YXRlIHtcbiAgaWYgKGFjdGl2YXRpb24gIT0gbnVsbCkge1xuICAgIHJldHVybiBhY3RpdmF0aW9uLnNlcmlhbGl6ZSgpO1xuICB9XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBjb25zdW1lT3V0bGluZVByb3ZpZGVyKHByb3ZpZGVyOiBPdXRsaW5lUHJvdmlkZXIpOiBJRGlzcG9zYWJsZSB7XG4gIGludmFyaWFudChhY3RpdmF0aW9uICE9IG51bGwpO1xuICByZXR1cm4gYWN0aXZhdGlvbi5jb25zdW1lT3V0bGluZVByb3ZpZGVyKHByb3ZpZGVyKTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGNvbnN1bWVUb29sQmFyKGdldFRvb2xCYXI6IChncm91cDogc3RyaW5nKSA9PiBPYmplY3QpOiB2b2lkIHtcbiAgaW52YXJpYW50KGFjdGl2YXRpb24gIT0gbnVsbCk7XG4gIGFjdGl2YXRpb24uY29uc3VtZVRvb2xCYXIoZ2V0VG9vbEJhcik7XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBnZXRIb21lRnJhZ21lbnRzKCk6IEhvbWVGcmFnbWVudHMge1xuICByZXR1cm4ge1xuICAgIGZlYXR1cmU6IHtcbiAgICAgIHRpdGxlOiAnT3V0bGluZSBWaWV3JyxcbiAgICAgIGljb246ICdsaXN0LXVub3JkZXJlZCcsXG4gICAgICBkZXNjcmlwdGlvbjogJ0Rpc3BsYXlzIG1ham9yIGNvbXBvbmVudHMgb2YgdGhlIGN1cnJlbnQgZmlsZSAoY2xhc3NlcywgbWV0aG9kcywgZXRjLiknLFxuICAgICAgY29tbWFuZDogJ251Y2xpZGUtb3V0bGluZS12aWV3OnNob3cnLFxuICAgIH0sXG4gICAgcHJpb3JpdHk6IDIuNSwgLy8gQmV0d2VlbiBkaWZmIHZpZXcgYW5kIHRlc3QgcnVubmVyXG4gIH07XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBnZXREaXN0cmFjdGlvbkZyZWVNb2RlUHJvdmlkZXIoKTogRGlzdHJhY3Rpb25GcmVlTW9kZVByb3ZpZGVyIHtcbiAgaW52YXJpYW50KGFjdGl2YXRpb24gIT0gbnVsbCk7XG4gIHJldHVybiBhY3RpdmF0aW9uLmdldERpc3RyYWN0aW9uRnJlZU1vZGVQcm92aWRlcigpO1xufVxuIl19

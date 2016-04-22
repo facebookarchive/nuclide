@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = createComponentItem;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +11,22 @@
  * the root directory of this source tree.
  */
 
-import {React, ReactDOM} from 'react-for-atom';
+var _reactForAtom = require('react-for-atom');
 
 /**
  * Create an object suitable for use as an Atom pane item from a React element.
  */
-export default function createComponentItem(reactElement: ?React.Element): HTMLElement {
+
+function createComponentItem(reactElement) {
   // In order to get the stateful object with the methods that Atom wants for items, we actually
   // have to mount it.
-  const container = document.createElement('div');
+  var container = document.createElement('div');
 
   // For some reason, setting `container.style.display` to `"flex"` directly here doesn't work
   // (something clears it) so we add a class to style it instead.
   container.className = 'nuclide-gadgets--gadget-container';
 
-  const mountedComponent = ReactDOM.render(reactElement, container);
+  var mountedComponent = _reactForAtom.ReactDOM.render(reactElement, container);
 
   // Add the element as a property of the mounted component. This is a special property that Atom's
   // view registry knows to look for. (See [View Resolution
@@ -32,3 +35,6 @@ export default function createComponentItem(reactElement: ?React.Element): HTMLE
 
   return mountedComponent;
 }
+
+module.exports = exports['default'];
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImNyZWF0ZUNvbXBvbmVudEl0ZW0uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7O3FCQWdCd0IsbUJBQW1COzs7Ozs7Ozs7OzRCQUxiLGdCQUFnQjs7Ozs7O0FBSy9CLFNBQVMsbUJBQW1CLENBQUMsWUFBNEIsRUFBZTs7O0FBR3JGLE1BQU0sU0FBUyxHQUFHLFFBQVEsQ0FBQyxhQUFhLENBQUMsS0FBSyxDQUFDLENBQUM7Ozs7QUFJaEQsV0FBUyxDQUFDLFNBQVMsR0FBRyxtQ0FBbUMsQ0FBQzs7QUFFMUQsTUFBTSxnQkFBZ0IsR0FBRyx1QkFBUyxNQUFNLENBQUMsWUFBWSxFQUFFLFNBQVMsQ0FBQyxDQUFDOzs7OztBQUtsRSxrQkFBZ0IsQ0FBQyxPQUFPLEdBQUcsU0FBUyxDQUFDOztBQUVyQyxTQUFPLGdCQUFnQixDQUFDO0NBQ3pCIiwiZmlsZSI6ImNyZWF0ZUNvbXBvbmVudEl0ZW0uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQge1JlYWN0LCBSZWFjdERPTX0gZnJvbSAncmVhY3QtZm9yLWF0b20nO1xuXG4vKipcbiAqIENyZWF0ZSBhbiBvYmplY3Qgc3VpdGFibGUgZm9yIHVzZSBhcyBhbiBBdG9tIHBhbmUgaXRlbSBmcm9tIGEgUmVhY3QgZWxlbWVudC5cbiAqL1xuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gY3JlYXRlQ29tcG9uZW50SXRlbShyZWFjdEVsZW1lbnQ6ID9SZWFjdC5FbGVtZW50KTogSFRNTEVsZW1lbnQge1xuICAvLyBJbiBvcmRlciB0byBnZXQgdGhlIHN0YXRlZnVsIG9iamVjdCB3aXRoIHRoZSBtZXRob2RzIHRoYXQgQXRvbSB3YW50cyBmb3IgaXRlbXMsIHdlIGFjdHVhbGx5XG4gIC8vIGhhdmUgdG8gbW91bnQgaXQuXG4gIGNvbnN0IGNvbnRhaW5lciA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2RpdicpO1xuXG4gIC8vIEZvciBzb21lIHJlYXNvbiwgc2V0dGluZyBgY29udGFpbmVyLnN0eWxlLmRpc3BsYXlgIHRvIGBcImZsZXhcImAgZGlyZWN0bHkgaGVyZSBkb2Vzbid0IHdvcmtcbiAgLy8gKHNvbWV0aGluZyBjbGVhcnMgaXQpIHNvIHdlIGFkZCBhIGNsYXNzIHRvIHN0eWxlIGl0IGluc3RlYWQuXG4gIGNvbnRhaW5lci5jbGFzc05hbWUgPSAnbnVjbGlkZS1nYWRnZXRzLS1nYWRnZXQtY29udGFpbmVyJztcblxuICBjb25zdCBtb3VudGVkQ29tcG9uZW50ID0gUmVhY3RET00ucmVuZGVyKHJlYWN0RWxlbWVudCwgY29udGFpbmVyKTtcblxuICAvLyBBZGQgdGhlIGVsZW1lbnQgYXMgYSBwcm9wZXJ0eSBvZiB0aGUgbW91bnRlZCBjb21wb25lbnQuIFRoaXMgaXMgYSBzcGVjaWFsIHByb3BlcnR5IHRoYXQgQXRvbSdzXG4gIC8vIHZpZXcgcmVnaXN0cnkga25vd3MgdG8gbG9vayBmb3IuIChTZWUgW1ZpZXcgUmVzb2x1dGlvblxuICAvLyBBbGdvcml0aG1dKGh0dHBzOi8vYXRvbS5pby9kb2NzL2FwaS92MS4yLjQvVmlld1JlZ2lzdHJ5I2luc3RhbmNlLWdldFZpZXcpIGZvciBtb3JlIGRldGFpbHMuKVxuICBtb3VudGVkQ29tcG9uZW50LmVsZW1lbnQgPSBjb250YWluZXI7XG5cbiAgcmV0dXJuIG1vdW50ZWRDb21wb25lbnQ7XG59XG4iXX0=

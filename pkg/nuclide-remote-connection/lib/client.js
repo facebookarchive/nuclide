@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +8,27 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {RemoteFile} from './RemoteFile';
+var _atom = require('atom');
 
-import {File} from 'atom';
-const {ServerConnection} = require('./ServerConnection');
-const {isRemote} = require('../../nuclide-remote-uri');
+var _require = require('./ServerConnection');
+
+var ServerConnection = _require.ServerConnection;
+
+var _require2 = require('../../nuclide-remote-uri');
+
+var isRemote = _require2.isRemote;
 
 module.exports = {
-  getFileForPath(filePath: NuclideUri): ?(atom$File | RemoteFile) {
+  getFileForPath: function getFileForPath(filePath) {
     if (isRemote(filePath)) {
-      const connection = ServerConnection.getForUri(filePath);
+      var connection = ServerConnection.getForUri(filePath);
       if (!connection) {
         return null;
       }
       return connection.createFile(filePath);
     } else {
-      return new File(filePath);
+      return new _atom.File(filePath);
     }
-  },
+  }
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImNsaWVudC5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O29CQWNtQixNQUFNOztlQUNFLE9BQU8sQ0FBQyxvQkFBb0IsQ0FBQzs7SUFBakQsZ0JBQWdCLFlBQWhCLGdCQUFnQjs7Z0JBQ0osT0FBTyxDQUFDLDBCQUEwQixDQUFDOztJQUEvQyxRQUFRLGFBQVIsUUFBUTs7QUFFZixNQUFNLENBQUMsT0FBTyxHQUFHO0FBQ2YsZ0JBQWMsRUFBQSx3QkFBQyxRQUFvQixFQUE2QjtBQUM5RCxRQUFJLFFBQVEsQ0FBQyxRQUFRLENBQUMsRUFBRTtBQUN0QixVQUFNLFVBQVUsR0FBRyxnQkFBZ0IsQ0FBQyxTQUFTLENBQUMsUUFBUSxDQUFDLENBQUM7QUFDeEQsVUFBSSxDQUFDLFVBQVUsRUFBRTtBQUNmLGVBQU8sSUFBSSxDQUFDO09BQ2I7QUFDRCxhQUFPLFVBQVUsQ0FBQyxVQUFVLENBQUMsUUFBUSxDQUFDLENBQUM7S0FDeEMsTUFBTTtBQUNMLGFBQU8sZUFBUyxRQUFRLENBQUMsQ0FBQztLQUMzQjtHQUNGO0NBQ0YsQ0FBQyIsImZpbGUiOiJjbGllbnQuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7TnVjbGlkZVVyaX0gZnJvbSAnLi4vLi4vbnVjbGlkZS1yZW1vdGUtdXJpJztcbmltcG9ydCB0eXBlIHtSZW1vdGVGaWxlfSBmcm9tICcuL1JlbW90ZUZpbGUnO1xuXG5pbXBvcnQge0ZpbGV9IGZyb20gJ2F0b20nO1xuY29uc3Qge1NlcnZlckNvbm5lY3Rpb259ID0gcmVxdWlyZSgnLi9TZXJ2ZXJDb25uZWN0aW9uJyk7XG5jb25zdCB7aXNSZW1vdGV9ID0gcmVxdWlyZSgnLi4vLi4vbnVjbGlkZS1yZW1vdGUtdXJpJyk7XG5cbm1vZHVsZS5leHBvcnRzID0ge1xuICBnZXRGaWxlRm9yUGF0aChmaWxlUGF0aDogTnVjbGlkZVVyaSk6ID8oYXRvbSRGaWxlIHwgUmVtb3RlRmlsZSkge1xuICAgIGlmIChpc1JlbW90ZShmaWxlUGF0aCkpIHtcbiAgICAgIGNvbnN0IGNvbm5lY3Rpb24gPSBTZXJ2ZXJDb25uZWN0aW9uLmdldEZvclVyaShmaWxlUGF0aCk7XG4gICAgICBpZiAoIWNvbm5lY3Rpb24pIHtcbiAgICAgICAgcmV0dXJuIG51bGw7XG4gICAgICB9XG4gICAgICByZXR1cm4gY29ubmVjdGlvbi5jcmVhdGVGaWxlKGZpbGVQYXRoKTtcbiAgICB9IGVsc2Uge1xuICAgICAgcmV0dXJuIG5ldyBGaWxlKGZpbGVQYXRoKTtcbiAgICB9XG4gIH0sXG59O1xuIl19

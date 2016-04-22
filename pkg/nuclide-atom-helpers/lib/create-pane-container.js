@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +8,14 @@
  * the root directory of this source tree.
  */
 
-let paneContainerClass: ?Function;
+var paneContainerClass = undefined;
 
-module.exports = function createPaneContainer(): Object {
+module.exports = function createPaneContainer() {
   if (!paneContainerClass) {
-    paneContainerClass = atom.views.providers.filter((provider: atom$ViewProvider) =>
-      provider.modelConstructor.name === 'PaneContainer'
-    )[0].modelConstructor;
+    paneContainerClass = atom.views.providers.filter(function (provider) {
+      return provider.modelConstructor.name === 'PaneContainer';
+    })[0].modelConstructor;
   }
   return new paneContainerClass({});
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImNyZWF0ZS1wYW5lLWNvbnRhaW5lci5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBV0EsSUFBSSxrQkFBNkIsWUFBQSxDQUFDOztBQUVsQyxNQUFNLENBQUMsT0FBTyxHQUFHLFNBQVMsbUJBQW1CLEdBQVc7QUFDdEQsTUFBSSxDQUFDLGtCQUFrQixFQUFFO0FBQ3ZCLHNCQUFrQixHQUFHLElBQUksQ0FBQyxLQUFLLENBQUMsU0FBUyxDQUFDLE1BQU0sQ0FBQyxVQUFDLFFBQVE7YUFDeEQsUUFBUSxDQUFDLGdCQUFnQixDQUFDLElBQUksS0FBSyxlQUFlO0tBQUEsQ0FDbkQsQ0FBQyxDQUFDLENBQUMsQ0FBQyxnQkFBZ0IsQ0FBQztHQUN2QjtBQUNELFNBQU8sSUFBSSxrQkFBa0IsQ0FBQyxFQUFFLENBQUMsQ0FBQztDQUNuQyxDQUFDIiwiZmlsZSI6ImNyZWF0ZS1wYW5lLWNvbnRhaW5lci5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmxldCBwYW5lQ29udGFpbmVyQ2xhc3M6ID9GdW5jdGlvbjtcblxubW9kdWxlLmV4cG9ydHMgPSBmdW5jdGlvbiBjcmVhdGVQYW5lQ29udGFpbmVyKCk6IE9iamVjdCB7XG4gIGlmICghcGFuZUNvbnRhaW5lckNsYXNzKSB7XG4gICAgcGFuZUNvbnRhaW5lckNsYXNzID0gYXRvbS52aWV3cy5wcm92aWRlcnMuZmlsdGVyKChwcm92aWRlcjogYXRvbSRWaWV3UHJvdmlkZXIpID0+XG4gICAgICBwcm92aWRlci5tb2RlbENvbnN0cnVjdG9yLm5hbWUgPT09ICdQYW5lQ29udGFpbmVyJ1xuICAgIClbMF0ubW9kZWxDb25zdHJ1Y3RvcjtcbiAgfVxuICByZXR1cm4gbmV3IHBhbmVDb250YWluZXJDbGFzcyh7fSk7XG59O1xuIl19

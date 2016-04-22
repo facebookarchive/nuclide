@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,173 +10,221 @@
  * the root directory of this source tree.
  */
 
-import type {CommandInfo} from './types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import invariant from 'assert';
-import type {ProcessOutputDataHandlers} from '../../../nuclide-process-output-store/lib/types';
-import type {Dispatcher} from 'flux';
-import {scriptSafeSpawnAndObserveOutput} from '../../../nuclide-commons';
-import ExecutorServer from '../../../nuclide-react-native-node-executor';
-import ReactNativeServerStatus from './ReactNativeServerStatus';
-import {React} from 'react-for-atom';
-import ReactNativeServerPanel from './ReactNativeServerPanel';
-import ReactNativeServerActions from './ReactNativeServerActions';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export default class ReactNativeServerManager {
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-  _actions: ReactNativeServerActions;
-  _dispatcher: Dispatcher;
-  _status: ReactNativeServerStatus;
-  _processRunner: ?Object;
-  _nodeExecutorServer: ?ExecutorServer;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  constructor(dispatcher: Dispatcher, actions: ReactNativeServerActions) {
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _nuclideCommons = require('../../../nuclide-commons');
+
+var _nuclideReactNativeNodeExecutor = require('../../../nuclide-react-native-node-executor');
+
+var _nuclideReactNativeNodeExecutor2 = _interopRequireDefault(_nuclideReactNativeNodeExecutor);
+
+var _ReactNativeServerStatus = require('./ReactNativeServerStatus');
+
+var _ReactNativeServerStatus2 = _interopRequireDefault(_ReactNativeServerStatus);
+
+var _reactForAtom = require('react-for-atom');
+
+var _ReactNativeServerPanel = require('./ReactNativeServerPanel');
+
+var _ReactNativeServerPanel2 = _interopRequireDefault(_ReactNativeServerPanel);
+
+var _ReactNativeServerActions = require('./ReactNativeServerActions');
+
+var _ReactNativeServerActions2 = _interopRequireDefault(_ReactNativeServerActions);
+
+var ReactNativeServerManager = (function () {
+  function ReactNativeServerManager(dispatcher, actions) {
+    _classCallCheck(this, ReactNativeServerManager);
+
     this._actions = actions;
     this._dispatcher = dispatcher;
-    this._status = new ReactNativeServerStatus();
+    this._status = new _ReactNativeServerStatus2['default']();
     this._setupActions();
   }
 
-  dispose() {
-    this._stopServer();
-    if (this._nodeExecutorServer) {
-      this._nodeExecutorServer.close();
-    }
-  }
-
-  _setupActions() {
-    this._dispatcher.register(action => {
-      switch (action.actionType) {
-        case ReactNativeServerActions.ActionType.START_NODE_EXECUTOR_SERVER:
-          this._startNodeExecutorServer();
-          break;
-        case ReactNativeServerActions.ActionType.START_SERVER:
-          this._startServer(action.commandInfo);
-          break;
-        case ReactNativeServerActions.ActionType.STOP_SERVER:
-          this._stopServer();
-          break;
-        case ReactNativeServerActions.ActionType.RESTART_SERVER:
-          this._stopServer();
-          atom.workspace.destroyActivePaneItem();
-          this._startServer(action.commandInfo);
-          break;
+  _createClass(ReactNativeServerManager, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._stopServer();
+      if (this._nodeExecutorServer) {
+        this._nodeExecutorServer.close();
       }
-    });
-  }
-
-  _stopServer() {
-    this._processRunner && this._processRunner.dispose();
-    this._processRunner = null;
-    this._status.setServerRunning(false);
-  }
-
-  async _startServer(commandInfo: CommandInfo): Promise<void> {
-    let processRunner = this._processRunner;
-    if (processRunner == null) {
-      processRunner = await this._createProcessRunner(commandInfo);
-      if (processRunner == null) {
-        return;
-      }
-      this._processRunner = processRunner;
-      this._status.setServerRunning(true);
     }
-    invariant(processRunner);
-    processRunner.run();
-  }
+  }, {
+    key: '_setupActions',
+    value: function _setupActions() {
+      var _this = this;
 
-  async _createProcessRunner(commandInfo: CommandInfo): Promise<?Object> {
-    const getRunCommandInNewPane = require('../../../nuclide-process-output');
-    const {runCommandInNewPane, disposable} = getRunCommandInNewPane();
-
-    const runProcessWithHandlers = (dataHandlerOptions: ProcessOutputDataHandlers) => {
-      const {stdout, stderr, error, exit} = dataHandlerOptions;
-      const {command, cwd} = commandInfo;
-      invariant(command);
-      invariant(cwd);
-      const observable = scriptSafeSpawnAndObserveOutput(command, [], {cwd});
-      const onNext = (data: {stdout?: string; stderr?: string}) => {
-        if (data.stdout) {
-          stdout(data.stdout);
-        } else {
-          stderr(data.stderr || '');
+      this._dispatcher.register(function (action) {
+        switch (action.actionType) {
+          case _ReactNativeServerActions2['default'].ActionType.START_NODE_EXECUTOR_SERVER:
+            _this._startNodeExecutorServer();
+            break;
+          case _ReactNativeServerActions2['default'].ActionType.START_SERVER:
+            _this._startServer(action.commandInfo);
+            break;
+          case _ReactNativeServerActions2['default'].ActionType.STOP_SERVER:
+            _this._stopServer();
+            break;
+          case _ReactNativeServerActions2['default'].ActionType.RESTART_SERVER:
+            _this._stopServer();
+            atom.workspace.destroyActivePaneItem();
+            _this._startServer(action.commandInfo);
+            break;
         }
-      };
-      const onError = (data: string) => {
-        error(new Error(data));
-        exit(1);
-        disposable.dispose();
-      };
-      const onExit = () => {
-        exit(0);
-        disposable.dispose();
-      };
-      const subscription = observable.subscribe(onNext, onError, onExit);
-
-      return Promise.resolve({
-        kill() {
-          subscription.unsubscribe();
-          disposable.dispose();
-        },
       });
-    };
-
-    const {ProcessOutputStore} = require('../../../nuclide-process-output-store');
-    const processOutputStore = new ProcessOutputStore(runProcessWithHandlers);
-
-    const panel =
-      <ReactNativeServerPanel
-        store={this._status}
-        stopServer={() => this._actions.stopServer()}
-        restartServer={() => this._actions.restartServer(commandInfo)}
-      />;
-
-    let isOutputPaneOpen = false;
-    let paneSubscription;
-
-    // We don't want to call getRunCommandInNewPane() multiple times because it has unwanted
-    // side effects. So, we cache the output of runCommandInNewPane function and use the same
-    // instance of runCommandInNewPane to re-open output pane for the same server process.
-    return {
-      run: async () => {
-        if (isOutputPaneOpen) {
+    }
+  }, {
+    key: '_stopServer',
+    value: function _stopServer() {
+      this._processRunner && this._processRunner.dispose();
+      this._processRunner = null;
+      this._status.setServerRunning(false);
+    }
+  }, {
+    key: '_startServer',
+    value: _asyncToGenerator(function* (commandInfo) {
+      var processRunner = this._processRunner;
+      if (processRunner == null) {
+        processRunner = yield this._createProcessRunner(commandInfo);
+        if (processRunner == null) {
           return;
         }
-        const textEditor = await runCommandInNewPane({
-          tabTitle: 'React Native Server',
-          processOutputStore,
-          processOutputViewTopElement: panel,
-        });
-        isOutputPaneOpen = true;
+        this._processRunner = processRunner;
+        this._status.setServerRunning(true);
+      }
+      (0, _assert2['default'])(processRunner);
+      processRunner.run();
+    })
+  }, {
+    key: '_createProcessRunner',
+    value: _asyncToGenerator(function* (commandInfo) {
+      var _this2 = this;
 
-        paneSubscription = atom.workspace.onDidDestroyPaneItem(event => {
-          if (event.item === textEditor) {
-            isOutputPaneOpen = false;
-            invariant(paneSubscription);
-            paneSubscription.dispose();
-            paneSubscription = null;
+      var getRunCommandInNewPane = require('../../../nuclide-process-output');
+
+      var _getRunCommandInNewPane = getRunCommandInNewPane();
+
+      var runCommandInNewPane = _getRunCommandInNewPane.runCommandInNewPane;
+      var disposable = _getRunCommandInNewPane.disposable;
+
+      var runProcessWithHandlers = function runProcessWithHandlers(dataHandlerOptions) {
+        var stdout = dataHandlerOptions.stdout;
+        var stderr = dataHandlerOptions.stderr;
+        var error = dataHandlerOptions.error;
+        var exit = dataHandlerOptions.exit;
+        var command = commandInfo.command;
+        var cwd = commandInfo.cwd;
+
+        (0, _assert2['default'])(command);
+        (0, _assert2['default'])(cwd);
+        var observable = (0, _nuclideCommons.scriptSafeSpawnAndObserveOutput)(command, [], { cwd: cwd });
+        var onNext = function onNext(data) {
+          if (data.stdout) {
+            stdout(data.stdout);
+          } else {
+            stderr(data.stderr || '');
+          }
+        };
+        var onError = function onError(data) {
+          error(new Error(data));
+          exit(1);
+          disposable.dispose();
+        };
+        var onExit = function onExit() {
+          exit(0);
+          disposable.dispose();
+        };
+        var subscription = observable.subscribe(onNext, onError, onExit);
+
+        return Promise.resolve({
+          kill: function kill() {
+            subscription.unsubscribe();
+            disposable.dispose();
           }
         });
-      },
+      };
 
-      dispose: () => {
-        processOutputStore && processOutputStore.stopProcess();
-        paneSubscription && paneSubscription.dispose();
-      },
-    };
-  }
+      var _require = require('../../../nuclide-process-output-store');
 
-  async _attachNodeDebugger(pid: number): Promise<void> {
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-    const debuggerService = await require('../../../nuclide-service-hub-plus')
-      .consumeFirstProvider('nuclide-debugger.remote');
-    debuggerService.debugNode(pid);
-  }
+      var ProcessOutputStore = _require.ProcessOutputStore;
 
-  _startNodeExecutorServer() {
-    if (!this._nodeExecutorServer) {
-      const server = this._nodeExecutorServer = new ExecutorServer(8090);
-      server.onDidEvalApplicationScript(this._attachNodeDebugger.bind(this));
+      var processOutputStore = new ProcessOutputStore(runProcessWithHandlers);
+
+      var panel = _reactForAtom.React.createElement(_ReactNativeServerPanel2['default'], {
+        store: this._status,
+        stopServer: function () {
+          return _this2._actions.stopServer();
+        },
+        restartServer: function () {
+          return _this2._actions.restartServer(commandInfo);
+        }
+      });
+
+      var isOutputPaneOpen = false;
+      var paneSubscription = undefined;
+
+      // We don't want to call getRunCommandInNewPane() multiple times because it has unwanted
+      // side effects. So, we cache the output of runCommandInNewPane function and use the same
+      // instance of runCommandInNewPane to re-open output pane for the same server process.
+      return {
+        run: _asyncToGenerator(function* () {
+          if (isOutputPaneOpen) {
+            return;
+          }
+          var textEditor = yield runCommandInNewPane({
+            tabTitle: 'React Native Server',
+            processOutputStore: processOutputStore,
+            processOutputViewTopElement: panel
+          });
+          isOutputPaneOpen = true;
+
+          paneSubscription = atom.workspace.onDidDestroyPaneItem(function (event) {
+            if (event.item === textEditor) {
+              isOutputPaneOpen = false;
+              (0, _assert2['default'])(paneSubscription);
+              paneSubscription.dispose();
+              paneSubscription = null;
+            }
+          });
+        }),
+
+        dispose: function dispose() {
+          processOutputStore && processOutputStore.stopProcess();
+          paneSubscription && paneSubscription.dispose();
+        }
+      };
+    })
+  }, {
+    key: '_attachNodeDebugger',
+    value: _asyncToGenerator(function* (pid) {
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
+      var debuggerService = yield require('../../../nuclide-service-hub-plus').consumeFirstProvider('nuclide-debugger.remote');
+      debuggerService.debugNode(pid);
+    })
+  }, {
+    key: '_startNodeExecutorServer',
+    value: function _startNodeExecutorServer() {
+      if (!this._nodeExecutorServer) {
+        var server = this._nodeExecutorServer = new _nuclideReactNativeNodeExecutor2['default'](8090);
+        server.onDidEvalApplicationScript(this._attachNodeDebugger.bind(this));
+      }
     }
-  }
-}
+  }]);
+
+  return ReactNativeServerManager;
+})();
+
+exports['default'] = ReactNativeServerManager;
+module.exports = exports['default'];
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlJlYWN0TmF0aXZlU2VydmVyTWFuYWdlci5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7OztzQkFhc0IsUUFBUTs7Ozs4QkFHZ0IsMEJBQTBCOzs4Q0FDN0MsNkNBQTZDOzs7O3VDQUNwQywyQkFBMkI7Ozs7NEJBQzNDLGdCQUFnQjs7c0NBQ0QsMEJBQTBCOzs7O3dDQUN4Qiw0QkFBNEI7Ozs7SUFFNUMsd0JBQXdCO0FBUWhDLFdBUlEsd0JBQXdCLENBUS9CLFVBQXNCLEVBQUUsT0FBaUMsRUFBRTswQkFScEQsd0JBQXdCOztBQVN6QyxRQUFJLENBQUMsUUFBUSxHQUFHLE9BQU8sQ0FBQztBQUN4QixRQUFJLENBQUMsV0FBVyxHQUFHLFVBQVUsQ0FBQztBQUM5QixRQUFJLENBQUMsT0FBTyxHQUFHLDBDQUE2QixDQUFDO0FBQzdDLFFBQUksQ0FBQyxhQUFhLEVBQUUsQ0FBQztHQUN0Qjs7ZUFia0Isd0JBQXdCOztXQWVwQyxtQkFBRztBQUNSLFVBQUksQ0FBQyxXQUFXLEVBQUUsQ0FBQztBQUNuQixVQUFJLElBQUksQ0FBQyxtQkFBbUIsRUFBRTtBQUM1QixZQUFJLENBQUMsbUJBQW1CLENBQUMsS0FBSyxFQUFFLENBQUM7T0FDbEM7S0FDRjs7O1dBRVkseUJBQUc7OztBQUNkLFVBQUksQ0FBQyxXQUFXLENBQUMsUUFBUSxDQUFDLFVBQUEsTUFBTSxFQUFJO0FBQ2xDLGdCQUFRLE1BQU0sQ0FBQyxVQUFVO0FBQ3ZCLGVBQUssc0NBQXlCLFVBQVUsQ0FBQywwQkFBMEI7QUFDakUsa0JBQUssd0JBQXdCLEVBQUUsQ0FBQztBQUNoQyxrQkFBTTtBQUFBLEFBQ1IsZUFBSyxzQ0FBeUIsVUFBVSxDQUFDLFlBQVk7QUFDbkQsa0JBQUssWUFBWSxDQUFDLE1BQU0sQ0FBQyxXQUFXLENBQUMsQ0FBQztBQUN0QyxrQkFBTTtBQUFBLEFBQ1IsZUFBSyxzQ0FBeUIsVUFBVSxDQUFDLFdBQVc7QUFDbEQsa0JBQUssV0FBVyxFQUFFLENB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LEtBQUssQ0FBQztBQUN6Qix1Q0FBVSxnQkFBZ0IsQ0FBQyxDQUFDO0FBQzVCLDhCQUFnQixDQUFDLE9BQU8sRUFBRSxDQUFDO0FBQzNCLDhCQUFnQixHQUFHLElBQUksQ0FBQzthQUN6QjtXQUNGLENBQUMsQ0FBQztTQUNKLENBQUE7O0FBRUQsZUFBTyxFQUFFLG1CQUFNO0FBQ2IsNEJBQWtCLElBQUksa0JBQWtCLENBQUMsV0FBVyxFQUFFLENBQUM7QUFDdkQsMEJBQWdCLElBQUksZ0JBQWdCLENBQUMsT0FBTyxFQUFFLENBQUM7U0FDaEQ7T0FDRixDQUFDO0tBQ0g7Ozs2QkFFd0IsV0FBQyxHQUFXLEVBQWlCO0FBQ3BELFVBQUksQ0FBQyxRQUFRLENBQUMsUUFBUSxDQUFDLElBQUksQ0FBQyxLQUFLLENBQUMsT0FBTyxDQUFDLElBQUksQ0FBQyxTQUFTLENBQUMsRUFBRSx1QkFBdUIsQ0FBQyxDQUFDO0FBQ3BGLFVBQU0sZUFBZSxHQUFHLE1BQU0sT0FBTyxDQUFDLG1DQUFtQyxDQUFDLENBQ3ZFLG9CQUFvQixDQUFDLHlCQUF5QixDQUFDLENBQUM7QUFDbkQscUJBQWUsQ0FBQyxTQUFTLENBQUMsR0FBRyxDQUFDLENBQUM7S0FDaEM7OztXQUV1QixvQ0FBRztBQUN6QixVQUFJLENBQUMsSUFBSSxDQUFDLG1CQUFtQixFQUFFO0FBQzdCLFlBQU0sTUFBTSxHQUFHLElBQUksQ0FBQyxtQkFBbUIsR0FBRyxnREFBbUIsSUFBSSxDQUFDLENBQUM7QUFDbkUsY0FBTSxDQUFDLDBCQUEwQixDQUFDLElBQUksQ0FBQyxtQkFBbUIsQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDLENBQUMsQ0FBQztPQUN4RTtLQUNGOzs7U0E1SmtCLHdCQUF3Qjs7O3FCQUF4Qix3QkFBd0IiLCJmaWxlIjoiUmVhY3ROYXRpdmVTZXJ2ZXJNYW5hZ2VyLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge0NvbW1hbmRJbmZvfSBmcm9tICcuL3R5cGVzJztcblxuaW1wb3J0IGludmFyaWFudCBmcm9tICdhc3NlcnQnO1xuaW1wb3J0IHR5cGUge1Byb2Nlc3NPdXRwdXREYXRhSGFuZGxlcnN9IGZyb20gJy4uLy4uLy4uL251Y2xpZGUtcHJvY2Vzcy1vdXRwdXQtc3RvcmUvbGliL3R5cGVzJztcbmltcG9ydCB0eXBlIHtEaXNwYXRjaGVyfSBmcm9tICdmbHV4JztcbmltcG9ydCB7c2NyaXB0U2FmZVNwYXduQW5kT2JzZXJ2ZU91dHB1dH0gZnJvbSAnLi4vLi4vLi4vbnVjbGlkZS1jb21tb25zJztcbmltcG9ydCBFeGVjdXRvclNlcnZlciBmcm9tICcuLi8uLi8uLi9udWNsaWRlLXJlYWN0LW5hdGl2ZS1ub2RlLWV4ZWN1dG9yJztcbmltcG9ydCBSZWFjdE5hdGl2ZVNlcnZlclN0YXR1cyBmcm9tICcuL1JlYWN0TmF0aXZlU2VydmVyU3RhdHVzJztcbmltcG9ydCB7UmVhY3R9IGZyb20gJ3JlYWN0LWZvci1hdG9tJztcbmltcG9ydCBSZWFjdE5hdGl2ZVNlcnZlclBhbmVsIGZyb20gJy4vUmVhY3ROYXRpdmVTZXJ2ZXJQYW5lbCc7XG5pbXBvcnQgUmVhY3ROYXRpdmVTZXJ2ZXJBY3Rpb25zIGZyb20gJy4vUmVhY3ROYXRpdmVTZXJ2ZXJBY3Rpb25zJztcblxuZXhwb3J0IGRlZmF1bHQgY2xhc3MgUmVhY3ROYXRpdmVTZXJ2ZXJNYW5hZ2VyIHtcblxuICBfYWN0aW9uczogUmVhY3ROYXRpdmVTZXJ2ZXJBY3Rpb25zO1xuICBfZGlzcGF0Y2hlcjogRGlzcGF0Y2hlcjtcbiAgX3N0YXR1czogUmVhY3ROYXRpdmVTZXJ2ZXJTdGF0dXM7XG4gIF9wcm9jZXNzUnVubmVyOiA/T2JqZWN0O1xuICBfbm9kZUV4ZWN1dG9yU2VydmVyOiA/RXhlY3V0b3JTZXJ2ZXI7XG5cbiAgY29uc3RydWN0b3IoZGlzcGF0Y2hlcjogRGlzcGF0Y2hlciwgYWN0aW9uczogUmVhY3ROYXRpdmVTZXJ2ZXJBY3Rpb25zKSB7XG4gICAgdGhpcy5fYWN0aW9ucyA9IGFjdGlvbnM7XG4gICAgdGhpcy5fZGlzcGF0Y2hlciA9IGRpc3BhdGNoZXI7XG4gICAgdGhpcy5fc3RhdHVzID0gbmV3IFJlYWN0TmF0aXZlU2VydmVyU3RhdHVzKCk7XG4gICAgdGhpcy5fc2V0dXBBY3Rpb25zKCk7XG4gIH1cblxuICBkaXNwb3NlKCkge1xuICAgIHRoaXMuX3N0b3BTZXJ2ZXIoKTtcbiAgICBpZiAodGhpcy5fbm9kZUV4ZWN1dG9yU2VydmVyKSB7XG4gICAgICB0aGlzLl9ub2RlRXhlY3V0b3JTZXJ2ZXIuY2xvc2UoKTtcbiAgICB9XG4gIH1cblxuICBfc2V0dXBBY3Rpb25zKCkge1xuICAgIHRoaXMuX2Rpc3BhdGNoZXIucmVnaXN0ZXIoYWN0aW9uID0+IHtcbiAgICAgIHN3aXRjaCAoYWN0aW9uLmFjdGlvblR5cGUpIHtcbiAgICAgICAgY2FzZSBSZWFjdE5hdGl2ZVNlcnZlckFjdGlvbnMuQWN0aW9uVHlwZS5TVEFSVF9OT0RFX0VYRUNVVE9SX1NFUlZFUjpcbiAgICAgICAgICB0aGlzLl9zdGFydE5vZGVFeGVjdXRvclNlcnZlcigpO1xuICAgICAgICAgIGJyZWFrO1xuICAgICAgICBjYXNlIFJlYWN0TmF0aXZlU2VydmVyQWN0aW9ucy5BY3Rpb25UeXBlLlNUQVJUX1NFUlZFUjpcbiAgICAgICAgICB0aGlzLl9zdGFydFNlcnZlcihhY3Rpb24uY29tbWFuZEluZm8pO1xuICAgICAgICAgIGJyZWFrO1xuICAgICAgICBjYXNlIFJlYWN0TmF0aXZlU2VydmVyQWN0aW9ucy5BY3Rpb25UeXBlLlNUT1BfU0VSVkVSOlxuICAgICAgICAgIHRoaXMuX3N0b3BTZXJ2ZXIoKTtcbiAgICAgICAgICBicmVhaztcbiAgICAgICAgY2FzZSBSZWFjdE5hdGl2ZVNlcnZlckFjdGlvbnMuQWN0aW9uVHlwZS5SRVNUQVJUX1NFUlZFUjpcbiAgICAgICAgICB0aGlzLl9zdG9wU2VydmVyKCk7XG4gICAgICAgICAgYXRvbS53b3Jrc3BhY2UuZGVzdHJveUFjdGl2ZVBhbmVJdGVtKCk7XG4gICAgICAgICAgdGhpcy5fc3RhcnRTZXJ2ZXIoYWN0aW9uLmNvbW1hbmRJbmZvKTtcbiAgICAgICAgICBicmVhaztcbiAgICAgIH1cbiAgICB9KTtcbiAgfVxuXG4gIF9zdG9wU2VydmVyKCkge1xuICAgIHRoaXMuX3Byb2Nlc3NSdW5uZXIgJiYgdGhpcy5fcHJvY2Vzc1J1bm5lci5kaXNwb3NlKCk7XG4gICAgdGhpcy5fcHJvY2Vzc1J1bm5lciA9IG51bGw7XG4gICAgdGhpcy5fc3RhdHVzLnNldFNlcnZlclJ1bm5pbmcoZmFsc2UpO1xuICB9XG5cbiAgYXN5bmMgX3N0YXJ0U2VydmVyKGNvbW1hbmRJbmZvOiBDb21tYW5kSW5mbyk6IFByb21pc2U8dm9pZD4ge1xuICAgIGxldCBwcm9jZXNzUnVubmVyID0gdGhpcy5fcHJvY2Vzc1J1bm5lcjtcbiAgICBpZiAocHJvY2Vzc1J1bm5lciA9PSBudWxsKSB7XG4gICAgICBwcm9jZXNzUnVubmVyID0gYXdhaXQgdGhpcy5fY3JlYXRlUHJvY2Vzc1J1bm5lcihjb21tYW5kSW5mbyk7XG4gICAgICBpZiAocHJvY2Vzc1J1bm5lciA9PSBudWxsKSB7XG4gICAgICAgIHJldHVybjtcbiAgICAgIH1cbiAgICAgIHRoaXMuX3Byb2Nlc3NSdW5uZXIgPSBwcm9jZXNzUnVubmVyO1xuICAgICAgdGhpcy5fc3RhdHVzLnNldFNlcnZlclJ1bm5pbmcodHJ1ZSk7XG4gICAgfVxuICAgIGludmFyaWFudChwcm9jZXNzUnVubmVyKTtcbiAgICBwcm9jZXNzUnVubmVyLnJ1bigpO1xuICB9XG5cbiAgYXN5bmMgX2NyZWF0ZVByb2Nlc3NSdW5uZXIoY29tbWFuZEluZm86IENvbW1hbmRJbmZvKTogUHJvbWlzZTw/T2JqZWN0PiB7XG4gICAgY29uc3QgZ2V0UnVuQ29tbWFuZEluTmV3UGFuZSA9IHJlcXVpcmUoJy4uLy4uLy4uL251Y2xpZGUtcHJvY2Vzcy1vdXRwdXQnKTtcbiAgICBjb25zdCB7cnVuQ29tbWFuZEluTmV3UGFuZSwgZGlzcG9zYWJsZX0gPSBnZXRSdW5Db21tYW5kSW5OZXdQYW5lKCk7XG5cbiAgICBjb25zdCBydW5Qcm9jZXNzV2l0aEhhbmRsZXJzID0gKGRhdGFIYW5kbGVyT3B0aW9uczogUHJvY2Vzc091dHB1dERhdGFIYW5kbGVycykgPT4ge1xuICAgICAgY29uc3Qge3N0ZG91dCwgc3RkZXJyLCBlcnJvciwgZXhpdH0gPSBkYXRhSGFuZGxlck9wdGlvbnM7XG4gICAgICBjb25zdCB7Y29tbWFuZCwgY3dkfSA9IGNvbW1hbmRJbmZvO1xuICAgICAgaW52YXJpYW50KGNvbW1hbmQpO1xuICAgICAgaW52YXJpYW50KGN3ZCk7XG4gICAgICBjb25zdCBvYnNlcnZhYmxlID0gc2NyaXB0U2FmZVNwYXduQW5kT2JzZXJ2ZU91dHB1dChjb21tYW5kLCBbXSwge2N3ZH0pO1xuICAgICAgY29uc3Qgb25OZXh0ID0gKGRhdGE6IHtzdGRvdXQ/OiBzdHJpbmc7IHN0ZGVycj86IHN0cmluZ30pID0+IHtcbiAgICAgICAgaWYgKGRhdGEuc3Rkb3V0KSB7XG4gICAgICAgICAgc3Rkb3V0KGRhdGEuc3Rkb3V0KTtcbiAgICAgICAgfSBlbHNlIHtcbiAgICAgICAgICBzdGRlcnIoZGF0YS5zdGRlcnIgfHwgJycpO1xuICAgICAgICB9XG4gICAgICB9O1xuICAgICAgY29uc3Qgb25FcnJvciA9IChkYXRhOiBzdHJpbmcpID0+IHtcbiAgICAgICAgZXJyb3IobmV3IEVycm9yKGRhdGEpKTtcbiAgICAgICAgZXhpdCgxKTtcbiAgICAgICAgZGlzcG9zYWJsZS5kaXNwb3NlKCk7XG4gICAgICB9O1xuICAgICAgY29uc3Qgb25FeGl0ID0gKCkgPT4ge1xuICAgICAgICBleGl0KDApO1xuICAgICAgICBkaXNwb3NhYmxlLmRpc3Bvc2UoKTtcbiAgICAgIH07XG4gICAgICBjb25zdCBzdWJzY3JpcHRpb24gPSBvYnNlcnZhYmxlLnN1YnNjcmliZShvbk5leHQsIG9uRXJyb3IsIG9uRXhpdCk7XG5cbiAgICAgIHJldHVybiBQcm9taXNlLnJlc29sdmUoe1xuICAgICAgICBraWxsKCkge1xuICAgICAgICAgIHN1YnNjcmlwdGlvbi51bnN1YnNjcmliZSgpO1xuICAgICAgICAgIGRpc3Bvc2FibGUuZGlzcG9zZSgpO1xuICAgICAgICB9LFxuICAgICAgfSk7XG4gICAgfTtcblxuICAgIGNvbnN0IHtQcm9jZXNzT3V0cHV0U3RvcmV9ID0gcmVxdWlyZSgnLi4vLi4vLi4vbnVjbGlkZS1wcm9jZXNzLW91dHB1dC1zdG9yZScpO1xuICAgIGNvbnN0IHByb2Nlc3NPdXRwdXRTdG9yZSA9IG5ldyBQcm9jZXNzT3V0cHV0U3RvcmUocnVuUHJvY2Vzc1dpdGhIYW5kbGVycyk7XG5cbiAgICBjb25zdCBwYW5lbCA9XG4gICAgICA8UmVhY3ROYXRpdmVTZXJ2ZXJQYW5lbFxuICAgICAgICBzdG9yZT17dGhpcy5fc3RhdHVzfVxuICAgICAgICBzdG9wU2VydmVyPXsoKSA9PiB0aGlzLl9hY3Rpb25zLnN0b3BTZXJ2ZXIoKX1cbiAgICAgICAgcmVzdGFydFNlcnZlcj17KCkgPT4gdGhpcy5fYWN0aW9ucy5yZXN0YXJ0U2VydmVyKGNvbW1hbmRJbmZvKX1cbiAgICAgIC8+O1xuXG4gICAgbGV0IGlzT3V0cHV0UGFuZU9wZW4gPSBmYWxzZTtcbiAgICBsZXQgcGFuZVN1YnNjcmlwdGlvbjtcblxuICAgIC8vIFdlIGRvbid0IHdhbnQgdG8gY2FsbCBnZXRSdW5Db21tYW5kSW5OZXdQYW5lKCkgbXVsdGlwbGUgdGltZXMgYmVjYXVzZSBpdCBoYXMgdW53YW50ZWRcbiAgICAvLyBzaWRlIGVmZmVjdHMuIFNvLCB3ZSBjYWNoZSB0aGUgb3V0cHV0IG9mIHJ1bkNvbW1hbmRJbk5ld1BhbmUgZnVuY3Rpb24gYW5kIHVzZSB0aGUgc2FtZVxuICAgIC8vIGluc3RhbmNlIG9mIHJ1bkNvbW1hbmRJbk5ld1BhbmUgdG8gcmUtb3BlbiBvdXRwdXQgcGFuZSBmb3IgdGhlIHNhbWUgc2VydmVyIHByb2Nlc3MuXG4gICAgcmV0dXJuIHtcbiAgICAgIHJ1bjogYXN5bmMgKCkgPT4ge1xuICAgICAgICBpZiAoaXNPdXRwdXRQYW5lT3Blbikge1xuICAgICAgICAgIHJldHVybjtcbiAgICAgICAgfVxuICAgICAgICBjb25zdCB0ZXh0RWRpdG9yID0gYXdhaXQgcnVuQ29tbWFuZEluTmV3UGFuZSh7XG4gICAgICAgICAgdGFiVGl0bGU6ICdSZWFjdCBOYXRpdmUgU2VydmVyJyxcbiAgICAgICAgICBwcm9jZXNzT3V0cHV0U3RvcmUsXG4gICAgICAgICAgcHJvY2Vzc091dHB1dFZpZXdUb3BFbGVtZW50OiBwYW5lbCxcbiAgICAgICAgfSk7XG4gICAgICAgIGlzT3V0cHV0UGFuZU9wZW4gPSB0cnVlO1xuXG4gICAgICAgIHBhbmVTdWJzY3JpcHRpb24gPSBhdG9tLndvcmtzcGFjZS5vbkRpZERlc3Ryb3lQYW5lSXRlbShldmVudCA9PiB7XG4gICAgICAgICAgaWYgKGV2ZW50Lml0ZW0gPT09IHRleHRFZGl0b3IpIHtcbiAgICAgICAgICAgIGlzT3V0cHV0UGFuZU9wZW4gPSBmYWxzZTtcbiAgICAgICAgICAgIGludmFyaWFudChwYW5lU3Vic2NyaXB0aW9uKTtcbiAgICAgICAgICAgIHBhbmVTdWJzY3JpcHRpb24uZGlzcG9zZSgpO1xuICAgICAgICAgICAgcGFuZVN1YnNjcmlwdGlvbiA9IG51bGw7XG4gICAgICAgICAgfVxuICAgICAgICB9KTtcbiAgICAgIH0sXG5cbiAgICAgIGRpc3Bvc2U6ICgpID0+IHtcbiAgICAgICAgcHJvY2Vzc091dHB1dFN0b3JlICYmIHByb2Nlc3NPdXRwdXRTdG9yZS5zdG9wUHJvY2VzcygpO1xuICAgICAgICBwYW5lU3Vic2NyaXB0aW9uICYmIHBhbmVTdWJzY3JpcHRpb24uZGlzcG9zZSgpO1xuICAgICAgfSxcbiAgICB9O1xuICB9XG5cbiAgYXN5bmMgX2F0dGFjaE5vZGVEZWJ1Z2dlcihwaWQ6IG51bWJlcik6IFByb21pc2U8dm9pZD4ge1xuICAgIGF0b20uY29tbWFuZHMuZGlzcGF0Y2goYXRvbS52aWV3cy5nZXRWaWV3KGF0b20ud29ya3NwYWNlKSwgJ251Y2xpZGUtZGVidWdnZXI6c2hvdycpO1xuICAgIGNvbnN0IGRlYnVnZ2VyU2VydmljZSA9IGF3YWl0IHJlcXVpcmUoJy4uLy4uLy4uL251Y2xpZGUtc2VydmljZS1odWItcGx1cycpXG4gICAgICAuY29uc3VtZUZpcnN0UHJvdmlkZXIoJ251Y2xpZGUtZGVidWdnZXIucmVtb3RlJyk7XG4gICAgZGVidWdnZXJTZXJ2aWNlLmRlYnVnTm9kZShwaWQpO1xuICB9XG5cbiAgX3N0YXJ0Tm9kZUV4ZWN1dG9yU2VydmVyKCkge1xuICAgIGlmICghdGhpcy5fbm9kZUV4ZWN1dG9yU2VydmVyKSB7XG4gICAgICBjb25zdCBzZXJ2ZXIgPSB0aGlzLl9ub2RlRXhlY3V0b3JTZXJ2ZXIgPSBuZXcgRXhlY3V0b3JTZXJ2ZXIoODA5MCk7XG4gICAgICBzZXJ2ZXIub25EaWRFdmFsQXBwbGljYXRpb25TY3JpcHQodGhpcy5fYXR0YWNoTm9kZURlYnVnZ2VyLmJpbmQodGhpcykpO1xuICAgIH1cbiAgfVxufVxuIl19

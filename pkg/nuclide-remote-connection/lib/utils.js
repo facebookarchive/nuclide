@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +8,13 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
-import fs from 'fs';
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
+var _fs = require('fs');
+
+var _fs2 = _interopRequireDefault(_fs);
 
 /**
  * Returns if the `rootPath` directory contains the `checkPath` which could be:
@@ -20,27 +24,27 @@ import fs from 'fs';
  *  - May end in a trailing slash if it's a directory path.
  * Follows symlinks to figure out if the real paths of the root and check paths matches.
  */
-function containsPathSync(rootPath: string, checkPath: string): boolean {
-  let realRootPath = null;
-  let realCheckPath = null;
+function containsPathSync(rootPath, checkPath) {
+  var realRootPath = null;
+  var realCheckPath = null;
   try {
-    realRootPath = fs.realpathSync(rootPath);
-    realCheckPath = fs.realpathSync(checkPath);
+    realRootPath = _fs2['default'].realpathSync(rootPath);
+    realCheckPath = _fs2['default'].realpathSync(checkPath);
   } catch (e) {
     realRootPath = rootPath;
     realCheckPath = checkPath;
   }
 
-  const normalizedRootPath = path.normalize(realRootPath);
-  const normalizedCheckPath = path.normalize(realCheckPath);
+  var normalizedRootPath = _path2['default'].normalize(realRootPath);
+  var normalizedCheckPath = _path2['default'].normalize(realCheckPath);
 
-  const rootPathNumberOfParts = normalizedRootPath.split(path.sep).length;
+  var rootPathNumberOfParts = normalizedRootPath.split(_path2['default'].sep).length;
   // Extract the matching piece of the normalized path to compare with the root path.
-  const rootPathMatch = normalizedCheckPath.split(path.sep)
-    .slice(0, rootPathNumberOfParts).join(path.sep);
+  var rootPathMatch = normalizedCheckPath.split(_path2['default'].sep).slice(0, rootPathNumberOfParts).join(_path2['default'].sep);
   return rootPathMatch === normalizedRootPath;
 }
 
 module.exports = {
-  containsPathSync,
+  containsPathSync: containsPathSync
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInV0aWxzLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7b0JBV2lCLE1BQU07Ozs7a0JBQ1IsSUFBSTs7Ozs7Ozs7Ozs7O0FBVW5CLFNBQVMsZ0JBQWdCLENBQUMsUUFBZ0IsRUFBRSxTQUFpQixFQUFXO0FBQ3RFLE1BQUksWUFBWSxHQUFHLElBQUksQ0FBQztBQUN4QixNQUFJLGFBQWEsR0FBRyxJQUFJLENBQUM7QUFDekIsTUFBSTtBQUNGLGdCQUFZLEdBQUcsZ0JBQUcsWUFBWSxDQUFDLFFBQVEsQ0FBQyxDQUFDO0FBQ3pDLGlCQUFhLEdBQUcsZ0JBQUcsWUFBWSxDQUFDLFNBQVMsQ0FBQyxDQUFDO0dBQzVDLENBQUMsT0FBTyxDQUFDLEVBQUU7QUFDVixnQkFBWSxHQUFHLFFBQVEsQ0FBQztBQUN4QixpQkFBYSxHQUFHLFNBQVMsQ0FBQztHQUMzQjs7QUFFRCxNQUFNLGtCQUFrQixHQUFHLGtCQUFLLFNBQVMsQ0FBQyxZQUFZLENBQUMsQ0FBQztBQUN4RCxNQUFNLG1CQUFtQixHQUFHLGtCQUFLLFNBQVMsQ0FBQyxhQUFhLENBQUMsQ0FBQzs7QUFFMUQsTUFBTSxxQkFBcUIsR0FBRyxrQkFBa0IsQ0FBQyxLQUFLLENBQUMsa0JBQUssR0FBRyxDQUFDLENBQUMsTUFBTSxDQUFDOztBQUV4RSxNQUFNLGFBQWEsR0FBRyxtQkFBbUIsQ0FBQyxLQUFLLENBQUMsa0JBQUssR0FBRyxDQUFDLENBQ3RELEtBQUssQ0FBQyxDQUFDLEVBQUUscUJBQXFCLENBQUMsQ0FBQyxJQUFJLENBQUMsa0JBQUssR0FBRyxDQUFDLENBQUM7QUFDbEQsU0FBTyxhQUFhLEtBQUssa0JBQWtCLENBQUM7Q0FDN0M7O0FBRUQsTUFBTSxDQUFDLE9BQU8sR0FBRztBQUNmLGtCQUFnQixFQUFoQixnQkFBZ0I7Q0FDakIsQ0FBQyIsImZpbGUiOiJ1dGlscy5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCBwYXRoIGZyb20gJ3BhdGgnO1xuaW1wb3J0IGZzIGZyb20gJ2ZzJztcblxuLyoqXG4gKiBSZXR1cm5zIGlmIHRoZSBgcm9vdFBhdGhgIGRpcmVjdG9yeSBjb250YWlucyB0aGUgYGNoZWNrUGF0aGAgd2hpY2ggY291bGQgYmU6XG4gKiAgLSBBIGZpbGUgb3IgZGlyZWN0b3J5IHBhdGggdGhhdCdzIGEgZGlyZWN0IGNoaWxkIG9mIHRoZSByb290IHBhdGguXG4gKiAgLSBBIGZpbGUgb3IgZGlyZWN0b3J5IHBhdGggdGhhdCdzIGEgZGVlcCBjaGlsZCBvZiB0aGUgcm9vdCBwYXRoLlxuICogIC0gVGhlIGV4YWN0IGByb290UGF0aGAgaW4gYW4gZXhhY3Qgb3Igc3ltbGlua2VkIGZvcm0uXG4gKiAgLSBNYXkgZW5kIGluIGEgdHJhaWxpbmcgc2xhc2ggaWYgaXQncyBhIGRpcmVjdG9yeSBwYXRoLlxuICogRm9sbG93cyBzeW1saW5rcyB0byBmaWd1cmUgb3V0IGlmIHRoZSByZWFsIHBhdGhzIG9mIHRoZSByb290IGFuZCBjaGVjayBwYXRocyBtYXRjaGVzLlxuICovXG5mdW5jdGlvbiBjb250YWluc1BhdGhTeW5jKHJvb3RQYXRoOiBzdHJpbmcsIGNoZWNrUGF0aDogc3RyaW5nKTogYm9vbGVhbiB7XG4gIGxldCByZWFsUm9vdFBhdGggPSBudWxsO1xuICBsZXQgcmVhbENoZWNrUGF0aCA9IG51bGw7XG4gIHRyeSB7XG4gICAgcmVhbFJvb3RQYXRoID0gZnMucmVhbHBhdGhTeW5jKHJvb3RQYXRoKTtcbiAgICByZWFsQ2hlY2tQYXRoID0gZnMucmVhbHBhdGhTeW5jKGNoZWNrUGF0aCk7XG4gIH0gY2F0Y2ggKGUpIHtcbiAgICByZWFsUm9vdFBhdGggPSByb290UGF0aDtcbiAgICByZWFsQ2hlY2tQYXRoID0gY2hlY2tQYXRoO1xuICB9XG5cbiAgY29uc3Qgbm9ybWFsaXplZFJvb3RQYXRoID0gcGF0aC5ub3JtYWxpemUocmVhbFJvb3RQYXRoKTtcbiAgY29uc3Qgbm9ybWFsaXplZENoZWNrUGF0aCA9IHBhdGgubm9ybWFsaXplKHJlYWxDaGVja1BhdGgpO1xuXG4gIGNvbnN0IHJvb3RQYXRoTnVtYmVyT2ZQYXJ0cyA9IG5vcm1hbGl6ZWRSb290UGF0aC5zcGxpdChwYXRoLnNlcCkubGVuZ3RoO1xuICAvLyBFeHRyYWN0IHRoZSBtYXRjaGluZyBwaWVjZSBvZiB0aGUgbm9ybWFsaXplZCBwYXRoIHRvIGNvbXBhcmUgd2l0aCB0aGUgcm9vdCBwYXRoLlxuICBjb25zdCByb290UGF0aE1hdGNoID0gbm9ybWFsaXplZENoZWNrUGF0aC5zcGxpdChwYXRoLnNlcClcbiAgICAuc2xpY2UoMCwgcm9vdFBhdGhOdW1iZXJPZlBhcnRzKS5qb2luKHBhdGguc2VwKTtcbiAgcmV0dXJuIHJvb3RQYXRoTWF0Y2ggPT09IG5vcm1hbGl6ZWRSb290UGF0aDtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSB7XG4gIGNvbnRhaW5zUGF0aFN5bmMsXG59O1xuIl19

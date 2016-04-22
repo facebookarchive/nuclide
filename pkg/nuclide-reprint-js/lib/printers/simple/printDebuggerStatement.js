@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +8,14 @@
  * the root directory of this source tree.
  */
 
-import type {DebuggerStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var wrapStatement = require('../../wrappers/simple/wrapStatement');
 
-const wrapStatement = require('../../wrappers/simple/wrapStatement');
-
-function printDebuggerStatement(print: Print, node: DebuggerStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
+function printDebuggerStatement(print, node) {
+  var wrap = function wrap(x) {
+    return wrapStatement(print, node, x);
+  };
   return wrap(['debugger;']);
 }
 
 module.exports = printDebuggerStatement;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50RGVidWdnZXJTdGF0ZW1lbnQuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQWNBLElBQU0sYUFBYSxHQUFHLE9BQU8sQ0FBQyxxQ0FBcUMsQ0FBQyxDQUFDOztBQUVyRSxTQUFTLHNCQUFzQixDQUFDLEtBQVksRUFBRSxJQUF1QixFQUFTO0FBQzVFLE1BQU0sSUFBSSxHQUFHLFNBQVAsSUFBSSxDQUFHLENBQUM7V0FBSSxhQUFhLENBQUMsS0FBSyxFQUFFLElBQUksRUFBRSxDQUFDLENBQUM7R0FBQSxDQUFDO0FBQ2hELFNBQU8sSUFBSSxDQUFDLENBQUMsV0FBVyxDQUFDLENBQUMsQ0FBQztDQUM1Qjs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHLHNCQUFzQixDQUFDIiwiZmlsZSI6InByaW50RGVidWdnZXJTdGF0ZW1lbnQuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7RGVidWdnZXJTdGF0ZW1lbnR9IGZyb20gJ2FzdC10eXBlcy1mbG93JztcbmltcG9ydCB0eXBlIHtMaW5lcywgUHJpbnR9IGZyb20gJy4uLy4uL3R5cGVzL2NvbW1vbic7XG5cbmNvbnN0IHdyYXBTdGF0ZW1lbnQgPSByZXF1aXJlKCcuLi8uLi93cmFwcGVycy9zaW1wbGUvd3JhcFN0YXRlbWVudCcpO1xuXG5mdW5jdGlvbiBwcmludERlYnVnZ2VyU3RhdGVtZW50KHByaW50OiBQcmludCwgbm9kZTogRGVidWdnZXJTdGF0ZW1lbnQpOiBMaW5lcyB7XG4gIGNvbnN0IHdyYXAgPSB4ID0+IHdyYXBTdGF0ZW1lbnQocHJpbnQsIG5vZGUsIHgpO1xuICByZXR1cm4gd3JhcChbJ2RlYnVnZ2VyOyddKTtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSBwcmludERlYnVnZ2VyU3RhdGVtZW50O1xuIl19

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +10,13 @@
  * the root directory of this source tree.
  */
 
-import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/service';
+exports.activate = activate;
+exports.provideNuclideDebuggerNode = provideNuclideDebuggerNode;
 
-export function activate(state: mixed): void {
-}
+function activate(state) {}
 
-export function provideNuclideDebuggerNode(): nuclide_debugger$Service {
-  const Service = require('./Service');
+function provideNuclideDebuggerNode() {
+  var Service = require('./Service');
   return Service;
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7O0FBYU8sU0FBUyxRQUFRLENBQUMsS0FBWSxFQUFRLEVBQzVDOztBQUVNLFNBQVMsMEJBQTBCLEdBQTZCO0FBQ3JFLE1BQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyxXQUFXLENBQUMsQ0FBQztBQUNyQyxTQUFPLE9BQU8sQ0FBQztDQUNoQiIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge251Y2xpZGVfZGVidWdnZXIkU2VydmljZX0gZnJvbSAnLi4vLi4vbnVjbGlkZS1kZWJ1Z2dlci1pbnRlcmZhY2VzL3NlcnZpY2UnO1xuXG5leHBvcnQgZnVuY3Rpb24gYWN0aXZhdGUoc3RhdGU6IG1peGVkKTogdm9pZCB7XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBwcm92aWRlTnVjbGlkZURlYnVnZ2VyTm9kZSgpOiBudWNsaWRlX2RlYnVnZ2VyJFNlcnZpY2Uge1xuICBjb25zdCBTZXJ2aWNlID0gcmVxdWlyZSgnLi9TZXJ2aWNlJyk7XG4gIHJldHVybiBTZXJ2aWNlO1xufVxuIl19

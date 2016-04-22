@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +10,17 @@
  * the root directory of this source tree.
  */
 
-import type {AppState} from './types';
+exports['default'] = getCurrentExecutorId;
 
-export default function getCurrentExecutorId(state: AppState): ?string {
-  let {currentExecutorId} = state;
+function getCurrentExecutorId(state) {
+  var currentExecutorId = state.currentExecutorId;
+
   if (currentExecutorId == null) {
-    const firstExecutor = Array.from(state.executors.values())[0];
+    var firstExecutor = Array.from(state.executors.values())[0];
     currentExecutorId = firstExecutor && firstExecutor.id;
   }
   return currentExecutorId;
 }
+
+module.exports = exports['default'];
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImdldEN1cnJlbnRFeGVjdXRvcklkLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7OztxQkFhd0Isb0JBQW9COztBQUE3QixTQUFTLG9CQUFvQixDQUFDLEtBQWUsRUFBVztNQUNoRSxpQkFBaUIsR0FBSSxLQUFLLENBQTFCLGlCQUFpQjs7QUFDdEIsTUFBSSxpQkFBaUIsSUFBSSxJQUFJLEVBQUU7QUFDN0IsUUFBTSxhQUFhLEdBQUcsS0FBSyxDQUFDLElBQUksQ0FBQyxLQUFLLENBQUMsU0FBUyxDQUFDLE1BQU0sRUFBRSxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUM7QUFDOUQscUJBQWlCLEdBQUcsYUFBYSxJQUFJLGFBQWEsQ0FBQyxFQUFFLENBQUM7R0FDdkQ7QUFDRCxTQUFPLGlCQUFpQixDQUFDO0NBQzFCIiwiZmlsZSI6ImdldEN1cnJlbnRFeGVjdXRvcklkLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge0FwcFN0YXRlfSBmcm9tICcuL3R5cGVzJztcblxuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gZ2V0Q3VycmVudEV4ZWN1dG9ySWQoc3RhdGU6IEFwcFN0YXRlKTogP3N0cmluZyB7XG4gIGxldCB7Y3VycmVudEV4ZWN1dG9ySWR9ID0gc3RhdGU7XG4gIGlmIChjdXJyZW50RXhlY3V0b3JJZCA9PSBudWxsKSB7XG4gICAgY29uc3QgZmlyc3RFeGVjdXRvciA9IEFycmF5LmZyb20oc3RhdGUuZXhlY3V0b3JzLnZhbHVlcygpKVswXTtcbiAgICBjdXJyZW50RXhlY3V0b3JJZCA9IGZpcnN0RXhlY3V0b3IgJiYgZmlyc3RFeGVjdXRvci5pZDtcbiAgfVxuICByZXR1cm4gY3VycmVudEV4ZWN1dG9ySWQ7XG59XG4iXX0=
