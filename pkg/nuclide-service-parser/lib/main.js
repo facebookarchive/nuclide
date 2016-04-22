@@ -14,6 +14,8 @@ import path from 'path';
 import invariant from 'assert';
 import Module from 'module';
 
+import NodeTranspiler from '../../nuclide-node-transpiler/lib/NodeTranspiler';
+
 import type {Definitions} from './types';
 
 /** Cache for definitions. */
@@ -55,12 +57,11 @@ export function getProxy(serviceName: string, definitionPath: string, clientObje
   // Cache proxy factory functions by the resolved definition file path.
   if (!proxiesCache.has(resolvedPath)) {
     const {generateProxy} = require('./proxy-generator');
-    const {createOrFetchFromCache} = require('../../nuclide-node-transpiler/lib/babel-cache');
 
     // Transpile this code (since it will use anonymous classes and arrow functions).
     const code = generateProxy(serviceName, defs);
     const filename = path.parse(definitionPath).name + 'Proxy.js';
-    const transpiled = createOrFetchFromCache(code, filename);
+    const transpiled = (new NodeTranspiler()).transformWithCache(code, filename);
 
     // Load the module directly from a string,
     const m = new Module();

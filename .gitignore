@@ -2,6 +2,3 @@
 npm-debug.log*
 *.pyc
 /node_modules
-
-# node-transpiler's cache:
-**/babel-cache/**

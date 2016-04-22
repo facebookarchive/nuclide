@@ -9,6 +9,6 @@
     "testRunner": "npm"
   },
   "scripts": {
-    "test": "node spec/node-transpiler-spec.js"
+    "test": "find spec -name '*-spec.js' -print0 | xargs -n 1 -0 node"
   }
 }

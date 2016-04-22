@@ -30,10 +30,12 @@ function logger(group, filename) {
 }
 
 var assert = require('assert');
-var babelCore = require('babel-core');
 var fs = require('fs');
 var glob = require('glob');
 var path = require('path');
+
+var NodeTranspiler = require('../../pkg/nuclide-node-transpiler/lib/NodeTranspiler');
+var nodeTranspiler = new NodeTranspiler();
 
 var basedir = path.join(__dirname, '../..');
 var serverBasedir =
@@ -49,6 +51,7 @@ try {
 var jsFiles = glob.sync(path.join(basedir, '**/*.js'), {
   ignore: [
     '**/node_modules/**',
+    '**/VendorLib/**',
     '**/spec/**',
   ],
 });
@@ -79,46 +82,19 @@ jsFiles.forEach(function(filename) {
     logger('exclude', filename);
     return;
   }
-  var src = fs.readFileSync(filename, 'utf8');
-  if (!hasUseBabel(src)) {
+  var src = fs.readFileSync(filename);
+  if (!NodeTranspiler.shouldCompile(src)) {
     logger('skip', filename);
     return;
   }
   logger('transpile', filename);
+
   var safeFilename = path.basename(filename);
   // Prevent leaking private data in the sourcemap file path
   assert(safeFilename.indexOf(process.env.HOME) === -1);
-  var opts = {
-    filename: safeFilename,
-    breakConfig: true,
-    // comments: false,
-    // shouldPrintComment: function(comment) {
-    //   return (/^ \* Copyright/m).test(comment);
-    // },
-    // compact: true,
-    // loose: [
-    //   'es6.classes',
-    //   'es6.spread',
-    //   'es6.destructuring',
-    //   'es6.properties.computed',
-    //   'es6.modules',
-    //   'es6.forOf',
-    //   'es6.templateLiterals',
-    // ],
-    sourceMap: 'inline',
-    blacklist: [
-      'es6.forOf',
-      'useStrict',
-      // 'es6.templateLiterals',
-    ],
-    optional: [
-      'asyncToGenerator',
-    ],
-    stage: 0,
-    plugins: [stripUseBabel],
-  };
-  var result = babelCore.transform(src, opts);
-  fs.writeFileSync(filename, result.code);
+
+  var code = nodeTranspiler.transform(src, safeFilename);
+  fs.writeFileSync(filename, code);
 });
 
 console.log(
@@ -126,38 +102,3 @@ console.log(
     .map(function(group) { return group + ': ' +  counter[group]; })
     .join(' | ')
 );
-
-function hasUseBabel(str) {
-  return /^('use babel'|"use babel"|\/\*\* @babel \*\/)/.test(str);
-}
-
-function stripUseBabel(babel) {
-  function isUseBabel(node) {
-    return (
-      node &&
-      node.type === 'ExpressionStatement' &&
-      node.expression.type === 'Literal' &&
-      node.expression.value === 'use babel'
-    ) || (
-      node &&
-      node.type === 'CommentBlock' &&
-      node.value === '* @babel ' // yes, with the "*" and the trailing space
-    );
-  }
-  return new babel.Plugin('strip-use-babel', {
-    visitor: {
-      Program: function(node, parent, scope, state) {
-        if (isUseBabel(parent.comments[0])) {
-          parent.comments[0].value = '';
-          return;
-        }
-        for (var i = 0; i < node.body.length; i++) {
-          if (isUseBabel(node.body[i])) {
-            this.get('body')[i].dangerouslyRemove();
-            return;
-          }
-        }
-      },
-    },
-  });
-}

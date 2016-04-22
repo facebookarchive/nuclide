@@ -8,6 +8,7 @@
 .*/node_modules/babel-types/.*
 .*/node_modules/fbjs/lib/.*
 .*/node_modules/sabor/.*
+.*/nuclide-node-transpiler/spec/fixtures/.*
 # issues with JSON
 .*/node_modules/json5/.*json
 
