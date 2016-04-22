@@ -49,6 +49,7 @@ const BABEL_OPTIONS = {
   // TODO(asuarez): Improve perf by explicitly running only the transforms we use.
   stage: 1,
   plugins: [
+    require.resolve('./remove-use-babel-tr'),
   ],
   // comments: false,
   // compact: true,
