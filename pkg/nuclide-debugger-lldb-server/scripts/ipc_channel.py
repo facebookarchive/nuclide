@@ -43,7 +43,7 @@ class IpcChannel:
                 'text': text,
             }
         }
-        message_in_json = json.dumps(message);
+        message_in_json = json.dumps(message, ensure_ascii=False)
         log_debug('send_output_message: %s' % message_in_json)
         self._file.write(message_in_json + '\n')
         self._file.flush()

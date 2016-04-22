@@ -77,14 +77,14 @@ def read_json_arguments_if_needed(arguments):
         file = os.fdopen(ARGUMENT_INPUT_FD, 'r+', buffering)
         init_line = file.readline()
         if init_line.startswith('init'):
-            file.write('ready\n') # Tell parent channel is ready.
+            file.write('ready\n')  # Tell parent channel is ready.
             arguments_input = file.readline()
             log_debug('Received json arguments: %s' % arguments_input)
             # Parse JSON into python object.
             arguments = json.loads(
                 arguments_input,
                 object_hook=lambda d: namedtuple('arguments', d.keys())(*d.values()))
-            log_debug('Parsed arguments: %s' % json.dumps(arguments))
+            log_debug('Parsed arguments: %s' % json.dumps(arguments, ensure_ascii=False))
             file.close()
         else:
             # Fail: did not receive proper initialization sequence.

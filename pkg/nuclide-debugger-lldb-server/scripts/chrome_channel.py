@@ -19,7 +19,7 @@ class ChromeChannel:
     def send_notification(self, method, params=None):
         """ Send a notification over the socket to a Chrome Dev Tools client.
         """
-        notification_in_json = json.dumps({'method': method, 'params': params});
+        notification_in_json = json.dumps({'method': method, 'params': params}, ensure_ascii=False)
         log_debug('send_notification: %s' % notification_in_json)
 
         if self._channelAvailable:

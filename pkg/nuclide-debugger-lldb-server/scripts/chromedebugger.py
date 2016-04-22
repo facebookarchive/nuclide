@@ -93,11 +93,10 @@ class DebuggerWebSocket(WebSocket):
         self.send(response_in_json)
 
     def _is_debugger_protocol(self, parsed):
-        return parsed is not None and ( \
-            parsed['method'].startswith('Debugger') or \
-            parsed['method'].startswith('Runtime') or \
+        return parsed is not None and (
+            parsed['method'].startswith('Debugger') or
+            parsed['method'].startswith('Runtime') or
             parsed['method'].startswith('Console'))
-
 
 
 class ChromeDevToolsDebuggerApp(object):
