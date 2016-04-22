@@ -1342,7 +1342,7 @@ type AtomGlobal = {
 
   // Messaging the User
   confirm(options: {
-    buttons?: Array<string> | {[buttonName: string]: () => void};
+    buttons?: Array<string> | {[buttonName: string]: () => mixed};
     detailedMessage?: string;
     message: string;
   }): ?number;

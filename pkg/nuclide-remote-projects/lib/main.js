@@ -25,7 +25,8 @@ import {getOpenFileEditorForRemoteProject} from './utils';
 import featureConfig from '../../nuclide-feature-config';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
-import {RemoteConnection} from '../../nuclide-remote-connection';
+import {RemoteConnection, ServerConnection} from '../../nuclide-remote-connection';
+import {trackImmediate} from '../../nuclide-analytics';
 
 const logger = getLogger();
 
@@ -228,6 +229,26 @@ async function reloadRemoteProjects(
   }
 }
 
+async function shutdownServersAndRestartNuclide(): Promise<void> {
+  atom.confirm({
+    message: 'This will shutdown your Nuclide servers and restart Atom, ' +
+      'discarding all unsaved changes. Continue?',
+    buttons: {
+      'Shutdown & Restart': async () => {
+        try {
+          await trackImmediate('nuclide-remote-projects:kill-and-restart');
+        } finally {
+          // This directly kills the servers without removing the RemoteConnections
+          // so that restarting Nuclide preserves the existing workspace state.
+          await ServerConnection.forceShutdownAllServers();
+          atom.reload();
+        }
+      },
+      'Cancel': () => {},
+    },
+  });
+}
+
 export function activate(
   state: ?{remoteProjectsConfig: SerializableRemoteConnectionConfiguration[]},
 ): void {
@@ -277,9 +298,15 @@ export function activate(
   }));
 
   subscriptions.add(atom.commands.add(
-      'atom-workspace',
-      'nuclide-remote-projects:connect',
-      () => require('../../nuclide-ssh-dialog').openConnectionDialog()
+    'atom-workspace',
+    'nuclide-remote-projects:connect',
+    () => require('../../nuclide-ssh-dialog').openConnectionDialog()
+  ));
+
+  subscriptions.add(atom.commands.add(
+    'atom-workspace',
+    'nuclide-remote-projects:kill-and-restart',
+    () => shutdownServersAndRestartNuclide(),
   ));
 
   // Subscribe opener before restoring the remote projects.

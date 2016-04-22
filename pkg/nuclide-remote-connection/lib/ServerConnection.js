@@ -79,6 +79,17 @@ class ServerConnection {
     }
   }
 
+  // WARNING: This shuts down all Nuclide servers _without_ closing their
+  // RemoteConnections first! This is extremely unsafe and
+  // should only be used to forcibly kill Nuclide servers before restarting.
+  static async forceShutdownAllServers(): Promise<void> {
+    await Promise.all(
+      Array.from(ServerConnection._connections).map(([_, connection]) => {
+        return connection._getInfoService().closeConnection(true);
+      }),
+    );
+  }
+
   // Do NOT call this from outside this class. Use ServerConnection.getOrCreate() instead.
   constructor(config: ServerConnectionConfiguration) {
     this._entries = {};

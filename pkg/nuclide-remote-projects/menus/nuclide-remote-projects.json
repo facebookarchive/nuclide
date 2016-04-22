@@ -11,6 +11,10 @@
               "command": "nuclide-remote-projects:connect"
             }
           ]
+        },
+        {
+          "label": "Kill Nuclide Server and Restart",
+          "command": "nuclide-remote-projects:kill-and-restart"
         }
       ]
     }
