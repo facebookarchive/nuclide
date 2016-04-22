@@ -200,7 +200,17 @@ class SearchResultManager {
             isEligible,
             provider,
             directory,
-          }))
+          })).catch(err => {
+            getLogger().warn(
+              `isEligibleForDirectory failed for directory provider ${provider.getName()}`,
+              err,
+            );
+            return {
+              isEligible: false,
+              provider,
+              directory,
+            };
+          }),
         );
       }
     });
