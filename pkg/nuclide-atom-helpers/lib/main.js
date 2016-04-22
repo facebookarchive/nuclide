@@ -52,6 +52,10 @@ module.exports = {
     return requireFromCache('./text-editor').bufferForUri;
   },
 
+  get formatEnoentNotification() {
+    return requireFromCache('./format-enoent-notification').formatEnoentNotification;
+  },
+
   get loadBufferForUri() {
     return requireFromCache('./text-editor').loadBufferForUri;
   },
