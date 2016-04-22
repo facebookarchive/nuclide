@@ -196,16 +196,24 @@ export default class ClangServer {
     return this._flagsChanged;
   }
 
+  /**
+   * Send a request to the Clang server.
+   * Requests are processed serially and strictly in order.
+   * If the server is currently compiling, all other requests will automatically return null
+   * (unless the `blocking` parameter is explicitly provided).
+   */
   async makeRequest(
     method: ClangServerRequest,
     defaultFlags: ?Array<string>,
     params: Object,
+    blocking?: boolean,
   ): Promise<?Object> {
     invariant(!this._disposed, 'calling makeRequest on a disposed ClangServer');
     if (method === 'compile') {
       this._pendingCompileRequests++;
-    } else if (this._pendingCompileRequests) {
-      // All other requests should instantly fail.
+    } else if (!blocking && this._pendingCompileRequests) {
+      // All non-blocking requests should instantly fail.
+      // This allows the client to fall back to default autocomplete, ctags, etc.
       return null;
     }
     try {

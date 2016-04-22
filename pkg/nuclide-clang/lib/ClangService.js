@@ -224,6 +224,25 @@ export type ClangDeclaration = {
   file: ?NuclideUri;
 };
 
+export type ClangOutlineTree = {
+  name: string;
+  extent: ClangCursorExtent;
+  cursor_kind: ClangCursorType;
+  // Will be non-null for variables/typedefs only.
+  cursor_type?: string;
+  // Will be non-null for functions and methods only.
+  // Contains a list of the names of parameters.
+  params?: Array<string>;
+  // List of template parameters (functions/methods only).
+  tparams?: Array<string>;
+  // Will be non-null for class-like containers only.
+  children?: Array<ClangOutlineTree>;
+};
+
+export type ClangOutline = {
+  outline: Array<ClangOutlineTree>;
+};
+
 // Fetches information for a declaration and all its parents.
 // The first element in info will be for the declaration itself,
 // the second will be for its direct semantic parent (if it exists), etc.
@@ -315,6 +334,15 @@ export function getDeclarationInfo(
       line,
       column,
     });
+}
+
+export async function getOutline(
+  src: NuclideUri,
+  contents: string,
+  defaultFlags: ?Array<string>,
+): Promise<?ClangOutline> {
+  return getClangServer(src, contents, defaultFlags)
+    .makeRequest('get_outline', defaultFlags, {contents}, /* blocking */ true);
 }
 
 export async function formatCode(
