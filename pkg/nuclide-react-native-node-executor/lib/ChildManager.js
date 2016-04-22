@@ -16,6 +16,7 @@ import type {
 } from './types';
 import type {EventEmitter} from 'events';
 
+import {formatEnoentNotification} from '../../nuclide-atom-helpers';
 import {executeRnRequests} from './executeRnRequests';
 import {Observable, Subject} from '@reactivex/rxjs';
 
@@ -48,19 +49,33 @@ export default class ChildManager {
       return;
     }
 
-    this._executorSubscription = this._executorResponses.subscribe(response => {
-      switch (response.kind) {
-        case 'result':
-          this._onReply(response.replyId, response.result);
+    this._executorSubscription = this._executorResponses.subscribe(
+      response => {
+        switch (response.kind) {
+          case 'result':
+            this._onReply(response.replyId, response.result);
+            return;
+          case 'error':
+            getLogger().error(response.message);
+            return;
+          case 'pid':
+            this._emitter.emit('eval_application_script', response.pid);
+            return;
+        }
+      },
+      err => {
+        if (err.code === 'ENOENT') {
+          const {message, meta} = formatEnoentNotification({
+            feature: 'React Native debugging',
+            toolName: 'node',
+            pathSetting: 'nuclide-react-native.pathToNode',
+          });
+          atom.notifications.addError(message, meta);
           return;
-        case 'error':
-          getLogger().error(response.message);
-          return;
-        case 'pid':
-          this._emitter.emit('eval_application_script', response.pid);
-          return;
-      }
-    });
+        }
+        getLogger().error(err);
+      },
+    );
   }
 
   killChild(): void {
