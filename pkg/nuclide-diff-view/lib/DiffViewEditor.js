@@ -125,7 +125,7 @@ export default class DiffViewEditor {
       const marker = this._editor.markBufferPosition([lineNumber, 0], {invalidate: 'never'});
       this._editor.decorateMarker(
         marker,
-        {type: 'block', item: blockItem, position: 'after'},
+        {type: 'block', item: blockItem, position: 'before'},
       );
       this._offsetMarkers.push(marker);
     }
