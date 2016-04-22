@@ -1,0 +1,11 @@
+{
+  "name": "nuclide-active-editor-based-service",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides abstractions for creating services that operate on text editor contents",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  }
+}
