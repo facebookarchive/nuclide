@@ -35,12 +35,6 @@
         "type": "boolean",
         "default": false,
         "description": "EXPERIMENTAL: Show tree-structured type hints. Type hints must first be enabled. Requires Flow v0.17.0"
-      },
-      "diagnosticsOnFly": {
-        "type": "boolean",
-        "default": false,
-        "title": "Diagnostics As You Type",
-        "description": "EXPERIMENTAL: Report Flow errors and warnings as you type, rather than waiting for a save"
       }
     },
     "packageType": "Atom",

@@ -155,12 +155,10 @@ class FlowDiagnosticsProvider {
       return;
     }
 
-    const currentContents = textEditor.isModified() ? textEditor.getText() : null;
-
     const flowService = getFlowServiceByNuclideUri(file);
     invariant(flowService);
     const result = await this._requestSerializer.run(
-      flowService.flowFindDiagnostics(file, currentContents)
+      flowService.flowFindDiagnostics(file, /* currentContents */ null)
     );
     if (result.status === 'outdated') {
       return;
@@ -216,10 +214,6 @@ class FlowDiagnosticsProvider {
         this._runDiagnostics(activeTextEditor);
       }
     }
-  }
-
-  setRunOnTheFly(runOnTheFly: boolean): void {
-    this._providerBase.setRunOnTheFly(runOnTheFly);
   }
 
   onMessageUpdate(callback: MessageUpdateCallback): IDisposable {

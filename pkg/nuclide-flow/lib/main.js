@@ -104,10 +104,6 @@ export function provideDiagnostics() {
     const runOnTheFly = ((featureConfig.get(diagnosticsOnFlySetting): any): boolean);
     flowDiagnosticsProvider = new FlowDiagnosticsProvider(runOnTheFly, busyProvider);
     invariant(disposables);
-    disposables.add(featureConfig.observe(diagnosticsOnFlySetting, newValue => {
-      invariant(flowDiagnosticsProvider);
-      flowDiagnosticsProvider.setRunOnTheFly(newValue);
-    }));
     const {projects} = require('../../nuclide-atom-helpers');
     disposables.add(projects.onDidRemoveProjectPath(projectPath => {
       invariant(flowDiagnosticsProvider);
