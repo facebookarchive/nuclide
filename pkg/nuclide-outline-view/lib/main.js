@@ -14,8 +14,9 @@ import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-m
 
 import {CompositeDisposable, Disposable} from 'atom';
 
+import {ActiveEditorBasedService} from '../../nuclide-active-editor-based-service';
+
 import {OutlineViewPanelState} from './OutlineViewPanel';
-import {ProviderRegistry} from './ProviderRegistry';
 import {createOutlines} from './createOutlines';
 
 import invariant from 'assert';
@@ -102,17 +103,19 @@ function makeDefaultState(): OutlineViewState {
 class Activation {
   _disposables: CompositeDisposable;
 
-  _providers: ProviderRegistry<OutlineProvider>;
+  _editorService: ActiveEditorBasedService<OutlineProvider, ?Outline>;
 
   _panel: OutlineViewPanelState;
 
   constructor(state?: OutlineViewState = makeDefaultState()) {
     this._disposables = new CompositeDisposable();
 
-    this._providers = new ProviderRegistry();
+    this._editorService = new ActiveEditorBasedService(
+      (provider, editor) => provider.getOutline(editor)
+    );
 
     const panel = this._panel = new OutlineViewPanelState(
-      createOutlines(this._providers),
+      createOutlines(this._editorService),
       state.width,
       state.visible
     );
@@ -153,8 +156,7 @@ class Activation {
   }
 
   consumeOutlineProvider(provider: OutlineProvider): IDisposable {
-    this._providers.addProvider(provider);
-    return new Disposable(() => this._providers.removeProvider(provider));
+    return this._editorService.consumeProvider(provider);
   }
 
   consumeToolBar(getToolBar: (group: string) => Object): void {

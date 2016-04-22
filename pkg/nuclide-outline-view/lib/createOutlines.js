@@ -10,100 +10,58 @@
  */
 
 import type {Outline, OutlineForUi, OutlineTree, OutlineTreeForUi} from '..';
-import type {ProviderRegistry} from './ProviderRegistry';
+import type {ActiveEditorBasedService, Result} from '../../nuclide-active-editor-based-service';
 
 import {Observable} from '@reactivex/rxjs';
 import invariant from 'assert';
 
-import {event as commonsEvent} from '../../nuclide-commons';
-const {observableFromSubscribeFunction} = commonsEvent;
-
 import {getCursorPositions} from '../../nuclide-atom-helpers';
 
-import {getLogger} from '../../nuclide-logging';
-const logger = getLogger();
-
-const TAB_SWITCH_DELAY = 100; // ms
-export function createOutlines(providers: ProviderRegistry): Observable<OutlineForUi> {
-  const paneChanges = observableFromSubscribeFunction(
-      atom.workspace.observeActivePaneItem.bind(atom.workspace),
-    )
-    // Delay the work on tab switch to keep tab switches snappy and avoid doing a bunch of
-    // computation if there are a lot of consecutive tab switches.
-    .debounceTime(TAB_SWITCH_DELAY);
-
-  return paneChanges
-    .map(() => atom.workspace.getActiveTextEditor())
-    .switchMap(editor => outlinesForEditor(providers, editor));
+export function createOutlines(editorService: ActiveEditorBasedService): Observable<OutlineForUi> {
+  return outlinesForProviderResults(editorService.getResultsStream());
 }
 
-function outlinesForEditor(
-  providers: ProviderRegistry,
-  editorArg: ?atom$TextEditor,
+function outlinesForProviderResults(
+  providerResults: Observable<Result<?Outline>>,
 ): Observable<OutlineForUi> {
-  // needs to be const so the refinement holds in closures
-  const editor = editorArg;
-  if (editor == null) {
-    return Observable.of({
-      kind: 'not-text-editor',
-    });
-  }
-
-  const editorEvents = Observable.concat(
-    // Emit one event at the beginning to trigger the computation of the initial outline
-    Observable.of(null),
-    observableFromSubscribeFunction(editor.onDidStopChanging.bind(editor)),
-  );
-
-  const outlines = editorEvents.flatMap(() => outlineForEditor(providers, editor));
-
-  const highlightedOutlines = outlines.switchMap(outline => {
-    if (outline.kind !== 'outline') {
-      return Observable.of(outline);
-    }
-    return getCursorPositions(editor)
-      .map(cursorLocation => {
-        return highlightCurrentNode(outline, cursorLocation);
-      });
-  });
-
-  return Observable.concat(
-    Observable.of({ kind: 'empty' }),
-    highlightedOutlines,
-  );
+  return providerResults.switchMap(uiOutlinesForResult);
 }
 
-async function outlineForEditor(
-  providers: ProviderRegistry,
-  editor: atom$TextEditor
-): Promise<OutlineForUi> {
-  const scopeName = editor.getGrammar().scopeName;
-  const readableGrammarName = editor.getGrammar().name;
+function uiOutlinesForResult(result: Result<?Outline>): Observable<OutlineForUi> {
+  switch (result.kind) {
+    case 'not-text-editor':
+      return Observable.of({ kind: 'not-text-editor' });
+    case 'no-provider':
+      return Observable.of({
+        kind: 'no-provider',
+        grammar: result.grammar.name,
+      });
+    case 'pane-change':
+      // Render a blank outline when we change panes
+      return Observable.of({ kind: 'empty' });
+    case 'result':
+      const outline = result.result;
+      if (outline == null) {
+        return Observable.of({ kind: 'provider-no-outline' });
+      }
+      return highlightedOutlines(outline, result.editor);
+    default:
+      // The remaining kind is 'edit', but we don't want to render a blank outline whenever an edit
+      // happens. Better just to display slightly out of date results while we wait for the new
+      // results to come in than to flicker
+      return Observable.empty();
+  }
+}
 
-  const outlineProvider = providers.findProvider(scopeName);
-  if (outlineProvider == null) {
-    return {
-      kind: 'no-provider',
-      grammar: readableGrammarName,
-    };
-  }
-  let outline: ?Outline;
-  try {
-    outline = await outlineProvider.getOutline(editor);
-  } catch (e) {
-    logger.error('Error in outline provider:', e);
-    outline = null;
-  }
-  if (outline == null) {
-    return {
-      kind: 'provider-no-outline',
-    };
-  }
-  return {
+function highlightedOutlines(outline: Outline, editor: atom$TextEditor): Observable<OutlineForUi> {
+  const outlineForUi = {
     kind: 'outline',
     outlineTrees: outline.outlineTrees.map(treeToUiTree),
     editor,
   };
+
+  return getCursorPositions(editor)
+    .map(cursorLocation => highlightCurrentNode(outlineForUi, cursorLocation));
 }
 
 function treeToUiTree(outlineTree: OutlineTree): OutlineTreeForUi {
