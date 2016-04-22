@@ -25,6 +25,7 @@ const {Disposable} = require('atom');
 const WebSocketServer = require('ws').Server;
 const {stringifyError} = require('../../nuclide-commons').error;
 import {DisposableSubscription} from '../../nuclide-commons';
+import {getConfig} from './utils';
 
 const SESSION_END_EVENT = 'session-end-event';
 
@@ -93,12 +94,17 @@ export class LldbDebuggerInstance extends DebuggerInstance {
 
   _startChromeWebSocketServer(): string {
     // setup web socket
-    // TODO: Assign random port rather than using fixed port.
-    const wsPort = 2000;
+    const wsPort = this._getWebSocketPort();
     const server = new WebSocketServer({port: wsPort});
     this._chromeWebSocketServer = server;
     server.on('error', error => {
-      logError('Server error: ' + error);
+      let errorMessage = `Server error: ${error}`;
+      if (error.code === 'EADDRINUSE') {
+        errorMessage = `The debug port ${error.port} is in use.
+        Please choose a different port in the debugger config settings.`;
+      }
+      atom.notifications.addError(errorMessage);
+      logError(errorMessage);
       this.dispose();
     });
     server.on('headers', headers => {
@@ -118,8 +124,21 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     });
 
     const result = 'ws=localhost:' + String(wsPort) + '/';
-    log('Listening for connection at: ' + result);
+    logInfo('Listening for connection at: ' + result);
     return result;
+  }
+
+  _getWebSocketPort(): number {
+    // Use the port from config setting if set, otherwise
+    // generate a random port.
+    const configPort = Number(getConfig().debugPort);
+    return Number.isInteger(configPort) && configPort > 0 ?
+      configPort :
+      this._generateRandomInteger(2000, 65535);
+  }
+
+  _generateRandomInteger(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min) + min);
   }
 
   onSessionEnd(callback: () => void): Disposable {

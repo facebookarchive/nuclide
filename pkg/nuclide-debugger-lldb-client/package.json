@@ -49,6 +49,12 @@
         "type": "string",
         "default": ".",
         "description": "Path of the buck config root directory. The source file paths in debug symbol will be relative to this directory."
+      },
+      "debugPort": {
+        "title": "Debug Port",
+        "type": "string",
+        "default": "",
+        "description": "The port used by debugger UI connecting with backend"
       }
     },
     "packageType": "Atom",
