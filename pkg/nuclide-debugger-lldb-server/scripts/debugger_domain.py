@@ -45,6 +45,7 @@ class DebuggerDomain(HandlerDomain):
 
     @handler()
     def enable(self, params):
+        self.debugger_store.debugger.HandleCommand('command script import ./data_formatter.py')
         self.debugger_store.chrome_channel.enable()
         return {}
 
