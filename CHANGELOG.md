@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.132.0
+
+* Hotfix double publish.
+
 ## v0.131.0
 
 ### Added
