@@ -10,7 +10,7 @@
  */
 
 import logger from './utils';
-import {launchScriptToDebug} from './helpers';
+import {launchPhpScriptWithXDebugEnabled} from './helpers';
 import {Connection} from './Connection';
 import {getConfig} from './config';
 import {
@@ -100,7 +100,8 @@ export class ConnectionMultiplexer {
   _attachConnector: ?DbgpConnector;
   _launchConnector: ?DbgpConnector;
   _dummyRequestProcess: ?child_process$ChildProcess;
-  _launchedScriptProcess: ?Promise<void>;
+  _launchedScriptProcess: ?child_process$ChildProcess;
+  _launchedScriptProcessPromise: ?Promise<void>;
 
   constructor(clientCallback: ClientCallback) {
     this._clientCallback = clientCallback;
@@ -114,6 +115,7 @@ export class ConnectionMultiplexer {
     this._dummyRequestProcess = null;
     this._breakpointStore = new BreakpointStore();
     this._launchedScriptProcess = null;
+    this._launchedScriptProcessPromise = null;
   }
 
   onStatus(callback: (status: string) => mixed): IDisposable {
@@ -150,10 +152,12 @@ export class ConnectionMultiplexer {
     this._dummyRequestProcess = sendDummyRequest();
 
     if (launchScriptPath != null) {
-      this._launchedScriptProcess = launchScriptToDebug(
-        launchScriptPath,
-        text => this._clientCallback.sendUserMessage('outputWindow', {level: 'info', text}),
-      );
+      this._launchedScriptProcessPromise = new Promise(resolve => {
+        this._launchedScriptProcess = launchPhpScriptWithXDebugEnabled(launchScriptPath, text => {
+          this._clientCallback.sendUserMessage('outputWindow', {level: 'info', text});
+          resolve();
+        });
+      });
     }
   }
 
@@ -433,20 +437,6 @@ export class ConnectionMultiplexer {
     }
   }
 
-  async dispose(): Promise<void> {
-    for (const connection of this._connections.keys()) {
-      this._removeConnection(connection);
-    }
-    if (this._launchedScriptProcess != null && this._status === STATUS_END) {
-      await this._launchedScriptProcess;
-    }
-    if (this._dummyRequestProcess) {
-      this._dummyRequestProcess.kill('SIGKILL');
-    }
-    this._disposeLaunchConnector();
-    this._disposeAttachConnector();
-  }
-
   _removeConnection(connection: Connection): void {
     const info = this._connections.get(connection);
     invariant(info != null);
@@ -486,11 +476,19 @@ export class ConnectionMultiplexer {
     this._checkForEnd();
   }
 
-  _checkForEnd(): void {
+  async _checkForEnd(): Promise<void> {
     if (this._connections.size === 0 &&
       (this._attachConnector == null ||
         this._launchConnector == null ||
         getConfig().endDebugWhenNoRequests)) {
+
+      // TODO: When HHVM handles the 'stop' message correctly, we don't need to await this promise,
+      //       and we can delete this if check.  See: D3192728
+      if (this._launchedScriptProcessPromise != null) {
+        await this._launchedScriptProcessPromise;
+        this._launchedScriptProcessPromise = null;
+      }
+
       this._setStatus(STATUS_END);
     }
   }
@@ -527,5 +525,21 @@ export class ConnectionMultiplexer {
     if (!setFeatureSucceeded) {
       logger.logError('HHVM returned failure for setting feature show_hidden');
     }
+  }
+
+  dispose(): void {
+    if (this._launchedScriptProcess != null) {
+      this._launchedScriptProcessPromise = null;
+      this._launchedScriptProcess.kill('SIGKILL');
+      this._launchedScriptProcess = null;
+    }
+    for (const connection of this._connections.keys()) {
+      this._removeConnection(connection);
+    }
+    if (this._dummyRequestProcess) {
+      this._dummyRequestProcess.kill('SIGKILL');
+    }
+    this._disposeLaunchConnector();
+    this._disposeAttachConnector();
   }
 }

@@ -109,6 +109,7 @@ export class ClientCallback {
   }
 
   dispose(): void {
+    logger.log('Called ClientCallback dispose method.');
     this._notificationObservable.complete();
     this._serverMessageObservable.complete();
     this._outputWindowObservable.complete();

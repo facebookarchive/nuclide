@@ -19,6 +19,7 @@ import type {
 import invariant from 'assert';
 import {DebuggerInstance} from '../../nuclide-debugger-atom';
 import {ObservableManager} from './ObservableManager';
+import {CompositeDisposable} from 'atom';
 
 const {log, logInfo, logError, setLogLevel} = utils;
 const featureConfig = require('../../nuclide-feature-config');
@@ -39,6 +40,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
   _launchScriptPath: ?string;
   _sessionEndCallback: ?() => void;
   _observableManager: ?ObservableManager;
+  _disposables: CompositeDisposable;
 
   constructor(processInfo: DebuggerProcessInfo, launchScriptPath: ?string) {
     super(processInfo);
@@ -48,6 +50,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
     this._webSocket = null;
     this._sessionEndCallback = null;
     this._observableManager = null;
+    this._disposables = new CompositeDisposable();
     setLogLevel(getConfig().logLevel);
   }
 
@@ -58,6 +61,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       getServiceByNuclideUri('HhvmDebuggerProxyService', this.getTargetUri());
     invariant(service);
     const proxy = new service.HhvmDebuggerProxyService();
+    this._disposables.add(proxy);
     this._proxy = proxy;
     this._observableManager = new ObservableManager(
       proxy.getNotificationObservable(),
@@ -73,6 +77,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       this._sendServerMessageToChromeUi.bind(this),
       this._endSession.bind(this),
     );
+    this._disposables.add(this._observableManager);
 
     const config = getConfig();
     const sessionConfig: HhvmDebuggerSessionConfig = {
@@ -138,6 +143,8 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       webSocket.on('error', this._onSocketError.bind(this));
       webSocket.on('close', this._onSocketClose.bind(this));
     });
+    this._disposables.add(new Disposable(() => this._disposeServer()));
+    this._disposables.add(new Disposable(() => this._disposeWebSocket()));
 
     const result = 'ws=localhost:' + String(wsPort) + '/';
     log('Listening for connection at: ' + result);
@@ -185,31 +192,28 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
 
   _onSocketClose(code: number): void {
     log('webSocket Closed ' + code);
-    this.dispose();
   }
 
-  dispose() {
-    if (this._proxy != null) {
-      this._proxy.dispose().then(() => {
-        if (this._observableManager != null) {
-          this._observableManager.dispose();
-          this._observableManager = null;
-        }
-      });
-      this._proxy = null;
-    }
+  _disposeWebSocket(): void {
     const webSocket = this._webSocket;
     if (webSocket) {
+      this._webSocket = null;
       logInfo('closing webSocket');
       webSocket.close();
-      this._webSocket = null;
     }
+  }
+
+  _disposeServer(): void {
     const server = this._server;
     if (server) {
+      this._server = null;
       logInfo('closing server');
       server.close();
-      this._server = null;
     }
+  }
+
+  dispose(): void {
+    this._disposables.dispose();
   }
 }
 

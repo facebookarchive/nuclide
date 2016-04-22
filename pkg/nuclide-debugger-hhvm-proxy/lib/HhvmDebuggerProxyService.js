@@ -13,6 +13,7 @@ import logger from './utils';
 import {clearConfig, setConfig} from './config';
 import {setRootDirectoryUri} from './ConnectionUtils';
 import {MessageTranslator} from './MessageTranslator';
+import {CompositeDisposable} from 'event-kit';
 
 import type {Observable} from '@reactivex/rxjs';
 
@@ -62,11 +63,14 @@ export class HhvmDebuggerProxyService {
   _state: string;
   _translator: ?MessageTranslator;
   _clientCallback: ClientCallback;
+  _disposables: CompositeDisposable;
 
   constructor() {
     this._state = INITIAL;
     this._translator = null;
+    this._disposables = new CompositeDisposable();
     this._clientCallback = new ClientCallback();
+    this._disposables.add(this._clientCallback);
   }
 
   getNotificationObservable(): Observable<NotificationMessage> {
@@ -89,8 +93,10 @@ export class HhvmDebuggerProxyService {
     logger.setLogLevel(config.logLevel);
     this._setState(CONNECTING);
 
-    this._translator = new MessageTranslator(this._clientCallback);
-    this._translator.onSessionEnd(() => { this._onEnd(); });
+    const translator = new MessageTranslator(this._clientCallback);
+    this._disposables.add(translator);
+    translator.onSessionEnd(() => { this._onEnd(); });
+    this._translator = translator;
 
     this._setState(CONNECTED);
 
@@ -121,12 +127,6 @@ export class HhvmDebuggerProxyService {
   async dispose(): Promise<void> {
     logger.logInfo('Proxy: Ending session');
     clearConfig();
-    if (this._translator) {
-      await this._translator.dispose();
-      this._translator = null;
-    }
-    // We dispose the ClientCallback last so that messages triggered by the disposal of other
-    // objects won't be lost.
-    this._clientCallback.dispose();
+    this._disposables.dispose();
   }
 }

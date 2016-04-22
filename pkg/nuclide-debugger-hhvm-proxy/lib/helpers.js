@@ -76,7 +76,7 @@ export function launchScriptToDebug(
   });
 }
 
-function launchPhpScriptWithXDebugEnabled(
+export function launchPhpScriptWithXDebugEnabled(
   scriptPath: string,
   sendToOutputWindowAndResolve?: (text: string) => void,
 ): child_process$ChildProcess {
@@ -107,7 +107,7 @@ function launchPhpScriptWithXDebugEnabled(
   });
   proc.on('exit', code => {
     logger.log(`child_process(${proc.pid}) exit: ${code}`);
-    if (sendToOutputWindowAndResolve != null) {
+    if (code != null && sendToOutputWindowAndResolve != null) {
       sendToOutputWindowAndResolve(`Script: ${scriptPath} exited with code: ${code}`);
     }
   });
