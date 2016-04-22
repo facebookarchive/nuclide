@@ -46,6 +46,12 @@ export function createProcessStream(): Rx.Observable<string> {
     .first()
     .flatMap(udid => (
       observeProcess(() => tailDeviceLogs(udid))
+        .map(event => {
+          if (event.kind === 'error') {
+            throw event.error;
+          }
+          return event;
+        })
         .filter(event => event.kind === 'stdout')
         .map(event => (invariant(event.data != null), event.data))
     ));

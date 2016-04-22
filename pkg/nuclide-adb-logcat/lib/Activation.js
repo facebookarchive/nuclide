@@ -11,16 +11,12 @@
 
 import type OutputService from '../../nuclide-console/lib/OutputService';
 
+import {formatEnoentNotification} from '../../nuclide-atom-helpers';
 import {createProcessStream} from './createProcessStream';
 import createMessageStream from './createMessageStream';
 import {LogTailer} from '../../nuclide-console/lib/LogTailer';
 import {CompositeDisposable, Disposable} from 'atom';
 import Rx from '@reactivex/rxjs';
-
-const NOENT_ERROR_DESCRIPTION = `**Troubleshooting Tips**
-1. Make sure that adb is installed
-2. If it is installed, update the "Path to adb" setting in the "nuclide-adb-logcat" section of your
-   Atom settings.`;
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -45,13 +41,12 @@ class Activation {
           .do({
             error(err) {
               if (isNoEntError(err)) {
-                atom.notifications.addError(
-                  "adb wasn't found on your path!",
-                  {
-                    dismissable: true,
-                    description: NOENT_ERROR_DESCRIPTION,
-                  },
-                );
+                const {message, meta} = formatEnoentNotification({
+                  feature: 'Tailing Android (adb) logs',
+                  toolName: 'adb',
+                  pathSetting: 'nuclide-adb-logcat.pathToAdb',
+                });
+                atom.notifications.addError(message, meta);
                 return;
               }
               atom.notifications.addError(

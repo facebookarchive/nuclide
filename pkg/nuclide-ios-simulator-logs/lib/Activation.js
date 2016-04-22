@@ -11,16 +11,12 @@
 
 import type OutputService from '../../nuclide-console/lib/OutputService';
 
+import {formatEnoentNotification} from '../../nuclide-atom-helpers';
 import {LogTailer} from '../../nuclide-console/lib/LogTailer';
 import {createMessageStream} from './createMessageStream';
 import {createProcessStream} from './createProcessStream';
 import {CompositeDisposable, Disposable} from 'atom';
 import Rx from '@reactivex/rxjs';
-
-const NOENT_ERROR_DESCRIPTION = `**Troubleshooting Tips**
-1. Make sure that syslog is installed
-2. If it is installed, update the "Path to syslog" setting in the "nuclide-ios-simulator-logs"
-   section of your Atom settings.`;
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -31,13 +27,12 @@ class Activation {
       .do({
         error(err) {
           if (err.code === 'ENOENT') {
-            atom.notifications.addError(
-              "syslog wasn't found on your path!",
-              {
-                dismissable: true,
-                description: NOENT_ERROR_DESCRIPTION,
-              },
-            );
+            const {message, meta} = formatEnoentNotification({
+              feature: 'iOS Syslog tailing',
+              toolName: 'syslog',
+              pathSetting: 'nuclide-ios-simulator-logs.pathToSyslog',
+            });
+            atom.notifications.addError(message, meta);
           }
         },
       });
