@@ -107,7 +107,6 @@ export class FlowProcess {
   async execFlow(
     args: Array<any>,
     options: Object,
-    file: string,
     waitForServer?: boolean = false,
   ): Promise<?process$asyncExecuteRet> {
     const maxRetries = waitForServer ? EXEC_FLOW_RETRIES : 0;

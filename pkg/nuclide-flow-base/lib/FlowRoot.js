@@ -78,7 +78,7 @@ export class FlowRoot {
 
     const args = ['get-def', '--json', '--path', file, line, column];
     try {
-      const result = await this._process.execFlow(args, options, file);
+      const result = await this._process.execFlow(args, options);
       if (!result) {
         return null;
       }
@@ -128,7 +128,7 @@ export class FlowRoot {
     try {
       // Don't log errors if the command returns a nonzero exit code, because status returns nonzero
       // if it is reporting any issues, even when it succeeds.
-      result = await this._process.execFlow(args, options, file, /* waitForServer */ true);
+      result = await this._process.execFlow(args, options, /* waitForServer */ true);
       if (!result) {
         return null;
       }
@@ -189,7 +189,7 @@ export class FlowRoot {
 
     options.stdin = insertAutocompleteToken(currentContents, line, column);
     try {
-      const result = await this._process.execFlow(args, options, file);
+      const result = await this._process.execFlow(args, options);
       if (!result) {
         return [];
       }
@@ -231,7 +231,7 @@ export class FlowRoot {
 
     let output;
     try {
-      const result = await this._process.execFlow(args, options, file);
+      const result = await this._process.execFlow(args, options);
       if (!result) {
         return null;
       }
