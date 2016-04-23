@@ -17,12 +17,11 @@ describe('TypeHintProvider', () => {
 
   const mockEditor: atom$TextEditor = (null: any);
   let mockDeclaration;
-  let typeHintProvider;
+  let TypeHintProvider;
   beforeEach(() => {
     spyOn(libclang, 'getDeclaration').andCallFake(async () => mockDeclaration);
     // Must use lazy require to get the spied version.
-    const {TypeHintProvider} = require('../lib/TypeHintProvider');
-    typeHintProvider = new TypeHintProvider();
+    TypeHintProvider = require('../lib/TypeHintProvider').TypeHintProvider;
   });
 
   it('can return a typehint', () => {
@@ -35,7 +34,7 @@ describe('TypeHintProvider', () => {
         },
       };
 
-      const hint = await typeHintProvider.typeHint(mockEditor, new Point(0, 0));
+      const hint = await TypeHintProvider.typeHint(mockEditor, new Point(0, 0));
       expect(hint).toEqual({
         hint: 'test',
         range: new Range(new Point(0, 0), new Point(1, 1)),
@@ -53,7 +52,7 @@ describe('TypeHintProvider', () => {
         },
       };
 
-      const hint = await typeHintProvider.typeHint(mockEditor, new Point(0, 0));
+      const hint = await TypeHintProvider.typeHint(mockEditor, new Point(0, 0));
       expect(hint).toEqual({
         hint: 'a'.repeat(256) + '...',
         range: new Range(new Point(0, 0), new Point(1, 1)),
@@ -71,7 +70,7 @@ describe('TypeHintProvider', () => {
         },
       };
 
-      const hint = await typeHintProvider.typeHint(mockEditor, new Point(0, 0));
+      const hint = await TypeHintProvider.typeHint(mockEditor, new Point(0, 0));
       expect(hint).toBe(null);
     });
   });

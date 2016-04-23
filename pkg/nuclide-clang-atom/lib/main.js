@@ -10,7 +10,10 @@
  */
 
 import type {HyperclickProvider} from '../../hyperclick';
-import type {TypeHintProvider as TypeHintProviderType} from '../../nuclide-type-hint-interfaces';
+import type {
+  TypeHint,
+  TypeHintProvider as TypeHintProviderType,
+} from '../../nuclide-type-hint-interfaces';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../nuclide-busy-signal';
@@ -19,6 +22,7 @@ import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
 import type ClangDiagnosticsProvider from './ClangDiagnosticsProvider';
 
 import {CompositeDisposable} from 'atom';
+import {TypeHintProvider} from './TypeHintProvider';
 import {GRAMMAR_SET, PACKAGE_NAME} from './constants';
 
 let busySignalProvider: ?BusySignalProviderBaseType = null;
@@ -82,15 +86,16 @@ export function createAutocompleteProvider(): atom$AutocompleteProvider {
 }
 
 export function createTypeHintProvider(): TypeHintProviderType {
-  const {TypeHintProvider} = require('./TypeHintProvider');
-  const typeHintProvider = new TypeHintProvider();
-  const typeHint = typeHintProvider.typeHint.bind(typeHintProvider);
-
   return {
     inclusionPriority: 1,
     providerName: PACKAGE_NAME,
     selector: Array.from(GRAMMAR_SET).join(', '),
-    typeHint,
+    typeHint(
+      editor: atom$TextEditor,
+      position: atom$Point
+    ): Promise<?TypeHint>  {
+      return TypeHintProvider.typeHint(editor, position);
+    },
   };
 }
 

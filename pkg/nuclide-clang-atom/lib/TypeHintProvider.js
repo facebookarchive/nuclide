@@ -21,7 +21,10 @@ const MAX_LENGTH = 256;
 export class TypeHintProvider {
 
   @trackTiming('nuclide-clang-atom.typeHint')
-  async typeHint(editor: atom$TextEditor, position: atom$Point): Promise<?TypeHint> {
+  static async typeHint(
+    editor: atom$TextEditor,
+    position: atom$Point
+  ): Promise<?TypeHint> {
     const decl = await getDeclaration(editor, position.row, position.column);
     if (decl == null) {
       return null;
