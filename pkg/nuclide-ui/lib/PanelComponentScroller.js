@@ -13,20 +13,25 @@ import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
 type Props = {
-  children: React.Element;
+  children?: React.Element;
   flexDirection?: 'column';
   overflowX?: string;
+  onScroll?: (event: Event) => void;
 };
 
-export const PanelComponentScroller = (props: Props): React.Element => {
-  const style = (props.overflowX == null) ? null : {overflowX: props.overflowX};
-  const className = classnames('nuclide-ui-panel-component-scroller', {
-    'nuclide-ui-panel-component-scroller--column': (props.flexDirection === 'column'),
-  });
+export class PanelComponentScroller extends React.Component {
+  props: Props;
 
-  return (
-    <div className={className} style={style}>
-      {props.children}
-    </div>
-  );
-};
+  render(): React.Element {
+    const style = (this.props.overflowX == null) ? null : {overflowX: this.props.overflowX};
+    const className = classnames('nuclide-ui-panel-component-scroller', {
+      'nuclide-ui-panel-component-scroller--column': (this.props.flexDirection === 'column'),
+    });
+
+    return (
+      <div className={className} style={style} onScroll={this.props.onScroll}>
+        {this.props.children}
+      </div>
+    );
+  }
+}

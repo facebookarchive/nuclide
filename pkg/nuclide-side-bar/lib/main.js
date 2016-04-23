@@ -106,16 +106,17 @@ function focusPanel(): void {
 
 function renderPanel(renderState: State, onDidRender?: () => mixed): void {
   const activeViewInstance = getActiveViewInstance(renderState);
+  const hidden = (activeViewInstance == null) || renderState.hidden;
   const component = ReactDOM.render(
     <PanelComponent
       dock="left"
       // Keep the side-bar hidden when there is no active view instance.
-      hidden={(activeViewInstance == null) || renderState.hidden}
+      hidden={hidden}
       initialLength={renderState.initialLength}
       noScroll>
       {activeViewInstance == null
         ? <div />
-        : React.createElement(activeViewInstance.view.getComponent())}
+        : React.createElement(activeViewInstance.view.getComponent(), {hidden})}
     </PanelComponent>,
     item,
     onDidRender

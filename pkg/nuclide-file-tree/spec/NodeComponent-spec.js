@@ -11,8 +11,7 @@
 
 import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeNode} from '../lib/FileTreeNode';
-import {DirectoryEntryComponent} from '../components/DirectoryEntryComponent';
-import {FileEntryComponent} from '../components/FileEntryComponent';
+import {FileTreeEntryComponent} from '../components/FileTreeEntryComponent';
 import {WorkingSet} from '../../nuclide-working-sets';
 import Immutable from 'immutable';
 
@@ -54,7 +53,7 @@ function renderEntryComponentIntoDocument(
   return TestUtils.renderIntoDocument(React.createElement(componentKlass, {node}));
 }
 
-describe('DirectoryEntryComponent', () => {
+describe('Directory FileTreeEntryComponent', () => {
   const actions = FileTreeActions.getInstance();
 
   describe('when expanding/collapsing dir component', () => {
@@ -64,11 +63,12 @@ describe('DirectoryEntryComponent', () => {
 
     it('expands on click when node is selected', () => {
       const nodeComponent = renderEntryComponentIntoDocument(
-        DirectoryEntryComponent,
+        FileTreeEntryComponent,
         {
           rootUri: '/a/',
           uri: '/a/b/',
           isSelected: true,
+          isContainer: true,
         }
       );
 
@@ -80,7 +80,7 @@ describe('DirectoryEntryComponent', () => {
   });
 });
 
-describe('FileEntryComponent', () => {
+describe('File FileTreeEntryComponent', () => {
   const actions = FileTreeActions.getInstance();
 
   describe('when expanding/collapsing file component', () => {
@@ -90,11 +90,12 @@ describe('FileEntryComponent', () => {
 
     it('does not expand on click when node is selected', () => {
       const nodeComponent = renderEntryComponentIntoDocument(
-        FileEntryComponent,
+        FileTreeEntryComponent,
         {
           rootUri: '/a/',
           uri: '/a/b',
           isSelected: true,
+          isContainer: false,
         }
       );
       const domNode = ReactDOM.findDOMNode(nodeComponent);
@@ -110,11 +111,12 @@ describe('FileEntryComponent', () => {
 
     it('opens a file if a selected node is clicked', () => {
       const nodeComponent = renderEntryComponentIntoDocument(
-        FileEntryComponent,
+        FileTreeEntryComponent,
         {
           rootUri: '/a/',
           uri: '/a/b',
           isSelected: true,
+          isContainer: false,
           usePreviewTabs: true,
         },
       );

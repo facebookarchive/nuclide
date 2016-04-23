@@ -13,7 +13,7 @@ import {
   React,
   ReactDOM,
 } from 'react-for-atom';
-import FileTree from './FileTree';
+import {FileTree} from './FileTree';
 import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
 import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
 import {FileTreeStore} from '../lib/FileTreeStore';
@@ -22,34 +22,67 @@ import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScrolle
 
 type State = {
   shouldRenderToolbar: boolean;
+  scrollerHeight: number;
+  scrollerScrollTop: number;
+};
+
+type Props = {
+  hidden: boolean;
 };
 
 class FileTreeSidebarComponent extends React.Component {
   _store: FileTreeStore;
   _disposables: CompositeDisposable;
+  _afRequestId: ?number;
   state: State;
+  props: Props;
 
-  constructor(props: Object) {
+  constructor(props: Props) {
     super(props);
 
     this._store = FileTreeStore.getInstance();
     this.state = {
       shouldRenderToolbar: false,
+      scrollerHeight: 0,
+      scrollerScrollTop: 0,
     };
     this._disposables = new CompositeDisposable();
+    this._afRequestId = null;
     (this: any)._handleFocus = this._handleFocus.bind(this);
+    (this: any)._onViewChange = this._onViewChange.bind(this);
+    (this: any)._scrollToPosition = this._scrollToPosition.bind(this);
+    (this: any)._processExternalUpdate = this._processExternalUpdate.bind(this);
   }
 
   componentDidMount(): void {
     this._processExternalUpdate();
+
+    window.addEventListener('resize', this._onViewChange);
+    this._afRequestId = window.requestAnimationFrame(() => {
+      this._onViewChange();
+      this._afRequestId = null;
+    });
+
     this._disposables.add(
-      this._store.subscribe(this._processExternalUpdate.bind(this))
+      this._store.subscribe(this._processExternalUpdate),
+      atom.project.onDidChangePaths(this._processExternalUpdate),
+      () => {
+        window.removeEventListener('resize', this._onViewChange);
+        if (this._afRequestId != null) {
+          window.cancelAnimationFrame(this._afRequestId);
+        }
+      },
     );
-    this._disposables.add(atom.project.onDidChangePaths(this._processExternalUpdate.bind(this)));
   }
 
   componentWillUnmount(): void {
     this._disposables.dispose();
+  }
+
+  componentDidUpdate(prevProps: Props): void {
+    if (prevProps.hidden && !this.props.hidden) {
+      this._onViewChange();
+    }
   }
 
   _handleFocus(event: SyntheticEvent): void {
@@ -84,8 +117,15 @@ class FileTreeSidebarComponent extends React.Component {
         onFocus={this._handleFocus}
         tabIndex={0}>
         {toolbar}
-        <PanelComponentScroller>
-          <FileTree ref="fileTree" />
+        <PanelComponentScroller
+          ref="scroller"
+          onScroll={this._onViewChange}>
+          <FileTree
+            ref="fileTree"
+            containerHeight={this.state.scrollerHeight}
+            containerScrollTop={this.state.scrollerScrollTop}
+            scrollToPosition={this._scrollToPosition}
+          />
         </PanelComponentScroller>
       </div>
     );
@@ -100,6 +140,35 @@ class FileTreeSidebarComponent extends React.Component {
       // Note: It's safe to call forceUpdate here because the change events are de-bounced.
       this.forceUpdate();
     }
+  }
+
+  _onViewChange(): void {
+    const node = ReactDOM.findDOMNode(this.refs['scroller']);
+    const {clientHeight, scrollTop} = node;
+
+    if (clientHeight !== this.state.scrollerHeight || scrollTop !== this.state.scrollerScrollTop) {
+      this.setState({scrollerHeight: clientHeight, scrollerScrollTop: scrollTop});
+    }
+  }
+
+  _scrollToPosition(top: number, height: number): void {
+    const requestedBottom = top + height;
+    const currentBottom = this.state.scrollerScrollTop + this.state.scrollerHeight;
+    if (top > this.state.scrollerScrollTop && requestedBottom <= currentBottom) {
+      return;  // Already in the view
+    }
+
+    const node = ReactDOM.findDOMNode(this.refs['scroller']);
+    if (node == null) {
+      return;
+    }
+    const newTop = Math.max(top + height / 2 - this.state.scrollerHeight / 2, 0);
+    setImmediate(() => {
+      try {  // For the rather unlikely chance that the node is already gone from the DOM
+        node.scrollTop = newTop;
+        this.setState({scrollerScrollTop: newTop});
+      } catch (e) {}
+    });
   }
 }
 

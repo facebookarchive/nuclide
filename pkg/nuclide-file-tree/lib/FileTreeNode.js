@@ -613,6 +613,17 @@ export class FileTreeNode {
     }
   }
 
+  getDepth(): number {
+    let it = this.parent;
+    let depth = 0;
+    while (it != null) {
+      it = it.parent;
+      depth++;
+    }
+
+    return depth;
+  }
+
   _buildDerivedFields(uri: NuclideUri, rootUri: NuclideUri, conf: StoreConfigData): Object {
     const isContainer = isDirKey(uri);
     const rootVcsStatuses = conf.vcsStatuses[rootUri] || {};

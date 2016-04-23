@@ -9,21 +9,15 @@
  * the root directory of this source tree.
  */
 
-
-import type {FileTreeNode} from '../lib/FileTreeNode';
-
 import FileTreeActions from '../lib/FileTreeActions';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
-import classnames from  'classnames';
+import {React, ReactDOM} from 'react-for-atom';
+import classnames from 'classnames';
+import {fileTypeClass} from '../../nuclide-atom-helpers';
 import {filterName} from '../lib/FileTreeFilterHelper';
 import {isContextClick} from '../lib/FileTreeHelpers';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
-
-import {FileEntryComponent} from './FileEntryComponent';
+import type {FileTreeNode} from '../lib/FileTreeNode';
 
 const getActions = FileTreeActions.getInstance;
 
@@ -31,13 +25,16 @@ type Props = {
   node: FileTreeNode;
 };
 
-export class DirectoryEntryComponent extends React.Component {
+const INDENT_LEVEL = 17;
+
+
+export class FileTreeEntryComponent extends React.Component {
   props: Props;
-  _animationFrameRequestId: ?number;
 
   constructor(props: Props) {
     super(props);
     (this: any)._onClick = this._onClick.bind(this);
+    (this: any)._onDoubleClick = this._onDoubleClick.bind(this);
     (this: any)._onMouseDown = this._onMouseDown.bind(this);
     (this: any)._checkboxOnChange = this._checkboxOnChange.bind(this);
     (this: any)._checkboxOnClick = this._checkboxOnClick.bind(this);
@@ -47,48 +44,22 @@ export class DirectoryEntryComponent extends React.Component {
     return nextProps.node !== this.props.node;
   }
 
-  scrollTrackedIntoView(): void {
-    if (!this.props.node.containsTrackedNode) {
-      return;
-    }
-
-    if (this.props.node.isTracked) {
-      if (this._animationFrameRequestId != null) {
-        return;
-      }
-
-      this._animationFrameRequestId = window.requestAnimationFrame(() => {
-        ReactDOM.findDOMNode(this.refs['arrowContainer']).scrollIntoViewIfNeeded();
-        this._animationFrameRequestId = null;
-      });
-      return;
-    }
-
-    const trackedChild = this.refs['tracked'];
-    if (trackedChild != null) {
-      trackedChild.scrollTrackedIntoView();
-    }
-  }
-
-  componentWillUnmount(): void {
-    if (this._animationFrameRequestId != null) {
-      window.cancelAnimationFrame(this._animationFrameRequestId);
-    }
-  }
-
   render(): React.Element {
     const node = this.props.node;
 
-    const outerClassName = classnames('directory entry list-nested-item', {
+    const outerClassName = classnames('entry', {
+      'file list-item': !node.isContainer,
+      'directory list-nested-item': node.isContainer,
       'current-working-directory': node.isCwd,
       'collapsed': !node.isExpanded,
       'expanded': node.isExpanded,
       'project-root': node.isRoot,
       'selected': node.isSelected,
-    });
-    const listItemClassName = classnames('header list-item', {
-      'loading': node.isLoading,
       'nuclide-file-tree-softened': node.shouldBeSoftened,
+    });
+    const listItemClassName = classnames({
+      'header list-item': node.isContainer,
+      'loading': node.isLoading,
     });
 
     let statusClass;
@@ -98,7 +69,7 @@ export class DirectoryEntryComponent extends React.Component {
         statusClass = 'status-modified';
       } else if (vcsStatusCode === StatusCodeNumber.ADDED) {
         statusClass = 'status-added';
-      } else if (this.props.node.isIgnored) {
+      } else if (node.isIgnored) {
         statusClass = 'status-ignored';
       } else {
         statusClass = '';
@@ -117,22 +88,25 @@ export class DirectoryEntryComponent extends React.Component {
       }
     }
 
-    const iconName = node.isCwd ? 'briefcase' : 'file-directory';
-    let name = node.name;
-    if (!node.isRoot) {
-      name = filterName(name, node.highlightedText, node.isSelected);
+    let iconName;
+    if (node.isContainer) {
+      iconName = node.isCwd ? 'icon-briefcase' : 'icon-file-directory';
+    } else {
+      iconName = fileTypeClass(node.name);
     }
 
     return (
       <li
-        className={`${outerClassName} ${statusClass}`}>
+        className={`${outerClassName} ${statusClass}`}
+        style={{paddingLeft: this.props.node.getDepth() * INDENT_LEVEL}}
+        onClick={this._onClick}
+        onDoubleClick={this._onDoubleClick}
+        onMouseDown={this._onMouseDown}>
         <div
           className={listItemClassName}
-          ref="arrowContainer"
-          onClick={this._onClick}
-          onMouseDown={this._onMouseDown}>
+          ref="arrowContainer">
           <span
-            className={`icon name icon-${iconName}`}
+            className={`icon name ${iconName}`}
             ref="pathContainer"
             data-name={node.name}
             data-path={node.uri}>
@@ -140,12 +114,11 @@ export class DirectoryEntryComponent extends React.Component {
             <span
               data-name={node.name}
               data-path={node.uri}>
-              {name}
+              {filterName(node.name, node.highlightedText, node.isSelected)}
             </span>
           </span>
           {this._renderConnectionTitle()}
         </div>
-        {this._renderChildren()}
       </li>
     );
   }
@@ -181,44 +154,17 @@ export class DirectoryEntryComponent extends React.Component {
     );
   }
 
-  _renderChildren(): ?React.Element {
-    if (!this.props.node.isExpanded) {
-      return;
-    }
-
-    const children = this.props.node.children.toArray()
-    .filter(childNode => childNode.shouldBeShown)
-    .map(childNode => {
-      if (childNode.isContainer) {
-        if (childNode.containsTrackedNode) {
-          return <DirectoryEntryComponent node={childNode} key={childNode.name} ref="tracked" />;
-        } else {
-          return <DirectoryEntryComponent node={childNode} key={childNode.name} />;
-        }
-      }
-
-      if (childNode.containsTrackedNode) {
-        return <FileEntryComponent node={childNode} key={childNode.name} ref="tracked" />;
-      } else {
-        return <FileEntryComponent node={childNode} key={childNode.name} />;
-      }
-    });
-
-    return (
-      <ul className="list-tree">
-        {children}
-      </ul>
-    );
-  }
-
   _onClick(event: SyntheticMouseEvent) {
     event.stopPropagation();
+    const node = this.props.node;
 
     const deep = event.altKey;
     if (
-      ReactDOM.findDOMNode(this.refs['arrowContainer']).contains(event.target)
-      && event.clientX < ReactDOM.findDOMNode(
-        this.refs['pathContainer']).getBoundingClientRect().left
+      node.isContainer &&
+      ReactDOM.findDOMNode(this.refs['arrowContainer']).contains(event.target) &&
+      event.clientX < ReactDOM.findDOMNode(
+        this.refs['pathContainer']
+      ).getBoundingClientRect().left
     ) {
       this._toggleNodeExpanded(deep);
       return;
@@ -226,18 +172,38 @@ export class DirectoryEntryComponent extends React.Component {
 
     const modifySelection = event.ctrlKey || event.metaKey;
     if (modifySelection) {
-      if (this.props.node.isSelected) {
-        getActions().unselectNode(this.props.node.rootUri, this.props.node.uri);
+      if (node.isSelected) {
+        getActions().unselectNode(node.rootUri, node.uri);
       } else {
-        getActions().addSelectedNode(this.props.node.rootUri, this.props.node.uri);
+        getActions().addSelectedNode(node.rootUri, node.uri);
       }
     } else {
-      if (!this.props.node.isSelected) {
-        getActions().setSelectedNode(this.props.node.rootUri, this.props.node.uri);
+      if (!node.isSelected) {
+        getActions().setSelectedNode(node.rootUri, node.uri);
       }
-      if (this.props.node.isSelected || this.props.node.conf.usePreviewTabs) {
-        this._toggleNodeExpanded(deep);
+      if (node.isContainer) {
+        if (node.isSelected || node.conf.usePreviewTabs) {
+          this._toggleNodeExpanded(deep);
+        }
+      } else {
+        if (this.props.node.conf.usePreviewTabs) {
+          getActions().confirmNode(this.props.node.rootUri, this.props.node.uri);
+        }
       }
+    }
+  }
+
+  _onDoubleClick(event: SyntheticMouseEvent) {
+    event.stopPropagation();
+
+    if (this.props.node.isContainer) {
+      return;
+    }
+
+    if (this.props.node.conf.usePreviewTabs) {
+      getActions().keepPreviewTab();
+    } else {
+      getActions().confirmNode(this.props.node.rootUri, this.props.node.uri);
     }
   }
 
