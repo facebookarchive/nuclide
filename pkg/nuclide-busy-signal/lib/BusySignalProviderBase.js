@@ -19,7 +19,6 @@ import {Subject} from '@reactivex/rxjs';
 import invariant from 'assert';
 
 import {promises} from '../../nuclide-commons';
-const {isPromise} = promises;
 
 export type MessageDisplayOptions = {
   onlyForFile: NuclideUri;
@@ -104,7 +103,7 @@ export class BusySignalProviderBase {
     const removeMessage = messageRemover.dispose.bind(messageRemover);
     try {
       const returnValue = f();
-      invariant(isPromise(returnValue));
+      invariant(promises.isPromise(returnValue));
       returnValue.then(removeMessage, removeMessage);
       return returnValue;
     } catch (e) {
