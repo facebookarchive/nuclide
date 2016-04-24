@@ -39,7 +39,7 @@ module.exports = _client => {
   }
 
   remoteModule.TestFunctionB = function () {
-    return Observable.concat().toArray().concatMap(args => _client.callRemoteFunction("FunctionService/TestFunctionB", "observable", args)).concatMap(value => _client.unmarshal(value, {
+    return Observable.fromPromise(Promise.all([]).then(args => _client.callRemoteFunction("FunctionService/TestFunctionB", "observable", args))).concatMap(id => id).concatMap(value => _client.unmarshal(value, {
       location: {
         type: "source",
         fileName: "FunctionService.def",

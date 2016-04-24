@@ -122,68 +122,27 @@ export function generateProxy(serviceName: string, defs: Definitions): string {
  *   a property of the remote module.
  */
 function generateFunctionProxy(name: string, funcType: FunctionType): any {
-  const proxyStatments = [];
-
-  // Convert all of the arguments into marshaled form. `argumentsPromise` will resolve
-  // to an array of the converted arguments.
-  const args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
-  const argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
-
-  // Call the remoteFunctionCall method of the ClientComponent object.
-  let rpcCallExpression = t.callExpression(callRemoteFunctionExpression, [
+  // _client.callRemoteFunction(name, kind, args)
+  const callExpression = t.callExpression(callRemoteFunctionExpression, [
     t.literal(name),
     t.literal(funcType.returnType.kind),
     t.identifier('args'),
   ]);
 
-  let value, transformer, type;
-  const returnType = funcType.returnType;
-  switch (returnType.kind) {
-    case 'void':
-      rpcCallExpression = thenPromise(argumentsPromise, t.arrowFunctionExpression(
-        [t.identifier('args')],
-        rpcCallExpression,
-      ));
-      break;
-    case 'promise':
-      rpcCallExpression = thenPromise(argumentsPromise, t.arrowFunctionExpression(
-        [t.identifier('args')],
-        rpcCallExpression,
-      ));
+  // Promise.all(...).then(args => ...)
+  const argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
+  const marshalArgsAndCall = thenPromise(argumentsPromise, t.arrowFunctionExpression(
+    [t.identifier('args')],
+    callExpression,
+  ));
 
-      value = t.identifier('value');
-      type = returnType.type;
-      transformer = t.arrowFunctionExpression([value],
-        generateTransformStatement(value, type, false));
+  const result = generateUnmarshalResult(funcType.returnType, marshalArgsAndCall);
 
-      rpcCallExpression = thenPromise(rpcCallExpression, transformer);
-      break;
-    case 'observable':
-      // generateArgumentConversionObservable will return an observable that emits the transformed
-      // array of arguments. We concatMap this array through the RPC call, which will return the
-      // stream of events.
-      rpcCallExpression = t.callExpression(
-        t.memberExpression(
-          generateArgumentConversionObservable(funcType.argumentTypes), t.identifier('concatMap')
-        ),
-        [t.arrowFunctionExpression([t.identifier('args')], rpcCallExpression)]
-      );
-
-      // We then map the incoming events through the appropriate marshaller. We use concatMap
-      // instead of flatMap, since concatMap ensures that the order of the events doesn't change.
-      value = t.identifier('value');
-      type = returnType.type;
-      transformer = t.arrowFunctionExpression([value],
-        generateTransformStatement(value, type, false));
-      rpcCallExpression = t.callExpression(
-        t.memberExpression(rpcCallExpression, t.identifier('concatMap')), [transformer]);
-      break;
-    default:
-      throw new Error(`Unkown return type ${returnType.kind}.`);
-  }
-
-  proxyStatments.push(t.returnStatement(rpcCallExpression));
-  return t.functionExpression(null, args, t.blockStatement(proxyStatments));
+  // function(arg0, ... argN) { return ... }
+  const args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
+  return t.functionExpression(null, args, t.blockStatement(
+    [t.returnStatement(result)]
+  ));
 }
 
 /**
@@ -200,29 +159,6 @@ function generateArgumentConversionPromise(argumentTypes: Array<Type>): Array<an
       args.map((arg, i) => generateTransformStatement(arg, argumentTypes[i], true))
     )]
   );
-}
-
-/**
- * Helper function that generates an Observable that emits an array of converted arguments.
- * @param argumentTypes - An array of the types of the function's arguments.
- * @returns An expression that represents an Observable that emits an array of converted arguments.
- * Example: `Observable.concat(_client.marshal(...), _client.marshal(...)).toArray()`
- */
-function generateArgumentConversionObservable(argumentTypes: Array<Type>): Array<any> {
-  // Create identifiers that represent all of the arguments.
-  const args = argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
-
-  // We create an initial observable by concatenating (http://rxmarbles.com/#concat) all of
-  // the marshalling promises. Concatenation takes multiple streams (Promises in this case), and
-  // returns one stream where all the elements of the input streams are emitted. Concat preserves
-  // order, ensuring that all of stream's elements are emitted before the next stream's can emit.
-  const argumentsObservable = t.callExpression(
-      t.memberExpression(observableIdentifier, t.identifier('concat')),
-      args.map((arg, i) => generateTransformStatement(arg, argumentTypes[i], true)));
-
-  // Once we have a stream of the arguments, we can use toArray(), which returns an observable that
-  // waits for the stream to complete, and emits one event with all of the elements as an array.
-  return t.callExpression(t.memberExpression(argumentsObservable, t.identifier('toArray')), []);
 }
 
 /**
@@ -332,18 +268,17 @@ function generateRemoteDispatch(methodName: string, thisType: NamedType, funcTyp
       true),
     t.arrowFunctionExpression([idIdentifier], remoteMethodCall));
 
-  // Promise.all(...).then(args => _client.callRemoteMethod(...))
+  // Promise.all(...).then(args => ...)
   const argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
   const marshallThenCall = thenPromise(argumentsPromise, t.arrowFunctionExpression(
     [t.identifier('args')],
     idThenCall,
   ));
 
+  // methodName(arg0, ... argN) { return ... }
   const funcTypeArgs = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
   const funcExpression = t.functionExpression(null, funcTypeArgs, t.blockStatement([
     t.returnStatement(generateUnmarshalResult(funcType.returnType, marshallThenCall))]));
-
-  // methodName(arg0, ... argN) { return ... }
   return t.methodDefinition(t.identifier(methodName), funcExpression, 'method', false, false);
 }
 
