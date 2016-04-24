@@ -68,7 +68,7 @@ module.exports = _client => {
       }));
     }
     watchChanges() {
-      return Observable.forkJoin(this._idPromise, Observable.concat().toArray()).concatMap(([id, args]) => _client.callRemoteMethod(id, "watchChanges", "observable", args)).concatMap(value => _client.unmarshal(value, {
+      return Observable.fromPromise(Promise.all([]).then(args => this._idPromise.then(id => _client.callRemoteMethod(id, "watchChanges", "observable", args)))).concatMap(id => id).concatMap(value => _client.unmarshal(value, {
         location: {
           type: "source",
           fileName: "InterfaceService.def",

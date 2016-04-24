@@ -314,16 +314,18 @@ function generateRemoteConstructor(className: string, constructorArgs: Array<Typ
  */
 function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
   // First, convert the arguments.
+  // Promise.all(...)
   const argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
 
   const id = t.identifier('id');
-  const value = t.identifier('value');
 
+  // _client.callRemoteMethod(id, methodName, returnType, args)
   const remoteMethodCall = t.callExpression(callRemoteMethodExpression, [
     id, t.literal(methodName), t.literal(funcType.returnType.kind), t.identifier('args')]);
   let rpcCallExpression = thenPromise(thisDotIdPromiseExpression, t.arrowFunctionExpression(
     [id], remoteMethodCall));
 
+  // marshalledArgs.then(args => _client.callRemoteMethod(...))
   rpcCallExpression = thenPromise(argumentsPromise, t.arrowFunctionExpression(
     [t.identifier('args')],
     rpcCallExpression,
@@ -334,45 +336,47 @@ function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
     case 'void':
       break;
     case 'promise':
-      const promiseTransformer = t.arrowFunctionExpression([value],
-        generateTransformStatement(value, returnType.type, false));
+      const promiseTransformer = generateValueTransformer(returnType.type);
       rpcCallExpression = thenPromise(rpcCallExpression, promiseTransformer);
       break;
     case 'observable':
-      const argumentsObservable = generateArgumentConversionObservable(funcType.argumentTypes);
+      // rpcCallExpression is a call which returns Promise<Observable<unmarshalled result>>
 
-      // We need to resolve both the transformed arguments and the object id before making the RPC.
-      // We can use forkJoin - https://github.com/Reactive-Extensions/RxJS/blob/master/doc/api/core/operators/forkjoin.md.
-      // This will resolve to an Observable that emits an array with [id, args] as the two elements.
-      const idAndArgumentsObservable = t.callExpression(t.memberExpression(observableIdentifier,
-        t.identifier('forkJoin')), [thisDotIdPromiseExpression, argumentsObservable]);
-
-      // Once we resolve both the id and the transformed arguments, we can map them to then RPC
-      // call, which then returns the observable of data that we actually want to return.
-      rpcCallExpression = t.callExpression(
-        t.memberExpression(idAndArgumentsObservable, t.identifier('concatMap')),
-        [t.arrowFunctionExpression([
-          t.arrayPattern([t.identifier('id'), t.identifier('args')]),
-        ], remoteMethodCall)]
-      );
+      // Observable.fromPromise(rpcCallExpression)
+      const callObservable = t.callExpression(
+            t.memberExpression(observableIdentifier, t.identifier('fromPromise')),
+            [rpcCallExpression]);
+      // ... .flatMap(id => id)
+      const unmarshalledValues = t.callExpression(
+        t.memberExpression(callObservable, t.identifier('concatMap')),
+        [t.arrowFunctionExpression([id], id)]);
 
       // Finally, we map the events through the appropriate marshaller. We use concatMap instead of
       // flatMap to ensure that the order doesn't change, in case one event takes especially long
       // to marshal.
-      const observableTransformer = t.arrowFunctionExpression([value],
-        generateTransformStatement(value, returnType.type, false));
+      //
+      // ... .concatMap(value => _client.unmarshal(value, returnType))
+      const observableTransformer = generateValueTransformer(returnType.type);
       rpcCallExpression = t.callExpression(
-        t.memberExpression(rpcCallExpression, t.identifier('concatMap')), [observableTransformer]);
+        t.memberExpression(unmarshalledValues, t.identifier('concatMap')), [observableTransformer]);
       break;
     default:
       throw new Error(`Unkown return type ${returnType.kind}.`);
   }
 
+  // methodName(arg0, ... argN) { return ... }
   const funcTypeArgs = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
   const funcExpression = t.functionExpression(null, funcTypeArgs, t.blockStatement([
     t.returnStatement(rpcCallExpression)]));
 
   return t.methodDefinition(t.identifier(methodName), funcExpression, 'method', false, false);
+}
+
+// value => _client.unmarshal(value, type)
+function generateValueTransformer(type: Type) {
+  const value = t.identifier('value');
+  return t.arrowFunctionExpression([value],
+    generateTransformStatement(value, type, false));
 }
 
 /**
