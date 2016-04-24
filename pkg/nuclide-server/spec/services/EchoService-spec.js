@@ -12,19 +12,23 @@
 import invariant from 'assert';
 import path from 'path';
 import ServiceTestHelper from './ServiceTestHelper';
+import typeof * as EchoServiceType from './EchoService';
+import {RemotableObject} from './EchoService';
+
 
 describe('EchoServer', () => {
-  let testHelper, service;
+  let testHelper;
+  let service: EchoServiceType = (null: any);
   beforeEach(() => {
     testHelper = new ServiceTestHelper();
     waitsForPromise(() => testHelper.start([{
       name: 'EchoService',
-      definition: path.join(__dirname, 'EchoService.def'),
+      definition: path.join(__dirname, 'EchoService.js'),
       implementation: path.join(__dirname, 'EchoService.js'),
     }]));
 
     runs(() => {
-      service = testHelper.getRemoteService('EchoService', path.join(__dirname, 'EchoService.def'));
+      service = testHelper.getRemoteService('EchoService', path.join(__dirname, 'EchoService.js'));
     });
   });
 
@@ -130,13 +134,17 @@ describe('EchoServer', () => {
       const originalA = original.get('a');
       expect(originalA).toBeTruthy();
       if (originalA != null) {
-        expect(results.get('a').getTime()).toEqual(originalA.getTime());
+        const resultA = results.get('a');
+        invariant(resultA != null);
+        expect(resultA.getTime()).toEqual(originalA.getTime());
       }
 
       const originalB = original.get('b');
       expect(originalB).toBeTruthy();
       if (originalB != null) {
-        expect(results.get('b').getTime()).toEqual(originalB.getTime());
+        const resultB = results.get('b');
+        invariant(resultB != null);
+        expect(resultB.getTime()).toEqual(originalB.getTime());
       }
 
       expect(results.has('c')).toBeFalsy();
@@ -174,6 +182,16 @@ describe('EchoServer', () => {
     waitsForPromise(async () => {
       invariant(service);
       const results = await service.echoNuclideUri(expected);
+      expect(results).toBe(expected);
+    });
+  });
+
+  // Echo a RemotableObject.
+  it('Echoes a RemotableObject.', () => {
+    const expected = new RemotableObject();
+    waitsForPromise(async () => {
+      invariant(service);
+      const results = await service.echoRemotableObject(expected);
       expect(results).toBe(expected);
     });
   });

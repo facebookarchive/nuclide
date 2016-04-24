@@ -62,11 +62,23 @@ export async function echoTuple(arg: [number, string]): Promise<[number, string]
 }
 
 // Value Type
-export async function echoValueType<ValueTypeA>(arg: ValueTypeA): Promise<ValueTypeA> {
+export type BufferAlias = Buffer;
+export type ValueTypeA = {
+  a: Date;
+  b: BufferAlias;
+  c?: number; // Note that as of 5.8.14, there is a bug with parsing optional props in Babel.
+};
+export async function echoValueType(arg: ValueTypeA): Promise<ValueTypeA> {
   return arg;
 }
 
 // NuclideUri
 export async function echoNuclideUri(arg: NuclideUri): Promise<NuclideUri> {
+  return arg;
+}
+
+// Remotable object
+export class RemotableObject {}
+export async function echoRemotableObject(arg: RemotableObject): Promise<RemotableObject> {
   return arg;
 }
