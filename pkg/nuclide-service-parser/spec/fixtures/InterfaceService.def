@@ -7,6 +7,8 @@ export class Vector2 {
 
   // Private members do NOT require marshallable signatures.
   _privateMember(): number {}
+
+  dispose(): void {}
 }
 
 export function getCurrentDirection(): Promise<Vector2> {}

@@ -78,7 +78,9 @@ export async function echoNuclideUri(arg: NuclideUri): Promise<NuclideUri> {
 }
 
 // Remotable object
-export class RemotableObject {}
+export class RemotableObject {
+  dispose(): void {}
+}
 export async function echoRemotableObject(arg: RemotableObject): Promise<RemotableObject> {
   return arg;
 }

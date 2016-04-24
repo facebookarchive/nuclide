@@ -26,4 +26,6 @@ export class Counter {
 
   // A static method that takes a Counter object as an argument.
   static indexOf(counter: Counter): Promise<number> {}
+
+  dispose(): Promise<void> {}
 }

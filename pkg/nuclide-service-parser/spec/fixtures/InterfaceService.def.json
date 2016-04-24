@@ -118,6 +118,23 @@
                         "kind": "number"
                     }
                 }
+            },
+            "dispose": {
+                "location": {
+                    "type": "source",
+                    "fileName": "InterfaceService.def",
+                    "line": 11
+                },
+                "kind": "function",
+                "argumentTypes": [],
+                "returnType": {
+                    "location": {
+                        "type": "source",
+                        "fileName": "InterfaceService.def",
+                        "line": 11
+                    },
+                    "kind": "void"
+                }
             }
         },
         "staticMethods": {
@@ -173,13 +190,13 @@
         "location": {
             "type": "source",
             "fileName": "InterfaceService.def",
-            "line": 12
+            "line": 14
         },
         "type": {
             "location": {
                 "type": "source",
                 "fileName": "InterfaceService.def",
-                "line": 12
+                "line": 14
             },
             "kind": "function",
             "argumentTypes": [],
@@ -187,14 +204,14 @@
                 "location": {
                     "type": "source",
                     "fileName": "InterfaceService.def",
-                    "line": 12
+                    "line": 14
                 },
                 "kind": "promise",
                 "type": {
                     "location": {
                         "type": "source",
                         "fileName": "InterfaceService.def",
-                        "line": 12
+                        "line": 14
                     },
                     "kind": "named",
                     "name": "Vector2"

@@ -192,6 +192,11 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
     name: def.name,
   };
   def.instanceMethods.forEach((funcType, methodName) => {
+    // dispose method is generated custom at the end
+    if (methodName === 'dispose') {
+      return;
+    }
+
     const methodDefinition = generateRemoteDispatch(methodName, thisType, funcType);
 
     // Add trackTiming decorator to instance method that returns a promise.

@@ -219,9 +219,21 @@ class ServiceParser {
       } else {
         if (!isPrivateMemberName(method.key.name)) {
           const {name, type} = this._parseMethodDefinition(method);
+          if (name === 'dispose') {
+            // Validate dispose method has a reasonable signature
+            if (type.argumentTypes.length > 0) {
+              throw this._error(method, `dispose method may not take arguments`);
+            }
+            if (!isValidDisposeReturnType(type.returnType)) {
+              throw this._error(method, `dispose method must return either void or Promise<void>`);
+            }
+          }
           this._defineMethod(name, type, method.static ? def.staticMethods : def.instanceMethods);
         }
       }
+    }
+    if (!def.instanceMethods.has('dispose')) {
+      throw this._error(declaration, `Remotable interfaces must include a dispose method`);
     }
     return def;
   }
@@ -429,4 +441,9 @@ class ServiceParser {
         throw this._error(type, `Expected named type. Found ${type.type}`);
     }
   }
+}
+
+function isValidDisposeReturnType(type: Type): boolean {
+  return type.kind === 'void'
+    || (type.kind === 'promise' && type.type.kind === 'void');
 }

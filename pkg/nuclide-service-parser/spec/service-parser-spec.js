@@ -38,6 +38,7 @@ describe('Nuclide service parser test suite.', () => {
       export function f(): void {}
       export class f {
         m(): void {}
+        dispose(): void {}
       }`;
     expect(() => {
       parseServiceDefinition('fileName', code);
@@ -49,6 +50,37 @@ describe('Nuclide service parser test suite.', () => {
       export class f {
         m(): void {}
         m(): void {}
+        dispose(): void {}
+      }`;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('Invalid dispose arguments throw', () => {
+    const code = `
+      export class f {
+        dispose(x: int): void {}
+      }`;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('Invalid dispose return type throw', () => {
+    const code = `
+      export class f {
+        dispose(): int {}
+      }`;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('Missing dispose throw', () => {
+    const code = `
+      export class f {
+        m(): void {}
       }`;
     expect(() => {
       parseServiceDefinition('fileName', code);
@@ -59,6 +91,7 @@ describe('Nuclide service parser test suite.', () => {
     const code = `
       export class f {
         m(): Promise<MissingType> {}
+        dispose(): void {}
       }`;
     expect(() => {
       parseServiceDefinition('fileName', code);
@@ -69,6 +102,7 @@ describe('Nuclide service parser test suite.', () => {
     const code = `
       export class f {
         static m(): Observable<Map<string, {f: [string, ?Set<Array<MissingType>>]}>> {}
+        dispose(): void {}
       }`;
     expect(() => {
       parseServiceDefinition('fileName', code);
@@ -91,6 +125,7 @@ describe('Nuclide service parser test suite.', () => {
     const code = `
       export class C {
         constructor(p: MissingType) {}
+        dispose(): void {}
       }`;
     expect(() => {
       parseServiceDefinition('fileName', code);
@@ -101,6 +136,7 @@ describe('Nuclide service parser test suite.', () => {
     const code = `
       export class Object {
         constructor() {}
+        dispose(): void {}
       }`;
     expect(() => {
       parseServiceDefinition('fileName', code);
@@ -111,6 +147,7 @@ describe('Nuclide service parser test suite.', () => {
     const code = `
       export class C {
         constructor(p: Promise<string>) {}
+        dispose(): void {}
       }`;
     expect(() => {
       parseServiceDefinition('fileName', code);
@@ -121,6 +158,7 @@ describe('Nuclide service parser test suite.', () => {
     const code = `
       export class C {
         m(p: Array<Observable<number>>): void {}
+        dispose(): void {}
       }`;
     expect(() => {
       parseServiceDefinition('fileName', code);
@@ -131,6 +169,7 @@ describe('Nuclide service parser test suite.', () => {
     const code = `
       export class C {
         m(p: void): void {}
+        dispose(): void {}
       }`;
     expect(() => {
       parseServiceDefinition('fileName', code);
@@ -141,6 +180,7 @@ describe('Nuclide service parser test suite.', () => {
     const code = `
       export class C {
         constructor(): Promise<void> {}
+        dispose(): void {}
       }`;
     expect(() => {
       parseServiceDefinition('fileName', code);
