@@ -231,6 +231,14 @@ export default class TypeRegistry<MarshallingContext> {
     return kindMarshaller.marshaller(value, type, context);
   }
 
+  marshalArguments(
+    context: MarshallingContext,
+    args: Array<any>,
+    argTypes: Array<Type>
+  ): Promise<Array<any>> {
+    return Promise.all(args.map((arg, i) => this.marshal(context, arg, argTypes[i])));
+  }
+
   /**
    * Unmarshal and object using the appropriate unmarshal function.
    * Ensures the result is actually a Promise.

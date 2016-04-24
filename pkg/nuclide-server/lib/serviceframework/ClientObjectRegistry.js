@@ -43,4 +43,8 @@ export class ClientObjectRegistry {
     object._idPromise = Promise.reject(new Error('This remote Object has been disposed'));
     return objectId;
   }
+
+  addProxy(object: Object, idPromise: Promise<number>): void {
+    object._idPromise = idPromise;
+  }
 }

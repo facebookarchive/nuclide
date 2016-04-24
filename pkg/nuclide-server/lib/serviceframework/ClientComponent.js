@@ -11,6 +11,7 @@
 
 import {SERVICE_FRAMEWORK3_CHANNEL} from '../config';
 import type {ConfigEntry} from './index';
+import type {Type} from '../../../nuclide-service-parser/lib/types';
 
 import invariant from 'assert';
 import {EventEmitter} from 'events';
@@ -150,21 +151,33 @@ export default class ClientComponent {
    * Call a remote constructor, returning an id that eventually resolves to a unique identifier
    * for the object.
    * @param interfaceName - The name of the remote class for which to construct an object.
-   * @param args - Serialized arguments to pass to the remote constructor.
+   * @param thisArg - The newly created proxy object.
+   * @param unmarshalledArgs - Unmarshalled arguments to pass to the remote constructor.
+   * @param argTypes - Types of arguments.
    */
-  createRemoteObject(interfaceName: string, args: Array<any>): Promise<number> {
-    const message: CreateRemoteObjectMessage = {
-      protocol: 'service_framework3_rpc',
-      type: 'NewObject',
-      interface: interfaceName,
-      requestId: this._generateRequestId(),
-      args,
-    };
-    return this._sendMessageAndListenForResult(
-      message,
-      'promise',
-      `Creating instance of ${interfaceName}`
-    );
+  createRemoteObject(
+    interfaceName: string,
+    thisArg: Object,
+    unmarshalledArgs: Array<any>,
+    argTypes: Array<Type>
+  ): void {
+    const idPromise = (async () => {
+      const marshalledArgs = await this._typeRegistry.marshalArguments(
+        this._objectRegistry, unmarshalledArgs, argTypes);
+      const message: CreateRemoteObjectMessage = {
+        protocol: 'service_framework3_rpc',
+        type: 'NewObject',
+        interface: interfaceName,
+        requestId: this._generateRequestId(),
+        args: marshalledArgs,
+      };
+      return this._sendMessageAndListenForResult(
+        message,
+        'promise',
+        `Creating instance of ${interfaceName}`
+      );
+    })();
+    this._objectRegistry.addProxy(thisArg, idPromise);
   }
 
   /**

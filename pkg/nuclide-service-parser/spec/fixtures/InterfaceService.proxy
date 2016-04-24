@@ -32,14 +32,14 @@ module.exports = _client => {
       }));
     }
     constructor(arg0, arg1) {
-      this._idPromise = Promise.all([_client.marshal(arg0, {
+      _client.createRemoteObject("Vector2", this, [arg0, arg1], [{
         location: {
           type: "source",
           fileName: "InterfaceService.def",
           line: 2
         },
         kind: "number"
-      }), _client.marshal(arg1, {
+      }, {
         location: {
           type: "source",
           fileName: "InterfaceService.def",
@@ -54,7 +54,7 @@ module.exports = _client => {
           },
           kind: "number"
         }
-      })]).then(args => _client.createRemoteObject("Vector2", args))
+      }])
     }
     @trackTiming("Vector2.len")
     len() {

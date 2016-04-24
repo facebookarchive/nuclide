@@ -282,21 +282,26 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
  * @returns A MethodDefinition node that can be added to a ClassBody.
  */
 function generateRemoteConstructor(className: string, constructorArgs: Array<Type>) {
-  // Convert constructor arguments.
+
+  // arg0, .... argN
   const args = constructorArgs.map((arg, i) => t.identifier(`arg${i}`));
-  const argumentsPromise = generateArgumentConversionPromise(constructorArgs);
+  // [arg0, ... argN]
+  const argsArray = t.arrayExpression(args);
+  // [argType0, ... argTypeN]
+  const argTypes = t.arrayExpression(constructorArgs.map(objectToLiteral));
 
-  // Make an RPC call that will return the id of the remote object.
-  let rpcCallExpression = t.callExpression(createRemoteObjectExpression, [
-    t.literal(className),
-    t.identifier('args'),
-  ]);
-  rpcCallExpression = thenPromise(argumentsPromise, t.arrowFunctionExpression(
-    [t.identifier('args')], rpcCallExpression));
+  // client.createRemoteObject(className, this, [arg0, arg1, .... argN], [argType0 ... argTypeN])
+  const rpcCallExpression = t.callExpression(
+    createRemoteObjectExpression,
+    [
+      t.literal(className),
+      t.thisExpression(),
+      argsArray,
+      argTypes,
+    ]
+  );
 
-  // Set a promise that resolves when the id of the remotable object is known.
-  rpcCallExpression = t.assignmentExpression('=', thisDotIdPromiseExpression, rpcCallExpression);
-
+  // constructor(arg0, arg1, ..., argN) { ... }
   const constructor = t.FunctionExpression(null, args, t.blockStatement([rpcCallExpression]));
   return t.methodDefinition(t.identifier('constructor'), constructor, 'constructor', false, false);
 }
