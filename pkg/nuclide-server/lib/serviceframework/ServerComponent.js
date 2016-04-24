@@ -100,8 +100,8 @@ export default class ServerComponent {
             });
 
             this._typeRegistry.registerType(name, (object, context: ObjectRegistry) => {
-              return context.add(name, object);
-            }, (objectId, context: ObjectRegistry) => context.get(objectId));
+              return context.marshal(name, object);
+            }, (objectId, context: ObjectRegistry) => context.unmarshal(objectId));
 
             // Register all of the static methods as remote functions.
             definition.staticMethods.forEach((funcType, funcName) => {
@@ -220,7 +220,7 @@ export default class ServerComponent {
     };
 
     const callMethod = async (call: CallRemoteMethodMessage) => {
-      const object = marshallingContext.get(call.objectId);
+      const object = marshallingContext.unmarshal(call.objectId);
       invariant(object != null);
 
       const interfaceName = marshallingContext.getInterface(call.objectId);

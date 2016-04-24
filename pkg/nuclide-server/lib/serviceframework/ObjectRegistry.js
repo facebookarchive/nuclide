@@ -41,7 +41,7 @@ export class ObjectRegistry {
     this._subscriptions = new Map();
   }
 
-  get(remoteId: number): RemoteObject {
+  unmarshal(remoteId: number): RemoteObject {
     return this._getRegistration(remoteId).object;
   }
 
@@ -74,7 +74,7 @@ export class ObjectRegistry {
   }
 
   // Put the object in the registry.
-  add(interfaceName: string, object: Object): number {
+  marshal(interfaceName: string, object: Object): number {
     const existingRegistration = this._registrationsByObject.get(object);
     if (existingRegistration != null) {
       invariant(existingRegistration.interface === interfaceName);

@@ -20,6 +20,7 @@ import {SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} from '../config';
 
 import TypeRegistry from '../../../nuclide-service-parser/lib/TypeRegistry';
 import {getProxy, getDefinitions} from '../../../nuclide-service-parser';
+import {ClientObjectRegistry} from './ClientObjectRegistry';
 
 import type {RequestMessage, CallRemoteFunctionMessage, CreateRemoteObjectMessage,
   CallRemoteMethodMessage, DisposeRemoteObjectMessage, DisposeObservableMessage,
@@ -27,15 +28,13 @@ import type {RequestMessage, CallRemoteFunctionMessage, CreateRemoteObjectMessag
 
 const logger = require('../../../nuclide-logging').getLogger();
 
-type MarshallingContext = Map<number, any>;
-
 export default class ClientComponent {
   _rpcRequestId: number;
   _emitter: EventEmitter;
   _socket: NuclideSocket;
 
-  _typeRegistry: TypeRegistry<MarshallingContext>;
-  _objectRegistry: MarshallingContext;
+  _typeRegistry: TypeRegistry<ClientObjectRegistry>;
+  _objectRegistry: ClientObjectRegistry;
 
   constructor(socket: NuclideSocket, services: Array<ConfigEntry>) {
     this._emitter = new EventEmitter();
@@ -43,7 +42,7 @@ export default class ClientComponent {
     this._rpcRequestId = 1;
 
     this._typeRegistry = new TypeRegistry();
-    this._objectRegistry = new Map();
+    this._objectRegistry = new ClientObjectRegistry();
 
     this.addServices(services);
     this._socket.on('message', message => this._handleSocketMessage(message));
@@ -70,22 +69,13 @@ export default class ClientComponent {
             break;
           case 'interface':
             logger.debug(`Registering interface ${name}.`);
-            this._typeRegistry.registerType(name, object => {
-              return object._idPromise;
-            }, objectId => {
-              // Return a cached proxy, if one already exists, for this object.
-              if (this._objectRegistry.has(objectId)) {
-                return this._objectRegistry.get(objectId);
-              }
-
-              // Generate the proxy by manually setting the prototype of the object to be the
-              // prototype of the remote proxy constructor.
-              const object = { _idPromise: Promise.resolve(objectId) };
-              // $FlowIssue - T9254210 add Object.setPrototypeOf typing
-              Object.setPrototypeOf(object, proxy[name].prototype);
-              this._objectRegistry.set(objectId, object);
-              return object;
-            });
+            this._typeRegistry.registerType(name,
+              (object, context: ClientObjectRegistry) => {
+                return context.marshal(object);
+              },
+              (objectId, context: ClientObjectRegistry) => {
+                return context.unmarshal(objectId, proxy[name]);
+              });
             break;
         }
       });
