@@ -10,41 +10,51 @@
  */
 
 
+import invariant from 'assert';
+
 // Handles lifetimes of marshalling wrappers remote objects.
+// Proxies are local shims which marshal their calls across the RPC layer.
 export class ClientObjectRegistry {
-  _proxies: Map<number, Object>;
+  _proxiesById: Map<number, Object>;
+  _idsByProxy: Map<Object, Promise<number>>;
 
   constructor() {
-    this._proxies = new Map();
+    this._proxiesById = new Map();
+    this._idsByProxy = new Map();
   }
 
-  marshal(object: Object): Promise<number> {
-    return object._idPromise;
+  marshal(proxy: Object): Promise<number> {
+    const result = this._idsByProxy.get(proxy);
+    invariant(result != null);
+    return result;
   }
 
   unmarshal(objectId: number, proxyClass: Function): Object {
-    // Return a cached proxy, if one already exists, for this object.
-    const existingProxy = this._proxies.get(objectId);
+    const existingProxy = this._proxiesById.get(objectId);
     if (existingProxy != null) {
       return existingProxy;
     }
 
-    // Generate the proxy by manually setting the prototype of the object to be the
+    // Generate the proxy by manually setting the prototype of the proxy to be the
     // prototype of the remote proxy constructor.
-    const object = { _idPromise: Promise.resolve(objectId) };
-    // $FlowIssue - T9254210 add Object.setPrototypeOf typing
-    Object.setPrototypeOf(object, proxyClass.prototype);
-    this._proxies.set(objectId, object);
-    return object;
+    const newProxy = Object.create(proxyClass.prototype);
+    this.addProxy(newProxy, Promise.resolve(objectId));
+    return newProxy;
   }
 
-  async disposeRemoteObject(object: Object): Promise<number> {
-    const objectId = await object._idPromise;
-    object._idPromise = Promise.reject(new Error('This remote Object has been disposed'));
+  async disposeProxy(proxy: Object): Promise<number> {
+    invariant(this._idsByProxy.has(proxy));
+    const objectId = await this._idsByProxy.get(proxy);
+    this._idsByProxy.set(proxy, Promise.reject(new Error('This remote Object has been disposed')));
     return objectId;
   }
 
-  addProxy(object: Object, idPromise: Promise<number>): void {
-    object._idPromise = idPromise;
+  async addProxy(proxy: Object, idPromise: Promise<number>): Promise<void> {
+    invariant(!this._idsByProxy.has(proxy));
+    this._idsByProxy.set(proxy, idPromise);
+
+    const id = await idPromise;
+    invariant(!this._proxiesById.has(id));
+    this._proxiesById.set(id, proxy);
   }
 }

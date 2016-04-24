@@ -323,8 +323,7 @@ function generateValueTransformer(type: Type) {
 
 /**
  * Helper method that generates the dispose method for a class. The dispose method
- * replaces `this._idPromise` with a thenable object that throws error when used,
- * as well as calls `_client.disposeRemoteObject` with the object's id as a parameter.
+ * calls `_client.disposeRemoteObject` with the object's id as a parameter.
  * @returns A MethodDefinition node that can be attached to a class body.
  */
 function generateDisposeMethod() {

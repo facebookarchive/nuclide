@@ -187,7 +187,7 @@ export default class ClientComponent {
    * @returns A Promise that resolves when the object disposal has completed.
    */
   async disposeRemoteObject(object: Object): Promise<void> {
-    const objectId = await this._objectRegistry.disposeRemoteObject(object);
+    const objectId = await this._objectRegistry.disposeProxy(object);
     const message: DisposeRemoteObjectMessage = {
       protocol: 'service_framework3_rpc',
       type: 'DisposeObject',
