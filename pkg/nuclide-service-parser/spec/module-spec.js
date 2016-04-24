@@ -23,7 +23,7 @@ describe('Module public API.', () => {
 
     expect(__test__.definitionsCache.size).toBe(0);
 
-    const proxy = getProxy('FunctionService', defFile, fakeClient);
+    const proxy = getProxy('FunctionService', defFile, (fakeClient: any));
     expect(Object.keys(proxy)).diffJson([
       'TestFunctionA', 'TestFunctionB', 'TestFunctionC', 'TestFunctionD', 'ReturnAlias']);
 

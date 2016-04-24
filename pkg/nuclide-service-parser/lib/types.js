@@ -123,6 +123,8 @@ export type BuiltinLocation = {
   type: 'builtin';
 };
 
+export type ReturnKind = 'promise' | 'observable' | 'void';
+
 // Babel Definitions
 // TODO: Move these to external-interfaces package.
 

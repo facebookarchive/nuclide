@@ -16,12 +16,35 @@ import Module from 'module';
 
 import NodeTranspiler from '../../nuclide-node-transpiler/lib/NodeTranspiler';
 
-import type {Definitions} from './types';
+import type {
+  Definitions,
+  ReturnKind,
+  Type,
+} from './types';
 
 /** Cache for definitions. */
 const definitionsCache: Map<string, Definitions> = new Map();
 /** Cache for remote proxies. */
 const proxiesCache: Map<string, {factory: Function; proxies: WeakMap}> = new Map();
+
+export type RpcContext = {
+  callRemoteFunction(functionName: string, returnType: ReturnKind, args: Array<any>): any;
+  callRemoteMethod(
+    objectId: number,
+    methodName: string,
+    returnType: ReturnKind,
+    args: Array<any>
+  ): any;
+  createRemoteObject(
+    interfaceName: string,
+    thisArg: Object,
+    unmarshalledArgs: Array<any>,
+    argTypes: Array<Type>
+  ): void;
+  disposeRemoteObject(object: Object): Promise<void>;
+  marshal(value: any, type: Type): any;
+  unmarshal(value: any, type: Type): any;
+};
 
 /**
  * Load the definitions, cached by their resolved file path.
@@ -50,7 +73,11 @@ export function getDefinitions(definitionPath: string): Definitions {
  *   and unmarshal objects, as well as make RPC calls.
  * @returns - A proxy module that exports the API specified by the definition
  */
-export function getProxy(serviceName: string, definitionPath: string, clientObject: any): any {
+export function getProxy(
+  serviceName: string,
+  definitionPath: string,
+  clientObject: RpcContext
+): any {
   const resolvedPath = resolvePath(definitionPath);
   const defs = getDefinitions(definitionPath);
 

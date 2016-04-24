@@ -76,7 +76,8 @@ export default class ServerComponent {
       const defs = getDefinitions(service.definition);
       // $FlowIssue - the parameter passed to require must be a literal string.
       const localImpl = require(service.implementation);
-      const proxy = getProxy(service.name, service.definition, this);
+      // TODO: Remove the any cast once we have bi-directional marshalling.
+      const proxy = getProxy(service.name, service.definition, (this: any));
 
       // Register type aliases.
       defs.forEach((definition: Definition) => {
