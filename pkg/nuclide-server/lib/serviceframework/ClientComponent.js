@@ -72,7 +72,7 @@ export default class ClientComponent {
             logger.debug(`Registering interface ${name}.`);
             this._typeRegistry.registerType(name,
               (object, context: ClientObjectRegistry) => {
-                return context.marshal(object);
+                return context.marshal(name, object);
               },
               (objectId, context: ClientObjectRegistry) => {
                 return context.unmarshal(objectId, proxy[name]);

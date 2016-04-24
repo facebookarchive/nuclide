@@ -10,7 +10,7 @@
  */
 
 import {Observable} from 'rxjs';
-import {getDefinitions} from '../../../nuclide-service-parser';
+import {getProxy, getDefinitions} from '../../../nuclide-service-parser';
 import TypeRegistry from '../../../nuclide-service-parser/lib/TypeRegistry';
 import {builtinLocation, voidType} from '../../../nuclide-service-parser/lib/builtin-types';
 import {startTracking} from '../../../nuclide-analytics';
@@ -76,6 +76,7 @@ export default class ServerComponent {
       const defs = getDefinitions(service.definition);
       // $FlowIssue - the parameter passed to require must be a literal string.
       const localImpl = require(service.implementation);
+      const proxy = getProxy(service.name, service.definition, this);
 
       // Register type aliases.
       defs.forEach((definition: Definition) => {
@@ -99,9 +100,10 @@ export default class ServerComponent {
               definition,
             });
 
-            this._typeRegistry.registerType(name, (object, context: ObjectRegistry) => {
-              return context.marshal(name, object);
-            }, (objectId, context: ObjectRegistry) => context.unmarshal(objectId));
+            this._typeRegistry.registerType(
+              name,
+              (object, context: ObjectRegistry) => context.marshal(name, object),
+              (objectId, context: ObjectRegistry) => context.unmarshal(objectId, proxy[name]));
 
             // Register all of the static methods as remote functions.
             definition.staticMethods.forEach((funcType, funcName) => {

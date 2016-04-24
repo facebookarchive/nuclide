@@ -41,7 +41,7 @@ export class ObjectRegistry {
     this._subscriptions = new Map();
   }
 
-  unmarshal(remoteId: number): RemoteObject {
+  unmarshal(remoteId: number, proxyClass?: Function): RemoteObject {
     return this._getRegistration(remoteId).object;
   }
 

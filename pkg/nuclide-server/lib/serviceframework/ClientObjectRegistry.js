@@ -23,17 +23,18 @@ export class ClientObjectRegistry {
     this._idsByProxy = new Map();
   }
 
-  marshal(proxy: Object): Promise<number> {
+  marshal(interfaceName: string, proxy: Object): Promise<number> {
     const result = this._idsByProxy.get(proxy);
     invariant(result != null);
     return result;
   }
 
-  unmarshal(objectId: number, proxyClass: Function): Object {
+  unmarshal(objectId: number, proxyClass?: Function): Object {
     const existingProxy = this._proxiesById.get(objectId);
     if (existingProxy != null) {
       return existingProxy;
     }
+    invariant(proxyClass != null);
 
     // Generate the proxy by manually setting the prototype of the proxy to be the
     // prototype of the remote proxy constructor.
