@@ -78,14 +78,7 @@ module.exports = _client => {
       }));
     }
     dispose() {
-      return this._idPromise.then(id => {
-        this._idPromise = {
-          then: function () {
-            throw new Error("This Remote Object has been disposed.");
-          }
-        };
-        return _client.disposeRemoteObject(id);
-      });
+      return _client.disposeRemoteObject(this);
     }
   }
 

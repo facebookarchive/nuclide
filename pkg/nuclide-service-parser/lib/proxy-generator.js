@@ -377,33 +377,11 @@ function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
  * @returns A MethodDefinition node that can be attached to a class body.
  */
 function generateDisposeMethod() {
-  const id = t.identifier('id');
+  // return _client.disposeRemoteObject(this);
+  const returnStatement = t.returnStatement(
+    t.callExpression(disposeRemoteObjectExpression, [t.thisExpression()]));
 
-  // Replace `idPromise` with thenable object that throws error.
-  const disposedError = t.newExpression(t.identifier('Error'),
-    [t.literal('This Remote Object has been disposed.')]);
-  const throwErrorFunction = t.functionExpression(null, [], t.blockStatement([
-    t.throwStatement(disposedError),
-  ]));
-  const thenableErrorObject =
-    t.objectExpression([t.Property('init', t.identifier('then'), throwErrorFunction)]);
-  const replaceIdPromise = t.expressionStatement(t.assignmentExpression('=',
-    thisDotIdPromiseExpression, thenableErrorObject));
-
-  // Call `_client.disposeRemoteObject`.
-  let rpcCallExpression = t.callExpression(disposeRemoteObjectExpression, [id]);
-
-  // Wrap these statements in a `.then` on `idPromise`, so that they can execute after the
-  // id has been determined.
-  rpcCallExpression = t.callExpression(
-    t.memberExpression(thisDotIdPromiseExpression, t.identifier('then')),
-    [t.arrowFunctionExpression([id], t.blockStatement([
-      replaceIdPromise,
-      t.returnStatement(rpcCallExpression),
-    ]))]
-  );
-  const returnStatement = t.returnStatement(rpcCallExpression);
-
+  // dispose() { ... }
   return t.methodDefinition(t.identifier('dispose'),
     t.functionExpression(null, [], t.blockStatement([returnStatement])), 'method', false, false);
 }

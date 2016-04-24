@@ -38,4 +38,9 @@ export class ClientObjectRegistry {
     return object;
   }
 
+  async disposeRemoteObject(object: Object): Promise<number> {
+    const objectId = await object._idPromise;
+    object._idPromise = Promise.reject(new Error('This remote Object has been disposed'));
+    return objectId;
+  }
 }

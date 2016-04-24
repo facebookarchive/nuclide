@@ -170,17 +170,19 @@ export default class ClientComponent {
   /**
    * Dispose a remote object. This makes it's proxies unsuable, and calls the `dispose` method on
    * the remote object.
-   * @param objectId - The numerical id that identifies the remote object.
+   * @param object - The remote object.
    * @returns A Promise that resolves when the object disposal has completed.
    */
-  disposeRemoteObject(objectId: number): Promise<void> {
+  async disposeRemoteObject(object: Object): Promise<void> {
+    const objectId = await this._objectRegistry.disposeRemoteObject(object);
     const message: DisposeRemoteObjectMessage = {
       protocol: 'service_framework3_rpc',
       type: 'DisposeObject',
       requestId: this._generateRequestId(),
       objectId,
     };
-    return this._sendMessageAndListenForResult(message, 'promise', `Disposing object ${objectId}`);
+    return await this._sendMessageAndListenForResult(
+      message, 'promise', `Disposing object ${objectId}`);
   }
 
   /**
