@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import invariant from 'assert';
 import {TextBuffer} from 'atom';
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 
 // TODO(most): move to remote-connection/lib/RemoteTextBuffer.js
 import NuclideTextBuffer from '../../nuclide-remote-projects/lib/NuclideTextBuffer';

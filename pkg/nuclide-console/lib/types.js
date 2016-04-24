@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type Rx from '@reactivex/rxjs';
+import type Rx from 'rxjs';
 
 export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug';
 

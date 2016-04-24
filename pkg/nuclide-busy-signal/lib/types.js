@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from '@reactivex/rxjs';
+import type {Observable} from 'rxjs';
 
 export type BusySignalMessage = BusySignalMessageBusy | BusySignalMessageDone;
 

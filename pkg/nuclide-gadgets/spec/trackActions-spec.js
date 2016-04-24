@@ -11,7 +11,7 @@
 
 import * as ActionTypes from '../lib/ActionTypes';
 import {createTrackingEventStream} from '../lib/trackActions';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 describe('createTrackingEventStream', () => {
 

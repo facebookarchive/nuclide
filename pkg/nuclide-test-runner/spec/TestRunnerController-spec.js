@@ -10,7 +10,7 @@
  */
 
 import type {TestRunner} from '../../nuclide-test-runner/lib/interfaces';
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 
 import {TestRunnerController} from '../lib/TestRunnerController';
 

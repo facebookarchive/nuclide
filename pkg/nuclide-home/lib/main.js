@@ -15,7 +15,7 @@ import type {HomeFragments} from '../../nuclide-home-interfaces';
 import {CompositeDisposable, Disposable} from 'atom';
 import featureConfig from '../../nuclide-feature-config';
 import Immutable from 'immutable';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 let subscriptions: CompositeDisposable = (null: any);
 let gadgetsApi: ?GadgetsService = null;

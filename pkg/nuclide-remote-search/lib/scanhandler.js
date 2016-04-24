@@ -14,7 +14,7 @@ import type {
   search$Match,
 } from '..';
 
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 
 import {
   fsPromise,

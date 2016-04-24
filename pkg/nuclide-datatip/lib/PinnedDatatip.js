@@ -23,7 +23,7 @@ import {
   React,
   ReactDOM,
 } from 'react-for-atom';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 import invariant from 'assert';
 
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';

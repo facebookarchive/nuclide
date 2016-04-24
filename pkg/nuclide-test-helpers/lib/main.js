@@ -107,7 +107,7 @@ function areSetsEqual(set1: Set, set2: Set): boolean {
   return true;
 }
 
-import type {Observer} from '@reactivex/rxjs';
+import type {Observer} from 'rxjs';
 
 /**
  * Logs an observable to the console.
@@ -116,7 +116,7 @@ import type {Observer} from '@reactivex/rxjs';
  *     observable = observable.do(loggingObserver('My Prefix'));
  */
 function loggingObserver(message: string): Observer {
-  const Rx = require('@reactivex/rxjs');
+  const Rx = require('rxjs');
   return Rx.Observer.create(
     value => {
       console.log(`${message}: ${JSON.stringify(value)}`); // eslint-disable-line no-console

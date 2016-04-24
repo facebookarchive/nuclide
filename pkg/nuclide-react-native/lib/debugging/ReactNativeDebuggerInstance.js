@@ -14,7 +14,7 @@ import {DebuggerInstance, DebuggerProcessInfo} from '../../../nuclide-debugger-a
 import {
   DebuggerProxyClient,
 } from '../../../nuclide-react-native-node-executor/lib/DebuggerProxyClient';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 import WebSocket from 'ws';
 import type {Session as SessionType} from '../../../nuclide-debugger-node/lib/Session';
 

@@ -12,7 +12,7 @@
 import invariant from 'assert';
 
 import DiffViewModel from '../lib/DiffViewModel';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 describe('DiffViewModel', () => {
   let model = null;

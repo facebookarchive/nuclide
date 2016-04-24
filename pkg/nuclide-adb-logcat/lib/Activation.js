@@ -16,7 +16,7 @@ import {createProcessStream} from './createProcessStream';
 import createMessageStream from './createMessageStream';
 import {LogTailer} from '../../nuclide-console/lib/LogTailer';
 import {CompositeDisposable, Disposable} from 'atom';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 class Activation {
   _disposables: CompositeDisposable;

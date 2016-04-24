@@ -11,11 +11,11 @@
 
 import type {BusySignalMessage} from './types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {Observable} from '@reactivex/rxjs';
+import type {Observable} from 'rxjs';
 
 import {Disposable, CompositeDisposable} from 'atom';
 
-import {Subject} from '@reactivex/rxjs';
+import {Subject} from 'rxjs';
 import invariant from 'assert';
 
 import {promises} from '../../nuclide-commons';

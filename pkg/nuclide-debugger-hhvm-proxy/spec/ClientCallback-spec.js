@@ -22,7 +22,7 @@ describe('debugger-hhvm-proxy ClientCallback', () => {
       'next',
       'complete',
     ]);
-    spyOn(require('@reactivex/rxjs'), 'Subject').andReturn(observableSpy);
+    spyOn(require('rxjs'), 'Subject').andReturn(observableSpy);
     const {ClientCallback} = ((
       uncachedRequire(require, '../lib/ClientCallback'): any
     ): {ClientCallback: () => ClientCallbackType});

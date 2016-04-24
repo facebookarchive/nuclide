@@ -12,7 +12,7 @@
 import type {Message} from './types';
 
 import {track} from '../../nuclide-analytics';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 type EventNames = {
   start: string;

@@ -10,7 +10,7 @@
  */
 
 import createMessageStream from '../lib/createMessageStream';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 describe('createMessageStream', () => {
 

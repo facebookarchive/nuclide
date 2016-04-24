@@ -16,7 +16,7 @@ import type {HealthStats} from './types';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import os from 'os';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 // Imports from other Nuclide packages.
 import {track, HistogramTracker} from '../../nuclide-analytics';

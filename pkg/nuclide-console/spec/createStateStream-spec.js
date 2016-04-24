@@ -13,7 +13,7 @@ import type {Executor} from '../lib/types';
 
 import * as ActionTypes from '../lib/ActionTypes';
 import createStateStream from '../lib/createStateStream';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 const emptyAppState = {
   currentExecutorId: null,

@@ -15,7 +15,7 @@ import type {
   BusySignalMessageBusy,
 } from './types';
 
-import {Observable, BehaviorSubject} from '@reactivex/rxjs';
+import {Observable, BehaviorSubject} from 'rxjs';
 import {Disposable} from 'atom';
 import invariant from 'assert';
 

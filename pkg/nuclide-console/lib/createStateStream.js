@@ -12,7 +12,7 @@
 import type {AppState} from './types';
 
 import * as ActionTypes from './ActionTypes';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 export default function createStateStream(
   action$: Rx.Observable<Object>,

@@ -10,7 +10,7 @@
  */
 
 import logger from './utils';
-import {Observable, Subject} from '@reactivex/rxjs';
+import {Observable, Subject} from 'rxjs';
 
 import type {NotificationMessage} from '..';
 

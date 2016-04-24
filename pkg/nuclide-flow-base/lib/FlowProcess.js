@@ -15,7 +15,7 @@ import type {ServerStatusType} from '..';
 
 import invariant from 'assert';
 
-import {BehaviorSubject, Observable} from '@reactivex/rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();

@@ -11,7 +11,7 @@
 
 import type {TestRunner, Message} from '../../nuclide-test-runner/lib/interfaces';
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {Observable} from '@reactivex/rxjs';
+import type {Observable} from 'rxjs';
 import invariant from 'assert';
 
 const Ansi = require('./Ansi');

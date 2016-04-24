@@ -14,7 +14,7 @@ import type {BuckUtils} from '../../nuclide-buck-base/lib/BuckUtils';
 import invariant from 'assert';
 import fs from 'fs';
 import path from 'path';
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 import {parse} from 'shell-quote';
 import {trackTiming} from '../../nuclide-analytics';
 import {fsPromise} from '../../nuclide-commons';

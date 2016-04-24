@@ -12,7 +12,7 @@
 import type {EventEmitter} from 'events';
 
 import {Disposable} from 'event-kit';
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 
 /**
  * Add an event listener an return a disposable for removing it. Note that this function assumes

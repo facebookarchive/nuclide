@@ -10,7 +10,7 @@
  */
 
 import {Disposable} from 'atom';
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 
 import {
   atomEventDebounce,

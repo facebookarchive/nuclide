@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 
 import path from 'path';
 import search from './scanhandler';

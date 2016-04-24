@@ -47,7 +47,7 @@ type BuckCommandAndOptions = {
     queueName: string;
   };
 };
-import type {Observable} from '@reactivex/rxjs';
+import type {Observable} from 'rxjs';
 
 /**
  * As defined in com.facebook.buck.cli.Command, some of Buck's subcommands are

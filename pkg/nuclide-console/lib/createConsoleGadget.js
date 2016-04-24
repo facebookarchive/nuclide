@@ -12,7 +12,7 @@
 import type Commands from './Commands';
 import type {Gadget} from '../../nuclide-gadgets-interfaces';
 import type {AppState, Record, Executor} from './types';
-import type Rx from '@reactivex/rxjs';
+import type Rx from 'rxjs';
 
 import Console from './Console';
 import {React} from 'react-for-atom';

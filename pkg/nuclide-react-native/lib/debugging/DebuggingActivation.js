@@ -16,7 +16,7 @@ import serviceHubPlus from '../../../nuclide-service-hub-plus';
 import {ReactNativeDebuggerInstance} from './ReactNativeDebuggerInstance';
 import {ReactNativeProcessInfo} from './ReactNativeProcessInfo';
 import {CompositeDisposable, Disposable} from 'atom';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 /**
  * Connects the executor to the debugger.

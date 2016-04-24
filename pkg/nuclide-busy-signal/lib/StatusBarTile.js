@@ -11,7 +11,7 @@
 
 /* eslint-env browser */
 
-import type {Observable} from '@reactivex/rxjs';
+import type {Observable} from 'rxjs';
 
 import type {BusySignalMessageBusy} from './types';
 

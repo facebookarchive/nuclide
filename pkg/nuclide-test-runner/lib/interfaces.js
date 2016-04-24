@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {Observable} from '@reactivex/rxjs';
+import type {Observable} from 'rxjs';
 
 /**
  * Test run status values as defined in

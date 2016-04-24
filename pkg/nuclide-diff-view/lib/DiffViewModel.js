@@ -62,7 +62,7 @@ import {getFileSystemContents} from './utils';
 import {bufferUntil, map, debounce, promises} from '../../nuclide-commons';
 import remoteUri from '../../nuclide-remote-uri';
 import RepositoryStack from './RepositoryStack';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 import {
   notifyInternalError,
   notifyFilesystemOverrideUserEdits,

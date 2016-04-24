@@ -16,7 +16,7 @@ import {
   CompositeDisposable,
   Disposable,
 } from 'atom';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 import invariant from 'assert';
 import {DisposableSubscription, observables} from '../../nuclide-commons';
 const {incompleteObservableFromPromise} = observables;

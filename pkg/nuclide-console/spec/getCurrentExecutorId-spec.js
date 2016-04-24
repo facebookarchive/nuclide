@@ -12,7 +12,7 @@
 import type {Executor} from '../lib/types';
 
 import getCurrentExecutorId from '../lib/getCurrentExecutorId';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 const baseAppState = {
   currentExecutorId: 'a',

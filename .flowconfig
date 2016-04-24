@@ -2,7 +2,7 @@
 
 [ignore]
 # ignore module source to prefer declaration
-.*/node_modules/@reactivex/rxjs/.*
+.*/node_modules/rxjs/.*
 .*/node_modules/react/react.js
 # annotated with `@flow` but have errors
 .*/node_modules/babel-types/.*

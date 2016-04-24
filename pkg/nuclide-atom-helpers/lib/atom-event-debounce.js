@@ -18,7 +18,7 @@
  * This file provides methods to do this.
  */
 
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 
 import {
   event as commonsEvent,

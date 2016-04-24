@@ -18,7 +18,7 @@ import type {EventEmitter} from 'events';
 
 import {formatEnoentNotification} from '../../nuclide-atom-helpers';
 import {executeRnRequests} from './executeRnRequests';
-import {Observable, Subject} from '@reactivex/rxjs';
+import {Observable, Subject} from 'rxjs';
 
 let logger;
 function getLogger() {

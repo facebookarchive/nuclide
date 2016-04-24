@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 
 // Contains services that let us test marshalling of Errors.
 

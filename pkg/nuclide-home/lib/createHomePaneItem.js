@@ -11,7 +11,7 @@
 
 import type {Gadget} from '../../nuclide-gadgets-interfaces';
 import type {HomeFragments} from '../../nuclide-home-interfaces';
-import type Rx from '@reactivex/rxjs';
+import type Rx from 'rxjs';
 
 const Immutable = require('immutable');
 const {React} = require('react-for-atom');

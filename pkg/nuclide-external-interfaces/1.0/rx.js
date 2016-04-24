@@ -28,7 +28,7 @@ interface rx$ISubscription {
 
 type TeardownLogic = rx$ISubscription | () => void;
 
-declare module '@reactivex/rxjs' {
+declare module 'rxjs' {
   declare class Observable<T> {
     // This is actually variadic, but we only support one or two other observables.
     static combineLatest<T, U>(t: Observable<T>, u: Observable<U>): Observable<[T, U]>;

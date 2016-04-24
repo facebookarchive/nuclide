@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 
 import {
   onWorkspaceDidStopChangingActivePaneItem,

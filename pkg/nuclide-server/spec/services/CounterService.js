@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Observable, Subject} from '@reactivex/rxjs';
+import {Observable, Subject} from 'rxjs';
 
 export class Counter {
   _count: number;

@@ -105,7 +105,7 @@ export function generateProxy(serviceName: string, defs: Definitions): string {
     t.expressionStatement(t.literal('use babel')),
     t.importDeclaration([
       t.importSpecifier(t.identifier('Observable'), t.identifier('Observable'))],
-      t.literal('@reactivex/rxjs')),
+      t.literal('rxjs')),
     t.importDeclaration([
       t.importSpecifier(t.identifier('trackTiming'), t.identifier('trackTiming'))],
       t.literal('../../nuclide-analytics')),

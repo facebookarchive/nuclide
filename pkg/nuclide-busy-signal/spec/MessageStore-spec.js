@@ -14,7 +14,7 @@ import type {
   BusySignalMessageBusy,
 } from '../lib/types';
 
-import {Subject} from '@reactivex/rxjs';
+import {Subject} from 'rxjs';
 
 import {MessageStore} from '../lib/MessageStore';
 

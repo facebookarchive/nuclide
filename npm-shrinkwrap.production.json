@@ -2,11 +2,6 @@
   "name": "nuclide",
   "version": "0.132.0",
   "dependencies": {
-    "@reactivex/rxjs": {
-      "version": "5.0.0-beta.6",
-      "from": "@reactivex/rxjs@5.0.0-beta.6",
-      "resolved": "https://registry.npmjs.org/@reactivex/rxjs/-/rxjs-5.0.0-beta.6.tgz"
-    },
     "acorn": {
       "version": "1.2.2",
       "from": "acorn@>=1.0.3 <2.0.0",
@@ -1258,6 +1253,11 @@
       "version": "2.5.2",
       "from": "rimraf@2.5.2",
       "resolved": "https://registry.npmjs.org/rimraf/-/rimraf-2.5.2.tgz"
+    },
+    "rxjs": {
+      "version": "5.0.0-beta.6",
+      "from": "rxjs@5.0.0-beta.6",
+      "resolved": "https://registry.npmjs.org/rxjs/-/rxjs-5.0.0-beta.6.tgz"
     },
     "sax": {
       "version": "1.2.1",

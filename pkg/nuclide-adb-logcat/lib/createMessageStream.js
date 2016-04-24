@@ -14,7 +14,7 @@ import type {Message} from '../../nuclide-console/lib/types';
 import {CompositeSubscription} from '../../nuclide-commons';
 import createMessage from './createMessage';
 import parseLogcatMetadata from './parseLogcatMetadata';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 export default function createMessageStream(
   line$: Rx.Observable<string>,

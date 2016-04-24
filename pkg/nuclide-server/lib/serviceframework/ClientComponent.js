@@ -15,7 +15,7 @@ import type {ConfigEntry} from './index';
 import invariant from 'assert';
 import {EventEmitter} from 'events';
 import NuclideSocket from '../NuclideSocket';
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 import {SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} from '../config';
 
 import TypeRegistry from '../../../nuclide-service-parser/lib/TypeRegistry';

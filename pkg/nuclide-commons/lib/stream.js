@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {Observable as ObservableType} from '@reactivex/rxjs';
+import type {Observable as ObservableType} from 'rxjs';
 
-import {Observable, Subscription} from '@reactivex/rxjs';
+import {Observable, Subscription} from 'rxjs';
 
 /**
  * Observe a stream like stdout or stderr.

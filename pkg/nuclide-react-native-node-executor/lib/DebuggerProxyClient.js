@@ -15,7 +15,7 @@ import {DisposableSubscription} from '../../nuclide-commons';
 import ChildManager from './ChildManager';
 import {CompositeDisposable, Disposable} from 'atom';
 import {EventEmitter} from 'events';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 import WebSocket from 'ws';
 
 const EXECUTOR_PORT = 8081;

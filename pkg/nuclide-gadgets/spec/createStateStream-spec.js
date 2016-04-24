@@ -13,7 +13,7 @@ import * as ActionTypes from '../lib/ActionTypes';
 import createStateStream from '../lib/createStateStream';
 import getInitialState from '../lib/getInitialState';
 import Immutable from 'immutable';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 describe('createStateStream', () => {
 

@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from '@reactivex/rxjs';
+import type {Observable} from 'rxjs';
 import type {ServerStatusUpdate} from '..';
 
-import {Subject} from '@reactivex/rxjs';
+import {Subject} from 'rxjs';
 
 import {findFlowConfigDir} from './FlowHelpers';
 import {FlowRoot} from './FlowRoot';

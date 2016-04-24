@@ -15,7 +15,7 @@ type ComboboxOption = {
   matchIndex: number;
 };
 
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 const {CompositeDisposable} = require('atom');
 const {AtomInput} = require('./AtomInput');

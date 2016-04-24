@@ -15,7 +15,7 @@ import {setRootDirectoryUri} from './ConnectionUtils';
 import {MessageTranslator} from './MessageTranslator';
 import {CompositeDisposable} from 'event-kit';
 
-import type {Observable} from '@reactivex/rxjs';
+import type {Observable} from 'rxjs';
 
 export type HhvmDebuggerSessionConfig = {
   xdebugAttachPort: number;

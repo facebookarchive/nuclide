@@ -13,7 +13,7 @@ import {CompositeDisposable} from 'atom';
 import {getOutputService} from '../../nuclide-debugger-common/lib/OutputServiceManager';
 import utils from './utils';
 const {log, logError} = utils;
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 import {DisposableSubscription} from '../../nuclide-commons';
 
 type NotificationMessage = {

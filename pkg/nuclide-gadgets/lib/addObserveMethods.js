@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 import {DisposableSubscription} from '../../nuclide-commons';
 
 type Comparer = (a: mixed, b: mixed) => boolean;

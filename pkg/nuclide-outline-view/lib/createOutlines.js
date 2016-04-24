@@ -12,7 +12,7 @@
 import type {Outline, OutlineForUi, OutlineTree, OutlineTreeForUi} from '..';
 import type {ActiveEditorBasedService, Result} from '../../nuclide-active-editor-based-service';
 
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 import invariant from 'assert';
 
 import {getCursorPositions} from '../../nuclide-atom-helpers';

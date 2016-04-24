@@ -21,7 +21,7 @@ import createStateStream from './createStateStream';
 import featureConfig from '../../nuclide-feature-config';
 import OutputService from './OutputService';
 import invariant from 'assert';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 class Activation {
   _commands: Commands;

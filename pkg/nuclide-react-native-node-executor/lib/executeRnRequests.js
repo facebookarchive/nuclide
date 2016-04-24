@@ -20,7 +20,7 @@ import {
 } from '../../nuclide-commons/lib/process';
 import {getLogger} from '../../nuclide-logging';
 import path from 'path';
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 
 const logger = getLogger();
 

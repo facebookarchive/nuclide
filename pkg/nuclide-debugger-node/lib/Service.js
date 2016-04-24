@@ -14,7 +14,7 @@ const WebSocketServer = require('ws').Server;
 import invariant from 'assert';
 import {DebuggerInstance, DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 import {DisposableSubscription} from '../../nuclide-commons';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 

@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {Subject} from '@reactivex/rxjs';
-import type {Observable} from '@reactivex/rxjs';
+import {Subject} from 'rxjs';
+import type {Observable} from 'rxjs';
 
 // Opens the given file at the line/column.
 // By default will center the opened text editor.

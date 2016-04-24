@@ -12,7 +12,7 @@
 import invariant from 'assert';
 import fs from 'fs';
 import path from 'path';
-import {Subject} from '@reactivex/rxjs';
+import {Subject} from 'rxjs';
 import ClangServer from '../lib/ClangServer';
 
 const TEST_FILE = path.join(__dirname, 'fixtures', 'test.cpp');

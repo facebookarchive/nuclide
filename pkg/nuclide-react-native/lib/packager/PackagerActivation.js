@@ -15,7 +15,7 @@ import ReactNativeServerActions from './ReactNativeServerActions';
 import ReactNativeServerManager from './ReactNativeServerManager';
 import {CompositeDisposable, Disposable} from 'atom';
 import {Dispatcher} from 'flux';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 /**
  * Runs the server in the appropriate place. This class encapsulates all the state of the packager

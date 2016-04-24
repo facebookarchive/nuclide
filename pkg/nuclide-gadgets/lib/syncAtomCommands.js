@@ -11,7 +11,7 @@
 
 import createAtomCommands from './createAtomCommands';
 import type Immutable from 'immutable';
-import type Rx from '@reactivex/rxjs';
+import type Rx from 'rxjs';
 import type Commands from './Commands';
 
 /**

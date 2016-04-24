@@ -15,7 +15,7 @@ import {bufferUntil} from '../../nuclide-commons';
 import featureConfig from '../../nuclide-feature-config';
 import {createMessage} from './createMessage';
 import plist from 'plist';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 export function createMessageStream(line$: Rx.Observable<string>): Rx.Observable<Message> {
 

@@ -14,7 +14,7 @@ import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
 import {RemoteConnection, RemoteDirectory} from '../../nuclide-remote-connection';
 import RemoteUri from '../../nuclide-remote-uri';
 import {CompositeDisposable, Directory as LocalDirectory} from 'atom';
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 type Directory = LocalDirectory | RemoteDirectory;
 

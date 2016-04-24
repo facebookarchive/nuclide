@@ -13,11 +13,11 @@ import child_process from 'child_process';
 import path from 'path';
 import {PromiseQueue} from './PromiseExecutors';
 
-import type {Observer} from '@reactivex/rxjs';
+import type {Observer} from 'rxjs';
 import type {ProcessMessage, process$asyncExecuteRet} from '..';
 
 import {CompositeSubscription, observeStream, splitStream} from './stream';
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 import invariant from 'assert';
 import {quote} from 'shell-quote';
 

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import Rx from '@reactivex/rxjs';
+import Rx from 'rxjs';
 
 /**
  * Like `Rx.Observable.fromPromise`, but the resulting Observable sequence does not automatically

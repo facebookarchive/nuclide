@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Observable, ReplaySubject} from '@reactivex/rxjs';
+import {Observable, ReplaySubject} from 'rxjs';
 const {RemoteDirectory} = require('../../nuclide-remote-connection');
 import typeof * as FindInProjectService from '../../nuclide-remote-search';
 

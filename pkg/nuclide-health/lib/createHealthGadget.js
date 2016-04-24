@@ -10,7 +10,7 @@
  */
 
 import type {HealthStats} from './types';
-import type Rx from '@reactivex/rxjs';
+import type Rx from 'rxjs';
 
 import HealthPaneItemComponent from './ui/HealthPaneItemComponent';
 import {React} from 'react-for-atom';

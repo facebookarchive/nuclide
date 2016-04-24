@@ -15,7 +15,7 @@ import type {FileChange} from '../../nuclide-watchman-helpers/lib/WatchmanClient
 
 import invariant from 'assert';
 import path from 'path';
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 import {EventEmitter} from 'events';
 import {fsPromise} from '../../nuclide-commons';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Observable} from '@reactivex/rxjs';
+import {Observable} from 'rxjs';
 import {getDefinitions} from '../../../nuclide-service-parser';
 import TypeRegistry from '../../../nuclide-service-parser/lib/TypeRegistry';
 import {builtinLocation, voidType} from '../../../nuclide-service-parser/lib/builtin-types';

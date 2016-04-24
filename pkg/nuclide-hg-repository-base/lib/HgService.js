@@ -18,7 +18,7 @@ import DelayedEventManager from './DelayedEventManager';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 
 import {HgStatusOption} from './hg-constants';
-import {Observable, Subject} from '@reactivex/rxjs';
+import {Observable, Subject} from 'rxjs';
 import {parseHgBlameOutput} from './hg-blame-output-parser';
 import {parseMultiFileHgDiffUnifiedOutput} from './hg-diff-output-parser';
 import {
