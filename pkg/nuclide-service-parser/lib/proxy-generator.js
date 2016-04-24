@@ -15,6 +15,7 @@ import generate from 'babel-core/lib/generation';
 import type {
   Definitions,
   FunctionType,
+  NamedType,
   Type,
   InterfaceDefinition,
 } from './types';
@@ -40,9 +41,6 @@ const createRemoteObjectExpression =
   t.memberExpression(clientIdentifier, t.identifier('createRemoteObject'));
 const disposeRemoteObjectExpression =
   t.memberExpression(clientIdentifier, t.identifier('disposeRemoteObject'));
-
-const thisDotIdPromiseExpression =
-  t.memberExpression(t.thisExpression(), t.identifier('_idPromise'));
 
 const remoteModule = t.identifier('remoteModule');
 const emptyObject = t.objectExpression([]);
@@ -252,8 +250,13 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
   methodDefinitions.push(generateRemoteConstructor(name, def.constructorArgs));
 
   // Generate proxies for instance methods.
+  const thisType: NamedType = {
+    kind: 'named',
+    location: def.location,
+    name: def.name,
+  };
   def.instanceMethods.forEach((funcType, methodName) => {
-    const methodDefinition = generateRemoteDispatch(methodName, funcType);
+    const methodDefinition = generateRemoteDispatch(methodName, thisType, funcType);
 
     // Add trackTiming decorator to instance method that returns a promise.
     if (funcType.returnType.kind === 'promise') {
@@ -313,17 +316,21 @@ function generateRemoteConstructor(className: string, constructorArgs: Array<Typ
  * @param funcType - The type information for the function.
  * @returns A MethodDefinition node that can be added to a ClassBody
  */
-function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
-  // _client.callRemoteMethod(id, methodName, returnType, args)
+function generateRemoteDispatch(methodName: string, thisType: NamedType, funcType: FunctionType) {
+  // _client.callRemoteMethod(this, methodName, returnType, args)
   const remoteMethodCall = t.callExpression(callRemoteMethodExpression, [
     idIdentifier,
     t.literal(methodName),
     t.literal(funcType.returnType.kind),
     t.identifier('args')]);
 
-  // this._idPromise.then(id => ... )
-  const idThenCall = thenPromise(thisDotIdPromiseExpression, t.arrowFunctionExpression(
-    [idIdentifier], remoteMethodCall));
+  // _client.marshal(this, thisType).then(id => ... )
+  const idThenCall = thenPromise(
+    generateTransformStatement(
+      t.thisExpression(),
+      thisType,
+      true),
+    t.arrowFunctionExpression([idIdentifier], remoteMethodCall));
 
   // Promise.all(...).then(args => _client.callRemoteMethod(...))
   const argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);

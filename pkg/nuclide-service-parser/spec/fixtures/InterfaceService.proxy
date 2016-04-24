@@ -58,7 +58,15 @@ module.exports = _client => {
     }
     @trackTiming("Vector2.len")
     len() {
-      return Promise.all([]).then(args => this._idPromise.then(id => _client.callRemoteMethod(id, "len", "promise", args))).then(value => _client.unmarshal(value, {
+      return Promise.all([]).then(args => _client.marshal(this, {
+        kind: "named",
+        location: {
+          type: "source",
+          fileName: "InterfaceService.def",
+          line: 1
+        },
+        name: "Vector2"
+      }).then(id => _client.callRemoteMethod(id, "len", "promise", args))).then(value => _client.unmarshal(value, {
         location: {
           type: "source",
           fileName: "InterfaceService.def",
@@ -68,7 +76,15 @@ module.exports = _client => {
       }));
     }
     watchChanges() {
-      return Observable.fromPromise(Promise.all([]).then(args => this._idPromise.then(id => _client.callRemoteMethod(id, "watchChanges", "observable", args)))).concatMap(id => id).concatMap(value => _client.unmarshal(value, {
+      return Observable.fromPromise(Promise.all([]).then(args => _client.marshal(this, {
+        kind: "named",
+        location: {
+          type: "source",
+          fileName: "InterfaceService.def",
+          line: 1
+        },
+        name: "Vector2"
+      }).then(id => _client.callRemoteMethod(id, "watchChanges", "observable", args)))).concatMap(id => id).concatMap(value => _client.unmarshal(value, {
         location: {
           type: "source",
           fileName: "InterfaceService.def",
