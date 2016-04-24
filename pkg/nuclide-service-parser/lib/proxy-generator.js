@@ -25,6 +25,7 @@ const promiseDotAllExpression = t.memberExpression(t.identifier('Promise'), t.id
 const thenIdent = t.identifier('then');
 
 const observableIdentifier = t.identifier('Observable');
+const idIdentifier = t.identifier('id');
 
 const moduleDotExportsExpression =
   t.memberExpression(t.identifier('module'), t.identifier('exports'));
@@ -313,32 +314,39 @@ function generateRemoteConstructor(className: string, constructorArgs: Array<Typ
  * @returns A MethodDefinition node that can be added to a ClassBody
  */
 function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
-  // First, convert the arguments.
-  // Promise.all(...)
-  const argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
-
-  const id = t.identifier('id');
-
   // _client.callRemoteMethod(id, methodName, returnType, args)
   const remoteMethodCall = t.callExpression(callRemoteMethodExpression, [
-    id, t.literal(methodName), t.literal(funcType.returnType.kind), t.identifier('args')]);
-  let rpcCallExpression = thenPromise(thisDotIdPromiseExpression, t.arrowFunctionExpression(
-    [id], remoteMethodCall));
+    idIdentifier,
+    t.literal(methodName),
+    t.literal(funcType.returnType.kind),
+    t.identifier('args')]);
 
-  // marshalledArgs.then(args => _client.callRemoteMethod(...))
-  rpcCallExpression = thenPromise(argumentsPromise, t.arrowFunctionExpression(
+  // this._idPromise.then(id => ... )
+  const idThenCall = thenPromise(thisDotIdPromiseExpression, t.arrowFunctionExpression(
+    [idIdentifier], remoteMethodCall));
+
+  // Promise.all(...).then(args => _client.callRemoteMethod(...))
+  const argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
+  const marshallThenCall = thenPromise(argumentsPromise, t.arrowFunctionExpression(
     [t.identifier('args')],
-    rpcCallExpression,
+    idThenCall,
   ));
 
-  const returnType = funcType.returnType;
+  const funcTypeArgs = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
+  const funcExpression = t.functionExpression(null, funcTypeArgs, t.blockStatement([
+    t.returnStatement(generateUnmarshalResult(funcType.returnType, marshallThenCall))]));
+
+  // methodName(arg0, ... argN) { return ... }
+  return t.methodDefinition(t.identifier(methodName), funcExpression, 'method', false, false);
+}
+
+function generateUnmarshalResult(returnType: Type, rpcCallExpression) {
   switch (returnType.kind) {
     case 'void':
-      break;
+      return rpcCallExpression;
     case 'promise':
       const promiseTransformer = generateValueTransformer(returnType.type);
-      rpcCallExpression = thenPromise(rpcCallExpression, promiseTransformer);
-      break;
+      return thenPromise(rpcCallExpression, promiseTransformer);
     case 'observable':
       // rpcCallExpression is a call which returns Promise<Observable<unmarshalled result>>
 
@@ -349,7 +357,7 @@ function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
       // ... .flatMap(id => id)
       const unmarshalledValues = t.callExpression(
         t.memberExpression(callObservable, t.identifier('concatMap')),
-        [t.arrowFunctionExpression([id], id)]);
+        [t.arrowFunctionExpression([idIdentifier], idIdentifier)]);
 
       // Finally, we map the events through the appropriate marshaller. We use concatMap instead of
       // flatMap to ensure that the order doesn't change, in case one event takes especially long
@@ -357,19 +365,11 @@ function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
       //
       // ... .concatMap(value => _client.unmarshal(value, returnType))
       const observableTransformer = generateValueTransformer(returnType.type);
-      rpcCallExpression = t.callExpression(
+      return t.callExpression(
         t.memberExpression(unmarshalledValues, t.identifier('concatMap')), [observableTransformer]);
-      break;
     default:
       throw new Error(`Unkown return type ${returnType.kind}.`);
   }
-
-  // methodName(arg0, ... argN) { return ... }
-  const funcTypeArgs = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
-  const funcExpression = t.functionExpression(null, funcTypeArgs, t.blockStatement([
-    t.returnStatement(rpcCallExpression)]));
-
-  return t.methodDefinition(t.identifier(methodName), funcExpression, 'method', false, false);
 }
 
 // value => _client.unmarshal(value, type)
