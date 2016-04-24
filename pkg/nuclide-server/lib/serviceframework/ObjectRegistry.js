@@ -27,15 +27,23 @@ export type RemoteObject = {
   dispose: () => void;
 };
 
+type RegistryKind = 'server' | 'client';
+
 // Handles lifetimes of marshalling wrappers remote objects.
+//
+// Object passed by reference over RPC are assigned an ID.
+// Positive IDs represent objects which live on the server,
+// negative IDs represent objects which live on the client.
 export class ObjectRegistry {
   _registrationsById: Map<number, ObjectRegistration>;
   _registrationsByObject: Map<RemoteObject, ObjectRegistration>;
   _nextObjectId: number;
   _subscriptions: Map<number, rx$ISubscription>;
+  _delta: number;
 
-  constructor() {
-    this._nextObjectId = 1;
+  constructor(kind: RegistryKind = 'server') {
+    this._delta = (kind === 'server') ? 1 : -1;
+    this._nextObjectId = this._delta;
     this._registrationsById = new Map();
     this._registrationsByObject = new Map();
     this._subscriptions = new Map();
@@ -82,7 +90,7 @@ export class ObjectRegistry {
     }
 
     const objectId = this._nextObjectId;
-    this._nextObjectId++;
+    this._nextObjectId += this._delta;
 
     const registration = {
       interface: interfaceName,
