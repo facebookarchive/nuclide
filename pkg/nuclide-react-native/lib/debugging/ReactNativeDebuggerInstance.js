@@ -16,6 +16,8 @@ import {
 } from '../../../nuclide-react-native-node-executor/lib/DebuggerProxyClient';
 import Rx from 'rxjs';
 import WebSocket from 'ws';
+// $FlowIssue: Flow doesn't recognize this nested module.
+import {using as observableUsing} from 'rxjs/observable/using';
 import type {Session as SessionType} from '../../../nuclide-debugger-node/lib/Session';
 
 const {observableFromSubscribeFunction} = commonsEvent;
@@ -94,7 +96,7 @@ export class ReactNativeDebuggerInstance extends DebuggerInstance {
  * A stream of PIDs to debug, obtained by connecting to the packager via the DebuggerProxyClient.
  * This stream is shared so that only one client is created when there is more than one subscriber.
  */
-const pid$ = Rx.Observable.using(
+const pid$ = observableUsing(
   () => {
     const client = new DebuggerProxyClient();
     client.connect();
@@ -111,7 +113,7 @@ const pid$ = Rx.Observable.using(
  * Connections from the Chrome UI. There will only be one connection at a time. This stream won't
  * complete unless the connection closes.
  */
-const uiConnection$ = Rx.Observable.using(
+const uiConnection$ = observableUsing(
   () => {
     // TODO(natthu): Assign random port instead.
     const server = new WebSocket.Server({port: PORT});

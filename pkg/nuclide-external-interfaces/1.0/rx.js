@@ -94,11 +94,6 @@ declare module 'rxjs' {
 
     static throw(error: any): Observable<any>;
 
-    static using<Resource: rx$ISubscription>(
-      resourceFactory: () => Resource,
-      observableFactory: (resource: Resource) => Observable<T>,
-    ): Observable<T>;
-
     race(other: Observable<T>): Observable<T>;
 
     buffer(bufferBoundaries: Observable<any>): Observable<Array<T>>;
