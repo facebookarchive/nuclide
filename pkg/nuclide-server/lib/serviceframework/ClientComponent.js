@@ -21,7 +21,7 @@ import {SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} from '../config';
 
 import TypeRegistry from '../../../nuclide-service-parser/lib/TypeRegistry';
 import {getProxy, getDefinitions} from '../../../nuclide-service-parser';
-import {ClientObjectRegistry} from './ClientObjectRegistry';
+import {ObjectRegistry} from './ObjectRegistry';
 
 import type {RequestMessage, CallRemoteFunctionMessage, CreateRemoteObjectMessage,
   CallRemoteMethodMessage, DisposeRemoteObjectMessage, DisposeObservableMessage,
@@ -34,8 +34,8 @@ export default class ClientComponent {
   _emitter: EventEmitter;
   _socket: NuclideSocket;
 
-  _typeRegistry: TypeRegistry<ClientObjectRegistry>;
-  _objectRegistry: ClientObjectRegistry;
+  _typeRegistry: TypeRegistry<ObjectRegistry>;
+  _objectRegistry: ObjectRegistry;
 
   constructor(socket: NuclideSocket, services: Array<ConfigEntry>) {
     this._emitter = new EventEmitter();
@@ -43,7 +43,7 @@ export default class ClientComponent {
     this._rpcRequestId = 1;
 
     this._typeRegistry = new TypeRegistry();
-    this._objectRegistry = new ClientObjectRegistry();
+    this._objectRegistry = new ObjectRegistry('client');
 
     this.addServices(services);
     this._socket.on('message', message => this._handleSocketMessage(message));
@@ -71,10 +71,10 @@ export default class ClientComponent {
           case 'interface':
             logger.debug(`Registering interface ${name}.`);
             this._typeRegistry.registerType(name,
-              (object, context: ClientObjectRegistry) => {
+              (object, context: ObjectRegistry) => {
                 return context.marshal(name, object);
               },
-              (objectId, context: ClientObjectRegistry) => {
+              (objectId, context: ObjectRegistry) => {
                 return context.unmarshal(objectId, proxy[name]);
               });
             break;

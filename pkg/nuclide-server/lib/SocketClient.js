@@ -35,7 +35,7 @@ export class SocketClient {
     this._isDisposed = false;
     this._socket = null;
     this._messageQueue = [];
-    this._objectRegistry = new ObjectRegistry();
+    this._objectRegistry = new ObjectRegistry('server');
     this._serverComponent = serverComponent;
     this._connect(socket);
   }
