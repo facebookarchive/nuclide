@@ -110,6 +110,7 @@ export class FlowProcess {
     args: Array<any>,
     options: Object,
     waitForServer?: boolean = false,
+    suppressErrors?: boolean = false,
   ): Promise<?process$asyncExecuteRet> {
     const maxRetries = waitForServer ? EXEC_FLOW_RETRIES : 0;
     if (this._serverStatus.getValue() === ServerStatus.FAILED) {
@@ -131,7 +132,7 @@ export class FlowProcess {
         } else {
           // If it couldn't retry, it means there was a legitimate error. If it could retry, we
           // don't want to log because it just means the server is busy and we don't want to wait.
-          if (!couldRetry) {
+          if (!couldRetry && !suppressErrors) {
             // not sure what happened, but we'll let the caller deal with it
             logger.error(`Flow failed: flow ${args.join(' ')}. Error: ${JSON.stringify(e)}`);
           }
