@@ -20,6 +20,7 @@ import invariant from 'assert';
 
 import featureConfig from '../../nuclide-feature-config';
 import {nuclideFeatures} from '../../../lib/nuclide-features';
+import {debounce} from '../../nuclide-commons';
 
 import {WorkingSet} from '../../nuclide-working-sets';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore';
@@ -31,6 +32,7 @@ import semver from 'semver';
  * item in the file tree.
  */
 const ACTIVE_PANE_DEBOUNCE_INTERVAL_MS = 150;
+const OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS = 150;
 
 const REVEAL_FILE_ON_SWITCH_SETTING = 'nuclide-file-tree.revealFileOnSwitch';
 
@@ -108,13 +110,25 @@ class Activation {
     });
     this._subscriptions.add(currentSubscription);
 
-    const rebuildOpenFilesWorkingSet = () => {
-      const openUris = atom.workspace.getTextEditors()
-        .filter(te => te.getPath() != null && te.getPath() !== '')
-        .map(te => (te.getPath(): any));
-      const openFilesWorkingSet = new WorkingSet(openUris);
-      this._fileTreeController.updateOpenFilesWorkingSet(openFilesWorkingSet);
-    };
+
+    let updateOpenFilesWorkingSet = this._fileTreeController.updateOpenFilesWorkingSet.bind(
+      this._fileTreeController
+    );
+
+    this._subscriptions.add(new Disposable(() => {
+      updateOpenFilesWorkingSet = () => {};
+    }));
+
+    const rebuildOpenFilesWorkingSet = debounce(
+      () => {
+        const openUris = atom.workspace.getTextEditors()
+          .filter(te => te.getPath() != null && te.getPath() !== '')
+          .map(te => (te.getPath(): any));
+        const openFilesWorkingSet = new WorkingSet(openUris);
+        updateOpenFilesWorkingSet(openFilesWorkingSet);
+      },
+      OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS,
+    );
 
     rebuildOpenFilesWorkingSet();
 
