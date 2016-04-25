@@ -14,6 +14,7 @@ import type {process$asyncExecuteRet} from '../../nuclide-commons';
 import type {ServerStatusType} from '..';
 
 import invariant from 'assert';
+import os from 'os';
 
 import {BehaviorSubject, Observable} from 'rxjs';
 
@@ -152,7 +153,12 @@ export class FlowProcess {
     // ChildProcess object.
     const serverProcess = await safeSpawn( // eslint-disable-line babel/no-await-in-loop
       pathToFlow,
-      ['server', '--from', 'nuclide', this._root],
+      [
+        'server',
+        '--from', 'nuclide',
+        '--max-workers', this._getMaxWorkers().toString(),
+        this._root,
+      ],
     );
     const logIt = data => {
       const pid = serverProcess.pid;
@@ -290,6 +296,10 @@ export class FlowProcess {
     } else {
       return null;
     }
+  }
+
+  _getMaxWorkers(): number {
+    return Math.max(os.cpus().length - 1, 1);
   }
 
   /**

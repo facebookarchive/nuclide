@@ -13,6 +13,9 @@ import type {Observable} from 'rxjs';
 
 import type {ServerStatusType} from '..';
 import type {FlowProcess as FlowProcessType} from '../lib/FlowProcess';
+
+import os from 'os';
+
 import {FLOW_RETURN_CODES} from '../lib/FlowProcess';
 
 import {uncachedRequire} from '../../nuclide-test-helpers';
@@ -91,9 +94,15 @@ describe('FlowProcess', () => {
 
     describe('execFlow', () => {
       it('should spawn a new Flow server', () => {
+        const expectedWorkers = os.cpus().length - 1;
         expect(require('../../nuclide-commons').safeSpawn).toHaveBeenCalledWith(
           'flow',
-          ['server', '--from', 'nuclide', '/path/to/flow/root']
+          [
+            'server',
+            '--from', 'nuclide',
+            '--max-workers', expectedWorkers.toString(),
+            '/path/to/flow/root',
+          ]
         );
       });
     });
