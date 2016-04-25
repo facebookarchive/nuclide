@@ -1,5 +1,33 @@
 # Nuclide Changelog
 
+## v0.133.0
+
+### General
+
+* Vastly improved file-tree performance for large repositories.
+* Added a "Kill Nuclide and Restart" menu option to kill the remote server.
+* Output pane now autoscrolls correctly.
+* Fixed file-tree appearance with the one-light-ui Atom theme.
+* Quick Open: Fixed bug where filename search fails to load at startup.
+* Diff View: Improved file switching performance.
+* Diff View: Fixed off-by-one diff view blocks.
+
+### PHP
+
+* Added project selector in Debugger Launch/Attach UI (cmd+shift+A)
+
+### C++
+
+* Added outline view support for C++.
+* Debugging:
+  * Fixed crash while stepping into function with parameters pointing to non-utf8 characters.
+  * Support simultaneous debugging from multiple Nuclide instances.
+
+### React Native
+
+* Updated bundled React Native inspector to 0.14.9.
+* Improved error messages for adb, syslog, and React Native debugging.
+
 ## v0.132.0
 
 * Hotfix double publish.
