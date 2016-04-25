@@ -137,7 +137,6 @@ nuclide-react-native-inspector \
 nuclide-recent-files-provider \
 nuclide-recent-files-service \
 nuclide-remote-projects \
-nuclide-service-monitor \
 nuclide-test-runner \
 nuclide-toolbar \
 nuclide-type-hint \
