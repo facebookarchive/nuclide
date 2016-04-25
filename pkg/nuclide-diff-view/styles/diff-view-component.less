@@ -16,120 +16,153 @@
   flex-grow: 1;
   /* Let the `<atom-pane-container>` fill the height since it already has `flex: 1` applied. */
   display: flex;
+}
 
-  .nuclide-diff-view-tree {
-    z-index: 3;
-    border-top: 1px solid @pane-item-border-color;
-    -webkit-user-select: none;
-    white-space: nowrap;
+.nuclide-diff-view-tree {
+  z-index: 3;
+  border-top: 1px solid @pane-item-border-color;
+  -webkit-user-select: none;
+  white-space: nowrap;
+  overflow: auto;
+  cursor: default;
+
+  // Fill vertical and horizontal space if tree is smaller than panel.
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.nuclide-diff-timeline {
+  z-index: 3;
+  border-top: 1px solid @pane-item-border-color;
+  width: 100%;
+  color: @text-color;
+
+  .revision-timeline-wrap {
+    height: 100%;
     overflow: auto;
-    cursor: default;
-
-    // Fill vertical and horizontal space if tree is smaller than panel.
-    min-width: 100%;
-    min-height: 100%;
   }
 
-  .diff-timeline {
-    z-index: 3;
-    border-top: 1px solid @pane-item-border-color;
+  .revision-selector  {
+    // TODO Use a standard Atom font-family https://github.com/atom/atom/issues/8800
+    font-family: Menlo, Consolas, monospace;
     width: 100%;
-    color: @text-color;
+    white-space: nowrap;
+    display: flex;
+  }
 
-    .revision-timeline-wrap {
-      height: 100%;
-      overflow: auto;
-    }
+  .revisions {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
 
-    .revision-selector  {
-      // TODO Use a standard Atom font-family https://github.com/atom/atom/issues/8800
-      font-family: Menlo, Consolas, monospace;
-      width: 100%;
-      white-space: nowrap;
-      display: flex;
-    }
+  .revision--actionable {
+    cursor: pointer;
+  }
 
-    .revisions {
-      display: flex;
-      flex-direction: column;
-      position: relative;
-    }
+  .revision:hover .revision-label {
+    font-weight: bold;
+  }
 
-    .revision {
-      cursor: pointer;
-    }
+  .revision:hover .revision-bubble {
+    background-color: @text-color-info;
+    box-shadow: 0 0 0 2px @text-color-info;
+  }
 
-    .revision:hover .revision-label {
+  .revision:hover .revision-bubble--uncommitted {
+    background-color: @text-color-warning;
+    box-shadow: 0 0 0 2px @text-color-warning;
+  }
+
+  .revision:hover .revision-bubble--no-changes {
+    /*
+     * Match the app background color to give the illusion of transparency while properly cutting
+     * off the underlying line that connects this bubble to the one below it.
+     */
+    background-color: @app-background-color;
+  }
+
+  .revision-bubble {
+    background-color: @text-color-info;
+    border-radius: @revisionBubbleDiameter;
+    display: inline-block;
+    height: @revisionBubbleDiameter;
+    width: @revisionBubbleDiameter;
+    margin: @revisionBubbleShadowRadius;
+    position: absolute;
+  }
+
+  .revision-bubble::after {
+    content: " ";
+    display: block;
+    width: 1px;
+    background-color: @text-color-info;
+    height: 2em;
+    margin-left: 5px;
+    margin-top: 5px;
+    position: absolute;
+    z-index: -1;
+  }
+
+  .revision-bubble--uncommitted {
+    background-color: @text-color-warning;
+  }
+
+  .revision-bubble--no-changes {
+    /*
+     * Match the app background color to give the illusion of transparency while properly cutting
+     * off the underlying line that connects this bubble to the one below it.
+     */
+    background-color: @app-background-color;
+  }
+
+  .selected-revision-inrange .revision-bubble:after {
+    content: " ";
+    width: 10px;
+    height: 2.2em;
+    background: @text-color-info;
+    display: block;
+    margin-top: 5px;
+    margin-left: 0;
+  }
+
+  .selected-revision-inrange .revision-bubble--uncommitted:after {
+    background: linear-gradient(to bottom, @text-color-warning, @text-color-info);
+  }
+
+  .selected-revision-last .revision-bubble::after {
+    display: none;
+  }
+
+  .revision-label {
+    margin-bottom: 8px;
+    margin-left: 24px;
+    margin-top: 2px;
+  }
+
+  .selected-revision-start,
+  .selected-revision-end {
+    font-weight: bold;
+  }
+
+  .selected-revision-inrange, .selected-revision-end {
+    .revision-label {
       color: @text-color-info;
     }
 
-    .revision:hover .revision-bubble {
-      background-color: @text-color-info;
-      box-shadow: 0 0 0 2px @text-color-info;
+    .revision-label--uncommitted {
+      color: @text-color-warning;
     }
+  }
 
-    .revision-bubble {
-      background-color: @text-color-info;
-      border-radius: @revisionBubbleDiameter;
-      display: inline-block;
-      height: @revisionBubbleDiameter;
-      width: @revisionBubbleDiameter;
-      margin: @revisionBubbleShadowRadius;
-      position: absolute;
-    }
+  .selected-revision-start .revision-bubble,
+  .selected-revision-end .revision-bubble {
+    box-shadow: 0 0 0 @revisionBubbleShadowRadius fade(@text-color-info, 25%);
+  }
 
-    .revision-bubble::after {
-      content: " ";
-      display: block;
-      width: 1px;
-      background-color: @text-color-info;
-      height: 2em;
-      margin-left: 5px;
-      margin-top: 5px;
-      position: absolute;
-      z-index: -1;
-    }
-
-    .selected-revision-inrange .revision-bubble {
-      background-color: @text-color-info;
-    }
-
-    .selected-revision-inrange .revision-bubble::after {
-      content: " ";
-      width: 10px;
-      height: 2.2em;
-      background: @text-color-info;
-      display: block;
-      margin-top: 5px;
-      margin-left: 0;
-    }
-
-    .selected-revision-last .revision-bubble::after {
-      display: none;
-    }
-
-    .revision-label {
-      margin-bottom: 6px;
-      margin-left: 24px;
-      margin-top: 4px;
-      display: inline-block;
-    }
-
-    .selected-revision-start,
-    .selected-revision-end {
-      font-weight: bold;
-    }
-
-    .selected-revision-inrange, .selected-revision-end {
-      .revision-label {
-        color: @text-color-info;
-      }
-    }
-
-    .selected-revision-start .revision-bubble,
-    .selected-revision-end .revision-bubble {
-       box-shadow: 0 0 0 @revisionBubbleShadowRadius fade(@text-color-info, 25%);
-    }
+  .selected-revision-start .revision-bubble--uncommitted,
+  .selected-revision-end .revision-bubble--uncommitted {
+    box-shadow: 0 0 0 2px @text-color-warning;
   }
 }
 
@@ -184,6 +217,7 @@ atom-text-editor, atom-text-editor::shadow {
     border-left-width: 1px;
     background-color: @remove-color-faded;
   }
+
 }
 
 .nuclide-diff-view-navigation-bar {
@@ -221,12 +255,15 @@ atom-text-editor, atom-text-editor::shadow {
   position: absolute;
   width: 100%;
   cursor: pointer;
+
   &.added {
     background-color: @background-color-success;
   }
+
   &.removed {
     background-color: @background-color-error;
   }
+
   &.modified {
     background-color: @background-color-warning;
   }

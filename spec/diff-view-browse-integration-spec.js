@@ -78,7 +78,7 @@ describe('Diff View Browse Mode Integration Test', () => {
       expect(textEditorElements.length).toBe(2);
       treeElement = diffViewElement.querySelector('.nuclide-diff-view-tree');
       expect(treeElement).not.toBeNull();
-      revisionsTimelineElement = diffViewElement.querySelector('.diff-timeline');
+      revisionsTimelineElement = diffViewElement.querySelector('.nuclide-diff-timeline');
       expect(revisionsTimelineElement).not.toBeNull();
     });
 
@@ -90,7 +90,8 @@ describe('Diff View Browse Mode Integration Test', () => {
     });
 
     runs(() => {
-      expect(revisionLabels.length).toBe(3);
+      // Should be the number of revisions + 1 to account for the permanent "Uncommitted" node.
+      expect(revisionLabels.length).toBe(4);
     });
 
     let diffFiles = [];

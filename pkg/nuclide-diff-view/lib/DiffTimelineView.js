@@ -15,8 +15,8 @@ import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService'
 
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
-
-import classnames from 'classnames';
+import RevisionTimelineNode from './RevisionTimelineNode';
+import UncommittedChangesTimelineNode from './UncommittedChangesTimelineNode';
 
 type DiffTimelineViewProps = {
   diffModel: DiffViewModel;
@@ -61,14 +61,16 @@ export default class DiffTimelineView extends React.Component {
       const {revisions, compareCommitId, commitId} = revisionsState;
       content = (
         <RevisionsTimelineComponent
-          revisions={revisions}
           compareRevisionId={compareCommitId || commitId}
+          dirtyFileCount={this.props.diffModel.getState().dirtyFileChanges.size}
           onSelectionChange={this.props.onSelectionChange}
+          revisions={revisions}
         />
       );
     }
+
     return (
-      <div className="diff-timeline padded">
+      <div className="nuclide-diff-timeline padded">
         {content}
       </div>
     );
@@ -84,88 +86,41 @@ export default class DiffTimelineView extends React.Component {
 }
 
 type RevisionsComponentProps = {
-  revisions: Array<RevisionInfo>;
   compareRevisionId: number;
+  dirtyFileCount: number;
   onSelectionChange: (revisionInfo: RevisionInfo) => any;
+  revisions: Array<RevisionInfo>;
 };
 
-class RevisionsTimelineComponent extends React.Component {
-  props: RevisionsComponentProps;
+function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Element {
 
-  render(): React.Element {
-    const {revisions, compareRevisionId} = this.props;
-    const latestToOldestRevisions = revisions.slice().reverse();
-    const selectedIndex = latestToOldestRevisions.findIndex(
-      revision => revision.id === compareRevisionId
-    );
+  const {revisions, compareRevisionId} = props;
+  const latestToOldestRevisions = revisions.slice().reverse();
+  const selectedIndex = latestToOldestRevisions.findIndex(
+    revision => revision.id === compareRevisionId
+  );
 
-    return (
-      <div className="revision-timeline-wrap">
-        <div className="revision-selector">
-          <div className="revisions">
-            {latestToOldestRevisions.map((revision, i) =>
-              <RevisionTimelineNode
-                index={i}
-                key={revision.hash}
-                selectedIndex={selectedIndex}
-                revision={revision}
-                revisionsCount={revisions.length}
-                onSelectionChange={this.props.onSelectionChange}
-              />
-            )}
-          </div>
+  return (
+    <div className="revision-timeline-wrap">
+      <h5 style={{marginTop: 0}}>Compare Revisions</h5>
+      <div className="revision-selector">
+        <div className="revisions">
+          <UncommittedChangesTimelineNode
+            dirtyFileCount={props.dirtyFileCount}
+          />
+          {latestToOldestRevisions.map((revision, i) =>
+            <RevisionTimelineNode
+              index={i}
+              key={revision.hash}
+              selectedIndex={selectedIndex}
+              revision={revision}
+              revisionsCount={revisions.length}
+              onSelectionChange={props.onSelectionChange}
+            />
+          )}
         </div>
       </div>
-    );
-  }
-}
+    </div>
+  );
 
-type RevisionTimelineNodeProps = {
-  revision: RevisionInfo;
-  index: number;
-  selectedIndex: number;
-  revisionsCount: number;
-  onSelectionChange: (revisionInfo: RevisionInfo) => any;
-};
-
-class RevisionTimelineNode extends React.Component {
-  props: RevisionTimelineNodeProps;
-
-  render(): React.Element {
-    const {revision, index, selectedIndex, revisionsCount} = this.props;
-    const {bookmarks, title, author, hash, date} = revision;
-    const revisionClassName = classnames({
-      revision: true,
-      'selected-revision-inrange': index < selectedIndex,
-      'selected-revision-start': index === 0,
-      'selected-revision-end': index === selectedIndex,
-      'selected-revision-last': index === revisionsCount - 1,
-    });
-    const tooltip = `${hash}: ${title}
-  Author: ${author}
-  Date: ${date}`;
-    const bookmarksToRender = bookmarks.slice();
-    // Add `BASE`
-    if (index === 0 && revisionsCount > 1 && bookmarks.length === 0) {
-      bookmarksToRender.push('HEAD');
-    }
-    if (index === revisionsCount - 1 && bookmarks.length === 0) {
-      bookmarksToRender.push('BASE');
-    }
-    return (
-      <div
-        className={revisionClassName}
-        onClick={this.handleSelectionChange.bind(this, revision)}
-        title={tooltip}>
-        <div className="revision-bubble" />
-        <div className="revision-label">
-          {title} ({bookmarksToRender.length ? bookmarksToRender.join(',') : hash})
-        </div>
-      </div>
-    );
-  }
-
-  handleSelectionChange(): void {
-    this.props.onSelectionChange(this.props.revision);
-  }
 }
