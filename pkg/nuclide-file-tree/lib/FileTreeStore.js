@@ -788,12 +788,7 @@ export class FileTreeStore {
           });
 
           const children = FileTreeNode.childrenFromArray(childrenNodes);
-          // In case previous subscription existed - dispose of it
-          if (node.subscription != null) {
-            node.subscription.dispose();
-          }
-          // and create a new subscription
-          const subscription = this._makeSubscription(nodeKey, directory);
+          const subscription = node.subscription || this._makeSubscription(nodeKey, directory);
 
           // If the fetch indicated that some children were removed - dispose of all
           // their subscriptions
@@ -823,10 +818,37 @@ export class FileTreeStore {
       return null;
     }
 
+    let fetchingPromise = null;
+    let couldMissUpdate = false;
+
     try {
+      // Here we intentionally circumvent, to a degree, the logic in the _fetchChildKeys
+      // which wouldn't schedule a new fetch if there is already one running.
+      // This is fine for the most cases, but not for the subscription handling, as the
+      // subscription is notifying us that something has changed and if a fetch is already in
+      // progress then it is racing with the change. Therefore, if we detect that there was a change
+      // during the fetch we schedule another right after the first has finished.
+      let checkMissed;
+
+      const fetchKeys = () => {
+        if (fetchingPromise == null) {
+          couldMissUpdate = false;
+          fetchingPromise = this._fetchChildKeys(nodeKey).then(checkMissed);
+        } else {
+          couldMissUpdate = true;
+        }
+      };
+
+      checkMissed = () => {
+        fetchingPromise = null;
+        if (couldMissUpdate) {
+          fetchKeys();
+        }
+      };
+
       // This call might fail if we try to watch a non-existing directory, or if permission denied.
       return directory.onDidChange(() => {
-        this._fetchChildKeys(nodeKey);
+        fetchKeys();
       });
     } catch (ex) {
       /*
