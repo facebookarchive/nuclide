@@ -13,6 +13,7 @@ import type {
   ClangCompileResult,
   ClangCompletionsResult,
   ClangDeclarationResult,
+  ClangOutline,
 } from '../../nuclide-clang';
 
 import featureConfig from '../../nuclide-feature-config';
@@ -91,6 +92,17 @@ module.exports = {
 
     return service
         .getDeclaration(src, editor.getText(), line, column, defaultFlags);
+  },
+
+  async getOutline(editor: atom$TextEditor): Promise<?ClangOutline> {
+    const src = editor.getPath();
+    const defaultFlags = getDefaultFlags();
+
+    const service = getServiceByNuclideUri('ClangService', src);
+    invariant(service);
+
+    return service
+        .getOutline(src, editor.getText(), defaultFlags);
   },
 
   formatCode(editor: atom$TextEditor, range: atom$Range): Promise<{

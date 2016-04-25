@@ -19,6 +19,7 @@ import type {
 } from '../../nuclide-busy-signal';
 import type {DiagnosticProvider} from '../../nuclide-diagnostics-base';
 import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
+import type {OutlineProvider} from '../../nuclide-outline-view';
 import type ClangDiagnosticsProvider from './ClangDiagnosticsProvider';
 
 import {CompositeDisposable} from 'atom';
@@ -113,6 +114,18 @@ export function provideCodeFormat(): CodeFormatProvider {
 
 export function provideDiagnostics(): DiagnosticProvider {
   return getDiagnosticsProvider();
+}
+
+export function provideOutlineView(): OutlineProvider {
+  return {
+    name: PACKAGE_NAME,
+    priority: 10,
+    grammarScopes: Array.from(GRAMMAR_SET),
+    getOutline(editor: atom$TextEditor) {
+      const {OutlineViewProvider} = require('./OutlineViewProvider');
+      return OutlineViewProvider.getOutline(editor);
+    },
+  };
 }
 
 export function deactivate() {
