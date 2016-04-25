@@ -51,12 +51,6 @@ export const DiffMode = Object.freeze({
 // This is to work around flow's missing support of enums.
 (DiffMode: { [key: string]: DiffModeType });
 
-export const DiffModeIcon = Object.freeze({
-  BROWSE_MODE: 'versions',
-  COMMIT_MODE: 'git-branch',
-  PUBLISH_MODE: 'repo-push',
-});
-
 export const DiffOption = Object.freeze({
   DIRTY: 'Dirty',
   LAST_COMMIT: 'Last Commit',
