@@ -17,7 +17,7 @@ import {FileTree} from './FileTree';
 import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
 import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
 import {FileTreeStore} from '../lib/FileTreeStore';
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
 
 type State = {
@@ -66,12 +66,12 @@ class FileTreeSidebarComponent extends React.Component {
     this._disposables.add(
       this._store.subscribe(this._processExternalUpdate),
       atom.project.onDidChangePaths(this._processExternalUpdate),
-      () => {
+      new Disposable(() => {
         window.removeEventListener('resize', this._onViewChange);
         if (this._afRequestId != null) {
           window.cancelAnimationFrame(this._afRequestId);
         }
-      },
+      }),
     );
   }
 

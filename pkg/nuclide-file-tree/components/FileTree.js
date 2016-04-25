@@ -17,7 +17,7 @@ import {EmptyComponent} from './EmptyComponent';
 import {track} from '../../nuclide-analytics';
 import {once} from '../../nuclide-commons';
 import classnames from 'classnames';
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 
 
 import type {OrderedMap} from 'immutable';
@@ -79,17 +79,19 @@ export class FileTree extends React.Component {
     this._measureHeights();
     window.addEventListener('resize', this._measureHeights);
 
-    this._disposables.add(atom.themes.onDidChangeActiveThemes(
-      () => {
-        this._initialHeightMeasured = false;
-        this._afRequestId = window.requestAnimationFrame(() => {
-          this._afRequestId = null;
-          this._measureHeights();
-        });
-      }),
-      () => {
+    this._disposables.add(
+      atom.themes.onDidChangeActiveThemes(
+        () => {
+          this._initialHeightMeasured = false;
+          this._afRequestId = window.requestAnimationFrame(() => {
+            this._afRequestId = null;
+            this._measureHeights();
+          });
+        }
+      ),
+      new Disposable(() => {
         window.removeEventListener('resize', this._measureHeights);
-      },
+      }),
     );
   }
 
