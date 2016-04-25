@@ -45,6 +45,7 @@ export const FLOW_RETURN_CODES = {
   // other work.
   outOfRetries: 7,
   buildIdMismatch: 9,
+  unexpectedArgument: 64,
 };
 
 const SERVER_READY_TIMEOUT_MS = 10 * 1000;
@@ -228,6 +229,10 @@ export class FlowProcess {
           logger.info('Killed flow server with incorrect version in', this._root);
           status = ServerStatus.NOT_RUNNING;
           break;
+        case FLOW_RETURN_CODES.unexpectedArgument:
+          // If we issued an unexpected argument we have learned nothing about the state of the Flow
+          // server. So, don't update.
+          return;
         default:
           logger.error('Unknown return code from Flow: ' + result.exitCode);
           status = ServerStatus.UNKNOWN;
