@@ -13,7 +13,7 @@ import type {Dispatcher} from 'flux';
 
 import {ActionType} from './FileTreeConstants';
 import {debounce} from '../../nuclide-commons';
-import {Disposable} from 'atom';
+import {Disposable, CompositeDisposable} from 'atom';
 import FileTreeDispatcher from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import {FileTreeStore} from './FileTreeStore';
@@ -396,17 +396,22 @@ class FileTreeActions {
     }
     // Now that the initial VCS statuses are set, subscribe to changes to the Repository so that the
     // VCS statuses are kept up to date.
-    const subscription = asyncRepo.onDidChangeStatus(
-      // t8227570: If the user is a "nervous saver," many onDidChangeStatuses will get fired in
-      // succession. We should probably explore debouncing this in HgRepositoryClient itself.
-      debounce(
-        this._onDidChangeStatusesForRepository.bind(this, repo, rootKeysForRepository),
-        /* wait */ 1000,
-        /* immediate */ false,
-      ),
+    const debouncedChangeStatuses = debounce(
+      this._onDidChangeStatusesForRepository.bind(this, repo, rootKeysForRepository),
+      /* wait */ 1000,
+      /* immediate */ false,
     );
-
-    this._subscriptionForRepository = this._subscriptionForRepository.set(repo, subscription);
+    // Different repo types emit different events at individual and refresh updates.
+    // Hence, the need to debounce and listen to both change types.
+    const changeStatusesSubscriptions = new CompositeDisposable();
+    changeStatusesSubscriptions.add(
+      asyncRepo.onDidChangeStatuses(debouncedChangeStatuses),
+      asyncRepo.onDidChangeStatus(debouncedChangeStatuses),
+    );
+    this._subscriptionForRepository = this._subscriptionForRepository.set(
+      repo,
+      changeStatusesSubscriptions,
+    );
   }
 
   /**
