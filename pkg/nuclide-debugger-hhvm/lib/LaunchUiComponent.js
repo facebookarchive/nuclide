@@ -13,32 +13,52 @@ import {React} from 'react-for-atom';
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
 import remoteUri from '../../nuclide-remote-uri';
+import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
 import {
   Button,
   ButtonTypes,
 } from '../../nuclide-ui/lib/Button';
-import {
-  ButtonGroup,
-} from '../../nuclide-ui/lib/ButtonGroup';
+import {RemoteConnection} from '../../nuclide-remote-connection';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 type PropsType = {
   targetUri: NuclideUri;
 };
-export class LaunchUiComponent extends React.Component<void, PropsType, void> {
+
+type StateType = {
+  pathsDropdownIndex: number;
+  pathMenuItems: Array<{label: string; value: number}>;
+};
+
+export class LaunchUiComponent extends React.Component<void, PropsType, StateType> {
   props: PropsType;
+  state: StateType;
 
   constructor(props: PropsType) {
     super(props);
     (this: any)._getActiveFilePath = this._getActiveFilePath.bind(this);
     (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(this);
     (this: any)._handleLaunchButtonClick = this._handleLaunchButtonClick.bind(this);
+    (this: any)._handlePathsDropdownChange = this._handlePathsDropdownChange.bind(this);
+    this.state = {
+      pathsDropdownIndex: 0,
+      pathMenuItems: this._getPathMenuItems(),
+    };
   }
 
   render(): React.Element {
     return (
       <div className="block">
+        <div className="nuclide-debugger-php-launch-attach-ui-select-project">
+          <label>Selected Project Directory: </label>
+          <Dropdown
+            className="inline-block nuclide-debugger-atom-connection-box"
+            menuItems={this.state.pathMenuItems}
+            onSelectedChange={this._handlePathsDropdownChange}
+            selectedIndex={this.state.pathsDropdownIndex}
+          />
+        </div>
         <label>Command: </label>
         <AtomInput
           ref="scriptPath"
@@ -46,7 +66,7 @@ export class LaunchUiComponent extends React.Component<void, PropsType, void> {
           placeholderText="/path/to/my/script.php arg1 arg2"
           initialValue={this._getActiveFilePath()}
         />
-        <ButtonGroup className="padded text-right">
+        <div className="padded text-right">
           <Button onClick={this._handleCancelButtonClick}>
             Cancel
           </Button>
@@ -55,9 +75,27 @@ export class LaunchUiComponent extends React.Component<void, PropsType, void> {
             onClick={this._handleLaunchButtonClick}>
             Launch
           </Button>
-        </ButtonGroup>
+        </div>
       </div>
     );
+  }
+
+  _getPathMenuItems(): Array<{label: string; value: number}> {
+    const connections = RemoteConnection.getByHostname(remoteUri.getHostname(this.props.targetUri));
+    return connections.map((connection, index) => {
+      const pathToProject = connection.getPathForInitialWorkingDirectory();
+      return {
+        label: pathToProject,
+        value: index,
+      };
+    });
+  }
+
+  _handlePathsDropdownChange(newIndex: number): void {
+    this.setState({
+      pathsDropdownIndex: newIndex,
+      pathMenuItems: this._getPathMenuItems(),
+    });
   }
 
   _handleLaunchButtonClick(): void {
