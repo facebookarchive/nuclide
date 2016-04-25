@@ -87,6 +87,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       logLevel: config.logLevel,
       endDebugWhenNoRequests: false,
       phpRuntimePath: config.phpRuntimePath,
+      dummyRequestFilePath: 'php_only_xdebug_request.php',
     };
     logInfo('Connection config: ' + JSON.stringify(config));
 

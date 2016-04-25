@@ -17,8 +17,6 @@ import path from 'path';
 
 import type {Socket} from 'net';
 
-let dummyRequestFilePath = 'php_only_xdebug_request.php';
-
 async function getHackRoot(filePath: string): Promise<?string> {
   return await fsPromise.findNearestFile('.hhconfig', filePath);
 }
@@ -34,17 +32,17 @@ export async function setRootDirectoryUri(directoryUri: string): Promise {
 
   // Use hackDummyRequestFilePath if possible.
   if (await fsPromise.exists(hackDummyRequestFilePath)) {
-    dummyRequestFilePath = hackDummyRequestFilePath;
+    getConfig().dummyRequestFilePath = hackDummyRequestFilePath;
   }
 }
 
 export function sendDummyRequest(): child_process$ChildProcess {
-  return launchScriptForDummyConnection(dummyRequestFilePath);
+  return launchScriptForDummyConnection(getConfig().dummyRequestFilePath);
 }
 
 export function isDummyConnection(message: Object): boolean {
   const attributes = message.init.$;
-  return attributes.fileuri.endsWith(dummyRequestFilePath);
+  return attributes.fileuri.endsWith(getConfig().dummyRequestFilePath);
 }
 
 export function failConnection(socket: Socket, errorMessage: string): void {

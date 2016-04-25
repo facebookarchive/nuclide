@@ -28,6 +28,7 @@ export type HhvmDebuggerSessionConfig = {
   logLevel: string;
   targetUri: string;
   phpRuntimePath: string;
+  dummyRequestFilePath: string;
 };
 
 export type NotificationMessage = {

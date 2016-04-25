@@ -18,6 +18,7 @@ const defaultConfig: HhvmDebuggerSessionConfig = {
   logLevel: 'INFO',
   targetUri: '',
   phpRuntimePath: '/usr/local/bin/php',
+  dummyRequestFilePath: 'php_only_xdebug_request.php',
 };
 
 let config: HhvmDebuggerSessionConfig = defaultConfig;
