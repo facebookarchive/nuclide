@@ -58,6 +58,9 @@ export type OutlineForUi = {
   // The thing that currently has focus is not a text editor.
   kind: 'not-text-editor';
 } | {
+  // Currently awaiting results from a provider (for longer than a certain delay).
+  kind: 'loading';
+} | {
   // Indicates that no provider is registered for the given grammar.
   kind: 'no-provider';
   // Human-readable name for the grammar.

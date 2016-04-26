@@ -20,6 +20,7 @@ import classnames from 'classnames';
 import {track} from '../../nuclide-analytics';
 import {goToLocationInEditor} from '../../nuclide-atom-helpers';
 import {getLogger} from '../../nuclide-logging';
+import {LoadingSpinner, LoadingSpinnerSizes} from '../../nuclide-ui/lib/LoadingSpinner';
 const logger = getLogger();
 
 type State = {
@@ -102,6 +103,15 @@ class OutlineViewComponent extends React.Component {
       case 'empty':
       case 'not-text-editor':
         return null;
+      case 'loading':
+        return (
+          <div className="nuclide-outline-view-loading">
+            <LoadingSpinner
+              className="inline-block"
+              size={LoadingSpinnerSizes.MEDIUM}
+            />
+          </div>
+        );
       case 'no-provider':
         return (
           <span>
