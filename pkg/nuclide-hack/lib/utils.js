@@ -101,8 +101,9 @@ export type HackEnvironment = {
 export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<HackEnvironment> {
   const hackService = getHackService(fileUri);
   const config = getConfig();
-  const useIdeConnection = config.useIdeConnection
-      || (await passesGK('nuclide_hack_use_persistent_connection'));
+  // TODO: Reenable this once the server connection is revived.
+  const useIdeConnection = false && (config.useIdeConnection
+      || (await passesGK('nuclide_hack_use_persistent_connection')));
   const hackEnvironment = await hackService.getHackEnvironmentDetails(
     fileUri,
     config.hhClientPath,
