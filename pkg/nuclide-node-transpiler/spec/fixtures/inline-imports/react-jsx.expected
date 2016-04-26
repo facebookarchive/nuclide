@@ -1,0 +1,36 @@
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _react2;
+
+function _react() {
+  return _react2 = _interopRequireDefault(require('react'));
+}
+
+var _button2;
+
+function _button() {
+  return _button2 = _interopRequireDefault(require('button'));
+}
+
+var _label2;
+
+function _label() {
+  return _label2 = _interopRequireDefault(require('label'));
+}
+
+var _groups2;
+
+function _groups() {
+  return _groups2 = require('groups');
+}
+
+(_react2 || _react()).default.createElement(
+  (_groups2 || _groups()).Group,
+  null,
+  (_react2 || _react()).default.createElement((_button2 || _button()).default, { prop: (_groups2 || _groups()).Group }),
+  (_react2 || _react()).default.createElement(
+    (_label2 || _label()).default.Big,
+    null,
+    foo()
+  )
+);

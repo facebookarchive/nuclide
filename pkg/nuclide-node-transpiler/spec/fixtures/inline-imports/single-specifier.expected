@@ -1,0 +1,9 @@
+var _Foo2;
+
+function _Foo() {
+  return _Foo2 = require('Foo');
+}
+
+function test() {
+  (0, (_Foo2 || _Foo()).bar)();
+}

@@ -1,0 +1,5 @@
+import Foo from 'Foo';
+
+function test() {
+  new Foo();
+}

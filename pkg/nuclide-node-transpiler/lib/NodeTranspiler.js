@@ -40,6 +40,7 @@ const BABEL_OPTIONS = {
   breakConfig: true,
   // sourceMap: 'inline',
   blacklist: [
+    'es3.memberExpressionLiterals',
     'es6.forOf',
     'useStrict',
   ],
@@ -50,6 +51,8 @@ const BABEL_OPTIONS = {
   stage: 1,
   plugins: [
     require.resolve('./remove-use-babel-tr'),
+    // Uncomment this line to enable inline-imports:
+    // require.resolve('./inline-imports-tr'),
   ],
   // comments: false,
   // compact: true,

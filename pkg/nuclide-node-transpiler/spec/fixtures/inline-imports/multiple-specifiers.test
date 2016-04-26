@@ -1,0 +1,6 @@
+import {default as Foo, bar} from 'Foo';
+
+function test() {
+  new Foo();
+  bar();
+}
