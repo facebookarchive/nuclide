@@ -291,6 +291,7 @@ export const TreeRootComponent = React.createClass({
             isLoading={!node.isCacheValid()}
             isSelected={isNodeSelected}
             label={node.getLabel()}
+            labelElement={node.getLabelElement()}
             labelClassName={this.props.labelClassNameForNode(node)}
             rowClassName={this.props.rowClassNameForNode(node)}
             onClickArrow={this._onClickNodeArrow}

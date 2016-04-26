@@ -104,6 +104,13 @@ export class LazyTreeNode {
     throw new Error('subclasses must override this method');
   }
 
+  /**
+   * This can return a richer element for a node and will be used instead of the label if present.
+   */
+  getLabelElement(): ?React$Element {
+    return null;
+  }
+
   isContainer(): boolean {
     return this.__isContainer;
   }
