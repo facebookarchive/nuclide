@@ -14,5 +14,12 @@
       }
     }
   },
+  "providedServices": {
+    "nuclide-distraction-free-mode": {
+      "versions": {
+        "0.0.0": "getDistractionFreeModeProvider"
+      }
+    }
+  },
   "description": "Provides a toolbar in Nuclide to build projects with HHVM"
 }

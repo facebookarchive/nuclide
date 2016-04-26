@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
+
 import type NuclideToolbarType from './NuclideToolbar';
 import type ProjectStoreType from './ProjectStore';
 
@@ -63,6 +65,14 @@ class Activation {
     this._disposables.add(
       new Disposable(() => { toolBar.removeItems(); }),
     );
+  }
+
+  getDistractionFreeModeProvider(): DistractionFreeModeProvider {
+    return {
+      name: 'nuclide-hhvm-toolbar',
+      isVisible: () => this._state.panelVisible,
+      toggle: () => this.togglePanel(),
+    };
   }
 
   _createToolbar() {
@@ -141,6 +151,11 @@ export function activate(state: ?Object) {
 export function consumeToolBar(getToolBar: (group: string) => Object): void {
   invariant(activation);
   return activation.consumeToolBar(getToolBar);
+}
+
+export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
+  invariant(activation != null);
+  return activation.getDistractionFreeModeProvider();
 }
 
 export function deactivate() {
