@@ -272,6 +272,8 @@ function nuclideUriToUri(uri: NuclideUri): string {
  * Returns true if child is equal to, or is a proper child of parent.
  */
 function contains(parent: NuclideUri, child: NuclideUri): boolean {
+  parent = parent.replace(/\/$/, '');
+  child = child.replace(/\/$/, '');
   return child.startsWith(parent)
     && (child.length === parent.length || child[parent.length] === '/');
 }

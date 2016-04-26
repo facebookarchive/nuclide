@@ -25,7 +25,7 @@ import {React} from 'react-for-atom';
 
 import {array} from '../../nuclide-commons';
 import classnames from 'classnames';
-import {getFileTreePathFromTargetEvent} from './utils';
+import {getUiTreePathFromTargetEvent} from '../../nuclide-atom-helpers';
 import {getPath, basename} from '../../nuclide-remote-uri';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 
@@ -120,7 +120,7 @@ export default class DiffViewTree extends React.Component {
       '.nuclide-diff-view-tree .entry.file-change',
       'nuclide-diff-tree:goto-file',
       event => {
-        const filePath = getFileTreePathFromTargetEvent(event);
+        const filePath = getUiTreePathFromTargetEvent(event);
         if (filePath != null && filePath.length) {
           atom.workspace.open(filePath);
         }
@@ -130,7 +130,7 @@ export default class DiffViewTree extends React.Component {
       '.nuclide-diff-view-tree .entry.file-change',
       'nuclide-diff-tree:copy-full-path',
       event => {
-        const filePath = getFileTreePathFromTargetEvent(event);
+        const filePath = getUiTreePathFromTargetEvent(event);
         atom.clipboard.write(getPath(filePath || ''));
       }
     ));
@@ -138,7 +138,7 @@ export default class DiffViewTree extends React.Component {
       '.nuclide-diff-view-tree .entry.file-change',
       'nuclide-diff-tree:copy-file-name',
       event => {
-        const filePath = getFileTreePathFromTargetEvent(event);
+        const filePath = getUiTreePathFromTargetEvent(event);
         atom.clipboard.write(basename(filePath || ''));
       }
     ));

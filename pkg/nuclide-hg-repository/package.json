@@ -8,6 +8,13 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
+  "consumedServices": {
+    "nuclide-file-tree.context-menu": {
+      "versions": {
+        "0.1.0": "addItemsToFileTreeContextMenu"
+      }
+    }
+  },
   "providedServices": {
     "atom.repository-provider": {
       "versions": {

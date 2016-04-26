@@ -40,6 +40,15 @@ export default class HgRepositoryClientAsync {
     return this._client.getWorkingDirectory();
   }
 
+  /**
+   * That extends the `GitRepositoryAsync` implementation which takes a single file path.
+   * Here, it's possible to pass an array of file paths to revert/checkout-head.
+   */
+  checkoutHead(filePathsArg: NuclideUri | Array<NuclideUri>): Promise<void> {
+    const filePaths = Array.isArray(filePathsArg) ? filePathsArg : [filePathsArg];
+    return this._client._service.revert(filePaths);
+  }
+
   checkoutReference(reference: string, create: boolean): Promise<void> {
     return this._client._service.checkout(reference, create);
   }

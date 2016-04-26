@@ -147,4 +147,8 @@ module.exports = {
   get addTooltip() {
     return requireFromCache('./tooltip').addTooltip;
   },
+
+  get getUiTreePathFromTargetEvent() {
+    return requireFromCache('./ui-tree-path').getUiTreePathFromTargetEvent;
+  },
 };

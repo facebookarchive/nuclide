@@ -14,8 +14,6 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import invariant from 'assert';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
 
-const TREE_API_DATA_PATH = 'data-path';
-
 /**
  * Reads the file contents and returns empty string if the file doesn't exist
  * which means it was removed in the HEAD dirty repository status.
@@ -37,14 +35,4 @@ export function getFileSystemContents(filePath: NuclideUri): Promise<string> {
         throw error;
       }
     );
-}
-
-export function getFileTreePathFromTargetEvent(event: Event): string {
-  // Event target isn't necessarily an HTMLElement,
-  // but that's guaranteed in the usages here.
-  const target: HTMLElement = (event.currentTarget: any);
-  const nameElement = target.hasAttribute(TREE_API_DATA_PATH)
-    ? target
-    : target.querySelector(`[${TREE_API_DATA_PATH}]`);
-  return nameElement.getAttribute(TREE_API_DATA_PATH);
 }
