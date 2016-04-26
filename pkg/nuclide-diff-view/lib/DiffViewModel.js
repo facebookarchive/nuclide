@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
+import type {
+  HgRepositoryClient,
+} from '../../nuclide-hg-repository-client';
 import type {
   FileChangeState,
   RevisionsState,
@@ -23,7 +25,7 @@ import type {
 } from './types';
 import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {PhabricatorRevisionInfo} from '../../nuclide-arcanist-client';
+import type {PhabricatorRevisionInfo} from '../../nuclide-arcanist-base/lib/utils';
 import type {
   UIProvider,
   UIElement,
@@ -42,6 +44,7 @@ export type DiffEntityOptions = {
   commitMode?: CommitModeType;
 };
 
+import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-base/lib/utils';
 import arcanist from '../../nuclide-arcanist-client';
 import {CompositeDisposable, Emitter} from 'atom';
 import shell from 'shell';
@@ -923,10 +926,15 @@ class DiffViewModel {
     this._publishUpdates.next({level: 'log', text: 'Creating new revision...\n'});
     const stream = arcanist.createPhabricatorRevision(filePath);
     await this._processArcanistOutput(stream);
+    const asyncHgRepo = activeRepositoryStack.getRepository().async;
+    const headCommitMessagePromise = asyncHgRepo.getHeadCommitMessage();
     // Invalidate the current revisions state because the current commit info has changed.
     activeRepositoryStack.getRevisionsStatePromise();
-    const {phabricatorRevision}  = await this._getActiveHeadRevisionDetails();
-    return phabricatorRevision;
+    const commitMessage = await headCommitMessagePromise;
+    if (commitMessage == null) {
+      return null;
+    }
+    return getPhabricatorRevisionFromCommitMessage(commitMessage);
   }
 
   async _updatePhabricatorRevision(
@@ -1167,7 +1175,7 @@ class DiffViewModel {
     const {revisions} = revisionsState;
     invariant(revisions.length > 0, 'Diff View Error: Zero Revisions');
     const headRevision = revisions[revisions.length - 1];
-    const phabricatorRevision = arcanist.getPhabricatorRevisionFromCommitMessage(
+    const phabricatorRevision = getPhabricatorRevisionFromCommitMessage(
       headRevision.description,
     );
     return {

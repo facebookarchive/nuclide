@@ -15,13 +15,6 @@ import typeof * as ArcanistBaseService from '../../nuclide-arcanist-base';
 
 import invariant from 'assert';
 
-const DIFFERENTIAL_REVISION_REGEX = /^Differential Revision:\s*(\D+\/[dD]([1-9][0-9]{5,}))/im;
-
-export type PhabricatorRevisionInfo = {
-  url: string;
-  id: string;
-};
-
 function getService(fileName: NuclideUri): ArcanistBaseService {
   const {getServiceByNuclideUri} = require('../../nuclide-client');
   const service = getServiceByNuclideUri('ArcanistBaseService', fileName);
@@ -86,18 +79,6 @@ function updatePhabricatorRevision(
     .share();
 }
 
-function getPhabricatorRevisionFromCommitMessage(commitMessage: string): ?PhabricatorRevisionInfo {
-  const match = DIFFERENTIAL_REVISION_REGEX.exec(commitMessage);
-  if (match === null) {
-    return null;
-  } else {
-    return {
-      url: match[1],
-      id: `D${match[2]}`,
-    };
-  }
-}
-
 module.exports = {
   findArcConfigDirectory,
   readArcConfig,
@@ -106,5 +87,4 @@ module.exports = {
   findDiagnostics,
   createPhabricatorRevision,
   updatePhabricatorRevision,
-  getPhabricatorRevisionFromCommitMessage,
 };

@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 
-import arcanistClient from '..';
+import {getPhabricatorRevisionFromCommitMessage} from '../lib/utils';
 
 describe('nuclide-arcanist-client', () => {
   const testCases = [
@@ -32,7 +32,7 @@ describe('nuclide-arcanist-client', () => {
   it('can parse a commit message and get the revision ID', () => {
     for (const [message, correctAnswer] of testCases) {
       const msg = `Test data: '${message}'`;
-      const revisionInfo = arcanistClient.getPhabricatorRevisionFromCommitMessage(message);
+      const revisionInfo = getPhabricatorRevisionFromCommitMessage(message);
       if (correctAnswer == null) {
         expect(revisionInfo).toBeNull(msg);
       } else {

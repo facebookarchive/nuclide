@@ -13,7 +13,7 @@ import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService'
 import type DiffViewModel from './DiffViewModel';
 import type {PublishModeType, PublishModeStateType} from './types';
 
-import arcanist from '../../nuclide-arcanist-client';
+import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-base/lib/utils';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 import classnames from 'classnames';
 import {PublishMode, PublishModeState} from './constants';
@@ -39,7 +39,7 @@ class DiffRevisionView extends React.Component {
   render(): React.Element {
     const {hash, title, description} = this.props.revision;
     const tooltip = `${hash}: ${title}`;
-    const revision = arcanist.getPhabricatorRevisionFromCommitMessage(description);
+    const revision = getPhabricatorRevisionFromCommitMessage(description);
 
     return (revision == null)
       ? <span />

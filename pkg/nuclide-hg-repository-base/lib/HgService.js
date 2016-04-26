@@ -799,4 +799,24 @@ export class HgService {
     return this._runSimpleInWorkingDirectory('add', filePaths);
   }
 
+  async getHeadCommitMessage(): Promise<?string> {
+    const args = [
+      'log', '-T', '{desc}\n',
+      '--limit', '1',
+      '--rev', expressionForRevisionsBeforeHead(0),
+    ];
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    try {
+      const output = await this._hgAsyncExecute(args, execOptions);
+      const stdout = output.stdout.trim();
+      return stdout || null;
+    } catch (e) {
+      // This should not happen: `hg log` does not error even if it does not recognize the template.
+      getLogger().error('Failed when trying to get head commit message');
+      return null;
+    }
+  }
+
 }

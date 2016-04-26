@@ -134,6 +134,10 @@ export default class HgRepositoryClientAsync {
     });
   }
 
+  getHeadCommitMessage(): Promise<?string> {
+    return this._client._service.getHeadCommitMessage();
+  }
+
   /**
    * Return relative paths to status code number values object.
    * matching `GitRepositoryAsync` implementation.
