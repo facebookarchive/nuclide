@@ -188,14 +188,16 @@ export default class ClientComponent {
    */
   async disposeRemoteObject(object: Object): Promise<void> {
     const objectId = await this._objectRegistry.disposeProxy(object);
-    const message: DisposeRemoteObjectMessage = {
-      protocol: 'service_framework3_rpc',
-      type: 'DisposeObject',
-      requestId: this._generateRequestId(),
-      objectId,
-    };
-    return await this._sendMessageAndListenForResult(
-      message, 'promise', `Disposing object ${objectId}`);
+    if (objectId != null) {
+      const message: DisposeRemoteObjectMessage = {
+        protocol: 'service_framework3_rpc',
+        type: 'DisposeObject',
+        requestId: this._generateRequestId(),
+        objectId,
+      };
+      return await this._sendMessageAndListenForResult(
+        message, 'promise', `Disposing object ${objectId}`);
+    }
   }
 
   /**

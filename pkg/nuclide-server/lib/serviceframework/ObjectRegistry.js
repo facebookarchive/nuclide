@@ -43,7 +43,8 @@ export class ObjectRegistry {
   _delta: number;
   // These members handle remote objects.
   _proxiesById: Map<number, Object>;
-  _idsByProxy: Map<Object, Promise<number>>;
+  // null means the proxy has been disposed.
+  _idsByProxy: Map<Object, ?Promise<number>>;
 
   constructor(kind: RegistryKind) {
     this._delta = (kind === 'server') ? 1 : -1;
@@ -184,11 +185,16 @@ export class ObjectRegistry {
     }
   }
 
-  async disposeProxy(proxy: Object): Promise<number> {
+  // Returns null if the object is already disposed.
+  async disposeProxy(proxy: Object): Promise<?number> {
     invariant(this._idsByProxy.has(proxy));
-    const objectId = await this._idsByProxy.get(proxy);
-    this._idsByProxy.set(proxy, Promise.reject(new Error('This remote Object has been disposed')));
-    return objectId;
+    const objectId = this._idsByProxy.get(proxy);
+    if (objectId != null) {
+      this._idsByProxy.set(proxy, null);
+      return await objectId;
+    } else {
+      return null;
+    }
   }
 
   async addProxy(proxy: Object, idPromise: Promise<number>): Promise<void> {
