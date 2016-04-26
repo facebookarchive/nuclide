@@ -55,14 +55,17 @@ console.log('NodeTranspiler.shouldCompile on Buffers and strings');
     version: '5.8.38',
     transform() { throw new Error('This should not have been called.'); },
   };
-  const nodeTranspiler1 = new NodeTranspiler(fakeBabel1);
+  const nodeTranspiler1 =
+    new NodeTranspiler(fakeBabel1.version, () => fakeBabel1);
 
   const fakeBabel2 = {
     version: '5.0.0',
     transform() { throw new Error('This should not have been called.'); },
   };
-  const nodeTranspiler2a = new NodeTranspiler(fakeBabel2);
-  const nodeTranspiler2b = new NodeTranspiler(fakeBabel2);
+  const nodeTranspiler2a =
+    new NodeTranspiler(fakeBabel2.version, () => fakeBabel2);
+  const nodeTranspiler2b =
+    new NodeTranspiler(fakeBabel2.version, () => fakeBabel2);
 
   assert.notEqual(
     nodeTranspiler1.getConfigDigest(),
@@ -90,7 +93,8 @@ console.log('NodeTranspiler.shouldCompile on Buffers and strings');
     version: realBabel.version,
     transform() { throw new Error('This should not have been called.'); },
   };
-  const nodeTranspilerFake = new NodeTranspiler(fakeBabel);
+  const nodeTranspilerFake =
+    new NodeTranspiler(fakeBabel.version, () => fakeBabel);
 
   assert.equal(
     nodeTranspilerReal.getConfigDigest(),
@@ -135,13 +139,15 @@ console.log('NodeTranspiler.shouldCompile on Buffers and strings');
   console.log('NodeTranspiler#transform with external babel');
 
   const filename = require.resolve('./fixtures/modern-syntax');
-  const nodeTranspiler = new NodeTranspiler({
+  const babelMock = {
     version: '5.0.0',
     transform(src, _filename) {
       assert.ok(typeof src === 'string');
       return {code: src.toUpperCase()};
     },
-  });
+  };
+  const nodeTranspiler =
+    new NodeTranspiler(babelMock.version, () => babelMock);
 
   // nodeTranspiler.transform(buffer) => babel.transform(string)
 
