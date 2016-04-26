@@ -77,6 +77,8 @@ describe('CounterService', () => {
       expect((await service.Counter.listCounters()).length).toBe(1);
       await counter2.dispose();
       expect((await service.Counter.listCounters()).length).toBe(0);
+      // Calling dispose multiple times should not throw.
+      await counter2.dispose();
 
       // Wait for the counter1 Observable to complete.
       waitsFor(() => completed1, 'The counter1 Observable to complete.');
