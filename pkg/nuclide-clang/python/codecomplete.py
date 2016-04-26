@@ -140,7 +140,6 @@ def _processResult(completion_result):
         'spelling': spelling,
         'chunks': chunks,
         'result_type': result_type,
-        'first_token': _getFirstNonResultTypeTokenChunk(completion_string),
         'cursor_kind': _getKind(completion_result),
         'brief_comment': briefComment and briefComment.spelling,
     }

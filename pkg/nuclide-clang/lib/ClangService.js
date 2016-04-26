@@ -136,6 +136,7 @@ export const ClangCursorToDeclarationTypes = Object.freeze({
   OBJC_DYNAMIC_DECL: 'ObjCDynamic',
   CXX_ACCESS_SPEC_DECL: 'AccessSpec',
   OVERLOAD_CANDIDATE: 'Function',
+  MACRO_DEFINITION: 'Macro',
 });
 
 // TODO: Support enums in rpc3 framework.
@@ -194,7 +195,6 @@ export type ClangCompletion = {
     isPlaceHolder: boolean;
     kind?: string;
   }>;
-  first_token: ?string;
   result_type: string;
   spelling: string;
   cursor_kind: string;
