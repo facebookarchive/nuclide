@@ -23,6 +23,8 @@ import {
   plain,
 } from '../../nuclide-tokenized-text';
 
+import invariant from 'assert';
+
 type Extent = {
   startPosition: Point;
   endPosition: Point;
@@ -109,7 +111,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
         ...extent,
       };
     case 'ExpressionStatement':
-      return specOutline(item, /* describeOnly */ true);
+      return topLevelExpressionOutline(item);
     default:
       return null;
   }
@@ -141,6 +143,81 @@ function getExtent(item: any): Extent {
       column: item.loc.end.column,
     },
   };
+}
+
+function topLevelExpressionOutline(expressionStatement: any): ?FlowOutlineTree {
+  switch (expressionStatement.expression.type) {
+    case 'CallExpression':
+      return specOutline(expressionStatement, /* describeOnly */ true);
+    case 'AssignmentExpression':
+      return moduleExportsOutline(expressionStatement.expression);
+    default:
+      return null;
+  }
+}
+
+function moduleExportsOutline(assignmentStatement: any): ?FlowOutlineTree {
+  invariant(assignmentStatement.type === 'AssignmentExpression');
+
+  const left = assignmentStatement.left;
+  if (!isModuleExports(left)) {
+    return null;
+  }
+
+  const right = assignmentStatement.right;
+  if (right.type !== 'ObjectExpression') {
+    return null;
+  }
+  const properties: Array<Object> = right.properties;
+  return {
+    tokenizedText: [plain('module.exports')],
+    children: array.compact(properties.map(moduleExportsPropertyOutline)),
+    ...getExtent(assignmentStatement),
+  };
+}
+
+function isModuleExports(left: Object): boolean {
+  return left.type === 'MemberExpression' &&
+    left.object.type === 'Identifier' &&
+    left.object.name === 'module' &&
+    left.property.type === 'Identifier' &&
+    left.property.name === 'exports';
+}
+
+function moduleExportsPropertyOutline(property: any): ?FlowOutlineTree {
+  invariant(property.type === 'Property');
+  if (property.key.type !== 'Identifier') {
+    return null;
+  }
+  const propName = property.key.name;
+
+  if (property.value.type === 'Literal') {
+    return {
+      tokenizedText: [
+        string(propName),
+        plain(':'),
+      ],
+      children: [],
+      ...getExtent(property),
+    };
+  }
+
+  if (property.value.type === 'FunctionExpression' ||
+    property.value.type === 'ArrowFunctionExpression'
+  ) {
+    return {
+      tokenizedText: [
+        method(propName),
+        plain('('),
+        ...paramsTokenizedText(property.value.params),
+        plain(')'),
+      ],
+      children: [],
+      ...getExtent(property),
+    };
+  }
+
+  return null;
 }
 
 function specOutline(expressionStatement: any, describeOnly: boolean = false): ?FlowOutlineTree {

@@ -9,11 +9,14 @@
  * the root directory of this source tree.
  */
 
+import type {FlowOutlineTree} from '..';
+
 import {astToOutline} from '../lib/astToOutline';
 
 import classAST from './fixtures/class-ast';
 import jasmineAST from './fixtures/jasmine-ast';
 import toplevelAST from './fixtures/toplevel-ast';
+import exportsAST from './fixtures/exports-ast';
 
 const expectedClassOutline = [
   {
@@ -181,6 +184,124 @@ const expectedJasmineOutline = [
   },
 ];
 
+const expectedExportsOutline: Array<FlowOutlineTree> = [
+  {
+    tokenizedText: [
+      {value: 'module.exports', kind: 'plain'},
+    ],
+    startPosition: {
+      line: 13,
+      column: 0,
+    },
+    endPosition: {
+      line: 22,
+      column: 1,
+    },
+    children: [
+      {
+        tokenizedText: [
+          {value: 'foo', kind: 'string'},
+          {value: ':', kind: 'plain'},
+        ],
+        startPosition: {
+          line: 14,
+          column: 2,
+        },
+        endPosition: {
+          line: 14,
+          column: 8,
+        },
+        children: [],
+      },
+      {
+        tokenizedText: [
+          {value: 'bar', kind: 'method'},
+          {value: '(', kind: 'plain'},
+          {value: 'arg', kind: 'param'},
+          {value: ')', kind: 'plain'},
+        ],
+        startPosition: {
+          line: 15,
+          column: 2,
+        },
+        endPosition: {
+          line: 17,
+          column: 3,
+        },
+        children: [],
+      },
+      {
+        tokenizedText: [
+          {value: 'baz', kind: 'method'},
+          {value: '(', kind: 'plain'},
+          {value: 'arg', kind: 'param'},
+          {value: ')', kind: 'plain'},
+        ],
+        startPosition: {
+          line: 18,
+          column: 2,
+        },
+        endPosition: {
+          line: 18,
+          column: 33,
+        },
+        children: [],
+      },
+      {
+        tokenizedText: [
+          {value: 'asdf', kind: 'method'},
+          {value: '(', kind: 'plain'},
+          {value: 'arg', kind: 'param'},
+          {value: ')', kind: 'plain'},
+        ],
+        startPosition: {
+          line: 19,
+          column: 2,
+        },
+        endPosition: {
+          line: 19,
+          column: 24,
+        },
+        children: [],
+      },
+      {
+        tokenizedText: [
+          {value: 'jkl', kind: 'method'},
+          {value: '(', kind: 'plain'},
+          {value: 'arg', kind: 'param'},
+          {value: ')', kind: 'plain'},
+        ],
+        startPosition: {
+          line: 20,
+          column: 2,
+        },
+        endPosition: {
+          line: 20,
+          column: 27,
+        },
+        children: [],
+      },
+      {
+        tokenizedText: [
+          {value: 'asdfjkl', kind: 'method'},
+          {value: '(', kind: 'plain'},
+          {value: 'arg', kind: 'param'},
+          {value: ')', kind: 'plain'},
+        ],
+        startPosition: {
+          line: 21,
+          column: 2,
+        },
+        endPosition: {
+          line: 21,
+          column: 17,
+        },
+        children: [],
+      },
+    ],
+  },
+];
+
 describe('astToOutline', () => {
   it('should provide a class outline', () => {
     expect(astToOutline(classAST)).toEqual(expectedClassOutline);
@@ -192,5 +313,9 @@ describe('astToOutline', () => {
 
   it('should provide an outline for Jasmine specs', () => {
     expect(astToOutline(jasmineAST)).toEqual(expectedJasmineOutline);
+  });
+
+  it('should provide an outline for module.exports', () => {
+    expect(astToOutline(exportsAST)).toEqual(expectedExportsOutline);
   });
 });
