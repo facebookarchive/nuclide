@@ -20,8 +20,6 @@ const pathModule = require('path');
 
 import type {Point} from 'atom';
 
-const targetRegex = /(\/(?:\/[\w\-\.]*)*){0,1}:([\w\-\.]+)/;
-
 const ESCAPE_REGEXP = /([.*+?^${}()|\[\]\/\\])/g;
 
 function escapeRegExp(str: string): string {
@@ -103,6 +101,12 @@ async function findTargetLocation(target: Target): Promise {
   return {path: target.path, line: lineIndex, column: 0};
 }
 
+const VALID_BUILD_FILE_NAMES = new Set([
+  'BUCK',
+  'BUCK.autodeps',
+  'TARGETS',
+]);
+
 module.exports = {
   priority: 200,
   providerName: 'nuclide-buck-files',
@@ -113,7 +117,7 @@ module.exports = {
     }
 
     const baseName = pathModule.basename(absolutePath);
-    if (baseName !== 'BUCK' && baseName !== 'BUCK.autodeps') {
+    if (!VALID_BUILD_FILE_NAMES.has(baseName)) {
       return null;
     }
 
@@ -122,21 +126,17 @@ module.exports = {
       return null;
     }
 
-    const wordMatchAndRange = extractWordAtPosition(textEditor, position, targetRegex);
-    if (!wordMatchAndRange) {
-      return null;
-    }
-    const {wordMatch, range} = wordMatchAndRange;
+    const results = await Promise.all([
+      findBuildTarget(textEditor, position, absolutePath, buckProject),
+      findRelativeFilePath(textEditor, position, pathModule.dirname(absolutePath)),
+    ]);
+    const hyperclickMatch = results.find(x => x != null);
 
-    const target = await parseTarget(wordMatch, absolutePath, buckProject);
-    if (!target) {
-      return null;
-    }
-    const location = await findTargetLocation(target);
-    if (location) {
+    if (hyperclickMatch != null) {
+      const match = hyperclickMatch;
       return {
-        range,
-        callback() { goToLocation(location.path, location.line, location.column); },
+        range: match.range,
+        callback() { goToLocation(match.path, match.line, match.column); },
       };
     } else {
       return null;
@@ -145,3 +145,82 @@ module.exports = {
   parseTarget,
   findTargetLocation,
 };
+
+type HyperclickMatch = {
+  path: string;
+  line: number;
+  column: number;
+  range: atom$Range;
+};
+
+const TARGET_REGEX = /(\/(?:\/[\w\-\.]*)*){0,1}:([\w\-\.]+)/;
+
+/**
+ * @return HyperclickMatch if (textEditor, position) identifies a build target.
+ */
+async function findBuildTarget(
+  textEditor: atom$TextEditor,
+  position: atom$Point,
+  absolutePath: string,
+  buckProject: BuckProject,
+): Promise<?HyperclickMatch> {
+  const wordMatchAndRange = extractWordAtPosition(textEditor, position, TARGET_REGEX);
+  if (!wordMatchAndRange) {
+    return null;
+  }
+  const {wordMatch, range} = wordMatchAndRange;
+
+  const target = await parseTarget(wordMatch, absolutePath, buckProject);
+  if (!target) {
+    return null;
+  }
+
+  const location = await findTargetLocation(target);
+  if (location != null) {
+    return {...location, range};
+  } else {
+    return null;
+  }
+}
+
+const RELATIVE_FILE_PATH_REGEX = /(['"])(.*)(['"])/;
+
+/**
+ * @return HyperclickMatch if (textEditor, position) identifies a file path that resolves to a file
+ *   under the specified directory.
+ */
+async function findRelativeFilePath(
+  textEditor: atom$TextEditor,
+  position: atom$Point,
+  directory: string,
+): Promise<?HyperclickMatch> {
+  const wordMatchAndRange = extractWordAtPosition(textEditor, position, RELATIVE_FILE_PATH_REGEX);
+  if (!wordMatchAndRange) {
+    return null;
+  }
+  const {wordMatch, range} = wordMatchAndRange;
+
+  // Make sure that the quotes match up.
+  if (wordMatch[1] !== wordMatch[3]) {
+    return null;
+  }
+
+  const potentialPath = pathModule.join(directory, wordMatch[2]);
+  let stat;
+  try {
+    stat = await fsPromise.stat(potentialPath);
+  } catch (e) {
+    return null;
+  }
+
+  if (stat.isFile()) {
+    return {
+      path: potentialPath,
+      line: 0,
+      column: 0,
+      range,
+    };
+  } else {
+    return null;
+  }
+}
