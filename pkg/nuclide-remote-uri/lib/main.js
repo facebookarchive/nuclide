@@ -46,6 +46,7 @@ type ParsedRemoteUrl = {
 
 import invariant from 'assert';
 import pathModule from 'path';
+
 import url from 'url';
 
 const REMOTE_PATH_URI_PREFIX = 'nuclide://';
@@ -168,29 +169,31 @@ function getPort(remoteUri: NuclideUri): number {
 }
 
 function join(uri: NuclideUri, ...relativePath: Array<string>): NuclideUri {
+  const uriPathModule = pathModuleFor(uri);
   if (isRemote(uri)) {
     const {hostname, port, path} = parseRemoteUri(uri);
     relativePath.splice(0, 0, path);
     return createRemoteUri(
       hostname,
       Number(port),
-      pathModule.join.apply(null, relativePath));
+      uriPathModule.join.apply(null, relativePath));
   } else {
     relativePath.splice(0, 0, uri);
-    return pathModule.join.apply(null, relativePath);
+    return uriPathModule.join.apply(null, relativePath);
   }
 }
 
 function normalize(uri: NuclideUri): NuclideUri {
+  const uriPathModule = pathModuleFor(uri);
   if (isRemote(uri)) {
     const {hostname, port, path} = parseRemoteUri(uri);
     return createRemoteUri(
       hostname,
       Number(port),
-      pathModule.normalize(path)
+      uriPathModule.normalize(path)
     );
   } else {
-    return pathModule.normalize(uri);
+    return uriPathModule.normalize(uri);
   }
 }
 
@@ -200,37 +203,40 @@ function getParent(uri: NuclideUri): NuclideUri {
 }
 
 function relative(uri: NuclideUri, other: NuclideUri): string {
+  const uriPathModule = pathModuleFor(uri);
   const remote = isRemote(uri);
   if (remote !== isRemote(other) ||
       (remote && getHostname(uri) !== getHostname(other))) {
     throw new Error(`Cannot relative urls on different hosts: ${uri} and ${other}`);
   }
   if (remote) {
-    return pathModule.relative(getPath(uri), getPath(other));
+    return uriPathModule.relative(getPath(uri), getPath(other));
   } else {
-    return pathModule.relative(uri, other);
+    return uriPathModule.relative(uri, other);
   }
 }
 
 // TODO: Add optional ext parameter
 function basename(uri: NuclideUri): NuclideUri {
+  const uriPathModule = pathModuleFor(uri);
   if (isRemote(uri)) {
-    return pathModule.basename(getPath(uri));
+    return uriPathModule.basename(getPath(uri));
   } else {
-    return pathModule.basename(uri);
+    return uriPathModule.basename(uri);
   }
 }
 
 function dirname(uri: NuclideUri): NuclideUri {
+  const uriPathModule = pathModuleFor(uri);
   if (isRemote(uri)) {
     const {hostname, port, path} = parseRemoteUri(uri);
     return createRemoteUri(
       hostname,
       Number(port),
-      pathModule.dirname(path)
+      uriPathModule.dirname(path)
     );
   } else {
-    return pathModule.dirname(uri);
+    return uriPathModule.dirname(uri);
   }
 }
 
@@ -310,6 +316,27 @@ function nuclideUriToDisplayString(uri: NuclideUri): string {
   }
 }
 
+function pathModuleFor(uri: NuclideUri): any {
+  const posixPath = pathModule.posix;
+  const win32Path = pathModule.win32;
+
+  if (uri.startsWith(posixPath.sep)) {
+    return posixPath;
+  }
+  if (uri.indexOf('://') > -1) {
+    return posixPath;
+  }
+  if (uri[1] === ':' && uri[2] === win32Path.sep) {
+    return win32Path;
+  }
+
+  if (uri.split(win32Path.sep).length > uri.split(posixPath.sep).length) {
+    return win32Path;
+  } else {
+    return posixPath;
+  }
+}
+
 module.exports = {
   basename,
   dirname,
@@ -330,4 +357,5 @@ module.exports = {
   contains,
   nuclideUriToDisplayString,
   registerHostnameFormatter,
+  pathModuleFor,
 };

@@ -10,6 +10,7 @@
  */
 
 const nuclideUri = require('..');
+import path from 'path';
 
 describe('nuclide-uri', () => {
   const localUri = '/usr/local/file';
@@ -116,5 +117,26 @@ describe('nuclide-uri', () => {
   it('nuclideUriToDisplayString', () => {
     expect(nuclideUri.nuclideUriToDisplayString(localUri)).toBe(localUri);
     expect(nuclideUri.nuclideUriToDisplayString(remoteUri)).toBe('fb.com//usr/local');
+  });
+
+  it('detects Windows and Posix paths properly', () => {
+    const win32Path = path.win32;
+    const posixPath = path.posix;
+
+    expect(nuclideUri.pathModuleFor('/')).toBe(posixPath);
+    expect(nuclideUri.pathModuleFor('/abc')).toBe(posixPath);
+    expect(nuclideUri.pathModuleFor('/abc/def')).toBe(posixPath);
+    expect(nuclideUri.pathModuleFor('/abc.txt')).toBe(posixPath);
+    expect(nuclideUri.pathModuleFor('nuclide://host')).toBe(posixPath);
+    expect(nuclideUri.pathModuleFor('nuclide://host:123/')).toBe(posixPath);
+    expect(nuclideUri.pathModuleFor('nuclide://host:123/abc')).toBe(posixPath);
+    expect(nuclideUri.pathModuleFor('nuclide://host:123/abc/def')).toBe(posixPath);
+    expect(nuclideUri.pathModuleFor('nuclide://host:123/abc/def.txt')).toBe(posixPath);
+    expect(nuclideUri.pathModuleFor('C:\\')).toBe(win32Path);
+    expect(nuclideUri.pathModuleFor('C:\\abc')).toBe(win32Path);
+    expect(nuclideUri.pathModuleFor('C:\\abc\\def')).toBe(win32Path);
+    expect(nuclideUri.pathModuleFor('C:\\abc\\def.txt')).toBe(win32Path);
+    expect(nuclideUri.pathModuleFor('D:\\abc\\aaa bbb')).toBe(win32Path);
+    expect(nuclideUri.pathModuleFor('\\abc\\def')).toBe(win32Path);
   });
 });
