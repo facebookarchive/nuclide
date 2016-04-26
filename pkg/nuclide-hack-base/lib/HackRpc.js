@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
+import type {Observable, Subscription} from 'rxjs';
 import {observeStream, splitStream} from '../../nuclide-commons';
 const logger = require('../../nuclide-logging').getLogger();
 import invariant from 'assert';
@@ -96,7 +96,7 @@ export class HackRpc {
   _index: number;
   _inProgress: Map<number, CallResolver>;
   _transport: Transport;
-  _subscription: IDisposable;
+  _subscription: Subscription;
 
   constructor(transport: Transport) {
     this._index = 0;
@@ -120,7 +120,7 @@ export class HackRpc {
   }
 
   dispose(): void {
-    this._subscription.dispose();
+    this._subscription.unsubscribe();
   }
 
   _handleMessage(messageString: string): void {
