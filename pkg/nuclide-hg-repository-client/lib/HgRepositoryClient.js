@@ -649,28 +649,6 @@ export class HgRepositoryClient {
    */
 
   /**
-   * @deprecated Use {#async.getDiffStats} instead
-   *
-   * Recommended method to use to get the diff stats of files in this repo.
-   * @param path The file path to get the status for. If a path is not in the
-   *   project, default "clean" stats will be returned.
-   */
-  getDiffStatsForPath(filePath: NuclideUri): Promise<{added: number; deleted: number;}> {
-    return this.async.getDiffStats(filePath);
-  }
-
-  /**
-   * @deprecated Use {#async.getLineDiffs} instead
-   *
-   * Recommended method to use to get the line diffs of files in this repo.
-   * @param path The absolute file path to get the line diffs for. If the path \
-   *   is not in the project, an empty Array will be returned.
-   */
-  getLineDiffsForPath(filePath: NuclideUri): Promise<Array<LineDiff>> {
-    return this.async.getLineDiffs(filePath);
-  }
-
-  /**
    * Updates the diff information for the given paths, and updates the cache.
    * @param An array of absolute file paths for which to update the diff info.
    * @return A map of each path to its DiffInfo.

@@ -73,28 +73,8 @@ export default class HgRepositoryClientAsync {
     return Promise.resolve(this._client.getCachedUpstreamAheadBehindCount(path));
   }
 
-  async getDiffStats(filePath: NuclideUri): Promise<{added: number; deleted: number;}> {
-    const cleanStats = {added: 0, deleted: 0};
-    if (!filePath) {
-      return cleanStats;
-    }
-
-    // Check the cache.
-    const cachedDiffInfo = this._client._hgDiffCache[filePath];
-    if (cachedDiffInfo) {
-      return {added: cachedDiffInfo.added, deleted: cachedDiffInfo.deleted};
-    }
-
-    // Fall back to a fetch.
-    const fetchedPathToDiffInfo = await this._client._updateDiffInfo([filePath]);
-    if (fetchedPathToDiffInfo) {
-      const diffInfo = fetchedPathToDiffInfo.get(filePath);
-      if (diffInfo != null) {
-        return {added: diffInfo.added, deleted: diffInfo.deleted};
-      }
-    }
-
-    return cleanStats;
+  getDiffStats(filePath: NuclideUri): Promise<{added: number; deleted: number;}> {
+    return Promise.resolve(this._client.getDiffStats(filePath));
   }
 
   /**
@@ -102,28 +82,8 @@ export default class HgRepositoryClientAsync {
    * @param path The absolute file path to get the line diffs for. If the path \
    *   is not in the project, an empty Array will be returned.
    */
-  async getLineDiffs(filePath: NuclideUri): Promise<Array<LineDiff>> {
-    const lineDiffs = [];
-    if (!filePath) {
-      return lineDiffs;
-    }
-
-    // Check the cache.
-    const cachedDiffInfo = this._client._hgDiffCache[filePath];
-    if (cachedDiffInfo) {
-      return cachedDiffInfo.lineDiffs;
-    }
-
-    // Fall back to a fetch.
-    const fetchedPathToDiffInfo = await this._client._updateDiffInfo([filePath]);
-    if (fetchedPathToDiffInfo != null) {
-      const diffInfo = fetchedPathToDiffInfo.get(filePath);
-      if (diffInfo != null) {
-        return diffInfo.lineDiffs;
-      }
-    }
-
-    return lineDiffs;
+  getLineDiffs(filePath: NuclideUri): Promise<Array<LineDiff>> {
+    return Promise.resolve(this._client.getLineDiffs(filePath));
   }
 
   async refreshStatus(): Promise<void> {
