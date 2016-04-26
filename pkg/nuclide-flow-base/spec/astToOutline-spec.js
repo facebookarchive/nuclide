@@ -11,9 +11,11 @@
 
 import {astToOutline} from '../lib/astToOutline';
 
-import ast from './fixtures/ast';
+import classAST from './fixtures/class-ast';
+import jasmineAST from './fixtures/jasmine-ast';
+import toplevelAST from './fixtures/toplevel-ast';
 
-const expectedOutline = [
+const expectedClassOutline = [
   {
     tokenizedText: [
       {value: 'export', kind: 'keyword'},
@@ -23,11 +25,11 @@ const expectedOutline = [
       {value: 'Foo', kind: 'class-name'},
     ],
     startPosition: {
-      line: 15,
+      line: 11,
       column: 0,
     },
     endPosition: {
-      line: 23,
+      line: 19,
       column: 1,
     },
     children: [
@@ -37,11 +39,11 @@ const expectedOutline = [
           {value: '=', kind: 'plain'},
         ],
         startPosition: {
-          line: 16,
+          line: 12,
           column: 2,
         },
         endPosition: {
-          line: 16,
+          line: 12,
           column: 14,
         },
         children: [],
@@ -54,11 +56,11 @@ const expectedOutline = [
           {value: ')', kind: 'plain'},
         ],
         startPosition: {
-          line: 18,
+          line: 14,
           column: 2,
         },
         endPosition: {
-          line: 20,
+          line: 16,
           column: 3,
         },
         children: [],
@@ -72,17 +74,20 @@ const expectedOutline = [
           {value: ')', kind: 'plain'},
         ],
         startPosition: {
-          line: 22,
+          line: 18,
           column: 2,
         },
         endPosition: {
-          line: 22,
+          line: 18,
           column: 35,
         },
         children: [],
       },
     ],
   },
+];
+
+const expectedToplevelOutline = [
   {
     tokenizedText: [
       {value: 'function', kind: 'keyword'},
@@ -96,15 +101,18 @@ const expectedOutline = [
       {value: ')', kind: 'plain'},
     ],
     startPosition: {
-      line: 25,
+      line: 11,
       column: 0,
     },
     endPosition: {
-      line: 27,
+      line: 13,
       column: 1,
     },
     children: [],
   },
+];
+
+const expectedJasmineOutline = [
   {
     tokenizedText: [
       {value: 'describe', kind: 'method'},
@@ -112,11 +120,11 @@ const expectedOutline = [
       {value: 'foo', kind: 'string'},
     ],
     startPosition: {
-      line: 29,
+      line: 11,
       column: 0,
     },
     endPosition: {
-      line: 34,
+      line: 16,
       column: 3,
     },
     children: [
@@ -127,11 +135,11 @@ const expectedOutline = [
           {value: 'should work', kind: 'string'},
         ],
         startPosition: {
-          line: 31,
+          line: 13,
           column: 2,
         },
         endPosition: {
-          line: 33,
+          line: 15,
           column: 5,
         },
         children: [],
@@ -145,11 +153,11 @@ const expectedOutline = [
       {value: 'bar', kind: 'string'},
     ],
     startPosition: {
-      line: 36,
+      line: 18,
       column: 0,
     },
     endPosition: {
-      line: 39,
+      line: 21,
       column: 3,
     },
     children: [
@@ -160,11 +168,11 @@ const expectedOutline = [
           {value: 'should work with a normal function', kind: 'string'},
         ],
         startPosition: {
-          line: 37,
+          line: 19,
           column: 2,
         },
         endPosition: {
-          line: 38,
+          line: 20,
           column: 5,
         },
         children: [],
@@ -174,7 +182,15 @@ const expectedOutline = [
 ];
 
 describe('astToOutline', () => {
-  it('should provide an outline', () => {
-    expect(astToOutline(ast)).toEqual(expectedOutline);
+  it('should provide a class outline', () => {
+    expect(astToOutline(classAST)).toEqual(expectedClassOutline);
+  });
+
+  it('should provide an outline for miscellaneous top-level statements', () => {
+    expect(astToOutline(toplevelAST)).toEqual(expectedToplevelOutline);
+  });
+
+  it('should provide an outline for Jasmine specs', () => {
+    expect(astToOutline(jasmineAST)).toEqual(expectedJasmineOutline);
   });
 });
