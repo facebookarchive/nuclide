@@ -106,9 +106,9 @@ export class HgRepositoryClient {
 
   _currentBookmark: ?string;
   _serializedRefreshStatusesCache: () => Promise<void>;
+  async: HgRepositoryClientAsync;
 
   constructor(repoPath: string, hgService: HgService, options: HgRepositoryOptions) {
-    // $FlowIssue: `async` not able to be annotated on classes
     this.async = new HgRepositoryClientAsync(this);
 
     this._path = repoPath;
@@ -263,7 +263,6 @@ export class HgRepositoryClient {
   getShortHead(filePath: NuclideUri): string {
     if (!this._currentBookmark) {
       // Kick off a fetch to get the current bookmark. This is async.
-      // $FlowIssue: `async` not able to be annotated on classes
       this.async.getShortHead();
       return '';
     }
@@ -428,17 +427,14 @@ export class HgRepositoryClient {
   }
 
   isStatusModified(status: ?number): boolean {
-    // $FlowIssue: `async` not able to be annotated on classes
     return this.async.isStatusModified(status);
   }
 
   isStatusNew(status: ?number): boolean {
-    // $FlowIssue: `async` not able to be annotated on classes
     return this.async.isStatusNew(status);
   }
 
   isStatusIgnored(status: ?number): boolean {
-    // $FlowIssue: `async` not able to be annotated on classes
     return this.async.isStatusIgnored(status);
   }
 
@@ -660,7 +656,6 @@ export class HgRepositoryClient {
    *   project, default "clean" stats will be returned.
    */
   getDiffStatsForPath(filePath: NuclideUri): Promise<{added: number; deleted: number;}> {
-    // $FlowIssue: `async` not able to be annotated on classes
     return this.async.getDiffStats(filePath);
   }
 
@@ -672,7 +667,6 @@ export class HgRepositoryClient {
    *   is not in the project, an empty Array will be returned.
    */
   getLineDiffsForPath(filePath: NuclideUri): Promise<Array<LineDiff>> {
-    // $FlowIssue: `async` not able to be annotated on classes
     return this.async.getLineDiffs(filePath);
   }
 
@@ -739,7 +733,6 @@ export class HgRepositoryClient {
    * @deprecated Use {#async.getShortHead} instead
    */
   fetchCurrentBookmark(): Promise<string> {
-    // $FlowIssue: `async` not able to be annotated on classes
     return this.async.getShortHead();
   }
 
@@ -765,7 +758,6 @@ export class HgRepositoryClient {
    * This is the async version of what checkoutReference() is meant to do.
    */
   checkoutRevision(reference: string, create: boolean): Promise<void> {
-    // $FlowIssue: `async` not able to be annotated on classes
     return this.async.checkoutReference(reference, create);
   }
 
