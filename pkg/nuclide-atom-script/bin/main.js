@@ -28,6 +28,7 @@
 var child_process = require('child_process');
 var net = require('net');
 var path = require('path');
+var split = require('split');
 var temp = require('temp').track();
 
 var server;
@@ -36,7 +37,6 @@ function exit(code) {
   if (server != null) {
     server.close();
   }
-  // Flush process.stdout, if possible?
   process.exit(code);
 }
 
@@ -79,24 +79,38 @@ function runAtom() {
     atomTest.stderr.on('data', writeToStderr);
   }
 
-  // TODO(mbolin): Before exiting, we should make sure that everything that was written
-  // to the UNIX domain socket has been flushed.
   atomTest.on('close', exit);
 }
 
 function main() {
   server = net.createServer(function(connection) {
-    connection.on('data', function(bufferOrString) {
-      var data = bufferOrString.toString();
-      // Until a fix for suppressing this debug info is upstreamed:
-      // https://github.com/atom/atom/commit/a4b9b9c6cd27e1403bd1ea4b82bd02f97031fc6a#commitcomment-16378936
-      // We special-case content that starts with this prefix:
-      var PREFIX = 'Window load time: ';
-      // We use this technique instead of startsWith() so this works on Node 0.12.0.
-      if (data.substring(0, PREFIX.length) !== PREFIX) {
-        process.stdout.write(bufferOrString);
-      }
-    });
+    connection
+      .pipe(split(JSON.parse))
+      .on('data', function(obj) {
+        var method = obj.method;
+        if (method === 'end') {
+          server.close();
+          return;
+        }
+
+        var id = obj.id;
+        var data = obj.message;
+
+        // Until a fix for suppressing this debug info is upstreamed:
+        // https://github.com/atom/atom/commit/a4b9b9c6cd27e1403bd1ea4b82bd02f97031fc6a#commitcomment-16378936
+        // We special-case content that starts with this prefix:
+        var PREFIX = 'Window load time: ';
+        // We use this technique instead of startsWith() so this works on Node 0.12.0.
+        if (data.substring(0, PREFIX.length) !== PREFIX) {
+          var stream = method === 'log' ? process.stdout : process.stderr;
+          stream.write(data);
+        }
+
+        connection.write(`${id}\0`);
+      })
+      .on('error', function(error) {
+        process.stderr.write('ERROR: ' + error + '\n');
+      });
   });
   server.listen({path: domainSocket}, runAtom);
 }

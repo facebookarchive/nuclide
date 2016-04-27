@@ -10,7 +10,9 @@
  */
 
 import {EventEmitter} from 'events';
+import {PromiseQueue} from '../../nuclide-commons';
 import net from 'net';
+import split from 'split';
 
 /* eslint-disable no-console */
 
@@ -24,47 +26,82 @@ import net from 'net';
  * This means we need to wrap the appropriate functions so they do not include the extra
  * information added by Chromium's chatty logger.
  *
- * @return a "notify when stdout is flushed" function that returns a Promise that will be resolved
- *   when all messages have been written to the UNIX domain socket.
+ * Unfortunately, this solution changes the semantics of console.log() to be asynchronous
+ * rather than synchronous. Although it could return a Promise, it returns void to be consistent
+ * with the original implementation of console.log().
+ *
+ * When console.log() (or .warn() or .error()) is called, it enqueues a request to atom-script via
+ * the UNIX socket to print the specified message. The PromiseQueue that holds all of these
+ * requests is returned by this function, along with a shutdown() function that should be used to
+ * disconnect from the UNIX socket.
  */
-export async function instrumentConsole(stdout: string): Promise<() => Promise<void>> {
-  const connectedSocket = await new Promise(resolve => {
+export async function instrumentConsole(
+  stdout: string,
+): Promise<{queue: PromiseQueue; shutdown: () => void}> {
+  const queue = new PromiseQueue();
+  const connectedSocket = await queue.submit(resolve => {
     const socket = net.connect(
       {path: stdout},
-      // $FlowIgnore: Not sure what's up with this.
       () => resolve(socket),
     );
   });
 
   const emitter = new EventEmitter();
-  const QUEUE_CLEARED_EVENT_NAME = 'queue-cleared';
 
-  function isQueueCleared(): boolean {
-    // Until we can figure out a better way to do this, we have to rely on an internal Node API.
-    return !connectedSocket._writableState.needDrain;
+  console.log = createFn(
+    'log',
+    connectedSocket,
+    emitter,
+    queue,
+  );
+  console.warn = createFn(
+    'warn',
+    connectedSocket,
+    emitter,
+    queue,
+  );
+  console.error = createFn(
+    'error',
+    connectedSocket,
+    emitter,
+    queue,
+  );
+
+  connectedSocket.pipe(split(/\0/)).on('data', function(id: string) {
+    emitter.emit(id);
+  });
+
+  // Set up a mechanism to cleanly shut down the socket.
+  function shutdown() {
+    connectedSocket.end(JSON.stringify({method: 'end'}));
   }
 
-  function dispatchWhenClear() {
-    if (isQueueCleared()) {
-      emitter.emit(QUEUE_CLEARED_EVENT_NAME);
-    } else {
-      setTimeout(dispatchWhenClear, 10);
-    }
-  }
+  return {queue, shutdown};
+}
 
-  console.log = (...args: string[]) => {
-    const message = args.join(' ');
-    connectedSocket.write(message + '\n');
-    dispatchWhenClear();
-  };
+/**
+ * Each request is sent with a unique ID that the server should send back to signal that the
+ * message has been written to the appropriate stream.
+ */
+let messageId = 0;
 
-  return () => {
-    if (isQueueCleared()) {
-      return Promise.resolve();
-    }
+function createFn(
+  method: string,
+  connectedSocket: net$Socket,
+  emitter: EventEmitter,
+  queue: PromiseQueue,
+) {
+  return function(...args: string[]) {
+    const id = (messageId++).toString(16);
+    const message = args.join(' ') + '\n';
+    const payload = {id, method, message};
+    queue.submit(resolve => {
+      // Set up the listener for the ack that the message was received.
+      emitter.once(id, resolve);
 
-    return new Promise(resolve => {
-      emitter.once(QUEUE_CLEARED_EVENT_NAME, resolve);
+      // Now that the listener is in place, send the message.
+      connectedSocket.write(JSON.stringify(payload), 'utf8');
+      connectedSocket.write('\n', 'utf8');
     });
   };
 }

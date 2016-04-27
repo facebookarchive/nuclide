@@ -69,7 +69,7 @@ export default async function runTest(params: TestRunnerParams): Promise<ExitCod
   global.atom = params.buildAtomEnvironment(atomEnvParams);
 
   // Set up the console before running any user code.
-  const notifyWhenStdoutHasBeenFlushed = await instrumentConsole(args['stdout']);
+  const {queue, shutdown} = await instrumentConsole(args['stdout']);
 
   const pathArg = args['path'];
   if (typeof pathArg !== 'string') {
@@ -81,13 +81,19 @@ export default async function runTest(params: TestRunnerParams): Promise<ExitCod
   // $FlowFixMe: entryPoint is determined dynamically rather than a string literal.
   const handler = require(entryPoint);
 
+  let exitCode;
   try {
-    const exitCode = await handler(args['args']);
-    await notifyWhenStdoutHasBeenFlushed();
-    return exitCode;
+    exitCode = await handler(args['args']);
   } catch (e) {
     console.error(e);
-    return 1;
+    exitCode = 1;
   }
+
+  // Insert a sentinel executor that will not be called until all of the other promises in the
+  // queue have been flushed.
+  await queue.submit(resolve => resolve());
+  shutdown();
+
+  return exitCode;
 }
 /* eslint-enable no-console */
