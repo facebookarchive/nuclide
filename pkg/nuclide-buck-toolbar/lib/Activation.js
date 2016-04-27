@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
+
 import {CompositeDisposable, Disposable} from 'atom';
 import buckIcon from './buckIcon';
 import BuckToolbar from './BuckToolbar';
@@ -89,6 +91,16 @@ class Activation {
     this._disposables.add(
       new Disposable(() => { toolBar.removeItems(); }),
     );
+  }
+
+  getDistractionFreeModeProvider(): DistractionFreeModeProvider {
+    return {
+      name: 'nuclide-buck-toolbar',
+      isVisible: () => this._store.isPanelVisible(),
+      toggle: () => {
+        this._actions.togglePanelVisibility();
+      },
+    };
   }
 
   dispose(): void {

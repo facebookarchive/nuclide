@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
+
 import type ActivationType from './Activation';
 
 import invariant from 'assert';
@@ -30,6 +32,11 @@ export function deactivate(): void {
 export function consumeToolBar(getToolBar: (group: string) => Object): void {
   invariant(activation);
   activation.consumeToolBar(getToolBar);
+}
+
+export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
+  invariant(activation != null);
+  return activation.getDistractionFreeModeProvider();
 }
 
 export function serialize(): Object {
