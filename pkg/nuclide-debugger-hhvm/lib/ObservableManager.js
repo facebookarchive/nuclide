@@ -58,21 +58,20 @@ export class ObservableManager {
   }
 
   _subscribe(): void {
-    this._disposables.add(new DisposableSubscription(this._notifications.subscribe(
+    const sharedNotifications = this._notifications.share();
+    this._disposables.add(new DisposableSubscription(sharedNotifications.subscribe(
       this._handleNotificationMessage.bind(this),
       this._handleNotificationError.bind(this),
       this._handleNotificationEnd.bind(this),
     )));
-    this._disposables.add(new DisposableSubscription(this._serverMessages.subscribe(
+    const sharedServerMessages = this._serverMessages.share();
+    this._disposables.add(new DisposableSubscription(sharedServerMessages.subscribe(
       this._handleServerMessage.bind(this),
       this._handleServerError.bind(this),
       this._handleServerEnd.bind(this),
     )));
-    this._registerOutputWindowLogging();
-    // Register a merged observable from shared streams that we can listen to for the onComplete.
-    const sharedNotifications = this._notifications.share();
-    const sharedServerMessages = this._serverMessages.share();
     const sharedOutputWindow = this._outputWindowMessages.share();
+    this._registerOutputWindowLogging(sharedOutputWindow);
     Observable
       .merge(sharedNotifications, sharedServerMessages, sharedOutputWindow)
       .subscribe({
@@ -80,10 +79,10 @@ export class ObservableManager {
       });
   }
 
-  _registerOutputWindowLogging(): void {
+  _registerOutputWindowLogging(sharedOutputWindowMessages: Observable<Object>): void {
     const api = getOutputService();
     if (api != null) {
-      const messages = this._outputWindowMessages
+      const messages = sharedOutputWindowMessages
         .filter(messageObj => messageObj.method === 'Console.messageAdded')
         .map(messageObj => {
           return {
@@ -91,13 +90,12 @@ export class ObservableManager {
             text: messageObj.params.message.text,
           };
         });
-      const shared = messages.share();
-      shared.subscribe({
+      this._disposables.add(new DisposableSubscription(sharedOutputWindowMessages.subscribe({
         complete: this._handleOutputWindowEnd.bind(this),
-      });
+      })));
       this._disposables.add(api.registerOutputProvider({
         source: 'hhvm debugger',
-        messages: shared,
+        messages,
       }));
     } else {
       logError('Cannot get output window service.');
