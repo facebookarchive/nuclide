@@ -58,6 +58,8 @@ function uiOutlinesForResult(result: Result<?Outline>): Observable<OutlineForUi>
         return Observable.of({ kind: 'provider-no-outline' });
       }
       return highlightedOutlines(outline, result.editor);
+    case 'provider-error':
+      return Observable.of({ kind: 'provider-no-outline' });
     default:
       // The last case, 'edit', is already filtered out above, but Flow doesn't know that.
       throw new Error(`Unexpected editor provider result ${result.kind}`);
