@@ -1,5 +1,14 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.isRunningInTest = isRunningInTest;
+exports.isRunningInClient = isRunningInClient;
+exports.getAtomNuclideDir = getAtomNuclideDir;
+exports.getAtomVersion = getAtomVersion;
+exports.getNuclideVersion = getNuclideVersion;
+exports.getNuclideRealDir = getNuclideRealDir;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +18,40 @@
  * the root directory of this source tree.
  */
 
-import fs from 'fs';
-import invariant from 'assert';
-import {once} from './once';
-import path from 'path';
+var _fs = require('fs');
 
-const NUCLIDE_PACKAGE_JSON_PATH = require.resolve('../../../package.json');
-const NUCLIDE_BASEDIR = path.dirname(NUCLIDE_PACKAGE_JSON_PATH);
+var _fs2 = _interopRequireDefault(_fs);
 
-const pkgJson = JSON.parse(fs.readFileSync(NUCLIDE_PACKAGE_JSON_PATH));
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _once = require('./once');
+
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
+var NUCLIDE_PACKAGE_JSON_PATH = require.resolve('../../../package.json');
+var NUCLIDE_BASEDIR = _path2['default'].dirname(NUCLIDE_PACKAGE_JSON_PATH);
+
+var pkgJson = JSON.parse(_fs2['default'].readFileSync(NUCLIDE_PACKAGE_JSON_PATH));
 
 // "Development" is defined as working from source - not packaged code.
 // apm/npm and internal releases don't package the base `.flowconfig`, so
 // we use this to figure if we're packaged or not.
-export const isDevelopment = once(function(): boolean {
+var isDevelopment = (0, _once.once)(function () {
   try {
-    fs.statSync(path.join(NUCLIDE_BASEDIR, '.flowconfig'));
+    _fs2['default'].statSync(_path2['default'].join(NUCLIDE_BASEDIR, '.flowconfig'));
     return true;
   } catch (err) {
     return false;
   }
 });
 
-export function isRunningInTest(): boolean {
+exports.isDevelopment = isDevelopment;
+
+function isRunningInTest() {
   if (isRunningInClient()) {
     return atom.inSpecMode();
   } else {
@@ -39,31 +59,32 @@ export function isRunningInTest(): boolean {
   }
 }
 
-export function isRunningInClient(): boolean {
+function isRunningInClient() {
   return typeof atom !== 'undefined';
 }
 
 // This path may be a symlink.
-export function getAtomNuclideDir(): string {
+
+function getAtomNuclideDir() {
   if (!isRunningInClient()) {
     throw Error('Not running in Atom.');
   }
-  const nuclidePackageModule = atom.packages.getLoadedPackage('nuclide');
-  invariant(nuclidePackageModule);
+  var nuclidePackageModule = atom.packages.getLoadedPackage('nuclide');
+  (0, _assert2['default'])(nuclidePackageModule);
   return nuclidePackageModule.path;
 }
 
-export function getAtomVersion(): string {
+function getAtomVersion() {
   if (!isRunningInClient()) {
     throw Error('Not running in Atom.');
   }
   return atom.getVersion();
 }
 
-export function getNuclideVersion(): string {
+function getNuclideVersion() {
   return pkgJson.version;
 }
 
-export function getNuclideRealDir(): string {
+function getNuclideRealDir() {
   return NUCLIDE_BASEDIR;
 }

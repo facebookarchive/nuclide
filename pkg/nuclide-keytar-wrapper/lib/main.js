@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,58 +8,47 @@
  * the root directory of this source tree.
  */
 
-import child_process from 'child_process';
-import path from 'path';
+var _child_process = require('child_process');
 
-function getApmNodePath(): string {
-  const apmDir = path.dirname(atom.packages.getApmPath());
-  return path.normalize(path.join(apmDir, 'node'));
+var _child_process2 = _interopRequireDefault(_child_process);
+
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
+function getApmNodePath() {
+  var apmDir = _path2['default'].dirname(atom.packages.getApmPath());
+  return _path2['default'].normalize(_path2['default'].join(apmDir, 'node'));
 }
 
-function getApmNodeModulesPath(): string {
-  const apmDir = path.dirname(atom.packages.getApmPath());
-  return path.normalize(path.join(apmDir, '..', 'node_modules'));
+function getApmNodeModulesPath() {
+  var apmDir = _path2['default'].dirname(atom.packages.getApmPath());
+  return _path2['default'].normalize(_path2['default'].join(apmDir, '..', 'node_modules'));
 }
 
-function runScriptInApmNode(script: string): string {
-  const args = ['-e', script];
-  const options = {env: {NODE_PATH: getApmNodeModulesPath()}};
-  const output = child_process.spawnSync(getApmNodePath(), args, options);
+function runScriptInApmNode(script) {
+  var args = ['-e', script];
+  var options = { env: { NODE_PATH: getApmNodeModulesPath() } };
+  var output = _child_process2['default'].spawnSync(getApmNodePath(), args, options);
   return output.stdout.toString();
 }
 
-function getPassword(service: string, account: string): ?string {
-  const script = `
-    var keytar = require('keytar');
-    var service = ${JSON.stringify(service)};
-    var account = ${JSON.stringify(account)};
-    var password = keytar.getPassword(service, account);
-    console.log(JSON.stringify(password));
-  `;
+function getPassword(service, account) {
+  var script = '\n    var keytar = require(\'keytar\');\n    var service = ' + JSON.stringify(service) + ';\n    var account = ' + JSON.stringify(account) + ';\n    var password = keytar.getPassword(service, account);\n    console.log(JSON.stringify(password));\n  ';
   return JSON.parse(runScriptInApmNode(script));
 }
 
-function replacePassword(
-    service: string,
-    account: string,
-    password: string): ?boolean {
-  const script = `
-    var keytar = require('keytar');
-    var service = ${JSON.stringify(service)};
-    var account = ${JSON.stringify(account)};
-    var password = ${JSON.stringify(password)};
-    var result = keytar.replacePassword(service, account, password);
-    console.log(JSON.stringify(result));
-  `;
+function replacePassword(service, account, password) {
+  var script = '\n    var keytar = require(\'keytar\');\n    var service = ' + JSON.stringify(service) + ';\n    var account = ' + JSON.stringify(account) + ';\n    var password = ' + JSON.stringify(password) + ';\n    var result = keytar.replacePassword(service, account, password);\n    console.log(JSON.stringify(result));\n  ';
   return JSON.parse(runScriptInApmNode(script));
 }
 
 module.exports = {
-  getPassword,
-  replacePassword,
+  getPassword: getPassword,
+  replacePassword: replacePassword,
   __test__: {
-    runScriptInApmNode,
-    getApmNodePath,
-    getApmNodeModulesPath,
-  },
+    runScriptInApmNode: runScriptInApmNode,
+    getApmNodePath: getApmNodePath,
+    getApmNodeModulesPath: getApmNodeModulesPath
+  }
 };

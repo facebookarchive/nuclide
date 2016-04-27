@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,131 +12,179 @@
  * the root directory of this source tree.
  */
 
-import type {Gadget} from '../../nuclide-gadgets-interfaces';
-import type {HomeFragments} from '../../nuclide-home-interfaces';
-import type Rx from 'rxjs';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const Immutable = require('immutable');
-const {React} = require('react-for-atom');
-const HomeFeatureComponent = require('./HomeFeatureComponent');
-const NuclideLogo = require('./NuclideLogo');
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-const featureConfig = require('../../nuclide-feature-config');
+var Immutable = require('immutable');
 
-const DEFAULT_WELCOME = (
-  <div>
-    <p>
-      Thanks for trying Nuclide, Facebook's
-      <br />
-      unified developer environment.
-    </p>
-    <p>
-      We would love your feedback and contributions to continue to make it better. Please
-      raise issues and pull-requests directly on
-      our <a href="https://github.com/facebook/nuclide">GitHub repo</a>.
-    </p>
-    <p>
-      Thank you!
-    </p>
-  </div>
+var _require = require('react-for-atom');
+
+var React = _require.React;
+
+var HomeFeatureComponent = require('./HomeFeatureComponent');
+var NuclideLogo = require('./NuclideLogo');
+
+var featureConfig = require('../../nuclide-feature-config');
+
+var DEFAULT_WELCOME = React.createElement(
+  'div',
+  null,
+  React.createElement(
+    'p',
+    null,
+    'Thanks for trying Nuclide, Facebook\'s',
+    React.createElement('br', null),
+    'unified developer environment.'
+  ),
+  React.createElement(
+    'p',
+    null,
+    'We would love your feedback and contributions to continue to make it better. Please raise issues and pull-requests directly on our ',
+    React.createElement(
+      'a',
+      { href: 'https://github.com/facebook/nuclide' },
+      'GitHub repo'
+    ),
+    '.'
+  ),
+  React.createElement(
+    'p',
+    null,
+    'Thank you!'
+  )
 );
 
 /**
  * Create a HomePaneItem component class that's bound to the provided stream of home fragments.
  */
-function createHomePaneItem(
-  allHomeFragmentsStream: Rx.Observable<Immutable.Set<HomeFragments>>,
-): Gadget {
+function createHomePaneItem(allHomeFragmentsStream) {
+  var HomePaneItem = (function (_React$Component) {
+    _inherits(HomePaneItem, _React$Component);
 
-  class HomePaneItem extends React.Component {
+    _createClass(HomePaneItem, null, [{
+      key: 'gadgetId',
+      value: 'nuclide-home',
+      enumerable: true
+    }]);
 
-    static gadgetId = 'nuclide-home';
+    function HomePaneItem() {
+      _classCallCheck(this, HomePaneItem);
 
-    state: {
-      allHomeFragments: Immutable.Set<string, React.Element>;
-    };
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
 
-    _homeFragmentsSubscription: rx$ISubscription;
-
-    constructor(...args) {
-      super(...args);
+      _get(Object.getPrototypeOf(HomePaneItem.prototype), 'constructor', this).apply(this, args);
       this.state = {
-        allHomeFragments: Immutable.Set(),
+        allHomeFragments: Immutable.Set()
       };
     }
 
-    componentDidMount() {
-      this._homeFragmentsSubscription = allHomeFragmentsStream.subscribe(
-        allHomeFragments => this.setState({allHomeFragments}),
-      );
+    _createClass(HomePaneItem, [{
+      key: 'componentDidMount',
+      value: function componentDidMount() {
+        var _this = this;
 
-      featureConfig.set('nuclide-home.showHome', true);
-    }
+        this._homeFragmentsSubscription = allHomeFragmentsStream.subscribe(function (allHomeFragments) {
+          return _this.setState({ allHomeFragments: allHomeFragments });
+        });
 
-    render() {
-      const welcomes = [];
-      const features = [];
-      const sortedHomeFragments = Array.from(this.state.allHomeFragments).sort(
-        (fragmentA, fragmentB) => (fragmentB.priority || 0) - (fragmentA.priority || 0)
-      );
-      sortedHomeFragments.forEach(fragment => {
-        const {welcome, feature} = fragment;
-        if (welcome) {
-          welcomes.push(<div key={welcomes.length}>{welcome}</div>);
+        featureConfig.set('nuclide-home.showHome', true);
+      }
+    }, {
+      key: 'render',
+      value: function render() {
+        var welcomes = [];
+        var features = [];
+        var sortedHomeFragments = Array.from(this.state.allHomeFragments).sort(function (fragmentA, fragmentB) {
+          return (fragmentB.priority || 0) - (fragmentA.priority || 0);
+        });
+        sortedHomeFragments.forEach(function (fragment) {
+          var welcome = fragment.welcome;
+          var feature = fragment.feature;
+
+          if (welcome) {
+            welcomes.push(React.createElement(
+              'div',
+              { key: welcomes.length },
+              welcome
+            ));
+          }
+          if (feature) {
+            features.push(React.createElement(HomeFeatureComponent, _extends({ key: features.length }, feature)));
+          }
+        });
+
+        var containers = [React.createElement(
+          'div',
+          { key: 'welcome', className: 'nuclide-home-container' },
+          React.createElement(
+            'section',
+            { className: 'text-center' },
+            React.createElement(NuclideLogo, { className: 'nuclide-home-logo' }),
+            React.createElement(
+              'h1',
+              { className: 'nuclide-home-title' },
+              'Welcome to Nuclide'
+            )
+          ),
+          React.createElement(
+            'section',
+            { className: 'text-center' },
+            welcomes.length > 0 ? welcomes : DEFAULT_WELCOME
+          )
+        )];
+
+        if (features.length > 0) {
+          containers.push(React.createElement(
+            'div',
+            { key: 'features', className: 'nuclide-home-container' },
+            features
+          ));
         }
-        if (feature) {
-          features.push(<HomeFeatureComponent key={features.length} {...feature} />);
-        }
-      });
 
-      const containers = [
-        <div key="welcome" className="nuclide-home-container">
-          <section className="text-center">
-            <NuclideLogo className="nuclide-home-logo" />
-            <h1 className="nuclide-home-title">Welcome to Nuclide</h1>
-          </section>
-          <section className="text-center">
-            {welcomes.length > 0 ? welcomes : DEFAULT_WELCOME}
-          </section>
-        </div>,
-      ];
-
-      if (features.length > 0) {
-        containers.push(<div key="features" className="nuclide-home-container">{features}</div>);
+        return(
+          // Re-use styles from the Atom welcome pane where possible.
+          React.createElement(
+            'div',
+            { className: 'nuclide-home pane-item padded nuclide-home-containers' },
+            containers
+          )
+        );
+      }
+    }, {
+      key: 'getTitle',
+      value: function getTitle() {
+        return 'Home';
+      }
+    }, {
+      key: 'getIconName',
+      value: function getIconName() {
+        return 'home';
       }
 
-      return (
-        // Re-use styles from the Atom welcome pane where possible.
-        <div className="nuclide-home pane-item padded nuclide-home-containers">
-          {containers}
-        </div>
-      );
-    }
-
-    getTitle(): string {
-      return 'Home';
-    }
-
-    getIconName(): string {
-      return 'home';
-    }
-
-    // Return false to prevent the tab getting split (since we only update a singleton health pane).
-    copy() {
-      return false;
-    }
-
-    componentWillUnmount() {
-      featureConfig.set('nuclide-home.showHome', false);
-
-      if (this._homeFragmentsSubscription) {
-        this._homeFragmentsSubscription.unsubscribe();
+      // Return false to prevent the tab getting split (since we only update a singleton health pane).
+    }, {
+      key: 'copy',
+      value: function copy() {
+        return false;
       }
-    }
+    }, {
+      key: 'componentWillUnmount',
+      value: function componentWillUnmount() {
+        featureConfig.set('nuclide-home.showHome', false);
 
-  }
+        if (this._homeFragmentsSubscription) {
+          this._homeFragmentsSubscription.unsubscribe();
+        }
+      }
+    }]);
 
-  return ((HomePaneItem: any): Gadget);
+    return HomePaneItem;
+  })(React.Component);
+
+  return HomePaneItem;
 }
 
 module.exports = createHomePaneItem;

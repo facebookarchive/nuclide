@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +10,49 @@
  * the root directory of this source tree.
  */
 
-import type {
-  BusySignalProvider,
-  BusySignalProviderBase,
-} from '../../nuclide-busy-signal';
+exports.activate = activate;
+exports.dactivate = dactivate;
+exports.provideBusySignal = provideBusySignal;
+exports.provideDiagnostics = provideDiagnostics;
 
-import {CompositeDisposable} from 'atom';
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let subscriptions: ?CompositeDisposable = null;
+var _atom = require('atom');
 
-let busySignalProvider: ?BusySignalProviderBase = null;
+var _assert = require('assert');
 
-function getBusySignalProvider(): BusySignalProviderBase {
+var _assert2 = _interopRequireDefault(_assert);
+
+var subscriptions = null;
+
+var busySignalProvider = null;
+
+function getBusySignalProvider() {
   if (busySignalProvider == null) {
-    const {DedupedBusySignalProviderBase} = require('../../nuclide-busy-signal');
+    var _require = require('../../nuclide-busy-signal');
+
+    var DedupedBusySignalProviderBase = _require.DedupedBusySignalProviderBase;
+
     busySignalProvider = new DedupedBusySignalProviderBase();
   }
   return busySignalProvider;
 }
 
-export function activate(): void {
+function activate() {
   if (subscriptions) {
     return;
   }
 
-  subscriptions = new CompositeDisposable();
+  subscriptions = new _atom.CompositeDisposable();
 
-  const {registerGrammarForFileExtension} = require('../../nuclide-atom-helpers');
+  var _require2 = require('../../nuclide-atom-helpers');
+
+  var registerGrammarForFileExtension = _require2.registerGrammarForFileExtension;
+
   registerGrammarForFileExtension('source.json', '.arcconfig');
 }
 
-export function dactivate(): void {
+function dactivate() {
   if (subscriptions) {
     subscriptions.dispose();
     subscriptions = null;
@@ -48,14 +60,17 @@ export function dactivate(): void {
   busySignalProvider = null;
 }
 
-export function provideBusySignal(): BusySignalProvider {
+function provideBusySignal() {
   return getBusySignalProvider();
 }
 
-export function provideDiagnostics() {
-  const {ArcanistDiagnosticsProvider} = require('./ArcanistDiagnosticsProvider');
-  const provider = new ArcanistDiagnosticsProvider(getBusySignalProvider());
-  invariant(subscriptions != null);
+function provideDiagnostics() {
+  var _require3 = require('./ArcanistDiagnosticsProvider');
+
+  var ArcanistDiagnosticsProvider = _require3.ArcanistDiagnosticsProvider;
+
+  var provider = new ArcanistDiagnosticsProvider(getBusySignalProvider());
+  (0, _assert2['default'])(subscriptions != null);
   subscriptions.add(provider);
   return provider;
 }

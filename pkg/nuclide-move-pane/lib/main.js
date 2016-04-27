@@ -1,5 +1,13 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+exports.activate = activate;
+exports.deactivate = deactivate;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +17,25 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
-import {trackOperationTiming} from '../../nuclide-analytics';
+var _atom = require('atom');
 
-function trackSplit(
-    operation: string,
-    splitOperation: (pane: atom$Pane, params?: atom$PaneSplitParams) => atom$Pane) {
-  trackOperationTiming(
-    'nuclide-move-pane:move-tab-to-new-pane-' + operation,
-    () => { doSplit(splitOperation); });
+var _nuclideAnalytics = require('../../nuclide-analytics');
+
+function trackSplit(operation, splitOperation) {
+  (0, _nuclideAnalytics.trackOperationTiming)('nuclide-move-pane:move-tab-to-new-pane-' + operation, function () {
+    doSplit(splitOperation);
+  });
 }
 
-function doSplit(
-    splitOperation: (pane: atom$Pane, params?: atom$PaneSplitParams) => atom$Pane) {
-  const pane = atom.workspace.getActivePane();
+function doSplit(splitOperation) {
+  var pane = atom.workspace.getActivePane();
   if (pane) {
     // Note that this will (intentionally) create an empty pane if the active
     // pane contains exactly zero or one items.
     // The new empty pane will be kept if the global atom setting
     // 'Destroy Empty Panes' is false, otherwise it will be removed.
-    const newPane = splitOperation(pane, {copyActiveItem: false});
-    const item = pane.getActiveItem();
+    var newPane = splitOperation(pane, { copyActiveItem: false });
+    var item = pane.getActiveItem();
     if (item) {
       pane.moveItemToPane(item, newPane, 0);
     }
@@ -37,58 +43,59 @@ function doSplit(
 }
 
 function splitUp() {
-  trackSplit('up', (pane, params) => pane.splitUp(params));
+  trackSplit('up', function (pane, params) {
+    return pane.splitUp(params);
+  });
 }
 
 function splitDown() {
-  trackSplit('down', (pane, params) => pane.splitDown(params));
+  trackSplit('down', function (pane, params) {
+    return pane.splitDown(params);
+  });
 }
 
 function splitRight() {
-  trackSplit('right', (pane, params) => pane.splitRight(params));
+  trackSplit('right', function (pane, params) {
+    return pane.splitRight(params);
+  });
 }
 
 function splitLeft() {
-  trackSplit('left', (pane, params) => pane.splitLeft(params));
+  trackSplit('left', function (pane, params) {
+    return pane.splitLeft(params);
+  });
 }
 
-class Activation {
-  _subscriptions: CompositeDisposable;
+var Activation = (function () {
+  function Activation(state) {
+    _classCallCheck(this, Activation);
 
-  constructor(state: ?Object) {
-    this._subscriptions = new CompositeDisposable();
-    this._subscriptions.add(
-      atom.commands.add('atom-workspace',
-      'nuclide-move-pane:move-tab-to-new-pane-up', splitUp)
-    );
-    this._subscriptions.add(
-      atom.commands.add('atom-workspace',
-      'nuclide-move-pane:move-tab-to-new-pane-down', splitDown)
-    );
-    this._subscriptions.add(
-      atom.commands.add('atom-workspace',
-      'nuclide-move-pane:move-tab-to-new-pane-left', splitLeft)
-    );
-    this._subscriptions.add(
-      atom.commands.add('atom-workspace',
-      'nuclide-move-pane:move-tab-to-new-pane-right', splitRight)
-    );
+    this._subscriptions = new _atom.CompositeDisposable();
+    this._subscriptions.add(atom.commands.add('atom-workspace', 'nuclide-move-pane:move-tab-to-new-pane-up', splitUp));
+    this._subscriptions.add(atom.commands.add('atom-workspace', 'nuclide-move-pane:move-tab-to-new-pane-down', splitDown));
+    this._subscriptions.add(atom.commands.add('atom-workspace', 'nuclide-move-pane:move-tab-to-new-pane-left', splitLeft));
+    this._subscriptions.add(atom.commands.add('atom-workspace', 'nuclide-move-pane:move-tab-to-new-pane-right', splitRight));
   }
 
-  dispose() {
-    this._subscriptions.dispose();
-  }
-}
+  _createClass(Activation, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._subscriptions.dispose();
+    }
+  }]);
 
-let activation: ?Activation = null;
+  return Activation;
+})();
 
-export function activate(state: ?mixed): void {
+var activation = null;
+
+function activate(state) {
   if (!activation) {
     activation = new Activation();
   }
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;

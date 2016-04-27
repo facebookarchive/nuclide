@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.getHyperclickProvider = getHyperclickProvider;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +13,18 @@
  * the root directory of this source tree.
  */
 
-export function activate() {
-  const {registerGrammarForFileExtension} = require('../../nuclide-atom-helpers');
+function activate() {
+  var _require = require('../../nuclide-atom-helpers');
+
+  var registerGrammarForFileExtension = _require.registerGrammarForFileExtension;
+
   registerGrammarForFileExtension('source.python', 'BUCK');
   registerGrammarForFileExtension('source.json', 'BUCK.autodeps');
   registerGrammarForFileExtension('source.ini', '.buckconfig');
 }
 
-export function deactivate() {
-}
+function deactivate() {}
 
-export function getHyperclickProvider() {
+function getHyperclickProvider() {
   return require('./HyperclickProvider');
 }

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +10,25 @@
  * the root directory of this source tree.
  */
 
-import type {OffsetMap} from './types';
-import type {UIElement} from '../../nuclide-diff-ui-provider-interfaces';
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-import {Range} from 'atom';
-import {ReactDOM} from 'react-for-atom';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _atom = require('atom');
+
+var _reactForAtom = require('react-for-atom');
 
 /**
  * The DiffViewEditor manages the lifecycle of the two editors used in the diff view,
  * and controls its rendering of highlights and offsets.
  */
-export default class DiffViewEditor {
-  _editor: atom$TextEditor;;
-  _editorElement: atom$TextEditorElement;
-  _highlightMarkers: Array<atom$Marker>;
-  _offsetMarkers: Array<atom$Marker>;
-  _uiElementsMarkers: Array<atom$Marker>;
 
-  constructor(editorElement: atom$TextEditorElement) {
+var DiffViewEditor = (function () {
+  function DiffViewEditor(editorElement) {
+    _classCallCheck(this, DiffViewEditor);
+
     this._editorElement = editorElement;
     this._editor = editorElement.getModel();
     this._highlightMarkers = [];
@@ -34,126 +36,156 @@ export default class DiffViewEditor {
     this._uiElementsMarkers = [];
   }
 
-  setUIElements(elements: Array<UIElement>): void {
-    for (const marker of this._uiElementsMarkers) {
-      marker.destroy();
+  _createClass(DiffViewEditor, [{
+    key: 'setUIElements',
+    value: function setUIElements(elements) {
+      var _this = this;
+
+      for (var marker of this._uiElementsMarkers) {
+        marker.destroy();
+      }
+      this._uiElementsMarkers = elements.map(function (element) {
+        var node = element.node;
+        var bufferRow = element.bufferRow;
+
+        // TODO(most): OMG, this mutates React props for the created component!!
+        Object.assign(node.props.helpers, {
+          scrollToRow: _this._scrollToRow.bind(_this)
+        });
+        var container = document.createElement('div');
+        _reactForAtom.ReactDOM.render(node, container);
+        // an overlay marker at a buffer range with row x renders under row x + 1
+        // so, use range at bufferRow - 1 to actually display at bufferRow
+        var range = [[bufferRow - 1, 0], [bufferRow - 1, 0]];
+        var marker = _this._editor.markBufferRange(range, { invalidate: 'never' });
+        _this._editor.decorateMarker(marker, {
+          type: 'block',
+          item: container,
+          position: 'after'
+        });
+        return marker;
+      });
     }
-    this._uiElementsMarkers = elements.map(element => {
-      const {node, bufferRow} = element;
-      // TODO(most): OMG, this mutates React props for the created component!!
-      Object.assign(node.props.helpers, {
-        scrollToRow: this._scrollToRow.bind(this),
-      });
-      const container = document.createElement('div');
-      ReactDOM.render(node, container);
-      // an overlay marker at a buffer range with row x renders under row x + 1
-      // so, use range at bufferRow - 1 to actually display at bufferRow
-      const range = [[bufferRow - 1, 0], [bufferRow - 1, 0]];
-      const marker = this._editor.markBufferRange(range, {invalidate: 'never'});
-      this._editor.decorateMarker(marker, {
-        type: 'block',
-        item: container,
-        position: 'after',
-      });
-      return marker;
-    });
-  }
-
-  scrollToScreenLine(screenLine: number): void {
-    this._editor.scrollToScreenPosition(
+  }, {
+    key: 'scrollToScreenLine',
+    value: function scrollToScreenLine(screenLine) {
+      this._editor.scrollToScreenPosition(
       // Markers are ordered in ascending order by line number.
-      [screenLine, 0],
-      {center: true},
-    );
-  }
+      [screenLine, 0], { center: true });
+    }
+  }, {
+    key: 'setFileContents',
+    value: function setFileContents(filePath, contents) {
+      var buffer = this._editor.getBuffer();
+      if (buffer.getText() !== contents) {
+        if (buffer.getPath() === filePath && !buffer.isEmpty()) {
+          // The text is set via diffs to keep the cursor position when updating the file that is
+          // already active.
+          buffer.setTextViaDiff(contents);
+        } else {
+          // `setText` is faster than diffing and is used for speed when the buffer is changing to a
+          // different path or when an editable buffer is being loaded for the first time
+          // (`buffer.isEmpty() === true`) because maintaining cursor position between file changes is
+          // not needed.
+          buffer.setText(contents);
+        }
+      }
+      var grammar = atom.grammars.selectGrammar(filePath, contents);
+      this._editor.setGrammar(grammar);
+    }
+  }, {
+    key: 'getModel',
+    value: function getModel() {
+      return this._editor;
+    }
+  }, {
+    key: 'getText',
+    value: function getText() {
+      return this._editor.getText();
+    }
 
-  setFileContents(filePath: string, contents: string): void {
-    const buffer = this._editor.getBuffer();
-    if (buffer.getText() !== contents) {
-      if (buffer.getPath() === filePath && !buffer.isEmpty()) {
-        // The text is set via diffs to keep the cursor position when updating the file that is
-        // already active.
-        buffer.setTextViaDiff(contents);
-      } else {
-        // `setText` is faster than diffing and is used for speed when the buffer is changing to a
-        // different path or when an editable buffer is being loaded for the first time
-        // (`buffer.isEmpty() === true`) because maintaining cursor position between file changes is
-        // not needed.
-        buffer.setText(contents);
+    /**
+     * @param addedLines An array of buffer line numbers that should be highlighted as added.
+     * @param removedLines An array of buffer line numbers that should be highlighted as removed.
+     */
+  }, {
+    key: 'setHighlightedLines',
+    value: function setHighlightedLines() {
+      var _this2 = this;
+
+      var addedLines = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+      var removedLines = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+
+      for (var marker of this._highlightMarkers) {
+        marker.destroy();
+      }
+      this._highlightMarkers = addedLines.map(function (lineNumber) {
+        return _this2._createLineMarker(lineNumber, 'insert');
+      }).concat(removedLines.map(function (lineNumber) {
+        return _this2._createLineMarker(lineNumber, 'delete');
+      }));
+    }
+
+    /**
+     * @param lineNumber A buffer line number to be highlighted.
+     * @param type The type of highlight to be applied to the line.
+    *    Could be a value of: ['insert', 'delete'].
+     */
+  }, {
+    key: '_createLineMarker',
+    value: function _createLineMarker(lineNumber, type) {
+      var range = new _atom.Range([lineNumber, 0], [lineNumber + 1, 0]);
+      var marker = this._editor.markBufferRange(range, { invalidate: 'never' });
+      this._editor.decorateMarker(marker, { type: 'highlight', 'class': 'diff-view-' + type });
+      return marker;
+    }
+  }, {
+    key: 'setOffsets',
+    value: function setOffsets(lineOffsets) {
+      this._offsetMarkers.forEach(function (marker) {
+        return marker.destroy();
+      });
+      this._offsetMarkers = [];
+      var lineHeight = this._editor.getLineHeightInPixels();
+      for (var _ref3 of lineOffsets) {
+        var _ref2 = _slicedToArray(_ref3, 2);
+
+        var lineNumber = _ref2[0];
+        var offsetLines = _ref2[1];
+
+        var blockItem = document.createElement('div');
+        blockItem.style.minHeight = offsetLines * lineHeight + 'px';
+        var marker = this._editor.markBufferPosition([lineNumber, 0], { invalidate: 'never' });
+        this._editor.decorateMarker(marker, { type: 'block', item: blockItem, position: 'before' });
+        this._offsetMarkers.push(marker);
       }
     }
-    const grammar = atom.grammars.selectGrammar(filePath, contents);
-    this._editor.setGrammar(grammar);
-  }
-
-  getModel(): Object {
-    return this._editor;
-  }
-
-  getText(): string {
-    return this._editor.getText();
-  }
-
-  /**
-   * @param addedLines An array of buffer line numbers that should be highlighted as added.
-   * @param removedLines An array of buffer line numbers that should be highlighted as removed.
-   */
-  setHighlightedLines(addedLines: Array<number> = [], removedLines: Array<number> = []) {
-    for (const marker of this._highlightMarkers) {
-      marker.destroy();
+  }, {
+    key: 'destroy',
+    value: function destroy() {
+      this._highlightMarkers.forEach(function (marker) {
+        return marker.destroy();
+      });
+      this._highlightMarkers = [];
+      this._offsetMarkers.forEach(function (marker) {
+        return marker.destroy();
+      });
+      this._offsetMarkers = [];
+      this._uiElementsMarkers.forEach(function (marker) {
+        return marker.destroy();
+      });
+      this._uiElementsMarkers = [];
+      this._editor.destroy();
     }
-    this._highlightMarkers = addedLines.map(
-      lineNumber => this._createLineMarker(lineNumber, 'insert')
-    ).concat(removedLines.map(
-      lineNumber => this._createLineMarker(lineNumber, 'delete')
-    ));
-  }
-
-  /**
-   * @param lineNumber A buffer line number to be highlighted.
-   * @param type The type of highlight to be applied to the line.
-  *    Could be a value of: ['insert', 'delete'].
-   */
-  _createLineMarker(lineNumber: number, type: string): atom$Marker {
-    const range = new Range(
-      [lineNumber, 0],
-      [lineNumber + 1, 0],
-    );
-    const marker = this._editor.markBufferRange(range, {invalidate: 'never'});
-    this._editor.decorateMarker(marker, {type: 'highlight', class: `diff-view-${type}`});
-    return marker;
-  }
-
-  setOffsets(lineOffsets: OffsetMap): void {
-    this._offsetMarkers.forEach(marker => marker.destroy());
-    this._offsetMarkers = [];
-    const lineHeight = this._editor.getLineHeightInPixels();
-    for (const [lineNumber, offsetLines] of lineOffsets) {
-      const blockItem = document.createElement('div');
-      blockItem.style.minHeight = (offsetLines * lineHeight) + 'px';
-      const marker = this._editor.markBufferPosition([lineNumber, 0], {invalidate: 'never'});
-      this._editor.decorateMarker(
-        marker,
-        {type: 'block', item: blockItem, position: 'before'},
-      );
-      this._offsetMarkers.push(marker);
+  }, {
+    key: '_scrollToRow',
+    value: function _scrollToRow(row) {
+      this._editor.scrollToBufferPosition([row, 0], { center: true });
     }
-  }
+  }]);
 
-  destroy(): void {
-    this._highlightMarkers.forEach(marker => marker.destroy());
-    this._highlightMarkers = [];
-    this._offsetMarkers.forEach(marker => marker.destroy());
-    this._offsetMarkers = [];
-    this._uiElementsMarkers.forEach(marker => marker.destroy());
-    this._uiElementsMarkers = [];
-    this._editor.destroy();
-  }
+  return DiffViewEditor;
+})();
 
-  _scrollToRow(row: number): void {
-    this._editor.scrollToBufferPosition(
-      [row, 0],
-      {center: true},
-    );
-  }
-}
+exports['default'] = DiffViewEditor;
+module.exports = exports['default'];

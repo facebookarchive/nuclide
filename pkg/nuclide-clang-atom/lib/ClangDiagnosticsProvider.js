@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _createDecoratedClass = (function () { function defineProperties(target, descriptors, initializers) { for (var i = 0; i < descriptors.length; i++) { var descriptor = descriptors[i]; var decorators = descriptor.decorators; var key = descriptor.key; delete descriptor.key; delete descriptor.decorators; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor || descriptor.initializer) descriptor.writable = true; if (decorators) { for (var f = 0; f < decorators.length; f++) { var decorator = decorators[f]; if (typeof decorator === 'function') { descriptor = decorator(target, key, descriptor) || descriptor; } else { throw new TypeError('The decorator for method ' + descriptor.key + ' is of the invalid type ' + typeof decorator); } } if (descriptor.initializer !== undefined) { initializers[key] = descriptor; continue; } } Object.defineProperty(target, key, descriptor); } } return function (Constructor, protoProps, staticProps, protoInitializers, staticInitializers) { if (protoProps) defineProperties(Constructor.prototype, protoProps, protoInitializers); if (staticProps) defineProperties(Constructor, staticProps, staticInitializers); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,230 +8,232 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {
-  ClangCompileResult,
-  ClangSourceRange,
-  ClangLocation,
-} from '../../nuclide-clang';
-import type {
-  FileDiagnosticMessage,
-  MessageUpdateCallback,
-  MessageInvalidationCallback,
-} from '../../nuclide-diagnostics-base';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import invariant from 'assert';
-import {GRAMMAR_SET} from './constants';
-import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
-import {track, trackTiming} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
-import {getDiagnostics} from './libclang';
-import {CompositeDisposable, Range} from 'atom';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-const DEFAULT_FLAGS_WARNING =
-  'Diagnostics are disabled due to lack of compilation flags. ' +
-  'Build this file with Buck, or create a compile_commands.json file manually.';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-function atomRangeFromSourceRange(clangRange: ClangSourceRange): atom$Range {
-  return new Range(
-    [clangRange.start.line, clangRange.start.column],
-    [clangRange.end.line, clangRange.end.column]
-  );
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _constants = require('./constants');
+
+var _nuclideDiagnosticsProviderBase = require('../../nuclide-diagnostics-provider-base');
+
+var _nuclideAnalytics = require('../../nuclide-analytics');
+
+var _nuclideLogging = require('../../nuclide-logging');
+
+var _libclang = require('./libclang');
+
+var _atom = require('atom');
+
+var DEFAULT_FLAGS_WARNING = 'Diagnostics are disabled due to lack of compilation flags. ' + 'Build this file with Buck, or create a compile_commands.json file manually.';
+
+function atomRangeFromSourceRange(clangRange) {
+  return new _atom.Range([clangRange.start.line, clangRange.start.column], [clangRange.end.line, clangRange.end.column]);
 }
 
-function atomRangeFromLocation(location: ClangLocation): atom$Range {
-  const line = Math.max(0, location.line);
-  return new Range([line, 0], [line + 1, 0]);
+function atomRangeFromLocation(location) {
+  var line = Math.max(0, location.line);
+  return new _atom.Range([line, 0], [line + 1, 0]);
 }
 
-class ClangDiagnosticsProvider {
-  _providerBase: DiagnosticsProviderBase;
-  _busySignalProvider: BusySignalProviderBase;
+var ClangDiagnosticsProvider = (function () {
+  function ClangDiagnosticsProvider(busySignalProvider) {
+    _classCallCheck(this, ClangDiagnosticsProvider);
 
-  // Keep track of the diagnostics created by each text buffer.
-  // Diagnostics will be removed once the file is closed.
-  _bufferDiagnostics: WeakMap<atom$TextBuffer, Array<NuclideUri>>;
-  _hasSubscription: WeakMap<atom$TextBuffer, boolean>;
-  _subscriptions: atom$CompositeDisposable;
-
-  // When we open a file for the first time, make sure we pass 'clean' to getDiagnostics
-  // to reset any server state for the file.
-  // This is so the user can easily refresh the Clang + Buck state by reloading Atom.
-  // Note that we do not use the TextBuffer here, since a close/reopen is acceptable.
-  _openedFiles: Set<string>;
-
-  constructor(busySignalProvider: BusySignalProviderBase) {
-    const options = {
-      grammarScopes: GRAMMAR_SET,
+    var options = {
+      grammarScopes: _constants.GRAMMAR_SET,
       onTextEditorEvent: this.runDiagnostics.bind(this),
-      onNewUpdateSubscriber: this._receivedNewUpdateSubscriber.bind(this),
+      onNewUpdateSubscriber: this._receivedNewUpdateSubscriber.bind(this)
     };
-    this._providerBase = new DiagnosticsProviderBase(options);
+    this._providerBase = new _nuclideDiagnosticsProviderBase.DiagnosticsProviderBase(options);
     this._busySignalProvider = busySignalProvider;
 
     this._bufferDiagnostics = new WeakMap();
     this._hasSubscription = new WeakMap();
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new _atom.CompositeDisposable();
     this._openedFiles = new Set();
   }
 
-  runDiagnostics(editor: atom$TextEditor): void {
-    this._busySignalProvider.reportBusy(
-      `Clang: compiling \`${editor.getTitle()}\``,
-      () => this._runDiagnosticsImpl(editor),
-    );
-  }
+  _createDecoratedClass(ClangDiagnosticsProvider, [{
+    key: 'runDiagnostics',
+    value: function runDiagnostics(editor) {
+      var _this = this;
 
-  @trackTiming('nuclide-clang-atom.fetch-diagnostics')
-  async _runDiagnosticsImpl(textEditor: atom$TextEditor): Promise<void> {
-    const filePath = textEditor.getPath();
-    if (!filePath) {
-      return;
-    }
-
-    const buffer = textEditor.getBuffer();
-    if (!this._hasSubscription.get(buffer)) {
-      const disposable = buffer.onDidDestroy(() => {
-        this.invalidateBuffer(buffer);
-        this._hasSubscription.delete(buffer);
-        this._subscriptions.remove(disposable);
-        disposable.dispose();
+      this._busySignalProvider.reportBusy('Clang: compiling `' + editor.getTitle() + '`', function () {
+        return _this._runDiagnosticsImpl(editor);
       });
-      this._hasSubscription.set(buffer, true);
-      this._subscriptions.add(disposable);
     }
+  }, {
+    key: '_runDiagnosticsImpl',
+    decorators: [(0, _nuclideAnalytics.trackTiming)('nuclide-clang-atom.fetch-diagnostics')],
+    value: _asyncToGenerator(function* (textEditor) {
+      var _this2 = this;
 
-    try {
-      const diagnostics = await getDiagnostics(textEditor, !this._openedFiles.has(filePath));
-      this._openedFiles.add(filePath);
-      // It's important to make sure that the buffer hasn't already been destroyed.
-      if (diagnostics == null || !this._hasSubscription.get(buffer)) {
+      var filePath = textEditor.getPath();
+      if (!filePath) {
         return;
       }
-      track('nuclide-clang-atom.fetch-diagnostics', {
-        filePath,
-        count: diagnostics.diagnostics.length.toString(),
-        accurateFlags: diagnostics.accurateFlags.toString(),
-      });
-      const filePathToMessages = this._processDiagnostics(diagnostics, textEditor);
-      this.invalidateBuffer(buffer);
-      this._providerBase.publishMessageUpdate({filePathToMessages});
-      this._bufferDiagnostics.set(buffer, Array.from(filePathToMessages.keys()));
-    } catch (error) {
-      getLogger().error(error);
-    }
-  }
 
-  _processDiagnostics(
-    data: ClangCompileResult,
-    textEditor: atom$TextEditor,
-  ): Map<NuclideUri, Array<FileDiagnosticMessage>> {
-    const editorPath = textEditor.getPath();
-    invariant(editorPath);
-    const filePathToMessages = new Map();
-    if (data.accurateFlags) {
-      data.diagnostics.forEach(diagnostic => {
-        // We show only warnings, errors and fatals (2, 3 and 4, respectively).
-        if (diagnostic.severity < 2) {
+      var buffer = textEditor.getBuffer();
+      if (!this._hasSubscription.get(buffer)) {
+        (function () {
+          var disposable = buffer.onDidDestroy(function () {
+            _this2.invalidateBuffer(buffer);
+            _this2._hasSubscription['delete'](buffer);
+            _this2._subscriptions.remove(disposable);
+            disposable.dispose();
+          });
+          _this2._hasSubscription.set(buffer, true);
+          _this2._subscriptions.add(disposable);
+        })();
+      }
+
+      try {
+        var diagnostics = yield (0, _libclang.getDiagnostics)(textEditor, !this._openedFiles.has(filePath));
+        this._openedFiles.add(filePath);
+        // It's important to make sure that the buffer hasn't already been destroyed.
+        if (diagnostics == null || !this._hasSubscription.get(buffer)) {
           return;
         }
-
-        // Clang adds file-wide errors on line -1, so we put it on line 0 instead.
-        // The usual file-wide error is 'too many errors emitted, stopping now'.
-        let range;
-        if (diagnostic.ranges) {
-          // Use the first range from the diagnostic as the range for Linter.
-          range = atomRangeFromSourceRange(diagnostic.ranges[0]);
-        } else {
-          range = atomRangeFromLocation(diagnostic.location);
-        }
-
-        const filePath = diagnostic.location.file || editorPath;
-        let messages = filePathToMessages.get(filePath);
-        if (messages == null) {
-          messages = [];
-          filePathToMessages.set(filePath, messages);
-        }
-
-        let trace;
-        if (diagnostic.children != null) {
-          trace = diagnostic.children.map(child => {
-            return {
-              type: 'Trace',
-              text: child.spelling,
-              filePath: child.location.file,
-              range: atomRangeFromLocation(child.location),
-            };
-          });
-        }
-
-        let fix;
-        if (diagnostic.fixits != null) {
-          // TODO: support multiple fixits (if it's ever used at all)
-          const fixit = diagnostic.fixits[0];
-          if (fixit != null) {
-            fix = {
-              oldRange: atomRangeFromSourceRange(fixit.range),
-              newText: fixit.value,
-            };
-          }
-        }
-
-        messages.push({
-          scope: 'file',
-          providerName: 'Clang',
-          type: diagnostic.severity === 2 ? 'Warning' : 'Error',
-          filePath,
-          text: diagnostic.spelling,
-          range,
-          trace,
-          fix,
+        (0, _nuclideAnalytics.track)('nuclide-clang-atom.fetch-diagnostics', {
+          filePath: filePath,
+          count: diagnostics.diagnostics.length.toString(),
+          accurateFlags: diagnostics.accurateFlags.toString()
         });
-      });
-    } else {
-      filePathToMessages.set(editorPath, [
-        {
+        var filePathToMessages = this._processDiagnostics(diagnostics, textEditor);
+        this.invalidateBuffer(buffer);
+        this._providerBase.publishMessageUpdate({ filePathToMessages: filePathToMessages });
+        this._bufferDiagnostics.set(buffer, Array.from(filePathToMessages.keys()));
+      } catch (error) {
+        (0, _nuclideLogging.getLogger)().error(error);
+      }
+    })
+  }, {
+    key: '_processDiagnostics',
+    value: function _processDiagnostics(data, textEditor) {
+      var editorPath = textEditor.getPath();
+      (0, _assert2['default'])(editorPath);
+      var filePathToMessages = new Map();
+      if (data.accurateFlags) {
+        data.diagnostics.forEach(function (diagnostic) {
+          // We show only warnings, errors and fatals (2, 3 and 4, respectively).
+          if (diagnostic.severity < 2) {
+            return;
+          }
+
+          // Clang adds file-wide errors on line -1, so we put it on line 0 instead.
+          // The usual file-wide error is 'too many errors emitted, stopping now'.
+          var range = undefined;
+          if (diagnostic.ranges) {
+            // Use the first range from the diagnostic as the range for Linter.
+            range = atomRangeFromSourceRange(diagnostic.ranges[0]);
+          } else {
+            range = atomRangeFromLocation(diagnostic.location);
+          }
+
+          var filePath = diagnostic.location.file || editorPath;
+          var messages = filePathToMessages.get(filePath);
+          if (messages == null) {
+            messages = [];
+            filePathToMessages.set(filePath, messages);
+          }
+
+          var trace = undefined;
+          if (diagnostic.children != null) {
+            trace = diagnostic.children.map(function (child) {
+              return {
+                type: 'Trace',
+                text: child.spelling,
+                filePath: child.location.file,
+                range: atomRangeFromLocation(child.location)
+              };
+            });
+          }
+
+          var fix = undefined;
+          if (diagnostic.fixits != null) {
+            // TODO: support multiple fixits (if it's ever used at all)
+            var fixit = diagnostic.fixits[0];
+            if (fixit != null) {
+              fix = {
+                oldRange: atomRangeFromSourceRange(fixit.range),
+                newText: fixit.value
+              };
+            }
+          }
+
+          messages.push({
+            scope: 'file',
+            providerName: 'Clang',
+            type: diagnostic.severity === 2 ? 'Warning' : 'Error',
+            filePath: filePath,
+            text: diagnostic.spelling,
+            range: range,
+            trace: trace,
+            fix: fix
+          });
+        });
+      } else {
+        filePathToMessages.set(editorPath, [{
           scope: 'file',
           providerName: 'Clang',
           type: 'Warning',
           filePath: editorPath,
           text: DEFAULT_FLAGS_WARNING,
-          range: new Range([0, 0], [1, 0]),
-        },
-      ]);
+          range: new _atom.Range([0, 0], [1, 0])
+        }]);
+      }
+
+      return filePathToMessages;
     }
-
-    return filePathToMessages;
-  }
-
-  invalidateBuffer(buffer: atom$TextBuffer): void {
-    const filePaths = this._bufferDiagnostics.get(buffer);
-    if (filePaths != null) {
-      this._providerBase.publishMessageInvalidation({scope: 'file', filePaths});
+  }, {
+    key: 'invalidateBuffer',
+    value: function invalidateBuffer(buffer) {
+      var filePaths = this._bufferDiagnostics.get(buffer);
+      if (filePaths != null) {
+        this._providerBase.publishMessageInvalidation({ scope: 'file', filePaths: filePaths });
+      }
     }
-  }
-
-  _receivedNewUpdateSubscriber(callback: MessageUpdateCallback): void {
-    const activeTextEditor = atom.workspace.getActiveTextEditor();
-    if (activeTextEditor && GRAMMAR_SET.has(activeTextEditor.getGrammar().scopeName)) {
-      this.runDiagnostics(activeTextEditor);
+  }, {
+    key: '_receivedNewUpdateSubscriber',
+    value: function _receivedNewUpdateSubscriber(callback) {
+      var activeTextEditor = atom.workspace.getActiveTextEditor();
+      if (activeTextEditor && _constants.GRAMMAR_SET.has(activeTextEditor.getGrammar().scopeName)) {
+        this.runDiagnostics(activeTextEditor);
+      }
     }
-  }
+  }, {
+    key: 'onMessageUpdate',
+    value: function onMessageUpdate(callback) {
+      return this._providerBase.onMessageUpdate(callback);
+    }
+  }, {
+    key: 'onMessageInvalidation',
+    value: function onMessageInvalidation(callback) {
+      return this._providerBase.onMessageInvalidation(callback);
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._providerBase.dispose();
+      this._subscriptions.dispose();
+    }
+  }]);
 
-  onMessageUpdate(callback: MessageUpdateCallback): IDisposable {
-    return this._providerBase.onMessageUpdate(callback);
-  }
-
-  onMessageInvalidation(callback: MessageInvalidationCallback): IDisposable {
-    return this._providerBase.onMessageInvalidation(callback);
-  }
-
-  dispose() {
-    this._providerBase.dispose();
-    this._subscriptions.dispose();
-  }
-
-}
+  return ClangDiagnosticsProvider;
+})();
 
 module.exports = ClangDiagnosticsProvider;
+
+// Keep track of the diagnostics created by each text buffer.
+// Diagnostics will be removed once the file is closed.
+
+// When we open a file for the first time, make sure we pass 'clean' to getDiagnostics
+// to reset any server state for the file.
+// This is so the user can easily refresh the Clang + Buck state by reloading Atom.
+// Note that we do not use the TextBuffer here, since a close/reopen is acceptable.

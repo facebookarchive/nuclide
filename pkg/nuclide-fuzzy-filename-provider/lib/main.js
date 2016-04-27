@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,46 +10,54 @@
  * the root directory of this source tree.
  */
 
-import type {
-  Provider,
-} from '../../nuclide-quick-open-interfaces';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import typeof * as FuzzyFileSearchService from '../../nuclide-fuzzy-file-search-service';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import {
-  CompositeDisposable,
-} from 'atom';
+exports.registerProvider = registerProvider;
+exports.activate = activate;
+exports.deactivate = deactivate;
 
-import {getServiceByNuclideUri} from '../../nuclide-client';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-let providerInstance: ?Provider;
-function getProviderInstance(): Provider {
+var _atom = require('atom');
+
+var _nuclideClient = require('../../nuclide-client');
+
+var providerInstance = undefined;
+function getProviderInstance() {
   if (providerInstance == null) {
-    const FuzzyFileNameProvider = require('./FuzzyFileNameProvider');
-    providerInstance = {...FuzzyFileNameProvider};
+    var FuzzyFileNameProvider = require('./FuzzyFileNameProvider');
+    providerInstance = _extends({}, FuzzyFileNameProvider);
   }
   return providerInstance;
 }
 
-class Activation {
-  _disposables: CompositeDisposable;
+var Activation = (function () {
+  function Activation(state) {
+    _classCallCheck(this, Activation);
 
-  constructor(state: ?Object) {
-    this._disposables = new CompositeDisposable();
+    this._disposables = new _atom.CompositeDisposable();
   }
 
-  activate() {
-    // Do search preprocessing for all existing and future root directories.
-    initSearch(atom.project.getPaths());
-    this._disposables.add(atom.project.onDidChangePaths(initSearch));
-  }
+  _createClass(Activation, [{
+    key: 'activate',
+    value: function activate() {
+      // Do search preprocessing for all existing and future root directories.
+      initSearch(atom.project.getPaths());
+      this._disposables.add(atom.project.onDidChangePaths(initSearch));
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }]);
 
-  dispose() {
-    this._disposables.dispose();
-  }
-}
+  return Activation;
+})();
 
-let activation: ?Activation = null;
+var activation = null;
 function getActivation() {
   if (activation == null) {
     activation = new Activation();
@@ -56,25 +65,24 @@ function getActivation() {
   }
   return activation;
 }
-let projectRoots: Set<string> = new Set();
+var projectRoots = new Set();
 
 /**
  * @param projectPaths All the root directories in the Atom workspace.
  */
-function initSearch(projectPaths: Array<string>): void {
-  const newProjectRoots = new Set();
-  projectPaths.forEach(projectPath => {
+function initSearch(projectPaths) {
+  var newProjectRoots = new Set();
+  projectPaths.forEach(function (projectPath) {
     newProjectRoots.add(projectPath);
     if (projectRoots.has(projectPath)) {
       return;
     }
-    const service: ?FuzzyFileSearchService = getServiceByNuclideUri(
-      'FuzzyFileSearchService', projectPath);
+    var service = (0, _nuclideClient.getServiceByNuclideUri)('FuzzyFileSearchService', projectPath);
     if (service) {
       // It doesn't matter what the search term is. Empirically, doing an initial
       // search speeds up the next search much more than simply doing the setup
       // kicked off by 'fileSearchForDirectory'.
-      service.isFuzzySearchAvailableFor(projectPath).then(isAvailable => {
+      service.isFuzzySearchAvailableFor(projectPath).then(function (isAvailable) {
         if (isAvailable) {
           service.queryFuzzyFile(projectPath, 'a');
         }
@@ -84,15 +92,15 @@ function initSearch(projectPaths: Array<string>): void {
   projectRoots = newProjectRoots;
 }
 
-export function registerProvider(): Provider {
+function registerProvider() {
   return getProviderInstance();
 }
 
-export function activate(state: ?Object) {
+function activate(state) {
   getActivation();
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;

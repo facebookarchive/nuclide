@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +8,11 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {QualifiedTypeIdentifier} from 'ast-types-flow';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printQualifiedTypeIdentifier(
-  print: Print,
-  node: QualifiedTypeIdentifier,
-): Lines {
-  return flatten([
-    print(node.qualification),
-    markers.noBreak,
-    '.',
-    markers.noBreak,
-    print(node.id),
-  ]);
+function printQualifiedTypeIdentifier(print, node) {
+  return flatten([print(node.qualification), markers.noBreak, '.', markers.noBreak, print(node.id)]);
 }
 
 module.exports = printQualifiedTypeIdentifier;

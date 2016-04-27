@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,69 +10,59 @@
  * the root directory of this source tree.
  */
 
-import type {
-  FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-base';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import {React} from 'react-for-atom';
-import classnames from 'classnames';
-import {DiagnosticsMessage} from '../../nuclide-ui/lib/DiagnosticsMessage';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-type DiagnosticsPopupProps = {
-  messages: Array<FileDiagnosticMessage>;
-  goToLocation: (filePath: NuclideUri, line: number) => mixed;
-  fixer: (message: FileDiagnosticMessage) => void;
-  left: number;
-  top: number;
-};
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 
-function renderMessage(
-  fixer: (message: FileDiagnosticMessage) => void,
-  goToLocation: (filePath: NuclideUri, line: number) => mixed,
-  message: FileDiagnosticMessage,
-  index: number
-): React.Element {
-  const className = classnames(
-    // native-key-bindings and tabIndex=-1 are both needed to allow copying the text in the popup.
-    'native-key-bindings',
-    'nuclide-diagnostics-gutter-ui-popup-diagnostic',
-    {
-      'nuclide-diagnostics-gutter-ui-popup-error': message.type === 'Error',
-      'nuclide-diagnostics-gutter-ui-popup-warning': message.type !== 'Error',
-    }
-  );
-  return (
-    <div className={className} key={index} tabIndex={-1}>
-      <DiagnosticsMessage
-        fixer={fixer}
-        goToLocation={goToLocation}
-        key={index}
-        message={message}
-      />
-    </div>
+var _reactForAtom = require('react-for-atom');
+
+var _classnames = require('classnames');
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
+var _nuclideUiLibDiagnosticsMessage = require('../../nuclide-ui/lib/DiagnosticsMessage');
+
+function renderMessage(fixer, goToLocation, message, index) {
+  var className = (0, _classnames2['default'])(
+  // native-key-bindings and tabIndex=-1 are both needed to allow copying the text in the popup.
+  'native-key-bindings', 'nuclide-diagnostics-gutter-ui-popup-diagnostic', {
+    'nuclide-diagnostics-gutter-ui-popup-error': message.type === 'Error',
+    'nuclide-diagnostics-gutter-ui-popup-warning': message.type !== 'Error'
+  });
+  return _reactForAtom.React.createElement(
+    'div',
+    { className: className, key: index, tabIndex: -1 },
+    _reactForAtom.React.createElement(_nuclideUiLibDiagnosticsMessage.DiagnosticsMessage, {
+      fixer: fixer,
+      goToLocation: goToLocation,
+      key: index,
+      message: message
+    })
   );
 }
 
 // TODO move LESS styles to nuclide-ui
-export const DiagnosticsPopup = (props: DiagnosticsPopupProps) => {
-  const {
-    fixer,
-    goToLocation,
-    left,
-    messages,
-    top,
-    ...rest,
-  } = props;
-  return (
-    <div
-      className="nuclide-diagnostics-gutter-ui-popup"
-      style={{
-        left,
-        top,
-      }}
-      {...rest}>
-      {messages.map(renderMessage.bind(null, fixer, goToLocation))}
-    </div>
+var DiagnosticsPopup = function DiagnosticsPopup(props) {
+  var fixer = props.fixer;
+  var goToLocation = props.goToLocation;
+  var left = props.left;
+  var messages = props.messages;
+  var top = props.top;
+
+  var rest = _objectWithoutProperties(props, ['fixer', 'goToLocation', 'left', 'messages', 'top']);
+
+  return _reactForAtom.React.createElement(
+    'div',
+    _extends({
+      className: 'nuclide-diagnostics-gutter-ui-popup',
+      style: {
+        left: left,
+        top: top
+      }
+    }, rest),
+    messages.map(renderMessage.bind(null, fixer, goToLocation))
   );
 };
+exports.DiagnosticsPopup = DiagnosticsPopup;

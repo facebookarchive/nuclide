@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeToolBar = consumeToolBar;
+exports.serialize = serialize;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +16,30 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
+var _assert = require('assert');
 
-let activation: ?Object = null;
+var _assert2 = _interopRequireDefault(_assert);
 
-export function activate(state: ?Object) {
-  invariant(activation == null);
-  const Activation = require('./Activation');
+var activation = null;
+
+function activate(state) {
+  (0, _assert2['default'])(activation == null);
+  var Activation = require('./Activation');
   activation = new Activation(state);
 }
 
-export function deactivate(): void {
-  invariant(activation);
+function deactivate() {
+  (0, _assert2['default'])(activation);
   activation.dispose();
   activation = null;
 }
 
-export function consumeToolBar(getToolBar: (group: string) => Object): void {
-  invariant(activation);
+function consumeToolBar(getToolBar) {
+  (0, _assert2['default'])(activation);
   activation.consumeToolBar(getToolBar);
 }
 
-export function serialize(): Object {
-  invariant(activation);
+function serialize() {
+  (0, _assert2['default'])(activation);
   return activation.serialize();
 }

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,44 +10,57 @@
  * the root directory of this source tree.
  */
 
-import type ObjectiveCColonIndenter from './ObjectiveCColonIndenter';
-import type ObjectiveCBracketBalancer from './ObjectiveCBracketBalancer';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import featureConfig from '../../nuclide-feature-config';
+exports.activate = activate;
+exports.deactivate = deactivate;
 
-class Activation {
-  _indentFeature: ObjectiveCColonIndenter;
-  _bracketFeature: ObjectiveCBracketBalancer;
-  _configSubscription: IDisposable;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  constructor() {
-    const ObjectiveCColonIndenterCtr = require('./ObjectiveCColonIndenter');
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _nuclideFeatureConfig = require('../../nuclide-feature-config');
+
+var _nuclideFeatureConfig2 = _interopRequireDefault(_nuclideFeatureConfig);
+
+var Activation = (function () {
+  function Activation() {
+    var _this = this;
+
+    _classCallCheck(this, Activation);
+
+    var ObjectiveCColonIndenterCtr = require('./ObjectiveCColonIndenter');
     this._indentFeature = new ObjectiveCColonIndenterCtr();
     this._indentFeature.enable();
 
-    const ObjectiveCBracketBalancerCtr = require('./ObjectiveCBracketBalancer');
+    var ObjectiveCBracketBalancerCtr = require('./ObjectiveCBracketBalancer');
     this._bracketFeature = new ObjectiveCBracketBalancerCtr();
-    this._configSubscription = featureConfig.observe(
-        'nuclide-objc.enableAutomaticSquareBracketInsertion',
-        enabled => enabled ? this._bracketFeature.enable() : this._bracketFeature.disable());
+    this._configSubscription = _nuclideFeatureConfig2['default'].observe('nuclide-objc.enableAutomaticSquareBracketInsertion', function (enabled) {
+      return enabled ? _this._bracketFeature.enable() : _this._bracketFeature.disable();
+    });
   }
 
-  dispose() {
-    this._configSubscription.dispose();
-    this._bracketFeature.disable();
-    this._indentFeature.disable();
-  }
-}
+  _createClass(Activation, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._configSubscription.dispose();
+      this._bracketFeature.disable();
+      this._indentFeature.disable();
+    }
+  }]);
 
-let activation: ?Activation;
+  return Activation;
+})();
 
-export function activate(state: ?mixed): void {
+var activation = undefined;
+
+function activate(state) {
   if (!activation) {
     activation = new Activation();
   }
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;

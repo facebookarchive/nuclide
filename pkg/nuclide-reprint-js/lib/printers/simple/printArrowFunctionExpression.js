@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +8,15 @@
  * the root directory of this source tree.
  */
 
-import type {ArrowFunctionExpression} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var markers = require('../../constants/markers');
+var printCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
+var wrapExpression = require('../../wrappers/simple/wrapExpression');
 
-const markers = require('../../constants/markers');
-const printCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
-
-function printArrowFunctionExpression(
-  print: Print,
-  node: ArrowFunctionExpression,
-): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    '(',
-    printCommaSeparatedNodes(print, node.params),
-    ') =>',
-    markers.noBreak,
-    markers.space,
-    print(node.body),
-    markers.noBreak,
-  ]);
+function printArrowFunctionExpression(print, node) {
+  var wrap = function wrap(x) {
+    return wrapExpression(print, node, x);
+  };
+  return wrap(['(', printCommaSeparatedNodes(print, node.params), ') =>', markers.noBreak, markers.space, print(node.body), markers.noBreak]);
 }
 
 module.exports = printArrowFunctionExpression;

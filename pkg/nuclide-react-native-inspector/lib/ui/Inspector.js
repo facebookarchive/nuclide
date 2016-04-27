@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,45 +10,65 @@
  * the root directory of this source tree.
  */
 
-import type {Gadget} from '../../../nuclide-gadgets-interfaces';
-import {React} from 'react-for-atom';
-import path from 'path';
-import {Webview} from '../../../nuclide-ui/lib/Webview';
-import {toJsString} from '../../../nuclide-commons';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-class Inspector extends React.Component {
-  static gadgetId = 'nuclide-react-native-inspector';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  constructor(props: mixed) {
-    super(props);
-    (this: any)._handleDidFinishLoad = this._handleDidFinishLoad.bind(this);
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _reactForAtom = require('react-for-atom');
+
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
+var _nuclideUiLibWebview = require('../../../nuclide-ui/lib/Webview');
+
+var _nuclideCommons = require('../../../nuclide-commons');
+
+var Inspector = (function (_React$Component) {
+  _inherits(Inspector, _React$Component);
+
+  _createClass(Inspector, null, [{
+    key: 'gadgetId',
+    value: 'nuclide-react-native-inspector',
+    enumerable: true
+  }]);
+
+  function Inspector(props) {
+    _classCallCheck(this, Inspector);
+
+    _get(Object.getPrototypeOf(Inspector.prototype), 'constructor', this).call(this, props);
+    this._handleDidFinishLoad = this._handleDidFinishLoad.bind(this);
   }
 
-  getTitle(): string {
-    return 'React Native Inspector';
-  }
+  _createClass(Inspector, [{
+    key: 'getTitle',
+    value: function getTitle() {
+      return 'React Native Inspector';
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      return _reactForAtom.React.createElement(_nuclideUiLibWebview.Webview, {
+        style: { width: '100%', height: '100%' },
+        nodeintegration: true,
+        className: 'native-key-bindings',
+        onDidFinishLoad: this._handleDidFinishLoad,
+        src: 'atom://nuclide/pkg/nuclide-react-native-inspector/lib/ui/inspector.html'
+      });
+    }
+  }, {
+    key: '_handleDidFinishLoad',
+    value: function _handleDidFinishLoad(event) {
+      var element = event.target;
+      var requirePaths = require.cache[__filename].paths;
+      var inspectorDevTools = _path2['default'].join(__dirname, '../../VendorLib/dev-tools/standalone.js');
+      element.executeJavaScript('initializeElementInspector(' + (0, _nuclideCommons.toJsString)(inspectorDevTools) + ', ' + (0, _nuclideCommons.toJsString)(requirePaths) + ');');
+    }
+  }]);
 
-  render(): ?React.Element {
-    return (
-      <Webview
-        style={{width: '100%', height: '100%'}}
-        nodeintegration={true}
-        className="native-key-bindings"
-        onDidFinishLoad={this._handleDidFinishLoad}
-        src="atom://nuclide/pkg/nuclide-react-native-inspector/lib/ui/inspector.html"
-      />
-    );
-  }
+  return Inspector;
+})(_reactForAtom.React.Component);
 
-  _handleDidFinishLoad(event) {
-    const element = ((event.target: any): WebviewElement);
-    const requirePaths = require.cache[__filename].paths;
-    const inspectorDevTools =
-      path.join(__dirname, '../../VendorLib/dev-tools/standalone.js');
-    element.executeJavaScript(
-      `initializeElementInspector(${toJsString(inspectorDevTools)}, ${toJsString(requirePaths)});`
-    );
-  }
-}
-
-module.exports = ((Inspector: any): Gadget);
+module.exports = Inspector;

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +8,14 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {YieldExpression} from 'ast-types-flow';
+var markers = require('../../constants/markers');
+var wrapExpression = require('../../wrappers/simple/wrapExpression');
 
-const markers = require('../../constants/markers');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
-
-function printYieldExpression(print: Print, node: YieldExpression): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    'yield',
-    node.delegate ? '*' : markers.empty,
-    markers.noBreak,
-    markers.space,
-    print(node.argument),
-  ]);
+function printYieldExpression(print, node) {
+  var wrap = function wrap(x) {
+    return wrapExpression(print, node, x);
+  };
+  return wrap(['yield', node.delegate ? '*' : markers.empty, markers.noBreak, markers.space, print(node.argument)]);
 }
 
 module.exports = printYieldExpression;

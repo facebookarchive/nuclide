@@ -1,22 +1,4 @@
-'use babel';
-/* @flow */
-
-/*
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- */
-
-import type {SourceOptions} from '../../nuclide-format-js-base/lib/options/SourceOptions';
-
-const logger = require('../../nuclide-logging').getLogger();
-const featureConfig = require('../../nuclide-feature-config');
-const {track} = require('../../nuclide-analytics');
-const {updateCursor} = require('../../nuclide-update-cursor');
-
-async function formatCode(options: SourceOptions, editor: ?TextEditor): Promise<void> {
+var formatCode = _asyncToGenerator(function* (options, editor) {
   editor = editor || atom.workspace.getActiveTextEditor();
   if (!editor) {
     logger.info('- format-js: No active text editor');
@@ -26,25 +8,32 @@ async function formatCode(options: SourceOptions, editor: ?TextEditor): Promise<
   track('format-js-formatCode');
 
   // Save things
-  const buffer = editor.getBuffer();
-  const oldSource = buffer.getText();
-  let source = oldSource;
+  var buffer = editor.getBuffer();
+  var oldSource = buffer.getText();
+  var source = oldSource;
 
   // Reprint transform.
   if (featureConfig.get('nuclide-format-js.reprint')) {
-    const {reprint} = require('../../nuclide-reprint-js');
+    var _require3 = require('../../nuclide-reprint-js');
+
+    var reprint = _require3.reprint;
+
     // $FlowFixMe(kad) -- this seems to conflate an class instance with an ordinary object.
-    const reprintResult = reprint(source, {
+    var reprintResult = reprint(source, {
       maxLineLength: 80,
       useSpaces: true,
-      tabWidth: 2,
+      tabWidth: 2
     });
     source = reprintResult.source;
   }
 
   // Auto-require transform.
   // TODO: Add a limit so the transform is not run on files over a certain size.
-  const {transform} = require('../../nuclide-format-js-base');
+
+  var _require4 = require('../../nuclide-format-js-base');
+
+  var transform = _require4.transform;
+
   source = transform(source, options);
 
   // Update the source and position after all transforms are done. Do nothing
@@ -53,16 +42,42 @@ async function formatCode(options: SourceOptions, editor: ?TextEditor): Promise<
     return;
   }
 
-  const range = buffer.getRange();
-  const position = editor.getCursorBufferPosition();
+  var range = buffer.getRange();
+  var position = editor.getCursorBufferPosition();
   editor.setTextInBufferRange(range, source);
-  const {row, column} = updateCursor(oldSource, position, source);
+
+  var _updateCursor = updateCursor(oldSource, position, source);
+
+  var row = _updateCursor.row;
+  var column = _updateCursor.column;
+
   editor.setCursorBufferPosition([row, column]);
 
   // Save the file if that option is specified.
   if (featureConfig.get('nuclide-format-js.saveAfterRun')) {
     editor.save();
   }
-}
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+var logger = require('../../nuclide-logging').getLogger();
+var featureConfig = require('../../nuclide-feature-config');
+
+var _require = require('../../nuclide-analytics');
+
+var track = _require.track;
+
+var _require2 = require('../../nuclide-update-cursor');
+
+var updateCursor = _require2.updateCursor;
 
 module.exports = formatCode;

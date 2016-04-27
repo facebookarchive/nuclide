@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +8,13 @@
  * the root directory of this source tree.
  */
 
-const buildRuns = require('../utils/buildRuns');
-const buildScopes = require('../utils/buildScopes');
-const invariant = require('assert');
-const isScopeBreakMarker = require('../utils/isScopeBreakMarker');
-const isScopeMarker = require('../utils/isScopeMarker');
-const markers = require('../constants/markers');
-const translateScopeMarker = require('../utils/translateScopeMarker');
+var buildRuns = require('../utils/buildRuns');
+var buildScopes = require('../utils/buildScopes');
+var invariant = require('assert');
+var isScopeBreakMarker = require('../utils/isScopeBreakMarker');
+var isScopeMarker = require('../utils/isScopeMarker');
+var markers = require('../constants/markers');
+var translateScopeMarker = require('../utils/translateScopeMarker');
 
 /**
  * Sometimes a scope break may be adjacent to a hard break. If that's the case
@@ -23,19 +22,20 @@ const translateScopeMarker = require('../utils/translateScopeMarker');
  *
  * This assumes noBreaks have already been removed and will not be encountered.
  */
-function resolveForcedScopeBreaks(lines: Array<any>): Array<any> {
-  const scopes = buildScopes(lines);
-  const runs = buildRuns(lines);
-  const toBreak = new Set();
+function resolveForcedScopeBreaks(lines) {
+  var scopes = buildScopes(lines);
+  var runs = buildRuns(lines);
+  var toBreak = new Set();
 
-  for (const run of runs) {
-    const [start, end] = run;
-    let broken = false;
-    for (let i = start; i < end; i++) {
-      if (
-        lines[i] === markers.hardBreak ||
-        lines[i] === markers.multiHardBreak
-      ) {
+  for (var run of runs) {
+    var _run = _slicedToArray(run, 2);
+
+    var start = _run[0];
+    var end = _run[1];
+
+    var broken = false;
+    for (var i = start; i < end; i++) {
+      if (lines[i] === markers.hardBreak || lines[i] === markers.multiHardBreak) {
         broken = true;
         break;
       }
@@ -45,7 +45,7 @@ function resolveForcedScopeBreaks(lines: Array<any>): Array<any> {
       continue;
     }
 
-    for (let i = start; i < end; i++) {
+    for (var i = start; i < end; i++) {
       if (isScopeBreakMarker(lines[i])) {
         invariant(scopes[i] != null, 'Scope markers must have a scope.');
         toBreak.add(scopes[i]);
@@ -53,12 +53,8 @@ function resolveForcedScopeBreaks(lines: Array<any>): Array<any> {
     }
   }
 
-  return lines.map((line, i) => {
-    if (
-      isScopeMarker(line) &&
-      scopes[i] != null &&
-      toBreak.has(scopes[i])
-    ) {
+  return lines.map(function (line, i) {
+    if (isScopeMarker(line) && scopes[i] != null && toBreak.has(scopes[i])) {
       return translateScopeMarker(line, true);
     }
     return line;

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,35 +8,31 @@
  * the root directory of this source tree.
  */
 
-import type {Collection} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
+var FirstNode = require('../utils/FirstNode');
 
-const FirstNode = require('../utils/FirstNode');
+var getUndeclaredIdentifiers = require('../utils/getUndeclaredIdentifiers');
+var getUndeclaredJSXIdentifiers = require('../utils/getUndeclaredJSXIdentifiers');
 
-const getUndeclaredIdentifiers = require('../utils/getUndeclaredIdentifiers');
-const getUndeclaredJSXIdentifiers = require('../utils/getUndeclaredJSXIdentifiers');
-
-
-function addMissingRequires(root: Collection, options: SourceOptions): void {
-  const first = FirstNode.get(root);
+function addMissingRequires(root, options) {
+  var first = FirstNode.get(root);
   if (!first) {
     return;
   }
-  const _first = first; // For flow.
+  var _first = first; // For flow.
 
-  const {moduleMap} = options;
+  var moduleMap = options.moduleMap;
 
   // Add the missing requires.
-  getUndeclaredIdentifiers(root, options).forEach(name => {
-    const node = moduleMap.getRequire(name, {sourcePath: options.sourcePath});
+  getUndeclaredIdentifiers(root, options).forEach(function (name) {
+    var node = moduleMap.getRequire(name, { sourcePath: options.sourcePath });
     _first.insertBefore(node);
   });
 
   // Add missing JSX requires.
-  getUndeclaredJSXIdentifiers(root, options).forEach(name => {
-    const node = moduleMap.getRequire(name, {
+  getUndeclaredJSXIdentifiers(root, options).forEach(function (name) {
+    var node = moduleMap.getRequire(name, {
       sourcePath: options.sourcePath,
-      jsxIdentifier: true,
+      jsxIdentifier: true
     });
     _first.insertBefore(node);
   });

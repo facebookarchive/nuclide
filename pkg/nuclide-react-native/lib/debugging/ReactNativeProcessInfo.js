@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +10,47 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../../nuclide-remote-uri';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {DebuggerProcessInfo} from '../../../nuclide-debugger-atom';
-import {ReactNativeDebuggerInstance} from './ReactNativeDebuggerInstance';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-export class ReactNativeProcessInfo extends DebuggerProcessInfo {
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  constructor(targetUri: NuclideUri) {
-    super('react-native', targetUri);
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _nuclideDebuggerAtom = require('../../../nuclide-debugger-atom');
+
+var _ReactNativeDebuggerInstance = require('./ReactNativeDebuggerInstance');
+
+var ReactNativeProcessInfo = (function (_DebuggerProcessInfo) {
+  _inherits(ReactNativeProcessInfo, _DebuggerProcessInfo);
+
+  function ReactNativeProcessInfo(targetUri) {
+    _classCallCheck(this, ReactNativeProcessInfo);
+
+    _get(Object.getPrototypeOf(ReactNativeProcessInfo.prototype), 'constructor', this).call(this, 'react-native', targetUri);
   }
 
-  debug(): Promise<ReactNativeDebuggerInstance> {
-    // This is the port that the V8 debugger usually listens on.
-    // TODO(matthewwithanm): Provide a way to override this in the UI.
-    return Promise.resolve(new ReactNativeDebuggerInstance(this, 5858));
-  }
+  _createClass(ReactNativeProcessInfo, [{
+    key: 'debug',
+    value: function debug() {
+      // This is the port that the V8 debugger usually listens on.
+      // TODO(matthewwithanm): Provide a way to override this in the UI.
+      return Promise.resolve(new _ReactNativeDebuggerInstance.ReactNativeDebuggerInstance(this, 5858));
+    }
+  }, {
+    key: 'compareDetails',
+    value: function compareDetails(other) {
+      return 1;
+    }
+  }, {
+    key: 'displayString',
+    value: function displayString() {
+      return this.getTargetUri();
+    }
+  }]);
 
-  compareDetails(other: DebuggerProcessInfo): number {
-    return 1;
-  }
+  return ReactNativeProcessInfo;
+})(_nuclideDebuggerAtom.DebuggerProcessInfo);
 
-  displayString(): string {
-    return this.getTargetUri();
-  }
-
-}
+exports.ReactNativeProcessInfo = ReactNativeProcessInfo;

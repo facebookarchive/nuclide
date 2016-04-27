@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,43 +8,34 @@
  * the root directory of this source tree.
  */
 
-import type {Collection} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
+var getDeclaredIdentifiers = require('../utils/getDeclaredIdentifiers');
+var getNamesFromID = require('../utils/getNamesFromID');
+var getNonDeclarationIdentifiers = require('../utils/getNonDeclarationIdentifiers');
+var hasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
+var isGlobal = require('../utils/isGlobal');
+var jscs = require('jscodeshift');
 
-const getDeclaredIdentifiers = require('../utils/getDeclaredIdentifiers');
-const getNamesFromID = require('../utils/getNamesFromID');
-const getNonDeclarationIdentifiers = require('../utils/getNonDeclarationIdentifiers');
-const hasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
-const isGlobal = require('../utils/isGlobal');
-const jscs = require('jscodeshift');
-
-function removeUnusedRequires(
-  root: Collection,
-  options: SourceOptions,
-): void {
-  const used = getNonDeclarationIdentifiers(root, options);
-  const nonRequires = getDeclaredIdentifiers(
-    root,
-    options,
-    [path => !hasOneRequireDeclaration(path.node)]
-  );
+function removeUnusedRequires(root, options) {
+  var used = getNonDeclarationIdentifiers(root, options);
+  var nonRequires = getDeclaredIdentifiers(root, options, [function (path) {
+    return !hasOneRequireDeclaration(path.node);
+  }]);
 
   // Remove unused requires.
-  root
-    .find(jscs.VariableDeclaration)
-    .filter(path => isGlobal(path))
-    .filter(path => hasOneRequireDeclaration(path.node))
-    .filter(path => {
-      const id = path.node.declarations[0].id;
-      const names = getNamesFromID(id);
-      for (const name of names) {
-        if (used.has(name) && !nonRequires.has(name)) {
-          return false;
-        }
+  root.find(jscs.VariableDeclaration).filter(function (path) {
+    return isGlobal(path);
+  }).filter(function (path) {
+    return hasOneRequireDeclaration(path.node);
+  }).filter(function (path) {
+    var id = path.node.declarations[0].id;
+    var names = getNamesFromID(id);
+    for (var _name of names) {
+      if (used.has(_name) && !nonRequires.has(_name)) {
+        return false;
       }
-      return true;
-    })
-    .remove();
+    }
+    return true;
+  }).remove();
 }
 
 module.exports = removeUnusedRequires;

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -16,8 +15,10 @@
 // remote connection is reestablished, nuclide-remote-projects will convert
 // the TextBuffer to NuclideTextBuffer.
 
-const {TextBuffer} = require('atom');
+var _require = require('atom');
 
-module.exports = function(state: Object, params: Object): mixed {
+var TextBuffer = _require.TextBuffer;
+
+module.exports = function (state, params) {
   return TextBuffer.deserialize(state, params);
 };

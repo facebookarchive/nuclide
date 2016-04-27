@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +10,7 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+var _reactForAtom = require('react-for-atom');
 
-export type HomeFragments = {
-  // A string that a package can publish to the main part of the home panel. This allows for
-  // customized welcome messages, but should be used judiciously.
-  welcome?: React.Element;
-  feature?: {
-    title: string;
-    icon: string;
-    description: React.Element | string;
-    command?: string;
-  };
-  priority?: number;
-};
+// A string that a package can publish to the main part of the home panel. This allows for
+// customized welcome messages, but should be used judiciously.

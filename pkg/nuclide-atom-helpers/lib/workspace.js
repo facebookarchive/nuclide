@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getPathToWorkspaceState = getPathToWorkspaceState;
+exports.activatePaneItem = activatePaneItem;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +14,22 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
-import invariant from 'assert';
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
 
 /**
  * @return The path to the JSON file on disk where the workspace state is stored.
  */
-export function getPathToWorkspaceState(): ?string {
+
+function getPathToWorkspaceState() {
   // Atom <1.2 this function exists on `atom.constructor`. Atom >=1.2 it exists on the global `atom`
   // object. Find the appropriate location, and return `null` if both fail unexpectedly.
-  const getStateKey = atom.getStateKey || atom.constructor.getStateKey;
+  var getStateKey = atom.getStateKey || atom.constructor.getStateKey;
   if (typeof getStateKey !== 'function') {
     return null;
   }
@@ -26,16 +37,12 @@ export function getPathToWorkspaceState(): ?string {
   // As you can imagine, the way that we are getting this path is not documented and is therefore
   // unstable.
   // TODO(t8750960): Work with the Atom core team to get a stable API for this.
-  return path.join(
-    atom.getConfigDirPath(),
-    'storage',
-    getStateKey(atom.project.getPaths(), 'editor'),
-  );
+  return _path2['default'].join(atom.getConfigDirPath(), 'storage', getStateKey(atom.project.getPaths(), 'editor'));
 }
 
-export function activatePaneItem(paneItem: Object): void {
-  const pane = atom.workspace.paneForItem(paneItem);
-  invariant(pane != null);
+function activatePaneItem(paneItem) {
+  var pane = atom.workspace.paneForItem(paneItem);
+  (0, _assert2['default'])(pane != null);
   pane.activate();
   pane.activateItem(paneItem);
 }

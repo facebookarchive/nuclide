@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var FirstNode = require('../utils/FirstNode');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +10,22 @@
  * the root directory of this source tree.
  */
 
-import type {Collection, Node} from '../types/ast';
+var reprintComment = require('../utils/reprintComment');
 
-const FirstNode = require('../utils/FirstNode');
-
-const reprintComment = require('../utils/reprintComment');
-
-function addLeadingComments(root: Collection, comments: ?Array<Node>): void {
+function addLeadingComments(root, comments) {
   if (!comments || comments.length === 0) {
     return;
   }
 
-  const firstPath = FirstNode.get(root);
+  var firstPath = FirstNode.get(root);
   if (!firstPath) {
     return;
   }
-  const first = firstPath.node;
+  var first = firstPath.node;
   first.comments = first.comments ? comments.concat(first.comments) : comments;
-  first.comments = first.comments.map(comment => reprintComment(comment));
+  first.comments = first.comments.map(function (comment) {
+    return reprintComment(comment);
+  });
   firstPath.replace(first);
 }
 

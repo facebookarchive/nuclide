@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var Options = require('./options/Options');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +10,16 @@
  * the root directory of this source tree.
  */
 
-import type {SourceOptions} from './options/SourceOptions';
+var jscs = require('jscodeshift');
+var nuclideTransform = require('./nuclide/transform');
+var printRoot = require('./utils/printRoot');
+var requiresTransform = require('./requires/transform');
 
-const Options = require('./options/Options');
-
-const jscs = require('jscodeshift');
-const nuclideTransform = require('./nuclide/transform');
-const printRoot = require('./utils/printRoot');
-const requiresTransform = require('./requires/transform');
-
-function transform(source: string, options: SourceOptions): string {
+function transform(source, options) {
   Options.validateSourceOptions(options);
 
   // Parse the source code once, then reuse the root node
-  const root = jscs(source);
+  var root = jscs(source);
 
   // Add use-strict
   // TODO: implement this, make it configurable
@@ -30,7 +27,7 @@ function transform(source: string, options: SourceOptions): string {
   // Requires
   requiresTransform(root, options);
 
-  let output = printRoot(root);
+  var output = printRoot(root);
 
   // Transform that operates on the raw string output.
   output = nuclideTransform(output, options);

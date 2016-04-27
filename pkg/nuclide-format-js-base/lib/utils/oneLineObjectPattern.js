@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+
+
+var jscs = require('jscodeshift');
+
+/**
+ * This is a hack to force an ObjectPattern node to be printed on one line
+ */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +14,22 @@
  * the root directory of this source tree.
  */
 
-import type {Node} from '../types/ast';
-
-const jscs = require('jscodeshift');
-
-/**
- * This is a hack to force an ObjectPattern node to be printed on one line
- */
-function oneLineObjectPattern(node: Node): Node {
+function oneLineObjectPattern(node) {
   if (!jscs.ObjectPattern.check(node)) {
     return node;
   }
 
-  const props = node.properties;
-  if (!props.every(prop => prop.shorthand && jscs.Identifier.check(prop.key))) {
+  var props = node.properties;
+  if (!props.every(function (prop) {
+    return prop.shorthand && jscs.Identifier.check(prop.key);
+  })) {
     return node;
   }
 
-  const mySource =
-    'var {' +
-    props.map(prop => prop.key.name).join(', ') +
-    '} = _;';
-  const myAst = jscs(mySource);
+  var mySource = 'var {' + props.map(function (prop) {
+    return prop.key.name;
+  }).join(', ') + '} = _;';
+  var myAst = jscs(mySource);
   return myAst.find(jscs.ObjectPattern).nodes()[0];
 }
 

@@ -1,5 +1,22 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+var _IconsForAction;
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,66 +26,67 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+var _reactForAtom = require('react-for-atom');
 
-export const DATATIP_ACTIONS = Object.freeze({
+var DATATIP_ACTIONS = Object.freeze({
   PIN: 'PIN',
-  CLOSE: 'CLOSE',
+  CLOSE: 'CLOSE'
 });
 
-const IconsForAction = {
-  [DATATIP_ACTIONS.PIN]: 'pin',
-  [DATATIP_ACTIONS.CLOSE]: 'x',
-};
+exports.DATATIP_ACTIONS = DATATIP_ACTIONS;
+var IconsForAction = (_IconsForAction = {}, _defineProperty(_IconsForAction, DATATIP_ACTIONS.PIN, 'pin'), _defineProperty(_IconsForAction, DATATIP_ACTIONS.CLOSE, 'x'), _IconsForAction);
 
-type DatatipComponentProps = {
-  action: string;
-  actionTitle: string;
-  children?: any;
-  className?: string;
-  onActionClick: Function;
-};
+var DatatipComponent = (function (_React$Component) {
+  _inherits(DatatipComponent, _React$Component);
 
-export class DatatipComponent extends React.Component {
-  props: DatatipComponentProps;
+  function DatatipComponent(props) {
+    _classCallCheck(this, DatatipComponent);
 
-  constructor(props: DatatipComponentProps) {
-    super(props);
-    (this: any).handleActionClick = this.handleActionClick.bind(this);
+    _get(Object.getPrototypeOf(DatatipComponent.prototype), 'constructor', this).call(this, props);
+    this.handleActionClick = this.handleActionClick.bind(this);
   }
 
-  handleActionClick(event: SyntheticEvent): void {
-    this.props.onActionClick();
-  }
+  _createClass(DatatipComponent, [{
+    key: 'handleActionClick',
+    value: function handleActionClick(event) {
+      this.props.onActionClick();
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var className = _props.className;
+      var children = _props.children;
+      var action = _props.action;
+      var actionTitle = _props.actionTitle;
 
-  render(): React.Element {
-    const {
-      className,
-      children,
-      action,
-      actionTitle,
-      ...props,
-    } = this.props;
-    let actionButton;
-    if (action != null && IconsForAction[action] != null) {
-      const actionIcon = IconsForAction[action];
-      actionButton = (
-        <div
-          className={`nuclide-datatip-pin-button icon-${actionIcon}`}
-          onClick={this.handleActionClick}
-          title={actionTitle}
-        />
+      var props = _objectWithoutProperties(_props, ['className', 'children', 'action', 'actionTitle']);
+
+      var actionButton = undefined;
+      if (action != null && IconsForAction[action] != null) {
+        var actionIcon = IconsForAction[action];
+        actionButton = _reactForAtom.React.createElement('div', {
+          className: 'nuclide-datatip-pin-button icon-' + actionIcon,
+          onClick: this.handleActionClick,
+          title: actionTitle
+        });
+      }
+      return _reactForAtom.React.createElement(
+        'div',
+        _extends({
+          className: className + ' nuclide-datatip-container'
+        }, props),
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'nuclide-datatip-content' },
+          children
+        ),
+        actionButton
       );
     }
-    return (
-      <div
-        className={`${className} nuclide-datatip-container`}
-        {...props}>
-        <div className="nuclide-datatip-content">
-          {children}
-        </div>
-        {actionButton}
-      </div>
-    );
-  }
-}
+  }]);
+
+  return DatatipComponent;
+})(_reactForAtom.React.Component);
+
+exports.DatatipComponent = DatatipComponent;

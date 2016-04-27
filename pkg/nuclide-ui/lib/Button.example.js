@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,130 +10,299 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {Button} from './Button';
-import {ButtonGroup} from './ButtonGroup';
-import {ButtonToolbar} from './ButtonToolbar';
-import {Block} from './Block';
+var _reactForAtom = require('react-for-atom');
 
-const ButtonSizeExample = (): React.Element => (
-  <Block>
-    <Button className="inline-block" size="EXTRA_SMALL">extra_small</Button>
-    <Button className="inline-block" size="SMALL">small</Button>
-    <Button className="inline-block">regular</Button>
-    <Button className="inline-block" size="LARGE">large</Button>
-  </Block>
-);
+var _Button = require('./Button');
 
-const ButtonColorExample = (): React.Element => (
-  <div>
-    <Block>
-      <ButtonGroup>
-        <Button buttonType="PRIMARY">primary</Button>
-        <Button buttonType="INFO">info</Button>
-        <Button buttonType="SUCCESS">success</Button>
-        <Button buttonType="WARNING">warning</Button>
-        <Button buttonType="ERROR">error</Button>
-      </ButtonGroup>
-    </Block>
-    <Block>
-      <p>selected:</p>
-      <ButtonGroup>
-        <Button selected={true} buttonType="PRIMARY">primary</Button>
-        <Button selected={true} buttonType="INFO">info</Button>
-        <Button selected={true} buttonType="SUCCESS">success</Button>
-        <Button selected={true} buttonType="WARNING">warning</Button>
-        <Button selected={true} buttonType="ERROR">error</Button>
-      </ButtonGroup>
-    </Block>
-  </div>
-);
+var _ButtonGroup = require('./ButtonGroup');
 
-const ButtonIconExample = (): React.Element => (
-  <Block>
-    <ButtonGroup>
-      <Button icon="gear"></Button>
-      <Button icon="cloud-download"></Button>
-      <Button icon="code"></Button>
-      <Button icon="check"></Button>
-      <Button icon="device-mobile"></Button>
-      <Button icon="alert"></Button>
-    </ButtonGroup>
-  </Block>
-);
+var _ButtonToolbar = require('./ButtonToolbar');
 
-const ButtonGroupExample = (): React.Element => (
-  <div>
-    <Block>
-      <ButtonGroup size="EXTRA_SMALL">
-        <Button buttonType="SUCCESS">extra small</Button>
-        <Button>button</Button>
-        <Button>group</Button>
-      </ButtonGroup>
-    </Block>
-    <Block>
-      <ButtonGroup size="SMALL">
-        <Button buttonType="SUCCESS">small</Button>
-        <Button>button</Button>
-        <Button>group</Button>
-      </ButtonGroup>
-    </Block>
-    <Block>
-      <ButtonGroup>
-        <Button buttonType="SUCCESS">regular</Button>
-        <Button>button</Button>
-        <Button>group</Button>
-      </ButtonGroup>
-    </Block>
-    <Block>
-      <ButtonGroup size="LARGE">
-        <Button buttonType="SUCCESS">large</Button>
-        <Button>button</Button>
-        <Button>group</Button>
-      </ButtonGroup>
-    </Block>
-  </div>
-);
+var _Block = require('./Block');
 
-const ButtonToolbarExample = (): React.Element => (
-  <div>
-    <Block>
-      <ButtonToolbar>
-        <ButtonGroup>
-          <Button>ButtonGroup</Button>
-          <Button>in a</Button>
-          <Button>toolbar</Button>
-        </ButtonGroup>
-        <Button>single buttons</Button>
-        <Button>in toolbar</Button>
-      </ButtonToolbar>
-    </Block>
-  </div>
-);
+var ButtonSizeExample = function ButtonSizeExample() {
+  return _reactForAtom.React.createElement(
+    _Block.Block,
+    null,
+    _reactForAtom.React.createElement(
+      _Button.Button,
+      { className: 'inline-block', size: 'EXTRA_SMALL' },
+      'extra_small'
+    ),
+    _reactForAtom.React.createElement(
+      _Button.Button,
+      { className: 'inline-block', size: 'SMALL' },
+      'small'
+    ),
+    _reactForAtom.React.createElement(
+      _Button.Button,
+      { className: 'inline-block' },
+      'regular'
+    ),
+    _reactForAtom.React.createElement(
+      _Button.Button,
+      { className: 'inline-block', size: 'LARGE' },
+      'large'
+    )
+  );
+};
 
-export const ButtonExamples = {
+var ButtonColorExample = function ButtonColorExample() {
+  return _reactForAtom.React.createElement(
+    'div',
+    null,
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(
+        _ButtonGroup.ButtonGroup,
+        null,
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          { buttonType: 'PRIMARY' },
+          'primary'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          { buttonType: 'INFO' },
+          'info'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          { buttonType: 'SUCCESS' },
+          'success'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          { buttonType: 'WARNING' },
+          'warning'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          { buttonType: 'ERROR' },
+          'error'
+        )
+      )
+    ),
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(
+        'p',
+        null,
+        'selected:'
+      ),
+      _reactForAtom.React.createElement(
+        _ButtonGroup.ButtonGroup,
+        null,
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          { selected: true, buttonType: 'PRIMARY' },
+          'primary'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          { selected: true, buttonType: 'INFO' },
+          'info'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          { selected: true, buttonType: 'SUCCESS' },
+          'success'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          { selected: true, buttonType: 'WARNING' },
+          'warning'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          { selected: true, buttonType: 'ERROR' },
+          'error'
+        )
+      )
+    )
+  );
+};
+
+var ButtonIconExample = function ButtonIconExample() {
+  return _reactForAtom.React.createElement(
+    _Block.Block,
+    null,
+    _reactForAtom.React.createElement(
+      _ButtonGroup.ButtonGroup,
+      null,
+      _reactForAtom.React.createElement(_Button.Button, { icon: 'gear' }),
+      _reactForAtom.React.createElement(_Button.Button, { icon: 'cloud-download' }),
+      _reactForAtom.React.createElement(_Button.Button, { icon: 'code' }),
+      _reactForAtom.React.createElement(_Button.Button, { icon: 'check' }),
+      _reactForAtom.React.createElement(_Button.Button, { icon: 'device-mobile' }),
+      _reactForAtom.React.createElement(_Button.Button, { icon: 'alert' })
+    )
+  );
+};
+
+var ButtonGroupExample = function ButtonGroupExample() {
+  return _reactForAtom.React.createElement(
+    'div',
+    null,
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(
+        _ButtonGroup.ButtonGroup,
+        { size: 'EXTRA_SMALL' },
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          { buttonType: 'SUCCESS' },
+          'extra small'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          null,
+          'button'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          null,
+          'group'
+        )
+      )
+    ),
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(
+        _ButtonGroup.ButtonGroup,
+        { size: 'SMALL' },
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          { buttonType: 'SUCCESS' },
+          'small'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          null,
+          'button'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          null,
+          'group'
+        )
+      )
+    ),
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(
+        _ButtonGroup.ButtonGroup,
+        null,
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          { buttonType: 'SUCCESS' },
+          'regular'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          null,
+          'button'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          null,
+          'group'
+        )
+      )
+    ),
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(
+        _ButtonGroup.ButtonGroup,
+        { size: 'LARGE' },
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          { buttonType: 'SUCCESS' },
+          'large'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          null,
+          'button'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          null,
+          'group'
+        )
+      )
+    )
+  );
+};
+
+var ButtonToolbarExample = function ButtonToolbarExample() {
+  return _reactForAtom.React.createElement(
+    'div',
+    null,
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(
+        _ButtonToolbar.ButtonToolbar,
+        null,
+        _reactForAtom.React.createElement(
+          _ButtonGroup.ButtonGroup,
+          null,
+          _reactForAtom.React.createElement(
+            _Button.Button,
+            null,
+            'ButtonGroup'
+          ),
+          _reactForAtom.React.createElement(
+            _Button.Button,
+            null,
+            'in a'
+          ),
+          _reactForAtom.React.createElement(
+            _Button.Button,
+            null,
+            'toolbar'
+          )
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          null,
+          'single buttons'
+        ),
+        _reactForAtom.React.createElement(
+          _Button.Button,
+          null,
+          'in toolbar'
+        )
+      )
+    )
+  );
+};
+
+var ButtonExamples = {
   sectionName: 'Buttons',
   description: 'For clicking things.',
-  examples: [
-    {
-      title: 'Button sizes',
-      component: ButtonSizeExample,
-    },
-    {
-      title: 'Button colors',
-      component: ButtonColorExample,
-    },
-    {
-      title: 'Buttons with icons',
-      component: ButtonIconExample,
-    },
-    {
-      title: 'Button Group',
-      component: ButtonGroupExample,
-    },
-    {
-      title: 'Button Toolbar',
-      component: ButtonToolbarExample,
-    },
-  ],
+  examples: [{
+    title: 'Button sizes',
+    component: ButtonSizeExample
+  }, {
+    title: 'Button colors',
+    component: ButtonColorExample
+  }, {
+    title: 'Buttons with icons',
+    component: ButtonIconExample
+  }, {
+    title: 'Button Group',
+    component: ButtonGroupExample
+  }, {
+    title: 'Button Toolbar',
+    component: ButtonToolbarExample
+  }]
 };
+exports.ButtonExamples = ButtonExamples;

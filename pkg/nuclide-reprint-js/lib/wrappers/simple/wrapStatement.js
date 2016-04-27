@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var flatten = require('../../utils/flatten');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +10,10 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function wrapStatement(print: Print, node: any, lines: Lines): Lines {
-  return flatten([
-    lines,
-    markers.hardBreak,
-  ]);
+function wrapStatement(print, node, lines) {
+  return flatten([lines, markers.hardBreak]);
 }
 
 module.exports = wrapStatement;

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var addLeadingComments = require('./addLeadingComments');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +10,19 @@
  * the root directory of this source tree.
  */
 
-import type {Collection} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
-import type {TransformKey} from '../types/transforms';
-
-const addLeadingComments = require('./addLeadingComments');
-const addMissingRequires = require('./addMissingRequires');
-const addMissingTypes = require('./addMissingTypes');
-const formatRequires = require('./formatRequires');
-const removeLeadingComments = require('./removeLeadingComments');
-const removeUnusedRequires = require('./removeUnusedRequires');
-const removeUnusedTypes = require('./removeUnusedTypes');
+var addMissingRequires = require('./addMissingRequires');
+var addMissingTypes = require('./addMissingTypes');
+var formatRequires = require('./formatRequires');
+var removeLeadingComments = require('./removeLeadingComments');
+var removeUnusedRequires = require('./removeUnusedRequires');
+var removeUnusedTypes = require('./removeUnusedTypes');
 
 /**
  * This is the collection of transforms that affect requires.
  */
-function transform(root: Collection, options: SourceOptions): void {
-  const blacklist: Set<TransformKey> = options.blacklist || new Set();
-  let comments;
+function transform(root, options) {
+  var blacklist = options.blacklist || new Set();
+  var comments = undefined;
   if (!blacklist.has('requires.transferComments')) {
     comments = removeLeadingComments(root);
   }

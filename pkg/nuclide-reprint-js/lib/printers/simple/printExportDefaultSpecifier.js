@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +8,9 @@
  * the root directory of this source tree.
  */
 
-import type {ExportDefaultSpecifier} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var flatten = require('../../utils/flatten');
 
-const flatten = require('../../utils/flatten');
-
-function printExportDefaultSpecifier(
-  print: Print,
-  node: ExportDefaultSpecifier,
-): Lines {
+function printExportDefaultSpecifier(print, node) {
   return flatten(print(node.exported));
 }
 

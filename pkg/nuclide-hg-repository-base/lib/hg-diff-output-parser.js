@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _os = require('os');
+
+var _os2 = _interopRequireDefault(_os);
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -14,74 +17,72 @@
  * Explained here: http://www.gnu.org/software/diffutils/manual/html_node/Detailed-Unified.html
  * and here: http://www.artima.com/weblogs/viewpost.jsp?thread=164293.
  */
-const HUNK_DIFF_REGEX = /@@ .* @@/g;
-const HUNK_OLD_INFO_REGEX = /\-([0-9]+)((?:,[0-9]+)?)/;
-const HUNK_NEW_INFO_REGEX = /\+([0-9]+)((?:,[0-9]+)?)/;
-
-import os from 'os';
-import type {DiffInfo} from './HgService';
 
 /**
  * Parses the output of `hg diff --unified 0`.
  */
-function parseHgDiffUnifiedOutput(output: string): DiffInfo {
-  const diffInfo = {
+var HUNK_DIFF_REGEX = /@@ .* @@/g;
+var HUNK_OLD_INFO_REGEX = /\-([0-9]+)((?:,[0-9]+)?)/;
+var HUNK_NEW_INFO_REGEX = /\+([0-9]+)((?:,[0-9]+)?)/;
+
+function parseHgDiffUnifiedOutput(output) {
+  var diffInfo = {
     added: 0,
     deleted: 0,
-    lineDiffs: [],
+    lineDiffs: []
   };
   if (!output) {
     return diffInfo;
   }
   // $FlowFixMe match may return null
-  const diffHunks = output.match(HUNK_DIFF_REGEX);
-  diffHunks.forEach(hunk => {
+  var diffHunks = output.match(HUNK_DIFF_REGEX);
+  diffHunks.forEach(function (hunk) {
     // `hunk` will look like: "@@ -a(,b) +c(,d) @@"
-    const hunkParts = hunk.split(' ');
+    var hunkParts = hunk.split(' ');
     // $FlowFixMe match may return null
-    const oldInfo = hunkParts[1].match(HUNK_OLD_INFO_REGEX);
+    var oldInfo = hunkParts[1].match(HUNK_OLD_INFO_REGEX);
     // $FlowFixMe match may return null
-    const newInfo = hunkParts[2].match(HUNK_NEW_INFO_REGEX);
+    var newInfo = hunkParts[2].match(HUNK_NEW_INFO_REGEX);
 
     // `oldInfo`/`newInfo` will look like: ["a,b", "a", ",b"], or ["a", "a", ""].
-    const oldStart = parseInt(oldInfo[1], 10);
-    const newStart = parseInt(newInfo[1], 10);
+    var oldStart = parseInt(oldInfo[1], 10);
+    var newStart = parseInt(newInfo[1], 10);
     // According to the spec, if the line length is 1, it may be omitted.
-    const oldLines = oldInfo[2] ? parseInt(oldInfo[2].substring(1), 10) : 1;
-    const newLines = newInfo[2] ? parseInt(newInfo[2].substring(1), 10) : 1;
+    var oldLines = oldInfo[2] ? parseInt(oldInfo[2].substring(1), 10) : 1;
+    var newLines = newInfo[2] ? parseInt(newInfo[2].substring(1), 10) : 1;
 
     diffInfo.added += newLines;
     diffInfo.deleted += oldLines;
-    diffInfo.lineDiffs.push({oldStart, oldLines, newStart, newLines});
+    diffInfo.lineDiffs.push({ oldStart: oldStart, oldLines: oldLines, newStart: newStart, newLines: newLines });
   });
 
   return diffInfo;
 }
 
-const SINGLE_UNIFIED_DIFF_BEGINNING_REGEX = /--- /;
+var SINGLE_UNIFIED_DIFF_BEGINNING_REGEX = /--- /;
 
 /**
  * Parses the output of `hg diff --unified 0 --noprefix` from one or more files.
  * @return A map of each file path in the output (relative to the root of the
  *   repo) to its parsed DiffInfo.
  */
-function parseMultiFileHgDiffUnifiedOutput(output: string): Map<string, DiffInfo> {
-  const filePathToDiffInfo = new Map();
+function parseMultiFileHgDiffUnifiedOutput(output) {
+  var filePathToDiffInfo = new Map();
   // Split the output by the symbols '--- '. This is specified in the Unified diff format:
   // http://www.gnu.org/software/diffutils/manual/html_node/Detailed-Unified.html#Detailed-Unified.
-  let diffOutputs = output.split(SINGLE_UNIFIED_DIFF_BEGINNING_REGEX);
+  var diffOutputs = output.split(SINGLE_UNIFIED_DIFF_BEGINNING_REGEX);
   // Throw out the first chunk (anything before the first '--- ' sequence), because
   // it is not part of a complete diff.
   diffOutputs = diffOutputs.slice(1);
 
-  for (const diffOutputForFile of diffOutputs) {
+  for (var diffOutputForFile of diffOutputs) {
     // First, extract the file name. The first line of the string should be the file path.
-    const newLineChar = os.EOL;
-    const firstNewline = diffOutputForFile.indexOf(newLineChar);
-    let filePath = diffOutputForFile.slice(0, firstNewline);
+    var newLineChar = _os2['default'].EOL;
+    var firstNewline = diffOutputForFile.indexOf(newLineChar);
+    var filePath = diffOutputForFile.slice(0, firstNewline);
     filePath = filePath.trim();
     // Then, get the parsed diff info.
-    const lineDiffs = parseHgDiffUnifiedOutput(diffOutputForFile);
+    var lineDiffs = parseHgDiffUnifiedOutput(diffOutputForFile);
 
     filePathToDiffInfo.set(filePath, lineDiffs);
   }
@@ -89,6 +90,6 @@ function parseMultiFileHgDiffUnifiedOutput(output: string): Map<string, DiffInfo
 }
 
 module.exports = {
-  parseHgDiffUnifiedOutput,
-  parseMultiFileHgDiffUnifiedOutput,
+  parseHgDiffUnifiedOutput: parseHgDiffUnifiedOutput,
+  parseMultiFileHgDiffUnifiedOutput: parseMultiFileHgDiffUnifiedOutput
 };

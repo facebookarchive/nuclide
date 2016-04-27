@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -19,12 +18,12 @@
   *      a service definition and a local implementation.
   */
 
-const HEARTBEAT_CHANNEL = 'heartbeat';
-const SERVICE_FRAMEWORK3_CHANNEL = 'service_framework3_rpc';
-const SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
+var HEARTBEAT_CHANNEL = 'heartbeat';
+var SERVICE_FRAMEWORK3_CHANNEL = 'service_framework3_rpc';
+var SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
 
 module.exports = {
-  HEARTBEAT_CHANNEL,
-  SERVICE_FRAMEWORK_RPC_TIMEOUT_MS,
-  SERVICE_FRAMEWORK3_CHANNEL,
+  HEARTBEAT_CHANNEL: HEARTBEAT_CHANNEL,
+  SERVICE_FRAMEWORK_RPC_TIMEOUT_MS: SERVICE_FRAMEWORK_RPC_TIMEOUT_MS,
+  SERVICE_FRAMEWORK3_CHANNEL: SERVICE_FRAMEWORK3_CHANNEL
 };

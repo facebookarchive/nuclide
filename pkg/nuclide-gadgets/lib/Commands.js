@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,164 +10,217 @@
  * the root directory of this source tree.
  */
 
-import type {Gadget, GadgetLocation} from '../../nuclide-gadgets-interfaces';
-import type Immutable from 'immutable';
-import type {PaneItemContainer} from '../types/PaneItemContainer';
-import type {Action} from '../types/Action';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import * as ActionTypes from './ActionTypes';
-import * as ContainerVisibility from './ContainerVisibility';
-import createComponentItem from './createComponentItem';
-import * as ExpandedFlexScale from './ExpandedFlexScale';
-import findOrCreatePaneItemLocation from './findOrCreatePaneItemLocation';
-import findPaneAndItem from './findPaneAndItem';
-import getContainerToHide from './getContainerToHide';
-import getResizableContainers from './getResizableContainers';
-import GadgetPlaceholder from './GadgetPlaceholder';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
-import shallowEqual from 'shallowequal';
-import wrapGadget from './wrapGadget';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _ActionTypes = require('./ActionTypes');
+
+var ActionTypes = _interopRequireWildcard(_ActionTypes);
+
+var _ContainerVisibility = require('./ContainerVisibility');
+
+var ContainerVisibility = _interopRequireWildcard(_ContainerVisibility);
+
+var _createComponentItem = require('./createComponentItem');
+
+var _createComponentItem2 = _interopRequireDefault(_createComponentItem);
+
+var _ExpandedFlexScale = require('./ExpandedFlexScale');
+
+var ExpandedFlexScale = _interopRequireWildcard(_ExpandedFlexScale);
+
+var _findOrCreatePaneItemLocation = require('./findOrCreatePaneItemLocation');
+
+var _findOrCreatePaneItemLocation2 = _interopRequireDefault(_findOrCreatePaneItemLocation);
+
+var _findPaneAndItem = require('./findPaneAndItem');
+
+var _findPaneAndItem2 = _interopRequireDefault(_findPaneAndItem);
+
+var _getContainerToHide = require('./getContainerToHide');
+
+var _getContainerToHide2 = _interopRequireDefault(_getContainerToHide);
+
+var _getResizableContainers = require('./getResizableContainers');
+
+var _getResizableContainers2 = _interopRequireDefault(_getResizableContainers);
+
+var _GadgetPlaceholder = require('./GadgetPlaceholder');
+
+var _GadgetPlaceholder2 = _interopRequireDefault(_GadgetPlaceholder);
+
+var _reactForAtom = require('react-for-atom');
+
+var _shallowequal = require('shallowequal');
+
+var _shallowequal2 = _interopRequireDefault(_shallowequal);
+
+var _wrapGadget = require('./wrapGadget');
+
+var _wrapGadget2 = _interopRequireDefault(_wrapGadget);
 
 /**
  * Create an object that provides commands ("action creators")
  */
-export default class Commands {
 
-  _observer: rx$IObserver<Action>;
-  _getState: () => Immutable.Map;
+var Commands = (function () {
+  function Commands(observer, getState) {
+    _classCallCheck(this, Commands);
 
-  constructor(observer: rx$IObserver<Action>, getState: () => Immutable.Map) {
     this._observer = observer;
     this._getState = getState;
   }
 
-  deactivate(): void {
-    this._observer.next({
-      type: ActionTypes.DEACTIVATE,
-    });
-    this._observer.complete();
-  }
-
-  destroyGadget(gadgetId: string): void {
-    const match = findPaneAndItem(item => getGadgetId(item) === gadgetId);
-    if (match == null) {
-      return;
+  _createClass(Commands, [{
+    key: 'deactivate',
+    value: function deactivate() {
+      this._observer.next({
+        type: ActionTypes.DEACTIVATE
+      });
+      this._observer.complete();
     }
-    match.pane.destroyItem(match.item);
-  }
-
-  cleanUpDestroyedPaneItem(item: Object): void {
-    if (!this._getState().get('components').has(item)) {
-      return;
+  }, {
+    key: 'destroyGadget',
+    value: function destroyGadget(gadgetId) {
+      var match = (0, _findPaneAndItem2['default'])(function (item) {
+        return getGadgetId(item) === gadgetId;
+      });
+      if (match == null) {
+        return;
+      }
+      match.pane.destroyItem(match.item);
     }
+  }, {
+    key: 'cleanUpDestroyedPaneItem',
+    value: function cleanUpDestroyedPaneItem(item) {
+      if (!this._getState().get('components').has(item)) {
+        return;
+      }
 
-    ReactDOM.unmountComponentAtNode(item.element);
+      _reactForAtom.ReactDOM.unmountComponentAtNode(item.element);
 
-    this._observer.next({
-      type: ActionTypes.DESTROY_PANE_ITEM,
-      payload: {item},
-    });
-  }
-
-  /**
-   * Creates a new pane item for the specified gadget. This is meant to be the single point
-   * through which all pane item creation goes (new pane item creation, deserialization,
-   * splitting, reopening, etc.).
-   */
-  createPaneItem(gadgetId: string, props?: Object, isNew: boolean = true): ?React.Component {
-    // Look up the gadget.
-    const gadget = this._getState().get('gadgets').get(gadgetId);
-
-    // If there's no gadget registered with the provided ID, abort. Maybe the user just
-    // deactivated that package.
-    if (gadget == null) {
-      return;
+      this._observer.next({
+        type: ActionTypes.DESTROY_PANE_ITEM,
+        payload: { item: item }
+      });
     }
 
-    const GadgetComponent = gadget;
-    const item = createComponentItem(<GadgetComponent {...props} />);
+    /**
+     * Creates a new pane item for the specified gadget. This is meant to be the single point
+     * through which all pane item creation goes (new pane item creation, deserialization,
+     * splitting, reopening, etc.).
+     */
+  }, {
+    key: 'createPaneItem',
+    value: function createPaneItem(gadgetId, props) {
+      var isNew = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
 
-    this._observer.next({
-      type: ActionTypes.CREATE_PANE_ITEM,
-      payload: {
-        component: GadgetComponent,
-        gadgetId,
-        item,
-        props,
-        isNew,
-      },
-    });
+      // Look up the gadget.
+      var gadget = this._getState().get('gadgets').get(gadgetId);
 
-    return item;
-  }
+      // If there's no gadget registered with the provided ID, abort. Maybe the user just
+      // deactivated that package.
+      if (gadget == null) {
+        return;
+      }
 
-  hideGadget(gadgetId: string): void {
-    // Hiding a gadget doesn't just mean closing its pane; it means getting it out of the way.
-    // Just closing its pane and would potentially leave siblings which, presumably, the user
-    // would then have to also close. Instead, it's more useful to identify the group of gadgets
-    // to which this one belongs and get it out of the way. Though groups can be nested, the most
-    // useful to hide is almost certainly the topmost, so that's what we do.
+      var GadgetComponent = gadget;
+      var item = (0, _createComponentItem2['default'])(_reactForAtom.React.createElement(GadgetComponent, props));
 
-    const match = findPaneAndItem(item => getGadgetId(item) === gadgetId);
+      this._observer.next({
+        type: ActionTypes.CREATE_PANE_ITEM,
+        payload: {
+          component: GadgetComponent,
+          gadgetId: gadgetId,
+          item: item,
+          props: props,
+          isNew: isNew
+        }
+      });
 
-    // If the gadget isn't present, no biggie; just no-op.
-    if (match == null) {
-      return;
+      return item;
+    }
+  }, {
+    key: 'hideGadget',
+    value: function hideGadget(gadgetId) {
+      // Hiding a gadget doesn't just mean closing its pane; it means getting it out of the way.
+      // Just closing its pane and would potentially leave siblings which, presumably, the user
+      // would then have to also close. Instead, it's more useful to identify the group of gadgets
+      // to which this one belongs and get it out of the way. Though groups can be nested, the most
+      // useful to hide is almost certainly the topmost, so that's what we do.
+
+      var match = (0, _findPaneAndItem2['default'])(function (item) {
+        return getGadgetId(item) === gadgetId;
+      });
+
+      // If the gadget isn't present, no biggie; just no-op.
+      if (match == null) {
+        return;
+      }
+
+      var gadgetItem = match.item;
+      var parentPane = match.pane;
+
+      var containerToHide = (0, _getContainerToHide2['default'])(parentPane);
+
+      // If gadget is at the top level "hiding" is kind of a murky concept but we'll take it to mean
+      // "close."
+      if (containerToHide == null) {
+        parentPane.destroyItem(gadgetItem);
+
+        // TODO: Store the location of the closed pane for serialization so we can reopen this
+        //       gadget there next time. (This isn't necessary if the gadget's default location is
+        //       at the top, but is if it was moved there.)
+        return;
+      }
+
+      ContainerVisibility.hide(containerToHide);
+    }
+  }, {
+    key: 'registerGadget',
+    value: function registerGadget(gadget) {
+      // Wrap the gadget so it has Atom-specific stuff.
+      gadget = (0, _wrapGadget2['default'])(gadget);
+
+      this._observer.next({
+        type: ActionTypes.REGISTER_GADGET,
+        payload: { gadget: gadget }
+      });
     }
 
-    const {item: gadgetItem, pane: parentPane} = match;
-    const containerToHide = getContainerToHide(parentPane);
+    /**
+     * Make sure all of the pane items reflect the current state of the app.
+     */
+  }, {
+    key: 'renderPaneItems',
+    value: function renderPaneItems() {
+      var _this = this;
 
-    // If gadget is at the top level "hiding" is kind of a murky concept but we'll take it to mean
-    // "close."
-    if (containerToHide == null) {
-      parentPane.destroyItem(gadgetItem);
+      var state = this._getState();
 
-      // TODO: Store the location of the closed pane for serialization so we can reopen this
-      //       gadget there next time. (This isn't necessary if the gadget's default location is
-      //       at the top, but is if it was moved there.)
-      return;
-    }
-
-    ContainerVisibility.hide(containerToHide);
-  }
-
-  registerGadget(gadget: Gadget): void {
-    // Wrap the gadget so it has Atom-specific stuff.
-    gadget = wrapGadget(gadget);
-
-    this._observer.next({
-      type: ActionTypes.REGISTER_GADGET,
-      payload: {gadget},
-    });
-  }
-
-  /**
-   * Make sure all of the pane items reflect the current state of the app.
-   */
-  renderPaneItems(): void {
-    const state = this._getState();
-
-    atom.workspace.getPanes()
-      .forEach(pane => {
-        const items = pane.getItems();
-        const activeItem = pane.getActiveItem();
+      atom.workspace.getPanes().forEach(function (pane) {
+        var items = pane.getItems();
+        var activeItem = pane.getActiveItem();
 
         // Iterate in reverse so that we can't get tripped up by the items we're adding.
-        for (let index = items.length - 1; index >= 0; index--) {
-          const item = items[index];
+        for (var index = items.length - 1; index >= 0; index--) {
+          var item = items[index];
 
           // If the item is a placeholder, try to replace it. If we were successful, then we know
           // the item is up-to-date, so there's no need to update it and we can move on to the
           // next item.
-          if (this.replacePlaceholder(item, pane, index) != null) {
+          if (_this.replacePlaceholder(item, pane, index) != null) {
             continue;
           }
 
-          const GadgetComponent = state.get('components').get(item);
+          var GadgetComponent = state.get('components').get(item);
 
           // If there's no component for this item, it isn't a gadget.
           if (GadgetComponent == null) {
@@ -174,171 +228,183 @@ export default class Commands {
           }
 
           // Update the props for the item.
-          const oldProps = state.get('props').get(item);
-          const newProps = {
-            ...oldProps,
-            active: item === activeItem,
-          };
+          var oldProps = state.get('props').get(item);
+          var newProps = _extends({}, oldProps, {
+            active: item === activeItem
+          });
 
           // Don't re-render if the props haven't changed.
-          if (shallowEqual(oldProps, newProps)) {
+          if ((0, _shallowequal2['default'])(oldProps, newProps)) {
             continue;
           }
 
           // Re-render the item with the new props.
-          ReactDOM.render(
-            <GadgetComponent {...newProps} />,
-            item.element,
-          );
+          _reactForAtom.ReactDOM.render(_reactForAtom.React.createElement(GadgetComponent, newProps), item.element);
 
           // $FlowIssue(t10268095)
-          this._observer.next({
+          _this._observer.next({
             type: ActionTypes.UPDATE_PANE_ITEM,
             payload: {
-              item,
-              props: newProps,
-            },
+              item: item,
+              props: newProps
+            }
           });
         }
       });
-  }
-
-  /**
-   * Replace the item if it is a placeholder, returning the new item.
-   */
-  replacePlaceholder(item: Object, pane: atom$Pane, index: number): ?Object {
-    if (!(item instanceof GadgetPlaceholder)) {
-      return null;
     }
 
-    const gadgetId = item.getGadgetId();
-    const gadget = this._getState().get('gadgets').get(gadgetId);
+    /**
+     * Replace the item if it is a placeholder, returning the new item.
+     */
+  }, {
+    key: 'replacePlaceholder',
+    value: function replacePlaceholder(item, pane, index) {
+      if (!(item instanceof _GadgetPlaceholder2['default'])) {
+        return null;
+      }
 
-    if (gadget == null) {
-      // Still don't have the gadget.
-      return null;
-    }
+      var gadgetId = item.getGadgetId();
+      var gadget = this._getState().get('gadgets').get(gadgetId);
 
-    // Now that we have the gadget, we can deserialize the state. **IMPORTANT:** if it
-    // doesn't have any (e.g. it's `== null`) that's okay! It allows components to provide a
-    // default initial state in their constructor; for example:
-    //
-    //     constructor(props) {
-    //       super(props);
-    //       this.state = props.initialState || {count: 1};
-    //     }
-    const rawInitialGadgetState = item.getRawInitialGadgetState();
-    const initialState = (
-      typeof gadget.deserializeState === 'function' ?
-        gadget.deserializeState(rawInitialGadgetState) : rawInitialGadgetState
-    );
+      if (gadget == null) {
+        // Still don't have the gadget.
+        return null;
+      }
 
-    const active = pane.getActiveItem() === item;
-    const realItem = this.createPaneItem(gadgetId, {initialState, active}, false);
+      // Now that we have the gadget, we can deserialize the state. **IMPORTANT:** if it
+      // doesn't have any (e.g. it's `== null`) that's okay! It allows components to provide a
+      // default initial state in their constructor; for example:
+      //
+      //     constructor(props) {
+      //       super(props);
+      //       this.state = props.initialState || {count: 1};
+      //     }
+      var rawInitialGadgetState = item.getRawInitialGadgetState();
+      var initialState = typeof gadget.deserializeState === 'function' ? gadget.deserializeState(rawInitialGadgetState) : rawInitialGadgetState;
 
-    if (realItem == null) {
-      return;
-    }
+      var active = pane.getActiveItem() === item;
+      var realItem = this.createPaneItem(gadgetId, { initialState: initialState, active: active }, false);
 
-    // Copy the metadata about the container from the placeholder.
-    // TODO(matthewwithanm): Decide how to assign `_expandedFlexScale` to `HTMLElement` to remove
-    //   this `any` cast.
-    (realItem: any)._expandedFlexScale = item._expandedFlexScale;
-
-    // Replace the placeholder with the real item. We'll add the real item first and then
-    // remove the old one so that we don't risk dropping down to zero items.
-    pane.addItem(realItem, {index: index + 1});
-    pane.destroyItem(item);
-    if (active) {
-      pane.setActiveItem(realItem);
-    }
-
-    return realItem;
-  }
-
-  /**
-   * Ensure that a gadget of the specified gadgetId is visible, creating one if necessary.
-   */
-  showGadget(gadgetId: string): ?Object {
-    const match = findPaneAndItem(item => getGadgetId(item) === gadgetId);
-
-    if (match == null) {
-      // If the gadget isn't in the workspace, create it.
-      const newItem = this.createPaneItem(gadgetId);
-
-      if (newItem == null) {
+      if (realItem == null) {
         return;
       }
 
-      const gadget = this._getState().get('gadgets').get(gadgetId);
-      const defaultLocation: GadgetLocation = gadget.defaultLocation || 'active-pane';
-      const pane = findOrCreatePaneItemLocation(defaultLocation);
-      pane.addItem(newItem);
-      pane.activateItem(newItem);
-      return newItem;
+      // Copy the metadata about the container from the placeholder.
+      // TODO(matthewwithanm): Decide how to assign `_expandedFlexScale` to `HTMLElement` to remove
+      //   this `any` cast.
+      realItem._expandedFlexScale = item._expandedFlexScale;
+
+      // Replace the placeholder with the real item. We'll add the real item first and then
+      // remove the old one so that we don't risk dropping down to zero items.
+      pane.addItem(realItem, { index: index + 1 });
+      pane.destroyItem(item);
+      if (active) {
+        pane.setActiveItem(realItem);
+      }
+
+      return realItem;
     }
 
-    const {item, pane} = match;
-    pane.activateItem(item);
+    /**
+     * Ensure that a gadget of the specified gadgetId is visible, creating one if necessary.
+     */
+  }, {
+    key: 'showGadget',
+    value: function showGadget(gadgetId) {
+      var match = (0, _findPaneAndItem2['default'])(function (item) {
+        return getGadgetId(item) === gadgetId;
+      });
 
-    // If the item isn't in a hidable container (i.e. it's a top-level pane item), we're done.
-    const hiddenContainer = getContainerToHide(pane);
-    if (hiddenContainer == null) {
+      if (match == null) {
+        // If the gadget isn't in the workspace, create it.
+        var newItem = this.createPaneItem(gadgetId);
+
+        if (newItem == null) {
+          return;
+        }
+
+        var gadget = this._getState().get('gadgets').get(gadgetId);
+        var defaultLocation = gadget.defaultLocation || 'active-pane';
+        var _pane = (0, _findOrCreatePaneItemLocation2['default'])(defaultLocation);
+        _pane.addItem(newItem);
+        _pane.activateItem(newItem);
+        return newItem;
+      }
+
+      var item = match.item;
+      var pane = match.pane;
+
+      pane.activateItem(item);
+
+      // If the item isn't in a hidable container (i.e. it's a top-level pane item), we're done.
+      var hiddenContainer = (0, _getContainerToHide2['default'])(pane);
+      if (hiddenContainer == null) {
+        return item;
+      }
+
+      // Show all of the containers recursively up the tree.
+      for (var container of (0, _getResizableContainers2['default'])(hiddenContainer)) {
+        ContainerVisibility.show(container);
+      }
+
       return item;
     }
-
-    // Show all of the containers recursively up the tree.
-    for (const container of getResizableContainers(hiddenContainer)) {
-      ContainerVisibility.show(container);
-    }
-
-    return item;
-  }
-
-  toggleGadget(gadgetId: string): void {
-    // Show the gadget if it doesn't already exist in the workspace.
-    const match = findPaneAndItem(item => getGadgetId(item) === gadgetId);
-    if (match == null) {
-      this.showGadget(gadgetId);
-      return;
-    }
-
-    const {pane} = match;
-
-    // Show the gadget if it's hidden.
-    for (const container of getResizableContainers(pane)) {
-      if (ContainerVisibility.isHidden(container)) {
+  }, {
+    key: 'toggleGadget',
+    value: function toggleGadget(gadgetId) {
+      // Show the gadget if it doesn't already exist in the workspace.
+      var match = (0, _findPaneAndItem2['default'])(function (item) {
+        return getGadgetId(item) === gadgetId;
+      });
+      if (match == null) {
         this.showGadget(gadgetId);
         return;
       }
+
+      var pane = match.pane;
+
+      // Show the gadget if it's hidden.
+      for (var container of (0, _getResizableContainers2['default'])(pane)) {
+        if (ContainerVisibility.isHidden(container)) {
+          this.showGadget(gadgetId);
+          return;
+        }
+      }
+
+      this.hideGadget(gadgetId);
+    }
+  }, {
+    key: 'unregisterGadget',
+    value: function unregisterGadget(gadgetId) {
+      this._observer.next({
+        type: ActionTypes.UNREGISTER_GADGET,
+        payload: { gadgetId: gadgetId }
+      });
     }
 
-    this.hideGadget(gadgetId);
-  }
+    /**
+     * Update the provided container's expanded flex scale to its current flex scale.
+     */
+  }, {
+    key: 'updateExpandedFlexScale',
+    value: function updateExpandedFlexScale(container) {
+      var flexScale = container.getFlexScale();
 
-  unregisterGadget(gadgetId: string): void {
-    this._observer.next({
-      type: ActionTypes.UNREGISTER_GADGET,
-      payload: {gadgetId},
-    });
-  }
+      // If the flex scale is zero, the container isn't expanded.
+      if (flexScale === 0) {
+        return;
+      }
 
-  /**
-   * Update the provided container's expanded flex scale to its current flex scale.
-   */
-  updateExpandedFlexScale(container: PaneItemContainer): void {
-    const flexScale = container.getFlexScale();
-
-    // If the flex scale is zero, the container isn't expanded.
-    if (flexScale === 0) {
-      return;
+      ExpandedFlexScale.set(container, flexScale);
     }
+  }]);
 
-    ExpandedFlexScale.set(container, flexScale);
-  }
+  return Commands;
+})();
 
-}
+exports['default'] = Commands;
 
-function getGadgetId(item: Object): string {
+function getGadgetId(item) {
   return item.getGadgetId ? item.getGadgetId() : item.constructor.gadgetId;
 }
+module.exports = exports['default'];

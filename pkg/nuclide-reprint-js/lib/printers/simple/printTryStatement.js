@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,42 +8,24 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {TryStatement} from 'ast-types-flow';
+var markers = require('../../constants/markers');
+var wrapStatement = require('../../wrappers/simple/wrapStatement');
 
-const markers = require('../../constants/markers');
-const wrapStatement = require('../../wrappers/simple/wrapStatement');
+function printTryStatement(print, node) {
+  var wrap = function wrap(x) {
+    return wrapStatement(print, node, x);
+  };
 
-function printTryStatement(print: Print, node: TryStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
-
-  let parts = [
-    markers.hardBreak,
-    'try',
-    markers.noBreak,
-    markers.space,
-    print(node.block),
-  ];
+  var parts = [markers.hardBreak, 'try', markers.noBreak, markers.space, print(node.block)];
 
   if (node.handler) {
-    const handler = node.handler;
-    parts = parts.concat([
-      markers.noBreak,
-      markers.space,
-      print(handler),
-    ]);
+    var handler = node.handler;
+    parts = parts.concat([markers.noBreak, markers.space, print(handler)]);
   }
 
   if (node.finalizer) {
-    const finalizer = node.finalizer;
-    parts = parts.concat([
-      markers.noBreak,
-      markers.space,
-      'finally',
-      markers.noBreak,
-      markers.space,
-      print(finalizer),
-    ]);
+    var finalizer = node.finalizer;
+    parts = parts.concat([markers.noBreak, markers.space, 'finally', markers.noBreak, markers.space, print(finalizer)]);
   }
 
   return wrap(parts);

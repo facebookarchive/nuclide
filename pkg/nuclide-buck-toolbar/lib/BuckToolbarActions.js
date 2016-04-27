@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,85 +10,104 @@
  * the root directory of this source tree.
  */
 
-const {Dispatcher} = require('flux');
+var _require = require('flux');
 
-class BuckToolbarActions {
+var Dispatcher = _require.Dispatcher;
 
-  _dispatcher: Dispatcher;
+var BuckToolbarActions = (function () {
+  _createClass(BuckToolbarActions, null, [{
+    key: 'ActionType',
+    value: Object.freeze({
+      BUILD: 'BUILD',
+      DEBUG: 'DEBUG',
+      RUN: 'RUN',
+      TEST: 'TEST',
+      TOGGLE_PANEL_VISIBILITY: 'TOGGLE_PANEL_VISIBILITY',
+      UPDATE_BUILD_TARGET: 'UPDATE_BUILD_TARGET',
+      UPDATE_PANEL_VISIBILITY: 'UPDATE_PANEL_VISIBILITY',
+      UPDATE_PROJECT: 'UPDATE_PROJECT',
+      UPDATE_REACT_NATIVE_SERVER_MODE: 'UPDATE_REACT_NATIVE_SERVER_MODE',
+      UPDATE_SIMULATOR: 'UPDATE_SIMULATOR'
+    }),
+    enumerable: true
+  }]);
 
-  static ActionType = Object.freeze({
-    BUILD: 'BUILD',
-    DEBUG: 'DEBUG',
-    RUN: 'RUN',
-    TEST: 'TEST',
-    TOGGLE_PANEL_VISIBILITY: 'TOGGLE_PANEL_VISIBILITY',
-    UPDATE_BUILD_TARGET: 'UPDATE_BUILD_TARGET',
-    UPDATE_PANEL_VISIBILITY: 'UPDATE_PANEL_VISIBILITY',
-    UPDATE_PROJECT: 'UPDATE_PROJECT',
-    UPDATE_REACT_NATIVE_SERVER_MODE: 'UPDATE_REACT_NATIVE_SERVER_MODE',
-    UPDATE_SIMULATOR: 'UPDATE_SIMULATOR',
-  });
+  function BuckToolbarActions(dispatcher) {
+    _classCallCheck(this, BuckToolbarActions);
 
-  constructor(dispatcher: Dispatcher) {
     this._dispatcher = dispatcher;
   }
 
-  togglePanelVisibility(): void {
-    this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.TOGGLE_PANEL_VISIBILITY,
-    });
-  }
+  _createClass(BuckToolbarActions, [{
+    key: 'togglePanelVisibility',
+    value: function togglePanelVisibility() {
+      this._dispatcher.dispatch({
+        actionType: BuckToolbarActions.ActionType.TOGGLE_PANEL_VISIBILITY
+      });
+    }
+  }, {
+    key: 'updateIsPanelVisible',
+    value: function updateIsPanelVisible(isPanelVisible) {
+      this._dispatcher.dispatch({
+        actionType: BuckToolbarActions.ActionType.UPDATE_PANEL_VISIBILITY,
+        isPanelVisible: isPanelVisible
+      });
+    }
+  }, {
+    key: 'updateProjectFor',
+    value: function updateProjectFor(editor) {
+      this._dispatcher.dispatch({
+        actionType: BuckToolbarActions.ActionType.UPDATE_PROJECT,
+        editor: editor
+      });
+    }
+  }, {
+    key: 'updateBuildTarget',
+    value: function updateBuildTarget(buildTarget) {
+      this._dispatcher.dispatch({
+        actionType: BuckToolbarActions.ActionType.UPDATE_BUILD_TARGET,
+        buildTarget: buildTarget
+      });
+    }
+  }, {
+    key: 'updateSimulator',
+    value: function updateSimulator(simulator) {
+      this._dispatcher.dispatch({
+        actionType: BuckToolbarActions.ActionType.UPDATE_SIMULATOR,
+        simulator: simulator
+      });
+    }
+  }, {
+    key: 'updateReactNativeServerMode',
+    value: function updateReactNativeServerMode(serverMode) {
+      this._dispatcher.dispatch({
+        actionType: BuckToolbarActions.ActionType.UPDATE_REACT_NATIVE_SERVER_MODE,
+        serverMode: serverMode
+      });
+    }
+  }, {
+    key: 'build',
+    value: function build() {
+      this._dispatcher.dispatch({ actionType: BuckToolbarActions.ActionType.BUILD });
+    }
+  }, {
+    key: 'run',
+    value: function run() {
+      this._dispatcher.dispatch({ actionType: BuckToolbarActions.ActionType.RUN });
+    }
+  }, {
+    key: 'test',
+    value: function test() {
+      this._dispatcher.dispatch({ actionType: BuckToolbarActions.ActionType.TEST });
+    }
+  }, {
+    key: 'debug',
+    value: function debug() {
+      this._dispatcher.dispatch({ actionType: BuckToolbarActions.ActionType.DEBUG });
+    }
+  }]);
 
-  updateIsPanelVisible(isPanelVisible: boolean): void {
-    this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.UPDATE_PANEL_VISIBILITY,
-      isPanelVisible,
-    });
-  }
-
-  updateProjectFor(editor: TextEditor): void {
-    this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.UPDATE_PROJECT,
-      editor,
-    });
-  }
-
-  updateBuildTarget(buildTarget: string): void {
-    this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.UPDATE_BUILD_TARGET,
-      buildTarget,
-    });
-  }
-
-  updateSimulator(simulator: string): void {
-    this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.UPDATE_SIMULATOR,
-      simulator,
-    });
-  }
-
-  updateReactNativeServerMode(serverMode: boolean): void {
-    this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.UPDATE_REACT_NATIVE_SERVER_MODE,
-      serverMode,
-    });
-  }
-
-  build(): void {
-    this._dispatcher.dispatch({actionType: BuckToolbarActions.ActionType.BUILD});
-  }
-
-  run(): void {
-    this._dispatcher.dispatch({actionType: BuckToolbarActions.ActionType.RUN});
-  }
-
-  test(): void {
-    this._dispatcher.dispatch({actionType: BuckToolbarActions.ActionType.TEST});
-  }
-
-  debug(): void {
-    this._dispatcher.dispatch({actionType: BuckToolbarActions.ActionType.DEBUG});
-  }
-}
+  return BuckToolbarActions;
+})();
 
 module.exports = BuckToolbarActions;

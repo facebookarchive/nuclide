@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.loadServicesConfig = loadServicesConfig;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +13,19 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
-import type {ConfigEntry} from './index';
+var _path = require('path');
 
-const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
+var _path2 = _interopRequireDefault(_path);
+
+var PACKAGE_ROOT = _path2['default'].resolve(__dirname, '..', '..');
 
 /**
  * Load service configs, and resolve all of the paths to absolute paths.
  */
-export function loadServicesConfig(): Array<ConfigEntry> {
-  const publicServices = createServiceConfigObject(require('../../services-3.json'));
-  let privateServices = [];
+
+function loadServicesConfig() {
+  var publicServices = createServiceConfigObject(require('../../services-3.json'));
+  var privateServices = [];
   try {
     privateServices = createServiceConfigObject(require('../../fb/fb-services-3.json'));
   } catch (e) {
@@ -32,8 +38,8 @@ export function loadServicesConfig(): Array<ConfigEntry> {
  * Takes the contents of a service config JSON file, and formats each entry into
  * a ConfigEntry.
  */
-function createServiceConfigObject(jsonConfig: Array<Object>): Array<ConfigEntry> {
-  return jsonConfig.map(config => {
+function createServiceConfigObject(jsonConfig) {
+  return jsonConfig.map(function (config) {
     // TODO(peterhal): Remove this once all services have had their def files removed.
     if (config.definition == null) {
       config.definition = config.implementation;
@@ -41,7 +47,7 @@ function createServiceConfigObject(jsonConfig: Array<Object>): Array<ConfigEntry
     return {
       name: config.name,
       definition: resolveServicePath(config.definition),
-      implementation: resolveServicePath(config.implementation),
+      implementation: resolveServicePath(config.implementation)
     };
   });
 }
@@ -54,10 +60,10 @@ function createServiceConfigObject(jsonConfig: Array<Object>): Array<ConfigEntry
  *   3. A path in form of `$dependency_package/path/to/service`. For example,
  *      'nuclide-commons/lib/array.js'.
  */
-function resolveServicePath(servicePath: string): string {
+function resolveServicePath(servicePath) {
   try {
     return require.resolve(servicePath);
   } catch (e) {
-    return path.resolve(PACKAGE_ROOT, servicePath);
+    return _path2['default'].resolve(PACKAGE_ROOT, servicePath);
   }
 }

@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,65 +14,78 @@
  * the root directory of this source tree.
  */
 
-const {React} = require('react-for-atom');
-const {Disposable} = require('atom');
-const ProjectStore = require('./ProjectStore');
-const {PropTypes} = React;
+var _require = require('react-for-atom');
 
-class NuclideToolbar extends React.Component {
-  _disposable: ?Disposable;
+var React = _require.React;
 
-  state: {
-    currentFilePath: string;
-    projectType: string;
-  };
+var _require2 = require('atom');
 
-  static propTypes = {
-    projectStore: PropTypes.instanceOf(ProjectStore).isRequired,
-  };
+var Disposable = _require2.Disposable;
 
-  constructor(props: mixed) {
-    super(props);
+var ProjectStore = require('./ProjectStore');
+var PropTypes = React.PropTypes;
+
+var NuclideToolbar = (function (_React$Component) {
+  _inherits(NuclideToolbar, _React$Component);
+
+  _createClass(NuclideToolbar, null, [{
+    key: 'propTypes',
+    value: {
+      projectStore: PropTypes.instanceOf(ProjectStore).isRequired
+    },
+    enumerable: true
+  }]);
+
+  function NuclideToolbar(props) {
+    _classCallCheck(this, NuclideToolbar);
+
+    _get(Object.getPrototypeOf(NuclideToolbar.prototype), 'constructor', this).call(this, props);
     this.state = {
       currentFilePath: '',
-      projectType: 'Other',
+      projectType: 'Other'
     };
     this._disposable = null;
-    (this: any)._updateStateFromStore = this._updateStateFromStore.bind(this);
+    this._updateStateFromStore = this._updateStateFromStore.bind(this);
   }
 
-  componentWillMount() {
-    this._disposable = this.props.projectStore.onChange(this._updateStateFromStore);
-  }
-
-  componentWillUnmount() {
-    if (this._disposable) {
-      this._disposable.dispose();
-      this._disposable = null;
+  _createClass(NuclideToolbar, [{
+    key: 'componentWillMount',
+    value: function componentWillMount() {
+      this._disposable = this.props.projectStore.onChange(this._updateStateFromStore);
     }
-  }
-
-  _updateStateFromStore() {
-    this.setState({
-      currentFilePath: this.props.projectStore.getCurrentFilePath(),
-      projectType: this.props.projectStore.getProjectType(),
-    });
-  }
-
-  render(): ?React.Element {
-    if (this.state.projectType === 'Hhvm') {
-      const HhvmToolbar = require('./HhvmToolbar');
-      return (
-        <HhvmToolbar
-          ref="hhvmToolbar"
-          targetFilePath={this.state.currentFilePath}
-        />
-      );
-    } else {
-      // Hide toolbar.
-      return null;
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      if (this._disposable) {
+        this._disposable.dispose();
+        this._disposable = null;
+      }
     }
-  }
-}
+  }, {
+    key: '_updateStateFromStore',
+    value: function _updateStateFromStore() {
+      this.setState({
+        currentFilePath: this.props.projectStore.getCurrentFilePath(),
+        projectType: this.props.projectStore.getProjectType()
+      });
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      if (this.state.projectType === 'Hhvm') {
+        var HhvmToolbar = require('./HhvmToolbar');
+        return React.createElement(HhvmToolbar, {
+          ref: 'hhvmToolbar',
+          targetFilePath: this.state.currentFilePath
+        });
+      } else {
+        // Hide toolbar.
+        return null;
+      }
+    }
+  }]);
+
+  return NuclideToolbar;
+})(React.Component);
 
 module.exports = NuclideToolbar;

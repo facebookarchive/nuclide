@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,83 +10,97 @@
  * the root directory of this source tree.
  */
 
-import type Bridge from './Bridge';
-import type {EvaluationResult} from './Bridge';
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-import {
-  CompositeDisposable,
-  Disposable,
-} from 'atom';
-import Rx from 'rxjs';
-import invariant from 'assert';
-import {DisposableSubscription, observables} from '../../nuclide-commons';
-const {incompleteObservableFromPromise} = observables;
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-type Expression = string;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export class WatchExpressionStore {
-  _bridge: Bridge;
-  _disposables: CompositeDisposable;
-  _watchExpressions: Map<Expression, Rx.BehaviorSubject<?EvaluationResult>>;
-  _previousEvaluationSubscriptions: CompositeDisposable;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  constructor(bridge: Bridge) {
+var _atom = require('atom');
+
+var _rxjs = require('rxjs');
+
+var _rxjs2 = _interopRequireDefault(_rxjs);
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _nuclideCommons = require('../../nuclide-commons');
+
+var incompleteObservableFromPromise = _nuclideCommons.observables.incompleteObservableFromPromise;
+
+var WatchExpressionStore = (function () {
+  function WatchExpressionStore(bridge) {
+    var _this = this;
+
+    _classCallCheck(this, WatchExpressionStore);
+
     this._bridge = bridge;
-    this._disposables = new CompositeDisposable();
+    this._disposables = new _atom.CompositeDisposable();
     this._watchExpressions = new Map();
     // `this._previousEvaluationSubscriptions` can change at any time and are a distinct subset of
     // `this._disposables`.
-    this._previousEvaluationSubscriptions = new CompositeDisposable();
-    this._disposables.add(new Disposable(() => {
-      this._previousEvaluationSubscriptions.dispose();
+    this._previousEvaluationSubscriptions = new _atom.CompositeDisposable();
+    this._disposables.add(new _atom.Disposable(function () {
+      _this._previousEvaluationSubscriptions.dispose();
     }));
   }
 
-  dispose(): void {
-    this._disposables.dispose();
-  }
-
-  _requestExpressionEvaluation(
-    expression: Expression,
-    subject: Rx.BehaviorSubject<?EvaluationResult>,
-  ): void {
-    this._previousEvaluationSubscriptions.add(
-      new DisposableSubscription(
-        incompleteObservableFromPromise(
-          this._bridge.evaluateOnSelectedCallFrame(expression)
-        ).subscribe(subject)
-      )
-    );
-  }
-
-  /**
-   * Returns an observable of evaluation results for a given expression.
-   * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
-   */
-  evaluateWatchExpression(expression: Expression): Rx.Observable<?EvaluationResult> {
-    if (this._watchExpressions.has(expression)) {
-      const cachedResult = this._watchExpressions.get(expression);
-      invariant(cachedResult);
-      return cachedResult;
+  _createClass(WatchExpressionStore, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
     }
-    const subject = new Rx.BehaviorSubject();
-    this._requestExpressionEvaluation(expression, subject);
-    this._watchExpressions.set(expression, subject);
-    // Expose an observable rather than the raw subject.
-    return subject.asObservable();
-  }
+  }, {
+    key: '_requestExpressionEvaluation',
+    value: function _requestExpressionEvaluation(expression, subject) {
+      this._previousEvaluationSubscriptions.add(new _nuclideCommons.DisposableSubscription(incompleteObservableFromPromise(this._bridge.evaluateOnSelectedCallFrame(expression)).subscribe(subject)));
+    }
 
-  triggerReevaluation(): void {
-    // Cancel any outstanding evaluation requests to the Bridge
-    this._previousEvaluationSubscriptions.dispose();
-    this._previousEvaluationSubscriptions = new CompositeDisposable();
-    for (const [expression, subject] of this._watchExpressions) {
-      if (subject.observers == null || subject.observers.length === 0) {
-        // Nobody is watching this expression anymore.
-        this._watchExpressions.delete(expression);
-        continue;
+    /**
+     * Returns an observable of evaluation results for a given expression.
+     * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
+     */
+  }, {
+    key: 'evaluateWatchExpression',
+    value: function evaluateWatchExpression(expression) {
+      if (this._watchExpressions.has(expression)) {
+        var cachedResult = this._watchExpressions.get(expression);
+        (0, _assert2['default'])(cachedResult);
+        return cachedResult;
       }
+      var subject = new _rxjs2['default'].BehaviorSubject();
       this._requestExpressionEvaluation(expression, subject);
+      this._watchExpressions.set(expression, subject);
+      // Expose an observable rather than the raw subject.
+      return subject.asObservable();
     }
-  }
-}
+  }, {
+    key: 'triggerReevaluation',
+    value: function triggerReevaluation() {
+      // Cancel any outstanding evaluation requests to the Bridge
+      this._previousEvaluationSubscriptions.dispose();
+      this._previousEvaluationSubscriptions = new _atom.CompositeDisposable();
+      for (var _ref3 of this._watchExpressions) {
+        var _ref2 = _slicedToArray(_ref3, 2);
+
+        var expression = _ref2[0];
+        var subject = _ref2[1];
+
+        if (subject.observers == null || subject.observers.length === 0) {
+          // Nobody is watching this expression anymore.
+          this._watchExpressions['delete'](expression);
+          continue;
+        }
+        this._requestExpressionEvaluation(expression, subject);
+      }
+    }
+  }]);
+
+  return WatchExpressionStore;
+})();
+
+exports.WatchExpressionStore = WatchExpressionStore;

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +8,11 @@
  * the root directory of this source tree.
  */
 
-import type {ExportNamespaceSpecifier} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printExportNamespaceSpecifier(
-  print: Print,
-  node: ExportNamespaceSpecifier,
-): Lines {
-  return flatten([
-    '*',
-    markers.space,
-    'as',
-    markers.noBreak,
-    markers.space,
-    print(node.exported),
-  ]);
+function printExportNamespaceSpecifier(print, node) {
+  return flatten(['*', markers.space, 'as', markers.noBreak, markers.space, print(node.exported)]);
 }
 
 module.exports = printExportNamespaceSpecifier;

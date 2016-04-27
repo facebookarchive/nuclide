@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var flatten = require('../../utils/flatten');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +10,15 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printCommaSeparatedNodes(print: Print, nodes: Array<any>): Lines {
+function printCommaSeparatedNodes(print, nodes) {
   if (nodes.length === 0) {
     return [];
   }
-  return flatten([
-    markers.openScope,
-    markers.scopeIndent,
-    flatten(nodes.map((node, i, arr) => {
-      return flatten([
-        i > 0 ? [markers.space] : [],
-        markers.scopeBreak,
-        print(node),
-        i === arr.length - 1 ? [markers.scopeComma] : ',',
-        '',
-      ]);
-    })),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-  ]);
+  return flatten([markers.openScope, markers.scopeIndent, flatten(nodes.map(function (node, i, arr) {
+    return flatten([i > 0 ? [markers.space] : [], markers.scopeBreak, print(node), i === arr.length - 1 ? [markers.scopeComma] : ',', '']);
+  })), markers.scopeBreak, markers.scopeDedent, markers.closeScope]);
 }
 
 module.exports = printCommaSeparatedNodes;

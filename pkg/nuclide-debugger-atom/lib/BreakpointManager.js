@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,54 +8,65 @@
  * the root directory of this source tree.
  */
 
-import type BreakpointStore from './BreakpointStore';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const {CompositeDisposable} = require('atom');
-const BreakpointDisplayController = require('./BreakpointDisplayController');
+var _require = require('atom');
 
-class BreakpointManager {
-  _breakpointStore: BreakpointStore;
-  _displayControllers: Map<atom$TextEditor, BreakpointDisplayController>;
-  _disposables: CompositeDisposable;
+var CompositeDisposable = _require.CompositeDisposable;
 
-  constructor(store: BreakpointStore) {
+var BreakpointDisplayController = require('./BreakpointDisplayController');
+
+var BreakpointManager = (function () {
+  function BreakpointManager(store) {
+    _classCallCheck(this, BreakpointManager);
+
     this._breakpointStore = store;
     this._displayControllers = new Map();
-    this._disposables = new CompositeDisposable(
-      atom.workspace.observeTextEditors(this._handleTextEditor.bind(this)),
-    );
+    this._disposables = new CompositeDisposable(atom.workspace.observeTextEditors(this._handleTextEditor.bind(this)));
   }
 
-  dispose(): void {
-    this._disposables.dispose();
-    this._displayControllers.forEach(controller => controller.dispose());
-    this._displayControllers.clear();
-  }
-
-  /**
-   * Used for testing.
-   */
-  getDisplayControllers(): Map<atom$TextEditor, BreakpointDisplayController> {
-    return this._displayControllers;
-  }
-
-  /**
-   * Delegate callback from BreakpointDisplayController.
-   */
-  handleTextEditorDestroyed(controller: BreakpointDisplayController) {
-    controller.dispose();
-    this._displayControllers.delete(controller.getEditor());
-  }
-
-  _handleTextEditor(editor: atom$TextEditor) {
-    if (!this._displayControllers.has(editor)) {
-      // TODO[jeffreytan]: flow does not seem to accept delegate typing,
-      // need to ask flow team if this is a known issue.
-      // $FlowFixMe
-      const controller = new BreakpointDisplayController(this, this._breakpointStore, editor);
-      this._displayControllers.set(editor, controller);
+  _createClass(BreakpointManager, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+      this._displayControllers.forEach(function (controller) {
+        return controller.dispose();
+      });
+      this._displayControllers.clear();
     }
-  }
-}
+
+    /**
+     * Used for testing.
+     */
+  }, {
+    key: 'getDisplayControllers',
+    value: function getDisplayControllers() {
+      return this._displayControllers;
+    }
+
+    /**
+     * Delegate callback from BreakpointDisplayController.
+     */
+  }, {
+    key: 'handleTextEditorDestroyed',
+    value: function handleTextEditorDestroyed(controller) {
+      controller.dispose();
+      this._displayControllers['delete'](controller.getEditor());
+    }
+  }, {
+    key: '_handleTextEditor',
+    value: function _handleTextEditor(editor) {
+      if (!this._displayControllers.has(editor)) {
+        // TODO[jeffreytan]: flow does not seem to accept delegate typing,
+        // need to ask flow team if this is a known issue.
+        // $FlowFixMe
+        var controller = new BreakpointDisplayController(this, this._breakpointStore, editor);
+        this._displayControllers.set(editor, controller);
+      }
+    }
+  }]);
+
+  return BreakpointManager;
+})();
 
 module.exports = BreakpointManager;

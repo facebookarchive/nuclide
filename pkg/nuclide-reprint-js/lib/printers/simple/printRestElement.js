@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +8,11 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {RestElement} from 'ast-types-flow';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printRestElement(print: Print, node: RestElement): Lines {
-  return flatten([
-    '...',
-    markers.noBreak,
-    print(node.argument),
-  ]);
+function printRestElement(print, node) {
+  return flatten(['...', markers.noBreak, print(node.argument)]);
 }
 
 module.exports = printRestElement;

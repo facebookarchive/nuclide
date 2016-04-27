@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +8,26 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {RemoteFile} from './RemoteFile';
+var _atom = require('atom');
 
-import {File} from 'atom';
-const {ServerConnection} = require('./ServerConnection');
-const {isRemote} = require('../../nuclide-remote-uri');
+var _require = require('./ServerConnection');
+
+var ServerConnection = _require.ServerConnection;
+
+var _require2 = require('../../nuclide-remote-uri');
+
+var isRemote = _require2.isRemote;
 
 module.exports = {
-  getFileForPath(filePath: NuclideUri): ?(atom$File | RemoteFile) {
+  getFileForPath: function getFileForPath(filePath) {
     if (isRemote(filePath)) {
-      const connection = ServerConnection.getForUri(filePath);
+      var connection = ServerConnection.getForUri(filePath);
       if (!connection) {
         return null;
       }
       return connection.createFile(filePath);
     } else {
-      return new File(filePath);
+      return new _atom.File(filePath);
     }
-  },
+  }
 };

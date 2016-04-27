@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +8,20 @@
  * the root directory of this source tree.
  */
 
-const getPosition = require('./getPosition');
-const getRawPosition = require('./getRawPosition');
+var getPosition = require('./getPosition');
+var getRawPosition = require('./getRawPosition');
 
 // Accuracy determines how many tokens we look for to guess the position.
-const ACCURACIES = [15, 4, 1];
-const WHITESPACE = '\\s*';
+var ACCURACIES = [15, 4, 1];
+var WHITESPACE = '\\s*';
 
 /**
  * Given the starting source, starting position, and the ending source this
  * function guesses where the cursor should move to.
  */
-function updateCursor(
-  startSource: string,
-  startPosition: {row: number; column: number},
-  endSource: string,
-): {row: number; column: number} {
-  for (const accuracy of ACCURACIES) {
-    const result = maybeUpdateCursorWithAccuracy(
-      startSource,
-      startPosition,
-      endSource,
-      accuracy,
-    );
+function updateCursor(startSource, startPosition, endSource) {
+  for (var accuracy of ACCURACIES) {
+    var result = maybeUpdateCursorWithAccuracy(startSource, startPosition, endSource, accuracy);
     if (result) {
       return result;
     }
@@ -40,21 +30,12 @@ function updateCursor(
   return startPosition;
 }
 
-function maybeUpdateCursorWithAccuracy(
-  startSource: string,
-  startPosition: {row: number; column: number},
-  endSource: string,
-  accuracy: number,
-): ?{row: number; column: number} {
-  const rawStartPosition = getRawPosition(startSource, startPosition);
-  const regexParts = [];
-  let inWord = false;
-  for (
-    let i = rawStartPosition - 1, found = 0;
-    i >= 0 && found < accuracy;
-    i--
-  ) {
-    const char = startSource.charAt(i);
+function maybeUpdateCursorWithAccuracy(startSource, startPosition, endSource, accuracy) {
+  var rawStartPosition = getRawPosition(startSource, startPosition);
+  var regexParts = [];
+  var inWord = false;
+  for (var i = rawStartPosition - 1, found = 0; i >= 0 && found < accuracy; i--) {
+    var char = startSource.charAt(i);
     if (/\s/.test(char)) {
       if (regexParts[0] !== WHITESPACE) {
         regexParts.unshift(WHITESPACE);
@@ -84,17 +65,17 @@ function maybeUpdateCursorWithAccuracy(
           found++;
           inWord = false;
         }
-        const escapedChar = char.replace(/[[{()*+?.\\^$|]/g, '\\$&');
+        var escapedChar = char.replace(/[[{()*+?.\\^$|]/g, '\\$&');
         regexParts.unshift(escapedChar + '?');
       }
     }
   }
-  const regex = new RegExp(regexParts.join(''));
-  const result = regex.exec(endSource);
+  var regex = new RegExp(regexParts.join(''));
+  var result = regex.exec(endSource);
   if (!result) {
     return null;
   }
-  const rawEndPosition = result[0].length + result.index;
+  var rawEndPosition = result[0].length + result.index;
   return getPosition(endSource, rawEndPosition);
 }
 

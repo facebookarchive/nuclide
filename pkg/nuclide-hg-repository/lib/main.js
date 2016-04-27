@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.activate = activate;
+exports.createHgRepositoryProvider = createHgRepositoryProvider;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +12,14 @@
  * the root directory of this source tree.
  */
 
-export function activate(state: any): void {
+function activate(state) {
   // TODO(mbolin): Add activation code here.
 }
 
-export function createHgRepositoryProvider() {
-  const {HgRepositoryProvider} = require('./HgRepositoryProvider');
+function createHgRepositoryProvider() {
+  var _require = require('./HgRepositoryProvider');
+
+  var HgRepositoryProvider = _require.HgRepositoryProvider;
+
   return new HgRepositoryProvider();
 }

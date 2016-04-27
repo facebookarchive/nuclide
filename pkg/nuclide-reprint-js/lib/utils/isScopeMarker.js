@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +8,11 @@
  * the root directory of this source tree.
  */
 
-const markers = require('../constants/markers');
+var markers = require('../constants/markers');
 
-const SCOPE_MARKER = new Set([
-  markers.openScope,
-  markers.scopeIndent,
-  markers.scopeBreak,
-  markers.scopeSpaceBreak,
-  markers.scopeComma,
-  markers.scopeDedent,
-  markers.closeScope,
-]);
+var SCOPE_MARKER = new Set([markers.openScope, markers.scopeIndent, markers.scopeBreak, markers.scopeSpaceBreak, markers.scopeComma, markers.scopeDedent, markers.closeScope]);
 
-function isScopeMarker(marker: any): boolean {
+function isScopeMarker(marker) {
   return SCOPE_MARKER.has(marker);
 }
 

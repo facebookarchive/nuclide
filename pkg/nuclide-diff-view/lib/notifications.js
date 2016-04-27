@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +10,23 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+exports.notifyInternalError = notifyInternalError;
+exports.notifyFilesystemOverrideUserEdits = notifyFilesystemOverrideUserEdits;
 
-import {getLogger} from '../../nuclide-logging';
+var _nuclideLogging = require('../../nuclide-logging');
 
-const logger = getLogger();
+var logger = (0, _nuclideLogging.getLogger)();
 
-export function notifyInternalError(error: Error, dismissable?: boolean = false) {
-  const errorMessage = 'Diff View Internal Error';
+function notifyInternalError(error) {
+  var dismissable = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
+  var errorMessage = 'Diff View Internal Error';
   logger.error(errorMessage, error);
-  atom.notifications.addError(errorMessage, {detail: error.message, dismissable});
+  atom.notifications.addError(errorMessage, { detail: error.message, dismissable: dismissable });
 }
 
-export function notifyFilesystemOverrideUserEdits(filePath: NuclideUri) {
-  const message = `Diff View Override<br/>
-The filesystem contents of the active file have changed, overriding user changes for file:<br/>
-\`${filePath}\`
-`;
+function notifyFilesystemOverrideUserEdits(filePath) {
+  var message = 'Diff View Override<br/>\nThe filesystem contents of the active file have changed, overriding user changes for file:<br/>\n`' + filePath + '`\n';
   logger.warn(message);
   atom.notifications.addWarning(message);
 }

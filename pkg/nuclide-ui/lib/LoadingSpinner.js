@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,48 +12,39 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
+var _classnames = require('classnames');
 
-type LoadingSpinnerSize = 'EXTRA_SMALL' | 'SMALL' | 'MEDIUM' | 'LARGE';
-type Props = {
-  className? : string;
-  /** The size of the LoadingSpinner. Defaults to MEDIUM. */
-  size?: LoadingSpinnerSize;
-};
+var _classnames2 = _interopRequireDefault(_classnames);
 
-export const LoadingSpinnerSizes = Object.freeze({
+var _reactForAtom = require('react-for-atom');
+
+var LoadingSpinnerSizes = Object.freeze({
   EXTRA_SMALL: 'EXTRA_SMALL',
   SMALL: 'SMALL',
   MEDIUM: 'MEDIUM',
-  LARGE: 'LARGE',
+  LARGE: 'LARGE'
 });
 
-const LoadingSpinnerClassnames = Object.freeze({
+exports.LoadingSpinnerSizes = LoadingSpinnerSizes;
+var LoadingSpinnerClassnames = Object.freeze({
   EXTRA_SMALL: 'loading-spinner-tiny',
   SMALL: 'loading-spinner-small',
   MEDIUM: 'loading-spinner-medium',
-  LARGE: 'loading-spinner-large',
+  LARGE: 'loading-spinner-large'
 });
 
 /**
  * Shows an indefinite, animated LoadingSpinner.
  */
-export const LoadingSpinner = (props: Props): React.Element => {
-  const {
-    className,
-    size,
-  } = props;
-  const safeSize = size != null && LoadingSpinnerSizes.hasOwnProperty(size)
-    ? size
-    : LoadingSpinnerSizes.MEDIUM;
-  const sizeClassname = LoadingSpinnerClassnames[safeSize];
-  const newClassName = classnames(
-    className,
-    'loading',
-    sizeClassname,
-  );
-  return (
-    <div className={newClassName} />
-  );
+var LoadingSpinner = function LoadingSpinner(props) {
+  var className = props.className;
+  var size = props.size;
+
+  var safeSize = size != null && LoadingSpinnerSizes.hasOwnProperty(size) ? size : LoadingSpinnerSizes.MEDIUM;
+  var sizeClassname = LoadingSpinnerClassnames[safeSize];
+  var newClassName = (0, _classnames2['default'])(className, 'loading', sizeClassname);
+  return _reactForAtom.React.createElement('div', { className: newClassName });
 };
+exports.LoadingSpinner = LoadingSpinner;
+
+/** The size of the LoadingSpinner. Defaults to MEDIUM. */

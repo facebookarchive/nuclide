@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +10,25 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+var _reactForAtom = require('react-for-atom');
 
-type DiagnosticsMessageTextProps = {
-  message: {
-    html?: string;
-    text?: string;
-  };
-};
+var DiagnosticsMessageText = function DiagnosticsMessageText(props) {
+  var message = props.message;
 
-export const DiagnosticsMessageText = (props: DiagnosticsMessageTextProps) => {
-  const {
-    message,
-  } = props;
   if (message.html != null) {
-    return <span dangerouslySetInnerHTML={{__html: message.html}} />;
+    return _reactForAtom.React.createElement('span', { dangerouslySetInnerHTML: { __html: message.html } });
   } else if (message.text != null) {
-    return <span>{message.text}</span>;
+    return _reactForAtom.React.createElement(
+      'span',
+      null,
+      message.text
+    );
   } else {
-    return <span>Diagnostic lacks message.</span>;
+    return _reactForAtom.React.createElement(
+      'span',
+      null,
+      'Diagnostic lacks message.'
+    );
   }
 };
+exports.DiagnosticsMessageText = DiagnosticsMessageText;

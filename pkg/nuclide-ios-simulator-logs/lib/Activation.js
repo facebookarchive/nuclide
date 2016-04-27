@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,61 +8,87 @@
  * the root directory of this source tree.
  */
 
-import type OutputService from '../../nuclide-console/lib/OutputService';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {formatEnoentNotification} from '../../nuclide-atom-helpers';
-import {LogTailer} from '../../nuclide-console/lib/LogTailer';
-import {createMessageStream} from './createMessageStream';
-import {createProcessStream} from './createProcessStream';
-import {CompositeDisposable, Disposable} from 'atom';
-import Rx from 'rxjs';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-class Activation {
-  _disposables: CompositeDisposable;
-  _logTailer: LogTailer;
+var _nuclideAtomHelpers = require('../../nuclide-atom-helpers');
 
-  constructor(state: ?Object) {
-    const message$ = Rx.Observable.defer(() => createMessageStream(createProcessStream()))
-      .do({
-        error(err) {
-          if (err.code === 'ENOENT') {
-            const {message, meta} = formatEnoentNotification({
-              feature: 'iOS Syslog tailing',
-              toolName: 'syslog',
-              pathSetting: 'nuclide-ios-simulator-logs.pathToSyslog',
-            });
-            atom.notifications.addError(message, meta);
-          }
-        },
-      });
+var _nuclideConsoleLibLogTailer = require('../../nuclide-console/lib/LogTailer');
 
-    this._logTailer = new LogTailer(message$, {
+var _createMessageStream = require('./createMessageStream');
+
+var _createProcessStream = require('./createProcessStream');
+
+var _atom = require('atom');
+
+var _rxjs = require('rxjs');
+
+var _rxjs2 = _interopRequireDefault(_rxjs);
+
+var Activation = (function () {
+  function Activation(state) {
+    var _this = this;
+
+    _classCallCheck(this, Activation);
+
+    var message$ = _rxjs2['default'].Observable.defer(function () {
+      return (0, _createMessageStream.createMessageStream)((0, _createProcessStream.createProcessStream)());
+    })['do']({
+      error: function error(err) {
+        if (err.code === 'ENOENT') {
+          var _formatEnoentNotification = (0, _nuclideAtomHelpers.formatEnoentNotification)({
+            feature: 'iOS Syslog tailing',
+            toolName: 'syslog',
+            pathSetting: 'nuclide-ios-simulator-logs.pathToSyslog'
+          });
+
+          var message = _formatEnoentNotification.message;
+          var meta = _formatEnoentNotification.meta;
+
+          atom.notifications.addError(message, meta);
+        }
+      }
+    });
+
+    this._logTailer = new _nuclideConsoleLibLogTailer.LogTailer(message$, {
       start: 'ios-simulator-logs:start',
       stop: 'ios-simulator-logs:stop',
       restart: 'ios-simulator-logs:restart',
-      error: 'ios-simulator-logs:error',
+      error: 'ios-simulator-logs:error'
     });
 
-    this._disposables = new CompositeDisposable(
-      new Disposable(() => { this._logTailer.stop(); }),
-      atom.commands.add('atom-workspace', {
-        'nuclide-ios-simulator-logs:start': () => this._logTailer.start(),
-        'nuclide-ios-simulator-logs:stop': () => this._logTailer.stop(),
-        'nuclide-ios-simulator-logs:restart': () => this._logTailer.restart(),
-      }),
-    );
+    this._disposables = new _atom.CompositeDisposable(new _atom.Disposable(function () {
+      _this._logTailer.stop();
+    }), atom.commands.add('atom-workspace', {
+      'nuclide-ios-simulator-logs:start': function nuclideIosSimulatorLogsStart() {
+        return _this._logTailer.start();
+      },
+      'nuclide-ios-simulator-logs:stop': function nuclideIosSimulatorLogsStop() {
+        return _this._logTailer.stop();
+      },
+      'nuclide-ios-simulator-logs:restart': function nuclideIosSimulatorLogsRestart() {
+        return _this._logTailer.restart();
+      }
+    }));
   }
 
-  consumeOutputService(api: OutputService): IDisposable {
-    return api.registerOutputProvider({
-      source: 'iOS Simulator Logs',
-      messages: this._logTailer.getMessages(),
-    });
-  }
+  _createClass(Activation, [{
+    key: 'consumeOutputService',
+    value: function consumeOutputService(api) {
+      return api.registerOutputProvider({
+        source: 'iOS Simulator Logs',
+        messages: this._logTailer.getMessages()
+      });
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }]);
 
-  dispose() {
-    this._disposables.dispose();
-  }
-}
+  return Activation;
+})();
 
 module.exports = Activation;

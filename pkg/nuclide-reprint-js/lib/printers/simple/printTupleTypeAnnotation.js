@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +8,11 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {TupleTypeAnnotation} from 'ast-types-flow';
+var flatten = require('../../utils/flatten');
+var printCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
 
-const flatten = require('../../utils/flatten');
-const printCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
-
-function printTupleTypeAnnotation(
-  print: Print,
-  node: TupleTypeAnnotation,
-): Lines {
-  return flatten([
-    '[',
-    printCommaSeparatedNodes(print, node.types),
-    ']',
-  ]);
+function printTupleTypeAnnotation(print, node) {
+  return flatten(['[', printCommaSeparatedNodes(print, node.types), ']']);
 }
 
 module.exports = printTupleTypeAnnotation;

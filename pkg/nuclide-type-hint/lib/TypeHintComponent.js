@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,107 +10,125 @@
  * the root directory of this source tree.
  */
 
-import type {HintTree} from '../../nuclide-type-hint-interfaces';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {TextBuffer} from 'atom';
-import {React} from 'react-for-atom';
-import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-type TypeHintComponentProps = {
-  content: string | HintTree;
-  grammar: atom$Grammar;
-};
+exports.makeTypeHintComponent = makeTypeHintComponent;
 
-type TypeHintComponentState = {
-  expandedNodes: Set<HintTree>;
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export function makeTypeHintComponent(
-  content: string | HintTree,
-  grammar: atom$Grammar,
-): ReactClass {
-  return () => <TypeHintComponent content={content} grammar={grammar} />;
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _atom = require('atom');
+
+var _reactForAtom = require('react-for-atom');
+
+var _nuclideUiLibAtomTextEditor = require('../../nuclide-ui/lib/AtomTextEditor');
+
+function makeTypeHintComponent(content, grammar) {
+  return function () {
+    return _reactForAtom.React.createElement(TypeHintComponent, { content: content, grammar: grammar });
+  };
 }
 
-class TypeHintComponent extends React.Component {
-  props: TypeHintComponentProps;
-  state: TypeHintComponentState;
+var TypeHintComponent = (function (_React$Component) {
+  _inherits(TypeHintComponent, _React$Component);
 
-  constructor(props: TypeHintComponentProps) {
-    super(props);
+  function TypeHintComponent(props) {
+    _classCallCheck(this, TypeHintComponent);
+
+    _get(Object.getPrototypeOf(TypeHintComponent.prototype), 'constructor', this).call(this, props);
     this.state = {
-      expandedNodes: new Set(),
+      expandedNodes: new Set()
     };
   }
 
-  renderPrimitive(value: string): React.Element {
-    const buffer = new TextBuffer(value);
-    const {grammar} = this.props;
-    return (
-      <div className="nuclide-type-hint-text-editor-container">
-        <AtomTextEditor
-          className="nuclide-type-hint-text-editor"
-          gutterHidden={true}
-          readOnly={true}
-          syncTextContents={false}
-          autoGrow={true}
-          grammar={grammar}
-          textBuffer={buffer}
-        />
-      </div>
-    );
-  }
+  _createClass(TypeHintComponent, [{
+    key: 'renderPrimitive',
+    value: function renderPrimitive(value) {
+      var buffer = new _atom.TextBuffer(value);
+      var grammar = this.props.grammar;
 
-  handleChevronClick(tree: HintTree, event: SyntheticEvent): void {
-    const {expandedNodes} = this.state;
-    if (expandedNodes.has(tree)) {
-      expandedNodes.delete(tree);
-    } else {
-      expandedNodes.add(tree);
+      return _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-type-hint-text-editor-container' },
+        _reactForAtom.React.createElement(_nuclideUiLibAtomTextEditor.AtomTextEditor, {
+          className: 'nuclide-type-hint-text-editor',
+          gutterHidden: true,
+          readOnly: true,
+          syncTextContents: false,
+          autoGrow: true,
+          grammar: grammar,
+          textBuffer: buffer
+        })
+      );
     }
-    // Force update.
-    this.forceUpdate();
-  }
+  }, {
+    key: 'handleChevronClick',
+    value: function handleChevronClick(tree, event) {
+      var expandedNodes = this.state.expandedNodes;
 
-  renderHierarchical(tree: HintTree): React.Element {
-    if (tree.children == null) {
-      return this.renderPrimitive(tree.value);
+      if (expandedNodes.has(tree)) {
+        expandedNodes['delete'](tree);
+      } else {
+        expandedNodes.add(tree);
+      }
+      // Force update.
+      this.forceUpdate();
     }
-    const children = tree.children.map(child => this.renderHierarchical(child));
-    const isExpanded = this.state.expandedNodes.has(tree);
-    const childrenList = isExpanded
-      ? <ul className="list-tree">
-          {children}
-        </ul>
-      : null;
-    const className =
-      'icon nuclide-type-hint-expandable-chevron ' +
-      `icon-chevron-${isExpanded ? 'down' : 'right'}`;
-    return (
-      <li className="list-nested-item">
-        <div className="list-item">
-          <span>
-            <span
-              className={className}
-              onClick={this.handleChevronClick.bind(this, tree)}
-            />
-            {tree.value}
-          </span>
-        </div>
-        {childrenList}
-      </li>
-    );
-  }
+  }, {
+    key: 'renderHierarchical',
+    value: function renderHierarchical(tree) {
+      var _this = this;
 
-  render(): React.Element {
-    const {content} = this.props;
-    if (typeof content === 'string') {
-      return this.renderPrimitive(content);
+      if (tree.children == null) {
+        return this.renderPrimitive(tree.value);
+      }
+      var children = tree.children.map(function (child) {
+        return _this.renderHierarchical(child);
+      });
+      var isExpanded = this.state.expandedNodes.has(tree);
+      var childrenList = isExpanded ? _reactForAtom.React.createElement(
+        'ul',
+        { className: 'list-tree' },
+        children
+      ) : null;
+      var className = 'icon nuclide-type-hint-expandable-chevron ' + ('icon-chevron-' + (isExpanded ? 'down' : 'right'));
+      return _reactForAtom.React.createElement(
+        'li',
+        { className: 'list-nested-item' },
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'list-item' },
+          _reactForAtom.React.createElement(
+            'span',
+            null,
+            _reactForAtom.React.createElement('span', {
+              className: className,
+              onClick: this.handleChevronClick.bind(this, tree)
+            }),
+            tree.value
+          )
+        ),
+        childrenList
+      );
     }
-    return (
-      <ul className="list-tree">
-        {this.renderHierarchical(content)}
-      </ul>
-    );
-  }
-}
+  }, {
+    key: 'render',
+    value: function render() {
+      var content = this.props.content;
+
+      if (typeof content === 'string') {
+        return this.renderPrimitive(content);
+      }
+      return _reactForAtom.React.createElement(
+        'ul',
+        { className: 'list-tree' },
+        this.renderHierarchical(content)
+      );
+    }
+  }]);
+
+  return TypeHintComponent;
+})(_reactForAtom.React.Component);

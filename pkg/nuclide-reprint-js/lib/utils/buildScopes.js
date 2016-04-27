@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +8,18 @@
  * the root directory of this source tree.
  */
 
-const markers = require('../constants/markers');
+var markers = require('../constants/markers');
 
 /**
  * Given an array of lines this will parse the scopes and return a mapping of
  * line number to unique scope ids. This mapping is returned in the form of an
  * array where arr[lineNumber] is the scopeID.
  */
-function buildScopes(lines: Array<any>): Array<?number> {
-  const scopes = [];
-  let id = 0;
-  const stack = [];
-  for (let i = 0; i < lines.length; i++) {
+function buildScopes(lines) {
+  var scopes = [];
+  var id = 0;
+  var stack = [];
+  for (var i = 0; i < lines.length; i++) {
     if (lines[i] === markers.openScope) {
       stack.push(id++);
     }

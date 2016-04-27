@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +8,11 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {TypeAnnotation} from 'ast-types-flow';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printTypeAnnotation(print: Print, node: TypeAnnotation): Lines {
-  return flatten([
-    markers.noBreak,
-    ':',
-    markers.noBreak,
-    markers.space,
-    print(node.typeAnnotation),
-  ]);
+function printTypeAnnotation(print, node) {
+  return flatten([markers.noBreak, ':', markers.noBreak, markers.space, print(node.typeAnnotation)]);
 }
 
 module.exports = printTypeAnnotation;

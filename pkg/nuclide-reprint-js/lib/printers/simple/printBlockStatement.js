@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +8,16 @@
  * the root directory of this source tree.
  */
 
-import type {BlockStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var markers = require('../../constants/markers');
+var printArrayOfStatements = require('../common/printArrayOfStatements');
+var printComments = require('../common/printComments');
+var wrapStatement = require('../../wrappers/simple/wrapStatement');
 
-const markers = require('../../constants/markers');
-const printArrayOfStatements = require('../common/printArrayOfStatements');
-const printComments = require('../common/printComments');
-const wrapStatement = require('../../wrappers/simple/wrapStatement');
-
-function printBlockStatement(print: Print, node: BlockStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
-  return wrap([
-    '{',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    printComments(node.innerComments),
-    printArrayOfStatements(print, node.body),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-    '}',
-  ]);
+function printBlockStatement(print, node) {
+  var wrap = function wrap(x) {
+    return wrapStatement(print, node, x);
+  };
+  return wrap(['{', markers.openScope, markers.scopeIndent, markers.scopeBreak, printComments(node.innerComments), printArrayOfStatements(print, node.body), markers.scopeBreak, markers.scopeDedent, markers.closeScope, '}']);
 }
 
 module.exports = printBlockStatement;

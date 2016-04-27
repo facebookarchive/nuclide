@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var getRootIdentifierInExpression = require('./getRootIdentifierInExpression');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +10,8 @@
  * the root directory of this source tree.
  */
 
-import type {Node} from '../types/ast';
-
-const getRootIdentifierInExpression = require('./getRootIdentifierInExpression');
-
-function isRequireExpression(node: Node): boolean {
-  const root = getRootIdentifierInExpression(node);
+function isRequireExpression(node) {
+  var root = getRootIdentifierInExpression(node);
   return !!(root && root.name === 'require');
 }
 

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,175 +10,191 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHint} from '../../nuclide-type-hint-interfaces';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import invariant from 'assert';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-const {extractWordAtPosition} = require('../../nuclide-atom-helpers');
-const featureConfig = require('../../nuclide-feature-config');
-import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
-const {Range} = require('atom');
+exports.getTypeHintTree = getTypeHintTree;
 
-import {JAVASCRIPT_WORD_REGEX} from './constants';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export class FlowTypeHintProvider {
-  async typeHint(editor: TextEditor, position: atom$Point): Promise<?TypeHint> {
-    const enabled = featureConfig.get('nuclide-flow.enableTypeHints');
-    if (!enabled) {
-      return null;
-    }
-    const filePath = editor.getPath();
-    if (filePath == null) {
-      return null;
-    }
-    const contents = editor.getText();
-    const flowService = await getFlowServiceByNuclideUri(filePath);
-    invariant(flowService);
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-    const enableStructuredTypeHints: boolean =
-      (featureConfig.get('nuclide-flow.enableStructuredTypeHints'): any);
-    const getTypeResult = await flowService.flowGetType(
-      filePath,
-      contents,
-      position.row,
-      position.column,
-      enableStructuredTypeHints,
-    );
-    if (getTypeResult == null) {
-      return null;
-    }
-    const {type, rawType} = getTypeResult;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    // TODO(nmote) refine this regex to better capture JavaScript expressions.
-    // Having this regex be not quite right is just a display issue, though --
-    // it only affects the location of the tooltip.
-    const word = extractWordAtPosition(editor, position, JAVASCRIPT_WORD_REGEX);
-    let range;
-    if (word) {
-      range = word.range;
-    } else {
-      range = new Range(position, position);
-    }
-    const result = {
-      hint: type,
-      range,
-    };
-    const hintTree = getTypeHintTree(rawType);
-    if (hintTree) {
-      return {
-        ...result,
-        hintTree,
-      };
-    } else {
-      return result;
-    }
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _FlowServiceFactory = require('./FlowServiceFactory');
+
+var _constants = require('./constants');
+
+var _require = require('../../nuclide-atom-helpers');
+
+var extractWordAtPosition = _require.extractWordAtPosition;
+
+var featureConfig = require('../../nuclide-feature-config');
+
+var _require2 = require('atom');
+
+var Range = _require2.Range;
+
+var FlowTypeHintProvider = (function () {
+  function FlowTypeHintProvider() {
+    _classCallCheck(this, FlowTypeHintProvider);
   }
-}
 
-// TODO Import from type-hints package once it exposes it.
-type HintTree = {
-  value: string;
-  children?: Array<HintTree>;
-};
+  // TODO Import from type-hints package once it exposes it.
 
-export function getTypeHintTree(typeHint: ?string): ?HintTree {
+  _createClass(FlowTypeHintProvider, [{
+    key: 'typeHint',
+    value: _asyncToGenerator(function* (editor, position) {
+      var enabled = featureConfig.get('nuclide-flow.enableTypeHints');
+      if (!enabled) {
+        return null;
+      }
+      var filePath = editor.getPath();
+      if (filePath == null) {
+        return null;
+      }
+      var contents = editor.getText();
+      var flowService = yield (0, _FlowServiceFactory.getFlowServiceByNuclideUri)(filePath);
+      (0, _assert2['default'])(flowService);
+
+      var enableStructuredTypeHints = featureConfig.get('nuclide-flow.enableStructuredTypeHints');
+      var getTypeResult = yield flowService.flowGetType(filePath, contents, position.row, position.column, enableStructuredTypeHints);
+      if (getTypeResult == null) {
+        return null;
+      }
+      var type = getTypeResult.type;
+      var rawType = getTypeResult.rawType;
+
+      // TODO(nmote) refine this regex to better capture JavaScript expressions.
+      // Having this regex be not quite right is just a display issue, though --
+      // it only affects the location of the tooltip.
+      var word = extractWordAtPosition(editor, position, _constants.JAVASCRIPT_WORD_REGEX);
+      var range = undefined;
+      if (word) {
+        range = word.range;
+      } else {
+        range = new Range(position, position);
+      }
+      var result = {
+        hint: type,
+        range: range
+      };
+      var hintTree = getTypeHintTree(rawType);
+      if (hintTree) {
+        return _extends({}, result, {
+          hintTree: hintTree
+        });
+      } else {
+        return result;
+      }
+    })
+  }]);
+
+  return FlowTypeHintProvider;
+})();
+
+exports.FlowTypeHintProvider = FlowTypeHintProvider;
+
+function getTypeHintTree(typeHint) {
   if (!typeHint) {
     return null;
   }
   try {
-    const json = JSON.parse(typeHint);
+    var json = JSON.parse(typeHint);
     return jsonToTree(json);
   } catch (e) {
-    const logger = require('../../nuclide-logging').getLogger();
-    logger.error(`Problem parsing type hint: ${e.message}`);
+    var logger = require('../../nuclide-logging').getLogger();
+    logger.error('Problem parsing type hint: ' + e.message);
     // If there is any problem parsing just fall back on the original string
     return null;
   }
 }
 
-const OBJECT = 'ObjT';
-const NUMBER = 'NumT';
-const STRING = 'StrT';
-const BOOLEAN = 'BoolT';
-const MAYBE = 'MaybeT';
-const ANYOBJECT = 'AnyObjT';
-const ARRAY = 'ArrT';
-const FUNCTION = 'FunT';
+var OBJECT = 'ObjT';
+var NUMBER = 'NumT';
+var STRING = 'StrT';
+var BOOLEAN = 'BoolT';
+var MAYBE = 'MaybeT';
+var ANYOBJECT = 'AnyObjT';
+var ARRAY = 'ArrT';
+var FUNCTION = 'FunT';
 
-function jsonToTree(json: Object): HintTree {
-  const kind = json['kind'];
+function jsonToTree(json) {
+  var kind = json['kind'];
   switch (kind) {
     case OBJECT:
-      const propTypes = json['type']['propTypes'];
-      const children = [];
-      for (const prop of propTypes) {
-        const propName = prop['name'];
-        const childTree = jsonToTree(prop['type']);
+      var propTypes = json['type']['propTypes'];
+      var children = [];
+      for (var prop of propTypes) {
+        var propName = prop['name'];
+        var _childTree = jsonToTree(prop['type']);
         // Instead of making single child node just for the type name, we'll graft the type onto the
         // end of the property name.
         children.push({
-          value: `${propName}: ${childTree.value}`,
-          children: childTree.children,
+          value: propName + ': ' + _childTree.value,
+          children: _childTree.children
         });
       }
       return {
         value: 'Object',
-        children,
+        children: children
       };
     case NUMBER:
       return {
-        value: 'number',
+        value: 'number'
       };
     case STRING:
       return {
-        value: 'string',
+        value: 'string'
       };
     case BOOLEAN:
       return {
-        value: 'boolean',
+        value: 'boolean'
       };
     case MAYBE:
-      const childTree = jsonToTree(json['type']);
+      var childTree = jsonToTree(json['type']);
       return {
-        value: `?${childTree.value}`,
-        children: childTree.children,
+        value: '?' + childTree.value,
+        children: childTree.children
       };
     case ANYOBJECT:
       return {
-        value: 'Object',
+        value: 'Object'
       };
     case ARRAY:
-      const elemType = jsonToTree(json['elemType']);
+      var elemType = jsonToTree(json['elemType']);
       return {
-        value: `Array<${elemType.value}>`,
-        children: elemType.children,
+        value: 'Array<' + elemType.value + '>',
+        children: elemType.children
       };
     case FUNCTION:
-      const paramNames = json['funType']['paramNames'];
-      const paramTypes = json['funType']['paramTypes'];
-      invariant(Array.isArray(paramNames));
-      const parameters = paramNames.map((name, i) => {
-        const type = jsonToTree(paramTypes[i]);
+      var paramNames = json['funType']['paramNames'];
+      var paramTypes = json['funType']['paramTypes'];
+      (0, _assert2['default'])(Array.isArray(paramNames));
+      var parameters = paramNames.map(function (name, i) {
+        var type = jsonToTree(paramTypes[i]);
         return {
-          value: `${name}: ${type.value}`,
-          children: type.children,
+          value: name + ': ' + type.value,
+          children: type.children
         };
       });
-      const returnType = jsonToTree(json['funType']['returnType']);
+      var returnType = jsonToTree(json['funType']['returnType']);
       return {
         value: 'Function',
-        children: [
-          {
-            value: 'Parameters',
-            children: parameters,
-          },
-          {
-            value: `Return Type: ${returnType.value}`,
-            children: returnType.children,
-          },
-        ],
+        children: [{
+          value: 'Parameters',
+          children: parameters
+        }, {
+          value: 'Return Type: ' + returnType.value,
+          children: returnType.children
+        }]
       };
     default:
-      throw new Error(`Kind ${kind} not supported`);
+      throw new Error('Kind ' + kind + ' not supported');
   }
 }

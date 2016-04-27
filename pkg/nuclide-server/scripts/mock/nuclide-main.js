@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +8,20 @@
  * the root directory of this source tree.
  */
 
-const https = require('https');
-const http = require('http');
-const fs = require('fs');
-const url = require('url');
+var https = require('https');
+var http = require('http');
+var fs = require('fs');
+var url = require('url');
 
 // Set the initial version by reading from the file.
-const json = JSON.parse(fs.readFileSync(require.resolve('./package.json')));
-const version = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z0-9.-]+))?$/.exec(json.version)[2];
+var json = JSON.parse(fs.readFileSync(require.resolve('./package.json')));
+var version = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z0-9.-]+))?$/.exec(json.version)[2];
 
 function processArgs() {
-  const args = process.argv.slice(2);
-  const processedArgs = {};
+  var args = process.argv.slice(2);
+  var processedArgs = {};
 
-  args.forEach(function(argument, index) {
+  args.forEach(function (argument, index) {
     if (index % 2 !== 0) {
       processedArgs[args[index - 1].slice(2)] = argument;
     }
@@ -31,23 +30,23 @@ function processArgs() {
 }
 
 function startServer(args) {
-  let _webServer;
+  var _webServer = undefined;
   if (args.key && args.cert && args.ca) {
-    const webServerOptions = {
+    var webServerOptions = {
       key: fs.readFileSync(args.key),
       cert: fs.readFileSync(args.cert),
       ca: fs.readFileSync(args.ca),
       requestCert: true,
-      rejectUnauthorized: true,
+      rejectUnauthorized: true
     };
 
     _webServer = https.createServer(webServerOptions, handleRequest);
     console.log('running in secure mode'); //eslint-disable-line no-console
   } else {
-    _webServer = http.createServer(handleRequest);
-  }
+      _webServer = http.createServer(handleRequest);
+    }
 
-  _webServer.on('listening', function() {
+  _webServer.on('listening', function () {
     console.log('listening on port ' + args.port); //eslint-disable-line no-console
   });
 
@@ -55,7 +54,7 @@ function startServer(args) {
 }
 
 function handleRequest(request, response) {
-  const pathname = url.parse(request.url, false).pathname;
+  var pathname = url.parse(request.url, false).pathname;
 
   switch (pathname) {
     case '/heartbeat':
@@ -68,7 +67,6 @@ function handleRequest(request, response) {
       break;
   }
 }
-
 
 function handleVersion(request, response) {
   response.writeHead(200);

@@ -1,5 +1,29 @@
-'use babel';
-/* @flow */
+var getProcessInfoList = _asyncToGenerator(function* () {
+  log('Getting process info list');
+
+  var remoteUri = require('../../nuclide-remote-uri');
+  // TODO: Currently first remote dir only.
+  var remoteDirectoryPath = atom.project.getDirectories().map(function (directoryPath) {
+    return directoryPath.getPath();
+  }).filter(function (directoryPath) {
+    return remoteUri.isRemote(directoryPath);
+  })[0];
+
+  if (remoteDirectoryPath) {
+    var _require = require('./AttachProcessInfo');
+
+    var AttachProcessInfo = _require.AttachProcessInfo;
+
+    return [new AttachProcessInfo(remoteDirectoryPath)];
+  } else {
+    log('No remote dirs getting process info list');
+    return [];
+  }
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +33,13 @@
  * the root directory of this source tree.
  */
 
-import utils from './utils';
-const {log} = utils;
+var _utils = require('./utils');
 
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
+var _utils2 = _interopRequireDefault(_utils);
 
-async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
-  log('Getting process info list');
-
-  const remoteUri = require('../../nuclide-remote-uri');
-  // TODO: Currently first remote dir only.
-  const remoteDirectoryPath = atom.project.getDirectories()
-    .map(directoryPath => directoryPath.getPath())
-    .filter(directoryPath => remoteUri.isRemote(directoryPath))[0];
-
-  if (remoteDirectoryPath) {
-    const {AttachProcessInfo} = require('./AttachProcessInfo');
-    return [(new AttachProcessInfo(remoteDirectoryPath): DebuggerProcessInfo)];
-  } else {
-    log('No remote dirs getting process info list');
-    return [];
-  }
-}
+var log = _utils2['default'].log;
 
 module.exports = {
   name: 'hhvm',
-  getProcessInfoList,
+  getProcessInfoList: getProcessInfoList
 };

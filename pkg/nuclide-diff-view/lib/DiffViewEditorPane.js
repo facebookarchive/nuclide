@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,187 +10,202 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {HighlightedLines, OffsetMap} from './types';
-import type {UIElement} from '../../nuclide-diff-ui-provider-interfaces';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {CompositeDisposable} from 'atom';
-import {debounce} from '../../nuclide-commons';
-import {
-  React,
-} from 'react-for-atom';
-import DiffViewEditor from './DiffViewEditor';
-import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
-import invariant from 'assert';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-const CHANGE_DEBOUNCE_DELAY_MS = 5;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-type Props = {
-  filePath: NuclideUri;
-  textBuffer: atom$TextBuffer;
-  offsets: OffsetMap;
-  highlightedLines: {
-    added: Array<number>;
-    removed: Array<number>;
-  };
-  initialTextContent: string;
-  savedContents: string;
-  inlineElements: Array<UIElement>;
-  readOnly: boolean;
-  onChange: (newContents: string) => any;
-  onDidUpdateTextEditorElement: () => mixed;
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export default class DiffViewEditorPane extends React.Component {
-  props: Props;
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  _diffViewEditor: ?DiffViewEditor;
-  _subscriptions: CompositeDisposable;
-  _editorSubscriptions: ?CompositeDisposable;
-  // TODO(most): move async code out of the view and deprecate the usage of `_isMounted`.
-  // All view changes should be pushed from the model/store through subscriptions.
-  _isMounted: boolean;
+var _atom = require('atom');
 
-  constructor(props: Props) {
-    super(props);
-    this._subscriptions = new CompositeDisposable();
+var _nuclideCommons = require('../../nuclide-commons');
+
+var _reactForAtom = require('react-for-atom');
+
+var _DiffViewEditor = require('./DiffViewEditor');
+
+var _DiffViewEditor2 = _interopRequireDefault(_DiffViewEditor);
+
+var _nuclideUiLibAtomTextEditor = require('../../nuclide-ui/lib/AtomTextEditor');
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var CHANGE_DEBOUNCE_DELAY_MS = 5;
+
+var DiffViewEditorPane = (function (_React$Component) {
+  _inherits(DiffViewEditorPane, _React$Component);
+
+  function DiffViewEditorPane(props) {
+    _classCallCheck(this, DiffViewEditorPane);
+
+    _get(Object.getPrototypeOf(DiffViewEditorPane.prototype), 'constructor', this).call(this, props);
+    this._subscriptions = new _atom.CompositeDisposable();
     this._isMounted = false;
   }
 
-  componentDidMount(): void {
-    this._isMounted = true;
-    this._setupDiffEditor();
-  }
-
-  _setupDiffEditor(): void {
-    const editorSubscriptions = this._editorSubscriptions = new CompositeDisposable();
-    this._subscriptions.add(editorSubscriptions);
-
-    this._diffViewEditor = new DiffViewEditor(this.getEditorDomElement());
-    const textEditor = this.getEditorModel();
-    const textBuffer = textEditor.getBuffer();
-
-    const debouncedOnChange = debounce(
-      () => {
-        if (!this._isMounted || textBuffer !== this.props.textBuffer) {
-          return;
-        }
-        const textContent = textBuffer.getText();
-        if (textContent === this.props.initialTextContent) {
-          return;
-        }
-        if (this.props.onChange) {
-          this.props.onChange(textContent);
-        }
-      },
-      CHANGE_DEBOUNCE_DELAY_MS,
-      false,
-    );
-    editorSubscriptions.add(textBuffer.onDidChange(debouncedOnChange));
-    /*
-     * Those should have been synced automatically, but an implementation limitation of creating
-     * a <atom-text-editor> element assumes default settings for those.
-     * Filed: https://github.com/atom/atom/issues/10506
-     */
-    editorSubscriptions.add(atom.config.observe('editor.tabLength', tabLength => {
-      textEditor.setTabLength(tabLength);
-    }));
-    editorSubscriptions.add(atom.config.observe('editor.softTabs', softTabs => {
-      textEditor.setSoftTabs(softTabs);
-    }));
-
-    if (this.props.onDidUpdateTextEditorElement) {
-      this.props.onDidUpdateTextEditorElement();
-    }
-  }
-
-  componentWillUnmount(): void {
-    this._subscriptions.dispose();
-    if (this._diffViewEditor != null) {
-      this._diffViewEditor.destroy();
-      this._diffViewEditor = null;
-    }
-    this._isMounted = false;
-  }
-
-  render(): React.Element {
-    return (
-      <div className="nuclide-diff-editor-container">
-        <div className="nuclide-diff-editor-wrapper">
-          <AtomTextEditor
-            ref="editor"
-            readOnly={this.props.readOnly}
-            textBuffer={this.props.textBuffer}
-            syncTextContents={false}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  componentDidUpdate(prevProps: Props): void {
-    if (prevProps.textBuffer !== this.props.textBuffer) {
-      const oldEditorSubscriptions = this._editorSubscriptions;
-      if (oldEditorSubscriptions != null) {
-        oldEditorSubscriptions.dispose();
-        this._subscriptions.remove(oldEditorSubscriptions);
-        this._editorSubscriptions = null;
-      }
+  _createClass(DiffViewEditorPane, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      this._isMounted = true;
       this._setupDiffEditor();
     }
-    this._updateDiffView(prevProps);
-  }
+  }, {
+    key: '_setupDiffEditor',
+    value: function _setupDiffEditor() {
+      var _this = this;
 
-  _updateDiffView(oldProps: Props): void {
-    const newProps = this.props;
-    const diffEditorUpdated = oldProps.textBuffer !== newProps.textBuffer;
-    if (diffEditorUpdated || oldProps.initialTextContent !== this.props.initialTextContent) {
-      this._setTextContent(newProps.filePath, newProps.initialTextContent);
+      var editorSubscriptions = this._editorSubscriptions = new _atom.CompositeDisposable();
+      this._subscriptions.add(editorSubscriptions);
+
+      this._diffViewEditor = new _DiffViewEditor2['default'](this.getEditorDomElement());
+      var textEditor = this.getEditorModel();
+      var textBuffer = textEditor.getBuffer();
+
+      var debouncedOnChange = (0, _nuclideCommons.debounce)(function () {
+        if (!_this._isMounted || textBuffer !== _this.props.textBuffer) {
+          return;
+        }
+        var textContent = textBuffer.getText();
+        if (textContent === _this.props.initialTextContent) {
+          return;
+        }
+        if (_this.props.onChange) {
+          _this.props.onChange(textContent);
+        }
+      }, CHANGE_DEBOUNCE_DELAY_MS, false);
+      editorSubscriptions.add(textBuffer.onDidChange(debouncedOnChange));
+      /*
+       * Those should have been synced automatically, but an implementation limitation of creating
+       * a <atom-text-editor> element assumes default settings for those.
+       * Filed: https://github.com/atom/atom/issues/10506
+       */
+      editorSubscriptions.add(atom.config.observe('editor.tabLength', function (tabLength) {
+        textEditor.setTabLength(tabLength);
+      }));
+      editorSubscriptions.add(atom.config.observe('editor.softTabs', function (softTabs) {
+        textEditor.setSoftTabs(softTabs);
+      }));
+
+      if (this.props.onDidUpdateTextEditorElement) {
+        this.props.onDidUpdateTextEditorElement();
+      }
     }
-    if (diffEditorUpdated || oldProps.highlightedLines !== newProps.highlightedLines) {
-      this._setHighlightedLines(newProps.highlightedLines);
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      this._subscriptions.dispose();
+      if (this._diffViewEditor != null) {
+        this._diffViewEditor.destroy();
+        this._diffViewEditor = null;
+      }
+      this._isMounted = false;
     }
-    if (diffEditorUpdated || oldProps.offsets !== newProps.offsets) {
-      this._setOffsets(newProps.offsets);
+  }, {
+    key: 'render',
+    value: function render() {
+      return _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-diff-editor-container' },
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'nuclide-diff-editor-wrapper' },
+          _reactForAtom.React.createElement(_nuclideUiLibAtomTextEditor.AtomTextEditor, {
+            ref: 'editor',
+            readOnly: this.props.readOnly,
+            textBuffer: this.props.textBuffer,
+            syncTextContents: false
+          })
+        )
+      );
     }
-    if (oldProps.inlineElements !== newProps.inlineElements) {
-      this._renderComponentsInline(newProps.inlineElements);
+  }, {
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate(prevProps) {
+      if (prevProps.textBuffer !== this.props.textBuffer) {
+        var oldEditorSubscriptions = this._editorSubscriptions;
+        if (oldEditorSubscriptions != null) {
+          oldEditorSubscriptions.dispose();
+          this._subscriptions.remove(oldEditorSubscriptions);
+          this._editorSubscriptions = null;
+        }
+        this._setupDiffEditor();
+      }
+      this._updateDiffView(prevProps);
     }
-  }
-
-  scrollToScreenLine(screenLine: number): void {
-    invariant(this._diffViewEditor, 'diffViewEditor has not been setup yet.');
-    this._diffViewEditor.scrollToScreenLine(screenLine);
-  }
-
-  _setTextContent(filePath: string, text: string): void {
-    invariant(this._diffViewEditor);
-    this._diffViewEditor.setFileContents(filePath, text);
-  }
-
-  _setHighlightedLines(highlightedLines: HighlightedLines): void {
-    invariant(this._diffViewEditor);
-    this._diffViewEditor.setHighlightedLines(highlightedLines.added, highlightedLines.removed);
-  }
-
-  _setOffsets(offsets: OffsetMap): void {
-    invariant(this._diffViewEditor);
-    this._diffViewEditor.setOffsets(offsets);
-  }
-
-  _renderComponentsInline(elements: Array<UIElement>): void {
-    if (!this._isMounted || elements.length === 0) {
-      return;
+  }, {
+    key: '_updateDiffView',
+    value: function _updateDiffView(oldProps) {
+      var newProps = this.props;
+      var diffEditorUpdated = oldProps.textBuffer !== newProps.textBuffer;
+      if (diffEditorUpdated || oldProps.initialTextContent !== this.props.initialTextContent) {
+        this._setTextContent(newProps.filePath, newProps.initialTextContent);
+      }
+      if (diffEditorUpdated || oldProps.highlightedLines !== newProps.highlightedLines) {
+        this._setHighlightedLines(newProps.highlightedLines);
+      }
+      if (diffEditorUpdated || oldProps.offsets !== newProps.offsets) {
+        this._setOffsets(newProps.offsets);
+      }
+      if (oldProps.inlineElements !== newProps.inlineElements) {
+        this._renderComponentsInline(newProps.inlineElements);
+      }
     }
-    invariant(this._diffViewEditor, 'diffViewEditor has not been setup yet.');
-    this._diffViewEditor.setUIElements(elements);
-  }
+  }, {
+    key: 'scrollToScreenLine',
+    value: function scrollToScreenLine(screenLine) {
+      (0, _assert2['default'])(this._diffViewEditor, 'diffViewEditor has not been setup yet.');
+      this._diffViewEditor.scrollToScreenLine(screenLine);
+    }
+  }, {
+    key: '_setTextContent',
+    value: function _setTextContent(filePath, text) {
+      (0, _assert2['default'])(this._diffViewEditor);
+      this._diffViewEditor.setFileContents(filePath, text);
+    }
+  }, {
+    key: '_setHighlightedLines',
+    value: function _setHighlightedLines(highlightedLines) {
+      (0, _assert2['default'])(this._diffViewEditor);
+      this._diffViewEditor.setHighlightedLines(highlightedLines.added, highlightedLines.removed);
+    }
+  }, {
+    key: '_setOffsets',
+    value: function _setOffsets(offsets) {
+      (0, _assert2['default'])(this._diffViewEditor);
+      this._diffViewEditor.setOffsets(offsets);
+    }
+  }, {
+    key: '_renderComponentsInline',
+    value: function _renderComponentsInline(elements) {
+      if (!this._isMounted || elements.length === 0) {
+        return;
+      }
+      (0, _assert2['default'])(this._diffViewEditor, 'diffViewEditor has not been setup yet.');
+      this._diffViewEditor.setUIElements(elements);
+    }
+  }, {
+    key: 'getEditorModel',
+    value: function getEditorModel() {
+      return this.refs['editor'].getModel();
+    }
+  }, {
+    key: 'getEditorDomElement',
+    value: function getEditorDomElement() {
+      return this.refs['editor'].getElement();
+    }
+  }]);
 
-  getEditorModel(): atom$TextEditor {
-    return this.refs['editor'].getModel();
-  }
+  return DiffViewEditorPane;
+})(_reactForAtom.React.Component);
 
-  getEditorDomElement(): atom$TextEditorElement {
-    return this.refs['editor'].getElement();
-  }
-}
+exports['default'] = DiffViewEditorPane;
+module.exports = exports['default'];
+
+// TODO(most): move async code out of the view and deprecate the usage of `_isMounted`.
+// All view changes should be pushed from the model/store through subscriptions.

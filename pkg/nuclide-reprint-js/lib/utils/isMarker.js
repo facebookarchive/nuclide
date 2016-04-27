@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +8,14 @@
  * the root directory of this source tree.
  */
 
-const markers = require('../constants/markers');
+var markers = require('../constants/markers');
 
-const MARKER_SET = new Set();
-Object.keys(markers).forEach(key => {
+var MARKER_SET = new Set();
+Object.keys(markers).forEach(function (key) {
   MARKER_SET.add(markers[key]);
 });
 
-function isMarker(line: any): boolean {
+function isMarker(line) {
   return MARKER_SET.has(line);
 }
 

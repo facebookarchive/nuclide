@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _nuclideUiLibButton = require('../../nuclide-ui/lib/Button');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,111 +8,114 @@
  * the root directory of this source tree.
  */
 
-const {React} = require('react-for-atom');
-const {PropTypes} = React;
-const BreakpointStore = require('./BreakpointStore.js');
-const DebuggerActions = require('./DebuggerActions');
-const DebuggerInspector = require('./DebuggerInspector');
-const DebuggerSessionSelector = require('./DebuggerSessionSelector');
-const {DebuggerStore} = require('./DebuggerStore');
-const Bridge = require('./Bridge');
-import {Button} from '../../nuclide-ui/lib/Button';
+var _require = require('react-for-atom');
 
-type State = {
-  processSocket: ?string;
-  debuggerStoreChangeListener?: IDisposable;
-};
+var React = _require.React;
+var PropTypes = React.PropTypes;
 
-function getStateFromStore(store: DebuggerStore): State {
+var BreakpointStore = require('./BreakpointStore.js');
+var DebuggerActions = require('./DebuggerActions');
+var DebuggerInspector = require('./DebuggerInspector');
+var DebuggerSessionSelector = require('./DebuggerSessionSelector');
+
+var _require2 = require('./DebuggerStore');
+
+var DebuggerStore = _require2.DebuggerStore;
+
+var Bridge = require('./Bridge');
+
+function getStateFromStore(store) {
   return {
-    processSocket: store.getProcessSocket(),
+    processSocket: store.getProcessSocket()
   };
 }
 
-const DebuggerControllerView = React.createClass({
+var DebuggerControllerView = React.createClass({
+  displayName: 'DebuggerControllerView',
+
   propTypes: {
     actions: PropTypes.instanceOf(DebuggerActions).isRequired,
     breakpointStore: PropTypes.instanceOf(BreakpointStore).isRequired,
     store: PropTypes.instanceOf(DebuggerStore).isRequired,
-    bridge: PropTypes.instanceOf(Bridge).isRequired,
+    bridge: PropTypes.instanceOf(Bridge).isRequired
   },
 
-  getInitialState(): State {
+  getInitialState: function getInitialState() {
     return getStateFromStore(this.props.store);
   },
 
-  componentWillMount() {
+  componentWillMount: function componentWillMount() {
     this.setState({
-      debuggerStoreChangeListener: this.props.store.onChange(this._updateStateFromStore),
+      debuggerStoreChangeListener: this.props.store.onChange(this._updateStateFromStore)
     });
     this._updateStateFromStore();
   },
 
-  componentWillUnmount() {
-    const listener = this.state.debuggerStoreChangeListener;
+  componentWillUnmount: function componentWillUnmount() {
+    var listener = this.state.debuggerStoreChangeListener;
     if (listener != null) {
       listener.dispose();
     }
   },
 
-  componentWillReceiveProps(nextProps: {store: DebuggerStore}) {
-    const listener = this.state.debuggerStoreChangeListener;
+  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+    var listener = this.state.debuggerStoreChangeListener;
     if (listener != null) {
       listener.dispose();
     }
     this.setState({
-      debuggerStoreChangeListener: nextProps.store.onChange(this._updateStateFromStore),
+      debuggerStoreChangeListener: nextProps.store.onChange(this._updateStateFromStore)
     });
     this._updateStateFromStore(nextProps.store);
   },
 
-  render(): ?React.Element {
+  render: function render() {
     if (this.state.processSocket) {
-      return (
-        <DebuggerInspector
-          actions={this.props.actions}
-          bridge={this.props.bridge}
-          breakpointStore={this.props.breakpointStore}
-          socket={this.state.processSocket}
-        />
-      );
+      return React.createElement(DebuggerInspector, {
+        actions: this.props.actions,
+        bridge: this.props.bridge,
+        breakpointStore: this.props.breakpointStore,
+        socket: this.state.processSocket
+      });
     }
-    const closeButton = (
-      <Button
-        title="Close"
-        icon="x"
-        className="nuclide-debugger-root-close-button"
-        onClick={this._handleClickClose}
-      />
-    );
+    var closeButton = React.createElement(_nuclideUiLibButton.Button, {
+      title: 'Close',
+      icon: 'x',
+      className: 'nuclide-debugger-root-close-button',
+      onClick: this._handleClickClose
+    });
     if (this.props.store.getDebuggerMode() === 'starting') {
-      return (
-        <div className="padded">
-          {closeButton}
-          <p>Starting Debugger</p>
-          <progress className="starting"></progress>
-        </div>
+      return React.createElement(
+        'div',
+        { className: 'padded' },
+        closeButton,
+        React.createElement(
+          'p',
+          null,
+          'Starting Debugger'
+        ),
+        React.createElement('progress', { className: 'starting' })
       );
     }
-    return (
-      <div>
-        {closeButton}
-        <DebuggerSessionSelector store={this.props.store} actions={this.props.actions} />
-      </div>
+    return React.createElement(
+      'div',
+      null,
+      closeButton,
+      React.createElement(DebuggerSessionSelector, { store: this.props.store, actions: this.props.actions })
     );
   },
 
-  _handleClickClose() {
+  _handleClickClose: function _handleClickClose() {
     this.props.actions.stopDebugging();
   },
 
-  _updateStateFromStore(store?: DebuggerStore) {
+  _updateStateFromStore: function _updateStateFromStore(store) {
     if (store != null) {
       this.setState(getStateFromStore(store));
     } else {
       this.setState(getStateFromStore(this.props.store));
     }
-  },
+  }
 });
 
 module.exports = DebuggerControllerView;

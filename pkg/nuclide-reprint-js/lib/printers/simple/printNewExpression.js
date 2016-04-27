@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +8,15 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {NewExpression} from 'ast-types-flow';
+var markers = require('../../constants/markers');
+var printCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
+var wrapExpression = require('../../wrappers/simple/wrapExpression');
 
-const markers = require('../../constants/markers');
-const printCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
-
-function printNewExpression(print: Print, node: NewExpression): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    'new',
-    markers.noBreak,
-    markers.space,
-    print(node.callee),
-    markers.noBreak,
-    '(',
-    printCommaSeparatedNodes(print, node.arguments),
-    ')',
-  ]);
+function printNewExpression(print, node) {
+  var wrap = function wrap(x) {
+    return wrapExpression(print, node, x);
+  };
+  return wrap(['new', markers.noBreak, markers.space, print(node.callee), markers.noBreak, '(', printCommaSeparatedNodes(print, node.arguments), ')']);
 }
 
 module.exports = printNewExpression;

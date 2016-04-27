@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _require = require('../../../nuclide-ui/lib/AtomInput');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,67 +8,68 @@
  * the root directory of this source tree.
  */
 
-import type {Reference} from '../types';
+var AtomInput = _require.AtomInput;
 
-const {AtomInput} = require('../../../nuclide-ui/lib/AtomInput');
-const {React} = require('react-for-atom');
-const {PropTypes} = React;
+var _require2 = require('react-for-atom');
 
-const FilePreview = React.createClass({
+var React = _require2.React;
+var PropTypes = React.PropTypes;
+
+var FilePreview = React.createClass({
+  displayName: 'FilePreview',
 
   propTypes: {
     text: PropTypes.string.isRequired,
     grammar: PropTypes.object,
     references: PropTypes.arrayOf(PropTypes.object /*Reference*/).isRequired,
     startLine: PropTypes.number.isRequired,
-    endLine: PropTypes.number.isRequired,
+    endLine: PropTypes.number.isRequired
   },
 
-  componentDidMount() {
-    const editor = this.refs.editor.getTextEditor();
-    const {grammar, references, startLine} = this.props;
+  componentDidMount: function componentDidMount() {
+    var editor = this.refs.editor.getTextEditor();
+    var _props = this.props;
+    var grammar = _props.grammar;
+    var references = _props.references;
+    var startLine = _props.startLine;
 
     if (grammar) {
       editor.setGrammar(grammar);
     }
 
-    references.forEach((ref: Reference) => {
-      const marker = editor.markBufferRange([
-        [ref.start.line - startLine, ref.start.column - 1],
-        [ref.end.line - startLine, ref.end.column],
-      ]);
-      editor.decorateMarker(marker, {type: 'highlight', class: 'reference'});
+    references.forEach(function (ref) {
+      var marker = editor.markBufferRange([[ref.start.line - startLine, ref.start.column - 1], [ref.end.line - startLine, ref.end.column]]);
+      editor.decorateMarker(marker, { type: 'highlight', 'class': 'reference' });
     });
 
     // Make sure at least one highlight is visible.
-    editor.scrollToBufferPosition([
-      references[0].end.line - startLine,
-      references[0].end.column - 1,
-    ]);
+    editor.scrollToBufferPosition([references[0].end.line - startLine, references[0].end.column - 1]);
   },
 
-  render(): React.Element {
-    const lineNumbers = [];
-    for (let i = this.props.startLine; i <= this.props.endLine; i++) {
-      lineNumbers.push(
-        <div key={i} className="nuclide-find-references-line-number">
-          {i}
-        </div>
-      );
+  render: function render() {
+    var lineNumbers = [];
+    for (var i = this.props.startLine; i <= this.props.endLine; i++) {
+      lineNumbers.push(React.createElement(
+        'div',
+        { key: i, className: 'nuclide-find-references-line-number' },
+        i
+      ));
     }
-    return (
-      <div className="nuclide-find-references-file-preview">
-        <div className="nuclide-find-references-line-number-column">
-          {lineNumbers}
-        </div>
-        <AtomInput
-          ref="editor"
-          initialValue={this.props.text}
-          disabled={true}
-        />
-      </div>
+    return React.createElement(
+      'div',
+      { className: 'nuclide-find-references-file-preview' },
+      React.createElement(
+        'div',
+        { className: 'nuclide-find-references-line-number-column' },
+        lineNumbers
+      ),
+      React.createElement(AtomInput, {
+        ref: 'editor',
+        initialValue: this.props.text,
+        disabled: true
+      })
     );
-  },
+  }
 
 });
 

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +8,10 @@
  * the root directory of this source tree.
  */
 
-const NUCLIDE_CONFIG_SCOPE = 'nuclide.';
+var NUCLIDE_CONFIG_SCOPE = 'nuclide.';
 
-function formatKeyPath(keyPath: string): string {
-  return `${NUCLIDE_CONFIG_SCOPE}${keyPath}`;
+function formatKeyPath(keyPath) {
+  return '' + NUCLIDE_CONFIG_SCOPE + keyPath;
 }
 
 module.exports = {
@@ -21,24 +20,17 @@ module.exports = {
    * `atom.config.get` exception `keyPath` is not optional. To get the entire config object, use
    * `atom.config.get`.
    */
-  get(
-    keyPath: string,
-    options?: {
-      excludeSources?: Array<string>;
-      sources?: Array<string>;
-      scope?: Object;
-    }
-  ): mixed {
-    return atom.config.get(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
+  get: function get(keyPath, options) {
+    var _atom$config;
+
+    return (_atom$config = atom.config).get.apply(_atom$config, [formatKeyPath(keyPath)].concat(_toConsumableArray(Array.prototype.slice.call(arguments, 1))));
   },
 
   /*
    * Gets the schema of a setting for a Nuclide feature key. Takes and returns the same types as
    * `atom.config.getSchema`.
    */
-  getSchema(
-    keyPath: string
-  ): atom$ConfigSchema {
+  getSchema: function getSchema(keyPath) {
     return atom.config.getSchema(formatKeyPath(keyPath));
   },
 
@@ -46,69 +38,49 @@ module.exports = {
    * Takes and returns the same types as `atom.config.observe` except `keyPath` is not optional.
    * To observe changes on the entire config, use `atom.config.observe`.
    */
-  observe(
-    keyPath: string,
-    optionsOrCallback: (Object | (value: any) => void),
-    callback?: (value: any) => void
-  ): IDisposable {
-    return atom.config.observe(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
+  observe: function observe(keyPath, optionsOrCallback, callback) {
+    var _atom$config2;
+
+    return (_atom$config2 = atom.config).observe.apply(_atom$config2, [formatKeyPath(keyPath)].concat(_toConsumableArray(Array.prototype.slice.call(arguments, 1))));
   },
 
   /*
    * Takes and returns the same types as `atom.config.onDidChange` except `keyPath` is not optional.
    * To listen to changes on all key paths, use `atom.config.onDidChange`.
    */
-  onDidChange(
-    keyPath: string,
-    optionsOrCallback: (Object | (event: Object) => void),
-    callback?: (event: Object) => void
-  ): IDisposable {
-    return atom.config.onDidChange(
-      formatKeyPath(keyPath),
-      ...Array.prototype.slice.call(arguments, 1)
-    );
+  onDidChange: function onDidChange(keyPath, optionsOrCallback, callback) {
+    var _atom$config3;
+
+    return (_atom$config3 = atom.config).onDidChange.apply(_atom$config3, [formatKeyPath(keyPath)].concat(_toConsumableArray(Array.prototype.slice.call(arguments, 1))));
   },
 
   /*
    * Sets the value of a setting for a Nuclide feature key. Takes and returns the same types as
    * `atom.config.set`.
    */
-  set(
-    keyPath: string,
-    value: ?mixed,
-    options?: {
-      scopeSelector?: string;
-      source?: string;
-    }
-  ): boolean {
-    return atom.config.set(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
+  set: function set(keyPath, value, options) {
+    var _atom$config4;
+
+    return (_atom$config4 = atom.config).set.apply(_atom$config4, [formatKeyPath(keyPath)].concat(_toConsumableArray(Array.prototype.slice.call(arguments, 1))));
   },
 
   /*
    * Sets the schema of a setting for a Nuclide feature key. Takes and returns the same types as
    * `atom.config.setSchema`.
    */
-  setSchema(
-    keyPath: string,
-    schema: Object
-  ): void {
-    return atom.config.setSchema(
-      formatKeyPath(keyPath),
-      ...Array.prototype.slice.call(arguments, 1)
-    );
+  setSchema: function setSchema(keyPath, schema) {
+    var _atom$config5;
+
+    return (_atom$config5 = atom.config).setSchema.apply(_atom$config5, [formatKeyPath(keyPath)].concat(_toConsumableArray(Array.prototype.slice.call(arguments, 1))));
   },
 
   /*
    * Restores a setting for a Nuclide feature key to its default value. Takes and returns the same
    * types as `atom.config.set`.
    */
-  unset(
-    keyPath: string,
-    options?: {
-      scopeSelector?: string;
-      source?: string;
-    }
-  ): void {
-    return atom.config.unset(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
-  },
+  unset: function unset(keyPath, options) {
+    var _atom$config6;
+
+    return (_atom$config6 = atom.config).unset.apply(_atom$config6, [formatKeyPath(keyPath)].concat(_toConsumableArray(Array.prototype.slice.call(arguments, 1))));
+  }
 };

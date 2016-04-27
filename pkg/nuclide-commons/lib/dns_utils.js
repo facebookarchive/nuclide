@@ -1,5 +1,17 @@
-'use babel';
-/* @flow */
+var lookupPreferIpv6 = _asyncToGenerator(function* (host) {
+  try {
+    return yield lookup(host, 6);
+  } catch (e) {
+    if (e.code === 'ENOTFOUND') {
+      return yield lookup(host, 4);
+    }
+    throw e;
+  }
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +21,13 @@
  * the root directory of this source tree.
  */
 
-import dns from 'dns';
+var _dns = require('dns');
 
-type DnsFamily = 4 | 6;
+var _dns2 = _interopRequireDefault(_dns);
 
-async function lookupPreferIpv6(host: string): Promise<string> {
-  try {
-    return await lookup(host, 6);
-  } catch (e) {
-    if (e.code === 'ENOTFOUND') {
-      return await lookup(host, 4);
-    }
-    throw e;
-  }
-}
-
-function lookup(host: string, family: DnsFamily): Promise<string> {
-  return new Promise((resolve, reject) => {
-    dns.lookup(host, family, (error: ?Error, address: ?string) => {
+function lookup(host, family) {
+  return new Promise(function (resolve, reject) {
+    _dns2['default'].lookup(host, family, function (error, address) {
       if (error) {
         reject(error);
       } else if (address != null) {
@@ -39,6 +40,6 @@ function lookup(host: string, family: DnsFamily): Promise<string> {
 }
 
 module.exports = {
-  lookup,
-  lookupPreferIpv6,
+  lookup: lookup,
+  lookupPreferIpv6: lookupPreferIpv6
 };

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var flatten = require('../../utils/flatten');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +10,17 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-const unwrapMarkers = require('../../utils/unwrapMarkers');
+var markers = require('../../constants/markers');
+var unwrapMarkers = require('../../utils/unwrapMarkers');
 
 /**
  * Adds parenthesis and the appropriate markers to a set of lines. It also moves
  * any leading and trailing markers outside of the parenthesis.
  */
-function wrapExpression(print: Print, node: any, lines: Lines): Lines {
+function wrapExpression(print, node, lines) {
   lines = flatten(lines);
   if (node.parenthesizedExpression) {
-    lines = unwrapMarkers(
-      [
-        '(',
-        markers.openScope,
-        markers.scopeIndent,
-        markers.scopeBreak,
-      ],
-      lines,
-      [
-        markers.scopeBreak,
-        markers.scopeDedent,
-        markers.closeScope,
-        ')',
-      ],
-    );
+    lines = unwrapMarkers(['(', markers.openScope, markers.scopeIndent, markers.scopeBreak], lines, [markers.scopeBreak, markers.scopeDedent, markers.closeScope, ')']);
   }
   return lines;
 }

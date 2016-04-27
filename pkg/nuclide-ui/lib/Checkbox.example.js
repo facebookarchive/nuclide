@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,67 +10,80 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {Block} from './Block';
-import {Checkbox} from './Checkbox';
+var _reactForAtom = require('react-for-atom');
 
-const NOOP = () => {};
+var _Block = require('./Block');
 
-const CheckboxExample = (): React.Element => (
-  <div>
-    <Block>
-      <Checkbox
-        checked={false}
-        onClick={NOOP}
-        onChange={NOOP}
-        label="A Checkbox."
-      />
-    </Block>
-    <Block>
-      <Checkbox
-        onClick={NOOP}
-        onChange={NOOP}
-        checked={true}
-        label="A checked Checkbox."
-      />
-    </Block>
-    <Block>
-      <Checkbox
-        onClick={NOOP}
-        onChange={NOOP}
-        disabled={true}
-        checked={false}
-        label="A disabled Checkbox."
-      />
-    </Block>
-    <Block>
-      <Checkbox
-        onClick={NOOP}
-        onChange={NOOP}
-        checked={true}
-        disabled={true}
-        label="A disabled, checked Checkbox."
-      />
-    </Block>
-    <Block>
-      <Checkbox
-        onClick={NOOP}
-        onChange={NOOP}
-        indeterminate={true}
-        checked={false}
-        label="An indeterminate Checkbox."
-      />
-    </Block>
-  </div>
-);
+var _Checkbox = require('./Checkbox');
 
-export const CheckboxExamples = {
+var NOOP = function NOOP() {};
+
+var CheckboxExample = function CheckboxExample() {
+  return _reactForAtom.React.createElement(
+    'div',
+    null,
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(_Checkbox.Checkbox, {
+        checked: false,
+        onClick: NOOP,
+        onChange: NOOP,
+        label: 'A Checkbox.'
+      })
+    ),
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(_Checkbox.Checkbox, {
+        onClick: NOOP,
+        onChange: NOOP,
+        checked: true,
+        label: 'A checked Checkbox.'
+      })
+    ),
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(_Checkbox.Checkbox, {
+        onClick: NOOP,
+        onChange: NOOP,
+        disabled: true,
+        checked: false,
+        label: 'A disabled Checkbox.'
+      })
+    ),
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(_Checkbox.Checkbox, {
+        onClick: NOOP,
+        onChange: NOOP,
+        checked: true,
+        disabled: true,
+        label: 'A disabled, checked Checkbox.'
+      })
+    ),
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(_Checkbox.Checkbox, {
+        onClick: NOOP,
+        onChange: NOOP,
+        indeterminate: true,
+        checked: false,
+        label: 'An indeterminate Checkbox.'
+      })
+    )
+  );
+};
+
+var CheckboxExamples = {
   sectionName: 'Checkbox',
   description: '',
-  examples: [
-    {
-      title: '',
-      component: CheckboxExample,
-    },
-  ],
+  examples: [{
+    title: '',
+    component: CheckboxExample
+  }]
 };
+exports.CheckboxExamples = CheckboxExamples;

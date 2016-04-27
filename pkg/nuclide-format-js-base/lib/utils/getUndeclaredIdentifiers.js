@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +8,18 @@
  * the root directory of this source tree.
  */
 
-import type {Collection} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
-
-const getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
-const getNonDeclarationIdentifiers = require('./getNonDeclarationIdentifiers');
+var getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
+var getNonDeclarationIdentifiers = require('./getNonDeclarationIdentifiers');
 
 /**
  * This will get a list of all identifiers that are used but undeclared.
  */
-function getUndeclaredIdentifiers(
-  root: Collection,
-  options: SourceOptions
-): Set<string> {
-  const declared = getDeclaredIdentifiers(root, options);
-  const undeclared = getNonDeclarationIdentifiers(root);
+function getUndeclaredIdentifiers(root, options) {
+  var declared = getDeclaredIdentifiers(root, options);
+  var undeclared = getNonDeclarationIdentifiers(root);
   // now remove anything that was declared
-  for (const name of declared) {
-    undeclared.delete(name);
+  for (var _name of declared) {
+    undeclared['delete'](_name);
   }
   return undeclared;
 }

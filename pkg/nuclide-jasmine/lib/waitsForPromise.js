@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +8,15 @@
  * the root directory of this source tree.
  */
 
-const invariant = require('assert');
+var invariant = require('assert');
 
-type WaitsForPromiseOptions = {
-  shouldReject?: boolean;
-  timeout?: number;
-};
+function waitsForPromise() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
 
-function waitsForPromise(...args: Array<WaitsForPromiseOptions | () => Promise<mixed>>): void {
-  let shouldReject;
-  let timeout;
+  var shouldReject = undefined;
+  var timeout = undefined;
   if (args.length > 1) {
     shouldReject = args[0].shouldReject;
     timeout = args[0].timeout;
@@ -27,35 +25,35 @@ function waitsForPromise(...args: Array<WaitsForPromiseOptions | () => Promise<m
     timeout = 0;
   }
 
-  let finished = false;
+  var finished = false;
 
-  runs(() => {
-    const fn = args[args.length - 1];
+  runs(function () {
+    var fn = args[args.length - 1];
     invariant(typeof fn === 'function');
-    const promise = fn();
+    var promise = fn();
     if (shouldReject) {
-      promise.then(() => {
-        jasmine.getEnv().currentSpec.fail(
-          'Expected promise to be rejected, but it was resolved');
-      }, () => {
+      promise.then(function () {
+        jasmine.getEnv().currentSpec.fail('Expected promise to be rejected, but it was resolved');
+      }, function () {
         // Do nothing, it's expected.
-      }).then(() => {
+      }).then(function () {
         finished = true;
       });
     } else {
-      promise.then(() => {
+      promise.then(function () {
         // Do nothing, it's expected.
-      }, error => {
-        const text = error ? (error.stack || error.toString()) : 'undefined';
-        jasmine.getEnv().currentSpec.fail(
-          `Expected promise to be resolved, but it was rejected with ${text}`);
-      }).then(() => {
+      }, function (error) {
+        var text = error ? error.stack || error.toString() : 'undefined';
+        jasmine.getEnv().currentSpec.fail('Expected promise to be resolved, but it was rejected with ' + text);
+      }).then(function () {
         finished = true;
       });
     }
   });
 
-  waitsFor(timeout, () => finished);
+  waitsFor(timeout, function () {
+    return finished;
+  });
 }
 
 module.exports = waitsForPromise;

@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.mkdir = mkdir;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +13,20 @@
  * the root directory of this source tree.
  */
 
-import temp from 'temp';
+var _temp = require('temp');
+
+var _temp2 = _interopRequireDefault(_temp);
 
 // Automatically track and cleanup files at exit.
-const tempWithAutoCleanup = temp.track();
+var tempWithAutoCleanup = _temp2['default'].track();
 
 /**
  * Creates a temporary directory with the given name.
  */
-export function mkdir(dirname: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    tempWithAutoCleanup.mkdir(dirname, (err: ?Error, dirPath) => {
+
+function mkdir(dirname) {
+  return new Promise(function (resolve, reject) {
+    tempWithAutoCleanup.mkdir(dirname, function (err, dirPath) {
       if (err) {
         reject(err);
       } else {

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +8,40 @@
  * the root directory of this source tree.
  */
 
-import type Commands from './Commands';
-import type {Gadget} from '../../nuclide-gadgets-interfaces';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-import {Disposable} from 'atom';
+var _atom = require('atom');
 
-class GadgetsService {
+var GadgetsService = (function () {
+  function GadgetsService(commands) {
+    _classCallCheck(this, GadgetsService);
 
-  _commands: Commands;
-
-  constructor(commands: Commands) {
     this._commands = commands;
   }
 
-  destroyGadget(gadgetId: string): void {
-    this._commands.destroyGadget(gadgetId);
-  }
+  _createClass(GadgetsService, [{
+    key: 'destroyGadget',
+    value: function destroyGadget(gadgetId) {
+      this._commands.destroyGadget(gadgetId);
+    }
+  }, {
+    key: 'registerGadget',
+    value: function registerGadget(gadget) {
+      var _this = this;
 
-  registerGadget(gadget: Gadget): IDisposable {
-    this._commands.registerGadget(gadget);
-    return new Disposable(() => {
-      this._commands.unregisterGadget(gadget.gadgetId);
-    });
-  }
+      this._commands.registerGadget(gadget);
+      return new _atom.Disposable(function () {
+        _this._commands.unregisterGadget(gadget.gadgetId);
+      });
+    }
+  }, {
+    key: 'showGadget',
+    value: function showGadget(gadgetId) {
+      this._commands.showGadget(gadgetId);
+    }
+  }]);
 
-  showGadget(gadgetId: string): void {
-    this._commands.showGadget(gadgetId);
-  }
-
-}
+  return GadgetsService;
+})();
 
 module.exports = GadgetsService;

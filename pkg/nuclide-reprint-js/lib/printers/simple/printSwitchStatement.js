@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +8,17 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {SwitchStatement} from 'ast-types-flow';
+var markers = require('../../constants/markers');
+var wrapStatement = require('../../wrappers/simple/wrapStatement');
 
-const markers = require('../../constants/markers');
-const wrapStatement = require('../../wrappers/simple/wrapStatement');
-
-function printSwitchStatement(print: Print, node: SwitchStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
-  return wrap([
-    markers.hardBreak,
-    'switch (',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    print(node.discriminant),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-    ') {',
-    markers.hardBreak,
-    markers.indent,
-    node.cases.map(caseNode => print(caseNode)),
-    markers.noBreak, // Squash the last breaks.
-    '',
-    markers.dedent,
-    markers.hardBreak,
-    '}',
-  ]);
+function printSwitchStatement(print, node) {
+  var wrap = function wrap(x) {
+    return wrapStatement(print, node, x);
+  };
+  return wrap([markers.hardBreak, 'switch (', markers.openScope, markers.scopeIndent, markers.scopeBreak, print(node.discriminant), markers.scopeBreak, markers.scopeDedent, markers.closeScope, ') {', markers.hardBreak, markers.indent, node.cases.map(function (caseNode) {
+    return print(caseNode);
+  }), markers.noBreak, // Squash the last breaks.
+  '', markers.dedent, markers.hardBreak, '}']);
 }
 
 module.exports = printSwitchStatement;

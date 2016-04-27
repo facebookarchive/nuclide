@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.remove = remove;
+exports.equal = equal;
+exports.compact = compact;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +13,33 @@
  * the root directory of this source tree.
  */
 
-export function remove<T>(array: Array<T>, element: T): void {
-  const index = array.indexOf(element);
+function remove(array, element) {
+  var index = array.indexOf(element);
   if (index >= 0) {
     array.splice(index, 1);
   }
 }
 
-export function equal<T>(
-  array1: Array<T>,
-  array2: Array<T>,
-  equalComparator?: (a: T, b: T) => boolean,
-): boolean {
+function equal(array1, array2, equalComparator) {
   if (array1.length !== array2.length) {
     return false;
   }
-  const equalFunction = equalComparator || ((a: T,  b: T) => a === b);
-  return array1.every((item1, i) => equalFunction(item1, array2[i]));
+  var equalFunction = equalComparator || function (a, b) {
+    return a === b;
+  };
+  return array1.every(function (item1, i) {
+    return equalFunction(item1, array2[i]);
+  });
 }
 
 /**
  * Returns a copy of the input Array with all `null` and `undefined` values filtered out.
  * Allows Flow to typecheck the common `filter(x => x != null)` pattern.
  */
-export function compact<T>(array: Array<?T>): Array<T> {
-  const result = [];
-  for (const elem of array) {
+
+function compact(array) {
+  var result = [];
+  for (var elem of array) {
     if (elem != null) {
       result.push(elem);
     }

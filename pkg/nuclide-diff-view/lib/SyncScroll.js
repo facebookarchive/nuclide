@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,59 +14,70 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
+var _atom = require('atom');
 
-export default class SyncScroll {
+var SyncScroll = (function () {
+  function SyncScroll(editor1Element, editor2Element) {
+    var _this = this;
 
-  _subscriptions: ?CompositeDisposable;
-  _syncInfo: Array<{
-    scrollElement: atom$TextEditorElement;
-    scrolling: boolean;
-  }>;
+    _classCallCheck(this, SyncScroll);
 
-  constructor(editor1Element: atom$TextEditorElement, editor2Element: atom$TextEditorElement) {
     // Atom master or >= v1.0.18 have changed the scroll logic to the editor element.
-    const subscriptions = this._subscriptions = new CompositeDisposable();
+    var subscriptions = this._subscriptions = new _atom.CompositeDisposable();
     this._syncInfo = [{
       scrollElement: editor1Element,
-      scrolling: false,
+      scrolling: false
     }, {
       scrollElement: editor2Element,
-      scrolling: false,
+      scrolling: false
     }];
-    this._syncInfo.forEach((editorInfo, i) => {
+    this._syncInfo.forEach(function (editorInfo, i) {
       // Note that `onDidChangeScrollTop` isn't technically in the public API.
-      const {scrollElement} = editorInfo;
-      const updateScrollPosition = () => this._scrollPositionChanged(i);
+      var scrollElement = editorInfo.scrollElement;
+
+      var updateScrollPosition = function updateScrollPosition() {
+        return _this._scrollPositionChanged(i);
+      };
       subscriptions.add(scrollElement.onDidChangeScrollTop(updateScrollPosition));
       subscriptions.add(scrollElement.onDidChangeScrollLeft(updateScrollPosition));
     });
   }
 
-  _scrollPositionChanged(changeScrollIndex: number): void {
-    const thisInfo  = this._syncInfo[changeScrollIndex];
-    if (thisInfo.scrolling) {
-      return;
-    }
-    const otherInfo = this._syncInfo[1 - changeScrollIndex];
-    const {scrollElement: otherElement} = otherInfo;
-    if (otherElement.component == null) {
-      // The other editor isn't yet attached,
-      // while both editors were already in sync when attached.
-      return;
-    }
-    const {scrollElement: thisElement} = thisInfo;
-    otherInfo.scrolling = true;
-    otherElement.setScrollTop(thisElement.getScrollTop());
-    // $FlowFixMe Atom API backword compatability.
-    otherElement.setScrollLeft(thisElement.getScrollLeft());
-    otherInfo.scrolling = false;
-  }
+  _createClass(SyncScroll, [{
+    key: '_scrollPositionChanged',
+    value: function _scrollPositionChanged(changeScrollIndex) {
+      var thisInfo = this._syncInfo[changeScrollIndex];
+      if (thisInfo.scrolling) {
+        return;
+      }
+      var otherInfo = this._syncInfo[1 - changeScrollIndex];
+      var otherElement = otherInfo.scrollElement;
 
-  dispose(): void {
-    if (this._subscriptions) {
-      this._subscriptions.dispose();
-      this._subscriptions = null;
+      if (otherElement.component == null) {
+        // The other editor isn't yet attached,
+        // while both editors were already in sync when attached.
+        return;
+      }
+      var thisElement = thisInfo.scrollElement;
+
+      otherInfo.scrolling = true;
+      otherElement.setScrollTop(thisElement.getScrollTop());
+      // $FlowFixMe Atom API backword compatability.
+      otherElement.setScrollLeft(thisElement.getScrollLeft());
+      otherInfo.scrolling = false;
     }
-  }
-}
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      if (this._subscriptions) {
+        this._subscriptions.dispose();
+        this._subscriptions = null;
+      }
+    }
+  }]);
+
+  return SyncScroll;
+})();
+
+exports['default'] = SyncScroll;
+module.exports = exports['default'];

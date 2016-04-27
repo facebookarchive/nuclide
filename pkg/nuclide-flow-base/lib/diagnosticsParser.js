@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,90 +10,22 @@
  * the root directory of this source tree.
  */
 
-import type {
-  Diagnostics,
-  Diagnostic,
-  MessageComponent,
-  Range,
-} from '..';
-
 // Types for the old `flow status` output -- v0.22 and below
 
-type OldFlowStatusOutput = {
-  passed: boolean;
-  // This is not actually the Flow version; instead it is a build ID or something.
-  version?: string;
-  errors: Array<OldFlowStatusError>;
-};
-
-type OldFlowStatusError = {
-  kind: string;
-  operation?: OldFlowStatusErrorOperation;
-  message: Array<OldFlowStatusErrorMessageComponent>;
-};
-
-type OldBaseFlowStatusErrorMessageComponent = {
-  // If there is no path component, this is the empty string. We should make it null instead, in
-  // that case (t8644340)
-  path: string;
-  descr: string;
-  line: number;
-  start: number;
-  end: number;
-  endline: number;
-};
-
-type OldFlowStatusErrorMessageComponent = OldBaseFlowStatusErrorMessageComponent & {
-  level: 'error' | 'warning';
-};
-
 // Same as FlowStatusErrorMessageComponent, except without the 'level' field.
-type OldFlowStatusErrorOperation = OldBaseFlowStatusErrorMessageComponent;
 
 // New types for `flow status` v0.23.0 (or possibly v0.24.0, it has yet to be finalized)
 
-type NewFlowStatusOutput = {
-  passed: boolean;
-  flowVersion: string;
-  errors: Array<NewFlowStatusError>;
-};
+// There is also an `extra` field where additional details about certain kinds of errors are
+// provided. For now we will ignore these details.
 
-type NewFlowStatusError = {
-  level: 'error' | 'warning';
-  // e.g. parse, infer, maybe others?
-  kind: string;
-  message: Array<NewFlowStatusErrorMessageComponent>;
-  operation?: NewFlowStatusErrorMessageComponent;
+// The old path, line, etc. fields also currently exist here, but they are deprecated in favor of
+// `loc`.
+exports.flowStatusOutputToDiagnostics = flowStatusOutputToDiagnostics;
+exports.oldFlowStatusOutputToDiagnostics = oldFlowStatusOutputToDiagnostics;
+exports.newFlowStatusOutputToDiagnostics = newFlowStatusOutputToDiagnostics;
 
-  // There is also an `extra` field where additional details about certain kinds of errors are
-  // provided. For now we will ignore these details.
-};
-
-type NewFlowStatusErrorMessageComponent = {
-  descr: string;
-  loc?: FlowLoc;
-  // The old path, line, etc. fields also currently exist here, but they are deprecated in favor of
-  // `loc`.
-};
-
-type FlowLoc = {
-  // file path
-  source: string;
-  start: FlowPoint;
-  end: FlowPoint;
-};
-
-type FlowPoint = {
-  column: number;
-  line: number;
-  // total character offset
-  offset: number;
-};
-
-export function flowStatusOutputToDiagnostics(
-  root: string,
-  statusOutput: Object,
-): Diagnostics {
+function flowStatusOutputToDiagnostics(root, statusOutput) {
   if (statusOutput['flowVersion'] != null) {
     return newFlowStatusOutputToDiagnostics(root, statusOutput);
   } else {
@@ -100,44 +33,37 @@ export function flowStatusOutputToDiagnostics(
   }
 }
 
-export function oldFlowStatusOutputToDiagnostics(
-  root: string,
-  statusOutput: OldFlowStatusOutput,
-): Diagnostics {
-  const errors: Array<OldFlowStatusError> = statusOutput['errors'];
-  const messages: Array<Diagnostic> = errors.map((flowStatusError: OldFlowStatusError) => {
-    const flowMessageComponents: Array<OldFlowStatusErrorMessageComponent> =
-      flowStatusError['message'];
-    const level = flowMessageComponents[0]['level'];
+function oldFlowStatusOutputToDiagnostics(root, statusOutput) {
+  var errors = statusOutput['errors'];
+  var messages = errors.map(function (flowStatusError) {
+    var flowMessageComponents = flowStatusError['message'];
+    var level = flowMessageComponents[0]['level'];
 
-    const messageComponents: Array<MessageComponent> =
-      flowMessageComponents.map(flowMessageComponentToMessageComponent);
-    const operation = flowStatusError['operation'];
+    var messageComponents = flowMessageComponents.map(flowMessageComponentToMessageComponent);
+    var operation = flowStatusError['operation'];
     if (operation != null) {
       // The operation field provides additional context. I don't fully understand the motivation
       // behind separating it out, but prepending it with 'See also: ' and adding it to the end of
       // the messages is what the Flow team recommended.
-      const operationComponent = flowMessageComponentToMessageComponent(operation);
+      var operationComponent = flowMessageComponentToMessageComponent(operation);
       operationComponent.descr = 'See also: ' + operationComponent.descr;
       messageComponents.push(operationComponent);
     }
     return {
-      level,
-      messageComponents,
+      level: level,
+      messageComponents: messageComponents
     };
   });
 
   return {
     flowRoot: root,
-    messages: messages,
+    messages: messages
   };
 }
 
-function flowMessageComponentToMessageComponent(
-  component: OldBaseFlowStatusErrorMessageComponent,
-): MessageComponent {
-  const path = component.path;
-  let range = null;
+function flowMessageComponentToMessageComponent(component) {
+  var path = component.path;
+  var range = null;
 
   // Flow returns the empty string instead of null when there is no relevant path. The upcoming
   // format changes described elsewhere in this file fix the issue, but for now we must still work
@@ -147,74 +73,78 @@ function flowMessageComponentToMessageComponent(
       file: path,
       start: {
         line: component.line,
-        column: component.start,
+        column: component.start
       },
       end: {
         line: component.endline,
-        column: component.end,
-      },
+        column: component.end
+      }
     };
   }
   return {
     descr: component.descr,
-    range,
+    range: range
   };
 }
 
-export function newFlowStatusOutputToDiagnostics(
-  root: string,
-  statusOutput: NewFlowStatusOutput,
-): Diagnostics {
-  const errors: Array<NewFlowStatusError> = statusOutput.errors;
-  const messages: Array<Diagnostic> = errors.map((flowStatusError: NewFlowStatusError) => {
-    const flowMessageComponents: Array<NewFlowStatusErrorMessageComponent> =
-      flowStatusError.message;
-    const level = flowStatusError.level;
+function newFlowStatusOutputToDiagnostics(root, statusOutput) {
+  var errors = statusOutput.errors;
+  var messages = errors.map(function (flowStatusError) {
+    var flowMessageComponents = flowStatusError.message;
+    var level = flowStatusError.level;
 
-    const messageComponents: Array<MessageComponent> =
-      flowMessageComponents.map(newFlowMessageComponentToMessageComponent);
-    const operation = flowStatusError.operation;
+    var messageComponents = flowMessageComponents.map(newFlowMessageComponentToMessageComponent);
+    var operation = flowStatusError.operation;
     if (operation != null) {
-      const operationComponent = newFlowMessageComponentToMessageComponent(operation);
+      var operationComponent = newFlowMessageComponentToMessageComponent(operation);
       operationComponent.descr = 'See also: ' + operationComponent.descr;
       messageComponents.push(operationComponent);
     }
 
     return {
-      level,
-      messageComponents,
+      level: level,
+      messageComponents: messageComponents
     };
   });
 
   return {
     flowRoot: root,
-    messages,
+    messages: messages
   };
 }
 
-function newFlowMessageComponentToMessageComponent(
-  component: NewFlowStatusErrorMessageComponent,
-): MessageComponent {
+function newFlowMessageComponentToMessageComponent(component) {
   return {
     descr: component.descr,
-    range: maybeFlowLocToRange(component.loc),
+    range: maybeFlowLocToRange(component.loc)
   };
 }
 
-function maybeFlowLocToRange(loc: ?FlowLoc): ?Range {
+function maybeFlowLocToRange(loc) {
   return loc == null ? null : flowLocToRange(loc);
 }
 
-function flowLocToRange(loc: FlowLoc): Range {
+function flowLocToRange(loc) {
   return {
     file: loc.source,
     start: {
       line: loc.start.line,
-      column: loc.start.column,
+      column: loc.start.column
     },
     end: {
       line: loc.end.line,
-      column: loc.end.column,
-    },
+      column: loc.end.column
+    }
   };
 }
+
+// This is not actually the Flow version; instead it is a build ID or something.
+
+// If there is no path component, this is the empty string. We should make it null instead, in
+// that case (t8644340)
+
+// e.g. parse, infer, maybe others?
+
+// file path
+
+// total character offset

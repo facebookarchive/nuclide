@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +8,7 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {NumberTypeAnnotation} from 'ast-types-flow';
-
-function printNumberTypeAnnotation(
-  print: Print,
-  node: NumberTypeAnnotation,
-): Lines {
+function printNumberTypeAnnotation(print, node) {
   return ['number'];
 }
 

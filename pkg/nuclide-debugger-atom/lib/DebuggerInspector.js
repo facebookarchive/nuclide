@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+var _nuclideUiLibButton = require('../../nuclide-ui/lib/Button');
+
+/**
+ * Wrapper for Chrome Devtools frontend view.
+ */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +12,23 @@
  * the root directory of this source tree.
  */
 
-const BreakpointStore = require('./BreakpointStore');
-const Bridge = require('./Bridge');
-const DebuggerActions = require('./DebuggerActions');
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
-const {PropTypes} = React;
-const path = require('path');
-const {PanelComponent} = require('../../nuclide-ui/lib/PanelComponent');
-import {
-  Button,
-  ButtonTypes,
-} from '../../nuclide-ui/lib/Button';
+var BreakpointStore = require('./BreakpointStore');
+var Bridge = require('./Bridge');
+var DebuggerActions = require('./DebuggerActions');
 
-/**
- * Wrapper for Chrome Devtools frontend view.
- */
-const DebuggerInspector = React.createClass({
-  _webviewNode: (null: ?Object),
+var _require = require('react-for-atom');
+
+var React = _require.React;
+var ReactDOM = _require.ReactDOM;
+var PropTypes = React.PropTypes;
+
+var path = require('path');
+
+var _require2 = require('../../nuclide-ui/lib/PanelComponent');
+
+var PanelComponent = _require2.PanelComponent;
+var DebuggerInspector = React.createClass({
+  _webviewNode: null,
 
   displayName: 'DebuggerInspector',
 
@@ -36,74 +36,78 @@ const DebuggerInspector = React.createClass({
     actions: PropTypes.instanceOf(DebuggerActions).isRequired,
     breakpointStore: PropTypes.instanceOf(BreakpointStore).isRequired,
     socket: PropTypes.string.isRequired,
-    bridge: PropTypes.instanceOf(Bridge).isRequired,
+    bridge: PropTypes.instanceOf(Bridge).isRequired
   },
 
-  render(): ?React.Element {
-    return (
-      <PanelComponent initialLength={500} dock="right">
-        <div className="inspector">
-          <div className="control-bar" ref="controlBar">
-            <Button
-              title="Detach from the current process."
-              icon="x"
-              buttonType={ButtonTypes.ERROR}
-              onClick={this._handleClickClose}
-            />
-            <Button
-              title="(Debug) Open Web Inspector for the debugger frame."
-              icon="gear"
-              onClick={this._handleClickDevTools}
-            />
-          </div>
-        </div>
-      </PanelComponent>
+  render: function render() {
+    return React.createElement(
+      PanelComponent,
+      { initialLength: 500, dock: 'right' },
+      React.createElement(
+        'div',
+        { className: 'inspector' },
+        React.createElement(
+          'div',
+          { className: 'control-bar', ref: 'controlBar' },
+          React.createElement(_nuclideUiLibButton.Button, {
+            title: 'Detach from the current process.',
+            icon: 'x',
+            buttonType: _nuclideUiLibButton.ButtonTypes.ERROR,
+            onClick: this._handleClickClose
+          }),
+          React.createElement(_nuclideUiLibButton.Button, {
+            title: '(Debug) Open Web Inspector for the debugger frame.',
+            icon: 'gear',
+            onClick: this._handleClickDevTools
+          })
+        )
+      )
     );
   },
 
-  componentDidMount() {
+  componentDidMount: function componentDidMount() {
     // Cast from HTMLElement down to WebviewElement without instanceof
     // checking, as WebviewElement constructor is not exposed.
-    const webviewNode = ((document.createElement('webview'): any): WebviewElement);
+    var webviewNode = document.createElement('webview');
     webviewNode.src = this._getUrl();
     webviewNode.nodeintegration = true;
     webviewNode.disablewebsecurity = true;
     webviewNode.classList.add('native-key-bindings'); // required to pass through certain key events
     webviewNode.classList.add('nuclide-debugger-webview');
     this._webviewNode = webviewNode;
-    const controlBarNode = ReactDOM.findDOMNode(this.refs.controlBar);
+    var controlBarNode = ReactDOM.findDOMNode(this.refs.controlBar);
     controlBarNode.parentNode.insertBefore(webviewNode, controlBarNode.nextSibling);
     this.props.bridge.setWebviewElement(webviewNode);
   },
 
-  componentDidUpdate() {
-    const webviewNode = this._webviewNode;
+  componentDidUpdate: function componentDidUpdate() {
+    var webviewNode = this._webviewNode;
     if (webviewNode) {
       webviewNode.src = this._getUrl();
     }
   },
 
-  componentWillUnmount() {
+  componentWillUnmount: function componentWillUnmount() {
     if (this.props.bridge) {
       this.props.bridge.cleanup();
     }
     this._webviewNode = null;
   },
 
-  _getUrl(): string {
-    return `${path.join(__dirname, '../scripts/inspector.html')}?${this.props.socket}`;
+  _getUrl: function _getUrl() {
+    return path.join(__dirname, '../scripts/inspector.html') + '?' + this.props.socket;
   },
 
-  _handleClickClose() {
+  _handleClickClose: function _handleClickClose() {
     this.props.actions.stopDebugging();
   },
 
-  _handleClickDevTools() {
-    const webviewNode = this._webviewNode;
+  _handleClickDevTools: function _handleClickDevTools() {
+    var webviewNode = this._webviewNode;
     if (webviewNode) {
       webviewNode.openDevTools();
     }
-  },
+  }
 });
 
 module.exports = DebuggerInspector;

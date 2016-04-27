@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var FirstNode = require('../utils/FirstNode');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,87 +10,78 @@
  * the root directory of this source tree.
  */
 
-import type {Collection, Node, NodePath} from '../types/ast';
+var NewLine = require('../utils/NewLine');
 
-const FirstNode = require('../utils/FirstNode');
-const NewLine = require('../utils/NewLine');
+var _require = require('../utils/StringUtils');
 
-const {compareStrings, isCapitalized} = require('../utils/StringUtils');
-const hasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
-const isGlobal = require('../utils/isGlobal');
-const isRequireExpression = require('../utils/isRequireExpression');
-const jscs = require('jscodeshift');
-const reprintRequire = require('../utils/reprintRequire');
+var compareStrings = _require.compareStrings;
+var isCapitalized = _require.isCapitalized;
 
-type ConfigEntry = {
-  searchTerms: [any, Object];
-  filters: Array<(path: NodePath) => boolean>;
-  comparator: (node1: Node, node2: Node) => number;
-  mapper: (node: Node) => Node;
-};
+var hasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
+var isGlobal = require('../utils/isGlobal');
+var isRequireExpression = require('../utils/isRequireExpression');
+var jscs = require('jscodeshift');
+var reprintRequire = require('../utils/reprintRequire');
 
 // Set up a config to easily add require formats
-const CONFIG: Array<ConfigEntry> = [
-  // Handle type imports
-  {
-    searchTerms: [
-      jscs.ImportDeclaration,
-      {importKind: 'type'},
-    ],
-    filters: [
-      isGlobal,
-    ],
-    comparator: (node1, node2) => compareStrings(
-      node1.specifiers[0].local.name,
-      node2.specifiers[0].local.name
-    ),
-    mapper: node => reprintRequire(node),
+var CONFIG = [
+// Handle type imports
+{
+  searchTerms: [jscs.ImportDeclaration, { importKind: 'type' }],
+  filters: [isGlobal],
+  comparator: function comparator(node1, node2) {
+    return compareStrings(node1.specifiers[0].local.name, node2.specifiers[0].local.name);
   },
+  mapper: function mapper(node) {
+    return reprintRequire(node);
+  }
+},
 
-  // Handle side effects, e.g: `require('monkey-patches');`
-  {
-    searchTerms: [jscs.ExpressionStatement],
-    filters: [
-      isGlobal,
-      path => isRequireExpression(path.node),
-    ],
-    comparator: (node1, node2) => compareStrings(
-      node1.expression.arguments[0].value,
-      node2.expression.arguments[0].value
-    ),
-    mapper: node => reprintRequire(node),
+// Handle side effects, e.g: `require('monkey-patches');`
+{
+  searchTerms: [jscs.ExpressionStatement],
+  filters: [isGlobal, function (path) {
+    return isRequireExpression(path.node);
+  }],
+  comparator: function comparator(node1, node2) {
+    return compareStrings(node1.expression.arguments[0].value, node2.expression.arguments[0].value);
   },
+  mapper: function mapper(node) {
+    return reprintRequire(node);
+  }
+},
 
-  // Handle UpperCase requires, e.g: `require('UpperCase');`
-  {
-    searchTerms: [jscs.VariableDeclaration],
-    filters: [
-      isGlobal,
-      path => isValidRequireDeclaration(path.node),
-      path => isCapitalized(getDeclarationName(path.node)),
-    ],
-    comparator: (node1, node2) => compareStrings(
-      getDeclarationName(node1),
-      getDeclarationName(node2)
-    ),
-    mapper: node => reprintRequire(node),
+// Handle UpperCase requires, e.g: `require('UpperCase');`
+{
+  searchTerms: [jscs.VariableDeclaration],
+  filters: [isGlobal, function (path) {
+    return isValidRequireDeclaration(path.node);
+  }, function (path) {
+    return isCapitalized(getDeclarationName(path.node));
+  }],
+  comparator: function comparator(node1, node2) {
+    return compareStrings(getDeclarationName(node1), getDeclarationName(node2));
   },
+  mapper: function mapper(node) {
+    return reprintRequire(node);
+  }
+},
 
-  // Handle lowerCase requires, e.g: `require('lowerCase');`
-  {
-    searchTerms: [jscs.VariableDeclaration],
-    filters: [
-      isGlobal,
-      path => isValidRequireDeclaration(path.node),
-      path => !isCapitalized(getDeclarationName(path.node)),
-    ],
-    comparator: (node1, node2) => compareStrings(
-      getDeclarationName(node1),
-      getDeclarationName(node2)
-    ),
-    mapper: node => reprintRequire(node),
+// Handle lowerCase requires, e.g: `require('lowerCase');`
+{
+  searchTerms: [jscs.VariableDeclaration],
+  filters: [isGlobal, function (path) {
+    return isValidRequireDeclaration(path.node);
+  }, function (path) {
+    return !isCapitalized(getDeclarationName(path.node));
+  }],
+  comparator: function comparator(node1, node2) {
+    return compareStrings(getDeclarationName(node1), getDeclarationName(node2));
   },
-];
+  mapper: function mapper(node) {
+    return reprintRequire(node);
+  }
+}];
 
 /**
  * This formats requires based on the left hand side of the require, unless it
@@ -106,58 +98,68 @@ const CONFIG: Array<ConfigEntry> = [
  * are sorted and then the first identifier in each of patterns is used for
  * sorting.
  */
-function formatRequires(root: Collection): void {
-  const first = FirstNode.get(root);
+function formatRequires(root) {
+  var first = FirstNode.get(root);
   if (!first) {
     return;
   }
-  const _first = first; // For flow.
+  var _first = first; // For flow.
 
   // Create groups of requires from each config
-  const nodeGroups = CONFIG.map(config => {
-    const paths = root
-      .find(config.searchTerms[0], config.searchTerms[1])
-      .filter(path => config.filters.every(filter => filter(path)));
+  var nodeGroups = CONFIG.map(function (config) {
+    var paths = root.find(config.searchTerms[0], config.searchTerms[1]).filter(function (path) {
+      return config.filters.every(function (filter) {
+        return filter(path);
+      });
+    });
 
     // Save the underlying nodes before removing the paths
-    const nodes = paths.nodes().slice();
-    paths.forEach(path => jscs(path).remove());
-    return nodes.map(node => config.mapper(node)).sort(config.comparator);
+    var nodes = paths.nodes().slice();
+    paths.forEach(function (path) {
+      return jscs(path).remove();
+    });
+    return nodes.map(function (node) {
+      return config.mapper(node);
+    }).sort(config.comparator);
   });
 
   // Build all the nodes we want to insert, then add them
-  const allGroups = [[NewLine.statement]];
-  nodeGroups.forEach(group => allGroups.push(group, [NewLine.statement]));
-  const nodesToInsert = Array.prototype.concat.apply([], allGroups);
-  nodesToInsert.reverse().forEach(node => _first.insertBefore(node));
+  var allGroups = [[NewLine.statement]];
+  nodeGroups.forEach(function (group) {
+    return allGroups.push(group, [NewLine.statement]);
+  });
+  var nodesToInsert = Array.prototype.concat.apply([], allGroups);
+  nodesToInsert.reverse().forEach(function (node) {
+    return _first.insertBefore(node);
+  });
 }
 
 /**
  * Tests if a variable declaration is a valid require declaration.
  */
-function isValidRequireDeclaration(node: Node): boolean {
+function isValidRequireDeclaration(node) {
   if (!hasOneRequireDeclaration(node)) {
     return false;
   }
-  const declaration = node.declarations[0];
+  var declaration = node.declarations[0];
   if (jscs.Identifier.check(declaration.id)) {
     return true;
   }
   if (jscs.ObjectPattern.check(declaration.id)) {
-    return declaration.id.properties.every(
-      prop => prop.shorthand && jscs.Identifier.check(prop.key)
-    );
+    return declaration.id.properties.every(function (prop) {
+      return prop.shorthand && jscs.Identifier.check(prop.key);
+    });
   }
   if (jscs.ArrayPattern.check(declaration.id)) {
-    return declaration.id.elements.every(
-      element => jscs.Identifier.check(element)
-    );
+    return declaration.id.elements.every(function (element) {
+      return jscs.Identifier.check(element);
+    });
   }
   return false;
 }
 
-function getDeclarationName(node: Node): string {
-  const declaration = node.declarations[0];
+function getDeclarationName(node) {
+  var declaration = node.declarations[0];
   if (jscs.Identifier.check(declaration.id)) {
     return declaration.id.name;
   }

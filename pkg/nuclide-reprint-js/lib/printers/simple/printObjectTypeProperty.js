@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +8,12 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {ObjectTypeProperty} from 'ast-types-flow';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printObjectTypeProperty(
-  print: Print,
-  node: ObjectTypeProperty,
-): Lines {
+function printObjectTypeProperty(print, node) {
   // TODO: What does static mean here?
-  return flatten([
-    print(node.key),
-    markers.noBreak,
-    node.optional ? '?:' : ':',
-    markers.noBreak,
-    markers.space,
-    print(node.value),
-  ]);
+  return flatten([print(node.key), markers.noBreak, node.optional ? '?:' : ':', markers.noBreak, markers.space, print(node.value)]);
 }
 
 module.exports = printObjectTypeProperty;

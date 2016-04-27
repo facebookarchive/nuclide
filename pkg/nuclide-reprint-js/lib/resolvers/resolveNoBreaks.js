@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +8,33 @@
  * the root directory of this source tree.
  */
 
-const buildRuns = require('../utils/buildRuns');
-const buildScopes = require('../utils/buildScopes');
-const invariant = require('assert');
-const isScopeBreakMarker = require('../utils/isScopeBreakMarker');
-const isScopeMarker = require('../utils/isScopeMarker');
-const markers = require('../constants/markers');
+var buildRuns = require('../utils/buildRuns');
+var buildScopes = require('../utils/buildScopes');
+var invariant = require('assert');
+var isScopeBreakMarker = require('../utils/isScopeBreakMarker');
+var isScopeMarker = require('../utils/isScopeMarker');
+var markers = require('../constants/markers');
 
 /**
  * This squashes all no break markers and any nearby breaks.
  */
-function resolveNoBreaks(lines: Array<any>): Array<any> {
-  const scopes = buildScopes(lines);
-  const runs = buildRuns(lines);
+function resolveNoBreaks(lines) {
+  var scopes = buildScopes(lines);
+  var runs = buildRuns(lines);
 
-  const kill = new Set();
-  const killScopes = new Set();
+  var kill = new Set();
+  var killScopes = new Set();
 
-  for (const run of runs) {
-    const [start, end] = run;
-    let hasNoBreak = false;
+  for (var run of runs) {
+    var _run = _slicedToArray(run, 2);
+
+    var start = _run[0];
+    var end = _run[1];
+
+    var hasNoBreak = false;
 
     // Check for the noBreak.
-    for (let i = start; i < end; i++) {
+    for (var i = start; i < end; i++) {
       if (lines[i] === markers.noBreak) {
         hasNoBreak = true;
         break;
@@ -43,29 +46,25 @@ function resolveNoBreaks(lines: Array<any>): Array<any> {
     }
 
     // Then test what we need to kill.
-    for (let i = start; i < end; i++) {
+    for (var i = start; i < end; i++) {
       if (isScopeBreakMarker(lines[i])) {
         invariant(scopes[i] != null, 'Scope markers must have a scope.');
         killScopes.add(scopes[i]);
-      } else if (
-        lines[i] === markers.noBreak ||
-        lines[i] === markers.hardBreak ||
-        lines[i] === markers.multiHardBreak
-      ) {
+      } else if (lines[i] === markers.noBreak || lines[i] === markers.hardBreak || lines[i] === markers.multiHardBreak) {
         kill.add(i);
       }
     }
   }
 
   // Kill the appropriate scope markers.
-  for (let i = 0; i < lines.length; i++) {
+  for (var i = 0; i < lines.length; i++) {
     if (isScopeMarker(lines[i]) && killScopes.has(scopes[i])) {
       kill.add(i);
     }
   }
 
   // Now do the killing.
-  return lines.map((line, i) => {
+  return lines.map(function (line, i) {
     if (kill.has(i)) {
       if (line === markers.hardBreak) {
         return markers.empty;

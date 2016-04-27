@@ -1,5 +1,20 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _path4 = require('path');
+
+var _path5 = _interopRequireDefault(_path4);
+
+var _url = require('url');
+
+var _url2 = _interopRequireDefault(_url);
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -14,52 +29,18 @@
 //
 // This package creates, queries and decomposes NuclideUris.
 
-export type NuclideUri = string;
+var REMOTE_PATH_URI_PREFIX = 'nuclide://';
 
-type ParsedUrl = {
-  auth: ?string;
-  href: string;
-  host: ?string;
-  hostname: ?string;
-  path: string;
-  pathname: string;
-  port: ?string;
-  protocol: ?string;
-  query: ?any;
-  search: ?string;
-  slashes: ?boolean;
-};
-
-type ParsedRemoteUrl = {
-  auth: ?string;
-  href: string;
-  host: ?string;
-  hostname: string;
-  path: string;
-  pathname: string;
-  port: string;
-  protocol: ?string;
-  query: ?any;
-  search: ?string;
-  slashes: ?boolean;
-};
-
-import invariant from 'assert';
-import pathModule from 'path';
-import url from 'url';
-
-const REMOTE_PATH_URI_PREFIX = 'nuclide://';
-
-function isRemote(uri: NuclideUri): boolean {
+function isRemote(uri) {
   return uri.startsWith(REMOTE_PATH_URI_PREFIX);
 }
 
-function isLocal(uri: NuclideUri): boolean {
+function isLocal(uri) {
   return !isRemote(uri);
 }
 
-function createRemoteUri(hostname: string, remotePort: number, remotePath: string): string {
-  return `nuclide://${hostname}:${remotePort}${remotePath}`;
+function createRemoteUri(hostname, remotePort, remotePath) {
+  return 'nuclide://' + hostname + ':' + remotePort + remotePath;
 }
 
 /**
@@ -80,25 +61,19 @@ function createRemoteUri(hostname: string, remotePort: number, remotePath: strin
  *           ...
  *         }
  */
-function parse(uri: NuclideUri): ParsedUrl {
-  const parsedUri = url.parse(uri);
+function parse(uri) {
+  var parsedUri = _url2['default'].parse(uri);
 
-  invariant(
-    parsedUri.path,
-    `Nuclide URIs must contain paths, '${parsedUri.path}' found while parsing '${uri}'`
-  );
-  let path = parsedUri.path;
+  (0, _assert2['default'])(parsedUri.path, 'Nuclide URIs must contain paths, \'' + parsedUri.path + '\' found while parsing \'' + uri + '\'');
+  var path = parsedUri.path;
   // `url.parse` treates the first '#' character as the beginning of the `hash` attribute. That
   // feature is not used in Nuclide and is instead treated as part of the path.
   if (parsedUri.hash != null) {
     path += parsedUri.hash;
   }
 
-  invariant(
-    parsedUri.pathname,
-    `Nuclide URIs must contain pathnamess, '${parsedUri.pathname}' found while parsing '${uri}'`
-  );
-  let pathname = parsedUri.pathname;
+  (0, _assert2['default'])(parsedUri.pathname, 'Nuclide URIs must contain pathnamess, \'' + parsedUri.pathname + '\' found while parsing \'' + uri + '\'');
+  var pathname = parsedUri.pathname;
   // `url.parse` treates the first '#' character as the beginning of the `hash` attribute. That
   // feature is not used in Nuclide and is instead treated as part of the pathname.
   if (parsedUri.hash != null) {
@@ -118,25 +93,17 @@ function parse(uri: NuclideUri): ParsedUrl {
     protocol: parsedUri.protocol,
     query: parsedUri.query,
     search: parsedUri.search,
-    slashes: parsedUri.slashes,
+    slashes: parsedUri.slashes
   };
 }
 
-function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
+function parseRemoteUri(remoteUri) {
   if (!isRemote(remoteUri)) {
     throw new Error('Expected remote uri. Got ' + remoteUri);
   }
-  const parsedUri = parse(remoteUri);
-  invariant(
-    parsedUri.hostname,
-    `Remote Nuclide URIs must contain hostnames, '${parsedUri.hostname}' found ` +
-    `while parsing '${remoteUri}'`
-  );
-  invariant(
-    parsedUri.port,
-    `Remote Nuclide URIs must have port numbers, '${parsedUri.port}' found ` +
-    `while parsing '${remoteUri}'`
-  );
+  var parsedUri = parse(remoteUri);
+  (0, _assert2['default'])(parsedUri.hostname, 'Remote Nuclide URIs must contain hostnames, \'' + parsedUri.hostname + '\' found ' + ('while parsing \'' + remoteUri + '\''));
+  (0, _assert2['default'])(parsedUri.port, 'Remote Nuclide URIs must have port numbers, \'' + parsedUri.port + '\' found ' + ('while parsing \'' + remoteUri + '\''));
 
   // Explicitly copying object properties appeases Flow's "maybe" type handling. Using the `...`
   // operator causes null/undefined errors, and `Object.assign` bypasses type checking.
@@ -151,86 +118,93 @@ function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
     protocol: parsedUri.protocol,
     query: parsedUri.query,
     search: parsedUri.search,
-    slashes: parsedUri.slashes,
+    slashes: parsedUri.slashes
   };
 }
 
-function getPath(uri: NuclideUri): string {
+function getPath(uri) {
   return parse(uri).path;
 }
 
-function getHostname(remoteUri: NuclideUri): string {
+function getHostname(remoteUri) {
   return parseRemoteUri(remoteUri).hostname;
 }
 
-function getPort(remoteUri: NuclideUri): number {
+function getPort(remoteUri) {
   return Number(parseRemoteUri(remoteUri).port);
 }
 
-function join(uri: NuclideUri, ...relativePath: Array<string>): NuclideUri {
+function join(uri) {
+  for (var _len = arguments.length, relativePath = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    relativePath[_key - 1] = arguments[_key];
+  }
+
   if (isRemote(uri)) {
-    const {hostname, port, path} = parseRemoteUri(uri);
-    relativePath.splice(0, 0, path);
-    return createRemoteUri(
-      hostname,
-      Number(port),
-      pathModule.join.apply(null, relativePath));
+    var _parseRemoteUri = parseRemoteUri(uri);
+
+    var _hostname = _parseRemoteUri.hostname;
+    var _port = _parseRemoteUri.port;
+    var _path = _parseRemoteUri.path;
+
+    relativePath.splice(0, 0, _path);
+    return createRemoteUri(_hostname, Number(_port), _path5['default'].join.apply(null, relativePath));
   } else {
     relativePath.splice(0, 0, uri);
-    return pathModule.join.apply(null, relativePath);
+    return _path5['default'].join.apply(null, relativePath);
   }
 }
 
-function normalize(uri: NuclideUri): NuclideUri {
+function normalize(uri) {
   if (isRemote(uri)) {
-    const {hostname, port, path} = parseRemoteUri(uri);
-    return createRemoteUri(
-      hostname,
-      Number(port),
-      pathModule.normalize(path)
-    );
+    var _parseRemoteUri2 = parseRemoteUri(uri);
+
+    var _hostname2 = _parseRemoteUri2.hostname;
+    var _port2 = _parseRemoteUri2.port;
+    var _path2 = _parseRemoteUri2.path;
+
+    return createRemoteUri(_hostname2, Number(_port2), _path5['default'].normalize(_path2));
   } else {
-    return pathModule.normalize(uri);
+    return _path5['default'].normalize(uri);
   }
 }
 
-function getParent(uri: NuclideUri): NuclideUri {
+function getParent(uri) {
   // TODO: Is this different than dirname?
   return normalize(join(uri, '..'));
 }
 
-function relative(uri: NuclideUri, other: NuclideUri): string {
-  const remote = isRemote(uri);
-  if (remote !== isRemote(other) ||
-      (remote && getHostname(uri) !== getHostname(other))) {
-    throw new Error(`Cannot relative urls on different hosts: ${uri} and ${other}`);
+function relative(uri, other) {
+  var remote = isRemote(uri);
+  if (remote !== isRemote(other) || remote && getHostname(uri) !== getHostname(other)) {
+    throw new Error('Cannot relative urls on different hosts: ' + uri + ' and ' + other);
   }
   if (remote) {
-    return pathModule.relative(getPath(uri), getPath(other));
+    return _path5['default'].relative(getPath(uri), getPath(other));
   } else {
-    return pathModule.relative(uri, other);
+    return _path5['default'].relative(uri, other);
   }
 }
 
 // TODO: Add optional ext parameter
-function basename(uri: NuclideUri): NuclideUri {
+function basename(uri) {
   if (isRemote(uri)) {
-    return pathModule.basename(getPath(uri));
+    return _path5['default'].basename(getPath(uri));
   } else {
-    return pathModule.basename(uri);
+    return _path5['default'].basename(uri);
   }
 }
 
-function dirname(uri: NuclideUri): NuclideUri {
+function dirname(uri) {
   if (isRemote(uri)) {
-    const {hostname, port, path} = parseRemoteUri(uri);
-    return createRemoteUri(
-      hostname,
-      Number(port),
-      pathModule.dirname(path)
-    );
+    var _parseRemoteUri3 = parseRemoteUri(uri);
+
+    var _hostname3 = _parseRemoteUri3.hostname;
+    var _port3 = _parseRemoteUri3.port;
+    var _path3 = _parseRemoteUri3.path;
+
+    return createRemoteUri(_hostname3, Number(_port3), _path5['default'].dirname(_path3));
   } else {
-    return pathModule.dirname(uri);
+    return _path5['default'].dirname(uri);
   }
 }
 
@@ -240,9 +214,10 @@ function dirname(uri: NuclideUri): NuclideUri {
  *
  * Returns null if not a valid file: URI.
  */
-function uriToNuclideUri(uri: string): ?string {
-  const urlParts = url.parse(uri, false);
-  if (urlParts.protocol === 'file:' && urlParts.path) { // only handle real files for now.
+function uriToNuclideUri(uri) {
+  var urlParts = _url2['default'].parse(uri, false);
+  if (urlParts.protocol === 'file:' && urlParts.path) {
+    // only handle real files for now.
     return urlParts.path;
   } else if (isRemote(uri)) {
     return uri;
@@ -254,7 +229,7 @@ function uriToNuclideUri(uri: string): ?string {
 /**
  * Converts local paths to file: URI's. Leaves remote URI's alone.
  */
-function nuclideUriToUri(uri: NuclideUri): string {
+function nuclideUriToUri(uri) {
   if (isRemote(uri)) {
     return uri;
   } else {
@@ -265,28 +240,25 @@ function nuclideUriToUri(uri: NuclideUri): string {
 /**
  * Returns true if child is equal to, or is a proper child of parent.
  */
-function contains(parent: NuclideUri, child: NuclideUri): boolean {
-  return child.startsWith(parent)
-    && (child.length === parent.length || child[parent.length] === '/');
+function contains(parent, child) {
+  return child.startsWith(parent) && (child.length === parent.length || child[parent.length] === '/');
 }
 
-const hostFormatters = [];
+var hostFormatters = [];
 
 // A formatter which may shorten hostnames.
 // Returns null if the formatter won't shorten the hostname.
-export type HostnameFormatter = (uri: NuclideUri) => ?string;
 
 // Registers a host formatter for nuclideUriToDisplayString
-function registerHostnameFormatter(formatter: HostnameFormatter):
-    {dispose: () => void} {
+function registerHostnameFormatter(formatter) {
   hostFormatters.push(formatter);
   return {
-    dispose: () => {
-      const index = hostFormatters.indexOf(formatter);
+    dispose: function dispose() {
+      var index = hostFormatters.indexOf(formatter);
       if (index >= 0) {
         hostFormatters.splice(index, 1);
       }
-    },
+    }
   };
 }
 
@@ -294,40 +266,40 @@ function registerHostnameFormatter(formatter: HostnameFormatter):
  * NuclideUris should never be shown to humans.
  * This function returns a human usable string.
  */
-function nuclideUriToDisplayString(uri: NuclideUri): string {
+function nuclideUriToDisplayString(uri) {
   if (isRemote(uri)) {
-    let hostname = getHostname(uri);
-    for (const formatter of hostFormatters) {
-      const formattedHostname = formatter(hostname);
+    var _hostname4 = getHostname(uri);
+    for (var formatter of hostFormatters) {
+      var formattedHostname = formatter(_hostname4);
       if (formattedHostname) {
-        hostname = formattedHostname;
+        _hostname4 = formattedHostname;
         break;
       }
     }
-    return `${hostname}/${getPath(uri)}`;
+    return _hostname4 + '/' + getPath(uri);
   } else {
     return uri;
   }
 }
 
 module.exports = {
-  basename,
-  dirname,
-  isRemote,
-  isLocal,
-  createRemoteUri,
-  parse,
-  parseRemoteUri,
-  getPath,
-  getHostname,
-  getPort,
-  join,
-  relative,
-  normalize,
-  getParent,
-  uriToNuclideUri,
-  nuclideUriToUri,
-  contains,
-  nuclideUriToDisplayString,
-  registerHostnameFormatter,
+  basename: basename,
+  dirname: dirname,
+  isRemote: isRemote,
+  isLocal: isLocal,
+  createRemoteUri: createRemoteUri,
+  parse: parse,
+  parseRemoteUri: parseRemoteUri,
+  getPath: getPath,
+  getHostname: getHostname,
+  getPort: getPort,
+  join: join,
+  relative: relative,
+  normalize: normalize,
+  getParent: getParent,
+  uriToNuclideUri: uriToNuclideUri,
+  nuclideUriToUri: nuclideUriToUri,
+  contains: contains,
+  nuclideUriToDisplayString: nuclideUriToDisplayString,
+  registerHostnameFormatter: registerHostnameFormatter
 };

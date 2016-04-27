@@ -1,5 +1,16 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,66 +20,97 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import ReactNativeServerActions from './ReactNativeServerActions';
-import ReactNativeServerStatus from './ReactNativeServerStatus';
-import {Button} from '../../nuclide-ui/lib/Button';
+var _reactForAtom = require('react-for-atom');
 
-type Props = {
-  actions: ReactNativeServerActions;
-  store: ReactNativeServerStatus;
-  serverCommand: string;
-};
+var _ReactNativeServerActions = require('./ReactNativeServerActions');
 
-export default class ReactNativeServerPanel extends React.Component {
+var _ReactNativeServerActions2 = _interopRequireDefault(_ReactNativeServerActions);
 
-  props: Props;
-  _storeSubscription: IDisposable;
+var _ReactNativeServerStatus = require('./ReactNativeServerStatus');
 
-  constructor(props: Props) {
-    super(props);
-    this._storeSubscription = props.store.subscribe(() => {
-      this.forceUpdate();
+var _ReactNativeServerStatus2 = _interopRequireDefault(_ReactNativeServerStatus);
+
+var _nuclideUiLibButton = require('../../nuclide-ui/lib/Button');
+
+var ReactNativeServerPanel = (function (_React$Component) {
+  _inherits(ReactNativeServerPanel, _React$Component);
+
+  function ReactNativeServerPanel(props) {
+    var _this = this;
+
+    _classCallCheck(this, ReactNativeServerPanel);
+
+    _get(Object.getPrototypeOf(ReactNativeServerPanel.prototype), 'constructor', this).call(this, props);
+    this._storeSubscription = props.store.subscribe(function () {
+      _this.forceUpdate();
     });
-    (this: any)._handleStopClicked = this._handleStopClicked.bind(this);
-    (this: any)._handleRestartClicked = this._handleRestartClicked.bind(this);
+    this._handleStopClicked = this._handleStopClicked.bind(this);
+    this._handleRestartClicked = this._handleRestartClicked.bind(this);
   }
 
-  componentWillUnmount() {
-    this._storeSubscription.dispose();
-  }
+  _createClass(ReactNativeServerPanel, [{
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      this._storeSubscription.dispose();
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      // TODO(natthu): Add another button to allow debugging RN Javascript.
+      var status = this.props.store.isServerRunning() ? _reactForAtom.React.createElement(
+        'span',
+        { className: 'inline-block highlight-success' },
+        'Running'
+      ) : _reactForAtom.React.createElement(
+        'span',
+        { className: 'inline-block highlight-error' },
+        'Stopped'
+      );
+      return _reactForAtom.React.createElement(
+        'div',
+        { className: 'inset-panel padded' },
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'inline-block' },
+          _reactForAtom.React.createElement(
+            _nuclideUiLibButton.Button,
+            {
+              className: 'inline-block-tight',
+              icon: 'primitive-square',
+              onClick: this._handleStopClicked },
+            'Stop'
+          ),
+          _reactForAtom.React.createElement(
+            _nuclideUiLibButton.Button,
+            {
+              className: 'inline-block-tight',
+              icon: 'sync',
+              onClick: this._handleRestartClicked },
+            'Restart'
+          )
+        ),
+        _reactForAtom.React.createElement(
+          'span',
+          { className: 'inline-block' },
+          'Status: ',
+          status
+        )
+      );
+    }
+  }, {
+    key: '_handleStopClicked',
+    value: function _handleStopClicked() {
+      this.props.actions.stopServer();
+    }
+  }, {
+    key: '_handleRestartClicked',
+    value: function _handleRestartClicked() {
+      this.props.actions.restartServer(this.props.serverCommand);
+    }
+  }]);
 
-  render(): React.Element {
-    // TODO(natthu): Add another button to allow debugging RN Javascript.
-    const status = this.props.store.isServerRunning()
-      ? <span className="inline-block highlight-success">Running</span>
-      : <span className="inline-block highlight-error">Stopped</span>;
-    return (
-      <div className="inset-panel padded">
-        <div className="inline-block">
-          <Button
-            className="inline-block-tight"
-            icon="primitive-square"
-            onClick={this._handleStopClicked}>
-            Stop
-          </Button>
-          <Button
-            className="inline-block-tight"
-            icon="sync"
-            onClick={this._handleRestartClicked}>
-            Restart
-          </Button>
-        </div>
-        <span className="inline-block">Status: {status}</span>
-      </div>
-    );
-  }
+  return ReactNativeServerPanel;
+})(_reactForAtom.React.Component);
 
-  _handleStopClicked() {
-    this.props.actions.stopServer();
-  }
-
-  _handleRestartClicked() {
-    this.props.actions.restartServer(this.props.serverCommand);
-  }
-}
+exports['default'] = ReactNativeServerPanel;
+module.exports = exports['default'];

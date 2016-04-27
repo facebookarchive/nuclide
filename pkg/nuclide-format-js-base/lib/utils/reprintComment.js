@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var jscs = require('jscodeshift');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +10,7 @@
  * the root directory of this source tree.
  */
 
-import type {Node} from '../types/ast';
-
-const jscs = require('jscodeshift');
-
-function reprintComment(node: Node): Node {
+function reprintComment(node) {
   if (node.type === 'Block') {
     return jscs.block(node.value);
   } else if (node.type === 'Line') {

@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +14,38 @@
  * the root directory of this source tree.
  */
 
-import {Emitter} from 'atom';
+var _atom = require('atom');
 
-export default class ReactNativeServerStatus {
+var ReactNativeServerStatus = (function () {
+  function ReactNativeServerStatus() {
+    _classCallCheck(this, ReactNativeServerStatus);
 
-  _emitter: Emitter;
-  _isRunning: boolean;
-
-  constructor() {
-    this._emitter = new Emitter();
+    this._emitter = new _atom.Emitter();
     this._isRunning = false;
   }
 
-  subscribe(callback: () => void): IDisposable {
-    return this._emitter.on('change', callback);
-  }
-
-  isServerRunning(): boolean {
-    return this._isRunning;
-  }
-
-  setServerRunning(isRunning: boolean): void {
-    if (this._isRunning !== isRunning) {
-      this._isRunning = isRunning;
-      this._emitter.emit('change');
+  _createClass(ReactNativeServerStatus, [{
+    key: 'subscribe',
+    value: function subscribe(callback) {
+      return this._emitter.on('change', callback);
     }
-  }
-}
+  }, {
+    key: 'isServerRunning',
+    value: function isServerRunning() {
+      return this._isRunning;
+    }
+  }, {
+    key: 'setServerRunning',
+    value: function setServerRunning(isRunning) {
+      if (this._isRunning !== isRunning) {
+        this._isRunning = isRunning;
+        this._emitter.emit('change');
+      }
+    }
+  }]);
+
+  return ReactNativeServerStatus;
+})();
+
+exports['default'] = ReactNativeServerStatus;
+module.exports = exports['default'];

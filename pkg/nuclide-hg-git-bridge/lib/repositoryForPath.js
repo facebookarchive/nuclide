@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+var _nuclideCommons = require('../../nuclide-commons');
+
+/**
+ * @param aPath The NuclideUri of a file or directory for which you want to find
+ *   a Repository it belongs to.
+ * @return A Git or Hg repository the path belongs to, if any.
+ */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +14,20 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import {array} from '../../nuclide-commons';
-
-/**
- * @param aPath The NuclideUri of a file or directory for which you want to find
- *   a Repository it belongs to.
- * @return A Git or Hg repository the path belongs to, if any.
- */
-function repositoryForPath(aPath: NuclideUri): ?atom$Repository {
+function repositoryForPath(aPath) {
   // Calling atom.project.repositoryForDirectory gets the real path of the directory,
   // which requires a round-trip to the server for remote paths.
   // Instead, this function keeps filtering local.
-  const repositoryContainsPath = require('./repositoryContainsPath');
-  const repositories = array.compact(atom.project.getRepositories());
-  return repositories.find(
-    repo => {
-      try {
-        return repositoryContainsPath(repo, aPath);
-      } catch (e) {
-        // The repo type is not supported.
-        return false;
-      }
-    },
-  );
+  var repositoryContainsPath = require('./repositoryContainsPath');
+  var repositories = _nuclideCommons.array.compact(atom.project.getRepositories());
+  return repositories.find(function (repo) {
+    try {
+      return repositoryContainsPath(repo, aPath);
+    } catch (e) {
+      // The repo type is not supported.
+      return false;
+    }
+  });
 }
 
 module.exports = repositoryForPath;

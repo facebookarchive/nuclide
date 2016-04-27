@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +8,14 @@
  * the root directory of this source tree.
  */
 
-import type {Context, Lines, Print} from '../../types/common';
-import type {LogicalExpression} from 'ast-types-flow';
+var markers = require('../../constants/markers');
+var wrapExpression = require('../../wrappers/simple/wrapExpression');
 
-const markers = require('../../constants/markers');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
-
-function printLogicalExpression(
-  print: Print,
-  node: LogicalExpression,
-  context: Context,
-): Lines {
-  const path = context.path;
-  let needsScope = true;
-  for (let i = path.size - 1; i >= 0; i--) {
-    const curr = path.get(i);
+function printLogicalExpression(print, node, context) {
+  var path = context.path;
+  var needsScope = true;
+  for (var i = path.size - 1; i >= 0; i--) {
+    var curr = path.get(i);
     /**
      * Traverse the path until we see the first logical expression. If it has
      * the same kind of operator we do not need to open a new scope. If it has
@@ -35,21 +27,10 @@ function printLogicalExpression(
     }
   }
 
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    needsScope
-      ? [markers.openScope, markers.scopeIndent, markers.scopeBreak]
-      : markers.empty,
-    print(node.left),
-    markers.noBreak,
-    markers.space,
-    node.operator,
-    markers.scopeSpaceBreak,
-    print(node.right),
-    needsScope
-      ? [markers.scopeBreak, markers.scopeDedent, markers.closeScope]
-      : markers.empty,
-  ]);
+  var wrap = function wrap(x) {
+    return wrapExpression(print, node, x);
+  };
+  return wrap([needsScope ? [markers.openScope, markers.scopeIndent, markers.scopeBreak] : markers.empty, print(node.left), markers.noBreak, markers.space, node.operator, markers.scopeSpaceBreak, print(node.right), needsScope ? [markers.scopeBreak, markers.scopeDedent, markers.closeScope] : markers.empty]);
 }
 
 module.exports = printLogicalExpression;
