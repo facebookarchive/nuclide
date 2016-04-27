@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +10,25 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {FileSystemService} from '../../nuclide-server/lib/services/FileSystemServiceType';
-import invariant from 'assert';
+exports.getFileSystemServiceByNuclideUri = getFileSystemServiceByNuclideUri;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
 
 // TODO: Remove this once all services have been moved to framework v3.
-import {
-  getFileForPath,
-  getService,
-  getServiceLogger,
-  getServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
 
-export {
-  getFileForPath,
-  getService,
-  getServiceLogger,
-  getServiceByNuclideUri,
-};
+var _nuclideRemoteConnection = require('../../nuclide-remote-connection');
 
-export function getFileSystemServiceByNuclideUri(uri: NuclideUri): FileSystemService {
-  const service = getServiceByNuclideUri('FileSystemService', uri);
-  invariant(service);
+exports.getFileForPath = _nuclideRemoteConnection.getFileForPath;
+exports.getService = _nuclideRemoteConnection.getService;
+exports.getServiceLogger = _nuclideRemoteConnection.getServiceLogger;
+exports.getServiceByNuclideUri = _nuclideRemoteConnection.getServiceByNuclideUri;
+
+function getFileSystemServiceByNuclideUri(uri) {
+  var service = (0, _nuclideRemoteConnection.getServiceByNuclideUri)('FileSystemService', uri);
+  (0, _assert2['default'])(service);
   return service;
 }

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,37 +8,19 @@
  * the root directory of this source tree.
  */
 
-import type {IfStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var markers = require('../../constants/markers');
+var wrapStatement = require('../../wrappers/simple/wrapStatement');
 
-const markers = require('../../constants/markers');
-const wrapStatement = require('../../wrappers/simple/wrapStatement');
+function printIfStatement(print, node) {
+  var wrap = function wrap(x) {
+    return wrapStatement(print, node, x);
+  };
 
-function printIfStatement(print: Print, node: IfStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
-
-  let parts = [
-    markers.hardBreak,
-    'if (',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    print(node.test),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-    ') ',
-    print(node.consequent),
-  ];
+  var parts = [markers.hardBreak, 'if (', markers.openScope, markers.scopeIndent, markers.scopeBreak, print(node.test), markers.scopeBreak, markers.scopeDedent, markers.closeScope, ') ', print(node.consequent)];
 
   if (node.alternate) {
 
-    parts = parts.concat([
-      markers.noBreak,
-      ' else ',
-      markers.noBreak,
-      print(node.alternate),
-    ]);
+    parts = parts.concat([markers.noBreak, ' else ', markers.noBreak, print(node.alternate)]);
   }
 
   return wrap(parts);

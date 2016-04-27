@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +8,15 @@
  * the root directory of this source tree.
  */
 
-const markers = require('../constants/markers');
+var markers = require('../constants/markers');
 
 /**
  * This removes all but the first cursor. Since cursors are added at the end of
  * nodes this will keep the most valid cursor that appears deepest in the tree.
  */
-function resolveDuplicateCursors(lines: Array<any>): Array<any> {
-  let seenCursor = false;
-  return lines.map(line => {
+function resolveDuplicateCursors(lines) {
+  var seenCursor = false;
+  return lines.map(function (line) {
     // $FlowFixMe(kad, t9954160)
     if (line === markers.cursor) {
       if (seenCursor) {

@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +14,26 @@
  * the root directory of this source tree.
  */
 
-import JumpToRelatedFile from './JumpToRelatedFile';
-import RelatedFileFinder from './RelatedFileFinder';
+var _JumpToRelatedFile = require('./JumpToRelatedFile');
 
-let jumpToRelatedFile: ?JumpToRelatedFile = null;
+var _JumpToRelatedFile2 = _interopRequireDefault(_JumpToRelatedFile);
 
-export function activate() {
+var _RelatedFileFinder = require('./RelatedFileFinder');
+
+var _RelatedFileFinder2 = _interopRequireDefault(_RelatedFileFinder);
+
+var jumpToRelatedFile = null;
+
+function activate() {
   // Make it a const for Flow
-  const local = jumpToRelatedFile = new JumpToRelatedFile(new RelatedFileFinder());
+  var local = jumpToRelatedFile = new _JumpToRelatedFile2['default'](new _RelatedFileFinder2['default']());
 
-  atom.workspace.observeTextEditors(textEditor => {
+  atom.workspace.observeTextEditors(function (textEditor) {
     local.enableInTextEditor(textEditor);
   });
 }
 
-export function deactivate() {
+function deactivate() {
   if (jumpToRelatedFile) {
     jumpToRelatedFile.dispose();
     jumpToRelatedFile = null;

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +8,14 @@
  * the root directory of this source tree.
  */
 
-import type {AssignmentExpression} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var markers = require('../../constants/markers');
+var wrapExpression = require('../../wrappers/simple/wrapExpression');
 
-const markers = require('../../constants/markers');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
-
-function printAssignmentExpression(
-  print: Print,
-  node: AssignmentExpression,
-): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    print(node.left),
-    markers.noBreak,
-    markers.space,
-    node.operator,
-    markers.noBreak,
-    markers.space,
-    print(node.right),
-  ]);
+function printAssignmentExpression(print, node) {
+  var wrap = function wrap(x) {
+    return wrapExpression(print, node, x);
+  };
+  return wrap([print(node.left), markers.noBreak, markers.space, node.operator, markers.noBreak, markers.space, print(node.right)]);
 }
 
 module.exports = printAssignmentExpression;

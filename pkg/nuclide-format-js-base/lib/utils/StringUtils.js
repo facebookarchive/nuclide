@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +8,7 @@
  * the root directory of this source tree.
  */
 
-function capitalize(word: string): string {
+function capitalize(word) {
   if (word.length === 0) {
     return word;
   }
@@ -21,21 +20,18 @@ function capitalize(word: string): string {
  * directly in case we every choose another sorting algorithm. Such as some
  * sort of natural compare algorithm.
  */
-function compareStrings(one: ?string, two: ?string): number {
+function compareStrings(one, two) {
   one = (one || '').toLowerCase();
   two = (two || '').toLowerCase();
   return one.localeCompare(two);
 }
 
-function isCapitalized(name: string): boolean {
-  return (
-    name.length > 0 &&
-    name.charAt(0).toUpperCase() === name.charAt(0)
-  );
+function isCapitalized(name) {
+  return name.length > 0 && name.charAt(0).toUpperCase() === name.charAt(0);
 }
 
-function isLowerCase(name: string): boolean {
+function isLowerCase(name) {
   return name.toLowerCase() === name;
 }
 
-module.exports = {capitalize, compareStrings, isCapitalized, isLowerCase};
+module.exports = { capitalize: capitalize, compareStrings: compareStrings, isCapitalized: isCapitalized, isLowerCase: isLowerCase };

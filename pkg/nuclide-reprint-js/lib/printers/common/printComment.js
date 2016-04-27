@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var flatten = require('../../utils/flatten');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +10,13 @@
  * the root directory of this source tree.
  */
 
-import type {Lines} from '../../types/common';
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printComment(node: any): Lines {
+function printComment(node) {
   if (node.type === 'CommentBlock') {
-    return flatten([('/*' + node.value + '*/').split('\n').map(part => {
-      const trimmed = part.trim();
-      return [
-        trimmed.startsWith('*') ? ' ' + trimmed : trimmed,
-        markers.hardBreak,
-      ];
+    return flatten([('/*' + node.value + '*/').split('\n').map(function (part) {
+      var trimmed = part.trim();
+      return [trimmed.startsWith('*') ? ' ' + trimmed : trimmed, markers.hardBreak];
     })]);
   }
 

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,57 +10,64 @@
  * the root directory of this source tree.
  */
 
-import type {
-  NuclideRemoteAuthMethods,
-  NuclideRemoteConnectionParamsWithPassword,
-} from './connection-types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-const {AtomInput} = require('../../nuclide-ui/lib/AtomInput');
-const {CompositeDisposable} = require('atom');
-const {RadioGroup} = require('../../nuclide-ui/lib/RadioGroup');
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
-const {PropTypes} = React;
-const {SshHandshake} = require('../../nuclide-remote-connection');
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-type State = {
-  cwd: string;
-  pathToPrivateKey: string;
-  remoteServerCommand: string;
-  selectedAuthMethodIndex: number;
-  server: string;
-  sshPort: string;
-  username: string;
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const {SupportedMethods} = SshHandshake;
-const authMethods = [
-  SupportedMethods.PASSWORD,
-  SupportedMethods.SSL_AGENT,
-  SupportedMethods.PRIVATE_KEY,
-];
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _require = require('../../nuclide-ui/lib/AtomInput');
+
+var AtomInput = _require.AtomInput;
+
+var _require2 = require('atom');
+
+var CompositeDisposable = _require2.CompositeDisposable;
+
+var _require3 = require('../../nuclide-ui/lib/RadioGroup');
+
+var RadioGroup = _require3.RadioGroup;
+
+var _require4 = require('react-for-atom');
+
+var React = _require4.React;
+var ReactDOM = _require4.ReactDOM;
+var PropTypes = React.PropTypes;
+
+var _require5 = require('../../nuclide-remote-connection');
+
+var SshHandshake = _require5.SshHandshake;
+var SupportedMethods = SshHandshake.SupportedMethods;
+
+var authMethods = [SupportedMethods.PASSWORD, SupportedMethods.SSL_AGENT, SupportedMethods.PRIVATE_KEY];
 
 /** Component to prompt the user for connection details. */
-export default class ConnectionDetailsForm extends React.Component {
-  state: State;
-  static propTypes = {
-    initialUsername: PropTypes.string,
-    initialServer: PropTypes.string,
-    initialCwd: PropTypes.string,
-    initialRemoteServerCommand: PropTypes.string,
-    initialSshPort: PropTypes.string,
-    initialPathToPrivateKey: PropTypes.string,
-    initialAuthMethod: PropTypes.oneOf(Object.keys(SupportedMethods)),
-    onConfirm: PropTypes.func.isRequired,
-    onCancel: PropTypes.func.isRequired,
-  };
 
-  _disposables: ?CompositeDisposable;
+var ConnectionDetailsForm = (function (_React$Component) {
+  _inherits(ConnectionDetailsForm, _React$Component);
 
-  constructor(props: any) {
-    super(props);
+  _createClass(ConnectionDetailsForm, null, [{
+    key: 'propTypes',
+    value: {
+      initialUsername: PropTypes.string,
+      initialServer: PropTypes.string,
+      initialCwd: PropTypes.string,
+      initialRemoteServerCommand: PropTypes.string,
+      initialSshPort: PropTypes.string,
+      initialPathToPrivateKey: PropTypes.string,
+      initialAuthMethod: PropTypes.oneOf(Object.keys(SupportedMethods)),
+      onConfirm: PropTypes.func.isRequired,
+      onCancel: PropTypes.func.isRequired
+    },
+    enumerable: true
+  }]);
+
+  function ConnectionDetailsForm(props) {
+    _classCallCheck(this, ConnectionDetailsForm);
+
+    _get(Object.getPrototypeOf(ConnectionDetailsForm.prototype), 'constructor', this).call(this, props);
     this.state = {
       username: props.initialUsername,
       server: props.initialServer,
@@ -67,250 +75,305 @@ export default class ConnectionDetailsForm extends React.Component {
       remoteServerCommand: props.initialRemoteServerCommand,
       sshPort: props.initialSshPort,
       pathToPrivateKey: props.initialPathToPrivateKey,
-      selectedAuthMethodIndex: authMethods.indexOf(props.initialAuthMethod),
+      selectedAuthMethodIndex: authMethods.indexOf(props.initialAuthMethod)
     };
   }
 
-  handleAuthMethodChange(newIndex: number) {
-    this.setState({
-      selectedAuthMethodIndex: newIndex,
-    });
-  }
-
-  _onKeyUp(e: SyntheticKeyboardEvent): void {
-    if (e.key === 'Enter') {
-      this.props.onConfirm();
+  _createClass(ConnectionDetailsForm, [{
+    key: 'handleAuthMethodChange',
+    value: function handleAuthMethodChange(newIndex) {
+      this.setState({
+        selectedAuthMethodIndex: newIndex
+      });
     }
-
-    if (e.key === 'Escape') {
-      this.props.onCancel();
-    }
-  }
-
-  _handlePasswordInputClick(event: SyntheticEvent): void {
-    const passwordAuthMethodIndex = authMethods.indexOf(SupportedMethods.PASSWORD);
-    this.setState(
-      {
-        selectedAuthMethodIndex: passwordAuthMethodIndex,
-      },
-      () => {
-        ReactDOM.findDOMNode(this.refs['password']).focus();
+  }, {
+    key: '_onKeyUp',
+    value: function _onKeyUp(e) {
+      if (e.key === 'Enter') {
+        this.props.onConfirm();
       }
-    );
-  }
 
-  _handleKeyFileInputClick(event: SyntheticEvent): void {
-    const privateKeyAuthMethodIndex = authMethods.indexOf(SupportedMethods.PRIVATE_KEY);
-    this.setState(
-      {
-        selectedAuthMethodIndex: privateKeyAuthMethodIndex,
-      },
-      () => {
+      if (e.key === 'Escape') {
+        this.props.onCancel();
+      }
+    }
+  }, {
+    key: '_handlePasswordInputClick',
+    value: function _handlePasswordInputClick(event) {
+      var _this = this;
+
+      var passwordAuthMethodIndex = authMethods.indexOf(SupportedMethods.PASSWORD);
+      this.setState({
+        selectedAuthMethodIndex: passwordAuthMethodIndex
+      }, function () {
+        ReactDOM.findDOMNode(_this.refs['password']).focus();
+      });
+    }
+  }, {
+    key: '_handleKeyFileInputClick',
+    value: function _handleKeyFileInputClick(event) {
+      var _this2 = this;
+
+      var privateKeyAuthMethodIndex = authMethods.indexOf(SupportedMethods.PRIVATE_KEY);
+      this.setState({
+        selectedAuthMethodIndex: privateKeyAuthMethodIndex
+      }, function () {
         // when setting this immediately, Atom will unset the focus...
-        setTimeout(() => {
-          ReactDOM.findDOMNode(this.refs['pathToPrivateKey']).focus();
+        setTimeout(function () {
+          ReactDOM.findDOMNode(_this2.refs['pathToPrivateKey']).focus();
         }, 0);
+      });
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var activeAuthMethod = authMethods[this.state.selectedAuthMethodIndex];
+      // We need native-key-bindings so that delete works and we need
+      // _onKeyUp so that escape and enter work
+      var passwordLabel = React.createElement(
+        'div',
+        { className: 'nuclide-auth-method' },
+        React.createElement(
+          'div',
+          { className: 'nuclide-auth-method-label' },
+          'Password:'
+        ),
+        React.createElement(
+          'div',
+          { className: 'nuclide-auth-method-input nuclide-auth-method-password' },
+          React.createElement('input', { type: 'password',
+            className: 'nuclide-password native-key-bindings',
+            disabled: activeAuthMethod !== SupportedMethods.PASSWORD,
+            ref: 'password',
+            onClick: this._handlePasswordInputClick.bind(this),
+            onKeyUp: this._onKeyUp.bind(this)
+          })
+        )
+      );
+      var privateKeyLabel = React.createElement(
+        'div',
+        { className: 'nuclide-auth-method' },
+        React.createElement(
+          'div',
+          { className: 'nuclide-auth-method-label' },
+          'Private Key File:'
+        ),
+        React.createElement(
+          'div',
+          { className: 'nuclide-auth-method-input nuclide-auth-method-privatekey' },
+          React.createElement(AtomInput, {
+            ref: 'pathToPrivateKey',
+            disabled: activeAuthMethod !== SupportedMethods.PRIVATE_KEY,
+            initialValue: this.state.pathToPrivateKey,
+            onClick: this._handleKeyFileInputClick.bind(this),
+            placeholder: 'Path to private key',
+            unstyled: true
+          })
+        )
+      );
+      var sshAgentLabel = React.createElement(
+        'div',
+        { className: 'nuclide-auth-method' },
+        'Use ssh-agent'
+      );
+      return React.createElement(
+        'div',
+        null,
+        React.createElement(
+          'div',
+          { className: 'form-group' },
+          React.createElement(
+            'label',
+            null,
+            'Username:'
+          ),
+          React.createElement(AtomInput, {
+            initialValue: this.state.username,
+            ref: 'username',
+            unstyled: true
+          })
+        ),
+        React.createElement(
+          'div',
+          { className: 'form-group row' },
+          React.createElement(
+            'div',
+            { className: 'col-xs-9' },
+            React.createElement(
+              'label',
+              null,
+              'Server:'
+            ),
+            React.createElement(AtomInput, {
+              initialValue: this.state.server,
+              ref: 'server',
+              unstyled: true
+            })
+          ),
+          React.createElement(
+            'div',
+            { className: 'col-xs-3' },
+            React.createElement(
+              'label',
+              null,
+              'SSH Port:'
+            ),
+            React.createElement(AtomInput, {
+              initialValue: this.state.sshPort,
+              ref: 'sshPort',
+              unstyled: true
+            })
+          )
+        ),
+        React.createElement(
+          'div',
+          { className: 'form-group' },
+          React.createElement(
+            'label',
+            null,
+            'Initial Directory:'
+          ),
+          React.createElement(AtomInput, {
+            initialValue: this.state.cwd,
+            ref: 'cwd',
+            unstyled: true
+          })
+        ),
+        React.createElement(
+          'div',
+          { className: 'form-group' },
+          React.createElement(
+            'label',
+            null,
+            'Authentication method:'
+          ),
+          React.createElement(RadioGroup, {
+            optionLabels: [passwordLabel, sshAgentLabel, privateKeyLabel],
+            onSelectedChange: this.handleAuthMethodChange.bind(this),
+            selectedIndex: this.state.selectedAuthMethodIndex
+          })
+        ),
+        React.createElement(
+          'div',
+          { className: 'form-group' },
+          React.createElement(
+            'label',
+            null,
+            'Remote Server Command:'
+          ),
+          React.createElement(AtomInput, {
+            initialValue: this.state.remoteServerCommand,
+            ref: 'remoteServerCommand',
+            unstyled: true
+          })
+        )
+      );
+    }
+  }, {
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _this3 = this;
+
+      var disposables = new CompositeDisposable();
+      this._disposables = disposables;
+      var root = ReactDOM.findDOMNode(this);
+
+      // Hitting enter when this panel has focus should confirm the dialog.
+      disposables.add(atom.commands.add(root, 'core:confirm', function (event) {
+        return _this3.props.onConfirm();
+      }));
+
+      // Hitting escape when this panel has focus should cancel the dialog.
+      disposables.add(atom.commands.add(root, 'core:cancel', function (event) {
+        return _this3.props.onCancel();
+      }));
+
+      this.refs['username'].focus();
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      if (this._disposables) {
+        this._disposables.dispose();
+        this._disposables = null;
       }
-    );
-  }
-
-  render(): React.Element {
-    const activeAuthMethod = authMethods[this.state.selectedAuthMethodIndex];
-    // We need native-key-bindings so that delete works and we need
-    // _onKeyUp so that escape and enter work
-    const passwordLabel = (
-      <div className="nuclide-auth-method">
-        <div className="nuclide-auth-method-label">
-          Password:
-        </div>
-        <div className="nuclide-auth-method-input nuclide-auth-method-password">
-          <input type="password"
-            className="nuclide-password native-key-bindings"
-            disabled={activeAuthMethod !== SupportedMethods.PASSWORD}
-            ref="password"
-            onClick={this._handlePasswordInputClick.bind(this)}
-            onKeyUp={this._onKeyUp.bind(this)}
-          />
-        </div>
-      </div>
-    );
-    const privateKeyLabel = (
-      <div className="nuclide-auth-method">
-        <div className="nuclide-auth-method-label">
-          Private Key File:
-        </div>
-        <div className="nuclide-auth-method-input nuclide-auth-method-privatekey">
-          <AtomInput
-            ref="pathToPrivateKey"
-            disabled={activeAuthMethod !== SupportedMethods.PRIVATE_KEY}
-            initialValue={this.state.pathToPrivateKey}
-            onClick={this._handleKeyFileInputClick.bind(this)}
-            placeholder="Path to private key"
-            unstyled={true}
-          />
-        </div>
-      </div>
-    );
-    const sshAgentLabel = (
-      <div className="nuclide-auth-method">
-        Use ssh-agent
-      </div>
-    );
-    return (
-      <div>
-        <div className="form-group">
-          <label>Username:</label>
-          <AtomInput
-            initialValue={this.state.username}
-            ref="username"
-            unstyled={true}
-          />
-        </div>
-        <div className="form-group row">
-          <div className="col-xs-9">
-            <label>Server:</label>
-            <AtomInput
-              initialValue={this.state.server}
-              ref="server"
-              unstyled={true}
-            />
-          </div>
-          <div className="col-xs-3">
-            <label>SSH Port:</label>
-            <AtomInput
-              initialValue={this.state.sshPort}
-              ref="sshPort"
-              unstyled={true}
-            />
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Initial Directory:</label>
-          <AtomInput
-            initialValue={this.state.cwd}
-            ref="cwd"
-            unstyled={true}
-          />
-        </div>
-        <div className="form-group">
-          <label>Authentication method:</label>
-          <RadioGroup
-            optionLabels={[
-              passwordLabel,
-              sshAgentLabel,
-              privateKeyLabel,
-            ]}
-            onSelectedChange={this.handleAuthMethodChange.bind(this)}
-            selectedIndex={this.state.selectedAuthMethodIndex}
-          />
-        </div>
-        <div className="form-group">
-          <label>Remote Server Command:</label>
-          <AtomInput
-            initialValue={this.state.remoteServerCommand}
-            ref="remoteServerCommand"
-            unstyled={true}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  componentDidMount() {
-    const disposables = new CompositeDisposable();
-    this._disposables = disposables;
-    const root = ReactDOM.findDOMNode(this);
-
-    // Hitting enter when this panel has focus should confirm the dialog.
-    disposables.add(atom.commands.add(
-        root,
-        'core:confirm',
-        event => this.props.onConfirm()));
-
-    // Hitting escape when this panel has focus should cancel the dialog.
-    disposables.add(atom.commands.add(
-        root,
-        'core:cancel',
-        event => this.props.onCancel()));
-
-    this.refs['username'].focus();
-  }
-
-  componentWillUnmount() {
-    if (this._disposables) {
-      this._disposables.dispose();
-      this._disposables = null;
     }
-  }
-
-  getFormFields(): NuclideRemoteConnectionParamsWithPassword {
-    return {
-      username: this._getText('username'),
-      server: this._getText('server'),
-      cwd: this._getText('cwd'),
-      remoteServerCommand: this._getText('remoteServerCommand'),
-      sshPort: this._getText('sshPort'),
-      pathToPrivateKey: this._getText('pathToPrivateKey'),
-      authMethod: this._getAuthMethod(),
-      password: this._getPassword(),
-    };
-  }
-
-  // Note: 'password' is not settable. The only exposed method is 'clearPassword'.
-  setFormFields(fields: {
-    username?: string;
-    server?: string;
-    cwd?: string;
-    remoteServerCommand?: string;
-    sshPort?: string;
-    pathToPrivateKey?: string;
-    authMethod?: NuclideRemoteAuthMethods;
-  }): void {
-    this._setText('username', fields.username);
-    this._setText('server', fields.server);
-    this._setText('cwd', fields.cwd);
-    this._setText('remoteServerCommand', fields.remoteServerCommand);
-    this._setText('sshPort', fields.sshPort);
-    this._setText('pathToPrivateKey', fields.pathToPrivateKey);
-    this._setAuthMethod(fields.authMethod);
-  }
-
-  _getText(fieldName: string): string {
-    return (this.refs[fieldName] && this.refs[fieldName].getText().trim()) || '';
-  }
-
-  _setText(fieldName: string, text: ?string): void {
-    if (text == null) {
-      return;
+  }, {
+    key: 'getFormFields',
+    value: function getFormFields() {
+      return {
+        username: this._getText('username'),
+        server: this._getText('server'),
+        cwd: this._getText('cwd'),
+        remoteServerCommand: this._getText('remoteServerCommand'),
+        sshPort: this._getText('sshPort'),
+        pathToPrivateKey: this._getText('pathToPrivateKey'),
+        authMethod: this._getAuthMethod(),
+        password: this._getPassword()
+      };
     }
-    const atomInput = this.refs[fieldName];
-    if (atomInput) {
-      atomInput.setText(text);
-    }
-  }
 
-  _getAuthMethod(): string {
-    return authMethods[this.state.selectedAuthMethodIndex];
-  }
-
-  _setAuthMethod(authMethod: ?NuclideRemoteAuthMethods): void {
-    if (authMethod == null) {
-      return;
+    // Note: 'password' is not settable. The only exposed method is 'clearPassword'.
+  }, {
+    key: 'setFormFields',
+    value: function setFormFields(fields) {
+      this._setText('username', fields.username);
+      this._setText('server', fields.server);
+      this._setText('cwd', fields.cwd);
+      this._setText('remoteServerCommand', fields.remoteServerCommand);
+      this._setText('sshPort', fields.sshPort);
+      this._setText('pathToPrivateKey', fields.pathToPrivateKey);
+      this._setAuthMethod(fields.authMethod);
     }
-    const newIndex = authMethods.indexOf(authMethod);
-    if (newIndex >= 0) {
-      this.setState({selectedAuthMethodIndex: newIndex});
+  }, {
+    key: '_getText',
+    value: function _getText(fieldName) {
+      return this.refs[fieldName] && this.refs[fieldName].getText().trim() || '';
     }
-  }
-
-  _getPassword(): string {
-    return (this.refs.password && ReactDOM.findDOMNode(this.refs.password).value) || '';
-  }
-
-  clearPassword(): void {
-    const passwordInput = this.refs['password'];
-    if (passwordInput) {
-      passwordInput.value = '';
+  }, {
+    key: '_setText',
+    value: function _setText(fieldName, text) {
+      if (text == null) {
+        return;
+      }
+      var atomInput = this.refs[fieldName];
+      if (atomInput) {
+        atomInput.setText(text);
+      }
     }
-  }
-}
+  }, {
+    key: '_getAuthMethod',
+    value: function _getAuthMethod() {
+      return authMethods[this.state.selectedAuthMethodIndex];
+    }
+  }, {
+    key: '_setAuthMethod',
+    value: function _setAuthMethod(authMethod) {
+      if (authMethod == null) {
+        return;
+      }
+      var newIndex = authMethods.indexOf(authMethod);
+      if (newIndex >= 0) {
+        this.setState({ selectedAuthMethodIndex: newIndex });
+      }
+    }
+  }, {
+    key: '_getPassword',
+    value: function _getPassword() {
+      return this.refs.password && ReactDOM.findDOMNode(this.refs.password).value || '';
+    }
+  }, {
+    key: 'clearPassword',
+    value: function clearPassword() {
+      var passwordInput = this.refs['password'];
+      if (passwordInput) {
+        passwordInput.value = '';
+      }
+    }
+  }]);
+
+  return ConnectionDetailsForm;
+})(React.Component);
+
+exports['default'] = ConnectionDetailsForm;
+module.exports = exports['default'];

@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getVersion = getVersion;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +11,13 @@
  * the root directory of this source tree.
  */
 
-const fs = require('fs');
-const invariant = require('assert');
+var fs = require('fs');
+var invariant = require('assert');
 
 // Use a regex and not the "semver" module so the result here is the same
 // as from python code.
-const SEMVERISH_RE = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z0-9.-]+))?$/;
-let version;
+var SEMVERISH_RE = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z0-9.-]+))?$/;
+var version = undefined;
 
 /*
  * This is the versioning of Nuclide client-server protocol.
@@ -33,16 +35,17 @@ let version;
  * (new feature or whatever) that do not work with the older servers.
  * It also includes server changes that break older clients.
  */
-export function getVersion(): string {
+
+function getVersion() {
   if (!version) {
     // Don't use require() because it may be reading from the module cache.
     // Do use require.resolve so the paths can be codemoded in the future.
-    const pkgFilename = require.resolve('../../../package.json');
-    const pkgJson = JSON.parse(fs.readFileSync(pkgFilename));
-    const match = SEMVERISH_RE.exec(pkgJson.version);
+    var pkgFilename = require.resolve('../../../package.json');
+    var pkgJson = JSON.parse(fs.readFileSync(pkgFilename));
+    var match = SEMVERISH_RE.exec(pkgJson.version);
     invariant(match);
     // const majorVersion = match[1];
-    const minorVersion = match[2];
+    var minorVersion = match[2];
     // const patchVersion = match[3];
     // const prereleaseVersion = match[4];
     version = minorVersion;

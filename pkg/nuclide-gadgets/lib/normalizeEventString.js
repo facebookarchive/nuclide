@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = normalizeEventString;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,6 +11,8 @@
  * the root directory of this source tree.
  */
 
-export default function normalizeEventString(str: string): string {
+function normalizeEventString(str) {
   return str.replace(/\s+/g, '-').toLowerCase();
 }
+
+module.exports = exports['default'];

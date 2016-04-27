@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +8,13 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {VariableDeclarator} from 'ast-types-flow';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printVariableDeclarator(
-  print: Print,
-  node: VariableDeclarator,
-): Lines {
+function printVariableDeclarator(print, node) {
   if (node.init) {
-    const init = node.init;
-    return flatten([
-      print(node.id),
-      markers.space,
-      '=',
-      markers.space,
-      print(init),
-    ]);
+    var init = node.init;
+    return flatten([print(node.id), markers.space, '=', markers.space, print(init)]);
   } else {
     return flatten(print(node.id));
   }

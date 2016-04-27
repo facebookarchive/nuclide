@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,33 +10,27 @@
  * the root directory of this source tree.
  */
 
-import {RemoteConnection} from './RemoteConnection';
-import {RemoteDirectory} from './RemoteDirectory';
-import {RemoteFile} from './RemoteFile';
-import {ServerConnection} from './ServerConnection';
+var _RemoteConnection = require('./RemoteConnection');
 
-import {
-  SshHandshake,
-  decorateSshConnectionDelegateWithTracking,
-} from './SshHandshake';
+var _RemoteDirectory = require('./RemoteDirectory');
 
-import {getFileForPath} from './client';
+var _RemoteFile = require('./RemoteFile');
 
-import {
-  getService,
-  getServiceByNuclideUri,
-  getServiceLogger,
-} from './service-manager';
+var _ServerConnection = require('./ServerConnection');
 
-export {
-  RemoteConnection,
-  RemoteDirectory,
-  RemoteFile,
-  ServerConnection,
-  SshHandshake,
-  decorateSshConnectionDelegateWithTracking,
-  getFileForPath,
-  getService,
-  getServiceByNuclideUri,
-  getServiceLogger,
-};
+var _SshHandshake = require('./SshHandshake');
+
+var _client = require('./client');
+
+var _serviceManager = require('./service-manager');
+
+exports.RemoteConnection = _RemoteConnection.RemoteConnection;
+exports.RemoteDirectory = _RemoteDirectory.RemoteDirectory;
+exports.RemoteFile = _RemoteFile.RemoteFile;
+exports.ServerConnection = _ServerConnection.ServerConnection;
+exports.SshHandshake = _SshHandshake.SshHandshake;
+exports.decorateSshConnectionDelegateWithTracking = _SshHandshake.decorateSshConnectionDelegateWithTracking;
+exports.getFileForPath = _client.getFileForPath;
+exports.getService = _serviceManager.getService;
+exports.getServiceByNuclideUri = _serviceManager.getServiceByNuclideUri;
+exports.getServiceLogger = _serviceManager.getServiceLogger;

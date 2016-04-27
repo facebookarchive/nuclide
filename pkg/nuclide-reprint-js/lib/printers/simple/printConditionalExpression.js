@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +8,14 @@
  * the root directory of this source tree.
  */
 
-import type {ConditionalExpression} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var markers = require('../../constants/markers');
+var wrapExpression = require('../../wrappers/simple/wrapExpression');
 
-const markers = require('../../constants/markers');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
-
-function printConditionalExpression(
-  print: Print,
-  node: ConditionalExpression,
-): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    markers.openScope,
-    markers.scopeIndent,
-    print(node.test),
-    markers.scopeSpaceBreak,
-    '?',
-    markers.noBreak,
-    markers.space,
-    print(node.consequent),
-    markers.scopeSpaceBreak,
-    ':',
-    markers.noBreak,
-    markers.space,
-    print(node.alternate),
-    markers.scopeDedent,
-    markers.closeScope,
-  ]);
+function printConditionalExpression(print, node) {
+  var wrap = function wrap(x) {
+    return wrapExpression(print, node, x);
+  };
+  return wrap([markers.openScope, markers.scopeIndent, print(node.test), markers.scopeSpaceBreak, '?', markers.noBreak, markers.space, print(node.consequent), markers.scopeSpaceBreak, ':', markers.noBreak, markers.space, print(node.alternate), markers.scopeDedent, markers.closeScope]);
 }
 
 module.exports = printConditionalExpression;

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,74 +8,38 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {Property} from 'ast-types-flow';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printProperty(print: Print, node: Property): Lines {
-  let parts = [];
+function printProperty(print, node) {
+  var parts = [];
 
   if (node.kind === 'get') {
-    parts = parts.concat([
-      'get',
-      markers.noBreak,
-      markers.space,
-    ]);
+    parts = parts.concat(['get', markers.noBreak, markers.space]);
   } else if (node.kind === 'set') {
-    parts = parts.concat([
-      'set',
-      markers.noBreak,
-      markers.space,
-    ]);
+    parts = parts.concat(['set', markers.noBreak, markers.space]);
   }
 
   if (node.value && node.value.async) {
-    parts = parts.concat([
-      'async',
-      markers.noBreak,
-      markers.space,
-    ]);
+    parts = parts.concat(['async', markers.noBreak, markers.space]);
   }
 
   if (node.value && node.value.generator) {
-    parts = parts.concat([
-      '*',
-      markers.noBreak,
-    ]);
+    parts = parts.concat(['*', markers.noBreak]);
   }
 
   if (node.computed) {
-    parts = parts.concat([
-      '[',
-      markers.noBreak,
-      print(node.key),
-      markers.noBreak,
-      ']',
-      markers.noBreak,
-    ]);
+    parts = parts.concat(['[', markers.noBreak, print(node.key), markers.noBreak, ']', markers.noBreak]);
   } else {
-    parts = parts.concat([
-      print(node.key),
-      markers.noBreak,
-    ]);
+    parts = parts.concat([print(node.key), markers.noBreak]);
   }
 
   // TODO: Force the scope to break when a property is a method. Or if the
   // value is a function expression.
   if (node.method) {
-    parts = parts.concat([
-      markers.noBreak,
-      print(node.value),
-    ]);
+    parts = parts.concat([markers.noBreak, print(node.value)]);
   } else if (!node.shorthand) {
-    parts = parts.concat([
-      ':',
-      markers.noBreak,
-      markers.space,
-      print(node.value),
-    ]);
+    parts = parts.concat([':', markers.noBreak, markers.space, print(node.value)]);
   } else if (node.key.type !== node.value.type) {
     // This is a very strange case in the AST where we are in a shorthand
     // property but key and value do not have the same type. This can happen

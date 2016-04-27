@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +8,12 @@
  * the root directory of this source tree.
  */
 
-const util = require('util');
+var util = require('util');
 
-function layout(loggingEvent: any): Array<any> {
-  const eventInfo = util.format(
-    '[%s] [%s] %s - ',
-    loggingEvent.startTime.toISOString(),
-    loggingEvent.level,
-    loggingEvent.categoryName);
+function layout(loggingEvent) {
+  var eventInfo = util.format('[%s] [%s] %s - ', loggingEvent.startTime.toISOString(), loggingEvent.level, loggingEvent.categoryName);
 
-  const data = loggingEvent.data.slice();
+  var data = loggingEvent.data.slice();
 
   // Since console.log support string format as first parameter, we should preserve this behavior
   // by concating eventInfo with first parameter if it is string.
@@ -34,13 +29,13 @@ function layout(loggingEvent: any): Array<any> {
  * Comparing to log4js's console appender(https://fburl.com/69861669), you can expand and explore
  * the object in console logged by this Appender.
  */
-function consoleAppender(): (loggingEvent: any) => void {
-  return loggingEvent => {
+function consoleAppender() {
+  return function (loggingEvent) {
     console.log.apply(console, layout(loggingEvent)); // eslint-disable-line no-console
   };
 }
 
 module.exports = {
   appender: consoleAppender,
-  configure: consoleAppender,
+  configure: consoleAppender
 };

@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _nuclideUiLibButton = require('../../nuclide-ui/lib/Button');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,43 +16,64 @@
  * the root directory of this source tree.
  */
 
-const {React} = require('react-for-atom');
-const {PropTypes} = React;
-import {
-  Button,
-  ButtonSizes,
-} from '../../nuclide-ui/lib/Button';
+var _require = require('react-for-atom');
 
-class HomeFeatureComponent extends React.Component {
-  static propTypes = {
-    title: PropTypes.string.isRequired,
-    icon: PropTypes.string.isRequired,
-    description: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.element,
-    ]).isRequired,
-    command: PropTypes.string,
-  };
+var React = _require.React;
+var PropTypes = React.PropTypes;
 
-  render(): React.Element {
-    const {title, command} = this.props;
-    return (
-      <details className="nuclide-home-card">
-        <summary className={`nuclide-home-summary icon icon-${this.props.icon}`}>
-          {title}
-          {command ? <Button
-            className="pull-right nuclide-home-tryit"
-            size={ButtonSizes.SMALL}
-            onClick={() => atom.commands.dispatch(atom.views.getView(atom.workspace), command)}>
-            Try it
-          </Button> : null}
-        </summary>
-        <div className="nuclide-home-detail">
-          {this.props.description}
-        </div>
-      </details>
-    );
+var HomeFeatureComponent = (function (_React$Component) {
+  _inherits(HomeFeatureComponent, _React$Component);
+
+  function HomeFeatureComponent() {
+    _classCallCheck(this, HomeFeatureComponent);
+
+    _get(Object.getPrototypeOf(HomeFeatureComponent.prototype), 'constructor', this).apply(this, arguments);
   }
-}
+
+  _createClass(HomeFeatureComponent, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var title = _props.title;
+      var command = _props.command;
+
+      return React.createElement(
+        'details',
+        { className: 'nuclide-home-card' },
+        React.createElement(
+          'summary',
+          { className: 'nuclide-home-summary icon icon-' + this.props.icon },
+          title,
+          command ? React.createElement(
+            _nuclideUiLibButton.Button,
+            {
+              className: 'pull-right nuclide-home-tryit',
+              size: _nuclideUiLibButton.ButtonSizes.SMALL,
+              onClick: function () {
+                return atom.commands.dispatch(atom.views.getView(atom.workspace), command);
+              } },
+            'Try it'
+          ) : null
+        ),
+        React.createElement(
+          'div',
+          { className: 'nuclide-home-detail' },
+          this.props.description
+        )
+      );
+    }
+  }], [{
+    key: 'propTypes',
+    value: {
+      title: PropTypes.string.isRequired,
+      icon: PropTypes.string.isRequired,
+      description: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,
+      command: PropTypes.string
+    },
+    enumerable: true
+  }]);
+
+  return HomeFeatureComponent;
+})(React.Component);
 
 module.exports = HomeFeatureComponent;

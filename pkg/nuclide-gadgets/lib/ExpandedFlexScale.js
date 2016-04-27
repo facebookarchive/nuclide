@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +10,17 @@
  * the root directory of this source tree.
  */
 
-import type {PaneItemContainer} from '../types/PaneItemContainer';
+exports.get = get;
+exports.set = set;
 
-import GadgetPlaceholder from './GadgetPlaceholder';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export function get(container: PaneItemContainer): number {
-  for (const item of container.getItems()) {
+var _GadgetPlaceholder = require('./GadgetPlaceholder');
+
+var _GadgetPlaceholder2 = _interopRequireDefault(_GadgetPlaceholder);
+
+function get(container) {
+  for (var item of container.getItems()) {
     if (item._expandedFlexScale) {
       return item._expandedFlexScale;
     }
@@ -22,12 +28,12 @@ export function get(container: PaneItemContainer): number {
   return 1;
 }
 
-export function set(container: PaneItemContainer, value: number): void {
+function set(container, value) {
   // Store the number on on every gadget item in the container just in case one gets moved or
   // destroyed. It would be nice to store the information on the container (Pane, PaneAxis) itself,
   // but Atom doesn't give us a way to persist metadata about those.
-  container.getItems().forEach(item => {
-    if (!('gadgetId' in item.constructor) && !(item instanceof GadgetPlaceholder)) {
+  container.getItems().forEach(function (item) {
+    if (!('gadgetId' in item.constructor) && !(item instanceof _GadgetPlaceholder2['default'])) {
       // We don't control this item's serialization so no use in storing the size on it.
       return;
     }

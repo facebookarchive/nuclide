@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,35 +10,39 @@
  * the root directory of this source tree.
  */
 
-import type {HomeFragments} from '../../nuclide-home-interfaces';
-import type {
-  nuclide_debugger$Service,
-  NuclideDebuggerProvider,
-} from '../../nuclide-debugger-interfaces/service';
-import type OutputService from '../../nuclide-console/lib/OutputService';
-import DebuggerProvider from './DebuggerProvider';
-import {setOutputService} from '../../nuclide-debugger-common/lib/OutputServiceManager';
+exports.consumeOutputService = consumeOutputService;
+exports.provideNuclideDebuggerHhvm = provideNuclideDebuggerHhvm;
+exports.createDebuggerProvider = createDebuggerProvider;
+exports.getHomeFragments = getHomeFragments;
 
-export function consumeOutputService(api: OutputService): void {
-  setOutputService(api);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _DebuggerProvider = require('./DebuggerProvider');
+
+var _DebuggerProvider2 = _interopRequireDefault(_DebuggerProvider);
+
+var _nuclideDebuggerCommonLibOutputServiceManager = require('../../nuclide-debugger-common/lib/OutputServiceManager');
+
+function consumeOutputService(api) {
+  (0, _nuclideDebuggerCommonLibOutputServiceManager.setOutputService)(api);
 }
 
-export function provideNuclideDebuggerHhvm(): nuclide_debugger$Service {
+function provideNuclideDebuggerHhvm() {
   return require('./Service');
 }
 
-export function createDebuggerProvider(): NuclideDebuggerProvider {
-  return DebuggerProvider;
+function createDebuggerProvider() {
+  return _DebuggerProvider2['default'];
 }
 
-export function getHomeFragments(): HomeFragments {
+function getHomeFragments() {
   return {
     feature: {
       title: 'HHVM Debugger',
       icon: 'plug',
       description: 'Connect to a HHVM server process and debug Hack code from within Nuclide.',
-      command: 'nuclide-debugger:toggle',
+      command: 'nuclide-debugger:toggle'
     },
-    priority: 6,
+    priority: 6
   };
 }

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +8,12 @@
  * the root directory of this source tree.
  */
 
-import type {EmptyStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var wrapStatement = require('../../wrappers/simple/wrapStatement');
 
-const wrapStatement = require('../../wrappers/simple/wrapStatement');
-
-function printEmptyStatement(print: Print, node: EmptyStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
+function printEmptyStatement(print, node) {
+  var wrap = function wrap(x) {
+    return wrapStatement(print, node, x);
+  };
   return wrap([';']);
 }
 

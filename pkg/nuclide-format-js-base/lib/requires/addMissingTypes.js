@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +8,26 @@
  * the root directory of this source tree.
  */
 
-import type {Collection} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
+var FirstNode = require('../utils/FirstNode');
 
-const FirstNode = require('../utils/FirstNode');
+var getUndeclaredTypes = require('../utils/getUndeclaredTypes');
 
-const getUndeclaredTypes = require('../utils/getUndeclaredTypes');
-
-function addMissingTypes(root: Collection, options: SourceOptions): void {
-  const first = FirstNode.get(root);
+function addMissingTypes(root, options) {
+  var first = FirstNode.get(root);
   if (!first) {
     return;
   }
-  const _first = first; // For flow.
+  var _first = first; // For flow.
 
-  const {moduleMap} = options;
-  const requireOptions = {
+  var moduleMap = options.moduleMap;
+
+  var requireOptions = {
     sourcePath: options.sourcePath,
-    typeImport: true,
+    typeImport: true
   };
 
-  getUndeclaredTypes(root, options).forEach(name => {
-    const node = moduleMap.getRequire(name, requireOptions);
+  getUndeclaredTypes(root, options).forEach(function (name) {
+    var node = moduleMap.getRequire(name, requireOptions);
     _first.insertBefore(node);
   });
 }

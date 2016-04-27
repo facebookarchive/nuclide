@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var jscs = require('jscodeshift');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +10,41 @@
  * the root directory of this source tree.
  */
 
-import type {Node} from '../types/ast';
-
-const jscs = require('jscodeshift');
-
-const {match} = jscs;
+var match = jscs.match;
 
 /**
  * This traverses a node to find the first identifier in nested expressions.
  */
-function getRootIdentifierInExpression(node: ?Node): ?Node {
-  if (!node) {
+function getRootIdentifierInExpression(_x) {
+  var _again = true;
+
+  _function: while (_again) {
+    var node = _x;
+    _again = false;
+
+    if (!node) {
+      return null;
+    }
+    if (match(node, { type: 'ExpressionStatement' })) {
+      _x = node.expression;
+      _again = true;
+      continue _function;
+    }
+    if (match(node, { type: 'CallExpression' })) {
+      _x = node.callee;
+      _again = true;
+      continue _function;
+    }
+    if (match(node, { type: 'MemberExpression' })) {
+      _x = node.object;
+      _again = true;
+      continue _function;
+    }
+    if (match(node, { type: 'Identifier' })) {
+      return node;
+    }
     return null;
   }
-  if (match(node, {type: 'ExpressionStatement'})) {
-    return getRootIdentifierInExpression(node.expression);
-  }
-  if (match(node, {type: 'CallExpression'})) {
-    return getRootIdentifierInExpression(node.callee);
-  }
-  if (match(node, {type: 'MemberExpression'})) {
-    return getRootIdentifierInExpression(node.object);
-  }
-  if (match(node, {type: 'Identifier'})) {
-    return node;
-  }
-  return null;
 }
 
 module.exports = getRootIdentifierInExpression;

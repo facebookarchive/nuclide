@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,101 +16,86 @@
  * the root directory of this source tree.
  */
 
-import {Disposable} from 'atom';
-import {Observable} from 'rxjs';
+var _atom = require('atom');
 
-import {
-  atomEventDebounce,
-} from '../../nuclide-atom-helpers';
+var _rxjs = require('rxjs');
 
-import {ProviderRegistry} from './ProviderRegistry';
+var _nuclideAtomHelpers = require('../../nuclide-atom-helpers');
 
-export type Provider = {
-  priority: number;
-  grammarScopes: Array<string>;
-};
+var _ProviderRegistry = require('./ProviderRegistry');
 
-export type Result<V> = {
-  kind: 'not-text-editor';
-} | {
-  kind: 'no-provider';
-  grammar: atom$Grammar;
-} | {
-  // Since providers can be slow, the pane-change and edit events are emitted immediately in case
-  // the UI needs to clear outdated results.
-  kind: 'pane-change';
-} | {
-  kind: 'edit';
-} | {
-  kind: 'result';
-  result: V;
-  // The editor that the result was computed from
-  editor: atom$TextEditor;
-};
+var ActiveEditorBasedService = (function () {
+  function ActiveEditorBasedService(resultFunction) {
+    _classCallCheck(this, ActiveEditorBasedService);
 
-type ResultFunction<T, V> = (provider: T, editor: atom$TextEditor) => Promise<V>;
-
-export class ActiveEditorBasedService<T: Provider, V> {
-  _resultFunction: ResultFunction<T, V>;
-  _providerRegistry: ProviderRegistry<T>;
-  _resultsStream: Observable<Result<V>>;
-
-  constructor(resultFunction: ResultFunction<T, V>) {
     this._resultFunction = resultFunction;
-    this._providerRegistry = new ProviderRegistry();
+    this._providerRegistry = new _ProviderRegistry.ProviderRegistry();
     this._resultsStream = this._createResultsStream();
   }
 
-  consumeProvider(provider: T): IDisposable {
-    this._providerRegistry.addProvider(provider);
-    return new Disposable(() => {
-      this._providerRegistry.removeProvider(provider);
-    });
-  }
+  _createClass(ActiveEditorBasedService, [{
+    key: 'consumeProvider',
+    value: function consumeProvider(provider) {
+      var _this = this;
 
-  getResultsStream(): Observable<Result<V>> {
-    return this._resultsStream;
-  }
-
-  _createResultsStream(): Observable<Result<V>> {
-    const activeEditors = atomEventDebounce.observeActiveEditorsDebounced();
-    // Emit a pane change event first, so that clients can do something while waiting for a provider
-    // to give a result.
-    return activeEditors.switchMap(editorArg => {
-      // Necessary so the type refinement holds in the callback later
-      const editor = editorArg;
-      if (editor == null) {
-        return Observable.of({ kind: 'not-text-editor' });
-      }
-
-      const editorEvents = atomEventDebounce.observeEditorChangesDebounced(editor);
-
-      return Observable.concat(
-        Observable.of({ kind: 'pane-change' }),
-        editorEvents.flatMap(() => {
-          return Observable.concat(
-            Observable.of({ kind: 'edit' }),
-            Observable.fromPromise(this._getResultForEditor(editor)),
-          );
-        }),
-      );
-    });
-  }
-
-  async _getResultForEditor(editor: atom$TextEditor): Promise<Result<V>> {
-    const grammar = editor.getGrammar().scopeName;
-    const provider = this._providerRegistry.findProvider(grammar);
-    if (provider == null) {
-      return {
-        kind: 'no-provider',
-        grammar: editor.getGrammar(),
-      };
+      this._providerRegistry.addProvider(provider);
+      return new _atom.Disposable(function () {
+        _this._providerRegistry.removeProvider(provider);
+      });
     }
-    const result = await this._resultFunction(provider, editor);
-    return {
-      kind: 'result',
-      result,
-      editor,
-    };
-  }
-}
+  }, {
+    key: 'getResultsStream',
+    value: function getResultsStream() {
+      return this._resultsStream;
+    }
+  }, {
+    key: '_createResultsStream',
+    value: function _createResultsStream() {
+      var _this2 = this;
+
+      var activeEditors = _nuclideAtomHelpers.atomEventDebounce.observeActiveEditorsDebounced();
+      // Emit a pane change event first, so that clients can do something while waiting for a provider
+      // to give a result.
+      return activeEditors.switchMap(function (editorArg) {
+        // Necessary so the type refinement holds in the callback later
+        var editor = editorArg;
+        if (editor == null) {
+          return _rxjs.Observable.of({ kind: 'not-text-editor' });
+        }
+
+        var editorEvents = _nuclideAtomHelpers.atomEventDebounce.observeEditorChangesDebounced(editor);
+
+        return _rxjs.Observable.concat(_rxjs.Observable.of({ kind: 'pane-change' }), editorEvents.flatMap(function () {
+          return _rxjs.Observable.concat(_rxjs.Observable.of({ kind: 'edit' }), _rxjs.Observable.fromPromise(_this2._getResultForEditor(editor)));
+        }));
+      });
+    }
+  }, {
+    key: '_getResultForEditor',
+    value: _asyncToGenerator(function* (editor) {
+      var grammar = editor.getGrammar().scopeName;
+      var provider = this._providerRegistry.findProvider(grammar);
+      if (provider == null) {
+        return {
+          kind: 'no-provider',
+          grammar: editor.getGrammar()
+        };
+      }
+      var result = yield this._resultFunction(provider, editor);
+      return {
+        kind: 'result',
+        result: result,
+        editor: editor
+      };
+    })
+  }]);
+
+  return ActiveEditorBasedService;
+})();
+
+exports.ActiveEditorBasedService = ActiveEditorBasedService;
+
+// Since providers can be slow, the pane-change and edit events are emitted immediately in case
+// the UI needs to clear outdated results.
+
+// The editor that the result was computed from

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var jscs = require('jscodeshift');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +10,10 @@
  * the root directory of this source tree.
  */
 
-import type {Node} from '../types/ast';
+var match = jscs.match;
 
-const jscs = require('jscodeshift');
-
-const {match} = jscs;
-
-function hasOneDeclaration(node: Node): boolean {
-  if (!match(node, {type: 'VariableDeclaration'})) {
+function hasOneDeclaration(node) {
+  if (!match(node, { type: 'VariableDeclaration' })) {
     return false;
   }
   return node.declarations.length === 1;

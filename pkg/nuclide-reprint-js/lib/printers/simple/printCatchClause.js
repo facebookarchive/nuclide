@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +8,11 @@
  * the root directory of this source tree.
  */
 
-import type {CatchClause} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printCatchClause(print: Print, node: CatchClause): Lines {
-  return flatten([
-    'catch (',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    print(node.param),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-    ')',
-    markers.noBreak,
-    markers.space,
-    print(node.body),
-  ]);
+function printCatchClause(print, node) {
+  return flatten(['catch (', markers.openScope, markers.scopeIndent, markers.scopeBreak, print(node.param), markers.scopeBreak, markers.scopeDedent, markers.closeScope, ')', markers.noBreak, markers.space, print(node.body)]);
 }
 
 module.exports = printCatchClause;

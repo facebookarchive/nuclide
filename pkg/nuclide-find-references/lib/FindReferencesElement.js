@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,39 +12,50 @@
 
 /* eslint-env browser */
 
-import type FindReferencesModel from './FindReferencesModel';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
-const FindReferencesView = require('./view/FindReferencesView');
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-class FindReferencesElement extends HTMLElement {
-  _model: FindReferencesModel;
+var _require = require('react-for-atom');
 
-  initialize(model: FindReferencesModel) {
-    this._model = model;
-    return this;
+var React = _require.React;
+var ReactDOM = _require.ReactDOM;
+
+var FindReferencesView = require('./view/FindReferencesView');
+
+var FindReferencesElement = (function (_HTMLElement) {
+  _inherits(FindReferencesElement, _HTMLElement);
+
+  function FindReferencesElement() {
+    _classCallCheck(this, FindReferencesElement);
+
+    _get(Object.getPrototypeOf(FindReferencesElement.prototype), 'constructor', this).apply(this, arguments);
   }
 
-  getTitle() {
-    return 'Symbol References: ' + this._model.getSymbolName();
-  }
+  _createClass(FindReferencesElement, [{
+    key: 'initialize',
+    value: function initialize(model) {
+      this._model = model;
+      return this;
+    }
+  }, {
+    key: 'getTitle',
+    value: function getTitle() {
+      return 'Symbol References: ' + this._model.getSymbolName();
+    }
+  }, {
+    key: 'attachedCallback',
+    value: function attachedCallback() {
+      ReactDOM.render(React.createElement(FindReferencesView, { model: this._model }), this);
+    }
+  }, {
+    key: 'detachedCallback',
+    value: function detachedCallback() {
+      ReactDOM.unmountComponentAtNode(this);
+    }
+  }]);
 
-  attachedCallback() {
-    ReactDOM.render(
-      <FindReferencesView model={this._model} />,
-      this
-    );
-  }
+  return FindReferencesElement;
+})(HTMLElement);
 
-  detachedCallback() {
-    ReactDOM.unmountComponentAtNode(this);
-  }
-}
-
-module.exports = FindReferencesElement = (document: any).registerElement(
-  'nuclide-find-references-view',
-  {prototype: FindReferencesElement.prototype}
-);
+module.exports = FindReferencesElement = document.registerElement('nuclide-find-references-view', { prototype: FindReferencesElement.prototype });

@@ -1,5 +1,67 @@
-'use babel';
-/* @flow */
+
+
+// TODO (mikeo): Make this another search provider
+
+var doSearchDirectory = _asyncToGenerator(function* (directoryUri, query) {
+  var search = fileSearchers[directoryUri];
+  if (search === undefined) {
+    var directory = remoteUri.parse(directoryUri).path;
+
+    var exists = yield fsPromise.exists(directory);
+    if (!exists) {
+      throw new Error('Could not find directory to search : ' + directory);
+    }
+
+    var stat = yield fsPromise.stat(directory);
+    if (!stat.isDirectory()) {
+      throw new Error('Provided path is not a directory : ' + directory);
+    }
+
+    search = yield fileSearchForDirectory(directoryUri);
+    fileSearchers[directoryUri] = search;
+  }
+
+  return yield search.query(query);
+});
+
+var getSearchProviders = _asyncToGenerator(function* (cwd) {
+  var checkAvailability = _asyncToGenerator(function* (providerName) {
+    (0, _assert2['default'])(providers);
+    var isAvailable = yield providers[providerName].isAvailable(cwd);
+    return isAvailable ? { name: providerName } : null;
+  });
+
+  var validPromises = [];
+
+  for (var _name in providers) {
+    validPromises.push(checkAvailability(_name));
+  }
+
+  var allResults = yield Promise.all(validPromises);
+  // Any is required here as otherwise we get a flow error in core.js
+  return allResults.filter(function (provider) {
+    return provider != null;
+  });
+});
+
+var doSearchQuery = _asyncToGenerator(function* (cwd, provider, query) {
+  (0, _assert2['default'])(providers);
+  var currentProvider = providers[provider];
+  if (!currentProvider) {
+    throw new Error('Invalid provider: ' + provider);
+  }
+  (0, _assert2['default'])(currentProvider != null);
+  var results = yield currentProvider.query(cwd, query);
+  return { results: results };
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +71,17 @@
  * the root directory of this source tree.
  */
 
-type ProviderInfo = {
-  name: string;
-};
+var _require = require('../../../nuclide-commons');
 
-type SearchQueryResult = {
-  line: number;
-  column: number;
-  name: string;
-  path: string;
-  length: number;
-  scope: string;
-  additionalInfo: string;
-  action: string;
-};
+var fsPromise = _require.fsPromise;
 
-type SearchResponse = {
-  results: Array<SearchQueryResult>;
-};
+var _require2 = require('../../../nuclide-path-search');
 
-import invariant from 'assert';
-import type {FileSearchResult} from '../../../nuclide-path-search';
+var fileSearchForDirectory = _require2.fileSearchForDirectory;
 
-const {fsPromise} = require('../../../nuclide-commons');
-const {fileSearchForDirectory} = require('../../../nuclide-path-search');
-const remoteUri = require('../../../nuclide-remote-uri');
+var remoteUri = require('../../../nuclide-remote-uri');
 
-type SearchProvider = {
-  isAvailable: (cwd: string) => boolean;
-  query: (cwd: string, query: string) => Promise<Array<SearchQueryResult>>;
-};
-
-let providers: ?{[providerName: string]: SearchProvider};
+var providers = undefined;
 
 /*
  * TODO(williamsc): This needs to have some better
@@ -48,99 +89,38 @@ let providers: ?{[providerName: string]: SearchProvider};
  */
 
 // Cache of previously indexed folders for later use.
-let fileSearchers: any = Object.create(null);
+var fileSearchers = Object.create(null);
 
-// TODO (mikeo): Make this another search provider
-async function doSearchDirectory(
-  directoryUri: string,
-  query: string
-): Promise<Array<FileSearchResult>> {
-  let search = fileSearchers[directoryUri];
-  if (search === undefined) {
-    const directory = remoteUri.parse(directoryUri).path;
-
-    const exists = await fsPromise.exists(directory);
-    if (!exists) {
-      throw new Error('Could not find directory to search : ' + directory);
-    }
-
-    const stat = await fsPromise.stat(directory);
-    if (!stat.isDirectory()) {
-      throw new Error('Provided path is not a directory : ' + directory);
-    }
-
-    search = await fileSearchForDirectory(directoryUri);
-    fileSearchers[directoryUri] = search;
-  }
-
-  return await search.query(query);
-}
-
-async function getSearchProviders(cwd: string): Promise<Array<ProviderInfo>> {
-  const validPromises: Array<Promise<?ProviderInfo>> = [];
-
-  async function checkAvailability(providerName: string): Promise<?ProviderInfo> {
-    invariant(providers);
-    const isAvailable = await providers[providerName].isAvailable(cwd);
-    return isAvailable ? {name: providerName} : null;
-  }
-
-  for (const name in providers) {
-    validPromises.push(checkAvailability(name));
-  }
-
-  const allResults: Array<?ProviderInfo> =
-      await Promise.all((validPromises: Array<Promise<?ProviderInfo>>));
-  // Any is required here as otherwise we get a flow error in core.js
-  return (allResults.filter(provider => provider != null): any);
-}
-
-async function doSearchQuery(
-  cwd: string,
-  provider: string,
-  query: string
-): Promise<SearchResponse> {
-  invariant(providers);
-  const currentProvider: ?SearchProvider = providers[provider];
-  if (!currentProvider) {
-    throw new Error(`Invalid provider: ${provider}`);
-  }
-  invariant(currentProvider != null);
-  const results: Array<SearchQueryResult> = await currentProvider.query(cwd, query);
-  return {results};
-}
-
-function addProvider(name: string, provider: SearchProvider): void {
+function addProvider(name, provider) {
   providers = providers || {};
   if (providers[name]) {
-    throw new Error(`${name} has already been added as a provider.`);
+    throw new Error(name + ' has already been added as a provider.');
   }
   providers[name] = provider;
 }
 
-function clearProviders(): void {
+function clearProviders() {
   providers = null;
 }
 
-function initialize(): void {
-}
+function initialize() {}
 
-function shutdown(): void {
+function shutdown() {
   clearProviders();
-  for (const k in fileSearchers) {
+  for (var k in fileSearchers) {
     fileSearchers[k].dispose();
   }
   fileSearchers = Object.create(null);
 }
 
 module.exports = {
-  initialize,
-  shutdown,
-  addProvider,
-  clearProviders,
+  initialize: initialize,
+  shutdown: shutdown,
+  addProvider: addProvider,
+  clearProviders: clearProviders,
   services: {
-    '/search/query': {handler: doSearchQuery, method: 'post'},
-    '/search/listProviders': {handler: getSearchProviders, method: 'post'},
-    '/search/directory': {handler: doSearchDirectory},
-  },
+    '/search/query': { handler: doSearchQuery, method: 'post' },
+    '/search/listProviders': { handler: getSearchProviders, method: 'post' },
+    '/search/directory': { handler: doSearchDirectory }
+  }
 };

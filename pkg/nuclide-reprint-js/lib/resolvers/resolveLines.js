@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +8,18 @@
  * the root directory of this source tree.
  */
 
-import type Options from '../options/Options';
-import type {Output} from '../types/common';
-
-const resolveAll = require('./resolveAll');
-const resolveDuplicates = require('./resolveDuplicates');
-const resolveForcedMarkers = require('./resolveForcedMarkers');
-const resolveForcedScopeBreaks = require('./resolveForcedScopeBreaks');
-const resolveNoBreaks = require('./resolveNoBreaks');
-const resolveScopes = require('./resolveScopes');
+var resolveAll = require('./resolveAll');
+var resolveDuplicates = require('./resolveDuplicates');
+var resolveForcedMarkers = require('./resolveForcedMarkers');
+var resolveForcedScopeBreaks = require('./resolveForcedScopeBreaks');
+var resolveNoBreaks = require('./resolveNoBreaks');
+var resolveScopes = require('./resolveScopes');
 
 /**
  * After printing the AST parts and all appropriate markers this will join the
  * parts based on options and the markers that are available.
  */
-function resolveLines(lines: Array<any>, options: Options): Output {
+function resolveLines(lines, options) {
   lines = resolveNoBreaks(lines);
   lines = resolveForcedScopeBreaks(lines);
   lines = resolveDuplicates(lines);

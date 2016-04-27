@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,22 +8,14 @@
  * the root directory of this source tree.
  */
 
-import type {ExpressionStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var markers = require('../../constants/markers');
+var wrapStatement = require('../../wrappers/simple/wrapStatement');
 
-const markers = require('../../constants/markers');
-const wrapStatement = require('../../wrappers/simple/wrapStatement');
-
-function printExpressionStatement(
-  print: Print,
-  node: ExpressionStatement,
-): Lines {
-  const wrap = x => wrapStatement(print, node, x);
-  return wrap([
-    print(node.expression),
-    markers.noBreak,
-    ';',
-  ]);
+function printExpressionStatement(print, node) {
+  var wrap = function wrap(x) {
+    return wrapStatement(print, node, x);
+  };
+  return wrap([print(node.expression), markers.noBreak, ';']);
 }
 
 module.exports = printExpressionStatement;

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +8,20 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {ReturnStatement} from 'ast-types-flow';
+var markers = require('../../constants/markers');
+var wrapStatement = require('../../wrappers/simple/wrapStatement');
 
-const markers = require('../../constants/markers');
-const wrapStatement = require('../../wrappers/simple/wrapStatement');
+function printReturnStatement(print, node) {
+  var wrap = function wrap(x) {
+    return wrapStatement(print, node, x);
+  };
 
-function printReturnStatement(print: Print, node: ReturnStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
-
-  let parts = ['return'];
+  var parts = ['return'];
   if (node.argument) {
-    const argument = node.argument;
-    parts = parts.concat([
-      markers.space,
-      print(argument),
-    ]);
+    var argument = node.argument;
+    parts = parts.concat([markers.space, print(argument)]);
   }
-  return wrap([
-    parts,
-    markers.noBreak,
-    ';',
-  ]);
+  return wrap([parts, markers.noBreak, ';']);
 }
 
 module.exports = printReturnStatement;

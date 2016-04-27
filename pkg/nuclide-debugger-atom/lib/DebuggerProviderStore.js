@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,103 +10,122 @@
  * the root directory of this source tree.
  */
 
-import type {Dispatcher} from 'flux';
-import type DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
-import type {
-  NuclideDebuggerProvider,
-} from '../../nuclide-debugger-interfaces/service';
-import type DebuggerActions from './DebuggerActions';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {CompositeDisposable, Disposable} from 'atom';
-import Constants from './Constants';
-import {EventEmitter} from 'events';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const CONNECTIONS_UPDATED_EVENT = 'CONNECTIONS_UPDATED_EVENT';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _atom = require('atom');
+
+var _Constants = require('./Constants');
+
+var _Constants2 = _interopRequireDefault(_Constants);
+
+var _events = require('events');
+
+var CONNECTIONS_UPDATED_EVENT = 'CONNECTIONS_UPDATED_EVENT';
 
 /**
  * Flux style store holding all data related to debugger provider.
  */
-export class DebuggerProviderStore {
-  _dispatcher: Dispatcher;
-  _disposables: CompositeDisposable;
-  _debuggerActions: DebuggerActions;
-  _eventEmitter: EventEmitter;
-  _debuggerProviders: Set<NuclideDebuggerProvider>;
-  _connections: Array<string>;
 
-  constructor(dispatcher: Dispatcher, debuggerActions: DebuggerActions) {
+var DebuggerProviderStore = (function () {
+  function DebuggerProviderStore(dispatcher, debuggerActions) {
+    _classCallCheck(this, DebuggerProviderStore);
+
     this._dispatcher = dispatcher;
-    this._disposables = new CompositeDisposable(
-      this._registerDispatcherEvents(),
-      this._listenForProjectChange(),
-    );
+    this._disposables = new _atom.CompositeDisposable(this._registerDispatcherEvents(), this._listenForProjectChange());
     this._debuggerActions = debuggerActions;
-    this._eventEmitter = new EventEmitter();
+    this._eventEmitter = new _events.EventEmitter();
     this._debuggerProviders = new Set();
     this._connections = [];
   }
 
-  _registerDispatcherEvents(): IDisposable {
-    const dispatcherToken = this._dispatcher.register(this._handlePayload.bind(this));
-    return new Disposable(() => this._dispatcher.unregister(dispatcherToken));
-  }
+  _createClass(DebuggerProviderStore, [{
+    key: '_registerDispatcherEvents',
+    value: function _registerDispatcherEvents() {
+      var _this = this;
 
-  _listenForProjectChange(): IDisposable {
-    return atom.project.onDidChangePaths(() => {
-      this._debuggerActions.updateConnections();
-    });
-  }
+      var dispatcherToken = this._dispatcher.register(this._handlePayload.bind(this));
+      return new _atom.Disposable(function () {
+        return _this._dispatcher.unregister(dispatcherToken);
+      });
+    }
+  }, {
+    key: '_listenForProjectChange',
+    value: function _listenForProjectChange() {
+      var _this2 = this;
 
-  dispose() {
-    this._disposables.dispose();
-  }
+      return atom.project.onDidChangePaths(function () {
+        _this2._debuggerActions.updateConnections();
+      });
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
 
-  /**
-   * Subscribe to new connection updates from DebuggerActions.
-   */
-  onConnectionsUpdated(callback: () => void): IDisposable {
-    const emitter = this._eventEmitter;
-    this._eventEmitter.on(CONNECTIONS_UPDATED_EVENT, callback);
-    return new Disposable(() => emitter.removeListener(CONNECTIONS_UPDATED_EVENT, callback));
-  }
+    /**
+     * Subscribe to new connection updates from DebuggerActions.
+     */
+  }, {
+    key: 'onConnectionsUpdated',
+    value: function onConnectionsUpdated(callback) {
+      var emitter = this._eventEmitter;
+      this._eventEmitter.on(CONNECTIONS_UPDATED_EVENT, callback);
+      return new _atom.Disposable(function () {
+        return emitter.removeListener(CONNECTIONS_UPDATED_EVENT, callback);
+      });
+    }
+  }, {
+    key: 'getConnections',
+    value: function getConnections() {
+      return this._connections;
+    }
 
-  getConnections(): Array<string> {
-    return this._connections;
-  }
-
-  /**
-   * Return available launch/attach provider for input connection.
-   * Caller is responsible for disposing the results.
-   */
-  getLaunchAttachProvidersForConnection(connection: string): Array<DebuggerLaunchAttachProvider> {
-    const availableLaunchAttachProviders = [];
-    for (const provider of this._debuggerProviders) {
-      const launchAttachProvider = provider.getLaunchAttachProvider(connection);
-      if (launchAttachProvider != null) {
-        availableLaunchAttachProviders.push(launchAttachProvider);
+    /**
+     * Return available launch/attach provider for input connection.
+     * Caller is responsible for disposing the results.
+     */
+  }, {
+    key: 'getLaunchAttachProvidersForConnection',
+    value: function getLaunchAttachProvidersForConnection(connection) {
+      var availableLaunchAttachProviders = [];
+      for (var provider of this._debuggerProviders) {
+        var launchAttachProvider = provider.getLaunchAttachProvider(connection);
+        if (launchAttachProvider != null) {
+          availableLaunchAttachProviders.push(launchAttachProvider);
+        }
+      }
+      return availableLaunchAttachProviders;
+    }
+  }, {
+    key: '_handlePayload',
+    value: function _handlePayload(payload) {
+      switch (payload.actionType) {
+        case _Constants2['default'].Actions.ADD_DEBUGGER_PROVIDER:
+          if (this._debuggerProviders.has(payload.data)) {
+            return;
+          }
+          this._debuggerProviders.add(payload.data);
+          break;
+        case _Constants2['default'].Actions.REMOVE_DEBUGGER_PROVIDER:
+          if (!this._debuggerProviders.has(payload.data)) {
+            return;
+          }
+          this._debuggerProviders['delete'](payload.data);
+          break;
+        case _Constants2['default'].Actions.UPDATE_CONNECTIONS:
+          this._connections = payload.data;
+          this._eventEmitter.emit(CONNECTIONS_UPDATED_EVENT);
+          break;
       }
     }
-    return availableLaunchAttachProviders;
-  }
+  }]);
 
-  _handlePayload(payload: Object) {
-    switch (payload.actionType) {
-      case Constants.Actions.ADD_DEBUGGER_PROVIDER:
-        if (this._debuggerProviders.has(payload.data)) {
-          return;
-        }
-        this._debuggerProviders.add(payload.data);
-        break;
-      case Constants.Actions.REMOVE_DEBUGGER_PROVIDER:
-        if (!this._debuggerProviders.has(payload.data)) {
-          return;
-        }
-        this._debuggerProviders.delete(payload.data);
-        break;
-      case Constants.Actions.UPDATE_CONNECTIONS:
-        this._connections = payload.data;
-        this._eventEmitter.emit(CONNECTIONS_UPDATED_EVENT);
-        break;
-    }
-  }
-}
+  return DebuggerProviderStore;
+})();
+
+exports.DebuggerProviderStore = DebuggerProviderStore;

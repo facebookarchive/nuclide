@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,45 +10,49 @@
  * the root directory of this source tree.
  */
 
-import type Rx from 'rxjs';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import invariant from 'assert';
-import {DisposableSubscription} from '../../nuclide-commons';
-import {track as rawTrack} from './track';
-import {HistogramTracker} from './HistogramTracker';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export type TrackingEvent = {
-  type: string;
-  data?: Object;
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-function track(eventName: string, values?: {[key: string]: mixed}): Promise<mixed> {
-  invariant(rawTrack);
-  return rawTrack(eventName, values || {});
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _nuclideCommons = require('../../nuclide-commons');
+
+var _track = require('./track');
+
+var _HistogramTracker = require('./HistogramTracker');
+
+function track(eventName, values) {
+  (0, _assert2['default'])(_track.track);
+  return (0, _track.track)(eventName, values || {});
 }
 
 /**
  * Track an analytics event and send it off immediately.
  * The returned promise will resolve when the request completes (or reject on failure).
  */
-function trackImmediate(eventName: string, values?: {[key: string]: mixed}): Promise<mixed> {
-  invariant(rawTrack);
-  return rawTrack(eventName, values || {}, true);
+function trackImmediate(eventName, values) {
+  (0, _assert2['default'])(_track.track);
+  return (0, _track.track)(eventName, values || {}, true);
 }
 
 /**
  * An alternative interface for `track` that accepts a single event object. This is particularly
  * useful when dealing with streams (Observables).
  */
-function trackEvent(event: TrackingEvent): Promise<mixed> {
+function trackEvent(event) {
   return track(event.type, event.data);
 }
 
 /**
  * Track each event in a stream of TrackingEvents.
  */
-function trackEvents(events: Rx.Observable<TrackingEvent>): IDisposable {
-  return new DisposableSubscription(events.subscribe(trackEvent));
+function trackEvents(events) {
+  return new _nuclideCommons.DisposableSubscription(events.subscribe(trackEvent));
 }
 
 /**
@@ -74,22 +79,31 @@ function trackEvents(events: Rx.Observable<TrackingEvent>): IDisposable {
  *    `$className.$methodName` for Class method or `Object.$methodName` for Object method.
  * @returns A decorator.
  */
-function trackTiming(eventName: ?string = null): any {
+function trackTiming() {
+  var eventName = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
 
-  return (target: any, name: string, descriptor: any) => {
-    const originalMethod = descriptor.value;
+  return function (target, name, descriptor) {
+    var originalMethod = descriptor.value;
 
     // We can't use arrow function here as it will bind `this` to the context of enclosing function
     // which is trackTiming, whereas what needed is context of originalMethod.
-    descriptor.value = function(...args) {
+    descriptor.value = function () {
+      var _this = this;
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
       if (!eventName) {
-        const constructorName = this.constructor ? this.constructor.name : undefined;
-        eventName = `${constructorName}.${name}`;
+        var constructorName = this.constructor ? this.constructor.name : undefined;
+        eventName = constructorName + '.' + name;
       }
 
       return trackOperationTiming(eventName,
-        // Must use arrow here to get correct 'this'
-        () => originalMethod.apply(this, args));
+      // Must use arrow here to get correct 'this'
+      function () {
+        return originalMethod.apply(_this, args);
+      });
     };
   };
 }
@@ -102,48 +116,52 @@ function trackTiming(eventName: ?string = null): any {
  *
  * Wrapped in a function rather than a module constant to facilitate testing.
  */
-const getTimestamp = (): number => {
-  const timingFunction = (global.performance != null)
-    ? () => Math.round(global.performance.now())
-    : (process != null && typeof process.hrtime === 'function')
-      ? () => {
-        const hr = process.hrtime();
-        return Math.round((hr[0] * 1e9 + hr[1]) / 1e6);
-      }
-      : Date.now;
+var getTimestamp = function getTimestamp() {
+  var timingFunction = global.performance != null ? function () {
+    return Math.round(global.performance.now());
+  } : process != null && typeof process.hrtime === 'function' ? function () {
+    var hr = process.hrtime();
+    return Math.round((hr[0] * 1e9 + hr[1]) / 1e6);
+  } : Date.now;
   return timingFunction();
 };
 
-const PERFORMANCE_EVENT = 'performance';
+var PERFORMANCE_EVENT = 'performance';
 
-class TimingTracker {
-  _eventName: string;
-  _startTime: number;
+var TimingTracker = (function () {
+  function TimingTracker(eventName) {
+    _classCallCheck(this, TimingTracker);
 
-  constructor(eventName: string) {
     this._eventName = eventName;
     this._startTime = getTimestamp();
   }
 
-  onError(error: Error): Promise {
-    return this._trackTimingEvent(error);
-  }
+  _createClass(TimingTracker, [{
+    key: 'onError',
+    value: function onError(error) {
+      return this._trackTimingEvent(error);
+    }
+  }, {
+    key: 'onSuccess',
+    value: function onSuccess() {
+      return this._trackTimingEvent( /* error */null);
+    }
+  }, {
+    key: '_trackTimingEvent',
+    value: function _trackTimingEvent(exception) {
+      return track(PERFORMANCE_EVENT, {
+        duration: (getTimestamp() - this._startTime).toString(),
+        eventName: this._eventName,
+        error: exception ? '1' : '0',
+        exception: exception ? exception.toString() : ''
+      });
+    }
+  }]);
 
-  onSuccess(): Promise {
-    return this._trackTimingEvent(/* error */ null);
-  }
+  return TimingTracker;
+})();
 
-  _trackTimingEvent(exception: ?Error): Promise {
-    return track(PERFORMANCE_EVENT, {
-      duration: (getTimestamp() - this._startTime).toString(),
-      eventName: this._eventName,
-      error: exception ? '1' : '0',
-      exception: exception ? exception.toString() : '',
-    });
-  }
-}
-
-function startTracking(eventName: string): TimingTracker {
+function startTracking(eventName) {
   return new TimingTracker(eventName);
 }
 
@@ -156,22 +174,22 @@ function startTracking(eventName: string): TimingTracker {
  *
  * Returns (or throws) the result of the operation.
  */
-function trackOperationTiming<T>(eventName: string, operation: () => T): T {
+function trackOperationTiming(eventName, operation) {
 
-  const tracker = startTracking(eventName);
+  var tracker = startTracking(eventName);
 
   try {
-    const result = operation();
+    var result = operation();
 
     if (require('../../nuclide-commons').promises.isPromise(result)) {
       // Atom uses a different Promise implementation than Nuclide, so the following is not true:
       // invariant(result instanceof Promise);
 
       // For the method returning a Promise, track the time after the promise is resolved/rejected.
-      return (result: any).then(value => {
+      return result.then(function (value) {
         tracker.onSuccess();
         return value;
-      }, reason => {
+      }, function (reason) {
         tracker.onError(reason instanceof Error ? reason : new Error(reason));
         return Promise.reject(reason);
       });
@@ -186,13 +204,13 @@ function trackOperationTiming<T>(eventName: string, operation: () => T): T {
 }
 
 module.exports = {
-  track,
-  trackImmediate,
-  trackEvent,
-  trackEvents,
-  trackOperationTiming,
-  startTracking,
-  TimingTracker,
-  trackTiming,
-  HistogramTracker,
+  track: track,
+  trackImmediate: trackImmediate,
+  trackEvent: trackEvent,
+  trackEvents: trackEvents,
+  trackOperationTiming: trackOperationTiming,
+  startTracking: startTracking,
+  TimingTracker: TimingTracker,
+  trackTiming: trackTiming,
+  HistogramTracker: _HistogramTracker.HistogramTracker
 };

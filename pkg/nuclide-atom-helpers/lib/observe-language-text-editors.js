@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +10,17 @@
  * the root directory of this source tree.
  */
 
-const {CompositeDisposable, Disposable} = require('atom');
-const {EventEmitter} = require('events');
+var _require = require('atom');
 
-const START_OBSERVING_TEXT_EDITOR_EVENT = 'start-observing-text-editor';
-const STOP_OBSERVING_TEXT_EDITOR_EVENT = 'stop-observing-text-editor';
+var CompositeDisposable = _require.CompositeDisposable;
+var Disposable = _require.Disposable;
+
+var _require2 = require('events');
+
+var EventEmitter = _require2.EventEmitter;
+
+var START_OBSERVING_TEXT_EDITOR_EVENT = 'start-observing-text-editor';
+var STOP_OBSERVING_TEXT_EDITOR_EVENT = 'stop-observing-text-editor';
 
 /**
  * Use this to perform an action on all text editors of the given grammar set.
@@ -21,74 +28,87 @@ const STOP_OBSERVING_TEXT_EDITOR_EVENT = 'stop-observing-text-editor';
  * This exists as its own class to make it possible to reuse instances when
  * multiple callers observe on text editors with the same grammar scopes.
  */
-class LanguageTextEditorsListener {
-  _grammarScopes: Set<string>;
-  _emitter: EventEmitter;
-  _observedTextEditors: Set<TextEditor>;
-  _destroySubscriptionsMap: Map<TextEditor, IDisposable>;
-  _grammarSubscription: IDisposable;
 
-  constructor(grammarScopes: Set<string>) {
+var LanguageTextEditorsListener = (function () {
+  function LanguageTextEditorsListener(grammarScopes) {
+    var _this = this;
+
+    _classCallCheck(this, LanguageTextEditorsListener);
+
     this._grammarScopes = grammarScopes;
 
     this._emitter = new EventEmitter();
     this._observedTextEditors = new Set();
     this._destroySubscriptionsMap = new Map();
 
-    const {observeGrammarForTextEditors} = require('..');
-    this._grammarSubscription = observeGrammarForTextEditors((textEditor, grammar) => {
-      const textEditorHasTheRightGrammar = this._grammarScopes.has(grammar.scopeName);
-      const isTextEditorObserved = this._observedTextEditors.has(textEditor);
+    var _require3 = require('..');
+
+    var observeGrammarForTextEditors = _require3.observeGrammarForTextEditors;
+
+    this._grammarSubscription = observeGrammarForTextEditors(function (textEditor, grammar) {
+      var textEditorHasTheRightGrammar = _this._grammarScopes.has(grammar.scopeName);
+      var isTextEditorObserved = _this._observedTextEditors.has(textEditor);
       if (textEditorHasTheRightGrammar && !isTextEditorObserved) {
-        this._emitter.emit(START_OBSERVING_TEXT_EDITOR_EVENT, textEditor);
-        this._observedTextEditors.add(textEditor);
+        _this._emitter.emit(START_OBSERVING_TEXT_EDITOR_EVENT, textEditor);
+        _this._observedTextEditors.add(textEditor);
       } else if (!textEditorHasTheRightGrammar && isTextEditorObserved) {
-        this._emitter.emit(STOP_OBSERVING_TEXT_EDITOR_EVENT, textEditor);
-        this._observedTextEditors.delete(textEditor);
+        _this._emitter.emit(STOP_OBSERVING_TEXT_EDITOR_EVENT, textEditor);
+        _this._observedTextEditors['delete'](textEditor);
       }
 
-      const destroySubscription = textEditor.onDidDestroy(() => {
+      var destroySubscription = textEditor.onDidDestroy(function () {
         // When a text editor that we were observing is destroyed, we need to
         // do clean-up even if its grammar hasn't changed.
-        if (this._observedTextEditors.has(textEditor)) {
-          this._emitter.emit(STOP_OBSERVING_TEXT_EDITOR_EVENT, textEditor);
-          this._observedTextEditors.delete(textEditor);
+        if (_this._observedTextEditors.has(textEditor)) {
+          _this._emitter.emit(STOP_OBSERVING_TEXT_EDITOR_EVENT, textEditor);
+          _this._observedTextEditors['delete'](textEditor);
         }
 
         destroySubscription.dispose();
-        this._destroySubscriptionsMap.delete(textEditor);
+        _this._destroySubscriptionsMap['delete'](textEditor);
       });
-      this._destroySubscriptionsMap.set(textEditor, destroySubscription);
+      _this._destroySubscriptionsMap.set(textEditor, destroySubscription);
     });
   }
 
-  observeLanguageTextEditors(
-      fn: (textEditor: TextEditor) => void,
-      cleanupFn: (textEditor: TextEditor) => void): Disposable {
-    // The event was already handled before `fn` was added to the emitter, so
-    // we need to call it on all the existing editors.
-    atom.workspace.getTextEditors()
-        .filter(textEditor => this._grammarScopes.has(textEditor.getGrammar().scopeName))
-        // We wrap `fn` instead of passing it directly to `.forEach` so it only
-        // gets called with one arg (i.e. it matches the Flow annotation).
-        .forEach(textEditor => fn(textEditor));
+  _createClass(LanguageTextEditorsListener, [{
+    key: 'observeLanguageTextEditors',
+    value: function observeLanguageTextEditors(fn, cleanupFn) {
+      var _this2 = this;
 
-    this._emitter.addListener(START_OBSERVING_TEXT_EDITOR_EVENT, fn);
-    this._emitter.addListener(STOP_OBSERVING_TEXT_EDITOR_EVENT, cleanupFn);
-    return new Disposable(() => {
-      this._emitter.removeListener(START_OBSERVING_TEXT_EDITOR_EVENT, fn);
-      this._emitter.removeListener(STOP_OBSERVING_TEXT_EDITOR_EVENT, cleanupFn);
-    });
-  }
+      // The event was already handled before `fn` was added to the emitter, so
+      // we need to call it on all the existing editors.
+      atom.workspace.getTextEditors().filter(function (textEditor) {
+        return _this2._grammarScopes.has(textEditor.getGrammar().scopeName);
+      })
+      // We wrap `fn` instead of passing it directly to `.forEach` so it only
+      // gets called with one arg (i.e. it matches the Flow annotation).
+      .forEach(function (textEditor) {
+        return fn(textEditor);
+      });
 
-  dispose(): void {
-    this._emitter.removeAllListeners();
-    this._observedTextEditors.clear();
-    this._destroySubscriptionsMap.forEach(subscription => subscription.dispose());
-    this._destroySubscriptionsMap.clear();
-    this._grammarSubscription.dispose();
-  }
-}
+      this._emitter.addListener(START_OBSERVING_TEXT_EDITOR_EVENT, fn);
+      this._emitter.addListener(STOP_OBSERVING_TEXT_EDITOR_EVENT, cleanupFn);
+      return new Disposable(function () {
+        _this2._emitter.removeListener(START_OBSERVING_TEXT_EDITOR_EVENT, fn);
+        _this2._emitter.removeListener(STOP_OBSERVING_TEXT_EDITOR_EVENT, cleanupFn);
+      });
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._emitter.removeAllListeners();
+      this._observedTextEditors.clear();
+      this._destroySubscriptionsMap.forEach(function (subscription) {
+        return subscription.dispose();
+      });
+      this._destroySubscriptionsMap.clear();
+      this._grammarSubscription.dispose();
+    }
+  }]);
+
+  return LanguageTextEditorsListener;
+})();
 
 module.exports =
 /**
@@ -99,13 +119,10 @@ module.exports =
  * @param cleanupFn This is called when a text editor no longer matches the
  * grammars or is destroyed.
  */
-function observeLanguageTextEditors(
-    grammarScopes: Array<string>,
-    fn: (textEditor: TextEditor) => void,
-    cleanupFn?: (textEditor: TextEditor) => void): IDisposable {
-  const subscriptions = new CompositeDisposable();
-  const listener = new LanguageTextEditorsListener(new Set(grammarScopes));
+function observeLanguageTextEditors(grammarScopes, fn, cleanupFn) {
+  var subscriptions = new CompositeDisposable();
+  var listener = new LanguageTextEditorsListener(new Set(grammarScopes));
   subscriptions.add(listener);
-  subscriptions.add(listener.observeLanguageTextEditors(fn, cleanupFn || (() => {})));
+  subscriptions.add(listener.observeLanguageTextEditors(fn, cleanupFn || function () {}));
   return subscriptions;
 };

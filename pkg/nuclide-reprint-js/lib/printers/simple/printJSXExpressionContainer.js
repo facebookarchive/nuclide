@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +8,11 @@
  * the root directory of this source tree.
  */
 
-import type {JSXExpressionContainer} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printJSXExpressionContainer(
-  print: Print,
-  node: JSXExpressionContainer,
-): Lines {
-  return flatten([
-    '{',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    print(node.expression),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-    '}',
-  ]);
+function printJSXExpressionContainer(print, node) {
+  return flatten(['{', markers.openScope, markers.scopeIndent, markers.scopeBreak, print(node.expression), markers.scopeBreak, markers.scopeDedent, markers.closeScope, '}']);
 }
 
 module.exports = printJSXExpressionContainer;

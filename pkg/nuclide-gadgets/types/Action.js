@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,57 +10,6 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-
-export type Action =
-  CreatePaneItemAction |
-  DestroyPaneItemAction |
-  RegisterGadgetAction |
-  DeactivateAction |
-  UnregisterGadgetAction |
-  UpdatePaneItemAction;
+var _reactForAtom = require('react-for-atom');
 
 // The duplication of string literals here is necessary to make the disjoint unions work properly.
-export type CreatePaneItemAction = {
-  type: 'CREATE_PANE_ITEM';
-  payload: {
-    component?: React.Component;
-    gadgetId: string;
-    item: Object;
-    props?: Object;
-    isNew: boolean;
-  };
-};
-
-export type DeactivateAction = {
-  type: 'DEACTIVATE';
-};
-
-export type DestroyPaneItemAction = {
-  type: 'DESTROY_PANE_ITEM';
-  payload: {
-    item: Object;
-  };
-};
-
-export type RegisterGadgetAction = {
-  type: 'REGISTER_GADGET';
-  payload: {
-    gadget: Object;
-  };
-};
-
-export type UnregisterGadgetAction = {
-  type: 'UNREGISTER_GADGET';
-  payload: {
-    gadgetId: string;
-  };
-};
-
-export type UpdatePaneItemAction = {
-  type: 'UPDATE_PANE_ITEM';
-  payload: {
-    item: Object;
-    props: Object;
-  };
-};

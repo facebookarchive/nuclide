@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,84 +8,104 @@
  * the root directory of this source tree.
  */
 
-import type OutputService from '../../nuclide-console/lib/OutputService';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {formatEnoentNotification} from '../../nuclide-atom-helpers';
-import {createProcessStream} from './createProcessStream';
-import createMessageStream from './createMessageStream';
-import {LogTailer} from '../../nuclide-console/lib/LogTailer';
-import {CompositeDisposable, Disposable} from 'atom';
-import Rx from 'rxjs';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-class Activation {
-  _disposables: CompositeDisposable;
-  _logTailer: LogTailer;
+var _nuclideAtomHelpers = require('../../nuclide-atom-helpers');
 
-  constructor(state: ?Object) {
-    const message$ = Rx.Observable.defer(() =>
-      createMessageStream(
-        createProcessStream()
-          // Retry 3 times (unless we get a ENOENT)
-          .retryWhen(errors => (
-            errors.scan(
-              (errCount, err) => {
-                if (isNoEntError(err) || errCount >= 2) {
-                  throw err;
-                }
-                return errCount + 1;
-              },
-              0,
-            )
-          ))
-          .do({
-            error(err) {
-              if (isNoEntError(err)) {
-                const {message, meta} = formatEnoentNotification({
-                  feature: 'Tailing Android (adb) logs',
-                  toolName: 'adb',
-                  pathSetting: 'nuclide-adb-logcat.pathToAdb',
-                });
-                atom.notifications.addError(message, meta);
-                return;
-              }
-              atom.notifications.addError(
-                'adb logcat has crashed 3 times.'
-                + ' You can manually restart it using the "Nuclide Adb Logcat: Start" command.'
-              );
-            },
-          })
-      )
-    );
+var _createProcessStream = require('./createProcessStream');
 
-    this._logTailer = new LogTailer(message$, {
+var _createMessageStream = require('./createMessageStream');
+
+var _createMessageStream2 = _interopRequireDefault(_createMessageStream);
+
+var _nuclideConsoleLibLogTailer = require('../../nuclide-console/lib/LogTailer');
+
+var _atom = require('atom');
+
+var _rxjs = require('rxjs');
+
+var _rxjs2 = _interopRequireDefault(_rxjs);
+
+var Activation = (function () {
+  function Activation(state) {
+    var _this = this;
+
+    _classCallCheck(this, Activation);
+
+    var message$ = _rxjs2['default'].Observable.defer(function () {
+      return (0, _createMessageStream2['default'])((0, _createProcessStream.createProcessStream)()
+      // Retry 3 times (unless we get a ENOENT)
+      .retryWhen(function (errors) {
+        return errors.scan(function (errCount, err) {
+          if (isNoEntError(err) || errCount >= 2) {
+            throw err;
+          }
+          return errCount + 1;
+        }, 0);
+      })['do']({
+        error: function error(err) {
+          if (isNoEntError(err)) {
+            var _formatEnoentNotification = (0, _nuclideAtomHelpers.formatEnoentNotification)({
+              feature: 'Tailing Android (adb) logs',
+              toolName: 'adb',
+              pathSetting: 'nuclide-adb-logcat.pathToAdb'
+            });
+
+            var message = _formatEnoentNotification.message;
+            var meta = _formatEnoentNotification.meta;
+
+            atom.notifications.addError(message, meta);
+            return;
+          }
+          atom.notifications.addError('adb logcat has crashed 3 times.' + ' You can manually restart it using the "Nuclide Adb Logcat: Start" command.');
+        }
+      }));
+    });
+
+    this._logTailer = new _nuclideConsoleLibLogTailer.LogTailer(message$, {
       start: 'adb-logcat:start',
       stop: 'adb-logcat:stop',
       restart: 'adb-logcat:restart',
-      error: 'adb-logcat:crash',
+      error: 'adb-logcat:crash'
     });
 
-    this._disposables = new CompositeDisposable(
-      new Disposable(() => { this._logTailer.stop(); }),
-      atom.commands.add('atom-workspace', {
-        'nuclide-adb-logcat:start': () => this._logTailer.start(),
-        'nuclide-adb-logcat:stop': () => this._logTailer.stop(),
-        'nuclide-adb-logcat:restart': () => this._logTailer.restart(),
-      }),
-    );
+    this._disposables = new _atom.CompositeDisposable(new _atom.Disposable(function () {
+      _this._logTailer.stop();
+    }), atom.commands.add('atom-workspace', {
+      'nuclide-adb-logcat:start': function nuclideAdbLogcatStart() {
+        return _this._logTailer.start();
+      },
+      'nuclide-adb-logcat:stop': function nuclideAdbLogcatStop() {
+        return _this._logTailer.stop();
+      },
+      'nuclide-adb-logcat:restart': function nuclideAdbLogcatRestart() {
+        return _this._logTailer.restart();
+      }
+    }));
   }
 
-  consumeOutputService(api: OutputService): IDisposable {
-    return api.registerOutputProvider({
-      source: 'adb logcat',
-      messages: this._logTailer.getMessages(),
-    });
-  }
+  _createClass(Activation, [{
+    key: 'consumeOutputService',
+    value: function consumeOutputService(api) {
+      return api.registerOutputProvider({
+        source: 'adb logcat',
+        messages: this._logTailer.getMessages()
+      });
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }]);
 
-  dispose() {
-    this._disposables.dispose();
-  }
-}
+  return Activation;
+})();
 
-const isNoEntError = err => (err: any).code === 'ENOENT';
+var isNoEntError = function isNoEntError(err) {
+  return err.code === 'ENOENT';
+};
 
 module.exports = Activation;

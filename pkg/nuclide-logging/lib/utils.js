@@ -1,5 +1,14 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+exports.patchErrorsOfLoggingEvent = patchErrorsOfLoggingEvent;
+exports.serializeLoggingEvent = serializeLoggingEvent;
+exports.deserializeLoggingEvent = deserializeLoggingEvent;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +18,9 @@
  * the root directory of this source tree.
  */
 
-import log4js from 'log4js';
+var _log4js = require('log4js');
 
-import type {LoggingEvent} from './types';
+var _log4js2 = _interopRequireDefault(_log4js);
 
 /**
  * JSON.stringify can't stringify instance of Error. To solve this problem, we
@@ -21,21 +30,24 @@ import type {LoggingEvent} from './types';
  * loggingEvent.data, so that we could get stack information which helps categorization in
  * logview.
  */
-export function patchErrorsOfLoggingEvent(loggingEvent: LoggingEvent): LoggingEvent {
-  const loggingEventCopy = {...loggingEvent};
+
+function patchErrorsOfLoggingEvent(loggingEvent) {
+  var loggingEventCopy = _extends({}, loggingEvent);
   loggingEventCopy.data = (loggingEventCopy.data || []).slice();
 
-  if (!loggingEventCopy.data.some(item => item instanceof Error)) {
+  if (!loggingEventCopy.data.some(function (item) {
+    return item instanceof Error;
+  })) {
     loggingEventCopy.data.push(new Error('Auto generated Error'));
   }
 
-  loggingEventCopy.data = loggingEventCopy.data.map(item => {
+  loggingEventCopy.data = loggingEventCopy.data.map(function (item) {
     if (item instanceof Error) {
       return {
         name: item.name,
         message: item.message,
         stack: item.stack,
-        stackTrace: item.stackTrace,
+        stackTrace: item.stackTrace
       };
     }
     return item;
@@ -47,7 +59,8 @@ export function patchErrorsOfLoggingEvent(loggingEvent: LoggingEvent): LoggingEv
 /**
  * Takes a loggingEvent object, returns string representation of it.
  */
-export function serializeLoggingEvent(loggingEvent: mixed): string {
+
+function serializeLoggingEvent(loggingEvent) {
   return JSON.stringify(loggingEvent);
 }
 
@@ -61,19 +74,20 @@ export function serializeLoggingEvent(loggingEvent: mixed): string {
  * so we need smart deserialization that will recreate log date and level for further processing by
  * log4js internals.
  */
-export function deserializeLoggingEvent(loggingEventString: string): LoggingEvent {
-  let loggingEvent;
+
+function deserializeLoggingEvent(loggingEventString) {
+  var loggingEvent = undefined;
   try {
     loggingEvent = JSON.parse(loggingEventString);
     loggingEvent.startTime = new Date(loggingEvent.startTime);
-    loggingEvent.level = log4js.levels.toLevel(loggingEvent.level.levelStr);
+    loggingEvent.level = _log4js2['default'].levels.toLevel(loggingEvent.level.levelStr);
   } catch (e) {
     // JSON.parse failed, just log the contents probably a naughty.
     loggingEvent = {
       startTime: new Date(),
       categoryName: 'log4js',
-      level: log4js.levels.ERROR,
-      data: ['Unable to parse log:', loggingEventString],
+      level: _log4js2['default'].levels.ERROR,
+      data: ['Unable to parse log:', loggingEventString]
     };
   }
   return loggingEvent;

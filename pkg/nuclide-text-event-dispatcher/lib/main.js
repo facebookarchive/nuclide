@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +10,16 @@
  * the root directory of this source tree.
  */
 
-import {TextEventDispatcher} from './TextEventDispatcher';
-export type {TextEventDispatcher};
+var _TextEventDispatcher = require('./TextEventDispatcher');
 
-let dispatcher = null;
+exports.TextEventDispatcher = _TextEventDispatcher.TextEventDispatcher;
+
+var dispatcher = null;
 module.exports = {
-  getInstance(): TextEventDispatcher {
+  getInstance: function getInstance() {
     if (!dispatcher) {
-      dispatcher = new TextEventDispatcher();
+      dispatcher = new _TextEventDispatcher.TextEventDispatcher();
     }
     return dispatcher;
-  },
+  }
 };

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +10,35 @@
  * the root directory of this source tree.
  */
 
-import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/service';
-import type {Activation as ActivationType} from './Activation';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.provideNuclideDebugger = provideNuclideDebugger;
 
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let activation: ?ActivationType = null;
+var _assert = require('assert');
 
-export function activate(state: ?Object): void {
-  invariant(activation == null);
-  const {Activation} = require('./Activation');
+var _assert2 = _interopRequireDefault(_assert);
+
+var activation = null;
+
+function activate(state) {
+  (0, _assert2['default'])(activation == null);
+
+  var _require = require('./Activation');
+
+  var Activation = _require.Activation;
+
   activation = new Activation(state);
 }
 
-export function deactivate(): void {
-  invariant(activation != null);
+function deactivate() {
+  (0, _assert2['default'])(activation != null);
   activation.dispose();
   activation = null;
 }
 
-export function provideNuclideDebugger(): nuclide_debugger$Service {
-  invariant(activation != null);
+function provideNuclideDebugger() {
+  (0, _assert2['default'])(activation != null);
   return activation.provideNuclideDebugger();
 }

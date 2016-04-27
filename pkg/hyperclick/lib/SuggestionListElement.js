@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,207 +12,250 @@
 
 /* eslint-env browser */
 
-import type SuggestionListType from './SuggestionList';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {CompositeDisposable, Disposable} from 'atom';
-import {React, ReactDOM} from 'react-for-atom';
-import invariant from 'assert';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _atom = require('atom');
+
+var _reactForAtom = require('react-for-atom');
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
 
 /**
  * We need to create this custom HTML element so we can hook into the view
  * registry. The overlay decoration only works through the view registry.
  */
-class SuggestionListElement extends HTMLElement {
-  _model: SuggestionListType;
 
-  initialize(model: SuggestionListType) {
-    this._model = model;
-    return this;
+var SuggestionListElement = (function (_HTMLElement) {
+  _inherits(SuggestionListElement, _HTMLElement);
+
+  function SuggestionListElement() {
+    _classCallCheck(this, SuggestionListElement);
+
+    _get(Object.getPrototypeOf(SuggestionListElement.prototype), 'constructor', this).apply(this, arguments);
   }
 
-  // $FlowIssue -- readonly props: t10620219
-  attachedCallback(): mixed {
-    ReactDOM.render(<SuggestionList suggestionList={this._model} />, this);
-  }
-
-  dispose() {
-    ReactDOM.unmountComponentAtNode(this);
-    if (this.parentNode) {
-      this.parentNode.removeChild(this);
+  _createClass(SuggestionListElement, [{
+    key: 'initialize',
+    value: function initialize(model) {
+      this._model = model;
+      return this;
     }
-  }
-}
 
-type Props = {
-  suggestionList: SuggestionListType;
-};
+    // $FlowIssue -- readonly props: t10620219
+  }, {
+    key: 'attachedCallback',
+    value: function attachedCallback() {
+      _reactForAtom.ReactDOM.render(_reactForAtom.React.createElement(SuggestionList, { suggestionList: this._model }), this);
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      _reactForAtom.ReactDOM.unmountComponentAtNode(this);
+      if (this.parentNode) {
+        this.parentNode.removeChild(this);
+      }
+    }
+  }]);
 
-type State = {
-  selectedIndex: number;
-};
+  return SuggestionListElement;
+})(HTMLElement);
 
-class SuggestionList extends React.Component {
-  props: Props;
-  state: State;
+var SuggestionList = (function (_React$Component) {
+  _inherits(SuggestionList, _React$Component);
 
-  _items: Array<{rightLabel?: string; title: string; callback: () => mixed}>;
-  _textEditor: ?atom$TextEditor;
-  _subscriptions: atom$CompositeDisposable;
-  _boundConfirm: () => void;
+  function SuggestionList(props) {
+    _classCallCheck(this, SuggestionList);
 
-  constructor(props: Props) {
-    super(props);
+    _get(Object.getPrototypeOf(SuggestionList.prototype), 'constructor', this).call(this, props);
     this.state = {
-      selectedIndex: 0,
+      selectedIndex: 0
     };
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new _atom.CompositeDisposable();
     this._boundConfirm = this._confirm.bind(this);
   }
 
-  componentWillMount() {
-    const {suggestionList} = this.props;
-    const suggestion = suggestionList.getSuggestion();
-    invariant(suggestion);
-    // TODO(nmote): This is assuming `suggestion.callback` is always an Array, which is not true
-    //   according to hyperclick/lib/types. It can also be a function.
-    this._items = ((suggestion.callback: any):
-        Array<{rightLabel?: string; title: string; callback: () => mixed}>);
-    this._textEditor = suggestionList.getTextEditor();
-  }
+  _createClass(SuggestionList, [{
+    key: 'componentWillMount',
+    value: function componentWillMount() {
+      var suggestionList = this.props.suggestionList;
 
-  componentDidMount() {
-    const textEditor = this._textEditor;
-    invariant(textEditor);
-    const textEditorView = atom.views.getView(textEditor);
-    const boundClose = this._close.bind(this);
-    this._subscriptions.add(
-        atom.commands.add(textEditorView, {
-          'core:move-up': this._moveSelectionUp.bind(this),
-          'core:move-down': this._moveSelectionDown.bind(this),
-          'core:move-to-top': this._moveSelectionToTop.bind(this),
-          'core:move-to-bottom': this._moveSelectionToBottom.bind(this),
-          'core:cancel': boundClose,
-          'editor:newline': this._boundConfirm,
-        }));
+      var suggestion = suggestionList.getSuggestion();
+      (0, _assert2['default'])(suggestion);
+      // TODO(nmote): This is assuming `suggestion.callback` is always an Array, which is not true
+      //   according to hyperclick/lib/types. It can also be a function.
+      this._items = suggestion.callback;
+      this._textEditor = suggestionList.getTextEditor();
+    }
+  }, {
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _this = this;
 
-    this._subscriptions.add(textEditor.onDidChange(boundClose));
-    this._subscriptions.add(textEditor.onDidChangeCursorPosition(boundClose));
+      var textEditor = this._textEditor;
+      (0, _assert2['default'])(textEditor);
+      var textEditorView = atom.views.getView(textEditor);
+      var boundClose = this._close.bind(this);
+      this._subscriptions.add(atom.commands.add(textEditorView, {
+        'core:move-up': this._moveSelectionUp.bind(this),
+        'core:move-down': this._moveSelectionDown.bind(this),
+        'core:move-to-top': this._moveSelectionToTop.bind(this),
+        'core:move-to-bottom': this._moveSelectionToBottom.bind(this),
+        'core:cancel': boundClose,
+        'editor:newline': this._boundConfirm
+      }));
 
-    // Prevent scrolling the editor when scrolling the suggestion list.
-    const stopPropagation = event => event.stopPropagation();
-    ReactDOM.findDOMNode(this.refs['scroller']).addEventListener('mousewheel', stopPropagation);
-    this._subscriptions.add(new Disposable(() => {
-      ReactDOM.findDOMNode(this.refs['scroller']).
-        removeEventListener('mousewheel', stopPropagation);
-    }));
+      this._subscriptions.add(textEditor.onDidChange(boundClose));
+      this._subscriptions.add(textEditor.onDidChangeCursorPosition(boundClose));
 
-    const keydown = (event: KeyboardEvent) => {
-      // If the user presses the enter key, confirm the selection.
-      if (event.keyCode === 13) {
-        event.stopImmediatePropagation();
-        this._confirm();
-      }
-    };
-    textEditorView.addEventListener('keydown', keydown);
-    this._subscriptions.add(new Disposable(() => {
-      textEditorView.removeEventListener('keydown', keydown);
-    }));
-  }
+      // Prevent scrolling the editor when scrolling the suggestion list.
+      var stopPropagation = function stopPropagation(event) {
+        return event.stopPropagation();
+      };
+      _reactForAtom.ReactDOM.findDOMNode(this.refs['scroller']).addEventListener('mousewheel', stopPropagation);
+      this._subscriptions.add(new _atom.Disposable(function () {
+        _reactForAtom.ReactDOM.findDOMNode(_this.refs['scroller']).removeEventListener('mousewheel', stopPropagation);
+      }));
 
-  render() {
-    const itemComponents = this._items.map((item, index) => {
-      let className = 'hyperclick-result-item';
-      if (index === this.state.selectedIndex) {
-        className += ' selected';
-      }
-      return (
-        <li className={className}
-            key={index}
-            onMouseDown={this._boundConfirm}
-            onMouseEnter={this._setSelectedIndex.bind(this, index)}>
-            {item.title}
-            <span className="right-label">{item.rightLabel}</span>
-        </li>
+      var keydown = function keydown(event) {
+        // If the user presses the enter key, confirm the selection.
+        if (event.keyCode === 13) {
+          event.stopImmediatePropagation();
+          _this._confirm();
+        }
+      };
+      textEditorView.addEventListener('keydown', keydown);
+      this._subscriptions.add(new _atom.Disposable(function () {
+        textEditorView.removeEventListener('keydown', keydown);
+      }));
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _this2 = this;
+
+      var itemComponents = this._items.map(function (item, index) {
+        var className = 'hyperclick-result-item';
+        if (index === _this2.state.selectedIndex) {
+          className += ' selected';
+        }
+        return _reactForAtom.React.createElement(
+          'li',
+          { className: className,
+            key: index,
+            onMouseDown: _this2._boundConfirm,
+            onMouseEnter: _this2._setSelectedIndex.bind(_this2, index) },
+          item.title,
+          _reactForAtom.React.createElement(
+            'span',
+            { className: 'right-label' },
+            item.rightLabel
+          )
+        );
+      });
+
+      return _reactForAtom.React.createElement(
+        'div',
+        { className: 'popover-list select-list hyperclick-suggestion-list-scroller', ref: 'scroller' },
+        _reactForAtom.React.createElement(
+          'ol',
+          { className: 'list-group', ref: 'selectionList' },
+          itemComponents
+        )
       );
-    });
-
-    return (
-      <div className="popover-list select-list hyperclick-suggestion-list-scroller" ref="scroller">
-        <ol className="list-group" ref="selectionList">
-          {itemComponents}
-        </ol>
-      </div>
-    );
-  }
-
-  componentDidUpdate(prevProps: Object, prevState: Object) {
-    if (prevState.selectedIndex !== this.state.selectedIndex) {
-      this._updateScrollPosition();
     }
-  }
-
-  componentWillUnmount() {
-    this._subscriptions.dispose();
-  }
-
-  _confirm() {
-    this._items[this.state.selectedIndex].callback();
-    this._close();
-  }
-
-  _close() {
-    this.props.suggestionList.hide();
-  }
-
-  _setSelectedIndex(index: number) {
-    this.setState({
-      selectedIndex: index,
-    });
-  }
-
-  _moveSelectionDown(event) {
-    if (this.state.selectedIndex < this._items.length - 1) {
-      this.setState({selectedIndex: this.state.selectedIndex + 1});
-    } else {
-      this._moveSelectionToTop();
+  }, {
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate(prevProps, prevState) {
+      if (prevState.selectedIndex !== this.state.selectedIndex) {
+        this._updateScrollPosition();
+      }
     }
-    if (event) {
-      event.stopImmediatePropagation();
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      this._subscriptions.dispose();
     }
-  }
-
-  _moveSelectionUp(event) {
-    if (this.state.selectedIndex > 0) {
-      this.setState({selectedIndex: this.state.selectedIndex - 1});
-    } else {
-      this._moveSelectionToBottom();
+  }, {
+    key: '_confirm',
+    value: function _confirm() {
+      this._items[this.state.selectedIndex].callback();
+      this._close();
     }
-    if (event) {
-      event.stopImmediatePropagation();
+  }, {
+    key: '_close',
+    value: function _close() {
+      this.props.suggestionList.hide();
     }
-  }
-
-  _moveSelectionToBottom(event) {
-    this.setState({selectedIndex: Math.max(this._items.length - 1, 0)});
-    if (event) {
-      event.stopImmediatePropagation();
+  }, {
+    key: '_setSelectedIndex',
+    value: function _setSelectedIndex(index) {
+      this.setState({
+        selectedIndex: index
+      });
     }
-  }
-
-  _moveSelectionToTop(event) {
-    this.setState({selectedIndex: 0});
-    if (event) {
-      event.stopImmediatePropagation();
+  }, {
+    key: '_moveSelectionDown',
+    value: function _moveSelectionDown(event) {
+      if (this.state.selectedIndex < this._items.length - 1) {
+        this.setState({ selectedIndex: this.state.selectedIndex + 1 });
+      } else {
+        this._moveSelectionToTop();
+      }
+      if (event) {
+        event.stopImmediatePropagation();
+      }
     }
-  }
+  }, {
+    key: '_moveSelectionUp',
+    value: function _moveSelectionUp(event) {
+      if (this.state.selectedIndex > 0) {
+        this.setState({ selectedIndex: this.state.selectedIndex - 1 });
+      } else {
+        this._moveSelectionToBottom();
+      }
+      if (event) {
+        event.stopImmediatePropagation();
+      }
+    }
+  }, {
+    key: '_moveSelectionToBottom',
+    value: function _moveSelectionToBottom(event) {
+      this.setState({ selectedIndex: Math.max(this._items.length - 1, 0) });
+      if (event) {
+        event.stopImmediatePropagation();
+      }
+    }
+  }, {
+    key: '_moveSelectionToTop',
+    value: function _moveSelectionToTop(event) {
+      this.setState({ selectedIndex: 0 });
+      if (event) {
+        event.stopImmediatePropagation();
+      }
+    }
+  }, {
+    key: '_updateScrollPosition',
+    value: function _updateScrollPosition() {
+      var listNode = _reactForAtom.ReactDOM.findDOMNode(this.refs['selectionList']);
+      var selectedNode = listNode.getElementsByClassName('selected')[0];
+      selectedNode.scrollIntoViewIfNeeded(false);
+    }
+  }]);
 
-  _updateScrollPosition() {
-    const listNode = ReactDOM.findDOMNode(this.refs['selectionList']);
-    const selectedNode = listNode.getElementsByClassName('selected')[0];
-    selectedNode.scrollIntoViewIfNeeded(false);
-  }
-}
+  return SuggestionList;
+})(_reactForAtom.React.Component);
 
-export default document.registerElement('hyperclick-suggestion-list', {
-  prototype: SuggestionListElement.prototype,
+exports['default'] = document.registerElement('hyperclick-suggestion-list', {
+  prototype: SuggestionListElement.prototype
 });
+module.exports = exports['default'];

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +8,12 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  get buckProjectRootForPath() {
-    return require('./buck-project-root-for-path');
-  },
-};
+module.exports = Object.defineProperties({}, {
+  buckProjectRootForPath: {
+    get: function get() {
+      return require('./buck-project-root-for-path');
+    },
+    configurable: true,
+    enumerable: true
+  }
+});

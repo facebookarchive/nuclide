@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +8,11 @@
  * the root directory of this source tree.
  */
 
-import type {GenericTypeAnnotation} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printGenericTypeAnnotation(
-  print: Print,
-  node: GenericTypeAnnotation,
-): Lines {
-  return flatten([
-    print(node.id),
-    node.typeParameters ? print(node.typeParameters) : markers.empty,
-  ]);
+function printGenericTypeAnnotation(print, node) {
+  return flatten([print(node.id), node.typeParameters ? print(node.typeParameters) : markers.empty]);
 }
 
 module.exports = printGenericTypeAnnotation;

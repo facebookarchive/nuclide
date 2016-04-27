@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +8,13 @@
  * the root directory of this source tree.
  */
 
-const markers = require('../constants/markers');
+var markers = require('../constants/markers');
 
 /**
  * This translates a scope marker into the appropriate marker based on if the
  * scope was broken or not.
  */
-function translateScopeMarker(marker: string, broken: boolean): string {
+function translateScopeMarker(marker, broken) {
   if (broken) {
     if (marker === markers.openScope) {
       return markers.empty;

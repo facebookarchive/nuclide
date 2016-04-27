@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +8,10 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {StringLiteralTypeAnnotation} from 'ast-types-flow';
+var escapeStringLiteral = require('../../utils/escapeStringLiteral');
 
-const escapeStringLiteral = require('../../utils/escapeStringLiteral');
-
-function printStringLiteralTypeAnnotation(
-  print: Print,
-  node: StringLiteralTypeAnnotation,
-): Lines {
-  return [escapeStringLiteral(node.value, {quotes: 'single'})];
+function printStringLiteralTypeAnnotation(print, node) {
+  return [escapeStringLiteral(node.value, { quotes: 'single' })];
 }
 
 module.exports = printStringLiteralTypeAnnotation;

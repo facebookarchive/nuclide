@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,48 +8,28 @@
  * the root directory of this source tree.
  */
 
-import type {ClassProperty} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printClassProperty(print: Print, node: ClassProperty): Lines {
-  let parts = [];
-  if (node.static) {
-    parts = parts.concat([
-      'static',
-      markers.noBreak,
-      markers.space,
-    ]);
+function printClassProperty(print, node) {
+  var parts = [];
+  if (node['static']) {
+    parts = parts.concat(['static', markers.noBreak, markers.space]);
   }
 
   // TODO: Computed class properties don't seem to be supported by Babylon yet.
 
-  parts = parts.concat([
-    print(node.key),
-  ]);
+  parts = parts.concat([print(node.key)]);
 
   if (node.value) {
-    parts = parts.concat([
-      markers.noBreak,
-      markers.space,
-      '=',
-      markers.noBreak,
-      markers.space,
-      print(node.value),
-    ]);
+    parts = parts.concat([markers.noBreak, markers.space, '=', markers.noBreak, markers.space, print(node.value)]);
   }
 
   if (node.typeAnnotation) {
     parts = parts.concat(print(node.typeAnnotation));
   }
 
-  parts = parts.concat([
-    markers.noBreak,
-    ';',
-    markers.hardBreak,
-  ]);
+  parts = parts.concat([markers.noBreak, ';', markers.hardBreak]);
 
   return flatten(parts);
 }

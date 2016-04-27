@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var flatten = require('../../utils/flatten');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +10,15 @@
  * the root directory of this source tree.
  */
 
-import type {Lines} from '../../types/common';
+var printComment = require('./printComment');
 
-const flatten = require('../../utils/flatten');
-const printComment = require('./printComment');
-
-function printComments(nodes: ?Array<any>): Lines {
+function printComments(nodes) {
   if (!Array.isArray(nodes)) {
     return [];
   }
-  return flatten(nodes.map(n => printComment(n)));
+  return flatten(nodes.map(function (n) {
+    return printComment(n);
+  }));
 }
 
 module.exports = printComments;

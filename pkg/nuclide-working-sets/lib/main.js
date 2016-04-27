@@ -1,5 +1,16 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.provideWorkingSetsStore = provideWorkingSetsStore;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,59 +20,71 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
-import {WorkingSetsStore} from './WorkingSetsStore';
-import {WorkingSetsConfig} from './WorkingSetsConfig';
-import {PathsObserver} from './PathsObserver';
+var _assert = require('assert');
 
-export type WorkingSetDefinition = {
-  name: string;
-  active: boolean;
-  uris: Array<string>;
-};
+var _assert2 = _interopRequireDefault(_assert);
 
-export type {WorkingSetsStore};
-export type {ApplicabilitySortedDefinitions} from './WorkingSetsStore';
+var _atom = require('atom');
 
-export {WorkingSet} from './WorkingSet';
+var _WorkingSetsStore = require('./WorkingSetsStore');
 
-class Activation {
-  workingSetsStore: WorkingSetsStore;
-  _workingSetsConfig: WorkingSetsConfig;
-  _disposables: CompositeDisposable;
+var _WorkingSetsConfig = require('./WorkingSetsConfig');
 
-  constructor() {
-    this.workingSetsStore = new WorkingSetsStore();
-    this._workingSetsConfig = new WorkingSetsConfig();
-    this._disposables = new CompositeDisposable();
+var _PathsObserver = require('./PathsObserver');
 
-    this._disposables.add(this.workingSetsStore.onSaveDefinitions(definitions => {
-      this._workingSetsConfig.setDefinitions(definitions);
+exports.WorkingSetsStore = _WorkingSetsStore.WorkingSetsStore;
+Object.defineProperty(exports, 'ApplicabilitySortedDefinitions', {
+  enumerable: true,
+  get: function get() {
+    return _WorkingSetsStore.ApplicabilitySortedDefinitions;
+  }
+});
+
+var _WorkingSet = require('./WorkingSet');
+
+Object.defineProperty(exports, 'WorkingSet', {
+  enumerable: true,
+  get: function get() {
+    return _WorkingSet.WorkingSet;
+  }
+});
+
+var Activation = (function () {
+  function Activation() {
+    var _this = this;
+
+    _classCallCheck(this, Activation);
+
+    this.workingSetsStore = new _WorkingSetsStore.WorkingSetsStore();
+    this._workingSetsConfig = new _WorkingSetsConfig.WorkingSetsConfig();
+    this._disposables = new _atom.CompositeDisposable();
+
+    this._disposables.add(this.workingSetsStore.onSaveDefinitions(function (definitions) {
+      _this._workingSetsConfig.setDefinitions(definitions);
     }));
 
-    this._disposables.add(this._workingSetsConfig.observeDefinitions(definitions => {
-      this.workingSetsStore.updateDefinitions(definitions);
+    this._disposables.add(this._workingSetsConfig.observeDefinitions(function (definitions) {
+      _this.workingSetsStore.updateDefinitions(definitions);
     }));
 
-    this._disposables.add(atom.commands.add(
-      'atom-workspace',
-      'working-sets:toggle-last-selected',
-      this.workingSetsStore.toggleLastSelected.bind(this.workingSetsStore),
-    ));
+    this._disposables.add(atom.commands.add('atom-workspace', 'working-sets:toggle-last-selected', this.workingSetsStore.toggleLastSelected.bind(this.workingSetsStore)));
 
-    this._disposables.add(new PathsObserver(this.workingSetsStore));
+    this._disposables.add(new _PathsObserver.PathsObserver(this.workingSetsStore));
   }
 
-  deactivate(): void {
-    this._disposables.dispose();
-  }
-}
+  _createClass(Activation, [{
+    key: 'deactivate',
+    value: function deactivate() {
+      this._disposables.dispose();
+    }
+  }]);
 
+  return Activation;
+})();
 
-let activation: ?Activation = null;
+var activation = null;
 
-export function activate() {
+function activate() {
   if (activation != null) {
     return;
   }
@@ -69,7 +92,7 @@ export function activate() {
   activation = new Activation();
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation == null) {
     return;
   }
@@ -78,8 +101,8 @@ export function deactivate() {
   activation = null;
 }
 
-export function provideWorkingSetsStore(): WorkingSetsStore {
-  invariant(activation, 'Was requested to provide service from a non-activated package');
+function provideWorkingSetsStore() {
+  (0, _assert2['default'])(activation, 'Was requested to provide service from a non-activated package');
 
   return activation.workingSetsStore;
 }

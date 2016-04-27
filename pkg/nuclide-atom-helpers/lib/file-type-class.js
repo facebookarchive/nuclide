@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +8,12 @@
  * the root directory of this source tree.
  */
 
-const fs = require('fs-plus');
-const path = require('path');
+var fs = require('fs-plus');
+var path = require('path');
 
-function fileTypeClass(filename: string): string {
-  let typeClass;
-  const ext = path.extname(filename);
+function fileTypeClass(filename) {
+  var typeClass = undefined;
+  var ext = path.extname(filename);
 
   if (fs.isReadmePath(filename)) {
     typeClass = 'icon-book';

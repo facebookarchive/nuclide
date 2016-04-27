@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var hasOneDeclaration = require('./hasOneDeclaration');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +10,13 @@
  * the root directory of this source tree.
  */
 
-import type {Node} from '../types/ast';
+var isRequireExpression = require('./isRequireExpression');
 
-const hasOneDeclaration = require('./hasOneDeclaration');
-const isRequireExpression = require('./isRequireExpression');
-
-function hasOneRequireDeclaration(node: Node): boolean {
+function hasOneRequireDeclaration(node) {
   if (!hasOneDeclaration(node)) {
     return false;
   }
-  const declaration = node.declarations[0];
+  var declaration = node.declarations[0];
   return isRequireExpression(declaration.init);
 }
 

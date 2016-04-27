@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +12,25 @@
  * the root directory of this source tree.
  */
 
-import BaseSession from '../VendorLib/node-inspector/lib/session';
-import util from 'util';
+var _VendorLibNodeInspectorLibSession = require('../VendorLib/node-inspector/lib/session');
+
+var _VendorLibNodeInspectorLibSession2 = _interopRequireDefault(_VendorLibNodeInspectorLibSession);
+
+var _util = require('util');
+
+var _util2 = _interopRequireDefault(_util);
 
 /**
  * A custom version of node-inspector's Session that ignores commands that we don't support. (We
  * do this here so we can pull in new versions of node-inspector without having to worry about what
  * modifications we've made to the source.)
  */
-function CustomSession(config: Object, debuggerPort: number, wsConnection: ws$WebSocket): void {
-  BaseSession.call(this, config, debuggerPort, wsConnection);
-  this.frontendCommandHandler._registerNoopCommands(
-    'Emulation.canEmulate',
-    'Network.setMonitoringXHREnabled',
-    'Worker.enable',
-    'ServiceWorker.enable',
-    'Emulation.setScriptExecutionDisabled',
-    'Page.setOverlayMessage',
-  );
+function CustomSession(config, debuggerPort, wsConnection) {
+  _VendorLibNodeInspectorLibSession2['default'].call(this, config, debuggerPort, wsConnection);
+  this.frontendCommandHandler._registerNoopCommands('Emulation.canEmulate', 'Network.setMonitoringXHREnabled', 'Worker.enable', 'ServiceWorker.enable', 'Emulation.setScriptExecutionDisabled', 'Page.setOverlayMessage');
 }
 
-util.inherits(CustomSession, BaseSession);
+_util2['default'].inherits(CustomSession, _VendorLibNodeInspectorLibSession2['default']);
 
-export const Session = ((CustomSession: any): Class<BaseSession>);
+var Session = CustomSession;
+exports.Session = Session;

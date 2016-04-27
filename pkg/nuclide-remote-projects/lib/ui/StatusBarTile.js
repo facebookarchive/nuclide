@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +8,29 @@
  * the root directory of this source tree.
  */
 
-const ConnectionState = require('../ConnectionState');
-const {
-  notifyLocalDiskFile,
-  notifyConnectedRemoteFile,
-  notifyDisconnectedRemoteFile,
-} = require('../notification');
-const {React} = require('react-for-atom');
-const {PropTypes} = React;
+var ConnectionState = require('../ConnectionState');
 
-const StatusBarTile = React.createClass({
+var _require = require('../notification');
+
+var notifyLocalDiskFile = _require.notifyLocalDiskFile;
+var notifyConnectedRemoteFile = _require.notifyConnectedRemoteFile;
+var notifyDisconnectedRemoteFile = _require.notifyDisconnectedRemoteFile;
+
+var _require2 = require('react-for-atom');
+
+var React = _require2.React;
+var PropTypes = React.PropTypes;
+
+var StatusBarTile = React.createClass({
+  displayName: 'StatusBarTile',
+
   propTypes: {
     connectionState: PropTypes.number.isRequired,
-    fileUri: PropTypes.string,
+    fileUri: PropTypes.string
   },
 
-  render(): ?React.Element {
-    let iconName = null;
+  render: function render() {
+    var iconName = null;
     switch (this.props.connectionState) {
       case ConnectionState.NONE:
         break;
@@ -44,15 +49,13 @@ const StatusBarTile = React.createClass({
     if (!iconName) {
       return null;
     }
-    return (
-      <span
-        className={`icon icon-${iconName} nuclide-remote-projects-status-icon`}
-        onClick={this.onStatusBarTileClicked}
-      />
-    );
+    return React.createElement('span', {
+      className: 'icon icon-' + iconName + ' nuclide-remote-projects-status-icon',
+      onClick: this.onStatusBarTileClicked
+    });
   },
 
-  onStatusBarTileClicked(): void {
+  onStatusBarTileClicked: function onStatusBarTileClicked() {
     if (!this.props.fileUri) {
       return;
     }
@@ -67,7 +70,7 @@ const StatusBarTile = React.createClass({
         notifyDisconnectedRemoteFile(this.props.fileUri);
         break;
     }
-  },
+  }
 });
 
 module.exports = StatusBarTile;

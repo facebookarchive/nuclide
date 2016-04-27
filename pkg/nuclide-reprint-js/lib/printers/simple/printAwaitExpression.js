@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +8,15 @@
  * the root directory of this source tree.
  */
 
-import type {AwaitExpression} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var markers = require('../../constants/markers');
+var wrapExpression = require('../../wrappers/simple/wrapExpression');
 
-const markers = require('../../constants/markers');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
-
-function printAwaitExpression(print: Print, node: AwaitExpression): Lines {
-  const wrap = x => wrapExpression(print, node, x);
+function printAwaitExpression(print, node) {
+  var wrap = function wrap(x) {
+    return wrapExpression(print, node, x);
+  };
   // TODO: What is node.all?
-  return wrap([
-    'await',
-    markers.noBreak,
-    markers.space,
-    print(node.argument),
-  ]);
+  return wrap(['await', markers.noBreak, markers.space, print(node.argument)]);
 }
 
 module.exports = printAwaitExpression;

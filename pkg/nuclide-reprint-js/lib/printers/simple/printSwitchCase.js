@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,41 +8,23 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {SwitchCase} from 'ast-types-flow';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printSwitchCase(print: Print, node: SwitchCase): Lines {
-  const consequentParts = flatten(node.consequent.map(
-    nodePart => print(nodePart)
-  ));
+function printSwitchCase(print, node) {
+  var consequentParts = flatten(node.consequent.map(function (nodePart) {
+    return print(nodePart);
+  }));
   if (node.consequent.length > 0) {
     // We want a new line separating cases if they had a consequent.
     consequentParts.push(markers.multiHardBreak);
     consequentParts.push(markers.multiHardBreak);
   }
   if (!node.test) {
-    return flatten([
-      'default:',
-      markers.hardBreak,
-      markers.indent,
-      consequentParts,
-      markers.dedent,
-    ]);
+    return flatten(['default:', markers.hardBreak, markers.indent, consequentParts, markers.dedent]);
   } else {
-    const test = node.test;
-    return flatten([
-      'case',
-      markers.space,
-      print(test),
-      ':',
-      markers.hardBreak,
-      markers.indent,
-      consequentParts,
-      markers.dedent,
-    ]);
+    var test = node.test;
+    return flatten(['case', markers.space, print(test), ':', markers.hardBreak, markers.indent, consequentParts, markers.dedent]);
   }
 }
 

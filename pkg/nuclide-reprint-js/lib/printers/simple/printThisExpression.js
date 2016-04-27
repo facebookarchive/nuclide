@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +8,12 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {ThisExpression} from 'ast-types-flow';
+var wrapExpression = require('../../wrappers/simple/wrapExpression');
 
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
-
-function printThisExpression(print: Print, node: ThisExpression): Lines {
-  const wrap = x => wrapExpression(print, node, x);
+function printThisExpression(print, node) {
+  var wrap = function wrap(x) {
+    return wrapExpression(print, node, x);
+  };
   return wrap(['this']);
 }
 

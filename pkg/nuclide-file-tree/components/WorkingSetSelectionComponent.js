@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,285 +10,324 @@
  * the root directory of this source tree.
  */
 
-import type {WorkingSetDefinition} from '../../nuclide-working-sets';
-import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import classnames from 'classnames';
-import {CompositeDisposable} from 'atom';
-import {React, ReactDOM} from 'react-for-atom';
-import {Button} from '../../nuclide-ui/lib/Button';
-import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-type Props = {
-  workingSetsStore: WorkingSetsStore;
-  onClose: () => void;
-  onEditWorkingSet: (name: string, uris: Array<string>) => void;
-};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-type State = {
-  selectionIndex: number;
-  applicableDefinitions: Array<WorkingSetDefinition>;
-  notApplicableDefinitions: Array<WorkingSetDefinition>;
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export class WorkingSetSelectionComponent extends React.Component {
-  _disposables: CompositeDisposable;
-  props: Props;
-  state: State;
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  constructor(props: Props) {
-    super(props);
+var _classnames = require('classnames');
 
-    const workingSetsStore = props.workingSetsStore;
+var _classnames2 = _interopRequireDefault(_classnames);
+
+var _atom = require('atom');
+
+var _reactForAtom = require('react-for-atom');
+
+var _nuclideUiLibButton = require('../../nuclide-ui/lib/Button');
+
+var _nuclideUiLibButtonGroup = require('../../nuclide-ui/lib/ButtonGroup');
+
+var WorkingSetSelectionComponent = (function (_React$Component) {
+  _inherits(WorkingSetSelectionComponent, _React$Component);
+
+  function WorkingSetSelectionComponent(props) {
+    var _this = this;
+
+    _classCallCheck(this, WorkingSetSelectionComponent);
+
+    _get(Object.getPrototypeOf(WorkingSetSelectionComponent.prototype), 'constructor', this).call(this, props);
+
+    var workingSetsStore = props.workingSetsStore;
 
     this.state = {
       selectionIndex: 0,
       applicableDefinitions: workingSetsStore.getApplicableDefinitions(),
-      notApplicableDefinitions: workingSetsStore.getNotApplicableDefinitions(),
+      notApplicableDefinitions: workingSetsStore.getNotApplicableDefinitions()
     };
 
-    this._disposables = new CompositeDisposable();
+    this._disposables = new _atom.CompositeDisposable();
 
-    this._disposables.add(
-      workingSetsStore.subscribeToDefinitions(definitions => {
-        this.setState({
-          applicableDefinitions: definitions.applicable,
-          notApplicableDefinitions: definitions.notApplicable,
-        });
-        if (definitions.applicable.length + definitions.notApplicable.length === 0) {
-          this.props.onClose();
-        }
-      })
-    );
-
-    (this: any)._checkFocus = this._checkFocus.bind(this);
-    (this: any)._toggleWorkingSet = this._toggleWorkingSet.bind(this);
-    (this: any)._setSelectionIndex = this._setSelectionIndex.bind(this);
-    (this: any)._deleteWorkingSet = this._deleteWorkingSet.bind(this);
-  }
-
-  componentDidMount(): void {
-    const node = ReactDOM.findDOMNode(this);
-    node.focus();
-    this._disposables.add(atom.commands.add(
-      node,
-      {
-        'core:move-up': () => this._moveSelectionIndex(-1),
-        'core:move-down': () => this._moveSelectionIndex(1),
-        'core:confirm': () => {
-          const def = this.state.applicableDefinitions[this.state.selectionIndex];
-          this._toggleWorkingSet(def.name, def.active);
-        },
-        'core:cancel': this.props.onClose,
+    this._disposables.add(workingSetsStore.subscribeToDefinitions(function (definitions) {
+      _this.setState({
+        applicableDefinitions: definitions.applicable,
+        notApplicableDefinitions: definitions.notApplicable
+      });
+      if (definitions.applicable.length + definitions.notApplicable.length === 0) {
+        _this.props.onClose();
       }
-    ));
+    }));
+
+    this._checkFocus = this._checkFocus.bind(this);
+    this._toggleWorkingSet = this._toggleWorkingSet.bind(this);
+    this._setSelectionIndex = this._setSelectionIndex.bind(this);
+    this._deleteWorkingSet = this._deleteWorkingSet.bind(this);
   }
 
-  componentWillUnmount(): void {
-    this._disposables.dispose();
-  }
+  _createClass(WorkingSetSelectionComponent, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _this2 = this;
 
-  componentWillUpdate(nextProps: Props, nextState: State): void {
-    const applicableLength = nextState.applicableDefinitions.length;
+      var node = _reactForAtom.ReactDOM.findDOMNode(this);
+      node.focus();
+      this._disposables.add(atom.commands.add(node, {
+        'core:move-up': function coreMoveUp() {
+          return _this2._moveSelectionIndex(-1);
+        },
+        'core:move-down': function coreMoveDown() {
+          return _this2._moveSelectionIndex(1);
+        },
+        'core:confirm': function coreConfirm() {
+          var def = _this2.state.applicableDefinitions[_this2.state.selectionIndex];
+          _this2._toggleWorkingSet(def.name, def.active);
+        },
+        'core:cancel': this.props.onClose
+      }));
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      this._disposables.dispose();
+    }
+  }, {
+    key: 'componentWillUpdate',
+    value: function componentWillUpdate(nextProps, nextState) {
+      var applicableLength = nextState.applicableDefinitions.length;
 
-    if (applicableLength > 0) {
-      if (nextState.selectionIndex >= applicableLength) {
-        this.setState({selectionIndex: applicableLength - 1});
-      } else if (nextState.selectionIndex < 0) {
-        this.setState({selectionIndex: 0});
+      if (applicableLength > 0) {
+        if (nextState.selectionIndex >= applicableLength) {
+          this.setState({ selectionIndex: applicableLength - 1 });
+        } else if (nextState.selectionIndex < 0) {
+          this.setState({ selectionIndex: 0 });
+        }
       }
     }
-  }
+  }, {
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate() {
+      var node = _reactForAtom.ReactDOM.findDOMNode(this);
+      node.focus();
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _this3 = this;
 
-  componentDidUpdate(): void {
-    const node = ReactDOM.findDOMNode(this);
-    node.focus();
-  }
-
-  render(): React.Element {
-    const applicableDefinitions = this.state.applicableDefinitions.map((def, index) => {
-      return (
-        <ApplicableDefinitionLine
-          key={def.name}
-          def={def}
-          index={index}
-          selected={index === this.state.selectionIndex}
-          toggleWorkingSet={this._toggleWorkingSet}
-          onSelect={this._setSelectionIndex}
-          onDeleteWorkingSet={this._deleteWorkingSet}
-          onEditWorkingSet={this.props.onEditWorkingSet}
-        />
-      );
-    });
-
-    let notApplicableSection;
-    if (this.state.notApplicableDefinitions.length > 0) {
-      const notApplicableDefinitions = this.state.notApplicableDefinitions.map(def => {
-        return (
-          <NonApplicableDefinitionLine
-            key={def.name}
-            def={def}
-            onDeleteWorkingSet={this._deleteWorkingSet}
-          />
-        );
+      var applicableDefinitions = this.state.applicableDefinitions.map(function (def, index) {
+        return _reactForAtom.React.createElement(ApplicableDefinitionLine, {
+          key: def.name,
+          def: def,
+          index: index,
+          selected: index === _this3.state.selectionIndex,
+          toggleWorkingSet: _this3._toggleWorkingSet,
+          onSelect: _this3._setSelectionIndex,
+          onDeleteWorkingSet: _this3._deleteWorkingSet,
+          onEditWorkingSet: _this3.props.onEditWorkingSet
+        });
       });
 
-      notApplicableSection = (
-        <div>
-          <hr className="nuclide-file-tree-working-set-separator" />
-          <span>The working sets below are not applicable to your current project folders</span>
-          <ol className="list-group">
-            {notApplicableDefinitions}
-          </ol>
-        </div>
+      var notApplicableSection = undefined;
+      if (this.state.notApplicableDefinitions.length > 0) {
+        var _notApplicableDefinitions = this.state.notApplicableDefinitions.map(function (def) {
+          return _reactForAtom.React.createElement(NonApplicableDefinitionLine, {
+            key: def.name,
+            def: def,
+            onDeleteWorkingSet: _this3._deleteWorkingSet
+          });
+        });
+
+        notApplicableSection = _reactForAtom.React.createElement(
+          'div',
+          null,
+          _reactForAtom.React.createElement('hr', { className: 'nuclide-file-tree-working-set-separator' }),
+          _reactForAtom.React.createElement(
+            'span',
+            null,
+            'The working sets below are not applicable to your current project folders'
+          ),
+          _reactForAtom.React.createElement(
+            'ol',
+            { className: 'list-group' },
+            _notApplicableDefinitions
+          )
+        );
+      }
+
+      return _reactForAtom.React.createElement(
+        'div',
+        {
+          className: 'select-list',
+          tabIndex: '0',
+          onBlur: this._checkFocus },
+        _reactForAtom.React.createElement(
+          'ol',
+          { className: 'list-group mark-active' },
+          applicableDefinitions
+        ),
+        notApplicableSection
       );
     }
-
-    return (
-      <div
-        className="select-list"
-        tabIndex="0"
-        onBlur={this._checkFocus}>
-        <ol className="list-group mark-active">
-          {applicableDefinitions}
-        </ol>
-        {notApplicableSection}
-      </div>
-    );
-  }
-
-  _moveSelectionIndex(step: number): void {
-    this.setState({selectionIndex: this.state.selectionIndex + step});
-  }
-
-  _setSelectionIndex(selectionIndex: number): void {
-    this.setState({selectionIndex});
-  }
-
-  _checkFocus(event: SyntheticFocusEvent): void {
-    const node = ReactDOM.findDOMNode(this);
-    // If the next active element (`event.relatedTarget`) is not a descendant of this modal, close
-    // the modal.
-    if (!node.contains(event.relatedTarget)) {
-      this.props.onClose();
+  }, {
+    key: '_moveSelectionIndex',
+    value: function _moveSelectionIndex(step) {
+      this.setState({ selectionIndex: this.state.selectionIndex + step });
     }
-  }
-
-  _toggleWorkingSet(name: string, active: boolean) {
-    if (active) {
-      this.props.workingSetsStore.deactivate(name);
-    } else {
-      this.props.workingSetsStore.activate(name);
+  }, {
+    key: '_setSelectionIndex',
+    value: function _setSelectionIndex(selectionIndex) {
+      this.setState({ selectionIndex: selectionIndex });
     }
+  }, {
+    key: '_checkFocus',
+    value: function _checkFocus(event) {
+      var node = _reactForAtom.ReactDOM.findDOMNode(this);
+      // If the next active element (`event.relatedTarget`) is not a descendant of this modal, close
+      // the modal.
+      if (!node.contains(event.relatedTarget)) {
+        this.props.onClose();
+      }
+    }
+  }, {
+    key: '_toggleWorkingSet',
+    value: function _toggleWorkingSet(name, active) {
+      if (active) {
+        this.props.workingSetsStore.deactivate(name);
+      } else {
+        this.props.workingSetsStore.activate(name);
+      }
+    }
+  }, {
+    key: '_deleteWorkingSet',
+    value: function _deleteWorkingSet(name) {
+      this.props.workingSetsStore.deleteWorkingSet(name);
+    }
+  }]);
+
+  return WorkingSetSelectionComponent;
+})(_reactForAtom.React.Component);
+
+exports.WorkingSetSelectionComponent = WorkingSetSelectionComponent;
+
+var ApplicableDefinitionLine = (function (_React$Component2) {
+  _inherits(ApplicableDefinitionLine, _React$Component2);
+
+  function ApplicableDefinitionLine(props) {
+    _classCallCheck(this, ApplicableDefinitionLine);
+
+    _get(Object.getPrototypeOf(ApplicableDefinitionLine.prototype), 'constructor', this).call(this, props);
+
+    this._lineOnClick = this._lineOnClick.bind(this);
+    this._deleteButtonOnClick = this._deleteButtonOnClick.bind(this);
+    this._editButtonOnClick = this._editButtonOnClick.bind(this);
   }
 
-  _deleteWorkingSet(name: string): void {
-    this.props.workingSetsStore.deleteWorkingSet(name);
-  }
-}
+  _createClass(ApplicableDefinitionLine, [{
+    key: 'render',
+    value: function render() {
+      var _this4 = this;
 
-type ApplicableDefinitionLineProps = {
-  def: WorkingSetDefinition;
-  index: number;
-  selected: boolean;
-  toggleWorkingSet: (name: string, active: boolean) => void;
-  onSelect: (index: number) => void;
-  onDeleteWorkingSet: (name: string) => void;
-  onEditWorkingSet: (name: string, uris: Array<string>) => void;
-};
+      var classes = {
+        active: this.props.def.active,
+        selected: this.props.selected,
+        clearfix: true
+      };
 
-class ApplicableDefinitionLine extends React.Component {
-  props: ApplicableDefinitionLineProps;
+      return _reactForAtom.React.createElement(
+        'li',
+        {
+          className: (0, _classnames2['default'])(classes),
+          onMouseOver: function () {
+            return _this4.props.onSelect(_this4.props.index);
+          },
+          onClick: this._lineOnClick },
+        _reactForAtom.React.createElement(
+          _nuclideUiLibButtonGroup.ButtonGroup,
+          { className: 'pull-right' },
+          _reactForAtom.React.createElement(_nuclideUiLibButton.Button, {
+            icon: 'trashcan',
+            onClick: this._deleteButtonOnClick,
+            tabIndex: '-1',
+            title: 'Delete this working set'
+          }),
+          _reactForAtom.React.createElement(_nuclideUiLibButton.Button, {
+            icon: 'pencil',
+            onClick: this._editButtonOnClick,
+            tabIndex: '-1',
+            title: 'Edit this working set'
+          })
+        ),
+        _reactForAtom.React.createElement(
+          'span',
+          null,
+          this.props.def.name
+        )
+      );
+    }
+  }, {
+    key: '_lineOnClick',
+    value: function _lineOnClick(event) {
+      this.props.toggleWorkingSet(this.props.def.name, this.props.def.active);
+    }
+  }, {
+    key: '_deleteButtonOnClick',
+    value: function _deleteButtonOnClick(event) {
+      this.props.onDeleteWorkingSet(this.props.def.name);
+      event.stopPropagation();
+    }
+  }, {
+    key: '_editButtonOnClick',
+    value: function _editButtonOnClick(event) {
+      this.props.onEditWorkingSet(this.props.def.name, this.props.def.uris);
+      event.stopPropagation();
+    }
+  }]);
 
-  constructor(props: ApplicableDefinitionLineProps) {
-    super(props);
+  return ApplicableDefinitionLine;
+})(_reactForAtom.React.Component);
 
-    (this: any)._lineOnClick = this._lineOnClick.bind(this);
-    (this: any)._deleteButtonOnClick = this._deleteButtonOnClick.bind(this);
-    (this: any)._editButtonOnClick = this._editButtonOnClick.bind(this);
-  }
+var NonApplicableDefinitionLine = (function (_React$Component3) {
+  _inherits(NonApplicableDefinitionLine, _React$Component3);
 
-  render(): React.Element {
-    const classes = {
-      active: this.props.def.active,
-      selected: this.props.selected,
-      clearfix: true,
-    };
+  function NonApplicableDefinitionLine(props) {
+    _classCallCheck(this, NonApplicableDefinitionLine);
 
-    return (
-      <li
-        className={classnames(classes)}
-        onMouseOver={() => this.props.onSelect(this.props.index)}
-        onClick={this._lineOnClick}>
-        <ButtonGroup className="pull-right">
-          <Button
-            icon="trashcan"
-            onClick={this._deleteButtonOnClick}
-            tabIndex="-1"
-            title="Delete this working set"
-          />
-          <Button
-            icon="pencil"
-            onClick={this._editButtonOnClick}
-            tabIndex="-1"
-            title="Edit this working set"
-          />
-        </ButtonGroup>
-        <span>
-          {this.props.def.name}
-        </span>
-      </li>
-    );
-  }
+    _get(Object.getPrototypeOf(NonApplicableDefinitionLine.prototype), 'constructor', this).call(this, props);
 
-  _lineOnClick(event: MouseEvent): void {
-    this.props.toggleWorkingSet(this.props.def.name, this.props.def.active);
-  }
-
-  _deleteButtonOnClick(event: MouseEvent): void {
-    this.props.onDeleteWorkingSet(this.props.def.name);
-    event.stopPropagation();
-  }
-
-  _editButtonOnClick(event: MouseEvent): void {
-    this.props.onEditWorkingSet(this.props.def.name, this.props.def.uris);
-    event.stopPropagation();
-  }
-}
-
-type NonApplicableDefinitionLineProps = {
-  def: WorkingSetDefinition;
-  onDeleteWorkingSet: (name: string) => void;
-};
-
-class NonApplicableDefinitionLine extends React.Component {
-  props: NonApplicableDefinitionLineProps;
-
-  constructor(props: NonApplicableDefinitionLineProps) {
-    super(props);
-
-    (this: any)._deleteButtonOnClick = this._deleteButtonOnClick.bind(this);
+    this._deleteButtonOnClick = this._deleteButtonOnClick.bind(this);
   }
 
-  render(): React.Element {
-    return (
-      <li className="clearfix">
-        <Button
-          className="pull-right"
-          icon="trashcan"
-          onClick={this._deleteButtonOnClick}
-          tabIndex="-1"
-          title="Delete this working set"
-        />
-        <span className="text-subtle">
-          {this.props.def.name}
-        </span>
-      </li>
-    );
-  }
+  _createClass(NonApplicableDefinitionLine, [{
+    key: 'render',
+    value: function render() {
+      return _reactForAtom.React.createElement(
+        'li',
+        { className: 'clearfix' },
+        _reactForAtom.React.createElement(_nuclideUiLibButton.Button, {
+          className: 'pull-right',
+          icon: 'trashcan',
+          onClick: this._deleteButtonOnClick,
+          tabIndex: '-1',
+          title: 'Delete this working set'
+        }),
+        _reactForAtom.React.createElement(
+          'span',
+          { className: 'text-subtle' },
+          this.props.def.name
+        )
+      );
+    }
+  }, {
+    key: '_deleteButtonOnClick',
+    value: function _deleteButtonOnClick(event) {
+      this.props.onDeleteWorkingSet(this.props.def.name);
+      event.stopPropagation();
+    }
+  }]);
 
-  _deleteButtonOnClick(event: MouseEvent): void {
-    this.props.onDeleteWorkingSet(this.props.def.name);
-    event.stopPropagation();
-  }
-}
+  return NonApplicableDefinitionLine;
+})(_reactForAtom.React.Component);

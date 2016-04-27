@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var NewLine = require('./NewLine');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,54 +10,49 @@
  * the root directory of this source tree.
  */
 
-import type {Collection, NodePath} from '../types/ast';
+var getRootIdentifierInExpression = require('./getRootIdentifierInExpression');
+var isGlobal = require('./isGlobal');
+var jscs = require('jscodeshift');
 
-const NewLine = require('./NewLine');
+var match = jscs.match;
 
-const getRootIdentifierInExpression = require('./getRootIdentifierInExpression');
-const isGlobal = require('./isGlobal');
-const jscs = require('jscodeshift');
-
-const {match} = jscs;
-
-const FirstNode = {
+var FirstNode = {
   /**
    * Gets the first node that it's safe to insert before on.
    *
    * Note: We never need to add a first node. If a first node doesn't exist
    * then there isn't ever code that would result in a require being changed.
    */
-  get(root: Collection): ?NodePath {
-    let first;
-    root
-      .find(jscs.Node)
-      .filter(path => isGlobal(path))
-      .forEach(path => {
-        if (!first && FirstNode.isValidFirstNode(path)) {
-          first = path;
-        }
-      });
+  get: function get(root) {
+    var first = undefined;
+    root.find(jscs.Node).filter(function (path) {
+      return isGlobal(path);
+    }).forEach(function (path) {
+      if (!first && FirstNode.isValidFirstNode(path)) {
+        first = path;
+      }
+    });
     return first;
   },
 
   /**
    * Filter to see if a node is a valid first node.
    */
-  isValidFirstNode(path: NodePath): boolean {
+  isValidFirstNode: function isValidFirstNode(path) {
     // A new line literal is okay.
-    if (match(path, {expression: {value: NewLine.literal}})) {
+    if (match(path, { expression: { value: NewLine.literal } })) {
       return true;
     }
     // Any other literal is not.
-    if (match(path, {expression: {type: 'Literal'}})) {
+    if (match(path, { expression: { type: 'Literal' } })) {
       return false;
     }
-    const firstObject = getRootIdentifierInExpression(path.node);
-    if (firstObject && match(firstObject, {name: 'jest'})) {
+    var firstObject = getRootIdentifierInExpression(path.node);
+    if (firstObject && match(firstObject, { name: 'jest' })) {
       return false;
     }
     return true;
-  },
+  }
 };
 
 module.exports = FirstNode;

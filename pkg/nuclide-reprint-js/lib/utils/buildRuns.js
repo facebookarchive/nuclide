@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +8,16 @@
  * the root directory of this source tree.
  */
 
-const isMarker = require('./isMarker');
+var isMarker = require('./isMarker');
 
 /**
  * This returns a list of all the contiguous runs of markers within this set
  * of lines. Runs are [inclusive, exclusive).
  */
-function buildRuns(lines: Array<any>): Array<[number, number]> {
-  const runs = [];
-  let start = null;
-  for (let i = 0; i < lines.length; i++) {
+function buildRuns(lines) {
+  var runs = [];
+  var start = null;
+  for (var i = 0; i < lines.length; i++) {
     if (!isMarker(lines[i])) {
       if (start != null) {
         runs.push([start, i]);

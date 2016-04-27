@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var jscs = require('jscodeshift');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +10,24 @@
  * the root directory of this source tree.
  */
 
-import type {Node} from '../types/ast';
-
-const jscs = require('jscodeshift');
-
-function getNamesFromID(node: Node): Set<string> {
-  const ids = new Set();
+function getNamesFromID(node) {
+  var ids = new Set();
   if (jscs.Identifier.check(node)) {
     ids.add(node.name);
-  } else if (
-    jscs.RestElement.check(node) ||
-    jscs.SpreadElement.check(node) ||
-    jscs.SpreadProperty.check(node)
-  ) {
-    for (const id of getNamesFromID(node.argument)) {
+  } else if (jscs.RestElement.check(node) || jscs.SpreadElement.check(node) || jscs.SpreadProperty.check(node)) {
+    for (var id of getNamesFromID(node.argument)) {
       ids.add(id);
     }
   } else if (jscs.ObjectPattern.check(node)) {
-    node.properties.forEach(prop => {
+    node.properties.forEach(function (prop) {
       // Generally props have a value, if it is a spread property it doesn't.
-      for (const id of getNamesFromID(prop.value || prop)) {
+      for (var id of getNamesFromID(prop.value || prop)) {
         ids.add(id);
       }
     });
   } else if (jscs.ArrayPattern.check(node)) {
-    node.elements.forEach(element => {
-      for (const id of getNamesFromID(element)) {
+    node.elements.forEach(function (element) {
+      for (var id of getNamesFromID(element)) {
         ids.add(id);
       }
     });

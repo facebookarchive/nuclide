@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = onWillDestroyTextBuffer;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +13,25 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
+var _assert = require('assert');
 
-export default function onWillDestroyTextBuffer(callback: (buffer: atom$TextBuffer) => mixed)
-    : IDisposable {
-  return atom.workspace.onWillDestroyPaneItem(({item}) => {
+var _assert2 = _interopRequireDefault(_assert);
+
+function onWillDestroyTextBuffer(callback) {
+  return atom.workspace.onWillDestroyPaneItem(function (_ref) {
+    var item = _ref.item;
+
     if (!atom.workspace.isTextEditor(item)) {
       return;
     }
 
-    const editor: atom$TextEditor = (item: any);
-    const openBufferCount = editor.getBuffer().refcount;
-    invariant(
-      openBufferCount !== 0,
-      'The file that is about to be closed should still be open.'
-    );
+    var editor = item;
+    var openBufferCount = editor.getBuffer().refcount;
+    (0, _assert2['default'])(openBufferCount !== 0, 'The file that is about to be closed should still be open.');
     if (openBufferCount === 1) {
       callback(editor.getBuffer());
     }
   });
 }
+
+module.exports = exports['default'];

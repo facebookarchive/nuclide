@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _require = require('../../../nuclide-remote-uri');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,33 +8,27 @@
  * the root directory of this source tree.
  */
 
-import type {ModuleMapOptions} from './ModuleMapOptions';
-import type {RequireOptions} from './RequireOptions';
-import type {SourceOptions} from './SourceOptions';
+var getPath = _require.getPath;
 
-const {getPath} = require('../../../nuclide-remote-uri');
-const invariant = require('assert');
-const path = require('path');
+var invariant = require('assert');
+var path = require('path');
 
 /**
  * Valides the options used to construct a module map.
  */
-function validateModuleMapOptions(options: ModuleMapOptions): void {
+function validateModuleMapOptions(options) {
   invariant(options, 'Invalid (undefined) ModuleMapOptions given.');
 
   // Validate presence of correct fields.
   invariant(options.paths, '`paths` must be provided.');
   invariant(options.pathsToRelativize, '`pathsToRelativze` must be provided.');
   invariant(options.aliases, '`aliases` must be provided.');
-  invariant(
-    options.aliasesToRelativize,
-    '`aliasesToRelativze` must be provided.'
-  );
+  invariant(options.aliasesToRelativize, '`aliasesToRelativze` must be provided.');
   invariant(options.builtIns, '`builtIns` must be provided.');
   invariant(options.builtInTypes, '`builtInTypes` must be provided.');
 
   // TODO: Use let.
-  let filePath;
+  var filePath = undefined;
   for (filePath of options.paths) {
     invariant(isAbsolute(filePath), 'All paths must be absolute.');
   }
@@ -47,39 +40,33 @@ function validateModuleMapOptions(options: ModuleMapOptions): void {
 /**
  * Valides the options used to get requires out of a module map.
  */
-function validateRequireOptions(options: RequireOptions): void {
+function validateRequireOptions(options) {
   invariant(options, 'Invalid (undefined) RequireOptions given.');
 }
 
 /**
  * Validates the options given as input to transform.
  */
-function validateSourceOptions(options: SourceOptions): void {
+function validateSourceOptions(options) {
   invariant(options, 'Invalid (undefined) SourceOptions given.');
   if (options.sourcePath != null) {
-    invariant(
-      isAbsolute(options.sourcePath),
-      'If a "sourcePath" is given it must be an absolute path.'
-    );
+    invariant(isAbsolute(options.sourcePath), 'If a "sourcePath" is given it must be an absolute path.');
   }
-  invariant(
-    options.moduleMap,
-    'A "moduleMap" must be provided in order to transform the source.'
-  );
+  invariant(options.moduleMap, 'A "moduleMap" must be provided in order to transform the source.');
 }
 
 /**
  * Small helper function to validate that a path is absolute. We also need to
  * allow remote nuclide files.
  */
-function isAbsolute(sourcePath: string): boolean {
+function isAbsolute(sourcePath) {
   return path.isAbsolute(getPath(sourcePath));
 }
 
-const Options = {
-  validateModuleMapOptions,
-  validateRequireOptions,
-  validateSourceOptions,
+var Options = {
+  validateModuleMapOptions: validateModuleMapOptions,
+  validateRequireOptions: validateRequireOptions,
+  validateSourceOptions: validateSourceOptions
 };
 
 module.exports = Options;

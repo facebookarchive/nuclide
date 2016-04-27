@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,6 +8,6 @@
  * the root directory of this source tree.
  */
 
-const Options = require('./Options');
+var Options = require('./Options');
 
 module.exports = new Options();

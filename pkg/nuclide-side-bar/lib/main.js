@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,22 +10,36 @@
  * the root directory of this source tree.
  */
 
-import type {Logger} from '../../nuclide-logging/lib/types';
-import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import invariant from 'assert';
-const {CompositeDisposable} = require('atom');
-const {getLogger} = require('../../nuclide-logging');
-const {PanelComponent} = require('../../nuclide-ui/lib/PanelComponent');
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
+exports.provideNuclideSideBar = provideNuclideSideBar;
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.serialize = serialize;
+exports.getDistractionFreeModeProvider = getDistractionFreeModeProvider;
 
-type ViewInstance = {
-  commandDisposable: IDisposable;
-  view: View;
-};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _require = require('atom');
+
+var CompositeDisposable = _require.CompositeDisposable;
+
+var _require2 = require('../../nuclide-logging');
+
+var getLogger = _require2.getLogger;
+
+var _require3 = require('../../nuclide-ui/lib/PanelComponent');
+
+var PanelComponent = _require3.PanelComponent;
+
+var _require4 = require('react-for-atom');
+
+var React = _require4.React;
+var ReactDOM = _require4.ReactDOM;
 
 /**
  * Type consumed by the side bar service's `registerView` function.
@@ -44,37 +59,24 @@ type ViewInstance = {
  *   methods may be used normally. When another view is shown, the active view's React element is
  *   unmounted.
  */
-type View = {
-  toggleCommand: string;
-  getComponent: () => Class<any>; // TODO(ssorallen): Should be polymorphic `Class<React.Component>`
-  onDidShow: () => mixed;
-  viewId: string;
-};
 
-type State = {
-  activeViewId: ?string;
-  hidden: boolean;
-  initialLength: number;
-  views: Map<string, ViewInstance>;
-};
+var disposables = undefined;
+var item = undefined;
+var logger = undefined;
+var panel = undefined;
+var panelComponent = undefined;
+var state = undefined;
 
-let disposables: CompositeDisposable;
-let item: HTMLElement;
-let logger: Logger;
-let panel: atom$Panel;
-let panelComponent: PanelComponent;
-let state: State;
-
-function getDefaultState(): State {
+function getDefaultState() {
   return {
     activeViewId: null,
     hidden: false,
     initialLength: 240,
-    views: new Map(),
+    views: new Map()
   };
 }
 
-function getActiveViewInstance(activeState: State): ?ViewInstance {
+function getActiveViewInstance(activeState) {
   if (activeState.activeViewId != null) {
     return activeState.views.get(activeState.activeViewId);
   }
@@ -86,113 +88,107 @@ function getActiveViewInstance(activeState: State): ?ViewInstance {
  * `tabindex` attributes on descendants, and so a view's descendants have to be searched for a
  * potential `activeElement`.
  */
-function elementHasOrContainsFocus(element: HTMLElement): boolean {
+function elementHasOrContainsFocus(element) {
   return document.activeElement === element || element.contains(document.activeElement);
 }
 
-function blurPanel(): void {
-  const child = ReactDOM.findDOMNode(panelComponent.getChildComponent());
+function blurPanel() {
+  var child = ReactDOM.findDOMNode(panelComponent.getChildComponent());
   if (elementHasOrContainsFocus(child)) {
     atom.workspace.getActivePane().activate();
   }
 }
 
-function focusPanel(): void {
-  const child = ReactDOM.findDOMNode(panelComponent.getChildComponent());
+function focusPanel() {
+  var child = ReactDOM.findDOMNode(panelComponent.getChildComponent());
   if (!elementHasOrContainsFocus(child)) {
     child.focus();
   }
 }
 
-function renderPanel(renderState: State, onDidRender?: () => mixed): void {
-  const activeViewInstance = getActiveViewInstance(renderState);
-  const hidden = (activeViewInstance == null) || renderState.hidden;
-  const component = ReactDOM.render(
-    <PanelComponent
-      dock="left"
+function renderPanel(renderState, onDidRender) {
+  var activeViewInstance = getActiveViewInstance(renderState);
+  var hidden = activeViewInstance == null || renderState.hidden;
+  var component = ReactDOM.render(React.createElement(
+    PanelComponent,
+    {
+      dock: 'left',
       // Keep the side-bar hidden when there is no active view instance.
-      hidden={hidden}
-      initialLength={renderState.initialLength}
-      noScroll>
-      {activeViewInstance == null
-        ? <div />
-        : React.createElement(activeViewInstance.view.getComponent(), {hidden})}
-    </PanelComponent>,
-    item,
-    onDidRender
-  );
-  invariant(component instanceof PanelComponent);
+      hidden: hidden,
+      initialLength: renderState.initialLength,
+      noScroll: true },
+    activeViewInstance == null ? React.createElement('div', null) : React.createElement(activeViewInstance.view.getComponent(), { hidden: hidden })
+  ), item, onDidRender);
+  (0, _assert2['default'])(component instanceof PanelComponent);
   panelComponent = component;
 }
 
-function toggleView(viewId: ?string, options?: {display: boolean}) {
+function toggleView(viewId, options) {
   // If `display` is specified in the event details, use it as the `hidden` value rather than
   // toggle. This enables consumers to force hide/show without first asking for the visibility
   // state.
-  let forceHidden;
+  var forceHidden = undefined;
   if (options != null) {
     forceHidden = !options.display;
   }
 
-  let nextState;
+  var nextState = undefined;
   if (viewId === state.activeViewId) {
     // If this view is already active, just toggle the visibility of the side bar or set it to the
     // desired `display`.
-    nextState = {
-      ...state,
-      hidden: (forceHidden == null) ? !state.hidden : forceHidden,
-    };
+    nextState = _extends({}, state, {
+      hidden: forceHidden == null ? !state.hidden : forceHidden
+    });
   } else {
     // If this is not already the active view, switch to it and ensure the side bar is visible or is
     // the specified `display` value.
-    nextState = {
-      ...state,
+    nextState = _extends({}, state, {
       activeViewId: viewId,
-      hidden: (forceHidden == null) ? false : forceHidden,
-    };
+      hidden: forceHidden == null ? false : forceHidden
+    });
   }
 
   // If the side bar became visible or if it was already visible and the active view changed, call
   // the next active view's `onDidShow` so it can respond to becoming visible.
-  const didShow = (nextState.hidden === false && state.hidden === true)
-    || (!nextState.hidden && (nextState.activeViewId !== state.activeViewId));
+  var didShow = nextState.hidden === false && state.hidden === true || !nextState.hidden && nextState.activeViewId !== state.activeViewId;
 
   // Store the next state.
   state = nextState;
 
   if (didShow) {
-    const activeViewInstance = getActiveViewInstance(state);
-    let onDidShow;
-    if (activeViewInstance != null) {
-      onDidShow = function() {
-        focusPanel();
-        activeViewInstance.view.onDidShow();
-      };
-    }
-    renderPanel(state, onDidShow);
+    (function () {
+      var activeViewInstance = getActiveViewInstance(state);
+      var onDidShow = undefined;
+      if (activeViewInstance != null) {
+        onDidShow = function () {
+          focusPanel();
+          activeViewInstance.view.onDidShow();
+        };
+      }
+      renderPanel(state, onDidShow);
+    })();
   } else {
     renderPanel(state);
     blurPanel();
   }
 }
 
-const Service = {
-  registerView(view: View): void {
+var Service = {
+  registerView: function registerView(view) {
     if (state.views.has(view.viewId)) {
-      logger.warn(`A view with ID '${view.viewId}' is already registered.`);
+      logger.warn('A view with ID \'' + view.viewId + '\' is already registered.');
       return;
     }
 
     // If there's no active view yet, activate this one immediately.
     if (state.activeViewId == null) {
-      state = {
-        ...state,
-        activeViewId: view.viewId,
-      };
+      state = _extends({}, state, {
+        activeViewId: view.viewId
+      });
     }
 
     // Listen for the view's toggle command.
-    const commandDisposable = atom.commands.add('atom-workspace', view.toggleCommand, event => {
+    var commandDisposable = atom.commands.add('atom-workspace', view.toggleCommand, function (event) {
       // $FlowIssue Missing `CustomEvent` type in Flow's 'dom.js' library
       toggleView(view.viewId, event.detail);
     });
@@ -200,69 +196,65 @@ const Service = {
 
     // `Map` is not actually immutable, but use the immutable paradigm to keep updating consistent
     // for all values in `state`.
-    state.views.set(view.viewId, {commandDisposable, view});
-    state = {
-      ...state,
-      views: state.views,
-    };
+    state.views.set(view.viewId, { commandDisposable: commandDisposable, view: view });
+    state = _extends({}, state, {
+      views: state.views
+    });
 
     renderPanel(state);
   },
-  destroyView(viewId: string): void {
-    const viewInstance = state.views.get(viewId);
+  destroyView: function destroyView(viewId) {
+    var viewInstance = state.views.get(viewId);
 
     if (viewInstance == null) {
-      logger.warn(`No view with ID '${viewId}' is registered. Nothing to remove.`);
+      logger.warn('No view with ID \'' + viewId + '\' is registered. Nothing to remove.');
       return;
     }
 
     // Stop listening for this view's toggle command.
-    const commandDisposable = viewInstance.commandDisposable;
+    var commandDisposable = viewInstance.commandDisposable;
     disposables.remove(commandDisposable);
     commandDisposable.dispose();
 
     // `Map` is not actually immutable, but use the immutable paradigm to keep updating consistent
     // for all values in `state`.
-    state.views.delete(viewId);
-    state = {
-      ...state,
-      views: state.views,
-    };
+    state.views['delete'](viewId);
+    state = _extends({}, state, {
+      views: state.views
+    });
 
     // If this was the active view, choose the first remaining view (in insertion order) or, if
     // there are no remaining views, choose nothing (`undefined`).
     if (viewId === state.activeViewId) {
-      state = {
-        ...state,
-        activeViewId: state.views.keys().next().value,
-      };
+      state = _extends({}, state, {
+        activeViewId: state.views.keys().next().value
+      });
     }
 
     renderPanel(state);
-  },
+  }
 };
 
 /**
  * The type provided to service consumers.
  */
-export type NuclideSideBarService = typeof Service;
 
-export function provideNuclideSideBar(): NuclideSideBarService {
+function provideNuclideSideBar() {
   return Service;
 }
 
-export function activate(deserializedState: ?Object) {
+function activate(deserializedState) {
   logger = getLogger('nuclide-side-bar');
   disposables = new CompositeDisposable();
 
-  disposables.add(atom.commands.add('atom-workspace', 'nuclide-side-bar:toggle', event => {
+  disposables.add(atom.commands.add('atom-workspace', 'nuclide-side-bar:toggle', function (event) {
     // Pass the already-active view ID to simply toggle the side bar's visibility.
     // $FlowIssue Missing `CustomEvent` type in Flow's 'dom.js' library
     toggleView(state.activeViewId, event.detail);
   }));
 
-  disposables.add(atom.commands.add('atom-workspace', 'nuclide-side-bar:toggle-focus', () => {
-    const child = ReactDOM.findDOMNode(panelComponent.getChildComponent());
+  disposables.add(atom.commands.add('atom-workspace', 'nuclide-side-bar:toggle-focus', function () {
+    var child = ReactDOM.findDOMNode(panelComponent.getChildComponent());
     if (elementHasOrContainsFocus(child)) {
       atom.workspace.getActivePane().activate();
     } else {
@@ -273,14 +265,14 @@ export function activate(deserializedState: ?Object) {
   item = document.createElement('div');
   item.style.display = 'flex';
   item.style.height = 'inherit';
-  panel = atom.workspace.addLeftPanel({item});
-  state = {...getDefaultState(), ...deserializedState};
+  panel = atom.workspace.addLeftPanel({ item: item });
+  state = _extends({}, getDefaultState(), deserializedState);
 
   // Initializes `panelComponent` so it does not need to be considered nullable.
   renderPanel(state);
 }
 
-export function deactivate() {
+function deactivate() {
   ReactDOM.unmountComponentAtNode(item);
   // Contains the `commandDisposable` Objects for all currently-registered views.
   disposables.dispose();
@@ -288,21 +280,25 @@ export function deactivate() {
   panel.destroy();
 }
 
-export function serialize(): Object {
+function serialize() {
   return {
     activeViewId: state.activeViewId,
     hidden: state.hidden,
-    initialLength: panelComponent.getLength(),
+    initialLength: panelComponent.getLength()
   };
 }
 
-export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
-  const isVisible = () => !state.hidden;
+function getDistractionFreeModeProvider() {
+  var isVisible = function isVisible() {
+    return !state.hidden;
+  };
   return {
     name: 'nuclide-side-bar',
-    isVisible,
-    toggle(): void {
+    isVisible: isVisible,
+    toggle: function toggle() {
       toggleView(state.activeViewId);
-    },
+    }
   };
 }
+
+// TODO(ssorallen): Should be polymorphic `Class<React.Component>`

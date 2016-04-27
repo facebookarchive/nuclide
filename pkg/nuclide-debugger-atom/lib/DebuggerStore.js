@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,46 +14,34 @@
  * the root directory of this source tree.
  */
 
-const {Disposable} = require('atom');
-const {EventEmitter} = require('events');
-const Constants = require('./Constants');
+var _require = require('atom');
 
-import type {Dispatcher} from 'flux';
-import type {
-  nuclide_debugger$Service,
-  NuclideEvaluationExpressionProvider,
-} from '../../nuclide-debugger-interfaces/service';
-import type DebuggerInstance from './DebuggerInstance';
-import type DebuggerProcessInfoType from './DebuggerProcessInfo';
+var Disposable = _require.Disposable;
 
-export type DebuggerModeType = 'starting' | 'running' | 'paused' | 'stopping' | 'stopped';
-const DebuggerMode: {[key: string]: DebuggerModeType} = Object.freeze({
+var _require2 = require('events');
+
+var EventEmitter = _require2.EventEmitter;
+
+var Constants = require('./Constants');
+
+var DebuggerMode = Object.freeze({
   STARTING: 'starting',
   RUNNING: 'running',
   PAUSED: 'paused',
   STOPPING: 'stopping',
-  STOPPED: 'stopped',
+  STOPPED: 'stopped'
 });
 
 /**
  * Flux style Store holding all data used by the debugger plugin.
  */
-class DebuggerStore {
-  _dispatcher: Dispatcher;
-  _eventEmitter: EventEmitter;
-  _dispatcherToken: any;
 
-  // Stored values
-  _debuggerInstance: ?DebuggerInstance;
-  _error: ?string;
-  _services: Set<nuclide_debugger$Service>;
-  _evaluationExpressionProviders: Set<NuclideEvaluationExpressionProvider>;
-  _processSocket: ?string;
-  _debuggerMode: DebuggerModeType;
-  _onLoaderBreakpointResume: () => void;
-  loaderBreakpointResumePromise: Promise<void>;
+var DebuggerStore = (function () {
+  function DebuggerStore(dispatcher) {
+    var _this = this;
 
-  constructor(dispatcher: Dispatcher) {
+    _classCallCheck(this, DebuggerStore);
+
     this._dispatcher = dispatcher;
     this._eventEmitter = new EventEmitter();
     this._dispatcherToken = this._dispatcher.register(this._handlePayload.bind(this));
@@ -59,128 +52,149 @@ class DebuggerStore {
     this._evaluationExpressionProviders = new Set();
     this._processSocket = null;
     this._debuggerMode = DebuggerMode.STOPPED;
-    this.loaderBreakpointResumePromise = new Promise(resolve => {
-      this._onLoaderBreakpointResume = resolve;
+    this.loaderBreakpointResumePromise = new Promise(function (resolve) {
+      _this._onLoaderBreakpointResume = resolve;
     });
   }
 
-  dispose() {
-    this._eventEmitter.removeAllListeners();
-    this._dispatcher.unregister(this._dispatcherToken);
-    if (this._debuggerInstance) {
-      this._debuggerInstance.dispose();
+  _createClass(DebuggerStore, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._eventEmitter.removeAllListeners();
+      this._dispatcher.unregister(this._dispatcherToken);
+      if (this._debuggerInstance) {
+        this._debuggerInstance.dispose();
+      }
     }
-  }
-
-  loaderBreakpointResumed(): void {
-    this._onLoaderBreakpointResume(); // Resolves onLoaderBreakpointResumePromise.
-  }
-
-  getDebuggerInstance(): ?DebuggerInstance {
-    return this._debuggerInstance;
-  }
-
-  getError(): ?string {
-    return this._error;
-  }
-
-  /**
-   * Return attachables.
-   *
-   * @param optional service name (e.g. lldb) to filter resulting attachables.
-   */
-  getProcessInfoList(serviceName?: string): Promise<Array<DebuggerProcessInfoType>> {
-    return Promise.all(
-        Array.from(this._services)
-          .map(service => {
-            if (!serviceName || service.name === serviceName) {
-              return service.getProcessInfoList();
-            } else {
-              return Promise.resolve([]);
-            }
-          }))
-        .then(values => [].concat.apply([], values));
-  }
-
-  getProcessSocket(): ?string {
-    return this._processSocket;
-  }
-
-  getDebuggerMode(): DebuggerModeType {
-    return this._debuggerMode;
-  }
-
-  getEvaluationExpressionProviders(): Set<NuclideEvaluationExpressionProvider> {
-    return this._evaluationExpressionProviders;
-  }
-
-  onChange(callback: () => void): Disposable {
-    const emitter = this._eventEmitter;
-    this._eventEmitter.on('change', callback);
-    return new Disposable(() => emitter.removeListener('change', callback));
-  }
-
-  setDebuggerMode(newMode: DebuggerModeType): void {
-    this._debuggerMode = newMode;
-  // Using a setter is necessary to circumvent timing issues when using the dispatcher.
-    // TODO fix underlying dispatcher timing problem & move to proper Flux implementation.
-    // this._dispatcher.dispatch({
-    //   actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
-    //   data: newMode,
-    // });
-  }
-
-  _handlePayload(payload: Object) {
-    switch (payload.actionType) {
-      case Constants.Actions.SET_PROCESS_SOCKET:
-        this._processSocket = payload.data;
-        break;
-      case Constants.Actions.ADD_SERVICE:
-        if (this._services.has(payload.data)) {
-          return;
-        }
-        this._services.add(payload.data);
-        break;
-      case Constants.Actions.REMOVE_SERVICE:
-        if (!this._services.has(payload.data)) {
-          return;
-        }
-        this._services.delete(payload.data);
-        break;
-      case Constants.Actions.SET_ERROR:
-        this._error = payload.data;
-        break;
-      case Constants.Actions.SET_DEBUGGER_INSTANCE:
-        this._debuggerInstance = payload.data;
-        break;
-      case Constants.Actions.DEBUGGER_MODE_CHANGE:
-        this._debuggerMode = payload.data;
-        if (this._debuggerMode === DebuggerMode.STOPPED) {
-          this.loaderBreakpointResumePromise = new Promise(resolve => {
-            this._onLoaderBreakpointResume = resolve;
-          });
-        }
-        break;
-      case Constants.Actions.ADD_EVALUATION_EXPRESSION_PROVIDER:
-        if (this._evaluationExpressionProviders.has(payload.data)) {
-          return;
-        }
-        this._evaluationExpressionProviders.add(payload.data);
-        break;
-      case Constants.Actions.REMOVE_EVALUATION_EXPRESSION_PROVIDER:
-        if (!this._evaluationExpressionProviders.has(payload.data)) {
-          return;
-        }
-        this._evaluationExpressionProviders.delete(payload.data);
-        break;
-      default:
-        return;
+  }, {
+    key: 'loaderBreakpointResumed',
+    value: function loaderBreakpointResumed() {
+      this._onLoaderBreakpointResume(); // Resolves onLoaderBreakpointResumePromise.
     }
-    this._eventEmitter.emit('change');
-  }
-}
+  }, {
+    key: 'getDebuggerInstance',
+    value: function getDebuggerInstance() {
+      return this._debuggerInstance;
+    }
+  }, {
+    key: 'getError',
+    value: function getError() {
+      return this._error;
+    }
+
+    /**
+     * Return attachables.
+     *
+     * @param optional service name (e.g. lldb) to filter resulting attachables.
+     */
+  }, {
+    key: 'getProcessInfoList',
+    value: function getProcessInfoList(serviceName) {
+      return Promise.all(Array.from(this._services).map(function (service) {
+        if (!serviceName || service.name === serviceName) {
+          return service.getProcessInfoList();
+        } else {
+          return Promise.resolve([]);
+        }
+      })).then(function (values) {
+        return [].concat.apply([], values);
+      });
+    }
+  }, {
+    key: 'getProcessSocket',
+    value: function getProcessSocket() {
+      return this._processSocket;
+    }
+  }, {
+    key: 'getDebuggerMode',
+    value: function getDebuggerMode() {
+      return this._debuggerMode;
+    }
+  }, {
+    key: 'getEvaluationExpressionProviders',
+    value: function getEvaluationExpressionProviders() {
+      return this._evaluationExpressionProviders;
+    }
+  }, {
+    key: 'onChange',
+    value: function onChange(callback) {
+      var emitter = this._eventEmitter;
+      this._eventEmitter.on('change', callback);
+      return new Disposable(function () {
+        return emitter.removeListener('change', callback);
+      });
+    }
+  }, {
+    key: 'setDebuggerMode',
+    value: function setDebuggerMode(newMode) {
+      this._debuggerMode = newMode;
+      // Using a setter is necessary to circumvent timing issues when using the dispatcher.
+      // TODO fix underlying dispatcher timing problem & move to proper Flux implementation.
+      // this._dispatcher.dispatch({
+      //   actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
+      //   data: newMode,
+      // });
+    }
+  }, {
+    key: '_handlePayload',
+    value: function _handlePayload(payload) {
+      var _this2 = this;
+
+      switch (payload.actionType) {
+        case Constants.Actions.SET_PROCESS_SOCKET:
+          this._processSocket = payload.data;
+          break;
+        case Constants.Actions.ADD_SERVICE:
+          if (this._services.has(payload.data)) {
+            return;
+          }
+          this._services.add(payload.data);
+          break;
+        case Constants.Actions.REMOVE_SERVICE:
+          if (!this._services.has(payload.data)) {
+            return;
+          }
+          this._services['delete'](payload.data);
+          break;
+        case Constants.Actions.SET_ERROR:
+          this._error = payload.data;
+          break;
+        case Constants.Actions.SET_DEBUGGER_INSTANCE:
+          this._debuggerInstance = payload.data;
+          break;
+        case Constants.Actions.DEBUGGER_MODE_CHANGE:
+          this._debuggerMode = payload.data;
+          if (this._debuggerMode === DebuggerMode.STOPPED) {
+            this.loaderBreakpointResumePromise = new Promise(function (resolve) {
+              _this2._onLoaderBreakpointResume = resolve;
+            });
+          }
+          break;
+        case Constants.Actions.ADD_EVALUATION_EXPRESSION_PROVIDER:
+          if (this._evaluationExpressionProviders.has(payload.data)) {
+            return;
+          }
+          this._evaluationExpressionProviders.add(payload.data);
+          break;
+        case Constants.Actions.REMOVE_EVALUATION_EXPRESSION_PROVIDER:
+          if (!this._evaluationExpressionProviders.has(payload.data)) {
+            return;
+          }
+          this._evaluationExpressionProviders['delete'](payload.data);
+          break;
+        default:
+          return;
+      }
+      this._eventEmitter.emit('change');
+    }
+  }]);
+
+  return DebuggerStore;
+})();
 
 module.exports = {
-  DebuggerMode,
-  DebuggerStore,
+  DebuggerMode: DebuggerMode,
+  DebuggerStore: DebuggerStore
 };
+
+// Stored values

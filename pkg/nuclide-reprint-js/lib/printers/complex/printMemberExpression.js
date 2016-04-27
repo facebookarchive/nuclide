@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +8,18 @@
  * the root directory of this source tree.
  */
 
-import type {Context, Lines, Print} from '../../types/common';
-import type {MemberExpression} from 'ast-types-flow';
+var markers = require('../../constants/markers');
+var wrapExpression = require('../../wrappers/simple/wrapExpression');
 
-const markers = require('../../constants/markers');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
-
-function printMemberExpression(
-  print: Print,
-  node: MemberExpression,
-  context: Context,
-): Lines {
-  const wrap = x => wrapExpression(print, node, x);
+function printMemberExpression(print, node, context) {
+  var wrap = function wrap(x) {
+    return wrapExpression(print, node, x);
+  };
 
   if (node.computed) {
-    return wrap([
-      print(node.object),
-      '[',
-      markers.openScope,
-      markers.scopeIndent,
-      markers.scopeBreak,
-      print(node.property),
-      markers.scopeBreak,
-      markers.scopeDedent,
-      markers.closeScope,
-      ']',
-    ]);
+    return wrap([print(node.object), '[', markers.openScope, markers.scopeIndent, markers.scopeBreak, print(node.property), markers.scopeBreak, markers.scopeDedent, markers.closeScope, ']']);
   } else {
-    return wrap([
-      print(node.object),
-      '.',
-      print(node.property),
-    ]);
+    return wrap([print(node.object), '.', print(node.property)]);
   }
 }
 

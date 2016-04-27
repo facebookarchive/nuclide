@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +8,26 @@
  * the root directory of this source tree.
  */
 
-const QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
-const {ActionType} = QuickSelectionDispatcher;
+var QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
+var ActionType = QuickSelectionDispatcher.ActionType;
 
-const QuickSelectionActions = {
+var QuickSelectionActions = {
 
-  query(query: string): void {
+  query: function query(_query) {
     QuickSelectionDispatcher.getInstance().dispatch({
       actionType: ActionType.QUERY,
-      query,
+      query: _query
     });
   },
 
-  changeActiveProvider(providerName: string): void {
-    setImmediate(() => {
+  changeActiveProvider: function changeActiveProvider(providerName) {
+    setImmediate(function () {
       QuickSelectionDispatcher.getInstance().dispatch({
         actionType: ActionType.ACTIVE_PROVIDER_CHANGED,
-        providerName,
+        providerName: providerName
       });
     });
-  },
+  }
 
 };
 

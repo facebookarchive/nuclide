@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,62 +10,79 @@
  * the root directory of this source tree.
  */
 
-import type {
-  BusySignalProvider,
-  BusySignalMessage,
-  BusySignalMessageBusy,
-} from './types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {Observable, BehaviorSubject} from 'rxjs';
-import {Disposable} from 'atom';
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export class MessageStore {
-  // provider to id to messages.
-  _currentMessages: Map<BusySignalProvider, Map<number, BusySignalMessageBusy>>;
-  _messageStream: BehaviorSubject<Array<BusySignalMessageBusy>>;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  constructor() {
+var _rxjs = require('rxjs');
+
+var _atom = require('atom');
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var MessageStore = (function () {
+  function MessageStore() {
+    _classCallCheck(this, MessageStore);
+
     this._currentMessages = new Map();
-    this._messageStream = new BehaviorSubject([]);
+    this._messageStream = new _rxjs.BehaviorSubject([]);
   }
 
-  consumeProvider(provider: BusySignalProvider): IDisposable {
-    const subscription =
-      provider.messages.subscribe(message => this._processUpdate(provider, message));
-    return new Disposable(() => {
-      subscription.unsubscribe();
-      this._currentMessages.delete(provider);
-      this._publishMessages();
-    });
-  }
+  _createClass(MessageStore, [{
+    key: 'consumeProvider',
+    value: function consumeProvider(provider) {
+      var _this = this;
 
-  getMessageStream(): Observable<Array<BusySignalMessageBusy>> {
-    return this._messageStream;
-  }
-
-  _processUpdate(provider: BusySignalProvider, message: BusySignalMessage): void {
-    let idMap = this._currentMessages.get(provider);
-    if (idMap == null) {
-      idMap = new Map();
-      this._currentMessages.set(provider, idMap);
+      var subscription = provider.messages.subscribe(function (message) {
+        return _this._processUpdate(provider, message);
+      });
+      return new _atom.Disposable(function () {
+        subscription.unsubscribe();
+        _this._currentMessages['delete'](provider);
+        _this._publishMessages();
+      });
     }
-    if (message.status === 'busy') {
-      idMap.set(message.id, message);
-    } else {
-      invariant(message.status === 'done');
-      idMap.delete(message.id);
+  }, {
+    key: 'getMessageStream',
+    value: function getMessageStream() {
+      return this._messageStream;
     }
-    this._publishMessages();
-  }
-
-  _publishMessages(): void {
-    const messages: Array<BusySignalMessageBusy> = [];
-    for (const idMap of this._currentMessages.values()) {
-      for (const message of idMap.values()) {
-        messages.push(message);
+  }, {
+    key: '_processUpdate',
+    value: function _processUpdate(provider, message) {
+      var idMap = this._currentMessages.get(provider);
+      if (idMap == null) {
+        idMap = new Map();
+        this._currentMessages.set(provider, idMap);
       }
+      if (message.status === 'busy') {
+        idMap.set(message.id, message);
+      } else {
+        (0, _assert2['default'])(message.status === 'done');
+        idMap['delete'](message.id);
+      }
+      this._publishMessages();
     }
-    this._messageStream.next(messages);
-  }
-}
+  }, {
+    key: '_publishMessages',
+    value: function _publishMessages() {
+      var messages = [];
+      for (var idMap of this._currentMessages.values()) {
+        for (var message of idMap.values()) {
+          messages.push(message);
+        }
+      }
+      this._messageStream.next(messages);
+    }
+  }]);
+
+  return MessageStore;
+})();
+
+exports.MessageStore = MessageStore;
+
+// provider to id to messages.

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +8,22 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  get WatchmanClient() {
-    return require('./WatchmanClient');
+module.exports = Object.defineProperties({}, {
+  WatchmanClient: {
+    get: function get() {
+      return require('./WatchmanClient');
+    },
+    configurable: true,
+    enumerable: true
   },
+  WatchmanSubscription: {
 
-  // Exposed for testing.
-  get WatchmanSubscription() {
-    return require('./WatchmanSubscription');
-  },
-};
+    // Exposed for testing.
+
+    get: function get() {
+      return require('./WatchmanSubscription');
+    },
+    configurable: true,
+    enumerable: true
+  }
+});

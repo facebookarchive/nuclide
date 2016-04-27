@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +10,14 @@
  * the root directory of this source tree.
  */
 
-
 /**
  * This class manages creating and canceling delayed events.
  */
-class DelayedEventManager {
 
-  _setTimeoutFunction: (callback: any, delay: number) => any;
-  _clearTimeoutFunction: (identifier: any) => void;
-  _canAcceptEvents: boolean;
-  _ids: Set<number>;
+var DelayedEventManager = (function () {
+  function DelayedEventManager(setTimeoutFunc, clearTimeoutFunc) {
+    _classCallCheck(this, DelayedEventManager);
 
-  constructor(
-    setTimeoutFunc: (callback: any, delay: number) => any,
-    clearTimeoutFunc: (identifier: any) => void
-  ) {
     // These functions are passed from above to facilitate testing.
     this._setTimeoutFunction = setTimeoutFunc;
     this._clearTimeoutFunction = clearTimeoutFunc;
@@ -32,54 +26,67 @@ class DelayedEventManager {
     this._ids = new Set();
   }
 
-  dispose(): void {
-    this.cancelAllEvents();
-  }
-
-  /**
-   * Sets whether the DelayedEventManager can currently accept more events.
-   * If set to true, it can. If set to false, ::addEvent becomes a no-op.
-   */
-  setCanAcceptEvents(canAcceptEvents: boolean): void {
-    this._canAcceptEvents = canAcceptEvents;
-  }
-
-  /**
-   * Creates an event and returns an identifier that can be used to cancel it,
-   * or null if the manager cannot accept events.
-   */
-  addEvent(callback: () => void, delayInMilliseconds: number): ?any {
-    if (!this._canAcceptEvents) {
-      return null;
+  _createClass(DelayedEventManager, [{
+    key: 'dispose',
+    value: function dispose() {
+      this.cancelAllEvents();
     }
-    // Prevent 'this' from being bound to DelayedEventManager.
-    const setTimeoutFunction = this._setTimeoutFunction;
-    const eventId = setTimeoutFunction(callback, delayInMilliseconds);
-    this._ids.add(eventId);
-    return eventId;
-  }
 
-  /**
-   * Cancel the event with the given identifier.
-   */
-  cancelEvent(identifier: any): void {
-    const hadId = this._ids.delete(identifier);
-    if (hadId) {
+    /**
+     * Sets whether the DelayedEventManager can currently accept more events.
+     * If set to true, it can. If set to false, ::addEvent becomes a no-op.
+     */
+  }, {
+    key: 'setCanAcceptEvents',
+    value: function setCanAcceptEvents(canAcceptEvents) {
+      this._canAcceptEvents = canAcceptEvents;
+    }
+
+    /**
+     * Creates an event and returns an identifier that can be used to cancel it,
+     * or null if the manager cannot accept events.
+     */
+  }, {
+    key: 'addEvent',
+    value: function addEvent(callback, delayInMilliseconds) {
+      if (!this._canAcceptEvents) {
+        return null;
+      }
       // Prevent 'this' from being bound to DelayedEventManager.
-      const clearTimeoutFunction = this._clearTimeoutFunction;
-      clearTimeoutFunction(identifier);
+      var setTimeoutFunction = this._setTimeoutFunction;
+      var eventId = setTimeoutFunction(callback, delayInMilliseconds);
+      this._ids.add(eventId);
+      return eventId;
     }
-  }
 
-  /**
-   * Clears all pending events.
-   */
-  cancelAllEvents(): void {
-    // Prevent 'this' from being bound to DelayedEventManager.
-    const clearTimeoutFunction = this._clearTimeoutFunction;
-    this._ids.forEach(clearTimeoutFunction);
-    this._ids.clear();
-  }
-}
+    /**
+     * Cancel the event with the given identifier.
+     */
+  }, {
+    key: 'cancelEvent',
+    value: function cancelEvent(identifier) {
+      var hadId = this._ids['delete'](identifier);
+      if (hadId) {
+        // Prevent 'this' from being bound to DelayedEventManager.
+        var clearTimeoutFunction = this._clearTimeoutFunction;
+        clearTimeoutFunction(identifier);
+      }
+    }
+
+    /**
+     * Clears all pending events.
+     */
+  }, {
+    key: 'cancelAllEvents',
+    value: function cancelAllEvents() {
+      // Prevent 'this' from being bound to DelayedEventManager.
+      var clearTimeoutFunction = this._clearTimeoutFunction;
+      this._ids.forEach(clearTimeoutFunction);
+      this._ids.clear();
+    }
+  }]);
+
+  return DelayedEventManager;
+})();
 
 module.exports = DelayedEventManager;

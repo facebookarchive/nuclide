@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,46 +8,18 @@
  * the root directory of this source tree.
  */
 
-import type {ClassDeclaration} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printClassDeclaration(print: Print, node: ClassDeclaration): Lines {
-  let parts = flatten([
-    'class',
-    markers.noBreak,
-    markers.space,
-    print(node.id),
-    node.typeParameters
-      ? [markers.noBreak, print(node.typeParameters)]
-      : markers.empty,
-    markers.noBreak,
-    markers.space,
-  ]);
+function printClassDeclaration(print, node) {
+  var parts = flatten(['class', markers.noBreak, markers.space, print(node.id), node.typeParameters ? [markers.noBreak, print(node.typeParameters)] : markers.empty, markers.noBreak, markers.space]);
 
   if (node.superClass) {
-    const superClass = node.superClass;
-    parts = flatten([
-      parts,
-      'extends',
-      markers.noBreak,
-      markers.space,
-      print(superClass),
-      node.superTypeParameters
-        ? [markers.noBreak, print(node.superTypeParameters)]
-        : markers.empty,
-      markers.noBreak,
-      markers.space,
-    ]);
+    var superClass = node.superClass;
+    parts = flatten([parts, 'extends', markers.noBreak, markers.space, print(superClass), node.superTypeParameters ? [markers.noBreak, print(node.superTypeParameters)] : markers.empty, markers.noBreak, markers.space]);
   }
 
-  return flatten([
-    parts,
-    print(node.body),
-    markers.hardBreak,
-  ]);
+  return flatten([parts, print(node.body), markers.hardBreak]);
 }
 
 module.exports = printClassDeclaration;

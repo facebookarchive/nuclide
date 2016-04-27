@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var StringUtils = require('./StringUtils');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +10,25 @@
  * the root directory of this source tree.
  */
 
-import type {AbsolutePath, Identifier, Literal, RelativePath} from '../types/common';
+var path = require('path');
 
-const StringUtils = require('./StringUtils');
+function getIdentifiersFromPath(filePath) {
+  var ids = new Set();
 
-const path = require('path');
-
-function getIdentifiersFromPath(filePath: AbsolutePath): Set<Identifier> {
-  const ids = new Set();
-
-  const baseName = path.basename(filePath);
+  var baseName = path.basename(filePath);
 
   // Get rid of extensions like, '.js', '.jsx', '.react.js', etc.
-  const noExtensions = baseName.split('.')[0];
+  var noExtensions = baseName.split('.')[0];
 
   // These are not valid tokens in an identifier so we have to remove them.
-  const splits = noExtensions.split(/[^\w]/);
+  var splits = noExtensions.split(/[^\w]/);
 
   // Just a standard identifier.
   ids.add(splits.join(''));
 
   // Then a camel case identifier (or possibly title case based on file name).
-  const camelCaseSplits = [splits[0]];
-  for (let i = 1; i < splits.length; i++) {
+  var camelCaseSplits = [splits[0]];
+  for (var i = 1; i < splits.length; i++) {
     camelCaseSplits.push(StringUtils.capitalize(splits[i]));
   }
   ids.add(camelCaseSplits.join(''));
@@ -39,24 +36,19 @@ function getIdentifiersFromPath(filePath: AbsolutePath): Set<Identifier> {
   return ids;
 }
 
-function getLiteralFromPath(filePath: AbsolutePath): Literal {
-  const baseName = path.basename(filePath);
+function getLiteralFromPath(filePath) {
+  var baseName = path.basename(filePath);
   return removeFileType(baseName);
 }
 
-function relativizeForRequire(
-  sourcePath: AbsolutePath,
-  destPath: AbsolutePath,
-): RelativePath {
-  const relativePath = path.relative(path.dirname(sourcePath), destPath);
-  const noFileType = removeFileType(relativePath);
-  return !noFileType.startsWith('.')
-    ? '.' + path.sep + noFileType
-    : noFileType;
+function relativizeForRequire(sourcePath, destPath) {
+  var relativePath = path.relative(path.dirname(sourcePath), destPath);
+  var noFileType = removeFileType(relativePath);
+  return !noFileType.startsWith('.') ? '.' + path.sep + noFileType : noFileType;
 }
 
-function removeFileType(str: string): string {
-  const splits = str.split('.');
+function removeFileType(str) {
+  var splits = str.split('.');
   if (splits.length <= 1) {
     return str;
   } else {
@@ -64,10 +56,10 @@ function removeFileType(str: string): string {
   }
 }
 
-const ModuleMapUtils = {
-  getIdentifiersFromPath,
-  getLiteralFromPath,
-  relativizeForRequire,
+var ModuleMapUtils = {
+  getIdentifiersFromPath: getIdentifiersFromPath,
+  getLiteralFromPath: getLiteralFromPath,
+  relativizeForRequire: relativizeForRequire
 };
 
 module.exports = ModuleMapUtils;

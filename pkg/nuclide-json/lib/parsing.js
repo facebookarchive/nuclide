@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.parseJSON = parseJSON;
+exports.babelPosToPoint = babelPosToPoint;
+exports.babelLocToRange = babelLocToRange;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,46 +13,37 @@
  * the root directory of this source tree.
  */
 
-import {Point, Range} from 'atom';
+var _atom = require('atom');
 
-let babelCore = null;
-function babelParse(text: string): Object {
+var babelCore = null;
+function babelParse(text) {
   if (babelCore == null) {
     babelCore = require('babel-core');
   }
   return babelCore.parse(text);
 }
 
-type BabelPos = {
-  line: number;
-  column: number;
-};
-
-type BabelLoc = {
-  start: BabelPos;
-  end: BabelPos;
-};
-
 /**
  * Returns a Babel Expression AST node, or null if the parse does not succeed.
  */
-export function parseJSON(json: string): ?Object {
+
+function parseJSON(json) {
   // This fucks up the positions but without it, babel won't parse the text as an expression
-  const jsonWithParens = '(\n' + json + '\n)';
+  var jsonWithParens = '(\n' + json + '\n)';
   try {
-    const ast = babelParse(jsonWithParens);
+    var ast = babelParse(jsonWithParens);
     return ast.body[0].expression;
   } catch (e) {
     return null;
   }
 }
 
-export function babelPosToPoint(pos: BabelPos): atom$Point {
+function babelPosToPoint(pos) {
   // Need to subtract 2: one to move from 1-indexed to 0-indexed, another to account for the open
   // paren we had to add on the first line.
-  return new Point(pos.line - 2, pos.column);
+  return new _atom.Point(pos.line - 2, pos.column);
 }
 
-export function babelLocToRange(loc: BabelLoc): atom$Range {
-  return new Range(babelPosToPoint(loc.start), babelPosToPoint(loc.end));
+function babelLocToRange(loc) {
+  return new _atom.Range(babelPosToPoint(loc.start), babelPosToPoint(loc.end));
 }

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,131 +8,128 @@
  * the root directory of this source tree.
  */
 
-import type {Context, Lines, Output, Print} from './types/common';
-import type Options from './options/Options';
+var DefaultOptions = require('./options/DefaultOptions');
+var Immutable = require('immutable');
 
-const DefaultOptions = require('./options/DefaultOptions');
-const Immutable = require('immutable');
-
-const babel = require('babel-core');
-const flatten = require('./utils/flatten');
-const getInvalidLeadingComments = require('./utils/getInvalidLeadingComments');
-const getInvalidTrailingComments = require('./utils/getInvalidTrailingComments');
-const invariant = require('assert');
-const printAnyTypeAnnotation = require('./printers/simple/printAnyTypeAnnotation');
-const printArrayExpression = require('./printers/simple/printArrayExpression');
-const printArrayPattern = require('./printers/simple/printArrayPattern');
-const printArrowFunctionExpression = require('./printers/simple/printArrowFunctionExpression');
-const printAssignmentExpression = require('./printers/simple/printAssignmentExpression');
-const printAssignmentPattern = require('./printers/simple/printAssignmentPattern');
-const printAwaitExpression = require('./printers/simple/printAwaitExpression');
-const printBinaryExpression = require('./printers/complex/printBinaryExpression');
-const printBlockStatement = require('./printers/simple/printBlockStatement');
-const printBooleanLiteralTypeAnnotation = require('./printers/simple/printBooleanLiteralTypeAnnotation');
-const printBooleanTypeAnnotation = require('./printers/simple/printBooleanTypeAnnotation');
-const printBreakStatement = require('./printers/simple/printBreakStatement');
-const printCallExpression = require('./printers/simple/printCallExpression');
-const printCatchClause = require('./printers/simple/printCatchClause');
-const printClassBody = require('./printers/simple/printClassBody');
-const printClassDeclaration = require('./printers/simple/printClassDeclaration');
-const printClassProperty = require('./printers/simple/printClassProperty');
-const printConditionalExpression = require('./printers/simple/printConditionalExpression');
-const printContinueStatement = require('./printers/simple/printContinueStatement');
-const printDebuggerStatement = require('./printers/simple/printDebuggerStatement');
-const printDoWhileStatement = require('./printers/simple/printDoWhileStatement');
-const printEmptyStatement = require('./printers/simple/printEmptyStatement');
-const printExportDefaultDeclaration = require('./printers/simple/printExportDefaultDeclaration');
-const printExportDefaultSpecifier = require('./printers/simple/printExportDefaultSpecifier');
-const printExportNamedDeclaration = require('./printers/simple/printExportNamedDeclaration');
-const printExportNamespaceSpecifier = require('./printers/simple/printExportNamespaceSpecifier');
-const printExportSpecifier = require('./printers/simple/printExportSpecifier');
-const printExpressionStatement = require('./printers/simple/printExpressionStatement');
-const printFile = require('./printers/simple/printFile');
-const printForInStatement = require('./printers/simple/printForInStatement');
-const printForOfStatement = require('./printers/simple/printForOfStatement');
-const printForStatement = require('./printers/simple/printForStatement');
-const printFunctionDeclaration = require('./printers/simple/printFunctionDeclaration');
-const printFunctionExpression = require('./printers/complex/printFunctionExpression');
-const printFunctionTypeAnnotation = require('./printers/simple/printFunctionTypeAnnotation');
-const printFunctionTypeParam = require('./printers/simple/printFunctionTypeParam');
-const printGenericTypeAnnotation = require('./printers/simple/printGenericTypeAnnotation');
-const printIdentifier = require('./printers/simple/printIdentifier');
-const printIfStatement = require('./printers/simple/printIfStatement');
-const printImportDeclaration = require('./printers/simple/printImportDeclaration');
-const printImportDefaultSpecifier = require('./printers/simple/printImportDefaultSpecifier');
-const printImportNamespaceSpecifier = require('./printers/simple/printImportNamespaceSpecifier');
-const printImportSpecifier = require('./printers/simple/printImportSpecifier');
-const printIntersectionTypeAnnotation = require('./printers/simple/printIntersectionTypeAnnotation');
-const printJSXAttribute = require('./printers/simple/printJSXAttribute');
-const printJSXClosingElement = require('./printers/simple/printJSXClosingElement');
-const printJSXElement = require('./printers/simple/printJSXElement');
-const printJSXExpressionContainer = require('./printers/simple/printJSXExpressionContainer');
-const printJSXIdentifier = require('./printers/simple/printJSXIdentifier');
-const printJSXMemberExpression = require('./printers/simple/printJSXMemberExpression');
-const printJSXOpeningElement = require('./printers/simple/printJSXOpeningElement');
-const printJSXSpreadAttribute = require('./printers/simple/printJSXSpreadAttribute');
-const printLabeledStatement = require('./printers/simple/printLabeledStatement');
-const printLiteral = require('./printers/complex/printLiteral');
-const printLogicalExpression = require('./printers/complex/printLogicalExpression');
-const printMemberExpression = require('./printers/complex/printMemberExpression');
-const printMethodDefinition = require('./printers/simple/printMethodDefinition');
-const printMixedTypeAnnotation = require('./printers/simple/printMixedTypeAnnotation');
-const printNewExpression = require('./printers/simple/printNewExpression');
-const printNullableTypeAnnotation = require('./printers/simple/printNullableTypeAnnotation');
-const printNumberLiteralTypeAnnotation = require('./printers/simple/printNumberLiteralTypeAnnotation');
-const printNumberTypeAnnotation = require('./printers/simple/printNumberTypeAnnotation');
-const printObjectExpression = require('./printers/simple/printObjectExpression');
-const printObjectPattern = require('./printers/simple/printObjectPattern');
-const printObjectTypeAnnotation = require('./printers/simple/printObjectTypeAnnotation');
-const printObjectTypeProperty = require('./printers/simple/printObjectTypeProperty');
-const printProgram = require('./printers/simple/printProgram');
-const printProperty = require('./printers/simple/printProperty');
-const printQualifiedTypeIdentifier = require('./printers/simple/printQualifiedTypeIdentifier');
-const printRestElement = require('./printers/simple/printRestElement');
-const printReturnStatement = require('./printers/simple/printReturnStatement');
-const printSpreadElement = require('./printers/simple/printSpreadElement');
-const printSpreadProperty = require('./printers/simple/printSpreadProperty');
-const printStringLiteralTypeAnnotation = require('./printers/simple/printStringLiteralTypeAnnotation');
-const printStringTypeAnnotation = require('./printers/simple/printStringTypeAnnotation');
-const printSuper = require('./printers/simple/printSuper');
-const printSwitchCase = require('./printers/simple/printSwitchCase');
-const printSwitchStatement = require('./printers/simple/printSwitchStatement');
-const printTaggedTemplateExpression = require('./printers/simple/printTaggedTemplateExpression');
-const printTemplateElement = require('./printers/simple/printTemplateElement');
-const printTemplateLiteral = require('./printers/simple/printTemplateLiteral');
-const printThisExpression = require('./printers/simple/printThisExpression');
-const printThrowStatement = require('./printers/simple/printThrowStatement');
-const printTryStatement = require('./printers/simple/printTryStatement');
-const printTupleTypeAnnotation = require('./printers/simple/printTupleTypeAnnotation');
-const printTypeAlias = require('./printers/simple/printTypeAlias');
-const printTypeAnnotation = require('./printers/simple/printTypeAnnotation');
-const printTypeofTypeAnnotation = require('./printers/simple/printTypeofTypeAnnotation');
-const printTypeParameterDeclaration = require('./printers/simple/printTypeParameterDeclaration');
-const printTypeParameterInstantiation = require('./printers/simple/printTypeParameterInstantiation');
-const printUnaryExpression = require('./printers/simple/printUnaryExpression');
-const printUnionTypeAnnotation = require('./printers/simple/printUnionTypeAnnotation');
-const printUpdateExpression = require('./printers/simple/printUpdateExpression');
-const printVariableDeclaration = require('./printers/complex/printVariableDeclaration');
-const printVariableDeclarator = require('./printers/simple/printVariableDeclarator');
-const printVoidTypeAnnotation = require('./printers/simple/printVoidTypeAnnotation');
-const printWhileStatement = require('./printers/simple/printWhileStatement');
-const printWithStatement = require('./printers/simple/printWithStatement');
-const printYieldExpression = require('./printers/simple/printYieldExpression');
-const resolveLines = require('./resolvers/resolveLines');
-const wrapWithComments = require('./wrappers/complex/wrapWithComments');
+var babel = require('babel-core');
+var flatten = require('./utils/flatten');
+var getInvalidLeadingComments = require('./utils/getInvalidLeadingComments');
+var getInvalidTrailingComments = require('./utils/getInvalidTrailingComments');
+var invariant = require('assert');
+var printAnyTypeAnnotation = require('./printers/simple/printAnyTypeAnnotation');
+var printArrayExpression = require('./printers/simple/printArrayExpression');
+var printArrayPattern = require('./printers/simple/printArrayPattern');
+var printArrowFunctionExpression = require('./printers/simple/printArrowFunctionExpression');
+var printAssignmentExpression = require('./printers/simple/printAssignmentExpression');
+var printAssignmentPattern = require('./printers/simple/printAssignmentPattern');
+var printAwaitExpression = require('./printers/simple/printAwaitExpression');
+var printBinaryExpression = require('./printers/complex/printBinaryExpression');
+var printBlockStatement = require('./printers/simple/printBlockStatement');
+var printBooleanLiteralTypeAnnotation = require('./printers/simple/printBooleanLiteralTypeAnnotation');
+var printBooleanTypeAnnotation = require('./printers/simple/printBooleanTypeAnnotation');
+var printBreakStatement = require('./printers/simple/printBreakStatement');
+var printCallExpression = require('./printers/simple/printCallExpression');
+var printCatchClause = require('./printers/simple/printCatchClause');
+var printClassBody = require('./printers/simple/printClassBody');
+var printClassDeclaration = require('./printers/simple/printClassDeclaration');
+var printClassProperty = require('./printers/simple/printClassProperty');
+var printConditionalExpression = require('./printers/simple/printConditionalExpression');
+var printContinueStatement = require('./printers/simple/printContinueStatement');
+var printDebuggerStatement = require('./printers/simple/printDebuggerStatement');
+var printDoWhileStatement = require('./printers/simple/printDoWhileStatement');
+var printEmptyStatement = require('./printers/simple/printEmptyStatement');
+var printExportDefaultDeclaration = require('./printers/simple/printExportDefaultDeclaration');
+var printExportDefaultSpecifier = require('./printers/simple/printExportDefaultSpecifier');
+var printExportNamedDeclaration = require('./printers/simple/printExportNamedDeclaration');
+var printExportNamespaceSpecifier = require('./printers/simple/printExportNamespaceSpecifier');
+var printExportSpecifier = require('./printers/simple/printExportSpecifier');
+var printExpressionStatement = require('./printers/simple/printExpressionStatement');
+var printFile = require('./printers/simple/printFile');
+var printForInStatement = require('./printers/simple/printForInStatement');
+var printForOfStatement = require('./printers/simple/printForOfStatement');
+var printForStatement = require('./printers/simple/printForStatement');
+var printFunctionDeclaration = require('./printers/simple/printFunctionDeclaration');
+var printFunctionExpression = require('./printers/complex/printFunctionExpression');
+var printFunctionTypeAnnotation = require('./printers/simple/printFunctionTypeAnnotation');
+var printFunctionTypeParam = require('./printers/simple/printFunctionTypeParam');
+var printGenericTypeAnnotation = require('./printers/simple/printGenericTypeAnnotation');
+var printIdentifier = require('./printers/simple/printIdentifier');
+var printIfStatement = require('./printers/simple/printIfStatement');
+var printImportDeclaration = require('./printers/simple/printImportDeclaration');
+var printImportDefaultSpecifier = require('./printers/simple/printImportDefaultSpecifier');
+var printImportNamespaceSpecifier = require('./printers/simple/printImportNamespaceSpecifier');
+var printImportSpecifier = require('./printers/simple/printImportSpecifier');
+var printIntersectionTypeAnnotation = require('./printers/simple/printIntersectionTypeAnnotation');
+var printJSXAttribute = require('./printers/simple/printJSXAttribute');
+var printJSXClosingElement = require('./printers/simple/printJSXClosingElement');
+var printJSXElement = require('./printers/simple/printJSXElement');
+var printJSXExpressionContainer = require('./printers/simple/printJSXExpressionContainer');
+var printJSXIdentifier = require('./printers/simple/printJSXIdentifier');
+var printJSXMemberExpression = require('./printers/simple/printJSXMemberExpression');
+var printJSXOpeningElement = require('./printers/simple/printJSXOpeningElement');
+var printJSXSpreadAttribute = require('./printers/simple/printJSXSpreadAttribute');
+var printLabeledStatement = require('./printers/simple/printLabeledStatement');
+var printLiteral = require('./printers/complex/printLiteral');
+var printLogicalExpression = require('./printers/complex/printLogicalExpression');
+var printMemberExpression = require('./printers/complex/printMemberExpression');
+var printMethodDefinition = require('./printers/simple/printMethodDefinition');
+var printMixedTypeAnnotation = require('./printers/simple/printMixedTypeAnnotation');
+var printNewExpression = require('./printers/simple/printNewExpression');
+var printNullableTypeAnnotation = require('./printers/simple/printNullableTypeAnnotation');
+var printNumberLiteralTypeAnnotation = require('./printers/simple/printNumberLiteralTypeAnnotation');
+var printNumberTypeAnnotation = require('./printers/simple/printNumberTypeAnnotation');
+var printObjectExpression = require('./printers/simple/printObjectExpression');
+var printObjectPattern = require('./printers/simple/printObjectPattern');
+var printObjectTypeAnnotation = require('./printers/simple/printObjectTypeAnnotation');
+var printObjectTypeProperty = require('./printers/simple/printObjectTypeProperty');
+var printProgram = require('./printers/simple/printProgram');
+var printProperty = require('./printers/simple/printProperty');
+var printQualifiedTypeIdentifier = require('./printers/simple/printQualifiedTypeIdentifier');
+var printRestElement = require('./printers/simple/printRestElement');
+var printReturnStatement = require('./printers/simple/printReturnStatement');
+var printSpreadElement = require('./printers/simple/printSpreadElement');
+var printSpreadProperty = require('./printers/simple/printSpreadProperty');
+var printStringLiteralTypeAnnotation = require('./printers/simple/printStringLiteralTypeAnnotation');
+var printStringTypeAnnotation = require('./printers/simple/printStringTypeAnnotation');
+var printSuper = require('./printers/simple/printSuper');
+var printSwitchCase = require('./printers/simple/printSwitchCase');
+var printSwitchStatement = require('./printers/simple/printSwitchStatement');
+var printTaggedTemplateExpression = require('./printers/simple/printTaggedTemplateExpression');
+var printTemplateElement = require('./printers/simple/printTemplateElement');
+var printTemplateLiteral = require('./printers/simple/printTemplateLiteral');
+var printThisExpression = require('./printers/simple/printThisExpression');
+var printThrowStatement = require('./printers/simple/printThrowStatement');
+var printTryStatement = require('./printers/simple/printTryStatement');
+var printTupleTypeAnnotation = require('./printers/simple/printTupleTypeAnnotation');
+var printTypeAlias = require('./printers/simple/printTypeAlias');
+var printTypeAnnotation = require('./printers/simple/printTypeAnnotation');
+var printTypeofTypeAnnotation = require('./printers/simple/printTypeofTypeAnnotation');
+var printTypeParameterDeclaration = require('./printers/simple/printTypeParameterDeclaration');
+var printTypeParameterInstantiation = require('./printers/simple/printTypeParameterInstantiation');
+var printUnaryExpression = require('./printers/simple/printUnaryExpression');
+var printUnionTypeAnnotation = require('./printers/simple/printUnionTypeAnnotation');
+var printUpdateExpression = require('./printers/simple/printUpdateExpression');
+var printVariableDeclaration = require('./printers/complex/printVariableDeclaration');
+var printVariableDeclarator = require('./printers/simple/printVariableDeclarator');
+var printVoidTypeAnnotation = require('./printers/simple/printVoidTypeAnnotation');
+var printWhileStatement = require('./printers/simple/printWhileStatement');
+var printWithStatement = require('./printers/simple/printWithStatement');
+var printYieldExpression = require('./printers/simple/printYieldExpression');
+var resolveLines = require('./resolvers/resolveLines');
+var wrapWithComments = require('./wrappers/complex/wrapWithComments');
 
 /**
  * Entry point into reprint. Parses the source into an AST and then prints it
  * according to the given options.
  */
-function reprint(source: string, nullableOptions?: Options): Output {
-  const options = nullableOptions || DefaultOptions;
-  const ast = babel.parse(source);
-  const lines = flatten(printWithWrappers(ast, {
+function reprint(source, nullableOptions) {
+  var options = nullableOptions || DefaultOptions;
+  var ast = babel.parse(source);
+  var lines = flatten(printWithWrappers(ast, {
     invalidLeadingComments: getInvalidLeadingComments(ast),
     invalidTrailingComments: getInvalidTrailingComments(ast),
     options: options,
-    path: Immutable.List(),
+    path: Immutable.List()
   }));
   return resolveLines(lines, options);
 }
@@ -141,25 +137,26 @@ function reprint(source: string, nullableOptions?: Options): Output {
 /**
  * Helper to build a print function for the given node and context.
  */
-function getPrintFn(node: any, context: Context): Print {
-  const nextContext = {
-    ...context,
-    path: context.path.push(node),
+function getPrintFn(node, context) {
+  var nextContext = _extends({}, context, {
+    path: context.path.push(node)
+  });
+  return function (x) {
+    return printWithWrappers(x, nextContext);
   };
-  return x => printWithWrappers(x, nextContext);
 }
 
 /**
  * Generic print function that will return an array of strings for the given
  * ast node.
  */
-function printWithWrappers(node: ?any, context: Context): Lines {
+function printWithWrappers(node, context) {
   if (!node) {
     return [];
   }
 
-  const print = getPrintFn(node, context);
-  let lines = printWithoutWrappers(node, context);
+  var print = getPrintFn(node, context);
+  var lines = printWithoutWrappers(node, context);
   lines = wrapWithComments(print, node, context, lines);
   return lines;
 }
@@ -167,12 +164,12 @@ function printWithWrappers(node: ?any, context: Context): Lines {
 /**
  * Prints the node ignoring comments.
  */
-function printWithoutWrappers(node: ?any, context: Context): Lines {
+function printWithoutWrappers(node, context) {
   if (!node) {
     return [];
   }
 
-  const print = getPrintFn(node, context);
+  var print = getPrintFn(node, context);
 
   /**
    * Simple printers.

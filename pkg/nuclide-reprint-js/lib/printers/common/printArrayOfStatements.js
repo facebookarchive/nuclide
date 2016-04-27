@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var flatten = require('../../utils/flatten');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +10,11 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printArrayOfStatements(print: Print, nodes: Array<any>): Lines {
-  return flatten(nodes.map((node, i, arr) => {
-    let parts = [];
+function printArrayOfStatements(print, nodes) {
+  return flatten(nodes.map(function (node, i, arr) {
+    var parts = [];
     /**
      * Basic description of algorithm:
      *
@@ -26,17 +24,8 @@ function printArrayOfStatements(print: Print, nodes: Array<any>): Lines {
      *   - If previous node is a for/while/if/etc prefix it with extra new line
      */
     if (i > 0) {
-      if (
-        hasAttachedLeadingComments(node) ||
-        shouldSurroundWithBreaks(node) ||
-        shouldSurroundWithBreaks(arr[i - 1])
-      ) {
-        parts = parts.concat([
-          markers.noBreak,
-          '',
-          markers.multiHardBreak,
-          markers.multiHardBreak,
-        ]);
+      if (hasAttachedLeadingComments(node) || shouldSurroundWithBreaks(node) || shouldSurroundWithBreaks(arr[i - 1])) {
+        parts = parts.concat([markers.noBreak, '', markers.multiHardBreak, markers.multiHardBreak]);
       }
     }
 
@@ -50,46 +39,21 @@ function printArrayOfStatements(print: Print, nodes: Array<any>): Lines {
   }));
 }
 
-function hasAttachedLeadingComments(node: any): boolean {
+function hasAttachedLeadingComments(node) {
   if (!node.leadingComments || node.leadingComments.length === 0) {
     return false;
   }
-  const last = node.leadingComments[node.leadingComments.length - 1];
-  return (node.loc.start.line - last.loc.end.line) <= 1;
+  var last = node.leadingComments[node.leadingComments.length - 1];
+  return node.loc.start.line - last.loc.end.line <= 1;
 }
 
-function shouldSurroundWithBreaks(node: any): boolean {
-  return (
+function shouldSurroundWithBreaks(node) {
+  return(
     // Literal statements like: 'use strict';
-    (
-      node.type === 'ExpressionStatement' &&
-      node.expression &&
-      node.expression.type === 'Literal'
-    ) ||
+    node.type === 'ExpressionStatement' && node.expression && node.expression.type === 'Literal' ||
 
     // Immediately Invoked Function Expression (IIFE).
-    (
-      node.type === 'ExpressionStatement' &&
-      node.expression &&
-      node.expression.type === 'CallExpression' &&
-      node.expression.callee &&
-      node.expression.callee.type === 'FunctionExpression'
-    ) ||
-
-    node.type === 'BlockStatement' ||
-    node.type === 'ClassDeclaration' ||
-    node.type === 'DoWhileStatement' ||
-    node.type === 'ForInStatement' ||
-    node.type === 'ForOfStatement' ||
-    node.type === 'ForStatement' ||
-    node.type === 'FunctionDeclaration' ||
-    node.type === 'IfStatement' ||
-    node.type === 'LabeledStatement' ||
-    node.type === 'MethodDefinition' ||
-    node.type === 'SwitchStatement' ||
-    node.type === 'TryStatement' ||
-    node.type === 'WhileStatement' ||
-    node.type === 'WithStatement'
+    node.type === 'ExpressionStatement' && node.expression && node.expression.type === 'CallExpression' && node.expression.callee && node.expression.callee.type === 'FunctionExpression' || node.type === 'BlockStatement' || node.type === 'ClassDeclaration' || node.type === 'DoWhileStatement' || node.type === 'ForInStatement' || node.type === 'ForOfStatement' || node.type === 'ForStatement' || node.type === 'FunctionDeclaration' || node.type === 'IfStatement' || node.type === 'LabeledStatement' || node.type === 'MethodDefinition' || node.type === 'SwitchStatement' || node.type === 'TryStatement' || node.type === 'WhileStatement' || node.type === 'WithStatement'
   );
 }
 

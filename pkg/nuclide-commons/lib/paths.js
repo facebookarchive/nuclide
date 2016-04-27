@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +8,13 @@
  * the root directory of this source tree.
  */
 
-const path = require('path');
+var path = require('path');
 
 /**
  * @param filePath A file path.
  * @return The file path with a trailing separator, if it doesn't already have one.
  */
-function ensureTrailingSeparator(filePath: string): string {
+function ensureTrailingSeparator(filePath) {
   if (filePath.endsWith(path.sep)) {
     return filePath;
   } else {
@@ -24,5 +23,5 @@ function ensureTrailingSeparator(filePath: string): string {
 }
 
 module.exports = {
-  ensureTrailingSeparator,
+  ensureTrailingSeparator: ensureTrailingSeparator
 };

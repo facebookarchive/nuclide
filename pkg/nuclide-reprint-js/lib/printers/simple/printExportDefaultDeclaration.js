@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +8,11 @@
  * the root directory of this source tree.
  */
 
-import type {ExportDefaultDeclaration} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printExportDefaultDeclaration(
-  print: Print,
-  node: ExportDefaultDeclaration,
-): Lines {
-  return flatten([
-    'export',
-    markers.space,
-    'default',
-    markers.noBreak,
-    markers.space,
-    print(node.declaration),
-    markers.noBreak,
-    ';',
-    markers.hardBreak,
-  ]);
+function printExportDefaultDeclaration(print, node) {
+  return flatten(['export', markers.space, 'default', markers.noBreak, markers.space, print(node.declaration), markers.noBreak, ';', markers.hardBreak]);
 }
 
 module.exports = printExportDefaultDeclaration;

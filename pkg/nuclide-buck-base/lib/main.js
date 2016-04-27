@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +8,24 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+var _path = require('path');
 
-module.exports = {
-  get BuckProject() {
-    return require('./BuckProject');
-  },
+var _path2 = _interopRequireDefault(_path);
 
-  isBuckFile: function(filePath: string): boolean {
+module.exports = Object.defineProperties({
+
+  isBuckFile: function isBuckFile(filePath) {
     // TODO(mbolin): Buck does have an option where the user can customize the
     // name of the build file: https://github.com/facebook/buck/issues/238.
     // This function will not work for those who use that option.
-    return path.basename(filePath) === 'BUCK';
-  },
-};
+    return _path2['default'].basename(filePath) === 'BUCK';
+  }
+}, {
+  BuckProject: {
+    get: function get() {
+      return require('./BuckProject');
+    },
+    configurable: true,
+    enumerable: true
+  }
+});

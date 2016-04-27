@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +8,16 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {ObjectExpression} from 'ast-types-flow';
+var markers = require('../../constants/markers');
+var wrapExpression = require('../../wrappers/simple/wrapExpression');
 
-const markers = require('../../constants/markers');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
-
-function printObjectExpression(print: Print, node: ObjectExpression): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    '{',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    node.properties.map((propNode, i, arr) => [
-      print(propNode),
-      i === arr.length - 1 ? markers.scopeComma : ',',
-      i === arr.length - 1 ? markers.scopeBreak : markers.scopeSpaceBreak,
-    ]),
-    markers.scopeDedent,
-    markers.closeScope,
-    '}',
-  ]);
+function printObjectExpression(print, node) {
+  var wrap = function wrap(x) {
+    return wrapExpression(print, node, x);
+  };
+  return wrap(['{', markers.openScope, markers.scopeIndent, markers.scopeBreak, node.properties.map(function (propNode, i, arr) {
+    return [print(propNode), i === arr.length - 1 ? markers.scopeComma : ',', i === arr.length - 1 ? markers.scopeBreak : markers.scopeSpaceBreak];
+  }), markers.scopeDedent, markers.closeScope, '}']);
 }
 
 module.exports = printObjectExpression;

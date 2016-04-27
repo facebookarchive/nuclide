@@ -1,5 +1,18 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,258 +22,266 @@
  * the root directory of this source tree.
  */
 
+var _utils = require('./utils');
 
-import {makeExpressionHphpdCompatible} from './utils';
-import logger from './utils';
-import {uriToPath} from './helpers';
-import Handler from './Handler';
-import {
-  STATUS_STARTING,
-  STATUS_STOPPING,
-  STATUS_STOPPED,
-  STATUS_RUNNING,
-  STATUS_BREAK,
-  STATUS_ERROR,
-  STATUS_END,
-  COMMAND_RUN,
-  COMMAND_STEP_INTO,
-  COMMAND_STEP_OVER,
-  COMMAND_STEP_OUT,
-} from './DbgpSocket';
+var _utils2 = _interopRequireDefault(_utils);
 
-import FileCache from './FileCache';
-import {EventEmitter} from 'events';
+var _helpers = require('./helpers');
 
-import type {ConnectionMultiplexer} from './ConnectionMultiplexer';
-import type {ClientCallback} from './ClientCallback';
+var _Handler2 = require('./Handler');
 
-const SESSION_END_EVENT = 'session-end-event';
+var _Handler3 = _interopRequireDefault(_Handler2);
+
+var _DbgpSocket = require('./DbgpSocket');
+
+var _FileCache = require('./FileCache');
+
+var _FileCache2 = _interopRequireDefault(_FileCache);
+
+var _events = require('events');
+
+var SESSION_END_EVENT = 'session-end-event';
 
 // Handles all 'Debug.*' Chrome dev tools messages
-export class DebuggerHandler extends Handler {
-  _connectionMultiplexer: ConnectionMultiplexer;
-  _files: FileCache;
-  _emitter: EventEmitter;
-  _statusSubscription: ?IDisposable;
-  _hadFirstContinuationCommand: boolean;
 
-  constructor(
-    clientCallback: ClientCallback,
-    connectionMultiplexer: ConnectionMultiplexer
-  ) {
-    super('Debugger', clientCallback);
+var DebuggerHandler = (function (_Handler) {
+  _inherits(DebuggerHandler, _Handler);
+
+  function DebuggerHandler(clientCallback, connectionMultiplexer) {
+    _classCallCheck(this, DebuggerHandler);
+
+    _get(Object.getPrototypeOf(DebuggerHandler.prototype), 'constructor', this).call(this, 'Debugger', clientCallback);
 
     this._hadFirstContinuationCommand = false;
     this._connectionMultiplexer = connectionMultiplexer;
-    this._files = new FileCache(clientCallback);
-    this._emitter = new EventEmitter();
-    this._statusSubscription = this._connectionMultiplexer.onStatus(
-      this._onStatusChanged.bind(this)
-    );
+    this._files = new _FileCache2['default'](clientCallback);
+    this._emitter = new _events.EventEmitter();
+    this._statusSubscription = this._connectionMultiplexer.onStatus(this._onStatusChanged.bind(this));
   }
 
-  onSessionEnd(callback: () => void): void {
-    logger.log('onSessionEnd');
-    this._emitter.on(SESSION_END_EVENT, callback);
-  }
-
-  async handleMethod(id: number, method: string, params: Object): Promise {
-
-    switch (method) {
-
-      // TODO: Add Console (aka logging) support
-      case 'enable':
-        this._debuggerEnable(id);
-        break;
-
-      case 'pause':
-        await this._sendBreakCommand(id);
-        break;
-
-      case 'stepInto':
-        this._sendContinuationCommand(COMMAND_STEP_INTO);
-        break;
-
-      case 'stepOut':
-        this._sendContinuationCommand(COMMAND_STEP_OUT);
-        break;
-
-      case 'stepOver':
-        this._sendContinuationCommand(COMMAND_STEP_OVER);
-        break;
-
-      case 'resume':
-        this._sendContinuationCommand(COMMAND_RUN);
-        break;
-
-      case 'setPauseOnExceptions':
-        await this._setPauseOnExceptions(id, params);
-        break;
-
-      case 'setAsyncCallStackDepth':
-      case 'skipStackFrames':
-        this.replyWithError(id, 'Not implemented');
-        break;
-
-      case 'getScriptSource':
-        // TODO: Handle file read errors.
-        // TODO: Handle non-file scriptIds
-        this.replyToCommand(id, { scriptSource: await this._files.getFileSource(params.scriptId) });
-        break;
-
-      case 'setBreakpointByUrl':
-        this._setBreakpointByUrl(id, params);
-        break;
-
-      case 'removeBreakpoint':
-        await this._removeBreakpoint(id, params);
-        break;
-
-      case 'evaluateOnCallFrame':
-        const compatParams = makeExpressionHphpdCompatible(params);
-        const result = await this._connectionMultiplexer.evaluateOnCallFrame(
-          Number(compatParams.callFrameId),
-          compatParams.expression
-        );
-        this.replyToCommand(id, result);
-        break;
-
-      default:
-        this.unknownMethod(id, method, params);
-        break;
+  _createClass(DebuggerHandler, [{
+    key: 'onSessionEnd',
+    value: function onSessionEnd(callback) {
+      _utils2['default'].log('onSessionEnd');
+      this._emitter.on(SESSION_END_EVENT, callback);
     }
-  }
+  }, {
+    key: 'handleMethod',
+    value: _asyncToGenerator(function* (id, method, params) {
 
-  async _setPauseOnExceptions(id: number, params: Object): Promise {
-    const {state} = params;
-    await this._connectionMultiplexer.setPauseOnExceptions(state);
-    this.replyToCommand(id, {});
-  }
+      switch (method) {
 
-  _setBreakpointByUrl(id: number, params: Object): void {
-    const {lineNumber, url, columnNumber, condition} = params;
-    if (!url || condition !== '' || columnNumber !== 0) {
-      this.replyWithError(id, 'Invalid arguments to Debugger.setBreakpointByUrl: '
-        + JSON.stringify(params));
-      return;
+        // TODO: Add Console (aka logging) support
+        case 'enable':
+          this._debuggerEnable(id);
+          break;
+
+        case 'pause':
+          yield this._sendBreakCommand(id);
+          break;
+
+        case 'stepInto':
+          this._sendContinuationCommand(_DbgpSocket.COMMAND_STEP_INTO);
+          break;
+
+        case 'stepOut':
+          this._sendContinuationCommand(_DbgpSocket.COMMAND_STEP_OUT);
+          break;
+
+        case 'stepOver':
+          this._sendContinuationCommand(_DbgpSocket.COMMAND_STEP_OVER);
+          break;
+
+        case 'resume':
+          this._sendContinuationCommand(_DbgpSocket.COMMAND_RUN);
+          break;
+
+        case 'setPauseOnExceptions':
+          yield this._setPauseOnExceptions(id, params);
+          break;
+
+        case 'setAsyncCallStackDepth':
+        case 'skipStackFrames':
+          this.replyWithError(id, 'Not implemented');
+          break;
+
+        case 'getScriptSource':
+          // TODO: Handle file read errors.
+          // TODO: Handle non-file scriptIds
+          this.replyToCommand(id, { scriptSource: yield this._files.getFileSource(params.scriptId) });
+          break;
+
+        case 'setBreakpointByUrl':
+          this._setBreakpointByUrl(id, params);
+          break;
+
+        case 'removeBreakpoint':
+          yield this._removeBreakpoint(id, params);
+          break;
+
+        case 'evaluateOnCallFrame':
+          var compatParams = (0, _utils.makeExpressionHphpdCompatible)(params);
+          var result = yield this._connectionMultiplexer.evaluateOnCallFrame(Number(compatParams.callFrameId), compatParams.expression);
+          this.replyToCommand(id, result);
+          break;
+
+        default:
+          this.unknownMethod(id, method, params);
+          break;
+      }
+    })
+  }, {
+    key: '_setPauseOnExceptions',
+    value: _asyncToGenerator(function* (id, params) {
+      var state = params.state;
+
+      yield this._connectionMultiplexer.setPauseOnExceptions(state);
+      this.replyToCommand(id, {});
+    })
+  }, {
+    key: '_setBreakpointByUrl',
+    value: function _setBreakpointByUrl(id, params) {
+      var lineNumber = params.lineNumber;
+      var url = params.url;
+      var columnNumber = params.columnNumber;
+      var condition = params.condition;
+
+      if (!url || condition !== '' || columnNumber !== 0) {
+        this.replyWithError(id, 'Invalid arguments to Debugger.setBreakpointByUrl: ' + JSON.stringify(params));
+        return;
+      }
+      this._files.registerFile(url);
+
+      var path = (0, _helpers.uriToPath)(url);
+      var breakpointId = this._connectionMultiplexer.setBreakpoint(path, lineNumber + 1);
+      this.replyToCommand(id, {
+        breakpointId: breakpointId,
+        locations: [{
+          lineNumber: lineNumber,
+          scriptId: path
+        }] });
     }
-    this._files.registerFile(url);
+  }, {
+    key: '_removeBreakpoint',
+    value: _asyncToGenerator(function* (id, params) {
+      var breakpointId = params.breakpointId;
 
-    const path = uriToPath(url);
-    const breakpointId = this._connectionMultiplexer.setBreakpoint(path, lineNumber + 1);
-    this.replyToCommand(id, {
-      breakpointId: breakpointId,
-      locations: [
-        {
-          lineNumber,
-          scriptId: path,
-        },
-      ]});
-  }
-
-  async _removeBreakpoint(id: number, params: Object): Promise {
-    const {breakpointId} = params;
-    await this._connectionMultiplexer.removeBreakpoint(breakpointId);
-    this.replyToCommand(id, {id: breakpointId});
-  }
-
-  _debuggerEnable(id: number): void {
-    this.replyToCommand(id, {});
-    this._sendFakeLoaderBreakpoint();
-  }
-
-  async _getStackFrames(): Promise<Array<Object>> {
-    const frames = await this._connectionMultiplexer.getStackFrames();
-    return await Promise.all(
-      frames.stack.map((frame, frameIndex) => this._convertFrame(frame, frameIndex)));
-  }
-
-  async _convertFrame(frame: Object, frameIndex: number): Promise<Object> {
-    logger.log('Converting frame: ' + JSON.stringify(frame));
-    const {
-      idOfFrame,
-      functionOfFrame,
-      fileUrlOfFrame,
-      locationOfFrame,
-    } = require('./frame');
-
-    this._files.registerFile(fileUrlOfFrame(frame));
-    return {
-      callFrameId: idOfFrame(frame),
-      functionName: functionOfFrame(frame),
-      location: locationOfFrame(frame),
-      scopeChain: await this._connectionMultiplexer.getScopesForFrame(frameIndex),
-    };
-  }
-
-  _sendContinuationCommand(command: string): void {
-    if (!this._hadFirstContinuationCommand) {
-      this._hadFirstContinuationCommand = true;
-      this.sendMethod('Debugger.resumed');
-      this._connectionMultiplexer.listen();
-      return;
+      yield this._connectionMultiplexer.removeBreakpoint(breakpointId);
+      this.replyToCommand(id, { id: breakpointId });
+    })
+  }, {
+    key: '_debuggerEnable',
+    value: function _debuggerEnable(id) {
+      this.replyToCommand(id, {});
+      this._sendFakeLoaderBreakpoint();
     }
-    logger.log('Sending continuation command: ' + command);
-    this._connectionMultiplexer.sendContinuationCommand(command);
-  }
+  }, {
+    key: '_getStackFrames',
+    value: _asyncToGenerator(function* () {
+      var _this = this;
 
-  async _sendBreakCommand(id: number): Promise {
-    const response = await this._connectionMultiplexer.sendBreakCommand();
-    if (!response) {
-      this.replyWithError(id, 'Unable to break');
-    }
-  }
+      var frames = yield this._connectionMultiplexer.getStackFrames();
+      return yield Promise.all(frames.stack.map(function (frame, frameIndex) {
+        return _this._convertFrame(frame, frameIndex);
+      }));
+    })
+  }, {
+    key: '_convertFrame',
+    value: _asyncToGenerator(function* (frame, frameIndex) {
+      _utils2['default'].log('Converting frame: ' + JSON.stringify(frame));
 
-  async _onStatusChanged(status: string): Promise {
-    logger.log('Sending status: ' + status);
-    switch (status) {
-      case STATUS_BREAK:
-        await this._sendPausedMessage();
-        break;
-      case STATUS_RUNNING:
+      var _require = require('./frame');
+
+      var idOfFrame = _require.idOfFrame;
+      var functionOfFrame = _require.functionOfFrame;
+      var fileUrlOfFrame = _require.fileUrlOfFrame;
+      var locationOfFrame = _require.locationOfFrame;
+
+      this._files.registerFile(fileUrlOfFrame(frame));
+      return {
+        callFrameId: idOfFrame(frame),
+        functionName: functionOfFrame(frame),
+        location: locationOfFrame(frame),
+        scopeChain: yield this._connectionMultiplexer.getScopesForFrame(frameIndex)
+      };
+    })
+  }, {
+    key: '_sendContinuationCommand',
+    value: function _sendContinuationCommand(command) {
+      if (!this._hadFirstContinuationCommand) {
+        this._hadFirstContinuationCommand = true;
         this.sendMethod('Debugger.resumed');
-        break;
-      case STATUS_STOPPED:
-      case STATUS_ERROR:
-      case STATUS_END:
-        this._endSession();
-        break;
-      case STATUS_STARTING:
-      case STATUS_STOPPING:
-        // These two should be hidden by the ConnectionMultiplexer
-        break;
-      default:
-        logger.logErrorAndThrow('Unexpected status: ' + status);
+        this._connectionMultiplexer.listen();
+        return;
+      }
+      _utils2['default'].log('Sending continuation command: ' + command);
+      this._connectionMultiplexer.sendContinuationCommand(command);
     }
-  }
+  }, {
+    key: '_sendBreakCommand',
+    value: _asyncToGenerator(function* (id) {
+      var response = yield this._connectionMultiplexer.sendBreakCommand();
+      if (!response) {
+        this.replyWithError(id, 'Unable to break');
+      }
+    })
+  }, {
+    key: '_onStatusChanged',
+    value: _asyncToGenerator(function* (status) {
+      _utils2['default'].log('Sending status: ' + status);
+      switch (status) {
+        case _DbgpSocket.STATUS_BREAK:
+          yield this._sendPausedMessage();
+          break;
+        case _DbgpSocket.STATUS_RUNNING:
+          this.sendMethod('Debugger.resumed');
+          break;
+        case _DbgpSocket.STATUS_STOPPED:
+        case _DbgpSocket.STATUS_ERROR:
+        case _DbgpSocket.STATUS_END:
+          this._endSession();
+          break;
+        case _DbgpSocket.STATUS_STARTING:
+        case _DbgpSocket.STATUS_STOPPING:
+          // These two should be hidden by the ConnectionMultiplexer
+          break;
+        default:
+          _utils2['default'].logErrorAndThrow('Unexpected status: ' + status);
+      }
+    })
 
-  // May only call when in paused state.
-  async _sendPausedMessage(): Promise {
-    this.sendMethod(
-      'Debugger.paused',
-      {
-        callFrames: await this._getStackFrames(),
+    // May only call when in paused state.
+  }, {
+    key: '_sendPausedMessage',
+    value: _asyncToGenerator(function* () {
+      this.sendMethod('Debugger.paused', {
+        callFrames: yield this._getStackFrames(),
         reason: 'breakpoint', // TODO: better reason?
-        data: {},
+        data: {}
       });
-  }
-
-  _sendFakeLoaderBreakpoint(): void {
-    this.sendMethod(
-      'Debugger.paused',
-      {
+    })
+  }, {
+    key: '_sendFakeLoaderBreakpoint',
+    value: function _sendFakeLoaderBreakpoint() {
+      this.sendMethod('Debugger.paused', {
         callFrames: [],
         reason: 'breakpoint', // TODO: better reason?
-        data: {},
+        data: {}
       });
-  }
-
-  _endSession(): void {
-    logger.log('DebuggerHandler: Ending session');
-    if (this._statusSubscription) {
-      this._statusSubscription.dispose();
-      this._statusSubscription = null;
     }
-    this._emitter.emit(SESSION_END_EVENT);
-  }
-}
+  }, {
+    key: '_endSession',
+    value: function _endSession() {
+      _utils2['default'].log('DebuggerHandler: Ending session');
+      if (this._statusSubscription) {
+        this._statusSubscription.dispose();
+        this._statusSubscription = null;
+      }
+      this._emitter.emit(SESSION_END_EVENT);
+    }
+  }]);
+
+  return DebuggerHandler;
+})(_Handler3['default']);
+
+exports.DebuggerHandler = DebuggerHandler;

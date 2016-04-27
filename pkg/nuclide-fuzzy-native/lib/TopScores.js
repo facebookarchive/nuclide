@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +16,11 @@
  * the root directory of this source tree.
  */
 
-import Heap from 'heap';
+var _heap = require('heap');
 
-import type {QueryScore} from './QueryScore';
-import {
-  scoreComparator,
-  inverseScoreComparator,
-} from './utils';
+var _heap2 = _interopRequireDefault(_heap);
+
+var _utils = require('./utils');
 
 /**
  * This data structure is designed to hold the top K scores from a collection of
@@ -28,50 +33,60 @@ import {
  * Therefore, finding the top K scores from a collection of N elements should be
  * O(N lg K).
  */
-export default class TopScores {
-  _capacity: number;
-  _full: boolean;
-  _heap: Heap;
-  _min: ?QueryScore;
 
-  constructor(capacity: number) {
+var TopScores = (function () {
+  function TopScores(capacity) {
+    _classCallCheck(this, TopScores);
+
     this._capacity = capacity;
     this._full = false;
-    this._heap = new Heap(inverseScoreComparator);
+    this._heap = new _heap2['default'](_utils.inverseScoreComparator);
     this._min = null;
   }
 
-  insert(score: QueryScore) {
-    if (this._full && this._min) {
-      const cmp = scoreComparator(score, this._min);
-      if (cmp < 0) {
+  _createClass(TopScores, [{
+    key: 'insert',
+    value: function insert(score) {
+      if (this._full && this._min) {
+        var cmp = (0, _utils.scoreComparator)(score, this._min);
+        if (cmp < 0) {
+          this._doInsert(score);
+        }
+      } else {
         this._doInsert(score);
       }
-    } else {
-      this._doInsert(score);
     }
-  }
-
-  _doInsert(score: QueryScore) {
-    if (this._full) {
-      this._heap.replace(score);
-    } else {
-      this._heap.insert(score);
-      this._full = this._heap.size() === this._capacity;
+  }, {
+    key: '_doInsert',
+    value: function _doInsert(score) {
+      if (this._full) {
+        this._heap.replace(score);
+      } else {
+        this._heap.insert(score);
+        this._full = this._heap.size() === this._capacity;
+      }
+      this._min = this._heap.peek();
     }
-    this._min = this._heap.peek();
-  }
+  }, {
+    key: 'getSize',
+    value: function getSize() {
+      return this._heap.size();
+    }
 
-  getSize(): number {
-    return this._heap.size();
-  }
+    /**
+     * @return an Array where Scores will be sorted in ascending order.
+     */
+  }, {
+    key: 'getTopScores',
+    value: function getTopScores() {
+      var array = this._heap.toArray();
+      array.sort(_utils.scoreComparator);
+      return array;
+    }
+  }]);
 
-  /**
-   * @return an Array where Scores will be sorted in ascending order.
-   */
-  getTopScores(): Array<QueryScore> {
-    const array = this._heap.toArray();
-    array.sort(scoreComparator);
-    return array;
-  }
-}
+  return TopScores;
+})();
+
+exports['default'] = TopScores;
+module.exports = exports['default'];

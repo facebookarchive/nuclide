@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +8,7 @@
  * the root directory of this source tree.
  */
 
-const invariant = require('assert');
+var invariant = require('assert');
 
 /**
  * Utility to make it easier to register a file extension with a grammar,
@@ -26,16 +25,13 @@ const invariant = require('assert');
  *   the grammar is available.
  * @return whether the extension was registered or not.
  */
-function registerGrammarForFileExtension(
-  scopeName: string,
-  extension: string,
-): boolean {
-  let customFileTypes = atom.config.get('core.customFileTypes');
+function registerGrammarForFileExtension(scopeName, extension) {
+  var customFileTypes = atom.config.get('core.customFileTypes');
   if (!customFileTypes || typeof customFileTypes !== 'object') {
     customFileTypes = {};
   }
   invariant(customFileTypes);
-  let customFileType = customFileTypes[scopeName];
+  var customFileType = customFileTypes[scopeName];
   if (!Array.isArray(customFileType)) {
     customFileType = [];
   }

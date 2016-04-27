@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,153 +10,162 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
-import {observeStream, splitStream} from '../../nuclide-commons';
-const logger = require('../../nuclide-logging').getLogger();
-import invariant from 'assert';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-const CALL_MESSAGE_TYPE = 'call';
-const RESPONSE_MESSAGE_TYPE = 'response';
+exports.createCallMessage = createCallMessage;
+exports.createSuccessResponseMessage = createSuccessResponseMessage;
+exports.createErrorReponseMessage = createErrorReponseMessage;
+exports.isValidResponseMessage = isValidResponseMessage;
 
-type CallMessage = {
-  type: 'call';
-  id: number;
-  args: any; // Typically Array<string | Object>
-};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-type ResponseError = {
-  code?: number;
-  message: string;
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-type ResponseMessage = {
-  type: 'response';
-  id: number;
-  result?: any;
-  error?: ResponseError;
-};
+var _nuclideCommons = require('../../nuclide-commons');
 
-type CallResolver = {
-  resolve: (result: string | Object) => void;
-  reject: (message: any) => void;
-};
+var _assert = require('assert');
 
-export function createCallMessage(id: number, args: any): CallMessage {
+var _assert2 = _interopRequireDefault(_assert);
+
+var logger = require('../../nuclide-logging').getLogger();
+
+var CALL_MESSAGE_TYPE = 'call';
+var RESPONSE_MESSAGE_TYPE = 'response';
+
+// Typically Array<string | Object>
+
+function createCallMessage(id, args) {
   return {
     type: CALL_MESSAGE_TYPE,
-    id,
-    args,
+    id: id,
+    args: args
   };
 }
 
-export function createSuccessResponseMessage(id: number, result: any): ResponseMessage {
+function createSuccessResponseMessage(id, result) {
   return {
     type: RESPONSE_MESSAGE_TYPE,
-    id,
-    result,
+    id: id,
+    result: result
   };
 }
 
-export function createErrorReponseMessage(id: number, error: ResponseError): ResponseMessage {
+function createErrorReponseMessage(id, error) {
   return {
     type: RESPONSE_MESSAGE_TYPE,
-    id,
-    error,
+    id: id,
+    error: error
   };
 }
 
-export function isValidResponseMessage(obj: any): boolean {
-  return obj.type === RESPONSE_MESSAGE_TYPE
-    && typeof obj.id === 'number'
-    && ((obj.result == null) !== (obj.error == null));
+function isValidResponseMessage(obj) {
+  return obj.type === RESPONSE_MESSAGE_TYPE && typeof obj.id === 'number' && obj.result == null !== (obj.error == null);
 }
 
-interface Transport {
-  sendMessage(message: string): void;
-  onMessage(): Observable<string>;
-}
+var StreamTransport = (function () {
+  function StreamTransport(output, input) {
+    _classCallCheck(this, StreamTransport);
 
-export class StreamTransport {
-  _output: stream$Writable;
-  _messages: Observable<string>;
-
-  constructor(output: stream$Writable, input: stream$Readable) {
     this._output = output;
-    this._messages = splitStream(observeStream(input));
+    this._messages = (0, _nuclideCommons.splitStream)((0, _nuclideCommons.observeStream)(input));
   }
-  sendMessage(message: string): void {
-    invariant(message.indexOf('\n') === -1);
-    this._output.write(message + '\n');
-  }
-  onMessage(): Observable<string> {
-    return this._messages;
-  }
-}
 
-export class HackRpc {
-  _index: number;
-  _inProgress: Map<number, CallResolver>;
-  _transport: Transport;
-  _subscription: IDisposable;
+  _createClass(StreamTransport, [{
+    key: 'sendMessage',
+    value: function sendMessage(message) {
+      (0, _assert2['default'])(message.indexOf('\n') === -1);
+      this._output.write(message + '\n');
+    }
+  }, {
+    key: 'onMessage',
+    value: function onMessage() {
+      return this._messages;
+    }
+  }]);
 
-  constructor(transport: Transport) {
+  return StreamTransport;
+})();
+
+exports.StreamTransport = StreamTransport;
+
+var HackRpc = (function () {
+  function HackRpc(transport) {
+    var _this = this;
+
+    _classCallCheck(this, HackRpc);
+
     this._index = 0;
     this._inProgress = new Map();
     this._transport = transport;
-    this._subscription = transport.onMessage().do(message => {
-      this._handleMessage(message);
+    this._subscription = transport.onMessage()['do'](function (message) {
+      _this._handleMessage(message);
     }).subscribe();
   }
 
-  call(args: Array<any>): Promise<string | Object> {
-    this._index++;
-    const message = createCallMessage(this._index, args);
-    const messageString = JSON.stringify(message);
-    logger.debug(`Sending Hack Rpc: ${messageString}`);
-    this._transport.sendMessage(messageString);
+  _createClass(HackRpc, [{
+    key: 'call',
+    value: function call(args) {
+      var _this2 = this;
 
-    return new Promise((resolve, reject) => {
-      this._inProgress.set(this._index, {resolve, reject});
-    });
-  }
+      this._index++;
+      var message = createCallMessage(this._index, args);
+      var messageString = JSON.stringify(message);
+      logger.debug('Sending Hack Rpc: ' + messageString);
+      this._transport.sendMessage(messageString);
 
-  dispose(): void {
-    this._subscription.dispose();
-  }
-
-  _handleMessage(messageString: string): void {
-    // logger.debug(`Received Hack Rpc response: ${messageString}`);
-    let messageObject;
-    try {
-      messageObject = JSON.parse(messageString);
-    } catch (e) {
-      logger.debug(`Error: Parsing hack Rpc message.`);
-      return;
+      return new Promise(function (resolve, reject) {
+        _this2._inProgress.set(_this2._index, { resolve: resolve, reject: reject });
+      });
     }
-
-    if (!isValidResponseMessage(messageObject)) {
-      logger.debug(`Error: Received invalid Hack Rpc response.`);
-      return;
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._subscription.dispose();
     }
-    const response: ResponseMessage = messageObject;
-    const {id, result, error} = response;
+  }, {
+    key: '_handleMessage',
+    value: function _handleMessage(messageString) {
+      // logger.debug(`Received Hack Rpc response: ${messageString}`);
+      var messageObject = undefined;
+      try {
+        messageObject = JSON.parse(messageString);
+      } catch (e) {
+        logger.debug('Error: Parsing hack Rpc message.');
+        return;
+      }
 
-    const inProgress = this._inProgress.get(id);
-    if (inProgress == null) {
-      logger.debug(`Error: Received Hack Rpc response with invalid index.`);
-      return;
-    }
+      if (!isValidResponseMessage(messageObject)) {
+        logger.debug('Error: Received invalid Hack Rpc response.');
+        return;
+      }
+      var response = messageObject;
+      var id = response.id;
+      var result = response.result;
+      var error = response.error;
 
-    const {resolve, reject} = inProgress;
-    this._inProgress.delete(id);
-    if (result != null) {
-      logger.debug(`Returning ${JSON.stringify(result)} from Hack RPC ${id}`);
-      resolve(result);
-      return;
-    } else {
-      invariant(error != null);
-      logger.debug(`Error ${JSON.stringify(error)} from Hack RPC ${id}`);
-      reject(new Error(JSON.stringify(error)));
+      var inProgress = this._inProgress.get(id);
+      if (inProgress == null) {
+        logger.debug('Error: Received Hack Rpc response with invalid index.');
+        return;
+      }
+
+      var resolve = inProgress.resolve;
+      var reject = inProgress.reject;
+
+      this._inProgress['delete'](id);
+      if (result != null) {
+        logger.debug('Returning ' + JSON.stringify(result) + ' from Hack RPC ' + id);
+        resolve(result);
+        return;
+      } else {
+        (0, _assert2['default'])(error != null);
+        logger.debug('Error ' + JSON.stringify(error) + ' from Hack RPC ' + id);
+        reject(new Error(JSON.stringify(error)));
+      }
     }
-  }
-}
+  }]);
+
+  return HackRpc;
+})();
+
+exports.HackRpc = HackRpc;
