@@ -523,7 +523,7 @@ export class FileTreeNode {
       return null;
     }
 
-    if (this.isContainer && this.isExpanded && !this.children.isEmpty()) {
+    if (this.shownChildrenBelow > 1) {
       return this.children.find(c => c.shouldBeShown);
     }
 
