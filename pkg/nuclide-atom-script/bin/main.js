@@ -26,14 +26,23 @@
 /* eslint-disable no-var, no-console */
 
 var child_process = require('child_process');
+var epipebomb = require('epipebomb');
 var net = require('net');
 var path = require('path');
 var split = require('split');
 var temp = require('temp').track();
 
+var atomTest;
 var server;
 var domainSocket = path.join(temp.mkdirSync(), 'my.sock');
+
 function exit(code) {
+  // Unfortunately, this does not seem to kill Atom appropriately when the output of atom-script
+  // is piped to another process. That is, this main process dies, but Atom sticks around.
+  if (atomTest != null) {
+    atomTest.kill('SIGTERM');
+  }
+
   if (server != null) {
     server.close();
   }
@@ -69,7 +78,7 @@ function runAtom() {
     JSON.stringify(scriptArgs),
   ];
 
-  var atomTest = child_process.spawn('atom', args);
+  atomTest = child_process.spawn('atom', args);
   if (process.env['DEBUG_ATOM_SCRIPT'] != null) {
     // When the DEBUG_ATOM_SCRIPT environment variable is set, we forward stdout and stderr from
     // the Atom process to stderr so that the stdout is only what is written by `console.log()`
@@ -83,6 +92,9 @@ function runAtom() {
 }
 
 function main() {
+  // This ensures that users of atom-script can pipe output to head, etc., without error.
+  epipebomb(process.stdout, exit);
+
   server = net.createServer(function(connection) {
     connection
       .pipe(split(JSON.parse))
