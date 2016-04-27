@@ -21,6 +21,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
   }
 
   async debug(): Promise<HhvmDebuggerInstance> {
+    try {
+      const services = require('./fb/services');
+      await services.warnIfNotBuilt(this.getTargetUri());
+    } catch (_) {}
     return new HhvmDebuggerInstance(this);
   }
 
