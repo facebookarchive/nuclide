@@ -388,6 +388,7 @@ class Server:
             TranslationUnit.PARSE_PRECOMPILED_PREAMBLE |
             TranslationUnit.PARSE_CACHE_COMPLETION_RESULTS |
             TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION |
+            TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD |
             TranslationUnit.PARSE_INCOMPLETE)
 
         # Clang 3.8 comes with CXTranslationUnit_CreatePreambleOnFirstParse,

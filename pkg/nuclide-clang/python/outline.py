@@ -65,7 +65,7 @@ ALL_KINDS = FUNCTION_KINDS | CLASS_KINDS | MEMBER_KINDS | VAR_KINDS
 
 def visit_cursor(path, cursor):
     # Skip symbols from other files.
-    if cursor.location.file.name != path:
+    if cursor.location.file is None or cursor.location.file.name != path:
         return None
 
     kind = cursor.kind.name
