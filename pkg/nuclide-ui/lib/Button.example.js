@@ -15,6 +15,7 @@ import {ButtonGroup} from './ButtonGroup';
 import {ButtonToolbar} from './ButtonToolbar';
 import {Block} from './Block';
 import {Dropdown} from './Dropdown';
+import {SplitButtonDropdown} from './SplitButtonDropdown';
 
 const ButtonSizeExample = (): React.Element => (
   <Block>
@@ -135,6 +136,23 @@ const DropdownExample = (() => {
   );
 })();
 
+const SplitButtonDropdownExample = (() => {
+  const options = [
+    {value: 1, label: 'Build', icon: 'tools'},
+    {value: 2, label: 'Run', icon: 'triangle-right'},
+    {value: 3, label: 'Rocket', icon: 'rocket'},
+    {value: 4, label: 'Squirrel', icon: 'squirrel'},
+  ];
+  return (): React.Element => (
+    <div>
+      <SplitButtonDropdown
+        options={options}
+        value={2}
+      />
+    </div>
+  );
+})();
+
 export const ButtonExamples = {
   sectionName: 'Buttons',
   description: 'For clicking things.',
@@ -166,6 +184,10 @@ export const ButtonExamples = {
     {
       title: 'Dropdown',
       component: DropdownExample,
+    },
+    {
+      title: 'Split Button Dropdown',
+      component: SplitButtonDropdownExample,
     },
   ],
 };
