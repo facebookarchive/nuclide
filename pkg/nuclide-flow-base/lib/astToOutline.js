@@ -191,11 +191,11 @@ function moduleExportsPropertyOutline(property: any): ?FlowOutlineTree {
   }
   const propName = property.key.name;
 
-  if (property.value.type === 'Literal') {
+  if (property.shorthand) {
+    // This happens when the shorthand `{ foo }` is used for `{ foo: foo }`
     return {
       tokenizedText: [
         string(propName),
-        plain(':'),
       ],
       children: [],
       ...getExtent(property),
@@ -217,7 +217,14 @@ function moduleExportsPropertyOutline(property: any): ?FlowOutlineTree {
     };
   }
 
-  return null;
+  return {
+    tokenizedText: [
+      string(propName),
+      plain(':'),
+    ],
+    children: [],
+    ...getExtent(property),
+  };
 }
 
 function specOutline(expressionStatement: any, describeOnly: boolean = false): ?FlowOutlineTree {

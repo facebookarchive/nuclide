@@ -194,7 +194,7 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
       column: 0,
     },
     endPosition: {
-      line: 22,
+      line: 24,
       column: 1,
     },
     children: [
@@ -295,6 +295,35 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
         endPosition: {
           line: 21,
           column: 17,
+        },
+        children: [],
+      },
+      {
+        tokenizedText: [
+          {value: 'thing', kind: 'string'},
+        ],
+        startPosition: {
+          line: 22,
+          column: 2,
+        },
+        endPosition: {
+          line: 22,
+          column: 7,
+        },
+        children: [],
+      },
+      {
+        tokenizedText: [
+          {value: 'stuff', kind: 'string'},
+          {value: ':', kind: 'plain'},
+        ],
+        startPosition: {
+          line: 23,
+          column: 2,
+        },
+        endPosition: {
+          line: 23,
+          column: 14,
         },
         children: [],
       },

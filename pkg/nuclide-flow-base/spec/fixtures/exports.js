@@ -20,6 +20,8 @@ module.exports = {
   asdf: function(arg) {},
   jkl: function jkl(arg) {},
   asdfjkl(arg) {},
+  thing,
+  stuff: stuff,
 };
 
 // We should not render these
