@@ -50,14 +50,16 @@ The toolbar has buttons that, when clicked, take you to a specific feature of Nu
 
 ![](/static/images/docs/feature-toolbar-buttons.png)
 
+- ![](/static/images/docs/feature-toolbar-button-nuclide-settings.png) Show the Nuclide settings view.
+- ![](/static/images/docs/feature-toolbar-button-nuclide-health.png) Toggle the Nuclide health statistics.
 - ![](/static/images/docs/feature-toolbar-button-debugger.png) Toggle the debugger.
 - ![](/static/images/docs/feature-toolbar-button-diagnostics.png) Toggle the diagnostics window.
 - ![](/static/images/docs/feature-toolbar-button-diff-view.png) Toggle diff view.
+- ![](/static/images/docs/feature-toolbar-button-outline-view.png) Toggle outline view.
 - ![](/static/images/docs/feature-toolbar-button-test-runner.png) Toggle the test runner.
 - ![](/static/images/docs/feature-toolbar-button-buck-toolbar.png) Toggle the Buck toolbar.
 - ![](/static/images/docs/feature-toolbar-button-hhvm-toolbar.png) Toggle the HHVM toolbar.
-- ![](/static/images/docs/feature-toolbar-button-nuclide-settings.png) Show the Nuclide settings view.
-- ![](/static/images/docs/feature-toolbar-button-nuclide-health.png) Toggle the Nuclide health statistics.
+- ![](/static/images/docs/feature-toolbar-button-distraction-free-mode.png) Toggle distraction free mode.
 
 ## Uninstalling
 
