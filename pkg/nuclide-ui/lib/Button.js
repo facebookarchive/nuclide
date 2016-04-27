@@ -84,8 +84,8 @@ export const Button = (props: Props) => {
     },
   );
   return (
-    <div className={newClassName} {...remainingProps}>
+    <button className={newClassName} {...remainingProps}>
       {children}
-    </div>
+    </button>
   );
 };

@@ -24,6 +24,13 @@ const ButtonSizeExample = (): React.Element => (
   </Block>
 );
 
+const ButtonDisabledExample = (): React.Element => (
+  <Block>
+    <Button className="inline-block">enabled</Button>
+    <Button className="inline-block" disabled={true}>disabled</Button>
+  </Block>
+);
+
 const ButtonColorExample = (): React.Element => (
   <div>
     <Block>
@@ -117,6 +124,10 @@ export const ButtonExamples = {
     {
       title: 'Button sizes',
       component: ButtonSizeExample,
+    },
+    {
+      title: 'Disabled/enabled',
+      component: ButtonDisabledExample,
     },
     {
       title: 'Button colors',
