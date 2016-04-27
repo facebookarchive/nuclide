@@ -14,6 +14,7 @@ import {Button} from './Button';
 import {ButtonGroup} from './ButtonGroup';
 import {ButtonToolbar} from './ButtonToolbar';
 import {Block} from './Block';
+import {Dropdown} from './Dropdown';
 
 const ButtonSizeExample = (): React.Element => (
   <Block>
@@ -117,6 +118,23 @@ const ButtonToolbarExample = (): React.Element => (
   </div>
 );
 
+const DropdownExample = (() => {
+  const options = [
+    {value: 1, label: 'One'},
+    {value: 2, label: 'Two'},
+    {value: 3, label: 'Three'},
+    {value: 4, label: 'Four'},
+  ];
+  return (): React.Element => (
+    <div>
+      <Dropdown
+        menuItems={options}
+        value={2}
+      />
+    </div>
+  );
+})();
+
 export const ButtonExamples = {
   sectionName: 'Buttons',
   description: 'For clicking things.',
@@ -144,6 +162,10 @@ export const ButtonExamples = {
     {
       title: 'Button Toolbar',
       component: ButtonToolbarExample,
+    },
+    {
+      title: 'Dropdown',
+      component: DropdownExample,
     },
   ],
 };

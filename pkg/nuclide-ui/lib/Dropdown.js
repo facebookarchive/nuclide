@@ -68,7 +68,7 @@ export class Dropdown extends React.Component {
           value={selectedValue}>
           {options}
         </select>
-        <i className="icon icon-triangle-down" />
+        <i className="icon icon-triangle-down text-center" />
       </div>
     );
   }
