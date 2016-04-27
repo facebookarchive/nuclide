@@ -209,12 +209,15 @@ def run_integration_tests_with_clean_state(
                     shutil.copy(os.path.join(root, name), dest)
 
                     # Run test.
+                    start_time = time.time()
                     run_js_test(
                         'apm',
                         path_to_nuclide,
                         os.path.basename(dest),
                         continue_on_errors=continue_on_errors,
                     )
+                    total_time = time.time() - start_time
+                    print "Finished in %.1f seconds" % total_time
 
                     # Remove file.
                     os.remove(dest)
