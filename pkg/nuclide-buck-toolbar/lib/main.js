@@ -9,9 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type ActivationType from './Activation';
+
 import invariant from 'assert';
 
-let activation: ?Object = null;
+let activation: ?ActivationType = null;
 
 export function activate(state: ?Object) {
   invariant(activation == null);
