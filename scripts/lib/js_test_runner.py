@@ -142,7 +142,7 @@ def run_js_test(
             stderr=subprocess.STDOUT,
             shell=False)
     stdout = []
-    for line in proc.stdout:
+    for line in iter(proc.stdout.readline, ''):
         # line is a bytes string literal in Python 3.
         logging.info('[%s test %s]: %s', test_runner, name, line.rstrip().decode('utf-8'))
         stdout.append(line)
