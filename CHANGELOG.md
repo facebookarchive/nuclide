@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.134.0
+
+Hotfix for outline view regression.
+
 ## v0.133.0
 
 ### General
