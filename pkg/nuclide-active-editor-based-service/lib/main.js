@@ -16,6 +16,9 @@ import {
   atomEventDebounce,
 } from '../../nuclide-atom-helpers';
 
+import {getLogger} from '../../nuclide-logging';
+const logger = getLogger();
+
 import {ProviderRegistry} from './ProviderRegistry';
 
 export type Provider = {
@@ -28,6 +31,8 @@ export type Result<V> = {
 } | {
   kind: 'no-provider';
   grammar: atom$Grammar;
+} | {
+  kind: 'provider-error';
 } | {
   // Since providers can be slow, the pane-change and edit events are emitted immediately in case
   // the UI needs to clear outdated results.
@@ -99,7 +104,15 @@ export class ActiveEditorBasedService<T: Provider, V> {
         grammar: editor.getGrammar(),
       };
     }
-    const result = await this._resultFunction(provider, editor);
+    let result;
+    try {
+      result = await this._resultFunction(provider, editor);
+    } catch (e) {
+      logger.error(`Error from provider for ${grammar}`, e);
+      return {
+        kind: 'provider-error',
+      };
+    }
     return {
       kind: 'result',
       result,

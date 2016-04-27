@@ -45,6 +45,8 @@ function uiOutlinesForResult(result: Result<?Outline>): Observable<OutlineForUi>
         return Observable.of({ kind: 'provider-no-outline' });
       }
       return highlightedOutlines(outline, result.editor);
+    case 'provider-error':
+      return Observable.of({ kind: 'provider-no-outline' });
     default:
       // The remaining kind is 'edit', but we don't want to render a blank outline whenever an edit
       // happens. Better just to display slightly out of date results while we wait for the new
