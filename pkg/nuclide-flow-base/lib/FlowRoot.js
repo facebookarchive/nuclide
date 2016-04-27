@@ -108,8 +108,6 @@ export class FlowRoot {
     file: NuclideUri,
     currentContents: ?string,
   ): Promise<?Diagnostics> {
-    await this._forceRecheck(file);
-
     const options = {};
 
     let args;
@@ -265,23 +263,6 @@ export class FlowRoot {
       return null;
     }
     return {type, rawType};
-  }
-
-  async _forceRecheck(file: string): Promise<boolean> {
-    try {
-      await this._process.execFlow(
-        ['force-recheck', file],
-        /* options */ {},
-        // Make an attempt to force a recheck, but if the server is busy don't insist.
-        /* waitsForServer */ false,
-        /* suppressErrors */ true,
-      );
-      return true;
-    } catch (e) {
-      // This command was introduced in Flow v0.23, so silently swallow errors to avoid logspam on
-      // earlier versions, until we want to break support for earlier version.
-      return false;
-    }
   }
 
   static async flowGetOutline(currentContents: string): Promise<?Array<FlowOutlineTree>> {
