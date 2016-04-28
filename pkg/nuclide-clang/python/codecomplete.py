@@ -6,8 +6,10 @@
 
 from clang import cindex
 
+import heapq
 import logging
 import re
+import time
 from itertools import imap, islice
 
 
@@ -125,6 +127,24 @@ class CompletionResult:
         }
 
 
+# Wraps cindex.CodeCompletionResults
+class CompletionResults:
+
+    def __init__(self, completion):
+        # Keep reference to original results object alive.
+        self._completion = completion
+        self._results = map(CompletionResult, list(completion.results))
+
+    def getResults(self, prefix, limit):
+        if prefix == '':
+            matches = self._results
+        else:
+            matches = [x for x in self._results if x.typed_name.startswith(prefix)]
+
+        return [x.to_dict() for x in heapq.nsmallest(
+            limit or len(matches), matches, key=lambda x: x.priority)]
+
+
 class CompletionCache:
 
     def __init__(self, absolute_path, translation_unit):
@@ -133,59 +153,60 @@ class CompletionCache:
         self.invalidate()
 
     def get_completions(self, line, column, prefix, contents=None, limit=None):
-        results = self._lookup(line, column, prefix)
-        if results is None:
-            results = _get_completions(
+        completions = self._lookup(line, column)
+        if completions is None:
+            completions = _get_completions(
                 self._translation_unit,
                 self._absolute_path,
                 line,
                 column,
-                prefix,
                 contents
             )
-            self._update(line, column, prefix, results)
-        return list(islice(results, limit))
+            self._update(line, column, completions)
+        # completions may still be None if there was a clang parsing error.
+        if completions is None:
+            return []
+        return completions.getResults(prefix, limit)
 
     def invalidate(self):
         self._last_line = None
         self._last_column = None
-        self._last_prefix = None
-        self._last_result = None
+        self._completions = None
 
-    def _lookup(self, line, column, prefix):
-        if (line == self._last_line and column == self._last_column and
-                prefix.startswith(self._last_prefix)):
-            if prefix == self._last_prefix:
-                return self._last_result
-            return (result for result in self._last_result
-                    if result['spelling'].startswith(prefix))
+    def _lookup(self, line, column):
+        if line == self._last_line and column == self._last_column:
+            return self._completions
         return None
 
-    def _update(self, line, column, prefix, result):
+    def _update(self, line, column, completions):
         self._last_line = line
         self._last_column = column
-        self._last_prefix = prefix
-        self._last_result = result
+        self._completions = completions
 
 
-def _get_completions(translation_unit, absolute_path, line, column, prefix, contents=None):
+def _get_completions(
+    translation_unit,
+    absolute_path,
+    line,
+    column,
+    contents=None,
+):
     unsaved_files = []
     if contents:
         contents_as_str = contents.encode('utf8')
         unsaved_files.append((absolute_path, contents_as_str))
 
-    results = translation_unit.codeComplete(
+    start_time = time.time()
+    completion = translation_unit.codeComplete(
         absolute_path, line, column, unsaved_files,
         include_macros=True, include_brief_comments=True)
-    if results is None:
-        return []
+    if completion is None:
+        return None
+    logger.info(
+        'codeComplete returned %d completions in %.3lf secs',
+        len(completion.results),
+        time.time() - start_time,
+    )
 
-    completions = []
-    for result in results.results:
-        wrapped = CompletionResult(result)
-        if prefix and not wrapped.typed_name.startswith(prefix):
-            continue
-        completions.append(wrapped)
-
-    completions.sort(key=lambda x: x.priority)
-    return map(lambda x: x.to_dict(), completions)
+    wrapper = CompletionResults(completion)
+    return wrapper
