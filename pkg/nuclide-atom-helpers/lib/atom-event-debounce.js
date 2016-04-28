@@ -65,16 +65,12 @@ export function observeActiveEditorsDebounced(
     });
 }
 
-export function observeEditorChangesDebounced(
+export function editorChangesDebounced(
   editor: atom$TextEditor,
   debounceInterval: number = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS,
 ): Observable<void> {
-  return Observable.concat(
-    // Emit one event at the beginning in keeping with the observe* methods in the Atom API.
-    Observable.of(undefined),
-    commonsEvent.observableFromSubscribeFunction(callback => editor.onDidChange(callback)),
-  )
-  // Debounce manually rather than using editor.onDidStopChanging so that the debounce time is
-  // configurable.
-  .debounceTime(debounceInterval);
+  return commonsEvent.observableFromSubscribeFunction(callback => editor.onDidChange(callback))
+    // Debounce manually rather than using editor.onDidStopChanging so that the debounce time is
+    // configurable.
+    .debounceTime(debounceInterval);
 }

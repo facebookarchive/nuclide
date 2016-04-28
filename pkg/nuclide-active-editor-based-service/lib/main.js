@@ -92,6 +92,7 @@ export class ActiveEditorBasedService<T: Provider, V> {
 
       return Observable.concat(
         Observable.of({ kind: 'pane-change' }),
+        Observable.fromPromise(this._getResultForEditor(editor)),
         editorEvents.flatMap(() => {
           return Observable.concat(
             Observable.of({ kind: 'edit' }),
@@ -131,6 +132,6 @@ export class ActiveEditorBasedService<T: Provider, V> {
 function getDefaultEventSources(): EventSources {
   return {
     activeEditors: atomEventDebounce.observeActiveEditorsDebounced(),
-    changesForEditor: editor => atomEventDebounce.observeEditorChangesDebounced(editor),
+    changesForEditor: editor => atomEventDebounce.editorChangesDebounced(editor),
   };
 }

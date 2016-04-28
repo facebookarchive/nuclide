@@ -15,7 +15,7 @@ import {
   onWorkspaceDidStopChangingActivePaneItem,
   observeActivePaneItemDebounced,
   observeActiveEditorsDebounced,
-  observeEditorChangesDebounced,
+  editorChangesDebounced,
 } from '../lib/atom-event-debounce';
 import {activatePaneItem} from '../lib/workspace';
 
@@ -155,7 +155,7 @@ describe('pane item change events', ()  => {
   });
 });
 
-describe('observeEditorChangesDebounced', () => {
+describe('editorChangesDebounced', () => {
   let editor: atom$TextEditor = (null: any);
   let editorChanges: Observable<void> = (null: any);
 
@@ -163,13 +163,7 @@ describe('observeEditorChangesDebounced', () => {
     waitsForPromise(async () => {
       jasmine.useRealClock();
       editor = await atom.workspace.open();
-      editorChanges = observeEditorChangesDebounced(editor, DEBOUNCE_INTERVAL);
-    });
-  });
-
-  it('emits one event immediately', () => {
-    waitsForPromise(async () => {
-      expect(await editorChanges.take(1).toPromise()).toBeUndefined();
+      editorChanges = editorChangesDebounced(editor, DEBOUNCE_INTERVAL);
     });
   });
 
@@ -187,7 +181,7 @@ describe('observeEditorChangesDebounced', () => {
       editor.insertNewline();
       editor.insertNewline();
 
-      expect((await eventsPromise).length).toBe(2);
+      expect((await eventsPromise).length).toBe(1);
     });
   });
 });
