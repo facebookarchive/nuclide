@@ -250,9 +250,9 @@
       "resolved": "https://registry.npmjs.org/babel-plugin-undefined-to-void/-/babel-plugin-undefined-to-void-1.1.6.tgz"
     },
     "babel-polyfill": {
-      "version": "6.3.14",
-      "from": "babel-polyfill@6.3.14",
-      "resolved": "https://registry.npmjs.org/babel-polyfill/-/babel-polyfill-6.3.14.tgz"
+      "version": "6.7.2",
+      "from": "babel-polyfill@6.7.2",
+      "resolved": "https://registry.npmjs.org/babel-polyfill/-/babel-polyfill-6.7.2.tgz"
     },
     "babel-regenerator-runtime": {
       "version": "6.5.0",
@@ -286,9 +286,9 @@
       }
     },
     "babel-types": {
-      "version": "6.3.13",
-      "from": "babel-types@6.3.13",
-      "resolved": "https://registry.npmjs.org/babel-types/-/babel-types-6.3.13.tgz"
+      "version": "6.7.2",
+      "from": "babel-types@6.7.2",
+      "resolved": "https://registry.npmjs.org/babel-types/-/babel-types-6.7.2.tgz"
     },
     "babylon": {
       "version": "5.8.38",
@@ -1935,14 +1935,14 @@
       "resolved": "https://registry.npmjs.org/rxjs/-/rxjs-5.0.0-beta.6.tgz"
     },
     "sabor": {
-      "version": "0.5.0",
-      "from": "sabor@0.5.0",
-      "resolved": "https://registry.npmjs.org/sabor/-/sabor-0.5.0.tgz",
+      "version": "0.7.0",
+      "from": "sabor@0.7.0",
+      "resolved": "https://registry.npmjs.org/sabor/-/sabor-0.7.0.tgz",
       "dependencies": {
         "babylon": {
-          "version": "6.3.26",
-          "from": "babylon@6.3.26",
-          "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.3.26.tgz"
+          "version": "6.7.0",
+          "from": "babylon@6.7.0",
+          "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.7.0.tgz"
         },
         "es6-promise": {
           "version": "3.0.2",
