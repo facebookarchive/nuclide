@@ -197,8 +197,8 @@ async function execArcLint(cwd: string, filePaths: Array<NuclideUri>, skip: Arra
     try {
       json = JSON.parse(line);
     } catch (error) {
-      logger.error('Error parsing `arc lint` JSON output', result.stdout);
-      return [];
+      logger.error('Error parsing `arc lint` JSON output', line);
+      continue;
     }
     for (const file of Object.keys(json)) {
       const errorsToAdd = json[file];
