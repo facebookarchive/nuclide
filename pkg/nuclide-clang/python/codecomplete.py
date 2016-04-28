@@ -10,7 +10,7 @@ import heapq
 import logging
 import re
 import time
-from itertools import imap, islice
+from itertools import islice
 
 
 OPERATOR_OVERLOAD_RE = re.compile('^operator[^\w]')
@@ -127,7 +127,8 @@ class CompletionResult:
         }
 
 
-# Wraps cindex.CodeCompletionResults
+# Wraps cindex.CodeCompletionResults.
+# Results must be pre-sorted by typed_name.
 class CompletionResults:
 
     def __init__(self, completion):
@@ -138,11 +139,40 @@ class CompletionResults:
     def getResults(self, prefix, limit):
         if prefix == '':
             matches = self._results
+            num_matches = len(matches)
         else:
-            matches = [x for x in self._results if x.typed_name.startswith(prefix)]
+            # Since the results are sorted, binary search to find the range that matches.
+            # Fetching the typed text for each result is expensive, so this requires only
+            # O(log N) lookups / comparisons.
+            prefix_lower = prefix.lower()
+            start = self._getFirstMatch(prefix_lower)
+            # ~ is the last printable character in the ASCII table.
+            # Destructors should still be visible, so add two of them.
+            end = self._getFirstMatch(prefix_lower + '~~')
+            matches = islice(self._results, start, end)
+            num_matches = end - start
 
-        return [x.to_dict() for x in heapq.nsmallest(
-            limit or len(matches), matches, key=lambda x: x.priority)]
+        best_matches = heapq.nsmallest(
+            limit or num_matches, matches, key=lambda x: x.priority)
+
+        # We ignored case earlier, but use it as a final ranking basis.
+        # Note that Python sort is stable.
+        best_matches.sort(key=lambda x: not x.typed_name.startswith(prefix))
+        return map(lambda x: x.to_dict(), best_matches)
+
+    # Binary search for the first result comparing >= `prefix`.
+    # Note that prefix should already be all lowercase.
+    # Returns len(results) if no such result exists.
+    def _getFirstMatch(self, prefix):
+        low = 0
+        high = len(self._results)
+        while low < high:
+            mid = (low + high) // 2
+            if self._results[mid].typed_name.lower() < prefix:
+                low = mid + 1
+            else:
+                high = mid
+        return low
 
 
 class CompletionCache:
@@ -158,6 +188,7 @@ class CompletionCache:
         if completions is None:
             completions = _get_completions(
                 self._translation_unit,
+                self._clang_lib,
                 self._absolute_path,
                 line,
                 column,
@@ -187,6 +218,7 @@ class CompletionCache:
 
 def _get_completions(
     translation_unit,
+    clang_lib,
     absolute_path,
     line,
     column,
@@ -209,5 +241,9 @@ def _get_completions(
         time.time() - start_time,
     )
 
+    # Sort results for fast filtering.
+    clang_lib.clang_sortCodeCompletionResults(
+        # hack: retrieve underlying results pointer
+        completion.results.results, len(completion.results))
     wrapper = CompletionResults(completion)
     return wrapper

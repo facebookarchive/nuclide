@@ -26,6 +26,54 @@ def mock_completion_results(results):
     return mock_results
 
 
+class CompletionResultsTestCase(unittest.TestCase):
+
+    def test_empty_prefix(self):
+        results = mock_completion_results([
+            MockCompletionResult('a', 5),
+            MockCompletionResult('b', 10),
+            MockCompletionResult('c', 1),
+        ])
+        # Make sure we order by priority.
+        self.assertEqual(
+            results.getResults('', None),
+            [{'spelling': 'c'}, {'spelling': 'a'}, {'spelling': 'b'}],
+        )
+        self.assertEqual(
+            results.getResults('', 1),
+            [{'spelling': 'c'}],
+        )
+
+    def test_prefix_matching(self):
+        results = mock_completion_results([
+            MockCompletionResult('aa', 5),
+            MockCompletionResult('ab', 4),
+            MockCompletionResult('b', 10),
+            MockCompletionResult('B', 1),
+            MockCompletionResult('~c', 1),
+        ])
+        self.assertEqual(
+            results.getResults('a', None),
+            [{'spelling': 'ab'}, {'spelling': 'aa'}],
+        )
+        self.assertEqual(
+            results.getResults('B', None),
+            [{'spelling': 'B'}, {'spelling': 'b'}],
+        )
+        self.assertEqual(
+            results.getResults('~', None),
+            [{'spelling': '~c'}],
+        )
+        self.assertEqual(
+            results.getResults('~c', None),
+            [{'spelling': '~c'}],
+        )
+        self.assertEqual(results.getResults(' ', None), [])
+        self.assertEqual(results.getResults('c', None), [])
+        self.assertEqual(results.getResults('d', None), [])
+        self.assertEqual(results.getResults('bb', None), [])
+
+
 class CompletionCacheTestCase(unittest.TestCase):
 
     def test_cache(self):
