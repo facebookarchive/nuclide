@@ -65,7 +65,9 @@ These shortcuts provide quick access to development features such as diff view, 
 | `option-shift-cmd-F` | `alt-shift-ctrl-F` | `nuclide-find-references:activate` | In projects such as Hack or Flow, this will allow you to find all the references to a selected, highlighted entity in your project. |
 | `option-shift-D` | `alt-shift-D` | `nuclide-diagnostics-ui:toggle-table`  | Display the window showing you messages about your code. Possible messages include lint, compiler errors, etc. |
 | `option-shift-A` | `option-shift-A` | `nuclide-diagnostics-ui:fix-all-in-current-file` | Nuclide can fix certain types of problems for you automatically, including various lint problems. This will allow all those to be fixed in the current file. |
-| `option-cmd-y` | `alt-cmd-y` | `nuclide-hack-symbol-provider:toggle-provider` | Allows you to search for Hack function, classes and constants within you Hack project. | `cmd-shift-i` | `ctrl-shift-i` | `nuclide-format-js:format` | Automatically tries to insert missing `require` and `import` statements to your Flow or JavaScript project. 
+| `option-cmd-y` | `alt-cmd-y` | `nuclide-hack-symbol-provider:toggle-provider` | Allows you to search for Hack function, classes and constants within you Hack project.
+| `cmd-shift-i` | `ctrl-shift-i` | `nuclide-format-js:format` | Automatically tries to insert missing `require` and `import` statements to your Flow or JavaScript project.
+| `option-O`| `alt-O` | `nuclide-outline-view:toggle` | Toggles the [outline view](/docs/features/outline-view/) for a supported file so you can easily navigate to class and function definitions.
 
 ## File Tree
 
