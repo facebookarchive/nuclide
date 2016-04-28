@@ -39,7 +39,7 @@ class CompletionCacheTestCase(unittest.TestCase):
             ])
         codecomplete._get_completions = mock_get_completions
 
-        cache = codecomplete.CompletionCache('test.cpp', {})
+        cache = codecomplete.CompletionCache('test.cpp', {}, {})
         self.assertEqual(cache.get_completions(1, 1, ''), [
             {'spelling': 'f'},
             {'spelling': 'g'},

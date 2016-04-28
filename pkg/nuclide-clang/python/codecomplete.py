@@ -147,9 +147,10 @@ class CompletionResults:
 
 class CompletionCache:
 
-    def __init__(self, absolute_path, translation_unit):
+    def __init__(self, absolute_path, translation_unit, clang_lib):
         self._absolute_path = absolute_path
         self._translation_unit = translation_unit
+        self._clang_lib = clang_lib
         self.invalidate()
 
     def get_completions(self, line, column, prefix, contents=None, limit=None):
