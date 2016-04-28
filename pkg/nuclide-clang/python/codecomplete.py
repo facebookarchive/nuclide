@@ -4,7 +4,7 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
-from clang.cindex import *
+from clang import cindex
 
 import logging
 import re
@@ -13,8 +13,116 @@ from itertools import imap, islice
 
 OPERATOR_OVERLOAD_RE = re.compile('^operator[^\w]')
 
+# Cache values for speed.
+CURSOR_KIND_DESTRUCTOR = cindex.CursorKind.DESTRUCTOR.value
+CURSOR_KIND_CXX_METHOD = cindex.CursorKind.CXX_METHOD.value
+CURSOR_KIND_MACRO = cindex.CursorKind.MACRO_DEFINITION.value
+
 
 logger = logging.getLogger(__name__)
+
+
+# Wraps cindex.CodeCompletionResult
+class CompletionResult:
+
+    def __init__(self, completion_result):
+        self._result = completion_result
+        self._priority = None
+        self._typed_name = None
+
+    @property
+    def priority(self):
+        """
+        Clang's ranking isn't very good. We downrank the following:
+        - Operator overloads
+        - Destructors
+        - Macros
+        - Methods prefixed underscores
+        """
+        if self._priority is not None:
+            return self._priority
+
+        priority = self._result.string.priority
+        kind = self._result.cursorKind
+        if kind == CURSOR_KIND_DESTRUCTOR:
+            priority += 50
+        elif kind == CURSOR_KIND_MACRO:
+            priority += 25
+        elif kind == CURSOR_KIND_CXX_METHOD:
+            typed_name = self.typed_name
+            if typed_name.startswith('_'):
+                priority += 25
+            elif OPERATOR_OVERLOAD_RE.match(typed_name):
+                priority += 100
+        self._priority = priority
+        return priority
+
+    @property
+    def typed_name(self):
+        """
+        A completion results contains exactly one TypedText chunk, representing
+        what autocompletion input should be matched against.
+        """
+        if self._typed_name is not None:
+            return self._typed_name
+
+        self._typed_name = ''
+        for chunk in self._result.string:
+            if chunk.isKindTypedText():
+                self._typed_name = chunk.spelling
+                break
+        return self._typed_name
+
+    @property
+    def kind(self):
+        try:
+            return self._result.kind.name
+        except:
+            # Function argument completions return a special cursor kind:
+            #   CXCursor_OverloadCandidate = 700
+            # This isn't declared in the LLVM Python bindings (yet).
+            # TODO(hansonw): remove when this is upstreamed
+            if self._result.cursorKind == 700:
+                return 'OVERLOAD_CANDIDATE'
+            return 'UNKNOWN'
+
+    def to_dict(self):
+        chunks = []
+        spelling = ''
+        result_type = ''
+
+        # We want to know which chunks are placeholders.
+        completion_string = self._result.string
+        for chunk in completion_string:
+            # A piece of text that describes something about the result but
+            # should not be inserted into the buffer. (e.g. const modifier)
+            if chunk.isKindInformative():
+                continue
+
+            # There should be at most one ResultType chunk and it should tell us
+            # type of suggested expression. For example, if a method call is
+            # suggested, this chunk will be equal to the method return type.
+            # Obviously, we don't want that chunk in spelling.
+            if chunk.isKindResultType():
+                result_type = chunk.spelling
+                continue
+
+            spelling += chunk.spelling
+            chunks.append({
+                'spelling': chunk.spelling,
+                'isPlaceHolder':
+                    chunk.isKindPlaceHolder() or chunk.kind.name == 'CurrentParameter',
+                'kind': str(chunk.kind),
+            })
+
+        briefComment = completion_string.briefComment
+        return {
+            'spelling': spelling,
+            'chunks': chunks,
+            'result_type': result_type,
+            'cursor_kind': self.kind,
+            'brief_comment': briefComment and briefComment.spelling,
+        }
 
 
 class CompletionCache:
@@ -46,7 +154,7 @@ class CompletionCache:
 
     def _lookup(self, line, column, prefix):
         if (line == self._last_line and column == self._last_column and
-            prefix.startswith(self._last_prefix)):
+                prefix.startswith(self._last_prefix)):
             if prefix == self._last_prefix:
                 return self._last_result
             return (result for result in self._last_result
@@ -74,93 +182,10 @@ def _get_completions(translation_unit, absolute_path, line, column, prefix, cont
 
     completions = []
     for result in results.results:
-        completion_string = result.string
-        # From Index.h: Smaller values indicate higher-priority (more likely)
-        # completions.
-        if completion_string.priority > 50:
+        wrapped = CompletionResult(result)
+        if prefix and not wrapped.typed_name.startswith(prefix):
             continue
+        completions.append(wrapped)
 
-        first_token = _getFirstNonResultTypeTokenChunk(completion_string)
-        if not first_token or (prefix and not first_token.startswith(prefix)):
-            continue
-
-        completions.append(result)
-
-    completions.sort(key=_resultPriority)
-    return map(_processResult, completions)
-
-
-# Strongly downrank destructors and operator overloads.
-# Slightly downrank methods with a leading underscore (typically private).
-def _resultPriority(result):
-    priority = result.string.priority
-    kind = _getKind(result)
-    if kind == CursorKind.DESTRUCTOR:
-        priority += 50
-    elif kind == CursorKind.CXX_METHOD:
-        first_chunk = _getFirstNonResultTypeTokenChunk(result.string)
-        if first_chunk is not None:
-            if first_chunk.startswith('_'):
-                priority += 25
-            elif OPERATOR_OVERLOAD_RE.match(first_chunk):
-                priority += 100
-    return priority
-
-
-def _processResult(completion_result):
-    chunks = []
-    spelling = ''
-    result_type = ''
-
-    # We want to know which chunks are placeholders.
-    completion_string = completion_result.string
-    for chunk in completion_string:
-        # A piece of text that describes something about the result but
-        # should not be inserted into the buffer. (e.g. const modifier)
-        if chunk.isKindInformative():
-            continue
-
-        # There should be at most one ResultType chunk and it should tell us
-        # type of suggested expression. For example, if a method call is
-        # suggested, this chunk will be equal to the method return type.
-        # Obviously, we don't want that chunk in spelling.
-        if chunk.isKindResultType():
-            result_type = chunk.spelling
-            continue
-
-        spelling += chunk.spelling
-        chunks.append({
-            'spelling': chunk.spelling,
-            'isPlaceHolder': chunk.isKindPlaceHolder() or chunk.kind.name == 'CurrentParameter',
-            'kind': str(chunk.kind),
-        })
-
-    briefComment = completion_string.briefComment
-    return {
-        'spelling': spelling,
-        'chunks': chunks,
-        'result_type': result_type,
-        'cursor_kind': _getKind(completion_result),
-        'brief_comment': briefComment and briefComment.spelling,
-    }
-
-
-def _getFirstNonResultTypeTokenChunk(completion_string):
-    for chunk in completion_string:
-        if not chunk.isKindResultType():
-            return chunk.spelling
-    return None
-
-
-# Some cursor kinds aren't known to libclang yet.
-def _getKind(completion_result):
-    try:
-        return completion_result.kind.name
-    except:
-        # Function argument completions return a special cursor kind:
-        #   CXCursor_OverloadCandidate = 700
-        # This isn't declared in the LLVM Python bindings (yet).
-        # TODO(hansonw): remove when this is upstreamed
-        if completion_result.cursorKind == 700:
-            return 'OVERLOAD_CANDIDATE'
-        return 'UNKNOWN'
+    completions.sort(key=lambda x: x.priority)
+    return map(lambda x: x.to_dict(), completions)
