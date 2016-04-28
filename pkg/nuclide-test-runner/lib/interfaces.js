@@ -14,7 +14,7 @@ import type {Observable} from 'rxjs';
 
 /**
  * Test run status values as defined in
- * {@link https://phabricator.fb.com/diffusion/E/browse/tfb/trunk/www/flib/intern/testinfra/model/TR_Result.php TR_Result}.
+ * {@link https://phabricator.intern.facebook.com/diffusion/E/browse/tfb/trunk/www/flib/intern/testinfra/model/TR_Result.php TR_Result}.
  *
  *     {
  *       PASSED: 1,

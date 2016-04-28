@@ -16,17 +16,17 @@ import {getPhabricatorRevisionFromCommitMessage} from '../lib/utils';
 describe('nuclide-arcanist-client', () => {
   const testCases = [
     [
-      'Differential Revision: https://phabricator.fb.com/D169775',
-      {id: 'D169775', url: 'https://phabricator.fb.com/D169775'},
+      'Differential Revision: https://phabricator.intern.facebook.com/D169775',
+      {id: 'D169775', url: 'https://phabricator.intern.facebook.com/D169775'},
     ],
     ['Some stuff', null],
     [
       (`Multiline
 
       message
-      Differential Revision: https://phabricator.fb.com/d123456
+      Differential Revision: https://phabricator.intern.facebook.com/d123456
       Test plan: foo!`).replace(/^ +/gm, ''),
-      {id: 'D123456', url: 'https://phabricator.fb.com/d123456'},
+      {id: 'D123456', url: 'https://phabricator.intern.facebook.com/d123456'},
     ],
   ];
   it('can parse a commit message and get the revision ID', () => {

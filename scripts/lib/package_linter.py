@@ -167,7 +167,8 @@ class PackageLinter(object):
                 package_name)
 
     def validate_babelrc(self, package):
-        # See https://phabricator.fb.com/D2301649 for details on why this used to exist.
+        # See https://phabricator.intern.facebook.com/D2301649
+        # for details on why this used to exist.
         babelrc_path = os.path.join(package['packageRootAbsolutePath'], '.babelrc')
         if os.path.isfile(babelrc_path):
             self.report_error('Deprecated .babelrc file found at %s.', babelrc_path)
