@@ -12,12 +12,14 @@
 import type {
   HgService,
   DiffInfo,
+  HgStatusCommandOptions,
   HgStatusOptionValue,
   LineDiff,
   RevisionInfo,
   RevisionFileChanges,
   StatusCodeIdValue,
   StatusCodeNumberValue,
+  VcsLogResponse,
 } from '../../nuclide-hg-repository-base/lib/HgService';
 
 import {CompositeDisposable, Emitter} from 'atom';
@@ -50,10 +52,6 @@ type HgRepositoryOptions = {
  * Section: Constants, Type Definitions
  *
  */
-
-export type HgStatusCommandOptions = {
-  hgStatusOption: HgStatusOptionValue;
-};
 
 const EDITOR_SUBSCRIPTION_NAME = 'hg-repository-editor-subscription';
 export const MAX_INDIVIDUAL_CHANGED_PATHS = 1;
@@ -848,6 +846,13 @@ export class HgRepositoryClient {
 
   revert(filePaths: Array<NuclideUri>): Promise<void> {
     return this._service.revert(filePaths);
+  }
+
+  log(filePaths: Array<NuclideUri>, limit?: ?number): Promise<VcsLogResponse> {
+    // TODO(mbolin): Return an Observable so that results appear faster.
+    // Unfortunately, `hg log -Tjson` is not Observable-friendly because it will
+    // not parse as JSON until all of the data has been printed to stdout.
+    return this._service.log(filePaths, limit);
   }
 
   _getStatusOption(options: ?HgStatusCommandOptions): ?HgStatusOptionValue {

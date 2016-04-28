@@ -1,0 +1,60 @@
+@import 'ui-variables';
+
+@CELL_PADDING: 4px;
+
+.nuclide-vcs-log-spinner {
+  margin-top: 2em;
+  text-align: center;
+}
+
+.nuclide-vcs-log-scroll-container {
+  height: 100%;
+  overflow-y: scroll;
+}
+
+.nuclide-vcs-log-cell {
+  font-family: Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  padding: @CELL_PADDING;
+  vertical-align: top;
+}
+
+.nuclide-vcs-log-fixed-cell {
+  white-space: nowrap;
+}
+
+.nuclide-vcs-log-header-cell {
+  padding: @CELL_PADDING 6px;
+}
+
+.nuclide-vcs-log-date-cell {
+  .nuclide-vcs-log-cell;
+  .nuclide-vcs-log-fixed-cell;
+  color: @text-color-info;
+}
+
+.nuclide-vcs-log-id-cell {
+  .nuclide-vcs-log-cell;
+  .nuclide-vcs-log-fixed-cell;
+  color: @text-color-success;
+}
+
+.nuclide-vcs-log-differential-cell {
+  .nuclide-vcs-log-cell;
+  .nuclide-vcs-log-fixed-cell;
+  color: @text-color-highlight;
+  text-decoration: underline;
+}
+
+.nuclide-vcs-log-differential-cell-text {  
+  cursor: pointer;
+}
+
+.nuclide-vcs-log-author-cell {
+  .nuclide-vcs-log-cell;
+  .nuclide-vcs-log-fixed-cell;
+}
+
+.nuclide-vcs-log-summary-cell {
+  .nuclide-vcs-log-cell;
+  color: @text-color-highlight;
+}

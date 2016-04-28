@@ -122,6 +122,21 @@ export type RevisionFileChanges = {
   modified: Array<NuclideUri>;
 };
 
+export type HgStatusCommandOptions = {
+  hgStatusOption: HgStatusOptionValue;
+};
+
+export type VcsLogEntry = {
+  node: string;
+  user: string;
+  desc: string;
+  date: [number, number];
+};
+
+export type VcsLogResponse = {
+  entries: Array<VcsLogEntry>;
+};
+
 async function getForkBaseName(directoryPath: string): Promise<string> {
   const arcConfig = await readArcConfig(directoryPath);
   if (arcConfig != null) {
@@ -819,4 +834,20 @@ export class HgService {
     }
   }
 
+  async log(filePaths: Array<NuclideUri>, limit?: ?number): Promise<VcsLogResponse> {
+    const args = ['log', '-Tjson'];
+    if (limit != null && limit > 0) {
+      args.push('--limit', String(limit));
+    }
+    for (const filePath of filePaths) {
+      args.push(filePath);
+    }
+
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    const result = await this._hgAsyncExecute(args, execOptions);
+    const entries = JSON.parse(result.stdout);
+    return {entries};
+  }
 }

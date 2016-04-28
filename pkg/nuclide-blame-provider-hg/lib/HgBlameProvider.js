@@ -14,6 +14,7 @@ import type {BlameForEditor} from '../../nuclide-blame-base';
 import featureConfig from '../../nuclide-feature-config';
 import {hgRepositoryForEditor} from './common';
 import {trackOperationTiming} from '../../nuclide-analytics';
+import {shortNameForAuthor} from '../../nuclide-vcs-log';
 
 let logger;
 function getLogger() {
@@ -77,7 +78,7 @@ function formatBlameInfo(
   rawBlameData: Map<string, string>,
   useShortName: boolean
 ): BlameForEditor {
-  const extractAuthor = useShortName ? shortenBlameName : identity;
+  const extractAuthor = useShortName ? shortNameForAuthor : identity;
 
   const blameForEditor = new Map();
   rawBlameData.forEach((blameName, serializedLineNumber) => {
@@ -94,24 +95,6 @@ function formatBlameInfo(
     blameForEditor.set(lineNumber, blameInfo);
   });
   return blameForEditor;
-}
-
-
-// Mercurial history emails can be invalid.
-const HG_EMAIL_REGEX = /\b([A-Za-z0-9._%+-]+)@[A-Za-z0-9.-]+\b/;
-/**
- * `hg blame` may return the 'user' name in a mix of formats:
- *   - foo@bar.com
- *   - bar@56abc2-24378f
- *   - Foo Bar <foo@bar.com>
- * This method shortens the name in `blameName` to just
- * return the beginning part of the email, iff an email is present.
- * The examples above would become 'foo'.
- */
-function shortenBlameName(blameName: string): string {
-  const match = blameName.match(HG_EMAIL_REGEX);
-  // Index 0 will be the whole email. Index 1 is the capture group.
-  return match ? match[1] : blameName;
 }
 
 /** @return The input value. */
