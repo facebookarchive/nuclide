@@ -134,14 +134,20 @@ class FileTreeContextMenu {
     this._subscriptions = new CompositeDisposable();
     this._store = FileTreeStore.getInstance();
 
+    const shouldDisplaySetToCurrentWorkingRootOption = () => {
+      const node = this._store.getSingleSelectedNode();
+      return node != null && node.isRoot && this._store.hasCwd() && !node.isCwd;
+    };
+
     this._addContextMenuItemGroup([
       {
         label: 'Set to Current Working Root',
         command: 'nuclide-file-tree:set-current-working-root',
-        shouldDisplay: () => {
-          const node = this._store.getSingleSelectedNode();
-          return node != null && node.isRoot && this._store.hasCwd() && !node.isCwd;
-        },
+        shouldDisplay: shouldDisplaySetToCurrentWorkingRootOption,
+      },
+      {
+        type: 'separator',
+        shouldDisplay: shouldDisplaySetToCurrentWorkingRootOption,
       },
       {
         label: 'New',
