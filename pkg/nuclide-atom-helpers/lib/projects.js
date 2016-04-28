@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../nuclide-remote-uri';
+
 const {Emitter, Directory} = require('atom');
 const {isRemote} = require('../../nuclide-remote-uri');
 const {singleton} = require('../../nuclide-commons');
@@ -78,7 +80,17 @@ function getProjectManager(): ProjectManager {
   );
 }
 
+function getAtomProjectRelativePath(path: NuclideUri): ?string {
+  const [projectPath, relativePath] = atom.project.relativizePath(path);
+  if (!projectPath) {
+    return null;
+  }
+  return relativePath;
+}
+
 module.exports = {
+  getAtomProjectRelativePath,
+
   observeProjectPaths(callback: (projectPath: string) => void): IDisposable {
     return getProjectManager().observeProjectPaths(callback);
   },

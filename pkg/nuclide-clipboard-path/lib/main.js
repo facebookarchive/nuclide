@@ -11,6 +11,7 @@
 
 import {CompositeDisposable} from 'atom';
 import {getPath} from '../../nuclide-remote-uri';
+import {projects} from '../../nuclide-atom-helpers';
 import {trackOperationTiming} from '../../nuclide-analytics';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
@@ -32,7 +33,7 @@ function copyProjectRelativePath(): void {
       return;
     }
 
-    const projectRelativePath = getAtomProjectRelativePath(uri);
+    const projectRelativePath = projects.getAtomProjectRelativePath(uri);
     if (projectRelativePath) {
       copyToClipboard('Copied project relative path', projectRelativePath);
     } else {
@@ -66,21 +67,13 @@ function copyRepositoryRelativePath(): void {
     }
 
     // Lastly, project and absolute.
-    const projectRelativePath = getAtomProjectRelativePath(uri);
+    const projectRelativePath = projects.getAtomProjectRelativePath(uri);
     if (projectRelativePath) {
       copyToClipboard('Copied project relative path', projectRelativePath);
     } else {
       copyToClipboard('Path not contained in any repository.\nCopied absolute path', getPath(uri));
     }
   });
-}
-
-function getAtomProjectRelativePath(path: NuclideUri): ?string {
-  const [projectPath, relativePath] = atom.project.relativizePath(path);
-  if (!projectPath) {
-    return null;
-  }
-  return relativePath;
 }
 
 function getRepositoryRelativePath(path: NuclideUri): ?string {
