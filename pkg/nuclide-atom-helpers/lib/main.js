@@ -60,14 +60,6 @@ module.exports = {
     return requireFromCache('./text-editor').loadBufferForUri;
   },
 
-  get observeActiveEditorsDebounced() {
-    return requireFromCache('./text-editor').observeActiveEditorsDebounced;
-  },
-
-  get observeEditorChangesDebounced() {
-    return requireFromCache('./text-editor').observeEditorChangesDebounced;
-  },
-
   get destroyPaneItemWithTitle() {
     return requireFromCache('./destroy-pane-item');
   },
