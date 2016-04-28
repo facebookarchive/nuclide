@@ -48,15 +48,23 @@ export type Result<V> = {
 
 type ResultFunction<T, V> = (provider: T, editor: atom$TextEditor) => Promise<V>;
 
+export type EventSources = {
+  activeEditors: Observable<?atom$TextEditor>;
+  changesForEditor: (editor: atom$TextEditor) => Observable<void>;
+};
+
 export class ActiveEditorBasedService<T: Provider, V> {
   _resultFunction: ResultFunction<T, V>;
   _providerRegistry: ProviderRegistry<T>;
   _resultsStream: Observable<Result<V>>;
 
-  constructor(resultFunction: ResultFunction<T, V>) {
+  constructor(
+    resultFunction: ResultFunction<T, V>,
+    eventSources: EventSources = getDefaultEventSources(),
+  ) {
     this._resultFunction = resultFunction;
     this._providerRegistry = new ProviderRegistry();
-    this._resultsStream = this._createResultsStream();
+    this._resultsStream = this._createResultsStream(eventSources);
   }
 
   consumeProvider(provider: T): IDisposable {
@@ -70,18 +78,17 @@ export class ActiveEditorBasedService<T: Provider, V> {
     return this._resultsStream;
   }
 
-  _createResultsStream(): Observable<Result<V>> {
-    const activeEditors = atomEventDebounce.observeActiveEditorsDebounced();
+  _createResultsStream(eventSources: EventSources): Observable<Result<V>> {
     // Emit a pane change event first, so that clients can do something while waiting for a provider
     // to give a result.
-    return activeEditors.switchMap(editorArg => {
+    return eventSources.activeEditors.switchMap(editorArg => {
       // Necessary so the type refinement holds in the callback later
       const editor = editorArg;
       if (editor == null) {
         return Observable.of({ kind: 'not-text-editor' });
       }
 
-      const editorEvents = atomEventDebounce.observeEditorChangesDebounced(editor);
+      const editorEvents = eventSources.changesForEditor(editor);
 
       return Observable.concat(
         Observable.of({ kind: 'pane-change' }),
@@ -119,4 +126,11 @@ export class ActiveEditorBasedService<T: Provider, V> {
       editor,
     };
   }
+}
+
+function getDefaultEventSources(): EventSources {
+  return {
+    activeEditors: atomEventDebounce.observeActiveEditorsDebounced(),
+    changesForEditor: editor => atomEventDebounce.observeEditorChangesDebounced(editor),
+  };
 }
