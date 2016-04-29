@@ -25,4 +25,4 @@ suppress_comment=.*\\$FlowIgnore.*
 unsafe.enable_getters_and_setters=true
 
 [version]
-0.23.0
+0.24.0
