@@ -42,7 +42,7 @@
   }
   font-weight: bold;
   position: absolute;
-  top: @component-padding;
+  margin-top: @component-padding;
   left: @component-padding;
   z-index: 1;
   background: @overlay-background-color;
@@ -58,15 +58,16 @@
 }
 
 .nuclide-file-tree-toolbar {
+  margin-top: 10px;
   position: absolute;
   right: 30px;
-  top: 10px;
   z-index: 1;
 }
 
 .nuclide-file-tree-toolbar-container {
   display: flex;
   flex: 1;
+  min-height: 0;
   width: 100%;
 }
 

@@ -315,6 +315,7 @@ export function consumeNuclideSideBar(sidebar: NuclideSideBarService): IDisposab
         );
       }
     },
+    title: 'File Tree',
     toggleCommand: 'nuclide-file-tree:toggle',
     viewId: 'nuclide-file-tree',
   });

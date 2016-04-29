@@ -37,6 +37,7 @@ class SideBarView extends React.Component {
 const COOLER_BAR = {
   getComponent() { return CoolerBarView; },
   onDidShow() {},
+  title: 'Cooler Bar',
   toggleCommand: 'cooler-bar-view:toggle',
   viewId: 'cooler-bar-view',
 };
@@ -44,6 +45,7 @@ const COOLER_BAR = {
 const FOCUS_DELEGATE = {
   getComponent() { return FocusDelegateView; },
   onDidShow() {},
+  title: 'Focus Delegate',
   toggleCommand: 'focus-delegate-view:toggle',
   viewId: 'focus-delegate-view',
 };
@@ -51,6 +53,7 @@ const FOCUS_DELEGATE = {
 const SIDE_BAR = {
   getComponent() { return SideBarView; },
   onDidShow() {},
+  title: 'Side Bar',
   toggleCommand: 'side-bar-view:toggle',
   viewId: 'side-bar-view',
 };
@@ -77,18 +80,31 @@ describe('nuclide-side-bar main', () => {
   beforeEach(() => {
     workspaceElement = atom.views.getView(atom.workspace);
     jasmine.attachToDOM(workspaceElement);
+    spyOn(Date, 'now').andCallFake(() => window.now);
 
     waitsForPromise(() => {
       return atom.packages.activatePackage('nuclide-side-bar');
     });
   });
 
+  afterEach(() => {
+    // Ensure no lingering debounced renders are waiting and will muck with the state of the package
+    // between test runs.
+    advanceClock(500);
+  });
+
   it('renders a view object when its toggle event is dispatched', () => {
     const sideBarService = NuclideSideBar.provideNuclideSideBar();
     sideBarService.registerView(SIDE_BAR);
 
+    // render
+    advanceClock(500);
+
     // Show the view
     showView(SIDE_BAR);
+
+    // render
+    advanceClock(500);
 
     // Should be present in the DOM.
     expect(document.querySelectorAll('.side-bar-view').length).toEqual(1);
@@ -97,6 +113,9 @@ describe('nuclide-side-bar main', () => {
   it('focuses a view when its toggle event is dispatched', () => {
     const sideBarService = NuclideSideBar.provideNuclideSideBar();
     sideBarService.registerView(SIDE_BAR);
+
+    // render
+    advanceClock(500);
 
     let didShow = false;
     spyOn(SIDE_BAR, 'onDidShow').andCallFake(() => {
@@ -108,7 +127,14 @@ describe('nuclide-side-bar main', () => {
     runs(() => {
       // Do a full toggle, hide and then show, so focus logic is guaranteed to happen.
       hideView(SIDE_BAR);
+
+      // render
+      advanceClock(500);
+
       showView(SIDE_BAR);
+
+      // render
+      advanceClock(500);
     });
 
     waitsFor(() => {
@@ -119,6 +145,9 @@ describe('nuclide-side-bar main', () => {
   it('blurs a view when one of its descendants has focus', () => {
     const sideBarService = NuclideSideBar.provideNuclideSideBar();
     sideBarService.registerView(FOCUS_DELEGATE);
+
+    // render
+    advanceClock(500);
 
     // Give a descendant focus
     document.querySelector('.focus-delegate-view-delegate').focus();
@@ -131,11 +160,18 @@ describe('nuclide-side-bar main', () => {
   it('replaces a view object when another view is displayed', () => {
     const sideBarService = NuclideSideBar.provideNuclideSideBar();
     sideBarService.registerView(SIDE_BAR);
+
+    // render
+    advanceClock(500);
+
     showView(SIDE_BAR);
     sideBarService.registerView(COOLER_BAR);
 
     // Show the second view
     showView(COOLER_BAR);
+
+    // render
+    advanceClock(500);
 
     // First view should be gone.
     expect(document.querySelectorAll('.side-bar-view').length).toEqual(0);
@@ -146,12 +182,19 @@ describe('nuclide-side-bar main', () => {
   it('re-shows a view when it has been replaced and re-requested', () => {
     const sideBarService = NuclideSideBar.provideNuclideSideBar();
     sideBarService.registerView(SIDE_BAR);
+
+    // render
+    advanceClock(500);
+
     showView(SIDE_BAR);
     sideBarService.registerView(COOLER_BAR);
     showView(COOLER_BAR);
 
     // Fire the first view's toggle again
     showView(SIDE_BAR);
+
+    // render
+    advanceClock(500);
 
     // First view should be visible again.
     expect(document.querySelectorAll('.side-bar-view').length).toEqual(1);
@@ -162,11 +205,18 @@ describe('nuclide-side-bar main', () => {
   it('shows the next possible view when the active one is destroyed', () => {
     const sideBarService = NuclideSideBar.provideNuclideSideBar();
     sideBarService.registerView(SIDE_BAR);
+
+    // render
+    advanceClock(500);
+
     showView(SIDE_BAR);
     sideBarService.registerView(COOLER_BAR);
 
     // Destroy side-bar-view, the active view.
     sideBarService.destroyView('side-bar-view');
+
+    // render
+    advanceClock(500);
 
     // The remaining view should be activated.
     expect(document.querySelectorAll('.cooler-bar-view').length).toEqual(1);
@@ -179,6 +229,27 @@ describe('nuclide-side-bar main', () => {
 
     expect(NuclideSideBar.serialize()).toEqual({
       activeViewId: SIDE_BAR.viewId,
+      autoViewId: SIDE_BAR.viewId,
+      hidden: false,
+      // Hard-coded length from `main`. Empirically the minimum width needed to fit
+      // 'nuclide-file-tree' buttons without causing overflow.
+      initialLength: 240,
+    });
+  });
+
+  it('maintains the last active (user-selected) view when views are destroyed', () => {
+    const sideBarService = NuclideSideBar.provideNuclideSideBar();
+    sideBarService.registerView(SIDE_BAR);
+    showView(SIDE_BAR);
+    sideBarService.registerView(COOLER_BAR);
+    showView(COOLER_BAR);
+
+    sideBarService.destroyView(COOLER_BAR.viewId);
+    sideBarService.destroyView(SIDE_BAR.viewId);
+
+    expect(NuclideSideBar.serialize()).toEqual({
+      activeViewId: COOLER_BAR.viewId,
+      autoViewId: undefined,
       hidden: false,
       // Hard-coded length from `main`. Empirically the minimum width needed to fit
       // 'nuclide-file-tree' buttons without causing overflow.
@@ -191,9 +262,24 @@ describe('nuclide-side-bar main', () => {
 
     spyOn(COOLER_BAR, 'onDidShow');
     sideBarService.registerView(SIDE_BAR);
+
+    // render
+    advanceClock(500);
+
     showView(SIDE_BAR);
+
+    // render
+    advanceClock(500);
+
     sideBarService.registerView(COOLER_BAR);
+
+    // render
+    advanceClock(500);
+
     showView(COOLER_BAR);
+
+    // render
+    advanceClock(500);
 
     expect(COOLER_BAR.onDidShow).toHaveBeenCalled();
   });
@@ -204,11 +290,20 @@ describe('nuclide-side-bar main', () => {
     // Ensure the side bar is hidden to start
     atom.commands.dispatch(workspaceElement, 'nuclide-side-bar:toggle', {display: false});
 
+    // render
+    advanceClock(500);
+
     spyOn(SIDE_BAR, 'onDidShow');
     sideBarService.registerView(SIDE_BAR);
 
+    // render
+    advanceClock(500);
+
     // Show the side bar.
     atom.commands.dispatch(workspaceElement, 'nuclide-side-bar:toggle', {display: true});
+
+    // render
+    advanceClock(500);
 
     expect(SIDE_BAR.onDidShow).toHaveBeenCalled();
   });

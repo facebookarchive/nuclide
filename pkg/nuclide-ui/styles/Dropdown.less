@@ -1,3 +1,7 @@
+@import "ui-variables";
+
+@icon-width: 2.4em;
+
 .nuclide-dropdown-container {
   display: inline-block;
   position: relative;
@@ -18,6 +22,16 @@
 /* Match specificity of `.btn.btn-*` to override padding set by that selector. */
 .btn.btn.nuclide-dropdown {
   /* Provide space for the right .icon */
-  padding-right: 2.4em;
+  padding-right: @icon-width;
+  -webkit-appearance: none;
+}
+
+.nuclide-dropdown-flat {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  border-right: 1px solid @pane-item-border-color;
+  /* Provide space for the right .icon */
+  padding-right: @icon-width;
   -webkit-appearance: none;
 }

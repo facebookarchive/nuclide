@@ -180,7 +180,7 @@ export class PanelComponent extends React.Component {
   }
 
   focus(): void {
-    ReactDOM.findDOMNode(this.refs['child']).focus();
+    this.refs['child'].focus();
   }
 
   getChildComponent(): React.Component {

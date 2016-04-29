@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
-const {React} = require('react-for-atom');
+import classnames from 'classnames';
+import {React} from 'react-for-atom';
+
 const {PropTypes} = React;
 
 export class Dropdown extends React.Component {
@@ -17,6 +19,7 @@ export class Dropdown extends React.Component {
   static propTypes = {
     className: PropTypes.string.isRequired,
     disabled: PropTypes.bool.isRequired,
+    isFlat: PropTypes.bool.isRequired,
     menuItems: PropTypes.arrayOf(PropTypes.shape({
       label: PropTypes.node.isRequired,
       value: PropTypes.any,
@@ -52,12 +55,15 @@ export class Dropdown extends React.Component {
     const options = this.props.menuItems.map(item =>
       <option key={item.value} value={item.value}>{item.label}</option>
     );
-    let selectClassName = 'btn nuclide-dropdown';
-    if (this.props.size) {
-      selectClassName = `${selectClassName} btn-${this.props.size}`;
-    }
+    const selectClassName = classnames('nuclide-dropdown', {
+      'btn': !this.props.isFlat,
+      [`btn-${this.props.size}`]: !this.props.isFlat && this.props.size != null,
+      'nuclide-dropdown-flat': this.props.isFlat,
+    });
+
     const selectedItem = this.props.menuItems[this.props.selectedIndex];
     const selectedValue = selectedItem && selectedItem.value;
+
     return (
       <div className={'nuclide-dropdown-container ' + this.props.className}>
         <select
