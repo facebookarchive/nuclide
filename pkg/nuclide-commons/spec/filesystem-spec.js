@@ -62,8 +62,9 @@ describe('fsPromise test suite', () => {
     });
 
     it('expands ~/ to HOME', () => {
-      invariant(process.env.HOME != null);
-      expect(fsPromise.expandHomeDir('~/abc')).toBe(path.join(process.env.HOME, 'abc'));
+      const HOME = process.env.HOME;
+      invariant(HOME != null);
+      expect(fsPromise.expandHomeDir('~/abc')).toBe(path.join(HOME, 'abc'));
     });
 
     it('keeps ~def to ~def', () => {

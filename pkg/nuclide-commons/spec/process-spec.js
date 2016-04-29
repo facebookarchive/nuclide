@@ -44,10 +44,11 @@ describe('nuclide-commons/process', () => {
 
     it('combine the existing environment variables with the common paths passed', () => {
       waitsForPromise(async () => {
-        invariant(process.env.PATH != null);
+        const PATH = process.env.PATH;
+        invariant(PATH != null);
         expect(
-          await processLib.createExecEnvironment({foo: 'bar', PATH: process.env.PATH}, ['/abc/def'])
-        ).toEqual({foo: 'bar', PATH: process.env.PATH + path.delimiter + '/abc/def'});
+          await processLib.createExecEnvironment({foo: 'bar', PATH: PATH}, ['/abc/def'])
+        ).toEqual({foo: 'bar', PATH: PATH + path.delimiter + '/abc/def'});
       });
     });
 
