@@ -163,6 +163,8 @@ declare module 'rxjs' {
 
     map<U>(f: (value: T) => U): Observable<U>;
 
+    mapTo<U>(value: U): Observable<U>;
+
     merge(other: Observable<T>): Observable<T>;
 
     mergeAll(): T; // assumption: T is Observable
