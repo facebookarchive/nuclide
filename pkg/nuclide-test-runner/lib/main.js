@@ -200,7 +200,7 @@ class Activation {
         }
         if (target.dataset.name === undefined) {
           // If no necessary `.name` descendant is found, don't display a context menu.
-          return false;
+          return;
         }
         const name = target.dataset.name;
         this.command = 'nuclide-test-runner:run-tests';
