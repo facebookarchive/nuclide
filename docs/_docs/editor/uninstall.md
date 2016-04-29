@@ -30,10 +30,10 @@ two ways to do that:
   1. Open '~/.atom/config.cson'
   2. Remove `"tree-view"` from the array of `disabledPackages` and save 'config.cson'
 
-    ```coffeescript
-    "*":
-      core:
-        disabledPackages: [
-          "tree-view" # REMOVE THIS LINE
-        ]
-    ```
+     ```coffeescript
+     "*":
+       core:
+         disabledPackages: [
+           "tree-view" # REMOVE THIS LINE
+         ]
+     ```
