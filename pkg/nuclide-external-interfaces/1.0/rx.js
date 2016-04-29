@@ -18,7 +18,7 @@ interface rx$IObserver<T> {
 // FIXME: Technically at least one of these is required.
 interface PartialObserver<T> {
   next?: (value: T) => mixed;
-  error?: (errror: any) => mixed;
+  error?: (error: any) => mixed;
   complete?: () => mixed;
 }
 
