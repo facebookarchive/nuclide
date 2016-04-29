@@ -19,6 +19,9 @@ import {track} from '../../nuclide-analytics';
 
 const logger = getLogger();
 
+// Do not attempt to diff files larger than this limit.
+const DIFF_FILE_SIZE_LIMIT = 10000;
+
 class NuclideTextBuffer extends TextBuffer {
   _connection: ServerConnection;
   fileSubscriptions: CompositeDisposable;
@@ -117,6 +120,18 @@ class NuclideTextBuffer extends TextBuffer {
     } catch (e) {
       this._exists = false;
       throw e;
+    }
+  }
+
+  // Override of TextBuffer's implementation.
+  // Atom tries to diff contents even for extremely large files, which can
+  // easily cause the editor to lock.
+  // TODO(hansonw): Remove after https://github.com/atom/text-buffer/issues/153 is resolved.
+  setTextViaDiff(newText: string): void {
+    if (this.getText().length > DIFF_FILE_SIZE_LIMIT || newText.length > DIFF_FILE_SIZE_LIMIT) {
+      this.setText(newText);
+    } else {
+      super.setTextViaDiff(newText);
     }
   }
 
