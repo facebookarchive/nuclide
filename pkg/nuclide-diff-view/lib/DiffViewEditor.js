@@ -131,6 +131,7 @@ export default class DiffViewEditor {
     for (const [lineNumber, offsetLines] of lineOffsets) {
       const blockItem = document.createElement('div');
       blockItem.style.minHeight = (offsetLines * lineHeight) + 'px';
+      blockItem.className = 'nuclide-diff-view-block-offset';
       const marker = this._editor.markBufferPosition([lineNumber, 0], {invalidate: 'never'});
       this._editor.decorateMarker(
         marker,
