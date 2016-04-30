@@ -22,6 +22,7 @@ const path = require('path');
 const transformer = require('../lib/inline-imports-tr');
 
 [
+  'decorators',
   'default-and-namespace-specifier',
   'default-specifier',
   'global-identifier',
@@ -72,6 +73,9 @@ function assertTransformation(source, expected) {
     blacklist: [
       'es3.memberExpressionLiterals',
       'strict',
+    ],
+    optional: [
+      'es7.decorators',
     ],
   }).code;
   assert.deepEqual(
