@@ -10,12 +10,14 @@
  */
 
 import invariant from 'assert';
-const fs = require('fs');
-const path = require('path');
-const {Directory} = require('atom');
-const {RemoteDirectory} = require('../lib/RemoteDirectory');
-const temp = require('temp').track();
-const connectionMock = require('./connection_mock');
+import fs from 'fs';
+import path from 'path';
+import {Directory} from 'atom';
+import {RemoteDirectory} from '../lib/RemoteDirectory';
+import connectionMock from './connection_mock';
+import temp from 'temp';
+
+temp.track();
 
 const FILE_MODE = 33188;
 

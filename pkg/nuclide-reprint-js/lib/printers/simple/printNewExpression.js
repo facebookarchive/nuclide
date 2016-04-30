@@ -12,9 +12,9 @@
 import type {Lines, Print} from '../../types/common';
 import type {NewExpression} from 'ast-types-flow';
 
-const markers = require('../../constants/markers');
-const printCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
+import markers from '../../constants/markers';
+import printCommaSeparatedNodes from '../common/printCommaSeparatedNodes';
+import wrapExpression from '../../wrappers/simple/wrapExpression';
 
 function printNewExpression(print: Print, node: NewExpression): Lines {
   const wrap = x => wrapExpression(print, node, x);

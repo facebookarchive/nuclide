@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const invariant = require('assert');
-const {CompositeDisposable, Disposable, Emitter, Point} = require('atom');
+import invariant from 'assert';
+import {CompositeDisposable, Disposable, Emitter, Point} from 'atom';
 
 type PositionChangeEvent = {
   nativeEvent: MouseEvent;

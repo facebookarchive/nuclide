@@ -16,15 +16,9 @@ type ComboboxOption = {
 };
 
 import Rx from 'rxjs';
-
-const {CompositeDisposable} = require('atom');
-const {AtomInput} = require('./AtomInput');
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
-
-const {PropTypes} = React;
+import {CompositeDisposable} from 'atom';
+import {AtomInput} from './AtomInput';
+import {React, ReactDOM} from 'react-for-atom';
 
 type State = {
   error: ?Error;
@@ -50,22 +44,22 @@ export class Combobox extends React.Component {
   _subscriptions: ?CompositeDisposable;
 
   static propTypes = {
-    className: PropTypes.string.isRequired,
-    formatRequestOptionsErrorMessage: PropTypes.func,
-    initialTextInput: PropTypes.string,
-    loadingMessage: PropTypes.string,
-    placeholderText: PropTypes.string,
-    maxOptionCount: PropTypes.number.isRequired,
-    onChange: PropTypes.func.isRequired,
-    onRequestOptionsError: PropTypes.func,
-    onSelect: PropTypes.func.isRequired,
+    className: React.PropTypes.string.isRequired,
+    formatRequestOptionsErrorMessage: React.PropTypes.func,
+    initialTextInput: React.PropTypes.string,
+    loadingMessage: React.PropTypes.string,
+    placeholderText: React.PropTypes.string,
+    maxOptionCount: React.PropTypes.number.isRequired,
+    onChange: React.PropTypes.func.isRequired,
+    onRequestOptionsError: React.PropTypes.func,
+    onSelect: React.PropTypes.func.isRequired,
     /**
      * promise-returning function; Gets called with
      * the current value of the input field as its only argument
      */
-    requestOptions: PropTypes.func.isRequired,
-    size: PropTypes.oneOf(['xs', 'sm', 'lg']),
-    width: PropTypes.number,
+    requestOptions: React.PropTypes.func.isRequired,
+    size: React.PropTypes.oneOf(['xs', 'sm', 'lg']),
+    width: React.PropTypes.number,
   };
 
   static defaultProps = {

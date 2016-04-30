@@ -13,12 +13,11 @@ import type {Gadget} from '../../nuclide-gadgets-interfaces';
 import type {HomeFragments} from '../../nuclide-home-interfaces';
 import type Rx from 'rxjs';
 
-const Immutable = require('immutable');
-const {React} = require('react-for-atom');
-const HomeFeatureComponent = require('./HomeFeatureComponent');
-const NuclideLogo = require('./NuclideLogo');
-
-const featureConfig = require('../../nuclide-feature-config');
+import Immutable from 'immutable';
+import {React} from 'react-for-atom';
+import HomeFeatureComponent from './HomeFeatureComponent';
+import NuclideLogo from './NuclideLogo';
+import featureConfig from '../../nuclide-feature-config';
 
 const DEFAULT_WELCOME = (
   <div>

@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-const {Disposable} = require('atom');
-const {EventEmitter} = require('events');
-const Constants = require('./Constants');
+import {Disposable} from 'atom';
+import {EventEmitter} from 'events';
+import Constants from './Constants';
 
 import type {Dispatcher} from 'flux';
 import type {

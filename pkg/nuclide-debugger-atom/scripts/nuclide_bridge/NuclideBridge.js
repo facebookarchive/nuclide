@@ -9,10 +9,13 @@
  * the root directory of this source tree.
  */
 
-const Emitter = require('./Emitter');
-const Multimap = require('../../lib/Multimap');
-const ipc = require('ipc');
-import {beginTimerTracking, endTimerTracking} from '../../lib/AnalyticsHelper';
+import Emitter from './Emitter';
+import Multimap from '../../lib/Multimap';
+import ipc from 'ipc';
+import {
+  beginTimerTracking,
+  endTimerTracking,
+} from '../../lib/AnalyticsHelper';
 
 const WebInspector: typeof WebInspector = window.WebInspector;
 // Re-use 'watch-group' since some backends throw when they encounted an unrecognized object group.

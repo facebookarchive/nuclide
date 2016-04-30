@@ -12,8 +12,8 @@
 import type {Lines, Print} from '../../types/common';
 import type {UnaryExpression} from 'ast-types-flow';
 
-const markers = require('../../constants/markers');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
+import markers from '../../constants/markers';
+import wrapExpression from '../../wrappers/simple/wrapExpression';
 
 function printUnaryExpression(print: Print, node: UnaryExpression): Lines {
   const wrap = x => wrapExpression(print, node, x);

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {LazyTreeNode} = require('../lib/LazyTreeNode');
+import {LazyTreeNode} from '../lib/LazyTreeNode';
 
 export class LazyTestTreeNode extends LazyTreeNode {
 

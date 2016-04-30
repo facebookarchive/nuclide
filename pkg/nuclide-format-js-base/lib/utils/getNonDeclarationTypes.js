@@ -11,7 +11,7 @@
 
 import type {Collection, Node} from '../types/ast';
 
-const jscs = require('jscodeshift');
+import jscs from 'jscodeshift';
 
 /**
  * This will get a list of all types that are not from a declaration.

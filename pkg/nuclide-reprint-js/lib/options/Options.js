@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const Immutable = require('immutable');
+import Immutable from 'immutable';
 
 const OptionsRecord = Immutable.Record({
 

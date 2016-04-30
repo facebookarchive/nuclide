@@ -18,14 +18,16 @@ import {EventEmitter} from 'events';
 import utils from './utils';
 import {DebuggerInstance} from '../../nuclide-debugger-atom';
 import {CompositeDisposable} from 'atom';
-const {log, logInfo, logError} = utils;
-const {translateMessageFromServer, translateMessageToServer} = require('./ChromeMessageRemoting');
-const remoteUri = require('../../nuclide-remote-uri');
-const {Disposable} = require('atom');
-const WebSocketServer = require('ws').Server;
-const {stringifyError} = require('../../nuclide-commons').error;
+import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
+import remoteUri from '../../nuclide-remote-uri';
+import {Disposable} from 'atom';
 import {DisposableSubscription} from '../../nuclide-commons';
 import {getConfig} from './utils';
+
+const WebSocketServer = require('ws').Server;
+const {stringifyError} = require('../../nuclide-commons').error;
+
+const {log, logInfo, logError} = utils;
 
 const SESSION_END_EVENT = 'session-end-event';
 

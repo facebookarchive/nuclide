@@ -9,9 +9,8 @@
  * the root directory of this source tree.
  */
 
-const path = require('path');
-const registerGrammarForFileExtension =
-  require('../lib/register-grammar-for-file-extension');
+import path from 'path';
+import registerGrammarForFileExtension from '../lib/register-grammar-for-file-extension';
 
 describe('registerGrammarForFileExtension', () => {
   it('works', () => {

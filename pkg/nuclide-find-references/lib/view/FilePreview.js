@@ -11,18 +11,17 @@
 
 import type {Reference} from '../types';
 
-const {AtomInput} = require('../../../nuclide-ui/lib/AtomInput');
-const {React} = require('react-for-atom');
-const {PropTypes} = React;
+import {AtomInput} from '../../../nuclide-ui/lib/AtomInput';
+import {React} from 'react-for-atom';
 
 const FilePreview = React.createClass({
 
   propTypes: {
-    text: PropTypes.string.isRequired,
-    grammar: PropTypes.object,
-    references: PropTypes.arrayOf(PropTypes.object /*Reference*/).isRequired,
-    startLine: PropTypes.number.isRequired,
-    endLine: PropTypes.number.isRequired,
+    text: React.PropTypes.string.isRequired,
+    grammar: React.PropTypes.object,
+    references: React.PropTypes.arrayOf(React.PropTypes.object /*Reference*/).isRequired,
+    startLine: React.PropTypes.number.isRequired,
+    endLine: React.PropTypes.number.isRequired,
   },
 
   componentDidMount() {

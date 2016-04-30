@@ -9,22 +9,22 @@
  * the root directory of this source tree.
  */
 
-const blocked = require('./blocked');
-const connect: connect$module = require('connect');
+import type {ConfigEntry} from './serviceframework/index';
 
+import blocked from './blocked';
+import {HEARTBEAT_CHANNEL} from './config';
+import {deserializeArgs, sendJsonResponse, sendTextResponse} from './utils';
+import {getVersion} from '../../nuclide-version';
+import invariant from 'assert';
+import ServiceFramework from './serviceframework/index';
+import {SocketClient} from './SocketClient';
+import {getLogger, flushLogsAndExit} from '../../nuclide-logging';
+
+const WebSocketServer: Class<ws$Server> = require('ws').Server;
+const connect: connect$module = require('connect');
 const http: http$fixed = (require('http'): any);
 const https: https$fixed = (require('https'): any);
 
-import {HEARTBEAT_CHANNEL} from './config';
-const WebSocketServer: Class<ws$Server> = require('ws').Server;
-const {deserializeArgs, sendJsonResponse, sendTextResponse} = require('./utils');
-const {getVersion} = require('../../nuclide-version');
-import invariant from 'assert';
-import ServiceFramework from './serviceframework/index';
-import type {ConfigEntry} from './serviceframework/index';
-import {SocketClient} from './SocketClient';
-
-import {getLogger, flushLogsAndExit} from '../../nuclide-logging';
 const logger = getLogger();
 
 type NuclideServerOptions = {

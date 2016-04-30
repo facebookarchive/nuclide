@@ -9,9 +9,10 @@
  * the root directory of this source tree.
  */
 
-import {Observable, ReplaySubject} from 'rxjs';
-const {RemoteDirectory} = require('../../nuclide-remote-connection');
 import typeof * as FindInProjectService from '../../nuclide-remote-search';
+
+import {Observable, ReplaySubject} from 'rxjs';
+import {RemoteDirectory} from '../../nuclide-remote-connection';
 
 type RemoteDirectorySearch = {
   then: (onFullfilled: any, onRejected: any) => Promise<any>;

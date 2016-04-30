@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {CompositeDisposable, Range} = require('atom');
+import {CompositeDisposable, Range} from 'atom';
 import {trackOperationTiming} from '../../nuclide-analytics';
 
 const GRAMMARS = [

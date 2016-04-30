@@ -14,14 +14,11 @@ import type {
   DiagnosticUpdater,
 } from '../../nuclide-diagnostics-base';
 
-const invariant = require('assert');
-const {debounce} = require('../../nuclide-commons');
-const {compareMessagesByFile} = require('./paneUtils');
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
-const DiagnosticsPanel = require('./DiagnosticsPanel');
+import invariant from 'assert';
+import {debounce} from '../../nuclide-commons';
+import {compareMessagesByFile} from './paneUtils';
+import {React, ReactDOM} from 'react-for-atom';
+import DiagnosticsPanel from './DiagnosticsPanel';
 
 const DEFAULT_TABLE_WIDTH = 600;
 

@@ -12,7 +12,7 @@
 import type {File} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-const flatten = require('../../utils/flatten');
+import flatten from '../../utils/flatten';
 
 function printFile(print: Print, node: File): Lines {
   return flatten(print(node.program));

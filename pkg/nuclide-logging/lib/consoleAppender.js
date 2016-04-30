@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const util = require('util');
+import util from 'util';
 
 function layout(loggingEvent: any): Array<any> {
   const eventInfo = util.format(

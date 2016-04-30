@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {expectAsyncFailure} = require('..');
+import {expectAsyncFailure} from '..';
 
 describe('expectAsyncFailure', () => {
   it('fails when provided Promise succeeds', () => {

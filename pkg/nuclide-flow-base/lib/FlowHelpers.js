@@ -9,10 +9,9 @@
  * the root directory of this source tree.
  */
 
-const path = require('path');
-const {asyncExecute, fsPromise} = require('../../nuclide-commons');
-const LRU = require('lru-cache');
-
+import path from 'path';
+import {asyncExecute, fsPromise} from '../../nuclide-commons';
+import LRU from 'lru-cache';
 import invariant from 'assert';
 
 const flowConfigDirCache = LRU({

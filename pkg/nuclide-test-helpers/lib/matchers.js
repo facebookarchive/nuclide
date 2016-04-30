@@ -28,8 +28,8 @@
 // instanceof check is the only way to convince Flow of the type of an unbound `this`.
 const invariant = (condition: boolean) => {};
 
-const chalk = require('chalk');
-const diff = require('diff');
+import chalk from 'chalk';
+import * as diff from 'diff';
 
 type Change = {
   value: string;

@@ -11,8 +11,8 @@
 
 import type {LazyTreeNode} from '../lib/LazyTreeNode';
 
-const {LazyTestTreeNode} = require('./LazyTestTreeNode');
-const invariant = require('assert');
+import {LazyTestTreeNode} from './LazyTestTreeNode';
+import invariant from 'assert';
 
 describe('LazyTreeNode', () => {
   it('caches the fetched children', () => {

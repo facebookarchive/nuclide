@@ -11,9 +11,9 @@
 
 /* eslint-env browser */
 
-const invariant = require('assert');
-const {Point} = require('atom');
-const mouseListenerForTextEditor = require('../lib/mouse-listener-for-text-editor');
+import invariant from 'assert';
+import {Point} from 'atom';
+import mouseListenerForTextEditor from '../lib/mouse-listener-for-text-editor';
 
 // Make this a bit more than the actual debounce time. Even though the tests use the mocked clock,
 // it still seems to occasionally flake out.

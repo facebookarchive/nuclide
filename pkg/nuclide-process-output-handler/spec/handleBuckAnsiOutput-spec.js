@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-const invariant = require('assert');
-const {TextBuffer} = require('atom');
-const handleBuckAnsiOutput = require('../lib/handleBuckAnsiOutput');
+import invariant from 'assert';
+import {TextBuffer} from 'atom';
+import handleBuckAnsiOutput from '../lib/handleBuckAnsiOutput';
 
 describe('handleBuckAnsiOutput', () => {
   const RESUME_WRAPPING_ESCAPE = '\u001B[?7h';

@@ -16,7 +16,7 @@
 // remote connection is reestablished, nuclide-remote-projects will convert
 // the TextBuffer to NuclideTextBuffer.
 
-const {TextBuffer} = require('atom');
+import {TextBuffer} from 'atom';
 
 module.exports = function(state: Object, params: Object): mixed {
   return TextBuffer.deserialize(state, params);

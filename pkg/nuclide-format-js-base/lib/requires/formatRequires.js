@@ -11,15 +11,14 @@
 
 import type {Collection, Node, NodePath} from '../types/ast';
 
-const FirstNode = require('../utils/FirstNode');
-const NewLine = require('../utils/NewLine');
-
-const {compareStrings, isCapitalized} = require('../utils/StringUtils');
-const hasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
-const isGlobal = require('../utils/isGlobal');
-const isRequireExpression = require('../utils/isRequireExpression');
-const jscs = require('jscodeshift');
-const reprintRequire = require('../utils/reprintRequire');
+import FirstNode from '../utils/FirstNode';
+import NewLine from '../utils/NewLine';
+import {compareStrings, isCapitalized} from '../utils/StringUtils';
+import hasOneRequireDeclaration from '../utils/hasOneRequireDeclaration';
+import isGlobal from '../utils/isGlobal';
+import isRequireExpression from '../utils/isRequireExpression';
+import jscs from 'jscodeshift';
+import reprintRequire from '../utils/reprintRequire';
 
 type ConfigEntry = {
   searchTerms: [any, Object];

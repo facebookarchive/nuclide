@@ -11,8 +11,8 @@
 
 import type {Lines, Print} from '../../types/common';
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
+import flatten from '../../utils/flatten';
+import markers from '../../constants/markers';
 
 function printCommaSeparatedNodes(print: Print, nodes: Array<any>): Lines {
   if (nodes.length === 0) {

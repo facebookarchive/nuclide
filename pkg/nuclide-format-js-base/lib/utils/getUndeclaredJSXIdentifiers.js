@@ -12,8 +12,8 @@
 import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-const getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
-const getJSXIdentifiers = require('./getJSXIdentifiers');
+import getDeclaredIdentifiers from './getDeclaredIdentifiers';
+import getJSXIdentifiers from './getJSXIdentifiers';
 
 function getUndeclaredJSXIdentifiers(
   root: Collection,

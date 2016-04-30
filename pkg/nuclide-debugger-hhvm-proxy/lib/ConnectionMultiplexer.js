@@ -19,11 +19,8 @@ import {
   isCorrectConnection,
   failConnection,
 } from './ConnectionUtils';
-
-import type {Socket} from 'net';
-import type {ExceptionState} from './BreakpointStore';
-const {BreakpointStore} = require('./BreakpointStore');
-const {DbgpConnector} = require('./DbgpConnector');
+import {BreakpointStore} from './BreakpointStore';
+import {DbgpConnector} from './DbgpConnector';
 import {
   STATUS_STARTING,
   STATUS_STOPPING,
@@ -39,6 +36,9 @@ import {
 import {EventEmitter} from 'events';
 import invariant from 'assert';
 import {ClientCallback} from './ClientCallback';
+
+import type {Socket} from 'net';
+import type {ExceptionState} from './BreakpointStore';
 
 const CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
 

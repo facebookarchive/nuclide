@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-const {
+import {
   parseDevicesFromSimctlOutput,
   selectDevice,
-} = require('../lib/IosSimulator');
+} from '../lib/IosSimulator';
 
 describe('IosSimulator', () => {
 

@@ -12,13 +12,12 @@
 type Target = {path: string; name: string};
 
 import type {BuckProject} from '../../nuclide-buck-base/lib/BuckProject';
-
-const {buckProjectRootForPath} = require('../../nuclide-buck-commons');
-const {fsPromise} = require('../../nuclide-commons');
-const {goToLocation, extractWordAtPosition} = require('../../nuclide-atom-helpers');
-const pathModule = require('path');
-
 import type {Point} from 'atom';
+
+import {buckProjectRootForPath} from '../../nuclide-buck-commons';
+import {fsPromise} from '../../nuclide-commons';
+import {goToLocation, extractWordAtPosition} from '../../nuclide-atom-helpers';
+import pathModule from 'path';
 
 const ESCAPE_REGEXP = /([.*+?^${}()|\[\]\/\\])/g;
 

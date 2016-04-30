@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-const {
+import {
   addAllParentDirectoriesToCache,
   removeAllParentDirectoriesFromCache,
-} = require('../lib/utils');
+} from '../lib/utils';
 
 describe('nuclide-hg-repository-client/utils', () => {
   let cache: Map<string, number> = (null: any);

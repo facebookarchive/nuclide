@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const blocked = require('../lib/blocked');
+import blocked from '../lib/blocked';
 
 let now = 0;
 

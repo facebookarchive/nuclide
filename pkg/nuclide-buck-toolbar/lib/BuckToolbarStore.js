@@ -17,12 +17,12 @@ function getLogger() {
   return logger;
 }
 
-const invariant = require('assert');
-const {Emitter} = require('atom');
-const path = require('path');
-const {Dispatcher} = require('flux');
-const {buckProjectRootForPath} = require('../../nuclide-buck-commons');
-const BuckToolbarActions = require('./BuckToolbarActions');
+import invariant from 'assert';
+import {Emitter} from 'atom';
+import path from 'path';
+import {Dispatcher} from 'flux';
+import {buckProjectRootForPath} from '../../nuclide-buck-commons';
+import BuckToolbarActions from './BuckToolbarActions';
 
 type BuckRunDetails = {
   pid?: number;

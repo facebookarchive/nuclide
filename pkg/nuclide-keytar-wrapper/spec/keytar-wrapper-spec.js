@@ -11,7 +11,12 @@
 
 import crypto from 'crypto';
 
-const {replacePassword, getPassword, __test__} = require('..');
+import {
+  replacePassword,
+  getPassword,
+  __test__,
+} from '..';
+
 const {
   runScriptInApmNode,
   getApmNodePath,

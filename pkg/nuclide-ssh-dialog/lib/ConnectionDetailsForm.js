@@ -14,15 +14,11 @@ import type {
   NuclideRemoteConnectionParamsWithPassword,
 } from './connection-types';
 
-const {AtomInput} = require('../../nuclide-ui/lib/AtomInput');
-const {CompositeDisposable} = require('atom');
-const {RadioGroup} = require('../../nuclide-ui/lib/RadioGroup');
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
-const {PropTypes} = React;
-const {SshHandshake} = require('../../nuclide-remote-connection');
+import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
+import {CompositeDisposable} from 'atom';
+import {RadioGroup} from '../../nuclide-ui/lib/RadioGroup';
+import {React, ReactDOM} from 'react-for-atom';
+import {SshHandshake} from '../../nuclide-remote-connection';
 
 type State = {
   cwd: string;
@@ -45,15 +41,15 @@ const authMethods = [
 export default class ConnectionDetailsForm extends React.Component {
   state: State;
   static propTypes = {
-    initialUsername: PropTypes.string,
-    initialServer: PropTypes.string,
-    initialCwd: PropTypes.string,
-    initialRemoteServerCommand: PropTypes.string,
-    initialSshPort: PropTypes.string,
-    initialPathToPrivateKey: PropTypes.string,
-    initialAuthMethod: PropTypes.oneOf(Object.keys(SupportedMethods)),
-    onConfirm: PropTypes.func.isRequired,
-    onCancel: PropTypes.func.isRequired,
+    initialUsername: React.PropTypes.string,
+    initialServer: React.PropTypes.string,
+    initialCwd: React.PropTypes.string,
+    initialRemoteServerCommand: React.PropTypes.string,
+    initialSshPort: React.PropTypes.string,
+    initialPathToPrivateKey: React.PropTypes.string,
+    initialAuthMethod: React.PropTypes.oneOf(Object.keys(SupportedMethods)),
+    onConfirm: React.PropTypes.func.isRequired,
+    onCancel: React.PropTypes.func.isRequired,
   };
 
   _disposables: ?CompositeDisposable;

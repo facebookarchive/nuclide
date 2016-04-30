@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const invariant = require('assert');
-const {getServiceByNuclideUri} = require('../../nuclide-client');
+import invariant from 'assert';
+import {getServiceByNuclideUri} from '../../nuclide-client';
 
 module.exports = {
   async getAutocompleteSuggestions(

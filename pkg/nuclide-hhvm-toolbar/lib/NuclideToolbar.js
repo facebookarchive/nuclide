@@ -9,10 +9,9 @@
  * the root directory of this source tree.
  */
 
-const {React} = require('react-for-atom');
-const {Disposable} = require('atom');
-const ProjectStore = require('./ProjectStore');
-const {PropTypes} = React;
+import {React} from 'react-for-atom';
+import {Disposable} from 'atom';
+import ProjectStore from './ProjectStore';
 
 class NuclideToolbar extends React.Component {
   _disposable: ?Disposable;
@@ -23,7 +22,7 @@ class NuclideToolbar extends React.Component {
   };
 
   static propTypes = {
-    projectStore: PropTypes.instanceOf(ProjectStore).isRequired,
+    projectStore: React.PropTypes.instanceOf(ProjectStore).isRequired,
   };
 
   constructor(props: mixed) {

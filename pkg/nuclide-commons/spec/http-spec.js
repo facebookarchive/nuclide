@@ -9,11 +9,12 @@
  * the root directory of this source tree.
  */
 
-const invariant = require('assert');
-const fs = require('fs');
-const {fsPromise, httpPromise} = require('..');
-const http = require('http');
-const path = require('path');
+import invariant from 'assert';
+import fs from 'fs';
+import {fsPromise, httpPromise} from '..';
+import http from 'http';
+import path from 'path';
+
 let server: ?http.Server;
 let port;
 

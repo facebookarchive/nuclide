@@ -13,11 +13,12 @@ import type {FileSystemService} from '../../lib/services/FileSystemServiceType';
 
 import ServiceTestHelper from './ServiceTestHelper';
 import invariant from 'assert';
+import fs from 'fs';
+import path from 'path';
+import rimraf from 'rimraf';
+import temp from 'temp';
 
-const fs = require('fs');
-const path = require('path');
-const rimraf = require('rimraf');
-const temp = require('temp').track();
+temp.track();
 
 const pathToTestDir = path.join(__dirname, '../testfiles');
 const pathToTestFile = path.join(pathToTestDir, 'testfile.txt');

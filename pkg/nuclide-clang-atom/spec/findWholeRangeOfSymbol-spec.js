@@ -9,18 +9,18 @@
  * the root directory of this source tree.
  */
 
-const {Range} = require('atom');
-const findWholeRangeOfSymbol = require('../lib/findWholeRangeOfSymbol');
-const {
-  toEqualAtomRange,
-  toEqualAtomRanges,
-} = require('../../nuclide-atom-test-helpers').jasmineMatchers;
+import {Range} from 'atom';
+import findWholeRangeOfSymbol from '../lib/findWholeRangeOfSymbol';
+import {jasmineMatchers} from '../../nuclide-atom-test-helpers';
 
 describe('findWholeRangeOfSymbol', () => {
   let editor: atom$TextEditor = (null: any);
 
   beforeEach(function() {
-    const rangeMatchers = {toEqualAtomRange, toEqualAtomRanges};
+    const rangeMatchers = {
+      toEqualAtomRange: jasmineMatchers.toEqualAtomRange,
+      toEqualAtomRanges: jasmineMatchers.toEqualAtomRanges,
+    };
     this.addMatchers(rangeMatchers);
     waitsForPromise(async () => {
       editor = await atom.workspace.open('sampleObjC.m');

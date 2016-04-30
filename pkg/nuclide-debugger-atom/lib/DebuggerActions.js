@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const Constants = require('./Constants');
-const {CompositeDisposable} = require('atom');
+import Constants from './Constants';
+import {CompositeDisposable} from 'atom';
 import {beginTimerTracking, failTimerTracking, endTimerTracking} from './AnalyticsHelper';
 import remoteUri from '../../nuclide-remote-uri';
 import invariant from 'assert';

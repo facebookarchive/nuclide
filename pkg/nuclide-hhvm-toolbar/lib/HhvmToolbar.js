@@ -10,10 +10,9 @@
  */
 
 import type DebuggerProcessInfo from '../../nuclide-debugger-atom/lib/DebuggerProcessInfo';
-const {AtomInput} = require('../../nuclide-ui/lib/AtomInput');
-const {Dropdown} = require('../../nuclide-ui/lib/Dropdown');
-const {React} = require('react-for-atom');
-const {PropTypes} = React;
+import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
+import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
+import {React} from 'react-for-atom';
 import {
   Button,
 } from '../../nuclide-ui/lib/Button';
@@ -45,7 +44,7 @@ async function callDebugService(processInfo: DebuggerProcessInfo): Promise {
 
 class HhvmToolbar extends React.Component {
   static propTypes = {
-    targetFilePath: PropTypes.string.isRequired,
+    targetFilePath: React.PropTypes.string.isRequired,
   };
 
   state: {

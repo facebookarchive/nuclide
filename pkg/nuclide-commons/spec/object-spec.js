@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const objectHelpers = require('../lib/object');
+import * as objectHelpers from '../lib/object';
 
 describe('object.isEmpty', () => {
   it('correctly identifies empty Objects', () => {

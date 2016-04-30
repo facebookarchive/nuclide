@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const invariant = require('assert');
+import invariant from 'assert';
 
 export function debounce<T : Function>(
   func: T,

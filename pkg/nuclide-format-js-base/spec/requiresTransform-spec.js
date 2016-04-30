@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-const DefaultModuleMap = require('../lib/state/DefaultModuleMap');
+import DefaultModuleMap from '../lib/state/DefaultModuleMap';
 
-const jscodeshift = require('jscodeshift');
-const printRoot = require('../lib/utils/printRoot');
-const {fsPromise} = require('../../nuclide-commons');
-const requiresTransform = require('../lib/requires/transform');
+import jscodeshift from 'jscodeshift';
+import printRoot from '../lib/utils/printRoot';
+import {fsPromise} from '../../nuclide-commons';
+import requiresTransform from '../lib/requires/transform';
 
 const TESTS = [
   'add-array-expressions',

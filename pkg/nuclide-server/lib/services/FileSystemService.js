@@ -15,10 +15,10 @@
  * readFile, writeFile, etc.
  */
 
-const mv = require('mv');
-const fs = require('fs');
-const pathModule = require('path');
-const {fsPromise} = require('../../../nuclide-commons');
+import mv from 'mv';
+import fs from 'fs';
+import pathModule from 'path';
+import {fsPromise} from '../../../nuclide-commons';
 
 import type {FileWithStats} from './FileSystemServiceType';
 

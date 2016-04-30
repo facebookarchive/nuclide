@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {CompositeDisposable, Emitter} = require('atom');
+import {CompositeDisposable, Emitter} from 'atom';
 
 const GRAMMAR_CHANGE_EVENT = 'grammar-change';
 

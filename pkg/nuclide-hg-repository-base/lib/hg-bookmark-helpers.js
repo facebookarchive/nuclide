@@ -9,9 +9,8 @@
  * the root directory of this source tree.
  */
 
-const {fsPromise} = require('../../nuclide-commons');
-const path = require('path');
-
+import {fsPromise} from '../../nuclide-commons';
+import path from 'path';
 
 /**
  * @param repoPath The full path to the repository directory (.hg).

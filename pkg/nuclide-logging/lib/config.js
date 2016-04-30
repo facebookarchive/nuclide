@@ -10,9 +10,9 @@
  */
 
 import type {LoggingAppender} from './types';
-const {clientInfo, fsPromise, systemInfo, ScribeProcess} = require('../../nuclide-commons');
-const os = require('os');
-const path = require('path');
+import {clientInfo, fsPromise, systemInfo, ScribeProcess} from '../../nuclide-commons';
+import os from 'os';
+import path from 'path';
 const {USER} = require('../../nuclide-commons').env;
 let LOG_FILE_PATH;
 

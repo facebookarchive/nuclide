@@ -11,7 +11,7 @@
 
 import type {Collection, Node} from '../types/ast';
 
-const FirstNode = require('../utils/FirstNode');
+import FirstNode from '../utils/FirstNode';
 
 /**
  * Removes the leading comments from the first node. Leading comments are

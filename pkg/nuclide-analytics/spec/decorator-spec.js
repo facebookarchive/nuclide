@@ -9,8 +9,9 @@
  * the root directory of this source tree.
  */
 
-const main = require('..');
-const track = require('../lib/track');
+import main from '..';
+import * as track from '../lib/track';
+
 const trackTiming = main.trackTiming;
 
 class TestClass {

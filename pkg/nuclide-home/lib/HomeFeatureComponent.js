@@ -9,8 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {React} = require('react-for-atom');
-const {PropTypes} = React;
+import {React} from 'react-for-atom';
 import {
   Button,
   ButtonSizes,
@@ -18,13 +17,13 @@ import {
 
 class HomeFeatureComponent extends React.Component {
   static propTypes = {
-    title: PropTypes.string.isRequired,
-    icon: PropTypes.string.isRequired,
-    description: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.element,
+    title: React.PropTypes.string.isRequired,
+    icon: React.PropTypes.string.isRequired,
+    description: React.PropTypes.oneOfType([
+      React.PropTypes.string,
+      React.PropTypes.element,
     ]).isRequired,
-    command: PropTypes.string,
+    command: React.PropTypes.string,
   };
 
   render(): React.Element {

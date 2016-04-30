@@ -9,8 +9,12 @@
  * the root directory of this source tree.
  */
 
-const {BufferedProcess} = require('atom');
-const {createArgsForScriptCommand} = require('../../nuclide-commons');
+import {BufferedProcess} from 'atom';
+import {
+  createArgsForScriptCommand,
+  createExecEnvironment,
+  COMMON_BINARY_PATHS,
+} from '../../nuclide-commons';
 
 /**
  * Wrapper around BufferedProcess that runs the command using unix `script`
@@ -32,8 +36,6 @@ class ScriptBufferedProcess extends BufferedProcess {
  * @return A ScriptBufferedProcess with common binary paths added to `options.env`.
  */
 async function createScriptBufferedProcessWithEnv(options: Object): Promise<BufferedProcess> {
-  const {createExecEnvironment, COMMON_BINARY_PATHS} = require('../../nuclide-commons');
-
   const localOptions = {...options};
   localOptions.env = await createExecEnvironment(localOptions.env ||  process.env,
     COMMON_BINARY_PATHS);

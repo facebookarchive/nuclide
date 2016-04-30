@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const {Emitter} = require('atom');
-const Multimap = require('./Multimap');
+import {Emitter} from 'atom';
+import Multimap from './Multimap';
 
 export type SerializedBreakpoint = {
   line: number;

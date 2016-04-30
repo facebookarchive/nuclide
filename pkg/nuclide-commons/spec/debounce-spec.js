@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {debounce} = require('..');
+import {debounce} from '..';
 
 describe('debounce()', () => {
   it('only calls function once after time advances', () => {

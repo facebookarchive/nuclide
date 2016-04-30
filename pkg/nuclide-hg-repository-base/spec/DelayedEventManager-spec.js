@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-const DelayedEventManager = require('../lib/DelayedEventManager');
+import DelayedEventManager from '../lib/DelayedEventManager';
+
 import invariant from 'assert';
 
 describe('DelayedEventManager', () => {

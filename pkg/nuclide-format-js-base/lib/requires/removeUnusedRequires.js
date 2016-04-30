@@ -12,12 +12,12 @@
 import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-const getDeclaredIdentifiers = require('../utils/getDeclaredIdentifiers');
-const getNamesFromID = require('../utils/getNamesFromID');
-const getNonDeclarationIdentifiers = require('../utils/getNonDeclarationIdentifiers');
-const hasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
-const isGlobal = require('../utils/isGlobal');
-const jscs = require('jscodeshift');
+import getDeclaredIdentifiers from '../utils/getDeclaredIdentifiers';
+import getNamesFromID from '../utils/getNamesFromID';
+import getNonDeclarationIdentifiers from '../utils/getNonDeclarationIdentifiers';
+import hasOneRequireDeclaration from '../utils/hasOneRequireDeclaration';
+import isGlobal from '../utils/isGlobal';
+import jscs from 'jscodeshift';
 
 function removeUnusedRequires(
   root: Collection,

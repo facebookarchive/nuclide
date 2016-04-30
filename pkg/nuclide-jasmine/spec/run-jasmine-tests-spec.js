@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const waitsForPromise = require('../lib/waitsForPromise');
+import waitsForPromise from '../lib/waitsForPromise';
 
 function testFlowtypedFunction(arg: number): number {
   return arg;

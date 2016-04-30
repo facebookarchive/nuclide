@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {Range} = require('atom');
+import {Range} from 'atom';
 
 const testPath = 'myPath';
 

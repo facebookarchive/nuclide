@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const TestRunModel = require('../lib/TestRunModel');
+import TestRunModel from '../lib/TestRunModel';
 
 const TestRunStatus = TestRunModel.Status;
 

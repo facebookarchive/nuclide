@@ -9,10 +9,9 @@
  * the root directory of this source tree.
  */
 
-const invariant = require('assert');
-const {Disposable, CompositeDisposable} = require('atom');
-
-const {debounce} = require('../../nuclide-commons');
+import invariant from 'assert';
+import {Disposable, CompositeDisposable} from 'atom';
+import {debounce} from '../../nuclide-commons';
 
 type EventCallback = (editor: TextEditor) => mixed;
 

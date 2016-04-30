@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-const {
+import {
   parseHgDiffUnifiedOutput,
   parseMultiFileHgDiffUnifiedOutput,
-} = require('../lib/hg-diff-output-parser');
+} from '../lib/hg-diff-output-parser';
 
 const MULTI_CHUNK_CHANGE_HG_DIFF_OUTPUT =
 `diff --git a/test-test/blah/blah.js b/test-test/blah/blah.js

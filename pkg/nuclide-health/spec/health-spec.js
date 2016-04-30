@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const featureConfig = require('../../nuclide-feature-config');
-const path = require('path');
+import featureConfig from '../../nuclide-feature-config';
+import path from 'path';
 
 const openHealthPane = () => {
   atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-health:show');

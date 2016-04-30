@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const markers = require('../constants/markers');
+import markers from '../constants/markers';
 
 const SCOPE_MARKER = new Set([
   markers.openScope,

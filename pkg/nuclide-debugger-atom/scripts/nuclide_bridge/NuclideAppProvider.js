@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const UnresolvedBreakpointsSidebarPane = require('./UnresolvedBreakpointsSidebarPane');
+import UnresolvedBreakpointsSidebarPane from './UnresolvedBreakpointsSidebarPane';
 
 // Supress ESLint no-undef about using WebInspector without window, which would
 // not have flow types attached.

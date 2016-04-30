@@ -11,11 +11,10 @@
 
 
 
-const WebSocket = require('ws');
-const NuclideServer = require('../lib/NuclideServer');
+import WebSocket from 'ws';
+import NuclideServer from '../lib/NuclideServer';
 import ClientComponent from '../lib/serviceframework/ClientComponent';
-const {loadServicesConfig} = require('../lib/serviceframework/config');
-
+import {loadServicesConfig} from '../lib/serviceframework/config';
 import invariant from 'assert';
 import NuclideSocket from '../lib/NuclideSocket';
 

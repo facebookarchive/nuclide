@@ -11,9 +11,9 @@
 
 import type {Lines, Print} from '../../types/common';
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-const unwrapMarkers = require('../../utils/unwrapMarkers');
+import flatten from '../../utils/flatten';
+import markers from '../../constants/markers';
+import unwrapMarkers from '../../utils/unwrapMarkers';
 
 /**
  * Adds parenthesis and the appropriate markers to a set of lines. It also moves

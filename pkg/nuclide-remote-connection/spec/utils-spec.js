@@ -9,10 +9,12 @@
  * the root directory of this source tree.
  */
 
-const {containsPathSync} = require('../lib/utils');
-const fs = require('fs');
-const path = require('path');
-const temp = require('temp').track();
+import fs from 'fs';
+import path from 'path';
+import temp from 'temp';
+import {containsPathSync} from '../lib/utils';
+
+temp.track();
 
 describe('containsPathSync()', () => {
 

@@ -12,21 +12,18 @@
 import type {TestRunner, Message} from '../../nuclide-test-runner/lib/interfaces';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {Observable} from 'rxjs';
-import invariant from 'assert';
 
-const Ansi = require('./Ansi');
-const {TextBuffer} = require('atom');
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
-const TestRunModel = require('./TestRunModel');
-const TestRunnerPanel = require('./ui/TestRunnerPanel');
-const TestSuiteModel = require('./TestSuiteModel');
+import invariant from 'assert';
+import Ansi from './Ansi';
+import {TextBuffer} from 'atom';
+import {React, ReactDOM} from 'react-for-atom';
+import TestRunModel from './TestRunModel';
+import TestRunnerPanel from './ui/TestRunnerPanel';
+import TestSuiteModel from './TestSuiteModel';
+import os from 'os';
+import {track} from '../../nuclide-analytics';
 
 const logger = require('../../nuclide-logging').getLogger();
-const os = require('os');
-const {track} = require('../../nuclide-analytics');
 
 export type TestRunnerControllerState = {
   panelVisible?: boolean;

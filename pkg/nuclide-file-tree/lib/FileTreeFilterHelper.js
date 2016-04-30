@@ -9,9 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {
-  React,
-} = require('react-for-atom');
+import {React} from 'react-for-atom';
 import classnames from 'classnames';
 
 const SPECIAL_CHARACTERS = './@_';

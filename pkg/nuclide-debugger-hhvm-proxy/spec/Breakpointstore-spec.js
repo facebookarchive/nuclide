@@ -11,7 +11,7 @@
 
 
 import type {Connection as ConnectionType} from '../lib/Connection';
-const {BreakpointStore} = require('../lib/BreakpointStore');
+import {BreakpointStore} from '../lib/BreakpointStore';
 
 describe('debugger-hhvm-proxy BreakpointStore', () => {
   let store;

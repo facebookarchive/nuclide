@@ -9,8 +9,9 @@
  * the root directory of this source tree.
  */
 
-const {Point, TextBuffer} = require('atom');
-const ObjectiveCColonIndenter = require('../lib/ObjectiveCColonIndenter');
+import {Point, TextBuffer} from 'atom';
+
+import ObjectiveCColonIndenter from '../lib/ObjectiveCColonIndenter';
 const {getIndentedColonColumn} = ObjectiveCColonIndenter;
 
 describe('ObjectiveCColonIndenter', () => {

@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const {parseRevisionFileChangeOutput} = require('../lib/hg-revision-state-helpers');
-const path = require('path');
+import {parseRevisionFileChangeOutput} from '../lib/hg-revision-state-helpers';
+import path from 'path';
 
 describe('parseRevisionFileChangeOutput', () => {
   const testWorkingDirectory = '/Hg/Working/Directory';

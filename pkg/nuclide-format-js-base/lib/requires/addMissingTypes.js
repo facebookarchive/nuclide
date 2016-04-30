@@ -12,9 +12,8 @@
 import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-const FirstNode = require('../utils/FirstNode');
-
-const getUndeclaredTypes = require('../utils/getUndeclaredTypes');
+import FirstNode from '../utils/FirstNode';
+import getUndeclaredTypes from '../utils/getUndeclaredTypes';
 
 function addMissingTypes(root: Collection, options: SourceOptions): void {
   const first = FirstNode.get(root);

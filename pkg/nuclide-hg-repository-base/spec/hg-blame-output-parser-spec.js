@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {parseHgBlameOutput} = require('../lib/hg-blame-output-parser');
+import {parseHgBlameOutput} from '../lib/hg-blame-output-parser';
 
 const HG_BLAME_OUTPUT_WITH_ERROR =
 `[abort: Tools/Nuclide/pkg/blah.js: no such file in rev c2096f856c82`;

@@ -11,13 +11,9 @@
 
 import type {FileReferences} from '../types';
 
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
-const {PropTypes} = React;
-const FileReferencesView = require('./FileReferencesView');
-const FindReferencesModel = require('../FindReferencesModel');
+import {React, ReactDOM} from 'react-for-atom';
+import FileReferencesView from './FileReferencesView';
+import FindReferencesModel from '../FindReferencesModel';
 
 // Number of files to show on every page.
 const PAGE_SIZE = 10;
@@ -31,7 +27,7 @@ function pluralize(noun: string, count: number) {
 const FindReferencesView = React.createClass({
 
   propTypes: {
-    model: PropTypes.instanceOf(FindReferencesModel).isRequired,
+    model: React.PropTypes.instanceOf(FindReferencesModel).isRequired,
   },
 
   getInitialState() {

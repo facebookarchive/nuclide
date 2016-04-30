@@ -12,13 +12,14 @@
 import type {ServerConnection} from '..';
 
 import invariant from 'assert';
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
-const temp = require('temp').track();
-const connectionMock = require('./connection_mock');
-const {RemoteFile} = require('../lib/RemoteFile');
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
+import temp from 'temp';
+import connectionMock from './connection_mock';
+import {RemoteFile} from '../lib/RemoteFile';
 
+temp.track();
 
 describe('RemoteFile', () => {
 

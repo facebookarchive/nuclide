@@ -12,7 +12,7 @@
 import type {EmptyStatement} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-const wrapStatement = require('../../wrappers/simple/wrapStatement');
+import wrapStatement from '../../wrappers/simple/wrapStatement';
 
 function printEmptyStatement(print: Print, node: EmptyStatement): Lines {
   const wrap = x => wrapStatement(print, node, x);

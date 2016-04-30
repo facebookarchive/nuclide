@@ -12,9 +12,9 @@
 import type {Lines, Print} from '../../types/common';
 import type {Program} from 'ast-types-flow';
 
-const flatten = require('../../utils/flatten');
-const printArrayOfStatements = require('../common/printArrayOfStatements');
-const printComments = require('../common/printComments');
+import flatten from '../../utils/flatten';
+import printArrayOfStatements from '../common/printArrayOfStatements';
+import printComments from '../common/printComments';
 
 function printProgram(print: Print, node: Program): Lines {
   return flatten([

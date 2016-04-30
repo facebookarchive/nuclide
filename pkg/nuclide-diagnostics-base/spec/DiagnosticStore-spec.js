@@ -10,9 +10,8 @@
  */
 
 import {Range} from 'atom';
-
-const DiagnosticStore = require('../lib/DiagnosticStore');
-const invariant = require('assert');
+import DiagnosticStore from '../lib/DiagnosticStore';
+import invariant from 'assert';
 
 // Test Constants
 const dummyProviderA: any = {};

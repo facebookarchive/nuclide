@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {Point, Range} = require('atom');
+import {Point, Range} from 'atom';
 import {trackOperationTiming} from '../../nuclide-analytics';
 
 const GRAMMARS = [

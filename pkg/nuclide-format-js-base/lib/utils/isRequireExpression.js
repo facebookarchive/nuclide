@@ -11,7 +11,7 @@
 
 import type {Node} from '../types/ast';
 
-const getRootIdentifierInExpression = require('./getRootIdentifierInExpression');
+import getRootIdentifierInExpression from './getRootIdentifierInExpression';
 
 function isRequireExpression(node: Node): boolean {
   const root = getRootIdentifierInExpression(node);

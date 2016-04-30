@@ -9,10 +9,11 @@
  * the root directory of this source tree.
  */
 
-const fs = require('fs');
-const {RemoteConnection} = require('../lib/RemoteConnection');
-const {ServerConnection, __test__} = require('../lib/ServerConnection');
-const path = require('path');
+import fs from 'fs';
+import {RemoteConnection} from '../lib/RemoteConnection';
+import {ServerConnection, __test__} from '../lib/ServerConnection';
+import path from 'path';
+
 const pathToFakePk = path.join(__dirname, 'fakepk');
 
 describe('RemoteConnection', () => {

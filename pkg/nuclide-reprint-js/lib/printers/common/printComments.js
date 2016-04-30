@@ -11,8 +11,8 @@
 
 import type {Lines} from '../../types/common';
 
-const flatten = require('../../utils/flatten');
-const printComment = require('./printComment');
+import flatten from '../../utils/flatten';
+import printComment from './printComment';
 
 function printComments(nodes: ?Array<any>): Lines {
   if (!Array.isArray(nodes)) {

@@ -12,8 +12,8 @@
 import type {JSXOpeningElement} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
+import flatten from '../../utils/flatten';
+import markers from '../../constants/markers';
 
 /**
  * Note: A self closing tag gets its own scope, but a non-self closing tag will

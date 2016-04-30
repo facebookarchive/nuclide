@@ -13,11 +13,8 @@ export type FilePath = string;
 export type TimeStamp = number;
 export type FileList = Array<{path: FilePath; timestamp: TimeStamp}>;
 
-const {CompositeDisposable} = require('atom');
-
-const {
-  onWorkspaceDidStopChangingActivePaneItem,
-} = require('../../nuclide-atom-helpers').atomEventDebounce;
+import {CompositeDisposable} from 'atom';
+import {atomEventDebounce} from '../../nuclide-atom-helpers';
 import {trackTiming} from '../../nuclide-analytics';
 
 class RecentFilesService {
@@ -34,16 +31,18 @@ class RecentFilesService {
       }, null);
     }
     this._subscriptions = new CompositeDisposable();
-    this._subscriptions.add(onWorkspaceDidStopChangingActivePaneItem((item: ?mixed) => {
-      // Not all `item`s are instances of TextEditor (e.g. the diff view).
-      if (!item || typeof item.getPath !== 'function') {
-        return;
-      }
-      const editorPath = item.getPath();
-      if (editorPath != null) {
-        this.touchFile(editorPath);
-      }
-    }));
+    this._subscriptions.add(
+      atomEventDebounce.onWorkspaceDidStopChangingActivePaneItem((item: ?mixed) => {
+        // Not all `item`s are instances of TextEditor (e.g. the diff view).
+        if (!item || typeof item.getPath !== 'function') {
+          return;
+        }
+        const editorPath = item.getPath();
+        if (editorPath != null) {
+          this.touchFile(editorPath);
+        }
+      })
+    );
   }
 
   touchFile(path: string): void {

@@ -12,8 +12,8 @@
 import type {Lines, Print} from '../../types/common';
 import type {TemplateLiteral} from 'ast-types-flow';
 
-const markers = require('../../constants/markers');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
+import markers from '../../constants/markers';
+import wrapExpression from '../../wrappers/simple/wrapExpression';
 
 function printTemplateLiteral(print: Print, node: TemplateLiteral): Lines {
   const wrap = x => wrapExpression(print, node, x);

@@ -11,12 +11,11 @@
 
 import type {SourceOptions} from './options/SourceOptions';
 
-const Options = require('./options/Options');
-
-const jscs = require('jscodeshift');
-const nuclideTransform = require('./nuclide/transform');
-const printRoot = require('./utils/printRoot');
-const requiresTransform = require('./requires/transform');
+import Options from './options/Options';
+import jscs from 'jscodeshift';
+import nuclideTransform from './nuclide/transform';
+import printRoot from './utils/printRoot';
+import requiresTransform from './requires/transform';
 
 function transform(source: string, options: SourceOptions): string {
   Options.validateSourceOptions(options);

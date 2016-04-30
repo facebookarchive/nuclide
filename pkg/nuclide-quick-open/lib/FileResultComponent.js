@@ -13,9 +13,9 @@ import type {
   FileResult,
 } from '../../nuclide-quick-open-interfaces';
 
-const {React} = require('react-for-atom');
-const {fileTypeClass} = require('../../nuclide-atom-helpers');
-const path = require('path');
+import {React} from 'react-for-atom';
+import {fileTypeClass} from '../../nuclide-atom-helpers';
+import path from 'path';
 
 type Key = number | string;
 

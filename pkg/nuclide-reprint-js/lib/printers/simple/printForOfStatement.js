@@ -12,8 +12,8 @@
 import type {ForInStatement} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-const markers = require('../../constants/markers');
-const wrapStatement = require('../../wrappers/simple/wrapStatement');
+import markers from '../../constants/markers';
+import wrapStatement from '../../wrappers/simple/wrapStatement';
 
 function printForOfStatement(print: Print, node: ForInStatement): Lines {
   const wrap = x => wrapStatement(print, node, x);

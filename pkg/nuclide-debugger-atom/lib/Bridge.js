@@ -26,10 +26,9 @@ export type EvaluationResult = {
 };
 
 import invariant from 'assert';
-const {CompositeDisposable, Disposable} = require('atom');
-
+import {CompositeDisposable, Disposable} from 'atom';
 import {getLogger} from '../../nuclide-logging';
-const remoteUri = require('../../nuclide-remote-uri');
+import remoteUri from '../../nuclide-remote-uri';
 import {Deferred} from '../../nuclide-commons';
 import {DebuggerMode} from './DebuggerStore';
 

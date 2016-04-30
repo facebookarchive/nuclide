@@ -12,10 +12,10 @@
 import type {ClassBody} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-const printArrayOfStatements = require('../common/printArrayOfStatements');
-const printComments = require('../common/printComments');
+import flatten from '../../utils/flatten';
+import markers from '../../constants/markers';
+import printArrayOfStatements from '../common/printArrayOfStatements';
+import printComments from '../common/printComments';
 
 function printClassBody(print: Print, node: ClassBody): Lines {
   // Can't put extra new lines in here like BlockStatement since it may be

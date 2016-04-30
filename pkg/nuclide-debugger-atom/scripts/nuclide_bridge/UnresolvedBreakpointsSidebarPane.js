@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-const NuclideBridge = require('./NuclideBridge');
-const React = require('react');
-const ReactDOM = require('react-dom');
-const path = require('path');
-const url = require('url');
+import NuclideBridge from './NuclideBridge';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import path from 'path';
+import url from 'url';
 import invariant from 'assert';
 
 const WebInspector: typeof WebInspector = window.WebInspector;

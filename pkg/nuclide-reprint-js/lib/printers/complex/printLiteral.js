@@ -12,10 +12,10 @@
 import type {Context, Lines, Print} from '../../types/common';
 import type {Literal} from 'ast-types-flow';
 
-const escapeStringLiteral = require('../../utils/escapeStringLiteral');
-const flatten = require('../../utils/flatten');
-const invariant = require('assert');
-const markers = require('../../constants/markers');
+import escapeStringLiteral from '../../utils/escapeStringLiteral';
+import flatten from '../../utils/flatten';
+import invariant from 'assert';
+import markers from '../../constants/markers';
 
 function printLiteral(print: Print, node: Literal, context: Context): Lines {
   const last = context.path.last();

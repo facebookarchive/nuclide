@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const invariant = require('assert');
+import invariant from 'assert';
 
 /**
  * Utility to make it easier to register a file extension with a grammar,

@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-const getPosition = require('../lib/getPosition');
-const invariant = require('assert');
-const updateCursor = require('../lib/updateCursor');
+import getPosition from '../lib/getPosition';
+import invariant from 'assert';
+import updateCursor from '../lib/updateCursor';
 
 describe('updateCursor', () => {
   it('should work for a simple test case', () => {

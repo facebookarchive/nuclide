@@ -11,9 +11,9 @@
 
 import type {ServerConnectionConfiguration} from '../lib/ServerConnection';
 
-const {getFileForPath} = require('../lib/client');
-const {ServerConnection, RemoteFile} = require('..');
-const {File} = require('atom');
+import {getFileForPath} from '../lib/client';
+import {ServerConnection, RemoteFile} from '..';
+import {File} from 'atom';
 
 describe('getFileForPath()', () => {
 

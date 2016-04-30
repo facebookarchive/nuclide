@@ -9,12 +9,10 @@
  * the root directory of this source tree.
  */
 
-const classNames = require('classnames');
-const {CompositeDisposable} = require('atom');
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
+import classNames from 'classnames';
+
+import {CompositeDisposable} from 'atom';
+import {React, ReactDOM} from 'react-for-atom';
 
 const ENTER_KEY_CODE = 13;
 const ESCAPE_KEY_CODE = 27;

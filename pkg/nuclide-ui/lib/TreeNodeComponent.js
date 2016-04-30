@@ -9,13 +9,10 @@
  * the root directory of this source tree.
  */
 
-const {LazyTreeNode} = require('./LazyTreeNode');
-const {
-  PureRenderMixin,
-  React,
-  ReactDOM,
-} = require('react-for-atom');
-const classnames = require('classnames');
+import {LazyTreeNode} from './LazyTreeNode';
+
+import {PureRenderMixin, React, ReactDOM} from 'react-for-atom';
+import classnames from 'classnames';
 
 const {PropTypes} = React;
 

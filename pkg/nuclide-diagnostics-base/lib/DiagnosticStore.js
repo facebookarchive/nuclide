@@ -22,14 +22,10 @@ import type {
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {applyTextEdit} from '../../nuclide-textedit';
-
 import {array} from '../../nuclide-commons';
-
 import {MarkerTracker} from './MarkerTracker';
-
 import invariant from 'assert';
-
-const {Disposable, Emitter} = require('atom');
+import {Disposable, Emitter} from 'atom';
 
 const PROJECT_MESSAGE_CHANGE_EVENT = 'messages-changed-for-project';
 const ALL_CHANGE_EVENT = 'messages-changed';

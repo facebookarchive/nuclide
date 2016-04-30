@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {asyncExecute} = require('../../nuclide-commons');
+import {asyncExecute} from '../../nuclide-commons';
 
 export type Device = {
   name: string;

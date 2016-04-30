@@ -11,9 +11,8 @@
 
 import type {AbsolutePath, Identifier, Literal, RelativePath} from '../types/common';
 
-const StringUtils = require('./StringUtils');
-
-const path = require('path');
+import StringUtils from './StringUtils';
+import path from 'path';
 
 function getIdentifiersFromPath(filePath: AbsolutePath): Set<Identifier> {
   const ids = new Set();

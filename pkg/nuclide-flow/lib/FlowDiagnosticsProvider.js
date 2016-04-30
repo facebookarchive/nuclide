@@ -25,19 +25,15 @@ import type {
 } from '../../nuclide-flow-base';
 
 import {trackTiming} from '../../nuclide-analytics';
-
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
-const {promises} = require('../../nuclide-commons');
-const {RequestSerializer} = promises;
-const {DiagnosticsProviderBase} = require('../../nuclide-diagnostics-provider-base');
-
+import {promises} from '../../nuclide-commons';
+import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
+import {Range} from 'atom';
+import invariant from 'assert';
+import {JS_GRAMMARS} from './constants';
 import {getLogger} from '../../nuclide-logging';
+
 const logger = getLogger();
-
-const {Range} = require('atom');
-const invariant = require('assert');
-
-const {JS_GRAMMARS} = require('./constants');
 
 /**
  * Currently, a diagnostic from Flow is an object with a "message" property.
@@ -116,7 +112,7 @@ function flowMessageToDiagnosticMessage(diagnostic: Diagnostic) {
 class FlowDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
   _busySignalProvider: BusySignalProviderBase;
-  _requestSerializer: RequestSerializer;
+  _requestSerializer: promises.RequestSerializer;
 
   /**
     * Maps flow root to the set of file paths under that root for which we have
@@ -137,7 +133,7 @@ class FlowDiagnosticsProvider {
       onNewUpdateSubscriber: callback => this._receivedNewUpdateSubscriber(callback),
     };
     this._providerBase = new ProviderBase(utilsOptions);
-    this._requestSerializer = new RequestSerializer();
+    this._requestSerializer = new promises.RequestSerializer();
     this._flowRootToFilePaths = new Map();
   }
 

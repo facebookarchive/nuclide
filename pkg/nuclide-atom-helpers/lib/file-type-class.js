@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const fs = require('fs-plus');
-const path = require('path');
+import fs from 'fs-plus';
+import path from 'path';
 
 function fileTypeClass(filename: string): string {
   let typeClass;

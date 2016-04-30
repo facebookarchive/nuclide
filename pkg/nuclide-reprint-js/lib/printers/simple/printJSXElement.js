@@ -12,8 +12,8 @@
 import type {JSXElement} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-const markers = require('../../constants/markers');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
+import markers from '../../constants/markers';
+import wrapExpression from '../../wrappers/simple/wrapExpression';
 
 function printJSXElement(print: Print, node: JSXElement): Lines {
   const wrap = x => wrapExpression(print, node, x);

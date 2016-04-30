@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-const https = require('https');
-const http = require('http');
-const fs = require('fs');
-const url = require('url');
+import https from 'https';
+import http from 'http';
+import fs from 'fs';
+import url from 'url';
 
 // Set the initial version by reading from the file.
 const json = JSON.parse(fs.readFileSync(require.resolve('./package.json')));

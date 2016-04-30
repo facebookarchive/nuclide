@@ -12,8 +12,8 @@
 import type {Lines, Print} from '../../types/common';
 import type {UpdateExpression} from 'ast-types-flow';
 
-const markers = require('../../constants/markers');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
+import markers from '../../constants/markers';
+import wrapExpression from '../../wrappers/simple/wrapExpression';
 
 function printUpdateExpression(print: Print, node: UpdateExpression): Lines {
   const wrap = x => wrapExpression(print, node, x);

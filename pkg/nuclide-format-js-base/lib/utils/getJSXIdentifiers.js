@@ -11,9 +11,8 @@
 
 import type {Collection} from '../types/ast';
 
-const jscs = require('jscodeshift');
-
-const {isLowerCase} = require('./StringUtils');
+import jscs from 'jscodeshift';
+import {isLowerCase} from './StringUtils';
 
 // TODO: make this configurable somehow, we probably don't want to explicitly
 // list out all of the lowercase html tags that are built-in

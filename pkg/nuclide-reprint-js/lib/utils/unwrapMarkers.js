@@ -11,8 +11,8 @@
 
 import type {Lines} from '../types/common';
 
-const flatten = require('./flatten');
-const isMarker = require('./isMarker');
+import flatten from './flatten';
+import isMarker from './isMarker';
 
 /**
  * This utility unwraps contiguous leading and trailing markers from lines and

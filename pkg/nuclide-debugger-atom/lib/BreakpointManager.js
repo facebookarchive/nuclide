@@ -11,8 +11,8 @@
 
 import type BreakpointStore from './BreakpointStore';
 
-const {CompositeDisposable} = require('atom');
-const BreakpointDisplayController = require('./BreakpointDisplayController');
+import {CompositeDisposable} from 'atom';
+import BreakpointDisplayController from './BreakpointDisplayController';
 
 class BreakpointManager {
   _breakpointStore: BreakpointStore;

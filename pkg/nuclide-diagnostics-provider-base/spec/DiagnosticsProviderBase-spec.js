@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {Disposable} = require('atom');
+import {Disposable} from 'atom';
 
 const grammar = 'testgrammar';
 

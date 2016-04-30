@@ -11,10 +11,10 @@
 
 import type {Node} from '../types/ast';
 
-const {compareStrings} = require('./StringUtils');
-const jscs = require('jscodeshift');
-const oneLineObjectPattern = require('./oneLineObjectPattern');
-const reprintComment = require('./reprintComment');
+import {compareStrings} from './StringUtils';
+import jscs from 'jscodeshift';
+import oneLineObjectPattern from './oneLineObjectPattern';
+import reprintComment from './reprintComment';
 
 const {statement} = jscs.template;
 

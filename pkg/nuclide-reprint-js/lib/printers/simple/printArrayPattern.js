@@ -12,8 +12,8 @@
 import type {ArrayPattern} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-const flatten = require('../../utils/flatten');
-const printCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
+import flatten from '../../utils/flatten';
+import printCommaSeparatedNodes from '../common/printCommaSeparatedNodes';
 
 function printArrayPattern(print: Print, node: ArrayPattern): Lines {
   return flatten([

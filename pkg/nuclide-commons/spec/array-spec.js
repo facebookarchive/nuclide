@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const es6Array = require('../lib/array');
+import * as es6Array from '../lib/array';
 
 describe('Array.remove', () => {
   let a: any;

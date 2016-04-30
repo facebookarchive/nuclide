@@ -11,7 +11,7 @@
 
 import type {ObjectId} from '../lib/ObjectId';
 
-const {convertValue} = require('../lib/values');
+import {convertValue} from '../lib/values';
 
 describe('debugger-hhvm-proxy convertValue', () => {
 

@@ -9,25 +9,26 @@
  * the root directory of this source tree.
  */
 
-import utils from './utils';
 import type {HhvmDebuggerSessionConfig} from '../../nuclide-debugger-hhvm-proxy';
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 import type {
   HhvmDebuggerProxyService as HhvmDebuggerProxyServiceType,
 } from '../../nuclide-debugger-hhvm-proxy/lib/HhvmDebuggerProxyService';
 
+import utils from './utils';
 import invariant from 'assert';
 import {DebuggerInstance} from '../../nuclide-debugger-atom';
 import {ObservableManager} from './ObservableManager';
 import {CompositeDisposable} from 'atom';
+import featureConfig from '../../nuclide-feature-config';
+import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
+import remoteUri from '../../nuclide-remote-uri';
+import {Disposable} from 'atom';
 
-const {log, logInfo, logError, setLogLevel} = utils;
-const featureConfig = require('../../nuclide-feature-config');
-const {translateMessageFromServer, translateMessageToServer} = require('./ChromeMessageRemoting');
-const remoteUri = require('../../nuclide-remote-uri');
-const {Disposable} = require('atom');
 const WebSocketServer = require('ws').Server;
 const {stringifyError} = require('../../nuclide-commons').error;
+
+const {log, logInfo, logError, setLogLevel} = utils;
 
 function getConfig(): HhvmDebuggerSessionConfig {
   return (featureConfig.get('nuclide-debugger-hhvm'): any);

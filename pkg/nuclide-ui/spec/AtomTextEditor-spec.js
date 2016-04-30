@@ -9,12 +9,9 @@
  * the root directory of this source tree.
  */
 
-const {AtomTextEditor} = require('../lib/AtomTextEditor');
-const {
-  React,
-  TestUtils,
-} = require('react-for-atom');
-const invariant = require('assert');
+import {AtomTextEditor} from '../lib/AtomTextEditor';
+import {React, TestUtils} from 'react-for-atom';
+import invariant from 'assert';
 
 describe('nuclide-ui-atom-text-editor', () => {
 

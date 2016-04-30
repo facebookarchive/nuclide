@@ -9,17 +9,12 @@
  * the root directory of this source tree.
  */
 
-const {CompositeDisposable} = require('atom');
-const {EventEmitter} = require('events');
-const {LazyTreeNode} = require('./LazyTreeNode');
-const {TreeNodeComponent} = require('./TreeNodeComponent');
-const {forEachCachedNode} = require('./tree-node-traversals');
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
-
-const {PropTypes} = React;
+import {CompositeDisposable} from 'atom';
+import {EventEmitter} from 'events';
+import {LazyTreeNode} from './LazyTreeNode';
+import {TreeNodeComponent} from './TreeNodeComponent';
+import {forEachCachedNode} from './tree-node-traversals';
+import {React, ReactDOM} from 'react-for-atom';
 
 type TreeMenuItemDefinition = {
   label: string;
@@ -81,20 +76,20 @@ export const TreeRootComponent = React.createClass({
   _subscriptions: (null: ?CompositeDisposable),
 
   propTypes: {
-    initialRoots: PropTypes.arrayOf(PropTypes.instanceOf(LazyTreeNode)).isRequired,
-    eventHandlerSelector: PropTypes.string.isRequired,
+    initialRoots: React.PropTypes.arrayOf(React.PropTypes.instanceOf(LazyTreeNode)).isRequired,
+    eventHandlerSelector: React.PropTypes.string.isRequired,
     // A node can be confirmed if it is a selected non-container node and the user is clicks on it
     // or presses <enter>.
-    onConfirmSelection: PropTypes.func.isRequired,
+    onConfirmSelection: React.PropTypes.func.isRequired,
     // A node can be "kept" (opened permanently) by double clicking it. This only has an effect
     // when the `usePreviewTabs` setting is enabled in the "tabs" package.
-    onKeepSelection: PropTypes.func.isRequired,
-    labelClassNameForNode: PropTypes.func.isRequired,
-    rowClassNameForNode: PropTypes.func.isRequired,
+    onKeepSelection: React.PropTypes.func.isRequired,
+    labelClassNameForNode: React.PropTypes.func.isRequired,
+    rowClassNameForNode: React.PropTypes.func.isRequired,
     // Render will return this component if there are no root nodes.
-    elementToRenderWhenEmpty: PropTypes.element,
-    initialExpandedNodeKeys: PropTypes.arrayOf(PropTypes.string),
-    initialSelectedNodeKeys: PropTypes.arrayOf(PropTypes.string),
+    elementToRenderWhenEmpty: React.PropTypes.element,
+    initialExpandedNodeKeys: React.PropTypes.arrayOf(React.PropTypes.string),
+    initialSelectedNodeKeys: React.PropTypes.arrayOf(React.PropTypes.string),
   },
 
   getDefaultProps(): any {

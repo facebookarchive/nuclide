@@ -11,10 +11,10 @@
 
 import type {LazyTreeNode} from '../../../nuclide-ui/lib/LazyTreeNode';
 
-const {React} = require('react-for-atom');
-const {PanelComponentScroller} = require('../../../nuclide-ui/lib/PanelComponentScroller');
-const TestClassTreeNode = require('./TestClassTreeNode');
-const {TreeRootComponent} = require('../../../nuclide-ui/lib/TreeRootComponent');
+import {React} from 'react-for-atom';
+import {PanelComponentScroller} from '../../../nuclide-ui/lib/PanelComponentScroller';
+import TestClassTreeNode from './TestClassTreeNode';
+import {TreeRootComponent} from '../../../nuclide-ui/lib/TreeRootComponent';
 
 const {PropTypes} = React;
 

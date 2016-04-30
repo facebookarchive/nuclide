@@ -11,7 +11,7 @@
 
 import type BreakpointStore from './BreakpointStore';
 
-const {CompositeDisposable, Disposable} = require('atom');
+import {CompositeDisposable, Disposable} from 'atom';
 
 /**
  * A single delegate which handles events from the object.

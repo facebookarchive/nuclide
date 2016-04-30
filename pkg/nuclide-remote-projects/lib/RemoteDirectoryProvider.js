@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {RemoteConnection, RemoteDirectory} = require('../../nuclide-remote-connection');
+import {RemoteConnection, RemoteDirectory} from '../../nuclide-remote-connection';
 
 /**
  * The prefix a URI must have for `RemoteDirectoryProvider` to try to produce a

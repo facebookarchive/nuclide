@@ -11,26 +11,21 @@
 
 import invariant from 'assert';
 import path from 'path';
-const Console = require('./Console');
-const {Dropdown} = require('../../../nuclide-ui/lib/Dropdown');
-const {PanelComponent} = require('../../../nuclide-ui/lib/PanelComponent');
-const {Toolbar} = require('../../../nuclide-ui/lib/Toolbar');
-const {ToolbarLeft} = require('../../../nuclide-ui/lib/ToolbarLeft');
-const {ToolbarRight} = require('../../../nuclide-ui/lib/ToolbarRight');
-const {Checkbox} = require('../../../nuclide-ui/lib/Checkbox');
+import Console from './Console';
+import {Dropdown} from '../../../nuclide-ui/lib/Dropdown';
+import {PanelComponent} from '../../../nuclide-ui/lib/PanelComponent';
+import {Toolbar} from '../../../nuclide-ui/lib/Toolbar';
+import {ToolbarLeft} from '../../../nuclide-ui/lib/ToolbarLeft';
+import {ToolbarRight} from '../../../nuclide-ui/lib/ToolbarRight';
+import {Checkbox} from '../../../nuclide-ui/lib/Checkbox';
 import {
   Button,
   ButtonSizes,
   ButtonTypes,
 } from '../../../nuclide-ui/lib/Button';
-const {createPaneContainer} = require('../../../nuclide-atom-helpers');
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
-const TestClassTree = require('./TestClassTree');
-
-const {PropTypes} = React;
+import {createPaneContainer} from '../../../nuclide-atom-helpers';
+import {React, ReactDOM} from 'react-for-atom';
+import TestClassTree from './TestClassTree';
 
 type State = {
   selectedTestRunnerIndex: number;
@@ -48,21 +43,21 @@ class TestRunnerPanel extends React.Component {
   setSelectedTestRunnerIndex: Function;
 
   static propTypes = {
-    attachDebuggerBeforeRunning: PropTypes.bool,
-    buffer: PropTypes.object.isRequired,
-    executionState: PropTypes.number.isRequired,
-    onClickClear: PropTypes.func.isRequired,
-    onClickClose: PropTypes.func.isRequired,
-    onClickRun: PropTypes.func.isRequired,
-    onClickStop: PropTypes.func.isRequired,
-    onDebuggerCheckboxChanged: PropTypes.func,
-    path: PropTypes.string,
-    progressValue: PropTypes.number,
-    runDuration: PropTypes.number,
+    attachDebuggerBeforeRunning: React.PropTypes.bool,
+    buffer: React.PropTypes.object.isRequired,
+    executionState: React.PropTypes.number.isRequired,
+    onClickClear: React.PropTypes.func.isRequired,
+    onClickClose: React.PropTypes.func.isRequired,
+    onClickRun: React.PropTypes.func.isRequired,
+    onClickStop: React.PropTypes.func.isRequired,
+    onDebuggerCheckboxChanged: React.PropTypes.func,
+    path: React.PropTypes.string,
+    progressValue: React.PropTypes.number,
+    runDuration: React.PropTypes.number,
     // TODO: Should be `arrayOf(TestRunner)`, but that would require a real object since this is
     // runtime code for React.
-    testRunners: PropTypes.arrayOf(Object).isRequired,
-    testSuiteModel: PropTypes.object,
+    testRunners: React.PropTypes.arrayOf(Object).isRequired,
+    testSuiteModel: React.PropTypes.object,
   };
 
   static ExecutionState = Object.freeze({

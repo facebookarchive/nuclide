@@ -11,11 +11,10 @@
 
 import type {Collection, NodePath} from '../types/ast';
 
-const NewLine = require('./NewLine');
-
-const getRootIdentifierInExpression = require('./getRootIdentifierInExpression');
-const isGlobal = require('./isGlobal');
-const jscs = require('jscodeshift');
+import NewLine from './NewLine';
+import getRootIdentifierInExpression from './getRootIdentifierInExpression';
+import isGlobal from './isGlobal';
+import jscs from 'jscodeshift';
 
 const {match} = jscs;
 

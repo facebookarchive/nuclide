@@ -10,9 +10,8 @@
  */
 
 import invariant from 'assert';
-
-const DebuggerModel = require('../lib/DebuggerModel');
-const utils = require('./utils');
+import DebuggerModel from '../lib/DebuggerModel';
+import utils from './utils';
 
 class MockWebview {
   _listeners: Map<string, Set<Function>>;

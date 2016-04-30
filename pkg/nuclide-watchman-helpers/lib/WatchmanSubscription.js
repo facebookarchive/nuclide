@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {EventEmitter} = require('events');
+import {EventEmitter} from 'events';
 
 export type WatchmanSubscriptionOptions = {
   expression: ?Array<string>; // e.g. ['match', '*.js'],

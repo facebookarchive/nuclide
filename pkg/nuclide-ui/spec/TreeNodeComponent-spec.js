@@ -9,14 +9,10 @@
  * the root directory of this source tree.
  */
 
-const {LazyTestTreeNode} = require('./LazyTestTreeNode');
-const {
-  React,
-  ReactDOM,
-  TestUtils,
-} = require('react-for-atom');
-const {TreeNodeComponent} = require('../lib/TreeNodeComponent');
-const invariant = require('assert');
+import {LazyTestTreeNode} from './LazyTestTreeNode';
+import {React, ReactDOM, TestUtils} from 'react-for-atom';
+import {TreeNodeComponent} from '../lib/TreeNodeComponent';
+import invariant from 'assert';
 
 describe('TreeNodeComponent', () => {
 

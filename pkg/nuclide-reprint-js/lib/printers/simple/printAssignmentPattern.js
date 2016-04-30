@@ -12,8 +12,8 @@
 import type {AssignmentPattern} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
+import flatten from '../../utils/flatten';
+import markers from '../../constants/markers';
 
 function printAssignmentPattern(print: Print, node: AssignmentPattern): Lines {
   return flatten([

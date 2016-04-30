@@ -10,8 +10,14 @@
  */
 
 import invariant from 'assert';
-
 import logger from './utils';
+import {
+  STATUS_STOPPING,
+  STATUS_STOPPED,
+  STATUS_ERROR,
+  STATUS_END,
+} from './DbgpSocket';
+
 import type {Connection} from './Connection';
 
 type BreakpointId = string;
@@ -20,17 +26,11 @@ type Breakpoint = {
   filename: string;
   lineNumber: number;
 };
+
 export type ExceptionState = 'none' | 'uncaught' | 'all';
 
 const PAUSE_ALL_EXCEPTION_NAME = '*';
 const EXCEPTION_PAUSE_STATE_ALL = 'all';
-
-const {
-  STATUS_STOPPING,
-  STATUS_STOPPED,
-  STATUS_ERROR,
-  STATUS_END,
-} = require('./DbgpSocket');
 
 // Stores breakpoints and connections.
 //

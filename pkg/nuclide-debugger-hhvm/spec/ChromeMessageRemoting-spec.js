@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-const {
+import {
   translateMessageFromServer,
   translateMessageToServer,
-} = require('../lib/ChromeMessageRemoting');
+} from '../lib/ChromeMessageRemoting';
 
 describe('debugger-hhvm ChromeMessageRemoting', () => {
 

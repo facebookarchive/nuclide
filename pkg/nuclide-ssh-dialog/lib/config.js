@@ -9,21 +9,20 @@
  * the root directory of this source tree.
  */
 
-const path = require('path');
-const {USER, HOME} = require('../../nuclide-commons').env;
-
 import type {NuclideRemoteConnectionParams} from './connection-types';
 
+import path from 'path';
+import {env} from '../../nuclide-commons';
 
 function getConnectionDialogDefaultSettings(): NuclideRemoteConnectionParams {
   return {
     server: '',
-    username: USER,
+    username: env.USER,
     // Do not use path.join() because we assume that the remote machine is *nix,
     // so we always want to use `/` as the path separator for cwd, even if Atom
     // is running on Windows.
-    cwd: `/home/${USER}/`,
-    pathToPrivateKey: path.join(HOME, '.ssh', 'id_rsa'),
+    cwd: `/home/${env.USER}/`,
+    pathToPrivateKey: path.join(env.HOME, '.ssh', 'id_rsa'),
     remoteServerCommand: 'nuclide-start-server',
     authMethod: require('../../nuclide-remote-connection').SshHandshake.SupportedMethods.PASSWORD,
     sshPort: '22',

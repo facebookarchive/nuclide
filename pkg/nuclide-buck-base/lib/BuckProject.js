@@ -11,10 +11,14 @@
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
-const {asyncExecute, scriptSafeSpawnAndObserveOutput} = require('../../nuclide-commons');
-const {fsPromise} = require('../../nuclide-commons');
+import {
+  asyncExecute,
+  scriptSafeSpawnAndObserveOutput,
+} from '../../nuclide-commons';
+import {fsPromise} from '../../nuclide-commons';
+import path from 'path';
+
 const logger = require('../../nuclide-logging').getLogger();
-const path = require('path');
 
 export type dontRunOptions = {
   run: false;

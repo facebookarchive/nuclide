@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-const {asyncFind, denodeify} = require('..');
-const {promises} = require('..');
-const {expectAsyncFailure} = require('../../nuclide-test-helpers');
+import {asyncFind, denodeify} from '..';
+import {promises} from '..';
+import {expectAsyncFailure} from '../../nuclide-test-helpers';
 
 describe('promises::asyncFind()', () => {
 

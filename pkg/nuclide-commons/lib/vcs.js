@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const {asyncExecute} = require('./process');
-const path = require('path');
+import {asyncExecute} from './process';
+import path from 'path';
 
 type VcsInfo = {
   vcs: string;

@@ -9,22 +9,19 @@
  * the root directory of this source tree.
  */
 
-const {React} = require('react-for-atom');
-
-const {PropTypes} = React;
-
-const classnames = require('classnames');
+import {React} from 'react-for-atom';
+import classnames from 'classnames';
 
 export const Tabs = React.createClass({
 
   propTypes: {
-    tabs: PropTypes.arrayOf(PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      tabContent: PropTypes.node.isRequired,
+    tabs: React.PropTypes.arrayOf(React.PropTypes.shape({
+      name: React.PropTypes.string.isRequired,
+      tabContent: React.PropTypes.node.isRequired,
     })).isRequired,
-    activeTabName: PropTypes.string.isRequired,
-    onActiveTabChange: PropTypes.func.isRequired,
-    triggeringEvent: PropTypes.string.isRequired,
+    activeTabName: React.PropTypes.string.isRequired,
+    onActiveTabChange: React.PropTypes.func.isRequired,
+    triggeringEvent: React.PropTypes.string.isRequired,
   },
 
   getDefaultProps(): any {

@@ -12,8 +12,8 @@
 import type {Lines, Print} from '../../types/common';
 import type {TypeAnnotation} from 'ast-types-flow';
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
+import flatten from '../../utils/flatten';
+import markers from '../../constants/markers';
 
 function printTypeAnnotation(print: Print, node: TypeAnnotation): Lines {
   return flatten([

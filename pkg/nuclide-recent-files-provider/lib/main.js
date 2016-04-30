@@ -13,7 +13,7 @@ import type {
   Provider,
 } from '../../nuclide-quick-open-interfaces';
 
-const invariant = require('assert');
+import invariant from 'assert';
 
 let providerInstance: ?Provider;
 function getProviderInstance(): Provider {

@@ -11,8 +11,8 @@
 
 import type {Lines} from '../../types/common';
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
+import flatten from '../../utils/flatten';
+import markers from '../../constants/markers';
 
 function printComment(node: any): Lines {
   if (node.type === 'CommentBlock') {

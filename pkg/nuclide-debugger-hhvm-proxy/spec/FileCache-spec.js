@@ -9,11 +9,10 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
-
 import type {ClientCallback} from '../lib/ClientCallback';
 
-const FileCache = require('../lib/FileCache');
+import path from 'path';
+import FileCache from '../lib/FileCache';
 
 describe('debugger-hhvm-proxy FileCache', () => {
   let callback;

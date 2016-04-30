@@ -13,10 +13,10 @@ import type {
   GroupedResult,
 } from '../../nuclide-quick-open-interfaces';
 
-const {
+import {
   filterEmptyResults,
   flattenResults,
-} = require('../lib/searchResultHelpers');
+} from '../lib/searchResultHelpers';
 
 const SEARCH_RESULTS_FIXTURE: GroupedResult = {
   searchService: {

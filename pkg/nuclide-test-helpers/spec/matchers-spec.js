@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-const chalk = require('chalk');
-const invariant = require('assert');
-const {addMatchers, diffJson, diffLines} = require('../lib/matchers');
+import chalk from 'chalk';
+import invariant from 'assert';
+import {addMatchers, diffJson, diffLines} from '../lib/matchers';
 
 describe('matchers', () => {
   beforeEach(function() {

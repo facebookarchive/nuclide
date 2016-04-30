@@ -31,9 +31,9 @@ type SearchResponse = {
 import invariant from 'assert';
 import type {FileSearchResult} from '../../../nuclide-path-search';
 
-const {fsPromise} = require('../../../nuclide-commons');
-const {fileSearchForDirectory} = require('../../../nuclide-path-search');
-const remoteUri = require('../../../nuclide-remote-uri');
+import {fsPromise} from '../../../nuclide-commons';
+import {fileSearchForDirectory} from '../../../nuclide-path-search';
+import remoteUri from '../../../nuclide-remote-uri';
 
 type SearchProvider = {
   isAvailable: (cwd: string) => boolean;

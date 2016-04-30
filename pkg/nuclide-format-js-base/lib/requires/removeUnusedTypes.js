@@ -12,11 +12,11 @@
 import type {Collection, Node, NodePath} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-const getDeclaredIdentifiers = require('../utils/getDeclaredIdentifiers');
-const getDeclaredTypes = require('../utils/getDeclaredTypes');
-const getNonDeclarationTypes = require('../utils/getNonDeclarationTypes');
-const isGlobal = require('../utils/isGlobal');
-const jscs = require('jscodeshift');
+import getDeclaredIdentifiers from '../utils/getDeclaredIdentifiers';
+import getDeclaredTypes from '../utils/getDeclaredTypes';
+import getNonDeclarationTypes from '../utils/getNonDeclarationTypes';
+import isGlobal from '../utils/isGlobal';
+import jscs from 'jscodeshift';
 
 const {match} = jscs;
 

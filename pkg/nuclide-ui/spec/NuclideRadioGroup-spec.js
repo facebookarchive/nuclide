@@ -9,12 +9,8 @@
  * the root directory of this source tree.
  */
 
-const {RadioGroup} = require('../lib/RadioGroup');
-const {
-  React,
-  ReactDOM,
-  TestUtils,
-} = require('react-for-atom');
+import {RadioGroup} from '../lib/RadioGroup';
+import {React, ReactDOM, TestUtils} from 'react-for-atom';
 
 const {
   Simulate,

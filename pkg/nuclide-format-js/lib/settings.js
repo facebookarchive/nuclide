@@ -13,8 +13,8 @@ import type ModuleMap from '../../nuclide-format-js-base/lib/state/ModuleMap';
 import type {SourceOptions} from '../../nuclide-format-js-base/lib/options/SourceOptions';
 import type {TransformKey} from '../../nuclide-format-js-base/lib/types/transforms';
 
-const featureConfig = require('../../nuclide-feature-config');
-const formatJSBase = require('../../nuclide-format-js-base');
+import featureConfig from '../../nuclide-feature-config';
+import formatJSBase from '../../nuclide-format-js-base';
 
 // Nuclide package settings used to calculate the module map,
 // the blacklist, and control the plugin behavior.

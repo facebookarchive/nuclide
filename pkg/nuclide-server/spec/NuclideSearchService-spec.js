@@ -11,8 +11,8 @@
 
 import NuclideServer from '../lib/NuclideServer';
 import ServiceFramework from '../lib/serviceframework/index';
+import path from 'path';
 
-const path = require('path');
 const pathToTestDir = path.join(__dirname, 'testfiles');
 const pathToTestFile = path.join(pathToTestDir, 'testfile.txt');
 

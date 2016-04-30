@@ -11,7 +11,8 @@
 
 import invariant from 'assert';
 import url from 'url';
-const request = require('request');
+import request from 'request';
+
 const MAX_REQUEST_LENGTH = 1e6;
 
 type HttpResponse = {

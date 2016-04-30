@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {once} = require('../lib/once');
+import {once} from '../lib/once';
 
 describe('once', () => {
   it('correctly calls only once', () => {

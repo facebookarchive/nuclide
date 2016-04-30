@@ -12,8 +12,8 @@
 import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-const getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
-const getNonDeclarationIdentifiers = require('./getNonDeclarationIdentifiers');
+import getDeclaredIdentifiers from './getDeclaredIdentifiers';
+import getNonDeclarationIdentifiers from './getNonDeclarationIdentifiers';
 
 /**
  * This will get a list of all identifiers that are used but undeclared.

@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const fs = require('fs');
-const invariant = require('assert');
+import fs from 'fs';
+import invariant from 'assert';
 
 // Use a regex and not the "semver" module so the result here is the same
 // as from python code.

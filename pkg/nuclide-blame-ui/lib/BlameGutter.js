@@ -15,7 +15,7 @@ import type {
   BlameProvider,
 } from '../../nuclide-blame-base';
 
-const {BLAME_DECORATION_CLASS} = require('./constants');
+import {BLAME_DECORATION_CLASS} from './constants';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';

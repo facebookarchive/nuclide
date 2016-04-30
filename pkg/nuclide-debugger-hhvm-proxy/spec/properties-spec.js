@@ -11,7 +11,11 @@
 
 import type {ObjectId} from '../lib/ObjectId';
 
-const {convertProperties, convertProperty, getPagedProperties} = require('../lib/properties');
+import {
+  convertProperties,
+  convertProperty,
+  getPagedProperties,
+} from '../lib/properties';
 
 describe('debugger-hhvm-proxy properties', () => {
 

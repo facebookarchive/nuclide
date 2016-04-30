@@ -9,11 +9,13 @@
  * the root directory of this source tree.
  */
 
-const {CompositeDisposable} = require('atom');
-const {React} = require('react-for-atom');
-const SimulatorDropdown = require('./SimulatorDropdown');
-const BuckToolbarActions = require('./BuckToolbarActions');
-const BuckToolbarStore = require('./BuckToolbarStore');
+import {CompositeDisposable} from 'atom';
+import {React} from 'react-for-atom';
+import {atomEventDebounce} from '../../nuclide-atom-helpers';
+import {debounce} from '../../nuclide-commons';
+import SimulatorDropdown from './SimulatorDropdown';
+import BuckToolbarActions from './BuckToolbarActions';
+import BuckToolbarStore from './BuckToolbarStore';
 import {Combobox} from '../../nuclide-ui/lib/Combobox';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import {
@@ -23,13 +25,6 @@ import {
   ButtonGroup,
   ButtonGroupSizes,
 } from '../../nuclide-ui/lib/ButtonGroup';
-
-const {debounce} = require('../../nuclide-commons');
-const {
-  atomEventDebounce,
-} = require('../../nuclide-atom-helpers');
-const {onWorkspaceDidStopChangingActivePaneItem} = atomEventDebounce;
-const {PropTypes} = React;
 
 const BUCK_TARGET_INPUT_WIDTH = 400;
 const formatRequestOptionsErrorMessage = () => 'Invalid .buckconfig';
@@ -50,8 +45,8 @@ class BuckToolbar extends React.Component {
   _buckToolbarActions: BuckToolbarActions;
 
   static propTypes = {
-    store: PropTypes.instanceOf(BuckToolbarStore).isRequired,
-    actions: PropTypes.instanceOf(BuckToolbarActions).isRequired,
+    store: React.PropTypes.instanceOf(BuckToolbarStore).isRequired,
+    actions: React.PropTypes.instanceOf(BuckToolbarActions).isRequired,
   };
 
   constructor(props: mixed) {
@@ -74,7 +69,7 @@ class BuckToolbar extends React.Component {
 
     this._disposables = new CompositeDisposable();
     this._disposables.add(this._buckToolbarStore);
-    this._disposables.add(onWorkspaceDidStopChangingActivePaneItem(
+    this._disposables.add(atomEventDebounce.onWorkspaceDidStopChangingActivePaneItem(
       this._onActivePaneItemChanged.bind(this)));
 
     // Re-render whenever the data in the store changes.

@@ -9,17 +9,17 @@
  * the root directory of this source tree.
  */
 
-import ConnectionTracker from './ConnectionTracker';
 import type {RemoteConnectionConfiguration} from './RemoteConnection';
 
-const SshConnection = require('ssh2').Client;
-const fs = require('fs-plus');
-const net = require('net');
-const logger = require('../../nuclide-logging').getLogger();
-const invariant = require('assert');
+import ConnectionTracker from './ConnectionTracker';
+import {Client as SshConnection} from 'ssh2';
+import fs from 'fs-plus';
+import net from 'net';
+import invariant from 'assert';
+import {RemoteConnection} from './RemoteConnection';
+import {fsPromise, promises} from '../../nuclide-commons';
 
-const {RemoteConnection} = require('./RemoteConnection');
-const {fsPromise, promises} = require('../../nuclide-commons');
+const logger = require('../../nuclide-logging').getLogger();
 
 // Sync word and regex pattern for parsing command stdout.
 const READY_TIMEOUT_MS = 60 * 1000;

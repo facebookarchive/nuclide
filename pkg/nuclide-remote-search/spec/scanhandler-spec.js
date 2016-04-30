@@ -11,13 +11,15 @@
 
 import type {search$FileResult} from '..';
 
-const {asyncExecute} = require('../../nuclide-commons');
-const fs = require('fs');
-const {addMatchers} = require('../../nuclide-test-helpers');
-const path = require('path');
-const temp = require('temp').track();
-
+import {asyncExecute} from '../../nuclide-commons';
+import {addMatchers} from '../../nuclide-test-helpers';
+import fs from 'fs';
+import path from 'path';
+import temp from 'temp';
 import search from '../lib/scanhandler';
+
+temp.track();
+
 
 describe('Scan Handler Tests', () => {
   beforeEach(function() {

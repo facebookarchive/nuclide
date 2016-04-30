@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const TestSuiteModel = require('../lib/TestSuiteModel');
+import TestSuiteModel from '../lib/TestSuiteModel';
 
 describe('TestSuiteModel', () => {
   const testClassSummaries = [

@@ -11,7 +11,7 @@
 
 /* eslint-env browser */
 
-const {CompositeDisposable, Emitter} = require('atom');
+import {CompositeDisposable, Emitter} from 'atom';
 
 class WebViewPane extends HTMLElement {
   _title: string;

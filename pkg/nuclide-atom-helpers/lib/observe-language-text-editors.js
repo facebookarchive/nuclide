@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const {CompositeDisposable, Disposable} = require('atom');
-const {EventEmitter} = require('events');
+import {CompositeDisposable, Disposable} from 'atom';
+import {EventEmitter} from 'events';
 
 const START_OBSERVING_TEXT_EDITOR_EVENT = 'start-observing-text-editor';
 const STOP_OBSERVING_TEXT_EDITOR_EVENT = 'stop-observing-text-editor';

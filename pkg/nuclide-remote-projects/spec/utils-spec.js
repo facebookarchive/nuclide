@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {sanitizeNuclideUri} = require('../lib/utils');
+import {sanitizeNuclideUri} from '../lib/utils';
 
 describe('Utils Test Suite', () => {
 

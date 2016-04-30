@@ -12,7 +12,7 @@
 import type {DebuggerStatement} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-const wrapStatement = require('../../wrappers/simple/wrapStatement');
+import wrapStatement from '../../wrappers/simple/wrapStatement';
 
 function printDebuggerStatement(print: Print, node: DebuggerStatement): Lines {
   const wrap = x => wrapStatement(print, node, x);

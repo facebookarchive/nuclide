@@ -9,12 +9,8 @@
  * the root directory of this source tree.
  */
 
-const {Tabs} = require('../lib/Tabs');
-const {
-  React,
-  ReactDOM,
-  TestUtils,
-} = require('react-for-atom');
+import {Tabs} from '../lib/Tabs';
+import {React, ReactDOM, TestUtils} from 'react-for-atom';
 
 const {
   Simulate,

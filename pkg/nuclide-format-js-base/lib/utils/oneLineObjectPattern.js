@@ -11,7 +11,7 @@
 
 import type {Node} from '../types/ast';
 
-const jscs = require('jscodeshift');
+import jscs from 'jscodeshift';
 
 /**
  * This is a hack to force an ObjectPattern node to be printed on one line

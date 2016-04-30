@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const markers = require('../constants/markers');
+import markers from '../constants/markers';
 
 /**
  * Given an array of lines this will parse the scopes and return a mapping of

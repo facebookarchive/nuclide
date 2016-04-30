@@ -17,7 +17,8 @@ import type {Socket} from 'net';
 type DataCacheConstructorType = () => DataCacheType;
 type ConnectionConstuctorType = () => ConnectionType;
 type DbgpSocketConstructorType = () => DbgpSocketType;
-const {uncachedRequire, clearRequireCache} = require('../../nuclide-test-helpers');
+
+import {uncachedRequire, clearRequireCache} from '../../nuclide-test-helpers';
 
 describe('debugger-hhvm-proxy Connection', () => {
   let DbgpSocketConstructor: DbgpSocketConstructorType = (null: any);

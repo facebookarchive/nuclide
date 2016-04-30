@@ -9,14 +9,13 @@
  * the root directory of this source tree.
  */
 
-const {React} = require('react-for-atom');
-const {PropTypes} = React;
-const BreakpointStore = require('./BreakpointStore.js');
-const DebuggerActions = require('./DebuggerActions');
-const DebuggerInspector = require('./DebuggerInspector');
-const DebuggerSessionSelector = require('./DebuggerSessionSelector');
-const {DebuggerStore} = require('./DebuggerStore');
-const Bridge = require('./Bridge');
+import {React} from 'react-for-atom';
+import BreakpointStore from './BreakpointStore.js';
+import DebuggerActions from './DebuggerActions';
+import DebuggerInspector from './DebuggerInspector';
+import DebuggerSessionSelector from './DebuggerSessionSelector';
+import {DebuggerStore} from './DebuggerStore';
+import Bridge from './Bridge';
 import {Button} from '../../nuclide-ui/lib/Button';
 
 type State = {
@@ -32,10 +31,10 @@ function getStateFromStore(store: DebuggerStore): State {
 
 const DebuggerControllerView = React.createClass({
   propTypes: {
-    actions: PropTypes.instanceOf(DebuggerActions).isRequired,
-    breakpointStore: PropTypes.instanceOf(BreakpointStore).isRequired,
-    store: PropTypes.instanceOf(DebuggerStore).isRequired,
-    bridge: PropTypes.instanceOf(Bridge).isRequired,
+    actions: React.PropTypes.instanceOf(DebuggerActions).isRequired,
+    breakpointStore: React.PropTypes.instanceOf(BreakpointStore).isRequired,
+    store: React.PropTypes.instanceOf(DebuggerStore).isRequired,
+    bridge: React.PropTypes.instanceOf(Bridge).isRequired,
   },
 
   getInitialState(): State {

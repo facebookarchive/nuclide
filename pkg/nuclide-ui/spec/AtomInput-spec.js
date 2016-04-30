@@ -9,11 +9,8 @@
  * the root directory of this source tree.
  */
 
-const {AtomInput} = require('../lib/AtomInput');
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
+import {AtomInput} from '../lib/AtomInput';
+import {React, ReactDOM} from 'react-for-atom';
 
 let reactElement: any;
 

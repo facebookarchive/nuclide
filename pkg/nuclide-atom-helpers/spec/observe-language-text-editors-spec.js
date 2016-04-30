@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-const invariant = require('assert');
-const path = require('path');
-const {observeLanguageTextEditors, observeGrammarForTextEditors} = require('..');
+import invariant from 'assert';
+import path from 'path';
+import {observeLanguageTextEditors, observeGrammarForTextEditors} from '..';
 
 describe('observeLanguageTextEditors', () => {
   let objcGrammar;

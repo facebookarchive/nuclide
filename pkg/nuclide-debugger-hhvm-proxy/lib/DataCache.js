@@ -29,13 +29,13 @@ import {convertValue} from './values';
 import type {DbgpContext, DbgpSocket} from './DbgpSocket';
 import type {ObjectId} from './ObjectId';
 
-const {
+import {
   STATUS_BREAK,
   STATUS_STOPPING,
   STATUS_STOPPED,
   STATUS_RUNNING,
   STATUS_STARTING,
-} = require('./DbgpSocket');
+} from './DbgpSocket';
 
 const EVAL_IDENTIFIER = '$__unique_xdebug_variable_name__';
 

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const nuclideUri = require('..');
+import nuclideUri from '..';
 import path from 'path';
 
 describe('nuclide-uri', () => {

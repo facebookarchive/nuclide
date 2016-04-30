@@ -11,9 +11,9 @@
 
 import type {Task} from '../lib/bootstrap';
 
-const invariant = require('assert');
-const {createTask} = require('..');
-const {expectAsyncFailure} = require('../../nuclide-test-helpers');
+import invariant from 'assert';
+import {createTask} from '..';
+import {expectAsyncFailure} from '../../nuclide-test-helpers';
 
 describe('Task', () => {
   describe('.invokeRemoteMethod()', () => {

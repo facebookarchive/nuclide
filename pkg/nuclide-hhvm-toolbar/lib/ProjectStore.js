@@ -10,9 +10,9 @@
  */
 
 import {getHackEnvironmentDetails} from '../../nuclide-hack/lib/utils';
-const {CompositeDisposable, Disposable} = require('atom');
-const {EventEmitter} = require('events');
-const {buckProjectRootForPath} = require('../../nuclide-buck-commons');
+import {CompositeDisposable, Disposable} from 'atom';
+import {EventEmitter} from 'events';
+import {buckProjectRootForPath} from '../../nuclide-buck-commons';
 import {trackTiming} from '../../nuclide-analytics';
 import remoteUri from '../../nuclide-remote-uri';
 

@@ -9,14 +9,13 @@
  * the root directory of this source tree.
  */
 
-const QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
-const {ActionType} = QuickSelectionDispatcher;
+import QuickSelectionDispatcher from './QuickSelectionDispatcher';
 
 const QuickSelectionActions = {
 
   query(query: string): void {
     QuickSelectionDispatcher.getInstance().dispatch({
-      actionType: ActionType.QUERY,
+      actionType: QuickSelectionDispatcher.ActionType.QUERY,
       query,
     });
   },
@@ -24,7 +23,7 @@ const QuickSelectionActions = {
   changeActiveProvider(providerName: string): void {
     setImmediate(() => {
       QuickSelectionDispatcher.getInstance().dispatch({
-        actionType: ActionType.ACTIVE_PROVIDER_CHANGED,
+        actionType: QuickSelectionDispatcher.ActionType.ACTIVE_PROVIDER_CHANGED,
         providerName,
       });
     });

@@ -9,14 +9,12 @@
  * the root directory of this source tree.
  */
 
-const {AtomTextEditor} = require('../../../nuclide-ui/lib/AtomTextEditor');
-const {React} = require('react-for-atom');
-
-const {PropTypes} = React;
+import {AtomTextEditor} from '../../../nuclide-ui/lib/AtomTextEditor';
+import {React} from 'react-for-atom';
 
 class Console extends React.Component {
   static propTypes = {
-    textBuffer: PropTypes.object.isRequired,
+    textBuffer: React.PropTypes.object.isRequired,
   };
 
   render() {

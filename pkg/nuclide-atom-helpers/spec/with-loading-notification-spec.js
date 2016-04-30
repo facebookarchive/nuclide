@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const invariant = require('assert');
-const {withLoadingNotification} = require('..');
+import invariant from 'assert';
+import {withLoadingNotification} from '..';
 
 describe('withLoadingNotification', () => {
   let mockNotif;

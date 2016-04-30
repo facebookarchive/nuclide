@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-const buildRuns = require('../utils/buildRuns');
-const buildScopes = require('../utils/buildScopes');
-const invariant = require('assert');
-const isScopeBreakMarker = require('../utils/isScopeBreakMarker');
-const isScopeMarker = require('../utils/isScopeMarker');
-const markers = require('../constants/markers');
-const translateScopeMarker = require('../utils/translateScopeMarker');
+import buildRuns from '../utils/buildRuns';
+import buildScopes from '../utils/buildScopes';
+import invariant from 'assert';
+import isScopeBreakMarker from '../utils/isScopeBreakMarker';
+import isScopeMarker from '../utils/isScopeMarker';
+import markers from '../constants/markers';
+import translateScopeMarker from '../utils/translateScopeMarker';
 
 /**
  * Sometimes a scope break may be adjacent to a hard break. If that's the case

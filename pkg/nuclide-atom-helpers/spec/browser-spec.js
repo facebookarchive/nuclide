@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const browser = require('../lib/browser');
+import browser from '../lib/browser';
 
 describe('browser', () => {
 

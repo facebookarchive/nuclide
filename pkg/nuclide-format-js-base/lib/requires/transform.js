@@ -13,13 +13,13 @@ import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 import type {TransformKey} from '../types/transforms';
 
-const addLeadingComments = require('./addLeadingComments');
-const addMissingRequires = require('./addMissingRequires');
-const addMissingTypes = require('./addMissingTypes');
-const formatRequires = require('./formatRequires');
-const removeLeadingComments = require('./removeLeadingComments');
-const removeUnusedRequires = require('./removeUnusedRequires');
-const removeUnusedTypes = require('./removeUnusedTypes');
+import addLeadingComments from './addLeadingComments';
+import addMissingRequires from './addMissingRequires';
+import addMissingTypes from './addMissingTypes';
+import formatRequires from './formatRequires';
+import removeLeadingComments from './removeLeadingComments';
+import removeUnusedRequires from './removeUnusedRequires';
+import removeUnusedTypes from './removeUnusedTypes';
 
 /**
  * This is the collection of transforms that affect requires.

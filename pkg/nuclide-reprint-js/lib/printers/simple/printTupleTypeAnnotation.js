@@ -12,8 +12,8 @@
 import type {Lines, Print} from '../../types/common';
 import type {TupleTypeAnnotation} from 'ast-types-flow';
 
-const flatten = require('../../utils/flatten');
-const printCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
+import flatten from '../../utils/flatten';
+import printCommaSeparatedNodes from '../common/printCommaSeparatedNodes';
 
 function printTupleTypeAnnotation(
   print: Print,

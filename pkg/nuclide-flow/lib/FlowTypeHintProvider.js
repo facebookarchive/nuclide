@@ -12,12 +12,10 @@
 import type {TypeHint} from '../../nuclide-type-hint-interfaces';
 
 import invariant from 'assert';
-
-const {extractWordAtPosition} = require('../../nuclide-atom-helpers');
-const featureConfig = require('../../nuclide-feature-config');
+import {extractWordAtPosition} from '../../nuclide-atom-helpers';
+import featureConfig from '../../nuclide-feature-config';
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
-const {Range} = require('atom');
-
+import {Range} from 'atom';
 import {JAVASCRIPT_WORD_REGEX} from './constants';
 
 export class FlowTypeHintProvider {

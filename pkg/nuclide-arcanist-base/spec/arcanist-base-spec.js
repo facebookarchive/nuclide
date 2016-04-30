@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-const arcanist = require('..');
-const path = require('path');
-const fs = require('fs-plus');
-const temp = require('temp').track();
-
+import * as arcanist from '..';
+import path from 'path';
+import fs from 'fs-plus';
+import temp from 'temp';
 import invariant from 'assert';
-
 import {uncachedRequire} from '../../nuclide-test-helpers';
+
+temp.track();
 
 const rootConfig = {
   'project_id': 'project1',

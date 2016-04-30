@@ -12,9 +12,9 @@
 import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-const getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
-const getDeclaredTypes = require('./getDeclaredTypes');
-const getNonDeclarationTypes = require('./getNonDeclarationTypes');
+import getDeclaredIdentifiers from './getDeclaredIdentifiers';
+import getDeclaredTypes from './getDeclaredTypes';
+import getNonDeclarationTypes from './getNonDeclarationTypes';
 
 /**
  * This will get a list of all types that are used but undeclared.

@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-const {CompositeDisposable} = require('atom');
+import {CompositeDisposable} from 'atom';
+
 let logger = null;
 
 function getLogger() {

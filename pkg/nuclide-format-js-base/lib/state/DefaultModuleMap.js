@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const ModuleMap = require('./ModuleMap');
+import ModuleMap from './ModuleMap';
 
 const DefaultModuleMap = new ModuleMap({
   paths: [],

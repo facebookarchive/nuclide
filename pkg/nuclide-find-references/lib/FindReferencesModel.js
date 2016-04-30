@@ -22,10 +22,10 @@ type FindReferencesOptions = {
   previewContext?: number;
 };
 
-const {array} = require('../../nuclide-commons');
-const {getLogger} = require('../../nuclide-logging');
-const {getFileSystemServiceByNuclideUri} = require('../../nuclide-client');
-const {getPath} = require('../../nuclide-remote-uri');
+import {array} from '../../nuclide-commons';
+import {getLogger} from '../../nuclide-logging';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
+import {getPath} from '../../nuclide-remote-uri';
 
 const FRAGMENT_GRAMMARS = {
   'text.html.hack': 'source.hackfragment',

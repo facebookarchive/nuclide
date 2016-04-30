@@ -10,14 +10,14 @@
  */
 
 import {DebuggerProviderStore} from './DebuggerProviderStore';
-const BreakpointManager = require('./BreakpointManager');
-const BreakpointStore = require('./BreakpointStore');
-const DebuggerActions = require('./DebuggerActions');
-const {DebuggerStore} = require('./DebuggerStore');
-const {WatchExpressionStore} = require('./WatchExpressionStore');
-const Bridge = require('./Bridge');
-const {CompositeDisposable} = require('atom');
-const {Dispatcher} = require('flux');
+import BreakpointManager from './BreakpointManager';
+import BreakpointStore from './BreakpointStore';
+import DebuggerActions from './DebuggerActions';
+import {DebuggerStore} from './DebuggerStore';
+import {WatchExpressionStore} from './WatchExpressionStore';
+import Bridge from './Bridge';
+import {CompositeDisposable} from 'atom';
+import {Dispatcher} from 'flux';
 
 import type {SerializedState} from '..';
 

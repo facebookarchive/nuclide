@@ -12,8 +12,8 @@
 import type {Lines, Print} from '../../types/common';
 import type {TryStatement} from 'ast-types-flow';
 
-const markers = require('../../constants/markers');
-const wrapStatement = require('../../wrappers/simple/wrapStatement');
+import markers from '../../constants/markers';
+import wrapStatement from '../../wrappers/simple/wrapStatement';
 
 function printTryStatement(print: Print, node: TryStatement): Lines {
   const wrap = x => wrapStatement(print, node, x);

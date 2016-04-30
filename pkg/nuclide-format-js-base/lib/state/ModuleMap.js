@@ -13,11 +13,10 @@ import type {AbsolutePath, Identifier, Literal} from '../types/common';
 import type {ModuleMapOptions} from '../options/ModuleMapOptions';
 import type {RequireOptions} from '../options/RequireOptions';
 
-const ModuleMapUtils = require('../utils/ModuleMapUtils');
-const Options = require('../options/Options');
-
-const jscs = require('jscodeshift');
-const oneLineObjectPattern = require('../utils/oneLineObjectPattern');
+import ModuleMapUtils from '../utils/ModuleMapUtils';
+import Options from '../options/Options';
+import jscs from 'jscodeshift';
+import oneLineObjectPattern from '../utils/oneLineObjectPattern';
 
 const {statement} = jscs.template;
 

@@ -12,12 +12,9 @@
 import type {ProcessOutputStore} from '../../nuclide-process-output-store';
 import type {ProcessOutputHandler} from './types';
 
-const {CompositeDisposable, TextBuffer} = require('atom');
-const {AtomTextEditor} = require('../../nuclide-ui/lib/AtomTextEditor');
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
+import {CompositeDisposable, TextBuffer} from 'atom';
+import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
+import {React, ReactDOM} from 'react-for-atom';
 
 const PROCESS_OUTPUT_PATH = 'nuclide-process-output.ansi';
 

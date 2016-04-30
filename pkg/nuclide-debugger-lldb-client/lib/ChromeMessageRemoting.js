@@ -10,8 +10,8 @@
  */
 
 
-const url = require('url');
-const remoteUri = require('../../nuclide-remote-uri');
+import url from 'url';
+import remoteUri from '../../nuclide-remote-uri';
 import logger from './utils';
 
 const {log} = logger;

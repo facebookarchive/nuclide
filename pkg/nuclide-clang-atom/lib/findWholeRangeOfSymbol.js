@@ -11,7 +11,7 @@
 
 import type {ClangCursorExtent} from '../../nuclide-clang';
 
-const {Range} = require('atom');
+import {Range} from 'atom';
 
 // Matches something like: textA: or textA:textB:
 const OBJC_SELECTOR_NAME_REGEX = /([^\s:]+:)+$/g;

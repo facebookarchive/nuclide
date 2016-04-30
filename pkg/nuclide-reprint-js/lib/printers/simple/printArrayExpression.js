@@ -12,8 +12,8 @@
 import type {ArrayExpression} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-const printCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
+import printCommaSeparatedNodes from '../common/printCommaSeparatedNodes';
+import wrapExpression from '../../wrappers/simple/wrapExpression';
 
 function printArrayExpression(print: Print, node: ArrayExpression): Lines {
   const wrap = x => wrapExpression(print, node, x);

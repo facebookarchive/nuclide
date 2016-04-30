@@ -13,8 +13,8 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {RemoteFile} from './RemoteFile';
 
 import {File} from 'atom';
-const {ServerConnection} = require('./ServerConnection');
-const {isRemote} = require('../../nuclide-remote-uri');
+import {ServerConnection} from './ServerConnection';
+import {isRemote} from '../../nuclide-remote-uri';
 
 module.exports = {
   getFileForPath(filePath: NuclideUri): ?(atom$File | RemoteFile) {

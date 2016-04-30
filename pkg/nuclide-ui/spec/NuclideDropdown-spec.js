@@ -9,12 +9,8 @@
  * the root directory of this source tree.
  */
 
-const {Dropdown} = require('../lib/Dropdown');
-const {
-  React,
-  ReactDOM,
-  TestUtils,
-} = require('react-for-atom');
+import {Dropdown} from '../lib/Dropdown';
+import {React, ReactDOM, TestUtils} from 'react-for-atom';
 
 const {
   Simulate,

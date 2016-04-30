@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-const fs = require('fs-plus');
-const path = require('path');
-const {fsPromise} = require('../../nuclide-commons');
+import fs from 'fs-plus';
+import path from 'path';
+import {fsPromise} from '../../nuclide-commons';
 
 async function loadStyles(stylesPath: string): Promise {
   // TODO(jjiaa): If possible, check that `stylesPath` is also a directory.

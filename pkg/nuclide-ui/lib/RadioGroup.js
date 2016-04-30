@@ -9,9 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {React} = require('react-for-atom');
-
-const {PropTypes} = React;
+import {React} from 'react-for-atom';
 
 // Globally unique ID used as the "name" attribute to group radio inputs.
 let uid = 0;
@@ -22,9 +20,9 @@ let uid = 0;
 export const RadioGroup = React.createClass({
 
   propTypes: {
-    optionLabels: PropTypes.arrayOf(PropTypes.node).isRequired,
-    selectedIndex: PropTypes.number.isRequired,
-    onSelectedChange: PropTypes.func.isRequired,
+    optionLabels: React.PropTypes.arrayOf(React.PropTypes.node).isRequired,
+    selectedIndex: React.PropTypes.number.isRequired,
+    onSelectedChange: React.PropTypes.func.isRequired,
   },
 
   getDefaultProps(): any {

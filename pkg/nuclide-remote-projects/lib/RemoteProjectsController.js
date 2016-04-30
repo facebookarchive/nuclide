@@ -11,17 +11,12 @@
 
 import invariant from 'assert';
 import {RemoteConnection} from '../../nuclide-remote-connection';
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
-const {CompositeDisposable, Disposable} = require('atom');
-const StatusBarTile = require('./ui/StatusBarTile');
-const remoteUri = require('../../nuclide-remote-uri');
-const ConnectionState = require('./ConnectionState');
-
-const {onWorkspaceDidStopChangingActivePaneItem} =
-  require('../../nuclide-atom-helpers').atomEventDebounce;
+import {React, ReactDOM} from 'react-for-atom';
+import {CompositeDisposable, Disposable} from 'atom';
+import StatusBarTile from './ui/StatusBarTile';
+import remoteUri from '../../nuclide-remote-uri';
+import ConnectionState from './ConnectionState';
+import {atomEventDebounce} from '../../nuclide-atom-helpers';
 
 class RemoteProjectsController {
   _disposables: CompositeDisposable;
@@ -36,7 +31,9 @@ class RemoteProjectsController {
     this._statusSubscription = null;
     this._disposables.add(
       atom.workspace.onDidChangeActivePaneItem(this._disposeSubscription.bind(this)),
-      onWorkspaceDidStopChangingActivePaneItem(this._updateConnectionStatus.bind(this))
+      atomEventDebounce.onWorkspaceDidStopChangingActivePaneItem(
+        this._updateConnectionStatus.bind(this)
+      )
     );
   }
 

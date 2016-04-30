@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const buildRuns = require('../utils/buildRuns');
-const markers = require('../constants/markers');
+import buildRuns from '../utils/buildRuns';
+import markers from '../constants/markers';
 
 /**
  * This squashes all duplicates that should not be kept.

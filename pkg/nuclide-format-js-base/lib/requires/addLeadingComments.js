@@ -11,9 +11,8 @@
 
 import type {Collection, Node} from '../types/ast';
 
-const FirstNode = require('../utils/FirstNode');
-
-const reprintComment = require('../utils/reprintComment');
+import FirstNode from '../utils/FirstNode';
+import reprintComment from '../utils/reprintComment';
 
 function addLeadingComments(root: Collection, comments: ?Array<Node>): void {
   if (!comments || comments.length === 0) {

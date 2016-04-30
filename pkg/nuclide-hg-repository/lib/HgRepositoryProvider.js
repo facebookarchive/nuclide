@@ -9,11 +9,13 @@
  * the root directory of this source tree.
  */
 
-const {Directory} = require('atom');
+import {Directory} from 'atom';
 import invariant from 'assert';
 import {trackTiming} from '../../nuclide-analytics';
-import {RemoteDirectory as RemoteDirectoryType} from '../../nuclide-remote-connection';
-const {HgRepositoryClient} = require('../../nuclide-hg-repository-client');
+import {
+  RemoteDirectory as RemoteDirectoryType,
+} from '../../nuclide-remote-connection';
+import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 
 let logger = null;
 function getLogger() {

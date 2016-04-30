@@ -9,20 +9,18 @@
  * the root directory of this source tree.
  */
 
-const DiagnosticsPane = require('./DiagnosticsPane');
-const {Checkbox} = require('../../nuclide-ui/lib/Checkbox');
-const {PanelComponent} = require('../../nuclide-ui/lib/PanelComponent');
-const {Toolbar} = require('../../nuclide-ui/lib/Toolbar');
-const {ToolbarCenter} = require('../../nuclide-ui/lib/ToolbarCenter');
-const {ToolbarLeft} = require('../../nuclide-ui/lib/ToolbarLeft');
-const {ToolbarRight} = require('../../nuclide-ui/lib/ToolbarRight');
-const {React} = require('react-for-atom');
-const {PropTypes} = React;
+import DiagnosticsPane from './DiagnosticsPane';
+import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
+import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
+import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
+import {ToolbarCenter} from '../../nuclide-ui/lib/ToolbarCenter';
+import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
+import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
+import {React} from 'react-for-atom';
 import {
   Button,
   ButtonSizes,
 } from '../../nuclide-ui/lib/Button';
-
 import {track} from '../../nuclide-analytics';
 
 let keyboardShortcut: ?string = null;
@@ -48,16 +46,16 @@ function getKeyboardShortcut(): string {
  */
 class DiagnosticsPanel extends React.Component {
   static propTypes = {
-    diagnostics: PropTypes.array.isRequired,
-    height: PropTypes.number.isRequired,
-    onDismiss: PropTypes.func.isRequired,
-    onResize: PropTypes.func.isRequired,
-    width: PropTypes.number.isRequired,
-    pathToActiveTextEditor: PropTypes.string,
-    filterByActiveTextEditor: PropTypes.bool.isRequired,
-    onFilterByActiveTextEditorChange: PropTypes.func.isRequired,
-    warnAboutLinter: PropTypes.bool.isRequired,
-    disableLinter: PropTypes.func.isRequired,
+    diagnostics: React.PropTypes.array.isRequired,
+    height: React.PropTypes.number.isRequired,
+    onDismiss: React.PropTypes.func.isRequired,
+    onResize: React.PropTypes.func.isRequired,
+    width: React.PropTypes.number.isRequired,
+    pathToActiveTextEditor: React.PropTypes.string,
+    filterByActiveTextEditor: React.PropTypes.bool.isRequired,
+    onFilterByActiveTextEditorChange: React.PropTypes.func.isRequired,
+    warnAboutLinter: React.PropTypes.bool.isRequired,
+    disableLinter: React.PropTypes.func.isRequired,
   };
 
   constructor(props: mixed) {

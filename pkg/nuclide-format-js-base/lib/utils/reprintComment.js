@@ -11,7 +11,7 @@
 
 import type {Node} from '../types/ast';
 
-const jscs = require('jscodeshift');
+import jscs from 'jscodeshift';
 
 function reprintComment(node: Node): Node {
   if (node.type === 'Block') {

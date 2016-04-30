@@ -11,9 +11,8 @@
 
 import type {FileDiagnosticMessage} from '../../nuclide-diagnostics-base';
 
-const {Range} = require('atom');
-
-const {compareMessagesByFile} = require('../lib/paneUtils');
+import {Range} from 'atom';
+import {compareMessagesByFile} from '../lib/paneUtils';
 
 describe('compareMessagesByFile', () => {
 

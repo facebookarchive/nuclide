@@ -13,9 +13,9 @@ import type {ModuleMapOptions} from './ModuleMapOptions';
 import type {RequireOptions} from './RequireOptions';
 import type {SourceOptions} from './SourceOptions';
 
-const {getPath} = require('../../../nuclide-remote-uri');
-const invariant = require('assert');
-const path = require('path');
+import {getPath} from '../../../nuclide-remote-uri';
+import invariant from 'assert';
+import path from 'path';
 
 /**
  * Valides the options used to construct a module map.

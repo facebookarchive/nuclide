@@ -12,11 +12,9 @@
 import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-const FirstNode = require('../utils/FirstNode');
-
-const getUndeclaredIdentifiers = require('../utils/getUndeclaredIdentifiers');
-const getUndeclaredJSXIdentifiers = require('../utils/getUndeclaredJSXIdentifiers');
-
+import FirstNode from '../utils/FirstNode';
+import getUndeclaredIdentifiers from '../utils/getUndeclaredIdentifiers';
+import getUndeclaredJSXIdentifiers from '../utils/getUndeclaredJSXIdentifiers';
 
 function addMissingRequires(root: Collection, options: SourceOptions): void {
   const first = FirstNode.get(root);

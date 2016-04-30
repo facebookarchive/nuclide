@@ -9,20 +9,18 @@
  * the root directory of this source tree.
  */
 
-const IosSimulator = require('./IosSimulator');
-const {Dropdown} = require('../../nuclide-ui/lib/Dropdown');
-const {React} = require('react-for-atom');
-
-const {PropTypes} = React;
-
 import type {Device} from './IosSimulator';
+
+import IosSimulator from './IosSimulator';
+import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
+import {React} from 'react-for-atom';
 
 class SimulatorDropdown extends React.Component {
   static propTypes = {
-    className: PropTypes.string.isRequired,
-    disabled: PropTypes.bool.isRequired,
-    title: PropTypes.string.isRequired,
-    onSelectedSimulatorChange: PropTypes.func.isRequired,
+    className: React.PropTypes.string.isRequired,
+    disabled: React.PropTypes.bool.isRequired,
+    title: React.PropTypes.string.isRequired,
+    onSelectedSimulatorChange: React.PropTypes.func.isRequired,
   };
 
   static defaultProps = {

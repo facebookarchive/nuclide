@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const jscs = require('jscodeshift');
+import jscs from 'jscodeshift';
 
 /**
  * This module helps support a hack to easily introduce new lines into the AST.

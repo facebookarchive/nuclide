@@ -9,13 +9,14 @@
  * the root directory of this source tree.
  */
 
+import fs from 'fs';
+import path from 'path';
+import invariant from 'assert';
+import temp from 'temp';
 import watchman from 'fb-watchman';
+import WatchmanClient from '../lib/WatchmanClient';
 
-const fs = require('fs');
-const path = require('path');
-const invariant = require('assert');
-const temp = require('temp').track();
-const WatchmanClient = require('../lib/WatchmanClient');
+temp.track();
 
 const FILE_MODE = 33188;
 

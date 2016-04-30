@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const path = require('path');
-const {observeGrammarForTextEditors} = require('..');
+import path from 'path';
+import {observeGrammarForTextEditors} from '..';
 
 describe('observeGrammarForTextEditors', () => {
   let objcGrammar;

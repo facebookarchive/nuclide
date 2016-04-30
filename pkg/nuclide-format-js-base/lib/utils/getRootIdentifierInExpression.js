@@ -11,7 +11,7 @@
 
 import type {Node} from '../types/ast';
 
-const jscs = require('jscodeshift');
+import jscs from 'jscodeshift';
 
 const {match} = jscs;
 

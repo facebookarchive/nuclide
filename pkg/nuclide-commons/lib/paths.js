@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const path = require('path');
+import path from 'path';
 
 /**
  * @param filePath A file path.

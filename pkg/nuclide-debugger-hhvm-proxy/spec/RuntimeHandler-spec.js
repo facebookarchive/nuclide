@@ -12,7 +12,7 @@
 import type {ConnectionMultiplexer} from '../lib/ConnectionMultiplexer';
 import type {ClientCallback} from '../lib/ClientCallback';
 
-const {RuntimeHandler} = require('../lib/RuntimeHandler');
+import {RuntimeHandler} from '../lib/RuntimeHandler';
 
 describe('debugger-hhvm-proxy RuntimeHandler', () => {
   let clientCallback: any;

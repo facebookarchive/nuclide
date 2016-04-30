@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const {Range} = require('atom');
-const {jasmineMatchers} = require('..');
+import {Range} from 'atom';
+import {jasmineMatchers} from '..';
 
 describe('atom-test-helpers/matchers', () => {
   beforeEach(function() {

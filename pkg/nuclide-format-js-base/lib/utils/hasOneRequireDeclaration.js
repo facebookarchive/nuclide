@@ -11,8 +11,8 @@
 
 import type {Node} from '../types/ast';
 
-const hasOneDeclaration = require('./hasOneDeclaration');
-const isRequireExpression = require('./isRequireExpression');
+import hasOneDeclaration from './hasOneDeclaration';
+import isRequireExpression from './isRequireExpression';
 
 function hasOneRequireDeclaration(node: Node): boolean {
   if (!hasOneDeclaration(node)) {

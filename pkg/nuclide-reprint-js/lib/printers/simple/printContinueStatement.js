@@ -12,8 +12,8 @@
 import type {ContinueStatement} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-const markers = require('../../constants/markers');
-const wrapStatement = require('../../wrappers/simple/wrapStatement');
+import markers from '../../constants/markers';
+import wrapStatement from '../../wrappers/simple/wrapStatement';
 
 function printContinueStatement(print: Print, node: ContinueStatement): Lines {
   const wrap = x => wrapStatement(print, node, x);

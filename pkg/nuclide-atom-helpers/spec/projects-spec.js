@@ -9,8 +9,9 @@
  * the root directory of this source tree.
  */
 
-const {singleton} = require('../../nuclide-commons');
-const projects = require('../lib/projects');
+import {singleton} from '../../nuclide-commons';
+import projects from '../lib/projects';
+
 const {PROJECT_PATH_WATCHER_INSTANCE_KEY} = projects.__test__;
 
 describe('projects', () => {

@@ -11,11 +11,12 @@
 
 import type {SshConnectionConfiguration} from '../lib/SshHandshake';
 
-const {EventEmitter} = require('events');
-const path = require('path');
+import {EventEmitter} from 'events';
+import path from 'path';
+import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
+import {SshHandshake} from '../lib/SshHandshake';
+
 const pathToFakePk = path.join(__dirname, 'fakepk');
-const {clearRequireCache, uncachedRequire} = require('../../nuclide-test-helpers');
-const {SshHandshake} = require('../lib/SshHandshake');
 
 describe('SshHandshake', () => {
   class MockSshConnection extends EventEmitter {

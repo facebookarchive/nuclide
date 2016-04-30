@@ -9,14 +9,9 @@
  * the root directory of this source tree.
  */
 
-const {CompositeDisposable} = require('atom');
-const {PanelComponentScroller} = require('./PanelComponentScroller');
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
-
-const {PropTypes} = React;
+import {CompositeDisposable} from 'atom';
+import {PanelComponentScroller} from './PanelComponentScroller';
+import {React, ReactDOM} from 'react-for-atom';
 
 const MINIMUM_LENGTH = 100;
 
@@ -37,17 +32,17 @@ export class PanelComponent extends React.Component {
   state: State;
 
   static propTypes = {
-    children: PropTypes.element.isRequired,
-    dock: PropTypes.oneOf(['left', 'bottom', 'right']).isRequired,
-    hidden: PropTypes.bool.isRequired,
-    initialLength: PropTypes.number.isRequired,
+    children: React.PropTypes.element.isRequired,
+    dock: React.PropTypes.oneOf(['left', 'bottom', 'right']).isRequired,
+    hidden: React.PropTypes.bool.isRequired,
+    initialLength: React.PropTypes.number.isRequired,
     /*
      * When `true`, this component does not wrap its children in a scrolling container and instead
      * provides a simple container with visible (the default in CSS) overflow. Default: false.
      */
-    noScroll: PropTypes.bool.isRequired,
-    onResize: PropTypes.func.isRequired,
-    overflowX: PropTypes.string,
+    noScroll: React.PropTypes.bool.isRequired,
+    onResize: React.PropTypes.func.isRequired,
+    overflowX: React.PropTypes.string,
   };
 
   static defaultProps = {

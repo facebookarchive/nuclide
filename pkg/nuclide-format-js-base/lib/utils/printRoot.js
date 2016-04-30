@@ -11,7 +11,7 @@
 
 import type {Collection} from '../types/ast';
 
-const NewLine = require('./NewLine');
+import NewLine from './NewLine';
 
 function printRoot(root: Collection): string {
   // Print the new source.

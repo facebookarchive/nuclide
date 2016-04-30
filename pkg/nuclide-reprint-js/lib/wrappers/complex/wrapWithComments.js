@@ -11,9 +11,9 @@
 
 import type {Context, Lines, Print} from '../../types/common';
 
-const markers = require('../../constants/markers');
-const printComment = require('../../printers/common/printComment');
-const unwrapMarkers = require('../../utils/unwrapMarkers');
+import markers from '../../constants/markers';
+import printComment from '../../printers/common/printComment';
+import unwrapMarkers from '../../utils/unwrapMarkers';
 
 function wrapWithComments(
   print: Print,

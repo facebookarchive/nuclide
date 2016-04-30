@@ -12,7 +12,7 @@
 import {BuckProject} from '../../nuclide-buck-base/lib/BuckProject';
 import path from 'path';
 
-const {findTargetLocation, parseTarget} = require('../lib/HyperclickProvider');
+import {findTargetLocation, parseTarget} from '../lib/HyperclickProvider';
 
 describe('HyperclickProvider', () => {
   let projectPath: string = (null: any);

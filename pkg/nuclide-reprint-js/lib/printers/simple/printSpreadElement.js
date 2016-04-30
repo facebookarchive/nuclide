@@ -12,8 +12,8 @@
 import type {Lines, Print} from '../../types/common';
 import type {SpreadElement} from 'ast-types-flow';
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
+import flatten from '../../utils/flatten';
+import markers from '../../constants/markers';
 
 function printSpreadElement(print: Print, node: SpreadElement): Lines {
   return flatten([

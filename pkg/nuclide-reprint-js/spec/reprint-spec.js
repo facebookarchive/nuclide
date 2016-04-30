@@ -11,7 +11,7 @@
 
 import fs from 'fs';
 import {fsPromise} from '../../nuclide-commons';
-const {reprint} = require('..');
+import {reprint} from '..';
 
 // Helpful for debugging.
 const only = new Set([

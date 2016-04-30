@@ -11,7 +11,7 @@
 
 import type {Node} from '../types/ast';
 
-const jscs = require('jscodeshift');
+import jscs from 'jscodeshift';
 
 function getNamesFromID(node: Node): Set<string> {
   const ids = new Set();

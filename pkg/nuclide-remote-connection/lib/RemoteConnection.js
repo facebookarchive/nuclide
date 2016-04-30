@@ -20,14 +20,12 @@ import type {RemoteDirectory} from './RemoteDirectory';
 import invariant from 'assert';
 import {DisposableSubscription} from '../../nuclide-commons';
 import {ServerConnection} from './ServerConnection';
+import {CompositeDisposable, Disposable} from 'atom';
+import remoteUri from '../../nuclide-remote-uri';
+import {EventEmitter} from 'events';
+import {getConnectionConfig} from './RemoteConnectionConfigurationManager';
 
-const {CompositeDisposable, Disposable} = require('atom');
-const remoteUri = require('../../nuclide-remote-uri');
 const logger = require('../../nuclide-logging').getLogger();
-const {EventEmitter} = require('events');
-
-const {getConnectionConfig} =
-  require('./RemoteConnectionConfigurationManager');
 
 const FILE_WATCHER_SERVICE = 'FileWatcherService';
 const FILE_SYSTEM_SERVICE = 'FileSystemService';

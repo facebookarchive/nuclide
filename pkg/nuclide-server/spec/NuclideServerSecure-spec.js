@@ -9,9 +9,10 @@
  * the root directory of this source tree.
  */
 
-const fs = require('fs');
-const path = require('path');
-const NuclideServer = require('../lib/NuclideServer');
+import fs from 'fs';
+
+import path from 'path';
+import NuclideServer from '../lib/NuclideServer';
 import ClientComponent from '../lib/serviceframework/ClientComponent';
 import {loadServicesConfig} from '../lib/serviceframework/config';
 import NuclideSocket from '../lib/NuclideSocket';

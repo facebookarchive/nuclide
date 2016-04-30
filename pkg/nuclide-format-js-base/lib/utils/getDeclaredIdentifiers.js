@@ -12,8 +12,8 @@
 import type {Collection, Node, NodePath} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-const getNamesFromID = require('./getNamesFromID');
-const jscs = require('jscodeshift');
+import getNamesFromID from './getNamesFromID';
+import jscs from 'jscodeshift';
 
 type ConfigEntry = {
   searchTerms: [any, Object];

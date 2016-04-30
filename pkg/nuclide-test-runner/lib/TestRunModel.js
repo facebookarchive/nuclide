@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const Ansi = require('./Ansi');
+import Ansi from './Ansi';
 
 import type {TestRunStatus} from '../../nuclide-test-runner/lib/interfaces';
 

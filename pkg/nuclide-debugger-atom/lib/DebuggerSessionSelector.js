@@ -9,11 +9,10 @@
  * the root directory of this source tree.
  */
 
-const DebuggerActions = require('./DebuggerActions');
-const DebuggerProcessInfo = require('./DebuggerProcessInfo');
-const {DebuggerStore} = require('./DebuggerStore');
-const {React} = require('react-for-atom');
-const {PropTypes} = React;
+import DebuggerActions from './DebuggerActions';
+import DebuggerProcessInfo from './DebuggerProcessInfo';
+import {DebuggerStore} from './DebuggerStore';
+import {React} from 'react-for-atom';
 import {
   Button,
   ButtonTypes,
@@ -31,8 +30,8 @@ type State = {
  */
 const DebuggerSessionSelector = React.createClass({
   propTypes: {
-    actions: PropTypes.instanceOf(DebuggerActions).isRequired,
-    store: PropTypes.instanceOf(DebuggerStore).isRequired,
+    actions: React.PropTypes.instanceOf(DebuggerActions).isRequired,
+    store: React.PropTypes.instanceOf(DebuggerStore).isRequired,
   },
 
   getInitialState(): State {

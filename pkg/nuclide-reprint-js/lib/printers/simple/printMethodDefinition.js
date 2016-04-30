@@ -12,8 +12,8 @@
 import type {Lines, Print} from '../../types/common';
 import type {MethodDefinition} from 'ast-types-flow';
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
+import flatten from '../../utils/flatten';
+import markers from '../../constants/markers';
 
 function printMethodDefinition(print: Print, node: MethodDefinition): Lines {
   let parts = [];

@@ -11,12 +11,11 @@
 
 import invariant from 'assert';
 import {trackEvent} from '../../nuclide-analytics';
-
-const {Disposable} = require('atom');
+import {Disposable} from 'atom';
 import {parse as parseRemoteUri} from '../../nuclide-remote-uri';
-const logger = require('../../nuclide-logging').getLogger();
+import NuclideSocket from '../../nuclide-server/lib/NuclideSocket';
 
-const NuclideSocket = require('../../nuclide-server/lib/NuclideSocket');
+const logger = require('../../nuclide-logging').getLogger();
 
 const HEARTBEAT_AWAY_REPORT_COUNT = 3;
 const HEARTBEAT_NOTIFICATION_ERROR = 1;

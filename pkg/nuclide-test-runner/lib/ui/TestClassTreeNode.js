@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const Immutable = require('immutable');
-const {LazyTreeNode} = require('../../../nuclide-ui/lib/LazyTreeNode');
+import Immutable from 'immutable';
+import {LazyTreeNode} from '../../../nuclide-ui/lib/LazyTreeNode';
 
 class TestClassTreeNode extends LazyTreeNode {
 

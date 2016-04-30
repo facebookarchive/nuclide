@@ -10,13 +10,15 @@
  */
 
 import type {RequestOptions} from './utils';
-const url = require('url');
-const {asyncRequest} = require('./utils');
-const WebSocket = require('ws');
-const uuid = require('uuid');
-const {EventEmitter} = require('events');
-const logger = require('../../nuclide-logging').getLogger();
+
+import url from 'url';
+import {asyncRequest} from './utils';
+import WebSocket from 'ws';
+import uuid from 'uuid';
+import {EventEmitter} from 'events';
 import {HEARTBEAT_CHANNEL} from './config';
+
+const logger = require('../../nuclide-logging').getLogger();
 
 type NuclideSocketOptions = {
   certificateAuthorityCertificate?: Buffer;

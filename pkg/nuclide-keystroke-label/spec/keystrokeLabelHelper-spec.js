@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {humanizeKeystroke} = require('../lib/keystrokeLabelHelpers');
+import {humanizeKeystroke} from '../lib/keystrokeLabelHelpers';
 
 describe('nuclide-keystroke-label', () => {
 

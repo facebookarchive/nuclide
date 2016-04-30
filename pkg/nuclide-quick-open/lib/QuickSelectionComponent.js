@@ -35,27 +35,17 @@ type Selection = {
   selectedItemIndex: number;
 };
 
-const {AtomInput} = require('../../nuclide-ui/lib/AtomInput');
-const {Tabs} = require('../../nuclide-ui/lib/Tabs');
-const {CompositeDisposable, Emitter} = require('atom');
-const {
-  debounce,
-  object,
-} = require('../../nuclide-commons');
-const {
-  React,
-  ReactDOM,
-} = require('react-for-atom');
-
+import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
+import {Tabs} from '../../nuclide-ui/lib/Tabs';
+import {CompositeDisposable, Emitter} from 'atom';
+import {debounce, object} from '../../nuclide-commons';
+import {React, ReactDOM} from 'react-for-atom';
 import SearchResultManager from './SearchResultManager';
-const searchResultManager = SearchResultManager.getInstance();
-const {PropTypes} = React;
-const classnames = require('classnames');
+import classnames from 'classnames';
+import {filterEmptyResults} from './searchResultHelpers';
+import {nuclideUriToDisplayString} from '../../nuclide-remote-uri';
 
-const {
-  filterEmptyResults,
-} = require('./searchResultHelpers');
-const {nuclideUriToDisplayString} = require('../../nuclide-remote-uri');
+const searchResultManager = SearchResultManager.getInstance();
 
 /**
  * Determine what the applicable shortcut for a given action is within this component's context.
@@ -739,13 +729,13 @@ export default class QuickSelectionComponent extends React.Component {
 }
 
 QuickSelectionComponent.propTypes = {
-  activeProvider: PropTypes.shape({
-    action: PropTypes.string.isRequired,
-    debounceDelay: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
-    prompt: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
+  activeProvider: React.PropTypes.shape({
+    action: React.PropTypes.string.isRequired,
+    debounceDelay: React.PropTypes.number.isRequired,
+    name: React.PropTypes.string.isRequired,
+    prompt: React.PropTypes.string.isRequired,
+    title: React.PropTypes.string.isRequired,
   }).isRequired,
-  onProviderChange: PropTypes.func,
-  maxScrollableAreaHeight: PropTypes.number,
+  onProviderChange: React.PropTypes.func,
+  maxScrollableAreaHeight: React.PropTypes.number,
 };

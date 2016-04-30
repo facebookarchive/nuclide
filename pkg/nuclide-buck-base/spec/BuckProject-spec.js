@@ -10,8 +10,8 @@
  */
 
 const BuckProject = require('../lib/BuckProject').BuckProject;
-const fs = require('fs-plus');
-const path = require('path');
+import fs from 'fs-plus';
+import path from 'path';
 const temp = require('temp').track();
 
 function copyProject(projectInFixturesDirectory: string) {

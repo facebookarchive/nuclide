@@ -12,9 +12,9 @@
 import type {SourceOptions} from '../../nuclide-format-js-base/lib/options/SourceOptions';
 
 const logger = require('../../nuclide-logging').getLogger();
-const featureConfig = require('../../nuclide-feature-config');
-const {track} = require('../../nuclide-analytics');
-const {updateCursor} = require('../../nuclide-update-cursor');
+import featureConfig from '../../nuclide-feature-config';
+import {track} from '../../nuclide-analytics';
+import {updateCursor} from '../../nuclide-update-cursor';
 
 async function formatCode(options: SourceOptions, editor: ?TextEditor): Promise<void> {
   editor = editor || atom.workspace.getActiveTextEditor();

@@ -9,8 +9,9 @@
  * the root directory of this source tree.
  */
 
-const {Point, TextBuffer} = require('atom');
-const ObjectiveCBracketBalancer = require('../lib/ObjectiveCBracketBalancer');
+import {Point, TextBuffer} from 'atom';
+import ObjectiveCBracketBalancer from '../lib/ObjectiveCBracketBalancer';
+
 const {getOpenBracketInsertPosition} = ObjectiveCBracketBalancer;
 
 describe('ObjectiveCBracketBalancer', () => {

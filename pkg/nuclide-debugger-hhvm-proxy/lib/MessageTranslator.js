@@ -12,11 +12,11 @@
 import invariant from 'assert';
 
 import logger from './utils';
-const {DebuggerHandler} = require('./DebuggerHandler');
-const PageHandler = require('./PageHandler');
-const ConsoleHandler = require('./ConsoleHandler');
-const {RuntimeHandler} = require('./RuntimeHandler');
-const {ConnectionMultiplexer} = require('./ConnectionMultiplexer');
+import {DebuggerHandler} from './DebuggerHandler';
+import PageHandler from './PageHandler';
+import ConsoleHandler from './ConsoleHandler';
+import {RuntimeHandler} from './RuntimeHandler';
+import {ConnectionMultiplexer} from './ConnectionMultiplexer';
 import {ClientCallback} from './ClientCallback';
 
 import type Handler from './Handler';

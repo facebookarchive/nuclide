@@ -16,7 +16,7 @@ import {Range} from 'atom';
 
 import {MarkerTracker} from '../lib/MarkerTracker';
 
-const path = require('path');
+import path from 'path';
 
 describe('MarkerTracker', () => {
   let tracker: MarkerTracker = (null: any);

@@ -9,10 +9,9 @@
  * the root directory of this source tree.
  */
 
-import {Range} from 'atom';
-const {CompositeDisposable} = require('atom');
-
 import type {CodeFormatProvider} from './types';
+
+import {CompositeDisposable, Range} from 'atom';
 
 class CodeFormatManager {
 

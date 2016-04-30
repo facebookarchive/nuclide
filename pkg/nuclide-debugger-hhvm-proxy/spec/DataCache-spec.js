@@ -13,14 +13,17 @@ import type {DataCache as DataCacheType} from '../lib/DataCache';
 import type {DbgpSocket as DbgpSocketType} from '../lib/DbgpSocket';
 
 import invariant from 'assert';
-const {uncachedRequire} = require('../../nuclide-test-helpers');
-const {
+import {uncachedRequire} from '../../nuclide-test-helpers';
+import {
   remoteObjectIdOfObjectId,
   createContextObjectId,
   pagedObjectId,
   singlePageObjectId,
-} = require('../lib/ObjectId');
-const { STATUS_BREAK, STATUS_RUNNING } = require('../lib/DbgpSocket');
+} from '../lib/ObjectId';
+import {
+  STATUS_BREAK,
+  STATUS_RUNNING,
+} from '../lib/DbgpSocket';
 
 const PROPERTIES = [{$: {fullname: 'pizza'}}];
 const CONVERTED_PROPERTIES = ['converted-properties'];

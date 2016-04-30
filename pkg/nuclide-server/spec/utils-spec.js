@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-const http = require('http');
-const utils = require('../lib/utils');
-const querystring = require('querystring');
+import http from 'http';
+import utils from '../lib/utils';
+import querystring from 'querystring';
 
 xdescribe('NuclideServer utils test', () => { // eslint-disable-line jasmine/no-disabled-tests
   let server, customHandler;

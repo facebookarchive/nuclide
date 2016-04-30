@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const NuclideSideBar = require('..');
-const {React} = require('react-for-atom');
+import * as NuclideSideBar from '..';
+import {React} from 'react-for-atom';
 
 class CoolerBarView extends React.Component {
   render() {

@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const path = require('path');
-const {ensureTrailingSeparator} = require('../lib/paths');
+import path from 'path';
+import {ensureTrailingSeparator} from '../lib/paths';
 
 describe('paths.js', () => {
   describe('ensureTrailingSeparator', () => {

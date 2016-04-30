@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {Dispatcher} = require('flux');
+import {Dispatcher} from 'flux';
 
 let quickopenDispatcher = null;
 class QuickSelectionDispatcher {

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {trackTiming} = require('..');
+import {trackTiming} from '..';
 
 class Test {
 

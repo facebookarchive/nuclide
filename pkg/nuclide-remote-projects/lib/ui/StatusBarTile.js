@@ -9,19 +9,18 @@
  * the root directory of this source tree.
  */
 
-const ConnectionState = require('../ConnectionState');
-const {
+import ConnectionState from '../ConnectionState';
+import {
   notifyLocalDiskFile,
   notifyConnectedRemoteFile,
   notifyDisconnectedRemoteFile,
-} = require('../notification');
-const {React} = require('react-for-atom');
-const {PropTypes} = React;
+} from '../notification';
+import {React} from 'react-for-atom';
 
 const StatusBarTile = React.createClass({
   propTypes: {
-    connectionState: PropTypes.number.isRequired,
-    fileUri: PropTypes.string,
+    connectionState: React.PropTypes.number.isRequired,
+    fileUri: React.PropTypes.string,
   },
 
   render(): ?React.Element {

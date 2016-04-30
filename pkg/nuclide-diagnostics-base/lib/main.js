@@ -103,7 +103,7 @@ export type DiagnosticUpdater = {
   applyFixesForFile: (file: NuclideUri) => void;
 };
 
-const DiagnosticStore = require('./DiagnosticStore');
+import DiagnosticStore from './DiagnosticStore';
 
 /**
  * Linter APIs, for compatibility with the Atom linter package.

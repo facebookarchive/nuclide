@@ -49,7 +49,7 @@ type ProviderBaseOptions = {
 const UPDATE_EVENT = 'update';
 const INVALIDATE_EVENT = 'invalidate';
 
-const {CompositeDisposable, Emitter} = require('atom');
+import {CompositeDisposable, Emitter} from 'atom';
 
 function getTextEventDispatcher() {
   return require('../../nuclide-text-event-dispatcher').getInstance();

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const markers = require('../constants/markers');
+import markers from '../constants/markers';
 
 /**
  * This translates a scope marker into the appropriate marker based on if the
