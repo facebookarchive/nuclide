@@ -31,13 +31,21 @@ export const isDevelopment = once(function(): boolean {
   }
 });
 
-export function isRunningInTest(): boolean {
+// Prior to Atom v1.7.0, `atom.inSpecMode` had a chance of performing an IPC call that could be
+// expensive depending on how much work the other process was doing. Because this value will not
+// change during run time, memoize the value to ensure the IPC call is performed only once.
+//
+// See [`getWindowLoadSettings`][1] for the sneaky getter and `remote` call that this memoization
+// ensures happens only once.
+//
+// [1]: https://github.com/atom/atom/blob/v1.6.2/src/window-load-settings-helpers.coffee#L10-L14
+export const isRunningInTest = once(function(): boolean {
   if (isRunningInClient()) {
     return atom.inSpecMode();
   } else {
     return process.env.NODE_ENV === 'test';
   }
-}
+});
 
 export function isRunningInClient(): boolean {
   return typeof atom !== 'undefined';
