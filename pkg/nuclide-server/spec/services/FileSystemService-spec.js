@@ -82,7 +82,12 @@ describe('FileSystemService', () => {
   it('can stat', () => {
     waitsForPromise(async () => {
       const stats = await service.stat(pathToTestFile);
-      expect(stats).toEqual(fs.statSync(pathToTestFile));
+      const expected = fs.statSync(pathToTestFile);
+      // The above call to statSync actually updates the value of atime.
+      // So the comparison below can fail of the two calls span a second boundary.
+      delete stats.atime;
+      delete expected.atime;
+      expect(stats).toEqual(expected);
     });
   });
 
@@ -113,7 +118,12 @@ describe('FileSystemService', () => {
     waitsForPromise(async () => {
       fs.symlinkSync(pathToTestFile, pathToLinkFile, 'file');
       const lstats = await service.lstat(pathToLinkFile);
-      expect(lstats).toEqual(fs.lstatSync(pathToLinkFile));
+      const expected = fs.lstatSync(pathToLinkFile);
+      // The above call to lstatSync actually updates the value of atime.
+      // So the comparison below can fail of the two calls span a second boundary.
+      delete lstats.atime;
+      delete expected.atime;
+      expect(lstats).toEqual(expected);
     });
   });
 
