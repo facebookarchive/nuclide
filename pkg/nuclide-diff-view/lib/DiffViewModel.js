@@ -1141,6 +1141,11 @@ class DiffViewModel {
   }
 
   async _loadPublishModeState(): Promise<void> {
+    if (this._state.publishModeState === PublishModeState.AWAITING_PUBLISH) {
+      // That must be an a update triggered by an `amend` operation,
+      // done as part of diffing.
+      return;
+    }
     let publishMessage = this._state.publishMessage;
     this._setState({
       ...this._state,
