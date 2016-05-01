@@ -1307,6 +1307,7 @@ type atom$UnhandledErrorEvent = {
 type AtomGlobal = {
   // Properties
   appVersion: string;
+  atomScriptMode: ?boolean; // Added by nuclide-atom-script.
   clipboard: atom$Clipboard;
   commands: atom$CommandRegistry;
   config: atom$Config;

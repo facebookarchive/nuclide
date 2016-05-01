@@ -67,6 +67,7 @@ export default async function runTest(params: TestRunnerParams): Promise<ExitCod
     document,
   };
   global.atom = params.buildAtomEnvironment(atomEnvParams);
+  global.atom.atomScriptMode = true;
 
   // Set up the console before running any user code.
   const {queue, shutdown} = await instrumentConsole(args['stdout']);
