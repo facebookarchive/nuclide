@@ -306,4 +306,8 @@ module.exports = {
   get passesGK(): (gatekeeperName: string, timeout?: number) => Promise<boolean> {
     return requireFromCache('./gatekeeper').passesGK;
   },
+
+  get passesGKSafe(): (gatekeeperName: string, timeout?: number) => Promise<boolean> {
+    return requireFromCache('./gatekeeper').passesGKSafe;
+  },
 };

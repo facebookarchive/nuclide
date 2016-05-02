@@ -20,10 +20,9 @@ import {extractWordAtPosition} from '../../nuclide-atom-helpers';
 import {injectObservableAsProps} from '../../nuclide-ui/lib/HOC';
 import {DebuggerMode} from './DebuggerStore';
 import {DebuggerDatatipComponent} from './DebuggerDatatipComponent';
-import {passesGK} from '../../nuclide-commons';
+import {passesGKSafe} from '../../nuclide-commons';
 
 const GK_DEBUGGER_DATATIPS = 'nuclide_debugger_datatips';
-const GK_TIMEOUT = 1000;
 
 const DEFAULT_WORD_REGEX = /\w+/gi;
 function defaultGetEvaluationExpression(
@@ -71,7 +70,7 @@ export async function debuggerDatatip(
   editor: TextEditor,
   position: atom$Point,
 ): Promise<?Datatip> {
-  if (!await passesGK(GK_DEBUGGER_DATATIPS, GK_TIMEOUT)) {
+  if (!await passesGKSafe(GK_DEBUGGER_DATATIPS, 0)) {
     return null;
   }
   if (model.getStore().getDebuggerMode() !== DebuggerMode.PAUSED) {

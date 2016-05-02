@@ -26,3 +26,12 @@ export async function passesGK(gatekeeperName: string, timeout?: number): Promis
     ? false
     : (await gatekeeper.asyncIsGkEnabled(gatekeeperName, timeout)) === true;
 }
+
+/**
+ * Check a GK but silently return false on error.
+ * Use this for features that should work despite gatekeepers not being available.
+ */
+export function passesGKSafe(gatekeeperName: string, timeout?: number): Promise<boolean> {
+  return passesGK(gatekeeperName, timeout)
+    .catch(() => false);
+}

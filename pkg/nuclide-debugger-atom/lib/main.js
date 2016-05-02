@@ -33,7 +33,7 @@ import {
 import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
 import remoteUri from '../../nuclide-remote-uri';
 import {ServerConnection} from '../../nuclide-remote-connection';
-import {passesGK} from '../../nuclide-commons';
+import {passesGKSafe} from '../../nuclide-commons';
 
 import DebuggerProcessInfo from './DebuggerProcessInfo';
 import DebuggerInstance from './DebuggerInstance';
@@ -161,12 +161,7 @@ class Activation {
   }
 
   async _setupView(): Promise<void> {
-    let useRevampedUi;
-    try {
-      useRevampedUi = await passesGK(GK_DEBUGGER_UI_REVAMP, GK_TIMEOUT);
-    } catch (e) {
-      useRevampedUi = false;
-    }
+    const useRevampedUi = await passesGKSafe(GK_DEBUGGER_UI_REVAMP, GK_TIMEOUT);
     this._disposables.add(
       atom.views.addViewProvider(
         DebuggerModel,
@@ -194,7 +189,7 @@ class Activation {
   }
 
   async _toggle() {
-    const passedNewUIGK = await passesGK(GK_DEBUGGER_LAUNCH_ATTACH_UI, GK_TIMEOUT);
+    const passedNewUIGK = await passesGKSafe(GK_DEBUGGER_LAUNCH_ATTACH_UI, 0);
     if (passedNewUIGK) {
       this._toggleLaunchAttachDialog();
     } else {
