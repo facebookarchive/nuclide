@@ -272,7 +272,7 @@ const FileSystemActions = {
           !!options.addToVCS,
           onDidConfirm,
         ).catch(error => {
-          atom.notifications.addError(`Failed to duplicate '{file.getPath()}'`);
+          atom.notifications.addError(`Failed to duplicate '${file.getPath()}'`);
         });
       },
       onClose: this._closeDialog,

@@ -156,11 +156,6 @@ export class NavigationStackController {
 
   onOptInNavigation(editor: atom$TextEditor): void {
     log(`onOptInNavigation ${editor.getPath()}`);
-
-    // Usually the setPosition would come before the onOptInNavigation
-    if (this._lastLocation == null) {
-
-    }
     // Opt-in navigation is handled in the same way as a file open with no preceeding activation
     this.onOpen(editor);
   }

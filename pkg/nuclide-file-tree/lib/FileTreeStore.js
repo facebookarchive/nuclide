@@ -514,23 +514,6 @@ export class FileTreeStore {
     });
   }
 
-  _setRootKeys(rootKeys: Array<NuclideUri>): void {
-    const rootNodes = rootKeys.map(rootUri => {
-      const root = this.roots.get(rootUri);
-      if (root != null) {
-        return root;
-      }
-
-      return new FileTreeNode({
-        uri: rootUri,
-        rootUri,
-        connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
-      }, this._conf);
-    });
-    this._setRoots(new Immutable.OrderedMap(rootNodes.map(root => [root.uri, root])));
-    this._setCwdKey(this._cwdKey);
-  }
-
   getTrackedNode(): ?FileTreeNode {
     // Locate the root containing the tracked node efficiently by using the child-derived
     // containsTrackedNode property
