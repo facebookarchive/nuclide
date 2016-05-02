@@ -16,6 +16,8 @@ import {
   atomEventDebounce,
 } from '../../nuclide-atom-helpers';
 
+import {event as commonsEvent} from '../../nuclide-commons';
+
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
 
@@ -40,31 +42,56 @@ export type Result<V> = {
 } | {
   kind: 'edit';
 } | {
+  kind: 'save';
+} | {
   kind: 'result';
   result: V;
   // The editor that the result was computed from
   editor: atom$TextEditor;
 };
 
-type ResultFunction<T, V> = (provider: T, editor: atom$TextEditor) => Promise<V>;
+export type ResultFunction<T, V> = (provider: T, editor: atom$TextEditor) => Promise<V>;
 
 export type EventSources = {
   activeEditors: Observable<?atom$TextEditor>;
   changesForEditor: (editor: atom$TextEditor) => Observable<void>;
+  savesForEditor: (editor: atom$TextEditor) => Observable<void>;
+};
+
+export type Config = {
+  /**
+   * If true, we will query providers for updates whenever the text in the editor is changed.
+   * Otherwise, we will query only when there is a save event.
+   */
+  updateOnEdit?: boolean;
+};
+
+type ConcreteConfig = {
+  updateOnEdit: boolean;
 };
 
 export class ActiveEditorBasedService<T: Provider, V> {
   _resultFunction: ResultFunction<T, V>;
   _providerRegistry: ProviderRegistry<T>;
   _resultsStream: Observable<Result<V>>;
+  _config: ConcreteConfig;
 
   constructor(
     resultFunction: ResultFunction<T, V>,
+    config: Config = {},
     eventSources: EventSources = getDefaultEventSources(),
   ) {
+    this._config = this._getConcreteConfig(config);
     this._resultFunction = resultFunction;
     this._providerRegistry = new ProviderRegistry();
     this._resultsStream = this._createResultsStream(eventSources);
+  }
+
+  _getConcreteConfig(config: Config): ConcreteConfig {
+    return {
+      updateOnEdit: true,
+      ...config,
+    };
   }
 
   consumeProvider(provider: T): IDisposable {
@@ -88,17 +115,30 @@ export class ActiveEditorBasedService<T: Provider, V> {
         return Observable.of({ kind: 'not-text-editor' });
       }
 
-      const editorEvents = eventSources.changesForEditor(editor);
-
       return Observable.concat(
         Observable.of({ kind: 'pane-change' }),
         Observable.fromPromise(this._getResultForEditor(editor)),
-        editorEvents.flatMap(() => {
-          return Observable.concat(
-            Observable.of({ kind: 'edit' }),
-            Observable.fromPromise(this._getResultForEditor(editor)),
-          );
-        }),
+        this._resultsForEditor(editor, eventSources),
+      );
+    });
+  }
+
+  _resultsForEditor(editor: atom$TextEditor, eventSources: EventSources): Observable<Result<V>> {
+    let editorEvents: Observable<void>;
+    // The result that we publish when an editor event is emitted
+    let eventEmittedResult: Result<V>;
+    if (this._config.updateOnEdit) {
+      editorEvents = eventSources.changesForEditor(editor);
+      eventEmittedResult = { kind: 'edit' };
+    } else {
+      editorEvents = eventSources.savesForEditor(editor);
+      eventEmittedResult = { kind: 'save' };
+    }
+
+    return editorEvents.flatMap(() => {
+      return Observable.concat(
+        Observable.of(eventEmittedResult),
+        Observable.fromPromise(this._getResultForEditor(editor)),
       );
     });
   }
@@ -133,5 +173,9 @@ function getDefaultEventSources(): EventSources {
   return {
     activeEditors: atomEventDebounce.observeActiveEditorsDebounced(),
     changesForEditor: editor => atomEventDebounce.editorChangesDebounced(editor),
+    savesForEditor: editor => {
+      return commonsEvent.observableFromSubscribeFunction(callback => editor.onDidSave(callback))
+        .mapTo(undefined);
+    },
   };
 }

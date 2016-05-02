@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {Config, EventSources, ResultFunction} from '..';
+
 import {Subject} from 'rxjs';
 
 import {ActiveEditorBasedService} from '..';
@@ -23,6 +25,11 @@ describe('ActiveEditorBasedService', () => {
 
   let activeEditors: Subject<?atom$TextEditor> = (null: any);
   let editorChanges: Subject<void> = (null: any);
+  let editorSaves: Subject<void> = (null: any);
+
+  let resultFunction: ResultFunction<TestProvider, void> = (null: any);
+  let config: Config = (null: any);
+  let eventSources: EventSources = (null: any);
 
   let editor1: atom$TextEditor = (null: any);
   let editor2: atom$TextEditor = (null: any);
@@ -31,33 +38,50 @@ describe('ActiveEditorBasedService', () => {
 
   let shouldProviderError: boolean = (null: any);
 
+  function initializeService() {
+    activeEditorBasedService = new ActiveEditorBasedService(
+      resultFunction,
+      config,
+      eventSources,
+    );
+
+    resultingEventsPromise = activeEditorBasedService.getResultsStream()
+      .map(result => result.kind)
+      .toArray()
+      .toPromise();
+  }
+
+  // This doesn't happen in normal use but it's useful to be able to truncate the stream for
+  // testing.
+  function completeSources() {
+    activeEditors.complete();
+    editorChanges.complete();
+    editorSaves.complete();
+  }
+
   beforeEach(() => {
     waitsForPromise(async () => {
       activeEditors = new Subject();
       editorChanges = new Subject();
+      editorSaves = new Subject();
       shouldProviderError = false;
 
-      const eventSources = {
+      resultFunction = async () => {
+        if (shouldProviderError) {
+          throw new Error('baaaaad');
+        }
+      };
+      config = {};
+      eventSources = {
         activeEditors,
         changesForEditor: () => editorChanges,
+        savesForEditor: () => editorSaves,
       };
 
-      activeEditorBasedService = new ActiveEditorBasedService(
-        async () => {
-          if (shouldProviderError) {
-            throw new Error('baaaaad');
-          }
-        },
-        eventSources,
-      );
+      initializeService();
 
       editor1 = await atom.workspace.open();
       editor2 = await atom.workspace.open();
-
-      resultingEventsPromise = activeEditorBasedService.getResultsStream()
-        .map(result => result.kind)
-        .toArray()
-        .toPromise();
     });
   });
 
@@ -82,10 +106,7 @@ describe('ActiveEditorBasedService', () => {
 
         activeEditors.next(editor2);
 
-        // This doesn't happen in normal use but it's useful to be able to truncate the stream for
-        // testing.
-        activeEditors.complete();
-        editorChanges.complete();
+        completeSources();
 
         expect(await resultingEventsPromise).toEqual([
           'not-text-editor',
@@ -99,6 +120,62 @@ describe('ActiveEditorBasedService', () => {
       });
     });
 
+    it('should not emit save events when it is configured to respond to edit events', () => {
+      waitsForPromise(async () => {
+        activeEditors.next(editor1);
+        await waitForNextTick();
+
+        editorChanges.next(undefined);
+        await waitForNextTick();
+
+        editorSaves.next(undefined);
+        await waitForNextTick();
+
+        completeSources();
+
+        expect(await resultingEventsPromise).toEqual([
+          'pane-change',
+          'result',
+          'edit',
+          'result',
+        ]);
+      });
+    });
+
+    describe('when configured to respond to save events', () => {
+      beforeEach(() => {
+        config.updateOnEdit = false;
+        initializeService();
+        // Have to re-add this since the re-initialization kills it
+        activeEditorBasedService.consumeProvider({
+          priority: 10,
+          grammarScopes: ['text.plain.null-grammar'],
+        });
+      });
+
+      it('should generate and respond to save events', () => {
+        waitsForPromise(async () => {
+          activeEditors.next(editor1);
+          await waitForNextTick();
+
+          editorChanges.next(undefined);
+          await waitForNextTick();
+
+          editorSaves.next(undefined);
+          await waitForNextTick();
+
+          completeSources();
+
+          expect(await resultingEventsPromise).toEqual([
+            'pane-change',
+            'result',
+            'save',
+            'result',
+          ]);
+        });
+      });
+    });
+
     it("should produce the 'provider-error' event when a provider errors", () => {
       waitsForPromise(async () => {
         shouldProviderError = true;
@@ -106,8 +183,7 @@ describe('ActiveEditorBasedService', () => {
         activeEditors.next(editor1);
         await waitForNextTick();
 
-        activeEditors.complete();
-        editorChanges.complete();
+        completeSources();
 
         expect(await resultingEventsPromise).toEqual([
           'pane-change',
@@ -123,8 +199,7 @@ describe('ActiveEditorBasedService', () => {
         activeEditors.next(editor1);
         await waitForNextTick();
 
-        activeEditors.complete();
-        editorChanges.complete();
+        completeSources();
 
         expect(await resultingEventsPromise).toEqual([
           'pane-change',
