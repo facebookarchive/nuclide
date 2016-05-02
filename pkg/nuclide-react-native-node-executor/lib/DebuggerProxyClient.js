@@ -16,7 +16,7 @@ import ChildManager from './ChildManager';
 import {CompositeDisposable, Disposable} from 'atom';
 import {EventEmitter} from 'events';
 import Rx from 'rxjs';
-import WebSocket from 'ws';
+import WS from 'ws';
 
 const EXECUTOR_PORT = 8081;
 const WS_URL = `ws://localhost:${EXECUTOR_PORT}/debugger-proxy?role=debugger&name=Nuclide`;
@@ -61,7 +61,7 @@ export class DebuggerProxyClient {
       return;
     }
 
-    const ws = new WebSocket(WS_URL);
+    const ws = new WS(WS_URL);
     const onReply = (replyID, result) => { ws.send(JSON.stringify({replyID, result})); };
 
     // TODO(matthewwithanm): Don't share an emitter; add API for subscribing to what we want to

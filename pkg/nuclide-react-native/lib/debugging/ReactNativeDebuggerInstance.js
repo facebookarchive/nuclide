@@ -15,7 +15,7 @@ import {
   DebuggerProxyClient,
 } from '../../../nuclide-react-native-node-executor/lib/DebuggerProxyClient';
 import Rx from 'rxjs';
-import WebSocket from 'ws';
+import WS from 'ws';
 // $FlowIssue: Flow doesn't recognize this nested module.
 import {using as observableUsing} from 'rxjs/observable/using';
 import type {Session as SessionType} from '../../../nuclide-debugger-node/lib/Session';
@@ -116,7 +116,7 @@ const pid$ = observableUsing(
 const uiConnection$ = observableUsing(
   () => {
     // TODO(natthu): Assign random port instead.
-    const server = new WebSocket.Server({port: PORT});
+    const server = new WS.Server({port: PORT});
     return {
       server,
       unsubscribe: () => { server.close(); },
@@ -132,7 +132,7 @@ const uiConnection$ = observableUsing(
 )
 .publish();
 
-function createSessionStream(ws: WebSocket, debugPort: number): Rx.Observable<SessionType> {
+function createSessionStream(ws: WS, debugPort: number): Rx.Observable<SessionType> {
   const config = {
     debugPort,
     // This makes the node inspector not load all the source files on startup:

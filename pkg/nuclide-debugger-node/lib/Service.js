@@ -9,8 +9,7 @@
  * the root directory of this source tree.
  */
 
-const WebSocketServer = require('ws').Server;
-
+import WS from 'ws';
 import invariant from 'assert';
 import {DebuggerInstance, DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 import {DisposableSubscription} from '../../nuclide-commons';
@@ -21,7 +20,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 class NodeDebuggerInstance extends DebuggerInstance {
   _close$: Rx.Subject<mixed>;
   _debugPort: number;
-  _server: ?WebSocketServer;
+  _server: ?WS.Server;
   _sessionEndCallback: ?() => void;
 
   constructor(processInfo: DebuggerProcessInfo, debugPort: number) {
@@ -42,7 +41,7 @@ class NodeDebuggerInstance extends DebuggerInstance {
     // TODO(natthu): Assign random port instead.
     const wsPort = 8080;
     if (!this._server) {
-      this._server = new WebSocketServer({port: wsPort});
+      this._server = new WS.Server({port: wsPort});
       this._server.on('connection', websocket => {
         const config = {
           debugPort: this._debugPort,

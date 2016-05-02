@@ -19,8 +19,8 @@ import invariant from 'assert';
 import ServiceFramework from './serviceframework/index';
 import {SocketClient} from './SocketClient';
 import {getLogger, flushLogsAndExit} from '../../nuclide-logging';
+import WS from 'ws';
 
-const WebSocketServer: Class<ws$Server> = require('ws').Server;
 const connect: connect$module = require('connect');
 const http: http$fixed = (require('http'): any);
 const https: https$fixed = (require('https'): any);
@@ -39,7 +39,7 @@ class NuclideServer {
   static _theServer: ?NuclideServer;
 
   _webServer: http$fixed$Server;
-  _webSocketServer: ws$Server;
+  _webSocketServer: WS.Server;
   _clients: Map<string, SocketClient>;
   _port: number;
   _app: connect$Server;
@@ -110,8 +110,8 @@ class NuclideServer {
     });
   }
 
-  _createWebSocketServer(): ws$Server {
-    const webSocketServer = new WebSocketServer({server: this._webServer});
+  _createWebSocketServer(): WS.Server {
+    const webSocketServer = new WS.Server({server: this._webServer});
     webSocketServer.on('connection', socket => this._onConnection(socket));
     webSocketServer.on('error', error => logger.error('WebSocketServer Error:', error));
     return webSocketServer;
@@ -228,7 +228,7 @@ class NuclideServer {
     });
   }
 
-  _onConnection(socket: ws$WebSocket): void {
+  _onConnection(socket: WS): void {
     logger.debug('WebSocket connecting');
 
 

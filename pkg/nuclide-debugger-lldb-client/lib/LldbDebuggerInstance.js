@@ -23,8 +23,8 @@ import remoteUri from '../../nuclide-remote-uri';
 import {Disposable} from 'atom';
 import {DisposableSubscription} from '../../nuclide-commons';
 import {getConfig} from './utils';
+import WS from 'ws';
 
-const WebSocketServer = require('ws').Server;
 const {stringifyError} = require('../../nuclide-commons').error;
 
 const {log, logInfo, logError} = utils;
@@ -34,7 +34,7 @@ const SESSION_END_EVENT = 'session-end-event';
 export class LldbDebuggerInstance extends DebuggerInstance {
   _debuggerConnection: ?DebuggerConnectionType;
   _attachPromise: ?Promise<DebuggerConnectionType>;
-  _chromeWebSocketServer: ?WebSocketServer;
+  _chromeWebSocketServer: ?WS.Server;
   _chromeWebSocket: ?WebSocket;
   _disposables: atom$CompositeDisposable;
   _emitter: EventEmitter;
@@ -97,7 +97,7 @@ export class LldbDebuggerInstance extends DebuggerInstance {
   _startChromeWebSocketServer(): string {
     // setup web socket
     const wsPort = this._getWebSocketPort();
-    const server = new WebSocketServer({port: wsPort});
+    const server = new WS.Server({port: wsPort});
     this._chromeWebSocketServer = server;
     server.on('error', error => {
       let errorMessage = `Server error: ${error}`;

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type WS from 'ws';
+
 import BaseSession from '../VendorLib/node-inspector/lib/session';
 import util from 'util';
 
@@ -17,7 +19,7 @@ import util from 'util';
  * do this here so we can pull in new versions of node-inspector without having to worry about what
  * modifications we've made to the source.)
  */
-function CustomSession(config: Object, debuggerPort: number, wsConnection: ws$WebSocket): void {
+function CustomSession(config: Object, debuggerPort: number, wsConnection: WS): void {
   BaseSession.call(this, config, debuggerPort, wsConnection);
   this.frontendCommandHandler._registerNoopCommands(
     'Emulation.canEmulate',

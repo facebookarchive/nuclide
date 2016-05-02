@@ -9,9 +9,7 @@
  * the root directory of this source tree.
  */
 
-
-
-import WebSocket from 'ws';
+import WS from 'ws';
 import NuclideServer from '../lib/NuclideServer';
 import ClientComponent from '../lib/serviceframework/ClientComponent';
 import {loadServicesConfig} from '../lib/serviceframework/config';
@@ -40,7 +38,7 @@ describe('Nuclide Server test suite', () => {
   });
 
   it('websocket is connected with the server', () => {
-    const websocket = new WebSocket('ws://localhost:8176');
+    const websocket = new WS('ws://localhost:8176');
     let opened = false;
     websocket.once('open', () => {
       opened = true;

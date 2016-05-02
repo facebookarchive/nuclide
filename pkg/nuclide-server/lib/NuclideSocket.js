@@ -13,7 +13,7 @@ import type {RequestOptions} from './utils';
 
 import url from 'url';
 import {asyncRequest} from './utils';
-import WebSocket from 'ws';
+import WS from 'ws';
 import uuid from 'uuid';
 import {EventEmitter} from 'events';
 import {HEARTBEAT_CHANNEL} from './config';
@@ -61,7 +61,7 @@ class NuclideSocket extends EventEmitter {
   _previouslyConnected: boolean;
   _cachedMessages: Array<{data: any}>;
   _websocketUri: string;
-  _websocket: ?WebSocket;
+  _websocket: ?WS;
   _heartbeatConnectedOnce: boolean;
   _lastHeartbeat: ?('here' | 'away');
   _lastHeartbeatTime: ?number;
@@ -103,7 +103,7 @@ class NuclideSocket extends EventEmitter {
 
   _reconnect() {
     const {certificateAuthorityCertificate, clientKey, clientCertificate} = this._options;
-    const websocket = new WebSocket(this._websocketUri, {
+    const websocket = new WS(this._websocketUri, {
       cert: clientCertificate,
       key: clientKey,
       ca: certificateAuthorityCertificate,

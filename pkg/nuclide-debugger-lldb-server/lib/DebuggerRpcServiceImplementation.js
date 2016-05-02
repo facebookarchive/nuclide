@@ -20,7 +20,7 @@ import {Observable} from 'rxjs';
 import child_process from 'child_process';
 import path from 'path';
 import utils from './utils';
-import WebSocket from 'ws';
+import WS from 'ws';
 const {log, logTrace, logError, logInfo, setLogLevel} = utils;
 import {ClientCallback} from '../../nuclide-debugger-common/lib/ClientCallback';
 import {observeStream, splitStream, DisposableSubscription} from '../../nuclide-commons';
@@ -61,13 +61,13 @@ export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>
 
 export class DebuggerConnection {
   _clientCallback: ClientCallback;
-  _lldbWebSocket: WebSocket;
+  _lldbWebSocket: WS;
   _lldbProcess: child_process$ChildProcess;
   _subscriptions: CompositeDisposable;
 
   constructor(
     clientCallback: ClientCallback,
-    lldbWebSocket: WebSocket,
+    lldbWebSocket: WS,
     lldbProcess: child_process$ChildProcess,
     subscriptions: CompositeDisposable,
   ) {
@@ -236,7 +236,7 @@ export class DebuggerRpcService {
     )));
   }
 
-  _connectWithLLDB(lldbProcess: child_process$ChildProcess): Promise<WebSocket> {
+  _connectWithLLDB(lldbProcess: child_process$ChildProcess): Promise<WS> {
     log(`connecting with lldb`);
     return new Promise((resolve, reject) => {
       // Async handle parsing websocket address from the stdout of the child.
@@ -253,7 +253,7 @@ export class DebuggerRpcService {
           // Investigate if we can use localhost and match protocol version between client/server.
           const lldbWebSocketAddress = `ws://127.0.0.1:${result[1]}/`;
           log(`Connecting lldb with address: ${lldbWebSocketAddress}`);
-          const ws = new WebSocket(lldbWebSocketAddress);
+          const ws = new WS(lldbWebSocketAddress);
           ws.on('open', () => {
             // Successfully connected with lldb python process, fulfill the promise.
             resolve(ws);

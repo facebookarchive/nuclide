@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-import WebSocket from 'ws';
+import WS from 'ws';
 
 const EXECUTOR_PORT = 8081;
 const WS_URL = `ws://localhost:${EXECUTOR_PORT}/message?role=interface&name=Nuclide`;
 
 export class ShellMessageManager {
   _url: string;
-  _ws: ?WebSocket;
+  _ws: ?WS;
 
   constructor() {
     this._url = WS_URL;
@@ -25,7 +25,7 @@ export class ShellMessageManager {
   send(message: Object): void {
     if (this._ws == null) {
       // Currently, use cases only require a simple fire-and-forget interaction
-      const ws = new WebSocket(this._url);
+      const ws = new WS(this._url);
       this._ws = ws;
       ws.onopen = () => {
         ws.send(JSON.stringify(message));

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type WS from 'ws';
+
 import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
 import ServiceFramework from './serviceframework/index';
 import invariant from 'assert';
@@ -22,7 +24,7 @@ import {ObjectRegistry} from './serviceframework/ObjectRegistry';
 export class SocketClient {
   id: string;
   _isDisposed: boolean;
-  _socket: ?ws$WebSocket;
+  _socket: ?WS;
   _messageQueue: Array<{data: string}>;
   _serverComponent: ServiceFramework.ServerComponent;
   _objectRegistry: ObjectRegistry;
@@ -30,7 +32,7 @@ export class SocketClient {
   constructor(
       clientId: string,
       serverComponent: ServiceFramework.ServerComponent,
-      socket: ws$WebSocket) {
+      socket: WS) {
     this.id = clientId;
     this._isDisposed = false;
     this._socket = null;
@@ -40,7 +42,7 @@ export class SocketClient {
     this._connect(socket);
   }
 
-  _connect(socket: ws$WebSocket): void {
+  _connect(socket: WS): void {
     logger.info('Client #%s connecting with a new socket!', this.id);
     invariant(this._socket == null);
     this._socket = socket;
@@ -62,7 +64,7 @@ export class SocketClient {
     });
   }
 
-  reconnect(socket: ws$WebSocket): void {
+  reconnect(socket: WS): void {
     this._close();
     this._connect(socket);
     const queuedMessages = this._messageQueue;

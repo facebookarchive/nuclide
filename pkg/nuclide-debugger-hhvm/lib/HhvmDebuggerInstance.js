@@ -24,8 +24,8 @@ import featureConfig from '../../nuclide-feature-config';
 import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
 import remoteUri from '../../nuclide-remote-uri';
 import {Disposable} from 'atom';
+import WS from 'ws';
 
-const WebSocketServer = require('ws').Server;
 const {stringifyError} = require('../../nuclide-commons').error;
 
 const {log, logInfo, logError, setLogLevel} = utils;
@@ -36,7 +36,7 @@ function getConfig(): HhvmDebuggerSessionConfig {
 
 export class HhvmDebuggerInstance extends DebuggerInstance {
   _proxy: ?HhvmDebuggerProxyServiceType;
-  _server: ?WebSocketServer;
+  _server: ?WS.Server;
   _webSocket: ?WebSocket;
   _launchScriptPath: ?string;
   _sessionEndCallback: ?() => void;
@@ -124,7 +124,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
     // setup web socket
     // TODO: Assign random port rather than using fixed port.
     const wsPort = 2000;
-    const server = new WebSocketServer({port: wsPort});
+    const server = new WS.Server({port: wsPort});
     this._server = server;
     server.on('error', error => {
       logError('Server error: ' + error);
