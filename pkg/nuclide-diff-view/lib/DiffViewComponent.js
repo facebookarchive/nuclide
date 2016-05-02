@@ -134,7 +134,7 @@ class DiffViewComponent extends React.Component {
     this._subscriptions.add(atom.workspace.onDidChangeActivePaneItem(activeItem => {
       if (activeItem != null && (activeItem: any).tagName === 'NUCLIDE-DIFF-VIEW') {
         // Re-render on activation.
-        this.setState({});
+        this._updateLineDiffState(diffModel.getActiveFileState());
       }
     }));
 
