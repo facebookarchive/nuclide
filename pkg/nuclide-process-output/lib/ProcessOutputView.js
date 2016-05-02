@@ -61,13 +61,28 @@ class ProcessOutputView extends React.Component<void, Props, void> {
 
   _handleBufferChange(): void {
     const el = this.refs['process-output-editor'];
-    const model = el && el.getModel();
-    if (model != null) {
-      const shouldScroll =
-        model.getScrollHeight() - (model.getHeight() + model.getScrollTop()) <= 5;
-      if (shouldScroll) {
-        model.scrollToBottom();
-      }
+
+    if (el == null) {
+      return;
+    }
+
+    const textEditor = el.getElement();
+
+    // It's possible that the element exists but doesn't have a component. I'm honestly not sure
+    // how since `component` is set in the webcomponent's [attached callback][1] (which should
+    // happen before our `componentDidMount`) and nulled in the [detached callback][2] (which
+    // should happen after our `componentWillUnmount`). In any case, we need to guard against it.
+    // See GH-483.
+    // [1]: https://github.com/atom/atom/blob/dd24e3b22304b495625140f74be9d221238074ab/src/text-editor-element.coffee#L75
+    // [2]: https://github.com/atom/atom/blob/dd24e3b22304b495625140f74be9d221238074ab/src/text-editor-element.coffee#L83
+    if (textEditor.component == null) {
+      return;
+    }
+
+    const shouldScroll =
+      textEditor.getScrollHeight() - (textEditor.getHeight() + textEditor.getScrollTop()) <= 5;
+    if (shouldScroll) {
+      textEditor.scrollToBottom();
     }
   }
 
