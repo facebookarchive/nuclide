@@ -52,8 +52,7 @@ const BABEL_OPTIONS = {
   stage: 1,
   plugins: [
     require.resolve('./remove-use-babel-tr'),
-    // Uncomment this line to enable inline-imports:
-    // require.resolve('./inline-imports-tr'),
+    require.resolve('./inline-imports-tr'),
   ],
   // comments: false,
   // compact: true,
