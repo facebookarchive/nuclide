@@ -9,53 +9,25 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
-import invariant from 'assert';
+import type {
+  HyperclickProvider,
+  HyperclickSuggestion,
+} from '../../hyperclick';
 
-import type {HyperclickProvider as HyperclickProviderType} from './HyperclickProvider';
+import getSuggestionForWord from './getSuggestionForWord';
 
-class Activation {
-  _disposables: CompositeDisposable;
-  _hyperclickProvider: HyperclickProviderType;
-
-  constructor(state: ?Object) {
-    this._disposables = new CompositeDisposable();
-  }
-
-  activate(): void {
-  }
-
-  getHyperclickProvider(): HyperclickProviderType {
-    let provider = this._hyperclickProvider;
-    if (provider == null) {
-      const {HyperclickProvider} = require('./HyperclickProvider');
-      this._hyperclickProvider = provider = new HyperclickProvider();
-    }
-    return provider;
-  }
-
-  dispose(): void {
-    this._disposables.dispose();
-  }
-}
-
-let activation: ?Activation = null;
-
-export function activate(state: ?Object): void {
-  if (activation == null) {
-    activation = new Activation(state);
-    activation.activate();
-  }
-}
-
-export function deactivate(): void {
-  if (activation != null) {
-    activation.dispose();
-    activation = null;
-  }
-}
-
-export function getHyperclickProvider(): HyperclickProviderType {
-  invariant(activation);
-  return activation.getHyperclickProvider();
+export function getHyperclickProvider(): HyperclickProvider {
+  return {
+    providerName: 'url-hyperclick',
+    // Allow all language-specific providers to take priority.
+    priority: 5,
+    wordRegExp: /[^\s]+/g,
+    getSuggestionForWord(
+      textEditor: atom$TextEditor,
+      text: string,
+      range: atom$Range
+    ): Promise<?HyperclickSuggestion> {
+      return getSuggestionForWord(textEditor, text, range);
+    },
+  };
 }
