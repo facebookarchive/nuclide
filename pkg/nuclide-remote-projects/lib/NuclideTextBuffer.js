@@ -30,10 +30,16 @@ class NuclideTextBuffer extends TextBuffer {
   conflict: boolean;
   _exists: boolean;
 
+  // This is a counter that will be incremented after every successful save request.
+  // We use this to accurately detect changes on disk - conflicts should not be reported
+  // if any saves finished while fetching the updated contents.
+  _saveID: number;
+
   constructor(connection: ServerConnection, params: any) {
     super(params);
     this._exists = true;
     this._connection = connection;
+    this._saveID = 0;
     this.setPath(params.filePath);
     const encoding: string = (atom.config.get('core.fileEncoding'): any);
     this.setEncoding(encoding);
@@ -90,6 +96,7 @@ class NuclideTextBuffer extends TextBuffer {
       const toSaveContents = this.getText();
       await file.write(toSaveContents);
       this.cachedDiskContents = toSaveContents;
+      this._saveID++;
       this.conflict = false;
       this.emitModifiedStatusChanged(false);
       this.emitter.emit('did-save', {path: filePath});
@@ -150,8 +157,13 @@ class NuclideTextBuffer extends TextBuffer {
         this.conflict = true;
       }
       const previousContents = this.cachedDiskContents;
+      const previousSaveID = this._saveID;
       await this.updateCachedDiskContents();
-      if (previousContents === this.cachedDiskContents) {
+      // If any save requests finished in the meantime, previousContents is not longer accurate.
+      // The most recent save request should trigger another change event, so we'll check for
+      // conflicts when that happens.
+      // Otherwise, what we wrote and what we read should match exactly.
+      if (this._saveID !== previousSaveID || previousContents === this.cachedDiskContents) {
         this.conflict = false;
         return;
       }
