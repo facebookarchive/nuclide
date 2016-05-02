@@ -275,11 +275,11 @@ export function activate(
         continue;
       }
 
-      // Here, a unique uri is picked to the pending open pane item to maintain the pane layout.
-      // Otherwise, the open won't be completed because there exists a pane item with the same
-      // uri.
+      // Atom ensures that each pane only has one item per unique URI.
+      // Null out the existing pane item's URI so we can insert the new one
+      // without closing the pane.
       /* $FlowFixMe */
-      editor.getBuffer().file.path = `${uri}.to-close`;
+      editor.getURI = () => null;
       // Cleanup the old pane item on successful opening or when no connection could be
       // established.
       const cleanupBuffer = () => {
