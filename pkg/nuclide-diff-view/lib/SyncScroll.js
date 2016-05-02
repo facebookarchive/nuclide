@@ -11,17 +11,20 @@
 
 import {CompositeDisposable} from 'atom';
 
+const DEFER_SCROLL_SYNC_MS = 10;
+
 export default class SyncScroll {
 
-  _subscriptions: ?CompositeDisposable;
+  _subscriptions: CompositeDisposable;
   _syncInfo: Array<{
     scrollElement: atom$TextEditorElement;
     scrolling: boolean;
   }>;
+  _scrollSyncTimeout: ?number;
 
   constructor(editor1Element: atom$TextEditorElement, editor2Element: atom$TextEditorElement) {
     // Atom master or >= v1.0.18 have changed the scroll logic to the editor element.
-    const subscriptions = this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new CompositeDisposable();
     this._syncInfo = [{
       scrollElement: editor1Element,
       scrolling: false,
@@ -33,9 +36,10 @@ export default class SyncScroll {
       // Note that `onDidChangeScrollTop` isn't technically in the public API.
       const {scrollElement} = editorInfo;
       const updateScrollPosition = () => this._scrollPositionChanged(i);
-      subscriptions.add(scrollElement.onDidChangeScrollTop(updateScrollPosition));
-      subscriptions.add(scrollElement.onDidChangeScrollLeft(updateScrollPosition));
+      this._subscriptions.add(scrollElement.onDidChangeScrollTop(updateScrollPosition));
+      this._subscriptions.add(scrollElement.onDidChangeScrollLeft(updateScrollPosition));
     });
+    this._scrollSyncTimeout = null;
   }
 
   _scrollPositionChanged(changeScrollIndex: number): void {
@@ -51,17 +55,27 @@ export default class SyncScroll {
       return;
     }
     const {scrollElement: thisElement} = thisInfo;
+    if (thisElement.getScrollHeight() !== otherElement.getScrollHeight()) {
+      // One of the editors' dimensions is pending sync.
+      if (this._scrollSyncTimeout != null) {
+        clearTimeout(this._scrollSyncTimeout);
+      }
+      this._scrollSyncTimeout = setTimeout(() => {
+        this._scrollPositionChanged(1);
+        this._scrollSyncTimeout = null;
+      }, DEFER_SCROLL_SYNC_MS);
+      return;
+    }
     otherInfo.scrolling = true;
     otherElement.setScrollTop(thisElement.getScrollTop());
-    // $FlowFixMe Atom API backword compatability.
     otherElement.setScrollLeft(thisElement.getScrollLeft());
     otherInfo.scrolling = false;
   }
 
   dispose(): void {
-    if (this._subscriptions) {
-      this._subscriptions.dispose();
-      this._subscriptions = null;
+    this._subscriptions.dispose();
+    if (this._scrollSyncTimeout != null) {
+      clearTimeout(this._scrollSyncTimeout);
     }
   }
 }

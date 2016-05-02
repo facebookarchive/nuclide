@@ -35,3 +35,18 @@ export function filter<T, X>(
   }
   return selected;
 }
+
+export function equal<T, X>(
+  map1: Map<T, X>,
+  map2: Map<T, X>,
+) {
+  if (map1.size !== map2.size) {
+    return false;
+  }
+  for (const [key1, value1] of map1) {
+    if (map2.get(key1) !== value1) {
+      return false;
+    }
+  }
+  return true;
+}

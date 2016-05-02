@@ -82,6 +82,10 @@ function _computeDiffChunks(oldText: string, newText: string): DiffChunk {
     chunks.push({added, removed, value, count, offset});
     offset = 0;
   });
+  if (nextOffset !== 0) {
+    // Add a trailing offset block at the end of the shorter file.
+    chunks.push({added: 0, removed: 0, value: '', count: 0, offset: nextOffset});
+  }
   return {addedLines, removedLines, chunks};
 }
 

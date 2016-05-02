@@ -20,7 +20,7 @@ import {ReactDOM} from 'react-for-atom';
  * and controls its rendering of highlights and offsets.
  */
 export default class DiffViewEditor {
-  _editor: atom$TextEditor;;
+  _editor: atom$TextEditor;
   _editorElement: atom$TextEditorElement;
   _highlightMarkers: Array<atom$Marker>;
   _offsetMarkers: Array<atom$Marker>;
@@ -133,9 +133,11 @@ export default class DiffViewEditor {
       blockItem.style.minHeight = (offsetLines * lineHeight) + 'px';
       blockItem.className = 'nuclide-diff-view-block-offset';
       const marker = this._editor.markBufferPosition([lineNumber, 0], {invalidate: 'never'});
+      // The position should be `after` if the offset is at the end of the file.
+      const position = lineNumber >= this._editor.getLineCount() - 1 ? 'after' : 'before';
       this._editor.decorateMarker(
         marker,
-        {type: 'block', item: blockItem, position: 'before'},
+        {type: 'block', item: blockItem, position},
       );
       this._offsetMarkers.push(marker);
     }

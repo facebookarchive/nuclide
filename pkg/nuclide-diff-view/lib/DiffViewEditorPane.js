@@ -14,7 +14,7 @@ import type {HighlightedLines, OffsetMap} from './types';
 import type {UIElement} from '../../nuclide-diff-ui-provider-interfaces';
 
 import {CompositeDisposable} from 'atom';
-import {debounce} from '../../nuclide-commons';
+import {array, debounce, map} from '../../nuclide-commons';
 import {
   React,
 } from 'react-for-atom';
@@ -146,13 +146,16 @@ export default class DiffViewEditorPane extends React.Component {
     if (diffEditorUpdated || oldProps.initialTextContent !== this.props.initialTextContent) {
       this._setTextContent(newProps.filePath, newProps.initialTextContent);
     }
-    if (diffEditorUpdated || oldProps.highlightedLines !== newProps.highlightedLines) {
+    if (diffEditorUpdated
+      || !array.equal(oldProps.highlightedLines.added, newProps.highlightedLines.added)
+      || !array.equal(oldProps.highlightedLines.removed, newProps.highlightedLines.removed)
+    ) {
       this._setHighlightedLines(newProps.highlightedLines);
     }
-    if (diffEditorUpdated || oldProps.offsets !== newProps.offsets) {
+    if (diffEditorUpdated || !map.equal(oldProps.offsets, newProps.offsets)) {
       this._setOffsets(newProps.offsets);
     }
-    if (oldProps.inlineElements !== newProps.inlineElements) {
+    if (!array.equal(oldProps.inlineElements, newProps.inlineElements)) {
       this._renderComponentsInline(newProps.inlineElements);
     }
   }
