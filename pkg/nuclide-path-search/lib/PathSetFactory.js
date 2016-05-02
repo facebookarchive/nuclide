@@ -13,6 +13,11 @@ import child_process from 'child_process';
 import split from 'split';
 
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
+import {promises} from '../../nuclide-commons';
+
+// Occasionally, the watchman client may hang while waiting for a query.
+// Fall back to other methods after the timeout expires.
+const WATCHMAN_TIMEOUT_MS = 20000;
 
 function getFilesFromCommand(
   command: string,
@@ -138,7 +143,10 @@ function getAllFiles(localDirectory: string): Promise<Array<string>> {
 async function getFilesFromWatchman(localDirectory: string): Promise<Array<string>> {
   const watchmanClient = new WatchmanClient();
   try {
-    return await watchmanClient.listFiles(localDirectory);
+    return await Promise.race([
+      watchmanClient.listFiles(localDirectory),
+      promises.awaitMilliSeconds(WATCHMAN_TIMEOUT_MS).then(() => Promise.reject()),
+    ]);
   } finally {
     watchmanClient.dispose();
   }
