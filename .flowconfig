@@ -17,12 +17,15 @@
 ./pkg/nuclide-debugger-interfaces/WebInspector.js
 
 [options]
-esproposal.class_static_fields=enable
-esproposal.decorators=ignore
+
 suppress_comment=.*\\$FlowFixMe.*
 suppress_comment=.*\\$FlowIssue.*
 suppress_comment=.*\\$FlowIgnore.*
+
+esproposal.class_static_fields=enable
+esproposal.decorators=ignore
 unsafe.enable_getters_and_setters=true
+module.use_strict=true
 
 [version]
 0.24.0
