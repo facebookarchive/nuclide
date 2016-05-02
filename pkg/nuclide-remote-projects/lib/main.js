@@ -313,10 +313,23 @@ export function activate(
   subscriptions.add(atom.workspace.addOpener((uri = '') => {
     if (uri.startsWith('nuclide:')) {
       const connection = RemoteConnection.getForUri(uri);
+      if (connection == null) {
+        // It's possible that the URI opens before the remote connection has finished loading
+        // (or the remote connection cannot be restored for some reason).
+        //
+        // In this case, we can just let Atom open a blank editor. Once the connection
+        // is re-established, the `onDidAddRemoteConnection` logic above will restore the
+        // editor contents as appropriate.
+        return;
+      }
       // On Atom restart, it tries to open the uri path as a file tab because it's not a local
       // directory. We can't let that create a file with the initial working directory path.
-      if (connection && uri === connection.getUriForInitialWorkingDirectory()) {
-        return;
+      if (uri === connection.getUriForInitialWorkingDirectory()) {
+        const blankEditor = atom.workspace.buildTextEditor({});
+        // No matter what we do here, Atom is going to create a blank editor.
+        // We don't want the user to see this, so destroy it as soon as possible.
+        setImmediate(() => blankEditor.destroy());
+        return blankEditor;
       }
       if (pendingFiles[uri]) {
         return pendingFiles[uri];
