@@ -15,24 +15,19 @@ export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug';
 
 type MessageKind = 'message' | 'request' | 'response';
 
-// Represents the result of an executor executing code.
-type Response = {
-  text: string;
-  level: Level;
-};
-
 // A regular message, emitted by output providers.
 export type Message = {
   text: string;
   level: Level;
 };
 
+// Represents the result of an executor executing code.
+type Response = Message;
+
 // A normalized type used internally to represent all possible kinds of messages. Responses and
 // Messages are transformed into these.
-export type Record = {
+export type Record = Message & {
   kind: MessageKind;
-  text: string;
-  level: Level;
   source: string;
   scopeName: ?string;
 };
