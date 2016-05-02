@@ -29,6 +29,11 @@ export type Provider = {
   getDebounceDelay?: () => number;
   isEligibleForDirectory?: (directory: atom$Directory) => Promise<boolean>;
   getComponentForItem?: (item: FileResult) => React.Element;
+  /**
+   * An optional number ≥ 0 used to determine ranking order in OmniSearch.
+   * 0 == highest rank, +Infinity == lowest rank. Defaults to Number.POSITIVE_INFINITY.
+   */
+  getPriority?: () => number;
 };
 
 import type {NuclideUri} from '../../nuclide-remote-uri';

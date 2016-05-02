@@ -22,6 +22,9 @@ import {
 
 const FuzzyFileNameProvider: Provider = {
 
+  // Give preference to filename results in OmniSearch.
+  getPriority: () => 1,
+
   getName(): string {
     return 'FuzzyFileNameProvider';
   },

@@ -61,6 +61,21 @@ function _findKeybindingForAction(action: string, target: HTMLElement): string {
   return humanizeKeystroke(keystroke);
 }
 
+function sortServiceNames(names: Array<string>): Array<string> {
+  return names.sort((serviceName1, serviceName2) => {
+    const provider1 = searchResultManager.getProviderByName(serviceName1);
+    const provider2 = searchResultManager.getProviderByName(serviceName2);
+    if (
+      provider1.priority == null ||
+      provider2.priority == null ||
+      provider1.priority === provider2.priority
+    ) {
+      return provider1.name.localeCompare(provider2.name);
+    }
+    return provider1.priority - provider2.priority;
+  });
+}
+
 export default class QuickSelectionComponent extends React.Component {
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
@@ -226,11 +241,19 @@ export default class QuickSelectionComponent extends React.Component {
       this.refs['queryInput'].getText(),
       activeProviderName
     );
+    const [topProviderName] = sortServiceNames(Object.keys(updatedResults));
     this.setState({
       resultsByService: updatedResults,
     }, () => {
-      if (!this.state.hasUserSelection) {
-        this.moveSelectionToTop();
+      if (
+        !this.state.hasUserSelection &&
+        topProviderName != null &&
+        this.state.resultsByService[topProviderName] != null
+      ) {
+        const topProviderResults = this.state.resultsByService[topProviderName].results;
+        if (!Object.keys(topProviderResults).some(dirName => topProviderResults[dirName].loading)) {
+          this.moveSelectionToTop();
+        }
       }
     });
   }
@@ -418,7 +441,7 @@ export default class QuickSelectionComponent extends React.Component {
   _getOuterResults(arrayOperation: Function):
     ?{serviceName: string; directoryName: string; results: Array<mixed>} {
     const nonEmptyResults = filterEmptyResults(this.state.resultsByService);
-    const serviceName = arrayOperation.call(Object.keys(nonEmptyResults));
+    const serviceName = arrayOperation.call(sortServiceNames(Object.keys(nonEmptyResults)));
     if (!serviceName) {
       return null;
     }
@@ -597,7 +620,7 @@ export default class QuickSelectionComponent extends React.Component {
     let numTotalResultsRendered = 0;
     const isOmniSearchActive = this.state.activeTab.name === 'OmniSearchResultProvider';
     let numQueriesOutstanding = 0;
-    const serviceNames = Object.keys(this.state.resultsByService);
+    const serviceNames = sortServiceNames(Object.keys(this.state.resultsByService));
     const services = serviceNames.map(serviceName => {
       let numResultsForService = 0;
       const directories = this.state.resultsByService[serviceName].results;

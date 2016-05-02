@@ -15,4 +15,5 @@ export type ProviderSpec = {
   name: string;
   prompt?: string;
   title: string;
+  priority?: number;
 };
