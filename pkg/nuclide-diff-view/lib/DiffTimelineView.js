@@ -62,7 +62,7 @@ export default class DiffTimelineView extends React.Component {
       content = (
         <RevisionsTimelineComponent
           compareRevisionId={compareCommitId || commitId}
-          dirtyFileCount={this.props.diffModel.getState().dirtyFileChanges.size}
+          dirtyFileCount={this.props.diffModel.getActiveStackDirtyFileChanges().size}
           onSelectionChange={this.props.onSelectionChange}
           revisions={revisions}
         />

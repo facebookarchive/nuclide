@@ -319,6 +319,14 @@ class DiffViewModel {
     this._updateCompareChangedStatus(dirtyFileChanges);
   }
 
+  getActiveStackDirtyFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
+    if (this._activeRepositoryStack == null) {
+      return new Map();
+    } else {
+      return this._activeRepositoryStack.getDirtyFileChanges();
+    }
+  }
+
   _updateCommitMergeFileChanges(): void {
     const commitMergeFileChanges = map.union(
       ...Array.from(this._repositoryStacks.values())
