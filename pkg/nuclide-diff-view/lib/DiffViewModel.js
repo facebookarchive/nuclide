@@ -73,8 +73,6 @@ import {
 import {bufferForUri, loadBufferForUri} from '../../nuclide-atom-helpers';
 import {getLogger} from '../../nuclide-logging';
 
-const {serializeAsyncCall} = promises;
-
 const ACTIVE_FILE_UPDATE_EVENT = 'active-file-update';
 const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
 const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
@@ -227,7 +225,9 @@ class DiffViewModel {
       selectedFileChanges: new Map(),
       showNonHgRepos: true,
     };
-    this._serializedUpdateActiveFileDiff = serializeAsyncCall(() => this._updateActiveFileDiff());
+    this._serializedUpdateActiveFileDiff = promises.serializeAsyncCall(
+      () => this._updateActiveFileDiff(),
+    );
     this._updateRepositories();
     this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
     this._setActiveFileState(getInitialFileChangeState());
@@ -820,9 +820,11 @@ class DiffViewModel {
         default:
           throw new Error(`Unknown publish mode '${publishMode}'`);
       }
-      // Wait a bit until the user sees the success push message.
-      await promises.awaitMilliSeconds(2000);
       // Populate Publish UI with the most recent data after a successful push.
+      this._setState({
+        ...this._state,
+        publishModeState: PublishModeState.READY,
+      });
       this._loadModeState(true);
     } catch (error) {
       notifyInternalError(error, true /*persist the error (user dismissable)*/);
