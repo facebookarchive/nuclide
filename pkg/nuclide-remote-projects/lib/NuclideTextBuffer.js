@@ -90,10 +90,10 @@ class NuclideTextBuffer extends TextBuffer {
     let success;
     this.emitter.emit('will-save', {path: filePath});
     this.setPath(filePath);
+    const toSaveContents = this.getText();
     try {
       const file = this.file;
       invariant(file, 'Cannot save an null file!');
-      const toSaveContents = this.getText();
       await file.write(toSaveContents);
       this.cachedDiskContents = toSaveContents;
       this._saveID++;
@@ -106,7 +106,15 @@ class NuclideTextBuffer extends TextBuffer {
       // Demote these to 'error' level.
       const logFunction = (/timeout/i).test(e.message) ? logger.error : logger.fatal;
       logFunction('Failed to save remote file.', e);
-      atom.notifications.addError(`Failed to save remote file: ${e.message}`);
+      let message = e.message;
+      // This can happen if the user triggered the save while closing the file.
+      // Unfortunately, we can't interrupt the user action, but we can at least reopen the buffer.
+      if (this.destroyed) {
+        message += `<br><br>Opening a new tab with your unsaved changes.`;
+        atom.workspace.open()
+          .then(editor => editor.setText(toSaveContents));
+      }
+      atom.notifications.addError(`Failed to save remote file ${filePath}: ${message}`);
       success = false;
     }
 
