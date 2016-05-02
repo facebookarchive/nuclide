@@ -192,36 +192,28 @@ class Activation {
   }
 
   addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
-    const menuItemDescriptions = new CompositeDisposable();
-    menuItemDescriptions.add(
-      atom.commands.add(
-        contextMenu.getCSSSelectorForFileTree(),
-        /* eslint-disable nuclide-internal/command-menu-items */
-        // This does not belong in a menu because it should not be a public command:
-        // it should be a callback, but ContextMenuManager forces our hand.
-        'nuclide-blame:toggle-blame-file-tree',
-        /* eslint-enable nuclide-internal/command-menu-items */
-        async () => {
+    const contextDisposable = contextMenu.addItemToSourceControlMenu(
+      {
+        label: 'Toggle Blame',
+        callback: async () => {
           const {goToLocation} = require('../../nuclide-atom-helpers');
           findBlameableNodes(contextMenu).forEach(async node => {
             const editor = await goToLocation(node.uri);
             atom.commands.dispatch(atom.views.getView(editor), 'nuclide-blame:toggle-blame');
           });
         },
-      ),
-      contextMenu.addItemToSourceControlMenu(
-        {
-          label: 'Toggle Blame',
-          command: 'nuclide-blame:toggle-blame-file-tree',
-          shouldDisplay() {
-            return findBlameableNodes(contextMenu).length > 0;
-          },
+        shouldDisplay() {
+          return findBlameableNodes(contextMenu).length > 0;
         },
-        TOGGLE_BLAME_FILE_TREE_CONTEXT_MENU_PRIORITY,
-      ),
+      },
+      TOGGLE_BLAME_FILE_TREE_CONTEXT_MENU_PRIORITY,
     );
-    this._packageDisposables.add(menuItemDescriptions);
-    return menuItemDescriptions;
+
+    this._packageDisposables.add(contextDisposable);
+    // We don't need to dispose of the contextDisposable when the provider is disabled -
+    // it needs to be handled by the provider itself. We only should remove it from the list
+    // of the disposables we maintain.
+    return new Disposable(() => this._packageDisposables.remove(contextDisposable));
   }
 }
 

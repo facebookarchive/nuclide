@@ -17,7 +17,7 @@ import type {
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {track} from '../../nuclide-analytics';
 
@@ -115,30 +115,29 @@ export function activate(state: any): void {
 
 export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
   invariant(subscriptions);
-  const menuItemDescriptions = new CompositeDisposable();
 
-  menuItemDescriptions.add(atom.commands.add(
-    contextMenu.getCSSSelectorForFileTree(),
-    'nuclide-hg-repository:revert-context',
-    () => {
-      // TODO(most): support reverting multiple nodes at once.
-      const revertNode = contextMenu.getSingleSelectedNode();
-      revertPath(revertNode == null ? null : revertNode.uri);
-    },
-  ));
-
-  menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu(
+  const contextDisposable = contextMenu.addItemToSourceControlMenu(
     {
       label: 'Revert',
-      command: 'nuclide-hg-repository:revert-context',
+      callback() {
+        // TODO(most): support reverting multiple nodes at once.
+        const revertNode = contextMenu.getSingleSelectedNode();
+        revertPath(revertNode == null ? null : revertNode.uri);
+      },
       shouldDisplay() {
         return shouldDisplayRevertTreeItem(contextMenu);
       },
     },
     HG_REVERT_FILE_TREE_CONTEXT_MENU_PRIORITY,
-  ));
-  subscriptions.add(menuItemDescriptions);
-  return menuItemDescriptions;
+  );
+
+  subscriptions.add(contextDisposable);
+
+  return new Disposable(() => {
+    if (subscriptions != null) {
+      subscriptions.remove(contextDisposable);
+    }
+  });
 }
 
 export function deactivate(state: any): void {

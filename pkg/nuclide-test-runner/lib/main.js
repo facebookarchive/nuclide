@@ -120,7 +120,8 @@ class Activation {
       contextMenu.addItemToTestSection(separator, FILE_TREE_CONTEXT_MENU_PRIORITY + 2),
     );
     this._disposables.add(menuItemSubscriptions);
-    return menuItemSubscriptions;
+
+    return new Disposable(() => this._disposables.remove(menuItemSubscriptions));
   }
 
   addTestRunner(testRunner: TestRunner): ?Disposable {

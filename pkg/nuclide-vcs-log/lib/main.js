@@ -15,7 +15,7 @@ import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContex
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {VcsLogResponse} from '../../nuclide-hg-repository-base/lib/HgService';
 
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 import VcsLogPaneItem from './VcsLogPaneItem';
 import featureConfig from '../../nuclide-feature-config';
 import invariant from 'assert';
@@ -94,12 +94,10 @@ class Activation {
   }
 
   addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
-    const menuItemDescriptions = new CompositeDisposable();
-    menuItemDescriptions.add(
-      atom.commands.add(
-        contextMenu.getCSSSelectorForFileTree(),
-        'nuclide-vcs-log:show-log-from-context-menu',
-        function showLog() {
+    const contextDisposable = contextMenu.addItemToSourceControlMenu(
+      {
+        label: CONTEXT_MENU_LABEL,
+        callback() {
           const node = contextMenu.getSingleSelectedNode();
           if (node == null) {
             return;
@@ -113,27 +111,25 @@ class Activation {
 
           openLogPaneForURI(uri);
           track('nuclide-vcs-log:open-from-file-tree');
-        }
-      ),
-      contextMenu.addItemToSourceControlMenu(
-        {
-          label: CONTEXT_MENU_LABEL,
-          command: 'nuclide-vcs-log:show-log-from-context-menu',
-          shouldDisplay(): boolean {
-            const node = contextMenu.getSingleSelectedNode();
-            if (node == null) {
-              return false;
-            }
-
-            return getRepositoryWithLogMethodForPath(node.uri) != null;
-          },
         },
-        SHOW_LOG_FILE_TREE_CONTEXT_MENU_PRIORITY,
-      ),
+        shouldDisplay(): boolean {
+          const node = contextMenu.getSingleSelectedNode();
+          if (node == null) {
+            return false;
+          }
+
+          return getRepositoryWithLogMethodForPath(node.uri) != null;
+        },
+      },
+      SHOW_LOG_FILE_TREE_CONTEXT_MENU_PRIORITY,
     );
 
-    this._subscriptions.add(menuItemDescriptions);
-    return menuItemDescriptions;
+    this._subscriptions.add(contextDisposable);
+
+    // We don't need to dispose of the contextDisposable when the provider is disabled -
+    // it needs to be handled by the provider itself. We only should remove it from the list
+    // of the disposables we maintain.
+    return new Disposable(() => this._subscriptions.remove(contextDisposable));
   }
 
   dispose() {

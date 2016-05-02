@@ -13,7 +13,7 @@ import type {FileTreeNode} from './FileTreeNode';
 import type Immutable from 'immutable';
 
 import ContextMenu from '../../nuclide-context-menu';
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 import {EVENT_HANDLER_SELECTOR} from './FileTreeConstants';
 import {FileTreeStore} from './FileTreeStore';
 
@@ -36,6 +36,25 @@ type MenuItemSeparator = {
 };
 
 type MenuItemDefinition = MenuItemSingle | MenuItemGroup | MenuItemSeparator;
+
+
+// It's just atom$ContextMenuItem with an optional `callback` property added.
+// I wish flow would let add it in a more elegant way.
+type AtomContextMenuItemWithCallback = {
+  command?: string;
+  callback?: () => mixed;
+  created?: (event: MouseEvent) => void;
+  enabled?: boolean;
+  label?: string;
+  shouldDisplay?: (event: MouseEvent) => boolean;
+  submenu?: Array<atom$ContextMenuItem>;
+  type?: string;
+  visible?: boolean;
+};
+
+export type FileTreeContextMenuItem = atom$ContextMenuItem | AtomContextMenuItemWithCallback;
+
+const FILE_TREE_CSS = '.nuclide-file-tree-toolbar-container';
 
 const NEW_MENU_PRIORITY = 0;
 const ADD_PROJECT_MENU_PRIORITY = 1000;
@@ -67,7 +86,7 @@ const SHOW_IN_MENU_PRIORITY = 6000;
  * },
  *
  * // Include the following in the main.js file for your package:
- * import {CompositeDisposable} from 'atom';
+ * import {CompositeDisposable, Disposable} from 'atom';
  * import invariant from 'assert';
  *
  * let subscriptions: ?CompositeDisposable = null;
@@ -83,14 +102,17 @@ const SHOW_IN_MENU_PRIORITY = 6000;
  *   }
  * }
  *
- * export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): void {
+ * export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
  *   invariant(subscriptions);
  *
- *   subscriptions.add(
- *     atom.commands.add(
- *       'atom-workspace',
- *       'command-that-should-only-be-fired-from-the-context-menu',
- *       () => {
+ *   const contextDisposable = contextMenu.addItemToSourceControlMenu(
+ *     {
+ *       label: 'Label for the menu item that acts on a file',
+ *       command: 'command-that-should-only-be-fired-from-the-context-menu',
+ *       // If the callback below is given a new atom command with the given name will be
+ *       // automatically registered. You can omit it if you prefer to register the command
+ *       // manually.
+ *       callback() {
  *         Array.from(contextMenu.getSelectedNodes())
  *           .filter(node => !node.isContainer)
  *           .forEach((node: FileTreeNode) => {
@@ -98,25 +120,22 @@ const SHOW_IN_MENU_PRIORITY = 6000;
  *             // DO WHAT YOU LIKE WITH THE URI!
  *           });
  *       },
- *     )
- *   );
- *   subscriptions.add(contextMenu.addItemToSourceControlMenu(
- *     {
- *       label: 'Label for the menu item that acts on a file',
- *       command: 'command-that-should-only-be-fired-from-the-context-menu',
  *       shouldDisplay() {
  *         return Array.from(contextMenu.getSelectedNodes()).some(node => !node.isContainer);
  *       },
  *     },
  *     1000, // priority
- *   ));
+ *   );
+ *
+ *   subscriptions.add(contextDisposable);
+ *   return new Disposable(() => {
+ *     invariant(subscriptions);
+ *     if (subscriptions != null) {
+ *       subscriptions.remove(contextDisposable);
+ *     }
+ *   });
  * }
  * ```
- *
- * Note that it is a little odd to register a command that only makes sense in the context of what
- * is currently selected in the file tree. Ideally, there would be a way to make this a "private"
- * command that could not be selected from the command palette. (Or really, just associate a
- * callback function with a menu item instead of a command.)
  */
 class FileTreeContextMenu {
   _contextMenu: ContextMenu;
@@ -303,23 +322,31 @@ class FileTreeContextMenu {
   /**
    * @param priority must be an integer in the range [0, 1000).
    */
-  addItemToTestSection(item: atom$ContextMenuItem, priority: number): IDisposable {
+  addItemToTestSection(originalItem: FileTreeContextMenuItem, priority: number): IDisposable {
     if (priority < 0 || priority >= 1000) {
       throw Error(`Illegal priority value: ${priority}`);
     }
-    return this._contextMenu.addItem(item, TEST_SECTION_PRIORITY + priority);
+
+    return this._addItemToMenu(originalItem, this._contextMenu, TEST_SECTION_PRIORITY + priority);
   }
 
-  addItemToSourceControlMenu(item: atom$ContextMenuItem, priority: number): IDisposable {
-    return this._sourceControlMenu.addItem(item, priority);
+  addItemToSourceControlMenu(originalItem: FileTreeContextMenuItem, priority: number): IDisposable {
+    return this._addItemToMenu(originalItem, this._sourceControlMenu, priority);
   }
 
-  /**
-   * This is appropriate to use as the target for a command that is triggered exclusively by an
-   * item in the file tree context menu.
-   */
-  getCSSSelectorForFileTree(): string {
-    return '.nuclide-file-tree-toolbar-container';
+  _addItemToMenu(
+    originalItem: FileTreeContextMenuItem,
+    menu: ContextMenu,
+    priority: number,
+  ): IDisposable {
+    const {itemDisposable, item} = initCommandIfPresent(originalItem);
+    itemDisposable.add(menu.addItem(item, priority));
+
+    this._subscriptions.add(itemDisposable);
+    return new Disposable(() => {
+      this._subscriptions.remove(itemDisposable);
+      itemDisposable.dispose();
+    });
   }
 
   getSelectedNodes(): Immutable.OrderedSet<FileTreeNode> {
@@ -357,5 +384,27 @@ class FileTreeContextMenu {
     );
   }
 }
+
+function initCommandIfPresent(item: FileTreeContextMenuItem): {
+  itemDisposable: CompositeDisposable;
+  item: atom$ContextMenuItem;
+} {
+  const itemDisposable = new CompositeDisposable();
+  if (item.callback != null && item.label != null) {
+    const command = item.command || generateNextInternalCommand(item.label);
+    itemDisposable.add(atom.commands.add(FILE_TREE_CSS, command, item.callback));
+    return {itemDisposable, item: {...item, command: command}};
+  }
+
+  return {itemDisposable, item};
+}
+
+let nextInternalCommandId = 0;
+
+function generateNextInternalCommand(itemLabel: string): string {
+  const cmdName = itemLabel.toLowerCase().replace(/[^\w]+/g, '-') + '-' + nextInternalCommandId++;
+  return `nuclide-file-tree:${cmdName}`;
+}
+
 
 module.exports = FileTreeContextMenu;

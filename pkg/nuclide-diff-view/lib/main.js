@@ -19,7 +19,7 @@ import type {
   UIProvider,
 } from '../../nuclide-diff-ui-provider-interfaces';
 
-import {CompositeDisposable, Directory} from 'atom';
+import {CompositeDisposable, Directory, Disposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 import invariant from 'assert';
 import url from 'url';
@@ -504,8 +504,17 @@ module.exports = {
       },
       PUBLISH_FILE_TREE_CONTEXT_MENU_PRIORITY,
     ));
+
     subscriptions.add(menuItemDescriptions);
-    return menuItemDescriptions;
+
+    // We don't need to dispose of the menuItemDescriptions when the provider is disabled -
+    // it needs to be handled by the provider itself. We only should remove it from the list
+    // of the disposables we maintain.
+    return new Disposable(() => {
+      if (subscriptions != null) {
+        subscriptions.remove(menuItemDescriptions);
+      }
+    });
   },
 
   get __testDiffView() {
