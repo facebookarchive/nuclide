@@ -22,6 +22,8 @@ import {Disposable, Emitter} from 'atom';
 import {getLogger} from '../../nuclide-logging';
 import remoteUri from '../../nuclide-remote-uri';
 
+const posixPath = path.posix;
+
 const logger = getLogger();
 
 const MARKER_PROPERTY_FOR_REMOTE_DIRECTORY = '__nuclide_remote_directory__';
@@ -150,8 +152,8 @@ export class RemoteDirectory {
   }
 
   _isRoot(filePath: string): boolean {
-    filePath = path.normalize(filePath);
-    const parts = path.parse(filePath);
+    filePath = posixPath.normalize(filePath);
+    const parts = posixPath.parse(filePath);
     return parts.root === filePath;
   }
 
@@ -172,7 +174,7 @@ export class RemoteDirectory {
   }
 
   getBaseName(): string {
-    return path.basename(this._localPath);
+    return posixPath.basename(this._localPath);
   }
 
   relativize(uri: string): string {
@@ -181,25 +183,25 @@ export class RemoteDirectory {
     }
     // Note: host of uri must match this._host.
     const subpath = remoteUri.parse(uri).path;
-    return path.relative(this._localPath, subpath);
+    return posixPath.relative(this._localPath, subpath);
   }
 
   getParent(): RemoteDirectory {
     if (this.isRoot()) {
       return this;
     } else {
-      const uri = this._host + path.normalize(path.join(this._localPath, '..'));
+      const uri = this._host + posixPath.normalize(posixPath.join(this._localPath, '..'));
       return this._server.createDirectory(uri, this._hgRepositoryDescription);
     }
   }
 
   getFile(filename: string): RemoteFile {
-    const uri = this._host + path.join(this._localPath, filename);
+    const uri = this._host + posixPath.join(this._localPath, filename);
     return this._server.createFile(uri);
   }
 
   getSubdirectory(dirname: string): RemoteDirectory {
-    const uri = this._host + path.join(this._localPath, dirname);
+    const uri = this._host + posixPath.join(this._localPath, dirname);
     return this._server.createDirectory(uri, this._hgRepositoryDescription);
   }
 
@@ -267,7 +269,7 @@ export class RemoteDirectory {
       return a.file.toLowerCase().localeCompare(b.file.toLowerCase());
     }).forEach(entry => {
       invariant(entry);
-      const uri = this._host + path.join(this._localPath, entry.file);
+      const uri = this._host + posixPath.join(this._localPath, entry.file);
       const symlink = entry.isSymbolicLink;
       if (entry.stats && entry.stats.isFile()) {
         files.push(this._server.createFile(uri, symlink));
@@ -286,13 +288,13 @@ export class RemoteDirectory {
     // So first check startsWith. If so, then if the two path lengths are
     // equal OR if the next character in the path to check is a path
     // separator, then we know the checked path is in this path.
-    const endIndex = this.getPath().slice(-1) === path.sep
+    const endIndex = this.getPath().slice(-1) === posixPath.sep
                    ? this.getPath().length - 1
                    : this.getPath().length;
     return pathToCheck != null
       && pathToCheck.startsWith(this.getPath())
       && (pathToCheck.length === this.getPath().length
-          || pathToCheck.charAt(endIndex) === path.sep);
+          || pathToCheck.charAt(endIndex) === posixPath.sep);
   }
 
   off() {

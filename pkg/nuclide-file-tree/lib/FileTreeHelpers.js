@@ -18,7 +18,6 @@ import {
 } from '../../nuclide-remote-connection';
 import RemoteUri from '../../nuclide-remote-uri';
 
-import pathModule from 'path';
 import url from 'url';
 import crypto from 'crypto';
 
@@ -35,24 +34,29 @@ function escapeBackslash(str: string): string {
 }
 
 function dirPathToKey(path: string): string {
+  const pathModule = RemoteUri.pathModuleFor(path);
   return path.replace(new RegExp(`${escapeBackslash(pathModule.sep)}+$`), '') + pathModule.sep;
 }
 
 function isDirKey(key: string): boolean {
+  const pathModule = RemoteUri.pathModuleFor(key);
   return (key.slice(-1) === pathModule.sep);
 }
 
 function keyToName(key: string): string {
+  const pathModule = RemoteUri.pathModuleFor(key);
   const path = keyToPath(key);
   const index = path.lastIndexOf(pathModule.sep);
   return (index === -1) ? path : path.slice(index + 1);
 }
 
 function keyToPath(key: string): string {
+  const pathModule = RemoteUri.pathModuleFor(key);
   return key.replace(new RegExp(`${escapeBackslash(pathModule.sep)}+$`), '');
 }
 
 function getParentKey(key: string): string {
+  const pathModule = RemoteUri.pathModuleFor(key);
   const path = keyToPath(key);
   const parsed = RemoteUri.parse(path);
   parsed.pathname = pathModule.join(parsed.pathname, '..');
@@ -137,10 +141,13 @@ function getDisplayTitle(key: string): ?string {
 
 // Sometimes remote directories are instantiated as local directories but with invalid paths.
 function isValidDirectory(directory: Directory): boolean {
-  return (
-    !isLocalEntry((directory: any)) ||
-    pathModule.isAbsolute(directory.getPath())
-  );
+  if (!isLocalEntry((directory: any))) {
+    return true;
+  }
+
+  const dirPath = directory.getPath();
+  const pathModule = RemoteUri.pathModuleFor(dirPath);
+  return pathModule.isAbsolute(dirPath);
 }
 
 function isLocalEntry(entry: Entry): boolean {

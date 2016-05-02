@@ -11,9 +11,8 @@
 
 
 import {isDirKey, keyToName, keyToPath, buildHashKey} from './FileTreeHelpers';
-import {isRemote, parse} from '../../nuclide-remote-uri';
+import {isRemote, parse, pathModuleFor} from '../../nuclide-remote-uri';
 import Immutable from 'immutable';
-import path from 'path';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {StoreConfigData, NodeCheckedStatus} from './FileTreeStore';
@@ -506,7 +505,8 @@ export class FileTreeNode {
     }
 
     const subUri = uri.slice(this.uri.length);
-    const childNamePath = subUri.split(path.sep).filter(part => part !== '');
+    const pathModule = pathModuleFor(uri);
+    const childNamePath = subUri.split(pathModule.sep).filter(part => part !== '');
     return this._findLastByNamePath(childNamePath);
   }
 

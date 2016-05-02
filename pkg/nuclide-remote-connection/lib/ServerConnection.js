@@ -32,6 +32,7 @@ import {EventEmitter} from 'events';
 import NuclideSocket from '../../nuclide-server/lib/NuclideSocket';
 import {getVersion} from '../../nuclide-version';
 
+const posixPath = pathModule.posix;
 const newServices = ServiceFramework.loadServicesConfig();
 
 export type ServerConnectionConfiguration = {
@@ -139,7 +140,7 @@ class ServerConnection {
     symlink: boolean = false
   ): RemoteDirectory {
     let {path} = parseRemoteUri(uri);
-    path = pathModule.normalize(path);
+    path = posixPath.normalize(path);
 
     let entry = this._entries[path];
     if (
@@ -171,7 +172,7 @@ class ServerConnection {
 
   createFile(uri: NuclideUri, symlink: boolean = false): RemoteFile {
     let {path} = parseRemoteUri(uri);
-    path = pathModule.normalize(path);
+    path = posixPath.normalize(path);
 
     let entry = this._entries[path];
     if (
