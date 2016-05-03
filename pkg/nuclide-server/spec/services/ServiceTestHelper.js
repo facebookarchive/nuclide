@@ -20,7 +20,7 @@ type Services = Array<{name: string; definition: string; implementation: string}
 
 export default class ServiceTestHelper {
   _server: NuclideServer;
-  _client: ServiceFramework.ClientComponent;
+  _client: ServiceFramework.ClientComponent<NuclideSocket>;
   _connection: _RemoteConnectionMock;
 
   async start(customServices?: Services): Promise<void> {
@@ -54,15 +54,15 @@ export default class ServiceTestHelper {
 }
 
 class _RemoteConnectionMock {
-  _client: ServiceFramework.ClientComponent;
+  _client: ServiceFramework.ClientComponent<NuclideSocket>;
   _port: number;
 
-  constructor(client: ServiceFramework.ClientComponent, port: number) {
+  constructor(client: ServiceFramework.ClientComponent<NuclideSocket>, port: number) {
     this._client = client;
     this._port = port;
   }
 
-  getClient(): ServiceFramework.ClientComponent {
+  getClient(): ServiceFramework.ClientComponent<NuclideSocket> {
     return this._client;
   }
 

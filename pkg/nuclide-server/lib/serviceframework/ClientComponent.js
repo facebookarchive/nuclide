@@ -12,10 +12,10 @@
 import {SERVICE_FRAMEWORK3_CHANNEL} from '../config';
 import type {ConfigEntry} from './index';
 import type {Type} from '../../../nuclide-service-parser/lib/types';
+import type {Transport} from './types';
 
 import invariant from 'assert';
 import {EventEmitter} from 'events';
-import NuclideSocket from '../NuclideSocket';
 import {Observable} from 'rxjs';
 import {SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} from '../config';
 
@@ -30,17 +30,19 @@ import type {RequestMessage, CallRemoteFunctionMessage, CreateRemoteObjectMessag
 
 const logger = require('../../../nuclide-logging').getLogger();
 
-export default class ClientComponent {
+export default class ClientComponent<TransportType: Transport> {
   _rpcRequestId: number;
   _emitter: EventEmitter;
-  _socket: NuclideSocket;
+  _transport: TransportType;
 
   _typeRegistry: TypeRegistry<ObjectRegistry>;
   _objectRegistry: ObjectRegistry;
 
-  constructor(hostname: string, port: number, socket: NuclideSocket, services: Array<ConfigEntry>) {
+  constructor(
+    hostname: string, port: number, transport: TransportType, services: Array<ConfigEntry>
+  ) {
     this._emitter = new EventEmitter();
-    this._socket = socket;
+    this._transport = transport;
     this._rpcRequestId = 1;
 
     this._typeRegistry = new TypeRegistry();
@@ -51,7 +53,7 @@ export default class ClientComponent {
       remoteUri => getPath(remoteUri), path => createRemoteUri(hostname, port, path));
 
     this.addServices(services);
-    this._socket.onMessage(message => this._handleSocketMessage(message));
+    this._transport.onMessage(message => this._handleMessage(message));
   }
 
   addServices(services: Array<ConfigEntry>): void {
@@ -219,12 +221,12 @@ export default class ClientComponent {
   ): any {
     switch (returnType) {
       case 'void':
-        this._socket.send(message);
+        this._transport.send(message);
         return; // No values to return.
       case 'promise':
         // Listen for a single message, and resolve or reject a promise on that message.
         return new Promise((resolve, reject) => {
-          this._socket.send(message);
+          this._transport.send(message);
           this._emitter.once(message.requestId.toString(), (hadError, error, result) => {
             hadError ? reject(decodeError(message, error)) : resolve(result);
           });
@@ -239,7 +241,7 @@ export default class ClientComponent {
         });
       case 'observable':
         const observable = Observable.create(observer => {
-          this._socket.send(message);
+          this._transport.send(message);
 
           // Listen for 'next', 'error', and 'completed' events.
           this._emitter.on(
@@ -270,7 +272,7 @@ export default class ClientComponent {
                 type: 'DisposeObservable',
                 requestId: message.requestId,
               };
-              this._socket.send(disposeMessage);
+              this._transport.send(disposeMessage);
             },
           };
         });
@@ -281,11 +283,11 @@ export default class ClientComponent {
     }
   }
 
-  getSocket(): NuclideSocket {
-    return this._socket;
+  getSocket(): TransportType {
+    return this._transport;
   }
 
-  _handleSocketMessage(message: any): void {
+  _handleMessage(message: any): void {
     const {channel} = message;
     invariant(channel === SERVICE_FRAMEWORK3_CHANNEL);
     const {requestId, hadError, error, result} = message;
@@ -297,7 +299,7 @@ export default class ClientComponent {
   }
 
   close(): void {
-    this._socket.close();
+    this._transport.close();
   }
 }
 
