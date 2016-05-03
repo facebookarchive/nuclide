@@ -28,7 +28,7 @@ describe('Nuclide Server test suite', () => {
       server = new NuclideServer({port: 8176}, loadServicesConfig());
       await server.connect();
       socket = new NuclideSocket('http://localhost:8176');
-      client = new ClientComponent(socket, loadServicesConfig());
+      client = new ClientComponent('localhost', 8176, socket, loadServicesConfig());
     });
   });
 

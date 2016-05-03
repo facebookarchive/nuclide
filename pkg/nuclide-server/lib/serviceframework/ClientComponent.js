@@ -22,6 +22,7 @@ import {SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} from '../config';
 import TypeRegistry from '../../../nuclide-service-parser/lib/TypeRegistry';
 import {getProxy, getDefinitions} from '../../../nuclide-service-parser';
 import {ObjectRegistry} from './ObjectRegistry';
+import {getPath, createRemoteUri} from '../../../nuclide-remote-uri';
 
 import type {RequestMessage, CallRemoteFunctionMessage, CreateRemoteObjectMessage,
   CallRemoteMethodMessage, DisposeRemoteObjectMessage, DisposeObservableMessage,
@@ -37,13 +38,17 @@ export default class ClientComponent {
   _typeRegistry: TypeRegistry<ObjectRegistry>;
   _objectRegistry: ObjectRegistry;
 
-  constructor(socket: NuclideSocket, services: Array<ConfigEntry>) {
+  constructor(hostname: string, port: number, socket: NuclideSocket, services: Array<ConfigEntry>) {
     this._emitter = new EventEmitter();
     this._socket = socket;
     this._rpcRequestId = 1;
 
     this._typeRegistry = new TypeRegistry();
     this._objectRegistry = new ObjectRegistry('client');
+
+    // Register NuclideUri type conversions.
+    this._typeRegistry.registerType('NuclideUri',
+      remoteUri => getPath(remoteUri), path => createRemoteUri(hostname, port, path));
 
     this.addServices(services);
     this._socket.on('message', message => this._handleSocketMessage(message));
@@ -91,9 +96,6 @@ export default class ClientComponent {
   }
   unmarshal(value: any, type: Type): any {
     return this._typeRegistry.unmarshal(this._objectRegistry, value, type);
-  }
-  registerType(...args: any): void {
-    return this._typeRegistry.registerType(...args);
   }
 
   /**

@@ -35,7 +35,7 @@ export default class ServiceTestHelper {
 
     const port = this._server._webServer.address().port;
     this._client = new ServiceFramework.ClientComponent(
-      new NuclideSocket(`http://localhost:${port}`), customServices);
+      'localhost', port, new NuclideSocket(`http://localhost:${port}`), customServices);
     this._connection = new _RemoteConnectionMock(this._client, port);
   }
 
@@ -60,10 +60,6 @@ class _RemoteConnectionMock {
   constructor(client: ServiceFramework.ClientComponent, port: number) {
     this._client = client;
     this._port = port;
-
-    this._client.registerType('NuclideUri',
-      uri => this.getPathOfUri(uri),
-      path => this.getUriOfRemotePath(path));
   }
 
   getClient(): ServiceFramework.ClientComponent {

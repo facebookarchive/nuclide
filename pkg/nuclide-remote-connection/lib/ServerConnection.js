@@ -276,11 +276,8 @@ class ServerConnection {
     }
 
     const socket = new NuclideSocket(uri, options);
-    const client = new ClientComponent(socket, loadServicesConfig());
-
-    // Register NuclideUri type conversions.
-    client.registerType('NuclideUri',
-      remoteUri => this.getPathOfUri(remoteUri), path => this.getUriOfRemotePath(path));
+    const client = new ClientComponent(
+      this.getRemoteHostname(), this.getPort(), socket, loadServicesConfig());
 
     this._client = client;
   }

@@ -55,7 +55,7 @@ describe('Nuclide Secure Server test suite', () => {
         clientCertificate: fs.readFileSync(client_cert_path),
         clientKey: fs.readFileSync(client_key_path),
       });
-      const client = new ClientComponent(socket, loadServicesConfig());
+      const client = new ClientComponent('localhost', 8176, socket, loadServicesConfig());
       invariant(client);
 
       socket.close();
