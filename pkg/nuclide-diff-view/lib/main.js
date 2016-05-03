@@ -83,6 +83,7 @@ function createView(diffEntityOptions: DiffEntityOptions): HTMLElement {
   const DiffViewComponent = require('./DiffViewComponent');
 
   const diffModel = getDiffViewModel();
+  diffModel.activate();
   const hostElement = new DiffViewElement().initialize(diffModel, NUCLIDE_DIFF_VIEW_URI);
   const component = ReactDOM.render(
     <DiffViewComponent diffModel={diffModel} />,
@@ -92,7 +93,6 @@ function createView(diffEntityOptions: DiffEntityOptions): HTMLElement {
     component,
     element: hostElement,
   };
-  diffModel.activate();
   activateDiffPath(diffEntityOptions);
 
   const destroySubscription = hostElement.onDidDestroy(() => {

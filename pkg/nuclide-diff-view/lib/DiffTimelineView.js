@@ -35,15 +35,18 @@ export default class DiffTimelineView extends React.Component {
   constructor(props: DiffTimelineViewProps) {
     super(props);
     this._subscriptions = new CompositeDisposable();
-    const {diffModel} = props;
+    (this: any)._updateRevisions = this._updateRevisions.bind(this);
     this.state = {
       revisionsState: null,
     };
-    const boundUpdateRevisions = this._updateRevisions.bind(this);
+  }
+
+  componentDidMount(): void {
+    const {diffModel} = this.props;
     this._subscriptions.add(
-      diffModel.onRevisionsUpdate(boundUpdateRevisions)
+      diffModel.onRevisionsUpdate(this._updateRevisions)
     );
-    diffModel.getActiveRevisionsState().then(boundUpdateRevisions);
+    diffModel.getActiveRevisionsState().then(this._updateRevisions);
   }
 
   _updateRevisions(newRevisionsState: ?RevisionsState): void {
