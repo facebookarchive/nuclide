@@ -394,9 +394,9 @@ export class HgService {
           hgIgnoreChange();
         }
       });
-      logger.debug(`Node watcher created for lock/dirstate/bookmarks files.`);
+      logger.debug('Node watcher created for lock/dirstate/bookmarks files.');
     } catch (error) {
-      getLogger().error(`Error when creating node watcher for hg state files`, error);
+      getLogger().error('Error when creating node watcher for hg state files', error);
     }
 
     // Subscribe to changes in the current Hg bookmark.

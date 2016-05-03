@@ -212,7 +212,7 @@ export class SshHandshake {
         privateKey = await fsPromise.readFile(expandedPath);
       } catch (e) {
         this._error(
-          `Failed to read private key`,
+          'Failed to read private key',
           SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY,
           e,
         );

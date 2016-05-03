@@ -82,7 +82,6 @@ describe('TextEventDispatcher', () => {
 
 
   function makeFakeEditor(path?: string = '') {
-    let editor;
     // Register a callback for this fake editor.
     const registerCallback = callback => {
       let set = textEventCallbacks.get(editor);
@@ -100,7 +99,7 @@ describe('TextEventDispatcher', () => {
       onDidSave: registerCallback,
       onDidReload: registerCallback,
     };
-    editor = {
+    const editor = {
       getBuffer() {
         return buffer;
       },

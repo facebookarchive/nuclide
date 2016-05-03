@@ -261,9 +261,10 @@ export default class RepositoryStack {
     revisionsState: RevisionsState,
   ): Promise<RevisionsFileHistory> {
     this._revisionsFileHistoryPromise = this._fetchRevisionsFileHistory(revisionsState)
-      .then(revisionsFileHistory =>
-        this._lastRevisionsFileHistory = revisionsFileHistory
-      , error => {
+      .then(revisionsFileHistory => {
+        this._lastRevisionsFileHistory = revisionsFileHistory;
+        return revisionsFileHistory;
+      }, error => {
         this._revisionsFileHistoryPromise = null;
         this._lastRevisionsFileHistory = null;
         throw error;

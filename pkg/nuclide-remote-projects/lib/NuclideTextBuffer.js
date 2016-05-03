@@ -110,7 +110,7 @@ class NuclideTextBuffer extends TextBuffer {
       // This can happen if the user triggered the save while closing the file.
       // Unfortunately, we can't interrupt the user action, but we can at least reopen the buffer.
       if (this.destroyed) {
-        message += `<br><br>Opening a new tab with your unsaved changes.`;
+        message += '<br><br>Opening a new tab with your unsaved changes.';
         atom.workspace.open()
           .then(editor => editor.setText(toSaveContents));
       }

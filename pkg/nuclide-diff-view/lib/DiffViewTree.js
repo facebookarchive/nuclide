@@ -30,17 +30,13 @@ import {getPath, basename} from '../../nuclide-remote-uri';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 
 function labelClassNameForNode(node: LazyTreeNode): string {
-  const classObj = {
-    'icon': true,
-    'name': true,
-  };
-
+  const classArr = ['icon', 'name'];
   if (node.isContainer()) {
-    classObj[`icon-file-directory`] = true;
+    classArr.push('icon-file-directory');
   } else if (node.getItem().statusCode) {
-    classObj[fileTypeClass(node.getLabel())] = true;
+    classArr.push(fileTypeClass(node.getLabel()));
   }
-  return classnames(classObj);
+  return classnames(classArr);
 }
 
 function rowClassNameForNode(node: LazyTreeNode) {
@@ -176,7 +172,7 @@ export default class DiffViewTree extends React.Component {
 
     const repository = repositoryForPath(rootPath);
     if (repository == null || repository.getType() !== 'hg') {
-      const nodeName = `[X] Non-Mercurial Repository`;
+      const nodeName = '[X] Non-Mercurial Repository';
       childNodes.push(
         new DiffViewTreeNode({filePath: nodeName}, rootNode, false, noChildrenFetcher)
       );

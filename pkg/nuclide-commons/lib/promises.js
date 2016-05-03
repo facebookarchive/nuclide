@@ -188,8 +188,8 @@ function serializeAsyncCall<T>(asyncFun: () => Promise<T>): () => Promise<T> {
   const startAsyncCall = () => {
     const resultPromise = asyncFun();
     pendingCall = resultPromise.then(
-      () => pendingCall = null,
-      () => pendingCall = null,
+      () => (pendingCall = null),
+      () => (pendingCall = null),
     );
     return resultPromise;
   };

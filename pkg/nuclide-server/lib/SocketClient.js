@@ -84,7 +84,7 @@ export class SocketClient {
 
   _onSocketMessage(message: any): void {
     if (this._isDisposed) {
-      logger.error(`Received socket message after connection closed`, new Error());
+      logger.error('Received socket message after connection closed', new Error());
       return;
     }
 
@@ -95,7 +95,7 @@ export class SocketClient {
 
   sendSocketMessage(data: any): void {
     if (this._isDisposed) {
-      logger.error(`Attempt to send socket message after connection closed`, new Error());
+      logger.error('Attempt to send socket message after connection closed', new Error());
       return;
     }
 

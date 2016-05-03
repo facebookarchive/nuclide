@@ -198,7 +198,7 @@ export default class ClientComponent {
       return await this._sendMessageAndListenForResult(
         message, 'promise', `Disposing object ${objectId}`);
     } else {
-      logger.info(`Duplicate dispose call on remote proxy`);
+      logger.info('Duplicate dispose call on remote proxy');
     }
   }
 

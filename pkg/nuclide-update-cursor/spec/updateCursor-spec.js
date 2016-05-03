@@ -16,14 +16,14 @@ import updateCursor from '../lib/updateCursor';
 describe('updateCursor', () => {
   it('should work for a simple test case', () => {
     test(
-      `simple|test`,
-      `extra-simple|test`,
+      'simple|test',
+      'extra-simple|test',
     );
   });
 
   it('should handle splitting function parameters', () => {
     test(
-      `foo(a,| b)`,
+      'foo(a,| b)',
       `foo(
         a,|
         b
@@ -33,7 +33,7 @@ describe('updateCursor', () => {
 
   it('should handle splitting function parameters with a comma added', () => {
     test(
-      `foo(a, b, c|)`,
+      'foo(a, b, c|)',
       `foo(
         a,
         b,
@@ -48,7 +48,7 @@ describe('updateCursor', () => {
         a,
         b|
       )`,
-      `foo(a, b|)`,
+      'foo(a, b|)',
     );
   });
 
@@ -58,28 +58,28 @@ describe('updateCursor', () => {
         a,
         b,|
       )`,
-      `foo(a, b|)`,
+      'foo(a, b|)',
     );
   });
 
   it('should return original position if it has no clue what to do', () => {
     test(
-      `abc|def`,
-      `hij|klm`,
+      'abc|def',
+      'hij|klm',
     );
   });
 
   it('should handle removing extra parenthesis', () => {
     test(
-      `((1 + 2) + 3)|`,
-      `1 + 2 + 3|`,
+      '((1 + 2) + 3)|',
+      '1 + 2 + 3|',
     );
   });
 
   it('should handle array accesses', () => {
     test(
-      `foo[1]|`,
-      `blah-foo[1]|`,
+      'foo[1]|',
+      'blah-foo[1]|',
     );
   });
 

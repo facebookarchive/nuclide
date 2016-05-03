@@ -169,7 +169,7 @@ export class ObjectRegistry {
       try {
         await this.disposeObject(id);
       } catch (e) {
-        logger.error(`Error disposing marshalled object.`, e);
+        logger.error('Error disposing marshalled object.', e);
       }
     }));
 
@@ -180,7 +180,7 @@ export class ObjectRegistry {
 
         this.disposeSubscription(id);
       } catch (e) {
-        logger.error(`Error disposing subscription`, e);
+        logger.error('Error disposing subscription', e);
       }
     }
   }

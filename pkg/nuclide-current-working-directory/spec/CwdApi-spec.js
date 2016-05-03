@@ -72,7 +72,7 @@ describe('CwdApi event handling', () => {
     spyOn(atom.project, 'getDirectories').andCallFake(() => projects);
 
     let callback;
-    const onDidChangePaths = cb => callback = cb;
+    const onDidChangePaths = cb => { callback = cb; };
     const originalOnDidChangePaths = atom.project.onDidChangePaths;
     try {
       (atom.project: any).onDidChangePaths = onDidChangePaths;

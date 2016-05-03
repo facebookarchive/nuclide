@@ -99,12 +99,12 @@ export class DebuggerConnection {
       logTrace(`forward client message to lldb: ${message}`);
       lldbWebSocket.send(message);
     } else {
-      logError(`Why is not lldb socket available?`);
+      logError('Why is not lldb socket available?');
     }
   }
 
   async dispose(): Promise<void> {
-    log(`DebuggerConnection disposed`);
+    log('DebuggerConnection disposed');
     this._subscriptions.dispose();
   }
 }
@@ -237,7 +237,7 @@ export class DebuggerRpcService {
   }
 
   _connectWithLLDB(lldbProcess: child_process$ChildProcess): Promise<WS> {
-    log(`connecting with lldb`);
+    log('connecting with lldb');
     return new Promise((resolve, reject) => {
       // Async handle parsing websocket address from the stdout of the child.
       lldbProcess.stdout.on('data', chunk => {
@@ -278,6 +278,6 @@ export class DebuggerRpcService {
   }
 
   async dispose(): Promise<void> {
-    logInfo(`DebuggerRpcService disposed`);
+    logInfo('DebuggerRpcService disposed');
   }
 }

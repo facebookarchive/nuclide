@@ -101,7 +101,7 @@ module.exports = {
           if (charset) {
             response.setEncoding(charset);
           }
-          response.on('data', data => body += data);
+          response.on('data', data => { body += data; });
           response.on('end', () => resolve(body));
         }
       }).on('error', reject);

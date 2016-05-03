@@ -234,11 +234,11 @@ export class FileTreeStore {
   }
 
   _setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {
-    this._updateConf(conf => conf.excludeVcsIgnoredPaths = excludeVcsIgnoredPaths);
+    this._updateConf(conf => { conf.excludeVcsIgnoredPaths = excludeVcsIgnoredPaths; });
   }
 
   _setHideIgnoredNames(hideIgnoredNames: boolean): void {
-    this._updateConf(conf => conf.hideIgnoredNames = hideIgnoredNames);
+    this._updateConf(conf => { conf.hideIgnoredNames = hideIgnoredNames; });
   }
 
   /**
@@ -262,7 +262,7 @@ export class FileTreeStore {
         }
       })
       .filter(pattern => pattern != null);
-    this._updateConf(conf => conf.ignoredPatterns = ignoredPatterns);
+    this._updateConf(conf => { conf.ignoredPatterns = ignoredPatterns; });
   }
 
   _onDispatch(payload: ActionPayload): void {
@@ -493,7 +493,7 @@ export class FileTreeStore {
   * Update the configuration for the file-tree. The direct writing to the this._conf should be
   * avoided.
   */
-  _updateConf(predicate: (conf: StoreConfigData) => mixed): void {
+  _updateConf(predicate: (conf: StoreConfigData) => void): void {
     predicate(this._conf);
     this._updateRoots(root => {
       return root.updateConf().setRecursive(
@@ -602,7 +602,7 @@ export class FileTreeStore {
     });
 
     if (this._vcsStatusesAreDifferent(rootKey, enrichedVcsStatuses)) {
-      this._updateConf(conf => conf.vcsStatuses[rootKey] = enrichedVcsStatuses);
+      this._updateConf(conf => { conf.vcsStatuses[rootKey] = enrichedVcsStatuses; });
     }
   }
 
@@ -627,7 +627,7 @@ export class FileTreeStore {
   }
 
   _setUsePreviewTabs(usePreviewTabs: boolean): void {
-    this._updateConf(conf => conf.usePreviewTabs = usePreviewTabs);
+    this._updateConf(conf => { conf.usePreviewTabs = usePreviewTabs; });
   }
 
   _setUsePrefixNav(usePrefixNav: boolean) {
@@ -811,7 +811,12 @@ export class FileTreeStore {
       // subscription is notifying us that something has changed and if a fetch is already in
       // progress then it is racing with the change. Therefore, if we detect that there was a change
       // during the fetch we schedule another right after the first has finished.
-      let checkMissed;
+      const checkMissed = () => {
+        fetchingPromise = null;
+        if (couldMissUpdate) {
+          fetchKeys();
+        }
+      };
 
       const fetchKeys = () => {
         if (fetchingPromise == null) {
@@ -819,13 +824,6 @@ export class FileTreeStore {
           fetchingPromise = this._fetchChildKeys(nodeKey).then(checkMissed);
         } else {
           couldMissUpdate = true;
-        }
-      };
-
-      checkMissed = () => {
-        fetchingPromise = null;
-        if (couldMissUpdate) {
-          fetchKeys();
         }
       };
 
@@ -1332,11 +1330,11 @@ export class FileTreeStore {
   }
 
   _setWorkingSet(workingSet: WorkingSet): void {
-    this._updateConf(conf => conf.workingSet = workingSet);
+    this._updateConf(conf => { conf.workingSet = workingSet; });
   }
 
   _setOpenFilesWorkingSet(openFilesWorkingSet: WorkingSet): void {
-    this._updateConf(conf => conf.openFilesWorkingSet = openFilesWorkingSet);
+    this._updateConf(conf => { conf.openFilesWorkingSet = openFilesWorkingSet; });
   }
 
   _setWorkingSetsStore(workingSetsStore: ?WorkingSetsStore): void {

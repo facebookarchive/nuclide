@@ -77,7 +77,7 @@ describe('ObjectiveCBracketBalancer', () => {
     it('inserts an open bracket at the beginning of an unbalanced nested expression with an open'
       + ' bracket in a char literal', () => {
       expect(getOpenBracketInsertPosition(
-        new TextBuffer(`[self fooWithBar:'['] setEnabled:NO]`),
+        new TextBuffer("[self fooWithBar:'['] setEnabled:NO]"),
         Point.fromObject([0, 35])
       )).toEqual(Point.fromObject([0, 0]));
     });
@@ -85,7 +85,7 @@ describe('ObjectiveCBracketBalancer', () => {
     it('does not insert an open bracket at the beginning of a balanced nested expression with an'
       + ' open bracket in a char literal', () => {
       expect(getOpenBracketInsertPosition(
-        new TextBuffer(`[foo('[') setEnabled:NO]`),
+        new TextBuffer("[foo('[') setEnabled:NO]"),
         Point.fromObject([0, 23])
       )).toEqual(null);
     });

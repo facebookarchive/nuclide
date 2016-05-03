@@ -58,7 +58,7 @@ ${INFO_REV_END_MARK}
       expect(parseRevisionInfoOutput(revisionsString)).toEqual([
         {
           id: 124,
-          title: `Commit 1 'title'.`,
+          title: "Commit 1 'title'.",
           author: 'Author Name<auth_2_alias@domain.com>',
           hash: 'a343fb3',
           bookmarks: [],
@@ -67,7 +67,7 @@ ${INFO_REV_END_MARK}
         },
         {
           id: 123,
-          title: `Commit 2 'title'.`,
+          title: "Commit 2 'title'.",
           author: 'Author Name<auth_2_alias@domain.com>',
           hash: 'a343fb2',
           bookmarks: [],
@@ -78,7 +78,7 @@ ${INFO_REV_END_MARK}
     });
 
     it('skips an entry if invalid - should never happen', () => {
-      expect(parseRevisionInfoOutput(`revision:123`)).toEqual([]);
+      expect(parseRevisionInfoOutput('revision:123')).toEqual([]);
     });
   });
 

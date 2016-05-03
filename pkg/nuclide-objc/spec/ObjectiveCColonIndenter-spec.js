@@ -56,7 +56,7 @@ describe('ObjectiveCColonIndenter', () => {
 
     it('returns null for single-line method calls', () => {
       expect(getIndentedColonColumn(
-          new TextBuffer(`[obj arg:value :`),
+          new TextBuffer('[obj arg:value :'),
           Point.fromObject([0, 15])))
           .toBeNull();
     });

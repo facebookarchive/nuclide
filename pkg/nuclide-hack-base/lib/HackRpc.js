@@ -129,12 +129,12 @@ export class HackRpc {
     try {
       messageObject = JSON.parse(messageString);
     } catch (e) {
-      logger.debug(`Error: Parsing hack Rpc message.`);
+      logger.debug('Error: Parsing hack Rpc message.');
       return;
     }
 
     if (!isValidResponseMessage(messageObject)) {
-      logger.debug(`Error: Received invalid Hack Rpc response.`);
+      logger.debug('Error: Received invalid Hack Rpc response.');
       return;
     }
     const response: ResponseMessage = messageObject;
@@ -142,7 +142,7 @@ export class HackRpc {
 
     const inProgress = this._inProgress.get(id);
     if (inProgress == null) {
-      logger.debug(`Error: Received Hack Rpc response with invalid index.`);
+      logger.debug('Error: Received Hack Rpc response with invalid index.');
       return;
     }
 

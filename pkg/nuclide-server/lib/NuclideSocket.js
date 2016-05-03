@@ -296,13 +296,17 @@ class NuclideSocket extends EventEmitter {
       switch (originalCode) {
         case 'ENOTFOUND':
         // A socket operation failed because the network was down.
+        /* fallthrough */
         case 'ENETDOWN':
         // The range of the temporary ports for connection are all taken,
         // This is temporal with many http requests, but should be counted as a network away event.
+        /* fallthrough */
         case 'EADDRNOTAVAIL':
         // The host server is unreachable, could be in a VPN.
+        /* fallthrough */
         case 'EHOSTUNREACH':
         // A request timeout is considered a network away event.
+        /* fallthrough */
         case 'ETIMEDOUT':
           code = 'NETWORK_AWAY';
           break;

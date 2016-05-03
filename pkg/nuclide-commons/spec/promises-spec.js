@@ -12,6 +12,7 @@
 import {asyncFind, denodeify} from '..';
 import {promises} from '..';
 import {expectAsyncFailure} from '../../nuclide-test-helpers';
+import invariant from 'assert';
 
 describe('promises::asyncFind()', () => {
 
@@ -461,7 +462,8 @@ describe('promises::RequestSerializer()', () => {
       expect(oldStatus).toBe('outdated');
       const newResult = await newPromise;
       expect(newResult.status).toBe('success');
-      expect(newResult[`result`]).toBe('NEW');
+      invariant(newResult.result);
+      expect(newResult.result).toBe('NEW');
     });
   });
 

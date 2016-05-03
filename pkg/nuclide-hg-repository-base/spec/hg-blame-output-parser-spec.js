@@ -12,7 +12,7 @@
 import {parseHgBlameOutput} from '../lib/hg-blame-output-parser';
 
 const HG_BLAME_OUTPUT_WITH_ERROR =
-`[abort: Tools/Nuclide/pkg/blah.js: no such file in rev c2096f856c82`;
+'[abort: Tools/Nuclide/pkg/blah.js: no such file in rev c2096f856c82';
 
 const HG_BLAME_FOR_FILE_WITH_COMMITTED_AND_UNCOMMITTED_CHANGES =
 `[

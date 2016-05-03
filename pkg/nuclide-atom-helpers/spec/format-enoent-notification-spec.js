@@ -34,7 +34,7 @@ describe('formatEnoentNotification', () => {
 
   it('formats the message', () => {
     invariant(formatted != null);
-    expect(formatted.message).toBe(`Nuclide couldn't find *node*!`);
+    expect(formatted.message).toBe("Nuclide couldn't find *node*!");
   });
 
   it('has a useful intro line', () => {

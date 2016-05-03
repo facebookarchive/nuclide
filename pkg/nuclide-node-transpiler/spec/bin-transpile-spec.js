@@ -25,8 +25,8 @@ const ps = child_process.spawn(
 
 let out = '';
 let err = '';
-ps.stdout.on('data', buf => out += buf);
-ps.stderr.on('data', buf => err += buf);
+ps.stdout.on('data', buf => { out += buf; });
+ps.stderr.on('data', buf => { err += buf; });
 
 let ran = false;
 ps.on('close', () => {

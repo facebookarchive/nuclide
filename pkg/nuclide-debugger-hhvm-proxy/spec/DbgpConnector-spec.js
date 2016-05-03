@@ -179,7 +179,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
     expect(emitted).toBe(true);
     expect(onError).toHaveBeenCalledWith(
       `Can't start debugging because port ${port} is being used by another process. ` +
-      `Try running 'killall node' on your devserver and then restarting Nuclide.`
+      "Try running 'killall node' on your devserver and then restarting Nuclide."
     );
     expect(server.close).toHaveBeenCalledWith();
     expect(onClose).toHaveBeenCalledWith(undefined);

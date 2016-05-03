@@ -480,7 +480,7 @@ export default class TypeRegistry<MarshallingContext> {
         if (obj != null && obj.hasOwnProperty(prop.name)) {
           const value = this._marshal(context, obj[prop.name], prop.type);
           if (value instanceof Promise) {
-            return value.then(result => newObj[prop.name] = result);
+            return value.then(result => (newObj[prop.name] = result));
           } else {
             newObj[prop.name] = value;
           }
@@ -504,7 +504,7 @@ export default class TypeRegistry<MarshallingContext> {
         if (obj != null && obj.hasOwnProperty(prop.name)) {
           const value = this._unmarshal(context, obj[prop.name], prop.type);
           if (value instanceof Promise) {
-            return value.then(result => newObj[prop.name] = result);
+            return value.then(result => (newObj[prop.name] = result));
           } else {
             newObj[prop.name] = value;
           }

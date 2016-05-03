@@ -510,9 +510,11 @@ function printWithoutWrappers(node: ?any, context: Context): Lines {
     case 'ObjectTypeIndexer':
     case 'TypeCaseExpression':
     // I believe this is now replaced with TupleTypeAnnotation: [string].
+    /* fallthrough */
     case 'ArrayTypeAnnotation':
     // I think this is a literal within JSXElement's children for certain
     // parsers, but Babylon appears to just use Literal.
+    /* fallthrough */
     case 'JSXText':
       return [];
   }

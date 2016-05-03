@@ -194,10 +194,10 @@ export class RemoteConnection {
       // Let's just console log it anyway.
       logger.info(`Watcher Features Initialized for project: ${rootDirectoryUri}`, watchUpdate);
     }, async error => {
-      let warningMessageToUser = `You just connected to a remote project ` +
+      let warningMessageToUser = 'You just connected to a remote project ' +
         `\`${rootDirectotyPath}\` but we recommend you remove this directory now ` +
-        `because crucial features like synced remote file editing, file search, ` +
-        `and Mercurial-related updates will not work.<br/>`;
+        'because crucial features like synced remote file editing, file search, ' +
+        'and Mercurial-related updates will not work.<br/>';
 
       const loggedErrorMessage = error.message || error;
       logger.error(
@@ -208,11 +208,11 @@ export class RemoteConnection {
       if (await FileSystemService.isNfs(rootDirectotyPath)) {
         warningMessageToUser +=
           `This project directory: \`${rootDirectotyPath}\` is on <b>\`NFS\`</b> filesystem. ` +
-          `Nuclide works best with local (non-NFS) root directory.` +
-          `e.g. \`/data/users/$USER\``;
+          'Nuclide works best with local (non-NFS) root directory.' +
+          'e.g. `/data/users/$USER`';
       } else {
         warningMessageToUser +=
-          `<b><a href='https://facebook.github.io/watchman/'>Watchman</a> Error:</b>` +
+          '<b><a href="https://facebook.github.io/watchman/">Watchman</a> Error:</b>' +
           loggedErrorMessage;
       }
       // Add a persistent warning message to make sure the user sees it before dismissing.

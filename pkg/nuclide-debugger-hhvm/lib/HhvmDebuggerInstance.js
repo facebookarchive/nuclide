@@ -155,7 +155,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
 
   onSessionEnd(callback: () => void): Disposable {
     this._sessionEndCallback = callback;
-    return (new Disposable(() => this._sessionEndCallback = null));
+    return new Disposable(() => { this._sessionEndCallback = null; });
   }
 
   _sendServerMessageToChromeUi(message: string): void {

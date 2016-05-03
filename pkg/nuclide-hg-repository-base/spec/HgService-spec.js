@@ -242,7 +242,9 @@ describe('HgService', () => {
         tempFileCreated = true;
         return messageFile;
       });
-      spyOn(fsPromise, 'unlink').andCallFake(async () => tempFileRemoved = true);
+      spyOn(fsPromise, 'unlink').andCallFake(async () => {
+        tempFileRemoved = true;
+      });
       spyOn(fsPromise, 'writeFile').andCallFake((filePath, contents) => {
         expect(contents).toBe(commitMessage);
         tempFileWritten = true;

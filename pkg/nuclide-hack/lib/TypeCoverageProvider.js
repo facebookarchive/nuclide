@@ -86,7 +86,7 @@ export class TypeCoverageProvider {
 
   _runTypeCoverage(textEditor: TextEditor): Promise<void> {
     return this._busySignalProvider.reportBusy(
-      `Hack: Waiting for type coverage results`,
+      'Hack: Waiting for type coverage results',
       () => this._runTypeCoverageImpl(textEditor),
     ).catch(async e => { logger.error(e); });
   }

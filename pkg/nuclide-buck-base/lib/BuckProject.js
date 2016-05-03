@@ -244,7 +244,7 @@ export class BuckProject {
       const json: string = await fsPromise.readFile(report, {encoding: 'UTF-8'});
       if (!json) {
         throw Error(`Report file ${report} for ${buildTargets} was opened, ` +
-            `but nothing was written.`);
+            'but nothing was written.');
       }
 
       try {

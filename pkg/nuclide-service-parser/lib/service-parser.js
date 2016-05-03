@@ -214,7 +214,7 @@ class ServiceParser {
       if (method.kind === 'constructor') {
         def.constructorArgs = method.value.params.map(param => this._parseParameter(param));
         if (method.value.returnType) {
-          throw this._error(method, `constructors may not have return types`);
+          throw this._error(method, 'constructors may not have return types');
         }
       } else {
         if (!isPrivateMemberName(method.key.name)) {
@@ -222,10 +222,10 @@ class ServiceParser {
           if (name === 'dispose') {
             // Validate dispose method has a reasonable signature
             if (type.argumentTypes.length > 0) {
-              throw this._error(method, `dispose method may not take arguments`);
+              throw this._error(method, 'dispose method may not take arguments');
             }
             if (!isValidDisposeReturnType(type.returnType)) {
-              throw this._error(method, `dispose method must return either void or Promise<void>`);
+              throw this._error(method, 'dispose method must return either void or Promise<void>');
             }
           }
           this._defineMethod(name, type, method.static ? def.staticMethods : def.instanceMethods);
@@ -233,7 +233,7 @@ class ServiceParser {
       }
     }
     if (!def.instanceMethods.has('dispose')) {
-      throw this._error(declaration, `Remotable interfaces must include a dispose method`);
+      throw this._error(declaration, 'Remotable interfaces must include a dispose method');
     }
     return def;
   }

@@ -30,9 +30,9 @@ describe('handleBuckAnsiOutput', () => {
     + ' uses.', () => {
     invariant(textBuffer);
 
-    const line0 = `0`;
-    const line1 = `1`;
-    const line2 = `2`;
+    const line0 = '0';
+    const line1 = '1';
+    const line2 = '2';
     // Erases line2.
     const line3 =
       `${RESUME_WRAPPING_ESCAPE}${ERASE_PREVIOUS_LINE_ESCAPE_PAIR}${STOP_WRAPPING_ESCAPE}3`;
@@ -40,7 +40,7 @@ describe('handleBuckAnsiOutput', () => {
     const line4 =
       `${RESUME_WRAPPING_ESCAPE}${ERASE_PREVIOUS_LINE_ESCAPE_PAIR}`
       + `${ERASE_PREVIOUS_LINE_ESCAPE_PAIR}${STOP_WRAPPING_ESCAPE}4`;
-    const line5 = `5`;
+    const line5 = '5';
     const line6 = `${RESUME_WRAPPING_ESCAPE}`;
     const text = [line0, line1, line2, line3, line4, line5, line6].join('\n');
     const expectedResultingText = ['0', '4', '5', ''].join('\n');

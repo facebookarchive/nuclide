@@ -50,7 +50,7 @@ export function notifySshHandshakeError(
         originalErrorDetail;
       break;
     case SshHandshake.ErrorType.SSH_AUTHENTICATION:
-      message = `Authentication failed`;
+      message = 'Authentication failed';
       detail = 'Make sure your password or private key is properly configured.';
       break;
     case SshHandshake.ErrorType.DIRECTORY_NOT_FOUND:
@@ -64,7 +64,7 @@ export function notifySshHandshakeError(
         `  1. Make sure the command "${config.remoteServerCommand}" is correct.\n` +
         `  2. The server might take longer to start up than expected, try to connect again.\n` +
         `  3. If none of above works, ssh to ${config.host} and kill existing nuclide-server` +
-        ` by running "killall node", and reconnect.`;
+        ' by running "killall node", and reconnect.';
       break;
     case SshHandshake.ErrorType.SERVER_VERSION_MISMATCH:
       message = 'Server version is different than client version';

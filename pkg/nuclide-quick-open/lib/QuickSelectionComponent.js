@@ -729,7 +729,7 @@ export default class QuickSelectionComponent extends React.Component {
       omniSearchStatus = (
         <span>
           <span className="loading loading-spinner-tiny inline-block" />
-          {`Loading...`}
+          {'Loading...'}
         </span>
       );
     }

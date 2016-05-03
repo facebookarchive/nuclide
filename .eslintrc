@@ -1,14 +1,20 @@
 {
   "parser": "babel-eslint",
+
   "env": {
+    "es6": true,
     "jasmine": true,
     "node": true,
   },
 
-  "ecmaFeatures": {
-    "blockBindings": true,
-    "jsx": true,
-    "objectLiteralComputedProperties": true,
+  "parserOptions": {
+    "ecmaVersion": 7,
+    "ecmaFeatures": {
+        "experimentalObjectRestSpread": true,
+        "globalReturn": true,
+        "jsx": true,
+    },
+    "sourceType": "module"
   },
 
   // Map from global var to bool specifying if it can be redefined
@@ -22,17 +28,13 @@
     "clearTimeout": false,
     "console": false,
     "document": false,
-    "escape": false,
     "exports": false,
     "global": false,
     "jest": false,
-    "Map": false,
     "module": false,
     "process": false,
-    "Promise": false,
     "requestAnimationFrame": true,
     "require": false,
-    "Set": false,
     "setImmediate": true,
     "setInterval": false,
     "setTimeout": false,
@@ -100,7 +102,6 @@
     "no-caller": 1,                  // disallow use of arguments.caller or arguments.callee
     "no-div-regex": 1,               // disallow division operators explicitly at beginning of regular expression (off by default)
     "no-else-return": 0,             // disallow else after a return in an if (off by default)
-    "no-empty-label": 1,             // disallow use of labels for anything other then loops and switches
     "no-eq-null": 0,                 // disallow comparisons to null without a type-checking operator (off by default)
     "no-eval": 1,                    // disallow use of eval()
     "no-extend-native": 1,           // disallow adding to native types
@@ -180,6 +181,7 @@
   // These rules are purely matters of style and are quite subjective.
 
     "key-spacing": 0,
+    "keyword-spacing": 1,
     "comma-spacing": 0,
     "no-multi-spaces": 0,
     "brace-style": [2, "1tbs", {"allowSingleLine": true}], // enforce one true brace style
@@ -209,13 +211,11 @@
     "quote-props": 0,                     // require quotes around object literal property names (off by default)
     "semi": 1,                            // require or disallow use of semicolons instead of ASI
     "sort-vars": 0,                       // sort variables within the same declaration block (off by default)
-    "space-after-keywords": 1,            // require a space after certain keywords (off by default)
     "space-before-blocks": 1,             // require a space before blocks
     "space-before-function-paren": [1, "never"], // require a space before function parenthesis
     "space-in-brackets": 0,               // require or disallow spaces inside brackets (off by default)
     "space-in-parens": 0,                 // require or disallow spaces inside parentheses (off by default)
     "space-infix-ops": 1,                 // require spaces around operators
-    "space-return-throw-case": 1,         // require a space after return, throw, and case
     "space-unary-ops": 1,                 // require a space around word operators such as typeof (off by default)
     "max-nested-callbacks": 0,            // specify the maximum depth callbacks can be nested (off by default)
     "one-var": 0,                         // allow just one var statement per function (off by default)

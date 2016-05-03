@@ -320,7 +320,7 @@ function trackingIdOfMessage(registry: ObjectRegistry, message: RequestMessage):
       const interfaceName = registry.getInterface(message.objectId);
       return `service-framework:dispose:${interfaceName}`;
     case 'DisposeObservable':
-      return `service-framework:disposeObservable`;
+      return 'service-framework:disposeObservable';
     default:
       throw new Error(`Unknown message type ${message.type}`);
   }

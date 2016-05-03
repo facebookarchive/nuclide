@@ -142,6 +142,7 @@ export class FlowProcess {
       }
     }
     // otherwise flow complains
+    // eslint-disable-next-line no-unreachable
     return null;
   }
 

@@ -14,7 +14,7 @@ import {once} from '../lib/once';
 describe('once', () => {
   it('correctly calls only once', () => {
     let num = 1;
-    const onceFn = once(n => num += n);
+    const onceFn = once(n => (num += n));
     expect(onceFn(2)).toEqual(3);
     expect(onceFn(2)).toEqual(3);
   });

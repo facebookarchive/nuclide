@@ -92,7 +92,7 @@ export class RemoteDirectory {
     const {watchDirectory} = (this._getService('FileWatcherService'): FileWatcherService);
     const watchStream = watchDirectory(this._uri);
     this._watchSubscription = watchStream.subscribe(watchUpdate => {
-      logger.debug(`watchDirectory update:`, watchUpdate);
+      logger.debug('watchDirectory update:', watchUpdate);
       if (watchUpdate.type === 'change') {
         return this._handleNativeChangeEvent();
       }

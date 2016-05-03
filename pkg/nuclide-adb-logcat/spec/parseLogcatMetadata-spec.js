@@ -15,7 +15,7 @@ import parseLogcatMetadata from '../lib/parseLogcatMetadata';
 describe('parseLogcatMetadata', () => {
 
   const getParsed = () => {
-    const parsed = parseLogcatMetadata(`[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]`);
+    const parsed = parseLogcatMetadata('[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]');
     invariant(parsed);
     return parsed;
   };

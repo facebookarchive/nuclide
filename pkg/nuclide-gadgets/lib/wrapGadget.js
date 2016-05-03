@@ -72,8 +72,8 @@ export default function wrapGadget(gadget: any): Object {
   // `serializeState()`.
   invariant(
     !('serialize' in gadget.prototype),
-    `Gadgets can't define a "serialize" method. To provide custom serialization, `
-    + `implement "serializeState"`
+    "Gadgets can't define a \"serialize\" method. To provide custom serialization, "
+    + 'implement "serializeState"'
   );
 
   // Copy statics.

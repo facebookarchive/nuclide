@@ -234,7 +234,7 @@ export function validateDefinitions(definitions: Definitions): void {
   function validateReturnType(funcType: FunctionType, type: Type): void {
     function invalidReturnTypeError(): Error {
       return error(funcType,
-        `The return type of a remote function must be of type Void, Promise, or Observable`);
+        'The return type of a remote function must be of type Void, Promise, or Observable');
     }
 
     switch (type.kind) {
@@ -308,7 +308,7 @@ export function validateDefinitions(definitions: Definitions): void {
       validateObjectUnionType(type, alternates);
     }  else {
       throw errorLocations([type.location, alternates[0].location],
-        `Union alternates must be either be typed object or literal types.`);
+        'Union alternates must be either be typed object or literal types.');
     }
   }
 
@@ -319,7 +319,7 @@ export function validateDefinitions(definitions: Definitions): void {
       // Ensure a valid alternate
       if (!isLiteralType(alternate)) {
         throw errorLocations([type.location, alternate.location],
-          `Union alternates may only be literal types.`);
+          'Union alternates may only be literal types.');
       }
 
       // Ensure no duplicates
@@ -330,7 +330,7 @@ export function validateDefinitions(definitions: Definitions): void {
             || alternate.kind === 'boolean-literal');
         if (previous.value === alternate.value) {
           throw errorLocations([type.location, previous.location, alternate.location],
-            `Union alternates may not have the same value.`);
+            'Union alternates may not have the same value.');
         }
       });
 
@@ -346,7 +346,7 @@ export function validateDefinitions(definitions: Definitions): void {
       // Ensure alternates match
       if (alternate.kind !== 'object') {
         throw errorLocations([type.location, alternates[0].location, alternate.location],
-          `Union alternates must be of the same type.`);
+          'Union alternates must be of the same type.');
       }
     });
 
@@ -362,7 +362,7 @@ export function validateDefinitions(definitions: Definitions): void {
         const alternatePossibilities = possibleDiscriminantFieldsOfUnionAlternate(alternate);
         if (alternatePossibilities.size === 0) {
           throw errorLocations([type.location, alternate.location],
-            `Object union alternative has no possible discriminant fields.`);
+            'Object union alternative has no possible discriminant fields.');
         }
         // Use null to represent the set containing everything.
         if (possibilities == null) {

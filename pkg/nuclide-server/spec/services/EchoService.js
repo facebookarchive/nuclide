@@ -32,7 +32,7 @@ export async function echoBoolean(arg: boolean): Promise<boolean> {
 
 // More Complex Objects.
 export async function echoDate(arg: Date): Promise<Date> {
-  assert(arg instanceof Date, `Argument to echoDate must be a Date.`);
+  assert(arg instanceof Date, 'Argument to echoDate must be a Date.');
   return arg;
 }
 export async function echoRegExp(arg: RegExp): Promise<RegExp> {

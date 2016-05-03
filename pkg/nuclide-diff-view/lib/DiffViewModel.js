@@ -141,7 +141,7 @@ function hgRepositoryForPath(filePath: NuclideUri): HgRepositoryClient {
   if (repository == null || repository.getType() !== 'hg') {
     const type = repository ? repository.getType() : 'no repository';
     throw new Error(
-      `Diff view only supports \`Mercurial\` repositories, ` +
+      'Diff view only supports `Mercurial` repositories, ' +
       `but found \`${type}\` at path: \`${filePath}\``
     );
   }

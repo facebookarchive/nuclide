@@ -118,8 +118,8 @@ export default class {
       newBlame = await this._blameProvider.getBlameForEditor(this._editor);
     } catch (error) {
       atom.notifications.addError(
-        `Failed to fetch blame to display. ` +
-        `The file is empty or untracked or the repository cannot be reached.`,
+        'Failed to fetch blame to display. ' +
+        'The file is empty or untracked or the repository cannot be reached.',
         error,
       );
       return;
