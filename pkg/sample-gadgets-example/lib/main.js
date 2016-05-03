@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Gadget, GadgetsService} from '../../nuclide-gadgets-interfaces';
+import type {Gadget, GadgetsService} from '../../nuclide-gadgets';
 
 import {ExamplePaneItem} from './createExamplePaneItem';
 

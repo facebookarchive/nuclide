@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {GadgetsService} from '../../nuclide-gadgets-interfaces';
+import type {GadgetsService} from '../../nuclide-gadgets';
 import type {HomeFragments} from './types';
 
 export type {HomeFragments} from './types';

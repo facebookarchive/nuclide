@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {GadgetLocation} from '../../nuclide-gadgets-interfaces';
+import type {GadgetLocation} from './types';
 
 type Direction = 'top' | 'right' | 'bottom' | 'left';
 

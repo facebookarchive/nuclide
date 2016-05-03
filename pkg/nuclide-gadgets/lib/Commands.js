@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Gadget, GadgetLocation} from '../../nuclide-gadgets-interfaces';
+import type {Gadget, GadgetLocation} from './types';
 import type Immutable from 'immutable';
 import type {PaneItemContainer} from '../types/PaneItemContainer';
 import type {Action} from '../types/Action';

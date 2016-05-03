@@ -10,7 +10,7 @@
  */
 
 import type Commands from './Commands';
-import type {Gadget} from '../../nuclide-gadgets-interfaces';
+import type {Gadget} from './types';
 
 import {Disposable} from 'atom';
 

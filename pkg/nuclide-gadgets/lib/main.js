@@ -11,6 +11,12 @@
 
 import type GadgetsService from './GadgetsService';
 
+export type {
+  Gadget,
+  GadgetLocation,
+  GadgetsService,
+} from './types';
+
 import invariant from 'assert';
 
 let activation: ?Object = null;

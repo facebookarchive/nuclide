@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Gadget} from '../../../nuclide-gadgets-interfaces';
+import type {Gadget} from '../../../nuclide-gadgets';
 import {React} from 'react-for-atom';
 import path from 'path';
 import {Webview} from '../../../nuclide-ui/lib/Webview';
