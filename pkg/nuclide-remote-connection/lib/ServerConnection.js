@@ -218,7 +218,7 @@ class ServerConnection {
     // Test connection first. First time we get here we're checking to reestablish
     // connection using cached credentials. This will fail fast (faster than infoService)
     // when we don't have cached credentials yet.
-    await client.testConnection();
+    await client.getSocket().testConnection();
 
     // Do version check.
     const serverVersion = await this._getInfoService().getServerVersion();

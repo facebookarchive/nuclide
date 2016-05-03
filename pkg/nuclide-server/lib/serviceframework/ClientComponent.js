@@ -296,12 +296,6 @@ export default class ClientComponent {
     return this._rpcRequestId++;
   }
 
-  // Resolves if the connection looks healthy.
-  // Will reject quickly if the connection looks unhealthy.
-  testConnection(): Promise<void> {
-    return this._socket.testConnection();
-  }
-
   close(): void {
     this._socket.close();
   }
