@@ -1,0 +1,26 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Build",
+          "submenu": [
+            {
+              "label": "Toggle Toolbar Visibility",
+              "command": "nuclide-build:toggle-toolbar-visibility"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "context-menu": {
+    ".buck-toolbar": [
+      {
+        "command": "nuclide-build:toggle-toolbar-visibility",
+        "label": "Hide Tool Bar"
+      }
+    ]
+  }
+}
