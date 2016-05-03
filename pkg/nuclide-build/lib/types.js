@@ -29,6 +29,12 @@ export type AppState = {
   visible: boolean;
 };
 
+export type SerializedAppState = {
+  previousSessionActiveBuildSystemId: ?string;
+  previousSessionActiveTaskType: ?string;
+  visible: boolean;
+};
+
 export type Task = {
   type: string;
   label: string;

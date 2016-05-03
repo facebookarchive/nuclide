@@ -10,7 +10,7 @@
  */
 
 import type {Commands as CommandsType} from './Commands';
-import type {AppState, BuildSystem, BuildSystemRegistry} from './types';
+import type {AppState, BuildSystem, BuildSystemRegistry, SerializedAppState} from './types';
 import type {BehaviorSubject} from 'rxjs';
 
 import {DisposableSubscription} from '../../nuclide-commons';
@@ -21,7 +21,7 @@ let disposables: ?CompositeDisposable = null;
 let _commands: ?CommandsType = null;
 let _states: ?BehaviorSubject<AppState> = null;
 
-export function activate(rawState: ?Object = {}): void {
+export function activate(rawState: ?SerializedAppState): void {
   invariant(disposables == null);
   invariant(_commands == null);
 
@@ -31,10 +31,15 @@ export function activate(rawState: ?Object = {}): void {
   const {createEmptyAppState} = require('./createEmptyAppState');
   const Rx = require('rxjs');
 
+  const initialState = {
+    ...createEmptyAppState(),
+    ...(rawState || {}),
+  };
+
   const actions = new Rx.Subject();
   const states = _states = createStateStream(
     applyActionMiddleware(actions, () => states.getValue()),
-    createEmptyAppState(),
+    initialState,
   );
   const dispatch = action => { actions.next(action); };
   const commands = _commands = new Commands(dispatch, () => states.getValue());
@@ -123,5 +128,17 @@ export function provideBuildSystemRegistry(): BuildSystemRegistry {
         commands.unregisterBuildSystem(buildSystem);
       });
     },
+  };
+}
+
+export function serialize(): SerializedAppState {
+  invariant(_states != null);
+  const state = _states.getValue();
+  return {
+    previousSessionActiveBuildSystemId:
+      state.activeBuildSystemId || state.previousSessionActiveBuildSystemId,
+    previousSessionActiveTaskType:
+      state.activeTaskType || state.previousSessionActiveTaskType,
+    visible: state.visible,
   };
 }
