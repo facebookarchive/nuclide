@@ -1,5 +1,5 @@
+@import "syntax-variables";
 @import "ui-variables";
-@import "progress";
 
 .nuclide-blame {
   display: flex;
@@ -18,13 +18,67 @@
   text-decoration: underline;
 }
 
+/*
+ * Progress spinner mostly taken from [progress.less in one-light-ui][1] and the same file in
+ * one-dark-ui. "progress.less" can not be imported because it is not guaranteed to be defined by
+ * all themes. Copy the styles here to use in the blame gutter
+ *
+ * [1]: https://github.com/atom/one-light-ui/blob/fa2e7e73c0301f3dad4b17d94bb4ce68d5c21b2d/styles/progress.less
+ */
+
+.ui-syntax-color() { @syntax-background-color: hsl(220,1%,98%); } .ui-syntax-color(); // fallback color
+@ui-syntax-color: @syntax-background-color;
+
+// Color guards -----------------
+@ui-s-h: hue(@ui-syntax-color);
+.ui-hue() when (@ui-s-h = 0) { @ui-hue: 220; } // Use blue hue when no saturation
+.ui-hue() when (@ui-s-h > 0) { @ui-hue: @ui-s-h; }
+.ui-hue();
+
+// Base (Custom) -----------------
+@base-accent-color: hsl(@ui-hue, 64%, 56%);
+
+// Spinner ----------------------
+
+@spinner-duration: 1.2s;
+
 .nuclide-blame-ui-spinner {
-  // The gutter lives in a shadow element so it can't use the
-  // "loading-spinner-tiny" class directly - instead we copy the styles.
-  .loading-spinner-tiny;
   align-self: center;
   margin: 0 auto;
-  &::before, &::after {
+  position: relative;
+  display: block;
+  width: 1em;
+  height: 1em;
+  font-size: 16px;
+  background: radial-gradient(@base-accent-color .1em, transparent .11em);
+
+  &::before,
+  &::after {
     box-sizing: border-box;
+    content: "";
+    position: absolute;
+    z-index: 10; // prevent sibling elements from getting their own layers
+    top: 0;
+    left: 0;
+    border-radius: 1em;
+    width: inherit;
+    height: inherit;
+    border-radius: 1em;
+    border: 1px solid;
+    -webkit-animation: spinner-animation @spinner-duration infinite;
+    -webkit-animation-fill-mode: backwards;
   }
+  &::before {
+    border-color: @base-accent-color transparent transparent transparent;
+  }
+  &::after {
+    border-color: transparent lighten(@base-accent-color, 15%) transparent transparent;
+    -webkit-animation-delay: @spinner-duration/2;
+  }
+}
+
+@-webkit-keyframes spinner-animation {
+    0% { transform: rotateZ(  0deg); -webkit-animation-timing-function: cubic-bezier(0, 0, .8, .2); }
+   50% { transform: rotateZ(180deg); -webkit-animation-timing-function: cubic-bezier(.2, .8, 1, 1); }
+  100% { transform: rotateZ(360deg); }
 }
