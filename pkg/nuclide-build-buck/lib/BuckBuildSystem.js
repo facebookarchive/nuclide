@@ -115,7 +115,7 @@ export class BuckBuildSystem {
         return new DisposableSubscription(
           // Add an empty error handler to avoid the "Unhandled Error" message. (We're handling it
           // above via the onDidError interface.)
-          resultStream.subscribe({next: cb, error: () => null})
+          resultStream.subscribe({next: cb, error: () => {}})
         );
       },
     };
