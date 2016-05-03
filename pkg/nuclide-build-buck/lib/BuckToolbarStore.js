@@ -293,7 +293,7 @@ class BuckToolbarStore {
       return;
     }
     if (!buckProject) {
-      return;
+      throw new Error('Could not build: must navigate to a file that is part of a Buck project.');
     }
 
     let appArgs = [];
@@ -312,16 +312,18 @@ class BuckToolbarStore {
     this._isBuilding = true;
     this.emitChange();
 
-    const {pid} = await this._runBuckCommandInNewPane(
-        {buckProject, buildTarget, simulator, subcommand, debug, appArgs});
-
-    this._isBuilding = false;
-    this.emitChange();
-    if (ws) {
-      ws.close();
+    try {
+      const result = await this._runBuckCommandInNewPane(
+        {buckProject, buildTarget, simulator, subcommand, debug, appArgs}
+      );
+      return {buckProject, buildTarget, pid: result.pid};
+    } finally {
+      this._isBuilding = false;
+      this.emitChange();
+      if (ws) {
+        ws.close();
+      }
     }
-
-    return {buckProject, buildTarget, pid};
   }
 
   /**
