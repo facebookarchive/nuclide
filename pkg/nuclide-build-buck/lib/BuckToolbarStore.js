@@ -27,6 +27,7 @@ import BuckToolbarActions from './BuckToolbarActions';
 type BuckRunDetails = {
   pid?: number;
 };
+import type {Task} from '../../nuclide-build/lib/types';
 import type {
   ProcessOutputStore as ProcessOutputStoreType,
 } from '../../nuclide-process-output-store';
@@ -472,6 +473,50 @@ class BuckToolbarStore {
     };
     return ws;
   }
+
+  getTasks(): Array<Task> {
+    const enabled = !!(this.getBuildTarget() && !this.isBuilding());
+    return TASKS.map(task => ({
+      ...task,
+      enabled,
+    }));
+  }
+
 }
+
+const TASKS = [
+  {
+    type: 'build',
+    label: 'Build',
+    description: 'Build the specified Buck target',
+    enabled: true,
+    cancelable: false,
+    icon: 'tools',
+  },
+  {
+    type: 'run',
+    label: 'Run',
+    description: 'Run the specfied Buck target',
+    enabled: true,
+    cancelable: false,
+    icon: 'triangle-right',
+  },
+  {
+    type: 'test',
+    label: 'Test',
+    description: 'Test the specfied Buck target',
+    enabled: true,
+    cancelable: false,
+    icon: 'checklist',
+  },
+  {
+    type: 'debug',
+    label: 'Debug',
+    description: 'Debug the specfied Buck target',
+    enabled: true,
+    cancelable: false,
+    icon: 'plug',
+  },
+];
 
 module.exports = BuckToolbarStore;

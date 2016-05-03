@@ -40,7 +40,7 @@ export type Task = {
   label: string;
   description: string;
   enabled: boolean; // Can the action be run now?
-  cancelable?: boolean;
+  cancelable?: boolean; // By default, this is true (all tasks are cancelable).
   icon: Octicon;
 };
 
