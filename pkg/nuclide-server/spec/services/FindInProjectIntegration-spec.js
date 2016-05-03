@@ -43,9 +43,7 @@ describe('FindInProjectService-Integration', () => {
         implementation: FIND_IN_PROJECT_SERVICE_PATH,
       }]);
 
-      const remoteService = testHelper.getRemoteService(
-        'FindInProjectService',
-        FIND_IN_PROJECT_SERVICE_PATH);
+      const remoteService = testHelper.getRemoteService('FindInProjectService');
 
       // Search in the fixtures/basic directory.
       const connection = testHelper.getRemoteConnection();

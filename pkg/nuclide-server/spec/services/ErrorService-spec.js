@@ -29,8 +29,7 @@ describe('ErrorServer', () => {
 
     runs(() => {
       invariant(testHelper);
-      service = testHelper.getRemoteService('ErrorService',
-          path.join(__dirname, 'ErrorService.def'));
+      service = testHelper.getRemoteService('ErrorService');
     });
   });
 

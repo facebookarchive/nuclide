@@ -14,19 +14,20 @@ import typeof * as InfoService from '../../lib/services/InfoService';
 import ServiceTestHelper from './ServiceTestHelper';
 import {getVersion} from '../../../nuclide-version';
 import invariant from 'assert';
+import {loadServicesConfig} from '../../lib/services';
 
 describe('InfoService', () => {
   let testHelper;
   beforeEach(() => {
     testHelper = new ServiceTestHelper();
-    waitsForPromise(() => testHelper.start());
+    waitsForPromise(() => testHelper.start(loadServicesConfig()));
   });
 
   it('Returns the correct version number', () => {
     waitsForPromise(async () => {
       invariant(testHelper);
       const service: InfoService =
-          testHelper.getRemoteService('InfoService', '../../lib/services/InfoService.js');
+          testHelper.getRemoteService('InfoService');
 
       const version = await service.getServerVersion();
       expect(version).toBe(getVersion());

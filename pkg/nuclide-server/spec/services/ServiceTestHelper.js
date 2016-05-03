@@ -9,11 +9,8 @@
  * the root directory of this source tree.
  */
 
-import * as services from '../../lib/services';
 import {getPath} from '../../../nuclide-remote-uri';
-import {getProxy} from '../../../nuclide-service-parser';
 import NuclideServer from '../../lib/NuclideServer';
-import {loadServicesConfig} from '../../lib/services';
 import NuclideSocket from '../../lib/NuclideSocket';
 import ClientComponent from '../../lib/serviceframework/ClientComponent';
 
@@ -24,13 +21,7 @@ export default class ServiceTestHelper {
   _client: ClientComponent<NuclideSocket>;
   _connection: _RemoteConnectionMock;
 
-  async start(customServices?: Services): Promise<void> {
-    if (customServices) {
-      spyOn(services, 'loadServicesConfig').andReturn(customServices);
-    } else {
-      customServices = loadServicesConfig();
-    }
-
+  async start(customServices: Services): Promise<void> {
     this._server = new NuclideServer({port: 0}, customServices);
     await this._server.connect();
 
@@ -45,8 +36,8 @@ export default class ServiceTestHelper {
     this._server.close();
   }
 
-  getRemoteService(serviceName: string, serviceDefinitionFile: string): any {
-    return getProxy(serviceName, serviceDefinitionFile, this._client);
+  getRemoteService(serviceName: string): any {
+    return this._client.getService(serviceName);
   }
 
   getRemoteConnection(): _RemoteConnectionMock {

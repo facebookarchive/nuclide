@@ -25,8 +25,7 @@ describe('CounterService', () => {
     }]));
 
     runs(() => {
-      service = testHelper.getRemoteService('CounterService',
-          path.join(__dirname, 'CounterService.def'));
+      service = testHelper.getRemoteService('CounterService');
     });
   });
 

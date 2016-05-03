@@ -28,7 +28,7 @@ describe('EchoServer', () => {
     }]));
 
     runs(() => {
-      service = testHelper.getRemoteService('EchoService', path.join(__dirname, 'EchoService.js'));
+      service = testHelper.getRemoteService('EchoService');
     });
   });
 

@@ -33,9 +33,12 @@ describe('FileSystemService', () => {
   beforeEach(() => {
     waitsForPromise(async () => {
       testHelper = new ServiceTestHelper();
-      await testHelper.start();
-      service = testHelper.getRemoteService('FileSystemService',
-          '../../lib/services/FileSystemService.def');
+      await testHelper.start([{
+        name: 'FileSystemService',
+        definition: '../../lib/services/FileSystemService.def',
+        implementation: '../../lib/services/FileSystemService.js',
+      }]);
+      service = testHelper.getRemoteService('FileSystemService');
     });
   });
 
