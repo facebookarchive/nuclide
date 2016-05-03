@@ -12,6 +12,8 @@
 // FIXME: This file has a strange header because it needs to be ignored by the transpiler, but work
 // with 'import type'". Once Babel understands "export interface", revert it to the normal one.
 
+import type {Octicon} from '../../nuclide-ui/lib/Octicons';
+
 export type AppState = {
   activeBuildSystemId: ?string;
   activeTaskType: ?string;
@@ -32,7 +34,7 @@ export type Task = {
   label: string;
   description: string;
   enabled: boolean; // Can the action be run now?
-  icon: string;
+  icon: Octicon;
 };
 
 export interface BuildSystem {
@@ -43,6 +45,11 @@ export interface BuildSystem {
   getIcon(): ReactClass;
   runTask(taskName: string): TaskInfo;
 }
+
+export type IconButtonOption = {
+  value: string;
+  label: string;
+};
 
 export interface TaskInfo {
   observeProgress?: (callback: (progress: ?number) => mixed) => IDisposable;

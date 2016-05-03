@@ -9,10 +9,16 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState, BuildSystem} from './types';
+import type {Action, AppState, BuildSystem, IconButtonOption} from './types';
 import type Rx from 'rxjs';
 
+import {injectObservableAsProps} from '../../nuclide-ui/lib/HOC';
 import * as ActionTypes from './ActionTypes';
+import {getActiveBuildSystem} from './getActiveBuildSystem';
+import {createPanelItem} from './ui/createPanelItem';
+import {BuildToolbar} from './ui/BuildToolbar';
+import {React} from 'react-for-atom';
+
 
 export class Commands {
   _dispatch: (action: Action) => void;
@@ -21,11 +27,40 @@ export class Commands {
   constructor(dispatch: (action: Action) => void, getState: () => AppState) {
     this._dispatch = dispatch;
     this._getState = getState;
+
+    (this: any).runTask = this.runTask.bind(this);
+    (this: any).selectBuildSystem = this.selectBuildSystem.bind(this);
+    (this: any).selectTask = this.selectTask.bind(this);
+    (this: any).stopTask = this.stopTask.bind(this);
   }
 
   createPanel(stateStream: Rx.BehaviorSubject<AppState>): void {
-    const item = document.createElement('div'); // A dummy item for now
+    const props = stateStream
+      .map(state => {
+        const activeBuildSystem = getActiveBuildSystem(state);
+        const extraUi = activeBuildSystem != null && activeBuildSystem.getExtraUi != null
+          ? activeBuildSystem.getExtraUi()
+          : null;
+        return {
+          buildSystemOptions: getBuildSystemOptions(state),
+          activeBuildSystemId: activeBuildSystem && activeBuildSystem.id,
+          activeBuildSystemIcon: activeBuildSystem && activeBuildSystem.getIcon(),
+          extraUi,
+          progress: state.taskStatus && state.taskStatus.progress,
+          visible: state.visible,
+          runTask: this.runTask,
+          activeTaskType: state.activeTaskType,
+          selectBuildSystem: this.selectBuildSystem,
+          selectTask: this.selectTask,
+          stopTask: this.stopTask,
+          taskIsRunning: state.taskStatus != null,
+          tasks: state.tasks,
+        };
+      });
 
+    const StatefulBuildToolbar = injectObservableAsProps(props, BuildToolbar);
+    // $FlowIssue: injectObservableAsProps doesn't handle props exactly right.
+    const item = createPanelItem(<StatefulBuildToolbar />);
     const panel = atom.workspace.addTopPanel({item});
 
     this._dispatch({
@@ -114,4 +149,14 @@ export class Commands {
     });
   }
 
+}
+
+
+function getBuildSystemOptions(state: AppState): Array<IconButtonOption> {
+  // TODO: Sort alphabetically?
+  return Array.from(state.buildSystems.values())
+    .map(buildSystem => ({
+      value: buildSystem.id,
+      label: buildSystem.name,
+    }));
 }
