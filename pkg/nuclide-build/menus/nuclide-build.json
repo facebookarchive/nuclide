@@ -16,10 +16,10 @@
     }
   ],
   "context-menu": {
-    ".buck-toolbar": [
+    ".nuclide-build-toolbar": [
       {
         "command": "nuclide-build:toggle-toolbar-visibility",
-        "label": "Hide Tool Bar"
+        "label": "Hide Toolbar"
       }
     ]
   }
