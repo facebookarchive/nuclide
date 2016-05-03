@@ -17,15 +17,15 @@ import {
   TestUtils,
 } from 'react-for-atom';
 import * as hackService from '../../nuclide-hack-symbol-provider/lib/getHackService';
+import QuickOpenHelpers from '../lib/QuickOpenHelpers';
 
 const TEST_DIR = '/test';
 
-describe('QuickOpenProvider', () => {
+describe('QuickOpenHelpers', () => {
   const mockDirectory: atom$Directory = ({
     getPath: () => TEST_DIR,
   }: any);
 
-  let QuickOpenProvider;
   beforeEach(() => {
     spyOn(require('../../nuclide-remote-connection'), 'getServiceByNuclideUri')
       .andReturn({
@@ -55,12 +55,11 @@ describe('QuickOpenProvider', () => {
         },
       });
     spyOn(hackService, 'getHackService').andReturn(null);
-    QuickOpenProvider = require('../lib/QuickOpenProvider');
   });
 
   it('it activates for valid directories', () => {
     waitsForPromise(async () => {
-      const {isEligibleForDirectory} = QuickOpenProvider;
+      const {isEligibleForDirectory} = QuickOpenHelpers;
       invariant(isEligibleForDirectory);
       expect(await isEligibleForDirectory(mockDirectory)).toBe(true);
     });
@@ -68,7 +67,7 @@ describe('QuickOpenProvider', () => {
 
   it('is able to return and render tag results', () => {
     waitsForPromise(async () => {
-      const {executeQuery, getComponentForItem} = QuickOpenProvider;
+      const {executeQuery, getComponentForItem} = QuickOpenHelpers;
       let results = await executeQuery('', mockDirectory);
       expect(results).toEqual([]);
 

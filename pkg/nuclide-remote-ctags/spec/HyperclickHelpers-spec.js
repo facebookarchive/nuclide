@@ -14,7 +14,7 @@ import type {CtagsResult} from '../../nuclide-remote-ctags-base';
 import invariant from 'assert';
 import {Range} from 'atom';
 import atomHelpers from '../../nuclide-atom-helpers';
-import {HyperclickProvider} from '../lib/HyperclickProvider';
+import HyperclickHelpers from '../lib/HyperclickHelpers';
 
 const fakeEditor: atom$TextEditor = ({
   getPath() {
@@ -22,9 +22,8 @@ const fakeEditor: atom$TextEditor = ({
   },
 }: any);
 
-describe('HyperclickProvider', () => {
+describe('HyperclickHelpers', () => {
   let findTagsResult: Array<CtagsResult> = [];
-  let hyperclickProvider: HyperclickProvider = (null: any);
   beforeEach(() => {
     // HACK: goToLocation is a getter. Not too easy to mock out :(
     delete atomHelpers.goToLocation;
@@ -57,8 +56,6 @@ describe('HyperclickProvider', () => {
           throw new Error('Unexpected service call');
         }
       });
-
-    hyperclickProvider = new HyperclickProvider();
   });
 
   it('works with multiple tag results', () => {
@@ -89,7 +86,7 @@ describe('HyperclickProvider', () => {
         },
       ];
 
-      const result = await hyperclickProvider.getSuggestionForWord(
+      const result = await HyperclickHelpers.getSuggestionForWord(
         fakeEditor,
         'A',
         new Range([0, 0], [0, 1]),
@@ -128,7 +125,7 @@ describe('HyperclickProvider', () => {
         },
       ];
 
-      const result = await hyperclickProvider.getSuggestionForWord(
+      const result = await HyperclickHelpers.getSuggestionForWord(
         fakeEditor,
         'test',
         new Range([0, 0], [0, 1]),
@@ -144,7 +141,7 @@ describe('HyperclickProvider', () => {
   it('returns null for no results', () => {
     waitsForPromise(async () => {
       findTagsResult = [];
-      const result = await hyperclickProvider.getSuggestionForWord(
+      const result = await HyperclickHelpers.getSuggestionForWord(
         fakeEditor,
         'test',
         new Range([0, 0], [0, 1]),

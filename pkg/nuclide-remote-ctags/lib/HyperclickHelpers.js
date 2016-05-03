@@ -40,9 +40,9 @@ function commonPrefixLength(a: string, b: string): number {
   return i;
 }
 
-export class HyperclickProvider {
+export default class HyperclickHelpers {
 
-  async getSuggestionForWord(
+  static async getSuggestionForWord(
     textEditor: atom$TextEditor,
     text: string,
     range: atom$Range,

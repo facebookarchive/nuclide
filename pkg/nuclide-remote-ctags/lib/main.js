@@ -9,25 +9,41 @@
  * the root directory of this source tree.
  */
 
-import type {
-  HyperclickProvider as HyperclickProviderType,
-} from '../../hyperclick';
+import type {HyperclickProvider} from '../../hyperclick';
+import type {Provider as QuickOpenProviderType} from '../../nuclide-quick-open';
+
+import HyperclickHelpers from './HyperclickHelpers';
+import QuickOpenHelpers from './QuickOpenHelpers';
 
 export function activate(state: ?Object) {
 }
 
-export function getHyperclickProvider(): HyperclickProviderType {
-  const {HyperclickProvider} = require('./HyperclickProvider');
-  const provider = new HyperclickProvider();
+export function getHyperclickProvider(): HyperclickProvider {
   return {
     priority: 1, // Should be lower than all language-specific providers.
     providerName: 'nuclide-remote-ctags',
-    getSuggestionForWord: provider.getSuggestionForWord.bind(provider),
+    getSuggestionForWord(editor, text, range) {
+      return HyperclickHelpers.getSuggestionForWord(editor, text, range);
+    },
   };
 }
 
-export function getQuickOpenProvider() {
-  return require('./QuickOpenProvider');
+export function getQuickOpenProvider(): QuickOpenProviderType {
+  return {
+    getProviderType: () => 'DIRECTORY',
+    getName: () => 'CtagsSymbolProvider',
+    isRenderable: () => true,
+    getTabTitle: () => 'Ctags',
+    isEligibleForDirectory(directory) {
+      return QuickOpenHelpers.isEligibleForDirectory(directory);
+    },
+    getComponentForItem(item) {
+      return QuickOpenHelpers.getComponentForItem(item);
+    },
+    executeQuery(query, directory) {
+      return QuickOpenHelpers.executeQuery(query, directory);
+    },
+  };
 }
 
 export function deactivate() {
