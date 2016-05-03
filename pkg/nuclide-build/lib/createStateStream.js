@@ -45,6 +45,44 @@ function accumulateState(state: AppState, action: Action): AppState {
         activeTaskType: taskType,
       };
     }
+    case ActionTypes.TASK_COMPLETED: {
+      return {
+        ...state,
+        taskStatus: null,
+      };
+    }
+    case ActionTypes.TASK_PROGRESS: {
+      const {progress} = action.payload;
+      return {
+        ...state,
+        taskStatus: {
+          ...state.taskStatus,
+          progress,
+        },
+      };
+    }
+    case ActionTypes.TASK_ERRORED: {
+      return {
+        ...state,
+        taskStatus: null,
+      };
+    }
+    case ActionTypes.TASK_STARTED: {
+      const {taskInfo} = action.payload;
+      return {
+        ...state,
+        taskStatus: {
+          info: taskInfo,
+          progress: null,
+        },
+      };
+    }
+    case ActionTypes.TASK_STOPPED: {
+      return {
+        ...state,
+        taskStatus: null,
+      };
+    }
     case ActionTypes.TOOLBAR_VISIBILITY_UPDATED: {
       return {
         ...state,
@@ -88,6 +126,25 @@ function accumulateState(state: AppState, action: Action): AppState {
         ...state,
         buildSystems,
       };
+    }
+    case ActionTypes.TASKS_UPDATED: {
+      const {tasks} = action.payload;
+      const newState = {
+        ...state,
+        tasks: tasks.slice(),
+      };
+
+      // If the new tasks contain the one we were waiting to restore from the user's previous
+      // session (or we have no active task), make it the active one.
+      if (
+        tasks.some(task => task.type === state.previousSessionActiveTaskType) ||
+        state.activeTaskType == null
+      ) {
+        newState.activeTaskType = state.previousSessionActiveTaskType;
+        newState.previousSessionActiveTaskType = null;
+      }
+
+      return newState;
     }
   }
 

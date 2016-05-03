@@ -87,6 +87,32 @@ type StopTaskAction = {
   type: 'STOP_TASK';
 };
 
+type TaskCompletedAction = {
+  type: 'TASK_COMPLETED';
+};
+
+type TaskProgressAction = {
+  type: 'TASK_PROGRESS';
+  payload: {
+    progress: ?number;
+  };
+};
+
+type TaskErroredAction = {
+  type: 'TASK_ERRORED';
+};
+
+type TaskStartedAction = {
+  type: 'TASK_STARTED';
+  payload: {
+    taskInfo: TaskInfo;
+  };
+};
+
+type TaskStoppedAction = {
+  type: 'TASK_STOPPED';
+};
+
 type ToolbarVisibilityUpdatedAction = {
   type: 'TOOLBAR_VISIBILITY_UPDATED';
   payload: {
@@ -119,6 +145,13 @@ type UnregisterBuildSystemAction = {
   };
 };
 
+type TasksUpdatedAction = {
+  type: 'TASKS_UPDATED';
+  payload: {
+    tasks: Array<Task>;
+  };
+};
+
 export type Action =
   PanelCreatedAction
   | PanelDestroyedAction
@@ -126,6 +159,12 @@ export type Action =
   | RunTaskAction
   | SelectTaskAction
   | StopTaskAction
+  | TaskCompletedAction
+  | TaskProgressAction
+  | TaskErroredAction
+  | TaskStartedAction
+  | TaskStoppedAction
+  | TasksUpdatedAction
   | ToolbarVisibilityUpdatedAction
   | RegisterBuildSystemAction
   | UnregisterBuildSystemAction
