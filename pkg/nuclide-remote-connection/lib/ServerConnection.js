@@ -18,8 +18,6 @@ import invariant from 'assert';
 import pathModule from 'path';
 import ClientComponent from '../../nuclide-server/lib/serviceframework/ClientComponent';
 import {loadServicesConfig} from '../../nuclide-server/lib/serviceframework/config';
-import {getProxy} from '../../nuclide-service-parser';
-import ServiceFramework from '../../nuclide-server/lib/serviceframework/index';
 import {setConnectionConfig} from './RemoteConnectionConfigurationManager';
 import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
 import {RemoteFile} from './RemoteFile';
@@ -33,7 +31,6 @@ import NuclideSocket from '../../nuclide-server/lib/NuclideSocket';
 import {getVersion} from '../../nuclide-version';
 
 const posixPath = pathModule.posix;
-const newServices = ServiceFramework.loadServicesConfig();
 
 export type ServerConnectionConfiguration = {
   host: string; // host nuclide server is running on.
@@ -350,9 +347,7 @@ class ServerConnection {
   }
 
   getService(serviceName: string): any {
-    const [serviceConfig] = newServices.filter(config => config.name === serviceName);
-    invariant(serviceConfig != null, `No config found for service ${serviceName}`);
-    return getProxy(serviceConfig.name, serviceConfig.definition, this.getClient());
+    return this.getClient().getService(serviceName);
   }
 
   getSocket(): NuclideSocket {

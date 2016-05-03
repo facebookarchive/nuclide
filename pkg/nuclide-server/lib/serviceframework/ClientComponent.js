@@ -37,6 +37,8 @@ export default class ClientComponent<TransportType: Transport> {
 
   _typeRegistry: TypeRegistry<ObjectRegistry>;
   _objectRegistry: ObjectRegistry;
+  // Maps service name to proxy
+  _services: Map<string, Object>;
 
   constructor(
     hostname: string, port: number, transport: TransportType, services: Array<ConfigEntry>
@@ -47,6 +49,7 @@ export default class ClientComponent<TransportType: Transport> {
 
     this._typeRegistry = new TypeRegistry();
     this._objectRegistry = new ObjectRegistry('client');
+    this._services = new Map();
 
     // Register NuclideUri type conversions.
     this._typeRegistry.registerType('NuclideUri',
@@ -56,16 +59,23 @@ export default class ClientComponent<TransportType: Transport> {
     this._transport.onMessage(message => this._handleMessage(message));
   }
 
+  getService(serviceName: string): Object {
+    const service = this._services.get(serviceName);
+    invariant(service != null, `No config found for service ${serviceName}`);
+    return service;
+  }
+
   addServices(services: Array<ConfigEntry>): void {
     services.forEach(this.addService, this);
   }
 
   addService(service: ConfigEntry): void {
+    invariant(!this._services.has(service.name), `Duplicate service ${service.name}`);
     logger.debug(`Registering 3.0 service ${service.name}...`);
     try {
       const defs = getDefinitions(service.definition);
       const proxy = getProxy(service.name, service.definition, this);
-
+      this._services.set(service.name, proxy);
       defs.forEach(definition => {
         const name = definition.name;
         switch (definition.kind) {
