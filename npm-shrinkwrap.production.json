@@ -907,9 +907,9 @@
       "resolved": "https://registry.npmjs.org/jsprim/-/jsprim-1.2.2.tgz"
     },
     "kind-of": {
-      "version": "3.0.2",
+      "version": "3.0.3",
       "from": "kind-of@>=3.0.2 <4.0.0",
-      "resolved": "https://registry.npmjs.org/kind-of/-/kind-of-3.0.2.tgz"
+      "resolved": "https://registry.npmjs.org/kind-of/-/kind-of-3.0.3.tgz"
     },
     "lazy-cache": {
       "version": "1.0.4",
@@ -1379,9 +1379,9 @@
       "resolved": "https://registry.npmjs.org/rimraf/-/rimraf-2.5.2.tgz"
     },
     "rxjs": {
-      "version": "5.0.0-beta.6",
-      "from": "rxjs@5.0.0-beta.6",
-      "resolved": "https://registry.npmjs.org/rxjs/-/rxjs-5.0.0-beta.6.tgz"
+      "version": "5.0.0-beta.7",
+      "from": "rxjs@5.0.0-beta.7",
+      "resolved": "https://registry.npmjs.org/rxjs/-/rxjs-5.0.0-beta.7.tgz"
     },
     "sax": {
       "version": "1.2.1",
@@ -1526,6 +1526,11 @@
       "version": "2.0.0",
       "from": "supports-color@>=2.0.0 <3.0.0",
       "resolved": "https://registry.npmjs.org/supports-color/-/supports-color-2.0.0.tgz"
+    },
+    "symbol-observable": {
+      "version": "0.2.4",
+      "from": "symbol-observable@>=0.2.4 <0.3.0",
+      "resolved": "https://registry.npmjs.org/symbol-observable/-/symbol-observable-0.2.4.tgz"
     },
     "temp": {
       "version": "0.8.3",
