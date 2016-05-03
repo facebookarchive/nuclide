@@ -8,6 +8,13 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
+  "consumedServices": {
+    "nuclide.build-system-registry": {
+      "versions": {
+        "0.0.0": "consumeBuildSystemRegistry"
+      }
+    }
+  },
   "activationCommands": {
   }
 }
