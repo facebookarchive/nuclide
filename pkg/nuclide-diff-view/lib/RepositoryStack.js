@@ -243,12 +243,12 @@ export default class RepositoryStack {
       compareCommitId = null;
     }
     const latestToOldestRevisions = revisions.slice().reverse();
-    if (compareCommitId == null && latestToOldestRevisions.length > 1) {
+    if (compareCommitId == null && latestToOldestRevisions.length > 0) {
       // If the user has already committed, most of the times, he'd be working on an amend.
       // So, the heuristic here is to compare against the previous version,
       // not the just-committed one, while the revisions timeline
       // would give a way to specify otherwise.
-      compareCommitId = latestToOldestRevisions[1].id;
+      compareCommitId = latestToOldestRevisions[0].id;
     }
     return {
       revisions,
