@@ -9,32 +9,33 @@
  * the root directory of this source tree.
  */
 
-import * as config from '../../lib/serviceframework/config';
+import * as services from '../../lib/services';
 import {getPath} from '../../../nuclide-remote-uri';
 import {getProxy} from '../../../nuclide-service-parser';
 import NuclideServer from '../../lib/NuclideServer';
-import ServiceFramework from '../../lib/serviceframework/index';
+import {loadServicesConfig} from '../../lib/services';
 import NuclideSocket from '../../lib/NuclideSocket';
+import ClientComponent from '../../lib/serviceframework/ClientComponent';
 
 type Services = Array<{name: string; definition: string; implementation: string}>;
 
 export default class ServiceTestHelper {
   _server: NuclideServer;
-  _client: ServiceFramework.ClientComponent<NuclideSocket>;
+  _client: ClientComponent<NuclideSocket>;
   _connection: _RemoteConnectionMock;
 
   async start(customServices?: Services): Promise<void> {
     if (customServices) {
-      spyOn(config, 'loadServicesConfig').andReturn(customServices);
+      spyOn(services, 'loadServicesConfig').andReturn(customServices);
     } else {
-      customServices = ServiceFramework.loadServicesConfig();
+      customServices = loadServicesConfig();
     }
 
     this._server = new NuclideServer({port: 0}, customServices);
     await this._server.connect();
 
     const port = this._server._webServer.address().port;
-    this._client = new ServiceFramework.ClientComponent(
+    this._client = new ClientComponent(
       'localhost', port, new NuclideSocket(`http://localhost:${port}`), customServices);
     this._connection = new _RemoteConnectionMock(this._client, port);
   }
@@ -54,15 +55,15 @@ export default class ServiceTestHelper {
 }
 
 class _RemoteConnectionMock {
-  _client: ServiceFramework.ClientComponent<NuclideSocket>;
+  _client: ClientComponent<NuclideSocket>;
   _port: number;
 
-  constructor(client: ServiceFramework.ClientComponent<NuclideSocket>, port: number) {
+  constructor(client: ClientComponent<NuclideSocket>, port: number) {
     this._client = client;
     this._port = port;
   }
 
-  getClient(): ServiceFramework.ClientComponent<NuclideSocket> {
+  getClient(): ClientComponent<NuclideSocket> {
     return this._client;
   }
 

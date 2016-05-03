@@ -14,11 +14,11 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import {ServerConnection} from './ServerConnection';
 import {isRemote, getHostname} from '../../nuclide-remote-uri';
 import invariant from 'assert';
-import ServiceFramework from '../../nuclide-server/lib/serviceframework/index';
+import {loadServicesConfig} from '../../nuclide-server/lib/services';
 import ServiceLogger from './ServiceLogger';
 
 const logger = require('../../nuclide-logging').getLogger();
-const newServices = ServiceFramework.loadServicesConfig();
+const newServices = loadServicesConfig();
 
 /**
  * Create or get a cached service.

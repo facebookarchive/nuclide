@@ -12,7 +12,8 @@
 import WS from 'ws';
 import NuclideServer from '../lib/NuclideServer';
 import ClientComponent from '../lib/serviceframework/ClientComponent';
-import {loadServicesConfig} from '../lib/serviceframework/config';
+import {loadServicesConfig} from '../lib/services';
+
 import invariant from 'assert';
 import NuclideSocket from '../lib/NuclideSocket';
 

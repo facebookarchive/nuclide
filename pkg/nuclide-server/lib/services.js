@@ -10,18 +10,18 @@
  */
 
 import path from 'path';
-import type {ConfigEntry} from './index';
+import type {ConfigEntry} from './serviceframework/index';
 
-const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
+const PACKAGE_ROOT = path.resolve(__dirname, '..');
 
 /**
  * Load service configs, and resolve all of the paths to absolute paths.
  */
 export function loadServicesConfig(): Array<ConfigEntry> {
-  const publicServices = createServiceConfigObject(require('../../services-3.json'));
+  const publicServices = createServiceConfigObject(require('../services-3.json'));
   let privateServices = [];
   try {
-    privateServices = createServiceConfigObject(require('../../fb/fb-services-3.json'));
+    privateServices = createServiceConfigObject(require('../fb/fb-services-3.json'));
   } catch (e) {
     // This file may not exist.
   }

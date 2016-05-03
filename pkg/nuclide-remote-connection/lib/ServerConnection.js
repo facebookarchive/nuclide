@@ -17,7 +17,7 @@ import typeof * as InfoService from '../../nuclide-server/lib/services/InfoServi
 import invariant from 'assert';
 import pathModule from 'path';
 import ClientComponent from '../../nuclide-server/lib/serviceframework/ClientComponent';
-import {loadServicesConfig} from '../../nuclide-server/lib/serviceframework/config';
+import {loadServicesConfig} from '../../nuclide-server/lib/services';
 import {setConnectionConfig} from './RemoteConnectionConfigurationManager';
 import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
 import {RemoteFile} from './RemoteFile';

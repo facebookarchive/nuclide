@@ -12,12 +12,10 @@
 import ServerComponent from './ServerComponent';
 import ClientComponent from './ClientComponent';
 
-import {loadServicesConfig} from './config';
-
 export type ConfigEntry = {
   name: string;
   definition:string;
   implementation: string;
 };
 
-export default {ServerComponent, ClientComponent, loadServicesConfig};
+export default {ServerComponent, ClientComponent};

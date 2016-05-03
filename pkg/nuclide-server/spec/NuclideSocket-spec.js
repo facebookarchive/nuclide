@@ -10,7 +10,7 @@
  */
 
 import NuclideServer from '../lib/NuclideServer';
-import ServiceFramework from '../lib/serviceframework/index';
+import {loadServicesConfig} from '../lib/services';
 import NuclideSocket from '../lib/NuclideSocket';
 import {ClientConnection} from '../lib/serviceframework/ClientConnection';
 import invariant from 'assert';
@@ -23,7 +23,7 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
   beforeEach(() => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
     waitsForPromise(async () => {
-      server = new NuclideServer({port: 8176}, ServiceFramework.loadServicesConfig());
+      server = new NuclideServer({port: 8176}, loadServicesConfig());
       await server.connect();
       socket = new NuclideSocket('http://localhost:8176');
 
