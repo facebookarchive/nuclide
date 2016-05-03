@@ -9,8 +9,4 @@
  * the root directory of this source tree.
  */
 
-const HEARTBEAT_CHANNEL = 'heartbeat';
-
-module.exports = {
-  HEARTBEAT_CHANNEL,
-};
+export const SERVICE_FRAMEWORK3_CHANNEL = 'service_framework3_rpc';

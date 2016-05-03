@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
 import {Observable} from 'rxjs';
 import {getProxy, getDefinitions} from '../../../nuclide-service-parser';
 import TypeRegistry from '../../../nuclide-service-parser/lib/TypeRegistry';
@@ -356,7 +357,7 @@ function isObservable(object: any): boolean {
 
 function createPromiseMessage(requestId: number, result: any): PromiseResponseMessage {
   return {
-    channel: 'service_framework3_rpc',
+    channel: SERVICE_FRAMEWORK3_CHANNEL,
     type: 'PromiseMessage',
     requestId,
     result,
@@ -366,7 +367,7 @@ function createPromiseMessage(requestId: number, result: any): PromiseResponseMe
 
 function createNextMessage(requestId: number, data: any): ObservableResponseMessage {
   return {
-    channel: 'service_framework3_rpc',
+    channel: SERVICE_FRAMEWORK3_CHANNEL,
     type: 'ObservableMessage',
     requestId,
     hadError: false,
@@ -379,7 +380,7 @@ function createNextMessage(requestId: number, data: any): ObservableResponseMess
 
 function createCompletedMessage(requestId: number): ObservableResponseMessage {
   return {
-    channel: 'service_framework3_rpc',
+    channel: SERVICE_FRAMEWORK3_CHANNEL,
     type: 'ObservableMessage',
     requestId,
     hadError: false,
@@ -389,7 +390,7 @@ function createCompletedMessage(requestId: number): ObservableResponseMessage {
 
 function createErrorMessage(requestId: number, error: any): ErrorResponseMessage {
   return {
-    channel: 'service_framework3_rpc',
+    channel: SERVICE_FRAMEWORK3_CHANNEL,
     type: 'ErrorMessage',
     requestId,
     hadError: true,

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {SERVICE_FRAMEWORK3_CHANNEL} from '../config';
+import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
 import type {ConfigEntry} from './index';
 import type {Type} from '../../../nuclide-service-parser/lib/types';
 import type {Transport} from './types';
@@ -119,7 +119,7 @@ export default class ClientComponent<TransportType: Transport> {
    */
   callRemoteFunction(functionName: string, returnType: ReturnType, args: Array<any>): any {
     const message: CallRemoteFunctionMessage = {
-      protocol: 'service_framework3_rpc',
+      protocol: SERVICE_FRAMEWORK3_CHANNEL,
       type: 'FunctionCall',
       function: functionName,
       requestId: this._generateRequestId(),
@@ -147,7 +147,7 @@ export default class ClientComponent<TransportType: Transport> {
     args: Array<any>
   ): any {
     const message: CallRemoteMethodMessage = {
-      protocol: 'service_framework3_rpc',
+      protocol: SERVICE_FRAMEWORK3_CHANNEL,
       type: 'MethodCall',
       method: methodName,
       objectId,
@@ -179,7 +179,7 @@ export default class ClientComponent<TransportType: Transport> {
       const marshalledArgs = await this._typeRegistry.marshalArguments(
         this._objectRegistry, unmarshalledArgs, argTypes);
       const message: CreateRemoteObjectMessage = {
-        protocol: 'service_framework3_rpc',
+        protocol: SERVICE_FRAMEWORK3_CHANNEL,
         type: 'NewObject',
         interface: interfaceName,
         requestId: this._generateRequestId(),
@@ -204,7 +204,7 @@ export default class ClientComponent<TransportType: Transport> {
     const objectId = await this._objectRegistry.disposeProxy(object);
     if (objectId != null) {
       const message: DisposeRemoteObjectMessage = {
-        protocol: 'service_framework3_rpc',
+        protocol: SERVICE_FRAMEWORK3_CHANNEL,
         type: 'DisposeObject',
         requestId: this._generateRequestId(),
         objectId,
@@ -278,7 +278,7 @@ export default class ClientComponent<TransportType: Transport> {
               // Send a message to server to call the dispose function of
               // the remote Observable subscription.
               const disposeMessage: DisposeObservableMessage = {
-                protocol: 'service_framework3_rpc',
+                protocol: SERVICE_FRAMEWORK3_CHANNEL,
                 type: 'DisposeObservable',
                 requestId: message.requestId,
               };

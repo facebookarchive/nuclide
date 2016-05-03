@@ -11,7 +11,7 @@
 
 import type {Transport} from './types';
 
-import {SERVICE_FRAMEWORK3_CHANNEL} from '../config';
+import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
 import ServiceFramework from './index';
 import invariant from 'assert';
 
