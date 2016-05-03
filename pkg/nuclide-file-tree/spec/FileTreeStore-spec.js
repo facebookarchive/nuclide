@@ -512,4 +512,36 @@ describe('FileTreeStore', () => {
       expect(isExpanded(dir3, dir32)).toBe(false);
     });
   });
+
+  it('should be able to add, remove, then re-add a file', () => {
+    const foo2Txt = pathModule.join(dir1, 'foo2.txt');
+
+    waitsForPromise(async () => {
+      actions.setRootKeys([dir1]);
+      actions.expandNode(dir1, dir1);
+      await loadChildKeys(dir1, dir1);
+      fs.writeFileSync(foo2Txt, '');
+    });
+
+    // Wait for the new file to be loaded.
+    waitsFor(() => store.getNode(dir1, foo2Txt));
+
+    runs(() => {
+      // Ensure the child did not inherit the parent subscription.
+      const child = getNode(dir1, foo2Txt);
+      expect(child.subscription).toBe(null);
+      fs.unlinkSync(foo2Txt);
+    });
+
+    // Ensure that file disappears from the tree.
+    waitsFor(() => store.getNode(dir1, foo2Txt) == null);
+
+    // Add the file back.
+    runs(() => {
+      fs.writeFileSync(foo2Txt, '');
+    });
+
+    // Wait for the new file to be loaded.
+    waitsFor(() => store.getNode(dir1, foo2Txt));
+  });
 });

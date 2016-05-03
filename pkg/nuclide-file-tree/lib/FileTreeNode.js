@@ -404,6 +404,7 @@ export class FileTreeNode {
       isCwd: false,
       connectionTitle: '',
       children: new Immutable.OrderedMap(),
+      subscription: null,
       ...options,
     },
     this.conf,
