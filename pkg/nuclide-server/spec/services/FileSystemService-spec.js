@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {FileSystemService} from '../../lib/services/FileSystemServiceType';
+import typeof * as FileSystemService from '../../lib/services/FileSystemService';
 
 import ServiceTestHelper from './ServiceTestHelper';
 import invariant from 'assert';
@@ -35,7 +35,7 @@ describe('FileSystemService', () => {
       testHelper = new ServiceTestHelper();
       await testHelper.start([{
         name: 'FileSystemService',
-        definition: '../../lib/services/FileSystemService.def',
+        definition: '../../lib/services/FileSystemService.js',
         implementation: '../../lib/services/FileSystemService.js',
       }]);
       service = testHelper.getRemoteService('FileSystemService');

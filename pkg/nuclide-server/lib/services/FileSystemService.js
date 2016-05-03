@@ -20,7 +20,11 @@ import fs from 'fs';
 import pathModule from 'path';
 import {fsPromise} from '../../../nuclide-commons';
 
-import type {FileWithStats} from './FileSystemServiceType';
+export type FileWithStats = {
+  file: string;
+  stats: ?fs.Stats;
+  isSymbolicLink: boolean;
+};
 
 // Attempting to read large files just crashes node, so just fail.
 // Atom can't handle files of this scale anyway.
@@ -71,6 +75,9 @@ export function mkdirp(path: string): Promise<boolean> {
   return fsPromise.mkdirp(path);
 }
 
+/**
+ * Changes permissions on a file.
+ */
 export function chmod(path: string, mode: number): Promise<void> {
   return fsPromise.chmod(path, mode);
 }
@@ -134,6 +141,10 @@ export function realpath(path: string): Promise<string> {
   return fsPromise.realpath(path);
 }
 
+/**
+ * Gets the real path of a file path, while expanding tilda paths and symlinks
+ * like: ~/abc to its absolute path format.
+ */
 export function resolveRealPath(path: string): Promise<string> {
   return fsPromise.realpath(fsPromise.expandHomeDir(path));
 }
@@ -141,7 +152,7 @@ export function resolveRealPath(path: string): Promise<string> {
 /**
  * Runs the equivalent of `mv sourcePath destinationPath`.
  */
-export function rename(sourcePath: string, destinationPath: string): Promise {
+export function rename(sourcePath: string, destinationPath: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const fsPlus = require('fs-plus');
     fsPlus.move(sourcePath, destinationPath, error => {
@@ -152,6 +163,7 @@ export function rename(sourcePath: string, destinationPath: string): Promise {
 
 /**
  * Runs the equivalent of `cp sourcePath destinationPath`.
+ * @return true if the operation was successful; false if it wasn't.
  */
 export async function copy(sourcePath: string, destinationPath: string): Promise<boolean> {
   const isExistingFile = await fsPromise.exists(destinationPath);
@@ -180,6 +192,24 @@ export function rmdir(path: string): Promise<void> {
  *
  *   path: path to the file to read
  *
+ * It returns a JSON encoded stats object that looks something like this:
+ *
+ * { dev: 2114,
+ *  ino: 48064969,
+ *  mode: 33188,
+ *  nlink: 1,
+ *  uid: 85,
+ *  gid: 100,
+ *  rdev: 0,
+ *  size: 527,
+ *  blksize: 4096,
+ *  blocks: 8,
+ *  atime: 'Mon, 10 Oct 2011 23:24:11 GMT',
+ *  mtime: 'Mon, 10 Oct 2011 23:24:11 GMT',
+ *  ctime: 'Mon, 10 Oct 2011 23:24:11 GMT',
+ *  birthtime: 'Mon, 10 Oct 2011 23:24:11 GMT'
+ * }
+ *
  */
 export function stat(path: string): Promise<fs.Stats> {
   return fsPromise.stat(path);
@@ -188,7 +218,7 @@ export function stat(path: string): Promise<fs.Stats> {
 /**
  * Removes files. Does not fail if the file doesn't exist.
  */
-export function unlink(path: string): Promise {
+export function unlink(path: string): Promise<void> {
   return fsPromise.unlink(path).catch(error => {
     if (error.code !== 'ENOENT') {
       throw error;
@@ -252,6 +282,7 @@ async function copyFilePermissions(sourcePath: string, destinationPath: string):
  * The writeFile endpoint accepts the following query parameters:
  *
  *   path: path to the file to read (it must be url encoded).
+ *   data: file contents to write.
  *   options: options to pass to fs.writeFile
  *
  * TODO: move to nuclide-commons and rename to writeFileAtomic

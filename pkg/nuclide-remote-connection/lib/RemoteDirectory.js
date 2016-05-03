@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {FileSystemService} from '../../nuclide-server/lib/services/FileSystemServiceType';
+import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 import type {ServerConnection} from './ServerConnection';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
 import type {RemoteFile} from './RemoteFile';

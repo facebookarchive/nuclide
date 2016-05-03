@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {FileSystemService} from '../../nuclide-server/lib/services/FileSystemServiceType';
+import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 import invariant from 'assert';
 
 // TODO: Remove this once all services have been moved to framework v3.

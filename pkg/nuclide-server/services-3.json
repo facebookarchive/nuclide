@@ -8,7 +8,6 @@
     "name": "BuckProject"
   },
   {
-    "definition": "lib/services/FileSystemService.def",
     "implementation": "lib/services/FileSystemService.js",
     "name": "FileSystemService"
   },

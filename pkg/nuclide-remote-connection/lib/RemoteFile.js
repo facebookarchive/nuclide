@@ -11,7 +11,7 @@
 
 import type {ServerConnection} from './ServerConnection';
 import type {RemoteDirectory} from './RemoteDirectory';
-import type {FileSystemService} from '../../nuclide-server/lib/services/FileSystemServiceType';
+import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-base';
 
 import invariant from 'assert';
