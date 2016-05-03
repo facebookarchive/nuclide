@@ -16,6 +16,13 @@
       }
     }
   },
+  "consumedServices": {
+    "tool-bar": {
+      "versions": {
+        "^0.1.0": "consumeToolBar"
+      }
+    }
+  },
   "activationCommands": {
   }
 }

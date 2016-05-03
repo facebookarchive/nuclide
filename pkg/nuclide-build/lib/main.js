@@ -10,7 +10,8 @@
  */
 
 import type {Commands as CommandsType} from './Commands';
-import type {BuildSystem, BuildSystemRegistry} from './types';
+import type {AppState, BuildSystem, BuildSystemRegistry} from './types';
+import type {BehaviorSubject} from 'rxjs';
 
 import {DisposableSubscription} from '../../nuclide-commons';
 import invariant from 'assert';
@@ -18,6 +19,7 @@ import {CompositeDisposable, Disposable} from 'atom';
 
 let disposables: ?CompositeDisposable = null;
 let _commands: ?CommandsType = null;
+let _states: ?BehaviorSubject<AppState> = null;
 
 export function activate(rawState: ?Object = {}): void {
   invariant(disposables == null);
@@ -30,7 +32,7 @@ export function activate(rawState: ?Object = {}): void {
   const Rx = require('rxjs');
 
   const actions = new Rx.Subject();
-  const states = createStateStream(
+  const states = _states = createStateStream(
     applyActionMiddleware(actions, () => states.getValue()),
     createEmptyAppState(),
   );
@@ -44,6 +46,7 @@ export function activate(rawState: ?Object = {}): void {
     new Disposable(() => { commands.destroyPanel(); }),
     new Disposable(() => {
       _commands = null;
+      _states = null;
     }),
     atom.commands.add('atom-workspace', {
       'nuclide-build:toggle-toolbar-visibility': () => { commands.toggleToolbarVisibility(); },
@@ -64,6 +67,50 @@ export function deactivate(): void {
   invariant(disposables != null);
   disposables.dispose();
   disposables = null;
+}
+
+export function consumeToolBar(getToolBar: (group: string) => Object): IDisposable {
+  invariant(disposables != null);
+  const toolBar = getToolBar('nuclide-build');
+  const {element} = toolBar.addButton({
+    callback: 'nuclide-build:toggle-toolbar-visibility',
+    tooltip: 'Toggle Build Toolbar',
+    iconset: 'ion',
+    icon: 'hammer',
+    priority: 499.5,
+  });
+  element.className += ' nuclide-build-tool-bar-button';
+
+  invariant(_states != null);
+
+  const buttonUpdatesDisposable = new DisposableSubscription(
+    _states.subscribe(state => {
+      if (state.buildSystems.size > 0) {
+        element.removeAttribute('hidden');
+      } else {
+        element.setAttribute('hidden', 'hidden');
+      }
+    })
+  );
+
+  // Remove the button from the toolbar.
+  const buttonPresenceDisposable = new Disposable(() => { toolBar.removeItems(); });
+
+  // If this package is disabled, stop updating the button and remove it from the toolbar.
+  disposables.add(
+    buttonUpdatesDisposable,
+    buttonPresenceDisposable,
+  );
+
+  // If tool-bar is disabled, stop updating the button state and remove tool-bar related cleanup
+  // from this package's disposal actions.
+  return new Disposable(() => {
+    buttonUpdatesDisposable.dispose();
+    if (disposables != null) {
+      disposables.remove(buttonUpdatesDisposable);
+      disposables.remove(buttonPresenceDisposable);
+    }
+  });
 }
 
 export function provideBuildSystemRegistry(): BuildSystemRegistry {
