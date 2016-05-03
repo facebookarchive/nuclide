@@ -11,7 +11,7 @@
 
 import Ansi from './Ansi';
 
-import type {TestRunStatus} from '../../nuclide-test-runner/lib/interfaces';
+import type {TestRunStatus} from './types';
 
 /**
  * Status codes returned in the "status" field of the testing utility's JSON response.

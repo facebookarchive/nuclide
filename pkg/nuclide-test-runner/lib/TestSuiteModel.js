@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {TestClassSummary, TestRunInfo} from '../../nuclide-test-runner/lib/interfaces';
+import type {TestClassSummary, TestRunInfo} from './types';
 
 class TestSuiteModel {
 

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {TestRunner} from '../../nuclide-test-runner/lib/interfaces';
+import type {TestRunner} from '../lib/types';
 import {Observable} from 'rxjs';
 
 import {TestRunnerController} from '../lib/TestRunnerController';
