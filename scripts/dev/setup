@@ -33,7 +33,9 @@ parser = optparse.OptionParser(usage='usage: %prog [options]',
                                description='Install Nuclide packages for development')
 
 parser.add_option('--no-atom', action='store_true', default=False,
-                  help='Exclude packages that depend on Atom')
+                  help='Exclude packages that depend on Atom (implies --no-link)')
+parser.add_option('--no-link', action='store_true', default=False,
+                  help='Skip linking the "nuclide" package')
 parser.add_option('--nuke', action='store_true', default=False,
                   help='Remove all Atom caches and state. '
                        'NOTE: Serialized state and stored session data (like login '
@@ -91,6 +93,6 @@ logging.info('"%s install" took %s seconds.',
 
 # "apm link" will fail if "~/.atom/packages/nuclide" is a directory, and
 # overwrite if it's a symlink.
-if not options.no_atom:
+if not options.no_link and not options.no_atom:
     logging.info('Linking nuclide...')
     subprocess.check_call(['apm', 'link'], cwd=NUCLIDE_PATH)
