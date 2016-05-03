@@ -283,7 +283,7 @@ export default class ClientComponent<TransportType: Transport> {
     }
   }
 
-  getSocket(): TransportType {
+  getTransport(): TransportType {
     return this._transport;
   }
 

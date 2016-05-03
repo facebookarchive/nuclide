@@ -40,7 +40,7 @@ export default class ServiceTestHelper {
   }
 
   stop(): void {
-    this._client.getSocket().close();
+    this._client.close();
     this._server.close();
   }
 
