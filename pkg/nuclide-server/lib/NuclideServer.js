@@ -20,6 +20,7 @@ import ServiceFramework from './serviceframework/index';
 import {SocketClient} from './SocketClient';
 import {getLogger, flushLogsAndExit} from '../../nuclide-logging';
 import WS from 'ws';
+import {SocketTransport} from './SocketTransport';
 
 const connect: connect$module = require('connect');
 const http: http$fixed = (require('http'): any);
@@ -40,7 +41,7 @@ class NuclideServer {
 
   _webServer: http$fixed$Server;
   _webSocketServer: WS.Server;
-  _clients: Map<string, SocketClient>;
+  _clients: Map<string, SocketClient<SocketTransport>>;
   _port: number;
   _app: connect$Server;
   _serviceRegistry: {[serviceName: string]: () => any};
@@ -155,16 +156,16 @@ class NuclideServer {
     }
   }
 
-  static closeConnection(client: SocketClient): void {
-    logger.info(`Closing client: #${client.id}`);
+  static closeConnection(client: SocketClient<SocketTransport>): void {
+    logger.info(`Closing client: #${client.getTransport().id}`);
     if (NuclideServer._theServer != null) {
       NuclideServer._theServer._closeConnection(client);
     }
   }
 
-  _closeConnection(client: SocketClient): void {
-    if (this._clients.get(client.id) === client) {
-      this._clients.delete(client.id);
+  _closeConnection(client: SocketClient<SocketTransport>): void {
+    if (this._clients.get(client.getTransport().id) === client) {
+      this._clients.delete(client.getTransport().id);
       client.dispose();
     }
   }
@@ -232,19 +233,20 @@ class NuclideServer {
     logger.debug('WebSocket connecting');
 
 
-    let client: ?SocketClient = null;
+    let client: ?SocketClient<SocketTransport> = null;
 
     socket.on('error', e =>
-      logger.error('Client #%s error: %s', client ? client.id : 'unkown', e.message));
+      logger.error(
+        'Client #%s error: %s', client ? client.getTransport().id : 'unkown', e.message));
 
     socket.once('message', (clientId: string) => {
       client = this._clients.get(clientId);
       if (client == null) {
-        client = new SocketClient(clientId, this._serverComponent, socket);
+        client = new SocketClient(this._serverComponent, new SocketTransport(clientId, socket));
         this._clients.set(clientId, client);
       } else {
-        invariant(clientId === client.id);
-        client.reconnect(socket);
+        invariant(clientId === client.getTransport().id);
+        client.getTransport().reconnect(socket);
       }
     });
   }

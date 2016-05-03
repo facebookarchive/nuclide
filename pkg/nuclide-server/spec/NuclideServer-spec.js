@@ -72,9 +72,9 @@ describe('Nuclide Server test suite', () => {
         const clientId = Array.from(server._clients.keys())[0];
         serverSocketClient = server._clients.get(clientId);
         invariant(serverSocketClient != null);
-        expect(serverSocketClient.id).toBe(clientId);
+        expect(serverSocketClient.getTransport().id).toBe(clientId);
 
-        serverSocketClient.sendSocketMessage(message1);
+        serverSocketClient.getTransport().send(message1);
       });
 
       waitsFor(() => messageHandler.callCount === 1);
@@ -83,17 +83,17 @@ describe('Nuclide Server test suite', () => {
         // A server socket close will trigger a client disconnect and a scheduled reconnect.
         if (serverSocketClient != null && serverSocketClient.socket != null) {
           serverSocketClient.socket.close();
-          serverSocketClient.sendSocketMessage(serverSocketClient, message2);
+          serverSocketClient.getTransport().send(serverSocketClient, message2);
           // The default WebSocket's close timeout is 30 seconds.
           window.advanceClock(31 * 1000);
-          serverSocketClient.sendSocketMessage(serverSocketClient, message3);
+          serverSocketClient.getTransport().send(serverSocketClient, message3);
         }
       });
 
       waitsFor(() => reconnectHandler.callCount === 1);
       runs(() => {
         if (serverSocketClient != null) {
-          serverSocketClient.sendSocketMessage(serverSocketClient, message4);
+          serverSocketClient.getTransport().send(serverSocketClient, message4);
         }
       });
 

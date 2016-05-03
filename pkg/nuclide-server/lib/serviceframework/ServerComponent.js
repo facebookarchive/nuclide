@@ -157,10 +157,10 @@ export default class ServerComponent {
 
       // Send the result of the promise across the socket.
       returnVal.then(result => {
-        client.sendSocketMessage(createPromiseMessage(requestId, result));
+        client.getTransport().send(createPromiseMessage(requestId, result));
         timingTracker.onSuccess();
       }, error => {
-        client.sendSocketMessage(createErrorMessage(requestId, error));
+        client.getTransport().send(createErrorMessage(requestId, error));
         timingTracker.onError(error == null ? new Error() : error);
       });
     };
@@ -181,12 +181,12 @@ export default class ServerComponent {
 
       // Send the next, error, and completion events of the observable across the socket.
       const subscription = result.subscribe(data => {
-        client.sendSocketMessage(createNextMessage(requestId, data));
+        client.getTransport().send(createNextMessage(requestId, data));
       }, error => {
-        client.sendSocketMessage(createErrorMessage(requestId, error));
+        client.getTransport().send(createErrorMessage(requestId, error));
         marshallingContext.removeSubscription(requestId);
       }, completed => {
-        client.sendSocketMessage(createCompletedMessage(requestId));
+        client.getTransport().send(createCompletedMessage(requestId));
         marshallingContext.removeSubscription(requestId);
       });
       marshallingContext.addSubscription(requestId, subscription);
@@ -296,7 +296,7 @@ export default class ServerComponent {
     } catch (e) {
       logger.error(e != null ? e.message : e);
       timingTracker.onError(e == null ? new Error() : e);
-      client.sendSocketMessage(createErrorMessage(requestId, e));
+      client.getTransport().send(createErrorMessage(requestId, e));
     }
   }
 

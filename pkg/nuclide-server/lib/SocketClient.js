@@ -9,43 +9,43 @@
  * the root directory of this source tree.
  */
 
-import type WS from 'ws';
+import type {Transport} from './serviceframework/types';
 
 import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
 import ServiceFramework from './serviceframework/index';
 import invariant from 'assert';
 
 import {ObjectRegistry} from './serviceframework/ObjectRegistry';
-import {SocketTransport} from './SocketTransport';
 
 // Per-Client state on the Server for the RPC framework
-export class SocketClient extends SocketTransport {
+export class SocketClient<TransportType: Transport> {
   _serverComponent: ServiceFramework.ServerComponent;
   _objectRegistry: ObjectRegistry;
+  _transport: TransportType;
 
   constructor(
-      clientId: string,
-      serverComponent: ServiceFramework.ServerComponent,
-      socket: WS) {
-    super(clientId, socket);
+    serverComponent: ServiceFramework.ServerComponent,
+    transport: TransportType,
+  ) {
     this._objectRegistry = new ObjectRegistry('server');
     this._serverComponent = serverComponent;
-    this.onMessage(message => {
+    this._transport = transport;
+    transport.onMessage(message => {
       invariant(message.protocol && message.protocol === SERVICE_FRAMEWORK3_CHANNEL);
       this._serverComponent.handleMessage(this, message);
     });
-  }
-
-  sendSocketMessage(data: any): void {
-    this.send(data);
   }
 
   getMarshallingContext(): ObjectRegistry {
     return this._objectRegistry;
   }
 
+  getTransport(): TransportType {
+    return this._transport;
+  }
+
   dispose(): void {
-    this.close();
+    this._transport.close();
     this._objectRegistry.dispose();
   }
 }
