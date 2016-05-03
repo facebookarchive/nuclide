@@ -1,5 +1,8 @@
 {
-  "atom-text-editor:not(.mini)": {
+  ".platform-darwin atom-text-editor:not(.mini)": {
     "cmd-alt-n": "nuclide-related-files:jump-to-next-related-file"
+  },
+  ".platform-win32 atom-text-editor:not(.mini), .platform-linux atom-text-editor:not(.mini)": {
+    "ctrl-alt-n": "nuclide-related-files:jump-to-next-related-file"
   }
 }
