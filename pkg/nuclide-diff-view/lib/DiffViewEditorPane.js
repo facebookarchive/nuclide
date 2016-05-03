@@ -10,8 +10,7 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {HighlightedLines, OffsetMap} from './types';
-import type {UIElement} from '../../nuclide-diff-ui-provider-interfaces';
+import type {HighlightedLines, OffsetMap, UIElement} from './types';
 
 import {CompositeDisposable} from 'atom';
 import {array, debounce, map} from '../../nuclide-commons';

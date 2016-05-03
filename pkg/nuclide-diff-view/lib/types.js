@@ -11,7 +11,8 @@
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
-import type {UIElement} from '../../nuclide-diff-ui-provider-interfaces';
+
+import {React} from 'react-for-atom';
 
 export type DiffModeType = '1. Browse' | '2. Commit' | '3. Publish';
 
@@ -76,4 +77,13 @@ export type LineRangesWithOffsets = {
 export type HighlightedLines = {
   added: Array<number>;
   removed: Array<number>;
+};
+
+export type UIElement = {
+  node: React.Element;
+  bufferRow: number;
+};
+
+export type UIProvider = {
+  composeUiElements: (filePath: string) => Promise<Array<UIElement>>;
 };

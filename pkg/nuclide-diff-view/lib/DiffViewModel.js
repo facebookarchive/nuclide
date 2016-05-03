@@ -22,14 +22,12 @@ import type {
   PublishModeStateType,
   DiffModeType,
   DiffOptionType,
+  UIProvider,
+  UIElement,
 } from './types';
 import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {PhabricatorRevisionInfo} from '../../nuclide-arcanist-base/lib/utils';
-import type {
-  UIProvider,
-  UIElement,
-} from '../../nuclide-diff-ui-provider-interfaces';
 
 type FileDiffState = {
   revisionInfo: RevisionInfo;

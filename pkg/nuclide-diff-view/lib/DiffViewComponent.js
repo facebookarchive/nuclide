@@ -9,10 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {FileChangeState, OffsetMap, DiffModeType} from './types';
 import type {
+  FileChangeState,
+  OffsetMap,
+  DiffModeType,
   UIElement,
-} from '../../nuclide-diff-ui-provider-interfaces';
+} from './types';
 import type DiffViewModel from './DiffViewModel';
 import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
 import type {NuclideUri} from '../../nuclide-remote-uri';

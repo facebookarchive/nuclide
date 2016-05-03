@@ -9,8 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {OffsetMap} from './types';
-import type {UIElement} from '../../nuclide-diff-ui-provider-interfaces';
+import type {OffsetMap, UIElement} from './types';
 
 import {Range} from 'atom';
 import {ReactDOM} from 'react-for-atom';

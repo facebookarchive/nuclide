@@ -10,14 +10,16 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {CommitModeType, DiffModeType} from './types';
+import type {CommitModeType, DiffModeType, UIProvider} from './types';
 import type DiffViewModelType, {DiffEntityOptions} from './DiffViewModel';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {HomeFragments} from '../../nuclide-home';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {
+
+export type {
+  UIElement,
   UIProvider,
-} from '../../nuclide-diff-ui-provider-interfaces';
+} from './types';
 
 import {CompositeDisposable, Directory, Disposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
