@@ -76,7 +76,7 @@ export class BuildToolbar extends React.Component {
           <div className="inline-block">
             <button
               className="btn icon icon-primitive-square"
-              disabled={!this.props.taskIsRunning}
+              disabled={!this.props.taskIsRunning || !activeTask || activeTask.cancelable === false}
               onClick={() => { this.props.stopTask(); }}
             />
           </div>

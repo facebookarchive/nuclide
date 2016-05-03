@@ -34,6 +34,7 @@ export type Task = {
   label: string;
   description: string;
   enabled: boolean; // Can the action be run now?
+  cancelable?: boolean;
   icon: Octicon;
 };
 
