@@ -422,3 +422,22 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
     });
   });
 });
+
+describe('RemoteDirectory::onDidDelete()', () => {
+  let tempDir;
+
+  beforeEach(() => {
+    tempDir = temp.mkdirSync('on_did_delete');
+  });
+
+  it('calls on delete', () => {
+    waitsForPromise(async () => {
+      const dirPath = path.join(tempDir, 'dir_to_delete');
+      const dir = new RemoteDirectory(connectionMock, `nuclide://host13:1234${dirPath}`);
+      const callbackSpy = jasmine.createSpy();
+      dir.onDidDelete(callbackSpy);
+      await dir.delete();
+      expect(callbackSpy.callCount).toBe(1);
+    });
+  });
+});

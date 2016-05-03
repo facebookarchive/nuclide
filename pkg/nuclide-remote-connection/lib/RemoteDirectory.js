@@ -44,6 +44,7 @@ export class RemoteDirectory {
   _localPath: string;
   _hgRepositoryDescription: ?HgRepositoryDescription;
   _symlink: boolean;
+  _deleted: boolean;
 
   /**
    * @param uri should be of the form "nuclide://example.com:9090/path/to/directory".
@@ -69,11 +70,17 @@ export class RemoteDirectory {
     this._localPath = directoryPath;
     // A workaround before Atom 2.0: see ::getHgRepoInfo of main.js.
     this._hgRepositoryDescription = options ? options.hgRepositoryDescription : null;
+    this._deleted = false;
   }
 
   onDidChange(callback: () => any): IDisposable {
     this._willAddSubscription();
     return this._trackUnsubscription(this._emitter.on('did-change', callback));
+  }
+
+  onDidDelete(callback: () => any): IDisposable {
+    this._willAddSubscription();
+    return this._trackUnsubscription(this._emitter.on('did-delete', callback));
   }
 
   _willAddSubscription(): void {
@@ -93,8 +100,11 @@ export class RemoteDirectory {
     const watchStream = watchDirectory(this._uri);
     this._watchSubscription = watchStream.subscribe(watchUpdate => {
       logger.debug('watchDirectory update:', watchUpdate);
-      if (watchUpdate.type === 'change') {
-        return this._handleNativeChangeEvent();
+      switch (watchUpdate.type) {
+        case 'change':
+          return this._handleNativeChangeEvent();
+        case 'delete':
+          return this._handleNativeDeleteEvent();
       }
     }, error => {
       logger.error('Failed to subscribe RemoteDirectory:', this._uri, error);
@@ -108,6 +118,14 @@ export class RemoteDirectory {
 
   _handleNativeChangeEvent(): void {
     this._emitter.emit('did-change');
+  }
+
+  _handleNativeDeleteEvent(): void {
+    this._unsubscribeFromNativeChangeEvents();
+    if (!this._deleted) {
+      this._deleted = true;
+      this._emitter.emit('did-delete');
+    }
   }
 
   _trackUnsubscription(subscription: IDisposable): IDisposable {
@@ -206,6 +224,7 @@ export class RemoteDirectory {
   }
 
   async create(): Promise<boolean> {
+    invariant(!this._deleted, 'RemoteDirectory has been deleted');
     const created = await this._getFileSystemService().mkdirp(this._localPath);
     if (this._subscriptionCount > 0) {
       this._subscribeToNativeChangeEvents();
@@ -215,7 +234,7 @@ export class RemoteDirectory {
 
   async delete(): Promise {
     await this._getFileSystemService().rmdir(this._localPath);
-    this._unsubscribeFromNativeChangeEvents();
+    this._handleNativeDeleteEvent();
   }
 
   /**

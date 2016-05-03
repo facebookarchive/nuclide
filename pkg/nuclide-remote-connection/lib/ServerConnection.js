@@ -154,12 +154,7 @@ class ServerConnection {
         symlink,
         {hgRepositoryDescription},
       );
-      // TODO: We should add the following line to keep the cache up-to-date.
-      // We need to implement onDidRename and onDidDelete in RemoteDirectory
-      // first. It's ok that we don't add the handlers for now since we have
-      // the check `entry.getLocalPath() !== path` above.
-      //
-      // this._addHandlersForEntry(entry);
+      this._addHandlersForEntry(entry);
     }
 
     invariant(entry instanceof RemoteDirectory);
@@ -197,16 +192,9 @@ class ServerConnection {
   }
 
   _addHandlersForEntry(entry: RemoteFile | RemoteDirectory): void {
-    const oldPath = entry.getLocalPath();
-    /* $FlowFixMe */
-    const renameSubscription = entry.onDidRename(() => {
-      delete this._entries[oldPath];
-      this._entries[entry.getLocalPath()] = entry;
-    });
-    /* $FlowFixMe */
+    // TODO(most): Subscribe to rename events when they're implemented.
     const deleteSubscription = entry.onDidDelete(() => {
       delete this._entries[entry.getLocalPath()];
-      renameSubscription.dispose();
       deleteSubscription.dispose();
     });
   }
