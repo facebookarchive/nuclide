@@ -9,12 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {
-  HyperclickProvider,
-  HyperclickSuggestion,
-} from '../../hyperclick';
+import type {HyperclickProvider} from '../../hyperclick';
 
-import getSuggestionForWord from './getSuggestionForWord';
+import HyperclickProviderHelpers from './HyperclickProviderHelpers';
 
 export function getHyperclickProvider(): HyperclickProvider {
   return {
@@ -22,12 +19,8 @@ export function getHyperclickProvider(): HyperclickProvider {
     // Allow all language-specific providers to take priority.
     priority: 5,
     wordRegExp: /[^\s]+/g,
-    getSuggestionForWord(
-      textEditor: atom$TextEditor,
-      text: string,
-      range: atom$Range
-    ): Promise<?HyperclickSuggestion> {
-      return getSuggestionForWord(textEditor, text, range);
+    getSuggestionForWord(textEditor, text, range) {
+      return HyperclickProviderHelpers.getSuggestionForWord(textEditor, text, range);
     },
   };
 }
