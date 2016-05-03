@@ -49,7 +49,7 @@ export function watchFile(filePath: NuclideUri): Observable<watcher$WatchResult>
 }
 
 export function watchDirectory(directoryPath: NuclideUri): Observable<watcher$WatchResult> {
-  return watchEntity(watchedDirectories, directoryPath, [CHANGE_EVENT_NAME]);
+  return watchEntity(watchedDirectories, directoryPath, [CHANGE_EVENT_NAME, DELETE_EVENT_NAME]);
 }
 
 function watchEntity(
@@ -140,14 +140,13 @@ function onWatcherChange(subscription: WatchmanSubscription, entries: Array<File
   const directoryChanges = new Map();
   for (const entry of entries) {
     const entryPath = path.join(subscription.root, entry.name);
-    if (watchedFiles.has(entryPath)) {
-      // $FlowFixMe(most)
-      const {eventEmitter} = watchedFiles.get(entryPath);
+    const watchEntry = watchedFiles.get(entryPath) || watchedDirectories.get(entryPath);
+    if (watchEntry != null) {
       // TODO(most): handle `rename`, if needed.
       if (!entry.exists) {
-        eventEmitter.emit(DELETE_EVENT_NAME);
+        watchEntry.eventEmitter.emit(DELETE_EVENT_NAME);
       } else {
-        eventEmitter.emit(CHANGE_EVENT_NAME);
+        watchEntry.eventEmitter.emit(CHANGE_EVENT_NAME);
       }
     }
     // A file watch event can also be considered a directry change
