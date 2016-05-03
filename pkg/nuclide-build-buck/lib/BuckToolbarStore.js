@@ -293,7 +293,6 @@ class BuckToolbarStore {
       return;
     }
     if (!buckProject) {
-      this._notifyError();
       return;
     }
 
@@ -307,7 +306,6 @@ class BuckToolbarStore {
       }
     }
 
-    atom.notifications.addInfo(`buck ${subcommand} ${buildTarget} started.`);
     const ws = await this._setupWebSocket(buckProject, buildTarget);
 
     this._buildProgress = 0;
@@ -368,7 +366,6 @@ class BuckToolbarStore {
       const onError = (data: string) => {
         error(new Error(data));
         exit(1);
-        atom.notifications.addError(`${buildTarget} failed to build.`);
         disposable.dispose();
       };
       const onExit = () => {
@@ -376,7 +373,6 @@ class BuckToolbarStore {
         // i.e. with exit code 0. Unfortunately an Observable cannot pass an
         // argument (e.g. an exit code) on completion.
         exit(0);
-        atom.notifications.addSuccess(`buck ${subcommand} succeeded.`);
         disposable.dispose();
       };
       const subscription = observable.subscribe(onNext, onError, onExit);
@@ -473,19 +469,6 @@ class BuckToolbarStore {
       }
     };
     return ws;
-  }
-
-  _notifyError() {
-    const activeEditor = atom.workspace.getActiveTextEditor();
-    if (!activeEditor) {
-      atom.notifications.addWarning(
-          `Could not build: must navigate to a file that is part of a Buck project.`);
-      return;
-    }
-
-    const fileName = activeEditor.getPath();
-    atom.notifications.addWarning(
-        `Could not build: file '${fileName}' is not part of a Buck project.`);
   }
 }
 
