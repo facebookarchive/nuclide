@@ -11,13 +11,13 @@
 
 import invariant from 'assert';
 import path from 'path';
-import ServiceTestHelper from './ServiceTestHelper';
+import {ServiceTester} from './ServiceTester';
 
 describe('ErrorServer', () => {
   let testHelper;
   let service;
   beforeEach(() => {
-    testHelper = new ServiceTestHelper();
+    testHelper = new ServiceTester();
     waitsForPromise(() => {
       invariant(testHelper);
       return testHelper.start([{

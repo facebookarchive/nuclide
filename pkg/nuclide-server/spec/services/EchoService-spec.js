@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import path from 'path';
-import ServiceTestHelper from './ServiceTestHelper';
+import {ServiceTester} from './ServiceTester';
 import typeof * as EchoServiceType from './EchoService';
 import {RemotableObject} from './EchoService';
 
@@ -20,7 +20,7 @@ describe('EchoServer', () => {
   let testHelper;
   let service: EchoServiceType = (null: any);
   beforeEach(() => {
-    testHelper = new ServiceTestHelper();
+    testHelper = new ServiceTester();
     waitsForPromise(() => testHelper.start([{
       name: 'EchoService',
       definition: path.join(__dirname, 'EchoService.js'),
