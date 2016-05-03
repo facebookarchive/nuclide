@@ -77,11 +77,11 @@ declare module 'rxjs' {
 
     static interval(period: number): Observable<number>;
 
-    static merge<T,U>(
+    static merge<T, U>(
       source0: Observable<T>,
       source1: Observable<U>,
     ): Observable<T | U>;
-    static merge<T,U,V>(
+    static merge<T, U, V>(
       source0: Observable<T>,
       source1: Observable<U>,
       source2: Observable<V>,

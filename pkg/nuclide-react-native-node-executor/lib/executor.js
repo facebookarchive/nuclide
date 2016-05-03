@@ -8,7 +8,7 @@
 
 'use strict';
 
-/* eslint-disable no-var, no-console */
+/* eslint-disable no-var, no-console, prefer-arrow-callback */
 
 var http = require('http');
 var invariant = require('assert');

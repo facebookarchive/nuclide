@@ -9,9 +9,9 @@
 
 import {WString} from '../lib/main.js';
 
-describe('wootr', function() {
-  describe('insert', function() {
-    it('should allow a whole string to be passed in', function() {
+describe('wootr', () => {
+  describe('insert', () => {
+    it('should allow a whole string to be passed in', () => {
       const wstring = new WString(1, 50000000);
 
       expect(wstring._string[1]).toEqual({
@@ -27,7 +27,7 @@ describe('wootr', function() {
       expect(wstring._string.length).toEqual(3);
     });
 
-    it('should combine adjacent runs', function() {
+    it('should combine adjacent runs', () => {
       const wstring = new WString(1);
       wstring.insert(1, {startId: {site: 1, h: 1}, visible: true, startDegree: 1, length: 1});
       wstring.insert(2, {startId: {site: 1, h: 2}, visible: true, startDegree: 2, length: 1});
@@ -46,7 +46,7 @@ describe('wootr', function() {
       expect(wstring._string.length).toEqual(3);
     });
 
-    it('should append run when inserted after incompatible run', function() {
+    it('should append run when inserted after incompatible run', () => {
       const wstring = new WString(1);
 
       wstring.insert(1, {startId: {site: 1, h: 1}, visible: true, startDegree: 1, length: 1});
@@ -75,7 +75,7 @@ describe('wootr', function() {
       expect(wstring._string.length).toEqual(4);
     });
 
-    it('should split runs when inserted inside a run', function() {
+    it('should split runs when inserted inside a run', () => {
       const wstring = new WString(1);
 
       wstring.insert(1, {startId: {site: 1, h: 1}, visible: true, startDegree: 1, length: 1});
@@ -117,7 +117,7 @@ describe('wootr', function() {
     });
 
     it('should be the same wstrings when you ' +
-    'insert 4 length 1 chars and 1 length 4 char', function() {
+    'insert 4 length 1 chars and 1 length 4 char', () => {
       const wstring = new WString(1);
       const wstring2 = new WString(2);
       wstring.insert(1, {startId: {site: 1, h: 1}, visible: true, startDegree: 1, length: 1});

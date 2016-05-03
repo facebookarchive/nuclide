@@ -47,7 +47,11 @@ describe('applyActionMiddleware', () => {
 
   describe('REFRESH_TASKS', () => {
 
-    let buildSystem, input, outputStream, outputPromise, tasks;
+    let buildSystem;
+    let input;
+    let outputStream;
+    let outputPromise;
+    let tasks;
 
     beforeEach(() => {
       input = new Subject();

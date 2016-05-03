@@ -7,7 +7,7 @@
  */
 
 /* Is not transpiled, allow `var` and console usage. */
-/* eslint-disable no-var, no-console */
+/* eslint-disable no-var, no-console, prefer-arrow-callback */
 
 // Starts listening for xdebug connections on the given port.
 // Once connected you can enter xdebug commands, messages from the xdebug connection

@@ -60,8 +60,8 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
 
   it('getProperties', () => {
     waitsForPromise(async () => {
-      connectionMultiplexer.getProperties = jasmine.createSpy('getProperties').
-        andReturn(Promise.resolve('the-result'));
+      connectionMultiplexer.getProperties = jasmine.createSpy('getProperties')
+        .andReturn(Promise.resolve('the-result'));
 
       const objectId = 'object-id';
       const ownProperties = false;
@@ -81,8 +81,8 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
     const expression = 'evaluate-expression';
 
     beforeEach(() => {
-      connectionMultiplexer.runtimeEvaluate = jasmine.createSpy('runtimeEvaluate').
-        andReturn(Promise.resolve('the-result'));
+      connectionMultiplexer.runtimeEvaluate = jasmine.createSpy('runtimeEvaluate')
+        .andReturn(Promise.resolve('the-result'));
     });
 
     it('console', () => {

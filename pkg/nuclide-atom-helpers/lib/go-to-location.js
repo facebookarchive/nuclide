@@ -31,8 +31,6 @@ async function goToLocation(
   return editor;
 }
 
-
-
 const goToLocationSubject = new Subject();
 
 // Scrolls to the given line/column at the given editor
@@ -51,7 +49,6 @@ function goToLocationInEditor(
 
   goToLocationSubject.next(editor);
 }
-
 
 function observeNavigatingEditors(): Observable<atom$TextEditor> {
   return goToLocationSubject;

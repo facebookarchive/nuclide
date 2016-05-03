@@ -298,7 +298,7 @@ function processDefinitionsForXhp(
       definitionIndex >= column ||
       !xhpCharRegex.test(lineText.substring(definitionIndex, column))
     ) {
-      return { ...definition };
+      return {...definition};
     } else {
       return {
         ...definition,

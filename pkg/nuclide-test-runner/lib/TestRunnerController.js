@@ -345,7 +345,7 @@ export class TestRunnerController {
     }
 
     let progressValue;
-    if  (this._testSuiteModel && this._executionState === TestRunnerPanel.ExecutionState.RUNNING) {
+    if (this._testSuiteModel && this._executionState === TestRunnerPanel.ExecutionState.RUNNING) {
       progressValue = this._testSuiteModel.progressPercent();
     } else {
       // If there is no running test suite, fill the progress bar because there is no progress to

@@ -37,7 +37,7 @@ class ScriptBufferedProcess extends BufferedProcess {
  */
 async function createScriptBufferedProcessWithEnv(options: Object): Promise<BufferedProcess> {
   const localOptions = {...options};
-  localOptions.env = await createExecEnvironment(localOptions.env ||  process.env,
+  localOptions.env = await createExecEnvironment(localOptions.env || process.env,
     COMMON_BINARY_PATHS);
   // Flow infers Promise<ScriptBufferedProcess> and believes that to be incompatible with
   // Promise<BufferedProcess> so we need to cast.

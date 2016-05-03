@@ -14,7 +14,8 @@ import path from 'path';
 import ServiceTestHelper from './ServiceTestHelper';
 
 describe('CounterService', () => {
-  let testHelper, service;
+  let testHelper;
+  let service;
   beforeEach(() => {
     testHelper = new ServiceTestHelper();
     waitsForPromise(() => testHelper.start([{

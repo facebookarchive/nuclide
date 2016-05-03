@@ -32,7 +32,7 @@ function createSimpleServer(): http.Server {
           res.statusCode = 404;
           res.end('Not found', 'utf8');
         } else {
-          res.setHeader('Content-Type', 'text/html;charset=utf8' );
+          res.setHeader('Content-Type', 'text/html;charset=utf8');
           res.end(contents, 'utf8');
         }
       });
@@ -87,7 +87,7 @@ async function testGetFailure(url: string): Promise<void> {
   } catch (e) {
     error = e;
   }
-  expect(!!(error)).toBe(true);
+  expect(Boolean(error)).toBe(true);
 
   error = null;
   const tempfile = await fsPromise.tempfile();
@@ -96,7 +96,7 @@ async function testGetFailure(url: string): Promise<void> {
   } catch (e) {
     error = e;
   }
-  expect(!!(error)).toBe(true);
+  expect(Boolean(error)).toBe(true);
 }
 
 describe('Async http get/download test suite', () => {

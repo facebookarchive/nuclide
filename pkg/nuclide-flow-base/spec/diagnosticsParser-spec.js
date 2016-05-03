@@ -12,46 +12,46 @@
 import {flowStatusOutputToDiagnostics} from '../lib/diagnosticsParser';
 
 const oldOutput = {
-  version : 'big long string',
-  passed : false,
-  errors : [
+  version: 'big long string',
+  passed: false,
+  errors: [
     {
-      operation : {
-        endline : 13,
-        end : 12,
-        path : '/flow-test/src/test.js',
-        line : 13,
-        descr : 'assignment of property `bar`',
-        start : 5,
+      operation: {
+        endline: 13,
+        end: 12,
+        path: '/flow-test/src/test.js',
+        line: 13,
+        descr: 'assignment of property `bar`',
+        start: 5,
       },
-      kind : 'infer',
-      message : [
+      kind: 'infer',
+      message: [
         {
-          end : 17,
-          path : '/flow-test/src/test.js',
-          endline : 13,
-          start : 16,
-          level : 'error',
-          line : 13,
-          descr : 'object literal',
+          end: 17,
+          path: '/flow-test/src/test.js',
+          endline: 13,
+          start: 16,
+          level: 'error',
+          line: 13,
+          descr: 'object literal',
         },
         {
-          endline : 0,
-          end : 0,
-          path : '',
-          descr : 'This type is incompatible with',
-          line : 0,
-          level : 'error',
-          start : 1,
+          endline: 0,
+          end: 0,
+          path: '',
+          descr: 'This type is incompatible with',
+          line: 0,
+          level: 'error',
+          start: 1,
         },
         {
-          line : 10,
-          descr : 'union: object type(s)',
-          start : 8,
-          level : 'error',
-          endline : 10,
-          path : '/flow-test/src/test.js',
-          end : 10,
+          line: 10,
+          descr: 'union: object type(s)',
+          start: 8,
+          level: 'error',
+          endline: 10,
+          path: '/flow-test/src/test.js',
+          end: 10,
         },
       ],
     },
@@ -59,66 +59,66 @@ const oldOutput = {
 };
 
 const newOutput = {
-  passed : false,
-  flowVersion : '0.23.0',
-  errors : [
+  passed: false,
+  flowVersion: '0.23.0',
+  errors: [
     {
-      operation : {
-        descr : 'assignment of property `bar`',
-        loc : {
-          start : {
-            offset : 104,
-            line : 13,
-            column : 5,
+      operation: {
+        descr: 'assignment of property `bar`',
+        loc: {
+          start: {
+            offset: 104,
+            line: 13,
+            column: 5,
           },
-          source : '/flow-test/src/test.js',
-          end : {
-            offset : 112,
-            line : 13,
-            column : 12,
+          source: '/flow-test/src/test.js',
+          end: {
+            offset: 112,
+            line: 13,
+            column: 12,
           },
         },
       },
-      message : [
+      message: [
         {
-          descr : 'object literal',
-          loc : {
-            start : {
-              offset : 115,
-              line : 13,
-              column : 16,
+          descr: 'object literal',
+          loc: {
+            start: {
+              offset: 115,
+              line: 13,
+              column: 16,
             },
-            source : '/flow-test/src/test.js',
-            end : {
-              line : 13,
-              offset : 117,
-              column : 17,
+            source: '/flow-test/src/test.js',
+            end: {
+              line: 13,
+              offset: 117,
+              column: 17,
             },
           },
         },
         {
-          descr : 'This type is incompatible with',
-          path : '',
+          descr: 'This type is incompatible with',
+          path: '',
         },
         {
-          descr : 'union: object type(s)',
-          loc : {
-            end : {
-              line : 10,
-              offset : 87,
-              column : 10,
+          descr: 'union: object type(s)',
+          loc: {
+            end: {
+              line: 10,
+              offset: 87,
+              column: 10,
             },
-            source : '/flow-test/src/test.js',
-            start : {
-              column : 8,
-              line : 10,
-              offset : 84,
+            source: '/flow-test/src/test.js',
+            start: {
+              column: 8,
+              line: 10,
+              offset: 84,
             },
           },
         },
       ],
-      kind : 'infer',
-      level : 'error',
+      kind: 'infer',
+      level: 'error',
     },
   ],
 };
@@ -144,11 +144,11 @@ const expected = {
           },
         },
         {
-          descr : 'This type is incompatible with',
+          descr: 'This type is incompatible with',
           range: null,
         },
         {
-          descr : 'union: object type(s)',
+          descr: 'union: object type(s)',
           range: {
             file: '/flow-test/src/test.js',
             start: {
@@ -162,7 +162,7 @@ const expected = {
           },
         },
         {
-          descr : 'See also: assignment of property `bar`',
+          descr: 'See also: assignment of property `bar`',
           range: {
             file: '/flow-test/src/test.js',
             start: {

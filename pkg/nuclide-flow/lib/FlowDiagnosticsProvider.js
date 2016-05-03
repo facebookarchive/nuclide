@@ -259,7 +259,7 @@ class FlowDiagnosticsProvider {
       diagnosticArray.push(diagnostic);
     }
 
-    return { filePathToMessages };
+    return {filePathToMessages};
   }
 
   invalidateProjectPath(projectPath: string): void {

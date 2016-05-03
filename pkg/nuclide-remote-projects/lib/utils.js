@@ -49,7 +49,7 @@ export function sanitizeNuclideUri(uri: string): string {
   return uri;
 }
 
-export function* getOpenFileEditorForRemoteProject(
+export function *getOpenFileEditorForRemoteProject(
   connectionConfig: RemoteConnectionConfiguration,
 ): Iterator<OpenFileEditorInstance> {
   for (const pane of atom.workspace.getPanes()) {

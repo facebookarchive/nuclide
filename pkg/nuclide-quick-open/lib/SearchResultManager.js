@@ -457,7 +457,9 @@ class SearchResultManager {
     return {
       title: provider.getTabTitle(),
       results: providerPaths.reduce((results, path) => {
-        let cachedPaths, cachedQueries, cachedResult;
+        let cachedPaths;
+        let cachedQueries;
+        let cachedResult;
         if (!(
           (cachedPaths = this._cachedResults[providerName]) &&
           (cachedQueries = cachedPaths[path]) &&

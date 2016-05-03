@@ -32,7 +32,7 @@ const COMMON_BINARY_PATHS = ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/loc
  *
  *     PATH="/usr/bin"; export PATH;
  */
-const DARWIN_PATH_HELPER_REGEXP = /PATH=\"([^\"]+)\"/;
+const DARWIN_PATH_HELPER_REGEXP = /PATH="([^"]+)"/;
 
 const STREAM_NAMES = ['stdin', 'stdout', 'stderr'];
 
@@ -330,16 +330,19 @@ function getOutputStream(
       invariant(process != null, 'process has not yet been disposed');
       // Use replay/connect on exit for the final concat.
       // By default concat defers subscription until after the LHS completes.
-      const exit = Observable.fromEvent(process, 'exit').take(1).
-        map(exitCode => ({kind: 'exit', exitCode})).publishReplay();
+      const exit = Observable
+        .fromEvent(process, 'exit')
+        .take(1)
+        .map(exitCode => ({kind: 'exit', exitCode})).publishReplay();
       exit.connect();
-      const error = Observable.fromEvent(process, 'error').
-        takeUntil(exit).
-        map(errorObj => ({kind: 'error', error: errorObj}));
-      const stdout = splitStream(observeStream(process.stdout)).
-        map(data => ({kind: 'stdout', data}));
-      const stderr = splitStream(observeStream(process.stderr)).
-        map(data => ({kind: 'stderr', data}));
+      const error = Observable
+        .fromEvent(process, 'error')
+        .takeUntil(exit)
+        .map(errorObj => ({kind: 'error', error: errorObj}));
+      const stdout = splitStream(observeStream(process.stdout))
+        .map(data => ({kind: 'stdout', data}));
+      const stderr = splitStream(observeStream(process.stderr))
+        .map(data => ({kind: 'stderr', data}));
       return stdout.merge(stderr).merge(error).concat(exit);
     });
 }

@@ -19,4 +19,4 @@
     inputSelector: '#algolia-doc-search',
   });
 
-}());
+})();

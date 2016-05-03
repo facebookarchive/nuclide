@@ -70,7 +70,7 @@ class Activation {
       atom.commands.add(
         'atom-text-editor',
         'nuclide-vcs-log:show-log-for-active-editor',
-        function() {
+        () => {
           const uri = getActiveTextEditorURI();
           if (uri != null) {
             openLogPaneForURI(uri);

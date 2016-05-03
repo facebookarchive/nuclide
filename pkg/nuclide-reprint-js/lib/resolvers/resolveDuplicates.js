@@ -53,7 +53,7 @@ function resolveDuplicates(lines: Array<any>): Array<any> {
   }
 
   // We always kill to empty here.
-  return lines.map((line, i) => kill.has(i) ? markers.empty : line);
+  return lines.map((line, i) => (kill.has(i) ? markers.empty : line));
 }
 
 module.exports = resolveDuplicates;

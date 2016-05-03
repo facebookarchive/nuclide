@@ -24,7 +24,7 @@ import invariant from 'assert';
  * @returns True if the Ranges are equal.
  */
 function toEqualAtomRange(expected: ?atom$Range): boolean {
-  return !!this.actual && !!expected && this.actual.isEqual(expected);
+  return Boolean(this.actual && expected && this.actual.isEqual(expected));
 }
 
 /**

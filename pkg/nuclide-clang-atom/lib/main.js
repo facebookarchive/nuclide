@@ -94,7 +94,7 @@ export function createTypeHintProvider(): TypeHintProviderType {
     typeHint(
       editor: atom$TextEditor,
       position: atom$Point
-    ): Promise<?TypeHint>  {
+    ): Promise<?TypeHint> {
       return TypeHintProvider.typeHint(editor, position);
     },
   };

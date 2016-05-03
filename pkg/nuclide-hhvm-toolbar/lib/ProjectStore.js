@@ -77,7 +77,7 @@ class ProjectStore {
   @trackTiming('toolbar.isFileBuckProject')
   async _isFileBuckProject(fileName: string): Promise<boolean> {
     const buckProject = await buckProjectRootForPath(fileName);
-    return !!buckProject;
+    return Boolean(buckProject);
   }
 
   onChange(callback: () => void): Disposable {

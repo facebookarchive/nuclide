@@ -68,7 +68,7 @@ function getDeclaredTypes(
   CONFIG.forEach(config => {
     root
       .find(config.searchTerms[0], config.searchTerms[1])
-      .filter(path => filters ? filters.every(filter => filter(path)) : true)
+      .filter(path => (filters ? filters.every(filter => filter(path)) : true))
       .filter(path => config.filters.every(filter => filter(path)))
       .forEach(path => {
         const nodes = config.getNodes(path);

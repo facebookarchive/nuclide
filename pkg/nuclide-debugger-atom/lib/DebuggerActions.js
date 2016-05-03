@@ -32,9 +32,9 @@ function track(...args: any) {
 }
 
 const AnalyticsEvents = Object.freeze({
-  DEBUGGER_START:       'debugger-start',
-  DEBUGGER_START_FAIL:  'debugger-start-fail',
-  DEBUGGER_STOP:        'debugger-stop',
+  DEBUGGER_START: 'debugger-start',
+  DEBUGGER_START_FAIL: 'debugger-start-fail',
+  DEBUGGER_STOP: 'debugger-stop',
 });
 
 /**

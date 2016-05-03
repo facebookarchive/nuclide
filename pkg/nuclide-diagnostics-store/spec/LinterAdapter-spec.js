@@ -72,7 +72,7 @@ describe('LinterAdapter', () => {
   beforeEach(() => {
     fakeEditor = {
       getPath() { return 'foo'; },
-      getGrammar() { return { scopeName: grammar }; },
+      getGrammar() { return {scopeName: grammar}; },
     };
     spyOn(atom.workspace, 'getActiveTextEditor').andReturn(fakeEditor);
     linterReturn = Promise.resolve([]);

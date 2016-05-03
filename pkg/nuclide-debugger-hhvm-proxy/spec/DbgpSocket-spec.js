@@ -185,13 +185,13 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
       expect(idOfFrame(frame0)).toBe('0');
       expect(functionOfFrame(frame0)).toBe('foo');
       expect(fileOfFrame(frame0)).toBe('/home/peterhal/test/dbgp/test-client.php');
-      expect(locationOfFrame(frame0)).toEqual({lineNumber:3, scriptId: fileOfFrame(frame0)});
+      expect(locationOfFrame(frame0)).toEqual({lineNumber: 3, scriptId: fileOfFrame(frame0)});
 
       const frame1 = stack[1];
       expect(idOfFrame(frame1)).toBe('1');
       expect(functionOfFrame(frame1)).toBe('{main}');
       expect(fileOfFrame(frame1)).toBe('/home/peterhal/test/dbgp/test-client.php');
-      expect(locationOfFrame(frame1)).toEqual({lineNumber:9, scriptId: fileOfFrame(frame1)});
+      expect(locationOfFrame(frame1)).toEqual({lineNumber: 9, scriptId: fileOfFrame(frame1)});
     });
   });
 
@@ -289,7 +289,7 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
         },
         {
           name: 'Class',
-          id : '2',
+          id: '2',
         },
       ]);
     });
@@ -362,7 +362,7 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
         },
         {
           name: 'Class',
-          id : '2',
+          id: '2',
         },
       ]);
 
@@ -378,7 +378,7 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
         },
         {
           name: 'Class2',
-          id : '2',
+          id: '2',
         },
       ]);
     });

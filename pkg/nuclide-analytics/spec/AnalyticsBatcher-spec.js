@@ -18,20 +18,20 @@ describe('analytics - AnalyticsBatcher', () => {
     const batcher = new AnalyticsBatcher(track);
 
     batcher.track('key1', {});
-    batcher.track('key2', { v1: 'value1'});
+    batcher.track('key2', {v1: 'value1'});
     expect(track).not.toHaveBeenCalled();
 
     advanceClock(999);
     expect(track).not.toHaveBeenCalled();
     advanceClock(1);
     expect(track).toHaveBeenCalledWith([
-      {'key':'key1','values':{}},
-      {'key':'key2','values':{'v1':'value1'}},
+      {key: 'key1', values: {}},
+      {key: 'key2', values: {v1: 'value1'}},
     ]);
 
     batcher.track('key3');
     advanceClock(10000);
-    expect(track).toHaveBeenCalledWith([{'key':'key3'}]);
+    expect(track).toHaveBeenCalledWith([{key: 'key3'}]);
   });
 
   it('flush on dispose', () => {
@@ -39,13 +39,13 @@ describe('analytics - AnalyticsBatcher', () => {
     const batcher = new AnalyticsBatcher(track);
 
     batcher.track('key1', {});
-    batcher.track('key2', { v1: 'value1'});
+    batcher.track('key2', {v1: 'value1'});
     expect(track).not.toHaveBeenCalled();
 
     batcher.dispose();
     expect(track).toHaveBeenCalledWith([
-      {'key':'key1','values':{}},
-      {'key':'key2','values':{'v1':'value1'}},
+      {key: 'key1', values: {}},
+      {key: 'key2', values: {v1: 'value1'}},
     ]);
   });
 

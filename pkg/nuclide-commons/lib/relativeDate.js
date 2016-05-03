@@ -21,19 +21,19 @@ const YEAR = DAY * 365;
 const MONTH = YEAR / 12;
 
 const formats = [
-  [ 0.7 * MINUTE, 'just now' ],
-  [ 1.5 * MINUTE, 'a minute ago' ],
-  [ 60 * MINUTE, 'minutes ago', MINUTE ],
-  [ 1.5 * HOUR, 'an hour ago' ],
-  [ DAY, 'hours ago', HOUR ],
-  [ 2 * DAY, 'yesterday' ],
-  [ 7 * DAY, 'days ago', DAY ],
-  [ 1.5 * WEEK, 'a week ago'],
-  [ MONTH, 'weeks ago', WEEK ],
-  [ 1.5 * MONTH, 'a month ago' ],
-  [ YEAR, 'months ago', MONTH ],
-  [ 1.5 * YEAR, 'a year ago' ],
-  [ Number.MAX_VALUE, 'years ago', YEAR ],
+  [0.7 * MINUTE, 'just now'],
+  [1.5 * MINUTE, 'a minute ago'],
+  [60 * MINUTE, 'minutes ago', MINUTE],
+  [1.5 * HOUR, 'an hour ago'],
+  [DAY, 'hours ago', HOUR],
+  [2 * DAY, 'yesterday'],
+  [7 * DAY, 'days ago', DAY],
+  [1.5 * WEEK, 'a week ago'],
+  [MONTH, 'weeks ago', WEEK],
+  [1.5 * MONTH, 'a month ago'],
+  [YEAR, 'months ago', MONTH],
+  [1.5 * YEAR, 'a year ago'],
+  [Number.MAX_VALUE, 'years ago', YEAR],
 ];
 
 export function relativeDate(

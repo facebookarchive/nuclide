@@ -498,7 +498,7 @@ export class FileTreeStore {
     this._updateRoots(root => {
       return root.updateConf().setRecursive(
         // Remove selection from hidden nodes under this root
-        node => node.containsSelection && node.containsHidden ? null : node,
+        node => (node.containsSelection && node.containsHidden ? null : node),
         node => {
           if (node.shouldBeShown) {
             return node;
@@ -506,7 +506,7 @@ export class FileTreeStore {
 
           // The node is hidden - unselect all nodes under it if there are any
           return node.setRecursive(
-            subNode => subNode.containsSelection ? null : subNode,
+            subNode => (subNode.containsSelection ? null : subNode),
             subNode => subNode.setIsSelected(false),
           );
         }
@@ -866,7 +866,7 @@ export class FileTreeStore {
     this._filter = this._filter + letter;
     this._updateRoots(root => {
       return root.setRecursive(
-        node => node.containsFilterMatches ? null : node,
+        node => (node.containsFilterMatches ? null : node),
         node => {
           return matchesFilter(node.name, this._filter) ? node.set({
             highlightedText: this._filter,
@@ -981,7 +981,7 @@ export class FileTreeStore {
   _expandNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
     this._updateNodeAtRoot(rootKey, nodeKey, node => {
       return node.setIsExpanded(true).setRecursive(
-        n => !n.isContainer || !n.isExpanded ? n : null,
+        n => (!n.isContainer || !n.isExpanded ? n : null),
         n => {
           if (n.isContainer && n.isExpanded) {
             this._fetchChildKeys(n.uri);
@@ -1182,7 +1182,7 @@ export class FileTreeStore {
   _clearSelection(): void {
     this._updateRoots(root => {
       return root.setRecursive(
-        node => node.containsSelection ? null : node,
+        node => (node.containsSelection ? null : node),
         node => node.setIsSelected(false),
       );
     });
@@ -1307,7 +1307,7 @@ export class FileTreeStore {
       }
 
       return root.setRecursive(
-        node => node.containsTrackedNode ? null : node,
+        node => (node.containsTrackedNode ? null : node),
         node => node.setIsTracked(false),
       );
     });

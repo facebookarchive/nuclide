@@ -134,7 +134,7 @@ function pointFromHackOutlineItem(item: HackOutlineItem): atom$Point {
 async function outlineFromEditor(editor: atom$TextEditor): Promise<?HackOutline> {
   const filePath = editor.getPath();
   if (filePath == null) {
-    return  null;
+    return null;
   }
   const hackLanguage = await getHackLanguageForUri(filePath);
   if (hackLanguage == null) {

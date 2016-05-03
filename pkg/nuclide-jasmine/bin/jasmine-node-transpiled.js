@@ -38,7 +38,7 @@ const timeoutId = setTimeout(() => {
 // Use "inherit" for "stdio" so jasmine-node inherits our TTY, and can properly
 // determine whether to show colors or not.
 child_process
-  .spawn('node', args,  {stdio: 'inherit'})
+  .spawn('node', args, {stdio: 'inherit'})
   .on('close', code => {
     clearTimeout(timeoutId);
     if (code === 0) {

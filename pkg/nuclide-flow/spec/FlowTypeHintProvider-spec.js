@@ -133,10 +133,10 @@ describe('getTypeHintTree', () => {
     };
   }
 
-  const num = { kind: 'NumT' };
-  const str = { kind: 'StrT' };
-  const bool = { kind: 'BoolT' };
-  const anyObj = { kind: 'AnyObjT' };
+  const num = {kind: 'NumT'};
+  const str = {kind: 'StrT'};
+  const bool = {kind: 'BoolT'};
+  const anyObj = {kind: 'AnyObjT'};
 
   const emptyObject = makeObjectType(new Map());
   const simpleObject = makeObjectType(new Map([['numProp', num]]));

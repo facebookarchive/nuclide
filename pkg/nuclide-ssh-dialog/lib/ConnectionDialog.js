@@ -87,12 +87,12 @@ class ConnectionDialog extends React.Component {
     super(props);
 
     const sshHandshake = new SshHandshake(decorateSshConnectionDelegateWithTracking({
-      onKeyboardInteractive: (name, instructions, instructionsLang, prompts, finish)  => {
+      onKeyboardInteractive: (name, instructions, instructionsLang, prompts, finish) => {
         // TODO: Display all prompts, not just the first one.
         this.requestAuthentication(prompts[0], finish);
       },
 
-      onWillConnect:() => {},
+      onWillConnect: () => {},
 
       onDidConnect: (connection: RemoteConnection, config: SshConnectionConfiguration) => {
         this.close(); // Close the dialog.

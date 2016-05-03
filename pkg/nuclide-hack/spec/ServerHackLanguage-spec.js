@@ -98,9 +98,9 @@ describe('ServerHackLanguage', () => {
 AUTO332class HackClass {}`);
       expect(result).toEqual([
         {
-          matchSnippet : 'foo(${1:p1}, ${2:p2})',
-          matchText : 'foo',
-          matchType : 'foo_type',
+          matchSnippet: 'foo(${1:p1}, ${2:p2})',
+          matchText: 'foo',
+          matchType: 'foo_type',
         },
       ]);
     });
@@ -130,13 +130,13 @@ AUTO332class HackClass {}`);
             filename: filePath,
             line: 1,
             char_start: 2,
-            char_end:2,
+            char_end: 2,
           },
           {
             filename: filePath,
             line: 2,
             char_start: 4,
-            char_end:6,
+            char_end: 6,
           },
         ],
         internal_error: false,
@@ -147,8 +147,8 @@ AUTO332class HackClass {}`);
 
       expect(mockService.getSourceHighlights).toHaveBeenCalledWith(filePath, contents, 4, 6);
       expect(result).toEqual([
-        { start: { row: 0, column: 1 }, end: { row: 0, column: 2 } },
-        { start: { row: 1, column: 3 }, end: { row: 1, column: 6 } },
+        {start: {row: 0, column: 1}, end: {row: 0, column: 2}},
+        {start: {row: 1, column: 3}, end: {row: 1, column: 6}},
       ]);
     });
   });
@@ -185,21 +185,21 @@ AUTO332class HackClass {}`);
   it('getTypeCoverage', () => {
     waitsForPromise(async () => {
       const serviceResults: Array<HackTypedRegion> = [
-        { color: 'default', text: '123' },
-        { color: 'unchecked', text: '456' },
+        {color: 'default', text: '123'},
+        {color: 'unchecked', text: '456'},
       ];
       mockService.getTypedRegions.andReturn(serviceResults);
 
       const result = await hackLanguage.getTypeCoverage(filePath);
 
       expect(mockService.getTypedRegions).toHaveBeenCalledWith(filePath);
-      expect(result).toEqual([ { type : 'unchecked', line : 1, start : 4, end : 6 } ]);
+      expect(result).toEqual([{type: 'unchecked', line: 1, start: 4, end: 6}]);
     });
   });
 
   it('getDefinition', () => {
     waitsForPromise(async () => {
-      const definition =           {
+      const definition = {
         path: filePath,
         line: 42,
         column: 24,
@@ -230,7 +230,7 @@ AUTO332class HackClass {}`);
           filename: filePath,
           line: 1,
           char_start: 2,
-          char_end:2,
+          char_end: 2,
         },
       };
       mockService.getTypeAtPos.andReturn(serviceResult);

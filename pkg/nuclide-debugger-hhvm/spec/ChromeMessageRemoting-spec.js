@@ -25,20 +25,20 @@ describe('debugger-hhvm ChromeMessageRemoting', () => {
           params: {
             scriptId: '/home/test.php',
             url: 'file:///home/test.php',
-            startLine:0,
-            startColumn:0,
-            endLine:0,
-            endColumn:0,
+            startLine: 0,
+            startColumn: 0,
+            endLine: 0,
+            endColumn: 0,
           },
         }))).toBe(JSON.stringify({
           method: 'Debugger.scriptParsed',
           params: {
             scriptId: '/home/test.php',
             url: 'nuclide://myhost:8080/home/test.php',
-            startLine:0,
-            startColumn:0,
-            endLine:0,
-            endColumn:0,
+            startLine: 0,
+            startColumn: 0,
+            endLine: 0,
+            endColumn: 0,
           },
         }));
   });
@@ -52,20 +52,20 @@ describe('debugger-hhvm ChromeMessageRemoting', () => {
           params: {
             scriptId: '/home/te st.php',
             url: 'file:///home/te st.php',
-            startLine:0,
-            startColumn:0,
-            endLine:0,
-            endColumn:0,
+            startLine: 0,
+            startColumn: 0,
+            endLine: 0,
+            endColumn: 0,
           },
         }))).toBe(JSON.stringify({
           method: 'Debugger.scriptParsed',
           params: {
             scriptId: '/home/te st.php',
             url: 'nuclide://myhost:8080/home/te st.php',
-            startLine:0,
-            startColumn:0,
-            endLine:0,
-            endColumn:0,
+            startLine: 0,
+            startColumn: 0,
+            endLine: 0,
+            endColumn: 0,
           },
         }));
   });

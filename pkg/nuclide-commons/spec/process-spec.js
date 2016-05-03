@@ -72,7 +72,7 @@ describe('nuclide-commons/process', () => {
 
   describe('OS X path_helper regexp', () => {
     it('matches and captures valid PATH', () => {
-      const matches = 'PATH=\"/usr/bin:/usr/local/bin\"; export PATH; echo \"\"'
+      const matches = 'PATH="/usr/bin:/usr/local/bin"; export PATH; echo ""'
         .match(DARWIN_PATH_HELPER_REGEXP);
       invariant(matches);
       expect(matches[1]).toEqual('/usr/bin:/usr/local/bin');

@@ -38,7 +38,7 @@ describe('FlowHelpers', () => {
       expect(groupParamNames(args)).toEqual([args]);
     });
 
-    it('should return an empty array for no arguments', () =>  {
+    it('should return an empty array for no arguments', () => {
       expect(groupParamNames([])).toEqual([]);
     });
   });

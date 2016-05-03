@@ -200,7 +200,8 @@ class AutocompleteProvider {
     }
 
     return data.completions.map(completion => {
-      let snippet, displayText;
+      let snippet;
+      let displayText;
       // For function argument completions, strip out everything before the current parameter.
       // Ideally we'd use the replacement prefix, but this is a hard problem in C++:
       //   e.g. min<decltype(x)>(x, y) is a perfectly valid function call.

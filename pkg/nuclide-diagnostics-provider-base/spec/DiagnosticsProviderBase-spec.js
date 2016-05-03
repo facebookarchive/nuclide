@@ -43,7 +43,7 @@ describe('DiagnosticsProviderBase', () => {
   beforeEach(() => {
     fakeEditor = {
       getPath() { return 'foo'; },
-      getGrammar() { return { scopeName: grammar }; },
+      getGrammar() { return {scopeName: grammar}; },
     };
     eventCallback = null;
     subscribedToAny = null;

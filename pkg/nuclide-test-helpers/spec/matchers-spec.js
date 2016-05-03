@@ -32,7 +32,7 @@ describe('matchers', () => {
     });
 
     it('colors diff output.', () => {
-      const match = {actual : {a: 1, b: 2}};
+      const match = {actual: {a: 1, b: 2}};
       const isMatch = diffJson.bind(match)({b: 2, c: 3});
 
       const expected = chalk.gray('{\n')
@@ -61,7 +61,7 @@ describe('matchers', () => {
     });
 
     it('colors diff output.', () => {
-      const match = { actual: 'line1\nline2\nline3' };
+      const match = {actual: 'line1\nline2\nline3'};
       const isMatch = diffLines.bind(match)('line1\nline3');
 
       const expected = chalk.gray('line1\n')

@@ -286,7 +286,7 @@ class ServerConnection {
   }
 
   _isSecure(): boolean {
-    return !!(
+    return Boolean(
         this._config.certificateAuthorityCertificate
         && this._config.clientCertificate
         && this._config.clientKey

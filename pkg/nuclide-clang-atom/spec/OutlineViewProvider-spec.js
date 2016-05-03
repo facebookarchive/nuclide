@@ -48,7 +48,7 @@ describe('outlineFromClangOutline', () => {
           param('p1'),
           plain(', '),
           param('p2'),
-          plain(')',),
+          plain(')'),
         ],
         startPosition: new Point(0, 1),
         endPosition: new Point(2, 3),
@@ -92,7 +92,7 @@ describe('outlineFromClangOutline', () => {
             tokenizedText: [
               method('testMethod'),
               plain('('),
-              plain(')',),
+              plain(')'),
             ],
             startPosition: new Point(1, 1),
             endPosition: new Point(1, 2),

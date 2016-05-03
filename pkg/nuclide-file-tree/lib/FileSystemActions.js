@@ -269,7 +269,7 @@ const FileSystemActions = {
           file,
           nodePath,
           newBasename.trim(),
-          !!options.addToVCS,
+          Boolean(options.addToVCS),
           onDidConfirm,
         ).catch(error => {
           atom.notifications.addError(`Failed to duplicate '${file.getPath()}'`);

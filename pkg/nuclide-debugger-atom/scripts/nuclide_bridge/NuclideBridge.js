@@ -147,7 +147,7 @@ class NuclideBridge {
         // $FlowFixMe.
         WebInspector.RemoteObject.loadFromObject(
           this.object,
-          !!this.ignoreHasOwnProperty,
+          Boolean(this.ignoreHasOwnProperty),
           callback.bind(this)
         );
       };
@@ -218,7 +218,7 @@ class NuclideBridge {
       (remoteObject, wasThrown, error) => {
         ipc.sendToHost('notification', 'ExpressionEvaluationResponse', {
           result: wasThrown ? null : remoteObject,
-          error:  wasThrown ? error : null,
+          error: wasThrown ? error : null,
           expression,
         });
       },
@@ -294,7 +294,7 @@ class NuclideBridge {
     this._allBreakpoints.forEach(breakpoint => {
       const sourceUrl = breakpoint.sourceURL;
       if (sourceUrl.endsWith('.php') ||
-          sourceUrl.endsWith('.hh')  ||
+          sourceUrl.endsWith('.hh') ||
           sourceUrl.endsWith('.c') ||
           sourceUrl.endsWith('.cpp') ||
           sourceUrl.endsWith('.h') ||
@@ -402,7 +402,7 @@ class NuclideBridge {
   _handleUISourceCodeAdded(event: Object) {
     const source = event.data;
     this._unresolvedBreakpoints.get(source.uri()).forEach(line => {
-      WebInspector.breakpointManager.setBreakpoint(source, line , 0, '', true);
+      WebInspector.breakpointManager.setBreakpoint(source, line, 0, '', true);
     });
     if (this._unresolvedBreakpoints.deleteAll(source.uri())) {
       this._emitter.emit('unresolved-breakpoints-changed', null);

@@ -16,7 +16,7 @@ import flatten from '../../utils/flatten';
 import markers from '../../constants/markers';
 
 function printIdentifier(print: Print, node: Identifier): Lines {
-  return  flatten([
+  return flatten([
     node.name,
     node.typeAnnotation ? print(node.typeAnnotation) : markers.empty,
   ]);

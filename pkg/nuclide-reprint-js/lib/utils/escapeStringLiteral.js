@@ -25,7 +25,7 @@ function escapeStringLiteral(value: string, options: QuoteOptions): string {
 }
 
 function swapQuotes(str) {
-  return str.replace(/['"]/g, function(m) {
+  return str.replace(/['"]/g, m => {
     return m === '"' ? '\'' : '"';
   });
 }

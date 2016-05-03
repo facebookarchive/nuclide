@@ -61,7 +61,7 @@ function advanceClock(deltaMs: number): void {
   const advanceTo = now + deltaMs;
 
   while (timeouts.length !== 0 && timeouts[0][1] <= advanceTo) {
-    const [ , strikeTime, callback] = timeouts.shift();
+    const [, strikeTime, callback] = timeouts.shift();
     now = strikeTime;
     callback();
   }

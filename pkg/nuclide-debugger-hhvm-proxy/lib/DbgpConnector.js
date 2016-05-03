@@ -148,7 +148,7 @@ export class DbgpConnector {
   }
 
   isListening(): boolean {
-    return !!this._server;
+    return Boolean(this._server);
   }
 
   dispose() {

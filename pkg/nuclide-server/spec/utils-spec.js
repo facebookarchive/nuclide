@@ -14,7 +14,8 @@ import utils from '../lib/utils';
 import querystring from 'querystring';
 
 xdescribe('NuclideServer utils test', () => { // eslint-disable-line jasmine/no-disabled-tests
-  let server, customHandler;
+  let server;
+  let customHandler;
 
   beforeEach(() => {
     let connected = false;

@@ -38,7 +38,7 @@ class FlowAutocompleteProvider {
       col,
       prefix,
       // Needs to be a boolean, but autocomplete-plus gives us undefined instead of false.
-      !!activatedManually,
+      Boolean(activatedManually),
     );
   }
 }

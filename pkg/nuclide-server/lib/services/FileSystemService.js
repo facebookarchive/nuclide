@@ -118,8 +118,9 @@ export async function readdir(path: string): Promise<Array<FileWithStats>> {
     }
   }));
   // TODO: Return entries directly and change client to handle error.
-  return entries.filter(entry => entry.error === undefined).
-    map(entry => {
+  return entries
+    .filter(entry => entry.error === undefined)
+    .map(entry => {
       return {file: entry.file, stats: entry.stats, isSymbolicLink: entry.isSymbolicLink};
     });
 }

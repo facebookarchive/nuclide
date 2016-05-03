@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-/* eslint-env browser */
+/* globals MouseEvent */
 
 import invariant from 'assert';
 import {Point} from 'atom';

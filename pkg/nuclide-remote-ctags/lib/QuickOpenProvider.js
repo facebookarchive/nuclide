@@ -73,7 +73,8 @@ module.exports = ({
   getComponentForItem(uncastedItem: FileResult): React.Element {
     const item = ((uncastedItem: any): Result);
     const path = relative(item.dir, item.path);
-    let kind, icon;
+    let kind;
+    let icon;
     if (item.kind != null) {
       kind = CTAGS_KIND_NAMES[item.kind];
       icon = CTAGS_KIND_ICONS[item.kind];

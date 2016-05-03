@@ -105,7 +105,7 @@ export class DebuggerHandler extends Handler {
       case 'getScriptSource':
         // TODO: Handle file read errors.
         // TODO: Handle non-file scriptIds
-        this.replyToCommand(id, { scriptSource: await this._files.getFileSource(params.scriptId) });
+        this.replyToCommand(id, {scriptSource: await this._files.getFileSource(params.scriptId)});
         break;
 
       case 'setBreakpointByUrl':

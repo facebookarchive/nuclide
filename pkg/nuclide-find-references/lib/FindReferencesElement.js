@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/* eslint-env browser */
-
 import type FindReferencesModel from './FindReferencesModel';
 
 import {React, ReactDOM} from 'react-for-atom';
@@ -28,19 +26,20 @@ class FindReferencesElement extends HTMLElement {
     return 'Symbol References: ' + this._model.getSymbolName();
   }
 
-  attachedCallback() {
+  // $FlowIssue -- readonly props: t10620219
+  attachedCallback(): mixed {
     ReactDOM.render(
       <FindReferencesView model={this._model} />,
       this
     );
   }
 
-  detachedCallback() {
+  // $FlowIssue -- readonly props: t10620219
+  detachedCallback(): mixed {
     ReactDOM.unmountComponentAtNode(this);
   }
 }
 
-module.exports = FindReferencesElement = (document: any).registerElement(
-  'nuclide-find-references-view',
-  {prototype: FindReferencesElement.prototype}
-);
+export default document.registerElement('nuclide-find-references-view', {
+  prototype: FindReferencesElement.prototype,
+});

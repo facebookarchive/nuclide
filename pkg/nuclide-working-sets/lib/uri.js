@@ -59,7 +59,7 @@ export function splitUri(uri: string): Array<string> {
 export function isUriBelow(ancestorUri: string, descendantUri: string): boolean {
   const sep = pathModuleFor(ancestorUri).sep;
   return descendantUri.startsWith(ancestorUri) &&
-    (descendantUri[ancestorUri.length] === sep  || ancestorUri.length === descendantUri.length);
+    (descendantUri[ancestorUri.length] === sep || ancestorUri.length === descendantUri.length);
 }
 
 function normalizePath(path?: string): string {

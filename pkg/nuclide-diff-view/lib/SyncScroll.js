@@ -43,7 +43,7 @@ export default class SyncScroll {
   }
 
   _scrollPositionChanged(changeScrollIndex: number): void {
-    const thisInfo  = this._syncInfo[changeScrollIndex];
+    const thisInfo = this._syncInfo[changeScrollIndex];
     if (thisInfo.scrolling) {
       return;
     }

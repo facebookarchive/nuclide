@@ -22,7 +22,7 @@ function processArgs() {
   const args = process.argv.slice(2);
   const processedArgs = {};
 
-  args.forEach(function(argument, index) {
+  args.forEach((argument, index) => {
     if (index % 2 !== 0) {
       processedArgs[args[index - 1].slice(2)] = argument;
     }
@@ -47,7 +47,7 @@ function startServer(args) {
     _webServer = http.createServer(handleRequest);
   }
 
-  _webServer.on('listening', function() {
+  _webServer.on('listening', () => {
     console.log('listening on port ' + args.port); //eslint-disable-line no-console
   });
 

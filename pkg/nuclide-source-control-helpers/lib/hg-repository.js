@@ -24,8 +24,7 @@ function findHgRepository(directoryPath: string): ?HgRepositoryDescription {
   let workingDirectoryPath = directoryPath;
   let repoPath = path.join(workingDirectoryPath, '.hg');
   let originURL = null;
-  /*eslint-disable no-constant-condition */
-  while (true) {
+  for (;;) {
     const dirToTest = path.join(workingDirectoryPath, '.hg');
     if (fs.isDirectorySync(dirToTest)) {
       repoPath = dirToTest;
@@ -43,7 +42,6 @@ function findHgRepository(directoryPath: string): ?HgRepositoryDescription {
       workingDirectoryPath = getParentDir(workingDirectoryPath);
     }
   }
-  /*eslint-enable no-constant-condition */
   return {repoPath, originURL, workingDirectoryPath};
 }
 

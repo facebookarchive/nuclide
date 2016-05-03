@@ -47,8 +47,8 @@ describe('FlowProcess', () => {
     fakeAsyncExec = jasmine.createSpy().andReturn({exitCode: FLOW_RETURN_CODES.ok});
 
     childSpy = {
-      stdout: { on() {} },
-      stderr: { on() {} },
+      stdout: {on() {}},
+      stderr: {on() {}},
       on() {},
       kill() {},
     };

@@ -39,7 +39,7 @@ function outlinesForProviderResults(
 function uiOutlinesForResult(result: Result<?Outline>): Observable<OutlineForUi> {
   switch (result.kind) {
     case 'not-text-editor':
-      return Observable.of({ kind: 'not-text-editor' });
+      return Observable.of({kind: 'not-text-editor'});
     case 'no-provider':
       return Observable.of({
         kind: 'no-provider',
@@ -49,17 +49,17 @@ function uiOutlinesForResult(result: Result<?Outline>): Observable<OutlineForUi>
       // Render a blank outline when we change panes.
       // If we haven't received anything after LOADING_DELAY_MS, display a loading indicator.
       return Observable.concat(
-        Observable.of({ kind: 'empty' }),
-        Observable.of({ kind: 'loading' }).delay(LOADING_DELAY_MS),
+        Observable.of({kind: 'empty'}),
+        Observable.of({kind: 'loading'}).delay(LOADING_DELAY_MS),
       );
     case 'result':
       const outline = result.result;
       if (outline == null) {
-        return Observable.of({ kind: 'provider-no-outline' });
+        return Observable.of({kind: 'provider-no-outline'});
       }
       return highlightedOutlines(outline, result.editor);
     case 'provider-error':
-      return Observable.of({ kind: 'provider-no-outline' });
+      return Observable.of({kind: 'provider-no-outline'});
     default:
       // The last case, 'edit', is already filtered out above, but Flow doesn't know that.
       throw new Error(`Unexpected editor provider result ${result.kind}`);

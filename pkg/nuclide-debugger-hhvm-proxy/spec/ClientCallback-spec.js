@@ -39,7 +39,7 @@ describe('debugger-hhvm-proxy ClientCallback', () => {
   });
 
   it('sendMethod: args', () => {
-    clientCallback.sendMethod(observableSpy, 'method1', { arg1: 12 });
+    clientCallback.sendMethod(observableSpy, 'method1', {arg1: 12});
     expect(observableSpy.next).toHaveBeenCalledWith('{"method":"method1","params":{"arg1":12}}');
   });
 
@@ -49,12 +49,12 @@ describe('debugger-hhvm-proxy ClientCallback', () => {
   });
 
   it('replyToCommand: no-error', () => {
-    clientCallback.replyToCommand(42, {result:'value'});
+    clientCallback.replyToCommand(42, {result: 'value'});
     expect(observableSpy.next).toHaveBeenCalledWith('{"id":42,"result":{"result":"value"}}');
   });
 
   it('replyToCommand: error', () => {
-    clientCallback.replyToCommand(42, {result:'value'}, 'error-msg');
+    clientCallback.replyToCommand(42, {result: 'value'}, 'error-msg');
     expect(observableSpy.next).toHaveBeenCalledWith(
       '{"id":42,"result":{"result":"value"},"error":"error-msg"}');
   });

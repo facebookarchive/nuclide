@@ -66,7 +66,7 @@ export class ArcanistDiagnosticsProvider {
     return this._busySignalProvider.reportBusy(
       `Waiting for arc lint results for \`${textEditor.getTitle()}\``,
       () => this._runLint(textEditor),
-      { onlyForFile: path },
+      {onlyForFile: path},
     );
   }
 

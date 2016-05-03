@@ -42,7 +42,7 @@ function printRoot(root: Collection): string {
 
   // Make sure there is a new line at the end.
   if (!/^[\w\W]*\n$/.test(output)) {
-    output = output + '\n';
+    output += '\n';
   }
 
   return output;

@@ -130,7 +130,7 @@ function getQueryParameters(requestUrl: string): QueryParams {
 function serializeArgs(args: Array<any>): SerializedArguments {
   const argsOnHttp = [];
   const argTypes = [];
-  args.forEach(function(arg) {
+  args.forEach(arg => {
     // I do this because nulls are normally sent as empty strings
     if (arg === undefined) {
       argsOnHttp.push('');
@@ -159,7 +159,7 @@ function deserializeArgs(requestUrl: string): Array<any> {
   argTypes = argTypes || [];
   const argsArray = Array.isArray(args) ? args : [args];
   const argTypesArray = Array.isArray(argTypes) ? argTypes : [argTypes];
-  return argsArray.map(function(arg, i) {
+  return argsArray.map((arg, i) => {
     // I do this because nulls are normally sent as empty strings.
     if (argTypesArray[i] === 'undefined') {
       return undefined;

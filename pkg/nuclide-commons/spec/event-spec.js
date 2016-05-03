@@ -40,7 +40,7 @@ describe('observableFromSubscribeFunction', () => {
   // above for inspection.
   const subscribeFunction = fn => {
     callback = fn;
-    disposable = { dispose() { callback = null; } };
+    disposable = {dispose() { callback = null; }};
     spyOn(disposable, 'dispose').andCallThrough();
     return disposable;
   };

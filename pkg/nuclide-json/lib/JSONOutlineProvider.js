@@ -32,7 +32,7 @@ export function getOutline(text: string): ?Outline {
           children: [],
         };
       });
-    return { outlineTrees };
+    return {outlineTrees};
   }
   return null;
 }

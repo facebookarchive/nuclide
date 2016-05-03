@@ -15,7 +15,8 @@ import * as track from '../lib/track';
 const startTracking = main.startTracking;
 
 describe('startTracking', () => {
-  let trackKey, trackValues;
+  let trackKey;
+  let trackValues;
   let originalProcessHrTime = null;
   let originalWindowPerformance = null;
 

@@ -204,7 +204,7 @@ export class FlowRoot {
         resultsArray = json.result;
       }
       const candidates = resultsArray.map(item => processAutocompleteItem(replacementPrefix, item));
-      return filter(candidates, replacementPrefix, { key: 'displayText' });
+      return filter(candidates, replacementPrefix, {key: 'displayText'});
     } catch (e) {
       return [];
     }
@@ -221,8 +221,8 @@ export class FlowRoot {
 
     options.stdin = currentContents;
 
-    line = line + 1;
-    column = column + 1;
+    line++;
+    column++;
     const args =
       ['type-at-pos', '--json', '--path', file, line, column];
     if (includeRawType) {

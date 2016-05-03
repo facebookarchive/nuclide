@@ -22,7 +22,7 @@ async function createEditorWithUniquePath(): Promise<atom$TextEditor> {
 }
 
 function hasBreakpointDecorationInRow(editor: atom$TextEditor, row: number): boolean {
-  return !!getBreakpointDecorationInRow(editor, row);
+  return Boolean(getBreakpointDecorationInRow(editor, row));
 }
 
 function getBreakpointDecorationInRow(editor: atom$TextEditor, row: number): ?atom$Decoration {

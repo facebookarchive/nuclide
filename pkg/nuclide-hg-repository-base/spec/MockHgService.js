@@ -18,7 +18,7 @@ module.exports = class MockHgService {
   fetchStatuses(
     filePaths: Array<NuclideUri>,
     options: ?any
-  ): Promise<Map<string,StatusCodeIdValue>> {
+  ): Promise<Map<string, StatusCodeIdValue>> {
     return Promise.resolve(new Map());
   }
 

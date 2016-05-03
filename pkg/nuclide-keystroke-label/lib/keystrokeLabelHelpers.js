@@ -115,7 +115,9 @@ function humanizeKeystroke(keystroke: string, platform: ?string): string {
   }
   platform = platform || process.platform;
   const separator = platform === 'darwin' ? '' : '+';
-  let key, keys, splitKeystroke;
+  let key;
+  let keys;
+  let splitKeystroke;
   const keystrokes = keystroke.split(' ');
   const humanizedKeystrokes = [];
   for (let i = 0; i < keystrokes.length; i++) {

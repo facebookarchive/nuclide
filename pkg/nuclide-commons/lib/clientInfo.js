@@ -22,7 +22,7 @@ const pkgJson = JSON.parse(fs.readFileSync(NUCLIDE_PACKAGE_JSON_PATH));
 // "Development" is defined as working from source - not packaged code.
 // apm/npm and internal releases don't package the base `.flowconfig`, so
 // we use this to figure if we're packaged or not.
-export const isDevelopment = once(function(): boolean {
+export const isDevelopment = once((): boolean => {
   try {
     fs.statSync(path.join(NUCLIDE_BASEDIR, '.flowconfig'));
     return true;
@@ -39,7 +39,7 @@ export const isDevelopment = once(function(): boolean {
 // ensures happens only once.
 //
 // [1]: https://github.com/atom/atom/blob/v1.6.2/src/window-load-settings-helpers.coffee#L10-L14
-export const isRunningInTest = once(function(): boolean {
+export const isRunningInTest = once((): boolean => {
   if (isRunningInClient()) {
     return atom.inSpecMode();
   } else {

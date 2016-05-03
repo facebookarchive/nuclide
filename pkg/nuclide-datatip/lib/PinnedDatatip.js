@@ -154,9 +154,9 @@ export class PinnedDatatip {
     this._ensureMouseSubscriptionDisposed();
     this._mouseSubscription =
       documentMouseMove$().takeUntil(documentMouseUp$()).subscribe(
-      (e: MouseEvent) => {this.handleGlobalMouseMove(e);},
+      (e: MouseEvent) => { this.handleGlobalMouseMove(e); },
       (error: any) => {},
-      () => {this.handleGlobalMouseUp();},
+      () => { this.handleGlobalMouseUp(); },
     );
   }
 

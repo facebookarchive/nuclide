@@ -783,7 +783,7 @@
       "resolved": "https://registry.npmjs.org/eslint-plugin-jasmine/-/eslint-plugin-jasmine-1.8.1.tgz"
     },
     "eslint-plugin-nuclide-internal": {
-      "version": "0.0.12",
+      "version": "0.0.13",
       "from": "resources/eslint-plugin-nuclide-internal",
       "resolved": "file:resources/eslint-plugin-nuclide-internal"
     },

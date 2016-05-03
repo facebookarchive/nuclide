@@ -239,10 +239,9 @@ class DiffViewModel {
     try {
       config = require('./fb/config');
     } finally {
-      if (config == null) {
-        return;
+      if (config != null) {
+        await config.applyConfig();
       }
-      await config.applyConfig();
     }
   }
 
@@ -551,7 +550,7 @@ class DiffViewModel {
     }
     const {viewMode, commitMode} = entityOption;
     if (viewMode !== this._state.viewMode || commitMode !== this._state.commitMode) {
-      if (viewMode ===  DiffMode.COMMIT_MODE) {
+      if (viewMode === DiffMode.COMMIT_MODE) {
         invariant(commitMode, 'DIFF: Commit Mode not set!');
         this.setViewMode(DiffMode.COMMIT_MODE, false);
         this.setCommitMode(commitMode, false);

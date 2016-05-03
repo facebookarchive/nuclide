@@ -15,7 +15,7 @@ import getRootIdentifierInExpression from './getRootIdentifierInExpression';
 
 function isRequireExpression(node: Node): boolean {
   const root = getRootIdentifierInExpression(node);
-  return !!(root && root.name === 'require');
+  return Boolean(root && root.name === 'require');
 }
 
 module.exports = isRequireExpression;

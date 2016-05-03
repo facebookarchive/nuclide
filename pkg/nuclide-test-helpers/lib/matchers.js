@@ -75,7 +75,8 @@ function diffLines(expected: string): boolean {
  *   and a string containing the colored diff output.
  */
 function formatMessage(parts: Array<Change>): {changes: number; message: string} {
-  let changes = 0, message = '';
+  let changes = 0;
+  let message = '';
   for (const part of parts) {
     let color = 'gray';
     if (part.added || part.removed) {

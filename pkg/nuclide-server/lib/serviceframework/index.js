@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import ServerComponent from  './ServerComponent';
-import ClientComponent from  './ClientComponent';
+import ServerComponent from './ServerComponent';
+import ClientComponent from './ClientComponent';
 
 import {loadServicesConfig} from './config';
 

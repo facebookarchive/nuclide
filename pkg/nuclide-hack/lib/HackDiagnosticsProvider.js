@@ -182,7 +182,7 @@ class HackDiagnosticsProvider {
       diagnosticArray.push(diagnostic);
     }
 
-    return { filePathToMessages };
+    return {filePathToMessages};
   }
 
   _getPathsToInvalidate(hackLanguage: HackLanguage): Array<NuclideUri> {

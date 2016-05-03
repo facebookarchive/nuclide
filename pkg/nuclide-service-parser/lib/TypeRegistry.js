@@ -75,7 +75,7 @@ function statsToObject(stats: fs.Stats): Object {
   };
 
   if (stats.birthtime) {
-    return {...result, birthtime: stats.birthtime.toJSON() };
+    return {...result, birthtime: stats.birthtime.toJSON()};
   }
 
   return result;

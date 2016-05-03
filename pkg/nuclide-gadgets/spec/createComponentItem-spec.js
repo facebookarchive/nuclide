@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/* eslint-env browser */
-
 import invariant from 'assert';
 import createComponentItem from '../lib/createComponentItem';
 import {React} from 'react-for-atom';

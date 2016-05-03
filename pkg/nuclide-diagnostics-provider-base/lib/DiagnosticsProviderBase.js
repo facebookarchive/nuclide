@@ -86,8 +86,8 @@ export class DiagnosticsProviderBase {
 
     // The Set constructor creates an empty Set if passed null or undefined.
     this._grammarScopes = new Set(options.grammarScopes);
-    this._allGrammarScopes = !!options.enableForAllGrammars;
-    this._subscribeToTextEditorEvent(!!options.shouldRunOnTheFly);
+    this._allGrammarScopes = Boolean(options.enableForAllGrammars);
+    this._subscribeToTextEditorEvent(Boolean(options.shouldRunOnTheFly));
   }
 
   /**

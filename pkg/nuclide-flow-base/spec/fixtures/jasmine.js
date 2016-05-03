@@ -16,8 +16,8 @@ describe('foo', () => {
   });
 });
 
-describe('bar', function() {
-  it('should work with a normal function', function() {
+describe('bar', () => {
+  it('should work with a normal function', () => {
   });
 });
 

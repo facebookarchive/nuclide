@@ -61,8 +61,9 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
     ): ConnectionMultiplexerType);
     onStatusSubscription = jasmine.createSpyObj('onStatusSubscription', ['dispose']);
     // $FlowFixMe override instance methods.
-    connectionMultiplexer.onStatus = jasmine.createSpy('onStatus').
-      andCallFake(callback => {
+    connectionMultiplexer.onStatus = jasmine
+      .createSpy('onStatus')
+      .andCallFake(callback => {
         onStatus = callback;
         return onStatusSubscription;
       });
@@ -126,7 +127,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
           startLine: 0,
           startColumn: 0,
           endLine: 0,
-          endColumn: 0 ,
+          endColumn: 0,
         });
       expect(clientCallback.sendMethod).toHaveBeenCalledWith(
         observableSpy,
@@ -304,11 +305,11 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       expect(clientCallback.replyToCommand).toHaveBeenCalledWith(
         1,
         {
-          breakpointId : 12,
-          locations : [
+          breakpointId: 12,
+          locations: [
             {
-              lineNumber : 42,
-              scriptId : '/test.php',
+              lineNumber: 42,
+              scriptId: '/test.php',
             },
           ],
         },

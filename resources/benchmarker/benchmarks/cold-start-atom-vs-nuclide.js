@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-
-
 const TIMEOUT = 30 * 1000;
 
 const REPETITIONS = 3;

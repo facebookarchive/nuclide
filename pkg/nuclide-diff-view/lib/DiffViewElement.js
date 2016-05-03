@@ -110,6 +110,6 @@ class DiffViewElement extends HTMLElement {
 
 }
 
-module.exports = DiffViewElement = document.registerElement('nuclide-diff-view', {
+export default document.registerElement('nuclide-diff-view', {
   prototype: DiffViewElement.prototype,
 });

@@ -63,7 +63,7 @@ function hasPrefix(
 function findHackPrefix(editor: atom$TextEditor): string {
   const cursor = editor.getLastCursor();
   // We use custom wordRegex to adopt php variables starting with $.
-  const currentRange = cursor.getCurrentWordBufferRange({wordRegex:/(\$\w*)|\w+/});
+  const currentRange = cursor.getCurrentWordBufferRange({wordRegex: /(\$\w*)|\w+/});
   // Current word might go beyond the cursor, so we cut it.
   const range = new Range(
       currentRange.start,

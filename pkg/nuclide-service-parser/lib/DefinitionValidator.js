@@ -171,10 +171,10 @@ export function validateDefinitions(definitions: Definitions): void {
         // Containers break the layout chain as they may be empty.
         break;
       case 'object':
-        type.fields.
-          filter(field => !field.optional).
-          map(field => field.type).
-          forEach(validateTypeRec);
+        type.fields
+          .filter(field => !field.optional)
+          .map(field => field.type)
+          .forEach(validateTypeRec);
         break;
       case 'tuple':
         type.types.forEach(validateTypeRec);
@@ -306,7 +306,7 @@ export function validateDefinitions(definitions: Definitions): void {
       validateLiteralUnionType(type, alternates);
     } else if (alternates[0].kind === 'object') {
       validateObjectUnionType(type, alternates);
-    }  else {
+    } else {
       throw errorLocations([type.location, alternates[0].location],
         'Union alternates must be either be typed object or literal types.');
     }
@@ -372,8 +372,8 @@ export function validateDefinitions(definitions: Definitions): void {
         }
       }, null);
 
-    const validFields = Array.from(possibleFields).
-        filter(fieldName => isValidDiscriminantField(alternates, fieldName));
+    const validFields = Array.from(possibleFields)
+        .filter(fieldName => isValidDiscriminantField(alternates, fieldName));
     if (validFields.length > 0) {
       // If there are multiple valid discriminant fields, we just pick the first.
       return validFields[0];

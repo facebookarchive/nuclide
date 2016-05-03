@@ -61,7 +61,7 @@ describe('debugger-hhvm-proxy DataCache', () => {
         },
         {
           name: 'User defined constants',
-          id : '2',
+          id: '2',
         },
       ])),
       getContextProperties: jasmine.createSpy().andReturn(Promise.resolve(PROPERTIES)),
@@ -163,8 +163,8 @@ describe('debugger-hhvm-proxy DataCache', () => {
   it('getProperties - single page', () => {
     waitsForPromise(async () => {
       // $FlowFixMe override instance method.
-      socket.getPropertiesByFullname = jasmine.createSpy('getPropertiesByFullname').
-          andReturn(Promise.resolve(PROPERTIES));
+      socket.getPropertiesByFullname = jasmine.createSpy('getPropertiesByFullname')
+        .andReturn(Promise.resolve(PROPERTIES));
       enable();
       const result = await cache.getProperties(singlePageRemoteId);
       expect(result).toEqual(CONVERTED_PROPERTIES);
@@ -182,11 +182,10 @@ describe('debugger-hhvm-proxy DataCache', () => {
       const result = await cache.evaluateOnCallFrame(5, 'expression');
       expect(socket.evaluateOnCallFrame).toHaveBeenCalledWith(5, 'expression');
       expect(convertValue).toHaveBeenCalledWith({
-        enableCount : 1,
-        frameIndex : 5,
-        contextId : 'Watch Context Id',
-      },
-          PROPERTIES);
+        enableCount: 1,
+        frameIndex: 5,
+        contextId: 'Watch Context Id',
+      }, PROPERTIES);
       expect(result).toEqual({
         result: EXPRESSION,
         wasThrown: false,

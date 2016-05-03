@@ -88,7 +88,7 @@ export class WString {
     // =>
     // [begin][id:1,1; len: 2, vis: 1;][id:1,4; len: 1, vis: 1;][id:1,3; len: 2, vis: 1;][end]
     if (leftHalf.startId.site === c.startId.site
-      && leftHalf.startId.h  === c.startId.h - leftHalf.length
+      && leftHalf.startId.h === c.startId.h - leftHalf.length
       && offset === leftHalf.length
       && c.visible === leftHalf.visible) {
       leftHalf.length += c.length;

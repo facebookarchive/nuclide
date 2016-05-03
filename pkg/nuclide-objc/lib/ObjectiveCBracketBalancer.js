@@ -99,12 +99,12 @@ class ObjectiveCBracketBalancer {
     for (let i = 0; i < startingLine.length; i++) {
       if (startingLine[i] === '\'') {
         singleQuoteCount++;
-      } else if (startingLine[i] === '\"') {
+      } else if (startingLine[i] === '"') {
         doubleQuoteCount++;
       } else {
         if (singleQuoteCount % 2 === 0 && doubleQuoteCount % 2 === 0) {
           // We are not inside a char nor string literal. Count the brackets.
-          characterCount[startingLine[i]] = characterCount[startingLine[i]] + 1;
+          characterCount[startingLine[i]]++;
         }
       }
     }

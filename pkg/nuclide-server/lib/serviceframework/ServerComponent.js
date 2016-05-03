@@ -96,7 +96,7 @@ export default class ServerComponent {
           case 'interface':
             // Register interfaces.
             logger.debug(`Registering interface ${name}...`);
-            this._classesByName.set(name,  {
+            this._classesByName.set(name, {
               localImplementation: localImpl[name],
               definition,
             });
@@ -125,7 +125,7 @@ export default class ServerComponent {
     if (this._functionsByName.has(name)) {
       throw new Error(`Duplicate RPC function: ${name}`);
     }
-    this._functionsByName.set(name,  {
+    this._functionsByName.set(name, {
       localImplementation: localImpl,
       type,
     });
@@ -383,7 +383,7 @@ function createCompletedMessage(requestId: number): ObservableResponseMessage {
     type: 'ObservableMessage',
     requestId,
     hadError: false,
-    result: { type: 'completed' },
+    result: {type: 'completed'},
   };
 }
 

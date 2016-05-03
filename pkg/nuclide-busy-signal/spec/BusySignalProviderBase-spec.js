@@ -63,24 +63,24 @@ describe('BusySignalProviderBase', () => {
     it('should only display for the proper text editor', () => {
       atom.workspace.getActivePane().activateItem(editor1);
 
-      const disposable = providerBase.displayMessage('foo', { onlyForFile: '/file2.txt'});
+      const disposable = providerBase.displayMessage('foo', {onlyForFile: '/file2.txt'});
       expect(messages).toEqual([]);
 
       atom.workspace.getActivePane().activateItem(editor2);
       expect(messages.length).toBe(1);
-      expect(messages[0]).toEqual({ status: 'busy', id: 0, message: 'foo'});
+      expect(messages[0]).toEqual({status: 'busy', id: 0, message: 'foo'});
 
       atom.workspace.getActivePane().activateItem(editor3);
       expect(messages.length).toBe(2);
-      expect(messages[1]).toEqual({ status: 'done', id: 0});
+      expect(messages[1]).toEqual({status: 'done', id: 0});
 
       atom.workspace.getActivePane().activateItem(editor2);
       expect(messages.length).toBe(3);
-      expect(messages[2]).toEqual({ status: 'busy', id: 1, message: 'foo'});
+      expect(messages[2]).toEqual({status: 'busy', id: 1, message: 'foo'});
 
       disposable.dispose();
       expect(messages.length).toBe(4);
-      expect(messages[3]).toEqual({ status: 'done', id: 1});
+      expect(messages[3]).toEqual({status: 'done', id: 1});
     });
   });
 });

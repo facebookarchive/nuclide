@@ -11,7 +11,7 @@
 
 import SearchResultManager from '../lib/SearchResultManager';
 import {__test__} from '../lib/SearchResultManager';
-const {_getOmniSearchProviderSpec} =  __test__;
+const {_getOmniSearchProviderSpec} = __test__;
 
 const FakeProvider = {
   getProviderType: () => 'GLOBAL',

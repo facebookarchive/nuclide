@@ -31,7 +31,8 @@ function createTestClassAndCallTrackedMethod(methodBodyToBeTracked: any): any {
 }
 
 describe('The @trackTiming decorator', () => {
-  let trackKey, trackValues;
+  let trackKey;
+  let trackValues;
   beforeEach(() => {
     // Clear intercepted tracking data.
     trackKey = null;
@@ -51,7 +52,7 @@ describe('The @trackTiming decorator', () => {
     let ret;
 
     runs(() => {
-      ret = createTestClassAndCallTrackedMethod(() => 1 );
+      ret = createTestClassAndCallTrackedMethod(() => 1);
     });
 
     waitsFor(() => trackKey, 10);

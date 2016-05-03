@@ -80,7 +80,7 @@ export const Button = (props: Props) => {
       [`icon icon-${icon}`]: icon != null,
       [sizeClassname]: size != null,
       selected,
-      [buttonTypeClassname]:  buttonType != null,
+      [buttonTypeClassname]: buttonType != null,
     },
   );
   return (

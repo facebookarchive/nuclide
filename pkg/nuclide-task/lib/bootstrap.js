@@ -7,7 +7,7 @@
  */
 
 // This file must be written in ES5. It is used to bootstrap a forked process.
-/*eslint-disable no-var*/
+/* eslint-disable no-var, prefer-arrow-callback, no-inner-declarations */
 
 var isBootstrapped = false;
 var messagesToProcess = [];

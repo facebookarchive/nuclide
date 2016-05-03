@@ -109,4 +109,4 @@ function validate(condition: mixed, msg: string, errors: Array<string>): void {
   }
 }
 
-module.exports = { createAdapters, validateLinter };
+module.exports = {createAdapters, validateLinter};

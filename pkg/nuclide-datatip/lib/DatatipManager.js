@@ -76,7 +76,7 @@ export class DatatipManager {
       }));
 
       const editorView = atom.views.getView(editor);
-      const mouseMoveListener = event => {this.handleMouseMove(event, editor, editorView);};
+      const mouseMoveListener = event => { this.handleMouseMove(event, editor, editorView); };
       editorView.addEventListener('mousemove', mouseMoveListener);
       const mouseListenerSubscription = new Disposable(() =>
           editorView.removeEventListener('mousemove', mouseMoveListener));
@@ -224,7 +224,8 @@ export class DatatipManager {
           rangeEndColumn: String(range.end.column),
         });
         this._currentRange = range;
-        let action, actionTitle;
+        let action;
+        let actionTitle;
         // Datatips are pinnable by default, unless explicitly specified otherwise.
         if (pinnable !== false) {
           action = DATATIP_ACTIONS.PIN;
@@ -281,7 +282,7 @@ export class DatatipManager {
     // Atom issue: https://github.com/atom/atom/issues/6695
     const expressionLength = combinedRange.end.column - combinedRange.start.column;
     this._ephemeralDatatipElement.style.left =
-      -(expressionLength * editor.getDefaultCharWidth()) +  'px';
+      -(expressionLength * editor.getDefaultCharWidth()) + 'px';
     this._ephemeralDatatipElement.style.display = 'block';
 
     editor.decorateMarker(

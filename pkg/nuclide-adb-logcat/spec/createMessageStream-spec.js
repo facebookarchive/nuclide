@@ -25,7 +25,7 @@ describe('createMessageStream', () => {
         '',
       ]);
 
-      const message$ =  createMessageStream(output$)
+      const message$ = createMessageStream(output$)
         .map(message => message.text)
         .toArray();
 

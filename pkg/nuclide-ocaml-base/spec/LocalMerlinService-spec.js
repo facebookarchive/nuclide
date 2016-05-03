@@ -61,9 +61,9 @@ describe('LocalMerlinService', () => {
           async command => {
             if (command[0] === 'reset' && command[2] === filename && count === 0) {
               ++count;
-              return { cursor: {line: 1, col: 0}, marker: false };
+              return {cursor: {line: 1, col: 0}, marker: false};
             } else if (command[0] === 'tell' && command[2] === content && count === 1) {
-              return { cursor: {line: 2, col: 0}, marker: false};
+              return {cursor: {line: 2, col: 0}, marker: false};
             }
 
             return null;
@@ -84,7 +84,7 @@ describe('LocalMerlinService', () => {
         // within the same file; make sure we normalize this by
         // adding the path.
         const merlinService = await getMockedMerlinService(
-          async command => { return {cursor: {line: 1 ,col: 0}, marker: false}; }
+          async command => { return {cursor: {line: 1, col: 0}, marker: false}; }
         );
 
         const result = await merlinService.locate('derp.ml', 1, 1, 'ml');
@@ -97,7 +97,7 @@ describe('LocalMerlinService', () => {
       waitsForPromise(async () => {
         const merlinService = await getMockedMerlinService(
           async command => {
-            return {cursor: {line: 1 ,col: 0}, marker: false, file: 'notderp.ml'};
+            return {cursor: {line: 1, col: 0}, marker: false, file: 'notderp.ml'};
           }
         );
 
@@ -115,8 +115,8 @@ describe('LocalMerlinService', () => {
     it('sends the appropriate merlin command', () => {
       waitsForPromise(async () => {
         const expectedResult = [
-            { desc: 'unit -> int', info: '', kind: 'Value', name: 'derp' },
-            { desc: 'int', info: '', kind: 'Value', name: 'also' },
+            {desc: 'unit -> int', info: '', kind: 'Value', name: 'derp'},
+            {desc: 'int', info: '', kind: 'Value', name: 'also'},
         ];
 
         const merlinService = await getMockedMerlinService(

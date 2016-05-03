@@ -21,8 +21,8 @@ describe('FindInProjectService-Integration', () => {
 
   // Strips out port number, hostname, and current file directory.
   function makePortable(jsonObject) {
-    const regex =
-      new RegExp('\/\/localhost:\\d*/*' + __dirname, 'g'); // eslint-disable-line no-path-concat
+    // eslint-disable-next-line no-path-concat
+    const regex = new RegExp('\\/\\/localhost:\\d*/*' + __dirname, 'g');
     return JSON.parse(
       JSON.stringify(jsonObject, null, 2)
         .replace(regex, 'VARIABLE')

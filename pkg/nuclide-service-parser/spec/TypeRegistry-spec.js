@@ -180,7 +180,7 @@ describe('TypeRegistry', () => {
     waitsForPromise(async () => {
       invariant(typeRegistry);
 
-      const expected1 = { a: 42, b: { c: 'str' }};
+      const expected1 = {a: 42, b: {c: 'str'}};
       const object1 = await typeRegistry.unmarshal(
           context,
           await typeRegistry.marshal(context, expected1, objectType), objectType);
@@ -257,7 +257,7 @@ describe('TypeRegistry', () => {
           },
         ],
       };
-      const expected2 = { a: null, b: new Buffer('test') };
+      const expected2 = {a: null, b: new Buffer('test')};
       const result2 = await typeRegistry.unmarshal(
         context,
         await typeRegistry.marshal(context, expected2, customObjectType),

@@ -26,14 +26,14 @@ describe('DedupedBusySignalProviderBase', () => {
   it('should properly dispose of a message', () => {
     providerBase.displayMessage('foo').dispose();
     expect(messages).toEqual([
-      { status: 'busy', id: 0, message: 'foo'},
-      { status: 'done', id: 0},
+      {status: 'busy', id: 0, message: 'foo'},
+      {status: 'done', id: 0},
     ]);
   });
 
   it('should properly display and dispose of a duplicate message', () => {
-    const expectedFirstMessage = { status: 'busy', id: 0, message: 'foo' };
-    const expectedCancellationMessage = { status: 'done', id: 0 };
+    const expectedFirstMessage = {status: 'busy', id: 0, message: 'foo'};
+    const expectedCancellationMessage = {status: 'done', id: 0};
 
     const dispose1 = providerBase.displayMessage('foo');
     const dispose2 = providerBase.displayMessage('foo');

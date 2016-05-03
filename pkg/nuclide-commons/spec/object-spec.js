@@ -17,8 +17,7 @@ describe('object.isEmpty', () => {
   });
 
   it('correctly identifies non-empty Objects', () => {
-
-    const proto = {a:1, b:2, c:3};
+    const proto = {a: 1, b: 2, c: 3};
     const objWithOwnProperties = Object.create(proto, {foo: {value: 'bar'}});
     const objWithoutOwnProperties = Object.create(proto);
 

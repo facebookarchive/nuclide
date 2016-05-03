@@ -15,7 +15,8 @@ import {BreakpointStore} from '../lib/BreakpointStore';
 
 describe('debugger-hhvm-proxy BreakpointStore', () => {
   let store;
-  let connection1, connection2;
+  let connection1;
+  let connection2;
   let onStatus1;
 
   function createIdGenerator(prefix) {

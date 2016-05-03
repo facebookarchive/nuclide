@@ -65,7 +65,7 @@ describe('repositoryContainsPath', () => {
       const hgRepositoryClient = new HgRepositoryClient(
         /* repoPath */ path.join(repoRoot, '.hg'),
         /* hgService */ mockHgService,
-        /* options */  {
+        /* options */ {
           originURL: 'testURL',
           workingDirectory: new Directory(repoRoot),
           projectRootDirectory: new Directory(repoRoot),

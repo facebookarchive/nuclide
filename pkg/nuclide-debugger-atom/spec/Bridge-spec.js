@@ -120,7 +120,7 @@ describe('Bridge', () => {
 
   it('should add decoration to line of current call frame', () => {
     waitsFor(() => {
-      return !!getCallFrameDecorationInRow(1);
+      return Boolean(getCallFrameDecorationInRow(1));
     }, 'call frame highlight to appear', 100);
 
     runs(() => {
@@ -130,7 +130,7 @@ describe('Bridge', () => {
 
   it('should remove decoration when clear interface', () => {
     waitsFor(() => {
-      return !!getCallFrameDecorationInRow(1);
+      return Boolean(getCallFrameDecorationInRow(1));
     }, 'call frame highlight to appear', 100);
 
     runs(() => {
@@ -142,7 +142,7 @@ describe('Bridge', () => {
 
   it('should remove decoration and unregister listener when disposed', () => {
     waitsFor(() => {
-      return !!getCallFrameDecorationInRow(1);
+      return Boolean(getCallFrameDecorationInRow(1));
     }, 'call frame highlight to appear', 100);
 
     runs(() => {
@@ -155,7 +155,7 @@ describe('Bridge', () => {
 
   it('should remove decoration and unregister listener after cleanup', () => {
     waitsFor(() => {
-      return !!getCallFrameDecorationInRow(1);
+      return Boolean(getCallFrameDecorationInRow(1));
     }, 'call frame highlight to appear', 100);
 
     runs(() => {
@@ -196,7 +196,7 @@ describe('Bridge', () => {
     });
 
     waitsFor(() => {
-      return !!getCursorInRow(line);
+      return Boolean(getCursorInRow(line));
     }, 'cursor at line to appear', 100);
 
     runs(() => {

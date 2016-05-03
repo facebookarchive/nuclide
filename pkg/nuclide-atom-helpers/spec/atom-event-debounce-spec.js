@@ -28,7 +28,7 @@ const DEBOUNCE_INTERVAL = 10;
 // emitted.
 const SLEEP_INTERVAL = 15;
 
-describe('pane item change events', ()  => {
+describe('pane item change events', () => {
   let editor1: atom$TextEditor = (null: any);
   let editor2: atom$TextEditor = (null: any);
   let editor3: atom$TextEditor = (null: any);

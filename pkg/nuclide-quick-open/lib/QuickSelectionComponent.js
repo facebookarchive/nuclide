@@ -412,7 +412,7 @@ export default class QuickSelectionComponent extends React.Component {
     if (!(this.refs && this.refs['selectionList'])) {
       return;
     }
-    const listNode =  ReactDOM.findDOMNode(this.refs['selectionList']);
+    const listNode = ReactDOM.findDOMNode(this.refs['selectionList']);
     const selectedNode = listNode.getElementsByClassName('selected')[0];
     // false is passed for @centerIfNeeded parameter, which defaults to true.
     // Passing false causes the minimum necessary scroll to occur, so the selection sticks to the
@@ -720,6 +720,7 @@ export default class QuickSelectionComponent extends React.Component {
     if (object.isEmpty(this.state.resultsByService)) {
       noResultsMessage = this._renderEmptyMessage('Search away!');
     } else if (numTotalResultsRendered === 0) {
+      // eslint-disable-next-line no-useless-escape
       noResultsMessage = this._renderEmptyMessage(<span>¯\_(ツ)_/¯<br />No results</span>);
     }
     const currentProvider = this.getProvider();

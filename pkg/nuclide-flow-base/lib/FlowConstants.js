@@ -14,7 +14,7 @@ import type {ServerStatusType} from '..';
 export const ServerStatus = Object.freeze({
   FAILED: 'failed',
   UNKNOWN: 'unknown',
-  NOT_RUNNING:  'not running',
+  NOT_RUNNING: 'not running',
   NOT_INSTALLED: 'not installed',
   BUSY: 'busy',
   INIT: 'init',

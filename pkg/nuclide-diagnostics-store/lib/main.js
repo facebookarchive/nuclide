@@ -140,7 +140,7 @@ export function consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvi
     )
   );
   compositeDisposable.add(new Disposable(() => {
-    store.invalidateMessages(provider, { scope: 'all' });
+    store.invalidateMessages(provider, {scope: 'all'});
   }));
 
   return compositeDisposable;

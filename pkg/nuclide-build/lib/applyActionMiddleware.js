@@ -65,7 +65,7 @@ export function applyActionMiddleware(
           type: ActionTypes.TASKS_UPDATED,
           payload: {tasks},
         });
-        const noTasks =  Observable.of(tasksToActions([]));
+        const noTasks = Observable.of(tasksToActions([]));
         return activeBuildSystem == null
           ? noTasks
           : noTasks.concat(

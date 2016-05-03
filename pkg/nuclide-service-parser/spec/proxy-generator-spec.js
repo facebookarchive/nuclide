@@ -58,7 +58,7 @@ const ArrayOfArrayOfNuclideUri: Type = {
   },
 };
 
-describe('generateTransformStatement helper function', function() {
+describe('generateTransformStatement helper function', () => {
   beforeEach(function() {
     addMatchers(this);
   });

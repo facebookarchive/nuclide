@@ -98,7 +98,7 @@ describe('DistractionFreeMode', () => {
 
   describe('deserialization', () => {
     it('should properly deserialize from a non-distraction-free-mode state', () => {
-      distractionFreeMode = new DistractionFreeMode({ restoreState: null });
+      distractionFreeMode = new DistractionFreeMode({restoreState: null});
       distractionFreeMode.consumeDistractionFreeModeProvider(provider1);
       distractionFreeMode.consumeDistractionFreeModeProvider(provider2);
 

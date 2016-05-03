@@ -69,8 +69,7 @@ export class SocketClient {
     this._connect(socket);
     const queuedMessages = this._messageQueue;
     this._messageQueue = [];
-    queuedMessages.
-        forEach(message => this.sendSocketMessage(message.data));
+    queuedMessages.forEach(message => { this.sendSocketMessage(message.data); });
   }
 
   _close(): void {

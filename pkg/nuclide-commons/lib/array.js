@@ -24,7 +24,7 @@ export function equal<T>(
   if (array1.length !== array2.length) {
     return false;
   }
-  const equalFunction = equalComparator || ((a: T,  b: T) => a === b);
+  const equalFunction = equalComparator || ((a: T, b: T) => a === b);
   return array1.every((item1, i) => equalFunction(item1, array2[i]));
 }
 

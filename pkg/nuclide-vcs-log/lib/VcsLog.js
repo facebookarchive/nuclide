@@ -71,7 +71,8 @@ export default class VcsLog extends React.Component {
         let differentialCell;
         if (showDifferentialRevision) {
           const url = differentialUrls[index];
-          let revision, onClick;
+          let revision;
+          let onClick;
           if (url != null) {
             revision = url.substring(url.lastIndexOf('/') + 1);
             onClick = () => shell.openExternal(url);

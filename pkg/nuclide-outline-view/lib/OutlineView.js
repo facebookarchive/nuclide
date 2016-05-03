@@ -158,7 +158,7 @@ function renderTree(
 
   const classes = classnames(
     'list-nested-item',
-    { 'selected': outline.highlighted },
+    {selected: outline.highlighted},
   );
   return (
     <li className={classes} key={index}>

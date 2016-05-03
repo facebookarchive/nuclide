@@ -27,7 +27,7 @@ describe('applyTextEdit', () => {
 
   it('should apply a patch', () => {
     const textedit = {
-      oldRange: new Range([1,0], [1, 2]),
+      oldRange: new Range([1, 0], [1, 2]),
       newText: 'BAR',
     };
 

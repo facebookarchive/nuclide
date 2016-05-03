@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/* eslint-env browser */
-
 import {CompositeDisposable, Emitter} from 'atom';
 
 class WebViewPane extends HTMLElement {

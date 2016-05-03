@@ -70,8 +70,8 @@ class FileWatcher {
 
     // Load the file contents locally or remotely.
     const localFilePath = getPath(filePath);
-    const filesystemContents = (await getFileSystemServiceByNuclideUri(filePath).
-      readFile(localFilePath)).toString(encoding);
+    const filesystemContents = (await getFileSystemServiceByNuclideUri(filePath)
+      .readFile(localFilePath)).toString(encoding);
 
     // Open a right split pane to compare the contents.
     // TODO: We can use the diff-view here when ready.

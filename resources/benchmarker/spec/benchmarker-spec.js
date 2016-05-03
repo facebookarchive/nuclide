@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-/* eslint-env browser */
 /* eslint-disable no-console */
 
 declare function waitsForPromise(
@@ -142,7 +141,7 @@ function getBenchmarksAndPackages(): {benchmarks: Array<string>; packages: Array
 }
 
 function getTestState(): Object {
-  const item = sessionStorage.getItem(RUN_STATE_KEY);
+  const item = window.sessionStorage.getItem(RUN_STATE_KEY);
   if (item) {
     try {
       return JSON.parse(item);
@@ -162,7 +161,7 @@ function setTestState(newState: Object): void {
   for (const key in newState) {
     state[key] = newState[key];
   }
-  sessionStorage.setItem(RUN_STATE_KEY, JSON.stringify(state));
+  window.sessionStorage.setItem(RUN_STATE_KEY, JSON.stringify(state));
 }
 
 function createResultDir(): string {

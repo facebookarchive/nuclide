@@ -28,7 +28,7 @@ class Activation {
     this._bracketFeature = new ObjectiveCBracketBalancerCtr();
     this._configSubscription = featureConfig.observe(
         'nuclide-objc.enableAutomaticSquareBracketInsertion',
-        enabled => enabled ? this._bracketFeature.enable() : this._bracketFeature.disable());
+        enabled => (enabled ? this._bracketFeature.enable() : this._bracketFeature.disable()));
   }
 
   dispose() {

@@ -13,8 +13,6 @@
  * THIS IS FILE IS NOT TRANSPILED - USE ELECTRON COMPATIBLE JAVASCRIPT
  */
 
-/* global WebInspector */
-/* eslint-env browser */
 /* eslint-disable no-var */
 
 require('../../nuclide-node-transpiler');
@@ -59,8 +57,8 @@ window.InspectorFrontendHost = {
   loadNetworkResource: function(url, headers, streamId, callback) {
     const dataPrefix = 'data:application/json;base64,';
     if (url.startsWith(dataPrefix)) {
-      const response = atob(url.slice(dataPrefix.length));
-      WebInspector.Streams.streamWrite(streamId, response);
+      const response = window.atob(url.slice(dataPrefix.length));
+      window.WebInspector.Streams.streamWrite(streamId, response);
       callback({statusCode: 200});
     } else {
       callback({statusCode: 404});

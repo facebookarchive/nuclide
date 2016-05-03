@@ -15,6 +15,7 @@ import crypto from 'crypto';
 import {CompositeDisposable} from 'atom';
 import {array} from '../../nuclide-commons';
 import {track} from '../../nuclide-analytics';
+import FindReferencesElement from './FindReferencesElement';
 
 export type FindReferencesData = {
   type: 'data';
@@ -67,7 +68,7 @@ async function getProviderData(): Promise<?FindReferencesReturn> {
   const providerData = await Promise.all(supported.map(
     provider => provider.findReferences(editor, point)
   ));
-  return providerData.filter(x => !!x)[0];
+  return providerData.filter(x => Boolean(x))[0];
 }
 
 function showError(message: string): void {
@@ -99,7 +100,6 @@ async function tryCreateView(): Promise<?HTMLElement> {
         references
       );
 
-      const FindReferencesElement = require('./FindReferencesElement');
       return new FindReferencesElement().initialize(model);
     }
   } catch (e) {

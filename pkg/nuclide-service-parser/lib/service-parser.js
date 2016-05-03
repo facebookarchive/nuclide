@@ -55,7 +55,7 @@ class ServiceParser {
       this._defs.set(name, {
         kind: 'alias',
         name,
-        location: { type: 'builtin' },
+        location: {type: 'builtin'},
       });
     };
     namedBuiltinTypes.forEach(defineBuiltinType);

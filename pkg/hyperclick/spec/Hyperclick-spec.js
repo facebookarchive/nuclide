@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/* eslint-env browser */
-
 import type {HyperclickProvider} from '../lib/types';
 import type HyperclickForTextEditor from '../lib/HyperclickForTextEditor';
 

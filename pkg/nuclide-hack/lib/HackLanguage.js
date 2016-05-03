@@ -55,7 +55,7 @@ export type Definition = {
  * and/or results from HackService (which would be executing hh_client on a supporting server)
  * and combining and/or selecting the results to give back to the requester.
  */
-export type HackLanguage  = {
+export type HackLanguage = {
 
   dispose(): void;
 

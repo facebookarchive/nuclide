@@ -29,7 +29,7 @@ const capitalize = str => str[0].toUpperCase() + str.substr(1);
 
 export function formatEnoentNotification(options: Options): Result {
   const {feature, toolName, pathSetting} = options;
-  const schema =  featureConfig.getSchema(pathSetting);
+  const schema = featureConfig.getSchema(pathSetting);
   const settingTitle = schema.title;
   const categoryTitle = capitalize(pathSetting.split('.').shift());
   const command = featureConfig.get(pathSetting);

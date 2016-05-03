@@ -79,7 +79,7 @@ export type KeyboardInteractiveCallback = (
   instructions: string,
   instructionsLang: string,
   prompts: Array<{prompt: string; echo: boolean;}>,
-  finish: (answers: Array<string>) => void)  => void;
+  finish: (answers: Array<string>) => void) => void;
 
 export type SshConnectionDelegate = {
   /** Invoked when server requests keyboard interaction */
@@ -281,7 +281,7 @@ export class SshHandshake {
   }
 
   _isSecure(): boolean {
-    return !!(this._certificateAuthorityCertificate
+    return Boolean(this._certificateAuthorityCertificate
         && this._clientCertificate
         && this._clientKey);
   }

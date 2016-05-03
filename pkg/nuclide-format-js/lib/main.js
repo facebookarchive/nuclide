@@ -22,7 +22,7 @@ export function activate(state: ?Object): void {
   }
 
   const formatCode = require('./formatCode');
-  const { calculateOptions, observeSettings } = require('./settings');
+  const {calculateOptions, observeSettings} = require('./settings');
 
   const localSubscriptions = new CompositeDisposable();
   localSubscriptions.add(atom.commands.add(

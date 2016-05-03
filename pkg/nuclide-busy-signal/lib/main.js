@@ -29,7 +29,7 @@ export type {
   BusySignalMessageBusy,
   BusySignalMessageDone,
   BusySignalProvider,
-} from  './types';
+} from './types';
 
 class Activation {
   _statusBarTile: ?StatusBarTileType;

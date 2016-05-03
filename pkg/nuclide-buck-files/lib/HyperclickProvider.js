@@ -84,9 +84,9 @@ async function findTargetLocation(target: Target): Promise {
   const regex = new RegExp(
       '^\\s*' + // beginning of the line
       'name\\s*=\\s*' + // name =
-      '[\'\"]' + // opening quotation mark
+      '[\'"]' + // opening quotation mark
       escapeRegExp(target.name) + // target name
-      '[\'\"]' + // closing quotation mark
+      '[\'"]' + // closing quotation mark
       ',?$' // optional trailling comma
   );
 

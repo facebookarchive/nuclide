@@ -143,7 +143,7 @@ class BreakpointDisplayController {
         throw 'should have created anchor element';
       }
       elem.className = 'nuclide-breakpoint-icon';
-      gutter.decorateMarker(marker, { item: elem });
+      gutter.decorateMarker(marker, {item: elem});
       markersToKeep.push(marker);
     });
 

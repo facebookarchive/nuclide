@@ -145,7 +145,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
           page: 0,
           pagesize: 32,
         },
-        property:[
+        property: [
           {
             _: 'dGVzdC1jbGllbnQucGhw',
             $: {
@@ -170,7 +170,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
     expect(convertValue(
       objectId,
       {
-        $:{
+        $: {
           name: '$arg',
           fullname: '$arg',
           address: '140735546955520',

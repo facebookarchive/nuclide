@@ -67,7 +67,7 @@ export async function instrumentConsole(
     queue,
   );
 
-  connectedSocket.pipe(split(/\0/)).on('data', function(id: string) {
+  connectedSocket.pipe(split(/\0/)).on('data', (id: string) => {
     emitter.emit(id);
   });
 

@@ -42,10 +42,10 @@ const MAX_SELECTION_LENGTH = 1000;
 let analyticsSessionId = null;
 const AnalyticsEvents = Object.freeze({
   CHANGE_SELECTION: 'quickopen-change-selection',
-  CHANGE_TAB:       'quickopen-change-tab',
-  CLOSE_PANEL:      'quickopen-close-panel',
-  OPEN_PANEL:       'quickopen-open-panel',
-  SELECT_FILE:      'quickopen-select-file',
+  CHANGE_TAB: 'quickopen-change-tab',
+  CLOSE_PANEL: 'quickopen-close-panel',
+  OPEN_PANEL: 'quickopen-open-panel',
+  SELECT_FILE: 'quickopen-select-file',
 });
 const AnalyticsDebounceDelays = Object.freeze({
   CHANGE_TAB: 100,

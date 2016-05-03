@@ -475,7 +475,7 @@ class BuckToolbarStore {
   }
 
   getTasks(): Array<Task> {
-    const enabled = !!(this.getBuildTarget() && !this.isBuilding());
+    const enabled = Boolean(this.getBuildTarget() && !this.isBuilding());
     return TASKS.map(task => ({
       ...task,
       enabled,

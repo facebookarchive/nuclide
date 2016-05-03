@@ -176,7 +176,7 @@ describe('createStateStream', () => {
           action$.next({
             type: ActionTypes.REGISTER_EXECUTOR,
             payload: {
-              executor:  createDummyExecutor('b'),
+              executor: createDummyExecutor('b'),
             },
           });
           action$.complete();
@@ -201,7 +201,7 @@ describe('createStateStream', () => {
           action$.next({
             type: ActionTypes.UNREGISTER_EXECUTOR,
             payload: {
-              executor:  initialExecutors.get('a'),
+              executor: initialExecutors.get('a'),
             },
           });
           action$.complete();

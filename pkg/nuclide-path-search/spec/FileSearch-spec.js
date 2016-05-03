@@ -12,18 +12,20 @@
 import invariant from 'assert';
 import fs from 'fs';
 import path from 'path';
-import {track} from 'temp';
-const temp = track();
+import temp from 'temp';
 import url from 'url';
-
 import {asyncExecute} from '../../nuclide-commons';
-
 import {fileSearchForDirectory} from '../lib/FileSearch';
 
+temp.track();
 
 function aFileSearchShould(typename) {
   describe(`A ${typename} folder`, () => {
-    let dirPath, dirPathFn, search, deeperSearch, uriSearch;
+    let dirPath;
+    let dirPathFn;
+    let search;
+    let deeperSearch;
+    let uriSearch;
 
     if (typename === 'Mercurial') {
       dirPathFn = hgTestFolder;

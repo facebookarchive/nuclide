@@ -409,23 +409,7 @@ export function consumeToolBar(getToolBar: (group: string) => Object): void {
 }
 
 export function provideRemoteControlService(): RemoteControlService {
-  return new RemoteControlService(() => activation ? activation.getModel() : null);
-}
-
-export function createDatatipProvider(): Object {
-  return {
-    // Eligibility is determined online, based on registered EvaluationExpression providers.
-    validForScope: (scope: string) => true,
-    providerName: DATATIP_PACKAGE_NAME,
-    inclusionPriority: 1,
-    datatip: (editor: TextEditor, position: atom$Point) => {
-      if (activation == null) {
-        return null;
-      }
-      const model = activation.getModel();
-      return debuggerDatatip(model, editor, position);
-    },
-  };
+  return new RemoteControlService(() => (activation ? activation.getModel() : null));
 }
 
 export function consumeDatatipService(service: DatatipService): IDisposable {

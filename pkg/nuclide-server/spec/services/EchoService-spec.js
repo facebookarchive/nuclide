@@ -94,7 +94,7 @@ describe('EchoServer', () => {
   it('Echoes an Array<Array<Date>>.', () => {
     const a = new Date();
     const b = new Date(1995, 11, 17, 3, 24, 0);
-    const expected = [[ a, b ]];
+    const expected = [[a, b]];
 
     waitsForPromise(async () => {
       const results = await service.echoArrayOfArrayOfDate(expected);

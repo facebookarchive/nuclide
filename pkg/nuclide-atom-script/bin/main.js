@@ -23,7 +23,7 @@
  */
 
 // NOTE: This file is run as-is from Node, which is why we do not use let or Flow types.
-/* eslint-disable no-var, no-console */
+/* eslint-disable no-var, no-console, prefer-arrow-callback */
 
 var child_process = require('child_process');
 var epipebomb = require('epipebomb');

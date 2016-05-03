@@ -41,7 +41,7 @@ function processAutocompleteItem(replacementPrefix: string, flowItem: Object): O
   // Truncate long types for readability
   const description = flowItem['type'].length < 80
     ? flowItem['type']
-    : flowItem['type'].substring(0,80) + ' ...';
+    : flowItem['type'].substring(0, 80) + ' ...';
   let result = {
     description: description,
     displayText: flowItem['name'],

@@ -28,6 +28,7 @@ import {getUiTreePathFromTargetEvent} from '../../nuclide-atom-helpers';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {getLogger} from '../../nuclide-logging';
 import {DiffMode, CommitMode} from './constants';
+import DiffViewElement from './DiffViewElement';
 
 type SerializedDiffViewState = {
   visible: false;
@@ -42,7 +43,7 @@ let diffViewModel: ?DiffViewModelType = null;
 let activeDiffView: ?{
   component: React.Component;
   element: HTMLElement;
-}  = null;
+} = null;
 
 // This url style is the one Atom uses for the welcome and settings pages.
 const NUCLIDE_DIFF_VIEW_URI = 'atom://nuclide/diff-view';
@@ -79,7 +80,6 @@ function createView(diffEntityOptions: DiffEntityOptions): HTMLElement {
     activateDiffPath(diffEntityOptions);
     return activeDiffView.element;
   }
-  const DiffViewElement = require('./DiffViewElement');
   const DiffViewComponent = require('./DiffViewComponent');
 
   const diffModel = getDiffViewModel();

@@ -177,7 +177,7 @@ class WatchmanClient {
   }
 
   hasSubscription(entryPath: string): boolean {
-    return !!this._getSubscription(entryPath);
+    return Boolean(this._getSubscription(entryPath));
   }
 
   async unwatch(entryPath: string): Promise<void> {
@@ -271,7 +271,8 @@ class WatchmanClient {
     return new Promise((resolve, reject) => {
       this._clientPromise.then(client => {
         client.command(args, (error, response) =>
-            error ? reject(error) : resolve(response));
+          (error ? reject(error) : resolve(response))
+        );
       }).catch(reject);
     });
   }

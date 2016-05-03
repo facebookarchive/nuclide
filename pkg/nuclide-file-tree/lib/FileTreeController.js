@@ -13,7 +13,7 @@ import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {ExportStoreData} from './FileTreeStore';
 
 import {CompositeDisposable, Disposable} from 'atom';
-import {EVENT_HANDLER_SELECTOR}  from './FileTreeConstants';
+import {EVENT_HANDLER_SELECTOR} from './FileTreeConstants';
 import FileSystemActions from './FileSystemActions';
 import FileTreeActions from './FileTreeActions';
 import FileTreeContextMenu from './FileTreeContextMenu';

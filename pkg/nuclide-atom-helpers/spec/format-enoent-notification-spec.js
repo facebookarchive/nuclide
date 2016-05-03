@@ -40,7 +40,7 @@ describe('formatEnoentNotification', () => {
   it('has a useful intro line', () => {
     invariant(formatted != null);
     const expected =
-      "Awesome stuff creation needs *node* but Nuclide couldn't find it at `/path/to/node\`";
+      "Awesome stuff creation needs *node* but Nuclide couldn't find it at `/path/to/node`";
     expect(formatted.meta.description.startsWith(expected)).toBe(true);
   });
 

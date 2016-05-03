@@ -182,7 +182,7 @@ function _denodeifyFsMethod(methodName: string): () => Promise {
     const method = fs[methodName];
     return new Promise((resolve, reject) => {
       method.apply(fs, args.concat([
-        (err, result) => err ? reject(err) : resolve(result),
+        (err, result) => (err ? reject(err) : resolve(result)),
       ]));
     });
   };

@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/* eslint-env browser */
-
 import type SuggestionListType from './SuggestionList';
 
 import {CompositeDisposable, Disposable} from 'atom';
@@ -101,8 +99,8 @@ class SuggestionList extends React.Component {
     const stopPropagation = event => event.stopPropagation();
     ReactDOM.findDOMNode(this.refs['scroller']).addEventListener('mousewheel', stopPropagation);
     this._subscriptions.add(new Disposable(() => {
-      ReactDOM.findDOMNode(this.refs['scroller']).
-        removeEventListener('mousewheel', stopPropagation);
+      ReactDOM.findDOMNode(this.refs['scroller'])
+        .removeEventListener('mousewheel', stopPropagation);
     }));
 
     const keydown = (event: KeyboardEvent) => {

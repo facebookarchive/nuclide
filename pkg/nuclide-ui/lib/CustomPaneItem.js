@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/* eslint-env browser */
-
 import invariant from 'assert';
 import {React, ReactDOM} from 'react-for-atom';
 
@@ -28,7 +26,7 @@ export class CustomPaneItem extends HTMLElement {
     this._title = options.title;
     this._iconName = options.iconName;
     this._uri = options.uri;
-    this._allowSplit = !!options.allowSplit;
+    this._allowSplit = Boolean(options.allowSplit);
 
     this.__component = ReactDOM.render(this.__renderPaneItem(options), this);
   }

@@ -370,7 +370,7 @@ export default class ClangServer {
       });
       // Make sure the bidirectional communication channel is set up before
       // resolving this Promise.
-      child.stdout.once('data', function(data: Buffer) {
+      child.stdout.once('data', (data: Buffer) => {
         if (data.toString().trim() === 'ack') {
           const result = {
             dispose: () => {

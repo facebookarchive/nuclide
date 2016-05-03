@@ -37,7 +37,7 @@ function canProvideBlameForEditor(editor: atom$TextEditor): boolean {
     return false;
   }
   const repo = hgRepositoryForEditor(editor);
-  return !!repo;
+  return Boolean(repo);
 }
 
 function getBlameForEditor(editor: atom$TextEditor): Promise<BlameForEditor> {

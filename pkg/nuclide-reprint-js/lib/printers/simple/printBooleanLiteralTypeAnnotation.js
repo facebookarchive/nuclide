@@ -16,7 +16,7 @@ function printBooleanLiteralTypeAnnotation(
   print: Print,
   node: BooleanLiteralTypeAnnotation,
 ): Lines {
-  return [String(!!node.value)];
+  return [String(Boolean(node.value))];
 }
 
 module.exports = printBooleanLiteralTypeAnnotation;

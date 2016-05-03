@@ -28,7 +28,7 @@ export class CwdApi {
     this._cwd$ = this._cwdPath$
       .distinctUntilChanged()
       .map(() => this.getCwd())
-      .map(directory => isValidDirectory(directory) ? directory : null);
+      .map(directory => (isValidDirectory(directory) ? directory : null));
 
     this._disposables = new CompositeDisposable(
       // If the active directory is removed, fall back to the default.

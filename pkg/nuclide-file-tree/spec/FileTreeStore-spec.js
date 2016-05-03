@@ -452,7 +452,7 @@ describe('FileTreeStore', () => {
   });
 
   it('expands deep nested structure of the node', () => {
-    waitsForPromise( async () => {
+    waitsForPromise(async () => {
       const map: Map<string, string> = await buildTempDirTree(
         'dir3/dir31/foo31.txt',
         'dir3/dir32/bar32.txt'

@@ -527,10 +527,9 @@ export class FileTreeNode {
       return this.children.find(c => c.shouldBeShown);
     }
 
-    /* eslint-disable consistent-this */
     // Not really an alias, but an iterating reference
+    // eslint-disable-next-line consistent-this
     let it = this;
-    /* eslint-enable consistent-this */
     while (it != null) {
       const nextShownSibling = it.findNextShownSibling();
       if (nextShownSibling != null) {
@@ -544,10 +543,7 @@ export class FileTreeNode {
   }
 
   findNextShownSibling(): ?FileTreeNode {
-    /* eslint-disable consistent-this */
-    // Not really an alias, but an iterating reference
     let it = this.nextSibling;
-    /* eslint-enable consistent-this */
     while (it != null && !it.shouldBeShown) {
       it = it.nextSibling;
     }
@@ -577,10 +573,7 @@ export class FileTreeNode {
   }
 
   findPrevShownSibling(): ?FileTreeNode {
-    /* eslint-disable consistent-this */
-    // Not really an alias, but an iterating reference
     let it = this.prevSibling;
-    /* eslint-enable consistent-this */
     while (it != null && !it.shouldBeShown) {
       it = it.prevSibling;
     }

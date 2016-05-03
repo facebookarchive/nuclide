@@ -112,11 +112,11 @@ export class ActiveEditorBasedService<T: Provider, V> {
       // Necessary so the type refinement holds in the callback later
       const editor = editorArg;
       if (editor == null) {
-        return Observable.of({ kind: 'not-text-editor' });
+        return Observable.of({kind: 'not-text-editor'});
       }
 
       return Observable.concat(
-        Observable.of({ kind: 'pane-change' }),
+        Observable.of({kind: 'pane-change'}),
         Observable.fromPromise(this._getResultForEditor(editor)),
         this._resultsForEditor(editor, eventSources),
       );
@@ -129,10 +129,10 @@ export class ActiveEditorBasedService<T: Provider, V> {
     let eventEmittedResult: Result<V>;
     if (this._config.updateOnEdit) {
       editorEvents = eventSources.changesForEditor(editor);
-      eventEmittedResult = { kind: 'edit' };
+      eventEmittedResult = {kind: 'edit'};
     } else {
       editorEvents = eventSources.savesForEditor(editor);
-      eventEmittedResult = { kind: 'save' };
+      eventEmittedResult = {kind: 'save'};
     }
 
     return editorEvents.flatMap(() => {

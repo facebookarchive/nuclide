@@ -7,6 +7,7 @@
  */
 
 /* eslint-disable no-var */
+/* eslint-disable prefer-arrow-callback */
 
 // Taken and modified from https://gist.github.com/SimplGy/a229d25cdb19d7f21231
 (function() {

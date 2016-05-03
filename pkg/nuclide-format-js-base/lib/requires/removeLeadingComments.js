@@ -34,7 +34,7 @@ function removeLeadingComments(root: Collection): Array<Node> {
   // Check if the last comment ends exactly where the first node starts.
   let transferLastcomment = false;
   const lastComment = first.comments.reduce(
-    (curr, next) => next.leading ? next : curr,
+    (curr, next) => (next.leading ? next : curr),
     null
   );
   if (lastComment && first.start != null && lastComment.end != null) {
@@ -46,7 +46,7 @@ function removeLeadingComments(root: Collection): Array<Node> {
 
   // Count how many comments we need to transfer, treat negative counts as 0.
   const transferCount = first.comments.reduce(
-    (count, next) => next.leading ? count + 1 : count,
+    (count, next) => (next.leading ? count + 1 : count),
     transferLastcomment ? 0 : -1,
   );
   if (transferCount <= 0) {

@@ -42,8 +42,6 @@ describe('NuclideTextBuffer', () => {
     buffer.setPath(filePath);
     expect(buffer.file instanceof RemoteFile).toBe(true);
     invariant(buffer.file);
-  /* eslint-disable no-path-concat */
     expect(buffer.file.getPath()).toBe('nuclide://most.fb.com:9090' + filePath);
-  /* eslint-enable no-path-concat */
   });
 });

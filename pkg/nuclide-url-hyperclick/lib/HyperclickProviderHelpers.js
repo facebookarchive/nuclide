@@ -37,7 +37,7 @@ export default class HyperclickProviderHelpers {
     // Update the range to include only what was matched
     const urlRange = new Range(
       [range.start.row, range.start.column + index],
-      [range.end.row,   range.start.column + index + matchLength],
+      [range.end.row, range.start.column + index + matchLength],
     );
 
     return {

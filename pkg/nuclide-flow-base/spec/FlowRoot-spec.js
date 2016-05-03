@@ -208,8 +208,8 @@ describe('FlowRoot', () => {
               type: '(param1: type1, param2: type2) => ret',
               func_details: {
                 params: [
-                  { name: 'param1', type: 'type1' },
-                  { name: 'param2', type: 'type2' },
+                  {name: 'param1', type: 'type1'},
+                  {name: 'param2', type: 'type2'},
                 ],
                 return_type: 'ret',
               },
