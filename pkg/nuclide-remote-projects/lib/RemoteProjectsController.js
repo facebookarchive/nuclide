@@ -22,7 +22,7 @@ class RemoteProjectsController {
   _disposables: CompositeDisposable;
   _statusBarDiv: ?HTMLElement;
   _statusBarTile: ?StatusBarTile;
-  _statusSubscription: ?Disposable;
+  _statusSubscription: ?IDisposable;
 
   constructor() {
     this._statusBarTile = null;
@@ -78,11 +78,9 @@ class RemoteProjectsController {
 
     const socket = connection.getConnection().getSocket();
     updateStatus(socket.isConnected());
-    socket.on('status', updateStatus);
 
-    this._statusSubscription = new Disposable(() => {
-      socket.removeListener('status', updateStatus);
-    });
+
+    this._statusSubscription = socket.onStatus(updateStatus);
     this._disposables.add(this._statusSubscription);
   }
 

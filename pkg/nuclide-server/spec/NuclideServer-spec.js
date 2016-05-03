@@ -52,10 +52,10 @@ describe('Nuclide Server test suite', () => {
       const nuclideSocket = socket;
       const messageHandler: Function = (jasmine.createSpy(): any);
       const reconnectHandler: Function = (jasmine.createSpy(): any);
-      nuclideSocket.on('reconnect', reconnectHandler);
-      nuclideSocket.on('message', messageHandler);
+      nuclideSocket.onReconnect(reconnectHandler);
+      nuclideSocket.onMessage(messageHandler);
       // The maximum reconnect time is 5 seconds - advance clock to sip the reconnect time.
-      nuclideSocket.on('disconnect', () => process.nextTick(() => window.advanceClock(6000)));
+      nuclideSocket.onDisconnect(() => process.nextTick(() => window.advanceClock(6000)));
 
       waitsForPromise(() => nuclideSocket.waitForConnect());
 

@@ -52,7 +52,7 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
     waitsForPromise(async () => {
       await socket.waitForConnect();
       const disconnectHandler: Function = (jasmine.createSpy(): any);
-      socket.on('disconnect', disconnectHandler);
+      socket.onDisconnect(disconnectHandler);
       socket.close();
       waitsFor(() => disconnectHandler.callCount > 0);
     });
@@ -72,7 +72,7 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
       const heartbeatHandler: Function = (jasmine.createSpy(): any);
       // There was an initial heartbeat, but we can't be sure if it went before or after we do
       // listen here.
-      socket.on('heartbeat', heartbeatHandler);
+      socket.onHeartbeat(heartbeatHandler);
       window.advanceClock(5050); // Advance the heartbeat interval.
       waitsFor(() => heartbeatHandler.callCount > 0);
       window.advanceClock(5050); // Advance the heartbeat interval.
@@ -81,7 +81,7 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
 
     it('on ECONNREFUSED, emits PORT_NOT_ACCESSIBLE, when the server was never accessible', () => {
       const heartbeatErrorHandler: Function = (jasmine.createSpy(): any);
-      socket.on('heartbeat.error', heartbeatErrorHandler);
+      socket.onHeartbeatError(heartbeatErrorHandler);
       // Assume the hearbeat didn't happen.
       socket._heartbeatConnectedOnce = false;
       server.close();
@@ -92,7 +92,7 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
 
     it('on ECONNREFUSED, emits SERVER_CRASHED, when the server was once reachable', () => {
       const heartbeatErrorHandler: Function = (jasmine.createSpy(): any);
-      socket.on('heartbeat.error', heartbeatErrorHandler);
+      socket.onHeartbeatError(heartbeatErrorHandler);
       socket._heartbeatConnectedOnce = true;
       server.close();
       window.advanceClock(5050); // Advance the heartbeat interval.
@@ -102,7 +102,7 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
 
     it('on ENOTFOUND, emits NETWORK_AWAY error, when the server cannot be located', () => {
       const heartbeatErrorHandler: Function = (jasmine.createSpy(): any);
-      socket.on('heartbeat.error', heartbeatErrorHandler);
+      socket.onHeartbeatError(heartbeatErrorHandler);
       socket._serverUri = 'http://not.existing.uri.conf:8657';
       window.advanceClock(5050); // Advance the heartbeat interval.
       waitsFor(() => heartbeatErrorHandler.callCount > 0);
@@ -113,7 +113,7 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
   describe('reconnect flow', () => {
     it('the socket would send the cached messages on reconnect', () => {
       const reconnectHandler: Function = (jasmine.createSpy(): any);
-      socket.on('reconnect', reconnectHandler);
+      socket.onReconnect(reconnectHandler);
       spyOn(serverSocketClient, '_onSocketMessage');
 
       const message0 = {foo0: 'bar0'};

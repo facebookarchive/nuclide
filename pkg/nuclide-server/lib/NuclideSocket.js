@@ -17,6 +17,7 @@ import WS from 'ws';
 import uuid from 'uuid';
 import {EventEmitter} from 'events';
 import {HEARTBEAT_CHANNEL} from './config';
+import {event} from '../../nuclide-commons';
 
 const logger = require('../../nuclide-logging').getLogger();
 
@@ -95,8 +96,8 @@ class NuclideSocket extends EventEmitter {
       if (this._connected) {
         return resolve();
       } else {
-        this.on('connect', resolve);
-        this.on('reconnect', resolve);
+        this.onConnect(resolve);
+        this.onReconnect(resolve);
       }
     });
   }
@@ -351,6 +352,36 @@ class NuclideSocket extends EventEmitter {
 
   isConnected(): boolean {
     return this._connected;
+  }
+
+  onHeartbeat(callback: () => mixed): IDisposable {
+    return event.attachEvent(this, 'heartbeat', callback);
+  }
+
+  onHeartbeatError(
+    callback: (code: string, originalCode: string, message: string) => mixed
+  ): IDisposable {
+    return event.attachEvent(this, 'heartbeat.error', callback);
+  }
+
+  onMessage(callback: (message: Object) => mixed): IDisposable {
+    return event.attachEvent(this, 'message', callback);
+  }
+
+  onStatus(callback: (connected: boolean) => mixed): IDisposable {
+    return event.attachEvent(this, 'status', callback);
+  }
+
+  onConnect(callback: () => mixed): IDisposable {
+    return event.attachEvent(this, 'connect', callback);
+  }
+
+  onReconnect(callback: () => mixed): IDisposable {
+    return event.attachEvent(this, 'reconnect', callback);
+  }
+
+  onDisconnect(callback: () => mixed): IDisposable {
+    return event.attachEvent(this, 'disconnect', callback);
   }
 }
 

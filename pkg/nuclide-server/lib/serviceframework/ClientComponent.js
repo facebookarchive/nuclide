@@ -51,7 +51,7 @@ export default class ClientComponent {
       remoteUri => getPath(remoteUri), path => createRemoteUri(hostname, port, path));
 
     this.addServices(services);
-    this._socket.on('message', message => this._handleSocketMessage(message));
+    this._socket.onMessage(message => this._handleSocketMessage(message));
   }
 
   addServices(services: Array<ConfigEntry>): void {

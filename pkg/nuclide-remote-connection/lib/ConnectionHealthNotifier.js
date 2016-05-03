@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import {trackEvent} from '../../nuclide-analytics';
-import {Disposable} from 'atom';
+import {CompositeDisposable} from 'atom';
 import {parse as parseRemoteUri} from '../../nuclide-remote-uri';
 import NuclideSocket from '../../nuclide-server/lib/NuclideSocket';
 
@@ -164,13 +164,10 @@ export class ConnectionHealthNotifier {
           break;
       }
     };
-    socket.on('heartbeat', onHeartbeat);
-    socket.on('heartbeat.error', onHeartbeatError);
-
-    this._subscription = new Disposable(() => {
-      socket.removeListener('heartbeat', onHeartbeat);
-      socket.removeListener('heartbeat.error', onHeartbeatError);
-    });
+    this._subscription = new CompositeDisposable(
+      socket.onHeartbeat(onHeartbeat),
+      socket.onHeartbeatError(onHeartbeatError)
+    );
   }
 
   dispose(): void {
