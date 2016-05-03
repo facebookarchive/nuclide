@@ -180,6 +180,13 @@ export async function flowGetType(
   );
 }
 
+export async function flowGetCoverage(file: NuclideUri): Promise<?number> {
+  return rootContainer.runWithRoot(
+    file,
+    root => root.flowGetCoverage(file),
+  );
+}
+
 export function flowGetOutline(
   currentContents: string,
 ): Promise<?Array<FlowOutlineTree>> {

@@ -13,6 +13,7 @@ import type {HyperclickProvider} from '../../hyperclick';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../nuclide-busy-signal';
+import type {CoverageProvider} from '../../nuclide-type-coverage';
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 
@@ -22,6 +23,8 @@ import {CompositeDisposable} from 'atom';
 import featureConfig from '../../nuclide-feature-config';
 import {getServiceByNuclideUri} from '../../nuclide-client';
 import {track} from '../../nuclide-analytics';
+
+import {getCoverage} from './FlowCoverageProvider';
 
 import {JS_GRAMMARS, JAVASCRIPT_WORD_REGEX} from './constants';
 const GRAMMARS_STRING = JS_GRAMMARS.join(', ');
@@ -133,6 +136,16 @@ export function createTypeHintProvider(): Object {
     providerName: PACKAGE_NAME,
     inclusionPriority: 1,
     typeHint,
+  };
+}
+
+export function createCoverageProvider(): CoverageProvider {
+  return {
+    priority: 10,
+    grammarScopes: JS_GRAMMARS,
+    getCoverage(path) {
+      return getCoverage(path);
+    },
   };
 }
 

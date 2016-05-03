@@ -265,6 +265,30 @@ export class FlowRoot {
     return {type, rawType};
   }
 
+  async flowGetCoverage(path: NuclideUri): Promise<?number> {
+    const args = ['coverage', '--json', path];
+    let result;
+    try {
+      result = await this._process.execFlow(args, {});
+    } catch (e) {
+      return null;
+    }
+    if (result == null) {
+      return null;
+    }
+    let json;
+    try {
+      json = parseJSON(args, result.stdout);
+    } catch (e) {
+      // The error is already logged in parseJSON
+      return null;
+    }
+
+    const covered = json.expressions.covered_count;
+    const total = json.expressions.uncovered_count + covered;
+    return covered / total * 100;
+  }
+
   static async flowGetOutline(currentContents: string): Promise<?Array<FlowOutlineTree>> {
     const options = {
       stdin: currentContents,
