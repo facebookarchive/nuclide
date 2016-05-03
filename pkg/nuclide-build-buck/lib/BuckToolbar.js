@@ -87,7 +87,6 @@ class BuckToolbar extends React.Component {
 
   render(): React.Element {
     const buckToolbarStore = this._buckToolbarStore;
-    const disabled = !buckToolbarStore.getBuildTarget() || buckToolbarStore.isBuilding();
     let serverModeCheckbox;
     if (buckToolbarStore.isReactNativeApp()) {
       serverModeCheckbox =
@@ -98,14 +97,6 @@ class BuckToolbar extends React.Component {
             label={'React Native Server Mode'}
           />
         </div>;
-    }
-    let progressBar;
-    if (buckToolbarStore.isBuilding()) {
-      progressBar =
-        <progress
-          className="inline-block buck-toolbar-progress-bar"
-          value={buckToolbarStore.getBuildProgress()}
-        />;
     }
     return (
       <div>
@@ -129,7 +120,6 @@ class BuckToolbar extends React.Component {
           onSelectedSimulatorChange={this._handleSimulatorChange}
         />
         {serverModeCheckbox}
-        {progressBar}
       </div>
     );
   }
