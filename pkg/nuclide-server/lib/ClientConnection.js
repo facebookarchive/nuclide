@@ -18,15 +18,14 @@ import invariant from 'assert';
 import {ObjectRegistry} from './serviceframework/ObjectRegistry';
 
 // Per-Client state on the Server for the RPC framework
-export class SocketClient<TransportType: Transport> {
+export class ClientConnection<TransportType: Transport> {
   _serverComponent: ServiceFramework.ServerComponent;
   _objectRegistry: ObjectRegistry;
   _transport: TransportType;
 
   constructor(
-    serverComponent: ServiceFramework.ServerComponent,
-    transport: TransportType,
-  ) {
+      serverComponent: ServiceFramework.ServerComponent,
+      transport: TransportType) {
     this._objectRegistry = new ObjectRegistry('server');
     this._serverComponent = serverComponent;
     this._transport = transport;

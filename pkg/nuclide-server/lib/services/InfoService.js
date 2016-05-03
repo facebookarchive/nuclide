@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {SocketClient} from '../SocketClient';
+import type {ClientConnection} from '../ClientConnection';
 
 import {getVersion} from '../../../nuclide-version';
 import NuclideServer from '../NuclideServer';
@@ -19,7 +19,7 @@ export async function getServerVersion(): Promise<string> {
 }
 
 export function closeConnection(shutdownServer: boolean): void {
-  const client: SocketClient = (this: any);
+  const client: ClientConnection = (this: any);
   NuclideServer.closeConnection(client);
   if (shutdownServer) {
     NuclideServer.shutdown();

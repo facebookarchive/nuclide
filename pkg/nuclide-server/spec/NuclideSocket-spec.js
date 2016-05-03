@@ -12,12 +12,12 @@
 import NuclideServer from '../lib/NuclideServer';
 import ServiceFramework from '../lib/serviceframework/index';
 import NuclideSocket from '../lib/NuclideSocket';
-import {SocketClient} from '../lib/SocketClient';
+import {ClientConnection} from '../lib/ClientConnection';
 import invariant from 'assert';
 
 let server: NuclideServer;
 let socket: NuclideSocket;
-let serverSocketClient: SocketClient;
+let serverSocketClient: ClientConnection;
 
 xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-disabled-tests
   beforeEach(() => {

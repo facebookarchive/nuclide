@@ -34,7 +34,7 @@ import type {
   CallRemoteMethodMessage,
   CreateRemoteObjectMessage,
 } from './types';
-import type {SocketClient} from '../SocketClient';
+import type {ClientConnection} from '../ClientConnection';
 
 const logger = require('../../../nuclide-logging').getLogger();
 
@@ -131,7 +131,7 @@ export default class ServerComponent {
     });
   }
 
-  async handleMessage(client: SocketClient, message: RequestMessage): Promise<void> {
+  async handleMessage(client: ClientConnection, message: RequestMessage): Promise<void> {
     const requestId = message.requestId;
     const marshallingContext = client.getMarshallingContext();
 
