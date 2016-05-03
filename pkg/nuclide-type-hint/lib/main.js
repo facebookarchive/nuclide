@@ -13,7 +13,7 @@ import type {TypeHintProvider} from '../../nuclide-type-hint-interfaces';
 import type {
   DatatipProvider,
   DatatipService,
-} from '../../nuclide-datatip-interfaces';
+} from '../../nuclide-datatip';
 import type TypeHintManagerType from './TypeHintManager';
 
 import invariant from 'assert';

@@ -9,6 +9,11 @@
  * the root directory of this source tree.
  */
 
+export type {
+  Datatip,
+  DatatipProvider,
+  DatatipService,
+} from './types';
 
 import invariant from 'assert';
 

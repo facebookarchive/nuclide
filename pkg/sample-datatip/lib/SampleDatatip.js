@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Datatip} from '../../nuclide-datatip-interfaces';
+import type {Datatip} from '../../nuclide-datatip';
 
 import {extractWordAtPosition} from '../../nuclide-atom-helpers';
 import {makeSampleDatatipComponent} from './SampleDatatipComponent';

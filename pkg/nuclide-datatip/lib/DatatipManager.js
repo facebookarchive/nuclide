@@ -12,7 +12,7 @@
 import type {
   Datatip,
   DatatipProvider,
-} from '../../nuclide-datatip-interfaces';
+} from './types';
 
 import {CompositeDisposable, Disposable} from 'atom';
 import {

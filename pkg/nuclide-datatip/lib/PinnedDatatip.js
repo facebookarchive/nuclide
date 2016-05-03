@@ -9,9 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {
-  Datatip,
-} from '../../nuclide-datatip-interfaces';
+import type {Datatip} from './types';
 
 type Position = {
   x: number;
