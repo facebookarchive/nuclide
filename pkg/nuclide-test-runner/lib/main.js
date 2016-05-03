@@ -10,7 +10,7 @@
  */
 
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
-import type {HomeFragments} from '../../nuclide-home-interfaces';
+import type {HomeFragments} from '../../nuclide-home';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {TestRunner} from './interfaces';
 import type {TestRunnerController as TestRunnerControllerType} from './TestRunnerController';

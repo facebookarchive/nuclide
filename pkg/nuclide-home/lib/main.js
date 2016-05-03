@@ -10,7 +10,9 @@
  */
 
 import type {GadgetsService} from '../../nuclide-gadgets-interfaces';
-import type {HomeFragments} from '../../nuclide-home-interfaces';
+import type {HomeFragments} from './types';
+
+export type {HomeFragments} from './types';
 
 import {CompositeDisposable, Disposable} from 'atom';
 import featureConfig from '../../nuclide-feature-config';

@@ -10,7 +10,7 @@
  */
 
 import type {Provider} from './types';
-import type {HomeFragments} from '../../nuclide-home-interfaces';
+import type {HomeFragments} from '../../nuclide-home';
 
 export {
   DirectoryName,

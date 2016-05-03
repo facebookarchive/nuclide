@@ -10,7 +10,7 @@
  */
 
 import type {Gadget} from '../../nuclide-gadgets-interfaces';
-import type {HomeFragments} from '../../nuclide-home-interfaces';
+import type {HomeFragments} from './types';
 import type Rx from 'rxjs';
 
 import Immutable from 'immutable';

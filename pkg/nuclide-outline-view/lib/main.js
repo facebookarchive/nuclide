@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {HomeFragments} from '../../nuclide-home-interfaces';
+import type {HomeFragments} from '../../nuclide-home';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 
 import {CompositeDisposable, Disposable} from 'atom';

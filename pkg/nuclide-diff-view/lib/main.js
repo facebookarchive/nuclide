@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {CommitModeType, DiffModeType} from './types';
 import type DiffViewModelType, {DiffEntityOptions} from './DiffViewModel';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
-import type {HomeFragments} from '../../nuclide-home-interfaces';
+import type {HomeFragments} from '../../nuclide-home';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {
   UIProvider,
