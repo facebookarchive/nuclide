@@ -1,0 +1,25 @@
+{
+  "name": "nuclide-type-coverage",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides type coverage information for gradually-typed languages such as Hack and Flows",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationCommands": {
+  },
+  "consumedServices": {
+    "nuclide-type-coverage": {
+      "versions": {
+        "0.0.0": "consumeCoverageProvider"
+      }
+    },
+    "status-bar": {
+      "versions": {
+        "^1.0.0": "consumeStatusBar"
+      }
+    }
+  }
+}
