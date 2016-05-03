@@ -10,14 +10,11 @@
  */
 
 import type {
-  ProviderSpec,
-} from './types';
-
-import type {
   DirectoryName,
   GroupedResult,
+  ProviderSpec,
   ServiceName,
-} from '../../nuclide-quick-open-interfaces';
+} from './types';
 
 type ResultContext = {
   nonEmptyResults: GroupedResult;

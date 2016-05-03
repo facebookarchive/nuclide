@@ -10,14 +10,11 @@
  */
 
 import type {
-  ProviderSpec,
-} from './types';
-
-import type {
   FileResult,
   Provider,
   ProviderResult,
-} from '../../nuclide-quick-open-interfaces';
+  ProviderSpec,
+} from './types';
 
 import type {Dispatcher} from 'flux';
 

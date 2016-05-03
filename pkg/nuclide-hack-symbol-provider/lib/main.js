@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Provider} from '../../nuclide-quick-open-interfaces';
+import type {Provider} from '../../nuclide-quick-open';
 
 let providerInstance: ?Provider;
 function getProviderInstance(): Provider {

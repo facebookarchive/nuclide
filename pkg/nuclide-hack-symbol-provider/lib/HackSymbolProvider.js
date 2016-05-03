@@ -13,7 +13,7 @@ import type {
   FileResult,
   Provider,
   ProviderType,
-} from '../../nuclide-quick-open-interfaces';
+} from '../../nuclide-quick-open';
 import type {HackSearchPosition} from '../../nuclide-hack-base/lib/HackService';
 
 import {getHackService} from './getHackService';

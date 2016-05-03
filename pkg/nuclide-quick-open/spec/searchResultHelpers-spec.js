@@ -9,9 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {
-  GroupedResult,
-} from '../../nuclide-quick-open-interfaces';
+import type {GroupedResult} from '../lib/types';
 
 import {
   filterEmptyResults,

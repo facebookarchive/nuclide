@@ -9,10 +9,20 @@
  * the root directory of this source tree.
  */
 
-import type {
-  Provider,
-} from '../../nuclide-quick-open-interfaces';
+import type {Provider} from './types';
 import type {HomeFragments} from '../../nuclide-home-interfaces';
+
+export {
+  DirectoryName,
+  FileResult,
+  GroupedResult,
+  Provider,
+  ProviderResult,
+  ProviderSpec,
+  ProviderType,
+  ServiceName,
+  Store,
+} from './types';
 
 import invariant from 'assert';
 import {

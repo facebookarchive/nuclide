@@ -9,10 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {
-  FileResult,
-  GroupedResult,
-} from '../../nuclide-quick-open-interfaces';
+import type {FileResult, GroupedResult} from './types';
 
 const {
   isEmpty,

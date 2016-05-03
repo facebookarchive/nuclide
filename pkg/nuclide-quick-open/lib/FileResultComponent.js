@@ -9,9 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {
-  FileResult,
-} from '../../nuclide-quick-open-interfaces';
+import type {FileResult} from './types';
 
 import {React} from 'react-for-atom';
 import {fileTypeClass} from '../../nuclide-atom-helpers';
