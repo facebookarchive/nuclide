@@ -8,6 +8,14 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
+  "providedServices": {
+    "nuclide.build-system-registry": {
+      "description": "Register a build system with Nuclide.",
+      "versions": {
+        "0.0.0": "provideBuildSystemRegistry"
+      }
+    }
+  },
   "activationCommands": {
   }
 }

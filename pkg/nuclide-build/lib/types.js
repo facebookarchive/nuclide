@@ -176,3 +176,7 @@ export type Action =
   | RegisterBuildSystemAction
   | UnregisterBuildSystemAction
   | SelectBuildSystemAction;
+
+export type BuildSystemRegistry = {
+  register(buildSystem: BuildSystem): IDisposable;
+};
