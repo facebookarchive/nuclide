@@ -46,9 +46,8 @@ describe('FindInProjectService-Integration', () => {
       const remoteService = testHelper.getRemoteService('FindInProjectService');
 
       // Search in the fixtures/basic directory.
-      const connection = testHelper.getRemoteConnection();
       const input_dir = path.join(__dirname, 'fixtures', 'basic');
-      const uri = connection.getUriOfRemotePath(input_dir);
+      const uri = testHelper.getUriOfRemotePath(input_dir);
 
       // Do search.
       const updates = await remoteService.findInProjectSearch(uri,

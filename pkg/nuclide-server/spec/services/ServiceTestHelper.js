@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import {getPath} from '../../../nuclide-remote-uri';
 import NuclideServer from '../../lib/NuclideServer';
 import NuclideSocket from '../../lib/NuclideSocket';
 import ClientComponent from '../../lib/serviceframework/ClientComponent';
@@ -19,7 +18,7 @@ type Services = Array<{name: string; definition: string; implementation: string}
 export default class ServiceTestHelper {
   _server: NuclideServer;
   _client: ClientComponent<NuclideSocket>;
-  _connection: _RemoteConnectionMock;
+  _port: number;
 
   async start(customServices: Services): Promise<void> {
     this._server = new NuclideServer({port: 0}, customServices);
@@ -28,7 +27,7 @@ export default class ServiceTestHelper {
     const port = this._server._webServer.address().port;
     this._client = new ClientComponent(
       'localhost', port, new NuclideSocket(`http://localhost:${port}`), customServices);
-    this._connection = new _RemoteConnectionMock(this._client, port);
+    this._port = port;
   }
 
   stop(): void {
@@ -40,28 +39,7 @@ export default class ServiceTestHelper {
     return this._client.getService(serviceName);
   }
 
-  getRemoteConnection(): _RemoteConnectionMock {
-    return this._connection;
-  }
-}
-
-class _RemoteConnectionMock {
-  _client: ClientComponent<NuclideSocket>;
-  _port: number;
-
-  constructor(client: ClientComponent<NuclideSocket>, port: number) {
-    this._client = client;
-    this._port = port;
-  }
-
-  getClient(): ClientComponent<NuclideSocket> {
-    return this._client;
-  }
-
   getUriOfRemotePath(remotePath: string): string {
     return `nuclide://localhost:${this._port}${remotePath}`;
-  }
-  getPathOfUri(uri: string): string {
-    return getPath(uri);
   }
 }

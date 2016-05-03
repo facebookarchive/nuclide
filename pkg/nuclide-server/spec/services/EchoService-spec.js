@@ -178,7 +178,7 @@ describe('EchoServer', () => {
 
   // Echo a NuclideUri.
   it('Echoes a NuclideUri.', () => {
-    const expected = testHelper._connection.getUriOfRemotePath('/fake/file.txt');
+    const expected = testHelper.getUriOfRemotePath('/fake/file.txt');
     waitsForPromise(async () => {
       invariant(service);
       const results = await service.echoNuclideUri(expected);
