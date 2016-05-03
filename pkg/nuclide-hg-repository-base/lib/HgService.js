@@ -13,8 +13,6 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import path from 'path';
 import fs from 'fs';
-import {debounce} from '../../nuclide-commons';
-import DelayedEventManager from './DelayedEventManager';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 
 import {HgStatusOption} from './hg-constants';
@@ -42,8 +40,6 @@ const DEFAULT_FORK_BASE_NAME = 'default';
 
 const WATCHMAN_SUBSCRIPTION_NAME_PRIMARY = 'hg-repository-watchman-subscription-primary';
 const WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK = 'hg-repository-watchman-subscription-hgbookmark';
-const WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK = 'arc-build-lock';
-const EVENT_DELAY_IN_MS = 1000;
 
 // If Watchman reports that many files have changed, it's not really useful to report this.
 // This is typically caused by a large rebase or a Watchman re-crawl.
@@ -145,16 +141,6 @@ async function getForkBaseName(directoryPath: string): Promise<string> {
   return DEFAULT_FORK_BASE_NAME;
 }
 
-function getArcBuildLockFile(): ?string {
-  let lockFile;
-  try {
-    lockFile = require('./fb/config').arcBuildLockFile;
-  } catch (e) {
-    // purposely blank
-  }
-  return lockFile;
-}
-
 /**
  * @return Array of additional watch expressions to apply to the primary
  *   watchman subscription.
@@ -170,29 +156,21 @@ function getPrimaryWatchmanSubscriptionRefinements(): Array<mixed> {
 }
 
 export class HgService {
-
-  _delayedEventManager: DelayedEventManager;
   _lockFileHeld: boolean;
-  _shouldUseDirstate: boolean;
   _watchmanClient: ?WatchmanClient;
   _hgDirWatcher: ?fs.FSWatcher;
-  _allowEventsAgain: ?() => ?void;
 
   _workingDirectory: string;
   _filesDidChangeObserver: Subject;
-  _hgIgnoreFileDidChangeObserver: Subject;
   _hgRepoStateDidChangeObserver: Subject;
   _hgBookmarkDidChangeObserver: Subject;
 
   constructor(workingDirectory: string) {
     this._workingDirectory = workingDirectory;
     this._filesDidChangeObserver = new Subject();
-    this._hgIgnoreFileDidChangeObserver = new Subject();
     this._hgRepoStateDidChangeObserver = new Subject();
     this._hgBookmarkDidChangeObserver = new Subject();
-    this._delayedEventManager = new DelayedEventManager(setTimeout, clearTimeout);
     this._lockFileHeld = false;
-    this._shouldUseDirstate = true;
     this._subscribeToWatchman().catch(error => {
       logger.error('Failed to subscribe to watchman error: ', error);
     });
@@ -200,7 +178,6 @@ export class HgService {
 
   async dispose(): Promise<void> {
     this._filesDidChangeObserver.complete();
-    this._hgIgnoreFileDidChangeObserver.complete();
     this._hgRepoStateDidChangeObserver.complete();
     this._hgBookmarkDidChangeObserver.complete();
     if (this._hgDirWatcher != null) {
@@ -208,10 +185,6 @@ export class HgService {
       this._hgDirWatcher = null;
     }
     await this._cleanUpWatchman();
-    this._delayedEventManager.dispose();
-    if (this._dirstateDelayedEventManager) {
-      this._dirstateDelayedEventManager.dispose();
-    }
   }
 
   // Wrapper to help mocking during tests.
@@ -266,77 +239,12 @@ export class HgService {
   }
 
   async _subscribeToWatchman(): Promise<void> {
-    let arcBuildSubscription = null;
-
-    const hgIgnoreChange = () => {
-      // There are three events that may outdate the status of ignored files.
-      // 1. The .hgignore file changes. In this case, we want to run a fresh 'hg status -i'.
-      // 2. A file is added that meets the criteria under .hgignore. In this case, we can
-      //    scope the 'hg status -i' call to just the added file.
-      // 3. A file that was previously ignored, has been deleted. (A bit debatable in this
-      //    case what ::isPathIgnored should return if the file doesn't exist. But let's
-      //    at least keep the local cache updated.) In this case, we just want to remove
-      //    the deleted file if it is in the cache.
-      // Case 1 is covered by the response to WATCHMAN_SUBSCRIPTION_NAME_HGIGNORE firing.
-      // Cases 2 and 3 are covered by the response to WATCHMAN_SUBSCRIPTION_NAME_PRIMARY firing.
-      this._delayedEventManager.addEvent(
-        this._hgIgnoreFileDidChange.bind(this),
-        EVENT_DELAY_IN_MS,
-      );
-    };
-
     const lockFileChange = exists => {
       if (exists) {
-        // TODO: Implement a timer to unset this, in case watchman update
-        // fails to notify of the removal of the lock. I haven't seen this
-        // in practice but it's better to be safe.
         this._lockFileHeld = true;
-        // The lock being created is a definitive start to a Mercurial action/arc build.
-        // Block the effects from any dirstate change, which is a fuzzier signal.
-        this._shouldUseDirstate = false;
-        this._delayedEventManager.setCanAcceptEvents(false);
-        this._delayedEventManager.cancelAllEvents();
       } else {
         this._lockFileHeld = false;
-        this._delayedEventManager.setCanAcceptEvents(true);
-        // The lock being deleted is a definitive end to a Mercurial action/arc build.
-        // Block the effects from any dirstate change, which is a fuzzier signal.
-        this._shouldUseDirstate = false;
       }
-      this._hgLockDidChange(exists);
-    };
-
-    const dirStateChange = () => {
-      // We don't know whether the change to the dirstate is at the middle or end
-      // of a Mercurial action. But we would rather have false positives (ignore
-      // some user-generated events that occur near a Mercurial event) than false
-      // negatives (register irrelevant Mercurial events).
-      // Each time this watchman update fires, we will make the LocalHgService
-      // ignore events for a certain grace period.
-
-      // A lock file is a more reliable signal, so defer to it.
-      if (this._lockFileHeld) {
-        return;
-      }
-
-      this._shouldUseDirstate = true;
-      this._delayedEventManager.setCanAcceptEvents(false);
-      this._delayedEventManager.cancelAllEvents();
-
-      // Using a local variable here to allow better type refinement.
-      let allowEventsAgain = this._allowEventsAgain;
-      if (!allowEventsAgain) {
-        allowEventsAgain = debounce(() => {
-          if (this._shouldUseDirstate) {
-            this._delayedEventManager.setCanAcceptEvents(true);
-            this._hgDirstateDidChange();
-          }
-        },
-        EVENT_DELAY_IN_MS,
-        /* immediate */ false);
-        this._allowEventsAgain = allowEventsAgain;
-      }
-      allowEventsAgain();
     };
 
     // Using a local variable here to allow better type refinement.
@@ -369,6 +277,7 @@ export class HgService {
       {
         fields: ['name', 'exists', 'new'],
         expression: primarySubscriptionExpression,
+        defer: ['hg.update'],
       },
     );
     logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_PRIMARY} established.`);
@@ -388,13 +297,9 @@ export class HgService {
           // That may lead to a sequence calls: lockFileChange(false) then lockFileChange(true),
           // stopping future events from being sent to the client.
           lockFileChange(fs.existsSync(lockFilePath));
-        } else if (fileName === 'dirstate') {
-          dirStateChange();
-        } else if (fileName === '.hgignore') {
-          hgIgnoreChange();
         }
       });
-      logger.debug('Node watcher created for lock/dirstate/bookmarks files.');
+      logger.debug('Node watcher created for wslock files.');
     } catch (error) {
       getLogger().error('Error when creating node watcher for hg state files', error);
     }
@@ -406,63 +311,12 @@ export class HgService {
       {
         fields: ['name', 'exists'],
         expression: ['name', '.hg/bookmarks.current', 'wholename'],
-        defer_vcs: false,
+        defer: ['hg.update'],
       },
     );
     logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK} established.`);
 
-    // Subscribe to changes to a file that appears to be the 'arc build' lock file.
-    const arcBuildLockFile = getArcBuildLockFile();
-    if (arcBuildLockFile != null) {
-      arcBuildSubscription = await watchmanClient.watchDirectoryRecursive(
-        workingDirectory,
-        WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK,
-        {
-          fields: ['name', 'exists'],
-          expression: ['name', arcBuildLockFile, 'wholename'],
-        },
-      );
-      logger.debug(
-        `Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK} established.`
-      );
-    }
-
-    // Mercurial creates the .hg/wlock file before it modifies the working directory,
-    // and deletes it when it's done. We want to ignore the watchman updates
-    // caused by these modifications, so we do two things:
-    // 1. The first level of defense is to watch for the creation and deletion of
-    // the wlock and ignore events accordingly.
-    // However, the watchman update for the files that have changed
-    // due to the Mercurial action may arrive before the update for the wlock
-    // file.
-    // To work around this, we introduce an artificial delay for the watchman
-    // updates for our files of interest, which allows time for a wlock watchman
-    // update (if any) to arrive and cancel them.
-    // This may occasionally result in a false positive: cancelling events that
-    // were generated by a user action (not Mercurial) that occur shortly before
-    // Mercurial modifies the working directory. But this should be fine,
-    // because the client of LocalHgService should be reacting to the
-    // 'onHgRepoStateDidChange' event that follows the Mercurial event.
-    // 2. The wlock is surest way to detect the beginning and end of events. But
-    // because it is a transient file, watchman may not pick up on it, especially
-    // if the Mercurial action is quick (e.g. a commit, as opposed to a rebase).
-    // In this case we fall back on watching the dirstate, which is a persistent
-    // file that is written to whenever Mercurial updates the state of the working
-    // directory (except reverts -- but this will also modify the state of the
-    // relevant files). The dirstate gets modified in the middle of an update
-    // and at the end, but not the beginning. Therefore it's a bit noisier of
-    // a signal, and is prone to both false positives and negatives.
-    primarySubscribtion.on('change', files => {
-      this._delayedEventManager.addEvent(
-        this._filesDidChange.bind(this, files),
-        EVENT_DELAY_IN_MS,
-      );
-    });
-
-    if (arcBuildSubscription != null) {
-      arcBuildSubscription.on('change', lockFileChange);
-    }
-
+    primarySubscribtion.on('change', this._filesDidChange.bind(this));
     hgBookmarkSubscription.on('change', this._hgBookmarkDidChange.bind(this));
   }
 
@@ -487,20 +341,6 @@ export class HgService {
     this._filesDidChangeObserver.next(changedFiles);
   }
 
-  _hgIgnoreFileDidChange(): void {
-    this._hgIgnoreFileDidChangeObserver.next();
-  }
-
-  _hgLockDidChange(lockExists: boolean): void {
-    if (!lockExists) {
-      this._emitHgRepoStateChanged();
-    }
-  }
-
-  _hgDirstateDidChange(): void {
-    this._emitHgRepoStateChanged();
-  }
-
   _emitHgRepoStateChanged(): void {
     this._hgRepoStateDidChangeObserver.next();
   }
@@ -516,14 +356,6 @@ export class HgService {
    */
   observeFilesDidChange(): Observable<Array<NuclideUri>> {
     return this._filesDidChangeObserver;
-  }
-
-  /**
-   * Observes that a .hgignore file has changed.
-   * @return A Observable which client could subscribe to.
-   */
-  observeHgIgnoreFileDidChange(): Observable<void> {
-    return this._hgIgnoreFileDidChangeObserver;
   }
 
   /**

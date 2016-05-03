@@ -179,8 +179,6 @@ export class HgRepositoryClient {
     };
     // Get updates that tell the HgRepositoryClient when to clear its caches.
     this._service.observeFilesDidChange().subscribe(onFilesChanges);
-    this._service.observeHgIgnoreFileDidChange()
-      .subscribe(this._serializedRefreshStatusesCache);
     this._service.observeHgRepoStateDidChange()
       .subscribe(this._serializedRefreshStatusesCache);
     this._service.observeHgBookmarkDidChange()
