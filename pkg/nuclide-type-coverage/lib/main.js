@@ -28,10 +28,26 @@ import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
 
 import {ActiveEditorBasedService} from '../../nuclide-active-editor-based-service';
+import {passesGKSafe} from '../../nuclide-commons';
 
 import {StatusBarTile} from './StatusBarTile';
 
 const STATUS_BAR_PRIORITY = 1000;
+const GK_TYPE_COVERAGE = 'nuclide_type_coverage';
+
+async function resultFunction(
+  provider: CoverageProvider,
+  editor: atom$TextEditor,
+): Promise<?CoverageResult> {
+  if (!await passesGKSafe(GK_TYPE_COVERAGE, 0)) {
+    return null;
+  }
+  const path = editor.getPath();
+  if (path == null) {
+    return null;
+  }
+  return await provider.getCoverage(path);
+}
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -39,16 +55,6 @@ class Activation {
 
   constructor(state: ?Object) {
     this._disposables = new CompositeDisposable();
-    const resultFunction = (
-      provider: CoverageProvider,
-      editor: atom$TextEditor,
-    ) => {
-      const path = editor.getPath();
-      if (path == null) {
-        return Promise.resolve(null);
-      }
-      return provider.getCoverage(path);
-    };
     this._activeEditorBasedService = new ActiveEditorBasedService(
       resultFunction,
       {updateOnEdit: false},
