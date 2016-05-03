@@ -12,7 +12,7 @@
 import NuclideServer from '../lib/NuclideServer';
 import ServiceFramework from '../lib/serviceframework/index';
 import NuclideSocket from '../lib/NuclideSocket';
-import {ClientConnection} from '../lib/ClientConnection';
+import {ClientConnection} from '../lib/serviceframework/ClientConnection';
 import invariant from 'assert';
 
 let server: NuclideServer;

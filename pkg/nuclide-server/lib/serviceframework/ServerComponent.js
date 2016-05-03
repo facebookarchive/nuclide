@@ -34,7 +34,7 @@ import type {
   CallRemoteMethodMessage,
   CreateRemoteObjectMessage,
 } from './types';
-import type {ClientConnection} from '../ClientConnection';
+import type {ClientConnection} from './ClientConnection';
 
 const logger = require('../../../nuclide-logging').getLogger();
 

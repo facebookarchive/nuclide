@@ -20,7 +20,7 @@ import ServiceFramework from './serviceframework/index';
 import {getLogger, flushLogsAndExit} from '../../nuclide-logging';
 import WS from 'ws';
 import {SocketTransport} from './SocketTransport';
-import {ClientConnection} from './ClientConnection';
+import {ClientConnection} from './serviceframework/ClientConnection';
 
 const connect: connect$module = require('connect');
 const http: http$fixed = (require('http'): any);

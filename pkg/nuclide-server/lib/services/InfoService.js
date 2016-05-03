@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {ClientConnection} from '../ClientConnection';
+import type {ClientConnection} from '../serviceframework/ClientConnection';
 
 import {getVersion} from '../../../nuclide-version';
 import NuclideServer from '../NuclideServer';

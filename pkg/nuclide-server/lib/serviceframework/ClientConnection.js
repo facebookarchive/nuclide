@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {Transport} from './serviceframework/types';
+import type {Transport} from './types';
 
-import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
-import ServiceFramework from './serviceframework/index';
+import {SERVICE_FRAMEWORK3_CHANNEL} from '../config';
+import ServiceFramework from './index';
 import invariant from 'assert';
 
-import {ObjectRegistry} from './serviceframework/ObjectRegistry';
+import {ObjectRegistry} from './ObjectRegistry';
 
 // Per-Client state on the Server for the RPC framework
 export class ClientConnection<TransportType: Transport> {
