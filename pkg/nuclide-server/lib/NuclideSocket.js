@@ -50,7 +50,7 @@ const MAX_HEARTBEAT_AWAY_RECONNECT_MS = 60000;
 //   - message(message: Object): on receipt fo JSON message
 //   - heartbeat: On receipt of successful heartbeat
 //   - heartbeat.error({code, originalCode, message}): On failure of heartbeat
-class NuclideSocket extends EventEmitter {
+class NuclideSocket {
   id: string;
 
   _serverUri: string;
@@ -67,9 +67,10 @@ class NuclideSocket extends EventEmitter {
   _lastHeartbeat: ?('here' | 'away');
   _lastHeartbeatTime: ?number;
   _heartbeatInterval: ?number;
+  _emitter: EventEmitter;
 
   constructor(serverUri: string, options: NuclideSocketOptions = {}) {
-    super();
+    this._emitter = new EventEmitter();
     this._serverUri = serverUri;
     this._options = options;
     this.id = uuid.v4();
@@ -116,13 +117,13 @@ class NuclideSocket extends EventEmitter {
       // Handshake the server with my client id to manage my re-connect attemp, if it is.
       websocket.send(this.id, () => {
         this._connected = true;
-        this.emit('status', this._connected);
+        this._emitter.emit('status', this._connected);
         if (this._previouslyConnected) {
           logger.info('WebSocket reconnected');
-          this.emit('reconnect');
+          this._emitter.emit('reconnect');
         } else {
           logger.info('WebSocket connected');
-          this.emit('connect');
+          this._emitter.emit('connect');
         }
         this._previouslyConnected = true;
         this._cachedMessages.splice(0).forEach(message => this.send(message.data));
@@ -158,7 +159,7 @@ class NuclideSocket extends EventEmitter {
       // flags.binary will be set if a binary data is received.
       // flags.masked will be set if the data was masked.
       const json = JSON.parse(data);
-      this.emit('message', json);
+      this._emitter.emit('message', json);
     };
 
     websocket.on('message', onSocketMessage);
@@ -176,8 +177,8 @@ class NuclideSocket extends EventEmitter {
 
   _disconnect() {
     this._connected = false;
-    this.emit('status', this._connected);
-    this.emit('disconnect');
+    this._emitter.emit('status', this._connected);
+    this._emitter.emit('disconnect');
   }
 
   _cleanWebSocket() {
@@ -285,7 +286,7 @@ class NuclideSocket extends EventEmitter {
       }
       this._lastHeartbeat = 'here';
       this._lastHeartbeatTime = now;
-      this.emit('heartbeat');
+      this._emitter.emit('heartbeat');
     } catch (err) {
       this._disconnect();
       this._lastHeartbeat = 'away';
@@ -326,7 +327,7 @@ class NuclideSocket extends EventEmitter {
           code = originalCode;
           break;
       }
-      this.emit('heartbeat.error', {code, originalCode, message});
+      this._emitter.emit('heartbeat.error', {code, originalCode, message});
     }
   }
 
@@ -355,33 +356,33 @@ class NuclideSocket extends EventEmitter {
   }
 
   onHeartbeat(callback: () => mixed): IDisposable {
-    return event.attachEvent(this, 'heartbeat', callback);
+    return event.attachEvent(this._emitter, 'heartbeat', callback);
   }
 
   onHeartbeatError(
     callback: (code: string, originalCode: string, message: string) => mixed
   ): IDisposable {
-    return event.attachEvent(this, 'heartbeat.error', callback);
+    return event.attachEvent(this._emitter, 'heartbeat.error', callback);
   }
 
   onMessage(callback: (message: Object) => mixed): IDisposable {
-    return event.attachEvent(this, 'message', callback);
+    return event.attachEvent(this._emitter, 'message', callback);
   }
 
   onStatus(callback: (connected: boolean) => mixed): IDisposable {
-    return event.attachEvent(this, 'status', callback);
+    return event.attachEvent(this._emitter, 'status', callback);
   }
 
   onConnect(callback: () => mixed): IDisposable {
-    return event.attachEvent(this, 'connect', callback);
+    return event.attachEvent(this._emitter, 'connect', callback);
   }
 
   onReconnect(callback: () => mixed): IDisposable {
-    return event.attachEvent(this, 'reconnect', callback);
+    return event.attachEvent(this._emitter, 'reconnect', callback);
   }
 
   onDisconnect(callback: () => mixed): IDisposable {
-    return event.attachEvent(this, 'disconnect', callback);
+    return event.attachEvent(this._emitter, 'disconnect', callback);
   }
 }
 
