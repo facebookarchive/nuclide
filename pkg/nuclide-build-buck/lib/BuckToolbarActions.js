@@ -20,7 +20,6 @@ class BuckToolbarActions {
     DEBUG: 'DEBUG',
     RUN: 'RUN',
     TEST: 'TEST',
-    TOGGLE_PANEL_VISIBILITY: 'TOGGLE_PANEL_VISIBILITY',
     UPDATE_BUILD_TARGET: 'UPDATE_BUILD_TARGET',
     UPDATE_PANEL_VISIBILITY: 'UPDATE_PANEL_VISIBILITY',
     UPDATE_PROJECT: 'UPDATE_PROJECT',
@@ -30,19 +29,6 @@ class BuckToolbarActions {
 
   constructor(dispatcher: Dispatcher) {
     this._dispatcher = dispatcher;
-  }
-
-  togglePanelVisibility(): void {
-    this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.TOGGLE_PANEL_VISIBILITY,
-    });
-  }
-
-  updateIsPanelVisible(isPanelVisible: boolean): void {
-    this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.UPDATE_PANEL_VISIBILITY,
-      isPanelVisible,
-    });
   }
 
   updateProjectFor(editor: TextEditor): void {

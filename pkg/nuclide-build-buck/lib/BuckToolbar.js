@@ -18,13 +18,6 @@ import BuckToolbarActions from './BuckToolbarActions';
 import BuckToolbarStore from './BuckToolbarStore';
 import {Combobox} from '../../nuclide-ui/lib/Combobox';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
-import {
-  Button,
-} from '../../nuclide-ui/lib/Button';
-import {
-  ButtonGroup,
-  ButtonGroupSizes,
-} from '../../nuclide-ui/lib/ButtonGroup';
 
 const BUCK_TARGET_INPUT_WIDTH = 400;
 const formatRequestOptionsErrorMessage = () => 'Invalid .buckconfig';
@@ -115,9 +108,7 @@ class BuckToolbar extends React.Component {
         />;
     }
     return (
-      <div
-        className="buck-toolbar padded tool-panel"
-        hidden={!buckToolbarStore.isPanelVisible()}>
+      <div>
         <Combobox
           className="inline-block"
           ref="buildTarget"
@@ -137,12 +128,6 @@ class BuckToolbar extends React.Component {
           title="Choose target device"
           onSelectedSimulatorChange={this._handleSimulatorChange}
         />
-        <ButtonGroup className="inline-block" size={ButtonGroupSizes.SMALL}>
-          <Button onClick={this._build} disabled={disabled}>Build</Button>
-          <Button onClick={this._run} disabled={disabled}>Run</Button>
-          <Button onClick={this._test} disabled={disabled}>Test</Button>
-          <Button onClick={this._debug} disabled={disabled}>Debug</Button>
-        </ButtonGroup>
         {serverModeCheckbox}
         {progressBar}
       </div>
