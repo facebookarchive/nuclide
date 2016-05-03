@@ -9,12 +9,18 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHintProvider} from '../../nuclide-type-hint-interfaces';
+import type {TypeHintProvider} from './types';
 import type {
   DatatipProvider,
   DatatipService,
 } from '../../nuclide-datatip';
 import type TypeHintManagerType from './TypeHintManager';
+
+export type {
+  HintTree,
+  TypeHint,
+  TypeHintProvider,
+} from './types';
 
 import invariant from 'assert';
 import {

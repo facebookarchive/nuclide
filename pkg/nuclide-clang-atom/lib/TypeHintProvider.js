@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHint} from '../../nuclide-type-hint-interfaces';
+import type {TypeHint} from '../../nuclide-type-hint';
 
 import {Point, Range} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';

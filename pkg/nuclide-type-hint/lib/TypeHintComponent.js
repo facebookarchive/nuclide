@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {HintTree} from '../../nuclide-type-hint-interfaces';
+import type {HintTree} from './types';
 
 import {TextBuffer} from 'atom';
 import {React} from 'react-for-atom';

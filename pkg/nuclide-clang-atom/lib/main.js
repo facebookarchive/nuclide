@@ -13,7 +13,7 @@ import type {HyperclickProvider} from '../../hyperclick';
 import type {
   TypeHint,
   TypeHintProvider as TypeHintProviderType,
-} from '../../nuclide-type-hint-interfaces';
+} from '../../nuclide-type-hint';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../nuclide-busy-signal';
