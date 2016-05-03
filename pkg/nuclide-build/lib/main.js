@@ -12,6 +12,7 @@
 import type {Commands as CommandsType} from './Commands';
 import type {AppState, BuildSystem, BuildSystemRegistry, SerializedAppState} from './types';
 import type {BehaviorSubject} from 'rxjs';
+import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 
 import {DisposableSubscription} from '../../nuclide-commons';
 import invariant from 'assert';
@@ -140,5 +141,16 @@ export function serialize(): SerializedAppState {
     previousSessionActiveTaskType:
       state.activeTaskType || state.previousSessionActiveTaskType,
     visible: state.visible,
+  };
+}
+
+export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
+  return {
+    name: 'nuclide-build',
+    isVisible: () => (invariant(_states != null), _states.getValue().visible),
+    toggle: () => {
+      invariant(_commands != null);
+      _commands.toggleToolbarVisibility();
+    },
   };
 }
