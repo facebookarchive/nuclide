@@ -22,11 +22,6 @@ import type {
   Type,
 } from './types';
 
-/** Cache for definitions. */
-const definitionsCache: Map<string, Definitions> = new Map();
-/** Cache for remote proxies. */
-const proxiesCache: Map<string, {factory: Function; proxies: WeakMap}> = new Map();
-
 export type RpcContext = {
   callRemoteFunction(functionName: string, returnType: ReturnKind, args: Array<any>): any;
   callRemoteMethod(
@@ -45,6 +40,14 @@ export type RpcContext = {
   marshal(value: any, type: Type): any;
   unmarshal(value: any, type: Type): any;
 };
+
+/** Cache for definitions. */
+const definitionsCache: Map<string, Definitions> = new Map();
+/** Cache for remote proxies. */
+const proxiesCache: Map<string, {
+  factory: (context: RpcContext) => Object;
+  proxies: WeakMap<RpcContext, Object>;
+}> = new Map();
 
 /**
  * Load the definitions, cached by their resolved file path.

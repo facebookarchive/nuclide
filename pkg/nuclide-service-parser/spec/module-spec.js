@@ -18,12 +18,12 @@ describe('Module public API.', () => {
   });
 
   it('Creates a remote proxy for a module, caching the intermediate results.', () => {
-    const fakeClient = {};
+    const fakeClient: any = {};
     const defFile = '../spec/fixtures/FunctionService.def';
 
     expect(__test__.definitionsCache.size).toBe(0);
 
-    const proxy = getProxy('FunctionService', defFile, (fakeClient: any));
+    const proxy = getProxy('FunctionService', defFile, fakeClient);
     expect(Object.keys(proxy)).diffJson([
       'TestFunctionA', 'TestFunctionB', 'TestFunctionC', 'TestFunctionD', 'ReturnAlias']);
 
