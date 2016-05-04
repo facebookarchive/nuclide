@@ -1,11 +1,12 @@
 /.eslintignore
-/.eslintrc
+/.eslintrc.js
 /.flowconfig
+/CONTRIBUTING.md
+/ISSUE_TEMPLATE.md
 /docs
 /pkg/sample-*
 /resources/benchmarker
 /scripts
-babel-cache
 spec
 
 # Ignore "BUCK" files, but not "buck/" directories.
