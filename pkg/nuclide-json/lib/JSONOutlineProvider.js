@@ -11,6 +11,7 @@
 
 import type {Outline} from '../../nuclide-outline-view';
 
+import invariant from 'assert';
 import {parseJSON, babelPosToPoint} from './parsing';
 
 export function getOutline(text: string): ?Outline {
@@ -23,10 +24,16 @@ export function getOutline(text: string): ?Outline {
       // Filter out property keys that aren't string literals, such as computed properties. They
       // aren't valid JSON but nothing actually enforces that we are getting valid JSON and we are
       // using a full JS parser so we have to handle cases like this.
-      .filter(prop => prop.key.type === 'Literal' && typeof prop.key.value === 'string')
+      .filter(prop => (
+        prop.type === 'Property' &&
+        prop.key.type === 'Literal' &&
+        typeof prop.key.value === 'string'
+      ))
       .map(prop => {
+        invariant(prop.type === 'Property');
+        invariant(prop.key.type === 'Literal');
         return {
-          plainText: prop.key.value,
+          plainText: String(prop.key.value),
           startPosition: babelPosToPoint(prop.loc.start),
           endPosition: babelPosToPoint(prop.loc.end),
           children: [],

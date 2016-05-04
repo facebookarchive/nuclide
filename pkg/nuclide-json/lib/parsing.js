@@ -9,15 +9,11 @@
  * the root directory of this source tree.
  */
 
-import {Point, Range} from 'atom';
+import type {Node} from 'ast-types-flow';
 
-let babelCore = null;
-function babelParse(text: string): Object {
-  if (babelCore == null) {
-    babelCore = require('babel-core');
-  }
-  return babelCore.parse(text);
-}
+import invariant from 'assert';
+import {Point, Range} from 'atom';
+import parse from 'babel-core/lib/helpers/parse';
 
 type BabelPos = {
   line: number;
@@ -32,15 +28,20 @@ type BabelLoc = {
 /**
  * Returns a Babel Expression AST node, or null if the parse does not succeed.
  */
-export function parseJSON(json: string): ?Object {
-  // This fucks up the positions but without it, babel won't parse the text as an expression
+export function parseJSON(json: string): ?Node {
+  // This messes up the positions but without it, babel won't parse the text as an expression.
   const jsonWithParens = '(\n' + json + '\n)';
   try {
-    const ast = babelParse(jsonWithParens);
-    return ast.body[0].expression;
-  } catch (e) {
-    return null;
-  }
+    const ast: Node = parse(jsonWithParens);
+    if (ast.type === 'File') {
+      invariant(ast.program.body[0].type === 'ExpressionStatement');
+      return ast.program.body[0].expression;
+    } else if (ast.type === 'Program') {
+      invariant(ast.body[0].type === 'ExpressionStatement');
+      return ast.body[0].expression;
+    }
+  } catch (e) {}
+  return null;
 }
 
 export function babelPosToPoint(pos: BabelPos): atom$Point {
