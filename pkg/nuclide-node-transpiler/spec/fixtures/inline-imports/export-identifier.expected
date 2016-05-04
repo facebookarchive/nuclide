@@ -1,0 +1,21 @@
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _foo2;
+
+function _foo() {
+  return _foo2 = _interopRequireDefault(require('./foo'));
+}
+
+var _bar2;
+
+function _bar() {
+  return _bar2 = require('./bar');
+}
+
+exports.foo = (_foo2 || _foo()).default;
+exports.Foo = (_foo2 || _foo()).default;
+exports.Bar = (_bar2 || _bar()).Bar;

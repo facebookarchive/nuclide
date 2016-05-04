@@ -24,7 +24,9 @@ const transformer = require('../lib/inline-imports-tr');
 [
   'decorators',
   'default-and-namespace-specifier',
+  'default-param',
   'default-specifier',
+  'export-identifier',
   'global-identifier',
   'multiple-specifiers',
   'namespace-specifier',

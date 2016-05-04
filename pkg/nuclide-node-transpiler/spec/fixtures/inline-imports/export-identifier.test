@@ -1,0 +1,5 @@
+import Foo from './foo';
+import {Bar} from './bar';
+
+export {Foo as foo};
+export {Foo, Bar};
