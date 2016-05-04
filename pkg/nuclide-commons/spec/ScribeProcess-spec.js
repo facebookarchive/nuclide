@@ -30,12 +30,6 @@ async function getContentOfScribeCategory(category: string): Promise<Array<mixed
   return result;
 }
 
-function sleep(timeMs: number): Promise<void> {
-  return new Promise((resolve, reject) => {
-    setTimeout(resolve, timeMs);
-  });
-}
-
 describe('scribe_cat test suites', () => {
   beforeEach(() => {
     jasmine.useRealClock();
@@ -65,7 +59,7 @@ describe('scribe_cat test suites', () => {
     waitsForPromise(async () => {
       await Promise.all(messages.map(message => localScribeProcess.write(message)));
       // Wait for `scribe_cat_mock` to flush data into disk.
-      await sleep(100);
+      await localScribeProcess.join();
       expect(messages).toEqual(await getContentOfScribeCategory('test'));
     });
   });
@@ -79,11 +73,11 @@ describe('scribe_cat test suites', () => {
     waitsForPromise(async () => {
       await Promise.all(firstPart.map(message => localScribeProcess.write(message)));
       await localScribeProcess.write(JSON.stringify('abort'));
-      // Give some time to scribeProcess and wait for it resume.
-      await sleep(100);
+      // Wait for the scribe process to crash.
+      await localScribeProcess.join();
       await Promise.all(secondPart.map(message => localScribeProcess.write(message)));
       // Wait for `scribe_cat_mock` to flush data into disk.
-      await sleep(100);
+      await localScribeProcess.join();
       expect(firstPart.concat(secondPart))
         .toEqual(await getContentOfScribeCategory('test'));
     });
