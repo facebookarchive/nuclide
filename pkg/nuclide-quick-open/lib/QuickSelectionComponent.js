@@ -717,8 +717,7 @@ export default class QuickSelectionComponent extends React.Component {
     if (object.isEmpty(this.state.resultsByService)) {
       noResultsMessage = this._renderEmptyMessage('Search away!');
     } else if (numTotalResultsRendered === 0) {
-      // eslint-disable-next-line no-useless-escape
-      noResultsMessage = this._renderEmptyMessage(<span>¯\_(ツ)_/¯<br />No results</span>);
+      noResultsMessage = this._renderEmptyMessage(<span>No results</span>);
     }
     const currentProvider = this.getProvider();
     const promptText = (currentProvider && currentProvider.prompt) || '';
