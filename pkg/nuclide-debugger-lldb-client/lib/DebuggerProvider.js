@@ -14,7 +14,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import {LLDBLaunchAttachProvider} from './LLDBLaunchAttachProvider';
 
 function getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
-  return new LLDBLaunchAttachProvider('Native', connection);
+  return new LLDBLaunchAttachProvider('C++', connection);
 }
 
 module.exports = {
