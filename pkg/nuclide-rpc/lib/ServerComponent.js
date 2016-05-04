@@ -12,7 +12,7 @@
 import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
 import {Observable} from 'rxjs';
 import {getProxy, getDefinitions} from '../../nuclide-service-parser';
-import TypeRegistry from '../../nuclide-service-parser/lib/TypeRegistry';
+import {TypeRegistry} from './TypeRegistry';
 import {builtinLocation, voidType} from '../../nuclide-service-parser/lib/builtin-types';
 import {startTracking} from '../../nuclide-analytics';
 import type {TimingTracker} from '../../nuclide-analytics';

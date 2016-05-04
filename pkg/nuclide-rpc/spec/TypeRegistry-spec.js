@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import TypeRegistry from '../lib/TypeRegistry';
+import {TypeRegistry} from '../lib/TypeRegistry';
 import invariant from 'assert';
 
 import type {
@@ -20,7 +20,7 @@ import type {
   BooleanType,
   UnionType,
   IntersectionType,
-} from '../lib/types';
+} from '../../nuclide-service-parser/lib/types';
 
 import {
   builtinLocation,
@@ -33,7 +33,7 @@ import {
   anyType,
   mixedType,
   objectType,
-} from '../lib/builtin-types';
+} from '../../nuclide-service-parser/lib/builtin-types';
 
 describe('TypeRegistry', () => {
   let typeRegistry: TypeRegistry = (null: any);

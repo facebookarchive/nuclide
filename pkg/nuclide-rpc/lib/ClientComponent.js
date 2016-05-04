@@ -18,7 +18,7 @@ import invariant from 'assert';
 import {EventEmitter} from 'events';
 import {Observable} from 'rxjs';
 
-import TypeRegistry from '../../nuclide-service-parser/lib/TypeRegistry';
+import {TypeRegistry} from './TypeRegistry';
 import {getProxy, getDefinitions} from '../../nuclide-service-parser';
 import {ObjectRegistry} from './ObjectRegistry';
 import {getPath, createRemoteUri} from '../../nuclide-remote-uri';

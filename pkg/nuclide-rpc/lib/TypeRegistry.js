@@ -19,8 +19,14 @@ import type {
   ObjectType,
   ObjectField,
   UnionType,
-} from './types';
-import {objectType, dateType, regExpType, bufferType, fsStatsType} from './builtin-types';
+} from '../../nuclide-service-parser/lib/types';
+import {
+  objectType,
+  dateType,
+  regExpType,
+  bufferType,
+  fsStatsType,
+} from '../../nuclide-service-parser/lib/builtin-types';
 
 
 /*
@@ -116,7 +122,7 @@ function objectToStats(jsonStats: Object): fs.Stats {
  * The MarshallingContext is opaque to the TypeRegistry and allows for adding per-connection
  * context to marshalling transformations.
  */
-export default class TypeRegistry<MarshallingContext> {
+export class TypeRegistry<MarshallingContext> {
   /** Store marshallers and and unmarshallers, index by the kind of the type. */
   _kindMarshallers: Map<string, {
       marshaller: Transformer<MarshallingContext>;
