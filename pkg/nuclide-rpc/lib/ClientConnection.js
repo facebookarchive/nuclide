@@ -53,6 +53,10 @@ export class ClientConnection<TransportType: Transport> {
     this._objectRegistry = new ObjectRegistry('server');
     this._serverComponent = serverComponent;
     this._transport = transport;
+    serverComponent.getServices().forEach(service => {
+      // TODO: Remove the any cast once we have bi-directional marshalling.
+      this._objectRegistry.addService(service.name, service.factory((this: any)));
+    });
     transport.onMessage(message => {
       this._handleMessage(message);
     });

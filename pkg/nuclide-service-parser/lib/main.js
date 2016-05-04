@@ -92,7 +92,7 @@ export function getProxy(
   return factory(clientObject);
 }
 
-function createProxyFactory(
+export function createProxyFactory(
   serviceName: string,
   definitionPath: string
 ): ProxyFactory {

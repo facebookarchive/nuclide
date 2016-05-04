@@ -45,6 +45,8 @@ export class ObjectRegistry {
   _proxiesById: Map<number, Object>;
   // null means the proxy has been disposed.
   _idsByProxy: Map<Object, ?Promise<number>>;
+  // Maps service name to proxy
+  _services: Map<string, Object>;
 
   constructor(kind: RegistryKind) {
     this._delta = (kind === 'server') ? 1 : -1;
@@ -54,6 +56,22 @@ export class ObjectRegistry {
     this._subscriptions = new Map();
     this._proxiesById = new Map();
     this._idsByProxy = new Map();
+    this._services = new Map();
+  }
+
+  addService(serviceName: string, service: Object): void {
+    invariant(!this.hasService(serviceName), `Duplicate service ${serviceName}`);
+    this._services.set(serviceName, service);
+  }
+
+  hasService(serviceName: string): boolean {
+    return this._services.has(serviceName);
+  }
+
+  getService(serviceName: string): Object {
+    const service = this._services.get(serviceName);
+    invariant(service != null);
+    return service;
   }
 
   unmarshal(id: number, proxyClass?: Function): RemoteObject {

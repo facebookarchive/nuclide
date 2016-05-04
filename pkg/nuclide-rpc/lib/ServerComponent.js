@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {getProxy, getDefinitions} from '../../nuclide-service-parser';
+import {createProxyFactory, getDefinitions} from '../../nuclide-service-parser';
 import {TypeRegistry} from './TypeRegistry';
 import type {
   FunctionType,
@@ -17,6 +17,7 @@ import type {
   InterfaceDefinition,
   Type,
 } from '../../nuclide-service-parser/lib/types';
+import type {ProxyFactory} from '../../nuclide-service-parser';
 import invariant from 'assert';
 import type {ConfigEntry} from './index';
 import type {ObjectRegistry} from './ObjectRegistry';
@@ -25,6 +26,10 @@ const logger = require('../../nuclide-logging').getLogger();
 
 export type FunctionImplementation = {localImplementation: Function; type: FunctionType};
 export type ClassDefinition = {localImplementation: any; definition: InterfaceDefinition};
+export type ServiceDefinition = {
+  name: string;
+  factory: ProxyFactory;
+};
 
 export class ServerComponent {
   _typeRegistry: TypeRegistry;
@@ -41,10 +46,13 @@ export class ServerComponent {
    */
   _classesByName: Map<string, ClassDefinition>;
 
+  _services: Array<ServiceDefinition>;
+
   constructor(services: Array<ConfigEntry>) {
     this._typeRegistry = new TypeRegistry();
     this._functionsByName = new Map();
     this._classesByName = new Map();
+    this._services = [];
 
     // NuclideUri type requires no transformations (it is done on the client side).
     this._typeRegistry.registerType('NuclideUri', uri => uri, remotePath => remotePath);
@@ -62,8 +70,10 @@ export class ServerComponent {
       const defs = getDefinitions(service.definition);
       // $FlowIssue - the parameter passed to require must be a literal string.
       const localImpl = require(service.implementation);
-      // TODO: Remove the any cast once we have bi-directional marshalling.
-      const proxy = getProxy(service.name, service.definition, (this: any));
+      this._services.push({
+        name: service.name,
+        factory: createProxyFactory(service.name, service.definition),
+      });
 
       // Register type aliases.
       defs.forEach((definition: Definition) => {
@@ -90,7 +100,8 @@ export class ServerComponent {
             this._typeRegistry.registerType(
               name,
               (object, context: ObjectRegistry) => context.marshal(name, object),
-              (objectId, context: ObjectRegistry) => context.unmarshal(objectId, proxy[name]));
+              (objectId, context: ObjectRegistry) =>
+                context.unmarshal(objectId, context.getService(service.name)[name]));
 
             // Register all of the static methods as remote functions.
             definition.staticMethods.forEach((funcType, funcName) => {
@@ -131,5 +142,9 @@ export class ServerComponent {
 
   getTypeRegistry(): TypeRegistry {
     return this._typeRegistry;
+  }
+
+  getServices(): Array<ServiceDefinition> {
+    return this._services;
   }
 }
