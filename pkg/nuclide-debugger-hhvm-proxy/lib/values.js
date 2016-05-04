@@ -36,7 +36,9 @@ function convertValue(contextId: ObjectId, dbgpProperty: DbgpProperty): Runtime$
     case 'bool':
       return convertBoolValue(dbgpProperty);
     case 'null':
-      return convertNullValue(dbgpProperty);
+      return getNullValue();
+    case 'undefined':
+      return getUndefinedValue();
     case 'array':
       return convertArrayValue(contextId, dbgpProperty);
     case 'object':
@@ -95,11 +97,18 @@ function convertBoolValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
   };
 }
 
-function convertNullValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+function getNullValue(): Runtime$RemoteObject {
   return {
     type: 'undefined',
     subtype: 'null',
     value: null,
+  };
+}
+
+function getUndefinedValue(): Runtime$RemoteObject {
+  return {
+    type: 'undefined',
+    value: undefined,
   };
 }
 

@@ -48,7 +48,7 @@ export type DbgpProperty = {
   $: {
     name?: string; // name and fullname are omitted when we get data back from the `eval` command.
     fullname?: string;
-    address: string;
+    address?: string;
     type: string;
 
     // array or object
@@ -75,6 +75,12 @@ type EvaluationResult = {
   error?: Object;
   result?: ?DbgpProperty;
   wasThrown: boolean;
+};
+
+const DEFAULT_DBGP_PROPERTY: DbgpProperty = {
+  $: {
+    type: 'undefined',
+  },
 };
 
 /**
@@ -217,11 +223,20 @@ class DbgpSocket {
         error: result.error[0],
         wasThrown: true,
       };
+    } else if (result.property != null) {
+      return {
+        result: result.property[0],
+        wasThrown: false,
+      };
+    } else {
+      logger.log(
+        `Received non-error evaluateOnCallFrame response with no properties: ${expression}`,
+      );
+      return {
+        result: DEFAULT_DBGP_PROPERTY,
+        wasThrown: false,
+      };
     }
-    return {
-      result: result.property[0] || [],
-      wasThrown: false,
-    };
   }
 
   // Returns one of:
@@ -279,11 +294,18 @@ class DbgpSocket {
         error: response.error[0],
         wasThrown: true,
       };
+    } else if (response != null) {
+      return {
+        result: response.property[0],
+        wasThrown: false,
+      };
+    } else {
+      logger.log(`Received non-error runtimeEvaluate response with no properties: ${expr}`);
+      return {
+        result: DEFAULT_DBGP_PROPERTY,
+        wasThrown: false,
+      };
     }
-    return {
-      result: response.property[0] || [],
-      wasThrown: false,
-    };
   }
 
   /**
