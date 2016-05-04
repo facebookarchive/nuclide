@@ -35,7 +35,7 @@ export class ClientComponent<TransportType: Transport> {
   _emitter: EventEmitter;
   _transport: TransportType;
 
-  _typeRegistry: TypeRegistry<ObjectRegistry>;
+  _typeRegistry: TypeRegistry;
   _objectRegistry: ObjectRegistry;
   // Maps service name to proxy
   _services: Map<string, Object>;

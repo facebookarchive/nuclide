@@ -27,7 +27,7 @@ import {
   bufferType,
   fsStatsType,
 } from '../../nuclide-service-parser/lib/builtin-types';
-
+import type {ObjectRegistry} from './ObjectRegistry';
 
 /*
  * This type represents a Transformer function, which takes in a value, and either serializes
@@ -39,10 +39,10 @@ import {
  * In the interest of a performance, a transformer should only return a Promise if necessary.
  * (Promise objects and Promise.all are very expensive operations in large numbers).
  */
-export type Transformer<MarshallingContext> =
-  (value: any, type: Type, context: MarshallingContext) => (any | Promise<any>);
-export type NamedTransformer<MarshallingContext>
-  = (value: any, context: MarshallingContext) => (any | Promise<any>);
+export type Transformer =
+  (value: any, type: Type, context: ObjectRegistry) => (any | Promise<any>);
+export type NamedTransformer
+  = (value: any, context: ObjectRegistry) => (any | Promise<any>);
 
 // Equivalent to Promise.all, but avoids wrappers if nothing is actually a promise.
 // Input must be homogenously typed.
@@ -119,20 +119,20 @@ function objectToStats(jsonStats: Object): fs.Stats {
  * that are not handled at the transport layer. The key concept is that marshalling functions can
  * be recursive, calling other marshalling functions, ending at the primitives.
  *
- * The MarshallingContext is opaque to the TypeRegistry and allows for adding per-connection
+ * The ObjectRegistry is opaque to the TypeRegistry and allows for adding per-connection
  * context to marshalling transformations.
  */
-export class TypeRegistry<MarshallingContext> {
+export class TypeRegistry {
   /** Store marshallers and and unmarshallers, index by the kind of the type. */
   _kindMarshallers: Map<string, {
-      marshaller: Transformer<MarshallingContext>;
-      unmarshaller: Transformer<MarshallingContext>;
+      marshaller: Transformer;
+      unmarshaller: Transformer;
     }>;
 
   /** Store marshallers and and unmarshallers, index by the name of the type. */
   _namedMarshallers: Map<string, {
-      marshaller: NamedTransformer<MarshallingContext>;
-      unmarshaller: NamedTransformer<MarshallingContext>;
+      marshaller: NamedTransformer;
+      unmarshaller: NamedTransformer;
     }>;
 
   constructor() {
@@ -147,26 +147,26 @@ export class TypeRegistry<MarshallingContext> {
     this._registerIntersections();
 
     // Register NullableType and NamedType
-    this._registerKind('nullable', (value: any, type: Type, context: MarshallingContext) => {
+    this._registerKind('nullable', (value: any, type: Type, context: ObjectRegistry) => {
       if (value === null || value === undefined || type.kind !== 'nullable') {
         return null;
       }
       return this._marshal(context, value, type.type);
-    }, (value: any, type: Type, context: MarshallingContext) => {
+    }, (value: any, type: Type, context: ObjectRegistry) => {
       if (value === null || value === undefined || type.kind !== 'nullable') {
         return null;
       }
       return this._unmarshal(context, value, type.type);
     });
 
-    this._registerKind('named', (value: any, type: Type, context: MarshallingContext) => {
+    this._registerKind('named', (value: any, type: Type, context: ObjectRegistry) => {
       invariant(type.kind === 'named');
       const namedMarshaller = this._namedMarshallers.get(type.name);
       if (namedMarshaller == null) {
         throw new Error(`No marshaller found for named type ${type.name}.`);
       }
       return namedMarshaller.marshaller(value, context);
-    }, (value: any, type: Type, context: MarshallingContext) => {
+    }, (value: any, type: Type, context: ObjectRegistry) => {
       invariant(type.kind === 'named');
       const namedMarshaller = this._namedMarshallers.get(type.name);
       if (namedMarshaller == null) {
@@ -183,8 +183,8 @@ export class TypeRegistry<MarshallingContext> {
 
   _registerKind(
     kind: string,
-    marshaller: Transformer<MarshallingContext>,
-    unmarshaller: Transformer<MarshallingContext>
+    marshaller: Transformer,
+    unmarshaller: Transformer
   ): void {
     invariant(!this._kindMarshallers.has(kind));
     this._kindMarshallers.set(kind, {marshaller, unmarshaller});
@@ -200,8 +200,8 @@ export class TypeRegistry<MarshallingContext> {
    */
   registerType(
     typeName: string,
-    marshaller: NamedTransformer<MarshallingContext>,
-    unmarshaller: NamedTransformer<MarshallingContext>,
+    marshaller: NamedTransformer,
+    unmarshaller: NamedTransformer,
   ): void {
     if (this._namedMarshallers.has(typeName)) {
       throw new Error(`A type by the name ${typeName} has already been registered.`);
@@ -225,11 +225,11 @@ export class TypeRegistry<MarshallingContext> {
    * @param value - The value to be marshalled.
    * @param type - The type object (used to find the appropriate function).
    */
-  marshal(context: MarshallingContext, value: any, type: Type): Promise<any> {
+  marshal(context: ObjectRegistry, value: any, type: Type): Promise<any> {
     return Promise.resolve(this._marshal(context, value, type));
   }
 
-  _marshal(context: MarshallingContext, value: any, type: Type): any {
+  _marshal(context: ObjectRegistry, value: any, type: Type): any {
     const kindMarshaller = this._kindMarshallers.get(type.kind);
     if (kindMarshaller == null) {
       throw new Error(`No marshaller found for type kind ${type.kind}.`);
@@ -238,7 +238,7 @@ export class TypeRegistry<MarshallingContext> {
   }
 
   marshalArguments(
-    context: MarshallingContext,
+    context: ObjectRegistry,
     args: Array<any>,
     argTypes: Array<Type>
   ): Promise<Array<any>> {
@@ -251,19 +251,19 @@ export class TypeRegistry<MarshallingContext> {
    * @param value - The value to be marshalled.
    * @param type - The type object (used to find the appropriate function).
    */
-  unmarshal(context: MarshallingContext, value: any, type: Type): Promise<any> {
+  unmarshal(context: ObjectRegistry, value: any, type: Type): Promise<any> {
     return Promise.resolve(this._unmarshal(context, value, type));
   }
 
   unmarshalArguments(
-    context: MarshallingContext,
+    context: ObjectRegistry,
     args: Array<any>,
     argTypes: Array<Type>
   ): Promise<Array<any>> {
     return Promise.all(args.map((arg, i) => this.unmarshal(context, arg, argTypes[i])));
   }
 
-  _unmarshal(context: MarshallingContext, value: any, type: Type): any {
+  _unmarshal(context: ObjectRegistry, value: any, type: Type): any {
     const kindMarshaller = this._kindMarshallers.get(type.kind);
     if (kindMarshaller == null) {
       throw new Error(`No unmarshaller found for type kind ${type.kind}.`);
@@ -464,12 +464,12 @@ export class TypeRegistry<MarshallingContext> {
 
   _registerContainers(): void {
     // Serialize / Deserialize Arrays.
-    this._registerKind('array', (value: any, type: Type, context: MarshallingContext) => {
+    this._registerKind('array', (value: any, type: Type, context: ObjectRegistry) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
       invariant(type.kind === 'array');
       const elemType = type.type;
       return smartPromiseAll(value.map(elem => this._marshal(context, elem, elemType)));
-    }, (value: any, type: Type, context: MarshallingContext) => {
+    }, (value: any, type: Type, context: ObjectRegistry) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
       invariant(type.kind === 'array');
       const elemType = type.type;
@@ -477,7 +477,7 @@ export class TypeRegistry<MarshallingContext> {
     });
 
     // Serialize and Deserialize Objects.
-    this._registerKind('object', (obj: any, type: Type, context: MarshallingContext) => {
+    this._registerKind('object', (obj: any, type: Type, context: ObjectRegistry) => {
       assert(typeof obj === 'object', 'Expected an argument of type object.');
       invariant(type.kind === 'object');
       const newObj = {}; // Create a new object so we don't mutate the original one.
@@ -501,7 +501,7 @@ export class TypeRegistry<MarshallingContext> {
         return promise.then(() => newObj);
       }
       return newObj;
-    }, (obj: any, type: Type, context: MarshallingContext) => {
+    }, (obj: any, type: Type, context: ObjectRegistry) => {
       assert(typeof obj === 'object', 'Expected an argument of type object.');
       invariant(type.kind === 'object');
       const newObj = {}; // Create a new object so we don't mutate the original one.
@@ -528,7 +528,7 @@ export class TypeRegistry<MarshallingContext> {
     });
 
     // Serialize / Deserialize Sets.
-    this._registerKind('set', (value: any, type: Type, context: MarshallingContext) => {
+    this._registerKind('set', (value: any, type: Type, context: ObjectRegistry) => {
       invariant(type.kind === 'set');
       assert(value instanceof Set, 'Expected an object of type Set.');
       const serializePromises = [];
@@ -536,7 +536,7 @@ export class TypeRegistry<MarshallingContext> {
         serializePromises.push(this._marshal(context, elem, type.type));
       }
       return smartPromiseAll(serializePromises);
-    }, (value: any, type: Type, context: MarshallingContext) => {
+    }, (value: any, type: Type, context: ObjectRegistry) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
       invariant(type.kind === 'set');
       const elemType = type.type;
@@ -548,7 +548,7 @@ export class TypeRegistry<MarshallingContext> {
     });
 
     // Serialize / Deserialize Maps.
-    this._registerKind('map', (map: Map, type: Type, context: MarshallingContext) => {
+    this._registerKind('map', (map: Map, type: Type, context: ObjectRegistry) => {
       assert(map instanceof Map, 'Expected an object of type Set.');
       invariant(type.kind === 'map');
       const serializePromises = [];
@@ -559,7 +559,7 @@ export class TypeRegistry<MarshallingContext> {
         ]));
       }
       return smartPromiseAll(serializePromises);
-    }, (serialized: any, type: Type, context: MarshallingContext) => {
+    }, (serialized: any, type: Type, context: ObjectRegistry) => {
       assert(serialized instanceof Array, 'Expected an object of type Array.');
       invariant(type.kind === 'map');
       const keyType = type.keyType;
@@ -577,7 +577,7 @@ export class TypeRegistry<MarshallingContext> {
     });
 
     // Serialize / Deserialize Tuples.
-    this._registerKind('tuple', (value: any, type: Type, context: MarshallingContext) => {
+    this._registerKind('tuple', (value: any, type: Type, context: ObjectRegistry) => {
       // Assert the length of the array.
       assert(Array.isArray(value), 'Expected an object of type Array.');
       invariant(type.kind === 'tuple');
@@ -586,7 +586,7 @@ export class TypeRegistry<MarshallingContext> {
 
       // Convert all of the elements through the correct marshaller.
       return checkedSmartPromiseAll(value.map((elem, i) => this._marshal(context, elem, types[i])));
-    }, (value: any, type: Type, context: MarshallingContext) => {
+    }, (value: any, type: Type, context: ObjectRegistry) => {
       // Assert the length of the array.
       assert(Array.isArray(value), 'Expected an object of type Array.');
       invariant(type.kind === 'tuple');

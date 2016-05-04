@@ -34,13 +34,14 @@ import {
   mixedType,
   objectType,
 } from '../../nuclide-service-parser/lib/builtin-types';
+import type {ObjectRegistry} from '../lib/ObjectRegistry';
 
 describe('TypeRegistry', () => {
   let typeRegistry: TypeRegistry = (null: any);
-  let context;
+  let context: ObjectRegistry = (null: any);
   beforeEach(() => {
     typeRegistry = new TypeRegistry();
-    context = {};
+    context = ({}: any);
   });
 
   it('Can serialize / deserialize basic primitive types', () => {

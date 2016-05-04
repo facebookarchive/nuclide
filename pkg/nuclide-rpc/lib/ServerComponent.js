@@ -42,7 +42,7 @@ const logger = require('../../nuclide-logging').getLogger();
 type FunctionImplementation = {localImplementation: Function; type: FunctionType};
 
 export class ServerComponent {
-  _typeRegistry: TypeRegistry<ObjectRegistry>;
+  _typeRegistry: TypeRegistry;
 
   /**
    * Store a mapping from function name to a structure holding both the local implementation and
