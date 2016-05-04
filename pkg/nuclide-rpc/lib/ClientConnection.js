@@ -58,6 +58,152 @@ export class ClientConnection<TransportType: Transport> {
     });
   }
 
+  _returnPromise(
+    requestId: number,
+    timingTracker: TimingTracker,
+    candidate: any,
+    type: Type
+  ): void {
+    let returnVal = candidate;
+    // Ensure that the return value is a promise.
+    if (!isThenable(returnVal)) {
+      returnVal = Promise.reject(
+        new Error('Expected a Promise, but the function returned something else.'));
+    }
+
+    // Marshal the result, to send over the network.
+    invariant(returnVal != null);
+    returnVal = returnVal.then(value => this._getTypeRegistry().marshal(
+      this._objectRegistry, value, type));
+
+    // Send the result of the promise across the socket.
+    returnVal.then(result => {
+      this._transport.send(createPromiseMessage(requestId, result));
+      timingTracker.onSuccess();
+    }, error => {
+      this._transport.send(createErrorMessage(requestId, error));
+      timingTracker.onError(error == null ? new Error() : error);
+    });
+  }
+
+  _returnObservable(requestId: number, returnVal: any, elementType: Type): void {
+    let result: Observable;
+    // Ensure that the return value is an observable.
+    if (!isObservable(returnVal)) {
+      result = Observable.throw(new Error(
+        'Expected an Observable, but the function returned something else.'));
+    } else {
+      result = returnVal;
+    }
+
+    // Marshal the result, to send over the network.
+    result = result.concatMap(value => this._getTypeRegistry().marshal(
+      this._objectRegistry, value, elementType));
+
+    // Send the next, error, and completion events of the observable across the socket.
+    const subscription = result.subscribe(data => {
+      this._transport.send(createNextMessage(requestId, data));
+    }, error => {
+      this._transport.send(createErrorMessage(requestId, error));
+      this._objectRegistry.removeSubscription(requestId);
+    }, completed => {
+      this._transport.send(createCompletedMessage(requestId));
+      this._objectRegistry.removeSubscription(requestId);
+    });
+    this._objectRegistry.addSubscription(requestId, subscription);
+  }
+
+  // Returns true if a promise was returned.
+  _returnValue(requestId: number, timingTracker: TimingTracker, value: any, type: Type): boolean {
+    switch (type.kind) {
+      case 'void':
+        break; // No need to send anything back to the user.
+      case 'promise':
+        this._returnPromise(requestId, timingTracker, value, type.type);
+        return true;
+      case 'observable':
+        this._returnObservable(requestId, value, type.type);
+        break;
+      default:
+        throw new Error(`Unkown return type ${type.kind}.`);
+    }
+    return false;
+  }
+
+  async _callFunction(
+    requestId: number,
+    timingTracker: TimingTracker,
+    call: CallRemoteFunctionMessage
+  ): Promise<boolean> {
+    const {
+      localImplementation,
+      type,
+    } = this._getFunctionImplemention(call.function);
+    const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
+      this._objectRegistry, call.args, type.argumentTypes);
+
+    return this._returnValue(
+      requestId,
+      timingTracker,
+      localImplementation.apply(this, marshalledArgs),
+      type.returnType);
+  }
+
+  async _callMethod(
+    requestId: number,
+    timingTracker: TimingTracker,
+    call: CallRemoteMethodMessage
+  ): Promise<boolean> {
+    const object = this._objectRegistry.unmarshal(call.objectId);
+    invariant(object != null);
+
+    const interfaceName = this._objectRegistry.getInterface(call.objectId);
+    const classDefinition = this._getClassDefinition(interfaceName);
+    invariant(classDefinition != null);
+    const type = classDefinition.definition.instanceMethods.get(call.method);
+    invariant(type != null);
+
+    const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
+      this._objectRegistry, call.args, type.argumentTypes);
+
+    return this._returnValue(
+      requestId,
+      timingTracker,
+      object[call.method].apply(object, marshalledArgs),
+      type.returnType);
+  }
+
+  async _callConstructor(
+    requestId: number,
+    timingTracker: TimingTracker,
+    constructorMessage: CreateRemoteObjectMessage
+  ): Promise<void> {
+    const classDefinition = this._getClassDefinition(constructorMessage.interface);
+    invariant(classDefinition != null);
+    const {
+      localImplementation,
+      definition,
+    } = classDefinition;
+
+    const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
+      this._objectRegistry, constructorMessage.args, definition.constructorArgs);
+
+    // Create a new object and put it in the registry.
+    const newObject = construct(localImplementation, marshalledArgs);
+
+    // Return the object, which will automatically be converted to an id through the
+    // marshalling system.
+    this._returnPromise(
+      requestId,
+      timingTracker,
+      Promise.resolve(newObject),
+      {
+        kind: 'named',
+        name: constructorMessage.interface,
+        location: builtinLocation,
+      });
+  }
+
   async _handleMessage(message: RequestMessage): Promise<void> {
     invariant(message.protocol && message.protocol === SERVICE_FRAMEWORK3_CHANNEL);
 
@@ -70,146 +216,23 @@ export class ClientConnection<TransportType: Transport> {
     const timingTracker: TimingTracker
       = startTracking(trackingIdOfMessage(this._objectRegistry, message));
 
-    const returnPromise = (candidate: any, type: Type) => {
-      let returnVal = candidate;
-      // Ensure that the return value is a promise.
-      if (!isThenable(returnVal)) {
-        returnVal = Promise.reject(
-          new Error('Expected a Promise, but the function returned something else.'));
-      }
-
-      // Marshal the result, to send over the network.
-      invariant(returnVal != null);
-      returnVal = returnVal.then(value => this._getTypeRegistry().marshal(
-        this._objectRegistry, value, type));
-
-      // Send the result of the promise across the socket.
-      returnVal.then(result => {
-        this._transport.send(createPromiseMessage(requestId, result));
-        timingTracker.onSuccess();
-      }, error => {
-        this._transport.send(createErrorMessage(requestId, error));
-        timingTracker.onError(error == null ? new Error() : error);
-      });
-    };
-
-    const returnObservable = (returnVal: any, elementType: Type) => {
-      let result: Observable;
-      // Ensure that the return value is an observable.
-      if (!isObservable(returnVal)) {
-        result = Observable.throw(new Error(
-          'Expected an Observable, but the function returned something else.'));
-      } else {
-        result = returnVal;
-      }
-
-      // Marshal the result, to send over the network.
-      result = result.concatMap(value => this._getTypeRegistry().marshal(
-        this._objectRegistry, value, elementType));
-
-      // Send the next, error, and completion events of the observable across the socket.
-      const subscription = result.subscribe(data => {
-        this._transport.send(createNextMessage(requestId, data));
-      }, error => {
-        this._transport.send(createErrorMessage(requestId, error));
-        this._objectRegistry.removeSubscription(requestId);
-      }, completed => {
-        this._transport.send(createCompletedMessage(requestId));
-        this._objectRegistry.removeSubscription(requestId);
-      });
-      this._objectRegistry.addSubscription(requestId, subscription);
-    };
-
-    // Returns true if a promise was returned.
-    const returnValue = (value: any, type: Type) => {
-      switch (type.kind) {
-        case 'void':
-          break; // No need to send anything back to the user.
-        case 'promise':
-          returnPromise(value, type.type);
-          return true;
-        case 'observable':
-          returnObservable(value, type.type);
-          break;
-        default:
-          throw new Error(`Unkown return type ${type.kind}.`);
-      }
-      return false;
-    };
-
-    const callFunction = async (call: CallRemoteFunctionMessage) => {
-      const {
-        localImplementation,
-        type,
-      } = this._getFunctionImplemention(call.function);
-      const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
-        this._objectRegistry, call.args, type.argumentTypes);
-
-      return returnValue(
-        localImplementation.apply(this, marshalledArgs),
-        type.returnType);
-    };
-
-    const callMethod = async (call: CallRemoteMethodMessage) => {
-      const object = this._objectRegistry.unmarshal(call.objectId);
-      invariant(object != null);
-
-      const interfaceName = this._objectRegistry.getInterface(call.objectId);
-      const classDefinition = this._getClassDefinition(interfaceName);
-      invariant(classDefinition != null);
-      const type = classDefinition.definition.instanceMethods.get(call.method);
-      invariant(type != null);
-
-      const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
-        this._objectRegistry, call.args, type.argumentTypes);
-
-      return returnValue(
-        object[call.method].apply(object, marshalledArgs),
-        type.returnType);
-    };
-
-    const callConstructor = async (constructorMessage: CreateRemoteObjectMessage) => {
-      const classDefinition = this._getClassDefinition(constructorMessage.interface);
-      invariant(classDefinition != null);
-      const {
-        localImplementation,
-        definition,
-      } = classDefinition;
-
-      const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
-        this._objectRegistry, constructorMessage.args, definition.constructorArgs);
-
-      // Create a new object and put it in the registry.
-      const newObject = construct(localImplementation, marshalledArgs);
-
-      // Return the object, which will automatically be converted to an id through the
-      // marshalling system.
-      returnPromise(
-        Promise.resolve(newObject),
-        {
-          kind: 'named',
-          name: constructorMessage.interface,
-          location: builtinLocation,
-        });
-    };
-
     // Here's the main message handler ...
     try {
       let returnedPromise = false;
       switch (message.type) {
         case 'FunctionCall':
-          returnedPromise = await callFunction(message);
+          returnedPromise = await this._callFunction(requestId, timingTracker, message);
           break;
         case 'MethodCall':
-          returnedPromise = await callMethod(message);
+          returnedPromise = await this._callMethod(requestId, timingTracker, message);
           break;
         case 'NewObject':
-          await callConstructor(message);
+          await this._callConstructor(requestId, timingTracker, message);
           returnedPromise = true;
           break;
         case 'DisposeObject':
           await this._objectRegistry.disposeObject(message.objectId);
-          returnPromise(Promise.resolve(), voidType);
+          this._returnPromise(requestId, timingTracker, Promise.resolve(), voidType);
           returnedPromise = true;
           break;
         case 'DisposeObservable':
