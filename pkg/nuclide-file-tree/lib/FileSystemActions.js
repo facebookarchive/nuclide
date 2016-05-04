@@ -28,8 +28,8 @@ import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constant
 
 import pathModule from 'path';
 
+let atomPanel: ?Object;
 let dialogComponent: ?React.Component;
-let dialogHostElement: ?HTMLElement;
 
 const legalStatusCodeForRename = new Set([
   StatusCodeNumber.ADDED,
@@ -309,8 +309,8 @@ const FileSystemActions = {
 
   _openDialog(props: Object): void {
     this._closeDialog();
-    dialogHostElement = document.createElement('div');
-    atom.views.getView(atom.workspace).appendChild(dialogHostElement);
+    const dialogHostElement = document.createElement('div');
+    atomPanel = atom.workspace.addModalPanel({item: dialogHostElement});
     dialogComponent = ReactDOM.render(
       <FileDialogComponent {...props} />,
       dialogHostElement
@@ -318,13 +318,14 @@ const FileSystemActions = {
   },
 
   _closeDialog(): void {
-    if (dialogComponent != null) {
-      ReactDOM.unmountComponentAtNode(dialogHostElement);
-      dialogComponent = null;
-    }
-    if (dialogHostElement != null) {
-      dialogHostElement.parentNode.removeChild(dialogHostElement);
-      dialogHostElement = null;
+    if (atomPanel != null) {
+      if (dialogComponent != null) {
+        ReactDOM.unmountComponentAtNode(atomPanel.getItem());
+        dialogComponent = null;
+      }
+
+      atomPanel.destroy();
+      atomPanel = null;
     }
   },
 };
