@@ -15,6 +15,8 @@ import invariant from 'assert';
 import Module from 'module';
 
 import NodeTranspiler from '../../nuclide-node-transpiler/lib/NodeTranspiler';
+import {generateProxy} from './proxy-generator';
+import {parseServiceDefinition} from './service-parser';
 
 import type {
   Definitions,
@@ -41,13 +43,12 @@ export type RpcContext = {
   unmarshal(value: any, type: Type): any;
 };
 
+export type ProxyFactory = (context: RpcContext) => Object;
+
 /** Cache for definitions. */
 const definitionsCache: Map<string, Definitions> = new Map();
 /** Cache for remote proxies. */
-const proxiesCache: Map<string, {
-  factory: (context: RpcContext) => Object;
-  proxies: WeakMap<RpcContext, Object>;
-}> = new Map();
+const proxiesCache: Map<string, ProxyFactory> = new Map();
 
 /**
  * Load the definitions, cached by their resolved file path.
@@ -55,17 +56,18 @@ const proxiesCache: Map<string, {
  *  the caller.
  * @returns - The Definitions that represents the API of the definiition file.
  */
-// $FlowFixMe
 export function getDefinitions(definitionPath: string): Definitions {
-  const resolvedPath = resolvePath(definitionPath);
-
-  // Cache definitions by the resolved file path they were loaded from.
-  if (!definitionsCache.has(resolvedPath)) {
-    const {parseServiceDefinition} = require('./service-parser');
-    definitionsCache.set(resolvedPath,
-      parseServiceDefinition(resolvedPath, fs.readFileSync(resolvedPath, 'utf8')));
+  if (!definitionsCache.has(definitionPath)) {
+    definitionsCache.set(definitionPath, loadDefinitions(definitionPath));
   }
-  return definitionsCache.get(resolvedPath);
+  const result = definitionsCache.get(definitionPath);
+  invariant(result != null);
+  return result;
+}
+
+function loadDefinitions(definitionPath: string): Definitions {
+  const resolvedPath = resolvePath(definitionPath);
+  return parseServiceDefinition(resolvedPath, fs.readFileSync(resolvedPath, 'utf8'));
 }
 
 /**
@@ -81,39 +83,39 @@ export function getProxy(
   definitionPath: string,
   clientObject: RpcContext
 ): any {
-  const resolvedPath = resolvePath(definitionPath);
+  if (!proxiesCache.has(definitionPath)) {
+    proxiesCache.set(definitionPath, createProxyFactory(serviceName, definitionPath));
+  }
+
+  const factory = proxiesCache.get(definitionPath);
+  invariant(factory != null);
+  return factory(clientObject);
+}
+
+function createProxyFactory(
+  serviceName: string,
+  definitionPath: string
+): ProxyFactory {
+  // Transpile this code (since it will use anonymous classes and arrow functions).
   const defs = getDefinitions(definitionPath);
+  const code = generateProxy(serviceName, defs);
+  const filename = path.parse(definitionPath).name + 'Proxy.js';
+  const m = transpileToModule(code, filename);
 
-  // Cache proxy factory functions by the resolved definition file path.
-  if (!proxiesCache.has(resolvedPath)) {
-    const {generateProxy} = require('./proxy-generator');
+  return m.exports;
+}
 
-    // Transpile this code (since it will use anonymous classes and arrow functions).
-    const code = generateProxy(serviceName, defs);
-    const filename = path.parse(definitionPath).name + 'Proxy.js';
-    const transpiled = (new NodeTranspiler()).transformWithCache(code, filename);
+function transpileToModule(code: string, filename: string): Module {
+  const transpiled = (new NodeTranspiler()).transformWithCache(code, filename);
 
-    // Load the module directly from a string,
-    const m = new Module();
-    // as if it were a sibling to this file.
-    m.filename = m.id = path.join(__dirname, filename);
-    m.paths = ((module: any).paths: Array<string>);
-    m._compile(transpiled, filename);
+  // Load the module directly from a string,
+  const m = new Module();
+  // as if it were a sibling to this file.
+  m.filename = m.id = path.join(__dirname, filename);
+  m.paths = ((module: any).paths: Array<string>);
+  m._compile(transpiled, filename);
 
-    // Add the factory function to a cache.
-    proxiesCache.set(resolvedPath, {
-      factory: m.exports,
-      proxies: new WeakMap(),
-    });
-  }
-
-  // Cache remote proxy modules by the (definition path, client object) tuple.
-  const cache = proxiesCache.get(resolvedPath);
-  invariant(cache != null);
-  if (!cache.proxies.has(clientObject)) {
-    cache.proxies.set(clientObject, cache.factory(clientObject));
-  }
-  return cache.proxies.get(clientObject);
+  return m;
 }
 
 /**
