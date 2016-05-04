@@ -759,15 +759,7 @@ export class FileTreeStore {
               return prevNode;
             }
 
-            return node.createChild({
-              uri,
-              isExpanded: false,
-              isSelected: false,
-              isLoading: false,
-              isCwd: false,
-              isTracked: false,
-              children: new Immutable.OrderedMap(),
-            });
+            return new FileTreeNode({uri, rootUri: node.rootUri}, this._conf);
           });
 
           const children = FileTreeNode.childrenFromArray(childrenNodes);
@@ -1264,21 +1256,26 @@ export class FileTreeStore {
 
       const parents = [];
       let currentParentUri = FileTreeHelpers.getParentKey(nodeKey);
+      const rootUri = root.uri;
       while (currentParentUri !== deepest.uri) {
         parents.push(currentParentUri);
         currentParentUri = FileTreeHelpers.getParentKey(currentParentUri);
       }
 
-      let currentChild = deepest.createChild({uri: nodeKey});
+      let currentChild = new FileTreeNode({uri: nodeKey, rootUri}, this._conf);
 
       parents.forEach(currentUri => {
         this._fetchChildKeys(currentUri);
-        const parent = deepest.createChild({
-          uri: currentUri,
-          isLoading: true,
-          isExpanded: true,
-          children: FileTreeNode.childrenFromArray([currentChild]),
-        });
+        const parent = new FileTreeNode(
+          {
+            uri: currentUri,
+            rootUri,
+            isLoading: true,
+            isExpanded: true,
+            children: FileTreeNode.childrenFromArray([currentChild]),
+          },
+          this._conf,
+        );
 
         currentChild = parent;
       });

@@ -21,19 +21,6 @@ import type {WorkingSet} from '../../nuclide-working-sets';
 import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
 
 
-export type FileTreeChildNodeOptions = {
-  uri: NuclideUri;
-  isExpanded?: boolean;
-  isSelected?: boolean;
-  isLoading?: boolean;
-  isCwd?: boolean;
-  isTracked?: boolean;
-  children?: Immutable.OrderedMap<string, FileTreeNode>;
-  subscription?: ?IDisposable;
-};
-
-// Ideally the type here would be FileTreeChildNodeOptions & {rootUri},
-// but flow doesn't handle it well
 export type FileTreeNodeOptions = {
   uri: NuclideUri;
   rootUri: NuclideUri;
@@ -93,10 +80,6 @@ export type ImmutableNodeSettableFields = {
 *   The FileTreeNode class is almost entirely immutable. Except for the parent and the sibling
 * links no properties are to be updated after the creation.
 *
-*   An instance can either be created by calling the constructor which accepts multiple options and
-* the configuration, or by calling a `createChild()` method. The createChild() inherits the
-* configuration instance and many of the options from the instance it was created from.
-*
 *   The class contains multiple derived fields. The derived fields are calculated from the options,
 * from the configuration values and even from chieldren's properties. Once calculated the properties
 * are immutable.
@@ -135,11 +118,9 @@ export type ImmutableNodeSettableFields = {
 *   Just like the parent property, some operations require an ability to find siblings easily.
 * The previous and the next sibling properties are too set when a child is assigned to its parent.
 *
-*   Some of the properties are derived from the properties of children. For example when editing a
-* Working set all ancestors of a selected node must have either partial or a complete selection.
-* This is something done with the help of the children-derived fields. Additional example is the
-* .containsSelection property - having it allows efficient selection removal from the entire tree
-* or one of its branches.
+*   Some of the properties are derived from the properties of children. For example, it is
+* beneficial to know whether a node contains a selected node in its sub-tree and the size of the
+* visible sub-tree.
 *
 *   All property derivation and links set-up is done with one traversal only over the children.
 *
@@ -391,24 +372,6 @@ export class FileTreeNode {
   updateConf(): FileTreeNode {
     const children = this.children.map(c => c.updateConf(this.conf));
     return this.newNode({children}, this.conf);
-  }
-
-  /**
-  * Creates a decendant node that inherits many of the properties (rootUri, repo, etc)
-  * The created node does not have to be a direct decendant and moreover it is not assigned
-  * automatically in any way to the list of current node children.
-  */
-  createChild(options: FileTreeChildNodeOptions): FileTreeNode {
-    return new FileTreeNode({
-      ...this._buildOptions(),
-      isCwd: false,
-      connectionTitle: '',
-      children: new Immutable.OrderedMap(),
-      subscription: null,
-      ...options,
-    },
-    this.conf,
-    );
   }
 
   /**
