@@ -93,8 +93,13 @@ jsFiles.forEach(filename => {
   // Prevent leaking private data in the sourcemap file path
   assert(safeFilename.indexOf(process.env.HOME) === -1);
 
-  const code = nodeTranspiler.transform(src, safeFilename);
-  fs.writeFileSync(filename, code);
+  try {
+    const code = nodeTranspiler.transform(src, safeFilename);
+    fs.writeFileSync(filename, code);
+  } catch (err) {
+    console.error('Error transpiling %j', filename);
+    throw err;
+  }
 });
 
 console.log(
