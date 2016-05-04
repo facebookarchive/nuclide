@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,90 +14,110 @@
  * the root directory of this source tree.
  */
 
-import {DbgpSocket} from './DbgpSocket';
-import {DataCache} from './DataCache';
+var _DbgpSocket = require('./DbgpSocket');
 
-import type {Socket} from 'net';
+var _DataCache = require('./DataCache');
 
-let connectionCount = 1;
+var connectionCount = 1;
 
-export class Connection {
-  _socket: DbgpSocket;
-  _dataCache: DataCache;
-  _id: number;
+var Connection = (function () {
+  function Connection(socket) {
+    _classCallCheck(this, Connection);
 
-  constructor(socket: Socket) {
-    const dbgpSocket = new DbgpSocket(socket);
+    var dbgpSocket = new _DbgpSocket.DbgpSocket(socket);
     this._socket = dbgpSocket;
-    this._dataCache = new DataCache(dbgpSocket);
+    this._dataCache = new _DataCache.DataCache(dbgpSocket);
     this._id = connectionCount++;
   }
 
-  getId(): number {
-    return this._id;
-  }
+  _createClass(Connection, [{
+    key: 'getId',
+    value: function getId() {
+      return this._id;
+    }
+  }, {
+    key: 'onStatus',
+    value: function onStatus(callback) {
+      return this._socket.onStatus(callback);
+    }
+  }, {
+    key: 'evaluateOnCallFrame',
+    value: function evaluateOnCallFrame(frameIndex, expression) {
+      return this._dataCache.evaluateOnCallFrame(frameIndex, expression);
+    }
+  }, {
+    key: 'runtimeEvaluate',
+    value: function runtimeEvaluate(frameIndex, expression) {
+      return this._dataCache.runtimeEvaluate(frameIndex, expression);
+    }
+  }, {
+    key: 'setExceptionBreakpoint',
+    value: function setExceptionBreakpoint(exceptionName) {
+      return this._socket.setExceptionBreakpoint(exceptionName);
+    }
+  }, {
+    key: 'setBreakpoint',
+    value: function setBreakpoint(filename, lineNumber) {
+      return this._socket.setBreakpoint(filename, lineNumber);
+    }
+  }, {
+    key: 'removeBreakpoint',
+    value: function removeBreakpoint(breakpointId) {
+      return this._socket.removeBreakpoint(breakpointId);
+    }
+  }, {
+    key: 'getStackFrames',
+    value: function getStackFrames() {
+      return this._socket.getStackFrames();
+    }
+  }, {
+    key: 'getScopesForFrame',
+    value: function getScopesForFrame(frameIndex) {
+      return this._dataCache.getScopesForFrame(frameIndex);
+    }
+  }, {
+    key: 'getStatus',
+    value: function getStatus() {
+      return this._socket.getStatus();
+    }
+  }, {
+    key: 'sendContinuationCommand',
+    value: function sendContinuationCommand(command) {
+      return this._socket.sendContinuationCommand(command);
+    }
+  }, {
+    key: 'sendStdoutRequest',
+    value: function sendStdoutRequest() {
+      return this._socket.sendStdoutRequest();
+    }
+  }, {
+    key: 'sendStderrRequest',
+    value: function sendStderrRequest() {
+      return this._socket.sendStderrRequest();
+    }
+  }, {
+    key: 'sendBreakCommand',
+    value: function sendBreakCommand() {
+      return this._socket.sendBreakCommand();
+    }
+  }, {
+    key: 'setFeature',
+    value: function setFeature(name, value) {
+      return this._socket.setFeature(name, value);
+    }
+  }, {
+    key: 'getProperties',
+    value: function getProperties(remoteId) {
+      return this._dataCache.getProperties(remoteId);
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._socket.dispose();
+    }
+  }]);
 
-  onStatus(callback: (status: string, ...args: Array<string>) => mixed): IDisposable {
-    return this._socket.onStatus(callback);
-  }
+  return Connection;
+})();
 
-  evaluateOnCallFrame(frameIndex: number, expression: string): Promise<Object> {
-    return this._dataCache.evaluateOnCallFrame(frameIndex, expression);
-  }
-
-  runtimeEvaluate(frameIndex: number, expression: string): Promise<Object> {
-    return this._dataCache.runtimeEvaluate(frameIndex, expression);
-  }
-
-  setExceptionBreakpoint(exceptionName: string): Promise<string> {
-    return this._socket.setExceptionBreakpoint(exceptionName);
-  }
-
-  setBreakpoint(filename: string, lineNumber: number): Promise<string> {
-    return this._socket.setBreakpoint(filename, lineNumber);
-  }
-
-  removeBreakpoint(breakpointId: string): Promise {
-    return this._socket.removeBreakpoint(breakpointId);
-  }
-
-  getStackFrames(): Promise<Object> {
-    return this._socket.getStackFrames();
-  }
-
-  getScopesForFrame(frameIndex: number): Promise<Array<Debugger$Scope>> {
-    return this._dataCache.getScopesForFrame(frameIndex);
-  }
-
-  getStatus(): Promise<string> {
-    return this._socket.getStatus();
-  }
-
-  sendContinuationCommand(command: string): Promise<string> {
-    return this._socket.sendContinuationCommand(command);
-  }
-
-  sendStdoutRequest(): Promise<boolean> {
-    return this._socket.sendStdoutRequest();
-  }
-
-  sendStderrRequest(): Promise<boolean> {
-    return this._socket.sendStderrRequest();
-  }
-
-  sendBreakCommand(): Promise<boolean> {
-    return this._socket.sendBreakCommand();
-  }
-
-  setFeature(name: string, value: string): Promise<boolean> {
-    return this._socket.setFeature(name, value);
-  }
-
-  getProperties(remoteId: Runtime$RemoteObjectId): Promise<Array<Runtime$PropertyDescriptor>> {
-    return this._dataCache.getProperties(remoteId);
-  }
-
-  dispose(): void {
-    this._socket.dispose();
-  }
-}
+exports.Connection = Connection;

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +10,42 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
+exports.getFlowServiceByNuclideUri = getFlowServiceByNuclideUri;
+exports.getLocalFlowService = getLocalFlowService;
+exports.getServerStatusUpdates = getServerStatusUpdates;
+exports.getCurrentServiceInstances = getCurrentServiceInstances;
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {
-  ServerStatusUpdate,
-} from '../../nuclide-flow-base';
-import typeof * as FlowService from '../../nuclide-flow-base';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import invariant from 'assert';
-import {Subject} from 'rxjs';
+var _assert = require('assert');
 
-import {getServiceByNuclideUri} from '../../nuclide-client';
+var _assert2 = _interopRequireDefault(_assert);
 
-const FLOW_SERVICE = 'FlowService';
+var _rxjs = require('rxjs');
 
-const serverStatusUpdates: Subject<ServerStatusUpdate> = new Subject();
+var _nuclideClient = require('../../nuclide-client');
 
-const serviceInstances = new Set();
+var FLOW_SERVICE = 'FlowService';
 
-export function getFlowServiceByNuclideUri(file: NuclideUri): FlowService {
+var serverStatusUpdates = new _rxjs.Subject();
+
+var serviceInstances = new Set();
+
+function getFlowServiceByNuclideUri(file) {
   return getFlowServiceByNullableUri(file);
 }
 
-export function getLocalFlowService(): FlowService {
+function getLocalFlowService() {
   return getFlowServiceByNullableUri(null);
 }
 
 /** Returns the FlowService for the given URI, or the local FlowService if the given URI is null. */
-function getFlowServiceByNullableUri(file: ?NuclideUri): FlowService {
-  const flowService: ?FlowService = getServiceByNuclideUri(FLOW_SERVICE, file);
-  invariant(flowService != null);
+function getFlowServiceByNullableUri(file) {
+  var flowService = (0, _nuclideClient.getServiceByNuclideUri)(FLOW_SERVICE, file);
+  (0, _assert2.default)(flowService != null);
   if (!serviceInstances.has(flowService)) {
     serviceInstances.add(flowService);
-    const statusUpdates: Observable<ServerStatusUpdate> = flowService.getServerStatusUpdates();
+    var statusUpdates = flowService.getServerStatusUpdates();
     // TODO Unsubscribe at some point. To do that, we need a hook into the service framework so we
     // can learn when a given service instance is gone. I would expect the service framework to send
     // onCompleted when it disconnects, but that seemingly doesn't happen. So, we should do this
@@ -54,10 +57,10 @@ function getFlowServiceByNullableUri(file: ?NuclideUri): FlowService {
   return flowService;
 }
 
-export function getServerStatusUpdates(): Observable<ServerStatusUpdate> {
+function getServerStatusUpdates() {
   return serverStatusUpdates.asObservable();
 }
 
-export function getCurrentServiceInstances(): Set<FlowService> {
+function getCurrentServiceInstances() {
   return new Set(serviceInstances);
 }

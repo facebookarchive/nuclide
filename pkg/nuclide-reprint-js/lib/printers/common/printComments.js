@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +8,21 @@
  * the root directory of this source tree.
  */
 
-import type {Lines} from '../../types/common';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import printComment from './printComment';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printComments(nodes: ?Array<any>): Lines {
+var _printComment = require('./printComment');
+
+var _printComment2 = _interopRequireDefault(_printComment);
+
+function printComments(nodes) {
   if (!Array.isArray(nodes)) {
     return [];
   }
-  return flatten(nodes.map(n => printComment(n)));
+  return (0, _utilsFlatten2.default)(nodes.map(function (n) {
+    return (0, _printComment2.default)(n);
+  }));
 }
 
 module.exports = printComments;

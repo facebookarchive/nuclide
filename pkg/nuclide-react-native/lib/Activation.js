@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +10,38 @@
  * the root directory of this source tree.
  */
 
-import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/service';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {DebuggingActivation} from './debugging/DebuggingActivation';
-import {PackagerActivation} from './packager/PackagerActivation';
-import {ShellActivation} from './shell/ShellActivation';
-import {CompositeDisposable} from 'atom';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export class Activation {
-  _debuggingActivation: DebuggingActivation;
-  _disposables: IDisposable;
+var _debuggingDebuggingActivation = require('./debugging/DebuggingActivation');
 
-  constructor(state: ?Object) {
-    this._disposables = new CompositeDisposable(
-      this._debuggingActivation = new DebuggingActivation(),
-      new PackagerActivation(),
-      new ShellActivation(),
-    );
+var _packagerPackagerActivation = require('./packager/PackagerActivation');
+
+var _shellShellActivation = require('./shell/ShellActivation');
+
+var _atom = require('atom');
+
+var Activation = (function () {
+  function Activation(state) {
+    _classCallCheck(this, Activation);
+
+    this._disposables = new _atom.CompositeDisposable(this._debuggingActivation = new _debuggingDebuggingActivation.DebuggingActivation(), new _packagerPackagerActivation.PackagerActivation(), new _shellShellActivation.ShellActivation());
   }
 
-  dispose(): void {
-    this._disposables.dispose();
-  }
+  _createClass(Activation, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }, {
+    key: 'provideNuclideDebugger',
+    value: function provideNuclideDebugger() {
+      return this._debuggingActivation.provideNuclideDebugger();
+    }
+  }]);
 
-  provideNuclideDebugger(): nuclide_debugger$Service {
-    return this._debuggingActivation.provideNuclideDebugger();
-  }
+  return Activation;
+})();
 
-}
+exports.Activation = Activation;

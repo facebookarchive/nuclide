@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +8,19 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {YieldExpression} from 'ast-types-flow';
+var _constantsMarkers = require('../../constants/markers');
 
-import markers from '../../constants/markers';
-import wrapExpression from '../../wrappers/simple/wrapExpression';
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
-function printYieldExpression(print: Print, node: YieldExpression): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    'yield',
-    node.delegate ? '*' : markers.empty,
-    markers.noBreak,
-    markers.space,
-    print(node.argument),
-  ]);
+var _wrappersSimpleWrapExpression = require('../../wrappers/simple/wrapExpression');
+
+var _wrappersSimpleWrapExpression2 = _interopRequireDefault(_wrappersSimpleWrapExpression);
+
+function printYieldExpression(print, node) {
+  var wrap = function wrap(x) {
+    return (0, _wrappersSimpleWrapExpression2.default)(print, node, x);
+  };
+  return wrap(['yield', node.delegate ? '*' : _constantsMarkers2.default.empty, _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, print(node.argument)]);
 }
 
 module.exports = printYieldExpression;

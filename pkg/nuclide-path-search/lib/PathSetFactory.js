@@ -1,5 +1,25 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
+var getFilesFromWatchman = _asyncToGenerator(function* (localDirectory) {
+  var watchmanClient = new _nuclideWatchmanHelpers.WatchmanClient();
+  try {
+    return yield Promise.race([watchmanClient.listFiles(localDirectory), _nuclideCommons.promises.awaitMilliSeconds(WATCHMAN_TIMEOUT_MS).then(function () {
+      return Promise.reject();
+    })]);
+  } finally {
+    watchmanClient.dispose();
+  }
+});
+
+exports.getPaths = getPaths;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +29,32 @@
  * the root directory of this source tree.
  */
 
-import child_process from 'child_process';
-import split from 'split';
+var _child_process = require('child_process');
 
-import {WatchmanClient} from '../../nuclide-watchman-helpers';
-import {promises} from '../../nuclide-commons';
+var _child_process2 = _interopRequireDefault(_child_process);
+
+var _split = require('split');
+
+var _split2 = _interopRequireDefault(_split);
+
+var _nuclideWatchmanHelpers = require('../../nuclide-watchman-helpers');
+
+var _nuclideCommons = require('../../nuclide-commons');
 
 // Occasionally, the watchman client may hang while waiting for a query.
 // Fall back to other methods after the timeout expires.
-const WATCHMAN_TIMEOUT_MS = 20000;
+var WATCHMAN_TIMEOUT_MS = 20000;
 
-function getFilesFromCommand(
-  command: string,
-  args: Array<string>,
-  localDirectory: string,
-  transform?: (path: string) => string,
-): Promise<Array<string>> {
-  return new Promise((resolve, reject) => {
+function getFilesFromCommand(command, args, localDirectory, transform) {
+  return new Promise(function (resolve, reject) {
     // Use `spawn` here to process the, possibly huge, output of the file listing.
 
-    const proc = child_process.spawn(command, args, {cwd: localDirectory});
+    var proc = _child_process2.default.spawn(command, args, { cwd: localDirectory });
 
     proc.on('error', reject);
 
-    const filePaths = [];
-    proc.stdout.pipe(split()).on('data', filePath => {
+    var filePaths = [];
+    proc.stdout.pipe((0, _split2.default)()).on('data', function (filePath) {
       if (transform) {
         filePath = transform(filePath);
       }
@@ -43,12 +64,12 @@ function getFilesFromCommand(
       }
     });
 
-    let errorString = '';
-    proc.stderr.on('data', data => {
+    var errorString = '';
+    proc.stderr.on('data', function (data) {
       errorString += data;
     });
 
-    proc.on('close', code => {
+    proc.on('close', function (code) {
       if (code === 0) {
         resolve(filePaths);
       } else {
@@ -58,31 +79,25 @@ function getFilesFromCommand(
   });
 }
 
-function getTrackedHgFiles(localDirectory: string): Promise<Array<string>> {
-  return getFilesFromCommand(
-    'hg',
-    ['locate', '--fullpath', '--include', '.'],
-    localDirectory,
-    filePath => filePath.slice(localDirectory.length + 1)
-  );
+function getTrackedHgFiles(localDirectory) {
+  return getFilesFromCommand('hg', ['locate', '--fullpath', '--include', '.'], localDirectory, function (filePath) {
+    return filePath.slice(localDirectory.length + 1);
+  });
 }
 
 /**
  * 'Untracked' files are files that haven't been added to the repo, but haven't
  * been explicitly hg-ignored.
  */
-function getUntrackedHgFiles(localDirectory: string): Promise<Array<string>> {
-  return getFilesFromCommand(
-    'hg',
-    // Calling 'hg status' with a path has two side-effects:
-    // 1. It returns the status of only files under the given path. In this case,
-    //    we only want the untracked files under the given localDirectory.
-    // 2. It returns the paths relative to the directory in which this command is
-    //    run. This is hard-coded to 'localDirectory' in `getFilesFromCommand`,
-    //    which is what we want.
-    ['status', '--unknown', '--no-status' /* No status code. */, localDirectory],
-    localDirectory,
-  );
+function getUntrackedHgFiles(localDirectory) {
+  return getFilesFromCommand('hg',
+  // Calling 'hg status' with a path has two side-effects:
+  // 1. It returns the status of only files under the given path. In this case,
+  //    we only want the untracked files under the given localDirectory.
+  // 2. It returns the paths relative to the directory in which this command is
+  //    run. This is hard-coded to 'localDirectory' in `getFilesFromCommand`,
+  //    which is what we want.
+  ['status', '--unknown', '--no-status' /* No status code. */, localDirectory], localDirectory);
 }
 
 /**
@@ -92,16 +107,18 @@ function getUntrackedHgFiles(localDirectory: string): Promise<Array<string>> {
  *   files within that directory, but not including ignored files. All values
  *   are 'true'. If localDirectory is not within an Hg repo, the Promise rejects.
  */
-function getFilesFromHg(localDirectory: string): Promise<Array<string>> {
-  return Promise.all([getTrackedHgFiles(localDirectory), getUntrackedHgFiles(localDirectory)]).then(
-    returnedFiles => {
-      const [trackedFiles, untrackedFiles] = returnedFiles;
-      return trackedFiles.concat(untrackedFiles);
-    }
-  );
+function getFilesFromHg(localDirectory) {
+  return Promise.all([getTrackedHgFiles(localDirectory), getUntrackedHgFiles(localDirectory)]).then(function (returnedFiles) {
+    var _returnedFiles = _slicedToArray(returnedFiles, 2);
+
+    var trackedFiles = _returnedFiles[0];
+    var untrackedFiles = _returnedFiles[1];
+
+    return trackedFiles.concat(untrackedFiles);
+  });
 }
 
-function getTrackedGitFiles(localDirectory: string): Promise<Array<string>> {
+function getTrackedGitFiles(localDirectory) {
   return getFilesFromCommand('git', ['ls-files'], localDirectory);
 }
 
@@ -109,7 +126,7 @@ function getTrackedGitFiles(localDirectory: string): Promise<Array<string>> {
  * 'Untracked' files are files that haven't been added to the repo, but haven't
  * been explicitly git-ignored.
  */
-function getUntrackedGitFiles(localDirectory: string): Promise<Array<string>> {
+function getUntrackedGitFiles(localDirectory) {
   // '--others' means untracked files, and '--exclude-standard' excludes ignored files.
   return getFilesFromCommand('git', ['ls-files', '--exclude-standard', '--others'], localDirectory);
 }
@@ -121,50 +138,43 @@ function getUntrackedGitFiles(localDirectory: string): Promise<Array<string>> {
  *   files within that directory, but not including ignored files. All values
  *   are 'true'. If localDirectory is not within a Git repo, the Promise rejects.
  */
-function getFilesFromGit(localDirectory: string): Promise<Array<string>> {
-  return Promise.all(
-      [getTrackedGitFiles(localDirectory), getUntrackedGitFiles(localDirectory)]).then(
-    returnedFiles => {
-      const [trackedFiles, untrackedFiles] = returnedFiles;
-      return trackedFiles.concat(untrackedFiles);
-    }
-  );
+function getFilesFromGit(localDirectory) {
+  return Promise.all([getTrackedGitFiles(localDirectory), getUntrackedGitFiles(localDirectory)]).then(function (returnedFiles) {
+    var _returnedFiles2 = _slicedToArray(returnedFiles, 2);
+
+    var trackedFiles = _returnedFiles2[0];
+    var untrackedFiles = _returnedFiles2[1];
+
+    return trackedFiles.concat(untrackedFiles);
+  });
 }
 
-function getAllFiles(localDirectory: string): Promise<Array<string>> {
-  return getFilesFromCommand(
-      'find',
-      ['.', '-type', 'f'],
-      localDirectory,
-      // Slice off the leading `./` that find will add on here.
-      filePath => filePath.substring(2));
+function getAllFiles(localDirectory) {
+  return getFilesFromCommand('find', ['.', '-type', 'f'], localDirectory,
+  // Slice off the leading `./` that find will add on here.
+  function (filePath) {
+    return filePath.substring(2);
+  });
 }
 
-async function getFilesFromWatchman(localDirectory: string): Promise<Array<string>> {
-  const watchmanClient = new WatchmanClient();
-  try {
-    return await Promise.race([
-      watchmanClient.listFiles(localDirectory),
-      promises.awaitMilliSeconds(WATCHMAN_TIMEOUT_MS).then(() => Promise.reject()),
-    ]);
-  } finally {
-    watchmanClient.dispose();
-  }
-}
-
-export function getPaths(localDirectory: string): Promise<Array<string>> {
+function getPaths(localDirectory) {
   // Attempts to get a list of files relative to `localDirectory`, hopefully from
   // a fast source control index.
   // TODO (williamsc) once ``{HG|Git}Repository` is working in nuclide-server,
   // use those instead to determine VCS.
-  return getFilesFromWatchman(localDirectory)
-      .catch(() => getFilesFromHg(localDirectory))
-      .catch(() => getFilesFromGit(localDirectory))
-      .catch(() => getAllFiles(localDirectory))
-      .catch(() => { throw new Error(`Failed to populate FileSearch for ${localDirectory}`); });
+  return getFilesFromWatchman(localDirectory).catch(function () {
+    return getFilesFromHg(localDirectory);
+  }).catch(function () {
+    return getFilesFromGit(localDirectory);
+  }).catch(function () {
+    return getAllFiles(localDirectory);
+  }).catch(function () {
+    throw new Error('Failed to populate FileSearch for ' + localDirectory);
+  });
 }
 
-export const __test__ = {
-  getFilesFromGit,
-  getFilesFromHg,
+var __test__ = {
+  getFilesFromGit: getFilesFromGit,
+  getFilesFromHg: getFilesFromHg
 };
+exports.__test__ = __test__;

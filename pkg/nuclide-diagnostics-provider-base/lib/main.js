@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,6 +10,6 @@
  * the root directory of this source tree.
  */
 
-import {DiagnosticsProviderBase} from './DiagnosticsProviderBase';
+var _DiagnosticsProviderBase = require('./DiagnosticsProviderBase');
 
-export {DiagnosticsProviderBase};
+exports.DiagnosticsProviderBase = _DiagnosticsProviderBase.DiagnosticsProviderBase;

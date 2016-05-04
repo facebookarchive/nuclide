@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,68 +8,50 @@
  * the root directory of this source tree.
  */
 
-import type {ImportDeclaration} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import invariant from 'assert';
-import markers from '../../constants/markers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printImportDeclaration(print: Print, node: ImportDeclaration): Lines {
-  let open = false;
-  const specifiers = node.specifiers.map((specifier, i, arr) => {
-    let parts = [];
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+function printImportDeclaration(print, node) {
+  var open = false;
+  var specifiers = node.specifiers.map(function (specifier, i, arr) {
+    var parts = [];
 
     // Check if we should open.
     if (!open && specifier.type === 'ImportSpecifier') {
       open = true;
-      parts = parts.concat([
-        '{',
-      ]);
+      parts = parts.concat(['{']);
     }
 
     // Print the specifier.
-    parts = parts.concat([
-      markers.noBreak,
-      print(specifier),
-      markers.noBreak,
-    ]);
+    parts = parts.concat([_constantsMarkers2.default.noBreak, print(specifier), _constantsMarkers2.default.noBreak]);
 
     // Check if we should close. Note that it's important we be able to open
     // and then close within a single cycle of this loop.
     if (open && i === arr.length - 1) {
       open = false;
-      parts = parts.concat([
-        '}',
-      ]);
+      parts = parts.concat(['}']);
     }
 
     // Check if we should add a comma and space.
     if (i < arr.length - 1) {
-      parts = parts.concat([
-        markers.comma,
-        markers.space,
-      ]);
+      parts = parts.concat([_constantsMarkers2.default.comma, _constantsMarkers2.default.space]);
     }
 
     return parts;
   });
-  invariant(!open, 'Import declaration left open somehow.');
-  return flatten([
-    'import',
-    markers.space,
-    // $FlowFixMe(kad): add importKind to ast-types-flow
-    node.importKind === 'type' ? ['type', markers.space] : markers.empty,
-    specifiers,
-    markers.space,
-    'from',
-    markers.noBreak,
-    markers.space,
-    print(node.source),
-    markers.noBreak,
-    ';',
-    markers.hardBreak,
-  ]);
+  (0, _assert2.default)(!open, 'Import declaration left open somehow.');
+  return (0, _utilsFlatten2.default)(['import', _constantsMarkers2.default.space,
+  // $FlowFixMe(kad): add importKind to ast-types-flow
+  node.importKind === 'type' ? ['type', _constantsMarkers2.default.space] : _constantsMarkers2.default.empty, specifiers, _constantsMarkers2.default.space, 'from', _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, print(node.source), _constantsMarkers2.default.noBreak, ';', _constantsMarkers2.default.hardBreak]);
 }
 
 module.exports = printImportDeclaration;

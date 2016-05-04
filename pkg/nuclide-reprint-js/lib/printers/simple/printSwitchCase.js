@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,41 +8,28 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {SwitchCase} from 'ast-types-flow';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printSwitchCase(print: Print, node: SwitchCase): Lines {
-  const consequentParts = flatten(node.consequent.map(
-    nodePart => print(nodePart)
-  ));
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+function printSwitchCase(print, node) {
+  var consequentParts = (0, _utilsFlatten2.default)(node.consequent.map(function (nodePart) {
+    return print(nodePart);
+  }));
   if (node.consequent.length > 0) {
     // We want a new line separating cases if they had a consequent.
-    consequentParts.push(markers.multiHardBreak);
-    consequentParts.push(markers.multiHardBreak);
+    consequentParts.push(_constantsMarkers2.default.multiHardBreak);
+    consequentParts.push(_constantsMarkers2.default.multiHardBreak);
   }
   if (!node.test) {
-    return flatten([
-      'default:',
-      markers.hardBreak,
-      markers.indent,
-      consequentParts,
-      markers.dedent,
-    ]);
+    return (0, _utilsFlatten2.default)(['default:', _constantsMarkers2.default.hardBreak, _constantsMarkers2.default.indent, consequentParts, _constantsMarkers2.default.dedent]);
   } else {
-    const test = node.test;
-    return flatten([
-      'case',
-      markers.space,
-      print(test),
-      ':',
-      markers.hardBreak,
-      markers.indent,
-      consequentParts,
-      markers.dedent,
-    ]);
+    var test = node.test;
+    return (0, _utilsFlatten2.default)(['case', _constantsMarkers2.default.space, print(test), ':', _constantsMarkers2.default.hardBreak, _constantsMarkers2.default.indent, consequentParts, _constantsMarkers2.default.dedent]);
   }
 }
 

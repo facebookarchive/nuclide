@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +8,16 @@
  * the root directory of this source tree.
  */
 
-import type {CatchClause} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printCatchClause(print: Print, node: CatchClause): Lines {
-  return flatten([
-    'catch (',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    print(node.param),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-    ')',
-    markers.noBreak,
-    markers.space,
-    print(node.body),
-  ]);
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+function printCatchClause(print, node) {
+  return (0, _utilsFlatten2.default)(['catch (', _constantsMarkers2.default.openScope, _constantsMarkers2.default.scopeIndent, _constantsMarkers2.default.scopeBreak, print(node.param), _constantsMarkers2.default.scopeBreak, _constantsMarkers2.default.scopeDedent, _constantsMarkers2.default.closeScope, ')', _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, print(node.body)]);
 }
 
 module.exports = printCatchClause;

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +10,36 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
-import type {OutlineForUi} from '..';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-import {React, ReactDOM} from 'react-for-atom';
-import invariant from 'assert';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {track} from '../../nuclide-analytics';
-import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
-import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
-import {
-  Button,
-  ButtonSizes,
-} from '../../nuclide-ui/lib/Button';
-import {OutlineView} from './OutlineView';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export class OutlineViewPanelState {
-  _outlines: Observable<OutlineForUi>;
-  _outlineViewPanel: ?OutlineViewPanel;
-  _width: number;
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  constructor(outlines: Observable<OutlineForUi>, width: number, visible: boolean) {
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _reactForAtom = require('react-for-atom');
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _nuclideAnalytics = require('../../nuclide-analytics');
+
+var _nuclideUiLibPanelComponent = require('../../nuclide-ui/lib/PanelComponent');
+
+var _nuclideUiLibPanelComponentScroller = require('../../nuclide-ui/lib/PanelComponentScroller');
+
+var _nuclideUiLibButton = require('../../nuclide-ui/lib/Button');
+
+var _OutlineView = require('./OutlineView');
+
+var OutlineViewPanelState = (function () {
+  function OutlineViewPanelState(outlines, width, visible) {
+    _classCallCheck(this, OutlineViewPanelState);
+
     this._outlines = outlines;
     this._outlineViewPanel = null;
     this._width = width;
@@ -39,78 +49,85 @@ export class OutlineViewPanelState {
     }
   }
 
-  dispose(): void {
-    if (this.isVisible()) {
+  _createClass(OutlineViewPanelState, [{
+    key: 'dispose',
+    value: function dispose() {
+      if (this.isVisible()) {
+        this._destroyPanel();
+      }
+    }
+  }, {
+    key: 'toggle',
+    value: function toggle() {
+      if (this.isVisible()) {
+        this._hide();
+      } else {
+        this._show();
+      }
+    }
+  }, {
+    key: 'show',
+    value: function show() {
+      if (!this.isVisible()) {
+        this._show();
+      }
+    }
+  }, {
+    key: 'hide',
+    value: function hide() {
+      if (this.isVisible()) {
+        this._hide();
+      }
+    }
+  }, {
+    key: 'getWidth',
+    value: function getWidth() {
+      return this._width;
+    }
+  }, {
+    key: 'isVisible',
+    value: function isVisible() {
+      return this._outlineViewPanel != null;
+    }
+  }, {
+    key: '_show',
+    value: function _show() {
+      (0, _assert2.default)(this._outlineViewPanel == null);
+
+      (0, _nuclideAnalytics.track)('nuclide-outline-view-show');
+
+      this._outlineViewPanel = new OutlineViewPanel(this._outlines, this._width, this._onResize.bind(this));
+    }
+  }, {
+    key: '_hide',
+    value: function _hide() {
       this._destroyPanel();
     }
-  }
+  }, {
+    key: '_destroyPanel',
+    value: function _destroyPanel() {
+      var outlineViewPanel = this._outlineViewPanel;
+      (0, _assert2.default)(outlineViewPanel != null);
 
-  toggle(): void {
-    if (this.isVisible()) {
-      this._hide();
-    } else {
-      this._show();
+      outlineViewPanel.dispose();
+      this._outlineViewPanel = null;
     }
-  }
-
-  show(): void {
-    if (!this.isVisible()) {
-      this._show();
+  }, {
+    key: '_onResize',
+    value: function _onResize(newWidth) {
+      this._width = newWidth;
     }
-  }
+  }]);
 
-  hide(): void {
-    if (this.isVisible()) {
-      this._hide();
-    }
-  }
+  return OutlineViewPanelState;
+})();
 
-  getWidth(): number {
-    return this._width;
-  }
+exports.OutlineViewPanelState = OutlineViewPanelState;
 
-  isVisible(): boolean {
-    return this._outlineViewPanel != null;
-  }
+var OutlineViewPanel = (function () {
+  function OutlineViewPanel(outlines, initialWidth, onResize) {
+    _classCallCheck(this, OutlineViewPanel);
 
-  _show(): void {
-    invariant(this._outlineViewPanel == null);
-
-    track('nuclide-outline-view-show');
-
-    this._outlineViewPanel = new OutlineViewPanel(
-      this._outlines,
-      this._width,
-      this._onResize.bind(this),
-    );
-  }
-
-  _hide(): void {
-    this._destroyPanel();
-  }
-
-  _destroyPanel(): void {
-    const outlineViewPanel = this._outlineViewPanel;
-    invariant(outlineViewPanel != null);
-
-    outlineViewPanel.dispose();
-    this._outlineViewPanel = null;
-  }
-
-  _onResize(newWidth: number): void {
-    this._width = newWidth;
-  }
-}
-
-class OutlineViewPanel {
-  _panelDOMElement: HTMLElement;
-  _panel: atom$Panel;
-
-  constructor(
-    outlines: Observable<OutlineForUi>,
-    initialWidth: number,
-    onResize: (width: number) => void,
-  ) {
     this._panelDOMElement = document.createElement('div');
     // Otherwise it does not fill the whole panel, which might be alright except it means that the
     // resize-handle doesn't extend all the way to the bottom.
@@ -121,56 +138,76 @@ class OutlineViewPanel {
     this._panelDOMElement.style.display = 'flex';
     this._panelDOMElement.style.height = 'inherit';
 
-    ReactDOM.render(
-      <PanelComponent
-        dock="right"
-        initialLength={initialWidth}
-        noScroll
-        onResize={onResize}>
-        <div style={{display: 'flex', flexDirection: 'column', 'width': '100%'}}>
-          <OutlineViewHeader />
-          <PanelComponentScroller>
-            <OutlineView outlines={outlines} />
-          </PanelComponentScroller>
-        </div>
-      </PanelComponent>,
-      this._panelDOMElement,
-    );
+    _reactForAtom.ReactDOM.render(_reactForAtom.React.createElement(
+      _nuclideUiLibPanelComponent.PanelComponent,
+      {
+        dock: 'right',
+        initialLength: initialWidth,
+        noScroll: true,
+        onResize: onResize },
+      _reactForAtom.React.createElement(
+        'div',
+        { style: { display: 'flex', flexDirection: 'column', 'width': '100%' } },
+        _reactForAtom.React.createElement(OutlineViewHeader, null),
+        _reactForAtom.React.createElement(
+          _nuclideUiLibPanelComponentScroller.PanelComponentScroller,
+          null,
+          _reactForAtom.React.createElement(_OutlineView.OutlineView, { outlines: outlines })
+        )
+      )
+    ), this._panelDOMElement);
     this._panel = atom.workspace.addRightPanel({
       item: this._panelDOMElement,
-      priority: 200,
+      priority: 200
     });
   }
 
-  dispose(): void {
-    ReactDOM.unmountComponentAtNode(this._panelDOMElement);
-    this._panel.destroy();
-  }
-}
+  _createClass(OutlineViewPanel, [{
+    key: 'dispose',
+    value: function dispose() {
+      _reactForAtom.ReactDOM.unmountComponentAtNode(this._panelDOMElement);
+      this._panel.destroy();
+    }
+  }]);
 
-class OutlineViewHeader extends React.Component {
-  render(): React.Element {
-    return (
-      // Because the container is flex, prevent this header from shrinking smaller than its
-      // contents. The default for flex children is to shrink as needed.
-      <div className="panel-heading" style={{flexShrink: 0}}>
-        <span className="icon icon-list-unordered" />
-        Outline View
-        <Button
-          className="pull-right nuclide-outline-view-close-button"
-          size={ButtonSizes.EXTRA_SMALL}
-          icon="x"
-          onClick={hideOutlineView}
-          title="Hide Outline View"
-        />
-      </div>
-    );
+  return OutlineViewPanel;
+})();
+
+var OutlineViewHeader = (function (_React$Component) {
+  _inherits(OutlineViewHeader, _React$Component);
+
+  function OutlineViewHeader() {
+    _classCallCheck(this, OutlineViewHeader);
+
+    _get(Object.getPrototypeOf(OutlineViewHeader.prototype), 'constructor', this).apply(this, arguments);
   }
-}
+
+  _createClass(OutlineViewHeader, [{
+    key: 'render',
+    value: function render() {
+      return(
+        // Because the container is flex, prevent this header from shrinking smaller than its
+        // contents. The default for flex children is to shrink as needed.
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'panel-heading', style: { flexShrink: 0 } },
+          _reactForAtom.React.createElement('span', { className: 'icon icon-list-unordered' }),
+          'Outline View',
+          _reactForAtom.React.createElement(_nuclideUiLibButton.Button, {
+            className: 'pull-right nuclide-outline-view-close-button',
+            size: _nuclideUiLibButton.ButtonSizes.EXTRA_SMALL,
+            icon: 'x',
+            onClick: hideOutlineView,
+            title: 'Hide Outline View'
+          })
+        )
+      );
+    }
+  }]);
+
+  return OutlineViewHeader;
+})(_reactForAtom.React.Component);
 
 function hideOutlineView() {
-  atom.commands.dispatch(
-    atom.views.getView(atom.workspace),
-    'nuclide-outline-view:hide'
-  );
+  atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-outline-view:hide');
 }

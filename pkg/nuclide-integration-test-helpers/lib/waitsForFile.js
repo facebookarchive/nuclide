@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.waitsForFile = waitsForFile;
+exports.waitsForFilePosition = waitsForFilePosition;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,44 +14,44 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
 
 /**
  * Waits for the specified file to become the active text editor.
  * Can only be used in a Jasmine context.
  */
-export function waitsForFile(filename: string, timeoutMs: number = 10000): void {
-  waitsFor(`${filename} to become active`, timeoutMs, () => {
-    const editor = atom.workspace.getActiveTextEditor();
+
+function waitsForFile(filename) {
+  var timeoutMs = arguments.length <= 1 || arguments[1] === undefined ? 10000 : arguments[1];
+
+  waitsFor(filename + ' to become active', timeoutMs, function () {
+    var editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
       return false;
     }
-    const editorPath = editor.getPath();
+    var editorPath = editor.getPath();
     if (editorPath == null) {
       return false;
     }
-    return path.basename(editorPath) === filename;
+    return _path2.default.basename(editorPath) === filename;
   });
 }
 
-export function waitsForFilePosition(
-  filename: string,
-  row: number,
-  column: number,
-  timeoutMs: number = 10000
-): void {
-  waitsFor(`${filename} to become active at ${row}:${column}`, timeoutMs, () => {
-    const editor = atom.workspace.getActiveTextEditor();
+function waitsForFilePosition(filename, row, column) {
+  var timeoutMs = arguments.length <= 3 || arguments[3] === undefined ? 10000 : arguments[3];
+
+  waitsFor(filename + ' to become active at ' + row + ':' + column, timeoutMs, function () {
+    var editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
       return false;
     }
-    const editorPath = editor.getPath();
+    var editorPath = editor.getPath();
     if (editorPath == null) {
       return false;
     }
-    const pos = editor.getCursorBufferPosition();
-    return path.basename(editorPath) === filename
-      && pos.row === row
-      && pos.column === column;
+    var pos = editor.getCursorBufferPosition();
+    return _path2.default.basename(editorPath) === filename && pos.row === row && pos.column === column;
   });
 }

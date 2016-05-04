@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +8,20 @@
  * the root directory of this source tree.
  */
 
-import type {Node} from '../types/ast';
+var _hasOneDeclaration = require('./hasOneDeclaration');
 
-import hasOneDeclaration from './hasOneDeclaration';
-import isRequireExpression from './isRequireExpression';
+var _hasOneDeclaration2 = _interopRequireDefault(_hasOneDeclaration);
 
-function hasOneRequireDeclaration(node: Node): boolean {
-  if (!hasOneDeclaration(node)) {
+var _isRequireExpression = require('./isRequireExpression');
+
+var _isRequireExpression2 = _interopRequireDefault(_isRequireExpression);
+
+function hasOneRequireDeclaration(node) {
+  if (!(0, _hasOneDeclaration2.default)(node)) {
     return false;
   }
-  const declaration = node.declarations[0];
-  return isRequireExpression(declaration.init);
+  var declaration = node.declarations[0];
+  return (0, _isRequireExpression2.default)(declaration.init);
 }
 
 module.exports = hasOneRequireDeclaration;

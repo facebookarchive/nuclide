@@ -1,5 +1,18 @@
-'use babel';
-/* @flow */
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var getCtagsService = _asyncToGenerator(function* (directory) {
+  // The tags package looks in the directory, so give it a sample file.
+  var path = (0, _nuclideRemoteUri.join)(directory.getPath(), 'file');
+  var service = (0, _nuclideRemoteConnection.getServiceByNuclideUri)('CtagsService', path);
+  if (service == null) {
+    return null;
+  }
+  return yield service.getCtagsService(path);
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,91 +22,89 @@
  * the root directory of this source tree.
  */
 
-import type {
-  FileResult,
-  Provider,
-  ProviderType,
-} from '../../nuclide-quick-open-interfaces';
+var _reactForAtom = require('react-for-atom');
 
-import type {CtagsResult, CtagsService} from '../../nuclide-remote-ctags-base';
+var _nuclideFeatureConfig = require('../../nuclide-feature-config');
 
-import {React} from 'react-for-atom';
-import featureConfig from '../../nuclide-feature-config';
-import {getHackService} from '../../nuclide-hack-symbol-provider/lib/getHackService';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {join, relative} from '../../nuclide-remote-uri';
-import {CTAGS_KIND_ICONS, CTAGS_KIND_NAMES, getLineNumberForTag} from './utils';
+var _nuclideFeatureConfig2 = _interopRequireDefault(_nuclideFeatureConfig);
+
+var _nuclideHackSymbolProviderLibGetHackService = require('../../nuclide-hack-symbol-provider/lib/getHackService');
+
+var _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+
+var _nuclideRemoteUri = require('../../nuclide-remote-uri');
+
+var _utils = require('./utils');
 
 // ctags doesn't have a true limit API, so having too many results slows down Nuclide.
-const MIN_QUERY_LENGTH = 2;
-const RESULTS_LIMIT = 10;
-const DEFAULT_ICON = 'icon-squirrel';
+var MIN_QUERY_LENGTH = 2;
+var RESULTS_LIMIT = 10;
+var DEFAULT_ICON = 'icon-squirrel';
 
-type Result = FileResult & CtagsResult & {dir: string};
+module.exports = {
 
-async function getCtagsService(
-  directory: atom$Directory,
-): Promise<?CtagsService> {
-  // The tags package looks in the directory, so give it a sample file.
-  const path = join(directory.getPath(), 'file');
-  const service = getServiceByNuclideUri('CtagsService', path);
-  if (service == null) {
-    return null;
-  }
-  return await service.getCtagsService(path);
-}
-
-module.exports = ({
-
-  getProviderType(): ProviderType {
+  getProviderType: function getProviderType() {
     return 'DIRECTORY';
   },
 
-  getName(): string {
+  getName: function getName() {
     return 'CtagsSymbolProvider';
   },
 
-  isRenderable(): boolean {
+  isRenderable: function isRenderable() {
     return true;
   },
 
-  getTabTitle(): string {
+  getTabTitle: function getTabTitle() {
     return 'Ctags';
   },
 
-  async isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
-    const svc = await getCtagsService(directory);
+  isEligibleForDirectory: _asyncToGenerator(function* (directory) {
+    var svc = yield getCtagsService(directory);
     if (svc != null) {
       svc.dispose();
       return true;
     }
     return false;
-  },
+  }),
 
-  getComponentForItem(uncastedItem: FileResult): React.Element {
-    const item = ((uncastedItem: any): Result);
-    const path = relative(item.dir, item.path);
-    let kind, icon;
+  getComponentForItem: function getComponentForItem(uncastedItem) {
+    var item = uncastedItem;
+    var path = (0, _nuclideRemoteUri.relative)(item.dir, item.path);
+    var kind = undefined,
+        icon = undefined;
     if (item.kind != null) {
-      kind = CTAGS_KIND_NAMES[item.kind];
-      icon = CTAGS_KIND_ICONS[item.kind];
+      kind = _utils.CTAGS_KIND_NAMES[item.kind];
+      icon = _utils.CTAGS_KIND_ICONS[item.kind];
     }
     icon = icon || DEFAULT_ICON;
-    return (
-      <div title={kind}>
-        <span className={`file icon ${icon}`}><code>{item.name}</code></span>
-        <span className="omnisearch-symbol-result-filename">{path}</span>
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { title: kind },
+      _reactForAtom.React.createElement(
+        'span',
+        { className: 'file icon ' + icon },
+        _reactForAtom.React.createElement(
+          'code',
+          null,
+          item.name
+        )
+      ),
+      _reactForAtom.React.createElement(
+        'span',
+        { className: 'omnisearch-symbol-result-filename' },
+        path
+      )
     );
   },
 
-  async executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>> {
+  executeQuery: _asyncToGenerator(function* (query, directory) {
     if (directory == null || query.length < MIN_QUERY_LENGTH) {
       return [];
     }
 
-    const dir = directory.getPath();
-    const service = await getCtagsService(directory);
+    var dir = directory.getPath();
+    var service = yield getCtagsService(directory);
     if (service == null) {
       return [];
     }
@@ -101,32 +112,31 @@ module.exports = ({
     // HACK: Ctags results typically just duplicate Hack results when they're present.
     // Filter out results from PHP files when the Hack service is available.
     // TODO(hansonw): Remove this when quick-open has proper ranking/de-duplication.
-    let hack;
-    if (featureConfig.get('nuclide-remote-ctags.disableWithHack') !== false) {
-      hack = await getHackService(directory);
+    var hack = undefined;
+    if (_nuclideFeatureConfig2.default.get('nuclide-remote-ctags.disableWithHack') !== false) {
+      hack = yield (0, _nuclideHackSymbolProviderLibGetHackService.getHackService)(directory);
     }
 
     try {
-      const results = await service.findTags(query, {
+      var results = yield service.findTags(query, {
         caseInsensitive: true,
         partialMatch: true,
-        limit: RESULTS_LIMIT,
+        limit: RESULTS_LIMIT
       });
 
-      return await Promise.all(results
-        .filter(tag => hack == null || !tag.file.endsWith('.php'))
-        .map(async tag => {
-          const line = await getLineNumberForTag(tag);
-          return {
-            ...tag,
-            path: tag.file,
-            dir,
-            line,
-          };
-        }));
+      return yield Promise.all(results.filter(function (tag) {
+        return hack == null || !tag.file.endsWith('.php');
+      }).map(_asyncToGenerator(function* (tag) {
+        var line = yield (0, _utils.getLineNumberForTag)(tag);
+        return _extends({}, tag, {
+          path: tag.file,
+          dir: dir,
+          line: line
+        });
+      })));
     } finally {
       service.dispose();
     }
-  },
+  })
 
-}: Provider);
+};

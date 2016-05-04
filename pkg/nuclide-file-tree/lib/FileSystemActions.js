@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,138 +10,131 @@
  * the root directory of this source tree.
  */
 
-import type {FileTreeNode} from './FileTreeNode';
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {RemoteFile} from '../../nuclide-remote-connection';
+var _componentsFileDialogComponent = require('../components/FileDialogComponent');
 
-import FileDialogComponent from '../components/FileDialogComponent';
-import FileTreeHelpers from './FileTreeHelpers';
-import {FileTreeStore} from './FileTreeStore';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
-import RemoteUri, {getPath} from '../../nuclide-remote-uri';
-import {File} from 'atom';
-import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
+var _componentsFileDialogComponent2 = _interopRequireDefault(_componentsFileDialogComponent);
 
-import pathModule from 'path';
+var _FileTreeHelpers = require('./FileTreeHelpers');
 
-let dialogComponent: ?React.Component;
-let dialogHostElement: ?HTMLElement;
+var _FileTreeHelpers2 = _interopRequireDefault(_FileTreeHelpers);
 
-const legalStatusCodeForRename = new Set([
-  StatusCodeNumber.ADDED,
-  StatusCodeNumber.CLEAN,
-  StatusCodeNumber.MODIFIED,
-]);
+var _FileTreeStore = require('./FileTreeStore');
 
-const FileSystemActions = {
-  openAddFolderDialog(onDidConfirm: (filePath: ?string) => mixed): void {
-    const node = this._getSelectedContainerNode();
+var _reactForAtom = require('react-for-atom');
+
+var _nuclideRemoteUri = require('../../nuclide-remote-uri');
+
+var _nuclideRemoteUri2 = _interopRequireDefault(_nuclideRemoteUri);
+
+var _atom = require('atom');
+
+var _nuclideClient = require('../../nuclide-client');
+
+var _nuclideHgGitBridge = require('../../nuclide-hg-git-bridge');
+
+var _nuclideHgRepositoryBaseLibHgConstants = require('../../nuclide-hg-repository-base/lib/hg-constants');
+
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
+var dialogComponent = undefined;
+var dialogHostElement = undefined;
+
+var legalStatusCodeForRename = new Set([_nuclideHgRepositoryBaseLibHgConstants.StatusCodeNumber.ADDED, _nuclideHgRepositoryBaseLibHgConstants.StatusCodeNumber.CLEAN, _nuclideHgRepositoryBaseLibHgConstants.StatusCodeNumber.MODIFIED]);
+
+var FileSystemActions = {
+  openAddFolderDialog: function openAddFolderDialog(onDidConfirm) {
+    var node = this._getSelectedContainerNode();
     if (!node) {
       return;
     }
-    this._openAddDialog(
-      'folder',
-      node.localPath + '/',
-      async (filePath: string, options: Object) => {
-        // Prevent submission of a blank field from creating a directory.
-        if (filePath === '') {
-          return;
-        }
+    this._openAddDialog('folder', node.localPath + '/', _asyncToGenerator(function* (filePath, options) {
+      // Prevent submission of a blank field from creating a directory.
+      if (filePath === '') {
+        return;
+      }
 
-        // TODO: check if filePath is in rootKey and if not, find the rootKey it belongs to.
-        const directory = FileTreeHelpers.getDirectoryByKey(node.uri);
-        if (directory == null) {
-          return;
-        }
+      // TODO: check if filePath is in rootKey and if not, find the rootKey it belongs to.
+      var directory = _FileTreeHelpers2.default.getDirectoryByKey(node.uri);
+      if (directory == null) {
+        return;
+      }
 
-        const {pathname} = RemoteUri.parse(filePath);
-        const basename = pathModule.basename(pathname);
-        const newDirectory = directory.getSubdirectory(basename);
-        const created = await newDirectory.create();
-        if (!created) {
-          atom.notifications.addError(`'${basename}' already exists.`);
-          onDidConfirm(null);
-        } else {
-          onDidConfirm(newDirectory.getPath());
-        }
-      },
-    );
+      var _RemoteUri$parse = _nuclideRemoteUri2.default.parse(filePath);
+
+      var pathname = _RemoteUri$parse.pathname;
+
+      var basename = _path2.default.basename(pathname);
+      var newDirectory = directory.getSubdirectory(basename);
+      var created = yield newDirectory.create();
+      if (!created) {
+        atom.notifications.addError('\'' + basename + '\' already exists.');
+        onDidConfirm(null);
+      } else {
+        onDidConfirm(newDirectory.getPath());
+      }
+    }));
   },
 
-  openAddFileDialog(onDidConfirm: (filePath: ?string) => mixed): void {
-    const node = this._getSelectedContainerNode();
+  openAddFileDialog: function openAddFileDialog(onDidConfirm) {
+    var node = this._getSelectedContainerNode();
     if (!node) {
       return;
     }
-    const hgRepository = this._getHgRepositoryForNode(node);
-    const additionalOptions = {};
+    var hgRepository = this._getHgRepositoryForNode(node);
+    var additionalOptions = {};
     if (hgRepository !== null) {
       additionalOptions['addToVCS'] = 'Add the new file to version control.';
     }
-    this._openAddDialog(
-      'file',
-      node.localPath + pathModule.sep,
-      async (filePath: string, options: {addToVCS?: boolean}) => {
-        // Prevent submission of a blank field from creating a file.
-        if (filePath === '') {
-          return;
-        }
+    this._openAddDialog('file', node.localPath + _path2.default.sep, _asyncToGenerator(function* (filePath, options) {
+      // Prevent submission of a blank field from creating a file.
+      if (filePath === '') {
+        return;
+      }
 
-        // TODO: check if filePath is in rootKey and if not, find the rootKey it belongs to.
-        const directory = FileTreeHelpers.getDirectoryByKey(node.uri);
-        if (directory == null) {
-          return;
-        }
+      // TODO: check if filePath is in rootKey and if not, find the rootKey it belongs to.
+      var directory = _FileTreeHelpers2.default.getDirectoryByKey(node.uri);
+      if (directory == null) {
+        return;
+      }
 
-        const newFile = directory.getFile(filePath);
-        const created = await newFile.create();
-        if (created) {
-          if (hgRepository !== null && options.addToVCS === true) {
-            try {
-              await hgRepository.add([newFile.getPath()]);
-            } catch (e) {
-              atom.notifications.addError(
-                `Failed to add '${newFile.getPath}' to version control.  Error: ${e.toString()}`,
-              );
-            }
+      var newFile = directory.getFile(filePath);
+      var created = yield newFile.create();
+      if (created) {
+        if (hgRepository !== null && options.addToVCS === true) {
+          try {
+            yield hgRepository.add([newFile.getPath()]);
+          } catch (e) {
+            atom.notifications.addError('Failed to add \'' + newFile.getPath + '\' to version control.  Error: ' + e.toString());
           }
-          onDidConfirm(newFile.getPath());
-        } else {
-          atom.notifications.addError(`'${filePath}' already exists.`);
-          onDidConfirm(null);
         }
-      },
-      additionalOptions,
-    );
+        onDidConfirm(newFile.getPath());
+      } else {
+        atom.notifications.addError('\'' + filePath + '\' already exists.');
+        onDidConfirm(null);
+      }
+    }), additionalOptions);
   },
 
-  _getHgRepositoryForNode(node: FileTreeNode): ?HgRepositoryClient {
-    const repository = node.repo;
+  _getHgRepositoryForNode: function _getHgRepositoryForNode(node) {
+    var repository = node.repo;
     if (repository != null && repository.getType() === 'hg') {
-      return ((repository: any): HgRepositoryClient);
+      return repository;
     }
     return null;
   },
 
-  _getHgRepositoryForPath(filePath: string): ?HgRepositoryClient {
-    const repository = repositoryForPath(filePath);
+  _getHgRepositoryForPath: function _getHgRepositoryForPath(filePath) {
+    var repository = (0, _nuclideHgGitBridge.repositoryForPath)(filePath);
     if (repository != null && repository.getType() === 'hg') {
-      return ((repository: any): HgRepositoryClient);
+      return repository;
     }
     return null;
   },
 
-  async _onConfirmRename(
-    node: FileTreeNode,
-    nodePath: string,
-    newBasename: string,
-  ): Promise<void> {
-    const entry = FileTreeHelpers.getEntryByKey(node.uri);
+  _onConfirmRename: _asyncToGenerator(function* (node, nodePath, newBasename) {
+    var entry = _FileTreeHelpers2.default.getEntryByKey(node.uri);
     if (entry == null) {
       // TODO: Connection could have been lost for remote file.
       return;
@@ -150,183 +144,182 @@ const FileSystemActions = {
      * Use `resolve` to strip trailing slashes because renaming a file to a name with a
      * trailing slash is an error.
      */
-    const newPath = pathModule.resolve(
-      // Trim leading and trailing whitespace to prevent bad filenames.
-      pathModule.join(pathModule.dirname(nodePath), newBasename.trim())
-    );
-    const hgRepository = this._getHgRepositoryForNode(node);
-    let shouldFSRename = true;
+    var newPath = _path2.default.resolve(
+    // Trim leading and trailing whitespace to prevent bad filenames.
+    _path2.default.join(_path2.default.dirname(nodePath), newBasename.trim()));
+    var hgRepository = this._getHgRepositoryForNode(node);
+    var shouldFSRename = true;
     if (hgRepository !== null) {
       try {
         shouldFSRename = false;
-        await hgRepository.rename(entry.getPath(), newPath);
+        yield hgRepository.rename(entry.getPath(), newPath);
       } catch (e) {
-        const filePath = entry.getPath();
-        const statuses = await hgRepository.getStatuses([filePath]);
-        const pathStatus = statuses.get(filePath);
+        var _filePath = entry.getPath();
+        var statuses = yield hgRepository.getStatuses([_filePath]);
+        var pathStatus = statuses.get(_filePath);
         if (legalStatusCodeForRename.has(pathStatus)) {
-          atom.notifications.addError(
-            '`hg rename` failed, will try to move the file ignoring version control instead.  ' +
-            'Error: ' + e.toString(),
-          );
+          atom.notifications.addError('`hg rename` failed, will try to move the file ignoring version control instead.  ' + 'Error: ' + e.toString());
         }
         shouldFSRename = true;
       }
     }
     if (shouldFSRename) {
-      const service = getFileSystemServiceByNuclideUri(entry.getPath());
-      await service.rename(getPath(entry.getPath()), newPath);
+      var service = (0, _nuclideClient.getFileSystemServiceByNuclideUri)(entry.getPath());
+      yield service.rename((0, _nuclideRemoteUri.getPath)(entry.getPath()), newPath);
     }
-  },
+  }),
 
-  async _onConfirmDuplicate(
-    file: File | RemoteFile,
-    nodePath: string,
-    newBasename: string,
-    addToVCS: boolean,
-    onDidConfirm: (filePath: ?string) => mixed,
-  ): Promise<void> {
-    const directory = file.getParent();
-    const newFile = directory.getFile(newBasename);
-    const newPath = newFile.getPath();
-    const service = getFileSystemServiceByNuclideUri(newPath);
-    const exists = !(await service.copy(nodePath, getPath(newPath)));
+  _onConfirmDuplicate: _asyncToGenerator(function* (file, nodePath, newBasename, addToVCS, onDidConfirm) {
+    var directory = file.getParent();
+    var newFile = directory.getFile(newBasename);
+    var newPath = newFile.getPath();
+    var service = (0, _nuclideClient.getFileSystemServiceByNuclideUri)(newPath);
+    var exists = !(yield service.copy(nodePath, (0, _nuclideRemoteUri.getPath)(newPath)));
     if (exists) {
-      atom.notifications.addError(`'${newPath}' already exists.`);
+      atom.notifications.addError('\'' + newPath + '\' already exists.');
       onDidConfirm(null);
       return;
     }
-    const hgRepository = this._getHgRepositoryForPath(newPath);
+    var hgRepository = this._getHgRepositoryForPath(newPath);
     if (hgRepository !== null && addToVCS) {
       try {
-        await hgRepository.add([newPath]);
+        yield hgRepository.add([newPath]);
       } catch (e) {
-        const message = newPath + ' was duplicated, but there was an error adding it to ' +
-          'version control.  Error: ' + e.toString();
+        var message = newPath + ' was duplicated, but there was an error adding it to ' + 'version control.  Error: ' + e.toString();
         atom.notifications.addError(message);
         onDidConfirm(null);
         return;
       }
       onDidConfirm(newPath);
     }
-  },
+  }),
 
-  openRenameDialog(): void {
-    const store = FileTreeStore.getInstance();
-    const selectedNodes = store.getSelectedNodes();
+  openRenameDialog: function openRenameDialog() {
+    var _this = this;
+
+    var store = _FileTreeStore.FileTreeStore.getInstance();
+    var selectedNodes = store.getSelectedNodes();
     if (selectedNodes.size !== 1) {
       // Can only rename one entry at a time.
       return;
     }
 
-    const node = selectedNodes.first();
-    const nodePath = node.localPath;
+    var node = selectedNodes.first();
+    var nodePath = node.localPath;
     this._openDialog({
       iconClassName: 'icon-arrow-right',
-      initialValue: pathModule.basename(nodePath),
-      message: node.isContainer
-        ? <span>Enter the new path for the directory.</span>
-        : <span>Enter the new path for the file.</span>,
-      onConfirm: (newBasename: string, options: Object) => {
-        this._onConfirmRename(node, nodePath, newBasename).catch(error => {
-          atom.notifications.addError(`Rename to ${newBasename} failed`);
+      initialValue: _path2.default.basename(nodePath),
+      message: node.isContainer ? _reactForAtom.React.createElement(
+        'span',
+        null,
+        'Enter the new path for the directory.'
+      ) : _reactForAtom.React.createElement(
+        'span',
+        null,
+        'Enter the new path for the file.'
+      ),
+      onConfirm: function onConfirm(newBasename, options) {
+        _this._onConfirmRename(node, nodePath, newBasename).catch(function (error) {
+          atom.notifications.addError('Rename to ' + newBasename + ' failed');
         });
       },
       onClose: this._closeDialog,
-      selectBasename: true,
+      selectBasename: true
     });
   },
 
-  openDuplicateDialog(onDidConfirm: (filePath: ?string) => mixed): void {
-    const store = FileTreeStore.getInstance();
-    const selectedNodes = store.getSelectedNodes();
+  openDuplicateDialog: function openDuplicateDialog(onDidConfirm) {
+    var _this2 = this;
+
+    var store = _FileTreeStore.FileTreeStore.getInstance();
+    var selectedNodes = store.getSelectedNodes();
     if (selectedNodes.size !== 1) {
       // Can only copy one entry at a time.
       return;
     }
 
-    const node = selectedNodes.first();
-    const nodePath = node.localPath;
-    let initialValue = pathModule.basename(nodePath);
-    const ext = pathModule.extname(nodePath);
+    var node = selectedNodes.first();
+    var nodePath = node.localPath;
+    var initialValue = _path2.default.basename(nodePath);
+    var ext = _path2.default.extname(nodePath);
     initialValue = initialValue.substr(0, initialValue.length - ext.length) + '-copy' + ext;
-    const hgRepository = this._getHgRepositoryForNode(node);
-    const additionalOptions = {};
+    var hgRepository = this._getHgRepositoryForNode(node);
+    var additionalOptions = {};
     if (hgRepository !== null) {
       additionalOptions['addToVCS'] = 'Add the new file to version control.';
     }
     this._openDialog({
       iconClassName: 'icon-arrow-right',
       initialValue: initialValue,
-      message: <span>Enter the new path for the duplicate.</span>,
-      onConfirm: (newBasename: string, options: {addToVCS?: boolean}) => {
-        const file = FileTreeHelpers.getFileByKey(node.uri);
+      message: _reactForAtom.React.createElement(
+        'span',
+        null,
+        'Enter the new path for the duplicate.'
+      ),
+      onConfirm: function onConfirm(newBasename, options) {
+        var file = _FileTreeHelpers2.default.getFileByKey(node.uri);
         if (file == null) {
           // TODO: Connection could have been lost for remote file.
           return;
         }
-        this._onConfirmDuplicate(
-          file,
-          nodePath,
-          newBasename.trim(),
-          !!options.addToVCS,
-          onDidConfirm,
-        ).catch(error => {
-          atom.notifications.addError(`Failed to duplicate '${file.getPath()}'`);
+        _this2._onConfirmDuplicate(file, nodePath, newBasename.trim(), !!options.addToVCS, onDidConfirm).catch(function (error) {
+          atom.notifications.addError('Failed to duplicate \'' + file.getPath() + '\'');
         });
       },
       onClose: this._closeDialog,
       selectBasename: true,
-      additionalOptions,
+      additionalOptions: additionalOptions
     });
   },
 
-  _getSelectedContainerNode(): ?FileTreeNode {
-    const store = FileTreeStore.getInstance();
+  _getSelectedContainerNode: function _getSelectedContainerNode() {
+    var store = _FileTreeStore.FileTreeStore.getInstance();
     /*
      * TODO: Choosing the last selected key is inexact when there is more than 1 root. The Set of
      * selected keys should be maintained as a flat list across all roots to maintain insertion
      * order.
      */
-    const node = store.getSelectedNodes().first();
+    var node = store.getSelectedNodes().first();
     return node.isContainer ? node : node.parent;
   },
 
-  _openAddDialog(
-    entryType: string,
-    path: string,
-    onConfirm: (filePath: string, options: Object) => mixed,
-    additionalOptions?: Object = {},
-  ) {
+  _openAddDialog: function _openAddDialog(entryType, path, onConfirm) {
+    var additionalOptions = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+
     this._openDialog({
       iconClassName: 'icon-file-add',
-      message: <span>Enter the path for the new {entryType} in the root:<br />{path}</span>,
-      onConfirm,
+      message: _reactForAtom.React.createElement(
+        'span',
+        null,
+        'Enter the path for the new ',
+        entryType,
+        ' in the root:',
+        _reactForAtom.React.createElement('br', null),
+        path
+      ),
+      onConfirm: onConfirm,
       onClose: this._closeDialog,
-      additionalOptions,
+      additionalOptions: additionalOptions
     });
   },
 
-  _openDialog(props: Object): void {
+  _openDialog: function _openDialog(props) {
     this._closeDialog();
     dialogHostElement = document.createElement('div');
     atom.views.getView(atom.workspace).appendChild(dialogHostElement);
-    dialogComponent = ReactDOM.render(
-      <FileDialogComponent {...props} />,
-      dialogHostElement
-    );
+    dialogComponent = _reactForAtom.ReactDOM.render(_reactForAtom.React.createElement(_componentsFileDialogComponent2.default, props), dialogHostElement);
   },
 
-  _closeDialog(): void {
+  _closeDialog: function _closeDialog() {
     if (dialogComponent != null) {
-      ReactDOM.unmountComponentAtNode(dialogHostElement);
+      _reactForAtom.ReactDOM.unmountComponentAtNode(dialogHostElement);
       dialogComponent = null;
     }
     if (dialogHostElement != null) {
       dialogHostElement.parentNode.removeChild(dialogHostElement);
       dialogHostElement = null;
     }
-  },
+  }
 };
 
 module.exports = FileSystemActions;

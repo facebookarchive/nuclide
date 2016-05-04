@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +8,14 @@
  * the root directory of this source tree.
  */
 
-import type {EmptyStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _wrappersSimpleWrapStatement = require('../../wrappers/simple/wrapStatement');
 
-import wrapStatement from '../../wrappers/simple/wrapStatement';
+var _wrappersSimpleWrapStatement2 = _interopRequireDefault(_wrappersSimpleWrapStatement);
 
-function printEmptyStatement(print: Print, node: EmptyStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
+function printEmptyStatement(print, node) {
+  var wrap = function wrap(x) {
+    return (0, _wrappersSimpleWrapStatement2.default)(print, node, x);
+  };
   return wrap([';']);
 }
 

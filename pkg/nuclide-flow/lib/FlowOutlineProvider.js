@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,54 +10,63 @@
  * the root directory of this source tree.
  */
 
-import type {
-  OutlineTree,
-  Outline,
-} from '../../nuclide-outline-view';
-import type {FlowOutlineTree} from '../../nuclide-flow-base';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {Point} from 'atom';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import invariant from 'assert';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-import {
-  getFlowServiceByNuclideUri,
-  getLocalFlowService,
-} from './FlowServiceFactory';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
+var _atom = require('atom');
 
-export class FlowOutlineProvider {
-  async getOutline(editor: atom$TextEditor): Promise<?Outline> {
-    const filePath = editor.getPath();
-    let flowService;
-    if (filePath != null) {
-      flowService = getFlowServiceByNuclideUri(filePath);
-    } else {
-      flowService = getLocalFlowService();
-    }
-    invariant(flowService != null);
-    const flowOutline = await flowService.flowGetOutline(editor.getText());
-    if (flowOutline != null) {
-      return flowOutlineToNormalOutline(flowOutline);
-    } else {
-      return null;
-    }
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _FlowServiceFactory = require('./FlowServiceFactory');
+
+var FlowOutlineProvider = (function () {
+  function FlowOutlineProvider() {
+    _classCallCheck(this, FlowOutlineProvider);
   }
-}
 
-function flowOutlineToNormalOutline(
-  flowOutline: Array<FlowOutlineTree>,
-): Outline {
+  _createClass(FlowOutlineProvider, [{
+    key: 'getOutline',
+    value: _asyncToGenerator(function* (editor) {
+      var filePath = editor.getPath();
+      var flowService = undefined;
+      if (filePath != null) {
+        flowService = (0, _FlowServiceFactory.getFlowServiceByNuclideUri)(filePath);
+      } else {
+        flowService = (0, _FlowServiceFactory.getLocalFlowService)();
+      }
+      (0, _assert2.default)(flowService != null);
+      var flowOutline = yield flowService.flowGetOutline(editor.getText());
+      if (flowOutline != null) {
+        return flowOutlineToNormalOutline(flowOutline);
+      } else {
+        return null;
+      }
+    })
+  }]);
+
+  return FlowOutlineProvider;
+})();
+
+exports.FlowOutlineProvider = FlowOutlineProvider;
+
+function flowOutlineToNormalOutline(flowOutline) {
   return {
-    outlineTrees: flowOutline.map(flowTreeToNormalTree),
+    outlineTrees: flowOutline.map(flowTreeToNormalTree)
   };
 }
 
-function flowTreeToNormalTree(flowTree): OutlineTree {
+function flowTreeToNormalTree(flowTree) {
   return {
     tokenizedText: flowTree.tokenizedText,
-    startPosition: new Point(flowTree.startPosition.line, flowTree.startPosition.column),
-    endPosition: new Point(flowTree.endPosition.line, flowTree.endPosition.column),
-    children: flowTree.children.map(flowTreeToNormalTree),
+    startPosition: new _atom.Point(flowTree.startPosition.line, flowTree.startPosition.column),
+    endPosition: new _atom.Point(flowTree.endPosition.line, flowTree.endPosition.column),
+    children: flowTree.children.map(flowTreeToNormalTree)
   };
 }

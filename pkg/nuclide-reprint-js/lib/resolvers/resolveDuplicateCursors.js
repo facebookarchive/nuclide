@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +8,21 @@
  * the root directory of this source tree.
  */
 
-import markers from '../constants/markers';
+var _constantsMarkers = require('../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
 /**
  * This removes all but the first cursor. Since cursors are added at the end of
  * nodes this will keep the most valid cursor that appears deepest in the tree.
  */
-function resolveDuplicateCursors(lines: Array<any>): Array<any> {
-  let seenCursor = false;
-  return lines.map(line => {
+function resolveDuplicateCursors(lines) {
+  var seenCursor = false;
+  return lines.map(function (line) {
     // $FlowFixMe(kad, t9954160)
-    if (line === markers.cursor) {
+    if (line === _constantsMarkers2.default.cursor) {
       if (seenCursor) {
-        return markers.empty;
+        return _constantsMarkers2.default.empty;
       }
       seenCursor = true;
     }

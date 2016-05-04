@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,94 +12,106 @@
  * the root directory of this source tree.
  */
 
-import type {FileReferences} from '../types';
+var _reactForAtom = require('react-for-atom');
 
-import {React, ReactDOM} from 'react-for-atom';
-import FileReferencesView from './FileReferencesView';
-import FindReferencesModel from '../FindReferencesModel';
+var _FileReferencesView = require('./FileReferencesView');
+
+var _FileReferencesView2 = _interopRequireDefault(_FileReferencesView);
+
+var _FindReferencesModel = require('../FindReferencesModel');
+
+var _FindReferencesModel2 = _interopRequireDefault(_FindReferencesModel);
 
 // Number of files to show on every page.
-const PAGE_SIZE = 10;
+var PAGE_SIZE = 10;
 // Start loading more once the user scrolls within this many pixels of the bottom.
-const SCROLL_LOAD_THRESHOLD = 250;
+var SCROLL_LOAD_THRESHOLD = 250;
 
-function pluralize(noun: string, count: number) {
+function pluralize(noun, count) {
   return count === 1 ? noun : noun + 's';
 }
 
-const FindReferencesView = React.createClass({
+var FindReferencesView = _reactForAtom.React.createClass({
+  displayName: 'FindReferencesView',
 
   propTypes: {
-    model: React.PropTypes.instanceOf(FindReferencesModel).isRequired,
+    model: _reactForAtom.React.PropTypes.instanceOf(_FindReferencesModel2.default).isRequired
   },
 
-  getInitialState() {
-    const references: Array<FileReferences> = [];
+  getInitialState: function getInitialState() {
+    var references = [];
     return {
       loading: true,
       fetched: 0,
-      references,
+      references: references
     };
   },
 
-  componentDidMount() {
+  componentDidMount: function componentDidMount() {
     this._fetchMore(PAGE_SIZE);
   },
 
-  async _fetchMore(count: number): Promise<void> {
-    const next = await this.props.model.getFileReferences(
-      this.state.fetched,
-      PAGE_SIZE
-    );
+  _fetchMore: _asyncToGenerator(function* (count) {
+    var next = yield this.props.model.getFileReferences(this.state.fetched, PAGE_SIZE);
     this.setState({
       loading: false,
       fetched: this.state.fetched + PAGE_SIZE,
-      references: this.state.references.concat(next),
+      references: this.state.references.concat(next)
     });
-  },
+  }),
 
-  _onScroll(evt: Event) {
-    const root = ReactDOM.findDOMNode(this.refs.root);
+  _onScroll: function _onScroll(evt) {
+    var root = _reactForAtom.ReactDOM.findDOMNode(this.refs.root);
     if (this.state.loading || root.clientHeight >= root.scrollHeight) {
       return;
     }
-    const scrollBottom = root.scrollTop + root.clientHeight;
+    var scrollBottom = root.scrollTop + root.clientHeight;
     if (root.scrollHeight - scrollBottom <= SCROLL_LOAD_THRESHOLD) {
-      this.setState({loading: true});
+      this.setState({ loading: true });
       this._fetchMore(PAGE_SIZE);
     }
   },
 
-  render(): React.Element {
-    const children = this.state.references.map((fileRefs, i) =>
-      <FileReferencesView
-        key={i}
-        {...fileRefs}
-        basePath={this.props.model.getBasePath()}
-      />
-    );
+  render: function render() {
+    var _this = this;
 
-    const refCount = this.props.model.getReferenceCount();
-    const fileCount = this.props.model.getFileCount();
+    var children = this.state.references.map(function (fileRefs, i) {
+      return _reactForAtom.React.createElement(_FileReferencesView2.default, _extends({
+        key: i
+      }, fileRefs, {
+        basePath: _this.props.model.getBasePath()
+      }));
+    });
+
+    var refCount = this.props.model.getReferenceCount();
+    var fileCount = this.props.model.getFileCount();
     if (this.state.fetched < fileCount) {
-      children.push(
-        <div
-          key="loading"
-          className="nuclide-find-references-loading loading-spinner-medium"
-        />
-      );
+      children.push(_reactForAtom.React.createElement('div', {
+        key: 'loading',
+        className: 'nuclide-find-references-loading loading-spinner-medium'
+      }));
     }
 
-    return (
-      <div className="nuclide-find-references" onScroll={this._onScroll} ref="root" tabIndex="0">
-        <div className="nuclide-find-references-count">
-          Found {refCount} {pluralize('reference', refCount)}{' '}
-          in {fileCount} {pluralize('file', fileCount)}.
-        </div>
-        {children}
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-find-references', onScroll: this._onScroll, ref: 'root', tabIndex: '0' },
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-find-references-count' },
+        'Found ',
+        refCount,
+        ' ',
+        pluralize('reference', refCount),
+        ' ',
+        'in ',
+        fileCount,
+        ' ',
+        pluralize('file', fileCount),
+        '.'
+      ),
+      children
     );
-  },
+  }
 
 });
 

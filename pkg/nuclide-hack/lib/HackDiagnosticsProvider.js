@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _createDecoratedClass = (function () { function defineProperties(target, descriptors, initializers) { for (var i = 0; i < descriptors.length; i++) { var descriptor = descriptors[i]; var decorators = descriptor.decorators; var key = descriptor.key; delete descriptor.key; delete descriptor.decorators; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor || descriptor.initializer) descriptor.writable = true; if (decorators) { for (var f = 0; f < decorators.length; f++) { var decorator = decorators[f]; if (typeof decorator === 'function') { descriptor = decorator(target, key, descriptor) || descriptor; } else { throw new TypeError('The decorator for method ' + descriptor.key + ' is of the invalid type ' + typeof decorator); } } if (descriptor.initializer !== undefined) { initializers[key] = descriptor; continue; } } Object.defineProperty(target, key, descriptor); } } return function (Constructor, protoProps, staticProps, protoInitializers, staticInitializers) { if (protoProps) defineProperties(Constructor.prototype, protoProps, protoInitializers); if (staticProps) defineProperties(Constructor, staticProps, staticInitializers); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +8,43 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
-import type {HackLanguage} from './HackLanguage';
-import type {
-  HackDiagnostic,
-  SingleHackMessage,
-} from '../../nuclide-hack-base/lib/HackService';
-import type {
-  FileDiagnosticMessage,
-  MessageUpdateCallback,
-  MessageInvalidationCallback,
-  DiagnosticProviderUpdate,
-} from '../../nuclide-diagnostics-base';
+var findDiagnostics = _asyncToGenerator(function* (editor) {
+  var filePath = editor.getPath();
+  var hackLanguage = yield (0, _HackLanguage.getHackLanguageForUri)(filePath);
+  if (!hackLanguage || !filePath) {
+    return [];
+  }
 
-import {trackTiming} from '../../nuclide-analytics';
-import {getHackLanguageForUri, getCachedHackLanguageForUri} from './HackLanguage';
-import {promises} from '../../nuclide-commons';
-import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
-import {Range} from 'atom';
-import invariant from 'assert';
+  (0, _assert2.default)(filePath);
+  var contents = editor.getText();
 
-import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';
+  return yield hackLanguage.getDiagnostics(filePath, contents);
+});
 
-const {RequestSerializer} = promises;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _nuclideAnalytics = require('../../nuclide-analytics');
+
+var _HackLanguage = require('./HackLanguage');
+
+var _nuclideCommons = require('../../nuclide-commons');
+
+var _nuclideDiagnosticsProviderBase = require('../../nuclide-diagnostics-provider-base');
+
+var _atom = require('atom');
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _nuclideHackCommon = require('../../nuclide-hack-common');
+
+var RequestSerializer = _nuclideCommons.promises.RequestSerializer;
+
 /**
  * Currently, a diagnostic from Hack is an object with a "message" property.
  * Each item in the "message" array is an object with the following fields:
@@ -49,39 +61,34 @@ const {RequestSerializer} = promises;
  * with which the usage disagrees. Note that these could occur in different
  * files.
  */
-function extractRange(message: SingleHackMessage): atom$Range {
+function extractRange(message) {
   // It's unclear why the 1-based to 0-based indexing works the way that it
   // does, but this has the desired effect in the UI, in practice.
-  return new Range(
-    [message['line'] - 1, message['start'] - 1],
-    [message['line'] - 1, message['end']]
-  );
+  return new _atom.Range([message['line'] - 1, message['start'] - 1], [message['line'] - 1, message['end']]);
 }
 
 // A trace object is very similar to an error object.
-function hackMessageToTrace(traceError: SingleHackMessage): Object {
+function hackMessageToTrace(traceError) {
   return {
     type: 'Trace',
     text: traceError['descr'],
     filePath: traceError['path'],
-    range: extractRange(traceError),
+    range: extractRange(traceError)
   };
 }
 
-function hackMessageToDiagnosticMessage(
-  hackDiagnostic: {message: HackDiagnostic;},
-): FileDiagnosticMessage {
-  const {message: hackMessages} = hackDiagnostic;
+function hackMessageToDiagnosticMessage(hackDiagnostic) {
+  var hackMessages = hackDiagnostic.message;
 
-  const causeMessage = hackMessages[0];
-  invariant(causeMessage.path != null);
-  const diagnosticMessage: FileDiagnosticMessage = {
+  var causeMessage = hackMessages[0];
+  (0, _assert2.default)(causeMessage.path != null);
+  var diagnosticMessage = {
     scope: 'file',
-    providerName: `Hack: ${hackMessages[0].code}`,
+    providerName: 'Hack: ' + hackMessages[0].code,
     type: 'Error',
     text: causeMessage.descr,
     filePath: causeMessage.path,
-    range: extractRange(causeMessage),
+    range: extractRange(causeMessage)
   };
 
   // When the message is an array with multiple elements, the second element
@@ -93,169 +100,169 @@ function hackMessageToDiagnosticMessage(
   return diagnosticMessage;
 }
 
-class HackDiagnosticsProvider {
-  _busySignalProvider: BusySignalProviderBase;
-  _providerBase: DiagnosticsProviderBase;
-  _requestSerializer: RequestSerializer;
+var HackDiagnosticsProvider = (function () {
+  function HackDiagnosticsProvider(shouldRunOnTheFly, busySignalProvider) {
+    var _this = this;
 
-  /**
-   * Maps hack root to the set of file paths under that root for which we have
-   * ever reported diagnostics.
-   */
-  _hackLanguageToFilePaths: Map<HackLanguage, Set<NuclideUri>>;
+    var ProviderBase = arguments.length <= 2 || arguments[2] === undefined ? _nuclideDiagnosticsProviderBase.DiagnosticsProviderBase : arguments[2];
 
-  constructor(
-    shouldRunOnTheFly: boolean,
-    busySignalProvider: BusySignalProviderBase,
-    ProviderBase: typeof DiagnosticsProviderBase = DiagnosticsProviderBase,
-  ) {
+    _classCallCheck(this, HackDiagnosticsProvider);
+
     this._busySignalProvider = busySignalProvider;
-    const utilsOptions = {
-      grammarScopes: HACK_GRAMMARS_SET,
-      shouldRunOnTheFly,
-      onTextEditorEvent: editor => this._runDiagnostics(editor),
-      onNewUpdateSubscriber: callback => this._receivedNewUpdateSubscriber(callback),
+    var utilsOptions = {
+      grammarScopes: _nuclideHackCommon.HACK_GRAMMARS_SET,
+      shouldRunOnTheFly: shouldRunOnTheFly,
+      onTextEditorEvent: function onTextEditorEvent(editor) {
+        return _this._runDiagnostics(editor);
+      },
+      onNewUpdateSubscriber: function onNewUpdateSubscriber(callback) {
+        return _this._receivedNewUpdateSubscriber(callback);
+      }
     };
     this._providerBase = new ProviderBase(utilsOptions);
     this._requestSerializer = new RequestSerializer();
     this._hackLanguageToFilePaths = new Map();
   }
 
-  _runDiagnostics(textEditor: atom$TextEditor): void {
-    this._busySignalProvider.reportBusy(
-      'Hack: Waiting for diagnostics',
-      () => this._runDiagnosticsImpl(textEditor),
-    );
-  }
+  _createDecoratedClass(HackDiagnosticsProvider, [{
+    key: '_runDiagnostics',
+    value: function _runDiagnostics(textEditor) {
+      var _this2 = this;
 
-  @trackTiming('hack.run-diagnostics')
-  async _runDiagnosticsImpl(textEditor: atom$TextEditor): Promise<void> {
-    const filePath = textEditor.getPath();
-    if (!filePath) {
-      return;
+      this._busySignalProvider.reportBusy('Hack: Waiting for diagnostics', function () {
+        return _this2._runDiagnosticsImpl(textEditor);
+      });
     }
+  }, {
+    key: '_runDiagnosticsImpl',
+    decorators: [(0, _nuclideAnalytics.trackTiming)('hack.run-diagnostics')],
+    value: _asyncToGenerator(function* (textEditor) {
+      var filePath = textEditor.getPath();
+      if (!filePath) {
+        return;
+      }
 
-    // `hh_client` doesn't currently support `onTheFly` diagnosis.
-    // So, currently, it would only work if there is no `hh_client` or `.hhconfig` where
-    // the `HackWorker` model will diagnose with the updated editor contents.
-    const diagnosisResult = await this._requestSerializer.run(findDiagnostics(textEditor));
-    if (diagnosisResult.status === 'outdated' || diagnosisResult.result == null) {
-      return;
+      // `hh_client` doesn't currently support `onTheFly` diagnosis.
+      // So, currently, it would only work if there is no `hh_client` or `.hhconfig` where
+      // the `HackWorker` model will diagnose with the updated editor contents.
+      var diagnosisResult = yield this._requestSerializer.run(findDiagnostics(textEditor));
+      if (diagnosisResult.status === 'outdated' || diagnosisResult.result == null) {
+        return;
+      }
+
+      var diagnostics = diagnosisResult.result;
+      var hackLanguage = yield (0, _HackLanguage.getHackLanguageForUri)(textEditor.getPath());
+      if (!hackLanguage) {
+        return;
+      }
+
+      this._providerBase.publishMessageInvalidation({ scope: 'file', filePaths: [filePath] });
+      this._invalidatePathsForHackLanguage(hackLanguage);
+
+      var pathsForHackLanguage = new Set();
+      this._hackLanguageToFilePaths.set(hackLanguage, pathsForHackLanguage);
+      for (var diagnostic of diagnostics) {
+        /*
+         * Each message consists of several different components, each with its
+         * own text and path.
+         */
+        for (var diagnosticMessage of diagnostic.message) {
+          pathsForHackLanguage.add(diagnosticMessage.path);
+        }
+      }
+
+      this._providerBase.publishMessageUpdate(this._processDiagnostics(diagnostics));
+    })
+  }, {
+    key: '_processDiagnostics',
+    value: function _processDiagnostics(diagnostics) {
+      // Convert array messages to Error Objects with Traces.
+      var fileDiagnostics = diagnostics.map(hackMessageToDiagnosticMessage);
+
+      var filePathToMessages = new Map();
+      for (var diagnostic of fileDiagnostics) {
+        var path = diagnostic['filePath'];
+        var diagnosticArray = filePathToMessages.get(path);
+        if (!diagnosticArray) {
+          diagnosticArray = [];
+          filePathToMessages.set(path, diagnosticArray);
+        }
+        diagnosticArray.push(diagnostic);
+      }
+
+      return { filePathToMessages: filePathToMessages };
     }
-
-    const diagnostics = diagnosisResult.result;
-    const hackLanguage = await getHackLanguageForUri(textEditor.getPath());
-    if (!hackLanguage) {
-      return;
+  }, {
+    key: '_getPathsToInvalidate',
+    value: function _getPathsToInvalidate(hackLanguage) {
+      if (!hackLanguage.isHackAvailable()) {
+        return [];
+      }
+      var filePaths = this._hackLanguageToFilePaths.get(hackLanguage);
+      if (!filePaths) {
+        return [];
+      }
+      return Array.from(filePaths);
     }
-
-    this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: [filePath]});
-    this._invalidatePathsForHackLanguage(hackLanguage);
-
-    const pathsForHackLanguage = new Set();
-    this._hackLanguageToFilePaths.set(hackLanguage, pathsForHackLanguage);
-    for (const diagnostic of diagnostics) {
-      /*
-       * Each message consists of several different components, each with its
-       * own text and path.
-       */
-      for (const diagnosticMessage of diagnostic.message) {
-        pathsForHackLanguage.add(diagnosticMessage.path);
+  }, {
+    key: '_receivedNewUpdateSubscriber',
+    value: function _receivedNewUpdateSubscriber(callback) {
+      // Every time we get a new subscriber, we need to push results to them. This
+      // logic is common to all providers and should be abstracted out (t7813069)
+      //
+      // Once we provide all diagnostics, instead of just the current file, we can
+      // probably remove the activeTextEditor parameter.
+      var activeTextEditor = atom.workspace.getActiveTextEditor();
+      if (activeTextEditor) {
+        if (_nuclideHackCommon.HACK_GRAMMARS_SET.has(activeTextEditor.getGrammar().scopeName)) {
+          this._runDiagnostics(activeTextEditor);
+        }
       }
     }
-
-    this._providerBase.publishMessageUpdate(this._processDiagnostics(diagnostics));
-  }
-
-  _processDiagnostics(diagnostics: Array<{message: HackDiagnostic;}>): DiagnosticProviderUpdate {
-    // Convert array messages to Error Objects with Traces.
-    const fileDiagnostics = diagnostics.map(hackMessageToDiagnosticMessage);
-
-    const filePathToMessages = new Map();
-    for (const diagnostic of fileDiagnostics) {
-      const path = diagnostic['filePath'];
-      let diagnosticArray = filePathToMessages.get(path);
-      if (!diagnosticArray) {
-        diagnosticArray = [];
-        filePathToMessages.set(path, diagnosticArray);
+  }, {
+    key: 'setRunOnTheFly',
+    value: function setRunOnTheFly(runOnTheFly) {
+      this._providerBase.setRunOnTheFly(runOnTheFly);
+    }
+  }, {
+    key: 'onMessageUpdate',
+    value: function onMessageUpdate(callback) {
+      return this._providerBase.onMessageUpdate(callback);
+    }
+  }, {
+    key: 'onMessageInvalidation',
+    value: function onMessageInvalidation(callback) {
+      return this._providerBase.onMessageInvalidation(callback);
+    }
+  }, {
+    key: 'invalidateProjectPath',
+    value: function invalidateProjectPath(projectPath) {
+      var hackLanguage = (0, _HackLanguage.getCachedHackLanguageForUri)(projectPath);
+      if (!hackLanguage) {
+        return;
       }
-      diagnosticArray.push(diagnostic);
+      this._invalidatePathsForHackLanguage(hackLanguage);
     }
-
-    return { filePathToMessages };
-  }
-
-  _getPathsToInvalidate(hackLanguage: HackLanguage): Array<NuclideUri> {
-    if (!hackLanguage.isHackAvailable()) {
-      return [];
+  }, {
+    key: '_invalidatePathsForHackLanguage',
+    value: function _invalidatePathsForHackLanguage(hackLanguage) {
+      var pathsToInvalidate = this._getPathsToInvalidate(hackLanguage);
+      this._providerBase.publishMessageInvalidation({ scope: 'file', filePaths: pathsToInvalidate });
+      this._hackLanguageToFilePaths.delete(hackLanguage);
     }
-    const filePaths = this._hackLanguageToFilePaths.get(hackLanguage);
-    if (!filePaths) {
-      return [];
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._providerBase.dispose();
     }
-    return Array.from(filePaths);
-  }
+  }]);
 
-  _receivedNewUpdateSubscriber(callback: MessageUpdateCallback): void {
-    // Every time we get a new subscriber, we need to push results to them. This
-    // logic is common to all providers and should be abstracted out (t7813069)
-    //
-    // Once we provide all diagnostics, instead of just the current file, we can
-    // probably remove the activeTextEditor parameter.
-    const activeTextEditor = atom.workspace.getActiveTextEditor();
-    if (activeTextEditor) {
-      if (HACK_GRAMMARS_SET.has(activeTextEditor.getGrammar().scopeName)) {
-        this._runDiagnostics(activeTextEditor);
-      }
-    }
-  }
-
-  setRunOnTheFly(runOnTheFly: boolean): void {
-    this._providerBase.setRunOnTheFly(runOnTheFly);
-  }
-
-  onMessageUpdate(callback: MessageUpdateCallback): IDisposable {
-    return this._providerBase.onMessageUpdate(callback);
-  }
-
-  onMessageInvalidation(callback: MessageInvalidationCallback): IDisposable {
-    return this._providerBase.onMessageInvalidation(callback);
-  }
-
-  invalidateProjectPath(projectPath: NuclideUri): void {
-    const hackLanguage = getCachedHackLanguageForUri(projectPath);
-    if (!hackLanguage) {
-      return;
-    }
-    this._invalidatePathsForHackLanguage(hackLanguage);
-  }
-
-  _invalidatePathsForHackLanguage(hackLanguage: HackLanguage): void {
-    const pathsToInvalidate = this._getPathsToInvalidate(hackLanguage);
-    this._providerBase.publishMessageInvalidation(
-      {scope: 'file', filePaths: pathsToInvalidate},
-    );
-    this._hackLanguageToFilePaths.delete(hackLanguage);
-  }
-
-  dispose() {
-    this._providerBase.dispose();
-  }
-}
-
-async function findDiagnostics(
-  editor: atom$TextEditor,
-): Promise<Array<{message: HackDiagnostic;}>> {
-  const filePath = editor.getPath();
-  const hackLanguage = await getHackLanguageForUri(filePath);
-  if (!hackLanguage || !filePath) {
-    return [];
-  }
-
-  invariant(filePath);
-  const contents = editor.getText();
-
-  return await hackLanguage.getDiagnostics(filePath, contents);
-}
+  return HackDiagnosticsProvider;
+})();
 
 module.exports = HackDiagnosticsProvider;
+
+/**
+ * Maps hack root to the set of file paths under that root for which we have
+ * ever reported diagnostics.
+ */

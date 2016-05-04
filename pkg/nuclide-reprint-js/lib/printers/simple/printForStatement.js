@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,54 +8,41 @@
  * the root directory of this source tree.
  */
 
-import type {ForStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _constantsMarkers = require('../../constants/markers');
 
-import markers from '../../constants/markers';
-import wrapStatement from '../../wrappers/simple/wrapStatement';
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
-function printForStatement(print: Print, node: ForStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
+var _wrappersSimpleWrapStatement = require('../../wrappers/simple/wrapStatement');
 
-  let parts = [
-    markers.hardBreak,
-    'for (',
-    markers.openScope,
-    markers.scopeIndent,
-  ];
-  parts.push(markers.scopeBreak);
+var _wrappersSimpleWrapStatement2 = _interopRequireDefault(_wrappersSimpleWrapStatement);
+
+function printForStatement(print, node) {
+  var wrap = function wrap(x) {
+    return (0, _wrappersSimpleWrapStatement2.default)(print, node, x);
+  };
+
+  var parts = [_constantsMarkers2.default.hardBreak, 'for (', _constantsMarkers2.default.openScope, _constantsMarkers2.default.scopeIndent];
+  parts.push(_constantsMarkers2.default.scopeBreak);
   if (node.init) {
-    const init = node.init;
+    var init = node.init;
     parts.push(print(init));
   }
   parts.push(';');
-  parts.push(markers.scopeBreak);
+  parts.push(_constantsMarkers2.default.scopeBreak);
   if (node.test) {
-    const test = node.test;
-    parts = parts.concat([
-      markers.space,
-      print(test),
-    ]);
+    var test = node.test;
+    parts = parts.concat([_constantsMarkers2.default.space, print(test)]);
   }
   parts.push(';');
-  parts.push(markers.scopeBreak);
+  parts.push(_constantsMarkers2.default.scopeBreak);
   if (node.update) {
-    const update = node.update;
-    parts = parts.concat([
-      markers.space,
-      print(update),
-    ]);
+    var update = node.update;
+    parts = parts.concat([_constantsMarkers2.default.space, print(update)]);
     // We only need an additional one if there was an update, otherwise we
     // just ended with a scopeBreak.
-    parts.push(markers.scopeBreak);
+    parts.push(_constantsMarkers2.default.scopeBreak);
   }
-  parts = parts.concat([
-    markers.scopeDedent,
-    markers.closeScope,
-    ')',
-    markers.space,
-    print(node.body),
-  ]);
+  parts = parts.concat([_constantsMarkers2.default.scopeDedent, _constantsMarkers2.default.closeScope, ')', _constantsMarkers2.default.space, print(node.body)]);
   return wrap(parts);
 }
 

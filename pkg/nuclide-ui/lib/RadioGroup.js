@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,60 +10,66 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+var _reactForAtom = require('react-for-atom');
 
 // Globally unique ID used as the "name" attribute to group radio inputs.
-let uid = 0;
+var uid = 0;
 
 /**
  * A managed radio group component. Accepts arbitrary React elements as labels.
  */
-export const RadioGroup = React.createClass({
+var RadioGroup = _reactForAtom.React.createClass({
+  displayName: 'RadioGroup',
 
   propTypes: {
-    optionLabels: React.PropTypes.arrayOf(React.PropTypes.node).isRequired,
-    selectedIndex: React.PropTypes.number.isRequired,
-    onSelectedChange: React.PropTypes.func.isRequired,
+    optionLabels: _reactForAtom.React.PropTypes.arrayOf(_reactForAtom.React.PropTypes.node).isRequired,
+    selectedIndex: _reactForAtom.React.PropTypes.number.isRequired,
+    onSelectedChange: _reactForAtom.React.PropTypes.func.isRequired
   },
 
-  getDefaultProps(): any {
+  getDefaultProps: function getDefaultProps() {
     return {
       optionLabels: [],
-      onSelectedChange: () => {},
-      selectedIndex: 0,
+      onSelectedChange: function onSelectedChange() {},
+      selectedIndex: 0
     };
   },
 
-  getInitialState(): any {
+  getInitialState: function getInitialState() {
     return {
-      uid: uid++,
+      uid: uid++
     };
   },
 
-  render: function(): React.Element {
-    const checkboxes = this.props.optionLabels.map((labelContent, i) => {
-      const id = 'nuclide-radiogroup-' + uid + '-' + i;
-      return (
-        <div key={i}>
-          <input
-            type="radio"
-            checked={i === this.props.selectedIndex}
-            name={'radiogroup-' + this.state.uid}
-            id={id}
-            onChange={this.props.onSelectedChange.bind(null, i)}
-          />
-          <label
-            className="nuclide-ui-radiogroup-label"
-            htmlFor={id}>
-            {labelContent}
-          </label>
-        </div>
+  render: function render() {
+    var _this = this;
+
+    var checkboxes = this.props.optionLabels.map(function (labelContent, i) {
+      var id = 'nuclide-radiogroup-' + uid + '-' + i;
+      return _reactForAtom.React.createElement(
+        'div',
+        { key: i },
+        _reactForAtom.React.createElement('input', {
+          type: 'radio',
+          checked: i === _this.props.selectedIndex,
+          name: 'radiogroup-' + _this.state.uid,
+          id: id,
+          onChange: _this.props.onSelectedChange.bind(null, i)
+        }),
+        _reactForAtom.React.createElement(
+          'label',
+          {
+            className: 'nuclide-ui-radiogroup-label',
+            htmlFor: id },
+          labelContent
+        )
       );
     });
-    return (
-      <div>
-        {checkboxes}
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      null,
+      checkboxes
     );
-  },
+  }
 });
+exports.RadioGroup = RadioGroup;

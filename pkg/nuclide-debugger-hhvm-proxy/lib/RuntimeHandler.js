@@ -1,5 +1,18 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,83 +22,94 @@
  * the root directory of this source tree.
  */
 
+var _helpers = require('./helpers');
 
-import {DUMMY_FRAME_ID} from './helpers';
-import Handler from './Handler';
-import {makeExpressionHphpdCompatible} from './utils';
+var _Handler2 = require('./Handler');
 
-import type {ConnectionMultiplexer} from './ConnectionMultiplexer';
-import type {ClientCallback} from './ClientCallback';
+var _Handler3 = _interopRequireDefault(_Handler2);
+
+var _utils = require('./utils');
 
 // Handles all 'Runtime.*' Chrome dev tools messages
-export class RuntimeHandler extends Handler {
-  _connectionMultiplexer: ConnectionMultiplexer;
 
-  constructor(
-    clientCallback: ClientCallback,
-    connectionMultiplexer: ConnectionMultiplexer
-  ) {
-    super('Runtime', clientCallback);
+var RuntimeHandler = (function (_Handler) {
+  _inherits(RuntimeHandler, _Handler);
+
+  function RuntimeHandler(clientCallback, connectionMultiplexer) {
+    _classCallCheck(this, RuntimeHandler);
+
+    _get(Object.getPrototypeOf(RuntimeHandler.prototype), 'constructor', this).call(this, 'Runtime', clientCallback);
     this._connectionMultiplexer = connectionMultiplexer;
   }
 
-  async handleMethod(id: number, method: string, params: Object): Promise {
-    switch (method) {
-      case 'enable':
-        this._notifyExecutionContext(id);
-        break;
+  _createClass(RuntimeHandler, [{
+    key: 'handleMethod',
+    value: _asyncToGenerator(function* (id, method, params) {
+      switch (method) {
+        case 'enable':
+          this._notifyExecutionContext(id);
+          break;
 
-      case 'getProperties':
-        await this._getProperties(id, params);
-        break;
+        case 'getProperties':
+          yield this._getProperties(id, params);
+          break;
 
-      case 'evaluate':
-        const compatParams = makeExpressionHphpdCompatible(params);
+        case 'evaluate':
+          var compatParams = (0, _utils.makeExpressionHphpdCompatible)(params);
 
-        // Chrome may call 'evaluate' for other purposes like auto-completion etc..
-        // and we are only interested in console evaluation.
-        if (compatParams.objectGroup === 'console') {
-          await this._evaluate(id, compatParams);
-        } else {
-          this.unknownMethod(id, method, compatParams);
-        }
-        break;
+          // Chrome may call 'evaluate' for other purposes like auto-completion etc..
+          // and we are only interested in console evaluation.
+          if (compatParams.objectGroup === 'console') {
+            yield this._evaluate(id, compatParams);
+          } else {
+            this.unknownMethod(id, method, compatParams);
+          }
+          break;
 
-      default:
-        this.unknownMethod(id, method, params);
-        break;
-    }
-  }
-
-  _notifyExecutionContext(id: number): void {
-    this.sendMethod('Runtime.executionContextCreated',
-      {
+        default:
+          this.unknownMethod(id, method, params);
+          break;
+      }
+    })
+  }, {
+    key: '_notifyExecutionContext',
+    value: function _notifyExecutionContext(id) {
+      this.sendMethod('Runtime.executionContextCreated', {
         'context': {
           'id': 1,
-          'frameId': DUMMY_FRAME_ID,
-          'name': 'hhvm: TODO: mangle in pid, idekey, script from connection',
-        },
+          'frameId': _helpers.DUMMY_FRAME_ID,
+          'name': 'hhvm: TODO: mangle in pid, idekey, script from connection'
+        }
       });
-    this.replyToCommand(id, {});
-  }
-
-  async _getProperties(id: number, params: Object): Promise {
-    // params also has properties:
-    //    ownProperties
-    //    generatePreview
-    const {objectId, accessorPropertiesOnly} = params;
-    let result;
-    if (!accessorPropertiesOnly) {
-      result = await this._connectionMultiplexer.getProperties(objectId);
-    } else {
-      // TODO: Handle remaining params
-      result = [];
+      this.replyToCommand(id, {});
     }
-    this.replyToCommand(id, {result});
-  }
+  }, {
+    key: '_getProperties',
+    value: _asyncToGenerator(function* (id, params) {
+      // params also has properties:
+      //    ownProperties
+      //    generatePreview
+      var objectId = params.objectId;
+      var accessorPropertiesOnly = params.accessorPropertiesOnly;
 
-  async _evaluate(id: number, params: Object): Promise {
-    const result = await this._connectionMultiplexer.runtimeEvaluate(params.expression);
-    this.replyToCommand(id, result);
-  }
-}
+      var result = undefined;
+      if (!accessorPropertiesOnly) {
+        result = yield this._connectionMultiplexer.getProperties(objectId);
+      } else {
+        // TODO: Handle remaining params
+        result = [];
+      }
+      this.replyToCommand(id, { result: result });
+    })
+  }, {
+    key: '_evaluate',
+    value: _asyncToGenerator(function* (id, params) {
+      var result = yield this._connectionMultiplexer.runtimeEvaluate(params.expression);
+      this.replyToCommand(id, result);
+    })
+  }]);
+
+  return RuntimeHandler;
+})(_Handler3.default);
+
+exports.RuntimeHandler = RuntimeHandler;

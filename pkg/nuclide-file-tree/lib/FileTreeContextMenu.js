@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,60 +10,40 @@
  * the root directory of this source tree.
  */
 
-import type {FileTreeNode} from './FileTreeNode';
-import type Immutable from 'immutable';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import ContextMenu from '../../nuclide-context-menu';
-import {CompositeDisposable, Disposable} from 'atom';
-import {EVENT_HANDLER_SELECTOR} from './FileTreeConstants';
-import {FileTreeStore} from './FileTreeStore';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import path from 'path';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-type MenuItemSingle = {
-  label: string;
-  command: string;
-  shouldDisplay?: (event: MouseEvent) => boolean;
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-type MenuItemGroup = {
-  label: string;
-  submenu: Array<atom$ContextMenuItem>;
-  shouldDisplay?: (event: MouseEvent) => boolean;
-};
+var _nuclideContextMenu = require('../../nuclide-context-menu');
 
-type MenuItemSeparator = {
-  type: string;
-};
+var _nuclideContextMenu2 = _interopRequireDefault(_nuclideContextMenu);
 
-type MenuItemDefinition = MenuItemSingle | MenuItemGroup | MenuItemSeparator;
+var _atom = require('atom');
 
+var _FileTreeConstants = require('./FileTreeConstants');
+
+var _FileTreeStore = require('./FileTreeStore');
+
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
 
 // It's just atom$ContextMenuItem with an optional `callback` property added.
 // I wish flow would let add it in a more elegant way.
-type AtomContextMenuItemWithCallback = {
-  command?: string;
-  callback?: () => mixed;
-  created?: (event: MouseEvent) => void;
-  enabled?: boolean;
-  label?: string;
-  shouldDisplay?: (event: MouseEvent) => boolean;
-  submenu?: Array<atom$ContextMenuItem>;
-  type?: string;
-  visible?: boolean;
-};
 
-export type FileTreeContextMenuItem = atom$ContextMenuItem | AtomContextMenuItemWithCallback;
+var FILE_TREE_CSS = '.nuclide-file-tree-toolbar-container';
 
-const FILE_TREE_CSS = '.nuclide-file-tree-toolbar-container';
-
-const NEW_MENU_PRIORITY = 0;
-const ADD_PROJECT_MENU_PRIORITY = 1000;
-const SOURCE_CONTROL_MENU_PRIORITY = 2000;
-const MODIFY_FILE_MENU_PRIORITY = 3000;
-const SPLIT_MENU_PRIORITY = 4000;
-const TEST_SECTION_PRIORITY = 5000;
-const SHOW_IN_MENU_PRIORITY = 6000;
+var NEW_MENU_PRIORITY = 0;
+var ADD_PROJECT_MENU_PRIORITY = 1000;
+var SOURCE_CONTROL_MENU_PRIORITY = 2000;
+var MODIFY_FILE_MENU_PRIORITY = 3000;
+var SPLIT_MENU_PRIORITY = 4000;
+var TEST_SECTION_PRIORITY = 5000;
+var SHOW_IN_MENU_PRIORITY = 6000;
 
 /**
  * This context menu wrapper exists to address some of the limitations in the ContextMenuManager:
@@ -137,274 +118,250 @@ const SHOW_IN_MENU_PRIORITY = 6000;
  * }
  * ```
  */
-class FileTreeContextMenu {
-  _contextMenu: ContextMenu;
-  _sourceControlMenu: ContextMenu;
-  _store: FileTreeStore;
-  _subscriptions: CompositeDisposable;
 
-  constructor() {
-    this._contextMenu = new ContextMenu(
-      {
-        type: 'root',
-        cssSelector: EVENT_HANDLER_SELECTOR,
-      }
-    );
-    this._subscriptions = new CompositeDisposable();
-    this._store = FileTreeStore.getInstance();
+var FileTreeContextMenu = (function () {
+  function FileTreeContextMenu() {
+    var _this = this;
 
-    const shouldDisplaySetToCurrentWorkingRootOption = () => {
-      const node = this._store.getSingleSelectedNode();
-      return node != null && node.isRoot && this._store.hasCwd() && !node.isCwd;
+    _classCallCheck(this, FileTreeContextMenu);
+
+    this._contextMenu = new _nuclideContextMenu2.default({
+      type: 'root',
+      cssSelector: _FileTreeConstants.EVENT_HANDLER_SELECTOR
+    });
+    this._subscriptions = new _atom.CompositeDisposable();
+    this._store = _FileTreeStore.FileTreeStore.getInstance();
+
+    var shouldDisplaySetToCurrentWorkingRootOption = function shouldDisplaySetToCurrentWorkingRootOption() {
+      var node = _this._store.getSingleSelectedNode();
+      return node != null && node.isRoot && _this._store.hasCwd() && !node.isCwd;
     };
 
-    this._addContextMenuItemGroup([
-      {
-        label: 'Set to Current Working Root',
-        command: 'nuclide-file-tree:set-current-working-root',
-        shouldDisplay: shouldDisplaySetToCurrentWorkingRootOption,
+    this._addContextMenuItemGroup([{
+      label: 'Set to Current Working Root',
+      command: 'nuclide-file-tree:set-current-working-root',
+      shouldDisplay: shouldDisplaySetToCurrentWorkingRootOption
+    }, {
+      type: 'separator',
+      shouldDisplay: shouldDisplaySetToCurrentWorkingRootOption
+    }, {
+      label: 'New',
+      shouldDisplay: function shouldDisplay() {
+        return _this._store.getSingleSelectedNode() != null;
       },
-      {
-        type: 'separator',
-        shouldDisplay: shouldDisplaySetToCurrentWorkingRootOption,
-      },
-      {
-        label: 'New',
-        shouldDisplay: () => {
-          return this._store.getSingleSelectedNode() != null;
-        },
-        submenu: [
-          {
-            label: 'File',
-            command: 'nuclide-file-tree:add-file',
-          },
-          {
-            label: 'Folder',
-            command: 'nuclide-file-tree:add-folder',
-          },
-        ],
-      },
-    ],
-    NEW_MENU_PRIORITY);
+      submenu: [{
+        label: 'File',
+        command: 'nuclide-file-tree:add-file'
+      }, {
+        label: 'Folder',
+        command: 'nuclide-file-tree:add-folder'
+      }]
+    }], NEW_MENU_PRIORITY);
 
-    this._addContextMenuItemGroup([
-      {
-        label: 'Add Project Folder',
-        command: 'application:add-project-folder',
-      },
-      {
-        label: 'Add Remote Project Folder',
-        command: 'nuclide-remote-projects:connect',
-      },
-      {
-        label: 'Remove Project Folder',
-        command: 'nuclide-file-tree:remove-project-folder-selection',
-        shouldDisplay: () => {
-          const node = this.getSingleSelectedNode();
-          return node != null && node.isRoot;
-        },
-      },
-    ],
-    ADD_PROJECT_MENU_PRIORITY);
+    this._addContextMenuItemGroup([{
+      label: 'Add Project Folder',
+      command: 'application:add-project-folder'
+    }, {
+      label: 'Add Remote Project Folder',
+      command: 'nuclide-remote-projects:connect'
+    }, {
+      label: 'Remove Project Folder',
+      command: 'nuclide-file-tree:remove-project-folder-selection',
+      shouldDisplay: function shouldDisplay() {
+        var node = _this.getSingleSelectedNode();
+        return node != null && node.isRoot;
+      }
+    }], ADD_PROJECT_MENU_PRIORITY);
 
-    this._sourceControlMenu = new ContextMenu({
+    this._sourceControlMenu = new _nuclideContextMenu2.default({
       type: 'submenu',
       label: 'Source Control',
-      parent: this._contextMenu,
+      parent: this._contextMenu
     });
-    this._contextMenu.addSubmenu(
-      this._sourceControlMenu,
-      SOURCE_CONTROL_MENU_PRIORITY,
-    );
-    this._contextMenu.addItem(
-      {
-        type: 'separator',
-        shouldDisplay: (e: MouseEvent) => !this._sourceControlMenu.isEmpty(),
-      },
-      SOURCE_CONTROL_MENU_PRIORITY + 1,
-    );
+    this._contextMenu.addSubmenu(this._sourceControlMenu, SOURCE_CONTROL_MENU_PRIORITY);
+    this._contextMenu.addItem({
+      type: 'separator',
+      shouldDisplay: function shouldDisplay(e) {
+        return !_this._sourceControlMenu.isEmpty();
+      }
+    }, SOURCE_CONTROL_MENU_PRIORITY + 1);
 
-    this._addContextMenuItemGroup([
-      {
-        label: 'Rename',
-        command: 'nuclide-file-tree:rename-selection',
-        shouldDisplay: () => {
-          const node = this._store.getSingleSelectedNode();
-          // For now, rename does not apply to root nodes.
+    this._addContextMenuItemGroup([{
+      label: 'Rename',
+      command: 'nuclide-file-tree:rename-selection',
+      shouldDisplay: function shouldDisplay() {
+        var node = _this._store.getSingleSelectedNode();
+        // For now, rename does not apply to root nodes.
+        return node != null && !node.isRoot;
+      }
+    }, {
+      label: 'Duplicate',
+      command: 'nuclide-file-tree:duplicate-selection',
+      shouldDisplay: function shouldDisplay() {
+        var node = _this.getSingleSelectedNode();
+        return node != null && !node.isContainer;
+      }
+    }, {
+      label: 'Delete',
+      command: 'nuclide-file-tree:remove',
+      shouldDisplay: function shouldDisplay() {
+        var nodes = _this.getSelectedNodes();
+        // We can delete multiple nodes as long as no root node is selected
+        return nodes.size > 0 && nodes.every(function (node) {
           return node != null && !node.isRoot;
-        },
-      },
-      {
-        label: 'Duplicate',
-        command: 'nuclide-file-tree:duplicate-selection',
-        shouldDisplay: () => {
-          const node = this.getSingleSelectedNode();
-          return node != null && !node.isContainer;
-        },
-      },
-      {
-        label: 'Delete',
-        command: 'nuclide-file-tree:remove',
-        shouldDisplay: () => {
-          const nodes = this.getSelectedNodes();
-          // We can delete multiple nodes as long as no root node is selected
-          return nodes.size > 0 && nodes.every(node => node != null && !node.isRoot);
-        },
-      },
-    ],
-    MODIFY_FILE_MENU_PRIORITY);
+        });
+      }
+    }], MODIFY_FILE_MENU_PRIORITY);
 
-    this._addContextMenuItemGroup([
-      {
-        label: 'Split',
-        shouldDisplay: () => {
-          const node = this.getSingleSelectedNode();
-          return node != null && !node.isContainer;
-        },
-        submenu: [
-          {
-            'label': 'Up',
-            'command': 'nuclide-file-tree:open-selected-entry-up',
-          },
-          {
-            'label': 'Down',
-            'command': 'nuclide-file-tree:open-selected-entry-down',
-          },
-          {
-            'label': 'Left',
-            'command': 'nuclide-file-tree:open-selected-entry-left',
-          },
-          {
-            'label': 'Right',
-            'command': 'nuclide-file-tree:open-selected-entry-right',
-          },
-        ],
+    this._addContextMenuItemGroup([{
+      label: 'Split',
+      shouldDisplay: function shouldDisplay() {
+        var node = _this.getSingleSelectedNode();
+        return node != null && !node.isContainer;
       },
-    ],
-    SPLIT_MENU_PRIORITY);
+      submenu: [{
+        'label': 'Up',
+        'command': 'nuclide-file-tree:open-selected-entry-up'
+      }, {
+        'label': 'Down',
+        'command': 'nuclide-file-tree:open-selected-entry-down'
+      }, {
+        'label': 'Left',
+        'command': 'nuclide-file-tree:open-selected-entry-left'
+      }, {
+        'label': 'Right',
+        'command': 'nuclide-file-tree:open-selected-entry-right'
+      }]
+    }], SPLIT_MENU_PRIORITY);
 
-    this._addContextMenuItemGroup([
-      {
-        label: 'Copy Full Path',
-        command: 'nuclide-file-tree:copy-full-path',
-        shouldDisplay: () => {
-          const node = this.getSingleSelectedNode();
-          return node != null;
-        },
-      },
-      {
-        label: 'Show in Finder', // Mac OS X
-        command: 'nuclide-file-tree:show-in-file-manager',
-        shouldDisplay: this._shouldDisplayShowInFileManager.bind(this, 'darwin'),
-      },
-      {
-        label: 'Show in Explorer', // Windows
-        command: 'nuclide-file-tree:show-in-file-manager',
-        shouldDisplay: this._shouldDisplayShowInFileManager.bind(this, 'win32'),
-      },
-      {
-        label: 'Show in File Manager', // Linux
-        command: 'nuclide-file-tree:show-in-file-manager',
-        shouldDisplay: this._shouldDisplayShowInFileManager.bind(this, 'linux'),
-      },
-      {
-        label: 'Search in Directory',
-        command: 'nuclide-file-tree:search-in-directory',
-        shouldDisplay: () => {
-          const nodes = this.getSelectedNodes();
-          return nodes.size > 0 && nodes.every(node => node.isContainer);
-        },
-      },
-    ],
-    SHOW_IN_MENU_PRIORITY);
+    this._addContextMenuItemGroup([{
+      label: 'Copy Full Path',
+      command: 'nuclide-file-tree:copy-full-path',
+      shouldDisplay: function shouldDisplay() {
+        var node = _this.getSingleSelectedNode();
+        return node != null;
+      }
+    }, {
+      label: 'Show in Finder', // Mac OS X
+      command: 'nuclide-file-tree:show-in-file-manager',
+      shouldDisplay: this._shouldDisplayShowInFileManager.bind(this, 'darwin')
+    }, {
+      label: 'Show in Explorer', // Windows
+      command: 'nuclide-file-tree:show-in-file-manager',
+      shouldDisplay: this._shouldDisplayShowInFileManager.bind(this, 'win32')
+    }, {
+      label: 'Show in File Manager', // Linux
+      command: 'nuclide-file-tree:show-in-file-manager',
+      shouldDisplay: this._shouldDisplayShowInFileManager.bind(this, 'linux')
+    }, {
+      label: 'Search in Directory',
+      command: 'nuclide-file-tree:search-in-directory',
+      shouldDisplay: function shouldDisplay() {
+        var nodes = _this.getSelectedNodes();
+        return nodes.size > 0 && nodes.every(function (node) {
+          return node.isContainer;
+        });
+      }
+    }], SHOW_IN_MENU_PRIORITY);
   }
 
   /**
    * @param priority must be an integer in the range [0, 1000).
    */
-  addItemToTestSection(originalItem: FileTreeContextMenuItem, priority: number): IDisposable {
-    if (priority < 0 || priority >= 1000) {
-      throw Error(`Illegal priority value: ${priority}`);
+
+  _createClass(FileTreeContextMenu, [{
+    key: 'addItemToTestSection',
+    value: function addItemToTestSection(originalItem, priority) {
+      if (priority < 0 || priority >= 1000) {
+        throw Error('Illegal priority value: ' + priority);
+      }
+
+      return this._addItemToMenu(originalItem, this._contextMenu, TEST_SECTION_PRIORITY + priority);
+    }
+  }, {
+    key: 'addItemToSourceControlMenu',
+    value: function addItemToSourceControlMenu(originalItem, priority) {
+      return this._addItemToMenu(originalItem, this._sourceControlMenu, priority);
+    }
+  }, {
+    key: '_addItemToMenu',
+    value: function _addItemToMenu(originalItem, menu, priority) {
+      var _this2 = this;
+
+      var _initCommandIfPresent = initCommandIfPresent(originalItem);
+
+      var itemDisposable = _initCommandIfPresent.itemDisposable;
+      var item = _initCommandIfPresent.item;
+
+      itemDisposable.add(menu.addItem(item, priority));
+
+      this._subscriptions.add(itemDisposable);
+      return new _atom.Disposable(function () {
+        _this2._subscriptions.remove(itemDisposable);
+        itemDisposable.dispose();
+      });
+    }
+  }, {
+    key: 'getSelectedNodes',
+    value: function getSelectedNodes() {
+      return this._store.getSelectedNodes();
+    }
+  }, {
+    key: 'getSingleSelectedNode',
+    value: function getSingleSelectedNode() {
+      return this._store.getSingleSelectedNode();
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._subscriptions.dispose();
+    }
+  }, {
+    key: '_addContextMenuItemGroup',
+    value: function _addContextMenuItemGroup(menuItems, priority) {
+      var _this3 = this;
+
+      // Atom is smart about only displaying a separator when there are items to
+      // separate, so there will never be a dangling separator at the end.
+
+      var allItems = menuItems.concat([{ type: 'separator' }]);
+      allItems.forEach(function (item) {
+        _this3._contextMenu.addItem(item, ++priority);
+      });
     }
 
-    return this._addItemToMenu(originalItem, this._contextMenu, TEST_SECTION_PRIORITY + priority);
-  }
+    /**
+     * @return A {boolean} whether the "Show in File Manager" context menu item should be displayed
+     * for the current selection and the given `platform`.
+     */
+  }, {
+    key: '_shouldDisplayShowInFileManager',
+    value: function _shouldDisplayShowInFileManager(platform) {
+      var node = this.getSingleSelectedNode();
+      return node != null && _path2.default.isAbsolute(node.uri) && process.platform === platform;
+    }
+  }]);
 
-  addItemToSourceControlMenu(originalItem: FileTreeContextMenuItem, priority: number): IDisposable {
-    return this._addItemToMenu(originalItem, this._sourceControlMenu, priority);
-  }
+  return FileTreeContextMenu;
+})();
 
-  _addItemToMenu(
-    originalItem: FileTreeContextMenuItem,
-    menu: ContextMenu,
-    priority: number,
-  ): IDisposable {
-    const {itemDisposable, item} = initCommandIfPresent(originalItem);
-    itemDisposable.add(menu.addItem(item, priority));
-
-    this._subscriptions.add(itemDisposable);
-    return new Disposable(() => {
-      this._subscriptions.remove(itemDisposable);
-      itemDisposable.dispose();
-    });
-  }
-
-  getSelectedNodes(): Immutable.OrderedSet<FileTreeNode> {
-    return this._store.getSelectedNodes();
-  }
-
-  getSingleSelectedNode(): ?FileTreeNode {
-    return this._store.getSingleSelectedNode();
-  }
-
-  dispose(): void {
-    this._subscriptions.dispose();
-  }
-
-  _addContextMenuItemGroup(menuItems: Array<MenuItemDefinition>, priority: number): void {
-    // Atom is smart about only displaying a separator when there are items to
-    // separate, so there will never be a dangling separator at the end.
-    // $FlowFixMe: The conversion between MenuItemDefinition and atom$ContextMenuItem is a mess.
-    const allItems: Array<atom$ContextMenuItem> = menuItems.concat([{type: 'separator'}]);
-    allItems.forEach(item => {
-      this._contextMenu.addItem(item, ++priority);
-    });
-  }
-
-  /**
-   * @return A {boolean} whether the "Show in File Manager" context menu item should be displayed
-   * for the current selection and the given `platform`.
-   */
-  _shouldDisplayShowInFileManager(platform: string): boolean {
-    const node = this.getSingleSelectedNode();
-    return (
-      node != null &&
-      path.isAbsolute(node.uri) &&
-      process.platform === platform
-    );
-  }
-}
-
-function initCommandIfPresent(item: FileTreeContextMenuItem): {
-  itemDisposable: CompositeDisposable;
-  item: atom$ContextMenuItem;
-} {
-  const itemDisposable = new CompositeDisposable();
+function initCommandIfPresent(item) {
+  var itemDisposable = new _atom.CompositeDisposable();
   if (item.callback != null && item.label != null) {
-    const command = item.command || generateNextInternalCommand(item.label);
-    itemDisposable.add(atom.commands.add(FILE_TREE_CSS, command, item.callback));
-    return {itemDisposable, item: {...item, command: command}};
+    var _command = item.command || generateNextInternalCommand(item.label);
+    itemDisposable.add(atom.commands.add(FILE_TREE_CSS, _command, item.callback));
+    return { itemDisposable: itemDisposable, item: _extends({}, item, { command: _command }) };
   }
 
-  return {itemDisposable, item};
+  return { itemDisposable: itemDisposable, item: item };
 }
 
-let nextInternalCommandId = 0;
+var nextInternalCommandId = 0;
 
-function generateNextInternalCommand(itemLabel: string): string {
-  const cmdName = itemLabel.toLowerCase().replace(/[^\w]+/g, '-') + '-' + nextInternalCommandId++;
-  return `nuclide-file-tree:${cmdName}`;
+function generateNextInternalCommand(itemLabel) {
+  var cmdName = itemLabel.toLowerCase().replace(/[^\w]+/g, '-') + '-' + nextInternalCommandId++;
+  return 'nuclide-file-tree:' + cmdName;
 }
-
 
 module.exports = FileTreeContextMenu;
+// $FlowFixMe: The conversion between MenuItemDefinition and atom$ContextMenuItem is a mess.

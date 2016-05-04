@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +10,4 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-
-export type UIElement = {
-  node: React.Element;
-  bufferRow: number;
-};
-
-export type UIProvider = {
-  composeUiElements: (filePath: string) => Promise<Array<UIElement>>;
-};
+var _reactForAtom = require('react-for-atom');

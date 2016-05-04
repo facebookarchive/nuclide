@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +8,33 @@
  * the root directory of this source tree.
  */
 
+var _url = require('url');
 
-import url from 'url';
-import remoteUri from '../../nuclide-remote-uri';
-import logger from './utils';
+var _url2 = _interopRequireDefault(_url);
 
-const {log} = logger;
+var _nuclideRemoteUri = require('../../nuclide-remote-uri');
 
-function translateMessageFromServer(hostname: string, port: number, message: string): string {
-  return translateMessage(message, uri => translateUriFromServer(hostname, port, uri));
+var _nuclideRemoteUri2 = _interopRequireDefault(_nuclideRemoteUri);
+
+var _utils = require('./utils');
+
+var _utils2 = _interopRequireDefault(_utils);
+
+var log = _utils2.default.log;
+
+function translateMessageFromServer(hostname, port, message) {
+  return translateMessage(message, function (uri) {
+    return translateUriFromServer(hostname, port, uri);
+  });
 }
 
-function translateMessageToServer(message: string): string {
+function translateMessageToServer(message) {
   return translateMessage(message, translateUriToServer);
 }
 
-function translateMessage(message: string, translateUri: (uri: string) => string): string {
-  const obj = JSON.parse(message);
-  let result;
+function translateMessage(message, translateUri) {
+  var obj = JSON.parse(message);
+  var result = undefined;
   switch (obj.method) {
     case 'Debugger.scriptParsed':
       result = translateField(obj, 'params.url', translateUri);
@@ -44,9 +52,9 @@ function translateMessage(message: string, translateUri: (uri: string) => string
   return JSON.stringify(result);
 }
 
-function translateField(obj: Object, field: string, translateUri: (uri: string) => string): mixed {
-  const fields = field.split('.');
-  const fieldName = fields[0];
+function translateField(obj, field, translateUri) {
+  var fields = field.split('.');
+  var fieldName = fields[0];
   if (fields.length === 1) {
     obj[fieldName] = translateUri(obj[fieldName]);
   } else {
@@ -55,25 +63,25 @@ function translateField(obj: Object, field: string, translateUri: (uri: string) 
   return obj;
 }
 
-function translateUriFromServer(hostname: string, port: number, uri: string): string {
-  const components = remoteUri.parse(uri);
+function translateUriFromServer(hostname, port, uri) {
+  var components = _nuclideRemoteUri2.default.parse(uri);
   if (components.protocol === 'file:') {
-    const result = remoteUri.createRemoteUri(hostname, port, components.pathname);
-    log(`Translated URI from ${uri} to ${result}`);
+    var result = _nuclideRemoteUri2.default.createRemoteUri(hostname, port, components.pathname);
+    log('Translated URI from ' + uri + ' to ' + result);
     return result;
   } else {
     return uri;
   }
 }
 
-function translateUriToServer(uri: string): string {
-  if (remoteUri.isRemote(uri)) {
-    const result = url.format({
+function translateUriToServer(uri) {
+  if (_nuclideRemoteUri2.default.isRemote(uri)) {
+    var result = _url2.default.format({
       protocol: 'file',
       slashes: true,
-      pathname: remoteUri.getPath(uri),
+      pathname: _nuclideRemoteUri2.default.getPath(uri)
     });
-    log(`Translated URI from ${uri} to ${result}`);
+    log('Translated URI from ' + uri + ' to ' + result);
     return result;
   } else {
     return uri;
@@ -81,6 +89,6 @@ function translateUriToServer(uri: string): string {
 }
 
 module.exports = {
-  translateMessageFromServer,
-  translateMessageToServer,
+  translateMessageFromServer: translateMessageFromServer,
+  translateMessageToServer: translateMessageToServer
 };

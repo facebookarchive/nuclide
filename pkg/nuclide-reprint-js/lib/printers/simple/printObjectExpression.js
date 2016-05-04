@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +8,21 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {ObjectExpression} from 'ast-types-flow';
+var _constantsMarkers = require('../../constants/markers');
 
-import markers from '../../constants/markers';
-import wrapExpression from '../../wrappers/simple/wrapExpression';
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
-function printObjectExpression(print: Print, node: ObjectExpression): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    '{',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    node.properties.map((propNode, i, arr) => [
-      print(propNode),
-      i === arr.length - 1 ? markers.scopeComma : ',',
-      i === arr.length - 1 ? markers.scopeBreak : markers.scopeSpaceBreak,
-    ]),
-    markers.scopeDedent,
-    markers.closeScope,
-    '}',
-  ]);
+var _wrappersSimpleWrapExpression = require('../../wrappers/simple/wrapExpression');
+
+var _wrappersSimpleWrapExpression2 = _interopRequireDefault(_wrappersSimpleWrapExpression);
+
+function printObjectExpression(print, node) {
+  var wrap = function wrap(x) {
+    return (0, _wrappersSimpleWrapExpression2.default)(print, node, x);
+  };
+  return wrap(['{', _constantsMarkers2.default.openScope, _constantsMarkers2.default.scopeIndent, _constantsMarkers2.default.scopeBreak, node.properties.map(function (propNode, i, arr) {
+    return [print(propNode), i === arr.length - 1 ? _constantsMarkers2.default.scopeComma : ',', i === arr.length - 1 ? _constantsMarkers2.default.scopeBreak : _constantsMarkers2.default.scopeSpaceBreak];
+  }), _constantsMarkers2.default.scopeDedent, _constantsMarkers2.default.closeScope, '}']);
 }
 
 module.exports = printObjectExpression;

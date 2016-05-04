@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,85 +10,84 @@
  * the root directory of this source tree.
  */
 
-import type {
-  HyperclickProvider,
-  HyperclickSuggestion,
-} from '../../hyperclick';
+exports.getNPMHyperclickProvider = getNPMHyperclickProvider;
+exports.getPackageUrlForRange = getPackageUrlForRange;
 
-import semver from 'semver';
-import path from 'path';
-import shell from 'shell';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {parseJSON, babelLocToRange} from './parsing';
+var _semver = require('semver');
 
-const DEPENDENCY_PROPERTIES = new Set([
-  'dependencies',
-  'devDependencies',
-  'optionalDependencies',
-]);
+var _semver2 = _interopRequireDefault(_semver);
 
-export function getNPMHyperclickProvider(): HyperclickProvider {
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
+var _shell = require('shell');
+
+var _shell2 = _interopRequireDefault(_shell);
+
+var _parsing = require('./parsing');
+
+var DEPENDENCY_PROPERTIES = new Set(['dependencies', 'devDependencies', 'optionalDependencies']);
+
+function getNPMHyperclickProvider() {
   return npmHyperclickProvider;
 }
 
-const npmHyperclickProvider = {
+var npmHyperclickProvider = {
   priority: 1,
   providerName: 'npm-package-json',
-  getSuggestionForWord,
+  getSuggestionForWord: getSuggestionForWord,
   // Capture just text in quotes
-  wordRegExp: /"[^"]*"/g,
+  wordRegExp: /"[^"]*"/g
 };
 
-function getSuggestionForWord(
-  textEditor: atom$TextEditor,
-  text: string,
-  range: atom$Range
-): Promise<?HyperclickSuggestion> {
+function getSuggestionForWord(textEditor, text, range) {
 
   if (text === '' || !isPackageJson(textEditor)) {
     return Promise.resolve(null);
   }
 
-  const packageUrl = getPackageUrlForRange(textEditor.getText(), text, range);
+  var packageUrl = getPackageUrlForRange(textEditor.getText(), text, range);
 
   if (packageUrl == null) {
     return Promise.resolve(null);
   }
 
-  const suggestion: HyperclickSuggestion = {
-    range,
-    callback: () => {
-      shell.openExternal(packageUrl);
-    },
+  var suggestion = {
+    range: range,
+    callback: function callback() {
+      _shell2.default.openExternal(packageUrl);
+    }
   };
   return Promise.resolve(suggestion);
 }
 
 // Exported for testing. We could derive the token from the json text and the range, but since
 // hyperclick provides it we may as well use it.
-export function getPackageUrlForRange(json: string, token: string, range: atom$Range): ?string {
-  const version = getDependencyVersion(json, range);
+
+function getPackageUrlForRange(json, token, range) {
+  var version = getDependencyVersion(json, range);
   if (version == null) {
     return null;
   }
 
   // Strip off the quotes
-  const packageName = token.substring(1, token.length - 1);
+  var packageName = token.substring(1, token.length - 1);
 
   return getPackageUrl(packageName, version);
 }
 
-function isPackageJson(textEditor: atom$TextEditor): boolean {
-  const scopeName = textEditor.getGrammar().scopeName;
-  const filePath = textEditor.getPath();
-  return scopeName === 'source.json' &&
-    filePath != null &&
-    path.basename(filePath) === 'package.json';
+function isPackageJson(textEditor) {
+  var scopeName = textEditor.getGrammar().scopeName;
+  var filePath = textEditor.getPath();
+  return scopeName === 'source.json' && filePath != null && _path2.default.basename(filePath) === 'package.json';
 }
 
-function getPackageUrl(packageName: string, version: string): ?string {
-  if (semver.valid(version)) {
-    return `https://www.npmjs.com/package/${packageName}/`;
+function getPackageUrl(packageName, version) {
+  if (_semver2.default.valid(version)) {
+    return 'https://www.npmjs.com/package/' + packageName + '/';
   }
 
   // - optionally prefixed with 'github:' (but don't capture that)
@@ -98,32 +98,28 @@ function getPackageUrl(packageName: string, version: string): ?string {
   // - optionally followed by a revision:
   //   - starts with a hash (not captured)
   //   - then alphanumeric characters, underscores, dashes, periods (captured)
-  const githubRegex = /^(?:github:)?([\w-]+\/[\w-]+)(?:#([\w-.]+))?$/;
-  const githubMatch = version.match(githubRegex);
+  var githubRegex = /^(?:github:)?([\w-]+\/[\w-]+)(?:#([\w-.]+))?$/;
+  var githubMatch = version.match(githubRegex);
   if (githubMatch != null) {
-    const commit = githubMatch[2];
-    const commitSuffix = commit == null ? '' : `/tree/${commit}`;
-    return `https://github.com/${githubMatch[1]}${commitSuffix}`;
+    var commit = githubMatch[2];
+    var commitSuffix = commit == null ? '' : '/tree/' + commit;
+    return 'https://github.com/' + githubMatch[1] + commitSuffix;
   }
 
   return null;
 }
 
 // Return the version string, if it exists
-function getDependencyVersion(json: string, range: atom$Range): ?string {
-  const ast = parseJSON(json);
+function getDependencyVersion(json, range) {
+  var ast = (0, _parsing.parseJSON)(json);
   if (ast == null) {
     // parse error
     return null;
   }
-  const pathToNode = getPathToNodeForRange(ast, range);
+  var pathToNode = getPathToNodeForRange(ast, range);
 
-  if (pathToNode != null &&
-    pathToNode.length === 2 &&
-    DEPENDENCY_PROPERTIES.has(pathToNode[0].key.value) &&
-    isValidVersion(pathToNode[1].value)
-  ) {
-    const valueNode = pathToNode[1].value;
+  if (pathToNode != null && pathToNode.length === 2 && DEPENDENCY_PROPERTIES.has(pathToNode[0].key.value) && isValidVersion(pathToNode[1].value)) {
+    var valueNode = pathToNode[1].value;
     if (isValidVersion(valueNode)) {
       return valueNode.value;
     } else {
@@ -133,24 +129,24 @@ function getDependencyVersion(json: string, range: atom$Range): ?string {
   return null;
 }
 
-function isValidVersion(valueASTNode: Object): boolean {
+function isValidVersion(valueASTNode) {
   return valueASTNode.type === 'Literal' && typeof valueASTNode.value === 'string';
 }
 
 // return an array of property AST nodes
-function getPathToNodeForRange(objectExpression: Object, range: atom$Range): ?Array<Object> {
-  const properties = objectExpression.properties;
+function getPathToNodeForRange(objectExpression, range) {
+  var properties = objectExpression.properties;
   if (properties == null) {
     return null;
   }
-  for (const property of properties) {
-    const propertyRange = babelLocToRange(property.loc);
+  for (var property of properties) {
+    var propertyRange = (0, _parsing.babelLocToRange)(property.loc);
     if (propertyRange.containsRange(range)) {
-      const keyRange = babelLocToRange(property.key.loc);
+      var keyRange = (0, _parsing.babelLocToRange)(property.key.loc);
       if (keyRange.isEqual(range)) {
         return [property];
       }
-      const subPath = getPathToNodeForRange(property.value, range);
+      var subPath = getPathToNodeForRange(property.value, range);
       if (subPath == null) {
         return null;
       }

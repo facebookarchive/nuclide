@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,22 +8,16 @@
  * the root directory of this source tree.
  */
 
-import type {AssignmentPattern} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printAssignmentPattern(print: Print, node: AssignmentPattern): Lines {
-  return flatten([
-    print(node.left),
-    markers.noBreak,
-    markers.space,
-    '=',
-    markers.noBreak,
-    markers.space,
-    print(node.right),
-  ]);
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+function printAssignmentPattern(print, node) {
+  return (0, _utilsFlatten2.default)([print(node.left), _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, '=', _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, print(node.right)]);
 }
 
 module.exports = printAssignmentPattern;

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +8,19 @@
  * the root directory of this source tree.
  */
 
-import type {Collection} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
+var _getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
 
-import getDeclaredIdentifiers from './getDeclaredIdentifiers';
-import getJSXIdentifiers from './getJSXIdentifiers';
+var _getDeclaredIdentifiers2 = _interopRequireDefault(_getDeclaredIdentifiers);
 
-function getUndeclaredJSXIdentifiers(
-  root: Collection,
-  options: SourceOptions
-): Set<string> {
-  const declaredIdentifiers = getDeclaredIdentifiers(root, options);
-  const jsxIdentifiers = getJSXIdentifiers(root);
-  const undeclared = new Set();
-  for (const id of jsxIdentifiers) {
+var _getJSXIdentifiers = require('./getJSXIdentifiers');
+
+var _getJSXIdentifiers2 = _interopRequireDefault(_getJSXIdentifiers);
+
+function getUndeclaredJSXIdentifiers(root, options) {
+  var declaredIdentifiers = (0, _getDeclaredIdentifiers2.default)(root, options);
+  var jsxIdentifiers = (0, _getJSXIdentifiers2.default)(root);
+  var undeclared = new Set();
+  for (var id of jsxIdentifiers) {
     if (!declaredIdentifiers.has(id)) {
       undeclared.add(id);
     }

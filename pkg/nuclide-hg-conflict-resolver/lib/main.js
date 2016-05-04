@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,91 +10,65 @@
  * the root directory of this source tree.
  */
 
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {RemoteDirectory} from '../../nuclide-remote-connection';
+exports.activate = activate;
+exports.consumeMergeConflictsApi = consumeMergeConflictsApi;
+exports.consumeCwdApi = consumeCwdApi;
 
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import {MercurialConflictContext} from './MercurialConflictContext';
-
-let cwdApi: ?CwdApi = null;
-
-export type CheckoutSideName = 'ours' | 'theirs';
-
-export type MergeConflict = {
-  path: NuclideUri;
-  message: string;
-  resolveMessage: string;
-};
-
-export type RepositoryContext = {
-  workingDirectory: atom$Directory | RemoteDirectory;
-  priority: number;
-  resolveText: string;
-
-  readConflicts(): Promise<Array<MergeConflict>>;
-  isResolvedFile(filePath: NuclideUri): Promise<boolean>;
-  checkoutSide(sideName: CheckoutSideName, filePath: NuclideUri): Promise<void>;
-  resolveFile(filePath: NuclideUri): Promise<void>;
-  isRebasing(): boolean;
-  joinPath(relativePath: string): NuclideUri;
-};
-
-export type ConflictsContextApi = {
-  getContext(): Promise<?RepositoryContext>;
-};
-
-export type ConflictsApi = {
-  registerContextApi(contextApi: ConflictsContextApi): void;
-};
-
-export function activate() {
-}
-
-export function consumeMergeConflictsApi(conflictsApi: ConflictsApi) {
-  conflictsApi.registerContextApi({
-    getContext() { return getMercurialContext(); },
-  });
-}
-
-export function consumeCwdApi(api: CwdApi): void {
-  cwdApi = api;
-}
-
-async function getMercurialContext(): Promise<?RepositoryContext> {
-  const activeTextEditor = atom.workspace.getActiveTextEditor();
-  let activePath = null;
+var getMercurialContext = _asyncToGenerator(function* () {
+  var activeTextEditor = atom.workspace.getActiveTextEditor();
+  var activePath = null;
   if (activeTextEditor != null && activeTextEditor.getPath()) {
     activePath = activeTextEditor.getPath();
   }
   if (activePath == null && cwdApi != null) {
-    const directory = cwdApi.getCwd();
+    var directory = cwdApi.getCwd();
     if (directory != null) {
       activePath = directory.getPath();
     }
   }
-  let hgRepository: ?HgRepositoryClient = null;
-  let priority = 2;
+  var hgRepository = null;
+  var priority = 2;
   if (activePath != null) {
-    const repository = repositoryForPath(activePath);
+    var repository = (0, _nuclideHgGitBridge.repositoryForPath)(activePath);
     if (isHgRepo(repository)) {
-      hgRepository = (repository: any);
+      hgRepository = repository;
       priority = 3;
     }
   }
-  const repositories = atom.project.getRepositories();
-  const directories = atom.project.getDirectories();
+  var repositories = atom.project.getRepositories();
+  var directories = atom.project.getDirectories();
   if (hgRepository == null) {
-    hgRepository = ((repositories.filter(isHgRepo)[0]: any): ?HgRepositoryClient);
+    hgRepository = repositories.filter(isHgRepo)[0];
   }
   if (hgRepository == null) {
     return null;
   }
-  const workingDirectory = directories[repositories.indexOf((hgRepository: any))];
-  return new MercurialConflictContext(hgRepository, workingDirectory, priority);
+  var workingDirectory = directories[repositories.indexOf(hgRepository)];
+  return new _MercurialConflictContext.MercurialConflictContext(hgRepository, workingDirectory, priority);
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+var _nuclideHgGitBridge = require('../../nuclide-hg-git-bridge');
+
+var _MercurialConflictContext = require('./MercurialConflictContext');
+
+var cwdApi = null;
+
+function activate() {}
+
+function consumeMergeConflictsApi(conflictsApi) {
+  conflictsApi.registerContextApi({
+    getContext: function getContext() {
+      return getMercurialContext();
+    }
+  });
 }
 
-function isHgRepo(repository: ?atom$Repository) {
+function consumeCwdApi(api) {
+  cwdApi = api;
+}
+
+function isHgRepo(repository) {
   return repository != null && repository.getType() === 'hg';
 }

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,42 +10,50 @@
  * the root directory of this source tree.
  */
 
-import type {
-  Trace,
-} from '../../nuclide-diagnostics-base';
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-import {React} from 'react-for-atom';
-import {DiagnosticsMessageText} from './DiagnosticsMessageText';
+var _reactForAtom = require('react-for-atom');
 
-type DiagnosticsTraceItemProps = {
-  trace: Trace;
-  goToLocation: (path: string, line: number) => mixed;
-};
+var _DiagnosticsMessageText = require('./DiagnosticsMessageText');
 
 // TODO move LESS styles to nuclide-ui
-export const DiagnosticsTraceItem = (props: DiagnosticsTraceItemProps) => {
-  const {
-    trace,
-    goToLocation,
-  } = props;
-  let locSpan = null;
+var DiagnosticsTraceItem = function DiagnosticsTraceItem(props) {
+  var trace = props.trace;
+  var goToLocation = props.goToLocation;
+
+  var locSpan = null;
   // Local variable so that the type refinement holds in the onClick handler.
-  const path = trace.filePath;
+  var path = trace.filePath;
   if (path) {
-    const [, relativePath] = atom.project.relativizePath(path);
-    let locString = relativePath;
+    var _atom$project$relativizePath = atom.project.relativizePath(path);
+
+    var _atom$project$relativizePath2 = _slicedToArray(_atom$project$relativizePath, 2);
+
+    var relativePath = _atom$project$relativizePath2[1];
+
+    var locString = relativePath;
     if (trace.range) {
-      locString += `:${trace.range.start.row + 1}`;
+      locString += ':' + (trace.range.start.row + 1);
     }
-    const onClick = () => {
+    var onClick = function onClick() {
       goToLocation(path, Math.max(trace.range ? trace.range.start.row : 0, 0));
     };
-    locSpan = <span>: <a href="#" onClick={onClick}>{locString}</a></span>;
+    locSpan = _reactForAtom.React.createElement(
+      'span',
+      null,
+      ': ',
+      _reactForAtom.React.createElement(
+        'a',
+        { href: '#', onClick: onClick },
+        locString
+      )
+    );
   }
-  return (
-    <div>
-      <DiagnosticsMessageText message={trace} />
-      {locSpan}
-    </div>
+  return _reactForAtom.React.createElement(
+    'div',
+    null,
+    _reactForAtom.React.createElement(_DiagnosticsMessageText.DiagnosticsMessageText, { message: trace }),
+    locSpan
   );
 };
+exports.DiagnosticsTraceItem = DiagnosticsTraceItem;

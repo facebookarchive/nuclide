@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +10,28 @@
  * the root directory of this source tree.
  */
 
-import type {
-  HyperclickProvider as HyperclickProviderType,
-} from '../../hyperclick';
+exports.activate = activate;
+exports.getHyperclickProvider = getHyperclickProvider;
+exports.getQuickOpenProvider = getQuickOpenProvider;
+exports.deactivate = deactivate;
 
-export function activate(state: ?Object) {
-}
+function activate(state) {}
 
-export function getHyperclickProvider(): HyperclickProviderType {
-  const {HyperclickProvider} = require('./HyperclickProvider');
-  const provider = new HyperclickProvider();
+function getHyperclickProvider() {
+  var _require = require('./HyperclickProvider');
+
+  var HyperclickProvider = _require.HyperclickProvider;
+
+  var provider = new HyperclickProvider();
   return {
     priority: 1, // Should be lower than all language-specific providers.
     providerName: 'nuclide-remote-ctags',
-    getSuggestionForWord: provider.getSuggestionForWord.bind(provider),
+    getSuggestionForWord: provider.getSuggestionForWord.bind(provider)
   };
 }
 
-export function getQuickOpenProvider() {
+function getQuickOpenProvider() {
   return require('./QuickOpenProvider');
 }
 
-export function deactivate() {
-}
+function deactivate() {}

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +8,27 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideRemoteConnectionParams} from './connection-types';
+var _path = require('path');
 
-import path from 'path';
-import {env} from '../../nuclide-commons';
+var _path2 = _interopRequireDefault(_path);
 
-function getConnectionDialogDefaultSettings(): NuclideRemoteConnectionParams {
+var _nuclideCommons = require('../../nuclide-commons');
+
+function getConnectionDialogDefaultSettings() {
   return {
     server: '',
-    username: env.USER,
+    username: _nuclideCommons.env.USER,
     // Do not use path.join() because we assume that the remote machine is *nix,
     // so we always want to use `/` as the path separator for cwd, even if Atom
     // is running on Windows.
-    cwd: `/home/${env.USER}/`,
-    pathToPrivateKey: path.join(env.HOME, '.ssh', 'id_rsa'),
+    cwd: '/home/' + _nuclideCommons.env.USER + '/',
+    pathToPrivateKey: _path2.default.join(_nuclideCommons.env.HOME, '.ssh', 'id_rsa'),
     remoteServerCommand: 'nuclide-start-server',
     authMethod: require('../../nuclide-remote-connection').SshHandshake.SupportedMethods.PASSWORD,
-    sshPort: '22',
+    sshPort: '22'
   };
 }
 
 module.exports = {
-  getConnectionDialogDefaultSettings,
+  getConnectionDialogDefaultSettings: getConnectionDialogDefaultSettings
 };

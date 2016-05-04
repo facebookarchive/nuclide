@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,90 +8,100 @@
  * the root directory of this source tree.
  */
 
-import type {Collection, Node, NodePath} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
+var _getNamesFromID = require('./getNamesFromID');
 
-import getNamesFromID from './getNamesFromID';
-import jscs from 'jscodeshift';
+var _getNamesFromID2 = _interopRequireDefault(_getNamesFromID);
 
-type ConfigEntry = {
-  searchTerms: [any, Object];
-  getNodes: (path: NodePath) => Array<Node>;
-};
+var _jscodeshift = require('jscodeshift');
+
+var _jscodeshift2 = _interopRequireDefault(_jscodeshift);
 
 /**
  * These are the ways in which an identifier might be declared, note that these
  * identifiers are safe to use in code. They should not include types that have
  * been declared.
  */
-const CONFIG: Array<ConfigEntry> = [
-  // function foo(...rest) {}
-  {
-    searchTerms: [jscs.FunctionDeclaration],
-    getNodes: path => [path.node.id, path.node.rest].concat(path.node.params),
-  },
+var CONFIG = [
+// function foo(...rest) {}
+{
+  searchTerms: [_jscodeshift2.default.FunctionDeclaration],
+  getNodes: function getNodes(path) {
+    return [path.node.id, path.node.rest].concat(path.node.params);
+  }
+},
 
-  // foo(...rest) {}, in a class body for example
-  {
-    searchTerms: [jscs.FunctionExpression],
-    getNodes: path => [path.node.rest].concat(path.node.params),
-  },
+// foo(...rest) {}, in a class body for example
+{
+  searchTerms: [_jscodeshift2.default.FunctionExpression],
+  getNodes: function getNodes(path) {
+    return [path.node.rest].concat(path.node.params);
+  }
+},
 
-  // var foo;
-  {
-    searchTerms: [jscs.VariableDeclaration],
-    getNodes: path => path.node.declarations.map(declaration => declaration.id),
-  },
+// var foo;
+{
+  searchTerms: [_jscodeshift2.default.VariableDeclaration],
+  getNodes: function getNodes(path) {
+    return path.node.declarations.map(function (declaration) {
+      return declaration.id;
+    });
+  }
+},
 
-  // class foo {}
-  {
-    searchTerms: [jscs.ClassDeclaration],
-    getNodes: path => [path.node.id],
-  },
+// class foo {}
+{
+  searchTerms: [_jscodeshift2.default.ClassDeclaration],
+  getNodes: function getNodes(path) {
+    return [path.node.id];
+  }
+},
 
-  // (foo, ...rest) => {}
-  {
-    searchTerms: [jscs.ArrowFunctionExpression],
-    getNodes: path => [path.node.rest].concat(path.node.params),
-  },
+// (foo, ...rest) => {}
+{
+  searchTerms: [_jscodeshift2.default.ArrowFunctionExpression],
+  getNodes: function getNodes(path) {
+    return [path.node.rest].concat(path.node.params);
+  }
+},
 
-  // try {} catch (foo) {}
-  {
-    searchTerms: [jscs.CatchClause],
-    getNodes: path => [path.node.param],
-  },
+// try {} catch (foo) {}
+{
+  searchTerms: [_jscodeshift2.default.CatchClause],
+  getNodes: function getNodes(path) {
+    return [path.node.param];
+  }
+},
 
-  // function foo(a = b) {}
-  {
-    searchTerms: [jscs.AssignmentPattern],
-    getNodes: path => [path.node.left],
-  },
-];
+// function foo(a = b) {}
+{
+  searchTerms: [_jscodeshift2.default.AssignmentPattern],
+  getNodes: function getNodes(path) {
+    return [path.node.left];
+  }
+}];
 
 /**
  * This will get a list of all identifiers that are declared within root's AST
  */
-function getDeclaredIdentifiers(
-  root: Collection,
-  options: SourceOptions,
-  filters?: ?Array<(path: NodePath) => boolean>
-): Set<string> {
+function getDeclaredIdentifiers(root, options, filters) {
   // Start with the globals since they are always "declared" and safe to use.
-  const {moduleMap} = options;
-  const ids = new Set(moduleMap.getBuiltIns());
-  CONFIG.forEach(config => {
-    root
-      .find(config.searchTerms[0], config.searchTerms[1])
-      .filter(path => filters ? filters.every(filter => filter(path)) : true)
-      .forEach(path => {
-        const nodes = config.getNodes(path);
-        nodes.forEach(node => {
-          const names = getNamesFromID(node);
-          for (const name of names) {
-            ids.add(name);
-          }
-        });
+  var moduleMap = options.moduleMap;
+
+  var ids = new Set(moduleMap.getBuiltIns());
+  CONFIG.forEach(function (config) {
+    root.find(config.searchTerms[0], config.searchTerms[1]).filter(function (path) {
+      return filters ? filters.every(function (filter) {
+        return filter(path);
+      }) : true;
+    }).forEach(function (path) {
+      var nodes = config.getNodes(path);
+      nodes.forEach(function (node) {
+        var names = (0, _getNamesFromID2.default)(node);
+        for (var _name of names) {
+          ids.add(_name);
+        }
       });
+    });
   });
   return ids;
 }

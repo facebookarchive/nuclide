@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.beginTimerTracking = beginTimerTracking;
+exports.failTimerTracking = failTimerTracking;
+exports.endTimerTracking = endTimerTracking;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +13,22 @@
  * the root directory of this source tree.
  */
 
-import {startTracking} from '../../nuclide-analytics';
+var _nuclideAnalytics = require('../../nuclide-analytics');
 
-let timer = null;
-export function beginTimerTracking(eventName: string) {
-  timer = startTracking(eventName);
+var timer = null;
+
+function beginTimerTracking(eventName) {
+  timer = (0, _nuclideAnalytics.startTracking)(eventName);
 }
 
-export function failTimerTracking(err: Error) {
+function failTimerTracking(err) {
   if (timer !== null) {
     timer.onError(err);
     timer = null;
   }
 }
 
-export function endTimerTracking() {
+function endTimerTracking() {
   if (timer !== null) {
     timer.onSuccess();
     timer = null;

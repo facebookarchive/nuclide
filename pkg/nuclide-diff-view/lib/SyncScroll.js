@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,73 +14,85 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
+var _atom = require('atom');
 
-const DEFER_SCROLL_SYNC_MS = 10;
+var DEFER_SCROLL_SYNC_MS = 10;
 
-export default class SyncScroll {
+var SyncScroll = (function () {
+  function SyncScroll(editor1Element, editor2Element) {
+    var _this = this;
 
-  _subscriptions: CompositeDisposable;
-  _syncInfo: Array<{
-    scrollElement: atom$TextEditorElement;
-    scrolling: boolean;
-  }>;
-  _scrollSyncTimeout: ?number;
+    _classCallCheck(this, SyncScroll);
 
-  constructor(editor1Element: atom$TextEditorElement, editor2Element: atom$TextEditorElement) {
     // Atom master or >= v1.0.18 have changed the scroll logic to the editor element.
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new _atom.CompositeDisposable();
     this._syncInfo = [{
       scrollElement: editor1Element,
-      scrolling: false,
+      scrolling: false
     }, {
       scrollElement: editor2Element,
-      scrolling: false,
+      scrolling: false
     }];
-    this._syncInfo.forEach((editorInfo, i) => {
+    this._syncInfo.forEach(function (editorInfo, i) {
       // Note that `onDidChangeScrollTop` isn't technically in the public API.
-      const {scrollElement} = editorInfo;
-      const updateScrollPosition = () => this._scrollPositionChanged(i);
-      this._subscriptions.add(scrollElement.onDidChangeScrollTop(updateScrollPosition));
-      this._subscriptions.add(scrollElement.onDidChangeScrollLeft(updateScrollPosition));
+      var scrollElement = editorInfo.scrollElement;
+
+      var updateScrollPosition = function updateScrollPosition() {
+        return _this._scrollPositionChanged(i);
+      };
+      _this._subscriptions.add(scrollElement.onDidChangeScrollTop(updateScrollPosition));
+      _this._subscriptions.add(scrollElement.onDidChangeScrollLeft(updateScrollPosition));
     });
     this._scrollSyncTimeout = null;
   }
 
-  _scrollPositionChanged(changeScrollIndex: number): void {
-    const thisInfo  = this._syncInfo[changeScrollIndex];
-    if (thisInfo.scrolling) {
-      return;
+  _createClass(SyncScroll, [{
+    key: '_scrollPositionChanged',
+    value: function _scrollPositionChanged(changeScrollIndex) {
+      var _this2 = this;
+
+      var thisInfo = this._syncInfo[changeScrollIndex];
+      if (thisInfo.scrolling) {
+        return;
+      }
+      var otherInfo = this._syncInfo[1 - changeScrollIndex];
+      var otherElement = otherInfo.scrollElement;
+
+      if (otherElement.component == null) {
+        // The other editor isn't yet attached,
+        // while both editors were already in sync when attached.
+        return;
+      }
+      var thisElement = thisInfo.scrollElement;
+
+      if (thisElement.getScrollHeight() !== otherElement.getScrollHeight()) {
+        // One of the editors' dimensions is pending sync.
+        if (this._scrollSyncTimeout != null) {
+          clearTimeout(this._scrollSyncTimeout);
+        }
+        this._scrollSyncTimeout = setTimeout(function () {
+          _this2._scrollPositionChanged(1);
+          _this2._scrollSyncTimeout = null;
+        }, DEFER_SCROLL_SYNC_MS);
+        return;
+      }
+      otherInfo.scrolling = true;
+      otherElement.setScrollTop(thisElement.getScrollTop());
+      otherElement.setScrollLeft(thisElement.getScrollLeft());
+      otherInfo.scrolling = false;
     }
-    const otherInfo = this._syncInfo[1 - changeScrollIndex];
-    const {scrollElement: otherElement} = otherInfo;
-    if (otherElement.component == null) {
-      // The other editor isn't yet attached,
-      // while both editors were already in sync when attached.
-      return;
-    }
-    const {scrollElement: thisElement} = thisInfo;
-    if (thisElement.getScrollHeight() !== otherElement.getScrollHeight()) {
-      // One of the editors' dimensions is pending sync.
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._subscriptions.dispose();
       if (this._scrollSyncTimeout != null) {
         clearTimeout(this._scrollSyncTimeout);
       }
-      this._scrollSyncTimeout = setTimeout(() => {
-        this._scrollPositionChanged(1);
-        this._scrollSyncTimeout = null;
-      }, DEFER_SCROLL_SYNC_MS);
-      return;
     }
-    otherInfo.scrolling = true;
-    otherElement.setScrollTop(thisElement.getScrollTop());
-    otherElement.setScrollLeft(thisElement.getScrollLeft());
-    otherInfo.scrolling = false;
-  }
+  }]);
 
-  dispose(): void {
-    this._subscriptions.dispose();
-    if (this._scrollSyncTimeout != null) {
-      clearTimeout(this._scrollSyncTimeout);
-    }
-  }
-}
+  return SyncScroll;
+})();
+
+exports.default = SyncScroll;
+module.exports = exports.default;

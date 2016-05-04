@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +8,16 @@
  * the root directory of this source tree.
  */
 
-import markers from '../constants/markers';
+var _constantsMarkers = require('../constants/markers');
 
-const MARKER_SET = new Set();
-Object.keys(markers).forEach(key => {
-  MARKER_SET.add(markers[key]);
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+var MARKER_SET = new Set();
+Object.keys(_constantsMarkers2.default).forEach(function (key) {
+  MARKER_SET.add(_constantsMarkers2.default[key]);
 });
 
-function isMarker(line: any): boolean {
+function isMarker(line) {
   return MARKER_SET.has(line);
 }
 

@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,35 +16,46 @@
  * the root directory of this source tree.
  */
 
-import WS from 'ws';
+var _ws = require('ws');
 
-const EXECUTOR_PORT = 8081;
-const WS_URL = `ws://localhost:${EXECUTOR_PORT}/message?role=interface&name=Nuclide`;
+var _ws2 = _interopRequireDefault(_ws);
 
-export class ShellMessageManager {
-  _url: string;
-  _ws: ?WS;
+var EXECUTOR_PORT = 8081;
+var WS_URL = 'ws://localhost:' + EXECUTOR_PORT + '/message?role=interface&name=Nuclide';
 
-  constructor() {
+var ShellMessageManager = (function () {
+  function ShellMessageManager() {
+    _classCallCheck(this, ShellMessageManager);
+
     this._url = WS_URL;
   }
 
-  send(message: Object): void {
-    if (this._ws == null) {
-      // Currently, use cases only require a simple fire-and-forget interaction
-      const ws = new WS(this._url);
-      this._ws = ws;
-      ws.onopen = () => {
-        ws.send(JSON.stringify(message));
-        ws.close();
-      };
-      ws.onerror = () => {
-        atom.notifications.addWarning('Error connecting to React Native shell.');
-      };
-      ws.onclose = () => {
-        this._ws = null;
-      };
-    }
-  }
+  _createClass(ShellMessageManager, [{
+    key: 'send',
+    value: function send(message) {
+      var _this = this;
 
-}
+      if (this._ws == null) {
+        (function () {
+          // Currently, use cases only require a simple fire-and-forget interaction
+          var ws = new _ws2.default(_this._url);
+          _this._ws = ws;
+          ws.onopen = function () {
+            ws.send(JSON.stringify(message));
+            ws.close();
+          };
+          ws.onerror = function () {
+            atom.notifications.addWarning('Error connecting to React Native shell.');
+          };
+          ws.onclose = function () {
+            _this._ws = null;
+          };
+        })();
+      }
+    }
+  }]);
+
+  return ShellMessageManager;
+})();
+
+exports.ShellMessageManager = ShellMessageManager;

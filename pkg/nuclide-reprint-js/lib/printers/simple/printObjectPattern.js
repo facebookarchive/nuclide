@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +8,18 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {ObjectPattern} from 'ast-types-flow';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printObjectPattern(print: Print, node: ObjectPattern): Lines {
-  return flatten([
-    '{',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    node.properties.map((propNode, i, arr) => [
-      print(propNode),
-      i === arr.length - 1 ? markers.scopeComma : ',',
-      i === arr.length - 1 ? markers.scopeBreak : markers.scopeSpaceBreak,
-    ]),
-    markers.scopeDedent,
-    markers.closeScope,
-    '}',
-  ]);
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+function printObjectPattern(print, node) {
+  return (0, _utilsFlatten2.default)(['{', _constantsMarkers2.default.openScope, _constantsMarkers2.default.scopeIndent, _constantsMarkers2.default.scopeBreak, node.properties.map(function (propNode, i, arr) {
+    return [print(propNode), i === arr.length - 1 ? _constantsMarkers2.default.scopeComma : ',', i === arr.length - 1 ? _constantsMarkers2.default.scopeBreak : _constantsMarkers2.default.scopeSpaceBreak];
+  }), _constantsMarkers2.default.scopeDedent, _constantsMarkers2.default.closeScope, '}']);
 }
 
 module.exports = printObjectPattern;

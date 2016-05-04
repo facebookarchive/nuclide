@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,127 +8,118 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {CommitModeType, DiffModeType} from './types';
-import type DiffViewModelType, {DiffEntityOptions} from './DiffViewModel';
-import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
-import type {HomeFragments} from '../../nuclide-home-interfaces';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {
-  UIProvider,
-} from '../../nuclide-diff-ui-provider-interfaces';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {CompositeDisposable, Directory, Disposable} from 'atom';
-import {React, ReactDOM} from 'react-for-atom';
-import invariant from 'assert';
-import url from 'url';
-import {nuclideFeatures} from '../../../lib/nuclide-features';
-import {getUiTreePathFromTargetEvent} from '../../nuclide-atom-helpers';
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import {getLogger} from '../../nuclide-logging';
-import {DiffMode, CommitMode} from './constants';
+var _atom = require('atom');
 
-type SerializedDiffViewState = {
-  visible: false;
-} | {
-  visible: true;
-  activeFilePath: NuclideUri;
-  viewMode: DiffModeType;
-  commitMode: CommitModeType;
-};
+var _reactForAtom = require('react-for-atom');
 
-let diffViewModel: ?DiffViewModelType = null;
-let activeDiffView: ?{
-  component: React.Component;
-  element: HTMLElement;
-}  = null;
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _url = require('url');
+
+var _url2 = _interopRequireDefault(_url);
+
+var _libNuclideFeatures = require('../../../lib/nuclide-features');
+
+var _nuclideAtomHelpers = require('../../nuclide-atom-helpers');
+
+var _nuclideHgGitBridge = require('../../nuclide-hg-git-bridge');
+
+var _nuclideLogging = require('../../nuclide-logging');
+
+var _constants = require('./constants');
+
+var diffViewModel = null;
+var activeDiffView = null;
 
 // This url style is the one Atom uses for the welcome and settings pages.
-const NUCLIDE_DIFF_VIEW_URI = 'atom://nuclide/diff-view';
-const DIFF_VIEW_FILE_TREE_CONTEXT_MENU_PRIORITY = 1000;
-const COMMIT_FILE_TREE_CONTEXT_MENU_PRIORITY = 1100;
-const AMEND_FILE_TREE_CONTEXT_MENU_PRIORITY = 1200;
-const PUBLISH_FILE_TREE_CONTEXT_MENU_PRIORITY = 1300;
+var NUCLIDE_DIFF_VIEW_URI = 'atom://nuclide/diff-view';
+var DIFF_VIEW_FILE_TREE_CONTEXT_MENU_PRIORITY = 1000;
+var COMMIT_FILE_TREE_CONTEXT_MENU_PRIORITY = 1100;
+var AMEND_FILE_TREE_CONTEXT_MENU_PRIORITY = 1200;
+var PUBLISH_FILE_TREE_CONTEXT_MENU_PRIORITY = 1300;
 
-const uiProviders: Array<UIProvider> = [];
+var uiProviders = [];
 
-let subscriptions: ?CompositeDisposable = null;
-let toolBar: ?any = null;
-let changeCountElement: ?HTMLElement = null;
-let cwdApi: ?CwdApi = null;
+var subscriptions = null;
+var toolBar = null;
+var changeCountElement = null;
+var cwdApi = null;
 
-function formatDiffViewUrl(diffEntityOptions?: ?DiffEntityOptions): string {
+function formatDiffViewUrl(diffEntityOptions) {
   if (diffEntityOptions == null) {
-    diffEntityOptions = {file: ''};
+    diffEntityOptions = { file: '' };
   }
-  return url.format({
+  return _url2.default.format({
     protocol: 'atom',
     host: 'nuclide',
     pathname: 'diff-view',
     slashes: true,
-    query: diffEntityOptions,
+    query: diffEntityOptions
   });
 }
 
-
 // To add a View as an Atom workspace pane, we return `DiffViewElement` which extends `HTMLElement`.
 // This pattetn is also followed with atom's TextEditor.
-function createView(diffEntityOptions: DiffEntityOptions): HTMLElement {
+function createView(diffEntityOptions) {
   if (activeDiffView) {
     activateDiffPath(diffEntityOptions);
     return activeDiffView.element;
   }
-  const DiffViewElement = require('./DiffViewElement');
-  const DiffViewComponent = require('./DiffViewComponent');
+  var DiffViewElement = require('./DiffViewElement');
+  var DiffViewComponent = require('./DiffViewComponent');
 
-  const diffModel = getDiffViewModel();
-  const hostElement = new DiffViewElement().initialize(diffModel, NUCLIDE_DIFF_VIEW_URI);
-  const component = ReactDOM.render(
-    <DiffViewComponent diffModel={diffModel} />,
-    hostElement,
-  );
+  var diffModel = getDiffViewModel();
+  var hostElement = new DiffViewElement().initialize(diffModel, NUCLIDE_DIFF_VIEW_URI);
+  var component = _reactForAtom.ReactDOM.render(_reactForAtom.React.createElement(DiffViewComponent, { diffModel: diffModel }), hostElement);
   activeDiffView = {
-    component,
-    element: hostElement,
+    component: component,
+    element: hostElement
   };
   diffModel.activate();
   activateDiffPath(diffEntityOptions);
 
-  const destroySubscription = hostElement.onDidDestroy(() => {
-    ReactDOM.unmountComponentAtNode(hostElement);
+  var destroySubscription = hostElement.onDidDestroy(function () {
+    _reactForAtom.ReactDOM.unmountComponentAtNode(hostElement);
     diffModel.deactivate();
     destroySubscription.dispose();
-    invariant(subscriptions);
+    (0, _assert2.default)(subscriptions);
     subscriptions.remove(destroySubscription);
     activeDiffView = null;
   });
 
-  invariant(subscriptions);
+  (0, _assert2.default)(subscriptions);
   subscriptions.add(destroySubscription);
 
-  const {track} = require('../../nuclide-analytics');
+  var _require = require('../../nuclide-analytics');
+
+  var track = _require.track;
+
   track('diff-view-open');
 
   return hostElement;
 }
 
-function getDiffViewModel(): DiffViewModelType {
+function getDiffViewModel() {
   if (diffViewModel == null) {
-    const DiffViewModel = require('./DiffViewModel');
+    var DiffViewModel = require('./DiffViewModel');
     diffViewModel = new DiffViewModel();
     diffViewModel.setUiProviders(uiProviders);
-    invariant(subscriptions);
+    (0, _assert2.default)(subscriptions);
     subscriptions.add(diffViewModel);
   }
   return diffViewModel;
 }
 
-function activateDiffPath(diffEntityOptions: DiffEntityOptions): void {
+function activateDiffPath(diffEntityOptions) {
   if (diffViewModel == null) {
     return;
   }
   if (!diffEntityOptions.file && !diffEntityOptions.directory && cwdApi != null) {
-    const directory = cwdApi.getCwd();
+    var directory = cwdApi.getCwd();
     if (directory != null) {
       diffEntityOptions.directory = directory.getPath();
     }
@@ -137,22 +127,25 @@ function activateDiffPath(diffEntityOptions: DiffEntityOptions): void {
   diffViewModel.diffEntity(diffEntityOptions);
 }
 
-function projectsContainPath(checkPath: string): boolean {
-  const {isRemote} = require('../../nuclide-remote-uri');
-  return atom.project.getDirectories().some(directory => {
-    const directoryPath = directory.getPath();
+function projectsContainPath(checkPath) {
+  var _require2 = require('../../nuclide-remote-uri');
+
+  var isRemote = _require2.isRemote;
+
+  return atom.project.getDirectories().some(function (directory) {
+    var directoryPath = directory.getPath();
     if (!checkPath.startsWith(directoryPath)) {
       return false;
     }
     // If the remote directory hasn't yet loaded.
-    if (isRemote(checkPath) && directory instanceof Directory) {
+    if (isRemote(checkPath) && directory instanceof _atom.Directory) {
       return false;
     }
     return true;
   });
 }
 
-function updateToolbarCount(diffViewButton: HTMLElement, count: number): void {
+function updateToolbarCount(diffViewButton, count) {
   if (!changeCountElement) {
     changeCountElement = document.createElement('span');
     changeCountElement.className = 'diff-view-count';
@@ -163,174 +156,147 @@ function updateToolbarCount(diffViewButton: HTMLElement, count: number): void {
   } else {
     diffViewButton.classList.remove('positive-count');
   }
-  const DiffCountComponent = require('./DiffCountComponent');
-  ReactDOM.render(<DiffCountComponent count={count} />, changeCountElement);
+  var DiffCountComponent = require('./DiffCountComponent');
+  _reactForAtom.ReactDOM.render(_reactForAtom.React.createElement(DiffCountComponent, { count: count }), changeCountElement);
 }
 
-function diffActivePath(diffOptions?: Object): void {
-  const editor = atom.workspace.getActiveTextEditor();
+function diffActivePath(diffOptions) {
+  var editor = atom.workspace.getActiveTextEditor();
   if (editor == null) {
     atom.workspace.open(formatDiffViewUrl(diffOptions));
   } else {
-    atom.workspace.open(formatDiffViewUrl({
-      file: editor.getPath() || '',
-      ...diffOptions,
-    }));
+    atom.workspace.open(formatDiffViewUrl(_extends({
+      file: editor.getPath() || ''
+    }, diffOptions)));
   }
 }
 
-function isActiveEditorDiffable(): boolean {
-  const editor = atom.workspace.getActiveTextEditor();
+function isActiveEditorDiffable() {
+  var editor = atom.workspace.getActiveTextEditor();
   if (editor == null) {
     return false;
   }
   return isPathDiffable(editor.getPath());
 }
 
-function shouldDisplayDiffTreeItem(contextMenu: FileTreeContextMenu): boolean {
-  const node = contextMenu.getSingleSelectedNode();
+function shouldDisplayDiffTreeItem(contextMenu) {
+  var node = contextMenu.getSingleSelectedNode();
   return node != null && isPathDiffable(node.uri);
 }
 
-function isPathDiffable(filePath: ?string): boolean {
+function isPathDiffable(filePath) {
   if (filePath == null || filePath.length === 0) {
     return false;
   }
-  const repository = repositoryForPath(filePath);
+  var repository = (0, _nuclideHgGitBridge.repositoryForPath)(filePath);
   return repository != null && repository.getType() === 'hg';
 }
 
 // Listen for file tree context menu file item events to open the diff view.
-function addFileTreeCommands(commandName: string, diffOptions?: Object): void {
-  invariant(subscriptions);
-  subscriptions.add(atom.commands.add(
-    '.tree-view .entry.file.list-item',
-    commandName,
-    event => {
-      const filePath = getUiTreePathFromTargetEvent(event);
-      atom.workspace.open(formatDiffViewUrl({
-        file: filePath || '',
-        ...diffOptions,
-      }));
-    }
-  ));
+function addFileTreeCommands(commandName, diffOptions) {
+  (0, _assert2.default)(subscriptions);
+  subscriptions.add(atom.commands.add('.tree-view .entry.file.list-item', commandName, function (event) {
+    var filePath = (0, _nuclideAtomHelpers.getUiTreePathFromTargetEvent)(event);
+    atom.workspace.open(formatDiffViewUrl(_extends({
+      file: filePath || ''
+    }, diffOptions)));
+  }));
 
-  subscriptions.add(atom.commands.add(
-    '.tree-view .entry.directory.list-nested-item > .list-item',
-    commandName,
-    event => {
-      const directoryPath = getUiTreePathFromTargetEvent(event);
-      atom.workspace.open(formatDiffViewUrl({
-        directory: directoryPath || '',
-        ...diffOptions,
-      }));
-    }
-  ));
+  subscriptions.add(atom.commands.add('.tree-view .entry.directory.list-nested-item > .list-item', commandName, function (event) {
+    var directoryPath = (0, _nuclideAtomHelpers.getUiTreePathFromTargetEvent)(event);
+    atom.workspace.open(formatDiffViewUrl(_extends({
+      directory: directoryPath || ''
+    }, diffOptions)));
+  }));
 }
 
-function addActivePathCommands(commandName: string, diffOptions?: Object) {
-  invariant(subscriptions);
-  const boundDiffActivePath = diffActivePath.bind(null, diffOptions);
-  subscriptions.add(atom.commands.add(
-    'atom-workspace',
-    commandName,
-    boundDiffActivePath,
-  ));
+function addActivePathCommands(commandName, diffOptions) {
+  (0, _assert2.default)(subscriptions);
+  var boundDiffActivePath = diffActivePath.bind(null, diffOptions);
+  subscriptions.add(atom.commands.add('atom-workspace', commandName, boundDiffActivePath));
   // Listen for in-editor context menu item diff view open command.
-  subscriptions.add(atom.commands.add(
-    'atom-text-editor',
-    commandName,
-    boundDiffActivePath,
-  ));
+  subscriptions.add(atom.commands.add('atom-text-editor', commandName, boundDiffActivePath));
 }
 
-module.exports = {
+module.exports = Object.defineProperties({
 
-  activate(state: ?SerializedDiffViewState): void {
-    subscriptions = new CompositeDisposable();
+  activate: function activate(state) {
+    subscriptions = new _atom.CompositeDisposable();
     // Listen for menu item workspace diff view open command.
     addActivePathCommands('nuclide-diff-view:open');
     addActivePathCommands('nuclide-diff-view:commit', {
-      viewMode: DiffMode.COMMIT_MODE,
-      commitMode: CommitMode.COMMIT,
+      viewMode: _constants.DiffMode.COMMIT_MODE,
+      commitMode: _constants.CommitMode.COMMIT
     });
     addActivePathCommands('nuclide-diff-view:amend', {
-      viewMode: DiffMode.COMMIT_MODE,
-      commitMode: CommitMode.AMEND,
+      viewMode: _constants.DiffMode.COMMIT_MODE,
+      commitMode: _constants.CommitMode.AMEND
     });
     addActivePathCommands('nuclide-diff-view:publish', {
-      viewMode: DiffMode.PUBLISH_MODE,
+      viewMode: _constants.DiffMode.PUBLISH_MODE
     });
 
     // Context Menu Items.
     subscriptions.add(atom.contextMenu.add({
-      'atom-text-editor': [
-        {type: 'separator'},
-        {
-          label: 'Source Control',
-          submenu: [
-            {
-              label: 'Open in Diff View',
-              command: 'nuclide-diff-view:open',
-            },
-            {
-              label: 'Commit',
-              command: 'nuclide-diff-view:commit',
-            },
-            {
-              label: 'Amend',
-              command: 'nuclide-diff-view:amend',
-            },
-            {
-              label: 'Publish to Phabricator',
-              command: 'nuclide-diff-view:publish',
-            },
-          ],
-          shouldDisplay() {
-            return isActiveEditorDiffable();
-          },
-        },
-        {type: 'separator'},
-      ],
+      'atom-text-editor': [{ type: 'separator' }, {
+        label: 'Source Control',
+        submenu: [{
+          label: 'Open in Diff View',
+          command: 'nuclide-diff-view:open'
+        }, {
+          label: 'Commit',
+          command: 'nuclide-diff-view:commit'
+        }, {
+          label: 'Amend',
+          command: 'nuclide-diff-view:amend'
+        }, {
+          label: 'Publish to Phabricator',
+          command: 'nuclide-diff-view:publish'
+        }],
+        shouldDisplay: function shouldDisplay() {
+          return isActiveEditorDiffable();
+        }
+      }, { type: 'separator' }]
     }));
 
     // Listen for switching to editor mode for the active file.
-    subscriptions.add(atom.commands.add(
-      'nuclide-diff-view',
-      'nuclide-diff-view:switch-to-editor',
-      () => {
-        const diffModel = getDiffViewModel();
-        const {filePath} = diffModel.getActiveFileState();
-        if (filePath != null && filePath.length) {
-          atom.workspace.open(filePath);
-        }
+    subscriptions.add(atom.commands.add('nuclide-diff-view', 'nuclide-diff-view:switch-to-editor', function () {
+      var diffModel = getDiffViewModel();
+
+      var _diffModel$getActiveFileState = diffModel.getActiveFileState();
+
+      var filePath = _diffModel$getActiveFileState.filePath;
+
+      if (filePath != null && filePath.length) {
+        atom.workspace.open(filePath);
       }
-    ));
+    }));
 
     addFileTreeCommands('nuclide-diff-view:open-context');
     addFileTreeCommands('nuclide-diff-view:commit-context', {
-      viewMode: DiffMode.COMMIT_MODE,
-      commitMode: CommitMode.COMMIT,
+      viewMode: _constants.DiffMode.COMMIT_MODE,
+      commitMode: _constants.CommitMode.COMMIT
     });
     addFileTreeCommands('nuclide-diff-view:amend-context', {
-      viewMode: DiffMode.COMMIT_MODE,
-      commitMode: CommitMode.AMEND,
+      viewMode: _constants.DiffMode.COMMIT_MODE,
+      commitMode: _constants.CommitMode.AMEND
     });
     addFileTreeCommands('nuclide-diff-view:publish-context', {
-      viewMode: DiffMode.PUBLISH_MODE,
+      viewMode: _constants.DiffMode.PUBLISH_MODE
     });
 
     // The Diff View will open its main UI in a tab, like Atom's preferences and welcome pages.
-    subscriptions.add(atom.workspace.addOpener(uri => {
+    subscriptions.add(atom.workspace.addOpener(function (uri) {
       if (uri.startsWith(NUCLIDE_DIFF_VIEW_URI)) {
         if (!require('semver').gte(atom.getVersion(), '1.6.1')) {
-          throw new Error(
-            'Outdated Atom version<br/>\n' +
-            '**Nuclide\'s Diff View require Atom 1.6.1 or later**',
-          );
+          throw new Error('Outdated Atom version<br/>\n' + '**Nuclide\'s Diff View require Atom 1.6.1 or later**');
         }
-        const {query: diffEntityOptions} = url.parse(uri, true);
-        return createView((diffEntityOptions: any));
+
+        var _url$parse = _url2.default.parse(uri, true);
+
+        var diffEntityOptions = _url$parse.query;
+
+        return createView(diffEntityOptions);
       }
     }));
 
@@ -338,14 +304,17 @@ module.exports = {
       return;
     }
 
-    const {activeFilePath, viewMode, commitMode} = state;
+    var activeFilePath = state.activeFilePath;
+    var viewMode = state.viewMode;
+    var commitMode = state.commitMode;
+
     // Wait for all source control providers to register.
-    subscriptions.add(nuclideFeatures.onDidActivateInitialFeatures(() => {
+    subscriptions.add(_libNuclideFeatures.nuclideFeatures.onDidActivateInitialFeatures(function () {
       function restoreActiveDiffView() {
         atom.workspace.open(formatDiffViewUrl({
           file: activeFilePath,
-          viewMode,
-          commitMode,
+          viewMode: viewMode,
+          commitMode: commitMode
         }));
       }
 
@@ -356,75 +325,84 @@ module.exports = {
       }
       // If it's a remote directory, it should come on a path change event.
       // The change handler is delayed to break the race with the `DiffViewModel` subscription.
-      const changePathsSubscription = atom.project.onDidChangePaths(() => setTimeout(() => {
-        // try/catch here because in case of any error, Atom stops dispatching events to the
-        // rest of the listeners, which can stop the remote editing from being functional.
-        try {
-          if (projectsContainPath(activeFilePath)) {
-            restoreActiveDiffView();
-            changePathsSubscription.dispose();
-            invariant(subscriptions);
-            subscriptions.remove(changePathsSubscription);
+      var changePathsSubscription = atom.project.onDidChangePaths(function () {
+        return setTimeout(function () {
+          // try/catch here because in case of any error, Atom stops dispatching events to the
+          // rest of the listeners, which can stop the remote editing from being functional.
+          try {
+            if (projectsContainPath(activeFilePath)) {
+              restoreActiveDiffView();
+              changePathsSubscription.dispose();
+              (0, _assert2.default)(subscriptions);
+              subscriptions.remove(changePathsSubscription);
+            }
+          } catch (e) {
+            (0, _nuclideLogging.getLogger)().error('DiffView restore error', e);
           }
-        } catch (e) {
-          getLogger().error('DiffView restore error', e);
-        }
-      }, 10));
-      invariant(subscriptions);
+        }, 10);
+      });
+      (0, _assert2.default)(subscriptions);
       subscriptions.add(changePathsSubscription);
     }));
   },
 
-  consumeToolBar(getToolBar: (group: string) => Object): void {
+  consumeToolBar: function consumeToolBar(getToolBar) {
     toolBar = getToolBar('nuclide-diff-view');
-    const button = toolBar.addButton({
+    var button = toolBar.addButton({
       icon: 'git-branch',
       callback: 'nuclide-diff-view:open',
       tooltip: 'Open Diff View',
-      priority: 300,
+      priority: 300
     })[0];
-    const diffModel = getDiffViewModel();
+    var diffModel = getDiffViewModel();
     updateToolbarCount(button, diffModel.getState().dirtyFileChanges.size);
-    invariant(subscriptions);
-    subscriptions.add(diffModel.onDidUpdateState(() => {
+    (0, _assert2.default)(subscriptions);
+    subscriptions.add(diffModel.onDidUpdateState(function () {
       updateToolbarCount(button, diffModel.getState().dirtyFileChanges.size);
     }));
   },
 
-  getHomeFragments(): HomeFragments {
+  getHomeFragments: function getHomeFragments() {
     return {
       feature: {
         title: 'Diff View',
         icon: 'git-branch',
-        description: (
-          <span>
-            Launches an editable side-by-side compare view across mercurial dirty and commits
-            changes, allowing committing and pushing changes to phabricator.
-          </span>
+        description: _reactForAtom.React.createElement(
+          'span',
+          null,
+          'Launches an editable side-by-side compare view across mercurial dirty and commits changes, allowing committing and pushing changes to phabricator.'
         ),
-        command: 'nuclide-diff-view:open',
+        command: 'nuclide-diff-view:open'
       },
-      priority: 3,
+      priority: 3
     };
   },
 
-  serialize(): SerializedDiffViewState {
+  serialize: function serialize() {
     if (!activeDiffView || !diffViewModel) {
       return {
-        visible: false,
+        visible: false
       };
     }
-    const {filePath} = diffViewModel.getActiveFileState();
-    const {viewMode, commitMode} = diffViewModel.getState();
+
+    var _diffViewModel$getActiveFileState = diffViewModel.getActiveFileState();
+
+    var filePath = _diffViewModel$getActiveFileState.filePath;
+
+    var _diffViewModel$getState = diffViewModel.getState();
+
+    var viewMode = _diffViewModel$getState.viewMode;
+    var commitMode = _diffViewModel$getState.commitMode;
+
     return {
       visible: true,
       activeFilePath: filePath,
-      viewMode,
-      commitMode,
+      viewMode: viewMode,
+      commitMode: commitMode
     };
   },
 
-  deactivate(): void {
+  deactivate: function deactivate() {
     uiProviders.splice(0);
     if (subscriptions != null) {
       subscriptions.dispose();
@@ -449,7 +427,7 @@ module.exports = {
    * @return An array of InlineComments (defined above) to be rendered into the
    *         diff view
    */
-  consumeUIProvider(provider: UIProvider) {
+  consumeUIProvider: function consumeUIProvider(provider) {
     uiProviders.push(provider);
     if (diffViewModel != null) {
       diffViewModel.setUiProviders(uiProviders);
@@ -457,67 +435,60 @@ module.exports = {
     return;
   },
 
-  consumeCwdApi(api: CwdApi): void {
+  consumeCwdApi: function consumeCwdApi(api) {
     cwdApi = api;
   },
 
-  addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
-    invariant(subscriptions);
-    const menuItemDescriptions = new CompositeDisposable();
-    menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu(
-      {
-        label: 'Open in Diff View',
-        command: 'nuclide-diff-view:open-context',
-        shouldDisplay() {
-          return shouldDisplayDiffTreeItem(contextMenu);
-        },
-      },
-      DIFF_VIEW_FILE_TREE_CONTEXT_MENU_PRIORITY,
-    ));
-    menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu(
-      {
-        label: 'Commit',
-        command: 'nuclide-diff-view:commit-context',
-        shouldDisplay() {
-          return shouldDisplayDiffTreeItem(contextMenu);
-        },
-      },
-      COMMIT_FILE_TREE_CONTEXT_MENU_PRIORITY,
-    ));
-    menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu(
-      {
-        label: 'Amend',
-        command: 'nuclide-diff-view:amend-context',
-        shouldDisplay() {
-          return shouldDisplayDiffTreeItem(contextMenu);
-        },
-      },
-      AMEND_FILE_TREE_CONTEXT_MENU_PRIORITY,
-    ));
-    menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu(
-      {
-        label: 'Publish to Phabricator',
-        command: 'nuclide-diff-view:publish-context',
-        shouldDisplay() {
-          return shouldDisplayDiffTreeItem(contextMenu);
-        },
-      },
-      PUBLISH_FILE_TREE_CONTEXT_MENU_PRIORITY,
-    ));
+  addItemsToFileTreeContextMenu: function addItemsToFileTreeContextMenu(contextMenu) {
+    (0, _assert2.default)(subscriptions);
+    var menuItemDescriptions = new _atom.CompositeDisposable();
+    menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu({
+      label: 'Open in Diff View',
+      command: 'nuclide-diff-view:open-context',
+      shouldDisplay: function shouldDisplay() {
+        return shouldDisplayDiffTreeItem(contextMenu);
+      }
+    }, DIFF_VIEW_FILE_TREE_CONTEXT_MENU_PRIORITY));
+    menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu({
+      label: 'Commit',
+      command: 'nuclide-diff-view:commit-context',
+      shouldDisplay: function shouldDisplay() {
+        return shouldDisplayDiffTreeItem(contextMenu);
+      }
+    }, COMMIT_FILE_TREE_CONTEXT_MENU_PRIORITY));
+    menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu({
+      label: 'Amend',
+      command: 'nuclide-diff-view:amend-context',
+      shouldDisplay: function shouldDisplay() {
+        return shouldDisplayDiffTreeItem(contextMenu);
+      }
+    }, AMEND_FILE_TREE_CONTEXT_MENU_PRIORITY));
+    menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu({
+      label: 'Publish to Phabricator',
+      command: 'nuclide-diff-view:publish-context',
+      shouldDisplay: function shouldDisplay() {
+        return shouldDisplayDiffTreeItem(contextMenu);
+      }
+    }, PUBLISH_FILE_TREE_CONTEXT_MENU_PRIORITY));
 
     subscriptions.add(menuItemDescriptions);
 
     // We don't need to dispose of the menuItemDescriptions when the provider is disabled -
     // it needs to be handled by the provider itself. We only should remove it from the list
     // of the disposables we maintain.
-    return new Disposable(() => {
+    return new _atom.Disposable(function () {
       if (subscriptions != null) {
         subscriptions.remove(menuItemDescriptions);
       }
     });
-  },
+  }
 
-  get __testDiffView() {
-    return activeDiffView;
-  },
-};
+}, {
+  __testDiffView: {
+    get: function get() {
+      return activeDiffView;
+    },
+    configurable: true,
+    enumerable: true
+  }
+});

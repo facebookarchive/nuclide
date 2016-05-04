@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +8,16 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+var _path = require('path');
 
-const {ensureTrailingSeparator} = require('../../nuclide-commons').paths;
+var _path2 = _interopRequireDefault(_path);
 
-const ADD_ACTION = 'add';
-const REMOVE_ACTION = 'remove';
-type DirectoriesCacheOperation = 'add' | 'remove';
+var ensureTrailingSeparator = require('../../nuclide-commons').paths.ensureTrailingSeparator;
 
-const separatorRegex = new RegExp('\\' + path.sep, 'g');
+var ADD_ACTION = 'add';
+var REMOVE_ACTION = 'remove';
+
+var separatorRegex = new RegExp('\\' + _path2.default.sep, 'g');
 
 /**
  * This function takes in a file path, and computes all directories that would
@@ -33,47 +33,23 @@ const separatorRegex = new RegExp('\\' + path.sep, 'g');
  *   That is, if modifiedPath is /A/B/C/D and pathPrefixToSkip is /A/B/ (or /A/B),
  *   `directories` will be populated with '/A/B/C/', but not '/A/' or '/A/B/'.
  */
-function addAllParentDirectoriesToCache(
-    directories: Map<string, number>,
-    modifiedPath: string,
-    pathPrefixToSkip: ?string
-  ) {
-  computeAllParentDirectories(
-    directories,
-    modifiedPath,
-    pathPrefixToSkip,
-    ADD_ACTION
-  );
+function addAllParentDirectoriesToCache(directories, modifiedPath, pathPrefixToSkip) {
+  computeAllParentDirectories(directories, modifiedPath, pathPrefixToSkip, ADD_ACTION);
 }
 
 /**
  * Like `addAllParentDirectoriesToCache`, except it removes all parent directories.
  */
-function removeAllParentDirectoriesFromCache(
-    directories: Map<string, number>,
-    modifiedPath: string,
-    pathPrefixToSkip: ?string
-  ) {
-  computeAllParentDirectories(
-    directories,
-    modifiedPath,
-    pathPrefixToSkip,
-    REMOVE_ACTION
-  );
+function removeAllParentDirectoriesFromCache(directories, modifiedPath, pathPrefixToSkip) {
+  computeAllParentDirectories(directories, modifiedPath, pathPrefixToSkip, REMOVE_ACTION);
 }
-
 
 /**
  * Helper function to `addAllParentDirectoriesToCache` and
  * `removeAllParentDirectoriesFromCach`. Either adds or removes the computed
  * parent directories depending on the operation passed in.
  */
-function computeAllParentDirectories(
-    directories: Map<string, number>,
-    modifiedPath: string,
-    pathPrefixToSkip: ?string,
-    operation: DirectoriesCacheOperation
-  ) {
+function computeAllParentDirectories(directories, modifiedPath, pathPrefixToSkip, operation) {
   // Reset the regex so it will start the next search at the beginning of the string.
   separatorRegex.lastIndex = 0;
 
@@ -82,10 +58,10 @@ function computeAllParentDirectories(
     separatorRegex.lastIndex = ensureTrailingSeparator(pathPrefixToSkip).length;
   }
 
-  const shouldAdd = (operation === ADD_ACTION);
-  let match;
-  while ((match = separatorRegex.exec(modifiedPath))) {
-    const newSubPath = modifiedPath.slice(0, match.index + 1);
+  var shouldAdd = operation === ADD_ACTION;
+  var match = undefined;
+  while (match = separatorRegex.exec(modifiedPath)) {
+    var newSubPath = modifiedPath.slice(0, match.index + 1);
     if (shouldAdd) {
       addItemToCache(newSubPath, directories);
     } else {
@@ -94,8 +70,8 @@ function computeAllParentDirectories(
   }
 }
 
-function addItemToCache(item: string, cache: Map<string, number>) {
-  const existingValue = cache.get(item);
+function addItemToCache(item, cache) {
+  var existingValue = cache.get(item);
   if (existingValue) {
     cache.set(item, existingValue + 1);
   } else {
@@ -103,10 +79,10 @@ function addItemToCache(item: string, cache: Map<string, number>) {
   }
 }
 
-function removeItemFromCache(item: string, cache: Map<string, number>) {
-  const existingValue = cache.get(item);
+function removeItemFromCache(item, cache) {
+  var existingValue = cache.get(item);
   if (existingValue) {
-    const newValue = existingValue - 1;
+    var newValue = existingValue - 1;
     if (newValue > 0) {
       cache.set(item, newValue);
     } else {
@@ -115,8 +91,7 @@ function removeItemFromCache(item: string, cache: Map<string, number>) {
   }
 }
 
-
 module.exports = {
-  addAllParentDirectoriesToCache,
-  removeAllParentDirectoriesFromCache,
+  addAllParentDirectoriesToCache: addAllParentDirectoriesToCache,
+  removeAllParentDirectoriesFromCache: removeAllParentDirectoriesFromCache
 };

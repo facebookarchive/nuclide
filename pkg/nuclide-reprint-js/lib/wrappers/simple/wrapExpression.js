@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +8,26 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
-import unwrapMarkers from '../../utils/unwrapMarkers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
+
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+var _utilsUnwrapMarkers = require('../../utils/unwrapMarkers');
+
+var _utilsUnwrapMarkers2 = _interopRequireDefault(_utilsUnwrapMarkers);
 
 /**
  * Adds parenthesis and the appropriate markers to a set of lines. It also moves
  * any leading and trailing markers outside of the parenthesis.
  */
-function wrapExpression(print: Print, node: any, lines: Lines): Lines {
-  lines = flatten(lines);
+function wrapExpression(print, node, lines) {
+  lines = (0, _utilsFlatten2.default)(lines);
   if (node.parenthesizedExpression) {
-    lines = unwrapMarkers(
-      [
-        '(',
-        markers.openScope,
-        markers.scopeIndent,
-        markers.scopeBreak,
-      ],
-      lines,
-      [
-        markers.scopeBreak,
-        markers.scopeDedent,
-        markers.closeScope,
-        ')',
-      ],
-    );
+    lines = (0, _utilsUnwrapMarkers2.default)(['(', _constantsMarkers2.default.openScope, _constantsMarkers2.default.scopeIndent, _constantsMarkers2.default.scopeBreak], lines, [_constantsMarkers2.default.scopeBreak, _constantsMarkers2.default.scopeDedent, _constantsMarkers2.default.closeScope, ')']);
   }
   return lines;
 }

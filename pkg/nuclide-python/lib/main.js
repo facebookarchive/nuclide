@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +10,26 @@
  * the root directory of this source tree.
  */
 
-import type {OutlineProvider} from '../../nuclide-outline-view';
+exports.activate = activate;
+exports.provideOutlines = provideOutlines;
+exports.deactivate = deactivate;
 
-const PYTHON_GRAMMARS = ['source.python'];
+var PYTHON_GRAMMARS = ['source.python'];
 
-export function activate() {
-}
+function activate() {}
 
-export function provideOutlines(): OutlineProvider {
-  const {PythonOutlineProvider} = require('./PythonOutlineProvider');
-  const provider = new PythonOutlineProvider();
+function provideOutlines() {
+  var _require = require('./PythonOutlineProvider');
+
+  var PythonOutlineProvider = _require.PythonOutlineProvider;
+
+  var provider = new PythonOutlineProvider();
   return {
     grammarScopes: PYTHON_GRAMMARS,
     priority: 1,
     name: 'Python',
-    getOutline: provider.getOutline.bind(provider),
+    getOutline: provider.getOutline.bind(provider)
   };
 }
 
-export function deactivate() {
-}
+function deactivate() {}

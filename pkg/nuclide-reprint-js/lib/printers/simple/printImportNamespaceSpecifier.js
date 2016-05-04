@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +8,16 @@
  * the root directory of this source tree.
  */
 
-import type {ImportNamespaceSpecifier} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printImportNamespaceSpecifier(
-  print: Print,
-  node: ImportNamespaceSpecifier,
-): Lines {
-  return flatten([
-    '*',
-    markers.space,
-    'as',
-    markers.space,
-    markers.noBreak,
-    print(node.local),
-  ]);
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+function printImportNamespaceSpecifier(print, node) {
+  return (0, _utilsFlatten2.default)(['*', _constantsMarkers2.default.space, 'as', _constantsMarkers2.default.space, _constantsMarkers2.default.noBreak, print(node.local)]);
 }
 
 module.exports = printImportNamespaceSpecifier;

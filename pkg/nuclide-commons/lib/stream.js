@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +10,25 @@
  * the root directory of this source tree.
  */
 
-import type {Observable as ObservableType} from 'rxjs';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {Observable, Subscription} from 'rxjs';
+exports.observeStream = observeStream;
+exports.splitStream = splitStream;
+exports.bufferUntil = bufferUntil;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _rxjs = require('rxjs');
 
 /**
  * Observe a stream like stdout or stderr.
  */
-export function observeStream(stream: stream$Readable): ObservableType<string> {
-  const error = Observable.fromEvent(stream, 'error').flatMap(Observable.throw);
-  return Observable.fromEvent(stream, 'data').map(data => data.toString()).
-    merge(error).
-    takeUntil(Observable.fromEvent(stream, 'end').race(error));
+
+function observeStream(stream) {
+  var error = _rxjs.Observable.fromEvent(stream, 'error').flatMap(_rxjs.Observable.throw);
+  return _rxjs.Observable.fromEvent(stream, 'data').map(function (data) {
+    return data.toString();
+  }).merge(error).takeUntil(_rxjs.Observable.fromEvent(stream, 'end').race(error));
 }
 
 /**
@@ -29,9 +37,10 @@ export function observeStream(stream: stream$Readable): ObservableType<string> {
  * Sends any non-newline terminated data before closing.
  * Never sends an empty string.
  */
-export function splitStream(input: ObservableType<string>): ObservableType<string> {
-  return Observable.create(observer => {
-    let current: string = '';
+
+function splitStream(input) {
+  return _rxjs.Observable.create(function (observer) {
+    var current = '';
 
     function onEnd() {
       if (current !== '') {
@@ -40,80 +49,94 @@ export function splitStream(input: ObservableType<string>): ObservableType<strin
       }
     }
 
-    return input.subscribe(
-      value => {
-        const lines = (current + value).split('\n');
-        current = lines.pop();
-        lines.forEach(line => observer.next(line + '\n'));
-      },
-      error => { onEnd(); observer.error(error); },
-      () => { onEnd(); observer.complete(); },
-    );
+    return input.subscribe(function (value) {
+      var lines = (current + value).split('\n');
+      current = lines.pop();
+      lines.forEach(function (line) {
+        return observer.next(line + '\n');
+      });
+    }, function (error) {
+      onEnd();observer.error(error);
+    }, function () {
+      onEnd();observer.complete();
+    });
   });
 }
 
-export class DisposableSubscription {
-  _subscription: rx$ISubscription;
+var DisposableSubscription = (function () {
+  function DisposableSubscription(subscription) {
+    _classCallCheck(this, DisposableSubscription);
 
-  constructor(subscription: rx$ISubscription) {
     this._subscription = subscription;
   }
 
-  dispose(): void {
-    this._subscription.unsubscribe();
-  }
-}
+  _createClass(DisposableSubscription, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._subscription.unsubscribe();
+    }
+  }]);
 
-type TeardownLogic = (() => void) | rx$ISubscription;
+  return DisposableSubscription;
+})();
 
-export class CompositeSubscription {
-  _subscription: Subscription;
+exports.DisposableSubscription = DisposableSubscription;
 
-  constructor(...subscriptions: Array<TeardownLogic>) {
-    this._subscription = new Subscription();
-    subscriptions.forEach(sub => {
-      this._subscription.add(sub);
+var CompositeSubscription = (function () {
+  function CompositeSubscription() {
+    var _this = this;
+
+    _classCallCheck(this, CompositeSubscription);
+
+    this._subscription = new _rxjs.Subscription();
+
+    for (var _len = arguments.length, subscriptions = Array(_len), _key = 0; _key < _len; _key++) {
+      subscriptions[_key] = arguments[_key];
+    }
+
+    subscriptions.forEach(function (sub) {
+      _this._subscription.add(sub);
     });
   }
 
-  unsubscribe(): void {
-    this._subscription.unsubscribe();
-  }
-}
+  // TODO: We used to use `stream.buffer(stream.filter(...))` for this but it doesn't work in RxJS 5.
+  //  See https://github.com/ReactiveX/rxjs/issues/1610
 
-// TODO: We used to use `stream.buffer(stream.filter(...))` for this but it doesn't work in RxJS 5.
-//  See https://github.com/ReactiveX/rxjs/issues/1610
-export function bufferUntil<T>(
-  stream: Observable<T>,
-  condition: (item: T) => boolean,
-): Observable<Array<T>> {
-  return Observable.create(observer => {
-    let buffer = null;
-    const flush = () => {
+  _createClass(CompositeSubscription, [{
+    key: 'unsubscribe',
+    value: function unsubscribe() {
+      this._subscription.unsubscribe();
+    }
+  }]);
+
+  return CompositeSubscription;
+})();
+
+exports.CompositeSubscription = CompositeSubscription;
+
+function bufferUntil(stream, condition) {
+  return _rxjs.Observable.create(function (observer) {
+    var buffer = null;
+    var flush = function flush() {
       if (buffer != null) {
         observer.next(buffer);
         buffer = null;
       }
     };
-    return stream
-      .subscribe(
-        x => {
-          if (buffer == null) {
-            buffer = [];
-          }
-          buffer.push(x);
-          if (condition(x)) {
-            flush();
-          }
-        },
-        err => {
-          flush();
-          observer.error(err);
-        },
-        () => {
-          flush();
-          observer.complete();
-        },
-      );
+    return stream.subscribe(function (x) {
+      if (buffer == null) {
+        buffer = [];
+      }
+      buffer.push(x);
+      if (condition(x)) {
+        flush();
+      }
+    }, function (err) {
+      flush();
+      observer.error(err);
+    }, function () {
+      flush();
+      observer.complete();
+    });
   });
 }

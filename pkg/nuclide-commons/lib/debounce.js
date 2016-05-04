@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.debounce = debounce;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +13,29 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
+var _assert = require('assert');
 
-export function debounce<T : Function>(
-  func: T,
-  wait: number,
-  immediate?: boolean = false,
-): T {
+var _assert2 = _interopRequireDefault(_assert);
+
+function debounce(func, wait) {
+  var immediate = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
+
   // Taken from: https://github.com/jashkenas/underscore/blob/b10b2e6d72/underscore.js#L815.
-  let timeout;
-  let args: ?Array<any>;
-  let context;
-  let timestamp = 0;
-  let result;
+  var timeout = undefined;
+  var args = undefined;
+  var context = undefined;
+  var timestamp = 0;
+  var result = undefined;
 
-  const later = function() {
-    const last = Date.now() - timestamp;
+  var later = function later() {
+    var last = Date.now() - timestamp;
 
     if (last < wait && last >= 0) {
       timeout = setTimeout(later, wait - last);
     } else {
       timeout = null;
       if (!immediate) {
-        invariant(args);
+        (0, _assert2.default)(args);
         result = func.apply(context, args);
         if (!timeout) {
           context = args = null;
@@ -41,11 +45,11 @@ export function debounce<T : Function>(
   };
 
   // $FlowIssue -- Flow's type system isn't expressive enough to type debounce.
-  return function() {
+  return function () {
     context = this; // eslint-disable-line consistent-this
     args = arguments;
     timestamp = Date.now();
-    const callNow = immediate && !timeout;
+    var callNow = immediate && !timeout;
     if (!timeout) {
       timeout = setTimeout(later, wait);
     }

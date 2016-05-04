@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +8,21 @@
  * the root directory of this source tree.
  */
 
-import type {JSXElement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _constantsMarkers = require('../../constants/markers');
 
-import markers from '../../constants/markers';
-import wrapExpression from '../../wrappers/simple/wrapExpression';
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
-function printJSXElement(print: Print, node: JSXElement): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    markers.openScope,
-    markers.scopeIndent,
-    print(node.openingElement),
-    markers.scopeBreak,
-    node.children.map(child => [
-      print(child),
-      markers.scopeBreak,
-    ]),
-    markers.scopeDedent,
-    markers.closeScope,
-    print(node.closingElement),
-  ]);
+var _wrappersSimpleWrapExpression = require('../../wrappers/simple/wrapExpression');
+
+var _wrappersSimpleWrapExpression2 = _interopRequireDefault(_wrappersSimpleWrapExpression);
+
+function printJSXElement(print, node) {
+  var wrap = function wrap(x) {
+    return (0, _wrappersSimpleWrapExpression2.default)(print, node, x);
+  };
+  return wrap([_constantsMarkers2.default.openScope, _constantsMarkers2.default.scopeIndent, print(node.openingElement), _constantsMarkers2.default.scopeBreak, node.children.map(function (child) {
+    return [print(child), _constantsMarkers2.default.scopeBreak];
+  }), _constantsMarkers2.default.scopeDedent, _constantsMarkers2.default.closeScope, print(node.closingElement)]);
 }
 
 module.exports = printJSXElement;

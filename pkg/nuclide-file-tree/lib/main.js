@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,225 +10,238 @@
  * the root directory of this source tree.
  */
 
-import type {FileTreeControllerState} from './FileTreeController';
-import type FileTreeContextMenu from './FileTreeContextMenu';
-import type FileTreeControllerType from './FileTreeController';
-import type {NuclideSideBarService} from '../../nuclide-side-bar';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {Disposable, CompositeDisposable} from 'atom';
-import invariant from 'assert';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.serialize = serialize;
+exports.getContextMenuForFileTree = getContextMenuForFileTree;
+exports.consumeNuclideSideBar = consumeNuclideSideBar;
+exports.consumeWorkingSetsStore = consumeWorkingSetsStore;
+exports.consumeCwdApi = consumeCwdApi;
 
-import featureConfig from '../../nuclide-feature-config';
-import {nuclideFeatures} from '../../../lib/nuclide-features';
-import {debounce} from '../../nuclide-commons';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {WorkingSet} from '../../nuclide-working-sets';
-import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-import semver from 'semver';
+var _atom = require('atom');
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _nuclideFeatureConfig = require('../../nuclide-feature-config');
+
+var _nuclideFeatureConfig2 = _interopRequireDefault(_nuclideFeatureConfig);
+
+var _libNuclideFeatures = require('../../../lib/nuclide-features');
+
+var _nuclideCommons = require('../../nuclide-commons');
+
+var _nuclideWorkingSets = require('../../nuclide-working-sets');
+
+var _semver = require('semver');
+
+var _semver2 = _interopRequireDefault(_semver);
 
 /**
  * Minimum interval (in ms) between onChangeActivePaneItem events before revealing the active pane
  * item in the file tree.
  */
-const ACTIVE_PANE_DEBOUNCE_INTERVAL_MS = 150;
-const OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS = 150;
+var ACTIVE_PANE_DEBOUNCE_INTERVAL_MS = 150;
+var OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS = 150;
 
-const REVEAL_FILE_ON_SWITCH_SETTING = 'nuclide-file-tree.revealFileOnSwitch';
+var REVEAL_FILE_ON_SWITCH_SETTING = 'nuclide-file-tree.revealFileOnSwitch';
 
-class Activation {
-  _cwdApiSubscription: ?IDisposable;
-  _fileTreeController: FileTreeControllerType;
-  _packageState: ?FileTreeControllerState;
-  _subscriptions: CompositeDisposable;
-  _paneItemSubscription: ?Disposable;
+var Activation = (function () {
+  function Activation(state) {
+    _classCallCheck(this, Activation);
 
-  constructor(state: ?FileTreeControllerState) {
     this._packageState = state;
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new _atom.CompositeDisposable();
 
-    const FileTreeController = require('./FileTreeController');
+    var FileTreeController = require('./FileTreeController');
     this._fileTreeController = new FileTreeController(this._packageState);
 
-    const excludeVcsIgnoredPathsSetting = 'core.excludeVcsIgnoredPaths';
-    const hideIgnoredNamesSetting = 'nuclide-file-tree.hideIgnoredNames';
-    const ignoredNamesSetting = 'core.ignoredNames';
-    const prefixKeyNavSetting = 'nuclide-file-tree.allowKeyboardPrefixNavigation';
-    const usePreviewTabs = 'tabs.usePreviewTabs';
-    const allowPendingPaneItems = 'core.allowPendingPaneItems';
+    var excludeVcsIgnoredPathsSetting = 'core.excludeVcsIgnoredPaths';
+    var hideIgnoredNamesSetting = 'nuclide-file-tree.hideIgnoredNames';
+    var ignoredNamesSetting = 'core.ignoredNames';
+    var prefixKeyNavSetting = 'nuclide-file-tree.allowKeyboardPrefixNavigation';
+    var usePreviewTabs = 'tabs.usePreviewTabs';
+    var allowPendingPaneItems = 'core.allowPendingPaneItems';
 
-    this._subscriptions.add(
-      featureConfig.observe(prefixKeyNavSetting, this._setPrefixKeyNavSetting.bind(this)),
-      featureConfig.observe(REVEAL_FILE_ON_SWITCH_SETTING, this._setRevealOnFileSwitch.bind(this)),
-      atom.config.observe(ignoredNamesSetting, this._setIgnoredNames.bind(this)),
-      featureConfig.observe(hideIgnoredNamesSetting, this._setHideIgnoredNames.bind(this)),
-      atom.config.observe(
-        excludeVcsIgnoredPathsSetting,
-        this._setExcludeVcsIgnoredPaths.bind(this),
-      ),
-    );
+    this._subscriptions.add(_nuclideFeatureConfig2.default.observe(prefixKeyNavSetting, this._setPrefixKeyNavSetting.bind(this)), _nuclideFeatureConfig2.default.observe(REVEAL_FILE_ON_SWITCH_SETTING, this._setRevealOnFileSwitch.bind(this)), atom.config.observe(ignoredNamesSetting, this._setIgnoredNames.bind(this)), _nuclideFeatureConfig2.default.observe(hideIgnoredNamesSetting, this._setHideIgnoredNames.bind(this)), atom.config.observe(excludeVcsIgnoredPathsSetting, this._setExcludeVcsIgnoredPaths.bind(this)));
 
     // The use preview tabs setting was removed from 'tabs' package in atom 1.6 and moved to core
     // instead. Until Atoms <1.6.0 are supported we need to be ready for both
-    if (semver.gte(atom.getVersion(), '1.6.0')) {
-      this._subscriptions.add(
-        atom.config.observe(allowPendingPaneItems, this._setUsePreviewTabs.bind(this)),
-      );
+    if (_semver2.default.gte(atom.getVersion(), '1.6.0')) {
+      this._subscriptions.add(atom.config.observe(allowPendingPaneItems, this._setUsePreviewTabs.bind(this)));
     } else {
-      this._subscriptions.add(
-        atom.config.observe(usePreviewTabs, this._setUsePreviewTabs.bind(this)),
-      );
+      this._subscriptions.add(atom.config.observe(usePreviewTabs, this._setUsePreviewTabs.bind(this)));
     }
   }
 
-  consumeCwdApi(cwdApi: CwdApi): IDisposable {
-    invariant(this._fileTreeController);
-    if (this._cwdApiSubscription != null) {
-      this._cwdApiSubscription.dispose();
+  _createClass(Activation, [{
+    key: 'consumeCwdApi',
+    value: function consumeCwdApi(cwdApi) {
+      (0, _assert2.default)(this._fileTreeController);
+      if (this._cwdApiSubscription != null) {
+        this._cwdApiSubscription.dispose();
+      }
+      var controller = this._fileTreeController;
+      controller.setCwdApi(cwdApi);
+      this._cwdApiSubscription = new _atom.Disposable(function () {
+        return controller.setCwdApi(null);
+      });
+      return this._cwdApiSubscription;
     }
-    const controller = this._fileTreeController;
-    controller.setCwdApi(cwdApi);
-    this._cwdApiSubscription = new Disposable(() => controller.setCwdApi(null));
-    return this._cwdApiSubscription;
-  }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._deactivate();
+      this._subscriptions.dispose();
+    }
+  }, {
+    key: 'serialize',
+    value: function serialize() {
+      return this._fileTreeController.serialize();
+    }
+  }, {
+    key: 'consumeWorkingSetsStore',
+    value: function consumeWorkingSetsStore(workingSetsStore) {
+      var _this = this;
 
-  dispose() {
-    this._deactivate();
-    this._subscriptions.dispose();
-  }
+      this._fileTreeController.updateWorkingSetsStore(workingSetsStore);
+      this._fileTreeController.updateWorkingSet(workingSetsStore.getCurrent());
 
-  serialize(): ?FileTreeControllerState {
-    return this._fileTreeController.serialize();
-  }
+      var currentSubscription = workingSetsStore.subscribeToCurrent(function (currentWorkingSet) {
+        _this._fileTreeController.updateWorkingSet(currentWorkingSet);
+      });
+      this._subscriptions.add(currentSubscription);
 
-  consumeWorkingSetsStore(workingSetsStore: WorkingSetsStore): ?IDisposable {
-    this._fileTreeController.updateWorkingSetsStore(workingSetsStore);
-    this._fileTreeController.updateWorkingSet(workingSetsStore.getCurrent());
+      var updateOpenFilesWorkingSet = this._fileTreeController.updateOpenFilesWorkingSet.bind(this._fileTreeController);
 
-    const currentSubscription = workingSetsStore.subscribeToCurrent(currentWorkingSet => {
-      this._fileTreeController.updateWorkingSet(currentWorkingSet);
-    });
-    this._subscriptions.add(currentSubscription);
+      this._subscriptions.add(new _atom.Disposable(function () {
+        updateOpenFilesWorkingSet = function () {};
+      }));
 
-
-    let updateOpenFilesWorkingSet = this._fileTreeController.updateOpenFilesWorkingSet.bind(
-      this._fileTreeController
-    );
-
-    this._subscriptions.add(new Disposable(() => {
-      updateOpenFilesWorkingSet = () => {};
-    }));
-
-    const rebuildOpenFilesWorkingSet = debounce(
-      () => {
-        const openUris = atom.workspace.getTextEditors()
-          .filter(te => te.getPath() != null && te.getPath() !== '')
-          .map(te => (te.getPath(): any));
-        const openFilesWorkingSet = new WorkingSet(openUris);
+      var rebuildOpenFilesWorkingSet = (0, _nuclideCommons.debounce)(function () {
+        var openUris = atom.workspace.getTextEditors().filter(function (te) {
+          return te.getPath() != null && te.getPath() !== '';
+        }).map(function (te) {
+          return te.getPath();
+        });
+        var openFilesWorkingSet = new _nuclideWorkingSets.WorkingSet(openUris);
         updateOpenFilesWorkingSet(openFilesWorkingSet);
-      },
-      OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS,
-    );
+      }, OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS);
 
-    rebuildOpenFilesWorkingSet();
+      rebuildOpenFilesWorkingSet();
 
-    const paneObservingDisposable = new CompositeDisposable();
-    paneObservingDisposable.add(atom.workspace.onDidAddPaneItem(rebuildOpenFilesWorkingSet));
-    paneObservingDisposable.add(atom.workspace.onDidDestroyPaneItem(rebuildOpenFilesWorkingSet));
+      var paneObservingDisposable = new _atom.CompositeDisposable();
+      paneObservingDisposable.add(atom.workspace.onDidAddPaneItem(rebuildOpenFilesWorkingSet));
+      paneObservingDisposable.add(atom.workspace.onDidDestroyPaneItem(rebuildOpenFilesWorkingSet));
 
-    this._subscriptions.add(paneObservingDisposable);
+      this._subscriptions.add(paneObservingDisposable);
 
-    return new Disposable(() => {
-      this._fileTreeController.updateWorkingSetsStore(null);
-      this._fileTreeController.updateWorkingSet(new WorkingSet());
-      this._fileTreeController.updateOpenFilesWorkingSet(new WorkingSet());
-      paneObservingDisposable.dispose();
-      this._subscriptions.remove(currentSubscription);
-      currentSubscription.dispose();
-    });
-  }
-
-  _setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {
-    this._fileTreeController.setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths);
-  }
-
-  _setHideIgnoredNames(hideIgnoredNames: boolean): void {
-    this._fileTreeController.setHideIgnoredNames(hideIgnoredNames);
-  }
-
-  _setIgnoredNames(ignoredNames: string|Array<string>) {
-    let normalizedIgnoredNames;
-    if (ignoredNames === '') {
-      normalizedIgnoredNames = [];
-    } else if (typeof ignoredNames === 'string') {
-      normalizedIgnoredNames = [ignoredNames];
-    } else {
-      normalizedIgnoredNames = ignoredNames;
+      return new _atom.Disposable(function () {
+        _this._fileTreeController.updateWorkingSetsStore(null);
+        _this._fileTreeController.updateWorkingSet(new _nuclideWorkingSets.WorkingSet());
+        _this._fileTreeController.updateOpenFilesWorkingSet(new _nuclideWorkingSets.WorkingSet());
+        paneObservingDisposable.dispose();
+        _this._subscriptions.remove(currentSubscription);
+        currentSubscription.dispose();
+      });
     }
-    this._fileTreeController.setIgnoredNames(normalizedIgnoredNames);
-  }
-
-  _setRevealOnFileSwitch(shouldReveal: boolean) {
-    const {onWorkspaceDidStopChangingActivePaneItem} =
-      require('../../nuclide-atom-helpers').atomEventDebounce;
-
-    if (shouldReveal) {
-      const reveal = () => {
-        this._fileTreeController.revealActiveFile(/* showIfHidden */ false);
-      };
-      // Guard against this getting called multiple times
-      if (!this._paneItemSubscription) {
-        // Debounce tab change events to limit unneeded scrolling when changing or closing tabs
-        // in quick succession.
-        this._paneItemSubscription = onWorkspaceDidStopChangingActivePaneItem(
-          reveal,
-          ACTIVE_PANE_DEBOUNCE_INTERVAL_MS
-        );
-        this._subscriptions.add(this._paneItemSubscription);
+  }, {
+    key: '_setExcludeVcsIgnoredPaths',
+    value: function _setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths) {
+      this._fileTreeController.setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths);
+    }
+  }, {
+    key: '_setHideIgnoredNames',
+    value: function _setHideIgnoredNames(hideIgnoredNames) {
+      this._fileTreeController.setHideIgnoredNames(hideIgnoredNames);
+    }
+  }, {
+    key: '_setIgnoredNames',
+    value: function _setIgnoredNames(ignoredNames) {
+      var normalizedIgnoredNames = undefined;
+      if (ignoredNames === '') {
+        normalizedIgnoredNames = [];
+      } else if (typeof ignoredNames === 'string') {
+        normalizedIgnoredNames = [ignoredNames];
+      } else {
+        normalizedIgnoredNames = ignoredNames;
       }
-    } else {
-      // Use a local so Flow can refine the type.
-      const paneItemSubscription = this._paneItemSubscription;
-      if (paneItemSubscription) {
-        this._subscriptions.remove(paneItemSubscription);
-        paneItemSubscription.dispose();
-        this._paneItemSubscription = null;
+      this._fileTreeController.setIgnoredNames(normalizedIgnoredNames);
+    }
+  }, {
+    key: '_setRevealOnFileSwitch',
+    value: function _setRevealOnFileSwitch(shouldReveal) {
+      var _this2 = this;
+
+      var onWorkspaceDidStopChangingActivePaneItem = require('../../nuclide-atom-helpers').atomEventDebounce.onWorkspaceDidStopChangingActivePaneItem;
+
+      if (shouldReveal) {
+        var reveal = function reveal() {
+          _this2._fileTreeController.revealActiveFile( /* showIfHidden */false);
+        };
+        // Guard against this getting called multiple times
+        if (!this._paneItemSubscription) {
+          // Debounce tab change events to limit unneeded scrolling when changing or closing tabs
+          // in quick succession.
+          this._paneItemSubscription = onWorkspaceDidStopChangingActivePaneItem(reveal, ACTIVE_PANE_DEBOUNCE_INTERVAL_MS);
+          this._subscriptions.add(this._paneItemSubscription);
+        }
+      } else {
+        // Use a local so Flow can refine the type.
+        var paneItemSubscription = this._paneItemSubscription;
+        if (paneItemSubscription) {
+          this._subscriptions.remove(paneItemSubscription);
+          paneItemSubscription.dispose();
+          this._paneItemSubscription = null;
+        }
       }
     }
-  }
-
-  _setPrefixKeyNavSetting(usePrefixNav: ?boolean): void {
-    // config is void during startup, signifying no config yet
-    if (usePrefixNav == null || !this._fileTreeController) {
-      return;
+  }, {
+    key: '_setPrefixKeyNavSetting',
+    value: function _setPrefixKeyNavSetting(usePrefixNav) {
+      // config is void during startup, signifying no config yet
+      if (usePrefixNav == null || !this._fileTreeController) {
+        return;
+      }
+      this._fileTreeController.setUsePrefixNav(usePrefixNav);
     }
-    this._fileTreeController.setUsePrefixNav(usePrefixNav);
-  }
-
-  _setUsePreviewTabs(usePreviewTabs: ?boolean): void {
-    // config is void during startup, signifying no config yet
-    if (usePreviewTabs == null) {
-      return;
+  }, {
+    key: '_setUsePreviewTabs',
+    value: function _setUsePreviewTabs(usePreviewTabs) {
+      // config is void during startup, signifying no config yet
+      if (usePreviewTabs == null) {
+        return;
+      }
+      this._fileTreeController.setUsePreviewTabs(usePreviewTabs);
     }
-    this._fileTreeController.setUsePreviewTabs(usePreviewTabs);
-  }
+  }, {
+    key: 'getContextMenu',
+    value: function getContextMenu() {
+      (0, _assert2.default)(this._fileTreeController);
+      return this._fileTreeController.getContextMenu();
+    }
+  }, {
+    key: '_deactivate',
+    value: function _deactivate() {
+      // Guard against deactivate being called twice
+      this._fileTreeController.destroy();
+    }
+  }]);
 
-  getContextMenu(): FileTreeContextMenu {
-    invariant(this._fileTreeController);
-    return this._fileTreeController.getContextMenu();
-  }
+  return Activation;
+})();
 
-  _deactivate() {
-    // Guard against deactivate being called twice
-    this._fileTreeController.destroy();
-  }
-}
-
-let activation: ?Activation;
-let deserializedState: ?FileTreeControllerState;
-let onDidActivateDisposable: IDisposable;
-let sideBarDisposable: ?IDisposable;
+var activation = undefined;
+var deserializedState = undefined;
+var onDidActivateDisposable = undefined;
+var sideBarDisposable = undefined;
 
 function disableTreeViewPackage() {
   if (!atom.packages.isPackageDisabled('tree-view')) {
@@ -247,8 +261,8 @@ function disableTreeViewPackage() {
   }
 }
 
-export function activate(state: ?FileTreeControllerState): void {
-  invariant(activation == null);
+function activate(state) {
+  (0, _assert2.default)(activation == null);
   // Disable Atom's bundled 'tree-view' package. If this activation is happening during the
   // normal startup activation, the `onDidActivateInitialPackages` handler below must unload the
   // 'tree-view' because it will have been loaded during startup.
@@ -258,7 +272,7 @@ export function activate(state: ?FileTreeControllerState): void {
   // package's `activate` is called during an traversal of all initial packages to activate.
   // Disabling a package during the traversal has no effect if this is a startup load because
   // `PackageManager` does not re-load the list of packages to activate after each iteration.
-  onDidActivateDisposable = atom.packages.onDidActivateInitialPackages(() => {
+  onDidActivateDisposable = atom.packages.onDidActivateInitialPackages(function () {
     disableTreeViewPackage();
     onDidActivateDisposable.dispose();
   });
@@ -267,11 +281,10 @@ export function activate(state: ?FileTreeControllerState): void {
   activation = new Activation(deserializedState);
 }
 
-export function deactivate() {
+function deactivate() {
   // Re-enable Atom's bundled 'tree-view' when this package is disabled to leave the user's
   // environment the way this package found it.
-  if (nuclideFeatures.isFeatureDisabled('nuclide-file-tree')
-    && atom.packages.isPackageDisabled('tree-view')) {
+  if (_libNuclideFeatures.nuclideFeatures.isFeatureDisabled('nuclide-file-tree') && atom.packages.isPackageDisabled('tree-view')) {
     atom.packages.enablePackage('tree-view');
   }
 
@@ -289,51 +302,50 @@ export function deactivate() {
   }
 }
 
-export function serialize(): ?FileTreeControllerState {
+function serialize() {
   if (activation) {
     return activation.serialize();
   }
 }
 
-export function getContextMenuForFileTree(): FileTreeContextMenu {
-  invariant(activation);
+function getContextMenuForFileTree() {
+  (0, _assert2.default)(activation);
   return activation.getContextMenu();
 }
 
-export function consumeNuclideSideBar(sidebar: NuclideSideBarService): IDisposable {
-  invariant(activation);
+function consumeNuclideSideBar(sidebar) {
+  (0, _assert2.default)(activation);
 
   sidebar.registerView({
-    getComponent() { return require('../components/FileTreeSidebarComponent'); },
-    onDidShow() {
+    getComponent: function getComponent() {
+      return require('../components/FileTreeSidebarComponent');
+    },
+    onDidShow: function onDidShow() {
       // If "Reveal File on Switch" is enabled, ensure the scroll position is synced to where the
       // user expects when the side bar shows the file tree.
-      if (featureConfig.get(REVEAL_FILE_ON_SWITCH_SETTING)) {
-        atom.commands.dispatch(
-          atom.views.getView(atom.workspace),
-          'nuclide-file-tree:reveal-active-file'
-        );
+      if (_nuclideFeatureConfig2.default.get(REVEAL_FILE_ON_SWITCH_SETTING)) {
+        atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-file-tree:reveal-active-file');
       }
     },
     title: 'File Tree',
     toggleCommand: 'nuclide-file-tree:toggle',
-    viewId: 'nuclide-file-tree',
+    viewId: 'nuclide-file-tree'
   });
 
-  sideBarDisposable = new Disposable(() => {
+  sideBarDisposable = new _atom.Disposable(function () {
     sidebar.destroyView('nuclide-file-tree');
   });
 
   return sideBarDisposable;
 }
 
-export function consumeWorkingSetsStore(workingSetsStore: WorkingSetsStore): ?IDisposable {
-  invariant(activation);
+function consumeWorkingSetsStore(workingSetsStore) {
+  (0, _assert2.default)(activation);
 
   return activation.consumeWorkingSetsStore(workingSetsStore);
 }
 
-export function consumeCwdApi(cwdApi: CwdApi): IDisposable {
-  invariant(activation);
+function consumeCwdApi(cwdApi) {
+  (0, _assert2.default)(activation);
   return activation.consumeCwdApi(cwdApi);
 }

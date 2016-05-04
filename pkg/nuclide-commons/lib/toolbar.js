@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.farEndPriority = farEndPriority;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +13,19 @@
  * the root directory of this source tree.
  */
 
-import semver from 'semver';
+var _semver = require('semver');
 
-function isVersionOrLater(packageName: string, version: string): boolean {
-  const pkg = atom.packages.getLoadedPackage(packageName);
+var _semver2 = _interopRequireDefault(_semver);
+
+function isVersionOrLater(packageName, version) {
+  var pkg = atom.packages.getLoadedPackage(packageName);
   if (pkg == null || pkg.metadata == null || pkg.metadata.version == null) {
     return false;
   }
-  return semver.gte(pkg.metadata.version, version);
+  return _semver2.default.gte(pkg.metadata.version, version);
 }
 
-export function farEndPriority(priority: number): number {
+function farEndPriority(priority) {
   if (isVersionOrLater('tool-bar', '0.3.0')) {
     // New versions of the toolbar use negative priority to push icons to the far end.
     return -priority;

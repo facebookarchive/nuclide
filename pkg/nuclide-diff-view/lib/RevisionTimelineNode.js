@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,61 +10,87 @@
  * the root directory of this source tree.
  */
 
-import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-type RevisionTimelineNodeProps = {
-  revision: RevisionInfo;
-  index: number;
-  selectedIndex: number;
-  revisionsCount: number;
-  onSelectionChange: (revisionInfo: RevisionInfo) => any;
-};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export default class RevisionTimelineNode extends React.Component {
-  props: RevisionTimelineNodeProps;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  constructor(props: RevisionTimelineNodeProps) {
-    super(props);
-    (this: any).handleSelectionChange = this.handleSelectionChange.bind(this);
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _classnames = require('classnames');
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
+var _reactForAtom = require('react-for-atom');
+
+var RevisionTimelineNode = (function (_React$Component) {
+  _inherits(RevisionTimelineNode, _React$Component);
+
+  function RevisionTimelineNode(props) {
+    _classCallCheck(this, RevisionTimelineNode);
+
+    _get(Object.getPrototypeOf(RevisionTimelineNode.prototype), 'constructor', this).call(this, props);
+    this.handleSelectionChange = this.handleSelectionChange.bind(this);
   }
 
-  handleSelectionChange(): void {
-    this.props.onSelectionChange(this.props.revision);
-  }
-
-  render(): React.Element {
-    const {revision, index, selectedIndex, revisionsCount} = this.props;
-    const {bookmarks, title, author, hash, date} = revision;
-    const revisionClassName = classnames('revision revision--actionable', {
-      'selected-revision-inrange': index < selectedIndex,
-      'selected-revision-end': index === selectedIndex,
-      'selected-revision-last': index === revisionsCount - 1,
-    });
-    const tooltip = `${hash}: ${title}
-  Author: ${author}
-  Date: ${date}`;
-
-    const bookmarksToRender = bookmarks.slice();
-    if (index === 0 && revisionsCount > 1 && bookmarks.length === 0) {
-      bookmarksToRender.push('HEAD');
+  _createClass(RevisionTimelineNode, [{
+    key: 'handleSelectionChange',
+    value: function handleSelectionChange() {
+      this.props.onSelectionChange(this.props.revision);
     }
-    if (index === revisionsCount - 1 && bookmarks.length === 0) {
-      bookmarksToRender.push('BASE');
-    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var revision = _props.revision;
+      var index = _props.index;
+      var selectedIndex = _props.selectedIndex;
+      var revisionsCount = _props.revisionsCount;
+      var bookmarks = revision.bookmarks;
+      var title = revision.title;
+      var author = revision.author;
+      var hash = revision.hash;
+      var date = revision.date;
 
-    return (
-      <div
-        className={revisionClassName}
-        onClick={this.handleSelectionChange}
-        title={tooltip}>
-        <div className="revision-bubble" />
-        <div className="revision-label">
-          {title} ({bookmarksToRender.length ? bookmarksToRender.join(',') : hash})
-        </div>
-      </div>
-    );
-  }
-}
+      var revisionClassName = (0, _classnames2.default)('revision revision--actionable', {
+        'selected-revision-inrange': index < selectedIndex,
+        'selected-revision-end': index === selectedIndex,
+        'selected-revision-last': index === revisionsCount - 1
+      });
+      var tooltip = hash + ': ' + title + '\n  Author: ' + author + '\n  Date: ' + date;
+
+      var bookmarksToRender = bookmarks.slice();
+      if (index === 0 && revisionsCount > 1 && bookmarks.length === 0) {
+        bookmarksToRender.push('HEAD');
+      }
+      if (index === revisionsCount - 1 && bookmarks.length === 0) {
+        bookmarksToRender.push('BASE');
+      }
+
+      return _reactForAtom.React.createElement(
+        'div',
+        {
+          className: revisionClassName,
+          onClick: this.handleSelectionChange,
+          title: tooltip },
+        _reactForAtom.React.createElement('div', { className: 'revision-bubble' }),
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'revision-label' },
+          title,
+          ' (',
+          bookmarksToRender.length ? bookmarksToRender.join(',') : hash,
+          ')'
+        )
+      );
+    }
+  }]);
+
+  return RevisionTimelineNode;
+})(_reactForAtom.React.Component);
+
+exports.default = RevisionTimelineNode;
+module.exports = exports.default;

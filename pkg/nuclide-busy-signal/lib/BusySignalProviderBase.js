@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,106 +10,121 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalMessage} from './types';
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {Observable} from 'rxjs';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {Disposable, CompositeDisposable} from 'atom';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {Subject} from 'rxjs';
-import invariant from 'assert';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-import {promises} from '../../nuclide-commons';
+var _atom = require('atom');
 
-export type MessageDisplayOptions = {
-  onlyForFile: NuclideUri;
-};
+var _rxjs = require('rxjs');
 
-export class BusySignalProviderBase {
-  _nextId: number;
-  _messages: Subject<BusySignalMessage>;
-  messages: Observable<BusySignalMessage>;
+var _assert = require('assert');
 
-  constructor() {
+var _assert2 = _interopRequireDefault(_assert);
+
+var _nuclideCommons = require('../../nuclide-commons');
+
+var BusySignalProviderBase = (function () {
+  function BusySignalProviderBase() {
+    _classCallCheck(this, BusySignalProviderBase);
+
     this._nextId = 0;
-    this._messages = new Subject();
+    this._messages = new _rxjs.Subject();
     this.messages = this._messages;
   }
 
   /**
    * Displays the message until the returned disposable is disposed
    */
-  displayMessage(message: string, optionsArg?: MessageDisplayOptions): IDisposable {
-    // Reassign as const so the type refinement holds in the closure below
-    const options = optionsArg;
-    if (options == null || options.onlyForFile == null) {
-      return this._displayMessage(message);
-    }
 
-    let displayedDisposable = null;
-    const disposeDisplayed = () => {
-      if (displayedDisposable != null) {
-        displayedDisposable.dispose();
-        displayedDisposable = null;
+  _createClass(BusySignalProviderBase, [{
+    key: 'displayMessage',
+    value: function displayMessage(message, optionsArg) {
+      var _this = this;
+
+      // Reassign as const so the type refinement holds in the closure below
+      var options = optionsArg;
+      if (options == null || options.onlyForFile == null) {
+        return this._displayMessage(message);
       }
-    };
-    return new CompositeDisposable(
-      atom.workspace.observeActivePaneItem(item => {
-        if (item != null &&
-            typeof item.getPath === 'function' &&
-            item.getPath() === options.onlyForFile) {
+
+      var displayedDisposable = null;
+      var disposeDisplayed = function disposeDisplayed() {
+        if (displayedDisposable != null) {
+          displayedDisposable.dispose();
+          displayedDisposable = null;
+        }
+      };
+      return new _atom.CompositeDisposable(atom.workspace.observeActivePaneItem(function (item) {
+        if (item != null && typeof item.getPath === 'function' && item.getPath() === options.onlyForFile) {
           if (displayedDisposable == null) {
-            displayedDisposable = this._displayMessage(message);
+            displayedDisposable = _this._displayMessage(message);
           }
         } else {
           disposeDisplayed();
         }
       }),
       // We can't add displayedDisposable directly because its value may change.
-      new Disposable(disposeDisplayed)
-    );
-  }
-
-  _displayMessage(message: string): IDisposable {
-    const {busy, done} = this._nextMessagePair(message);
-    this._messages.next(busy);
-    return new Disposable(() => {
-      this._messages.next(done);
-    });
-  }
-
-  _nextMessagePair(message: string): {busy: BusySignalMessage; done: BusySignalMessage} {
-    const busy = {
-      status: 'busy',
-      id: this._nextId,
-      message,
-    };
-    const done = {
-      status: 'done',
-      id: this._nextId,
-    };
-    this._nextId++;
-    return {busy, done};
-  }
-
-  /**
-   * Publishes a 'busy' message with the given string. Marks it as done when the
-   * promise returned by the given function is resolved or rejected.
-   *
-   * Used to indicate that some work is ongoing while the given asynchronous
-   * function executes.
-   */
-  reportBusy<T>(message: string, f: () => Promise<T>, options?: MessageDisplayOptions): Promise<T> {
-    const messageRemover = this.displayMessage(message, options);
-    const removeMessage = messageRemover.dispose.bind(messageRemover);
-    try {
-      const returnValue = f();
-      invariant(promises.isPromise(returnValue));
-      returnValue.then(removeMessage, removeMessage);
-      return returnValue;
-    } catch (e) {
-      removeMessage();
-      throw e;
+      new _atom.Disposable(disposeDisplayed));
     }
-  }
-}
+  }, {
+    key: '_displayMessage',
+    value: function _displayMessage(message) {
+      var _this2 = this;
+
+      var _nextMessagePair2 = this._nextMessagePair(message);
+
+      var busy = _nextMessagePair2.busy;
+      var done = _nextMessagePair2.done;
+
+      this._messages.next(busy);
+      return new _atom.Disposable(function () {
+        _this2._messages.next(done);
+      });
+    }
+  }, {
+    key: '_nextMessagePair',
+    value: function _nextMessagePair(message) {
+      var busy = {
+        status: 'busy',
+        id: this._nextId,
+        message: message
+      };
+      var done = {
+        status: 'done',
+        id: this._nextId
+      };
+      this._nextId++;
+      return { busy: busy, done: done };
+    }
+
+    /**
+     * Publishes a 'busy' message with the given string. Marks it as done when the
+     * promise returned by the given function is resolved or rejected.
+     *
+     * Used to indicate that some work is ongoing while the given asynchronous
+     * function executes.
+     */
+  }, {
+    key: 'reportBusy',
+    value: function reportBusy(message, f, options) {
+      var messageRemover = this.displayMessage(message, options);
+      var removeMessage = messageRemover.dispose.bind(messageRemover);
+      try {
+        var returnValue = f();
+        (0, _assert2.default)(_nuclideCommons.promises.isPromise(returnValue));
+        returnValue.then(removeMessage, removeMessage);
+        return returnValue;
+      } catch (e) {
+        removeMessage();
+        throw e;
+      }
+    }
+  }]);
+
+  return BusySignalProviderBase;
+})();
+
+exports.BusySignalProviderBase = BusySignalProviderBase;

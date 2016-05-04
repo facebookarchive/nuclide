@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,52 +10,64 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from '../../hyperclick';
-import type {Outline, OutlineProvider} from '../../nuclide-outline-view';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {CompositeDisposable} from 'atom';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.provideOutlines = provideOutlines;
+exports.getHyperclickProvider = getHyperclickProvider;
 
-import {getOutline} from './JSONOutlineProvider';
-import {getNPMHyperclickProvider} from './NPMHyperclickProvider';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-class Activation {
-  _disposables: CompositeDisposable;
+var _atom = require('atom');
 
-  constructor(state: ?Object) {
-    this._disposables = new CompositeDisposable();
+var _JSONOutlineProvider = require('./JSONOutlineProvider');
+
+var _NPMHyperclickProvider = require('./NPMHyperclickProvider');
+
+var Activation = (function () {
+  function Activation(state) {
+    _classCallCheck(this, Activation);
+
+    this._disposables = new _atom.CompositeDisposable();
   }
 
-  dispose(): void {
-    this._disposables.dispose();
-  }
-}
+  _createClass(Activation, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }]);
 
-let activation: ?Activation = null;
+  return Activation;
+})();
 
-export function activate(state: ?Object): void {
+var activation = null;
+
+function activate(state) {
   if (activation == null) {
     activation = new Activation(state);
   }
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function provideOutlines(): OutlineProvider {
+function provideOutlines() {
   return {
     grammarScopes: ['source.json'],
     priority: 1,
     name: 'Nuclide JSON',
-    getOutline(editor: atom$TextEditor): Promise<?Outline> {
-      return Promise.resolve(getOutline(editor.getText()));
-    },
+    getOutline: function getOutline(editor) {
+      return Promise.resolve((0, _JSONOutlineProvider.getOutline)(editor.getText()));
+    }
   };
 }
 
-export function getHyperclickProvider(): HyperclickProvider {
-  return getNPMHyperclickProvider();
+function getHyperclickProvider() {
+  return (0, _NPMHyperclickProvider.getNPMHyperclickProvider)();
 }

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,22 +8,23 @@
  * the root directory of this source tree.
  */
 
-import type {CallExpression} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _constantsMarkers = require('../../constants/markers');
 
-import markers from '../../constants/markers';
-import printCommaSeparatedNodes from '../common/printCommaSeparatedNodes';
-import wrapExpression from '../../wrappers/simple/wrapExpression';
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
-function printCallExpression(print: Print, node: CallExpression): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    print(node.callee),
-    markers.noBreak,
-    '(',
-    printCommaSeparatedNodes(print, node.arguments),
-    ')',
-  ]);
+var _commonPrintCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
+
+var _commonPrintCommaSeparatedNodes2 = _interopRequireDefault(_commonPrintCommaSeparatedNodes);
+
+var _wrappersSimpleWrapExpression = require('../../wrappers/simple/wrapExpression');
+
+var _wrappersSimpleWrapExpression2 = _interopRequireDefault(_wrappersSimpleWrapExpression);
+
+function printCallExpression(print, node) {
+  var wrap = function wrap(x) {
+    return (0, _wrappersSimpleWrapExpression2.default)(print, node, x);
+  };
+  return wrap([print(node.callee), _constantsMarkers2.default.noBreak, '(', (0, _commonPrintCommaSeparatedNodes2.default)(print, node.arguments), ')']);
 }
 
 module.exports = printCallExpression;

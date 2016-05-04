@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,33 +8,33 @@
  * the root directory of this source tree.
  */
 
-import type {Collection} from '../types/ast';
+var _NewLine = require('./NewLine');
 
-import NewLine from './NewLine';
+var _NewLine2 = _interopRequireDefault(_NewLine);
 
-function printRoot(root: Collection): string {
+function printRoot(root) {
   // Print the new source.
-  let output = root.toSource({quote: 'single', trailingComma: true});
+  var output = root.toSource({ quote: 'single', trailingComma: true });
 
   // Remove all new lines between require fences that are not explicitly added
   // by the NewLine module.
-  const lines = output.split('\n');
-  let first = lines.length - 1;
-  let last = 0;
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].indexOf(NewLine.literal) !== -1) {
+  var lines = output.split('\n');
+  var first = lines.length - 1;
+  var last = 0;
+  for (var i = 0; i < lines.length; i++) {
+    if (lines[i].indexOf(_NewLine2.default.literal) !== -1) {
       first = Math.min(first, i);
       last = Math.max(last, i);
     }
   }
 
   // Filter out the empty lines that are between NewLine markers.
-  output = lines
-    .filter((line, index) => line || index < first || index > last)
-    .join('\n');
+  output = lines.filter(function (line, index) {
+    return line || index < first || index > last;
+  }).join('\n');
 
   // Remove the NewLine markers.
-  output = NewLine.replace(output);
+  output = _NewLine2.default.replace(output);
 
   // Remove new lines at the start.
   output = output.replace(/^\n{1,}/, '');

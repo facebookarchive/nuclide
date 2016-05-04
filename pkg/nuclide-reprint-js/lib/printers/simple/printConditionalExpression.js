@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +8,19 @@
  * the root directory of this source tree.
  */
 
-import type {ConditionalExpression} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _constantsMarkers = require('../../constants/markers');
 
-import markers from '../../constants/markers';
-import wrapExpression from '../../wrappers/simple/wrapExpression';
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
-function printConditionalExpression(
-  print: Print,
-  node: ConditionalExpression,
-): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    markers.openScope,
-    markers.scopeIndent,
-    print(node.test),
-    markers.scopeSpaceBreak,
-    '?',
-    markers.noBreak,
-    markers.space,
-    print(node.consequent),
-    markers.scopeSpaceBreak,
-    ':',
-    markers.noBreak,
-    markers.space,
-    print(node.alternate),
-    markers.scopeDedent,
-    markers.closeScope,
-  ]);
+var _wrappersSimpleWrapExpression = require('../../wrappers/simple/wrapExpression');
+
+var _wrappersSimpleWrapExpression2 = _interopRequireDefault(_wrappersSimpleWrapExpression);
+
+function printConditionalExpression(print, node) {
+  var wrap = function wrap(x) {
+    return (0, _wrappersSimpleWrapExpression2.default)(print, node, x);
+  };
+  return wrap([_constantsMarkers2.default.openScope, _constantsMarkers2.default.scopeIndent, print(node.test), _constantsMarkers2.default.scopeSpaceBreak, '?', _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, print(node.consequent), _constantsMarkers2.default.scopeSpaceBreak, ':', _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, print(node.alternate), _constantsMarkers2.default.scopeDedent, _constantsMarkers2.default.closeScope]);
 }
 
 module.exports = printConditionalExpression;

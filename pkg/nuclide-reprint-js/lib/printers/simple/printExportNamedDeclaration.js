@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,106 +8,77 @@
  * the root directory of this source tree.
  */
 
-import type {ExportNamedDeclaration} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import invariant from 'assert';
-import markers from '../../constants/markers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printExportNamedDeclaration(
-  print: Print,
-  node: ExportNamedDeclaration,
-): Lines {
-  let parts = [
-    'export',
-    markers.noBreak,
-    markers.space,
-  ];
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+function printExportNamedDeclaration(print, node) {
+  var parts = ['export', _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space];
 
   if (node.declaration) {
-    parts = parts.concat([
-      print(node.declaration),
-    ]);
-  // $FlowFixMe(kad): add exportKind to ast-types-flow
+    parts = parts.concat([print(node.declaration)]);
+    // $FlowFixMe(kad): add exportKind to ast-types-flow
   } else if (node.exportKind === 'type') {
-    // If there is a declaration and the kind is 'type', the declaration must
-    // be a type alias of some sort which already includes the word 'type'.
-    parts = parts.concat([
-      'type',
-      markers.noBreak,
-      markers.space,
-    ]);
-  }
+      // If there is a declaration and the kind is 'type', the declaration must
+      // be a type alias of some sort which already includes the word 'type'.
+      parts = parts.concat(['type', _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space]);
+    }
 
   if (node.specifiers.length > 0) {
-    invariant(!node.declaration, 'Cannot have both declaration and specifiers');
-    let open = false;
-    const specifiers = node.specifiers.map((specifier, i, arr) => {
-      let subParts = [];
+    (function () {
+      (0, _assert2.default)(!node.declaration, 'Cannot have both declaration and specifiers');
+      var open = false;
+      var specifiers = node.specifiers.map(function (specifier, i, arr) {
+        var subParts = [];
 
-      // Check if we should open.
-      if (!open && specifier.type === 'ExportSpecifier') {
-        open = true;
-        subParts = subParts.concat([
-          '{',
-        ]);
-      }
+        // Check if we should open.
+        if (!open && specifier.type === 'ExportSpecifier') {
+          open = true;
+          subParts = subParts.concat(['{']);
+        }
 
-      // Print the specifier.
-      subParts = subParts.concat([
-        markers.noBreak,
-        print(specifier),
-        markers.noBreak,
-      ]);
+        // Print the specifier.
+        subParts = subParts.concat([_constantsMarkers2.default.noBreak, print(specifier), _constantsMarkers2.default.noBreak]);
 
-      // Check if we should close. Note that it's important we be able to open
-      // and then close within a single cycle of this loop.
-      if (open && i === arr.length - 1) {
-        open = false;
-        subParts = subParts.concat([
-          '}',
-        ]);
-      }
+        // Check if we should close. Note that it's important we be able to open
+        // and then close within a single cycle of this loop.
+        if (open && i === arr.length - 1) {
+          open = false;
+          subParts = subParts.concat(['}']);
+        }
 
-      // Check if we should add a comma and space.
-      if (i < arr.length - 1) {
-        subParts = subParts.concat([
-          markers.comma,
-          markers.space,
-        ]);
-      }
+        // Check if we should add a comma and space.
+        if (i < arr.length - 1) {
+          subParts = subParts.concat([_constantsMarkers2.default.comma, _constantsMarkers2.default.space]);
+        }
 
-      return subParts;
-    });
-    invariant(!open, 'Export specifiers somehow left open');
-    parts = parts.concat(specifiers);
+        return subParts;
+      });
+      (0, _assert2.default)(!open, 'Export specifiers somehow left open');
+      parts = parts.concat(specifiers);
+    })();
   }
 
   if (node.source) {
-    invariant(!node.declaration, 'Declarations cannot have a source');
-    parts = parts.concat([
-      markers.noBreak,
-      markers.space,
-      'from',
-      markers.noBreak,
-      markers.space,
-      print(node.source),
-    ]);
+    (0, _assert2.default)(!node.declaration, 'Declarations cannot have a source');
+    parts = parts.concat([_constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, 'from', _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, print(node.source)]);
   }
 
   if (!node.declaration) {
-    parts = parts.concat([
-      markers.noBreak,
-      ';',
-    ]);
+    parts = parts.concat([_constantsMarkers2.default.noBreak, ';']);
   }
 
-  parts = parts.concat([
-    markers.hardBreak,
-  ]);
+  parts = parts.concat([_constantsMarkers2.default.hardBreak]);
 
-  return flatten(parts);
+  return (0, _utilsFlatten2.default)(parts);
 }
 
 module.exports = printExportNamedDeclaration;

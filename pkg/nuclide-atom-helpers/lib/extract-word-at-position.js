@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +8,20 @@
  * the root directory of this source tree.
  */
 
-function extractWordAtPosition(
-    editor: atom$TextEditor,
-    position: atom$Point,
-    wordRegex: ?RegExp): ?{wordMatch: Array<string>; range: atom$Range} {
+function extractWordAtPosition(editor, position, wordRegex) {
   if (!wordRegex) {
     wordRegex = editor.getLastCursor().wordRegExp();
   }
-  const buffer = editor.getBuffer();
-  const {row, column} = position;
-  const rowRange = buffer.rangeForRow(row);
-  let matchData;
+  var buffer = editor.getBuffer();
+  var row = position.row;
+  var column = position.column;
+
+  var rowRange = buffer.rangeForRow(row);
+  var matchData = undefined;
   // Extract the expression from the row text.
-  buffer.scanInRange(wordRegex, rowRange, data => {
-    const {range} = data;
+  buffer.scanInRange(wordRegex, rowRange, function (data) {
+    var range = data.range;
+
     if (range.containsPoint(position)) {
       matchData = data;
     }
@@ -34,7 +33,7 @@ function extractWordAtPosition(
   if (matchData) {
     return {
       wordMatch: matchData.match,
-      range: matchData.range,
+      range: matchData.range
     };
   } else {
     return null;

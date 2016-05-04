@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +8,16 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {QualifiedTypeIdentifier} from 'ast-types-flow';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printQualifiedTypeIdentifier(
-  print: Print,
-  node: QualifiedTypeIdentifier,
-): Lines {
-  return flatten([
-    print(node.qualification),
-    markers.noBreak,
-    '.',
-    markers.noBreak,
-    print(node.id),
-  ]);
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+function printQualifiedTypeIdentifier(print, node) {
+  return (0, _utilsFlatten2.default)([print(node.qualification), _constantsMarkers2.default.noBreak, '.', _constantsMarkers2.default.noBreak, print(node.id)]);
 }
 
 module.exports = printQualifiedTypeIdentifier;

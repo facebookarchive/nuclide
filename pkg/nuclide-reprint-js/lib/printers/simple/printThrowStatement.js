@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +8,19 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {ThrowStatement} from 'ast-types-flow';
+var _constantsMarkers = require('../../constants/markers');
 
-import markers from '../../constants/markers';
-import wrapStatement from '../../wrappers/simple/wrapStatement';
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
-function printThrowStatement(print: Print, node: ThrowStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
-  return wrap([
-    'throw',
-    print(node.argument),
-    markers.noBreak,
-    ';',
-  ]);
+var _wrappersSimpleWrapStatement = require('../../wrappers/simple/wrapStatement');
+
+var _wrappersSimpleWrapStatement2 = _interopRequireDefault(_wrappersSimpleWrapStatement);
+
+function printThrowStatement(print, node) {
+  var wrap = function wrap(x) {
+    return (0, _wrappersSimpleWrapStatement2.default)(print, node, x);
+  };
+  return wrap(['throw', print(node.argument), _constantsMarkers2.default.noBreak, ';']);
 }
 
 module.exports = printThrowStatement;

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +8,22 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {SwitchStatement} from 'ast-types-flow';
+var _constantsMarkers = require('../../constants/markers');
 
-import markers from '../../constants/markers';
-import wrapStatement from '../../wrappers/simple/wrapStatement';
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
-function printSwitchStatement(print: Print, node: SwitchStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
-  return wrap([
-    markers.hardBreak,
-    'switch (',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    print(node.discriminant),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-    ') {',
-    markers.hardBreak,
-    markers.indent,
-    node.cases.map(caseNode => print(caseNode)),
-    markers.noBreak, // Squash the last breaks.
-    '',
-    markers.dedent,
-    markers.hardBreak,
-    '}',
-  ]);
+var _wrappersSimpleWrapStatement = require('../../wrappers/simple/wrapStatement');
+
+var _wrappersSimpleWrapStatement2 = _interopRequireDefault(_wrappersSimpleWrapStatement);
+
+function printSwitchStatement(print, node) {
+  var wrap = function wrap(x) {
+    return (0, _wrappersSimpleWrapStatement2.default)(print, node, x);
+  };
+  return wrap([_constantsMarkers2.default.hardBreak, 'switch (', _constantsMarkers2.default.openScope, _constantsMarkers2.default.scopeIndent, _constantsMarkers2.default.scopeBreak, print(node.discriminant), _constantsMarkers2.default.scopeBreak, _constantsMarkers2.default.scopeDedent, _constantsMarkers2.default.closeScope, ') {', _constantsMarkers2.default.hardBreak, _constantsMarkers2.default.indent, node.cases.map(function (caseNode) {
+    return print(caseNode);
+  }), _constantsMarkers2.default.noBreak, // Squash the last breaks.
+  '', _constantsMarkers2.default.dedent, _constantsMarkers2.default.hardBreak, '}']);
 }
 
 module.exports = printSwitchStatement;

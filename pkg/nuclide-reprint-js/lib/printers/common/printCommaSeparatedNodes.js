@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +8,21 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printCommaSeparatedNodes(print: Print, nodes: Array<any>): Lines {
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+function printCommaSeparatedNodes(print, nodes) {
   if (nodes.length === 0) {
     return [];
   }
-  return flatten([
-    markers.openScope,
-    markers.scopeIndent,
-    flatten(nodes.map((node, i, arr) => {
-      return flatten([
-        i > 0 ? [markers.space] : [],
-        markers.scopeBreak,
-        print(node),
-        i === arr.length - 1 ? [markers.scopeComma] : ',',
-        '',
-      ]);
-    })),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-  ]);
+  return (0, _utilsFlatten2.default)([_constantsMarkers2.default.openScope, _constantsMarkers2.default.scopeIndent, (0, _utilsFlatten2.default)(nodes.map(function (node, i, arr) {
+    return (0, _utilsFlatten2.default)([i > 0 ? [_constantsMarkers2.default.space] : [], _constantsMarkers2.default.scopeBreak, print(node), i === arr.length - 1 ? [_constantsMarkers2.default.scopeComma] : ',', '']);
+  })), _constantsMarkers2.default.scopeBreak, _constantsMarkers2.default.scopeDedent, _constantsMarkers2.default.closeScope]);
 }
 
 module.exports = printCommaSeparatedNodes;

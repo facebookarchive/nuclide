@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,92 +10,105 @@
  * the root directory of this source tree.
  */
 
-import type {Message} from './types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {track} from '../../nuclide-analytics';
-import Rx from 'rxjs';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-type EventNames = {
-  start: string;
-  stop: string;
-  restart: string;
-  error: string;
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _nuclideAnalytics = require('../../nuclide-analytics');
+
+var _rxjs = require('rxjs');
+
+var _rxjs2 = _interopRequireDefault(_rxjs);
 
 /**
  * A utility for writing packages that tail log sources. Just give it a cold observable and let it
  * handle the rest.
  */
-export class LogTailer {
-  _eventNames: EventNames;
-  _subscription: ?rx$ISubscription;
-  _input$: Rx.Observable<Message>;
-  _message$: Rx.Subject<Message>;
-  _running: boolean;
 
-  constructor(input$: Rx.Observable<Message>, eventNames: EventNames) {
+var LogTailer = (function () {
+  function LogTailer(input$, eventNames) {
+    _classCallCheck(this, LogTailer);
+
     this._input$ = input$;
     this._eventNames = eventNames;
-    this._message$ = new Rx.Subject();
+    this._message$ = new _rxjs2.default.Subject();
     this._running = false;
   }
 
-  start(): void {
-    this._start();
-  }
-
-  stop(): void {
-    this._stop();
-  }
-
-  restart(): void {
-    track(this._eventNames.restart);
-    this._stop(false);
-    this._start(false);
-  }
-
-  _start(trackCall: boolean = true): void {
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
-
-    if (this._running) {
-      return;
+  _createClass(LogTailer, [{
+    key: 'start',
+    value: function start() {
+      this._start();
     }
-    if (trackCall) {
-      track(this._eventNames.start);
+  }, {
+    key: 'stop',
+    value: function stop() {
+      this._stop();
     }
-
-    this._running = true;
-
-    if (this._subscription != null) {
-      this._subscription.unsubscribe();
+  }, {
+    key: 'restart',
+    value: function restart() {
+      (0, _nuclideAnalytics.track)(this._eventNames.restart);
+      this._stop(false);
+      this._start(false);
     }
+  }, {
+    key: '_start',
+    value: function _start() {
+      var _this = this;
 
-    this._subscription = this._input$.subscribe(
-      message => { this._message$.next(message); },
-      err => {
-        this._stop(false);
-        track(this._eventNames.error, {message: err.message});
+      var trackCall = arguments.length <= 0 || arguments[0] === undefined ? true : arguments[0];
+
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
+
+      if (this._running) {
+        return;
       }
-    );
-  }
+      if (trackCall) {
+        (0, _nuclideAnalytics.track)(this._eventNames.start);
+      }
 
-  _stop(trackCall: boolean = true): void {
-    if (!this._running) {
-      return;
+      this._running = true;
+
+      if (this._subscription != null) {
+        this._subscription.unsubscribe();
+      }
+
+      this._subscription = this._input$.subscribe(function (message) {
+        _this._message$.next(message);
+      }, function (err) {
+        _this._stop(false);
+        (0, _nuclideAnalytics.track)(_this._eventNames.error, { message: err.message });
+      });
     }
-    if (trackCall) {
-      track(this._eventNames.stop);
+  }, {
+    key: '_stop',
+    value: function _stop() {
+      var trackCall = arguments.length <= 0 || arguments[0] === undefined ? true : arguments[0];
+
+      if (!this._running) {
+        return;
+      }
+      if (trackCall) {
+        (0, _nuclideAnalytics.track)(this._eventNames.stop);
+      }
+
+      this._running = false;
+
+      if (this._disposables != null) {
+        this._disposables.dispose();
+      }
     }
-
-    this._running = false;
-
-    if (this._disposables != null) {
-      this._disposables.dispose();
+  }, {
+    key: 'getMessages',
+    value: function getMessages() {
+      return this._message$.asObservable();
     }
-  }
+  }]);
 
-  getMessages(): Rx.Observable<Message> {
-    return this._message$.asObservable();
-  }
+  return LogTailer;
+})();
 
-}
+exports.LogTailer = LogTailer;

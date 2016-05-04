@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,52 +10,49 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+exports.getPathOfLocation = getPathOfLocation;
+exports.getLocationOfEditor = getLocationOfEditor;
 
-import invariant from 'assert';
-import {getScrollTop} from '../../nuclide-atom-helpers';
+var editorOfLocation = _asyncToGenerator(function* (location) {
+  if (location.type === 'uri') {
+    return yield atom.workspace.open(location.uri, {
+      searchAllPanes: true
+    });
+  } else {
+    (0, _assert2.default)(location.type === 'editor');
+    var _editor = location.editor;
+    var pane = atom.workspace.paneForItem(_editor);
+    (0, _assert2.default)(pane != null);
+    pane.activateItem(_editor);
+    pane.activate();
+    return _editor;
+  }
+});
+
+exports.editorOfLocation = editorOfLocation;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _nuclideAtomHelpers = require('../../nuclide-atom-helpers');
 
 // A location which can be navigated to. Includes the file (as uri for closed files and as
 // atom$TextEditor for open files) as well as the cursor position and scroll.
-export type UriLocation = {
-  type: 'uri';
-  uri: NuclideUri;
-  bufferPosition: atom$Point;
-  scrollTop: number;
-};
-export type EditorLocation = {
-  type: 'editor';
-  editor: atom$TextEditor;
-  bufferPosition: atom$Point;
-  scrollTop: number;
-};
-export type Location = EditorLocation | UriLocation;
 
-export function getPathOfLocation(location: Location): ?NuclideUri {
+function getPathOfLocation(location) {
   return location.type === 'uri' ? location.uri : location.editor.getPath();
 }
 
-export function getLocationOfEditor(editor: atom$TextEditor): EditorLocation {
+function getLocationOfEditor(editor) {
   return {
     type: 'editor',
-    editor,
+    editor: editor,
     bufferPosition: editor.getCursorBufferPosition(),
-    scrollTop: getScrollTop(editor),
+    scrollTop: (0, _nuclideAtomHelpers.getScrollTop)(editor)
   };
-}
-
-export async function editorOfLocation(location: Location) : Promise<atom$TextEditor> {
-  if (location.type === 'uri') {
-    return await atom.workspace.open(location.uri, {
-      searchAllPanes: true,
-    });
-  } else {
-    invariant(location.type === 'editor');
-    const editor = location.editor;
-    const pane = atom.workspace.paneForItem(editor);
-    invariant(pane != null);
-    pane.activateItem(editor);
-    pane.activate();
-    return editor;
-  }
 }

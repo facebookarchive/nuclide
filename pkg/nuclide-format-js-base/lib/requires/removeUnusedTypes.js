@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,60 +8,65 @@
  * the root directory of this source tree.
  */
 
-import type {Collection, Node, NodePath} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
+var _utilsGetDeclaredIdentifiers = require('../utils/getDeclaredIdentifiers');
 
-import getDeclaredIdentifiers from '../utils/getDeclaredIdentifiers';
-import getDeclaredTypes from '../utils/getDeclaredTypes';
-import getNonDeclarationTypes from '../utils/getNonDeclarationTypes';
-import isGlobal from '../utils/isGlobal';
-import jscs from 'jscodeshift';
+var _utilsGetDeclaredIdentifiers2 = _interopRequireDefault(_utilsGetDeclaredIdentifiers);
 
-const {match} = jscs;
+var _utilsGetDeclaredTypes = require('../utils/getDeclaredTypes');
 
-type ConfigEntry = {
-  searchTerms: [any, Object];
-  filters: Array<(path: NodePath) => boolean>;
-  getNames: (node: Node) => Array<string>;
-};
+var _utilsGetDeclaredTypes2 = _interopRequireDefault(_utilsGetDeclaredTypes);
+
+var _utilsGetNonDeclarationTypes = require('../utils/getNonDeclarationTypes');
+
+var _utilsGetNonDeclarationTypes2 = _interopRequireDefault(_utilsGetNonDeclarationTypes);
+
+var _utilsIsGlobal = require('../utils/isGlobal');
+
+var _utilsIsGlobal2 = _interopRequireDefault(_utilsIsGlobal);
+
+var _jscodeshift = require('jscodeshift');
+
+var _jscodeshift2 = _interopRequireDefault(_jscodeshift);
+
+var match = _jscodeshift2.default.match;
 
 // These are the things we should try to remove.
-const CONFIG: Array<ConfigEntry> = [
-  // import type Foo from 'Foo';
-  {
-    searchTerms: [
-      jscs.ImportDeclaration,
-      {importKind: 'type'},
-    ],
-    filters: [isGlobal],
-    getNames: node => node.specifiers.map(specifier => specifier.local.name),
-  },
-];
+var CONFIG = [
+// import type Foo from 'Foo';
+{
+  searchTerms: [_jscodeshift2.default.ImportDeclaration, { importKind: 'type' }],
+  filters: [_utilsIsGlobal2.default],
+  getNames: function getNames(node) {
+    return node.specifiers.map(function (specifier) {
+      return specifier.local.name;
+    });
+  }
+}];
 
-function removeUnusedTypes(root: Collection, options: SourceOptions): void {
-  const declared = getDeclaredIdentifiers(root, options);
-  const used = getNonDeclarationTypes(root, options);
-  const nonTypeImport = getDeclaredTypes(
-    root,
-    options,
-    [path => !isTypeImportDeclaration(path.node)]
-  );
+function removeUnusedTypes(root, options) {
+  var declared = (0, _utilsGetDeclaredIdentifiers2.default)(root, options);
+  var used = (0, _utilsGetNonDeclarationTypes2.default)(root, options);
+  var nonTypeImport = (0, _utilsGetDeclaredTypes2.default)(root, options, [function (path) {
+    return !isTypeImportDeclaration(path.node);
+  }]);
   // Remove things based on the config.
-  CONFIG.forEach(config => {
-    root
-      .find(config.searchTerms[0], config.searchTerms[1])
-      .filter(path => config.filters.every(filter => filter(path)))
-      .filter(path => config.getNames(path.node).every(
-        name => !used.has(name) || declared.has(name) || nonTypeImport.has(name)
-      ))
-      .remove();
+  CONFIG.forEach(function (config) {
+    root.find(config.searchTerms[0], config.searchTerms[1]).filter(function (path) {
+      return config.filters.every(function (filter) {
+        return filter(path);
+      });
+    }).filter(function (path) {
+      return config.getNames(path.node).every(function (name) {
+        return !used.has(name) || declared.has(name) || nonTypeImport.has(name);
+      });
+    }).remove();
   });
 }
 
-function isTypeImportDeclaration(node: NodePath): boolean {
+function isTypeImportDeclaration(node) {
   return match(node, {
     type: 'ImportDeclaration',
-    importKind: 'type',
+    importKind: 'type'
   });
 }
 

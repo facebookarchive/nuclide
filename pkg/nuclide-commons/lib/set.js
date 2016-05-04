@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.intersect = intersect;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,6 +11,8 @@
  * the root directory of this source tree.
  */
 
-export function intersect<T>(a: Set<T>, b: Set<T>): Set<T> {
-  return new Set(Array.from(a).filter(e => b.has(e)));
+function intersect(a, b) {
+  return new Set(Array.from(a).filter(function (e) {
+    return b.has(e);
+  }));
 }

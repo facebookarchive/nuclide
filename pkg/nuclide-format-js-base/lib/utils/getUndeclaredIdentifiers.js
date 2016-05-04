@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +8,23 @@
  * the root directory of this source tree.
  */
 
-import type {Collection} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
+var _getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
 
-import getDeclaredIdentifiers from './getDeclaredIdentifiers';
-import getNonDeclarationIdentifiers from './getNonDeclarationIdentifiers';
+var _getDeclaredIdentifiers2 = _interopRequireDefault(_getDeclaredIdentifiers);
+
+var _getNonDeclarationIdentifiers = require('./getNonDeclarationIdentifiers');
+
+var _getNonDeclarationIdentifiers2 = _interopRequireDefault(_getNonDeclarationIdentifiers);
 
 /**
  * This will get a list of all identifiers that are used but undeclared.
  */
-function getUndeclaredIdentifiers(
-  root: Collection,
-  options: SourceOptions
-): Set<string> {
-  const declared = getDeclaredIdentifiers(root, options);
-  const undeclared = getNonDeclarationIdentifiers(root);
+function getUndeclaredIdentifiers(root, options) {
+  var declared = (0, _getDeclaredIdentifiers2.default)(root, options);
+  var undeclared = (0, _getNonDeclarationIdentifiers2.default)(root);
   // now remove anything that was declared
-  for (const name of declared) {
-    undeclared.delete(name);
+  for (var _name of declared) {
+    undeclared.delete(_name);
   }
   return undeclared;
 }

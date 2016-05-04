@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,86 +8,95 @@
  * the root directory of this source tree.
  */
 
-import type {Collection, Node, NodePath} from '../types/ast';
+var _utilsFirstNode = require('../utils/FirstNode');
 
-import FirstNode from '../utils/FirstNode';
-import NewLine from '../utils/NewLine';
-import {compareStrings, isCapitalized} from '../utils/StringUtils';
-import hasOneRequireDeclaration from '../utils/hasOneRequireDeclaration';
-import isGlobal from '../utils/isGlobal';
-import isRequireExpression from '../utils/isRequireExpression';
-import jscs from 'jscodeshift';
-import reprintRequire from '../utils/reprintRequire';
+var _utilsFirstNode2 = _interopRequireDefault(_utilsFirstNode);
 
-type ConfigEntry = {
-  searchTerms: [any, Object];
-  filters: Array<(path: NodePath) => boolean>;
-  comparator: (node1: Node, node2: Node) => number;
-  mapper: (node: Node) => Node;
-};
+var _utilsNewLine = require('../utils/NewLine');
+
+var _utilsNewLine2 = _interopRequireDefault(_utilsNewLine);
+
+var _utilsStringUtils = require('../utils/StringUtils');
+
+var _utilsHasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
+
+var _utilsHasOneRequireDeclaration2 = _interopRequireDefault(_utilsHasOneRequireDeclaration);
+
+var _utilsIsGlobal = require('../utils/isGlobal');
+
+var _utilsIsGlobal2 = _interopRequireDefault(_utilsIsGlobal);
+
+var _utilsIsRequireExpression = require('../utils/isRequireExpression');
+
+var _utilsIsRequireExpression2 = _interopRequireDefault(_utilsIsRequireExpression);
+
+var _jscodeshift = require('jscodeshift');
+
+var _jscodeshift2 = _interopRequireDefault(_jscodeshift);
+
+var _utilsReprintRequire = require('../utils/reprintRequire');
+
+var _utilsReprintRequire2 = _interopRequireDefault(_utilsReprintRequire);
 
 // Set up a config to easily add require formats
-const CONFIG: Array<ConfigEntry> = [
-  // Handle type imports
-  {
-    searchTerms: [
-      jscs.ImportDeclaration,
-      {importKind: 'type'},
-    ],
-    filters: [
-      isGlobal,
-    ],
-    comparator: (node1, node2) => compareStrings(
-      node1.specifiers[0].local.name,
-      node2.specifiers[0].local.name
-    ),
-    mapper: node => reprintRequire(node),
+var CONFIG = [
+// Handle type imports
+{
+  searchTerms: [_jscodeshift2.default.ImportDeclaration, { importKind: 'type' }],
+  filters: [_utilsIsGlobal2.default],
+  comparator: function comparator(node1, node2) {
+    return (0, _utilsStringUtils.compareStrings)(node1.specifiers[0].local.name, node2.specifiers[0].local.name);
   },
+  mapper: function mapper(node) {
+    return (0, _utilsReprintRequire2.default)(node);
+  }
+},
 
-  // Handle side effects, e.g: `require('monkey-patches');`
-  {
-    searchTerms: [jscs.ExpressionStatement],
-    filters: [
-      isGlobal,
-      path => isRequireExpression(path.node),
-    ],
-    comparator: (node1, node2) => compareStrings(
-      node1.expression.arguments[0].value,
-      node2.expression.arguments[0].value
-    ),
-    mapper: node => reprintRequire(node),
+// Handle side effects, e.g: `require('monkey-patches');`
+{
+  searchTerms: [_jscodeshift2.default.ExpressionStatement],
+  filters: [_utilsIsGlobal2.default, function (path) {
+    return (0, _utilsIsRequireExpression2.default)(path.node);
+  }],
+  comparator: function comparator(node1, node2) {
+    return (0, _utilsStringUtils.compareStrings)(node1.expression.arguments[0].value, node2.expression.arguments[0].value);
   },
+  mapper: function mapper(node) {
+    return (0, _utilsReprintRequire2.default)(node);
+  }
+},
 
-  // Handle UpperCase requires, e.g: `require('UpperCase');`
-  {
-    searchTerms: [jscs.VariableDeclaration],
-    filters: [
-      isGlobal,
-      path => isValidRequireDeclaration(path.node),
-      path => isCapitalized(getDeclarationName(path.node)),
-    ],
-    comparator: (node1, node2) => compareStrings(
-      getDeclarationName(node1),
-      getDeclarationName(node2)
-    ),
-    mapper: node => reprintRequire(node),
+// Handle UpperCase requires, e.g: `require('UpperCase');`
+{
+  searchTerms: [_jscodeshift2.default.VariableDeclaration],
+  filters: [_utilsIsGlobal2.default, function (path) {
+    return isValidRequireDeclaration(path.node);
+  }, function (path) {
+    return (0, _utilsStringUtils.isCapitalized)(getDeclarationName(path.node));
+  }],
+  comparator: function comparator(node1, node2) {
+    return (0, _utilsStringUtils.compareStrings)(getDeclarationName(node1), getDeclarationName(node2));
   },
+  mapper: function mapper(node) {
+    return (0, _utilsReprintRequire2.default)(node);
+  }
+},
 
-  // Handle lowerCase requires, e.g: `require('lowerCase');`
-  {
-    searchTerms: [jscs.VariableDeclaration],
-    filters: [
-      isGlobal,
-      path => isValidRequireDeclaration(path.node),
-      path => !isCapitalized(getDeclarationName(path.node)),
-    ],
-    comparator: (node1, node2) => compareStrings(
-      getDeclarationName(node1),
-      getDeclarationName(node2)
-    ),
-    mapper: node => reprintRequire(node),
+// Handle lowerCase requires, e.g: `require('lowerCase');`
+{
+  searchTerms: [_jscodeshift2.default.VariableDeclaration],
+  filters: [_utilsIsGlobal2.default, function (path) {
+    return isValidRequireDeclaration(path.node);
+  }, function (path) {
+    return !(0, _utilsStringUtils.isCapitalized)(getDeclarationName(path.node));
+  }],
+  comparator: function comparator(node1, node2) {
+    return (0, _utilsStringUtils.compareStrings)(getDeclarationName(node1), getDeclarationName(node2));
   },
-];
+  mapper: function mapper(node) {
+    return (0, _utilsReprintRequire2.default)(node);
+  }
+}];
 
 /**
  * This formats requires based on the left hand side of the require, unless it
@@ -105,67 +113,77 @@ const CONFIG: Array<ConfigEntry> = [
  * are sorted and then the first identifier in each of patterns is used for
  * sorting.
  */
-function formatRequires(root: Collection): void {
-  const first = FirstNode.get(root);
+function formatRequires(root) {
+  var first = _utilsFirstNode2.default.get(root);
   if (!first) {
     return;
   }
-  const _first = first; // For flow.
+  var _first = first; // For flow.
 
   // Create groups of requires from each config
-  const nodeGroups = CONFIG.map(config => {
-    const paths = root
-      .find(config.searchTerms[0], config.searchTerms[1])
-      .filter(path => config.filters.every(filter => filter(path)));
+  var nodeGroups = CONFIG.map(function (config) {
+    var paths = root.find(config.searchTerms[0], config.searchTerms[1]).filter(function (path) {
+      return config.filters.every(function (filter) {
+        return filter(path);
+      });
+    });
 
     // Save the underlying nodes before removing the paths
-    const nodes = paths.nodes().slice();
-    paths.forEach(path => jscs(path).remove());
-    return nodes.map(node => config.mapper(node)).sort(config.comparator);
+    var nodes = paths.nodes().slice();
+    paths.forEach(function (path) {
+      return (0, _jscodeshift2.default)(path).remove();
+    });
+    return nodes.map(function (node) {
+      return config.mapper(node);
+    }).sort(config.comparator);
   });
 
   // Build all the nodes we want to insert, then add them
-  const allGroups = [[NewLine.statement]];
-  nodeGroups.forEach(group => allGroups.push(group, [NewLine.statement]));
-  const nodesToInsert = Array.prototype.concat.apply([], allGroups);
-  nodesToInsert.reverse().forEach(node => _first.insertBefore(node));
+  var allGroups = [[_utilsNewLine2.default.statement]];
+  nodeGroups.forEach(function (group) {
+    return allGroups.push(group, [_utilsNewLine2.default.statement]);
+  });
+  var nodesToInsert = Array.prototype.concat.apply([], allGroups);
+  nodesToInsert.reverse().forEach(function (node) {
+    return _first.insertBefore(node);
+  });
 }
 
 /**
  * Tests if a variable declaration is a valid require declaration.
  */
-function isValidRequireDeclaration(node: Node): boolean {
-  if (!hasOneRequireDeclaration(node)) {
+function isValidRequireDeclaration(node) {
+  if (!(0, _utilsHasOneRequireDeclaration2.default)(node)) {
     return false;
   }
-  const declaration = node.declarations[0];
-  if (jscs.Identifier.check(declaration.id)) {
+  var declaration = node.declarations[0];
+  if (_jscodeshift2.default.Identifier.check(declaration.id)) {
     return true;
   }
-  if (jscs.ObjectPattern.check(declaration.id)) {
-    return declaration.id.properties.every(
-      prop => prop.shorthand && jscs.Identifier.check(prop.key)
-    );
+  if (_jscodeshift2.default.ObjectPattern.check(declaration.id)) {
+    return declaration.id.properties.every(function (prop) {
+      return prop.shorthand && _jscodeshift2.default.Identifier.check(prop.key);
+    });
   }
-  if (jscs.ArrayPattern.check(declaration.id)) {
-    return declaration.id.elements.every(
-      element => jscs.Identifier.check(element)
-    );
+  if (_jscodeshift2.default.ArrayPattern.check(declaration.id)) {
+    return declaration.id.elements.every(function (element) {
+      return _jscodeshift2.default.Identifier.check(element);
+    });
   }
   return false;
 }
 
-function getDeclarationName(node: Node): string {
-  const declaration = node.declarations[0];
-  if (jscs.Identifier.check(declaration.id)) {
+function getDeclarationName(node) {
+  var declaration = node.declarations[0];
+  if (_jscodeshift2.default.Identifier.check(declaration.id)) {
     return declaration.id.name;
   }
   // Order by the first property name in the object pattern.
-  if (jscs.ObjectPattern.check(declaration.id)) {
+  if (_jscodeshift2.default.ObjectPattern.check(declaration.id)) {
     return declaration.id.properties[0].key.name;
   }
   // Order by the first element name in the array pattern.
-  if (jscs.ArrayPattern.check(declaration.id)) {
+  if (_jscodeshift2.default.ArrayPattern.check(declaration.id)) {
     return declaration.id.elements[0].name;
   }
   return '';

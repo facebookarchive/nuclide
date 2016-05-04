@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.toJsString = toJsString;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -15,6 +17,7 @@
  * escaped in JS.
  * See http://timelessrepo.com/json-isnt-a-javascript-subset
  */
-export function toJsString(str: string): string {
+
+function toJsString(str) {
   return JSON.stringify(str).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
 }

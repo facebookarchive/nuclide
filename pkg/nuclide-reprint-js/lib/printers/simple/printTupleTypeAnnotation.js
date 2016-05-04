@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +8,16 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {TupleTypeAnnotation} from 'ast-types-flow';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import printCommaSeparatedNodes from '../common/printCommaSeparatedNodes';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printTupleTypeAnnotation(
-  print: Print,
-  node: TupleTypeAnnotation,
-): Lines {
-  return flatten([
-    '[',
-    printCommaSeparatedNodes(print, node.types),
-    ']',
-  ]);
+var _commonPrintCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
+
+var _commonPrintCommaSeparatedNodes2 = _interopRequireDefault(_commonPrintCommaSeparatedNodes);
+
+function printTupleTypeAnnotation(print, node) {
+  return (0, _utilsFlatten2.default)(['[', (0, _commonPrintCommaSeparatedNodes2.default)(print, node.types), ']']);
 }
 
 module.exports = printTupleTypeAnnotation;

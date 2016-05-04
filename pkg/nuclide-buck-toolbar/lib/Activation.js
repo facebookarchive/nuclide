@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,112 +8,130 @@
  * the root directory of this source tree.
  */
 
-import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {CompositeDisposable, Disposable} from 'atom';
-import buckIcon from './buckIcon';
-import BuckToolbar from './BuckToolbar';
-import BuckToolbarActions from './BuckToolbarActions';
-import BuckToolbarStore from './BuckToolbarStore';
-import {Dispatcher} from 'flux';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-class Activation {
-  _actions: BuckToolbarActions;
-  _disposables: CompositeDisposable;
-  _store: BuckToolbarStore;
+var _atom = require('atom');
 
-  constructor(rawState: ?Object) {
+var _buckIcon = require('./buckIcon');
+
+var _buckIcon2 = _interopRequireDefault(_buckIcon);
+
+var _BuckToolbar = require('./BuckToolbar');
+
+var _BuckToolbar2 = _interopRequireDefault(_BuckToolbar);
+
+var _BuckToolbarActions = require('./BuckToolbarActions');
+
+var _BuckToolbarActions2 = _interopRequireDefault(_BuckToolbarActions);
+
+var _BuckToolbarStore = require('./BuckToolbarStore');
+
+var _BuckToolbarStore2 = _interopRequireDefault(_BuckToolbarStore);
+
+var _flux = require('flux');
+
+var _reactForAtom = require('react-for-atom');
+
+var Activation = (function () {
+  function Activation(rawState) {
+    var _this = this;
+
+    _classCallCheck(this, Activation);
+
     rawState = rawState || {};
-    this._disposables = new CompositeDisposable(
-      atom.commands.add(
-        'body',
-        'nuclide-buck-toolbar:toggle',
-        () => { this._actions.togglePanelVisibility(); },
-      ),
-    );
+    this._disposables = new _atom.CompositeDisposable(atom.commands.add('body', 'nuclide-buck-toolbar:toggle', function () {
+      _this._actions.togglePanelVisibility();
+    }));
 
-    const initialState = {
+    var initialState = {
       buildTarget: rawState.buildTarget || null,
       isPanelVisible: rawState.isPanelVisible || false,
-      isReactNativeServerMode: rawState.isReactNativeServerMode || false,
+      isReactNativeServerMode: rawState.isReactNativeServerMode || false
     };
 
-    const dispatcher = new Dispatcher();
-    this._store = new BuckToolbarStore(dispatcher, initialState);
+    var dispatcher = new _flux.Dispatcher();
+    this._store = new _BuckToolbarStore2.default(dispatcher, initialState);
     this._disposables.add(this._store);
-    this._actions = new BuckToolbarActions(dispatcher);
+    this._actions = new _BuckToolbarActions2.default(dispatcher);
 
-    const container = document.createElement('div');
-    ReactDOM.render(
-      <BuckToolbar store={this._store} actions={this._actions} />,
-      container,
-    );
-    const panel = atom.workspace.addTopPanel({
+    var container = document.createElement('div');
+    _reactForAtom.ReactDOM.render(_reactForAtom.React.createElement(_BuckToolbar2.default, { store: this._store, actions: this._actions }), container);
+    var panel = atom.workspace.addTopPanel({
       item: container,
       // Increase priority (default is 100) to ensure this toolbar comes after the 'tool-bar'
       // package's toolbar. Hierarchically the controlling toolbar should be above, and practically
       // this ensures the popover in this build toolbar stacks on top of other UI.
-      priority: 200,
+      priority: 200
     });
-    this._disposables.add(
-      new Disposable(() => {
-        ReactDOM.unmountComponentAtNode(container);
-        panel.destroy();
-      }),
-    );
+    this._disposables.add(new _atom.Disposable(function () {
+      _reactForAtom.ReactDOM.unmountComponentAtNode(container);
+      panel.destroy();
+    }));
 
-    const target = 'atom-workspace';
-    this._disposables.add(
-      atom.commands.add(target, 'nuclide-buck-toolbar:build', () => this._actions.build()),
-      atom.commands.add(target, 'nuclide-buck-toolbar:debug', () => this._actions.debug()),
-      atom.commands.add(target, 'nuclide-buck-toolbar:run', () => this._actions.run()),
-      atom.commands.add(target, 'nuclide-buck-toolbar:test', () => this._actions.test()),
-    );
+    var target = 'atom-workspace';
+    this._disposables.add(atom.commands.add(target, 'nuclide-buck-toolbar:build', function () {
+      return _this._actions.build();
+    }), atom.commands.add(target, 'nuclide-buck-toolbar:debug', function () {
+      return _this._actions.debug();
+    }), atom.commands.add(target, 'nuclide-buck-toolbar:run', function () {
+      return _this._actions.run();
+    }), atom.commands.add(target, 'nuclide-buck-toolbar:test', function () {
+      return _this._actions.test();
+    }));
   }
 
-  consumeToolBar(getToolBar: (group: string) => Object): void {
-    const toolBar = getToolBar('nuclide-buck-toolbar');
-    toolBar.addSpacer({
-      priority: 499,
-    });
-    const toolBarButton = toolBar.addButton({
-      callback: 'nuclide-buck-toolbar:toggle',
-      tooltip: 'Toggle Buck Toolbar',
-      iconset: 'ion',
-      priority: 500,
-    })[0];
-    toolBarButton.innerHTML = buckIcon();
-    this._disposables.add(
-      new Disposable(() => { toolBar.removeItems(); }),
-    );
-  }
+  _createClass(Activation, [{
+    key: 'consumeToolBar',
+    value: function consumeToolBar(getToolBar) {
+      var toolBar = getToolBar('nuclide-buck-toolbar');
+      toolBar.addSpacer({
+        priority: 499
+      });
+      var toolBarButton = toolBar.addButton({
+        callback: 'nuclide-buck-toolbar:toggle',
+        tooltip: 'Toggle Buck Toolbar',
+        iconset: 'ion',
+        priority: 500
+      })[0];
+      toolBarButton.innerHTML = (0, _buckIcon2.default)();
+      this._disposables.add(new _atom.Disposable(function () {
+        toolBar.removeItems();
+      }));
+    }
+  }, {
+    key: 'getDistractionFreeModeProvider',
+    value: function getDistractionFreeModeProvider() {
+      var _this2 = this;
 
-  getDistractionFreeModeProvider(): DistractionFreeModeProvider {
-    return {
-      name: 'nuclide-buck-toolbar',
-      isVisible: () => this._store.isPanelVisible(),
-      toggle: () => {
-        this._actions.togglePanelVisibility();
-      },
-    };
-  }
+      return {
+        name: 'nuclide-buck-toolbar',
+        isVisible: function isVisible() {
+          return _this2._store.isPanelVisible();
+        },
+        toggle: function toggle() {
+          _this2._actions.togglePanelVisibility();
+        }
+      };
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }, {
+    key: 'serialize',
+    value: function serialize() {
+      return {
+        buildTarget: this._store.getBuildTarget(),
+        isPanelVisible: this._store.isPanelVisible(),
+        isReactNativeServerMode: this._store.isReactNativeServerMode()
+      };
+    }
+  }]);
 
-  dispose(): void {
-    this._disposables.dispose();
-  }
-
-  serialize(): Object {
-    return {
-      buildTarget: this._store.getBuildTarget(),
-      isPanelVisible: this._store.isPanelVisible(),
-      isReactNativeServerMode: this._store.isReactNativeServerMode(),
-    };
-  }
-
-}
+  return Activation;
+})();
 
 module.exports = Activation;

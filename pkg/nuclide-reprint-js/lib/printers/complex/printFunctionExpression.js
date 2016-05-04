@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,58 +8,41 @@
  * the root directory of this source tree.
  */
 
-import type {Context, Lines, Print} from '../../types/common';
-import type {FunctionExpression} from 'ast-types-flow';
+var _constantsMarkers = require('../../constants/markers');
 
-import markers from '../../constants/markers';
-import printCommaSeparatedNodes from '../common/printCommaSeparatedNodes';
-import wrapExpression from '../../wrappers/simple/wrapExpression';
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
-function printFunctionExpression(
-  print: Print,
-  node: FunctionExpression,
-  context: Context,
-): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  const last = context.path.last();
+var _commonPrintCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
 
-  let parts = [];
+var _commonPrintCommaSeparatedNodes2 = _interopRequireDefault(_commonPrintCommaSeparatedNodes);
+
+var _wrappersSimpleWrapExpression = require('../../wrappers/simple/wrapExpression');
+
+var _wrappersSimpleWrapExpression2 = _interopRequireDefault(_wrappersSimpleWrapExpression);
+
+function printFunctionExpression(print, node, context) {
+  var wrap = function wrap(x) {
+    return (0, _wrappersSimpleWrapExpression2.default)(print, node, x);
+  };
+  var last = context.path.last();
+
+  var parts = [];
   if (last && last.type === 'MethodDefinition') {
     // Method definitions don't have the function keyword.
   } else if (last && last.type === 'Property' && last.method) {
-    // Properties that are methods don't use the function keyword.
-  } else {
-    parts = parts.concat([
-      node.async ? ['async', markers.space, markers.noBreak] : markers.empty,
-      'function',
-      node.generator ? '*' : markers.empty,
-      markers.noBreak,
-    ]);
-  }
+      // Properties that are methods don't use the function keyword.
+    } else {
+        parts = parts.concat([node.async ? ['async', _constantsMarkers2.default.space, _constantsMarkers2.default.noBreak] : _constantsMarkers2.default.empty, 'function', node.generator ? '*' : _constantsMarkers2.default.empty, _constantsMarkers2.default.noBreak]);
+      }
 
   if (node.id) {
-    const id = node.id;
-    parts = parts.concat([
-      markers.space,
-      print(id),
-    ]);
+    var id = node.id;
+    parts = parts.concat([_constantsMarkers2.default.space, print(id)]);
   }
 
-  parts = parts.concat([
-    node.typeParameters
-      ? [markers.noBreak, print(node.typeParameters)]
-      : markers.empty,
-    markers.noBreak,
-    '(',
-    printCommaSeparatedNodes(print, node.params),
-    ')',
-    node.returnType ? print(node.returnType) : markers.empty,
-    markers.space,
-    print(node.body),
-    // This is to squash any breaks from the body.
-    markers.noBreak,
-    '',
-  ]);
+  parts = parts.concat([node.typeParameters ? [_constantsMarkers2.default.noBreak, print(node.typeParameters)] : _constantsMarkers2.default.empty, _constantsMarkers2.default.noBreak, '(', (0, _commonPrintCommaSeparatedNodes2.default)(print, node.params), ')', node.returnType ? print(node.returnType) : _constantsMarkers2.default.empty, _constantsMarkers2.default.space, print(node.body),
+  // This is to squash any breaks from the body.
+  _constantsMarkers2.default.noBreak, '']);
 
   return wrap(parts);
 }

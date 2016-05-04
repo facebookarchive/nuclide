@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +10,15 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+exports.getFileSystemContents = getFileSystemContents;
 
-import invariant from 'assert';
-import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _nuclideClient = require('../../nuclide-client');
 
 /**
  * Reads the file contents and returns empty string if the file doesn't exist
@@ -20,19 +26,18 @@ import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
  *
  * If another error is encontered, it's thrown to be handled up the stack.
  */
-export function getFileSystemContents(filePath: NuclideUri): Promise<string> {
-  const fileSystemService = getFileSystemServiceByNuclideUri(filePath);
-  invariant(fileSystemService);
-  const localFilePath = require('../../nuclide-remote-uri').getPath(filePath);
-  return fileSystemService.readFile(localFilePath)
-    .then(
-      contents => contents.toString('utf8'),
-      error => {
-        if (error.code === 'ENOENT') {
-          // The file is deleted in the current dirty status.
-          return '';
-        }
-        throw error;
-      }
-    );
+
+function getFileSystemContents(filePath) {
+  var fileSystemService = (0, _nuclideClient.getFileSystemServiceByNuclideUri)(filePath);
+  (0, _assert2.default)(fileSystemService);
+  var localFilePath = require('../../nuclide-remote-uri').getPath(filePath);
+  return fileSystemService.readFile(localFilePath).then(function (contents) {
+    return contents.toString('utf8');
+  }, function (error) {
+    if (error.code === 'ENOENT') {
+      // The file is deleted in the current dirty status.
+      return '';
+    }
+    throw error;
+  });
 }

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,35 +8,24 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {TemplateLiteral} from 'ast-types-flow';
+var _constantsMarkers = require('../../constants/markers');
 
-import markers from '../../constants/markers';
-import wrapExpression from '../../wrappers/simple/wrapExpression';
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
-function printTemplateLiteral(print: Print, node: TemplateLiteral): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  const {quasis, expressions} = node;
-  return wrap([
-    '`',
-    quasis.map((q, i) => [
-      i > 0
-        ? [
-          '${',
-          markers.openScope,
-          markers.scopeIndent,
-          markers.scopeBreak,
-          print(expressions[i - 1]),
-          markers.scopeBreak,
-          markers.scopeDedent,
-          markers.closeScope,
-          '}',
-        ]
-        : markers.empty,
-      print(q),
-    ]),
-    '`',
-  ]);
+var _wrappersSimpleWrapExpression = require('../../wrappers/simple/wrapExpression');
+
+var _wrappersSimpleWrapExpression2 = _interopRequireDefault(_wrappersSimpleWrapExpression);
+
+function printTemplateLiteral(print, node) {
+  var wrap = function wrap(x) {
+    return (0, _wrappersSimpleWrapExpression2.default)(print, node, x);
+  };
+  var quasis = node.quasis;
+  var expressions = node.expressions;
+
+  return wrap(['`', quasis.map(function (q, i) {
+    return [i > 0 ? ['${', _constantsMarkers2.default.openScope, _constantsMarkers2.default.scopeIndent, _constantsMarkers2.default.scopeBreak, print(expressions[i - 1]), _constantsMarkers2.default.scopeBreak, _constantsMarkers2.default.scopeDedent, _constantsMarkers2.default.closeScope, '}'] : _constantsMarkers2.default.empty, print(q)];
+  }), '`']);
 }
 
 module.exports = printTemplateLiteral;

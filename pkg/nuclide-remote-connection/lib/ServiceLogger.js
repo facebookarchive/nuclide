@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,99 +14,108 @@
  * the root directory of this source tree.
  */
 
-import {CircularBuffer} from '../../nuclide-commons';
-import {Emitter} from 'atom';
+var _nuclideCommons = require('../../nuclide-commons');
 
-export type Item = {
-  date: Date;
-  service: string;
-  method: string;
-  isLocal: boolean;
-  args: Array<mixed>;
-  argInfo: ?string;
-};
+var _atom = require('atom');
 
-const NEW_ITEM_EVENT = 'NEW_ITEM_EVENT';
+var NEW_ITEM_EVENT = 'NEW_ITEM_EVENT';
 
-export default class ServiceLogger {
-  _buffer: CircularBuffer<Item>;
-  _emitter: Emitter;
+var ServiceLogger = (function () {
+  function ServiceLogger() {
+    _classCallCheck(this, ServiceLogger);
 
-  constructor() {
-    this._buffer = new CircularBuffer(10000);
-    this._emitter = new Emitter();
+    this._buffer = new _nuclideCommons.CircularBuffer(10000);
+    this._emitter = new _atom.Emitter();
   }
 
-  logServiceCall(
-    service: string,
-    method: string,
-    isLocal: boolean,
-    ...args: Array<mixed>
-  ): void {
-    const item: Item = {
-      date: new Date(),
-      service,
-      method,
-      isLocal,
-      args,
-      argInfo: createArgInfo(service, method, args),
-    };
-    this._buffer.push(item);
-    this._emitter.emit(NEW_ITEM_EVENT, item);
-  }
+  /**
+   * THIS IS A HACK.
+   *
+   * Takes the info for a service call and returns a string description of the relevant arguments.
+   *
+   * For now, we centralize some logic about how particular service calls should be formatted for
+   * display in log messages and the Nuclide Service Monitor. Rather than annotate which arguments
+   * in a service call should be included in the serialized version of the args (that are used for
+   * debugging), we take a shortcut and just hardcode the logic for each service call of interest,
+   * for now. It's not smart to choose a naive heuristic like "log all string arguments" because
+   * services such as Flow take the unsaved file contents as an argument, which would clutter our
+   * logs.
+   */
 
-  // $FlowIssue: t6187050
-  [Symbol.iterator](): Iterator<Item> {
-    return this._buffer[Symbol.iterator]();
-  }
+  _createClass(ServiceLogger, [{
+    key: 'logServiceCall',
+    value: function logServiceCall(service, method, isLocal) {
+      for (var _len = arguments.length, args = Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
+        args[_key - 3] = arguments[_key];
+      }
 
-  onNewItem(callback: (item: Item) => mixed): IDisposable {
-    return this._emitter.on(NEW_ITEM_EVENT, callback);
-  }
+      var item = {
+        date: new Date(),
+        service: service,
+        method: method,
+        isLocal: isLocal,
+        args: args,
+        argInfo: createArgInfo(service, method, args)
+      };
+      this._buffer.push(item);
+      this._emitter.emit(NEW_ITEM_EVENT, item);
+    }
 
-  dispose() {
-    this._emitter.dispose();
-  }
-}
+    // $FlowIssue: t6187050
+  }, {
+    key: Symbol.iterator,
+    value: function value() {
+      return this._buffer[Symbol.iterator]();
+    }
+  }, {
+    key: 'onNewItem',
+    value: function onNewItem(callback) {
+      return this._emitter.on(NEW_ITEM_EVENT, callback);
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._emitter.dispose();
+    }
+  }]);
 
-/**
- * THIS IS A HACK.
- *
- * Takes the info for a service call and returns a string description of the relevant arguments.
- *
- * For now, we centralize some logic about how particular service calls should be formatted for
- * display in log messages and the Nuclide Service Monitor. Rather than annotate which arguments
- * in a service call should be included in the serialized version of the args (that are used for
- * debugging), we take a shortcut and just hardcode the logic for each service call of interest,
- * for now. It's not smart to choose a naive heuristic like "log all string arguments" because
- * services such as Flow take the unsaved file contents as an argument, which would clutter our
- * logs.
- */
-function createArgInfo(service: string, method: string, args: Array<any>): ?string {
+  return ServiceLogger;
+})();
+
+exports.default = ServiceLogger;
+function createArgInfo(service, method, args) {
   if (service === 'ArcanistBaseService') {
     // All Arcanist services take a file.
-    return /* fileName */ args[0];
+    return (/* fileName */args[0]
+    );
   } else if (service === 'BuckUtils') {
     if (method === 'getBuckProjectRoot') {
-      return /* fileName */ args[0];
+      return (/* fileName */args[0]
+      );
     }
   } else if (service === 'FlowService') {
     if (method === 'findDefinition') {
-      return /* fileName */ args[0];
+      return (/* fileName */args[0]
+      );
     } else if (method === 'findDiagnostics') {
-      return /* fileName */ args[0];
+      return (/* fileName */args[0]
+      );
     } else if (method === 'getType') {
-      return /* fileName */ args[0];
+      return (/* fileName */args[0]
+      );
     } else if (method === 'getAutocompleteSuggestions') {
-      return /* fileName */ args[0];
+      return (/* fileName */args[0]
+      );
     }
   } else if (service === 'HgService') {
     if (method === 'fetchDiffInfo') {
-      return /* fileName */ args[0];
+      return (/* fileName */args[0]
+      );
     } else if (method === 'fetchStatuses') {
-      const filePaths: Array<string> = args[0];
+      var filePaths = args[0];
       return filePaths.join(';');
     }
   }
   return null;
 }
+module.exports = exports.default;

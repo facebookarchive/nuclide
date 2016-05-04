@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,39 +10,33 @@
  * the root directory of this source tree.
  */
 
-import type Immutable from 'immutable';
-import type Commands from './Commands';
+var _bind = Function.prototype.bind;
+exports.default = createAtomCommands;
 
-import {CompositeDisposable} from 'atom';
-import normalizeEventString from './normalizeEventString';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export default function createAtomCommands(
-  gadgets: Immutable.Map,
-  appCommands: Commands,
-): IDisposable {
-  const commands = gadgets
-    .valueSeq()
-    .flatMap(gadget => ([
-      atom.commands.add(
-        'atom-workspace',
-        formatCommandName(gadget.gadgetId, 'Show'),
-        () => appCommands.showGadget(gadget.gadgetId),
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        formatCommandName(gadget.gadgetId, 'Hide'),
-        () => appCommands.hideGadget(gadget.gadgetId),
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        formatCommandName(gadget.gadgetId, 'Toggle'),
-        () => appCommands.toggleGadget(gadget.gadgetId),
-      ),
-    ]))
-    .toArray();
-  return new CompositeDisposable(...commands);
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+var _atom = require('atom');
+
+var _normalizeEventString = require('./normalizeEventString');
+
+var _normalizeEventString2 = _interopRequireDefault(_normalizeEventString);
+
+function createAtomCommands(gadgets, appCommands) {
+  var commands = gadgets.valueSeq().flatMap(function (gadget) {
+    return [atom.commands.add('atom-workspace', formatCommandName(gadget.gadgetId, 'Show'), function () {
+      return appCommands.showGadget(gadget.gadgetId);
+    }), atom.commands.add('atom-workspace', formatCommandName(gadget.gadgetId, 'Hide'), function () {
+      return appCommands.hideGadget(gadget.gadgetId);
+    }), atom.commands.add('atom-workspace', formatCommandName(gadget.gadgetId, 'Toggle'), function () {
+      return appCommands.toggleGadget(gadget.gadgetId);
+    })];
+  }).toArray();
+  return new (_bind.apply(_atom.CompositeDisposable, [null].concat(_toConsumableArray(commands))))();
 }
 
-function formatCommandName(gadgetId: string, action: string): string {
-  return `${normalizeEventString(gadgetId)}:${normalizeEventString(action)}`;
+function formatCommandName(gadgetId, action) {
+  return (0, _normalizeEventString2.default)(gadgetId) + ':' + (0, _normalizeEventString2.default)(action);
 }
+module.exports = exports.default;

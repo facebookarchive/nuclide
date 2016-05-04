@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +10,32 @@
  * the root directory of this source tree.
  */
 
-import type {
-  nuclide_debugger$Service,
-  NuclideDebuggerProvider,
-} from '../../nuclide-debugger-interfaces/service';
-import type OutputService from '../../nuclide-console/lib/OutputService';
+exports.activate = activate;
+exports.consumeOutputService = consumeOutputService;
+exports.provideNuclideDebuggerLLDB = provideNuclideDebuggerLLDB;
+exports.createDebuggerProvider = createDebuggerProvider;
 
-import logger from './utils';
-import {getConfig} from './utils';
-import {setOutputService} from '../../nuclide-debugger-common/lib/OutputServiceManager';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
+var _utils = require('./utils');
 
-export function activate(state: mixed): void {
-  logger.setLogLevel(getConfig().clientLogLevel);
+var _utils2 = _interopRequireDefault(_utils);
+
+var _nuclideDebuggerCommonLibOutputServiceManager = require('../../nuclide-debugger-common/lib/OutputServiceManager');
+
+function activate(state) {
+  _utils2.default.setLogLevel((0, _utils.getConfig)().clientLogLevel);
 }
 
-export function consumeOutputService(api: OutputService): void {
-  setOutputService(api);
+function consumeOutputService(api) {
+  (0, _nuclideDebuggerCommonLibOutputServiceManager.setOutputService)(api);
 }
 
-export function provideNuclideDebuggerLLDB(): nuclide_debugger$Service {
-  const Service = require('./Service');
+function provideNuclideDebuggerLLDB() {
+  var Service = require('./Service');
   return Service;
 }
 
-export function createDebuggerProvider(): NuclideDebuggerProvider {
+function createDebuggerProvider() {
   return require('./DebuggerProvider');
 }

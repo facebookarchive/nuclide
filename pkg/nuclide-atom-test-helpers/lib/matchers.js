@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +8,9 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
 
 /**
  * This file contains a set of custom matchers for jasmine testing, as described
@@ -23,7 +24,7 @@ import invariant from 'assert';
  * @this A JasmineMatcher object.
  * @returns True if the Ranges are equal.
  */
-function toEqualAtomRange(expected: ?atom$Range): boolean {
+function toEqualAtomRange(expected) {
   return !!this.actual && !!expected && this.actual.isEqual(expected);
 }
 
@@ -34,13 +35,13 @@ function toEqualAtomRange(expected: ?atom$Range): boolean {
  * @this A JasmineMatcher object.
  * @returns True if the array of Ranges are equal.
  */
-function toEqualAtomRanges(expected: ?Array<atom$Range>): boolean {
-  let allEqual = true;
+function toEqualAtomRanges(expected) {
+  var allEqual = true;
   if (!this.actual || !expected) {
     return false;
   }
-  this.actual.some((range, index) => {
-    invariant(expected); // Tell Flow this is definitely non-null now.
+  this.actual.some(function (range, index) {
+    (0, _assert2.default)(expected); // Tell Flow this is definitely non-null now.
     if (range.isEqual(expected[index])) {
       return false;
     } else {
@@ -52,6 +53,6 @@ function toEqualAtomRanges(expected: ?Array<atom$Range>): boolean {
 }
 
 module.exports = {
-  toEqualAtomRange,
-  toEqualAtomRanges,
+  toEqualAtomRange: toEqualAtomRange,
+  toEqualAtomRanges: toEqualAtomRanges
 };

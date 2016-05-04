@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,107 +10,69 @@
  * the root directory of this source tree.
  */
 
-import type {FlowOutlineTree, Point} from '..';
-import {array} from '../../nuclide-commons';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import type {TokenizedText} from '../../nuclide-tokenized-text';
-import {
-  keyword,
-  className,
-  method,
-  param,
-  string,
-  whitespace,
-  plain,
-} from '../../nuclide-tokenized-text';
+exports.astToOutline = astToOutline;
 
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-type Extent = {
-  startPosition: Point;
-  endPosition: Point;
-};
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
-export function astToOutline(ast: any): Array<FlowOutlineTree> {
+var _nuclideCommons = require('../../nuclide-commons');
+
+var _nuclideTokenizedText = require('../../nuclide-tokenized-text');
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+function astToOutline(ast) {
   return itemsToTrees(ast.body);
 }
 
-function itemsToTrees(items: Array<any>): Array<FlowOutlineTree> {
-  return array.compact(items.map(itemToTree));
+function itemsToTrees(items) {
+  return _nuclideCommons.array.compact(items.map(itemToTree));
 }
 
-function itemToTree(item: any): ?FlowOutlineTree {
+function itemToTree(item) {
   if (item == null) {
     return null;
   }
-  const extent = getExtent(item);
+  var extent = getExtent(item);
   switch (item.type) {
     case 'FunctionDeclaration':
-      return {
-        tokenizedText: [
-          keyword('function'),
-          whitespace(' '),
-          method(item.id.name),
-          plain('('),
-          ...paramsTokenizedText(item.params),
-          plain(')'),
-        ],
-        children: [],
-        ...extent,
-      };
+      return _extends({
+        tokenizedText: [(0, _nuclideTokenizedText.keyword)('function'), (0, _nuclideTokenizedText.whitespace)(' '), (0, _nuclideTokenizedText.method)(item.id.name), (0, _nuclideTokenizedText.plain)('(')].concat(_toConsumableArray(paramsTokenizedText(item.params)), [(0, _nuclideTokenizedText.plain)(')')]),
+        children: []
+      }, extent);
     case 'ClassDeclaration':
-      return {
-        tokenizedText: [
-          keyword('class'),
-          whitespace(' '),
-          className(item.id.name),
-        ],
-        children: itemsToTrees(item.body.body),
-        ...extent,
-      };
+      return _extends({
+        tokenizedText: [(0, _nuclideTokenizedText.keyword)('class'), (0, _nuclideTokenizedText.whitespace)(' '), (0, _nuclideTokenizedText.className)(item.id.name)],
+        children: itemsToTrees(item.body.body)
+      }, extent);
     case 'ClassProperty':
-      let paramTokens = [];
+      var paramTokens = [];
       if (item.value && item.value.type === 'ArrowFunctionExpression') {
-        paramTokens = [
-          plain('('),
-          ...paramsTokenizedText(item.value.params),
-          plain(')'),
-        ];
+        paramTokens = [(0, _nuclideTokenizedText.plain)('(')].concat(_toConsumableArray(paramsTokenizedText(item.value.params)), [(0, _nuclideTokenizedText.plain)(')')]);
       }
-      return {
-        tokenizedText: [
-          method(item.key.name),
-          plain('='),
-          ...paramTokens,
-        ],
-        children: [],
-        ...extent,
-      };
+      return _extends({
+        tokenizedText: [(0, _nuclideTokenizedText.method)(item.key.name), (0, _nuclideTokenizedText.plain)('=')].concat(_toConsumableArray(paramTokens)),
+        children: []
+      }, extent);
     case 'MethodDefinition':
-      return {
-        tokenizedText: [
-          method(item.key.name),
-          plain('('),
-          ...paramsTokenizedText(item.value.params),
-          plain(')'),
-        ],
-        children: [],
-        ...extent,
-      };
+      return _extends({
+        tokenizedText: [(0, _nuclideTokenizedText.method)(item.key.name), (0, _nuclideTokenizedText.plain)('(')].concat(_toConsumableArray(paramsTokenizedText(item.value.params)), [(0, _nuclideTokenizedText.plain)(')')]),
+        children: []
+      }, extent);
     case 'ExportDeclaration':
-      const tree = itemToTree(item.declaration);
+      var tree = itemToTree(item.declaration);
       if (tree == null) {
         return null;
       }
-      return {
-        tokenizedText: [
-          keyword('export'),
-          whitespace(' '),
-          ...tree.tokenizedText,
-        ],
-        children: tree.children,
-        ...extent,
-      };
+      return _extends({
+        tokenizedText: [(0, _nuclideTokenizedText.keyword)('export'), (0, _nuclideTokenizedText.whitespace)(' ')].concat(_toConsumableArray(tree.tokenizedText)),
+        children: tree.children
+      }, extent);
     case 'ExpressionStatement':
       return topLevelExpressionOutline(item);
     default:
@@ -117,38 +80,38 @@ function itemToTree(item: any): ?FlowOutlineTree {
   }
 }
 
-function paramsTokenizedText(params: Array<any>): TokenizedText {
-  const textElements = [];
-  params.forEach((p, index) => {
-    textElements.push(param(p.name));
+function paramsTokenizedText(params) {
+  var textElements = [];
+  params.forEach(function (p, index) {
+    textElements.push((0, _nuclideTokenizedText.param)(p.name));
     if (index < params.length - 1) {
-      textElements.push(plain(','));
-      textElements.push(whitespace(' '));
+      textElements.push((0, _nuclideTokenizedText.plain)(','));
+      textElements.push((0, _nuclideTokenizedText.whitespace)(' '));
     }
   });
 
   return textElements;
 }
 
-function getExtent(item: any): Extent {
+function getExtent(item) {
   return {
     startPosition: {
       // It definitely makes sense that the lines we get are 1-based and the columns are
       // 0-based... convert to 0-based all around.
       line: item.loc.start.line - 1,
-      column: item.loc.start.column,
+      column: item.loc.start.column
     },
     endPosition: {
       line: item.loc.end.line - 1,
-      column: item.loc.end.column,
-    },
+      column: item.loc.end.column
+    }
   };
 }
 
-function topLevelExpressionOutline(expressionStatement: any): ?FlowOutlineTree {
+function topLevelExpressionOutline(expressionStatement) {
   switch (expressionStatement.expression.type) {
     case 'CallExpression':
-      return specOutline(expressionStatement, /* describeOnly */ true);
+      return specOutline(expressionStatement, /* describeOnly */true);
     case 'AssignmentExpression':
       return moduleExportsOutline(expressionStatement.expression);
     default:
@@ -156,129 +119,107 @@ function topLevelExpressionOutline(expressionStatement: any): ?FlowOutlineTree {
   }
 }
 
-function moduleExportsOutline(assignmentStatement: any): ?FlowOutlineTree {
-  invariant(assignmentStatement.type === 'AssignmentExpression');
+function moduleExportsOutline(assignmentStatement) {
+  (0, _assert2.default)(assignmentStatement.type === 'AssignmentExpression');
 
-  const left = assignmentStatement.left;
+  var left = assignmentStatement.left;
   if (!isModuleExports(left)) {
     return null;
   }
 
-  const right = assignmentStatement.right;
+  var right = assignmentStatement.right;
   if (right.type !== 'ObjectExpression') {
     return null;
   }
-  const properties: Array<Object> = right.properties;
-  return {
-    tokenizedText: [plain('module.exports')],
-    children: array.compact(properties.map(moduleExportsPropertyOutline)),
-    ...getExtent(assignmentStatement),
-  };
+  var properties = right.properties;
+  return _extends({
+    tokenizedText: [(0, _nuclideTokenizedText.plain)('module.exports')],
+    children: _nuclideCommons.array.compact(properties.map(moduleExportsPropertyOutline))
+  }, getExtent(assignmentStatement));
 }
 
-function isModuleExports(left: Object): boolean {
-  return left.type === 'MemberExpression' &&
-    left.object.type === 'Identifier' &&
-    left.object.name === 'module' &&
-    left.property.type === 'Identifier' &&
-    left.property.name === 'exports';
+function isModuleExports(left) {
+  return left.type === 'MemberExpression' && left.object.type === 'Identifier' && left.object.name === 'module' && left.property.type === 'Identifier' && left.property.name === 'exports';
 }
 
-function moduleExportsPropertyOutline(property: any): ?FlowOutlineTree {
-  invariant(property.type === 'Property');
+function moduleExportsPropertyOutline(property) {
+  (0, _assert2.default)(property.type === 'Property');
   if (property.key.type !== 'Identifier') {
     return null;
   }
-  const propName = property.key.name;
+  var propName = property.key.name;
 
   if (property.shorthand) {
     // This happens when the shorthand `{ foo }` is used for `{ foo: foo }`
-    return {
-      tokenizedText: [
-        string(propName),
-      ],
-      children: [],
-      ...getExtent(property),
-    };
+    return _extends({
+      tokenizedText: [(0, _nuclideTokenizedText.string)(propName)],
+      children: []
+    }, getExtent(property));
   }
 
-  if (property.value.type === 'FunctionExpression' ||
-    property.value.type === 'ArrowFunctionExpression'
-  ) {
-    return {
-      tokenizedText: [
-        method(propName),
-        plain('('),
-        ...paramsTokenizedText(property.value.params),
-        plain(')'),
-      ],
-      children: [],
-      ...getExtent(property),
-    };
+  if (property.value.type === 'FunctionExpression' || property.value.type === 'ArrowFunctionExpression') {
+    return _extends({
+      tokenizedText: [(0, _nuclideTokenizedText.method)(propName), (0, _nuclideTokenizedText.plain)('(')].concat(_toConsumableArray(paramsTokenizedText(property.value.params)), [(0, _nuclideTokenizedText.plain)(')')]),
+      children: []
+    }, getExtent(property));
   }
 
-  return {
-    tokenizedText: [
-      string(propName),
-      plain(':'),
-    ],
-    children: [],
-    ...getExtent(property),
-  };
+  return _extends({
+    tokenizedText: [(0, _nuclideTokenizedText.string)(propName), (0, _nuclideTokenizedText.plain)(':')],
+    children: []
+  }, getExtent(property));
 }
 
-function specOutline(expressionStatement: any, describeOnly: boolean = false): ?FlowOutlineTree {
-  const expression = expressionStatement.expression;
+function specOutline(expressionStatement) {
+  var describeOnly = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
+  var expression = expressionStatement.expression;
   if (expression.type !== 'CallExpression') {
     return null;
   }
-  const functionName = expression.callee.name;
+  var functionName = expression.callee.name;
   if (functionName !== 'describe') {
     if (describeOnly || functionName !== 'it') {
       return null;
     }
   }
-  const description = getStringLiteralValue(expression.arguments[0]);
-  const specBody = getFunctionBody(expression.arguments[1]);
+  var description = getStringLiteralValue(expression.arguments[0]);
+  var specBody = getFunctionBody(expression.arguments[1]);
   if (description == null || specBody == null) {
     return null;
   }
-  let children;
+  var children = undefined;
   if (functionName === 'it') {
     children = [];
   } else {
-    children = array.compact(
-      specBody
-      .filter(item => item.type === 'ExpressionStatement')
-      .map(item => specOutline(item)));
+    children = _nuclideCommons.array.compact(specBody.filter(function (item) {
+      return item.type === 'ExpressionStatement';
+    }).map(function (item) {
+      return specOutline(item);
+    }));
   }
-  return {
-    tokenizedText: [
-      method(expression.callee.name),
-      whitespace(' '),
-      string(description),
-    ],
-    children,
-    ...getExtent(expressionStatement),
-  };
+  return _extends({
+    tokenizedText: [(0, _nuclideTokenizedText.method)(expression.callee.name), (0, _nuclideTokenizedText.whitespace)(' '), (0, _nuclideTokenizedText.string)(description)],
+    children: children
+  }, getExtent(expressionStatement));
 }
 
 /** If the given AST Node is a string literal, return its literal value. Otherwise return null */
-function getStringLiteralValue(literal: ?any): ?string {
+function getStringLiteralValue(literal) {
   if (literal == null) {
     return null;
   }
   if (literal.type !== 'Literal') {
     return null;
   }
-  const value = literal.value;
+  var value = literal.value;
   if (typeof value !== 'string') {
     return null;
   }
   return value;
 }
 
-function getFunctionBody(fn: ?any): ?Array<any> {
+function getFunctionBody(fn) {
   if (fn == null) {
     return null;
   }

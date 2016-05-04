@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +8,22 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
 
 /**
  * @param filePath A file path.
  * @return The file path with a trailing separator, if it doesn't already have one.
  */
-function ensureTrailingSeparator(filePath: string): string {
-  if (filePath.endsWith(path.sep)) {
+function ensureTrailingSeparator(filePath) {
+  if (filePath.endsWith(_path2.default.sep)) {
     return filePath;
   } else {
-    return filePath + path.sep;
+    return filePath + _path2.default.sep;
   }
 }
 
 module.exports = {
-  ensureTrailingSeparator,
+  ensureTrailingSeparator: ensureTrailingSeparator
 };

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +8,30 @@
  * the root directory of this source tree.
  */
 
-import type {Collection} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
+var _utilsFirstNode = require('../utils/FirstNode');
 
-import FirstNode from '../utils/FirstNode';
-import getUndeclaredTypes from '../utils/getUndeclaredTypes';
+var _utilsFirstNode2 = _interopRequireDefault(_utilsFirstNode);
 
-function addMissingTypes(root: Collection, options: SourceOptions): void {
-  const first = FirstNode.get(root);
+var _utilsGetUndeclaredTypes = require('../utils/getUndeclaredTypes');
+
+var _utilsGetUndeclaredTypes2 = _interopRequireDefault(_utilsGetUndeclaredTypes);
+
+function addMissingTypes(root, options) {
+  var first = _utilsFirstNode2.default.get(root);
   if (!first) {
     return;
   }
-  const _first = first; // For flow.
+  var _first = first; // For flow.
 
-  const {moduleMap} = options;
-  const requireOptions = {
+  var moduleMap = options.moduleMap;
+
+  var requireOptions = {
     sourcePath: options.sourcePath,
-    typeImport: true,
+    typeImport: true
   };
 
-  getUndeclaredTypes(root, options).forEach(name => {
-    const node = moduleMap.getRequire(name, requireOptions);
+  (0, _utilsGetUndeclaredTypes2.default)(root, options).forEach(function (name) {
+    var node = moduleMap.getRequire(name, requireOptions);
     _first.insertBefore(node);
   });
 }

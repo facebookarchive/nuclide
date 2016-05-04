@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,189 +10,215 @@
  * the root directory of this source tree.
  */
 
-import type {
-  DebuggerConnection as DebuggerConnectionType,
-} from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {EventEmitter} from 'events';
-import utils from './utils';
-import {DebuggerInstance} from '../../nuclide-debugger-atom';
-import {CompositeDisposable} from 'atom';
-import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
-import remoteUri from '../../nuclide-remote-uri';
-import {Disposable} from 'atom';
-import {DisposableSubscription} from '../../nuclide-commons';
-import {getConfig} from './utils';
-import WS from 'ws';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-const {stringifyError} = require('../../nuclide-commons').error;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const {log, logInfo, logError} = utils;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const SESSION_END_EVENT = 'session-end-event';
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-export class LldbDebuggerInstance extends DebuggerInstance {
-  _debuggerConnection: ?DebuggerConnectionType;
-  _attachPromise: ?Promise<DebuggerConnectionType>;
-  _chromeWebSocketServer: ?WS.Server;
-  _chromeWebSocket: ?WebSocket;
-  _disposables: atom$CompositeDisposable;
-  _emitter: EventEmitter;
+var _events = require('events');
 
-  constructor(
-    processInfo: DebuggerProcessInfo,
-    connection: DebuggerConnectionType,
-    outputDisposable: ?IDisposable,
-  ) {
-    super(processInfo);
+var _utils = require('./utils');
+
+var _utils2 = _interopRequireDefault(_utils);
+
+var _nuclideDebuggerAtom = require('../../nuclide-debugger-atom');
+
+var _atom = require('atom');
+
+var _ChromeMessageRemoting = require('./ChromeMessageRemoting');
+
+var _nuclideRemoteUri = require('../../nuclide-remote-uri');
+
+var _nuclideRemoteUri2 = _interopRequireDefault(_nuclideRemoteUri);
+
+var _nuclideCommons = require('../../nuclide-commons');
+
+var _ws = require('ws');
+
+var _ws2 = _interopRequireDefault(_ws);
+
+var stringifyError = require('../../nuclide-commons').error.stringifyError;
+
+var log = _utils2.default.log;
+var logInfo = _utils2.default.logInfo;
+var logError = _utils2.default.logError;
+
+var SESSION_END_EVENT = 'session-end-event';
+
+var LldbDebuggerInstance = (function (_DebuggerInstance) {
+  _inherits(LldbDebuggerInstance, _DebuggerInstance);
+
+  function LldbDebuggerInstance(processInfo, connection, outputDisposable) {
+    _classCallCheck(this, LldbDebuggerInstance);
+
+    _get(Object.getPrototypeOf(LldbDebuggerInstance.prototype), 'constructor', this).call(this, processInfo);
 
     this._debuggerConnection = null;
     this._attachPromise = null;
     this._chromeWebSocketServer = null;
     this._chromeWebSocket = null;
-    this._disposables = new CompositeDisposable();
+    this._disposables = new _atom.CompositeDisposable();
     if (outputDisposable != null) {
       this._disposables.add(outputDisposable);
     }
-    this._emitter = new EventEmitter();
+    this._emitter = new _events.EventEmitter();
     this._registerConnection(connection);
   }
 
-  _registerConnection(connection: DebuggerConnectionType): void {
-    this._debuggerConnection = connection;
-    this._disposables.add(connection);
-    this._disposables.add(new DisposableSubscription(
-      connection.getServerMessageObservable().subscribe(
-        this._handleServerMessage.bind(this),
-        this._handleServerError.bind(this),
-        this._handleSessionEnd.bind(this)
-    )));
-  }
-
-  _handleServerMessage(message: string): void {
-    log('Recieved server message: ' + message);
-    const webSocket = this._chromeWebSocket;
-    if (webSocket) {
-      message = this._translateMessageIfNeeded(message);
-      webSocket.send(message);
-    } else {
-      logError('Why isn\'t chrome websocket available?');
+  _createClass(LldbDebuggerInstance, [{
+    key: '_registerConnection',
+    value: function _registerConnection(connection) {
+      this._debuggerConnection = connection;
+      this._disposables.add(connection);
+      this._disposables.add(new _nuclideCommons.DisposableSubscription(connection.getServerMessageObservable().subscribe(this._handleServerMessage.bind(this), this._handleServerError.bind(this), this._handleSessionEnd.bind(this))));
     }
-  }
-
-  _handleServerError(error: string): void {
-    logError('Received server error: ' + error);
-  }
-
-  _handleSessionEnd(): void {
-    log('Ending Session');
-    this._emitter.emit(SESSION_END_EVENT);
-    this.dispose();
-  }
-
-  getWebsocketAddress(): Promise<string> {
-    return Promise.resolve(this._startChromeWebSocketServer());
-  }
-
-  _startChromeWebSocketServer(): string {
-    // setup web socket
-    const wsPort = this._getWebSocketPort();
-    const server = new WS.Server({port: wsPort});
-    this._chromeWebSocketServer = server;
-    server.on('error', error => {
-      let errorMessage = `Server error: ${error}`;
-      if (error.code === 'EADDRINUSE') {
-        errorMessage = `The debug port ${error.port} is in use.
-        Please choose a different port in the debugger config settings.`;
+  }, {
+    key: '_handleServerMessage',
+    value: function _handleServerMessage(message) {
+      log('Recieved server message: ' + message);
+      var webSocket = this._chromeWebSocket;
+      if (webSocket) {
+        message = this._translateMessageIfNeeded(message);
+        webSocket.send(message);
+      } else {
+        logError('Why isn\'t chrome websocket available?');
       }
-      atom.notifications.addError(errorMessage);
-      logError(errorMessage);
+    }
+  }, {
+    key: '_handleServerError',
+    value: function _handleServerError(error) {
+      logError('Received server error: ' + error);
+    }
+  }, {
+    key: '_handleSessionEnd',
+    value: function _handleSessionEnd() {
+      log('Ending Session');
+      this._emitter.emit(SESSION_END_EVENT);
       this.dispose();
-    });
-    server.on('headers', headers => {
-      log('Server headers: ' + headers);
-    });
-    server.on('connection', webSocket => {
-      if (this._chromeWebSocket) {
-        log('Already connected to Chrome WebSocket. Discarding new connection.');
-        return;
+    }
+  }, {
+    key: 'getWebsocketAddress',
+    value: function getWebsocketAddress() {
+      return Promise.resolve(this._startChromeWebSocketServer());
+    }
+  }, {
+    key: '_startChromeWebSocketServer',
+    value: function _startChromeWebSocketServer() {
+      var _this = this;
+
+      // setup web socket
+      var wsPort = this._getWebSocketPort();
+      var server = new _ws2.default.Server({ port: wsPort });
+      this._chromeWebSocketServer = server;
+      server.on('error', function (error) {
+        var errorMessage = 'Server error: ' + error;
+        if (error.code === 'EADDRINUSE') {
+          errorMessage = 'The debug port ' + error.port + ' is in use.\n        Please choose a different port in the debugger config settings.';
+        }
+        atom.notifications.addError(errorMessage);
+        logError(errorMessage);
+        _this.dispose();
+      });
+      server.on('headers', function (headers) {
+        log('Server headers: ' + headers);
+      });
+      server.on('connection', function (webSocket) {
+        if (_this._chromeWebSocket) {
+          log('Already connected to Chrome WebSocket. Discarding new connection.');
+          return;
+        }
+
+        log('Connecting to Chrome WebSocket client.');
+        _this._chromeWebSocket = webSocket;
+        webSocket.on('message', _this._onChromeSocketMessage.bind(_this));
+        webSocket.on('error', _this._onChromeSocketError.bind(_this));
+        webSocket.on('close', _this._onChromeSocketClose.bind(_this));
+      });
+
+      var result = 'ws=localhost:' + String(wsPort) + '/';
+      logInfo('Listening for connection at: ' + result);
+      return result;
+    }
+  }, {
+    key: '_getWebSocketPort',
+    value: function _getWebSocketPort() {
+      // Use the port from config setting if set, otherwise
+      // generate a random port.
+      var configPort = Number((0, _utils.getConfig)().debugPort);
+      return Number.isInteger(configPort) && configPort > 0 ? configPort : this._generateRandomInteger(2000, 65535);
+    }
+  }, {
+    key: '_generateRandomInteger',
+    value: function _generateRandomInteger(min, max) {
+      return Math.floor(Math.random() * (max - min) + min);
+    }
+  }, {
+    key: 'onSessionEnd',
+    value: function onSessionEnd(callback) {
+      var _this2 = this;
+
+      this._emitter.on(SESSION_END_EVENT, callback);
+      return new _atom.Disposable(function () {
+        return _this2._emitter.removeListener(SESSION_END_EVENT, callback);
+      });
+    }
+  }, {
+    key: '_translateMessageIfNeeded',
+    value: function _translateMessageIfNeeded(message) {
+      // TODO: do we really need isRemote() checking?
+      if (_nuclideRemoteUri2.default.isRemote(this.getTargetUri())) {
+        message = (0, _ChromeMessageRemoting.translateMessageFromServer)(_nuclideRemoteUri2.default.getHostname(this.getTargetUri()), _nuclideRemoteUri2.default.getPort(this.getTargetUri()), message);
       }
-
-      log('Connecting to Chrome WebSocket client.');
-      this._chromeWebSocket = webSocket;
-      webSocket.on('message', this._onChromeSocketMessage.bind(this));
-      webSocket.on('error', this._onChromeSocketError.bind(this));
-      webSocket.on('close', this._onChromeSocketClose.bind(this));
-    });
-
-    const result = 'ws=localhost:' + String(wsPort) + '/';
-    logInfo('Listening for connection at: ' + result);
-    return result;
-  }
-
-  _getWebSocketPort(): number {
-    // Use the port from config setting if set, otherwise
-    // generate a random port.
-    const configPort = Number(getConfig().debugPort);
-    return Number.isInteger(configPort) && configPort > 0 ?
-      configPort :
-      this._generateRandomInteger(2000, 65535);
-  }
-
-  _generateRandomInteger(min: number, max: number): number {
-    return Math.floor(Math.random() * (max - min) + min);
-  }
-
-  onSessionEnd(callback: () => void): Disposable {
-    this._emitter.on(SESSION_END_EVENT, callback);
-    return (new Disposable(() => this._emitter.removeListener(SESSION_END_EVENT, callback)));
-  }
-
-  _translateMessageIfNeeded(message: string): string {
-    // TODO: do we really need isRemote() checking?
-    if (remoteUri.isRemote(this.getTargetUri())) {
-      message = translateMessageFromServer(
-        remoteUri.getHostname(this.getTargetUri()),
-        remoteUri.getPort(this.getTargetUri()),
-        message);
+      return message;
     }
-    return message;
-  }
-
-  _onChromeSocketMessage(message: string): void {
-    log('Recieved Chrome message: ' + message);
-    const connection = this._debuggerConnection;
-    if (connection) {
-      connection.sendCommand(translateMessageToServer(message));
-    } else {
-      logError('Why isn\'t debuger RPC service available?');
+  }, {
+    key: '_onChromeSocketMessage',
+    value: function _onChromeSocketMessage(message) {
+      log('Recieved Chrome message: ' + message);
+      var connection = this._debuggerConnection;
+      if (connection) {
+        connection.sendCommand((0, _ChromeMessageRemoting.translateMessageToServer)(message));
+      } else {
+        logError('Why isn\'t debuger RPC service available?');
+      }
     }
-  }
-
-  _onChromeSocketError(error: Error): void {
-    logError('Chrome webSocket error ' + stringifyError(error));
-    this.dispose();
-  }
-
-  _onChromeSocketClose(code: number): void {
-    log('Chrome webSocket Closed ' + code);
-    this.dispose();
-  }
-
-  dispose() {
-    this._disposables.dispose();
-    const webSocket = this._chromeWebSocket;
-    if (webSocket) {
-      logInfo('closing Chrome webSocket');
-      webSocket.close();
-      this._chromeWebSocket = null;
+  }, {
+    key: '_onChromeSocketError',
+    value: function _onChromeSocketError(error) {
+      logError('Chrome webSocket error ' + stringifyError(error));
+      this.dispose();
     }
-    const server = this._chromeWebSocketServer;
-    if (server) {
-      logInfo('closing Chrome server');
-      server.close();
-      this._chromeWebSocketServer = null;
+  }, {
+    key: '_onChromeSocketClose',
+    value: function _onChromeSocketClose(code) {
+      log('Chrome webSocket Closed ' + code);
+      this.dispose();
     }
-  }
-}
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+      var webSocket = this._chromeWebSocket;
+      if (webSocket) {
+        logInfo('closing Chrome webSocket');
+        webSocket.close();
+        this._chromeWebSocket = null;
+      }
+      var server = this._chromeWebSocketServer;
+      if (server) {
+        logInfo('closing Chrome server');
+        server.close();
+        this._chromeWebSocketServer = null;
+      }
+    }
+  }]);
+
+  return LldbDebuggerInstance;
+})(_nuclideDebuggerAtom.DebuggerInstance);
+
+exports.LldbDebuggerInstance = LldbDebuggerInstance;

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +10,9 @@
  * the root directory of this source tree.
  */
 
-import type {GadgetsService} from '../../nuclide-gadgets-interfaces';
+exports.consumeGadgetsService = consumeGadgetsService;
 
-export function consumeGadgetsService(api: GadgetsService): IDisposable {
-  const Inspector = require('./ui/Inspector');
+function consumeGadgetsService(api) {
+  var Inspector = require('./ui/Inspector');
   return api.registerGadget(Inspector);
 }

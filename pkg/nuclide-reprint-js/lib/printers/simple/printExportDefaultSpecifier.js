@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +8,12 @@
  * the root directory of this source tree.
  */
 
-import type {ExportDefaultSpecifier} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printExportDefaultSpecifier(
-  print: Print,
-  node: ExportDefaultSpecifier,
-): Lines {
-  return flatten(print(node.exported));
+function printExportDefaultSpecifier(print, node) {
+  return (0, _utilsFlatten2.default)(print(node.exported));
 }
 
 module.exports = printExportDefaultSpecifier;

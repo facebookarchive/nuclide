@@ -1,5 +1,15 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+exports.activate = activate;
+exports.deactivate = deactivate;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,98 +19,100 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
-import {getPath} from '../../nuclide-remote-uri';
-import {projects} from '../../nuclide-atom-helpers';
-import {trackOperationTiming} from '../../nuclide-analytics';
+var _atom = require('atom');
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+var _nuclideRemoteUri = require('../../nuclide-remote-uri');
 
-function copyAbsolutePath(): void {
-  trackOperation('copyAbsolutePath', () => {
-    const uri = getCurrentNuclideUri();
+var _nuclideAtomHelpers = require('../../nuclide-atom-helpers');
+
+var _nuclideAnalytics = require('../../nuclide-analytics');
+
+function copyAbsolutePath() {
+  trackOperation('copyAbsolutePath', function () {
+    var uri = getCurrentNuclideUri();
     if (!uri) {
       return;
     }
-    copyToClipboard('Copied absolute path', getPath(uri));
+    copyToClipboard('Copied absolute path', (0, _nuclideRemoteUri.getPath)(uri));
   });
 }
 
-function copyProjectRelativePath(): void {
-  trackOperation('copyProjectRelativePath', () => {
-    const uri = getCurrentNuclideUri();
+function copyProjectRelativePath() {
+  trackOperation('copyProjectRelativePath', function () {
+    var uri = getCurrentNuclideUri();
     if (!uri) {
       return;
     }
 
-    const projectRelativePath = projects.getAtomProjectRelativePath(uri);
+    var projectRelativePath = _nuclideAtomHelpers.projects.getAtomProjectRelativePath(uri);
     if (projectRelativePath) {
       copyToClipboard('Copied project relative path', projectRelativePath);
     } else {
-      copyToClipboard(
-        'Path not contained in any open project.\nCopied absolute path',
-        getPath(uri));
+      copyToClipboard('Path not contained in any open project.\nCopied absolute path', (0, _nuclideRemoteUri.getPath)(uri));
     }
   });
 }
 
-function copyRepositoryRelativePath(): void {
-  trackOperation('copyRepositoryRelativePath', async () => {
+function copyRepositoryRelativePath() {
+  trackOperation('copyRepositoryRelativePath', _asyncToGenerator(function* () {
 
-    const uri = getCurrentNuclideUri();
+    var uri = getCurrentNuclideUri();
     if (!uri) {
       return;
     }
 
     // First source control relative.
-    const repoRelativePath = getRepositoryRelativePath(uri);
+    var repoRelativePath = getRepositoryRelativePath(uri);
     if (repoRelativePath) {
       copyToClipboard('Copied repository relative path', repoRelativePath);
       return;
     }
 
     // Next try arcanist relative.
-    const arcRelativePath = await getArcanistRelativePath(uri);
+    var arcRelativePath = yield getArcanistRelativePath(uri);
     if (arcRelativePath) {
       copyToClipboard('Copied arc project relative path', arcRelativePath);
       return;
     }
 
     // Lastly, project and absolute.
-    const projectRelativePath = projects.getAtomProjectRelativePath(uri);
+    var projectRelativePath = _nuclideAtomHelpers.projects.getAtomProjectRelativePath(uri);
     if (projectRelativePath) {
       copyToClipboard('Copied project relative path', projectRelativePath);
     } else {
-      copyToClipboard('Path not contained in any repository.\nCopied absolute path', getPath(uri));
+      copyToClipboard('Path not contained in any repository.\nCopied absolute path', (0, _nuclideRemoteUri.getPath)(uri));
     }
-  });
+  }));
 }
 
-function getRepositoryRelativePath(path: NuclideUri): ?string {
+function getRepositoryRelativePath(path) {
   // TODO(peterhal): repositoryForPath is the same as projectRelativePath
   // only less robust. We'll need a version of findHgRepository which is
   // aware of remote paths.
   return null;
 }
 
-function getArcanistRelativePath(path: NuclideUri): Promise<?string> {
-  const {getProjectRelativePath} = require('../../nuclide-arcanist-client');
+function getArcanistRelativePath(path) {
+  var _require = require('../../nuclide-arcanist-client');
+
+  var getProjectRelativePath = _require.getProjectRelativePath;
+
   return getProjectRelativePath(path);
 }
 
-function copyToClipboard(messagePrefix: string, value: string): void {
+function copyToClipboard(messagePrefix, value) {
   atom.clipboard.write(value);
-  notify(`${messagePrefix}: \`\`\`${value}\`\`\``);
+  notify(messagePrefix + ': ```' + value + '```');
 }
 
-function getCurrentNuclideUri(): ?NuclideUri {
-  const editor = atom.workspace.getActiveTextEditor();
+function getCurrentNuclideUri() {
+  var editor = atom.workspace.getActiveTextEditor();
   if (!editor) {
     notify('Nothing copied. No active text editor.');
     return null;
   }
 
-  const path = editor.getPath();
+  var path = editor.getPath();
   if (!path) {
     notify('Nothing copied. Current text editor is unnamed.');
     return null;
@@ -109,47 +121,43 @@ function getCurrentNuclideUri(): ?NuclideUri {
   return path;
 }
 
-function trackOperation(eventName: string, operation: () => mixed): void {
-  trackOperationTiming('nuclide-clipboard-path:' + eventName, operation);
+function trackOperation(eventName, operation) {
+  (0, _nuclideAnalytics.trackOperationTiming)('nuclide-clipboard-path:' + eventName, operation);
 }
 
-function notify(message: string): void {
+function notify(message) {
   atom.notifications.addInfo(message);
 }
 
-class Activation {
-  _subscriptions: CompositeDisposable;
+var Activation = (function () {
+  function Activation(state) {
+    _classCallCheck(this, Activation);
 
-  constructor(state: ?Object) {
-    this._subscriptions = new CompositeDisposable();
-    this._subscriptions.add(
-      atom.commands.add('atom-workspace',
-      'nuclide-clipboard-path:copy-absolute-path', copyAbsolutePath)
-    );
-    this._subscriptions.add(
-      atom.commands.add('atom-workspace',
-      'nuclide-clipboard-path:copy-repository-relative-path', copyRepositoryRelativePath)
-    );
-    this._subscriptions.add(
-      atom.commands.add('atom-workspace',
-      'nuclide-clipboard-path:copy-project-relative-path', copyProjectRelativePath)
-    );
+    this._subscriptions = new _atom.CompositeDisposable();
+    this._subscriptions.add(atom.commands.add('atom-workspace', 'nuclide-clipboard-path:copy-absolute-path', copyAbsolutePath));
+    this._subscriptions.add(atom.commands.add('atom-workspace', 'nuclide-clipboard-path:copy-repository-relative-path', copyRepositoryRelativePath));
+    this._subscriptions.add(atom.commands.add('atom-workspace', 'nuclide-clipboard-path:copy-project-relative-path', copyProjectRelativePath));
   }
 
-  dispose() {
-    this._subscriptions.dispose();
-  }
-}
+  _createClass(Activation, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._subscriptions.dispose();
+    }
+  }]);
 
-let activation: ?Activation = null;
+  return Activation;
+})();
 
-export function activate(state: ?mixed): void {
+var activation = null;
+
+function activate(state) {
   if (!activation) {
     activation = new Activation();
   }
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;

@@ -1,5 +1,18 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.serialize = serialize;
+exports.consumeDistractionFreeModeProvider = consumeDistractionFreeModeProvider;
+exports.consumeToolBar = consumeToolBar;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,101 +22,100 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable, Disposable} from 'atom';
-import invariant from 'assert';
+var _atom = require('atom');
 
-import {track} from '../../nuclide-analytics';
+var _assert = require('assert');
 
-import {DistractionFreeMode} from './DistractionFreeMode';
-import {getBuiltinProviders} from './BuiltinProviders';
+var _assert2 = _interopRequireDefault(_assert);
 
-export type DistractionFreeModeProvider = {
-  // Should be the unique to all providers. Recommended to be the package name. This string is not
-  // user-facing.
-  name: string;
-  isVisible: () => boolean;
-  toggle: () => void;
-};
+var _nuclideAnalytics = require('../../nuclide-analytics');
 
-export type DistractionFreeModeState = {
-  // Serialize the restore state via an array of provider names.
-  restoreState: ?Array<string>;
-};
+var _DistractionFreeMode = require('./DistractionFreeMode');
 
-class Activation {
-  _disposables: CompositeDisposable;
-  _tunnelVision: DistractionFreeMode;
+var _BuiltinProviders = require('./BuiltinProviders');
 
-  constructor(state: ?DistractionFreeModeState) {
-    this._disposables = new CompositeDisposable();
-    this._tunnelVision = new DistractionFreeMode(state);
-    this._disposables.add(atom.commands.add(
-      atom.views.getView(atom.workspace),
-      'nuclide-distraction-free-mode:toggle',
-      () => {
-        track('distraction-free-mode:toggle');
-        this._tunnelVision.toggleDistractionFreeMode();
-      }
-    ));
-  }
+var Activation = (function () {
+  function Activation(state) {
+    var _this = this;
 
-  dispose(): void {
-    this._disposables.dispose();
-  }
+    _classCallCheck(this, Activation);
 
-  serialize(): DistractionFreeModeState {
-    return this._tunnelVision.serialize();
-  }
-
-  consumeDistractionFreeModeProvider(provider: DistractionFreeModeProvider): IDisposable {
-    return this._tunnelVision.consumeDistractionFreeModeProvider(provider);
-  }
-
-  consumeToolBar(getToolBar: (group: string) => Object): void {
-    const toolBar = getToolBar('nuclide-distraction-free-mode');
-    toolBar.addButton({
-      icon: 'eye',
-      callback: 'nuclide-distraction-free-mode:toggle',
-      tooltip: 'Toggle distraction-free mode',
-      priority: 600,
-    });
-    this._disposables.add(new Disposable(() => {
-      toolBar.removeItems();
+    this._disposables = new _atom.CompositeDisposable();
+    this._tunnelVision = new _DistractionFreeMode.DistractionFreeMode(state);
+    this._disposables.add(atom.commands.add(atom.views.getView(atom.workspace), 'nuclide-distraction-free-mode:toggle', function () {
+      (0, _nuclideAnalytics.track)('distraction-free-mode:toggle');
+      _this._tunnelVision.toggleDistractionFreeMode();
     }));
   }
-}
 
-let activation: ?Activation = null;
+  _createClass(Activation, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }, {
+    key: 'serialize',
+    value: function serialize() {
+      return this._tunnelVision.serialize();
+    }
+  }, {
+    key: 'consumeDistractionFreeModeProvider',
+    value: function consumeDistractionFreeModeProvider(provider) {
+      return this._tunnelVision.consumeDistractionFreeModeProvider(provider);
+    }
+  }, {
+    key: 'consumeToolBar',
+    value: function consumeToolBar(getToolBar) {
+      var toolBar = getToolBar('nuclide-distraction-free-mode');
+      toolBar.addButton({
+        icon: 'eye',
+        callback: 'nuclide-distraction-free-mode:toggle',
+        tooltip: 'Toggle distraction-free mode',
+        priority: 600
+      });
+      this._disposables.add(new _atom.Disposable(function () {
+        toolBar.removeItems();
+      }));
+    }
+  }]);
 
-export function activate(state: ?DistractionFreeModeState) {
+  return Activation;
+})();
+
+var activation = null;
+
+function activate(state) {
   if (activation == null) {
     activation = new Activation(state);
-    for (const provider of getBuiltinProviders()) {
+    for (var provider of (0, _BuiltinProviders.getBuiltinProviders)()) {
       activation.consumeDistractionFreeModeProvider(provider);
     }
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function serialize(): DistractionFreeModeState {
-  invariant(activation != null);
+function serialize() {
+  (0, _assert2.default)(activation != null);
   return activation.serialize();
 }
 
-export function consumeDistractionFreeModeProvider(
-  provider: DistractionFreeModeProvider
-): IDisposable {
-  invariant(activation != null);
+function consumeDistractionFreeModeProvider(provider) {
+  (0, _assert2.default)(activation != null);
   return activation.consumeDistractionFreeModeProvider(provider);
 }
 
-export function consumeToolBar(getToolBar: (group: string) => Object): void {
-  invariant(activation != null);
+function consumeToolBar(getToolBar) {
+  (0, _assert2.default)(activation != null);
   activation.consumeToolBar(getToolBar);
 }
+
+// Should be the unique to all providers. Recommended to be the package name. This string is not
+// user-facing.
+
+// Serialize the restore state via an array of provider names.

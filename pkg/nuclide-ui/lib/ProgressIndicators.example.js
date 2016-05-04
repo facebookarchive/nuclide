@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,56 +10,77 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {Block} from './Block';
-import {ProgressBar} from './ProgressBar';
-import {LoadingSpinner} from './LoadingSpinner';
+var _reactForAtom = require('react-for-atom');
 
-const ProgressBarExample = (): React.Element => (
-  <div>
-    <Block>
-      <ProgressBar />
-    </Block>
-    <Block>
-      <ProgressBar max={100} value={0} />
-    </Block>
-    <Block>
-      <ProgressBar max={100} value={50} />
-    </Block>
-    <Block>
-      <ProgressBar max={100} value={100} />
-    </Block>
-  </div>
-);
+var _Block = require('./Block');
 
-const LoadingSpinnerExample = (): React.Element => (
-  <div>
-    <Block>
-      <LoadingSpinner size="EXTRA_SMALL" />
-    </Block>
-    <Block>
-      <LoadingSpinner size="SMALL" />
-    </Block>
-    <Block>
-      <LoadingSpinner size="MEDIUM" />
-    </Block>
-    <Block>
-      <LoadingSpinner size="LARGE" />
-    </Block>
-  </div>
-);
+var _ProgressBar = require('./ProgressBar');
 
-export const ProgressIndicatorExamples = {
+var _LoadingSpinner = require('./LoadingSpinner');
+
+var ProgressBarExample = function ProgressBarExample() {
+  return _reactForAtom.React.createElement(
+    'div',
+    null,
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(_ProgressBar.ProgressBar, null)
+    ),
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(_ProgressBar.ProgressBar, { max: 100, value: 0 })
+    ),
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(_ProgressBar.ProgressBar, { max: 100, value: 50 })
+    ),
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(_ProgressBar.ProgressBar, { max: 100, value: 100 })
+    )
+  );
+};
+
+var LoadingSpinnerExample = function LoadingSpinnerExample() {
+  return _reactForAtom.React.createElement(
+    'div',
+    null,
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(_LoadingSpinner.LoadingSpinner, { size: 'EXTRA_SMALL' })
+    ),
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(_LoadingSpinner.LoadingSpinner, { size: 'SMALL' })
+    ),
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(_LoadingSpinner.LoadingSpinner, { size: 'MEDIUM' })
+    ),
+    _reactForAtom.React.createElement(
+      _Block.Block,
+      null,
+      _reactForAtom.React.createElement(_LoadingSpinner.LoadingSpinner, { size: 'LARGE' })
+    )
+  );
+};
+
+var ProgressIndicatorExamples = {
   sectionName: 'Progress Indicators',
   description: 'Show that work is being performed. Consider using one of these for any work > 1s.',
-  examples: [
-    {
-      title: 'ProgressBar',
-      component: ProgressBarExample,
-    },
-    {
-      title: 'LoadingSpinner',
-      component: LoadingSpinnerExample,
-    },
-  ],
+  examples: [{
+    title: 'ProgressBar',
+    component: ProgressBarExample
+  }, {
+    title: 'LoadingSpinner',
+    component: LoadingSpinnerExample
+  }]
 };
+exports.ProgressIndicatorExamples = ProgressIndicatorExamples;

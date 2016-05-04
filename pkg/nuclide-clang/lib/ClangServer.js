@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,62 +10,40 @@
  * the root directory of this source tree.
  */
 
-import type ClangFlagsManager from './ClangFlagsManager';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import invariant from 'assert';
-import path from 'path';
-import split from 'split';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import {EventEmitter} from 'events';
-import {checkOutput, safeSpawn, promises} from '../../nuclide-commons';
-import {getLogger} from '../../nuclide-logging';
-
-// Do not tie up the Buck server continuously retrying for flags.
-const FLAGS_RETRY_LIMIT = 2;
-
-// Mac OS X (El Capitan) prints this warning when loading the libclang library.
-// It's not silenceable and has no effect, so just ignore it.
-const DYLD_WARNING = 'dyld: warning, LC_RPATH';
-
-const logger = getLogger();
-const pathToLibClangServer = path.join(__dirname, '../python/clang_server.py');
-
-async function _findClangServerArgs(): Promise<{
-  libClangLibraryFile: ?string;
-  pythonExecutable: string;
-  pythonPathEnv: ?string;
-}> {
-  let findClangServerArgs;
+var _findClangServerArgs = _asyncToGenerator(function* () {
+  var findClangServerArgs = undefined;
   try {
     findClangServerArgs = require('./fb/find-clang-server-args');
   } catch (e) {
     // Ignore.
   }
 
-  let libClangLibraryFile;
+  var libClangLibraryFile = undefined;
   if (process.platform === 'darwin') {
-    const result = await checkOutput('xcode-select', ['--print-path']);
+    var result = yield (0, _nuclideCommons.checkOutput)('xcode-select', ['--print-path']);
     if (result.exitCode === 0) {
-      libClangLibraryFile = result.stdout.trim() +
-        '/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib';
+      libClangLibraryFile = result.stdout.trim() + '/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib';
     }
   }
 
-  const clangServerArgs = {
-    libClangLibraryFile,
+  var clangServerArgs = {
+    libClangLibraryFile: libClangLibraryFile,
     pythonExecutable: 'python',
-    pythonPathEnv: path.join(__dirname, '../pythonpath'),
+    pythonPathEnv: _path2.default.join(__dirname, '../pythonpath')
   };
   if (typeof findClangServerArgs === 'function') {
-    const clangServerArgsOverrides = await findClangServerArgs();
-    return {...clangServerArgs, ...clangServerArgsOverrides};
+    var clangServerArgsOverrides = yield findClangServerArgs();
+    return _extends({}, clangServerArgs, clangServerArgsOverrides);
   } else {
     return clangServerArgs;
   }
-}
+});
 
-let getDefaultFlags;
-async function augmentDefaultFlags(src: string, flags: Array<string>): Promise<Array<string>> {
+var augmentDefaultFlags = _asyncToGenerator(function* (src, flags) {
   if (getDefaultFlags === undefined) {
     getDefaultFlags = null;
     try {
@@ -74,322 +53,349 @@ async function augmentDefaultFlags(src: string, flags: Array<string>): Promise<A
     }
   }
   if (getDefaultFlags != null) {
-    return flags.concat(await getDefaultFlags(src));
+    return flags.concat((yield getDefaultFlags(src)));
   }
   return flags;
-}
-
-type Connection = {
-  dispose: () => any;
-  process: child_process$ChildProcess;
-  readableStream: stream$Readable;
-  writableStream: stream$Writable;
-};
+});
 
 // List of supported methods. Keep in sync with the Python server.
-type ClangServerRequest =
-  'compile' | 'get_completions' | 'get_declaration' | 'get_declaration_info' |
-  'get_outline';
 
-export default class ClangServer {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  _src: string;
-  _clangFlagsManager: ClangFlagsManager;
-  _emitter: EventEmitter;
-  _nextRequestId: number;
-  _lastProcessedRequestId: number;
-  _asyncConnection: ?Connection;
-  _pendingCompileRequests: number;
-  _getAsyncConnection: () => Promise<?Connection>;
-  _disposed: boolean;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  // Cache the flags-fetching promise so we don't end up invoking Buck twice.
-  _flagsPromise: ?Promise<?Array<string>>;
-  _flagsRetries: number;
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-  // Detect when flags have changed so we can alert the client.
-  _flagsChanged: boolean;
-  _flagsChangedSubscription: ?rx$ISubscription;
+var _assert = require('assert');
 
-  constructor(clangFlagsManager: ClangFlagsManager, src: string) {
+var _assert2 = _interopRequireDefault(_assert);
+
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
+var _split = require('split');
+
+var _split2 = _interopRequireDefault(_split);
+
+var _events = require('events');
+
+var _nuclideCommons = require('../../nuclide-commons');
+
+var _nuclideLogging = require('../../nuclide-logging');
+
+// Do not tie up the Buck server continuously retrying for flags.
+var FLAGS_RETRY_LIMIT = 2;
+
+// Mac OS X (El Capitan) prints this warning when loading the libclang library.
+// It's not silenceable and has no effect, so just ignore it.
+var DYLD_WARNING = 'dyld: warning, LC_RPATH';
+
+var logger = (0, _nuclideLogging.getLogger)();
+var pathToLibClangServer = _path2.default.join(__dirname, '../python/clang_server.py');
+
+var getDefaultFlags = undefined;
+
+var ClangServer = (function () {
+  function ClangServer(clangFlagsManager, src) {
+    _classCallCheck(this, ClangServer);
+
     this._src = src;
     this._clangFlagsManager = clangFlagsManager;
-    this._emitter = new EventEmitter();
+    this._emitter = new _events.EventEmitter();
     this._nextRequestId = 0;
     this._lastProcessedRequestId = -1;
     this._pendingCompileRequests = 0;
-    this._getAsyncConnection = promises.serializeAsyncCall(this._getAsyncConnectionImpl.bind(this));
+    this._getAsyncConnection = _nuclideCommons.promises.serializeAsyncCall(this._getAsyncConnectionImpl.bind(this));
     this._disposed = false;
     this._flagsRetries = 0;
     this._flagsChanged = false;
     this._flagsChangedSubscription = null;
   }
 
-  dispose() {
-    this._disposed = true;
-    this._cleanup();
-  }
+  _createClass(ClangServer, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._disposed = true;
+      this._cleanup();
+    }
 
-  /**
-   * Returns RSS of the child process in bytes.
-   * Works on Unix and Mac OS X.
-   */
-  async getMemoryUsage(): Promise<number> {
-    if (this._asyncConnection == null) {
-      return 0;
-    }
-    const {exitCode, stdout} = await checkOutput(
-      'ps',
-      ['-p', this._asyncConnection.process.pid.toString(), '-o', 'rss='],
-    );
-    if (exitCode !== 0) {
-      return 0;
-    }
-    return parseInt(stdout, 10) * 1024; // ps returns KB
-  }
+    /**
+     * Returns RSS of the child process in bytes.
+     * Works on Unix and Mac OS X.
+     */
+  }, {
+    key: 'getMemoryUsage',
+    value: _asyncToGenerator(function* () {
+      if (this._asyncConnection == null) {
+        return 0;
+      }
 
-  _cleanup() {
-    // Fail all pending requests.
-    // The Clang server receives requests serially via stdin (and processes them in that order)
-    // so it's quite safe to assume that requests are processed in order.
-    for (let reqid = this._lastProcessedRequestId + 1; reqid < this._nextRequestId; reqid++) {
-      this._emitter.emit(reqid.toString(16), {error: 'Server was killed.'});
-    }
-    if (this._asyncConnection) {
-      this._asyncConnection.dispose();
-    }
-    this._emitter.removeAllListeners();
-    if (this._flagsChangedSubscription != null) {
-      this._flagsChangedSubscription.unsubscribe();
-      this._flagsChangedSubscription = null;
-    }
-  }
+      var _ref = yield (0, _nuclideCommons.checkOutput)('ps', ['-p', this._asyncConnection.process.pid.toString(), '-o', 'rss=']);
 
-  getFlags(): Promise<?Array<string>> {
-    if (this._flagsPromise != null) {
-      return this._flagsPromise;
+      var exitCode = _ref.exitCode;
+      var stdout = _ref.stdout;
+
+      if (exitCode !== 0) {
+        return 0;
+      }
+      return parseInt(stdout, 10) * 1024; // ps returns KB
+    })
+  }, {
+    key: '_cleanup',
+    value: function _cleanup() {
+      // Fail all pending requests.
+      // The Clang server receives requests serially via stdin (and processes them in that order)
+      // so it's quite safe to assume that requests are processed in order.
+      for (var reqid = this._lastProcessedRequestId + 1; reqid < this._nextRequestId; reqid++) {
+        this._emitter.emit(reqid.toString(16), { error: 'Server was killed.' });
+      }
+      if (this._asyncConnection) {
+        this._asyncConnection.dispose();
+      }
+      this._emitter.removeAllListeners();
+      if (this._flagsChangedSubscription != null) {
+        this._flagsChangedSubscription.unsubscribe();
+        this._flagsChangedSubscription = null;
+      }
     }
-    this._flagsPromise = this._clangFlagsManager.getFlagsForSrc(this._src)
-      .then(result => {
+  }, {
+    key: 'getFlags',
+    value: function getFlags() {
+      var _this = this;
+
+      if (this._flagsPromise != null) {
+        return this._flagsPromise;
+      }
+      this._flagsPromise = this._clangFlagsManager.getFlagsForSrc(this._src).then(function (result) {
         if (result) {
-          this._flagsChangedSubscription = result.changes.subscribe(() => {
-            this._flagsChanged = true;
-          }, () => {
+          _this._flagsChangedSubscription = result.changes.subscribe(function () {
+            _this._flagsChanged = true;
+          }, function () {
             // Will be automatically unsubscribed here.
-            this._flagsChangedSubscription = null;
+            _this._flagsChangedSubscription = null;
           });
           return result.flags;
         }
         return null;
-      }, e => {
-        logger.error(
-          `clang-server: Could not get flags for ${this._src} (retry ${this._flagsRetries})`, e);
-        if (this._flagsRetries < FLAGS_RETRY_LIMIT) {
-          this._flagsPromise = null;
-          this._flagsRetries++;
+      }, function (e) {
+        logger.error('clang-server: Could not get flags for ' + _this._src + ' (retry ' + _this._flagsRetries + ')', e);
+        if (_this._flagsRetries < FLAGS_RETRY_LIMIT) {
+          _this._flagsPromise = null;
+          _this._flagsRetries++;
         }
       });
-    return this._flagsPromise;
-  }
-
-  getFlagsChanged(): boolean {
-    return this._flagsChanged;
-  }
-
-  /**
-   * Send a request to the Clang server.
-   * Requests are processed serially and strictly in order.
-   * If the server is currently compiling, all other requests will automatically return null
-   * (unless the `blocking` parameter is explicitly provided).
-   */
-  async makeRequest(
-    method: ClangServerRequest,
-    defaultFlags: ?Array<string>,
-    params: Object,
-    blocking?: boolean,
-  ): Promise<?Object> {
-    invariant(!this._disposed, 'calling makeRequest on a disposed ClangServer');
-    if (method === 'compile') {
-      this._pendingCompileRequests++;
-    } else if (!blocking && this._pendingCompileRequests) {
-      // All non-blocking requests should instantly fail.
-      // This allows the client to fall back to default autocomplete, ctags, etc.
-      return null;
+      return this._flagsPromise;
     }
-    try {
-      return await this._makeRequestImpl(method, defaultFlags, params);
-    } finally {
+  }, {
+    key: 'getFlagsChanged',
+    value: function getFlagsChanged() {
+      return this._flagsChanged;
+    }
+
+    /**
+     * Send a request to the Clang server.
+     * Requests are processed serially and strictly in order.
+     * If the server is currently compiling, all other requests will automatically return null
+     * (unless the `blocking` parameter is explicitly provided).
+     */
+  }, {
+    key: 'makeRequest',
+    value: _asyncToGenerator(function* (method, defaultFlags, params, blocking) {
+      (0, _assert2.default)(!this._disposed, 'calling makeRequest on a disposed ClangServer');
       if (method === 'compile') {
-        this._pendingCompileRequests--;
-      }
-    }
-  }
-
-  async _makeRequestImpl(
-    method: ClangServerRequest,
-    defaultFlags: ?Array<string>,
-    params: Object,
-  ): Promise<?Object> {
-    let flags = await this.getFlags();
-    let accurateFlags = true;
-    if (flags == null) {
-      if (defaultFlags == null) {
+        this._pendingCompileRequests++;
+      } else if (!blocking && this._pendingCompileRequests) {
+        // All non-blocking requests should instantly fail.
+        // This allows the client to fall back to default autocomplete, ctags, etc.
         return null;
       }
-      flags = await augmentDefaultFlags(this._src, defaultFlags);
-      accurateFlags = false;
-    }
-
-    const connection = await this._getAsyncConnection();
-    if (connection == null) {
-      return null;
-    }
-
-    const reqid = this._getNextRequestId();
-    const request = {reqid, method, flags, ...params};
-    const logData = JSON.stringify(request, (key, value) => {
-      // File contents are too large and clutter up the logs, so exclude them.
-      // We generally only want to see the flags for 'compile' commands, since they'll usually
-      // be the same for all other commands (barring an unexpected restart).
-      if (key === 'contents' || (method !== 'compile' && key === 'flags')) {
-        return undefined;
-      } else {
-        return value;
-      }
-    });
-
-    logger.debug('LibClang request: ' + logData);
-    // Because Node uses an event-loop, we do not have to worry about a call to
-    // write() coming in from another thread between our two calls here.
-    const {writableStream} = connection;
-    writableStream.write(JSON.stringify(request));
-    writableStream.write('\n');
-
-    return new Promise((resolve, reject) => {
-      this._emitter.once(reqid, response => {
-        logger.debug('LibClang response: ' + JSON.stringify(response));
-        const isError = 'error' in response;
-        if (isError && !this._disposed) {
-          logger.error('error received from clang_server.py for request:',
-            logData,
-            response['error']);
-        }
-        this._lastProcessedRequestId = parseInt(reqid, 16);
-        if (method === 'compile') {
-          // Using default flags typically results in poor diagnostics, so let the caller know.
-          response.accurateFlags = accurateFlags;
-        }
-        (isError ? reject : resolve)(response);
-      });
-    });
-  }
-
-  _getNextRequestId(): string {
-    return (this._nextRequestId++).toString(16);
-  }
-
-  async _getAsyncConnectionImpl(): Promise<?Connection> {
-    if (this._asyncConnection == null) {
       try {
-        const connection = await this.createAsyncConnection(this._src);
-        connection.readableStream
-          .pipe(split(JSON.parse))
-          .on('data', response => {
-            const id = response['reqid'];
-            this._emitter.emit(id, response);
-          })
-          .on('error', error => {
-            if (!this._disposed) {
-              logger.error(
-                'Failed to handle libclang output, most likely the libclang python'
-                + ' server crashed.',
-                error,
-              );
-              this._cleanup();
-            }
-            this._asyncConnection = null;
-            this._lastProcessedRequestId = this._nextRequestId - 1;
-          });
-        this._asyncConnection = connection;
-      } catch (e) {
-        logger.error('Could not connect to Clang server', e);
+        return yield this._makeRequestImpl(method, defaultFlags, params);
+      } finally {
+        if (method === 'compile') {
+          this._pendingCompileRequests--;
+        }
       }
-    }
-    return this._asyncConnection;
-  }
+    })
+  }, {
+    key: '_makeRequestImpl',
+    value: _asyncToGenerator(function* (method, defaultFlags, params) {
+      var _this2 = this;
 
-  async createAsyncConnection(src: string): Promise<Connection> {
-    return await new Promise(async (resolve, reject) => {
-      const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = await _findClangServerArgs();
-      const env: any = {
-        PYTHONPATH: pythonPathEnv,
-      };
-      // Note: undefined values in `env` get serialized to the string "undefined".
-      // Thus we have to make sure the key only gets set for valid values.
-      if (libClangLibraryFile != null) {
-        // On Mac OSX El Capitan, bash seems to wipe out the `LD_LIBRARY_PATH` and
-        // `DYLD_LIBRARY_PATH` environment variables. So, set this env var which is read by
-        // clang_server.py to explicitly set the file path to load.
-        env.LIB_CLANG_LIBRARY_FILE = libClangLibraryFile;
+      var flags = yield this.getFlags();
+      var accurateFlags = true;
+      if (flags == null) {
+        if (defaultFlags == null) {
+          return null;
+        }
+        flags = yield augmentDefaultFlags(this._src, defaultFlags);
+        accurateFlags = false;
       }
-      const options = {
-        cwd: path.dirname(pathToLibClangServer),
-        // The process should use its ordinary stderr for errors.
-        stdio: ['pipe', null, 'pipe', 'pipe'],
-        detached: false, // When Atom is killed, clang_server.py should be killed, too.
-        env,
-      };
 
-      // Note that safeSpawn() often overrides options.env.PATH, but that only happens when
-      // options.env is undefined (which is not the case here). This will only be an issue if the
-      // system cannot find `pythonExecutable`.
-      const child = await safeSpawn(pythonExecutable, /* args */ [pathToLibClangServer], options);
+      var connection = yield this._getAsyncConnection();
+      if (connection == null) {
+        return null;
+      }
 
-      child.on('close', exitCode => {
-        if (!this._disposed) {
-          logger.error(`${pathToLibClangServer} exited with code ${exitCode}`);
-        }
-      });
-      child.stderr.on('data', error => {
-        if (error instanceof Buffer) {
-          error = error.toString('utf8');
-        }
-        if (error.indexOf(DYLD_WARNING) === -1) {
-          logger.error('Error receiving data', error);
-        }
-      });
-      /* $FlowFixMe - update Flow defs for ChildProcess */
-      const writableStream = child.stdio[3];
-      writableStream.on('error', error => {
-        logger.error('Error writing data', error);
-      });
-
-      let childRunning = true;
-      child.on('exit', () => {
-        childRunning = false;
-      });
-      // Make sure the bidirectional communication channel is set up before
-      // resolving this Promise.
-      child.stdout.once('data', function(data: Buffer) {
-        if (data.toString().trim() === 'ack') {
-          const result = {
-            dispose: () => {
-              if (childRunning) {
-                child.kill();
-                childRunning = false;
-              }
-            },
-            process: child,
-            readableStream: child.stdout,
-            writableStream,
-          };
-          resolve(result);
+      var reqid = this._getNextRequestId();
+      var request = _extends({ reqid: reqid, method: method, flags: flags }, params);
+      var logData = JSON.stringify(request, function (key, value) {
+        // File contents are too large and clutter up the logs, so exclude them.
+        // We generally only want to see the flags for 'compile' commands, since they'll usually
+        // be the same for all other commands (barring an unexpected restart).
+        if (key === 'contents' || method !== 'compile' && key === 'flags') {
+          return undefined;
         } else {
-          reject(data);
+          return value;
         }
       });
-      writableStream.write(`init:${src}\n`);
-    });
-  }
 
-}
+      logger.debug('LibClang request: ' + logData);
+      // Because Node uses an event-loop, we do not have to worry about a call to
+      // write() coming in from another thread between our two calls here.
+      var writableStream = connection.writableStream;
+
+      writableStream.write(JSON.stringify(request));
+      writableStream.write('\n');
+
+      return new Promise(function (resolve, reject) {
+        _this2._emitter.once(reqid, function (response) {
+          logger.debug('LibClang response: ' + JSON.stringify(response));
+          var isError = ('error' in response);
+          if (isError && !_this2._disposed) {
+            logger.error('error received from clang_server.py for request:', logData, response['error']);
+          }
+          _this2._lastProcessedRequestId = parseInt(reqid, 16);
+          if (method === 'compile') {
+            // Using default flags typically results in poor diagnostics, so let the caller know.
+            response.accurateFlags = accurateFlags;
+          }
+          (isError ? reject : resolve)(response);
+        });
+      });
+    })
+  }, {
+    key: '_getNextRequestId',
+    value: function _getNextRequestId() {
+      return (this._nextRequestId++).toString(16);
+    }
+  }, {
+    key: '_getAsyncConnectionImpl',
+    value: _asyncToGenerator(function* () {
+      var _this3 = this;
+
+      if (this._asyncConnection == null) {
+        try {
+          var connection = yield this.createAsyncConnection(this._src);
+          connection.readableStream.pipe((0, _split2.default)(JSON.parse)).on('data', function (response) {
+            var id = response['reqid'];
+            _this3._emitter.emit(id, response);
+          }).on('error', function (error) {
+            if (!_this3._disposed) {
+              logger.error('Failed to handle libclang output, most likely the libclang python' + ' server crashed.', error);
+              _this3._cleanup();
+            }
+            _this3._asyncConnection = null;
+            _this3._lastProcessedRequestId = _this3._nextRequestId - 1;
+          });
+          this._asyncConnection = connection;
+        } catch (e) {
+          logger.error('Could not connect to Clang server', e);
+        }
+      }
+      return this._asyncConnection;
+    })
+  }, {
+    key: 'createAsyncConnection',
+    value: _asyncToGenerator(function* (src) {
+      var _this4 = this;
+
+      return yield new Promise(_asyncToGenerator(function* (resolve, reject) {
+        var _ref2 = yield _findClangServerArgs();
+
+        var libClangLibraryFile = _ref2.libClangLibraryFile;
+        var pythonPathEnv = _ref2.pythonPathEnv;
+        var pythonExecutable = _ref2.pythonExecutable;
+
+        var env = {
+          PYTHONPATH: pythonPathEnv
+        };
+        // Note: undefined values in `env` get serialized to the string "undefined".
+        // Thus we have to make sure the key only gets set for valid values.
+        if (libClangLibraryFile != null) {
+          // On Mac OSX El Capitan, bash seems to wipe out the `LD_LIBRARY_PATH` and
+          // `DYLD_LIBRARY_PATH` environment variables. So, set this env var which is read by
+          // clang_server.py to explicitly set the file path to load.
+          env.LIB_CLANG_LIBRARY_FILE = libClangLibraryFile;
+        }
+        var options = {
+          cwd: _path2.default.dirname(pathToLibClangServer),
+          // The process should use its ordinary stderr for errors.
+          stdio: ['pipe', null, 'pipe', 'pipe'],
+          detached: false, // When Atom is killed, clang_server.py should be killed, too.
+          env: env
+        };
+
+        // Note that safeSpawn() often overrides options.env.PATH, but that only happens when
+        // options.env is undefined (which is not the case here). This will only be an issue if the
+        // system cannot find `pythonExecutable`.
+        var child = yield (0, _nuclideCommons.safeSpawn)(pythonExecutable, /* args */[pathToLibClangServer], options);
+
+        child.on('close', function (exitCode) {
+          if (!_this4._disposed) {
+            logger.error(pathToLibClangServer + ' exited with code ' + exitCode);
+          }
+        });
+        child.stderr.on('data', function (error) {
+          if (error instanceof Buffer) {
+            error = error.toString('utf8');
+          }
+          if (error.indexOf(DYLD_WARNING) === -1) {
+            logger.error('Error receiving data', error);
+          }
+        });
+        /* $FlowFixMe - update Flow defs for ChildProcess */
+        var writableStream = child.stdio[3];
+        writableStream.on('error', function (error) {
+          logger.error('Error writing data', error);
+        });
+
+        var childRunning = true;
+        child.on('exit', function () {
+          childRunning = false;
+        });
+        // Make sure the bidirectional communication channel is set up before
+        // resolving this Promise.
+        child.stdout.once('data', function (data) {
+          if (data.toString().trim() === 'ack') {
+            var result = {
+              dispose: function dispose() {
+                if (childRunning) {
+                  child.kill();
+                  childRunning = false;
+                }
+              },
+              process: child,
+              readableStream: child.stdout,
+              writableStream: writableStream
+            };
+            resolve(result);
+          } else {
+            reject(data);
+          }
+        });
+        writableStream.write('init:' + src + '\n');
+      }));
+    })
+  }]);
+
+  return ClangServer;
+})();
+
+exports.default = ClangServer;
+module.exports = exports.default;
+
+// Cache the flags-fetching promise so we don't end up invoking Buck twice.
+
+// Detect when flags have changed so we can alert the client.

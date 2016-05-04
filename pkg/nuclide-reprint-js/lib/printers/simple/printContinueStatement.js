@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +8,25 @@
  * the root directory of this source tree.
  */
 
-import type {ContinueStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _constantsMarkers = require('../../constants/markers');
 
-import markers from '../../constants/markers';
-import wrapStatement from '../../wrappers/simple/wrapStatement';
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
-function printContinueStatement(print: Print, node: ContinueStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
+var _wrappersSimpleWrapStatement = require('../../wrappers/simple/wrapStatement');
 
-  let parts = ['continue'];
+var _wrappersSimpleWrapStatement2 = _interopRequireDefault(_wrappersSimpleWrapStatement);
+
+function printContinueStatement(print, node) {
+  var wrap = function wrap(x) {
+    return (0, _wrappersSimpleWrapStatement2.default)(print, node, x);
+  };
+
+  var parts = ['continue'];
   if (node.label) {
-    const label = node.label;
-    parts = parts.concat([
-      ':',
-      markers.noBreak,
-      markers.space,
-      print(label),
-    ]);
+    var label = node.label;
+    parts = parts.concat([':', _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, print(label)]);
   }
-  return wrap([
-    parts,
-    markers.noBreak,
-    ';',
-  ]);
+  return wrap([parts, _constantsMarkers2.default.noBreak, ';']);
 }
 
 module.exports = printContinueStatement;

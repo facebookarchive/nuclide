@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,123 +8,140 @@
  * the root directory of this source tree.
  */
 
-import DebuggerActions from './DebuggerActions';
-import DebuggerProcessInfo from './DebuggerProcessInfo';
-import {DebuggerStore} from './DebuggerStore';
-import {React} from 'react-for-atom';
-import {
-  Button,
-  ButtonTypes,
-} from '../../nuclide-ui/lib/Button';
-import {ButtonToolbar} from '../../nuclide-ui/lib/ButtonToolbar';
+var _DebuggerActions = require('./DebuggerActions');
 
-type State = {
-  selectedProcess: ?DebuggerProcessInfo;
-  processes: Array<DebuggerProcessInfo>;
-  debuggerStoreChangeListener: ?IDisposable;
-};
+var _DebuggerActions2 = _interopRequireDefault(_DebuggerActions);
+
+var _DebuggerProcessInfo = require('./DebuggerProcessInfo');
+
+var _DebuggerProcessInfo2 = _interopRequireDefault(_DebuggerProcessInfo);
+
+var _DebuggerStore = require('./DebuggerStore');
+
+var _reactForAtom = require('react-for-atom');
+
+var _nuclideUiLibButton = require('../../nuclide-ui/lib/Button');
+
+var _nuclideUiLibButtonToolbar = require('../../nuclide-ui/lib/ButtonToolbar');
 
 /**
  * View for setting up a new debugging session.
  */
-const DebuggerSessionSelector = React.createClass({
+var DebuggerSessionSelector = _reactForAtom.React.createClass({
+  displayName: 'DebuggerSessionSelector',
+
   propTypes: {
-    actions: React.PropTypes.instanceOf(DebuggerActions).isRequired,
-    store: React.PropTypes.instanceOf(DebuggerStore).isRequired,
+    actions: _reactForAtom.React.PropTypes.instanceOf(_DebuggerActions2.default).isRequired,
+    store: _reactForAtom.React.PropTypes.instanceOf(_DebuggerStore.DebuggerStore).isRequired
   },
 
-  getInitialState(): State {
+  getInitialState: function getInitialState() {
     return {
       processes: [],
       selectedProcess: null,
-      debuggerStoreChangeListener: null,
+      debuggerStoreChangeListener: null
     };
   },
 
-  componentWillMount() {
+  componentWillMount: function componentWillMount() {
     this.setState({
-      debuggerStoreChangeListener: this.props.store.onChange(this._updateProcessList),
+      debuggerStoreChangeListener: this.props.store.onChange(this._updateProcessList)
     });
     this._updateProcessList();
   },
 
-  componentWillUnmount() {
-    const listener = this.state.debuggerStoreChangeListener;
+  componentWillUnmount: function componentWillUnmount() {
+    var listener = this.state.debuggerStoreChangeListener;
     if (listener != null) {
       listener.dispose();
     }
   },
 
-  render(): ?React.Element {
-    return (
-      <section className="padded">
-        <h2>Attach to Process</h2>
-        <div className="form">
-          <div className="form-group">
-            <select
-              className="form-control"
-              onChange={this._handleSelectProcess}
-              value={this.state.selectedProcess == null
-                ? null
-                : this.state.processes.indexOf(this.state.selectedProcess)
-              }>
-              <option disabled>
-                Process ID
-              </option>
-              {this._renderProcessChoices()}
-            </select>
-          </div>
-          <ButtonToolbar className="form-group">
-            <Button
-              buttonType={ButtonTypes.PRIMARY}
-              onClick={this._handleClick}
-              disabled={this.state.selectedProcess === null}>
-              Attach
-            </Button>
-            <Button onClick={this._updateProcessList}>
-              Refresh List
-            </Button>
-          </ButtonToolbar>
-        </div>
-      </section>
+  render: function render() {
+    return _reactForAtom.React.createElement(
+      'section',
+      { className: 'padded' },
+      _reactForAtom.React.createElement(
+        'h2',
+        null,
+        'Attach to Process'
+      ),
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'form' },
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'form-group' },
+          _reactForAtom.React.createElement(
+            'select',
+            {
+              className: 'form-control',
+              onChange: this._handleSelectProcess,
+              value: this.state.selectedProcess == null ? null : this.state.processes.indexOf(this.state.selectedProcess) },
+            _reactForAtom.React.createElement(
+              'option',
+              { disabled: true },
+              'Process ID'
+            ),
+            this._renderProcessChoices()
+          )
+        ),
+        _reactForAtom.React.createElement(
+          _nuclideUiLibButtonToolbar.ButtonToolbar,
+          { className: 'form-group' },
+          _reactForAtom.React.createElement(
+            _nuclideUiLibButton.Button,
+            {
+              buttonType: _nuclideUiLibButton.ButtonTypes.PRIMARY,
+              onClick: this._handleClick,
+              disabled: this.state.selectedProcess === null },
+            'Attach'
+          ),
+          _reactForAtom.React.createElement(
+            _nuclideUiLibButton.Button,
+            { onClick: this._updateProcessList },
+            'Refresh List'
+          )
+        )
+      )
     );
   },
 
-  _updateProcessList(): void {
-    this.props.store.getProcessInfoList().then(processList => {
-      this.setState({
-        processes: processList.sort(compareDebuggerProcessInfo)});
+  _updateProcessList: function _updateProcessList() {
+    var _this = this;
+
+    this.props.store.getProcessInfoList().then(function (processList) {
+      _this.setState({
+        processes: processList.sort(compareDebuggerProcessInfo) });
     });
   },
 
-  _renderProcessChoices(): ?Array<React.Element> {
-    return this.state.processes
-      .map((item, index) =>
-        <option key={item.toString()} value={index}>
-          {item.toString()}
-        </option>
+  _renderProcessChoices: function _renderProcessChoices() {
+    return this.state.processes.map(function (item, index) {
+      return _reactForAtom.React.createElement(
+        'option',
+        { key: item.toString(), value: index },
+        item.toString()
       );
-  },
-
-  _handleSelectProcess(e: any) {
-    this.setState({
-      selectedProcess: this.state.processes[e.target.value],
     });
   },
 
-  _handleClick(e: any) {
+  _handleSelectProcess: function _handleSelectProcess(e) {
+    this.setState({
+      selectedProcess: this.state.processes[e.target.value]
+    });
+  },
+
+  _handleClick: function _handleClick(e) {
     if (this.state.selectedProcess) {
       // fire and forget.
       this.props.actions.startDebugging(this.state.selectedProcess);
     }
-  },
+  }
 });
 
-function compareDebuggerProcessInfo(
-  value: DebuggerProcessInfo,
-  other: DebuggerProcessInfo,
-): number {
-  const cmp = value.getServiceName().localeCompare(other.getServiceName());
+function compareDebuggerProcessInfo(value, other) {
+  var cmp = value.getServiceName().localeCompare(other.getServiceName());
   if (cmp === 0) {
     return value.compareDetails(other);
   } else {

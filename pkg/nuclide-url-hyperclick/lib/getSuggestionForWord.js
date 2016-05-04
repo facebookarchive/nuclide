@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +10,41 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickSuggestion} from '../../hyperclick';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {Range} from 'atom';
-import shell from 'shell';
-import urlregexp from 'urlregexp';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-export default async function getSuggestionForWord(
-  textEditor: atom$TextEditor,
-  text: string,
-  range: atom$Range
-): Promise<?HyperclickSuggestion> {
+var _atom = require('atom');
+
+var _shell = require('shell');
+
+var _shell2 = _interopRequireDefault(_shell);
+
+var _urlregexp = require('urlregexp');
+
+var _urlregexp2 = _interopRequireDefault(_urlregexp);
+
+exports.default = _asyncToGenerator(function* (textEditor, text, range) {
   // The match is an array that also has an index property, something that
-  // Flow does not appear to understand.
-  const match: any = urlregexp.exec(text);
+
+  var match = _urlregexp2.default.exec(text);
   if (match == null) {
     return null;
   }
 
-  urlregexp.lastIndex = 0;
+  _urlregexp2.default.lastIndex = 0;
 
-  const url = match[0];
-  const index = match.index;
-  const matchLength = url.length;
+  var url = match[0];
+  var index = match.index;
+  var matchLength = url.length;
 
   // Update the range to include only what was matched
-  const urlRange = new Range(
-    [range.start.row, range.start.column + index],
-    [range.end.row,   range.start.column + index + matchLength],
-  );
+  var urlRange = new _atom.Range([range.start.row, range.start.column + index], [range.end.row, range.start.column + index + matchLength]);
 
   return {
     range: urlRange,
-    callback() {
-      let validUrl;
+    callback: function callback() {
+      var validUrl = undefined;
       if (url.startsWith('http://') || url.startsWith('https://')) {
         validUrl = url;
       } else {
@@ -50,7 +52,9 @@ export default async function getSuggestionForWord(
         // http:// to them for them to open properly.
         validUrl = 'http://' + url;
       }
-      shell.openExternal(validUrl);
-    },
+      _shell2.default.openExternal(validUrl);
+    }
   };
-}
+});
+module.exports = exports.default;
+// Flow does not appear to understand.

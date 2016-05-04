@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +8,16 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {TypeAlias} from 'ast-types-flow';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printTypeAlias(print: Print, node: TypeAlias): Lines {
-  return flatten([
-    'type',
-    markers.noBreak,
-    markers.space,
-    print(node.id),
-    node.typeParameters ? print(node.typeParameters) : markers.empty,
-    markers.noBreak,
-    markers.space,
-    '=',
-    markers.space,
-    print(node.right),
-    markers.noBreak,
-    ';',
-    markers.hardBreak,
-  ]);
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+function printTypeAlias(print, node) {
+  return (0, _utilsFlatten2.default)(['type', _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, print(node.id), node.typeParameters ? print(node.typeParameters) : _constantsMarkers2.default.empty, _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, '=', _constantsMarkers2.default.space, print(node.right), _constantsMarkers2.default.noBreak, ';', _constantsMarkers2.default.hardBreak]);
 }
 
 module.exports = printTypeAlias;

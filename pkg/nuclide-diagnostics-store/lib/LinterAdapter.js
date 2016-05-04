@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,97 +10,95 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import type {
-  DiagnosticMessage,
-  DiagnosticProviderUpdate,
-  FileDiagnosticMessage,
-  LinterMessage,
-  LinterProvider,
-  ProjectDiagnosticMessage,
-  MessageUpdateCallback,
-  MessageInvalidationCallback,
-} from '../../nuclide-diagnostics-base';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import {Range} from 'atom';
+exports.linterMessageToDiagnosticMessage = linterMessageToDiagnosticMessage;
+exports.linterMessagesToDiagnosticUpdate = linterMessagesToDiagnosticUpdate;
 
-import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-import {promises as commonsPromises} from '../../nuclide-commons';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const {RequestSerializer} = commonsPromises;
+var _atom = require('atom');
+
+var _nuclideDiagnosticsProviderBase = require('../../nuclide-diagnostics-provider-base');
+
+var _nuclideCommons = require('../../nuclide-commons');
+
+var RequestSerializer = _nuclideCommons.promises.RequestSerializer;
 
 // Exported for testing.
-export function linterMessageToDiagnosticMessage(
-  msg: LinterMessage,
-  providerName: string,
-): DiagnosticMessage {
+
+function linterMessageToDiagnosticMessage(msg, providerName) {
   // The types are slightly different, so we need to copy to make Flow happy. Basically, a Trace
   // does not need a filePath property, but a LinterTrace does. Trace is a subtype of LinterTrace,
   // so copying works but aliasing does not. For a detailed explanation see
   // https://github.com/facebook/flow/issues/908
-  const trace = msg.trace ? msg.trace.map(component => ({...component})) : undefined;
+  var trace = msg.trace ? msg.trace.map(function (component) {
+    return _extends({}, component);
+  }) : undefined;
   if (msg.filePath) {
-    return ({
+    return {
       scope: 'file',
-      providerName,
+      providerName: providerName,
       type: msg.type,
       filePath: msg.filePath,
       text: msg.text,
       html: msg.html,
-      range: msg.range && Range.fromObject(msg.range),
+      range: msg.range && _atom.Range.fromObject(msg.range),
       trace: trace,
       fix: msg.fix == null ? undefined : {
         oldRange: msg.fix.range,
         oldText: msg.fix.oldText,
-        newText: msg.fix.newText,
-      },
-    }: FileDiagnosticMessage);
+        newText: msg.fix.newText
+      }
+    };
   } else {
-    return ({
+    return {
       scope: 'project',
-      providerName,
+      providerName: providerName,
       type: msg.type,
       text: msg.text,
       html: msg.html,
-      range: msg.range && Range.fromObject(msg.range),
-      trace: trace,
-    }: ProjectDiagnosticMessage);
+      range: msg.range && _atom.Range.fromObject(msg.range),
+      trace: trace
+    };
   }
 }
 
 // Exported for testing.
-export function linterMessagesToDiagnosticUpdate(
-  currentPath: ?NuclideUri,
-  msgs: Array<LinterMessage>,
-  providerName?: string = 'Unnamed Linter',
-): DiagnosticProviderUpdate {
-  const filePathToMessages: Map<NuclideUri, Array<FileDiagnosticMessage>> = new Map();
+
+function linterMessagesToDiagnosticUpdate(currentPath, msgs) {
+  var providerName = arguments.length <= 2 || arguments[2] === undefined ? 'Unnamed Linter' : arguments[2];
+
+  var filePathToMessages = new Map();
   if (currentPath) {
     // Make sure we invalidate the messages for the current path. We may want to
     // figure out which other paths we want to invalidate if it turns out that
     // linters regularly return messages for other files.
     filePathToMessages.set(currentPath, []);
   }
-  const projectMessages = [];
-  for (const msg of msgs) {
-    const diagnosticMessage = linterMessageToDiagnosticMessage(msg, providerName);
+  var projectMessages = [];
+  for (var msg of msgs) {
+    var diagnosticMessage = linterMessageToDiagnosticMessage(msg, providerName);
     if (diagnosticMessage.scope === 'file') {
-      const path = diagnosticMessage.filePath;
-      let messages = filePathToMessages.get(path);
+      var path = diagnosticMessage.filePath;
+      var messages = filePathToMessages.get(path);
       if (messages == null) {
         messages = [];
         filePathToMessages.set(path, messages);
       }
       messages.push(diagnosticMessage);
-    } else { // Project scope.
+    } else {
+      // Project scope.
       projectMessages.push(diagnosticMessage);
     }
   }
   return {
-    filePathToMessages,
-    projectMessages,
+    filePathToMessages: filePathToMessages,
+    projectMessages: projectMessages
   };
 }
 
@@ -114,25 +113,25 @@ export function linterMessagesToDiagnosticUpdate(
  * optional additional field, providerName, to indicate the display name of the
  * linter.
  */
-export class LinterAdapter {
-  _provider: LinterProvider;
 
-  _enabled: boolean;
+var LinterAdapter = (function () {
+  function LinterAdapter(provider) {
+    var _this = this;
 
-  _requestSerializer: RequestSerializer;
+    var ProviderBase = arguments.length <= 1 || arguments[1] === undefined ? _nuclideDiagnosticsProviderBase.DiagnosticsProviderBase : arguments[1];
 
-  _providerUtils: DiagnosticsProviderBase;
+    _classCallCheck(this, LinterAdapter);
 
-  constructor(
-    provider: LinterProvider,
-    ProviderBase?: typeof DiagnosticsProviderBase = DiagnosticsProviderBase,
-  ) {
-    const utilsOptions = {
+    var utilsOptions = {
       grammarScopes: new Set(provider.grammarScopes),
       enableForAllGrammars: provider.allGrammarScopes,
       shouldRunOnTheFly: provider.lintOnFly,
-      onTextEditorEvent: editor => this._runLint(editor),
-      onNewUpdateSubscriber: callback => this._newUpdateSubscriber(callback),
+      onTextEditorEvent: function onTextEditorEvent(editor) {
+        return _this._runLint(editor);
+      },
+      onNewUpdateSubscriber: function onNewUpdateSubscriber(callback) {
+        return _this._newUpdateSubscriber(callback);
+      }
     };
     this._providerUtils = new ProviderBase(utilsOptions);
     this._provider = provider;
@@ -140,52 +139,62 @@ export class LinterAdapter {
     this._requestSerializer = new RequestSerializer();
   }
 
-  async _runLint(editor: TextEditor): Promise<void> {
-    if (this._enabled) {
-      const result = await this._requestSerializer.run(this._provider.lint(editor));
-      if (result.status === 'success') {
-        const linterMessages = result.result;
-        const diagnosticUpdate = linterMessagesToDiagnosticUpdate(
-          editor.getPath(),
-          linterMessages, this._provider.providerName || this._provider.name
-        );
-        this._providerUtils.publishMessageUpdate(diagnosticUpdate);
+  _createClass(LinterAdapter, [{
+    key: '_runLint',
+    value: _asyncToGenerator(function* (editor) {
+      if (this._enabled) {
+        var result = yield this._requestSerializer.run(this._provider.lint(editor));
+        if (result.status === 'success') {
+          var linterMessages = result.result;
+          var diagnosticUpdate = linterMessagesToDiagnosticUpdate(editor.getPath(), linterMessages, this._provider.providerName || this._provider.name);
+          this._providerUtils.publishMessageUpdate(diagnosticUpdate);
+        }
+      }
+    })
+  }, {
+    key: '_newUpdateSubscriber',
+    value: function _newUpdateSubscriber(callback) {
+      var activeTextEditor = atom.workspace.getActiveTextEditor();
+      if (activeTextEditor) {
+        var matchesGrammar = this._provider.grammarScopes.indexOf(activeTextEditor.getGrammar().scopeName) !== -1;
+        if (!this._lintInProgress() && matchesGrammar) {
+          this._runLint(activeTextEditor);
+        }
       }
     }
-  }
-
-  _newUpdateSubscriber(callback: MessageUpdateCallback): void {
-    const activeTextEditor = atom.workspace.getActiveTextEditor();
-    if (activeTextEditor) {
-      const matchesGrammar =
-        this._provider.grammarScopes.indexOf(activeTextEditor.getGrammar().scopeName) !== -1;
-      if (!this._lintInProgress() && matchesGrammar) {
-        this._runLint(activeTextEditor);
-      }
+  }, {
+    key: 'setEnabled',
+    value: function setEnabled(enabled) {
+      this._enabled = enabled;
     }
-  }
+  }, {
+    key: 'setLintOnFly',
+    value: function setLintOnFly(lintOnFly) {
+      this._providerUtils.setRunOnTheFly(lintOnFly && this._provider.lintOnFly);
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._providerUtils.dispose();
+    }
+  }, {
+    key: '_lintInProgress',
+    value: function _lintInProgress() {
+      return this._requestSerializer.isRunInProgress();
+    }
+  }, {
+    key: 'onMessageUpdate',
+    value: function onMessageUpdate(callback) {
+      return this._providerUtils.onMessageUpdate(callback);
+    }
+  }, {
+    key: 'onMessageInvalidation',
+    value: function onMessageInvalidation(callback) {
+      return this._providerUtils.onMessageInvalidation(callback);
+    }
+  }]);
 
-  setEnabled(enabled: boolean): void {
-    this._enabled = enabled;
-  }
+  return LinterAdapter;
+})();
 
-  setLintOnFly(lintOnFly: boolean): void {
-    this._providerUtils.setRunOnTheFly(lintOnFly && this._provider.lintOnFly);
-  }
-
-  dispose(): void {
-    this._providerUtils.dispose();
-  }
-
-  _lintInProgress(): boolean {
-    return this._requestSerializer.isRunInProgress();
-  }
-
-  onMessageUpdate(callback: MessageUpdateCallback): IDisposable {
-    return this._providerUtils.onMessageUpdate(callback);
-  }
-
-  onMessageInvalidation(callback: MessageInvalidationCallback): IDisposable {
-    return this._providerUtils.onMessageInvalidation(callback);
-  }
-}
+exports.LinterAdapter = LinterAdapter;

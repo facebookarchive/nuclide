@@ -1,5 +1,17 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+exports.activate = activate;
+exports.provideRecentFilesService = provideRecentFilesService;
+exports.serialize = serialize;
+exports.deactivate = deactivate;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,55 +21,62 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
+var _assert = require('assert');
 
-import {CompositeDisposable, Disposable} from 'atom';
+var _assert2 = _interopRequireDefault(_assert);
 
-import type RecentFilesServiceType from './RecentFilesService';
+var _atom = require('atom');
 
-class Activation {
-  _subscriptions: CompositeDisposable;
-  _service: RecentFilesServiceType;
+var Activation = (function () {
+  function Activation(state) {
+    var _this = this;
 
-  constructor(state: ?Object) {
-    this._subscriptions = new CompositeDisposable();
-    const RecentFilesService = require('./RecentFilesService');
+    _classCallCheck(this, Activation);
+
+    this._subscriptions = new _atom.CompositeDisposable();
+    var RecentFilesService = require('./RecentFilesService');
     this._service = new RecentFilesService(state);
-    this._subscriptions.add(new Disposable(() => {
-      this._service.dispose();
+    this._subscriptions.add(new _atom.Disposable(function () {
+      _this._service.dispose();
     }));
   }
 
-  getService(): RecentFilesServiceType {
-    return this._service;
-  }
+  _createClass(Activation, [{
+    key: 'getService',
+    value: function getService() {
+      return this._service;
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._subscriptions.dispose();
+    }
+  }]);
 
-  dispose() {
-    this._subscriptions.dispose();
-  }
-}
+  return Activation;
+})();
 
-let activation: ?Activation = null;
+var activation = null;
 
-export function activate(state: ?Object): void {
+function activate(state) {
   if (activation == null) {
     activation = new Activation(state);
   }
 }
 
-export function provideRecentFilesService(): RecentFilesServiceType {
-  invariant(activation);
+function provideRecentFilesService() {
+  (0, _assert2.default)(activation);
   return activation.getService();
 }
 
-export function serialize(): Object {
-  invariant(activation);
+function serialize() {
+  (0, _assert2.default)(activation);
   return {
-    filelist: activation.getService().getRecentFiles(),
+    filelist: activation.getService().getRecentFiles()
   };
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;

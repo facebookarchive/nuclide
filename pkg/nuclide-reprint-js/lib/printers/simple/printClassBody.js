@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +8,30 @@
  * the root directory of this source tree.
  */
 
-import type {ClassBody} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
-import printArrayOfStatements from '../common/printArrayOfStatements';
-import printComments from '../common/printComments';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printClassBody(print: Print, node: ClassBody): Lines {
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+var _commonPrintArrayOfStatements = require('../common/printArrayOfStatements');
+
+var _commonPrintArrayOfStatements2 = _interopRequireDefault(_commonPrintArrayOfStatements);
+
+var _commonPrintComments = require('../common/printComments');
+
+var _commonPrintComments2 = _interopRequireDefault(_commonPrintComments);
+
+function printClassBody(print, node) {
   // Can't put extra new lines in here like BlockStatement since it may be
   // used in a ClassExpression.
-  return flatten([
-    '{',
-    // We want to override the extra space within the first node of a class
-    // body, so we do one hard break and then throw in a no break. The empty
-    // string is necessary to reset the run of markers.
-    markers.hardBreak,
-    markers.indent,
-    '',
-    markers.noBreak,
-    printComments(node.innerComments),
-    printArrayOfStatements(print, node.body),
-    markers.dedent,
-    markers.hardBreak,
-    '}',
-  ]);
+  return (0, _utilsFlatten2.default)(['{',
+  // We want to override the extra space within the first node of a class
+  // body, so we do one hard break and then throw in a no break. The empty
+  // string is necessary to reset the run of markers.
+  _constantsMarkers2.default.hardBreak, _constantsMarkers2.default.indent, '', _constantsMarkers2.default.noBreak, (0, _commonPrintComments2.default)(node.innerComments), (0, _commonPrintArrayOfStatements2.default)(print, node.body), _constantsMarkers2.default.dedent, _constantsMarkers2.default.hardBreak, '}']);
 }
 
 module.exports = printClassBody;

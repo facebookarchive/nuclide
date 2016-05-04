@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +8,18 @@
  * the root directory of this source tree.
  */
 
-import type {IntersectionTypeAnnotation} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printIntersectionTypeAnnotation(
-  print: Print,
-  node: IntersectionTypeAnnotation,
-): Lines {
-  return flatten([
-    markers.openScope,
-    markers.scopeIndent,
-    node.types.map((t, i, arr) => [
-      i === 0 ? markers.scopeBreak : markers.scopeSpaceBreak,
-      print(t),
-      i < arr.length - 1 ? [markers.space, '&'] : markers.empty,
-    ]),
-    markers.scopeDedent,
-    markers.closeScope,
-  ]);
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+function printIntersectionTypeAnnotation(print, node) {
+  return (0, _utilsFlatten2.default)([_constantsMarkers2.default.openScope, _constantsMarkers2.default.scopeIndent, node.types.map(function (t, i, arr) {
+    return [i === 0 ? _constantsMarkers2.default.scopeBreak : _constantsMarkers2.default.scopeSpaceBreak, print(t), i < arr.length - 1 ? [_constantsMarkers2.default.space, '&'] : _constantsMarkers2.default.empty];
+  }), _constantsMarkers2.default.scopeDedent, _constantsMarkers2.default.closeScope]);
 }
 
 module.exports = printIntersectionTypeAnnotation;

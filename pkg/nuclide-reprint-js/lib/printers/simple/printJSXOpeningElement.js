@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,47 +8,29 @@
  * the root directory of this source tree.
  */
 
-import type {JSXOpeningElement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
+
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
 /**
  * Note: A self closing tag gets its own scope, but a non-self closing tag will
  * use the scope opened up in the parent JSXElement.
  */
-function printJSXOpeningElement(print: Print, node: JSXOpeningElement): Lines {
+function printJSXOpeningElement(print, node) {
   // Easier to completely branch on self closing to handle slightly different
   // styles involved with scope breaks.
   if (node.selfClosing) {
-    return flatten([
-      '<',
-      markers.openScope,
-      markers.scopeIndent,
-      markers.noBreak,
-      print(node.name),
-      markers.scopeSpaceBreak,
-      node.attributes.map(a => [
-        print(a),
-        markers.scopeSpaceBreak,
-      ]),
-      markers.scopeDedent,
-      markers.closeScope,
-      '/>',
-    ]);
+    return (0, _utilsFlatten2.default)(['<', _constantsMarkers2.default.openScope, _constantsMarkers2.default.scopeIndent, _constantsMarkers2.default.noBreak, print(node.name), _constantsMarkers2.default.scopeSpaceBreak, node.attributes.map(function (a) {
+      return [print(a), _constantsMarkers2.default.scopeSpaceBreak];
+    }), _constantsMarkers2.default.scopeDedent, _constantsMarkers2.default.closeScope, '/>']);
   } else {
-    return flatten([
-      '<',
-      markers.noBreak,
-      print(node.name),
-      node.attributes.map((a, i, arr) => [
-        i === 0 ? markers.scopeSpaceBreak : markers.empty,
-        print(a),
-        i < arr.length - 1 ? markers.scopeSpaceBreak : markers.empty,
-      ]),
-      '>',
-    ]);
+    return (0, _utilsFlatten2.default)(['<', _constantsMarkers2.default.noBreak, print(node.name), node.attributes.map(function (a, i, arr) {
+      return [i === 0 ? _constantsMarkers2.default.scopeSpaceBreak : _constantsMarkers2.default.empty, print(a), i < arr.length - 1 ? _constantsMarkers2.default.scopeSpaceBreak : _constantsMarkers2.default.empty];
+    }), '>']);
   }
 }
 

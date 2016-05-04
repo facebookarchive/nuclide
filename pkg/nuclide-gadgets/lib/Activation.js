@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,95 +8,120 @@
  * the root directory of this source tree.
  */
 
-import type {Action} from '../types/Action';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {CompositeDisposable} from 'atom';
-import Commands from './Commands';
-import GadgetsService from './GadgetsService';
-import createStateStream from './createStateStream';
-import getInitialState from './getInitialState';
-import {DisposableSubscription, event as commonsEvent} from '../../nuclide-commons';
-const {observableFromSubscribeFunction} = commonsEvent;
-import Rx from 'rxjs';
-import syncAtomCommands from './syncAtomCommands';
-import trackActions from './trackActions';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-class Activation {
-  _disposables: CompositeDisposable;
-  commands: Commands;
+var _atom = require('atom');
 
-  constructor(initialState: ?Object) {
-    initialState = getInitialState();
-    const action$: Rx.Subject<Action> = new Rx.Subject();
-    const state$ = createStateStream(action$, initialState);
-    const commands = this.commands = new Commands(action$, () => state$.getValue());
+var _Commands = require('./Commands');
 
-    const getGadgets = state => state.get('gadgets');
-    const gadget$ = state$.map(getGadgets).distinctUntilChanged();
+var _Commands2 = _interopRequireDefault(_Commands);
 
-    this._disposables = new CompositeDisposable(
-      new DisposableSubscription(action$),
+var _GadgetsService = require('./GadgetsService');
 
-      // Re-render all pane items when (1) new items are added, (2) new gadgets are registered and
-      // (3) the active pane item changes.
-      new DisposableSubscription(
-        observableFromSubscribeFunction(atom.workspace.observePaneItems.bind(atom.workspace))
-          .merge(
-            observableFromSubscribeFunction(
-              atom.workspace.onDidChangeActivePaneItem.bind(atom.workspace)
-            )
-          )
-          .merge(gadget$)
-          .sampleTime(100)
-          .subscribe(() => this.commands.renderPaneItems())
-      ),
+var _GadgetsService2 = _interopRequireDefault(_GadgetsService);
 
-      // Clean up when pane items are destroyed.
-      new DisposableSubscription(
-        observableFromSubscribeFunction(atom.workspace.onDidDestroyPaneItem.bind(atom.workspace))
-          .subscribe(({item}) => this.commands.cleanUpDestroyedPaneItem(item))
-      ),
+var _createStateStream = require('./createStateStream');
 
-      // Keep the atom commands up to date with the registered gadgets.
-      new DisposableSubscription(syncAtomCommands(gadget$, commands)),
+var _createStateStream2 = _interopRequireDefault(_createStateStream);
 
-      // Collect some analytics about gadget actions.
-      trackActions(action$),
+var _getInitialState = require('./getInitialState');
 
-      // Update the expanded Flex scale whenever the user starts dragging a handle. Use the capture
-      // phase since resize handles stop propagation of the event during the bubbling phase.
-      new DisposableSubscription(
-        Rx.Observable.fromEventPattern(
-          handler => { document.addEventListener('mousedown', handler, true); },
-          handler => { document.removeEventListener('mousedown', handler, true); },
-        )
-          .filter(event => event.target.nodeName.toLowerCase() === 'atom-pane-resize-handle')
-          // Get the models that represent the containers being resized:
-          .flatMap(event => {
-            const handleElement = event.target;
-            return [
-              handleElement.previousElementSibling && handleElement.previousElementSibling.model,
-              handleElement.nextElementSibling && handleElement.nextElementSibling.model,
-            ].filter(paneItemContainer => paneItemContainer !== null);
-          })
-          // Make sure these are actually pane item containers:
-          .filter(paneItemContainer => {
-            return ('getItems' in paneItemContainer) && ('getFlexScale' in paneItemContainer);
-          })
-          .subscribe(paneItemContainer => this.commands.updateExpandedFlexScale(paneItemContainer))
-      ),
-    );
+var _getInitialState2 = _interopRequireDefault(_getInitialState);
+
+var _nuclideCommons = require('../../nuclide-commons');
+
+var _rxjs = require('rxjs');
+
+var _rxjs2 = _interopRequireDefault(_rxjs);
+
+var _syncAtomCommands = require('./syncAtomCommands');
+
+var _syncAtomCommands2 = _interopRequireDefault(_syncAtomCommands);
+
+var _trackActions = require('./trackActions');
+
+var _trackActions2 = _interopRequireDefault(_trackActions);
+
+var observableFromSubscribeFunction = _nuclideCommons.event.observableFromSubscribeFunction;
+
+var Activation = (function () {
+  function Activation(initialState) {
+    var _this = this;
+
+    _classCallCheck(this, Activation);
+
+    initialState = (0, _getInitialState2.default)();
+    var action$ = new _rxjs2.default.Subject();
+    var state$ = (0, _createStateStream2.default)(action$, initialState);
+    var commands = this.commands = new _Commands2.default(action$, function () {
+      return state$.getValue();
+    });
+
+    var getGadgets = function getGadgets(state) {
+      return state.get('gadgets');
+    };
+    var gadget$ = state$.map(getGadgets).distinctUntilChanged();
+
+    this._disposables = new _atom.CompositeDisposable(new _nuclideCommons.DisposableSubscription(action$),
+
+    // Re-render all pane items when (1) new items are added, (2) new gadgets are registered and
+    // (3) the active pane item changes.
+    new _nuclideCommons.DisposableSubscription(observableFromSubscribeFunction(atom.workspace.observePaneItems.bind(atom.workspace)).merge(observableFromSubscribeFunction(atom.workspace.onDidChangeActivePaneItem.bind(atom.workspace))).merge(gadget$).sampleTime(100).subscribe(function () {
+      return _this.commands.renderPaneItems();
+    })),
+
+    // Clean up when pane items are destroyed.
+    new _nuclideCommons.DisposableSubscription(observableFromSubscribeFunction(atom.workspace.onDidDestroyPaneItem.bind(atom.workspace)).subscribe(function (_ref) {
+      var item = _ref.item;
+      return _this.commands.cleanUpDestroyedPaneItem(item);
+    })),
+
+    // Keep the atom commands up to date with the registered gadgets.
+    new _nuclideCommons.DisposableSubscription((0, _syncAtomCommands2.default)(gadget$, commands)),
+
+    // Collect some analytics about gadget actions.
+    (0, _trackActions2.default)(action$),
+
+    // Update the expanded Flex scale whenever the user starts dragging a handle. Use the capture
+    // phase since resize handles stop propagation of the event during the bubbling phase.
+    new _nuclideCommons.DisposableSubscription(_rxjs2.default.Observable.fromEventPattern(function (handler) {
+      document.addEventListener('mousedown', handler, true);
+    }, function (handler) {
+      document.removeEventListener('mousedown', handler, true);
+    }).filter(function (event) {
+      return event.target.nodeName.toLowerCase() === 'atom-pane-resize-handle';
+    })
+    // Get the models that represent the containers being resized:
+    .flatMap(function (event) {
+      var handleElement = event.target;
+      return [handleElement.previousElementSibling && handleElement.previousElementSibling.model, handleElement.nextElementSibling && handleElement.nextElementSibling.model].filter(function (paneItemContainer) {
+        return paneItemContainer !== null;
+      });
+    })
+    // Make sure these are actually pane item containers:
+    .filter(function (paneItemContainer) {
+      return 'getItems' in paneItemContainer && 'getFlexScale' in paneItemContainer;
+    }).subscribe(function (paneItemContainer) {
+      return _this.commands.updateExpandedFlexScale(paneItemContainer);
+    })));
   }
 
-  deactivate() {
-    this.commands.deactivate();
-    this._disposables.dispose();
-  }
+  _createClass(Activation, [{
+    key: 'deactivate',
+    value: function deactivate() {
+      this.commands.deactivate();
+      this._disposables.dispose();
+    }
+  }, {
+    key: 'provideGadgetsService',
+    value: function provideGadgetsService() {
+      return new _GadgetsService2.default(this.commands);
+    }
+  }]);
 
-  provideGadgetsService(): GadgetsService {
-    return new GadgetsService(this.commands);
-  }
-
-}
+  return Activation;
+})();
 
 module.exports = Activation;

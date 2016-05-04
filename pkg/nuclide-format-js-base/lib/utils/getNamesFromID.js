@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +8,28 @@
  * the root directory of this source tree.
  */
 
-import type {Node} from '../types/ast';
+var _jscodeshift = require('jscodeshift');
 
-import jscs from 'jscodeshift';
+var _jscodeshift2 = _interopRequireDefault(_jscodeshift);
 
-function getNamesFromID(node: Node): Set<string> {
-  const ids = new Set();
-  if (jscs.Identifier.check(node)) {
+function getNamesFromID(node) {
+  var ids = new Set();
+  if (_jscodeshift2.default.Identifier.check(node)) {
     ids.add(node.name);
-  } else if (
-    jscs.RestElement.check(node) ||
-    jscs.SpreadElement.check(node) ||
-    jscs.SpreadProperty.check(node)
-  ) {
-    for (const id of getNamesFromID(node.argument)) {
+  } else if (_jscodeshift2.default.RestElement.check(node) || _jscodeshift2.default.SpreadElement.check(node) || _jscodeshift2.default.SpreadProperty.check(node)) {
+    for (var id of getNamesFromID(node.argument)) {
       ids.add(id);
     }
-  } else if (jscs.ObjectPattern.check(node)) {
-    node.properties.forEach(prop => {
+  } else if (_jscodeshift2.default.ObjectPattern.check(node)) {
+    node.properties.forEach(function (prop) {
       // Generally props have a value, if it is a spread property it doesn't.
-      for (const id of getNamesFromID(prop.value || prop)) {
+      for (var id of getNamesFromID(prop.value || prop)) {
         ids.add(id);
       }
     });
-  } else if (jscs.ArrayPattern.check(node)) {
-    node.elements.forEach(element => {
-      for (const id of getNamesFromID(element)) {
+  } else if (_jscodeshift2.default.ArrayPattern.check(node)) {
+    node.elements.forEach(function (element) {
+      for (var id of getNamesFromID(element)) {
         ids.add(id);
       }
     });

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +8,12 @@
  * the root directory of this source tree.
  */
 
-import type {Node} from '../types/ast';
+var _getRootIdentifierInExpression = require('./getRootIdentifierInExpression');
 
-import getRootIdentifierInExpression from './getRootIdentifierInExpression';
+var _getRootIdentifierInExpression2 = _interopRequireDefault(_getRootIdentifierInExpression);
 
-function isRequireExpression(node: Node): boolean {
-  const root = getRootIdentifierInExpression(node);
+function isRequireExpression(node) {
+  var root = (0, _getRootIdentifierInExpression2.default)(node);
   return !!(root && root.name === 'require');
 }
 

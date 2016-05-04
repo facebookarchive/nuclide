@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +8,11 @@
  * the root directory of this source tree.
  */
 
-import type DebuggerModel from './DebuggerModel';
-import type DebuggerProcessInfo from './DebuggerProcessInfo';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-class RemoteControlService {
-  _getModel: () => ?DebuggerModel;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var RemoteControlService = (function () {
 
   /**
    * @param getModel function always returning the latest singleton model.
@@ -23,71 +22,85 @@ class RemoteControlService {
    * outside of any model, so objects vended early must still always manipulate
    * the latest model's state.
    */
-  constructor(getModel: () => ?DebuggerModel) {
+
+  function RemoteControlService(getModel) {
+    _classCallCheck(this, RemoteControlService);
+
     this._getModel = getModel;
   }
 
-  debugLLDB(pid: number, basepath: string): Promise<void> {
-    // Nullable values are captured as nullable in lambdas, as they may change
-    // between lambda capture and lambda evaluation. Assigning to a
-    // non-nullable value after checking placates flow in this regard.
-    const modelNullable = this._getModel();
-    if (!modelNullable) {
-      return Promise.reject(new Error('Package is not activated.'));
-    }
-    const model = modelNullable;
-    return model.getStore().getProcessInfoList('lldb')
-      .then(processes => {
-        const process = processes.find(p => p.pid === pid);
+  _createClass(RemoteControlService, [{
+    key: 'debugLLDB',
+    value: function debugLLDB(pid, basepath) {
+      // Nullable values are captured as nullable in lambdas, as they may change
+      // between lambda capture and lambda evaluation. Assigning to a
+      // non-nullable value after checking placates flow in this regard.
+      var modelNullable = this._getModel();
+      if (!modelNullable) {
+        return Promise.reject(new Error('Package is not activated.'));
+      }
+      var model = modelNullable;
+      return model.getStore().getProcessInfoList('lldb').then(function (processes) {
+        var process = processes.find(function (p) {
+          return p.pid === pid;
+        });
         if (process) {
           process.basepath = basepath;
           model.getActions().startDebugging(process);
         } else {
-          throw new Error(`Requested process not found: ${pid}.`);
+          throw new Error('Requested process not found: ' + pid + '.');
         }
       });
-  }
-
-  debugNode(pid: number): Promise<void> {
-    const model = this._getModel();
-    if (!model) {
-      return Promise.reject(new Error('Package is not activated.'));
     }
-    return model.getStore().getProcessInfoList('node')
-      .then(processes => {
-        const proc = processes.find(p => p.pid === pid);
+  }, {
+    key: 'debugNode',
+    value: function debugNode(pid) {
+      var model = this._getModel();
+      if (!model) {
+        return Promise.reject(new Error('Package is not activated.'));
+      }
+      return model.getStore().getProcessInfoList('node').then(function (processes) {
+        var proc = processes.find(function (p) {
+          return p.pid === pid;
+        });
         if (proc) {
           model.getActions().startDebugging(proc);
         } else {
           Promise.reject('No node process to debug.');
         }
       });
-  }
-
-  async startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
-    const model = this._getModel();
-    if (model == null) {
-      throw new Error('Package is not activated.');
     }
-    await model.getActions().startDebugging(processInfo);
-  }
-
-  isInDebuggingMode(providerName: string): boolean {
-    const model = this._getModel();
-    if (model == null) {
-      throw new Error('Package is not activated.');
+  }, {
+    key: 'startDebugging',
+    value: _asyncToGenerator(function* (processInfo) {
+      var model = this._getModel();
+      if (model == null) {
+        throw new Error('Package is not activated.');
+      }
+      yield model.getActions().startDebugging(processInfo);
+    })
+  }, {
+    key: 'isInDebuggingMode',
+    value: function isInDebuggingMode(providerName) {
+      var model = this._getModel();
+      if (model == null) {
+        throw new Error('Package is not activated.');
+      }
+      var session = model.getStore().getDebuggerInstance();
+      return session != null && session.getProviderName() === providerName;
     }
-    const session = model.getStore().getDebuggerInstance();
-    return session != null && session.getProviderName() === providerName;
-  }
-
-  killDebugger(): void {
-    const model = this._getModel();
-    if (model == null) {
-      throw new Error('Package is not activated.');
+  }, {
+    key: 'killDebugger',
+    value: function killDebugger() {
+      var model = this._getModel();
+      if (model == null) {
+        throw new Error('Package is not activated.');
+      }
+      model.getActions().stopDebugging();
     }
-    model.getActions().stopDebugging();
-  }
-}
+  }]);
+
+  return RemoteControlService;
+})();
 
 module.exports = RemoteControlService;

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,80 +10,103 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHintProvider} from '../../nuclide-type-hint-interfaces';
-import type {Datatip} from '../../nuclide-datatip-interfaces';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import invariant from 'assert';
-import {array} from '../../nuclide-commons';
-import {track, trackOperationTiming} from '../../nuclide-analytics';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-import {makeTypeHintComponent} from './TypeHintComponent';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-class TypeHintManager {
-  _typeHintProviders: Array<TypeHintProvider>;
-  /**
-   * This helps determine if we should show the type hint when toggling it via
-   * command. The toggle command first negates this, and then if this is true
-   * shows a type hint, otherwise it hides the current typehint.
-   */
-  _typeHintToggle: boolean;
+var _assert = require('assert');
 
-  constructor() {
+var _assert2 = _interopRequireDefault(_assert);
+
+var _nuclideCommons = require('../../nuclide-commons');
+
+var _nuclideAnalytics = require('../../nuclide-analytics');
+
+var _TypeHintComponent = require('./TypeHintComponent');
+
+var TypeHintManager = (function () {
+  function TypeHintManager() {
+    _classCallCheck(this, TypeHintManager);
+
     this._typeHintProviders = [];
   }
 
-  async datatip(editor: TextEditor, position: atom$Point): Promise<?Datatip> {
-    const grammar = editor.getGrammar();
-    const {scopeName} = grammar;
-    const [provider] = this._getMatchingProvidersForScopeName(scopeName);
-    if (provider == null) {
-      return null;
-    }
-    let name;
-    if (provider.providerName != null) {
-      name = provider.providerName;
-    } else {
-      name = 'unknown';
-      const logger = require('../../nuclide-logging').getLogger();
-      logger.error('Type hint provider has no name', provider);
-    }
-    const typeHint = await trackOperationTiming(
-      name + '.typeHint',
-      () => provider.typeHint(editor, position),
-    );
-    if (!typeHint || this._marker) {
-      return;
-    }
-    const {hint, hintTree, range} = typeHint;
-    // For now, actual hint text is required.
-    invariant(hint != null);
-    // We track the timing above, but we still want to know the number of popups that are shown.
-    track('type-hint-popup', {
-      'scope': scopeName,
-      'message': hint,
-    });
-    return {
-      component: makeTypeHintComponent(hintTree || hint, grammar),
-      range,
-    };
-  }
+  _createClass(TypeHintManager, [{
+    key: 'datatip',
+    value: _asyncToGenerator(function* (editor, position) {
+      var grammar = editor.getGrammar();
+      var scopeName = grammar.scopeName;
 
-  _getMatchingProvidersForScopeName(scopeName: string): Array<TypeHintProvider> {
-    return this._typeHintProviders.filter((provider: TypeHintProvider) => {
-      const providerGrammars = provider.selector.split(/, ?/);
-      return provider.inclusionPriority > 0 && providerGrammars.indexOf(scopeName) !== -1;
-    }).sort((providerA: TypeHintProvider, providerB: TypeHintProvider) => {
-      return providerA.inclusionPriority - providerB.inclusionPriority;
-    });
-  }
+      var _getMatchingProvidersForScopeName2 = this._getMatchingProvidersForScopeName(scopeName);
 
-  addProvider(provider: TypeHintProvider) {
-    this._typeHintProviders.push(provider);
-  }
+      var _getMatchingProvidersForScopeName22 = _slicedToArray(_getMatchingProvidersForScopeName2, 1);
 
-  removeProvider(provider: TypeHintProvider): void {
-    array.remove(this._typeHintProviders, provider);
-  }
-}
+      var provider = _getMatchingProvidersForScopeName22[0];
+
+      if (provider == null) {
+        return null;
+      }
+      var name = undefined;
+      if (provider.providerName != null) {
+        name = provider.providerName;
+      } else {
+        name = 'unknown';
+        var logger = require('../../nuclide-logging').getLogger();
+        logger.error('Type hint provider has no name', provider);
+      }
+      var typeHint = yield (0, _nuclideAnalytics.trackOperationTiming)(name + '.typeHint', function () {
+        return provider.typeHint(editor, position);
+      });
+      if (!typeHint || this._marker) {
+        return;
+      }
+      var hint = typeHint.hint;
+      var hintTree = typeHint.hintTree;
+      var range = typeHint.range;
+
+      // For now, actual hint text is required.
+      (0, _assert2.default)(hint != null);
+      // We track the timing above, but we still want to know the number of popups that are shown.
+      (0, _nuclideAnalytics.track)('type-hint-popup', {
+        'scope': scopeName,
+        'message': hint
+      });
+      return {
+        component: (0, _TypeHintComponent.makeTypeHintComponent)(hintTree || hint, grammar),
+        range: range
+      };
+    })
+  }, {
+    key: '_getMatchingProvidersForScopeName',
+    value: function _getMatchingProvidersForScopeName(scopeName) {
+      return this._typeHintProviders.filter(function (provider) {
+        var providerGrammars = provider.selector.split(/, ?/);
+        return provider.inclusionPriority > 0 && providerGrammars.indexOf(scopeName) !== -1;
+      }).sort(function (providerA, providerB) {
+        return providerA.inclusionPriority - providerB.inclusionPriority;
+      });
+    }
+  }, {
+    key: 'addProvider',
+    value: function addProvider(provider) {
+      this._typeHintProviders.push(provider);
+    }
+  }, {
+    key: 'removeProvider',
+    value: function removeProvider(provider) {
+      _nuclideCommons.array.remove(this._typeHintProviders, provider);
+    }
+  }]);
+
+  return TypeHintManager;
+})();
 
 module.exports = TypeHintManager;
+
+/**
+ * This helps determine if we should show the type hint when toggling it via
+ * command. The toggle command first negates this, and then if this is true
+ * shows a type hint, otherwise it hides the current typehint.
+ */

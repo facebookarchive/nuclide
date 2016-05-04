@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +8,15 @@
  * the root directory of this source tree.
  */
 
-import type {Node} from '../types/ast';
+var _jscodeshift = require('jscodeshift');
 
-import jscs from 'jscodeshift';
+var _jscodeshift2 = _interopRequireDefault(_jscodeshift);
 
-function reprintComment(node: Node): Node {
+function reprintComment(node) {
   if (node.type === 'Block') {
-    return jscs.block(node.value);
+    return _jscodeshift2.default.block(node.value);
   } else if (node.type === 'Line') {
-    return jscs.line(node.value);
+    return _jscodeshift2.default.line(node.value);
   }
   return node;
 }

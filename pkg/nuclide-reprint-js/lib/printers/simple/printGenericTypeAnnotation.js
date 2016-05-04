@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +8,16 @@
  * the root directory of this source tree.
  */
 
-import type {GenericTypeAnnotation} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printGenericTypeAnnotation(
-  print: Print,
-  node: GenericTypeAnnotation,
-): Lines {
-  return flatten([
-    print(node.id),
-    node.typeParameters ? print(node.typeParameters) : markers.empty,
-  ]);
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+function printGenericTypeAnnotation(print, node) {
+  return (0, _utilsFlatten2.default)([print(node.id), node.typeParameters ? print(node.typeParameters) : _constantsMarkers2.default.empty]);
 }
 
 module.exports = printGenericTypeAnnotation;

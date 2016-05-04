@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +8,32 @@
  * the root directory of this source tree.
  */
 
-import type {Collection} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
+var _getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
 
-import getDeclaredIdentifiers from './getDeclaredIdentifiers';
-import getDeclaredTypes from './getDeclaredTypes';
-import getNonDeclarationTypes from './getNonDeclarationTypes';
+var _getDeclaredIdentifiers2 = _interopRequireDefault(_getDeclaredIdentifiers);
+
+var _getDeclaredTypes = require('./getDeclaredTypes');
+
+var _getDeclaredTypes2 = _interopRequireDefault(_getDeclaredTypes);
+
+var _getNonDeclarationTypes = require('./getNonDeclarationTypes');
+
+var _getNonDeclarationTypes2 = _interopRequireDefault(_getNonDeclarationTypes);
 
 /**
  * This will get a list of all types that are used but undeclared.
  */
-function getUndeclaredTypes(
-  root: Collection,
-  options: SourceOptions
-): Set<string> {
-  const declaredIdentifiers = getDeclaredIdentifiers(root, options);
-  const declaredTypes = getDeclaredTypes(root, options);
+function getUndeclaredTypes(root, options) {
+  var declaredIdentifiers = (0, _getDeclaredIdentifiers2.default)(root, options);
+  var declaredTypes = (0, _getDeclaredTypes2.default)(root, options);
 
-  const undeclared = getNonDeclarationTypes(root);
+  var undeclared = (0, _getNonDeclarationTypes2.default)(root);
   // now remove anything that was declared
-  for (const name of declaredIdentifiers) {
-    undeclared.delete(name);
+  for (var _name of declaredIdentifiers) {
+    undeclared.delete(_name);
   }
-  for (const name of declaredTypes) {
-    undeclared.delete(name);
+  for (var _name2 of declaredTypes) {
+    undeclared.delete(_name2);
   }
   return undeclared;
 }

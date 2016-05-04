@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,44 +8,60 @@
  * the root directory of this source tree.
  */
 
-import type {Collection} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
-import type {TransformKey} from '../types/transforms';
+var _addLeadingComments = require('./addLeadingComments');
 
-import addLeadingComments from './addLeadingComments';
-import addMissingRequires from './addMissingRequires';
-import addMissingTypes from './addMissingTypes';
-import formatRequires from './formatRequires';
-import removeLeadingComments from './removeLeadingComments';
-import removeUnusedRequires from './removeUnusedRequires';
-import removeUnusedTypes from './removeUnusedTypes';
+var _addLeadingComments2 = _interopRequireDefault(_addLeadingComments);
+
+var _addMissingRequires = require('./addMissingRequires');
+
+var _addMissingRequires2 = _interopRequireDefault(_addMissingRequires);
+
+var _addMissingTypes = require('./addMissingTypes');
+
+var _addMissingTypes2 = _interopRequireDefault(_addMissingTypes);
+
+var _formatRequires = require('./formatRequires');
+
+var _formatRequires2 = _interopRequireDefault(_formatRequires);
+
+var _removeLeadingComments = require('./removeLeadingComments');
+
+var _removeLeadingComments2 = _interopRequireDefault(_removeLeadingComments);
+
+var _removeUnusedRequires = require('./removeUnusedRequires');
+
+var _removeUnusedRequires2 = _interopRequireDefault(_removeUnusedRequires);
+
+var _removeUnusedTypes = require('./removeUnusedTypes');
+
+var _removeUnusedTypes2 = _interopRequireDefault(_removeUnusedTypes);
 
 /**
  * This is the collection of transforms that affect requires.
  */
-function transform(root: Collection, options: SourceOptions): void {
-  const blacklist: Set<TransformKey> = options.blacklist || new Set();
-  let comments;
+function transform(root, options) {
+  var blacklist = options.blacklist || new Set();
+  var comments = undefined;
   if (!blacklist.has('requires.transferComments')) {
-    comments = removeLeadingComments(root);
+    comments = (0, _removeLeadingComments2.default)(root);
   }
   if (!blacklist.has('requires.removeUnusedRequires')) {
-    removeUnusedRequires(root, options);
+    (0, _removeUnusedRequires2.default)(root, options);
   }
   if (!blacklist.has('requires.addMissingRequires')) {
-    addMissingRequires(root, options);
+    (0, _addMissingRequires2.default)(root, options);
   }
   if (!blacklist.has('requires.removeUnusedTypes')) {
-    removeUnusedTypes(root, options);
+    (0, _removeUnusedTypes2.default)(root, options);
   }
   if (!blacklist.has('requires.addMissingTypes')) {
-    addMissingTypes(root, options);
+    (0, _addMissingTypes2.default)(root, options);
   }
   if (!blacklist.has('requires.formatRequires')) {
-    formatRequires(root);
+    (0, _formatRequires2.default)(root);
   }
   if (!blacklist.has('requires.transferComments')) {
-    addLeadingComments(root, comments);
+    (0, _addLeadingComments2.default)(root, comments);
   }
 }
 

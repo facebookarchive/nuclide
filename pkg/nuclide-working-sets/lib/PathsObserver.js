@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,50 +16,63 @@
  * the root directory of this source tree.
  */
 
-import {isRemote} from '../../nuclide-remote-uri';
-import path from 'path';
+var _nuclideRemoteUri = require('../../nuclide-remote-uri');
 
-import type {WorkingSetsStore} from './WorkingSetsStore';
+var _path = require('path');
 
-export class PathsObserver {
-  _prevPaths: Array<string>;
-  _workingSetsStore: WorkingSetsStore;
-  _disposable: IDisposable;
+var _path2 = _interopRequireDefault(_path);
 
-  constructor(workingSetsStore: WorkingSetsStore) {
+var PathsObserver = (function () {
+  function PathsObserver(workingSetsStore) {
+    _classCallCheck(this, PathsObserver);
+
     this._prevPaths = atom.project.getPaths();
     this._workingSetsStore = workingSetsStore;
 
-    this._disposable = atom.project.onDidChangePaths(
-      this._didChangePaths.bind(this)
-    );
+    this._disposable = atom.project.onDidChangePaths(this._didChangePaths.bind(this));
   }
 
-  dispose(): void {
-    this._disposable.dispose();
-  }
-
-  _didChangePaths(_paths: Array<string>): void {
-    const paths = _paths.filter(p => isRemote(p) || path.isAbsolute(p));
-    this._workingSetsStore.updateApplicability();
-
-    const prevPaths = this._prevPaths;
-    this._prevPaths = paths;
-
-    const currentWs = this._workingSetsStore.getCurrent();
-    const noneShown = !paths.some(p => currentWs.containsDir(p));
-    if (noneShown) {
-      this._workingSetsStore.deactivateAll();
-      return;
+  _createClass(PathsObserver, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._disposable.dispose();
     }
+  }, {
+    key: '_didChangePaths',
+    value: function _didChangePaths(_paths) {
+      var paths = _paths.filter(function (p) {
+        return (0, _nuclideRemoteUri.isRemote)(p) || _path2.default.isAbsolute(p);
+      });
+      this._workingSetsStore.updateApplicability();
 
-    const addedPaths = paths.filter(p => prevPaths.indexOf(p) < 0);
-    const pathChangeWasHidden = addedPaths.some(p => !currentWs.containsDir(p));
+      var prevPaths = this._prevPaths;
+      this._prevPaths = paths;
 
-    // The user added a new project root and the currently active working sets did not let
-    // it show. This would feel broken - better deactivate the working sets.
-    if (pathChangeWasHidden) {
-      this._workingSetsStore.deactivateAll();
+      var currentWs = this._workingSetsStore.getCurrent();
+      var noneShown = !paths.some(function (p) {
+        return currentWs.containsDir(p);
+      });
+      if (noneShown) {
+        this._workingSetsStore.deactivateAll();
+        return;
+      }
+
+      var addedPaths = paths.filter(function (p) {
+        return prevPaths.indexOf(p) < 0;
+      });
+      var pathChangeWasHidden = addedPaths.some(function (p) {
+        return !currentWs.containsDir(p);
+      });
+
+      // The user added a new project root and the currently active working sets did not let
+      // it show. This would feel broken - better deactivate the working sets.
+      if (pathChangeWasHidden) {
+        this._workingSetsStore.deactivateAll();
+      }
     }
-  }
-}
+  }]);
+
+  return PathsObserver;
+})();
+
+exports.PathsObserver = PathsObserver;

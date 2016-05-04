@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +8,16 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {SpreadElement} from 'ast-types-flow';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printSpreadElement(print: Print, node: SpreadElement): Lines {
-  return flatten([
-    '...',
-    markers.noBreak,
-    print(node.argument),
-  ]);
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+function printSpreadElement(print, node) {
+  return (0, _utilsFlatten2.default)(['...', _constantsMarkers2.default.noBreak, print(node.argument)]);
 }
 
 module.exports = printSpreadElement;

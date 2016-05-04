@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +8,30 @@
  * the root directory of this source tree.
  */
 
-import type {Node} from '../types/ast';
+var _jscodeshift = require('jscodeshift');
 
-import jscs from 'jscodeshift';
+var _jscodeshift2 = _interopRequireDefault(_jscodeshift);
 
 /**
  * This is a hack to force an ObjectPattern node to be printed on one line
  */
-function oneLineObjectPattern(node: Node): Node {
-  if (!jscs.ObjectPattern.check(node)) {
+function oneLineObjectPattern(node) {
+  if (!_jscodeshift2.default.ObjectPattern.check(node)) {
     return node;
   }
 
-  const props = node.properties;
-  if (!props.every(prop => prop.shorthand && jscs.Identifier.check(prop.key))) {
+  var props = node.properties;
+  if (!props.every(function (prop) {
+    return prop.shorthand && _jscodeshift2.default.Identifier.check(prop.key);
+  })) {
     return node;
   }
 
-  const mySource =
-    'var {' +
-    props.map(prop => prop.key.name).join(', ') +
-    '} = _;';
-  const myAst = jscs(mySource);
-  return myAst.find(jscs.ObjectPattern).nodes()[0];
+  var mySource = 'var {' + props.map(function (prop) {
+    return prop.key.name;
+  }).join(', ') + '} = _;';
+  var myAst = (0, _jscodeshift2.default)(mySource);
+  return myAst.find(_jscodeshift2.default.ObjectPattern).nodes()[0];
 }
 
 module.exports = oneLineObjectPattern;

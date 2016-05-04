@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +10,31 @@
  * the root directory of this source tree.
  */
 
-import type {Level, Message} from '../../nuclide-console/lib/types';
-import type {LogcatEntry, Priority} from './types';
+exports.default = createMessage;
 
 /**
  * Convert a structured logcat entry into the format that nuclide-console wants.
  */
-export default function createMessage(entry: LogcatEntry): Message {
-  const priority = entry.metadata && entry.metadata.priority || 'I';
+
+function createMessage(entry) {
+  var priority = entry.metadata && entry.metadata.priority || 'I';
   return {
     text: entry.message,
-    level: priorityToLevel(priority),
+    level: priorityToLevel(priority)
   };
 }
 
-function priorityToLevel(priority: Priority): Level {
+function priorityToLevel(priority) {
   switch (priority) {
-    case 'W': // warn
+    case 'W':
+      // warn
       return 'warning';
     case 'E': // error
-    case 'F': // fatal
+    case 'F':
+      // fatal
       return 'error';
-    case 'S': // silent
+    case 'S':
+      // silent
       throw new Error('Silent messages should be filtered');
     case 'V': // verbose
     case 'D': // debug
@@ -39,3 +43,4 @@ function priorityToLevel(priority: Priority): Level {
       return 'info';
   }
 }
+module.exports = exports.default;

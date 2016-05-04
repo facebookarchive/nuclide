@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +8,12 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {StringLiteralTypeAnnotation} from 'ast-types-flow';
+var _utilsEscapeStringLiteral = require('../../utils/escapeStringLiteral');
 
-import escapeStringLiteral from '../../utils/escapeStringLiteral';
+var _utilsEscapeStringLiteral2 = _interopRequireDefault(_utilsEscapeStringLiteral);
 
-function printStringLiteralTypeAnnotation(
-  print: Print,
-  node: StringLiteralTypeAnnotation,
-): Lines {
-  return [escapeStringLiteral(node.value, {quotes: 'single'})];
+function printStringLiteralTypeAnnotation(print, node) {
+  return [(0, _utilsEscapeStringLiteral2.default)(node.value, { quotes: 'single' })];
 }
 
 module.exports = printStringLiteralTypeAnnotation;

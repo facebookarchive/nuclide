@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +8,28 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {UnaryExpression} from 'ast-types-flow';
+var _constantsMarkers = require('../../constants/markers');
 
-import markers from '../../constants/markers';
-import wrapExpression from '../../wrappers/simple/wrapExpression';
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
-function printUnaryExpression(print: Print, node: UnaryExpression): Lines {
-  const wrap = x => wrapExpression(print, node, x);
+var _wrappersSimpleWrapExpression = require('../../wrappers/simple/wrapExpression');
 
-  const hasSpace = (
-    node.operator === 'typeof' ||
-    node.operator === 'void' ||
-    node.operator === 'delete'
-  );
+var _wrappersSimpleWrapExpression2 = _interopRequireDefault(_wrappersSimpleWrapExpression);
 
-  const parts = [node.operator];
+function printUnaryExpression(print, node) {
+  var wrap = function wrap(x) {
+    return (0, _wrappersSimpleWrapExpression2.default)(print, node, x);
+  };
+
+  var hasSpace = node.operator === 'typeof' || node.operator === 'void' || node.operator === 'delete';
+
+  var parts = [node.operator];
   if (hasSpace) {
-    parts.push(markers.noBreak);
-    parts.push(markers.space);
+    parts.push(_constantsMarkers2.default.noBreak);
+    parts.push(_constantsMarkers2.default.space);
   }
 
-  return wrap([
-    parts,
-    print(node.argument),
-  ]);
+  return wrap([parts, print(node.argument)]);
 }
 
 module.exports = printUnaryExpression;

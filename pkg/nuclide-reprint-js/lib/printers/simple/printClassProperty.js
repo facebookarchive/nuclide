@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,50 +8,35 @@
  * the root directory of this source tree.
  */
 
-import type {ClassProperty} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printClassProperty(print: Print, node: ClassProperty): Lines {
-  let parts = [];
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+function printClassProperty(print, node) {
+  var parts = [];
   if (node.static) {
-    parts = parts.concat([
-      'static',
-      markers.noBreak,
-      markers.space,
-    ]);
+    parts = parts.concat(['static', _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space]);
   }
 
   // TODO: Computed class properties don't seem to be supported by Babylon yet.
 
-  parts = parts.concat([
-    print(node.key),
-  ]);
+  parts = parts.concat([print(node.key)]);
 
   if (node.value) {
-    parts = parts.concat([
-      markers.noBreak,
-      markers.space,
-      '=',
-      markers.noBreak,
-      markers.space,
-      print(node.value),
-    ]);
+    parts = parts.concat([_constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, '=', _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, print(node.value)]);
   }
 
   if (node.typeAnnotation) {
     parts = parts.concat(print(node.typeAnnotation));
   }
 
-  parts = parts.concat([
-    markers.noBreak,
-    ';',
-    markers.hardBreak,
-  ]);
+  parts = parts.concat([_constantsMarkers2.default.noBreak, ';', _constantsMarkers2.default.hardBreak]);
 
-  return flatten(parts);
+  return (0, _utilsFlatten2.default)(parts);
 }
 
 module.exports = printClassProperty;

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +8,17 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {ObjectTypeProperty} from 'ast-types-flow';
+var _utilsFlatten = require('../../utils/flatten');
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2 = _interopRequireDefault(_utilsFlatten);
 
-function printObjectTypeProperty(
-  print: Print,
-  node: ObjectTypeProperty,
-): Lines {
+var _constantsMarkers = require('../../constants/markers');
+
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
+
+function printObjectTypeProperty(print, node) {
   // TODO: What does static mean here?
-  return flatten([
-    print(node.key),
-    markers.noBreak,
-    node.optional ? '?:' : ':',
-    markers.noBreak,
-    markers.space,
-    print(node.value),
-  ]);
+  return (0, _utilsFlatten2.default)([print(node.key), _constantsMarkers2.default.noBreak, node.optional ? '?:' : ':', _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, print(node.value)]);
 }
 
 module.exports = printObjectTypeProperty;

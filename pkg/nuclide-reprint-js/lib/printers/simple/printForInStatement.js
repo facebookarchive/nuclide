@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +8,19 @@
  * the root directory of this source tree.
  */
 
-import type {ForInStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _constantsMarkers = require('../../constants/markers');
 
-import markers from '../../constants/markers';
-import wrapStatement from '../../wrappers/simple/wrapStatement';
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
-function printForInStatement(print: Print, node: ForInStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
-  return wrap([
-    markers.hardBreak,
-    'for (',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    print(node.left),
-    markers.noBreak,
-    markers.space,
-    'in',
-    markers.noBreak,
-    markers.space,
-    print(node.right),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-    ')',
-    markers.space,
-    print(node.body),
-  ]);
+var _wrappersSimpleWrapStatement = require('../../wrappers/simple/wrapStatement');
+
+var _wrappersSimpleWrapStatement2 = _interopRequireDefault(_wrappersSimpleWrapStatement);
+
+function printForInStatement(print, node) {
+  var wrap = function wrap(x) {
+    return (0, _wrappersSimpleWrapStatement2.default)(print, node, x);
+  };
+  return wrap([_constantsMarkers2.default.hardBreak, 'for (', _constantsMarkers2.default.openScope, _constantsMarkers2.default.scopeIndent, _constantsMarkers2.default.scopeBreak, print(node.left), _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, 'in', _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, print(node.right), _constantsMarkers2.default.scopeBreak, _constantsMarkers2.default.scopeDedent, _constantsMarkers2.default.closeScope, ')', _constantsMarkers2.default.space, print(node.body)]);
 }
 
 module.exports = printForInStatement;

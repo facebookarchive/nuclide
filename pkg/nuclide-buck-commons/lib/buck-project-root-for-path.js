@@ -1,5 +1,38 @@
-'use babel';
-/* @flow */
+
+
+/**
+ * @return Promise that resolves to buck project or null if the
+ *     specified filePath is not part of a Buck project.
+ */
+
+var buckProjectRootForPath = _asyncToGenerator(function* (filePath) {
+  var service = (0, _nuclideClient.getServiceByNuclideUri)('BuckUtils', filePath);
+  (0, _assert2.default)(service);
+  var buckUtils = new service.BuckUtils();
+  var directory = yield buckUtils.getBuckProjectRoot(filePath);
+
+  if (!directory) {
+    return null;
+  }
+
+  var buckProject = buckProjectForBuckProjectDirectory[directory];
+  if (buckProject) {
+    return buckProject;
+  }
+
+  directory = (0, _nuclideRemoteUri.getPath)(directory);
+
+  var buckService = (0, _nuclideClient.getServiceByNuclideUri)('BuckProject', filePath);
+  if (buckService) {
+    buckProject = new buckService.BuckProject({ rootPath: directory });
+    buckProjectForBuckProjectDirectory[directory] = buckProject;
+  }
+  return buckProject;
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,43 +42,14 @@
  * the root directory of this source tree.
  */
 
-import type {BuckProject} from '../../nuclide-buck-base/lib/BuckProject';
-import typeof * as BuckUtilsService from '../../nuclide-buck-base/lib/BuckUtils';
-import typeof * as BuckProjectService from '../../nuclide-buck-base/lib/BuckProject';
+var _assert = require('assert');
 
-import invariant from 'assert';
-import {getPath} from '../../nuclide-remote-uri';
-import {getServiceByNuclideUri} from '../../nuclide-client';
+var _assert2 = _interopRequireDefault(_assert);
 
-const buckProjectForBuckProjectDirectory: {[key: string]: BuckProject} = {};
+var _nuclideRemoteUri = require('../../nuclide-remote-uri');
 
-/**
- * @return Promise that resolves to buck project or null if the
- *     specified filePath is not part of a Buck project.
- */
-async function buckProjectRootForPath(filePath: string): Promise<?BuckProject> {
-  const service: ?BuckUtilsService = getServiceByNuclideUri('BuckUtils', filePath);
-  invariant(service);
-  const buckUtils = new service.BuckUtils();
-  let directory = await buckUtils.getBuckProjectRoot(filePath);
+var _nuclideClient = require('../../nuclide-client');
 
-  if (!directory) {
-    return null;
-  }
-
-  let buckProject = buckProjectForBuckProjectDirectory[directory];
-  if (buckProject) {
-    return buckProject;
-  }
-
-  directory = getPath(directory);
-
-  const buckService: ?BuckProjectService = getServiceByNuclideUri('BuckProject', filePath);
-  if (buckService) {
-    buckProject = new buckService.BuckProject({rootPath: directory});
-    buckProjectForBuckProjectDirectory[directory] = buckProject;
-  }
-  return buckProject;
-}
+var buckProjectForBuckProjectDirectory = {};
 
 module.exports = buckProjectRootForPath;

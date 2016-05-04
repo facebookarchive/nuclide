@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +8,44 @@
  * the root directory of this source tree.
  */
 
-import type Options from '../options/Options';
-import type {Output} from '../types/common';
+var _resolveAll = require('./resolveAll');
 
-import resolveAll from './resolveAll';
-import resolveDuplicates from './resolveDuplicates';
-import resolveForcedMarkers from './resolveForcedMarkers';
-import resolveForcedScopeBreaks from './resolveForcedScopeBreaks';
-import resolveNoBreaks from './resolveNoBreaks';
-import resolveScopes from './resolveScopes';
+var _resolveAll2 = _interopRequireDefault(_resolveAll);
+
+var _resolveDuplicates = require('./resolveDuplicates');
+
+var _resolveDuplicates2 = _interopRequireDefault(_resolveDuplicates);
+
+var _resolveForcedMarkers = require('./resolveForcedMarkers');
+
+var _resolveForcedMarkers2 = _interopRequireDefault(_resolveForcedMarkers);
+
+var _resolveForcedScopeBreaks = require('./resolveForcedScopeBreaks');
+
+var _resolveForcedScopeBreaks2 = _interopRequireDefault(_resolveForcedScopeBreaks);
+
+var _resolveNoBreaks = require('./resolveNoBreaks');
+
+var _resolveNoBreaks2 = _interopRequireDefault(_resolveNoBreaks);
+
+var _resolveScopes = require('./resolveScopes');
+
+var _resolveScopes2 = _interopRequireDefault(_resolveScopes);
 
 /**
  * After printing the AST parts and all appropriate markers this will join the
  * parts based on options and the markers that are available.
  */
-function resolveLines(lines: Array<any>, options: Options): Output {
-  lines = resolveNoBreaks(lines);
-  lines = resolveForcedScopeBreaks(lines);
-  lines = resolveDuplicates(lines);
+function resolveLines(lines, options) {
+  lines = (0, _resolveNoBreaks2.default)(lines);
+  lines = (0, _resolveForcedScopeBreaks2.default)(lines);
+  lines = (0, _resolveDuplicates2.default)(lines);
 
   // Now we will resolve some newlines where possible. This will affect
   // runs, whereas before we were careful to not affect runs of markers.
-  lines = resolveForcedMarkers(lines);
-  lines = resolveScopes(lines, options);
-  return resolveAll(lines, options);
+  lines = (0, _resolveForcedMarkers2.default)(lines);
+  lines = (0, _resolveScopes2.default)(lines, options);
+  return (0, _resolveAll2.default)(lines, options);
 }
 
 module.exports = resolveLines;

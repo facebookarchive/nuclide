@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +10,52 @@
  * the root directory of this source tree.
  */
 
-import type {RemoteConnectionConfiguration} from './RemoteConnection';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import ConnectionTracker from './ConnectionTracker';
-import {Client as SshConnection} from 'ssh2';
-import fs from 'fs-plus';
-import net from 'net';
-import invariant from 'assert';
-import {RemoteConnection} from './RemoteConnection';
-import {fsPromise, promises} from '../../nuclide-commons';
+exports.decorateSshConnectionDelegateWithTracking = decorateSshConnectionDelegateWithTracking;
 
-const logger = require('../../nuclide-logging').getLogger();
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _ConnectionTracker = require('./ConnectionTracker');
+
+var _ConnectionTracker2 = _interopRequireDefault(_ConnectionTracker);
+
+var _ssh2 = require('ssh2');
+
+var _fsPlus = require('fs-plus');
+
+var _fsPlus2 = _interopRequireDefault(_fsPlus);
+
+var _net = require('net');
+
+var _net2 = _interopRequireDefault(_net);
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
+
+var _RemoteConnection = require('./RemoteConnection');
+
+var _nuclideCommons = require('../../nuclide-commons');
+
+var logger = require('../../nuclide-logging').getLogger();
 
 // Sync word and regex pattern for parsing command stdout.
-const READY_TIMEOUT_MS = 60 * 1000;
+var READY_TIMEOUT_MS = 60 * 1000;
 
-export type SshConnectionConfiguration = {
-  host: string; // host nuclide server is running on
-  sshPort: number; // ssh port of host nuclide server is running on
-  username: string; // username to authenticate as
-  pathToPrivateKey: string; // The path to private key
-  remoteServerCommand: string; // Command to use to start server
-  cwd: string; // Path to remote directory user should start in upon connection.
-  authMethod: string; // Which of the authentication methods in `SupportedMethods` to use.
-  password: string; // for simple password-based authentication
-  displayTitle: string; // Name of the saved connection profile.
-};
+// Name of the saved connection profile.
 
-const SupportedMethods = Object.freeze({
+var SupportedMethods = Object.freeze({
   SSL_AGENT: 'SSL_AGENT',
   PASSWORD: 'PASSWORD',
-  PRIVATE_KEY: 'PRIVATE_KEY',
+  PRIVATE_KEY: 'PRIVATE_KEY'
 });
 
-const ErrorType = Object.freeze({
+var ErrorType = Object.freeze({
   UNKNOWN: 'UNKNOWN',
   HOST_NOT_FOUND: 'HOST_NOT_FOUND',
   CANT_READ_PRIVATE_KEY: 'CANT_READ_PRIVATE_KEY',
@@ -51,15 +64,8 @@ const ErrorType = Object.freeze({
   SSH_AUTHENTICATION: 'SSH_AUTHENTICATION',
   DIRECTORY_NOT_FOUND: 'DIRECTORY_NOT_FOUND',
   SERVER_START_FAILED: 'SERVER_START_FAILED',
-  SERVER_VERSION_MISMATCH: 'SERVER_VERSION_MISMATCH',
+  SERVER_VERSION_MISMATCH: 'SERVER_VERSION_MISMATCH'
 });
-
-export type SshHandshakeErrorType = 'UNKNOWN' | 'HOST_NOT_FOUND' | 'CANT_READ_PRIVATE_KEY' |
-  'SSH_CONNECT_TIMEOUT' | 'SSH_CONNECT_FAILED' | 'SSH_AUTHENTICATION' | 'DIRECTORY_NOT_FOUND' |
-  'SERVER_START_FAILED' | 'SERVER_VERSION_MISMATCH';
-
-type SshConnectionErrorLevel = 'client-timeout' | 'client-socket' | 'protocal' |
-  'client-authentication' | 'agent' | 'client-dns';
 
 /**
  * The server is asking for replies to the given prompts for
@@ -74,180 +80,137 @@ type SshConnectionErrorLevel = 'client-timeout' | 'client-socket' | 'protocal' |
  *     array of strings and passed to finish when you are ready to continue. Note:
  *     It's possible for the server to come back and ask more questions.
  */
-export type KeyboardInteractiveCallback = (
-  name: string,
-  instructions: string,
-  instructionsLang: string,
-  prompts: Array<{prompt: string; echo: boolean;}>,
-  finish: (answers: Array<string>) => void)  => void;
 
-export type SshConnectionDelegate = {
-  /** Invoked when server requests keyboard interaction */
-  onKeyboardInteractive: KeyboardInteractiveCallback;
-  /** Invoked when trying to connect */
-  onWillConnect: (config: SshConnectionConfiguration) => void;
-  /** Invoked when connection is sucessful */
-  onDidConnect: (connection: RemoteConnection, config: SshConnectionConfiguration) => void;
-  /** Invoked when connection is fails */
-  onError:
-    (errorType: SshHandshakeErrorType, error: Error, config: SshConnectionConfiguration) => void;
-};
+var SshConnectionErrorLevelMap = new Map([['client-timeout', ErrorType.SSH_CONNECT_TIMEOUT], ['client-socket', ErrorType.SSH_CONNECT_FAILED], ['protocal', ErrorType.SSH_CONNECT_FAILED], ['client-authentication', ErrorType.SSH_AUTHENTICATION], ['agent', ErrorType.SSH_AUTHENTICATION], ['client-dns', ErrorType.SSH_AUTHENTICATION]]);
 
-const SshConnectionErrorLevelMap: Map<SshConnectionErrorLevel, SshHandshakeErrorType> = new Map([
-  ['client-timeout', ErrorType.SSH_CONNECT_TIMEOUT],
-  ['client-socket', ErrorType.SSH_CONNECT_FAILED],
-  ['protocal', ErrorType.SSH_CONNECT_FAILED],
-  ['client-authentication', ErrorType.SSH_AUTHENTICATION],
-  ['agent', ErrorType.SSH_AUTHENTICATION],
-  ['client-dns', ErrorType.SSH_AUTHENTICATION],
-]);
+var SshHandshake = (function () {
+  _createClass(SshHandshake, null, [{
+    key: 'ErrorType',
+    value: ErrorType,
+    enumerable: true
+  }]);
 
-export class SshHandshake {
-  _delegate: SshConnectionDelegate;
-  _connection: SshConnection;
-  _config: SshConnectionConfiguration;
-  _forwardingServer: net.Server;
-  _remoteHost: ?string;
-  _remotePort: ?number;
-  _certificateAuthorityCertificate: Buffer;
-  _clientCertificate: Buffer;
-  _clientKey: Buffer;
-  static SupportedMethods: typeof SupportedMethods;
+  function SshHandshake(delegate, connection) {
+    _classCallCheck(this, SshHandshake);
 
-  static ErrorType = ErrorType;
-
-  constructor(delegate: SshConnectionDelegate, connection?: SshConnection) {
     this._delegate = delegate;
-    this._connection = connection ? connection : new SshConnection();
+    this._connection = connection ? connection : new _ssh2.Client();
     this._connection.on('ready', this._onConnect.bind(this));
     this._connection.on('error', this._onSshConnectionError.bind(this));
     this._connection.on('keyboard-interactive', this._onKeyboardInteractive.bind(this));
   }
 
-  _willConnect(): void {
-    this._delegate.onWillConnect(this._config);
-  }
-
-  _didConnect(connection: RemoteConnection): void {
-    this._delegate.onDidConnect(connection, this._config);
-  }
-
-  _error(message: string, errorType: SshHandshakeErrorType, error: Error): void {
-    logger.error(`SshHandshake failed: ${errorType}, ${message}`, error);
-    this._delegate.onError(errorType, error, this._config);
-  }
-
-  _onSshConnectionError(error: Error): void {
-    const errorLevel = ((error: Object).level: SshConnectionErrorLevel);
-    const errorType = SshConnectionErrorLevelMap.get(errorLevel) || SshHandshake.ErrorType.UNKNOWN;
-    this._error('Ssh connection failed.', errorType, error);
-  }
-
-  async connect(config: SshConnectionConfiguration): Promise<void> {
-    this._config = config;
-    this._willConnect();
-
-    const existingConnection = RemoteConnection
-      .getByHostnameAndPath(this._config.host, this._config.cwd);
-
-    if (existingConnection) {
-      this._didConnect(existingConnection);
-      return;
+  _createClass(SshHandshake, [{
+    key: '_willConnect',
+    value: function _willConnect() {
+      this._delegate.onWillConnect(this._config);
     }
-
-    const connection = await RemoteConnection.createConnectionBySavedConfig(
-      this._config.host,
-      this._config.cwd,
-      this._config.displayTitle,
-    );
-
-    if (connection) {
-      this._didConnect(connection);
-      return;
+  }, {
+    key: '_didConnect',
+    value: function _didConnect(connection) {
+      this._delegate.onDidConnect(connection, this._config);
     }
-
-    const {lookupPreferIpv6} = require('../../nuclide-commons').dnsUtils;
-    let address = null;
-    try {
-      address = await lookupPreferIpv6(config.host);
-    } catch (e) {
-      this._error(
-        'Failed to resolve DNS.',
-        SshHandshake.ErrorType.HOST_NOT_FOUND,
-        e,
-      );
+  }, {
+    key: '_error',
+    value: function _error(message, errorType, error) {
+      logger.error('SshHandshake failed: ' + errorType + ', ' + message, error);
+      this._delegate.onError(errorType, error, this._config);
     }
+  }, {
+    key: '_onSshConnectionError',
+    value: function _onSshConnectionError(error) {
+      var errorLevel = error.level;
+      var errorType = SshConnectionErrorLevelMap.get(errorLevel) || SshHandshake.ErrorType.UNKNOWN;
+      this._error('Ssh connection failed.', errorType, error);
+    }
+  }, {
+    key: 'connect',
+    value: _asyncToGenerator(function* (config) {
+      this._config = config;
+      this._willConnect();
 
-    if (config.authMethod === SupportedMethods.SSL_AGENT) {
-      // Point to ssh-agent's socket for ssh-agent-based authentication.
-      let agent = process.env['SSH_AUTH_SOCK'];
-      if (!agent && /^win/.test(process.platform)) {
-        // #100: On Windows, fall back to pageant.
-        agent = 'pageant';
+      var existingConnection = _RemoteConnection.RemoteConnection.getByHostnameAndPath(this._config.host, this._config.cwd);
+
+      if (existingConnection) {
+        this._didConnect(existingConnection);
+        return;
       }
-      this._connection.connect({
-        host: address,
-        port: config.sshPort,
-        username: config.username,
-        agent,
-        tryKeyboard: true,
-        readyTimeout: READY_TIMEOUT_MS,
-      });
-    } else if (config.authMethod === SupportedMethods.PASSWORD) {
+
+      var connection = yield _RemoteConnection.RemoteConnection.createConnectionBySavedConfig(this._config.host, this._config.cwd, this._config.displayTitle);
+
+      if (connection) {
+        this._didConnect(connection);
+        return;
+      }
+
+      var lookupPreferIpv6 = require('../../nuclide-commons').dnsUtils.lookupPreferIpv6;
+
+      var address = null;
+      try {
+        address = yield lookupPreferIpv6(config.host);
+      } catch (e) {
+        this._error('Failed to resolve DNS.', SshHandshake.ErrorType.HOST_NOT_FOUND, e);
+      }
+
+      if (config.authMethod === SupportedMethods.SSL_AGENT) {
+        // Point to ssh-agent's socket for ssh-agent-based authentication.
+        var agent = process.env['SSH_AUTH_SOCK'];
+        if (!agent && /^win/.test(process.platform)) {
+          // #100: On Windows, fall back to pageant.
+          agent = 'pageant';
+        }
+        this._connection.connect({
+          host: address,
+          port: config.sshPort,
+          username: config.username,
+          agent: agent,
+          tryKeyboard: true,
+          readyTimeout: READY_TIMEOUT_MS
+        });
+      } else if (config.authMethod === SupportedMethods.PASSWORD) {
         // When the user chooses password-based authentication, we specify
         // the config as follows so that it tries simple password auth and
         // failing that it falls through to the keyboard interactive path
-      this._connection.connect({
-        host: address,
-        port: config.sshPort,
-        username: config.username,
-        password: config.password,
-        tryKeyboard: true,
-      });
-    } else if (config.authMethod === SupportedMethods.PRIVATE_KEY) {
-      // We use fs-plus's normalize() function because it will expand the ~, if present.
-      const expandedPath = fs.normalize(config.pathToPrivateKey);
-      let privateKey: string = (null : any);
-      try {
-        privateKey = await fsPromise.readFile(expandedPath);
-      } catch (e) {
-        this._error(
-          `Failed to read private key`,
-          SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY,
-          e,
-        );
+        this._connection.connect({
+          host: address,
+          port: config.sshPort,
+          username: config.username,
+          password: config.password,
+          tryKeyboard: true
+        });
+      } else if (config.authMethod === SupportedMethods.PRIVATE_KEY) {
+        // We use fs-plus's normalize() function because it will expand the ~, if present.
+        var expandedPath = _fsPlus2.default.normalize(config.pathToPrivateKey);
+        var privateKey = null;
+        try {
+          privateKey = yield _nuclideCommons.fsPromise.readFile(expandedPath);
+        } catch (e) {
+          this._error('Failed to read private key', SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY, e);
+        }
+        this._connection.connect({
+          host: address,
+          port: config.sshPort,
+          username: config.username,
+          privateKey: privateKey,
+          tryKeyboard: true,
+          readyTimeout: READY_TIMEOUT_MS
+        });
       }
-      this._connection.connect({
-        host: address,
-        port: config.sshPort,
-        username: config.username,
-        privateKey,
-        tryKeyboard: true,
-        readyTimeout: READY_TIMEOUT_MS,
-      });
+    })
+  }, {
+    key: 'cancel',
+    value: function cancel() {
+      this._connection.end();
     }
-  }
-
-  cancel() {
-    this._connection.end();
-  }
-
-  _onKeyboardInteractive(
-      name: string,
-      instructions: string,
-      instructionsLang: string,
-      prompts: Array<{prompt: string; echo: boolean;}>,
-      finish: (answers: Array<string>) => void): void {
-    this._delegate.onKeyboardInteractive(name, instructions, instructionsLang, prompts, finish);
-  }
-
-  _forwardSocket(socket: net.Socket): void {
-    this._connection.forwardOut(
-      socket.remoteAddress,
-      socket.remotePort,
-      'localhost',
-      this._remotePort,
-      (err, stream) => {
+  }, {
+    key: '_onKeyboardInteractive',
+    value: function _onKeyboardInteractive(name, instructions, instructionsLang, prompts, finish) {
+      this._delegate.onKeyboardInteractive(name, instructions, instructionsLang, prompts, finish);
+    }
+  }, {
+    key: '_forwardSocket',
+    value: function _forwardSocket(socket) {
+      this._connection.forwardOut(socket.remoteAddress, socket.remotePort, 'localhost', this._remotePort, function (err, stream) {
         if (err) {
           socket.end();
           logger.error(err);
@@ -255,243 +218,230 @@ export class SshHandshake {
         }
         socket.pipe(stream);
         stream.pipe(socket);
+      });
+    }
+  }, {
+    key: '_updateServerInfo',
+    value: function _updateServerInfo(serverInfo) {
+      (0, _assert2.default)(serverInfo.port);
+      this._remotePort = serverInfo.port;
+      this._remoteHost = '' + (serverInfo.hostname || this._config.host);
+
+      // Because the value for the Initial Directory that the user supplied may have
+      // been a symlink that was resolved by the server, overwrite the original `cwd`
+      // value with the resolved value.
+      (0, _assert2.default)(serverInfo.workspace);
+      this._config.cwd = serverInfo.workspace;
+
+      // The following keys are optional in `RemoteConnectionConfiguration`.
+      //
+      // Do not throw when any of them (`ca`, `cert`, or `key`) are undefined because that will be the
+      // case when the server is started in "insecure" mode. See `::_isSecure`, which returns the
+      // security of this connection after the server is started.
+      if (serverInfo.ca != null) {
+        this._certificateAuthorityCertificate = serverInfo.ca;
       }
-    );
-  }
+      if (serverInfo.cert != null) {
+        this._clientCertificate = serverInfo.cert;
+      }
+      if (serverInfo.key != null) {
+        this._clientKey = serverInfo.key;
+      }
+    }
+  }, {
+    key: '_isSecure',
+    value: function _isSecure() {
+      return !!(this._certificateAuthorityCertificate && this._clientCertificate && this._clientKey);
+    }
+  }, {
+    key: '_startRemoteServer',
+    value: _asyncToGenerator(function* () {
+      var _this = this;
 
-  _updateServerInfo(serverInfo: {}) {
-    invariant(serverInfo.port);
-    this._remotePort = serverInfo.port;
-    this._remoteHost = `${serverInfo.hostname || this._config.host}`;
+      return new Promise(function (resolve, reject) {
+        var stdOut = '';
+        var remoteTempFile = '/tmp/nuclide-sshhandshake-' + Math.random();
+        //TODO: escape any single quotes
+        //TODO: the timeout value shall be configurable using .json file too (t6904691).
+        var cmd = _this._config.remoteServerCommand + ' --workspace=' + _this._config.cwd + (' --common-name=' + _this._config.host + ' --json-output-file=' + remoteTempFile + ' -t 60');
 
-    // Because the value for the Initial Directory that the user supplied may have
-    // been a symlink that was resolved by the server, overwrite the original `cwd`
-    // value with the resolved value.
-    invariant(serverInfo.workspace);
-    this._config.cwd = serverInfo.workspace;
-
-    // The following keys are optional in `RemoteConnectionConfiguration`.
-    //
-    // Do not throw when any of them (`ca`, `cert`, or `key`) are undefined because that will be the
-    // case when the server is started in "insecure" mode. See `::_isSecure`, which returns the
-    // security of this connection after the server is started.
-    if (serverInfo.ca != null) { this._certificateAuthorityCertificate = serverInfo.ca; }
-    if (serverInfo.cert != null) { this._clientCertificate = serverInfo.cert; }
-    if (serverInfo.key != null) { this._clientKey = serverInfo.key; }
-  }
-
-  _isSecure(): boolean {
-    return !!(this._certificateAuthorityCertificate
-        && this._clientCertificate
-        && this._clientKey);
-  }
-
-  async _startRemoteServer(): Promise<boolean> {
-
-    return new Promise((resolve, reject) => {
-      let stdOut = '';
-      const remoteTempFile = `/tmp/nuclide-sshhandshake-${Math.random()}`;
-      //TODO: escape any single quotes
-      //TODO: the timeout value shall be configurable using .json file too (t6904691).
-      const cmd = `${this._config.remoteServerCommand} --workspace=${this._config.cwd}`
-        + ` --common-name=${this._config.host} --json-output-file=${remoteTempFile} -t 60`;
-
-      this._connection.exec(cmd, {pty: {term: 'nuclide'}}, (err, stream) => {
-        if (err) {
-          this._onSshConnectionError(err);
-          return resolve(false);
-        }
-        stream.on('close', async (code, signal) => {
-          // Note: this code is probably the code from the child shell if one
-          // is in use.
-          if (code === 0) {
-            // Some servers have max channels set to 1, so add a delay to ensure
-            // the old channel has been cleaned up on the server.
-            // TODO(hansonw): Implement a proper retry mechanism.
-            // But first, we have to clean up this callback hell.
-            await promises.awaitMilliSeconds(100);
-            this._connection.sftp(async (error, sftp) => {
-              if (error) {
-                this._error(
-                  'Failed to start sftp connection',
-                  SshHandshake.ErrorType.SERVER_START_FAILED,
-                  error,
-                );
-                return resolve(false);
-              }
-              const localTempFile = await fsPromise.tempfile();
-              sftp.fastGet(remoteTempFile, localTempFile, async sftpError => {
-                sftp.end();
-                if (sftpError) {
-                  this._error(
-                    'Failed to transfer server start information',
-                    SshHandshake.ErrorType.SERVER_START_FAILED,
-                    sftpError,
-                  );
-                  return resolve(false);
-                }
-
-                let serverInfo: any = null;
-                const serverInfoJson = await fsPromise.readFile(localTempFile);
-                try {
-                  serverInfo = JSON.parse(serverInfoJson);
-                } catch (e) {
-                  this._error(
-                    'Malformed server start information',
-                    SshHandshake.ErrorType.SERVER_START_FAILED,
-                    new Error(serverInfoJson),
-                  );
-                  return resolve(false);
-                }
-
-                if (!serverInfo.success) {
-                  this._error(
-                    'Remote server failed to start',
-                    SshHandshake.ErrorType.SERVER_START_FAILED,
-                    new Error(serverInfo.logs),
-                  );
-                  return resolve(false);
-                }
-
-                if (!serverInfo.workspace) {
-                  this._error(
-                    'Could not find directory',
-                    SshHandshake.ErrorType.DIRECTORY_NOT_FOUND,
-                    new Error(serverInfo.logs),
-                  );
-                  return resolve(false);
-                }
-
-                // Update server info that is needed for setting up client.
-                this._updateServerInfo(serverInfo);
-                return resolve(true);
-              });
-            });
-          } else {
-            this._error(
-              'Remote shell execution failed',
-              SshHandshake.ErrorType.UNKNOWN,
-              new Error(stdOut),
-            );
+        _this._connection.exec(cmd, { pty: { term: 'nuclide' } }, function (err, stream) {
+          if (err) {
+            _this._onSshConnectionError(err);
             return resolve(false);
           }
-        }).on('data', data => {
-          stdOut += data;
+          stream.on('close', _asyncToGenerator(function* (code, signal) {
+            // Note: this code is probably the code from the child shell if one
+            // is in use.
+            if (code === 0) {
+              // Some servers have max channels set to 1, so add a delay to ensure
+              // the old channel has been cleaned up on the server.
+              // TODO(hansonw): Implement a proper retry mechanism.
+              // But first, we have to clean up this callback hell.
+              yield _nuclideCommons.promises.awaitMilliSeconds(100);
+              _this._connection.sftp(_asyncToGenerator(function* (error, sftp) {
+                if (error) {
+                  _this._error('Failed to start sftp connection', SshHandshake.ErrorType.SERVER_START_FAILED, error);
+                  return resolve(false);
+                }
+                var localTempFile = yield _nuclideCommons.fsPromise.tempfile();
+                sftp.fastGet(remoteTempFile, localTempFile, _asyncToGenerator(function* (sftpError) {
+                  sftp.end();
+                  if (sftpError) {
+                    _this._error('Failed to transfer server start information', SshHandshake.ErrorType.SERVER_START_FAILED, sftpError);
+                    return resolve(false);
+                  }
+
+                  var serverInfo = null;
+                  var serverInfoJson = yield _nuclideCommons.fsPromise.readFile(localTempFile);
+                  try {
+                    serverInfo = JSON.parse(serverInfoJson);
+                  } catch (e) {
+                    _this._error('Malformed server start information', SshHandshake.ErrorType.SERVER_START_FAILED, new Error(serverInfoJson));
+                    return resolve(false);
+                  }
+
+                  if (!serverInfo.success) {
+                    _this._error('Remote server failed to start', SshHandshake.ErrorType.SERVER_START_FAILED, new Error(serverInfo.logs));
+                    return resolve(false);
+                  }
+
+                  if (!serverInfo.workspace) {
+                    _this._error('Could not find directory', SshHandshake.ErrorType.DIRECTORY_NOT_FOUND, new Error(serverInfo.logs));
+                    return resolve(false);
+                  }
+
+                  // Update server info that is needed for setting up client.
+                  _this._updateServerInfo(serverInfo);
+                  return resolve(true);
+                }));
+              }));
+            } else {
+              _this._error('Remote shell execution failed', SshHandshake.ErrorType.UNKNOWN, new Error(stdOut));
+              return resolve(false);
+            }
+          })).on('data', function (data) {
+            stdOut += data;
+          });
         });
       });
-    });
-  }
+    })
+  }, {
+    key: '_onConnect',
+    value: _asyncToGenerator(function* () {
+      var _this2 = this;
 
-  async _onConnect(): Promise<void> {
-    if (!(await this._startRemoteServer())) {
-      return;
-    }
-
-    const connect = async (config: RemoteConnectionConfiguration) => {
-      let connection = null;
-      try {
-        connection = await RemoteConnection.findOrCreate(config);
-      } catch (e) {
-        this._error(
-          'Connection check failed',
-          SshHandshake.ErrorType.SERVER_VERSION_MISMATCH,
-          e,
-        );
+      if (!(yield this._startRemoteServer())) {
+        return;
       }
-      if (connection != null) {
-        this._didConnect(connection);
-        // If we are secure then we don't need the ssh tunnel.
-        if (this._isSecure()) {
-          this._connection.end();
+
+      var connect = _asyncToGenerator(function* (config) {
+        var connection = null;
+        try {
+          connection = yield _RemoteConnection.RemoteConnection.findOrCreate(config);
+        } catch (e) {
+          _this2._error('Connection check failed', SshHandshake.ErrorType.SERVER_VERSION_MISMATCH, e);
         }
-      }
-    };
-
-    // Use an ssh tunnel if server is not secure
-    if (this._isSecure()) {
-      invariant(this._remoteHost);
-      invariant(this._remotePort);
-      connect({
-        host: this._remoteHost,
-        port: this._remotePort,
-        cwd: this._config.cwd,
-        certificateAuthorityCertificate: this._certificateAuthorityCertificate,
-        clientCertificate: this._clientCertificate,
-        clientKey: this._clientKey,
-        displayTitle: this._config.displayTitle,
+        if (connection != null) {
+          _this2._didConnect(connection);
+          // If we are secure then we don't need the ssh tunnel.
+          if (_this2._isSecure()) {
+            _this2._connection.end();
+          }
+        }
       });
-    } else {
-      /* $FlowIssue t9212378 */
-      this._forwardingServer = net.createServer(sock => {
-        this._forwardSocket(sock);
-      }).listen(0, 'localhost', () => {
-        const localPort = this._getLocalPort();
-        invariant(localPort);
+
+      // Use an ssh tunnel if server is not secure
+      if (this._isSecure()) {
+        (0, _assert2.default)(this._remoteHost);
+        (0, _assert2.default)(this._remotePort);
         connect({
-          host: 'localhost',
-          port: localPort,
+          host: this._remoteHost,
+          port: this._remotePort,
           cwd: this._config.cwd,
-          displayTitle: this._config.displayTitle,
+          certificateAuthorityCertificate: this._certificateAuthorityCertificate,
+          clientCertificate: this._clientCertificate,
+          clientKey: this._clientKey,
+          displayTitle: this._config.displayTitle
         });
-      });
+      } else {
+        /* $FlowIssue t9212378 */
+        this._forwardingServer = _net2.default.createServer(function (sock) {
+          _this2._forwardSocket(sock);
+        }).listen(0, 'localhost', function () {
+          var localPort = _this2._getLocalPort();
+          (0, _assert2.default)(localPort);
+          connect({
+            host: 'localhost',
+            port: localPort,
+            cwd: _this2._config.cwd,
+            displayTitle: _this2._config.displayTitle
+          });
+        });
+      }
+    })
+  }, {
+    key: '_getLocalPort',
+    value: function _getLocalPort() {
+      return this._forwardingServer ? this._forwardingServer.address().port : null;
     }
-  }
+  }, {
+    key: 'getConfig',
+    value: function getConfig() {
+      return this._config;
+    }
+  }]);
 
-  _getLocalPort(): ?number {
-    return this._forwardingServer ? this._forwardingServer.address().port : null;
-  }
+  return SshHandshake;
+})();
 
-  getConfig(): SshConnectionConfiguration {
-    return this._config;
-  }
-}
+exports.SshHandshake = SshHandshake;
 
 SshHandshake.SupportedMethods = SupportedMethods;
 
-export function decorateSshConnectionDelegateWithTracking(
-  delegate: SshConnectionDelegate,
-): SshConnectionDelegate {
-  let connectionTracker;
+function decorateSshConnectionDelegateWithTracking(delegate) {
+  var connectionTracker = undefined;
 
   return {
-    onKeyboardInteractive: (
-      name: string,
-      instructions: string,
-      instructionsLang: string,
-      prompts: Array<{prompt: string; echo: boolean;}>,
-      finish: (answers: Array<string>) => void,
-    ) => {
-      invariant(connectionTracker);
+    onKeyboardInteractive: function onKeyboardInteractive(name, instructions, instructionsLang, prompts, finish) {
+      (0, _assert2.default)(connectionTracker);
       connectionTracker.trackPromptYubikeyInput();
-      delegate.onKeyboardInteractive(
-        name,
-        instructions,
-        instructionsLang,
-        prompts,
-        answers => {
-          invariant(connectionTracker);
-          connectionTracker.trackFinishYubikeyInput();
-          finish(answers);
-        },
-      );
+      delegate.onKeyboardInteractive(name, instructions, instructionsLang, prompts, function (answers) {
+        (0, _assert2.default)(connectionTracker);
+        connectionTracker.trackFinishYubikeyInput();
+        finish(answers);
+      });
     },
-    onWillConnect: (config: SshConnectionConfiguration) => {
-      connectionTracker = new ConnectionTracker(config);
+    onWillConnect: function onWillConnect(config) {
+      connectionTracker = new _ConnectionTracker2.default(config);
       delegate.onWillConnect(config);
     },
-    onDidConnect: (connection: RemoteConnection, config: SshConnectionConfiguration) => {
-      invariant(connectionTracker);
+    onDidConnect: function onDidConnect(connection, config) {
+      (0, _assert2.default)(connectionTracker);
       connectionTracker.trackSuccess();
       delegate.onDidConnect(connection, config);
     },
-    onError: (
-      errorType: SshHandshakeErrorType,
-      error: Error,
-      config: SshConnectionConfiguration,
-    ) => {
-      invariant(connectionTracker);
+    onError: function onError(errorType, error, config) {
+      (0, _assert2.default)(connectionTracker);
       connectionTracker.trackFailure(errorType, error);
       delegate.onError(errorType, error, config);
-    },
+    }
   };
 }
+
+// host nuclide server is running on
+// ssh port of host nuclide server is running on
+// username to authenticate as
+// The path to private key
+// Command to use to start server
+// Path to remote directory user should start in upon connection.
+// Which of the authentication methods in `SupportedMethods` to use.
+// for simple password-based authentication
+
+/** Invoked when server requests keyboard interaction */
+
+/** Invoked when trying to connect */
+
+/** Invoked when connection is sucessful */
+
+/** Invoked when connection is fails */

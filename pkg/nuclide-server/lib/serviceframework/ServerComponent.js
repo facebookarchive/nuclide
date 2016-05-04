@@ -1,5 +1,14 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,320 +18,305 @@
  * the root directory of this source tree.
  */
 
-import {Observable} from 'rxjs';
-import {getProxy, getDefinitions} from '../../../nuclide-service-parser';
-import TypeRegistry from '../../../nuclide-service-parser/lib/TypeRegistry';
-import {builtinLocation, voidType} from '../../../nuclide-service-parser/lib/builtin-types';
-import {startTracking} from '../../../nuclide-analytics';
-import type {TimingTracker} from '../../../nuclide-analytics';
-import type {
-  FunctionType,
-  Definition,
-  InterfaceDefinition,
-  Type,
-} from '../../../nuclide-service-parser/lib/types';
-import invariant from 'assert';
-import type {ConfigEntry} from './index';
-import type {ObjectRegistry} from './ObjectRegistry';
+var _rxjs = require('rxjs');
 
-import type {
-  RequestMessage,
-  ErrorResponseMessage,
-  PromiseResponseMessage,
-  ObservableResponseMessage,
-  CallRemoteFunctionMessage,
-  CallRemoteMethodMessage,
-  CreateRemoteObjectMessage,
-} from './types';
-import type {SocketClient} from '../SocketClient';
+var _nuclideServiceParser = require('../../../nuclide-service-parser');
 
-const logger = require('../../../nuclide-logging').getLogger();
+var _nuclideServiceParserLibTypeRegistry = require('../../../nuclide-service-parser/lib/TypeRegistry');
 
-type FunctionImplementation = {localImplementation: Function; type: FunctionType};
+var _nuclideServiceParserLibTypeRegistry2 = _interopRequireDefault(_nuclideServiceParserLibTypeRegistry);
 
-export default class ServerComponent {
-  _typeRegistry: TypeRegistry<ObjectRegistry>;
+var _nuclideServiceParserLibBuiltinTypes = require('../../../nuclide-service-parser/lib/builtin-types');
 
-  /**
-   * Store a mapping from function name to a structure holding both the local implementation and
-   * the type definition of the function.
-   */
-  _functionsByName: Map<string, FunctionImplementation>;
+var _nuclideAnalytics = require('../../../nuclide-analytics');
 
-  /**
-   * Store a mapping from a class name to a struct containing it's local constructor and it's
-   * interface definition.
-   */
-  _classesByName: Map<string, {localImplementation: any; definition: InterfaceDefinition}>;
+var _assert = require('assert');
 
-  constructor(services: Array<ConfigEntry>) {
-    this._typeRegistry = new TypeRegistry();
+var _assert2 = _interopRequireDefault(_assert);
+
+var logger = require('../../../nuclide-logging').getLogger();
+
+var ServerComponent = (function () {
+  function ServerComponent(services) {
+    _classCallCheck(this, ServerComponent);
+
+    this._typeRegistry = new _nuclideServiceParserLibTypeRegistry2.default();
     this._functionsByName = new Map();
     this._classesByName = new Map();
 
     // NuclideUri type requires no transformations (it is done on the client side).
-    this._typeRegistry.registerType('NuclideUri', uri => uri, remotePath => remotePath);
+    this._typeRegistry.registerType('NuclideUri', function (uri) {
+      return uri;
+    }, function (remotePath) {
+      return remotePath;
+    });
 
     this.addServices(services);
   }
 
-  addServices(services: Array<ConfigEntry>): void {
-    services.forEach(this.addService, this);
-  }
+  _createClass(ServerComponent, [{
+    key: 'addServices',
+    value: function addServices(services) {
+      services.forEach(this.addService, this);
+    }
+  }, {
+    key: 'addService',
+    value: function addService(service) {
+      var _this = this;
 
-  addService(service: ConfigEntry): void {
-    logger.debug(`Registering 3.0 service ${service.name}...`);
-    try {
-      const defs = getDefinitions(service.definition);
-      // $FlowIssue - the parameter passed to require must be a literal string.
-      const localImpl = require(service.implementation);
-      // TODO: Remove the any cast once we have bi-directional marshalling.
-      const proxy = getProxy(service.name, service.definition, (this: any));
+      logger.debug('Registering 3.0 service ' + service.name + '...');
+      try {
+        (function () {
+          var defs = (0, _nuclideServiceParser.getDefinitions)(service.definition);
+          // $FlowIssue - the parameter passed to require must be a literal string.
+          var localImpl = require(service.implementation);
+          // TODO: Remove the any cast once we have bi-directional marshalling.
+          var proxy = (0, _nuclideServiceParser.getProxy)(service.name, service.definition, _this);
 
-      // Register type aliases.
-      defs.forEach((definition: Definition) => {
-        const name = definition.name;
-        switch (definition.kind) {
-          case 'alias':
-            logger.debug(`Registering type alias ${name}...`);
-            if (definition.definition != null) {
-              this._typeRegistry.registerAlias(name, (definition.definition: Type));
+          // Register type aliases.
+          defs.forEach(function (definition) {
+            var name = definition.name;
+            switch (definition.kind) {
+              case 'alias':
+                logger.debug('Registering type alias ' + name + '...');
+                if (definition.definition != null) {
+                  _this._typeRegistry.registerAlias(name, definition.definition);
+                }
+                break;
+              case 'function':
+                // Register module-level functions.
+                _this._registerFunction(service.name + '/' + name, localImpl[name], definition.type);
+                break;
+              case 'interface':
+                // Register interfaces.
+                logger.debug('Registering interface ' + name + '...');
+                _this._classesByName.set(name, {
+                  localImplementation: localImpl[name],
+                  definition: definition
+                });
+
+                _this._typeRegistry.registerType(name, function (object, context) {
+                  return context.marshal(name, object);
+                }, function (objectId, context) {
+                  return context.unmarshal(objectId, proxy[name]);
+                });
+
+                // Register all of the static methods as remote functions.
+                definition.staticMethods.forEach(function (funcType, funcName) {
+                  _this._registerFunction(name + '/' + funcName, localImpl[name][funcName], funcType);
+                });
+                break;
             }
-            break;
-          case 'function':
-            // Register module-level functions.
-            this._registerFunction(`${service.name}/${name}`, localImpl[name], definition.type);
-            break;
-          case 'interface':
-            // Register interfaces.
-            logger.debug(`Registering interface ${name}...`);
-            this._classesByName.set(name,  {
-              localImplementation: localImpl[name],
-              definition,
-            });
+          });
+        })();
+      } catch (e) {
+        logger.error('Failed to load service ' + service.name + '. Stack Trace:\n' + e.stack);
+        throw e;
+      }
+    }
+  }, {
+    key: '_registerFunction',
+    value: function _registerFunction(name, localImpl, type) {
+      logger.debug('Registering function ' + name + '...');
+      if (this._functionsByName.has(name)) {
+        throw new Error('Duplicate RPC function: ' + name);
+      }
+      this._functionsByName.set(name, {
+        localImplementation: localImpl,
+        type: type
+      });
+    }
+  }, {
+    key: 'handleMessage',
+    value: _asyncToGenerator(function* (client, message) {
+      var _this2 = this;
 
-            this._typeRegistry.registerType(
-              name,
-              (object, context: ObjectRegistry) => context.marshal(name, object),
-              (objectId, context: ObjectRegistry) => context.unmarshal(objectId, proxy[name]));
+      var requestId = message.requestId;
+      var marshallingContext = client.getMarshallingContext();
 
-            // Register all of the static methods as remote functions.
-            definition.staticMethods.forEach((funcType, funcName) => {
-              this._registerFunction(`${name}/${funcName}`, localImpl[name][funcName], funcType);
-            });
-            break;
+      // Track timings of all function calls, method calls, and object creations.
+      // Note: for Observables we only track how long it takes to create the initial Observable.
+      // while for Promises we track the length of time it takes to resolve or reject.
+      // For returning void, we track the time for the call to complete.
+      var timingTracker = (0, _nuclideAnalytics.startTracking)(trackingIdOfMessage(marshallingContext, message));
+
+      var returnPromise = function returnPromise(candidate, type) {
+        var returnVal = candidate;
+        // Ensure that the return value is a promise.
+        if (!isThenable(returnVal)) {
+          returnVal = Promise.reject(new Error('Expected a Promise, but the function returned something else.'));
         }
+
+        // Marshal the result, to send over the network.
+        (0, _assert2.default)(returnVal != null);
+        returnVal = returnVal.then(function (value) {
+          return _this2._typeRegistry.marshal(marshallingContext, value, type);
+        });
+
+        // Send the result of the promise across the socket.
+        returnVal.then(function (result) {
+          client.sendSocketMessage(createPromiseMessage(requestId, result));
+          timingTracker.onSuccess();
+        }, function (error) {
+          client.sendSocketMessage(createErrorMessage(requestId, error));
+          timingTracker.onError(error == null ? new Error() : error);
+        });
+      };
+
+      var returnObservable = function returnObservable(returnVal, elementType) {
+        var result = undefined;
+        // Ensure that the return value is an observable.
+        if (!isObservable(returnVal)) {
+          result = _rxjs.Observable.throw(new Error('Expected an Observable, but the function returned something else.'));
+        } else {
+          result = returnVal;
+        }
+
+        // Marshal the result, to send over the network.
+        result = result.concatMap(function (value) {
+          return _this2._typeRegistry.marshal(marshallingContext, value, elementType);
+        });
+
+        // Send the next, error, and completion events of the observable across the socket.
+        var subscription = result.subscribe(function (data) {
+          client.sendSocketMessage(createNextMessage(requestId, data));
+        }, function (error) {
+          client.sendSocketMessage(createErrorMessage(requestId, error));
+          marshallingContext.removeSubscription(requestId);
+        }, function (completed) {
+          client.sendSocketMessage(createCompletedMessage(requestId));
+          marshallingContext.removeSubscription(requestId);
+        });
+        marshallingContext.addSubscription(requestId, subscription);
+      };
+
+      // Returns true if a promise was returned.
+      var returnValue = function returnValue(value, type) {
+        switch (type.kind) {
+          case 'void':
+            break; // No need to send anything back to the user.
+          case 'promise':
+            returnPromise(value, type.type);
+            return true;
+          case 'observable':
+            returnObservable(value, type.type);
+            break;
+          default:
+            throw new Error('Unkown return type ' + type.kind + '.');
+        }
+        return false;
+      };
+
+      var callFunction = _asyncToGenerator(function* (call) {
+        var _getFunctionImplemention2 = _this2._getFunctionImplemention(call.function);
+
+        var localImplementation = _getFunctionImplemention2.localImplementation;
+        var type = _getFunctionImplemention2.type;
+
+        var marshalledArgs = yield _this2._typeRegistry.unmarshalArguments(marshallingContext, call.args, type.argumentTypes);
+
+        return returnValue(localImplementation.apply(client, marshalledArgs), type.returnType);
       });
 
-    } catch (e) {
-      logger.error(`Failed to load service ${service.name}. Stack Trace:\n${e.stack}`);
-      throw e;
-    }
-  }
+      var callMethod = _asyncToGenerator(function* (call) {
+        var object = marshallingContext.unmarshal(call.objectId);
+        (0, _assert2.default)(object != null);
 
-  _registerFunction(name: string, localImpl: Function, type: FunctionType): void {
-    logger.debug(`Registering function ${name}...`);
-    if (this._functionsByName.has(name)) {
-      throw new Error(`Duplicate RPC function: ${name}`);
-    }
-    this._functionsByName.set(name,  {
-      localImplementation: localImpl,
-      type,
-    });
-  }
+        var interfaceName = marshallingContext.getInterface(call.objectId);
+        var classDefinition = _this2._classesByName.get(interfaceName);
+        (0, _assert2.default)(classDefinition != null);
+        var type = classDefinition.definition.instanceMethods.get(call.method);
+        (0, _assert2.default)(type != null);
 
-  async handleMessage(client: SocketClient, message: RequestMessage): Promise<void> {
-    const requestId = message.requestId;
-    const marshallingContext = client.getMarshallingContext();
+        var marshalledArgs = yield _this2._typeRegistry.unmarshalArguments(marshallingContext, call.args, type.argumentTypes);
 
-    // Track timings of all function calls, method calls, and object creations.
-    // Note: for Observables we only track how long it takes to create the initial Observable.
-    // while for Promises we track the length of time it takes to resolve or reject.
-    // For returning void, we track the time for the call to complete.
-    const timingTracker: TimingTracker
-      = startTracking(trackingIdOfMessage(marshallingContext, message));
-
-    const returnPromise = (candidate: any, type: Type) => {
-      let returnVal = candidate;
-      // Ensure that the return value is a promise.
-      if (!isThenable(returnVal)) {
-        returnVal = Promise.reject(
-          new Error('Expected a Promise, but the function returned something else.'));
-      }
-
-      // Marshal the result, to send over the network.
-      invariant(returnVal != null);
-      returnVal = returnVal.then(value => this._typeRegistry.marshal(
-        marshallingContext, value, type));
-
-      // Send the result of the promise across the socket.
-      returnVal.then(result => {
-        client.sendSocketMessage(createPromiseMessage(requestId, result));
-        timingTracker.onSuccess();
-      }, error => {
-        client.sendSocketMessage(createErrorMessage(requestId, error));
-        timingTracker.onError(error == null ? new Error() : error);
+        return returnValue(object[call.method].apply(object, marshalledArgs), type.returnType);
       });
-    };
 
-    const returnObservable = (returnVal: any, elementType: Type) => {
-      let result: Observable;
-      // Ensure that the return value is an observable.
-      if (!isObservable(returnVal)) {
-        result = Observable.throw(new Error(
-          'Expected an Observable, but the function returned something else.'));
-      } else {
-        result = returnVal;
-      }
+      var callConstructor = _asyncToGenerator(function* (constructorMessage) {
+        var classDefinition = _this2._classesByName.get(constructorMessage.interface);
+        (0, _assert2.default)(classDefinition != null);
+        var localImplementation = classDefinition.localImplementation;
+        var definition = classDefinition.definition;
 
-      // Marshal the result, to send over the network.
-      result = result.concatMap(value => this._typeRegistry.marshal(
-        marshallingContext, value, elementType));
+        var marshalledArgs = yield _this2._typeRegistry.unmarshalArguments(marshallingContext, constructorMessage.args, definition.constructorArgs);
 
-      // Send the next, error, and completion events of the observable across the socket.
-      const subscription = result.subscribe(data => {
-        client.sendSocketMessage(createNextMessage(requestId, data));
-      }, error => {
-        client.sendSocketMessage(createErrorMessage(requestId, error));
-        marshallingContext.removeSubscription(requestId);
-      }, completed => {
-        client.sendSocketMessage(createCompletedMessage(requestId));
-        marshallingContext.removeSubscription(requestId);
-      });
-      marshallingContext.addSubscription(requestId, subscription);
-    };
+        // Create a new object and put it in the registry.
+        var newObject = construct(localImplementation, marshalledArgs);
 
-    // Returns true if a promise was returned.
-    const returnValue = (value: any, type: Type) => {
-      switch (type.kind) {
-        case 'void':
-          break; // No need to send anything back to the user.
-        case 'promise':
-          returnPromise(value, type.type);
-          return true;
-        case 'observable':
-          returnObservable(value, type.type);
-          break;
-        default:
-          throw new Error(`Unkown return type ${type.kind}.`);
-      }
-      return false;
-    };
-
-    const callFunction = async (call: CallRemoteFunctionMessage) => {
-      const {
-        localImplementation,
-        type,
-      } = this._getFunctionImplemention(call.function);
-      const marshalledArgs = await this._typeRegistry.unmarshalArguments(
-        marshallingContext, call.args, type.argumentTypes);
-
-      return returnValue(
-        localImplementation.apply(client, marshalledArgs),
-        type.returnType);
-    };
-
-    const callMethod = async (call: CallRemoteMethodMessage) => {
-      const object = marshallingContext.unmarshal(call.objectId);
-      invariant(object != null);
-
-      const interfaceName = marshallingContext.getInterface(call.objectId);
-      const classDefinition = this._classesByName.get(interfaceName);
-      invariant(classDefinition != null);
-      const type = classDefinition.definition.instanceMethods.get(call.method);
-      invariant(type != null);
-
-      const marshalledArgs = await this._typeRegistry.unmarshalArguments(
-        marshallingContext, call.args, type.argumentTypes);
-
-      return returnValue(
-        object[call.method].apply(object, marshalledArgs),
-        type.returnType);
-    };
-
-    const callConstructor = async (constructorMessage: CreateRemoteObjectMessage) => {
-      const classDefinition = this._classesByName.get(constructorMessage.interface);
-      invariant(classDefinition != null);
-      const {
-        localImplementation,
-        definition,
-      } = classDefinition;
-
-      const marshalledArgs = await this._typeRegistry.unmarshalArguments(
-        marshallingContext, constructorMessage.args, definition.constructorArgs);
-
-      // Create a new object and put it in the registry.
-      const newObject = construct(localImplementation, marshalledArgs);
-
-      // Return the object, which will automatically be converted to an id through the
-      // marshalling system.
-      returnPromise(
-        Promise.resolve(newObject),
-        {
+        // Return the object, which will automatically be converted to an id through the
+        // marshalling system.
+        returnPromise(Promise.resolve(newObject), {
           kind: 'named',
           name: constructorMessage.interface,
-          location: builtinLocation,
+          location: _nuclideServiceParserLibBuiltinTypes.builtinLocation
         });
-    };
+      });
 
-    // Here's the main message handler ...
-    try {
-      let returnedPromise = false;
-      switch (message.type) {
-        case 'FunctionCall':
-          returnedPromise = await callFunction(message);
-          break;
-        case 'MethodCall':
-          returnedPromise = await callMethod(message);
-          break;
-        case 'NewObject':
-          await callConstructor(message);
-          returnedPromise = true;
-          break;
-        case 'DisposeObject':
-          await marshallingContext.disposeObject(message.objectId);
-          returnPromise(Promise.resolve(), voidType);
-          returnedPromise = true;
-          break;
-        case 'DisposeObservable':
-          marshallingContext.disposeSubscription(requestId);
-          break;
-        default:
-          throw new Error(`Unkown message type ${message.type}`);
+      // Here's the main message handler ...
+      try {
+        var returnedPromise = false;
+        switch (message.type) {
+          case 'FunctionCall':
+            returnedPromise = yield callFunction(message);
+            break;
+          case 'MethodCall':
+            returnedPromise = yield callMethod(message);
+            break;
+          case 'NewObject':
+            yield callConstructor(message);
+            returnedPromise = true;
+            break;
+          case 'DisposeObject':
+            yield marshallingContext.disposeObject(message.objectId);
+            returnPromise(Promise.resolve(), _nuclideServiceParserLibBuiltinTypes.voidType);
+            returnedPromise = true;
+            break;
+          case 'DisposeObservable':
+            marshallingContext.disposeSubscription(requestId);
+            break;
+          default:
+            throw new Error('Unkown message type ' + message.type);
+        }
+        if (!returnedPromise) {
+          timingTracker.onSuccess();
+        }
+      } catch (e) {
+        logger.error(e != null ? e.message : e);
+        timingTracker.onError(e == null ? new Error() : e);
+        client.sendSocketMessage(createErrorMessage(requestId, e));
       }
-      if (!returnedPromise) {
-        timingTracker.onSuccess();
-      }
-    } catch (e) {
-      logger.error(e != null ? e.message : e);
-      timingTracker.onError(e == null ? new Error() : e);
-      client.sendSocketMessage(createErrorMessage(requestId, e));
+    })
+  }, {
+    key: '_getFunctionImplemention',
+    value: function _getFunctionImplemention(name) {
+      var result = this._functionsByName.get(name);
+      (0, _assert2.default)(result);
+      return result;
     }
-  }
+  }]);
 
-  _getFunctionImplemention(name: string): FunctionImplementation {
-    const result = this._functionsByName.get(name);
-    invariant(result);
-    return result;
-  }
-}
+  return ServerComponent;
+})();
 
-function trackingIdOfMessage(registry: ObjectRegistry, message: RequestMessage): string {
+exports.default = ServerComponent;
+
+function trackingIdOfMessage(registry, message) {
   switch (message.type) {
     case 'FunctionCall':
-      return `service-framework:${message.function}`;
+      return 'service-framework:' + message.function;
     case 'MethodCall':
-      const callInterface = registry.getInterface(message.objectId);
-      return `service-framework:${callInterface}.${message.method}`;
+      var callInterface = registry.getInterface(message.objectId);
+      return 'service-framework:' + callInterface + '.' + message.method;
     case 'NewObject':
-      return `service-framework:new:${message.interface}`;
+      return 'service-framework:new:' + message.interface;
     case 'DisposeObject':
-      const interfaceName = registry.getInterface(message.objectId);
-      return `service-framework:dispose:${interfaceName}`;
+      var interfaceName = registry.getInterface(message.objectId);
+      return 'service-framework:dispose:' + interfaceName;
     case 'DisposeObservable':
-      return `service-framework:disposeObservable`;
+      return 'service-framework:disposeObservable';
     default:
-      throw new Error(`Unknown message type ${message.type}`);
+      throw new Error('Unknown message type ' + message.type);
   }
 }
 
@@ -343,57 +337,57 @@ function construct(classObject, args) {
 /**
  * A helper function that checks if an object is thenable (Promise-like).
  */
-function isThenable(object: any): boolean {
+function isThenable(object) {
   return Boolean(object && object.then);
 }
 
 /**
  * A helper function that checks if an object is an Observable.
  */
-function isObservable(object: any): boolean {
+function isObservable(object) {
   return Boolean(object && object.concatMap && object.subscribe);
 }
 
-function createPromiseMessage(requestId: number, result: any): PromiseResponseMessage {
+function createPromiseMessage(requestId, result) {
   return {
     channel: 'service_framework3_rpc',
     type: 'PromiseMessage',
-    requestId,
-    result,
-    hadError: false,
+    requestId: requestId,
+    result: result,
+    hadError: false
   };
 }
 
-function createNextMessage(requestId: number, data: any): ObservableResponseMessage {
+function createNextMessage(requestId, data) {
   return {
     channel: 'service_framework3_rpc',
     type: 'ObservableMessage',
-    requestId,
+    requestId: requestId,
     hadError: false,
     result: {
       type: 'next',
-      data: data,
-    },
+      data: data
+    }
   };
 }
 
-function createCompletedMessage(requestId: number): ObservableResponseMessage {
+function createCompletedMessage(requestId) {
   return {
     channel: 'service_framework3_rpc',
     type: 'ObservableMessage',
-    requestId,
+    requestId: requestId,
     hadError: false,
-    result: { type: 'completed' },
+    result: { type: 'completed' }
   };
 }
 
-function createErrorMessage(requestId: number, error: any): ErrorResponseMessage {
+function createErrorMessage(requestId, error) {
   return {
     channel: 'service_framework3_rpc',
     type: 'ErrorMessage',
-    requestId,
+    requestId: requestId,
     hadError: true,
-    error: formatError(error),
+    error: formatError(error)
   };
 }
 
@@ -401,12 +395,12 @@ function createErrorMessage(requestId: number, error: any): ErrorResponseMessage
  * Format the error before sending over the web socket.
  * TODO: This should be a custom marshaller registered in the TypeRegistry
  */
-function formatError(error: any): ?(Object | string) {
+function formatError(error) {
   if (error instanceof Error) {
     return {
       message: error.message,
       code: error.code,
-      stack: error.stack,
+      stack: error.stack
     };
   } else if (typeof error === 'string') {
     return error.toString();
@@ -414,9 +408,20 @@ function formatError(error: any): ?(Object | string) {
     return undefined;
   } else {
     try {
-      return `Unknown Error: ${JSON.stringify(error, null, 2)}`;
+      return 'Unknown Error: ' + JSON.stringify(error, null, 2);
     } catch (jsonError) {
-      return `Unknown Error: ${error.toString()}`;
+      return 'Unknown Error: ' + error.toString();
     }
   }
 }
+module.exports = exports.default;
+
+/**
+ * Store a mapping from function name to a structure holding both the local implementation and
+ * the type definition of the function.
+ */
+
+/**
+ * Store a mapping from a class name to a struct containing it's local constructor and it's
+ * interface definition.
+ */

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,42 +8,29 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {TryStatement} from 'ast-types-flow';
+var _constantsMarkers = require('../../constants/markers');
 
-import markers from '../../constants/markers';
-import wrapStatement from '../../wrappers/simple/wrapStatement';
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
-function printTryStatement(print: Print, node: TryStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
+var _wrappersSimpleWrapStatement = require('../../wrappers/simple/wrapStatement');
 
-  let parts = [
-    markers.hardBreak,
-    'try',
-    markers.noBreak,
-    markers.space,
-    print(node.block),
-  ];
+var _wrappersSimpleWrapStatement2 = _interopRequireDefault(_wrappersSimpleWrapStatement);
+
+function printTryStatement(print, node) {
+  var wrap = function wrap(x) {
+    return (0, _wrappersSimpleWrapStatement2.default)(print, node, x);
+  };
+
+  var parts = [_constantsMarkers2.default.hardBreak, 'try', _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, print(node.block)];
 
   if (node.handler) {
-    const handler = node.handler;
-    parts = parts.concat([
-      markers.noBreak,
-      markers.space,
-      print(handler),
-    ]);
+    var handler = node.handler;
+    parts = parts.concat([_constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, print(handler)]);
   }
 
   if (node.finalizer) {
-    const finalizer = node.finalizer;
-    parts = parts.concat([
-      markers.noBreak,
-      markers.space,
-      'finally',
-      markers.noBreak,
-      markers.space,
-      print(finalizer),
-    ]);
+    var finalizer = node.finalizer;
+    parts = parts.concat([_constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, 'finally', _constantsMarkers2.default.noBreak, _constantsMarkers2.default.space, print(finalizer)]);
   }
 
   return wrap(parts);

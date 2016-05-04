@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +8,28 @@
  * the root directory of this source tree.
  */
 
-import type {Collection, Node} from '../types/ast';
+var _utilsFirstNode = require('../utils/FirstNode');
 
-import FirstNode from '../utils/FirstNode';
-import reprintComment from '../utils/reprintComment';
+var _utilsFirstNode2 = _interopRequireDefault(_utilsFirstNode);
 
-function addLeadingComments(root: Collection, comments: ?Array<Node>): void {
+var _utilsReprintComment = require('../utils/reprintComment');
+
+var _utilsReprintComment2 = _interopRequireDefault(_utilsReprintComment);
+
+function addLeadingComments(root, comments) {
   if (!comments || comments.length === 0) {
     return;
   }
 
-  const firstPath = FirstNode.get(root);
+  var firstPath = _utilsFirstNode2.default.get(root);
   if (!firstPath) {
     return;
   }
-  const first = firstPath.node;
+  var first = firstPath.node;
   first.comments = first.comments ? comments.concat(first.comments) : comments;
-  first.comments = first.comments.map(comment => reprintComment(comment));
+  first.comments = first.comments.map(function (comment) {
+    return (0, _utilsReprintComment2.default)(comment);
+  });
   firstPath.replace(first);
 }
 

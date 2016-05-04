@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.makeExpressionHphpdCompatible = makeExpressionHphpdCompatible;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +11,13 @@
  * the root directory of this source tree.
  */
 
-const DEBUGGER_LOGGER_CATEGORY = 'nuclide-hhvm-debugger';
-export default require('../../nuclide-logging').getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
+var DEBUGGER_LOGGER_CATEGORY = 'nuclide-hhvm-debugger';
+exports.default = require('../../nuclide-logging').getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
 
-export function makeExpressionHphpdCompatible(params: {expression: string}): Object {
+function makeExpressionHphpdCompatible(params) {
   // Hphpd requires that '=' is prefixed to expressions, but xdebug doesn't require this, so
   // we remove leading '=' if necessary.
-  const expr = params.expression;
+  var expr = params.expression;
   if (expr.startsWith('=')) {
     params.expression = expr.substring(1);
   }

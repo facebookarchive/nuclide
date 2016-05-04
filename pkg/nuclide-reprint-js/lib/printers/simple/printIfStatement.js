@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,37 +8,24 @@
  * the root directory of this source tree.
  */
 
-import type {IfStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var _constantsMarkers = require('../../constants/markers');
 
-import markers from '../../constants/markers';
-import wrapStatement from '../../wrappers/simple/wrapStatement';
+var _constantsMarkers2 = _interopRequireDefault(_constantsMarkers);
 
-function printIfStatement(print: Print, node: IfStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
+var _wrappersSimpleWrapStatement = require('../../wrappers/simple/wrapStatement');
 
-  let parts = [
-    markers.hardBreak,
-    'if (',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    print(node.test),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-    ') ',
-    print(node.consequent),
-  ];
+var _wrappersSimpleWrapStatement2 = _interopRequireDefault(_wrappersSimpleWrapStatement);
+
+function printIfStatement(print, node) {
+  var wrap = function wrap(x) {
+    return (0, _wrappersSimpleWrapStatement2.default)(print, node, x);
+  };
+
+  var parts = [_constantsMarkers2.default.hardBreak, 'if (', _constantsMarkers2.default.openScope, _constantsMarkers2.default.scopeIndent, _constantsMarkers2.default.scopeBreak, print(node.test), _constantsMarkers2.default.scopeBreak, _constantsMarkers2.default.scopeDedent, _constantsMarkers2.default.closeScope, ') ', print(node.consequent)];
 
   if (node.alternate) {
 
-    parts = parts.concat([
-      markers.noBreak,
-      ' else ',
-      markers.noBreak,
-      print(node.alternate),
-    ]);
+    parts = parts.concat([_constantsMarkers2.default.noBreak, ' else ', _constantsMarkers2.default.noBreak, print(node.alternate)]);
   }
 
   return wrap(parts);

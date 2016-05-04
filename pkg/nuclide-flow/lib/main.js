@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,151 +10,183 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from '../../hyperclick';
-import type {
-  BusySignalProviderBase as BusySignalProviderBaseType,
-} from '../../nuclide-busy-signal';
-import type {OutlineProvider} from '../../nuclide-outline-view';
-import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
+exports.activate = activate;
+exports.createAutocompleteProvider = createAutocompleteProvider;
+exports.getHyperclickProvider = getHyperclickProvider;
+exports.provideBusySignal = provideBusySignal;
+exports.provideDiagnostics = provideDiagnostics;
+exports.provideOutlines = provideOutlines;
+exports.createTypeHintProvider = createTypeHintProvider;
+exports.createEvaluationExpressionProvider = createEvaluationExpressionProvider;
+exports.deactivate = deactivate;
 
-import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import featureConfig from '../../nuclide-feature-config';
-import {getServiceByNuclideUri} from '../../nuclide-client';
-import {track} from '../../nuclide-analytics';
+var _assert = require('assert');
 
-import {JS_GRAMMARS, JAVASCRIPT_WORD_REGEX} from './constants';
-const GRAMMARS_STRING = JS_GRAMMARS.join(', ');
-const diagnosticsOnFlySetting = 'nuclide-flow.diagnosticsOnFly';
+var _assert2 = _interopRequireDefault(_assert);
 
-const PACKAGE_NAME = 'nuclide-flow';
+var _atom = require('atom');
 
-let busySignalProvider;
+var _nuclideFeatureConfig = require('../../nuclide-feature-config');
 
-let flowDiagnosticsProvider;
+var _nuclideFeatureConfig2 = _interopRequireDefault(_nuclideFeatureConfig);
 
-let disposables;
+var _nuclideClient = require('../../nuclide-client');
 
-export function activate() {
+var _nuclideAnalytics = require('../../nuclide-analytics');
+
+var _constants = require('./constants');
+
+var GRAMMARS_STRING = _constants.JS_GRAMMARS.join(', ');
+var diagnosticsOnFlySetting = 'nuclide-flow.diagnosticsOnFly';
+
+var PACKAGE_NAME = 'nuclide-flow';
+
+var busySignalProvider = undefined;
+
+var flowDiagnosticsProvider = undefined;
+
+var disposables = undefined;
+
+function activate() {
   if (!disposables) {
-    disposables = new CompositeDisposable();
+    disposables = new _atom.CompositeDisposable();
 
-    const {FlowServiceWatcher} = require('./FlowServiceWatcher');
-    const watcher = new FlowServiceWatcher();
+    var _require = require('./FlowServiceWatcher');
+
+    var FlowServiceWatcher = _require.FlowServiceWatcher;
+
+    var watcher = new FlowServiceWatcher();
     disposables.add(watcher);
 
-    disposables.add(atom.commands.add(
-      atom.views.getView(atom.workspace),
-      'nuclide-flow:restart-flow-server',
-      allowFlowServerRestart,
-    ));
+    disposables.add(atom.commands.add(atom.views.getView(atom.workspace), 'nuclide-flow:restart-flow-server', allowFlowServerRestart));
 
-    const {registerGrammarForFileExtension} = require('../../nuclide-atom-helpers');
+    var _require2 = require('../../nuclide-atom-helpers');
+
+    var registerGrammarForFileExtension = _require2.registerGrammarForFileExtension;
+
     registerGrammarForFileExtension('source.ini', '.flowconfig');
   }
 }
 
 /** Provider for autocomplete service. */
-export function createAutocompleteProvider(): atom$AutocompleteProvider {
-  const AutocompleteProvider = require('./FlowAutocompleteProvider');
-  const autocompleteProvider = new AutocompleteProvider();
-  const getSuggestions = autocompleteProvider.getSuggestions.bind(autocompleteProvider);
 
-  const excludeLowerPriority = Boolean(featureConfig.get('nuclide-flow.excludeOtherAutocomplete'));
+function createAutocompleteProvider() {
+  var AutocompleteProvider = require('./FlowAutocompleteProvider');
+  var autocompleteProvider = new AutocompleteProvider();
+  var getSuggestions = autocompleteProvider.getSuggestions.bind(autocompleteProvider);
+
+  var excludeLowerPriority = Boolean(_nuclideFeatureConfig2.default.get('nuclide-flow.excludeOtherAutocomplete'));
 
   return {
-    selector: JS_GRAMMARS.map(grammar => '.' + grammar).join(', '),
+    selector: _constants.JS_GRAMMARS.map(function (grammar) {
+      return '.' + grammar;
+    }).join(', '),
     disableForSelector: '.source.js .comment',
     inclusionPriority: 1,
     // We want to get ranked higher than the snippets provider.
     suggestionPriority: 5,
-    onDidInsertSuggestion: () => {
-      track('nuclide-flow.autocomplete-chosen');
+    onDidInsertSuggestion: function onDidInsertSuggestion() {
+      (0, _nuclideAnalytics.track)('nuclide-flow.autocomplete-chosen');
     },
-    excludeLowerPriority,
-    getSuggestions,
+    excludeLowerPriority: excludeLowerPriority,
+    getSuggestions: getSuggestions
   };
 }
 
-export function getHyperclickProvider(): HyperclickProvider {
-  const FlowHyperclickProvider = require('./FlowHyperclickProvider');
-  const flowHyperclickProvider = new FlowHyperclickProvider();
-  const getSuggestionForWord =
-      flowHyperclickProvider.getSuggestionForWord.bind(flowHyperclickProvider);
+function getHyperclickProvider() {
+  var FlowHyperclickProvider = require('./FlowHyperclickProvider');
+  var flowHyperclickProvider = new FlowHyperclickProvider();
+  var getSuggestionForWord = flowHyperclickProvider.getSuggestionForWord.bind(flowHyperclickProvider);
   return {
-    wordRegExp: JAVASCRIPT_WORD_REGEX,
+    wordRegExp: _constants.JAVASCRIPT_WORD_REGEX,
     priority: 20,
     providerName: PACKAGE_NAME,
-    getSuggestionForWord,
+    getSuggestionForWord: getSuggestionForWord
   };
 }
 
-export function provideBusySignal(): BusySignalProviderBaseType {
+function provideBusySignal() {
   if (!busySignalProvider) {
-    const {DedupedBusySignalProviderBase} = require('../../nuclide-busy-signal');
+    var _require3 = require('../../nuclide-busy-signal');
+
+    var DedupedBusySignalProviderBase = _require3.DedupedBusySignalProviderBase;
+
     busySignalProvider = new DedupedBusySignalProviderBase();
   }
   return busySignalProvider;
 }
 
-export function provideDiagnostics() {
+function provideDiagnostics() {
   if (!flowDiagnosticsProvider) {
-    const busyProvider = this.provideBusySignal();
-    const FlowDiagnosticsProvider = require('./FlowDiagnosticsProvider');
-    const runOnTheFly = ((featureConfig.get(diagnosticsOnFlySetting): any): boolean);
+    var busyProvider = this.provideBusySignal();
+    var FlowDiagnosticsProvider = require('./FlowDiagnosticsProvider');
+    var runOnTheFly = _nuclideFeatureConfig2.default.get(diagnosticsOnFlySetting);
     flowDiagnosticsProvider = new FlowDiagnosticsProvider(runOnTheFly, busyProvider);
-    invariant(disposables);
-    const {projects} = require('../../nuclide-atom-helpers');
-    disposables.add(projects.onDidRemoveProjectPath(projectPath => {
-      invariant(flowDiagnosticsProvider);
+    (0, _assert2.default)(disposables);
+
+    var _require4 = require('../../nuclide-atom-helpers');
+
+    var projects = _require4.projects;
+
+    disposables.add(projects.onDidRemoveProjectPath(function (projectPath) {
+      (0, _assert2.default)(flowDiagnosticsProvider);
       flowDiagnosticsProvider.invalidateProjectPath(projectPath);
     }));
   }
   return flowDiagnosticsProvider;
 }
 
-export function provideOutlines(): OutlineProvider {
-  const {FlowOutlineProvider} = require('./FlowOutlineProvider');
-  const provider = new FlowOutlineProvider();
+function provideOutlines() {
+  var _require5 = require('./FlowOutlineProvider');
+
+  var FlowOutlineProvider = _require5.FlowOutlineProvider;
+
+  var provider = new FlowOutlineProvider();
   return {
-    grammarScopes: JS_GRAMMARS,
+    grammarScopes: _constants.JS_GRAMMARS,
     priority: 1,
     name: 'Flow',
-    getOutline: provider.getOutline.bind(provider),
+    getOutline: provider.getOutline.bind(provider)
   };
 }
 
-export function createTypeHintProvider(): Object {
-  const {FlowTypeHintProvider} = require('./FlowTypeHintProvider');
-  const flowTypeHintProvider = new FlowTypeHintProvider();
-  const typeHint = flowTypeHintProvider.typeHint.bind(flowTypeHintProvider);
+function createTypeHintProvider() {
+  var _require6 = require('./FlowTypeHintProvider');
+
+  var FlowTypeHintProvider = _require6.FlowTypeHintProvider;
+
+  var flowTypeHintProvider = new FlowTypeHintProvider();
+  var typeHint = flowTypeHintProvider.typeHint.bind(flowTypeHintProvider);
   return {
     selector: GRAMMARS_STRING,
     providerName: PACKAGE_NAME,
     inclusionPriority: 1,
-    typeHint,
+    typeHint: typeHint
   };
 }
 
-export function createEvaluationExpressionProvider(): NuclideEvaluationExpressionProvider {
-  const {FlowEvaluationExpressionProvider} = require('./FlowEvaluationExpressionProvider');
-  const evaluationExpressionProvider = new FlowEvaluationExpressionProvider();
-  const getEvaluationExpression =
-    evaluationExpressionProvider.getEvaluationExpression.bind(evaluationExpressionProvider);
+function createEvaluationExpressionProvider() {
+  var _require7 = require('./FlowEvaluationExpressionProvider');
+
+  var FlowEvaluationExpressionProvider = _require7.FlowEvaluationExpressionProvider;
+
+  var evaluationExpressionProvider = new FlowEvaluationExpressionProvider();
+  var getEvaluationExpression = evaluationExpressionProvider.getEvaluationExpression.bind(evaluationExpressionProvider);
   return {
     selector: GRAMMARS_STRING,
     name: PACKAGE_NAME,
-    getEvaluationExpression,
+    getEvaluationExpression: getEvaluationExpression
   };
 }
 
-export function deactivate() {
+function deactivate() {
   // TODO(mbolin): Find a way to unregister the autocomplete provider from
   // ServiceHub, or set a boolean in the autocomplete provider to always return
   // empty results.
-  const service = getServiceByNuclideUri('FlowService');
-  invariant(service);
+  var service = (0, _nuclideClient.getServiceByNuclideUri)('FlowService');
+  (0, _assert2.default)(service);
   service.dispose();
   if (disposables) {
     disposables.dispose();
@@ -165,9 +198,12 @@ export function deactivate() {
   }
 }
 
-function allowFlowServerRestart(): void {
-  const {getCurrentServiceInstances} = require('./FlowServiceFactory');
-  for (const service of getCurrentServiceInstances()) {
+function allowFlowServerRestart() {
+  var _require8 = require('./FlowServiceFactory');
+
+  var getCurrentServiceInstances = _require8.getCurrentServiceInstances;
+
+  for (var service of getCurrentServiceInstances()) {
     service.allowServerRestart();
   }
 }

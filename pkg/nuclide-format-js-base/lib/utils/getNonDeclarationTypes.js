@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +8,9 @@
  * the root directory of this source tree.
  */
 
-import type {Collection, Node} from '../types/ast';
+var _jscodeshift = require('jscodeshift');
 
-import jscs from 'jscodeshift';
+var _jscodeshift2 = _interopRequireDefault(_jscodeshift);
 
 /**
  * This will get a list of all types that are not from a declaration.
@@ -19,21 +18,21 @@ import jscs from 'jscodeshift';
  * NOTE: this can get types that are declared, if you want access to
  * types that are used but undeclared see getUndeclaredTypes
  */
-function getNonDeclarationTypes(root: Collection): Set<string> {
-  const ids = new Set();
+function getNonDeclarationTypes(root) {
+  var ids = new Set();
 
   // Pull out the logic to handle a generic type annotation, we have to iterate
   // down the qualified types to handle things like: `<Immutable.List<Foo>>`
-  function handleGenericType(node: Node): void {
-    if (jscs.Identifier.check(node.id)) {
+  function handleGenericType(node) {
+    if (_jscodeshift2.default.Identifier.check(node.id)) {
       ids.add(node.id.name);
     }
-    if (jscs.QualifiedTypeIdentifier.check(node.id)) {
-      let currPos = node.id;
-      while (currPos && !jscs.Identifier.check(currPos)) {
+    if (_jscodeshift2.default.QualifiedTypeIdentifier.check(node.id)) {
+      var currPos = node.id;
+      while (currPos && !_jscodeshift2.default.Identifier.check(currPos)) {
         currPos = currPos.qualification;
       }
-      if (jscs.Identifier.check(currPos)) {
+      if (_jscodeshift2.default.Identifier.check(currPos)) {
         ids.add(currPos.name);
       }
     }
@@ -42,22 +41,18 @@ function getNonDeclarationTypes(root: Collection): Set<string> {
   // Ideally this would be the only find in here, but it's not because of a
   // jscodeshift bug, so we have to manually search for a specific kind of
   // GenericTypeAnnotations on class super types
-  root
-    .find(jscs.GenericTypeAnnotation)
-    .forEach(path => handleGenericType(path.node));
+  root.find(_jscodeshift2.default.GenericTypeAnnotation).forEach(function (path) {
+    return handleGenericType(path.node);
+  });
 
   // TODO: Delete this after https://github.com/facebook/jscodeshift/issues/34
-  root
-    .find(jscs.ClassDeclaration)
-    .filter(path => (
-      path.node.superTypeParameters &&
-      Array.isArray(path.node.superTypeParameters.params)
-    ))
-    .forEach(path => {
-      jscs(path.node.superTypeParameters)
-        .find(jscs.GenericTypeAnnotation)
-        .forEach(subPath => handleGenericType(subPath.node));
+  root.find(_jscodeshift2.default.ClassDeclaration).filter(function (path) {
+    return path.node.superTypeParameters && Array.isArray(path.node.superTypeParameters.params);
+  }).forEach(function (path) {
+    (0, _jscodeshift2.default)(path.node.superTypeParameters).find(_jscodeshift2.default.GenericTypeAnnotation).forEach(function (subPath) {
+      return handleGenericType(subPath.node);
     });
+  });
 
   return ids;
 }

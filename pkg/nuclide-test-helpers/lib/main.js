@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -22,11 +21,17 @@
  *     rejection of `promise`. If these expectations are not met, then
  *     `verify()` must throw an exception.
  */
-async function expectAsyncFailure(
-    promise: Promise,
-    verify: (error: Error) => void): Promise {
+
+/**
+ * Logs an observable to the console.
+ * Useful for debugging observable code.
+ * Usage:
+ *     observable = observable.do(loggingObserver('My Prefix'));
+ */
+
+var expectAsyncFailure = _asyncToGenerator(function* (promise, verify) {
   try {
-    await promise;
+    yield promise;
     return Promise.reject('Promise should have failed, but did not.');
   } catch (e) {
     verify(e);
@@ -42,11 +47,15 @@ async function expectAsyncFailure(
   * The require parameter is needed because require is bound differently in each
   * file, and we need to execute this in the caller's context.
   */
-function clearRequireCache(require: Object, module: string): void {
+);
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function clearRequireCache(require, module) {
   delete require.cache[require.resolve(module)];
 }
 
-function uncachedRequire(require: Object, module: string): mixed {
+function uncachedRequire(require, module) {
   clearRequireCache(require, module);
   // $FlowIgnore
   return require(module);
@@ -63,8 +72,8 @@ function uncachedRequire(require: Object, module: string): mixed {
  * - The getter returns a function (otherwise, it doesn't make sense to spy on
  *   it)
  */
-function spyOnGetterValue(object: Object, f: string): JasmineSpy {
-  const value = object[f];
+function spyOnGetterValue(object, f) {
+  var value = object[f];
   delete object[f];
   object[f] = value;
   return spyOn(object, f);
@@ -74,15 +83,15 @@ function spyOnGetterValue(object: Object, f: string): JasmineSpy {
  * Checks if the two objects have equal properties. This considers a property
  * set to undefined to be equivalent to a property that was not set at all.
  */
-function arePropertiesEqual(obj1: Object, obj2: Object): boolean {
-  const allProps = new Set();
+function arePropertiesEqual(obj1, obj2) {
+  var allProps = new Set();
   function addAllProps(obj) {
-    for (const prop of Object.keys(obj)) {
+    for (var prop of Object.keys(obj)) {
       allProps.add(prop);
     }
   }
   [obj1, obj2].forEach(addAllProps);
-  for (const prop of allProps) {
+  for (var prop of allProps) {
     if (obj1[prop] !== obj2[prop]) {
       return false;
     }
@@ -93,13 +102,13 @@ function arePropertiesEqual(obj1: Object, obj2: Object): boolean {
 /**
  * Checks if the contents of two sets are identical
  */
-function areSetsEqual(set1: Set, set2: Set): boolean {
-  for (const v1 of set1) {
+function areSetsEqual(set1, set2) {
+  for (var v1 of set1) {
     if (!set2.has(v1)) {
       return false;
     }
   }
-  for (const v2 of set2) {
+  for (var v2 of set2) {
     if (!set1.has(v2)) {
       return false;
     }
@@ -107,42 +116,40 @@ function areSetsEqual(set1: Set, set2: Set): boolean {
   return true;
 }
 
-import type {Observer} from 'rxjs';
-
-/**
- * Logs an observable to the console.
- * Useful for debugging observable code.
- * Usage:
- *     observable = observable.do(loggingObserver('My Prefix'));
- */
-function loggingObserver(message: string): Observer {
-  const Rx = require('rxjs');
-  return Rx.Observer.create(
-    value => {
-      console.log(`${message}: ${JSON.stringify(value)}`); // eslint-disable-line no-console
-    },
-    error => {
-      console.log(`Error ${message}: ${error.toString()}`); // eslint-disable-line no-console
-    },
-    () => {
-      console.log('Completed: ' + message); // eslint-disable-line no-console
-    }
-  );
+function loggingObserver(message) {
+  var Rx = require('rxjs');
+  return Rx.Observer.create(function (value) {
+    console.log(message + ': ' + JSON.stringify(value)); // eslint-disable-line no-console
+  }, function (error) {
+    console.log('Error ' + message + ': ' + error.toString()); // eslint-disable-line no-console
+  }, function () {
+    console.log('Completed: ' + message); // eslint-disable-line no-console
+  });
 }
 
-module.exports = {
+module.exports = Object.defineProperties({
   addMatchers: require('./matchers').addMatchers,
-  clearRequireCache,
-  expectAsyncFailure,
-  get fixtures() {
-    return require('./fixtures');
+  clearRequireCache: clearRequireCache,
+  expectAsyncFailure: expectAsyncFailure,
+
+  spyOnGetterValue: spyOnGetterValue,
+  uncachedRequire: uncachedRequire,
+  arePropertiesEqual: arePropertiesEqual,
+  areSetsEqual: areSetsEqual,
+  loggingObserver: loggingObserver
+}, {
+  fixtures: {
+    get: function get() {
+      return require('./fixtures');
+    },
+    configurable: true,
+    enumerable: true
   },
-  get tempdir() {
-    return require('./tempdir');
-  },
-  spyOnGetterValue,
-  uncachedRequire,
-  arePropertiesEqual,
-  areSetsEqual,
-  loggingObserver,
-};
+  tempdir: {
+    get: function get() {
+      return require('./tempdir');
+    },
+    configurable: true,
+    enumerable: true
+  }
+});

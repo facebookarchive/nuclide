@@ -1,5 +1,28 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _rxjs = require('rxjs');
+
+var _rxjs2 = _interopRequireDefault(_rxjs);
+
+var _atom = require('atom');
+
+var _AtomInput = require('./AtomInput');
+
+var _reactForAtom = require('react-for-atom');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +32,6 @@
  * the root directory of this source tree.
  */
 
-type ComboboxOption = {
-  value: string;
-  valueLowercase: string;
-  matchIndex: number;
-};
-
-import Rx from 'rxjs';
-import {CompositeDisposable} from 'atom';
-import {AtomInput} from './AtomInput';
-import {React, ReactDOM} from 'react-for-atom';
-
-type State = {
-  error: ?Error;
-  filteredOptions: Array<Object>;
-  loadingOptions: boolean;
-  options: Array<string>;
-  optionsVisible: boolean;
-  selectedIndex: number;
-  textInput: string;
-};
-
 /**
  * A Combo Box.
  * TODO allow making text input non-editable via props
@@ -38,40 +40,47 @@ type State = {
  * TODO use generic search provider
  * TODO move combobox to separate package.
  */
-export class Combobox extends React.Component {
-  state: State;
-  _updateSubscription: ?rx$ISubscription;
-  _subscriptions: ?CompositeDisposable;
 
-  static propTypes = {
-    className: React.PropTypes.string.isRequired,
-    formatRequestOptionsErrorMessage: React.PropTypes.func,
-    initialTextInput: React.PropTypes.string,
-    loadingMessage: React.PropTypes.string,
-    placeholderText: React.PropTypes.string,
-    maxOptionCount: React.PropTypes.number.isRequired,
-    onChange: React.PropTypes.func.isRequired,
-    onRequestOptionsError: React.PropTypes.func,
-    onSelect: React.PropTypes.func.isRequired,
-    /**
-     * promise-returning function; Gets called with
-     * the current value of the input field as its only argument
-     */
-    requestOptions: React.PropTypes.func.isRequired,
-    size: React.PropTypes.oneOf(['xs', 'sm', 'lg']),
-    width: React.PropTypes.number,
-  };
+var Combobox = (function (_React$Component) {
+  _inherits(Combobox, _React$Component);
 
-  static defaultProps = {
-    className: '',
-    maxOptionCount: 10,
-    onChange: (newValue: string) => {},
-    onSelect: (newValue: string) => {},
-    width: 200,
-  };
+  _createClass(Combobox, null, [{
+    key: 'propTypes',
+    value: {
+      className: _reactForAtom.React.PropTypes.string.isRequired,
+      formatRequestOptionsErrorMessage: _reactForAtom.React.PropTypes.func,
+      initialTextInput: _reactForAtom.React.PropTypes.string,
+      loadingMessage: _reactForAtom.React.PropTypes.string,
+      placeholderText: _reactForAtom.React.PropTypes.string,
+      maxOptionCount: _reactForAtom.React.PropTypes.number.isRequired,
+      onChange: _reactForAtom.React.PropTypes.func.isRequired,
+      onRequestOptionsError: _reactForAtom.React.PropTypes.func,
+      onSelect: _reactForAtom.React.PropTypes.func.isRequired,
+      /**
+       * promise-returning function; Gets called with
+       * the current value of the input field as its only argument
+       */
+      requestOptions: _reactForAtom.React.PropTypes.func.isRequired,
+      size: _reactForAtom.React.PropTypes.oneOf(['xs', 'sm', 'lg']),
+      width: _reactForAtom.React.PropTypes.number
+    },
+    enumerable: true
+  }, {
+    key: 'defaultProps',
+    value: {
+      className: '',
+      maxOptionCount: 10,
+      onChange: function onChange(newValue) {},
+      onSelect: function onSelect(newValue) {},
+      width: 200
+    },
+    enumerable: true
+  }]);
 
-  constructor(props: Object) {
-    super(props);
+  function Combobox(props) {
+    _classCallCheck(this, Combobox);
+
+    _get(Object.getPrototypeOf(Combobox.prototype), 'constructor', this).call(this, props);
     this.state = {
       error: null,
       filteredOptions: [],
@@ -79,286 +88,296 @@ export class Combobox extends React.Component {
       options: [],
       optionsVisible: false,
       selectedIndex: -1,
-      textInput: props.initialTextInput,
+      textInput: props.initialTextInput
     };
-    (this: any).receiveUpdate = this.receiveUpdate.bind(this);
-    (this: any)._handleTextInputChange = this._handleTextInputChange.bind(this);
-    (this: any)._handleInputBlur = this._handleInputBlur.bind(this);
-    (this: any)._handleInputFocus = this._handleInputFocus.bind(this);
-    (this: any)._handleMoveDown = this._handleMoveDown.bind(this);
-    (this: any)._handleMoveUp = this._handleMoveUp.bind(this);
-    (this: any)._handleCancel = this._handleCancel.bind(this);
-    (this: any)._handleConfirm = this._handleConfirm.bind(this);
-    (this: any)._scrollSelectedOptionIntoViewIfNeeded =
-      this._scrollSelectedOptionIntoViewIfNeeded.bind(this);
+    this.receiveUpdate = this.receiveUpdate.bind(this);
+    this._handleTextInputChange = this._handleTextInputChange.bind(this);
+    this._handleInputBlur = this._handleInputBlur.bind(this);
+    this._handleInputFocus = this._handleInputFocus.bind(this);
+    this._handleMoveDown = this._handleMoveDown.bind(this);
+    this._handleMoveUp = this._handleMoveUp.bind(this);
+    this._handleCancel = this._handleCancel.bind(this);
+    this._handleConfirm = this._handleConfirm.bind(this);
+    this._scrollSelectedOptionIntoViewIfNeeded = this._scrollSelectedOptionIntoViewIfNeeded.bind(this);
   }
 
-  componentDidMount() {
-    const node = ReactDOM.findDOMNode(this);
-    const _subscriptions = this._subscriptions = new CompositeDisposable();
-    _subscriptions.add(
-      atom.commands.add(node, 'core:move-up', this._handleMoveUp),
-      atom.commands.add(node, 'core:move-down', this._handleMoveDown),
-      atom.commands.add(node, 'core:cancel', this._handleCancel),
-      atom.commands.add(node, 'core:confirm', this._handleConfirm),
-      this.refs['freeformInput'].onDidChange(this._handleTextInputChange)
-    );
-    this.requestUpdate();
-  }
-
-  componentWillUnmount() {
-    if (this._subscriptions) {
-      this._subscriptions.dispose();
+  _createClass(Combobox, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var node = _reactForAtom.ReactDOM.findDOMNode(this);
+      var _subscriptions = this._subscriptions = new _atom.CompositeDisposable();
+      _subscriptions.add(atom.commands.add(node, 'core:move-up', this._handleMoveUp), atom.commands.add(node, 'core:move-down', this._handleMoveDown), atom.commands.add(node, 'core:cancel', this._handleCancel), atom.commands.add(node, 'core:confirm', this._handleConfirm), this.refs['freeformInput'].onDidChange(this._handleTextInputChange));
+      this.requestUpdate();
     }
-    if (this._updateSubscription != null) {
-      this._updateSubscription.unsubscribe();
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      if (this._subscriptions) {
+        this._subscriptions.dispose();
+      }
+      if (this._updateSubscription != null) {
+        this._updateSubscription.unsubscribe();
+      }
     }
-  }
+  }, {
+    key: 'requestUpdate',
+    value: function requestUpdate() {
+      var _this = this;
 
-  requestUpdate(): void {
-    // Cancel pending update.
-    if (this._updateSubscription != null) {
-      this._updateSubscription.unsubscribe();
-    }
+      // Cancel pending update.
+      if (this._updateSubscription != null) {
+        this._updateSubscription.unsubscribe();
+      }
 
-    this.setState({error: null, loadingOptions: true});
+      this.setState({ error: null, loadingOptions: true });
 
-    this._updateSubscription = Rx.Observable.fromPromise(
-      this.props.requestOptions(this.state.textInput)
-    )
-      .subscribe(
-        options => this.receiveUpdate(options),
-        err => {
-          this.setState({error: err, loadingOptions: false});
-          if (this.props.onRequestOptionsError != null) {
-            this.props.onRequestOptionsError(err);
-          }
-        },
-      );
-  }
-
-  receiveUpdate(newOptions: Array<string>) {
-    const filteredOptions = this._getFilteredOptions(newOptions, this.state.textInput);
-    this.setState({
-      error: null,
-      loadingOptions: false,
-      options: newOptions,
-      filteredOptions: filteredOptions,
-    });
-  }
-
-  selectValue(newValue: string, didRenderCallback?: () => void) {
-    this.refs['freeformInput'].setText(newValue);
-    this.setState({
-      textInput: newValue,
-      selectedIndex: -1,
-      optionsVisible: false,
-    }, didRenderCallback);
-    this.props.onSelect(newValue);
-    // Selecting a value in the dropdown changes the text as well. Call the callback accordingly.
-    this.props.onChange(newValue);
-  }
-
-  getText(): string {
-    return this.refs['freeformInput'].getText();
-  }
-
-  // TODO use native (fuzzy/strict - configurable?) filter provider
-  _getFilteredOptions(options: Array<string>, filterValue: string): Array<ComboboxOption> {
-    const lowerCaseState = filterValue.toLowerCase();
-    return options
-      .map(
-        option => {
-          const valueLowercase = option.toLowerCase();
-          return {
-            value: option,
-            valueLowercase: valueLowercase,
-            matchIndex: valueLowercase.indexOf(lowerCaseState),
-          };
+      this._updateSubscription = _rxjs2.default.Observable.fromPromise(this.props.requestOptions(this.state.textInput)).subscribe(function (options) {
+        return _this.receiveUpdate(options);
+      }, function (err) {
+        _this.setState({ error: err, loadingOptions: false });
+        if (_this.props.onRequestOptionsError != null) {
+          _this.props.onRequestOptionsError(err);
         }
-      ).filter(
-        option => option.matchIndex !== -1
-      ).slice(0, this.props.maxOptionCount);
-  }
-
-  _handleTextInputChange(): void {
-    const newText = this.refs.freeformInput.getText();
-    if (newText === this.state.textInput) {
-      return;
+      });
     }
-    this.requestUpdate();
-    const filteredOptions = this._getFilteredOptions(this.state.options, newText);
-    let selectedIndex;
-    if (filteredOptions.length === 0) {
-      // If there aren't any options, don't select anything.
-      selectedIndex = -1;
-    } else if (this.state.selectedIndex === -1 ||
-        this.state.selectedIndex >= filteredOptions.length) {
-      // If there are options and the selected index is out of bounds,
-      // default to the first item.
-      selectedIndex = 0;
-    } else {
-      selectedIndex = this.state.selectedIndex;
+  }, {
+    key: 'receiveUpdate',
+    value: function receiveUpdate(newOptions) {
+      var filteredOptions = this._getFilteredOptions(newOptions, this.state.textInput);
+      this.setState({
+        error: null,
+        loadingOptions: false,
+        options: newOptions,
+        filteredOptions: filteredOptions
+      });
     }
-    this.setState({
-      textInput: newText,
-      optionsVisible: true,
-      filteredOptions: filteredOptions,
-      selectedIndex,
-    });
-    this.props.onChange(newText);
-  }
+  }, {
+    key: 'selectValue',
+    value: function selectValue(newValue, didRenderCallback) {
+      this.refs['freeformInput'].setText(newValue);
+      this.setState({
+        textInput: newValue,
+        selectedIndex: -1,
+        optionsVisible: false
+      }, didRenderCallback);
+      this.props.onSelect(newValue);
+      // Selecting a value in the dropdown changes the text as well. Call the callback accordingly.
+      this.props.onChange(newValue);
+    }
+  }, {
+    key: 'getText',
+    value: function getText() {
+      return this.refs['freeformInput'].getText();
+    }
 
-  _handleInputFocus(): void {
-    this.requestUpdate();
-    this.setState({optionsVisible: true});
-  }
-
-  _handleInputBlur(): void {
-    // Delay hiding the combobox long enough for a click inside the combobox to trigger on it in
-    // case the blur was caused by a click inside the combobox. 150ms is empirically long enough to
-    // let the stack clear from this blur event and for the click event to trigger.
-    setTimeout(this._handleCancel, 150);
-  }
-
-  _handleItemClick(selectedValue: string, event: any) {
-    this.selectValue(selectedValue, () => {
-      // Focus the input again because the click will cause the input to blur. This mimics native
-      // <select> behavior by keeping focus in the form being edited.
-      const input = ReactDOM.findDOMNode(this.refs['freeformInput']);
-      if (input) {
-        input.focus();
+    // TODO use native (fuzzy/strict - configurable?) filter provider
+  }, {
+    key: '_getFilteredOptions',
+    value: function _getFilteredOptions(options, filterValue) {
+      var lowerCaseState = filterValue.toLowerCase();
+      return options.map(function (option) {
+        var valueLowercase = option.toLowerCase();
+        return {
+          value: option,
+          valueLowercase: valueLowercase,
+          matchIndex: valueLowercase.indexOf(lowerCaseState)
+        };
+      }).filter(function (option) {
+        return option.matchIndex !== -1;
+      }).slice(0, this.props.maxOptionCount);
+    }
+  }, {
+    key: '_handleTextInputChange',
+    value: function _handleTextInputChange() {
+      var newText = this.refs.freeformInput.getText();
+      if (newText === this.state.textInput) {
+        return;
       }
-    });
-  }
-
-  _handleMoveDown() {
-    this.setState({
-      selectedIndex: Math.min(
-        this.props.maxOptionCount - 1,
-        this.state.selectedIndex + 1,
-        this.state.filteredOptions.length - 1,
-      ),
-    }, this._scrollSelectedOptionIntoViewIfNeeded);
-  }
-
-  _handleMoveUp() {
-    this.setState({
-      selectedIndex: Math.max(
-        0,
-        this.state.selectedIndex - 1,
-      ),
-    }, this._scrollSelectedOptionIntoViewIfNeeded);
-  }
-
-  _handleCancel() {
-    this.setState({
-      optionsVisible: false,
-    });
-  }
-
-  _handleConfirm() {
-    const option = this.state.filteredOptions[this.state.selectedIndex];
-    if (option !== undefined) {
-      this.selectValue(option.value);
+      this.requestUpdate();
+      var filteredOptions = this._getFilteredOptions(this.state.options, newText);
+      var selectedIndex = undefined;
+      if (filteredOptions.length === 0) {
+        // If there aren't any options, don't select anything.
+        selectedIndex = -1;
+      } else if (this.state.selectedIndex === -1 || this.state.selectedIndex >= filteredOptions.length) {
+        // If there are options and the selected index is out of bounds,
+        // default to the first item.
+        selectedIndex = 0;
+      } else {
+        selectedIndex = this.state.selectedIndex;
+      }
+      this.setState({
+        textInput: newText,
+        optionsVisible: true,
+        filteredOptions: filteredOptions,
+        selectedIndex: selectedIndex
+      });
+      this.props.onChange(newText);
     }
-  }
-
-  _setSelectedIndex(selectedIndex: number) {
-    this.setState({selectedIndex});
-  }
-
-  _scrollSelectedOptionIntoViewIfNeeded(): void {
-    const selectedOption = ReactDOM.findDOMNode(this.refs['selectedOption']);
-    if (selectedOption) {
-      selectedOption.scrollIntoViewIfNeeded();
+  }, {
+    key: '_handleInputFocus',
+    value: function _handleInputFocus() {
+      this.requestUpdate();
+      this.setState({ optionsVisible: true });
     }
-  }
-
-  render(): React.Element {
-    let optionsContainer;
-    const options = [];
-
-    if (this.props.loadingMessage && this.state.loadingOptions) {
-      options.push(
-        <li key="loading-text" className="loading">
-          <span className="loading-message">{this.props.loadingMessage}</span>
-        </li>
-      );
+  }, {
+    key: '_handleInputBlur',
+    value: function _handleInputBlur() {
+      // Delay hiding the combobox long enough for a click inside the combobox to trigger on it in
+      // case the blur was caused by a click inside the combobox. 150ms is empirically long enough to
+      // let the stack clear from this blur event and for the click event to trigger.
+      setTimeout(this._handleCancel, 150);
     }
+  }, {
+    key: '_handleItemClick',
+    value: function _handleItemClick(selectedValue, event) {
+      var _this2 = this;
 
-    if (this.state.error != null && this.props.formatRequestOptionsErrorMessage != null) {
-      const message = this.props.formatRequestOptionsErrorMessage(this.state.error);
-      options.push(
-        <li className="text-error">
-          {message}
-        </li>
-      );
+      this.selectValue(selectedValue, function () {
+        // Focus the input again because the click will cause the input to blur. This mimics native
+        // <select> behavior by keeping focus in the form being edited.
+        var input = _reactForAtom.ReactDOM.findDOMNode(_this2.refs['freeformInput']);
+        if (input) {
+          input.focus();
+        }
+      });
     }
+  }, {
+    key: '_handleMoveDown',
+    value: function _handleMoveDown() {
+      this.setState({
+        selectedIndex: Math.min(this.props.maxOptionCount - 1, this.state.selectedIndex + 1, this.state.filteredOptions.length - 1)
+      }, this._scrollSelectedOptionIntoViewIfNeeded);
+    }
+  }, {
+    key: '_handleMoveUp',
+    value: function _handleMoveUp() {
+      this.setState({
+        selectedIndex: Math.max(0, this.state.selectedIndex - 1)
+      }, this._scrollSelectedOptionIntoViewIfNeeded);
+    }
+  }, {
+    key: '_handleCancel',
+    value: function _handleCancel() {
+      this.setState({
+        optionsVisible: false
+      });
+    }
+  }, {
+    key: '_handleConfirm',
+    value: function _handleConfirm() {
+      var option = this.state.filteredOptions[this.state.selectedIndex];
+      if (option !== undefined) {
+        this.selectValue(option.value);
+      }
+    }
+  }, {
+    key: '_setSelectedIndex',
+    value: function _setSelectedIndex(selectedIndex) {
+      this.setState({ selectedIndex: selectedIndex });
+    }
+  }, {
+    key: '_scrollSelectedOptionIntoViewIfNeeded',
+    value: function _scrollSelectedOptionIntoViewIfNeeded() {
+      var selectedOption = _reactForAtom.ReactDOM.findDOMNode(this.refs['selectedOption']);
+      if (selectedOption) {
+        selectedOption.scrollIntoViewIfNeeded();
+      }
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _this3 = this;
 
-    if (this.state.optionsVisible) {
-      options.push(...this.state.filteredOptions.map((option, i) => {
-        const beforeMatch = option.value.substring(0, option.matchIndex);
-        const endOfMatchIndex = option.matchIndex + this.state.textInput.length;
-        const highlightedMatch = option.value.substring(
-          option.matchIndex,
-          endOfMatchIndex
-        );
-        const afterMatch = option.value.substring(
-          endOfMatchIndex,
-          option.value.length
-        );
-        const isSelected = i === this.state.selectedIndex;
-        return (
-          <li
-            className={isSelected ? 'selected' : null}
-            key={option.value}
-            onClick={this._handleItemClick.bind(this, option.value)}
-            onMouseOver={this._setSelectedIndex.bind(this, i)}
-            ref={isSelected ? 'selectedOption' : null}>
-            {beforeMatch}
-            <strong className="text-highlight">{highlightedMatch}</strong>
-            {afterMatch}
-          </li>
-        );
-      }));
+      var optionsContainer = undefined;
+      var options = [];
 
-      if (!options.length) {
-        options.push(
-          <li className="text-subtle" key="no-results-found">
-            No results found
-          </li>
+      if (this.props.loadingMessage && this.state.loadingOptions) {
+        options.push(_reactForAtom.React.createElement(
+          'li',
+          { key: 'loading-text', className: 'loading' },
+          _reactForAtom.React.createElement(
+            'span',
+            { className: 'loading-message' },
+            this.props.loadingMessage
+          )
+        ));
+      }
+
+      if (this.state.error != null && this.props.formatRequestOptionsErrorMessage != null) {
+        var message = this.props.formatRequestOptionsErrorMessage(this.state.error);
+        options.push(_reactForAtom.React.createElement(
+          'li',
+          { className: 'text-error' },
+          message
+        ));
+      }
+
+      if (this.state.optionsVisible) {
+        options.push.apply(options, _toConsumableArray(this.state.filteredOptions.map(function (option, i) {
+          var beforeMatch = option.value.substring(0, option.matchIndex);
+          var endOfMatchIndex = option.matchIndex + _this3.state.textInput.length;
+          var highlightedMatch = option.value.substring(option.matchIndex, endOfMatchIndex);
+          var afterMatch = option.value.substring(endOfMatchIndex, option.value.length);
+          var isSelected = i === _this3.state.selectedIndex;
+          return _reactForAtom.React.createElement(
+            'li',
+            {
+              className: isSelected ? 'selected' : null,
+              key: option.value,
+              onClick: _this3._handleItemClick.bind(_this3, option.value),
+              onMouseOver: _this3._setSelectedIndex.bind(_this3, i),
+              ref: isSelected ? 'selectedOption' : null },
+            beforeMatch,
+            _reactForAtom.React.createElement(
+              'strong',
+              { className: 'text-highlight' },
+              highlightedMatch
+            ),
+            afterMatch
+          );
+        })));
+
+        if (!options.length) {
+          options.push(_reactForAtom.React.createElement(
+            'li',
+            { className: 'text-subtle', key: 'no-results-found' },
+            'No results found'
+          ));
+        }
+
+        optionsContainer = _reactForAtom.React.createElement(
+          'ol',
+          { className: 'list-group' },
+          options
         );
       }
 
-      optionsContainer = (
-        <ol className="list-group">
-          {options}
-        </ol>
+      var _props = this.props;
+      var initialTextInput = _props.initialTextInput;
+      var placeholderText = _props.placeholderText;
+      var size = _props.size;
+      var width = _props.width;
+
+      return _reactForAtom.React.createElement(
+        'div',
+        { className: 'select-list popover-list popover-list-subtle ' + this.props.className,
+          style: { width: width + 'px' } },
+        _reactForAtom.React.createElement(_AtomInput.AtomInput, {
+          initialValue: initialTextInput,
+          onBlur: this._handleInputBlur,
+          onFocus: this._handleInputFocus,
+          placeholderText: placeholderText,
+          ref: 'freeformInput',
+          size: size,
+          width: width
+        }),
+        optionsContainer
       );
     }
+  }]);
 
-    const {
-      initialTextInput,
-      placeholderText,
-      size,
-      width,
-    } = this.props;
-    return (
-      <div className={'select-list popover-list popover-list-subtle ' + this.props.className}
-           style={{width: `${width}px`}}>
-        <AtomInput
-          initialValue={initialTextInput}
-          onBlur={this._handleInputBlur}
-          onFocus={this._handleInputFocus}
-          placeholderText={placeholderText}
-          ref="freeformInput"
-          size={size}
-          width={width}
-        />
-        {optionsContainer}
-      </div>
-    );
-  }
+  return Combobox;
+})(_reactForAtom.React.Component);
 
-}
+exports.Combobox = Combobox;

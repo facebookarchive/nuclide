@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +10,25 @@
  * the root directory of this source tree.
  */
 
-import type {Provider} from '../../nuclide-quick-open-interfaces';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-let providerInstance: ?Provider;
-function getProviderInstance(): Provider {
+exports.registerProvider = registerProvider;
+exports.activate = activate;
+
+var providerInstance = undefined;
+function getProviderInstance() {
   if (providerInstance == null) {
-    const {HackSymbolProvider} = require('./HackSymbolProvider');
-    providerInstance = {...HackSymbolProvider};
+    var _require = require('./HackSymbolProvider');
+
+    var HackSymbolProvider = _require.HackSymbolProvider;
+
+    providerInstance = _extends({}, HackSymbolProvider);
   }
   return providerInstance;
 }
 
-export function registerProvider(): Provider {
+function registerProvider() {
   return getProviderInstance();
 }
 
-export function activate(state: ?Object) {
-}
+function activate(state) {}
