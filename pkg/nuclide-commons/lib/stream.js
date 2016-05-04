@@ -9,14 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {Observable as ObservableType} from 'rxjs';
-
 import {Observable, Subscription} from 'rxjs';
 
 /**
  * Observe a stream like stdout or stderr.
  */
-export function observeStream(stream: stream$Readable): ObservableType<string> {
+export function observeStream(stream: stream$Readable): Observable<string> {
   const error = Observable.fromEvent(stream, 'error').flatMap(Observable.throw);
   return Observable
     .fromEvent(stream, 'data')
@@ -31,7 +29,7 @@ export function observeStream(stream: stream$Readable): ObservableType<string> {
  * Sends any non-newline terminated data before closing.
  * Never sends an empty string.
  */
-export function splitStream(input: ObservableType<string>): ObservableType<string> {
+export function splitStream(input: Observable<string>): Observable<string> {
   return Observable.create(observer => {
     let current: string = '';
 
