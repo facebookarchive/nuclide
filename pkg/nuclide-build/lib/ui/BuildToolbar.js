@@ -18,9 +18,9 @@ import {React} from 'react-for-atom';
 
 type Props = {
   activeBuildSystemId: ?string;
-  activeBuildSystemIcon: ?ReactClass;
   buildSystemOptions: Array<IconButtonOption>;
-  extraUi: ?ReactClass;
+  getActiveBuildSystemIcon: () => ?ReactClass;
+  getExtraUi: ?() => ReactClass;
   progress: ?number;
   visible: boolean;
   runTask: () => void;
@@ -39,7 +39,6 @@ export class BuildToolbar extends React.Component {
     if (!this.props.visible || this.props.activeBuildSystemId == null) {
       return null;
     }
-    const {extraUi: ExtraUi, progress} = this.props;
 
     // If there are no tasks, just show "Run" (but have it disabled). It's just less weird than
     // some kind of placeholder.
@@ -51,13 +50,15 @@ export class BuildToolbar extends React.Component {
         icon: task.icon,
       }));
 
+    const activeBuildSystemIcon = this.props.getActiveBuildSystemIcon();
     const activeTask = this.props.tasks.find(task => task.type === this.props.activeTaskType);
+    const ExtraUi = this.props.getExtraUi && this.props.getExtraUi();
 
     return (
       <div className="nuclide-build-toolbar">
         <div className="nuclide-build-toolbar-contents padded">
           <BuildSystemButton
-            icon={this.props.activeBuildSystemIcon}
+            icon={activeBuildSystemIcon}
             value={this.props.activeBuildSystemId}
             options={this.props.buildSystemOptions}
             disabled={this.props.taskIsRunning}
@@ -83,7 +84,7 @@ export class BuildToolbar extends React.Component {
           {ExtraUi ? <ExtraUi /> : null}
         </div>
         <ProgressBar
-          progress={progress}
+          progress={this.props.progress}
           visible={this.props.taskIsRunning}
         />
       </div>

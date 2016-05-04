@@ -38,14 +38,14 @@ export class Commands {
     const props = stateStream
       .map(state => {
         const activeBuildSystem = getActiveBuildSystem(state);
-        const extraUi = activeBuildSystem != null && activeBuildSystem.getExtraUi != null
-          ? activeBuildSystem.getExtraUi()
+        const getExtraUi = activeBuildSystem != null && activeBuildSystem.getExtraUi != null
+          ? activeBuildSystem.getExtraUi.bind(activeBuildSystem)
           : null;
         return {
           buildSystemOptions: getBuildSystemOptions(state),
           activeBuildSystemId: activeBuildSystem && activeBuildSystem.id,
-          activeBuildSystemIcon: activeBuildSystem && activeBuildSystem.getIcon(),
-          extraUi,
+          getActiveBuildSystemIcon: () => activeBuildSystem && activeBuildSystem.getIcon(),
+          getExtraUi,
           progress: state.taskStatus && state.taskStatus.progress,
           visible: state.visible,
           runTask: this.runTask,
