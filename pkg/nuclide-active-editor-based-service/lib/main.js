@@ -70,6 +70,17 @@ type ConcreteConfig = {
   updateOnEdit: boolean;
 };
 
+const DEFAULT_CONFIG: ConcreteConfig = {
+  updateOnEdit: true,
+};
+
+function getConcreteConfig(config: Config): ConcreteConfig {
+  return {
+    ...DEFAULT_CONFIG,
+    ...config,
+  };
+}
+
 export class ActiveEditorBasedService<T: Provider, V> {
   _resultFunction: ResultFunction<T, V>;
   _providerRegistry: ProviderRegistry<T>;
@@ -81,17 +92,10 @@ export class ActiveEditorBasedService<T: Provider, V> {
     config: Config = {},
     eventSources: EventSources = getDefaultEventSources(),
   ) {
-    this._config = this._getConcreteConfig(config);
+    this._config = getConcreteConfig(config);
     this._resultFunction = resultFunction;
     this._providerRegistry = new ProviderRegistry();
     this._resultsStream = this._createResultsStream(eventSources);
-  }
-
-  _getConcreteConfig(config: Config): ConcreteConfig {
-    return {
-      updateOnEdit: true,
-      ...config,
-    };
   }
 
   consumeProvider(provider: T): IDisposable {
