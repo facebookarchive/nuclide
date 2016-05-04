@@ -12,19 +12,12 @@
 import type {HyperclickSuggestion} from '../../hyperclick';
 
 import {goToLocation} from '../../nuclide-atom-helpers';
-import {GRAMMAR_SET, PACKAGE_NAME} from './constants';
+import {GRAMMAR_SET} from './constants';
 import {getDeclaration} from './libclang';
 import findWholeRangeOfSymbol from './findWholeRangeOfSymbol';
 
-const IDENTIFIER_REGEXP = /([a-zA-Z_][a-zA-Z0-9_]*)/g;
-
-module.exports = {
-  // It is important that this has a lower priority than the handler from
-  // fb-diffs-and-tasks.
-  priority: 10,
-  providerName: PACKAGE_NAME,
-  wordRegExp: IDENTIFIER_REGEXP,
-  async getSuggestionForWord(
+export default class HyperclickHelpers {
+  static async getSuggestionForWord(
     textEditor: TextEditor,
     text: string,
     range: atom$Range,
@@ -49,5 +42,5 @@ module.exports = {
     } else {
       return null;
     }
-  },
-};
+  }
+}

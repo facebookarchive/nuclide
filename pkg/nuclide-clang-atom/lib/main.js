@@ -9,42 +9,27 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from '../../hyperclick';
-import type {
-  TypeHint,
-  TypeHintProvider as TypeHintProviderType,
-} from '../../nuclide-type-hint';
-import type {
-  BusySignalProviderBase as BusySignalProviderBaseType,
-} from '../../nuclide-busy-signal';
-import type {DiagnosticProvider} from '../../nuclide-diagnostics-base';
 import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
+import type {DiagnosticProvider} from '../../nuclide-diagnostics-base';
+import type {HyperclickProvider} from '../../hyperclick';
 import type {OutlineProvider} from '../../nuclide-outline-view';
-import type ClangDiagnosticsProvider from './ClangDiagnosticsProvider';
+import type {TypeHintProvider} from '../../nuclide-type-hint';
 
+import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
-import {TypeHintProvider} from './TypeHintProvider';
+import {BusySignalProviderBase} from '../../nuclide-busy-signal';
+import AutocompleteHelpers from './AutocompleteHelpers';
+import CodeFormatHelpers from './CodeFormatHelpers';
+import HyperclickHelpers from './HyperclickHelpers';
+import OutlineViewHelpers from './OutlineViewHelpers';
+import TypeHintHelpers from './TypeHintHelpers';
+import ClangDiagnosticsProvider from './ClangDiagnosticsProvider';
 import {GRAMMAR_SET, PACKAGE_NAME} from './constants';
+import {reset} from './libclang';
 
-let busySignalProvider: ?BusySignalProviderBaseType = null;
+let busySignalProvider: ?BusySignalProviderBase = null;
 let diagnosticProvider: ?ClangDiagnosticsProvider = null;
 let subscriptions: ?CompositeDisposable = null;
-
-function getBusySignalProvider(): BusySignalProviderBaseType {
-  if (!busySignalProvider) {
-    const {BusySignalProviderBase} = require('../../nuclide-busy-signal');
-    busySignalProvider = new BusySignalProviderBase();
-  }
-  return busySignalProvider;
-}
-
-function getDiagnosticsProvider(): ClangDiagnosticsProvider {
-  if (!diagnosticProvider) {
-    const provider = require('./ClangDiagnosticsProvider');
-    diagnosticProvider = new provider(getBusySignalProvider());
-  }
-  return diagnosticProvider;
-}
 
 export function activate() {
   subscriptions = new CompositeDisposable();
@@ -61,7 +46,6 @@ export function activate() {
       if (path == null) {
         return;
       }
-      const {reset} = require('./libclang');
       await reset(editor);
       if (diagnosticProvider != null) {
         diagnosticProvider.invalidateBuffer(editor.getBuffer());
@@ -69,51 +53,67 @@ export function activate() {
       }
     }),
   );
+
+  busySignalProvider = new BusySignalProviderBase();
+  diagnosticProvider = new ClangDiagnosticsProvider(busySignalProvider);
+  subscriptions.add(diagnosticProvider);
 }
 
 /** Provider for autocomplete service. */
 export function createAutocompleteProvider(): atom$AutocompleteProvider {
-  const {AutocompleteProvider} = require('./AutocompleteProvider');
-  const autocompleteProvider = new AutocompleteProvider();
-  const getSuggestions = autocompleteProvider.getAutocompleteSuggestions
-    .bind(autocompleteProvider);
-
   return {
     selector: '.source.objc, .source.objcpp, .source.cpp, .source.c',
     inclusionPriority: 1,
     suggestionPriority: 5,  // Higher than the snippets provider.
-    getSuggestions,
+    getSuggestions(request) {
+      return AutocompleteHelpers.getAutocompleteSuggestions(request);
+    },
   };
 }
 
-export function createTypeHintProvider(): TypeHintProviderType {
+export function createTypeHintProvider(): TypeHintProvider {
   return {
     inclusionPriority: 1,
     providerName: PACKAGE_NAME,
     selector: Array.from(GRAMMAR_SET).join(', '),
-    typeHint(
-      editor: atom$TextEditor,
-      position: atom$Point
-    ): Promise<?TypeHint> {
-      return TypeHintProvider.typeHint(editor, position);
+    typeHint(editor, position) {
+      return TypeHintHelpers.typeHint(editor, position);
     },
   };
 }
 
 export function getHyperclickProvider(): HyperclickProvider {
-  return require('./HyperclickProvider');
+  const IDENTIFIER_REGEXP = /([a-zA-Z_][a-zA-Z0-9_]*)/g;
+  return {
+    // It is important that this has a lower priority than the handler from
+    // fb-diffs-and-tasks.
+    priority: 10,
+    providerName: PACKAGE_NAME,
+    wordRegExp: IDENTIFIER_REGEXP,
+    getSuggestionForWord(editor, text, range) {
+      return HyperclickHelpers.getSuggestionForWord(editor, text, range);
+    },
+  };
 }
 
-export function provideBusySignal(): BusySignalProviderBaseType {
-  return getBusySignalProvider();
+export function provideBusySignal(): BusySignalProviderBase {
+  invariant(busySignalProvider);
+  return busySignalProvider;
 }
 
 export function provideCodeFormat(): CodeFormatProvider {
-  return require('./CodeFormatProvider');
+  return {
+    selector: Array.from(GRAMMAR_SET).join(', '),
+    inclusionPriority: 1,
+    formatEntireFile(editor, range) {
+      return CodeFormatHelpers.formatEntireFile(editor, range);
+    },
+  };
 }
 
 export function provideDiagnostics(): DiagnosticProvider {
-  return getDiagnosticsProvider();
+  invariant(diagnosticProvider);
+  return diagnosticProvider;
 }
 
 export function provideOutlineView(): OutlineProvider {
@@ -121,18 +121,13 @@ export function provideOutlineView(): OutlineProvider {
     name: PACKAGE_NAME,
     priority: 10,
     grammarScopes: Array.from(GRAMMAR_SET),
-    getOutline(editor: atom$TextEditor) {
-      const {OutlineViewProvider} = require('./OutlineViewProvider');
-      return OutlineViewProvider.getOutline(editor);
+    getOutline(editor) {
+      return OutlineViewHelpers.getOutline(editor);
     },
   };
 }
 
 export function deactivate() {
-  if (diagnosticProvider != null) {
-    diagnosticProvider.dispose();
-    diagnosticProvider = null;
-  }
   if (subscriptions != null) {
     subscriptions.dispose();
     subscriptions = null;

@@ -176,10 +176,10 @@ function getCompletionPrefix(editor: atom$TextEditor): string {
   return editor.getTextInBufferRange(range).trim();
 }
 
-class AutocompleteProvider {
+export default class AutocompleteHelpers {
 
   @trackTiming('nuclide-clang-atom.autocomplete')
-  async getAutocompleteSuggestions(
+  static async getAutocompleteSuggestions(
     request: atom$AutocompleteRequest
   ): Promise<Array<atom$AutocompleteSuggestion>> {
     const {editor, bufferPosition: {row, column}, activatedManually} = request;
@@ -238,10 +238,7 @@ class AutocompleteProvider {
 
 }
 
-module.exports = {
-  AutocompleteProvider,
-  __test__: {
-    getCompletionBodyMultiLine,
-    getCompletionBodyInline,
-  },
+export const __test__ = {
+  getCompletionBodyMultiLine,
+  getCompletionBodyInline,
 };

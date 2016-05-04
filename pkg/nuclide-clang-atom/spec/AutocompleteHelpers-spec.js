@@ -12,9 +12,9 @@
 const {
   getCompletionBodyInline,
   getCompletionBodyMultiLine,
-} = require('../lib/AutocompleteProvider').__test__;
+} = require('../lib/AutocompleteHelpers').__test__;
 
-describe('AutocompleteProvider', () => {
+describe('AutocompleteHelpers', () => {
 
   describe('@getCompletionBodyMultiLine', () => {
     it('converts method call with first argument being longest', () => {

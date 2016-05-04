@@ -127,7 +127,7 @@ export function outlineFromClangOutline(outline: Array<ClangOutlineTree>): Array
   });
 }
 
-export class OutlineViewProvider {
+export default class OutlineViewHelpers {
   @trackTiming('nuclide-clang-atom:outline-view')
   static async getOutline(editor: atom$TextEditor): Promise<?Outline> {
     const clangOutline = await getOutline(editor);

@@ -20,7 +20,7 @@ import {
   string,
   plain,
 } from '../../nuclide-tokenized-text';
-import {outlineFromClangOutline} from '../lib/OutlineViewProvider';
+import {outlineFromClangOutline} from '../lib/OutlineViewHelpers';
 
 describe('outlineFromClangOutline', () => {
   it('works for a function', () => {

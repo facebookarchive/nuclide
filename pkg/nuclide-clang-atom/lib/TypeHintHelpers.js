@@ -18,7 +18,7 @@ import {getDeclaration} from './libclang';
 // Types longer than this will be truncated.
 const MAX_LENGTH = 256;
 
-export class TypeHintProvider {
+export default class TypeHintHelpers {
 
   @trackTiming('nuclide-clang-atom.typeHint')
   static async typeHint(
