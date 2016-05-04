@@ -9,13 +9,10 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  get WatchmanClient() {
-    return require('./WatchmanClient');
-  },
+import WatchmanClient from './WatchmanClient';
+import WatchmanSubscription from './WatchmanSubscription';
 
-  // Exposed for testing.
-  get WatchmanSubscription() {
-    return require('./WatchmanSubscription');
-  },
+export {
+  WatchmanClient,
+  WatchmanSubscription,
 };
