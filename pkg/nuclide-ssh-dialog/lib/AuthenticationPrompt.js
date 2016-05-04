@@ -10,10 +10,7 @@
  */
 
 import {CompositeDisposable} from 'atom';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 type Props = {
   instructions: string;
@@ -25,36 +22,38 @@ type Props = {
 export default class AuthenticationPrompt extends React.Component<void, Props, void> {
   props: Props;
 
-  _disposables: ?CompositeDisposable;
+  _disposables: CompositeDisposable;
 
   constructor(props: Props) {
     super(props);
+    this._disposables = new CompositeDisposable();
+    (this: any)._onKeyUp = this._onKeyUp.bind(this);
   }
 
-  render(): React.Element {
-    // Instructions may contain newlines that need to be converted to <br> tags.
-    const safeHtml = this.props.instructions
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/\\n/g, '<br>');
-
-    // We need native-key-bindings so that delete works and we need
-    // _onKeyUp so that escape and enter work
-    return (
-      <div ref="root">
-        <div
-          className="block"
-          style={{whiteSpace: 'pre'}}
-          dangerouslySetInnerHTML={{__html: safeHtml}}
-        />
-        <input
-          type="password"
-          className="nuclide-password native-key-bindings"
-          ref="password"
-          onKeyUp={this._onKeyUp.bind(this)}
-        />
-      </div>
+  componentDidMount(): void {
+    // Hitting enter when this panel has focus should confirm the dialog.
+    this._disposables.add(atom.commands.add(
+      this.refs.root,
+      'core:confirm',
+      event => this.props.onConfirm())
     );
+
+    // Hitting escape should cancel the dialog.
+    this._disposables.add(atom.commands.add(
+      'atom-workspace',
+      'core:cancel',
+      event => this.props.onCancel())
+    );
+
+    this.refs.password.focus();
+  }
+
+  componentWillUnmount(): void {
+    this._disposables.dispose();
+  }
+
+  getPassword(): string {
+    return this.refs.password.value;
   }
 
   _onKeyUp(e: SyntheticKeyboardEvent): void {
@@ -67,33 +66,24 @@ export default class AuthenticationPrompt extends React.Component<void, Props, v
     }
   }
 
-  componentDidMount(): void {
-    const disposables = this._disposables = new CompositeDisposable();
-    const root = ReactDOM.findDOMNode(this.refs['root']);
-
-    // Hitting enter when this panel has focus should confirm the dialog.
-    disposables.add(atom.commands.add(
-        root,
-        'core:confirm',
-        event => this.props.onConfirm()));
-
-    // Hitting escape when this panel has focus should cancel the dialog.
-    disposables.add(atom.commands.add(
-        root,
-        'core:cancel',
-        event => this.props.onCancel()));
-
-    ReactDOM.findDOMNode(this.refs.password).focus();
-  }
-
-  componentWillUnmount(): void {
-    if (this._disposables) {
-      this._disposables.dispose();
-      this._disposables = null;
-    }
-  }
-
-  getPassword(): string {
-    return ReactDOM.findDOMNode(this.refs.password).value;
+  render(): React.Element {
+    // * Need native-key-bindings so that delete works and we need `_onKeyUp` so that escape and
+    //   enter work
+    // * `instructions` are pre-formatted, so apply `whiteSpace: pre` to maintain formatting coming
+    //   from the server.
+    return (
+      <div ref="root">
+        <div className="block" style={{whiteSpace: 'pre'}}>
+          {this.props.instructions}
+        </div>
+        <input
+          tabIndex="-1"
+          type="password"
+          className="nuclide-password native-key-bindings"
+          ref="password"
+          onKeyPress={this._onKeyUp}
+        />
+      </div>
+    );
   }
 }
