@@ -11,9 +11,10 @@
 
 import NuclideServer from '../../lib/NuclideServer';
 import NuclideSocket from '../../lib/NuclideSocket';
-import ClientComponent from '../../lib/serviceframework/ClientComponent';
+import {ClientComponent} from '../../../nuclide-rpc';
+import type {ConfigEntry} from '../../../nuclide-rpc';
 
-type Services = Array<{name: string; definition: string; implementation: string}>;
+type Services = Array<ConfigEntry>;
 
 export default class ServiceTestHelper {
   _server: NuclideServer;

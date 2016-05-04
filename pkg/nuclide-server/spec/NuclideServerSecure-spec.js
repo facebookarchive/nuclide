@@ -13,7 +13,7 @@ import fs from 'fs';
 
 import path from 'path';
 import NuclideServer from '../lib/NuclideServer';
-import ClientComponent from '../lib/serviceframework/ClientComponent';
+import {ClientComponent} from '../../nuclide-rpc';
 import {loadServicesConfig} from '../lib/services';
 import NuclideSocket from '../lib/NuclideSocket';
 import invariant from 'assert';

@@ -11,26 +11,26 @@
 
 import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
 import type {ConfigEntry} from './index';
-import type {Type} from '../../../nuclide-service-parser/lib/types';
+import type {Type} from '../../nuclide-service-parser/lib/types';
 import type {Transport} from './types';
 
 import invariant from 'assert';
 import {EventEmitter} from 'events';
 import {Observable} from 'rxjs';
 
-import TypeRegistry from '../../../nuclide-service-parser/lib/TypeRegistry';
-import {getProxy, getDefinitions} from '../../../nuclide-service-parser';
+import TypeRegistry from '../../nuclide-service-parser/lib/TypeRegistry';
+import {getProxy, getDefinitions} from '../../nuclide-service-parser';
 import {ObjectRegistry} from './ObjectRegistry';
-import {getPath, createRemoteUri} from '../../../nuclide-remote-uri';
+import {getPath, createRemoteUri} from '../../nuclide-remote-uri';
 
 import type {RequestMessage, CallRemoteFunctionMessage, CreateRemoteObjectMessage,
   CallRemoteMethodMessage, DisposeRemoteObjectMessage, DisposeObservableMessage,
   ReturnType, ObservableResult} from './types';
 
-const logger = require('../../../nuclide-logging').getLogger();
+const logger = require('../../nuclide-logging').getLogger();
 const SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
 
-export default class ClientComponent<TransportType: Transport> {
+export class ClientComponent<TransportType: Transport> {
   _rpcRequestId: number;
   _emitter: EventEmitter;
   _transport: TransportType;

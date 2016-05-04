@@ -11,17 +11,17 @@
 
 import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
 import {Observable} from 'rxjs';
-import {getProxy, getDefinitions} from '../../../nuclide-service-parser';
-import TypeRegistry from '../../../nuclide-service-parser/lib/TypeRegistry';
-import {builtinLocation, voidType} from '../../../nuclide-service-parser/lib/builtin-types';
-import {startTracking} from '../../../nuclide-analytics';
-import type {TimingTracker} from '../../../nuclide-analytics';
+import {getProxy, getDefinitions} from '../../nuclide-service-parser';
+import TypeRegistry from '../../nuclide-service-parser/lib/TypeRegistry';
+import {builtinLocation, voidType} from '../../nuclide-service-parser/lib/builtin-types';
+import {startTracking} from '../../nuclide-analytics';
+import type {TimingTracker} from '../../nuclide-analytics';
 import type {
   FunctionType,
   Definition,
   InterfaceDefinition,
   Type,
-} from '../../../nuclide-service-parser/lib/types';
+} from '../../nuclide-service-parser/lib/types';
 import invariant from 'assert';
 import type {ConfigEntry} from './index';
 import type {ObjectRegistry} from './ObjectRegistry';
@@ -37,11 +37,11 @@ import type {
 } from './types';
 import type {ClientConnection} from './ClientConnection';
 
-const logger = require('../../../nuclide-logging').getLogger();
+const logger = require('../../nuclide-logging').getLogger();
 
 type FunctionImplementation = {localImplementation: Function; type: FunctionType};
 
-export default class ServerComponent {
+export class ServerComponent {
   _typeRegistry: TypeRegistry<ObjectRegistry>;
 
   /**

@@ -9,13 +9,12 @@
  * the root directory of this source tree.
  */
 
-import ServerComponent from './ServerComponent';
-import ClientComponent from './ClientComponent';
+export {ServerComponent} from './ServerComponent';
+export {ClientComponent} from './ClientComponent';
+export {ClientConnection} from './ClientConnection';
 
 export type ConfigEntry = {
   name: string;
   definition:string;
   implementation: string;
 };
-
-export default {ServerComponent, ClientComponent};

@@ -33,10 +33,12 @@ describe('FileSystemService', () => {
   beforeEach(() => {
     waitsForPromise(async () => {
       testHelper = new ServiceTestHelper();
+      const FILE_SYSTEM_SERVICE_PATH =
+        require.resolve('../../lib/services/FileSystemService');
       await testHelper.start([{
         name: 'FileSystemService',
-        definition: '../../lib/services/FileSystemService.js',
-        implementation: '../../lib/services/FileSystemService.js',
+        definition: FILE_SYSTEM_SERVICE_PATH,
+        implementation: FILE_SYSTEM_SERVICE_PATH,
       }]);
       service = testHelper.getRemoteService('FileSystemService');
     });

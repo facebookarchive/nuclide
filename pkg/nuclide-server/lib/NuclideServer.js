@@ -9,18 +9,17 @@
  * the root directory of this source tree.
  */
 
-import type {ConfigEntry} from './serviceframework/index';
+import type {ConfigEntry} from '../../nuclide-rpc';
 
 import blocked from './blocked';
 import {HEARTBEAT_CHANNEL} from './config';
 import {deserializeArgs, sendJsonResponse, sendTextResponse} from './utils';
 import {getVersion} from '../../nuclide-version';
 import invariant from 'assert';
-import ServiceFramework from './serviceframework/index';
 import {getLogger, flushLogsAndExit} from '../../nuclide-logging';
 import WS from 'ws';
 import {SocketTransport} from './SocketTransport';
-import {ClientConnection} from './serviceframework/ClientConnection';
+import {ClientConnection, ServerComponent} from '../../nuclide-rpc';
 
 const connect: connect$module = require('connect');
 const http: http$fixed = (require('http'): any);
@@ -47,7 +46,7 @@ class NuclideServer {
   _serviceRegistry: {[serviceName: string]: () => any};
   _version: string;
 
-  _serverComponent: ServiceFramework.ServerComponent;
+  _serverComponent: ServerComponent;
 
   constructor(options: NuclideServerOptions, services: Array<ConfigEntry>) {
     invariant(NuclideServer._theServer == null);
@@ -91,7 +90,7 @@ class NuclideServer {
     }
 
     this._serverComponent =
-        new ServiceFramework.ServerComponent(services);
+        new ServerComponent(services);
   }
 
   _attachUtilHandlers() {

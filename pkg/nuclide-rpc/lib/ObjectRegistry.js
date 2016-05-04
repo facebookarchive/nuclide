@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import {getLogger} from '../../../nuclide-logging';
+import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
 

@@ -10,7 +10,7 @@
  */
 
 import path from 'path';
-import type {ConfigEntry} from './serviceframework/index';
+import type {ConfigEntry} from '../../nuclide-rpc';
 
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
 

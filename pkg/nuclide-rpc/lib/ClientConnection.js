@@ -10,21 +10,21 @@
  */
 
 import type {Transport} from './types';
+import type {ServerComponent} from './ServerComponent';
 
 import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
-import ServiceFramework from './index';
 import invariant from 'assert';
 
 import {ObjectRegistry} from './ObjectRegistry';
 
 // Per-Client state on the Server for the RPC framework
 export class ClientConnection<TransportType: Transport> {
-  _serverComponent: ServiceFramework.ServerComponent;
+  _serverComponent: ServerComponent;
   _objectRegistry: ObjectRegistry;
   _transport: TransportType;
 
   constructor(
-      serverComponent: ServiceFramework.ServerComponent,
+      serverComponent: ServerComponent,
       transport: TransportType) {
     this._objectRegistry = new ObjectRegistry('server');
     this._serverComponent = serverComponent;

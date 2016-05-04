@@ -9,12 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {Transport} from '../../lib/serviceframework/types';
-import ClientComponent from '../../lib/serviceframework/ClientComponent';
-import ServerComponent from '../../lib/serviceframework/ServerComponent';
-import {ClientConnection} from '../../lib/serviceframework/ClientConnection';
-
-type Services = Array<{name: string; definition: string; implementation: string}>;
+import type {ConfigEntry} from '../lib/index';
+import type {Transport} from '../lib/types';
+import {ClientComponent} from '../lib/ClientComponent';
+import {ServerComponent} from '../lib/ServerComponent';
+import {ClientConnection} from '../lib/ClientConnection';
 
 export class ServiceTester {
   _server: ServerComponent;
@@ -22,7 +21,7 @@ export class ServiceTester {
   _clientConnection: ClientConnection<Transport>;
   _port: number;
 
-  async start(customServices: Services): Promise<void> {
+  async start(customServices: Array<ConfigEntry>): Promise<void> {
     const transports = new LoopbackTransports();
     this._server = new ServerComponent(customServices);
     this._clientConnection = new ClientConnection(this._server, transports.serverTransport);
