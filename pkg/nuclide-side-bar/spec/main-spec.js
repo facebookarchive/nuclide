@@ -229,7 +229,6 @@ describe('nuclide-side-bar main', () => {
 
     expect(NuclideSideBar.serialize()).toEqual({
       activeViewId: SIDE_BAR.viewId,
-      autoViewId: SIDE_BAR.viewId,
       hidden: false,
       // Hard-coded length from `main`. Empirically the minimum width needed to fit
       // 'nuclide-file-tree' buttons without causing overflow.
@@ -249,7 +248,6 @@ describe('nuclide-side-bar main', () => {
 
     expect(NuclideSideBar.serialize()).toEqual({
       activeViewId: COOLER_BAR.viewId,
-      autoViewId: undefined,
       hidden: false,
       // Hard-coded length from `main`. Empirically the minimum width needed to fit
       // 'nuclide-file-tree' buttons without causing overflow.

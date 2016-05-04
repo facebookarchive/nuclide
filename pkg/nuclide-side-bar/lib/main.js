@@ -316,6 +316,11 @@ export function activate(deserializedState: ?Object) {
   panel = atom.workspace.addLeftPanel({item});
   const nextState = {...getDefaultState(), ...deserializedState};
 
+  if (nextState.activeViewId == null) {
+    // Special case the file-tree so it renders synchronously if `null` was previously serialized.
+    nextState.activeViewId = 'nuclide-file-tree';
+  }
+
   // Initializes `panelComponent` so it does not need to be considered nullable.
   setState(nextState);
 }
@@ -331,7 +336,6 @@ export function deactivate() {
 export function serialize(): Object {
   return {
     activeViewId: state.activeViewId,
-    autoViewId: state.autoViewId,
     hidden: state.hidden,
     // If no render has yet happened, use the last stored length in the state (likely the default).
     initialLength: (panelComponent == null) ? state.initialLength : panelComponent.getLength(),
