@@ -16,20 +16,24 @@ import type {FileChange} from '../../nuclide-watchman-helpers/lib/WatchmanClient
 import invariant from 'assert';
 import path from 'path';
 import {Observable} from 'rxjs';
-import {EventEmitter} from 'events';
 import {fsPromise} from '../../nuclide-commons';
+import {getLogger} from '../../nuclide-logging';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 
-type watcher$WatchEntry = {
-  eventEmitter: EventEmitter;
-  subscriptionCount: number;
+export type WatchResult = {
+  path: NuclideUri;
+  type: string;
 };
 
-const watchedFiles: Map<string, watcher$WatchEntry> = new Map();
-const watchedDirectories: Map<string, watcher$WatchEntry> = new Map();
+type WatchEvent = 'change' | 'delete';
 
-const CHANGE_EVENT_NAME = 'change';
-const DELETE_EVENT_NAME = 'delete';
+// Cache an observable for each watched entity (file or directory).
+// Multiple watches for the same entity can share the same observable.
+const entityObservable: Map<string, Observable<WatchResult>> = new Map();
+
+// In addition, expose the observer behind each observable so we can
+// dispatch events from the root subscription.
+const entityObserver: Map<string, rx$IObserver<WatchEvent>> = new Map();
 
 let watchmanClient: ?WatchmanClient = null;
 function getWatchmanClient(): WatchmanClient {
@@ -39,77 +43,53 @@ function getWatchmanClient(): WatchmanClient {
   return watchmanClient;
 }
 
-export type watcher$WatchResult = {
-  path: NuclideUri;
-  type: string;
-};
-
-export function watchFile(filePath: NuclideUri): Observable<watcher$WatchResult> {
-  return watchEntity(watchedFiles, filePath, [CHANGE_EVENT_NAME, DELETE_EVENT_NAME]);
+export function watchFile(filePath: NuclideUri): Observable<WatchResult> {
+  return watchEntity(filePath, true);
 }
 
-export function watchDirectory(directoryPath: NuclideUri): Observable<watcher$WatchResult> {
-  return watchEntity(watchedDirectories, directoryPath, [CHANGE_EVENT_NAME, DELETE_EVENT_NAME]);
+export function watchDirectory(directoryPath: NuclideUri): Observable<WatchResult> {
+  return watchEntity(directoryPath, false);
 }
 
 function watchEntity(
-  watchedEntities: Map<string, watcher$WatchEntry>,
   entityPath: string,
-  watchEvents: Array<string>,
-): Observable<watcher$WatchResult> {
+  isFile: boolean,
+): Observable<WatchResult> {
   return Observable.fromPromise(
-    getRealPath(entityPath)
+    getRealPath(entityPath, isFile)
   ).flatMap(realPath => {
-    let watchEntry = watchedEntities.get(realPath);
-    if (watchEntry == null) {
-      watchEntry = {
-        eventEmitter: new EventEmitter(),
-        subscriptionCount: 0,
-      };
-      watchedEntities.set(realPath, watchEntry);
+    let observable = entityObservable.get(realPath);
+    if (observable != null) {
+      return observable;
     }
-    watchEntry.subscriptionCount++;
-
-    const {eventEmitter} = watchEntry;
-    const watcherObservable = Observable.merge(...watchEvents.map(watchEvent =>
-      Observable.fromEvent(
-        eventEmitter,
-        watchEvent,
-        () => {
-          return {path: entityPath, type: watchEvent};
-        },
-      )
-    ));
-
-    watcherObservable.subscribe({
-      complete() {
-        unwatchEntity(watchedEntities, realPath);
-      },
-    });
-
-    return watcherObservable;
+    observable = Observable.create(observer => {
+      entityObserver.set(realPath, observer);
+      return () => {
+        entityObserver.delete(realPath);
+        entityObservable.delete(realPath);
+      };
+    }).map(type => ({path: realPath, type}))
+      .share();
+    entityObservable.set(realPath, observable);
+    return observable;
   });
 }
 
-async function getRealPath(entityPath: string): Promise<string> {
-  const exists = await fsPromise.exists(entityPath);
-  if (!exists) {
-    // Atom watcher behavior compatability.
+async function getRealPath(entityPath: string, isFile: boolean): Promise<string> {
+  let stat;
+  try {
+    stat = await fsPromise.stat(entityPath);
+  } catch (e) {
+    // Atom watcher behavior compatibility.
     throw new Error(`Can't watch a non-existing entity: ${entityPath}`);
+  }
+  if (stat.isFile() !== isFile) {
+    getLogger().warn(
+      `FileWatcherService: expected ${entityPath} to be a ${isFile ? 'file' : 'directory'}`
+    );
   }
   return await fsPromise.realpath(entityPath);
 }
-
-async function unwatchEntity(
-  watchedEntities: Map<string, watcher$WatchEntry>,
-  realPath: string,
-): Promise<void> {
-  const watchEntry = watchedEntities.get(realPath);
-  if (watchEntry && --watchEntry.subscriptionCount === 0) {
-    watchedEntities.delete(realPath);
-  }
-}
-
 
 export function watchDirectoryRecursive(
   directoryPath: NuclideUri,
@@ -121,7 +101,6 @@ export function watchDirectoryRecursive(
   return Observable.fromPromise(
     client.watchDirectoryRecursive(directoryPath)
   ).flatMap(watcher => {
-
     // Listen for watcher changes to route them to watched files and directories.
     watcher.on('change', entries => {
       onWatcherChange(watcher, entries);
@@ -137,38 +116,34 @@ export function watchDirectoryRecursive(
 }
 
 function onWatcherChange(subscription: WatchmanSubscription, entries: Array<FileChange>): void {
-  const directoryChanges = new Map();
-  for (const entry of entries) {
+  const directoryChanges = new Set();
+  entries.forEach(entry => {
     const entryPath = path.join(subscription.root, entry.name);
-    const watchEntry = watchedFiles.get(entryPath) || watchedDirectories.get(entryPath);
-    if (watchEntry != null) {
+    const observer = entityObserver.get(entryPath);
+    if (observer != null) {
       // TODO(most): handle `rename`, if needed.
       if (!entry.exists) {
-        watchEntry.eventEmitter.emit(DELETE_EVENT_NAME);
+        observer.next('delete');
+        observer.complete();
       } else {
-        watchEntry.eventEmitter.emit(CHANGE_EVENT_NAME);
+        observer.next('change');
       }
     }
-    // A file watch event can also be considered a directry change
+    // A file watch event can also be considered a directory change
     // for the parent directory if a file was created or deleted.
     if (entry.new || !entry.exists) {
       const entryDirectoryPath = path.dirname(entryPath);
-      if (watchedDirectories.has(entryDirectoryPath)) {
-        if (!directoryChanges.has(entryDirectoryPath)) {
-          directoryChanges.set(entryDirectoryPath, []);
-        }
-        // $FlowFixMe(most)
-        directoryChanges.get(entryDirectoryPath).push(entry);
+      if (entityObserver.has(entryDirectoryPath)) {
+        directoryChanges.add(entryDirectoryPath);
       }
     }
-  }
+  });
 
-  for (const [watchedDirectoryPath, changes] of directoryChanges) {
-    const watchEntry = watchedDirectories.get(watchedDirectoryPath);
-    invariant(watchEntry != null);
-    const {eventEmitter} = watchEntry;
-    eventEmitter.emit(CHANGE_EVENT_NAME, changes);
-  }
+  directoryChanges.forEach(watchedDirectoryPath => {
+    const observer = entityObserver.get(watchedDirectoryPath);
+    invariant(observer != null);
+    observer.next('change');
+  });
 }
 
 async function unwatchDirectoryRecursive(directoryPath: string): Promise<void> {
