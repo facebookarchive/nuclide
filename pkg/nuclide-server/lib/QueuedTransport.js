@@ -1,0 +1,179 @@
+'use babel';
+/* @flow */
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+import invariant from 'assert';
+
+import {getLogger} from '../../nuclide-logging';
+const logger = getLogger();
+import {Emitter} from 'event-kit';
+
+// An unreliable transport for sending JSON formatted messages
+//
+// onClose handlers are guaranteed to be called exactly once.
+// onMessage handlers are guaranteed to not be called after onClose has been called.
+// send(data) yields false if the message failed to send, true on success.
+// onClose handlers will be called before close() returns.
+// May not call send() after transport has closed..
+export type UnreliableTransport = {
+  send(data: Object): Promise<boolean>;
+  onClose(callback: () => mixed): IDisposable;
+  onMessage(callback: (message: Object) => mixed): IDisposable;
+  close(): void;
+  isClosed(): boolean;
+};
+
+// Adapter to make an UnreliableTransport a reliable Transport
+// by queuing messages.
+//
+// Conforms to the RPC Framework's Transport type.
+//
+// Must be constructed with an open(not closed) transport.
+// Can be in one of 3 states: open, disconnected, or closed.
+// The transport starts in open state. When the current transport closes,
+// goes to disconnected state.
+// While disconnected, reconnect can be called to return to the open state.
+// close() closes the underlying transport and transitions to closed state.
+// Once closed, reconnect may not be called and no other events will be emitted.
+export class QueuedTransport {
+  id: string;
+  _isClosed: boolean;
+  _transport: ?UnreliableTransport;
+  _messageQueue: Array<any>;
+  _emitter: Emitter;
+
+  constructor(clientId: string, transport: ?UnreliableTransport) {
+    this.id = clientId;
+    this._isClosed = false;
+    this._transport = null;
+    this._messageQueue = [];
+    this._emitter = new Emitter();
+
+    if (transport != null) {
+      this._connect(transport);
+    }
+  }
+
+  getState(): 'open' | 'disconnected' | 'closed' {
+    return this._isClosed
+      ? 'closed'
+      : (this._transport == null ? 'disconnected' : 'open');
+  }
+
+  _connect(transport: UnreliableTransport): void {
+    invariant(!transport.isClosed());
+    logger.info('Client #%s connecting with a new socket!', this.id);
+    invariant(this._transport == null);
+    this._transport = transport;
+    transport.onMessage(message => this._onMessage(transport, message));
+    transport.onClose(() => this._onClose(transport));
+  }
+
+  _onMessage(transport: UnreliableTransport, message: Object): void {
+    if (this._isClosed) {
+      logger.error('Received socket message after connection closed', new Error());
+      return;
+    }
+    if (this._transport !== transport) {
+      // This shouldn't happen, but ...
+      logger.error('Received message after transport closed', new Error());
+    }
+
+    this._emitter.emit('message', message);
+  }
+
+  _onClose(transport: UnreliableTransport): void {
+    invariant(transport.isClosed());
+
+    if (this._isClosed) {
+      // This happens when close() is called and we have an open transport.
+      return;
+    }
+    if (transport !== this._transport) {
+      // This should not happen...
+      logger.error('Orphaned transport closed', new Error());
+      return;
+    }
+
+    this._transport = null;
+    this._emitter.emit('disconnect', transport);
+  }
+
+  // Reconnecting, when in an open state will cause a disconnect event.
+  reconnect(transport: UnreliableTransport): void {
+    invariant(!transport.isClosed());
+    invariant(!this._isClosed);
+
+    if (this._transport != null) {
+      // This will cause a disconnect event...
+      this._transport.close();
+    }
+    invariant(this._transport == null);
+
+    this._connect(transport);
+
+    // Attempt to resend queued messages
+    const queuedMessages = this._messageQueue;
+    this._messageQueue = [];
+    queuedMessages.forEach(message => this.send(message));
+  }
+
+  disconnect(): void {
+    invariant(!this._isClosed);
+    this._disconnect();
+  }
+
+  _disconnect(): void {
+    const transport = this._transport;
+    if (transport != null) {
+      transport.close();
+    }
+  }
+
+  onMessage(callback: (message: Object) => mixed): IDisposable {
+    return this._emitter.on('message', callback);
+  }
+
+  onDisconnect(callback: (transport: UnreliableTransport) => mixed): IDisposable {
+    return this._emitter.on('disconnect', callback);
+  }
+
+  send(data: any): void {
+    this._send(data);
+  }
+
+  async _send(data: any): Promise<void> {
+    invariant(!this._isClosed, 'Attempt to send socket message after connection closed');
+
+    this._messageQueue.push(data);
+    if (this._transport == null) {
+      return;
+    }
+
+    const sent = await this._transport.send(data);
+    if (!sent) {
+      logger.warn('Failed sending socket message to client:', this.id, data);
+    } else {
+      // This may remove a different (but equivalent) message from the Q,
+      // but that's ok because we don't guarantee message ordering.
+      const messageIndex = this._messageQueue.indexOf(data);
+      if (messageIndex !== -1) {
+        this._messageQueue.splice(messageIndex, 1);
+      }
+    }
+  }
+
+  close(): void {
+    this._disconnect();
+    if (!this._isClosed) {
+      this._isClosed = true;
+    }
+  }
+}
