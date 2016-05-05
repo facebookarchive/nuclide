@@ -16,6 +16,7 @@ import {React} from 'react-for-atom';
 
 type ButtonType = 'PRIMARY' | 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';
 type ButtonSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
+type ButtonNodeName = 'button' | 'a';
 
 type Props = {
   /** Octicon icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
@@ -28,6 +29,8 @@ type Props = {
   className?: string;
   /** The button's content; generally a string. */
   children: React.Element;
+  /** Allows specifying an element other than `button` to be used as the wrapper node. */
+  wrapperElement?: ButtonNodeName;
 };
 
 export const ButtonSizes = Object.freeze({
@@ -69,6 +72,7 @@ export const Button = (props: Props) => {
     size,
     children,
     className,
+    wrapperElement,
     ...remainingProps,
   } = props;
   const sizeClassname = size == null ? '' : ButtonSizeClassnames[size] || '';
@@ -83,9 +87,10 @@ export const Button = (props: Props) => {
       [buttonTypeClassname]: buttonType != null,
     },
   );
+  const Wrapper = wrapperElement == null ? 'button' : wrapperElement;
   return (
-    <button className={newClassName} {...remainingProps}>
+    <Wrapper className={newClassName} {...remainingProps}>
       {children}
-    </button>
+    </Wrapper>
   );
 };
