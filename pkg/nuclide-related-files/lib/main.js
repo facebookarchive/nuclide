@@ -18,6 +18,14 @@ import RelatedFileFinder from './RelatedFileFinder';
 let jumpToRelatedFile: ?JumpToRelatedFile = null;
 let subscriptions: ?CompositeDisposable = null;
 
+// Only expose a context menu for C-family files.
+const C_GRAMMARS = new Set([
+  'source.c',
+  'source.cpp',
+  'source.objc',
+  'source.objcpp',
+]);
+
 export function activate() {
   subscriptions = new CompositeDisposable();
   subscriptions.add(atom.workspace.observeTextEditors(textEditor => {
@@ -27,6 +35,19 @@ export function activate() {
       subscriptions.add(jumpToRelatedFile);
     }
     jumpToRelatedFile.enableInTextEditor(textEditor);
+  }));
+  subscriptions.add(atom.contextMenu.add({
+    'atom-text-editor': [
+      {
+        label: 'Switch Between Header/Source',
+        command: 'nuclide-related-files:jump-to-next-related-file',
+        shouldDisplay() {
+          const editor = atom.workspace.getActiveTextEditor();
+          return editor != null && C_GRAMMARS.has(editor.getGrammar().scopeName);
+        },
+      },
+      {type: 'separator'},
+    ],
   }));
 }
 
