@@ -87,40 +87,38 @@ class CreateConnectionProfileForm extends React.Component<void, Props, void> {
     const initialFields = this.props.initialFormFields;
 
     return (
-      <atom-panel class="modal from-top">
-        <div className="padded">
-          <div className="form-group">
-            <label>{PROFILE_NAME_LABEL}:</label>
-            <AtomInput
-              initialValue=""
-              ref="profile-name"
-              unstyled={true}
-            />
-          </div>
-          <ConnectionDetailsForm
-            ref="connection-details"
-            initialUsername={initialFields.username}
-            initialServer={initialFields.server}
-            initialCwd={initialFields.cwd}
-            initialRemoteServerCommand={DEFAULT_SERVER_COMMAND_PLACEHOLDER}
-            initialSshPort={initialFields.sshPort}
-            initialPathToPrivateKey={initialFields.pathToPrivateKey}
-            initialAuthMethod={initialFields.authMethod}
-            onConfirm={emptyFunction}
-            onCancel={emptyFunction}
+      <div className="padded">
+        <div className="form-group">
+          <label>{PROFILE_NAME_LABEL}:</label>
+          <AtomInput
+            initialValue=""
+            ref="profile-name"
+            unstyled={true}
           />
-          <div className="padded text-right">
-            <ButtonGroup>
-              <Button onClick={this._clickCancel}>
-                Cancel
-              </Button>
-              <Button buttonType={ButtonTypes.PRIMARY} onClick={this._clickSave}>
-                Save
-              </Button>
-            </ButtonGroup>
-          </div>
         </div>
-      </atom-panel>
+        <ConnectionDetailsForm
+          ref="connection-details"
+          initialUsername={initialFields.username}
+          initialServer={initialFields.server}
+          initialCwd={initialFields.cwd}
+          initialRemoteServerCommand={DEFAULT_SERVER_COMMAND_PLACEHOLDER}
+          initialSshPort={initialFields.sshPort}
+          initialPathToPrivateKey={initialFields.pathToPrivateKey}
+          initialAuthMethod={initialFields.authMethod}
+          onConfirm={emptyFunction}
+          onCancel={emptyFunction}
+        />
+        <div className="padded text-right">
+          <ButtonGroup>
+            <Button onClick={this._clickCancel}>
+              Cancel
+            </Button>
+            <Button buttonType={ButtonTypes.PRIMARY} onClick={this._clickSave}>
+              Save
+            </Button>
+          </ButtonGroup>
+        </div>
+      </div>
     );
   }
 

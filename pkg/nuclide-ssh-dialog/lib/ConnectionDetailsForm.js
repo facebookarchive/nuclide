@@ -219,15 +219,17 @@ export default class ConnectionDetailsForm extends React.Component {
 
     // Hitting enter when this panel has focus should confirm the dialog.
     disposables.add(atom.commands.add(
-        root,
-        'core:confirm',
-        event => this.props.onConfirm()));
+      root,
+      'core:confirm',
+      event => this.props.onConfirm()
+    ));
 
-    // Hitting escape when this panel has focus should cancel the dialog.
+    // Hitting escape should cancel the dialog.
     disposables.add(atom.commands.add(
-        root,
-        'core:cancel',
-        event => this.props.onCancel()));
+      'atom-workspace',
+      'core:cancel',
+      event => this.props.onCancel()
+    ));
 
     this.refs['username'].focus();
   }

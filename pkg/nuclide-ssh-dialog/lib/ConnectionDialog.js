@@ -182,7 +182,7 @@ class ConnectionDialog extends React.Component {
     }
 
     return (
-      <atom-panel class="modal modal-lg from-top">
+      <div>
         <div className="padded">
           {content}
         </div>
@@ -196,7 +196,7 @@ class ConnectionDialog extends React.Component {
             </Button>
           </ButtonGroup>
         </div>
-      </atom-panel>
+      </div>
     );
   }
 
