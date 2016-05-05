@@ -229,18 +229,6 @@ class DiffViewModel {
     this._updateRepositories();
     this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
     this._setActiveFileState(getInitialFileChangeState());
-    this._checkCustomConfig().catch(notifyInternalError);
-  }
-
-  async _checkCustomConfig(): Promise<void> {
-    let config = null;
-    try {
-      config = require('./fb/config');
-    } finally {
-      if (config != null) {
-        await config.applyConfig();
-      }
-    }
   }
 
   _updateRepositories(): void {

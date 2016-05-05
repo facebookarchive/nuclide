@@ -36,11 +36,7 @@ import DiffPublishView from './DiffPublishView';
 import {computeDiff, getOffsetLineNumber} from './diff-utils';
 import {createPaneContainer} from '../../nuclide-atom-helpers';
 import {bufferForUri} from '../../nuclide-atom-helpers';
-import {
-  DiffMode,
-  TOOLBAR_VISIBLE_SETTING,
-} from './constants';
-import featureConfig from '../../nuclide-feature-config';
+import {DiffMode} from './constants';
 
 type Props = {
   diffModel: DiffViewModel;
@@ -104,11 +100,10 @@ class DiffViewComponent extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    const toolbarVisible = ((featureConfig.get(TOOLBAR_VISIBLE_SETTING): any): boolean);
     this.state = {
       mode: DiffMode.BROWSE_MODE,
       filePath: '',
-      toolbarVisible,
+      toolbarVisible: true,
       oldEditorState: initialEditorState(),
       newEditorState: initialEditorState(),
     };
@@ -122,12 +117,6 @@ class DiffViewComponent extends React.Component {
     (this: any)._onSwitchToEditor = this._onSwitchToEditor.bind(this);
     this._readonlyBuffer = new TextBuffer();
     this._subscriptions = new CompositeDisposable();
-  }
-
-  componentWillMount(): void {
-    this._subscriptions.add(featureConfig.observe(TOOLBAR_VISIBLE_SETTING, toolbarVisible => {
-      this.setState({toolbarVisible});
-    }));
   }
 
   componentDidMount(): void {

@@ -6,15 +6,7 @@
   "description": "Provides Diff Viewer agnostic to the source control type of a project",
   "nuclide": {
     "packageType": "Atom",
-    "testRunner": "apm",
-    "config": {
-      "toolbarVisible": {
-        "type": "boolean",
-        "default": false,
-        "title": "Diff View Toolbar",
-        "description": "EXPERIMENTAL: Switch between Browse and Commit Mode"
-      }
-    }
+    "testRunner": "apm"
   },
   "consumedServices": {
     "nuclide-diff-view-ui.provider": {

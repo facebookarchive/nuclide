@@ -29,9 +29,6 @@ import {
 
 const {StatusCodeNumber: HgStatusCodeNumber} = hgConstants;
 
-export const GK_DIFF_VIEW_PUBLISH = 'nuclide_diff_view_publish';
-export const TOOLBAR_VISIBLE_SETTING = 'nuclide-diff-view.toolbarVisible';
-
 export const FileChangeStatus = Object.freeze({
   ADDED: 1,
   MODIFIED: 2,
