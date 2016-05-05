@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {EventEmitter} from 'events';
-
 import {Disposable} from 'event-kit';
 import {Observable} from 'rxjs';
 
@@ -20,7 +18,7 @@ import {Observable} from 'rxjs';
  * adds a second listener.
  */
 export function attachEvent(
-  emitter: EventEmitter,
+  emitter: events$EventEmitter,
   eventName: string,
   callback: Function
 ): Disposable {

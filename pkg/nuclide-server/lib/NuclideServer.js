@@ -18,8 +18,10 @@ import {getVersion} from '../../nuclide-version';
 import invariant from 'assert';
 import {getLogger, flushLogsAndExit} from '../../nuclide-logging';
 import WS from 'ws';
-import {SocketTransport} from './SocketTransport';
 import {ClientConnection, ServerComponent} from '../../nuclide-rpc';
+import {QueuedTransport} from './QueuedTransport';
+import {WebSocketTransport} from './WebSocketTransport';
+import {event} from '../../nuclide-commons';
 
 const connect: connect$module = require('connect');
 const http: http$fixed = (require('http'): any);
@@ -40,7 +42,7 @@ class NuclideServer {
 
   _webServer: http$fixed$Server;
   _webSocketServer: WS.Server;
-  _clients: Map<string, ClientConnection<SocketTransport>>;
+  _clients: Map<string, ClientConnection<QueuedTransport>>;
   _port: number;
   _app: connect$Server;
   _serviceRegistry: {[serviceName: string]: () => any};
@@ -155,14 +157,14 @@ class NuclideServer {
     }
   }
 
-  static closeConnection(client: ClientConnection<SocketTransport>): void {
+  static closeConnection(client: ClientConnection<QueuedTransport>): void {
     logger.info(`Closing client: #${client.getTransport().id}`);
     if (NuclideServer._theServer != null) {
       NuclideServer._theServer._closeConnection(client);
     }
   }
 
-  _closeConnection(client: ClientConnection<SocketTransport>): void {
+  _closeConnection(client: ClientConnection<QueuedTransport>): void {
     if (this._clients.get(client.getTransport().id) === client) {
       this._clients.delete(client.getTransport().id);
       client.dispose();
@@ -232,20 +234,24 @@ class NuclideServer {
     logger.debug('WebSocket connecting');
 
 
-    let client: ?ClientConnection<SocketTransport> = null;
+    let client: ?ClientConnection<QueuedTransport> = null;
 
-    socket.on('error', e =>
-      logger.error(
-        'Client #%s error: %s', client ? client.getTransport().id : 'unkown', e.message));
+    const errorSubscription = event.attachEvent(
+      socket, 'error', e =>
+      logger.error('WebSocket error before first message', e));
 
     socket.once('message', (clientId: string) => {
+      errorSubscription.dispose();
       client = this._clients.get(clientId);
+      const closeOnError = false;
+      const transport = new WebSocketTransport(clientId, socket, closeOnError);
       if (client == null) {
-        client = new ClientConnection(this._serverComponent, new SocketTransport(clientId, socket));
+        client = new ClientConnection(this._serverComponent,
+          new QueuedTransport(clientId, transport));
         this._clients.set(clientId, client);
       } else {
         invariant(clientId === client.getTransport().id);
-        client.getTransport().reconnect(socket);
+        client.getTransport().reconnect(transport);
       }
     });
   }
