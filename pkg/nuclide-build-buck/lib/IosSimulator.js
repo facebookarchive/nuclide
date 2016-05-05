@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
-import {asyncExecute} from '../../nuclide-commons';
+import {observeProcess, safeSpawn} from '../../nuclide-commons';
+import memoize from 'lodash.memoize';
+import {Observable} from 'rxjs';
 
 export type Device = {
   name: string;
@@ -53,17 +55,29 @@ export function parseDevicesFromSimctlOutput(output: string): Device[] {
   return devices;
 }
 
-export async function getDevices(): Promise<Device[]> {
-  let xcrunOutput;
-  try {
-    const {stdout} = await asyncExecute('xcrun', ['simctl', 'list', 'devices']);
-    xcrunOutput = stdout;
-  } catch (e) {
-    // Users may not have xcrun installed, particularly if they are using Buck for non-iOS projects.
-    return [];
-  }
-  return parseDevicesFromSimctlOutput(xcrunOutput);
-}
+export const getDevices = memoize(() => (
+  observeProcess(() => safeSpawn('xcrun', ['simctl', 'list', 'devices']))
+    .map(event => {
+      // Throw errors.
+      if (event.kind === 'error') {
+        const error = new Error();
+        error.name = 'XcrunError';
+        throw error;
+      }
+      return event;
+    })
+    .reduce(
+      (acc, event) => (event.kind === 'stdout' ? acc + event.data : acc),
+      '',
+    )
+    .map(parseDevicesFromSimctlOutput)
+    .catch(error => (
+      // Users may not have xcrun installed, particularly if they are using Buck for non-iOS
+      // projects. If the command failed, just return an empty list.
+      error.name === 'XcrunError' ? Observable.of([]) : Observable.throw(error)
+    ))
+    .share()
+));
 
 export function getActiveDeviceIndex(devices: Device[]): number {
   const bootedDeviceIndex = devices.findIndex(

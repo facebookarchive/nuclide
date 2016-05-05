@@ -13,9 +13,12 @@ import type {Device} from './IosSimulator';
 
 import * as IosSimulator from './IosSimulator';
 import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
+import invariant from 'assert';
 import {React} from 'react-for-atom';
 
 class SimulatorDropdown extends React.Component {
+  _deviceSubscription: ?rx$ISubscription;
+
   static propTypes = {
     className: React.PropTypes.string.isRequired,
     disabled: React.PropTypes.bool.isRequired,
@@ -46,7 +49,12 @@ class SimulatorDropdown extends React.Component {
   }
 
   componentDidMount() {
-    IosSimulator.getDevices().then(this._buildMenuItems);
+    this._deviceSubscription = IosSimulator.getDevices().subscribe(this._buildMenuItems);
+  }
+
+  componentWillUnmount(): void {
+    invariant(this._deviceSubscription != null);
+    this._deviceSubscription.unsubscribe();
   }
 
   _buildMenuItems(devices: Array<Device>): void {
