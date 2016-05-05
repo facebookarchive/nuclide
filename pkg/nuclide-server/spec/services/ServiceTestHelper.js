@@ -10,7 +10,7 @@
  */
 
 import NuclideServer from '../../lib/NuclideServer';
-import NuclideSocket from '../../lib/NuclideSocket';
+import {NuclideSocket} from '../../lib/NuclideSocket';
 import {ClientComponent} from '../../../nuclide-rpc';
 import type {ConfigEntry} from '../../../nuclide-rpc';
 

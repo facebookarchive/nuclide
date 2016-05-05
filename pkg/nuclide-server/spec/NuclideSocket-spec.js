@@ -11,7 +11,7 @@
 
 import NuclideServer from '../lib/NuclideServer';
 import {loadServicesConfig} from '../lib/services';
-import NuclideSocket from '../lib/NuclideSocket';
+import {NuclideSocket} from '../lib/NuclideSocket';
 import {ClientConnection} from '../../nuclide-rpc';
 import invariant from 'assert';
 

@@ -50,7 +50,7 @@ const MAX_HEARTBEAT_AWAY_RECONNECT_MS = 60000;
 //   - message(message: Object): on receipt fo JSON message
 //   - heartbeat: On receipt of successful heartbeat
 //   - heartbeat.error({code, originalCode, message}): On failure of heartbeat
-class NuclideSocket {
+export class NuclideSocket {
   id: string;
 
   _serverUri: string;
@@ -385,5 +385,3 @@ class NuclideSocket {
     return event.attachEvent(this._emitter, 'disconnect', callback);
   }
 }
-
-module.exports = NuclideSocket;

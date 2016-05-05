@@ -13,7 +13,7 @@ import invariant from 'assert';
 import {trackEvent} from '../../nuclide-analytics';
 import {CompositeDisposable} from 'atom';
 import {parse as parseRemoteUri} from '../../nuclide-remote-uri';
-import NuclideSocket from '../../nuclide-server/lib/NuclideSocket';
+import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
 
 const logger = require('../../nuclide-logging').getLogger();
 

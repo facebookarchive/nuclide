@@ -15,7 +15,7 @@ import {ClientComponent} from '../../nuclide-rpc';
 import {loadServicesConfig} from '../lib/services';
 
 import invariant from 'assert';
-import NuclideSocket from '../lib/NuclideSocket';
+import {NuclideSocket} from '../lib/NuclideSocket';
 
 let server;
 let client;

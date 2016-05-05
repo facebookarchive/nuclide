@@ -27,7 +27,7 @@ import {Disposable} from 'atom';
 import {parse as parseRemoteUri} from '../../nuclide-remote-uri';
 import {EventEmitter} from 'events';
 
-import NuclideSocket from '../../nuclide-server/lib/NuclideSocket';
+import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
 import {getVersion} from '../../nuclide-version';
 
 const posixPath = pathModule.posix;
