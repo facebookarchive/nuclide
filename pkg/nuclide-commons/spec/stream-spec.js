@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {splitStream, observeStream} from '..';
-import {Observable} from 'rxjs';
+import {splitStream, observeStream, cacheWhileSubscribed} from '..';
+import {Observable, Subject} from 'rxjs';
 import Stream from 'stream';
 
 describe('nuclide-commons/stream', () => {
@@ -56,5 +56,53 @@ describe('nuclide-commons/stream', () => {
       expect(output).toEqual(input);
       expect(result).toBe(error);
     });
+  });
+});
+
+describe('cacheWhileSubscribed', () => {
+  let input: Subject<number> = (null: any);
+  let output: Observable<number> = (null: any);
+
+  function subscribeArray(arr: Array<number>): rx$ISubscription {
+    return output.subscribe(x => arr.push(x));
+  }
+  beforeEach(() => {
+    input = new Subject();
+    output = cacheWhileSubscribed(input);
+  });
+
+  it('should provide cached values to late subscribers', () => {
+    const arr1 = [];
+    const arr2 = [];
+
+    input.next(0);
+    const sub1 = subscribeArray(arr1);
+    input.next(1);
+    input.next(2);
+    const sub2 = subscribeArray(arr2);
+
+    sub1.unsubscribe();
+    sub2.unsubscribe();
+    expect(arr1).toEqual([1, 2]);
+    expect(arr2).toEqual([2]);
+  });
+
+  it('should not store stale events when everyone is unsubscribed', () => {
+    const arr1 = [];
+    const arr2 = [];
+
+    input.next(0);
+    const sub1 = subscribeArray(arr1);
+    input.next(1);
+    sub1.unsubscribe();
+
+    input.next(2);
+
+    const sub2 = subscribeArray(arr2);
+    input.next(3);
+    sub2.unsubscribe();
+
+    expect(arr1).toEqual([1]);
+    expect(arr2).toEqual([3]);
   });
 });

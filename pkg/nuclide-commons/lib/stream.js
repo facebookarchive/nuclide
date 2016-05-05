@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Observable, Subscription} from 'rxjs';
+import {Observable, Subscription, Subject} from 'rxjs';
 
 /**
  * Observe a stream like stdout or stderr.
@@ -116,4 +116,80 @@ export function bufferUntil<T>(
         },
       );
   });
+}
+
+/**
+ * Like Observable.prototype.cache(1) except it forgets the cached value when there are no
+ * subscribers. This is useful so that if consumers unsubscribe and then subscribe much later, they
+ * do not get an ancient cached value.
+ *
+ * This is intended to be used with cold Observables. If you have a hot Observable, `cache(1)` will
+ * be just fine because the hot Observable will continue producing values even when there are no
+ * subscribers, so you can be assured that the cached values are up-to-date.
+ *
+ * Completion and error semantics are usnpec'd. If you are using this with Observables that
+ * complete, come up with coherent completion semantics and implement them.
+ */
+export function cacheWhileSubscribed<T>(input: Observable<T>): Observable<T> {
+  // cache() is implemented as publishBehavior().refCount
+  //
+  // publishBehavior() is implemented as multiCast(new ReplaySubject())
+  //
+  // So, we need our own Subject that implements the semantics we want.
+  return input.multicast(new CacheWhileSubscribedSubject()).refCount();
+}
+
+// Based on the implementation of ReplaySubject:
+// http://reactivex.io/rxjs/file/es6/ReplaySubject.js.html#lineNumber7
+class CacheWhileSubscribedSubject<T> extends Subject<T> {
+  _cachedValue: ?T;
+  // undefined, null, etc. are valid values so we have to store the information about whether we
+  // have a cached result separately.
+  _hasCachedValue: boolean;
+
+  _subscriberCount: number;
+
+  constructor() {
+    super();
+    this._cachedValue = null;
+    this._hasCachedValue = false;
+    this._subscriberCount = 0;
+  }
+
+  _setCachedValue(value: T): void {
+    if (this._subscriberCount === 0) {
+      return;
+    }
+    this._cachedValue = value;
+    this._hasCachedValue = true;
+  }
+
+  _clearCachedValue(): void {
+    this._cachedValue = null;
+    this._hasCachedValue = false;
+  }
+
+  _next(value: T): void {
+    this._setCachedValue(value);
+    super._next(value);
+  }
+
+  _subscribe(subscriber: any): Subscription {
+    this._incrementSubscriberCount();
+    if (this._hasCachedValue && !subscriber.isUnsubscribed) {
+      subscriber.next(this._cachedValue);
+    }
+    return super._subscribe(subscriber).add(() => this._decrementSubscriberCount());
+  }
+
+  _incrementSubscriberCount(): void {
+    this._subscriberCount++;
+  }
+
+  _decrementSubscriberCount(): void {
+    this._subscriberCount--;
+    if (this._subscriberCount === 0) {
+      this._clearCachedValue();
+    }
+  }
 }

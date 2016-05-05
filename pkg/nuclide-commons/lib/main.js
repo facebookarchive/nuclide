@@ -165,6 +165,10 @@ module.exports = {
     return requireStream().observeStream;
   },
 
+  get cacheWhileSubscribed() {
+    return requireStream().cacheWhileSubscribed;
+  },
+
   get observeProcessExit() {
     return requireProcess().observeProcessExit;
   },
