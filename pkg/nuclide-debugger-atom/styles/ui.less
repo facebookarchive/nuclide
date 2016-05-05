@@ -87,3 +87,54 @@ Use flexbox cross-axis stretch to fill the vertical space.
     height: auto !important;
   }
 }
+
+/* Watch Expressions */
+@leftMargin: 0.5em;
+
+.nuclide-debugger-atom-watch-expression-list {
+  margin: 0 @leftMargin;
+}
+
+.nuclide-debugger-atom-watch-expression-row {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  font-family: Menlo, Monaco, Consolas, monospace;
+  height: 23px; // Match height of AtomInput to prevent list items from jumping around.
+  justify-content: space-between;
+}
+
+.nuclide-debugger-atom-watch-expression-xout {
+  opacity: 0;
+}
+
+.nuclide-debugger-atom-watch-expression-row:hover {
+  background-color: @background-color-highlight;
+
+  .nuclide-debugger-atom-watch-expression-xout {
+    opacity: 0.5;
+  }
+}
+
+.nuclide-debugger-atom-watch-expression-xout.nuclide-debugger-atom-watch-expression-xout:hover {
+  opacity: 1;
+}
+
+.nuclide-debugger-atom-watch-expression {
+  display: inline-block;
+}
+
+.nuclide-debugger-atom-watch-expression-value {
+  margin-left: 1em;
+  display: inline-block;
+}
+
+.nuclide-debugger-atom-watch-expression-input {
+  // Vertically align listed watch expressions with input.
+  margin-left: -@leftMargin;
+}
+
+.nuclide-debugger-atom-watch-expression-add-new-input {
+  margin-top: 0.5em;
+}
