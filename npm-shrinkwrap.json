@@ -19,7 +19,8 @@
       "dependencies": {
         "acorn": {
           "version": "3.1.0",
-          "from": "acorn@>=3.0.4 <4.0.0"
+          "from": "acorn@>=3.0.4 <4.0.0",
+          "resolved": "https://registry.npmjs.org/acorn/-/acorn-3.1.0.tgz"
         }
       }
     },
@@ -170,7 +171,8 @@
       "dependencies": {
         "babel-runtime": {
           "version": "6.6.1",
-          "from": "babel-runtime@>=6.0.0 <7.0.0"
+          "from": "babel-runtime@>=6.0.0 <7.0.0",
+          "resolved": "https://registry.npmjs.org/babel-runtime/-/babel-runtime-6.6.1.tgz"
         },
         "core-js": {
           "version": "2.3.0",
@@ -201,10 +203,20 @@
       "from": "babel-eslint@6.0.4",
       "resolved": "https://registry.npmjs.org/babel-eslint/-/babel-eslint-6.0.4.tgz",
       "dependencies": {
+        "babel-runtime": {
+          "version": "6.6.1",
+          "from": "babel-runtime@>=6.0.0 <7.0.0",
+          "resolved": "https://registry.npmjs.org/babel-runtime/-/babel-runtime-6.6.1.tgz"
+        },
         "babylon": {
-          "version": "6.7.0",
+          "version": "6.8.0",
           "from": "babylon@>=6.0.18 <7.0.0",
-          "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.7.0.tgz"
+          "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.8.0.tgz"
+        },
+        "core-js": {
+          "version": "2.3.0",
+          "from": "core-js@>=2.1.0 <3.0.0",
+          "resolved": "https://registry.npmjs.org/core-js/-/core-js-2.3.0.tgz"
         }
       }
     },
@@ -215,11 +227,13 @@
       "dependencies": {
         "babel-runtime": {
           "version": "6.6.1",
-          "from": "babel-runtime@>=6.0.0 <7.0.0"
+          "from": "babel-runtime@>=6.0.0 <7.0.0",
+          "resolved": "https://registry.npmjs.org/babel-runtime/-/babel-runtime-6.6.1.tgz"
         },
         "core-js": {
           "version": "2.3.0",
-          "from": "core-js@>=2.1.0 <3.0.0"
+          "from": "core-js@>=2.1.0 <3.0.0",
+          "resolved": "https://registry.npmjs.org/core-js/-/core-js-2.3.0.tgz"
         }
       }
     },
@@ -322,7 +336,8 @@
       "dependencies": {
         "core-js": {
           "version": "2.3.0",
-          "from": "core-js@>=2.1.0 <3.0.0"
+          "from": "core-js@>=2.1.0 <3.0.0",
+          "resolved": "https://registry.npmjs.org/core-js/-/core-js-2.3.0.tgz"
         }
       }
     },
@@ -347,24 +362,14 @@
           "resolved": "https://registry.npmjs.org/babel-runtime/-/babel-runtime-6.6.1.tgz"
         },
         "babylon": {
-          "version": "6.7.0",
+          "version": "6.8.0",
           "from": "babylon@>=6.7.0 <7.0.0",
-          "dependencies": {
-            "babel-runtime": {
-              "version": "5.8.38",
-              "from": "babel-runtime@>=5.0.0 <6.0.0",
-              "resolved": "https://registry.npmjs.org/babel-runtime/-/babel-runtime-5.8.38.tgz"
-            },
-            "core-js": {
-              "version": "1.2.6",
-              "from": "core-js@>=1.0.0 <2.0.0",
-              "resolved": "https://registry.npmjs.org/core-js/-/core-js-1.2.6.tgz"
-            }
-          }
+          "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.8.0.tgz"
         },
         "core-js": {
           "version": "2.3.0",
-          "from": "core-js@>=2.1.0 <3.0.0"
+          "from": "core-js@>=2.1.0 <3.0.0",
+          "resolved": "https://registry.npmjs.org/core-js/-/core-js-2.3.0.tgz"
         },
         "globals": {
           "version": "8.18.0",
@@ -380,11 +385,13 @@
       "dependencies": {
         "babel-runtime": {
           "version": "6.6.1",
-          "from": "babel-runtime@>=6.0.0 <7.0.0"
+          "from": "babel-runtime@>=6.0.0 <7.0.0",
+          "resolved": "https://registry.npmjs.org/babel-runtime/-/babel-runtime-6.6.1.tgz"
         },
         "core-js": {
           "version": "2.3.0",
-          "from": "core-js@>=2.1.0 <3.0.0"
+          "from": "core-js@>=2.1.0 <3.0.0",
+          "resolved": "https://registry.npmjs.org/core-js/-/core-js-2.3.0.tgz"
         }
       }
     },
@@ -1021,7 +1028,8 @@
       "dependencies": {
         "lru-cache": {
           "version": "2.7.3",
-          "from": "lru-cache@>=2.0.0 <3.0.0"
+          "from": "lru-cache@>=2.0.0 <3.0.0",
+          "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-2.7.3.tgz"
         },
         "minimatch": {
           "version": "0.2.14",
@@ -1186,7 +1194,8 @@
       "dependencies": {
         "lodash": {
           "version": "4.11.2",
-          "from": "lodash@>=4.3.0 <5.0.0"
+          "from": "lodash@>=4.3.0 <5.0.0",
+          "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.11.2.tgz"
         }
       }
     },
@@ -1344,7 +1353,8 @@
       "dependencies": {
         "mkdirp": {
           "version": "0.3.5",
-          "from": "mkdirp@>=0.3.5 <0.4.0"
+          "from": "mkdirp@>=0.3.5 <0.4.0",
+          "resolved": "https://registry.npmjs.org/mkdirp/-/mkdirp-0.3.5.tgz"
         }
       }
     },
@@ -1365,7 +1375,7 @@
       "dependencies": {
         "esprima": {
           "version": "2.7.2",
-          "from": "esprima@>=2.6.0 <3.0.0",
+          "from": "esprima@^2.6.0",
           "resolved": "https://registry.npmjs.org/esprima/-/esprima-2.7.2.tgz"
         }
       }
@@ -1392,7 +1402,8 @@
         },
         "esprima": {
           "version": "2.7.2",
-          "from": "esprima@>=2.7.1 <2.8.0"
+          "from": "esprima@~2.7.1",
+          "resolved": "https://registry.npmjs.org/esprima/-/esprima-2.7.2.tgz"
         },
         "recast": {
           "version": "0.11.5",
@@ -1702,9 +1713,9 @@
       "resolved": "https://registry.npmjs.org/number-is-nan/-/number-is-nan-1.0.0.tgz"
     },
     "oauth-sign": {
-      "version": "0.8.1",
+      "version": "0.8.2",
       "from": "oauth-sign@>=0.8.1 <0.9.0",
-      "resolved": "https://registry.npmjs.org/oauth-sign/-/oauth-sign-0.8.1.tgz"
+      "resolved": "https://registry.npmjs.org/oauth-sign/-/oauth-sign-0.8.2.tgz"
     },
     "object-assign": {
       "version": "4.1.0",
@@ -1844,9 +1855,9 @@
       "resolved": "https://registry.npmjs.org/private/-/private-0.1.6.tgz"
     },
     "process-nextick-args": {
-      "version": "1.0.6",
+      "version": "1.0.7",
       "from": "process-nextick-args@>=1.0.6 <1.1.0",
-      "resolved": "https://registry.npmjs.org/process-nextick-args/-/process-nextick-args-1.0.6.tgz"
+      "resolved": "https://registry.npmjs.org/process-nextick-args/-/process-nextick-args-1.0.7.tgz"
     },
     "progress": {
       "version": "1.1.8",
@@ -1879,64 +1890,64 @@
       "resolved": "https://registry.npmjs.org/randomatic/-/randomatic-1.1.5.tgz"
     },
     "react": {
-      "version": "15.0.1",
-      "from": "react@15.0.1",
-      "resolved": "https://registry.npmjs.org/react/-/react-15.0.1.tgz"
+      "version": "15.0.2",
+      "from": "react@15.0.2",
+      "resolved": "https://registry.npmjs.org/react/-/react-15.0.2.tgz"
     },
     "react-addons-create-fragment": {
-      "version": "15.0.1",
-      "from": "react-addons-create-fragment@15.0.1",
-      "resolved": "https://registry.npmjs.org/react-addons-create-fragment/-/react-addons-create-fragment-15.0.1.tgz"
+      "version": "15.0.2",
+      "from": "react-addons-create-fragment@15.0.2",
+      "resolved": "https://registry.npmjs.org/react-addons-create-fragment/-/react-addons-create-fragment-15.0.2.tgz"
     },
     "react-addons-css-transition-group": {
-      "version": "15.0.1",
-      "from": "react-addons-css-transition-group@15.0.1",
-      "resolved": "https://registry.npmjs.org/react-addons-css-transition-group/-/react-addons-css-transition-group-15.0.1.tgz"
+      "version": "15.0.2",
+      "from": "react-addons-css-transition-group@15.0.2",
+      "resolved": "https://registry.npmjs.org/react-addons-css-transition-group/-/react-addons-css-transition-group-15.0.2.tgz"
     },
     "react-addons-linked-state-mixin": {
-      "version": "15.0.1",
-      "from": "react-addons-linked-state-mixin@15.0.1",
-      "resolved": "https://registry.npmjs.org/react-addons-linked-state-mixin/-/react-addons-linked-state-mixin-15.0.1.tgz"
+      "version": "15.0.2",
+      "from": "react-addons-linked-state-mixin@15.0.2",
+      "resolved": "https://registry.npmjs.org/react-addons-linked-state-mixin/-/react-addons-linked-state-mixin-15.0.2.tgz"
     },
     "react-addons-perf": {
-      "version": "15.0.1",
-      "from": "react-addons-perf@15.0.1",
-      "resolved": "https://registry.npmjs.org/react-addons-perf/-/react-addons-perf-15.0.1.tgz"
+      "version": "15.0.2",
+      "from": "react-addons-perf@15.0.2",
+      "resolved": "https://registry.npmjs.org/react-addons-perf/-/react-addons-perf-15.0.2.tgz"
     },
     "react-addons-pure-render-mixin": {
-      "version": "15.0.1",
-      "from": "react-addons-pure-render-mixin@15.0.1",
-      "resolved": "https://registry.npmjs.org/react-addons-pure-render-mixin/-/react-addons-pure-render-mixin-15.0.1.tgz"
+      "version": "15.0.2",
+      "from": "react-addons-pure-render-mixin@15.0.2",
+      "resolved": "https://registry.npmjs.org/react-addons-pure-render-mixin/-/react-addons-pure-render-mixin-15.0.2.tgz"
     },
     "react-addons-shallow-compare": {
-      "version": "15.0.1",
-      "from": "react-addons-shallow-compare@15.0.1",
-      "resolved": "https://registry.npmjs.org/react-addons-shallow-compare/-/react-addons-shallow-compare-15.0.1.tgz"
+      "version": "15.0.2",
+      "from": "react-addons-shallow-compare@15.0.2",
+      "resolved": "https://registry.npmjs.org/react-addons-shallow-compare/-/react-addons-shallow-compare-15.0.2.tgz"
     },
     "react-addons-test-utils": {
-      "version": "15.0.1",
-      "from": "react-addons-test-utils@15.0.1",
-      "resolved": "https://registry.npmjs.org/react-addons-test-utils/-/react-addons-test-utils-15.0.1.tgz"
+      "version": "15.0.2",
+      "from": "react-addons-test-utils@15.0.2",
+      "resolved": "https://registry.npmjs.org/react-addons-test-utils/-/react-addons-test-utils-15.0.2.tgz"
     },
     "react-addons-transition-group": {
-      "version": "15.0.1",
-      "from": "react-addons-transition-group@15.0.1",
-      "resolved": "https://registry.npmjs.org/react-addons-transition-group/-/react-addons-transition-group-15.0.1.tgz"
+      "version": "15.0.2",
+      "from": "react-addons-transition-group@15.0.2",
+      "resolved": "https://registry.npmjs.org/react-addons-transition-group/-/react-addons-transition-group-15.0.2.tgz"
     },
     "react-addons-update": {
-      "version": "15.0.1",
-      "from": "react-addons-update@15.0.1",
-      "resolved": "https://registry.npmjs.org/react-addons-update/-/react-addons-update-15.0.1.tgz"
+      "version": "15.0.2",
+      "from": "react-addons-update@15.0.2",
+      "resolved": "https://registry.npmjs.org/react-addons-update/-/react-addons-update-15.0.2.tgz"
     },
     "react-dom": {
-      "version": "15.0.1",
-      "from": "react-dom@15.0.1",
-      "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-15.0.1.tgz"
+      "version": "15.0.2",
+      "from": "react-dom@15.0.2",
+      "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-15.0.2.tgz"
     },
     "react-for-atom": {
-      "version": "15.0.1-0",
-      "from": "react-for-atom@15.0.1-0",
-      "resolved": "https://registry.npmjs.org/react-for-atom/-/react-for-atom-15.0.1-0.tgz"
+      "version": "15.0.2-0",
+      "from": "react-for-atom@15.0.2-0",
+      "resolved": "https://registry.npmjs.org/react-for-atom/-/react-for-atom-15.0.2-0.tgz"
     },
     "read-json-sync": {
       "version": "1.1.1",
@@ -2084,7 +2095,8 @@
         },
         "babylon": {
           "version": "6.7.0",
-          "from": "babylon@6.7.0"
+          "from": "babylon@6.7.0",
+          "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.7.0.tgz"
         },
         "es6-promise": {
           "version": "3.0.2",
@@ -2284,7 +2296,8 @@
         },
         "lodash": {
           "version": "4.11.2",
-          "from": "lodash@>=4.0.0 <5.0.0"
+          "from": "lodash@>=4.0.0 <5.0.0",
+          "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.11.2.tgz"
         }
       }
     },
@@ -2346,9 +2359,9 @@
       "resolved": "https://registry.npmjs.org/tryor/-/tryor-0.1.2.tgz"
     },
     "tunnel-agent": {
-      "version": "0.4.2",
+      "version": "0.4.3",
       "from": "tunnel-agent@>=0.4.1 <0.5.0",
-      "resolved": "https://registry.npmjs.org/tunnel-agent/-/tunnel-agent-0.4.2.tgz"
+      "resolved": "https://registry.npmjs.org/tunnel-agent/-/tunnel-agent-0.4.3.tgz"
     },
     "tv4": {
       "version": "1.2.7",
