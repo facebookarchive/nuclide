@@ -195,6 +195,7 @@ class Bridge {
   }
 
   _handleDebuggerPaused(additionalData: {sourceUrl?: string}): void {
+    this._expressionsInFlight.clear();
     this._debuggerModel.getStore().setDebuggerMode(DebuggerMode.PAUSED);
     // TODO go through dispatcher
     this._debuggerModel.getWatchExpressionStore().triggerReevaluation();
