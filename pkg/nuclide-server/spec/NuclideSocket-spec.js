@@ -25,7 +25,7 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
     waitsForPromise(async () => {
       server = new NuclideServer({port: 8176}, loadServicesConfig());
       await server.connect();
-      socket = new NuclideSocket('http://localhost:8176');
+      socket = new NuclideSocket('http://localhost:8176', null);
 
       const clientId = Array.from(server._clients.keys())[0];
       const client = server._clients.get(clientId);
@@ -61,7 +61,7 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
   describe('xhrRequest()', () => {
     it('gets heartbeat', () => {
       waitsForPromise(async () => {
-        const version = await socket.xhrRequest({uri: 'heartbeat', method: 'POST'});
+        const version = await socket.testConnection();
         expect(version).toBeDefined();
       });
     });
@@ -83,7 +83,7 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
       const heartbeatErrorHandler: Function = (jasmine.createSpy(): any);
       socket.onHeartbeatError(heartbeatErrorHandler);
       // Assume the hearbeat didn't happen.
-      socket._heartbeatConnectedOnce = false;
+      socket._heartbeat._heartbeatConnectedOnce = false;
       server.close();
       window.advanceClock(5050); // Advance the heartbeat interval.
       waitsFor(() => heartbeatErrorHandler.callCount > 0);
@@ -93,7 +93,7 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
     it('on ECONNREFUSED, emits SERVER_CRASHED, when the server was once reachable', () => {
       const heartbeatErrorHandler: Function = (jasmine.createSpy(): any);
       socket.onHeartbeatError(heartbeatErrorHandler);
-      socket._heartbeatConnectedOnce = true;
+      socket._heartbeat._heartbeatConnectedOnce = true;
       server.close();
       window.advanceClock(5050); // Advance the heartbeat interval.
       waitsFor(() => heartbeatErrorHandler.callCount > 0);

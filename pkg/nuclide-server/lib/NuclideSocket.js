@@ -9,31 +9,23 @@
  * the root directory of this source tree.
  */
 
-import type {RequestOptions} from './utils';
+import type {AgentOptions} from './main';
 
 import url from 'url';
-import {asyncRequest} from './utils';
 import WS from 'ws';
 import uuid from 'uuid';
 import {EventEmitter} from 'events';
-import {HEARTBEAT_CHANNEL} from './config';
 import {event} from '../../nuclide-commons';
 import {WebSocketTransport} from './WebSocketTransport';
 import {QueuedTransport} from './QueuedTransport';
+import {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
 import invariant from 'assert';
 
 const logger = require('../../nuclide-logging').getLogger();
 
-type NuclideSocketOptions = {
-  certificateAuthorityCertificate?: Buffer;
-  clientCertificate?: Buffer;
-  clientKey?: Buffer;
-};
 
 const INITIAL_RECONNECT_TIME_MS = 10;
 const MAX_RECONNECT_TIME_MS = 5000;
-const HEARTBEAT_INTERVAL_MS = 5000;
-const MAX_HEARTBEAT_AWAY_RECONNECT_MS = 60000;
 
 // The Nuclide Socket class does several things:
 //   - Provides a transport mechanism for sending/receiving JSON messages
@@ -57,19 +49,16 @@ export class NuclideSocket {
   id: string;
 
   _serverUri: string;
-  _options: NuclideSocketOptions;
+  _options: ?AgentOptions;
   _reconnectTime: number;
   _reconnectTimer: ?number; // ID from a setTimeout() call.
   _previouslyConnected: boolean;
   _websocketUri: string;
-  _heartbeatConnectedOnce: boolean;
-  _lastHeartbeat: ?('here' | 'away');
-  _lastHeartbeatTime: ?number;
-  _heartbeatInterval: ?number;
   _emitter: EventEmitter;
   _transport: ?QueuedTransport;
+  _heartbeat: XhrConnectionHeartbeat;
 
-  constructor(serverUri: string, options: NuclideSocketOptions = {}) {
+  constructor(serverUri: string, options: ?AgentOptions) {
     this._emitter = new EventEmitter();
     this._serverUri = serverUri;
     this._options = options;
@@ -93,10 +82,10 @@ export class NuclideSocket {
     const {protocol, host} = url.parse(serverUri);
     this._websocketUri = `ws${protocol === 'https:' ? 's' : ''}://${host}`;
 
-    this._heartbeatConnectedOnce = false;
-    this._lastHeartbeat = null;
-    this._lastHeartbeatTime = null;
-    this._monitorServerHeartbeat();
+    this._heartbeat = new XhrConnectionHeartbeat(serverUri);
+    this._heartbeat.onConnectionRestored(() => {
+      this._scheduleReconnect();
+    });
 
     this._reconnect();
   }
@@ -123,12 +112,7 @@ export class NuclideSocket {
   _reconnect() {
     invariant(this.isDisconnected());
 
-    const {certificateAuthorityCertificate, clientKey, clientCertificate} = this._options;
-    const websocket = new WS(this._websocketUri, {
-      cert: clientCertificate,
-      key: clientKey,
-      ca: certificateAuthorityCertificate,
-    });
+    const websocket = new WS(this._websocketUri, this._options);
 
     // Need to add this otherwise unhandled errors during startup will result
     // in uncaught exceptions. This is due to EventEmitter treating 'error'
@@ -207,97 +191,10 @@ export class NuclideSocket {
     this._transport.send(data);
   }
 
-  async xhrRequest(options: RequestOptions): Promise<string> {
-    const {certificateAuthorityCertificate, clientKey, clientCertificate} = this._options;
-    if (certificateAuthorityCertificate && clientKey && clientCertificate) {
-      options.agentOptions = {
-        ca: certificateAuthorityCertificate,
-        key: clientKey,
-        cert: clientCertificate,
-      };
-    }
-
-    options.uri = this._serverUri + '/' + options.uri;
-    const {body} = await asyncRequest(options);
-    return body;
-  }
-
-  _monitorServerHeartbeat(): void {
-    this._heartbeat();
-    this._heartbeatInterval = setInterval(() => this._heartbeat(), HEARTBEAT_INTERVAL_MS);
-  }
-
   // Resolves if the connection looks healthy.
   // Will reject quickly if the connection looks unhealthy.
-  testConnection(): Promise<void> {
-    return this._sendHeartBeat();
-  }
-
-  async _sendHeartBeat(): Promise<void> {
-    await this.xhrRequest({
-      uri: HEARTBEAT_CHANNEL,
-      method: 'POST',
-    });
-  }
-
-  async _heartbeat(): Promise<void> {
-    try {
-      await this._sendHeartBeat();
-      this._heartbeatConnectedOnce = true;
-      const now = Date.now();
-      this._lastHeartbeatTime = this._lastHeartbeatTime || now;
-      if (this._lastHeartbeat === 'away'
-          || ((now - this._lastHeartbeatTime) > MAX_HEARTBEAT_AWAY_RECONNECT_MS)) {
-        // Trigger a websocket reconnect.
-        this._scheduleReconnect();
-      }
-      this._lastHeartbeat = 'here';
-      this._lastHeartbeatTime = now;
-      this._emitter.emit('heartbeat');
-    } catch (err) {
-      if (this._transport != null) {
-        this._transport.disconnect();
-      }
-      this._lastHeartbeat = 'away';
-      // Error code could could be one of:
-      // ['ENOTFOUND', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT']
-      // A heuristic mapping is done between the xhr error code to the state of server connection.
-      const {code: originalCode, message} = err;
-      let code = null;
-      switch (originalCode) {
-        case 'ENOTFOUND':
-        // A socket operation failed because the network was down.
-        /* fallthrough */
-        case 'ENETDOWN':
-        // The range of the temporary ports for connection are all taken,
-        // This is temporal with many http requests, but should be counted as a network away event.
-        /* fallthrough */
-        case 'EADDRNOTAVAIL':
-        // The host server is unreachable, could be in a VPN.
-        /* fallthrough */
-        case 'EHOSTUNREACH':
-        // A request timeout is considered a network away event.
-        /* fallthrough */
-        case 'ETIMEDOUT':
-          code = 'NETWORK_AWAY';
-          break;
-        case 'ECONNREFUSED':
-          // Server shut down or port no longer accessible.
-          if (this._heartbeatConnectedOnce) {
-            code = 'SERVER_CRASHED';
-          } else {
-            code = 'PORT_NOT_ACCESSIBLE';
-          }
-          break;
-        case 'ECONNRESET':
-          code = 'INVALID_CERTIFICATE';
-          break;
-        default:
-          code = originalCode;
-          break;
-      }
-      this._emitter.emit('heartbeat.error', {code, originalCode, message});
-    }
+  testConnection(): Promise<string> {
+    return this._heartbeat.sendHeartBeat();
   }
 
   getServerUri(): string {
@@ -314,19 +211,17 @@ export class NuclideSocket {
       clearTimeout(this._reconnectTimer);
     }
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
-    if (this._heartbeatInterval != null) {
-      clearInterval(this._heartbeatInterval);
-    }
+    this._heartbeat.close();
   }
 
   onHeartbeat(callback: () => mixed): IDisposable {
-    return event.attachEvent(this._emitter, 'heartbeat', callback);
+    return this._heartbeat.onHeartbeat(callback);
   }
 
   onHeartbeatError(
     callback: (code: string, originalCode: string, message: string) => mixed
   ): IDisposable {
-    return event.attachEvent(this._emitter, 'heartbeat.error', callback);
+    return this._heartbeat.onHeartbeatError(callback);
   }
 
   onMessage(callback: (message: Object) => mixed): IDisposable {

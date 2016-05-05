@@ -27,7 +27,7 @@ export default class ServiceTestHelper {
 
     const port = this._server._webServer.address().port;
     this._client = new ClientComponent(
-      'localhost', port, new NuclideSocket(`http://localhost:${port}`), customServices);
+      'localhost', port, new NuclideSocket(`http://localhost:${port}`, null), customServices);
     this._port = port;
   }
 

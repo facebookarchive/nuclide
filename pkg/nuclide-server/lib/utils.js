@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {AgentOptions} from './main';
 import invariant from 'assert';
 import url from 'url';
 import request from 'request';
@@ -24,11 +25,7 @@ type SerializedArguments = {args: Array<string>; argTypes: Array<string>};
 
 export type RequestOptions = {
   uri: string;
-  agentOptions?: {
-    ca: Buffer;
-    key: Buffer;
-    cert: Buffer;
-  };
+  agentOptions?: AgentOptions;
   useQuerystring?: boolean;
 };
 

@@ -248,15 +248,21 @@ class ServerConnection {
 
   _startRpc(): void {
     let uri;
-    const options = {};
+    let options;
 
     // Use https if we have key, cert, and ca
     if (this._isSecure()) {
-      options.certificateAuthorityCertificate = this._config.certificateAuthorityCertificate;
-      options.clientCertificate = this._config.clientCertificate;
-      options.clientKey = this._config.clientKey;
+      invariant(this._config.certificateAuthorityCertificate != null);
+      invariant(this._config.clientCertificate != null);
+      invariant(this._config.clientKey != null);
+      options = {
+        ca: this._config.certificateAuthorityCertificate,
+        cert: this._config.clientCertificate,
+        key: this._config.clientKey,
+      };
       uri = `https://${this.getRemoteHost()}`;
     } else {
+      options = null;
       uri = `http://${this.getRemoteHost()}`;
     }
 

@@ -19,6 +19,12 @@ const DEFAULT_PORT = 9090;
 
 const logger = getLogger();
 
+export type AgentOptions = {
+  ca: Buffer;
+  key: Buffer;
+  cert: Buffer;
+};
+
 function setupServer(): void {
   try {
     require('./fb/setup').setupServer();

@@ -51,9 +51,9 @@ describe('Nuclide Secure Server test suite', () => {
       await server.connect();
 
       socket = new NuclideSocket('https://localhost:8176', {
-        certificateAuthorityCertificate: fs.readFileSync(ca_cert_path),
-        clientCertificate: fs.readFileSync(client_cert_path),
-        clientKey: fs.readFileSync(client_key_path),
+        ca: fs.readFileSync(ca_cert_path),
+        cert: fs.readFileSync(client_cert_path),
+        key: fs.readFileSync(client_key_path),
       });
       const client = new ClientComponent('localhost', 8176, socket, loadServicesConfig());
       invariant(client);
