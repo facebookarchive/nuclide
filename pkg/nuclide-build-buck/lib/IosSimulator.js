@@ -26,7 +26,7 @@ const DeviceState = {
   Booted: 'Booted',
 };
 
-function parseDevicesFromSimctlOutput(output: string): Device[] {
+export function parseDevicesFromSimctlOutput(output: string): Device[] {
   const devices = [];
   let currentOS = null;
 
@@ -53,7 +53,7 @@ function parseDevicesFromSimctlOutput(output: string): Device[] {
   return devices;
 }
 
-async function getDevices(): Promise<Device[]> {
+export async function getDevices(): Promise<Device[]> {
   let xcrunOutput;
   try {
     const {stdout} = await asyncExecute('xcrun', ['simctl', 'list', 'devices']);
@@ -65,7 +65,7 @@ async function getDevices(): Promise<Device[]> {
   return parseDevicesFromSimctlOutput(xcrunOutput);
 }
 
-function selectDevice(devices: Device[]): number {
+export function selectDevice(devices: Device[]): number {
   const bootedDeviceIndex = devices.findIndex(
     device => device.state === DeviceState.Booted
   );
@@ -85,11 +85,3 @@ function selectDevice(devices: Device[]): number {
   });
   return defaultDeviceIndex;
 }
-
-
-module.exports = {
-  DeviceState,
-  getDevices,
-  parseDevicesFromSimctlOutput,
-  selectDevice,
-};

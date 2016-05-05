@@ -11,7 +11,7 @@
 
 import type {Device} from './IosSimulator';
 
-import IosSimulator from './IosSimulator';
+import * as IosSimulator from './IosSimulator';
 import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
 import {React} from 'react-for-atom';
 
