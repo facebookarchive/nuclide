@@ -13,6 +13,7 @@ import type {EvaluationResult} from './Bridge';
 
 import {React} from 'react-for-atom';
 import invariant from 'assert';
+import {highlightOnUpdate} from '../../nuclide-ui/lib/highlightOnUpdate';
 
 type DebuggerValueComponentProps = {
   evaluationResult: ?EvaluationResult;
@@ -62,7 +63,7 @@ const valueRenderers = [
   renderDefault,
 ];
 
-export class DebuggerValueComponent extends React.Component {
+class ValueComponent extends React.Component {
   props: DebuggerValueComponentProps;
 
   render(): ?React.Element {
@@ -93,3 +94,25 @@ export class DebuggerValueComponent extends React.Component {
     );
   }
 }
+
+function arePropsEqual(p1: DebuggerValueComponentProps, p2: DebuggerValueComponentProps): boolean {
+  const evaluationResult1 = p1.evaluationResult;
+  const evaluationResult2 = p2.evaluationResult;
+  if (evaluationResult1 === evaluationResult2) {
+    return true;
+  }
+  if (evaluationResult1 == null || evaluationResult2 == null) {
+    return false;
+  }
+  return (
+    evaluationResult1.value === evaluationResult2.value &&
+    evaluationResult1._type === evaluationResult2._type &&
+    evaluationResult1._description === evaluationResult2._description
+  );
+}
+export const DebuggerValueComponent = highlightOnUpdate(
+  ValueComponent,
+  arePropsEqual,
+  undefined, /* custom classname */
+  undefined, /* custom delay */
+);
