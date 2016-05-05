@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import * as babel from 'babel-core';
 import invariant from 'assert';
 
 import type {
@@ -25,6 +24,7 @@ import type {
   Babel$Node,
 } from './types';
 
+import babelParse from './babel-parse';
 import {locationToString, namedBuiltinTypes} from './builtin-types';
 import {validateDefinitions} from './DefinitionValidator';
 
@@ -94,7 +94,7 @@ class ServiceParser {
   }
 
   parseService(source: string): Definitions {
-    const program = babel.parse(source);
+    const program = babelParse(source);
     invariant(program && program.type === 'Program', 'The result of parsing is a Program node.');
 
     // Iterate through each node in the program body.

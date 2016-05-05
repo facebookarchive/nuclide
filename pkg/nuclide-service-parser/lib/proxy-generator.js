@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import * as babel from 'babel-core';
+import * as t from 'babel-core/lib/types';
 import generate from 'babel-core/lib/generation';
 
 import type {
@@ -19,8 +19,6 @@ import type {
   Type,
   InterfaceDefinition,
 } from './types';
-
-const t = babel.types;
 
 const promiseDotAllExpression = t.memberExpression(t.identifier('Promise'), t.identifier('all'));
 const thenIdent = t.identifier('then');
