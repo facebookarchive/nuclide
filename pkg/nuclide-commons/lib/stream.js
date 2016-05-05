@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
 import {Observable, Subscription, Subject} from 'rxjs';
+// $FlowFixMe(matthewwithanm): Replace this with Observable.prototype.pairwise when we upgrade
+import {pairwise} from 'rxjs/operator/pairwise';
 
 /**
  * Observe a stream like stdout or stderr.
@@ -192,4 +195,85 @@ class CacheWhileSubscribedSubject<T> extends Subject<T> {
       this._clearCachedValue();
     }
   }
+}
+
+type Diff<T> = {
+  added: Set<T>;
+  removed: Set<T>;
+};
+
+function subtractSet<T>(a: Set<T>, b: Set<T>): Set<T> {
+  const result = new Set();
+  a.forEach(value => {
+    if (!b.has(value)) {
+      result.add(value);
+    }
+  });
+  return result;
+}
+
+/**
+ * Shallowly compare two Sets.
+ */
+function setsAreEqual<T>(a: Set<T>, b: Set<T>): boolean {
+  if (a.size !== b.size) {
+    return false;
+  }
+  for (const item of a) {
+    if (!b.has(item)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Given a stream of sets, return a stream of diffs.
+ * **IMPORTANT:** These sets are assumed to be immutable by convention. Don't mutate them!
+ */
+export function diffSets<T>(stream: Observable<Set<T>>): Observable<Diff<T>> {
+  return pairwise.call(
+    Observable.concat(
+      Observable.of(new Set()), // Always start with no items with an empty set
+      stream,
+    )
+    .distinctUntilChanged(setsAreEqual)
+  )
+    .map(([previous, next]) => ({
+      added: subtractSet(next, previous),
+      removed: subtractSet(previous, next),
+    }));
+}
+
+/**
+ * Give a stream of diffs, perform an action for each added item and dispose of the returned
+ * disposable when the item is removed.
+ */
+export function reconcileSetDiffs<T>(
+  diffs: Observable<Diff<T>>,
+  addAction: (addedItem: T) => IDisposable,
+): IDisposable {
+  const itemsToDisposables = new Map();
+  const disposeItem = item => {
+    const disposable = itemsToDisposables.get(item);
+    invariant(disposable != null);
+    disposable.dispose();
+    itemsToDisposables.delete(item);
+  };
+  const disposeAll = () => {
+    itemsToDisposables.forEach(disposable => { disposable.dispose(); });
+    itemsToDisposables.clear();
+  };
+
+  return new DisposableSubscription(
+    diffs
+      .subscribe(diff => {
+        // For every item that got added, perform the add action.
+        diff.added.forEach(item => { itemsToDisposables.set(item, addAction(item)); });
+
+        // "Undo" the add action for each item that got removed.
+        diff.removed.forEach(disposeItem);
+      })
+      .add(disposeAll)
+  );
 }

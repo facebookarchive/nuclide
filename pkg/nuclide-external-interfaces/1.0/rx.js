@@ -134,7 +134,7 @@ declare module 'rxjs' {
 
     delay(dueTime: number): Observable<T>;
 
-    distinctUntilChanged(): Observable<T>;
+    distinctUntilChanged(compare?: (x: T, y: T) => boolean): Observable<T>;
 
     filter(predicate: (value: T) => boolean): Observable<T>;
 

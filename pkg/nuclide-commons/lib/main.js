@@ -137,6 +137,10 @@ module.exports = {
     return requirePromises().denodeify;
   },
 
+  get diffSets() {
+    return requireStream().diffSets;
+  },
+
   get DisposableSubscription() {
     return requireStream().DisposableSubscription;
   },
@@ -314,4 +318,9 @@ module.exports = {
   get passesGKSafe(): (gatekeeperName: string, timeout?: number) => Promise<boolean> {
     return requireFromCache('./gatekeeper').passesGKSafe;
   },
+
+  get reconcileSetDiffs() {
+    return requireStream().reconcileSetDiffs;
+  },
+
 };

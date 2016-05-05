@@ -9,9 +9,20 @@
  * the root directory of this source tree.
  */
 
-import {splitStream, observeStream, cacheWhileSubscribed} from '..';
+import {diffSets, cacheWhileSubscribed, reconcileSetDiffs, observeStream, splitStream} from '..';
+import {Disposable} from 'event-kit';
 import {Observable, Subject} from 'rxjs';
 import Stream from 'stream';
+
+const setsAreEqual = (a, b) => a.size === b.size && Array.from(a).every(b.has.bind(b));
+const diffsAreEqual = (a, b) => (
+  setsAreEqual(a.added, b.added) && setsAreEqual(a.removed, b.removed)
+);
+const createDisposable = () => {
+  const disposable = new Disposable(() => {});
+  spyOn(disposable, 'dispose');
+  return disposable;
+};
 
 describe('nuclide-commons/stream', () => {
 
@@ -105,4 +116,113 @@ describe('cacheWhileSubscribed', () => {
     expect(arr1).toEqual([1]);
     expect(arr2).toEqual([3]);
   });
+
+});
+
+describe('diffSets', () => {
+
+  it('emits a diff for the first item', () => {
+    waitsForPromise(async () => {
+      const source = new Subject();
+      const diffsPromise = diffSets(source).toArray().toPromise();
+      source.next(new Set([1, 2, 3]));
+      source.complete();
+      const diffs = await diffsPromise;
+      expect(diffs.length).toBe(1);
+      expect(diffsAreEqual(diffs[0], {
+        added: new Set([1, 2, 3]),
+        removed: new Set(),
+      })).toBe(true);
+    });
+  });
+
+  it('correctly identifies removed items', () => {
+    waitsForPromise(async () => {
+      const source = new Subject();
+      const diffsPromise = diffSets(source).toArray().toPromise();
+      source.next(new Set([1, 2, 3]));
+      source.next(new Set([1, 2]));
+      source.complete();
+      const diffs = await diffsPromise;
+      expect(setsAreEqual(diffs[1].removed, new Set([3]))).toBe(true);
+    });
+  });
+
+  it('correctly identifies added items', () => {
+    waitsForPromise(async () => {
+      const source = new Subject();
+      const diffsPromise = diffSets(source).toArray().toPromise();
+      source.next(new Set([1, 2]));
+      source.next(new Set([1, 2, 3]));
+      source.complete();
+      const diffs = await diffsPromise;
+      expect(setsAreEqual(diffs[1].added, new Set([3]))).toBe(true);
+    });
+  });
+
+  it("doesn't emit a diff when nothing changes", () => {
+    waitsForPromise(async () => {
+      const source = new Subject();
+      const diffsPromise = diffSets(source).toArray().toPromise();
+      source.next(new Set([1, 2, 3]));
+      source.next(new Set([1, 2, 3]));
+      source.complete();
+      const diffs = await diffsPromise;
+      // Make sure we only get one diff (from the implicit initial empty set).
+      expect(diffs.length).toBe(1);
+    });
+  });
+
+});
+
+describe('reconcileSetDiffs', () => {
+
+  it("calls the add action for each item that's added", () => {
+    const diffs = new Subject();
+    const addAction = jasmine.createSpy().andReturn(new Disposable(() => {}));
+    reconcileSetDiffs(diffs, addAction);
+    diffs.next({
+      added: new Set(['a', 'b']),
+      removed: new Set(),
+    });
+    expect(addAction.calls.map(call => call.args[0])).toEqual(['a', 'b']);
+  });
+
+  it("disposes for each item that's removed", () => {
+    const diffs = new Subject();
+    const disposables = {
+      a: createDisposable(),
+      b: createDisposable(),
+    };
+    const addAction = item => disposables[item];
+    reconcileSetDiffs(diffs, addAction);
+    diffs.next({
+      added: new Set(['a', 'b']),
+      removed: new Set(),
+    });
+    diffs.next({
+      added: new Set(),
+      removed: new Set(['a', 'b']),
+    });
+    expect(disposables.a.dispose).toHaveBeenCalled();
+    expect(disposables.b.dispose).toHaveBeenCalled();
+  });
+
+  it('disposes for all items when disposed', () => {
+    const diffs = new Subject();
+    const disposables = {
+      a: createDisposable(),
+      b: createDisposable(),
+    };
+    const addAction = item => disposables[item];
+    const reconciliationDisposable = reconcileSetDiffs(diffs, addAction);
+    diffs.next({
+      added: new Set(['a', 'b']),
+      removed: new Set(),
+    });
+    reconciliationDisposable.dispose();
+    expect(disposables.a.dispose).toHaveBeenCalled();
+    expect(disposables.b.dispose).toHaveBeenCalled();
+  });
+
 });
