@@ -38,6 +38,7 @@ import {passesGKSafe} from '../../nuclide-commons';
 import DebuggerProcessInfo from './DebuggerProcessInfo';
 import DebuggerInstance from './DebuggerInstance';
 import DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
+import {NewDebuggerView} from './NewDebuggerView';
 
 export {
   DebuggerProcessInfo,
@@ -68,12 +69,7 @@ function createDebuggerView(model: DebuggerModel, useRevampedUi: boolean): HTMLE
           breakpointStore={model.getBreakpointStore()}
         />
       </div>
-      {useRevampedUi ?
-        <div className="nuclide-debugger-container-new">
-          TODO
-        </div>
-        : null
-      }
+      {useRevampedUi ? <NewDebuggerView /> : null}
     </div>,
     elem);
   return elem;
