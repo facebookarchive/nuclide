@@ -103,9 +103,6 @@ describe('nuclide-side-bar main', () => {
     // Show the view
     showView(SIDE_BAR);
 
-    // render
-    advanceClock(500);
-
     // Should be present in the DOM.
     expect(document.querySelectorAll('.side-bar-view').length).toEqual(1);
   });
@@ -132,9 +129,6 @@ describe('nuclide-side-bar main', () => {
       advanceClock(500);
 
       showView(SIDE_BAR);
-
-      // render
-      advanceClock(500);
     });
 
     waitsFor(() => {
@@ -167,11 +161,11 @@ describe('nuclide-side-bar main', () => {
     showView(SIDE_BAR);
     sideBarService.registerView(COOLER_BAR);
 
-    // Show the second view
-    showView(COOLER_BAR);
-
     // render
     advanceClock(500);
+
+    // Show the second view
+    showView(COOLER_BAR);
 
     // First view should be gone.
     expect(document.querySelectorAll('.side-bar-view').length).toEqual(0);
@@ -192,9 +186,6 @@ describe('nuclide-side-bar main', () => {
 
     // Fire the first view's toggle again
     showView(SIDE_BAR);
-
-    // render
-    advanceClock(500);
 
     // First view should be visible again.
     expect(document.querySelectorAll('.side-bar-view').length).toEqual(1);
@@ -266,19 +257,12 @@ describe('nuclide-side-bar main', () => {
 
     showView(SIDE_BAR);
 
-    // render
-    advanceClock(500);
-
     sideBarService.registerView(COOLER_BAR);
 
     // render
     advanceClock(500);
 
     showView(COOLER_BAR);
-
-    // render
-    advanceClock(500);
-
     expect(COOLER_BAR.onDidShow).toHaveBeenCalled();
   });
 

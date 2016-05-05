@@ -214,9 +214,9 @@ function toggleView(viewId: ?string, options?: {display: boolean}) {
         activeViewInstance.view.onDidShow();
       }
     };
-    setState(nextState, onDidShow);
+    setState(nextState, onDidShow, true /* render immediately; user expects fast UI response */);
   } else {
-    setState(nextState, blurPanel);
+    setState(nextState, blurPanel, true /* render immediately; user expects fast UI response */);
   }
 }
 
