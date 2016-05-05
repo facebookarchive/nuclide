@@ -143,9 +143,10 @@ export class NuclideSocket {
           break;
         case 'success':
           if (this.isDisconnected()) {
+            const ws = new WebSocketTransport(this.id, websocket);
+            ws.onError(error => { ws.close(); });
             invariant(this._transport != null);
-            const closeOnError = true;
-            this._transport.reconnect(new WebSocketTransport(this.id, websocket, closeOnError));
+            this._transport.reconnect(ws);
             websocket.removeListener('error', onSocketError);
             this._emitter.emit('status', true);
             if (this._previouslyConnected) {

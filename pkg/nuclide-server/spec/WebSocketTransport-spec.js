@@ -97,26 +97,14 @@ describe('WebSocketTransport', () => {
     socket.emit('close');
   });
 
-  it('error - no auto close', () => {
-    socket.emit('error', {message: 'error message'});
-    expect(transport.isClosed()).toBe(false);
-  });
-
-  it('error - auto close', () => {
-    transport = new WebSocketTransport('42', socket, true);
-    let closed = false;
-    transport.onClose(() => {
-      // close event should be published exactly once
-      expect(closed).toBe(false);
-      closed = true;
+  it('error', () => {
+    let error;
+    const expected = new Error('error message');
+    transport.onError(actual => {
+      error = actual;
     });
-    socket.emit('error', {message: 'error message'});
+    socket.emit('error', expected);
 
-    expect(transport.isClosed()).toBe(true);
-    expect(closed).toBe(true);
-
-    // These shouldn't throw
-    socket.emit('error', {message: 'error message'});
-    socket.emit('close');
+    expect(error).toBe(expected);
   });
 });

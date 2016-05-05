@@ -243,8 +243,7 @@ class NuclideServer {
     socket.once('message', (clientId: string) => {
       errorSubscription.dispose();
       client = this._clients.get(clientId);
-      const closeOnError = false;
-      const transport = new WebSocketTransport(clientId, socket, closeOnError);
+      const transport = new WebSocketTransport(clientId, socket);
       if (client == null) {
         client = new ClientConnection(this._serverComponent,
           new QueuedTransport(clientId, transport));

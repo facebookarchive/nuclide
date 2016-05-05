@@ -29,7 +29,7 @@ export class WebSocketTransport {
   _socket: ?WS;
   _emitter: Emitter;
 
-  constructor(clientId: string, socket: WS, closeOnError: boolean) {
+  constructor(clientId: string, socket: WS) {
     this.id = clientId;
     this._emitter = new Emitter();
     this._socket = socket;
@@ -48,9 +48,11 @@ export class WebSocketTransport {
     });
 
     socket.on('error', e => {
-      logger.error(`Client #${this.id} error: ${e.message}`);
-      if (closeOnError && this._socket != null) {
-        this.close();
+      if (this._socket != null) {
+        logger.error(`Client #${this.id} error: ${e.message}`);
+        this._emitter.emit('error', e);
+      } else {
+        logger.error(`Client #${this.id} error after close: ${e.message}`);
       }
     });
   }
@@ -71,6 +73,10 @@ export class WebSocketTransport {
 
   onClose(callback: () => mixed): IDisposable {
     return this._emitter.on('close', callback);
+  }
+
+  onError(callback: (error: Error) => mixed): IDisposable {
+    return this._emitter.on('error', callback);
   }
 
   send(data: any): Promise<boolean> {

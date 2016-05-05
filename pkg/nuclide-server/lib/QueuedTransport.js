@@ -26,6 +26,7 @@ export type UnreliableTransport = {
   send(data: Object): Promise<boolean>;
   onClose(callback: () => mixed): IDisposable;
   onMessage(callback: (message: Object) => mixed): IDisposable;
+  onError(callback: (error: Object) => mixed): IDisposable;
   close(): void;
   isClosed(): boolean;
 };
