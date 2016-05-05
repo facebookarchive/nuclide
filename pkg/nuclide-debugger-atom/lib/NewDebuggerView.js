@@ -9,45 +9,50 @@
  * the root directory of this source tree.
  */
 
+import type DebuggerModel from './DebuggerModel';
 import type {
-  WatchExpression,
-} from './WatchExpressionComponent';
+  WatchExpressionListStore,
+} from './WatchExpressionListStore';
 
 import {
   React,
 } from 'react-for-atom';
+import {injectObservableAsProps} from '../../nuclide-ui/lib/HOC';
 import {
   WatchExpressionComponent,
 } from './WatchExpressionComponent';
 
-type Props = {};
+type Props = {
+  model: DebuggerModel;
+  watchExpressionListStore: WatchExpressionListStore;
+};
 
 export class NewDebuggerView extends React.Component {
   props: Props;
-  state: {
-    watchExpressions: Array<WatchExpression>;
-  };
+  _wrappedComponent: ReactClass;
 
   constructor(props: Props) {
     super(props);
-    this.state = {
-      watchExpressions: [],
-    };
-    (this: any).handleUpdateExpressions = this.handleUpdateExpressions.bind(this);
-  }
-
-  handleUpdateExpressions(watchExpressions: Array<WatchExpression>): void {
-    this.setState({
-      watchExpressions,
-    });
+    this._wrappedComponent = injectObservableAsProps(
+      props.watchExpressionListStore.getWatchExpressions().map(
+        watchExpressions => ({watchExpressions})
+      ),
+      WatchExpressionComponent
+    );
   }
 
   render(): React.Element {
+    const {
+      model,
+    } = this.props;
+    const actions = model.getActions();
+    const Component = this._wrappedComponent;
     return (
       <div className="nuclide-debugger-container-new">
-        <WatchExpressionComponent
-          watchExpressions={this.state.watchExpressions}
-          onUpdateExpressions={this.handleUpdateExpressions}
+        <Component
+          onAddWatchExpression={actions.addWatchExpression.bind(model)}
+          onRemoveWatchExpression={actions.removeWatchExpression.bind(model)}
+          onUpdateWatchExpression={actions.updateWatchExpression.bind(model)}
         />
       </div>
     );

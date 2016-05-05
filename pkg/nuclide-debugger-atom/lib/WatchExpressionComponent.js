@@ -9,30 +9,35 @@
  * the root directory of this source tree.
  */
 
+import type {
+  WatchExpression,
+  WatchExpressionList,
+} from './WatchExpressionListStore';
+
 import {
   React,
 } from 'react-for-atom';
 import classnames from 'classnames';
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
+import {injectObservableAsProps} from '../../nuclide-ui/lib/HOC';
+import {DebuggerValueComponent} from './DebuggerValueComponent';
 
-export type WatchExpression = {
-  expression: string;
-  value: any;
-};
-
-type Props = {
-  watchExpressions: Array<WatchExpression>;
-  onUpdateExpressions: (watchExpressions: Array<WatchExpression>) => void;
+type WatchExpressionComponentProps = {
+  watchExpressions: WatchExpressionList;
+  onAddWatchExpression: (expression: string) => void;
+  onRemoveWatchExpression: (index: number) => void;
+  onUpdateWatchExpression: (index: number, newExpression: string) => void;
 };
 
 export class WatchExpressionComponent extends React.Component {
-  props: Props;
+  // $FlowIssue `watchExpressions` is injected by a higher-order component.
+  props: WatchExpressionComponentProps;
   state: {
     rowBeingEdited: ?number;
   };
   coreCancelDisposable: ?IDisposable;
 
-  constructor(props: Props) {
+  constructor(props: WatchExpressionComponentProps) {
     super(props);
     (this: any)._renderExpression = this._renderExpression.bind(this);
     (this: any)._onConfirmNewExpression = this._onConfirmNewExpression.bind(this);
@@ -46,19 +51,11 @@ export class WatchExpressionComponent extends React.Component {
 
   removeExpression(index: number, event: MouseEvent): void {
     event.stopPropagation();
-    const watchExpressions = this.props.watchExpressions.slice();
-    watchExpressions.splice(index, 1);
-    this.props.onUpdateExpressions(watchExpressions);
+    this.props.onRemoveWatchExpression(index);
   }
 
   addExpression(expression: string): void {
-    this.props.onUpdateExpressions([
-      ...this.props.watchExpressions,
-      {
-        expression,
-        value: '<not available>',
-      },
-    ]);
+    this.props.onAddWatchExpression(expression);
   }
 
   _onConfirmNewExpression(): void {
@@ -69,12 +66,7 @@ export class WatchExpressionComponent extends React.Component {
 
   _onConfirmExpressionEdit(index: number): void {
     const text = this.refs.editExpressionEditor.getText();
-    const watchExpressions = this.props.watchExpressions.slice();
-    watchExpressions[index] = {
-      ...watchExpressions[index],
-      expression: text,
-    };
-    this.props.onUpdateExpressions(watchExpressions);
+    this.props.onUpdateWatchExpression(index, text);
     this._resetExpressionEditState();
   }
 
@@ -119,33 +111,44 @@ export class WatchExpressionComponent extends React.Component {
       expression,
       value,
     } = watchExpression;
+    if (index === this.state.rowBeingEdited) {
+      return (
+        <AtomInput
+          className="nuclide-debugger-atom-watch-expression-input"
+          key={index}
+          onConfirm={this._onConfirmExpressionEdit.bind(this, index)}
+          onCancel={this._onEditorCancel}
+          onBlur={this._onEditorBlur}
+          ref="editExpressionEditor"
+          size="sm"
+          initialValue={expression}
+        />
+      );
+    }
+    const ValueComponent = injectObservableAsProps(
+      value.map(v => ({evaluationResult: v})),
+      DebuggerValueComponent,
+    );
+    /* $FlowIssue `evaluationResult` prop is injected by a higher-order component. */
+    const valueElement = <ValueComponent />;
     return (
-      index === this.state.rowBeingEdited
-        ? <AtomInput
-            className="nuclide-debugger-atom-watch-expression-input"
-            key={index}
-            onConfirm={this._onConfirmExpressionEdit.bind(this, index)}
-            onCancel={this._onEditorCancel}
-            onBlur={this._onEditorBlur}
-            ref="editExpressionEditor"
-            size="sm"
-            initialValue={expression}
-          />
-        : <div
-            className="nuclide-debugger-atom-watch-expression-row"
-            key={index}
-            onMouseDown={this._setRowBeingEdited.bind(this, index)}>
-            <div>
-              <span className="nuclide-debugger-atom-watch-expression">
-                {expression}
-              </span>
-              <span className="nuclide-debugger-atom-watch-expression-value">{value}</span>
-            </div>
-            <i
-              className="icon icon-x nuclide-debugger-atom-watch-expression-xout"
-              onMouseDown={this.removeExpression.bind(this, index)}
-            />
-          </div>
+      <div
+        className="nuclide-debugger-atom-watch-expression-row"
+        key={index}
+        onMouseDown={this._setRowBeingEdited.bind(this, index)}>
+        <div>
+          <span className="nuclide-debugger-atom-watch-expression">
+            {expression}
+          </span>
+          <span className="nuclide-debugger-atom-watch-expression-value">
+            {valueElement}
+          </span>
+        </div>
+        <i
+          className="icon icon-x nuclide-debugger-atom-watch-expression-xout"
+          onMouseDown={this.removeExpression.bind(this, index)}
+        />
+      </div>
     );
   }
 

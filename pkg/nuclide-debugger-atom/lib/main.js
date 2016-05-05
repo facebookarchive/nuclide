@@ -69,7 +69,13 @@ function createDebuggerView(model: DebuggerModel, useRevampedUi: boolean): HTMLE
           breakpointStore={model.getBreakpointStore()}
         />
       </div>
-      {useRevampedUi ? <NewDebuggerView /> : null}
+      {useRevampedUi
+        ? <NewDebuggerView
+            model={model}
+            watchExpressionListStore={model.getWatchExpressionListStore()}
+          />
+        : null
+      }
     </div>,
     elem);
   return elem;
