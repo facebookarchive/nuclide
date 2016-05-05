@@ -1,7 +1,8 @@
 @import "ui-variables";
+@import "syntax-variables";
 
 @nuclide-console-border-size: 1px;
-@nuclide-console-table-background-color: @tab-background-color-active;
+@nuclide-console-toolbar-background-color: @tab-background-color-active;
 @nuclide-console-record-background-color-normal: @syntax-background-color;
 @nuclide-console-record-text-color-normal: @syntax-text-color;
 @nuclide-console-record-border-color-normal: @base-border-color;
@@ -27,6 +28,10 @@
   .icon {
     vertical-align: middle;
   }
+
+  .nuclide-ui-toolbar {
+    background-color: @nuclide-console-toolbar-background-color;
+  }
 }
 
 .nuclide-console-record .icon:before,
@@ -45,11 +50,6 @@
   // Hack: This ensures that the scrollbar appears on top of all of the records.
   //       Without it, the atom-text-editors appear above the scrollbar.
   transform: translate3d(0, 0, 0);
-}
-
-.nuclide-console-header {
-  flex-shrink: 0;
-  border-bottom: 1px solid @pane-item-border-color;
 }
 
 .nuclide-console-record {
