@@ -1,0 +1,46 @@
+'use babel';
+/* @flow */
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+import type {AtomCommands} from '..';
+
+import {diffSets, reconcileSetDiffs} from '../../nuclide-commons';
+import {CompositeDisposable} from 'atom';
+import {Observable} from 'rxjs';
+
+type Projector<T> = (set: Set<T>) => AtomCommands;
+
+/**
+ * A utility that adds and removes commands to the Atom command registry based on their presence in
+ * a stream. This is basically like a mini-React for Atom commands, however, instead of diffing the
+ * result (commands), we diff the input (sets) since it's easier and less likely to contain
+ * functions (which are unlikely to be able to be safely compared using `===`).
+ */
+export function syncAtomCommands<T>(
+  source: Observable<Set<T>>,
+  project: Projector<T>,
+): IDisposable {
+  // Add empty sets before completing and erroring to make sure that we remove remaining commands
+  // in both cases.
+  const sets = source
+    .concat(Observable.of(new Set()))
+    .catch(err => Observable.of(new Set()).concat(Observable.throw(err)));
+
+  return reconcileSetDiffs(
+    diffSets(sets),
+    item => {
+      const commands = project(item);
+      const disposables = Object.keys(commands).map(target => (
+        atom.commands.add(target, commands[target])
+      ));
+      return new CompositeDisposable(...disposables);
+    },
+  );
+}

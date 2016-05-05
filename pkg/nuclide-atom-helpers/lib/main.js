@@ -19,6 +19,14 @@ function requireFromCache(id: string): any {
   return requireCache[id];
 }
 
+// A map of targets to command maps. We use an object (instead of a Map) to be more consistent with
+// Atom's API. See <https://atom.io/docs/api/v1.2.0/CommandRegistry#instance-add>
+export type AtomCommands = {
+  [target: string]: {
+    [commandName: string]: (event: Event) => mixed;
+  };
+};
+
 module.exports = {
   get projects() {
     return requireFromCache('./projects');
@@ -143,4 +151,9 @@ module.exports = {
   get getUiTreePathFromTargetEvent() {
     return requireFromCache('./ui-tree-path').getUiTreePathFromTargetEvent;
   },
+
+  get syncAtomCommands() {
+    return requireFromCache('./sync-atom-commands').syncAtomCommands;
+  },
+
 };
