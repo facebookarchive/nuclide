@@ -236,6 +236,34 @@ class DebuggerActions {
     });
   }
 
+  addWatchExpression(expression: string): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.ADD_WATCH_EXPRESSION,
+      data: {
+        expression,
+      },
+    });
+  }
+
+  removeWatchExpression(index: number): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.REMOVE_WATCH_EXPRESSION,
+      data: {
+        index,
+      },
+    });
+  }
+
+  updateWatchExpression(index: number, newExpression: string): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.UPDATE_WATCH_EXPRESSION,
+      data: {
+        newExpression,
+        index,
+      },
+    });
+  }
+
   dispose() {
     endTimerTracking();
     this._disposables.dispose();
