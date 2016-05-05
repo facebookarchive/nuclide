@@ -145,18 +145,13 @@ export default class DiffViewEditorPane extends React.Component {
     if (diffEditorUpdated || oldProps.initialTextContent !== this.props.initialTextContent) {
       this._setTextContent(newProps.filePath, newProps.initialTextContent);
     }
-    if (diffEditorUpdated
-      || !array.equal(oldProps.highlightedLines.added, newProps.highlightedLines.added)
-      || !array.equal(oldProps.highlightedLines.removed, newProps.highlightedLines.removed)
-    ) {
-      this._setHighlightedLines(newProps.highlightedLines);
-    }
     if (diffEditorUpdated || !map.equal(oldProps.offsets, newProps.offsets)) {
       this._setOffsets(newProps.offsets);
     }
     if (!array.equal(oldProps.inlineElements, newProps.inlineElements)) {
       this._renderComponentsInline(newProps.inlineElements);
     }
+    this._setHighlightedLines(newProps.highlightedLines);
   }
 
   scrollToScreenLine(screenLine: number): void {
