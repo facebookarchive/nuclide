@@ -18,6 +18,9 @@ import uuid from 'uuid';
 import {EventEmitter} from 'events';
 import {HEARTBEAT_CHANNEL} from './config';
 import {event} from '../../nuclide-commons';
+import {WebSocketTransport} from './WebSocketTransport';
+import {QueuedTransport} from './QueuedTransport';
+import invariant from 'assert';
 
 const logger = require('../../nuclide-logging').getLogger();
 
@@ -57,17 +60,14 @@ export class NuclideSocket {
   _options: NuclideSocketOptions;
   _reconnectTime: number;
   _reconnectTimer: ?number; // ID from a setTimeout() call.
-  _connected: boolean;
-  _closed: boolean;
   _previouslyConnected: boolean;
-  _cachedMessages: Array<{data: any}>;
   _websocketUri: string;
-  _websocket: ?WS;
   _heartbeatConnectedOnce: boolean;
   _lastHeartbeat: ?('here' | 'away');
   _lastHeartbeatTime: ?number;
   _heartbeatInterval: ?number;
   _emitter: EventEmitter;
+  _transport: ?QueuedTransport;
 
   constructor(serverUri: string, options: NuclideSocketOptions = {}) {
     this._emitter = new EventEmitter();
@@ -76,10 +76,19 @@ export class NuclideSocket {
     this.id = uuid.v4();
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
     this._reconnectTimer = null;
-    this._connected = false;
-    this._closed = false;
     this._previouslyConnected = false;
-    this._cachedMessages = [];
+    const transport = new QueuedTransport(this.id);
+    this._transport = transport;
+    transport.onMessage(message => {
+      this._emitter.emit('message', message);
+    });
+    transport.onDisconnect(() => {
+      if (this.isDisconnected()) {
+        this._emitter.emit('status', false);
+        this._emitter.emit('disconnect');
+        this._scheduleReconnect();
+      }
+    });
 
     const {protocol, host} = url.parse(serverUri);
     this._websocketUri = `ws${protocol === 'https:' ? 's' : ''}://${host}`;
@@ -92,9 +101,17 @@ export class NuclideSocket {
     this._reconnect();
   }
 
-  waitForConnect(): Promise {
+  isConnected(): boolean {
+    return this._transport != null && this._transport.getState() === 'open';
+  }
+
+  isDisconnected(): boolean {
+    return this._transport != null && this._transport.getState() === 'disconnected';
+  }
+
+  waitForConnect(): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (this._connected) {
+      if (this.isConnected()) {
         return resolve();
       } else {
         this.onConnect(resolve);
@@ -104,6 +121,8 @@ export class NuclideSocket {
   }
 
   _reconnect() {
+    invariant(this.isDisconnected());
+
     const {certificateAuthorityCertificate, clientKey, clientCertificate} = this._options;
     const websocket = new WS(this._websocketUri, {
       cert: clientCertificate,
@@ -111,84 +130,54 @@ export class NuclideSocket {
       ca: certificateAuthorityCertificate,
     });
 
-    const onSocketOpen = () => {
-      this._websocket = websocket;
-      this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
-      // Handshake the server with my client id to manage my re-connect attemp, if it is.
-      websocket.send(this.id, () => {
-        this._connected = true;
-        this._emitter.emit('status', this._connected);
-        if (this._previouslyConnected) {
-          logger.info('WebSocket reconnected');
-          this._emitter.emit('reconnect');
-        } else {
-          logger.info('WebSocket connected');
-          this._emitter.emit('connect');
-        }
-        this._previouslyConnected = true;
-        this._cachedMessages.splice(0).forEach(message => this.send(message.data));
-      });
-    };
-    websocket.on('open', onSocketOpen);
-
-    const onSocketClose = () => {
-      if (this._websocket !== websocket) {
-        return;
-      }
-      logger.info('WebSocket closed.');
-      this._websocket = null;
-      this._disconnect();
-      if (!this._closed) {
-        logger.info('WebSocket reconnecting after closed.');
-        this._scheduleReconnect();
-      }
-    };
-    websocket.on('close', onSocketClose);
-
+    // Need to add this otherwise unhandled errors during startup will result
+    // in uncaught exceptions. This is due to EventEmitter treating 'error'
+    // events specially.
     const onSocketError = error => {
-      if (this._websocket !== websocket) {
-        return;
-      }
-      logger.error('WebSocket Error - reconnecting...', error);
-      this._cleanWebSocket();
-      this._scheduleReconnect();
+      logger.error('WebSocket Error - attempting connection...', error);
     };
     websocket.on('error', onSocketError);
 
-    const onSocketMessage = (data, flags) => {
-      // flags.binary will be set if a binary data is received.
-      // flags.masked will be set if the data was masked.
-      const json = JSON.parse(data);
-      this._emitter.emit('message', json);
+    const onSocketOpen = async () => {
+      const sendIdResult = await sendOneMessage(websocket, this.id);
+      switch (sendIdResult.kind) {
+        case 'close':
+          websocket.close();
+          logger.info('WebSocket closed before sending id handshake');
+          if (this.isDisconnected()) {
+            logger.info('WebSocket reconnecting after closed.');
+            this._scheduleReconnect();
+          }
+          break;
+        case 'error':
+          websocket.close();
+          logger.error('WebSocket Error before sending id handshake', sendIdResult.message);
+          if (this.isDisconnected()) {
+            logger.info('WebSocket reconnecting after error.');
+            this._scheduleReconnect();
+          }
+          break;
+        case 'success':
+          if (this.isDisconnected()) {
+            invariant(this._transport != null);
+            const closeOnError = true;
+            this._transport.reconnect(new WebSocketTransport(this.id, websocket, closeOnError));
+            websocket.removeListener('error', onSocketError);
+            this._emitter.emit('status', true);
+            if (this._previouslyConnected) {
+              logger.info('WebSocket reconnected');
+              this._emitter.emit('reconnect');
+            } else {
+              logger.info('WebSocket connected');
+              this._emitter.emit('connect');
+            }
+            this._previouslyConnected = true;
+            this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
+          }
+          break;
+      }
     };
-
-    websocket.on('message', onSocketMessage);
-    // WebSocket inherits from EventEmitter, and doesn't dispose the listeners on close.
-    // Here, I added an expando property function to allow disposing those listeners on the created
-    // instance.
-    // $FlowFixMe -- no expandos
-    websocket.dispose = () => {
-      websocket.removeListener('open', onSocketOpen);
-      websocket.removeListener('close', onSocketClose);
-      websocket.removeListener('error', onSocketError);
-      websocket.removeListener('message', onSocketMessage);
-    };
-  }
-
-  _disconnect() {
-    this._connected = false;
-    this._emitter.emit('status', this._connected);
-    this._emitter.emit('disconnect');
-  }
-
-  _cleanWebSocket() {
-    const websocket = this._websocket;
-    if (websocket != null) {
-      // $FlowFixMe -- no expandos
-      websocket.dispose();
-      websocket.close();
-      this._websocket = null;
-    }
+    websocket.on('open', onSocketOpen);
   }
 
   _scheduleReconnect() {
@@ -213,30 +202,9 @@ export class NuclideSocket {
     }
   }
 
-  send(data: any): void {
-    // Wrap the data in an object, because if `data` is a primitive data type,
-    // finding it in an array would return the first matching item, not necessarily the same
-    // inserted item.
-    const message = {data};
-    this._cachedMessages.push(message);
-    if (!this._connected) {
-      return;
-    }
-
-    const websocket = this._websocket;
-    if (websocket == null) {
-      return;
-    }
-    websocket.send(JSON.stringify(data), err => {
-      if (err) {
-        logger.warn('WebSocket error, but caching the message:', err);
-      } else {
-        const messageIndex = this._cachedMessages.indexOf(message);
-        if (messageIndex !== -1) {
-          this._cachedMessages.splice(messageIndex, 1);
-        }
-      }
-    });
+  send(data: Object): void {
+    invariant(this._transport != null);
+    this._transport.send(data);
   }
 
   async xhrRequest(options: RequestOptions): Promise<string> {
@@ -281,14 +249,15 @@ export class NuclideSocket {
       if (this._lastHeartbeat === 'away'
           || ((now - this._lastHeartbeatTime) > MAX_HEARTBEAT_AWAY_RECONNECT_MS)) {
         // Trigger a websocket reconnect.
-        this._cleanWebSocket();
         this._scheduleReconnect();
       }
       this._lastHeartbeat = 'here';
       this._lastHeartbeatTime = now;
       this._emitter.emit('heartbeat');
     } catch (err) {
-      this._disconnect();
+      if (this._transport != null) {
+        this._transport.disconnect();
+      }
       this._lastHeartbeat = 'away';
       // Error code could could be one of:
       // ['ENOTFOUND', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT']
@@ -336,23 +305,18 @@ export class NuclideSocket {
   }
 
   close() {
-    this._closed = true;
-    if (this._connected) {
-      this._disconnect();
+    const transport = this._transport;
+    if (transport != null) {
+      this._transport = null;
+      transport.close();
     }
     if (this._reconnectTimer) {
       clearTimeout(this._reconnectTimer);
     }
-    this._cleanWebSocket();
-    this._cachedMessages = [];
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
     if (this._heartbeatInterval != null) {
       clearInterval(this._heartbeatInterval);
     }
-  }
-
-  isConnected(): boolean {
-    return this._connected;
   }
 
   onHeartbeat(callback: () => mixed): IDisposable {
@@ -384,4 +348,29 @@ export class NuclideSocket {
   onDisconnect(callback: () => mixed): IDisposable {
     return event.attachEvent(this._emitter, 'disconnect', callback);
   }
+}
+
+type SendResult =
+  { kind: 'error'; message: string}
+  | { kind: 'close' }
+  | { kind: 'success' };
+
+function sendOneMessage(socket: WS, message: string): Promise<SendResult> {
+  return new Promise((resolve, reject) => {
+    function finish(result) {
+      onError.dispose();
+      onClose.dispose();
+      resolve(result);
+    }
+    const onError = event.attachEvent(socket, 'event',
+      err => finish({kind: 'error', message: err}));
+    const onClose = event.attachEvent(socket, 'close', () => finish({kind: 'close'}));
+    socket.send(message, error => {
+      if (error == null) {
+        finish({kind: 'success'});
+      } else {
+        finish({kind: 'error', message: error.toString()});
+      }
+    });
+  });
 }

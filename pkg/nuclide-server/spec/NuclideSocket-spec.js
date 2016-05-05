@@ -130,7 +130,6 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
         // This call will error, because the socket will be closed on the next statement
         // synchronously.
         socket.send(message1); // The messages will be cached and sent in order.
-        socket._cleanWebSocket();
 
         socket.send(message2); // The messages will be cached and sent in order.
         // Make sure a close event on the old socket doesn't have any effect on the reconnect
