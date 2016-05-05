@@ -834,12 +834,14 @@ export class HgRepositoryClient {
     return this._service.add(filePaths);
   }
 
-  commit(message: string): Promise<void> {
-    return this._service.commit(message);
+  async commit(message: string): Promise<void> {
+    await this._service.commit(message);
+    this._clearClientCache();
   }
 
-  amend(message: ?string): Promise<void> {
-    return this._service.amend(message);
+  async amend(message: ?string): Promise<void> {
+    await this._service.amend(message);
+    this._clearClientCache();
   }
 
   revert(filePaths: Array<NuclideUri>): Promise<void> {
@@ -858,5 +860,11 @@ export class HgRepositoryClient {
       return null;
     }
     return options.hgStatusOption;
+  }
+
+  _clearClientCache(): void {
+    this._hgDiffCache = {};
+    this._hgStatusCache = {};
+    this._emitter.emit('did-change-statuses');
   }
 }

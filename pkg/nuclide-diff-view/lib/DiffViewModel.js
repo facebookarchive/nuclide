@@ -845,7 +845,17 @@ class DiffViewModel {
   ): Promise<?{allowUntracked: boolean; amended: boolean;}> {
     const activeStack = this._activeRepositoryStack;
     invariant(activeStack != null, 'No active repository stack when cleaning dirty changes');
+
+    const hgRepo = activeStack.getRepository();
+    const checkingStatusNotification = atom.notifications.addInfo(
+      'Running `hg status` to check dirty changes to Add/Amend/Revert',
+      {dismissable: true},
+    );
+    await hgRepo.getStatuses([hgRepo.getProjectDirectory()]);
+    checkingStatusNotification.dismiss();
+
     const dirtyFileChanges = activeStack.getDirtyFileChanges();
+
     let shouldAmend = false;
     let amended = false;
     let allowUntracked = false;

@@ -26,8 +26,6 @@ import invariant from 'assert';
 import LRU from 'lru-cache';
 import {getLogger} from '../../nuclide-logging';
 
-const logger = getLogger();
-const {serializeAsyncCall} = promises;
 const UPDATE_COMMIT_MERGE_FILES_EVENT = 'update-commit-merge-files';
 const UPDATE_DIRTY_FILES_EVENT = 'update-dirty-files';
 const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
@@ -70,18 +68,25 @@ export default class RepositoryStack {
     this._selectedCompareCommitId = null;
     this._lastRevisionsFileHistory = null;
     this._lastRevisionsState = null;
-    this._serializedUpdateStatus = serializeAsyncCall(() => this._updateChangedStatus());
+    this._serializedUpdateStatus = promises.serializeAsyncCall(
+      () => this._tryUpdateCommitMergeFileChanges(),
+    );
     const debouncedSerializedUpdateStatus = debounce(
       this._serializedUpdateStatus,
       UPDATE_STATUS_DEBOUNCE_MS,
       false,
     );
-    debouncedSerializedUpdateStatus();
+    this._serializedUpdateStatus();
     // Get the initial project status, if it's not already there,
     // triggered by another integration, like the file tree.
     repository.getStatuses([repository.getProjectDirectory()]);
     this._subscriptions.add(
-      repository.onDidChangeStatuses(debouncedSerializedUpdateStatus),
+      repository.onDidChangeStatuses(() => {
+        // Do the lightweight dirty cache update to reflect the changes,
+        // While only commit merge changes consumers wait for its results.
+        this._updateDirtyFileChanges();
+        debouncedSerializedUpdateStatus();
+      }),
     );
   }
 
@@ -98,9 +103,8 @@ export default class RepositoryStack {
   }
 
   @trackTiming('diff-view.update-change-status')
-  async _updateChangedStatus(): Promise<void> {
+  async _tryUpdateCommitMergeFileChanges(): Promise<void> {
     try {
-      this._updateDirtyFileChanges();
       await this._updateCommitMergeFileChanges();
     } catch (error) {
       notifyInternalError(error);
@@ -186,7 +190,7 @@ export default class RepositoryStack {
       try {
         revisionsFileHistory = await this._getRevisionFileHistoryPromise(revisionsState);
       } catch (error) {
-        logger.error(
+        getLogger().error(
           'Cannot fetch revision history: ' +
           '(could happen with pending source-control history writing operations)',
           error,
