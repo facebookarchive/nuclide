@@ -11,7 +11,7 @@
 
 import {
   parseDevicesFromSimctlOutput,
-  selectDevice,
+  getActiveDeviceIndex,
 } from '../lib/IosSimulator';
 
 describe('IosSimulator', () => {
@@ -69,7 +69,7 @@ describe('IosSimulator', () => {
   });
 
   it('prefers already running simulator', () => {
-    expect(selectDevice([
+    expect(getActiveDeviceIndex([
       {
         name: 'iPhone 4s',
         udid: '4FE43B33-EF13-49A5-B6A6-658D32F20988',
@@ -86,7 +86,7 @@ describe('IosSimulator', () => {
   });
 
   it('selects iPhone 5s with latest iOS by default', () => {
-    expect(selectDevice([
+    expect(getActiveDeviceIndex([
       {
         name: 'iPhone 4s',
         udid: '4FE43B33-EF13-49A5-B6A6-658D32F20988',

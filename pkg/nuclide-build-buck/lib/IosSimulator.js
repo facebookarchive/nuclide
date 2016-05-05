@@ -65,7 +65,7 @@ export async function getDevices(): Promise<Device[]> {
   return parseDevicesFromSimctlOutput(xcrunOutput);
 }
 
-export function selectDevice(devices: Device[]): number {
+export function getActiveDeviceIndex(devices: Device[]): number {
   const bootedDeviceIndex = devices.findIndex(
     device => device.state === DeviceState.Booted
   );
