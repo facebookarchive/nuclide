@@ -14,8 +14,8 @@ import type {AppState, BuildSystem, BuildSystemRegistry, SerializedAppState} fro
 import type {BehaviorSubject} from 'rxjs';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 
+import {syncAtomCommands} from '../../nuclide-atom-helpers';
 import {DisposableSubscription} from '../../nuclide-commons';
-import {syncAtomTaskCommands} from './syncAtomTaskCommands';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 
@@ -60,12 +60,17 @@ export function activate(rawState: ?SerializedAppState): void {
     }),
 
     // Update the Atom palette commands to match our tasks.
-    syncAtomTaskCommands(
+    syncAtomCommands(
       states
-        .map(state => state.tasks)
         .debounceTime(500)
-        .distinctUntilChanged(),
-      commands,
+        .map(state => state.tasks)
+        .distinctUntilChanged()
+        .map(tasks => new Set(tasks.map(task => task.type))),
+      taskType => ({
+        'atom-workspace': {
+          [`nuclide-build:${taskType}`]: () => { commands.runTask(taskType); },
+        },
+      }),
     ),
 
     // Update the actions whenever the build system changes. This is a little weird because state

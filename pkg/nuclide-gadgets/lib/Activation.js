@@ -14,12 +14,13 @@ import type {Action} from '../types/Action';
 import {CompositeDisposable} from 'atom';
 import Commands from './Commands';
 import GadgetsService from './GadgetsService';
+import createAtomCommands from './createAtomCommands';
 import createStateStream from './createStateStream';
 import getInitialState from './getInitialState';
+import {syncAtomCommands} from '../../nuclide-atom-helpers';
 import {DisposableSubscription, event as commonsEvent} from '../../nuclide-commons';
 const {observableFromSubscribeFunction} = commonsEvent;
 import Rx from 'rxjs';
-import syncAtomCommands from './syncAtomCommands';
 import trackActions from './trackActions';
 
 class Activation {
@@ -59,7 +60,11 @@ class Activation {
       ),
 
       // Keep the atom commands up to date with the registered gadgets.
-      new DisposableSubscription(syncAtomCommands(gadget$, commands)),
+      syncAtomCommands(
+        // $FlowFixMe(matthewwithanm): gadgetsMap is mixed because the state is an untyped Immutable.Map. It should be a record!
+        gadget$.map(gadgetsMap => new Set(gadgetsMap.values())),
+        gadget => createAtomCommands(gadget, commands),
+      ),
 
       // Collect some analytics about gadget actions.
       trackActions(action$),

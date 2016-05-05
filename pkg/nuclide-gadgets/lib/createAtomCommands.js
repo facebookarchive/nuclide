@@ -9,37 +9,23 @@
  * the root directory of this source tree.
  */
 
-import type Immutable from 'immutable';
+import type {AtomCommands} from '../../nuclide-atom-helpers';
 import type Commands from './Commands';
+import type {Gadget} from './types';
 
-import {CompositeDisposable} from 'atom';
 import normalizeEventString from './normalizeEventString';
 
-export default function createAtomCommands(
-  gadgets: Immutable.Map,
-  appCommands: Commands,
-): IDisposable {
-  const commands = gadgets
-    .valueSeq()
-    .flatMap(gadget => ([
-      atom.commands.add(
-        'atom-workspace',
-        formatCommandName(gadget.gadgetId, 'Show'),
+export default function createAtomCommands(gadget: Gadget, appCommands: Commands): AtomCommands {
+  return {
+    'atom-workspace': {
+      [formatCommandName(gadget.gadgetId, 'Show')]:
         () => appCommands.showGadget(gadget.gadgetId),
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        formatCommandName(gadget.gadgetId, 'Hide'),
+      [formatCommandName(gadget.gadgetId, 'Hide')]:
         () => appCommands.hideGadget(gadget.gadgetId),
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        formatCommandName(gadget.gadgetId, 'Toggle'),
+      [formatCommandName(gadget.gadgetId, 'Toggle')]:
         () => appCommands.toggleGadget(gadget.gadgetId),
-      ),
-    ]))
-    .toArray();
-  return new CompositeDisposable(...commands);
+    },
+  };
 }
 
 function formatCommandName(gadgetId: string, action: string): string {
