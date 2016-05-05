@@ -15,6 +15,7 @@ import type {BehaviorSubject} from 'rxjs';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 
 import {DisposableSubscription} from '../../nuclide-commons';
+import {syncAtomTaskCommands} from './syncAtomTaskCommands';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 
@@ -57,6 +58,15 @@ export function activate(rawState: ?SerializedAppState): void {
     atom.commands.add('atom-workspace', {
       'nuclide-build:toggle-toolbar-visibility': () => { commands.toggleToolbarVisibility(); },
     }),
+
+    // Update the Atom palette commands to match our tasks.
+    syncAtomTaskCommands(
+      states
+        .map(state => state.tasks)
+        .debounceTime(500)
+        .distinctUntilChanged(),
+      commands,
+    ),
 
     // Update the actions whenever the build system changes. This is a little weird because state
     // changes are triggering commands that trigger state changes. Maybe there's a better place to

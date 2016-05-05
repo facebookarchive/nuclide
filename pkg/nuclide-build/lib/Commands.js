@@ -97,17 +97,15 @@ export class Commands {
     });
   }
 
-  runTask(): void {
-    const {activeTaskType} = this._getState();
-    if (activeTaskType == null) {
-      // TODO: Should we error here?
+  runTask(taskType_?: string): void {
+    const taskType = taskType_ || this._getState().activeTaskType;
+    if (taskType == null) {
       return;
     }
+    this.selectTask(taskType);
     this._dispatch({
       type: ActionTypes.RUN_TASK,
-      payload: {
-        taskType: activeTaskType,
-      },
+      payload: {taskType},
     });
   }
 
