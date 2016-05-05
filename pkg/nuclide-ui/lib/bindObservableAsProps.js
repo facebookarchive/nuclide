@@ -15,14 +15,14 @@ import {React} from 'react-for-atom';
 
 /**
  * Injects any key/value pairs from the given Observable value into the component as named props.
- * e.g. `injectObservableAsProps(Rx.Observable.just({val: 42}), FooComponent)` will translate to
+ * e.g. `bindObservableAsProps(Rx.Observable.just({val: 42}), FooComponent)` will translate to
  * `<FooComponent val={42} />`.
  *
  * The resulting component re-renders on updates to the observable.
  * The wrapped component is guaranteed to render only if the observable has resolved;
  * otherwise, the wrapper component renders `null`.
  */
-export function injectObservableAsProps<T : ReactClass>(
+export function bindObservableAsProps<T : ReactClass>(
   stream: Observable<{[key: string]: any}>,
   ComposedComponent: T,
 ): T {

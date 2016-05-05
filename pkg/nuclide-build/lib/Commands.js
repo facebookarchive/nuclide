@@ -12,7 +12,7 @@
 import type {Action, AppState, BuildSystem, IconButtonOption} from './types';
 import type Rx from 'rxjs';
 
-import {injectObservableAsProps} from '../../nuclide-ui/lib/HOC';
+import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 import * as ActionTypes from './ActionTypes';
 import {getActiveBuildSystem} from './getActiveBuildSystem';
 import {createPanelItem} from './ui/createPanelItem';
@@ -58,8 +58,8 @@ export class Commands {
         };
       });
 
-    const StatefulBuildToolbar = injectObservableAsProps(props, BuildToolbar);
-    // $FlowIssue: injectObservableAsProps doesn't handle props exactly right.
+    const StatefulBuildToolbar = bindObservableAsProps(props, BuildToolbar);
+    // $FlowIssue: bindObservableAsProps doesn't handle props exactly right.
     const item = createPanelItem(<StatefulBuildToolbar />);
     const panel = atom.workspace.addTopPanel({item});
 

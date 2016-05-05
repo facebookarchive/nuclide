@@ -17,7 +17,7 @@ import type DebuggerModel from './DebuggerModel';
 import type {EvaluationResult} from './Bridge';
 
 import {extractWordAtPosition} from '../../nuclide-atom-helpers';
-import {injectObservableAsProps} from '../../nuclide-ui/lib/HOC';
+import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 import {DebuggerMode} from './DebuggerStore';
 import {DebuggerDatatipComponent} from './DebuggerDatatipComponent';
 import {passesGKSafe} from '../../nuclide-commons';
@@ -101,7 +101,7 @@ export async function debuggerDatatip(
     .filter(result => result != null)
     .map(result => ({expression, evaluationResult: result}));
   return {
-    component: injectObservableAsProps(
+    component: bindObservableAsProps(
       propStream,
       DebuggerDatatipComponent,
     ),

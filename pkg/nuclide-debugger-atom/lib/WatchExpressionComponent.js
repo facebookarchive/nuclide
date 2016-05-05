@@ -19,7 +19,7 @@ import {
 } from 'react-for-atom';
 import classnames from 'classnames';
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
-import {injectObservableAsProps} from '../../nuclide-ui/lib/HOC';
+import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 import {DebuggerValueComponent} from './DebuggerValueComponent';
 
 type WatchExpressionComponentProps = {
@@ -125,7 +125,7 @@ export class WatchExpressionComponent extends React.Component {
         />
       );
     }
-    const ValueComponent = injectObservableAsProps(
+    const ValueComponent = bindObservableAsProps(
       value.map(v => ({evaluationResult: v})),
       DebuggerValueComponent,
     );

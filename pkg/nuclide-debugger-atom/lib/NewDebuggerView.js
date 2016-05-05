@@ -17,7 +17,7 @@ import type {
 import {
   React,
 } from 'react-for-atom';
-import {injectObservableAsProps} from '../../nuclide-ui/lib/HOC';
+import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 import {
   WatchExpressionComponent,
 } from './WatchExpressionComponent';
@@ -33,7 +33,7 @@ export class NewDebuggerView extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    this._wrappedComponent = injectObservableAsProps(
+    this._wrappedComponent = bindObservableAsProps(
       props.watchExpressionListStore.getWatchExpressions().map(
         watchExpressions => ({watchExpressions})
       ),
