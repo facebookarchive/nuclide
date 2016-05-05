@@ -79,6 +79,7 @@ function initialEditorState(): EditorState {
 }
 
 const EMPTY_FUNCTION = () => {};
+const SCROLL_FIRST_CHANGE_DELAY_MS = 100;
 
 class DiffViewComponent extends React.Component {
   props: Props;
@@ -198,7 +199,7 @@ class DiffViewComponent extends React.Component {
 
   _scrollToFirstHighlightedLine(): void {
     // Schedule scroll to first line after all lines have been rendered.
-    const {oldEditorState, newEditorState} = this.state;
+    const {oldEditorState, newEditorState, filePath} = this.state;
     const removedLines = oldEditorState.highlightedLines.removed;
     const addedLines = newEditorState.highlightedLines.added;
     if (addedLines.length === 0 && removedLines.length === 0) {
@@ -212,7 +213,11 @@ class DiffViewComponent extends React.Component {
       addedLines[0] || 0,
       newEditorState.offsets,
     );
-    setImmediate(() => {
+    const scrollTimeout = setTimeout(() => {
+      this._subscriptions.remove(clearScrollTimeoutSubscription);
+      if (this.state.filePath !== filePath) {
+        return;
+      }
       if (
         addedLines.length === 0 ||
         (removedLines.length > 0 && firstRemovedLine < firstAddedLine)
@@ -221,7 +226,11 @@ class DiffViewComponent extends React.Component {
       } else {
         this._newEditorComponent.scrollToScreenLine(firstAddedLine);
       }
+    }, SCROLL_FIRST_CHANGE_DELAY_MS);
+    const clearScrollTimeoutSubscription = new Disposable(() => {
+      clearTimeout(scrollTimeout);
     });
+    this._subscriptions.add(clearScrollTimeoutSubscription);
   }
 
   _onChangeMode(mode: DiffModeType): void {

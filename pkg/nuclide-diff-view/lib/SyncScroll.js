@@ -40,6 +40,7 @@ export default class SyncScroll {
       this._subscriptions.add(scrollElement.onDidChangeScrollLeft(updateScrollPosition));
     });
     this._scrollSyncTimeout = null;
+    this._scrollPositionChanged(1);
   }
 
   _scrollPositionChanged(changeScrollIndex: number): void {
