@@ -9,23 +9,31 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+import {CompositeDisposable} from 'atom';
+
 import JumpToRelatedFile from './JumpToRelatedFile';
 import RelatedFileFinder from './RelatedFileFinder';
 
 let jumpToRelatedFile: ?JumpToRelatedFile = null;
+let subscriptions: ?CompositeDisposable = null;
 
 export function activate() {
-  // Make it a const for Flow
-  const local = jumpToRelatedFile = new JumpToRelatedFile(new RelatedFileFinder());
-
-  atom.workspace.observeTextEditors(textEditor => {
-    local.enableInTextEditor(textEditor);
-  });
+  subscriptions = new CompositeDisposable();
+  subscriptions.add(atom.workspace.observeTextEditors(textEditor => {
+    if (jumpToRelatedFile == null) {
+      jumpToRelatedFile = new JumpToRelatedFile(new RelatedFileFinder());
+      invariant(subscriptions);
+      subscriptions.add(jumpToRelatedFile);
+    }
+    jumpToRelatedFile.enableInTextEditor(textEditor);
+  }));
 }
 
 export function deactivate() {
-  if (jumpToRelatedFile) {
-    jumpToRelatedFile.dispose();
-    jumpToRelatedFile = null;
+  if (subscriptions != null) {
+    subscriptions.dispose();
+    subscriptions = null;
   }
+  jumpToRelatedFile = null;
 }
