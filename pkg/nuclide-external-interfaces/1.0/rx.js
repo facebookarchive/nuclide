@@ -169,6 +169,10 @@ declare module 'rxjs' {
 
     mergeAll(): T; // assumption: T is Observable
 
+    multicast(
+      subjectOrSubjectFactory: Subject<T> | () => Subject<T>,
+    ): ConnectableObservable<T>;
+
     publish(): ConnectableObservable<T>;
 
     publishLast(): ConnectableObservable<T>;
@@ -271,6 +275,10 @@ declare module 'rxjs' {
     next(value: T): mixed;
     error(error: any): mixed;
     complete(): mixed;
+
+    // For use in subclasses only:
+    _next(value: T): void;
+    _subscribe(observer: PartialObserver<T>): Subscription;
   }
 
   declare class BehaviorSubject<T> extends Subject<T> {
