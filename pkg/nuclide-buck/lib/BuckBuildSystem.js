@@ -10,6 +10,7 @@
  */
 
 import type {Task, TaskInfo} from '../../nuclide-build/lib/types';
+import type {SerializedState} from './types';
 
 import {DisposableSubscription, event as eventLib} from '../../nuclide-commons';
 import {BuckIcon} from './ui/BuckIcon';
@@ -32,11 +33,13 @@ export class BuckBuildSystem {
   id: string;
   name: string;
   _icon: ReactClass;
+  _initialState: ?SerializedState;
   _tasks: Observable<Array<Task>>;
 
-  constructor() {
+  constructor(initialState: ?SerializedState) {
     this.id = 'buck';
     this.name = 'Buck';
+    this._initialState = initialState;
     this._disposables = new CompositeDisposable();
   }
 
@@ -77,11 +80,7 @@ export class BuckBuildSystem {
       // Set up flux stuff.
       const dispatcher = new Dispatcher();
       const flux = {
-        // TODO: Get initial state from serialized state.
-        store: new BuckToolbarStore(dispatcher, {
-          buildTarget: null,
-          isReactNativeServerMode: false,
-        }),
+        store: new BuckToolbarStore(dispatcher, this._initialState),
         actions: new BuckToolbarActions(dispatcher),
       };
       this._disposables.add(flux.store);
@@ -123,6 +122,18 @@ export class BuckBuildSystem {
 
   dispose(): void {
     this._disposables.dispose();
+  }
+
+  serialize(): ?SerializedState {
+    // If we haven't had to load and create the Flux stuff yet, don't do it now.
+    if (this._flux == null) {
+      return;
+    }
+    const {store} = this._flux;
+    return {
+      buildTarget: store.getBuildTarget(),
+      isReactNativeServerMode: store.isReactNativeServerMode(),
+    };
   }
 
 }

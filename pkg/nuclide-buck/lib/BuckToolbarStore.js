@@ -33,6 +33,8 @@ import type {
 } from '../../nuclide-process-output-store';
 import type {ProcessOutputDataHandlers} from '../../nuclide-process-output-store/lib/types';
 import type {BuckProject} from '../../nuclide-buck-base/lib/BuckProject';
+import type {SerializedState} from './types';
+
 import ReactNativeServerManager from './ReactNativeServerManager';
 import ReactNativeServerActions from './ReactNativeServerActions';
 
@@ -42,10 +44,6 @@ const REACT_NATIVE_APP_FLAGS = [
   '-websocket-executor-name', 'Nuclide',
   '-websocket-executor-port', '8090',
 ];
-
-type InitialState = {
-  isReactNativeServerMode?: boolean;
-};
 
 type BuckSubcommand = 'build' | 'install' | 'test';
 
@@ -67,7 +65,7 @@ class BuckToolbarStore {
   _buckProcessOutputStore: ?ProcessOutputStoreType;
   _aliasesByProject: WeakMap<BuckProject, Array<string>>;
 
-  constructor(dispatcher: Dispatcher, initialState: InitialState = {}) {
+  constructor(dispatcher: Dispatcher, initialState: ?SerializedState) {
     this._dispatcher = dispatcher;
     this._reactNativeServerActions = new ReactNativeServerActions(dispatcher);
     this._reactNativeServerManager = new ReactNativeServerManager(
@@ -81,13 +79,13 @@ class BuckToolbarStore {
     this._setupActions();
   }
 
-  _initState(initialState: InitialState) {
+  _initState(initialState: ?SerializedState) {
     this._isBuilding = false;
-    this._buildTarget = initialState.buildTarget || '';
+    this._buildTarget = initialState && initialState.buildTarget || '';
     this._buildProgress = 0;
     this._buildRuleType = '';
     this._isReactNativeApp = false;
-    this._isReactNativeServerMode = initialState.isReactNativeServerMode || false;
+    this._isReactNativeServerMode = initialState && initialState.isReactNativeServerMode || false;
   }
 
   _setupActions() {
