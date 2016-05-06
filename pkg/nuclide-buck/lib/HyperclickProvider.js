@@ -108,7 +108,7 @@ const VALID_BUILD_FILE_NAMES = new Set([
 
 module.exports = {
   priority: 200,
-  providerName: 'nuclide-buck-files',
+  providerName: 'nuclide-buck',
   async getSuggestion(textEditor: TextEditor, position: Point): Promise<mixed> {
     const absolutePath = textEditor.getPath();
     if (!absolutePath) {

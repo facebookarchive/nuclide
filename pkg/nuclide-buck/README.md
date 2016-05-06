@@ -1,6 +1,6 @@
-# nuclide-buck-files
+# nuclide-buck
 
-Nuclide feature that adds special handling for `BUCK` files. Features include:
+Buck integration for Nuclide. Features include:
 
 * Syntax highlighting for `BUCK` files.
 * "click-to-symbol" support (if [hyperclick](https://atom.io/packages/hyperclick) is installed) for:
@@ -9,3 +9,4 @@ Nuclide feature that adds special handling for `BUCK` files. Features include:
   * file paths in `BUCK` files
 * Syntax highlighting for `.buckconfig` files (if a package that recognizes the `source.ini`
 grammar is available).
+* A Buck build system for the nuclide-build toolbar.

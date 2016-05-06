@@ -11,8 +11,10 @@
 
 import type {BuildSystem, BuildSystemRegistry} from '../../nuclide-build/lib/types';
 
+import {registerGrammarForFileExtension} from '../../nuclide-atom-helpers';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
+import HyperclickProvider from './HyperclickProvider';
 
 let disposables: ?CompositeDisposable = null;
 let buildSystem: ?BuildSystem = null;
@@ -22,6 +24,9 @@ export function activate(rawState: ?Object = {}): void {
   disposables = new CompositeDisposable(
     new Disposable(() => { buildSystem = null; }),
   );
+  registerGrammarForFileExtension('source.python', 'BUCK');
+  registerGrammarForFileExtension('source.json', 'BUCK.autodeps');
+  registerGrammarForFileExtension('source.ini', '.buckconfig');
 }
 
 export function deactivate(): void {
@@ -43,4 +48,8 @@ function getBuildSystem(): BuildSystem {
     disposables.add(buildSystem);
   }
   return buildSystem;
+}
+
+export function getHyperclickProvider() {
+  return HyperclickProvider;
 }

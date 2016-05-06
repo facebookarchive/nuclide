@@ -9,7 +9,7 @@ Hyperclick is triggered by two events:
 
 ## Known Providers
 
-* [Nuclide](https://atom.io/packages/nuclide) features like nuclide-buck-files, nuclide-clang-atom, nuclide-flow, nuclide-hack and nuclide-ocaml.
+* [Nuclide](https://atom.io/packages/nuclide) features like nuclide-buck, nuclide-clang-atom, nuclide-flow, nuclide-hack and nuclide-ocaml.
 * [js-hyperclick](https://atom.io/packages/js-hyperclick) Jump to variable definitions, including when imported/required from another file
 * [hyperclick-php](https://atom.io/packages/hyperclick-php) Locate php classes with the help of composer, and open the file
 
