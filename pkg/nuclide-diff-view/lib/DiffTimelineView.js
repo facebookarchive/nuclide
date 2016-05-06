@@ -17,6 +17,11 @@ import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
 import RevisionTimelineNode from './RevisionTimelineNode';
 import UncommittedChangesTimelineNode from './UncommittedChangesTimelineNode';
+import {DiffMode} from './constants';
+import {
+  Button,
+  ButtonSizes,
+} from '../../nuclide-ui/lib/Button';
 
 type DiffTimelineViewProps = {
   diffModel: DiffViewModel;
@@ -36,6 +41,7 @@ export default class DiffTimelineView extends React.Component {
     super(props);
     this._subscriptions = new CompositeDisposable();
     (this: any)._updateRevisions = this._updateRevisions.bind(this);
+    (this: any)._handleClickPublish = this._handleClickPublish.bind(this);
     this.state = {
       revisionsState: null,
     };
@@ -69,6 +75,7 @@ export default class DiffTimelineView extends React.Component {
           compareRevisionId={compareCommitId || commitId}
           dirtyFileCount={diffModel.getActiveStackDirtyFileChanges().size}
           onSelectionChange={onSelectionChange}
+          onClickPublish={this._handleClickPublish}
           revisions={revisions}
         />
       );
@@ -81,8 +88,9 @@ export default class DiffTimelineView extends React.Component {
     );
   }
 
-  handleSelectionChange(revision: RevisionInfo): void {
-    this.props.onSelectionChange(revision);
+  _handleClickPublish(): void {
+    const {diffModel} = this.props;
+    diffModel.setViewMode(DiffMode.PUBLISH_MODE);
   }
 
   componentWillUnmount(): void {
@@ -94,7 +102,8 @@ type RevisionsComponentProps = {
   diffModel: DiffViewModel;
   compareRevisionId: number;
   dirtyFileCount: number;
-  onSelectionChange: (revisionInfo: RevisionInfo) => any;
+  onSelectionChange: (revisionInfo: RevisionInfo) => mixed;
+  onClickPublish: () => mixed;
   revisions: Array<RevisionInfo>;
 };
 
@@ -108,7 +117,15 @@ function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Eleme
 
   return (
     <div className="revision-timeline-wrap">
-      <h5 style={{marginTop: 0}}>Compare Revisions</h5>
+      <h5 style={{marginTop: 0}}>
+        <span>Compare Revisions</span>
+        <Button
+          className="pull-right"
+          size={ButtonSizes.SMALL}
+          onClick={props.onClickPublish}>
+          Publish to Phabricator
+        </Button>
+      </h5>
       <div className="revision-selector">
         <div className="revisions">
           <UncommittedChangesTimelineNode
