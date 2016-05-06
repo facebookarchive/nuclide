@@ -13,7 +13,7 @@ import type {Observable} from 'rxjs';
 
 import type {Result} from '../../nuclide-active-editor-based-service';
 
-import type {CoverageResult} from '..';
+import type {CoverageResult} from './types';
 
 import invariant from 'assert';
 import {React} from 'react-for-atom';

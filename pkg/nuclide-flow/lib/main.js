@@ -13,7 +13,7 @@ import type {HyperclickProvider} from '../../hyperclick';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../nuclide-busy-signal';
-import type {CoverageProvider} from '../../nuclide-type-coverage';
+import type {CoverageProvider} from '../../nuclide-type-coverage/lib/types';
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 

@@ -9,17 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-
-// This type is highly likely to change in the near future as we add information like *which* parts
-// of the file are covered. Expect breaking changes.
-export type CoverageResult = number;
-
-export type CoverageProvider = {
-  getCoverage(path: NuclideUri): Promise<?CoverageResult>;
-  priority: number;
-  grammarScopes: Array<string>;
-};
+import type {CoverageResult, CoverageProvider} from './types';
 
 import {React, ReactDOM} from 'react-for-atom';
 
