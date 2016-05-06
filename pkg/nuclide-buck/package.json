@@ -1,9 +1,9 @@
 {
-  "name": "nuclide-build-buck",
+  "name": "nuclide-buck",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main",
   "version": "0.0.0",
-  "description": "Build toolbar integration for Buck.",
+  "description": "Buck integration for Nuclide.",
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"
