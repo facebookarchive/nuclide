@@ -172,7 +172,9 @@ export class NuclideSocket {
     // Exponential reconnect time trials.
     this._reconnectTimer = setTimeout(() => {
       this._reconnectTimer = null;
-      this._reconnect();
+      if (this.isDisconnected()) {
+        this._reconnect();
+      }
     }, this._reconnectTime);
     this._reconnectTime = this._reconnectTime * 2;
     if (this._reconnectTime > MAX_RECONNECT_TIME_MS) {
@@ -208,9 +210,7 @@ export class NuclideSocket {
       this._transport = null;
       transport.close();
     }
-    if (this._reconnectTimer) {
-      clearTimeout(this._reconnectTimer);
-    }
+    this._clearReconnectTimer();
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
     this._heartbeat.close();
   }
