@@ -24,6 +24,22 @@ const LICENSE = `\
  * the root directory of this source tree.
  */`;
 
+// The LICENSE_WITH_FLOW header is meant for files that are read by flow but
+// not by the transpiler. The build transpiler will transpile any file that
+// starts with the right pragma (e.g. 'use babel', "use babel", /* @flow */, or
+// /** @babel */). There is some flow syntax that babel can't handle, this
+// header is for those files.
+const LICENSE_WITH_FLOW = `\
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * @flow
+ */`;
+
 const LINE_RE = /^\n/;
 const LINE_OR_END_RE = /^(\n|$)/;
 
@@ -42,6 +58,10 @@ module.exports = context => {
   return {
     Program(node) {
       let source = sourceCode.text;
+
+      if (source.startsWith(LICENSE_WITH_FLOW)) {
+        return;
+      }
 
       // shebangs and directives are optional
       source = source.replace(SHEBANG_RE, '');

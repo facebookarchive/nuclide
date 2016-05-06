@@ -4,13 +4,15 @@
  *
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
+ *
+ * @flow
  */
+
+/* eslint-disable no-unused-vars */
 
 /*
  * APIs listed in this file are ones that should be built into Flow and need to be upstreamed.
  */
-
-/* eslint-disable no-unused-vars */
 
 interface IDisposable {
   dispose(): mixed;

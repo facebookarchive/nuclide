@@ -4,9 +4,11 @@
  *
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
+ *
+ * @flow
  */
 
-/*eslint-disable jasmine/no-disabled-tests, no-unused-vars */
+/* eslint-disable no-unused-vars */
 
 // Type declarations for Jasmine v1.3
 // https://jasmine.github.io/1.3/introduction.html

@@ -4,9 +4,11 @@
  *
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
+ *
+ * @flow
  */
 
-/*eslint-disable no-unused-vars */
+/* eslint-disable no-unused-vars */
 
 declare class connect$Error extends Error {
   code?: number;

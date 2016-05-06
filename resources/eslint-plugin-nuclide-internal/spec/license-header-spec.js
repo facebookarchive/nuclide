@@ -29,6 +29,17 @@ const LICENSE = `\
  * the root directory of this source tree.
  */`;
 
+const LICENSE_WITH_FLOW = `\
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * @flow
+ */`;
+
 const CODE = 'module.exports = {};';
 
 const LINE_AFTER_FLOW_PRAGMA_ERROR = 'Expected one line break after the flow pragma';
@@ -41,6 +52,10 @@ const ruleTester = new RuleTester({
 
 ruleTester.run('license-header', rule, {
   valid: [
+    {code: [LICENSE_WITH_FLOW].join('\n')},
+    {code: [LICENSE_WITH_FLOW, LINE].join('\n')},
+    {code: [LICENSE_WITH_FLOW, LINE, CODE].join('\n')},
+
     {code: [SHEBANG, USE_BABEL, FLOW, LINE, LICENSE].join('\n')},
     {code: [SHEBANG, USE_BABEL, NO_FLOW, LINE, LICENSE].join('\n')},
     {code: [SHEBANG, USE_BABEL, FLOW, LINE, LICENSE, LINE, CODE].join('\n')},
@@ -83,6 +98,18 @@ ruleTester.run('license-header', rule, {
     {code: [LICENSE, LINE, CODE].join('\n')},
   ],
   invalid: [
+    {
+      code: [SHEBANG, LICENSE_WITH_FLOW].join('\n'),
+      errors: [LICENSE_ERROR],
+    },
+    {
+      code: [USE_BABEL, LICENSE_WITH_FLOW].join('\n'),
+      errors: [LICENSE_ERROR],
+    },
+    {
+      code: [USE_STRICT, LICENSE_WITH_FLOW].join('\n'),
+      errors: [LICENSE_ERROR],
+    },
     {
       code: [SHEBANG].join('\n'),
       errors: [LICENSE_ERROR],
