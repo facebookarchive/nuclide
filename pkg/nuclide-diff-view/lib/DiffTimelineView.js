@@ -57,6 +57,7 @@ export default class DiffTimelineView extends React.Component {
 
   render(): ?React.Element {
     let content = null;
+    const {diffModel, onSelectionChange} = this.props;
     const {revisionsState} = this.state;
     if (revisionsState == null) {
       content = 'Revisions not loaded...';
@@ -64,9 +65,10 @@ export default class DiffTimelineView extends React.Component {
       const {revisions, compareCommitId, commitId} = revisionsState;
       content = (
         <RevisionsTimelineComponent
+          diffModel={diffModel}
           compareRevisionId={compareCommitId || commitId}
-          dirtyFileCount={this.props.diffModel.getActiveStackDirtyFileChanges().size}
-          onSelectionChange={this.props.onSelectionChange}
+          dirtyFileCount={diffModel.getActiveStackDirtyFileChanges().size}
+          onSelectionChange={onSelectionChange}
           revisions={revisions}
         />
       );
@@ -89,6 +91,7 @@ export default class DiffTimelineView extends React.Component {
 }
 
 type RevisionsComponentProps = {
+  diffModel: DiffViewModel;
   compareRevisionId: number;
   dirtyFileCount: number;
   onSelectionChange: (revisionInfo: RevisionInfo) => any;
@@ -109,6 +112,7 @@ function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Eleme
       <div className="revision-selector">
         <div className="revisions">
           <UncommittedChangesTimelineNode
+            diffModel={props.diffModel}
             dirtyFileCount={props.dirtyFileCount}
           />
           {latestToOldestRevisions.map((revision, i) =>
