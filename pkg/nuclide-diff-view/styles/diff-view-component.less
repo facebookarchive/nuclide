@@ -196,10 +196,22 @@
 }
 
 .nuclide-diff-view-block-offset {
+  & when (lightness(@syntax-background-color) <= 50% ) {
+    @diff-block-offset-cross-color: lighten(@syntax-background-color, 3%);
+    .styleBlockOffset();
+  }
+
+  & when ( lightness(@syntax-background-color) >= 50% ) {
+    @diff-block-offset-cross-color: darken(@syntax-background-color, 3%);
+    .styleBlockOffset();
+  }
+}
+
+.styleBlockOffset() {
   background: repeating-linear-gradient(
     -45deg,
-    @background-color-highlight,
-    @background-color-highlight 5px,
+    @diff-block-offset-cross-color,
+    @diff-block-offset-cross-color, 5px,
     transparent 5px,
     transparent 10px
   );
