@@ -496,9 +496,9 @@
       "resolved": "https://registry.npmjs.org/code-point-at/-/code-point-at-1.0.0.tgz"
     },
     "coffee-script": {
-      "version": "1.9.0",
-      "from": "coffee-script@1.9.0",
-      "resolved": "https://registry.npmjs.org/coffee-script/-/coffee-script-1.9.0.tgz"
+      "version": "1.10.0",
+      "from": "coffee-script@>=1.0.1",
+      "resolved": "https://registry.npmjs.org/coffee-script/-/coffee-script-1.10.0.tgz"
     },
     "colors": {
       "version": "1.1.2",
@@ -568,11 +568,6 @@
       "version": "2.0.5",
       "from": "cryptiles@>=2.0.0 <3.0.0",
       "resolved": "https://registry.npmjs.org/cryptiles/-/cryptiles-2.0.5.tgz"
-    },
-    "cson-parser": {
-      "version": "1.0.9",
-      "from": "cson-parser@1.0.9",
-      "resolved": "https://registry.npmjs.org/cson-parser/-/cson-parser-1.0.9.tgz"
     },
     "d": {
       "version": "0.1.1",
@@ -1725,11 +1720,6 @@
       "from": "onetime@>=1.0.0 <2.0.0",
       "resolved": "https://registry.npmjs.org/onetime/-/onetime-1.1.0.tgz"
     },
-    "optimist": {
-      "version": "0.4.0",
-      "from": "optimist@>=0.4.0 <0.5.0",
-      "resolved": "https://registry.npmjs.org/optimist/-/optimist-0.4.0.tgz"
-    },
     "optionator": {
       "version": "0.8.1",
       "from": "optionator@>=0.8.1 <0.9.0",
@@ -2102,11 +2092,6 @@
       "version": "1.1.2",
       "from": "sb-callsite@>=1.1.2 <2.0.0",
       "resolved": "https://registry.npmjs.org/sb-callsite/-/sb-callsite-1.1.2.tgz"
-    },
-    "season": {
-      "version": "5.3.0",
-      "from": "season@5.3.0",
-      "resolved": "https://registry.npmjs.org/season/-/season-5.3.0.tgz"
     },
     "semver": {
       "version": "5.1.0",
