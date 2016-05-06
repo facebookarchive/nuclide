@@ -20,6 +20,7 @@ import {trackTiming} from '../../nuclide-analytics';
 import {fsPromise} from '../../nuclide-commons';
 import {getLogger} from '../../nuclide-logging';
 import {BuckProject} from '../../nuclide-buck-base/lib/BuckProject';
+import {isHeaderFile, isSourceFile} from './utils';
 
 const logger = getLogger();
 
@@ -29,8 +30,6 @@ const COMPILATION_DATABASE_FILE = 'compile_commands.json';
  * This target will never produce compilation flags, so make sure to ignore it.
  */
 const DEFAULT_HEADERS_TARGET = '__default_headers__';
-const HEADER_EXTENSIONS = new Set(['.h', '.hh', '.hpp', '.hxx', '.h++']);
-const SOURCE_EXTENSIONS = new Set(['.c', '.cc', '.cpp', '.cxx', '.c++', 'm', 'mm']);
 
 const CLANG_FLAGS_THAT_TAKE_PATHS = new Set([
   '-F',
@@ -45,14 +44,6 @@ const SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS = new Set(
   Array.from(CLANG_FLAGS_THAT_TAKE_PATHS)
     .filter(item => item.length === 2)
 );
-
-function isHeaderFile(filename: string): boolean {
-  return HEADER_EXTENSIONS.has(path.extname(filename));
-}
-
-function isSourceFile(filename: string): boolean {
-  return SOURCE_EXTENSIONS.has(path.extname(filename));
-}
 
 export type ClangFlags = {
   flags: ?Array<string>;
