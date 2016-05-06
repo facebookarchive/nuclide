@@ -818,7 +818,7 @@ class DiffViewModel {
         ...this._state,
         publishModeState: PublishModeState.READY,
       });
-      this._loadModeState(true);
+      this.setViewMode(DiffMode.BROWSE_MODE);
     } catch (error) {
       notifyInternalError(error, true /*persist the error (user dismissable)*/);
       this._setState({
@@ -1264,7 +1264,7 @@ class DiffViewModel {
 
       // Force trigger an update to the revisions to update the UI state with the new commit info.
       activeStack.getRevisionsStatePromise();
-      this._loadModeState(true);
+      this.setViewMode(DiffMode.BROWSE_MODE);
     } catch (e) {
       atom.notifications.addError(
         'Error creating commit',
