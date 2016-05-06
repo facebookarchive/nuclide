@@ -11,8 +11,8 @@
 
 import type {RequestOptions} from './utils';
 import type {AgentOptions} from './main';
-const {asyncRequest} = require('./utils');
-const {Emitter} = require('event-kit');
+import {asyncRequest} from './utils';
+import {Emitter} from 'event-kit';
 import {HEARTBEAT_CHANNEL} from './config';
 
 const HEARTBEAT_INTERVAL_MS = 5000;
@@ -26,7 +26,7 @@ export class XhrConnectionHeartbeat {
   _emitter: Emitter;
   _options: RequestOptions;
 
-  constructor(serverUri: string, agentOptions?: AgentOptions) {
+  constructor(serverUri: string, agentOptions: ?AgentOptions) {
     this._heartbeatConnectedOnce = false;
     this._lastHeartbeat = null;
     this._lastHeartbeatTime = null;

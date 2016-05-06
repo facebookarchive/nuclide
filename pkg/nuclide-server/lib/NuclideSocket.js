@@ -82,7 +82,7 @@ export class NuclideSocket {
     const {protocol, host} = url.parse(serverUri);
     this._websocketUri = `ws${protocol === 'https:' ? 's' : ''}://${host}`;
 
-    this._heartbeat = new XhrConnectionHeartbeat(serverUri);
+    this._heartbeat = new XhrConnectionHeartbeat(serverUri, options);
     this._heartbeat.onConnectionRestored(() => {
       this._scheduleReconnect();
     });
