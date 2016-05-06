@@ -16,7 +16,7 @@ import {
   atomEventDebounce,
 } from '../../nuclide-atom-helpers';
 
-import {event as commonsEvent} from '../../nuclide-commons';
+import {event as commonsEvent, cacheWhileSubscribed} from '../../nuclide-commons';
 
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
@@ -110,9 +110,7 @@ export class ActiveEditorBasedService<T: Provider, V> {
   }
 
   _createResultsStream(eventSources: EventSources): Observable<Result<V>> {
-    // Emit a pane change event first, so that clients can do something while waiting for a provider
-    // to give a result.
-    return eventSources.activeEditors.switchMap(editorArg => {
+    const results = eventSources.activeEditors.switchMap(editorArg => {
       // Necessary so the type refinement holds in the callback later
       const editor = editorArg;
       if (editor == null) {
@@ -120,11 +118,14 @@ export class ActiveEditorBasedService<T: Provider, V> {
       }
 
       return Observable.concat(
+        // Emit a pane change event first, so that clients can do something while waiting for a
+        // provider to give a result.
         Observable.of({kind: 'pane-change'}),
         Observable.fromPromise(this._getResultForEditor(editor)),
         this._resultsForEditor(editor, eventSources),
       );
     });
+    return cacheWhileSubscribed(results);
   }
 
   _resultsForEditor(editor: atom$TextEditor, eventSources: EventSources): Observable<Result<V>> {
