@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-import type Commands from './Commands';
-import type {Gadget} from '../../nuclide-gadgets';
-import type {AppState, Record, Executor} from './types';
+import type Commands from '../Commands';
+import type {Gadget} from '../../../nuclide-gadgets';
+import type {AppState, Record, Executor} from '../types';
 import type Rx from 'rxjs';
 
 import Console from './Console';
 import {React} from 'react-for-atom';
-import getCurrentExecutorId from './getCurrentExecutorId';
+import getCurrentExecutorId from '../getCurrentExecutorId';
 
 type State = {
   currentExecutor: ?Executor;

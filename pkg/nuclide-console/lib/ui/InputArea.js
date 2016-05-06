@@ -10,9 +10,9 @@
  */
 
 import {React, ReactDOM} from 'react-for-atom';
-import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
+import {AtomTextEditor} from '../../../nuclide-ui/lib/AtomTextEditor';
 import Rx from 'rxjs';
-import {DisposableSubscription} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../../nuclide-commons';
 
 type Props = {
   onSubmit: (value: string) => mixed;

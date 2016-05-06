@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {Record, Executor} from './types';
+import type {Record, Executor} from '../types';
 
-import {debounce} from '../../nuclide-commons';
+import {debounce} from '../../../nuclide-commons';
 import {React} from 'react-for-atom';
 import OutputTable from './OutputTable';
 import ConsoleHeader from './ConsoleHeader';

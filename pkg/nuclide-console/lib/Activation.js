@@ -16,7 +16,7 @@ import {DisposableSubscription} from '../../nuclide-commons';
 import {CompositeDisposable, Disposable} from 'atom';
 import * as ActionTypes from './ActionTypes';
 import Commands from './Commands';
-import createConsoleGadget from './createConsoleGadget';
+import createConsoleGadget from './ui/createConsoleGadget';
 import createStateStream from './createStateStream';
 import featureConfig from '../../nuclide-feature-config';
 import OutputService from './OutputService';

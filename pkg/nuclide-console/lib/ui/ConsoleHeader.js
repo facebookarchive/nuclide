@@ -10,12 +10,12 @@
  */
 
 import {React} from 'react-for-atom';
-import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
-import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
+import {Toolbar} from '../../../nuclide-ui/lib/Toolbar';
+import {ToolbarRight} from '../../../nuclide-ui/lib/ToolbarRight';
 import {
   Button,
   ButtonSizes,
-} from '../../nuclide-ui/lib/Button';
+} from '../../../nuclide-ui/lib/Button';
 
 type Props = {
   clear: () => void;

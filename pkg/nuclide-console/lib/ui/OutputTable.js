@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Record} from './types';
+import type {Record} from '../types';
 
 import {React} from 'react-for-atom';
 import RecordView from './RecordView';

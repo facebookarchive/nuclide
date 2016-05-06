@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Record} from './types';
+import type {Record} from '../types';
 
 import CodeBlock from './CodeBlock';
 import classnames from 'classnames';

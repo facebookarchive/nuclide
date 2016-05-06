@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
+import {AtomTextEditor} from '../../../nuclide-ui/lib/AtomTextEditor';
 import {React} from 'react-for-atom';
 
 type Props = {
