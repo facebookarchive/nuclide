@@ -9,35 +9,33 @@
  * the root directory of this source tree.
  */
 
-/*eslint-disable no-var, prefer-const*/
+const rule = require('../license-header');
+const RuleTester = require('eslint').RuleTester;
 
-var rule = require('../license-header');
-var RuleTester = require('eslint').RuleTester;
+const SHEBANG = '#!/usr/bin/env node';
+const USE_BABEL = '\'use babel\';';
+const USE_STRICT = '\'use strict\';';
+const FLOW = '/* @flow */';
+const NO_FLOW = '/* @noflow */';
 
-var SHEBANG = '#!/usr/bin/env node';
-var USE_BABEL = '\'use babel\';';
-var USE_STRICT = '\'use strict\';';
-var FLOW = '/* @flow */';
-var NO_FLOW = '/* @noflow */';
+const LINE = '';
 
-var LINE = '';
+const LICENSE = `\
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */`;
 
-var LICENSE =
-  '/*\n' +
-  ' * Copyright (c) 2015-present, Facebook, Inc.\n' +
-  ' * All rights reserved.\n' +
-  ' *\n' +
-  ' * This source code is licensed under the license found in the LICENSE file in\n' +
-  ' * the root directory of this source tree.\n' +
-  ' */';
+const CODE = 'module.exports = {};';
 
-var CODE = 'module.exports = {};';
+const LINE_AFTER_FLOW_PRAGMA_ERROR = 'Expected one line break after the flow pragma';
+const LICENSE_ERROR = 'Expected a license header';
+const LINE_AFTER_LICENSE_ERROR = 'Expected a line break after the license header';
 
-var LINE_AFTER_FLOW_PRAGMA_ERROR = 'Expected one line break after the flow pragma';
-var LICENSE_ERROR = 'Expected a license header';
-var LINE_AFTER_LICENSE_ERROR = 'Expected a line break after the license header';
-
-var ruleTester = new RuleTester({
+const ruleTester = new RuleTester({
   parser: 'babel-eslint',
 });
 

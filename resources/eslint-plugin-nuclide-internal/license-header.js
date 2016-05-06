@@ -15,14 +15,14 @@ const SHEBANG_RE = /^#!\/usr\/bin\/env node\n/;
 const DIRECTIVES_RE = /^['"]use (babel|strict)['"];\n/;
 const FLOW_PRAGMA_RE = /^\/\* @(no)?flow \*\//;
 
-const LICENSE =
-  '/*\n' +
-  ' * Copyright (c) 2015-present, Facebook, Inc.\n' +
-  ' * All rights reserved.\n' +
-  ' *\n' +
-  ' * This source code is licensed under the license found in the LICENSE file in\n' +
-  ' * the root directory of this source tree.\n' +
-  ' */';
+const LICENSE = `\
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */`;
 
 const LINE_RE = /^\n/;
 const LINE_OR_END_RE = /^(\n|$)/;
@@ -68,7 +68,7 @@ module.exports = context => {
       }
 
       // license is NOT optional
-      if (startsWith(source, LICENSE)) {
+      if (source.startsWith(LICENSE)) {
         source = source.replace(LICENSE, '').replace(LINE_RE, '');
         if (LINE_OR_END_RE.test(source)) {
           // all ok
@@ -93,9 +93,5 @@ module.exports = context => {
     },
   };
 };
-
-function startsWith(str, prefix) {
-  return typeof str === 'string' && str.indexOf(prefix) === 0;
-}
 
 module.exports.schema = [];

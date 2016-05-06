@@ -22,15 +22,15 @@ ruleTester.run('consistent-import-name', rule, {
     {code: 'var whateverModule = require("whateverModule")'},
     {
       code: 'import "path"',
-      ecmaFeatures: {modules: true},
+      parserOptions: {sourceType: 'module'},
     },
     {
       code: 'import pathModule from "path"',
-      ecmaFeatures: {modules: true},
+      parserOptions: {sourceType: 'module'},
     },
     {
       code: 'import * as path from "path"', // used as "import typeof"
-      ecmaFeatures: {modules: true},
+      parserOptions: {sourceType: 'module'},
     },
   ],
   invalid: [
@@ -43,7 +43,7 @@ ruleTester.run('consistent-import-name', rule, {
     },
     {
       code: 'var {path} = require("path")',
-      ecmaFeatures: {destructuring: true},
+      parserOptions: {ecmaVersion: 7},
       errors: [{
         message: 'path should be named "path" or "pathModule"',
         type: 'ObjectPattern',
@@ -51,7 +51,7 @@ ruleTester.run('consistent-import-name', rule, {
     },
     {
       code: 'import pathUtils from "path"',
-      ecmaFeatures: {modules: true},
+      parserOptions: {sourceType: 'module'},
       errors: [{
         message: 'path should be named "path" or "pathModule"',
         type: 'ImportDefaultSpecifier',
@@ -59,7 +59,7 @@ ruleTester.run('consistent-import-name', rule, {
     },
     {
       code: 'import * as pathUtils from "path"',
-      ecmaFeatures: {modules: true},
+      parserOptions: {sourceType: 'module'},
       errors: [{
         message: 'path should be named "path" or "pathModule"',
         type: 'ImportNamespaceSpecifier',
@@ -67,7 +67,7 @@ ruleTester.run('consistent-import-name', rule, {
     },
     {
       code: 'import {path} from "path"',
-      ecmaFeatures: {modules: true},
+      parserOptions: {sourceType: 'module'},
       errors: [{
         message: 'path should be named "path" or "pathModule"',
         type: 'ImportSpecifier',
@@ -75,7 +75,7 @@ ruleTester.run('consistent-import-name', rule, {
     },
     {
       code: 'import pathModule, {path} from "path"',
-      ecmaFeatures: {modules: true},
+      parserOptions: {sourceType: 'module'},
       errors: [{
         message: 'path should be named "path" or "pathModule"',
         type: 'ImportSpecifier',
@@ -83,7 +83,7 @@ ruleTester.run('consistent-import-name', rule, {
     },
     {
       code: 'import pathUtils, {path} from "path"',
-      ecmaFeatures: {modules: true},
+      parserOptions: {sourceType: 'module'},
       errors: [{
         message: 'path should be named "path" or "pathModule"',
         type: 'ImportDefaultSpecifier',

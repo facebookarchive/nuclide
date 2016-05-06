@@ -28,13 +28,13 @@ module.exports = function(context) {
   }
 
   return {
-    ImportNamespaceSpecifier: function(node) {
+    ImportNamespaceSpecifier(node) {
       if (node.parent.importKind !== 'type') {
         return;
       }
       checkIdentifier(node.local);
     },
-    ImportSpecifier: function(node) {
+    ImportSpecifier(node) {
       if (node.parent.importKind !== 'type') {
         return;
       }
