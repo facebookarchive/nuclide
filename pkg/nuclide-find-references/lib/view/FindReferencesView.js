@@ -35,6 +35,7 @@ const FindReferencesView = React.createClass({
     return {
       loading: true,
       fetched: 0,
+      selected: -1,
       references,
     };
   },
@@ -67,12 +68,18 @@ const FindReferencesView = React.createClass({
     }
   },
 
+  _childClick(i: number) {
+    this.setState({selected: (this.state.selected === i) ? -1 : i});
+  },
+
   render(): React.Element {
     const children = this.state.references.map((fileRefs, i) =>
       <FileReferencesView
         key={i}
+        isSelected={this.state.selected === i}
         {...fileRefs}
         basePath={this.props.model.getBasePath()}
+        clickCallback={() => this._childClick(i)}
       />
     );
 
@@ -88,12 +95,18 @@ const FindReferencesView = React.createClass({
     }
 
     return (
-      <div className="nuclide-find-references" onScroll={this._onScroll} ref="root" tabIndex="0">
-        <div className="nuclide-find-references-count">
-          Found {refCount} {pluralize('reference', refCount)}{' '}
-          in {fileCount} {pluralize('file', fileCount)}.
+      <div className="nuclide-find-references">
+        <div className="nuclide-find-references-count panel-heading">
+          {refCount} {pluralize('reference', refCount)}{' '}
+          found in {fileCount} {pluralize('file', fileCount)} for{' '}
+          <span className="highlight-info">
+            {this.props.model.getSymbolName()}
+          </span>
         </div>
-        {children}
+        <ul className="nuclide-find-references-files list-tree has-collapsable-children"
+            onScroll={this._onScroll} ref="root" tabIndex="0">
+          {children}
+        </ul>
       </div>
     );
   },

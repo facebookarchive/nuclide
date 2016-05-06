@@ -4,17 +4,31 @@
   background-color: @base-background-color;
   color: @text-color;
   font-size: @font-size;
-  height: 100%;
-  overflow-y: scroll;
-  padding: 12px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: -webkit-flex;
+  flex-direction: column;
 }
 
 .nuclide-find-references-loading {
   margin: auto;
 }
 
+.nuclide-find-references-count {
+  -webkit-flex-shrink: 0;
+}
+
+.nuclide-find-references-files {
+  padding: 0 12px;
+  position: relative;
+  overflow: auto;
+  -webkit-flex: 1;
+}
+
 .nuclide-find-references-file {
-  margin-top: 12px;
 }
 
 .nuclide-find-references-filename {
@@ -22,8 +36,15 @@
   word-break: break-all;
 }
 
+.nuclide-find-references-ref-count {
+  margin-left: 6px;
+  position: relative;
+  top: -2px;
+}
+
 .nuclide-find-references-refs {
-  margin: 12px 0 0 16px;
+  margin: 4px 0 0 16px;
+  padding: 0;
 }
 
 .nuclide-find-references-ref {

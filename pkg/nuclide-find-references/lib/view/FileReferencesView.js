@@ -12,6 +12,7 @@
 import type {Reference, ReferenceGroup} from '../types';
 
 import {React} from 'react-for-atom';
+import classnames from 'classnames';
 import FilePreview from './FilePreview';
 import {relative} from '../../../nuclide-remote-uri';
 
@@ -22,6 +23,14 @@ const FileReferencesView = React.createClass({
     previewText: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
     refGroups: React.PropTypes.arrayOf(React.PropTypes.object /*ReferenceGroup*/).isRequired,
     basePath: React.PropTypes.string.isRequired,
+    clickCallback: React.PropTypes.func.isRequired,
+    isSelected: React.PropTypes.bool.isRequired,
+  },
+
+  getInitialState() {
+    return {
+      isExpanded: true,
+    };
   },
 
   _onRefClick(ref: Reference) {
@@ -32,6 +41,13 @@ const FileReferencesView = React.createClass({
   },
 
   _onFileClick() {
+    this.props.clickCallback();
+    this.setState({
+      isExpanded: !this.state.isExpanded,
+    });
+  },
+
+  _onFileNameClick() {
     atom.workspace.open(this.props.uri);
   },
 
@@ -60,28 +76,38 @@ const FileReferencesView = React.createClass({
       });
 
       return (
-        <div key={group.startLine} className="nuclide-find-references-ref">
+        <li key={group.startLine} className="nuclide-find-references-ref">
           {ranges}
           <FilePreview
             grammar={this.props.grammar}
             text={previewText}
             {...group}
           />
-        </div>
+        </li>
       );
+    });
+    const outerClassName = classnames('nuclide-find-references-file list-nested-item', {
+      'collapsed': !this.state.isExpanded,
+      'expanded': this.state.isExpanded,
+      'selected': this.props.isSelected,
     });
 
     return (
-      <div className="nuclide-find-references-file">
-        <div className="nuclide-find-references-filename">
-          <a onClick={this._onFileClick}>
+      <li className={`${outerClassName}`}
+          onClick={this._onFileClick}>
+        <div className="nuclide-find-references-filename list-item">
+          <span className="icon-file-text icon" />
+          <a onClick={this._onFileNameClick}>
             {relative(this.props.basePath, this.props.uri)}
           </a>
+          <span className="nuclide-find-references-ref-count badge badge-small">
+            {groups.length}
+          </span>
         </div>
-        <div className="nuclide-find-references-refs">
+        <ul className="nuclide-find-references-refs list-tree">
           {groups}
-        </div>
-      </div>
+        </ul>
+      </li>
     );
   },
 });
