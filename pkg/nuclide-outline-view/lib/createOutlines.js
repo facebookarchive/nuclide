@@ -26,14 +26,7 @@ export function createOutlines(editorService: ActiveEditorBasedService): Observa
 function outlinesForProviderResults(
   providerResults: Observable<Result<?Outline>>,
 ): Observable<OutlineForUi> {
-  return providerResults
-    // Don't change the UI after 'edit' events.
-    // It's better to just leave the existing outline visible until the new results come in.
-    // Note: Ideally we'd just handle this in `uiOutlinesForResult`, but since switchMap
-    // disconnects the previous observable as soon as a new result comes in,
-    // any 'edit' event interrupts the pending loading event from 'pane-change'.
-    .filter(result => result.kind !== 'edit')
-    .switchMap(uiOutlinesForResult);
+  return providerResults.switchMap(uiOutlinesForResult);
 }
 
 function uiOutlinesForResult(result: Result<?Outline>): Observable<OutlineForUi> {
@@ -61,8 +54,9 @@ function uiOutlinesForResult(result: Result<?Outline>): Observable<OutlineForUi>
     case 'provider-error':
       return Observable.of({kind: 'provider-no-outline'});
     default:
-      // The last case, 'edit', is already filtered out above, but Flow doesn't know that.
-      throw new Error(`Unexpected editor provider result ${result.kind}`);
+      // Don't change the UI after 'edit' or 'save' events.
+      // It's better to just leave the existing outline visible until the new results come in.
+      return Observable.empty();
   }
 }
 
