@@ -60,13 +60,12 @@ export function deactivate(): void {
   subscriptions = (null: any);
 }
 
-export function consumeGadgetsService(api: GadgetsService): IDisposable {
+export function consumeGadgetsService(api: GadgetsService): void {
   const createHomePaneItem = require('./createHomePaneItem');
   gadgetsApi = api;
   const gadget = createHomePaneItem(allHomeFragmentsStream);
-  const disposable = api.registerGadget(gadget);
+  subscriptions.add(api.registerGadget(gadget));
   considerDisplayingHome();
-  return disposable;
 }
 
 export function consumeToolBar(getToolBar: (group: string) => Object): void {

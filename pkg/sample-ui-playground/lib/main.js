@@ -12,8 +12,23 @@
 import type {Gadget, GadgetsService} from '../../nuclide-gadgets';
 
 import {Playground} from './Playground';
+import invariant from 'assert';
+import {CompositeDisposable} from 'atom';
 
-export function consumeGadgetsService(api: GadgetsService): IDisposable {
-  const disposable = api.registerGadget(((Playground: any): Gadget));
-  return disposable;
+let disposables: ?CompositeDisposable = null;
+
+export function activate(): void {
+  disposables = new CompositeDisposable();
+}
+
+export function deactivate(): void {
+  invariant(disposables != null);
+  disposables.dispose();
+  disposables = null;
+}
+
+export function consumeGadgetsService(api: GadgetsService): void {
+  invariant(disposables != null);
+  disposables.add(api.registerGadget(((Playground: any): Gadget)));
+  // Optionally return a disposable to clean up this package's state when gadgets goes away
 }

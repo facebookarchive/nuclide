@@ -105,10 +105,10 @@ export function consumeToolBar(getToolBar: (group: string) => Object): void {
   }));
 }
 
-export function consumeGadgetsService(gadgetsApi: GadgetsService): IDisposable {
+export function consumeGadgetsService(gadgetsApi: GadgetsService): void {
   invariant(paneItemState$);
   const gadget: Gadget = (createHealthGadget(paneItemState$): any);
-  return gadgetsApi.registerGadget(gadget);
+  subscriptions.add(gadgetsApi.registerGadget(gadget));
 }
 
 function disposeActiveEditorDisposables(): void {

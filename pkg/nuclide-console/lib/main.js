@@ -32,11 +32,9 @@ export function deactivate() {
   }
 }
 
-export function consumeGadgetsService(
-  gadgetsApi: GadgetsService,
-): IDisposable {
+export function consumeGadgetsService(gadgetsApi: GadgetsService): void {
   invariant(activation);
-  return activation.consumeGadgetsService(gadgetsApi);
+  activation.consumeGadgetsService(gadgetsApi);
 }
 
 export function provideOutputService(): OutputService {

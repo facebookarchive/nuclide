@@ -89,9 +89,9 @@ class Activation {
     this._disposables.dispose();
   }
 
-  consumeGadgetsService(gadgetsApi: GadgetsService): IDisposable {
+  consumeGadgetsService(gadgetsApi: GadgetsService): void {
     const OutputGadget = createConsoleGadget(this._state$.asObservable(), this._commands);
-    return gadgetsApi.registerGadget(((OutputGadget: any): Gadget));
+    this._disposables.add(gadgetsApi.registerGadget(((OutputGadget: any): Gadget)));
   }
 
   provideOutputService(): OutputService {

@@ -12,10 +12,24 @@
 import type {Gadget, GadgetsService} from '../../nuclide-gadgets';
 
 import {ExamplePaneItem} from './createExamplePaneItem';
+import invariant from 'assert';
+import {CompositeDisposable} from 'atom';
 
-export function consumeGadgetsService(api: GadgetsService): IDisposable {
-  const disposable = api.registerGadget(((ExamplePaneItem: any): Gadget));
+let disposables: ?CompositeDisposable = null;
+
+export function activate() {
+  disposables = new CompositeDisposable();
+}
+
+export function consumeGadgetsService(api: GadgetsService): void {
+  invariant(disposables != null);
+  disposables.add(api.registerGadget(((ExamplePaneItem: any): Gadget)));
   // you could now keep a reference to `api` and use it to call, for example:
   // `api.showGadget('sample-gadget');`
-  return disposable;
+}
+
+export function deactivate(): void {
+  invariant(disposables != null);
+  disposables.dispose();
+  disposables = null;
 }

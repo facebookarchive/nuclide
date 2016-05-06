@@ -11,7 +11,23 @@
 
 import type {GadgetsService} from '../../nuclide-gadgets';
 
-export function consumeGadgetsService(api: GadgetsService): IDisposable {
+import invariant from 'assert';
+import {CompositeDisposable} from 'atom';
+
+let disposables: ?CompositeDisposable = null;
+
+export function activate(): void {
+  disposables = new CompositeDisposable();
+}
+
+export function deactivate(): void {
+  invariant(disposables != null);
+  disposables.dispose();
+  disposables = null;
+}
+
+export function consumeGadgetsService(api: GadgetsService): void {
   const Inspector = require('./ui/Inspector');
-  return api.registerGadget(Inspector);
+  invariant(disposables != null);
+  disposables.add(api.registerGadget(Inspector));
 }
