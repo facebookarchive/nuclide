@@ -367,9 +367,7 @@ class Server:
     def get_outline(self, request, response):
         contents = request['contents']
         flags = request['flags']
-        # Note that this does /not/ update the translation unit.
-        # This is intentional, as we do not want to block autocomplete.
-        translation_unit = self._get_translation_unit(contents, flags)
+        translation_unit = self._update_translation_unit(contents, flags)
         if not translation_unit:
             return
         response['outline'] = outline.get_outline(translation_unit, self.src)
