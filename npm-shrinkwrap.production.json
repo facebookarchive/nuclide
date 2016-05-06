@@ -459,7 +459,7 @@
     },
     "escape-string-regexp": {
       "version": "1.0.5",
-      "from": "escape-string-regexp@>=1.0.2 <2.0.0",
+      "from": "escape-string-regexp@1.0.5",
       "resolved": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz"
     },
     "esprima-fb": {
@@ -1037,9 +1037,9 @@
       "resolved": "https://registry.npmjs.org/node-dir/-/node-dir-0.1.8.tgz"
     },
     "node-fetch": {
-      "version": "1.5.1",
+      "version": "1.5.2",
       "from": "node-fetch@>=1.0.1 <2.0.0",
-      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-1.5.1.tgz"
+      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-1.5.2.tgz"
     },
     "node-int64": {
       "version": "0.4.0",

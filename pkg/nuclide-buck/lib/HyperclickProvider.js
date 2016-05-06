@@ -18,12 +18,7 @@ import {buckProjectRootForPath} from '../../nuclide-buck-commons';
 import {fsPromise} from '../../nuclide-commons';
 import {goToLocation, extractWordAtPosition} from '../../nuclide-atom-helpers';
 import pathModule from 'path';
-
-const ESCAPE_REGEXP = /([.*+?^${}()|\[\]\/\\])/g;
-
-function escapeRegExp(str: string): string {
-  return str.replace(ESCAPE_REGEXP, '\\$1');
-}
+import escapeStringRegExp from 'escape-string-regexp';
 
 /**
  * Takes target regex match and file path where given target is found as
@@ -85,7 +80,7 @@ async function findTargetLocation(target: Target): Promise {
       '^\\s*' + // beginning of the line
       'name\\s*=\\s*' + // name =
       '[\'"]' + // opening quotation mark
-      escapeRegExp(target.name) + // target name
+      escapeStringRegExp(target.name) + // target name
       '[\'"]' + // closing quotation mark
       ',?$' // optional trailling comma
   );
