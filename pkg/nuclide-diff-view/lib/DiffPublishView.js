@@ -16,7 +16,7 @@ import type {PublishModeType, PublishModeStateType} from './types';
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-base/lib/utils';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 import classnames from 'classnames';
-import {PublishMode, PublishModeState} from './constants';
+import {DiffMode, PublishMode, PublishModeState} from './constants';
 import {React} from 'react-for-atom';
 import {
   Button,
@@ -64,8 +64,13 @@ class DiffPublishView extends React.Component {
   _textBuffer: TextBuffer;
   _subscriptions: CompositeDisposable;
 
-  componentDidMount(): void {
+  constructor(props: Props) {
+    super(props);
+    (this: any)._onClickBack = this._onClickBack.bind(this);
     (this: any)._onClickPublish = this._onClickPublish.bind(this);
+  }
+
+  componentDidMount(): void {
     this._textBuffer = new TextBuffer();
     this._subscriptions = new CompositeDisposable();
 
@@ -209,11 +214,20 @@ class DiffPublishView extends React.Component {
             {revisionView}
           </ToolbarLeft>
           <ToolbarRight>
+            <Button
+              size={ButtonSizes.SMALL}
+              onClick={this._onClickBack}>
+              Back
+            </Button>
             {publishButton}
           </ToolbarRight>
         </Toolbar>
       </div>
     );
+  }
+
+  _onClickBack(): void {
+    this.props.diffModel.setViewMode(DiffMode.BROWSE_MODE);
   }
 }
 

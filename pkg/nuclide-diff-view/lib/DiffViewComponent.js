@@ -429,12 +429,10 @@ class DiffViewComponent extends React.Component {
   render(): React.Element {
     let toolbarComponent = null;
     if (this.state.toolbarVisible) {
-      const {viewMode} = this.props.diffModel.getState();
       const {oldEditorState, newEditorState} = this.state;
       toolbarComponent = (
         <DiffViewToolbar
           filePath={this.state.filePath}
-          diffMode={viewMode}
           newRevisionTitle={newEditorState.revisionTitle}
           oldRevisionTitle={oldEditorState.revisionTitle}
           onSwitchMode={this._onChangeMode}

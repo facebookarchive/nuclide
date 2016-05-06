@@ -15,7 +15,7 @@ import type DiffViewModel from './DiffViewModel';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import classnames from 'classnames';
-import {CommitMode, CommitModeState} from './constants';
+import {DiffMode, CommitMode, CommitModeState} from './constants';
 import {React} from 'react-for-atom';
 import {
   Button,
@@ -40,6 +40,7 @@ class DiffCommitView extends React.Component {
     super(props);
     (this: any)._onClickCommit = this._onClickCommit.bind(this);
     (this: any)._onToggleAmend = this._onToggleAmend.bind(this);
+    (this: any)._onClickBack = this._onClickBack.bind(this);
   }
 
   componentDidMount(): void {
@@ -101,6 +102,11 @@ class DiffCommitView extends React.Component {
           </ToolbarLeft>
           <ToolbarRight>
             <Button
+              size={ButtonSizes.SMALL}
+              onClick={this._onClickBack}>
+              Back
+            </Button>
+            <Button
               className={btnClassname}
               size={ButtonSizes.SMALL}
               buttonType={ButtonTypes.SUCCESS}
@@ -116,6 +122,10 @@ class DiffCommitView extends React.Component {
 
   _onClickCommit(): void {
     this.props.diffModel.commit(this._getCommitMessage());
+  }
+
+  _onClickBack(): void {
+    this.props.diffModel.setViewMode(DiffMode.BROWSE_MODE);
   }
 
   _getCommitMessage(): string {
