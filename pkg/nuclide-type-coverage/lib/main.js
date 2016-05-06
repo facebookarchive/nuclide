@@ -28,7 +28,7 @@ import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
 
 import {ActiveEditorBasedService} from '../../nuclide-active-editor-based-service';
-import {passesGKSafe} from '../../nuclide-commons';
+import {passesGK} from '../../nuclide-commons';
 
 import {StatusBarTile} from './StatusBarTile';
 
@@ -39,7 +39,7 @@ async function resultFunction(
   provider: CoverageProvider,
   editor: atom$TextEditor,
 ): Promise<?CoverageResult> {
-  if (!await passesGKSafe(GK_TYPE_COVERAGE, 0)) {
+  if (!await passesGK(GK_TYPE_COVERAGE, 0)) {
     return null;
   }
   const path = editor.getPath();

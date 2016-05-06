@@ -153,11 +153,7 @@ class SearchResultManager {
 
   async _setupGkConfig(): Promise<void> {
     this._shouldRankProviders = false;
-    try {
-      this._shouldRankProviders = await passesGK(GK_BASIC_RANKED_OMNISEARCH);
-    } catch (e) {
-      this._shouldRankProviders = false;
-    }
+    this._shouldRankProviders = await passesGK(GK_BASIC_RANKED_OMNISEARCH);
   }
 
   _setUpFlux(): void {

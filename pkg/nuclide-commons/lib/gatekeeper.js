@@ -12,6 +12,9 @@
 // undefined means unknown. null means known to not be present.
 let gatekeeper = undefined;
 
+/**
+ * Check a GK. Silently return false on error.
+ */
 export async function passesGK(gatekeeperName: string, timeout?: number): Promise<boolean> {
   // Only do the expensive require once.
   if (gatekeeper === undefined) {
@@ -22,16 +25,12 @@ export async function passesGK(gatekeeperName: string, timeout?: number): Promis
     }
   }
 
-  return gatekeeper == null
-    ? false
-    : (await gatekeeper.asyncIsGkEnabled(gatekeeperName, timeout)) === true;
-}
-
-/**
- * Check a GK but silently return false on error.
- * Use this for features that should work despite gatekeepers not being available.
- */
-export function passesGKSafe(gatekeeperName: string, timeout?: number): Promise<boolean> {
-  return passesGK(gatekeeperName, timeout)
-    .catch(() => false);
+  if (gatekeeper == null) {
+    return false;
+  }
+  try {
+    return (await gatekeeper.asyncIsGkEnabled(gatekeeperName, timeout)) === true;
+  } catch (e) {
+    return false;
+  }
 }

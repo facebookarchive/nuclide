@@ -26,14 +26,14 @@ import {
 } from 'atom';
 import invariant from 'assert';
 import {makeDiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
-import {passesGKSafe} from '../../nuclide-commons';
+import {passesGK} from '../../nuclide-commons';
 
 
 const GK_DIAGNOSTICS_DATATIPS = 'nuclide_diagnostics_datatips';
 
 const DATATIP_PACKAGE_NAME = 'nuclide-diagnostics-datatip';
 export async function datatip(editor: TextEditor, position: atom$Point): Promise<?Datatip> {
-  if (!await passesGKSafe(GK_DIAGNOSTICS_DATATIPS, 0)) {
+  if (!await passesGK(GK_DIAGNOSTICS_DATATIPS, 0)) {
     return null;
   }
   invariant(fileDiagnostics);

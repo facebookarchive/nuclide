@@ -20,7 +20,7 @@ import {extractWordAtPosition} from '../../nuclide-atom-helpers';
 import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 import {DebuggerMode} from './DebuggerStore';
 import {DebuggerDatatipComponent} from './DebuggerDatatipComponent';
-import {passesGKSafe} from '../../nuclide-commons';
+import {passesGK} from '../../nuclide-commons';
 
 const GK_DEBUGGER_DATATIPS = 'nuclide_debugger_datatips';
 
@@ -70,7 +70,7 @@ export async function debuggerDatatip(
   editor: TextEditor,
   position: atom$Point,
 ): Promise<?Datatip> {
-  if (!await passesGKSafe(GK_DEBUGGER_DATATIPS, 0)) {
+  if (!await passesGK(GK_DEBUGGER_DATATIPS, 0)) {
     return null;
   }
   if (model.getStore().getDebuggerMode() !== DebuggerMode.PAUSED) {

@@ -16,7 +16,7 @@ import {getConfig} from './config';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import invariant from 'assert';
 import {extractWordAtPosition} from '../../nuclide-atom-helpers';
-import {passesGKSafe} from '../../nuclide-commons';
+import {passesGK} from '../../nuclide-commons';
 
 const MATCH_PREFIX_CASE_SENSITIVE_SCORE = 6;
 const MATCH_PREFIX_CASE_INSENSITIVE_SCORE = 4;
@@ -103,7 +103,7 @@ export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<Ha
   const config = getConfig();
   // TODO: Reenable this once the server connection is revived.
   const useIdeConnection = false && (config.useIdeConnection
-      || (await passesGKSafe('nuclide_hack_use_persistent_connection')));
+      || (await passesGK('nuclide_hack_use_persistent_connection')));
   const hackEnvironment = await hackService.getHackEnvironmentDetails(
     fileUri,
     config.hhClientPath,
