@@ -18,6 +18,7 @@ import {ActiveEditorBasedService} from '..';
 type TestProvider = {
   priority: number;
   grammarScopes: Array<string>;
+  updateOnEdit?: boolean;
 };
 
 describe('ActiveEditorBasedService', () => {
@@ -167,6 +168,60 @@ describe('ActiveEditorBasedService', () => {
           completeSources();
 
           expect(await resultingEventsPromise).toEqual([
+            'pane-change',
+            'result',
+            'save',
+            'result',
+          ]);
+        });
+      });
+    });
+
+    describe('when given providers with different updateOnEdit settings', () => {
+      beforeEach(() => {
+        initializeService();
+        // Have to re-add this since the re-initialization kills it
+        activeEditorBasedService.consumeProvider({
+          priority: 10,
+          grammarScopes: ['text.plain.null-grammar'],
+        });
+        activeEditorBasedService.consumeProvider({
+          priority: 10,
+          grammarScopes: ['source.cpp'],
+          updateOnEdit: false,
+        });
+        spyOn(editor2, 'getGrammar').andReturn({
+          scopeName: 'source.cpp',
+        });
+      });
+
+      it('should generate and respond to the appropriate event', () => {
+        waitsForPromise(async () => {
+          activeEditors.next(editor1);
+          await waitForNextTick();
+
+          editorChanges.next(undefined);
+          await waitForNextTick();
+
+          editorSaves.next(undefined);
+          await waitForNextTick();
+
+          activeEditors.next(editor2);
+          await waitForNextTick();
+
+          editorChanges.next(undefined);
+          await waitForNextTick();
+
+          editorSaves.next(undefined);
+          await waitForNextTick();
+
+          completeSources();
+
+          expect(await resultingEventsPromise).toEqual([
+            'pane-change',
+            'result',
+            'edit',
+            'result',
             'pane-change',
             'result',
             'save',

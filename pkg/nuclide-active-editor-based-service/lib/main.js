@@ -26,6 +26,8 @@ import {ProviderRegistry} from './ProviderRegistry';
 export type Provider = {
   priority: number;
   grammarScopes: Array<string>;
+  // This overrides the updateOnEdit setting in ActiveEditorBasedService's config.
+  updateOnEdit?: boolean;
 };
 
 export type Result<V> = {
@@ -121,7 +123,10 @@ export class ActiveEditorBasedService<T: Provider, V> {
         // Emit a pane change event first, so that clients can do something while waiting for a
         // provider to give a result.
         Observable.of({kind: 'pane-change'}),
-        Observable.fromPromise(this._getResultForEditor(editor)),
+        Observable.fromPromise(this._getResultForEditor(
+          this._getProviderForEditor(editor),
+          editor,
+        )),
         this._resultsForEditor(editor, eventSources),
       );
     });
@@ -129,48 +134,57 @@ export class ActiveEditorBasedService<T: Provider, V> {
   }
 
   _resultsForEditor(editor: atom$TextEditor, eventSources: EventSources): Observable<Result<V>> {
-    let editorEvents: Observable<void>;
-    // The result that we publish when an editor event is emitted
-    let eventEmittedResult: Result<V>;
-    if (this._config.updateOnEdit) {
-      editorEvents = eventSources.changesForEditor(editor);
-      eventEmittedResult = {kind: 'edit'};
-    } else {
-      editorEvents = eventSources.savesForEditor(editor);
-      eventEmittedResult = {kind: 'save'};
-    }
-
-    return editorEvents.flatMap(() => {
+    // It's possible that the active provider for an editor changes over time.
+    // Thus, we have to subscribe to both edits and saves.
+    return Observable.merge(
+      eventSources.changesForEditor(editor)
+        .map(() => 'edit'),
+      eventSources.savesForEditor(editor)
+        .map(() => 'save'),
+    ).flatMap(event => {
+      const provider = this._getProviderForEditor(editor);
+      if (provider != null) {
+        let updateOnEdit = provider.updateOnEdit;
+        // Fall back to the config's updateOnEdit if not provided.
+        if (updateOnEdit == null) {
+          updateOnEdit = this._config.updateOnEdit;
+        }
+        if (updateOnEdit !== (event === 'edit')) {
+          return Observable.empty();
+        }
+      }
       return Observable.concat(
-        Observable.of(eventEmittedResult),
-        Observable.fromPromise(this._getResultForEditor(editor)),
+        // $FlowIssue: {kind: edit | save} <=> {kind: edit} | {kind: save}
+        Observable.of({kind: event}),
+        Observable.fromPromise(this._getResultForEditor(provider, editor)),
       );
     });
   }
 
-  async _getResultForEditor(editor: atom$TextEditor): Promise<Result<V>> {
+  _getProviderForEditor(editor: atom$TextEditor): ?T {
     const grammar = editor.getGrammar().scopeName;
-    const provider = this._providerRegistry.findProvider(grammar);
+    return this._providerRegistry.findProvider(grammar);
+  }
+
+  async _getResultForEditor(provider: ?T, editor: atom$TextEditor): Promise<Result<V>> {
     if (provider == null) {
       return {
         kind: 'no-provider',
         grammar: editor.getGrammar(),
       };
     }
-    let result;
     try {
-      result = await this._resultFunction(provider, editor);
+      return {
+        kind: 'result',
+        result: await this._resultFunction(provider, editor),
+        editor,
+      };
     } catch (e) {
-      logger.error(`Error from provider for ${grammar}`, e);
+      logger.error(`Error from provider for ${editor.getGrammar()}`, e);
       return {
         kind: 'provider-error',
       };
     }
-    return {
-      kind: 'result',
-      result,
-      editor,
-    };
   }
 }
 

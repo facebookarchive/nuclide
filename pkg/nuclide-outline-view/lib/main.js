@@ -86,6 +86,7 @@ export type OutlineProvider = {
   // used.
   priority: number;
   grammarScopes: Array<string>;
+  updateOnEdit?: boolean;
   getOutline: (editor: TextEditor) => Promise<?Outline>;
 };
 
