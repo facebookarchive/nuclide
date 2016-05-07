@@ -135,13 +135,15 @@ export function consumeToolBar(getToolBar: (group: string) => Object): IDisposab
 }
 
 export function provideBuildSystemRegistry(): BuildSystemRegistry {
-  invariant(_commands != null);
-  const commands = _commands;
   return {
     register(buildSystem: BuildSystem): IDisposable {
-      commands.registerBuildSystem(buildSystem);
+      if (_commands != null) {
+        _commands.registerBuildSystem(buildSystem);
+      }
       return new Disposable(() => {
-        commands.unregisterBuildSystem(buildSystem);
+        if (_commands != null) {
+          _commands.unregisterBuildSystem(buildSystem);
+        }
       });
     },
   };
