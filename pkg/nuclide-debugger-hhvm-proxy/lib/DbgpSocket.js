@@ -166,7 +166,8 @@ class DbgpSocket {
         }
       } else if (stream != null) {
         const outputType = stream.$.type;
-        const outputText = base64Decode(stream._);
+        // The body of the `stream` XML can be omitted, e.g. `echo null`, so we defend against this.
+        const outputText = stream._ != null ? base64Decode(stream._) : '';
         logger.log(`${outputType} message received: ${outputText}`);
         const status = outputType === 'stdout' ? STATUS_STDOUT : STATUS_STDERR;
         this._emitStatus(status, outputText);
