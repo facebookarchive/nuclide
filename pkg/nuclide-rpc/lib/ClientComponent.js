@@ -10,9 +10,8 @@
  */
 
 import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
-import type {ConfigEntry} from './index';
+import type {ConfigEntry, Transport} from './index';
 import type {Type} from '../../nuclide-service-parser/lib/types';
-import type {Transport} from './types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import invariant from 'assert';

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Transport} from './types';
+import type {Transport} from './index';
 import type {
   ClassDefinition,
   FunctionImplementation,

@@ -78,9 +78,3 @@ export type ObservableResponseMessage = {
 };
 
 export type ObservableResult = { type: 'completed'; } | { type: 'next'; data: any };
-
-export type Transport = {
-  send(data: Object): void;
-  onMessage(callback: (message: Object) => mixed): IDisposable;
-  close(): void;
-};

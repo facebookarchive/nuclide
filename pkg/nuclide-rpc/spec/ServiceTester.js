@@ -9,8 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {ConfigEntry} from '../lib/index';
-import type {Transport} from '../lib/types';
+import type {ConfigEntry, Transport} from '../lib/index';
 import {LoopbackTransports} from '../lib/LoopbackTransports';
 import {ClientComponent} from '../lib/ClientComponent';
 import {ServerComponent} from '../lib/ServerComponent';
