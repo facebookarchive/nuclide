@@ -19,14 +19,14 @@ import type {
   ObjectType,
   ObjectField,
   UnionType,
-} from '../../nuclide-service-parser/lib/types';
+} from './types';
 import {
   objectType,
   dateType,
   regExpType,
   bufferType,
   fsStatsType,
-} from '../../nuclide-service-parser/lib/builtin-types';
+} from './builtin-types';
 import type {ObjectRegistry} from './ObjectRegistry';
 
 /*

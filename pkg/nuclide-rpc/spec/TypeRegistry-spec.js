@@ -20,7 +20,7 @@ import type {
   BooleanType,
   UnionType,
   IntersectionType,
-} from '../../nuclide-service-parser/lib/types';
+} from '../lib/types';
 
 import {
   builtinLocation,
@@ -33,7 +33,7 @@ import {
   anyType,
   mixedType,
   objectType,
-} from '../../nuclide-service-parser/lib/builtin-types';
+} from '../lib/builtin-types';
 import type {ObjectRegistry} from '../lib/ObjectRegistry';
 
 describe('TypeRegistry', () => {

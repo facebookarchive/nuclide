@@ -9,15 +9,15 @@
  * the root directory of this source tree.
  */
 
-import {createProxyFactory, getDefinitions} from '../../nuclide-service-parser';
+import {createProxyFactory, getDefinitions} from './main';
 import {TypeRegistry} from './TypeRegistry';
 import type {
   FunctionType,
   Definition,
   InterfaceDefinition,
   Type,
-} from '../../nuclide-service-parser/lib/types';
-import type {ProxyFactory} from '../../nuclide-service-parser';
+} from './types';
+import type {ProxyFactory} from './main';
 import invariant from 'assert';
 import type {ConfigEntry} from './index';
 import type {ObjectRegistry} from './ObjectRegistry';

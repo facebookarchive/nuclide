@@ -10,6 +10,7 @@
  */
 
 import type {Transport} from './index';
+import type {Type} from './types';
 import type {
   ClassDefinition,
   FunctionImplementation,
@@ -18,7 +19,7 @@ import type {
 import type {TypeRegistry} from './TypeRegistry';
 
 import {Observable} from 'rxjs';
-import {builtinLocation, voidType} from '../../nuclide-service-parser/lib/builtin-types';
+import {builtinLocation, voidType} from './builtin-types';
 import {startTracking} from '../../nuclide-analytics';
 import type {TimingTracker} from '../../nuclide-analytics';
 import type {
@@ -30,9 +31,6 @@ import type {
   CallRemoteMethodMessage,
   CreateRemoteObjectMessage,
 } from './types';
-import type {
-  Type,
-} from '../../nuclide-service-parser/lib/types';
 
 import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
 import invariant from 'assert';

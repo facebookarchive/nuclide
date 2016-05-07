@@ -9,11 +9,13 @@
  * the root directory of this source tree.
  */
 
-import {getProxy, __test__} from '..';
+import {getProxy, __test__} from '../lib/main';
 import {addMatchers} from '../../nuclide-test-helpers';
 
 describe('Module public API.', () => {
   beforeEach(function() {
+    __test__.definitionsCache.clear();
+    __test__.proxiesCache.clear();
     addMatchers(this);
   });
 
@@ -22,6 +24,7 @@ describe('Module public API.', () => {
     const defFile = '../spec/fixtures/FunctionService.def';
 
     expect(__test__.definitionsCache.size).toBe(0);
+    expect(__test__.proxiesCache.size).toBe(0);
 
     const proxy = getProxy('FunctionService', defFile, fakeClient);
     expect(Object.keys(proxy)).diffJson([

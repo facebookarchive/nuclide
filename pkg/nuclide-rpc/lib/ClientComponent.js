@@ -11,7 +11,7 @@
 
 import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
 import type {ConfigEntry, Transport} from './index';
-import type {Type} from '../../nuclide-service-parser/lib/types';
+import type {Type} from './types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import invariant from 'assert';
@@ -19,7 +19,7 @@ import {EventEmitter} from 'events';
 import {Observable} from 'rxjs';
 
 import {TypeRegistry} from './TypeRegistry';
-import {getProxy, getDefinitions} from '../../nuclide-service-parser';
+import {getProxy, getDefinitions} from './main';
 import {ObjectRegistry} from './ObjectRegistry';
 import {getPath, createRemoteUri} from '../../nuclide-remote-uri';
 
