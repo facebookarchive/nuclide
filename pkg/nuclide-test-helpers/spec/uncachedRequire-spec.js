@@ -35,6 +35,6 @@ describe('Mocking Imports test suite', () => {
 
     // 4 - Reset the require cache so your mocks don't get used for other tests.
     // You may want to put this in your afterEach.
-    clearRequireCache(require, './ToBeTested');
+    clearRequireCache(require, './toBeTested');
   });
 });
