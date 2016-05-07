@@ -25,12 +25,14 @@ class ProjectStore {
   _eventEmitter: EventEmitter;
   _currentFilePath: string;
   _projectType: ProjectType;
+  _filePathsToScriptCommand: Map<string, string>;
 
   constructor() {
     this._disposables = new CompositeDisposable();
     this._eventEmitter = new EventEmitter();
     this._currentFilePath = '';
     this._projectType = 'Other';
+    this._filePathsToScriptCommand = new Map();
     this._monitorActiveEditorChange();
   }
 
@@ -78,6 +80,18 @@ class ProjectStore {
   async _isFileBuckProject(fileName: string): Promise<boolean> {
     const buckProject = await buckProjectRootForPath(fileName);
     return Boolean(buckProject);
+  }
+
+  getLastScriptCommand(filePath: string): string {
+    const command = this._filePathsToScriptCommand.get(filePath);
+    if (command != null) {
+      return command;
+    }
+    return '';
+  }
+
+  updateLastScriptCommand(command: string): void {
+    this._filePathsToScriptCommand.set(remoteUri.getPath(this._currentFilePath), command);
   }
 
   onChange(callback: () => void): Disposable {

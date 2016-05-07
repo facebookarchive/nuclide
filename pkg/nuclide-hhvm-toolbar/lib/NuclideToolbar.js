@@ -60,6 +60,7 @@ class NuclideToolbar extends React.Component {
         <HhvmToolbar
           ref="hhvmToolbar"
           targetFilePath={this.state.currentFilePath}
+          projectStore={this.props.projectStore}
         />
       );
     } else {

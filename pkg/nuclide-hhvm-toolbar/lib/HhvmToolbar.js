@@ -20,6 +20,7 @@ import {
   ButtonGroup,
   ButtonGroupSizes,
 } from '../../nuclide-ui/lib/ButtonGroup';
+import ProjectStore from './ProjectStore';
 
 const WEB_SERVER_OPTION = {label: 'WebServer', value: 0};
 const SCRIPT_OPTION = {label: 'Script', value: 1};
@@ -45,6 +46,7 @@ async function callDebugService(processInfo: DebuggerProcessInfo): Promise {
 class HhvmToolbar extends React.Component {
   static propTypes = {
     targetFilePath: React.PropTypes.string.isRequired,
+    projectStore: React.PropTypes.instanceOf(ProjectStore).isRequired,
   };
 
   state: {
@@ -58,6 +60,18 @@ class HhvmToolbar extends React.Component {
     };
     (this: any)._debug = this._debug.bind(this);
     (this: any)._handleDropdownChange = this._handleDropdownChange.bind(this);
+    (this: any)._updateLastScriptCommand = this._updateLastScriptCommand.bind(this);
+    (this: any)._getLastScriptCommand = this._getLastScriptCommand.bind(this);
+  }
+
+  _updateLastScriptCommand(command: string): void {
+    if (this._isDebugScript(this.state.selectedIndex)) {
+      this.props.projectStore.updateLastScriptCommand(command);
+    }
+  }
+
+  _getLastScriptCommand(filePath: string): string {
+    return this.props.projectStore.getLastScriptCommand(filePath);
   }
 
   _getMenuItems(): Array<{label: string; value: number}> {
@@ -100,6 +114,7 @@ class HhvmToolbar extends React.Component {
             ref="debugTarget"
             initialValue={debugTarget}
             disabled={!isDebugScript}
+            onDidChange={this._updateLastScriptCommand}
             size="sm"
           />
         </div>
@@ -118,9 +133,15 @@ class HhvmToolbar extends React.Component {
 
   _getDebugTarget(index: number, targetFilePath: string): string {
     const remoteUri = require('../../nuclide-remote-uri');
-    const hostName = remoteUri.getHostname(targetFilePath);
-    const remoteFilePath = remoteUri.getPath(targetFilePath);
-    return this._isDebugScript(index) ? remoteFilePath : hostName;
+    if (this._isDebugScript(index)) {
+      const targetPath = remoteUri.getPath(targetFilePath);
+      const lastScriptCommand = this._getLastScriptCommand(targetPath);
+      if (lastScriptCommand === '') {
+        return targetPath;
+      }
+      return lastScriptCommand;
+    }
+    return remoteUri.getHostname(targetFilePath);
   }
 
   _handleDropdownChange(newIndex: number) {
