@@ -26,7 +26,7 @@ export default class ServiceTestHelper {
     await this._server.connect();
 
     const port = this._server._webServer.address().port;
-    this._client = new ClientComponent(
+    this._client = ClientComponent.createRemote(
       'localhost', port, new NuclideSocket(`http://localhost:${port}`, null), customServices);
     this._port = port;
   }

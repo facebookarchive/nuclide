@@ -267,7 +267,7 @@ class ServerConnection {
     }
 
     const socket = new NuclideSocket(uri, options);
-    const client = new ClientComponent(
+    const client = ClientComponent.createRemote(
       this.getRemoteHostname(), this.getPort(), socket, loadServicesConfig());
 
     this._client = client;

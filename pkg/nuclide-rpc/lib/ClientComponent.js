@@ -13,6 +13,7 @@ import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
 import type {ConfigEntry} from './index';
 import type {Type} from '../../nuclide-service-parser/lib/types';
 import type {Transport} from './types';
+import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import invariant from 'assert';
 import {EventEmitter} from 'events';
@@ -39,7 +40,10 @@ export class ClientComponent<TransportType: Transport> {
   _objectRegistry: ObjectRegistry;
 
   constructor(
-    hostname: string, port: number, transport: TransportType, services: Array<ConfigEntry>
+    marshalUri: (uri: NuclideUri) => string,
+    unmarshalUri: (value: string) => NuclideUri,
+    transport: TransportType,
+    services: Array<ConfigEntry>
   ) {
     this._emitter = new EventEmitter();
     this._transport = transport;
@@ -49,11 +53,21 @@ export class ClientComponent<TransportType: Transport> {
     this._objectRegistry = new ObjectRegistry('client');
 
     // Register NuclideUri type conversions.
-    this._typeRegistry.registerType('NuclideUri',
-      remoteUri => getPath(remoteUri), path => createRemoteUri(hostname, port, path));
+    this._typeRegistry.registerType('NuclideUri', marshalUri, unmarshalUri);
 
     this.addServices(services);
     this._transport.onMessage(message => this._handleMessage(message));
+  }
+
+  static createRemote(
+    hostname: string, port: number, transport: TransportType, services: Array<ConfigEntry>
+  ): ClientComponent<TransportType> {
+    return new ClientComponent(
+      remoteUri => getPath(remoteUri),
+      path => createRemoteUri(hostname, port, path),
+      transport,
+      services
+    );
   }
 
   getService(serviceName: string): Object {

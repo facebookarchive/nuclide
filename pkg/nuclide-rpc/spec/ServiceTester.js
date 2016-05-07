@@ -27,7 +27,7 @@ export class ServiceTester {
     this._clientConnection = new ClientConnection(this._server, transports.serverTransport);
 
     const port = 42;
-    this._client = new ClientComponent(
+    this._client = ClientComponent.createRemote(
       'localhost', port, transports.clientTransport, customServices);
     this._port = port;
   }

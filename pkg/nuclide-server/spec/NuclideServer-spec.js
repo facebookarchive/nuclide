@@ -29,7 +29,7 @@ describe('Nuclide Server test suite', () => {
       server = new NuclideServer({port: 8176}, loadServicesConfig());
       await server.connect();
       socket = new NuclideSocket('http://localhost:8176', null);
-      client = new ClientComponent('localhost', 8176, socket, loadServicesConfig());
+      client = ClientComponent.createRemote('localhost', 8176, socket, loadServicesConfig());
     });
   });
 
