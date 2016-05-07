@@ -11,6 +11,7 @@
 
 import type {ConfigEntry} from '../lib/index';
 import type {Transport} from '../lib/types';
+import {LoopbackTransports} from '../lib/LoopbackTransports';
 import {ClientComponent} from '../lib/ClientComponent';
 import {ServerComponent} from '../lib/ServerComponent';
 import {ClientConnection} from '../lib/ClientConnection';
@@ -43,37 +44,5 @@ export class ServiceTester {
 
   getUriOfRemotePath(remotePath: string): string {
     return `nuclide://localhost:${this._port}${remotePath}`;
-  }
-}
-
-class LoopbackTransports {
-  serverTransport: Transport;
-  clientTransport: Transport;
-
-  constructor() {
-    let onServerMessage: (message: Object) => mixed;
-    let onClientMessage: (message: Object) => mixed;
-
-    this.serverTransport = {
-      send(data: Object): void {
-        onClientMessage(data);
-      },
-      onMessage(callback: (message: Object) => mixed): IDisposable {
-        onServerMessage = callback;
-        return {dispose() {}};
-      },
-      close() {},
-    };
-
-    this.clientTransport = {
-      send(data: Object): void {
-        onServerMessage(data);
-      },
-      onMessage(callback: (message: Object) => mixed): IDisposable {
-        onClientMessage = callback;
-        return {dispose() {}};
-      },
-      close() {},
-    };
   }
 }
