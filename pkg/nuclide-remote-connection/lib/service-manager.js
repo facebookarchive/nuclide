@@ -10,15 +10,56 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {Transport} from '../../nuclide-rpc';
 
 import {ServerConnection} from './ServerConnection';
 import {isRemote, getHostname} from '../../nuclide-remote-uri';
 import invariant from 'assert';
 import {loadServicesConfig} from '../../nuclide-server/lib/services';
 import ServiceLogger from './ServiceLogger';
+import {
+  LoopbackTransports,
+  ServerComponent,
+  ClientConnection,
+  ClientComponent,
+} from '../../nuclide-rpc';
 
 const logger = require('../../nuclide-logging').getLogger();
 const newServices = loadServicesConfig();
+
+let localRpcClient: ?ClientComponent<Transport> = null;
+let knownLocalRpc = false;
+
+// Creates a local RPC client that we can use to ensure that
+// local service calls have the same behavior as remote RPC calls.
+function createLocalRpcClient(): ClientComponent<Transport> {
+  const localTransports = new LoopbackTransports();
+  const localRpcServer = new ServerComponent(newServices);
+  const localClientConnection
+    = new ClientConnection(localRpcServer, localTransports.serverTransport);
+  invariant(localClientConnection != null); // silence lint...
+  return ClientComponent.createLocal(localTransports.clientTransport, newServices);
+}
+
+function setUseLocalRpc(value: boolean): void {
+  invariant(!knownLocalRpc, 'setUseLocalRpc must be called exactly once');
+  knownLocalRpc = true;
+  if (value) {
+    localRpcClient = createLocalRpcClient();
+  }
+}
+
+function getlocalService(serviceName: string): Object {
+  invariant(knownLocalRpc, 'Must call setUseLocalRpc before getService');
+  if (localRpcClient != null) {
+    return localRpcClient.getService(serviceName);
+  } else {
+    const [serviceConfig] = newServices.filter(config => config.name === serviceName);
+    invariant(serviceConfig, `No config found for service ${serviceName}`);
+    // $FlowIgnore
+    return require(serviceConfig.implementation);
+  }
+}
 
 /**
  * Create or get a cached service.
@@ -48,10 +89,7 @@ function getService(serviceName: string, hostname: ?string): ?any {
     }
     return serverConnection.getService(serviceName);
   } else {
-    const [serviceConfig] = newServices.filter(config => config.name === serviceName);
-    invariant(serviceConfig, `No config found for service ${serviceName}`);
-    // $FlowIgnore
-    return require(serviceConfig.implementation);
+    return getlocalService(serviceName);
   }
 }
 
@@ -72,4 +110,5 @@ module.exports = {
   getService,
   getServiceByNuclideUri,
   getServiceLogger,
+  setUseLocalRpc,
 };

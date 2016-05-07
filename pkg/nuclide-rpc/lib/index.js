@@ -12,6 +12,7 @@
 export {ServerComponent} from './ServerComponent';
 export {ClientComponent} from './ClientComponent';
 export {ClientConnection} from './ClientConnection';
+export {LoopbackTransports} from './LoopbackTransports';
 
 export type ConfigEntry = {
   name: string;

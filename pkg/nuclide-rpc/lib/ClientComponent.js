@@ -69,6 +69,18 @@ export class ClientComponent<TransportType: Transport> {
     );
   }
 
+  static createLocal(
+    transport: TransportType,
+    services: Array<ConfigEntry>
+  ): ClientComponent<TransportType> {
+    return new ClientComponent(
+      remoteUri => remoteUri,
+      path => path,
+      transport,
+      services
+    );
+  }
+
   getService(serviceName: string): Object {
     const service = this._objectRegistry.getService(serviceName);
     invariant(service != null, `No config found for service ${serviceName}`);
