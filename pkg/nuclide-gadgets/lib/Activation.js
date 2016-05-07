@@ -10,10 +10,11 @@
  */
 
 import type {Action} from '../types/Action';
+import type {GadgetsService} from './types';
 
 import {CompositeDisposable} from 'atom';
 import Commands from './Commands';
-import GadgetsService from './GadgetsService';
+import createGadgetsService from './createGadgetsService';
 import createAtomCommands from './createAtomCommands';
 import createStateStream from './createStateStream';
 import getInitialState from './getInitialState';
@@ -26,6 +27,7 @@ import trackActions from './trackActions';
 class Activation {
   _disposables: CompositeDisposable;
   commands: Commands;
+  _gadgetsService: ?GadgetsService;
 
   constructor(initialState: ?Object) {
     initialState = getInitialState();
@@ -100,7 +102,12 @@ class Activation {
   }
 
   provideGadgetsService(): GadgetsService {
-    return new GadgetsService(this.commands);
+    if (this._gadgetsService == null) {
+      const {service, dispose} = createGadgetsService(this.commands);
+      this._disposables.add({dispose});
+      this._gadgetsService = service;
+    }
+    return this._gadgetsService;
   }
 
 }

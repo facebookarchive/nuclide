@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type GadgetsService from './GadgetsService';
+import type {GadgetsService} from './types';
 
 export type {
   Gadget,
