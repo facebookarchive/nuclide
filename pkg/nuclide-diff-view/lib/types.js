@@ -42,7 +42,6 @@ export type FileChangeState = {
   filePath: NuclideUri;
   oldContents: string;
   newContents: string;
-  savedContents?: string;
   fromRevisionTitle: string;
   toRevisionTitle: string;
   compareRevisionInfo: ?RevisionInfo;

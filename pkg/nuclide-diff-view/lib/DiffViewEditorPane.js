@@ -32,7 +32,6 @@ type Props = {
     removed: Array<number>;
   };
   initialTextContent: string;
-  savedContents: string;
   inlineElements: Array<UIElement>;
   readOnly: boolean;
   onChange: (newContents: string) => any;

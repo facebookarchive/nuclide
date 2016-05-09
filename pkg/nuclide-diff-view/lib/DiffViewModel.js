@@ -59,15 +59,11 @@ import {
 import invariant from 'assert';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {track, trackTiming} from '../../nuclide-analytics';
-import {getFileSystemContents} from './utils';
-import {bufferUntil, map, debounce, promises} from '../../nuclide-commons';
+import {bufferUntil, map, promises} from '../../nuclide-commons';
 import remoteUri from '../../nuclide-remote-uri';
 import RepositoryStack from './RepositoryStack';
 import Rx from 'rxjs';
-import {
-  notifyInternalError,
-  notifyFilesystemOverrideUserEdits,
-} from './notifications';
+import {notifyInternalError} from './notifications';
 import {bufferForUri, loadBufferForUri} from '../../nuclide-atom-helpers';
 import {getLogger} from '../../nuclide-logging';
 
@@ -85,7 +81,6 @@ function getRevisionUpdateMessage(phabricatorRevision: PhabricatorRevisionInfo):
 # The first line is used as subject, next lines as comment.`;
 }
 
-const FILE_CHANGE_DEBOUNCE_MS = 200;
 const MAX_DIALOG_FILE_STATUS_COUNT = 20;
 
 // Returns a string with all newline strings, '\\n', converted to literal newlines, '\n'.
@@ -551,7 +546,6 @@ class DiffViewModel {
     }
   }
 
-
   _diffFilePath(filePath: NuclideUri): void {
     if (filePath === this._activeFileState.filePath) {
       return;
@@ -560,36 +554,22 @@ class DiffViewModel {
     this._activeSubscriptions = new CompositeDisposable();
     // TODO(most): Show progress indicator: t8991676
     const buffer = bufferForUri(filePath);
-    const {file} = buffer;
-    if (file != null) {
-      this._activeSubscriptions.add(file.onDidChange(debounce(
-        () => this._onDidFileChange(filePath).catch(notifyInternalError),
-        FILE_CHANGE_DEBOUNCE_MS,
-        false,
-      )));
-    }
+    this._activeSubscriptions.add(buffer.onDidReload(
+      () => this._onActiveBufferReload(filePath, buffer).catch(notifyInternalError),
+    ));
     this._activeSubscriptions.add(buffer.onDidChangeModified(
       this.emitActiveBufferChangeModified.bind(this),
     ));
-    // Modified events could be late that it doesn't capture the latest edits/ state changes.
+    // Modified events could be late that it doesn't capture the latest edits / state changes.
     // Hence, it's safe to re-emit changes when stable from changes.
     this._activeSubscriptions.add(buffer.onDidStopChanging(
       this.emitActiveBufferChangeModified.bind(this),
-    ));
-    // Update `savedContents` on buffer save requests.
-    this._activeSubscriptions.add(buffer.onWillSave(
-      () => this._onWillSaveActiveBuffer(buffer),
     ));
     track('diff-view-open-file', {filePath});
     this._updateActiveDiffState(filePath).catch(notifyInternalError);
   }
 
-  @trackTiming('diff-view.file-change-update')
-  async _onDidFileChange(filePath: NuclideUri): Promise<void> {
-    if (this._activeFileState.filePath !== filePath) {
-      return;
-    }
-    const filesystemContents = await getFileSystemContents(filePath);
+  async _onActiveBufferReload(filePath: NuclideUri, buffer: atom$TextBuffer): Promise<void> {
     const {
       oldContents: committedContents,
       compareRevisionInfo: revisionInfo,
@@ -598,7 +578,7 @@ class DiffViewModel {
     await this._updateDiffStateIfChanged(
       filePath,
       committedContents,
-      filesystemContents,
+      buffer.getText(),
       revisionInfo,
     );
   }
@@ -619,50 +599,24 @@ class DiffViewModel {
     return buffer.isModified();
   }
 
-  _updateDiffStateIfChanged(
+  async _updateDiffStateIfChanged(
     filePath: NuclideUri,
     committedContents: string,
     filesystemContents: string,
     revisionInfo: RevisionInfo,
   ): Promise<void> {
-    const {
-      filePath: activeFilePath,
-      newContents,
-      savedContents,
-    } = this._activeFileState;
-    if (filePath !== activeFilePath) {
-      return Promise.resolve();
+    if (this._activeFileState.filePath !== filePath) {
+      return;
     }
     const updatedDiffState = {
       committedContents,
       filesystemContents,
       revisionInfo,
     };
-    invariant(savedContents, 'savedContents is not defined while updating diff state!');
-    if (savedContents === newContents || filesystemContents === newContents) {
-      return this._updateDiffState(
-        filePath,
-        updatedDiffState,
-        savedContents,
-      );
-    }
-    // The user have edited since the last update.
-    if (filesystemContents === savedContents) {
-      // The changes haven't touched the filesystem, keep user edits.
-      return this._updateDiffState(
-        filePath,
-        {...updatedDiffState, filesystemContents: newContents},
-        savedContents,
-      );
-    } else {
-      // The committed and filesystem state have changed, notify of override.
-      notifyFilesystemOverrideUserEdits(filePath);
-      return this._updateDiffState(
-        filePath,
-        updatedDiffState,
-        filesystemContents,
-      );
-    }
+    return this._updateDiffState(
+      filePath,
+      updatedDiffState,
+    );
   }
 
   setNewContents(newContents: string): void {
@@ -693,14 +647,12 @@ class DiffViewModel {
     await this._updateDiffState(
       filePath,
       fileDiffState,
-      fileDiffState.filesystemContents,
     );
   }
 
   async _updateDiffState(
     filePath: NuclideUri,
     fileDiffState: FileDiffState,
-    savedContents: string,
   ): Promise<void> {
     const {
       committedContents: oldContents,
@@ -712,7 +664,6 @@ class DiffViewModel {
       filePath,
       oldContents,
       newContents,
-      savedContents,
       compareRevisionInfo: revisionInfo,
       fromRevisionTitle: `${hash}` + (bookmarks.length === 0 ? '' : ` - (${bookmarks.join(', ')})`),
       toRevisionTitle: 'Filesystem / Editor',
@@ -1056,13 +1007,6 @@ class DiffViewModel {
         },
       )
       .toPromise();
-  }
-
-  _onWillSaveActiveBuffer(buffer: atom$TextBuffer): void {
-    this._setActiveFileState({
-      ...this._activeFileState,
-      savedContents: buffer.getText(),
-    });
   }
 
   async _saveFile(filePath: NuclideUri): Promise<void> {

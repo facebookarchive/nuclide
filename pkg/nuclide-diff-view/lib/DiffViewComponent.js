@@ -45,7 +45,6 @@ type Props = {
 type EditorState = {
   revisionTitle: string;
   text: string;
-  savedContents?: string;
   offsets: OffsetMap;
   highlightedLines: {
     added: Array<number>;
@@ -335,7 +334,6 @@ class DiffViewComponent extends React.Component {
           filePath={filePath}
           offsets={oldState.offsets}
           highlightedLines={oldState.highlightedLines}
-          savedContents={oldState.text}
           initialTextContent={oldState.text}
           inlineElements={oldState.inlineElements}
           readOnly={true}
@@ -355,7 +353,6 @@ class DiffViewComponent extends React.Component {
           offsets={newState.offsets}
           highlightedLines={newState.highlightedLines}
           initialTextContent={newState.text}
-          savedContents={newState.savedContents}
           inlineElements={newState.inlineElements}
           onDidUpdateTextEditorElement={this._onDidUpdateTextEditorElement}
           readOnly={false}
@@ -470,7 +467,6 @@ class DiffViewComponent extends React.Component {
       filePath,
       oldContents,
       newContents,
-      savedContents,
       inlineComponents,
       fromRevisionTitle,
       toRevisionTitle,
@@ -493,7 +489,6 @@ class DiffViewComponent extends React.Component {
     const newEditorState = {
       revisionTitle: toRevisionTitle,
       text: newContents,
-      savedContents,
       offsets: newLineOffsets,
       highlightedLines: {
         added: addedLines,
