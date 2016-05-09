@@ -124,7 +124,7 @@ class NodeTranspiler {
       const output = this._babel.transform(input, BABEL_OPTIONS).code;
       return output;
     } catch (err) {
-      console.error('Error transpiling %j %s', filename, err);
+      console.error(`Error transpiling "${filename}"`);
       throw err;
     }
   }
