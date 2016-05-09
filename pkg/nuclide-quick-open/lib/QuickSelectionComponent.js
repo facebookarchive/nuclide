@@ -290,7 +290,7 @@ export default class QuickSelectionComponent extends React.Component {
 
   _getCurrentResultContext(): ?ResultContext {
     const nonEmptyResults = filterEmptyResults(this.state.resultsByService);
-    const serviceNames = Object.keys(nonEmptyResults);
+    const serviceNames = sortServiceNames(Object.keys(nonEmptyResults));
     const currentServiceIndex = serviceNames.indexOf(this.state.selectedService);
     const currentService = nonEmptyResults[this.state.selectedService];
 
