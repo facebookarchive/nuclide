@@ -25,13 +25,27 @@
 2015/11/23 22:57:51 jonaldislarry (46484)> push exited -1 after 0.10 seconds
 2015/11/23 23:01:07 jonaldislarry (46819)> config -e
 2015/11/23 23:01:20 jonaldislarry (46819)> config -e exited 0 after 12.17 seconds
-2016/03/01 16:44:17 most (79757)> status
-2016/03/01 16:44:17 most (79757)> status exited 0 after 0.15 seconds
-2016/03/01 16:44:22 most (79826)> add .arcconfig
-2016/03/01 16:44:22 most (79826)> add .arcconfig exited 0 after 0.08 seconds
-2016/03/01 16:44:52 most (79899)> commit -m 'add .arcconfig to select mercurial compare default'
-2016/03/01 16:44:52 most (79899)> updated served branch cache in 0.0009 seconds
-2016/03/01 16:44:52 most (79899)> wrote served branch cache with 1 labels and 1 nodes
-2016/03/01 16:44:52 most (79899)> commit -m 'add .arcconfig to select mercurial compare default' exited 0 after 0.11 seconds
-2016/03/01 16:44:57 most (79967)> status
-2016/03/01 16:44:57 most (79967)> status exited 0 after 0.13 seconds
+2016/05/06 18:20:22 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76108)> log
+2016/05/06 18:20:22 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76108)> writing .hg/cache/tags2-visible-directaccess-nowarn with 0 tags
+2016/05/06 18:20:22 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76108)> log exited 0 after 0.13 seconds
+2016/05/06 18:21:03 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76370)> status
+2016/05/06 18:21:03 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76370)> status exited 0 after 0.13 seconds
+2016/05/06 18:21:15 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76449)> add .arcconfig
+2016/05/06 18:21:15 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76449)> add .arcconfig exited 0 after 0.12 seconds
+2016/05/06 18:21:21 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76521)> status
+2016/05/06 18:21:21 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76521)> status exited 0 after 0.12 seconds
+2016/05/06 18:21:36 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76614)> status
+2016/05/06 18:21:36 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76614)> status exited 0 after 0.12 seconds
+2016/05/06 18:21:43 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76670)> status
+2016/05/06 18:21:43 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76670)> status exited 0 after 0.13 seconds
+2016/05/06 18:21:54 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76734)> log
+2016/05/06 18:21:54 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76734)> log exited 0 after 0.12 seconds
+2016/05/06 18:22:17 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76839)> commit -m 'add .arcconfig to select mercurial compare default'
+2016/05/06 18:22:17 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76839)> updated served branch cache in 0.0009 seconds
+2016/05/06 18:22:17 most @c1c235283cb0e497d9dbedc4a9fe45966d96fa8c (76839)> wrote served branch cache with 1 labels and 1 nodes
+2016/05/06 18:22:17 most @a570d5d57a44040a0ebd0de9eb542d3d2bec252b (76839)> commit -m 'add .arcconfig to select mercurial compare default' exited 0 after 0.15 seconds
+2016/05/06 18:22:45 most @a570d5d57a44040a0ebd0de9eb542d3d2bec252b (77070)> log
+2016/05/06 18:22:45 most @a570d5d57a44040a0ebd0de9eb542d3d2bec252b (77070)> writing .hg/cache/tags2-visible-directaccess-nowarn with 0 tags
+2016/05/06 18:22:45 most @a570d5d57a44040a0ebd0de9eb542d3d2bec252b (77070)> log exited 0 after 0.12 seconds
+2016/05/06 18:22:50 most @a570d5d57a44040a0ebd0de9eb542d3d2bec252b (77138)> status
+2016/05/06 18:22:50 most @a570d5d57a44040a0ebd0de9eb542d3d2bec252b (77138)> status exited 0 after 0.11 seconds
