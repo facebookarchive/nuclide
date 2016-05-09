@@ -73,8 +73,9 @@ export class StatusBarTile extends React.Component {
         this.setState({pending: true});
         break;
       case 'result':
+        const coverageResult = result.result;
         this.setState({
-          percentage: result.result,
+          percentage: coverageResult == null ? null : coverageResult.percentage,
           pending: false,
         });
         break;

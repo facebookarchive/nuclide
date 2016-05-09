@@ -11,7 +11,7 @@
 
 import type {Observable} from 'rxjs';
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {ServerStatusType} from '..';
+import type {ServerStatusType, FlowCoverageResult} from '..';
 
 import type {
   Diagnostics,
@@ -265,7 +265,7 @@ export class FlowRoot {
     return {type, rawType};
   }
 
-  async flowGetCoverage(path: NuclideUri): Promise<?number> {
+  async flowGetCoverage(path: NuclideUri): Promise<?FlowCoverageResult> {
     const args = ['coverage', '--json', path];
     let result;
     try {
@@ -286,7 +286,9 @@ export class FlowRoot {
 
     const covered = json.expressions.covered_count;
     const total = json.expressions.uncovered_count + covered;
-    return covered / total * 100;
+    return {
+      percentage: covered / total * 100,
+    };
   }
 
   static async flowGetOutline(currentContents: string): Promise<?Array<FlowOutlineTree>> {

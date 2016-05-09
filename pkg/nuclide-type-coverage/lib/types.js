@@ -10,9 +10,9 @@
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
-// This type is highly likely to change in the near future as we add information like *which* parts
-// of the file are covered. Expect breaking changes.
-export type CoverageResult = number;
+export type CoverageResult = {
+  percentage: number;
+};
 
 export interface CoverageProvider {
   getCoverage(path: NuclideUri): Promise<?CoverageResult>;

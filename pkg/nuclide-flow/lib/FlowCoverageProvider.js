@@ -10,12 +10,13 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {CoverageResult} from '../../nuclide-type-coverage/lib/types';
 
 import invariant from 'assert';
 
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 
-export async function getCoverage(path: NuclideUri): Promise<?number> {
+export async function getCoverage(path: NuclideUri): Promise<?CoverageResult> {
   const flowService = await getFlowServiceByNuclideUri(path);
   invariant(flowService != null);
   return await flowService.flowGetCoverage(path);
