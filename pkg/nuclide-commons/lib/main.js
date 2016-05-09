@@ -172,6 +172,10 @@ module.exports = {
     return requireStream().cacheWhileSubscribed;
   },
 
+  get toggle() {
+    return requireStream().toggle;
+  },
+
   get observeProcessExit() {
     return requireProcess().observeProcessExit;
   },

@@ -9,7 +9,14 @@
  * the root directory of this source tree.
  */
 
-import {diffSets, cacheWhileSubscribed, reconcileSetDiffs, observeStream, splitStream} from '..';
+import {
+  diffSets,
+  cacheWhileSubscribed,
+  reconcileSetDiffs,
+  observeStream,
+  splitStream,
+  toggle,
+} from '..';
 import {Disposable} from 'event-kit';
 import {Observable, Subject} from 'rxjs';
 import Stream from 'stream';
@@ -225,4 +232,74 @@ describe('reconcileSetDiffs', () => {
     expect(disposables.b.dispose).toHaveBeenCalled();
   });
 
+});
+
+describe('toggle', () => {
+  let toggler: Subject<boolean> = (null: any);
+  let source: Observable<number> = (null: any);
+  let output: Observable<number> = (null: any);
+  let outputArray: Array<number> = (null: any);
+
+  beforeEach(() => {
+    toggler = new Subject();
+    // Deferred so individual 'it' blocks can set the source on the fly.
+    output = toggle(Observable.defer(() => source), toggler);
+  });
+
+  describe('with a standard source', () => {
+    let realSource: Subject<number> = (null: any);
+
+    beforeEach(() => {
+      source = realSource = new Subject();
+      outputArray = [];
+      output.subscribe(x => outputArray.push(x));
+    });
+
+    it("should not emit anything before the toggler is set to 'true'", () => {
+      realSource.next(5);
+      expect(outputArray).toEqual([]);
+    });
+
+    it("should start emitting events when the toggler is set to 'true'", () => {
+      toggler.next(true);
+      realSource.next(5);
+      expect(outputArray).toEqual([5]);
+    });
+
+    it("should stop emitting events when the toggler is set to 'false'", () => {
+      toggler.next(true);
+      toggler.next(false);
+      realSource.next(4);
+      expect(outputArray).toEqual([]);
+    });
+  });
+
+  // These ones are set apart from the rest because we want a cold observable to explicitly test
+  // that toggling off unsubscribes and then resubscribes.
+  describe('subscription behavior', () => {
+    beforeEach(() => {
+      source = Observable.of(1, 2, 3);
+      outputArray = [];
+      output.subscribe(x => outputArray.push(x));
+    });
+
+    it('should unsubscribe and resusbscribe when toggled off and back on', () => {
+      expect(outputArray).toEqual([]);
+
+      toggler.next(true);
+
+      expect(outputArray).toEqual([1, 2, 3]);
+
+      toggler.next(false);
+      toggler.next(true);
+
+      expect(outputArray).toEqual([1, 2, 3, 1, 2, 3]);
+    });
+
+    it('should not re-subscribe on duplicate toggler values', () => {
+      toggler.next(true);
+      toggler.next(true);
+      expect(outputArray).toEqual([1, 2, 3]);
+    });
+  });
 });

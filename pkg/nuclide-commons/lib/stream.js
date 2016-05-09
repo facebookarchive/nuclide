@@ -277,3 +277,12 @@ export function reconcileSetDiffs<T>(
       .add(disposeAll)
   );
 }
+
+export function toggle<T>(
+  source: Observable<T>,
+  toggler: Observable<boolean>,
+): Observable<T> {
+  return toggler
+    .distinctUntilChanged()
+    .switchMap(enabled => (enabled ? source : Observable.empty()));
+}
