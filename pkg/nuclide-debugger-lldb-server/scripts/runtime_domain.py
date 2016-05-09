@@ -9,6 +9,7 @@ Defines methods for the Runtime domain.
 https://developer.chrome.com/devtools/docs/protocol/1.1/runtime#command-evaluate
 """
 import lldb
+import sys
 
 from handler import HandlerDomain, handler
 from page_domain import DUMMY_FRAME_ID
@@ -31,7 +32,7 @@ class RuntimeDomain(HandlerDomain):
     @handler()
     def evaluate(self, params):
         # Cast to string from possible unicode.
-        command = str(params['expression'])
+        expression = str(params['expression'])
 
         # `objectGroups` are used by the client to designate remote objects on
         # the server that should stick around (for potential future queries),
@@ -42,7 +43,7 @@ class RuntimeDomain(HandlerDomain):
         # C-style expressions.
         if params['objectGroup'] == 'console':
             result = lldb.SBCommandReturnObject()
-            self.debugger_store.debugger.GetCommandInterpreter().HandleCommand(command, result)
+            self.debugger_store.debugger.GetCommandInterpreter().HandleCommand(expression, result)
 
             return {
                 'result': {
@@ -51,15 +52,22 @@ class RuntimeDomain(HandlerDomain):
                 'wasThrown': False,
             }
         elif params['objectGroup'] == 'watch-group':
-            frame = self.debugger_store.debugger.GetSelectedTarget().process.GetSelectedThread().GetSelectedFrame()
-            value = frame.EvaluateExpression(command)
+            frame = self.debugger_store.debugger.GetSelectedTarget(). \
+                process.GetSelectedThread().GetSelectedFrame()
+            # TODO: investigate why "EvaluateExpression"
+            # is not working for some scenarios on Linux.
+            if sys.platform.startswith('linux'):
+                value = frame.GetValueForVariablePath(expression)
+            else:
+                value = frame.EvaluateExpression(expression)
             # `value.error` is an `SBError` instance which captures whether the
             # result had an error. `SBError.success` denotes no error.
             if value.error.success:
                 return {
                     'result': value_serializer.serialize_value(
                         value,
-                        self.debugger_store.remote_object_manager.get_add_object_func(params['objectGroup'])),
+                        self.debugger_store.remote_object_manager.
+                        get_add_object_func(params['objectGroup'])),
                     'wasThrown': False,
                 }
             else:
