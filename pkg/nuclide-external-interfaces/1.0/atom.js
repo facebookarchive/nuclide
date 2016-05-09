@@ -362,7 +362,7 @@ declare class atom$Point {
   min(point1: atom$Point, point2: atom$Point): atom$Point;
   // TODO(t8220399): Change this to: `-1 | 0 | 1`.
   compare(other: atom$Point): number;
-  isEqual(otherRange: atom$Point): boolean;
+  isEqual(otherRange: atom$Point | [number, number]): boolean;
   isLessThan(other: atom$Point): boolean;
   isLessThanOrEqual(other: atom$Point): boolean;
   isGreaterThan(other: atom$Point): boolean;
@@ -390,7 +390,7 @@ declare class atom$Range {
   start: atom$Point;
   end: atom$Point;
   isEmpty(): boolean;
-  isEqual(otherRange: atom$Range): boolean;
+  isEqual(otherRange: atom$Range | [[number, number], [number, number]]): boolean;
   containsPoint(point: atom$Point, exclusive?: boolean): boolean;
   containsRange(other: atom$Range, exclusive?: boolean): boolean;
   serialize(): Array<Array<number>>;
@@ -599,7 +599,7 @@ declare class atom$TextEditor extends atom$Model {
     startScreenRow: number,
     endScreenRow: number,
   ): {[markerId: string]: Array<Object>};
-  getDecorations(options?: {class: string}): Array<atom$Decoration>;
+  getDecorations(options?: {class?: string; type?: string;}): Array<atom$Decoration>;
 
   // Markers
   markBufferPosition(position: atom$Point | Array<number>): atom$Marker;

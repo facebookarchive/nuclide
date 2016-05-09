@@ -42,7 +42,7 @@ export default class UncommittedChangesTimelineNode extends React.Component {
     });
     let filesMessage;
     if (hasChanges) {
-      filesMessage = `${dirtyFileCount} Uncommitted Change${dirtyFileCount > 0 ? 's' : ''}`;
+      filesMessage = `${dirtyFileCount} Uncommitted Change${dirtyFileCount > 1 ? 's' : ''}`;
     } else {
       filesMessage = 'No Uncommitted Changes';
     }

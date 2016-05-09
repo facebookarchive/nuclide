@@ -15,13 +15,13 @@ import {
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
   setLocalProject,
-} from '../pkg/nuclide-integration-test-helpers';
+} from '../../pkg/nuclide-integration-test-helpers';
 import path from 'path';
 import invariant from 'assert';
 import {ReactDOM} from 'react-for-atom';
-import {getUiTreePathFromTargetEvent} from '../pkg/nuclide-atom-helpers';
+import {getUiTreePathFromTargetEvent} from '../../pkg/nuclide-atom-helpers';
 
-import type DiffViewComponent from '../pkg/nuclide-diff-view/lib/DiffViewComponent';
+import type DiffViewComponent from '../../pkg/nuclide-diff-view/lib/DiffViewComponent';
 
 describe('Diff View Browse Mode Integration Test', () => {
 
@@ -103,6 +103,12 @@ describe('Diff View Browse Mode Integration Test', () => {
     });
 
     runs(() => {
+      expect(diffFiles.length).toBe(1);
+      const dataPathElement = diffFiles[0].querySelector('[data-path]');
+      expect(dataPathElement).not.toBeNull();
+      expect(dataPathElement.getAttribute('data-path')).toBe(
+        path.join(repoPath, '.arcconfig'),
+      );
       const treeRoots = treeElement.querySelectorAll('.root');
       expect(treeRoots.length).toBe(1);
       const rootPath = getUiTreePathFromTargetEvent(({currentTarget: treeRoots[0]}: any));
