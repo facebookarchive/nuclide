@@ -54,6 +54,10 @@ export type RecordProvider = {
   source: string;
 };
 
+export type OutputService = {
+  registerOutputProvider(outputProvider: OutputProvider): IDisposable;
+};
+
 export type Executor = {
   id: string;
   name: string;

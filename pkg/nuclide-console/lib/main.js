@@ -10,9 +10,8 @@
  */
 
 import type ActivationType from './Activation';
-import type {RegisterExecutorFunction} from './types';
+import type {OutputService, RegisterExecutorFunction} from './types';
 import type {GadgetsService} from '../../nuclide-gadgets';
-import type OutputService from './OutputService';
 
 import invariant from 'assert';
 

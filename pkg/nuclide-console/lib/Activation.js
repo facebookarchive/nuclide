@@ -10,7 +10,7 @@
  */
 
 import type {GadgetsService, Gadget} from '../../nuclide-gadgets';
-import type {AppState, RegisterExecutorFunction} from './types';
+import type {AppState, OutputProvider, OutputService, RegisterExecutorFunction} from './types';
 
 import {DisposableSubscription} from '../../nuclide-commons';
 import {CompositeDisposable, Disposable} from 'atom';
@@ -19,14 +19,14 @@ import Commands from './Commands';
 import createConsoleGadget from './ui/createConsoleGadget';
 import createStateStream from './createStateStream';
 import featureConfig from '../../nuclide-feature-config';
-import OutputService from './OutputService';
 import invariant from 'assert';
 import Rx from 'rxjs';
 
 class Activation {
   _commands: Commands;
   _disposables: CompositeDisposable;
-  _outputService: OutputService;
+  _outputService: ?OutputService;
+  _registerExecutorFunction: ?RegisterExecutorFunction;
   _state$: Rx.BehaviorSubject<AppState>;
 
   constructor(rawState: ?Object) {
@@ -43,7 +43,6 @@ class Activation {
       action$,
       () => this._state$.getValue(),
     );
-    this._outputService = new OutputService(this._commands);
     this._disposables = new CompositeDisposable(
       atom.contextMenu.add({
         '.nuclide-console-record': [
@@ -95,16 +94,47 @@ class Activation {
   }
 
   provideOutputService(): OutputService {
+    if (this._outputService == null) {
+      // Create a local, nullable reference so that the service consumers don't keep the `Commands`
+      // instance in memory.
+      let commands = this._commands;
+      this._disposables.add(new Disposable(() => { commands = null; }));
+
+      this._outputService = {
+        registerOutputProvider(outputProvider: OutputProvider): IDisposable {
+          if (commands != null) {
+            commands.registerOutputProvider(outputProvider);
+          }
+          return new Disposable(() => {
+            if (commands != null) {
+              commands.removeSource(outputProvider.source);
+            }
+          });
+        },
+      };
+    }
     return this._outputService;
   }
 
   provideRegisterExecutor(): RegisterExecutorFunction {
-    return executor => {
-      this._commands.registerExecutor(executor);
-      return new Disposable(() => {
-        this._commands.unregisterExecutor(executor);
-      });
-    };
+    if (this._registerExecutorFunction == null) {
+      // Create a local, nullable reference so that the service consumers don't keep the `Commands`
+      // instance in memory.
+      let commands = this._commands;
+      this._disposables.add(new Disposable(() => { commands = null; }));
+
+      this._registerExecutorFunction = executor => {
+        if (commands != null) {
+          commands.registerExecutor(executor);
+        }
+        return new Disposable(() => {
+          if (commands != null) {
+            commands.unregisterExecutor(executor);
+          }
+        });
+      };
+    }
+    return this._registerExecutorFunction;
   }
 
   serialize(): Object {

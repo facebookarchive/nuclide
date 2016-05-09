@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type OutputService from '../../nuclide-console/lib/OutputService';
+import type {OutputService} from '../../nuclide-console/lib/types';
 
 import invariant from 'assert';
 

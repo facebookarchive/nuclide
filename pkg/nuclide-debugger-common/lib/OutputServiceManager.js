@@ -10,7 +10,7 @@
  */
 
 import type {Observable} from 'rxjs';
-import type OutputService from '../../nuclide-console/lib/OutputService';
+import type {OutputService} from '../../nuclide-console/lib/types';
 
 let outputServiceApi: ?OutputService = null;
 
