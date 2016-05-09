@@ -1,0 +1,12 @@
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _rxjsBundlesRxUmdMinJs = require('rxjs/bundles/Rx.umd.min.js');
+
+Object.defineProperty(exports, 'Observable', {
+  enumerable: true,
+  get: function get() {
+    return _rxjsBundlesRxUmdMinJs.Observable;
+  }
+});
