@@ -15,6 +15,7 @@ import type {RemoteFile} from '../../nuclide-remote-connection';
 
 import FileDialogComponent from '../components/FileDialogComponent';
 import FileTreeHelpers from './FileTreeHelpers';
+import FileTreeHgHelpers from './FileTreeHgHelpers';
 import {FileTreeStore} from './FileTreeStore';
 import {
   React,
@@ -24,18 +25,11 @@ import RemoteUri, {getPath} from '../../nuclide-remote-uri';
 import {File} from 'atom';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
 
 import pathModule from 'path';
 
 let atomPanel: ?Object;
 let dialogComponent: ?React.Component;
-
-const legalStatusCodeForRename = new Set([
-  StatusCodeNumber.ADDED,
-  StatusCodeNumber.CLEAN,
-  StatusCodeNumber.MODIFIED,
-]);
 
 const FileSystemActions = {
   openAddFolderDialog(onDidConfirm: (filePath: ?string) => mixed): void {
@@ -77,9 +71,9 @@ const FileSystemActions = {
     if (!node) {
       return;
     }
-    const hgRepository = this._getHgRepositoryForNode(node);
+    const hgRepository = FileTreeHgHelpers.getHgRepositoryForNode(node);
     const additionalOptions = {};
-    if (hgRepository !== null) {
+    if (hgRepository != null) {
       additionalOptions['addToVCS'] = 'Add the new file to version control.';
     }
     this._openAddDialog(
@@ -100,7 +94,7 @@ const FileSystemActions = {
         const newFile = directory.getFile(filePath);
         const created = await newFile.create();
         if (created) {
-          if (hgRepository !== null && options.addToVCS === true) {
+          if (hgRepository != null && options.addToVCS === true) {
             try {
               await hgRepository.add([newFile.getPath()]);
             } catch (e) {
@@ -119,14 +113,6 @@ const FileSystemActions = {
     );
   },
 
-  _getHgRepositoryForNode(node: FileTreeNode): ?HgRepositoryClient {
-    const repository = node.repo;
-    if (repository != null && repository.getType() === 'hg') {
-      return ((repository: any): HgRepositoryClient);
-    }
-    return null;
-  },
-
   _getHgRepositoryForPath(filePath: string): ?HgRepositoryClient {
     const repository = repositoryForPath(filePath);
     if (repository != null && repository.getType() === 'hg') {
@@ -140,12 +126,6 @@ const FileSystemActions = {
     nodePath: string,
     newBasename: string,
   ): Promise<void> {
-    const entry = FileTreeHelpers.getEntryByKey(node.uri);
-    if (entry == null) {
-      // TODO: Connection could have been lost for remote file.
-      return;
-    }
-
     /*
      * Use `resolve` to strip trailing slashes because renaming a file to a name with a
      * trailing slash is an error.
@@ -154,29 +134,7 @@ const FileSystemActions = {
       // Trim leading and trailing whitespace to prevent bad filenames.
       pathModule.join(pathModule.dirname(nodePath), newBasename.trim())
     );
-    const hgRepository = this._getHgRepositoryForNode(node);
-    let shouldFSRename = true;
-    if (hgRepository !== null) {
-      try {
-        shouldFSRename = false;
-        await hgRepository.rename(entry.getPath(), newPath);
-      } catch (e) {
-        const filePath = entry.getPath();
-        const statuses = await hgRepository.getStatuses([filePath]);
-        const pathStatus = statuses.get(filePath);
-        if (legalStatusCodeForRename.has(pathStatus)) {
-          atom.notifications.addError(
-            '`hg rename` failed, will try to move the file ignoring version control instead.  ' +
-            'Error: ' + e.toString(),
-          );
-        }
-        shouldFSRename = true;
-      }
-    }
-    if (shouldFSRename) {
-      const service = getFileSystemServiceByNuclideUri(entry.getPath());
-      await service.rename(getPath(entry.getPath()), newPath);
-    }
+    FileTreeHgHelpers.renameNode(node, newPath);
   },
 
   async _onConfirmDuplicate(
@@ -250,7 +208,7 @@ const FileSystemActions = {
     let initialValue = pathModule.basename(nodePath);
     const ext = pathModule.extname(nodePath);
     initialValue = initialValue.substr(0, initialValue.length - ext.length) + '-copy' + ext;
-    const hgRepository = this._getHgRepositoryForNode(node);
+    const hgRepository = FileTreeHgHelpers.getHgRepositoryForNode(node);
     const additionalOptions = {};
     if (hgRepository !== null) {
       additionalOptions['addToVCS'] = 'Add the new file to version control.';
