@@ -13,7 +13,6 @@ import {CompositeDisposable} from 'atom';
 import featureConfig from '../../nuclide-feature-config';
 
 let subscriptions: CompositeDisposable = (null: any);
-// eslint-disable-next-line no-unused-vars
 let currentConfig = ((featureConfig.get('nuclide-notifications'): any): {[type: string]: bool});
 let gkEnabled = false;
 
@@ -25,6 +24,23 @@ export function activate(state: ?Object): void {
       currentConfig = event.newValue;
     }),
 
+    // Listen for Atom notifications:
+    atom.notifications.onDidAddNotification(proxyToNativeNotification),
+
+  );
+}
+
+function proxyToNativeNotification(notification: atom$Notification): void {
+  const notificationType = notification.getType();
+
+  // Ensure the user has configured this type of notification to be sent to the OS.
+  if (!currentConfig[notificationType]) {
+    return;
+  }
+
+  raiseNativeNotification(
+    `${upperCaseFirst(notificationType)}: ${notification.getMessage()}`,
+    notification.getOptions().detail,
   );
 
   try {
@@ -58,4 +74,8 @@ export function raiseNativeNotification(title: string, body: string): void {
 export function deactivate(): void {
   subscriptions.dispose();
   subscriptions = (null: any);
+}
+
+function upperCaseFirst(str: string): string {
+  return `${str[0].toUpperCase()}${str.slice(1)}`;
 }
