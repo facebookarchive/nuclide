@@ -33,6 +33,7 @@ import {
 import {
   debounce,
   passesGK,
+  promises,
 } from '../../nuclide-commons';
 import QuickSelectionDispatcher from './QuickSelectionDispatcher';
 import QuickSelectionActions from './QuickSelectionActions';
@@ -55,6 +56,7 @@ const RESULTS_CHANGED = 'results_changed';
 const PROVIDERS_CHANGED = 'providers_changed';
 const MAX_OMNI_RESULTS_PER_SERVICE = 5;
 const DEFAULT_QUERY_DEBOUNCE_DELAY = 200;
+const LOADING_EVENT_DELAY = 500;
 const OMNISEARCH_PROVIDER = {
   action: 'nuclide-quick-open:find-anything-via-omni-search',
   debounceDelay: DEFAULT_QUERY_DEBOUNCE_DELAY,
@@ -388,7 +390,15 @@ class SearchResultManager {
     const query = this.sanitizeQuery(rawQuery);
     for (const globalProvider of this._registeredProviders[GLOBAL_KEY].values()) {
       const startTime = performance.now();
-      globalProvider.executeQuery(query).then(result => {
+      const loadingFn = () => {
+        this._setLoading(query, GLOBAL_KEY, globalProvider);
+        this._emitter.emit(RESULTS_CHANGED);
+      };
+      promises.triggerAfterWait(
+        globalProvider.executeQuery(query),
+        LOADING_EVENT_DELAY,
+        loadingFn,
+      ).then(result => {
         track(AnalyticsEvents.QUERY_SOURCE_PROVIDER, {
           'quickopen-source-provider': globalProvider.getName(),
           'quickopen-query-duration': (performance.now() - startTime).toString(),
@@ -396,7 +406,6 @@ class SearchResultManager {
         });
         this.processResult(query, result, GLOBAL_KEY, globalProvider);
       });
-      this._setLoading(query, GLOBAL_KEY, globalProvider);
     }
     if (this._providersByDirectory.size === 0) {
       return;
@@ -410,7 +419,15 @@ class SearchResultManager {
       }
       for (const directoryProvider of providers) {
         const startTime = performance.now();
-        directoryProvider.executeQuery(query, directory).then(result => {
+        const loadingFn = () => {
+          this._setLoading(query, path, directoryProvider);
+          this._emitter.emit(RESULTS_CHANGED);
+        };
+        promises.triggerAfterWait(
+          directoryProvider.executeQuery(query, directory),
+          LOADING_EVENT_DELAY,
+          loadingFn,
+        ).then(result => {
           track(AnalyticsEvents.QUERY_SOURCE_PROVIDER, {
             'quickopen-source-provider': directoryProvider.getName(),
             'quickopen-query-duration': (performance.now() - startTime).toString(),
@@ -418,10 +435,8 @@ class SearchResultManager {
           });
           this.processResult(query, result, path, directoryProvider);
         });
-        this._setLoading(query, path, directoryProvider);
       }
     });
-    this._emitter.emit(RESULTS_CHANGED);
   }
 
   _isGlobalProvider(providerName: string): boolean {

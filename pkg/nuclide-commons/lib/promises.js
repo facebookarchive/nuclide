@@ -113,6 +113,29 @@ function awaitMilliSeconds(milliSeconds: number): Promise {
 }
 
 /**
+ * Executes a provided callback only if a promise takes longer than
+ * `milliSeconds` milliseconds to resolve.
+ *
+ * @param `promise` the promise to wait on.
+ * @param `milliSeconds` max amount of time that `promise` can take to resolve
+ * before timeoutFn is fired.
+ * @param `timeoutFn` the function to execute when a promise takes longer than
+ * `milliSeconds` ms to resolve.
+ */
+async function triggerAfterWait<T>(
+  promise: Promise<T>,
+  milliSeconds: number,
+  timeoutFn: () => void,
+): Promise<T> {
+  const timeout = setTimeout(timeoutFn, milliSeconds);
+  try {
+    return await promise;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+/**
  * Call an async function repeatedly with a maximum number of trials limit,
  * until a valid result that's defined by a validation function.
  * A failed call can result from an async thrown exception, or invalid result.
@@ -423,6 +446,8 @@ const promises = module.exports = {
   },
 
   awaitMilliSeconds,
+
+  triggerAfterWait,
 
   RequestSerializer,
 
