@@ -1259,6 +1259,7 @@ declare class atom$Notification {
   // Methods
   getType(): string;
   getMessage(): string;
+  getOptions(): Object;
   dismiss(): void;
 }
 

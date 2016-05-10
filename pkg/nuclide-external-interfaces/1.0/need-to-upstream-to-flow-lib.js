@@ -25,6 +25,22 @@ declare class Worker {
   postMessage(message: mixed): void;
 }
 
+/*
+ * These Notification & NotificationOptions definitions are not exhaustive while standardization,
+ * browser, and Electron support remain incomplete.
+ */
+type NotificationOptions = {
+  body?: string;
+  icon?: string;
+};
+
+declare class Notification {
+  constructor(
+    message: string,
+    options?: NotificationOptions,
+  ): void;
+}
+
 type IDBDatabase = {
   close: () => void;
   transaction: (key: string) => any;
