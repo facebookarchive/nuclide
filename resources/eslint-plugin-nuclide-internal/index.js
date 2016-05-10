@@ -15,6 +15,7 @@ module.exports = {
     'consistent-import-name': require('./consistent-import-name'),
     'import-type-style': require('./import-type-style'),
     'license-header': require('./license-header'),
+    'no-re-export-type': require('./no-re-export-type'),
     'type-alias-semi': require('./type-alias-semi'),
   },
   rulesConfig: {
@@ -22,6 +23,7 @@ module.exports = {
     'consistent-import-name': 0,
     'import-type-style': 0,
     'license-header': 0,
+    'no-re-export-type': 0,
     'type-alias-semi': 0,
   },
 };
