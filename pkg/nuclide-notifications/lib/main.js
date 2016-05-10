@@ -62,6 +62,10 @@ export function raiseNativeNotification(title: string, body: string): void {
     return;
   }
 
+  if (atom.getCurrentWindow().isFocused() && !currentConfig.whenFocused) {
+    return;
+  }
+
   // eslint-disable-next-line no-new, no-undef
   new Notification(
     title, {

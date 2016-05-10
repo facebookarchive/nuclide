@@ -6,6 +6,13 @@
   "description": "Provides native notification support for Nuclide & Atom",
   "nuclide": {
     "config": {
+      "whenFocused": {
+        "order": 0,
+        "title": "Show notifications when in focus",
+        "type": "boolean",
+        "default": false,
+        "description": "Send notifications to the operating system even when Nuclide is in focus."
+      },
       "success": {
         "order": 1,
         "title": "Native success notifications",
