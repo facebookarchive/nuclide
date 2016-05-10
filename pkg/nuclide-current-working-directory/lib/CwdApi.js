@@ -49,7 +49,11 @@ export class CwdApi {
   }
 
   observeCwd(callback: (directory: ?Directory) => void): IDisposable {
-    return new DisposableSubscription(this._cwd$.subscribe(directory => { callback(directory); }));
+    const disposable = new DisposableSubscription(
+      this._cwd$.subscribe(directory => { callback(directory); })
+    );
+    this._disposables.add(disposable);
+    return disposable;
   }
 
   dispose(): void {
