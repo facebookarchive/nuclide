@@ -8,35 +8,35 @@
     "config": {
       "success": {
         "order": 1,
-        "title": "1. Native success notifications",
+        "title": "Native success notifications",
         "type": "boolean",
         "default": true,
         "description": "Send 'success' notifications to the operating system."
       },
       "info": {
         "order": 2,
-        "title": "2. Native info notifications",
+        "title": "Native info notifications",
         "type": "boolean",
         "default": false,
         "description": "Send 'info' notifications to the operating system."
       },
       "warning": {
         "order": 3,
-        "title": "3. Native warning notifications",
+        "title": "Native warning notifications",
         "type": "boolean",
         "default": true,
         "description": "Send 'warning' notifications to the operating system."
       },
       "error": {
         "order": 4,
-        "title": "4. Native error notifications",
+        "title": "Native error notifications",
         "type": "boolean",
         "default": true,
         "description": "Send 'error' notifications to the operating system."
       },
       "fatal": {
         "order": 5,
-        "title": "5. Native fatal notifications",
+        "title": "Native fatal notifications",
         "type": "boolean",
         "default": true,
         "description": "Send 'fatal' notifications to the operating system."
