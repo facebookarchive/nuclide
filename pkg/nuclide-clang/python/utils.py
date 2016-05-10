@@ -20,13 +20,17 @@ def is_header_file(src):
 def resolve_file(file):
     if file is None:
         return None
-    realpath = os.path.realpath(file.name)
+    return resolve_file_name(file.name)
+
+
+def resolve_file_name(file_name):
+    realpath = os.path.realpath(file_name)
     # If the file itself is a symlink, always resolve it.
     # Otherwise, do not resolve '/mnt' paths, since Nuclide can't open them remotely.
     # TODO(hansonw): this is a hack! Remove when we support arbitrary filesystem paths.
-    if os.path.islink(file.name) or not realpath.startswith('/mnt'):
+    if os.path.islink(file_name) or not realpath.startswith('/mnt'):
         return realpath
-    return file.name
+    return file_name
 
 
 # Converts a Clang `SourceLocation` into a dict.

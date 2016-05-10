@@ -307,7 +307,7 @@ class Server:
             return
 
         response['locationAndSpelling'] = get_declaration_location_and_spelling(
-            translation_unit, self.src, line + 1, column + 1)
+            translation_unit, contents, flags, self.src, line + 1, column + 1)
 
     def get_declaration_info(self, request, response):
         contents = request['contents']
