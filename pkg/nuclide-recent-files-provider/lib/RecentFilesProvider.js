@@ -16,7 +16,7 @@ import type {
   FileResult,
   Provider,
   ProviderType,
-} from '../../nuclide-quick-open';
+} from '../../nuclide-quick-open/lib/types';
 
 import {array, relativeDate} from '../../nuclide-commons';
 import {Matcher} from '../../nuclide-fuzzy-native';

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from '../../hyperclick';
+import type {HyperclickProvider} from '../../hyperclick/lib/types';
 
 import HyperclickProviderHelpers from './HyperclickProviderHelpers';
 

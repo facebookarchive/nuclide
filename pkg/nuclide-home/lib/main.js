@@ -9,10 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {GadgetsService} from '../../nuclide-gadgets';
+import type {GadgetsService} from '../../nuclide-gadgets/lib/types';
 import type {HomeFragments} from './types';
-
-export type {HomeFragments} from './types';
 
 import {CompositeDisposable, Disposable} from 'atom';
 import featureConfig from '../../nuclide-feature-config';

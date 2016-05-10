@@ -23,7 +23,7 @@ import {nuclideFeatures} from '../../../lib/nuclide-features';
 import {debounce} from '../../nuclide-commons';
 
 import {WorkingSet} from '../../nuclide-working-sets';
-import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore';
+import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
 import semver from 'semver';
 

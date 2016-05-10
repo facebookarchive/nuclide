@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from '../../hyperclick';
-import type {Provider as QuickOpenProviderType} from '../../nuclide-quick-open';
+import type {HyperclickProvider} from '../../hyperclick/lib/types';
+import type {Provider as QuickOpenProviderType} from '../../nuclide-quick-open/lib/types';
 
 import HyperclickHelpers from './HyperclickHelpers';
 import QuickOpenHelpers from './QuickOpenHelpers';

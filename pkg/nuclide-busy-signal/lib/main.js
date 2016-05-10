@@ -24,13 +24,6 @@ export {
   DedupedBusySignalProviderBase,
 };
 
-export type {
-  BusySignalMessage,
-  BusySignalMessageBusy,
-  BusySignalMessageDone,
-  BusySignalProvider,
-} from './types';
-
 class Activation {
   _statusBarTile: ?StatusBarTileType;
   _disposables: CompositeDisposable;

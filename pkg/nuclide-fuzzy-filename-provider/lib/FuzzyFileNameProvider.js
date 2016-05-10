@@ -13,7 +13,7 @@ import type {
   FileResult,
   Provider,
   ProviderType,
-} from '../../nuclide-quick-open';
+} from '../../nuclide-quick-open/lib/types';
 
 import {getFuzzyFileSearchService} from './utils';
 import {

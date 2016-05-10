@@ -11,11 +11,6 @@
 
 import type {HyperclickProvider} from './types';
 
-export type {
-  HyperclickProvider,
-  HyperclickSuggestion,
-} from './types';
-
 import {Disposable} from 'atom';
 import Hyperclick from './Hyperclick';
 

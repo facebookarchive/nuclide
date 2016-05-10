@@ -11,9 +11,9 @@
 
 import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
 import type {DiagnosticProvider} from '../../nuclide-diagnostics-base';
-import type {HyperclickProvider} from '../../hyperclick';
+import type {HyperclickProvider} from '../../hyperclick/lib/types';
 import type {OutlineProvider} from '../../nuclide-outline-view';
-import type {TypeHintProvider} from '../../nuclide-type-hint';
+import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';

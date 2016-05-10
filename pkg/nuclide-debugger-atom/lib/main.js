@@ -18,7 +18,7 @@ import type {SerializedBreakpoint} from './BreakpointStore';
 import type {
   DatatipProvider,
   DatatipService,
-} from '../../nuclide-datatip';
+} from '../../nuclide-datatip/lib/types';
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';

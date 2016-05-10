@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Gadget, GadgetsService} from '../../nuclide-gadgets';
+import type {Gadget, GadgetsService} from '../../nuclide-gadgets/lib/types';
 
 import {Playground} from './Playground';
 import invariant from 'assert';

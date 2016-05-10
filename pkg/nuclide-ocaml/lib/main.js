@@ -10,7 +10,7 @@
  */
 
 import type {LinterProvider} from '../../nuclide-diagnostics-base';
-import type {TypeHintProvider as TypeHintProviderType} from '../../nuclide-type-hint';
+import type {TypeHintProvider as TypeHintProviderType} from '../../nuclide-type-hint/lib/types';
 
 import {GRAMMARS} from './constants';
 

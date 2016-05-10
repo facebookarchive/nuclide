@@ -12,7 +12,7 @@
 import type {
   HyperclickProvider,
   HyperclickSuggestion,
-} from '../../hyperclick';
+} from '../../hyperclick/lib/types';
 
 import semver from 'semver';
 import path from 'path';

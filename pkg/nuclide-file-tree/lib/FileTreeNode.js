@@ -17,7 +17,7 @@ import Immutable from 'immutable';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {StoreConfigData, NodeCheckedStatus} from './FileTreeStore';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
-import type {WorkingSet} from '../../nuclide-working-sets';
+import type {WorkingSet} from '../../nuclide-working-sets/lib/types';
 import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
 
 

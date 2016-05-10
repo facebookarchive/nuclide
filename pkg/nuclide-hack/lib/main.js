@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHint} from '../../nuclide-type-hint';
+import type {TypeHint} from '../../nuclide-type-hint/lib/types';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../nuclide-busy-signal';
-import type {HyperclickProvider} from '../../hyperclick';
+import type {HyperclickProvider} from '../../hyperclick/lib/types';
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 

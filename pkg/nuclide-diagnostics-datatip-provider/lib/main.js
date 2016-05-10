@@ -13,7 +13,7 @@ import type {
   Datatip,
   DatatipProvider,
   DatatipService,
-} from '../../nuclide-datatip';
+} from '../../nuclide-datatip/lib/types';
 import type {
   DiagnosticUpdater,
   FileMessageUpdate,

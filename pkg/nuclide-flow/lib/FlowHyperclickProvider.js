@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickSuggestion} from '../../hyperclick';
+import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 
 import invariant from 'assert';
 

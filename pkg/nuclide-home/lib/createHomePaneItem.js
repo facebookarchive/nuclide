@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Gadget} from '../../nuclide-gadgets';
+import type {Gadget} from '../../nuclide-gadgets/lib/types';
 import type {HomeFragments} from './types';
 import type Rx from 'rxjs';
 

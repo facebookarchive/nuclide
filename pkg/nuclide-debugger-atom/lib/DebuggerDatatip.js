@@ -12,7 +12,7 @@
 import type {
   NuclideEvaluationExpression,
 } from '../../nuclide-debugger-interfaces/service';
-import type {Datatip} from '../../nuclide-datatip';
+import type {Datatip} from '../../nuclide-datatip/lib/types';
 import type DebuggerModel from './DebuggerModel';
 import type {EvaluationResult} from './Bridge';
 

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {HomeFragments} from '../../nuclide-home';
+import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {
   nuclide_debugger$Service,
   NuclideDebuggerProvider,

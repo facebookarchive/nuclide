@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickSuggestion} from '../../hyperclick';
+import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 import type {CtagsResult, CtagsService} from '../../nuclide-remote-ctags-base';
 
 import {goToLocation} from '../../nuclide-atom-helpers';

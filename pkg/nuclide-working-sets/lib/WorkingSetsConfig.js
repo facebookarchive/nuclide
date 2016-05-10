@@ -11,12 +11,11 @@
 
 import featureConfig from '../../nuclide-feature-config';
 
-import type {WorkingSetDefinition} from '..';
+import type {WorkingSetDefinition} from './types';
 
 const CONFIG_KEY = 'nuclide-working-sets.workingSets';
 
-export type DefinitionsObserver = (definitions: Array<WorkingSetDefinition>) => void;
-
+type DefinitionsObserver = (definitions: Array<WorkingSetDefinition>) => void;
 
 export class WorkingSetsConfig {
   observeDefinitions(callback: DefinitionsObserver): IDisposable {

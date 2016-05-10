@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Provider} from '../../nuclide-quick-open';
+import type {Provider} from '../../nuclide-quick-open/lib/types';
 
 import typeof * as FuzzyFileSearchService from '../../nuclide-fuzzy-file-search-service';
 

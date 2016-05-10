@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {GadgetsService} from '../../nuclide-gadgets';
+import type {GadgetsService} from '../../nuclide-gadgets/lib/types';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';

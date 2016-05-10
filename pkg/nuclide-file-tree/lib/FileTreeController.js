@@ -27,8 +27,10 @@ import shell from 'shell';
 
 import invariant from 'assert';
 
-import type {WorkingSet} from '../../nuclide-working-sets';
-import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore';
+import type {
+  WorkingSet,
+  WorkingSetsStore,
+} from '../../nuclide-working-sets/lib/types';
 import type {FileTreeNode} from './FileTreeNode';
 
 export type FileTreeControllerState = {

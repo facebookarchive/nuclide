@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHint} from '../../nuclide-type-hint';
+import type {TypeHint} from '../../nuclide-type-hint/lib/types';
 
 import invariant from 'assert';
 import {extractWordAtPosition} from '../../nuclide-atom-helpers';

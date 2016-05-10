@@ -9,10 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {
-  BusySignalProvider,
-  BusySignalProviderBase,
-} from '../../nuclide-busy-signal';
+import type {BusySignalProvider} from '../../nuclide-busy-signal/lib/types';
+import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
 
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';

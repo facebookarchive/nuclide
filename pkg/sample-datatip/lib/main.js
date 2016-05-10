@@ -12,7 +12,7 @@
 import type {
   DatatipProvider,
   DatatipService,
-} from '../../nuclide-datatip';
+} from '../../nuclide-datatip/lib/types';
 
 import {
   CompositeDisposable,

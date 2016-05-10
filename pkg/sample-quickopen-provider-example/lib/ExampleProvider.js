@@ -13,7 +13,7 @@ import type {
   FileResult,
   Provider,
   ProviderType,
-} from '../../nuclide-quick-open';
+} from '../../nuclide-quick-open/lib/types';
 
 const FIXTURE = [
   'ac', 'accumsan', 'adipiscing', 'amet', 'auctor', 'consectetur', 'dictum', 'dolor', 'efficitur',

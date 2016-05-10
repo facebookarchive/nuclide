@@ -10,19 +10,7 @@
  */
 
 import type {Provider} from './types';
-import type {HomeFragments} from '../../nuclide-home';
-
-export {
-  DirectoryName,
-  FileResult,
-  GroupedResult,
-  Provider,
-  ProviderResult,
-  ProviderSpec,
-  ProviderType,
-  ServiceName,
-  Store,
-} from './types';
+import type {HomeFragments} from '../../nuclide-home/lib/types';
 
 import invariant from 'assert';
 import {

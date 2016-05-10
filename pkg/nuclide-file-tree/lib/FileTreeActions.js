@@ -29,8 +29,10 @@ import type {
   HgRepositoryClientAsync,
 } from '../../nuclide-hg-repository-client';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
-import type {WorkingSet} from '../../nuclide-working-sets';
-import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore';
+import type {
+  WorkingSet,
+  WorkingSetsStore,
+} from '../../nuclide-working-sets/lib/types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 

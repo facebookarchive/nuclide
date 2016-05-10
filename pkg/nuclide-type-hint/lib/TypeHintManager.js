@@ -10,7 +10,7 @@
  */
 
 import type {TypeHintProvider} from './types';
-import type {Datatip} from '../../nuclide-datatip';
+import type {Datatip} from '../../nuclide-datatip/lib/types';
 
 import invariant from 'assert';
 import {array} from '../../nuclide-commons';

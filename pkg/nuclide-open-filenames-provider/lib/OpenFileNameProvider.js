@@ -13,7 +13,7 @@ import type {
   FileResult,
   Provider,
   ProviderType,
-} from '../../nuclide-quick-open';
+} from '../../nuclide-quick-open/lib/types';
 
 import {array} from '../../nuclide-commons';
 import {Matcher} from '../../nuclide-fuzzy-native';

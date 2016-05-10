@@ -9,8 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {WorkingSetDefinition} from '../../nuclide-working-sets';
-import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore';
+import type {
+  WorkingSetDefinition,
+  WorkingSetsStore,
+} from '../../nuclide-working-sets/lib/types';
 
 import classnames from 'classnames';
 import {CompositeDisposable} from 'atom';

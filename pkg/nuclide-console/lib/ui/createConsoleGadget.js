@@ -10,7 +10,7 @@
  */
 
 import type Commands from '../Commands';
-import type {Gadget} from '../../../nuclide-gadgets';
+import type {Gadget} from '../../../nuclide-gadgets/lib/types';
 import type {AppState, Record, Executor} from '../types';
 import type Rx from 'rxjs';
 

@@ -21,7 +21,7 @@ import FileTreeActions from '../lib/FileTreeActions';
 import {WorkingSet} from '../../nuclide-working-sets';
 import {Button} from '../../nuclide-ui/lib/Button';
 
-import type {WorkingSetsStore} from '../../nuclide-working-sets';
+import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
 type Props = {
   workingSetsStore: WorkingSetsStore;

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {GadgetsService, Gadget} from '../../nuclide-gadgets';
+import type {GadgetsService, Gadget} from '../../nuclide-gadgets/lib/types';
 import type {HealthStats} from './types';
 
 // Imports from non-Nuclide modules.

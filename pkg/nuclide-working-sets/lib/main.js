@@ -15,15 +15,9 @@ import {WorkingSetsStore} from './WorkingSetsStore';
 import {WorkingSetsConfig} from './WorkingSetsConfig';
 import {PathsObserver} from './PathsObserver';
 
-export type WorkingSetDefinition = {
-  name: string;
-  active: boolean;
-  uris: Array<string>;
-};
-
-export type {WorkingSetsStore};
-export type {ApplicabilitySortedDefinitions} from './WorkingSetsStore';
-
+// TODO(advinsky): Importing across Atom packages is an anti-pattern. Either
+// factor this out so it can be shared with the file-tree or merge working sets
+// into it.
 export {WorkingSet} from './WorkingSet';
 
 class Activation {

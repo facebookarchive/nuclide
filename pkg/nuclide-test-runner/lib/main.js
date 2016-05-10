@@ -10,25 +10,11 @@
  */
 
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
-import type {HomeFragments} from '../../nuclide-home';
+import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {TestRunner} from './types';
 import type {TestRunnerController as TestRunnerControllerType} from './TestRunnerController';
 import type {TestRunnerControllerState} from './TestRunnerController';
-
-export type {
-  TestRunStatus,
-  TestClassSummary,
-  TestRunInfo,
-  StartMessage,
-  SummaryMessage,
-  RunTestMessage,
-  StderrMessage,
-  StdoutMessage,
-  ErrorMessage,
-  Message,
-  TestRunner,
-} from './types';
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';

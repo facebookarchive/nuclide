@@ -16,9 +16,9 @@ import {track} from '../../nuclide-analytics';
 import {normalizePathUri} from './uri';
 import {getLogger} from '../../nuclide-logging';
 
-import type {WorkingSetDefinition} from '..';
+import type {WorkingSetDefinition} from './types';
 
-export type ApplicabilitySortedDefinitions = {
+type ApplicabilitySortedDefinitions = {
   applicable: Array<WorkingSetDefinition>;
   notApplicable: Array<WorkingSetDefinition>;
 };

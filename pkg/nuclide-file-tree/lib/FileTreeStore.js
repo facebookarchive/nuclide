@@ -37,7 +37,7 @@ const VERSION = 1;
 import type {Directory} from './FileTreeHelpers';
 import type {Dispatcher} from 'flux';
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore';
+import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
 
 
