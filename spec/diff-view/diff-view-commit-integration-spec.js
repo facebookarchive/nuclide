@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {HgRepositoryClient} from '../../pkg/nuclide-hg-repository-client';
-
 import {
   activateAllPackages,
   copyMercurialFixture,
@@ -20,8 +18,7 @@ import {
 } from '../../pkg/nuclide-integration-test-helpers';
 import path from 'path';
 import fs from 'fs';
-import invariant from 'assert';
-import {repositoryForPath} from '../../pkg/nuclide-hg-git-bridge';
+import {triggerWatchmanHgChange} from '../lib/diff-view-utils';
 
 const NO_FILE_SELECTED_TITLE = 'No file selected...No file selected';
 
@@ -47,15 +44,6 @@ describe('Diff View Commit Mode Integration Test', () => {
   afterEach(() => {
     deactivateAllPackages();
   });
-
-  // In this test, we only mock `watchman` sending updates after the files are changed.
-  // This is to avoid the dependency on `watchman` existing and working on test machines.
-  function triggerWatchmanHgChange() {
-    const repository = repositoryForPath(filePath);
-    invariant(repository != null && repository.getType() === 'hg', 'non-hg repository');
-    const hgRepository: HgRepositoryClient = (repository: any);
-    hgRepository._service._filesDidChangeObserver.next([filePath]);
-  }
 
   it('tests commit view have the changed files & commit/amend works', () => {
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-diff-view:open');
@@ -124,7 +112,7 @@ describe('Diff View Commit Mode Integration Test', () => {
       // TODO(most): edit the file in a text editor and in the diff view, save
       // and make sure they sync and update the markers/offsets correctly.
       fs.appendFileSync(filePath, '\nnew_line_1\nnew_line_2');
-      triggerWatchmanHgChange();
+      triggerWatchmanHgChange(filePath);
     });
 
     waitsFor('repo diff status to update', 5000, () => {

@@ -18,10 +18,12 @@ import {
 } from '../../pkg/nuclide-integration-test-helpers';
 import path from 'path';
 import invariant from 'assert';
+import {triggerWatchmanHgChange} from '../lib/diff-view-utils';
 
 describe('Diff View Toolbar Button Test', () => {
 
   let repoPath: string = (null: any);
+  let filePath: string = (null: any);
 
   beforeEach(() => {
     waitsForPromise({timeout: 60000}, async () => {
@@ -33,7 +35,8 @@ describe('Diff View Toolbar Button Test', () => {
       // Add this directory as a new project in atom.
       setLocalProject(repoPath);
       // Open the test.txt file in the repo.
-      await atom.workspace.open(path.join(repoPath, 'test.txt'));
+      filePath = path.join(repoPath, 'test.txt');
+      await atom.workspace.open(filePath);
     });
   });
 
@@ -59,6 +62,7 @@ describe('Diff View Toolbar Button Test', () => {
 
       textEditor.setText('cg');
       textEditor.save();
+      triggerWatchmanHgChange(filePath);
     });
 
     waitsFor('uncommited file changes tool-bar counter to update', 10000, () => {
