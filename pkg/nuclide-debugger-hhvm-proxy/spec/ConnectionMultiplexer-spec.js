@@ -134,6 +134,12 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       connection.evaluateOnCallFrame = jasmine.createSpy('evaluateOnCallFrame').andReturn({});
       // $FlowFixMe override instance method.
       connection.runtimeEvaluate = jasmine.createSpy('runtimeEvaluate').andReturn({});
+      // $FlowFixMe override instance method.
+      connection.setFeature = jasmine.createSpy('setFeature').andReturn(true);
+      // $FlowFixMe override instance method.
+      connection.sendStdoutRequest = jasmine.createSpy('sendStdoutRequest').andReturn(true);
+      // $FlowFixMe override instance method.
+      connection.sendStderrRequest = jasmine.createSpy('sendStderrRequest').andReturn(true);
 
       const statusDispose = jasmine.createSpy('connection.onStatus.dispose' + connectionCount);
       // $FlowFixMe override instance method.
