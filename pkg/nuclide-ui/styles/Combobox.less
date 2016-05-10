@@ -23,6 +23,9 @@
   margin-top: 0;
   position: absolute;
   width: 100%;
+  // This needs some z-index or else any absolutely positioned siblings could
+  // be rendered on top of it.
+  z-index: 1;
 
   strong {
     font-weight: bold;
