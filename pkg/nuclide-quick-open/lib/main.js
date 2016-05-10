@@ -172,6 +172,7 @@ class Activation {
         activeProvider={this._currentProvider}
         onProviderChange={this.handleActiveProviderChange.bind(this)}
         maxScrollableAreaHeight={this._maxScrollableAreaHeight}
+        onBlur={this.closeSearchPanel.bind(this)}
       />,
       this._reactDiv
     );
