@@ -18,7 +18,9 @@ import ConsoleHeader from './ConsoleHeader';
 import InputArea from './InputArea';
 import PromptButton from './PromptButton';
 import RecordView from './RecordView';
+import UnseenMessagesNotification from './UnseenMessagesNotification';
 import invariant from 'assert';
+import shallowEqual from 'shallowequal';
 
 type Props = {
   records: Array<Record>;
@@ -29,8 +31,13 @@ type Props = {
   selectExecutor: (executorId: string) => void;
 };
 
+type State = {
+  unseenMessages: boolean;
+};
+
 export default class Console extends React.Component {
   props: Props;
+  state: State;
 
   _isScrolledToBottom: boolean;
   _scrollPane: ?HTMLElement;
@@ -38,11 +45,15 @@ export default class Console extends React.Component {
 
   constructor(props: Props) {
     super(props);
+    this.state = {
+      unseenMessages: false,
+    };
     this._isScrolledToBottom = true;
     this._userIsScrolling = false;
     (this: any)._handleScrollPane = this._handleScrollPane.bind(this);
     (this: any)._handleScroll = this._handleScroll.bind(this);
     (this: any)._handleScrollEnd = debounce(this._handleScrollEnd, 100);
+    (this: any)._scrollToBottom = this._scrollToBottom.bind(this);
   }
 
   componentDidUpdate(prevProps: Props): void {
@@ -75,15 +86,37 @@ export default class Console extends React.Component {
     );
   }
 
+  componentWillReceiveProps(props: Props): void {
+    // If we receive new messages after we've scrolled away from the bottom, show the "new messages"
+    // notification.
+    if (props.records !== this.props.records && !this._isScrolledToBottom) {
+      this.setState({unseenMessages: true});
+    }
+  }
+
+  shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
+    return !shallowEqual(this.props, nextProps) || !shallowEqual(this.state, nextState);
+  }
+
   render(): ?React.Element {
     return (
       <div className="nuclide-console">
         <ConsoleHeader clear={this.props.clearRecords} />
-        <div
-          ref={this._handleScrollPane}
-          className="nuclide-console-scroll-pane"
-          onScroll={this._handleScroll}>
-          <OutputTable records={this.props.records} />
+        {/*
+          We need an extra wrapper element here in order to have the new messages notification stick
+          to the bottom of the scrollable area (and not scroll with it).
+        */}
+        <div className="nuclide-console-scroll-pane-wrapper">
+          <div
+            ref={this._handleScrollPane}
+            className="nuclide-console-scroll-pane"
+            onScroll={this._handleScroll}>
+            <OutputTable records={this.props.records} />
+          </div>
+          <UnseenMessagesNotification
+            visible={this.state.unseenMessages}
+            onClick={this._scrollToBottom}
+          />
         </div>
         {this._renderPrompt()}
       </div>
@@ -120,6 +153,7 @@ export default class Console extends React.Component {
 
     const {scrollTop, scrollHeight, offsetHeight} = this._scrollPane;
     this._isScrolledToBottom = scrollHeight - (offsetHeight + scrollTop) < 5;
+    this.setState({unseenMessages: this.state.unseenMessages && !this._isScrolledToBottom});
   }
 
   _handleScrollPane(el: HTMLElement): void {
@@ -131,6 +165,14 @@ export default class Console extends React.Component {
     return <RecordView key={index} record={record} />;
   }
 
+  _scrollToBottom(): void {
+    if (!this._scrollPane) {
+      return;
+    }
+    // TODO: Animate?
+    this._scrollPane.scrollTop = this._scrollPane.scrollHeight;
+  }
+
   /**
    * Scroll to the bottom of the list if autoscroll is active.
    */
@@ -138,7 +180,7 @@ export default class Console extends React.Component {
     if (!this._scrollPane || this._userIsScrolling || !this._isScrolledToBottom) {
       return;
     }
-    this._scrollPane.scrollTop = this._scrollPane.scrollHeight;
+    this._scrollToBottom();
   }
 
 }

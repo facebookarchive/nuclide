@@ -41,8 +41,6 @@
 }
 
 .nuclide-console-scroll-pane {
-  position: relative;
-  flex-grow: 1;
   overflow-y: auto;
   overflow-x: hidden;
   background-color: @syntax-background-color;
@@ -180,4 +178,37 @@
 
 .nuclide-console-text-editor-wrapper {
   flex-grow: 1;
+}
+
+.nuclide-console-scroll-pane-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.nuclide-console-new-messages-notification {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  text-align: center;
+  padding-left: @component-padding;
+  padding-right: @component-padding;
+  cursor: pointer;
+
+  // Use a timing function that approximates easeOutBack.
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  &.visible {
+    // Using both margin-bottom and translateY allows us to combine percentage-
+    // and pixel-based sizes.
+    margin-bottom: @component-padding / 2;
+    // translateX to center horizontally, translateY for hiding.
+    transform: translateX(-50%) translateY(0);
+  }
+
+  &:not(.visible) {
+    margin-bottom: 0;
+    transform: translateX(-50%) translateY(100%);
+  }
 }
