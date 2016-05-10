@@ -20,7 +20,7 @@ import {trackTiming} from '../../nuclide-analytics';
 import {fsPromise} from '../../nuclide-commons';
 import {getLogger} from '../../nuclide-logging';
 import {BuckProject} from '../../nuclide-buck-base/lib/BuckProject';
-import {isHeaderFile, isSourceFile} from './utils';
+import {isHeaderFile, isSourceFile, findIncludingSourceFile} from './utils';
 
 const logger = getLogger();
 
@@ -44,6 +44,8 @@ const SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS = new Set(
   Array.from(CLANG_FLAGS_THAT_TAKE_PATHS)
     .filter(item => item.length === 2)
 );
+
+const INCLUDE_SEARCH_TIMEOUT = 15000;
 
 export type ClangFlags = {
   flags: ?Array<string>;
@@ -141,7 +143,12 @@ class ClangFlagsManager {
         return buckFlags.values().next().value;
       }
       // Try finding flags for a related source file.
-      const sourceFile = await ClangFlagsManager._findSourceFileForHeader(src);
+      const projectRoot = (await this._buckUtils.getBuckProjectRoot(src)) || dbDir;
+      // If we don't have a .buckconfig or a compile_commands.json, we won't find flags regardless.
+      if (projectRoot == null) {
+        return null;
+      }
+      const sourceFile = await ClangFlagsManager._findSourceFileForHeader(src, projectRoot);
       if (sourceFile != null) {
         return this.getFlagsForSrc(sourceFile);
       }
@@ -356,11 +363,12 @@ class ClangFlagsManager {
     return args;
   }
 
-  static async _findSourceFileForHeader(header: string): Promise<?string> {
+  static async _findSourceFileForHeader(
+    header: string,
+    projectRoot: string,
+  ): Promise<?string> {
     // Basic implementation: look at files in the same directory for paths
     // with matching file names.
-    // TODO(#10028531): Scan through source files to find those that include
-    // the header file.
     const dir = path.dirname(header);
     const files = await fsPromise.readdir(dir);
     const basename = ClangFlagsManager._getFileBasename(header);
@@ -369,7 +377,13 @@ class ClangFlagsManager {
         return path.join(dir, file);
       }
     }
-    return null;
+
+    // Try searching all subdirectories for source files that include this header.
+    // Give up after INCLUDE_SEARCH_TIMEOUT.
+    return findIncludingSourceFile(header, projectRoot)
+      .timeout(INCLUDE_SEARCH_TIMEOUT)
+      .catch(() => Observable.of(null))
+      .toPromise();
   }
 
   // Strip off the extension and conventional suffixes like "Internal" and "-inl".
