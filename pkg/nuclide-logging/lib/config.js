@@ -10,18 +10,11 @@
  */
 
 import type {LoggingAppender} from './types';
-import {clientInfo, fsPromise, systemInfo, ScribeProcess} from '../../nuclide-commons';
+import {clientInfo, fsPromise, ScribeProcess, env} from '../../nuclide-commons';
 import os from 'os';
 import path from 'path';
-const {USER} = require('../../nuclide-commons').env;
-let LOG_FILE_PATH;
 
-if (systemInfo.isRunningInWindows()) {
-  LOG_FILE_PATH = path.join(os.tmpdir(), `/nuclide-${USER}-logs/nuclide.log`);
-} else {
-  LOG_FILE_PATH = `/tmp/nuclide-${USER}-logs/nuclide.log`;
-}
-
+const LOG_FILE_PATH = path.join(os.tmpdir(), `/nuclide-${env.USER}-logs/nuclide.log`);
 const logDirectory = path.dirname(LOG_FILE_PATH);
 let logDirectoryInitialized = false;
 const scribeAppenderPath = path.join(__dirname, '../fb/scribeAppender.js');

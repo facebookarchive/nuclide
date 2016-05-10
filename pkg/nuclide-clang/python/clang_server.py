@@ -53,10 +53,7 @@ def log_filename(value):
 
 def set_up_logging(src):
     # Be consistent with the main Nuclide logs.
-    if sys.platform == 'win32':
-        log_dir = os.path.join(tempfile.gettempdir(), LOGGING_DIR)
-    else:
-        log_dir = os.path.join('/tmp', LOGGING_DIR)
+    log_dir = os.path.join(tempfile.gettempdir(), LOGGING_DIR)
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     handler = FileHandler(os.path.join(log_dir, log_filename(src)))
