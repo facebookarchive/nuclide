@@ -121,17 +121,22 @@ function awaitMilliSeconds(milliSeconds: number): Promise {
  * before timeoutFn is fired.
  * @param `timeoutFn` the function to execute when a promise takes longer than
  * `milliSeconds` ms to resolve.
+ * @param `cleanupFn` the cleanup function to execute after the promise resolves.
  */
 async function triggerAfterWait<T>(
   promise: Promise<T>,
   milliSeconds: number,
   timeoutFn: () => void,
+  cleanupFn?: () => void,
 ): Promise<T> {
   const timeout = setTimeout(timeoutFn, milliSeconds);
   try {
     return await promise;
   } finally {
     clearTimeout(timeout);
+    if (cleanupFn) {
+      cleanupFn();
+    }
   }
 }
 

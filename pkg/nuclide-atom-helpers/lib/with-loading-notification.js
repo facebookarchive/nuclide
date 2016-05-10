@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import {promises} from '../../nuclide-commons';
+
 /**
  * Displays a loading notification while waiting for a promise.
  * Waits delayMs before actually showing the notification (to prevent flicker).
@@ -20,20 +22,20 @@ async function withLoadingNotification<T>(
   options: Object = {},
 ): Promise<T> {
   let notif = null;
-  const timeout = setTimeout(() => {
+  const timeoutFn = () => {
     notif = atom.notifications.addInfo(message, {
       dismissable: true,
       ...options,
     });
-  }, delayMs);
-  try {
-    return await promise;
-  } finally {
-    clearTimeout(timeout);
+  };
+  const cleanupFn = () => {
     if (notif) {
       notif.dismiss();
     }
-  }
+  };
+  return promises.triggerAfterWait(
+    promise, delayMs, timeoutFn, cleanupFn,
+  );
 }
 
 module.exports = withLoadingNotification;
