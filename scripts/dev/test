@@ -36,17 +36,17 @@ parser = optparse.OptionParser(
     description='Run all tests for Nuclide. '
                 'Can explicitly list individual packages or integration-tests '
                 'to run.')
-parser.add_option('--no-module-cycle-check', action='store_true', default=False,
+parser.add_option('--no-module-cycle-check', action='store_true',
                   help='Skip `./module_cycle_check` step')
-parser.add_option('--verbose', action='store_true', default=False,
+parser.add_option('--verbose', action='store_true',
                   help='Verbose output')
-parser.add_option('--no-atom', action='store_true', default=False,
+parser.add_option('--no-atom', action='store_true',
                   help='Exclude packages that depend on Atom')
-parser.add_option('--run-in-band', action='store_true', default=False,
-                  help='Run tests in a single process')
-parser.add_option('--no-version', action='store_true', default=False,
+parser.add_option('--parallel', action='store_true',
+                  help='Run parallelable tests in parallel')
+parser.add_option('--no-version', action='store_true',
                   help='Ignore mismatched versions of Atom/npm/node/apm')
-parser.add_option('--run-integration-tests', action='store_true', default=False,
+parser.add_option('--run-integration-tests', action='store_true',
                   help='Only run tests in Nuclide/spec')
 parser.add_option('--continue-on-errors', action='store_true',
                   help='Run all tests, regardless of failures')
@@ -58,8 +58,8 @@ def run(name, cmd):
         start = datetime.now()
         logging.info('Running %s...', name)
         subprocess.check_call(cmd, cwd=NUCLIDE_PATH)
-    except subprocess.CalledProcessError:
-        logging.info('!!! FAILED %s !!!', name)
+    except (subprocess.CalledProcessError, KeyboardInterrupt):
+        logging.info('FAILED: %s', name)
         sys.exit(1)
     finally:
         end = datetime.now()
@@ -76,7 +76,7 @@ test_runner = JsTestRunner(
     not options.no_atom,
     args,
     options.verbose,
-    options.run_in_band,
+    options.parallel,
     options.continue_on_errors,
 )
 
@@ -91,4 +91,4 @@ else:
     run('flow', ['flow', 'check', '--show-all-errors'])
     if not options.no_module_cycle_check:
         run('module_cycle_check', ['scripts/dev/module_cycle_check'])
-    test_runner.run_tests()
+    test_runner.run_unit_tests()
