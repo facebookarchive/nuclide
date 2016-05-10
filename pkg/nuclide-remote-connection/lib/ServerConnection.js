@@ -308,8 +308,6 @@ class ServerConnection {
     if (this._connections.length === 0) {
       // The await here is subtle, it ensures that the shutdown call is sent
       // on the socket before the socket is closed on the next line.
-      // TODO: Ideally we'd not Promise.all() for argument lists which do not
-      // contain any remote interfaces rather than await here.
       await this._getInfoService().closeConnection(shutdownIfLast);
       this.close();
     }

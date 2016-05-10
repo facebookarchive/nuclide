@@ -225,8 +225,8 @@ export class RemoteConnection {
     this._subscriptions.add(new DisposableSubscription(subscription));
   }
 
-  close(shutdownIfLast: boolean): void {
-    this._connection.removeConnection(this, shutdownIfLast);
+  async close(shutdownIfLast: boolean): Promise<void> {
+    await this._connection.removeConnection(this, shutdownIfLast);
     _emitter.emit('did-close', this);
   }
 

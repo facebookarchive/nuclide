@@ -18,10 +18,15 @@ export async function getServerVersion(): Promise<string> {
   return getVersion();
 }
 
-export function closeConnection(shutdownServer: boolean): void {
+// Mark this as async so the client can wait for an acknowledgement.
+// However, we can't close the connection right away, as otherwise the response never gets sent!
+// Add a small delay to allow the return message to go through.
+export async function closeConnection(shutdownServer: boolean): Promise<void> {
   const client: ClientConnection = (this: any);
-  NuclideServer.closeConnection(client);
-  if (shutdownServer) {
-    NuclideServer.shutdown();
-  }
+  setTimeout(() => {
+    NuclideServer.closeConnection(client);
+    if (shutdownServer) {
+      NuclideServer.shutdown();
+    }
+  }, 100);
 }
