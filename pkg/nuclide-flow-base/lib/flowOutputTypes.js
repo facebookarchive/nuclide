@@ -80,6 +80,4 @@ export type FlowLoc = {
 export type FlowPoint = {
   column: number;
   line: number;
-  // total character offset
-  offset: number;
 };
