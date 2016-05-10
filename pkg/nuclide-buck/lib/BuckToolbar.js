@@ -51,10 +51,6 @@ class BuckToolbar extends React.Component {
     (this: any)._handleReactNativeServerModeChanged =
       this._handleReactNativeServerModeChanged.bind(this);
     (this: any)._requestOptions = this._requestOptions.bind(this);
-    (this: any)._build = this._build.bind(this);
-    (this: any)._run = this._run.bind(this);
-    (this: any)._test = this._test.bind(this);
-    (this: any)._debug = this._debug.bind(this);
 
     this._buckToolbarActions = this.props.actions;
     this._buckToolbarStore = this.props.store;
@@ -143,21 +139,6 @@ class BuckToolbar extends React.Component {
     this._buckToolbarActions.updateReactNativeServerMode(checked);
   }
 
-  _build() {
-    this._buckToolbarActions.build();
-  }
-
-  _run() {
-    this._buckToolbarActions.run();
-  }
-
-  _test() {
-    this._buckToolbarActions.test();
-  }
-
-  _debug() {
-    this._buckToolbarActions.debug();
-  }
 }
 
 module.exports = BuckToolbar;

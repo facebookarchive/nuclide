@@ -104,18 +104,6 @@ class BuckToolbarStore {
           this._isReactNativeServerMode = action.serverMode;
           this.emitChange();
           break;
-        case BuckToolbarActions.ActionType.BUILD:
-          this._doBuild('build', /* debug */ false);
-          break;
-        case BuckToolbarActions.ActionType.RUN:
-          this._doBuild('install', /* debug */ false);
-          break;
-        case BuckToolbarActions.ActionType.TEST:
-          this._doBuild('test', /* debug */ false);
-          break;
-        case BuckToolbarActions.ActionType.DEBUG:
-          this._doDebug();
-          break;
       }
     });
   }

@@ -16,10 +16,6 @@ class BuckToolbarActions {
   _dispatcher: Dispatcher;
 
   static ActionType = Object.freeze({
-    BUILD: 'BUILD',
-    DEBUG: 'DEBUG',
-    RUN: 'RUN',
-    TEST: 'TEST',
     UPDATE_BUILD_TARGET: 'UPDATE_BUILD_TARGET',
     UPDATE_PANEL_VISIBILITY: 'UPDATE_PANEL_VISIBILITY',
     UPDATE_PROJECT: 'UPDATE_PROJECT',
@@ -59,21 +55,6 @@ class BuckToolbarActions {
     });
   }
 
-  build(): void {
-    this._dispatcher.dispatch({actionType: BuckToolbarActions.ActionType.BUILD});
-  }
-
-  run(): void {
-    this._dispatcher.dispatch({actionType: BuckToolbarActions.ActionType.RUN});
-  }
-
-  test(): void {
-    this._dispatcher.dispatch({actionType: BuckToolbarActions.ActionType.TEST});
-  }
-
-  debug(): void {
-    this._dispatcher.dispatch({actionType: BuckToolbarActions.ActionType.DEBUG});
-  }
 }
 
 module.exports = BuckToolbarActions;
