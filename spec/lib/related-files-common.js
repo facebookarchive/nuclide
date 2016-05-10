@@ -84,9 +84,9 @@ export function runTest(remote: boolean) {
     waitsForFile(TEST_FILES[(i + 1) % TEST_FILES.length]);
   }
 
-  runs(() => {
+  waitsForPromise(async () => {
     if (connection != null) {
-      stopNuclideServer(connection);
+      await stopNuclideServer(connection);
     }
     deactivateAllPackages();
   });

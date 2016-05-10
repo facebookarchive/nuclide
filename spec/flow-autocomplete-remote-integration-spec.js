@@ -92,7 +92,7 @@ describe('Remote Flow Autocomplete', () => {
 
       // Clean up -- kill nuclide server and deactivate packages.
       invariant(connection != null);
-      stopNuclideServer(connection);
+      await stopNuclideServer(connection);
       deactivateAllPackages();
     });
   });

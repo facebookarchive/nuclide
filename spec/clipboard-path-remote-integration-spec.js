@@ -53,7 +53,7 @@ describe('Remote clipboard path integration test', () => {
       dispatchKeyboardEvent('x', document.activeElement, {ctrl: true, alt: true});
       expect(atom.clipboard.read()).toBe('test.txt');
 
-      stopNuclideServer(connection);
+      await stopNuclideServer(connection);
       deactivateAllPackages();
     });
   });

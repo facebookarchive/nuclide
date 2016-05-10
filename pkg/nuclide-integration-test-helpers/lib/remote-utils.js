@@ -49,5 +49,5 @@ export async function stopNuclideServer(connection: RemoteConnection): Promise<v
   // or we can add a force shutdown method to ServerConnection.
   invariant(connection.isOnlyConnection());
   const attemptShutdown = true;
-  connection.close(attemptShutdown);
+  await connection.close(attemptShutdown);
 }

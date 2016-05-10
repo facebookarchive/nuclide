@@ -31,7 +31,7 @@ describe('remote connection for testing', () => {
       invariant(connection != null);
       expect(atom.project.getDirectories().length).toBe(2);
       expect(atom.project.getRepositories().length).toBe(2);
-      stopNuclideServer(connection);
+      await stopNuclideServer(connection);
       deactivateAllPackages();
     });
   });
