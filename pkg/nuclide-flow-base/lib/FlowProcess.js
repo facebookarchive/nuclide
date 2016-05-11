@@ -242,7 +242,7 @@ export class FlowProcess {
           // server. So, don't update.
           return;
         default:
-          logger.error('Unknown return code from Flow: ' + result.exitCode);
+          logger.error(`Unknown return code from Flow: ${result.exitCode}`);
           status = ServerStatus.UNKNOWN;
       }
     }

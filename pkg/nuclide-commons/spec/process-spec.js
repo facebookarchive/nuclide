@@ -141,7 +141,7 @@ describe('nuclide-commons/process', () => {
             } catch (error) {
               // `exit` with a non-zero error code should reject the Promise and return the generic
               // ENOENT (End Of ENTity) exit code.
-              expect(error.exitCode).toEqual('ENOENT');
+              expect(error.errorCode).toEqual('ENOENT');
               return;
             }
             // Force failure if the error was not thrown.
@@ -154,18 +154,10 @@ describe('nuclide-commons/process', () => {
 
   describe('checkOutput', () => {
     if (origPlatform !== 'win32') {
-      it('checkOutput throws an error if the process cannot be started', () => {
+      it('checkOutput returns an error if the process cannot be started', () => {
         waitsForPromise(async () => {
-          try {
-            await processLib.checkOutput('non_existing_command', /* args */ []);
-          } catch (error) {
-            // `exit` with a non-zero error code should reject the Promise and return the generic
-            // ENOENT (End Of ENTity) exit code.
-            expect(error.exitCode).toBe('ENOENT');
-            return;
-          }
-          // Force failure if the error was not thrown.
-          expect('should have exited because of error code > 0').toEqual(null);
+          const result = await processLib.checkOutput('non_existing_command', /* args */ []);
+          expect(result.errorCode).toBe('ENOENT');
         });
       });
       it('checkOutput does not throw an error if the exit code !== 0', () => {

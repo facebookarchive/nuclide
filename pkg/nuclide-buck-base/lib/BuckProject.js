@@ -107,14 +107,11 @@ export class BuckProject {
   }
 
   /**
-   * This syntax is not supported yet, but the return type is:
-   * Promise<{stdout: string; stderr: string; exitCode: number}>
-   *
    * @param args Do not include 'buck' as the first argument: it will be added
    *     automatically.
    */
   _runBuckCommandFromProjectRoot(args: Array<string>
-      ): Promise<{stdout: string; stderr: string; exitCode: number}> {
+      ): Promise<{stdout: string; stderr: string; exitCode?: number}> {
     const {pathToBuck, buckCommandOptions: options} = this._getBuckCommandAndOptions();
     logger.debug('Buck command:', pathToBuck, args, options);
     return asyncExecute(pathToBuck, args, options);

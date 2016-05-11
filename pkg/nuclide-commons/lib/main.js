@@ -10,9 +10,13 @@
  */
 
 export type process$asyncExecuteRet = {
+  // If the process fails to even start up, exitCode will not be set
+  // and errorCode / errorMessage will contain the actual error message.
+  // Otherwise, exitCode will always be defined.
   command?: string;
   errorMessage?: string;
-  exitCode: number;
+  errorCode?: string;
+  exitCode?: number;
   stderr: string;
   stdout: string;
 };

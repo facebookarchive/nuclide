@@ -368,10 +368,6 @@ function observeProcess(
  *       stdin string The contents to write to stdin.
  *       pipedCommand string a command to pipe the output of command through.
  *       pipedArgs array of strings as arguments.
- * @return Promise that resolves to an object with the properties:
- *     stdout string The contents of the process's output stream.
- *     stderr string The contents of the process's error stream.
- *     exitCode number The exit code returned by the process.
  */
 function checkOutput(
     command: string,
@@ -393,11 +389,11 @@ function checkOutput(
       firstChildStderr = '';
 
       firstChild.on('error', error => {
-        // Reject early with the result when encountering an error.
-        reject({
+        // Resolve early with the result when encountering an error.
+        resolve({
           command: [command].concat(args).join(' '),
           errorMessage: error.message,
-          exitCode: error.code,
+          errorCode: error.code,
           stderr: firstChildStderr,
           stdout: '',
         });
@@ -438,11 +434,11 @@ function checkOutput(
     });
 
     lastChild.on('error', error => {
-      // Reject early with the result when encountering an error.
-      reject({
+      // Return early with the result when encountering an error.
+      resolve({
         command: [command].concat(args).join(' '),
         errorMessage: error.message,
-        exitCode: error.code,
+        errorCode: error.code,
         stderr,
         stdout,
       });
