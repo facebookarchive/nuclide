@@ -491,14 +491,14 @@ async function asyncExecute(
     command: string,
     args: Array<string>,
     options: ?Object = {}): Promise<process$asyncExecuteRet> {
-  /* $FlowIssue (t8216189) */
   const result = await checkOutput(command, args, options);
   if (result.exitCode !== 0) {
-    // Duck typing Error.
-    result['name'] = 'Async Execution Error';
-    result['message'] =
-        `exitCode: ${result.exitCode}, stderr: ${result.stderr}, stdout: ${result.stdout}.`;
-    throw result;
+    const reason = result.exitCode != null ? `exitCode: ${result.exitCode}` :
+      `error: ${result.errorMessage}`;
+    throw new Error(
+      `asyncExecute "${command}" failed with ${reason}, ` +
+      `stderr: ${result.stderr}, stdout: ${result.stdout}.`
+    );
   }
   return result;
 }

@@ -88,17 +88,8 @@ describe('nuclide-commons/process', () => {
         });
       });
       it('throws an error if the exit code !== 0', () => {
-        waitsForPromise(async () => {
-          try {
-            await processLib.asyncExecute(process.execPath, ['-e', 'process.exit(1)']);
-          } catch (error) {
-            // `exit` with a non-zero error code should reject the Promise and return the generic
-            // ENOENT (End Of ENTity) exit code.
-            expect(error.exitCode).toEqual(1);
-            return;
-          }
-          // Force failure if the error was not thrown.
-          expect('should have exited because of error code > 0').toEqual(null);
+        waitsForPromise({shouldReject: true}, async () => {
+          await processLib.asyncExecute(process.execPath, ['-e', 'process.exit(1)']);
         });
       });
       it('pipes stdout to stdin of `pipedCommand`', () => {
@@ -133,19 +124,11 @@ describe('nuclide-commons/process', () => {
       describe('when passed a pipedCommand', () => {
         it('captures an error message if the first command exits', () => {
           waitsForPromise(async () => {
-            try {
-              await processLib.asyncExecute(
+            const error = await processLib.checkOutput(
                 'exit',
                 ['5'],
                 {env: process.env, pipedCommand: 'head', pipedArgs: ['-10']});
-            } catch (error) {
-              // `exit` with a non-zero error code should reject the Promise and return the generic
-              // ENOENT (End Of ENTity) exit code.
-              expect(error.errorCode).toEqual('ENOENT');
-              return;
-            }
-            // Force failure if the error was not thrown.
-            expect('should have exited because of error code > 0').toEqual(null);
+            expect(error.errorCode).toEqual('ENOENT');
           });
         });
       });

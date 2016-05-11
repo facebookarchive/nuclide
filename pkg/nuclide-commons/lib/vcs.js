@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {asyncExecute} from './process';
+import {checkOutput} from './process';
 import path from 'path';
 
 type VcsInfo = {
@@ -23,13 +23,7 @@ async function findVcsHelper(src: string): Promise<VcsInfo> {
   const options = {
     'cwd': path.dirname(src),
   };
-  let hgResult;
-  try {
-    hgResult = await asyncExecute('hg', ['root'], options);
-  } catch (e) {
-    hgResult = e;
-  }
-
+  const hgResult = await checkOutput('hg', ['root'], options);
   if (hgResult.exitCode === 0) {
     return {
       vcs: 'hg',
@@ -37,13 +31,7 @@ async function findVcsHelper(src: string): Promise<VcsInfo> {
     };
   }
 
-  let gitResult;
-  try {
-    gitResult = await asyncExecute('git', ['rev-parse', '--show-toplevel'], options);
-  } catch (e) {
-    gitResult = e;
-  }
-
+  const gitResult = await checkOutput('git', ['rev-parse', '--show-toplevel'], options);
   if (gitResult.exitCode === 0) {
     return {
       vcs: 'git',
