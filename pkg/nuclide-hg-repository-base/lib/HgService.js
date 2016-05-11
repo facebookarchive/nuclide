@@ -40,6 +40,7 @@ const DEFAULT_FORK_BASE_NAME = 'default';
 
 const WATCHMAN_SUBSCRIPTION_NAME_PRIMARY = 'hg-repository-watchman-subscription-primary';
 const WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK = 'hg-repository-watchman-subscription-hgbookmark';
+const WATCHMAN_HG_DIR_STATE = 'hg-repository-watchman-subscription-dirstate';
 
 // If Watchman reports that many files have changed, it's not really useful to report this.
 // This is typically caused by a large rebase or a Watchman re-crawl.
@@ -254,7 +255,6 @@ export class HgService {
 
     let primarySubscriptionExpression: Array<mixed> = ['allof',
       ['not', ['dirname', '.hg']],
-      ['not', ['name', '.hgignore', 'wholename']],
       // Hg appears to modify temporary files that begin with these
       // prefixes, every time a file is saved.
       // TODO (t7832809) Remove this when it is unnecessary.
@@ -316,8 +316,20 @@ export class HgService {
     );
     logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK} established.`);
 
+    const dirStateSubscribtion = await watchmanClient.watchDirectoryRecursive(
+      workingDirectory,
+      WATCHMAN_HG_DIR_STATE,
+      {
+        fields: ['name'],
+        expression: ['name', '.hg/dirstate', 'wholename'],
+        defer: ['hg.update'],
+      },
+    );
+    logger.debug(`Watchman subscription ${WATCHMAN_HG_DIR_STATE} established.`);
+
     primarySubscribtion.on('change', this._filesDidChange.bind(this));
     hgBookmarkSubscription.on('change', this._hgBookmarkDidChange.bind(this));
+    dirStateSubscribtion.on('change', this._emitHgRepoStateChanged.bind(this));
   }
 
   async _cleanUpWatchman(): Promise<void> {
