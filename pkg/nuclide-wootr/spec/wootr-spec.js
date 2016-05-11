@@ -395,4 +395,87 @@ describe('wootr', () => {
       ]);
     });
   });
+
+  describe('genInsert', () => {
+    it('should work with single characters', () => {
+      const wstring = new WString(1);
+
+      wstring.genInsert(0, 't');
+      wstring.genInsert(0, 'e');
+      wstring.genInsert(2, 's');
+
+      expect(wstring._string[1]).toEqual({
+        startId: {
+          site: 1,
+          h: 2,
+        },
+        visible: true,
+        length: 1,
+        startDegree: 2,
+      });
+
+      expect(wstring._string[2]).toEqual({
+        startId: {
+          site: 1,
+          h: 1,
+        },
+        visible: true,
+        length: 1,
+        startDegree: 1,
+      });
+      expect(wstring._string[3]).toEqual({
+        startId: {
+          site: 1,
+          h: 3,
+        },
+        visible: true,
+        length: 1,
+        startDegree: 2,
+      });
+    });
+
+    it('should work with multiple characters', () => {
+      const wstring = new WString(1);
+
+      expect(wstring.genInsert(0, 'test')).toEqual({
+        type: 'INS',
+        char: {
+          startId: {
+            site: 1,
+            h: 1,
+          },
+          length: 4,
+          startDegree: 1,
+          visible: true,
+        },
+        prev: {
+          id: {
+            site: -1,
+            h: 0,
+          },
+          visible: true,
+          degree: 0,
+        },
+        next: {
+          id: {
+            site: -1,
+            h: 1,
+          },
+          visible: true,
+          degree: 0,
+        },
+        text: 'test',
+      });
+
+      expect(wstring._string[1]).toEqual({
+        startId: {
+          site: 1,
+          h: 1,
+        },
+        visible: true,
+        length: 4,
+        startDegree: 1,
+      });
+    });
+  });
 });

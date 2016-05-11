@@ -29,6 +29,22 @@ export type WCharRun = {
   length: number;
 };
 
+export type WOpType = 'INS' | 'DEL';
+
+export type WOp = {
+  type: WOpType;
+  text?: string;
+  char?: WCharRun;
+  runs?: Array<WCharRun>;
+  next?: WChar;
+  prev?: WChar;
+};
+
+function idLess(idLeft: WId, idRight: WId): boolean {
+  return (idLeft.site < idRight.site
+    || (idLeft.site === idRight.site && idLeft.h < idRight.h));
+}
+
 export class WString {
   static start: WCharRun;
   static end: WCharRun;
@@ -266,6 +282,51 @@ export class WString {
     }
 
     return sub;
+  }
+
+  genInsert(pos: number, text: string): WOp {
+    const prevChar = this.ith(pos);
+    const nextChar = this.ith(pos + 1);
+
+    if (prevChar == null || nextChar == null) {
+      throw new Error(`Position ${pos} invalid within wstring`);
+    }
+
+    const c = {
+      startId: {
+        site: this._siteId,
+        h: this._localId,
+      },
+      visible: true,
+      startDegree: Math.max(prevChar.degree, nextChar.degree) + 1,
+      length: text.length,
+    };
+    this._localId += text.length;
+
+    this.integrateIns(c, prevChar, nextChar);
+
+    return {type: 'INS', char: c, prev: prevChar, next: nextChar, text: text};
+  }
+
+  // Main wooto algorithm. see: "Wooki: a P2P Wiki-based Collaborative Writing Tool"
+  integrateIns(c: WCharRun, cp: WChar, cn: WChar) {
+    // Consider the sequence of characters between cp, and cn
+    const sub = this.subseq(cp, cn);
+    // If this is an empty sequence just insert the character
+    if (sub.length === 0) {
+      return this.insert(this.pos(cn), c, c.length);
+    }
+
+    // Else, only consider the characters with minimum degree.  Other characters
+    // positions in the sequence are determing by the order relations.
+    const minDegree = Math.min(...sub.map(c2 => c2.degree));
+    const idOrderedSubset = [cp, ...sub.filter(c2 => c2.degree === minDegree), cn];
+
+    // Find the position of the new character in this sequence of characters
+    // ordered by the ids
+    const i = idOrderedSubset.findIndex(elm => !idLess(elm.id, c.startId));
+
+    this.integrateIns(c, idOrderedSubset[i - 1], idOrderedSubset[i]);
   }
 }
 
