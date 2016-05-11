@@ -286,3 +286,8 @@ export function toggle<T>(
     .distinctUntilChanged()
     .switchMap(enabled => (enabled ? source : Observable.empty()));
 }
+
+export function compact<T>(source: Observable<?T>): Observable<T> {
+  // Flow does not understand the semantics of `filter`
+  return (source.filter(x => x != null): any);
+}

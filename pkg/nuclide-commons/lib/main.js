@@ -176,6 +176,10 @@ module.exports = {
     return requireStream().toggle;
   },
 
+  get compact() {
+    return requireStream().compact;
+  },
+
   get observeProcessExit() {
     return requireProcess().observeProcessExit;
   },
