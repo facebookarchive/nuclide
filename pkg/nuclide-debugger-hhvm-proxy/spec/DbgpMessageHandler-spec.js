@@ -21,6 +21,7 @@ describe('debugger-hhvm-proxy DbgpMessageHandler', () => {
   let messageHandler: any;
 
   beforeEach(() => {
+    spyOn(console, 'log'); // Suppress logger messages.
     messageHandler = getDbgpMessageHandlerInstance();
   });
 
