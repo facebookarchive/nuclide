@@ -7,6 +7,8 @@
  * the root directory of this source tree.
  */
 
+import assert from 'assert';
+const invariant = assert;
 import {WString} from '../lib/main.js';
 
 describe('wootr', () => {
@@ -553,6 +555,34 @@ describe('wootr', () => {
         },
         visible: false,
       });
+    });
+  });
+
+  describe('visibleRanges', () => {
+    it('works', () => {
+      const wstring = new WString(1);
+      const wstring2 = new WString(1);
+
+      wstring.genInsert(0, 'a');
+      wstring.genInsert(1, 'a');
+      wstring.genInsert(2, 'asdf');
+      wstring2.genInsert(0, 'a');
+      wstring2.genInsert(1, 'a');
+      wstring2.genInsert(2, 'asdf');
+      const op = wstring.genDelete(0, 6);
+      wstring2.genInsert(2, 'a');
+
+      invariant(op.runs != null);
+      assert.deepEqual(wstring2.visibleRanges(op.runs), [
+        {
+          pos: 1,
+          count: 2,
+        },
+        {
+          pos: 4,
+          count: 4,
+        },
+      ]);
     });
   });
 });

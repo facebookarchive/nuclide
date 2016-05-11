@@ -378,6 +378,35 @@ export class WString {
 
     return {type: 'DEL', runs: this.charsToRuns(chars)};
   }
+
+  visibleRanges(runs: Array<WCharRun>): Array<{pos: number; count: number}> {
+    let pos = -1;
+    let count = 1;
+    const ranges = [];
+    for (let i = 0; i < runs.length; i++) {
+      for (let j = 0; j < runs[i].length; j++) {
+        const wchar = this.charFromRun(runs[i], j);
+        const newPos = this.pos(wchar, /* visibleOnly */ true);
+        // Skip invisible characters
+        if (newPos === -1) {
+          continue;
+        }
+        if (pos + count === newPos) {
+          count += 1;
+        } else {
+          if (pos > 0) {
+            ranges.push({pos, count});
+          }
+          count = 1;
+          pos = newPos;
+        }
+      }
+    }
+    if (pos > 0) {
+      ranges.push({pos, count});
+    }
+    return ranges;
+  }
 }
 
 WString.start = {
