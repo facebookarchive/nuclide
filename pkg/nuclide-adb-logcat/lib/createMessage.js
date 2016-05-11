@@ -32,9 +32,12 @@ function priorityToLevel(priority: Priority): Level {
       return 'error';
     case 'S': // silent
       throw new Error('Silent messages should be filtered');
-    case 'V': // verbose
     case 'D': // debug
+      return 'debug';
     case 'I': // info
+      // Even though the console has an "info" level, this is the default for adb, so we use "log."
+      return 'log';
+    case 'V': // verbose
     default:
       return 'info';
   }
