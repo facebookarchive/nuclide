@@ -99,6 +99,10 @@ export type TokenizedText = Array<TextToken>;
 
 export type FlowCoverageResult = {
   percentage: number;
+  uncoveredRanges: Array<{
+    start: Point;
+    end: Point;
+  }>;
 };
 
 import {FlowRoot} from './FlowRoot';

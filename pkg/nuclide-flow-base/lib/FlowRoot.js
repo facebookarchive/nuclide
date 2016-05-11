@@ -28,6 +28,7 @@ const logger = getLogger();
 import {
   insertAutocompleteToken,
   processAutocompleteItem,
+  flowCoordsToAtomCoords,
 } from './FlowHelpers';
 
 import {FlowProcess} from './FlowProcess';
@@ -266,7 +267,7 @@ export class FlowRoot {
   }
 
   async flowGetCoverage(path: NuclideUri): Promise<?FlowCoverageResult> {
-    const args = ['coverage', '--json', path];
+    const args = ['dump-types', '--json', path];
     let result;
     try {
       result = await this._process.execFlow(args, {});
@@ -284,10 +285,17 @@ export class FlowRoot {
       return null;
     }
 
-    const covered = json.expressions.covered_count;
-    const total = json.expressions.uncovered_count + covered;
+    const allEntries = json;
+
+    const uncoveredEntries = allEntries.filter(item => item.type === '' || item.type === 'any');
+    const uncoveredRanges = uncoveredEntries.map(item => flowCoordsToAtomCoords(item.loc));
+
+    const uncoveredCount = uncoveredEntries.length;
+    const totalCount = allEntries.length;
+    const coveredCount = totalCount - uncoveredCount;
     return {
-      percentage: covered / total * 100,
+      percentage: coveredCount / totalCount * 100,
+      uncoveredRanges,
     };
   }
 
