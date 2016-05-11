@@ -328,6 +328,56 @@ export class WString {
 
     this.integrateIns(c, idOrderedSubset[i - 1], idOrderedSubset[i]);
   }
+
+  charToRun(char: WChar, visible: boolean): WCharRun {
+    return {
+      startId: {
+        site: char.id.site,
+        h: char.id.h,
+      },
+      startDegree: char.degree,
+      visible: visible,
+      length: 1,
+    };
+  }
+
+  canExtendRun(run: WCharRun, char: WChar): boolean {
+    return run.startId.site === char.id.site
+      && run.startId.h + run.length === char.id.h
+      && run.startDegree + run.length === char.degree;
+  }
+
+  charsToRuns(chars: Array<WChar>): Array<WCharRun> {
+    if (chars.length === 0) {
+      return [];
+    }
+
+    const runs = [];
+    let curRun = this.charToRun(chars[0], false);
+
+    for (let i = 1; i < chars.length; i++) {
+      if (this.canExtendRun(curRun, chars[i])) {
+        curRun.length += 1;
+      } else {
+        runs.push(curRun);
+        curRun = this.charToRun(chars[i], false);
+      }
+    }
+
+    runs.push(curRun);
+
+    return runs;
+  }
+
+  genDelete(pos: number, count: number = 1): WOp {
+    const chars = [];
+    for (let i = 0; i < count; i++) {
+      chars.push(this.ith(pos + 1));
+      this.integrateDelete(pos + 1);
+    }
+
+    return {type: 'DEL', runs: this.charsToRuns(chars)};
+  }
 }
 
 WString.start = {

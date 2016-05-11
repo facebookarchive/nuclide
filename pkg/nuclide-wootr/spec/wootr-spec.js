@@ -478,4 +478,81 @@ describe('wootr', () => {
       });
     });
   });
+
+  describe('genDelete', () => {
+    it('should delete range', () => {
+      const wstring = new WString(1, 4); // 1-4
+      wstring.genDelete(0, 4);
+
+      expect(wstring._string.length).toEqual(3);
+      expect(wstring._string[1]).toEqual({
+        length: 4,
+        startDegree: 1,
+        startId: {
+          h: 1,
+          site: 1,
+        },
+        visible: false,
+      });
+    });
+
+    it('should merge left', () => {
+      const wstring = new WString(1, 4); // 1-4
+      wstring.genDelete(0);
+      wstring.genDelete(0);
+      wstring.genDelete(0);
+      wstring.genDelete(0);
+
+      expect(wstring._string.length).toEqual(3);
+      expect(wstring._string[1]).toEqual({
+        length: 4,
+        startDegree: 1,
+        startId: {
+          h: 1,
+          site: 1,
+        },
+        visible: false,
+      });
+    });
+
+    it('should merge right', () => {
+      const wstring = new WString(1, 4); // 1-4
+
+      wstring.genDelete(3);
+      wstring.genDelete(2);
+      wstring.genDelete(1);
+      wstring.genDelete(0);
+
+      expect(wstring._string.length).toEqual(3);
+      expect(wstring._string[1]).toEqual({
+        length: 4,
+        startDegree: 1,
+        startId: {
+          h: 1,
+          site: 1,
+        },
+        visible: false,
+      });
+    });
+
+    it('should merge left and right', () => {
+      const wstring = new WString(1, 4); // 1-4
+
+      wstring.genDelete(3);
+      wstring.genDelete(0);
+      wstring.genDelete(1);
+      wstring.genDelete(0);
+
+      expect(wstring._string.length).toEqual(3);
+      expect(wstring._string[1]).toEqual({
+        length: 4,
+        startDegree: 1,
+        startId: {
+          h: 1,
+          site: 1,
+        },
+        visible: false,
+      });
+    });
+  });
 });
