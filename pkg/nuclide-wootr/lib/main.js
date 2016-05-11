@@ -329,7 +329,7 @@ export class WString {
     if (sub.length === 0) {
       const pos = this.pos(cn);
       this.insert(pos, c);
-      return pos;
+      return this.pos(this.charFromRun(c, 0), true);
     }
 
     // Else, only consider the characters with minimum degree.  Other characters

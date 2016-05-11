@@ -587,6 +587,22 @@ describe('wootr', () => {
   });
 
   describe('receive', () => {
+    it('should report correct changes', () => {
+      const wstring = new WString(1);
+      const wstring2 = new WString(2);
+
+      wstring2.receive(wstring.genInsert(0, 'text')); // both strings 'text'
+      wstring2.receive(wstring.genDelete(2)); // both strings 'tet'
+      const changes = wstring2.receive(wstring.genInsert(2, 's')); // both strings 'test'
+
+      expect(changes).toEqual([{
+        addition: {
+          pos: 3,
+          text: 's',
+        },
+      }]);
+    });
+
     it('should work with conflicting add/remove', () => {
       const wstring = new WString(1);
       const wstring2 = new WString(2);
