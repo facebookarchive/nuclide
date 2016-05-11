@@ -34,12 +34,12 @@ export class StatusBarTileComponent extends React.Component {
     const percentage = this.props.percentage;
     if (percentage != null) {
       const classes: string = classnames({
-        'type-coverage-status-bar-pending': this.props.pending,
-        'type-coverage-status-bar-ready': !this.props.pending,
-        'type-coverage-status-bar-really-bad': percentage <= REALLY_BAD_THRESHOLD,
-        'type-coverage-status-bar-not-great':
+        'nuclide-type-coverage-status-bar-pending': this.props.pending,
+        'nuclide-type-coverage-status-bar-ready': !this.props.pending,
+        'nuclide-type-coverage-status-bar-really-bad': percentage <= REALLY_BAD_THRESHOLD,
+        'nuclide-type-coverage-status-bar-not-great':
           percentage > REALLY_BAD_THRESHOLD && percentage <= NOT_GREAT_THRESHOLD,
-        'type-coverage-status-bar-good': percentage > NOT_GREAT_THRESHOLD,
+        'nuclide-type-coverage-status-bar-good': percentage > NOT_GREAT_THRESHOLD,
       });
       const formattedPercentage: string = `${Math.floor(percentage)}%`;
       const titleString = `This file is ${formattedPercentage} covered by the type system.<br/>` +
