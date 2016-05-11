@@ -23,7 +23,7 @@ import {uncachedRequire} from '../../nuclide-test-helpers';
 const flowProcessPath = '../lib/FlowProcess';
 
 describe('FlowProcess', () => {
-  let fakeAsyncExec: () => Object = (null: any);
+  let fakeCheckOutput: () => Object = (null: any);
 
   // Mocked ChildProcess instance (not typed as such because the mock only implements a subset of
   // methods).
@@ -34,17 +34,17 @@ describe('FlowProcess', () => {
 
   const root = '/path/to/flow/root';
 
-  function execFlow() {
-    return flowProcess.execFlow([], {}, /* waitForServer */ true);
+  function execFlow(waitForServer = true) {
+    return flowProcess.execFlow([], {}, waitForServer);
   }
 
   beforeEach(() => {
-    // We need this level of indirection to ensure that if fakeAsyncExec is rebound, the new one
+    // We need this level of indirection to ensure that if fakeCheckOutput is rebound, the new one
     // gets executed.
-    const runFakeAsyncExec = (...args) => fakeAsyncExec(...args);
-    spyOn(require('../../nuclide-commons/lib/process'), 'asyncExecute')
-      .andCallFake(runFakeAsyncExec);
-    fakeAsyncExec = jasmine.createSpy().andReturn({exitCode: FLOW_RETURN_CODES.ok});
+    const runFakeCheckOutput = (...args) => fakeCheckOutput(...args);
+    spyOn(require('../../nuclide-commons/lib/process'), 'checkOutput')
+      .andCallFake(runFakeCheckOutput);
+    fakeCheckOutput = jasmine.createSpy().andReturn({exitCode: FLOW_RETURN_CODES.ok});
 
     childSpy = {
       stdout: {on() {}},
@@ -66,15 +66,15 @@ describe('FlowProcess', () => {
   describe('Server startup and teardown', () => {
     beforeEach(() => {
       let called = false;
-      // we want asyncExecute to throw the first time, to mimic Flow not
+      // we want checkOutput to error the first time, to mimic Flow not
       // runinng. Then, it will spawn a new flow process, and we want that to be
       // successful
-      fakeAsyncExec = () => {
+      fakeCheckOutput = () => {
         if (called) {
           return {exitCode: FLOW_RETURN_CODES.ok};
         } else {
           called = true;
-          throw {
+          return {
             exitCode: FLOW_RETURN_CODES.noServerRunning,
             stderr: 'There is no flow server running\n\'/path/to/flow/root\'',
           };
@@ -88,7 +88,7 @@ describe('FlowProcess', () => {
     });
 
     afterEach(() => {
-      jasmine.unspy(require('../../nuclide-commons/lib/process'), 'asyncExecute');
+      jasmine.unspy(require('../../nuclide-commons/lib/process'), 'checkOutput');
       jasmine.unspy(require('../../nuclide-commons/lib/process'), 'safeSpawn');
     });
 
@@ -178,8 +178,10 @@ describe('FlowProcess', () => {
     exitCodeStatusPairs.forEach(([exitCode, status]) => {
       it(`should be ${status} when Flow returns ${exitCode}`, () => {
         waitsForPromise(async () => {
-          fakeAsyncExec = () => ({exitCode});
-          await execFlow();
+          fakeCheckOutput = () => ({exitCode});
+          await execFlow(/* waitForServer */ false).catch(e => {
+            expect(e.exitCode).toBe(exitCode);
+          });
           expect(currentStatus).toEqual(status);
         });
       });
@@ -188,7 +190,7 @@ describe('FlowProcess', () => {
     it('should ping the server after it is started', () => {
       waitsForPromise(async () => {
         const states = statusUpdates.take(4).toArray().toPromise();
-        fakeAsyncExec = () => {
+        fakeCheckOutput = () => {
           switch (currentStatus) {
             case 'unknown':
               return {exitCode: FLOW_RETURN_CODES.noServerRunning};
@@ -200,19 +202,21 @@ describe('FlowProcess', () => {
               throw new Error('should not happen');
           }
         };
-        await execFlow();
+        await execFlow(/* waitForServer */ false).catch(e => {
+          expect(e.exitCode).toBe(FLOW_RETURN_CODES.noServerRunning);
+        });
         expect(await states).toEqual(['unknown', 'not running', 'init', 'ready']);
       });
     });
   });
 
   describe('execFlowClient', () => {
-    it('should call asyncExecute', () => {
+    it('should call checkOutput', () => {
       FlowProcess.execFlowClient(['arg']);
-      const [asyncExecArgs] = fakeAsyncExec.argsForCall;
-      expect(asyncExecArgs[0]).toEqual('flow');
-      expect(asyncExecArgs[1]).toEqual(['arg', '--from', 'nuclide']);
-      expect(asyncExecArgs[2]).toEqual({});
+      const [checkOutputArgs] = fakeCheckOutput.argsForCall;
+      expect(checkOutputArgs[0]).toEqual('flow');
+      expect(checkOutputArgs[1]).toEqual(['arg', '--from', 'nuclide']);
+      expect(checkOutputArgs[2]).toEqual({});
     });
   });
 });
