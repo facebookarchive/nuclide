@@ -10,15 +10,23 @@
  */
 
 import type {CoverageResult, CoverageProvider} from './types';
+import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {
+  ObservableDiagnosticProvider,
+  DiagnosticProviderUpdate,
+  FileDiagnosticMessage,
+} from '../../nuclide-diagnostics-base';
+import type {Result} from '../../nuclide-active-editor-based-service';
 
 import {React, ReactDOM} from 'react-for-atom';
 
 import {CompositeDisposable, Disposable} from 'atom';
 
 import invariant from 'assert';
+import {Observable} from 'rxjs';
 
 import {ActiveEditorBasedService} from '../../nuclide-active-editor-based-service';
-import {passesGK} from '../../nuclide-commons';
+import {passesGK, compact} from '../../nuclide-commons';
 
 import {StatusBarTile} from './StatusBarTile';
 
@@ -76,6 +84,10 @@ class Activation {
     return disposable;
   }
 
+  getDiagnosticsProvider(): ObservableDiagnosticProvider {
+    return diagnosticProviderForResultStream(this._activeEditorBasedService.getResultsStream());
+  }
+
   dispose() {
     this._disposables.dispose();
   }
@@ -104,4 +116,69 @@ export function consumeCoverageProvider(provider: CoverageProvider): IDisposable
 export function consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
   invariant(activation != null);
   return activation.consumeStatusBar(statusBar);
+}
+
+export function getDiagnosticsProvider(): ObservableDiagnosticProvider {
+  invariant(activation != null);
+  return activation.getDiagnosticsProvider();
+}
+
+function diagnosticProviderForResultStream(
+  results: Observable<Result<?CoverageResult>>,
+): ObservableDiagnosticProvider {
+  return {
+    updates: compact(results.map(diagnosticsForResult)),
+    invalidations: results.filter(result => {
+      switch (result.kind) {
+        case 'not-text-editor':
+        case 'no-provider':
+        case 'provider-error':
+        case 'pane-change':
+          return true;
+        case 'result':
+          return result.result == null;
+        default:
+          return false;
+      }
+    }).mapTo({scope: 'all'}),
+  };
+}
+
+/**
+ * Preconditions:
+ *   result.editor.getPath() != null
+ *
+ * This is reasonable because we only query providers when there is a path available for the current
+ * text editor.
+ */
+function diagnosticsForResult(result: Result<?CoverageResult>): ?DiagnosticProviderUpdate {
+  if (result.kind !== 'result') {
+    return null;
+  }
+  const value = result.result;
+  if (value == null) {
+    return null;
+  }
+
+  const editorPath = result.editor.getPath();
+  invariant(editorPath != null);
+
+  const diagnostics = value.uncoveredRanges.map(
+    range => uncoveredRangeToDiagnostic(range, editorPath)
+  );
+
+  return {
+    filePathToMessages: new Map([[editorPath, diagnostics]]),
+  };
+}
+
+function uncoveredRangeToDiagnostic(range: atom$Range, path: NuclideUri): FileDiagnosticMessage {
+  return {
+    scope: 'file',
+    providerName: 'Type Coverage',
+    type: 'Warning',
+    filePath: path,
+    range,
+    text: 'Not covered by the type system',
+  };
 }

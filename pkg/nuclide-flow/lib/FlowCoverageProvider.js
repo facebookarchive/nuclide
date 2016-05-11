@@ -19,5 +19,12 @@ import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 export async function getCoverage(path: NuclideUri): Promise<?CoverageResult> {
   const flowService = await getFlowServiceByNuclideUri(path);
   invariant(flowService != null);
-  return await flowService.flowGetCoverage(path);
+  const flowCoverageResult = await flowService.flowGetCoverage(path);
+  if (flowCoverageResult == null) {
+    return null;
+  }
+  return {
+    percentage: flowCoverageResult.percentage,
+    uncoveredRanges: [],
+  };
 }

@@ -21,5 +21,12 @@
         "^1.0.0": "consumeStatusBar"
       }
     }
+  },
+  "providedServices": {
+    "nuclide-diagnostics-provider": {
+      "versions": {
+        "0.2.0": "getDiagnosticsProvider"
+      }
+    }
   }
 }
