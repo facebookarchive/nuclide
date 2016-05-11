@@ -40,6 +40,13 @@ export type WOp = {
   prev?: WChar;
 };
 
+// Represents a concrete change to a string.  That is, the result of applying
+// the WOp to the local string.
+export type WChange = {
+  addition?: {pos: number; text: string};
+  removals?: Array<{pos: number; count: number}>;
+};
+
 function idLess(idLeft: WId, idRight: WId): boolean {
   return (idLeft.site < idRight.site
     || (idLeft.site === idRight.site && idLeft.h < idRight.h));
@@ -51,11 +58,13 @@ export class WString {
   _siteId: number;
   _localId: number;
   _string: Array<WCharRun>;
+  _ops: Array<WOp>;
 
   constructor(siteId: number, length: number = 0) {
     this._siteId = siteId;
     this._localId = 1;
     this._string = [WString.start, WString.end];
+    this._ops = [];
     if (length > 0) {
       this._localId = length;
       this.insert(
@@ -274,6 +283,9 @@ export class WString {
    */
   subseq(left: WChar, right: WChar): Array<WChar> {
     const sub = [];
+    if (left == null || right == null) {
+      throw new Error('asdf');
+    }
     const start = this.pos(left, false);
     const end = this.pos(right, false);
 
@@ -305,16 +317,19 @@ export class WString {
 
     this.integrateIns(c, prevChar, nextChar);
 
-    return {type: 'INS', char: c, prev: prevChar, next: nextChar, text: text};
+    return {type: 'INS', char: {...c}, prev: prevChar, next: nextChar, text: text};
   }
 
   // Main wooto algorithm. see: "Wooki: a P2P Wiki-based Collaborative Writing Tool"
-  integrateIns(c: WCharRun, cp: WChar, cn: WChar) {
+  // returns the visible position of the string that this text is inserted into
+  integrateIns(c: WCharRun, cp: WChar, cn: WChar): number {
     // Consider the sequence of characters between cp, and cn
     const sub = this.subseq(cp, cn);
     // If this is an empty sequence just insert the character
     if (sub.length === 0) {
-      return this.insert(this.pos(cn), c, c.length);
+      const pos = this.pos(cn);
+      this.insert(pos, c);
+      return pos;
     }
 
     // Else, only consider the characters with minimum degree.  Other characters
@@ -324,9 +339,11 @@ export class WString {
 
     // Find the position of the new character in this sequence of characters
     // ordered by the ids
-    const i = idOrderedSubset.findIndex(elm => !idLess(elm.id, c.startId));
-
-    this.integrateIns(c, idOrderedSubset[i - 1], idOrderedSubset[i]);
+    let i = idOrderedSubset.findIndex(elm => !idLess(elm.id, c.startId));
+    if (i === -1) {
+      i = idOrderedSubset.length - 1;
+    }
+    return this.integrateIns(c, idOrderedSubset[i - 1], idOrderedSubset[i]);
   }
 
   charToRun(char: WChar, visible: boolean): WCharRun {
@@ -405,7 +422,98 @@ export class WString {
     if (pos > 0) {
       ranges.push({pos, count});
     }
+
     return ranges;
+  }
+
+  applyOps(): Array<WChange> {
+    const changes = [];
+    let lastCount = this._ops.length + 1;
+
+    while (lastCount > this._ops.length) {
+      lastCount = this._ops.length;
+      this._ops = this._ops.filter(op => {
+        if (this.canApplyOp(op)) {
+          changes.push(this.execute(op));
+          return false;
+        }
+        return true;
+      });
+    }
+
+    return changes;
+  }
+
+  receive(op: WOp): Array<WChange> {
+    if (op.type === 'INS') {
+      invariant(op.char != null);
+      if (this.contains(this.charFromRun(op.char, 0))) {
+        return [];
+      }
+    }
+
+    this._ops.push(op);
+
+    return this.applyOps();
+  }
+
+  canApplyOp(op: WOp): boolean {
+    if (op.type === 'INS') {
+      const prev = op.prev;
+      const next = op.next;
+
+      invariant(prev != null && next != null);
+      return this.contains(prev) && this.contains(next);
+    } else { // DEL
+      invariant(op.runs != null);
+      for (let i = 0; i < op.runs.length; i++) {
+        for (let j = 0; j < op.runs[i].length; j++) {
+          if (!this.contains(this.charFromRun(op.runs[i], j))) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+  }
+
+  contains(c: WChar): boolean {
+    if (this.pos(c, false) !== -1) {
+      return true;
+    }
+    return false;
+  }
+
+  execute(op: WOp): WChange {
+    const next = op.next;
+    const prev = op.prev;
+
+    if (op.type === 'INS') {
+      if (next == null || prev == null || op.char == null || op.text == null) {
+        throw new Error('INS type operation invalid.');
+      }
+
+      const pos = this.integrateIns(
+        op.char,
+        prev,
+        next,
+      );
+      invariant(op.text);
+      return {addition: {pos, text: op.text}};
+    } else { //DEL
+      if (op.runs == null) {
+        throw new Error('DEL operation invalid');
+      }
+
+      const ranges = this.visibleRanges(op.runs);
+
+      for (let i = 0; i < ranges.length; i++) {
+        for (let j = 0; j < ranges[i].count; j++) {
+          this.integrateDelete(ranges[i].pos);
+        }
+      }
+      return {removals: ranges};
+    }
   }
 }
 

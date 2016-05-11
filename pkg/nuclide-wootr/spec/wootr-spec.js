@@ -573,7 +573,7 @@ describe('wootr', () => {
       wstring2.genInsert(2, 'a');
 
       invariant(op.runs != null);
-      assert.deepEqual(wstring2.visibleRanges(op.runs), [
+      expect(wstring2.visibleRanges(op.runs)).toEqual([
         {
           pos: 1,
           count: 2,
@@ -583,6 +583,85 @@ describe('wootr', () => {
           count: 4,
         },
       ]);
+    });
+  });
+
+  describe('receive', () => {
+    it('should work with conflicting add/remove', () => {
+      const wstring = new WString(1);
+      const wstring2 = new WString(2);
+
+      wstring2.receive(wstring.genInsert(0, 'text'));
+
+      const op1 = wstring2.genInsert(1, 't');
+      const op2 = wstring.genDelete(1, 2);
+
+      wstring.receive(op1);
+      wstring2.receive(op2);
+
+      expect(wstring2._string).toEqual(wstring._string);
+    });
+
+    it('should work with conflicting remove/remove', () => {
+      const wstring = new WString(1);
+      const wstring2 = new WString(2);
+
+      wstring2.receive(wstring.genInsert(0, 'text'));
+
+      const op1 = wstring2.genDelete(0, 4);
+      const op2 = wstring.genDelete(0, 2);
+
+      wstring.receive(op1);
+      wstring2.receive(op2);
+
+      expect(wstring2._string).toEqual(wstring._string);
+    });
+
+    it('should work with conflicting add/add', () => {
+      const wstring = new WString(1);
+      const wstring2 = new WString(2);
+
+      wstring2.receive(JSON.parse(JSON.stringify(wstring.genInsert(0, 'text'))));
+
+      expect(wstring2._string).toEqual(wstring._string);
+
+      const op1 = wstring2.genInsert(0, '1');
+      const op2 = wstring.genInsert(0, '2');
+
+      wstring.receive(op1);
+      wstring2.receive(op2);
+
+      expect(wstring2._string).toEqual(wstring._string);
+    });
+
+    it('should allow out of order delete', () => {
+      const wstring = new WString(1);
+      const wstring2 = new WString(2);
+
+      const insertTextOp = wstring.genInsert(0, 'text');
+      const deleteTextOp = wstring.genDelete(0, 4);
+
+      const changesAfterDelete = wstring2.receive(deleteTextOp);
+      const changesAfterInsert = wstring2.receive(insertTextOp);
+
+      expect(changesAfterDelete.length).toEqual(0);
+      expect(changesAfterInsert.length).toEqual(2);
+      expect(wstring2._string).toEqual(wstring._string);
+    });
+
+    it('should allow out of order insert', () => {
+      const wstring = new WString(1);
+      const wstring2 = new WString(2);
+
+      const insertTextOp = wstring.genInsert(0, 'text');
+      const insertAsdfOp = wstring.genInsert(4, 'asdf');
+
+      const changesAfterAsdf = wstring2.receive(insertAsdfOp);
+      const changesAfterText = wstring2.receive(insertTextOp);
+
+      expect(changesAfterAsdf.length).toEqual(0);
+      expect(changesAfterText.length).toEqual(2);
+      expect(wstring2._string).toEqual(wstring._string);
     });
   });
 });
