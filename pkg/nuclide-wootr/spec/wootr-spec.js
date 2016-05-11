@@ -130,4 +130,210 @@ describe('wootr', () => {
       expect(wstring2._string).toEqual(wstring._string);
     });
   });
+
+  describe('integrateDelete', function() {
+    it('not left edge; not right edge; no merge left; no merge right', function() {
+      const wstring = new WString(1, 3); // [+++]
+      wstring.integrateDelete(2); // [+][-][+]
+
+      expect(wstring._string.length).toEqual(5);
+      expect(wstring._string[1]).toEqual({
+        length: 1,
+        startDegree: 1,
+        startId: {
+          h: 1,
+          site: 1,
+        },
+        visible: true,
+      });
+      expect(wstring._string[2]).toEqual({
+        length: 1,
+        startDegree: 2,
+        startId: {
+          h: 2,
+          site: 1,
+        },
+        visible: false,
+      });
+      expect(wstring._string[3]).toEqual({
+        length: 1,
+        startDegree: 3,
+        startId: {
+          h: 3,
+          site: 1,
+        },
+        visible: true,
+      });
+    });
+
+    it('left edge; right edge; merge left; merge right', function() {
+      const wstring = new WString(1, 3); // [+++]
+      wstring.integrateDelete(3); // [++][-]
+      wstring.integrateDelete(1); // [-][+][-]
+      wstring.integrateDelete(1); // [---]
+
+      expect(wstring._string.length).toEqual(3);
+      expect(wstring._string[1]).toEqual({
+        length: 3,
+        startDegree: 1,
+        startId: {
+          h: 1,
+          site: 1,
+        },
+        visible: false,
+      });
+    });
+
+    it('left edge; not right edge; merge left; no merge right', function() {
+      const wstring = new WString(1, 3); // [+++]
+      wstring.integrateDelete(1); // [-][++]
+      wstring.integrateDelete(1); // [--][+]
+
+      expect(wstring._string.length).toEqual(4);
+      expect(wstring._string[1]).toEqual({
+        length: 2,
+        startDegree: 1,
+        startId: {
+          h: 1,
+          site: 1,
+        },
+        visible: false,
+      });
+      expect(wstring._string[2]).toEqual({
+        length: 1,
+        startDegree: 3,
+        startId: {
+          h: 3,
+          site: 1,
+        },
+        visible: true,
+      });
+    });
+
+    it('left edge; not right edge; no merge left; no merge right', function() {
+      const wstring = new WString(1, 2); // [++]
+      wstring.integrateDelete(1); // [-][+]
+
+      expect(wstring._string.length).toEqual(4);
+      expect(wstring._string[1]).toEqual({
+        length: 1,
+        startDegree: 1,
+        startId: {
+          h: 1,
+          site: 1,
+        },
+        visible: false,
+      });
+      expect(wstring._string[2]).toEqual({
+        length: 1,
+        startDegree: 2,
+        startId: {
+          h: 2,
+          site: 1,
+        },
+        visible: true,
+      });
+    });
+
+    it('not left edge; right edge; no merge left; no merge right', function() {
+      const wstring = new WString(1, 2); // [++]
+      wstring.integrateDelete(2); // [+][-]
+
+      expect(wstring._string.length).toEqual(4);
+      expect(wstring._string[1]).toEqual({
+        length: 1,
+        startDegree: 1,
+        startId: {
+          h: 1,
+          site: 1,
+        },
+        visible: true,
+      });
+      expect(wstring._string[2]).toEqual({
+        length: 1,
+        startDegree: 2,
+        startId: {
+          h: 2,
+          site: 1,
+        },
+        visible: false,
+      });
+    });
+
+    it('not left edge; right edge; no merge left; merge right', function() {
+      const wstring = new WString(1, 3); // [+++]
+      wstring.integrateDelete(3); // [++][-]
+      wstring.integrateDelete(2); // [+][--]
+
+      expect(wstring._string.length).toEqual(4);
+      expect(wstring._string[1]).toEqual({
+        length: 1,
+        startDegree: 1,
+        startId: {
+          h: 1,
+          site: 1,
+        },
+        visible: true,
+      });
+      expect(wstring._string[2]).toEqual({
+        length: 2,
+        startDegree: 2,
+        startId: {
+          h: 2,
+          site: 1,
+        },
+        visible: false,
+      });
+    });
+
+    it('left edge; right edge; no merge left; merge right', function() {
+      const wstring = new WString(1, 2); // [++]
+      wstring.integrateDelete(2); // [+][-]
+      wstring.integrateDelete(1); // [--]
+
+      expect(wstring._string.length).toEqual(3);
+      expect(wstring._string[1]).toEqual({
+        length: 2,
+        startDegree: 1,
+        startId: {
+          h: 1,
+          site: 1,
+        },
+        visible: false,
+      });
+    });
+
+    it('left edge; right edge; merge left; no merge right', function() {
+      const wstring = new WString(1, 2); // [++]
+      wstring.integrateDelete(1); // [-][+]
+      wstring.integrateDelete(1); // [--]
+
+      expect(wstring._string.length).toEqual(3);
+      expect(wstring._string[1]).toEqual({
+        length: 2,
+        startDegree: 1,
+        startId: {
+          h: 1,
+          site: 1,
+        },
+        visible: false,
+      });
+    });
+
+    it('left edge; right edge; no merge left; no merge right', function() {
+      const wstring = new WString(1, 1); // [+]
+      wstring.integrateDelete(1); // [-]
+
+      expect(wstring._string.length).toEqual(3);
+      expect(wstring._string[1]).toEqual({
+        length: 1,
+        startDegree: 1,
+        startId: {
+          h: 1,
+          site: 1,
+        },
+        visible: false,
+      });
+    });
+  });
 });

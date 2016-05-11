@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 export type WId = {
   site: number;
   h: number;
@@ -117,6 +119,87 @@ export class WString {
         rightHalf,
       );
     }
+  }
+
+  canMergeRight(i: number): boolean {
+    invariant(i < this._string.length - 1);
+    return this._string[i].startId.site === this._string[i + 1].startId.site
+      && this._string[i].startId.h  === this._string[i + 1].startId.h - this._string[i].length
+      && this._string[i].visible === this._string[i + 1].visible;
+  }
+
+  mergeRuns() {
+    const newString = [];
+    newString.push(this._string[0]);
+    for (let i = 0; i < this._string.length - 1; i++) {
+      if (this.canMergeRight(i)) {
+        newString[newString.length - 1].length += this._string[i + 1].length;
+      } else {
+        newString.push(this._string[i + 1]);
+      }
+    }
+    this._string = newString;
+  }
+
+  integrateDelete(pos: number): void {
+    let originalIndex;
+    let offset = pos;
+
+    // Find the index of the WString run containing this position
+    for (originalIndex = 0; originalIndex < this._string.length; originalIndex++) {
+      if (this._string[originalIndex].length > offset && this._string[originalIndex].visible) {
+        break;
+      }
+      if (this._string[originalIndex].visible) {
+        offset -= this._string[originalIndex].length;
+      }
+    }
+
+    const runs = [];
+
+    const original = this._string[originalIndex];
+
+    if (offset > 0) {
+      runs.push({
+        startId: {
+          site: original.startId.site,
+          h: original.startId.h,
+        },
+        visible: original.visible,
+        length: offset,
+        startDegree: original.startDegree,
+      });
+    }
+
+    runs.push({
+      startId: {
+        site: original.startId.site,
+        h: original.startId.h + offset,
+      },
+      visible: false,
+      length: 1,
+      startDegree: original.startDegree + offset,
+    });
+
+    if (offset < original.length - 1) {
+      runs.push({
+        startId: {
+          site: original.startId.site,
+          h: original.startId.h + offset + 1,
+        },
+        visible: original.visible,
+        length: original.length - (offset + 1),
+        startDegree: original.startDegree + offset + 1,
+      });
+    }
+
+    this._string.splice(
+      originalIndex,
+      1,
+      ...runs,
+    );
+
+    this.mergeRuns();
   }
 }
 
