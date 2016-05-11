@@ -252,6 +252,21 @@ export class WString {
 
     return this.charFromRun(this._string[i], offset);
   }
+
+  /**
+   * Returns the subset (left, right) of the string sequence (exlusive on both sides)
+   */
+  subseq(left: WChar, right: WChar): Array<WChar> {
+    const sub = [];
+    const start = this.pos(left, false);
+    const end = this.pos(right, false);
+
+    for (let i = start + 1; i < end; i++) {
+      sub.push(this.ith(i, false));
+    }
+
+    return sub;
+  }
 }
 
 WString.start = {

@@ -371,4 +371,28 @@ describe('wootr', () => {
       expect(wstring.ith(5)).toEqual({id: {site: -1, h: 1}, visible: true, degree: 0});
     });
   });
+
+  describe('subseq', () => {
+    it('should work', () => {
+      const wstring = new WString(1, 4);
+
+      expect(wstring.subseq(wstring.ith(1), wstring.ith(4))).toEqual(
+        [{
+          id: {
+            site: 1,
+            h: 2,
+          },
+          visible: true,
+          degree: 2,
+        }, {
+          id: {
+            site: 1,
+            h: 3,
+          },
+          visible: true,
+          degree: 3,
+        },
+      ]);
+    });
+  });
 });
