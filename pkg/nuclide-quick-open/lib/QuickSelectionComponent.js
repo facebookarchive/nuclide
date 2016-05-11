@@ -42,8 +42,7 @@ import classnames from 'classnames';
 import {filterEmptyResults} from './searchResultHelpers';
 import {nuclideUriToDisplayString} from '../../nuclide-remote-uri';
 
-const DEFAULT_PROVIDER_DEBOUNCE_DELAY = 200;
-const RESULTS_CHANGED_DEBOUNCE_DELAY = 200;
+const RESULTS_CHANGED_DEBOUNCE_DELAY = 50;
 
 const searchResultManager = SearchResultManager.getInstance();
 
@@ -244,7 +243,7 @@ export default class QuickSelectionComponent extends React.Component {
   _updateQueryHandler(): void {
     this._debouncedQueryHandler = debounce(
       () => this.setKeyboardQuery(this.getInputTextEditor().getModel().getText()),
-      this.getProvider().debounceDelay || DEFAULT_PROVIDER_DEBOUNCE_DELAY,
+      this.getProvider().debounceDelay || 0,
       false
     );
   }
@@ -622,19 +621,6 @@ export default class QuickSelectionComponent extends React.Component {
         <li>{message}</li>
       </ul>
     );
-  }
-
-  _hasNoResults(): boolean {
-    for (const serviceName in this.state.resultsByService) {
-      const service = this.state.resultsByService[serviceName];
-      for (const dirName in service) {
-        const results = service[dirName];
-        if (!results.loading && results.results.length > 0) {
-          return false;
-        }
-      }
-    }
-    return true;
   }
 
   render(): React.Element {

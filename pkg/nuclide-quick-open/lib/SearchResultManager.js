@@ -56,7 +56,7 @@ const RESULTS_CHANGED = 'results_changed';
 const PROVIDERS_CHANGED = 'providers_changed';
 const MAX_OMNI_RESULTS_PER_SERVICE = 5;
 const DEFAULT_QUERY_DEBOUNCE_DELAY = 200;
-const LOADING_EVENT_DELAY = 500;
+const LOADING_EVENT_DELAY = 200;
 const OMNISEARCH_PROVIDER = {
   action: 'nuclide-quick-open:find-anything-via-omni-search',
   debounceDelay: DEFAULT_QUERY_DEBOUNCE_DELAY,
