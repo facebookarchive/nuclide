@@ -23,10 +23,10 @@ import {React, ReactDOM} from 'react-for-atom';
 import {CompositeDisposable, Disposable} from 'atom';
 
 import invariant from 'assert';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 
 import {ActiveEditorBasedService} from '../../nuclide-active-editor-based-service';
-import {passesGK, compact} from '../../nuclide-commons';
+import {passesGK, toggle, compact} from '../../nuclide-commons';
 
 import {StatusBarTile} from './StatusBarTile';
 
@@ -50,8 +50,10 @@ async function resultFunction(
 class Activation {
   _disposables: CompositeDisposable;
   _activeEditorBasedService: ActiveEditorBasedService<CoverageProvider, ?CoverageResult>;
+  _toggleEvents: Subject<void>;
 
   constructor(state: ?Object) {
+    this._toggleEvents = new Subject();
     this._disposables = new CompositeDisposable();
     this._activeEditorBasedService = new ActiveEditorBasedService(
       resultFunction,
@@ -74,7 +76,7 @@ class Activation {
 
     const resultStream = this._activeEditorBasedService.getResultsStream();
     ReactDOM.render(
-      <StatusBarTile results={resultStream} />,
+      <StatusBarTile results={resultStream} onClick={() => this._toggleEvents.next()} />,
       item,
     );
     const disposable = new Disposable(() => {
@@ -85,7 +87,10 @@ class Activation {
   }
 
   getDiagnosticsProvider(): ObservableDiagnosticProvider {
-    return diagnosticProviderForResultStream(this._activeEditorBasedService.getResultsStream());
+    return diagnosticProviderForResultStream(
+      this._activeEditorBasedService.getResultsStream(),
+      this._toggleEvents,
+    );
   }
 
   dispose() {
@@ -125,22 +130,30 @@ export function getDiagnosticsProvider(): ObservableDiagnosticProvider {
 
 function diagnosticProviderForResultStream(
   results: Observable<Result<?CoverageResult>>,
+  toggleEvents: Observable<void>,
 ): ObservableDiagnosticProvider {
+  const isEnabledStream = toggleEvents.scan(prev => !prev, false);
+  const toggledResults = toggle(results, isEnabledStream);
+
   return {
-    updates: compact(results.map(diagnosticsForResult)),
-    invalidations: results.filter(result => {
-      switch (result.kind) {
-        case 'not-text-editor':
-        case 'no-provider':
-        case 'provider-error':
-        case 'pane-change':
-          return true;
-        case 'result':
-          return result.result == null;
-        default:
-          return false;
-      }
-    }).mapTo({scope: 'all'}),
+    updates: compact(toggledResults.map(diagnosticsForResult)),
+    invalidations: Observable.merge(
+      // Invalidate diagnostics when display is disabled
+      isEnabledStream.filter(enabled => !enabled),
+      toggledResults.filter(result => {
+        switch (result.kind) {
+          case 'not-text-editor':
+          case 'no-provider':
+          case 'provider-error':
+          case 'pane-change':
+            return true;
+          case 'result':
+            return result.result == null;
+          default:
+            return false;
+        }
+      }),
+    ).mapTo({scope: 'all'}),
   };
 }
 

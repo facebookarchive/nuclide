@@ -22,6 +22,7 @@ import {StatusBarTileComponent} from './StatusBarTileComponent';
 
 type Props = {
   results: Observable<Result<?CoverageResult>>;
+  onClick: Function;
 };
 
 type State = {
@@ -86,7 +87,7 @@ export class StatusBarTile extends React.Component {
 
   render(): React.Element {
     return (
-      <StatusBarTileComponent {...this.state} />
+      <StatusBarTileComponent {...this.state} onClick={this.props.onClick} />
     );
   }
 }

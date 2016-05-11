@@ -16,6 +16,7 @@ import {addTooltip} from '../../nuclide-atom-helpers';
 type Props = {
   percentage: ?number;
   pending: boolean;
+  onClick: Function;
 };
 
 export class StatusBarTileComponent extends React.Component {
@@ -32,11 +33,15 @@ export class StatusBarTileComponent extends React.Component {
         'type-coverage-status-bar-pending' :
         'type-coverage-status-bar-ready';
       const formattedPercentage: string = `${Math.floor(percentage)}%`;
+      const titleString = `This file is ${formattedPercentage} covered by the type system.<br/>` +
+        'Click to toggle display of uncovered areas.';
       return (
         <div
+            style={{cursor: 'pointer'}}
+            onClick={this.props.onClick}
             className={className}
             ref={addTooltip({
-              title: `This file is ${formattedPercentage} covered by the type system.`,
+              title: titleString,
               delay: 0,
               placement: 'top',
             })}>
