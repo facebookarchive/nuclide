@@ -144,7 +144,15 @@ export class RemoteDirectory {
 
   _unsubscribeFromNativeChangeEvents(): void {
     if (this._watchSubscription) {
-      this._watchSubscription.unsubscribe();
+      try {
+        this._watchSubscription.unsubscribe();
+      } catch (error) {
+        logger.warn(
+          'RemoteDirectory failed to unsubscribe from native events:',
+          this._uri,
+          error.message,
+        );
+      }
       this._watchSubscription = null;
     }
   }
