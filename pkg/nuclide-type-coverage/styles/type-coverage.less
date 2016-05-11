@@ -1,3 +1,5 @@
+@import 'ui-variables';
+
 .type-coverage-status-bar-pending {
   opacity: 0.5;
 }
@@ -5,4 +7,16 @@
 .type-coverage-status-bar-ready {
   opacity: 1.0;
   transition: opacity 0.1s ease-out;
+}
+
+.type-coverage-status-bar-really-bad {
+  color: @text-color-error;
+}
+
+.type-coverage-status-bar-not-great {
+  color: @text-color-warning;
+}
+
+.type-coverage-status-bar-good {
+  // Just display normally
 }

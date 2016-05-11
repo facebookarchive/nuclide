@@ -12,12 +12,16 @@
 import {React} from 'react-for-atom';
 
 import {addTooltip} from '../../nuclide-atom-helpers';
+import classnames from 'classnames';
 
 type Props = {
   percentage: ?number;
   pending: boolean;
   onClick: Function;
 };
+
+const REALLY_BAD_THRESHOLD = 50;
+const NOT_GREAT_THRESHOLD = 80;
 
 export class StatusBarTileComponent extends React.Component {
   props: Props;
@@ -29,9 +33,14 @@ export class StatusBarTileComponent extends React.Component {
   render(): ?React.Element {
     const percentage = this.props.percentage;
     if (percentage != null) {
-      const className = this.props.pending ?
-        'type-coverage-status-bar-pending' :
-        'type-coverage-status-bar-ready';
+      const classes: string = classnames({
+        'type-coverage-status-bar-pending': this.props.pending,
+        'type-coverage-status-bar-ready': !this.props.pending,
+        'type-coverage-status-bar-really-bad': percentage <= REALLY_BAD_THRESHOLD,
+        'type-coverage-status-bar-not-great':
+          percentage > REALLY_BAD_THRESHOLD && percentage <= NOT_GREAT_THRESHOLD,
+        'type-coverage-status-bar-good': percentage > NOT_GREAT_THRESHOLD,
+      });
       const formattedPercentage: string = `${Math.floor(percentage)}%`;
       const titleString = `This file is ${formattedPercentage} covered by the type system.<br/>` +
         'Click to toggle display of uncovered areas.';
@@ -39,7 +48,7 @@ export class StatusBarTileComponent extends React.Component {
         <div
             style={{cursor: 'pointer'}}
             onClick={this.props.onClick}
-            className={className}
+            className={classes}
             ref={addTooltip({
               title: titleString,
               delay: 0,
