@@ -6,6 +6,7 @@
   "description": "Provides common helper functions for Nuclide packages in Atom",
   "nuclide": {
     "packageType": "Node",
+    "testsCannotBeRunInParallel": true,
     "testRunner": "apm"
   }
 }
