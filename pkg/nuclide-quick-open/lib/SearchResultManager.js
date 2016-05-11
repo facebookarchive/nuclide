@@ -95,6 +95,9 @@ class SearchResultManager {
   _providersByDirectory: Map<atom$Directory, Set<Provider>>;
   _directories: Array<atom$Directory>;
   _cachedResults: Object;
+  // Cache the last query with results for each provider.
+  // Display cached results for the last completed query until new data arrives.
+  _lastCachedQuery: Map<string, string>;
   // List of most recently used query strings, used for pruning the result cache.
   // Makes use of `Map`'s insertion ordering, so values are irrelevant and always set to `null`.
   _queryLruQueue: Map<string, ?Number>;
@@ -124,6 +127,7 @@ class SearchResultManager {
     this._providersByDirectory = new Map();
     this._directories = [];
     this._cachedResults = {};
+    this._lastCachedQuery = new Map();
     this._debouncedCleanCache = debounce(
       () => this._cleanCache(),
       CACHE_CLEAN_DEBOUNCE_DELAY,
@@ -295,6 +299,7 @@ class SearchResultManager {
       delete this._cachedResults[providerName];
       this._emitter.emit(RESULTS_CHANGED);
     }
+    this._lastCachedQuery.delete(providerName);
   }
 
   setCacheResult(
@@ -310,6 +315,7 @@ class SearchResultManager {
       loading,
       error,
     };
+    this._lastCachedQuery.set(providerName, query);
     // Refresh the usage for the current query.
     this._queryLruQueue.delete(query);
     this._queryLruQueue.set(query, null);
@@ -462,6 +468,7 @@ class SearchResultManager {
       ? [GLOBAL_KEY]
       : this._directories.map(d => d.getPath());
     const provider = this._getProviderByName(providerName);
+    const lastCachedQuery = this._lastCachedQuery.get(providerName);
     return {
       title: provider.getTabTitle(),
       results: providerPaths.reduce((results, path) => {
@@ -471,7 +478,11 @@ class SearchResultManager {
         if (!(
           (cachedPaths = this._cachedResults[providerName]) &&
           (cachedQueries = cachedPaths[path]) &&
-          (cachedResult = cachedQueries[query])
+          (
+            (cachedResult = cachedQueries[query]) ||
+            // If the current query hasn't returned anything yet, try the last cached result.
+            lastCachedQuery != null && (cachedResult = cachedQueries[lastCachedQuery])
+          )
         )) {
           cachedResult = {};
         }
