@@ -131,8 +131,8 @@ describe('wootr', () => {
     });
   });
 
-  describe('integrateDelete', function() {
-    it('not left edge; not right edge; no merge left; no merge right', function() {
+  describe('integrateDelete', () => {
+    it('not left edge; not right edge; no merge left; no merge right', () => {
       const wstring = new WString(1, 3); // [+++]
       wstring.integrateDelete(2); // [+][-][+]
 
@@ -166,7 +166,7 @@ describe('wootr', () => {
       });
     });
 
-    it('left edge; right edge; merge left; merge right', function() {
+    it('left edge; right edge; merge left; merge right', () => {
       const wstring = new WString(1, 3); // [+++]
       wstring.integrateDelete(3); // [++][-]
       wstring.integrateDelete(1); // [-][+][-]
@@ -184,7 +184,7 @@ describe('wootr', () => {
       });
     });
 
-    it('left edge; not right edge; merge left; no merge right', function() {
+    it('left edge; not right edge; merge left; no merge right', () => {
       const wstring = new WString(1, 3); // [+++]
       wstring.integrateDelete(1); // [-][++]
       wstring.integrateDelete(1); // [--][+]
@@ -210,7 +210,7 @@ describe('wootr', () => {
       });
     });
 
-    it('left edge; not right edge; no merge left; no merge right', function() {
+    it('left edge; not right edge; no merge left; no merge right', () => {
       const wstring = new WString(1, 2); // [++]
       wstring.integrateDelete(1); // [-][+]
 
@@ -235,7 +235,7 @@ describe('wootr', () => {
       });
     });
 
-    it('not left edge; right edge; no merge left; no merge right', function() {
+    it('not left edge; right edge; no merge left; no merge right', () => {
       const wstring = new WString(1, 2); // [++]
       wstring.integrateDelete(2); // [+][-]
 
@@ -260,7 +260,7 @@ describe('wootr', () => {
       });
     });
 
-    it('not left edge; right edge; no merge left; merge right', function() {
+    it('not left edge; right edge; no merge left; merge right', () => {
       const wstring = new WString(1, 3); // [+++]
       wstring.integrateDelete(3); // [++][-]
       wstring.integrateDelete(2); // [+][--]
@@ -286,7 +286,7 @@ describe('wootr', () => {
       });
     });
 
-    it('left edge; right edge; no merge left; merge right', function() {
+    it('left edge; right edge; no merge left; merge right', () => {
       const wstring = new WString(1, 2); // [++]
       wstring.integrateDelete(2); // [+][-]
       wstring.integrateDelete(1); // [--]
@@ -303,7 +303,7 @@ describe('wootr', () => {
       });
     });
 
-    it('left edge; right edge; merge left; no merge right', function() {
+    it('left edge; right edge; merge left; no merge right', () => {
       const wstring = new WString(1, 2); // [++]
       wstring.integrateDelete(1); // [-][+]
       wstring.integrateDelete(1); // [--]
@@ -320,7 +320,7 @@ describe('wootr', () => {
       });
     });
 
-    it('left edge; right edge; no merge left; no merge right', function() {
+    it('left edge; right edge; no merge left; no merge right', () => {
       const wstring = new WString(1, 1); // [+]
       wstring.integrateDelete(1); // [-]
 
@@ -334,6 +334,28 @@ describe('wootr', () => {
         },
         visible: false,
       });
+    });
+  });
+
+  describe('pos', () => {
+    it('should work', () => {
+      const wstring = new WString(1);
+      const wchar1 = {startId: {site: 1, h: 1}, visible: true, startDegree: 1, length: 1};
+      const wchar2 = {startId: {site: 1, h: 2}, visible: true, startDegree: 2, length: 1};
+      const wchar3 = {startId: {site: 1, h: 3}, visible: true, startDegree: 3, length: 1};
+      const wchar4 = {startId: {site: 1, h: 4}, visible: true, startDegree: 4, length: 1};
+
+      wstring.insert(1, wchar1); // [1]
+      wstring.insert(1, wchar2); // [2][1]
+      wstring.insert(2, wchar3); // [23][1]
+      wstring.insert(3, wchar4); // [234][1]
+      wstring.integrateDelete(1); // [-2][34][1]
+
+      expect(wstring.pos(wstring.charFromRun(wchar1, 0), true)).toEqual(3);
+      expect(wstring.pos(wstring.charFromRun(wchar2, 0), true)).toEqual(-1);
+      expect(wstring.pos(wstring.charFromRun(wchar2, 0), /*visibleOnly*/ false)).toEqual(1);
+      expect(wstring.pos(wstring.charFromRun(wchar3, 0), true)).toEqual(1);
+      expect(wstring.pos(wstring.charFromRun(wchar4, 0), true)).toEqual(2);
     });
   });
 });

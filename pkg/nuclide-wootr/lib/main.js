@@ -16,6 +16,13 @@ export type WId = {
   h: number;
 };
 
+export type WChar = {
+  id: WId;
+  visible: boolean;
+  char?: string;
+  degree: number;
+};
+
 export type WCharRun = {
   startId: WId;
   visible: boolean;
@@ -124,7 +131,7 @@ export class WString {
   canMergeRight(i: number): boolean {
     invariant(i < this._string.length - 1);
     return this._string[i].startId.site === this._string[i + 1].startId.site
-      && this._string[i].startId.h  === this._string[i + 1].startId.h - this._string[i].length
+      && this._string[i].startId.h === this._string[i + 1].startId.h - this._string[i].length
       && this._string[i].visible === this._string[i + 1].visible;
   }
 
@@ -200,6 +207,35 @@ export class WString {
     );
 
     this.mergeRuns();
+  }
+
+  pos(c: WChar, visibleOnly: boolean = false): number {
+    let currentOffset = 0;
+
+    for (let i = 0; i < this._string.length; i++) {
+      const currentRun = this._string[i];
+      if (currentRun.startId.site === c.id.site
+        && currentRun.startId.h <= c.id.h
+        && currentRun.startId.h + currentRun.length > c.id.h
+        && (!visibleOnly || this._string[i].visible)) {
+        return currentOffset + (c.id.h - currentRun.startId.h);
+      }
+      if (!visibleOnly || this._string[i].visible) {
+        currentOffset += currentRun.length;
+      }
+    }
+    return -1;
+  }
+
+  charFromRun(run: WCharRun, offset: number): WChar {
+    return {
+      id: {
+        site: run.startId.site,
+        h: run.startId.h + offset,
+      },
+      degree: run.startDegree + offset,
+      visible: run.visible,
+    };
   }
 }
 
