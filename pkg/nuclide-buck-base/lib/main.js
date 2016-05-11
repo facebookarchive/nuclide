@@ -10,16 +10,15 @@
  */
 
 import path from 'path';
+import buckProjectRootForPath from './buckProjectRootForPath';
 
-module.exports = {
-  get BuckProject() {
-    return require('./BuckProject');
-  },
+export {BuckProject} from './BuckProject';
+export {BuckUtils} from './BuckUtils';
+export {buckProjectRootForPath};
 
-  isBuckFile: function(filePath: string): boolean {
-    // TODO(mbolin): Buck does have an option where the user can customize the
-    // name of the build file: https://github.com/facebook/buck/issues/238.
-    // This function will not work for those who use that option.
-    return path.basename(filePath) === 'BUCK';
-  },
-};
+export function isBuckFile(filePath: string): boolean {
+  // TODO(mbolin): Buck does have an option where the user can customize the
+  // name of the build file: https://github.com/facebook/buck/issues/238.
+  // This function will not work for those who use that option.
+  return path.basename(filePath) === 'BUCK';
+}

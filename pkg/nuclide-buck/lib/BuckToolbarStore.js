@@ -21,7 +21,7 @@ import invariant from 'assert';
 import {Emitter} from 'atom';
 import path from 'path';
 import {Dispatcher} from 'flux';
-import {buckProjectRootForPath} from '../../nuclide-buck-commons';
+import {buckProjectRootForPath} from '../../nuclide-buck-base';
 import BuckToolbarActions from './BuckToolbarActions';
 
 type BuckRunDetails = {
@@ -32,7 +32,7 @@ import type {
   ProcessOutputStore as ProcessOutputStoreType,
 } from '../../nuclide-process-output-store';
 import type {ProcessOutputDataHandlers} from '../../nuclide-process-output-store/lib/types';
-import type {BuckProject} from '../../nuclide-buck-base/lib/BuckProject';
+import type {BuckProject} from '../../nuclide-buck-base';
 import type {SerializedState} from './types';
 
 import ReactNativeServerManager from './ReactNativeServerManager';

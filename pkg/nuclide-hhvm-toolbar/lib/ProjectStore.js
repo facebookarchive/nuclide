@@ -12,7 +12,7 @@
 import {getHackEnvironmentDetails} from '../../nuclide-hack/lib/utils';
 import {CompositeDisposable, Disposable} from 'atom';
 import {EventEmitter} from 'events';
-import {buckProjectRootForPath} from '../../nuclide-buck-commons';
+import {buckProjectRootForPath} from '../../nuclide-buck-base';
 import {trackTiming} from '../../nuclide-analytics';
 import remoteUri from '../../nuclide-remote-uri';
 

@@ -13,7 +13,7 @@ import invariant from 'assert';
 import {EventEmitter} from 'events';
 import fs from 'fs';
 import path from 'path';
-import {BuckUtils} from '../../nuclide-buck-base/lib/BuckUtils';
+import {BuckUtils} from '../../nuclide-buck-base';
 import ClangFlagsManager from '../lib/ClangFlagsManager';
 
 describe('ClangFlagsManager', () => {

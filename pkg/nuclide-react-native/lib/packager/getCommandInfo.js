@@ -16,7 +16,7 @@ import featureConfig from '../../../nuclide-feature-config';
 import * as RemoteUri from '../../../nuclide-remote-uri';
 import ini from 'ini';
 import path from 'path';
-import {BuckUtils} from '../../../nuclide-buck-base/lib/BuckUtils';
+import {BuckUtils} from '../../../nuclide-buck-base';
 
 type PartialCommandInfo = {
   command: string;

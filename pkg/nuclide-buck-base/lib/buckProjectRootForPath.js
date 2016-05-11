@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {BuckProject} from '../../nuclide-buck-base/lib/BuckProject';
-import typeof * as BuckUtilsService from '../../nuclide-buck-base/lib/BuckUtils';
-import typeof * as BuckProjectService from '../../nuclide-buck-base/lib/BuckProject';
+import type {BuckProject} from './BuckProject';
+import typeof * as BuckUtilsService from './BuckUtils';
+import typeof * as BuckProjectService from './BuckProject';
 
 import invariant from 'assert';
 import {getPath} from '../../nuclide-remote-uri';
@@ -23,7 +23,7 @@ const buckProjectForBuckProjectDirectory: {[key: string]: BuckProject} = {};
  * @return Promise that resolves to buck project or null if the
  *     specified filePath is not part of a Buck project.
  */
-async function buckProjectRootForPath(filePath: string): Promise<?BuckProject> {
+export default async function buckProjectRootForPath(filePath: string): Promise<?BuckProject> {
   const service: ?BuckUtilsService = getServiceByNuclideUri('BuckUtils', filePath);
   invariant(service);
   const buckUtils = new service.BuckUtils();
@@ -47,5 +47,3 @@ async function buckProjectRootForPath(filePath: string): Promise<?BuckProject> {
   }
   return buckProject;
 }
-
-module.exports = buckProjectRootForPath;

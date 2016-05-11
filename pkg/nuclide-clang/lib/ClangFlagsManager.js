@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {BuckUtils} from '../../nuclide-buck-base/lib/BuckUtils';
+import type {BuckUtils} from '../../nuclide-buck-base';
 
 import invariant from 'assert';
 import fs from 'fs';
@@ -19,7 +19,7 @@ import {parse} from 'shell-quote';
 import {trackTiming} from '../../nuclide-analytics';
 import {fsPromise} from '../../nuclide-commons';
 import {getLogger} from '../../nuclide-logging';
-import {BuckProject} from '../../nuclide-buck-base/lib/BuckProject';
+import {BuckProject} from '../../nuclide-buck-base';
 import {isHeaderFile, isSourceFile, findIncludingSourceFile} from './utils';
 
 const logger = getLogger();

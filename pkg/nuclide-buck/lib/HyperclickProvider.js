@@ -11,10 +11,10 @@
 
 type Target = {path: string; name: string};
 
-import type {BuckProject} from '../../nuclide-buck-base/lib/BuckProject';
+import type {BuckProject} from '../../nuclide-buck-base';
 import type {Point} from 'atom';
 
-import {buckProjectRootForPath} from '../../nuclide-buck-commons';
+import {buckProjectRootForPath} from '../../nuclide-buck-base';
 import {fsPromise} from '../../nuclide-commons';
 import {goToLocation, extractWordAtPosition} from '../../nuclide-atom-helpers';
 import pathModule from 'path';
