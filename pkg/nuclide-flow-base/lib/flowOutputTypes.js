@@ -77,6 +77,11 @@ export type FlowLoc = {
   end: FlowPoint;
 };
 
+export type FlowLocNoSource = {
+  start: FlowPoint;
+  end: FlowPoint;
+};
+
 export type FlowPoint = {
   column: number;
   line: number;

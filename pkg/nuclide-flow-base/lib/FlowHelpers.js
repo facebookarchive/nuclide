@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {FlowLocNoSource} from './flowOutputTypes';
+
 import path from 'path';
 import {asyncExecute, fsPromise} from '../../nuclide-commons';
 import LRU from 'lru-cache';
@@ -166,6 +168,20 @@ function findFlowConfigDir(localFile: string): Promise<?string> {
   return flowConfigDirCache.get(localFile);
 }
 
+function flowCoordsToAtomCoords(flowCoords: FlowLocNoSource): FlowLocNoSource {
+  return {
+    start: {
+      line: flowCoords.start.line - 1,
+      column: flowCoords.start.column - 1,
+    },
+    end: {
+      line: flowCoords.end.line - 1,
+      // Yes, this is inconsistent. Yes, it works as expected in practice.
+      column: flowCoords.end.column,
+    },
+  };
+}
+
 module.exports = {
   findFlowConfigDir,
   getPathToFlow,
@@ -174,4 +190,5 @@ module.exports = {
   isFlowInstalled,
   processAutocompleteItem,
   groupParamNames,
+  flowCoordsToAtomCoords,
 };
