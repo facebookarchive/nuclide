@@ -358,4 +358,17 @@ describe('wootr', () => {
       expect(wstring.pos(wstring.charFromRun(wchar4, 0), true)).toEqual(2);
     });
   });
+
+  describe('ith', () => {
+    it('should work', () => {
+      const wstring = new WString(1, 4);
+
+      expect(wstring.ith(0)).toEqual({id: {site: -1, h: 0}, visible: true, degree: 0});
+      expect(wstring.ith(1)).toEqual({id: {site: 1, h: 1}, visible: true, degree: 1});
+      expect(wstring.ith(2)).toEqual({id: {site: 1, h: 2}, visible: true, degree: 2});
+      expect(wstring.ith(3)).toEqual({id: {site: 1, h: 3}, visible: true, degree: 3});
+      expect(wstring.ith(4)).toEqual({id: {site: 1, h: 4}, visible: true, degree: 4});
+      expect(wstring.ith(5)).toEqual({id: {site: -1, h: 1}, visible: true, degree: 0});
+    });
+  });
 });

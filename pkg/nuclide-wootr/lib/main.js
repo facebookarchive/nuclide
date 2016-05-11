@@ -19,7 +19,6 @@ export type WId = {
 export type WChar = {
   id: WId;
   visible: boolean;
-  char?: string;
   degree: number;
 };
 
@@ -236,6 +235,22 @@ export class WString {
       degree: run.startDegree + offset,
       visible: run.visible,
     };
+  }
+
+  ith(pos: number, visibleOnly: boolean = true): WChar {
+    let i;
+    let offset = pos;
+
+    for (i = 0; i < this._string.length; i++) {
+      if (this._string[i].length > offset && (!visibleOnly || this._string[i].visible)) {
+        break;
+      }
+      if (!visibleOnly || this._string[i].visible) {
+        offset -= this._string[i].length;
+      }
+    }
+
+    return this.charFromRun(this._string[i], offset);
   }
 }
 
