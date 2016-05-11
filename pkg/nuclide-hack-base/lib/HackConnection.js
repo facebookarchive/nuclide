@@ -12,7 +12,7 @@
 import {
   safeSpawn,
   observeStream,
-  checkOutput,
+  asyncExecute,
 } from '../../nuclide-commons';
 import {getHackCommand, findHackConfigDir} from './hack-config';
 import {StreamTransport, HackRpc} from './HackRpc';
@@ -98,7 +98,7 @@ async function getHackConnection(filePath: string): Promise<?HackConnection> {
 async function createConnection(command: string, configDir: string): Promise<?HackConnection> {
   logger.info(`Creating new hack connection for ${configDir}: ${command}`);
   logger.info(`Current PATH: ${process.env.PATH}`);
-  const startServerResult = await checkOutput(command, ['start', configDir]);
+  const startServerResult = await asyncExecute(command, ['start', configDir]);
   logger.info(
     `Hack connection start server results:\n${JSON.stringify(startServerResult, null, 2)}\n`);
   if (startServerResult.exitCode !== 0 &&

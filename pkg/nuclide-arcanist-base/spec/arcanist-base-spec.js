@@ -156,7 +156,7 @@ describe('nuclide-arcanist-base', () => {
     beforeEach(() => {
       setResult({});
       execArgs = [];
-      spyOn(require('../../nuclide-commons/lib/process'), 'asyncExecute')
+      spyOn(require('../../nuclide-commons/lib/process'), 'checkOutput')
         .andCallFake((command, args, options) => {
           execArgs.push(args);
           return arcResult;

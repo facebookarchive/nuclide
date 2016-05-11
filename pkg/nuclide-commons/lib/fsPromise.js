@@ -15,7 +15,7 @@ import mkdirpLib from 'mkdirp';
 import path from 'path';
 import rimraf from 'rimraf';
 import temp from 'temp';
-import {checkOutput} from './process';
+import {asyncExecute} from './process';
 
 function isRoot(filePath: string): boolean {
   return path.dirname(filePath) === filePath;
@@ -160,7 +160,7 @@ function expandHomeDir(filePath: string): string {
 /** @return true only if we are sure directoryPath is on NFS. */
 async function isNfs(entityPath: string): Promise<boolean> {
   if (process.platform === 'linux' || process.platform === 'darwin') {
-    const {stdout, exitCode} = await checkOutput('stat', ['-f', '-L', '-c', '%T', entityPath]);
+    const {stdout, exitCode} = await asyncExecute('stat', ['-f', '-L', '-c', '%T', entityPath]);
     if (exitCode === 0) {
       return stdout.trim() === 'nfs';
     } else {

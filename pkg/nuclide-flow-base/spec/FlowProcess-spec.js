@@ -42,7 +42,7 @@ describe('FlowProcess', () => {
     // We need this level of indirection to ensure that if fakeCheckOutput is rebound, the new one
     // gets executed.
     const runFakeCheckOutput = (...args) => fakeCheckOutput(...args);
-    spyOn(require('../../nuclide-commons/lib/process'), 'checkOutput')
+    spyOn(require('../../nuclide-commons/lib/process'), 'asyncExecute')
       .andCallFake(runFakeCheckOutput);
     fakeCheckOutput = jasmine.createSpy().andReturn({exitCode: FLOW_RETURN_CODES.ok});
 
@@ -66,7 +66,7 @@ describe('FlowProcess', () => {
   describe('Server startup and teardown', () => {
     beforeEach(() => {
       let called = false;
-      // we want checkOutput to error the first time, to mimic Flow not
+      // we want asyncExecute to error the first time, to mimic Flow not
       // runinng. Then, it will spawn a new flow process, and we want that to be
       // successful
       fakeCheckOutput = () => {
@@ -88,7 +88,7 @@ describe('FlowProcess', () => {
     });
 
     afterEach(() => {
-      jasmine.unspy(require('../../nuclide-commons/lib/process'), 'checkOutput');
+      jasmine.unspy(require('../../nuclide-commons/lib/process'), 'asyncExecute');
       jasmine.unspy(require('../../nuclide-commons/lib/process'), 'safeSpawn');
     });
 
@@ -211,12 +211,12 @@ describe('FlowProcess', () => {
   });
 
   describe('execFlowClient', () => {
-    it('should call checkOutput', () => {
+    it('should call asyncExecute', () => {
       FlowProcess.execFlowClient(['arg']);
-      const [checkOutputArgs] = fakeCheckOutput.argsForCall;
-      expect(checkOutputArgs[0]).toEqual('flow');
-      expect(checkOutputArgs[1]).toEqual(['arg', '--from', 'nuclide']);
-      expect(checkOutputArgs[2]).toEqual({});
+      const [asyncExecuteArgs] = fakeCheckOutput.argsForCall;
+      expect(asyncExecuteArgs[0]).toEqual('flow');
+      expect(asyncExecuteArgs[1]).toEqual(['arg', '--from', 'nuclide']);
+      expect(asyncExecuteArgs[2]).toEqual({});
     });
   });
 });

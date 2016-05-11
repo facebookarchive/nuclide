@@ -16,7 +16,7 @@ import path from 'path';
 import split from 'split';
 
 import {EventEmitter} from 'events';
-import {checkOutput, safeSpawn, promises} from '../../nuclide-commons';
+import {asyncExecute, safeSpawn, promises} from '../../nuclide-commons';
 import {getLogger} from '../../nuclide-logging';
 
 // Do not tie up the Buck server continuously retrying for flags.
@@ -43,7 +43,7 @@ async function _findClangServerArgs(): Promise<{
 
   let libClangLibraryFile;
   if (process.platform === 'darwin') {
-    const result = await checkOutput('xcode-select', ['--print-path']);
+    const result = await asyncExecute('xcode-select', ['--print-path']);
     if (result.exitCode === 0) {
       libClangLibraryFile = result.stdout.trim() +
         '/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib';
@@ -138,7 +138,7 @@ export default class ClangServer {
     if (this._asyncConnection == null) {
       return 0;
     }
-    const {exitCode, stdout} = await checkOutput(
+    const {exitCode, stdout} = await asyncExecute(
       'ps',
       ['-p', this._asyncConnection.process.pid.toString(), '-o', 'rss='],
     );

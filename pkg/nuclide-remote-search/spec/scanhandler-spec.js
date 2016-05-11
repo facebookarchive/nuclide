@@ -11,7 +11,7 @@
 
 import type {search$FileResult} from '..';
 
-import {asyncExecute} from '../../nuclide-commons';
+import {checkOutput} from '../../nuclide-commons';
 import {addMatchers} from '../../nuclide-test-helpers';
 import fs from 'fs';
 import path from 'path';
@@ -102,7 +102,7 @@ describe('Scan Handler Tests', () => {
     waitsForPromise(async () => {
       // Create a git repo in a temporary folder.
       const folder = temp.mkdirSync();
-      await asyncExecute('git', ['init'], {cwd: folder});
+      await checkOutput('git', ['init'], {cwd: folder});
 
       // Create a file that is ignored.
       fs.writeFileSync(path.join(folder, '.gitignore'), 'ignored.txt');
@@ -110,7 +110,7 @@ describe('Scan Handler Tests', () => {
 
       // Create a file that is tracked.
       fs.writeFileSync(path.join(folder, 'tracked.txt'), 'Hello World!');
-      await asyncExecute('git', ['add', 'tracked.txt'], {cwd: folder});
+      await checkOutput('git', ['add', 'tracked.txt'], {cwd: folder});
 
       // Create a file that is untracked.
       fs.writeFileSync(path.join(folder, 'untracked.txt'), 'Hello World!');
@@ -133,7 +133,7 @@ describe('Scan Handler Tests', () => {
     waitsForPromise(async () => {
       // Create a git repo in a temporary folder.
       const folder = temp.mkdirSync();
-      await asyncExecute('hg', ['init'], {cwd: folder});
+      await checkOutput('hg', ['init'], {cwd: folder});
 
       // Create a file that is ignored.
       fs.writeFileSync(path.join(folder, '.hgignore'), 'ignored.txt');
@@ -141,12 +141,12 @@ describe('Scan Handler Tests', () => {
 
       // Create a file that is tracked.
       fs.writeFileSync(path.join(folder, 'tracked.txt'), 'Hello World!');
-      await asyncExecute('hg', ['add', 'tracked.txt'], {cwd: folder});
+      await checkOutput('hg', ['add', 'tracked.txt'], {cwd: folder});
 
       // Create a file that is untracked.
       fs.writeFileSync(path.join(folder, 'untracked.txt'), 'Hello World!');
 
-      await asyncExecute('hg', ['commit', '-m', 'test commit'], {cwd: folder});
+      await checkOutput('hg', ['commit', '-m', 'test commit'], {cwd: folder});
 
       const results = await search(folder, /hello world/i, []).toArray().toPromise();
       const expected = JSON.parse(

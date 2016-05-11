@@ -79,22 +79,22 @@ describe('nuclide-commons/process', () => {
     });
   });
 
-  describe('asyncExecute', () => {
+  describe('checkOutput', () => {
     if (origPlatform !== 'win32') {
       it('returns stdout of the running process', () => {
         waitsForPromise(async () => {
-          const val = await processLib.asyncExecute('echo', ['-n', 'foo'], {env: process.env});
+          const val = await processLib.checkOutput('echo', ['-n', 'foo'], {env: process.env});
           expect(val.stdout).toEqual('foo');
         });
       });
       it('throws an error if the exit code !== 0', () => {
         waitsForPromise({shouldReject: true}, async () => {
-          await processLib.asyncExecute(process.execPath, ['-e', 'process.exit(1)']);
+          await processLib.checkOutput(process.execPath, ['-e', 'process.exit(1)']);
         });
       });
       it('pipes stdout to stdin of `pipedCommand`', () => {
         waitsForPromise(async () => {
-          const val = await processLib.asyncExecute(
+          const val = await processLib.checkOutput(
               'seq',
               ['1', '100'],
               {env: process.env, pipedCommand: 'head', pipedArgs: ['-10']});
@@ -105,7 +105,7 @@ describe('nuclide-commons/process', () => {
       if (process.platform === 'linux') {
         it('terminates piped processes correctly', () => {
           waitsForPromise(async () => {
-            const val = await processLib.asyncExecute(
+            const val = await processLib.checkOutput(
               'yes',
               [],
               {env: process.env, pipedCommand: 'head', pipedArgs: ['-1']},
@@ -113,7 +113,7 @@ describe('nuclide-commons/process', () => {
             expect(val.stdout).toEqual('y\n');
             // Make sure the `yes` process actually terminates.
             // It's possible to end up with dangling processes if pipe isn't implemented correctly.
-            const children = await processLib.asyncExecute(
+            const children = await processLib.checkOutput(
               'ps',
               ['--ppid', process.pid.toString()],
             );
@@ -124,7 +124,7 @@ describe('nuclide-commons/process', () => {
       describe('when passed a pipedCommand', () => {
         it('captures an error message if the first command exits', () => {
           waitsForPromise(async () => {
-            const error = await processLib.checkOutput(
+            const error = await processLib.asyncExecute(
                 'exit',
                 ['5'],
                 {env: process.env, pipedCommand: 'head', pipedArgs: ['-10']});
@@ -135,24 +135,24 @@ describe('nuclide-commons/process', () => {
     }
   });
 
-  describe('checkOutput', () => {
+  describe('asyncExecute', () => {
     if (origPlatform !== 'win32') {
-      it('checkOutput returns an error if the process cannot be started', () => {
+      it('asyncExecute returns an error if the process cannot be started', () => {
         waitsForPromise(async () => {
-          const result = await processLib.checkOutput('non_existing_command', /* args */ []);
+          const result = await processLib.asyncExecute('non_existing_command', /* args */ []);
           expect(result.errorCode).toBe('ENOENT');
         });
       });
-      it('checkOutput does not throw an error if the exit code !== 0', () => {
+      it('asyncExecute does not throw an error if the exit code !== 0', () => {
         waitsForPromise(async () => {
           const {exitCode} =
-              await processLib.checkOutput(process.execPath, ['-e', 'process.exit(1)']);
+              await processLib.asyncExecute(process.execPath, ['-e', 'process.exit(1)']);
           expect(exitCode).toBe(1);
         });
       });
-      it('checkOutput works with stdio ignore', () => {
+      it('asyncExecute works with stdio ignore', () => {
         waitsForPromise(async () => {
-          const {exitCode} = await processLib.checkOutput(
+          const {exitCode} = await processLib.asyncExecute(
             process.execPath,
             ['-e', 'process.exit(0)'],
             {stdio: ['ignore', 'pipe', 'pipe']},

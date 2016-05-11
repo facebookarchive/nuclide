@@ -24,7 +24,7 @@ const logger = getLogger();
 import {track} from '../../nuclide-analytics';
 
 import {
-  checkOutput,
+  asyncExecute,
   safeSpawn,
 } from '../../nuclide-commons';
 
@@ -323,7 +323,7 @@ export class FlowProcess {
       '--from', 'nuclide',
     ];
     const pathToFlow = getPathToFlow();
-    const ret = await checkOutput(pathToFlow, args, options);
+    const ret = await asyncExecute(pathToFlow, args, options);
     if (ret.exitCode !== 0) {
       // TODO: bubble up the exit code via return value instead
       throw ret;

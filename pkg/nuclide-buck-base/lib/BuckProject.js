@@ -12,7 +12,7 @@
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {
-  asyncExecute,
+  checkOutput,
   scriptSafeSpawnAndObserveOutput,
 } from '../../nuclide-commons';
 import {fsPromise} from '../../nuclide-commons';
@@ -114,7 +114,7 @@ export class BuckProject {
       ): Promise<{stdout: string; stderr: string; exitCode?: number}> {
     const {pathToBuck, buckCommandOptions: options} = this._getBuckCommandAndOptions();
     logger.debug('Buck command:', pathToBuck, args, options);
-    return asyncExecute(pathToBuck, args, options);
+    return checkOutput(pathToBuck, args, options);
   }
 
   /**

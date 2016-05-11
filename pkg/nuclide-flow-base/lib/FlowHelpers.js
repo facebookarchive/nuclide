@@ -12,7 +12,7 @@
 import type {FlowLocNoSource} from './flowOutputTypes';
 
 import path from 'path';
-import {asyncExecute, fsPromise} from '../../nuclide-commons';
+import {checkOutput, fsPromise} from '../../nuclide-commons';
 import LRU from 'lru-cache';
 import invariant from 'assert';
 
@@ -133,7 +133,7 @@ async function isFlowInstalled(): Promise<boolean> {
 
 async function canFindFlow(flowPath: string): Promise<boolean> {
   try {
-    await asyncExecute('which', [flowPath]);
+    await checkOutput('which', [flowPath]);
     return true;
   } catch (e) {
     return false;

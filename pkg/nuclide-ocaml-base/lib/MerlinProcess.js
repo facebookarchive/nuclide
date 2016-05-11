@@ -16,7 +16,7 @@ import path from 'path';
 import readline from 'readline';
 
 import {
-  checkOutput,
+  asyncExecute,
   fsPromise,
   safeSpawn,
   PromiseQueue,
@@ -287,7 +287,7 @@ function getMerlinFlags(): Array<string> {
 let isInstalledCache: ?boolean = null;
 async function isInstalled(merlinPath: string): Promise<boolean> {
   if (isInstalledCache == null) {
-    const result = await checkOutput('which', [merlinPath]);
+    const result = await asyncExecute('which', [merlinPath]);
     isInstalledCache = result.exitCode === 0;
     if (!isInstalledCache) {
       logger.info('ocamlmerlin not installed');

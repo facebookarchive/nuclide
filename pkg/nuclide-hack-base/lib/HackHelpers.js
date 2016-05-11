@@ -14,7 +14,7 @@ import type {HackSearchResult, HHSearchPosition} from './types';
 import type {SearchResultTypeValue} from '../../nuclide-hack-common';
 
 import invariant from 'assert';
-import {checkOutput, PromiseQueue} from '../../nuclide-commons';
+import {asyncExecute, PromiseQueue} from '../../nuclide-commons';
 import {SearchResultType} from '../../nuclide-hack-common';
 import {getHackExecOptions, getUseIde} from './hack-config';
 import {callHHClientUsingConnection} from './HackConnection';
@@ -64,7 +64,7 @@ export async function callHHClient(
     let execResult = null;
     try {
       logger.debug(`Calling Hack: ${hackCommand} with ${allArgs}`);
-      execResult = await checkOutput(hackCommand, allArgs, {stdin: processInput});
+      execResult = await asyncExecute(hackCommand, allArgs, {stdin: processInput});
     } catch (err) {
       reject(err);
       return;

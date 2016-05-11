@@ -17,7 +17,7 @@ import {Observable} from 'rxjs';
 import path from 'path';
 import {
   fsPromise,
-  asyncExecute,
+  checkOutput,
   scriptSafeSpawnAndObserveOutput,
 } from '../../nuclide-commons';
 import {
@@ -187,7 +187,7 @@ async function execArcLint(cwd: string, filePaths: Array<NuclideUri>, skip: Arra
     args.push('--skip', skip.join(','));
   }
   const options = {'cwd': cwd};
-  const result = await asyncExecute('arc', args, options);
+  const result = await checkOutput('arc', args, options);
 
   const output: Map<string, Array<Object>> = new Map();
   // Arc lint outputs multiple JSON objects on mutliple lines. Split them, then merge the

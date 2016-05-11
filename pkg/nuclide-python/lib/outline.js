@@ -25,7 +25,7 @@ import {
   plain,
 } from '../../nuclide-tokenized-text';
 import path from 'path';
-import {checkOutput} from '../../nuclide-commons';
+import {asyncExecute} from '../../nuclide-commons';
 import {getPythonPath} from './config';
 
 const SHOW_NO_VARIABLES = 'none';
@@ -147,7 +147,7 @@ function treeToOutline(showGlobalVariables: boolean, tree: PythonTree): ?Outline
 }
 
 async function getPythonTree(text: string): Promise<?PythonTree> {
-  const result = await checkOutput(
+  const result = await asyncExecute(
     getPythonPath(),
     [path.join(__dirname, '../python/outline.py')],
     {stdin: text});

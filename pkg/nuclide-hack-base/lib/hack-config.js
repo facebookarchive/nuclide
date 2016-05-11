@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {fsPromise, checkOutput} from '../../nuclide-commons';
+import {fsPromise, asyncExecute} from '../../nuclide-commons';
 const logger = require('../../nuclide-logging').getLogger();
 
 const HACK_CONFIG_FILE_NAME = '.hhconfig';
@@ -34,7 +34,7 @@ export function findHackConfigDir(localFile: string): Promise<?string> {
 // Returns the empty string on failure
 async function findHackCommand(): Promise<string> {
   // `stdout` would be empty if there is no such command.
-  return (await checkOutput('which', [PATH_TO_HH_CLIENT])).stdout.trim();
+  return (await asyncExecute('which', [PATH_TO_HH_CLIENT])).stdout.trim();
 }
 
 export function setHackCommand(newHackCommand: string): void {

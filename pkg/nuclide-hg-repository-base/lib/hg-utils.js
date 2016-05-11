@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import {asyncExecute, createArgsForScriptCommand} from '../../nuclide-commons';
+import {checkOutput, createArgsForScriptCommand} from '../../nuclide-commons';
 import {getLogger} from '../../nuclide-logging';
 
 /**
- * Calls out to asyncExecute using the 'hg' command.
+ * Calls out to checkOutput using the 'hg' command.
  * @param options as specified by http://nodejs.org/api/child_process.html. Additional options:
  *   - NO_HGPLAIN set if the $HGPLAIN environment variable should not be used.
  *   - TTY_OUTPUT set if the command should be run as if it were attached to a tty.
@@ -36,7 +36,7 @@ export async function hgAsyncExecute(args: Array<string>, options: any): Promise
     cmd = 'hg';
   }
   try {
-    return await asyncExecute(cmd, args, options);
+    return await checkOutput(cmd, args, options);
   } catch (e) {
     getLogger().error(`Error executing hg command: ${JSON.stringify(args)} ` +
         `options: ${JSON.stringify(options)} ${JSON.stringify(e)}`);

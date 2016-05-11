@@ -14,7 +14,7 @@ import fs from 'fs';
 import path from 'path';
 import temp from 'temp';
 import url from 'url';
-import {asyncExecute} from '../../nuclide-commons';
+import {checkOutput} from '../../nuclide-commons';
 import {fileSearchForDirectory} from '../lib/FileSearch';
 
 temp.track();
@@ -165,8 +165,8 @@ function createTestFolder(): string {
 async function hgTestFolder(): Promise<string> {
   const folder = createTestFolder();
 
-  await asyncExecute('hg', ['init'], {cwd: folder});
-  await asyncExecute('hg', ['addremove'], {cwd: folder});
+  await checkOutput('hg', ['init'], {cwd: folder});
+  await checkOutput('hg', ['addremove'], {cwd: folder});
 
   // After adding the existing files to hg, add an ignored file to
   // prove we're using hg to populate the list.
@@ -180,8 +180,8 @@ async function hgTestFolder(): Promise<string> {
 async function gitTestFolder(): Promise<string> {
   const folder = createTestFolder();
 
-  await asyncExecute('git', ['init'], {cwd: folder});
-  await asyncExecute('git', ['add', '*'], {cwd: folder});
+  await checkOutput('git', ['init'], {cwd: folder});
+  await checkOutput('git', ['add', '*'], {cwd: folder});
 
   // After adding the existing files to git, add an ignored file to
   // prove we're using git to populate the list.

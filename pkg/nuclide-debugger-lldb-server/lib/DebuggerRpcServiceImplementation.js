@@ -40,11 +40,11 @@ type LaunchInfoArgsType = {
 type LaunchAttachArgsType = AttachInfoArgsType | LaunchInfoArgsType;
 
 export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>> {
-  const {asyncExecute} = require('../../nuclide-commons');
+  const {checkOutput} = require('../../nuclide-commons');
   // Get processes list from ps utility.
   // -e: include all processes
   // -o pid,comm: custom format the output to be two columns(pid and command name)
-  const result = await asyncExecute('ps', ['-e', '-o', 'pid,comm'], {});
+  const result = await checkOutput('ps', ['-e', '-o', 'pid,comm'], {});
   return result.stdout.toString().split('\n').slice(1).map(line => {
     const words = line.trim().split(' ');
     const pid = Number(words[0]);

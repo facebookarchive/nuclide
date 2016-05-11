@@ -369,7 +369,7 @@ function observeProcess(
  *       pipedCommand string a command to pipe the output of command through.
  *       pipedArgs array of strings as arguments.
  */
-function checkOutput(
+function asyncExecute(
     command: string,
     args: Array<string>,
     options: ?Object = {}): Promise<process$asyncExecuteRet> {
@@ -487,11 +487,14 @@ function checkOutput(
   );
 }
 
-async function asyncExecute(
+/**
+ * Simple wrapper around asyncExecute that throws if the exitCode is non-zero.
+ */
+async function checkOutput(
     command: string,
     args: Array<string>,
     options: ?Object = {}): Promise<process$asyncExecuteRet> {
-  const result = await checkOutput(command, args, options);
+  const result = await asyncExecute(command, args, options);
   if (result.exitCode !== 0) {
     const reason = result.exitCode != null ? `exitCode: ${result.exitCode}` :
       `error: ${result.errorMessage}`;

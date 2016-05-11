@@ -10,7 +10,7 @@
  */
 
 import os from 'os';
-import {checkOutput, safeSpawn} from './process';
+import {asyncExecute, safeSpawn} from './process';
 
 const DEFAULT_JOIN_TIMEOUT = 5000;
 let SCRIBE_CAT_COMMAND = 'scribe_cat';
@@ -36,7 +36,7 @@ export class ScribeProcess {
    * Check if `scribe_cat` exists in PATH.
    */
   static async isScribeCatOnPath(): Promise<boolean> {
-    const {exitCode} = await checkOutput('which', [SCRIBE_CAT_COMMAND]);
+    const {exitCode} = await asyncExecute('which', [SCRIBE_CAT_COMMAND]);
     return exitCode === 0;
   }
 

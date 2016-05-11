@@ -95,8 +95,8 @@ class NodeDebuggerProcessInfo extends DebuggerProcessInfo {
 }
 
 function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
-  const {asyncExecute} = require('../../nuclide-commons');
-  return asyncExecute('ps', ['-e', '-o', 'pid,comm'], {})
+  const {checkOutput} = require('../../nuclide-commons');
+  return checkOutput('ps', ['-e', '-o', 'pid,comm'], {})
     .then(result => {
       // $FlowIssue -- https://github.com/facebook/flow/issues/1143
       return result.stdout.toString().split('\n').slice(1).map(line => {
