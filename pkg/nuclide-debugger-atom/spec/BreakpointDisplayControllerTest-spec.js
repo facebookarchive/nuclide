@@ -125,4 +125,57 @@ describe('BreakpointDisplayController', () => {
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(false);
     expect(utils.hasBreakpointDecorationInRow(editor, 2)).toBe(true);
   });
+
+  function mockText(numLines: number) : string {
+    return Array(numLines)
+            .fill('MOCK LINE\n')
+            .reduce((a, b) => { return a.concat(b); });
+  }
+
+  it('should create shadow markers on each row', () => {
+    editor.setText(mockText(3));
+    store.addBreakpoint(testFilePath, 1);
+
+    const gutter: ?atom$Gutter = editor.gutterWithName('nuclide-breakpoint');
+    invariant(gutter);
+
+    const shadowBreakpointElems =
+      atom.views.getView(gutter).querySelectorAll('.nuclide-debugger-atom-shadow-breakpoint');
+
+    expect(shadowBreakpointElems).toBeDefined();
+    expect(shadowBreakpointElems.length >= 1).toBeTruthy();
+  });
+
+  it('should maintain the minimal set of markers', () => {
+    editor.setText(mockText(20));
+
+    store.addBreakpoint(testFilePath, 1);
+    store.addBreakpoint(testFilePath, 4);
+    store.addBreakpoint(testFilePath, 10);
+
+    const gutter: ?atom$Gutter = editor.gutterWithName('nuclide-breakpoint');
+
+    if (gutter == null) {
+      return;
+    }
+
+    let numBreakpoints: number = 3;
+    let shadowBreakpointElems =
+      atom.views.getView(gutter).querySelectorAll('.nuclide-debugger-atom-shadow-breakpoint');
+
+    expect(shadowBreakpointElems).toBeDefined();
+    expect(shadowBreakpointElems.length).toEqual(editor.rowsPerPage - numBreakpoints);
+
+    store.addBreakpoint(testFilePath, 5);
+    store.addBreakpoint(testFilePath, 8);
+    store.addBreakpoint(testFilePath, 11);
+    store.deleteBreakpoint(testFilePath, 4);
+    numBreakpoints += 2;
+    shadowBreakpointElems =
+      atom.views.getView(gutter).querySelectorAll('.nuclide-debugger-atom-shadow-breakpoint');
+
+    expect(shadowBreakpointElems).toBeDefined();
+    expect(shadowBreakpointElems.length).toEqual(editor.rowsPerPage - numBreakpoints);
+  });
+
 });

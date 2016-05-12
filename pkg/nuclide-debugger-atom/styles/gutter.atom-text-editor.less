@@ -10,6 +10,18 @@
   color: @text-color-subtle;
 }
 
+.nuclide-debugger-atom-shadow-breakpoint {
+  text-align: center;
+  display: block;
+  width: 1em;
+  color: fade(@text-color-subtle, 40%);
+}
+
+.nuclide-debugger-atom-shadow-breakpoint:hover,
+.nuclide-debugger-atom-shadow-breakpoint-icon {
+  .octicon(primitive-dot, @size: 100%);
+}
+
 // Actual borders or outlines on line decorations are subject to
 // positioning issues (fixable) and tiling-related clipping issues (not fixable).
 // Use a gradient to simulate a pseudo-border.
