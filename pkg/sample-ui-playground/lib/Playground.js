@@ -23,6 +23,7 @@ import {TextInputExamples} from '../../nuclide-ui/lib/TextInputs.example';
 import {ToolbarExamples} from '../../nuclide-ui/lib/Toolbar.example';
 import {DiagnosticsExamples} from '../../nuclide-ui/lib/Diagnostics.example';
 import {BadgeExamples} from '../../nuclide-ui/lib/Badge.example';
+import {IconExamples} from '../../nuclide-ui/lib/Icon.example';
 
 const playgroundComponents = [
   ButtonExamples,
@@ -34,6 +35,7 @@ const playgroundComponents = [
   ToolbarExamples,
   DiagnosticsExamples,
   BadgeExamples,
+  IconExamples,
 ];
 
 type ComponentSpec = {
