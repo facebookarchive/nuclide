@@ -51,9 +51,12 @@ class Activation {
   _disposables: CompositeDisposable;
   _activeEditorBasedService: ActiveEditorBasedService<CoverageProvider, ?CoverageResult>;
   _toggleEvents: Subject<void>;
+  _shouldRenderDiagnostics: Observable<boolean>;
 
   constructor(state: ?Object) {
     this._toggleEvents = new Subject();
+    this._shouldRenderDiagnostics = this._toggleEvents.scan(prev => !prev, false);
+
     this._disposables = new CompositeDisposable();
     this._activeEditorBasedService = new ActiveEditorBasedService(
       resultFunction,
@@ -76,7 +79,11 @@ class Activation {
 
     const resultStream = this._activeEditorBasedService.getResultsStream();
     ReactDOM.render(
-      <StatusBarTile results={resultStream} onClick={() => this._toggleEvents.next()} />,
+      <StatusBarTile
+        results={resultStream}
+        isActive={this._shouldRenderDiagnostics}
+        onClick={() => this._toggleEvents.next()}
+      />,
       item,
     );
     const disposable = new Disposable(() => {
@@ -89,7 +96,7 @@ class Activation {
   getDiagnosticsProvider(): ObservableDiagnosticProvider {
     return diagnosticProviderForResultStream(
       this._activeEditorBasedService.getResultsStream(),
-      this._toggleEvents,
+      this._shouldRenderDiagnostics,
     );
   }
 
@@ -130,9 +137,8 @@ export function getDiagnosticsProvider(): ObservableDiagnosticProvider {
 
 function diagnosticProviderForResultStream(
   results: Observable<Result<?CoverageResult>>,
-  toggleEvents: Observable<void>,
+  isEnabledStream: Observable<boolean>,
 ): ObservableDiagnosticProvider {
-  const isEnabledStream = toggleEvents.scan(prev => !prev, false);
   const toggledResults = toggle(results, isEnabledStream);
 
   return {

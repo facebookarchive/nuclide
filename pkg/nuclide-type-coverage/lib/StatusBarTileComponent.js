@@ -17,6 +17,8 @@ import classnames from 'classnames';
 type Props = {
   percentage: ?number;
   pending: boolean;
+  // true iff we are currently displaying uncovered regions in the editor.
+  isActive: boolean;
   onClick: Function;
 };
 
@@ -40,6 +42,7 @@ export class StatusBarTileComponent extends React.Component {
         'nuclide-type-coverage-status-bar-not-great':
           percentage > REALLY_BAD_THRESHOLD && percentage <= NOT_GREAT_THRESHOLD,
         'nuclide-type-coverage-status-bar-good': percentage > NOT_GREAT_THRESHOLD,
+        'nuclide-type-coverage-status-bar-active': this.props.isActive,
       });
       const formattedPercentage: string = `${Math.floor(percentage)}%`;
       const titleString = `This file is ${formattedPercentage} covered by the type system.<br/>` +

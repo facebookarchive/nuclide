@@ -22,12 +22,14 @@ import {StatusBarTileComponent} from './StatusBarTileComponent';
 
 type Props = {
   results: Observable<Result<?CoverageResult>>;
+  isActive: Observable<boolean>;
   onClick: Function;
 };
 
 type State = {
   percentage: ?number;
   pending: boolean;
+  isActive: boolean;
 };
 
 export class StatusBarTile extends React.Component {
@@ -46,12 +48,15 @@ export class StatusBarTile extends React.Component {
     this.state = {
       percentage: null,
       pending: false,
+      isActive: false,
     };
   }
 
   componentDidMount(): void {
     invariant(this.subscription == null);
-    this.subscription = this.props.results.subscribe(result => this._consumeResult(result));
+    this.subscription =
+      this.props.results.subscribe(result => this._consumeResult(result))
+        .add(this.props.isActive.subscribe(isActive => this._consumeIsActive(isActive)));
   }
 
   componentWillUnmount(): void {
@@ -83,6 +88,10 @@ export class StatusBarTile extends React.Component {
       default:
         throw new Error(`Should handle kind ${result.kind}`);
     }
+  }
+
+  _consumeIsActive(isActive: boolean): void {
+    this.setState({isActive});
   }
 
   render(): React.Element {
