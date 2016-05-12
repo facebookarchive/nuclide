@@ -12,7 +12,6 @@
 import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
 import type {ConfigEntry, Transport} from './index';
 import type {ResponseMessage, Type} from './types';
-import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {TypeRegistry} from './TypeRegistry';
 
 import invariant from 'assert';
@@ -37,15 +36,14 @@ export class ClientComponent<TransportType: Transport> {
   _objectRegistry: ObjectRegistry;
 
   constructor(
-    marshalUri: (uri: NuclideUri) => string,
-    unmarshalUri: (value: string) => NuclideUri,
+    serviceRegistry: ServiceRegistry,
     transport: TransportType,
     services: Array<ConfigEntry>
   ) {
     this._emitter = new EventEmitter();
     this._transport = transport;
     this._rpcRequestId = 1;
-    this._serviceRegistry = new ServiceRegistry(marshalUri, unmarshalUri, services);
+    this._serviceRegistry = serviceRegistry;
     this._objectRegistry = new ObjectRegistry('client', this._serviceRegistry, this);
     this._transport.onMessage(message => this._handleMessage(message));
   }
@@ -54,8 +52,10 @@ export class ClientComponent<TransportType: Transport> {
     hostname: string, port: number, transport: TransportType, services: Array<ConfigEntry>
   ): ClientComponent<TransportType> {
     return new ClientComponent(
-      remoteUri => getPath(remoteUri),
-      path => createRemoteUri(hostname, port, path),
+      new ServiceRegistry(
+        remoteUri => getPath(remoteUri),
+        path => createRemoteUri(hostname, port, path),
+        services),
       transport,
       services
     );
@@ -66,8 +66,10 @@ export class ClientComponent<TransportType: Transport> {
     services: Array<ConfigEntry>
   ): ClientComponent<TransportType> {
     return new ClientComponent(
-      remoteUri => remoteUri,
-      path => path,
+      new ServiceRegistry(
+        remoteUri => remoteUri,
+        path => path,
+        services),
       transport,
       services
     );
