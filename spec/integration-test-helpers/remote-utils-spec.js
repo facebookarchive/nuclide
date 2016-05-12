@@ -12,6 +12,7 @@
 import {
   activateAllPackages,
   deactivateAllPackages,
+  jasmineIntegrationTestSetup,
 } from '../../pkg/nuclide-integration-test-helpers';
 import {
   addRemoteProject,
@@ -24,14 +25,30 @@ import invariant from 'assert';
 describe('remote connection for testing', () => {
   it('starts server and adds remote project', () => {
     waitsForPromise({timeout: 240000}, async () => {
+      expect(atom.project.getDirectories().length).toBe(1);
+      expect(atom.project.getRepositories().length).toBe(1);
+
+      jasmineIntegrationTestSetup();
+
+      expect(atom.project.getDirectories().length).toBe(0);
+      expect(atom.project.getRepositories().length).toBe(0);
+
       await activateAllPackages();
+
+      expect(atom.project.getDirectories().length).toBe(0);
+      expect(atom.project.getRepositories().length).toBe(0);
+
       const pathToProject = await copyMercurialFixture('hg_repo_1');
+
       startNuclideServer();
       const connection = await addRemoteProject(pathToProject);
       invariant(connection != null);
-      expect(atom.project.getDirectories().length).toBe(2);
-      expect(atom.project.getRepositories().length).toBe(2);
+
+      expect(atom.project.getDirectories().length).toBe(1);
+      expect(atom.project.getRepositories().length).toBe(1);
+
       await stopNuclideServer(connection);
+
       deactivateAllPackages();
     });
   });

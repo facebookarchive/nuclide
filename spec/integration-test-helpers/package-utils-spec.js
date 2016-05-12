@@ -12,11 +12,13 @@
 import {
   activateAllPackages,
   deactivateAllPackages,
+  jasmineIntegrationTestSetup,
 } from '../../pkg/nuclide-integration-test-helpers';
 
 describe('activate/deactivate all packages', () => {
   it('activates and deactivates packages correctly and without hanging', () => {
     waitsForPromise({timeout: 240000}, async () => {
+      jasmineIntegrationTestSetup();
       expect(atom.packages.getActivePackages().length).toBe(0);
       const activatedPackages = await activateAllPackages();
       expect(activatedPackages.length).toBeGreaterThan(20); // Inaccurate, just a sanity check.

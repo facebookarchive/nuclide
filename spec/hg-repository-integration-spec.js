@@ -14,6 +14,7 @@ import {
   activateAllPackages,
   copyMercurialFixture,
   deactivateAllPackages,
+  jasmineIntegrationTestSetup,
 } from '../pkg/nuclide-integration-test-helpers';
 import {repositoryForPath} from '../pkg/nuclide-hg-git-bridge';
 import {
@@ -27,6 +28,7 @@ import invariant from 'assert';
 describe('Mercurial Repository Integration Tests', () => {
   beforeEach(() => {
     waitsForPromise({timeout: 240000}, async () => {
+      jasmineIntegrationTestSetup();
       await activateAllPackages();
     });
   });

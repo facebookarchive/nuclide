@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+import path from 'path';
 import {dispatchKeyboardEvent} from './event';
 import {copyFixture, copyMercurialFixture, setLocalProject} from './fixtures';
 import {activateAllPackages, deactivateAllPackages} from './package-utils';
@@ -35,6 +37,16 @@ export function jasmineIntegrationTestSetup(): void {
 
   // Unmock timer functions.
   jasmine.useRealClock();
+
+  // Atom will add its spec directory to the project during tests. The asar
+  // hook makes "fs" operations seem like the "spec" dir in "app.asar" is
+  // real, but when we attempt to watch it, the operation fails (because
+  // it's not a real directory).
+  // https://github.com/atom/atom/blob/v1.7.3/spec/spec-helper.coffee#L66
+  invariant(typeof process.resourcesPath === 'string');
+  const specProjectPath = path.join(process.resourcesPath, 'app.asar/spec');
+  invariant(atom.project.getPaths().indexOf(specProjectPath) !== -1);
+  atom.project.removePath(specProjectPath);
 }
 
 export {
