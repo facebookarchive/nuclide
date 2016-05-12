@@ -9,9 +9,16 @@
  * the root directory of this source tree.
  */
 
-import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/service';
+import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-atom';
+import type {
+  nuclide_debugger$Service,
+  NuclideDebuggerProvider,
+} from '../../nuclide-debugger-interfaces/service';
+import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {Activation as ActivationType} from './Activation';
 
+import remoteUri from '../../nuclide-remote-uri';
+import {ReactNativeLaunchAttachProvider} from './debugging/ReactNativeLaunchAttachProvider';
 import invariant from 'assert';
 
 let activation: ?ActivationType = null;
@@ -31,4 +38,16 @@ export function deactivate(): void {
 export function provideNuclideDebugger(): nuclide_debugger$Service {
   invariant(activation != null);
   return activation.provideNuclideDebugger();
+}
+
+export function createDebuggerProvider(): NuclideDebuggerProvider {
+  return {
+    name: 'react-native',
+    getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
+      if (remoteUri.isLocal(connection)) {
+        return new ReactNativeLaunchAttachProvider('React Native', connection);
+      }
+      return null;
+    },
+  };
 }

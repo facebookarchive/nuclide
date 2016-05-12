@@ -22,6 +22,12 @@
       "versions": {
         "0.0.0": "provideNuclideDebugger"
       }
+    },
+    "nuclide-debugger.provider": {
+      "description": "React Native debugger provider.",
+      "versions": {
+        "0.0.0": "createDebuggerProvider"
+      }
     }
   }
 }
