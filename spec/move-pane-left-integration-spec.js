@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {testMovePaneDirection} from '../lib/move-pane-common';
+import {testMovePaneDirection} from './utils/move-pane-common';
 
-describe('Up Move Pane Integration Test', () => {
-  testMovePaneDirection('up');
+describe('Left Move Pane Integration Test', () => {
+  testMovePaneDirection('left');
 });

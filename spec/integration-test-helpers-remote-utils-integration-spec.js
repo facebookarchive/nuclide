@@ -13,13 +13,13 @@ import {
   activateAllPackages,
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
-} from '../../pkg/nuclide-integration-test-helpers';
+} from '../pkg/nuclide-integration-test-helpers';
 import {
   addRemoteProject,
   startNuclideServer,
   stopNuclideServer,
-} from '../../pkg/nuclide-integration-test-helpers';
-import {copyMercurialFixture} from '../../pkg/nuclide-integration-test-helpers';
+} from '../pkg/nuclide-integration-test-helpers';
+import {copyMercurialFixture} from '../pkg/nuclide-integration-test-helpers';
 import invariant from 'assert';
 
 describe('remote connection for testing', () => {

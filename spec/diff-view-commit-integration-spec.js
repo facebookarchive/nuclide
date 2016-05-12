@@ -15,10 +15,10 @@ import {
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
   setLocalProject,
-} from '../../pkg/nuclide-integration-test-helpers';
+} from '../pkg/nuclide-integration-test-helpers';
 import path from 'path';
 import fs from 'fs';
-import {triggerWatchmanHgChange} from '../lib/diff-view-utils';
+import {triggerWatchmanHgChange} from './utils/diff-view-utils';
 
 const NO_FILE_SELECTED_TITLE = 'No file selected...No file selected';
 

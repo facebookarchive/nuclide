@@ -15,10 +15,10 @@ import {
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
   setLocalProject,
-} from '../../pkg/nuclide-integration-test-helpers';
+} from '../pkg/nuclide-integration-test-helpers';
 import path from 'path';
 import invariant from 'assert';
-import {triggerWatchmanHgChange} from '../lib/diff-view-utils';
+import {triggerWatchmanHgChange} from './utils/diff-view-utils';
 
 describe('Diff View Toolbar Button Test', () => {
 

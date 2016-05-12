@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {runTest} from './lib/related-files-common';
+import {runTest} from './utils/related-files-common';
 
 describe('Remote Related Files Integration Test', () => {
   it('is able to switch between related files', () => {

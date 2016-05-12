@@ -13,7 +13,7 @@ import {
   activateAllPackages,
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
-} from '../../pkg/nuclide-integration-test-helpers';
+} from '../pkg/nuclide-integration-test-helpers';
 
 describe('activate/deactivate all packages', () => {
   it('activates and deactivates packages correctly and without hanging', () => {
