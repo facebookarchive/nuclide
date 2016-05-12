@@ -227,17 +227,23 @@ function addFileTreeCommands(commandName: string, diffOptions?: Object): void {
 
 function addActivePathCommands(commandName: string, diffOptions?: Object) {
   invariant(subscriptions);
-  const boundDiffActivePath = diffActivePath.bind(null, diffOptions);
+
+  function onTargetCommand(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    diffActivePath(diffOptions);
+  }
+
   subscriptions.add(atom.commands.add(
     'atom-workspace',
     commandName,
-    boundDiffActivePath,
+    onTargetCommand,
   ));
   // Listen for in-editor context menu item diff view open command.
   subscriptions.add(atom.commands.add(
     'atom-text-editor',
     commandName,
-    boundDiffActivePath,
+    onTargetCommand,
   ));
 }
 
