@@ -15,7 +15,10 @@ import {addTooltip} from '../../nuclide-atom-helpers';
 import classnames from 'classnames';
 
 type Props = {
-  percentage: ?number;
+  result: ?{
+    percentage: number;
+    providerName: string;
+  };
   pending: boolean;
   // true iff we are currently displaying uncovered regions in the editor.
   isActive: boolean;
@@ -33,8 +36,9 @@ export class StatusBarTileComponent extends React.Component {
   }
 
   render(): ?React.Element {
-    const percentage = this.props.percentage;
-    if (percentage != null) {
+    const result = this.props.result;
+    if (result != null) {
+      const percentage = result.percentage;
       const classes: string = classnames({
         'nuclide-type-coverage-status-bar-pending': this.props.pending,
         'nuclide-type-coverage-status-bar-ready': !this.props.pending,
@@ -45,15 +49,14 @@ export class StatusBarTileComponent extends React.Component {
         'nuclide-type-coverage-status-bar-active': this.props.isActive,
       });
       const formattedPercentage: string = `${Math.floor(percentage)}%`;
-      const titleString = `This file is ${formattedPercentage} covered by the type system.<br/>` +
-        'Click to toggle display of uncovered areas.';
+      const tooltipString = getTooltipString(formattedPercentage, result.providerName);
       return (
         <div
             style={{cursor: 'pointer'}}
             onClick={this.props.onClick}
             className={classes}
             ref={addTooltip({
-              title: titleString,
+              title: tooltipString,
               delay: 0,
               placement: 'top',
             })}>
@@ -64,4 +67,9 @@ export class StatusBarTileComponent extends React.Component {
       return null;
     }
   }
+}
+
+function getTooltipString(formattedPercentage: string, providerName: string): string {
+  return `This file is ${formattedPercentage} covered by ${providerName}.<br/>` +
+    'Click to toggle display of uncovered areas.';
 }

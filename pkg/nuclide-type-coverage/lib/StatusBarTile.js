@@ -27,7 +27,10 @@ type Props = {
 };
 
 type State = {
-  percentage: ?number;
+  result: ?{
+    percentage: number;
+    providerName: string;
+  };
   pending: boolean;
   isActive: boolean;
 };
@@ -46,7 +49,7 @@ export class StatusBarTile extends React.Component {
   constructor(props: Props) {
     super(props);
     this.state = {
-      percentage: null,
+      result: null,
       pending: false,
       isActive: false,
     };
@@ -63,7 +66,7 @@ export class StatusBarTile extends React.Component {
     invariant(this.subscription != null);
     this.subscription.unsubscribe();
     this.subscription = null;
-    this.setState({percentage: null});
+    this.setState({result: null});
   }
 
   _consumeResult(result: Result<CoverageProvider, ?CoverageResult>): void {
@@ -71,7 +74,7 @@ export class StatusBarTile extends React.Component {
       case 'not-text-editor':
       case 'no-provider':
       case 'provider-error':
-        this.setState({percentage: null});
+        this.setState({result: null});
         break;
       case 'pane-change':
       case 'edit':
@@ -81,7 +84,10 @@ export class StatusBarTile extends React.Component {
       case 'result':
         const coverageResult = result.result;
         this.setState({
-          percentage: coverageResult == null ? null : coverageResult.percentage,
+          result: coverageResult == null ? null : {
+            percentage: coverageResult.percentage,
+            providerName: result.provider.displayName,
+          },
           pending: false,
         });
         break;
