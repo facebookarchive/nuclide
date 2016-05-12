@@ -16,44 +16,26 @@ import temp from 'temp';
 import url from 'url';
 import {checkOutput} from '../../nuclide-commons';
 import {fileSearchForDirectory} from '../lib/FileSearch';
+import * as watchmanHelpers from '../../nuclide-watchman-helpers';
 
 temp.track();
 
-function aFileSearchShould(typename) {
+function aFileSearchShould(typename, dirPathFn) {
   describe(`A ${typename} folder`, () => {
     let dirPath;
-    let dirPathFn;
-    let search;
-    let deeperSearch;
-    let uriSearch;
 
-    if (typename === 'Mercurial') {
-      dirPathFn = hgTestFolder;
-    } else if (typename === 'Git') {
-      dirPathFn = gitTestFolder;
-    } else if (typename === 'Vanilla (No VCS)') {
-      dirPathFn = () => Promise.resolve(createTestFolder());
-    } else {
-      throw Error(`Unknown typename: ${typename}`);
-    }
+    // Don't create a real PathSearchUpdater that relies on watchman.
+    const mockPathSetUpdater: Object = {
+      startUpdatingPathSet: () => Promise.resolve({dispose: () => {}}),
+    };
 
     beforeEach(() => {
+      // Block Watchman usage by preventing client creation.
+      spyOn(watchmanHelpers, 'WatchmanClient').andCallFake(() => {
+        throw new Error();
+      });
       waitsForPromise(async () => {
-        // Don't create a real PathSearchUpdater that relies on watchman.
-        const mockPathSetUpdater: Object = {
-          startUpdatingPathSet: () => Promise.resolve({dispose: () => {}}),
-        };
-
-        invariant(dirPathFn);
         dirPath = await dirPathFn();
-        invariant(fileSearchForDirectory);
-        search = await fileSearchForDirectory(dirPath, mockPathSetUpdater);
-        deeperSearch =
-          await fileSearchForDirectory(path.join(dirPath, 'deeper'), mockPathSetUpdater);
-        uriSearch = await fileSearchForDirectory(
-          url.format({protocol: 'http', host: 'somehost.fb.com', pathname: dirPath}),
-          mockPathSetUpdater,
-        );
       });
     });
 
@@ -74,6 +56,13 @@ function aFileSearchShould(typename) {
     }
 
     describe('a FileSearch at the root of a project', () => {
+      let search;
+      beforeEach(() => {
+        waitsForPromise(async () => {
+          search = await fileSearchForDirectory(dirPath, mockPathSetUpdater);
+        });
+      });
+
       it('should return an easy match in the root directory', () => {
         waitsForPromise(async () => {
           invariant(search);
@@ -104,6 +93,14 @@ function aFileSearchShould(typename) {
     });
 
     describe('a subdirectory FileSearch', () => {
+      let deeperSearch;
+      beforeEach(() => {
+        waitsForPromise(async () => {
+          deeperSearch =
+            await fileSearchForDirectory(path.join(dirPath, 'deeper'), mockPathSetUpdater);
+        });
+      });
+
       it('should return results relative to the deeper path', () => {
         waitsForPromise(async () => {
           invariant(deeperSearch);
@@ -128,6 +125,16 @@ function aFileSearchShould(typename) {
     });
 
     describe('a FileSearch with a hostname', () => {
+      let uriSearch;
+      beforeEach(() => {
+        waitsForPromise(async () => {
+          uriSearch = await fileSearchForDirectory(
+            url.format({protocol: 'http', host: 'somehost.fb.com', pathname: dirPath}),
+            mockPathSetUpdater,
+          );
+        });
+      });
+
       it('should return an easy match in the root directory', () => {
         waitsForPromise(async () => {
           invariant(uriSearch);
@@ -192,6 +199,6 @@ async function gitTestFolder(): Promise<string> {
   return folder;
 }
 
-aFileSearchShould('Mercurial');
-aFileSearchShould('Git');
-aFileSearchShould('Vanilla (No VCS)');
+aFileSearchShould('Mercurial', hgTestFolder);
+aFileSearchShould('Git', gitTestFolder);
+aFileSearchShould('Vanilla (No VCS)', createTestFolder);

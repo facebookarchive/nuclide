@@ -14,10 +14,11 @@ import split from 'split';
 
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 import {promises} from '../../nuclide-commons';
+import {getLogger} from '../../nuclide-logging';
 
 // Occasionally, the watchman client may hang while waiting for a query.
 // Fall back to other methods after the timeout expires.
-const WATCHMAN_TIMEOUT_MS = 20000;
+const WATCHMAN_TIMEOUT_MS = 90000;
 
 function getFilesFromCommand(
   command: string,
@@ -93,7 +94,11 @@ function getUntrackedHgFiles(localDirectory: string): Promise<Array<string>> {
  *   are 'true'. If localDirectory is not within an Hg repo, the Promise rejects.
  */
 function getFilesFromHg(localDirectory: string): Promise<Array<string>> {
-  return Promise.all([getTrackedHgFiles(localDirectory), getUntrackedHgFiles(localDirectory)]).then(
+  return Promise.all([
+    getTrackedHgFiles(localDirectory),
+    // It's not a dealbreaker if untracked files fail to show up.
+    getUntrackedHgFiles(localDirectory).catch(() => []),
+  ]).then(
     returnedFiles => {
       const [trackedFiles, untrackedFiles] = returnedFiles;
       return trackedFiles.concat(untrackedFiles);
@@ -147,6 +152,9 @@ async function getFilesFromWatchman(localDirectory: string): Promise<Array<strin
       watchmanClient.listFiles(localDirectory),
       promises.awaitMilliSeconds(WATCHMAN_TIMEOUT_MS).then(() => Promise.reject()),
     ]);
+  } catch (e) {
+    getLogger().info('getFilesFromWatchman failed, falling back to hg/git/find', e);
+    throw e;
   } finally {
     watchmanClient.dispose();
   }

@@ -208,8 +208,6 @@ class WatchmanClient {
       expression: ['type', 'f'], // all files
       fields: ['name'],          // names only
       relative_root: relative_path,
-      // Do not wait for Watchman to sync. We can subscribe to updates for this.
-      sync_timeout: 0,
     });
     return result.files;
   }
