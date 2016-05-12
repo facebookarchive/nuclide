@@ -16,6 +16,7 @@ import type {
 import type {HyperclickProvider} from '../../hyperclick/lib/types';
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
+import type {DefinitionProvider} from '../../nuclide-definition-service';
 
 import CodeHighlightProvider from './CodeHighlightProvider';
 import {CompositeDisposable} from 'atom';
@@ -28,6 +29,7 @@ import {
 import {TypeCoverageProvider} from './TypeCoverageProvider';
 import {OutlineViewProvider} from './OutlineViewProvider';
 import {onDidChange} from '../../nuclide-feature-config';
+import {HackDefinitionProvider} from './HackDefinitionProvider';
 import invariant from 'assert';
 
 const HACK_GRAMMARS_STRING = HACK_GRAMMARS.join(', ');
@@ -38,6 +40,7 @@ let hackDiagnosticsProvider;
 let busySignalProvider;
 let hackTypeCoverageProviderSubscription = null;
 let coverageProvider = null;
+let definitionProvider: ?DefinitionProvider = null;
 
 export function activate() {
   const {getCachedHackLanguageForUri} = require('./HackLanguage');
@@ -221,4 +224,11 @@ function disableCoverageProvider(): void {
 
 function toggleTypeCoverage(): void {
   setShowTypeCoverage(!getShowTypeCoverage());
+}
+
+export function provideDefinitions(): DefinitionProvider {
+  if (definitionProvider == null) {
+    definitionProvider = new HackDefinitionProvider();
+  }
+  return definitionProvider;
 }
