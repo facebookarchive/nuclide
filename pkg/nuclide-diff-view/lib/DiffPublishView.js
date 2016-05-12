@@ -93,7 +93,10 @@ class DiffPublishView extends React.Component {
   }
 
   componentDidUpdate(prevProps: Props): void {
-    if (this.props.message !== prevProps.message) {
+    if (
+      this.props.message !== prevProps.message ||
+      this.props.publishModeState !== prevProps.publishModeState
+    ) {
       this._setPublishText();
     }
   }
@@ -119,15 +122,15 @@ class DiffPublishView extends React.Component {
 
   _onClickPublish(): void {
     this._textBuffer.setText('');
-    this.props.diffModel.publishDiff(this._getPublishMessage());
+    this.props.diffModel.publishDiff(this._getPublishMessage() || '');
   }
 
-  _getPublishMessage(): string {
+  _getPublishMessage(): ?string {
     const messageEditor = this.refs['message'];
     if (messageEditor != null) {
       return messageEditor.getTextBuffer().getText();
     } else {
-      return this.props.message || '';
+      return this.props.message;
     }
   }
 

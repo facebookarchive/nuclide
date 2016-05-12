@@ -429,7 +429,7 @@ class DiffViewModel {
     this._loadModeState(true);
   }
 
-  setPublishMessage(publishMessage: string): void {
+  setPublishMessage(publishMessage: ?string): void {
     this._setState({
       ...this._state,
       publishMessage,
@@ -1104,7 +1104,7 @@ class DiffViewModel {
       headRevision: null,
     });
     const {headRevision, phabricatorRevision} = await this._getActiveHeadRevisionDetails();
-    if (publishMessage == null) {
+    if (publishMessage == null || publishMessage.length === 0) {
       publishMessage = phabricatorRevision != null
         ? getRevisionUpdateMessage(phabricatorRevision)
         : headRevision.description;
