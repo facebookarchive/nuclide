@@ -10,9 +10,14 @@
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
+export type UncoveredRegion = {
+  range: atom$Range;
+  message?: string;
+};
+
 export type CoverageResult = {
   percentage: number;
-  uncoveredRanges: Array<atom$Range>;
+  uncoveredRegions: Array<UncoveredRegion>;
 };
 
 export interface CoverageProvider {

@@ -32,11 +32,13 @@ function flowCoverageToCoverage(flowCoverage: ?FlowCoverageResult): ?CoverageRes
 
   return {
     percentage: flowCoverage.percentage,
-    uncoveredRanges: flowCoverage.uncoveredRanges.map(
-      flowRange => new Range(
-        [flowRange.start.line, flowRange.start.column],
-        [flowRange.end.line, flowRange.end.column],
-      )
+    uncoveredRegions: flowCoverage.uncoveredRanges.map(
+      flowRange => ({
+        range: new Range(
+          [flowRange.start.line, flowRange.start.column],
+          [flowRange.end.line, flowRange.end.column],
+        ),
+      })
     ),
   };
 }

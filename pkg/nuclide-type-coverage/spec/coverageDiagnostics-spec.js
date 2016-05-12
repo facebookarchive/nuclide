@@ -62,8 +62,8 @@ describe('diagnosticProviderForResultStream', () => {
 
     sampleResult = {
       percentage: 90,
-      uncoveredRanges: [
-        new Range([1, 2], [3, 4]),
+      uncoveredRegions: [
+        {range: new Range([1, 2], [3, 4])},
       ],
     };
 
@@ -97,7 +97,7 @@ describe('diagnosticProviderForResultStream', () => {
         providerName: 'Type Coverage',
         type: 'Warning',
         filePath: 'foo',
-        range: sampleResult.uncoveredRanges[0],
+        range: sampleResult.uncoveredRegions[0].range,
         text: 'Not covered by Foo',
       });
       expect(invalidations.length).toBe(0);
