@@ -1808,9 +1808,9 @@
       "resolved": "https://registry.npmjs.org/pluralize/-/pluralize-1.2.1.tgz"
     },
     "pre-binding": {
-      "version": "1.0.0",
-      "from": "pre-binding@1.0.0",
-      "resolved": "https://registry.npmjs.org/pre-binding/-/pre-binding-1.0.0.tgz"
+      "version": "1.1.0",
+      "from": "pre-binding@1.1.0",
+      "resolved": "https://registry.npmjs.org/pre-binding/-/pre-binding-1.1.0.tgz"
     },
     "prelude-ls": {
       "version": "1.1.2",
