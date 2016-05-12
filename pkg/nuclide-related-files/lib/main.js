@@ -18,12 +18,13 @@ import RelatedFileFinder from './RelatedFileFinder';
 let jumpToRelatedFile: ?JumpToRelatedFile = null;
 let subscriptions: ?CompositeDisposable = null;
 
-// Only expose a context menu for C-family files.
-const C_GRAMMARS = new Set([
+// Only expose a context menu for files in languages that have header files.
+const GRAMMARS_WITH_HEADER_FILES = new Set([
   'source.c',
   'source.cpp',
   'source.objc',
   'source.objcpp',
+  'source.ocaml',
 ]);
 
 export function activate() {
@@ -43,7 +44,8 @@ export function activate() {
         command: 'nuclide-related-files:jump-to-next-related-file',
         shouldDisplay() {
           const editor = atom.workspace.getActiveTextEditor();
-          return editor != null && C_GRAMMARS.has(editor.getGrammar().scopeName);
+          return editor != null &&
+            GRAMMARS_WITH_HEADER_FILES.has(editor.getGrammar().scopeName);
         },
       },
       {type: 'separator'},
