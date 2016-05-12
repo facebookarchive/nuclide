@@ -17,7 +17,6 @@ import {
   observeActiveEditorsDebounced,
   editorChangesDebounced,
 } from '../lib/atom-event-debounce';
-import {activatePaneItem} from '../lib/workspace';
 
 import {event as commonsEvent} from '../../nuclide-commons';
 const {observableFromSubscribeFunction} = commonsEvent;
@@ -29,6 +28,7 @@ const DEBOUNCE_INTERVAL = 10;
 const SLEEP_INTERVAL = 15;
 
 describe('pane item change events', () => {
+  let pane: atom$Pane = (null: any);
   let editor1: atom$TextEditor = (null: any);
   let editor2: atom$TextEditor = (null: any);
   let editor3: atom$TextEditor = (null: any);
@@ -45,7 +45,7 @@ describe('pane item change events', () => {
       editor2 = await atom.workspace.open();
       editor1 = await atom.workspace.open();
 
-      const pane = atom.workspace.getActivePane();
+      pane = atom.workspace.getActivePane();
       nonEditor = {
         // Ordinarily we would have to provide an element or register a view, but since we are just
         // testing the model here and not actually rendering anything Atom doesn't complain. If
@@ -53,8 +53,7 @@ describe('pane item change events', () => {
         getTitle() { return 'foo'; },
       };
       pane.addItem(nonEditor);
-
-      activatePaneItem(editor1);
+      pane.activateItem(editor1);
     });
   });
 
@@ -88,8 +87,8 @@ describe('pane item change events', () => {
 
         await sleep(SLEEP_INTERVAL);
 
-        activatePaneItem(editor2);
-        activatePaneItem(editor3);
+        pane.activateItem(editor2);
+        pane.activateItem(editor3);
 
         expect(await itemsPromise).toEqual([editor3]);
       });
@@ -123,8 +122,8 @@ describe('pane item change events', () => {
 
         await sleep(SLEEP_INTERVAL);
 
-        activatePaneItem(editor2);
-        activatePaneItem(editor3);
+        pane.activateItem(editor2);
+        pane.activateItem(editor3);
 
         expect(await itemsPromise).toEqual([editor1, editor3]);
       });
@@ -145,9 +144,10 @@ describe('pane item change events', () => {
           .toPromise();
 
         await sleep(SLEEP_INTERVAL);
-        activatePaneItem(nonEditor);
+        pane.activateItem(nonEditor);
+
         await sleep(SLEEP_INTERVAL);
-        activatePaneItem(editor2);
+        pane.activateItem(editor2);
 
         expect(await itemsPromise).toEqual([editor1, null, editor2]);
       });

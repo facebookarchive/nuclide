@@ -88,14 +88,6 @@ module.exports = {
     return requireFromCache('./go-to-location').observeNavigatingEditors;
   },
 
-  get getPathToWorkspaceState() {
-    return requireFromCache('./workspace').getPathToWorkspaceState;
-  },
-
-  get activatePaneItem() {
-    return requireFromCache('./workspace').activatePaneItem;
-  },
-
   get setPositionAndScroll() {
     return requireFromCache('./text-editor').setPositionAndScroll;
   },
