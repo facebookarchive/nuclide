@@ -13,13 +13,12 @@ import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
 import type {ConfigEntry, Transport} from './index';
 import type {Type} from './types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {TypeRegistry} from './TypeRegistry';
 
 import invariant from 'assert';
 import {EventEmitter} from 'events';
 import {Observable} from 'rxjs';
-
-import {TypeRegistry} from './TypeRegistry';
-import {getProxy, getDefinitions} from './main';
+import {ServiceRegistry} from './ServiceRegistry';
 import {ObjectRegistry} from './ObjectRegistry';
 import {getPath, createRemoteUri} from '../../nuclide-remote-uri';
 
@@ -34,8 +33,7 @@ export class ClientComponent<TransportType: Transport> {
   _rpcRequestId: number;
   _emitter: EventEmitter;
   _transport: TransportType;
-
-  _typeRegistry: TypeRegistry;
+  _serviceRegistry: ServiceRegistry;
   _objectRegistry: ObjectRegistry;
 
   constructor(
@@ -47,14 +45,8 @@ export class ClientComponent<TransportType: Transport> {
     this._emitter = new EventEmitter();
     this._transport = transport;
     this._rpcRequestId = 1;
-
-    this._typeRegistry = new TypeRegistry();
-    this._objectRegistry = new ObjectRegistry('client');
-
-    // Register NuclideUri type conversions.
-    this._typeRegistry.registerType('NuclideUri', marshalUri, unmarshalUri);
-
-    this.addServices(services);
+    this._serviceRegistry = new ServiceRegistry(marshalUri, unmarshalUri, services);
+    this._objectRegistry = new ObjectRegistry('client', this._serviceRegistry, this);
     this._transport.onMessage(message => this._handleMessage(message));
   }
 
@@ -92,41 +84,15 @@ export class ClientComponent<TransportType: Transport> {
   }
 
   addService(service: ConfigEntry): void {
-    logger.debug(`Registering 3.0 service ${service.name}...`);
-    try {
-      const defs = getDefinitions(service.definition);
-      const proxy = getProxy(service.name, service.definition, this);
-      this._objectRegistry.addService(service.name, proxy);
-      defs.forEach(definition => {
-        const name = definition.name;
-        switch (definition.kind) {
-          case 'alias':
-            logger.debug(`Registering type alias ${name}...`);
-            if (definition.definition != null) {
-              this._typeRegistry.registerAlias(name, definition.definition);
-            }
-            break;
-          case 'interface':
-            logger.debug(`Registering interface ${name}.`);
-            this._typeRegistry.registerType(
-              name,
-              (object, context: ObjectRegistry) => context.marshal(name, object),
-              (objectId, context: ObjectRegistry) =>
-                context.unmarshal(objectId, context.getService(service.name)[name]));
-            break;
-        }
-      });
-    } catch (e) {
-      logger.error(`Failed to load service ${service.name}. Stack Trace:\n${e.stack}`);
-    }
+    this._serviceRegistry.addService(service);
   }
 
   // Delegate marshalling to the type registry.
   marshal(value: any, type: Type): any {
-    return this._typeRegistry.marshal(this._objectRegistry, value, type);
+    return this.getTypeRegistry().marshal(this._objectRegistry, value, type);
   }
   unmarshal(value: any, type: Type): any {
-    return this._typeRegistry.unmarshal(this._objectRegistry, value, type);
+    return this.getTypeRegistry().unmarshal(this._objectRegistry, value, type);
   }
 
   /**
@@ -195,7 +161,7 @@ export class ClientComponent<TransportType: Transport> {
     argTypes: Array<Type>
   ): void {
     const idPromise = (async () => {
-      const marshalledArgs = await this._typeRegistry.marshalArguments(
+      const marshalledArgs = await this.getTypeRegistry().marshalArguments(
         this._objectRegistry, unmarshalledArgs, argTypes);
       const message: CreateRemoteObjectMessage = {
         protocol: SERVICE_FRAMEWORK3_CHANNEL,
@@ -325,6 +291,10 @@ export class ClientComponent<TransportType: Transport> {
 
   _generateRequestId(): number {
     return this._rpcRequestId++;
+  }
+
+  getTypeRegistry(): TypeRegistry {
+    return this._serviceRegistry.getTypeRegistry();
   }
 
   close(): void {

@@ -29,7 +29,7 @@ export type FunctionImplementation = {localImplementation: Function; type: Funct
 export type ClassDefinition = {localImplementation: any; definition: InterfaceDefinition};
 export type ServiceDefinition = {
   name: string;
-  factory: ProxyFactory;
+  factory: ProxyFactory; // Maps from RpcContext to proxy
 };
 
 export class ServiceRegistry {

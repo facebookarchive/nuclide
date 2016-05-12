@@ -11,6 +11,8 @@
 
 import invariant from 'assert';
 import {getLogger} from '../../nuclide-logging';
+import type {ServiceRegistry} from './ServiceRegistry';
+import type {RpcContext} from './main';
 
 const logger = getLogger();
 
@@ -46,9 +48,15 @@ export class ObjectRegistry {
   // null means the proxy has been disposed.
   _idsByProxy: Map<Object, ?Promise<number>>;
   // Maps service name to proxy
+  _serviceRegistry: ServiceRegistry;
   _services: Map<string, Object>;
+  _context: RpcContext;
 
-  constructor(kind: RegistryKind) {
+  constructor(
+    kind: RegistryKind,
+    serviceRegistry: ServiceRegistry,
+    context: RpcContext
+  ) {
     this._delta = (kind === 'server') ? 1 : -1;
     this._nextObjectId = this._delta;
     this._registrationsById = new Map();
@@ -56,21 +64,21 @@ export class ObjectRegistry {
     this._subscriptions = new Map();
     this._proxiesById = new Map();
     this._idsByProxy = new Map();
+    this._serviceRegistry = serviceRegistry;
     this._services = new Map();
-  }
-
-  addService(serviceName: string, service: Object): void {
-    invariant(!this.hasService(serviceName), `Duplicate service ${serviceName}`);
-    this._services.set(serviceName, service);
+    this._context = context;
   }
 
   hasService(serviceName: string): boolean {
-    return this._services.has(serviceName);
+    return this._serviceRegistry.hasService(serviceName);
   }
 
   getService(serviceName: string): Object {
-    const service = this._services.get(serviceName);
-    invariant(service != null);
+    let service = this._services.get(serviceName);
+    if (service == null) {
+      service = this._serviceRegistry.getService(serviceName).factory(this._context);
+      this._services.set(serviceName, service);
+    }
     return service;
   }
 
