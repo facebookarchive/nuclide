@@ -98,7 +98,7 @@ describe('diagnosticProviderForResultStream', () => {
         type: 'Warning',
         filePath: 'foo',
         range: sampleResult.uncoveredRanges[0],
-        text: 'Not covered by the type system',
+        text: 'Not covered by Foo',
       });
       expect(invalidations.length).toBe(0);
     });

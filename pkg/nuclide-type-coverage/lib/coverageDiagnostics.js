@@ -73,8 +73,10 @@ function diagnosticsForResult(
   const editorPath = result.editor.getPath();
   invariant(editorPath != null);
 
+  const providerName = result.provider.displayName;
+
   const diagnostics = value.uncoveredRanges.map(
-    range => uncoveredRangeToDiagnostic(range, editorPath)
+    range => uncoveredRangeToDiagnostic(range, editorPath, providerName)
   );
 
   return {
@@ -82,13 +84,17 @@ function diagnosticsForResult(
   };
 }
 
-function uncoveredRangeToDiagnostic(range: atom$Range, path: NuclideUri): FileDiagnosticMessage {
+function uncoveredRangeToDiagnostic(
+  range: atom$Range,
+  path: NuclideUri,
+  providerName: string,
+): FileDiagnosticMessage {
   return {
     scope: 'file',
     providerName: 'Type Coverage',
     type: 'Warning',
     filePath: path,
     range,
-    text: 'Not covered by the type system',
+    text: `Not covered by ${providerName}`,
   };
 }
