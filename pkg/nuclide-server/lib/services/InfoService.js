@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {ClientConnection} from '../../../nuclide-rpc';
+import type {ClientComponent} from '../../../nuclide-rpc';
+import type {QueuedTransport} from '../QueuedTransport';
 
 import {getVersion} from '../../../nuclide-version';
 import NuclideServer from '../NuclideServer';
@@ -22,7 +23,7 @@ export async function getServerVersion(): Promise<string> {
 // However, we can't close the connection right away, as otherwise the response never gets sent!
 // Add a small delay to allow the return message to go through.
 export async function closeConnection(shutdownServer: boolean): Promise<void> {
-  const client: ClientConnection = (this: any);
+  const client: ClientComponent<QueuedTransport> = (this: any);
   setTimeout(() => {
     NuclideServer.closeConnection(client);
     if (shutdownServer) {

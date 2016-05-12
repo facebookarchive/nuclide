@@ -20,7 +20,6 @@ import ServiceLogger from './ServiceLogger';
 import {
   LoopbackTransports,
   ServiceRegistry,
-  ClientConnection,
   ClientComponent,
 } from '../../nuclide-rpc';
 
@@ -36,7 +35,7 @@ function createLocalRpcClient(): ClientComponent<Transport> {
   const localTransports = new LoopbackTransports();
   const serviceRegistry = ServiceRegistry.createRemote(newServices);
   const localClientConnection
-    = new ClientConnection('server', serviceRegistry, localTransports.serverTransport);
+    = new ClientComponent('server', serviceRegistry, localTransports.serverTransport);
   invariant(localClientConnection != null); // silence lint...
   return ClientComponent.createLocal(localTransports.clientTransport, newServices);
 }

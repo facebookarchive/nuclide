@@ -13,18 +13,17 @@ import type {ConfigEntry, Transport} from '../lib/index';
 import {LoopbackTransports} from '../lib/LoopbackTransports';
 import {ClientComponent} from '../lib/ClientComponent';
 import {ServiceRegistry} from '../lib/ServiceRegistry';
-import {ClientConnection} from '../lib/ClientConnection';
 
 export class ServiceTester {
   _serviceRegistry: ServiceRegistry;
   _client: ClientComponent<Transport>;
-  _clientConnection: ClientConnection<Transport>;
+  _clientConnection: ClientComponent<Transport>;
   _port: number;
 
   async start(customServices: Array<ConfigEntry>): Promise<void> {
     const transports = new LoopbackTransports();
     this._serviceRegistry = ServiceRegistry.createRemote(customServices);
-    this._clientConnection = new ClientConnection(
+    this._clientConnection = new ClientComponent(
       'server', this._serviceRegistry, transports.serverTransport);
 
     const port = 42;

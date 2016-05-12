@@ -9,15 +9,16 @@
  * the root directory of this source tree.
  */
 
+import type {ClientComponent} from '../../nuclide-rpc';
+
 import NuclideServer from '../lib/NuclideServer';
 import {loadServicesConfig} from '../lib/services';
 import {NuclideSocket} from '../lib/NuclideSocket';
-import {ClientConnection} from '../../nuclide-rpc';
 import invariant from 'assert';
 
 let server: NuclideServer;
 let socket: NuclideSocket;
-let serverSocketClient: ClientConnection;
+let serverSocketClient: ClientComponent;
 
 xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-disabled-tests
   beforeEach(() => {

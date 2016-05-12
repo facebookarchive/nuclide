@@ -11,7 +11,6 @@
 
 export {ServiceRegistry} from './ServiceRegistry';
 export {ClientComponent} from './ClientComponent';
-export {ClientConnection} from './ClientConnection';
 export {LoopbackTransports} from './LoopbackTransports';
 
 export type ConfigEntry = {
