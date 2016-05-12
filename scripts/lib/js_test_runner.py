@@ -136,7 +136,8 @@ def run_test(
     stdout = []
     for line in iter(proc.stdout.readline, ''):
         # line is a bytes string literal in Python 3.
-        logging.info('[%s %s]: %s', test_cmd[0], name, line.rstrip().decode('utf-8'))
+        if not is_log_noise(line):
+            logging.info('[%s %s]: %s', test_cmd[0], name, line.rstrip().decode('utf-8'))
         stdout.append(line)
     proc.wait()
 
@@ -169,3 +170,16 @@ def is_retryable_error(output):
         r'Atom\.app/atom:\s+line 117:\s+\d+\s+Bus error: 10',
     ]
     return any(re.search(error, output) for error in errors)
+
+
+def is_log_noise(line):
+    patterns = [
+        # Confirmed in Atom 1.7.3:
+        r'^\[\d+:\d+/\d+:WARNING:resource_bundle\.cc\(503\)\] '
+        r'locale resources are not loaded$',
+
+        # Confirmed in Atom 1.7.3:
+        r'^\[\d+:\d+/\d+:WARNING:resource_bundle\.cc\(305\)\] '
+        r'locale_file_path\.empty\(\) for locale English$',
+    ]
+    return any(re.search(pattern, line) for pattern in patterns)
