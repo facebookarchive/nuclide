@@ -50,6 +50,9 @@ export type Result<V> = {
   result: V;
   // The editor that the result was computed from
   editor: atom$TextEditor;
+  // The provider that computed the result
+  // TODO Use a type paramater for this type
+  provider: Provider;
 };
 
 export type ResultFunction<T, V> = (provider: T, editor: atom$TextEditor) => Promise<V>;
@@ -176,6 +179,7 @@ export class ActiveEditorBasedService<T: Provider, V> {
       return {
         kind: 'result',
         result: await this._resultFunction(provider, editor),
+        provider,
         editor,
       };
     } catch (e) {

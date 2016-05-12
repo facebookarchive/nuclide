@@ -9,8 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {Config, EventSources, ResultFunction} from '..';
+import type {Config, EventSources, ResultFunction, Result} from '..';
 
+import invariant from 'assert';
 import {Subject} from 'rxjs';
 
 import {ActiveEditorBasedService} from '..';
@@ -36,6 +37,7 @@ describe('ActiveEditorBasedService', () => {
   let editor2: atom$TextEditor = (null: any);
 
   let resultingEventsPromise: Promise<Array<string>> = (null: any);
+  let fullEventsPromise: Promise<Array<Result<void>>> = (null: any);
 
   let shouldProviderError: boolean = (null: any);
 
@@ -46,10 +48,10 @@ describe('ActiveEditorBasedService', () => {
       eventSources,
     );
 
-    resultingEventsPromise = activeEditorBasedService.getResultsStream()
-      .map(result => result.kind)
+    fullEventsPromise = activeEditorBasedService.getResultsStream()
       .toArray()
       .toPromise();
+    resultingEventsPromise = fullEventsPromise.then(arr => arr.map(result => result.kind));
   }
 
   // This doesn't happen in normal use but it's useful to be able to truncate the stream for
@@ -87,11 +89,13 @@ describe('ActiveEditorBasedService', () => {
   });
 
   describe('when there is a provider', () => {
+    let provider: TestProvider = (null: any);
     beforeEach(() => {
-      activeEditorBasedService.consumeProvider({
+      provider = {
         priority: 10,
         grammarScopes: ['text.plain.null-grammar'],
-      });
+      };
+      activeEditorBasedService.consumeProvider(provider);
     });
 
     it('should create correct event stream during normal use', () => {
@@ -118,6 +122,12 @@ describe('ActiveEditorBasedService', () => {
           'pane-change',
           'result',
         ]);
+
+        const fullEvents = await fullEventsPromise;
+        const firstResult = fullEvents[2];
+        invariant(firstResult.kind === 'result');
+        expect(firstResult.editor).toBe(editor1);
+        expect(firstResult.provider).toBe(provider);
       });
     });
 
