@@ -294,7 +294,7 @@ export class FlowRoot {
     const totalCount = allEntries.length;
     const coveredCount = totalCount - uncoveredCount;
     return {
-      percentage: coveredCount / totalCount * 100,
+      percentage: totalCount === 0 ? 100 : coveredCount / totalCount * 100,
       uncoveredRanges,
     };
   }
