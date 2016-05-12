@@ -100,6 +100,10 @@ type JasmineEnvironment = {
     fail(message: string): void;
   };
   defaultTimeoutInterval: number;
+  afterEach: afterEach;
+  beforeEach: beforeEach;
+  describe: describe;
+  it: it;
 };
 
 type JasmineSpec = {

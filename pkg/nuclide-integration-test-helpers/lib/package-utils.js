@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../nuclide-feature-config';
 import path from 'path';
 import {__testUseOnly_removeFeature} from '../../../lib/main';
 
@@ -44,12 +43,11 @@ export async function activateAllPackages(): Promise<Array<string>> {
     return (isLanguagePackage || inWhitelist) && !isActivationDeferred;
   });
 
-  // Ensure 3rd-party packages are not installed via the 'atom-package-deps' package when the
-  // 'nuclide' package is activated. It makes network requests that never return in a test env.
-  featureConfig.set('installRecommendedPackages', false);
-
   // Include the path to the nuclide package.
   packageNames.push(path.dirname(require.resolve('../../../package.json')));
+  // Include the path to the tool-bar package
+  packageNames.push(path.join(String(process.env.ATOM_HOME), 'packages/tool-bar'));
+
   await Promise.all(packageNames.map(pack => atom.packages.activatePackage(pack)));
   return atom.packages.getActivePackages().map(pack => pack.name);
 }

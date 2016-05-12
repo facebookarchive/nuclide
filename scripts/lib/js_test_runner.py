@@ -10,6 +10,9 @@ import os
 import re
 import subprocess
 import time
+from datetime import datetime
+
+import utils
 
 MAX_WORKERS = max(1, multiprocessing.cpu_count() - 1)
 
@@ -31,14 +34,18 @@ class JsTestRunner(object):
         self._continue_on_errors = continue_on_errors
 
     def run_integration_tests(self):
-        nuclide_dir = self._package_manager.get_nuclide_path()
+        self.install_third_party_packages()
 
+        nuclide_dir = self._package_manager.get_nuclide_path()
         spec_files = [
             os.path.join(root, f)
             for root, _, files in os.walk(os.path.join(nuclide_dir, 'spec'))
             for f in files
             if f.endswith('-spec.js')
         ]
+
+        logging.info('Running %s integration tests...', len(spec_files))
+        start = datetime.now()
 
         # Integration tests only run serially:
         for spec_file in spec_files:
@@ -49,6 +56,10 @@ class JsTestRunner(object):
                 retryable=True,
                 continue_on_errors=self._continue_on_errors
             )
+
+        end = datetime.now()
+        logging.info('Integration tests took %s seconds.', (end - start).seconds)
+
 
     def run_unit_tests(self):
         for package_name in self._packages_to_test:
@@ -110,6 +121,18 @@ class JsTestRunner(object):
             logging.info('Running %s tests serially...', len(serial_tests))
             for test_args in serial_tests:
                 run_test(*test_args)
+
+    @utils.retryable(num_retries=2, sleep_time=10, exponential=True)
+    def install_third_party_packages(self):
+        # TODO(asuarez): Figure out a way to better declare the 3rd-party
+        # packages that are absolutely needed during integration tests.
+        install_cmd = ['apm', 'install', 'tool-bar']
+        logging.info('Running %s...', ' '.join(install_cmd))
+        start = datetime.now()
+        nuclide_dir = self._package_manager.get_nuclide_path()
+        subprocess.check_call(install_cmd, cwd=nuclide_dir)
+        end = datetime.now()
+        logging.info('%s took %s seconds.', ' '.join(install_cmd), (end - start).seconds)
 
 
 def run_test(
