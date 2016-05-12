@@ -13,7 +13,7 @@ import type {Observable} from 'rxjs';
 
 import type {Result} from '../../nuclide-active-editor-based-service';
 
-import type {CoverageResult} from './types';
+import type {CoverageResult, CoverageProvider} from './types';
 
 import invariant from 'assert';
 import {React} from 'react-for-atom';
@@ -21,7 +21,7 @@ import {React} from 'react-for-atom';
 import {StatusBarTileComponent} from './StatusBarTileComponent';
 
 type Props = {
-  results: Observable<Result<?CoverageResult>>;
+  results: Observable<Result<CoverageProvider, ?CoverageResult>>;
   isActive: Observable<boolean>;
   onClick: Function;
 };
@@ -66,7 +66,7 @@ export class StatusBarTile extends React.Component {
     this.setState({percentage: null});
   }
 
-  _consumeResult(result: Result<?CoverageResult>): void {
+  _consumeResult(result: Result<CoverageProvider, ?CoverageResult>): void {
     switch (result.kind) {
       case 'not-text-editor':
       case 'no-provider':

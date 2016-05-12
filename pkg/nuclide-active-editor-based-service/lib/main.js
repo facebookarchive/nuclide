@@ -30,7 +30,7 @@ export type Provider = {
   updateOnEdit?: boolean;
 };
 
-export type Result<V> = {
+export type Result<T, V> = {
   kind: 'not-text-editor';
 } | {
   kind: 'no-provider';
@@ -52,7 +52,7 @@ export type Result<V> = {
   editor: atom$TextEditor;
   // The provider that computed the result
   // TODO Use a type paramater for this type
-  provider: Provider;
+  provider: T;
 };
 
 export type ResultFunction<T, V> = (provider: T, editor: atom$TextEditor) => Promise<V>;
@@ -89,7 +89,7 @@ function getConcreteConfig(config: Config): ConcreteConfig {
 export class ActiveEditorBasedService<T: Provider, V> {
   _resultFunction: ResultFunction<T, V>;
   _providerRegistry: ProviderRegistry<T>;
-  _resultsStream: Observable<Result<V>>;
+  _resultsStream: Observable<Result<T, V>>;
   _config: ConcreteConfig;
 
   constructor(
@@ -110,11 +110,11 @@ export class ActiveEditorBasedService<T: Provider, V> {
     });
   }
 
-  getResultsStream(): Observable<Result<V>> {
+  getResultsStream(): Observable<Result<T, V>> {
     return this._resultsStream;
   }
 
-  _createResultsStream(eventSources: EventSources): Observable<Result<V>> {
+  _createResultsStream(eventSources: EventSources): Observable<Result<T, V>> {
     const results = eventSources.activeEditors.switchMap(editorArg => {
       // Necessary so the type refinement holds in the callback later
       const editor = editorArg;
@@ -136,7 +136,7 @@ export class ActiveEditorBasedService<T: Provider, V> {
     return cacheWhileSubscribed(results);
   }
 
-  _resultsForEditor(editor: atom$TextEditor, eventSources: EventSources): Observable<Result<V>> {
+  _resultsForEditor(editor: atom$TextEditor, eventSources: EventSources): Observable<Result<T, V>> {
     // It's possible that the active provider for an editor changes over time.
     // Thus, we have to subscribe to both edits and saves.
     return Observable.merge(
@@ -168,7 +168,7 @@ export class ActiveEditorBasedService<T: Provider, V> {
     return this._providerRegistry.getProviderForEditor(editor);
   }
 
-  async _getResultForEditor(provider: ?T, editor: atom$TextEditor): Promise<Result<V>> {
+  async _getResultForEditor(provider: ?T, editor: atom$TextEditor): Promise<Result<T, V>> {
     if (provider == null) {
       return {
         kind: 'no-provider',

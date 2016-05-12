@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Outline, OutlineForUi, OutlineTree, OutlineTreeForUi} from '..';
+import type {Outline, OutlineForUi, OutlineTree, OutlineTreeForUi, OutlineProvider} from '..';
 import type {ActiveEditorBasedService, Result} from '../../nuclide-active-editor-based-service';
 
 import {Observable} from 'rxjs';
@@ -24,12 +24,12 @@ export function createOutlines(editorService: ActiveEditorBasedService): Observa
 }
 
 function outlinesForProviderResults(
-  providerResults: Observable<Result<?Outline>>,
+  providerResults: Observable<Result<OutlineProvider, ?Outline>>,
 ): Observable<OutlineForUi> {
   return providerResults.switchMap(uiOutlinesForResult);
 }
 
-function uiOutlinesForResult(result: Result<?Outline>): Observable<OutlineForUi> {
+function uiOutlinesForResult(result: Result<OutlineProvider, ?Outline>): Observable<OutlineForUi> {
   switch (result.kind) {
     case 'not-text-editor':
       return Observable.of({kind: 'not-text-editor'});

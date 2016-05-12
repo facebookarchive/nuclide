@@ -136,7 +136,7 @@ export function getDiagnosticsProvider(): ObservableDiagnosticProvider {
 }
 
 function diagnosticProviderForResultStream(
-  results: Observable<Result<?CoverageResult>>,
+  results: Observable<Result<CoverageProvider, ?CoverageResult>>,
   isEnabledStream: Observable<boolean>,
 ): ObservableDiagnosticProvider {
   const toggledResults = toggle(results, isEnabledStream);
@@ -170,7 +170,9 @@ function diagnosticProviderForResultStream(
  * This is reasonable because we only query providers when there is a path available for the current
  * text editor.
  */
-function diagnosticsForResult(result: Result<?CoverageResult>): ?DiagnosticProviderUpdate {
+function diagnosticsForResult(
+  result: Result<CoverageProvider, ?CoverageResult>,
+): ?DiagnosticProviderUpdate {
   if (result.kind !== 'result') {
     return null;
   }

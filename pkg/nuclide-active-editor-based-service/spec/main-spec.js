@@ -37,7 +37,7 @@ describe('ActiveEditorBasedService', () => {
   let editor2: atom$TextEditor = (null: any);
 
   let resultingEventsPromise: Promise<Array<string>> = (null: any);
-  let fullEventsPromise: Promise<Array<Result<void>>> = (null: any);
+  let fullEventsPromise: Promise<Array<Result<TestProvider, void>>> = (null: any);
 
   let shouldProviderError: boolean = (null: any);
 
