@@ -50,7 +50,7 @@ export class AtomInput extends React.Component {
   static defaultProps = {
     disabled: false,
     initialValue: '',
-    tabIndex: '-1',
+    tabIndex: '0', // Default to all <AtomInput /> components being in tab order
     onClick: event => {},
     onDidChange: text => {},
     onFocus: () => {},
