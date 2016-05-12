@@ -21,7 +21,7 @@ import {event as commonsEvent, cacheWhileSubscribed} from '../../nuclide-commons
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
 
-import {ProviderRegistry} from './ProviderRegistry';
+import {ProviderRegistry} from '../../nuclide-atom-helpers/lib/ProviderRegistry';
 
 export type Provider = {
   priority: number;
@@ -162,8 +162,7 @@ export class ActiveEditorBasedService<T: Provider, V> {
   }
 
   _getProviderForEditor(editor: atom$TextEditor): ?T {
-    const grammar = editor.getGrammar().scopeName;
-    return this._providerRegistry.findProvider(grammar);
+    return this._providerRegistry.getProviderForEditor(editor);
   }
 
   async _getResultForEditor(provider: ?T, editor: atom$TextEditor): Promise<Result<V>> {

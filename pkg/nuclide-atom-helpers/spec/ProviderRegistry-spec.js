@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Provider} from '..';
+import type {Provider} from '../lib/ProviderRegistry';
 
 import {ProviderRegistry} from '../lib/ProviderRegistry';
 
@@ -36,6 +36,17 @@ describe('ProviderRegistry', () => {
     expect(providerRegistry.findProvider('foo')).toBe(provider1);
     expect(providerRegistry.findProvider('bar')).toBe(provider1);
     expect(providerRegistry.findProvider('baz')).toBe(provider2);
+  });
+
+  it('should return the provider for an editor', () => {
+    const editor: any = {
+      getGrammar() {
+        return {
+          scopeName: 'foo',
+        };
+      },
+    };
+    expect(providerRegistry.getProviderForEditor(editor)).toBe(provider1);
   });
 
   it('should return null if there is no provider', () => {

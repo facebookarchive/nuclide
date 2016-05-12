@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {Provider} from '..';
+export type Provider = {
+  priority: number;
+  grammarScopes: Array<string>;
+};
 
 export class ProviderRegistry<T: Provider> {
   _providers: Set<T>;
@@ -24,6 +27,11 @@ export class ProviderRegistry<T: Provider> {
 
   removeProvider(provider: T): void {
     this._providers.delete(provider);
+  }
+
+  getProviderForEditor(editor: atom$TextEditor): ?T {
+    const grammar = editor.getGrammar().scopeName;
+    return this.findProvider(grammar);
   }
 
   findProvider(grammar: string): ?T {
