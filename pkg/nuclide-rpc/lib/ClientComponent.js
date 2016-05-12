@@ -11,8 +11,14 @@
 
 import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
 import type {ConfigEntry, Transport} from './index';
-import type {ResponseMessage, Type} from './types';
+import type {ReturnType, Type} from './types';
 import type {TypeRegistry} from './TypeRegistry';
+import type {
+  ResponseMessage,
+  RequestMessage,
+  DisposeRemoteObjectMessage,
+  ObservableResult,
+} from './messages';
 
 import invariant from 'assert';
 import {EventEmitter} from 'events';
@@ -20,10 +26,13 @@ import {Observable} from 'rxjs';
 import {ServiceRegistry} from './ServiceRegistry';
 import {ObjectRegistry} from './ObjectRegistry';
 import {getPath, createRemoteUri} from '../../nuclide-remote-uri';
-
-import type {RequestMessage, CallRemoteFunctionMessage, CreateRemoteObjectMessage,
-  CallRemoteMethodMessage, DisposeRemoteObjectMessage, DisposeObservableMessage,
-  ReturnType, ObservableResult} from './types';
+import {
+  createCallFunctionMessage,
+  createCallMethodMessage,
+  createNewObjectMessage,
+  createDisposeMessage,
+  decodeError,
+} from './messages';
 
 const logger = require('../../nuclide-logging').getLogger();
 const SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
@@ -105,15 +114,8 @@ export class ClientComponent<TransportType: Transport> {
    * @param args - The serialized arguments to invoke the remote function with.
    */
   callRemoteFunction(functionName: string, returnType: ReturnType, args: Array<any>): any {
-    const message: CallRemoteFunctionMessage = {
-      protocol: SERVICE_FRAMEWORK3_CHANNEL,
-      type: 'FunctionCall',
-      function: functionName,
-      requestId: this._generateRequestId(),
-      args,
-    };
     return this._sendMessageAndListenForResult(
-      message,
+      createCallFunctionMessage(functionName, this._generateRequestId(), args),
       returnType,
       `Calling function ${functionName}`
     );
@@ -133,16 +135,8 @@ export class ClientComponent<TransportType: Transport> {
     returnType: ReturnType,
     args: Array<any>
   ): any {
-    const message: CallRemoteMethodMessage = {
-      protocol: SERVICE_FRAMEWORK3_CHANNEL,
-      type: 'MethodCall',
-      method: methodName,
-      objectId,
-      requestId: this._generateRequestId(),
-      args,
-    };
     return this._sendMessageAndListenForResult(
-      message,
+      createCallMethodMessage(methodName, objectId, this._generateRequestId(), args),
       returnType,
       `Calling remote method ${methodName}.`
     );
@@ -165,15 +159,8 @@ export class ClientComponent<TransportType: Transport> {
     const idPromise = (async () => {
       const marshalledArgs = await this.getTypeRegistry().marshalArguments(
         this._objectRegistry, unmarshalledArgs, argTypes);
-      const message: CreateRemoteObjectMessage = {
-        protocol: SERVICE_FRAMEWORK3_CHANNEL,
-        type: 'NewObject',
-        interface: interfaceName,
-        requestId: this._generateRequestId(),
-        args: marshalledArgs,
-      };
       return this._sendMessageAndListenForResult(
-        message,
+        createNewObjectMessage(interfaceName, this._generateRequestId(), marshalledArgs),
         'promise',
         `Creating instance of ${interfaceName}`
       );
@@ -264,12 +251,7 @@ export class ClientComponent<TransportType: Transport> {
 
               // Send a message to server to call the dispose function of
               // the remote Observable subscription.
-              const disposeMessage: DisposeObservableMessage = {
-                protocol: SERVICE_FRAMEWORK3_CHANNEL,
-                type: 'DisposeObservable',
-                requestId: message.requestId,
-              };
-              this._transport.send(disposeMessage);
+              this._transport.send(createDisposeMessage(message.requestId));
             },
           };
         });
@@ -318,21 +300,5 @@ export class ClientComponent<TransportType: Transport> {
 
   close(): void {
     this._transport.close();
-  }
-}
-
-// TODO: This should be a custom marshaller registered in the TypeRegistry
-function decodeError(message: Object, encodedError: ?(Object | string)): ?(Error | string) {
-  if (encodedError != null && typeof encodedError === 'object') {
-    const resultError = new Error();
-    resultError.message =
-      `Remote Error: ${encodedError.message} processing message ${JSON.stringify(message)}\n`
-      + JSON.stringify(encodedError.stack);
-    // $FlowIssue - some Errors (notably file operations) have a code.
-    resultError.code = encodedError.code;
-    resultError.stack = encodedError.stack;
-    return resultError;
-  } else {
-    return encodedError;
   }
 }

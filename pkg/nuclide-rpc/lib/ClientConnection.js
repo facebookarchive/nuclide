@@ -24,13 +24,16 @@ import {startTracking} from '../../nuclide-analytics';
 import type {TimingTracker} from '../../nuclide-analytics';
 import type {
   RequestMessage,
-  ErrorResponseMessage,
-  PromiseResponseMessage,
-  ObservableResponseMessage,
   CallRemoteFunctionMessage,
   CallRemoteMethodMessage,
   CreateRemoteObjectMessage,
-} from './types';
+} from './messages';
+import {
+  createPromiseMessage,
+  createErrorMessage,
+  createNextMessage,
+  createCompletedMessage,
+} from './messages';
 
 import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
 import invariant from 'assert';
@@ -320,67 +323,4 @@ function isThenable(object: any): boolean {
  */
 function isObservable(object: any): boolean {
   return Boolean(object && object.concatMap && object.subscribe);
-}
-
-function createPromiseMessage(requestId: number, result: any): PromiseResponseMessage {
-  return {
-    channel: SERVICE_FRAMEWORK3_CHANNEL,
-    type: 'PromiseMessage',
-    requestId,
-    result,
-  };
-}
-
-function createNextMessage(requestId: number, data: any): ObservableResponseMessage {
-  return {
-    channel: SERVICE_FRAMEWORK3_CHANNEL,
-    type: 'ObservableMessage',
-    requestId,
-    result: {
-      type: 'next',
-      data: data,
-    },
-  };
-}
-
-function createCompletedMessage(requestId: number): ObservableResponseMessage {
-  return {
-    channel: SERVICE_FRAMEWORK3_CHANNEL,
-    type: 'ObservableMessage',
-    requestId,
-    result: {type: 'completed'},
-  };
-}
-
-function createErrorMessage(requestId: number, error: any): ErrorResponseMessage {
-  return {
-    channel: SERVICE_FRAMEWORK3_CHANNEL,
-    type: 'ErrorMessage',
-    requestId,
-    error: formatError(error),
-  };
-}
-
-/**
- * Format the error before sending over the web socket.
- * TODO: This should be a custom marshaller registered in the TypeRegistry
- */
-function formatError(error: any): ?(Object | string) {
-  if (error instanceof Error) {
-    return {
-      message: error.message,
-      code: error.code,
-      stack: error.stack,
-    };
-  } else if (typeof error === 'string') {
-    return error.toString();
-  } else if (error === undefined) {
-    return undefined;
-  } else {
-    try {
-      return `Unknown Error: ${JSON.stringify(error, null, 2)}`;
-    } catch (jsonError) {
-      return `Unknown Error: ${error.toString()}`;
-    }
-  }
 }
