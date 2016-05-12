@@ -60,6 +60,7 @@ export type ResponseMessage =
 export type ErrorResponseMessage = {
   channel: 'service_framework3_rpc';
   type: 'ErrorMessage';
+  requestId: number;
   error: any;
 };
 

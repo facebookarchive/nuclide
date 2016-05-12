@@ -11,7 +11,7 @@
 
 import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
 import type {ConfigEntry, Transport} from './index';
-import type {Type} from './types';
+import type {ResponseMessage, Type} from './types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {TypeRegistry} from './TypeRegistry';
 
@@ -282,11 +282,28 @@ export class ClientComponent<TransportType: Transport> {
     return this._transport;
   }
 
-  _handleMessage(message: any): void {
+  _handleMessage(message: ResponseMessage): void {
     const {channel} = message;
     invariant(channel === SERVICE_FRAMEWORK3_CHANNEL);
-    const {requestId, hadError, error, result} = message;
-    this._emitter.emit(requestId.toString(), hadError, error, result);
+    switch (message.type) {
+      case 'PromiseMessage': {
+        const {requestId, result} = message;
+        this._emitter.emit(requestId.toString(), false, null, result);
+        break;
+      }
+      case 'ObservableMessage': {
+        const {requestId, result} = message;
+        this._emitter.emit(requestId.toString(), false, null, result);
+        break;
+      }
+      case 'ErrorMessage': {
+        const {requestId, error} = message;
+        this._emitter.emit(requestId.toString(), true, error, undefined);
+        break;
+      }
+      default:
+        throw new Error(`Unexpected message type ${JSON.stringify(message)}`);
+    }
   }
 
   _generateRequestId(): number {

@@ -328,7 +328,6 @@ function createPromiseMessage(requestId: number, result: any): PromiseResponseMe
     type: 'PromiseMessage',
     requestId,
     result,
-    hadError: false,
   };
 }
 
@@ -337,7 +336,6 @@ function createNextMessage(requestId: number, data: any): ObservableResponseMess
     channel: SERVICE_FRAMEWORK3_CHANNEL,
     type: 'ObservableMessage',
     requestId,
-    hadError: false,
     result: {
       type: 'next',
       data: data,
@@ -350,7 +348,6 @@ function createCompletedMessage(requestId: number): ObservableResponseMessage {
     channel: SERVICE_FRAMEWORK3_CHANNEL,
     type: 'ObservableMessage',
     requestId,
-    hadError: false,
     result: {type: 'completed'},
   };
 }
@@ -360,7 +357,6 @@ function createErrorMessage(requestId: number, error: any): ErrorResponseMessage
     channel: SERVICE_FRAMEWORK3_CHANNEL,
     type: 'ErrorMessage',
     requestId,
-    hadError: true,
     error: formatError(error),
   };
 }
