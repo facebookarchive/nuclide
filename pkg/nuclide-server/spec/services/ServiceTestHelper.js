@@ -11,14 +11,14 @@
 
 import NuclideServer from '../../lib/NuclideServer';
 import {NuclideSocket} from '../../lib/NuclideSocket';
-import {ClientComponent} from '../../../nuclide-rpc';
+import {RpcConnection} from '../../../nuclide-rpc';
 import type {ConfigEntry} from '../../../nuclide-rpc';
 
 type Services = Array<ConfigEntry>;
 
 export default class ServiceTestHelper {
   _server: NuclideServer;
-  _client: ClientComponent<NuclideSocket>;
+  _client: RpcConnection<NuclideSocket>;
   _port: number;
 
   async start(customServices: Services): Promise<void> {
@@ -26,7 +26,7 @@ export default class ServiceTestHelper {
     await this._server.connect();
 
     const port = this._server._webServer.address().port;
-    this._client = ClientComponent.createRemote(
+    this._client = RpcConnection.createRemote(
       'localhost', port, new NuclideSocket(`http://localhost:${port}`, null), customServices);
     this._port = port;
   }

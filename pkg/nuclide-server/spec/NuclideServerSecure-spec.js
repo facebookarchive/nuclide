@@ -13,7 +13,7 @@ import fs from 'fs';
 
 import path from 'path';
 import NuclideServer from '../lib/NuclideServer';
-import {ClientComponent} from '../../nuclide-rpc';
+import {RpcConnection} from '../../nuclide-rpc';
 import {loadServicesConfig} from '../lib/services';
 import {NuclideSocket} from '../lib/NuclideSocket';
 import invariant from 'assert';
@@ -55,7 +55,7 @@ describe('Nuclide Secure Server test suite', () => {
         cert: fs.readFileSync(client_cert_path),
         key: fs.readFileSync(client_key_path),
       });
-      const client = ClientComponent.createRemote('localhost', 8176, socket, loadServicesConfig());
+      const client = RpcConnection.createRemote('localhost', 8176, socket, loadServicesConfig());
       invariant(client);
 
       socket.close();

@@ -11,7 +11,7 @@
 
 import WS from 'ws';
 import NuclideServer from '../lib/NuclideServer';
-import {ClientComponent} from '../../nuclide-rpc';
+import {RpcConnection} from '../../nuclide-rpc';
 import {loadServicesConfig} from '../lib/services';
 
 import invariant from 'assert';
@@ -29,7 +29,7 @@ describe('Nuclide Server test suite', () => {
       server = new NuclideServer({port: 8176}, loadServicesConfig());
       await server.connect();
       socket = new NuclideSocket('http://localhost:8176', null);
-      client = ClientComponent.createRemote('localhost', 8176, socket, loadServicesConfig());
+      client = RpcConnection.createRemote('localhost', 8176, socket, loadServicesConfig());
     });
   });
 

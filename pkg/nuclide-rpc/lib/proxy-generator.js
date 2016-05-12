@@ -54,7 +54,7 @@ const unmarshalCall = (...args) => t.callExpression(clientDotUnmarshalExpression
  * Given the parsed result of a definition file, generate a remote proxy module
  * that exports the definition's API, but internally calls RPC functions. The function
  * does not return the proxy module directly, but rather returns a 'factory' method
- * that should be called with a ClientComponent object. This factory method returns the
+ * that should be called with a RpcConnection object. This factory method returns the
  * remote module with the client object 'closed over,' and used to make the RPC calls.
  * @param defs - The result of parsing the definition file.
  * @returns The proxy factory method.
@@ -93,7 +93,7 @@ export function generateProxy(serviceName: string, defs: Definitions): string {
   // Return the remote module.
   statements.push(t.returnStatement(remoteModule));
 
-  // Wrap the remoteModule construction in a function that takes a ClientComponent object as
+  // Wrap the remoteModule construction in a function that takes a RpcConnection object as
   // an argument. `require` calls will resolve as if made by a file that is a sibling to
   // this module's `lib/main.js`.
   const func = t.arrowFunctionExpression([clientIdentifier], t.blockStatement(statements));

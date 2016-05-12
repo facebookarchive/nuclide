@@ -16,7 +16,7 @@ import typeof * as InfoService from '../../nuclide-server/lib/services/InfoServi
 
 import invariant from 'assert';
 import pathModule from 'path';
-import {ClientComponent} from '../../nuclide-rpc';
+import {RpcConnection} from '../../nuclide-rpc';
 import {loadServicesConfig} from '../../nuclide-server/lib/services';
 import {setConnectionConfig} from './RemoteConnectionConfigurationManager';
 import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
@@ -56,7 +56,7 @@ class ServerConnection {
   _config: ServerConnectionConfiguration;
   _closed: boolean;
   _healthNotifier: ?ConnectionHealthNotifier;
-  _client: ?ClientComponent<NuclideSocket>;
+  _client: ?RpcConnection<NuclideSocket>;
   _connections: Array<RemoteConnection>;
 
   static _connections: Map<string, ServerConnection> = new Map();
@@ -241,7 +241,7 @@ class ServerConnection {
     }
   }
 
-  getClient(): ClientComponent<NuclideSocket> {
+  getClient(): RpcConnection<NuclideSocket> {
     invariant(!this._closed && this._client != null, 'Server connection has been closed.');
     return this._client;
   }
@@ -267,7 +267,7 @@ class ServerConnection {
     }
 
     const socket = new NuclideSocket(uri, options);
-    const client = ClientComponent.createRemote(
+    const client = RpcConnection.createRemote(
       this.getRemoteHostname(), this.getPort(), socket, loadServicesConfig());
 
     this._client = client;

@@ -51,7 +51,7 @@ import {startTracking} from '../../nuclide-analytics';
 const logger = require('../../nuclide-logging').getLogger();
 const SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
 
-export class ClientComponent<TransportType: Transport> {
+export class RpcConnection<TransportType: Transport> {
   _rpcRequestId: number;
   _emitter: EventEmitter;
   _transport: TransportType;
@@ -73,8 +73,8 @@ export class ClientComponent<TransportType: Transport> {
 
   static createRemote(
     hostname: string, port: number, transport: TransportType, services: Array<ConfigEntry>
-  ): ClientComponent<TransportType> {
-    return new ClientComponent(
+  ): RpcConnection<TransportType> {
+    return new RpcConnection(
       'client',
       new ServiceRegistry(
         remoteUri => getPath(remoteUri),
@@ -86,8 +86,8 @@ export class ClientComponent<TransportType: Transport> {
   static createLocal(
     transport: TransportType,
     services: Array<ConfigEntry>
-  ): ClientComponent<TransportType> {
-    return new ClientComponent(
+  ): RpcConnection<TransportType> {
+    return new RpcConnection(
       'client',
       new ServiceRegistry(
         remoteUri => remoteUri,

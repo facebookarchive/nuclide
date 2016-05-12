@@ -18,7 +18,7 @@ import {getVersion} from '../../nuclide-version';
 import invariant from 'assert';
 import {getLogger, flushLogsAndExit} from '../../nuclide-logging';
 import WS from 'ws';
-import {ClientComponent, ServiceRegistry} from '../../nuclide-rpc';
+import {RpcConnection, ServiceRegistry} from '../../nuclide-rpc';
 import {QueuedTransport} from './QueuedTransport';
 import {WebSocketTransport} from './WebSocketTransport';
 import {event} from '../../nuclide-commons';
@@ -42,7 +42,7 @@ class NuclideServer {
 
   _webServer: http$fixed$Server;
   _webSocketServer: WS.Server;
-  _clients: Map<string, ClientComponent<QueuedTransport>>;
+  _clients: Map<string, RpcConnection<QueuedTransport>>;
   _port: number;
   _app: connect$Server;
   _xhrServiceRegistry: {[serviceName: string]: () => any};
@@ -155,14 +155,14 @@ class NuclideServer {
     }
   }
 
-  static closeConnection(client: ClientComponent<QueuedTransport>): void {
+  static closeConnection(client: RpcConnection<QueuedTransport>): void {
     logger.info(`Closing client: #${client.getTransport().id}`);
     if (NuclideServer._theServer != null) {
       NuclideServer._theServer._closeConnection(client);
     }
   }
 
-  _closeConnection(client: ClientComponent<QueuedTransport>): void {
+  _closeConnection(client: RpcConnection<QueuedTransport>): void {
     if (this._clients.get(client.getTransport().id) === client) {
       this._clients.delete(client.getTransport().id);
       client.dispose();
@@ -232,7 +232,7 @@ class NuclideServer {
     logger.debug('WebSocket connecting');
 
 
-    let client: ?ClientComponent<QueuedTransport> = null;
+    let client: ?RpcConnection<QueuedTransport> = null;
 
     const errorSubscription = event.attachEvent(
       socket, 'error', e =>
@@ -243,7 +243,7 @@ class NuclideServer {
       client = this._clients.get(clientId);
       const transport = new WebSocketTransport(clientId, socket);
       if (client == null) {
-        client = new ClientComponent(
+        client = new RpcConnection(
           'server',
           this._rpcServiceRegistry,
           new QueuedTransport(clientId, transport));

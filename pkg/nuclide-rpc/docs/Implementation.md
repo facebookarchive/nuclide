@@ -100,4 +100,4 @@ Note that a type can actually have four total transformation functions - a marsh
 | Server | Return the Object's ID as a string. If the Object doesn't have an ID, generate one and put it into a map that keys from ID => Object. | Lookup the string ID in the global registry and return the Object. |
 | Client | Extract the ID of the Proxy Object, and send it as a string. | Return the Proxy object associated from the string ID. If no proxy exists, create one and bake in the ID. |
 
-Due to the fact that these types, such as NuclideUri, require more information than what is known in the TypeRegistry object, their marshallers are registered in the `ServiceRegistry` and `ClientComponent` classes
+Due to the fact that these types, such as NuclideUri, require more information than what is known in the TypeRegistry object, their marshallers are registered in the `ServiceRegistry` and `RpcConnection` classes

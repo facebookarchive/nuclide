@@ -10,7 +10,7 @@
  */
 
 export {ServiceRegistry} from './ServiceRegistry';
-export {ClientComponent} from './ClientComponent';
+export {RpcConnection} from './RpcConnection';
 export {LoopbackTransports} from './LoopbackTransports';
 
 export type ConfigEntry = {
