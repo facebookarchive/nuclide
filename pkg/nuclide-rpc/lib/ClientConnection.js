@@ -49,9 +49,10 @@ export class ClientConnection<TransportType: Transport> {
   _transport: TransportType;
 
   constructor(
+      kind: 'server' | 'client',
       serviceRegistry: ServiceRegistry,
       transport: TransportType) {
-    this._objectRegistry = new ObjectRegistry('server', serviceRegistry, (this: any));
+    this._objectRegistry = new ObjectRegistry(kind, serviceRegistry, (this: any));
     this._serviceRegistry = serviceRegistry;
     this._transport = transport;
     transport.onMessage(message => {
@@ -262,10 +263,6 @@ export class ClientConnection<TransportType: Transport> {
 
   _getClassDefinition(className: string): ClassDefinition {
     return this._serviceRegistry.getClassDefinition(className);
-  }
-
-  getMarshallingContext(): ObjectRegistry {
-    return this._objectRegistry;
   }
 
   getTransport(): TransportType {

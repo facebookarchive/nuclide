@@ -25,7 +25,7 @@ export class ServiceTester {
     const transports = new LoopbackTransports();
     this._serviceRegistry = ServiceRegistry.createRemote(customServices);
     this._clientConnection = new ClientConnection(
-      this._serviceRegistry, transports.serverTransport);
+      'server', this._serviceRegistry, transports.serverTransport);
 
     const port = 42;
     this._client = ClientComponent.createRemote(
@@ -34,7 +34,7 @@ export class ServiceTester {
   }
 
   stop(): void {
-    this._client.close();
+    this._client.dispose();
     this._clientConnection.dispose();
   }
 

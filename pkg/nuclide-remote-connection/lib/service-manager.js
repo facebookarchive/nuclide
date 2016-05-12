@@ -36,7 +36,7 @@ function createLocalRpcClient(): ClientComponent<Transport> {
   const localTransports = new LoopbackTransports();
   const serviceRegistry = ServiceRegistry.createRemote(newServices);
   const localClientConnection
-    = new ClientConnection(serviceRegistry, localTransports.serverTransport);
+    = new ClientConnection('server', serviceRegistry, localTransports.serverTransport);
   invariant(localClientConnection != null); // silence lint...
   return ClientComponent.createLocal(localTransports.clientTransport, newServices);
 }

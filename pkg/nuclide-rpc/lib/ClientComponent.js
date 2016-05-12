@@ -45,15 +45,15 @@ export class ClientComponent<TransportType: Transport> {
   _objectRegistry: ObjectRegistry;
 
   constructor(
+    kind: 'server' | 'client',
     serviceRegistry: ServiceRegistry,
-    transport: TransportType,
-    services: Array<ConfigEntry>
+    transport: TransportType
   ) {
     this._emitter = new EventEmitter();
     this._transport = transport;
     this._rpcRequestId = 1;
     this._serviceRegistry = serviceRegistry;
-    this._objectRegistry = new ObjectRegistry('client', this._serviceRegistry, this);
+    this._objectRegistry = new ObjectRegistry(kind, this._serviceRegistry, this);
     this._transport.onMessage(message => this._handleMessage(message));
   }
 
@@ -61,13 +61,12 @@ export class ClientComponent<TransportType: Transport> {
     hostname: string, port: number, transport: TransportType, services: Array<ConfigEntry>
   ): ClientComponent<TransportType> {
     return new ClientComponent(
+      'client',
       new ServiceRegistry(
         remoteUri => getPath(remoteUri),
         path => createRemoteUri(hostname, port, path),
-        services),
-      transport,
-      services
-    );
+      services),
+      transport);
   }
 
   static createLocal(
@@ -75,13 +74,12 @@ export class ClientComponent<TransportType: Transport> {
     services: Array<ConfigEntry>
   ): ClientComponent<TransportType> {
     return new ClientComponent(
+      'client',
       new ServiceRegistry(
         remoteUri => remoteUri,
         path => path,
         services),
-      transport,
-      services
-    );
+      transport);
   }
 
   getService(serviceName: string): Object {
@@ -100,10 +98,10 @@ export class ClientComponent<TransportType: Transport> {
 
   // Delegate marshalling to the type registry.
   marshal(value: any, type: Type): any {
-    return this.getTypeRegistry().marshal(this._objectRegistry, value, type);
+    return this._getTypeRegistry().marshal(this._objectRegistry, value, type);
   }
   unmarshal(value: any, type: Type): any {
-    return this.getTypeRegistry().unmarshal(this._objectRegistry, value, type);
+    return this._getTypeRegistry().unmarshal(this._objectRegistry, value, type);
   }
 
   /**
@@ -157,7 +155,7 @@ export class ClientComponent<TransportType: Transport> {
     argTypes: Array<Type>
   ): void {
     const idPromise = (async () => {
-      const marshalledArgs = await this.getTypeRegistry().marshalArguments(
+      const marshalledArgs = await this._getTypeRegistry().marshalArguments(
         this._objectRegistry, unmarshalledArgs, argTypes);
       return this._sendMessageAndListenForResult(
         createNewObjectMessage(interfaceName, this._generateRequestId(), marshalledArgs),
@@ -294,11 +292,12 @@ export class ClientComponent<TransportType: Transport> {
     return this._rpcRequestId++;
   }
 
-  getTypeRegistry(): TypeRegistry {
+  _getTypeRegistry(): TypeRegistry {
     return this._serviceRegistry.getTypeRegistry();
   }
 
-  close(): void {
+  dispose(): void {
     this._transport.close();
+    this._objectRegistry.dispose();
   }
 }

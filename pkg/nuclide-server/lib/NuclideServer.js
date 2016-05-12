@@ -243,7 +243,9 @@ class NuclideServer {
       client = this._clients.get(clientId);
       const transport = new WebSocketTransport(clientId, socket);
       if (client == null) {
-        client = new ClientConnection(this._rpcServiceRegistry,
+        client = new ClientConnection(
+          'server',
+          this._rpcServiceRegistry,
           new QueuedTransport(clientId, transport));
         this._clients.set(clientId, client);
       } else {

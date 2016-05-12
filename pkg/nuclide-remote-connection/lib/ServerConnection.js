@@ -231,7 +231,7 @@ class ServerConnection {
 
     // The Rpc channel owns the socket.
     if (this._client != null) {
-      this._client.close();
+      this._client.dispose();
       this._client = null;
     }
 

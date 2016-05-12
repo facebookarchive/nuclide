@@ -32,7 +32,7 @@ export default class ServiceTestHelper {
   }
 
   stop(): void {
-    this._client.close();
+    this._client.dispose();
     this._server.close();
   }
 

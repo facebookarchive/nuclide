@@ -34,7 +34,7 @@ describe('Nuclide Server test suite', () => {
   });
 
   afterEach(() => {
-    client.close();
+    client.dispose();
     server.close();
   });
 
