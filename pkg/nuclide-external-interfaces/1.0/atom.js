@@ -520,9 +520,12 @@ type ChangeCursorPositionEvent = {
 
 declare class atom$TextEditor extends atom$Model {
   id: number;
+  firstVisibleScreenRow: number;
+  rowsPerPage: number;
 
   // Event Subscription
   onDidChange(callback: () => void): IDisposable;
+  onDidChangeScrollTop(callback: () => void): IDisposable;
   onDidStopChanging(callback: () => void): IDisposable;
   onDidChangeCursorPosition(callback: (event: ChangeCursorPositionEvent) => mixed):
     IDisposable;
@@ -687,6 +690,7 @@ declare class atom$TextEditor extends atom$Model {
   scrollToBufferPosition(position: atom$Point | number[], options?: {center?: boolean}): void;
   scrollToScreenPosition(position: atom$Point | number[], options?: {center?: boolean}): void;
   scrollToBottom(): void;
+  scrollToTop(): void;
 
   // TextEditor Rendering
   getPlaceholderText(): string;
@@ -697,6 +701,9 @@ declare class atom$TextEditor extends atom$Model {
 
   // Editor Options
   setSoftWrapped(softWrapped: boolean): void;
+
+  isFoldedAtBufferRow(row: number): boolean;
+  getLastBufferRow(): number;
 
   // Undocumented Methods
   getDefaultCharWidth(): number;
