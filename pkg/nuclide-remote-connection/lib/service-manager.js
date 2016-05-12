@@ -19,7 +19,7 @@ import {loadServicesConfig} from '../../nuclide-server/lib/services';
 import ServiceLogger from './ServiceLogger';
 import {
   LoopbackTransports,
-  ServerComponent,
+  ServiceRegistry,
   ClientConnection,
   ClientComponent,
 } from '../../nuclide-rpc';
@@ -34,9 +34,9 @@ let knownLocalRpc = false;
 // local service calls have the same behavior as remote RPC calls.
 function createLocalRpcClient(): ClientComponent<Transport> {
   const localTransports = new LoopbackTransports();
-  const localRpcServer = new ServerComponent(newServices);
+  const serviceRegistry = new ServiceRegistry(newServices);
   const localClientConnection
-    = new ClientConnection(localRpcServer, localTransports.serverTransport);
+    = new ClientConnection(serviceRegistry, localTransports.serverTransport);
   invariant(localClientConnection != null); // silence lint...
   return ClientComponent.createLocal(localTransports.clientTransport, newServices);
 }

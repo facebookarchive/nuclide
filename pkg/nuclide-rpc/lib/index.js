@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-export {ServerComponent} from './ServerComponent';
+export {ServiceRegistry} from './ServiceRegistry';
 export {ClientComponent} from './ClientComponent';
 export {ClientConnection} from './ClientConnection';
 export {LoopbackTransports} from './LoopbackTransports';

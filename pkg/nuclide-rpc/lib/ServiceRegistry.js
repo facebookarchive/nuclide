@@ -31,7 +31,7 @@ export type ServiceDefinition = {
   factory: ProxyFactory;
 };
 
-export class ServerComponent {
+export class ServiceRegistry {
   _typeRegistry: TypeRegistry;
 
   /**

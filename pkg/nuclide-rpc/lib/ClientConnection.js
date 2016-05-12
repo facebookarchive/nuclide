@@ -14,8 +14,8 @@ import type {Type} from './types';
 import type {
   ClassDefinition,
   FunctionImplementation,
-  ServerComponent,
-} from './ServerComponent';
+  ServiceRegistry,
+} from './ServiceRegistry';
 import type {TypeRegistry} from './TypeRegistry';
 
 import {Observable} from 'rxjs';
@@ -41,17 +41,17 @@ const logger = require('../../nuclide-logging').getLogger();
 
 // Per-Client state on the Server for the RPC framework
 export class ClientConnection<TransportType: Transport> {
-  _serverComponent: ServerComponent;
+  _serviceRegistry: ServiceRegistry;
   _objectRegistry: ObjectRegistry;
   _transport: TransportType;
 
   constructor(
-      serverComponent: ServerComponent,
+      serviceRegistry: ServiceRegistry,
       transport: TransportType) {
     this._objectRegistry = new ObjectRegistry('server');
-    this._serverComponent = serverComponent;
+    this._serviceRegistry = serviceRegistry;
     this._transport = transport;
-    serverComponent.getServices().forEach(service => {
+    serviceRegistry.getServices().forEach(service => {
       // TODO: Remove the any cast once we have bi-directional marshalling.
       this._objectRegistry.addService(service.name, service.factory((this: any)));
     });
@@ -254,15 +254,15 @@ export class ClientConnection<TransportType: Transport> {
   }
 
   _getTypeRegistry(): TypeRegistry {
-    return this._serverComponent.getTypeRegistry();
+    return this._serviceRegistry.getTypeRegistry();
   }
 
   _getFunctionImplemention(name: string): FunctionImplementation {
-    return this._serverComponent.getFunctionImplemention(name);
+    return this._serviceRegistry.getFunctionImplemention(name);
   }
 
   _getClassDefinition(className: string): ClassDefinition {
-    return this._serverComponent.getClassDefinition(className);
+    return this._serviceRegistry.getClassDefinition(className);
   }
 
   getMarshallingContext(): ObjectRegistry {

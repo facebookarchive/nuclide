@@ -18,7 +18,7 @@ import {getVersion} from '../../nuclide-version';
 import invariant from 'assert';
 import {getLogger, flushLogsAndExit} from '../../nuclide-logging';
 import WS from 'ws';
-import {ClientConnection, ServerComponent} from '../../nuclide-rpc';
+import {ClientConnection, ServiceRegistry} from '../../nuclide-rpc';
 import {QueuedTransport} from './QueuedTransport';
 import {WebSocketTransport} from './WebSocketTransport';
 import {event} from '../../nuclide-commons';
@@ -45,10 +45,9 @@ class NuclideServer {
   _clients: Map<string, ClientConnection<QueuedTransport>>;
   _port: number;
   _app: connect$Server;
-  _serviceRegistry: {[serviceName: string]: () => any};
+  _xhrServiceRegistry: {[serviceName: string]: () => any};
   _version: string;
-
-  _serverComponent: ServerComponent;
+  _rpcServiceRegistry: ServiceRegistry;
 
   constructor(options: NuclideServerOptions, services: Array<ConfigEntry>) {
     invariant(NuclideServer._theServer == null);
@@ -91,8 +90,7 @@ class NuclideServer {
       });
     }
 
-    this._serverComponent =
-        new ServerComponent(services);
+    this._rpcServiceRegistry = new ServiceRegistry(services);
   }
 
   _attachUtilHandlers() {
@@ -122,7 +120,7 @@ class NuclideServer {
   _setupServices() {
     // Lazy require these functions so that we could spyOn them while testing in
     // ServiceIntegrationTestHelper.
-    this._serviceRegistry = {};
+    this._xhrServiceRegistry = {};
     this._setupHeartbeatHandler();
 
     // Setup error handler.
@@ -188,7 +186,7 @@ class NuclideServer {
    * Calls a registered service with a name and arguments.
    */
   callService(serviceName: string, args: Array<any>): Promise<any> {
-    const serviceFunction = this._serviceRegistry[serviceName];
+    const serviceFunction = this._xhrServiceRegistry[serviceName];
     if (!serviceFunction) {
       throw Error('No service registered with name: ' + serviceName);
     }
@@ -205,10 +203,10 @@ class NuclideServer {
       serviceFunction: () => Promise<any>,
       method: string,
       isTextResponse: boolean) {
-    if (this._serviceRegistry[serviceName]) {
+    if (this._xhrServiceRegistry[serviceName]) {
       throw new Error('A service with this name is already registered:', serviceName);
     }
-    this._serviceRegistry[serviceName] = serviceFunction;
+    this._xhrServiceRegistry[serviceName] = serviceFunction;
     this._registerHttpService(serviceName, method, isTextResponse);
   }
 
@@ -245,7 +243,7 @@ class NuclideServer {
       client = this._clients.get(clientId);
       const transport = new WebSocketTransport(clientId, socket);
       if (client == null) {
-        client = new ClientConnection(this._serverComponent,
+        client = new ClientConnection(this._rpcServiceRegistry,
           new QueuedTransport(clientId, transport));
         this._clients.set(clientId, client);
       } else {
