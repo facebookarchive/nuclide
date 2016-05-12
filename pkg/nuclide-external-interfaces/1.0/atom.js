@@ -525,7 +525,6 @@ declare class atom$TextEditor extends atom$Model {
 
   // Event Subscription
   onDidChange(callback: () => void): IDisposable;
-  onDidChangeScrollTop(callback: () => void): IDisposable;
   onDidStopChanging(callback: () => void): IDisposable;
   onDidChangeCursorPosition(callback: (event: ChangeCursorPositionEvent) => mixed):
     IDisposable;
