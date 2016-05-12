@@ -63,7 +63,13 @@ describe('diagnosticProviderForResultStream', () => {
     sampleResult = {
       percentage: 90,
       uncoveredRegions: [
-        {range: new Range([1, 2], [3, 4])},
+        {
+          range: new Range([1, 2], [3, 4]),
+        },
+        {
+          range: new Range([2, 3], [4, 5]),
+          message: 'Custom message!!1!1!',
+        },
       ],
     };
 
@@ -91,15 +97,24 @@ describe('diagnosticProviderForResultStream', () => {
         provider,
       });
       expect(updates.length).toBe(1);
-      expect(updates[0].length).toBe(1);
-      expect(updates[0][0]).toEqual({
-        scope: 'file',
-        providerName: 'Type Coverage',
-        type: 'Warning',
-        filePath: 'foo',
-        range: sampleResult.uncoveredRegions[0].range,
-        text: 'Not covered by Foo',
-      });
+      expect(updates[0]).toEqual([
+        {
+          scope: 'file',
+          providerName: 'Type Coverage',
+          type: 'Warning',
+          filePath: 'foo',
+          range: sampleResult.uncoveredRegions[0].range,
+          text: 'Not covered by Foo',
+        },
+        {
+          scope: 'file',
+          providerName: 'Type Coverage',
+          type: 'Warning',
+          filePath: 'foo',
+          range: sampleResult.uncoveredRegions[1].range,
+          text: 'Custom message!!1!1!',
+        },
+      ]);
       expect(invalidations.length).toBe(0);
     });
 

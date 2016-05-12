@@ -17,7 +17,7 @@ import type {
   FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-base';
 
-import type {CoverageResult, CoverageProvider} from './types';
+import type {CoverageResult, CoverageProvider, UncoveredRegion} from './types';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
@@ -76,7 +76,7 @@ function diagnosticsForResult(
   const providerName = result.provider.displayName;
 
   const diagnostics = value.uncoveredRegions.map(
-    region => uncoveredRangeToDiagnostic(region.range, editorPath, providerName)
+    region => uncoveredRangeToDiagnostic(region, editorPath, providerName)
   );
 
   return {
@@ -85,16 +85,19 @@ function diagnosticsForResult(
 }
 
 function uncoveredRangeToDiagnostic(
-  range: atom$Range,
+  region: UncoveredRegion,
   path: NuclideUri,
   providerName: string,
 ): FileDiagnosticMessage {
+  const text = region.message != null ?
+    region.message :
+    `Not covered by ${providerName}`;
   return {
     scope: 'file',
     providerName: 'Type Coverage',
     type: 'Warning',
     filePath: path,
-    range,
-    text: `Not covered by ${providerName}`,
+    range: region.range,
+    text,
   };
 }
