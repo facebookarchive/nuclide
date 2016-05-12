@@ -9,4 +9,4 @@
  * the root directory of this source tree.
  */
 
-export const SERVICE_FRAMEWORK3_CHANNEL = 'service_framework3_rpc';
+export const SERVICE_FRAMEWORK3_PROTOCOL = 'service_framework3_rpc';

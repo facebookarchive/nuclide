@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
+import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
 import type {ConfigEntry, Transport} from './index';
 import type {ReturnType, Type} from './types';
 import type {TypeRegistry} from './TypeRegistry';
@@ -190,7 +190,7 @@ export class ClientComponent<TransportType: Transport> {
     const objectId = await this._objectRegistry.disposeProxy(object);
     if (objectId != null) {
       const message: DisposeRemoteObjectMessage = {
-        protocol: SERVICE_FRAMEWORK3_CHANNEL,
+        protocol: SERVICE_FRAMEWORK3_PROTOCOL,
         type: 'DisposeObject',
         requestId: this._generateRequestId(),
         objectId,
@@ -425,6 +425,8 @@ export class ClientComponent<TransportType: Transport> {
   }
 
   _handleMessage(message: RequestMessage | ResponseMessage): void {
+    invariant(message.protocol === SERVICE_FRAMEWORK3_PROTOCOL);
+
     switch (message.type) {
       case 'PromiseMessage':
       case 'ObservableMessage':
@@ -444,21 +446,20 @@ export class ClientComponent<TransportType: Transport> {
   }
 
   _handleResponseMessage(message: ResponseMessage): void {
-    const {channel} = message;
-    invariant(channel === SERVICE_FRAMEWORK3_CHANNEL);
+    const requestId = message.requestId;
     switch (message.type) {
       case 'PromiseMessage': {
-        const {requestId, result} = message;
+        const {result} = message;
         this._emitter.emit(requestId.toString(), false, null, result);
         break;
       }
       case 'ObservableMessage': {
-        const {requestId, result} = message;
+        const {result} = message;
         this._emitter.emit(requestId.toString(), false, null, result);
         break;
       }
       case 'ErrorMessage': {
-        const {requestId, error} = message;
+        const {error} = message;
         this._emitter.emit(requestId.toString(), true, error, undefined);
         break;
       }
@@ -468,8 +469,6 @@ export class ClientComponent<TransportType: Transport> {
   }
 
   async _handleRequestMessage(message: RequestMessage): Promise<void> {
-    invariant(message.protocol && message.protocol === SERVICE_FRAMEWORK3_CHANNEL);
-
     const requestId = message.requestId;
 
     // Track timings of all function calls, method calls, and object creations.

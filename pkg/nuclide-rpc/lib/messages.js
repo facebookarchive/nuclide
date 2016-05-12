@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {SERVICE_FRAMEWORK3_CHANNEL} from './config';
+import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
 
 // Encodes the structure of messages that can be sent from the client to the server.
 export type RequestMessage = CallRemoteFunctionMessage | CreateRemoteObjectMessage |
@@ -58,21 +58,21 @@ export type ResponseMessage =
   PromiseResponseMessage | ErrorResponseMessage | ObservableResponseMessage;
 
 export type ErrorResponseMessage = {
-  channel: 'service_framework3_rpc';
+  protocol: 'service_framework3_rpc';
   type: 'ErrorMessage';
   requestId: number;
   error: any;
 };
 
 export type PromiseResponseMessage = {
-  channel: 'service_framework3_rpc';
+  protocol: 'service_framework3_rpc';
   type: 'PromiseMessage';
   requestId: number;
   result: any;
 };
 
 export type ObservableResponseMessage = {
-  channel: 'service_framework3_rpc';
+  protocol: 'service_framework3_rpc';
   type: 'ObservableMessage';
   requestId: number;
   result: ObservableResult;
@@ -103,7 +103,7 @@ export function createCallFunctionMessage(
   args: Array<any>
 ): CallRemoteFunctionMessage {
   return {
-    protocol: SERVICE_FRAMEWORK3_CHANNEL,
+    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'FunctionCall',
     function: functionName,
     requestId,
@@ -118,7 +118,7 @@ export function createCallMethodMessage(
   args: Array<any>
 ): CallRemoteMethodMessage {
   return {
-    protocol: SERVICE_FRAMEWORK3_CHANNEL,
+    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'MethodCall',
     method: methodName,
     objectId,
@@ -133,7 +133,7 @@ export function createNewObjectMessage(
   args: Array<any>
 ): CreateRemoteObjectMessage {
   return {
-    protocol: SERVICE_FRAMEWORK3_CHANNEL,
+    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'NewObject',
     interface: interfaceName,
     requestId,
@@ -143,7 +143,7 @@ export function createNewObjectMessage(
 
 export function createPromiseMessage(requestId: number, result: any): PromiseResponseMessage {
   return {
-    channel: SERVICE_FRAMEWORK3_CHANNEL,
+    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'PromiseMessage',
     requestId,
     result,
@@ -152,7 +152,7 @@ export function createPromiseMessage(requestId: number, result: any): PromiseRes
 
 export function createNextMessage(requestId: number, data: any): ObservableResponseMessage {
   return {
-    channel: SERVICE_FRAMEWORK3_CHANNEL,
+    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'ObservableMessage',
     requestId,
     result: {
@@ -164,7 +164,7 @@ export function createNextMessage(requestId: number, data: any): ObservableRespo
 
 export function createCompletedMessage(requestId: number): ObservableResponseMessage {
   return {
-    channel: SERVICE_FRAMEWORK3_CHANNEL,
+    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'ObservableMessage',
     requestId,
     result: {type: 'completed'},
@@ -173,7 +173,7 @@ export function createCompletedMessage(requestId: number): ObservableResponseMes
 
 export function createDisposeMessage(requestId: number): DisposeObservableMessage {
   return {
-    protocol: SERVICE_FRAMEWORK3_CHANNEL,
+    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'DisposeObservable',
     requestId,
   };
@@ -181,7 +181,7 @@ export function createDisposeMessage(requestId: number): DisposeObservableMessag
 
 export function createErrorMessage(requestId: number, error: any): ErrorResponseMessage {
   return {
-    channel: SERVICE_FRAMEWORK3_CHANNEL,
+    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'ErrorMessage',
     requestId,
     error: formatError(error),
