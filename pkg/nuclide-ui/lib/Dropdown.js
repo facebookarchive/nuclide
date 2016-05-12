@@ -12,43 +12,47 @@
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
-const {PropTypes} = React;
+type Props = {
+  className: string;
+  disabled: boolean;
+  isFlat: boolean;
+  menuItems: Array<{label: React.Children; value: mixed}>;
+  selectedIndex: number;
+  /**
+   * A function that gets called with the new selected index on change.
+   */
+  onSelectedChange: (newIndex: number) => void;
+  /**
+   * Size of dropdown. Sizes match .btn classes in Atom's style guide. Default is medium (which
+   * does not have an associated 'size' string).
+   */
+  size?: 'xs' | 'sm' | 'lg';
+  title: string;
+};
 
 export class Dropdown extends React.Component {
-
-  static propTypes = {
-    className: PropTypes.string.isRequired,
-    disabled: PropTypes.bool.isRequired,
-    isFlat: PropTypes.bool.isRequired,
-    menuItems: PropTypes.arrayOf(PropTypes.shape({
-      label: PropTypes.node.isRequired,
-      value: PropTypes.any,
-    })).isRequired,
-    selectedIndex: PropTypes.number.isRequired,
-    /**
-     * A function that gets called with the new selected index on change.
-     */
-    onSelectedChange: PropTypes.func.isRequired,
-    /**
-     * Size of dropdown. Sizes match .btn classes in Atom's style guide. Default is medium (which
-     * does not have an associated 'size' string).
-     */
-    size: PropTypes.oneOf(['xs', 'sm', 'lg']),
-    title: PropTypes.string.isRequired,
-  };
+  props: Props;
 
   static defaultProps = {
     className: '',
     disabled: false,
-    selectedIndex: 0,
+    isFlat: false,
     menuItems: [],
     onSelectedChange: (newIndex: number) => {},
+    selectedIndex: 0,
     title: '',
   };
 
-  constructor(props: Object) {
+  constructor(props: Props) {
     super(props);
     (this: any)._onChange = this._onChange.bind(this);
+  }
+
+  _onChange(event: SyntheticMouseEvent): void {
+    if (event.target.selectedIndex != null) {
+      const selectedIndex = event.target.selectedIndex;
+      this.props.onSelectedChange(selectedIndex);
+    }
   }
 
   render(): React.Element {
@@ -77,12 +81,5 @@ export class Dropdown extends React.Component {
         <i className="icon icon-triangle-down text-center" />
       </div>
     );
-  }
-
-  _onChange(event: SyntheticMouseEvent): void {
-    if (event.target.selectedIndex != null) {
-      const selectedIndex = event.target.selectedIndex;
-      this.props.onSelectedChange(selectedIndex);
-    }
   }
 }

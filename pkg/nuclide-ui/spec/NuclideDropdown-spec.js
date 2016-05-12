@@ -21,16 +21,15 @@ const {
 describe('Dropdown', () => {
 
   it('honors the selectedIndex param', () => {
-    const props = {
-      menuItems: [
-        {label: 'foo', value: 'vfoo'},
-        {label: 'bar', value: 'vbar'},
-      ],
-      selectedIndex: 1,
-      onSelectedChange: () => {},
-    };
     const component = renderIntoDocument(
-      <Dropdown {...props} />
+      <Dropdown
+        menuItems={[
+          {label: 'foo', value: 'vfoo'},
+          {label: 'bar', value: 'vbar'},
+        ]}
+        onSelectedChange={newIndex => {}}
+        selectedIndex={1}
+      />
     );
 
     const select = scryRenderedDOMComponentsWithTag(component, 'select');
@@ -40,19 +39,17 @@ describe('Dropdown', () => {
 
   it('calls the callback with the new index when a different menu item is selected', () => {
     let changedIndex;
-    const onChange = index => {
-      changedIndex = index;
-    };
-    const props = {
-      menuItems: [
-        {label: 'foo', value: 'vfoo'},
-        {label: 'bar', value: 'vbar'},
-      ],
-      selectedIndex: 0,
-      onSelectedChange: onChange,
-    };
     const component = renderIntoDocument(
-      <Dropdown {...props} />
+      <Dropdown
+        menuItems={[
+          {label: 'foo', value: 'vfoo'},
+          {label: 'bar', value: 'vbar'},
+        ]}
+        onSelectedChange={index => {
+          changedIndex = index;
+        }}
+        selectedIndex={0}
+      />
     );
 
     const select = scryRenderedDOMComponentsWithTag(component, 'select');
