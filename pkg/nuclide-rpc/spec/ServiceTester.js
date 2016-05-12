@@ -23,7 +23,7 @@ export class ServiceTester {
 
   async start(customServices: Array<ConfigEntry>): Promise<void> {
     const transports = new LoopbackTransports();
-    this._serviceRegistry = new ServiceRegistry(customServices);
+    this._serviceRegistry = ServiceRegistry.createRemote(customServices);
     this._clientConnection = new ClientConnection(
       this._serviceRegistry, transports.serverTransport);
 

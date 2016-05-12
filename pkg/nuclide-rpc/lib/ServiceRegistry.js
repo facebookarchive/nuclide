@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../nuclide-remote-uri';
 import {createProxyFactory, getDefinitions} from './main';
 import {TypeRegistry} from './TypeRegistry';
 import type {
@@ -46,18 +47,29 @@ export class ServiceRegistry {
    */
   _classesByName: Map<string, ClassDefinition>;
 
-  _services: Array<ServiceDefinition>;
+  _services: Map<string, ServiceDefinition>;
 
-  constructor(services: Array<ConfigEntry>) {
+  constructor(
+    marshalUri: (uri: NuclideUri) => string,
+    unmarshalUri: (value: string) => NuclideUri,
+    services: Array<ConfigEntry>
+  ) {
     this._typeRegistry = new TypeRegistry();
     this._functionsByName = new Map();
     this._classesByName = new Map();
-    this._services = [];
+    this._services = new Map();
 
     // NuclideUri type requires no transformations (it is done on the client side).
-    this._typeRegistry.registerType('NuclideUri', uri => uri, remotePath => remotePath);
+    this._typeRegistry.registerType('NuclideUri', marshalUri, unmarshalUri);
 
     this.addServices(services);
+  }
+
+  static createRemote(services: Array<ConfigEntry>): ServiceRegistry {
+    return new ServiceRegistry(
+      uri => uri,
+      remotePath => remotePath,
+      services);
   }
 
   addServices(services: Array<ConfigEntry>): void {
@@ -70,7 +82,7 @@ export class ServiceRegistry {
       const defs = getDefinitions(service.definition);
       // $FlowIssue - the parameter passed to require must be a literal string.
       const localImpl = require(service.implementation);
-      this._services.push({
+      this._services.set(service.name, {
         name: service.name,
         factory: createProxyFactory(service.name, service.definition),
       });
@@ -144,7 +156,17 @@ export class ServiceRegistry {
     return this._typeRegistry;
   }
 
-  getServices(): Array<ServiceDefinition> {
-    return this._services;
+  getServices(): Iterator<ServiceDefinition> {
+    return this._services.values();
+  }
+
+  hasService(serviceName: string): boolean {
+    return this._services.has(serviceName);
+  }
+
+  getService(serviceName: string): ServiceDefinition {
+    const result = this._services.get(serviceName);
+    invariant(result != null);
+    return result;
   }
 }

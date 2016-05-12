@@ -90,7 +90,7 @@ class NuclideServer {
       });
     }
 
-    this._rpcServiceRegistry = new ServiceRegistry(services);
+    this._rpcServiceRegistry = ServiceRegistry.createRemote(services);
   }
 
   _attachUtilHandlers() {
