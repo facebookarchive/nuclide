@@ -1,0 +1,26 @@
+{
+  "name": "nuclide-definition-service",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides definitions from editor Positions.",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationCommands": {},
+  "consumedServices": {
+    "nuclide-definition-provider": {
+      "versions": {
+        "0.0.0": "consumeDefinitionProvider"
+      }
+    }
+  },
+  "providedServices": {
+    "nuclide-definition-service": {
+      "versions": {
+        "0.0.0": "provideDefinitionService"
+      }
+    }
+  }
+}
