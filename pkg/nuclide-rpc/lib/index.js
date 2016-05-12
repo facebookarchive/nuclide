@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +10,38 @@
  * the root directory of this source tree.
  */
 
-export {ServerComponent} from './ServerComponent';
-export {ClientComponent} from './ClientComponent';
-export {ClientConnection} from './ClientConnection';
-export {LoopbackTransports} from './LoopbackTransports';
+var _ServerComponent = require('./ServerComponent');
 
-export type ConfigEntry = {
-  name: string;
-  definition:string;
-  implementation: string;
-};
+Object.defineProperty(exports, 'ServerComponent', {
+  enumerable: true,
+  get: function get() {
+    return _ServerComponent.ServerComponent;
+  }
+});
 
-export type Transport = {
-  send(data: Object): void;
-  onMessage(callback: (message: Object) => mixed): IDisposable;
-  close(): void;
-};
+var _ClientComponent = require('./ClientComponent');
+
+Object.defineProperty(exports, 'ClientComponent', {
+  enumerable: true,
+  get: function get() {
+    return _ClientComponent.ClientComponent;
+  }
+});
+
+var _ClientConnection = require('./ClientConnection');
+
+Object.defineProperty(exports, 'ClientConnection', {
+  enumerable: true,
+  get: function get() {
+    return _ClientConnection.ClientConnection;
+  }
+});
+
+var _LoopbackTransports = require('./LoopbackTransports');
+
+Object.defineProperty(exports, 'LoopbackTransports', {
+  enumerable: true,
+  get: function get() {
+    return _LoopbackTransports.LoopbackTransports;
+  }
+});

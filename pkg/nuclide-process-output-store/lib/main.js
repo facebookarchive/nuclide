@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +8,12 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  get ProcessOutputStore() {
-    return require('./ProcessOutputStore');
-  },
-};
+module.exports = Object.defineProperties({}, {
+  ProcessOutputStore: {
+    get: function get() {
+      return require('./ProcessOutputStore');
+    },
+    configurable: true,
+    enumerable: true
+  }
+});

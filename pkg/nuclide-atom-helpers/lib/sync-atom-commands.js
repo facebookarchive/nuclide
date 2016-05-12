@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +10,28 @@
  * the root directory of this source tree.
  */
 
-import type {AtomCommands} from '..';
+var _bind = Function.prototype.bind;
+exports.syncAtomCommands = syncAtomCommands;
 
-import {diffSets, reconcileSetDiffs} from '../../nuclide-commons';
-import {CompositeDisposable} from 'atom';
-import {Observable} from 'rxjs';
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
-type Projector<T> = (set: Set<T>) => AtomCommands;
+var _nuclideCommons2;
+
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../../nuclide-commons');
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _rxjs2;
+
+function _rxjs() {
+  return _rxjs2 = require('rxjs');
+}
 
 /**
  * A utility that adds and removes commands to the Atom command registry based on their presence in
@@ -23,24 +39,19 @@ type Projector<T> = (set: Set<T>) => AtomCommands;
  * result (commands), we diff the input (sets) since it's easier and less likely to contain
  * functions (which are unlikely to be able to be safely compared using `===`).
  */
-export function syncAtomCommands<T>(
-  source: Observable<Set<T>>,
-  project: Projector<T>,
-): IDisposable {
+
+function syncAtomCommands(source, project) {
   // Add empty sets before completing and erroring to make sure that we remove remaining commands
   // in both cases.
-  const sets = source
-    .concat(Observable.of(new Set()))
-    .catch(err => Observable.of(new Set()).concat(Observable.throw(err)));
+  var sets = source.concat((_rxjs2 || _rxjs()).Observable.of(new Set())).catch(function (err) {
+    return (_rxjs2 || _rxjs()).Observable.of(new Set()).concat((_rxjs2 || _rxjs()).Observable.throw(err));
+  });
 
-  return reconcileSetDiffs(
-    diffSets(sets),
-    item => {
-      const commands = project(item);
-      const disposables = Object.keys(commands).map(target => (
-        atom.commands.add(target, commands[target])
-      ));
-      return new CompositeDisposable(...disposables);
-    },
-  );
+  return (0, (_nuclideCommons2 || _nuclideCommons()).reconcileSetDiffs)((0, (_nuclideCommons2 || _nuclideCommons()).diffSets)(sets), function (item) {
+    var commands = project(item);
+    var disposables = Object.keys(commands).map(function (target) {
+      return atom.commands.add(target, commands[target]);
+    });
+    return new (_bind.apply((_atom2 || _atom()).CompositeDisposable, [null].concat(_toConsumableArray(disposables))))();
+  });
 }

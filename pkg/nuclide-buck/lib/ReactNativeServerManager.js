@@ -1,5 +1,14 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,169 +18,221 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import type {ProcessOutputDataHandlers} from '../../nuclide-process-output-store/lib/types';
-import type {Dispatcher} from 'flux';
-import {scriptSafeSpawnAndObserveOutput} from '../../nuclide-commons';
-import ExecutorServer from '../../nuclide-react-native-node-executor';
-import ReactNativeServerStatus from './ReactNativeServerStatus';
-import {React} from 'react-for-atom';
-import ReactNativeServerPanel from './ReactNativeServerPanel';
-import ReactNativeServerActions from './ReactNativeServerActions';
+var _assert2;
 
-export default class ReactNativeServerManager {
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
-  _actions: ReactNativeServerActions;
-  _dispatcher: Dispatcher;
-  _status: ReactNativeServerStatus;
-  _processRunner: ?Object;
-  _nodeExecutorServer: ?ExecutorServer;
+var _nuclideCommons2;
 
-  constructor(dispatcher: Dispatcher, actions: ReactNativeServerActions) {
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../../nuclide-commons');
+}
+
+var _nuclideReactNativeNodeExecutor2;
+
+function _nuclideReactNativeNodeExecutor() {
+  return _nuclideReactNativeNodeExecutor2 = _interopRequireDefault(require('../../nuclide-react-native-node-executor'));
+}
+
+var _ReactNativeServerStatus2;
+
+function _ReactNativeServerStatus() {
+  return _ReactNativeServerStatus2 = _interopRequireDefault(require('./ReactNativeServerStatus'));
+}
+
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _ReactNativeServerPanel2;
+
+function _ReactNativeServerPanel() {
+  return _ReactNativeServerPanel2 = _interopRequireDefault(require('./ReactNativeServerPanel'));
+}
+
+var _ReactNativeServerActions2;
+
+function _ReactNativeServerActions() {
+  return _ReactNativeServerActions2 = _interopRequireDefault(require('./ReactNativeServerActions'));
+}
+
+var ReactNativeServerManager = (function () {
+  function ReactNativeServerManager(dispatcher, actions) {
+    _classCallCheck(this, ReactNativeServerManager);
+
     this._actions = actions;
     this._dispatcher = dispatcher;
-    this._status = new ReactNativeServerStatus();
+    this._status = new (_ReactNativeServerStatus2 || _ReactNativeServerStatus()).default();
     this._setupActions();
   }
 
-  dispose() {
-    this._stopServer();
-    if (this._nodeExecutorServer) {
-      this._nodeExecutorServer.close();
-    }
-  }
-
-  _setupActions() {
-    this._dispatcher.register(action => {
-      switch (action.actionType) {
-        case ReactNativeServerActions.ActionType.START_NODE_EXECUTOR_SERVER:
-          this._startNodeExecutorServer();
-          break;
-        case ReactNativeServerActions.ActionType.START_SERVER:
-          this._startServer(action.serverCommand);
-          break;
-        case ReactNativeServerActions.ActionType.STOP_SERVER:
-          this._stopServer();
-          break;
-        case ReactNativeServerActions.ActionType.RESTART_SERVER:
-          this._stopServer();
-          atom.workspace.destroyActivePaneItem();
-          this._startServer(action.serverCommand);
-          break;
+  _createClass(ReactNativeServerManager, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._stopServer();
+      if (this._nodeExecutorServer) {
+        this._nodeExecutorServer.close();
       }
-    });
-  }
-
-  _stopServer() {
-    this._processRunner && this._processRunner.dispose();
-    this._processRunner = null;
-    this._status.setServerRunning(false);
-  }
-
-  async _startServer(serverCommand: string): Promise<void> {
-    let processRunner = this._processRunner;
-    if (processRunner == null) {
-      processRunner = await this._createProcessRunner(serverCommand);
-      if (processRunner == null) {
-        return;
-      }
-      this._processRunner = processRunner;
-      this._status.setServerRunning(true);
     }
-    invariant(processRunner);
-    processRunner.run();
-  }
+  }, {
+    key: '_setupActions',
+    value: function _setupActions() {
+      var _this = this;
 
-  async _createProcessRunner(serverCommand: string): Promise<?Object> {
-    const getRunCommandInNewPane = require('../../nuclide-process-output');
-    const {runCommandInNewPane, disposable} = getRunCommandInNewPane();
-
-    const runProcessWithHandlers = (dataHandlerOptions: ProcessOutputDataHandlers) => {
-      const {stdout, stderr, error, exit} = dataHandlerOptions;
-      invariant(serverCommand);
-      const observable = scriptSafeSpawnAndObserveOutput(serverCommand);
-      const onNext = (data: {stdout?: string; stderr?: string}) => {
-        if (data.stdout) {
-          stdout(data.stdout);
-        } else {
-          stderr(data.stderr || '');
+      this._dispatcher.register(function (action) {
+        switch (action.actionType) {
+          case (_ReactNativeServerActions2 || _ReactNativeServerActions()).default.ActionType.START_NODE_EXECUTOR_SERVER:
+            _this._startNodeExecutorServer();
+            break;
+          case (_ReactNativeServerActions2 || _ReactNativeServerActions()).default.ActionType.START_SERVER:
+            _this._startServer(action.serverCommand);
+            break;
+          case (_ReactNativeServerActions2 || _ReactNativeServerActions()).default.ActionType.STOP_SERVER:
+            _this._stopServer();
+            break;
+          case (_ReactNativeServerActions2 || _ReactNativeServerActions()).default.ActionType.RESTART_SERVER:
+            _this._stopServer();
+            atom.workspace.destroyActivePaneItem();
+            _this._startServer(action.serverCommand);
+            break;
         }
-      };
-      const onError = (data: string) => {
-        error(new Error(data));
-        exit(1);
-        disposable.dispose();
-      };
-      const onExit = () => {
-        exit(0);
-        disposable.dispose();
-      };
-      const subscription = observable.subscribe(onNext, onError, onExit);
-
-      return Promise.resolve({
-        kill() {
-          subscription.unsubscribe();
-          disposable.dispose();
-        },
       });
-    };
-
-    const {ProcessOutputStore} = require('../../nuclide-process-output-store');
-    const processOutputStore = new ProcessOutputStore(runProcessWithHandlers);
-
-    const panel =
-      <ReactNativeServerPanel
-        actions={this._actions}
-        store={this._status}
-        serverCommand={serverCommand}
-      />;
-
-    let isOutputPaneOpen = false;
-    let paneSubscription;
-
-    // We don't want to call getRunCommandInNewPane() multiple times because it has unwanted
-    // side effects. So, we cache the output of runCommandInNewPane function and use the same
-    // instance of runCommandInNewPane to re-open output pane for the same server process.
-    return {
-      run: async () => {
-        if (isOutputPaneOpen) {
+    }
+  }, {
+    key: '_stopServer',
+    value: function _stopServer() {
+      this._processRunner && this._processRunner.dispose();
+      this._processRunner = null;
+      this._status.setServerRunning(false);
+    }
+  }, {
+    key: '_startServer',
+    value: _asyncToGenerator(function* (serverCommand) {
+      var processRunner = this._processRunner;
+      if (processRunner == null) {
+        processRunner = yield this._createProcessRunner(serverCommand);
+        if (processRunner == null) {
           return;
         }
-        const textEditor = await runCommandInNewPane({
-          tabTitle: 'React Native Server',
-          processOutputStore,
-          processOutputViewTopElement: panel,
-        });
-        isOutputPaneOpen = true;
+        this._processRunner = processRunner;
+        this._status.setServerRunning(true);
+      }
+      (0, (_assert2 || _assert()).default)(processRunner);
+      processRunner.run();
+    })
+  }, {
+    key: '_createProcessRunner',
+    value: _asyncToGenerator(function* (serverCommand) {
+      var getRunCommandInNewPane = require('../../nuclide-process-output');
 
-        paneSubscription = atom.workspace.onDidDestroyPaneItem(event => {
-          if (event.item === textEditor) {
-            isOutputPaneOpen = false;
-            invariant(paneSubscription);
-            paneSubscription.dispose();
-            paneSubscription = null;
+      var _getRunCommandInNewPane = getRunCommandInNewPane();
+
+      var runCommandInNewPane = _getRunCommandInNewPane.runCommandInNewPane;
+      var disposable = _getRunCommandInNewPane.disposable;
+
+      var runProcessWithHandlers = function runProcessWithHandlers(dataHandlerOptions) {
+        var stdout = dataHandlerOptions.stdout;
+        var stderr = dataHandlerOptions.stderr;
+        var error = dataHandlerOptions.error;
+        var exit = dataHandlerOptions.exit;
+
+        (0, (_assert2 || _assert()).default)(serverCommand);
+        var observable = (0, (_nuclideCommons2 || _nuclideCommons()).scriptSafeSpawnAndObserveOutput)(serverCommand);
+        var onNext = function onNext(data) {
+          if (data.stdout) {
+            stdout(data.stdout);
+          } else {
+            stderr(data.stderr || '');
+          }
+        };
+        var onError = function onError(data) {
+          error(new Error(data));
+          exit(1);
+          disposable.dispose();
+        };
+        var onExit = function onExit() {
+          exit(0);
+          disposable.dispose();
+        };
+        var subscription = observable.subscribe(onNext, onError, onExit);
+
+        return Promise.resolve({
+          kill: function kill() {
+            subscription.unsubscribe();
+            disposable.dispose();
           }
         });
-      },
+      };
 
-      dispose: () => {
-        processOutputStore && processOutputStore.stopProcess();
-        paneSubscription && paneSubscription.dispose();
-      },
-    };
-  }
+      var _require = require('../../nuclide-process-output-store');
 
-  async _attachNodeDebugger(pid: number): Promise<void> {
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-    const debuggerService = await require('../../nuclide-service-hub-plus')
-      .consumeFirstProvider('nuclide-debugger.remote');
-    debuggerService.debugNode(pid);
-  }
+      var ProcessOutputStore = _require.ProcessOutputStore;
 
-  _startNodeExecutorServer() {
-    if (!this._nodeExecutorServer) {
-      const server = this._nodeExecutorServer = new ExecutorServer(8090);
-      server.onDidEvalApplicationScript(this._attachNodeDebugger.bind(this));
+      var processOutputStore = new ProcessOutputStore(runProcessWithHandlers);
+
+      var panel = (_reactForAtom2 || _reactForAtom()).React.createElement((_ReactNativeServerPanel2 || _ReactNativeServerPanel()).default, {
+        actions: this._actions,
+        store: this._status,
+        serverCommand: serverCommand
+      });
+
+      var isOutputPaneOpen = false;
+      var paneSubscription = undefined;
+
+      // We don't want to call getRunCommandInNewPane() multiple times because it has unwanted
+      // side effects. So, we cache the output of runCommandInNewPane function and use the same
+      // instance of runCommandInNewPane to re-open output pane for the same server process.
+      return {
+        run: _asyncToGenerator(function* () {
+          if (isOutputPaneOpen) {
+            return;
+          }
+          var textEditor = yield runCommandInNewPane({
+            tabTitle: 'React Native Server',
+            processOutputStore: processOutputStore,
+            processOutputViewTopElement: panel
+          });
+          isOutputPaneOpen = true;
+
+          paneSubscription = atom.workspace.onDidDestroyPaneItem(function (event) {
+            if (event.item === textEditor) {
+              isOutputPaneOpen = false;
+              (0, (_assert2 || _assert()).default)(paneSubscription);
+              paneSubscription.dispose();
+              paneSubscription = null;
+            }
+          });
+        }),
+
+        dispose: function dispose() {
+          processOutputStore && processOutputStore.stopProcess();
+          paneSubscription && paneSubscription.dispose();
+        }
+      };
+    })
+  }, {
+    key: '_attachNodeDebugger',
+    value: _asyncToGenerator(function* (pid) {
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
+      var debuggerService = yield require('../../nuclide-service-hub-plus').consumeFirstProvider('nuclide-debugger.remote');
+      debuggerService.debugNode(pid);
+    })
+  }, {
+    key: '_startNodeExecutorServer',
+    value: function _startNodeExecutorServer() {
+      if (!this._nodeExecutorServer) {
+        var server = this._nodeExecutorServer = new (_nuclideReactNativeNodeExecutor2 || _nuclideReactNativeNodeExecutor()).default(8090);
+        server.onDidEvalApplicationScript(this._attachNodeDebugger.bind(this));
+      }
     }
-  }
-}
+  }]);
+
+  return ReactNativeServerManager;
+})();
+
+exports.default = ReactNativeServerManager;
+module.exports = exports.default;

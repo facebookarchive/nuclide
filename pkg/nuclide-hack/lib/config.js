@@ -1,5 +1,11 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getConfig = getConfig;
+exports.getShowTypeCoverage = getShowTypeCoverage;
+exports.setShowTypeCoverage = setShowTypeCoverage;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +15,26 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../nuclide-feature-config';
+var _nuclideFeatureConfig2;
 
-type HackConfig = {
-  hhClientPath: string;
-  useIdeConnection: boolean;
-  showTypeCoverage: boolean;
-};
-
-export const HACK_CONFIG_PATH = 'nuclide-hack';
-export const SHOW_TYPE_COVERAGE_CONFIG_PATH = HACK_CONFIG_PATH + '.showTypeCoverage';
-
-export function getConfig(): HackConfig {
-  return (featureConfig.get(HACK_CONFIG_PATH): any);
+function _nuclideFeatureConfig() {
+  return _nuclideFeatureConfig2 = _interopRequireDefault(require('../../nuclide-feature-config'));
 }
 
-export function getShowTypeCoverage(): boolean {
+var HACK_CONFIG_PATH = 'nuclide-hack';
+exports.HACK_CONFIG_PATH = HACK_CONFIG_PATH;
+var SHOW_TYPE_COVERAGE_CONFIG_PATH = HACK_CONFIG_PATH + '.showTypeCoverage';
+
+exports.SHOW_TYPE_COVERAGE_CONFIG_PATH = SHOW_TYPE_COVERAGE_CONFIG_PATH;
+
+function getConfig() {
+  return (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get(HACK_CONFIG_PATH);
+}
+
+function getShowTypeCoverage() {
   return getConfig().showTypeCoverage;
 }
 
-export function setShowTypeCoverage(value: boolean): void {
-  featureConfig.set(SHOW_TYPE_COVERAGE_CONFIG_PATH, value);
+function setShowTypeCoverage(value) {
+  (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.set(SHOW_TYPE_COVERAGE_CONFIG_PATH, value);
 }

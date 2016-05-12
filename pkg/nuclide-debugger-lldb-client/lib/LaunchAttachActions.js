@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,70 +10,99 @@
  * the root directory of this source tree.
  */
 
-import type {Dispatcher} from 'flux';
-import type {
-  AttachTargetInfo,
-  LaunchTargetInfo,
-} from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type DebuggerProcessInfo from '../../nuclide-debugger-atom/lib/DebuggerProcessInfo';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import invariant from 'assert';
-import {LaunchAttachActionCode} from './Constants';
-import {AttachProcessInfo} from './AttachProcessInfo';
-import {LaunchProcessInfo} from './LaunchProcessInfo';
-import {getServiceByNuclideUri} from '../../nuclide-client';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-export class LaunchAttachActions {
-  _dispatcher: Dispatcher;
-  _targetUri: NuclideUri;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  constructor(dispatcher: Dispatcher, targetUri: NuclideUri) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _Constants2;
+
+function _Constants() {
+  return _Constants2 = require('./Constants');
+}
+
+var _AttachProcessInfo2;
+
+function _AttachProcessInfo() {
+  return _AttachProcessInfo2 = require('./AttachProcessInfo');
+}
+
+var _LaunchProcessInfo2;
+
+function _LaunchProcessInfo() {
+  return _LaunchProcessInfo2 = require('./LaunchProcessInfo');
+}
+
+var _nuclideClient2;
+
+function _nuclideClient() {
+  return _nuclideClient2 = require('../../nuclide-client');
+}
+
+var LaunchAttachActions = (function () {
+  function LaunchAttachActions(dispatcher, targetUri) {
+    _classCallCheck(this, LaunchAttachActions);
+
     this._dispatcher = dispatcher;
     this._targetUri = targetUri;
   }
 
-  attachDebugger(attachTarget: AttachTargetInfo): Promise<void> {
-    const attachInfo = new AttachProcessInfo(this._targetUri, attachTarget);
-    return this._startDebugging(attachInfo);
-  }
+  _createClass(LaunchAttachActions, [{
+    key: 'attachDebugger',
+    value: function attachDebugger(attachTarget) {
+      var attachInfo = new (_AttachProcessInfo2 || _AttachProcessInfo()).AttachProcessInfo(this._targetUri, attachTarget);
+      return this._startDebugging(attachInfo);
+    }
+  }, {
+    key: 'launchDebugger',
+    value: function launchDebugger(launchTarget) {
+      var launchInfo = new (_LaunchProcessInfo2 || _LaunchProcessInfo()).LaunchProcessInfo(this._targetUri, launchTarget);
+      return this._startDebugging(launchInfo);
+    }
+  }, {
+    key: 'toggleLaunchAttachDialog',
+    value: function toggleLaunchAttachDialog() {
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:toggle-launch-attach');
+    }
+  }, {
+    key: 'showDebuggerPanel',
+    value: function showDebuggerPanel() {
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
+    }
+  }, {
+    key: '_startDebugging',
+    value: _asyncToGenerator(function* (processInfo) {
+      var debuggerService = yield require('../../nuclide-service-hub-plus').consumeFirstProvider('nuclide-debugger.remote');
+      yield debuggerService.startDebugging(processInfo);
+    })
+  }, {
+    key: 'updateAttachTargetList',
+    value: _asyncToGenerator(function* () {
+      var rpcService = (0, (_nuclideClient2 || _nuclideClient()).getServiceByNuclideUri)('LLDBDebuggerRpcService', this._targetUri);
+      (0, (_assert2 || _assert()).default)(rpcService);
+      var attachTargetList = yield rpcService.getAttachTargetInfoList();
+      this._emitNewAction((_Constants2 || _Constants()).LaunchAttachActionCode.UPDATE_ATTACH_TARGET_LIST, attachTargetList);
+    })
+  }, {
+    key: '_emitNewAction',
+    value: function _emitNewAction(actionType, data) {
+      this._dispatcher.dispatch({
+        actionType: actionType,
+        data: data
+      });
+    }
+  }]);
 
-  launchDebugger(launchTarget: LaunchTargetInfo): Promise<void> {
-    const launchInfo = new LaunchProcessInfo(this._targetUri, launchTarget);
-    return this._startDebugging(launchInfo);
-  }
+  return LaunchAttachActions;
+})();
 
-  toggleLaunchAttachDialog(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:toggle-launch-attach'
-    );
-  }
-
-  showDebuggerPanel(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:show'
-    );
-  }
-
-  async _startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
-    const debuggerService = await require('../../nuclide-service-hub-plus')
-          .consumeFirstProvider('nuclide-debugger.remote');
-    await debuggerService.startDebugging(processInfo);
-  }
-
-  async updateAttachTargetList(): Promise<void> {
-    const rpcService = getServiceByNuclideUri('LLDBDebuggerRpcService', this._targetUri);
-    invariant(rpcService);
-    const attachTargetList = await rpcService.getAttachTargetInfoList();
-    this._emitNewAction(LaunchAttachActionCode.UPDATE_ATTACH_TARGET_LIST, attachTargetList);
-  }
-
-  _emitNewAction(actionType: string, data: Object): void {
-    this._dispatcher.dispatch({
-      actionType,
-      data,
-    });
-  }
-}
+exports.LaunchAttachActions = LaunchAttachActions;

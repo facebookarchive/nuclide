@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,69 +10,18 @@
  * the root directory of this source tree.
  */
 
-import type {Task} from '../../nuclide-task';
-import type {FileSearchResult as FileSearchResultType} from './FileSearch';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {getLogger} from '../../nuclide-logging';
-import {fsPromise} from '../../nuclide-commons';
+var newFileSearch = _asyncToGenerator(function* (directoryUri) {
+  var _require = require('../../nuclide-task');
 
-export type FileSearchResult = FileSearchResultType;
+  var createTask = _require.createTask;
 
-type DirectoryUri = string;
-export type FileSearch = {
-  query: (query: string) => Promise<Array<FileSearchResult>>;
-  dispose: () => void;
-};
-
-const logger = getLogger();
-
-/**
- * This is an object that lives in the main process that delegates calls to the
- * FileSearch in the forked process.
- */
-class MainProcessFileSearch {
-  _task: ?Task;
-  _directoryUri: DirectoryUri;
-
-  constructor(task: Task, directoryUri: DirectoryUri) {
-    this._task = task;
-    this._task.onError(buffer => {
-      logger.error('File search process crashed with message:', buffer.toString());
-      this.dispose();
-    });
-    this._directoryUri = directoryUri;
-  }
-
-  async query(query: string): Promise<Array<FileSearchResult>> {
-    const task = this._task;
-    if (task == null) {
-      throw new Error('Task has been disposed');
-    }
-    return task.invokeRemoteMethod({
-      file: require.resolve('./FileSearch'),
-      method: 'doSearch',
-      args: [this._directoryUri, query],
-    });
-  }
-
-  dispose() {
-    if (this._task != null) {
-      delete fileSearchForDirectoryUri[this._directoryUri];
-      this._task.dispose();
-      this._task = null;
-    }
-  }
-}
-
-const fileSearchForDirectoryUri: {[key: DirectoryUri]: Promise<MainProcessFileSearch>} = {};
-
-async function newFileSearch(directoryUri: string): Promise<MainProcessFileSearch> {
-  const {createTask} = require('../../nuclide-task');
-  const task = createTask();
-  await task.invokeRemoteMethod({
+  var task = createTask();
+  yield task.invokeRemoteMethod({
     file: require.resolve('./FileSearch'),
     method: 'initFileSearchForDirectory',
-    args: [directoryUri],
+    args: [directoryUri]
   });
   return new MainProcessFileSearch(task, directoryUri);
 }
@@ -82,22 +32,102 @@ async function newFileSearch(directoryUri: string): Promise<MainProcessFileSearc
  *
  * TODO(mbolin): Caller should also invoke dispose(), as appropriate.
  */
-export async function fileSearchForDirectory(directoryUri: string): Promise<FileSearch> {
+);
+
+var fileSearchForDirectory = _asyncToGenerator(function* (directoryUri) {
   if (directoryUri in fileSearchForDirectoryUri) {
     return fileSearchForDirectoryUri[directoryUri];
   }
 
-  const exists = await fsPromise.exists(directoryUri);
+  var exists = yield (_nuclideCommons2 || _nuclideCommons()).fsPromise.exists(directoryUri);
   if (!exists) {
     throw new Error('Could not find directory to search : ' + directoryUri);
   }
 
-  const stat = await fsPromise.stat(directoryUri);
+  var stat = yield (_nuclideCommons2 || _nuclideCommons()).fsPromise.stat(directoryUri);
   if (!stat.isDirectory()) {
     throw new Error('Provided path is not a directory : ' + directoryUri);
   }
 
-  const promise = newFileSearch(directoryUri);
+  var promise = newFileSearch(directoryUri);
   fileSearchForDirectoryUri[directoryUri] = promise;
   return promise;
+});
+
+exports.fileSearchForDirectory = fileSearchForDirectory;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
 }
+
+var _nuclideCommons2;
+
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../../nuclide-commons');
+}
+
+var logger = (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)();
+
+/**
+ * This is an object that lives in the main process that delegates calls to the
+ * FileSearch in the forked process.
+ */
+
+var MainProcessFileSearch = (function () {
+  function MainProcessFileSearch(task, directoryUri) {
+    var _this = this;
+
+    _classCallCheck(this, MainProcessFileSearch);
+
+    this._task = task;
+    this._task.onError(function (buffer) {
+      logger.error('File search process crashed with message:', buffer.toString());
+      _this.dispose();
+    });
+    this._directoryUri = directoryUri;
+  }
+
+  _createClass(MainProcessFileSearch, [{
+    key: 'query',
+    value: (function (_query) {
+      function query(_x) {
+        return _query.apply(this, arguments);
+      }
+
+      query.toString = function () {
+        return _query.toString();
+      };
+
+      return query;
+    })(_asyncToGenerator(function* (query) {
+      var task = this._task;
+      if (task == null) {
+        throw new Error('Task has been disposed');
+      }
+      return task.invokeRemoteMethod({
+        file: require.resolve('./FileSearch'),
+        method: 'doSearch',
+        args: [this._directoryUri, query]
+      });
+    }))
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      if (this._task != null) {
+        delete fileSearchForDirectoryUri[this._directoryUri];
+        this._task.dispose();
+        this._task = null;
+      }
+    }
+  }]);
+
+  return MainProcessFileSearch;
+})();
+
+var fileSearchForDirectoryUri = {};

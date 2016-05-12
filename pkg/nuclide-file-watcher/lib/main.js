@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +12,29 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
-let subscriptions: ?CompositeDisposable = null;
-let watchers: ?Map = null;
+var _atom2;
 
-export function activate(state: ?Object): void {
-  const _subscriptions = new CompositeDisposable();
-  const _watchers = new Map();
+function _atom() {
+  return _atom2 = require('atom');
+}
 
-  _subscriptions.add(atom.workspace.observeTextEditors(editor => {
+var subscriptions = null;
+var watchers = null;
+
+function activate(state) {
+  var _subscriptions = new (_atom2 || _atom()).CompositeDisposable();
+  var _watchers = new Map();
+
+  _subscriptions.add(atom.workspace.observeTextEditors(function (editor) {
     if (_watchers.has(editor)) {
       return;
     }
 
-    const FileWatcher = require('./FileWatcher');
-    const fileWatcher = new FileWatcher(editor);
+    var FileWatcher = require('./FileWatcher');
+    var fileWatcher = new FileWatcher(editor);
     _watchers.set(editor, fileWatcher);
 
-    _subscriptions.add(editor.onDidDestroy(() => {
+    _subscriptions.add(editor.onDidDestroy(function () {
       fileWatcher.destroy();
       _watchers.delete(editor);
     }));
@@ -39,11 +47,11 @@ export function activate(state: ?Object): void {
   atom.config.set('file-watcher.promptWhenFileHasChangedOnDisk', false);
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (subscriptions == null || watchers == null) {
     return;
   }
-  for (const fileWatcher of watchers.values()) {
+  for (var fileWatcher of watchers.values()) {
     fileWatcher.destroy();
   }
   subscriptions.dispose();

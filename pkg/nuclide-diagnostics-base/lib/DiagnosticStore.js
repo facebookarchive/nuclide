@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,435 +10,466 @@
  * the root directory of this source tree.
  */
 
-import type {
-  InvalidationMessage,
-  DiagnosticMessage,
-  DiagnosticProvider,
-  DiagnosticProviderUpdate,
-  FileDiagnosticMessage,
-  ProjectDiagnosticMessage,
-  FileMessageUpdate,
-} from '..';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {applyTextEdit} from '../../nuclide-textedit';
-import {array} from '../../nuclide-commons';
-import {MarkerTracker} from './MarkerTracker';
-import invariant from 'assert';
-import {Disposable, Emitter} from 'atom';
+var _nuclideTextedit2;
 
-const PROJECT_MESSAGE_CHANGE_EVENT = 'messages-changed-for-project';
-const ALL_CHANGE_EVENT = 'messages-changed';
+function _nuclideTextedit() {
+  return _nuclideTextedit2 = require('../../nuclide-textedit');
+}
 
-class DiagnosticStore {
-  // A map from each diagnostic provider to:
-  // a map from each file it has messages for to the array of messages for that file.
-  _providerToFileToMessages: Map<DiagnosticProvider, Map<NuclideUri, Array<FileDiagnosticMessage>>>;
-  // A map from each file that has messages from any diagnostic provider
-  // to the set of diagnostic providers that have messages for it.
-  _fileToProviders: Map<NuclideUri, Set<DiagnosticProvider>>;
+var _nuclideCommons2;
 
-  // A map from each diagnostic provider to the array of project messages from it.
-  _providerToProjectDiagnostics: Map<DiagnosticProvider, Array<ProjectDiagnosticMessage>>;
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../../nuclide-commons');
+}
 
-  // File paths are used as event names for the _fileChangeEmitter, so a second
-  // emitter is used for other events to prevent event name collisions.
-  _fileChangeEmitter: Emitter;
-  _nonFileChangeEmitter: Emitter;
-  // A map of NuclideUri to the number of listeners registered for changes to
-  // messages for that file.
-  _fileToListenersCount: Map<NuclideUri, number>;
-  _projectListenersCount: number;
-  _allMessagesListenersCount: number;
+var _MarkerTracker2;
 
-  _markerTracker: MarkerTracker;
+function _MarkerTracker() {
+  return _MarkerTracker2 = require('./MarkerTracker');
+}
 
-  constructor() {
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var PROJECT_MESSAGE_CHANGE_EVENT = 'messages-changed-for-project';
+var ALL_CHANGE_EVENT = 'messages-changed';
+
+var DiagnosticStore = (function () {
+  function DiagnosticStore() {
+    _classCallCheck(this, DiagnosticStore);
+
     this._providerToFileToMessages = new Map();
     this._fileToProviders = new Map();
     this._providerToProjectDiagnostics = new Map();
 
-    this._fileChangeEmitter = new Emitter();
-    this._nonFileChangeEmitter = new Emitter();
+    this._fileChangeEmitter = new (_atom2 || _atom()).Emitter();
+    this._nonFileChangeEmitter = new (_atom2 || _atom()).Emitter();
     this._fileToListenersCount = new Map();
     this._projectListenersCount = 0;
     this._allMessagesListenersCount = 0;
 
-    this._markerTracker = new MarkerTracker();
+    this._markerTracker = new (_MarkerTracker2 || _MarkerTracker()).MarkerTracker();
   }
 
-  dispose() {
-    this._providerToFileToMessages.clear();
-    this._fileToProviders.clear();
-    this._providerToProjectDiagnostics.clear();
-    this._fileChangeEmitter.dispose();
-    this._nonFileChangeEmitter.dispose();
-    this._fileToListenersCount.clear();
-    this._markerTracker.dispose();
-  }
-
-
-  /**
-   * Section: Methods to modify the store.
-   */
-
-  /**
-   * Update the messages from the given provider.
-   * If the update contains messages at a scope that already has messages from
-   * this provider in the store, the existing messages will be overwritten by the
-   * new messages.
-   * @param diagnosticProvider The diagnostic provider that these messages come from.
-   * @param updates Set of updates to apply.
-   */
-  updateMessages(
-      diagnosticProvider: DiagnosticProvider,
-      updates: DiagnosticProviderUpdate,
-    ): void {
-    if (updates.filePathToMessages) {
-      this._updateFileMessages(diagnosticProvider, updates.filePathToMessages);
+  _createClass(DiagnosticStore, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._providerToFileToMessages.clear();
+      this._fileToProviders.clear();
+      this._providerToProjectDiagnostics.clear();
+      this._fileChangeEmitter.dispose();
+      this._nonFileChangeEmitter.dispose();
+      this._fileToListenersCount.clear();
+      this._markerTracker.dispose();
     }
-    if (updates.projectMessages) {
-      this._updateProjectMessages(diagnosticProvider, updates.projectMessages);
-    }
-    if (updates.filePathToMessages || updates.projectMessages) {
-      this._emitAllMessages();
-    }
-  }
 
-  _updateFileMessages(
-      diagnosticProvider: DiagnosticProvider,
-      newFilePathsToMessages: Map<NuclideUri, Array<FileDiagnosticMessage>>
-    ): void {
-    let fileToMessages = this._providerToFileToMessages.get(diagnosticProvider);
-    if (!fileToMessages) {
-      fileToMessages = new Map();
-      this._providerToFileToMessages.set(diagnosticProvider, fileToMessages);
-    }
-    newFilePathsToMessages.forEach((newMessagesForPath, filePath) => {
-      // Flow naively thinks that since we are in a closure, fileToMessages could have been
-      // reassigned to something null by the time this executes.
-      invariant(fileToMessages != null);
+    /**
+     * Section: Methods to modify the store.
+     */
 
-      const messagesToRemove = fileToMessages.get(filePath);
-      if (messagesToRemove != null) {
-        this._markerTracker.removeFileMessages(messagesToRemove);
+    /**
+     * Update the messages from the given provider.
+     * If the update contains messages at a scope that already has messages from
+     * this provider in the store, the existing messages will be overwritten by the
+     * new messages.
+     * @param diagnosticProvider The diagnostic provider that these messages come from.
+     * @param updates Set of updates to apply.
+     */
+  }, {
+    key: 'updateMessages',
+    value: function updateMessages(diagnosticProvider, updates) {
+      if (updates.filePathToMessages) {
+        this._updateFileMessages(diagnosticProvider, updates.filePathToMessages);
       }
-      this._markerTracker.addFileMessages(newMessagesForPath);
-
-      // Update _providerToFileToMessages.
-      fileToMessages.set(filePath, newMessagesForPath);
-      // Update _fileToProviders.
-      let providers = this._fileToProviders.get(filePath);
-      if (!providers) {
-        providers = new Set();
-        this._fileToProviders.set(filePath, providers);
+      if (updates.projectMessages) {
+        this._updateProjectMessages(diagnosticProvider, updates.projectMessages);
       }
-      providers.add(diagnosticProvider);
+      if (updates.filePathToMessages || updates.projectMessages) {
+        this._emitAllMessages();
+      }
+    }
+  }, {
+    key: '_updateFileMessages',
+    value: function _updateFileMessages(diagnosticProvider, newFilePathsToMessages) {
+      var _this = this;
 
-      this._emitFileMessages(filePath);
-    });
-  }
+      var fileToMessages = this._providerToFileToMessages.get(diagnosticProvider);
+      if (!fileToMessages) {
+        fileToMessages = new Map();
+        this._providerToFileToMessages.set(diagnosticProvider, fileToMessages);
+      }
+      newFilePathsToMessages.forEach(function (newMessagesForPath, filePath) {
+        // Flow naively thinks that since we are in a closure, fileToMessages could have been
+        // reassigned to something null by the time this executes.
+        (0, (_assert2 || _assert()).default)(fileToMessages != null);
 
-  _updateProjectMessages(
-    diagnosticProvider: DiagnosticProvider,
-    projectMessages: Array<ProjectDiagnosticMessage>
-  ): void {
-    this._providerToProjectDiagnostics.set(diagnosticProvider, projectMessages);
-    this._emitProjectMessages();
-  }
+        var messagesToRemove = fileToMessages.get(filePath);
+        if (messagesToRemove != null) {
+          _this._markerTracker.removeFileMessages(messagesToRemove);
+        }
+        _this._markerTracker.addFileMessages(newMessagesForPath);
 
-  /**
-   * Clear the messages from the given provider, according to the options.
-   * @param options An Object of the form:
-   *   * scope: Can be 'file', 'project', or 'all'.
-   *       * 'file': The 'filePaths' option determines which files' messages to clear
-   *       * 'project': all 'project' scope messages are cleared.
-   *       * 'all': all messages are cleared.
-   *   * filePaths: Array of absolute file paths (NuclideUri) to clear messages for.
-   */
-  invalidateMessages(
-      diagnosticProvider: DiagnosticProvider,
-      invalidationMessage: InvalidationMessage
-    ): void {
-    if (invalidationMessage.scope === 'file') {
-      this._invalidateFileMessagesForProvider(diagnosticProvider, invalidationMessage.filePaths);
-      this._emitAllMessages();
-    } else if (invalidationMessage.scope === 'project') {
+        // Update _providerToFileToMessages.
+        fileToMessages.set(filePath, newMessagesForPath);
+        // Update _fileToProviders.
+        var providers = _this._fileToProviders.get(filePath);
+        if (!providers) {
+          providers = new Set();
+          _this._fileToProviders.set(filePath, providers);
+        }
+        providers.add(diagnosticProvider);
+
+        _this._emitFileMessages(filePath);
+      });
+    }
+  }, {
+    key: '_updateProjectMessages',
+    value: function _updateProjectMessages(diagnosticProvider, projectMessages) {
+      this._providerToProjectDiagnostics.set(diagnosticProvider, projectMessages);
+      this._emitProjectMessages();
+    }
+
+    /**
+     * Clear the messages from the given provider, according to the options.
+     * @param options An Object of the form:
+     *   * scope: Can be 'file', 'project', or 'all'.
+     *       * 'file': The 'filePaths' option determines which files' messages to clear
+     *       * 'project': all 'project' scope messages are cleared.
+     *       * 'all': all messages are cleared.
+     *   * filePaths: Array of absolute file paths (NuclideUri) to clear messages for.
+     */
+  }, {
+    key: 'invalidateMessages',
+    value: function invalidateMessages(diagnosticProvider, invalidationMessage) {
+      if (invalidationMessage.scope === 'file') {
+        this._invalidateFileMessagesForProvider(diagnosticProvider, invalidationMessage.filePaths);
+        this._emitAllMessages();
+      } else if (invalidationMessage.scope === 'project') {
+        this._invalidateProjectMessagesForProvider(diagnosticProvider);
+        this._emitAllMessages();
+      } else if (invalidationMessage.scope === 'all') {
+        this._invalidateAllMessagesForProvider(diagnosticProvider);
+      }
+    }
+  }, {
+    key: '_invalidateFileMessagesForProvider',
+    value: function _invalidateFileMessagesForProvider(diagnosticProvider, pathsToRemove) {
+      var fileToDiagnostics = this._providerToFileToMessages.get(diagnosticProvider);
+      for (var filePath of pathsToRemove) {
+        // Update _providerToFileToMessages.
+        if (fileToDiagnostics) {
+          var diagnosticsToRemove = fileToDiagnostics.get(filePath);
+          if (diagnosticsToRemove != null) {
+            this._markerTracker.removeFileMessages(diagnosticsToRemove);
+          }
+          fileToDiagnostics.delete(filePath);
+        }
+        // Update _fileToProviders.
+        var providers = this._fileToProviders.get(filePath);
+        if (providers) {
+          providers.delete(diagnosticProvider);
+        }
+        this._emitFileMessages(filePath);
+      }
+    }
+  }, {
+    key: '_invalidateProjectMessagesForProvider',
+    value: function _invalidateProjectMessagesForProvider(diagnosticProvider) {
+      this._providerToProjectDiagnostics.delete(diagnosticProvider);
+      this._emitProjectMessages();
+    }
+  }, {
+    key: '_invalidateAllMessagesForProvider',
+    value: function _invalidateAllMessagesForProvider(diagnosticProvider) {
+      // Invalidate all file messages.
+      var filesToDiagnostics = this._providerToFileToMessages.get(diagnosticProvider);
+      if (filesToDiagnostics) {
+        var allFilePaths = filesToDiagnostics.keys();
+        this._invalidateFileMessagesForProvider(diagnosticProvider, allFilePaths);
+      }
+      // Invalidate all project messages.
       this._invalidateProjectMessagesForProvider(diagnosticProvider);
+
       this._emitAllMessages();
-    } else if (invalidationMessage.scope === 'all') {
-      this._invalidateAllMessagesForProvider(diagnosticProvider);
     }
-  }
-
-  _invalidateFileMessagesForProvider(
-    diagnosticProvider: DiagnosticProvider,
-    pathsToRemove: Iterable<NuclideUri>
-  ): void {
-    const fileToDiagnostics = this._providerToFileToMessages.get(diagnosticProvider);
-    for (const filePath of pathsToRemove) {
-      // Update _providerToFileToMessages.
-      if (fileToDiagnostics) {
-        const diagnosticsToRemove = fileToDiagnostics.get(filePath);
-        if (diagnosticsToRemove != null) {
-          this._markerTracker.removeFileMessages(diagnosticsToRemove);
+  }, {
+    key: '_invalidateSingleMessage',
+    value: function _invalidateSingleMessage(message) {
+      this._markerTracker.removeFileMessages([message]);
+      for (var fileToMessages of this._providerToFileToMessages.values()) {
+        var fileMessages = fileToMessages.get(message.filePath);
+        if (fileMessages != null) {
+          (_nuclideCommons2 || _nuclideCommons()).array.remove(fileMessages, message);
         }
-        fileToDiagnostics.delete(filePath);
       }
-      // Update _fileToProviders.
-      const providers = this._fileToProviders.get(filePath);
-      if (providers) {
-        providers.delete(diagnosticProvider);
+      // Looks like emitAllMessages does not actually emit all messages. We need to do both for both
+      // the gutter UI and the diagnostics table to get updated.
+      this._emitFileMessages(message.filePath);
+      this._emitAllMessages();
+    }
+
+    /**
+     * Section: Methods to read from the store.
+     */
+
+    /**
+     * Call the callback when the filePath's messages have changed.
+     * In addition, the Store will immediately invoke the callback with the data
+     * currently in the Store, iff there is any.
+     * @param callback The function to message when any of the filePaths' messages
+     *   change. The array of messages is meant to completely replace any previous
+     *   messages for this file path.
+     */
+  }, {
+    key: 'onFileMessagesDidUpdate',
+    value: function onFileMessagesDidUpdate(callback, filePath) {
+      var _this2 = this;
+
+      // Use the filePath as the event name.
+      var emitterDisposable = this._fileChangeEmitter.on(filePath, callback);
+      this._incrementFileListenerCount(filePath);
+
+      var fileMessages = this._getFileMessages(filePath);
+      if (fileMessages.length) {
+        callback({ filePath: filePath, messages: fileMessages });
       }
-      this._emitFileMessages(filePath);
+      return new (_atom2 || _atom()).Disposable(function () {
+        emitterDisposable.dispose();
+        _this2._decrementFileListenerCount(filePath);
+      });
     }
-  }
-
-  _invalidateProjectMessagesForProvider(diagnosticProvider: DiagnosticProvider): void {
-    this._providerToProjectDiagnostics.delete(diagnosticProvider);
-    this._emitProjectMessages();
-  }
-
-  _invalidateAllMessagesForProvider(diagnosticProvider: DiagnosticProvider): void {
-    // Invalidate all file messages.
-    const filesToDiagnostics = this._providerToFileToMessages.get(diagnosticProvider);
-    if (filesToDiagnostics) {
-      const allFilePaths = filesToDiagnostics.keys();
-      this._invalidateFileMessagesForProvider(diagnosticProvider, allFilePaths);
+  }, {
+    key: '_incrementFileListenerCount',
+    value: function _incrementFileListenerCount(filePath) {
+      var currentCount = this._fileToListenersCount.get(filePath) || 0;
+      this._fileToListenersCount.set(filePath, currentCount + 1);
     }
-    // Invalidate all project messages.
-    this._invalidateProjectMessagesForProvider(diagnosticProvider);
-
-    this._emitAllMessages();
-  }
-
-  _invalidateSingleMessage(message: FileDiagnosticMessage): void {
-    this._markerTracker.removeFileMessages([message]);
-    for (const fileToMessages of this._providerToFileToMessages.values()) {
-      const fileMessages = fileToMessages.get(message.filePath);
-      if (fileMessages != null) {
-        array.remove(fileMessages, message);
-      }
-    }
-    // Looks like emitAllMessages does not actually emit all messages. We need to do both for both
-    // the gutter UI and the diagnostics table to get updated.
-    this._emitFileMessages(message.filePath);
-    this._emitAllMessages();
-  }
-
-  /**
-   * Section: Methods to read from the store.
-   */
-
-  /**
-   * Call the callback when the filePath's messages have changed.
-   * In addition, the Store will immediately invoke the callback with the data
-   * currently in the Store, iff there is any.
-   * @param callback The function to message when any of the filePaths' messages
-   *   change. The array of messages is meant to completely replace any previous
-   *   messages for this file path.
-   */
-  onFileMessagesDidUpdate(
-      callback: (update: FileMessageUpdate) => mixed,
-      filePath: NuclideUri
-    ): IDisposable {
-    // Use the filePath as the event name.
-    const emitterDisposable = this._fileChangeEmitter.on(filePath, callback);
-    this._incrementFileListenerCount(filePath);
-
-    const fileMessages = this._getFileMessages(filePath);
-    if (fileMessages.length) {
-      callback({filePath, messages: fileMessages});
-    }
-    return new Disposable(() => {
-      emitterDisposable.dispose();
-      this._decrementFileListenerCount(filePath);
-    });
-  }
-
-  _incrementFileListenerCount(filePath: NuclideUri): void {
-    const currentCount = this._fileToListenersCount.get(filePath) || 0;
-    this._fileToListenersCount.set(filePath, currentCount + 1);
-  }
-
-  _decrementFileListenerCount(filePath: NuclideUri): void {
-    const currentCount = this._fileToListenersCount.get(filePath) || 0;
-    if (currentCount > 0) {
-      this._fileToListenersCount.set(filePath, currentCount - 1);
-    }
-  }
-
-  /**
-   * Call the callback when project-scope messages change.
-   * In addition, the Store will immediately invoke the callback with the data
-   * currently in the Store, iff there is any.
-   * @param callback The function to message when the project-scope messages
-   *   change. The array of messages is meant to completely replace any previous
-   *   project-scope messages.
-   */
-  onProjectMessagesDidUpdate(
-    callback: (messages: Array<ProjectDiagnosticMessage>) => mixed
-  ): IDisposable {
-    const emitterDisposable = this._nonFileChangeEmitter.on(PROJECT_MESSAGE_CHANGE_EVENT, callback);
-    this._projectListenersCount += 1;
-
-    const projectMessages = this._getProjectMessages();
-    if (projectMessages.length) {
-      callback(projectMessages);
-    }
-    return new Disposable(() => {
-      emitterDisposable.dispose();
-      this._projectListenersCount -= 1;
-    });
-  }
-
-  /**
-   * Call the callback when any messages change.
-   * In addition, the Store will immediately invoke the callback with data
-   * currently in the Store, iff there is any.
-   * @param callback The function to message when any messages change. The array
-   *   of messages is meant to completely replace any previous messages.
-   */
-  onAllMessagesDidUpdate(callback: (messages: Array<DiagnosticMessage>) => mixed):
-      IDisposable {
-    const emitterDisposable = this._nonFileChangeEmitter.on(ALL_CHANGE_EVENT, callback);
-    this._allMessagesListenersCount += 1;
-
-    const allMessages = this._getAllMessages();
-    if (allMessages.length) {
-      callback(allMessages);
-    }
-    return new Disposable(() => {
-      emitterDisposable.dispose();
-      this._allMessagesListenersCount -= 1;
-    });
-  }
-
-  /**
-   * Gets the current diagnostic messages for the file.
-   * Prefer to get updates via ::onFileMessagesDidUpdate.
-   */
-  _getFileMessages(filePath: NuclideUri): Array<FileDiagnosticMessage> {
-    let allFileMessages = [];
-    const relevantProviders = this._fileToProviders.get(filePath);
-    if (relevantProviders) {
-      for (const provider of relevantProviders) {
-        const fileToMessages = this._providerToFileToMessages.get(provider);
-        invariant(fileToMessages != null);
-        const messages = fileToMessages.get(filePath);
-        invariant(messages != null);
-        allFileMessages = allFileMessages.concat(messages);
+  }, {
+    key: '_decrementFileListenerCount',
+    value: function _decrementFileListenerCount(filePath) {
+      var currentCount = this._fileToListenersCount.get(filePath) || 0;
+      if (currentCount > 0) {
+        this._fileToListenersCount.set(filePath, currentCount - 1);
       }
     }
-    return allFileMessages;
-  }
 
-  /**
-   * Gets the current project-scope diagnostic messages.
-   * Prefer to get updates via ::onProjectMessagesDidUpdate.
-   */
-  _getProjectMessages(): Array<ProjectDiagnosticMessage> {
-    let allProjectMessages = [];
-    for (const messages of this._providerToProjectDiagnostics.values()) {
-      allProjectMessages = allProjectMessages.concat(messages);
+    /**
+     * Call the callback when project-scope messages change.
+     * In addition, the Store will immediately invoke the callback with the data
+     * currently in the Store, iff there is any.
+     * @param callback The function to message when the project-scope messages
+     *   change. The array of messages is meant to completely replace any previous
+     *   project-scope messages.
+     */
+  }, {
+    key: 'onProjectMessagesDidUpdate',
+    value: function onProjectMessagesDidUpdate(callback) {
+      var _this3 = this;
+
+      var emitterDisposable = this._nonFileChangeEmitter.on(PROJECT_MESSAGE_CHANGE_EVENT, callback);
+      this._projectListenersCount += 1;
+
+      var projectMessages = this._getProjectMessages();
+      if (projectMessages.length) {
+        callback(projectMessages);
+      }
+      return new (_atom2 || _atom()).Disposable(function () {
+        emitterDisposable.dispose();
+        _this3._projectListenersCount -= 1;
+      });
     }
-    return allProjectMessages;
-  }
 
-  /**
-   * Gets all current diagnostic messages.
-   * Prefer to get updates via ::onAllMessagesDidUpdate.
-   */
-  _getAllMessages(): Array<DiagnosticMessage> {
-    let allMessages = [];
-    // Get all file messages.
-    for (const fileToMessages of this._providerToFileToMessages.values()) {
-      for (const messages of fileToMessages.values()) {
-        allMessages = allMessages.concat(messages);
+    /**
+     * Call the callback when any messages change.
+     * In addition, the Store will immediately invoke the callback with data
+     * currently in the Store, iff there is any.
+     * @param callback The function to message when any messages change. The array
+     *   of messages is meant to completely replace any previous messages.
+     */
+  }, {
+    key: 'onAllMessagesDidUpdate',
+    value: function onAllMessagesDidUpdate(callback) {
+      var _this4 = this;
+
+      var emitterDisposable = this._nonFileChangeEmitter.on(ALL_CHANGE_EVENT, callback);
+      this._allMessagesListenersCount += 1;
+
+      var allMessages = this._getAllMessages();
+      if (allMessages.length) {
+        callback(allMessages);
+      }
+      return new (_atom2 || _atom()).Disposable(function () {
+        emitterDisposable.dispose();
+        _this4._allMessagesListenersCount -= 1;
+      });
+    }
+
+    /**
+     * Gets the current diagnostic messages for the file.
+     * Prefer to get updates via ::onFileMessagesDidUpdate.
+     */
+  }, {
+    key: '_getFileMessages',
+    value: function _getFileMessages(filePath) {
+      var allFileMessages = [];
+      var relevantProviders = this._fileToProviders.get(filePath);
+      if (relevantProviders) {
+        for (var provider of relevantProviders) {
+          var fileToMessages = this._providerToFileToMessages.get(provider);
+          (0, (_assert2 || _assert()).default)(fileToMessages != null);
+          var _messages = fileToMessages.get(filePath);
+          (0, (_assert2 || _assert()).default)(_messages != null);
+          allFileMessages = allFileMessages.concat(_messages);
+        }
+      }
+      return allFileMessages;
+    }
+
+    /**
+     * Gets the current project-scope diagnostic messages.
+     * Prefer to get updates via ::onProjectMessagesDidUpdate.
+     */
+  }, {
+    key: '_getProjectMessages',
+    value: function _getProjectMessages() {
+      var allProjectMessages = [];
+      for (var _messages2 of this._providerToProjectDiagnostics.values()) {
+        allProjectMessages = allProjectMessages.concat(_messages2);
+      }
+      return allProjectMessages;
+    }
+
+    /**
+     * Gets all current diagnostic messages.
+     * Prefer to get updates via ::onAllMessagesDidUpdate.
+     */
+  }, {
+    key: '_getAllMessages',
+    value: function _getAllMessages() {
+      var allMessages = [];
+      // Get all file messages.
+      for (var fileToMessages of this._providerToFileToMessages.values()) {
+        for (var _messages3 of fileToMessages.values()) {
+          allMessages = allMessages.concat(_messages3);
+        }
+      }
+      // Get all project messages.
+      allMessages = allMessages.concat(this._getProjectMessages());
+      return allMessages;
+    }
+
+    /**
+     * Section: Feedback from the UI
+     */
+
+  }, {
+    key: 'applyFix',
+    value: function applyFix(message) {
+      var succeeded = this._applySingleFix(message);
+      if (!succeeded) {
+        notifyFixFailed();
       }
     }
-    // Get all project messages.
-    allMessages = allMessages.concat(this._getProjectMessages());
-    return allMessages;
-  }
-
-  /**
-   * Section: Feedback from the UI
-   */
-
-  applyFix(message: FileDiagnosticMessage): void {
-    const succeeded = this._applySingleFix(message);
-    if (!succeeded) {
-      notifyFixFailed();
-    }
-  }
-
-  applyFixesForFile(file: NuclideUri): void {
-    for (const message of this._getFileMessages(file)) {
-      if (message.fix != null) {
-        const succeeded = this._applySingleFix(message);
-        if (!succeeded) {
-          notifyFixFailed();
-          return;
+  }, {
+    key: 'applyFixesForFile',
+    value: function applyFixesForFile(file) {
+      for (var message of this._getFileMessages(file)) {
+        if (message.fix != null) {
+          var succeeded = this._applySingleFix(message);
+          if (!succeeded) {
+            notifyFixFailed();
+            return;
+          }
         }
       }
     }
-  }
 
-  /**
-   * Returns true iff the fix succeeds.
-   */
-  _applySingleFix(message: FileDiagnosticMessage): boolean {
-    const fix = message.fix;
-    invariant(fix != null);
+    /**
+     * Returns true iff the fix succeeds.
+     */
+  }, {
+    key: '_applySingleFix',
+    value: function _applySingleFix(message) {
+      var fix = message.fix;
+      (0, (_assert2 || _assert()).default)(fix != null);
 
-    const actualRange = this._markerTracker.getCurrentRange(message);
+      var actualRange = this._markerTracker.getCurrentRange(message);
 
-    if (actualRange == null) {
-      return false;
+      if (actualRange == null) {
+        return false;
+      }
+
+      var fixWithActualRange = _extends({}, fix, {
+        oldRange: actualRange
+      });
+      var succeeded = (0, (_nuclideTextedit2 || _nuclideTextedit()).applyTextEdit)(message.filePath, fixWithActualRange);
+      if (succeeded) {
+        this._invalidateSingleMessage(message);
+        return true;
+      } else {
+        return false;
+      }
     }
 
-    const fixWithActualRange = {
-      ...fix,
-      oldRange: actualRange,
-    };
-    const succeeded = applyTextEdit(message.filePath, fixWithActualRange);
-    if (succeeded) {
-      this._invalidateSingleMessage(message);
-      return true;
-    } else {
-      return false;
-    }
-  }
+    /**
+     * Section: Event Emitting
+     */
 
-  /**
-   * Section: Event Emitting
-   */
-
-  _emitFileMessages(filePath: NuclideUri): void {
-    if (this._fileToListenersCount.get(filePath)) {
-      this._fileChangeEmitter.emit(filePath, {filePath, messages: this._getFileMessages(filePath)});
+  }, {
+    key: '_emitFileMessages',
+    value: function _emitFileMessages(filePath) {
+      if (this._fileToListenersCount.get(filePath)) {
+        this._fileChangeEmitter.emit(filePath, { filePath: filePath, messages: this._getFileMessages(filePath) });
+      }
     }
-  }
-
-  _emitProjectMessages(): void {
-    if (this._projectListenersCount) {
-      this._nonFileChangeEmitter.emit(PROJECT_MESSAGE_CHANGE_EVENT, this._getProjectMessages());
+  }, {
+    key: '_emitProjectMessages',
+    value: function _emitProjectMessages() {
+      if (this._projectListenersCount) {
+        this._nonFileChangeEmitter.emit(PROJECT_MESSAGE_CHANGE_EVENT, this._getProjectMessages());
+      }
     }
-  }
-
-  _emitAllMessages(): void {
-    if (this._allMessagesListenersCount) {
-      this._nonFileChangeEmitter.emit(ALL_CHANGE_EVENT, this._getAllMessages());
+  }, {
+    key: '_emitAllMessages',
+    value: function _emitAllMessages() {
+      if (this._allMessagesListenersCount) {
+        this._nonFileChangeEmitter.emit(ALL_CHANGE_EVENT, this._getAllMessages());
+      }
     }
-  }
-}
+  }]);
+
+  return DiagnosticStore;
+})();
 
 function notifyFixFailed() {
-  atom.notifications.addWarning(
-    'Failed to apply fix. Try saving to get fresh results and then try again.',
-  );
+  atom.notifications.addWarning('Failed to apply fix. Try saving to get fresh results and then try again.');
 }
 
 module.exports = DiagnosticStore;
+
+// A map from each diagnostic provider to:
+// a map from each file it has messages for to the array of messages for that file.
+
+// A map from each file that has messages from any diagnostic provider
+// to the set of diagnostic providers that have messages for it.
+
+// A map from each diagnostic provider to the array of project messages from it.
+
+// File paths are used as event names for the _fileChangeEmitter, so a second
+// emitter is used for other events to prevent event name collisions.
+
+// A map of NuclideUri to the number of listeners registered for changes to
+// messages for that file.

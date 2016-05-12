@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -14,7 +13,4 @@
  * that would cause it to be required, the value is the module that is required
  * rather than the key.
  */
-module.exports = new Map([
-  ['Immutable', 'immutable'],
-  ['fbt', 'fbt'],
-]);
+module.exports = new Map([['Immutable', 'immutable'], ['fbt', 'fbt']]);

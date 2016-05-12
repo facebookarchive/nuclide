@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getPythonPath = getPythonPath;
+exports.getShowGlobalVariables = getShowGlobalVariables;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +14,23 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../nuclide-feature-config';
+var _nuclideFeatureConfig2;
 
-export type PythonConfig = {
-  pathToPython: string;
-  showGlobalVariables: boolean;
-};
-
-// config can be null in tests.
-function getConfig(): ?PythonConfig {
-  return ((featureConfig.get('nuclide-python'): any): ?PythonConfig);
+function _nuclideFeatureConfig() {
+  return _nuclideFeatureConfig2 = _interopRequireDefault(require('../../nuclide-feature-config'));
 }
 
-export function getPythonPath(): string {
-  const config = getConfig();
+// config can be null in tests.
+function getConfig() {
+  return (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get('nuclide-python');
+}
+
+function getPythonPath() {
+  var config = getConfig();
   return config == null ? 'python' : config.pathToPython;
 }
 
-export function getShowGlobalVariables(): boolean {
-  const config = getConfig();
+function getShowGlobalVariables() {
+  var config = getConfig();
   return config == null ? true : config.showGlobalVariables;
 }

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,39 +10,47 @@
  * the root directory of this source tree.
  */
 
-import type ActivationType from './Activation';
-import type {OutputService, RegisterExecutorFunction} from './types';
-import type {GadgetsService} from '../../nuclide-gadgets';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeGadgetsService = consumeGadgetsService;
+exports.provideOutputService = provideOutputService;
+exports.provideRegisterExecutor = provideRegisterExecutor;
 
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let activation: ?ActivationType = null;
+var _assert2;
 
-export function activate(state: ?Object) {
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var activation = null;
+
+function activate(state) {
   if (activation == null) {
-    const Activation = require('./Activation');
+    var Activation = require('./Activation');
     activation = new Activation(state);
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function consumeGadgetsService(gadgetsApi: GadgetsService): void {
-  invariant(activation);
+function consumeGadgetsService(gadgetsApi) {
+  (0, (_assert2 || _assert()).default)(activation);
   activation.consumeGadgetsService(gadgetsApi);
 }
 
-export function provideOutputService(): OutputService {
-  invariant(activation);
+function provideOutputService() {
+  (0, (_assert2 || _assert()).default)(activation);
   return activation.provideOutputService();
 }
 
-export function provideRegisterExecutor(): RegisterExecutorFunction {
-  invariant(activation);
+function provideRegisterExecutor() {
+  (0, (_assert2 || _assert()).default)(activation);
   return activation.provideRegisterExecutor();
 }

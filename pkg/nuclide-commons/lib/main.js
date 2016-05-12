@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,65 +10,9 @@
  * the root directory of this source tree.
  */
 
-export type process$asyncExecuteRet = {
-  command?: string;
-  errorMessage?: string;
-  exitCode: number;
-  stderr: string;
-  stdout: string;
-};
-
-export type ProcessMessage = StdoutMessage | StderrMessage | ExitMessage | ErrorMessage;
-export type StdoutMessage = {
-  kind: 'stdout';
-  data: string;
-};
-export type StderrMessage = {
-  kind: 'stderr';
-  data: string;
-};
-export type ExitMessage = {
-  kind: 'exit';
-  exitCode: number;
-};
-export type ErrorMessage = {
-  kind: 'error';
-  error: Object;
-};
-
-import typeof * as ProcessType from './process';
-import typeof * as StreamType from './stream';
-import typeof * as FSPromiseType from './fsPromise';
-import typeof * as ToJsStringType from './toJsString';
-import typeof * as SetType from './set';
-import typeof * as MapType from './map';
-import typeof * as ArrayType from './array';
-import typeof * as ObjectType from './object';
-import typeof * as HttpType from './http';
-import typeof * as RelativeDateType from './relativeDate';
-import typeof * as PathsType from './paths';
-import typeof * as PromiseExecutorsType from './PromiseExecutors';
-import typeof * as DebounceType from './debounce';
-import typeof * as OnceType from './once';
-import typeof * as VcsType from './vcs';
-import typeof * as DnsUtilsType from './dns_utils';
-import typeof * as PromisesType from './promises';
-import typeof * as ErrorType from './error';
-import typeof * as EventType from './event';
-import typeof * as SessionType from './session';
-import typeof * as CircularBufferType from './CircularBuffer';
-import typeof * as ClientInfoType from './clientInfo';
-import typeof * as SystemInfoType from './systemInfo';
-import typeof * as RuntimeInfoType from './runtimeInfo';
-import typeof * as ScribeProcessType from './ScribeProcess';
-import typeof * as BatchProcessedQueueType from './BatchProcessedQueue';
-import typeof * as ExtendableErrorType from './ExtendableError';
-import typeof * as ObservablesType from './observables';
-import type {Environment as EnvironmentType} from './environment';
-
 // It's impactful to memoize our requires here since these commons are so often used.
-const requireCache: {[id: string]: any} = {};
-function requireFromCache(id: string): any {
+var requireCache = {};
+function requireFromCache(id) {
   if (!requireCache.hasOwnProperty(id)) {
     // $FlowIgnore
     requireCache[id] = require(id);
@@ -75,247 +20,408 @@ function requireFromCache(id: string): any {
   return requireCache[id];
 }
 
-function requirePromises(): PromisesType {
+function requirePromises() {
   return requireFromCache('./promises');
 }
 
-function requireObservables(): ObservablesType {
+function requireObservables() {
   return requireFromCache('./observables');
 }
 
-function requireProcess(): ProcessType {
+function requireProcess() {
   return requireFromCache('./process');
 }
 
-function requireStream(): StreamType {
+function requireStream() {
   return requireFromCache('./stream');
 }
 
-function requirePromiseExecutors(): PromiseExecutorsType {
+function requirePromiseExecutors() {
   return requireFromCache('./PromiseExecutors');
 }
 
-module.exports = {
-
-  get asyncFind() {
-    return requirePromises().asyncFind;
+module.exports = Object.defineProperties({}, {
+  asyncFind: {
+    get: function get() {
+      return requirePromises().asyncFind;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get asyncExecute() {
-    return requireProcess().asyncExecute;
+  asyncExecute: {
+    get: function get() {
+      return requireProcess().asyncExecute;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get bufferUntil() {
-    return requireStream().bufferUntil;
+  bufferUntil: {
+    get: function get() {
+      return requireStream().bufferUntil;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get checkOutput() {
-    return requireProcess().checkOutput;
+  checkOutput: {
+    get: function get() {
+      return requireProcess().checkOutput;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get CompositeSubscription() {
-    return requireStream().CompositeSubscription;
+  CompositeSubscription: {
+    get: function get() {
+      return requireStream().CompositeSubscription;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get createArgsForScriptCommand() {
-    return requireProcess().createArgsForScriptCommand;
+  createArgsForScriptCommand: {
+    get: function get() {
+      return requireProcess().createArgsForScriptCommand;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get createExecEnvironment() {
-    return requireProcess().createExecEnvironment;
+  createExecEnvironment: {
+    get: function get() {
+      return requireProcess().createExecEnvironment;
+    },
+    configurable: true,
+    enumerable: true
   },
+  Deferred: {
 
-  /**
-   * IMPORTANT: You should almost never use this!! See `./promises.js`.
-   */
-  get Deferred() {
-    return requirePromises().Deferred;
+    /**
+     * IMPORTANT: You should almost never use this!! See `./promises.js`.
+     */
+
+    get: function get() {
+      return requirePromises().Deferred;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get denodeify() {
-    return requirePromises().denodeify;
+  denodeify: {
+    get: function get() {
+      return requirePromises().denodeify;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get diffSets() {
-    return requireStream().diffSets;
+  diffSets: {
+    get: function get() {
+      return requireStream().diffSets;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get DisposableSubscription() {
-    return requireStream().DisposableSubscription;
+  DisposableSubscription: {
+    get: function get() {
+      return requireStream().DisposableSubscription;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get forkWithExecEnvironment() {
-    return requireProcess().forkWithExecEnvironment;
+  forkWithExecEnvironment: {
+    get: function get() {
+      return requireProcess().forkWithExecEnvironment;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get safeSpawn() {
-    return requireProcess().safeSpawn;
+  safeSpawn: {
+    get: function get() {
+      return requireProcess().safeSpawn;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get scriptSafeSpawn() {
-    return requireProcess().scriptSafeSpawn;
+  scriptSafeSpawn: {
+    get: function get() {
+      return requireProcess().scriptSafeSpawn;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get scriptSafeSpawnAndObserveOutput() {
-    return requireProcess().scriptSafeSpawnAndObserveOutput;
+  scriptSafeSpawnAndObserveOutput: {
+    get: function get() {
+      return requireProcess().scriptSafeSpawnAndObserveOutput;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get splitStream() {
-    return requireStream().splitStream;
+  splitStream: {
+    get: function get() {
+      return requireStream().splitStream;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get observeStream() {
-    return requireStream().observeStream;
+  observeStream: {
+    get: function get() {
+      return requireStream().observeStream;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get cacheWhileSubscribed() {
-    return requireStream().cacheWhileSubscribed;
+  cacheWhileSubscribed: {
+    get: function get() {
+      return requireStream().cacheWhileSubscribed;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get toggle() {
-    return requireStream().toggle;
+  toggle: {
+    get: function get() {
+      return requireStream().toggle;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get observeProcessExit() {
-    return requireProcess().observeProcessExit;
+  observeProcessExit: {
+    get: function get() {
+      return requireProcess().observeProcessExit;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get observeProcess() {
-    return requireProcess().observeProcess;
+  observeProcess: {
+    get: function get() {
+      return requireProcess().observeProcess;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get relativeDate() {
-    return (requireFromCache('./relativeDate'): RelativeDateType).relativeDate;
+  relativeDate: {
+    get: function get() {
+      return requireFromCache('./relativeDate').relativeDate;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get toJsString() {
-    return (requireFromCache('./toJsString'): ToJsStringType).toJsString;
+  toJsString: {
+    get: function get() {
+      return requireFromCache('./toJsString').toJsString;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get array(): ArrayType {
-    return requireFromCache('./array');
+  array: {
+    get: function get() {
+      return requireFromCache('./array');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get set(): SetType {
-    return requireFromCache('./set');
+  set: {
+    get: function get() {
+      return requireFromCache('./set');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get map(): MapType {
-    return requireFromCache('./map');
+  map: {
+    get: function get() {
+      return requireFromCache('./map');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get object(): ObjectType {
-    return requireFromCache('./object');
+  object: {
+    get: function get() {
+      return requireFromCache('./object');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get fsPromise(): FSPromiseType.fsPromise {
-    return (requireFromCache('./fsPromise'): FSPromiseType).fsPromise;
+  fsPromise: {
+    get: function get() {
+      return requireFromCache('./fsPromise').fsPromise;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get httpPromise(): HttpType {
-    return requireFromCache('./http');
+  httpPromise: {
+    get: function get() {
+      return requireFromCache('./http');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get paths(): PathsType {
-    return requireFromCache('./paths');
+  paths: {
+    get: function get() {
+      return requireFromCache('./paths');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get PromisePool() {
-    return requirePromiseExecutors().PromisePool;
+  PromisePool: {
+    get: function get() {
+      return requirePromiseExecutors().PromisePool;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get PromiseQueue() {
-    return requirePromiseExecutors().PromiseQueue;
+  PromiseQueue: {
+    get: function get() {
+      return requirePromiseExecutors().PromiseQueue;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get debounce() {
-    return (requireFromCache('./debounce'): DebounceType).debounce;
+  debounce: {
+    get: function get() {
+      return requireFromCache('./debounce').debounce;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get once() {
-    return (requireFromCache('./once'): OnceType).once;
+  once: {
+    get: function get() {
+      return requireFromCache('./once').once;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get toolbar() {
-    return requireFromCache('./toolbar');
+  toolbar: {
+    get: function get() {
+      return requireFromCache('./toolbar');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get vcs(): VcsType {
-    return requireFromCache('./vcs');
+  vcs: {
+    get: function get() {
+      return requireFromCache('./vcs');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get dnsUtils(): DnsUtilsType {
-    return requireFromCache('./dns_utils');
+  dnsUtils: {
+    get: function get() {
+      return requireFromCache('./dns_utils');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get env(): EnvironmentType {
-    return requireFromCache('./environment');
+  env: {
+    get: function get() {
+      return requireFromCache('./environment');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get promises() {
-    return requirePromises();
+  promises: {
+    get: function get() {
+      return requirePromises();
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get observables() {
-    return requireObservables();
+  observables: {
+    get: function get() {
+      return requireObservables();
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get error(): ErrorType {
-    return requireFromCache('./error');
+  error: {
+    get: function get() {
+      return requireFromCache('./error');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get event(): EventType {
-    return requireFromCache('./event');
+  event: {
+    get: function get() {
+      return requireFromCache('./event');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get session(): SessionType {
-    return requireFromCache('./session');
+  session: {
+    get: function get() {
+      return requireFromCache('./session');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get singleton() {
-    return requireFromCache('./singleton');
+  singleton: {
+    get: function get() {
+      return requireFromCache('./singleton');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get CircularBuffer() {
-    return (requireFromCache('./CircularBuffer'): CircularBufferType).CircularBuffer;
+  CircularBuffer: {
+    get: function get() {
+      return requireFromCache('./CircularBuffer').CircularBuffer;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get COMMON_BINARY_PATHS() {
-    return requireProcess().COMMON_BINARY_PATHS;
+  COMMON_BINARY_PATHS: {
+    get: function get() {
+      return requireProcess().COMMON_BINARY_PATHS;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get clientInfo(): ClientInfoType {
-    return requireFromCache('./clientInfo');
+  clientInfo: {
+    get: function get() {
+      return requireFromCache('./clientInfo');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get systemInfo(): SystemInfoType {
-    return requireFromCache('./systemInfo');
+  systemInfo: {
+    get: function get() {
+      return requireFromCache('./systemInfo');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get runtimeInfo(): RuntimeInfoType {
-    return requireFromCache('./runtimeInfo');
+  runtimeInfo: {
+    get: function get() {
+      return requireFromCache('./runtimeInfo');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get ScribeProcess() {
-    return (requireFromCache('./ScribeProcess'): ScribeProcessType).ScribeProcess;
+  ScribeProcess: {
+    get: function get() {
+      return requireFromCache('./ScribeProcess').ScribeProcess;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get BatchProcessedQueue() {
-    return (
-      requireFromCache('./BatchProcessedQueue'): BatchProcessedQueueType
-    ).BatchProcessedQueue;
+  BatchProcessedQueue: {
+    get: function get() {
+      return requireFromCache('./BatchProcessedQueue').BatchProcessedQueue;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get ExtendableError(): ExtendableErrorType {
-    return requireFromCache('./ExtendableError');
+  ExtendableError: {
+    get: function get() {
+      return requireFromCache('./ExtendableError');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get passesGK(): (gatekeeperName: string, timeout?: number) => Promise<boolean> {
-    return requireFromCache('./gatekeeper').passesGK;
+  passesGK: {
+    get: function get() {
+      return requireFromCache('./gatekeeper').passesGK;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get reconcileSetDiffs() {
-    return requireStream().reconcileSetDiffs;
-  },
-
-};
+  reconcileSetDiffs: {
+    get: function get() {
+      return requireStream().reconcileSetDiffs;
+    },
+    configurable: true,
+    enumerable: true
+  }
+});

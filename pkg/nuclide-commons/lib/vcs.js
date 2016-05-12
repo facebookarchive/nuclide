@@ -1,31 +1,10 @@
-'use babel';
-/* @flow */
-
-/*
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- */
-
-import {asyncExecute} from './process';
-import path from 'path';
-
-type VcsInfo = {
-  vcs: string;
-  root: string;
-};
-
-const vcsInfoCache: {[src: string]: VcsInfo} = {};
-
-async function findVcsHelper(src: string): Promise<VcsInfo> {
-  const options = {
-    'cwd': path.dirname(src),
+var findVcsHelper = _asyncToGenerator(function* (src) {
+  var options = {
+    'cwd': (_path2 || _path()).default.dirname(src)
   };
-  let hgResult;
+  var hgResult = undefined;
   try {
-    hgResult = await asyncExecute('hg', ['root'], options);
+    hgResult = yield (0, (_process2 || _process()).asyncExecute)('hg', ['root'], options);
   } catch (e) {
     hgResult = e;
   }
@@ -33,13 +12,13 @@ async function findVcsHelper(src: string): Promise<VcsInfo> {
   if (hgResult.exitCode === 0) {
     return {
       vcs: 'hg',
-      root: hgResult.stdout.trim(),
+      root: hgResult.stdout.trim()
     };
   }
 
-  let gitResult;
+  var gitResult = undefined;
   try {
-    gitResult = await asyncExecute('git', ['rev-parse', '--show-toplevel'], options);
+    gitResult = yield (0, (_process2 || _process()).asyncExecute)('git', ['rev-parse', '--show-toplevel'], options);
   } catch (e) {
     gitResult = e;
   }
@@ -47,7 +26,7 @@ async function findVcsHelper(src: string): Promise<VcsInfo> {
   if (gitResult.exitCode === 0) {
     return {
       vcs: 'git',
-      root: gitResult.stdout.trim(),
+      root: gitResult.stdout.trim()
     };
   }
 
@@ -58,17 +37,45 @@ async function findVcsHelper(src: string): Promise<VcsInfo> {
  * For the given source file, find the type of vcs that is managing it as well
  * as the root directory for the VCS.
  */
-async function findVcs(src: string): Promise<VcsInfo> {
-  let vcsInfo = vcsInfoCache[src];
+);
+
+var findVcs = _asyncToGenerator(function* (src) {
+  var vcsInfo = vcsInfoCache[src];
   if (vcsInfo) {
     return vcsInfo;
   }
 
-  vcsInfo = await findVcsHelper(src);
+  vcsInfo = yield findVcsHelper(src);
   vcsInfoCache[src] = vcsInfo;
   return vcsInfo;
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+var _process2;
+
+function _process() {
+  return _process2 = require('./process');
 }
 
+var _path2;
+
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
+
+var vcsInfoCache = {};
+
 module.exports = {
-  findVcs,
+  findVcs: findVcs
 };

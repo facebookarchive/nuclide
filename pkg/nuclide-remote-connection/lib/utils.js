@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +8,17 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
-import fs from 'fs';
+var _path2;
+
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
+
+var _fs2;
+
+function _fs() {
+  return _fs2 = _interopRequireDefault(require('fs'));
+}
 
 /**
  * Returns if the `rootPath` directory contains the `checkPath` which could be:
@@ -20,27 +28,26 @@ import fs from 'fs';
  *  - May end in a trailing slash if it's a directory path.
  * Follows symlinks to figure out if the real paths of the root and check paths matches.
  */
-function containsPathSync(rootPath: string, checkPath: string): boolean {
-  let realRootPath = null;
-  let realCheckPath = null;
+function containsPathSync(rootPath, checkPath) {
+  var realRootPath = null;
+  var realCheckPath = null;
   try {
-    realRootPath = fs.realpathSync(rootPath);
-    realCheckPath = fs.realpathSync(checkPath);
+    realRootPath = (_fs2 || _fs()).default.realpathSync(rootPath);
+    realCheckPath = (_fs2 || _fs()).default.realpathSync(checkPath);
   } catch (e) {
     realRootPath = rootPath;
     realCheckPath = checkPath;
   }
 
-  const normalizedRootPath = path.normalize(realRootPath);
-  const normalizedCheckPath = path.normalize(realCheckPath);
+  var normalizedRootPath = (_path2 || _path()).default.normalize(realRootPath);
+  var normalizedCheckPath = (_path2 || _path()).default.normalize(realCheckPath);
 
-  const rootPathNumberOfParts = normalizedRootPath.split(path.sep).length;
+  var rootPathNumberOfParts = normalizedRootPath.split((_path2 || _path()).default.sep).length;
   // Extract the matching piece of the normalized path to compare with the root path.
-  const rootPathMatch = normalizedCheckPath.split(path.sep)
-    .slice(0, rootPathNumberOfParts).join(path.sep);
+  var rootPathMatch = normalizedCheckPath.split((_path2 || _path()).default.sep).slice(0, rootPathNumberOfParts).join((_path2 || _path()).default.sep);
   return rootPathMatch === normalizedRootPath;
 }
 
 module.exports = {
-  containsPathSync,
+  containsPathSync: containsPathSync
 };

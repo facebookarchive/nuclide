@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,36 +10,35 @@
  * the root directory of this source tree.
  */
 
-import type {Transport} from '../lib/index';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export class LoopbackTransports {
-  serverTransport: Transport;
-  clientTransport: Transport;
+var LoopbackTransports = function LoopbackTransports() {
+  _classCallCheck(this, LoopbackTransports);
 
-  constructor() {
-    let onServerMessage: (message: Object) => mixed;
-    let onClientMessage: (message: Object) => mixed;
+  var onServerMessage = undefined;
+  var onClientMessage = undefined;
 
-    this.serverTransport = {
-      send(data: Object): void {
-        onClientMessage(data);
-      },
-      onMessage(callback: (message: Object) => mixed): IDisposable {
-        onServerMessage = callback;
-        return {dispose() {}};
-      },
-      close() {},
-    };
+  this.serverTransport = {
+    send: function send(data) {
+      onClientMessage(data);
+    },
+    onMessage: function onMessage(callback) {
+      onServerMessage = callback;
+      return { dispose: function dispose() {} };
+    },
+    close: function close() {}
+  };
 
-    this.clientTransport = {
-      send(data: Object): void {
-        onServerMessage(data);
-      },
-      onMessage(callback: (message: Object) => mixed): IDisposable {
-        onClientMessage = callback;
-        return {dispose() {}};
-      },
-      close() {},
-    };
-  }
-}
+  this.clientTransport = {
+    send: function send(data) {
+      onServerMessage(data);
+    },
+    onMessage: function onMessage(callback) {
+      onClientMessage = callback;
+      return { dispose: function dispose() {} };
+    },
+    close: function close() {}
+  };
+};
+
+exports.LoopbackTransports = LoopbackTransports;

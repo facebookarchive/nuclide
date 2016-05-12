@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +10,33 @@
  * the root directory of this source tree.
  */
 
-import type {FileResult, GroupedResult} from './types';
+exports.filterEmptyResults = filterEmptyResults;
+exports.flattenResults = flattenResults;
 
-const {
-  isEmpty,
-} = require('../../nuclide-commons').object;
+var isEmpty = require('../../nuclide-commons').object.isEmpty;
 
-export function filterEmptyResults(resultsGroupedByService: GroupedResult): GroupedResult {
-  const filteredTree = {};
+function filterEmptyResults(resultsGroupedByService) {
+  var filteredTree = {};
 
-  for (const serviceName in resultsGroupedByService) {
-    const directories = resultsGroupedByService[serviceName].results;
-    const nonEmptyDirectories = {};
-    for (const dirName in directories) {
+  for (var serviceName in resultsGroupedByService) {
+    var directories = resultsGroupedByService[serviceName].results;
+    var nonEmptyDirectories = {};
+    for (var dirName in directories) {
       if (directories[dirName].results.length) {
         nonEmptyDirectories[dirName] = directories[dirName];
       }
     }
     if (!isEmpty(nonEmptyDirectories)) {
-      filteredTree[serviceName] = {results: nonEmptyDirectories};
+      filteredTree[serviceName] = { results: nonEmptyDirectories };
     }
   }
   return filteredTree;
 }
 
-export function flattenResults(resultsGroupedByService: GroupedResult): Array<FileResult> {
-  const items = [];
-  for (const serviceName in resultsGroupedByService) {
-    for (const dirName in resultsGroupedByService[serviceName].results) {
+function flattenResults(resultsGroupedByService) {
+  var items = [];
+  for (var serviceName in resultsGroupedByService) {
+    for (var dirName in resultsGroupedByService[serviceName].results) {
       items.push(resultsGroupedByService[serviceName].results[dirName].results);
     }
   }

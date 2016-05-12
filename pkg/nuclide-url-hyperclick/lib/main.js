@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +10,24 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from '../../hyperclick';
+exports.getHyperclickProvider = getHyperclickProvider;
 
-import HyperclickProviderHelpers from './HyperclickProviderHelpers';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export function getHyperclickProvider(): HyperclickProvider {
+var _HyperclickProviderHelpers2;
+
+function _HyperclickProviderHelpers() {
+  return _HyperclickProviderHelpers2 = _interopRequireDefault(require('./HyperclickProviderHelpers'));
+}
+
+function getHyperclickProvider() {
   return {
     providerName: 'url-hyperclick',
     // Allow all language-specific providers to take priority.
     priority: 5,
     wordRegExp: /[^\s]+/g,
-    getSuggestionForWord(textEditor, text, range) {
-      return HyperclickProviderHelpers.getSuggestionForWord(textEditor, text, range);
-    },
+    getSuggestionForWord: function getSuggestionForWord(textEditor, text, range) {
+      return (_HyperclickProviderHelpers2 || _HyperclickProviderHelpers()).default.getSuggestionForWord(textEditor, text, range);
+    }
   };
 }

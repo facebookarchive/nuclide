@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +8,11 @@
  * the root directory of this source tree.
  */
 
-function consumeFirstProvider(keyPath: string, version: string = '0.0.0'): Promise {
-  return new Promise((resolve, reject) => {
-    const subscription = atom.packages.serviceHub.consume(keyPath, version, provider => {
+function consumeFirstProvider(keyPath) {
+  var version = arguments.length <= 1 || arguments[1] === undefined ? '0.0.0' : arguments[1];
+
+  return new Promise(function (resolve, reject) {
+    var subscription = atom.packages.serviceHub.consume(keyPath, version, function (provider) {
       resolve(provider);
       subscription.dispose();
     });
@@ -19,5 +20,5 @@ function consumeFirstProvider(keyPath: string, version: string = '0.0.0'): Promi
 }
 
 module.exports = {
-  consumeFirstProvider,
+  consumeFirstProvider: consumeFirstProvider
 };

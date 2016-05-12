@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,152 +10,212 @@
  * the root directory of this source tree.
  */
 
-import type {Task, TaskInfo} from '../../nuclide-build/lib/types';
-import type {SerializedState} from './types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {DisposableSubscription, event as eventLib} from '../../nuclide-commons';
-import {BuckIcon} from './ui/BuckIcon';
-import BuckToolbarStore from './BuckToolbarStore';
-import BuckToolbarActions from './BuckToolbarActions';
-import {createExtraUiComponent} from './ui/createExtraUiComponent';
-import {Observable} from 'rxjs';
-import {CompositeDisposable} from 'atom';
-import {Dispatcher} from 'flux';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-type Flux = {
-  actions: BuckToolbarActions;
-  store: BuckToolbarStore;
-};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export class BuckBuildSystem {
-  _flux: ?Flux;
-  _disposables: CompositeDisposable;
-  _extraUi: ?ReactClass;
-  id: string;
-  name: string;
-  _icon: ReactClass;
-  _initialState: ?SerializedState;
-  _tasks: Observable<Array<Task>>;
+var _nuclideCommons2;
 
-  constructor(initialState: ?SerializedState) {
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../../nuclide-commons');
+}
+
+var _uiBuckIcon2;
+
+function _uiBuckIcon() {
+  return _uiBuckIcon2 = require('./ui/BuckIcon');
+}
+
+var _BuckToolbarStore2;
+
+function _BuckToolbarStore() {
+  return _BuckToolbarStore2 = _interopRequireDefault(require('./BuckToolbarStore'));
+}
+
+var _BuckToolbarActions2;
+
+function _BuckToolbarActions() {
+  return _BuckToolbarActions2 = _interopRequireDefault(require('./BuckToolbarActions'));
+}
+
+var _uiCreateExtraUiComponent2;
+
+function _uiCreateExtraUiComponent() {
+  return _uiCreateExtraUiComponent2 = require('./ui/createExtraUiComponent');
+}
+
+var _rxjs2;
+
+function _rxjs() {
+  return _rxjs2 = require('rxjs');
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _flux2;
+
+function _flux() {
+  return _flux2 = require('flux');
+}
+
+var BuckBuildSystem = (function () {
+  function BuckBuildSystem(initialState) {
+    _classCallCheck(this, BuckBuildSystem);
+
     this.id = 'buck';
     this.name = 'Buck';
     this._initialState = initialState;
-    this._disposables = new CompositeDisposable();
-  }
-
-  observeTasks(cb: (tasks: Array<Task>) => mixed): IDisposable {
-    if (this._tasks == null) {
-      const {store} = this._getFlux();
-      this._tasks = Observable.concat(
-        Observable.of(store.getTasks()),
-        eventLib.observableFromSubscribeFunction(store.subscribe.bind(store))
-          .map(() => store.getTasks()),
-      );
-    }
-    return new DisposableSubscription(
-      this._tasks.subscribe({next: cb})
-    );
-  }
-
-  getExtraUi(): ReactClass {
-    if (this._extraUi == null) {
-      const {store, actions} = this._getFlux();
-      this._extraUi = createExtraUiComponent(store, actions);
-    }
-    return this._extraUi;
-  }
-
-  getIcon(): ReactClass {
-    if (this._icon == null) {
-      this._icon = BuckIcon;
-    }
-    return this._icon;
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable();
   }
 
   /**
-   * Lazily create the flux stuff.
+   * BuckToolbarActions and BuckToolbarStore implement an older version of the Flux pattern which puts
+   * a lot of the async work into the store. Therefore, it's not very easy to tie the action to the
+   * result. To get around this without having to rewrite the whole thing in one go, we just use the
+   * store API directly.
    */
-  _getFlux(): Flux {
-    if (this._flux == null) {
-      // Set up flux stuff.
-      const dispatcher = new Dispatcher();
-      const flux = {
-        store: new BuckToolbarStore(dispatcher, this._initialState),
-        actions: new BuckToolbarActions(dispatcher),
-      };
-      this._disposables.add(flux.store);
-      this._flux = flux;
+
+  _createClass(BuckBuildSystem, [{
+    key: 'observeTasks',
+    value: function observeTasks(cb) {
+      var _this = this;
+
+      if (this._tasks == null) {
+        (function () {
+          var _getFlux2 = _this._getFlux();
+
+          var store = _getFlux2.store;
+
+          _this._tasks = (_rxjs2 || _rxjs()).Observable.concat((_rxjs2 || _rxjs()).Observable.of(store.getTasks()), (_nuclideCommons2 || _nuclideCommons()).event.observableFromSubscribeFunction(store.subscribe.bind(store)).map(function () {
+            return store.getTasks();
+          }));
+        })();
+      }
+      return new (_nuclideCommons2 || _nuclideCommons()).DisposableSubscription(this._tasks.subscribe({ next: cb }));
     }
-    return this._flux;
-  }
+  }, {
+    key: 'getExtraUi',
+    value: function getExtraUi() {
+      if (this._extraUi == null) {
+        var _getFlux3 = this._getFlux();
 
-  runTask(taskType: string): TaskInfo {
-    const {store} = this._getFlux();
+        var _store = _getFlux3.store;
+        var _actions = _getFlux3.actions;
 
-    if (!store.getTasks().some(task => task.type === taskType)) {
-      throw new Error(`There's no Buck task named "${taskType}"`);
+        this._extraUi = (0, (_uiCreateExtraUiComponent2 || _uiCreateExtraUiComponent()).createExtraUiComponent)(_store, _actions);
+      }
+      return this._extraUi;
+    }
+  }, {
+    key: 'getIcon',
+    value: function getIcon() {
+      if (this._icon == null) {
+        this._icon = (_uiBuckIcon2 || _uiBuckIcon()).BuckIcon;
+      }
+      return this._icon;
     }
 
-    const run = getTaskRunFunction(store, taskType);
-    const resultStream = Observable.fromPromise(run());
+    /**
+     * Lazily create the flux stuff.
+     */
+  }, {
+    key: '_getFlux',
+    value: function _getFlux() {
+      if (this._flux == null) {
+        // Set up flux stuff.
+        var dispatcher = new (_flux2 || _flux()).Dispatcher();
+        var flux = {
+          store: new (_BuckToolbarStore2 || _BuckToolbarStore()).default(dispatcher, this._initialState),
+          actions: new (_BuckToolbarActions2 || _BuckToolbarActions()).default(dispatcher)
+        };
+        this._disposables.add(flux.store);
+        this._flux = flux;
+      }
+      return this._flux;
+    }
+  }, {
+    key: 'runTask',
+    value: function runTask(taskType) {
+      var _getFlux4 = this._getFlux();
 
-    // Currently, the BuckToolbarStore's progress reporting is pretty useless so we omit
-    // `observeProgress` and just use the indeterminate progress bar.
-    return {
-      cancel() {
-        // FIXME: How can we cancel Buck tasks?
-      },
-      onDidError(cb) {
-        return new DisposableSubscription(
-          resultStream.subscribe({error: cb})
-        );
-      },
-      onDidComplete(cb) {
-        return new DisposableSubscription(
+      var store = _getFlux4.store;
+
+      if (!store.getTasks().some(function (task) {
+        return task.type === taskType;
+      })) {
+        throw new Error('There\'s no Buck task named "' + taskType + '"');
+      }
+
+      var run = getTaskRunFunction(store, taskType);
+      var resultStream = (_rxjs2 || _rxjs()).Observable.fromPromise(run());
+
+      // Currently, the BuckToolbarStore's progress reporting is pretty useless so we omit
+      // `observeProgress` and just use the indeterminate progress bar.
+      return {
+        cancel: function cancel() {
+          // FIXME: How can we cancel Buck tasks?
+        },
+        onDidError: function onDidError(cb) {
+          return new (_nuclideCommons2 || _nuclideCommons()).DisposableSubscription(resultStream.subscribe({ error: cb }));
+        },
+        onDidComplete: function onDidComplete(cb) {
+          return new (_nuclideCommons2 || _nuclideCommons()).DisposableSubscription(
           // Add an empty error handler to avoid the "Unhandled Error" message. (We're handling it
           // above via the onDidError interface.)
-          resultStream.subscribe({next: cb, error: () => {}})
-        );
-      },
-    };
-  }
-
-  dispose(): void {
-    this._disposables.dispose();
-  }
-
-  serialize(): ?SerializedState {
-    // If we haven't had to load and create the Flux stuff yet, don't do it now.
-    if (this._flux == null) {
-      return;
+          resultStream.subscribe({ next: cb, error: function error() {} }));
+        }
+      };
     }
-    const {store} = this._flux;
-    return {
-      buildTarget: store.getBuildTarget(),
-      isReactNativeServerMode: store.isReactNativeServerMode(),
-    };
-  }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }, {
+    key: 'serialize',
+    value: function serialize() {
+      // If we haven't had to load and create the Flux stuff yet, don't do it now.
+      if (this._flux == null) {
+        return;
+      }
+      var store = this._flux.store;
 
-}
+      return {
+        buildTarget: store.getBuildTarget(),
+        isReactNativeServerMode: store.isReactNativeServerMode()
+      };
+    }
+  }]);
 
-/**
- * BuckToolbarActions and BuckToolbarStore implement an older version of the Flux pattern which puts
- * a lot of the async work into the store. Therefore, it's not very easy to tie the action to the
- * result. To get around this without having to rewrite the whole thing in one go, we just use the
- * store API directly.
- */
-function getTaskRunFunction(store: BuckToolbarStore, taskType: string): () => Promise<any> {
+  return BuckBuildSystem;
+})();
+
+exports.BuckBuildSystem = BuckBuildSystem;
+function getTaskRunFunction(store, taskType) {
   switch (taskType) {
     case 'build':
-      return () => store._doBuild('build', false);
+      return function () {
+        return store._doBuild('build', false);
+      };
     case 'run':
-      return () => store._doBuild('install', false);
+      return function () {
+        return store._doBuild('install', false);
+      };
     case 'test':
-      return () => store._doBuild('test', false);
+      return function () {
+        return store._doBuild('test', false);
+      };
     case 'debug':
-      return () => store._doDebug();
+      return function () {
+        return store._doDebug();
+      };
     default:
-      throw new Error(`Invalid task type: ${taskType}`);
+      throw new Error('Invalid task type: ' + taskType);
   }
 }

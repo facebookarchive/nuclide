@@ -1,5 +1,54 @@
-'use babel';
-/* @flow */
+var doFindReferences = _asyncToGenerator(function* (textEditor, position) /*FindReferencesReturn*/{
+  var result = yield (0, (_nuclideAtomHelpers2 || _nuclideAtomHelpers()).withLoadingNotification)(findReferences(textEditor, position.row, position.column), 'Loading references from Hack server...');
+  if (!result) {
+    return { type: 'error', message: 'Only classes/functions/methods are supported.' };
+  }
+
+  var baseUri = result.baseUri;
+  var symbolName = result.symbolName;
+  var references = result.references;
+
+  // Process this into the format nuclide-find-references expects.
+  references = references.map(function (ref) {
+    return {
+      uri: ref.filename,
+      name: null, // TODO(hansonw): Get the caller when it's available
+      start: {
+        line: ref.line,
+        column: ref.char_start
+      },
+      end: {
+        line: ref.line,
+        column: ref.char_end
+      }
+    };
+  });
+
+  // Strip off the global namespace indicator.
+  if (symbolName.startsWith('\\')) {
+    symbolName = symbolName.slice(1);
+  }
+
+  return {
+    type: 'data',
+    baseUri: baseUri,
+    referencedSymbolName: symbolName,
+    references: references
+  };
+});
+
+var findReferences = _asyncToGenerator(function* (editor, line, column) {
+  var filePath = editor.getPath();
+  var hackLanguage = yield (0, (_HackLanguage2 || _HackLanguage()).getHackLanguageForUri)(filePath);
+  if (!hackLanguage || !filePath) {
+    return null;
+  }
+
+  var contents = editor.getText();
+  return yield hackLanguage.findReferences(filePath, contents, line, column);
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -12,89 +61,42 @@
 // We can't pull in nuclide-find-references as a dependency, unfortunately.
 // import type {FindReferencesReturn} from 'nuclide-find-references';
 
-import type {
-  HackReference,
-} from '../../nuclide-hack-base/lib/HackService';
+var _nuclideHackCommon2;
 
-import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';
-import {trackOperationTiming} from '../../nuclide-analytics';
-import {withLoadingNotification} from '../../nuclide-atom-helpers';
-import {getHackLanguageForUri} from './HackLanguage';
-
-async function doFindReferences(
-  textEditor: atom$TextEditor,
-  position: atom$Point,
-): Promise<?Object /*FindReferencesReturn*/> {
-  const result = await withLoadingNotification(
-    findReferences(textEditor, position.row, position.column),
-    'Loading references from Hack server...',
-  );
-  if (!result) {
-    return {type: 'error', message: 'Only classes/functions/methods are supported.'};
-  }
-
-  const {baseUri} = result;
-  let {symbolName, references} = result;
-
-  // Process this into the format nuclide-find-references expects.
-  references = references.map(ref => {
-    return {
-      uri: ref.filename,
-      name: null, // TODO(hansonw): Get the caller when it's available
-      start: {
-        line: ref.line,
-        column: ref.char_start,
-      },
-      end: {
-        line: ref.line,
-        column: ref.char_end,
-      },
-    };
-  });
-
-  // Strip off the global namespace indicator.
-  if (symbolName.startsWith('\\')) {
-    symbolName = symbolName.slice(1);
-  }
-
-  return {
-    type: 'data',
-    baseUri,
-    referencedSymbolName: symbolName,
-    references,
-  };
+function _nuclideHackCommon() {
+  return _nuclideHackCommon2 = require('../../nuclide-hack-common');
 }
 
-async function findReferences(
-  editor: atom$TextEditor,
-  line: number,
-  column: number
-): Promise<?{baseUri: string; symbolName: string; references: Array<HackReference>}> {
-  const filePath = editor.getPath();
-  const hackLanguage = await getHackLanguageForUri(filePath);
-  if (!hackLanguage || !filePath) {
-    return null;
-  }
+var _nuclideAnalytics2;
 
-  const contents = editor.getText();
-  return await hackLanguage.findReferences(
-    filePath,
-    contents,
-    line,
-    column,
-  );
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+var _nuclideAtomHelpers2;
+
+function _nuclideAtomHelpers() {
+  return _nuclideAtomHelpers2 = require('../../nuclide-atom-helpers');
+}
+
+var _HackLanguage2;
+
+function _HackLanguage() {
+  return _HackLanguage2 = require('./HackLanguage');
 }
 
 module.exports = {
-  async isEditorSupported(textEditor: atom$TextEditor): Promise<boolean> {
-    const fileUri = textEditor.getPath();
-    if (!fileUri || !HACK_GRAMMARS_SET.has(textEditor.getGrammar().scopeName)) {
+  isEditorSupported: _asyncToGenerator(function* (textEditor) {
+    var fileUri = textEditor.getPath();
+    if (!fileUri || !(_nuclideHackCommon2 || _nuclideHackCommon()).HACK_GRAMMARS_SET.has(textEditor.getGrammar().scopeName)) {
       return false;
     }
     return true;
-  },
+  }),
 
-  findReferences(editor: atom$TextEditor, position: atom$Point): Promise<?Object> {
-    return trackOperationTiming('hack:findReferences', () => doFindReferences(editor, position));
-  },
+  findReferences: function findReferences(editor, position) {
+    return (0, (_nuclideAnalytics2 || _nuclideAnalytics()).trackOperationTiming)('hack:findReferences', function () {
+      return doFindReferences(editor, position);
+    });
+  }
 };

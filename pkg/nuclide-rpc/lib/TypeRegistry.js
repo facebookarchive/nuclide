@@ -1,33 +1,14 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
-/*
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- */
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-import assert from 'assert';
-import invariant from 'assert';
-import vm from 'vm';
-import fs from 'fs';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import type {
-  Type,
-  ObjectType,
-  ObjectField,
-  UnionType,
-} from './types';
-import {
-  objectType,
-  dateType,
-  regExpType,
-  bufferType,
-  fsStatsType,
-} from './builtin-types';
-import type {ObjectRegistry} from './ObjectRegistry';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * This type represents a Transformer function, which takes in a value, and either serializes
@@ -39,14 +20,50 @@ import type {ObjectRegistry} from './ObjectRegistry';
  * In the interest of a performance, a transformer should only return a Promise if necessary.
  * (Promise objects and Promise.all are very expensive operations in large numbers).
  */
-export type Transformer =
-  (value: any, type: Type, context: ObjectRegistry) => (any | Promise<any>);
-export type NamedTransformer
-  = (value: any, context: ObjectRegistry) => (any | Promise<any>);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _assert4;
+
+function _assert3() {
+  return _assert4 = _interopRequireDefault(require('assert'));
+}
+
+var _vm2;
+
+function _vm() {
+  return _vm2 = _interopRequireDefault(require('vm'));
+}
+
+var _fs2;
+
+function _fs() {
+  return _fs2 = _interopRequireDefault(require('fs'));
+}
+
+var _builtinTypes2;
+
+function _builtinTypes() {
+  return _builtinTypes2 = require('./builtin-types');
+}
 
 // Equivalent to Promise.all, but avoids wrappers if nothing is actually a promise.
 // Input must be homogenously typed.
-function smartPromiseAll<T>(arr: Array<T>): Array<T> | Promise<Array<T>> {
+function smartPromiseAll(arr) {
   if (arr.length === 0 || !(arr[0] instanceof Promise)) {
     return arr;
   }
@@ -54,8 +71,8 @@ function smartPromiseAll<T>(arr: Array<T>): Array<T> | Promise<Array<T>> {
 }
 
 // Same as the above, but works for non-homogenous input.
-function checkedSmartPromiseAll(arr: Array<any>): Array<any> | Promise<Array<any>> {
-  for (const elem of arr) {
+function checkedSmartPromiseAll(arr) {
+  for (var elem of arr) {
     if (elem instanceof Promise) {
       return Promise.all(arr);
     }
@@ -63,8 +80,8 @@ function checkedSmartPromiseAll(arr: Array<any>): Array<any> | Promise<Array<any
   return arr;
 }
 
-function statsToObject(stats: fs.Stats): Object {
-  const result = {
+function statsToObject(stats) {
+  var result = {
     dev: stats.dev,
     mode: stats.mode,
     nlink: stats.nlink,
@@ -77,18 +94,18 @@ function statsToObject(stats: fs.Stats): Object {
     blocks: stats.blocks,
     atime: stats.atime.toJSON(),
     mtime: stats.mtime.toJSON(),
-    ctime: stats.ctime.toJSON(),
+    ctime: stats.ctime.toJSON()
   };
 
   if (stats.birthtime) {
-    return {...result, birthtime: stats.birthtime.toJSON()};
+    return _extends({}, result, { birthtime: stats.birthtime.toJSON() });
   }
 
   return result;
 }
 
-function objectToStats(jsonStats: Object): fs.Stats {
-  const stats = new fs.Stats();
+function objectToStats(jsonStats) {
+  var stats = new (_fs2 || _fs()).default.Stats();
 
   stats.dev = jsonStats.dev;
   stats.mode = jsonStats.mode;
@@ -122,20 +139,13 @@ function objectToStats(jsonStats: Object): fs.Stats {
  * The ObjectRegistry is opaque to the TypeRegistry and allows for adding per-connection
  * context to marshalling transformations.
  */
-export class TypeRegistry {
-  /** Store marshallers and and unmarshallers, index by the kind of the type. */
-  _kindMarshallers: Map<string, {
-      marshaller: Transformer;
-      unmarshaller: Transformer;
-    }>;
 
-  /** Store marshallers and and unmarshallers, index by the name of the type. */
-  _namedMarshallers: Map<string, {
-      marshaller: NamedTransformer;
-      unmarshaller: NamedTransformer;
-    }>;
+var TypeRegistry = (function () {
+  function TypeRegistry() {
+    var _this = this;
 
-  constructor() {
+    _classCallCheck(this, TypeRegistry);
+
     this._kindMarshallers = new Map();
     this._namedMarshallers = new Map();
 
@@ -147,478 +157,526 @@ export class TypeRegistry {
     this._registerIntersections();
 
     // Register NullableType and NamedType
-    this._registerKind('nullable', (value: any, type: Type, context: ObjectRegistry) => {
+    this._registerKind('nullable', function (value, type, context) {
       if (value === null || value === undefined || type.kind !== 'nullable') {
         return null;
       }
-      return this._marshal(context, value, type.type);
-    }, (value: any, type: Type, context: ObjectRegistry) => {
+      return _this._marshal(context, value, type.type);
+    }, function (value, type, context) {
       if (value === null || value === undefined || type.kind !== 'nullable') {
         return null;
       }
-      return this._unmarshal(context, value, type.type);
+      return _this._unmarshal(context, value, type.type);
     });
 
-    this._registerKind('named', (value: any, type: Type, context: ObjectRegistry) => {
-      invariant(type.kind === 'named');
-      const namedMarshaller = this._namedMarshallers.get(type.name);
+    this._registerKind('named', function (value, type, context) {
+      (0, (_assert4 || _assert3()).default)(type.kind === 'named');
+      var namedMarshaller = _this._namedMarshallers.get(type.name);
       if (namedMarshaller == null) {
-        throw new Error(`No marshaller found for named type ${type.name}.`);
+        throw new Error('No marshaller found for named type ' + type.name + '.');
       }
       return namedMarshaller.marshaller(value, context);
-    }, (value: any, type: Type, context: ObjectRegistry) => {
-      invariant(type.kind === 'named');
-      const namedMarshaller = this._namedMarshallers.get(type.name);
+    }, function (value, type, context) {
+      (0, (_assert4 || _assert3()).default)(type.kind === 'named');
+      var namedMarshaller = _this._namedMarshallers.get(type.name);
       if (namedMarshaller == null) {
-        throw new Error(`No marshaller found for named type ${type.name}.`);
+        throw new Error('No marshaller found for named type ' + type.name + '.');
       }
       return namedMarshaller.unmarshaller(value, context);
     });
 
-    this._registerKind(
-      'void',
-      (value, type, context) => Promise.resolve(null),
-      (value, type, context) => Promise.resolve(null));
+    this._registerKind('void', function (value, type, context) {
+      return Promise.resolve(null);
+    }, function (value, type, context) {
+      return Promise.resolve(null);
+    });
   }
 
-  _registerKind(
-    kind: string,
-    marshaller: Transformer,
-    unmarshaller: Transformer
-  ): void {
-    invariant(!this._kindMarshallers.has(kind));
-    this._kindMarshallers.set(kind, {marshaller, unmarshaller});
-  }
-
-  /**
-   * Register a type by providing both a marshaller and an unmarshaller. The marshaller
-   * will be called to transform the type before sending it out onto the network, while the
-   * unmarshaller will be called on values incoming from the network.
-   * @param typeName - The string name of the type that the provided marshallers convert.
-   * @param marshaller - Serialize the type.
-   * @param unmarshaller - Deserialize the type.
-   */
-  registerType(
-    typeName: string,
-    marshaller: NamedTransformer,
-    unmarshaller: NamedTransformer,
-  ): void {
-    if (this._namedMarshallers.has(typeName)) {
-      throw new Error(`A type by the name ${typeName} has already been registered.`);
+  _createClass(TypeRegistry, [{
+    key: '_registerKind',
+    value: function _registerKind(kind, marshaller, unmarshaller) {
+      (0, (_assert4 || _assert3()).default)(!this._kindMarshallers.has(kind));
+      this._kindMarshallers.set(kind, { marshaller: marshaller, unmarshaller: unmarshaller });
     }
-    this._namedMarshallers.set(typeName, {marshaller, unmarshaller});
-  }
 
-  /**
-   * Helper function for registering the marashaller/unmarshaller for a type alias.
-   * @param name - The name of the alias type.
-   * @param type - The type the the alias represents.
-   */
-  registerAlias(name: string, type: Type): void {
-    this.registerType(name, (value, context) => this._marshal(context, value, type),
-      (value, context) => this._unmarshal(context, value, type));
-  }
-
-  /**
-   * Marshal an object using the appropriate marshal function.
-   * Ensures the result is actually a Promise.
-   * @param value - The value to be marshalled.
-   * @param type - The type object (used to find the appropriate function).
-   */
-  marshal(context: ObjectRegistry, value: any, type: Type): Promise<any> {
-    return Promise.resolve(this._marshal(context, value, type));
-  }
-
-  _marshal(context: ObjectRegistry, value: any, type: Type): any {
-    const kindMarshaller = this._kindMarshallers.get(type.kind);
-    if (kindMarshaller == null) {
-      throw new Error(`No marshaller found for type kind ${type.kind}.`);
+    /**
+     * Register a type by providing both a marshaller and an unmarshaller. The marshaller
+     * will be called to transform the type before sending it out onto the network, while the
+     * unmarshaller will be called on values incoming from the network.
+     * @param typeName - The string name of the type that the provided marshallers convert.
+     * @param marshaller - Serialize the type.
+     * @param unmarshaller - Deserialize the type.
+     */
+  }, {
+    key: 'registerType',
+    value: function registerType(typeName, marshaller, unmarshaller) {
+      if (this._namedMarshallers.has(typeName)) {
+        throw new Error('A type by the name ' + typeName + ' has already been registered.');
+      }
+      this._namedMarshallers.set(typeName, { marshaller: marshaller, unmarshaller: unmarshaller });
     }
-    return kindMarshaller.marshaller(value, type, context);
-  }
 
-  marshalArguments(
-    context: ObjectRegistry,
-    args: Array<any>,
-    argTypes: Array<Type>
-  ): Promise<Array<any>> {
-    return Promise.all(args.map((arg, i) => this.marshal(context, arg, argTypes[i])));
-  }
+    /**
+     * Helper function for registering the marashaller/unmarshaller for a type alias.
+     * @param name - The name of the alias type.
+     * @param type - The type the the alias represents.
+     */
+  }, {
+    key: 'registerAlias',
+    value: function registerAlias(name, type) {
+      var _this2 = this;
 
-  /**
-   * Unmarshal and object using the appropriate unmarshal function.
-   * Ensures the result is actually a Promise.
-   * @param value - The value to be marshalled.
-   * @param type - The type object (used to find the appropriate function).
-   */
-  unmarshal(context: ObjectRegistry, value: any, type: Type): Promise<any> {
-    return Promise.resolve(this._unmarshal(context, value, type));
-  }
-
-  unmarshalArguments(
-    context: ObjectRegistry,
-    args: Array<any>,
-    argTypes: Array<Type>
-  ): Promise<Array<any>> {
-    return Promise.all(args.map((arg, i) => this.unmarshal(context, arg, argTypes[i])));
-  }
-
-  _unmarshal(context: ObjectRegistry, value: any, type: Type): any {
-    const kindMarshaller = this._kindMarshallers.get(type.kind);
-    if (kindMarshaller == null) {
-      throw new Error(`No unmarshaller found for type kind ${type.kind}.`);
-    }
-    return kindMarshaller.unmarshaller(value, type, context);
-  }
-
-  _registerPrimitives(): void {
-    // Since string, number, and boolean are JSON primitives,
-    // they require no marshalling. Instead, simply create wrapped transformers
-    // that assert the type of their argument.
-    const stringTransformer = arg => {
-      // Unbox argument.
-      arg = (arg instanceof String) ? arg.valueOf() : arg;
-      assert(typeof arg === 'string', 'Expected a string argument');
-      return arg;
-    };
-    const numberMarshaller = arg => {
-      // Unbox argument.
-      if (arg instanceof Number) {
-        arg = arg.valueOf();
-      }
-      assert(typeof arg === 'number', 'Expected a number argument');
-      if (!Number.isFinite(arg)) {
-        if (arg === Number.NEGATIVE_INFINITY) {
-          arg = 'NEGATIVE_INFINITY';
-        } else if (arg === Number.POSITIVE_INFINITY) {
-          arg = 'POSITIVE_INFINITY';
-        } else {
-          arg = 'NaN';
-        }
-      }
-      return arg;
-    };
-    const numberUnmarshaller = arg => {
-      if (typeof arg === 'string') {
-        switch (arg) {
-          case 'NEGATIVE_INFINITY':
-            arg = Number.NEGATIVE_INFINITY;
-            break;
-          case 'POSITIVE_INFINITY':
-            arg = Number.POSITIVE_INFINITY;
-            break;
-          case 'NaN':
-            arg = Number.NaN;
-            break;
-          default:
-            // This will assert below
-            break;
-        }
-      } else if (arg instanceof Number) {
-        arg = arg.valueOf();
-      }
-      assert(typeof arg === 'number', 'Expected a number argument');
-      return arg;
-    };
-    const booleanTransformer = arg => {
-      // Unbox argument
-      if (arg instanceof Boolean) {
-        arg = arg.valueOf();
-      }
-      assert(typeof arg === 'boolean', 'Expected a boolean argument');
-      return arg;
-    };
-    // We assume an 'any' and 'mixed' types require no marshalling.
-    const identityTransformer = arg => arg;
-
-    // Register these transformers
-    this._registerKind('string', stringTransformer, stringTransformer);
-    this._registerKind('number', numberMarshaller, numberUnmarshaller);
-    this._registerKind('boolean', booleanTransformer, booleanTransformer);
-    this._registerKind('any', identityTransformer, identityTransformer);
-    this._registerKind('mixed', identityTransformer, identityTransformer);
-  }
-
-  _registerLiterals(): void {
-    const literalTransformer = (arg, type) => {
-      invariant(type.kind === 'string-literal' || type.kind === 'number-literal' ||
-          type.kind === 'boolean-literal');
-      invariant(arg === type.value);
-      return arg;
-    };
-    this._registerKind('string-literal', literalTransformer, literalTransformer);
-    this._registerKind('number-literal', literalTransformer, literalTransformer);
-    this._registerKind('boolean-literal', literalTransformer, literalTransformer);
-  }
-
-  _registerUnions(): void {
-    const unionLiteralTransformer = (arg, type) => {
-      invariant(type.kind === 'union');
-      const alternate = type.types.find(element => {
-        invariant(element.kind === 'string-literal' || element.kind === 'number-literal'
-            || element.kind === 'boolean-literal');
-        return (arg === element.value);
+      this.registerType(name, function (value, context) {
+        return _this2._marshal(context, value, type);
+      }, function (value, context) {
+        return _this2._unmarshal(context, value, type);
       });
-      invariant(alternate);
-      // This is just the literal transformer inlined ...
-      return arg;
-    };
-    const unionObjectMarshaller = (arg, type, context) => {
-      invariant(type.kind === 'union');
-      return this._marshal(context, arg, findAlternate(arg, type));
-    };
-    const unionObjectUnmarshaller = (arg, type, context) => {
-      invariant(type.kind === 'union');
-      return this._unmarshal(context, arg, findAlternate(arg, type));
-    };
-    const unionMarshaller = (arg, type, context) => {
-      invariant(type.kind === 'union');
-      if (type.discriminantField != null) {
-        return unionObjectMarshaller(arg, type, context);
-      } else {
-        return unionLiteralTransformer(arg, type);
+    }
+
+    /**
+     * Marshal an object using the appropriate marshal function.
+     * Ensures the result is actually a Promise.
+     * @param value - The value to be marshalled.
+     * @param type - The type object (used to find the appropriate function).
+     */
+  }, {
+    key: 'marshal',
+    value: function marshal(context, value, type) {
+      return Promise.resolve(this._marshal(context, value, type));
+    }
+  }, {
+    key: '_marshal',
+    value: function _marshal(context, value, type) {
+      var kindMarshaller = this._kindMarshallers.get(type.kind);
+      if (kindMarshaller == null) {
+        throw new Error('No marshaller found for type kind ' + type.kind + '.');
       }
-    };
-    const unionUnmarshaller = (arg, type, context) => {
-      invariant(type.kind === 'union');
-      if (type.discriminantField != null) {
-        return unionObjectUnmarshaller(arg, type, context);
-      } else {
-        return unionLiteralTransformer(arg, type);
-      }
-    };
-    this._registerKind('union', unionMarshaller, unionUnmarshaller);
-  }
+      return kindMarshaller.marshaller(value, type, context);
+    }
+  }, {
+    key: 'marshalArguments',
+    value: function marshalArguments(context, args, argTypes) {
+      var _this3 = this;
 
-  _registerIntersections(): void {
-    const intersectionMarshaller = (arg, type, context) => {
-      invariant(type.kind === 'intersection');
-      invariant(type.flattened != null);
-      return this._marshal(context, arg, type.flattened);
-    };
-    const intersectionUnmarshaller = (arg, type, context) => {
-      invariant(type.kind === 'intersection');
-      invariant(type.flattened != null);
-      return this._unmarshal(context, arg, type.flattened);
-    };
-    this._registerKind('intersection', intersectionMarshaller, intersectionUnmarshaller);
-  }
-
-  _registerSpecialTypes(): void {
-    // Serialize / Deserialize any Object type
-    this.registerType(objectType.name, object => {
-      assert(object != null && typeof object === 'object', 'Expected Object argument.');
-      return object;
-    }, object => {
-      assert(object != null && typeof object === 'object', 'Expected Object argument.');
-      return object;
-    });
-
-    // Serialize / Deserialize Javascript Date objects
-    this.registerType(dateType.name, date => {
-      assert(date instanceof Date, 'Expected date argument.');
-      return date.toJSON();
-    }, dateStr => {
-      // Unbox argument.
-      dateStr = (dateStr instanceof String) ? dateStr.valueOf() : dateStr;
-
-      assert(typeof dateStr === 'string', 'Expeceted a string argument.');
-      return new Date(dateStr);
-    });
-
-    // Serialize / Deserialize RegExp objects
-    this.registerType(regExpType.name, regexp => {
-      assert(regexp instanceof RegExp, 'Expected a RegExp object as an argument');
-      return regexp.toString();
-    }, regStr => {
-      // Unbox argument.
-      regStr = (regStr instanceof String) ? regStr.valueOf() : regStr;
-
-      assert(typeof regStr === 'string', 'Expected a string argument.');
-      return vm.runInThisContext(regStr);
-    });
-
-    // Serialize / Deserialize Buffer objects through Base64 strings
-    this.registerType(bufferType.name, buffer => {
-      assert(buffer instanceof Buffer, 'Expected a buffer argument.');
-      return buffer.toString('base64');
-    }, base64string => {
-      // Unbox argument.
-      base64string = (base64string instanceof String) ? base64string.valueOf() : base64string;
-
-      assert(
-        typeof base64string === 'string',
-        `Expected a base64 string. Not ${typeof base64string}`);
-      return new Buffer(base64string, 'base64');
-    });
-
-    // fs.Stats
-    this.registerType(fsStatsType.name, stats => {
-      assert(stats instanceof fs.Stats);
-      return JSON.stringify(statsToObject(stats));
-    }, json => {
-      assert(typeof json === 'string');
-      return objectToStats(JSON.parse(json));
-    });
-  }
-
-  _registerContainers(): void {
-    // Serialize / Deserialize Arrays.
-    this._registerKind('array', (value: any, type: Type, context: ObjectRegistry) => {
-      assert(value instanceof Array, 'Expected an object of type Array.');
-      invariant(type.kind === 'array');
-      const elemType = type.type;
-      return smartPromiseAll(value.map(elem => this._marshal(context, elem, elemType)));
-    }, (value: any, type: Type, context: ObjectRegistry) => {
-      assert(value instanceof Array, 'Expected an object of type Array.');
-      invariant(type.kind === 'array');
-      const elemType = type.type;
-      return smartPromiseAll(value.map(elem => this._unmarshal(context, elem, elemType)));
-    });
-
-    // Serialize and Deserialize Objects.
-    this._registerKind('object', (obj: any, type: Type, context: ObjectRegistry) => {
-      assert(typeof obj === 'object', 'Expected an argument of type object.');
-      invariant(type.kind === 'object');
-      const newObj = {}; // Create a new object so we don't mutate the original one.
-      const promise = checkedSmartPromiseAll(type.fields.map(prop => {
-        // Check if the source object has this key.
-        if (obj != null && obj.hasOwnProperty(prop.name)) {
-          const value = this._marshal(context, obj[prop.name], prop.type);
-          if (value instanceof Promise) {
-            return value.then(result => (newObj[prop.name] = result));
-          } else {
-            newObj[prop.name] = value;
-          }
-        } else if (!prop.optional) {
-          // If the property is optional, it's okay for it to be missing.
-          throw new Error(
-            `Source object: ${JSON.stringify(obj)} is missing property ${prop.name}.`,
-          );
-        }
+      return Promise.all(args.map(function (arg, i) {
+        return _this3.marshal(context, arg, argTypes[i]);
       }));
-      if (promise instanceof Promise) {
-        return promise.then(() => newObj);
-      }
-      return newObj;
-    }, (obj: any, type: Type, context: ObjectRegistry) => {
-      assert(typeof obj === 'object', 'Expected an argument of type object.');
-      invariant(type.kind === 'object');
-      const newObj = {}; // Create a new object so we don't mutate the original one.
-      const promise = checkedSmartPromiseAll(type.fields.map(prop => {
-        // Check if the source object has this key.
-        if (obj != null && obj.hasOwnProperty(prop.name)) {
-          const value = this._unmarshal(context, obj[prop.name], prop.type);
-          if (value instanceof Promise) {
-            return value.then(result => (newObj[prop.name] = result));
-          } else {
-            newObj[prop.name] = value;
-          }
-        } else if (!prop.optional) {
-          // If the property is optional, it's okay for it to be missing.
-          throw new Error(
-            `Source object: ${JSON.stringify(obj)} is missing property ${prop.name}.`,
-          );
-        }
+    }
+
+    /**
+     * Unmarshal and object using the appropriate unmarshal function.
+     * Ensures the result is actually a Promise.
+     * @param value - The value to be marshalled.
+     * @param type - The type object (used to find the appropriate function).
+     */
+  }, {
+    key: 'unmarshal',
+    value: function unmarshal(context, value, type) {
+      return Promise.resolve(this._unmarshal(context, value, type));
+    }
+  }, {
+    key: 'unmarshalArguments',
+    value: function unmarshalArguments(context, args, argTypes) {
+      var _this4 = this;
+
+      return Promise.all(args.map(function (arg, i) {
+        return _this4.unmarshal(context, arg, argTypes[i]);
       }));
-      if (promise instanceof Promise) {
-        return promise.then(() => newObj);
+    }
+  }, {
+    key: '_unmarshal',
+    value: function _unmarshal(context, value, type) {
+      var kindMarshaller = this._kindMarshallers.get(type.kind);
+      if (kindMarshaller == null) {
+        throw new Error('No unmarshaller found for type kind ' + type.kind + '.');
       }
-      return newObj;
-    });
+      return kindMarshaller.unmarshaller(value, type, context);
+    }
+  }, {
+    key: '_registerPrimitives',
+    value: function _registerPrimitives() {
+      // Since string, number, and boolean are JSON primitives,
+      // they require no marshalling. Instead, simply create wrapped transformers
+      // that assert the type of their argument.
+      var stringTransformer = function stringTransformer(arg) {
+        // Unbox argument.
+        arg = arg instanceof String ? arg.valueOf() : arg;
+        (0, (_assert2 || _assert()).default)(typeof arg === 'string', 'Expected a string argument');
+        return arg;
+      };
+      var numberMarshaller = function numberMarshaller(arg) {
+        // Unbox argument.
+        if (arg instanceof Number) {
+          arg = arg.valueOf();
+        }
+        (0, (_assert2 || _assert()).default)(typeof arg === 'number', 'Expected a number argument');
+        if (!Number.isFinite(arg)) {
+          if (arg === Number.NEGATIVE_INFINITY) {
+            arg = 'NEGATIVE_INFINITY';
+          } else if (arg === Number.POSITIVE_INFINITY) {
+            arg = 'POSITIVE_INFINITY';
+          } else {
+            arg = 'NaN';
+          }
+        }
+        return arg;
+      };
+      var numberUnmarshaller = function numberUnmarshaller(arg) {
+        if (typeof arg === 'string') {
+          switch (arg) {
+            case 'NEGATIVE_INFINITY':
+              arg = Number.NEGATIVE_INFINITY;
+              break;
+            case 'POSITIVE_INFINITY':
+              arg = Number.POSITIVE_INFINITY;
+              break;
+            case 'NaN':
+              arg = Number.NaN;
+              break;
+            default:
+              // This will assert below
+              break;
+          }
+        } else if (arg instanceof Number) {
+          arg = arg.valueOf();
+        }
+        (0, (_assert2 || _assert()).default)(typeof arg === 'number', 'Expected a number argument');
+        return arg;
+      };
+      var booleanTransformer = function booleanTransformer(arg) {
+        // Unbox argument
+        if (arg instanceof Boolean) {
+          arg = arg.valueOf();
+        }
+        (0, (_assert2 || _assert()).default)(typeof arg === 'boolean', 'Expected a boolean argument');
+        return arg;
+      };
+      // We assume an 'any' and 'mixed' types require no marshalling.
+      var identityTransformer = function identityTransformer(arg) {
+        return arg;
+      };
 
-    // Serialize / Deserialize Sets.
-    this._registerKind('set', (value: any, type: Type, context: ObjectRegistry) => {
-      invariant(type.kind === 'set');
-      assert(value instanceof Set, 'Expected an object of type Set.');
-      const serializePromises = [];
-      for (const elem of value) {
-        serializePromises.push(this._marshal(context, elem, type.type));
-      }
-      return smartPromiseAll(serializePromises);
-    }, (value: any, type: Type, context: ObjectRegistry) => {
-      assert(value instanceof Array, 'Expected an object of type Array.');
-      invariant(type.kind === 'set');
-      const elemType = type.type;
-      const elements = smartPromiseAll(value.map(elem => this._unmarshal(context, elem, elemType)));
-      if (elements instanceof Promise) {
-        return elements.then(x => new Set(x));
-      }
-      return new Set(elements);
-    });
+      // Register these transformers
+      this._registerKind('string', stringTransformer, stringTransformer);
+      this._registerKind('number', numberMarshaller, numberUnmarshaller);
+      this._registerKind('boolean', booleanTransformer, booleanTransformer);
+      this._registerKind('any', identityTransformer, identityTransformer);
+      this._registerKind('mixed', identityTransformer, identityTransformer);
+    }
+  }, {
+    key: '_registerLiterals',
+    value: function _registerLiterals() {
+      var literalTransformer = function literalTransformer(arg, type) {
+        (0, (_assert4 || _assert3()).default)(type.kind === 'string-literal' || type.kind === 'number-literal' || type.kind === 'boolean-literal');
+        (0, (_assert4 || _assert3()).default)(arg === type.value);
+        return arg;
+      };
+      this._registerKind('string-literal', literalTransformer, literalTransformer);
+      this._registerKind('number-literal', literalTransformer, literalTransformer);
+      this._registerKind('boolean-literal', literalTransformer, literalTransformer);
+    }
+  }, {
+    key: '_registerUnions',
+    value: function _registerUnions() {
+      var _this5 = this;
 
-    // Serialize / Deserialize Maps.
-    this._registerKind('map', (map: Map, type: Type, context: ObjectRegistry) => {
-      assert(map instanceof Map, 'Expected an object of type Set.');
-      invariant(type.kind === 'map');
-      const serializePromises = [];
-      for (const [key, value] of map) {
-        serializePromises.push(checkedSmartPromiseAll([
-          this._marshal(context, key, type.keyType),
-          this._marshal(context, value, type.valueType),
-        ]));
-      }
-      return smartPromiseAll(serializePromises);
-    }, (serialized: any, type: Type, context: ObjectRegistry) => {
-      assert(serialized instanceof Array, 'Expected an object of type Array.');
-      invariant(type.kind === 'map');
-      const keyType = type.keyType;
-      const valueType = type.valueType;
-      const entries = smartPromiseAll(
-        serialized.map(entry => checkedSmartPromiseAll([
-          this._unmarshal(context, entry[0], keyType),
-          this._unmarshal(context, entry[1], valueType),
-        ]))
-      );
-      if (entries instanceof Promise) {
-        return entries.then(x => new Map(x));
-      }
-      return new Map(entries);
-    });
+      var unionLiteralTransformer = function unionLiteralTransformer(arg, type) {
+        (0, (_assert4 || _assert3()).default)(type.kind === 'union');
+        var alternate = type.types.find(function (element) {
+          (0, (_assert4 || _assert3()).default)(element.kind === 'string-literal' || element.kind === 'number-literal' || element.kind === 'boolean-literal');
+          return arg === element.value;
+        });
+        (0, (_assert4 || _assert3()).default)(alternate);
+        // This is just the literal transformer inlined ...
+        return arg;
+      };
+      var unionObjectMarshaller = function unionObjectMarshaller(arg, type, context) {
+        (0, (_assert4 || _assert3()).default)(type.kind === 'union');
+        return _this5._marshal(context, arg, findAlternate(arg, type));
+      };
+      var unionObjectUnmarshaller = function unionObjectUnmarshaller(arg, type, context) {
+        (0, (_assert4 || _assert3()).default)(type.kind === 'union');
+        return _this5._unmarshal(context, arg, findAlternate(arg, type));
+      };
+      var unionMarshaller = function unionMarshaller(arg, type, context) {
+        (0, (_assert4 || _assert3()).default)(type.kind === 'union');
+        if (type.discriminantField != null) {
+          return unionObjectMarshaller(arg, type, context);
+        } else {
+          return unionLiteralTransformer(arg, type);
+        }
+      };
+      var unionUnmarshaller = function unionUnmarshaller(arg, type, context) {
+        (0, (_assert4 || _assert3()).default)(type.kind === 'union');
+        if (type.discriminantField != null) {
+          return unionObjectUnmarshaller(arg, type, context);
+        } else {
+          return unionLiteralTransformer(arg, type);
+        }
+      };
+      this._registerKind('union', unionMarshaller, unionUnmarshaller);
+    }
+  }, {
+    key: '_registerIntersections',
+    value: function _registerIntersections() {
+      var _this6 = this;
 
-    // Serialize / Deserialize Tuples.
-    this._registerKind('tuple', (value: any, type: Type, context: ObjectRegistry) => {
-      // Assert the length of the array.
-      assert(Array.isArray(value), 'Expected an object of type Array.');
-      invariant(type.kind === 'tuple');
-      const types = type.types;
-      assert(value.length === types.length, `Expected tuple of length ${types.length}.`);
+      var intersectionMarshaller = function intersectionMarshaller(arg, type, context) {
+        (0, (_assert4 || _assert3()).default)(type.kind === 'intersection');
+        (0, (_assert4 || _assert3()).default)(type.flattened != null);
+        return _this6._marshal(context, arg, type.flattened);
+      };
+      var intersectionUnmarshaller = function intersectionUnmarshaller(arg, type, context) {
+        (0, (_assert4 || _assert3()).default)(type.kind === 'intersection');
+        (0, (_assert4 || _assert3()).default)(type.flattened != null);
+        return _this6._unmarshal(context, arg, type.flattened);
+      };
+      this._registerKind('intersection', intersectionMarshaller, intersectionUnmarshaller);
+    }
+  }, {
+    key: '_registerSpecialTypes',
+    value: function _registerSpecialTypes() {
+      // Serialize / Deserialize any Object type
+      this.registerType((_builtinTypes2 || _builtinTypes()).objectType.name, function (object) {
+        (0, (_assert2 || _assert()).default)(object != null && typeof object === 'object', 'Expected Object argument.');
+        return object;
+      }, function (object) {
+        (0, (_assert2 || _assert()).default)(object != null && typeof object === 'object', 'Expected Object argument.');
+        return object;
+      });
 
-      // Convert all of the elements through the correct marshaller.
-      return checkedSmartPromiseAll(value.map((elem, i) => this._marshal(context, elem, types[i])));
-    }, (value: any, type: Type, context: ObjectRegistry) => {
-      // Assert the length of the array.
-      assert(Array.isArray(value), 'Expected an object of type Array.');
-      invariant(type.kind === 'tuple');
-      const types = type.types;
-      assert(value.length === types.length, `Expected tuple of length ${types.length}.`);
+      // Serialize / Deserialize Javascript Date objects
+      this.registerType((_builtinTypes2 || _builtinTypes()).dateType.name, function (date) {
+        (0, (_assert2 || _assert()).default)(date instanceof Date, 'Expected date argument.');
+        return date.toJSON();
+      }, function (dateStr) {
+        // Unbox argument.
+        dateStr = dateStr instanceof String ? dateStr.valueOf() : dateStr;
 
-      // Convert all of the elements through the correct unmarshaller.
-      return checkedSmartPromiseAll(
-          value.map((elem, i) => this._unmarshal(context, elem, types[i])));
-    });
-  }
-}
+        (0, (_assert2 || _assert()).default)(typeof dateStr === 'string', 'Expeceted a string argument.');
+        return new Date(dateStr);
+      });
 
-function getObjectFieldByName(type: ObjectType, fieldName: string): ObjectField {
-  const result = type.fields.find(field => field.name === fieldName);
-  invariant(result != null);
+      // Serialize / Deserialize RegExp objects
+      this.registerType((_builtinTypes2 || _builtinTypes()).regExpType.name, function (regexp) {
+        (0, (_assert2 || _assert()).default)(regexp instanceof RegExp, 'Expected a RegExp object as an argument');
+        return regexp.toString();
+      }, function (regStr) {
+        // Unbox argument.
+        regStr = regStr instanceof String ? regStr.valueOf() : regStr;
+
+        (0, (_assert2 || _assert()).default)(typeof regStr === 'string', 'Expected a string argument.');
+        return (_vm2 || _vm()).default.runInThisContext(regStr);
+      });
+
+      // Serialize / Deserialize Buffer objects through Base64 strings
+      this.registerType((_builtinTypes2 || _builtinTypes()).bufferType.name, function (buffer) {
+        (0, (_assert2 || _assert()).default)(buffer instanceof Buffer, 'Expected a buffer argument.');
+        return buffer.toString('base64');
+      }, function (base64string) {
+        // Unbox argument.
+        base64string = base64string instanceof String ? base64string.valueOf() : base64string;
+
+        (0, (_assert2 || _assert()).default)(typeof base64string === 'string', 'Expected a base64 string. Not ' + typeof base64string);
+        return new Buffer(base64string, 'base64');
+      });
+
+      // fs.Stats
+      this.registerType((_builtinTypes2 || _builtinTypes()).fsStatsType.name, function (stats) {
+        (0, (_assert2 || _assert()).default)(stats instanceof (_fs2 || _fs()).default.Stats);
+        return JSON.stringify(statsToObject(stats));
+      }, function (json) {
+        (0, (_assert2 || _assert()).default)(typeof json === 'string');
+        return objectToStats(JSON.parse(json));
+      });
+    }
+  }, {
+    key: '_registerContainers',
+    value: function _registerContainers() {
+      var _this7 = this;
+
+      // Serialize / Deserialize Arrays.
+      this._registerKind('array', function (value, type, context) {
+        (0, (_assert2 || _assert()).default)(value instanceof Array, 'Expected an object of type Array.');
+        (0, (_assert4 || _assert3()).default)(type.kind === 'array');
+        var elemType = type.type;
+        return smartPromiseAll(value.map(function (elem) {
+          return _this7._marshal(context, elem, elemType);
+        }));
+      }, function (value, type, context) {
+        (0, (_assert2 || _assert()).default)(value instanceof Array, 'Expected an object of type Array.');
+        (0, (_assert4 || _assert3()).default)(type.kind === 'array');
+        var elemType = type.type;
+        return smartPromiseAll(value.map(function (elem) {
+          return _this7._unmarshal(context, elem, elemType);
+        }));
+      });
+
+      // Serialize and Deserialize Objects.
+      this._registerKind('object', function (obj, type, context) {
+        (0, (_assert2 || _assert()).default)(typeof obj === 'object', 'Expected an argument of type object.');
+        (0, (_assert4 || _assert3()).default)(type.kind === 'object');
+        var newObj = {}; // Create a new object so we don't mutate the original one.
+        var promise = checkedSmartPromiseAll(type.fields.map(function (prop) {
+          // Check if the source object has this key.
+          if (obj != null && obj.hasOwnProperty(prop.name)) {
+            var _value = _this7._marshal(context, obj[prop.name], prop.type);
+            if (_value instanceof Promise) {
+              return _value.then(function (result) {
+                return newObj[prop.name] = result;
+              });
+            } else {
+              newObj[prop.name] = _value;
+            }
+          } else if (!prop.optional) {
+            // If the property is optional, it's okay for it to be missing.
+            throw new Error('Source object: ' + JSON.stringify(obj) + ' is missing property ' + prop.name + '.');
+          }
+        }));
+        if (promise instanceof Promise) {
+          return promise.then(function () {
+            return newObj;
+          });
+        }
+        return newObj;
+      }, function (obj, type, context) {
+        (0, (_assert2 || _assert()).default)(typeof obj === 'object', 'Expected an argument of type object.');
+        (0, (_assert4 || _assert3()).default)(type.kind === 'object');
+        var newObj = {}; // Create a new object so we don't mutate the original one.
+        var promise = checkedSmartPromiseAll(type.fields.map(function (prop) {
+          // Check if the source object has this key.
+          if (obj != null && obj.hasOwnProperty(prop.name)) {
+            var _value2 = _this7._unmarshal(context, obj[prop.name], prop.type);
+            if (_value2 instanceof Promise) {
+              return _value2.then(function (result) {
+                return newObj[prop.name] = result;
+              });
+            } else {
+              newObj[prop.name] = _value2;
+            }
+          } else if (!prop.optional) {
+            // If the property is optional, it's okay for it to be missing.
+            throw new Error('Source object: ' + JSON.stringify(obj) + ' is missing property ' + prop.name + '.');
+          }
+        }));
+        if (promise instanceof Promise) {
+          return promise.then(function () {
+            return newObj;
+          });
+        }
+        return newObj;
+      });
+
+      // Serialize / Deserialize Sets.
+      this._registerKind('set', function (value, type, context) {
+        (0, (_assert4 || _assert3()).default)(type.kind === 'set');
+        (0, (_assert2 || _assert()).default)(value instanceof Set, 'Expected an object of type Set.');
+        var serializePromises = [];
+        for (var elem of value) {
+          serializePromises.push(_this7._marshal(context, elem, type.type));
+        }
+        return smartPromiseAll(serializePromises);
+      }, function (value, type, context) {
+        (0, (_assert2 || _assert()).default)(value instanceof Array, 'Expected an object of type Array.');
+        (0, (_assert4 || _assert3()).default)(type.kind === 'set');
+        var elemType = type.type;
+        var elements = smartPromiseAll(value.map(function (elem) {
+          return _this7._unmarshal(context, elem, elemType);
+        }));
+        if (elements instanceof Promise) {
+          return elements.then(function (x) {
+            return new Set(x);
+          });
+        }
+        return new Set(elements);
+      });
+
+      // Serialize / Deserialize Maps.
+      this._registerKind('map', function (map, type, context) {
+        (0, (_assert2 || _assert()).default)(map instanceof Map, 'Expected an object of type Set.');
+        (0, (_assert4 || _assert3()).default)(type.kind === 'map');
+        var serializePromises = [];
+        for (var _ref3 of map) {
+          var _ref2 = _slicedToArray(_ref3, 2);
+
+          var key = _ref2[0];
+          var _value3 = _ref2[1];
+
+          serializePromises.push(checkedSmartPromiseAll([_this7._marshal(context, key, type.keyType), _this7._marshal(context, _value3, type.valueType)]));
+        }
+        return smartPromiseAll(serializePromises);
+      }, function (serialized, type, context) {
+        (0, (_assert2 || _assert()).default)(serialized instanceof Array, 'Expected an object of type Array.');
+        (0, (_assert4 || _assert3()).default)(type.kind === 'map');
+        var keyType = type.keyType;
+        var valueType = type.valueType;
+        var entries = smartPromiseAll(serialized.map(function (entry) {
+          return checkedSmartPromiseAll([_this7._unmarshal(context, entry[0], keyType), _this7._unmarshal(context, entry[1], valueType)]);
+        }));
+        if (entries instanceof Promise) {
+          return entries.then(function (x) {
+            return new Map(x);
+          });
+        }
+        return new Map(entries);
+      });
+
+      // Serialize / Deserialize Tuples.
+      this._registerKind('tuple', function (value, type, context) {
+        // Assert the length of the array.
+        (0, (_assert2 || _assert()).default)(Array.isArray(value), 'Expected an object of type Array.');
+        (0, (_assert4 || _assert3()).default)(type.kind === 'tuple');
+        var types = type.types;
+        (0, (_assert2 || _assert()).default)(value.length === types.length, 'Expected tuple of length ' + types.length + '.');
+
+        // Convert all of the elements through the correct marshaller.
+        return checkedSmartPromiseAll(value.map(function (elem, i) {
+          return _this7._marshal(context, elem, types[i]);
+        }));
+      }, function (value, type, context) {
+        // Assert the length of the array.
+        (0, (_assert2 || _assert()).default)(Array.isArray(value), 'Expected an object of type Array.');
+        (0, (_assert4 || _assert3()).default)(type.kind === 'tuple');
+        var types = type.types;
+        (0, (_assert2 || _assert()).default)(value.length === types.length, 'Expected tuple of length ' + types.length + '.');
+
+        // Convert all of the elements through the correct unmarshaller.
+        return checkedSmartPromiseAll(value.map(function (elem, i) {
+          return _this7._unmarshal(context, elem, types[i]);
+        }));
+      });
+    }
+  }]);
+
+  return TypeRegistry;
+})();
+
+exports.TypeRegistry = TypeRegistry;
+
+function getObjectFieldByName(type, fieldName) {
+  var result = type.fields.find(function (field) {
+    return field.name === fieldName;
+  });
+  (0, (_assert4 || _assert3()).default)(result != null);
   return result;
 }
 
-function findAlternate(arg: Object, type: UnionType): ObjectType {
-  const discriminantField = type.discriminantField;
-  invariant(discriminantField != null);
-  const discriminant = arg[discriminantField];
-  invariant(discriminant != null);
-  const alternates: Array<ObjectType> = (type.types: any);
-  const result = alternates.find(alternate => {
-    invariant(alternate.kind === 'object');
-    const alternateType = getObjectFieldByName(alternate, discriminantField).type;
-    invariant(alternateType.kind === 'string-literal' || alternateType.kind === 'number-literal'
-        || alternateType.kind === 'boolean-literal');
+function findAlternate(arg, type) {
+  var discriminantField = type.discriminantField;
+  (0, (_assert4 || _assert3()).default)(discriminantField != null);
+  var discriminant = arg[discriminantField];
+  (0, (_assert4 || _assert3()).default)(discriminant != null);
+  var alternates = type.types;
+  var result = alternates.find(function (alternate) {
+    (0, (_assert4 || _assert3()).default)(alternate.kind === 'object');
+    var alternateType = getObjectFieldByName(alternate, discriminantField).type;
+    (0, (_assert4 || _assert3()).default)(alternateType.kind === 'string-literal' || alternateType.kind === 'number-literal' || alternateType.kind === 'boolean-literal');
     return alternateType.value === discriminant;
   });
-  invariant(result != null);
+  (0, (_assert4 || _assert3()).default)(result != null);
   return result;
 }
+
+/** Store marshallers and and unmarshallers, index by the kind of the type. */
+
+/** Store marshallers and and unmarshallers, index by the name of the type. */

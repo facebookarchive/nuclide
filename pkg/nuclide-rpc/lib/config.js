@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,4 +10,5 @@
  * the root directory of this source tree.
  */
 
-export const SERVICE_FRAMEWORK3_CHANNEL = 'service_framework3_rpc';
+var SERVICE_FRAMEWORK3_CHANNEL = 'service_framework3_rpc';
+exports.SERVICE_FRAMEWORK3_CHANNEL = SERVICE_FRAMEWORK3_CHANNEL;

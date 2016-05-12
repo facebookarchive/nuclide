@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +8,36 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  get hgConstants() {
-    return require('./hg-constants');
+module.exports = Object.defineProperties({}, {
+  hgConstants: {
+    get: function get() {
+      return require('./hg-constants');
+    },
+    configurable: true,
+    enumerable: true
   },
+  HgService: {
+    get: function get() {
+      return require('./HgService');
+    },
+    configurable: true,
+    enumerable: true
+  },
+  MockHgService: {
 
-  get HgService() {
-    return require('./HgService');
-  },
+    // Exposed for testing
 
-  // Exposed for testing
-  get MockHgService() {
-    return require('../spec/MockHgService');
+    get: function get() {
+      return require('../spec/MockHgService');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get revisions() {
-    return require('./hg-revision-expression-helpers');
-  },
-};
+  revisions: {
+    get: function get() {
+      return require('./hg-revision-expression-helpers');
+    },
+    configurable: true,
+    enumerable: true
+  }
+});

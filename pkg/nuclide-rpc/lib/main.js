@@ -1,5 +1,11 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getDefinitions = getDefinitions;
+exports.getProxy = getProxy;
+exports.createProxyFactory = createProxyFactory;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,46 +15,52 @@
  * the root directory of this source tree.
  */
 
-import fs from 'fs';
-import path from 'path';
-import invariant from 'assert';
-import Module from 'module';
+var _fs2;
 
-import NodeTranspiler from '../../nuclide-node-transpiler/lib/NodeTranspiler';
-import {generateProxy} from './proxy-generator';
-import {parseServiceDefinition} from './service-parser';
+function _fs() {
+  return _fs2 = _interopRequireDefault(require('fs'));
+}
 
-import type {
-  Definitions,
-  ReturnKind,
-  Type,
-} from './types';
+var _path2;
 
-export type RpcContext = {
-  callRemoteFunction(functionName: string, returnType: ReturnKind, args: Array<any>): any;
-  callRemoteMethod(
-    objectId: number,
-    methodName: string,
-    returnType: ReturnKind,
-    args: Array<any>
-  ): any;
-  createRemoteObject(
-    interfaceName: string,
-    thisArg: Object,
-    unmarshalledArgs: Array<any>,
-    argTypes: Array<Type>
-  ): void;
-  disposeRemoteObject(object: Object): Promise<void>;
-  marshal(value: any, type: Type): any;
-  unmarshal(value: any, type: Type): any;
-};
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
 
-export type ProxyFactory = (context: RpcContext) => Object;
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _module2;
+
+function _module() {
+  return _module2 = _interopRequireDefault(require('module'));
+}
+
+var _nuclideNodeTranspilerLibNodeTranspiler2;
+
+function _nuclideNodeTranspilerLibNodeTranspiler() {
+  return _nuclideNodeTranspilerLibNodeTranspiler2 = _interopRequireDefault(require('../../nuclide-node-transpiler/lib/NodeTranspiler'));
+}
+
+var _proxyGenerator2;
+
+function _proxyGenerator() {
+  return _proxyGenerator2 = require('./proxy-generator');
+}
+
+var _serviceParser2;
+
+function _serviceParser() {
+  return _serviceParser2 = require('./service-parser');
+}
 
 /** Cache for definitions. */
-const definitionsCache: Map<string, Definitions> = new Map();
+var definitionsCache = new Map();
 /** Cache for remote proxies. */
-const proxiesCache: Map<string, ProxyFactory> = new Map();
+var proxiesCache = new Map();
 
 /**
  * Load the definitions, cached by their resolved file path.
@@ -56,18 +68,19 @@ const proxiesCache: Map<string, ProxyFactory> = new Map();
  *  the caller.
  * @returns - The Definitions that represents the API of the definiition file.
  */
-export function getDefinitions(definitionPath: string): Definitions {
+
+function getDefinitions(definitionPath) {
   if (!definitionsCache.has(definitionPath)) {
     definitionsCache.set(definitionPath, loadDefinitions(definitionPath));
   }
-  const result = definitionsCache.get(definitionPath);
-  invariant(result != null);
+  var result = definitionsCache.get(definitionPath);
+  (0, (_assert2 || _assert()).default)(result != null);
   return result;
 }
 
-function loadDefinitions(definitionPath: string): Definitions {
-  const resolvedPath = resolvePath(definitionPath);
-  return parseServiceDefinition(resolvedPath, fs.readFileSync(resolvedPath, 'utf8'));
+function loadDefinitions(definitionPath) {
+  var resolvedPath = resolvePath(definitionPath);
+  return (0, (_serviceParser2 || _serviceParser()).parseServiceDefinition)(resolvedPath, (_fs2 || _fs()).default.readFileSync(resolvedPath, 'utf8'));
 }
 
 /**
@@ -78,41 +91,35 @@ function loadDefinitions(definitionPath: string): Definitions {
  *   and unmarshal objects, as well as make RPC calls.
  * @returns - A proxy module that exports the API specified by the definition
  */
-export function getProxy(
-  serviceName: string,
-  definitionPath: string,
-  clientObject: RpcContext
-): any {
+
+function getProxy(serviceName, definitionPath, clientObject) {
   if (!proxiesCache.has(definitionPath)) {
     proxiesCache.set(definitionPath, createProxyFactory(serviceName, definitionPath));
   }
 
-  const factory = proxiesCache.get(definitionPath);
-  invariant(factory != null);
+  var factory = proxiesCache.get(definitionPath);
+  (0, (_assert2 || _assert()).default)(factory != null);
   return factory(clientObject);
 }
 
-export function createProxyFactory(
-  serviceName: string,
-  definitionPath: string
-): ProxyFactory {
+function createProxyFactory(serviceName, definitionPath) {
   // Transpile this code (since it will use anonymous classes and arrow functions).
-  const defs = getDefinitions(definitionPath);
-  const code = generateProxy(serviceName, defs);
-  const filename = path.parse(definitionPath).name + 'Proxy.js';
-  const m = transpileToModule(code, filename);
+  var defs = getDefinitions(definitionPath);
+  var code = (0, (_proxyGenerator2 || _proxyGenerator()).generateProxy)(serviceName, defs);
+  var filename = (_path2 || _path()).default.parse(definitionPath).name + 'Proxy.js';
+  var m = transpileToModule(code, filename);
 
   return m.exports;
 }
 
-function transpileToModule(code: string, filename: string): Module {
-  const transpiled = (new NodeTranspiler()).transformWithCache(code, filename);
+function transpileToModule(code, filename) {
+  var transpiled = new (_nuclideNodeTranspilerLibNodeTranspiler2 || _nuclideNodeTranspilerLibNodeTranspiler()).default().transformWithCache(code, filename);
 
   // Load the module directly from a string,
-  const m = new Module();
+  var m = new (_module2 || _module()).default();
   // as if it were a sibling to this file.
-  m.filename = m.id = path.join(__dirname, filename);
-  m.paths = ((module: any).paths: Array<string>);
+  m.filename = m.id = (_path2 || _path()).default.join(__dirname, filename);
+  m.paths = module.paths;
   m._compile(transpiled, filename);
 
   return m;
@@ -124,12 +131,13 @@ function transpileToModule(code: string, filename: string): Module {
  * Note that `require('module')._resolveFilename(path, module)` is equivelent to
  * `require.resolve(path)` under the context of given module.
  */
-function resolvePath(definitionPath: string): string {
-  return Module._resolveFilename(definitionPath, module.parent ? module.parent : module);
+function resolvePath(definitionPath) {
+  return (_module2 || _module()).default._resolveFilename(definitionPath, module.parent ? module.parent : module);
 }
 
 // Export caches for testing.
-export const __test__ = {
-  definitionsCache,
-  proxiesCache,
+var __test__ = {
+  definitionsCache: definitionsCache,
+  proxiesCache: proxiesCache
 };
+exports.__test__ = __test__;

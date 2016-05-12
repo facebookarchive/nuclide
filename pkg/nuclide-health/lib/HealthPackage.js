@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,68 +10,110 @@
  * the root directory of this source tree.
  */
 
-import type {GadgetsService, Gadget} from '../../nuclide-gadgets';
-import type {HealthStats} from './types';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeToolBar = consumeToolBar;
+exports.consumeGadgetsService = consumeGadgetsService;
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
 // Imports from non-Nuclide modules.
-import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
-import os from 'os';
-import Rx from 'rxjs';
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _os2;
+
+function _os() {
+  return _os2 = _interopRequireDefault(require('os'));
+}
+
+var _rxjs2;
+
+function _rxjs() {
+  return _rxjs2 = _interopRequireDefault(require('rxjs'));
+}
 
 // Imports from other Nuclide packages.
-import {track, HistogramTracker} from '../../nuclide-analytics';
-import {atomEventDebounce} from '../../nuclide-atom-helpers';
-import featureConfig from '../../nuclide-feature-config';
+
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+var _nuclideAtomHelpers2;
+
+function _nuclideAtomHelpers() {
+  return _nuclideAtomHelpers2 = require('../../nuclide-atom-helpers');
+}
+
+var _nuclideFeatureConfig2;
+
+function _nuclideFeatureConfig() {
+  return _nuclideFeatureConfig2 = _interopRequireDefault(require('../../nuclide-feature-config'));
+}
 
 // Imports from within this Nuclide package.
-import createHealthGadget from './createHealthGadget';
+
+var _createHealthGadget2;
+
+function _createHealthGadget() {
+  return _createHealthGadget2 = _interopRequireDefault(require('./createHealthGadget'));
+}
 
 // We may as well declare these outside of Activation because most of them really are nullable.
-let currentConfig = {};
-let viewTimeout: ?number = null;
-let analyticsTimeout: ?number = null;
-let analyticsBuffer: Array<HealthStats> = [];
+var currentConfig = {};
+var viewTimeout = null;
+var analyticsTimeout = null;
+var analyticsBuffer = [];
 
 // Variables for tracking where and when a key was pressed, and the time before it had an effect.
-let activeEditorSubscriptions: ?CompositeDisposable = null;
-let keyEditorId = 0;
-let keyDownTime = 0;
-let keyLatency = 0;
-let lastKeyLatency = 0;
-let keyLatencyHistogram: ?HistogramTracker = null;
+var activeEditorSubscriptions = null;
+var keyEditorId = 0;
+var keyDownTime = 0;
+var keyLatency = 0;
+var lastKeyLatency = 0;
+var keyLatencyHistogram = null;
 
-let paneItemState$: ?Rx.BehaviorSubject = null;
+var paneItemState$ = null;
 
-let subscriptions: CompositeDisposable = (null: any);
+var subscriptions = null;
 
-export function activate(state: ?Object) {
-  paneItemState$ = new Rx.BehaviorSubject(null);
-  subscriptions = new CompositeDisposable();
-  subscriptions.add(
-    featureConfig.onDidChange('nuclide-health', event => {
-      currentConfig = event.newValue;
-      // If user changes any config, update the health - and reset the polling cycles.
-      updateViews();
-      updateAnalytics();
-    }),
-    atom.workspace.onDidChangeActivePaneItem(disposeActiveEditorDisposables),
-    atomEventDebounce.onWorkspaceDidStopChangingActivePaneItem(timeActiveEditorKeys),
-  );
-  currentConfig = featureConfig.get('nuclide-health');
+function activate(state) {
+  paneItemState$ = new (_rxjs2 || _rxjs()).default.BehaviorSubject(null);
+  subscriptions = new (_atom2 || _atom()).CompositeDisposable();
+  subscriptions.add((_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.onDidChange('nuclide-health', function (event) {
+    currentConfig = event.newValue;
+    // If user changes any config, update the health - and reset the polling cycles.
+    updateViews();
+    updateAnalytics();
+  }), atom.workspace.onDidChangeActivePaneItem(disposeActiveEditorDisposables), (_nuclideAtomHelpers2 || _nuclideAtomHelpers()).atomEventDebounce.onWorkspaceDidStopChangingActivePaneItem(timeActiveEditorKeys));
+  currentConfig = (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get('nuclide-health');
   timeActiveEditorKeys();
   updateViews();
   updateAnalytics();
 
-  keyLatencyHistogram = new HistogramTracker(
-    'keypress-latency',
-    /* maxValue */ 500,
-    /* buckets */ 25,
-    /* intervalSeconds */ 60,
-  );
+  keyLatencyHistogram = new (_nuclideAnalytics2 || _nuclideAnalytics()).HistogramTracker('keypress-latency',
+  /* maxValue */500,
+  /* buckets */25,
+  /* intervalSeconds */60);
 }
 
-export function deactivate() {
+function deactivate() {
   subscriptions.dispose();
   paneItemState$ = null;
   if (viewTimeout !== null) {
@@ -91,27 +134,27 @@ export function deactivate() {
   }
 }
 
-export function consumeToolBar(getToolBar: (group: string) => Object): void {
-  const priority = require('../../nuclide-commons').toolbar.farEndPriority(400);
-  const toolBar = getToolBar('nuclide-health');
+function consumeToolBar(getToolBar) {
+  var priority = require('../../nuclide-commons').toolbar.farEndPriority(400);
+  var toolBar = getToolBar('nuclide-health');
   toolBar.addButton({
     icon: 'dashboard',
     callback: 'nuclide-health:toggle',
     tooltip: 'Toggle Nuclide health stats',
-    priority,
+    priority: priority
   });
-  subscriptions.add(new Disposable(() => {
+  subscriptions.add(new (_atom2 || _atom()).Disposable(function () {
     toolBar.removeItems();
   }));
 }
 
-export function consumeGadgetsService(gadgetsApi: GadgetsService): void {
-  invariant(paneItemState$);
-  const gadget: Gadget = (createHealthGadget(paneItemState$): any);
+function consumeGadgetsService(gadgetsApi) {
+  (0, (_assert2 || _assert()).default)(paneItemState$);
+  var gadget = (0, (_createHealthGadget2 || _createHealthGadget()).default)(paneItemState$);
   subscriptions.add(gadgetsApi.registerGadget(gadget));
 }
 
-function disposeActiveEditorDisposables(): void {
+function disposeActiveEditorDisposables() {
   // Clear out any events & timing data from previous text editor.
   if (activeEditorSubscriptions != null) {
     activeEditorSubscriptions.dispose();
@@ -119,9 +162,9 @@ function disposeActiveEditorDisposables(): void {
   }
 }
 
-function timeActiveEditorKeys(): void {
+function timeActiveEditorKeys() {
   disposeActiveEditorDisposables();
-  activeEditorSubscriptions = new CompositeDisposable();
+  activeEditorSubscriptions = new (_atom2 || _atom()).CompositeDisposable();
 
   // If option is enabled, start timing latency of keys on the new text editor.
   if (!paneItemState$) {
@@ -129,17 +172,17 @@ function timeActiveEditorKeys(): void {
   }
 
   // Ensure the editor is valid and there is a view to attach the keypress timing to.
-  const editor: ?TextEditor = atom.workspace.getActiveTextEditor();
+  var editor = atom.workspace.getActiveTextEditor();
   if (!editor) {
     return;
   }
-  const view = atom.views.getView(editor);
+  var view = atom.views.getView(editor);
   if (!view) {
     return;
   }
 
   // Start the clock when a key is pressed. Function is named so it can be disposed well.
-  const startKeyClock = () => {
+  var startKeyClock = function startKeyClock() {
     if (editor) {
       keyEditorId = editor.id;
       keyDownTime = Date.now();
@@ -147,7 +190,7 @@ function timeActiveEditorKeys(): void {
   };
 
   // Stop the clock when the (same) editor has changed content.
-  const stopKeyClock = () => {
+  var stopKeyClock = function stopKeyClock() {
     if (editor && editor.id && keyEditorId === editor.id && keyDownTime) {
       keyLatency = Date.now() - keyDownTime;
       if (keyLatencyHistogram != null) {
@@ -162,23 +205,24 @@ function timeActiveEditorKeys(): void {
   view.addEventListener('keydown', startKeyClock);
 
   activeEditorSubscriptions.add(
-    // Remove the listener in a home-made disposable for when this editor is no-longer active.
-    new Disposable(() => view.removeEventListener('keydown', startKeyClock)),
+  // Remove the listener in a home-made disposable for when this editor is no-longer active.
+  new (_atom2 || _atom()).Disposable(function () {
+    return view.removeEventListener('keydown', startKeyClock);
+  }),
 
-    // stopKeyClock is fast so attaching it to onDidChange here is OK.
-    // onDidStopChanging would be another option - any cost is deferred, but with far less fidelity.
-    editor.onDidChange(stopKeyClock),
-  );
+  // stopKeyClock is fast so attaching it to onDidChange here is OK.
+  // onDidStopChanging would be another option - any cost is deferred, but with far less fidelity.
+  editor.onDidChange(stopKeyClock));
 }
 
-function updateViews(): void {
+function updateViews() {
   if (!paneItemState$) {
     return;
   }
 
-  const stats = getHealthStats();
+  var stats = getHealthStats();
   analyticsBuffer.push(stats);
-  paneItemState$.next({stats, activeHandleObjects: getActiveHandles()});
+  paneItemState$.next({ stats: stats, activeHandleObjects: getActiveHandles() });
   if (currentConfig.viewTimeout) {
     if (viewTimeout !== null) {
       clearTimeout(viewTimeout);
@@ -187,31 +231,33 @@ function updateViews(): void {
   }
 }
 
-function updateAnalytics(): void {
+function updateAnalytics() {
   if (analyticsBuffer.length > 0) {
-    // Aggregates the buffered stats up by suffixing avg, min, max to their names.
-    const aggregateStats = {};
+    (function () {
+      // Aggregates the buffered stats up by suffixing avg, min, max to their names.
+      var aggregateStats = {};
 
-    // All analyticsBuffer entries have the same keys; we use the first entry to know what they are.
-    Object.keys(analyticsBuffer[0]).forEach(statsKey => {
-      if (statsKey === 'lastKeyLatency') {
-        return;
-        // This field is only used to for a sticky value in the status bar, and is not to be sent.
-      }
-
-      const aggregates = aggregate(
-        analyticsBuffer.map(stats => stats[statsKey]),
-        (statsKey === 'keyLatency'), // skipZeros: Don't use empty key latency values in aggregates.
-      );
-      Object.keys(aggregates).forEach(aggregatesKey => {
-        const value = aggregates[aggregatesKey];
-        if (value !== null && value !== undefined) {
-          aggregateStats[`${statsKey}_${aggregatesKey}`] = value.toFixed(2);
+      // All analyticsBuffer entries have the same keys; we use the first entry to know what they are.
+      Object.keys(analyticsBuffer[0]).forEach(function (statsKey) {
+        if (statsKey === 'lastKeyLatency') {
+          return;
+          // This field is only used to for a sticky value in the status bar, and is not to be sent.
         }
+
+        var aggregates = aggregate(analyticsBuffer.map(function (stats) {
+          return stats[statsKey];
+        }), statsKey === 'keyLatency');
+        // skipZeros: Don't use empty key latency values in aggregates.
+        Object.keys(aggregates).forEach(function (aggregatesKey) {
+          var value = aggregates[aggregatesKey];
+          if (value !== null && value !== undefined) {
+            aggregateStats[statsKey + '_' + aggregatesKey] = value.toFixed(2);
+          }
+        });
       });
-    });
-    track('nuclide-health', aggregateStats);
-    analyticsBuffer = [];
+      (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)('nuclide-health', aggregateStats);
+      analyticsBuffer = [];
+    })();
   }
 
   if (currentConfig.analyticsTimeout) {
@@ -222,41 +268,41 @@ function updateAnalytics(): void {
   }
 }
 
-function aggregate(
-  values: Array<number>,
-  skipZeros: boolean = false,
-): {avg: ?number; min: ?number; max: ?number} {
+function aggregate(values) {
+  var skipZeros = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
   // Some values (like memory usage) might be very high & numerous, so avoid summing them all up.
   if (skipZeros) {
-    values = values.filter(value => value !== 0);
+    values = values.filter(function (value) {
+      return value !== 0;
+    });
     if (values.length === 0) {
-      return {avg: null, min: null, max: null};
+      return { avg: null, min: null, max: null };
     }
   }
-  const avg = values.reduce((prevValue, currValue, index) => {
+  var avg = values.reduce(function (prevValue, currValue, index) {
     return prevValue + (currValue - prevValue) / (index + 1);
   }, 0);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  return {avg, min, max};
+  var min = Math.min.apply(Math, _toConsumableArray(values));
+  var max = Math.max.apply(Math, _toConsumableArray(values));
+  return { avg: avg, min: min, max: max };
 }
 
-function getHealthStats(): HealthStats {
-  const stats = process.memoryUsage();                               // RSS, heap and usage.
+function getHealthStats() {
+  var stats = process.memoryUsage(); // RSS, heap and usage.
 
   if (keyLatency) {
     lastKeyLatency = keyLatency;
   }
 
-  const result = {
-    ...stats,
-    heapPercentage: (100 * stats.heapUsed / stats.heapTotal),   // Just for convenience.
-    cpuPercentage: os.loadavg()[0],                             // 1 minute CPU average.
-    lastKeyLatency,
-    keyLatency,
+  var result = _extends({}, stats, {
+    heapPercentage: 100 * stats.heapUsed / stats.heapTotal, // Just for convenience.
+    cpuPercentage: (_os2 || _os()).default.loadavg()[0], // 1 minute CPU average.
+    lastKeyLatency: lastKeyLatency,
+    keyLatency: keyLatency,
     activeHandles: getActiveHandles().length,
-    activeRequests: getActiveRequests().length,
-  };
+    activeRequests: getActiveRequests().length
+  });
 
   keyLatency = 0; // We only want to ever record a key latency time once, and so we reset it.
 
@@ -264,14 +310,14 @@ function getHealthStats(): HealthStats {
 }
 
 // These two functions are to defend against undocumented Node functions.
-function getActiveHandles(): Array<Object> {
+function getActiveHandles() {
   if (process._getActiveHandles) {
     return process._getActiveHandles();
   }
   return [];
 }
 
-function getActiveRequests(): Array<Object> {
+function getActiveRequests() {
   if (process._getActiveRequests) {
     return process._getActiveRequests();
   }

@@ -1,5 +1,11 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.activate = activate;
+exports.provideDatatipService = provideDatatipService;
+exports.deactivate = deactivate;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +15,53 @@
  * the root directory of this source tree.
  */
 
-export type {
-  Datatip,
-  DatatipProvider,
-  DatatipService,
-} from './types';
+var _types = require('./types');
 
-import invariant from 'assert';
+Object.defineProperty(exports, 'Datatip', {
+  enumerable: true,
+  get: function get() {
+    return _types.Datatip;
+  }
+});
+Object.defineProperty(exports, 'DatatipProvider', {
+  enumerable: true,
+  get: function get() {
+    return _types.DatatipProvider;
+  }
+});
+Object.defineProperty(exports, 'DatatipService', {
+  enumerable: true,
+  get: function get() {
+    return _types.DatatipService;
+  }
+});
 
-import {DatatipManager} from './DatatipManager';
+var _assert2;
 
-let datatipManager: ?DatatipManager = null;
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
-export function activate(state: ?any): void {
+var _DatatipManager2;
+
+function _DatatipManager() {
+  return _DatatipManager2 = require('./DatatipManager');
+}
+
+var datatipManager = null;
+
+function activate(state) {
   if (datatipManager == null) {
-    datatipManager = new DatatipManager();
+    datatipManager = new (_DatatipManager2 || _DatatipManager()).DatatipManager();
   }
 }
 
-export function provideDatatipService(): DatatipManager {
-  invariant(datatipManager);
+function provideDatatipService() {
+  (0, (_assert2 || _assert()).default)(datatipManager);
   return datatipManager;
 }
 
-export function deactivate() {
+function deactivate() {
   if (datatipManager != null) {
     datatipManager.dispose();
     datatipManager = null;

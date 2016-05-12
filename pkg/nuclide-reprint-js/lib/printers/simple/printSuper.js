@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +8,7 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {Super} from 'ast-types-flow';
-
-function printSuper(print: Print, node: Super): Lines {
+function printSuper(print, node) {
   return ['super'];
 }
 

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,307 +10,361 @@
  * the root directory of this source tree.
  */
 
-import type DebuggerModel from './DebuggerModel';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-type ExpressionResult = {
-  expression: string;
-  result: ?EvaluationResult;
-  error: ?Object;
-};
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-export type EvaluationResult = {
-  _type: string;
-  // Either:
-  value?: string;
-  // Or:
-  _description? : string;
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
-import {getLogger} from '../../nuclide-logging';
-import remoteUri from '../../nuclide-remote-uri';
-import {Deferred} from '../../nuclide-commons';
-import {DebuggerMode} from './DebuggerStore';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const INJECTED_CSS = [
-  /* Force the inspector to scroll vertically on Atom ≥ 1.4.0 */
-  'body > .root-view {overflow-y: scroll;}',
-  /* Force the contents of the mini console (on the bottom) to scroll vertically */
-  '.insertion-point-sidebar#drawer-contents {overflow-y: auto;}',
-].join('');
+var _assert2;
 
-class Bridge {
-  _debuggerModel: DebuggerModel;
-  _disposables: CompositeDisposable;
-  // Contains disposable items should be disposed by
-  // cleanup() method.
-  _cleanupDisposables: CompositeDisposable;
-  _selectedCallFrameMarker: ?atom$Marker;
-  _webview: ?WebviewElement;
-  _suppressBreakpointSync: boolean;
-  // Tracks requests for expression evaluation, keyed by the expression body.
-  _expressionsInFlight: Map<string, Deferred<?EvaluationResult>>;
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
-  constructor(debuggerModel: DebuggerModel) {
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var _nuclideRemoteUri2;
+
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = _interopRequireDefault(require('../../nuclide-remote-uri'));
+}
+
+var _nuclideCommons2;
+
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../../nuclide-commons');
+}
+
+var _DebuggerStore2;
+
+function _DebuggerStore() {
+  return _DebuggerStore2 = require('./DebuggerStore');
+}
+
+var INJECTED_CSS = [
+/* Force the inspector to scroll vertically on Atom ≥ 1.4.0 */
+'body > .root-view {overflow-y: scroll;}',
+/* Force the contents of the mini console (on the bottom) to scroll vertically */
+'.insertion-point-sidebar#drawer-contents {overflow-y: auto;}'].join('');
+
+var Bridge = (function () {
+  function Bridge(debuggerModel) {
+    _classCallCheck(this, Bridge);
+
     this._debuggerModel = debuggerModel;
-    this._cleanupDisposables = new CompositeDisposable();
+    this._cleanupDisposables = new (_atom2 || _atom()).CompositeDisposable();
     this._selectedCallFrameMarker = null;
     this._webview = null;
     this._suppressBreakpointSync = false;
-    this._disposables = new CompositeDisposable(
-      debuggerModel.getBreakpointStore().onChange(this._handleBreakpointStoreChange.bind(this)),
-    );
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable(debuggerModel.getBreakpointStore().onChange(this._handleBreakpointStoreChange.bind(this)));
     this._expressionsInFlight = new Map();
   }
 
-  setWebviewElement(webview: WebviewElement) {
-    this._webview = webview;
-    const boundHandler = this._handleIpcMessage.bind(this);
-    webview.addEventListener('ipc-message', boundHandler);
-    this._cleanupDisposables.add(new Disposable(() =>
-      webview.removeEventListener('ipc-message', boundHandler)));
-  }
-
-  dispose() {
-    this.cleanup();
-    this._disposables.dispose();
-  }
-
-  // Clean up any state changed after constructor.
-  cleanup() {
-    this._cleanupDisposables.dispose();
-    this._webview = null;
-    this._clearSelectedCallFrameMarker();
-  }
-
-  continue() {
-    if (this._webview) {
-      this._webview.send('command', 'Continue');
+  _createClass(Bridge, [{
+    key: 'setWebviewElement',
+    value: function setWebviewElement(webview) {
+      this._webview = webview;
+      var boundHandler = this._handleIpcMessage.bind(this);
+      webview.addEventListener('ipc-message', boundHandler);
+      this._cleanupDisposables.add(new (_atom2 || _atom()).Disposable(function () {
+        return webview.removeEventListener('ipc-message', boundHandler);
+      }));
     }
-  }
-
-  stepOver() {
-    if (this._webview) {
-      this._webview.send('command', 'StepOver');
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this.cleanup();
+      this._disposables.dispose();
     }
-  }
 
-  stepInto() {
-    if (this._webview) {
-      this._webview.send('command', 'StepInto');
-    }
-  }
-
-  stepOut() {
-    if (this._webview) {
-      this._webview.send('command', 'StepOut');
-    }
-  }
-
-  async evaluateOnSelectedCallFrame(expression: string): Promise<?EvaluationResult> {
-    if (this._webview == null) {
-      return null;
-    }
-    let deferred;
-    if (this._expressionsInFlight.has(expression)) {
-      deferred = this._expressionsInFlight.get(expression);
-    } else {
-      deferred = new Deferred();
-      this._expressionsInFlight.set(expression, deferred);
-      invariant(this._webview != null);
-      this._webview.send('command', 'evaluateOnSelectedCallFrame', expression);
-    }
-    invariant(deferred != null);
-    let result;
-    try {
-      result = await deferred.promise;
-    } catch (e) {
-      getLogger().warn('evaluateOnSelectedCallFrame: Error getting result.', e);
-      result = null;
-    }
-    this._expressionsInFlight.delete(expression);
-    return result;
-  }
-
-  _handleExpressionEvaluationResponse(additionalData: ExpressionResult): void {
-    const {
-      expression,
-      result,
-      error,
-    } = additionalData;
-    const deferred = this._expressionsInFlight.get(expression);
-    if (deferred == null) {
-      // Nobody is listening for the result of this expression.
-      return;
-    }
-    if (error != null) {
-      deferred.reject(error);
-    } else {
-      deferred.resolve(result);
-    }
-  }
-
-  _handleIpcMessage(stdEvent: Event): void {
-    // addEventListener expects its callback to take an Event. I'm not sure how to reconcile it with
-    // the type that is expected here.
-    // $FlowFixMe(jeffreytan)
-    const event: {channel: string; args: any[]} = stdEvent;
-    switch (event.channel) {
-      case 'notification':
-        switch (event.args[0]) {
-          case 'ready':
-            this._sendAllBreakpoints();
-            this._injectCSS();
-            break;
-          case 'CallFrameSelected':
-            this._setSelectedCallFrameLine(event.args[1]);
-            break;
-          case 'OpenSourceLocation':
-            this._openSourceLocation(event.args[1]);
-            break;
-          case 'ClearInterface':
-            this._handleClearInterface();
-            break;
-          case 'DebuggerResumed':
-            this._handleDebuggerResumed();
-            break;
-          case 'LoaderBreakpointResumed':
-            this._handleLoaderBreakpointResumed();
-            break;
-          case 'BreakpointAdded':
-            this._addBreakpoint(event.args[1]);
-            break;
-          case 'BreakpointRemoved':
-            this._removeBreakpoint(event.args[1]);
-            break;
-          case 'DebuggerPaused':
-            this._handleDebuggerPaused(event.args[1]);
-            break;
-          case 'ExpressionEvaluationResponse':
-            this._handleExpressionEvaluationResponse(event.args[1]);
-            break;
-        }
-        break;
-    }
-  }
-
-  _handleDebuggerPaused(additionalData: {sourceUrl?: string}): void {
-    this._expressionsInFlight.clear();
-    this._debuggerModel.getStore().setDebuggerMode(DebuggerMode.PAUSED);
-    // TODO go through dispatcher
-    this._debuggerModel.getWatchExpressionStore().triggerReevaluation();
-  }
-
-  _handleClearInterface(): void {
-    this._setSelectedCallFrameLine(null);
-  }
-
-  _handleDebuggerResumed(): void {
-    this._debuggerModel.getStore().setDebuggerMode(DebuggerMode.RUNNING);
-  }
-
-  _handleLoaderBreakpointResumed(): void {
-    this._debuggerModel.getStore().loaderBreakpointResumed();
-  }
-
-  _setSelectedCallFrameLine(nullableOptions: ?{sourceURL: string; lineNumber: number}) {
-    if (nullableOptions) {
-      const options = nullableOptions; // For use in capture without re-checking null
-      const path = remoteUri.uriToNuclideUri(options.sourceURL);
-      if (path != null && atom.workspace != null) { // only handle real files for now
-        atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
-          this._clearSelectedCallFrameMarker();
-          this._highlightCallFrameLine(editor, options.lineNumber);
-        });
-      }
-    } else {
+    // Clean up any state changed after constructor.
+  }, {
+    key: 'cleanup',
+    value: function cleanup() {
+      this._cleanupDisposables.dispose();
+      this._webview = null;
       this._clearSelectedCallFrameMarker();
     }
-  }
-
-  _openSourceLocation(nullableOptions: ?{sourceURL: string; lineNumber: number}) {
-    if (nullableOptions) {
-      const options = nullableOptions; // For use in capture without re-checking null
-      const path = remoteUri.uriToNuclideUri(options.sourceURL);
-      if (path != null && atom.workspace != null) { // only handle real files for now.
-        atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
-          editor.scrollToBufferPosition([options.lineNumber, 0]);
-          editor.setCursorBufferPosition([options.lineNumber, 0]);
-        });
+  }, {
+    key: 'continue',
+    value: function _continue() {
+      if (this._webview) {
+        this._webview.send('command', 'Continue');
       }
     }
-  }
-
-  _highlightCallFrameLine(editor: atom$TextEditor, line: number) {
-    const marker = editor.markBufferRange(
-      [[line, 0], [line, Infinity]],
-      {persistent: false, invalidate: 'never'});
-    editor.decorateMarker(marker, {
-      type: 'line',
-      class: 'nuclide-current-line-highlight',
-    });
-    this._selectedCallFrameMarker = marker;
-  }
-
-  _addBreakpoint(location: {sourceURL: string; lineNumber: number}) {
-    const path = remoteUri.uriToNuclideUri(location.sourceURL);
-    // only handle real files for now.
-    if (path) {
+  }, {
+    key: 'stepOver',
+    value: function stepOver() {
+      if (this._webview) {
+        this._webview.send('command', 'StepOver');
+      }
+    }
+  }, {
+    key: 'stepInto',
+    value: function stepInto() {
+      if (this._webview) {
+        this._webview.send('command', 'StepInto');
+      }
+    }
+  }, {
+    key: 'stepOut',
+    value: function stepOut() {
+      if (this._webview) {
+        this._webview.send('command', 'StepOut');
+      }
+    }
+  }, {
+    key: 'evaluateOnSelectedCallFrame',
+    value: _asyncToGenerator(function* (expression) {
+      if (this._webview == null) {
+        return null;
+      }
+      var deferred = undefined;
+      if (this._expressionsInFlight.has(expression)) {
+        deferred = this._expressionsInFlight.get(expression);
+      } else {
+        deferred = new (_nuclideCommons2 || _nuclideCommons()).Deferred();
+        this._expressionsInFlight.set(expression, deferred);
+        (0, (_assert2 || _assert()).default)(this._webview != null);
+        this._webview.send('command', 'evaluateOnSelectedCallFrame', expression);
+      }
+      (0, (_assert2 || _assert()).default)(deferred != null);
+      var result = undefined;
       try {
-        this._suppressBreakpointSync = true;
-        this._debuggerModel.getBreakpointStore().addBreakpoint(path, location.lineNumber);
-      } finally {
-        this._suppressBreakpointSync = false;
+        result = yield deferred.promise;
+      } catch (e) {
+        (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)().warn('evaluateOnSelectedCallFrame: Error getting result.', e);
+        result = null;
+      }
+      this._expressionsInFlight.delete(expression);
+      return result;
+    })
+  }, {
+    key: '_handleExpressionEvaluationResponse',
+    value: function _handleExpressionEvaluationResponse(additionalData) {
+      var expression = additionalData.expression;
+      var result = additionalData.result;
+      var error = additionalData.error;
+
+      var deferred = this._expressionsInFlight.get(expression);
+      if (deferred == null) {
+        // Nobody is listening for the result of this expression.
+        return;
+      }
+      if (error != null) {
+        deferred.reject(error);
+      } else {
+        deferred.resolve(result);
       }
     }
-  }
+  }, {
+    key: '_handleIpcMessage',
+    value: function _handleIpcMessage(stdEvent) {
+      // addEventListener expects its callback to take an Event. I'm not sure how to reconcile it with
+      // the type that is expected here.
 
-  _removeBreakpoint(location: {sourceURL: string; lineNumber: number}) {
-    const path = remoteUri.uriToNuclideUri(location.sourceURL);
-    // only handle real files for now.
-    if (path) {
-      try {
-        this._suppressBreakpointSync = true;
-        this._debuggerModel.getBreakpointStore().deleteBreakpoint(path, location.lineNumber);
-      } finally {
-        this._suppressBreakpointSync = false;
+      var event = stdEvent;
+      switch (event.channel) {
+        case 'notification':
+          switch (event.args[0]) {
+            case 'ready':
+              this._sendAllBreakpoints();
+              this._injectCSS();
+              break;
+            case 'CallFrameSelected':
+              this._setSelectedCallFrameLine(event.args[1]);
+              break;
+            case 'OpenSourceLocation':
+              this._openSourceLocation(event.args[1]);
+              break;
+            case 'ClearInterface':
+              this._handleClearInterface();
+              break;
+            case 'DebuggerResumed':
+              this._handleDebuggerResumed();
+              break;
+            case 'LoaderBreakpointResumed':
+              this._handleLoaderBreakpointResumed();
+              break;
+            case 'BreakpointAdded':
+              this._addBreakpoint(event.args[1]);
+              break;
+            case 'BreakpointRemoved':
+              this._removeBreakpoint(event.args[1]);
+              break;
+            case 'DebuggerPaused':
+              this._handleDebuggerPaused(event.args[1]);
+              break;
+            case 'ExpressionEvaluationResponse':
+              this._handleExpressionEvaluationResponse(event.args[1]);
+              break;
+          }
+          break;
       }
     }
-  }
-
-  _clearSelectedCallFrameMarker() {
-    if (this._selectedCallFrameMarker) {
-      this._selectedCallFrameMarker.destroy();
-      this._selectedCallFrameMarker = null;
+  }, {
+    key: '_handleDebuggerPaused',
+    value: function _handleDebuggerPaused(additionalData) {
+      this._expressionsInFlight.clear();
+      this._debuggerModel.getStore().setDebuggerMode((_DebuggerStore2 || _DebuggerStore()).DebuggerMode.PAUSED);
+      // TODO go through dispatcher
+      this._debuggerModel.getWatchExpressionStore().triggerReevaluation();
     }
-  }
+  }, {
+    key: '_handleClearInterface',
+    value: function _handleClearInterface() {
+      this._setSelectedCallFrameLine(null);
+    }
+  }, {
+    key: '_handleDebuggerResumed',
+    value: function _handleDebuggerResumed() {
+      this._debuggerModel.getStore().setDebuggerMode((_DebuggerStore2 || _DebuggerStore()).DebuggerMode.RUNNING);
+    }
+  }, {
+    key: '_handleLoaderBreakpointResumed',
+    value: function _handleLoaderBreakpointResumed() {
+      this._debuggerModel.getStore().loaderBreakpointResumed();
+    }
+  }, {
+    key: '_setSelectedCallFrameLine',
+    value: function _setSelectedCallFrameLine(nullableOptions) {
+      var _this = this;
 
-  _handleBreakpointStoreChange(path: string) {
-    this._sendAllBreakpoints();
-  }
-
-  _sendAllBreakpoints() {
-    // Send an array of file/line objects.
-    const webview = this._webview;
-    if (webview && !this._suppressBreakpointSync) {
-      const results = [];
-      this._debuggerModel.getBreakpointStore().getAllBreakpoints().forEach((line, key) => {
-        results.push({
-          sourceURL: remoteUri.nuclideUriToUri(key),
-          lineNumber: line,
-        });
+      if (nullableOptions) {
+        (function () {
+          var options = nullableOptions; // For use in capture without re-checking null
+          var path = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.uriToNuclideUri(options.sourceURL);
+          if (path != null && atom.workspace != null) {
+            // only handle real files for now
+            atom.workspace.open(path, { searchAllPanes: true }).then(function (editor) {
+              _this._clearSelectedCallFrameMarker();
+              _this._highlightCallFrameLine(editor, options.lineNumber);
+            });
+          }
+        })();
+      } else {
+        this._clearSelectedCallFrameMarker();
+      }
+    }
+  }, {
+    key: '_openSourceLocation',
+    value: function _openSourceLocation(nullableOptions) {
+      if (nullableOptions) {
+        (function () {
+          var options = nullableOptions; // For use in capture without re-checking null
+          var path = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.uriToNuclideUri(options.sourceURL);
+          if (path != null && atom.workspace != null) {
+            // only handle real files for now.
+            atom.workspace.open(path, { searchAllPanes: true }).then(function (editor) {
+              editor.scrollToBufferPosition([options.lineNumber, 0]);
+              editor.setCursorBufferPosition([options.lineNumber, 0]);
+            });
+          }
+        })();
+      }
+    }
+  }, {
+    key: '_highlightCallFrameLine',
+    value: function _highlightCallFrameLine(editor, line) {
+      var marker = editor.markBufferRange([[line, 0], [line, Infinity]], { persistent: false, invalidate: 'never' });
+      editor.decorateMarker(marker, {
+        type: 'line',
+        'class': 'nuclide-current-line-highlight'
       });
-      webview.send('command', 'SyncBreakpoints', results);
+      this._selectedCallFrameMarker = marker;
     }
-  }
-
-  _injectCSS() {
-    if (this._webview != null) {
-      this._webview.insertCSS(INJECTED_CSS);
+  }, {
+    key: '_addBreakpoint',
+    value: function _addBreakpoint(location) {
+      var path = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.uriToNuclideUri(location.sourceURL);
+      // only handle real files for now.
+      if (path) {
+        try {
+          this._suppressBreakpointSync = true;
+          this._debuggerModel.getBreakpointStore().addBreakpoint(path, location.lineNumber);
+        } finally {
+          this._suppressBreakpointSync = false;
+        }
+      }
     }
-  }
+  }, {
+    key: '_removeBreakpoint',
+    value: function _removeBreakpoint(location) {
+      var path = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.uriToNuclideUri(location.sourceURL);
+      // only handle real files for now.
+      if (path) {
+        try {
+          this._suppressBreakpointSync = true;
+          this._debuggerModel.getBreakpointStore().deleteBreakpoint(path, location.lineNumber);
+        } finally {
+          this._suppressBreakpointSync = false;
+        }
+      }
+    }
+  }, {
+    key: '_clearSelectedCallFrameMarker',
+    value: function _clearSelectedCallFrameMarker() {
+      if (this._selectedCallFrameMarker) {
+        this._selectedCallFrameMarker.destroy();
+        this._selectedCallFrameMarker = null;
+      }
+    }
+  }, {
+    key: '_handleBreakpointStoreChange',
+    value: function _handleBreakpointStoreChange(path) {
+      this._sendAllBreakpoints();
+    }
+  }, {
+    key: '_sendAllBreakpoints',
+    value: function _sendAllBreakpoints() {
+      var _this2 = this;
 
-}
+      // Send an array of file/line objects.
+      var webview = this._webview;
+      if (webview && !this._suppressBreakpointSync) {
+        (function () {
+          var results = [];
+          _this2._debuggerModel.getBreakpointStore().getAllBreakpoints().forEach(function (line, key) {
+            results.push({
+              sourceURL: (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.nuclideUriToUri(key),
+              lineNumber: line
+            });
+          });
+          webview.send('command', 'SyncBreakpoints', results);
+        })();
+      }
+    }
+  }, {
+    key: '_injectCSS',
+    value: function _injectCSS() {
+      if (this._webview != null) {
+        this._webview.insertCSS(INJECTED_CSS);
+      }
+    }
+  }]);
+
+  return Bridge;
+})();
 
 module.exports = Bridge;
+
+// Either:
+// Or:
+// Contains disposable items should be disposed by
+// cleanup() method.
+
+// Tracks requests for expression evaluation, keyed by the expression body.
+// $FlowFixMe(jeffreytan)

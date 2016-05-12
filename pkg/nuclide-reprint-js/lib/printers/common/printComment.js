@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +8,28 @@
  * the root directory of this source tree.
  */
 
-import type {Lines} from '../../types/common';
+var _utilsFlatten2;
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+function _utilsFlatten() {
+  return _utilsFlatten2 = _interopRequireDefault(require('../../utils/flatten'));
+}
 
-function printComment(node: any): Lines {
+var _constantsMarkers2;
+
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+function printComment(node) {
   if (node.type === 'CommentBlock') {
-    return flatten([('/*' + node.value + '*/').split('\n').map(part => {
-      const trimmed = part.trim();
-      return [
-        trimmed.startsWith('*') ? ' ' + trimmed : trimmed,
-        markers.hardBreak,
-      ];
+    return (0, (_utilsFlatten2 || _utilsFlatten()).default)([('/*' + node.value + '*/').split('\n').map(function (part) {
+      var trimmed = part.trim();
+      return [trimmed.startsWith('*') ? ' ' + trimmed : trimmed, (_constantsMarkers2 || _constantsMarkers()).default.hardBreak];
     })]);
   }
 
   if (node.type === 'CommentLine') {
-    return ['//', node.value, markers.hardBreak];
+    return ['//', node.value, (_constantsMarkers2 || _constantsMarkers()).default.hardBreak];
   }
 
   return [];

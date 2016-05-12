@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getConfig = getConfig;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +13,15 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../nuclide-feature-config';
+var _nuclideFeatureConfig2;
 
-const DEBUGGER_LOGGER_CATEGORY = 'nuclide-lldb-client-debugger';
-export default require('../../nuclide-logging').getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
+function _nuclideFeatureConfig() {
+  return _nuclideFeatureConfig2 = _interopRequireDefault(require('../../nuclide-feature-config'));
+}
 
-export function getConfig(): any {
-  return (featureConfig.get('nuclide-debugger-lldb-client'): any);
+var DEBUGGER_LOGGER_CATEGORY = 'nuclide-lldb-client-debugger';
+exports.default = require('../../nuclide-logging').getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
+
+function getConfig() {
+  return (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get('nuclide-debugger-lldb-client');
 }

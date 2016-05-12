@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +10,33 @@
  * the root directory of this source tree.
  */
 
-import type {AtomCommands} from '../../nuclide-atom-helpers';
-import type Commands from './Commands';
-import type {Gadget} from './types';
+exports.default = createAtomCommands;
 
-import normalizeEventString from './normalizeEventString';
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-export default function createAtomCommands(gadget: Gadget, appCommands: Commands): AtomCommands {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _normalizeEventString2;
+
+function _normalizeEventString() {
+  return _normalizeEventString2 = _interopRequireDefault(require('./normalizeEventString'));
+}
+
+function createAtomCommands(gadget, appCommands) {
+  var _atomWorkspace;
+
   return {
-    'atom-workspace': {
-      [formatCommandName(gadget.gadgetId, 'Show')]:
-        () => appCommands.showGadget(gadget.gadgetId),
-      [formatCommandName(gadget.gadgetId, 'Hide')]:
-        () => appCommands.hideGadget(gadget.gadgetId),
-      [formatCommandName(gadget.gadgetId, 'Toggle')]:
-        () => appCommands.toggleGadget(gadget.gadgetId),
-    },
+    'atom-workspace': (_atomWorkspace = {}, _defineProperty(_atomWorkspace, formatCommandName(gadget.gadgetId, 'Show'), function () {
+      return appCommands.showGadget(gadget.gadgetId);
+    }), _defineProperty(_atomWorkspace, formatCommandName(gadget.gadgetId, 'Hide'), function () {
+      return appCommands.hideGadget(gadget.gadgetId);
+    }), _defineProperty(_atomWorkspace, formatCommandName(gadget.gadgetId, 'Toggle'), function () {
+      return appCommands.toggleGadget(gadget.gadgetId);
+    }), _atomWorkspace)
   };
 }
 
-function formatCommandName(gadgetId: string, action: string): string {
-  return `${normalizeEventString(gadgetId)}:${normalizeEventString(action)}`;
+function formatCommandName(gadgetId, action) {
+  return (0, (_normalizeEventString2 || _normalizeEventString()).default)(gadgetId) + ':' + (0, (_normalizeEventString2 || _normalizeEventString()).default)(action);
 }
+module.exports = exports.default;

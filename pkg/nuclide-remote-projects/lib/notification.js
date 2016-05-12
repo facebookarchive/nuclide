@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +8,22 @@
  * the root directory of this source tree.
  */
 
-function notifyLocalDiskFile(fileUri: string): void {
-  atom.notifications.addInfo(`File \`${fileUri}\` exists on the local filesystem.`);
+function notifyLocalDiskFile(fileUri) {
+  atom.notifications.addInfo('File `' + fileUri + '` exists on the local filesystem.');
 }
 
-function notifyConnectedRemoteFile(fileUri: string): void {
-  const hostname = require('../../nuclide-remote-uri').getHostname(fileUri);
-  atom.notifications.addInfo(`The connection to the server: \`${hostname}\` is healthy.`);
+function notifyConnectedRemoteFile(fileUri) {
+  var hostname = require('../../nuclide-remote-uri').getHostname(fileUri);
+  atom.notifications.addInfo('The connection to the server: `' + hostname + '` is healthy.');
 }
 
-function notifyDisconnectedRemoteFile(fileUri: string): void {
-  const hostname = require('../../nuclide-remote-uri').getHostname(fileUri);
-  atom.notifications.addError(
-    `The connection to the server: \`${hostname}\` is lost, retrying in the background!`);
+function notifyDisconnectedRemoteFile(fileUri) {
+  var hostname = require('../../nuclide-remote-uri').getHostname(fileUri);
+  atom.notifications.addError('The connection to the server: `' + hostname + '` is lost, retrying in the background!');
 }
 
 module.exports = {
-  notifyLocalDiskFile,
-  notifyConnectedRemoteFile,
-  notifyDisconnectedRemoteFile,
+  notifyLocalDiskFile: notifyLocalDiskFile,
+  notifyConnectedRemoteFile: notifyConnectedRemoteFile,
+  notifyDisconnectedRemoteFile: notifyDisconnectedRemoteFile
 };

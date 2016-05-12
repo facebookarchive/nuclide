@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +10,31 @@
  * the root directory of this source tree.
  */
 
-import type {ProcessOutputHandler} from './types';
-import type {ProcessOutputStore} from '../../nuclide-process-output-store';
+exports.default = createBoundTextBuffer;
 
-import {CompositeDisposable, TextBuffer} from 'atom';
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
 
 /**
  * Create a text buffer that's bound to the process.
  */
-export default function createBoundTextBuffer(
-  processOutputStore: ProcessOutputStore,
-  outputHandler: ?ProcessOutputHandler,
-): TextBuffer {
 
-  const buffer = new TextBuffer({
+function createBoundTextBuffer(processOutputStore, outputHandler) {
+
+  var buffer = new (_atom2 || _atom()).TextBuffer({
     load: false,
-    text: '',
+    text: ''
   });
 
-  const update = data => {
+  var update = function update(data) {
     if (outputHandler) {
       outputHandler(buffer, data);
     } else {
       // `{undo: 'skip'}` disables the TextEditor's "undo system".
-      buffer.append(data, {undo: 'skip'});
+      buffer.append(data, { undo: 'skip' });
     }
   };
 
@@ -40,12 +42,13 @@ export default function createBoundTextBuffer(
   update(processOutputStore.getStdout() || '');
   update(processOutputStore.getStderr() || '');
 
-  const disposable = new CompositeDisposable(
-    processOutputStore.observeStdout(update),
-    processOutputStore.observeStderr(update),
-  );
+  var disposable = new (_atom2 || _atom()).CompositeDisposable(processOutputStore.observeStdout(update), processOutputStore.observeStderr(update));
 
-  buffer.onDidDestroy(() => disposable.dispose());
+  buffer.onDidDestroy(function () {
+    return disposable.dispose();
+  });
 
   return buffer;
 }
+
+module.exports = exports.default;

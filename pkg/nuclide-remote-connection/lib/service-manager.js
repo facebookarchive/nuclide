@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,53 +8,82 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {Transport} from '../../nuclide-rpc';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {ServerConnection} from './ServerConnection';
-import {isRemote, getHostname} from '../../nuclide-remote-uri';
-import invariant from 'assert';
-import {loadServicesConfig} from '../../nuclide-server/lib/services';
-import ServiceLogger from './ServiceLogger';
-import {
-  LoopbackTransports,
-  ServerComponent,
-  ClientConnection,
-  ClientComponent,
-} from '../../nuclide-rpc';
+var _ServerConnection2;
 
-const logger = require('../../nuclide-logging').getLogger();
-const newServices = loadServicesConfig();
+function _ServerConnection() {
+  return _ServerConnection2 = require('./ServerConnection');
+}
 
-let localRpcClient: ?ClientComponent<Transport> = null;
-let knownLocalRpc = false;
+var _nuclideRemoteUri2;
+
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = require('../../nuclide-remote-uri');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _nuclideServerLibServices2;
+
+function _nuclideServerLibServices() {
+  return _nuclideServerLibServices2 = require('../../nuclide-server/lib/services');
+}
+
+var _ServiceLogger2;
+
+function _ServiceLogger() {
+  return _ServiceLogger2 = _interopRequireDefault(require('./ServiceLogger'));
+}
+
+var _nuclideRpc2;
+
+function _nuclideRpc() {
+  return _nuclideRpc2 = require('../../nuclide-rpc');
+}
+
+var logger = require('../../nuclide-logging').getLogger();
+var newServices = (0, (_nuclideServerLibServices2 || _nuclideServerLibServices()).loadServicesConfig)();
+
+var localRpcClient = null;
+var knownLocalRpc = false;
 
 // Creates a local RPC client that we can use to ensure that
 // local service calls have the same behavior as remote RPC calls.
-function createLocalRpcClient(): ClientComponent<Transport> {
-  const localTransports = new LoopbackTransports();
-  const localRpcServer = new ServerComponent(newServices);
-  const localClientConnection
-    = new ClientConnection(localRpcServer, localTransports.serverTransport);
-  invariant(localClientConnection != null); // silence lint...
-  return ClientComponent.createLocal(localTransports.clientTransport, newServices);
+function createLocalRpcClient() {
+  var localTransports = new (_nuclideRpc2 || _nuclideRpc()).LoopbackTransports();
+  var localRpcServer = new (_nuclideRpc2 || _nuclideRpc()).ServerComponent(newServices);
+  var localClientConnection = new (_nuclideRpc2 || _nuclideRpc()).ClientConnection(localRpcServer, localTransports.serverTransport);
+  (0, (_assert2 || _assert()).default)(localClientConnection != null); // silence lint...
+  return (_nuclideRpc2 || _nuclideRpc()).ClientComponent.createLocal(localTransports.clientTransport, newServices);
 }
 
-function setUseLocalRpc(value: boolean): void {
-  invariant(!knownLocalRpc, 'setUseLocalRpc must be called exactly once');
+function setUseLocalRpc(value) {
+  (0, (_assert2 || _assert()).default)(!knownLocalRpc, 'setUseLocalRpc must be called exactly once');
   knownLocalRpc = true;
   if (value) {
     localRpcClient = createLocalRpcClient();
   }
 }
 
-function getlocalService(serviceName: string): Object {
-  invariant(knownLocalRpc, 'Must call setUseLocalRpc before getService');
+function getlocalService(serviceName) {
+  (0, (_assert2 || _assert()).default)(knownLocalRpc, 'Must call setUseLocalRpc before getService');
   if (localRpcClient != null) {
     return localRpcClient.getService(serviceName);
   } else {
-    const [serviceConfig] = newServices.filter(config => config.name === serviceName);
-    invariant(serviceConfig, `No config found for service ${serviceName}`);
+    var _newServices$filter = newServices.filter(function (config) {
+      return config.name === serviceName;
+    });
+
+    var _newServices$filter2 = _slicedToArray(_newServices$filter, 1);
+
+    var serviceConfig = _newServices$filter2[0];
+
+    (0, (_assert2 || _assert()).default)(serviceConfig, 'No config found for service ' + serviceName);
     // $FlowIgnore
     return require(serviceConfig.implementation);
   }
@@ -67,13 +95,10 @@ function getlocalService(serviceName: string): Object {
  *    `nuclide:$host:$port/$path`. The function will use the $host from remote path to
  *    create a remote service or create a local service if the uri is local path.
  */
-function getServiceByNuclideUri(
-  serviceName: string,
-  nuclideUri: ?NuclideUri = null
-): ?any {
-  const hostname = (nuclideUri && isRemote(nuclideUri)) ?
-    getHostname(nuclideUri) :
-    null;
+function getServiceByNuclideUri(serviceName) {
+  var nuclideUri = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+
+  var hostname = nuclideUri && (0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).isRemote)(nuclideUri) ? (0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).getHostname)(nuclideUri) : null;
   return getService(serviceName, hostname);
 }
 
@@ -81,9 +106,9 @@ function getServiceByNuclideUri(
  * Create or get a cached service. If hostname is null or empty string,
  * it returns a local service, otherwise a remote service will be returned.
  */
-function getService(serviceName: string, hostname: ?string): ?any {
+function getService(serviceName, hostname) {
   if (hostname) {
-    const serverConnection = ServerConnection.getByHostname(hostname);
+    var serverConnection = (_ServerConnection2 || _ServerConnection()).ServerConnection.getByHostname(hostname);
     if (serverConnection == null) {
       return null;
     }
@@ -93,11 +118,11 @@ function getService(serviceName: string, hostname: ?string): ?any {
   }
 }
 
-let serviceLogger: ?ServiceLogger;
-function getServiceLogger(): ServiceLogger {
+var serviceLogger = undefined;
+function getServiceLogger() {
   if (!serviceLogger) {
-    serviceLogger = new ServiceLogger();
-    serviceLogger.onNewItem(item => {
+    serviceLogger = new (_ServiceLogger2 || _ServiceLogger()).default();
+    serviceLogger.onNewItem(function (item) {
       // TODO(t8579744): Log these to a separate file. Note that whatever file is used should also
       // be included in bug reports.
       logger.debug('Service call:', item.service, item.method, item.isLocal, item.argInfo);
@@ -107,8 +132,8 @@ function getServiceLogger(): ServiceLogger {
 }
 
 module.exports = {
-  getService,
-  getServiceByNuclideUri,
-  getServiceLogger,
-  setUseLocalRpc,
+  getService: getService,
+  getServiceByNuclideUri: getServiceByNuclideUri,
+  getServiceLogger: getServiceLogger,
+  setUseLocalRpc: setUseLocalRpc
 };

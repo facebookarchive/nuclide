@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+exports.addTooltip = addTooltip;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +14,11 @@
  * the root directory of this source tree.
  */
 
-import {React, ReactDOM} from 'react-for-atom';
+var _reactForAtom2;
 
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
 
 /**
 * Adds a self-disposing Atom's tooltip to a react element.
@@ -23,10 +31,11 @@ import {React, ReactDOM} from 'react-for-atom';
 *   this._myDiv = c;
 * }} />
 */
-export function addTooltip(options: atom$TooltipsAddOptions): (elementRef: React.Element) => void {
-  let prevRefDisposable;
 
-  return elementRef => {
+function addTooltip(options) {
+  var prevRefDisposable = undefined;
+
+  return function (elementRef) {
     if (prevRefDisposable != null) {
       prevRefDisposable.dispose();
       prevRefDisposable = null;
@@ -34,15 +43,11 @@ export function addTooltip(options: atom$TooltipsAddOptions): (elementRef: React
 
     if (elementRef != null) {
       // $FlowFixMe -- findDOMNode takes a React.Component or an HTMLElement.
-      const node = ReactDOM.findDOMNode(elementRef);
+      var node = (_reactForAtom2 || _reactForAtom()).ReactDOM.findDOMNode(elementRef);
 
-      prevRefDisposable = atom.tooltips.add(
-        node,
-        {
-          keyBindingTarget: node,
-          ...options,
-        }
-      );
+      prevRefDisposable = atom.tooltips.add(node, _extends({
+        keyBindingTarget: node
+      }, options));
     }
   };
 }

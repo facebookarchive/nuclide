@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +8,25 @@
  * the root directory of this source tree.
  */
 
-import type {BinaryExpression} from 'ast-types-flow';
-import type {Context, Lines, Print} from '../../types/common';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import markers from '../../constants/markers';
-import wrapExpression from '../../wrappers/simple/wrapExpression';
+var _constantsMarkers2;
 
-function printBinaryExpression(
-  print: Print,
-  node: BinaryExpression,
-  context: Context,
-): Lines {
-  const path = context.path;
-  let needsScope = true;
-  for (let i = path.size - 1; i >= 0; i--) {
-    const curr = path.get(i);
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+var _wrappersSimpleWrapExpression2;
+
+function _wrappersSimpleWrapExpression() {
+  return _wrappersSimpleWrapExpression2 = _interopRequireDefault(require('../../wrappers/simple/wrapExpression'));
+}
+
+function printBinaryExpression(print, node, context) {
+  var path = context.path;
+  var needsScope = true;
+  for (var i = path.size - 1; i >= 0; i--) {
+    var curr = path.get(i);
     /**
      * Traverse the path until we see the first logical expression. If it has
      * the same kind of operator we do not need to open a new scope. If it has
@@ -35,21 +38,10 @@ function printBinaryExpression(
     }
   }
 
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    needsScope
-      ? [markers.openScope, markers.scopeIndent, markers.scopeBreak]
-      : markers.empty,
-    print(node.left),
-    markers.noBreak,
-    markers.space,
-    node.operator,
-    markers.scopeSpaceBreak,
-    print(node.right),
-    needsScope
-      ? [markers.scopeBreak, markers.scopeDedent, markers.closeScope]
-      : markers.empty,
-  ]);
+  var wrap = function wrap(x) {
+    return (0, (_wrappersSimpleWrapExpression2 || _wrappersSimpleWrapExpression()).default)(print, node, x);
+  };
+  return wrap([needsScope ? [(_constantsMarkers2 || _constantsMarkers()).default.openScope, (_constantsMarkers2 || _constantsMarkers()).default.scopeIndent, (_constantsMarkers2 || _constantsMarkers()).default.scopeBreak] : (_constantsMarkers2 || _constantsMarkers()).default.empty, print(node.left), (_constantsMarkers2 || _constantsMarkers()).default.noBreak, (_constantsMarkers2 || _constantsMarkers()).default.space, node.operator, (_constantsMarkers2 || _constantsMarkers()).default.scopeSpaceBreak, print(node.right), needsScope ? [(_constantsMarkers2 || _constantsMarkers()).default.scopeBreak, (_constantsMarkers2 || _constantsMarkers()).default.scopeDedent, (_constantsMarkers2 || _constantsMarkers()).default.closeScope] : (_constantsMarkers2 || _constantsMarkers()).default.empty]);
 }
 
 module.exports = printBinaryExpression;

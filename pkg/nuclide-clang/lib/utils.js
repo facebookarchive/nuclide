@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.isHeaderFile = isHeaderFile;
+exports.isSourceFile = isSourceFile;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +14,19 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+var _path2;
 
-const HEADER_EXTENSIONS = new Set(['.h', '.hh', '.hpp', '.hxx', '.h++']);
-const SOURCE_EXTENSIONS = new Set(['.c', '.cc', '.cpp', '.cxx', '.c++', '.m', '.mm']);
-
-export function isHeaderFile(filename: string): boolean {
-  return HEADER_EXTENSIONS.has(path.extname(filename));
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
 }
 
-export function isSourceFile(filename: string): boolean {
-  return SOURCE_EXTENSIONS.has(path.extname(filename));
+var HEADER_EXTENSIONS = new Set(['.h', '.hh', '.hpp', '.hxx', '.h++']);
+var SOURCE_EXTENSIONS = new Set(['.c', '.cc', '.cpp', '.cxx', '.c++', '.m', '.mm']);
+
+function isHeaderFile(filename) {
+  return HEADER_EXTENSIONS.has((_path2 || _path()).default.extname(filename));
+}
+
+function isSourceFile(filename) {
+  return SOURCE_EXTENSIONS.has((_path2 || _path()).default.extname(filename));
 }

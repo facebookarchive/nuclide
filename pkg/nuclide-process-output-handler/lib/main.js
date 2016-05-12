@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +8,12 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  get handleBuckAnsiOutput() {
-    return require('./handleBuckAnsiOutput');
-  },
-};
+module.exports = Object.defineProperties({}, {
+  handleBuckAnsiOutput: {
+    get: function get() {
+      return require('./handleBuckAnsiOutput');
+    },
+    configurable: true,
+    enumerable: true
+  }
+});

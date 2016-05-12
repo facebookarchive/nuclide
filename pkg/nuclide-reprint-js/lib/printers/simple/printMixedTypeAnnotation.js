@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +8,7 @@
  * the root directory of this source tree.
  */
 
-import type {MixedTypeAnnotation} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
-
-function printMixedTypeAnnotation(
-  print: Print,
-  node: MixedTypeAnnotation,
-): Lines {
+function printMixedTypeAnnotation(print, node) {
   return ['mixed'];
 }
 

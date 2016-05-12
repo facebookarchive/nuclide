@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +10,73 @@
  * the root directory of this source tree.
  */
 
-import type {Message} from '../../nuclide-console/lib/types';
+exports.createMessageStream = createMessageStream;
 
-import {bufferUntil} from '../../nuclide-commons';
-import featureConfig from '../../nuclide-feature-config';
-import {createMessage} from './createMessage';
-import plist from 'plist';
-import Rx from 'rxjs';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export function createMessageStream(line$: Rx.Observable<string>): Rx.Observable<Message> {
+var _nuclideCommons2;
+
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../../nuclide-commons');
+}
+
+var _nuclideFeatureConfig2;
+
+function _nuclideFeatureConfig() {
+  return _nuclideFeatureConfig2 = _interopRequireDefault(require('../../nuclide-feature-config'));
+}
+
+var _createMessage2;
+
+function _createMessage() {
+  return _createMessage2 = require('./createMessage');
+}
+
+var _plist2;
+
+function _plist() {
+  return _plist2 = _interopRequireDefault(require('plist'));
+}
+
+var _rxjs2;
+
+function _rxjs() {
+  return _rxjs2 = _interopRequireDefault(require('rxjs'));
+}
+
+function createMessageStream(line$) {
 
   // Group the lines into valid plist strings.
-  return bufferUntil(line$, line => line.trim() === '</plist>')
-    // Don't include empty buffers. This happens if the stream completes since we opened a new
-    // buffer when the previous record ended.
-    .filter(lines => lines.length > 1)
+  return (0, (_nuclideCommons2 || _nuclideCommons()).bufferUntil)(line$, function (line) {
+    return line.trim() === '</plist>';
+  })
+  // Don't include empty buffers. This happens if the stream completes since we opened a new
+  // buffer when the previous record ended.
+  .filter(function (lines) {
+    return lines.length > 1;
+  }).map(function (lines) {
+    return lines.join('');
+  })
 
-    .map(lines => lines.join(''))
+  // Parse the plists. Each parsed plist contains an array which, in turn, *may* contain dicts
+  // (that correspond to records). We just want those dicts so we use `flatMap()`.
+  .flatMap(function (xml) {
+    return (_plist2 || _plist()).default.parse(xml);
+  })
 
-    // Parse the plists. Each parsed plist contains an array which, in turn, *may* contain dicts
-    // (that correspond to records). We just want those dicts so we use `flatMap()`.
-    .flatMap(xml => plist.parse(xml))
+  // Exclude dicts that don't have any message property.
+  .filter(function (record) {
+    return record.hasOwnProperty('Message');
+  })
 
-    // Exclude dicts that don't have any message property.
-    .filter(record => record.hasOwnProperty('Message'))
+  // Exclude blacklisted senders.
+  // FIXME: This is a stopgap. What we really need to do is identify the currently running app and
+  //   only show its messages. ):
+  .filter(function (record) {
+    var blacklist = (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get('nuclide-ios-simulator-logs.senderBlacklist');
+    return blacklist.indexOf(record.Sender) === -1;
+  })
 
-    // Exclude blacklisted senders.
-    // FIXME: This is a stopgap. What we really need to do is identify the currently running app and
-    //   only show its messages. ):
-    .filter(record => {
-      const blacklist =
-        ((featureConfig.get('nuclide-ios-simulator-logs.senderBlacklist'): any): Array<string>);
-      return blacklist.indexOf(record.Sender) === -1;
-    })
-
-    // Format the messages for Nuclide.
-    .map(createMessage);
+  // Format the messages for Nuclide.
+  .map((_createMessage2 || _createMessage()).createMessage);
 }

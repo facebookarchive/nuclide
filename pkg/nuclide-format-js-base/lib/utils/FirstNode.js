@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,53 +8,69 @@
  * the root directory of this source tree.
  */
 
-import type {Collection, NodePath} from '../types/ast';
+var _NewLine2;
 
-import NewLine from './NewLine';
-import getRootIdentifierInExpression from './getRootIdentifierInExpression';
-import isGlobal from './isGlobal';
-import jscs from 'jscodeshift';
+function _NewLine() {
+  return _NewLine2 = _interopRequireDefault(require('./NewLine'));
+}
 
-const {match} = jscs;
+var _getRootIdentifierInExpression2;
 
-const FirstNode = {
+function _getRootIdentifierInExpression() {
+  return _getRootIdentifierInExpression2 = _interopRequireDefault(require('./getRootIdentifierInExpression'));
+}
+
+var _isGlobal2;
+
+function _isGlobal() {
+  return _isGlobal2 = _interopRequireDefault(require('./isGlobal'));
+}
+
+var _jscodeshift2;
+
+function _jscodeshift() {
+  return _jscodeshift2 = _interopRequireDefault(require('jscodeshift'));
+}
+
+var match = (_jscodeshift2 || _jscodeshift()).default.match;
+
+var FirstNode = {
   /**
    * Gets the first node that it's safe to insert before on.
    *
    * Note: We never need to add a first node. If a first node doesn't exist
    * then there isn't ever code that would result in a require being changed.
    */
-  get(root: Collection): ?NodePath {
-    let first;
-    root
-      .find(jscs.Node)
-      .filter(path => isGlobal(path))
-      .forEach(path => {
-        if (!first && FirstNode.isValidFirstNode(path)) {
-          first = path;
-        }
-      });
+  get: function get(root) {
+    var first = undefined;
+    root.find((_jscodeshift2 || _jscodeshift()).default.Node).filter(function (path) {
+      return (0, (_isGlobal2 || _isGlobal()).default)(path);
+    }).forEach(function (path) {
+      if (!first && FirstNode.isValidFirstNode(path)) {
+        first = path;
+      }
+    });
     return first;
   },
 
   /**
    * Filter to see if a node is a valid first node.
    */
-  isValidFirstNode(path: NodePath): boolean {
+  isValidFirstNode: function isValidFirstNode(path) {
     // A new line literal is okay.
-    if (match(path, {expression: {value: NewLine.literal}})) {
+    if (match(path, { expression: { value: (_NewLine2 || _NewLine()).default.literal } })) {
       return true;
     }
     // Any other literal is not.
-    if (match(path, {expression: {type: 'Literal'}})) {
+    if (match(path, { expression: { type: 'Literal' } })) {
       return false;
     }
-    const firstObject = getRootIdentifierInExpression(path.node);
-    if (firstObject && match(firstObject, {name: 'jest'})) {
+    var firstObject = (0, (_getRootIdentifierInExpression2 || _getRootIdentifierInExpression()).default)(path.node);
+    if (firstObject && match(firstObject, { name: 'jest' })) {
       return false;
     }
     return true;
-  },
+  }
 };
 
 module.exports = FirstNode;

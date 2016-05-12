@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +8,18 @@
  * the root directory of this source tree.
  */
 
-import jscs from 'jscodeshift';
+var _jscodeshift2;
+
+function _jscodeshift() {
+  return _jscodeshift2 = _interopRequireDefault(require('jscodeshift'));
+}
 
 /**
  * This module helps support a hack to easily introduce new lines into the AST.
  */
-const NewLine = {
+var NewLine = Object.defineProperties({
   literal: '$$newline$$',
-  replace(input: string): string {
+  replace: function replace(input) {
     /**
      * This regex functions by matching:
      *
@@ -30,10 +33,15 @@ const NewLine = {
      * we have added in the file. It does not remove arbitrary extra new lines.
      */
     return input.replace(/(\n*[^\n]*\$\$newline\$\$[^\n]*\n*){1,}/g, '\n\n');
-  },
-  get statement() {
-    return jscs.expressionStatement(jscs.literal(NewLine.literal));
-  },
-};
+  }
+}, {
+  statement: {
+    get: function get() {
+      return (_jscodeshift2 || _jscodeshift()).default.expressionStatement((_jscodeshift2 || _jscodeshift()).default.literal(NewLine.literal));
+    },
+    configurable: true,
+    enumerable: true
+  }
+});
 
 module.exports = NewLine;

@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.onWorkspaceDidStopChangingActivePaneItem = onWorkspaceDidStopChangingActivePaneItem;
+exports.observeActivePaneItemDebounced = observeActivePaneItemDebounced;
+exports.observeActiveEditorsDebounced = observeActiveEditorsDebounced;
+exports.editorChangesDebounced = editorChangesDebounced;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -18,15 +23,20 @@
  * This file provides methods to do this.
  */
 
-import {Observable} from 'rxjs';
+var _rxjs2;
 
-import {
-  event as commonsEvent,
-  debounce,
-} from '../../nuclide-commons';
+function _rxjs() {
+  return _rxjs2 = require('rxjs');
+}
 
-const DEFAULT_PANE_DEBOUNCE_INTERVAL_MS = 100;
-const DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS = 300;
+var _nuclideCommons2;
+
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../../nuclide-commons');
+}
+
+var DEFAULT_PANE_DEBOUNCE_INTERVAL_MS = 100;
+var DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS = 300;
 
 /**
  * Similar to Atom's Workspace::onDidChangeActivePaneItem
@@ -34,43 +44,42 @@ const DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS = 300;
  * with the addition of a debounce interval.
  * @param debounceInterval The number of milliseconds to debounce.
  */
-export function onWorkspaceDidStopChangingActivePaneItem(
-    callback: (item: mixed) => any,
-    debounceInterval: number = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS
-  ): IDisposable {
-  const debouncedFunction = debounce(callback, debounceInterval, /* immediate */ false);
+
+function onWorkspaceDidStopChangingActivePaneItem(callback) {
+  var debounceInterval = arguments.length <= 1 || arguments[1] === undefined ? DEFAULT_PANE_DEBOUNCE_INTERVAL_MS : arguments[1];
+
+  var debouncedFunction = (0, (_nuclideCommons2 || _nuclideCommons()).debounce)(callback, debounceInterval, /* immediate */false);
   return atom.workspace.onDidChangeActivePaneItem(debouncedFunction);
 }
 
-export function observeActivePaneItemDebounced(
-  debounceInterval: number = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS,
-): Observable<mixed> {
-  return commonsEvent.observableFromSubscribeFunction(callback => {
+function observeActivePaneItemDebounced() {
+  var debounceInterval = arguments.length <= 0 || arguments[0] === undefined ? DEFAULT_PANE_DEBOUNCE_INTERVAL_MS : arguments[0];
+
+  return (_nuclideCommons2 || _nuclideCommons()).event.observableFromSubscribeFunction(function (callback) {
     return atom.workspace.observeActivePaneItem(callback);
+  }).debounceTime(debounceInterval);
+}
+
+function observeActiveEditorsDebounced() {
+  var debounceInterval = arguments.length <= 0 || arguments[0] === undefined ? DEFAULT_PANE_DEBOUNCE_INTERVAL_MS : arguments[0];
+
+  return observeActivePaneItemDebounced(debounceInterval).map(function (paneItem) {
+    if (atom.workspace.isTextEditor(paneItem)) {
+      // Flow cannot understand the type refinement provided by the isTextEditor function, so we
+      // have to cast.
+      return paneItem;
+    }
+    return null;
+  });
+}
+
+function editorChangesDebounced(editor) {
+  var debounceInterval = arguments.length <= 1 || arguments[1] === undefined ? DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS : arguments[1];
+
+  return (_nuclideCommons2 || _nuclideCommons()).event.observableFromSubscribeFunction(function (callback) {
+    return editor.onDidChange(callback);
   })
+  // Debounce manually rather than using editor.onDidStopChanging so that the debounce time is
+  // configurable.
   .debounceTime(debounceInterval);
-}
-
-export function observeActiveEditorsDebounced(
-  debounceInterval: number = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS,
-): Observable<?atom$TextEditor> {
-  return observeActivePaneItemDebounced(debounceInterval)
-    .map(paneItem => {
-      if (atom.workspace.isTextEditor(paneItem)) {
-        // Flow cannot understand the type refinement provided by the isTextEditor function, so we
-        // have to cast.
-        return (paneItem: any);
-      }
-      return null;
-    });
-}
-
-export function editorChangesDebounced(
-  editor: atom$TextEditor,
-  debounceInterval: number = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS,
-): Observable<void> {
-  return commonsEvent.observableFromSubscribeFunction(callback => editor.onDidChange(callback))
-    // Debounce manually rather than using editor.onDidStopChanging so that the debounce time is
-    // configurable.
-    .debounceTime(debounceInterval);
 }

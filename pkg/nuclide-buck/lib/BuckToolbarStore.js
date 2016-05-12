@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +16,7 @@
  * the root directory of this source tree.
  */
 
-let logger;
+var logger = undefined;
 function getLogger() {
   if (!logger) {
     logger = require('../../nuclide-logging').getLogger();
@@ -17,504 +24,532 @@ function getLogger() {
   return logger;
 }
 
-import invariant from 'assert';
-import {Emitter} from 'atom';
-import path from 'path';
-import {Dispatcher} from 'flux';
-import {buckProjectRootForPath} from '../../nuclide-buck-commons';
-import BuckToolbarActions from './BuckToolbarActions';
+var _assert2;
 
-type BuckRunDetails = {
-  pid?: number;
-};
-import type {Task} from '../../nuclide-build/lib/types';
-import type {
-  ProcessOutputStore as ProcessOutputStoreType,
-} from '../../nuclide-process-output-store';
-import type {ProcessOutputDataHandlers} from '../../nuclide-process-output-store/lib/types';
-import type {BuckProject} from '../../nuclide-buck-base/lib/BuckProject';
-import type {SerializedState} from './types';
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
-import ReactNativeServerManager from './ReactNativeServerManager';
-import ReactNativeServerActions from './ReactNativeServerActions';
+var _atom2;
 
-const BUCK_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
-const REACT_NATIVE_APP_FLAGS = [
-  '-executor-override', 'RCTWebSocketExecutor',
-  '-websocket-executor-name', 'Nuclide',
-  '-websocket-executor-port', '8090',
-];
+function _atom() {
+  return _atom2 = require('atom');
+}
 
-type BuckSubcommand = 'build' | 'install' | 'test';
+var _path2;
 
-class BuckToolbarStore {
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
 
-  _dispatcher: Dispatcher;
-  _emitter: Emitter;
-  _reactNativeServerActions: ReactNativeServerActions;
-  _reactNativeServerManager: ReactNativeServerManager;
-  _mostRecentBuckProject: ?BuckProject;
-  _textEditorToBuckProject: WeakMap<TextEditor, BuckProject>;
-  _isBuilding: boolean;
-  _buildTarget: string;
-  _buildProgress: number;
-  _buildRuleType: string;
-  _simulator: ?string;
-  _isReactNativeApp: boolean;
-  _isReactNativeServerMode: boolean;
-  _buckProcessOutputStore: ?ProcessOutputStoreType;
-  _aliasesByProject: WeakMap<BuckProject, Array<string>>;
+var _flux2;
 
-  constructor(dispatcher: Dispatcher, initialState: ?SerializedState) {
+function _flux() {
+  return _flux2 = require('flux');
+}
+
+var _nuclideBuckCommons2;
+
+function _nuclideBuckCommons() {
+  return _nuclideBuckCommons2 = require('../../nuclide-buck-commons');
+}
+
+var _BuckToolbarActions2;
+
+function _BuckToolbarActions() {
+  return _BuckToolbarActions2 = _interopRequireDefault(require('./BuckToolbarActions'));
+}
+
+var _ReactNativeServerManager2;
+
+function _ReactNativeServerManager() {
+  return _ReactNativeServerManager2 = _interopRequireDefault(require('./ReactNativeServerManager'));
+}
+
+var _ReactNativeServerActions2;
+
+function _ReactNativeServerActions() {
+  return _ReactNativeServerActions2 = _interopRequireDefault(require('./ReactNativeServerActions'));
+}
+
+var BUCK_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
+var REACT_NATIVE_APP_FLAGS = ['-executor-override', 'RCTWebSocketExecutor', '-websocket-executor-name', 'Nuclide', '-websocket-executor-port', '8090'];
+
+var BuckToolbarStore = (function () {
+  function BuckToolbarStore(dispatcher, initialState) {
+    _classCallCheck(this, BuckToolbarStore);
+
     this._dispatcher = dispatcher;
-    this._reactNativeServerActions = new ReactNativeServerActions(dispatcher);
-    this._reactNativeServerManager = new ReactNativeServerManager(
-      dispatcher,
-      this._reactNativeServerActions,
-    );
-    this._emitter = new Emitter();
+    this._reactNativeServerActions = new (_ReactNativeServerActions2 || _ReactNativeServerActions()).default(dispatcher);
+    this._reactNativeServerManager = new (_ReactNativeServerManager2 || _ReactNativeServerManager()).default(dispatcher, this._reactNativeServerActions);
+    this._emitter = new (_atom2 || _atom()).Emitter();
     this._textEditorToBuckProject = new WeakMap();
     this._aliasesByProject = new WeakMap();
     this._initState(initialState);
     this._setupActions();
   }
 
-  _initState(initialState: ?SerializedState) {
-    this._isBuilding = false;
-    this._buildTarget = initialState && initialState.buildTarget || '';
-    this._buildProgress = 0;
-    this._buildRuleType = '';
-    this._isReactNativeApp = false;
-    this._isReactNativeServerMode = initialState && initialState.isReactNativeServerMode || false;
-  }
-
-  _setupActions() {
-    this._dispatcher.register(action => {
-      switch (action.actionType) {
-        case BuckToolbarActions.ActionType.UPDATE_PROJECT:
-          this._updateProject(action.editor);
-          break;
-        case BuckToolbarActions.ActionType.UPDATE_BUILD_TARGET:
-          this._updateBuildTarget(action.buildTarget);
-          break;
-        case BuckToolbarActions.ActionType.UPDATE_SIMULATOR:
-          this._simulator = action.simulator;
-          break;
-        case BuckToolbarActions.ActionType.UPDATE_REACT_NATIVE_SERVER_MODE:
-          this._isReactNativeServerMode = action.serverMode;
-          this.emitChange();
-          break;
-        case BuckToolbarActions.ActionType.BUILD:
-          this._doBuild('build', /* debug */ false);
-          break;
-        case BuckToolbarActions.ActionType.RUN:
-          this._doBuild('install', /* debug */ false);
-          break;
-        case BuckToolbarActions.ActionType.TEST:
-          this._doBuild('test', /* debug */ false);
-          break;
-        case BuckToolbarActions.ActionType.DEBUG:
-          this._doDebug();
-          break;
-      }
-    });
-  }
-
-  dispose() {
-    this._reactNativeServerManager.dispose();
-    if (this._buckProcessOutputStore) {
-      this._buckProcessOutputStore.stopProcess();
-    }
-  }
-
-  subscribe(callback: () => void): IDisposable {
-    return this._emitter.on('change', callback);
-  }
-
-  emitChange(): void {
-    this._emitter.emit('change');
-  }
-
-  getBuildTarget(): string {
-    return this._buildTarget;
-  }
-
-  isBuilding(): boolean {
-    return this._isBuilding;
-  }
-
-  getRuleType(): string {
-    return this._buildRuleType;
-  }
-
-  getBuildProgress(): number {
-    return this._buildProgress;
-  }
-
-  isReactNativeApp(): boolean {
-    return this._isReactNativeApp;
-  }
-
-  isReactNativeServerMode(): boolean {
-    return this.isReactNativeApp() && this._isReactNativeServerMode;
-  }
-
-  async loadAliases(): Promise<Array<string>> {
-    const buckProject = this._mostRecentBuckProject;
-    if (!buckProject) {
-      return Promise.resolve([]);
-    }
-
-    // Cache aliases for a project because invoking buck just to list aliases that are highly
-    // unlikely to change is wasteful.
-    let aliases = this._aliasesByProject.get(buckProject);
-    if (!aliases) {
-      aliases = await buckProject.listAliases();
-      this._aliasesByProject.set(buckProject, aliases);
-    }
-
-    return aliases;
-  }
-
-  async _getReactNativeServerCommand(): Promise<?string> {
-    const buckProject = this._mostRecentBuckProject;
-    if (!buckProject) {
-      return null;
-    }
-    const serverCommand = await buckProject.getBuckConfig('react-native', 'server');
-    if (serverCommand == null) {
-      return null;
-    }
-    const repoRoot = await buckProject.getPath();
-    if (repoRoot == null) {
-      return null;
-    }
-    return path.join(repoRoot, serverCommand);
-  }
-
-  async _updateProject(editor: TextEditor): Promise<void> {
-    const nuclideUri = editor.getPath();
-    if (!nuclideUri) {
-      return;
-    }
-    let buckProject = this._textEditorToBuckProject.get(editor);
-    if (!buckProject) {
-      buckProject = await buckProjectRootForPath(nuclideUri);
-      if (!buckProject) {
-        return;
-      }
-      this._textEditorToBuckProject.set(editor, buckProject);
-    }
-    this._mostRecentBuckProject = buckProject;
-  }
-
-  async _updateBuildTarget(buildTarget: string): Promise<void> {
-    buildTarget = buildTarget.trim();
-    this._buildTarget = buildTarget;
-
-    this._buildRuleType = await this._findRuleType();
-    this.emitChange();
-    this._isReactNativeApp = await this._findIsReactNativeApp();
-    this.emitChange();
-  }
-
-  async _findRuleType(): Promise<string> {
-    const buckProject = this._mostRecentBuckProject;
-    const buildTarget = this._buildTarget;
-
-    let buildRuleType = '';
-    if (buildTarget && buckProject) {
-      try {
-        buildRuleType = await buckProject.buildRuleTypeFor(buildTarget);
-      } catch (e) {
-        // Most likely, this is an invalid target, so do nothing.
-      }
-    }
-    return buildRuleType;
-  }
-
-  async _findIsReactNativeApp(): Promise<boolean> {
-    const buildRuleType = this._buildRuleType;
-    if (buildRuleType !== 'apple_bundle' && buildRuleType !== 'android_binary') {
-      return false;
-    }
-    const buckProject = this._mostRecentBuckProject;
-    if (!buckProject) {
-      return false;
-    }
-
-    const reactNativeRule = buildRuleType === 'apple_bundle'
-    ? 'ios_react_native_library'
-    : 'android_react_native_library';
-
-    const buildTarget = this._buildTarget;
-    const matches = await buckProject.queryWithArgs(
-      `kind('${reactNativeRule}', deps('%s'))`,
-      [buildTarget],
-    );
-    return matches[buildTarget].length > 0;
-  }
-
-  async _doDebug(): Promise<void> {
-    // TODO(natthu): Restore validation logic to make sure the target is installable.
-    // For now, let's leave that to Buck.
-
-    // Stop any existing debugging sessions, as install hangs if an existing
-    // app that's being overwritten is being debugged.
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:stop-debugging');
-
-    const installResult = await this._doBuild('install', /* debug */ true);
-    if (!installResult) {
-      return;
-    }
-    const {buckProject, pid} = installResult;
-
-    if (pid) {
-      // Use commands here to trigger package activation.
-      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-      const debuggerService = await require('../../nuclide-service-hub-plus')
-          .consumeFirstProvider('nuclide-debugger.remote');
-      const buckProjectPath = await buckProject.getPath();
-      debuggerService.debugLLDB(pid, buckProjectPath);
-    }
-  }
-
-  async _doBuild(
-    subcommand: BuckSubcommand,
-    debug: boolean,
-  ): Promise<?{buckProject: BuckProject; buildTarget: string; pid: ?number}> {
-    const buildTarget = this._buildTarget;
-    const simulator = this._simulator;
-    const buckProject = this._mostRecentBuckProject;
-    if (!this._buildTarget) {
-      return;
-    }
-    if (!buckProject) {
-      throw new Error('Could not build: must navigate to a file that is part of a Buck project.');
-    }
-
-    let appArgs = [];
-    if (subcommand === 'install' && this.isReactNativeServerMode()) {
-      const serverCommand = await this._getReactNativeServerCommand();
-      if (serverCommand) {
-        this._reactNativeServerActions.startServer(serverCommand);
-        appArgs = REACT_NATIVE_APP_FLAGS;
-        this._reactNativeServerActions.startNodeExecutorServer();
-      }
-    }
-
-    const ws = await this._setupWebSocket(buckProject, buildTarget);
-
-    this._buildProgress = 0;
-    this._isBuilding = true;
-    this.emitChange();
-
-    try {
-      const result = await this._runBuckCommandInNewPane(
-        {buckProject, buildTarget, simulator, subcommand, debug, appArgs}
-      );
-      return {buckProject, buildTarget, pid: result.pid};
-    } finally {
+  _createClass(BuckToolbarStore, [{
+    key: '_initState',
+    value: function _initState(initialState) {
       this._isBuilding = false;
-      this.emitChange();
-      if (ws) {
-        ws.close();
+      this._buildTarget = initialState && initialState.buildTarget || '';
+      this._buildProgress = 0;
+      this._buildRuleType = '';
+      this._isReactNativeApp = false;
+      this._isReactNativeServerMode = initialState && initialState.isReactNativeServerMode || false;
+    }
+  }, {
+    key: '_setupActions',
+    value: function _setupActions() {
+      var _this = this;
+
+      this._dispatcher.register(function (action) {
+        switch (action.actionType) {
+          case (_BuckToolbarActions2 || _BuckToolbarActions()).default.ActionType.UPDATE_PROJECT:
+            _this._updateProject(action.editor);
+            break;
+          case (_BuckToolbarActions2 || _BuckToolbarActions()).default.ActionType.UPDATE_BUILD_TARGET:
+            _this._updateBuildTarget(action.buildTarget);
+            break;
+          case (_BuckToolbarActions2 || _BuckToolbarActions()).default.ActionType.UPDATE_SIMULATOR:
+            _this._simulator = action.simulator;
+            break;
+          case (_BuckToolbarActions2 || _BuckToolbarActions()).default.ActionType.UPDATE_REACT_NATIVE_SERVER_MODE:
+            _this._isReactNativeServerMode = action.serverMode;
+            _this.emitChange();
+            break;
+          case (_BuckToolbarActions2 || _BuckToolbarActions()).default.ActionType.BUILD:
+            _this._doBuild('build', /* debug */false);
+            break;
+          case (_BuckToolbarActions2 || _BuckToolbarActions()).default.ActionType.RUN:
+            _this._doBuild('install', /* debug */false);
+            break;
+          case (_BuckToolbarActions2 || _BuckToolbarActions()).default.ActionType.TEST:
+            _this._doBuild('test', /* debug */false);
+            break;
+          case (_BuckToolbarActions2 || _BuckToolbarActions()).default.ActionType.DEBUG:
+            _this._doDebug();
+            break;
+        }
+      });
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._reactNativeServerManager.dispose();
+      if (this._buckProcessOutputStore) {
+        this._buckProcessOutputStore.stopProcess();
       }
     }
-  }
-
-  /**
-   * @return An Object with some details about the output of the command:
-   *   pid: The process id of the running app, if 'run' was true.
-   */
-  async _runBuckCommandInNewPane(buckParams: {
-    buckProject: BuckProject;
-    buildTarget: string;
-    simulator: ?string;
-    subcommand: string;
-    debug: boolean;
-    appArgs: Array<string>;
-  }): Promise<BuckRunDetails> {
-    const {buckProject, buildTarget, simulator, subcommand, debug, appArgs} = buckParams;
-
-    const getRunCommandInNewPane = require('../../nuclide-process-output');
-    const {runCommandInNewPane, disposable} = getRunCommandInNewPane();
-
-    const run = subcommand === 'install';
-    const runProcessWithHandlers = async (dataHandlerOptions: ProcessOutputDataHandlers) => {
-      const {stdout, stderr, error, exit} = dataHandlerOptions;
-      let observable;
-      invariant(buckProject);
-      if (run) {
-        observable = await buckProject.installWithOutput(
-            [buildTarget], simulator, {run, debug, appArgs});
-      } else if (subcommand === 'build') {
-        observable = await buckProject.buildWithOutput([buildTarget]);
-      } else if (subcommand === 'test') {
-        observable = await buckProject.testWithOutput([buildTarget]);
-      } else {
-        throw Error(`Unknown subcommand: ${subcommand}`);
-      }
-      const onNext = (data: {stderr?: string; stdout?: string}) => {
-        if (data.stdout) {
-          stdout(data.stdout);
-        } else {
-          stderr(data.stderr || '');
-        }
-      };
-      const onError = (data: string) => {
-        error(new Error(data));
-        exit(1);
-        disposable.dispose();
-      };
-      const onExit = () => {
-        // onExit will only be called if the process completes successfully,
-        // i.e. with exit code 0. Unfortunately an Observable cannot pass an
-        // argument (e.g. an exit code) on completion.
-        exit(0);
-        disposable.dispose();
-      };
-      const subscription = observable.subscribe(onNext, onError, onExit);
-
-      return {
-        kill() {
-          subscription.unsubscribe();
-          disposable.dispose();
-        },
-      };
-    };
-
-    const buckRunPromise: Promise<BuckRunDetails> = new Promise((resolve, reject) => {
-      const {ProcessOutputStore} = require('../../nuclide-process-output-store');
-      const processOutputStore = new ProcessOutputStore(runProcessWithHandlers);
-      const {handleBuckAnsiOutput} = require('../../nuclide-process-output-handler');
-
-      this._buckProcessOutputStore = processOutputStore;
-      const exitSubscription = processOutputStore.onProcessExit((exitCode: number) => {
-        if (exitCode === 0 && run) {
-          // Get the process ID.
-          const allBuildOutput = processOutputStore.getStdout() || '';
-          const pidMatch = allBuildOutput.match(BUCK_PROCESS_ID_REGEX);
-          if (pidMatch) {
-            // Index 1 is the captured pid.
-            resolve({pid: parseInt(pidMatch[1], 10)});
-          }
-        } else {
-          resolve({});
-        }
-        exitSubscription.dispose();
-        this._buckProcessOutputStore = null;
-      });
-
-      runCommandInNewPane({
-        tabTitle: `buck ${subcommand} ${buildTarget}`,
-        processOutputStore,
-        processOutputHandler: handleBuckAnsiOutput,
-        destroyExistingPane: true,
-      });
-    });
-
-    return await buckRunPromise;
-  }
-
-  async _setupWebSocket(buckProject: BuckProject, buildTarget: string): Promise<?WebSocket> {
-    const httpPort = await buckProject.getServerPort();
-    if (httpPort <= 0) {
-      return null;
+  }, {
+    key: 'subscribe',
+    value: function subscribe(callback) {
+      return this._emitter.on('change', callback);
     }
+  }, {
+    key: 'emitChange',
+    value: function emitChange() {
+      this._emitter.emit('change');
+    }
+  }, {
+    key: 'getBuildTarget',
+    value: function getBuildTarget() {
+      return this._buildTarget;
+    }
+  }, {
+    key: 'isBuilding',
+    value: function isBuilding() {
+      return this._isBuilding;
+    }
+  }, {
+    key: 'getRuleType',
+    value: function getRuleType() {
+      return this._buildRuleType;
+    }
+  }, {
+    key: 'getBuildProgress',
+    value: function getBuildProgress() {
+      return this._buildProgress;
+    }
+  }, {
+    key: 'isReactNativeApp',
+    value: function isReactNativeApp() {
+      return this._isReactNativeApp;
+    }
+  }, {
+    key: 'isReactNativeServerMode',
+    value: function isReactNativeServerMode() {
+      return this.isReactNativeApp() && this._isReactNativeServerMode;
+    }
+  }, {
+    key: 'loadAliases',
+    value: _asyncToGenerator(function* () {
+      var buckProject = this._mostRecentBuckProject;
+      if (!buckProject) {
+        return Promise.resolve([]);
+      }
 
-    const uri = `ws://localhost:${httpPort}/ws/build`;
-    const ws = new WebSocket(uri);
-    let buildId: ?string = null;
-    let isFinished = false;
+      // Cache aliases for a project because invoking buck just to list aliases that are highly
+      // unlikely to change is wasteful.
+      var aliases = this._aliasesByProject.get(buckProject);
+      if (!aliases) {
+        aliases = yield buckProject.listAliases();
+        this._aliasesByProject.set(buckProject, aliases);
+      }
 
-    ws.onmessage = e => {
-      let message;
-      try {
-        message = JSON.parse(e.data);
-      } catch (err) {
-        getLogger().error(
-            `Buck was likely killed while building ${buildTarget}.`);
+      return aliases;
+    })
+  }, {
+    key: '_getReactNativeServerCommand',
+    value: _asyncToGenerator(function* () {
+      var buckProject = this._mostRecentBuckProject;
+      if (!buckProject) {
+        return null;
+      }
+      var serverCommand = yield buckProject.getBuckConfig('react-native', 'server');
+      if (serverCommand == null) {
+        return null;
+      }
+      var repoRoot = yield buckProject.getPath();
+      if (repoRoot == null) {
+        return null;
+      }
+      return (_path2 || _path()).default.join(repoRoot, serverCommand);
+    })
+  }, {
+    key: '_updateProject',
+    value: _asyncToGenerator(function* (editor) {
+      var nuclideUri = editor.getPath();
+      if (!nuclideUri) {
         return;
       }
-      const type = message['type'];
-      if (buildId === null) {
-        if (type === 'BuildStarted') {
-          buildId = message['buildId'];
-        } else {
+      var buckProject = this._textEditorToBuckProject.get(editor);
+      if (!buckProject) {
+        buckProject = yield (0, (_nuclideBuckCommons2 || _nuclideBuckCommons()).buckProjectRootForPath)(nuclideUri);
+        if (!buckProject) {
           return;
         }
+        this._textEditorToBuckProject.set(editor, buckProject);
+      }
+      this._mostRecentBuckProject = buckProject;
+    })
+  }, {
+    key: '_updateBuildTarget',
+    value: _asyncToGenerator(function* (buildTarget) {
+      buildTarget = buildTarget.trim();
+      this._buildTarget = buildTarget;
+
+      this._buildRuleType = yield this._findRuleType();
+      this.emitChange();
+      this._isReactNativeApp = yield this._findIsReactNativeApp();
+      this.emitChange();
+    })
+  }, {
+    key: '_findRuleType',
+    value: _asyncToGenerator(function* () {
+      var buckProject = this._mostRecentBuckProject;
+      var buildTarget = this._buildTarget;
+
+      var buildRuleType = '';
+      if (buildTarget && buckProject) {
+        try {
+          buildRuleType = yield buckProject.buildRuleTypeFor(buildTarget);
+        } catch (e) {
+          // Most likely, this is an invalid target, so do nothing.
+        }
+      }
+      return buildRuleType;
+    })
+  }, {
+    key: '_findIsReactNativeApp',
+    value: _asyncToGenerator(function* () {
+      var buildRuleType = this._buildRuleType;
+      if (buildRuleType !== 'apple_bundle' && buildRuleType !== 'android_binary') {
+        return false;
+      }
+      var buckProject = this._mostRecentBuckProject;
+      if (!buckProject) {
+        return false;
       }
 
-      if (buildId !== message['buildId']) {
+      var reactNativeRule = buildRuleType === 'apple_bundle' ? 'ios_react_native_library' : 'android_react_native_library';
+
+      var buildTarget = this._buildTarget;
+      var matches = yield buckProject.queryWithArgs('kind(\'' + reactNativeRule + '\', deps(\'%s\'))', [buildTarget]);
+      return matches[buildTarget].length > 0;
+    })
+  }, {
+    key: '_doDebug',
+    value: _asyncToGenerator(function* () {
+      // TODO(natthu): Restore validation logic to make sure the target is installable.
+      // For now, let's leave that to Buck.
+
+      // Stop any existing debugging sessions, as install hangs if an existing
+      // app that's being overwritten is being debugged.
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:stop-debugging');
+
+      var installResult = yield this._doBuild('install', /* debug */true);
+      if (!installResult) {
         return;
       }
+      var buckProject = installResult.buckProject;
+      var pid = installResult.pid;
 
-      if (type === 'BuildProgressUpdated' || type === 'ParsingProgressUpdated') {
-        this._buildProgress = message.progressValue;
-        this.emitChange();
-      } else if (type === 'BuildFinished') {
-        this._buildProgress = 1.0;
-        this.emitChange();
-        isFinished = true;
-        ws.close();
+      if (pid) {
+        // Use commands here to trigger package activation.
+        atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
+        var debuggerService = yield require('../../nuclide-service-hub-plus').consumeFirstProvider('nuclide-debugger.remote');
+        var buckProjectPath = yield buckProject.getPath();
+        debuggerService.debugLLDB(pid, buckProjectPath);
       }
-    };
-
-    ws.onclose = () => {
-      if (!isFinished) {
-        getLogger().error(
-            `WebSocket closed before ${buildTarget} finished building.`);
+    })
+  }, {
+    key: '_doBuild',
+    value: _asyncToGenerator(function* (subcommand, debug) {
+      var buildTarget = this._buildTarget;
+      var simulator = this._simulator;
+      var buckProject = this._mostRecentBuckProject;
+      if (!this._buildTarget) {
+        return;
       }
-    };
-    return ws;
-  }
+      if (!buckProject) {
+        throw new Error('Could not build: must navigate to a file that is part of a Buck project.');
+      }
 
-  getTasks(): Array<Task> {
-    const enabled = Boolean(this.getBuildTarget() && !this.isBuilding());
-    return TASKS.map(task => ({
-      ...task,
-      enabled,
-    }));
-  }
+      var appArgs = [];
+      if (subcommand === 'install' && this.isReactNativeServerMode()) {
+        var serverCommand = yield this._getReactNativeServerCommand();
+        if (serverCommand) {
+          this._reactNativeServerActions.startServer(serverCommand);
+          appArgs = REACT_NATIVE_APP_FLAGS;
+          this._reactNativeServerActions.startNodeExecutorServer();
+        }
+      }
 
-}
+      var ws = yield this._setupWebSocket(buckProject, buildTarget);
 
-const TASKS = [
-  {
-    type: 'build',
-    label: 'Build',
-    description: 'Build the specified Buck target',
-    enabled: true,
-    cancelable: false,
-    icon: 'tools',
-  },
-  {
-    type: 'run',
-    label: 'Run',
-    description: 'Run the specfied Buck target',
-    enabled: true,
-    cancelable: false,
-    icon: 'triangle-right',
-  },
-  {
-    type: 'test',
-    label: 'Test',
-    description: 'Test the specfied Buck target',
-    enabled: true,
-    cancelable: false,
-    icon: 'checklist',
-  },
-  {
-    type: 'debug',
-    label: 'Debug',
-    description: 'Debug the specfied Buck target',
-    enabled: true,
-    cancelable: false,
-    icon: 'plug',
-  },
-];
+      this._buildProgress = 0;
+      this._isBuilding = true;
+      this.emitChange();
+
+      try {
+        var result = yield this._runBuckCommandInNewPane({ buckProject: buckProject, buildTarget: buildTarget, simulator: simulator, subcommand: subcommand, debug: debug, appArgs: appArgs });
+        return { buckProject: buckProject, buildTarget: buildTarget, pid: result.pid };
+      } finally {
+        this._isBuilding = false;
+        this.emitChange();
+        if (ws) {
+          ws.close();
+        }
+      }
+    })
+
+    /**
+     * @return An Object with some details about the output of the command:
+     *   pid: The process id of the running app, if 'run' was true.
+     */
+  }, {
+    key: '_runBuckCommandInNewPane',
+    value: _asyncToGenerator(function* (buckParams) {
+      var _this2 = this;
+
+      var buckProject = buckParams.buckProject;
+      var buildTarget = buckParams.buildTarget;
+      var simulator = buckParams.simulator;
+      var subcommand = buckParams.subcommand;
+      var debug = buckParams.debug;
+      var appArgs = buckParams.appArgs;
+
+      var getRunCommandInNewPane = require('../../nuclide-process-output');
+
+      var _getRunCommandInNewPane = getRunCommandInNewPane();
+
+      var runCommandInNewPane = _getRunCommandInNewPane.runCommandInNewPane;
+      var disposable = _getRunCommandInNewPane.disposable;
+
+      var run = subcommand === 'install';
+      var runProcessWithHandlers = _asyncToGenerator(function* (dataHandlerOptions) {
+        var stdout = dataHandlerOptions.stdout;
+        var stderr = dataHandlerOptions.stderr;
+        var error = dataHandlerOptions.error;
+        var exit = dataHandlerOptions.exit;
+
+        var observable = undefined;
+        (0, (_assert2 || _assert()).default)(buckProject);
+        if (run) {
+          observable = yield buckProject.installWithOutput([buildTarget], simulator, { run: run, debug: debug, appArgs: appArgs });
+        } else if (subcommand === 'build') {
+          observable = yield buckProject.buildWithOutput([buildTarget]);
+        } else if (subcommand === 'test') {
+          observable = yield buckProject.testWithOutput([buildTarget]);
+        } else {
+          throw Error('Unknown subcommand: ' + subcommand);
+        }
+        var onNext = function onNext(data) {
+          if (data.stdout) {
+            stdout(data.stdout);
+          } else {
+            stderr(data.stderr || '');
+          }
+        };
+        var onError = function onError(data) {
+          error(new Error(data));
+          exit(1);
+          disposable.dispose();
+        };
+        var onExit = function onExit() {
+          // onExit will only be called if the process completes successfully,
+          // i.e. with exit code 0. Unfortunately an Observable cannot pass an
+          // argument (e.g. an exit code) on completion.
+          exit(0);
+          disposable.dispose();
+        };
+        var subscription = observable.subscribe(onNext, onError, onExit);
+
+        return {
+          kill: function kill() {
+            subscription.unsubscribe();
+            disposable.dispose();
+          }
+        };
+      });
+
+      var buckRunPromise = new Promise(function (resolve, reject) {
+        var _require = require('../../nuclide-process-output-store');
+
+        var ProcessOutputStore = _require.ProcessOutputStore;
+
+        var processOutputStore = new ProcessOutputStore(runProcessWithHandlers);
+
+        var _require2 = require('../../nuclide-process-output-handler');
+
+        var handleBuckAnsiOutput = _require2.handleBuckAnsiOutput;
+
+        _this2._buckProcessOutputStore = processOutputStore;
+        var exitSubscription = processOutputStore.onProcessExit(function (exitCode) {
+          if (exitCode === 0 && run) {
+            // Get the process ID.
+            var allBuildOutput = processOutputStore.getStdout() || '';
+            var pidMatch = allBuildOutput.match(BUCK_PROCESS_ID_REGEX);
+            if (pidMatch) {
+              // Index 1 is the captured pid.
+              resolve({ pid: parseInt(pidMatch[1], 10) });
+            }
+          } else {
+            resolve({});
+          }
+          exitSubscription.dispose();
+          _this2._buckProcessOutputStore = null;
+        });
+
+        runCommandInNewPane({
+          tabTitle: 'buck ' + subcommand + ' ' + buildTarget,
+          processOutputStore: processOutputStore,
+          processOutputHandler: handleBuckAnsiOutput,
+          destroyExistingPane: true
+        });
+      });
+
+      return yield buckRunPromise;
+    })
+  }, {
+    key: '_setupWebSocket',
+    value: _asyncToGenerator(function* (buckProject, buildTarget) {
+      var _this3 = this;
+
+      var httpPort = yield buckProject.getServerPort();
+      if (httpPort <= 0) {
+        return null;
+      }
+
+      var uri = 'ws://localhost:' + httpPort + '/ws/build';
+      var ws = new WebSocket(uri);
+      var buildId = null;
+      var isFinished = false;
+
+      ws.onmessage = function (e) {
+        var message = undefined;
+        try {
+          message = JSON.parse(e.data);
+        } catch (err) {
+          getLogger().error('Buck was likely killed while building ' + buildTarget + '.');
+          return;
+        }
+        var type = message['type'];
+        if (buildId === null) {
+          if (type === 'BuildStarted') {
+            buildId = message['buildId'];
+          } else {
+            return;
+          }
+        }
+
+        if (buildId !== message['buildId']) {
+          return;
+        }
+
+        if (type === 'BuildProgressUpdated' || type === 'ParsingProgressUpdated') {
+          _this3._buildProgress = message.progressValue;
+          _this3.emitChange();
+        } else if (type === 'BuildFinished') {
+          _this3._buildProgress = 1.0;
+          _this3.emitChange();
+          isFinished = true;
+          ws.close();
+        }
+      };
+
+      ws.onclose = function () {
+        if (!isFinished) {
+          getLogger().error('WebSocket closed before ' + buildTarget + ' finished building.');
+        }
+      };
+      return ws;
+    })
+  }, {
+    key: 'getTasks',
+    value: function getTasks() {
+      var enabled = Boolean(this.getBuildTarget() && !this.isBuilding());
+      return TASKS.map(function (task) {
+        return _extends({}, task, {
+          enabled: enabled
+        });
+      });
+    }
+  }]);
+
+  return BuckToolbarStore;
+})();
+
+var TASKS = [{
+  type: 'build',
+  label: 'Build',
+  description: 'Build the specified Buck target',
+  enabled: true,
+  cancelable: false,
+  icon: 'tools'
+}, {
+  type: 'run',
+  label: 'Run',
+  description: 'Run the specfied Buck target',
+  enabled: true,
+  cancelable: false,
+  icon: 'triangle-right'
+}, {
+  type: 'test',
+  label: 'Test',
+  description: 'Test the specfied Buck target',
+  enabled: true,
+  cancelable: false,
+  icon: 'checklist'
+}, {
+  type: 'debug',
+  label: 'Debug',
+  description: 'Debug the specfied Buck target',
+  enabled: true,
+  cancelable: false,
+  icon: 'plug'
+}];
 
 module.exports = BuckToolbarStore;

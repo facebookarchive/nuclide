@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +10,6 @@
  * the root directory of this source tree.
  */
 
-import type {AbsolutePath} from '../types/common';
-
 /**
  * These are the options that are necessary to get a require out of a ModuleMap.
  */
-export type RequireOptions = {
-  sourcePath?: AbsolutePath;
-  typeImport?: boolean;
-  jsxIdentifier?: boolean;
-};

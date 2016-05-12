@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.jasmineIntegrationTestSetup = jasmineIntegrationTestSetup;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +11,41 @@
  * the root directory of this source tree.
  */
 
-import {dispatchKeyboardEvent} from './event';
-import {copyFixture, copyMercurialFixture, setLocalProject} from './fixtures';
-import {activateAllPackages, deactivateAllPackages} from './package-utils';
-import {addRemoteProject, startNuclideServer, stopNuclideServer} from './remote-utils';
-import {waitsForFile, waitsForFilePosition} from './waitsForFile';
+var _event2;
+
+function _event() {
+  return _event2 = require('./event');
+}
+
+var _fixtures2;
+
+function _fixtures() {
+  return _fixtures2 = require('./fixtures');
+}
+
+var _packageUtils2;
+
+function _packageUtils() {
+  return _packageUtils2 = require('./package-utils');
+}
+
+var _remoteUtils2;
+
+function _remoteUtils() {
+  return _remoteUtils2 = require('./remote-utils');
+}
+
+var _waitsForFile2;
+
+function _waitsForFile() {
+  return _waitsForFile2 = require('./waitsForFile');
+}
 
 // Smallish, yet realistic testing window dimensions.
-const TEST_WINDOW_HEIGHT = 600;
-const TEST_WINDOW_WIDTH = 1000;
+var TEST_WINDOW_HEIGHT = 600;
+var TEST_WINDOW_WIDTH = 1000;
 
-export function jasmineIntegrationTestSetup(): void {
+function jasmineIntegrationTestSetup() {
   // Allow jasmine to interact with the DOM.
   jasmine.attachToDOM(atom.views.getView(atom.workspace));
 
@@ -27,26 +53,21 @@ export function jasmineIntegrationTestSetup(): void {
   process.env.NO_BUCKD = '1';
 
   // Set the testing window dimensions.
-  const styleCSS = `
-    height: ${TEST_WINDOW_HEIGHT}px;
-    width: ${TEST_WINDOW_WIDTH}px;
-  `;
+  var styleCSS = '\n    height: ' + TEST_WINDOW_HEIGHT + 'px;\n    width: ' + TEST_WINDOW_WIDTH + 'px;\n  ';
   document.querySelector('#jasmine-content').setAttribute('style', styleCSS);
 
   // Unmock timer functions.
   jasmine.useRealClock();
 }
 
-export {
-  activateAllPackages,
-  addRemoteProject,
-  copyFixture,
-  copyMercurialFixture,
-  deactivateAllPackages,
-  dispatchKeyboardEvent,
-  setLocalProject,
-  startNuclideServer,
-  stopNuclideServer,
-  waitsForFile,
-  waitsForFilePosition,
-};
+exports.activateAllPackages = (_packageUtils2 || _packageUtils()).activateAllPackages;
+exports.addRemoteProject = (_remoteUtils2 || _remoteUtils()).addRemoteProject;
+exports.copyFixture = (_fixtures2 || _fixtures()).copyFixture;
+exports.copyMercurialFixture = (_fixtures2 || _fixtures()).copyMercurialFixture;
+exports.deactivateAllPackages = (_packageUtils2 || _packageUtils()).deactivateAllPackages;
+exports.dispatchKeyboardEvent = (_event2 || _event()).dispatchKeyboardEvent;
+exports.setLocalProject = (_fixtures2 || _fixtures()).setLocalProject;
+exports.startNuclideServer = (_remoteUtils2 || _remoteUtils()).startNuclideServer;
+exports.stopNuclideServer = (_remoteUtils2 || _remoteUtils()).stopNuclideServer;
+exports.waitsForFile = (_waitsForFile2 || _waitsForFile()).waitsForFile;
+exports.waitsForFilePosition = (_waitsForFile2 || _waitsForFile()).waitsForFilePosition;

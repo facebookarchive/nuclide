@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +10,25 @@
  * the root directory of this source tree.
  */
 
-import type {Provider} from '../../nuclide-quick-open';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-let providerInstance: ?Provider;
-function getProviderInstance(): Provider {
+exports.registerProvider = registerProvider;
+exports.activate = activate;
+exports.deactivate = deactivate;
+
+var providerInstance = undefined;
+function getProviderInstance() {
   if (providerInstance == null) {
-    const OpenFileNameProvider = require('./OpenFileNameProvider');
-    providerInstance = {...OpenFileNameProvider};
+    var OpenFileNameProvider = require('./OpenFileNameProvider');
+    providerInstance = _extends({}, OpenFileNameProvider);
   }
   return providerInstance;
 }
 
-export function registerProvider(): Provider {
+function registerProvider() {
   return getProviderInstance();
 }
 
-export function activate(state: ?Object) {
+function activate(state) {}
 
-}
-
-export function deactivate() {
-
-}
+function deactivate() {}

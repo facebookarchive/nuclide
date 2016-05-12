@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,132 +12,166 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import {RemoteConnection} from '../../nuclide-remote-connection';
-import {React, ReactDOM} from 'react-for-atom';
-import {CompositeDisposable, Disposable} from 'atom';
-import StatusBarTile from './ui/StatusBarTile';
-import remoteUri from '../../nuclide-remote-uri';
-import ConnectionState from './ConnectionState';
-import {atomEventDebounce} from '../../nuclide-atom-helpers';
+var _assert2;
 
-class RemoteProjectsController {
-  _disposables: CompositeDisposable;
-  _statusBarDiv: ?HTMLElement;
-  _statusBarTile: ?StatusBarTile;
-  _statusSubscription: ?IDisposable;
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
-  constructor() {
+var _nuclideRemoteConnection2;
+
+function _nuclideRemoteConnection() {
+  return _nuclideRemoteConnection2 = require('../../nuclide-remote-connection');
+}
+
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _uiStatusBarTile2;
+
+function _uiStatusBarTile() {
+  return _uiStatusBarTile2 = _interopRequireDefault(require('./ui/StatusBarTile'));
+}
+
+var _nuclideRemoteUri2;
+
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = _interopRequireDefault(require('../../nuclide-remote-uri'));
+}
+
+var _ConnectionState2;
+
+function _ConnectionState() {
+  return _ConnectionState2 = _interopRequireDefault(require('./ConnectionState'));
+}
+
+var _nuclideAtomHelpers2;
+
+function _nuclideAtomHelpers() {
+  return _nuclideAtomHelpers2 = require('../../nuclide-atom-helpers');
+}
+
+var RemoteProjectsController = (function () {
+  function RemoteProjectsController() {
+    _classCallCheck(this, RemoteProjectsController);
+
     this._statusBarTile = null;
-    this._disposables = new CompositeDisposable();
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable();
 
     this._statusSubscription = null;
-    this._disposables.add(
-      atom.workspace.onDidChangeActivePaneItem(this._disposeSubscription.bind(this)),
-      atomEventDebounce.onWorkspaceDidStopChangingActivePaneItem(
-        this._updateConnectionStatus.bind(this)
-      )
-    );
+    this._disposables.add(atom.workspace.onDidChangeActivePaneItem(this._disposeSubscription.bind(this)), (_nuclideAtomHelpers2 || _nuclideAtomHelpers()).atomEventDebounce.onWorkspaceDidStopChangingActivePaneItem(this._updateConnectionStatus.bind(this)));
   }
 
-  _disposeSubscription(): void {
-    const subscription = this._statusSubscription;
-    if (subscription) {
-      this._disposables.remove(subscription);
-      subscription.dispose();
-      this._statusSubscription = null;
-    }
-  }
-
-  _updateConnectionStatus(paneItem: Object): void {
-    this._disposeSubscription();
-
-    if (!atom.workspace.isTextEditor(paneItem)) {
-      this._renderStatusBar(ConnectionState.NONE);
-      return;
-    }
-    const textEditor = paneItem;
-    const fileUri = textEditor.getPath();
-    if (!fileUri) {
-      return;
-    }
-    if (remoteUri.isLocal(fileUri)) {
-      this._renderStatusBar(ConnectionState.LOCAL, fileUri);
-      return;
-    }
-
-    const updateStatus = isConnected => {
-      this._renderStatusBar(
-        isConnected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED,
-        fileUri,
-      );
-    };
-
-    const connection = RemoteConnection.getForUri(fileUri);
-    if (connection == null) {
-      updateStatus(false);
-      return;
-    }
-
-    const socket = connection.getConnection().getSocket();
-    updateStatus(socket.isConnected());
-
-
-    this._statusSubscription = socket.onStatus(updateStatus);
-    this._disposables.add(this._statusSubscription);
-  }
-
-  consumeStatusBar(statusBar: atom$StatusBar): void {
-    this._statusBarDiv = document.createElement('div');
-    this._statusBarDiv.className = 'nuclide-remote-projects inline-block';
-
-    const tooltip = atom.tooltips.add(
-      this._statusBarDiv,
-      {title: 'Click to show details of connection.'}
-    );
-    invariant(this._statusBarDiv);
-    const rightTile = statusBar.addLeftTile({
-      item: this._statusBarDiv,
-      priority: -99,
-    });
-
-    this._disposables.add(new Disposable(() => {
-      invariant(this._statusBarDiv);
-      const parentNode = this._statusBarDiv.parentNode;
-      if (parentNode) {
-        parentNode.removeChild(this._statusBarDiv);
+  _createClass(RemoteProjectsController, [{
+    key: '_disposeSubscription',
+    value: function _disposeSubscription() {
+      var subscription = this._statusSubscription;
+      if (subscription) {
+        this._disposables.remove(subscription);
+        subscription.dispose();
+        this._statusSubscription = null;
       }
-      ReactDOM.unmountComponentAtNode(this._statusBarDiv);
-      this._statusBarDiv = null;
-      rightTile.destroy();
-      tooltip.dispose();
-    }));
-
-    const textEditor = atom.workspace.getActiveTextEditor();
-    if (textEditor != null) {
-      this._updateConnectionStatus(textEditor);
     }
-  }
+  }, {
+    key: '_updateConnectionStatus',
+    value: function _updateConnectionStatus(paneItem) {
+      var _this = this;
 
-  _renderStatusBar(connectionState: number, fileUri?: string): void {
-    if (!this._statusBarDiv) {
-      return;
+      this._disposeSubscription();
+
+      if (!atom.workspace.isTextEditor(paneItem)) {
+        this._renderStatusBar((_ConnectionState2 || _ConnectionState()).default.NONE);
+        return;
+      }
+      var textEditor = paneItem;
+      var fileUri = textEditor.getPath();
+      if (!fileUri) {
+        return;
+      }
+      if ((_nuclideRemoteUri2 || _nuclideRemoteUri()).default.isLocal(fileUri)) {
+        this._renderStatusBar((_ConnectionState2 || _ConnectionState()).default.LOCAL, fileUri);
+        return;
+      }
+
+      var updateStatus = function updateStatus(isConnected) {
+        _this._renderStatusBar(isConnected ? (_ConnectionState2 || _ConnectionState()).default.CONNECTED : (_ConnectionState2 || _ConnectionState()).default.DISCONNECTED, fileUri);
+      };
+
+      var connection = (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).RemoteConnection.getForUri(fileUri);
+      if (connection == null) {
+        updateStatus(false);
+        return;
+      }
+
+      var socket = connection.getConnection().getSocket();
+      updateStatus(socket.isConnected());
+
+      this._statusSubscription = socket.onStatus(updateStatus);
+      this._disposables.add(this._statusSubscription);
     }
+  }, {
+    key: 'consumeStatusBar',
+    value: function consumeStatusBar(statusBar) {
+      var _this2 = this;
 
-    const component = ReactDOM.render(
-      <StatusBarTile
-        connectionState={connectionState}
-        fileUri={fileUri}
-      />,
-      this._statusBarDiv,
-    );
-    invariant(component instanceof StatusBarTile);
-    this._statusBarTile = component;
-  }
+      this._statusBarDiv = document.createElement('div');
+      this._statusBarDiv.className = 'nuclide-remote-projects inline-block';
 
-  destroy(): void {
-    this._disposables.dispose();
-  }
-}
+      var tooltip = atom.tooltips.add(this._statusBarDiv, { title: 'Click to show details of connection.' });
+      (0, (_assert2 || _assert()).default)(this._statusBarDiv);
+      var rightTile = statusBar.addLeftTile({
+        item: this._statusBarDiv,
+        priority: -99
+      });
+
+      this._disposables.add(new (_atom2 || _atom()).Disposable(function () {
+        (0, (_assert2 || _assert()).default)(_this2._statusBarDiv);
+        var parentNode = _this2._statusBarDiv.parentNode;
+        if (parentNode) {
+          parentNode.removeChild(_this2._statusBarDiv);
+        }
+        (_reactForAtom2 || _reactForAtom()).ReactDOM.unmountComponentAtNode(_this2._statusBarDiv);
+        _this2._statusBarDiv = null;
+        rightTile.destroy();
+        tooltip.dispose();
+      }));
+
+      var textEditor = atom.workspace.getActiveTextEditor();
+      if (textEditor != null) {
+        this._updateConnectionStatus(textEditor);
+      }
+    }
+  }, {
+    key: '_renderStatusBar',
+    value: function _renderStatusBar(connectionState, fileUri) {
+      if (!this._statusBarDiv) {
+        return;
+      }
+
+      var component = (_reactForAtom2 || _reactForAtom()).ReactDOM.render((_reactForAtom2 || _reactForAtom()).React.createElement((_uiStatusBarTile2 || _uiStatusBarTile()).default, {
+        connectionState: connectionState,
+        fileUri: fileUri
+      }), this._statusBarDiv);
+      (0, (_assert2 || _assert()).default)(component instanceof (_uiStatusBarTile2 || _uiStatusBarTile()).default);
+      this._statusBarTile = component;
+    }
+  }, {
+    key: 'destroy',
+    value: function destroy() {
+      this._disposables.dispose();
+    }
+  }]);
+
+  return RemoteProjectsController;
+})();
 
 module.exports = RemoteProjectsController;

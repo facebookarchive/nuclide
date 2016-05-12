@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,42 +8,35 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {TryStatement} from 'ast-types-flow';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import markers from '../../constants/markers';
-import wrapStatement from '../../wrappers/simple/wrapStatement';
+var _constantsMarkers2;
 
-function printTryStatement(print: Print, node: TryStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
 
-  let parts = [
-    markers.hardBreak,
-    'try',
-    markers.noBreak,
-    markers.space,
-    print(node.block),
-  ];
+var _wrappersSimpleWrapStatement2;
+
+function _wrappersSimpleWrapStatement() {
+  return _wrappersSimpleWrapStatement2 = _interopRequireDefault(require('../../wrappers/simple/wrapStatement'));
+}
+
+function printTryStatement(print, node) {
+  var wrap = function wrap(x) {
+    return (0, (_wrappersSimpleWrapStatement2 || _wrappersSimpleWrapStatement()).default)(print, node, x);
+  };
+
+  var parts = [(_constantsMarkers2 || _constantsMarkers()).default.hardBreak, 'try', (_constantsMarkers2 || _constantsMarkers()).default.noBreak, (_constantsMarkers2 || _constantsMarkers()).default.space, print(node.block)];
 
   if (node.handler) {
-    const handler = node.handler;
-    parts = parts.concat([
-      markers.noBreak,
-      markers.space,
-      print(handler),
-    ]);
+    var handler = node.handler;
+    parts = parts.concat([(_constantsMarkers2 || _constantsMarkers()).default.noBreak, (_constantsMarkers2 || _constantsMarkers()).default.space, print(handler)]);
   }
 
   if (node.finalizer) {
-    const finalizer = node.finalizer;
-    parts = parts.concat([
-      markers.noBreak,
-      markers.space,
-      'finally',
-      markers.noBreak,
-      markers.space,
-      print(finalizer),
-    ]);
+    var finalizer = node.finalizer;
+    parts = parts.concat([(_constantsMarkers2 || _constantsMarkers()).default.noBreak, (_constantsMarkers2 || _constantsMarkers()).default.space, 'finally', (_constantsMarkers2 || _constantsMarkers()).default.noBreak, (_constantsMarkers2 || _constantsMarkers()).default.space, print(finalizer)]);
   }
 
   return wrap(parts);

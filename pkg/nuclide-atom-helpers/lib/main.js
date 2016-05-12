@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -10,8 +11,8 @@
  */
 
 // It's impactful to memoize our requires here since these commons are so often used.
-const requireCache: {[id: string]: any} = {};
-function requireFromCache(id: string): any {
+var requireCache = {};
+function requireFromCache(id) {
   if (!requireCache.hasOwnProperty(id)) {
     // $FlowIgnore
     requireCache[id] = require(id);
@@ -21,139 +22,230 @@ function requireFromCache(id: string): any {
 
 // A map of targets to command maps. We use an object (instead of a Map) to be more consistent with
 // Atom's API. See <https://atom.io/docs/api/v1.2.0/CommandRegistry#instance-add>
-export type AtomCommands = {
-  [target: string]: {
-    [commandName: string]: (event: Event) => mixed;
-  };
-};
 
-module.exports = {
-  get projects() {
-    return requireFromCache('./projects');
+module.exports = Object.defineProperties({}, {
+  projects: {
+    get: function get() {
+      return requireFromCache('./projects');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get atomEventDebounce() {
-    return requireFromCache('./atom-event-debounce');
+  atomEventDebounce: {
+    get: function get() {
+      return requireFromCache('./atom-event-debounce');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get browser() {
-    return requireFromCache('./browser');
+  browser: {
+    get: function get() {
+      return requireFromCache('./browser');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get createScriptBufferedProcessWithEnv() {
-    return requireFromCache('./script-buffered-process').createScriptBufferedProcessWithEnv;
+  createScriptBufferedProcessWithEnv: {
+    get: function get() {
+      return requireFromCache('./script-buffered-process').createScriptBufferedProcessWithEnv;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get createPaneContainer() {
-    return requireFromCache('./create-pane-container');
+  createPaneContainer: {
+    get: function get() {
+      return requireFromCache('./create-pane-container');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get existingEditorForUri() {
-    return requireFromCache('./text-editor').existingEditorForUri;
+  existingEditorForUri: {
+    get: function get() {
+      return requireFromCache('./text-editor').existingEditorForUri;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get existingBufferForUri() {
-    return requireFromCache('./text-editor').existingBufferForUri;
+  existingBufferForUri: {
+    get: function get() {
+      return requireFromCache('./text-editor').existingBufferForUri;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get bufferForUri() {
-    return requireFromCache('./text-editor').bufferForUri;
+  bufferForUri: {
+    get: function get() {
+      return requireFromCache('./text-editor').bufferForUri;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get formatEnoentNotification() {
-    return requireFromCache('./format-enoent-notification').formatEnoentNotification;
+  formatEnoentNotification: {
+    get: function get() {
+      return requireFromCache('./format-enoent-notification').formatEnoentNotification;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get loadBufferForUri() {
-    return requireFromCache('./text-editor').loadBufferForUri;
+  loadBufferForUri: {
+    get: function get() {
+      return requireFromCache('./text-editor').loadBufferForUri;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get destroyPaneItemWithTitle() {
-    return requireFromCache('./destroy-pane-item');
+  destroyPaneItemWithTitle: {
+    get: function get() {
+      return requireFromCache('./destroy-pane-item');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get fileTypeClass() {
-    return requireFromCache('./file-type-class');
+  fileTypeClass: {
+    get: function get() {
+      return requireFromCache('./file-type-class');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get goToLocation() {
-    return requireFromCache('./go-to-location').goToLocation;
+  goToLocation: {
+    get: function get() {
+      return requireFromCache('./go-to-location').goToLocation;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get goToLocationInEditor() {
-    return requireFromCache('./go-to-location').goToLocationInEditor;
+  goToLocationInEditor: {
+    get: function get() {
+      return requireFromCache('./go-to-location').goToLocationInEditor;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get observeNavigatingEditors() {
-    return requireFromCache('./go-to-location').observeNavigatingEditors;
+  observeNavigatingEditors: {
+    get: function get() {
+      return requireFromCache('./go-to-location').observeNavigatingEditors;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get getPathToWorkspaceState() {
-    return requireFromCache('./workspace').getPathToWorkspaceState;
+  getPathToWorkspaceState: {
+    get: function get() {
+      return requireFromCache('./workspace').getPathToWorkspaceState;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get activatePaneItem() {
-    return requireFromCache('./workspace').activatePaneItem;
+  activatePaneItem: {
+    get: function get() {
+      return requireFromCache('./workspace').activatePaneItem;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get setPositionAndScroll() {
-    return requireFromCache('./text-editor').setPositionAndScroll;
+  setPositionAndScroll: {
+    get: function get() {
+      return requireFromCache('./text-editor').setPositionAndScroll;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get getViewOfEditor() {
-    return requireFromCache('./text-editor').getViewOfEditor;
+  getViewOfEditor: {
+    get: function get() {
+      return requireFromCache('./text-editor').getViewOfEditor;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get getScrollTop() {
-    return requireFromCache('./text-editor').getScrollTop;
+  getScrollTop: {
+    get: function get() {
+      return requireFromCache('./text-editor').getScrollTop;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get getCursorPositions() {
-    return requireFromCache('./text-editor').getCursorPositions;
+  getCursorPositions: {
+    get: function get() {
+      return requireFromCache('./text-editor').getCursorPositions;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get setScrollTop() {
-    return requireFromCache('./text-editor').setScrollTop;
+  setScrollTop: {
+    get: function get() {
+      return requireFromCache('./text-editor').setScrollTop;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get extractWordAtPosition() {
-    return requireFromCache('./extract-word-at-position');
+  extractWordAtPosition: {
+    get: function get() {
+      return requireFromCache('./extract-word-at-position');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get mouseListenerForTextEditor() {
-    return requireFromCache('./mouse-listener-for-text-editor');
+  mouseListenerForTextEditor: {
+    get: function get() {
+      return requireFromCache('./mouse-listener-for-text-editor');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get observeLanguageTextEditors() {
-    return requireFromCache('./observe-language-text-editors');
+  observeLanguageTextEditors: {
+    get: function get() {
+      return requireFromCache('./observe-language-text-editors');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get observeGrammarForTextEditors() {
-    return requireFromCache('./observe-grammar-for-text-editors');
+  observeGrammarForTextEditors: {
+    get: function get() {
+      return requireFromCache('./observe-grammar-for-text-editors');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get registerGrammarForFileExtension() {
-    return requireFromCache('./register-grammar-for-file-extension');
+  registerGrammarForFileExtension: {
+    get: function get() {
+      return requireFromCache('./register-grammar-for-file-extension');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get withLoadingNotification() {
-    return requireFromCache('./with-loading-notification');
+  withLoadingNotification: {
+    get: function get() {
+      return requireFromCache('./with-loading-notification');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get onWillDestroyTextBuffer(): (callback: (buffer: atom$TextBuffer) => mixed) => IDisposable {
-    return requireFromCache('./on-will-destroy-text-buffer');
+  onWillDestroyTextBuffer: {
+    get: function get() {
+      return requireFromCache('./on-will-destroy-text-buffer');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get addTooltip() {
-    return requireFromCache('./tooltip').addTooltip;
+  addTooltip: {
+    get: function get() {
+      return requireFromCache('./tooltip').addTooltip;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get getUiTreePathFromTargetEvent() {
-    return requireFromCache('./ui-tree-path').getUiTreePathFromTargetEvent;
+  getUiTreePathFromTargetEvent: {
+    get: function get() {
+      return requireFromCache('./ui-tree-path').getUiTreePathFromTargetEvent;
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get syncAtomCommands() {
-    return requireFromCache('./sync-atom-commands').syncAtomCommands;
-  },
-
-};
+  syncAtomCommands: {
+    get: function get() {
+      return requireFromCache('./sync-atom-commands').syncAtomCommands;
+    },
+    configurable: true,
+    enumerable: true
+  }
+});

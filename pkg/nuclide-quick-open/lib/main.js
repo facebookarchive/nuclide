@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,103 +10,180 @@
  * the root directory of this source tree.
  */
 
-import type {Provider} from './types';
-import type {HomeFragments} from '../../nuclide-home';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-export {
-  DirectoryName,
-  FileResult,
-  GroupedResult,
-  Provider,
-  ProviderResult,
-  ProviderSpec,
-  ProviderType,
-  ServiceName,
-  Store,
-} from './types';
+exports.activate = activate;
+exports.registerProvider = registerProvider;
+exports.registerStore = registerStore;
+exports.getHomeFragments = getHomeFragments;
+exports.deactivate = deactivate;
 
-import invariant from 'assert';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
-import QuickSelectionComponent from './QuickSelectionComponent';
-import {CompositeDisposable} from 'atom';
-import featureConfig from '../../nuclide-feature-config';
-import {track} from '../../nuclide-analytics';
-import {debounce} from '../../nuclide-commons';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _types = require('./types');
+
+Object.defineProperty(exports, 'DirectoryName', {
+  enumerable: true,
+  get: function get() {
+    return _types.DirectoryName;
+  }
+});
+Object.defineProperty(exports, 'FileResult', {
+  enumerable: true,
+  get: function get() {
+    return _types.FileResult;
+  }
+});
+Object.defineProperty(exports, 'GroupedResult', {
+  enumerable: true,
+  get: function get() {
+    return _types.GroupedResult;
+  }
+});
+Object.defineProperty(exports, 'Provider', {
+  enumerable: true,
+  get: function get() {
+    return _types.Provider;
+  }
+});
+Object.defineProperty(exports, 'ProviderResult', {
+  enumerable: true,
+  get: function get() {
+    return _types.ProviderResult;
+  }
+});
+Object.defineProperty(exports, 'ProviderSpec', {
+  enumerable: true,
+  get: function get() {
+    return _types.ProviderSpec;
+  }
+});
+Object.defineProperty(exports, 'ProviderType', {
+  enumerable: true,
+  get: function get() {
+    return _types.ProviderType;
+  }
+});
+Object.defineProperty(exports, 'ServiceName', {
+  enumerable: true,
+  get: function get() {
+    return _types.ServiceName;
+  }
+});
+Object.defineProperty(exports, 'Store', {
+  enumerable: true,
+  get: function get() {
+    return _types.Store;
+  }
+});
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _QuickSelectionComponent2;
+
+function _QuickSelectionComponent() {
+  return _QuickSelectionComponent2 = _interopRequireDefault(require('./QuickSelectionComponent'));
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _nuclideFeatureConfig2;
+
+function _nuclideFeatureConfig() {
+  return _nuclideFeatureConfig2 = _interopRequireDefault(require('../../nuclide-feature-config'));
+}
+
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+var _nuclideCommons2;
+
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../../nuclide-commons');
+}
 
 function getSearchResultManager() {
   return require('./SearchResultManager').default.getInstance();
 }
 
-const DEFAULT_PROVIDER = 'OmniSearchResultProvider';
-const TOPBAR_APPROX_HEIGHT = 100; // A reasonable heuristic that prevents us from having to measure.
-const MODAL_MARGIN = 32;
+var DEFAULT_PROVIDER = 'OmniSearchResultProvider';
+var TOPBAR_APPROX_HEIGHT = 100; // A reasonable heuristic that prevents us from having to measure.
+var MODAL_MARGIN = 32;
 // don't pre-fill search input if selection is longer than this
-const MAX_SELECTION_LENGTH = 1000;
+var MAX_SELECTION_LENGTH = 1000;
 
 /**
  * A "session" for the purpose of analytics. It exists from the moment the quick-open UI becomes
  * visible until it gets closed, either via file selection or cancellation.
  */
-let analyticsSessionId = null;
-const AnalyticsEvents = Object.freeze({
+var analyticsSessionId = null;
+var AnalyticsEvents = Object.freeze({
   CHANGE_SELECTION: 'quickopen-change-selection',
   CHANGE_TAB: 'quickopen-change-tab',
   CLOSE_PANEL: 'quickopen-close-panel',
   OPEN_PANEL: 'quickopen-open-panel',
-  SELECT_FILE: 'quickopen-select-file',
+  SELECT_FILE: 'quickopen-select-file'
 });
-const AnalyticsDebounceDelays = Object.freeze({
+var AnalyticsDebounceDelays = Object.freeze({
   CHANGE_TAB: 100,
-  CHANGE_SELECTION: 100,
+  CHANGE_SELECTION: 100
 });
 
-const trackProviderChange = debounce(providerName => {
+var trackProviderChange = (0, (_nuclideCommons2 || _nuclideCommons()).debounce)(function (providerName) {
   analyticsSessionId = analyticsSessionId || Date.now().toString();
-  track(
-    AnalyticsEvents.CHANGE_TAB,
-    {
-      'quickopen-provider': providerName,
-      'quickopen-session': analyticsSessionId,
-    }
-  );
+  (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)(AnalyticsEvents.CHANGE_TAB, {
+    'quickopen-provider': providerName,
+    'quickopen-session': analyticsSessionId
+  });
 }, AnalyticsDebounceDelays.CHANGE_TAB);
 
-class Activation {
-  _currentProvider: Object;
-  _previousFocus: ?HTMLElement;
-  _reactDiv: HTMLElement;
-  _searchComponent: QuickSelectionComponent;
-  _searchPanel: atom$Panel;
-  _subscriptions: atom$CompositeDisposable;
-  _debouncedUpdateModalPosition: () => void;
-  _maxScrollableAreaHeight: number;
+var Activation = (function () {
+  function Activation() {
+    var _this = this;
 
-  constructor() {
+    _classCallCheck(this, Activation);
+
     this._previousFocus = null;
     this._maxScrollableAreaHeight = 10000;
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new (_atom2 || _atom()).CompositeDisposable();
     this._currentProvider = getSearchResultManager().getProviderByName(DEFAULT_PROVIDER);
-    const QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
-    QuickSelectionDispatcher.getInstance().register(action => {
+    var QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
+    QuickSelectionDispatcher.getInstance().register(function (action) {
       if (action.actionType === QuickSelectionDispatcher.ActionType.ACTIVE_PROVIDER_CHANGED) {
-        this.toggleProvider(action.providerName);
-        this._render();
+        _this.toggleProvider(action.providerName);
+        _this._render();
       }
     });
     this._reactDiv = document.createElement('div');
-    this._searchPanel = atom.workspace.addModalPanel({item: this._reactDiv, visible: false});
-    this._debouncedUpdateModalPosition = debounce(this._updateScrollableHeight.bind(this), 200);
+    this._searchPanel = atom.workspace.addModalPanel({ item: this._reactDiv, visible: false });
+    this._debouncedUpdateModalPosition = (0, (_nuclideCommons2 || _nuclideCommons()).debounce)(this._updateScrollableHeight.bind(this), 200);
     window.addEventListener('resize', this._debouncedUpdateModalPosition);
     this._customizeModalElement();
     this._updateScrollableHeight();
 
     this._searchComponent = this._render();
 
-    this._searchComponent.onSelection(selection => {
-      const options = {};
+    this._searchComponent.onSelection(function (selection) {
+      var options = {};
       if (selection.line) {
         options.initialLine = selection.line;
       }
@@ -113,219 +191,213 @@ class Activation {
         options.initialColumn = selection.column;
       }
 
-      atom.workspace.open(selection.path, options).then(textEditor => {
+      atom.workspace.open(selection.path, options).then(function (textEditor) {
         atom.commands.dispatch(atom.views.getView(textEditor), 'tabs:keep-preview-tab');
       });
 
-      const query = this._searchComponent.getInputTextEditor().textContent;
-      const providerName = this._currentProvider.name;
+      var query = _this._searchComponent.getInputTextEditor().textContent;
+      var providerName = _this._currentProvider.name;
       // default to empty string because `track` enforces string-only values
-      const sourceProvider = selection.sourceProvider || '';
-      track(
-        AnalyticsEvents.SELECT_FILE,
-        {
-          'quickopen-filepath': selection.path,
-          'quickopen-query': query,
-          'quickopen-provider': providerName, // The currently open "tab".
-          'quickopen-session': analyticsSessionId || '',
-          // Because the `provider` is usually OmniSearch, also track the original provider.
-          'quickopen-provider-source': sourceProvider,
-        }
-      );
-      this.closeSearchPanel();
+      var sourceProvider = selection.sourceProvider || '';
+      (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)(AnalyticsEvents.SELECT_FILE, {
+        'quickopen-filepath': selection.path,
+        'quickopen-query': query,
+        'quickopen-provider': providerName, // The currently open "tab".
+        'quickopen-session': analyticsSessionId || '',
+        // Because the `provider` is usually OmniSearch, also track the original provider.
+        'quickopen-provider-source': sourceProvider
+      });
+      _this.closeSearchPanel();
     });
 
-    this._subscriptions.add(
-      atom.commands.add('body', 'core:cancel', () => {
-        if (this._searchPanel && this._searchPanel.isVisible()) {
-          this.closeSearchPanel();
-        }
-      })
-    );
+    this._subscriptions.add(atom.commands.add('body', 'core:cancel', function () {
+      if (_this._searchPanel && _this._searchPanel.isVisible()) {
+        _this.closeSearchPanel();
+      }
+    }));
 
-    this._searchComponent.onCancellation(() => this.closeSearchPanel());
-    this._searchComponent.onSelectionChanged(debounce((selection: any) => {
+    this._searchComponent.onCancellation(function () {
+      return _this.closeSearchPanel();
+    });
+    this._searchComponent.onSelectionChanged((0, (_nuclideCommons2 || _nuclideCommons()).debounce)(function (selection) {
       // Only track user-initiated selection-change events.
       if (analyticsSessionId != null) {
-        track(
-          AnalyticsEvents.CHANGE_SELECTION,
-          {
-            'quickopen-selected-index': selection.selectedItemIndex.toString(),
-            'quickopen-selected-service': selection.selectedService,
-            'quickopen-selected-directory': selection.selectedDirectory,
-            'quickopen-session': analyticsSessionId,
-          }
-        );
+        (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)(AnalyticsEvents.CHANGE_SELECTION, {
+          'quickopen-selected-index': selection.selectedItemIndex.toString(),
+          'quickopen-selected-service': selection.selectedService,
+          'quickopen-selected-directory': selection.selectedDirectory,
+          'quickopen-session': analyticsSessionId
+        });
       }
     }, AnalyticsDebounceDelays.CHANGE_SELECTION));
   }
 
   // Customize the element containing the modal.
-  _customizeModalElement() {
-    const modalElement = ((this._searchPanel.getItem().parentNode: any): HTMLElement);
-    modalElement.style.setProperty('margin-left', '0');
-    modalElement.style.setProperty('max-width', 'none');
-    modalElement.style.setProperty('position', 'absolute');
-    modalElement.style.setProperty('width', 'auto');
-    modalElement.style.setProperty('left', MODAL_MARGIN + 'px');
-    modalElement.style.setProperty('right', MODAL_MARGIN + 'px');
-  }
 
-  _updateScrollableHeight() {
-    const {height} = document.documentElement.getBoundingClientRect();
-    this._maxScrollableAreaHeight = height - MODAL_MARGIN - TOPBAR_APPROX_HEIGHT;
-    // Force a re-render to update _maxScrollableAreaHeight.
-    this._searchComponent = this._render();
-  }
-
-  _render(): QuickSelectionComponent {
-    const component = ReactDOM.render(
-      <QuickSelectionComponent
-        activeProvider={this._currentProvider}
-        onProviderChange={this.handleActiveProviderChange.bind(this)}
-        maxScrollableAreaHeight={this._maxScrollableAreaHeight}
-      />,
-      this._reactDiv
-    );
-    invariant(component instanceof QuickSelectionComponent);
-    return component;
-  }
-
-  handleActiveProviderChange(newProviderName: string): void {
-    trackProviderChange(newProviderName);
-    this._currentProvider = getSearchResultManager().getProviderByName(newProviderName);
-    this._searchComponent = this._render();
-  }
-
-  toggleOmniSearchProvider(): void {
-    require('./QuickSelectionActions').changeActiveProvider('OmniSearchResultProvider');
-  }
-
-  toggleProvider(providerName: string) {
-    analyticsSessionId = analyticsSessionId || Date.now().toString();
-    track(
-      AnalyticsEvents.CHANGE_TAB,
-      {
-        'quickopen-provider': providerName,
-        'quickopen-session': analyticsSessionId,
-      }
-    );
-    const provider = getSearchResultManager().getProviderByName(providerName);
-    // "toggle" behavior
-    if (
-      this._searchPanel !== null &&
-      this._searchPanel.isVisible() &&
-      providerName === this._currentProvider.name
-    ) {
-      this.closeSearchPanel();
-      return;
+  _createClass(Activation, [{
+    key: '_customizeModalElement',
+    value: function _customizeModalElement() {
+      var modalElement = this._searchPanel.getItem().parentNode;
+      modalElement.style.setProperty('margin-left', '0');
+      modalElement.style.setProperty('max-width', 'none');
+      modalElement.style.setProperty('position', 'absolute');
+      modalElement.style.setProperty('width', 'auto');
+      modalElement.style.setProperty('left', MODAL_MARGIN + 'px');
+      modalElement.style.setProperty('right', MODAL_MARGIN + 'px');
     }
+  }, {
+    key: '_updateScrollableHeight',
+    value: function _updateScrollableHeight() {
+      var _document$documentElement$getBoundingClientRect = document.documentElement.getBoundingClientRect();
 
-    this._currentProvider = provider;
-    if (this._searchComponent) {
+      var height = _document$documentElement$getBoundingClientRect.height;
+
+      this._maxScrollableAreaHeight = height - MODAL_MARGIN - TOPBAR_APPROX_HEIGHT;
+      // Force a re-render to update _maxScrollableAreaHeight.
       this._searchComponent = this._render();
     }
-    this.showSearchPanel();
-  }
-
-  showSearchPanel() {
-    this._previousFocus = document.activeElement;
-    if (this._searchComponent && this._searchPanel) {
-      // Start a new search "session" for analytics purposes.
-      track(
-        AnalyticsEvents.OPEN_PANEL,
-        {
-          'quickopen-session': analyticsSessionId || '',
-        }
-      );
-      // showSearchPanel gets called when changing providers even if it's already shown.
-      const isAlreadyVisible = this._searchPanel.isVisible();
-      this._searchPanel.show();
-      this._searchComponent.focus();
-      if (featureConfig.get('nuclide-quick-open.useSelection') && !isAlreadyVisible) {
-        const selectedText = this._getFirstSelectionText();
-        if (selectedText && selectedText.length <= MAX_SELECTION_LENGTH) {
-          this._searchComponent.setInputValue(selectedText.split('\n')[0]);
-        }
+  }, {
+    key: '_render',
+    value: function _render() {
+      var component = (_reactForAtom2 || _reactForAtom()).ReactDOM.render((_reactForAtom2 || _reactForAtom()).React.createElement((_QuickSelectionComponent2 || _QuickSelectionComponent()).default, {
+        activeProvider: this._currentProvider,
+        onProviderChange: this.handleActiveProviderChange.bind(this),
+        maxScrollableAreaHeight: this._maxScrollableAreaHeight
+      }), this._reactDiv);
+      (0, (_assert2 || _assert()).default)(component instanceof (_QuickSelectionComponent2 || _QuickSelectionComponent()).default);
+      return component;
+    }
+  }, {
+    key: 'handleActiveProviderChange',
+    value: function handleActiveProviderChange(newProviderName) {
+      trackProviderChange(newProviderName);
+      this._currentProvider = getSearchResultManager().getProviderByName(newProviderName);
+      this._searchComponent = this._render();
+    }
+  }, {
+    key: 'toggleOmniSearchProvider',
+    value: function toggleOmniSearchProvider() {
+      require('./QuickSelectionActions').changeActiveProvider('OmniSearchResultProvider');
+    }
+  }, {
+    key: 'toggleProvider',
+    value: function toggleProvider(providerName) {
+      analyticsSessionId = analyticsSessionId || Date.now().toString();
+      (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)(AnalyticsEvents.CHANGE_TAB, {
+        'quickopen-provider': providerName,
+        'quickopen-session': analyticsSessionId
+      });
+      var provider = getSearchResultManager().getProviderByName(providerName);
+      // "toggle" behavior
+      if (this._searchPanel !== null && this._searchPanel.isVisible() && providerName === this._currentProvider.name) {
+        this.closeSearchPanel();
+        return;
       }
-      this._searchComponent.selectInput();
-    }
-  }
 
-  closeSearchPanel() {
-    if (this._searchComponent && this._searchPanel) {
-      track(
-        AnalyticsEvents.CLOSE_PANEL,
-        {
-          'quickopen-session': analyticsSessionId || '',
+      this._currentProvider = provider;
+      if (this._searchComponent) {
+        this._searchComponent = this._render();
+      }
+      this.showSearchPanel();
+    }
+  }, {
+    key: 'showSearchPanel',
+    value: function showSearchPanel() {
+      this._previousFocus = document.activeElement;
+      if (this._searchComponent && this._searchPanel) {
+        // Start a new search "session" for analytics purposes.
+        (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)(AnalyticsEvents.OPEN_PANEL, {
+          'quickopen-session': analyticsSessionId || ''
+        });
+        // showSearchPanel gets called when changing providers even if it's already shown.
+        var isAlreadyVisible = this._searchPanel.isVisible();
+        this._searchPanel.show();
+        this._searchComponent.focus();
+        if ((_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get('nuclide-quick-open.useSelection') && !isAlreadyVisible) {
+          var selectedText = this._getFirstSelectionText();
+          if (selectedText && selectedText.length <= MAX_SELECTION_LENGTH) {
+            this._searchComponent.setInputValue(selectedText.split('\n')[0]);
+          }
         }
-      );
-      this._searchPanel.hide();
-      this._searchComponent.blur();
-      analyticsSessionId = null;
+        this._searchComponent.selectInput();
+      }
     }
+  }, {
+    key: 'closeSearchPanel',
+    value: function closeSearchPanel() {
+      if (this._searchComponent && this._searchPanel) {
+        (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)(AnalyticsEvents.CLOSE_PANEL, {
+          'quickopen-session': analyticsSessionId || ''
+        });
+        this._searchPanel.hide();
+        this._searchComponent.blur();
+        analyticsSessionId = null;
+      }
 
-    if (this._previousFocus != null) {
-      this._previousFocus.focus();
-      this._previousFocus = null;
+      if (this._previousFocus != null) {
+        this._previousFocus.focus();
+        this._previousFocus = null;
+      }
     }
-  }
-
-  _getFirstSelectionText(): ?string {
-    const editor = atom.workspace.getActiveTextEditor();
-    if (editor) {
-      return editor.getSelections()[0].getText();
+  }, {
+    key: '_getFirstSelectionText',
+    value: function _getFirstSelectionText() {
+      var editor = atom.workspace.getActiveTextEditor();
+      if (editor) {
+        return editor.getSelections()[0].getText();
+      }
     }
-  }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._subscriptions.dispose();
+    }
+  }]);
 
-  dispose(): void {
-    this._subscriptions.dispose();
-  }
-}
+  return Activation;
+})();
 
-let activation: ?Activation = null;
-function getActivation(): Activation {
+var activation = null;
+function getActivation() {
   if (activation == null) {
     activation = new Activation();
   }
   return activation;
 }
 
-let listeners: ?CompositeDisposable = null;
+var listeners = null;
 
-export function activate(): void {
-  listeners = new CompositeDisposable();
-  listeners.add(
-    atom.commands.add('atom-workspace', {
-      'nuclide-quick-open:find-anything-via-omni-search': () => {
-        getActivation().toggleOmniSearchProvider();
-      },
-    }),
-  );
+function activate() {
+  listeners = new (_atom2 || _atom()).CompositeDisposable();
+  listeners.add(atom.commands.add('atom-workspace', {
+    'nuclide-quick-open:find-anything-via-omni-search': function nuclideQuickOpenFindAnythingViaOmniSearch() {
+      getActivation().toggleOmniSearchProvider();
+    }
+  }));
   getActivation();
 }
 
-export function registerProvider(service: Provider): IDisposable {
+function registerProvider(service) {
   return getSearchResultManager().registerProvider(service);
 }
 
-export function registerStore() {
+function registerStore() {
   return getSearchResultManager();
 }
 
-export function getHomeFragments(): HomeFragments {
+function getHomeFragments() {
   return {
     feature: {
       title: 'Quick Open',
       icon: 'search',
       description: 'A powerful search box to quickly find local and remote files and content.',
-      command: 'nuclide-quick-open:find-anything-via-omni-search',
+      command: 'nuclide-quick-open:find-anything-via-omni-search'
     },
-    priority: 10,
+    priority: 10
   };
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;

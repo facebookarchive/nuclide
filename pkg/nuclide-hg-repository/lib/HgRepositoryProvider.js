@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createDecoratedClass = (function () { function defineProperties(target, descriptors, initializers) { for (var i = 0; i < descriptors.length; i++) { var descriptor = descriptors[i]; var decorators = descriptor.decorators; var key = descriptor.key; delete descriptor.key; delete descriptor.decorators; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor || descriptor.initializer) descriptor.writable = true; if (decorators) { for (var f = 0; f < decorators.length; f++) { var decorator = decorators[f]; if (typeof decorator === 'function') { descriptor = decorator(target, key, descriptor) || descriptor; } else { throw new TypeError('The decorator for method ' + descriptor.key + ' is of the invalid type ' + typeof decorator); } } if (descriptor.initializer !== undefined) { initializers[key] = descriptor; continue; } } Object.defineProperty(target, key, descriptor); } } return function (Constructor, protoProps, staticProps, protoInitializers, staticInitializers) { if (protoProps) defineProperties(Constructor.prototype, protoProps, protoInitializers); if (staticProps) defineProperties(Constructor, staticProps, staticInitializers); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +16,37 @@
  * the root directory of this source tree.
  */
 
-import {Directory} from 'atom';
-import invariant from 'assert';
-import {trackTiming} from '../../nuclide-analytics';
-import {
-  RemoteDirectory as RemoteDirectoryType,
-} from '../../nuclide-remote-connection';
-import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
+var _atom2;
 
-let logger = null;
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+var _nuclideRemoteConnection2;
+
+function _nuclideRemoteConnection() {
+  return _nuclideRemoteConnection2 = require('../../nuclide-remote-connection');
+}
+
+var _nuclideHgRepositoryClient2;
+
+function _nuclideHgRepositoryClient() {
+  return _nuclideHgRepositoryClient2 = require('../../nuclide-hg-repository-client');
+}
+
+var logger = null;
 function getLogger() {
   return logger || (logger = require('../../nuclide-logging').getLogger());
 }
@@ -34,85 +63,98 @@ function getLogger() {
  *    repository (i.e. if it's a remote directory, the URI minus the hostname).
  *  If the directory is not part of a Mercurial repository, returns null.
  */
-function getRepositoryDescription(
-  directory: atom$Directory | RemoteDirectoryType,
-): ?{
-  originURL: ?string;
-  repoPath: string;
-  workingDirectory: atom$Directory | RemoteDirectoryType;
-  workingDirectoryLocalPath: string;
-} {
-  const {RemoteDirectory} = require('../../nuclide-remote-connection');
-  if (directory instanceof RemoteDirectoryType) {
-    const repositoryDescription = directory.getHgRepositoryDescription();
-    if (repositoryDescription == null
-      || repositoryDescription.repoPath == null
-      || repositoryDescription.originURL == null
-    ) {
+function getRepositoryDescription(directory) {
+  var _require = require('../../nuclide-remote-connection');
+
+  var RemoteDirectory = _require.RemoteDirectory;
+
+  if (directory instanceof (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).RemoteDirectory) {
+    var repositoryDescription = directory.getHgRepositoryDescription();
+    if (repositoryDescription == null || repositoryDescription.repoPath == null || repositoryDescription.originURL == null) {
       return null;
     }
-    const serverConnection = directory._server;
-    const {repoPath, originURL, workingDirectoryPath} = repositoryDescription;
-    const workingDirectoryLocalPath = workingDirectoryPath;
+    var serverConnection = directory._server;
+    var _repoPath = repositoryDescription.repoPath;
+    var _originURL = repositoryDescription.originURL;
+    var workingDirectoryPath = repositoryDescription.workingDirectoryPath;
+
+    var _workingDirectoryLocalPath = workingDirectoryPath;
     // These paths are all relative to the remote fs. We need to turn these into URIs.
-    const repoUri = serverConnection.getUriOfRemotePath(repoPath);
-    const workingDirectoryUri = serverConnection.getUriOfRemotePath(workingDirectoryPath);
+    var repoUri = serverConnection.getUriOfRemotePath(_repoPath);
+    var workingDirectoryUri = serverConnection.getUriOfRemotePath(workingDirectoryPath);
     return {
-      originURL,
+      originURL: _originURL,
       repoPath: repoUri,
       workingDirectory: new RemoteDirectory(serverConnection, workingDirectoryUri),
-      workingDirectoryLocalPath,
+      workingDirectoryLocalPath: _workingDirectoryLocalPath
     };
   } else {
-    const {findHgRepository} = require('../../nuclide-source-control-helpers');
-    const repositoryDescription = findHgRepository(directory.getPath());
+    var _require2 = require('../../nuclide-source-control-helpers');
+
+    var findHgRepository = _require2.findHgRepository;
+
+    var repositoryDescription = findHgRepository(directory.getPath());
     if (repositoryDescription == null) {
       return null;
     }
-    const {repoPath, originURL, workingDirectoryPath} = repositoryDescription;
+    var _repoPath2 = repositoryDescription.repoPath;
+    var _originURL2 = repositoryDescription.originURL;
+    var workingDirectoryPath = repositoryDescription.workingDirectoryPath;
+
     return {
-      originURL,
-      repoPath,
-      workingDirectory: new Directory(workingDirectoryPath),
-      workingDirectoryLocalPath: workingDirectoryPath,
+      originURL: _originURL2,
+      repoPath: _repoPath2,
+      workingDirectory: new (_atom2 || _atom()).Directory(workingDirectoryPath),
+      workingDirectoryLocalPath: workingDirectoryPath
     };
   }
 }
 
-export class HgRepositoryProvider {
-  repositoryForDirectory(directory: Directory): Promise<?HgRepositoryClient> {
-    return Promise.resolve(this.repositoryForDirectorySync(directory));
+var HgRepositoryProvider = (function () {
+  function HgRepositoryProvider() {
+    _classCallCheck(this, HgRepositoryProvider);
   }
 
-  @trackTiming('hg-repository.repositoryForDirectorySync')
-  repositoryForDirectorySync(directory: Directory): ?HgRepositoryClient {
-    try {
-      const repositoryDescription = getRepositoryDescription(directory);
-      if (!repositoryDescription) {
+  _createDecoratedClass(HgRepositoryProvider, [{
+    key: 'repositoryForDirectory',
+    value: function repositoryForDirectory(directory) {
+      return Promise.resolve(this.repositoryForDirectorySync(directory));
+    }
+  }, {
+    key: 'repositoryForDirectorySync',
+    decorators: [(0, (_nuclideAnalytics2 || _nuclideAnalytics()).trackTiming)('hg-repository.repositoryForDirectorySync')],
+    value: function repositoryForDirectorySync(directory) {
+      try {
+        var repositoryDescription = getRepositoryDescription(directory);
+        if (!repositoryDescription) {
+          return null;
+        }
+
+        var _originURL3 = repositoryDescription.originURL;
+        var _repoPath3 = repositoryDescription.repoPath;
+        var _workingDirectory = repositoryDescription.workingDirectory;
+        var _workingDirectoryLocalPath2 = repositoryDescription.workingDirectoryLocalPath;
+
+        var _require3 = require('../../nuclide-client');
+
+        var getServiceByNuclideUri = _require3.getServiceByNuclideUri;
+
+        var service = getServiceByNuclideUri('HgService', directory.getPath());
+        (0, (_assert2 || _assert()).default)(service);
+        var hgService = new service.HgService(_workingDirectoryLocalPath2);
+        return new (_nuclideHgRepositoryClient2 || _nuclideHgRepositoryClient()).HgRepositoryClient(_repoPath3, hgService, {
+          workingDirectory: _workingDirectory,
+          projectRootDirectory: directory,
+          originURL: _originURL3
+        });
+      } catch (err) {
+        getLogger().error('Failed to create an HgRepositoryClient for ', directory.getPath(), ', error: ', err);
         return null;
       }
-
-      const {
-        originURL,
-        repoPath,
-        workingDirectory,
-        workingDirectoryLocalPath,
-      } = repositoryDescription;
-
-      const {getServiceByNuclideUri} = require('../../nuclide-client');
-      const service = getServiceByNuclideUri('HgService', directory.getPath());
-      invariant(service);
-      const hgService = new service.HgService(workingDirectoryLocalPath);
-      return new HgRepositoryClient(repoPath, hgService, {
-        workingDirectory,
-        projectRootDirectory: directory,
-        originURL,
-      });
-    } catch (err) {
-      getLogger().error(
-        'Failed to create an HgRepositoryClient for ', directory.getPath(), ', error: ', err
-      );
-      return null;
     }
-  }
-}
+  }]);
+
+  return HgRepositoryProvider;
+})();
+
+exports.HgRepositoryProvider = HgRepositoryProvider;
