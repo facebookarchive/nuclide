@@ -18,6 +18,11 @@ export type MatcherOptions = {
   // Default: infinite
   maxResults?: number,
 
+  // Maximum gap to allow between consecutive letters in a match.
+  // Provide a smaller maxGap to speed up query results.
+  // Default: unlimited
+  maxGap?: number;
+
   // Default: 1
   numThreads?: number,
 
