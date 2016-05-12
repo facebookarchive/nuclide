@@ -19,4 +19,5 @@ export interface CoverageProvider {
   getCoverage(path: NuclideUri): Promise<?CoverageResult>;
   priority: number;
   grammarScopes: Array<string>;
+  displayName: string;
 }

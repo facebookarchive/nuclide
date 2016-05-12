@@ -141,6 +141,7 @@ export function createTypeHintProvider(): Object {
 
 export function createCoverageProvider(): CoverageProvider {
   return {
+    displayName: 'Flow',
     priority: 10,
     grammarScopes: JS_GRAMMARS,
     getCoverage(path) {
