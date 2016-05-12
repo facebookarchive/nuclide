@@ -19,7 +19,9 @@ import {getCursorPositions} from '../../nuclide-atom-helpers';
 
 const LOADING_DELAY_MS = 500;
 
-export function createOutlines(editorService: ActiveEditorBasedService): Observable<OutlineForUi> {
+export function createOutlines(
+  editorService: ActiveEditorBasedService<OutlineProvider, ?Outline>,
+): Observable<OutlineForUi> {
   return outlinesForProviderResults(editorService.getResultsStream());
 }
 
