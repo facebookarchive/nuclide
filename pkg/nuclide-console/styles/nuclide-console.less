@@ -16,6 +16,22 @@
 @nuclide-console-record-horizontal-padding: 5px;
 @nuclide-console-icon-size: 11px;
 
+// Color variables for `level-color` classes.
+@nuclide-console-record-background-color-red: lighten(@background-color-error, 25%);
+@nuclide-console-record-text-color-red: darken(@text-color-error, 40%);
+@nuclide-console-record-background-color-orange: lighten(@ui-site-color-3, 25%);
+@nuclide-console-record-text-color-orange: darken(@ui-site-color-3, 40%);
+@nuclide-console-record-background-color-yellow: lighten(@ui-site-color-5, 25%);
+@nuclide-console-record-text-color-yellow: darken(@ui-site-color-5, 50%);
+@nuclide-console-record-background-color-green: lighten(@ui-site-color-2, 25%);
+@nuclide-console-record-text-color-green: darken(@ui-site-color-2, 40%);
+@nuclide-console-record-background-color-blue: lighten(@ui-site-color-1, 25%);
+@nuclide-console-record-text-color-blue: darken(@ui-site-color-1, 40%);
+@nuclide-console-record-background-color-purple: lighten(@ui-site-color-4, 25%);
+@nuclide-console-record-text-color-purple: darken(@ui-site-color-4, 40%);
+@nuclide-console-record-background-color-violet: lighten(@ui-site-color-4, 35%);
+@nuclide-console-record-text-color-violet: darken(@ui-site-color-4, 30%);
+
 // Console text should be smaller than normal text. Gotta fit more!
 @nuclide-console-record-font-size: @font-size * 0.9;
 
@@ -128,6 +144,56 @@
       color: @nuclide-console-record-border-color-error;
     }
 
+  }
+
+  // Console record colors for `level-color` classes.
+  &.level-red {
+    background-color: @nuclide-console-record-background-color-red;
+    pre {
+      color: @nuclide-console-record-text-color-red;
+    }
+  }
+
+  &.level-orange {
+    background-color: @nuclide-console-record-background-color-orange;
+    pre {
+      color: @nuclide-console-record-text-color-orange;
+    }
+  }
+
+  &.level-yellow {
+    background-color: @nuclide-console-record-background-color-yellow;
+    pre {
+      color: @nuclide-console-record-text-color-yellow;
+    }
+  }
+
+  &.level-green {
+    background-color: @nuclide-console-record-background-color-green;
+    pre {
+      color: @nuclide-console-record-text-color-green;
+    }
+  }
+
+  &.level-blue {
+    background-color: @nuclide-console-record-background-color-blue;
+    pre {
+      color: @nuclide-console-record-text-color-blue;
+    }
+  }
+
+  &.level-purple {
+    background-color: @nuclide-console-record-background-color-purple;
+    pre {
+      color: @nuclide-console-record-text-color-purple;
+    }
+  }
+
+  &.level-violet {
+    background-color: @nuclide-console-record-background-color-violet;
+    pre {
+      color: @nuclide-console-record-text-color-violet;
+    }
   }
 
   pre {

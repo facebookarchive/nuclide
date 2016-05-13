@@ -11,7 +11,8 @@
 
 import type Rx from 'rxjs';
 
-export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug';
+export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug' | Color;
+type Color = 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'violet';
 
 type MessageKind = 'message' | 'request' | 'response';
 
