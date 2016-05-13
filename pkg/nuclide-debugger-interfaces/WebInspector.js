@@ -111,8 +111,23 @@ declare class WebInspector$BreakpointManager$Breakpoint {
   remove(keepInStorage: boolean): void;
 }
 
+declare class WebInspector$RuntimeAgent {
+  getProperties(
+    objectId: string,
+    ownProperties: boolean,
+    accessorPropertiesOnly: boolean,
+    generatePreview: boolean,
+    callback: (
+      remoteObject: ?Object,
+      wasThrown: boolean,
+      resultOrError: mixed
+    ) => void,
+  ): void;
+}
+
 declare class WebInspector$Target {
   debuggerModel: WebInspector$DebuggerModel;
+  runtimeAgent(): WebInspector$RuntimeAgent;
 }
 
 declare class WebInspector$TargetManager {

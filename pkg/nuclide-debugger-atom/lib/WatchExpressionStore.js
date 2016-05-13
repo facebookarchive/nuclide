@@ -10,11 +10,10 @@
  */
 
 import type Bridge from './Bridge';
-import type {EvaluationResult} from './Bridge';
+import type {ExpansionResult, EvaluationResult} from './Bridge';
 
 import {
   CompositeDisposable,
-  Disposable,
 } from 'atom';
 import Rx from 'rxjs';
 import invariant from 'assert';
@@ -36,26 +35,51 @@ export class WatchExpressionStore {
     // `this._previousEvaluationSubscriptions` can change at any time and are a distinct subset of
     // `this._disposables`.
     this._previousEvaluationSubscriptions = new CompositeDisposable();
-    this._disposables.add(new Disposable(() => {
-      this._previousEvaluationSubscriptions.dispose();
-    }));
+    this._disposables.add(this._previousEvaluationSubscriptions);
   }
 
   dispose(): void {
     this._disposables.dispose();
   }
 
+  _requestActionFromBridge<T>(
+    subject: Rx.BehaviorSubject<T>,
+    callback: () => Promise<T>,
+  ): IDisposable {
+    return new DisposableSubscription(
+      incompleteObservableFromPromise(callback()).subscribe(subject)
+    );
+  }
+
   _requestExpressionEvaluation(
     expression: Expression,
     subject: Rx.BehaviorSubject<?EvaluationResult>,
   ): void {
-    this._previousEvaluationSubscriptions.add(
-      new DisposableSubscription(
-        incompleteObservableFromPromise(
-          this._bridge.evaluateOnSelectedCallFrame(expression)
-        ).subscribe(subject)
-      )
+    const evaluationDisposable = this._requestActionFromBridge(
+      subject,
+      () => this._bridge.evaluateOnSelectedCallFrame(expression),
     );
+    this._previousEvaluationSubscriptions.add(evaluationDisposable);
+  }
+
+  _requestPropertiesForObjectId(
+    objectId: string,
+    subject: Rx.BehaviorSubject<?ExpansionResult>,
+  ): void {
+    this._requestActionFromBridge(
+      subject,
+      () => this._bridge.getProperties(objectId),
+    );
+  }
+
+  /**
+   * Returns an observable of child properties for the given objectId.
+   * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
+   */
+  getProperties(objectId: string): Rx.Observable<?ExpansionResult> {
+    const subject = new Rx.BehaviorSubject();
+    this._requestPropertiesForObjectId(objectId, subject);
+    return subject.asObservable();
   }
 
   /**

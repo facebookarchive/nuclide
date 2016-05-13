@@ -11,9 +11,16 @@
 
 import type DebuggerModel from './DebuggerModel';
 
-type ExpressionResult = {
+type ExpressionResult = ChromeProtocolResponse & {
   expression: string;
-  result: ?EvaluationResult;
+};
+
+type GetPropertiesResult = ChromeProtocolResponse & {
+  objectId: string;
+};
+
+type ChromeProtocolResponse = {
+  result: ?EvaluationResult | ?GetPropertiesResult;
   error: ?Object;
 };
 
@@ -24,6 +31,11 @@ export type EvaluationResult = {
   // Or:
   _description? : string;
 };
+
+export type ExpansionResult = Array<{
+  name: string;
+  value: EvaluationResult;
+}>;
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
@@ -50,6 +62,7 @@ class Bridge {
   _suppressBreakpointSync: boolean;
   // Tracks requests for expression evaluation, keyed by the expression body.
   _expressionsInFlight: Map<string, Deferred<?EvaluationResult>>;
+  _getPropertiesRequestsInFlight: Map<string, Deferred<?ExpansionResult>>;
 
   constructor(debuggerModel: DebuggerModel) {
     this._debuggerModel = debuggerModel;
@@ -61,6 +74,7 @@ class Bridge {
       debuggerModel.getBreakpointStore().onChange(this._handleBreakpointStoreChange.bind(this)),
     );
     this._expressionsInFlight = new Map();
+    this._getPropertiesRequestsInFlight = new Map();
   }
 
   setWebviewElement(webview: WebviewElement) {
@@ -107,38 +121,69 @@ class Bridge {
     }
   }
 
-  async evaluateOnSelectedCallFrame(expression: string): Promise<?EvaluationResult> {
-    if (this._webview == null) {
+  getProperties(objectId: string): Promise<?ExpansionResult> {
+    return this._cachedSendCommand(this._getPropertiesRequestsInFlight, 'getProperties', objectId);
+  }
+
+  evaluateOnSelectedCallFrame(expression: string): Promise<?EvaluationResult> {
+    return this._cachedSendCommand(
+      this._expressionsInFlight,
+      'evaluateOnSelectedCallFrame',
+      expression,
+    );
+  }
+
+  async _cachedSendCommand<T>(
+    cache: Map<string, Deferred<?T>>,
+    command: string,
+    value: string
+  ): Promise<?T> {
+    const webview = this._webview;
+    if (webview == null) {
       return null;
     }
     let deferred;
-    if (this._expressionsInFlight.has(expression)) {
-      deferred = this._expressionsInFlight.get(expression);
+    if (cache.has(value)) {
+      deferred = cache.get(value);
     } else {
       deferred = new Deferred();
-      this._expressionsInFlight.set(expression, deferred);
-      invariant(this._webview != null);
-      this._webview.send('command', 'evaluateOnSelectedCallFrame', expression);
+      cache.set(value, deferred);
+      webview.send('command', command, value);
     }
     invariant(deferred != null);
     let result;
     try {
       result = await deferred.promise;
     } catch (e) {
-      getLogger().warn('evaluateOnSelectedCallFrame: Error getting result.', e);
+      getLogger().warn(`${command}: Error getting result.`, e);
       result = null;
     }
-    this._expressionsInFlight.delete(expression);
+    cache.delete(value);
     return result;
   }
 
-  _handleExpressionEvaluationResponse(additionalData: ExpressionResult): void {
+  _handleExpressionEvaluationResponse(response: ExpressionResult): void {
+    this._handleResponseForPendingRequest(this._expressionsInFlight, response, response.expression);
+  }
+
+  _handleGetPropertiesResponse(response: GetPropertiesResult): void {
+    this._handleResponseForPendingRequest(
+      this._getPropertiesRequestsInFlight,
+      response,
+      response.objectId,
+    );
+  }
+
+  _handleResponseForPendingRequest<T>(
+    pending: Map<string, Deferred<?T>>,
+    response: ChromeProtocolResponse,
+    key: string,
+  ): void {
     const {
-      expression,
       result,
       error,
-    } = additionalData;
-    const deferred = this._expressionsInFlight.get(expression);
+    } = response;
+    const deferred = pending.get(key);
     if (deferred == null) {
       // Nobody is listening for the result of this expression.
       return;
@@ -146,7 +191,7 @@ class Bridge {
     if (error != null) {
       deferred.reject(error);
     } else {
-      deferred.resolve(result);
+      deferred.resolve(((result : any) : T));
     }
   }
 
@@ -188,6 +233,9 @@ class Bridge {
             break;
           case 'ExpressionEvaluationResponse':
             this._handleExpressionEvaluationResponse(event.args[1]);
+            break;
+          case 'GetPropertiesResponse':
+            this._handleGetPropertiesResponse(event.args[1]);
             break;
         }
         break;

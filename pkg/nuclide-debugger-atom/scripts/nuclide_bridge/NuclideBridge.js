@@ -178,6 +178,9 @@ class NuclideBridge {
       case 'evaluateOnSelectedCallFrame':
         this._evaluateOnSelectedCallFrame(args[0]);
         break;
+      case 'getProperties':
+        this._getProperties(args[0]);
+        break;
     }
   }
 
@@ -201,6 +204,30 @@ class NuclideBridge {
       sourceURL: sourceURL,
       lineNumber: line,
     });
+  }
+
+  _getProperties(objectId: string): void {
+    const mainTarget = WebInspector.targetManager.mainTarget();
+    if (mainTarget == null) {
+      return;
+    }
+    const runtimeAgent = mainTarget.runtimeAgent();
+    if (runtimeAgent == null) {
+      return;
+    }
+    runtimeAgent.getProperties(
+      objectId,
+      false, // ownProperties
+      false, // accessorPropertiesOnly
+      false, // generatePreview
+      (remoteObject, wasThrown, error) => {
+        ipc.sendToHost('notification', 'GetPropertiesResponse', {
+          result: wasThrown ? null : remoteObject,
+          error: wasThrown ? error : null,
+          objectId,
+        });
+      },
+    );
   }
 
   _evaluateOnSelectedCallFrame(expression: string): void {
