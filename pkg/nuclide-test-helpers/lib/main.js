@@ -71,6 +71,31 @@ function spyOnGetterValue(object: Object, f: string): JasmineSpy {
 }
 
 /**
+ * Allows spying on a function that is the default export of a module. Works
+ * with ES modules and CommonJS.
+ */
+function spyOnDefault(id: string): JasmineSpy {
+  // Load the module in case it hasn't been loaded already.
+  // $FlowIgnore
+  require(id);
+  const _module = require.cache[id];
+  if (_module.exports.__esModule) {
+    return spyOn(_module.exports, 'default');
+  } else {
+    return spyOn(_module, 'exports');
+  }
+}
+
+function unspyOnDefault(id: string): void {
+  const _module = require.cache[id];
+  if (_module.exports.__esModule) {
+    return jasmine.unspy(_module.exports, 'default');
+  } else {
+    return jasmine.unspy(_module, 'exports');
+  }
+}
+
+/**
  * Checks if the two objects have equal properties. This considers a property
  * set to undefined to be equivalent to a property that was not set at all.
  */
@@ -140,7 +165,9 @@ module.exports = {
   get tempdir() {
     return require('./tempdir');
   },
+  spyOnDefault,
   spyOnGetterValue,
+  unspyOnDefault,
   uncachedRequire,
   arePropertiesEqual,
   areSetsEqual,
