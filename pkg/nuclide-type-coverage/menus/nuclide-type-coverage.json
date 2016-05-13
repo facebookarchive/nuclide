@@ -1,0 +1,18 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Type Coverage",
+          "submenu": [
+            {
+              "label": "Toggle Inline Display",
+              "command": "nuclide-type-coverage:toggle-inline-display"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

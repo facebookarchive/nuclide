@@ -57,6 +57,14 @@ class Activation {
       resultFunction,
       {updateOnEdit: false},
     );
+
+    this._disposables.add(
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-type-coverage:toggle-inline-display',
+        () => this._toggleEvents.next(),
+      )
+    );
   }
 
   consumeCoverageProvider(provider: CoverageProvider): IDisposable {
