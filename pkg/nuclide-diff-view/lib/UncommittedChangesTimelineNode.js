@@ -50,7 +50,7 @@ export default class UncommittedChangesTimelineNode extends React.Component {
       <div className="revision selected-revision-inrange selected-revision-start">
         <div className={bubbleClassName} />
         <div className="revision-label revision-label--uncommitted">
-          <span className="text-monospace">{filesMessage}</span>
+          <span className="revision-title text-monospace">{filesMessage}</span>
           <Button
             className="nuclide-diff-rev-side-button"
             size={ButtonSizes.SMALL}

@@ -68,7 +68,7 @@ describe('Diff View Commit Mode Integration Test', () => {
     let revisionLabels = [];
 
     waitsFor('revisions to load', 5000, () => {
-      revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-label');
+      revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-title');
       return revisionLabels.length > 0;
     });
 
@@ -90,8 +90,8 @@ describe('Diff View Commit Mode Integration Test', () => {
 
     function getUncommittedChangesText(): string {
       const uncommittedNode = revisionsTimelineElement
-        .querySelector('.revision-label--uncommitted');
-      return uncommittedNode.firstChild.textContent;
+        .querySelector('.revision-label--uncommitted .revision-title');
+      return uncommittedNode.textContent;
     }
 
     runs(() => {
@@ -206,7 +206,7 @@ describe('Diff View Commit Mode Integration Test', () => {
     });
 
     waitsFor('new commit to load in the revisions timeline', 5000, () => {
-      revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-label');
+      revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-title');
       return revisionLabels.length === 5;
     });
 
@@ -215,7 +215,7 @@ describe('Diff View Commit Mode Integration Test', () => {
     });
 
     runs(() => {
-      expect(revisionLabels[1].textContent).toBe(`${commitMessage.split('\n')[0]} (HEAD)`);
+      expect(revisionLabels[1].textContent).toBe(commitMessage.split('\n')[0]);
       updateUncommittedButtons();
       expect((commitButton: any).disabled).toBe(true);
       // Now, let's amend to change the commit message.
@@ -258,9 +258,9 @@ describe('Diff View Commit Mode Integration Test', () => {
     });
 
     waitsFor('amended commit to show in the revisions timeline', 5000, () => {
-      revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-label');
+      revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-title');
       return revisionLabels.length === 5 &&
-        revisionLabels[1].textContent === `${commitMessage.split('\n')[0]} (HEAD)`;
+        revisionLabels[1].textContent === commitMessage.split('\n')[0];
     });
   });
 });
