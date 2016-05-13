@@ -49,8 +49,8 @@ export default class UncommittedChangesTimelineNode extends React.Component {
     return (
       <div className="revision selected-revision-inrange selected-revision-start">
         <div className={bubbleClassName} />
-        <span className="revision-label revision-label--uncommitted">
-          <span>{filesMessage}</span>
+        <div className="revision-label revision-label--uncommitted">
+          <span className="text-monospace">{filesMessage}</span>
           <Button
             className="nuclide-diff-rev-side-button"
             size={ButtonSizes.SMALL}
@@ -64,7 +64,7 @@ export default class UncommittedChangesTimelineNode extends React.Component {
             onClick={this._handleClickAmend}>
             Amend
           </Button>
-        </span>
+        </div>
       </div>
     );
   }

@@ -60,7 +60,7 @@ export default class RevisionTimelineNode extends React.Component {
         onClick={this.handleSelectionChange}
         title={tooltip}>
         <div className="revision-bubble" />
-        <div className="revision-label">
+        <div className="revision-label text-monospace">
           {title} ({bookmarksToRender.length ? bookmarksToRender.join(',') : hash})
         </div>
       </div>

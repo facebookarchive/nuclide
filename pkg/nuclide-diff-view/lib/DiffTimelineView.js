@@ -117,15 +117,13 @@ function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Eleme
 
   return (
     <div className="revision-timeline-wrap">
-      <h5 style={{marginTop: 0}}>
-        <span>Compare Revisions</span>
-        <Button
-          className="pull-right"
-          size={ButtonSizes.SMALL}
-          onClick={props.onClickPublish}>
-          Publish to Phabricator
-        </Button>
-      </h5>
+      <Button
+        className="pull-right"
+        size={ButtonSizes.SMALL}
+        onClick={props.onClickPublish}>
+        Publish to Phabricator
+      </Button>
+      <h5 style={{marginTop: 0}}>Compare Revisions</h5>
       <div className="revision-selector">
         <div className="revisions">
           <UncommittedChangesTimelineNode
