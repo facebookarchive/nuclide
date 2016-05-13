@@ -43,6 +43,7 @@ import {getLogger} from '../../nuclide-logging';
 import remoteUri from '../../nuclide-remote-uri';
 import {Deferred} from '../../nuclide-commons';
 import {DebuggerMode} from './DebuggerStore';
+import {raiseNativeNotificationAfterDelay} from '../../nuclide-notifications';
 
 const INJECTED_CSS = [
   /* Force the inspector to scroll vertically on Atom ≥ 1.4.0 */
@@ -247,6 +248,7 @@ class Bridge {
     this._debuggerModel.getStore().setDebuggerMode(DebuggerMode.PAUSED);
     // TODO go through dispatcher
     this._debuggerModel.getWatchExpressionStore().triggerReevaluation();
+    raiseNativeNotificationAfterDelay('Nuclide Debugger', 'Paused at a breakpoint', 3000);
   }
 
   _handleClearInterface(): void {

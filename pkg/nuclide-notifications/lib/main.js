@@ -43,6 +43,17 @@ function proxyToNativeNotification(notification: atom$Notification): void {
     notification.getOptions().detail,
   );
 
+}
+
+export function raiseNativeNotificationAfterDelay(
+  title: string,
+  body: string,
+  delay: number,
+): void {
+  setTimeout(() => raiseNativeNotification(title, body), delay);
+}
+
+export function raiseNativeNotification(title: string, body: string): void {
   try {
     // Listen for the gatekeeper to tell us if we can generate native notifications.
     const gatekeeper = require('../../fb-gatekeeper').gatekeeper;
@@ -52,10 +63,6 @@ function proxyToNativeNotification(notification: atom$Notification): void {
       }),
     );
   } catch (e) { }
-
-}
-
-export function raiseNativeNotification(title: string, body: string): void {
 
   // Check we're in the gatekeeper for native notifications at all.
   if (!gkEnabled) {
