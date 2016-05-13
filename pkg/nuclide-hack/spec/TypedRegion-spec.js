@@ -13,9 +13,11 @@ import invariant from 'assert';
 
 import {convertTypedRegionsToCoverageResult} from '../lib/TypedRegions';
 
-function runTest(regions, ...expected) {
+function runTest(regions, expectedPercentage, ...expected) {
   const result = convertTypedRegionsToCoverageResult(regions);
   invariant(result != null);
+  // Use floor since that's what will happen when it's displayed
+  expect(Math.floor(result.percentage)).toEqual(expectedPercentage);
   expect(result.uncoveredRegions)
     .toEqual(expected);
 }
@@ -34,12 +36,12 @@ function toWarning(expected) {
   };
 }
 
-function runTestError(regions, ...expected) {
-  runTest(regions, ... expected.map(toError));
+function runTestError(regions, expectedPercentage, ...expected) {
+  runTest(regions, expectedPercentage, ...expected.map(toError));
 }
 
-function runTestWarning(regions, ...expected) {
-  runTest(regions, ... expected.map(toWarning));
+function runTestWarning(regions, expectedPercentage, ...expected) {
+  runTest(regions, expectedPercentage, ...expected.map(toWarning));
 }
 
 describe('convertTypedRegionsToCoverageRegions', () => {
@@ -48,14 +50,14 @@ describe('convertTypedRegionsToCoverageRegions', () => {
   });
 
   it('empty array', () => {
-    runTest([]);
+    runTest([], 100);
   });
 
   it('empty string', () => {
     runTest([{
       color: 'unchecked',
       text: '',
-    }]);
+    }], 100);
   });
 
   it('simple error', () => {
@@ -66,6 +68,7 @@ describe('convertTypedRegionsToCoverageRegions', () => {
           text: 'blah',
         },
       ],
+      0,
       {
         line: 1,
         start: 1,
@@ -81,6 +84,7 @@ describe('convertTypedRegionsToCoverageRegions', () => {
           text: 'blah',
         },
       ],
+      0,
       {
         line: 1,
         start: 1,
@@ -100,6 +104,7 @@ describe('convertTypedRegionsToCoverageRegions', () => {
           text: 'blah',
         },
       ],
+      50,
       {
         line: 1,
         start: 6,
@@ -119,6 +124,7 @@ describe('convertTypedRegionsToCoverageRegions', () => {
           text: 'blah',
         },
       ],
+      75,
       {
         line: 4,
         start: 13,
@@ -138,6 +144,7 @@ describe('convertTypedRegionsToCoverageRegions', () => {
           text: 'blah',
         },
       ],
+      66,
       {
         line: 3,
         start: 1,
@@ -153,6 +160,7 @@ describe('convertTypedRegionsToCoverageRegions', () => {
           text: 'blah\nmoarerrors',
         },
       ],
+      0,
       {
         line: 1,
         start: 1,
@@ -173,6 +181,7 @@ describe('convertTypedRegionsToCoverageRegions', () => {
           text: 'blah\n\nmoarerrors\n',
         },
       ],
+      0,
       {
         line: 1,
         start: 1,
@@ -197,6 +206,7 @@ describe('convertTypedRegionsToCoverageRegions', () => {
           text: 'blech',
         },
       ],
+      0,
       {
         line: 1,
         start: 1,
@@ -204,4 +214,27 @@ describe('convertTypedRegionsToCoverageRegions', () => {
       });
   });
 
+  it('should not count default regions in the percentage', () => {
+    runTestError(
+      [
+        {
+          color: 'unchecked',
+          text: 'foo',
+        },
+        {
+          color: 'default',
+          text: 'bar',
+        },
+        {
+          color: 'checked',
+          text: 'baz',
+        },
+      ],
+      50,
+      {
+        line: 1,
+        start: 1,
+        end: 3,
+      });
+  });
 });

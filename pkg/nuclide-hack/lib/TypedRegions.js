@@ -36,6 +36,7 @@ type UnfilteredTypeCoverageRegion = {
 };
 
 export type HackCoverageResult = {
+  percentage: number;
   uncoveredRegions: Array<TypeCoverageRegion>;
 };
 
@@ -90,7 +91,20 @@ export function convertTypedRegionsToCoverageResult(
     column += last.length;
   });
 
+  const totalInterestingRegionCount = unfilteredResults.reduce(
+    (count, region) => (region.type !== 'default' ? count + 1 : count),
+    0,
+  );
+  const checkedRegionCount = unfilteredResults.reduce(
+    (count, region) =>
+      (region.type === 'checked' ? count + 1 : count),
+    0,
+  );
+
   return {
+    percentage: totalInterestingRegionCount === 0 ?
+      100 :
+      checkedRegionCount / totalInterestingRegionCount * 100,
     uncoveredRegions: filterResults(unfilteredResults),
   };
 }
