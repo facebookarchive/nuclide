@@ -281,11 +281,11 @@ export default class QuickSelectionComponent extends React.Component {
   handleProvidersChange(): void {
     const renderableProviders = searchResultManager.getRenderableProviders();
     const activeProviderName = searchResultManager.getActiveProviderName();
+    this._updateResults(activeProviderName);
     this.setState({
       renderableProviders,
       activeProviderName,
     });
-    this._updateResults(activeProviderName);
   }
 
   select(): void {
