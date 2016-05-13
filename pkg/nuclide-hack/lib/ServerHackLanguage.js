@@ -22,7 +22,7 @@ import type {
 } from '../../nuclide-hack-base/lib/HackService';
 import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
 import type {SymbolTypeValue} from '../../nuclide-hack-common';
-import type {TypeCoverageRegion} from './TypedRegions';
+import type {HackCoverageResult} from './TypedRegions';
 
 import {Range} from 'atom';
 import {getLogger} from '../../nuclide-logging';
@@ -118,13 +118,9 @@ export class ServerHackLanguage {
 
   async getTypeCoverage(
     filePath: NuclideUri,
-  ): Promise<Array<TypeCoverageRegion>> {
+  ): Promise<?HackCoverageResult> {
     const regions = await this._hackService.getTypedRegions(filePath);
-    const hackCoverageResult = convertTypedRegionsToCoverageResult(regions);
-    if (hackCoverageResult == null) {
-      return [];
-    }
-    return hackCoverageResult.uncoveredRegions;
+    return convertTypedRegionsToCoverageResult(regions);
   }
 
   getOutline(

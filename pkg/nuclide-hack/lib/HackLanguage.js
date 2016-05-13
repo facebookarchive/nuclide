@@ -16,7 +16,7 @@ import type {
   HackReference,
   HackOutline,
 } from '../../nuclide-hack-base/lib/HackService';
-import type {TypeCoverageRegion} from './TypedRegions';
+import type {HackCoverageResult} from './TypedRegions';
 
 import {ServerHackLanguage} from './ServerHackLanguage';
 import {RemoteConnection} from '../../nuclide-remote-connection';
@@ -85,7 +85,7 @@ export type HackLanguage = {
 
   getTypeCoverage(
     filePath: NuclideUri,
-  ): Promise<Array<TypeCoverageRegion>>;
+  ): Promise<?HackCoverageResult>;
 
   getDefinition(
       filePath: NuclideUri,

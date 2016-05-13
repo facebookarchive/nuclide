@@ -16,7 +16,10 @@ import type {
   MessageUpdateCallback,
   MessageInvalidationCallback,
 } from '../../nuclide-diagnostics-base';
-import type {TypeCoverageRegion} from './TypedRegions';
+import type {
+  TypeCoverageRegion,
+  HackCoverageResult,
+} from './TypedRegions';
 
 import {getHackLanguageForUri} from './HackLanguage';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
@@ -34,7 +37,7 @@ const {RequestSerializer} = promises;
 // Provides Diagnostics for un-typed regions of Hack code.
 export class TypeCoverageProvider {
   _providerBase: DiagnosticsProviderBase;
-  _requestSerializer: RequestSerializer<Array<TypeCoverageRegion>>;
+  _requestSerializer: RequestSerializer<?HackCoverageResult>;
   _busySignalProvider: BusySignalProviderBase;
   _subscriptions: atom$CompositeDisposable;
 
@@ -110,7 +113,8 @@ export class TypeCoverageProvider {
       return;
     }
 
-    const regions: Array<TypeCoverageRegion> = result.result;
+    const hackCoverageResult: ?HackCoverageResult = result.result;
+    const regions = hackCoverageResult == null ? [] : hackCoverageResult.uncoveredRegions;
     const diagnostics = regions.map(region => convertRegionToDiagnostic(filePath, region));
     const diagnosticsUpdate = {
       filePathToMessages: new Map([[filePath, diagnostics]]),

@@ -193,7 +193,10 @@ AUTO332class HackClass {}`);
       const result = await hackLanguage.getTypeCoverage(filePath);
 
       expect(mockService.getTypedRegions).toHaveBeenCalledWith(filePath);
-      expect(result).toEqual([{type: 'unchecked', line: 1, start: 4, end: 6}]);
+      expect(result).toEqual({
+        percentage: 0,
+        uncoveredRegions: [{type: 'unchecked', line: 1, start: 4, end: 6}],
+      });
     });
   });
 
