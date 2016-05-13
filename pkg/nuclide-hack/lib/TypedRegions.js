@@ -35,11 +35,15 @@ type UnfilteredTypeCoverageRegion = {
   end: number;
 };
 
-export function convertTypedRegionsToCoverageRegions(
+export type HackCoverageResult = {
+  uncoveredRegions: Array<TypeCoverageRegion>;
+};
+
+export function convertTypedRegionsToCoverageResult(
   regions: ?Array<HackTypedRegion>
-): Array<TypeCoverageRegion> {
+): ?HackCoverageResult {
   if (regions == null) {
-    return [];
+    return null;
   }
 
   const startColumn = 1;
@@ -86,7 +90,9 @@ export function convertTypedRegionsToCoverageRegions(
     column += last.length;
   });
 
-  return filterResults(unfilteredResults);
+  return {
+    uncoveredRegions: filterResults(unfilteredResults),
+  };
 }
 
 function filterResults(

@@ -9,10 +9,14 @@
  * the root directory of this source tree.
  */
 
-import {convertTypedRegionsToCoverageRegions} from '../lib/TypedRegions';
+import invariant from 'assert';
+
+import {convertTypedRegionsToCoverageResult} from '../lib/TypedRegions';
 
 function runTest(regions, ...expected) {
-  expect(convertTypedRegionsToCoverageRegions(regions))
+  const result = convertTypedRegionsToCoverageResult(regions);
+  invariant(result != null);
+  expect(result.uncoveredRegions)
     .toEqual(expected);
 }
 
@@ -40,7 +44,7 @@ function runTestWarning(regions, ...expected) {
 
 describe('convertTypedRegionsToCoverageRegions', () => {
   it('null', () => {
-    runTest(null);
+    expect(convertTypedRegionsToCoverageResult(null)).toBeNull();
   });
 
   it('empty array', () => {
