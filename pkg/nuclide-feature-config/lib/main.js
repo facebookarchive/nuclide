@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import Rx from 'rxjs';
+
 const NUCLIDE_CONFIG_SCOPE = 'nuclide.';
 
 function formatKeyPath(keyPath: string): string {
@@ -49,9 +51,20 @@ module.exports = {
   observe(
     keyPath: string,
     optionsOrCallback: (Object | (value: any) => void),
-    callback?: (value: any) => void
+    callback?: (value: any) => mixed
   ): IDisposable {
     return atom.config.observe(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
+  },
+
+  /*
+   * Behaves similarly to the `observe` function, but returns a stream of values, rather
+   * then receiving a callback.
+   */
+  observeAsStream(keyPath: string, options: Object = {}): Rx.Observable<any> {
+    return Rx.Observable.create(observer => {
+      const disposable = module.exports.observe(keyPath, options, observer.next.bind(observer));
+      return disposable.dispose.bind(disposable);
+    });
   },
 
   /*
