@@ -28,6 +28,13 @@ export type TypeCoverageRegion = {
   end: number;
 };
 
+type UnfilteredTypeCoverageRegion = {
+  type: 'unchecked' | 'partial' | 'default' | 'checked';
+  line: number;
+  start: number;
+  end: number;
+};
+
 export function convertTypedRegionsToCoverageRegions(
   regions: ?Array<HackTypedRegion>
 ): Array<TypeCoverageRegion> {
@@ -38,14 +45,13 @@ export function convertTypedRegionsToCoverageRegions(
   const startColumn = 1;
   let line = 1;
   let column = startColumn;
-  const results: Array<TypeCoverageRegion> = [];
+  const unfilteredResults: Array<UnfilteredTypeCoverageRegion> = [];
   regions.forEach(region => {
     const type = region.color;
-    const isMessage = (type === 'unchecked') || (type === 'partial');
 
     function addMessage(width) {
-      if (isMessage && width > 0) {
-        const last = results[results.length - 1];
+      if (width > 0) {
+        const last = unfilteredResults[unfilteredResults.length - 1];
         const endColumn = column + width - 1;
         // Often we'll get contiguous blocks of errors on the same line.
         if (last != null && last.type === type
@@ -53,8 +59,7 @@ export function convertTypedRegionsToCoverageRegions(
           // So we just merge them into 1 block.
           last.end = endColumn;
         } else {
-          invariant((type === 'unchecked') || (type === 'partial'));
-          results.push({
+          unfilteredResults.push({
             type,
             line,
             start: column,
@@ -81,5 +86,14 @@ export function convertTypedRegionsToCoverageRegions(
     column += last.length;
   });
 
-  return results;
+  return filterResults(unfilteredResults);
+}
+
+function filterResults(
+  unfilteredResults: Array<UnfilteredTypeCoverageRegion>,
+): Array<TypeCoverageRegion> {
+  // Flow doesn't understand filter so we cast.
+  return (unfilteredResults.filter(region =>
+    region.type === 'unchecked' || region.type === 'partial'
+  ): any);
 }
