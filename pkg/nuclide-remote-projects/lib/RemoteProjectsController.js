@@ -46,14 +46,15 @@ class RemoteProjectsController {
     }
   }
 
-  _updateConnectionStatus(paneItem: Object): void {
+  _updateConnectionStatus(paneItem: mixed): void {
     this._disposeSubscription();
 
     if (!atom.workspace.isTextEditor(paneItem)) {
       this._renderStatusBar(ConnectionState.NONE);
       return;
     }
-    const textEditor = paneItem;
+    // Flow does not understand that isTextEditor refines the type to atom$TextEditor
+    const textEditor = ((paneItem: any): atom$TextEditor);
     const fileUri = textEditor.getPath();
     if (!fileUri) {
       return;

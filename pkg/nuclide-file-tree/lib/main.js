@@ -41,7 +41,7 @@ class Activation {
   _fileTreeController: FileTreeControllerType;
   _packageState: ?FileTreeControllerState;
   _subscriptions: CompositeDisposable;
-  _paneItemSubscription: ?Disposable;
+  _paneItemSubscription: ?IDisposable;
 
   constructor(state: ?FileTreeControllerState) {
     this._packageState = state;

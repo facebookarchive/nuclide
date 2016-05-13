@@ -59,7 +59,7 @@ export function observeActiveEditorsDebounced(
       if (atom.workspace.isTextEditor(paneItem)) {
         // Flow cannot understand the type refinement provided by the isTextEditor function, so we
         // have to cast.
-        return (paneItem: any);
+        return ((paneItem: any): atom$TextEditor);
       }
       return null;
     });

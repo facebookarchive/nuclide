@@ -686,8 +686,14 @@ declare class atom$TextEditor extends atom$Model {
   gutterWithName(name: string): ?atom$Gutter;
 
   // Scrolling the TextEditor
-  scrollToBufferPosition(position: atom$Point | number[], options?: {center?: boolean}): void;
-  scrollToScreenPosition(position: atom$Point | number[], options?: {center?: boolean}): void;
+  scrollToBufferPosition(
+    position: atom$Point | [?number, ?number],
+    options?: {center?: boolean}
+  ): void;
+  scrollToScreenPosition(
+    position: atom$Point | [?number, ?number],
+    options?: {center?: boolean}
+  ): void;
   scrollToBottom(): void;
   scrollToTop(): void;
 
@@ -708,7 +714,7 @@ declare class atom$TextEditor extends atom$Model {
   getDefaultCharWidth(): number;
   getLineHeightInPixels(): number;
   moveToTop(): void;
-  tokenForBufferPosition(position: atom$Point | number[]): atom$Token;
+  tokenForBufferPosition(position: atom$Point | [?number, ?number]): atom$Token;
   onDidConflict(callback: () => void): IDisposable;
 }
 
@@ -1187,6 +1193,7 @@ declare class atom$TextBuffer {
   onDidStopChanging(callback: () => mixed): IDisposable;
   onDidSave(callback: () => mixed): IDisposable;
   onDidReload(callback: () => mixed): IDisposable;
+  onDidChangeModified(callback: () => mixed): IDisposable;
 
   // File Details
   setPath(filePath: string): void;
@@ -1244,8 +1251,10 @@ declare class atom$TextBuffer {
   // Buffer Operations
   reload(): void;
   load(): Promise<void>;
+  save(): void;
 
   isInConflict(): boolean;
+  isModified(): boolean;
 
   // Private APIs
   cachedDiskContents: ?string;

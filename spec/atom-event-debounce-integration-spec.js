@@ -25,7 +25,7 @@ const PACKAGE_LOAD_TIMEOUT = 30000; // milliseconds
 
 describe('editorScrollTopDebounced', () => {
   let editor: atom$TextEditor = (null: any);
-  let editorScroll: Observable<void> = (null: any);
+  let editorScroll: Observable<number> = (null: any);
   const LINES: number = 1000;
 
   it('debounces scroll event', () => {

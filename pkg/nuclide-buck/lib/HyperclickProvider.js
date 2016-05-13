@@ -31,7 +31,7 @@ import escapeStringRegExp from 'escape-string-regexp';
  * Returns null if target cannot be parsed from given arguments.
  */
 async function parseTarget(
-  match: Array<?string>,
+  match: Array<?string> | Array<string>,
   filePath: ?string,
   buckProject: BuckProject,
 ): Promise<?Target> {
@@ -159,7 +159,7 @@ async function findBuildTarget(
   buckProject: BuckProject,
 ): Promise<?HyperclickMatch> {
   const wordMatchAndRange = extractWordAtPosition(textEditor, position, TARGET_REGEX);
-  if (!wordMatchAndRange) {
+  if (wordMatchAndRange == null) {
     return null;
   }
   const {wordMatch, range} = wordMatchAndRange;

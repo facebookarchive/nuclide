@@ -16,9 +16,9 @@ import type {Observable} from 'rxjs';
 // By default will center the opened text editor.
 async function goToLocation(
     file: string,
-    line: number,
-    column: number,
-    center: boolean = true): Promise<atom$TextEditor> {
+    line?: number,
+    column?: number,
+    center?: boolean = true): Promise<atom$TextEditor> {
   const editor = await atom.workspace.open(file, {
     initialLine: line,
     initialColumn: column,
