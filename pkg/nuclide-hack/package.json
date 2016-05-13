@@ -83,6 +83,11 @@
       "versions": {
         "0.0.0": "provideOutlines"
       }
+    },
+    "nuclide-type-coverage": {
+      "versions": {
+        "0.0.0": "provideCoverage"
+      }
     }
   }
 }

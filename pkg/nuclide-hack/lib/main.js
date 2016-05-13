@@ -17,20 +17,14 @@ import type {HyperclickProvider} from '../../hyperclick/lib/types';
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 import type {DefinitionProvider} from '../../nuclide-definition-service';
+import type {CoverageProvider} from '../../nuclide-type-coverage/lib/types';
 
 import CodeHighlightProvider from './CodeHighlightProvider';
 import {CompositeDisposable} from 'atom';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
-import {
-  SHOW_TYPE_COVERAGE_CONFIG_PATH,
-  getShowTypeCoverage,
-  setShowTypeCoverage,
-} from './config';
 import {TypeCoverageProvider} from './TypeCoverageProvider';
 import {OutlineViewProvider} from './OutlineViewProvider';
-import {onDidChange} from '../../nuclide-feature-config';
 import {HackDefinitionProvider} from './HackDefinitionProvider';
-import invariant from 'assert';
 
 const HACK_GRAMMARS_STRING = HACK_GRAMMARS.join(', ');
 const PACKAGE_NAME = 'nuclide-hack';
@@ -38,7 +32,6 @@ const PACKAGE_NAME = 'nuclide-hack';
 let subscriptions: ?CompositeDisposable = null;
 let hackDiagnosticsProvider;
 let busySignalProvider;
-let hackTypeCoverageProviderSubscription = null;
 let coverageProvider = null;
 let definitionProvider: ?DefinitionProvider = null;
 
@@ -55,21 +48,6 @@ export function activate() {
       hackDiagnosticsProvider.invalidateProjectPath(projectPath);
     }
   }));
-  subscriptions.add(onDidChange(SHOW_TYPE_COVERAGE_CONFIG_PATH,
-    (delta: {newValue: boolean; oldValue: boolean}) => {
-      if (delta.newValue) {
-        enableCoverageProvider();
-      } else {
-        disableCoverageProvider();
-      }
-    }));
-  subscriptions.add(
-    atom.commands.add('atom-workspace',
-      'nuclide-hack:toggle-type-coverage', toggleTypeCoverage));
-
-  if (getShowTypeCoverage()) {
-    enableCoverageProvider();
-  }
 }
 
 /** Provider for autocomplete service. */
@@ -180,7 +158,6 @@ export function deactivate(): void {
     hackDiagnosticsProvider.dispose();
     hackDiagnosticsProvider = null;
   }
-  disableCoverageProvider();
 }
 
 export function provideOutlines(): OutlineProvider {
@@ -201,29 +178,22 @@ function provideBusySignal(): BusySignalProviderBaseType {
   return busySignalProvider;
 }
 
-function enableCoverageProvider(): void {
+export function provideCoverage(): CoverageProvider {
+  return {
+    displayName: 'Hack',
+    priority: 10,
+    grammarScopes: HACK_GRAMMARS,
+    getCoverage(path) {
+      return getTypeCoverageProvider().getTypeCoverage(path);
+    },
+  };
+}
+
+function getTypeCoverageProvider(): TypeCoverageProvider {
   if (coverageProvider == null) {
     coverageProvider = new TypeCoverageProvider(provideBusySignal());
-    invariant(hackTypeCoverageProviderSubscription == null);
-    hackTypeCoverageProviderSubscription = atom.packages.serviceHub.provide(
-      'nuclide-diagnostics-provider', '0.1.0',
-      coverageProvider);
   }
-}
-
-function disableCoverageProvider(): void {
-  if (hackTypeCoverageProviderSubscription != null) {
-    hackTypeCoverageProviderSubscription.dispose();
-    hackTypeCoverageProviderSubscription = null;
-  }
-  if (coverageProvider != null) {
-    coverageProvider.dispose();
-    coverageProvider = null;
-  }
-}
-
-function toggleTypeCoverage(): void {
-  setShowTypeCoverage(!getShowTypeCoverage());
+  return coverageProvider;
 }
 
 export function provideDefinitions(): DefinitionProvider {
