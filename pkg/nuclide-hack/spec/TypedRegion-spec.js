@@ -84,7 +84,7 @@ describe('convertTypedRegionsToCoverageRegions', () => {
           text: 'blah',
         },
       ],
-      0,
+      50,
       {
         line: 1,
         start: 1,
