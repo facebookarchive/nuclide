@@ -11,6 +11,12 @@
 
 import util from 'util';
 
+import {
+  activateAllPackages,
+  deactivateAllPackages,
+  jasmineIntegrationTestSetup,
+} from '../pkg/nuclide-integration-test-helpers';
+
 describe('aaa-nuclide', () => {
   it('print the environment', () => {
     // eslint-disable-next-line no-console
@@ -24,4 +30,30 @@ describe('aaa-nuclide', () => {
 
     expect(true).toBe(true);
   });
+
+  it('deactivates cleanly', () => {
+    // This test has a high timeout because when it runs on the CI, the
+    // transpile cache is cold. This test, among other things, warms up the
+    // cache as a side-effect.
+    waitsForPromise({timeout: 30000}, async () => {
+      jasmineIntegrationTestSetup();
+
+      await activateAllPackages();
+      await sleep(500);
+      spyOn(console, 'error').andCallThrough();
+      deactivateAllPackages();
+      await sleep(500);
+
+      // eslint-disable-next-line no-console
+      console.error.argsForCall.forEach(args => {
+        // If this test is failing for you, the easiest way to repro is to
+        // "disable" Nuclide from the Settings view.
+        expect(args[0]).not.toMatch(/^Error deactivating/i);
+      });
+    });
+  });
 });
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
