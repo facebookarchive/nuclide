@@ -12,7 +12,7 @@
 import type {TypeHint} from '../../nuclide-type-hint/lib/types';
 
 import invariant from 'assert';
-import {extractWordAtPosition} from '../../nuclide-atom-helpers';
+import wordAtPosition from '../../commons-atom/word-at-position';
 import featureConfig from '../../nuclide-feature-config';
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 import {Range} from 'atom';
@@ -49,7 +49,7 @@ export class FlowTypeHintProvider {
     // TODO(nmote) refine this regex to better capture JavaScript expressions.
     // Having this regex be not quite right is just a display issue, though --
     // it only affects the location of the tooltip.
-    const word = extractWordAtPosition(editor, position, JAVASCRIPT_WORD_REGEX);
+    const word = wordAtPosition(editor, position, JAVASCRIPT_WORD_REGEX);
     let range;
     if (word) {
       range = word.range;

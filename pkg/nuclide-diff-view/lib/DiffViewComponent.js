@@ -34,8 +34,8 @@ import DiffNavigationBar from './DiffNavigationBar';
 import DiffCommitView from './DiffCommitView';
 import DiffPublishView from './DiffPublishView';
 import {computeDiff, getOffsetLineNumber} from './diff-utils';
-import {createPaneContainer} from '../../nuclide-atom-helpers';
-import {bufferForUri} from '../../nuclide-atom-helpers';
+import createPaneContainer from '../../commons-atom/create-pane-container';
+import {bufferForUri} from '../../commons-atom/text-editor';
 import {DiffMode} from './constants';
 
 type Props = {

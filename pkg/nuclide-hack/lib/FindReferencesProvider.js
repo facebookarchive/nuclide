@@ -18,14 +18,14 @@ import type {
 
 import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';
 import {trackOperationTiming} from '../../nuclide-analytics';
-import {withLoadingNotification} from '../../nuclide-atom-helpers';
 import {getHackLanguageForUri} from './HackLanguage';
+import loadingNotification from '../../commons-atom/loading-notification';
 
 async function doFindReferences(
   textEditor: atom$TextEditor,
   position: atom$Point,
 ): Promise<?Object /*FindReferencesReturn*/> {
-  const result = await withLoadingNotification(
+  const result = await loadingNotification(
     findReferences(textEditor, position.row, position.column),
     'Loading references from Hack server...',
   );

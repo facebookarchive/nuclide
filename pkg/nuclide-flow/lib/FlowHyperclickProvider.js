@@ -14,7 +14,7 @@ import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 import invariant from 'assert';
 
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
-import {goToLocation} from '../../nuclide-atom-helpers';
+import {goToLocation} from '../../commons-atom/go-to-location';
 
 import {JS_GRAMMARS} from './constants';
 const JS_GRAMMARS_SET = new Set(JS_GRAMMARS);

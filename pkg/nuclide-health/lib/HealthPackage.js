@@ -20,7 +20,9 @@ import Rx from 'rxjs';
 
 // Imports from other Nuclide packages.
 import {track, HistogramTracker} from '../../nuclide-analytics';
-import {atomEventDebounce} from '../../nuclide-atom-helpers';
+import {
+  onWorkspaceDidStopChangingActivePaneItem,
+} from '../../commons-atom/debounced';
 import featureConfig from '../../nuclide-feature-config';
 
 // Imports from within this Nuclide package.
@@ -55,7 +57,7 @@ export function activate(state: ?Object) {
       updateAnalytics();
     }),
     atom.workspace.onDidChangeActivePaneItem(disposeActiveEditorDisposables),
-    atomEventDebounce.onWorkspaceDidStopChangingActivePaneItem(timeActiveEditorKeys),
+    onWorkspaceDidStopChangingActivePaneItem(timeActiveEditorKeys),
   );
   currentConfig = featureConfig.get('nuclide-health');
   timeActiveEditorKeys();

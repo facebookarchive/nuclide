@@ -14,7 +14,7 @@ import type {AppState, BuildSystem, BuildSystemRegistry, SerializedAppState} fro
 import type {BehaviorSubject} from 'rxjs';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 
-import {syncAtomCommands} from '../../nuclide-atom-helpers';
+import syncAtomCommands from '../../commons-atom/sync-atom-commands';
 import {DisposableSubscription} from '../../nuclide-commons';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
@@ -68,6 +68,7 @@ export function activate(rawState: ?SerializedAppState): void {
         .map(tasks => new Set(tasks.map(task => task.type))),
       taskType => ({
         'atom-workspace': {
+          // $FlowFixMe(matthewwithanm)
           [`nuclide-build:${taskType}`]: () => { commands.runTask(taskType); },
         },
       }),

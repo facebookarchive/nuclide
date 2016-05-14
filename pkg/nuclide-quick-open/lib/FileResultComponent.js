@@ -12,7 +12,7 @@
 import type {FileResult} from './types';
 
 import {React} from 'react-for-atom';
-import {fileTypeClass} from '../../nuclide-atom-helpers';
+import fileTypeClass from '../../commons-atom/file-type-class';
 import path from 'path';
 
 type Key = number | string;

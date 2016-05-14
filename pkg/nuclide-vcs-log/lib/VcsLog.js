@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {VcsLogEntry} from '../../nuclide-hg-repository-base/lib/HgService';
 
 import {React} from 'react-for-atom';
-import {projects} from '../../nuclide-atom-helpers';
+import {getAtomProjectRelativePath} from '../../commons-atom/projects';
 import shell from 'shell';
 import {shortNameForAuthor} from './util';
 
@@ -35,7 +35,7 @@ export default class VcsLog extends React.Component {
     super(props);
     this._files = [];
     for (const file of props.files) {
-      const projectPath = projects.getAtomProjectRelativePath(file);
+      const projectPath = getAtomProjectRelativePath(file);
       if (projectPath != null) {
         this._files.push(projectPath);
       }

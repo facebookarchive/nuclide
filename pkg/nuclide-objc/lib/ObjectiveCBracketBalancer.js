@@ -11,6 +11,8 @@
 
 import {Point, Range} from 'atom';
 import {trackOperationTiming} from '../../nuclide-analytics';
+import observeLanguageTextEditors from
+  '../../commons-atom/observe-language-text-editors';
 
 const GRAMMARS = [
   'source.objc',
@@ -32,7 +34,6 @@ class ObjectiveCBracketBalancer {
     }
 
     this._editingSubscriptionsMap = new Map();
-    const {observeLanguageTextEditors} = require('../../nuclide-atom-helpers');
     this._languageListener = observeLanguageTextEditors(
         GRAMMARS,
         textEditor => this._enableInTextEditor(textEditor),

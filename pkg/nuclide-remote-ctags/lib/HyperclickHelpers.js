@@ -12,7 +12,7 @@
 import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 import type {CtagsResult, CtagsService} from '../../nuclide-remote-ctags-base';
 
-import {goToLocation} from '../../nuclide-atom-helpers';
+import {goToLocation} from '../../commons-atom/go-to-location';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {dirname, relative} from '../../nuclide-remote-uri';
 import {CTAGS_KIND_NAMES, getLineNumberForTag} from './utils';

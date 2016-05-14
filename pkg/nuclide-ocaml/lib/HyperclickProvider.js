@@ -14,6 +14,7 @@ import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 import path from 'path';
 import invariant from 'assert';
 import {GRAMMARS} from './constants';
+import {goToLocation} from '../../commons-atom/go-to-location';
 
 const EXTENSIONS = new Set([
   'ml',
@@ -63,7 +64,6 @@ module.exports = {
           return;
         }
 
-        const {goToLocation} = require('../../nuclide-atom-helpers');
         goToLocation(location.file, location.pos.line - 1, location.pos.col);
       },
     };

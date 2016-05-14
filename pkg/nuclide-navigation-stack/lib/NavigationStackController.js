@@ -14,7 +14,7 @@ import type {EditorLocation, Location} from './Location';
 
 import {
   setPositionAndScroll,
-} from '../../nuclide-atom-helpers';
+} from '../../commons-atom/text-editor';
 import {NavigationStack} from './NavigationStack';
 import invariant from 'assert';
 import {contains} from '../../nuclide-remote-uri';

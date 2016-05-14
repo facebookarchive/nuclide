@@ -13,7 +13,7 @@ import type {BuildSystem, BuildSystemRegistry} from '../../nuclide-build/lib/typ
 import type {BuckBuildSystem as BuckBuildSystemType} from './BuckBuildSystem';
 import type {SerializedState} from './types';
 
-import {registerGrammarForFileExtension} from '../../nuclide-atom-helpers';
+import registerGrammar from '../../commons-atom/register-grammar';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import HyperclickProvider from './HyperclickProvider';
@@ -29,9 +29,9 @@ export function activate(rawState: ?Object): void {
     new Disposable(() => { buildSystem = null; }),
     new Disposable(() => { initialState = null; }),
   );
-  registerGrammarForFileExtension('source.python', 'BUCK');
-  registerGrammarForFileExtension('source.json', 'BUCK.autodeps');
-  registerGrammarForFileExtension('source.ini', '.buckconfig');
+  registerGrammar('source.python', 'BUCK');
+  registerGrammar('source.json', 'BUCK.autodeps');
+  registerGrammar('source.ini', '.buckconfig');
 }
 
 export function deactivate(): void {

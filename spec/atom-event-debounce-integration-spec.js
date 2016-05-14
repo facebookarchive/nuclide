@@ -10,8 +10,10 @@
  */
 
 import {Observable} from 'rxjs';
-import {atomEventDebounce} from '../pkg/nuclide-atom-helpers';
 import {Point} from 'atom';
+import {
+  editorScrollTopDebounced,
+} from '../pkg/commons-atom/debounced';
 
 import {
   activateAllPackages,
@@ -42,7 +44,7 @@ describe('editorScrollTopDebounced', () => {
       editor = await atom.workspace.open();
       editor.setText(mockText);
 
-      editorScroll = atomEventDebounce.editorScrollTopDebounced(editor, DEBOUNCE_INTERVAL);
+      editorScroll = editorScrollTopDebounced(editor, DEBOUNCE_INTERVAL);
 
       const eventsPromise = editorScroll
         .takeUntil(Observable.of(null).delay(500))

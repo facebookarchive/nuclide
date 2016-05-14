@@ -23,6 +23,8 @@ import {CompositeDisposable} from 'atom';
 import featureConfig from '../../nuclide-feature-config';
 import {getServiceByNuclideUri} from '../../nuclide-client';
 import {track} from '../../nuclide-analytics';
+import registerGrammar from '../../commons-atom/register-grammar';
+import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 
 import {getCoverage} from './FlowCoverageProvider';
 
@@ -52,8 +54,7 @@ export function activate() {
       allowFlowServerRestart,
     ));
 
-    const {registerGrammarForFileExtension} = require('../../nuclide-atom-helpers');
-    registerGrammarForFileExtension('source.ini', '.flowconfig');
+    registerGrammar('source.ini', '.flowconfig');
   }
 }
 
@@ -107,8 +108,7 @@ export function provideDiagnostics() {
     const runOnTheFly = ((featureConfig.get(diagnosticsOnFlySetting): any): boolean);
     flowDiagnosticsProvider = new FlowDiagnosticsProvider(runOnTheFly, busyProvider);
     invariant(disposables);
-    const {projects} = require('../../nuclide-atom-helpers');
-    disposables.add(projects.onDidRemoveProjectPath(projectPath => {
+    disposables.add(onDidRemoveProjectPath(projectPath => {
       invariant(flowDiagnosticsProvider);
       flowDiagnosticsProvider.invalidateProjectPath(projectPath);
     }));

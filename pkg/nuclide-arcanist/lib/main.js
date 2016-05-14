@@ -14,6 +14,7 @@ import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
 
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
+import registerGrammar from '../../commons-atom/register-grammar';
 
 let subscriptions: ?CompositeDisposable = null;
 
@@ -34,8 +35,7 @@ export function activate(): void {
 
   subscriptions = new CompositeDisposable();
 
-  const {registerGrammarForFileExtension} = require('../../nuclide-atom-helpers');
-  registerGrammarForFileExtension('source.json', '.arcconfig');
+  registerGrammar('source.json', '.arcconfig');
 }
 
 export function dactivate(): void {

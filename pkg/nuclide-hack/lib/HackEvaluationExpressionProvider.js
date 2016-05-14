@@ -11,7 +11,7 @@
 
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/service';
 
-import {extractWordAtPosition} from '../../nuclide-atom-helpers';
+import wordAtPosition from '../../commons-atom/word-at-position';
 
 // A heuristic for named variables in Hack.
 // TODO: Replace RegExp with AST-based, more accurate approach.
@@ -23,7 +23,7 @@ export class HackEvaluationExpressionProvider {
     editor: atom$TextEditor,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression> {
-    const extractedIdentifier = extractWordAtPosition(editor, position, HACK_IDENTIFIER_REGEXP);
+    const extractedIdentifier = wordAtPosition(editor, position, HACK_IDENTIFIER_REGEXP);
     if (extractedIdentifier == null) {
       return Promise.resolve(null);
     }

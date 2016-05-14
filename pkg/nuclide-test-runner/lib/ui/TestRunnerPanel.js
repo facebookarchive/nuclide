@@ -23,7 +23,7 @@ import {
   ButtonSizes,
   ButtonTypes,
 } from '../../../nuclide-ui/lib/Button';
-import {createPaneContainer} from '../../../nuclide-atom-helpers';
+import createPaneContainer from '../../../commons-atom/create-pane-container';
 import {React, ReactDOM} from 'react-for-atom';
 import TestClassTree from './TestClassTree';
 

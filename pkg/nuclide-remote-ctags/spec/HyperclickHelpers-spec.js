@@ -10,10 +10,10 @@
  */
 
 import type {CtagsResult} from '../../nuclide-remote-ctags-base';
+import type {goToLocation} from '../../commons-atom/go-to-location';
 
 import invariant from 'assert';
 import {Range} from 'atom';
-import atomHelpers from '../../nuclide-atom-helpers';
 import HyperclickHelpers from '../lib/HyperclickHelpers';
 
 const fakeEditor: atom$TextEditor = ({
@@ -24,10 +24,13 @@ const fakeEditor: atom$TextEditor = ({
 
 describe('HyperclickHelpers', () => {
   let findTagsResult: Array<CtagsResult> = [];
+  let goToLocationSpy: goToLocation = (null: any);
+
   beforeEach(() => {
     // HACK: goToLocation is a getter. Not too easy to mock out :(
-    delete atomHelpers.goToLocation;
-    atomHelpers.goToLocation = jasmine.createSpy('goToLocation');
+    goToLocationSpy =
+      spyOn(require('../../commons-atom/go-to-location'), 'goToLocation')
+        .andCallThrough();
 
     // Mock the services we use.
     spyOn(require('../../nuclide-remote-connection'), 'getServiceByNuclideUri')
@@ -101,15 +104,15 @@ describe('HyperclickHelpers', () => {
 
       // Blindly use line numbers, if they're given.
       await result.callback[0].callback();
-      expect(atomHelpers.goToLocation).toHaveBeenCalledWith('/path1/path2/a.py', 1336, 0);
+      expect(goToLocationSpy).toHaveBeenCalledWith('/path1/path2/a.py', 1336, 0);
 
       // Find the line by pattern, in other cases.
       await result.callback[1].callback();
-      expect(atomHelpers.goToLocation).toHaveBeenCalledWith('/path1/a', 2, 0);
+      expect(goToLocationSpy).toHaveBeenCalledWith('/path1/a', 2, 0);
 
       // Default to the first line, if it's not actually in the file any more.
       await result.callback[2].callback();
-      expect(atomHelpers.goToLocation).toHaveBeenCalledWith('/test/a', 0, 0);
+      expect(goToLocationSpy).toHaveBeenCalledWith('/test/a', 0, 0);
     });
   });
 
@@ -134,7 +137,7 @@ describe('HyperclickHelpers', () => {
       invariant(typeof result.callback === 'function');
 
       await result.callback();
-      expect(atomHelpers.goToLocation).toHaveBeenCalledWith('/test', 1, 0);
+      expect(goToLocationSpy).toHaveBeenCalledWith('/test', 1, 0);
     });
   });
 

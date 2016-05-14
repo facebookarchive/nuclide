@@ -15,6 +15,9 @@ import {EventEmitter} from 'events';
 import {getBuckProjectRoot} from '../../nuclide-buck-base';
 import {trackTiming} from '../../nuclide-analytics';
 import remoteUri from '../../nuclide-remote-uri';
+import {
+  onWorkspaceDidStopChangingActivePaneItem,
+} from '../../commons-atom/debounced';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
@@ -39,8 +42,6 @@ class ProjectStore {
   _monitorActiveEditorChange() {
     // For the current active editor, and any update to the active editor,
     // decide whether the toolbar should be displayed.
-    const {onWorkspaceDidStopChangingActivePaneItem} =
-        require('../../nuclide-atom-helpers').atomEventDebounce;
     const callback = this._onDidChangeActivePaneItem.bind(this);
     this._disposables.add(onWorkspaceDidStopChangingActivePaneItem(callback));
     callback();

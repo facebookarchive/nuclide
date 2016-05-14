@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {AtomCommands} from '../../nuclide-atom-helpers';
+import type {AtomCommands} from '../../commons-atom/sync-atom-commands';
 import type Commands from './Commands';
 import type {Gadget} from './types';
 

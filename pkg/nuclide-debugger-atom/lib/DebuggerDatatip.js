@@ -16,7 +16,7 @@ import type {Datatip} from '../../nuclide-datatip/lib/types';
 import type DebuggerModel from './DebuggerModel';
 import type {EvaluationResult} from './Bridge';
 
-import {extractWordAtPosition} from '../../nuclide-atom-helpers';
+import wordAtPosition from '../../commons-atom/word-at-position';
 import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 import {DebuggerMode} from './DebuggerStore';
 import {DebuggerDatatipComponent} from './DebuggerDatatipComponent';
@@ -29,7 +29,7 @@ function defaultGetEvaluationExpression(
   editor: atom$TextEditor,
   position: atom$Point,
 ): Promise<?NuclideEvaluationExpression> {
-  const extractedIdentifier = extractWordAtPosition(editor, position, DEFAULT_WORD_REGEX);
+  const extractedIdentifier = wordAtPosition(editor, position, DEFAULT_WORD_REGEX);
   if (extractedIdentifier == null) {
     return Promise.resolve(null);
   }

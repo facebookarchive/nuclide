@@ -64,7 +64,7 @@ import remoteUri from '../../nuclide-remote-uri';
 import RepositoryStack from './RepositoryStack';
 import Rx from 'rxjs';
 import {notifyInternalError} from './notifications';
-import {bufferForUri, loadBufferForUri} from '../../nuclide-atom-helpers';
+import {bufferForUri, loadBufferForUri} from '../../commons-atom/text-editor';
 import {getLogger} from '../../nuclide-logging';
 
 const ACTIVE_FILE_UPDATE_EVENT = 'active-file-update';

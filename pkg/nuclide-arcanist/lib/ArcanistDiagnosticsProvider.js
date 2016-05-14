@@ -21,7 +21,7 @@ import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 
 import featureConfig from '../../nuclide-feature-config';
 import {trackTiming} from '../../nuclide-analytics';
-import {onWillDestroyTextBuffer} from '../../nuclide-atom-helpers';
+import onWillDestroyTextBuffer from '../../commons-atom/on-will-destroy-text-buffer';
 import {promises} from '../../nuclide-commons';
 import invariant from 'assert';
 

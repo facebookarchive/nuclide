@@ -11,13 +11,15 @@
 
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
-import {atomEventDebounce} from '../../nuclide-atom-helpers';
 import {debounce} from '../../nuclide-commons';
 import SimulatorDropdown from './SimulatorDropdown';
 import BuckToolbarActions from './BuckToolbarActions';
 import BuckToolbarStore from './BuckToolbarStore';
 import {Combobox} from '../../nuclide-ui/lib/Combobox';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
+import {
+  onWorkspaceDidStopChangingActivePaneItem,
+} from '../../commons-atom/debounced';
 
 const BUCK_TARGET_INPUT_WIDTH = 400;
 const formatRequestOptionsErrorMessage = () => 'Invalid .buckconfig';
@@ -58,7 +60,7 @@ class BuckToolbar extends React.Component {
 
     this._disposables = new CompositeDisposable();
     this._disposables.add(this._buckToolbarStore);
-    this._disposables.add(atomEventDebounce.onWorkspaceDidStopChangingActivePaneItem(
+    this._disposables.add(onWorkspaceDidStopChangingActivePaneItem(
       this._onActivePaneItemChanged.bind(this)));
 
     // Re-render whenever the data in the store changes.

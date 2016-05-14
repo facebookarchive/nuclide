@@ -12,7 +12,7 @@
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-base';
 
 import {fileColumnCellDataGetter} from './paneUtils';
-import {goToLocation} from '../../nuclide-atom-helpers';
+import {goToLocation} from '../../commons-atom/go-to-location';
 import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
 import {React} from 'react-for-atom';
 import {track} from '../../nuclide-analytics';

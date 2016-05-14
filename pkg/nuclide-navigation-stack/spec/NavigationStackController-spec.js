@@ -21,7 +21,7 @@ describe('NavigationStackController test suite', () => {
   beforeEach(() => {
 
     setPositionAndScroll =
-      spyOn(require('../../nuclide-atom-helpers/lib/text-editor'), 'setPositionAndScroll');
+      spyOn(require('../../commons-atom/text-editor'), 'setPositionAndScroll');
     spyOn(require('../lib/Location'), 'getPathOfLocation')
       .andCallFake(location => location.editor.getPath());
     spyOn(require('../lib/Location'), 'getLocationOfEditor')

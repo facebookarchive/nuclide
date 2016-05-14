@@ -25,6 +25,7 @@ import {HACK_GRAMMARS} from '../../nuclide-hack-common';
 import {TypeCoverageProvider} from './TypeCoverageProvider';
 import {OutlineViewProvider} from './OutlineViewProvider';
 import {HackDefinitionProvider} from './HackDefinitionProvider';
+import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 
 const HACK_GRAMMARS_STRING = HACK_GRAMMARS.join(', ');
 const PACKAGE_NAME = 'nuclide-hack';
@@ -37,9 +38,8 @@ let definitionProvider: ?DefinitionProvider = null;
 
 export function activate() {
   const {getCachedHackLanguageForUri} = require('./HackLanguage');
-  const {projects} = require('../../nuclide-atom-helpers');
   subscriptions = new CompositeDisposable();
-  subscriptions.add(projects.onDidRemoveProjectPath(projectPath => {
+  subscriptions.add(onDidRemoveProjectPath(projectPath => {
     const hackLanguage = getCachedHackLanguageForUri(projectPath);
     if (hackLanguage) {
       hackLanguage.dispose();

@@ -11,13 +11,13 @@
 
 import type {Datatip} from '../../nuclide-datatip/lib/types';
 
-import {extractWordAtPosition} from '../../nuclide-atom-helpers';
+import wordAtPosition from '../../commons-atom/word-at-position';
 import {makeSampleDatatipComponent} from './SampleDatatipComponent';
 
 const WORD_REGEX = /\w+/gi;
 
 export async function datatip(editor: TextEditor, position: atom$Point): Promise<?Datatip> {
-  const extractedWord = extractWordAtPosition(editor, position, WORD_REGEX);
+  const extractedWord = wordAtPosition(editor, position, WORD_REGEX);
   if (extractedWord == null) {
     return null;
   }

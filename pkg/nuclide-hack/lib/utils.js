@@ -15,7 +15,7 @@ import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
 import {getConfig} from './config';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import invariant from 'assert';
-import {extractWordAtPosition} from '../../nuclide-atom-helpers';
+import wordAtPosition from '../../commons-atom/word-at-position';
 import {passesGK} from '../../nuclide-commons';
 
 const MATCH_PREFIX_CASE_SENSITIVE_SCORE = 6;
@@ -72,7 +72,7 @@ export function getIdentifierAndRange(
   editor: atom$TextEditor,
   position: atom$Point
 ): ?{id: string; range: atom$Range} {
-  const matchData = extractWordAtPosition(editor, position, HACK_WORD_REGEX);
+  const matchData = wordAtPosition(editor, position, HACK_WORD_REGEX);
   return (matchData == null || matchData.wordMatch.length === 0) ? null
       : {id: matchData.wordMatch[0], range: matchData.range};
 }

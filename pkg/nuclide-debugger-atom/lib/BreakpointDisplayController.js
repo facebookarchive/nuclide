@@ -12,7 +12,10 @@
 import type BreakpointStore from './BreakpointStore';
 
 import {CompositeDisposable, Disposable} from 'atom';
-import {atomEventDebounce} from '../../nuclide-atom-helpers';
+import {
+  editorChangesDebounced,
+  editorScrollTopDebounced,
+} from '../../commons-atom/debounced';
 
 /**
  * A single delegate which handles events from the object.
@@ -92,9 +95,9 @@ class BreakpointDisplayController {
     this._disposables.add(this._editor.onDidDestroy(this._handleTextEditorDestroyed.bind(this)));
 
     // Update shadow breakpoints on debounced editor change and debounced view scroll
-    atomEventDebounce.editorScrollTopDebounced(this._editor, 300, false)
+    editorScrollTopDebounced(this._editor, 300, false)
       .subscribe(this._update.bind(this));
-    atomEventDebounce.editorChangesDebounced(this._editor, 300, false)
+    editorChangesDebounced(this._editor, 300, false)
       .subscribe(this._update.bind(this, true));
 
     const disposableCallback =

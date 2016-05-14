@@ -16,7 +16,8 @@ import type {Point} from 'atom';
 
 import {getBuckProject} from '../../nuclide-buck-base';
 import {fsPromise} from '../../nuclide-commons';
-import {goToLocation, extractWordAtPosition} from '../../nuclide-atom-helpers';
+import wordAtPosition from '../../commons-atom/word-at-position';
+import {goToLocation} from '../../commons-atom/go-to-location';
 import pathModule from 'path';
 import escapeStringRegExp from 'escape-string-regexp';
 
@@ -158,7 +159,7 @@ async function findBuildTarget(
   absolutePath: string,
   buckProject: BuckProject,
 ): Promise<?HyperclickMatch> {
-  const wordMatchAndRange = extractWordAtPosition(textEditor, position, TARGET_REGEX);
+  const wordMatchAndRange = wordAtPosition(textEditor, position, TARGET_REGEX);
   if (wordMatchAndRange == null) {
     return null;
   }
@@ -188,7 +189,7 @@ async function findRelativeFilePath(
   position: atom$Point,
   directory: string,
 ): Promise<?HyperclickMatch> {
-  const wordMatchAndRange = extractWordAtPosition(textEditor, position, RELATIVE_FILE_PATH_REGEX);
+  const wordMatchAndRange = wordAtPosition(textEditor, position, RELATIVE_FILE_PATH_REGEX);
   if (!wordMatchAndRange) {
     return null;
   }

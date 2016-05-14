@@ -21,7 +21,7 @@ import {React, ReactDOM} from 'react-for-atom';
 import invariant from 'assert';
 import url from 'url';
 import {nuclideFeatures} from '../../../lib/nuclide-features';
-import {getUiTreePathFromTargetEvent} from '../../nuclide-atom-helpers';
+import uiTreePath from '../../commons-atom/ui-tree-path';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {getLogger} from '../../nuclide-logging';
 import {DiffMode, CommitMode} from './constants';
@@ -204,7 +204,7 @@ function addFileTreeCommands(commandName: string, diffOptions?: Object): void {
     '.tree-view .entry.file.list-item',
     commandName,
     event => {
-      const filePath = getUiTreePathFromTargetEvent(event);
+      const filePath = uiTreePath(event);
       atom.workspace.open(formatDiffViewUrl({
         file: filePath || '',
         ...diffOptions,
@@ -216,7 +216,7 @@ function addFileTreeCommands(commandName: string, diffOptions?: Object): void {
     '.tree-view .entry.directory.list-nested-item > .list-item',
     commandName,
     event => {
-      const directoryPath = getUiTreePathFromTargetEvent(event);
+      const directoryPath = uiTreePath(event);
       atom.workspace.open(formatDiffViewUrl({
         directory: directoryPath || '',
         ...diffOptions,

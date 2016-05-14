@@ -12,7 +12,7 @@
 import FileTreeActions from '../lib/FileTreeActions';
 import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
-import {fileTypeClass} from '../../nuclide-atom-helpers';
+import fileTypeClass from '../../commons-atom/file-type-class';
 import {filterName} from '../lib/FileTreeFilterHelper';
 import {isContextClick} from '../lib/FileTreeHelpers';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';

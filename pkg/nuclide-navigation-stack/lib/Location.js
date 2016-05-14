@@ -12,7 +12,7 @@
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import invariant from 'assert';
-import {getScrollTop} from '../../nuclide-atom-helpers';
+import {getScrollTop} from '../../commons-atom/text-editor';
 
 // A location which can be navigated to. Includes the file (as uri for closed files and as
 // atom$TextEditor for open files) as well as the cursor position and scroll.

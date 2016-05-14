@@ -16,7 +16,7 @@ import type {
 } from './types';
 import type {EventEmitter} from 'events';
 
-import {formatEnoentNotification} from '../../nuclide-atom-helpers';
+import formatEnoentNotification from '../../commons-atom/format-enoent-notification';
 import {executeRnRequests} from './executeRnRequests';
 import {Observable, Subject} from 'rxjs';
 

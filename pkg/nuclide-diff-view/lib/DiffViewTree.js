@@ -14,7 +14,7 @@ import type {FileChange, FileChangeStatusValue} from './types';
 import type DiffViewModel from './DiffViewModel';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
-import {fileTypeClass} from '../../nuclide-atom-helpers';
+import fileTypeClass from '../../commons-atom/file-type-class';
 import {TreeRootComponent} from '../../nuclide-ui/lib/TreeRootComponent';
 import DiffViewTreeNode from './DiffViewTreeNode';
 import remoteUri from '../../nuclide-remote-uri';
@@ -25,7 +25,7 @@ import {React} from 'react-for-atom';
 
 import {array} from '../../nuclide-commons';
 import classnames from 'classnames';
-import {getUiTreePathFromTargetEvent} from '../../nuclide-atom-helpers';
+import uiTreePath from '../../commons-atom/ui-tree-path';
 import {getPath, basename} from '../../nuclide-remote-uri';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {addPath, revertPath} from '../../nuclide-hg-repository/lib/actions';
@@ -110,7 +110,7 @@ export default class DiffViewTree extends React.Component {
           shouldDisplay: event => {
             // The context menu has the `currentTarget` set to `document`.
             // Hence, use `target` instead.
-            const filePath = getUiTreePathFromTargetEvent({currentTarget: event.target});
+            const filePath = uiTreePath({currentTarget: event.target});
             const statusCode = this.props.fileChanges.get(filePath);
             return statusCode === FileChangeStatus.UNTRACKED;
           },
@@ -121,7 +121,7 @@ export default class DiffViewTree extends React.Component {
           shouldDisplay: event => {
             // The context menu has the `currentTarget` set to `document`.
             // Hence, use `target` instead.
-            const filePath = getUiTreePathFromTargetEvent({currentTarget: event.target});
+            const filePath = uiTreePath({currentTarget: event.target});
             const statusCode = this.props.fileChanges.get(filePath);
             return REVERTABLE_STATUS_CODES.indexOf(statusCode) !== -1;
           },
@@ -145,7 +145,7 @@ export default class DiffViewTree extends React.Component {
       '.nuclide-diff-view-tree .entry.file-change',
       'nuclide-diff-tree:goto-file',
       event => {
-        const filePath = getUiTreePathFromTargetEvent(event);
+        const filePath = uiTreePath(event);
         if (filePath != null && filePath.length) {
           atom.workspace.open(filePath);
         }
@@ -155,7 +155,7 @@ export default class DiffViewTree extends React.Component {
       '.nuclide-diff-view-tree .entry.file-change',
       'nuclide-diff-tree:copy-full-path',
       event => {
-        const filePath = getUiTreePathFromTargetEvent(event);
+        const filePath = uiTreePath(event);
         atom.clipboard.write(getPath(filePath || ''));
       }
     ));
@@ -163,7 +163,7 @@ export default class DiffViewTree extends React.Component {
       '.nuclide-diff-view-tree .entry.file-change',
       'nuclide-diff-tree:copy-file-name',
       event => {
-        const filePath = getUiTreePathFromTargetEvent(event);
+        const filePath = uiTreePath(event);
         atom.clipboard.write(basename(filePath || ''));
       }
     ));
@@ -171,7 +171,7 @@ export default class DiffViewTree extends React.Component {
       '.nuclide-diff-view-tree .entry.file-change',
       'nuclide-diff-tree:add',
       event => {
-        const filePath = getUiTreePathFromTargetEvent(event);
+        const filePath = uiTreePath(event);
         if (filePath != null && filePath.length) {
           addPath(filePath);
         }
@@ -181,7 +181,7 @@ export default class DiffViewTree extends React.Component {
       '.nuclide-diff-view-tree .entry.file-change',
       'nuclide-diff-tree:revert',
       event => {
-        const filePath = getUiTreePathFromTargetEvent(event);
+        const filePath = uiTreePath(event);
         if (filePath != null && filePath.length) {
           revertPath(filePath);
         }

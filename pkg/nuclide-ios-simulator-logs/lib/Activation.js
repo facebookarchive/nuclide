@@ -11,7 +11,7 @@
 
 import type {OutputService} from '../../nuclide-console/lib/types';
 
-import {formatEnoentNotification} from '../../nuclide-atom-helpers';
+import formatEnoentNotification from '../../commons-atom/format-enoent-notification';
 import {LogTailer} from '../../nuclide-console/lib/LogTailer';
 import {createMessageStream} from './createMessageStream';
 import {createProcessStream} from './createProcessStream';

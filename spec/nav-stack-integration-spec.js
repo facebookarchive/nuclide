@@ -18,7 +18,7 @@ import {
   jasmineIntegrationTestSetup,
   setLocalProject,
 } from '../pkg/nuclide-integration-test-helpers';
-import {goToLocation} from '../pkg/nuclide-atom-helpers';
+import {goToLocation} from '../pkg/commons-atom/go-to-location';
 import path from 'path';
 
 function sleep(ms: number): Promise {

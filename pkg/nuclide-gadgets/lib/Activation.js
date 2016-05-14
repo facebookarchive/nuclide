@@ -18,7 +18,7 @@ import createGadgetsService from './createGadgetsService';
 import createAtomCommands from './createAtomCommands';
 import createStateStream from './createStateStream';
 import getInitialState from './getInitialState';
-import {syncAtomCommands} from '../../nuclide-atom-helpers';
+import syncAtomCommands from '../../commons-atom/sync-atom-commands';
 import {DisposableSubscription, event as commonsEvent} from '../../nuclide-commons';
 const {observableFromSubscribeFunction} = commonsEvent;
 import Rx from 'rxjs';
@@ -65,6 +65,7 @@ class Activation {
       syncAtomCommands(
         // $FlowFixMe(matthewwithanm): gadgetsMap is mixed because the state is an untyped Immutable.Map. It should be a record!
         gadget$.map(gadgetsMap => new Set(gadgetsMap.values())),
+        // $FlowFixMe(matthewwithanm)
         gadget => createAtomCommands(gadget, commands),
       ),
 

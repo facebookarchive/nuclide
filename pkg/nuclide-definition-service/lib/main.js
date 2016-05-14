@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {Disposable} from 'atom';
 import invariant from 'assert';
-import {ProviderRegistry} from '../../nuclide-atom-helpers/lib/ProviderRegistry';
+import ProviderRegistry from '../../commons-atom/ProviderRegistry';
 
 // position is the first char of the definition's identifier, while range
 // includes the entire definition. For example in:

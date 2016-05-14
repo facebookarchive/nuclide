@@ -11,7 +11,7 @@
 
 import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 
-import {goToLocation} from '../../nuclide-atom-helpers';
+import {goToLocation} from '../../commons-atom/go-to-location';
 import {GRAMMAR_SET} from './constants';
 import {getDeclaration} from './libclang';
 import findWholeRangeOfSymbol from './findWholeRangeOfSymbol';

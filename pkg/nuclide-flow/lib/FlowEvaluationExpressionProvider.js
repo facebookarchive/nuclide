@@ -11,7 +11,7 @@
 
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/service';
 
-import {extractWordAtPosition} from '../../nuclide-atom-helpers';
+import wordAtPosition from '../../commons-atom/word-at-position';
 import {JAVASCRIPT_IDENTIFIER_REGEX} from './constants';
 
 export class FlowEvaluationExpressionProvider {
@@ -21,7 +21,7 @@ export class FlowEvaluationExpressionProvider {
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression> {
     // TODO: Replace RegExp with AST-based, more accurate approach.
-    const extractedIdentifier = extractWordAtPosition(
+    const extractedIdentifier = wordAtPosition(
       editor,
       position,
       JAVASCRIPT_IDENTIFIER_REGEX,

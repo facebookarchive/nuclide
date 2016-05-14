@@ -10,14 +10,12 @@
  */
 
 import {CompositeDisposable} from 'atom';
-import {
-  projects,
-  getViewOfEditor,
-} from '../../nuclide-atom-helpers';
+import {onDidRemoveProjectPath} from '../../commons-atom/projects';
+import {getViewOfEditor} from '../../commons-atom/text-editor';
 import {NavigationStackController} from './NavigationStackController';
 import {trackOperationTiming} from '../../nuclide-analytics';
 import {DisposableSubscription} from '../../nuclide-commons';
-import {observeNavigatingEditors} from '../../nuclide-atom-helpers';
+import {observeNavigatingEditors} from '../../commons-atom/go-to-location';
 
 const controller = new NavigationStackController();
 
@@ -73,7 +71,7 @@ class Activation {
         controller.onActiveStopChanging((item: any));
       }
     }));
-    this._disposables.add(projects.onDidRemoveProjectPath(path => {
+    this._disposables.add(onDidRemoveProjectPath(path => {
       controller.removePath(
         path, atom.project.getDirectories().map(directory => directory.getPath()));
     }));

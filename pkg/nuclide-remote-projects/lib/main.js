@@ -19,7 +19,7 @@ import type RemoteDirectorySearcherT from './RemoteDirectorySearcher';
 import type RemoteProjectsControllerT from './RemoteProjectsController';
 import typeof * as FindInProjectService from '../../nuclide-remote-search';
 
-import {loadBufferForUri} from '../../nuclide-atom-helpers';
+import {loadBufferForUri} from '../../commons-atom/text-editor';
 import {getLogger} from '../../nuclide-logging';
 import {getOpenFileEditorForRemoteProject} from './utils';
 import featureConfig from '../../nuclide-feature-config';

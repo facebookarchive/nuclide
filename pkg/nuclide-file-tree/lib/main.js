@@ -21,6 +21,9 @@ import invariant from 'assert';
 import featureConfig from '../../nuclide-feature-config';
 import {nuclideFeatures} from '../../../lib/nuclide-features';
 import {debounce} from '../../nuclide-commons';
+import {
+  onWorkspaceDidStopChangingActivePaneItem,
+} from '../../commons-atom/debounced';
 
 import {WorkingSet} from '../../nuclide-working-sets';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
@@ -169,9 +172,6 @@ class Activation {
   }
 
   _setRevealOnFileSwitch(shouldReveal: boolean) {
-    const {onWorkspaceDidStopChangingActivePaneItem} =
-      require('../../nuclide-atom-helpers').atomEventDebounce;
-
     if (shouldReveal) {
       const reveal = () => {
         this._fileTreeController.revealActiveFile(/* showIfHidden */ false);

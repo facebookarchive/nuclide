@@ -16,6 +16,7 @@ import type {FileTreeNode} from '../../nuclide-file-tree/lib/FileTreeNode';
 import {CompositeDisposable, Disposable} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+import {goToLocation} from '../../commons-atom/go-to-location';
 import invariant from 'assert';
 
 const PACKAGES_MISSING_MESSAGE =
@@ -196,7 +197,6 @@ class Activation {
       {
         label: 'Toggle Blame',
         callback: async () => {
-          const {goToLocation} = require('../../nuclide-atom-helpers');
           findBlameableNodes(contextMenu).forEach(async node => {
             const editor = await goToLocation(node.uri);
             atom.commands.dispatch(atom.views.getView(editor), 'nuclide-blame:toggle-blame');

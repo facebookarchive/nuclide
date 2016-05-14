@@ -19,7 +19,9 @@ import {
   React,
   ReactDOM,
 } from 'react-for-atom';
-import {goToLocation as atomGoToLocation} from '../../nuclide-atom-helpers';
+import {
+  goToLocation as atomGoToLocation,
+} from '../../commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
 import {DiagnosticsPopup} from './DiagnosticsPopup';
 

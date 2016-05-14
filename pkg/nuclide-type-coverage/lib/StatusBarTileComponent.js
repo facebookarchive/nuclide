@@ -11,7 +11,7 @@
 
 import {React} from 'react-for-atom';
 
-import {addTooltip} from '../../nuclide-atom-helpers';
+import addTooltip from '../../nuclide-ui/lib/add-tooltip';
 import classnames from 'classnames';
 
 type Props = {

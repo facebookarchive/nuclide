@@ -11,7 +11,7 @@
 
 import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 
-import {goToLocation} from '../../nuclide-atom-helpers';
+import {goToLocation} from '../../commons-atom/go-to-location';
 import {trackTiming} from '../../nuclide-analytics';
 import {getHackLanguageForUri} from './HackLanguage';
 import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';

@@ -11,6 +11,8 @@
 
 import {CompositeDisposable, Range} from 'atom';
 import {trackOperationTiming} from '../../nuclide-analytics';
+import observeLanguageTextEditors from
+  '../../commons-atom/observe-language-text-editors';
 
 const GRAMMARS = [
   'source.objc',
@@ -41,7 +43,6 @@ class ObjectiveCColonIndenter {
       this._insertTextSubscriptionsMap.clear();
     }});
 
-    const {observeLanguageTextEditors} = require('../../nuclide-atom-helpers');
     subscriptions.add(observeLanguageTextEditors(
         GRAMMARS,
         textEditor => this._enableInTextEditor(textEditor),

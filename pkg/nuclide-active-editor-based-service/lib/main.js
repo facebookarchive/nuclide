@@ -13,15 +13,16 @@ import {Disposable} from 'atom';
 import {Observable} from 'rxjs';
 
 import {
-  atomEventDebounce,
-} from '../../nuclide-atom-helpers';
+  observeActiveEditorsDebounced,
+  editorChangesDebounced,
+} from '../../commons-atom/debounced';
 
 import {event as commonsEvent, cacheWhileSubscribed} from '../../nuclide-commons';
 
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
 
-import {ProviderRegistry} from '../../nuclide-atom-helpers/lib/ProviderRegistry';
+import ProviderRegistry from '../../commons-atom/ProviderRegistry';
 
 export type Provider = {
   priority: number;
@@ -193,8 +194,8 @@ export class ActiveEditorBasedService<T: Provider, V> {
 
 function getDefaultEventSources(): EventSources {
   return {
-    activeEditors: atomEventDebounce.observeActiveEditorsDebounced(),
-    changesForEditor: editor => atomEventDebounce.editorChangesDebounced(editor),
+    activeEditors: observeActiveEditorsDebounced(),
+    changesForEditor: editor => editorChangesDebounced(editor),
     savesForEditor: editor => {
       return commonsEvent.observableFromSubscribeFunction(callback => editor.onDidSave(callback))
         .mapTo(undefined);

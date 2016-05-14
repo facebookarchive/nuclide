@@ -13,7 +13,7 @@ import type {
   FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-base';
 
-import {goToLocation} from '../../nuclide-atom-helpers';
+import {goToLocation} from '../../commons-atom/go-to-location';
 import {React} from 'react-for-atom';
 import {DiagnosticsMessage} from '../../nuclide-ui/lib/DiagnosticsMessage';
 

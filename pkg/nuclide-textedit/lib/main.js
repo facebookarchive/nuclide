@@ -20,7 +20,7 @@ export type TextEdit = {
 
 import invariant from 'assert';
 
-import {existingEditorForUri} from '../../nuclide-atom-helpers';
+import {existingEditorForUri} from '../../commons-atom/text-editor';
 
 /**
  * Attempts to apply the patch to the given file.

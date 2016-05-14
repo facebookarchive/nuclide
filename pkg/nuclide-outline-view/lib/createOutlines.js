@@ -15,7 +15,7 @@ import type {ActiveEditorBasedService, Result} from '../../nuclide-active-editor
 import {Observable} from 'rxjs';
 import invariant from 'assert';
 
-import {getCursorPositions} from '../../nuclide-atom-helpers';
+import {getCursorPositions} from '../../commons-atom/text-editor';
 
 const LOADING_DELAY_MS = 500;
 

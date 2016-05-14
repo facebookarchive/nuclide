@@ -19,7 +19,7 @@ import {
 import path from 'path';
 import invariant from 'assert';
 import {ReactDOM} from 'react-for-atom';
-import {getUiTreePathFromTargetEvent} from '../pkg/nuclide-atom-helpers';
+import uiTreePath from '../pkg/commons-atom/ui-tree-path';
 
 import type DiffViewComponent from '../pkg/nuclide-diff-view/lib/DiffViewComponent';
 
@@ -111,10 +111,10 @@ describe('Diff View Browse Mode Integration Test', () => {
       );
       const treeRoots = treeElement.querySelectorAll('.root');
       expect(treeRoots.length).toBe(1);
-      const rootPath = getUiTreePathFromTargetEvent(({currentTarget: treeRoots[0]}: any));
+      const rootPath = uiTreePath(({currentTarget: treeRoots[0]}: any));
       expect(rootPath).toBe(repoPath);
       expect(diffFiles.length).toBe(1);
-      const filePath = getUiTreePathFromTargetEvent(({currentTarget: diffFiles[0]}: any));
+      const filePath = uiTreePath(({currentTarget: diffFiles[0]}: any));
       expect(filePath.startsWith(repoPath)).toBeTruthy();
     });
   });

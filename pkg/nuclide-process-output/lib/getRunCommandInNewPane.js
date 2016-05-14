@@ -36,7 +36,7 @@ export type RunCommandFunctionAndCleanup = {
 
 import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
-import {destroyPaneItemWithTitle} from '../../nuclide-atom-helpers';
+import destroyPaneItemWithTitle from '../../commons-atom/destroy-pane-item';
 import createBoundTextBuffer from './createBoundTextBuffer';
 
 const NUCLIDE_PROCESS_OUTPUT_VIEW_URI = 'atom://nuclide/process-output/';
