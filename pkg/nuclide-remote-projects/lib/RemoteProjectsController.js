@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import {RemoteConnection} from '../../nuclide-remote-connection';
+import {ServerConnection} from '../../nuclide-remote-connection';
 import {React, ReactDOM} from 'react-for-atom';
 import {CompositeDisposable, Disposable} from 'atom';
 import StatusBarTile from './ui/StatusBarTile';
@@ -71,13 +71,13 @@ class RemoteProjectsController {
       );
     };
 
-    const connection = RemoteConnection.getForUri(fileUri);
+    const connection = ServerConnection.getForUri(fileUri);
     if (connection == null) {
       updateStatus(false);
       return;
     }
 
-    const socket = connection.getConnection().getSocket();
+    const socket = connection.getSocket();
     updateStatus(socket.isConnected());
 
 

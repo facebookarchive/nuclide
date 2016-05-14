@@ -61,7 +61,7 @@ export function *getOpenFileEditorForRemoteProject(
       }
       const uri = sanitizeNuclideUri(paneItem.getURI());
       const {hostname: fileHostname, path: filePath} = parse(uri);
-      if (fileHostname === connectionConfig.host && filePath.startsWith(connectionConfig.cwd)) {
+      if (fileHostname === connectionConfig.host) {
         invariant(fileHostname);
         yield {
           pane,
