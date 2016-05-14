@@ -14,7 +14,7 @@ import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-m
 
 import {CompositeDisposable, Disposable} from 'atom';
 
-import {ActiveEditorBasedService} from '../../nuclide-active-editor-based-service';
+import ActiveEditorRegistry from '../../commons-atom/ActiveEditorRegistry';
 
 import {OutlineViewPanelState} from './OutlineViewPanel';
 import {createOutlines} from './createOutlines';
@@ -107,14 +107,14 @@ function makeDefaultState(): OutlineViewState {
 class Activation {
   _disposables: CompositeDisposable;
 
-  _editorService: ActiveEditorBasedService<OutlineProvider, ?Outline>;
+  _editorService: ActiveEditorRegistry<OutlineProvider, ?Outline>;
 
   _panel: OutlineViewPanelState;
 
   constructor(state?: OutlineViewState = makeDefaultState()) {
     this._disposables = new CompositeDisposable();
 
-    this._editorService = new ActiveEditorBasedService(
+    this._editorService = new ActiveEditorRegistry(
       (provider, editor) => provider.getOutline(editor)
     );
 

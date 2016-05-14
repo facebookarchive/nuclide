@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {Result} from '../../nuclide-active-editor-based-service';
+import type {Result} from '../../commons-atom/ActiveEditorRegistry';
 import type {
   ObservableDiagnosticProvider,
   DiagnosticProviderUpdate,

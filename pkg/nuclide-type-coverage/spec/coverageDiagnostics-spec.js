@@ -15,7 +15,7 @@ import type {
   InvalidationMessage,
   FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-base';
-import type {Result} from '../../nuclide-active-editor-based-service';
+import type {Result} from '../../commons-atom/ActiveEditorRegistry';
 
 import type {CoverageResult, CoverageProvider} from '../lib/types';
 

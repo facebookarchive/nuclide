@@ -9,25 +9,30 @@
  * the root directory of this source tree.
  */
 
+/**
+ * ActiveEditorRegistry provides abstractions for creating services that operate
+ * on text editor contents.
+ */
+
 import {Disposable} from 'atom';
 import {Observable} from 'rxjs';
 
 import {
   observeActiveEditorsDebounced,
   editorChangesDebounced,
-} from '../../commons-atom/debounced';
+} from './debounced';
 
-import {event as commonsEvent, cacheWhileSubscribed} from '../../nuclide-commons';
+import {event as commonsEvent, cacheWhileSubscribed} from '../nuclide-commons';
 
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from '../nuclide-logging';
 const logger = getLogger();
 
-import ProviderRegistry from '../../commons-atom/ProviderRegistry';
+import ProviderRegistry from './ProviderRegistry';
 
 export type Provider = {
   priority: number;
   grammarScopes: Array<string>;
-  // This overrides the updateOnEdit setting in ActiveEditorBasedService's config.
+  // This overrides the updateOnEdit setting in ActiveEditorRegistry's config.
   updateOnEdit?: boolean;
 };
 
@@ -87,7 +92,7 @@ function getConcreteConfig(config: Config): ConcreteConfig {
   };
 }
 
-export class ActiveEditorBasedService<T: Provider, V> {
+export default class ActiveEditorRegistry<T: Provider, V> {
   _resultFunction: ResultFunction<T, V>;
   _providerRegistry: ProviderRegistry<T>;
   _resultsStream: Observable<Result<T, V>>;

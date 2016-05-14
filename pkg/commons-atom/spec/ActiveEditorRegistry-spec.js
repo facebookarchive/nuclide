@@ -9,12 +9,17 @@
  * the root directory of this source tree.
  */
 
-import type {Config, EventSources, ResultFunction, Result} from '..';
+import type {
+  Config,
+  EventSources,
+  ResultFunction,
+  Result,
+} from '../ActiveEditorRegistry';
 
 import invariant from 'assert';
 import {Subject} from 'rxjs';
 
-import {ActiveEditorBasedService} from '..';
+import ActiveEditorRegistry from '../ActiveEditorRegistry';
 
 type TestProvider = {
   priority: number;
@@ -22,8 +27,8 @@ type TestProvider = {
   updateOnEdit?: boolean;
 };
 
-describe('ActiveEditorBasedService', () => {
-  let activeEditorBasedService: ActiveEditorBasedService<TestProvider, void> = (null: any);
+describe('ActiveEditorRegistry', () => {
+  let activeEditorRegistry: ActiveEditorRegistry<TestProvider, void> = (null: any);
 
   let activeEditors: Subject<?atom$TextEditor> = (null: any);
   let editorChanges: Subject<void> = (null: any);
@@ -42,13 +47,13 @@ describe('ActiveEditorBasedService', () => {
   let shouldProviderError: boolean = (null: any);
 
   function initializeService() {
-    activeEditorBasedService = new ActiveEditorBasedService(
+    activeEditorRegistry = new ActiveEditorRegistry(
       resultFunction,
       config,
       eventSources,
     );
 
-    fullEventsPromise = activeEditorBasedService.getResultsStream()
+    fullEventsPromise = activeEditorRegistry.getResultsStream()
       .toArray()
       .toPromise();
     resultingEventsPromise = fullEventsPromise.then(arr => arr.map(result => result.kind));
@@ -95,7 +100,7 @@ describe('ActiveEditorBasedService', () => {
         priority: 10,
         grammarScopes: ['text.plain.null-grammar'],
       };
-      activeEditorBasedService.consumeProvider(provider);
+      activeEditorRegistry.consumeProvider(provider);
     });
 
     it('should create correct event stream during normal use', () => {
@@ -158,7 +163,7 @@ describe('ActiveEditorBasedService', () => {
         config.updateOnEdit = false;
         initializeService();
         // Have to re-add this since the re-initialization kills it
-        activeEditorBasedService.consumeProvider({
+        activeEditorRegistry.consumeProvider({
           priority: 10,
           grammarScopes: ['text.plain.null-grammar'],
         });
@@ -191,11 +196,11 @@ describe('ActiveEditorBasedService', () => {
       beforeEach(() => {
         initializeService();
         // Have to re-add this since the re-initialization kills it
-        activeEditorBasedService.consumeProvider({
+        activeEditorRegistry.consumeProvider({
           priority: 10,
           grammarScopes: ['text.plain.null-grammar'],
         });
-        activeEditorBasedService.consumeProvider({
+        activeEditorRegistry.consumeProvider({
           priority: 10,
           grammarScopes: ['source.cpp'],
           updateOnEdit: false,

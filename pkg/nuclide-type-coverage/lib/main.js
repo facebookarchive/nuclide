@@ -19,7 +19,7 @@ import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 
-import {ActiveEditorBasedService} from '../../nuclide-active-editor-based-service';
+import ActiveEditorRegistry from '../../commons-atom/ActiveEditorRegistry';
 import {passesGK} from '../../nuclide-commons';
 
 import {StatusBarTile} from './StatusBarTile';
@@ -44,7 +44,7 @@ async function resultFunction(
 
 class Activation {
   _disposables: CompositeDisposable;
-  _activeEditorBasedService: ActiveEditorBasedService<CoverageProvider, ?CoverageResult>;
+  _activeEditorRegistry: ActiveEditorRegistry<CoverageProvider, ?CoverageResult>;
   _toggleEvents: Subject<void>;
   _shouldRenderDiagnostics: Observable<boolean>;
 
@@ -53,7 +53,7 @@ class Activation {
     this._shouldRenderDiagnostics = this._toggleEvents.scan(prev => !prev, false);
 
     this._disposables = new CompositeDisposable();
-    this._activeEditorBasedService = new ActiveEditorBasedService(
+    this._activeEditorRegistry = new ActiveEditorRegistry(
       resultFunction,
       {updateOnEdit: false},
     );
@@ -68,7 +68,7 @@ class Activation {
   }
 
   consumeCoverageProvider(provider: CoverageProvider): IDisposable {
-    return this._activeEditorBasedService.consumeProvider(provider);
+    return this._activeEditorRegistry.consumeProvider(provider);
   }
 
   consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
@@ -80,7 +80,7 @@ class Activation {
       priority: STATUS_BAR_PRIORITY,
     });
 
-    const resultStream = this._activeEditorBasedService.getResultsStream();
+    const resultStream = this._activeEditorRegistry.getResultsStream();
     ReactDOM.render(
       <StatusBarTile
         results={resultStream}
@@ -98,7 +98,7 @@ class Activation {
 
   getDiagnosticsProvider(): ObservableDiagnosticProvider {
     return diagnosticProviderForResultStream(
-      this._activeEditorBasedService.getResultsStream(),
+      this._activeEditorRegistry.getResultsStream(),
       this._shouldRenderDiagnostics,
     );
   }

@@ -10,7 +10,8 @@
  */
 
 import type {Outline, OutlineForUi, OutlineTree, OutlineTreeForUi, OutlineProvider} from '..';
-import type {ActiveEditorBasedService, Result} from '../../nuclide-active-editor-based-service';
+import type ActiveEditorRegistry, {Result} from
+  '../../commons-atom/ActiveEditorRegistry';
 
 import {Observable} from 'rxjs';
 import invariant from 'assert';
@@ -20,7 +21,7 @@ import {getCursorPositions} from '../../commons-atom/text-editor';
 const LOADING_DELAY_MS = 500;
 
 export function createOutlines(
-  editorService: ActiveEditorBasedService<OutlineProvider, ?Outline>,
+  editorService: ActiveEditorRegistry<OutlineProvider, ?Outline>,
 ): Observable<OutlineForUi> {
   return outlinesForProviderResults(editorService.getResultsStream());
 }

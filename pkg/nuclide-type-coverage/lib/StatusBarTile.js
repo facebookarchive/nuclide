@@ -11,7 +11,7 @@
 
 import type {Observable} from 'rxjs';
 
-import type {Result} from '../../nuclide-active-editor-based-service';
+import type {Result} from '../../commons-atom/ActiveEditorRegistry';
 
 import type {CoverageResult, CoverageProvider} from './types';
 
