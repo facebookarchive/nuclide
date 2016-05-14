@@ -836,6 +836,11 @@ export class HgRepositoryClient {
     return this._service.fetchRevisionInfoBetweenHeadAndBase();
   }
 
+  // See HgService.getBaseRevision.
+  getBaseRevision(): Promise<RevisionInfo> {
+    return this._service.getBaseRevision();
+  }
+
   // See HgService.getBlameAtHead.
   getBlameAtHead(filePath: NuclideUri): Promise<Map<string, string>> {
     return this._service.getBlameAtHead(filePath);

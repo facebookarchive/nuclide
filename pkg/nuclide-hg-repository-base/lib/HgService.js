@@ -23,6 +23,7 @@ import {
   expressionForCommonAncestor,
   expressionForRevisionsBeforeHead,
   fetchRevisionInfoBetweenRevisions,
+  fetchRevisionInfo,
 } from './hg-revision-expression-helpers';
 import {
   fetchFileContentAtRevision,
@@ -457,13 +458,24 @@ export class HgService {
    * or `null` if no common ancestor was found.
    */
   async fetchRevisionInfoBetweenHeadAndBase(): Promise<?Array<RevisionInfo>> {
-    const fokBaseName = await getForkBaseName(this._workingDirectory);
+    const forkBaseName = await getForkBaseName(this._workingDirectory);
     const revisionsInfo = await fetchRevisionInfoBetweenRevisions(
-      expressionForCommonAncestor(fokBaseName),
+      expressionForCommonAncestor(forkBaseName),
       expressionForRevisionsBeforeHead(0),
       this._workingDirectory,
     );
     return revisionsInfo;
+  }
+
+  /**
+   * Resolve the revision details of the base branch
+   */
+  async getBaseRevision(): Promise<RevisionInfo> {
+    const forkBaseName = await getForkBaseName(this._workingDirectory);
+    return await fetchRevisionInfo(
+      expressionForCommonAncestor(forkBaseName),
+      this._workingDirectory
+    );
   }
 
   /**

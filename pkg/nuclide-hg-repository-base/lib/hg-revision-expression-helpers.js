@@ -109,23 +109,11 @@ export async function fetchCommonAncestorOfHeadAndRevision(
   }
 }
 
-/**
- * @param revisionFrom The revision expression of the "start" (older) revision.
- * @param revisionTo The revision expression of the "end" (newer) revision.
- * @param workingDirectory The working directory of the Hg repository.
- * @return An array of revision info between revisionFrom and
- *   revisionTo, plus revisionFrom and revisionTo;
- * "Between" means that revisionFrom is an ancestor of, and
- *   revisionTo is a descendant of.
- * For each RevisionInfo, the `bookmarks` field will contain the list
- * of bookmark names applied to that revision.
- */
-export async function fetchRevisionInfoBetweenRevisions(
-  revisionFrom: string,
-  revisionTo: string,
+
+async function fetchRevisions(
+  revisionExpression: string,
   workingDirectory: string,
 ): Promise<Array<RevisionInfo>> {
-  const revisionExpression = `${revisionFrom}::${revisionTo}`;
   const revisionLogArgs = [
     'log', '--template', REVISION_INFO_TEMPLATE,
     '--rev', revisionExpression,
@@ -148,11 +136,43 @@ export async function fetchRevisionInfoBetweenRevisions(
     }
     return revisionsInfo;
   } catch (e) {
-    logger.warn('Failed to get revision info between two revisions: ', e.stderr || e, e.command);
+    logger.warn(
+      'Failed to get revision info for revisions' +
+      ` ${revisionExpression}: ${e.stderr || e}, ${e.command}`
+    );
     throw new Error(
-      `Could not fetch revision numbers between the revisions: ${revisionFrom}, ${revisionTo}`
+      `Could not fetch revision info for revisions: ${revisionExpression}`
     );
   }
+}
+
+/**
+ * @param revisionFrom The revision expression of the "start" (older) revision.
+ * @param revisionTo The revision expression of the "end" (newer) revision.
+ * @param workingDirectory The working directory of the Hg repository.
+ * @return An array of revision info between revisionFrom and
+ *   revisionTo, plus revisionFrom and revisionTo;
+ * "Between" means that revisionFrom is an ancestor of, and
+ *   revisionTo is a descendant of.
+ * For each RevisionInfo, the `bookmarks` field will contain the list
+ * of bookmark names applied to that revision.
+ */
+export async function fetchRevisionInfoBetweenRevisions(
+  revisionFrom: string,
+  revisionTo: string,
+  workingDirectory: string,
+): Promise<Array<RevisionInfo>> {
+  const revisionExpression = `${revisionFrom}::${revisionTo}`;
+  return await fetchRevisions(revisionExpression, workingDirectory);
+}
+
+export async function fetchRevisionInfo(
+    revisionExpression: string,
+    workingDirectory: string,
+  ): Promise<RevisionInfo> {
+
+  const [revisionInfo] = await fetchRevisions(revisionExpression, workingDirectory);
+  return revisionInfo;
 }
 
 /**

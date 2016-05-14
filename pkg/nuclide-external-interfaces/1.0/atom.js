@@ -640,6 +640,7 @@ declare class atom$TextEditor extends atom$Model {
   getSelectedText(): string;
   selectAll(): void;
   getSelectedBufferRange(): atom$Range;
+  getSelectedBufferRanges(): Array<atom$Range>;
   getSelections(): Array<atom$Selection>;
 
   // Searching and Replacing
