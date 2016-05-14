@@ -28,6 +28,13 @@ import classnames from 'classnames';
 import {getUiTreePathFromTargetEvent} from '../../nuclide-atom-helpers';
 import {getPath, basename} from '../../nuclide-remote-uri';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+import {addPath, revertPath} from '../../nuclide-hg-repository/lib/actions';
+
+const REVERTABLE_STATUS_CODES = [
+  FileChangeStatus.ADDED,
+  FileChangeStatus.MODIFIED,
+  FileChangeStatus.REMOVED,
+];
 
 function labelClassNameForNode(node: LazyTreeNode): string {
   const classArr = ['icon', 'name'];
@@ -98,6 +105,28 @@ export default class DiffViewTree extends React.Component {
       '.nuclide-diff-view-tree .entry.file-change': [
         {type: 'separator'},
         {
+          label: 'Add to Mercurial',
+          command: 'nuclide-diff-tree:add',
+          shouldDisplay: event => {
+            // The context menu has the `currentTarget` set to `document`.
+            // Hence, use `target` instead.
+            const filePath = getUiTreePathFromTargetEvent({currentTarget: event.target});
+            const statusCode = this.props.fileChanges.get(filePath);
+            return statusCode === FileChangeStatus.UNTRACKED;
+          },
+        },
+        {
+          label: 'Revert',
+          command: 'nuclide-diff-tree:revert',
+          shouldDisplay: event => {
+            // The context menu has the `currentTarget` set to `document`.
+            // Hence, use `target` instead.
+            const filePath = getUiTreePathFromTargetEvent({currentTarget: event.target});
+            const statusCode = this.props.fileChanges.get(filePath);
+            return REVERTABLE_STATUS_CODES.indexOf(statusCode) !== -1;
+          },
+        },
+        {
           label: 'Goto File',
           command: 'nuclide-diff-tree:goto-file',
         },
@@ -136,6 +165,26 @@ export default class DiffViewTree extends React.Component {
       event => {
         const filePath = getUiTreePathFromTargetEvent(event);
         atom.clipboard.write(basename(filePath || ''));
+      }
+    ));
+    this._subscriptions.add(atom.commands.add(
+      '.nuclide-diff-view-tree .entry.file-change',
+      'nuclide-diff-tree:add',
+      event => {
+        const filePath = getUiTreePathFromTargetEvent(event);
+        if (filePath != null && filePath.length) {
+          addPath(filePath);
+        }
+      }
+    ));
+    this._subscriptions.add(atom.commands.add(
+      '.nuclide-diff-view-tree .entry.file-change',
+      'nuclide-diff-tree:revert',
+      event => {
+        const filePath = getUiTreePathFromTargetEvent(event);
+        if (filePath != null && filePath.length) {
+          revertPath(filePath);
+        }
       }
     ));
   }
