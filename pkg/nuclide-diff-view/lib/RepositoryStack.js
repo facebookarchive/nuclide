@@ -140,8 +140,8 @@ export default class RepositoryStack {
     return this._repository.revert(filePaths);
   }
 
-  add(filePaths: Array<NuclideUri>): Promise<void> {
-    return this._repository.add(filePaths);
+  addAll(filePaths: Array<NuclideUri>): Promise<void> {
+    return this._repository.addAll(filePaths);
   }
 
   /**

@@ -348,6 +348,30 @@ export class HgRepositoryClient {
     }
   }
 
+  isPathAdded(filePath: ?NuclideUri): boolean {
+    if (!filePath) {
+      return false;
+    }
+    const cachedPathStatus = this._hgStatusCache[filePath];
+    if (!cachedPathStatus) {
+      return false;
+    } else {
+      return this.isStatusAdded(StatusCodeIdToNumber[cachedPathStatus]);
+    }
+  }
+
+  isPathUntracked(filePath: ?NuclideUri): boolean {
+    if (!filePath) {
+      return false;
+    }
+    const cachedPathStatus = this._hgStatusCache[filePath];
+    if (!cachedPathStatus) {
+      return false;
+    } else {
+      return this.isStatusUntracked(StatusCodeIdToNumber[cachedPathStatus]);
+    }
+  }
+
   // TODO (jessicalin) Can we change the API to make this method return a Promise?
   // If not, this method lies a bit by using cached information.
   // TODO (jessicalin) Make this work for ignored directories.
@@ -428,6 +452,14 @@ export class HgRepositoryClient {
 
   isStatusNew(status: ?number): boolean {
     return this.async.isStatusNew(status);
+  }
+
+  isStatusAdded(status: ?number): boolean {
+    return this.async.isStatusAdded(status);
+  }
+
+  isStatusUntracked(status: ?number): boolean {
+    return this.async.isStatusUntracked(status);
   }
 
   isStatusIgnored(status: ?number): boolean {
@@ -830,7 +862,7 @@ export class HgRepositoryClient {
     return this._service.remove(filePath);
   }
 
-  add(filePaths: Array<NuclideUri>): Promise<void> {
+  addAll(filePaths: Array<NuclideUri>): Promise<void> {
     return this._service.add(filePaths);
   }
 

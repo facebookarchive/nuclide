@@ -96,7 +96,7 @@ const FileSystemActions = {
         if (created) {
           if (hgRepository != null && options.addToVCS === true) {
             try {
-              await hgRepository.add([newFile.getPath()]);
+              await hgRepository.addAll([newFile.getPath()]);
             } catch (e) {
               atom.notifications.addError(
                 `Failed to add '${newFile.getPath}' to version control.  Error: ${e.toString()}`,

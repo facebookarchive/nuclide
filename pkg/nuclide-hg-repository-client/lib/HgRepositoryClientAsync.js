@@ -151,6 +151,14 @@ export default class HgRepositoryClientAsync {
     );
   }
 
+  isStatusAdded(status: ?number): boolean {
+    return status === StatusCodeNumber.ADDED;
+  }
+
+  isStatusUntracked(status: ?number): boolean {
+    return status === StatusCodeNumber.UNTRACKED;
+  }
+
   onDidChangeStatus(
     callback: (event: {path: string; pathStatus: StatusCodeNumberValue}) => mixed,
   ): IDisposable {
@@ -159,6 +167,10 @@ export default class HgRepositoryClientAsync {
 
   onDidChangeStatuses(callback: () => mixed): IDisposable {
     return this._client.onDidChangeStatuses(callback);
+  }
+
+  addAll(filePaths: Array<NuclideUri>): Promise<void> {
+    return this._client.addAll(filePaths);
   }
 
 }

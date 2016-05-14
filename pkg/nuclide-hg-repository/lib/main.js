@@ -10,86 +10,96 @@
  */
 
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
-import type {
-  HgRepositoryClient,
-  HgRepositoryClientAsync,
-} from '../../nuclide-hg-repository-client';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import {track} from '../../nuclide-analytics';
+import {revertPath, addPath} from './actions';
 
+const HG_ADD_TREE_CONTEXT_MENU_PRIORITY = 400;
 const HG_REVERT_FILE_TREE_CONTEXT_MENU_PRIORITY = 1050;
+
 let subscriptions: ?CompositeDisposable = null;
 
-// A file is revertable if it's changed.
+type HgContenxtMenuAction = 'Revert' | 'Add';
+
+// A file is revertable if it's changed or added.
+// A file is addable if it's untracked.
 // A directory is revertable if it contains changed files.
-function shouldDisplayRevertTreeItem(contextMenu: FileTreeContextMenu): boolean {
+function shouldDisplayActionTreeItem(
+  contextMenu: FileTreeContextMenu,
+  action: HgContenxtMenuAction,
+): boolean {
   const node = contextMenu.getSingleSelectedNode();
   if (node == null || node.repo == null || node.repo.getType() !== 'hg') {
     return false;
   }
   const hgRepository: HgRepositoryClient = (node.repo: any);
-  return hgRepository.isStatusModified(node.vcsStatusCode);
+  if (action === 'Revert') {
+    return hgRepository.isStatusModified(node.vcsStatusCode) ||
+      hgRepository.isStatusAdded(node.vcsStatusCode);
+  } else if (action === 'Add') {
+    return hgRepository.isStatusUntracked(node.vcsStatusCode);
+  } else {
+    return false;
+  }
 }
 
-function isActivePathRevertable(): boolean {
+function getActivePathAndHgRepository(): ?{activePath: string; repository: HgRepositoryClient;} {
   const editor = atom.workspace.getActiveTextEditor();
   if (editor == null || !editor.getPath()) {
-    return false;
+    return null;
   }
   const filePath = editor.getPath() || '';
   const repository = repositoryForPath(filePath);
   if (repository == null || repository.getType() !== 'hg') {
-    return false;
+    return null;
   }
   const hgRepository: HgRepositoryClient = (repository : any);
-  return hgRepository.isPathModified(filePath);
+  return {
+    repository: hgRepository,
+    activePath: filePath,
+  };
 }
 
-function revertActivePath(): void {
-  const editor = atom.workspace.getActiveTextEditor();
-  if (editor == null) {
-    atom.notifications.addError('No active text editor to revert!');
-  } else {
-    revertPath(editor.getPath());
+function isActivePathRevertable(): boolean {
+  const activeRepositoryInfo = getActivePathAndHgRepository();
+  if (activeRepositoryInfo == null) {
+    return false;
   }
+  const {repository, activePath} = activeRepositoryInfo;
+  return repository.isPathModified(activePath);
 }
 
-async function revertPath(nodePath: ?NuclideUri): Promise<void> {
-  if (nodePath == null || nodePath.length === 0) {
-    atom.notifications.addError('Cannot revert an empty path!');
-    return;
+function isActivePathAddable(): boolean {
+  const activeRepositoryInfo = getActivePathAndHgRepository();
+  if (activeRepositoryInfo == null) {
+    return false;
   }
-  const repository = repositoryForPath(nodePath);
-  if (repository == null || repository.getType() !== 'hg') {
-    atom.notifications.addError('Cannot revert a non-mercurial repository path');
-    return;
-  }
-  track('hg-repository-revert', {nodePath});
-  const hgRepositoryAsync: HgRepositoryClientAsync = (repository : any).async;
-  try {
-    await hgRepositoryAsync.checkoutHead(nodePath);
-    atom.notifications.addSuccess(
-      `Reverted \`${repository.relativize(nodePath)}\` successfully.`
-    );
-  } catch (error) {
-    atom.notifications.addError(
-      `Failed to revert \`${repository.relativize(nodePath)}\``,
-      {detail: error.message},
-    );
-  }
+  const {repository, activePath} = activeRepositoryInfo;
+  return repository.isPathUntracked(activePath);
 }
 
 export function activate(state: any): void {
   subscriptions = new CompositeDisposable();
 
   subscriptions.add(atom.commands.add(
-    'atom-workspace',
+    'atom-text-editor',
     'nuclide-hg-repository:revert',
-    revertActivePath,
+    event => {
+      const editorElement: atom$TextEditorElement = (event.target : any);
+      revertPath(editorElement.getModel().getPath());
+    },
+  ));
+
+  subscriptions.add(atom.commands.add(
+    'atom-text-editor',
+    'nuclide-hg-repository:add',
+    event => {
+      const editorElement: atom$TextEditorElement = (event.target : any);
+      addPath(editorElement.getModel().getPath());
+    },
   ));
 
   // Text editor context menu items.
@@ -102,10 +112,20 @@ export function activate(state: any): void {
           {
             label: 'Revert',
             command: 'nuclide-hg-repository:revert',
+            shouldDisplay() {
+              return isActivePathRevertable();
+            },
+          },
+          {
+            label: 'Add to Mercurial',
+            command: 'nuclide-hg-repository:revert',
+            shouldDisplay() {
+              return isActivePathAddable();
+            },
           },
         ],
         shouldDisplay() {
-          return isActivePathRevertable();
+          return getActivePathAndHgRepository() != null;
         },
       },
       {type: 'separator'},
@@ -116,7 +136,7 @@ export function activate(state: any): void {
 export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
   invariant(subscriptions);
 
-  const contextDisposable = contextMenu.addItemToSourceControlMenu(
+  const revertContextDisposable = contextMenu.addItemToSourceControlMenu(
     {
       label: 'Revert',
       callback() {
@@ -125,17 +145,33 @@ export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu):
         revertPath(revertNode == null ? null : revertNode.uri);
       },
       shouldDisplay() {
-        return shouldDisplayRevertTreeItem(contextMenu);
+        return shouldDisplayActionTreeItem(contextMenu, 'Revert');
       },
     },
     HG_REVERT_FILE_TREE_CONTEXT_MENU_PRIORITY,
   );
+  subscriptions.add(revertContextDisposable);
 
-  subscriptions.add(contextDisposable);
+  const addContextDisposable = contextMenu.addItemToSourceControlMenu(
+    {
+      label: 'Add to Mercurial',
+      callback() {
+        // TODO(most): support adding multiple nodes at once.
+        const addNode = contextMenu.getSingleSelectedNode();
+        addPath(addNode == null ? null : addNode.uri);
+      },
+      shouldDisplay() {
+        return shouldDisplayActionTreeItem(contextMenu, 'Add');
+      },
+    },
+    HG_ADD_TREE_CONTEXT_MENU_PRIORITY,
+  );
+  subscriptions.add(addContextDisposable);
 
   return new Disposable(() => {
     if (subscriptions != null) {
-      subscriptions.remove(contextDisposable);
+      subscriptions.remove(revertContextDisposable);
+      subscriptions.remove(addContextDisposable);
     }
   });
 }

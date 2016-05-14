@@ -17,7 +17,7 @@ import type {
   HgStatusOptionValue,
 } from './HgService';
 
-const StatusCodeId: {[key: string]: StatusCodeIdValue} = Object.freeze({
+const StatusCodeId = Object.freeze({
   ADDED: 'A',
   CLEAN: 'C',
   IGNORED: 'I',
@@ -26,6 +26,9 @@ const StatusCodeId: {[key: string]: StatusCodeIdValue} = Object.freeze({
   REMOVED: 'R',
   UNTRACKED: '?',
 });
+
+// This is to work around flow's missing support of enums.
+(StatusCodeId: {[key: string]: StatusCodeIdValue});
 
 const StatusCodeNumber = Object.freeze({
   ADDED: 1,

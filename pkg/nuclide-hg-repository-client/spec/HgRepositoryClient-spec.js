@@ -416,6 +416,64 @@ describe('HgRepositoryClient', () => {
     });
   });
 
+  describe('::isPathAdded', () => {
+    it('returns false if the path is null, untracked, modified or deleted'
+      + ' names.', () => {
+      // Force the state of the cache.
+      repo._hgStatusCache = {
+        [PATH_CALLED_NULL]: StatusCodeId.ADDED,
+        [PATH_CALLED_UNDEFINED]: StatusCodeId.ADDED,
+        [PATH_1]: StatusCodeId.ADDED,
+        [PATH_2]: StatusCodeId.CLEAN,
+        [PATH_3]: StatusCodeId.IGNORED,
+        [PATH_4]: StatusCodeId.MISSING,
+        [PATH_5]: StatusCodeId.MODIFIED,
+        [PATH_6]: StatusCodeId.REMOVED,
+        [PATH_7]: StatusCodeId.UNTRACKED,
+      };
+      expect(repo.isPathAdded(null)).toBe(false);
+      expect(repo.isPathAdded(undefined)).toBe(false);
+      expect(repo.isPathAdded(PATH_CALLED_NULL)).toBe(true);
+      expect(repo.isPathAdded(PATH_CALLED_UNDEFINED)).toBe(true);
+      expect(repo.isPathAdded(PATH_1)).toBe(true);
+      expect(repo.isPathAdded(PATH_2)).toBe(false);
+      expect(repo.isPathAdded(PATH_3)).toBe(false);
+      expect(repo.isPathAdded(PATH_4)).toBe(false);
+      expect(repo.isPathAdded(PATH_5)).toBe(false);
+      expect(repo.isPathAdded(PATH_6)).toBe(false);
+      expect(repo.isPathAdded(PATH_7)).toBe(false);
+    });
+  });
+
+  describe('::isPathUntracked', () => {
+    it('returns false if the path is null, untracked, modified or deleted'
+      + ' names.', () => {
+      // Force the state of the cache.
+      repo._hgStatusCache = {
+        [PATH_CALLED_NULL]: StatusCodeId.UNTRACKED,
+        [PATH_CALLED_UNDEFINED]: StatusCodeId.UNTRACKED,
+        [PATH_1]: StatusCodeId.UNTRACKED,
+        [PATH_2]: StatusCodeId.CLEAN,
+        [PATH_3]: StatusCodeId.IGNORED,
+        [PATH_4]: StatusCodeId.MISSING,
+        [PATH_5]: StatusCodeId.MODIFIED,
+        [PATH_6]: StatusCodeId.REMOVED,
+        [PATH_7]: StatusCodeId.ADDED,
+      };
+      expect(repo.isPathUntracked(null)).toBe(false);
+      expect(repo.isPathUntracked(undefined)).toBe(false);
+      expect(repo.isPathUntracked(PATH_CALLED_NULL)).toBe(true);
+      expect(repo.isPathUntracked(PATH_CALLED_UNDEFINED)).toBe(true);
+      expect(repo.isPathUntracked(PATH_1)).toBe(true);
+      expect(repo.isPathUntracked(PATH_2)).toBe(false);
+      expect(repo.isPathUntracked(PATH_3)).toBe(false);
+      expect(repo.isPathUntracked(PATH_4)).toBe(false);
+      expect(repo.isPathUntracked(PATH_5)).toBe(false);
+      expect(repo.isPathUntracked(PATH_6)).toBe(false);
+      expect(repo.isPathUntracked(PATH_7)).toBe(false);
+    });
+  });
+
   describe('::getCachedPathStatus', () => {
     beforeEach(() => {
       repo._hgStatusCache = {
