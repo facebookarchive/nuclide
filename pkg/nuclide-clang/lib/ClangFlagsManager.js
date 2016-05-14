@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {BuckUtils} from '../../nuclide-buck-base';
-
 import invariant from 'assert';
 import fs from 'fs';
 import path from 'path';
@@ -55,7 +53,6 @@ export type ClangFlags = {
 };
 
 class ClangFlagsManager {
-  _buckUtils: BuckUtils;
   _cachedBuckProjects: Map<string, BuckProject>;
   _compilationDatabases: Set<string>;
   _realpathCache: Object;
@@ -64,9 +61,8 @@ class ClangFlagsManager {
   // Watch config files (TARGETS/BUCK/compile_commands.json) for changes.
   _flagFileObservables: Map<string, Observable<string>>;
 
-  constructor(buckUtils: BuckUtils) {
+  constructor() {
     this.pathToFlags = new Map();
-    this._buckUtils = buckUtils;
     this._cachedBuckProjects = new Map();
     this._compilationDatabases = new Set();
     this._realpathCache = {};
@@ -87,7 +83,7 @@ class ClangFlagsManager {
     // return null. Going forward, we probably want to special-case some of the
     // paths under /Applications/Xcode.app so that click-to-symbol works in
     // files like Frameworks/UIKit.framework/Headers/UIImage.h.
-    const buckProjectRoot = await this._buckUtils.getBuckProjectRoot(src);
+    const buckProjectRoot = await BuckProject.getRootForPath(src);
     if (buckProjectRoot == null) {
       logger.info(
           'Did not try to attempt to get flags from Buck because ' +
@@ -143,7 +139,7 @@ class ClangFlagsManager {
         return buckFlags.values().next().value;
       }
       // Try finding flags for a related source file.
-      const projectRoot = (await this._buckUtils.getBuckProjectRoot(src)) || dbDir;
+      const projectRoot = (await BuckProject.getRootForPath(src)) || dbDir;
       // If we don't have a .buckconfig or a compile_commands.json, we won't find flags regardless.
       if (projectRoot == null) {
         return null;

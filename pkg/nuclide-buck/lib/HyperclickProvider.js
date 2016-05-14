@@ -14,7 +14,7 @@ type Target = {path: string; name: string};
 import type {BuckProject} from '../../nuclide-buck-base';
 import type {Point} from 'atom';
 
-import {buckProjectRootForPath} from '../../nuclide-buck-base';
+import {getBuckProject} from '../../nuclide-buck-base';
 import {fsPromise} from '../../nuclide-commons';
 import {goToLocation, extractWordAtPosition} from '../../nuclide-atom-helpers';
 import pathModule from 'path';
@@ -115,7 +115,7 @@ module.exports = {
       return null;
     }
 
-    const buckProject = await buckProjectRootForPath(absolutePath);
+    const buckProject = await getBuckProject(absolutePath);
     if (!buckProject) {
       return null;
     }

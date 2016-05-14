@@ -21,7 +21,7 @@ import invariant from 'assert';
 import {Emitter} from 'atom';
 import path from 'path';
 import {Dispatcher} from 'flux';
-import {buckProjectRootForPath} from '../../nuclide-buck-base';
+import {getBuckProject} from '../../nuclide-buck-base';
 import BuckToolbarActions from './BuckToolbarActions';
 
 type BuckRunDetails = {
@@ -187,7 +187,7 @@ class BuckToolbarStore {
     }
     let buckProject = this._textEditorToBuckProject.get(editor);
     if (!buckProject) {
-      buckProject = await buckProjectRootForPath(nuclideUri);
+      buckProject = await getBuckProject(nuclideUri);
       if (!buckProject) {
         return;
       }

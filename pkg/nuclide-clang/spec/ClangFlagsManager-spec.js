@@ -13,7 +13,6 @@ import invariant from 'assert';
 import {EventEmitter} from 'events';
 import fs from 'fs';
 import path from 'path';
-import {BuckUtils} from '../../nuclide-buck-base';
 import ClangFlagsManager from '../lib/ClangFlagsManager';
 
 describe('ClangFlagsManager', () => {
@@ -21,7 +20,7 @@ describe('ClangFlagsManager', () => {
   let flagsManager: ClangFlagsManager;
   let buckProject;
   beforeEach(() => {
-    flagsManager = new ClangFlagsManager(new BuckUtils());
+    flagsManager = new ClangFlagsManager();
     buckProject = {
       getOwner(src) {
         // Default header targets should be ignored.

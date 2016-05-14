@@ -77,7 +77,7 @@ export class BuckProject {
    * @param options.rootPath Absolute path to the directory that contains the
    *     .buckconfig file to configure the project.
    */
-  constructor(options: {rootPath: string}) {
+  constructor(options: {rootPath: NuclideUri}) {
     this._rootPath = options.rootPath;
     this._serialQueueName = BLOCKING_BUCK_COMMAND_QUEUE_PREFIX + this._rootPath;
   }
@@ -88,6 +88,14 @@ export class BuckProject {
 
   getPath(): Promise<NuclideUri> {
     return Promise.resolve(this._rootPath);
+  }
+
+  /**
+   * Given a file path, returns path to the Buck project root i.e. the directory containing
+   * '.buckconfig' file.
+   */
+  static getRootForPath(file: NuclideUri): Promise<?NuclideUri> {
+    return fsPromise.findNearestFile('.buckconfig', file);
   }
 
   /**

@@ -24,10 +24,6 @@
     "name": "FuzzyFileSearchService"
   },
   {
-    "implementation": "../nuclide-buck-base/lib/BuckUtils.js",
-    "name": "BuckUtils"
-  },
-  {
     "implementation": "../nuclide-ocaml-base/lib/LocalMerlinService.js",
     "name": "MerlinService"
   },

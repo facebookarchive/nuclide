@@ -12,14 +12,13 @@
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {checkOutput, object, promises} from '../../nuclide-commons';
-import {BuckUtils} from '../../nuclide-buck-base/lib/BuckUtils';
 import LRUCache from 'lru-cache';
 import os from 'os';
 import {Observable} from 'rxjs';
 import ClangFlagsManager from './ClangFlagsManager';
 import ClangServer from './ClangServer';
 
-const clangFlagsManager = new ClangFlagsManager(new BuckUtils());
+const clangFlagsManager = new ClangFlagsManager();
 
 // Limit the number of active Clang servers.
 const clangServers = new LRUCache({

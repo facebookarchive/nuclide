@@ -14,9 +14,9 @@ import type {CommandInfo} from './types';
 import {fsPromise} from '../../../nuclide-commons';
 import featureConfig from '../../../nuclide-feature-config';
 import * as RemoteUri from '../../../nuclide-remote-uri';
+import {getBuckProjectRoot} from '../../../nuclide-buck-base';
 import ini from 'ini';
 import path from 'path';
-import {BuckUtils} from '../../../nuclide-buck-base';
 
 type PartialCommandInfo = {
   command: string;
@@ -101,8 +101,7 @@ async function getCommandFromReactNative(dir: string): Promise<?CommandInfo> {
 }
 
 async function getCommandFromBuck(dir: string): Promise<?CommandInfo> {
-  const buckUtils = new BuckUtils();
-  const projectRoot = await buckUtils.getBuckProjectRoot(dir);
+  const projectRoot = await getBuckProjectRoot(dir);
   if (projectRoot == null) {
     return null;
   }

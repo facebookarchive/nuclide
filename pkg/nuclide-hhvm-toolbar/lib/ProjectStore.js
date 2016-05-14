@@ -12,7 +12,7 @@
 import {getHackEnvironmentDetails} from '../../nuclide-hack/lib/utils';
 import {CompositeDisposable, Disposable} from 'atom';
 import {EventEmitter} from 'events';
-import {buckProjectRootForPath} from '../../nuclide-buck-base';
+import {getBuckProjectRoot} from '../../nuclide-buck-base';
 import {trackTiming} from '../../nuclide-analytics';
 import remoteUri from '../../nuclide-remote-uri';
 
@@ -78,8 +78,8 @@ class ProjectStore {
 
   @trackTiming('toolbar.isFileBuckProject')
   async _isFileBuckProject(fileName: string): Promise<boolean> {
-    const buckProject = await buckProjectRootForPath(fileName);
-    return Boolean(buckProject);
+    const buckProject = await getBuckProjectRoot(fileName);
+    return buckProject != null;
   }
 
   getLastScriptCommand(filePath: string): string {
