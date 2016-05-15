@@ -20,7 +20,8 @@ import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 
 import ActiveEditorRegistry from '../../commons-atom/ActiveEditorRegistry';
-import {passesGK} from '../../nuclide-commons';
+import {track} from '../../nuclide-analytics';
+import {passesGK, DisposableSubscription} from '../../nuclide-commons';
 
 import {StatusBarTile} from './StatusBarTile';
 import {diagnosticProviderForResultStream} from './coverageDiagnostics';
@@ -63,6 +64,11 @@ class Activation {
         'atom-workspace',
         'nuclide-type-coverage:toggle-inline-display',
         () => this._toggleEvents.next(),
+      )
+    );
+
+    this._disposables.add(new DisposableSubscription(
+        this._toggleEvents.subscribe(() => track('nuclide-type-coverage:toggle'))
       )
     );
   }
