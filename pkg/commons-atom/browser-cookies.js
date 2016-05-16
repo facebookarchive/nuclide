@@ -9,10 +9,12 @@
  * the root directory of this source tree.
  */
 
+import remote from 'remote';
+
 export default {
   getCookies(domain: string): Promise<{[key: string]: string}> {
     return new Promise((resolve, reject) => {
-      atom.getCurrentWindow().webContents.session.cookies.get({
+      remote.getCurrentWindow().webContents.session.cookies.get({
         domain: domain,
       }, (error, cookies) => {
         if (error) {
@@ -30,7 +32,7 @@ export default {
 
   setCookie(url: string, domain: string, name: string, value: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      atom.getCurrentWindow().webContents.session.cookies.set({
+      remote.getCurrentWindow().webContents.session.cookies.set({
         url: url,
         domain: domain,
         name: name,

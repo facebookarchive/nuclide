@@ -24,7 +24,7 @@ declare module 'remote' {
    * TODO: type BrowserWindow, WebContents return types.
    */
   declare function require(module: string): any;
-  declare function getCurrentWindow(): mixed;
+  declare function getCurrentWindow(): any;
   declare function getCurrentWebContents(): mixed;
   declare function getGlobal(name: string): any;
   declare var process: mixed;
