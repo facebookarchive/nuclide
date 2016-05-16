@@ -114,16 +114,6 @@ export type HackTypedRegion = {
   text: string;
 };
 
-export type HackOutlineItem = {
-  name: string;
-  type: 'class' | 'method' | 'static method' | 'function';
-  line: number;
-  char_start: number;
-  char_end: number;
-};
-
-export type HackOutline = Array<HackOutlineItem>;
-
 export type HackIdeOutlineItem = {
   kind: 'function' | 'class' | 'property' | 'method' | 'const'
     | 'enum' | 'typeconst' | 'param' | 'trait' | 'interface';
@@ -393,20 +383,6 @@ export async function getTypedRegions(filePath: NuclideUri):
   }
   const {result} = hhResult;
   return (result: any);
-}
-
-export async function getOutline(filePath: NuclideUri, contents: string): Promise<?HackOutline> {
-  const hhResult = await callHHClient(
-    /*args*/ ['--outline'],
-    /*errorStream*/ false,
-    /*outputJson*/ true,
-    /*processInput*/ contents,
-    filePath,
-  );
-  if (hhResult == null) {
-    return null;
-  }
-  return (hhResult.result: any);
 }
 
 export async function getIdeOutline(

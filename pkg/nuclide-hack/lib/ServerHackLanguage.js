@@ -18,7 +18,6 @@ import type {
   HackSearchPosition,
   HackRange,
   HackReference,
-  HackOutline,
   HackIdeOutline,
 } from '../../nuclide-hack-base/lib/HackService';
 import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
@@ -122,13 +121,6 @@ export class ServerHackLanguage {
   ): Promise<?HackCoverageResult> {
     const regions = await this._hackService.getTypedRegions(filePath);
     return convertTypedRegionsToCoverageResult(regions);
-  }
-
-  getOutline(
-    filePath: NuclideUri,
-    contents: string,
-  ): Promise<?HackOutline> {
-    return this._hackService.getOutline(filePath, contents);
   }
 
   getIdeOutline(
