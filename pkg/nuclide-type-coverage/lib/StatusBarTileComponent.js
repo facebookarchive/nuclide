@@ -42,10 +42,9 @@ export class StatusBarTileComponent extends React.Component {
       const classes: string = classnames({
         'nuclide-type-coverage-status-bar-pending': this.props.pending,
         'nuclide-type-coverage-status-bar-ready': !this.props.pending,
-        'nuclide-type-coverage-status-bar-really-bad': percentage <= REALLY_BAD_THRESHOLD,
-        'nuclide-type-coverage-status-bar-not-great':
-          percentage > REALLY_BAD_THRESHOLD && percentage <= NOT_GREAT_THRESHOLD,
-        'nuclide-type-coverage-status-bar-good': percentage > NOT_GREAT_THRESHOLD,
+        'text-error': percentage <= REALLY_BAD_THRESHOLD,
+        'text-warning': percentage > REALLY_BAD_THRESHOLD && percentage <= NOT_GREAT_THRESHOLD,
+        // Nothing applied if percentage > NOT_GREAT_THRESHOLD,
         'nuclide-type-coverage-status-bar-active': this.props.isActive,
       });
       const formattedPercentage: string = `${Math.floor(percentage)}%`;
