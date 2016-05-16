@@ -58,6 +58,7 @@ describe('Diff View Toolbar Button Test', () => {
 
     runs(() => {
       // Initially we have no changed files so the diff view tool-bar counter should be empty.
+      // $FlowIgnore -- innerText is nonstandard.
       expect(getDiffCountElement().innerText).toEqual('');
 
       textEditor.setText('cg');
@@ -66,10 +67,12 @@ describe('Diff View Toolbar Button Test', () => {
     });
 
     waitsFor('uncommited file changes tool-bar counter to update', 10000, () => {
+      // $FlowIgnore -- innerText is nonstandard.
       return getDiffCountElement().innerText;
     });
 
     runs(() => {
+      // $FlowIgnore -- innerText is nonstandard.
       expect(getDiffCountElement().innerText).toEqual('1');
     });
   });

@@ -421,6 +421,7 @@ class BuckToolbarStore {
     ws.onmessage = e => {
       let message;
       try {
+        // $FlowFixMe looks like e.data can be a Blob or ArrayBuffer -- verify that it is a string.
         message = JSON.parse(e.data);
       } catch (err) {
         getLogger().error(

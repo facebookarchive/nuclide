@@ -76,7 +76,9 @@ describe('Clang Integration Test (objc)', () => {
 
     runs(() => {
       // The first result should be NSObject, with an annotated type.
+      // $FlowIgnore -- innerText is nonstandard.
       expect(autocompleteMenuView.querySelector('.right-label').innerText).toBe('ObjCInterface');
+      // $FlowIgnore -- innerText is nonstandard.
       expect(autocompleteMenuView.querySelector('.word').innerText).toBe('NSObject');
 
       // Confirm autocomplete.

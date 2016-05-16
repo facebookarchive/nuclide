@@ -70,9 +70,11 @@ describe('Flow Autocomplete', () => {
       expect(autocompleteMenuView).toExist();
 
       // Check type annotations exist and are correct.
+      // $FlowIgnore -- innerText is nonstandard.
       expect(autocompleteMenuView.querySelector('.right-label').innerText).toBe('number');
       const typeHintView = autocompleteMenuView.querySelector('.suggestion-description-content');
       expect(typeHintView).toExist();
+      // $FlowIgnore -- innerText is nonstandard.
       expect(typeHintView.innerText).toBe('number');
 
       // Confirm autocomplete.

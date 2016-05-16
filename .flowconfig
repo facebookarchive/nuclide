@@ -28,4 +28,4 @@ unsafe.enable_getters_and_setters=true
 module.use_strict=true
 
 [version]
-0.24.2
+0.25.0
