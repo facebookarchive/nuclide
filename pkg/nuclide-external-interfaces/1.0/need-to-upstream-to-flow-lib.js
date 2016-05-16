@@ -145,3 +145,7 @@ declare class module$Module {
 declare module 'module' {
   declare var exports: typeof module$Module;
 }
+
+declare module 'console' {
+  declare var exports: any;
+}

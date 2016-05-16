@@ -1487,3 +1487,8 @@ declare class atom$Token {
 declare class atom$Selection {
   getText(): string;
 }
+
+// Electron
+declare module 'electron' {
+  declare function ipcRenderer(channel: string, ...args: any[]): void;
+}

@@ -26,7 +26,7 @@
  * you must set the USE_DEV environment variable when running bootstrap.
  */
 
-import type {ExitCode} from '..';
+import type {ExitCode} from '../lib/types';
 
 export default async function runCommand(args: Array<string>): Promise<ExitCode> {
   const message = args.length === 0 ? 'Please pass me an arg!' : args.join(' ');

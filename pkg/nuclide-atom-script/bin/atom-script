@@ -1,12 +1,55 @@
-#!/usr/bin/env node
+#!/usr/bin/env bash
 
-/*
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- */
+#
+# Copyright (c) 2015-present, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the license found in the LICENSE file in
+# the root directory of this source tree.
+#
 
-var main = require('./main');
-main();
+# When using `--test`, the user's data dir will be set to a temp dir, unless
+# `--user-data-dir` is passed. This dir is where things like cookies are stored.
+# https://github.com/atom/atom/blob/v1.7.3/src/browser/main.coffee#L36-L39
+#
+# NOTE: If another Atom window is open, the Chromium logs (at level -2 or higher)
+# will have errors on a failure to set a lock on the IndexedDB database.
+# NOTE2: This value is verifiable with:
+#   `require('electron').remote.app.getPath('userData')`
+if [ "$(uname)" == 'Darwin' ]; then
+  USER_DATA_DIR="$HOME/Library/Application Support/Atom"
+elif [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
+  USER_DATA_DIR="$HOME/.config"
+else
+  >&2 echo "Your platform ($(uname -a)) is not supported."
+  exit 1
+fi
+
+if [[ $# == 0 ]]; then
+  >&2 echo 'usage: atom-script script_file [arguments]'
+  exit 1
+fi
+
+# Don't waste time starting up Atom if the script file doesn't exist.
+if [ ! -e "$1" ]; then
+  >&2 echo "Could not find \"$1\"."
+  exit 1
+fi
+
+# http://stackoverflow.com/questions/4774054/reliable-way-for-a-bash-script-to-get-the-full-path-to-itself
+SOURCE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/$(basename "${BASH_SOURCE[0]}")"
+
+# https://github.com/electron/electron/blob/v0.36.8/docs/api/chrome-command-line-switches.md#--vlog_level
+if [ -z $DEBUG_ATOM_SCRIPT ]; then
+  VERBOSE_LEVEL=-3
+else
+  VERBOSE_LEVEL=0
+fi
+
+FILE="$1"
+ARGS="$(printf "%q\n" "${@:2}")"
+
+# The test file doesn't need to exist or be JavaScript, it's used so that Atom
+# can resolve the "package.json" and execute the "testRunner".
+FILE_ATOM_SCRIPT="$FILE" ARGS_ATOM_SCRIPT="$ARGS" \
+  exec atom --user-data-dir="$USER_DATA_DIR" --v="$VERBOSE_LEVEL" --test "$SOURCE"

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {ExitCode} from '..';
+import type {ExitCode} from '../lib/types';
 
 import fs from 'fs';
 import invariant from 'assert';

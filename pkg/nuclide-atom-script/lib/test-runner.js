@@ -9,92 +9,101 @@
  * the root directory of this source tree.
  */
 
-import {instrumentConsole} from './console';
+// PRO-TIP: To debug this file, open it in Atom, and from the console, run:
+//
+// ```
+// require('electron').ipcRenderer.send('run-package-specs',
+//    atom.workspace.getActivePaneItem().getPath());
+// ```
+//
+// This will open it in the spec runner window. Keep in mind that the main
+// process will have production options set - not test options like
+// `--user-data-dir`.
 
-type TestRunnerParams = {
-  /** Absolute paths to tests to run. Could be paths to files or directories. */
-  testPaths: Array<string>;
+import type {
+  ExitCode,
+  TestRunnerParams,
+} from './types';
 
-  /** A boolean indicating whether or not the tests are running headless. */
-  headless: boolean;
+import invariant from 'assert';
+import path from 'path';
+import {Console} from 'console';
+import {ipcRenderer} from 'electron';
+import {parse} from 'shell-quote';
 
-  /** Creates the `atom` global object. */
-  buildAtomEnvironment: (params: BuildAtomEnvironmentParams) => AtomGlobal;
+const STDOUT_FILTERS = [
+  // Always shows:
+  /^window load time: \d+ms\n$/i,
+];
 
-  /** Currently undocumnted, but seemingly necessary to use buildAtomEnvironment(). */
-  buildDefaultApplicationDelegate: () => Object;
+const STDERR_FILTERS = [
+  // If the script takes ~1sec or more, and there's another Atom window open,
+  // then this error gets logged. It's because we set `--user-data-dir`, and
+  // our process can't get a lock on the IndexedDB file.
+  // https://github.com/atom/atom/blob/v1.7.3/src/state-store.js#L16
+  /^Could not connect to indexedDB Event { isTrusted: \[Getter\] }\n$/i,
+];
 
-  /** An optional path to a log file to which test output should be logged. */
-  logFile: ?string;
+// eslint-disable-next-line no-unused-vars
+const debugConsole = global.console;
 
-  /** Unclear what the contract of this is, but we will not be using it. */
-  legacyTestRunner: () => void;
-};
+// https://github.com/nodejs/node/blob/v5.1.1/lib/console.js
+const outputConsole = new Console(
+  { /*stdout*/
+    write(chunk) {
+      if (!STDOUT_FILTERS.some(re => re.test(chunk))) {
+        ipcRenderer.send('write-to-stdout', chunk);
+      }
+    },
+  },
+  { /*stderr*/
+    write(chunk) {
+      if (!STDERR_FILTERS.some(re => re.test(chunk))) {
+        ipcRenderer.send('write-to-stderr', chunk);
+      }
+    },
+  },
+);
 
-type BuildAtomEnvironmentParams = {
-  applicationDelegate: Object;
-  window: Object;
-  document: Object;
-  configDirPath?: string;
-  enablePersistence?: boolean;
-};
-
-export type ExitCode = number;
-
-/* eslint-disable no-console */
-export default async function runTest(params: TestRunnerParams): Promise<ExitCode> {
-  // Verify that a --log-file argument has been specified.
-  const {logFile} = params;
-  if (logFile == null) {
-    console.error('Must specify arguments via --log-file.');
-    return 1;
-  }
-
-  // Parse the args passed as JSON.
-  let args;
+export default async function runTest(
+  params: TestRunnerParams
+): Promise<ExitCode> {
+  let exitCode = 0;
   try {
-    args = JSON.parse(logFile);
+    const atomGlobal = params.buildAtomEnvironment({
+      applicationDelegate: params.buildDefaultApplicationDelegate(),
+      document,
+      window,
+    });
+    atomGlobal.atomScriptMode = true;
+
+    invariant(typeof process.env.FILE_ATOM_SCRIPT === 'string');
+    const fileAtomScript = process.env.FILE_ATOM_SCRIPT;
+
+    invariant(typeof process.env.ARGS_ATOM_SCRIPT === 'string');
+    const argsAtomScript = process.env.ARGS_ATOM_SCRIPT;
+
+    const scriptPath = path.resolve(fileAtomScript);
+    const scriptArgs = argsAtomScript === "''" ? [] : parse(argsAtomScript);
+
+    // Unfortunately we have to pollute our environment if we want to take
+    // advantage of Atom's v8 cache. Ideally, we'd run the script file using
+    // `vm.runInNewContext`, with the ipc bridged `console` in the new context.
+    // The v8 cache is activated via a monkey-patched `Module.prototype.load`,
+    // which executes code with `vm.runInThisContext`. So if you want the cache
+    // you have to run in this context.
+    // https://github.com/atom/atom/blob/v1.7.3/src/native-compile-cache.js#L71
+
+    global.atom = atomGlobal;
+    global.console = outputConsole;
+
+    // $FlowIgnore
+    const handler = require(scriptPath);
+    exitCode = await handler(scriptArgs);
   } catch (e) {
-    console.error(`Failed to parse --log-file argument: ${logFile}`);
-    return 1;
-  }
-
-  // Set global.atom before running any more code.
-  const applicationDelegate = params.buildDefaultApplicationDelegate();
-  const atomEnvParams = {
-    applicationDelegate,
-    window,
-    document,
-  };
-  global.atom = params.buildAtomEnvironment(atomEnvParams);
-  global.atom.atomScriptMode = true;
-
-  // Set up the console before running any user code.
-  const {queue, shutdown} = await instrumentConsole(args['stdout']);
-
-  const pathArg = args['path'];
-  if (typeof pathArg !== 'string') {
-    console.error('Must specify a path in the --log-file JSON');
-    return 1;
-  }
-
-  const entryPoint = args['path'];
-  // $FlowFixMe: entryPoint is determined dynamically rather than a string literal.
-  const handler = require(entryPoint);
-
-  let exitCode;
-  try {
-    exitCode = await handler(args['args']);
-  } catch (e) {
-    console.error(e);
+    outputConsole.error(e);
     exitCode = 1;
   }
 
-  // Insert a sentinel executor that will not be called until all of the other promises in the
-  // queue have been flushed.
-  await queue.submit(resolve => resolve());
-  shutdown();
-
   return exitCode;
 }
-/* eslint-enable no-console */

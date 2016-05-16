@@ -432,11 +432,6 @@
       "from": "encoding@>=0.1.11 <0.2.0",
       "resolved": "https://registry.npmjs.org/encoding/-/encoding-0.1.12.tgz"
     },
-    "epipebomb": {
-      "version": "0.1.1",
-      "from": "epipebomb@0.1.1",
-      "resolved": "https://registry.npmjs.org/epipebomb/-/epipebomb-0.1.1.tgz"
-    },
     "es6-promise": {
       "version": "3.1.2",
       "from": "es6-promise@>=3.0.0 <4.0.0",
