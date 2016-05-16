@@ -1,5 +1,52 @@
 # Nuclide Changelog
 
+## v0.137.0
+
+### JavaScript & Hack
+
+* New feature: Added the type-system coverage information.
+
+### C/C++
+
+* Added support for #include hyperclick.
+* Improved flags detection for header files.
+
+### OCaml
+
+* Added support for switch between header/source.
+
+### Hack
+
+* Outline improvements:
+  * Overall responsiveness.
+  * Additional symbols and function params.
+  * Modifiers.
+  * Highlighting current symbol in the outline view.
+
+### Debugger
+
+* React Native attach UI.
+
+### Source Control
+
+* Typed in publish message is preserved if a publish is canceled.
+* hg add and hg remove are reflected properly in the file-tree.
+* Existing files can be added to and removed from the Mercurial from Source Control menu.
+
+### General
+
+* Bump Atom version dependency to 1.7.3 and Node to 5.1.1.
+* Nuclide logs are always written under system temp dir now.
+* Filename search now supports full paths.
+
+### UI:
+
+* z-index fix to combobox in buck build toolbar.
+* Nuclide console now shows a notifications when there are new unseen messages.
+* Reduced flickering in omni-search.
+* Shadow breakpoint is displayed when hovering over the gutter for easier breakpoint toggle.
+
+
 ## v0.136.0
 
 ### General
