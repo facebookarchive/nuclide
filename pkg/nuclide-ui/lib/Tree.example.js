@@ -11,6 +11,7 @@
 
 import {React} from 'react-for-atom';
 import {Block} from './Block';
+import {Icon} from './Icon';
 import {
   TreeList,
   TreeItem,
@@ -34,6 +35,30 @@ const BasicTreeExample = (): React.Element => (
   </div>
 );
 
+const AtomStyleguideTreeExample = (): React.Element => (
+  <Block>
+    <TreeList showArrows={true}>
+      <NestedTreeItem
+        title={<Icon icon="file-directory">A Directory</Icon>}>
+          <NestedTreeItem
+            collapsed={false}
+            title={<Icon icon="file-directory">Nested Directory</Icon>}>
+            <TreeItem><Icon icon="file-text">File one</Icon></TreeItem>
+          </NestedTreeItem>
+          <NestedTreeItem
+            collapsed={true}
+            title={<Icon icon="file-directory">Collapsed Nested Directory</Icon>}>
+            <TreeItem><Icon icon="file-text">File one</Icon></TreeItem>
+          </NestedTreeItem>
+          <TreeItem><Icon icon="file-text">File one</Icon></TreeItem>
+          <TreeItem selected={true}><Icon icon="file-text">File three .selected!</Icon></TreeItem>
+      </NestedTreeItem>
+      <TreeItem><Icon icon="file-text">.icon-file-text</Icon></TreeItem>
+      <TreeItem><Icon icon="file-symlink-file">.icon-file-symlink-file</Icon></TreeItem>
+    </TreeList>
+  </Block>
+);
+
 export const TreeExamples = {
   sectionName: 'Trees',
   description: 'Expandable, hierarchical lists.',
@@ -41,6 +66,10 @@ export const TreeExamples = {
     {
       title: 'Basic Tree',
       component: BasicTreeExample,
+    },
+    {
+      title: 'Reproducing the Atom style guide example:',
+      component: AtomStyleguideTreeExample,
     },
   ],
 };
