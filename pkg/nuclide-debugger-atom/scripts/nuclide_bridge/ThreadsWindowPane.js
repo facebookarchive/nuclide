@@ -28,6 +28,7 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
     this._registerUpdate();
     this.state = this._getState();
     (this: any)._handleThreadsUpdated = this._handleThreadsUpdated.bind(this);
+    (this: any)._handleClearInterface = this._handleClearInterface.bind(this);
   }
 
   componentWillUnmount() {
@@ -60,6 +61,16 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
       this._handleThreadsUpdated,
       this,
     );
+    WebInspector.targetManager.addModelListener(
+      WebInspector.DebuggerModel,
+      WebInspector.DebuggerModel.Events.ClearInterface,
+      this._handleClearInterface,
+      this,
+    );
+  }
+
+  _handleClearInterface(event: WebInspector.Event): void {
+    this.setState({threadData: null});
   }
 
   _unregisterUpdate(): void {
@@ -73,6 +84,12 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
       WebInspector.DebuggerModel,
       WebInspector.DebuggerModel.Events.SelectedThreadChanged,
       this._handleThreadsUpdated,
+      this,
+    );
+    WebInspector.targetManager.removeModelListener(
+      WebInspector.DebuggerModel,
+      WebInspector.DebuggerModel.Events.ClearInterface,
+      this._handleClearInterface,
       this,
     );
   }
@@ -115,23 +132,28 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
       maxHeight: '20em',
       overflow: 'auto',
     };
-    return (
-      <div style={containerStyle}>
-        <table width="100%">
-          <thead>
-            <tr key={0} align="center">
-              <td> </td>
-              <td>ID</td>
-              <td>Description</td>
-              <td>Location</td>
-            </tr>
-          </thead>
-          <tbody align="center">
-            {children}
-          </tbody>
-        </table>
-      </div>
-    );
+
+    if (children.length > 0) {
+      return (
+        <div style={containerStyle}>
+          <table width="100%">
+            <thead>
+              <tr key={0} align="center">
+                <td> </td>
+                <td>ID</td>
+                <td>Description</td>
+                <td>Location</td>
+              </tr>
+            </thead>
+            <tbody align="center">
+              {children}
+            </tbody>
+          </table>
+        </div>
+      );
+    } else {
+      return <div className="info">No Threads</div>;
+    }
   }
 }
 
