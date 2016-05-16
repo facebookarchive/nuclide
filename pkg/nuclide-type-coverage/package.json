@@ -5,6 +5,14 @@
   "version": "0.0.0",
   "description": "Provides type coverage information for gradually-typed languages such as Hack and Flow",
   "nuclide": {
+    "config": {
+      "colorizeStatusBar": {
+        "title": "Colorize Status Bar Widget",
+        "type": "boolean",
+        "default": true,
+        "description": "Whether to highlight poor type coverage by colorizing the status bar red or yellow"
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

@@ -12,6 +12,7 @@
 import {React} from 'react-for-atom';
 
 import addTooltip from '../../nuclide-ui/lib/add-tooltip';
+import featureConfig from '../../nuclide-feature-config';
 import classnames from 'classnames';
 
 type Props = {
@@ -27,6 +28,7 @@ type Props = {
 
 const REALLY_BAD_THRESHOLD = 50;
 const NOT_GREAT_THRESHOLD = 80;
+const COLOR_DISPLAY_SETTING = 'nuclide-type-coverage.colorizeStatusBar';
 
 export class StatusBarTileComponent extends React.Component {
   props: Props;
@@ -39,13 +41,19 @@ export class StatusBarTileComponent extends React.Component {
     const result = this.props.result;
     if (result != null) {
       const percentage = result.percentage;
+      let colorClasses: {[classname: string]: boolean} = {};
+      if (featureConfig.get(COLOR_DISPLAY_SETTING)) {
+        colorClasses = {
+          'text-error': percentage <= REALLY_BAD_THRESHOLD,
+          'text-warning': percentage > REALLY_BAD_THRESHOLD && percentage <= NOT_GREAT_THRESHOLD,
+          // Nothing applied if percentage > NOT_GREAT_THRESHOLD,
+          'nuclide-type-coverage-status-bar-active': this.props.isActive,
+        };
+      }
       const classes: string = classnames({
         'nuclide-type-coverage-status-bar-pending': this.props.pending,
         'nuclide-type-coverage-status-bar-ready': !this.props.pending,
-        'text-error': percentage <= REALLY_BAD_THRESHOLD,
-        'text-warning': percentage > REALLY_BAD_THRESHOLD && percentage <= NOT_GREAT_THRESHOLD,
-        // Nothing applied if percentage > NOT_GREAT_THRESHOLD,
-        'nuclide-type-coverage-status-bar-active': this.props.isActive,
+        ...colorClasses,
       });
       const formattedPercentage: string = `${Math.floor(percentage)}%`;
       const tooltipString = getTooltipString(formattedPercentage, result.providerName);
