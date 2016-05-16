@@ -10,12 +10,18 @@
  */
 
 import type {Outline, OutlineTree} from '../../nuclide-outline-view';
-import type {HackOutline, HackOutlineItem} from '../../nuclide-hack-base/lib/HackService';
+import type {
+  HackOutline,
+  HackOutlineItem,
+  HackIdeOutline,
+  HackIdeOutlineItem,
+} from '../../nuclide-hack-base/lib/HackService';
 import {
   className,
   keyword,
   method,
   whitespace,
+  plain,
 } from '../../nuclide-tokenized-text';
 import {getHackLanguageForUri} from './HackLanguage';
 
@@ -30,6 +36,77 @@ export class OutlineViewProvider {
     }
     return outlineFromHackOutline(hackOutline);
   }
+}
+
+export function outlineFromHackIdeOutline(hackOutline: HackIdeOutline): Outline {
+  return {
+    outlineTrees: hackOutline.map(outlineFromHackIdeItem),
+  };
+}
+
+function outlineFromHackIdeItem(hackItem: HackIdeOutlineItem): OutlineTree {
+  const tokenizedText = [];
+
+  function addKeyword(value: string) {
+    tokenizedText.push(keyword(value));
+    tokenizedText.push(whitespace(' '));
+  }
+
+  function addModifiers(modifiers: ?Array<string>) {
+    if (modifiers != null) {
+      modifiers.forEach(addKeyword);
+    }
+  }
+
+  addModifiers(hackItem.modifiers);
+  switch (hackItem.kind) {
+    case 'typeconst':
+      addKeyword('const');
+      addKeyword('type');
+      break;
+    case 'method':
+      addKeyword('function');
+      break;
+    default:
+      addKeyword(hackItem.kind);
+      break;
+  }
+
+  // name
+  switch (hackItem.kind) {
+    case 'class':
+    case 'enum':
+    case 'typeconst':
+      tokenizedText.push(className(hackItem.name));
+      break;
+    default:
+      tokenizedText.push(method(hackItem.name));
+      break;
+  }
+
+  // params
+  const params = hackItem.params;
+  if (params != null) {
+    tokenizedText.push(plain('('));
+    let first = true;
+    for (const param of params) {
+      if (!first) {
+        tokenizedText.push(plain(','));
+        tokenizedText.push(whitespace(' '));
+      }
+      first = false;
+      addModifiers(param.modifiers);
+      tokenizedText.push(plain(param.name));
+    }
+    tokenizedText.push(plain(')'));
+  }
+
+  return {
+    tokenizedText,
+    startPosition: pointFromHack(hackItem.position.line, hackItem.position.char_start),
+    endPosition: pointFromHack(hackItem.span.line_end, hackItem.span.char_end),
+    children: hackItem.children == null ? [] : hackItem.children.map(outlineFromHackIdeItem),
+  };
 }
 
 // Exported for testing
@@ -128,7 +205,11 @@ function outlineTreeFromHackOutlineItem(item: HackOutlineItem): OutlineTree {
 }
 
 function pointFromHackOutlineItem(item: HackOutlineItem): atom$Point {
-  return new Point(item.line - 1, item.char_start - 1);
+  return pointFromHack(item.line, item.char_start);
+}
+
+function pointFromHack(hackLine: number, hackColumn: number): atom$Point {
+  return new Point(hackLine - 1, hackColumn - 1);
 }
 
 async function outlineFromEditor(editor: atom$TextEditor): Promise<?HackOutline> {
