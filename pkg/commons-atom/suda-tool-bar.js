@@ -9,7 +9,32 @@
  * the root directory of this source tree.
  */
 
+import type {Disposable} from 'atom';
+
 import semver from 'semver';
+
+export type GetToolBar = (group: string) => ToolBarManager;
+
+type ToolBarManager = {
+  addButton(options: {
+    priority?: number;
+    tooltip?: string;
+    iconset?: string;
+    icon?: string;
+    callback?: string | () => void;
+  }): ToolBarButtonView;
+  addSpacer(options: {
+    priority?: number;
+  }): ToolBarButtonView;
+  removeItems(): void;
+  onDidDestroy(callback: () => void): Disposable
+};
+
+type ToolBarButtonView = {
+  setEnabled(enabled: boolean): void;
+  destroy(): void;
+  element: HTMLElement;
+};
 
 function isVersionOrLater(packageName: string, version: string): boolean {
   const pkg = atom.packages.getLoadedPackage(packageName);

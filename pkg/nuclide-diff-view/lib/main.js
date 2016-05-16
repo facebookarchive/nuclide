@@ -15,6 +15,7 @@ import type DiffViewModelType, {DiffEntityOptions} from './DiffViewModel';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import {CompositeDisposable, Directory, Disposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
@@ -378,7 +379,7 @@ module.exports = {
     }));
   },
 
-  consumeToolBar(getToolBar: (group: string) => Object): void {
+  consumeToolBar(getToolBar: GetToolBar): void {
     toolBar = getToolBar('nuclide-diff-view');
     const button = toolBar.addButton({
       icon: 'git-branch',

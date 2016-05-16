@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {Commands as CommandsType} from './Commands';
 import type {AppState, BuildSystem, BuildSystemRegistry, SerializedAppState} from './types';
 import type {BehaviorSubject} from 'rxjs';
@@ -91,7 +92,7 @@ export function deactivate(): void {
   disposables = null;
 }
 
-export function consumeToolBar(getToolBar: (group: string) => Object): IDisposable {
+export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
   invariant(disposables != null);
   const toolBar = getToolBar('nuclide-build');
   const {element} = toolBar.addButton({

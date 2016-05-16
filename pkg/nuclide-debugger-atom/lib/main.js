@@ -19,6 +19,7 @@ import type {
   DatatipProvider,
   DatatipService,
 } from '../../nuclide-datatip/lib/types';
+import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
@@ -400,7 +401,7 @@ export function consumeEvaluationExpressionProvider(
   });
 }
 
-export function consumeToolBar(getToolBar: (group: string) => Object): void {
+export function consumeToolBar(getToolBar: GetToolBar): void {
   toolBar = getToolBar('nuclide-debugger');
   toolBar.addButton({
     icon: 'plug',

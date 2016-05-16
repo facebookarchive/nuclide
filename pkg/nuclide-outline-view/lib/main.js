@@ -11,6 +11,7 @@
 
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
+import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import {CompositeDisposable, Disposable} from 'atom';
 
@@ -163,7 +164,7 @@ class Activation {
     return this._editorService.consumeProvider(provider);
   }
 
-  consumeToolBar(getToolBar: (group: string) => Object): void {
+  consumeToolBar(getToolBar: GetToolBar): void {
     const toolBar = getToolBar('nuclide-outline-view');
     toolBar.addButton({
       icon: 'list-unordered',

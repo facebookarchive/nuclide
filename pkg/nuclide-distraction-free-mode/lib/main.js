@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
+
 import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
 
@@ -59,7 +61,7 @@ class Activation {
     return this._tunnelVision.consumeDistractionFreeModeProvider(provider);
   }
 
-  consumeToolBar(getToolBar: (group: string) => Object): void {
+  consumeToolBar(getToolBar: GetToolBar): void {
     const toolBar = getToolBar('nuclide-distraction-free-mode');
     toolBar.addButton({
       icon: 'eye',

@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {GadgetsService, Gadget} from '../../nuclide-gadgets/lib/types';
 import type {HealthStats} from './types';
 
@@ -24,6 +25,7 @@ import {
   onWorkspaceDidStopChangingActivePaneItem,
 } from '../../commons-atom/debounced';
 import featureConfig from '../../nuclide-feature-config';
+import {farEndPriority} from '../../commons-atom/suda-tool-bar';
 
 // Imports from within this Nuclide package.
 import createHealthGadget from './createHealthGadget';
@@ -93,14 +95,13 @@ export function deactivate() {
   }
 }
 
-export function consumeToolBar(getToolBar: (group: string) => Object): void {
-  const priority = require('../../nuclide-commons').toolbar.farEndPriority(400);
+export function consumeToolBar(getToolBar: GetToolBar): void {
   const toolBar = getToolBar('nuclide-health');
   toolBar.addButton({
     icon: 'dashboard',
     callback: 'nuclide-health:toggle',
     tooltip: 'Toggle Nuclide health stats',
-    priority,
+    priority: farEndPriority(400),
   });
   subscriptions.add(new Disposable(() => {
     toolBar.removeItems();

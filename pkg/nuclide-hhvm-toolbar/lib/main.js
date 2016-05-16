@@ -10,6 +10,7 @@
  */
 
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
+import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import type NuclideToolbarType from './NuclideToolbar';
 import type ProjectStoreType from './ProjectStore';
@@ -50,7 +51,7 @@ class Activation {
     );
   }
 
-  consumeToolBar(getToolBar: (group: string) => Object): void {
+  consumeToolBar(getToolBar: GetToolBar): void {
     const hhvmIcon = require('./hhvmIcon');
     const toolBar = getToolBar('nuclide-buck-toolbar');
     const toolBarButton = toolBar.addButton({

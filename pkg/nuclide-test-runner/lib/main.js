@@ -15,6 +15,7 @@ import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-m
 import type {TestRunner} from './types';
 import type {TestRunnerController as TestRunnerControllerType} from './TestRunnerController';
 import type {TestRunnerControllerState} from './TestRunnerController';
+import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
@@ -275,7 +276,7 @@ export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu):
   return activation.addItemsToFileTreeContextMenu(contextMenu);
 }
 
-export function consumeToolBar(getToolBar: (group: string) => Object): void {
+export function consumeToolBar(getToolBar: GetToolBar): void {
   toolBar = getToolBar('nuclide-test-runner');
   toolBar.addButton({
     icon: 'checklist',
