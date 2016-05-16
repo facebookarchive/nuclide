@@ -17,7 +17,7 @@ import {
 } from './clientInfo';
 import {getOsType} from './systemInfo';
 import userInfo from './userInfo';
-import session from './session';
+import uuid from 'uuid';
 
 export type RuntimeInformation = {
   sessionId: string;
@@ -41,7 +41,7 @@ function getCacheableRuntimeInformation(): RuntimeInformation {
   }
 
   cachedInformation = {
-    sessionId: '',
+    sessionId: uuid.v4(),
     user: userInfo().username,
     osType: getOsType(),
     timestamp: 0,
@@ -61,7 +61,6 @@ function getCacheableRuntimeInformation(): RuntimeInformation {
 export function getRuntimeInformation(): RuntimeInformation {
   const runtimeInformation = {
     ...getCacheableRuntimeInformation(),
-    sessionId: session.id,
     timestamp: Date.now(),
     uptime: Math.floor(process.uptime() * 1000),
   };

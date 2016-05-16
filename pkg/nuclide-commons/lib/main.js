@@ -57,7 +57,6 @@ import typeof * as VcsType from './vcs';
 import typeof * as PromisesType from './promises';
 import typeof * as ErrorType from './error';
 import typeof * as EventType from './event';
-import typeof * as SessionType from './session';
 import typeof * as CircularBufferType from './CircularBuffer';
 import typeof * as ClientInfoType from './clientInfo';
 import typeof * as SystemInfoType from './systemInfo';
@@ -265,10 +264,6 @@ module.exports = {
 
   get event(): EventType {
     return requireFromCache('./event');
-  },
-
-  get session(): SessionType {
-    return requireFromCache('./session');
   },
 
   get singleton() {
