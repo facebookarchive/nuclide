@@ -136,8 +136,8 @@ class LLDBListenerThread(Thread):
             self._send_user_output('log', process_output)
 
     def _send_paused_notification(self, process):
-        self._debugger_store.thread_manager.update(process)
         self._update_stop_thread(process)
+        self._debugger_store.thread_manager.update(process)
         thread = process.GetSelectedThread()
         output = 'Debugger paused at thread(%d) because of: %s' % (
             thread.GetThreadID(),
