@@ -124,6 +124,7 @@ WebInspector.CallStackSidebarPane.prototype = {
     {
         this._clear();
         this._updateHelper(callframes);
+        this._selectNextVisibleCallFrame(0);
     },
 
     /**
