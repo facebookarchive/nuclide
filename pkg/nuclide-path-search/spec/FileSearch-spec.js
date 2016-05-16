@@ -90,6 +90,16 @@ function aFileSearchShould(typename, dirPathFn) {
           ]);
         });
       });
+
+      it('should handle searches for full paths', () => {
+        waitsForPromise(async () => {
+          const fullpath = path.join(dirPath, 'deeper/deeper');
+          let results = await search.query(fullpath);
+          expect(values(results)).toEqual([fullpath]);
+          results = await search.query(path.join(path.dirname(dirPath), 'deeper/deeper'));
+          expect(values(results)).toEqual([fullpath]);
+        });
+      });
     });
 
     describe('a subdirectory FileSearch', () => {

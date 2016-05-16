@@ -10,6 +10,7 @@
  */
 
 import urlJoin from 'url-join';
+import path from 'path';
 
 import {parse} from '../../nuclide-remote-uri';
 import {fsPromise} from '../../nuclide-commons';
@@ -37,7 +38,20 @@ class FileSearch {
   }
 
   async query(query: string): Promise<Array<FileSearchResult>> {
-    const results = this._pathSet.match(query).map(result => {
+    // Attempt to relativize paths that people might e.g. copy + paste.
+    let relQuery = query;
+    // If a full path is pasted, make the path relative.
+    if (relQuery.startsWith(this._originalUri + path.sep)) {
+      relQuery = relQuery.substr(this._originalUri.length + 1);
+    } else {
+      // Also try to relativize queries that start with the dirname alone.
+      const dirname = path.dirname(this._originalUri);
+      if (relQuery.startsWith(dirname + path.sep)) {
+        relQuery = relQuery.substr(dirname.length + 1);
+      }
+    }
+
+    const results = this._pathSet.match(relQuery).map(result => {
       let {matchIndexes} = result;
       if (matchIndexes != null) {
         matchIndexes = matchIndexes.map(idx => idx + this._originalUri.length + 1);
