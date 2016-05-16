@@ -13,7 +13,6 @@ import type {TypeHint} from '../../nuclide-type-hint/lib/types';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../nuclide-busy-signal';
-import type {HyperclickProvider} from '../../hyperclick/lib/types';
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 import type {DefinitionProvider} from '../../nuclide-definition-service';
@@ -67,18 +66,6 @@ export function createAutocompleteProvider(): atom$AutocompleteProvider {
     ): Promise<?Array<atom$AutocompleteSuggestion>> {
       return autocompleteProvider.getAutocompleteSuggestions(request);
     },
-  };
-}
-
-export function getHyperclickProvider(): HyperclickProvider {
-  const HackHyperclickProvider = require('./HyperclickProvider').HyperclickProvider;
-  const hackHyperclickProvider = new HackHyperclickProvider();
-  const getSuggestion =
-      hackHyperclickProvider.getSuggestion.bind(hackHyperclickProvider);
-  return {
-    priority: 20,
-    providerName: PACKAGE_NAME,
-    getSuggestion,
   };
 }
 
