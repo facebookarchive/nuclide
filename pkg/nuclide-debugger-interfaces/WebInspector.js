@@ -52,13 +52,24 @@ declare class WebInspector$UISourceCode {
   uri(): string;
 }
 
+type ThreadData = {
+  owningProcessId: number;
+  stopThreadId: number;
+  selectedThreadId: number;
+  threadMap: Object; // TODO: add flow type.
+};
+
 declare class WebInspector$DebuggerModel {
   static Events: {
     CallFrameSelected: string;
     ClearInterface: string;
     DebuggerResumed: string;
     DebuggerPaused: string;
+    ThreadsUpdated: string;
+    SelectedThreadChanged: string;
   };
+
+  threadStore: WebInspector$ThreadStore;
 
   isPaused(): boolean;
   resume(): void;
@@ -82,8 +93,13 @@ declare class WebInspector$DebuggerModel {
       resultOrError: mixed
     ) => void,
   ): void;
+  selectThread(threadId: string): void;
 
   _parsedScriptSource(sourceUrl: string, sourceUrl: string): void;
+}
+
+declare class WebInspector$ThreadStore {
+  getData(): ThreadData;
 }
 
 declare class WebInspector$BreakpointManager {
@@ -132,6 +148,11 @@ declare class WebInspector$Target {
 
 declare class WebInspector$TargetManager {
   addModelListener(
+    modelClass: any,
+    eventType: string,
+    listener: (event: WebInspector$Event) => void,
+    thisObject: Object): void;
+  removeModelListener(
     modelClass: any,
     eventType: string,
     listener: (event: WebInspector$Event) => void,

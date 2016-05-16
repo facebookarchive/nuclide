@@ -153,6 +153,13 @@ class NuclideBridge {
       };
   }
 
+  selectThread(threadId: string) {
+    const target = WebInspector.targetManager.mainTarget();
+    if (target != null) {
+      target.debuggerModel.selectThread(threadId);
+    }
+  }
+
   _handleWindowLoad() {
     ipc.sendToHost('notification', 'ready');
   }

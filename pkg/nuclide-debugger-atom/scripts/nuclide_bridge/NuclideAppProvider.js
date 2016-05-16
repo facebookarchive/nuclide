@@ -10,6 +10,7 @@
  */
 
 import UnresolvedBreakpointsSidebarPane from './UnresolvedBreakpointsSidebarPane';
+import ThreadsWindowPane from './ThreadsWindowPane';
 
 // Supress ESLint no-undef about using WebInspector without window, which would
 // not have flow types attached.
@@ -37,6 +38,7 @@ class NuclideApp extends WebInspector.App {
       sourcesPanel.sidebarPanes.xhrBreakpoints.setVisible(false);
       sourcesPanel.sidebarPanes.eventListenerBreakpoints.setVisible(false);
       sourcesPanel.sidebarPanes.unresolvedBreakpoints = new UnresolvedBreakpointsSidebarPane();
+      sourcesPanel.sidebarPanes.threads = new ThreadsWindowPane();
       // Force redraw
       sourcesPanel.sidebarPaneView.detach();
       sourcesPanel.sidebarPaneView = null;
