@@ -15,6 +15,7 @@ import type {
 } from '../../nuclide-diagnostics-base';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
+import invariant from 'assert';
 import {
   React,
   ReactDOM,
@@ -169,6 +170,7 @@ function createGutterItem(
   const dispose = () => {
     if (popupElement) {
       ReactDOM.unmountComponentAtNode(popupElement);
+      invariant(popupElement.parentNode != null);
       popupElement.parentNode.removeChild(popupElement);
       popupElement = null;
     }
@@ -215,7 +217,7 @@ function showPopupFor(
   ): HTMLElement {
   // The popup will be an absolutely positioned child element of <atom-workspace> so that it appears
   // on top of everything.
-  const workspaceElement = atom.views.getView(atom.workspace);
+  const workspaceElement = atom.views.getView((atom.workspace: Object));
   const hostElement = window.document.createElement('div');
   workspaceElement.parentNode.appendChild(hostElement);
 

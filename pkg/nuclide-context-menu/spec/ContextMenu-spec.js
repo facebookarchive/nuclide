@@ -9,12 +9,14 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 import ContextMenu from '../lib/ContextMenu';
 
 describe('ContextMenu', () => {
 
   const cssSelector = '.nuclide-context-menu-unit-test';
-  let div;
+  let div: HTMLDivElement;
   let menu;
 
   beforeEach(() => {
@@ -28,6 +30,7 @@ describe('ContextMenu', () => {
       menu.dispose();
     }
     if (div != null) {
+      invariant(div.parentNode != null);
       div.parentNode.removeChild(div);
     }
   });
