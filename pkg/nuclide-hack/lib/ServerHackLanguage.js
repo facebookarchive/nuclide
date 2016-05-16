@@ -19,6 +19,7 @@ import type {
   HackRange,
   HackReference,
   HackOutline,
+  HackIdeOutline,
 } from '../../nuclide-hack-base/lib/HackService';
 import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
 import type {SymbolTypeValue} from '../../nuclide-hack-common';
@@ -128,6 +129,13 @@ export class ServerHackLanguage {
     contents: string,
   ): Promise<?HackOutline> {
     return this._hackService.getOutline(filePath, contents);
+  }
+
+  getIdeOutline(
+    filePath: NuclideUri,
+    contents: string,
+  ): Promise<?HackIdeOutline> {
+    return this._hackService.getIdeOutline(filePath, contents);
   }
 
   async getDefinition(

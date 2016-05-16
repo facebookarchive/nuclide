@@ -15,6 +15,7 @@ import type {
   HackDiagnostic,
   HackReference,
   HackOutline,
+  HackIdeOutline,
 } from '../../nuclide-hack-base/lib/HackService';
 import type {HackCoverageResult} from './TypedRegions';
 
@@ -121,6 +122,11 @@ export type HackLanguage = {
     filePath: NuclideUri,
     contents: string,
   ): Promise<?HackOutline>;
+
+  getIdeOutline(
+    filePath: NuclideUri,
+    contents: string,
+  ): Promise<?HackIdeOutline>;
 
   getBasePath(): ?string;
 
