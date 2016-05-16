@@ -60,6 +60,15 @@ export type HackRange = {
   char_end: number;
 };
 
+// Note that all line/column values are 1-based.
+export type HackSpan = {
+  filename: NuclideUri;
+  line_start: number;
+  char_start: number;
+  line_end: number;
+  char_end: number;
+};
+
 export type HackCompletion = {
   name: string;
   type: string;
@@ -114,6 +123,20 @@ export type HackOutlineItem = {
 };
 
 export type HackOutline = Array<HackOutlineItem>;
+
+export type HackIdeOutlineItem = {
+  kind: 'function' | 'class' | 'property' | 'method' | 'const'
+    | 'enum' | 'typeconst' | 'param' | 'trait' | 'interface';
+  name: string;
+  position: HackRange;
+  span: HackSpan;
+  modifiers: ?Array<string>;
+  children?: Array<HackIdeOutlineItem>;
+  params?: Array<HackIdeOutlineItem>;
+  docblock?: string;
+};
+
+export type HackIdeOutline = Array<HackIdeOutlineItem>;
 
 export type HackTypeAtPosResult = {
   type: ?string;
@@ -375,6 +398,23 @@ export async function getTypedRegions(filePath: NuclideUri):
 export async function getOutline(filePath: NuclideUri, contents: string): Promise<?HackOutline> {
   const hhResult = await callHHClient(
     /*args*/ ['--outline'],
+    /*errorStream*/ false,
+    /*outputJson*/ true,
+    /*processInput*/ contents,
+    filePath,
+  );
+  if (hhResult == null) {
+    return null;
+  }
+  return (hhResult.result: any);
+}
+
+export async function getIdeOutline(
+  filePath: NuclideUri,
+  contents: string
+): Promise<?HackIdeOutline> {
+  const hhResult = await callHHClient(
+    /*args*/ ['--ide-outline'],
     /*errorStream*/ false,
     /*outputJson*/ true,
     /*processInput*/ contents,
