@@ -21,6 +21,8 @@ const WebInspector: typeof WebInspector = window.WebInspector;
 // Re-use 'watch-group' since some backends throw when they encounted an unrecognized object group.
 const NUCLIDE_DEBUGGER_OBJECT_GROUP = 'watch-group';
 
+const DebuggerSettingsChangedEvent = 'debugger-settings-updated';
+
 /**
   * Generates a string from a breakpoint that can be used in hashed
   * containers.
@@ -37,6 +39,7 @@ class NuclideBridge {
   _emitter: Emitter;
   _debuggerPausedCount: number;
   _suppressBreakpointNotification: boolean;
+  _settings: Object;
 
   constructor() {
     this._allBreakpoints = [];
@@ -44,6 +47,7 @@ class NuclideBridge {
     this._emitter = new Emitter();
     this._debuggerPausedCount = 0;
     this._suppressBreakpointNotification = false;
+    this._settings = {};
 
     ipc.on('command', this._handleIpcCommand.bind(this));
 
@@ -95,6 +99,7 @@ class NuclideBridge {
       this._handleBreakpointRemoved,
       this);
 
+    (this: any)._handleSettingsUpdated = this._handleSettingsUpdated.bind(this);
     this._customizeWebInspector();
     window.runOnWindowLoad(this._handleWindowLoad.bind(this));
   }
@@ -166,6 +171,9 @@ class NuclideBridge {
 
   _handleIpcCommand(command: string, ...args: any[]) {
     switch (command) {
+      case 'UpdateSettings':
+        this._handleSettingsUpdated(args[0]);
+        break;
       case 'SyncBreakpoints':
         this._allBreakpoints = args[0];
         this._syncBreakpoints();
@@ -189,6 +197,19 @@ class NuclideBridge {
         this._getProperties(args[0]);
         break;
     }
+  }
+
+  getSettings(): Object {
+    return this._settings;
+  }
+
+  _handleSettingsUpdated(settingsData: string): void {
+    this._settings = JSON.parse(settingsData);
+    this._emitter.emit(DebuggerSettingsChangedEvent, null);
+  }
+
+  onDebuggerSettingsChanged(callback: () => void): IDisposable {
+    return this._emitter.on(DebuggerSettingsChangedEvent, callback);
   }
 
   _handleCallFrameSelected(event: WebInspector.Event) {

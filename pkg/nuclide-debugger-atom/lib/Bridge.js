@@ -205,6 +205,7 @@ class Bridge {
       case 'notification':
         switch (event.args[0]) {
           case 'ready':
+            this._updateDebuggerSettings();
             this._sendAllBreakpoints();
             this._injectCSS();
             break;
@@ -240,6 +241,17 @@ class Bridge {
             break;
         }
         break;
+    }
+  }
+
+  _updateDebuggerSettings(): void {
+    const webview = this._webview;
+    if (webview != null) {
+      webview.send(
+        'command',
+        'UpdateSettings',
+        this._debuggerModel.getSettings().getSerializedData()
+      );
     }
   }
 

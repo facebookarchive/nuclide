@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import NuclideBridge from './NuclideBridge';
 import UnresolvedBreakpointsSidebarPane from './UnresolvedBreakpointsSidebarPane';
 import ThreadsWindowPane from './ThreadsWindowPane';
 
@@ -24,7 +25,11 @@ const WebInspector: typeof WebInspector = window.WebInspector;
  * DOM. Here we can inject any modifications into the UI.
  */
 class NuclideApp extends WebInspector.App {
+  _threadsWindow: Object;
+
   presentUI() {
+    NuclideBridge.onDebuggerSettingsChanged(this._handleSettingsUpdated.bind(this));
+
     const rootView = new WebInspector.RootView();
     WebInspector.inspectorView.show(rootView.element);
     WebInspector.inspectorView.panel('sources').then(panel => {
@@ -38,7 +43,9 @@ class NuclideApp extends WebInspector.App {
       sourcesPanel.sidebarPanes.xhrBreakpoints.setVisible(false);
       sourcesPanel.sidebarPanes.eventListenerBreakpoints.setVisible(false);
       sourcesPanel.sidebarPanes.unresolvedBreakpoints = new UnresolvedBreakpointsSidebarPane();
-      sourcesPanel.sidebarPanes.threads = new ThreadsWindowPane();
+      this._threadsWindow = new ThreadsWindowPane();
+      sourcesPanel.sidebarPanes.threads = this._threadsWindow;
+      this._handleSettingsUpdated();
       // Force redraw
       sourcesPanel.sidebarPaneView.detach();
       sourcesPanel.sidebarPaneView = null;
@@ -54,6 +61,13 @@ class NuclideApp extends WebInspector.App {
     // Clear breakpoints whenever they are saved to localStorage.
     WebInspector.settings.breakpoints.addChangeListener(
       this._onBreakpointSettingsChanged, this);
+  }
+
+  _handleSettingsUpdated(): void {
+    const settings = NuclideBridge.getSettings();
+    if (this._threadsWindow != null && !settings.SupportThreadsWindow) {
+      this._threadsWindow.setVisible(false);
+    }
   }
 
   _forceOnlySidebar(event: any) {
