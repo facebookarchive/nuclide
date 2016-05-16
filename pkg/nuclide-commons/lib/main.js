@@ -65,7 +65,6 @@ import typeof * as SystemInfoType from './systemInfo';
 import typeof * as RuntimeInfoType from './runtimeInfo';
 import typeof * as ScribeProcessType from './ScribeProcess';
 import typeof * as BatchProcessedQueueType from './BatchProcessedQueue';
-import typeof * as ExtendableErrorType from './ExtendableError';
 import typeof * as ObservablesType from './observables';
 
 import userInfo from './userInfo';
@@ -313,10 +312,6 @@ module.exports = {
     return (
       requireFromCache('./BatchProcessedQueue'): BatchProcessedQueueType
     ).BatchProcessedQueue;
-  },
-
-  get ExtendableError(): ExtendableErrorType {
-    return requireFromCache('./ExtendableError');
   },
 
   get passesGK(): (gatekeeperName: string, timeout?: number) => Promise<boolean> {
