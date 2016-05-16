@@ -14,9 +14,6 @@ import classNames from 'classnames';
 import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 
-const ENTER_KEY_CODE = 13;
-const ESCAPE_KEY_CODE = 27;
-
 type Props = {
   className?: string;
   disabled: boolean;
@@ -64,7 +61,6 @@ export class AtomInput extends React.Component {
     this.state = {
       value: props.initialValue,
     };
-    (this: any)._analyzeKeyCodes = this._analyzeKeyCodes.bind(this);
   }
 
   componentDidMount(): void {
@@ -78,6 +74,21 @@ export class AtomInput extends React.Component {
       this.setState({value: textEditor.getText()});
       this.props.onDidChange.call(null, textEditor.getText());
     }));
+    const textEditorElement = this._getTextEditorElement();
+    disposables.add(
+      atom.commands.add(textEditorElement, {
+        'core:confirm': () => {
+          if (this.props.onConfirm != null) {
+            this.props.onConfirm();
+          }
+        },
+        'core:cancel': () => {
+          if (this.props.onCancel != null) {
+            this.props.onCancel();
+          }
+        },
+      })
+    );
     const placeholderText = this.props.placeholderText;
     if (placeholderText != null) {
       textEditor.setPlaceholderText(placeholderText);
@@ -141,7 +152,6 @@ export class AtomInput extends React.Component {
         mini
         onClick={this.props.onClick}
         onFocus={this.props.onFocus}
-        onKeyUp={this._analyzeKeyCodes}
         onBlur={this.props.onBlur}
       />
     );
@@ -165,21 +175,6 @@ export class AtomInput extends React.Component {
 
   _getTextEditorElement(): atom$TextEditorElement {
     return ReactDOM.findDOMNode(this);
-  }
-
-  _analyzeKeyCodes(event: SyntheticKeyboardEvent): void {
-    switch (event.keyCode) {
-      case ENTER_KEY_CODE:
-        if (this.props.onConfirm != null) {
-          this.props.onConfirm();
-        }
-        break;
-      case ESCAPE_KEY_CODE:
-        if (this.props.onCancel != null) {
-          this.props.onCancel();
-        }
-        break;
-    }
   }
 
   focus(): void {
