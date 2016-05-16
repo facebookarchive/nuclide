@@ -38,7 +38,7 @@ export function activate(): void {
   registerGrammar('source.json', '.arcconfig');
 }
 
-export function dactivate(): void {
+export function deactivate(): void {
   if (subscriptions) {
     subscriptions.dispose();
     subscriptions = null;
