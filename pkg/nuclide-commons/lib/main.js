@@ -42,7 +42,6 @@ export type ErrorMessage = {
 import typeof * as ProcessType from './process';
 import typeof * as StreamType from './stream';
 import typeof * as FSPromiseType from './fsPromise';
-import typeof * as ToJsStringType from './toJsString';
 import typeof * as SetType from './set';
 import typeof * as MapType from './map';
 import typeof * as ArrayType from './array';
@@ -192,10 +191,6 @@ module.exports = {
 
   get relativeDate() {
     return (requireFromCache('./relativeDate'): RelativeDateType).relativeDate;
-  },
-
-  get toJsString() {
-    return (requireFromCache('./toJsString'): ToJsStringType).toJsString;
   },
 
   get array(): ArrayType {

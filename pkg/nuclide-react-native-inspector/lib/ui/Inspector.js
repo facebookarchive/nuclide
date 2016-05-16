@@ -13,7 +13,6 @@ import type {Gadget} from '../../../nuclide-gadgets/lib/types';
 import {React} from 'react-for-atom';
 import path from 'path';
 import {Webview} from '../../../nuclide-ui/lib/Webview';
-import {toJsString} from '../../../nuclide-commons';
 
 class Inspector extends React.Component {
   static gadgetId = 'nuclide-react-native-inspector';
@@ -45,7 +44,10 @@ class Inspector extends React.Component {
     const inspectorDevTools =
       path.join(__dirname, '../../VendorLib/dev-tools/standalone.js');
     element.executeJavaScript(
-      `initializeElementInspector(${toJsString(inspectorDevTools)}, ${toJsString(requirePaths)});`
+      `initializeElementInspector(
+        ${JSON.stringify(inspectorDevTools)},
+        ${JSON.stringify(requirePaths)}
+      );`
     );
   }
 }
