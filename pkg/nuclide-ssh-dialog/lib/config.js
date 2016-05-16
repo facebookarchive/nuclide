@@ -12,23 +12,21 @@
 import type {NuclideRemoteConnectionParams} from './connection-types';
 
 import path from 'path';
-import {env} from '../../nuclide-commons';
+import {userInfo} from '../../nuclide-commons';
+import {SshHandshake} from '../../nuclide-remote-connection';
 
-function getConnectionDialogDefaultSettings(): NuclideRemoteConnectionParams {
+export function getConnectionDialogDefaultSettings(): NuclideRemoteConnectionParams {
+  const {username, homedir} = userInfo();
   return {
     server: '',
-    username: env.USER,
+    username: username,
     // Do not use path.join() because we assume that the remote machine is *nix,
     // so we always want to use `/` as the path separator for cwd, even if Atom
     // is running on Windows.
-    cwd: `/home/${env.USER}/`,
-    pathToPrivateKey: path.join(env.HOME, '.ssh', 'id_rsa'),
+    cwd: `/home/${username}/`,
+    pathToPrivateKey: path.join(homedir, '.ssh', 'id_rsa'),
     remoteServerCommand: 'nuclide-start-server',
-    authMethod: require('../../nuclide-remote-connection').SshHandshake.SupportedMethods.PASSWORD,
+    authMethod: SshHandshake.SupportedMethods.PASSWORD,
     sshPort: '22',
   };
 }
-
-module.exports = {
-  getConnectionDialogDefaultSettings,
-};

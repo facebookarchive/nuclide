@@ -10,12 +10,18 @@
  */
 
 import type {LoggingAppender} from './types';
-import {clientInfo, fsPromise, ScribeProcess, env} from '../../nuclide-commons';
+import {
+  clientInfo,
+  fsPromise,
+  ScribeProcess,
+  userInfo,
+} from '../../nuclide-commons';
 import os from 'os';
 import path from 'path';
 
-const LOG_FILE_PATH = path.join(os.tmpdir(), `/nuclide-${env.USER}-logs/nuclide.log`);
-const logDirectory = path.dirname(LOG_FILE_PATH);
+const LOG_DIRECTORY = path.join(os.tmpdir(), `/nuclide-${userInfo().username}-logs`);
+const LOG_FILE_PATH = path.join(LOG_DIRECTORY, 'nuclide.log');
+
 let logDirectoryInitialized = false;
 const scribeAppenderPath = path.join(__dirname, '../fb/scribeAppender.js');
 
@@ -63,7 +69,7 @@ module.exports = {
   async getDefaultConfig(): Promise<LoggingAppender> {
 
     if (!logDirectoryInitialized) {
-      await fsPromise.mkdirp(logDirectory);
+      await fsPromise.mkdirp(LOG_DIRECTORY);
       logDirectoryInitialized = true;
     }
 

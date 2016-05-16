@@ -33,6 +33,7 @@ const assert = require('assert');
 const fs = require('fs');
 const glob = require('glob');
 const path = require('path');
+const os = require('os');
 
 const NodeTranspiler = require('../../pkg/nuclide-node-transpiler/lib/NodeTranspiler');
 const nodeTranspiler = new NodeTranspiler();
@@ -91,7 +92,7 @@ jsFiles.forEach(filename => {
 
   const safeFilename = path.basename(filename);
   // Prevent leaking private data in the sourcemap file path
-  assert(safeFilename.indexOf(process.env.HOME) === -1);
+  assert(safeFilename.indexOf(os.homedir()) === -1);
 
   try {
     const code = nodeTranspiler.transform(src, safeFilename);

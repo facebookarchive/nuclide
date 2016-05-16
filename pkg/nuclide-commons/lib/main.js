@@ -67,7 +67,8 @@ import typeof * as ScribeProcessType from './ScribeProcess';
 import typeof * as BatchProcessedQueueType from './BatchProcessedQueue';
 import typeof * as ExtendableErrorType from './ExtendableError';
 import typeof * as ObservablesType from './observables';
-import type {Environment as EnvironmentType} from './environment';
+
+import userInfo from './userInfo';
 
 // It's impactful to memoize our requires here since these commons are so often used.
 const requireCache: {[id: string]: any} = {};
@@ -256,10 +257,6 @@ module.exports = {
     return requireFromCache('./dns_utils');
   },
 
-  get env(): EnvironmentType {
-    return requireFromCache('./environment');
-  },
-
   get promises() {
     return requirePromises();
   },
@@ -302,6 +299,10 @@ module.exports = {
 
   get runtimeInfo(): RuntimeInfoType {
     return requireFromCache('./runtimeInfo');
+  },
+
+  get userInfo() {
+    return userInfo;
   },
 
   get ScribeProcess() {

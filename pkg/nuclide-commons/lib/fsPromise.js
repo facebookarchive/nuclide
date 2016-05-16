@@ -10,10 +10,10 @@
  */
 
 import fs from 'fs-plus';
-import invariant from 'assert';
 import mkdirpLib from 'mkdirp';
 import path from 'path';
 import rimraf from 'rimraf';
+import os from 'os';
 import temp from 'temp';
 import {asyncExecute} from './process';
 
@@ -144,13 +144,11 @@ async function rmdir(filePath: string): Promise {
 }
 
 function expandHomeDir(filePath: string): string {
-  const {HOME} = process.env;
   let resolvedPath = null;
   if (filePath === '~') {
-    invariant(HOME != null);
-    resolvedPath = HOME;
+    resolvedPath = os.homedir();
   } else if (filePath.startsWith(`~${path.sep}`)) {
-    resolvedPath = `${HOME}${filePath.substr(1)}`;
+    resolvedPath = `${os.homedir()}${filePath.substr(1)}`;
   } else {
     resolvedPath = filePath;
   }

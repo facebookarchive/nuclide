@@ -16,7 +16,7 @@ import {
   isRunningInClient,
 } from './clientInfo';
 import {getOsType} from './systemInfo';
-import environment from './environment';
+import userInfo from './userInfo';
 import session from './session';
 
 export type RuntimeInformation = {
@@ -42,7 +42,7 @@ function getCacheableRuntimeInformation(): RuntimeInformation {
 
   cachedInformation = {
     sessionId: '',
-    user: environment.USER,
+    user: userInfo().username,
     osType: getOsType(),
     timestamp: 0,
     isClient: isRunningInClient(),

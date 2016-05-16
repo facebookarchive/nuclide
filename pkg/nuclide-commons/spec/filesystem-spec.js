@@ -10,9 +10,9 @@
  */
 
 import fs from 'fs';
-import invariant from 'assert';
 import path from 'path';
 import temp from 'temp';
+import os from 'os';
 import {fsPromise} from '../lib/fsPromise';
 
 describe('fsPromise test suite', () => {
@@ -58,13 +58,11 @@ describe('fsPromise test suite', () => {
 
   describe('expandHomeDir()', () => {
     it('expands ~ to HOME', () => {
-      expect(fsPromise.expandHomeDir('~')).toBe(process.env.HOME);
+      expect(fsPromise.expandHomeDir('~')).toBe(os.homedir());
     });
 
     it('expands ~/ to HOME', () => {
-      const HOME = process.env.HOME;
-      invariant(HOME != null);
-      expect(fsPromise.expandHomeDir('~/abc')).toBe(path.join(HOME, 'abc'));
+      expect(fsPromise.expandHomeDir('~/abc')).toBe(path.join(os.homedir(), 'abc'));
     });
 
     it('keeps ~def to ~def', () => {
