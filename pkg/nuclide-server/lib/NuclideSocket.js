@@ -118,7 +118,7 @@ export class NuclideSocket {
     // in uncaught exceptions. This is due to EventEmitter treating 'error'
     // events specially.
     const onSocketError = error => {
-      logger.error('WebSocket Error - attempting connection...', error);
+      logger.error(`WebSocket Error - attempting connection... ${error.message}`);
     };
     websocket.on('error', onSocketError);
 
