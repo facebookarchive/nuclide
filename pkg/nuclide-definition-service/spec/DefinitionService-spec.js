@@ -47,12 +47,14 @@ describe('DefinitionService', () => {
     waitsForPromise(async () => {
       const result = {
         queryRange: new Range(new Point(1, 1), new Point(1, 5)),
-        definition: {
+        definitions: [{
           path: 'path',
           position: new Point(42, 43),
           range: null,
-          definition: null,
-        },
+          id: null,
+          name: null,
+          projectRoot: null,
+        }],
       };
       provider.getDefinition.andReturn(Promise.resolve(result));
 

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {DefinitionQueryResult} from '../../nuclide-definition-service';
+import type {Definition, DefinitionQueryResult} from '../../nuclide-definition-service';
 
 import {getHackLanguageForUri} from './HackLanguage';
 import {HACK_GRAMMARS_SET, HACK_GRAMMARS} from '../../nuclide-hack-common';
@@ -51,14 +51,15 @@ export class HackDefinitionProvider {
     if (definition == null) {
       return null;
     }
+    const result: Definition = {
+      path: definition.path,
+      position: new Point(definition.line - 1, definition.column - 1),
+      // TODO: range, name, projectRoot
+      id: definition.name,
+    };
     return {
       queryRange: definition.queryRange,
-      definition: {
-        path: definition.path,
-        position: new Point(definition.line - 1, definition.column - 1),
-        range: null, // TODO
-        definition: definition.name,
-      },
+      definitions: [result],
     };
   }
 }

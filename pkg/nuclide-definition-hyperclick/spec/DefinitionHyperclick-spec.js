@@ -59,16 +59,18 @@ describe('DefinitionHyperclick', () => {
     });
   });
 
-  it('definition', () => {
+  it('definition - single', () => {
     waitsForPromise(async () => {
       const definition = {
         queryRange: new Range(new Point(1, 1), new Point(1, 5)),
-        definition: {
+        definitions: [{
           path: 'path1',
           position: new Point(1, 2),
           range: null,
-          definition: 'smbol-name',
-        },
+          id: 'symbol-name',
+          name: null,
+          projectRoot: null,
+        }],
       };
       service.getDefinition.andReturn(Promise.resolve(definition));
       consumeDefinitionService(service);
@@ -86,6 +88,52 @@ describe('DefinitionHyperclick', () => {
       invariant(typeof result.callback === 'function');
       result.callback();
       expect(goToLocation).toHaveBeenCalledWith('path1', 1, 2);
+    });
+  });
+
+  it('definition - multiple', () => {
+    waitsForPromise(async () => {
+      const defs = {
+        queryRange: new Range(new Point(1, 1), new Point(1, 5)),
+        definitions: [
+          {
+            path: '/a/b/path1',
+            position: new Point(1, 2),
+            range: null,
+            id: 'symbol-name',
+            name: 'd1',
+            projectRoot: '/a',
+          },
+          {
+            path: '/a/b/path2',
+            position: new Point(3, 4),
+            range: null,
+            id: 'symbol-name2',
+            name: 'd2',
+            projectRoot: '/a',
+          },
+        ],
+      };
+      service.getDefinition.andReturn(Promise.resolve(defs));
+      consumeDefinitionService(service);
+
+      invariant(provider.getSuggestion != null);
+      const result: ?HyperclickSuggestion = await provider.getSuggestion(editor, position);
+
+      invariant(result != null);
+      expect(result.range).toEqual(defs.queryRange);
+      expect(service.getDefinition).toHaveBeenCalledWith(editor, position);
+      expect(goToLocation).not.toHaveBeenCalled();
+      const callbacks: Array<{title: string; callback: () => mixed}> = (result.callback: any);
+
+      expect(callbacks.length).toBe(2);
+      expect(callbacks[0].title).toBe('d1 (b/path1)');
+      expect(typeof callbacks[0].callback).toBe('function');
+      expect(callbacks[1].title).toBe('d2 (b/path2)');
+      expect(typeof callbacks[1].callback).toBe('function');
+
+      callbacks[1].callback();
+      expect(goToLocation).toHaveBeenCalledWith('/a/b/path2', 3, 4);
     });
   });
 });

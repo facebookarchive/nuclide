@@ -94,12 +94,11 @@ describe('HackDefinitionProvider', () => {
       const result = await provider.getDefinition(editor, position);
       const expected = {
         queryRange: definition.queryRange,
-        definition: {
+        definitions: [{
           path: definition.path,
           position: new Point(41, 11),
-          range: null,
-          definition: 'symbol-name',
-        },
+          id: 'symbol-name',
+        }],
       };
       expect(result).toEqual(expected);
       expect(hackLanguage.getIdeDefinition).toHaveBeenCalledWith(
