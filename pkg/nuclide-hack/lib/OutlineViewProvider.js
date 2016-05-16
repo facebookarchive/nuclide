@@ -34,7 +34,7 @@ export class OutlineViewProvider {
     if (hackOutline == null) {
       return null;
     }
-    return outlineFromHackOutline(hackOutline);
+    return outlineFromHackIdeOutline(hackOutline);
   }
 }
 
@@ -212,7 +212,7 @@ function pointFromHack(hackLine: number, hackColumn: number): atom$Point {
   return new Point(hackLine - 1, hackColumn - 1);
 }
 
-async function outlineFromEditor(editor: atom$TextEditor): Promise<?HackOutline> {
+async function outlineFromEditor(editor: atom$TextEditor): Promise<?HackIdeOutline> {
   const filePath = editor.getPath();
   if (filePath == null) {
     return null;
@@ -224,5 +224,5 @@ async function outlineFromEditor(editor: atom$TextEditor): Promise<?HackOutline>
 
   const contents = editor.getText();
 
-  return await hackLanguage.getOutline(filePath, contents);
+  return await hackLanguage.getIdeOutline(filePath, contents);
 }
