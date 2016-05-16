@@ -54,7 +54,6 @@ import typeof * as PromiseExecutorsType from './PromiseExecutors';
 import typeof * as DebounceType from './debounce';
 import typeof * as OnceType from './once';
 import typeof * as VcsType from './vcs';
-import typeof * as DnsUtilsType from './dns_utils';
 import typeof * as PromisesType from './promises';
 import typeof * as ErrorType from './error';
 import typeof * as EventType from './event';
@@ -250,10 +249,6 @@ module.exports = {
 
   get vcs(): VcsType {
     return requireFromCache('./vcs');
-  },
-
-  get dnsUtils(): DnsUtilsType {
-    return requireFromCache('./dns_utils');
   },
 
   get promises() {

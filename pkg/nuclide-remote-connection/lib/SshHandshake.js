@@ -18,6 +18,7 @@ import net from 'net';
 import invariant from 'assert';
 import {RemoteConnection} from './RemoteConnection';
 import {fsPromise, promises} from '../../nuclide-commons';
+import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 
 const logger = require('../../nuclide-logging').getLogger();
 
@@ -166,7 +167,6 @@ export class SshHandshake {
       return;
     }
 
-    const {lookupPreferIpv6} = require('../../nuclide-commons').dnsUtils;
     let address = null;
     try {
       address = await lookupPreferIpv6(config.host);
