@@ -9,13 +9,7 @@
  * the root directory of this source tree.
  */
 
-let paneContainerClass: ?Function;
-
 export default function createPaneContainer(): Object {
-  if (!paneContainerClass) {
-    paneContainerClass = atom.views.providers.filter((provider: atom$ViewProvider) =>
-      provider.modelConstructor.name === 'PaneContainer'
-    )[0].modelConstructor;
-  }
-  return new paneContainerClass({});
+  const PaneContainer = atom.workspace.paneContainer.constructor;
+  return new PaneContainer({});
 }
