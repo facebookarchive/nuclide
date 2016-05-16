@@ -21,21 +21,17 @@ import {Observable, Subject} from 'rxjs';
 
 import ActiveEditorRegistry from '../../commons-atom/ActiveEditorRegistry';
 import {track} from '../../nuclide-analytics';
-import {passesGK, DisposableSubscription} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../nuclide-commons';
 
 import {StatusBarTile} from './StatusBarTile';
 import {diagnosticProviderForResultStream} from './coverageDiagnostics';
 
 const STATUS_BAR_PRIORITY = 1000;
-const GK_TYPE_COVERAGE = 'nuclide_type_coverage';
 
 async function resultFunction(
   provider: CoverageProvider,
   editor: atom$TextEditor,
 ): Promise<?CoverageResult> {
-  if (!await passesGK(GK_TYPE_COVERAGE, 0)) {
-    return null;
-  }
   const path = editor.getPath();
   if (path == null) {
     return null;
