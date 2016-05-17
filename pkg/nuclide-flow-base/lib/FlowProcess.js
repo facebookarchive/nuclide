@@ -191,7 +191,8 @@ export class FlowProcess {
   /** Execute Flow with the given arguments */
   async _rawExecFlow(args: Array<any>, options?: Object = {}): Promise<?process$asyncExecuteRet> {
     const flowOptions = await this._getFlowExecOptions();
-    if (!flowOptions) {
+    if (flowOptions == null) {
+      this._updateServerStatus(null);
       return null;
     }
     options = {...flowOptions, ...options};
