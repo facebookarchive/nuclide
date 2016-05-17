@@ -7,6 +7,9 @@
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm",
+    "configMetadata": {
+      "pathComponents": ["IDE", "Android"]
+    },
     "config": {
       "pathToAdb": {
         "title": "Path to adb (Android Debug Bridge) executable",

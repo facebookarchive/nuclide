@@ -7,6 +7,9 @@
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm",
+    "configMetadata": {
+      "pathComponents": ["IDE", "iOS Simulator Logs"]
+    },
     "config": {
       "senderBlacklist": {
         "title": "Sender Blacklist",

@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "Provides support for Python in Nuclide",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": ["Language", "Python"]
+    },
     "config": {
       "pathToPython": {
         "title": "Path to Python Executable",

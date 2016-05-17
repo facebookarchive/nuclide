@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "General display mechanism for the VCS log of a file",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": ["IDE", "VCS Log"]
+    },
     "config": {
       "showDifferentialRevision": {
         "title": "Show column for Differential revision",

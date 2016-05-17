@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "Provides a welcome message and other links for first time users.",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": ["IDE", "Home"]
+    },
     "config": {
       "showHome": {
         "title": "Show Home Pane",

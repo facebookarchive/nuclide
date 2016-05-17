@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "Allows Debugging of hhvm from Nuclide",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": ["Debugger", "HHVM"]
+    },
     "config": {
       "scriptRegex": {
         "title": "Script Path Filter Regexp",

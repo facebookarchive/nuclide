@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "React Native development tools",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": ["IDE", "React Native"]
+    },
     "config": {
       "pathToNode": {
         "title": "Path to Node Executable",

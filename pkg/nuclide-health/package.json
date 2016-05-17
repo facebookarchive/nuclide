@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "Provides some simple process stats in the status bar",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": ["IDE", "Health"]
+    },
     "config": {
       "analyticsTimeout": {
         "title": "Analytics Send Interval",

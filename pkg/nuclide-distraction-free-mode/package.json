@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "Hide the cruft and focus on your code",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": ["IDE", "Distraction Free Mode"]
+    },
     "config": {
       "hideToolBar": {
         "title": "Hide the tool-bar",

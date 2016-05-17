@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "Provides a datatip service for rendering persistent windows in the editor",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": ["IDE", "Datatip"]
+    },
     "config": {
       "datatipDebounceDelay": {
         "title": "Datatip debounce delay",

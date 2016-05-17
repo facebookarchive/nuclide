@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "Aggregate and display output from various sources and provide an user interface for REPL-like functionality.",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": ["IDE", "Console"]
+    },
     "config": {
       "maximumMessageCount": {
         "title": "Maximum Message Count",

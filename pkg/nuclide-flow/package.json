@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "Provides support for Flow in Nuclide",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": ["Language", "Flow"]
+    },
     "config": {
       "pathToFlow": {
         "title": "Path to Flow Executable",

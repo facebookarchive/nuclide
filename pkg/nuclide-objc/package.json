@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "Provides support for Objective-C in Nuclide",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": ["Language", "Obj-C"]
+    },
     "config": {
       "enableAutomaticSquareBracketInsertion": {
         "title": "Enable Automatic Square Bracket Insertion",

@@ -6,6 +6,9 @@
   "description": "Provides support for OCaml in Nuclide",
   "activationCommands": {},
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": ["Language", "Ocaml"]
+    },
     "config": {
       "pathToMerlin": {
         "title": "Path to Merlin Executable",

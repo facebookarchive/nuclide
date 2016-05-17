@@ -8,6 +8,9 @@
     "atom-text-editor": "nuclide-format-js:format"
   },
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": ["Language", "JS Format"]
+    },
     "config": {
       "runOnSave": {
         "title": "Run on save",

@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "Displays arcanist linter messages in Nuclide",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": ["Language", "Arc"]
+    },
     "config": {
       "blacklistedLinters": {
         "title": "Blacklisted Linters",

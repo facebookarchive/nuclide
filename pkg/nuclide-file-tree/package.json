@@ -29,6 +29,9 @@
     }
   },
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": ["IDE", "File Tree"]
+    },
     "config": {
       "revealFileOnSwitch": {
         "title": "Reveal File on Switch",

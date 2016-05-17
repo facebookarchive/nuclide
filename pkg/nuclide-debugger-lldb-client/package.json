@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "Nuclide lldb debugging client",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": ["Debugger", "LLDB"]
+    },
     "config": {
       "clientLogLevel": {
         "title": "Client Log Level",
