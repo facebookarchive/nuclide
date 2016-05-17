@@ -19,7 +19,7 @@ import type {
 import type {HackCoverageResult} from './TypedRegions';
 
 import {ServerHackLanguage} from './ServerHackLanguage';
-import {RemoteConnection} from '../../nuclide-remote-connection';
+import {ServerConnection, RemoteConnection} from '../../nuclide-remote-connection';
 import {isRemote} from '../../nuclide-remote-uri';
 import {getHackEnvironmentDetails} from './utils';
 
@@ -193,3 +193,11 @@ async function createHackLanguageIfNotExisting(
   }
   return uriToHackLanguage.get(key);
 }
+
+// Must clear the cache when servers go away.
+// TODO: Could be more precise about this and only clear those entries
+// for the closed connection.
+function clearHackLanguageCache() {
+  uriToHackLanguage.clear();
+}
+ServerConnection.onDidCloseServerConnection(clearHackLanguageCache);
