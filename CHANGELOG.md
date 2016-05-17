@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.138.0
+
+Hotfix for an error being thrown during the upgrade process from <0.136 to >=0.137
+
 ## v0.137.0
 
 ### JavaScript & Hack
