@@ -411,16 +411,26 @@ export class BuckProject {
     }
   }
 
-  /**
-   * Currently, if `aliasOrTarget` contains a flavor, this will fail.
-   */
   async buildRuleTypeFor(aliasOrTarget: string): Promise<string> {
-    const args = ['query', aliasOrTarget, '--json', '--output-attributes', 'buck.type'];
+    let canonicalName = aliasOrTarget;
+    // The leading "//" can be omitted for build/test/etc, but not for query.
+    // Don't prepend this for aliases though (aliases will not have colons)
+    if (canonicalName.indexOf(':') !== -1 && !canonicalName.startsWith('//')) {
+      canonicalName = '//' + canonicalName;
+    }
+    // Buck query does not support flavors.
+    const flavorIndex = canonicalName.indexOf('#');
+    if (flavorIndex !== -1) {
+      canonicalName = canonicalName.substr(0, flavorIndex);
+    }
+    const args = ['query', canonicalName, '--json', '--output-attributes', 'buck.type'];
     const result = await this._runBuckCommandFromProjectRoot(args);
     const json: {[target: string]: Object} = JSON.parse(result.stdout);
     // If aliasOrTarget is an alias, targets[0] will be the fully qualified build target.
     const targets = Object.keys(json);
-    if (!targets || targets.length !== 1) {
+    // "target:" rules build all rules in that particular BUCK file.
+    // Let's just choose the first one.
+    if (!targets || (!canonicalName.endsWith(':') && targets.length !== 1)) {
       throw new Error(`Error determining rule type of '${aliasOrTarget}'.`);
     }
     return json[targets[0]]['buck.type'];

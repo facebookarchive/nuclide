@@ -90,6 +90,27 @@ describe('BuckProject', () => {
       });
     });
 
+    it('returns the type of a build rule by full path', () => {
+      const projectDir = copyProject('test-project-with-failing-targets');
+      const buckProject = new BuckProject({rootPath: projectDir});
+
+      waitsForPromise({timeout: TIMEOUT}, async () => {
+        let type = await buckProject.buildRuleTypeFor('//:good_rule');
+        expect(type).toBe('genrule');
+
+        // Omitting the // is fine too.
+        type = await buckProject.buildRuleTypeFor(':good_rule');
+        expect(type).toBe('genrule');
+
+        // Strip out flavors.
+        type = await buckProject.buildRuleTypeFor('//:good_rule#');
+        expect(type).toBe('genrule');
+
+        // If all rules are specified, just pick one.
+        type = await buckProject.buildRuleTypeFor('//:');
+        expect(type).toBe('genrule');
+      });
+    });
 
     it('fails when passed an invalid target', () => {
       const projectDir = copyProject('test-project-with-failing-targets');
