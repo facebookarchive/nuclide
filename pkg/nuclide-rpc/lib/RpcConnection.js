@@ -425,7 +425,8 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   _handleMessage(message: RequestMessage | ResponseMessage): void {
-    invariant(message.protocol === SERVICE_FRAMEWORK3_PROTOCOL);
+    // TODO: advinsky uncomment after version 0.136 and below are phased out
+    // invariant(message.protocol === SERVICE_FRAMEWORK3_PROTOCOL);
 
     switch (message.type) {
       case 'PromiseMessage':
