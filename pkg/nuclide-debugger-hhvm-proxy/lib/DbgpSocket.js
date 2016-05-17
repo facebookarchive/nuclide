@@ -192,12 +192,19 @@ class DbgpSocket {
     return result.property || [];
   }
 
-  async getPropertiesByFullname(frameIndex: number, contextId: string, fullname: string,
-      page: number): Promise<Array<DbgpProperty>> {
+  async getPropertiesByFullname(
+    frameIndex: number,
+    contextId: string,
+    fullname: string,
+    page: number,
+  ): Promise<Array<DbgpProperty>> {
     const result = await this._callDebugger(
       'property_value', `-d ${frameIndex} -c ${contextId} -n ${fullname} -p ${page}`);
     // property_value returns the outer property, we want the children ...
     // 0 results yields missing 'property' member
+    if (result.property == null || result.property[0] == null) {
+      return [];
+    }
     return result.property[0].property || [];
   }
 
