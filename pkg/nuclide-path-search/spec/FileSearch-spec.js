@@ -14,7 +14,7 @@ import fs from 'fs';
 import path from 'path';
 import temp from 'temp';
 import url from 'url';
-import {checkOutput} from '../../nuclide-commons';
+import {checkOutput} from '../../commons-node/process';
 import {fileSearchForDirectory} from '../lib/FileSearch';
 import * as watchmanHelpers from '../../nuclide-watchman-helpers';
 

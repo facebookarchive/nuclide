@@ -30,11 +30,9 @@ import {
   Disposable,
   Emitter,
 } from 'atom';
-import {
-  debounce,
-  passesGK,
-  promises,
-} from '../../nuclide-commons';
+import {triggerAfterWait} from '../../commons-node/promise';
+import passesGK from '../../commons-node/passesGK';
+import debounce from '../../commons-node/debounce';
 import QuickSelectionDispatcher from './QuickSelectionDispatcher';
 import QuickSelectionActions from './QuickSelectionActions';
 
@@ -400,7 +398,7 @@ class SearchResultManager {
         this._setLoading(query, GLOBAL_KEY, globalProvider);
         this._emitter.emit(RESULTS_CHANGED);
       };
-      promises.triggerAfterWait(
+      triggerAfterWait(
         globalProvider.executeQuery(query),
         LOADING_EVENT_DELAY,
         loadingFn,
@@ -429,7 +427,7 @@ class SearchResultManager {
           this._setLoading(query, path, directoryProvider);
           this._emitter.emit(RESULTS_CHANGED);
         };
-        promises.triggerAfterWait(
+        triggerAfterWait(
           directoryProvider.executeQuery(query, directory),
           LOADING_EVENT_DELAY,
           loadingFn,

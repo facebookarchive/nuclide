@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {singleton} from '../../nuclide-commons';
+import singleton from '../../commons-node/singleton';
 import projects from '../projects';
 
 const {PROJECT_PATH_WATCHER_INSTANCE_KEY} = projects.__test__;

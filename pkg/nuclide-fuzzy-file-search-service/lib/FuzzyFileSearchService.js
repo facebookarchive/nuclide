@@ -18,7 +18,7 @@ export type FileSearchResult = {
 };
 
 import {fileSearchForDirectory} from '../../nuclide-path-search';
-import {fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
 
 /**
  * Performs a fuzzy file search in the specified directory.

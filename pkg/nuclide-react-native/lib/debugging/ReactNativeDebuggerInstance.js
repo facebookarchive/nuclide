@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {CompositeSubscription, event as commonsEvent} from '../../../nuclide-commons';
+import {CompositeSubscription} from '../../../commons-node/stream';
+import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {DebuggerInstance, DebuggerProcessInfo} from '../../../nuclide-debugger-atom';
 import {
   DebuggerProxyClient,
@@ -19,8 +20,6 @@ import WS from 'ws';
 // $FlowIssue: Flow doesn't recognize this nested module.
 import {using as observableUsing} from 'rxjs/observable/using';
 import type {Session as SessionType} from '../../../nuclide-debugger-node/lib/Session';
-
-const {observableFromSubscribeFunction} = commonsEvent;
 
 const PORT = 38913;
 

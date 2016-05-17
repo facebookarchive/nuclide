@@ -13,7 +13,7 @@ import urlJoin from 'url-join';
 import path from 'path';
 
 import {parse} from '../../nuclide-remote-uri';
-import {fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
 
 import {PathSet} from './PathSet';

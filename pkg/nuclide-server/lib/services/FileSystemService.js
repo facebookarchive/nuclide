@@ -18,7 +18,7 @@
 import mv from 'mv';
 import fs from 'fs';
 import pathModule from 'path';
-import {fsPromise} from '../../../nuclide-commons';
+import fsPromise from '../../../commons-node/fsPromise';
 
 export type FileWithStats = {
   file: string;

@@ -15,7 +15,7 @@ import type {BuckProject} from '../../nuclide-buck-base';
 import type {Point} from 'atom';
 
 import {getBuckProject} from '../../nuclide-buck-base';
-import {fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
 import wordAtPosition from '../../commons-atom/word-at-position';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import pathModule from 'path';

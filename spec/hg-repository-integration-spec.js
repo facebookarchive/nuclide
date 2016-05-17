@@ -21,7 +21,7 @@ import {
   fetchFileContentAtRevision,
   fetchFilesChangedAtRevision,
 } from '../pkg/nuclide-hg-repository-base/lib/hg-revision-state-helpers';
-import {fsPromise} from '../pkg/nuclide-commons';
+import fsPromise from '../pkg/commons-node/fsPromise';
 import path from 'path';
 import invariant from 'assert';
 

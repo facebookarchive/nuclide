@@ -11,7 +11,7 @@
 
 import {locationToString} from './builtin-types';
 import invariant from 'assert';
-import {set} from '../../nuclide-commons';
+import {setIntersect} from '../../commons-node/collection';
 
 import type {
   Definitions,
@@ -368,7 +368,7 @@ export function validateDefinitions(definitions: Definitions): void {
         if (possibilities == null) {
           return alternatePossibilities;
         } else {
-          return set.intersect(alternatePossibilities, possibilities);
+          return setIntersect(alternatePossibilities, possibilities);
         }
       }, null);
 

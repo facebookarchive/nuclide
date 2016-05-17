@@ -15,12 +15,9 @@ import type {MerlinError, MerlinType} from '..';
 import path from 'path';
 import readline from 'readline';
 
-import {
-  asyncExecute,
-  fsPromise,
-  safeSpawn,
-  PromiseQueue,
-} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
+import {asyncExecute, safeSpawn} from '../../commons-node/process';
+import {PromiseQueue} from '../../commons-node/promise-executors';
 
 const logger = require('../../nuclide-logging').getLogger();
 

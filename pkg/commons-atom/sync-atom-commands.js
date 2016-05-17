@@ -15,7 +15,7 @@ export type AtomCommands = {
   };
 };
 
-import {diffSets, reconcileSetDiffs} from '../nuclide-commons';
+import {diffSets, reconcileSetDiffs} from '../commons-node/stream';
 import {CompositeDisposable} from 'atom';
 import {Observable} from 'rxjs';
 

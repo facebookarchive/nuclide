@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import {Disposable, CompositeDisposable} from 'atom';
-import {debounce} from '../../nuclide-commons';
+import debounce from '../../commons-node/debounce';
 
 type EventCallback = (editor: TextEditor) => mixed;
 

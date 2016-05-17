@@ -10,8 +10,7 @@
  */
 
 import path from 'path';
-
-const {ensureTrailingSeparator} = require('../../nuclide-commons').paths;
+import fsSync from '../../commons-node/fsSync';
 
 const ADD_ACTION = 'add';
 const REMOVE_ACTION = 'remove';
@@ -79,7 +78,7 @@ function computeAllParentDirectories(
 
   if (pathPrefixToSkip) {
     // Setting the lastIndex determines where the next search begins.
-    separatorRegex.lastIndex = ensureTrailingSeparator(pathPrefixToSkip).length;
+    separatorRegex.lastIndex = fsSync.ensureTrailingSeparator(pathPrefixToSkip).length;
   }
 
   const shouldAdd = (operation === ADD_ACTION);

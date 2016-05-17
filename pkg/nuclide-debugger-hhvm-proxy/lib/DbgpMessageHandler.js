@@ -11,6 +11,7 @@
 
 import logger from './utils';
 import invariant from 'assert';
+import singleton from '../../commons-node/singleton';
 
 const GLOBAL_HHVM_DEBUGGER_KEY = '_global_hhvm_debugger_key';
 
@@ -160,7 +161,7 @@ export class DbgpMessageHandler {
 }
 
 export function getDbgpMessageHandlerInstance(): DbgpMessageHandler {
-  return require('../../nuclide-commons').singleton.get(
+  return singleton.get(
     GLOBAL_HHVM_DEBUGGER_KEY, () => {
       return new DbgpMessageHandler();
     });

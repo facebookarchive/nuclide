@@ -16,10 +16,10 @@ import invariant from 'assert';
 import {Observable} from 'rxjs';
 import path from 'path';
 import {
-  fsPromise,
   checkOutput,
   scriptSafeSpawnAndObserveOutput,
-} from '../../nuclide-commons';
+} from '../../commons-node/process';
+import fsPromise from '../../commons-node/fsPromise';
 import {
   fetchFilesChangedAtRevision,
 } from '../../nuclide-hg-repository-base/lib/hg-revision-state-helpers';

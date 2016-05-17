@@ -100,12 +100,12 @@ const config = {
 
 describe('debugger-hhvm-proxy ConnectionUtils', () => {
   beforeEach(() => {
-    spyOn(require('../../nuclide-commons').fsPromise, 'exists').andReturn(true);
+    spyOn(require('../../commons-node/fsPromise'), 'exists').andReturn(true);
     spyOn(require('../lib/config'), 'getConfig').andReturn(config);
   });
 
   afterEach(() => {
-    jasmine.unspy(require('../../nuclide-commons').fsPromise, 'exists');
+    jasmine.unspy(require('../../commons-node/fsPromise'), 'exists');
   });
 
   describe('isCorrectConnection', () => {

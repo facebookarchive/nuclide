@@ -20,8 +20,7 @@ import NuclideTextBuffer from '../nuclide-remote-projects/lib/NuclideTextBuffer'
 import {isLocal} from '../nuclide-remote-uri';
 import {ServerConnection} from '../nuclide-remote-connection';
 
-import {event as commonsEvent} from '../nuclide-commons';
-const {observableFromSubscribeFunction} = commonsEvent;
+import {observableFromSubscribeFunction} from '../commons-node/event';
 
 /**
  * Returns a text editor that has the given path open, or null if none exists. If there are multiple

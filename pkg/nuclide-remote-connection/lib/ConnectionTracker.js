@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {error} from '../../nuclide-commons';
+import {stringifyError} from '../../commons-node/string';
 import {track} from '../../nuclide-analytics';
 
 import type {SshConnectionConfiguration, SshHandshakeErrorType} from './SshHandshake';
@@ -65,7 +65,7 @@ export default class ConnectionTracker {
       {
         error: succeed ? '0' : '1',
         errorType: errorType || '',
-        exception: e ? error.stringifyError(e) : '',
+        exception: e ? stringifyError(e) : '',
         duration: (Date.now() - this._connectionStartTime).toString(),
         preYubikeyDuration: preYubikeyDuration.toString(),
         postYubikeyDuration: postYubikeyDuration.toString(),

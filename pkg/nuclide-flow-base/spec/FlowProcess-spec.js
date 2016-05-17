@@ -42,7 +42,7 @@ describe('FlowProcess', () => {
     // We need this level of indirection to ensure that if fakeCheckOutput is rebound, the new one
     // gets executed.
     const runFakeCheckOutput = (...args) => fakeCheckOutput(...args);
-    spyOn(require('../../nuclide-commons/lib/process'), 'asyncExecute')
+    spyOn(require('../../commons-node/process'), 'asyncExecute')
       .andCallFake(runFakeCheckOutput);
     fakeCheckOutput = jasmine.createSpy().andReturn({exitCode: FLOW_RETURN_CODES.ok});
 
@@ -53,7 +53,7 @@ describe('FlowProcess', () => {
       kill() {},
     };
 
-    spyOn(require('../../nuclide-commons/lib/process'), 'safeSpawn').andCallFake(() => {
+    spyOn(require('../../commons-node/process'), 'safeSpawn').andCallFake(() => {
       return childSpy;
     });
     // we have to create another flow service here since we've mocked modules
@@ -88,14 +88,14 @@ describe('FlowProcess', () => {
     });
 
     afterEach(() => {
-      jasmine.unspy(require('../../nuclide-commons/lib/process'), 'asyncExecute');
-      jasmine.unspy(require('../../nuclide-commons/lib/process'), 'safeSpawn');
+      jasmine.unspy(require('../../commons-node/process'), 'asyncExecute');
+      jasmine.unspy(require('../../commons-node/process'), 'safeSpawn');
     });
 
     describe('execFlow', () => {
       it('should spawn a new Flow server', () => {
         const expectedWorkers = os.cpus().length - 1;
-        expect(require('../../nuclide-commons').safeSpawn).toHaveBeenCalledWith(
+        expect(require('../../commons-node/process').safeSpawn).toHaveBeenCalledWith(
           'flow',
           [
             'server',

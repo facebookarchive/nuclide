@@ -10,7 +10,7 @@
  */
 
 import Rx from 'rxjs';
-import {DisposableSubscription} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../commons-node/stream';
 
 type Comparer = (a: mixed, b: mixed) => boolean;
 type SubscribeCallback = (...args: Array<mixed>) => mixed;

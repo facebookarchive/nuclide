@@ -17,7 +17,8 @@ import fs from 'fs-plus';
 import net from 'net';
 import invariant from 'assert';
 import {RemoteConnection} from './RemoteConnection';
-import {fsPromise, promises} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
+import {awaitMilliSeconds} from '../../commons-node/promise';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 
 const logger = require('../../nuclide-logging').getLogger();
@@ -309,7 +310,7 @@ export class SshHandshake {
             // the old channel has been cleaned up on the server.
             // TODO(hansonw): Implement a proper retry mechanism.
             // But first, we have to clean up this callback hell.
-            await promises.awaitMilliSeconds(100);
+            await awaitMilliSeconds(100);
             this._connection.sftp(async (error, sftp) => {
               if (error) {
                 this._error(

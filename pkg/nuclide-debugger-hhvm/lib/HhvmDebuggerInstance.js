@@ -25,8 +25,7 @@ import {translateMessageFromServer, translateMessageToServer} from './ChromeMess
 import remoteUri from '../../nuclide-remote-uri';
 import {Disposable} from 'atom';
 import WS from 'ws';
-
-const {stringifyError} = require('../../nuclide-commons').error;
+import {stringifyError} from '../../commons-node/string';
 
 const {log, logInfo, logError, setLogLevel} = utils;
 

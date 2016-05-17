@@ -14,9 +14,9 @@
 // in its package.json. As such, any tests for it that need to use Atom's built-in test runner
 // need to live elsewhere, which is why they are in the top-level spec/ directory.
 
-import type {process$asyncExecuteRet} from '../pkg/nuclide-commons';
+import type {process$asyncExecuteRet} from '../pkg/commons-node/process';
 
-import {asyncExecute} from '../pkg/nuclide-commons';
+import {asyncExecute} from '../pkg/commons-node/process';
 import path from 'path';
 
 describe('atom-script', () => {

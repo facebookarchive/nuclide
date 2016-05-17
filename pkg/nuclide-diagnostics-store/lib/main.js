@@ -19,9 +19,8 @@ import type {
 
 import {Disposable, CompositeDisposable} from 'atom';
 import featureConfig from '../../nuclide-feature-config';
-import {DisposableSubscription, event} from '../../nuclide-commons';
-
-const {observableFromSubscribeFunction} = event;
+import {DisposableSubscription} from '../../commons-node/stream';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 
 const legacyLinterSetting = 'nuclide-diagnostics-store.consumeLegacyLinters';
 

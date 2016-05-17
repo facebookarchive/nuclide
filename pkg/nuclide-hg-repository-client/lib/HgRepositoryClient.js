@@ -30,11 +30,9 @@ import {
   StatusCodeNumber,
   HgStatusOption,
 } from '../../nuclide-hg-repository-base/lib/hg-constants';
-import {promises} from '../../nuclide-commons';
-import {ensureTrailingSeparator} from '../../nuclide-commons/lib/paths';
+import {serializeAsyncCall} from '../../commons-node/promise';
+import fsSync from '../../commons-node/fsSync';
 import {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} from './utils';
-
-const {serializeAsyncCall} = promises;
 
 type HgRepositoryOptions = {
   /** The origin URL of this repository. */
@@ -415,7 +413,7 @@ export class HgRepositoryClient {
     if (!directoryPath) {
       return StatusCodeNumber.CLEAN;
     }
-    const directoryPathWithSeparator = ensureTrailingSeparator(directoryPath);
+    const directoryPathWithSeparator = fsSync.ensureTrailingSeparator(directoryPath);
     if (this._modifiedDirectoryCache.has(directoryPathWithSeparator)) {
       return StatusCodeNumber.MODIFIED;
     }

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {DisposableSubscription} from '../../../nuclide-commons';
+import {DisposableSubscription} from '../../../commons-node/stream';
 import {getCommandInfo} from './getCommandInfo';
 import ReactNativeServerActions from './ReactNativeServerActions';
 import ReactNativeServerManager from './ReactNativeServerManager';

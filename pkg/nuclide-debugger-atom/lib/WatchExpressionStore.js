@@ -17,8 +17,7 @@ import {
 } from 'atom';
 import Rx from 'rxjs';
 import invariant from 'assert';
-import {DisposableSubscription, observables} from '../../nuclide-commons';
-const {incompleteObservableFromPromise} = observables;
+import {DisposableSubscription} from '../../commons-node/stream';
 
 type Expression = string;
 
@@ -47,7 +46,11 @@ export class WatchExpressionStore {
     callback: () => Promise<T>,
   ): IDisposable {
     return new DisposableSubscription(
-      incompleteObservableFromPromise(callback()).subscribe(subject)
+      Rx.Observable
+      .fromPromise(callback())
+      // $FlowIssue Rx.Observable.never should not influence merged type
+      .merge(Rx.Observable.never())
+      .subscribe(subject)
     );
   }
 

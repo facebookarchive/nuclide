@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import {array} from '../../nuclide-commons';
+import {arrayCompact} from '../../commons-node/collection';
 
 /**
  * @param aPath The NuclideUri of a file or directory for which you want to find
@@ -22,7 +22,7 @@ function repositoryForPath(aPath: NuclideUri): ?atom$Repository {
   // which requires a round-trip to the server for remote paths.
   // Instead, this function keeps filtering local.
   const repositoryContainsPath = require('./repositoryContainsPath');
-  const repositories = array.compact(atom.project.getRepositories());
+  const repositories = arrayCompact(atom.project.getRepositories());
   return repositories.find(
     repo => {
       try {

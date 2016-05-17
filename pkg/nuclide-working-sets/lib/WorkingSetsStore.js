@@ -11,7 +11,7 @@
 
 import {Emitter} from 'atom';
 import {WorkingSet} from './WorkingSet';
-import {array} from '../../nuclide-commons';
+import {arrayEqual} from '../../commons-node/collection';
 import {track} from '../../nuclide-analytics';
 import {normalizePathUri} from './uri';
 import {getLogger} from '../../nuclide-logging';
@@ -117,8 +117,8 @@ export class WorkingSetsStore {
     definitions: Array<WorkingSetDefinition>
   ): void {
     const somethingHasChanged =
-      !array.equal(this._applicableDefinitions, applicable) ||
-      !array.equal(this._notApplicableDefinitions, notApplicable);
+      !arrayEqual(this._applicableDefinitions, applicable) ||
+      !arrayEqual(this._notApplicableDefinitions, notApplicable);
 
     if (somethingHasChanged) {
       this._applicableDefinitions = applicable;

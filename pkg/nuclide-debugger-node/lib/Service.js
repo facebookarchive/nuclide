@@ -12,7 +12,8 @@
 import WS from 'ws';
 import invariant from 'assert';
 import {DebuggerInstance, DebuggerProcessInfo} from '../../nuclide-debugger-atom';
-import {DisposableSubscription} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../commons-node/stream';
+import {checkOutput} from '../../commons-node/process';
 import Rx from 'rxjs';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
@@ -95,7 +96,6 @@ class NodeDebuggerProcessInfo extends DebuggerProcessInfo {
 }
 
 function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
-  const {checkOutput} = require('../../nuclide-commons');
   return checkOutput('ps', ['-e', '-o', 'pid,comm'], {})
     .then(result => {
       // $FlowIssue -- https://github.com/facebook/flow/issues/1143

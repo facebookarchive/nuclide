@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {CircularBuffer} from '../../nuclide-commons';
+import CircularBuffer from '../../commons-node/CircularBuffer';
 import {Emitter} from 'atom';
 
 export type Item = {

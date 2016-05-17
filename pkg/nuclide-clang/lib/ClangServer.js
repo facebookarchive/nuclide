@@ -16,7 +16,8 @@ import path from 'path';
 import split from 'split';
 
 import {EventEmitter} from 'events';
-import {asyncExecute, safeSpawn, promises} from '../../nuclide-commons';
+import {asyncExecute, safeSpawn} from '../../commons-node/process';
+import {serializeAsyncCall} from '../../commons-node/promise';
 import {getLogger} from '../../nuclide-logging';
 
 // Do not tie up the Buck server continuously retrying for flags.
@@ -118,7 +119,7 @@ export default class ClangServer {
     this._nextRequestId = 0;
     this._lastProcessedRequestId = -1;
     this._pendingCompileRequests = 0;
-    this._getAsyncConnection = promises.serializeAsyncCall(this._getAsyncConnectionImpl.bind(this));
+    this._getAsyncConnection = serializeAsyncCall(this._getAsyncConnectionImpl.bind(this));
     this._disposed = false;
     this._flagsRetries = 0;
     this._flagsChanged = false;

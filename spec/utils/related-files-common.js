@@ -25,7 +25,7 @@ import {
   waitsForFile,
 } from '../../pkg/nuclide-integration-test-helpers';
 
-import {fsPromise} from '../../pkg/nuclide-commons';
+import fsPromise from '../../pkg/commons-node/fsPromise';
 import {join} from '../../pkg/nuclide-remote-uri';
 import {tempdir} from '../../pkg/nuclide-test-helpers';
 

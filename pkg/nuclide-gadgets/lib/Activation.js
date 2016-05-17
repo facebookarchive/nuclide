@@ -19,8 +19,8 @@ import createAtomCommands from './createAtomCommands';
 import createStateStream from './createStateStream';
 import getInitialState from './getInitialState';
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
-import {DisposableSubscription, event as commonsEvent} from '../../nuclide-commons';
-const {observableFromSubscribeFunction} = commonsEvent;
+import {DisposableSubscription} from '../../commons-node/stream';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 import Rx from 'rxjs';
 import trackActions from './trackActions';
 

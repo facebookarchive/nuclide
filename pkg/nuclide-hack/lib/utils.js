@@ -16,7 +16,7 @@ import {getConfig} from './config';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import invariant from 'assert';
 import wordAtPosition from '../../commons-atom/word-at-position';
-import {passesGK} from '../../nuclide-commons';
+import passesGK from '../../commons-node/passesGK';
 
 const MATCH_PREFIX_CASE_SENSITIVE_SCORE = 6;
 const MATCH_PREFIX_CASE_INSENSITIVE_SCORE = 4;

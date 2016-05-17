@@ -13,7 +13,7 @@ import type {TypeHintProvider} from './types';
 import type {Datatip} from '../../nuclide-datatip/lib/types';
 
 import invariant from 'assert';
-import {array} from '../../nuclide-commons';
+import {arrayRemove} from '../../commons-node/collection';
 import {track, trackOperationTiming} from '../../nuclide-analytics';
 
 import {makeTypeHintComponent} from './TypeHintComponent';
@@ -81,7 +81,7 @@ class TypeHintManager {
   }
 
   removeProvider(provider: TypeHintProvider): void {
-    array.remove(this._typeHintProviders, provider);
+    arrayRemove(this._typeHintProviders, provider);
   }
 }
 

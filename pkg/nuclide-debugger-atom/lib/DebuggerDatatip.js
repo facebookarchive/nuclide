@@ -20,7 +20,7 @@ import wordAtPosition from '../../commons-atom/word-at-position';
 import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 import {DebuggerMode} from './DebuggerStore';
 import {DebuggerDatatipComponent} from './DebuggerDatatipComponent';
-import {passesGK} from '../../nuclide-commons';
+import passesGK from '../../commons-node/passesGK';
 
 const GK_DEBUGGER_DATATIPS = 'nuclide_debugger_datatips';
 

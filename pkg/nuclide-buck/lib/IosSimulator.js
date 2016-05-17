@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {observeProcess, safeSpawn} from '../../nuclide-commons';
+import {observeProcess, safeSpawn} from '../../commons-node/process';
 import memoize from 'lodash.memoize';
 import {Observable} from 'rxjs';
 

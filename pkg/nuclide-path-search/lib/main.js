@@ -13,7 +13,7 @@ import type {Task} from '../../nuclide-task';
 import type {FileSearchResult as FileSearchResultType} from './FileSearch';
 
 import {getLogger} from '../../nuclide-logging';
-import {fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
 
 export type FileSearchResult = FileSearchResultType;
 

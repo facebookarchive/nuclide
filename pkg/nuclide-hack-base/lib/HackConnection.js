@@ -9,11 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {
-  safeSpawn,
-  observeStream,
-  asyncExecute,
-} from '../../nuclide-commons';
+import {safeSpawn, asyncExecute} from '../../commons-node/process';
+import {observeStream} from '../../commons-node/stream';
 import {getHackCommand, findHackConfigDir} from './hack-config';
 import {StreamTransport, HackRpc} from './HackRpc';
 

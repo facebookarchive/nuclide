@@ -22,7 +22,7 @@ import type {
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {applyTextEdit} from '../../nuclide-textedit';
-import {array} from '../../nuclide-commons';
+import {arrayRemove} from '../../commons-node/collection';
 import {MarkerTracker} from './MarkerTracker';
 import invariant from 'assert';
 import {Disposable, Emitter} from 'atom';
@@ -217,7 +217,7 @@ class DiagnosticStore {
     for (const fileToMessages of this._providerToFileToMessages.values()) {
       const fileMessages = fileToMessages.get(message.filePath);
       if (fileMessages != null) {
-        array.remove(fileMessages, message);
+        arrayRemove(fileMessages, message);
       }
     }
     // Looks like emitAllMessages does not actually emit all messages. We need to do both for both

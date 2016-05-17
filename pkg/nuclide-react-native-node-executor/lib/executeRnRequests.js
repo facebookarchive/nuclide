@@ -11,13 +11,13 @@
 
 import type {ExecutorResponse, RnRequest} from './types';
 
-import {CompositeSubscription} from '../../nuclide-commons';
+import {CompositeSubscription} from '../../commons-node/stream';
 import featureConfig from '../../nuclide-feature-config';
 import {
   createProcessStream,
   forkWithExecEnvironment,
   getOutputStream,
-} from '../../nuclide-commons/lib/process';
+} from '../../commons-node/process';
 import {getLogger} from '../../nuclide-logging';
 import path from 'path';
 import {Observable} from 'rxjs';

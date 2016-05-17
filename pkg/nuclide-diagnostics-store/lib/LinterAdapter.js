@@ -23,12 +23,8 @@ import type {
 } from '../../nuclide-diagnostics-base';
 
 import {Range} from 'atom';
-
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
-
-import {promises as commonsPromises} from '../../nuclide-commons';
-
-const {RequestSerializer} = commonsPromises;
+import {RequestSerializer} from '../../commons-node/promise';
 
 // Exported for testing.
 export function linterMessageToDiagnosticMessage(

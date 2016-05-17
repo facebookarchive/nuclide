@@ -11,7 +11,7 @@
 
 import type {search$FileResult} from '..';
 
-import {checkOutput} from '../../nuclide-commons';
+import {checkOutput} from '../../commons-node/process';
 import {addMatchers} from '../../nuclide-test-helpers';
 import fs from 'fs';
 import path from 'path';

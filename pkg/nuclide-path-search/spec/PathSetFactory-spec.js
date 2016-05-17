@@ -15,7 +15,7 @@ import path from 'path';
 import {track} from 'temp';
 const temp = track();
 
-import {checkOutput} from '../../nuclide-commons';
+import {checkOutput} from '../../commons-node/process';
 
 import {__test__} from '../lib/PathSetFactory';
 const {getFilesFromGit, getFilesFromHg} = __test__;

@@ -41,7 +41,7 @@ import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import {getLogger} from '../../nuclide-logging';
 import remoteUri from '../../nuclide-remote-uri';
-import {Deferred} from '../../nuclide-commons';
+import {Deferred} from '../../commons-node/promise';
 import {DebuggerMode} from './DebuggerStore';
 import {raiseNativeNotificationAfterDelay} from '../../nuclide-notifications';
 

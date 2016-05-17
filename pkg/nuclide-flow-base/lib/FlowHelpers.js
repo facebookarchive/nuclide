@@ -12,7 +12,8 @@
 import type {FlowLocNoSource} from './flowOutputTypes';
 
 import path from 'path';
-import {checkOutput, fsPromise} from '../../nuclide-commons';
+import {checkOutput} from '../../commons-node/process';
+import fsPromise from '../../commons-node/fsPromise';
 import LRU from 'lru-cache';
 import invariant from 'assert';
 

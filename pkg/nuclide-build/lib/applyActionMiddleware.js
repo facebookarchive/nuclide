@@ -11,7 +11,8 @@
 
 import type {Action, AppState, BuildSystem, Task} from './types';
 
-import {event, once} from '../../nuclide-commons';
+import once from '../../commons-node/once';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 import * as ActionTypes from './ActionTypes';
 import {getActiveBuildSystem} from './getActiveBuildSystem';
 import {Observable} from 'rxjs';
@@ -69,7 +70,7 @@ export function applyActionMiddleware(
         return activeBuildSystem == null
           ? noTasks
           : noTasks.concat(
-              event.observableFromSubscribeFunction(
+              observableFromSubscribeFunction(
                 activeBuildSystem.observeTasks.bind(activeBuildSystem)
               )
               .map(tasksToActions)
@@ -123,7 +124,7 @@ function runTask(buildSystem: BuildSystem, task: Task): Observable<Action> {
     ({taskInfo}) => {
       const progressStream = taskInfo.observeProgress == null
         ? Observable.empty()
-        : event.observableFromSubscribeFunction(
+        : observableFromSubscribeFunction(
             taskInfo.observeProgress.bind(taskInfo),
           );
 
@@ -139,11 +140,11 @@ function runTask(buildSystem: BuildSystem, task: Task): Observable<Action> {
           }))
         )
         .merge(
-          event.observableFromSubscribeFunction(taskInfo.onDidError.bind(taskInfo))
+          observableFromSubscribeFunction(taskInfo.onDidError.bind(taskInfo))
             .map(err => { throw err; })
         )
         .takeUntil(
-          event.observableFromSubscribeFunction(taskInfo.onDidComplete.bind(taskInfo))
+          observableFromSubscribeFunction(taskInfo.onDidComplete.bind(taskInfo))
         )
         .concat(Observable.of({
           type: ActionTypes.TASK_COMPLETED,

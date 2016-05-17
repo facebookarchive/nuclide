@@ -13,7 +13,7 @@ import type {Reference} from './types';
 
 import crypto from 'crypto';
 import {CompositeDisposable} from 'atom';
-import {array} from '../../nuclide-commons';
+import {arrayCompact} from '../../commons-node/collection';
 import {track} from '../../nuclide-analytics';
 import FindReferencesElement from './FindReferencesElement';
 
@@ -153,7 +153,7 @@ export function activate(state: ?any): void {
         return null;
       },
     ));
-    supported = array.compact(supported);
+    supported = arrayCompact(supported);
     if (supported.length) {
       enableForEditor(editor);
     }

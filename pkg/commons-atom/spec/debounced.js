@@ -18,8 +18,7 @@ import {
   editorChangesDebounced,
 } from '../debounced';
 
-import {event as commonsEvent} from '../../nuclide-commons';
-const {observableFromSubscribeFunction} = commonsEvent;
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 
 // Shorter than the default so the tests don't run long.
 const DEBOUNCE_INTERVAL = 10;

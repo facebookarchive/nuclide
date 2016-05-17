@@ -12,7 +12,8 @@
 import type {Task, TaskInfo} from '../../nuclide-build/lib/types';
 import type {SerializedState} from './types';
 
-import {DisposableSubscription, event as eventLib} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../commons-node/stream';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {BuckIcon} from './ui/BuckIcon';
 import BuckToolbarStore from './BuckToolbarStore';
 import BuckToolbarActions from './BuckToolbarActions';
@@ -48,7 +49,7 @@ export class BuckBuildSystem {
       const {store} = this._getFlux();
       this._tasks = Observable.concat(
         Observable.of(store.getTasks()),
-        eventLib.observableFromSubscribeFunction(store.subscribe.bind(store))
+        observableFromSubscribeFunction(store.subscribe.bind(store))
           .map(() => store.getTasks()),
       );
     }

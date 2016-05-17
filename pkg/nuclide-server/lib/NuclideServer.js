@@ -21,7 +21,7 @@ import WS from 'ws';
 import {RpcConnection, ServiceRegistry} from '../../nuclide-rpc';
 import {QueuedTransport} from './QueuedTransport';
 import {WebSocketTransport} from './WebSocketTransport';
-import {event} from '../../nuclide-commons';
+import {attachEvent} from '../../commons-node/event';
 
 const connect: connect$module = require('connect');
 const http: http$fixed = (require('http'): any);
@@ -234,7 +234,7 @@ class NuclideServer {
 
     let client: ?RpcConnection<QueuedTransport> = null;
 
-    const errorSubscription = event.attachEvent(
+    const errorSubscription = attachEvent(
       socket, 'error', e =>
       logger.error('WebSocket error before first message', e));
 

@@ -12,7 +12,7 @@
 import type {ServerConnection} from '..';
 
 import fsPlus from 'fs-plus';
-import {fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
 import {RemoteDirectory} from '../lib/RemoteDirectory';
 import {RemoteFile} from '../lib/RemoteFile';
 /*

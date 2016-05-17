@@ -26,7 +26,7 @@ import type {
 
 import {trackTiming} from '../../nuclide-analytics';
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
-import {promises} from '../../nuclide-commons';
+import {RequestSerializer} from '../../commons-node/promise';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import {Range} from 'atom';
 import invariant from 'assert';
@@ -112,7 +112,7 @@ function flowMessageToDiagnosticMessage(diagnostic: Diagnostic) {
 class FlowDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
   _busySignalProvider: BusySignalProviderBase;
-  _requestSerializer: promises.RequestSerializer;
+  _requestSerializer: RequestSerializer;
 
   /**
     * Maps flow root to the set of file paths under that root for which we have
@@ -133,7 +133,7 @@ class FlowDiagnosticsProvider {
       onNewUpdateSubscriber: callback => this._receivedNewUpdateSubscriber(callback),
     };
     this._providerBase = new ProviderBase(utilsOptions);
-    this._requestSerializer = new promises.RequestSerializer();
+    this._requestSerializer = new RequestSerializer();
     this._flowRootToFilePaths = new Map();
   }
 

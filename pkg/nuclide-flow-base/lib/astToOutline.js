@@ -10,7 +10,7 @@
  */
 
 import type {FlowOutlineTree, Point} from '..';
-import {array} from '../../nuclide-commons';
+import {arrayCompact} from '../../commons-node/collection';
 
 import type {TokenizedText} from '../../nuclide-tokenized-text';
 import {
@@ -35,7 +35,7 @@ export function astToOutline(ast: any): Array<FlowOutlineTree> {
 }
 
 function itemsToTrees(items: Array<any>): Array<FlowOutlineTree> {
-  return array.compact(items.map(itemToTree));
+  return arrayCompact(items.map(itemToTree));
 }
 
 function itemToTree(item: any): ?FlowOutlineTree {
@@ -171,7 +171,7 @@ function moduleExportsOutline(assignmentStatement: any): ?FlowOutlineTree {
   const properties: Array<Object> = right.properties;
   return {
     tokenizedText: [plain('module.exports')],
-    children: array.compact(properties.map(moduleExportsPropertyOutline)),
+    children: arrayCompact(properties.map(moduleExportsPropertyOutline)),
     ...getExtent(assignmentStatement),
   };
 }
@@ -247,7 +247,7 @@ function specOutline(expressionStatement: any, describeOnly: boolean = false): ?
   if (functionName === 'it') {
     children = [];
   } else {
-    children = array.compact(
+    children = arrayCompact(
       specBody
       .filter(item => item.type === 'ExpressionStatement')
       .map(item => specOutline(item)));

@@ -22,10 +22,8 @@ import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import featureConfig from '../../nuclide-feature-config';
 import {trackTiming} from '../../nuclide-analytics';
 import onWillDestroyTextBuffer from '../../commons-atom/on-will-destroy-text-buffer';
-import {promises} from '../../nuclide-commons';
+import {RequestSerializer} from '../../commons-node/promise';
 import invariant from 'assert';
-
-const {RequestSerializer} = promises;
 
 export class ArcanistDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;

@@ -10,13 +10,12 @@
  */
 
 import {formatCode} from '..';
-import process from '../../nuclide-commons/lib/process';
 
 describe('ClangService.formatCode', () => {
 
   it('uses clang-format correctly', () => {
     waitsForPromise(async () => {
-      const spy = spyOn(process, 'checkOutput').andReturn({
+      const spy = spyOn(require('../../commons-node/process'), 'checkOutput').andReturn({
         stdout: '{ "Cursor": 4, "Incomplete": false }\ntest2',
       });
       const result = await formatCode('test.cpp', 'test', 1, 2, 3);

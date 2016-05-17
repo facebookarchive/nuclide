@@ -31,7 +31,7 @@ type SearchResponse = {
 import invariant from 'assert';
 import type {FileSearchResult} from '../../../nuclide-path-search';
 
-import {fsPromise} from '../../../nuclide-commons';
+import fsPromise from '../../../commons-node/fsPromise';
 import {fileSearchForDirectory} from '../../../nuclide-path-search';
 import remoteUri from '../../../nuclide-remote-uri';
 

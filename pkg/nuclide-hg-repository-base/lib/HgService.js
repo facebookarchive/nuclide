@@ -30,7 +30,7 @@ import {
   fetchFilesChangedAtRevision,
 } from './hg-revision-state-helpers';
 import {hgAsyncExecute} from './hg-utils';
-import {fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
 import {getPath} from '../../nuclide-remote-uri';
 
 import {readArcConfig} from '../../nuclide-arcanist-base';

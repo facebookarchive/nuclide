@@ -11,7 +11,7 @@
 
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
-import {debounce} from '../../nuclide-commons';
+import debounce from '../../commons-node/debounce';
 import SimulatorDropdown from './SimulatorDropdown';
 import BuckToolbarActions from './BuckToolbarActions';
 import BuckToolbarStore from './BuckToolbarStore';

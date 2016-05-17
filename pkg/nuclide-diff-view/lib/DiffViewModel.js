@@ -59,7 +59,9 @@ import {
 import invariant from 'assert';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {track, trackTiming} from '../../nuclide-analytics';
-import {bufferUntil, map, promises} from '../../nuclide-commons';
+import {serializeAsyncCall} from '../../commons-node/promise';
+import {mapUnion, mapFilter} from '../../commons-node/collection';
+import {bufferUntil} from '../../commons-node/stream';
 import remoteUri from '../../nuclide-remote-uri';
 import RepositoryStack from './RepositoryStack';
 import Rx from 'rxjs';
@@ -218,7 +220,7 @@ class DiffViewModel {
       selectedFileChanges: new Map(),
       showNonHgRepos: true,
     };
-    this._serializedUpdateActiveFileDiff = promises.serializeAsyncCall(
+    this._serializedUpdateActiveFileDiff = serializeAsyncCall(
       () => this._updateActiveFileDiff(),
     );
     this._updateRepositories();
@@ -292,7 +294,7 @@ class DiffViewModel {
   }
 
   _updateDirtyChangedStatus(): void {
-    const dirtyFileChanges = map.union(
+    const dirtyFileChanges = mapUnion(
       ...Array.from(this._repositoryStacks.values())
       .map(repositoryStack => repositoryStack.getDirtyFileChanges())
     );
@@ -308,11 +310,11 @@ class DiffViewModel {
   }
 
   _updateCommitMergeFileChanges(): void {
-    const commitMergeFileChanges = map.union(
+    const commitMergeFileChanges = mapUnion(
       ...Array.from(this._repositoryStacks.values())
       .map(repositoryStack => repositoryStack.getCommitMergeFileChanges())
     );
-    const lastCommitMergeFileChanges = map.union(
+    const lastCommitMergeFileChanges = mapUnion(
       ...Array.from(this._repositoryStacks.values())
       .map(repositoryStack => repositoryStack.getLastCommitMergeFileChanges())
     );
@@ -348,12 +350,12 @@ class DiffViewModel {
     switch (this._state.viewMode) {
       case DiffMode.COMMIT_MODE:
         // Commit mode only shows the changes of the active repository.
-        selectedFileChanges = map.filter(dirtyFileChanges, activeRepositorySelector);
+        selectedFileChanges = mapFilter(dirtyFileChanges, activeRepositorySelector);
         showNonHgRepos = false;
         break;
       case DiffMode.PUBLISH_MODE:
         // Publish mode only shows the changes of the active repository.
-        selectedFileChanges = map.filter(lastCommitMergeFileChanges, activeRepositorySelector);
+        selectedFileChanges = mapFilter(lastCommitMergeFileChanges, activeRepositorySelector);
         showNonHgRepos = false;
         break;
       case DiffMode.BROWSE_MODE:

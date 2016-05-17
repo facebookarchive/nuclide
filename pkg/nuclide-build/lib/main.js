@@ -16,7 +16,7 @@ import type {BehaviorSubject} from 'rxjs';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
-import {DisposableSubscription} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../commons-node/stream';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 

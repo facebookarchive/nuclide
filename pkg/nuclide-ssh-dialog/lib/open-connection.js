@@ -23,7 +23,7 @@ import {
 import ConnectionDialog from './ConnectionDialog';
 import CreateConnectionProfileForm from './CreateConnectionProfileForm';
 import {getLogger} from '../../nuclide-logging';
-import {PromiseQueue} from '../../nuclide-commons';
+import {PromiseQueue} from '../../commons-node/promise-executors';
 import {React, ReactDOM} from 'react-for-atom';
 
 const logger = getLogger();

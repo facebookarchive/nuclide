@@ -13,7 +13,7 @@ import DefaultModuleMap from '../lib/state/DefaultModuleMap';
 
 import jscodeshift from 'jscodeshift';
 import printRoot from '../lib/utils/printRoot';
-import {fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
 import requiresTransform from '../lib/requires/transform';
 
 const TESTS = [

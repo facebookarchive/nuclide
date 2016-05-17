@@ -15,7 +15,7 @@ import type {
 } from '../../nuclide-diagnostics-base';
 
 import invariant from 'assert';
-import {debounce} from '../../nuclide-commons';
+import debounce from '../../commons-node/debounce';
 import {compareMessagesByFile} from './paneUtils';
 import {React, ReactDOM} from 'react-for-atom';
 import DiagnosticsPanel from './DiagnosticsPanel';

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
 
 const WATCHMAN_DEFAULT_PATH = '/usr/local/bin/watchman';
 

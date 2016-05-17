@@ -23,7 +23,7 @@ import {FileChangeStatus} from './constants';
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
 
-import {array} from '../../nuclide-commons';
+import {arrayCompact} from '../../commons-node/collection';
 import classnames from 'classnames';
 import uiTreePath from '../../commons-atom/ui-tree-path';
 import {getPath, basename} from '../../nuclide-remote-uri';
@@ -190,7 +190,7 @@ export default class DiffViewTree extends React.Component {
   }
 
   componentDidUpdate(): void {
-    const roots = array.compact(
+    const roots = arrayCompact(
       atom.project.getDirectories().map(directory => {
         const rootPath = directory.getPath();
         const repository = repositoryForPath(rootPath);

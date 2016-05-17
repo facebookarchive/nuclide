@@ -21,7 +21,7 @@ import {Observable, Subject} from 'rxjs';
 
 import ActiveEditorRegistry from '../../commons-atom/ActiveEditorRegistry';
 import {track} from '../../nuclide-analytics';
-import {DisposableSubscription} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../commons-node/stream';
 
 import {StatusBarTile} from './StatusBarTile';
 import {diagnosticProviderForResultStream} from './coverageDiagnostics';

@@ -21,7 +21,7 @@ import QuickSelectionComponent from './QuickSelectionComponent';
 import {CompositeDisposable} from 'atom';
 import featureConfig from '../../nuclide-feature-config';
 import {track} from '../../nuclide-analytics';
-import {debounce} from '../../nuclide-commons';
+import debounce from '../../commons-node/debounce';
 
 function getSearchResultManager() {
   return require('./SearchResultManager').default.getInstance();

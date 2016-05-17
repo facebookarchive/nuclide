@@ -26,7 +26,7 @@ import {
 } from 'atom';
 import invariant from 'assert';
 import {makeDiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
-import {passesGK} from '../../nuclide-commons';
+import passesGK from '../../commons-node/passesGK';
 
 
 const GK_DIAGNOSTICS_DATATIPS = 'nuclide_diagnostics_datatips';

@@ -20,7 +20,7 @@ import invariant from 'assert';
 
 import featureConfig from '../../nuclide-feature-config';
 import {nuclideFeatures} from '../../../lib/nuclide-features';
-import {debounce} from '../../nuclide-commons';
+import debounce from '../../commons-node/debounce';
 import {
   onWorkspaceDidStopChangingActivePaneItem,
 } from '../../commons-atom/debounced';

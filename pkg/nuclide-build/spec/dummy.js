@@ -11,7 +11,7 @@
 
 import type {Task} from '../lib/types';
 
-import {DisposableSubscription} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../commons-node/stream';
 import {BehaviorSubject} from 'rxjs';
 import {Disposable} from 'event-kit';
 

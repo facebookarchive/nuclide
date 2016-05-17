@@ -36,6 +36,7 @@ import {
 import {EventEmitter} from 'events';
 import invariant from 'assert';
 import {ClientCallback} from './ClientCallback';
+import {attachEvent} from '../../commons-node/event';
 
 import type {Socket} from 'net';
 import type {ExceptionState} from './BreakpointStore';
@@ -119,7 +120,7 @@ export class ConnectionMultiplexer {
   }
 
   onStatus(callback: (status: string) => mixed): IDisposable {
-    return require('../../nuclide-commons').event.attachEvent(this._connectionStatusEmitter,
+    return attachEvent(this._connectionStatusEmitter,
       CONNECTION_MUX_STATUS_EVENT, callback);
   }
 

@@ -19,7 +19,9 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import {HgStatusToFileChangeStatus, FileChangeStatus, DiffOption} from './constants';
-import {array, promises, debounce} from '../../nuclide-commons';
+import {arrayEqual} from '../../commons-node/collection';
+import debounce from '../../commons-node/debounce';
+import {serializeAsyncCall, retryLimit} from '../../commons-node/promise';
 import {trackTiming} from '../../nuclide-analytics';
 import {notifyInternalError} from './notifications';
 import invariant from 'assert';
@@ -68,7 +70,7 @@ export default class RepositoryStack {
     this._selectedCompareCommitId = null;
     this._lastRevisionsFileHistory = null;
     this._lastRevisionsState = null;
-    this._serializedUpdateStatus = promises.serializeAsyncCall(
+    this._serializedUpdateStatus = serializeAsyncCall(
       () => this._tryUpdateCommitMergeFileChanges(),
     );
     const debouncedSerializedUpdateStatus = debounce(
@@ -164,7 +166,7 @@ export default class RepositoryStack {
     // That way, we guarantee we only update the revisions state if the revisions are changed.
     if (
       lastRevisionsState == null ||
-      !array.equal(
+      !arrayEqual(
         lastRevisionsState.revisions,
         revisionsState.revisions,
         (revision1, revision2) => revision1.id === revision2.id,
@@ -180,7 +182,7 @@ export default class RepositoryStack {
       const fileHistoryRevisionIds = this._lastRevisionsFileHistory
         .map(revisionChanges => revisionChanges.id);
       const revisionIds = revisionsState.revisions.map(revision => revision.id);
-      if (array.equal(revisionIds, fileHistoryRevisionIds)) {
+      if (arrayEqual(revisionIds, fileHistoryRevisionIds)) {
         revisionsFileHistory = this._lastRevisionsFileHistory;
       }
     }
@@ -295,7 +297,7 @@ export default class RepositoryStack {
     // may be not applicable, but that's defined once the rebase is done.
     // Hence, we need to retry fetching the revision info (depending on the common ancestor)
     // because the watchman-based Mercurial updates doesn't consider or wait while rebasing.
-    const revisions = await promises.retryLimit(
+    const revisions = await retryLimit(
       () => this._repository.fetchRevisionInfoBetweenHeadAndBase(),
       result => result != null,
       FETCH_REV_INFO_MAX_TRIES,

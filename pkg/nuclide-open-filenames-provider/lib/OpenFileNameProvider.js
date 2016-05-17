@@ -15,12 +15,12 @@ import type {
   ProviderType,
 } from '../../nuclide-quick-open/lib/types';
 
-import {array} from '../../nuclide-commons';
+import {arrayCompact} from '../../commons-node/collection';
 import {Matcher} from '../../nuclide-fuzzy-native';
 
 // Returns paths of currently opened editor tabs.
 function getOpenTabsMatching(query: string): Array<FileResult> {
-  const matcher = new Matcher(array.compact(
+  const matcher = new Matcher(arrayCompact(
     atom.workspace.getTextEditors()
       .map(editor => editor.getPath())
   ));

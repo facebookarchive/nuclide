@@ -10,6 +10,7 @@
  */
 
 import type {node$CallSite} from './types';
+import singleton from '../../commons-node/singleton';
 
 type PrepareStackTraceFunction = (error: Error, frames: Array<node$CallSite>) => any;
 
@@ -29,7 +30,7 @@ let hookedPrepareStackTrace: ?PrepareStackTraceFunction;
  * customize Error.prepareStackTrace.
  */
 export default function addPrepareStackTraceHook(): void {
-  require('../../nuclide-commons').singleton.get(
+  singleton.get(
     PREPARE_STACK_TRACE_HOOKED_KEY,
     () => {
       hookedPrepareStackTrace = createHookedPrepareStackTrace(Error.prepareStackTrace
@@ -118,6 +119,6 @@ function defaultPrepareStackTrace(error: Error, frames: Array<node$CallSite>): s
 export const __test__ = {
   createHookedPrepareStackTrace,
   resetPrepareStackTraceHooked() {
-    require('../../nuclide-commons').singleton.clear(PREPARE_STACK_TRACE_HOOKED_KEY);
+    singleton.clear(PREPARE_STACK_TRACE_HOOKED_KEY);
   },
 };

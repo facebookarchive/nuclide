@@ -13,7 +13,7 @@ import path from 'path';
 import {HgService} from '../lib/HgService';
 import {HgStatusOption, StatusCodeId} from '../lib/hg-constants';
 import invariant from 'assert';
-import {fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
 
 class TestHgService extends HgService {
   // These tests target the non-watchman-dependent features of LocalHgService.

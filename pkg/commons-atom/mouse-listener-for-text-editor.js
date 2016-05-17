@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable, Emitter, Point} from 'atom';
-import {debounce} from '../nuclide-commons';
+import debounce from '../commons-node/debounce';
 
 type PositionChangeEvent = {
   nativeEvent: MouseEvent;

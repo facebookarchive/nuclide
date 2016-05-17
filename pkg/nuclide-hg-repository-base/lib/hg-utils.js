@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {checkOutput, createArgsForScriptCommand} from '../../nuclide-commons';
+import {checkOutput, createArgsForScriptCommand} from '../../commons-node/process';
 import {getLogger} from '../../nuclide-logging';
 
 /**

@@ -22,7 +22,8 @@ import {
   editorChangesDebounced,
 } from './debounced';
 
-import {event as commonsEvent, cacheWhileSubscribed} from '../nuclide-commons';
+import {observableFromSubscribeFunction} from '../commons-node/event';
+import {cacheWhileSubscribed} from '../commons-node/stream';
 
 import {getLogger} from '../nuclide-logging';
 const logger = getLogger();
@@ -202,7 +203,7 @@ function getDefaultEventSources(): EventSources {
     activeEditors: observeActiveEditorsDebounced(),
     changesForEditor: editor => editorChangesDebounced(editor),
     savesForEditor: editor => {
-      return commonsEvent.observableFromSubscribeFunction(callback => editor.onDidSave(callback))
+      return observableFromSubscribeFunction(callback => editor.onDidSave(callback))
         .mapTo(undefined);
     },
   };

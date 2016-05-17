@@ -18,7 +18,7 @@ import {Disposable, CompositeDisposable} from 'atom';
 import {Subject} from 'rxjs';
 import invariant from 'assert';
 
-import {promises} from '../../nuclide-commons';
+import {isPromise} from '../../commons-node/promise';
 
 export type MessageDisplayOptions = {
   onlyForFile: NuclideUri;
@@ -103,7 +103,7 @@ export class BusySignalProviderBase {
     const removeMessage = messageRemover.dispose.bind(messageRemover);
     try {
       const returnValue = f();
-      invariant(promises.isPromise(returnValue));
+      invariant(isPromise(returnValue));
       returnValue.then(removeMessage, removeMessage);
       return returnValue;
     } catch (e) {

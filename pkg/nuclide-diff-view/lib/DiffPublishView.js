@@ -27,7 +27,7 @@ import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
 import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
 import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
 import {CompositeDisposable, TextBuffer} from 'atom';
-import {DisposableSubscription} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../commons-node/stream';
 
 type DiffRevisionViewProps = {
   revision: RevisionInfo;

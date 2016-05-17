@@ -21,11 +21,10 @@ import {CompositeDisposable} from 'atom';
 import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
 import remoteUri from '../../nuclide-remote-uri';
 import {Disposable} from 'atom';
-import {DisposableSubscription} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../commons-node/stream';
 import {getConfig} from './utils';
 import WS from 'ws';
-
-const {stringifyError} = require('../../nuclide-commons').error;
+import {stringifyError} from '../../commons-node/string';
 
 const {log, logInfo, logError} = utils;
 

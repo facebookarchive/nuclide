@@ -13,7 +13,7 @@ import type {NuclideUri} from '../nuclide-remote-uri';
 
 import {Emitter, Directory} from 'atom';
 import {isRemote} from '../nuclide-remote-uri';
-import {singleton} from '../nuclide-commons';
+import singleton from '../commons-node/singleton';
 
 const REMOVE_PROJECT_EVENT = 'did-remove-project';
 const ADD_PROJECT_EVENT = 'did-add-project';

@@ -18,7 +18,8 @@ import type {
   ProviderType,
 } from '../../nuclide-quick-open/lib/types';
 
-import {array, relativeDate} from '../../nuclide-commons';
+import {arrayCompact} from '../../commons-node/collection';
+import {relativeDate} from '../../commons-node/string';
 import {Matcher} from '../../nuclide-fuzzy-native';
 
 // Imported from nuclide-files-service, which is an apm package, preventing a direct import.
@@ -37,7 +38,7 @@ function getRecentFilesMatching(query: string): Array<FileResult> {
     return [];
   }
   const projectPaths = atom.project.getPaths();
-  const openFiles = new Set(array.compact(
+  const openFiles = new Set(arrayCompact(
     atom.workspace.getTextEditors().map(editor => editor.getPath())
   ));
   const validRecentFiles = _recentFilesService.getRecentFiles()

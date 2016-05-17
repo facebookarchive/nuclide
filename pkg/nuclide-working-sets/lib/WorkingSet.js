@@ -10,7 +10,7 @@
  */
 
 
-import {array} from '../../nuclide-commons';
+import {arrayEqual} from '../../commons-node/collection';
 import {normalizePathUri, dedupeNormalizedUris, splitUri, isUriBelow} from './uri';
 import invariant from 'assert';
 import {getLogger} from '../../nuclide-logging';
@@ -122,7 +122,7 @@ export class WorkingSet {
   }
 
   equals(other: WorkingSet): boolean {
-    return array.equal(this._uris, other._uris);
+    return arrayEqual(this._uris, other._uris);
   }
 
   _buildDirTree(uris: Array<string>): ?InnerNode {

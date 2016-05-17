@@ -19,7 +19,7 @@ import {fixtures} from '../../nuclide-test-helpers';
 import fs from 'fs';
 import pathModule from 'path';
 
-import {denodeify} from '../../nuclide-commons';
+import {denodeify} from '../../commons-node/promise';
 
 import tempModule from 'temp';
 tempModule.track();

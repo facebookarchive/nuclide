@@ -20,7 +20,8 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 
-import {array, debounce} from '../../nuclide-commons';
+import debounce from '../../commons-node/debounce';
+import {arrayRemove} from '../../commons-node/collection';
 import {track, trackOperationTiming} from '../../nuclide-analytics';
 
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
@@ -331,7 +332,7 @@ export class DatatipManager {
   }
 
   removeProvider(provider: DatatipProvider): void {
-    array.remove(this._datatipProviders, provider);
+    arrayRemove(this._datatipProviders, provider);
   }
 
   dispose() {

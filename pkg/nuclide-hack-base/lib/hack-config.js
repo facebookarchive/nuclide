@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {fsPromise, asyncExecute} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
+import {asyncExecute} from '../../commons-node/process';
 const logger = require('../../nuclide-logging').getLogger();
 
 const HACK_CONFIG_FILE_NAME = '.hhconfig';

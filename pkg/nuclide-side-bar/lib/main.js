@@ -13,7 +13,7 @@ import type {Logger} from '../../nuclide-logging/lib/types';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 
 import {CompositeDisposable} from 'atom';
-import {debounce} from '../../nuclide-commons';
+import debounce from '../../commons-node/debounce';
 import {getLogger} from '../../nuclide-logging';
 import invariant from 'assert';
 import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';

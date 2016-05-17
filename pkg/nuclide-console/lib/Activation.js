@@ -12,7 +12,7 @@
 import type {GadgetsService, Gadget} from '../../nuclide-gadgets/lib/types';
 import type {AppState, OutputProvider, OutputService, RegisterExecutorFunction} from './types';
 
-import {DisposableSubscription} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../commons-node/stream';
 import {CompositeDisposable, Disposable} from 'atom';
 import * as ActionTypes from './ActionTypes';
 import Commands from './Commands';

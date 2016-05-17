@@ -14,8 +14,8 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import {
   checkOutput,
   scriptSafeSpawnAndObserveOutput,
-} from '../../nuclide-commons';
-import {fsPromise} from '../../nuclide-commons';
+} from '../../commons-node/process';
+import fsPromise from '../../commons-node/fsPromise';
 import path from 'path';
 
 const logger = require('../../nuclide-logging').getLogger();

@@ -16,10 +16,8 @@ import type {
 
 import {Observable} from 'rxjs';
 
-import {
-  fsPromise,
-  safeSpawn,
-} from '../../nuclide-commons';
+import {safeSpawn} from '../../commons-node/process';
+import fsPromise from '../../commons-node/fsPromise';
 import path from 'path';
 import split from 'split';
 

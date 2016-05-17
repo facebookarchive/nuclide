@@ -10,7 +10,7 @@
  */
 
 import {Emitter} from 'event-kit';
-import {fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
 import * as watchmanHelpers from '../../nuclide-watchman-helpers';
 import * as logging from '../../nuclide-logging';
 import {watchFile, watchDirectory, watchDirectoryRecursive} from '../lib/FileWatcherService';

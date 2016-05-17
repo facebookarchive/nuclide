@@ -10,12 +10,11 @@
  */
 
 import type {LoggingAppender} from './types';
-import {
-  clientInfo,
-  fsPromise,
-  ScribeProcess,
-  userInfo,
-} from '../../nuclide-commons';
+import ScribeProcess from '../../commons-node/ScribeProcess';
+import {isRunningInTest, isRunningInClient} from '../../commons-node/system-info';
+import fsPromise from '../../commons-node/fsPromise';
+import userInfo from '../../commons-node/userInfo';
+
 import os from 'os';
 import path from 'path';
 
@@ -33,8 +32,8 @@ async function getServerLogAppenderConfig(): Promise<?Object> {
   // 2) or running in Atom client
   // 3) or running in open sourced version of nuclide
   // 4) or the scribe_cat command is missing.
-  if (clientInfo.isRunningInTest() ||
-      clientInfo.isRunningInClient() ||
+  if (isRunningInTest() ||
+      isRunningInClient() ||
       !(await fsPromise.exists(scribeAppenderPath)) ||
       !(await ScribeProcess.isScribeCatOnPath())) {
     return null;

@@ -10,7 +10,7 @@
  */
 
 import fs from 'fs';
-import {fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
 import {reprint} from '..';
 
 // Helpful for debugging.

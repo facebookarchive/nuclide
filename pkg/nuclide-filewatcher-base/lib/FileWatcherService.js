@@ -16,7 +16,7 @@ import type {FileChange} from '../../nuclide-watchman-helpers/lib/WatchmanClient
 import invariant from 'assert';
 import path from 'path';
 import {Observable} from 'rxjs';
-import {fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 

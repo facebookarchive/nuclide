@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {process$asyncExecuteRet} from '../../nuclide-commons';
+import type {process$asyncExecuteRet} from '../../commons-node/process';
 
 import type {ServerStatusType} from '..';
 
@@ -26,7 +26,7 @@ import {track} from '../../nuclide-analytics';
 import {
   asyncExecute,
   safeSpawn,
-} from '../../nuclide-commons';
+} from '../../commons-node/process';
 
 import {
   isFlowInstalled,

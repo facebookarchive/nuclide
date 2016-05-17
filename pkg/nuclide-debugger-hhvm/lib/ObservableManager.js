@@ -14,7 +14,7 @@ import {getOutputService} from '../../nuclide-debugger-common/lib/OutputServiceM
 import utils from './utils';
 const {log, logError} = utils;
 import {Observable} from 'rxjs';
-import {DisposableSubscription} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../commons-node/stream';
 
 type NotificationMessage = {
   type: 'info' | 'warning' | 'error' | 'fatalError';

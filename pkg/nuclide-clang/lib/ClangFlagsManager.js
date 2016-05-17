@@ -15,7 +15,7 @@ import path from 'path';
 import {Observable} from 'rxjs';
 import {parse} from 'shell-quote';
 import {trackTiming} from '../../nuclide-analytics';
-import {fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
 import {BuckProject} from '../../nuclide-buck-base';
 import {isHeaderFile, isSourceFile, findIncludingSourceFile} from './utils';

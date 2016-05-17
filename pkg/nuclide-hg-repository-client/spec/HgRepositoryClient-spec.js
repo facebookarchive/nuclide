@@ -22,14 +22,15 @@ import {
   StatusCodeId,
   StatusCodeNumber,
 } from '../../nuclide-hg-repository-base/lib/hg-constants';
+import fsSync from '../../commons-node/fsSync';
 import path from 'path';
 import temp from 'temp';
-const tempWithAutoCleanup = temp.track();
 
+temp.track();
 
 describe('HgRepositoryClient', () => {
-  const tempDir = tempWithAutoCleanup.mkdirSync('testproj');
-  const tempSubDir = tempWithAutoCleanup.mkdirSync({dir: tempDir});
+  const tempDir = temp.mkdirSync('testproj');
+  const tempSubDir = temp.mkdirSync({dir: tempDir});
 
   const repoPath = path.join(tempDir, '.hg');
   const workingDirectory = new Directory(tempDir);
@@ -537,7 +538,7 @@ describe('HgRepositoryClient', () => {
     xit('is updated when the active pane item changes to an editor, if the editor file is in the'
       + ' project.', () => {
       spyOn(repo, '_updateDiffInfo');
-      const file = tempWithAutoCleanup.openSync({dir: projectDirectory.getPath()});
+      const file = temp.openSync({dir: projectDirectory.getPath()});
       waitsForPromise(async () => {
         const editor = await atom.workspace.open(file.path);
         expect(repo._updateDiffInfo.calls.length).toBe(1);
@@ -548,7 +549,7 @@ describe('HgRepositoryClient', () => {
     it('is not updated when the active pane item changes to an editor whose file is not in the'
       + ' repo.', () => {
       spyOn(repo, '_updateDiffInfo');
-      const file = tempWithAutoCleanup.openSync();
+      const file = temp.openSync();
       waitsForPromise(async () => {
         await atom.workspace.open(file.path);
         expect(repo._updateDiffInfo.calls.length).toBe(0);
@@ -558,7 +559,7 @@ describe('HgRepositoryClient', () => {
     it('marks a file to be removed from the cache after its editor is closed, if the file is in the'
       + ' project.', () => {
       spyOn(repo, '_updateDiffInfo');
-      const file = tempWithAutoCleanup.openSync({dir: projectDirectory.getPath()});
+      const file = temp.openSync({dir: projectDirectory.getPath()});
       waitsForPromise(async () => {
         const editor = await atom.workspace.open(file.path);
         expect(repo._hgDiffCacheFilesToClear.size).toBe(0);
@@ -630,7 +631,6 @@ describe('HgRepositoryClient', () => {
   });
 
   describe('::getDirectoryStatus', () => {
-    const {ensureTrailingSeparator} = require('../../nuclide-commons').paths;
     const testDir = createFilePath('subDirectory');
     const subDirectory = path.join(testDir, 'dir1');
     const subSubDirectory = path.join(subDirectory, 'dir2');
@@ -638,8 +638,8 @@ describe('HgRepositoryClient', () => {
     it('marks a directory as modified only if it is in the modified directories cache.', () => {
       // Force the state of the hgStatusCache.
       repo._modifiedDirectoryCache = new Map();
-      repo._modifiedDirectoryCache.set(ensureTrailingSeparator(testDir), 1);
-      repo._modifiedDirectoryCache.set(ensureTrailingSeparator(subDirectory), 1);
+      repo._modifiedDirectoryCache.set(fsSync.ensureTrailingSeparator(testDir), 1);
+      repo._modifiedDirectoryCache.set(fsSync.ensureTrailingSeparator(subDirectory), 1);
 
       expect(repo.getDirectoryStatus(testDir)).toBe(StatusCodeNumber.MODIFIED);
       expect(repo.getDirectoryStatus(subDirectory)).toBe(StatusCodeNumber.MODIFIED);
@@ -652,8 +652,8 @@ describe('HgRepositoryClient', () => {
 
       // Force the state of the cache.
       repo._modifiedDirectoryCache = new Map();
-      repo._modifiedDirectoryCache.set(ensureTrailingSeparator(dir_called_null), 1);
-      repo._modifiedDirectoryCache.set(ensureTrailingSeparator(dir_called_undefined), 1);
+      repo._modifiedDirectoryCache.set(fsSync.ensureTrailingSeparator(dir_called_null), 1);
+      repo._modifiedDirectoryCache.set(fsSync.ensureTrailingSeparator(dir_called_undefined), 1);
 
       expect(repo.getDirectoryStatus(null)).toBe(StatusCodeNumber.CLEAN);
       expect(repo.getDirectoryStatus(undefined)).toBe(StatusCodeNumber.CLEAN);

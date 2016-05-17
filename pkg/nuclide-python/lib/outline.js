@@ -25,7 +25,7 @@ import {
   plain,
 } from '../../nuclide-tokenized-text';
 import path from 'path';
-import {asyncExecute} from '../../nuclide-commons';
+import {asyncExecute} from '../../commons-node/process';
 import {getPythonPath} from './config';
 
 const SHOW_NO_VARIABLES = 'none';

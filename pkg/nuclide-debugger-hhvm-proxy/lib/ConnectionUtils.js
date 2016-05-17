@@ -12,7 +12,7 @@
 import logger from './utils';
 import {getConfig} from './config';
 import {launchScriptForDummyConnection, uriToPath} from './helpers';
-import {fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
 import path from 'path';
 
 import type {Socket} from 'net';

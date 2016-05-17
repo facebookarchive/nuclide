@@ -16,7 +16,7 @@ import {Observable} from 'rxjs';
 import {
   safeSpawn,
   observeProcess,
-} from '../../nuclide-commons';
+} from '../../commons-node/process';
 
 const HEADER_EXTENSIONS = new Set(['.h', '.hh', '.hpp', '.hxx', '.h++']);
 const SOURCE_EXTENSIONS = new Set(['.c', '.cc', '.cpp', '.cxx', '.c++', '.m', '.mm']);

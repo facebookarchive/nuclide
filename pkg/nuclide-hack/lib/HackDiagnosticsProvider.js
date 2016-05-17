@@ -25,14 +25,13 @@ import type {
 
 import {trackTiming} from '../../nuclide-analytics';
 import {getHackLanguageForUri, getCachedHackLanguageForUri} from './HackLanguage';
-import {promises} from '../../nuclide-commons';
+import {RequestSerializer} from '../../commons-node/promise';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import {Range} from 'atom';
 import invariant from 'assert';
 
 import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';
 
-const {RequestSerializer} = promises;
 /**
  * Currently, a diagnostic from Hack is an object with a "message" property.
  * Each item in the "message" array is an object with the following fields:

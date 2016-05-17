@@ -23,11 +23,10 @@ import type {
 import {getHackLanguageForUri} from './HackLanguage';
 import {Range} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
-import {promises} from '../../nuclide-commons';
+import {RequestSerializer} from '../../commons-node/promise';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
-const {RequestSerializer} = promises;
 
 // Provides Diagnostics for un-typed regions of Hack code.
 export class TypeCoverageProvider {

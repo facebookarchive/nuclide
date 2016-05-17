@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {observeProcess, safeSpawn} from '../../nuclide-commons';
+import {observeProcess, safeSpawn} from '../../commons-node/process';
 import featureConfig from '../../nuclide-feature-config';
 import invariant from 'assert';
 import os from 'os';

@@ -12,7 +12,8 @@
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import path from 'path';
-import {array, fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
+import {arrayCompact} from '../../commons-node/collection';
 import {getLogger} from '../../nuclide-logging';
 
 const TAGS_FILENAME = 'tags';
@@ -73,7 +74,7 @@ export class CtagsService {
             }
             return null;
           }));
-          resolve(array.compact(processed));
+          resolve(arrayCompact(processed));
         }
       });
     });

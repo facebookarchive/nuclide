@@ -12,7 +12,8 @@
 import type Rx from 'rxjs';
 
 import invariant from 'assert';
-import {DisposableSubscription} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../commons-node/stream';
+import {isPromise} from '../../commons-node/promise';
 import {track as rawTrack} from './track';
 import {HistogramTracker} from './HistogramTracker';
 
@@ -163,7 +164,7 @@ function trackOperationTiming<T>(eventName: string, operation: () => T): T {
   try {
     const result = operation();
 
-    if (require('../../nuclide-commons').promises.isPromise(result)) {
+    if (isPromise(result)) {
       // Atom uses a different Promise implementation than Nuclide, so the following is not true:
       // invariant(result instanceof Promise);
 

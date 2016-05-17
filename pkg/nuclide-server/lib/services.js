@@ -52,7 +52,7 @@ function createServiceConfigObject(jsonConfig: Array<Object>): Array<ConfigEntry
  *   1. A path relative to the folder that contains `service-config.json`.
  *   2. An absolute path.
  *   3. A path in form of `$dependency_package/path/to/service`. For example,
- *      'nuclide-commons/lib/array.js'.
+ *      'commons-node/collection.js'.
  */
 function resolveServicePath(servicePath: string): string {
   try {

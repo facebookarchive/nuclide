@@ -15,11 +15,11 @@ import url from 'url';
 import WS from 'ws';
 import uuid from 'uuid';
 import {EventEmitter} from 'events';
-import {event} from '../../nuclide-commons';
 import {WebSocketTransport} from './WebSocketTransport';
 import {QueuedTransport} from './QueuedTransport';
 import {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
 import invariant from 'assert';
+import {attachEvent} from '../../commons-node/event';
 
 const logger = require('../../nuclide-logging').getLogger();
 
@@ -226,23 +226,23 @@ export class NuclideSocket {
   }
 
   onMessage(callback: (message: Object) => mixed): IDisposable {
-    return event.attachEvent(this._emitter, 'message', callback);
+    return attachEvent(this._emitter, 'message', callback);
   }
 
   onStatus(callback: (connected: boolean) => mixed): IDisposable {
-    return event.attachEvent(this._emitter, 'status', callback);
+    return attachEvent(this._emitter, 'status', callback);
   }
 
   onConnect(callback: () => mixed): IDisposable {
-    return event.attachEvent(this._emitter, 'connect', callback);
+    return attachEvent(this._emitter, 'connect', callback);
   }
 
   onReconnect(callback: () => mixed): IDisposable {
-    return event.attachEvent(this._emitter, 'reconnect', callback);
+    return attachEvent(this._emitter, 'reconnect', callback);
   }
 
   onDisconnect(callback: () => mixed): IDisposable {
-    return event.attachEvent(this._emitter, 'disconnect', callback);
+    return attachEvent(this._emitter, 'disconnect', callback);
   }
 }
 
@@ -258,9 +258,9 @@ function sendOneMessage(socket: WS, message: string): Promise<SendResult> {
       onClose.dispose();
       resolve(result);
     }
-    const onError = event.attachEvent(socket, 'event',
+    const onError = attachEvent(socket, 'event',
       err => finish({kind: 'error', message: err}));
-    const onClose = event.attachEvent(socket, 'close', () => finish({kind: 'close'}));
+    const onClose = attachEvent(socket, 'close', () => finish({kind: 'close'}));
     socket.send(message, error => {
       if (error == null) {
         finish({kind: 'success'});

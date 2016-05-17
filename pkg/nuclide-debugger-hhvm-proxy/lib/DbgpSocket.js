@@ -14,6 +14,7 @@ import logger from './utils';
 import {base64Decode, base64Encode} from './helpers';
 import {EventEmitter} from 'events';
 import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
+import {attachEvent} from '../../commons-node/event';
 import type {Socket} from 'net';
 
 // Responses to the DBGP 'status' command
@@ -110,8 +111,7 @@ class DbgpSocket {
   }
 
   onStatus(callback: (status: string) => mixed): IDisposable {
-    return require('../../nuclide-commons').event
-      .attachEvent(this._emitter, DBGP_SOCKET_STATUS_EVENT, callback);
+    return attachEvent(this._emitter, DBGP_SOCKET_STATUS_EVENT, callback);
   }
 
   _onError(error: {code: string}): void {

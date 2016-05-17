@@ -10,7 +10,7 @@
  */
 
 import type {Observable, Subscription} from 'rxjs';
-import {observeStream, splitStream} from '../../nuclide-commons';
+import {observeStream, splitStream} from '../../commons-node/stream';
 const logger = require('../../nuclide-logging').getLogger();
 import invariant from 'assert';
 

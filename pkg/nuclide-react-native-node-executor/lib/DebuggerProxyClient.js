@@ -11,7 +11,7 @@
 
 import type {RnRequest} from './types';
 
-import {DisposableSubscription} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../commons-node/stream';
 import ChildManager from './ChildManager';
 import {CompositeDisposable, Disposable} from 'atom';
 import {EventEmitter} from 'events';

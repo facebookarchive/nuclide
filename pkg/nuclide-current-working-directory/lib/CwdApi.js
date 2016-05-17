@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {DisposableSubscription} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../commons-node/stream';
 import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
 import {RemoteConnection, RemoteDirectory} from '../../nuclide-remote-connection';
 import RemoteUri from '../../nuclide-remote-uri';

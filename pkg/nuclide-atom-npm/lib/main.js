@@ -11,7 +11,7 @@
 
 import fs from 'fs-plus';
 import path from 'path';
-import {fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
 
 async function loadStyles(stylesPath: string): Promise {
   // TODO(jjiaa): If possible, check that `stylesPath` is also a directory.

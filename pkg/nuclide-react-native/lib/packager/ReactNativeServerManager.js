@@ -14,7 +14,7 @@ import type {CommandInfo} from './types';
 import invariant from 'assert';
 import type {ProcessOutputDataHandlers} from '../../../nuclide-process-output-store/lib/types';
 import type {Dispatcher} from 'flux';
-import {scriptSafeSpawnAndObserveOutput} from '../../../nuclide-commons';
+import {scriptSafeSpawnAndObserveOutput} from '../../../commons-node/process';
 import ExecutorServer from '../../../nuclide-react-native-node-executor';
 import ReactNativeServerStatus from './ReactNativeServerStatus';
 import {React} from 'react-for-atom';

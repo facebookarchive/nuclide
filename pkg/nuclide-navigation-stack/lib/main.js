@@ -14,7 +14,7 @@ import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 import {getViewOfEditor} from '../../commons-atom/text-editor';
 import {NavigationStackController} from './NavigationStackController';
 import {trackOperationTiming} from '../../nuclide-analytics';
-import {DisposableSubscription} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../commons-node/stream';
 import {observeNavigatingEditors} from '../../commons-atom/go-to-location';
 
 const controller = new NavigationStackController();

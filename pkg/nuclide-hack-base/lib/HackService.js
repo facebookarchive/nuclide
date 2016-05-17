@@ -12,7 +12,8 @@
 import type {HackSearchResult} from './types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
-import {promises, fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
+import {retryLimit} from '../../commons-node/promise';
 import {SymbolType} from '../../nuclide-hack-common';
 import {
   callHHClient,
@@ -163,7 +164,7 @@ export async function getDiagnostics(
   file: NuclideUri,
   currentContents?: string
 ): Promise<?HackDiagnosticsResult> {
-  const hhResult = await promises.retryLimit(
+  const hhResult = await retryLimit(
     () => callHHClient(
       /*args*/ [],
       /*errorStream*/ true,

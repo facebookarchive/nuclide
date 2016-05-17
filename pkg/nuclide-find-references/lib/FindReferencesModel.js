@@ -22,7 +22,7 @@ type FindReferencesOptions = {
   previewContext?: number;
 };
 
-import {array} from '../../nuclide-commons';
+import {arrayCompact} from '../../commons-node/collection';
 import {getLogger} from '../../nuclide-logging';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
 import {getPath} from '../../nuclide-remote-uri';
@@ -109,7 +109,7 @@ class FindReferencesModel {
         this._makeFileReferences.bind(this)
       )
     );
-    return array.compact(fileReferences);
+    return arrayCompact(fileReferences);
   }
 
   getBasePath(): NuclideUri {

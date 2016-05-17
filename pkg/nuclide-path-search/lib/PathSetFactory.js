@@ -13,7 +13,7 @@ import child_process from 'child_process';
 import split from 'split';
 
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
-import {promises} from '../../nuclide-commons';
+import {awaitMilliSeconds} from '../../commons-node/promise';
 import {getLogger} from '../../nuclide-logging';
 
 // Occasionally, the watchman client may hang while waiting for a query.
@@ -150,7 +150,7 @@ async function getFilesFromWatchman(localDirectory: string): Promise<Array<strin
   try {
     return await Promise.race([
       watchmanClient.listFiles(localDirectory),
-      promises.awaitMilliSeconds(WATCHMAN_TIMEOUT_MS).then(() => Promise.reject()),
+      awaitMilliSeconds(WATCHMAN_TIMEOUT_MS).then(() => Promise.reject()),
     ]);
   } catch (e) {
     getLogger().info('getFilesFromWatchman failed, falling back to hg/git/find', e);

@@ -12,7 +12,7 @@
 import type {NuclideRemoteConnectionParams} from './connection-types';
 
 import path from 'path';
-import {userInfo} from '../../nuclide-commons';
+import userInfo from '../../commons-node/userInfo';
 import {SshHandshake} from '../../nuclide-remote-connection';
 
 export function getConnectionDialogDefaultSettings(): NuclideRemoteConnectionParams {

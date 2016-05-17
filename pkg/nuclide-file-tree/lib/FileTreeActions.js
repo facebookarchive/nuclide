@@ -12,7 +12,7 @@
 import type {Dispatcher} from 'flux';
 
 import {ActionType} from './FileTreeConstants';
-import {debounce} from '../../nuclide-commons';
+import debounce from '../../commons-node/debounce';
 import {Disposable, CompositeDisposable} from 'atom';
 import FileTreeDispatcher from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';

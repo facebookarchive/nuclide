@@ -23,7 +23,12 @@ import utils from './utils';
 import WS from 'ws';
 const {log, logTrace, logError, logInfo, setLogLevel} = utils;
 import {ClientCallback} from '../../nuclide-debugger-common/lib/ClientCallback';
-import {observeStream, splitStream, DisposableSubscription} from '../../nuclide-commons';
+import {
+  observeStream,
+  splitStream,
+  DisposableSubscription,
+} from '../../commons-node/stream';
+import {checkOutput} from '../../commons-node/process';
 
 type AttachInfoArgsType = {
   pid: string;
@@ -40,7 +45,6 @@ type LaunchInfoArgsType = {
 type LaunchAttachArgsType = AttachInfoArgsType | LaunchInfoArgsType;
 
 export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>> {
-  const {checkOutput} = require('../../nuclide-commons');
   // Get processes list from ps utility.
   // -e: include all processes
   // -o pid,comm: custom format the output to be two columns(pid and command name)

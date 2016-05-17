@@ -35,7 +35,8 @@ type Selection = {
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import {Tabs} from '../../nuclide-ui/lib/Tabs';
 import {CompositeDisposable, Emitter} from 'atom';
-import {debounce, object} from '../../nuclide-commons';
+import debounce from '../../commons-node/debounce';
+import {isEmpty} from '../../commons-node/collection';
 import {React, ReactDOM} from 'react-for-atom';
 import SearchResultManager from './SearchResultManager';
 import classnames from 'classnames';
@@ -724,7 +725,7 @@ export default class QuickSelectionComponent extends React.Component {
       return directoriesForService;
     });
     let noResultsMessage = null;
-    if (object.isEmpty(this.state.resultsByService)) {
+    if (isEmpty(this.state.resultsByService)) {
       noResultsMessage = this._renderEmptyMessage('Search away!');
     } else if (numTotalResultsRendered === 0) {
       noResultsMessage = this._renderEmptyMessage(<span>No results</span>);

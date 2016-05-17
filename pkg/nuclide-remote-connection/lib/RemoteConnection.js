@@ -19,7 +19,7 @@ import type {RemoteFile} from './RemoteFile';
 import type {RemoteDirectory} from './RemoteDirectory';
 
 import invariant from 'assert';
-import {DisposableSubscription} from '../../nuclide-commons';
+import {DisposableSubscription} from '../../commons-node/stream';
 import {ServerConnection} from './ServerConnection';
 import {CompositeDisposable, Disposable} from 'atom';
 import remoteUri from '../../nuclide-remote-uri';

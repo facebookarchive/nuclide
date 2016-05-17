@@ -14,7 +14,8 @@ import type {HackSearchResult, HHSearchPosition} from './types';
 import type {SearchResultTypeValue} from '../../nuclide-hack-common';
 
 import invariant from 'assert';
-import {asyncExecute, PromiseQueue} from '../../nuclide-commons';
+import {asyncExecute} from '../../commons-node/process';
+import {PromiseQueue} from '../../commons-node/promise-executors';
 import {SearchResultType} from '../../nuclide-hack-common';
 import {getHackExecOptions, getUseIde} from './hack-config';
 import {callHHClientUsingConnection} from './HackConnection';

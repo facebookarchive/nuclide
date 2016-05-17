@@ -20,10 +20,8 @@
 
 import {Observable} from 'rxjs';
 
-import {
-  event as commonsEvent,
-  debounce,
-} from '../nuclide-commons';
+import {observableFromSubscribeFunction} from '../commons-node/event';
+import debounce from '../commons-node/debounce';
 
 const DEFAULT_PANE_DEBOUNCE_INTERVAL_MS = 100;
 const DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS = 300;
@@ -45,7 +43,7 @@ export function onWorkspaceDidStopChangingActivePaneItem(
 export function observeActivePaneItemDebounced(
   debounceInterval: number = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS,
 ): Observable<mixed> {
-  return commonsEvent.observableFromSubscribeFunction(callback => {
+  return observableFromSubscribeFunction(callback => {
     return atom.workspace.observeActivePaneItem(callback);
   })
   .debounceTime(debounceInterval);
@@ -69,7 +67,7 @@ export function editorChangesDebounced(
   editor: atom$TextEditor,
   debounceInterval: number = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS,
 ): Observable<void> {
-  return commonsEvent.observableFromSubscribeFunction(callback => editor.onDidChange(callback))
+  return observableFromSubscribeFunction(callback => editor.onDidChange(callback))
     // Debounce manually rather than using editor.onDidStopChanging so that the debounce time is
     // configurable.
     .debounceTime(debounceInterval);
@@ -79,7 +77,7 @@ export function editorScrollTopDebounced(
   editor: atom$TextEditor,
   debounceInterval: number = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS,
 ): Observable<number> {
-  return commonsEvent.observableFromSubscribeFunction(
+  return observableFromSubscribeFunction(
     callback => atom.views.getView(editor).onDidChangeScrollTop(callback)
   ).debounceTime(debounceInterval);
 }

@@ -15,7 +15,7 @@ import {React, ReactDOM} from 'react-for-atom';
 import {FileTreeEntryComponent} from './FileTreeEntryComponent';
 import {EmptyComponent} from './EmptyComponent';
 import {track} from '../../nuclide-analytics';
-import {once} from '../../nuclide-commons';
+import once from '../../commons-node/once';
 import classnames from 'classnames';
 import {CompositeDisposable, Disposable} from 'atom';
 

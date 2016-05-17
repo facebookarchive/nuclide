@@ -11,7 +11,7 @@
 
 import type {CommandInfo} from './types';
 
-import {fsPromise} from '../../../nuclide-commons';
+import fsPromise from '../../../commons-node/fsPromise';
 import featureConfig from '../../../nuclide-feature-config';
 import * as RemoteUri from '../../../nuclide-remote-uri';
 import {getBuckProjectRoot} from '../../../nuclide-buck-base';

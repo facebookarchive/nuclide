@@ -18,6 +18,7 @@
  */
 import addPrepareStackTraceHook from './stacktrace';
 import invariant from 'assert';
+import singleton from '../../commons-node/singleton';
 
 import type {Logger} from './types';
 
@@ -98,7 +99,7 @@ function createLazyLogger(category: string): Logger {
  * Execute only once.
  */
 export function initialUpdateConfig(): Promise<void> {
-  return require('../../nuclide-commons').singleton.get(
+  return singleton.get(
     INITIAL_UPDATE_CONFIG_KEY,
     async () => {
       const defaultConfig = await require('./config').getDefaultConfig();
@@ -112,7 +113,7 @@ export function getLogger(category: ?string): Logger {
   initialUpdateConfig();
 
   const loggerCategory = getCategory(category);
-  return require('../../nuclide-commons').singleton.get(
+  return singleton.get(
     loggerCategory,
     () => {
       return createLazyLogger(loggerCategory);

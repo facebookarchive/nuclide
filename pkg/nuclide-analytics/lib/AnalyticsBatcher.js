@@ -11,7 +11,7 @@
 
 import type {TrackEvent} from './track';
 
-import {BatchProcessedQueue} from '../../nuclide-commons';
+import BatchProcessedQueue from '../../commons-node/BatchProcessedQueue';
 
 const REPORTING_PERIOD = 1000;
 

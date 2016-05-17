@@ -11,7 +11,7 @@
 
 import path from 'path';
 import ini from 'ini';
-import {fsPromise} from '../../nuclide-commons';
+import fsPromise from '../../commons-node/fsPromise';
 
 import type {HgRepositoryDescription} from '..';
 

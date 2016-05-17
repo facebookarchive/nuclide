@@ -11,7 +11,7 @@
 
 import type {Record, Executor} from '../types';
 
-import {debounce} from '../../../nuclide-commons';
+import debounce from '../../../commons-node/debounce';
 import {React} from 'react-for-atom';
 import OutputTable from './OutputTable';
 import ConsoleHeader from './ConsoleHeader';

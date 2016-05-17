@@ -11,9 +11,7 @@
 
 import type {FileResult, GroupedResult} from './types';
 
-const {
-  isEmpty,
-} = require('../../nuclide-commons').object;
+import {isEmpty} from '../../commons-node/collection';
 
 export function filterEmptyResults(resultsGroupedByService: GroupedResult): GroupedResult {
   const filteredTree = {};

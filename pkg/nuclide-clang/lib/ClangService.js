@@ -11,7 +11,9 @@
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
-import {checkOutput, object, promises} from '../../nuclide-commons';
+import {checkOutput} from '../../commons-node/process';
+import {keyMirror} from '../../commons-node/collection';
+import {serializeAsyncCall} from '../../commons-node/promise';
 import LRUCache from 'lru-cache';
 import os from 'os';
 import {Observable} from 'rxjs';
@@ -32,7 +34,7 @@ const clangServers = new LRUCache({
 const MEMORY_LIMIT = Math.round(os.totalmem() * 15 / 100);
 
 // It's important that only one instance of this function runs at any time.
-const checkMemoryUsage = promises.serializeAsyncCall(async () => {
+const checkMemoryUsage = serializeAsyncCall(async () => {
   const usage = new Map();
   await Promise.all(clangServers.values().map(async server => {
     const mem = await server.getMemoryUsage();
@@ -251,7 +253,7 @@ export type ClangDeclarationInfoResult = {
   info?: Array<ClangDeclaration>;
 };
 
-export const ClangCursorTypes = object.keyMirror(ClangCursorToDeclarationTypes);
+export const ClangCursorTypes = keyMirror(ClangCursorToDeclarationTypes);
 
 /**
  * Compiles the specified source file (automatically determining the correct compilation flags).
