@@ -28,6 +28,16 @@ export function activate(state: ?Object): void {
     atom.notifications.onDidAddNotification(proxyToNativeNotification),
 
   );
+
+  try {
+    // Listen for the gatekeeper to tell us if we can generate native notifications.
+    const gatekeeper = require('../../fb-gatekeeper').gatekeeper;
+    subscriptions.add(
+      gatekeeper.onceInitialized(() => {
+        gkEnabled = gatekeeper.isGkEnabled('nuclide_native_notifications');
+      }),
+    );
+  } catch (e) { }
 }
 
 function proxyToNativeNotification(notification: atom$Notification): void {
@@ -54,16 +64,6 @@ export function raiseNativeNotificationAfterDelay(
 }
 
 export function raiseNativeNotification(title: string, body: string): void {
-  try {
-    // Listen for the gatekeeper to tell us if we can generate native notifications.
-    const gatekeeper = require('../../fb-gatekeeper').gatekeeper;
-    subscriptions.add(
-      gatekeeper.onceInitialized(() => {
-        gkEnabled = gatekeeper.isGkEnabled('nuclide_native_notifications');
-      }),
-    );
-  } catch (e) { }
-
   // Check we're in the gatekeeper for native notifications at all.
   if (!gkEnabled) {
     return;
