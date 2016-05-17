@@ -11,45 +11,52 @@
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
+import {Subscription} from 'rxjs';
+
 import {getServerStatusUpdates} from './FlowServiceFactory';
 
 export class FlowServiceWatcher {
-  _subscription: rx$ISubscription;
+  _subscription: Subscription;
 
   constructor() {
-    this._subscription = getServerStatusUpdates()
+    this._subscription = new Subscription();
+
+    const serverStatusUpdates = getServerStatusUpdates();
+
+    this._subscription.add(serverStatusUpdates
       .filter(({status}) => status === 'failed')
       .subscribe(({pathToRoot}) => {
-        this._handleFailure(pathToRoot);
-      });
+        handleFailure(pathToRoot);
+      }),
+    );
   }
 
   dispose(): void {
     this._subscription.unsubscribe();
   }
+}
 
-  _handleFailure(pathToRoot: NuclideUri): void {
-    const failureMessage = `Flow has failed in '${pathToRoot}'.<br/><br/>` +
-      'Flow features will be disabled for the remainder of this Nuclide session. ' +
-      'You may re-enable them by clicking below or by running the "Restart Flow Server" command ' +
-      'from the command palette later.'
-    ;
-    const notification = atom.notifications.addError(
-      failureMessage,
-      {
-        dismissable: true,
-        buttons: [{
-          className: 'icon icon-zap',
-          onDidClick() {
-            notification.dismiss();
-            atom.commands.dispatch(
-              atom.views.getView(atom.workspace),
-              'nuclide-flow:restart-flow-server',
-            );
-          },
-          text: 'Restart Flow Server',
-        }],
-      }
-    );
-  }
+function handleFailure(pathToRoot: NuclideUri): void {
+  const failureMessage = `Flow has failed in '${pathToRoot}'.<br/><br/>` +
+    'Flow features will be disabled for the remainder of this Nuclide session. ' +
+    'You may re-enable them by clicking below or by running the "Restart Flow Server" command ' +
+    'from the command palette later.'
+  ;
+  const notification = atom.notifications.addError(
+    failureMessage,
+    {
+      dismissable: true,
+      buttons: [{
+        className: 'icon icon-zap',
+        onDidClick() {
+          notification.dismiss();
+          atom.commands.dispatch(
+            atom.views.getView(atom.workspace),
+            'nuclide-flow:restart-flow-server',
+          );
+        },
+        text: 'Restart Flow Server',
+      }],
+    }
+  );
 }
