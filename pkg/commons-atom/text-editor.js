@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +10,10 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../nuclide-remote-uri';
+exports.existingEditorForUri = existingEditorForUri;
 
-import invariant from 'assert';
-import {TextBuffer} from 'atom';
-import {Observable} from 'rxjs';
-
-// TODO(most): move to remote-connection/lib/RemoteTextBuffer.js
-import NuclideTextBuffer from '../nuclide-remote-projects/lib/NuclideTextBuffer';
-import {isLocal} from '../nuclide-remote-uri';
-import {ServerConnection} from '../nuclide-remote-connection';
-
-import {event as commonsEvent} from '../nuclide-commons';
-const {observableFromSubscribeFunction} = commonsEvent;
-
-/**
- * Returns a text editor that has the given path open, or null if none exists. If there are multiple
- * text editors for this path, one is chosen arbitrarily.
- */
-export function existingEditorForUri(path: NuclideUri): ?atom$TextEditor {
-  // This isn't ideal but realistically iterating through even a few hundred editors shouldn't be a
-  // real problem. And if you have more than a few hundred you probably have bigger problems.
-  for (const editor of atom.workspace.getTextEditors()) {
-    if (editor.getPath() === path) {
-      return editor;
-    }
-  }
-
-  return null;
-}
-
-export async function loadBufferForUri(uri: NuclideUri): Promise<atom$TextBuffer> {
-  let buffer = existingBufferForUri(uri);
+var loadBufferForUri = _asyncToGenerator(function* (uri) {
+  var buffer = existingBufferForUri(uri);
   if (buffer == null) {
     buffer = createBufferForUri(uri);
   }
@@ -48,7 +21,7 @@ export async function loadBufferForUri(uri: NuclideUri): Promise<atom$TextBuffer
     return buffer;
   }
   try {
-    await buffer.load();
+    yield buffer.load();
     return buffer;
   } catch (error) {
     atom.project.removeBuffer(buffer);
@@ -59,46 +32,125 @@ export async function loadBufferForUri(uri: NuclideUri): Promise<atom$TextBuffer
 /**
  * Returns an existing buffer for that uri, or create one if not existing.
  */
-export function bufferForUri(uri: NuclideUri): atom$TextBuffer {
-  const buffer = existingBufferForUri(uri);
+);
+
+exports.loadBufferForUri = loadBufferForUri;
+exports.bufferForUri = bufferForUri;
+exports.existingBufferForUri = existingBufferForUri;
+exports.getViewOfEditor = getViewOfEditor;
+exports.getScrollTop = getScrollTop;
+exports.setScrollTop = setScrollTop;
+exports.setPositionAndScroll = setPositionAndScroll;
+exports.getCursorPositions = getCursorPositions;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _rxjs2;
+
+function _rxjs() {
+  return _rxjs2 = require('rxjs');
+}
+
+// TODO(most): move to remote-connection/lib/RemoteTextBuffer.js
+
+var _nuclideRemoteProjectsLibNuclideTextBuffer2;
+
+function _nuclideRemoteProjectsLibNuclideTextBuffer() {
+  return _nuclideRemoteProjectsLibNuclideTextBuffer2 = _interopRequireDefault(require('../nuclide-remote-projects/lib/NuclideTextBuffer'));
+}
+
+var _nuclideRemoteUri2;
+
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = require('../nuclide-remote-uri');
+}
+
+var _nuclideRemoteConnection2;
+
+function _nuclideRemoteConnection() {
+  return _nuclideRemoteConnection2 = require('../nuclide-remote-connection');
+}
+
+var _nuclideCommons2;
+
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../nuclide-commons');
+}
+
+var observableFromSubscribeFunction = (_nuclideCommons2 || _nuclideCommons()).event.observableFromSubscribeFunction;
+
+/**
+ * Returns a text editor that has the given path open, or null if none exists. If there are multiple
+ * text editors for this path, one is chosen arbitrarily.
+ */
+
+function existingEditorForUri(path) {
+  // This isn't ideal but realistically iterating through even a few hundred editors shouldn't be a
+  // real problem. And if you have more than a few hundred you probably have bigger problems.
+  for (var editor of atom.workspace.getTextEditors()) {
+    if (editor.getPath() === path) {
+      return editor;
+    }
+  }
+
+  return null;
+}
+
+function bufferForUri(uri) {
+  var buffer = existingBufferForUri(uri);
   if (buffer != null) {
     return buffer;
   }
   return createBufferForUri(uri);
 }
 
-function createBufferForUri(uri: NuclideUri): atom$TextBuffer {
-  let buffer;
-  if (isLocal(uri)) {
-    buffer = new TextBuffer({filePath: uri});
+function createBufferForUri(uri) {
+  var buffer = undefined;
+  if ((0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).isLocal)(uri)) {
+    buffer = new (_atom2 || _atom()).TextBuffer({ filePath: uri });
   } else {
-    const connection = ServerConnection.getForUri(uri);
+    var connection = (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).ServerConnection.getForUri(uri);
     if (connection == null) {
-      throw new Error(`ServerConnection cannot be found for uri: ${uri}`);
+      throw new Error('ServerConnection cannot be found for uri: ' + uri);
     }
-    buffer = new NuclideTextBuffer(connection, {filePath: uri});
+    buffer = new (_nuclideRemoteProjectsLibNuclideTextBuffer2 || _nuclideRemoteProjectsLibNuclideTextBuffer()).default(connection, { filePath: uri });
   }
   atom.project.addBuffer(buffer);
-  invariant(buffer);
+  (0, (_assert2 || _assert()).default)(buffer);
   return buffer;
 }
 
 /**
  * Returns an exsting buffer for that uri, or null if not existing.
  */
-export function existingBufferForUri(uri: NuclideUri): ?atom$TextBuffer {
+
+function existingBufferForUri(uri) {
   return atom.project.findBufferForPath(uri);
 }
 
-export function getViewOfEditor(editor: atom$TextEditor): atom$TextEditorElement {
+function getViewOfEditor(editor) {
   return atom.views.getView(editor);
 }
 
-export function getScrollTop(editor: atom$TextEditor): number {
+function getScrollTop(editor) {
   return getViewOfEditor(editor).getScrollTop();
 }
 
-export function setScrollTop(editor: atom$TextEditor, scrollTop: number): void {
+function setScrollTop(editor, scrollTop) {
   getViewOfEditor(editor).setScrollTop(scrollTop);
 }
 
@@ -109,23 +161,18 @@ export function setScrollTop(editor: atom$TextEditor, scrollTop: number): void {
  * Can be used with editor.getCursorBufferPosition() & getScrollTop() to restore
  * an editors cursor and scroll.
  */
-export function setPositionAndScroll(
-  editor: atom$TextEditor,
-  position: atom$Point,
-  scrollTop: number,
-): void {
-  editor.setCursorBufferPosition(position, {autoscroll: false});
+
+function setPositionAndScroll(editor, position, scrollTop) {
+  editor.setCursorBufferPosition(position, { autoscroll: false });
   setScrollTop(editor, scrollTop);
 }
 
-export function getCursorPositions(editor: atom$TextEditor): Observable<atom$Point> {
+function getCursorPositions(editor) {
   // This will behave strangely in the face of multiple cursors. Consider supporting multiple
   // cursors in the future.
-  const cursor = editor.getCursors()[0];
-  invariant(cursor != null);
-  return Observable.merge(
-    Observable.of(cursor.getBufferPosition()),
-    observableFromSubscribeFunction(cursor.onDidChangePosition.bind(cursor))
-      .map(event => event.newBufferPosition),
-  );
+  var cursor = editor.getCursors()[0];
+  (0, (_assert2 || _assert()).default)(cursor != null);
+  return (_rxjs2 || _rxjs()).Observable.merge((_rxjs2 || _rxjs()).Observable.of(cursor.getBufferPosition()), observableFromSubscribeFunction(cursor.onDidChangePosition.bind(cursor)).map(function (event) {
+    return event.newBufferPosition;
+  }));
 }

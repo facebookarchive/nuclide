@@ -1,5 +1,109 @@
-'use babel';
-/* @flow */
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+/**
+ * Since OS X apps don't inherit PATH when not launched from the CLI, this function creates a new
+ * environment object given the original environment by modifying the env.PATH using following
+ * logic:
+ *  1) If originalEnv.PATH doesn't equal to process.env.PATH, which means the PATH has been
+ *    modified, we shouldn't do anything.
+ *  1) If we are running in OS X, use `/usr/libexec/path_helper -s` to get the correct PATH and
+ *    REPLACE the PATH.
+ *  2) If step 1 failed or we are not running in OS X, APPEND commonBinaryPaths to current PATH.
+ */
+
+var createExecEnvironment = _asyncToGenerator(function* (originalEnv, commonBinaryPaths) {
+  var execEnv = _extends({}, originalEnv);
+
+  if (execEnv.PATH !== process.env.PATH) {
+    return execEnv;
+  }
+
+  execEnv.PATH = execEnv.PATH || '';
+
+  var platformPath = null;
+  try {
+    platformPath = yield getPlatformPath();
+  } catch (error) {
+    logError('Failed to getPlatformPath', error);
+  }
+
+  // If the platform returns a non-empty PATH, use it. Otherwise use the default set of common
+  // binary paths.
+  if (platformPath) {
+    execEnv.PATH = platformPath;
+  } else if (commonBinaryPaths.length) {
+    (function () {
+      var paths = execEnv.PATH.split((_path2 || _path()).default.delimiter);
+      commonBinaryPaths.forEach(function (commonBinaryPath) {
+        if (paths.indexOf(commonBinaryPath) === -1) {
+          paths.push(commonBinaryPath);
+        }
+      });
+      execEnv.PATH = paths.join((_path2 || _path()).default.delimiter);
+    })();
+  }
+
+  return execEnv;
+});
+
+/**
+ * Basically like spawn, except it handles and logs errors instead of crashing
+ * the process. This is much lower-level than asyncExecute. Unless you have a
+ * specific reason you should use asyncExecute instead.
+ */
+
+var safeSpawn = _asyncToGenerator(function* (command) {
+  var args = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+  var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
+  options.env = yield createExecEnvironment(options.env || process.env, COMMON_BINARY_PATHS);
+  var child = (_child_process2 || _child_process()).default.spawn(command, args, options);
+  monitorStreamErrors(child, command, args, options);
+  child.on('error', function (error) {
+    logError('error with command:', command, args, options, 'error:', error);
+  });
+  return child;
+});
+
+var forkWithExecEnvironment = _asyncToGenerator(function* (modulePath) {
+  var args = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+  var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
+  var forkOptions = _extends({}, options, {
+    env: yield createExecEnvironment(options.env || process.env, COMMON_BINARY_PATHS)
+  });
+  var child = (_child_process2 || _child_process()).default.fork(modulePath, args, forkOptions);
+  child.on('error', function (error) {
+    logError('error from module:', modulePath, args, options, 'error:', error);
+  });
+  return child;
+}
+
+/**
+ * Takes the command and args that you would normally pass to `spawn()` and returns `newArgs` such
+ * that you should call it with `spawn('script', newArgs)` to run the original command/args pair
+ * under `script`.
+ */
+);
+
+/**
+ * Simple wrapper around asyncExecute that throws if the exitCode is non-zero.
+ */
+
+var checkOutput = _asyncToGenerator(function* (command, args) {
+  var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
+  var result = yield asyncExecute(command, args, options);
+  if (result.exitCode !== 0) {
+    var reason = result.exitCode != null ? 'exitCode: ' + result.exitCode : 'error: ' + result.errorMessage;
+    throw new Error('asyncExecute "' + command + '" failed with ' + reason + ', ' + ('stderr: ' + result.stderr + ', stdout: ' + result.stdout + '.'));
+  }
+  return result;
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,22 +113,52 @@
  * the root directory of this source tree.
  */
 
-import child_process from 'child_process';
-import path from 'path';
-import {PromiseQueue} from './PromiseExecutors';
+var _child_process2;
 
-import type {Observer} from 'rxjs';
-import type {ProcessMessage, process$asyncExecuteRet} from '..';
+function _child_process() {
+  return _child_process2 = _interopRequireDefault(require('child_process'));
+}
 
-import {CompositeSubscription, observeStream, splitStream} from './stream';
-import {Observable} from 'rxjs';
-import invariant from 'assert';
-import {quote} from 'shell-quote';
+var _path2;
 
-let platformPathPromise: ?Promise<string>;
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
 
-const blockingQueues = {};
-const COMMON_BINARY_PATHS = ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin'];
+var _PromiseExecutors2;
+
+function _PromiseExecutors() {
+  return _PromiseExecutors2 = require('./PromiseExecutors');
+}
+
+var _stream2;
+
+function _stream() {
+  return _stream2 = require('./stream');
+}
+
+var _rxjs2;
+
+function _rxjs() {
+  return _rxjs2 = require('rxjs');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _shellQuote2;
+
+function _shellQuote() {
+  return _shellQuote2 = require('shell-quote');
+}
+
+var platformPathPromise = undefined;
+
+var blockingQueues = {};
+var COMMON_BINARY_PATHS = ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin'];
 
 /**
  * Captures the value of the PATH env variable returned by Darwin's (OS X) `path_helper` utility.
@@ -32,11 +166,11 @@ const COMMON_BINARY_PATHS = ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/loc
  *
  *     PATH="/usr/bin"; export PATH;
  */
-const DARWIN_PATH_HELPER_REGEXP = /PATH="([^"]+)"/;
+var DARWIN_PATH_HELPER_REGEXP = /PATH="([^"]+)"/;
 
-const STREAM_NAMES = ['stdin', 'stdout', 'stderr'];
+var STREAM_NAMES = ['stdin', 'stdout', 'stderr'];
 
-function getPlatformPath(): Promise<string> {
+function getPlatformPath() {
   // Do not return the cached value if we are executing under the test runner.
   if (platformPathPromise && process.env.NODE_ENV !== 'test') {
     // Path is being fetched, await the Promise that's in flight.
@@ -49,13 +183,13 @@ function getPlatformPath(): Promise<string> {
     // OS X apps don't inherit PATH when not launched from the CLI, so reconstruct it. This is a
     // bug, filed against Atom Linter here: https://github.com/AtomLinter/Linter/issues/150
     // TODO(jjiaa): remove this hack when the Atom issue is closed
-    platformPathPromise = new Promise((resolve, reject) => {
-      child_process.execFile('/usr/libexec/path_helper', ['-s'], (error, stdout, stderr) => {
+    platformPathPromise = new Promise(function (resolve, reject) {
+      (_child_process2 || _child_process()).default.execFile('/usr/libexec/path_helper', ['-s'], function (error, stdout, stderr) {
         if (error) {
           reject(error);
         } else {
-          const match = stdout.match(DARWIN_PATH_HELPER_REGEXP);
-          resolve((match && match.length > 1) ? match[1] : '');
+          var match = stdout.match(DARWIN_PATH_HELPER_REGEXP);
+          resolve(match && match.length > 1 ? match[1] : '');
         }
       });
     });
@@ -66,129 +200,36 @@ function getPlatformPath(): Promise<string> {
   return platformPathPromise;
 }
 
-/**
- * Since OS X apps don't inherit PATH when not launched from the CLI, this function creates a new
- * environment object given the original environment by modifying the env.PATH using following
- * logic:
- *  1) If originalEnv.PATH doesn't equal to process.env.PATH, which means the PATH has been
- *    modified, we shouldn't do anything.
- *  1) If we are running in OS X, use `/usr/libexec/path_helper -s` to get the correct PATH and
- *    REPLACE the PATH.
- *  2) If step 1 failed or we are not running in OS X, APPEND commonBinaryPaths to current PATH.
- */
-async function createExecEnvironment(
-  originalEnv: Object,
-  commonBinaryPaths: Array<string>,
-): Promise<Object> {
-  const execEnv = {...originalEnv};
-
-  if (execEnv.PATH !== process.env.PATH) {
-    return execEnv;
-  }
-
-  execEnv.PATH = execEnv.PATH || '';
-
-  let platformPath = null;
-  try {
-    platformPath = await getPlatformPath();
-  } catch (error) {
-    logError('Failed to getPlatformPath', error);
-  }
-
-  // If the platform returns a non-empty PATH, use it. Otherwise use the default set of common
-  // binary paths.
-  if (platformPath) {
-    execEnv.PATH = platformPath;
-  } else if (commonBinaryPaths.length) {
-    const paths = execEnv.PATH.split(path.delimiter);
-    commonBinaryPaths.forEach(commonBinaryPath => {
-      if (paths.indexOf(commonBinaryPath) === -1) {
-        paths.push(commonBinaryPath);
-      }
-    });
-    execEnv.PATH = paths.join(path.delimiter);
-  }
-
-  return execEnv;
-}
-
-function logError(...args) {
+function logError() {
   // Can't use nuclide-logging here to not cause cycle dependency.
   /*eslint-disable no-console*/
-  console.error(...args);
+  console.error.apply(console, arguments);
   /*eslint-enable no-console*/
 }
 
-function monitorStreamErrors(process: child_process$ChildProcess, command, args, options): void {
-  STREAM_NAMES.forEach(streamName => {
+function monitorStreamErrors(process, command, args, options) {
+  STREAM_NAMES.forEach(function (streamName) {
     // $FlowIssue
-    const stream = process[streamName];
+    var stream = process[streamName];
     if (stream == null) {
       return;
     }
-    stream.on('error', error => {
+    stream.on('error', function (error) {
       // This can happen without the full execution of the command to fail,
       // but we want to learn about it.
-      logError(
-        `stream error on stream ${streamName} with command:`,
-        command,
-        args,
-        options,
-        'error:',
-        error,
-      );
+      logError('stream error on stream ' + streamName + ' with command:', command, args, options, 'error:', error);
     });
   });
-}
+}function createArgsForScriptCommand(command) {
+  var args = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
 
-/**
- * Basically like spawn, except it handles and logs errors instead of crashing
- * the process. This is much lower-level than asyncExecute. Unless you have a
- * specific reason you should use asyncExecute instead.
- */
-async function safeSpawn(
-  command: string,
-  args?: Array<string> = [],
-  options?: Object = {},
-): Promise<child_process$ChildProcess> {
-  options.env = await createExecEnvironment(options.env || process.env, COMMON_BINARY_PATHS);
-  const child = child_process.spawn(command, args, options);
-  monitorStreamErrors(child, command, args, options);
-  child.on('error', error => {
-    logError('error with command:', command, args, options, 'error:', error);
-  });
-  return child;
-}
-
-async function forkWithExecEnvironment(
-  modulePath: string,
-  args?: Array<string> = [],
-  options?: Object = {},
-): Promise<child_process$ChildProcess> {
-  const forkOptions = {
-    ...options,
-    env: await createExecEnvironment(options.env || process.env, COMMON_BINARY_PATHS),
-  };
-  const child = child_process.fork(modulePath, args, forkOptions);
-  child.on('error', error => {
-    logError('error from module:', modulePath, args, options, 'error:', error);
-  });
-  return child;
-}
-
-/**
- * Takes the command and args that you would normally pass to `spawn()` and returns `newArgs` such
- * that you should call it with `spawn('script', newArgs)` to run the original command/args pair
- * under `script`.
- */
-function createArgsForScriptCommand(command: string, args?: Array<string> = []): Array<string> {
   if (process.platform === 'darwin') {
     // On OS X, script takes the program to run and its arguments as varargs at the end.
     return ['-q', '/dev/null', command].concat(args);
   } else {
     // On Linux, script takes the command to run as the -c parameter.
-    const allArgs = [command].concat(args);
-    return ['-q', '/dev/null', '-c', quote(allArgs)];
+    var allArgs = [command].concat(args);
+    return ['-q', '/dev/null', '-c', (0, (_shellQuote2 || _shellQuote()).quote)(allArgs)];
   }
 }
 
@@ -196,12 +237,11 @@ function createArgsForScriptCommand(command: string, args?: Array<string> = []):
  * Basically like safeSpawn, but runs the command with the `script` command.
  * `script` ensures terminal-like environment and commands we run give colored output.
  */
-function scriptSafeSpawn(
-  command: string,
-  args?: Array<string> = [],
-  options?: Object = {},
-): Promise<child_process$ChildProcess> {
-  const newArgs = createArgsForScriptCommand(command, args);
+function scriptSafeSpawn(command) {
+  var args = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+  var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
+  var newArgs = createArgsForScriptCommand(command, args);
   return safeSpawn('script', newArgs, options);
 }
 
@@ -209,27 +249,26 @@ function scriptSafeSpawn(
  * Wraps scriptSafeSpawn with an Observable that lets you listen to the stdout and
  * stderr of the spawned process.
  */
-function scriptSafeSpawnAndObserveOutput(
-  command: string,
-  args?: Array<string> = [],
-  options?: Object = {},
-): Observable<{stderr?: string; stdout?: string;}> {
-  return Observable.create((observer: Observer) => {
-    let childProcess;
-    scriptSafeSpawn(command, args, options).then(proc => {
+function scriptSafeSpawnAndObserveOutput(command) {
+  var args = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+  var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
+  return (_rxjs2 || _rxjs()).Observable.create(function (observer) {
+    var childProcess = undefined;
+    scriptSafeSpawn(command, args, options).then(function (proc) {
       childProcess = proc;
 
-      childProcess.stdout.on('data', data => {
-        observer.next({stdout: data.toString()});
+      childProcess.stdout.on('data', function (data) {
+        observer.next({ stdout: data.toString() });
       });
 
-      let stderr = '';
-      childProcess.stderr.on('data', data => {
+      var stderr = '';
+      childProcess.stderr.on('data', function (data) {
         stderr += data;
-        observer.next({stderr: data.toString()});
+        observer.next({ stderr: data.toString() });
       });
 
-      childProcess.on('exit', (exitCode: number) => {
+      childProcess.on('exit', function (exitCode) {
         if (exitCode !== 0) {
           observer.error(stderr);
         } else {
@@ -239,7 +278,7 @@ function scriptSafeSpawnAndObserveOutput(
       });
     });
 
-    return () => {
+    return function () {
       if (childProcess) {
         childProcess.kill();
       }
@@ -254,60 +293,58 @@ function scriptSafeSpawnAndObserveOutput(
  * 2. It doesn't complete until the process exits (or errors).
  * 3. The process is killed when there are no more subscribers.
  */
-function _createProcessStream(
-  createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
-  throwOnError: boolean,
-): Observable<child_process$ChildProcess> {
-  return Observable.create(observer => {
-    const promise = Promise.resolve(createProcess());
-    let process;
-    let disposed = false;
-    let exited = false;
-    const maybeKill = () => {
+function _createProcessStream(createProcess, throwOnError) {
+  return (_rxjs2 || _rxjs()).Observable.create(function (observer) {
+    var promise = Promise.resolve(createProcess());
+    var process = undefined;
+    var disposed = false;
+    var exited = false;
+    var maybeKill = function maybeKill() {
       if (process != null && disposed && !exited) {
         process.kill();
         process = null;
       }
     };
 
-    promise.then(p => {
+    promise.then(function (p) {
       process = p;
       maybeKill();
     });
 
-    const processStream = Observable.fromPromise(promise);
+    var processStream = (_rxjs2 || _rxjs()).Observable.fromPromise(promise);
 
-    const errors = throwOnError
-      ? processStream.switchMap(p => (
-        Observable.fromEvent(p, 'error').flatMap(err => Observable.throw(err))
-      ))
-      : Observable.empty();
+    var errors = throwOnError ? processStream.switchMap(function (p) {
+      return (_rxjs2 || _rxjs()).Observable.fromEvent(p, 'error').flatMap(function (err) {
+        return (_rxjs2 || _rxjs()).Observable.throw(err);
+      });
+    }) : (_rxjs2 || _rxjs()).Observable.empty();
 
-    const exit = processStream
-      .flatMap(p => Observable.fromEvent(p, 'exit', (code, signal) => signal))
-      // An exit signal from SIGUSR1 doesn't actually exit the process, so skip that.
-      .filter(signal => signal !== 'SIGUSR1')
-      .do(() => { exited = true; });
+    var exit = processStream.flatMap(function (p) {
+      return (_rxjs2 || _rxjs()).Observable.fromEvent(p, 'exit', function (code, signal) {
+        return signal;
+      });
+    })
+    // An exit signal from SIGUSR1 doesn't actually exit the process, so skip that.
+    .filter(function (signal) {
+      return signal !== 'SIGUSR1';
+    }).do(function () {
+      exited = true;
+    });
 
-    return new CompositeSubscription(
-      processStream
-        // A version of processStream that never completes...
-        .merge(Observable.never())
-        .merge(errors)
-        // ...which we take until the process exits.
-        .takeUntil(exit)
-        .subscribe(observer),
-      () => { disposed = true; maybeKill(); },
-    );
+    return new (_stream2 || _stream()).CompositeSubscription(processStream
+    // A version of processStream that never completes...
+    .merge((_rxjs2 || _rxjs()).Observable.never()).merge(errors)
+    // ...which we take until the process exits.
+    .takeUntil(exit).subscribe(observer), function () {
+      disposed = true;maybeKill();
+    });
   });
   // TODO: We should really `.share()` this observable, but there seem to be issues with that and
   //   `.retry()` in Rx 3 and 4. Once we upgrade to Rx5, we should share this observable and verify
   //   that our retry logic (e.g. in adb-logcat) works.
 }
 
-function createProcessStream(
-  createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
-): Observable<child_process$ChildProcess> {
+function createProcessStream(createProcess) {
   return _createProcessStream(createProcess, true);
 }
 
@@ -315,44 +352,38 @@ function createProcessStream(
  * Observe the stdout, stderr and exit code of a process.
  * stdout and stderr are split by newlines.
  */
-function observeProcessExit(
-  createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
-): Observable<number> {
-  return _createProcessStream(createProcess, false)
-    .flatMap(process => Observable.fromEvent(process, 'exit').take(1));
+function observeProcessExit(createProcess) {
+  return _createProcessStream(createProcess, false).flatMap(function (process) {
+    return (_rxjs2 || _rxjs()).Observable.fromEvent(process, 'exit').take(1);
+  });
 }
 
-function getOutputStream(
-  childProcess: child_process$ChildProcess | Promise<child_process$ChildProcess>,
-): Observable<ProcessMessage> {
-  return Observable.fromPromise(Promise.resolve(childProcess))
-    .flatMap(process => {
-      invariant(process != null, 'process has not yet been disposed');
-      // Use replay/connect on exit for the final concat.
-      // By default concat defers subscription until after the LHS completes.
-      const exit = Observable
-        .fromEvent(process, 'exit')
-        .take(1)
-        .map(exitCode => ({kind: 'exit', exitCode})).publishReplay();
-      exit.connect();
-      const error = Observable
-        .fromEvent(process, 'error')
-        .takeUntil(exit)
-        .map(errorObj => ({kind: 'error', error: errorObj}));
-      const stdout = splitStream(observeStream(process.stdout))
-        .map(data => ({kind: 'stdout', data}));
-      const stderr = splitStream(observeStream(process.stderr))
-        .map(data => ({kind: 'stderr', data}));
-      return stdout.merge(stderr).merge(error).concat(exit);
+function getOutputStream(childProcess) {
+  return (_rxjs2 || _rxjs()).Observable.fromPromise(Promise.resolve(childProcess)).flatMap(function (process) {
+    (0, (_assert2 || _assert()).default)(process != null, 'process has not yet been disposed');
+    // Use replay/connect on exit for the final concat.
+    // By default concat defers subscription until after the LHS completes.
+    var exit = (_rxjs2 || _rxjs()).Observable.fromEvent(process, 'exit').take(1).map(function (exitCode) {
+      return { kind: 'exit', exitCode: exitCode };
+    }).publishReplay();
+    exit.connect();
+    var error = (_rxjs2 || _rxjs()).Observable.fromEvent(process, 'error').takeUntil(exit).map(function (errorObj) {
+      return { kind: 'error', error: errorObj };
     });
+    var stdout = (0, (_stream2 || _stream()).splitStream)((0, (_stream2 || _stream()).observeStream)(process.stdout)).map(function (data) {
+      return { kind: 'stdout', data: data };
+    });
+    var stderr = (0, (_stream2 || _stream()).splitStream)((0, (_stream2 || _stream()).observeStream)(process.stderr)).map(function (data) {
+      return { kind: 'stderr', data: data };
+    });
+    return stdout.merge(stderr).merge(error).concat(exit);
+  });
 }
 
 /**
  * Observe the stdout, stderr and exit code of a process.
  */
-function observeProcess(
-  createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
-): Observable<ProcessMessage> {
+function observeProcess(createProcess) {
   return _createProcessStream(createProcess, false).flatMap(getOutputStream);
 }
 
@@ -369,85 +400,80 @@ function observeProcess(
  *       pipedCommand string a command to pipe the output of command through.
  *       pipedArgs array of strings as arguments.
  */
-function asyncExecute(
-    command: string,
-    args: Array<string>,
-    options: ?Object = {}): Promise<process$asyncExecuteRet> {
+function asyncExecute(command, args) {
+  var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
   // Clone passed in options so this function doesn't modify an object it doesn't own.
-  const localOptions = {...options};
+  var localOptions = _extends({}, options);
 
-  const executor = (resolve, reject) => {
-    let firstChild;
-    let lastChild;
+  var executor = function executor(resolve, reject) {
+    var firstChild = undefined;
+    var lastChild = undefined;
 
-    let firstChildStderr;
+    var firstChildStderr = undefined;
     if (localOptions.pipedCommand) {
       // If a second command is given, pipe stdout of first to stdin of second. String output
       // returned in this function's Promise will be stderr/stdout of the second command.
-      firstChild = child_process.spawn(command, args, localOptions);
+      firstChild = (_child_process2 || _child_process()).default.spawn(command, args, localOptions);
       monitorStreamErrors(firstChild, command, args, localOptions);
       firstChildStderr = '';
 
-      firstChild.on('error', error => {
+      firstChild.on('error', function (error) {
         // Resolve early with the result when encountering an error.
         resolve({
           command: [command].concat(args).join(' '),
           errorMessage: error.message,
           errorCode: error.code,
           stderr: firstChildStderr,
-          stdout: '',
+          stdout: ''
         });
       });
 
-      firstChild.stderr.on('data', data => {
+      firstChild.stderr.on('data', function (data) {
         firstChildStderr += data;
       });
 
-      lastChild = child_process.spawn(
-        localOptions.pipedCommand,
-        localOptions.pipedArgs,
-        localOptions
-      );
+      lastChild = (_child_process2 || _child_process()).default.spawn(localOptions.pipedCommand, localOptions.pipedArgs, localOptions);
       monitorStreamErrors(lastChild, command, args, localOptions);
       // pipe() normally pauses the writer when the reader errors (closes).
       // This is not how UNIX pipes work: if the reader closes, the writer needs
       // to also close (otherwise the writer process may hang.)
       // We have to manually close the writer in this case.
-      lastChild.stdin.on('error', () => {
+      lastChild.stdin.on('error', function () {
         firstChild.stdout.emit('end');
       });
       firstChild.stdout.pipe(lastChild.stdin);
     } else {
-      lastChild = child_process.spawn(command, args, localOptions);
+      lastChild = (_child_process2 || _child_process()).default.spawn(command, args, localOptions);
       monitorStreamErrors(lastChild, command, args, localOptions);
       firstChild = lastChild;
     }
 
-    let stderr = '';
-    let stdout = '';
-    lastChild.on('close', exitCode => {
+    var stderr = '';
+    var stdout = '';
+    lastChild.on('close', function (exitCode) {
       resolve({
-        exitCode,
-        stderr,
-        stdout,
+        exitCode: exitCode,
+        stderr: stderr,
+        stdout: stdout
       });
     });
 
-    lastChild.on('error', error => {
+    lastChild.on('error', function (error) {
       // Return early with the result when encountering an error.
       resolve({
         command: [command].concat(args).join(' '),
         errorMessage: error.message,
         errorCode: error.code,
-        stderr,
-        stdout,
+        stderr: stderr,
+        stdout: stdout
       });
     });
 
-    lastChild.stderr.on('data', data => {
+    lastChild.stderr.on('data', function (data) {
       stderr += data;
     });
-    lastChild.stdout.on('data', data => {
+    lastChild.stdout.on('data', function (data) {
       stdout += data;
     });
 
@@ -464,63 +490,41 @@ function asyncExecute(
     }
   };
 
-  function makePromise(): Promise<process$asyncExecuteRet> {
+  function makePromise() {
     if (localOptions.queueName === undefined) {
       return new Promise(executor);
     } else {
       if (!blockingQueues[localOptions.queueName]) {
-        blockingQueues[localOptions.queueName] = new PromiseQueue();
+        blockingQueues[localOptions.queueName] = new (_PromiseExecutors2 || _PromiseExecutors()).PromiseQueue();
       }
       return blockingQueues[localOptions.queueName].submit(executor);
     }
   }
 
-  return createExecEnvironment(localOptions.env || process.env, COMMON_BINARY_PATHS).then(
-    val => {
-      localOptions.env = val;
-      return makePromise();
-    },
-    error => {
-      localOptions.env = localOptions.env || process.env;
-      return makePromise();
-    }
-  );
-}
-
-/**
- * Simple wrapper around asyncExecute that throws if the exitCode is non-zero.
- */
-async function checkOutput(
-    command: string,
-    args: Array<string>,
-    options: ?Object = {}): Promise<process$asyncExecuteRet> {
-  const result = await asyncExecute(command, args, options);
-  if (result.exitCode !== 0) {
-    const reason = result.exitCode != null ? `exitCode: ${result.exitCode}` :
-      `error: ${result.errorMessage}`;
-    throw new Error(
-      `asyncExecute "${command}" failed with ${reason}, ` +
-      `stderr: ${result.stderr}, stdout: ${result.stdout}.`
-    );
-  }
-  return result;
+  return createExecEnvironment(localOptions.env || process.env, COMMON_BINARY_PATHS).then(function (val) {
+    localOptions.env = val;
+    return makePromise();
+  }, function (error) {
+    localOptions.env = localOptions.env || process.env;
+    return makePromise();
+  });
 }
 
 module.exports = {
-  asyncExecute,
-  createArgsForScriptCommand,
-  createProcessStream,
-  checkOutput,
-  forkWithExecEnvironment,
-  getOutputStream,
-  safeSpawn,
-  scriptSafeSpawn,
-  scriptSafeSpawnAndObserveOutput,
-  createExecEnvironment,
-  observeProcessExit,
-  observeProcess,
-  COMMON_BINARY_PATHS,
+  asyncExecute: asyncExecute,
+  createArgsForScriptCommand: createArgsForScriptCommand,
+  createProcessStream: createProcessStream,
+  checkOutput: checkOutput,
+  forkWithExecEnvironment: forkWithExecEnvironment,
+  getOutputStream: getOutputStream,
+  safeSpawn: safeSpawn,
+  scriptSafeSpawn: scriptSafeSpawn,
+  scriptSafeSpawnAndObserveOutput: scriptSafeSpawnAndObserveOutput,
+  createExecEnvironment: createExecEnvironment,
+  observeProcessExit: observeProcessExit,
+  observeProcess: observeProcess,
+  COMMON_BINARY_PATHS: COMMON_BINARY_PATHS,
   __test__: {
-    DARWIN_PATH_HELPER_REGEXP,
-  },
+    DARWIN_PATH_HELPER_REGEXP: DARWIN_PATH_HELPER_REGEXP
+  }
 };

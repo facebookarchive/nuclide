@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,67 +10,182 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {Block} from './Block';
-import {Icon} from './Icon';
-import {
-  TreeList,
-  TreeItem,
-  NestedTreeItem,
-} from './Tree';
+var _reactForAtom2;
 
-const BasicTreeExample = (): React.Element => (
-  <div>
-    Trees
-    <Block>
-      <TreeList>
-        <TreeItem>TreeItem 1</TreeItem>
-        <TreeItem>TreeItem 2</TreeItem>
-        <NestedTreeItem title={<span>NestedTreeItem 1</span>} selected={true}>
-          <TreeItem>TreeItem 3</TreeItem>
-          <TreeItem>TreeItem 4</TreeItem>
-        </NestedTreeItem>
-        <NestedTreeItem title={<span>NestedTreeItem 2</span>} collapsed={true} />
-      </TreeList>
-    </Block>
-  </div>
-);
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
 
-const AtomStyleguideTreeExample = (): React.Element => (
-  <Block>
-    <TreeList showArrows={true}>
-      <NestedTreeItem
-        title={<Icon icon="file-directory">A Directory</Icon>}>
-          <NestedTreeItem
-            collapsed={false}
-            title={<Icon icon="file-directory">Nested Directory</Icon>}>
-            <TreeItem><Icon icon="file-text">File one</Icon></TreeItem>
-          </NestedTreeItem>
-          <NestedTreeItem
-            collapsed={true}
-            title={<Icon icon="file-directory">Collapsed Nested Directory</Icon>}>
-            <TreeItem><Icon icon="file-text">File one</Icon></TreeItem>
-          </NestedTreeItem>
-          <TreeItem><Icon icon="file-text">File one</Icon></TreeItem>
-          <TreeItem selected={true}><Icon icon="file-text">File three .selected!</Icon></TreeItem>
-      </NestedTreeItem>
-      <TreeItem><Icon icon="file-text">.icon-file-text</Icon></TreeItem>
-      <TreeItem><Icon icon="file-symlink-file">.icon-file-symlink-file</Icon></TreeItem>
-    </TreeList>
-  </Block>
-);
+var _Block2;
 
-export const TreeExamples = {
+function _Block() {
+  return _Block2 = require('./Block');
+}
+
+var _Icon2;
+
+function _Icon() {
+  return _Icon2 = require('./Icon');
+}
+
+var _Tree2;
+
+function _Tree() {
+  return _Tree2 = require('./Tree');
+}
+
+var BasicTreeExample = function BasicTreeExample() {
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    'div',
+    null,
+    'Trees',
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      (_Block2 || _Block()).Block,
+      null,
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_Tree2 || _Tree()).TreeList,
+        null,
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_Tree2 || _Tree()).TreeItem,
+          null,
+          'TreeItem 1'
+        ),
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_Tree2 || _Tree()).TreeItem,
+          null,
+          'TreeItem 2'
+        ),
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_Tree2 || _Tree()).NestedTreeItem,
+          { title: (_reactForAtom2 || _reactForAtom()).React.createElement(
+              'span',
+              null,
+              'NestedTreeItem 1'
+            ), selected: true },
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            (_Tree2 || _Tree()).TreeItem,
+            null,
+            'TreeItem 3'
+          ),
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            (_Tree2 || _Tree()).TreeItem,
+            null,
+            'TreeItem 4'
+          )
+        ),
+        (_reactForAtom2 || _reactForAtom()).React.createElement((_Tree2 || _Tree()).NestedTreeItem, { title: (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'span',
+            null,
+            'NestedTreeItem 2'
+          ), collapsed: true })
+      )
+    )
+  );
+};
+
+var AtomStyleguideTreeExample = function AtomStyleguideTreeExample() {
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    (_Block2 || _Block()).Block,
+    null,
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      (_Tree2 || _Tree()).TreeList,
+      { showArrows: true },
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_Tree2 || _Tree()).NestedTreeItem,
+        {
+          title: (_reactForAtom2 || _reactForAtom()).React.createElement(
+            (_Icon2 || _Icon()).Icon,
+            { icon: 'file-directory' },
+            'A Directory'
+          ) },
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_Tree2 || _Tree()).NestedTreeItem,
+          {
+            collapsed: false,
+            title: (_reactForAtom2 || _reactForAtom()).React.createElement(
+              (_Icon2 || _Icon()).Icon,
+              { icon: 'file-directory' },
+              'Nested Directory'
+            ) },
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            (_Tree2 || _Tree()).TreeItem,
+            null,
+            (_reactForAtom2 || _reactForAtom()).React.createElement(
+              (_Icon2 || _Icon()).Icon,
+              { icon: 'file-text' },
+              'File one'
+            )
+          )
+        ),
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_Tree2 || _Tree()).NestedTreeItem,
+          {
+            collapsed: true,
+            title: (_reactForAtom2 || _reactForAtom()).React.createElement(
+              (_Icon2 || _Icon()).Icon,
+              { icon: 'file-directory' },
+              'Collapsed Nested Directory'
+            ) },
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            (_Tree2 || _Tree()).TreeItem,
+            null,
+            (_reactForAtom2 || _reactForAtom()).React.createElement(
+              (_Icon2 || _Icon()).Icon,
+              { icon: 'file-text' },
+              'File one'
+            )
+          )
+        ),
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_Tree2 || _Tree()).TreeItem,
+          null,
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            (_Icon2 || _Icon()).Icon,
+            { icon: 'file-text' },
+            'File one'
+          )
+        ),
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_Tree2 || _Tree()).TreeItem,
+          { selected: true },
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            (_Icon2 || _Icon()).Icon,
+            { icon: 'file-text' },
+            'File three .selected!'
+          )
+        )
+      ),
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_Tree2 || _Tree()).TreeItem,
+        null,
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_Icon2 || _Icon()).Icon,
+          { icon: 'file-text' },
+          '.icon-file-text'
+        )
+      ),
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_Tree2 || _Tree()).TreeItem,
+        null,
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_Icon2 || _Icon()).Icon,
+          { icon: 'file-symlink-file' },
+          '.icon-file-symlink-file'
+        )
+      )
+    )
+  );
+};
+
+var TreeExamples = {
   sectionName: 'Trees',
   description: 'Expandable, hierarchical lists.',
-  examples: [
-    {
-      title: 'Basic Tree',
-      component: BasicTreeExample,
-    },
-    {
-      title: 'Reproducing the Atom style guide example:',
-      component: AtomStyleguideTreeExample,
-    },
-  ],
+  examples: [{
+    title: 'Basic Tree',
+    component: BasicTreeExample
+  }, {
+    title: 'Reproducing the Atom style guide example:',
+    component: AtomStyleguideTreeExample
+  }]
 };
+exports.TreeExamples = TreeExamples;

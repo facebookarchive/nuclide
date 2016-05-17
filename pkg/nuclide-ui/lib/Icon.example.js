@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,41 +10,85 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {Block} from './Block';
-import {Icon} from './Icon';
+var _reactForAtom2;
 
-const IconExample = (): React.Element => (
-  <div>
-    <Block>
-      <Icon icon="gift" />
-      <Icon icon="heart" />
-      <Icon icon="info" />
-    </Block>
-  </div>
-);
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
 
-const IconWithTextExample = (): React.Element => (
-  <div>
-    <Block>
-      <div><Icon icon="gift">gift</Icon></div>
-      <div><Icon icon="heart">heart</Icon></div>
-      <div><Icon icon="info">info</Icon></div>
-    </Block>
-  </div>
-);
+var _Block2;
 
-export const IconExamples = {
+function _Block() {
+  return _Block2 = require('./Block');
+}
+
+var _Icon2;
+
+function _Icon() {
+  return _Icon2 = require('./Icon');
+}
+
+var IconExample = function IconExample() {
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    'div',
+    null,
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      (_Block2 || _Block()).Block,
+      null,
+      (_reactForAtom2 || _reactForAtom()).React.createElement((_Icon2 || _Icon()).Icon, { icon: 'gift' }),
+      (_reactForAtom2 || _reactForAtom()).React.createElement((_Icon2 || _Icon()).Icon, { icon: 'heart' }),
+      (_reactForAtom2 || _reactForAtom()).React.createElement((_Icon2 || _Icon()).Icon, { icon: 'info' })
+    )
+  );
+};
+
+var IconWithTextExample = function IconWithTextExample() {
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    'div',
+    null,
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      (_Block2 || _Block()).Block,
+      null,
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        null,
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_Icon2 || _Icon()).Icon,
+          { icon: 'gift' },
+          'gift'
+        )
+      ),
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        null,
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_Icon2 || _Icon()).Icon,
+          { icon: 'heart' },
+          'heart'
+        )
+      ),
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        null,
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_Icon2 || _Icon()).Icon,
+          { icon: 'info' },
+          'info'
+        )
+      )
+    )
+  );
+};
+
+var IconExamples = {
   sectionName: 'Icons',
   description: 'Octicons with optional text.',
-  examples: [
-    {
-      title: 'Icons',
-      component: IconExample,
-    },
-    {
-      title: 'You can pass optional text as children.',
-      component: IconWithTextExample,
-    },
-  ],
+  examples: [{
+    title: 'Icons',
+    component: IconExample
+  }, {
+    title: 'You can pass optional text as children.',
+    component: IconWithTextExample
+  }]
 };
+exports.IconExamples = IconExamples;

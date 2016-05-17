@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,46 +10,50 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {Result} from '../../commons-atom/ActiveEditorRegistry';
-import type {
-  ObservableDiagnosticProvider,
-  DiagnosticProviderUpdate,
-  FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-base';
+exports.diagnosticProviderForResultStream = diagnosticProviderForResultStream;
 
-import type {CoverageResult, CoverageProvider, UncoveredRegion} from './types';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import invariant from 'assert';
-import {Observable} from 'rxjs';
+var _assert2;
 
-import {toggle, compact} from '../../nuclide-commons';
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
-export function diagnosticProviderForResultStream(
-  results: Observable<Result<CoverageProvider, ?CoverageResult>>,
-  isEnabledStream: Observable<boolean>,
-): ObservableDiagnosticProvider {
-  const toggledResults = toggle(results, isEnabledStream);
+var _rxjs2;
+
+function _rxjs() {
+  return _rxjs2 = require('rxjs');
+}
+
+var _nuclideCommons2;
+
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../../nuclide-commons');
+}
+
+function diagnosticProviderForResultStream(results, isEnabledStream) {
+  var toggledResults = (0, (_nuclideCommons2 || _nuclideCommons()).toggle)(results, isEnabledStream);
 
   return {
-    updates: compact(toggledResults.map(diagnosticsForResult)),
-    invalidations: Observable.merge(
-      // Invalidate diagnostics when display is disabled
-      isEnabledStream.filter(enabled => !enabled),
-      toggledResults.filter(result => {
-        switch (result.kind) {
-          case 'not-text-editor':
-          case 'no-provider':
-          case 'provider-error':
-          case 'pane-change':
-            return true;
-          case 'result':
-            return result.result == null;
-          default:
-            return false;
-        }
-      }),
-    ).mapTo({scope: 'all'}),
+    updates: (0, (_nuclideCommons2 || _nuclideCommons()).compact)(toggledResults.map(diagnosticsForResult)),
+    invalidations: (_rxjs2 || _rxjs()).Observable.merge(
+    // Invalidate diagnostics when display is disabled
+    isEnabledStream.filter(function (enabled) {
+      return !enabled;
+    }), toggledResults.filter(function (result) {
+      switch (result.kind) {
+        case 'not-text-editor':
+        case 'no-provider':
+        case 'provider-error':
+        case 'pane-change':
+          return true;
+        case 'result':
+          return result.result == null;
+        default:
+          return false;
+      }
+    })).mapTo({ scope: 'all' })
   };
 }
 
@@ -59,45 +64,37 @@ export function diagnosticProviderForResultStream(
  * This is reasonable because we only query providers when there is a path available for the current
  * text editor.
  */
-function diagnosticsForResult(
-  result: Result<CoverageProvider, ?CoverageResult>,
-): ?DiagnosticProviderUpdate {
+function diagnosticsForResult(result) {
   if (result.kind !== 'result') {
     return null;
   }
-  const value = result.result;
+  var value = result.result;
   if (value == null) {
     return null;
   }
 
-  const editorPath = result.editor.getPath();
-  invariant(editorPath != null);
+  var editorPath = result.editor.getPath();
+  (0, (_assert2 || _assert()).default)(editorPath != null);
 
-  const providerName = result.provider.displayName;
+  var providerName = result.provider.displayName;
 
-  const diagnostics = value.uncoveredRegions.map(
-    region => uncoveredRangeToDiagnostic(region, editorPath, providerName)
-  );
+  var diagnostics = value.uncoveredRegions.map(function (region) {
+    return uncoveredRangeToDiagnostic(region, editorPath, providerName);
+  });
 
   return {
-    filePathToMessages: new Map([[editorPath, diagnostics]]),
+    filePathToMessages: new Map([[editorPath, diagnostics]])
   };
 }
 
-function uncoveredRangeToDiagnostic(
-  region: UncoveredRegion,
-  path: NuclideUri,
-  providerName: string,
-): FileDiagnosticMessage {
-  const text = region.message != null ?
-    region.message :
-    `Not covered by ${providerName}`;
+function uncoveredRangeToDiagnostic(region, path, providerName) {
+  var text = region.message != null ? region.message : 'Not covered by ' + providerName;
   return {
     scope: 'file',
     providerName: 'Type Coverage',
     type: 'Warning',
     filePath: path,
     range: region.range,
-    text,
+    text: text
   };
 }

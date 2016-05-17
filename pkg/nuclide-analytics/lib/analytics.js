@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +8,7 @@
  * the root directory of this source tree.
  */
 
-const cachedResultForTrack = Promise.resolve();
+var cachedResultForTrack = Promise.resolve();
 
 // This is a stubbed implementation that other packages use to record analytics data & performance.
 module.exports = {
@@ -20,11 +19,7 @@ module.exports = {
    * @param values The object containing the data to track.
    * @param immediate Bypass batching. The resulting promise will resolve on upload.
    */
-  track(
-    eventName: string,
-    values?: {[key: string]: string},
-    immediate?: boolean,
-  ): Promise<mixed> {
+  track: function track(eventName, values, immediate) {
     return cachedResultForTrack;
-  },
+  }
 };

@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.default = createPaneContainer;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +11,15 @@
  * the root directory of this source tree.
  */
 
-let paneContainerClass: ?Function;
+var paneContainerClass = undefined;
 
-export default function createPaneContainer(): Object {
+function createPaneContainer() {
   if (!paneContainerClass) {
-    paneContainerClass = atom.views.providers.filter((provider: atom$ViewProvider) =>
-      provider.modelConstructor.name === 'PaneContainer'
-    )[0].modelConstructor;
+    paneContainerClass = atom.views.providers.filter(function (provider) {
+      return provider.modelConstructor.name === 'PaneContainer';
+    })[0].modelConstructor;
   }
   return new paneContainerClass({});
 }
+
+module.exports = exports.default;

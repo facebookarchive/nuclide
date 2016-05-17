@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -13,14 +12,11 @@
  * Figures out the row and column coordinates of a raw position within a source
  * string. This will undo the transform `getRawPosition` makes to position.
  */
-function getPosition(
-  source: string,
-  rawPosition: number,
-): {row: number; column: number} {
-  let row = 0;
-  let column = 0;
-  for (let i = 0; i < rawPosition && i < source.length; i++) {
-    const char = source.charAt(i);
+function getPosition(source, rawPosition) {
+  var row = 0;
+  var column = 0;
+  for (var i = 0; i < rawPosition && i < source.length; i++) {
+    var char = source.charAt(i);
     if (char === '\n') {
       row++;
       column = 0;
@@ -28,7 +24,7 @@ function getPosition(
       column++;
     }
   }
-  return {row, column};
+  return { row: row, column: column };
 }
 
 module.exports = getPosition;

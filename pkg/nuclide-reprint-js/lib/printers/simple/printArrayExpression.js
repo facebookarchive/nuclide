@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +8,25 @@
  * the root directory of this source tree.
  */
 
-import type {ArrayExpression} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import printCommaSeparatedNodes from '../common/printCommaSeparatedNodes';
-import wrapExpression from '../../wrappers/simple/wrapExpression';
+var _commonPrintCommaSeparatedNodes2;
 
-function printArrayExpression(print: Print, node: ArrayExpression): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    '[',
-    printCommaSeparatedNodes(print, node.elements),
-    ']',
-  ]);
+function _commonPrintCommaSeparatedNodes() {
+  return _commonPrintCommaSeparatedNodes2 = _interopRequireDefault(require('../common/printCommaSeparatedNodes'));
+}
+
+var _wrappersSimpleWrapExpression2;
+
+function _wrappersSimpleWrapExpression() {
+  return _wrappersSimpleWrapExpression2 = _interopRequireDefault(require('../../wrappers/simple/wrapExpression'));
+}
+
+function printArrayExpression(print, node) {
+  var wrap = function wrap(x) {
+    return (0, (_wrappersSimpleWrapExpression2 || _wrappersSimpleWrapExpression()).default)(print, node, x);
+  };
+  return wrap(['[', (0, (_commonPrintCommaSeparatedNodes2 || _commonPrintCommaSeparatedNodes()).default)(print, node.elements), ']']);
 }
 
 module.exports = printArrayExpression;

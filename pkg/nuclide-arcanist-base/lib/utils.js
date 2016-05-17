@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +10,18 @@
  * the root directory of this source tree.
  */
 
-export type PhabricatorRevisionInfo = {
- url: string;
- id: string;
-};
+exports.getPhabricatorRevisionFromCommitMessage = getPhabricatorRevisionFromCommitMessage;
 
-const DIFFERENTIAL_REVISION_REGEX = /^Differential Revision:\s*(\D+\/[dD]([1-9][0-9]{5,}))/im;
+var DIFFERENTIAL_REVISION_REGEX = /^Differential Revision:\s*(\D+\/[dD]([1-9][0-9]{5,}))/im;
 
-export function getPhabricatorRevisionFromCommitMessage(
-  commitMessage: string,
-): ?PhabricatorRevisionInfo {
-  const match = DIFFERENTIAL_REVISION_REGEX.exec(commitMessage);
+function getPhabricatorRevisionFromCommitMessage(commitMessage) {
+  var match = DIFFERENTIAL_REVISION_REGEX.exec(commitMessage);
   if (match === null) {
     return null;
   } else {
     return {
       url: match[1],
-      id: `D${match[2]}`,
+      id: 'D' + match[2]
     };
   }
 }

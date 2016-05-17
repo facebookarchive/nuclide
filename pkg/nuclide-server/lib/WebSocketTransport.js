@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +10,31 @@
  * the root directory of this source tree.
  */
 
-import type WS from 'ws';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import invariant from 'assert';
-import {getLogger} from '../../nuclide-logging';
-import {Emitter} from 'event-kit';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const logger = getLogger();
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var _eventKit2;
+
+function _eventKit() {
+  return _eventKit2 = require('event-kit');
+}
+
+var logger = (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)();
 
 // An unreliable transport for sending JSON formatted messages
 // over a WebSocket
@@ -24,98 +43,117 @@ const logger = getLogger();
 // onMessage handlers are guaranteed to not be called after onClose has been called.
 // send(data) yields false if the message failed to send, true on success.
 // onClose handlers will be called before close() returns.
-export class WebSocketTransport {
-  id: string;
-  _socket: ?WS;
-  _emitter: Emitter;
 
-  constructor(clientId: string, socket: WS) {
+var WebSocketTransport = (function () {
+  function WebSocketTransport(clientId, socket) {
+    var _this = this;
+
+    _classCallCheck(this, WebSocketTransport);
+
     this.id = clientId;
-    this._emitter = new Emitter();
+    this._emitter = new (_eventKit2 || _eventKit()).Emitter();
     this._socket = socket;
 
     logger.info('Client #%s connecting with a new socket!', this.id);
-    socket.on('message', message => this._onSocketMessage(message));
+    socket.on('message', function (message) {
+      return _this._onSocketMessage(message);
+    });
 
-    socket.on('close', () => {
-      if (this._socket != null) {
-        invariant(this._socket === socket);
-        logger.info('Client #%s socket close recieved on open socket!', this.id);
-        this._setClosed();
+    socket.on('close', function () {
+      if (_this._socket != null) {
+        (0, (_assert2 || _assert()).default)(_this._socket === socket);
+        logger.info('Client #%s socket close recieved on open socket!', _this.id);
+        _this._setClosed();
       } else {
-        logger.info('Client #%s recieved socket close on already closed socket!', this.id);
+        logger.info('Client #%s recieved socket close on already closed socket!', _this.id);
       }
     });
 
-    socket.on('error', e => {
-      if (this._socket != null) {
-        logger.error(`Client #${this.id} error: ${e.message}`);
-        this._emitter.emit('error', e);
+    socket.on('error', function (e) {
+      if (_this._socket != null) {
+        logger.error('Client #' + _this.id + ' error: ' + e.message);
+        _this._emitter.emit('error', e);
       } else {
-        logger.error(`Client #${this.id} error after close: ${e.message}`);
+        logger.error('Client #' + _this.id + ' error after close: ' + e.message);
       }
     });
   }
 
-  _onSocketMessage(message: any): void {
-    if (this._socket == null) {
-      logger.error('Received socket message after connection closed', new Error());
-      return;
+  _createClass(WebSocketTransport, [{
+    key: '_onSocketMessage',
+    value: function _onSocketMessage(message) {
+      if (this._socket == null) {
+        logger.error('Received socket message after connection closed', new Error());
+        return;
+      }
+
+      var parsedMessage = JSON.parse(message);
+      this._emitter.emit('message', parsedMessage);
     }
-
-    const parsedMessage: Object = JSON.parse(message);
-    this._emitter.emit('message', parsedMessage);
-  }
-
-  onMessage(callback: (message: Object) => mixed): IDisposable {
-    return this._emitter.on('message', callback);
-  }
-
-  onClose(callback: () => mixed): IDisposable {
-    return this._emitter.on('close', callback);
-  }
-
-  onError(callback: (error: Error) => mixed): IDisposable {
-    return this._emitter.on('error', callback);
-  }
-
-  send(data: any): Promise<boolean> {
-    const socket = this._socket;
-    if (socket == null) {
-      logger.error('Attempt to send socket message after connection closed', new Error());
-      return Promise.resolve(false);
+  }, {
+    key: 'onMessage',
+    value: function onMessage(callback) {
+      return this._emitter.on('message', callback);
     }
+  }, {
+    key: 'onClose',
+    value: function onClose(callback) {
+      return this._emitter.on('close', callback);
+    }
+  }, {
+    key: 'onError',
+    value: function onError(callback) {
+      return this._emitter.on('error', callback);
+    }
+  }, {
+    key: 'send',
+    value: function send(data) {
+      var _this2 = this;
 
-    return new Promise((resolve, reject) => {
-      socket.send(JSON.stringify(data), err => {
-        if (err != null) {
-          logger.warn('Failed sending socket message to client:', this.id, data);
-          resolve(false);
-        } else {
-          resolve(true);
-        }
+      var socket = this._socket;
+      if (socket == null) {
+        logger.error('Attempt to send socket message after connection closed', new Error());
+        return Promise.resolve(false);
+      }
+
+      return new Promise(function (resolve, reject) {
+        socket.send(JSON.stringify(data), function (err) {
+          if (err != null) {
+            logger.warn('Failed sending socket message to client:', _this2.id, data);
+            resolve(false);
+          } else {
+            resolve(true);
+          }
+        });
       });
-    });
-  }
-
-  close(): void {
-    if (this._socket != null) {
-      // The call to socket.close may or may not cause our handler to be called
-      this._socket.close();
-      this._setClosed();
     }
-  }
-
-  isClosed(): boolean {
-    return this._socket == null;
-  }
-
-  _setClosed(): void {
-    if (this._socket != null) {
-      // In certain (Error) conditions socket.close may not emit the on close
-      // event synchronously.
-      this._socket = null;
-      this._emitter.emit('close');
+  }, {
+    key: 'close',
+    value: function close() {
+      if (this._socket != null) {
+        // The call to socket.close may or may not cause our handler to be called
+        this._socket.close();
+        this._setClosed();
+      }
     }
-  }
-}
+  }, {
+    key: 'isClosed',
+    value: function isClosed() {
+      return this._socket == null;
+    }
+  }, {
+    key: '_setClosed',
+    value: function _setClosed() {
+      if (this._socket != null) {
+        // In certain (Error) conditions socket.close may not emit the on close
+        // event synchronously.
+        this._socket = null;
+        this._emitter.emit('close');
+      }
+    }
+  }]);
+
+  return WebSocketTransport;
+})();
+
+exports.WebSocketTransport = WebSocketTransport;

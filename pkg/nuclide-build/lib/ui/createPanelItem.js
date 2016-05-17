@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.createPanelItem = createPanelItem;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +11,16 @@
  * the root directory of this source tree.
  */
 
-import {React, ReactDOM} from 'react-for-atom';
+var _reactForAtom2;
 
-export function createPanelItem(reactElement: React.Element): Object {
-  const element = document.createElement('div');
-  const mounted = ReactDOM.render(reactElement, element);
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+function createPanelItem(reactElement) {
+  var element = document.createElement('div');
+  var mounted = (_reactForAtom2 || _reactForAtom()).ReactDOM.render(reactElement, element);
   // Add the DOM element as the "element" property of the instance. (Atom looks for this.)
-  (mounted: any).element = element;
+  mounted.element = element;
   return mounted;
 }

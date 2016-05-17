@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,36 +10,57 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalProvider} from '../../nuclide-busy-signal/lib/types';
-import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.provideBusySignal = provideBusySignal;
+exports.provideDiagnostics = provideDiagnostics;
 
-import {CompositeDisposable} from 'atom';
-import invariant from 'assert';
-import registerGrammar from '../../commons-atom/register-grammar';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let subscriptions: ?CompositeDisposable = null;
+var _atom2;
 
-let busySignalProvider: ?BusySignalProviderBase = null;
+function _atom() {
+  return _atom2 = require('atom');
+}
 
-function getBusySignalProvider(): BusySignalProviderBase {
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _commonsAtomRegisterGrammar2;
+
+function _commonsAtomRegisterGrammar() {
+  return _commonsAtomRegisterGrammar2 = _interopRequireDefault(require('../../commons-atom/register-grammar'));
+}
+
+var subscriptions = null;
+
+var busySignalProvider = null;
+
+function getBusySignalProvider() {
   if (busySignalProvider == null) {
-    const {DedupedBusySignalProviderBase} = require('../../nuclide-busy-signal');
+    var _require = require('../../nuclide-busy-signal');
+
+    var DedupedBusySignalProviderBase = _require.DedupedBusySignalProviderBase;
+
     busySignalProvider = new DedupedBusySignalProviderBase();
   }
   return busySignalProvider;
 }
 
-export function activate(): void {
+function activate() {
   if (subscriptions) {
     return;
   }
 
-  subscriptions = new CompositeDisposable();
+  subscriptions = new (_atom2 || _atom()).CompositeDisposable();
 
-  registerGrammar('source.json', '.arcconfig');
+  (0, (_commonsAtomRegisterGrammar2 || _commonsAtomRegisterGrammar()).default)('source.json', '.arcconfig');
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (subscriptions) {
     subscriptions.dispose();
     subscriptions = null;
@@ -46,14 +68,17 @@ export function deactivate(): void {
   busySignalProvider = null;
 }
 
-export function provideBusySignal(): BusySignalProvider {
+function provideBusySignal() {
   return getBusySignalProvider();
 }
 
-export function provideDiagnostics() {
-  const {ArcanistDiagnosticsProvider} = require('./ArcanistDiagnosticsProvider');
-  const provider = new ArcanistDiagnosticsProvider(getBusySignalProvider());
-  invariant(subscriptions != null);
+function provideDiagnostics() {
+  var _require2 = require('./ArcanistDiagnosticsProvider');
+
+  var ArcanistDiagnosticsProvider = _require2.ArcanistDiagnosticsProvider;
+
+  var provider = new ArcanistDiagnosticsProvider(getBusySignalProvider());
+  (0, (_assert2 || _assert()).default)(subscriptions != null);
   subscriptions.add(provider);
   return provider;
 }

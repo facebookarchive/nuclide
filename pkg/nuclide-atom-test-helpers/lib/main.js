@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +8,12 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  get jasmineMatchers() {
-    return require('./matchers');
-  },
-};
+module.exports = Object.defineProperties({}, {
+  jasmineMatchers: {
+    get: function get() {
+      return require('./matchers');
+    },
+    configurable: true,
+    enumerable: true
+  }
+});

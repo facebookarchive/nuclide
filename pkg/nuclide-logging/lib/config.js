@@ -1,5 +1,29 @@
-'use babel';
-/* @flow */
+var getServerLogAppenderConfig = _asyncToGenerator(function* () {
+  // Skip config scribe_cat logger if
+  // 1) running in test environment
+  // 2) or running in Atom client
+  // 3) or running in open sourced version of nuclide
+  // 4) or the scribe_cat command is missing.
+  if ((_nuclideCommons2 || _nuclideCommons()).clientInfo.isRunningInTest() || (_nuclideCommons2 || _nuclideCommons()).clientInfo.isRunningInClient() || !(yield (_nuclideCommons2 || _nuclideCommons()).fsPromise.exists(scribeAppenderPath)) || !(yield (_nuclideCommons2 || _nuclideCommons()).ScribeProcess.isScribeCatOnPath())) {
+    return null;
+  }
+
+  return {
+    type: 'logLevelFilter',
+    level: 'DEBUG',
+    appender: {
+      type: scribeAppenderPath,
+      scribeCategory: 'errorlog_arsenal'
+    }
+  };
+}
+
+/**
+ * @return The absolute path to the log file for the specified date.
+ */
+);
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,99 +33,85 @@
  * the root directory of this source tree.
  */
 
-import type {LoggingAppender} from './types';
-import {clientInfo, fsPromise, ScribeProcess, env} from '../../nuclide-commons';
-import os from 'os';
-import path from 'path';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const LOG_FILE_PATH = path.join(os.tmpdir(), `/nuclide-${env.USER}-logs/nuclide.log`);
-const logDirectory = path.dirname(LOG_FILE_PATH);
-let logDirectoryInitialized = false;
-const scribeAppenderPath = path.join(__dirname, '../fb/scribeAppender.js');
+var _nuclideCommons2;
 
-const LOG4JS_DATE_FORMAT = '-yyyy-MM-dd';
-
-async function getServerLogAppenderConfig(): Promise<?Object> {
-  // Skip config scribe_cat logger if
-  // 1) running in test environment
-  // 2) or running in Atom client
-  // 3) or running in open sourced version of nuclide
-  // 4) or the scribe_cat command is missing.
-  if (clientInfo.isRunningInTest() ||
-      clientInfo.isRunningInClient() ||
-      !(await fsPromise.exists(scribeAppenderPath)) ||
-      !(await ScribeProcess.isScribeCatOnPath())) {
-    return null;
-  }
-
-  return {
-    type: 'logLevelFilter',
-    level: 'DEBUG',
-    appender: {
-      type: scribeAppenderPath,
-      scribeCategory: 'errorlog_arsenal',
-    },
-  };
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../../nuclide-commons');
 }
 
-/**
- * @return The absolute path to the log file for the specified date.
- */
-function getPathToLogFileForDate(targetDate: Date): string {
-  const log4jsFormatter = require('log4js/lib/date_format').asString;
+var _os2;
+
+function _os() {
+  return _os2 = _interopRequireDefault(require('os'));
+}
+
+var _path2;
+
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
+
+var LOG_FILE_PATH = (_path2 || _path()).default.join((_os2 || _os()).default.tmpdir(), '/nuclide-' + (_nuclideCommons2 || _nuclideCommons()).env.USER + '-logs/nuclide.log');
+var logDirectory = (_path2 || _path()).default.dirname(LOG_FILE_PATH);
+var logDirectoryInitialized = false;
+var scribeAppenderPath = (_path2 || _path()).default.join(__dirname, '../fb/scribeAppender.js');
+
+var LOG4JS_DATE_FORMAT = '-yyyy-MM-dd';
+
+function getPathToLogFileForDate(targetDate) {
+  var log4jsFormatter = require('log4js/lib/date_format').asString;
   return LOG_FILE_PATH + log4jsFormatter(LOG4JS_DATE_FORMAT, targetDate);
 }
 
 /**
  * @return The absolute path to the log file for today.
  */
-function getPathToLogFileForToday(): string {
+function getPathToLogFileForToday() {
   return getPathToLogFileForDate(new Date());
 }
 
 module.exports = {
-  async getDefaultConfig(): Promise<LoggingAppender> {
+  getDefaultConfig: _asyncToGenerator(function* () {
 
     if (!logDirectoryInitialized) {
-      await fsPromise.mkdirp(logDirectory);
+      yield (_nuclideCommons2 || _nuclideCommons()).fsPromise.mkdirp(logDirectory);
       logDirectoryInitialized = true;
     }
 
-    const config = {
-      appenders: [
-        {
-          type: 'logLevelFilter',
-          level: 'INFO',
-          appender: {
-            type: path.join(__dirname, './consoleAppender'),
-          },
-        },
-        {
-          type: 'dateFile',
-          alwaysIncludePattern: true,
-          absolute: true,
-          filename: LOG_FILE_PATH,
-          pattern: LOG4JS_DATE_FORMAT,
-          layout: {
-            type: 'pattern',
-            // Format log in following pattern:
-            // yyyy-MM-dd HH:mm:ss.mil $Level (pid:$pid) $categroy - $message.
-            pattern: `%d{ISO8601} %p (pid:${process.pid}) %c - %m`,
-          },
-        },
-      ],
+    var config = {
+      appenders: [{
+        type: 'logLevelFilter',
+        level: 'INFO',
+        appender: {
+          type: (_path2 || _path()).default.join(__dirname, './consoleAppender')
+        }
+      }, {
+        type: 'dateFile',
+        alwaysIncludePattern: true,
+        absolute: true,
+        filename: LOG_FILE_PATH,
+        pattern: LOG4JS_DATE_FORMAT,
+        layout: {
+          type: 'pattern',
+          // Format log in following pattern:
+          // yyyy-MM-dd HH:mm:ss.mil $Level (pid:$pid) $categroy - $message.
+          pattern: '%d{ISO8601} %p (pid:' + process.pid + ') %c - %m'
+        }
+      }]
     };
 
-    const serverLogAppenderConfig = await getServerLogAppenderConfig();
+    var serverLogAppenderConfig = yield getServerLogAppenderConfig();
     if (serverLogAppenderConfig) {
       config.appenders.push(serverLogAppenderConfig);
     }
 
     return config;
-  },
-  getPathToLogFileForToday,
-  LOG_FILE_PATH,
+  }),
+  getPathToLogFileForToday: getPathToLogFileForToday,
+  LOG_FILE_PATH: LOG_FILE_PATH,
   __test__: {
-    getPathToLogFileForDate,
-  },
+    getPathToLogFileForDate: getPathToLogFileForDate
+  }
 };

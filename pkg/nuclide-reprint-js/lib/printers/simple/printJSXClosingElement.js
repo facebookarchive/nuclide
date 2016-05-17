@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +8,22 @@
  * the root directory of this source tree.
  */
 
-import type {JSXClosingElement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2;
 
-function printJSXClosingElement(print: Print, node: JSXClosingElement): Lines {
-  return flatten([
-    '</',
-    markers.noBreak,
-    print(node.name),
-    markers.noBreak,
-    '>',
-  ]);
+function _utilsFlatten() {
+  return _utilsFlatten2 = _interopRequireDefault(require('../../utils/flatten'));
+}
+
+var _constantsMarkers2;
+
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+function printJSXClosingElement(print, node) {
+  return (0, (_utilsFlatten2 || _utilsFlatten()).default)(['</', (_constantsMarkers2 || _constantsMarkers()).default.noBreak, print(node.name), (_constantsMarkers2 || _constantsMarkers()).default.noBreak, '>']);
 }
 
 module.exports = printJSXClosingElement;

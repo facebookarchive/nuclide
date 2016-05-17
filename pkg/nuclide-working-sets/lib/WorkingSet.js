@@ -1,5 +1,14 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +18,31 @@
  * the root directory of this source tree.
  */
 
+var _nuclideCommons2;
 
-import {array} from '../../nuclide-commons';
-import {normalizePathUri, dedupeNormalizedUris, splitUri, isUriBelow} from './uri';
-import invariant from 'assert';
-import {getLogger} from '../../nuclide-logging';
-const logger = getLogger();
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../../nuclide-commons');
+}
 
+var _uri2;
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+function _uri() {
+  return _uri2 = require('./uri');
+}
 
-type InnerNode = {
-  kind: 'inner';
-  children: Map<string, TreeNode>;
-};
+var _assert2;
 
-type LeafNode = {
-  kind: 'leaf';
-};
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
-type TreeNode = InnerNode | LeafNode;
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var logger = (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)();
 
 /**
 * WorkingSet is an implementation of a filter for files and directories.
@@ -48,143 +62,184 @@ type TreeNode = InnerNode | LeafNode;
 *   to know that it must include its parent directories.
 *   This kind of test is performed by the .containsDir() method.
 */
-export class WorkingSet {
-  _uris: Array<string>;
-  _root: ?InnerNode;
 
-  static union(...sets: Array<WorkingSet>): WorkingSet {
-    const combinedUris = [].concat(...sets.map(s => s._uris));
-    return new WorkingSet(combinedUris);
-  }
+var WorkingSet = (function () {
+  _createClass(WorkingSet, null, [{
+    key: 'union',
+    value: function union() {
+      var _ref;
 
-  constructor(uris: Array<NuclideUri> = []) {
+      for (var _len = arguments.length, sets = Array(_len), _key = 0; _key < _len; _key++) {
+        sets[_key] = arguments[_key];
+      }
+
+      var combinedUris = (_ref = []).concat.apply(_ref, _toConsumableArray(sets.map(function (s) {
+        return s._uris;
+      })));
+      return new WorkingSet(combinedUris);
+    }
+  }]);
+
+  function WorkingSet() {
+    var uris = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+
+    _classCallCheck(this, WorkingSet);
+
     try {
-      this._uris = dedupeNormalizedUris(uris.map(normalizePathUri));
+      this._uris = (0, (_uri2 || _uri()).dedupeNormalizedUris)(uris.map((_uri2 || _uri()).normalizePathUri));
       this._root = this._buildDirTree(this._uris);
     } catch (e) {
-      logger.error(
-        'Failed to initialize a WorkingSet with URIs ' + uris.join(',') + '. ' + e.message
-      );
+      logger.error('Failed to initialize a WorkingSet with URIs ' + uris.join(',') + '. ' + e.message);
       this._uris = [];
       this._root = null;
     }
   }
 
-  containsFile(uri: NuclideUri) : boolean {
-    if (this.isEmpty()) {
-      return true;
-    }
-
-    try {
-      const tokens = splitUri(normalizePathUri(uri));
-      return this._containsPathFor(tokens, /* mustHaveLeaf */ true);
-    } catch (e) {
-      logger.error(e);
-      return true;
-    }
-  }
-
-  containsDir(uri: NuclideUri): boolean {
-    if (this.isEmpty()) {
-      return true;
-    }
-
-    try {
-      const tokens = splitUri(normalizePathUri(uri));
-      return this._containsPathFor(tokens, /* mustHaveLeaf */ false);
-    } catch (e) {
-      logger.error(e);
-      return true;
-    }
-  }
-
-  isEmpty(): boolean {
-    return this._uris.length === 0;
-  }
-
-  getUris(): Array<string> {
-    return this._uris;
-  }
-
-  append(...uris: Array<NuclideUri>): WorkingSet {
-    return new WorkingSet(this._uris.concat(uris));
-  }
-
-  remove(rootUri: NuclideUri): WorkingSet {
-    try {
-      const normalizedRoot = normalizePathUri(rootUri);
-      const uris = this._uris.filter(uri => !isUriBelow(normalizedRoot, uri));
-      return new WorkingSet(uris);
-    } catch (e) {
-      logger.error(e);
-      return this;
-    }
-  }
-
-  equals(other: WorkingSet): boolean {
-    return array.equal(this._uris, other._uris);
-  }
-
-  _buildDirTree(uris: Array<string>): ?InnerNode {
-    if (uris.length === 0) {
-      return null;
-    }
-
-    const root: InnerNode = newInnerNode();
-
-    for (const uri of uris) {
-      const tokens = splitUri(uri);
-      if (tokens.length === 0) {
-        continue;
+  _createClass(WorkingSet, [{
+    key: 'containsFile',
+    value: function containsFile(uri) {
+      if (this.isEmpty()) {
+        return true;
       }
 
-      let currentNode: InnerNode = root;
+      try {
+        var tokens = (0, (_uri2 || _uri()).splitUri)((0, (_uri2 || _uri()).normalizePathUri)(uri));
+        return this._containsPathFor(tokens, /* mustHaveLeaf */true);
+      } catch (e) {
+        logger.error(e);
+        return true;
+      }
+    }
+  }, {
+    key: 'containsDir',
+    value: function containsDir(uri) {
+      if (this.isEmpty()) {
+        return true;
+      }
 
-      for (const token of tokens.slice(0, -1)) {
-        let tokenNode: ?TreeNode = currentNode.children.get(token);
+      try {
+        var tokens = (0, (_uri2 || _uri()).splitUri)((0, (_uri2 || _uri()).normalizePathUri)(uri));
+        return this._containsPathFor(tokens, /* mustHaveLeaf */false);
+      } catch (e) {
+        logger.error(e);
+        return true;
+      }
+    }
+  }, {
+    key: 'isEmpty',
+    value: function isEmpty() {
+      return this._uris.length === 0;
+    }
+  }, {
+    key: 'getUris',
+    value: function getUris() {
+      return this._uris;
+    }
+  }, {
+    key: 'append',
+    value: function append() {
+      for (var _len2 = arguments.length, uris = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        uris[_key2] = arguments[_key2];
+      }
 
-        if (!tokenNode) {
-          tokenNode = newInnerNode();
-          currentNode.children.set(token, tokenNode);
-          currentNode = tokenNode;
-        } else {
-          invariant(tokenNode.kind === 'inner');
+      return new WorkingSet(this._uris.concat(uris));
+    }
+  }, {
+    key: 'remove',
+    value: function remove(rootUri) {
+      var _this = this;
+
+      try {
+        var _ret = (function () {
+          var normalizedRoot = (0, (_uri2 || _uri()).normalizePathUri)(rootUri);
+          var uris = _this._uris.filter(function (uri) {
+            return !(0, (_uri2 || _uri()).isUriBelow)(normalizedRoot, uri);
+          });
+          return {
+            v: new WorkingSet(uris)
+          };
+        })();
+
+        if (typeof _ret === 'object') return _ret.v;
+      } catch (e) {
+        logger.error(e);
+        return this;
+      }
+    }
+  }, {
+    key: 'equals',
+    value: function equals(other) {
+      return (_nuclideCommons2 || _nuclideCommons()).array.equal(this._uris, other._uris);
+    }
+  }, {
+    key: '_buildDirTree',
+    value: function _buildDirTree(uris) {
+      if (uris.length === 0) {
+        return null;
+      }
+
+      var root = newInnerNode();
+
+      for (var uri of uris) {
+        var tokens = (0, (_uri2 || _uri()).splitUri)(uri);
+        if (tokens.length === 0) {
+          continue;
+        }
+
+        var currentNode = root;
+
+        for (var token of tokens.slice(0, -1)) {
+          var tokenNode = currentNode.children.get(token);
+
+          if (!tokenNode) {
+            tokenNode = newInnerNode();
+            currentNode.children.set(token, tokenNode);
+            currentNode = tokenNode;
+          } else {
+            (0, (_assert2 || _assert()).default)(tokenNode.kind === 'inner');
+            currentNode = tokenNode;
+          }
+        }
+
+        var lastToken = tokens[tokens.length - 1];
+        currentNode.children.set(lastToken, newLeafNode());
+      }
+
+      return root;
+    }
+  }, {
+    key: '_containsPathFor',
+    value: function _containsPathFor(tokens, mustHaveLeaf) {
+      var currentNode = this._root;
+      if (currentNode == null) {
+        // Empty set actually contains everything
+        return true;
+      }
+
+      for (var token of tokens) {
+        var tokenNode = currentNode.children.get(token);
+        if (tokenNode == null) {
+          return false;
+        } else if (tokenNode.kind === 'leaf') {
+          return true;
+        } else if (tokenNode.kind === 'inner') {
           currentNode = tokenNode;
         }
       }
 
-      const lastToken = tokens[tokens.length - 1];
-      currentNode.children.set(lastToken, newLeafNode());
+      return !mustHaveLeaf;
     }
+  }]);
 
-    return root;
-  }
+  return WorkingSet;
+})();
 
-  _containsPathFor(tokens: Array<string>, mustHaveLeaf: boolean): boolean {
-    let currentNode = this._root;
-    if (currentNode == null) { // Empty set actually contains everything
-      return true;
-    }
+exports.WorkingSet = WorkingSet;
 
-    for (const token of tokens) {
-      const tokenNode = currentNode.children.get(token);
-      if (tokenNode == null) {
-        return false;
-      } else if (tokenNode.kind === 'leaf') {
-        return true;
-      } else if (tokenNode.kind === 'inner') {
-        currentNode = tokenNode;
-      }
-    }
-
-    return !mustHaveLeaf;
-  }
+function newInnerNode() {
+  return { kind: 'inner', children: new Map() };
 }
 
-function newInnerNode(): InnerNode {
-  return {kind: 'inner', children: new Map()};
-}
-
-function newLeafNode(): LeafNode {
-  return {kind: 'leaf'};
+function newLeafNode() {
+  return { kind: 'leaf' };
 }

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +8,12 @@
  * the root directory of this source tree.
  */
 
-import type {SourceOptions} from '../options/SourceOptions';
-import type {TransformKey} from '../types/transforms';
-
-function transform(source: string, options: SourceOptions): string {
-  const blacklist: Set<TransformKey> = options.blacklist || new Set();
+function transform(source, options) {
+  var blacklist = options.blacklist || new Set();
   if (blacklist.has('nuclide.fixHeader')) {
     return source;
   }
-  return source.replace(
-    '\'use babel\';\n\n/* @flow */',
-    '\'use babel\';\n/* @flow */'
-  );
+  return source.replace('\'use babel\';\n\n/* @flow */', '\'use babel\';\n/* @flow */');
 }
 
 module.exports = transform;

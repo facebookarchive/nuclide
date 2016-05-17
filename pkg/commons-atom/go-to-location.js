@@ -1,5 +1,30 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+// Opens the given file at the line/column.
+// By default will center the opened text editor.
+
+var goToLocation = _asyncToGenerator(function* (file, line, column) {
+  var center = arguments.length <= 3 || arguments[3] === undefined ? true : arguments[3];
+
+  var editor = yield atom.workspace.open(file, {
+    initialLine: line,
+    initialColumn: column,
+    searchAllPanes: true
+  });
+
+  if (center) {
+    editor.scrollToBufferPosition([line, column], { center: true });
+  }
+  return editor;
+});
+
+exports.goToLocation = goToLocation;
+exports.goToLocationInEditor = goToLocationInEditor;
+exports.observeNavigatingEditors = observeNavigatingEditors;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,48 +34,29 @@
  * the root directory of this source tree.
  */
 
-import {Subject} from 'rxjs';
-import type {Observable} from 'rxjs';
+var _rxjs2;
 
-// Opens the given file at the line/column.
-// By default will center the opened text editor.
-export async function goToLocation(
-  file: string,
-  line?: number,
-  column?: number,
-  center?: boolean = true
-): Promise<atom$TextEditor> {
-  const editor = await atom.workspace.open(file, {
-    initialLine: line,
-    initialColumn: column,
-    searchAllPanes: true,
-  });
-
-  if (center) {
-    editor.scrollToBufferPosition([line, column], {center: true});
-  }
-  return editor;
+function _rxjs() {
+  return _rxjs2 = require('rxjs');
 }
 
-const goToLocationSubject = new Subject();
+var goToLocationSubject = new (_rxjs2 || _rxjs()).Subject();
 
 // Scrolls to the given line/column at the given editor
 // broadcasts the editor instance on an observable (subject) available
 // through the getGoToLocation
-export function goToLocationInEditor(
-  editor: atom$TextEditor,
-  line: number,
-  column: number,
-  center: boolean = true
-): void {
+
+function goToLocationInEditor(editor, line, column) {
+  var center = arguments.length <= 3 || arguments[3] === undefined ? true : arguments[3];
+
   editor.setCursorBufferPosition([line, column]);
   if (center) {
-    editor.scrollToBufferPosition([line, column], {center: true});
+    editor.scrollToBufferPosition([line, column], { center: true });
   }
 
   goToLocationSubject.next(editor);
 }
 
-export function observeNavigatingEditors(): Observable<atom$TextEditor> {
+function observeNavigatingEditors() {
   return goToLocationSubject;
 }

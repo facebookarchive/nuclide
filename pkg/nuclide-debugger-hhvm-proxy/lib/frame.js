@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +8,11 @@
  * the root directory of this source tree.
  */
 
+var _helpers2;
 
-import {uriToPath} from './helpers';
+function _helpers() {
+  return _helpers2 = require('./helpers');
+}
 
 /**
  * A dbgp Frame after it is converted from XML to JSON:
@@ -24,51 +26,37 @@ import {uriToPath} from './helpers';
  *   }
  * }
  */
-type DbgpStackFrame = {
-  $: {
-    where: string;
-    level: string;
-    type: string;
-    filename: string;
-    lineno: string;
-  }
-};
 
-type FrameLocation = {
-  lineNumber: number;
-  scriptId: string
-};
-
-function idOfFrame(frame: DbgpStackFrame): string {
+function idOfFrame(frame) {
   // TODO: Mangle in the transactionId of the most recent pause/status.
   return frame.$.level;
 }
 
-function functionOfFrame(frame: DbgpStackFrame): string {
+function functionOfFrame(frame) {
   return frame.$.where;
 }
 
 // Returns an absolute path
-function fileOfFrame(frame: DbgpStackFrame): string {
-  return uriToPath(fileUrlOfFrame(frame));
+function fileOfFrame(frame) {
+  return (0, (_helpers2 || _helpers()).uriToPath)(fileUrlOfFrame(frame));
 }
 
-function fileUrlOfFrame(frame: DbgpStackFrame): string {
+function fileUrlOfFrame(frame) {
   return frame.$.filename;
 }
 
-function locationOfFrame(frame: DbgpStackFrame): FrameLocation {
+function locationOfFrame(frame) {
   return {
     // TODO: columnNumber: from cmdbegin/end
     lineNumber: Number(frame.$.lineno) - 1,
-    scriptId: fileOfFrame(frame),
+    scriptId: fileOfFrame(frame)
   };
 }
 
 module.exports = {
-  idOfFrame,
-  functionOfFrame,
-  fileOfFrame,
-  fileUrlOfFrame,
-  locationOfFrame,
+  idOfFrame: idOfFrame,
+  functionOfFrame: functionOfFrame,
+  fileOfFrame: fileOfFrame,
+  fileUrlOfFrame: fileUrlOfFrame,
+  locationOfFrame: locationOfFrame
 };

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +8,52 @@
  * the root directory of this source tree.
  */
 
-import type {SourceOptions} from './options/SourceOptions';
+var _optionsOptions2;
 
-import Options from './options/Options';
-import jscs from 'jscodeshift';
-import nuclideTransform from './nuclide/transform';
-import printRoot from './utils/printRoot';
-import requiresTransform from './requires/transform';
+function _optionsOptions() {
+  return _optionsOptions2 = _interopRequireDefault(require('./options/Options'));
+}
 
-function transform(source: string, options: SourceOptions): string {
-  Options.validateSourceOptions(options);
+var _jscodeshift2;
+
+function _jscodeshift() {
+  return _jscodeshift2 = _interopRequireDefault(require('jscodeshift'));
+}
+
+var _nuclideTransform2;
+
+function _nuclideTransform() {
+  return _nuclideTransform2 = _interopRequireDefault(require('./nuclide/transform'));
+}
+
+var _utilsPrintRoot2;
+
+function _utilsPrintRoot() {
+  return _utilsPrintRoot2 = _interopRequireDefault(require('./utils/printRoot'));
+}
+
+var _requiresTransform2;
+
+function _requiresTransform() {
+  return _requiresTransform2 = _interopRequireDefault(require('./requires/transform'));
+}
+
+function transform(source, options) {
+  (_optionsOptions2 || _optionsOptions()).default.validateSourceOptions(options);
 
   // Parse the source code once, then reuse the root node
-  const root = jscs(source);
+  var root = (0, (_jscodeshift2 || _jscodeshift()).default)(source);
 
   // Add use-strict
   // TODO: implement this, make it configurable
 
   // Requires
-  requiresTransform(root, options);
+  (0, (_requiresTransform2 || _requiresTransform()).default)(root, options);
 
-  let output = printRoot(root);
+  var output = (0, (_utilsPrintRoot2 || _utilsPrintRoot()).default)(root);
 
   // Transform that operates on the raw string output.
-  output = nuclideTransform(output, options);
+  output = (0, (_nuclideTransform2 || _nuclideTransform()).default)(output, options);
 
   return output;
 }

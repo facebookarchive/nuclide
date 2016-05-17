@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,22 +8,25 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-import {React} from 'react-for-atom';
+var _reactForAtom2;
 
-let uniqueKeySeed = 0;
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var uniqueKeySeed = 0;
 
 /**
  * Base class of all launch/attach providers.
  * It allows each concrete provider to provide customized debugging types, actions and UI.
  */
-class DebuggerLaunchAttachProvider {
-  _debuggingTypeName: string;
-  _targetUri: NuclideUri;
-  _uniqueKey: number;
 
-  constructor(debuggingTypeName: string, targetUri: NuclideUri) {
+var DebuggerLaunchAttachProvider = (function () {
+  function DebuggerLaunchAttachProvider(debuggingTypeName, targetUri) {
+    _classCallCheck(this, DebuggerLaunchAttachProvider);
+
     this._debuggingTypeName = debuggingTypeName;
     this._targetUri = targetUri;
     this._uniqueKey = uniqueKeySeed++;
@@ -33,44 +35,60 @@ class DebuggerLaunchAttachProvider {
   /**
    * Returns a unique key which can be associated with the component.
    */
-  getUniqueKey(): number {
-    return this._uniqueKey;
-  }
 
-  /**
-   * Returns the debugging type name for this provider(e.g. Natve, Php, Node etc...).
-   */
-  getDebuggingTypeName(): string {
-    return this._debuggingTypeName;
-  }
+  _createClass(DebuggerLaunchAttachProvider, [{
+    key: 'getUniqueKey',
+    value: function getUniqueKey() {
+      return this._uniqueKey;
+    }
 
-  /**
-   * Returns target uri for this provider.
-   */
-  getTargetUri(): NuclideUri {
-    return this._targetUri;
-  }
+    /**
+     * Returns the debugging type name for this provider(e.g. Natve, Php, Node etc...).
+     */
+  }, {
+    key: 'getDebuggingTypeName',
+    value: function getDebuggingTypeName() {
+      return this._debuggingTypeName;
+    }
 
-  /**
-   * Returns a list of supported debugger actions.
-   */
-  getActions(): Array<string> {
-    throw new Error('abstract method');
-  }
+    /**
+     * Returns target uri for this provider.
+     */
+  }, {
+    key: 'getTargetUri',
+    value: function getTargetUri() {
+      return this._targetUri;
+    }
 
-  /**
-   * Returns the UI component for input debug action.
-   */
-  getComponent(action: string): ?React.Element {
-    throw new Error('abstract method');
-  }
+    /**
+     * Returns a list of supported debugger actions.
+     */
+  }, {
+    key: 'getActions',
+    value: function getActions() {
+      throw new Error('abstract method');
+    }
 
-  /**
-   * Dispose any resource held by this provider.
-   */
-  dispose(): void {
-    throw new Error('abstract method');
-  }
-}
+    /**
+     * Returns the UI component for input debug action.
+     */
+  }, {
+    key: 'getComponent',
+    value: function getComponent(action) {
+      throw new Error('abstract method');
+    }
+
+    /**
+     * Dispose any resource held by this provider.
+     */
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      throw new Error('abstract method');
+    }
+  }]);
+
+  return DebuggerLaunchAttachProvider;
+})();
 
 module.exports = DebuggerLaunchAttachProvider;

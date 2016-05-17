@@ -1,65 +1,6 @@
-'use babel';
-/* @flow */
-
-/*
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- */
-
-import fs from 'fs-plus';
-import invariant from 'assert';
-import mkdirpLib from 'mkdirp';
-import path from 'path';
-import rimraf from 'rimraf';
-import temp from 'temp';
-import {asyncExecute} from './process';
-
-function isRoot(filePath: string): boolean {
-  return path.dirname(filePath) === filePath;
-}
-
-/**
- * Create a temp directory with given prefix. The caller is responsible for cleaning up the
- *   drectory.
- * @param prefix optinal prefix for the temp directory name.
- * @return path to a temporary directory.
- */
-function tempdir(prefix: string = ''): Promise<string> {
-  return new Promise((resolve, reject) => {
-    temp.mkdir(prefix, (err, dirPath) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(dirPath);
-      }
-    });
-  });
-}
-
-/**
- * @return path to a temporary file. The caller is responsible for cleaning up
- *     the file.
- */
-function tempfile(options: any): Promise<string> {
-  return new Promise((resolve, reject) => {
-    temp.open(options, (err, info) => {
-      if (err) {
-        reject(err);
-      } else {
-        fs.close(info.fd, closeErr => {
-          if (closeErr) {
-            reject(closeErr);
-          } else {
-            resolve(info.path);
-          }
-        });
-      }
-    });
-  });
-}
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /**
  * Searches upwards through the filesystem from pathToFile to find a file with
@@ -69,15 +10,17 @@ function tempfile(options: any): Promise<string> {
  *   file.
  * @return directory that contains the nearest file or null.
  */
-async function findNearestFile(fileName: string, pathToDirectory: string): Promise<?string> {
+
+var findNearestFile = _asyncToGenerator(function* (fileName, pathToDirectory) {
   // TODO(5586355): If this becomes a bottleneck, we should consider memoizing
   // this function. The downside would be that if someone added a closer file
   // with fileName to pathToFile (or deleted the one that was cached), then we
   // would have a bug. This would probably be pretty rare, though.
-  let currentPath = path.resolve(pathToDirectory);
-  do { // eslint-disable-line no-constant-condition
-    const fileToFind = path.join(currentPath, fileName);
-    const hasFile = await exists(fileToFind); // eslint-disable-line babel/no-await-in-loop
+  var currentPath = (_path2 || _path()).default.resolve(pathToDirectory);
+  do {
+    // eslint-disable-line no-constant-condition
+    var fileToFind = (_path2 || _path()).default.join(currentPath, fileName);
+    var hasFile = yield exists(fileToFind); // eslint-disable-line babel/no-await-in-loop
     if (hasFile) {
       return currentPath;
     }
@@ -85,24 +28,9 @@ async function findNearestFile(fileName: string, pathToDirectory: string): Promi
     if (isRoot(currentPath)) {
       return null;
     }
-    currentPath = path.dirname(currentPath);
+    currentPath = (_path2 || _path()).default.dirname(currentPath);
   } while (true);
-}
-
-function getCommonAncestorDirectory(filePaths: Array<string>): string {
-  let commonDirectoryPath = path.dirname(filePaths[0]);
-  while (filePaths.some(filePath => !filePath.startsWith(commonDirectoryPath))) {
-    commonDirectoryPath = path.dirname(commonDirectoryPath);
-  }
-  return commonDirectoryPath;
-}
-
-
-function exists(filePath: string): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    fs.exists(filePath, resolve);
-  });
-}
+});
 
 /**
  * Runs the equivalent of `mkdir -p` with the given path.
@@ -111,13 +39,14 @@ function exists(filePath: string): Promise<boolean> {
  * directories were created for some prefix of the given path.
  * @return true if the path was created; false if it already existed.
  */
-async function mkdirp(filePath: string): Promise<boolean> {
-  const isExistingDirectory = await exists(filePath);
+
+var mkdirp = _asyncToGenerator(function* (filePath) {
+  var isExistingDirectory = yield exists(filePath);
   if (isExistingDirectory) {
     return false;
   } else {
-    return new Promise((resolve, reject) => {
-      mkdirpLib(filePath, err => {
+    return new Promise(function (resolve, reject) {
+      (0, (_mkdirp2 || _mkdirp()).default)(filePath, function (err) {
         if (err) {
           reject(err);
         } else {
@@ -131,9 +60,11 @@ async function mkdirp(filePath: string): Promise<boolean> {
 /**
  * Removes directories even if they are non-empty. Does not fail if the directory doesn't exist.
  */
-async function rmdir(filePath: string): Promise {
-  return new Promise((resolve, reject) => {
-    rimraf(filePath, err => {
+);
+
+var rmdir = _asyncToGenerator(function* (filePath) {
+  return new Promise(function (resolve, reject) {
+    (0, (_rimraf2 || _rimraf()).default)(filePath, function (err) {
       if (err) {
         reject(err);
       } else {
@@ -141,26 +72,17 @@ async function rmdir(filePath: string): Promise {
       }
     });
   });
-}
-
-function expandHomeDir(filePath: string): string {
-  const {HOME} = process.env;
-  let resolvedPath = null;
-  if (filePath === '~') {
-    invariant(HOME != null);
-    resolvedPath = HOME;
-  } else if (filePath.startsWith(`~${path.sep}`)) {
-    resolvedPath = `${HOME}${filePath.substr(1)}`;
-  } else {
-    resolvedPath = filePath;
-  }
-  return resolvedPath;
-}
+});
 
 /** @return true only if we are sure directoryPath is on NFS. */
-async function isNfs(entityPath: string): Promise<boolean> {
+
+var isNfs = _asyncToGenerator(function* (entityPath) {
   if (process.platform === 'linux' || process.platform === 'darwin') {
-    const {stdout, exitCode} = await asyncExecute('stat', ['-f', '-L', '-c', '%T', entityPath]);
+    var _ref = yield (0, (_process2 || _process()).asyncExecute)('stat', ['-f', '-L', '-c', '%T', entityPath]);
+
+    var stdout = _ref.stdout;
+    var exitCode = _ref.exitCode;
+
     if (exitCode === 0) {
       return stdout.trim() === 'nfs';
     } else {
@@ -177,28 +99,163 @@ async function isNfs(entityPath: string): Promise<boolean> {
  * with the same functionality, but returns a Promise rather than taking a callback. This isn't
  * quite as efficient as Q's implementation of denodeify, but it's considerably less code.
  */
-function _denodeifyFsMethod(methodName: string): () => Promise {
-  return function(...args): Promise {
-    const method = fs[methodName];
-    return new Promise((resolve, reject) => {
-      method.apply(fs, args.concat([
-        (err, result) => (err ? reject(err) : resolve(result)),
-      ]));
+);
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+var _fsPlus2;
+
+function _fsPlus() {
+  return _fsPlus2 = _interopRequireDefault(require('fs-plus'));
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _mkdirp2;
+
+function _mkdirp() {
+  return _mkdirp2 = _interopRequireDefault(require('mkdirp'));
+}
+
+var _path2;
+
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
+
+var _rimraf2;
+
+function _rimraf() {
+  return _rimraf2 = _interopRequireDefault(require('rimraf'));
+}
+
+var _temp2;
+
+function _temp() {
+  return _temp2 = _interopRequireDefault(require('temp'));
+}
+
+var _process2;
+
+function _process() {
+  return _process2 = require('./process');
+}
+
+function isRoot(filePath) {
+  return (_path2 || _path()).default.dirname(filePath) === filePath;
+}
+
+/**
+ * Create a temp directory with given prefix. The caller is responsible for cleaning up the
+ *   drectory.
+ * @param prefix optinal prefix for the temp directory name.
+ * @return path to a temporary directory.
+ */
+function tempdir() {
+  var prefix = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
+
+  return new Promise(function (resolve, reject) {
+    (_temp2 || _temp()).default.mkdir(prefix, function (err, dirPath) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(dirPath);
+      }
+    });
+  });
+}
+
+/**
+ * @return path to a temporary file. The caller is responsible for cleaning up
+ *     the file.
+ */
+function tempfile(options) {
+  return new Promise(function (resolve, reject) {
+    (_temp2 || _temp()).default.open(options, function (err, info) {
+      if (err) {
+        reject(err);
+      } else {
+        (_fsPlus2 || _fsPlus()).default.close(info.fd, function (closeErr) {
+          if (closeErr) {
+            reject(closeErr);
+          } else {
+            resolve(info.path);
+          }
+        });
+      }
+    });
+  });
+}
+
+function getCommonAncestorDirectory(filePaths) {
+  var commonDirectoryPath = (_path2 || _path()).default.dirname(filePaths[0]);
+  while (filePaths.some(function (filePath) {
+    return !filePath.startsWith(commonDirectoryPath);
+  })) {
+    commonDirectoryPath = (_path2 || _path()).default.dirname(commonDirectoryPath);
+  }
+  return commonDirectoryPath;
+}
+
+function exists(filePath) {
+  return new Promise(function (resolve, reject) {
+    (_fsPlus2 || _fsPlus()).default.exists(filePath, resolve);
+  });
+}
+
+function expandHomeDir(filePath) {
+  var HOME = process.env.HOME;
+
+  var resolvedPath = null;
+  if (filePath === '~') {
+    (0, (_assert2 || _assert()).default)(HOME != null);
+    resolvedPath = HOME;
+  } else if (filePath.startsWith('~' + (_path2 || _path()).default.sep)) {
+    resolvedPath = '' + HOME + filePath.substr(1);
+  } else {
+    resolvedPath = filePath;
+  }
+  return resolvedPath;
+}function _denodeifyFsMethod(methodName) {
+  return function () {
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    var method = (_fsPlus2 || _fsPlus()).default[methodName];
+    return new Promise(function (resolve, reject) {
+      method.apply((_fsPlus2 || _fsPlus()).default, args.concat([function (err, result) {
+        return err ? reject(err) : resolve(result);
+      }]));
     });
   };
 }
 
-export const fsPromise = {
-  isRoot,
-  tempdir,
-  tempfile,
-  findNearestFile,
-  getCommonAncestorDirectory,
-  exists,
-  mkdirp,
-  rmdir,
-  expandHomeDir,
-  isNfs,
+var fsPromise = {
+  isRoot: isRoot,
+  tempdir: tempdir,
+  tempfile: tempfile,
+  findNearestFile: findNearestFile,
+  getCommonAncestorDirectory: getCommonAncestorDirectory,
+  exists: exists,
+  mkdirp: mkdirp,
+  rmdir: rmdir,
+  expandHomeDir: expandHomeDir,
+  isNfs: isNfs,
 
   copy: _denodeifyFsMethod('copy'),
   chmod: _denodeifyFsMethod('chmod'),
@@ -212,5 +269,6 @@ export const fsPromise = {
   stat: _denodeifyFsMethod('stat'),
   symlink: _denodeifyFsMethod('symlink'),
   unlink: _denodeifyFsMethod('unlink'),
-  writeFile: _denodeifyFsMethod('writeFile'),
+  writeFile: _denodeifyFsMethod('writeFile')
 };
+exports.fsPromise = fsPromise;

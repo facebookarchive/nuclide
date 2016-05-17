@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,167 +16,199 @@
  * the root directory of this source tree.
  */
 
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
-import {FileTree} from './FileTree';
-import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
-import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
-import {FileTreeStore} from '../lib/FileTreeStore';
-import {CompositeDisposable, Disposable} from 'atom';
-import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
+var _reactForAtom2;
 
-type State = {
-  shouldRenderToolbar: boolean;
-  scrollerHeight: number;
-  scrollerScrollTop: number;
-};
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
 
-type Props = {
-  hidden: boolean;
-};
+var _FileTree2;
 
-class FileTreeSidebarComponent extends React.Component {
-  _store: FileTreeStore;
-  _disposables: CompositeDisposable;
-  _afRequestId: ?number;
-  state: State;
-  props: Props;
+function _FileTree() {
+  return _FileTree2 = require('./FileTree');
+}
 
-  constructor(props: Props) {
-    super(props);
+var _FileTreeSideBarFilterComponent2;
 
-    this._store = FileTreeStore.getInstance();
+function _FileTreeSideBarFilterComponent() {
+  return _FileTreeSideBarFilterComponent2 = _interopRequireDefault(require('./FileTreeSideBarFilterComponent'));
+}
+
+var _FileTreeToolbarComponent2;
+
+function _FileTreeToolbarComponent() {
+  return _FileTreeToolbarComponent2 = require('./FileTreeToolbarComponent');
+}
+
+var _libFileTreeStore2;
+
+function _libFileTreeStore() {
+  return _libFileTreeStore2 = require('../lib/FileTreeStore');
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _nuclideUiLibPanelComponentScroller2;
+
+function _nuclideUiLibPanelComponentScroller() {
+  return _nuclideUiLibPanelComponentScroller2 = require('../../nuclide-ui/lib/PanelComponentScroller');
+}
+
+var FileTreeSidebarComponent = (function (_React$Component) {
+  _inherits(FileTreeSidebarComponent, _React$Component);
+
+  function FileTreeSidebarComponent(props) {
+    _classCallCheck(this, FileTreeSidebarComponent);
+
+    _get(Object.getPrototypeOf(FileTreeSidebarComponent.prototype), 'constructor', this).call(this, props);
+
+    this._store = (_libFileTreeStore2 || _libFileTreeStore()).FileTreeStore.getInstance();
     this.state = {
       shouldRenderToolbar: false,
       scrollerHeight: 0,
-      scrollerScrollTop: 0,
+      scrollerScrollTop: 0
     };
-    this._disposables = new CompositeDisposable();
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable();
     this._afRequestId = null;
-    (this: any)._handleFocus = this._handleFocus.bind(this);
-    (this: any)._onViewChange = this._onViewChange.bind(this);
-    (this: any)._scrollToPosition = this._scrollToPosition.bind(this);
-    (this: any)._processExternalUpdate = this._processExternalUpdate.bind(this);
+    this._handleFocus = this._handleFocus.bind(this);
+    this._onViewChange = this._onViewChange.bind(this);
+    this._scrollToPosition = this._scrollToPosition.bind(this);
+    this._processExternalUpdate = this._processExternalUpdate.bind(this);
   }
 
-  componentDidMount(): void {
-    this._processExternalUpdate();
+  _createClass(FileTreeSidebarComponent, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _this = this;
 
-    window.addEventListener('resize', this._onViewChange);
-    this._afRequestId = window.requestAnimationFrame(() => {
-      this._onViewChange();
-      this._afRequestId = null;
-    });
+      this._processExternalUpdate();
 
-    this._disposables.add(
-      this._store.subscribe(this._processExternalUpdate),
-      atom.project.onDidChangePaths(this._processExternalUpdate),
-      new Disposable(() => {
-        window.removeEventListener('resize', this._onViewChange);
-        if (this._afRequestId != null) {
-          window.cancelAnimationFrame(this._afRequestId);
+      window.addEventListener('resize', this._onViewChange);
+      this._afRequestId = window.requestAnimationFrame(function () {
+        _this._onViewChange();
+        _this._afRequestId = null;
+      });
+
+      this._disposables.add(this._store.subscribe(this._processExternalUpdate), atom.project.onDidChangePaths(this._processExternalUpdate), new (_atom2 || _atom()).Disposable(function () {
+        window.removeEventListener('resize', _this._onViewChange);
+        if (_this._afRequestId != null) {
+          window.cancelAnimationFrame(_this._afRequestId);
         }
-      }),
-    );
-  }
-
-  componentWillUnmount(): void {
-    this._disposables.dispose();
-  }
-
-  componentDidUpdate(prevProps: Props): void {
-    if (prevProps.hidden && !this.props.hidden) {
-      this._onViewChange();
+      }));
     }
-  }
-
-  _handleFocus(event: SyntheticEvent): void {
-    // Delegate focus to the FileTree component if this component gains focus because the FileTree
-    // matches the selectors targeted by themes to show the containing panel has focus.
-    if (event.target === ReactDOM.findDOMNode(this)) {
-      ReactDOM.findDOMNode(this.refs['fileTree']).focus();
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      this._disposables.dispose();
     }
-  }
-
-  render() {
-    const workingSetsStore = this._store.getWorkingSetsStore();
-    let toolbar;
-    if (this.state.shouldRenderToolbar && workingSetsStore != null) {
-      toolbar = [
-        <FileTreeSideBarFilterComponent
-          key="filter"
-          filter={this._store.getFilter()}
-          found={this._store.getFilterFound()}
-        />,
-        <FileTreeToolbarComponent
-          key="toolbar"
-          workingSetsStore={workingSetsStore}
-        />,
-      ];
+  }, {
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate(prevProps) {
+      if (prevProps.hidden && !this.props.hidden) {
+        this._onViewChange();
+      }
     }
-
-    // Include `tabIndex` so this component can be focused by calling its native `focus` method.
-    return (
-      <div
-        className="nuclide-file-tree-toolbar-container"
-        onFocus={this._handleFocus}
-        tabIndex={0}>
-        {toolbar}
-        <PanelComponentScroller
-          ref="scroller"
-          onScroll={this._onViewChange}>
-          <FileTree
-            ref="fileTree"
-            containerHeight={this.state.scrollerHeight}
-            containerScrollTop={this.state.scrollerScrollTop}
-            scrollToPosition={this._scrollToPosition}
-          />
-        </PanelComponentScroller>
-      </div>
-    );
-  }
-
-  _processExternalUpdate(): void {
-    const shouldRenderToolbar = !this._store.roots.isEmpty();
-
-    if (shouldRenderToolbar !== this.state.shouldRenderToolbar) {
-      this.setState({shouldRenderToolbar});
-    } else {
-      // Note: It's safe to call forceUpdate here because the change events are de-bounced.
-      this.forceUpdate();
+  }, {
+    key: '_handleFocus',
+    value: function _handleFocus(event) {
+      // Delegate focus to the FileTree component if this component gains focus because the FileTree
+      // matches the selectors targeted by themes to show the containing panel has focus.
+      if (event.target === (_reactForAtom2 || _reactForAtom()).ReactDOM.findDOMNode(this)) {
+        (_reactForAtom2 || _reactForAtom()).ReactDOM.findDOMNode(this.refs['fileTree']).focus();
+      }
     }
-  }
+  }, {
+    key: 'render',
+    value: function render() {
+      var workingSetsStore = this._store.getWorkingSetsStore();
+      var toolbar = undefined;
+      if (this.state.shouldRenderToolbar && workingSetsStore != null) {
+        toolbar = [(_reactForAtom2 || _reactForAtom()).React.createElement((_FileTreeSideBarFilterComponent2 || _FileTreeSideBarFilterComponent()).default, {
+          key: 'filter',
+          filter: this._store.getFilter(),
+          found: this._store.getFilterFound()
+        }), (_reactForAtom2 || _reactForAtom()).React.createElement((_FileTreeToolbarComponent2 || _FileTreeToolbarComponent()).FileTreeToolbarComponent, {
+          key: 'toolbar',
+          workingSetsStore: workingSetsStore
+        })];
+      }
 
-  _onViewChange(): void {
-    const node = ReactDOM.findDOMNode(this.refs['scroller']);
-    const {clientHeight, scrollTop} = node;
-
-    if (clientHeight !== this.state.scrollerHeight || scrollTop !== this.state.scrollerScrollTop) {
-      this.setState({scrollerHeight: clientHeight, scrollerScrollTop: scrollTop});
+      // Include `tabIndex` so this component can be focused by calling its native `focus` method.
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        {
+          className: 'nuclide-file-tree-toolbar-container',
+          onFocus: this._handleFocus,
+          tabIndex: 0 },
+        toolbar,
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_nuclideUiLibPanelComponentScroller2 || _nuclideUiLibPanelComponentScroller()).PanelComponentScroller,
+          {
+            ref: 'scroller',
+            onScroll: this._onViewChange },
+          (_reactForAtom2 || _reactForAtom()).React.createElement((_FileTree2 || _FileTree()).FileTree, {
+            ref: 'fileTree',
+            containerHeight: this.state.scrollerHeight,
+            containerScrollTop: this.state.scrollerScrollTop,
+            scrollToPosition: this._scrollToPosition
+          })
+        )
+      );
     }
-  }
+  }, {
+    key: '_processExternalUpdate',
+    value: function _processExternalUpdate() {
+      var shouldRenderToolbar = !this._store.roots.isEmpty();
 
-  _scrollToPosition(top: number, height: number): void {
-    const requestedBottom = top + height;
-    const currentBottom = this.state.scrollerScrollTop + this.state.scrollerHeight;
-    if (top > this.state.scrollerScrollTop && requestedBottom <= currentBottom) {
-      return;  // Already in the view
+      if (shouldRenderToolbar !== this.state.shouldRenderToolbar) {
+        this.setState({ shouldRenderToolbar: shouldRenderToolbar });
+      } else {
+        // Note: It's safe to call forceUpdate here because the change events are de-bounced.
+        this.forceUpdate();
+      }
     }
+  }, {
+    key: '_onViewChange',
+    value: function _onViewChange() {
+      var node = (_reactForAtom2 || _reactForAtom()).ReactDOM.findDOMNode(this.refs['scroller']);
+      var clientHeight = node.clientHeight;
+      var scrollTop = node.scrollTop;
 
-    const node = ReactDOM.findDOMNode(this.refs['scroller']);
-    if (node == null) {
-      return;
+      if (clientHeight !== this.state.scrollerHeight || scrollTop !== this.state.scrollerScrollTop) {
+        this.setState({ scrollerHeight: clientHeight, scrollerScrollTop: scrollTop });
+      }
     }
-    const newTop = Math.max(top + height / 2 - this.state.scrollerHeight / 2, 0);
-    setImmediate(() => {
-      try {  // For the rather unlikely chance that the node is already gone from the DOM
-        node.scrollTop = newTop;
-        this.setState({scrollerScrollTop: newTop});
-      } catch (e) {}
-    });
-  }
-}
+  }, {
+    key: '_scrollToPosition',
+    value: function _scrollToPosition(top, height) {
+      var _this2 = this;
+
+      var requestedBottom = top + height;
+      var currentBottom = this.state.scrollerScrollTop + this.state.scrollerHeight;
+      if (top > this.state.scrollerScrollTop && requestedBottom <= currentBottom) {
+        return; // Already in the view
+      }
+
+      var node = (_reactForAtom2 || _reactForAtom()).ReactDOM.findDOMNode(this.refs['scroller']);
+      if (node == null) {
+        return;
+      }
+      var newTop = Math.max(top + height / 2 - this.state.scrollerHeight / 2, 0);
+      setImmediate(function () {
+        try {
+          // For the rather unlikely chance that the node is already gone from the DOM
+          node.scrollTop = newTop;
+          _this2.setState({ scrollerScrollTop: newTop });
+        } catch (e) {}
+      });
+    }
+  }]);
+
+  return FileTreeSidebarComponent;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
 
 module.exports = FileTreeSidebarComponent;

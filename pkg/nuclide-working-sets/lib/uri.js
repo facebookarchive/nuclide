@@ -1,5 +1,14 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.normalizePathUri = normalizePathUri;
+exports.dedupeNormalizedUris = dedupeNormalizedUris;
+exports.splitUri = splitUri;
+exports.isUriBelow = isUriBelow;
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +18,46 @@
  * the root directory of this source tree.
  */
 
-import url from 'url';
-import invariant from 'assert';
-import {parse, normalize, pathModuleFor} from '../../nuclide-remote-uri';
+var _url2;
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+function _url() {
+  return _url2 = _interopRequireDefault(require('url'));
+}
 
-export function normalizePathUri(uri: NuclideUri): string {
-  const {hostname, path} = parse(uri);
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _nuclideRemoteUri2;
+
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = require('../../nuclide-remote-uri');
+}
+
+function normalizePathUri(uri) {
+  var _ref = (0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).parse)(uri);
+
+  var hostname = _ref.hostname;
+  var path = _ref.path;
+
   if (hostname != null && hostname !== '') {
     // TODO: advinsky replace with remote-uri.normalize() when task t10040084 is closed
-    return `nuclide://${hostname}${normalizePath(path)}`;
+    return 'nuclide://' + hostname + normalizePath(path);
   } else {
     return normalizePath(uri);
   }
 }
 
-export function dedupeNormalizedUris(uris: Array<string>): Array<string> {
-  const dedepped = uris.slice();
+function dedupeNormalizedUris(uris) {
+  var dedepped = uris.slice();
   dedepped.sort();
 
-  let lastOkIndex = -1;
+  var lastOkIndex = -1;
 
-  return dedepped.filter((u, i) => {
-    const sep = pathModuleFor(u).sep;
+  return dedepped.filter(function (u, i) {
+    var sep = (0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).pathModuleFor)(u).sep;
     if (i !== 0 && u.startsWith(dedepped[lastOkIndex] + sep)) {
       return false;
     }
@@ -42,30 +67,33 @@ export function dedupeNormalizedUris(uris: Array<string>): Array<string> {
   });
 }
 
-export function splitUri(uri: string): Array<string> {
-  const sep = pathModuleFor(uri).sep;
+function splitUri(uri) {
+  var sep = (0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).pathModuleFor)(uri).sep;
   // Can't user remote-uri.parse() here, as the (normzlized) URI might no longer conform
-  const {hostname, path} = url.parse(uri);
+
+  var _default$parse = (_url2 || _url()).default.parse(uri);
+
+  var hostname = _default$parse.hostname;
+  var path = _default$parse.path;
 
   if (hostname) {
-    const tokensInPath = path ? path.split(sep) : [];
-    return [hostname, sep, ...tokensInPath];
+    var tokensInPath = path ? path.split(sep) : [];
+    return [hostname, sep].concat(_toConsumableArray(tokensInPath));
   } else {
-    const tokensInPath = uri.split(sep);
-    return ['localhost', sep, ...tokensInPath];
+    var tokensInPath = uri.split(sep);
+    return ['localhost', sep].concat(_toConsumableArray(tokensInPath));
   }
 }
 
-export function isUriBelow(ancestorUri: string, descendantUri: string): boolean {
-  const sep = pathModuleFor(ancestorUri).sep;
-  return descendantUri.startsWith(ancestorUri) &&
-    (descendantUri[ancestorUri.length] === sep || ancestorUri.length === descendantUri.length);
+function isUriBelow(ancestorUri, descendantUri) {
+  var sep = (0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).pathModuleFor)(ancestorUri).sep;
+  return descendantUri.startsWith(ancestorUri) && (descendantUri[ancestorUri.length] === sep || ancestorUri.length === descendantUri.length);
 }
 
-function normalizePath(path?: string): string {
-  invariant(path);
-  const normalized = normalize(path);
-  const sep = pathModuleFor(path).sep;
+function normalizePath(path) {
+  (0, (_assert2 || _assert()).default)(path);
+  var normalized = (0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).normalize)(path);
+  var sep = (0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).pathModuleFor)(path).sep;
   if (normalized.endsWith(sep)) {
     return normalized.slice(0, -1);
   }

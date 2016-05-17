@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +8,16 @@
  * the root directory of this source tree.
  */
 
-import type {ImportDefaultSpecifier} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import flatten from '../../utils/flatten';
+var _utilsFlatten2;
 
-function printImportDefaultSpecifier(
-  print: Print,
-  node: ImportDefaultSpecifier,
-): Lines {
-  return flatten(print(node.local));
+function _utilsFlatten() {
+  return _utilsFlatten2 = _interopRequireDefault(require('../../utils/flatten'));
+}
+
+function printImportDefaultSpecifier(print, node) {
+  return (0, (_utilsFlatten2 || _utilsFlatten()).default)(print(node.local));
 }
 
 module.exports = printImportDefaultSpecifier;

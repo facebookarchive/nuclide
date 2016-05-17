@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.once = once;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +11,16 @@
  * the root directory of this source tree.
  */
 
-export function once<T>(fn: () => T): () => T {
-  let ret;
-  return function(): T {
+function once(fn) {
+  var ret = undefined;
+  return function () {
     // The type gymnastics here are so `fn` can be
     // garbage collected once we've used it.
     if (!fn) {
-      return (ret: any);
+      return ret;
     } else {
       ret = fn.apply(this, arguments);
-      fn = (null: any);
+      fn = null;
       return ret;
     }
   };

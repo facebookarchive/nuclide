@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +8,28 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {UpdateExpression} from 'ast-types-flow';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import markers from '../../constants/markers';
-import wrapExpression from '../../wrappers/simple/wrapExpression';
+var _constantsMarkers2;
 
-function printUpdateExpression(print: Print, node: UpdateExpression): Lines {
-  const wrap = x => wrapExpression(print, node, x);
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+var _wrappersSimpleWrapExpression2;
+
+function _wrappersSimpleWrapExpression() {
+  return _wrappersSimpleWrapExpression2 = _interopRequireDefault(require('../../wrappers/simple/wrapExpression'));
+}
+
+function printUpdateExpression(print, node) {
+  var wrap = function wrap(x) {
+    return (0, (_wrappersSimpleWrapExpression2 || _wrappersSimpleWrapExpression()).default)(print, node, x);
+  };
   if (node.prefix) {
-    return wrap([
-      node.operator,
-      markers.noBreak,
-      print(node.argument),
-    ]);
+    return wrap([node.operator, (_constantsMarkers2 || _constantsMarkers()).default.noBreak, print(node.argument)]);
   } else {
-    return wrap([
-      print(node.argument),
-      markers.noBreak,
-      node.operator,
-    ]);
+    return wrap([print(node.argument), (_constantsMarkers2 || _constantsMarkers()).default.noBreak, node.operator]);
   }
 }
 

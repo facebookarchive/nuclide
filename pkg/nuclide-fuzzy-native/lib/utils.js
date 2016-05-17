@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +10,9 @@
  * the root directory of this source tree.
  */
 
-import type {QueryScore} from './QueryScore';
+exports.valueComparator = valueComparator;
+exports.scoreComparator = scoreComparator;
+exports.inverseScoreComparator = inverseScoreComparator;
 
 /**
  * String comparator that lists the capitalized verson of a string before the lowercase version.
@@ -25,19 +28,20 @@ import type {QueryScore} from './QueryScore';
  *
  * @return <0 if a should appear before b in a list; >0 if b should appear before a in a list
  */
-export function valueComparator(a: string, b: string): number {
-  const len = Math.min(a.length, b.length);
-  for (let i = 0; i < len; i++) {
-    const charA = a.charAt(i);
-    const charB = b.charAt(i);
+
+function valueComparator(a, b) {
+  var len = Math.min(a.length, b.length);
+  for (var i = 0; i < len; i++) {
+    var charA = a.charAt(i);
+    var charB = b.charAt(i);
     if (charA === charB) {
       continue;
     }
 
-    const aUpper = charA.toUpperCase();
-    const bUpper = charB.toUpperCase();
+    var aUpper = charA.toUpperCase();
+    var bUpper = charB.toUpperCase();
 
-    const caseInsensitiveCompare = aUpper.localeCompare(bUpper);
+    var caseInsensitiveCompare = aUpper.localeCompare(bUpper);
     if (caseInsensitiveCompare !== 0) {
       return caseInsensitiveCompare;
     }
@@ -53,8 +57,9 @@ export function valueComparator(a: string, b: string): number {
 /**
  * @return >0 if a is the greater QueryScore; <0 if b is the greater QueryScore.
  */
-export function scoreComparator(a: QueryScore, b: QueryScore): number {
-  const cmp = a.score - b.score;
+
+function scoreComparator(a, b) {
+  var cmp = a.score - b.score;
   if (cmp !== 0) {
     return cmp;
   } else {
@@ -62,6 +67,6 @@ export function scoreComparator(a: QueryScore, b: QueryScore): number {
   }
 }
 
-export function inverseScoreComparator(a: QueryScore, b: QueryScore): number {
+function inverseScoreComparator(a, b) {
   return scoreComparator(b, a);
 }

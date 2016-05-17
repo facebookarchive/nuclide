@@ -1,91 +1,24 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
-/*
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import urlJoin from 'url-join';
-import path from 'path';
-
-import {parse} from '../../nuclide-remote-uri';
-import {fsPromise} from '../../nuclide-commons';
-import {getLogger} from '../../nuclide-logging';
-
-import {PathSet} from './PathSet';
-import {getPaths} from './PathSetFactory';
-import PathSetUpdater from './PathSetUpdater';
-
-const logger = getLogger();
-
-export type FileSearchResult = {
-  score: number;
-  path: string;
-  matchIndexes: Array<number>;
-};
-
-class FileSearch {
-  _originalUri: string;
-  _pathSet: PathSet;
-
-  constructor(fullUri: string, pathSet: PathSet) {
-    this._originalUri = fullUri;
-    this._pathSet = pathSet;
-  }
-
-  async query(query: string): Promise<Array<FileSearchResult>> {
-    // Attempt to relativize paths that people might e.g. copy + paste.
-    let relQuery = query;
-    // If a full path is pasted, make the path relative.
-    if (relQuery.startsWith(this._originalUri + path.sep)) {
-      relQuery = relQuery.substr(this._originalUri.length + 1);
-    } else {
-      // Also try to relativize queries that start with the dirname alone.
-      const dirname = path.dirname(this._originalUri);
-      if (relQuery.startsWith(dirname + path.sep)) {
-        relQuery = relQuery.substr(dirname.length + 1);
-      }
-    }
-
-    const results = this._pathSet.match(relQuery).map(result => {
-      let {matchIndexes} = result;
-      if (matchIndexes != null) {
-        matchIndexes = matchIndexes.map(idx => idx + this._originalUri.length + 1);
-      }
-      return {
-        score: result.score,
-        path: urlJoin(this._originalUri, '/', result.value),
-        matchIndexes: matchIndexes || [],
-      };
-    });
-    return results;
-  }
-}
-
-const fileSearchForDirectoryUri = {};
-
-export async function fileSearchForDirectory(
-  directoryUri: string,
-  pathSetUpdater: ?PathSetUpdater,
-): Promise<FileSearch> {
-  let fileSearch = fileSearchForDirectoryUri[directoryUri];
+var fileSearchForDirectory = _asyncToGenerator(function* (directoryUri, pathSetUpdater) {
+  var fileSearch = fileSearchForDirectoryUri[directoryUri];
   if (fileSearch) {
     return fileSearch;
   }
 
-  const realpath = await fsPromise.realpath(parse(directoryUri).path);
-  const paths = await getPaths(realpath);
-  const pathSet = new PathSet(paths);
+  var realpath = yield (_nuclideCommons2 || _nuclideCommons()).fsPromise.realpath((0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).parse)(directoryUri).path);
+  var paths = yield (0, (_PathSetFactory2 || _PathSetFactory()).getPaths)(realpath);
+  var pathSet = new (_PathSet2 || _PathSet()).PathSet(paths);
 
-  const thisPathSetUpdater = pathSetUpdater || getPathSetUpdater();
+  var thisPathSetUpdater = pathSetUpdater || getPathSetUpdater();
   try {
-    await thisPathSetUpdater.startUpdatingPathSet(pathSet, realpath);
+    yield thisPathSetUpdater.startUpdatingPathSet(pathSet, realpath);
   } catch (e) {
-    logger.warn(`Could not update path sets for ${realpath}. Searches may be stale`, e);
+    logger.warn('Could not update path sets for ' + realpath + '. Searches may be stale', e);
     // TODO(hansonw): Fall back to manual refresh or node watches
   }
 
@@ -95,28 +28,144 @@ export async function fileSearchForDirectory(
   fileSearch = new FileSearch(directoryUri, pathSet);
   fileSearchForDirectoryUri[directoryUri] = fileSearch;
   return fileSearch;
-}
+});
 
-let pathSetUpdater;
-
-function getPathSetUpdater() {
-  if (!pathSetUpdater) {
-    pathSetUpdater = new PathSetUpdater();
-  }
-  return pathSetUpdater;
-}
+exports.fileSearchForDirectory = fileSearchForDirectory;
 
 // The return values of the following functions must be JSON-serializable so they
 // can be sent across a process boundary.
 
-export async function initFileSearchForDirectory(directoryUri: string): Promise<void> {
-  await fileSearchForDirectory(directoryUri);
+var initFileSearchForDirectory = _asyncToGenerator(function* (directoryUri) {
+  yield fileSearchForDirectory(directoryUri);
+});
+
+exports.initFileSearchForDirectory = initFileSearchForDirectory;
+
+var doSearch = _asyncToGenerator(function* (directoryUri, query) {
+  var fileSearch = yield fileSearchForDirectory(directoryUri);
+  return fileSearch.query(query);
+});
+
+exports.doSearch = doSearch;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+var _urlJoin2;
+
+function _urlJoin() {
+  return _urlJoin2 = _interopRequireDefault(require('url-join'));
 }
 
-export async function doSearch(
-  directoryUri: string,
-  query: string,
-): Promise<Array<FileSearchResult>> {
-  const fileSearch = await fileSearchForDirectory(directoryUri);
-  return fileSearch.query(query);
+var _path2;
+
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
+
+var _nuclideRemoteUri2;
+
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = require('../../nuclide-remote-uri');
+}
+
+var _nuclideCommons2;
+
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../../nuclide-commons');
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var _PathSet2;
+
+function _PathSet() {
+  return _PathSet2 = require('./PathSet');
+}
+
+var _PathSetFactory2;
+
+function _PathSetFactory() {
+  return _PathSetFactory2 = require('./PathSetFactory');
+}
+
+var _PathSetUpdater2;
+
+function _PathSetUpdater() {
+  return _PathSetUpdater2 = _interopRequireDefault(require('./PathSetUpdater'));
+}
+
+var logger = (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)();
+
+var FileSearch = (function () {
+  function FileSearch(fullUri, pathSet) {
+    _classCallCheck(this, FileSearch);
+
+    this._originalUri = fullUri;
+    this._pathSet = pathSet;
+  }
+
+  _createClass(FileSearch, [{
+    key: 'query',
+    value: _asyncToGenerator(function* (_query) {
+      var _this = this;
+
+      // Attempt to relativize paths that people might e.g. copy + paste.
+      var relQuery = _query;
+      // If a full path is pasted, make the path relative.
+      if (relQuery.startsWith(this._originalUri + (_path2 || _path()).default.sep)) {
+        relQuery = relQuery.substr(this._originalUri.length + 1);
+      } else {
+        // Also try to relativize queries that start with the dirname alone.
+        var dirname = (_path2 || _path()).default.dirname(this._originalUri);
+        if (relQuery.startsWith(dirname + (_path2 || _path()).default.sep)) {
+          relQuery = relQuery.substr(dirname.length + 1);
+        }
+      }
+
+      var results = this._pathSet.match(relQuery).map(function (result) {
+        var matchIndexes = result.matchIndexes;
+
+        if (matchIndexes != null) {
+          matchIndexes = matchIndexes.map(function (idx) {
+            return idx + _this._originalUri.length + 1;
+          });
+        }
+        return {
+          score: result.score,
+          path: (0, (_urlJoin2 || _urlJoin()).default)(_this._originalUri, '/', result.value),
+          matchIndexes: matchIndexes || []
+        };
+      });
+      return results;
+    })
+  }]);
+
+  return FileSearch;
+})();
+
+var fileSearchForDirectoryUri = {};
+
+var pathSetUpdater = undefined;
+
+function getPathSetUpdater() {
+  if (!pathSetUpdater) {
+    exports.pathSetUpdater = exports.pathSetUpdater = pathSetUpdater = new (_PathSetUpdater2 || _PathSetUpdater()).default();
+  }
+  return pathSetUpdater;
 }

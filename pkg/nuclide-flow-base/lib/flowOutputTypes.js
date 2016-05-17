@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -13,76 +14,21 @@
 
 // Types for the old `flow status` output -- v0.22 and below
 
-export type OldFlowStatusOutput = {
-  passed: boolean;
-  // This is not actually the Flow version; instead it is a build ID or something.
-  version?: string;
-  errors: Array<OldFlowStatusError>;
-};
-
-export type OldFlowStatusError = {
-  kind: string;
-  operation?: OldFlowStatusErrorOperation;
-  message: Array<OldFlowStatusErrorMessageComponent>;
-};
-
-export type OldBaseFlowStatusErrorMessageComponent = {
-  // If there is no path component, this is the empty string. We should make it null instead, in
-  // that case (t8644340)
-  path: string;
-  descr: string;
-  line: number;
-  start: number;
-  end: number;
-  endline: number;
-};
-
-export type OldFlowStatusErrorMessageComponent = OldBaseFlowStatusErrorMessageComponent & {
-  level: 'error' | 'warning';
-};
-
 // Same as FlowStatusErrorMessageComponent, except without the 'level' field.
-export type OldFlowStatusErrorOperation = OldBaseFlowStatusErrorMessageComponent;
 
 // New types for `flow status` v0.23.0 (or possibly v0.24.0, it has yet to be finalized)
 
-export type NewFlowStatusOutput = {
-  passed: boolean;
-  flowVersion: string;
-  errors: Array<NewFlowStatusError>;
-};
+// There is also an `extra` field where additional details about certain kinds of errors are
+// provided. For now we will ignore these details.
 
-export type NewFlowStatusError = {
-  level: 'error' | 'warning';
-  // e.g. parse, infer, maybe others?
-  kind: string;
-  message: Array<NewFlowStatusErrorMessageComponent>;
-  operation?: NewFlowStatusErrorMessageComponent;
+// The old path, line, etc. fields also currently exist here, but they are deprecated in favor of
+// `loc`.
 
-  // There is also an `extra` field where additional details about certain kinds of errors are
-  // provided. For now we will ignore these details.
-};
+// This is not actually the Flow version; instead it is a build ID or something.
 
-export type NewFlowStatusErrorMessageComponent = {
-  descr: string;
-  loc?: FlowLoc;
-  // The old path, line, etc. fields also currently exist here, but they are deprecated in favor of
-  // `loc`.
-};
+// If there is no path component, this is the empty string. We should make it null instead, in
+// that case (t8644340)
 
-export type FlowLoc = {
-  // file path
-  source: string;
-  start: FlowPoint;
-  end: FlowPoint;
-};
+// e.g. parse, infer, maybe others?
 
-export type FlowLocNoSource = {
-  start: FlowPoint;
-  end: FlowPoint;
-};
-
-export type FlowPoint = {
-  column: number;
-  line: number;
-};
+// file path

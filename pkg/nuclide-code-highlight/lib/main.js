@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,43 +10,57 @@
  * the root directory of this source tree.
  */
 
-import type {CodeHighlightProvider} from './types';
-import type CodeHighlightManager from './CodeHighlightManager';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-class Activation {
-  _codeHighlightManager: CodeHighlightManager;
+exports.activate = activate;
+exports.consumeProvider = consumeProvider;
+exports.deactivate = deactivate;
 
-  activate() {
-    const HighlightManager = require('./CodeHighlightManager');
-    // $FlowIssue -- https://github.com/facebook/flow/issues/996
-    this._codeHighlightManager = new HighlightManager();
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var Activation = (function () {
+  function Activation() {
+    _classCallCheck(this, Activation);
   }
 
-  consumeProvider(provider: CodeHighlightProvider) {
-    this._codeHighlightManager.addProvider(provider);
-  }
+  _createClass(Activation, [{
+    key: 'activate',
+    value: function activate() {
+      var HighlightManager = require('./CodeHighlightManager');
+      // $FlowIssue -- https://github.com/facebook/flow/issues/996
+      this._codeHighlightManager = new HighlightManager();
+    }
+  }, {
+    key: 'consumeProvider',
+    value: function consumeProvider(provider) {
+      this._codeHighlightManager.addProvider(provider);
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._codeHighlightManager.dispose();
+    }
+  }]);
 
-  dispose() {
-    this._codeHighlightManager.dispose();
-  }
-}
+  return Activation;
+})();
 
-let activation: ?Activation = null;
+var activation = null;
 
-export function activate(state: ?Object) {
+function activate(state) {
   if (!activation) {
     activation = new Activation(state);
     activation.activate();
   }
 }
 
-export function consumeProvider(provider: CodeHighlightProvider) {
+function consumeProvider(provider) {
   if (activation != null) {
     activation.consumeProvider(provider);
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;

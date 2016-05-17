@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +10,72 @@
  * the root directory of this source tree.
  */
 
-import type {AgentOptions} from './main';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import url from 'url';
-import WS from 'ws';
-import uuid from 'uuid';
-import {EventEmitter} from 'events';
-import {event} from '../../nuclide-commons';
-import {WebSocketTransport} from './WebSocketTransport';
-import {QueuedTransport} from './QueuedTransport';
-import {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
-import invariant from 'assert';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-const logger = require('../../nuclide-logging').getLogger();
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const INITIAL_RECONNECT_TIME_MS = 10;
-const MAX_RECONNECT_TIME_MS = 5000;
+var _url2;
+
+function _url() {
+  return _url2 = _interopRequireDefault(require('url'));
+}
+
+var _ws2;
+
+function _ws() {
+  return _ws2 = _interopRequireDefault(require('ws'));
+}
+
+var _uuid2;
+
+function _uuid() {
+  return _uuid2 = _interopRequireDefault(require('uuid'));
+}
+
+var _events2;
+
+function _events() {
+  return _events2 = require('events');
+}
+
+var _nuclideCommons2;
+
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../../nuclide-commons');
+}
+
+var _WebSocketTransport2;
+
+function _WebSocketTransport() {
+  return _WebSocketTransport2 = require('./WebSocketTransport');
+}
+
+var _QueuedTransport2;
+
+function _QueuedTransport() {
+  return _QueuedTransport2 = require('./QueuedTransport');
+}
+
+var _XhrConnectionHeartbeat2;
+
+function _XhrConnectionHeartbeat() {
+  return _XhrConnectionHeartbeat2 = require('./XhrConnectionHeartbeat');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var logger = require('../../nuclide-logging').getLogger();
+
+var INITIAL_RECONNECT_TIME_MS = 10;
+var MAX_RECONNECT_TIME_MS = 5000;
 
 // The Nuclide Socket class does several things:
 //   - Provides a transport mechanism for sending/receiving JSON messages
@@ -45,228 +95,256 @@ const MAX_RECONNECT_TIME_MS = 5000;
 //   - message(message: Object): on receipt fo JSON message
 //   - heartbeat: On receipt of successful heartbeat
 //   - heartbeat.error({code, originalCode, message}): On failure of heartbeat
-export class NuclideSocket {
-  id: string;
 
-  _serverUri: string;
-  _options: ?AgentOptions;
-  _reconnectTime: number;
-  _reconnectTimer: ?number; // ID from a setTimeout() call.
-  _previouslyConnected: boolean;
-  _websocketUri: string;
-  _emitter: EventEmitter;
-  _transport: ?QueuedTransport;
-  _heartbeat: XhrConnectionHeartbeat;
+var NuclideSocket = (function () {
+  function NuclideSocket(serverUri, options) {
+    var _this = this;
 
-  constructor(serverUri: string, options: ?AgentOptions) {
-    this._emitter = new EventEmitter();
+    _classCallCheck(this, NuclideSocket);
+
+    this._emitter = new (_events2 || _events()).EventEmitter();
     this._serverUri = serverUri;
     this._options = options;
-    this.id = uuid.v4();
+    this.id = (_uuid2 || _uuid()).default.v4();
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
     this._reconnectTimer = null;
     this._previouslyConnected = false;
-    const transport = new QueuedTransport(this.id);
+    var transport = new (_QueuedTransport2 || _QueuedTransport()).QueuedTransport(this.id);
     this._transport = transport;
-    transport.onMessage(message => {
-      this._emitter.emit('message', message);
+    transport.onMessage(function (message) {
+      _this._emitter.emit('message', message);
     });
-    transport.onDisconnect(() => {
-      if (this.isDisconnected()) {
-        this._emitter.emit('status', false);
-        this._emitter.emit('disconnect');
-        this._scheduleReconnect();
+    transport.onDisconnect(function () {
+      if (_this.isDisconnected()) {
+        _this._emitter.emit('status', false);
+        _this._emitter.emit('disconnect');
+        _this._scheduleReconnect();
       }
     });
 
-    const {protocol, host} = url.parse(serverUri);
-    this._websocketUri = `ws${protocol === 'https:' ? 's' : ''}://${host}`;
+    var _default$parse = (_url2 || _url()).default.parse(serverUri);
 
-    this._heartbeat = new XhrConnectionHeartbeat(serverUri, options);
-    this._heartbeat.onConnectionRestored(() => {
-      this._scheduleReconnect();
+    var protocol = _default$parse.protocol;
+    var host = _default$parse.host;
+
+    this._websocketUri = 'ws' + (protocol === 'https:' ? 's' : '') + '://' + host;
+
+    this._heartbeat = new (_XhrConnectionHeartbeat2 || _XhrConnectionHeartbeat()).XhrConnectionHeartbeat(serverUri, options);
+    this._heartbeat.onConnectionRestored(function () {
+      _this._scheduleReconnect();
     });
 
     this._reconnect();
   }
 
-  isConnected(): boolean {
-    return this._transport != null && this._transport.getState() === 'open';
-  }
+  _createClass(NuclideSocket, [{
+    key: 'isConnected',
+    value: function isConnected() {
+      return this._transport != null && this._transport.getState() === 'open';
+    }
+  }, {
+    key: 'isDisconnected',
+    value: function isDisconnected() {
+      return this._transport != null && this._transport.getState() === 'disconnected';
+    }
+  }, {
+    key: 'waitForConnect',
+    value: function waitForConnect() {
+      var _this2 = this;
 
-  isDisconnected(): boolean {
-    return this._transport != null && this._transport.getState() === 'disconnected';
-  }
+      return new Promise(function (resolve, reject) {
+        if (_this2.isConnected()) {
+          return resolve();
+        } else {
+          _this2.onConnect(resolve);
+          _this2.onReconnect(resolve);
+        }
+      });
+    }
+  }, {
+    key: '_reconnect',
+    value: function _reconnect() {
+      var _this3 = this;
 
-  waitForConnect(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (this.isConnected()) {
-        return resolve();
-      } else {
-        this.onConnect(resolve);
-        this.onReconnect(resolve);
-      }
-    });
-  }
+      (0, (_assert2 || _assert()).default)(this.isDisconnected());
 
-  _reconnect() {
-    invariant(this.isDisconnected());
+      var websocket = new (_ws2 || _ws()).default(this._websocketUri, this._options);
 
-    const websocket = new WS(this._websocketUri, this._options);
+      // Need to add this otherwise unhandled errors during startup will result
+      // in uncaught exceptions. This is due to EventEmitter treating 'error'
+      // events specially.
+      var onSocketError = function onSocketError(error) {
+        logger.error('WebSocket Error - attempting connection... ' + error.message);
+      };
+      websocket.on('error', onSocketError);
 
-    // Need to add this otherwise unhandled errors during startup will result
-    // in uncaught exceptions. This is due to EventEmitter treating 'error'
-    // events specially.
-    const onSocketError = error => {
-      logger.error(`WebSocket Error - attempting connection... ${error.message}`);
-    };
-    websocket.on('error', onSocketError);
-
-    const onSocketOpen = async () => {
-      const sendIdResult = await sendOneMessage(websocket, this.id);
-      switch (sendIdResult.kind) {
-        case 'close':
-          websocket.close();
-          logger.info('WebSocket closed before sending id handshake');
-          if (this.isDisconnected()) {
-            logger.info('WebSocket reconnecting after closed.');
-            this._scheduleReconnect();
-          }
-          break;
-        case 'error':
-          websocket.close();
-          logger.error('WebSocket Error before sending id handshake', sendIdResult.message);
-          if (this.isDisconnected()) {
-            logger.info('WebSocket reconnecting after error.');
-            this._scheduleReconnect();
-          }
-          break;
-        case 'success':
-          if (this.isDisconnected()) {
-            const ws = new WebSocketTransport(this.id, websocket);
-            ws.onError(error => { ws.close(); });
-            invariant(this._transport != null);
-            this._transport.reconnect(ws);
-            websocket.removeListener('error', onSocketError);
-            this._emitter.emit('status', true);
-            if (this._previouslyConnected) {
-              logger.info('WebSocket reconnected');
-              this._emitter.emit('reconnect');
-            } else {
-              logger.info('WebSocket connected');
-              this._emitter.emit('connect');
+      var onSocketOpen = _asyncToGenerator(function* () {
+        var sendIdResult = yield sendOneMessage(websocket, _this3.id);
+        switch (sendIdResult.kind) {
+          case 'close':
+            websocket.close();
+            logger.info('WebSocket closed before sending id handshake');
+            if (_this3.isDisconnected()) {
+              logger.info('WebSocket reconnecting after closed.');
+              _this3._scheduleReconnect();
             }
-            this._previouslyConnected = true;
-            this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
-          }
-          break;
+            break;
+          case 'error':
+            websocket.close();
+            logger.error('WebSocket Error before sending id handshake', sendIdResult.message);
+            if (_this3.isDisconnected()) {
+              logger.info('WebSocket reconnecting after error.');
+              _this3._scheduleReconnect();
+            }
+            break;
+          case 'success':
+            if (_this3.isDisconnected()) {
+              (function () {
+                var ws = new (_WebSocketTransport2 || _WebSocketTransport()).WebSocketTransport(_this3.id, websocket);
+                ws.onError(function (error) {
+                  ws.close();
+                });
+                (0, (_assert2 || _assert()).default)(_this3._transport != null);
+                _this3._transport.reconnect(ws);
+                websocket.removeListener('error', onSocketError);
+                _this3._emitter.emit('status', true);
+                if (_this3._previouslyConnected) {
+                  logger.info('WebSocket reconnected');
+                  _this3._emitter.emit('reconnect');
+                } else {
+                  logger.info('WebSocket connected');
+                  _this3._emitter.emit('connect');
+                }
+                _this3._previouslyConnected = true;
+                _this3._reconnectTime = INITIAL_RECONNECT_TIME_MS;
+              })();
+            }
+            break;
+        }
+      });
+      websocket.on('open', onSocketOpen);
+    }
+  }, {
+    key: '_scheduleReconnect',
+    value: function _scheduleReconnect() {
+      var _this4 = this;
+
+      if (this._reconnectTimer) {
+        return;
       }
-    };
-    websocket.on('open', onSocketOpen);
-  }
-
-  _scheduleReconnect() {
-    if (this._reconnectTimer) {
-      return;
-    }
-    // Exponential reconnect time trials.
-    this._reconnectTimer = setTimeout(() => {
-      this._reconnectTimer = null;
-      if (this.isDisconnected()) {
-        this._reconnect();
+      // Exponential reconnect time trials.
+      this._reconnectTimer = setTimeout(function () {
+        _this4._reconnectTimer = null;
+        if (_this4.isDisconnected()) {
+          _this4._reconnect();
+        }
+      }, this._reconnectTime);
+      this._reconnectTime = this._reconnectTime * 2;
+      if (this._reconnectTime > MAX_RECONNECT_TIME_MS) {
+        this._reconnectTime = MAX_RECONNECT_TIME_MS;
       }
-    }, this._reconnectTime);
-    this._reconnectTime = this._reconnectTime * 2;
-    if (this._reconnectTime > MAX_RECONNECT_TIME_MS) {
-      this._reconnectTime = MAX_RECONNECT_TIME_MS;
     }
-  }
-
-  _clearReconnectTimer() {
-    if (this._reconnectTimer) {
-      clearTimeout(this._reconnectTimer);
-      this._reconnectTimer = null;
+  }, {
+    key: '_clearReconnectTimer',
+    value: function _clearReconnectTimer() {
+      if (this._reconnectTimer) {
+        clearTimeout(this._reconnectTimer);
+        this._reconnectTimer = null;
+      }
     }
-  }
-
-  send(data: Object): void {
-    invariant(this._transport != null);
-    this._transport.send(data);
-  }
-
-  // Resolves if the connection looks healthy.
-  // Will reject quickly if the connection looks unhealthy.
-  testConnection(): Promise<string> {
-    return this._heartbeat.sendHeartBeat();
-  }
-
-  getServerUri(): string {
-    return this._serverUri;
-  }
-
-  close() {
-    const transport = this._transport;
-    if (transport != null) {
-      this._transport = null;
-      transport.close();
+  }, {
+    key: 'send',
+    value: function send(data) {
+      (0, (_assert2 || _assert()).default)(this._transport != null);
+      this._transport.send(data);
     }
-    this._clearReconnectTimer();
-    this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
-    this._heartbeat.close();
-  }
 
-  onHeartbeat(callback: () => mixed): IDisposable {
-    return this._heartbeat.onHeartbeat(callback);
-  }
+    // Resolves if the connection looks healthy.
+    // Will reject quickly if the connection looks unhealthy.
+  }, {
+    key: 'testConnection',
+    value: function testConnection() {
+      return this._heartbeat.sendHeartBeat();
+    }
+  }, {
+    key: 'getServerUri',
+    value: function getServerUri() {
+      return this._serverUri;
+    }
+  }, {
+    key: 'close',
+    value: function close() {
+      var transport = this._transport;
+      if (transport != null) {
+        this._transport = null;
+        transport.close();
+      }
+      this._clearReconnectTimer();
+      this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
+      this._heartbeat.close();
+    }
+  }, {
+    key: 'onHeartbeat',
+    value: function onHeartbeat(callback) {
+      return this._heartbeat.onHeartbeat(callback);
+    }
+  }, {
+    key: 'onHeartbeatError',
+    value: function onHeartbeatError(callback) {
+      return this._heartbeat.onHeartbeatError(callback);
+    }
+  }, {
+    key: 'onMessage',
+    value: function onMessage(callback) {
+      return (_nuclideCommons2 || _nuclideCommons()).event.attachEvent(this._emitter, 'message', callback);
+    }
+  }, {
+    key: 'onStatus',
+    value: function onStatus(callback) {
+      return (_nuclideCommons2 || _nuclideCommons()).event.attachEvent(this._emitter, 'status', callback);
+    }
+  }, {
+    key: 'onConnect',
+    value: function onConnect(callback) {
+      return (_nuclideCommons2 || _nuclideCommons()).event.attachEvent(this._emitter, 'connect', callback);
+    }
+  }, {
+    key: 'onReconnect',
+    value: function onReconnect(callback) {
+      return (_nuclideCommons2 || _nuclideCommons()).event.attachEvent(this._emitter, 'reconnect', callback);
+    }
+  }, {
+    key: 'onDisconnect',
+    value: function onDisconnect(callback) {
+      return (_nuclideCommons2 || _nuclideCommons()).event.attachEvent(this._emitter, 'disconnect', callback);
+    }
+  }]);
 
-  onHeartbeatError(
-    callback: (code: string, originalCode: string, message: string) => mixed
-  ): IDisposable {
-    return this._heartbeat.onHeartbeatError(callback);
-  }
+  return NuclideSocket;
+})();
 
-  onMessage(callback: (message: Object) => mixed): IDisposable {
-    return event.attachEvent(this._emitter, 'message', callback);
-  }
+exports.NuclideSocket = NuclideSocket;
 
-  onStatus(callback: (connected: boolean) => mixed): IDisposable {
-    return event.attachEvent(this._emitter, 'status', callback);
-  }
-
-  onConnect(callback: () => mixed): IDisposable {
-    return event.attachEvent(this._emitter, 'connect', callback);
-  }
-
-  onReconnect(callback: () => mixed): IDisposable {
-    return event.attachEvent(this._emitter, 'reconnect', callback);
-  }
-
-  onDisconnect(callback: () => mixed): IDisposable {
-    return event.attachEvent(this._emitter, 'disconnect', callback);
-  }
-}
-
-type SendResult =
-  { kind: 'error'; message: string}
-  | { kind: 'close' }
-  | { kind: 'success' };
-
-function sendOneMessage(socket: WS, message: string): Promise<SendResult> {
-  return new Promise((resolve, reject) => {
+function sendOneMessage(socket, message) {
+  return new Promise(function (resolve, reject) {
     function finish(result) {
       onError.dispose();
       onClose.dispose();
       resolve(result);
     }
-    const onError = event.attachEvent(socket, 'event',
-      err => finish({kind: 'error', message: err}));
-    const onClose = event.attachEvent(socket, 'close', () => finish({kind: 'close'}));
-    socket.send(message, error => {
+    var onError = (_nuclideCommons2 || _nuclideCommons()).event.attachEvent(socket, 'event', function (err) {
+      return finish({ kind: 'error', message: err });
+    });
+    var onClose = (_nuclideCommons2 || _nuclideCommons()).event.attachEvent(socket, 'close', function () {
+      return finish({ kind: 'close' });
+    });
+    socket.send(message, function (error) {
       if (error == null) {
-        finish({kind: 'success'});
+        finish({ kind: 'success' });
       } else {
-        finish({kind: 'error', message: error.toString()});
+        finish({ kind: 'error', message: error.toString() });
       }
     });
   });
 }
+// ID from a setTimeout() call.

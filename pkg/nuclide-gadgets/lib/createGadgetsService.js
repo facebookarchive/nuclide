@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,48 +10,54 @@
  * the root directory of this source tree.
  */
 
-import type Commands from './Commands';
-import type {Gadget, GadgetsService} from './types';
+exports.default = createGadgetsService;
 
-import {Disposable} from 'atom';
+var _atom2;
 
-type Result = IDisposable & {service: GadgetsService};
+function _atom() {
+  return _atom2 = require('atom');
+}
 
 /**
  * Create an object that other packages can use (via Atom services) to interact with this package.
  */
-export default function createGadgetsService(commands_: Commands): Result {
+
+function createGadgetsService(commands_) {
   // Create a local, nullable variable to close over so that other packages won't keep the
   // `Commands` instance in memory after this package has been deactivated.
-  let commands = commands_;
+  var commands = commands_;
 
-  const service = {
-    destroyGadget(gadgetId: string): void {
+  var service = {
+    destroyGadget: function destroyGadget(gadgetId) {
       if (commands != null) {
         commands.destroyGadget(gadgetId);
       }
     },
 
-    registerGadget(gadget: Gadget): IDisposable {
+    registerGadget: function registerGadget(gadget) {
       if (commands != null) {
         commands.registerGadget(gadget);
       }
-      return new Disposable(() => {
+      return new (_atom2 || _atom()).Disposable(function () {
         if (commands != null) {
           commands.unregisterGadget(gadget.gadgetId);
         }
       });
     },
 
-    showGadget(gadgetId: string): void {
+    showGadget: function showGadget(gadgetId) {
       if (commands != null) {
         commands.showGadget(gadgetId);
       }
-    },
+    }
   };
 
   return {
-    service,
-    dispose: () => { commands = null; },
+    service: service,
+    dispose: function dispose() {
+      commands = null;
+    }
   };
 }
+
+module.exports = exports.default;
