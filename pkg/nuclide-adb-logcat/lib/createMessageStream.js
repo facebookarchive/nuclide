@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +10,45 @@
  * the root directory of this source tree.
  */
 
-import type {Message} from '../../nuclide-console/lib/types';
+exports.default = createMessageStream;
 
-import {CompositeSubscription} from '../../nuclide-commons';
-import createMessage from './createMessage';
-import parseLogcatMetadata from './parseLogcatMetadata';
-import Rx from 'rxjs';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export default function createMessageStream(
-  line$: Rx.Observable<string>,
-): Rx.Observable<Message> {
+var _nuclideCommons2;
+
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../../nuclide-commons');
+}
+
+var _createMessage2;
+
+function _createMessage() {
+  return _createMessage2 = _interopRequireDefault(require('./createMessage'));
+}
+
+var _parseLogcatMetadata2;
+
+function _parseLogcatMetadata() {
+  return _parseLogcatMetadata2 = _interopRequireDefault(require('./parseLogcatMetadata'));
+}
+
+var _rxjs2;
+
+function _rxjs() {
+  return _rxjs2 = _interopRequireDefault(require('rxjs'));
+}
+
+function createMessageStream(line$) {
 
   // Separate the lines into groups, beginning with metadata lines.
-  return Rx.Observable.create(observer => {
-    let buffer = [];
-    let prevMetadata = null;
-    const prevLineIsBlank = () => buffer[buffer.length - 1] === '';
+  return (_rxjs2 || _rxjs()).default.Observable.create(function (observer) {
+    var buffer = [];
+    var prevMetadata = null;
+    var prevLineIsBlank = function prevLineIsBlank() {
+      return buffer[buffer.length - 1] === '';
+    };
 
-    const flush = () => {
+    var flush = function flush() {
       if (buffer.length === 0) {
         return;
       }
@@ -38,55 +60,52 @@ export default function createMessageStream(
 
       observer.next({
         metadata: prevMetadata,
-        message: buffer.join('\n'),
+        message: buffer.join('\n')
       });
       buffer = [];
       prevMetadata = null;
     };
 
-    const sharedLine$ = line$.share();
+    var sharedLine$ = line$.share();
 
-    return new CompositeSubscription(
-      // Buffer incoming lines.
-      sharedLine$.subscribe(
-        // onNext
-        line => {
-          let metadata;
-          const hasPreviousLines = buffer.length > 0;
+    return new (_nuclideCommons2 || _nuclideCommons()).CompositeSubscription(
+    // Buffer incoming lines.
+    sharedLine$.subscribe(
+    // onNext
+    function (line) {
+      var metadata = undefined;
+      var hasPreviousLines = buffer.length > 0;
 
-          if (!hasPreviousLines || prevLineIsBlank()) {
-            metadata = parseLogcatMetadata(line);
-          }
+      if (!hasPreviousLines || prevLineIsBlank()) {
+        metadata = (0, (_parseLogcatMetadata2 || _parseLogcatMetadata()).default)(line);
+      }
 
-          if (metadata) {
-            // We've reached a new message so the other one must be done.
-            flush();
-            prevMetadata = metadata;
-          } else {
-            buffer.push(line);
-          }
-        },
+      if (metadata) {
+        // We've reached a new message so the other one must be done.
+        flush();
+        prevMetadata = metadata;
+      } else {
+        buffer.push(line);
+      }
+    },
 
-        // onError
-        error => {
-          flush();
-          observer.error(error);
-        },
+    // onError
+    function (error) {
+      flush();
+      observer.error(error);
+    },
 
-        // onCompleted
-        () => {
-          flush();
-          observer.complete();
-        },
-      ),
+    // onCompleted
+    function () {
+      flush();
+      observer.complete();
+    }),
 
-      // We know *for certain* that we have a complete entry once we see the metadata for the next
-      // one. But what if the next one takes a long time to happen? After a certain point, we need
-      // to just assume we have the complete entry and move on.
-      sharedLine$.debounceTime(200).subscribe(flush),
-    );
-
-  })
-  .map(createMessage)
-  .share();
+    // We know *for certain* that we have a complete entry once we see the metadata for the next
+    // one. But what if the next one takes a long time to happen? After a certain point, we need
+    // to just assume we have the complete entry and move on.
+    sharedLine$.debounceTime(200).subscribe(flush));
+  }).map((_createMessage2 || _createMessage()).default).share();
 }
+
+module.exports = exports.default;

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +10,11 @@
  * the root directory of this source tree.
  */
 
-export type TrackEvent = {
-  key: string;
-  values: {[key: string]: mixed};
-};
-
 // This extra module enables adding spies during testing.
-export let track;
+var track = undefined;
+exports.track = track;
 try {
-  track = require('../fb/analytics').track;
+  exports.track = exports.track = track = require('../fb/analytics').track;
 } catch (e) {
-  track = require('./analytics').track;
+  exports.track = exports.track = track = require('./analytics').track;
 }

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +8,23 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {ObjectTypeProperty} from 'ast-types-flow';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2;
 
-function printObjectTypeProperty(
-  print: Print,
-  node: ObjectTypeProperty,
-): Lines {
+function _utilsFlatten() {
+  return _utilsFlatten2 = _interopRequireDefault(require('../../utils/flatten'));
+}
+
+var _constantsMarkers2;
+
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+function printObjectTypeProperty(print, node) {
   // TODO: What does static mean here?
-  return flatten([
-    print(node.key),
-    markers.noBreak,
-    node.optional ? '?:' : ':',
-    markers.noBreak,
-    markers.space,
-    print(node.value),
-  ]);
+  return (0, (_utilsFlatten2 || _utilsFlatten()).default)([print(node.key), (_constantsMarkers2 || _constantsMarkers()).default.noBreak, node.optional ? '?:' : ':', (_constantsMarkers2 || _constantsMarkers()).default.noBreak, (_constantsMarkers2 || _constantsMarkers()).default.space, print(node.value)]);
 }
 
 module.exports = printObjectTypeProperty;

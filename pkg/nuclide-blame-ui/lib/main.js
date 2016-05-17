@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.activate = activate;
+exports.getBlameGutter = getBlameGutter;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +12,8 @@
  * the root directory of this source tree.
  */
 
-export function activate(state: ?Object): void {
-}
+function activate(state) {}
 
-export function getBlameGutter() {
+function getBlameGutter() {
   return require('./BlameGutter');
 }

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +10,38 @@
  * the root directory of this source tree.
  */
 
-import type {GadgetsService} from '../../nuclide-gadgets/lib/types';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeGadgetsService = consumeGadgetsService;
 
-import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let disposables: ?CompositeDisposable = null;
+var _assert2;
 
-export function activate(): void {
-  disposables = new CompositeDisposable();
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
 }
 
-export function deactivate(): void {
-  invariant(disposables != null);
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var disposables = null;
+
+function activate() {
+  disposables = new (_atom2 || _atom()).CompositeDisposable();
+}
+
+function deactivate() {
+  (0, (_assert2 || _assert()).default)(disposables != null);
   disposables.dispose();
   disposables = null;
 }
 
-export function consumeGadgetsService(api: GadgetsService): void {
-  const Inspector = require('./ui/Inspector');
-  invariant(disposables != null);
+function consumeGadgetsService(api) {
+  var Inspector = require('./ui/Inspector');
+  (0, (_assert2 || _assert()).default)(disposables != null);
   disposables.add(api.registerGadget(Inspector));
 }

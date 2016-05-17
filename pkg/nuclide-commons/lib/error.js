@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +8,10 @@
  * the root directory of this source tree.
  */
 
-function stringifyError(error: Error): string {
-  return `name: ${error.name}, message: ${error.message}, stack: ${error.stack}.`;
+function stringifyError(error) {
+  return 'name: ' + error.name + ', message: ' + error.message + ', stack: ' + error.stack + '.';
 }
 
 module.exports = {
-  stringifyError,
+  stringifyError: stringifyError
 };

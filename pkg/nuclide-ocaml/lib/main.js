@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,47 +10,59 @@
  * the root directory of this source tree.
  */
 
-import type {LinterProvider} from '../../nuclide-diagnostics-base';
-import type {TypeHintProvider as TypeHintProviderType} from '../../nuclide-type-hint/lib/types';
+exports.activate = activate;
+exports.getHyperclickProvider = getHyperclickProvider;
+exports.createAutocompleteProvider = createAutocompleteProvider;
+exports.provideLinter = provideLinter;
+exports.createTypeHintProvider = createTypeHintProvider;
 
-import {GRAMMARS} from './constants';
+var _constants2;
 
-export function activate(): void {
+function _constants() {
+  return _constants2 = require('./constants');
 }
 
-export function getHyperclickProvider() {
+function activate() {}
+
+function getHyperclickProvider() {
   return require('./HyperclickProvider');
 }
 
-export function createAutocompleteProvider(): mixed {
-  const {trackOperationTiming} = require('../../nuclide-analytics');
-  const getSuggestions = request => {
-    return trackOperationTiming(
-      'nuclide-ocaml:getAutocompleteSuggestions',
-      () => require('./AutoComplete').getAutocompleteSuggestions(request));
+function createAutocompleteProvider() {
+  var _require = require('../../nuclide-analytics');
+
+  var trackOperationTiming = _require.trackOperationTiming;
+
+  var getSuggestions = function getSuggestions(request) {
+    return trackOperationTiming('nuclide-ocaml:getAutocompleteSuggestions', function () {
+      return require('./AutoComplete').getAutocompleteSuggestions(request);
+    });
   };
   return {
     selector: '.source.ocaml',
     inclusionPriority: 1,
     disableForSelector: '.source.ocaml .comment',
-    getSuggestions,
+    getSuggestions: getSuggestions
   };
 }
 
-export function provideLinter(): LinterProvider {
-  const MerlinLinterProvider = require('./LinterProvider');
+function provideLinter() {
+  var MerlinLinterProvider = require('./LinterProvider');
   return MerlinLinterProvider;
 }
 
-export function createTypeHintProvider(): TypeHintProviderType {
-  const {TypeHintProvider} = require('./TypeHintProvider');
-  const typeHintProvider = new TypeHintProvider();
-  const typeHint = typeHintProvider.typeHint.bind(typeHintProvider);
+function createTypeHintProvider() {
+  var _require2 = require('./TypeHintProvider');
+
+  var TypeHintProvider = _require2.TypeHintProvider;
+
+  var typeHintProvider = new TypeHintProvider();
+  var typeHint = typeHintProvider.typeHint.bind(typeHintProvider);
 
   return {
     inclusionPriority: 1,
     providerName: 'nuclide-ocaml',
-    selector: Array.from(GRAMMARS).join(', '),
-    typeHint,
+    selector: Array.from((_constants2 || _constants()).GRAMMARS).join(', '),
+    typeHint: typeHint
   };
 }

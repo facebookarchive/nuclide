@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,49 +10,48 @@
  * the root directory of this source tree.
  */
 
-import type {ProcessOutputStore} from '../../nuclide-process-output-store';
-import type {ProcessOutputHandler} from './types';
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-import {React} from 'react-for-atom';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export type RunCommandOptions = {
-  /* A title for the tab of the newly opened pane. */
-  tabTitle: string;
-  /* The ProcessOutputStore that provides the data to display. */
-  processOutputStore: ProcessOutputStore;
-  /**
-   * An optional ProcessOutputHandler that is appropriate for the expected output. See the
-   * constructor of ProcessOutputView for more information.
-   */
-  processOutputHandler?: ProcessOutputHandler;
-  /* An optional React component that will be placed at the top of the process output view. */
-  processOutputViewTopElement?: React.Element;
-  /* If true, before opening the new tab, it will close any existing tab with the same title. */
-  destroyExistingPane?: boolean;
-};
-export type RunCommandFunctionAndCleanup = {
-  runCommandInNewPane: (options: RunCommandOptions) => Promise<atom$TextEditor>;
-  disposable: IDisposable;
-};
+var _reactForAtom2;
 
-import {CompositeDisposable, Disposable} from 'atom';
-import invariant from 'assert';
-import destroyPaneItemWithTitle from '../../commons-atom/destroy-pane-item';
-import createBoundTextBuffer from './createBoundTextBuffer';
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
 
-const NUCLIDE_PROCESS_OUTPUT_VIEW_URI = 'atom://nuclide/process-output/';
-const PROCESS_OUTPUT_HANDLER_KEY = 'nuclide-processOutputHandler';
-const PROCESS_OUTPUT_STORE_KEY = 'nuclide-processOutputStore';
-const PROCESS_OUTPUT_VIEW_TOP_ELEMENT = 'nuclide-processOutputViewTopElement';
-type CreateProcessOutputViewOptions = {
-  'nuclide-processOutputHandler': ?ProcessOutputHandler;
-  'nuclide-processOutputStore': ProcessOutputStore;
-  'nuclide-processOutputViewTopElement': ?React.Element;
-};
+var _atom2;
 
-let subscriptions: ?CompositeDisposable;
-let processOutputStores: ?Set<ProcessOutputStore>;
-let logger;
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _commonsAtomDestroyPaneItem2;
+
+function _commonsAtomDestroyPaneItem() {
+  return _commonsAtomDestroyPaneItem2 = _interopRequireDefault(require('../../commons-atom/destroy-pane-item'));
+}
+
+var _createBoundTextBuffer2;
+
+function _createBoundTextBuffer() {
+  return _createBoundTextBuffer2 = _interopRequireDefault(require('./createBoundTextBuffer'));
+}
+
+var NUCLIDE_PROCESS_OUTPUT_VIEW_URI = 'atom://nuclide/process-output/';
+var PROCESS_OUTPUT_HANDLER_KEY = 'nuclide-processOutputHandler';
+var PROCESS_OUTPUT_STORE_KEY = 'nuclide-processOutputStore';
+var PROCESS_OUTPUT_VIEW_TOP_ELEMENT = 'nuclide-processOutputViewTopElement';
+
+var subscriptions = undefined;
+var processOutputStores = undefined;
+var logger = undefined;
 
 function getLogger() {
   if (!logger) {
@@ -67,34 +67,31 @@ function getLogger() {
  *   call that triggered this function. In this case, it should contain special
  *   Nuclide arguments (see `runCommandInNewPane`).
  */
-function createProcessOutputView(
-  uri: string,
-  openOptions: CreateProcessOutputViewOptions
-): HTMLElement {
-  const processOutputStore = openOptions[PROCESS_OUTPUT_STORE_KEY];
-  const processOutputHandler = openOptions[PROCESS_OUTPUT_HANDLER_KEY];
-  const processOutputViewTopElement = openOptions[PROCESS_OUTPUT_VIEW_TOP_ELEMENT];
-  const tabTitle = uri.slice(NUCLIDE_PROCESS_OUTPUT_VIEW_URI.length);
+function createProcessOutputView(uri, openOptions) {
+  var processOutputStore = openOptions[PROCESS_OUTPUT_STORE_KEY];
+  var processOutputHandler = openOptions[PROCESS_OUTPUT_HANDLER_KEY];
+  var processOutputViewTopElement = openOptions[PROCESS_OUTPUT_VIEW_TOP_ELEMENT];
+  var tabTitle = uri.slice(NUCLIDE_PROCESS_OUTPUT_VIEW_URI.length);
 
-  const ProcessOutputView = require('./ProcessOutputView');
-  const component = ProcessOutputView.createView({
+  var ProcessOutputView = require('./ProcessOutputView');
+  var component = ProcessOutputView.createView({
     title: tabTitle,
-    textBuffer: createBoundTextBuffer(processOutputStore, processOutputHandler),
-    processOutputStore,
-    processOutputViewTopElement,
+    textBuffer: (0, (_createBoundTextBuffer2 || _createBoundTextBuffer()).default)(processOutputStore, processOutputHandler),
+    processOutputStore: processOutputStore,
+    processOutputViewTopElement: processOutputViewTopElement
   });
 
-  invariant(processOutputStores);
+  (0, (_assert2 || _assert()).default)(processOutputStores);
   processOutputStores.add(processOutputStore);
 
   // When the process exits, we want to remove the reference to the process.
-  const handleProcessExit = () => {
+  var handleProcessExit = function handleProcessExit() {
     if (processOutputStores) {
       processOutputStores.delete(processOutputStore);
     }
   };
-  const handleProcessExitWithError = (error: Error) => {
-    getLogger().error(`runCommandInNewPane encountered an error running: ${tabTitle}`, error);
+  var handleProcessExitWithError = function handleProcessExitWithError(error) {
+    getLogger().error('runCommandInNewPane encountered an error running: ' + tabTitle, error);
     handleProcessExit();
   };
 
@@ -105,16 +102,14 @@ function createProcessOutputView(
 /**
  * @param options See definition of RunCommandOptions.
  */
-function runCommandInNewPane(options: RunCommandOptions): Promise<atom$TextEditor> {
-  const openOptions = {
-    [PROCESS_OUTPUT_HANDLER_KEY]: options.processOutputHandler,
-    [PROCESS_OUTPUT_STORE_KEY]: options.processOutputStore,
-    [PROCESS_OUTPUT_VIEW_TOP_ELEMENT]: options.processOutputViewTopElement,
-  };
+function runCommandInNewPane(options) {
+  var _openOptions;
 
-  const tabTitle = options.tabTitle;
+  var openOptions = (_openOptions = {}, _defineProperty(_openOptions, PROCESS_OUTPUT_HANDLER_KEY, options.processOutputHandler), _defineProperty(_openOptions, PROCESS_OUTPUT_STORE_KEY, options.processOutputStore), _defineProperty(_openOptions, PROCESS_OUTPUT_VIEW_TOP_ELEMENT, options.processOutputViewTopElement), _openOptions);
+
+  var tabTitle = options.tabTitle;
   if (options.destroyExistingPane) {
-    destroyPaneItemWithTitle(tabTitle);
+    (0, (_commonsAtomDestroyPaneItem2 || _commonsAtomDestroyPaneItem()).default)(tabTitle);
   }
   // Not documented: the 'options' passed to atom.workspace.open() are passed to the opener.
   // There's no other great way for a consumer of this service to specify a ProcessOutputHandler.
@@ -125,11 +120,11 @@ function runCommandInNewPane(options: RunCommandOptions): Promise<atom$TextEdito
  * Set up and Teardown of Atom Opener
  */
 
-function activateModule(): void {
+function activateModule() {
   if (!subscriptions) {
-    subscriptions = new CompositeDisposable();
+    subscriptions = new (_atom2 || _atom()).CompositeDisposable();
     // $FlowFixMe: the expando options argument is an undocumented hack.
-    subscriptions.add(atom.workspace.addOpener((uri, options) => {
+    subscriptions.add(atom.workspace.addOpener(function (uri, options) {
       if (uri.startsWith(NUCLIDE_PROCESS_OUTPUT_VIEW_URI)) {
         return createProcessOutputView(uri, options);
       }
@@ -138,13 +133,13 @@ function activateModule(): void {
   }
 }
 
-function disposeModule(): void {
+function disposeModule() {
   if (subscriptions) {
     subscriptions.dispose();
     subscriptions = null;
   }
   if (processOutputStores) {
-    for (const processStore of processOutputStores) {
+    for (var processStore of processOutputStores) {
       processStore.dispose();
     }
     processOutputStores = null;
@@ -155,7 +150,7 @@ function disposeModule(): void {
  * "Reference Counting"
  */
 
-let references: number = 0;
+var references = 0;
 function incrementReferences() {
   if (references === 0) {
     activateModule();
@@ -167,8 +162,7 @@ function decrementReferences() {
   references--;
   if (references < 0) {
     references = 0;
-    getLogger.error('getRunCommandInNewPane: number of decrementReferences() ' +
-      'calls has exceeded the number of incrementReferences() calls.');
+    getLogger.error('getRunCommandInNewPane: number of decrementReferences() ' + 'calls has exceeded the number of incrementReferences() calls.');
   }
   if (references === 0) {
     disposeModule();
@@ -182,12 +176,27 @@ function decrementReferences() {
  *   - disposable: A Disposable which should be disposed when this function is
  *       no longer needed by the caller.
  */
-function getRunCommandInNewPane(): RunCommandFunctionAndCleanup {
+function getRunCommandInNewPane() {
   incrementReferences();
   return {
-    runCommandInNewPane,
-    disposable: new Disposable(() => decrementReferences()),
+    runCommandInNewPane: runCommandInNewPane,
+    disposable: new (_atom2 || _atom()).Disposable(function () {
+      return decrementReferences();
+    })
   };
 }
 
 module.exports = getRunCommandInNewPane;
+
+/* A title for the tab of the newly opened pane. */
+
+/* The ProcessOutputStore that provides the data to display. */
+
+/**
+ * An optional ProcessOutputHandler that is appropriate for the expected output. See the
+ * constructor of ProcessOutputView for more information.
+ */
+
+/* An optional React component that will be placed at the top of the process output view. */
+
+/* If true, before opening the new tab, it will close any existing tab with the same title. */

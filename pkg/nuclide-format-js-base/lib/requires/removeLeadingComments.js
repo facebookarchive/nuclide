@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +8,11 @@
  * the root directory of this source tree.
  */
 
-import type {Collection, Node} from '../types/ast';
+var _utilsFirstNode2;
 
-import FirstNode from '../utils/FirstNode';
+function _utilsFirstNode() {
+  return _utilsFirstNode2 = _interopRequireDefault(require('../utils/FirstNode'));
+}
 
 /**
  * Removes the leading comments from the first node. Leading comments are
@@ -21,42 +22,40 @@ import FirstNode from '../utils/FirstNode';
  *   - if there is space betwee comment N-1 and first, comments 0 to N-1
  *   - else comments 0 to N-2
  */
-function removeLeadingComments(root: Collection): Array<Node> {
-  const firstPath = FirstNode.get(root);
+function removeLeadingComments(root) {
+  var firstPath = (_utilsFirstNode2 || _utilsFirstNode()).default.get(root);
   if (!firstPath) {
     return [];
   }
-  const first = firstPath.node;
+  var first = firstPath.node;
   if (!first || !first.comments) {
     return [];
   }
 
   // Check if the last comment ends exactly where the first node starts.
-  let transferLastcomment = false;
-  const lastComment = first.comments.reduce(
-    (curr, next) => (next.leading ? next : curr),
-    null
-  );
+  var transferLastcomment = false;
+  var lastComment = first.comments.reduce(function (curr, next) {
+    return next.leading ? next : curr;
+  }, null);
   if (lastComment && first.start != null && lastComment.end != null) {
-    const difference = Math.abs(first.start - lastComment.end);
+    var difference = Math.abs(first.start - lastComment.end);
     if (difference > 1) {
       transferLastcomment = true;
     }
   }
 
   // Count how many comments we need to transfer, treat negative counts as 0.
-  const transferCount = first.comments.reduce(
-    (count, next) => (next.leading ? count + 1 : count),
-    transferLastcomment ? 0 : -1,
-  );
+  var transferCount = first.comments.reduce(function (count, next) {
+    return next.leading ? count + 1 : count;
+  }, transferLastcomment ? 0 : -1);
   if (transferCount <= 0) {
     return [];
   }
 
   // Make the transfer.
-  const transfer = [];
-  const keep = [];
-  first.comments.forEach(comment => {
+  var transfer = [];
+  var keep = [];
+  first.comments.forEach(function (comment) {
     if (transfer.length < transferCount && comment.leading) {
       transfer.push(comment);
     } else {

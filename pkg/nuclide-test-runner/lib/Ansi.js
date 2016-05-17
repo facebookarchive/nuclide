@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +8,12 @@
  * the root directory of this source tree.
  */
 
-const Ansi = Object.freeze({
-  BLUE: '\u001B[34m',
-  GREEN: '\u001B[32m',
-  RED: '\u001B[31m',
-  RESET: '\u001B[39m',
-  YELLOW: '\u001B[33m',
+var Ansi = Object.freeze({
+  BLUE: '\u001b[34m',
+  GREEN: '\u001b[32m',
+  RED: '\u001b[31m',
+  RESET: '\u001b[39m',
+  YELLOW: '\u001b[33m'
 });
 
 module.exports = Ansi;

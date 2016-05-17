@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,46 +16,28 @@
 
 // This file is transpiled by Atom - not by nuclide-node-transpiler.
 
-import temp from 'temp';
-temp.track();
+var _temp2;
+
+function _temp() {
+  return _temp2 = _interopRequireDefault(require('temp'));
+}
+
+(_temp2 || _temp()).default.track();
 
 // http://flight-manual.atom.io/hacking-atom/sections/writing-specs/#customizing-your-test-runner
-type TestRunnerParams = {
-  testPaths: Array<string>;
-  buildAtomEnvironment: (params: BuildAtomEnvironmentParams) => AtomGlobal;
-  buildDefaultApplicationDelegate: () => Object;
-  logFile: ?string;
-  headless: boolean;
-  legacyTestRunner: (params: LegacyTestRunnerParams) => Promise<number>;
-};
 
 // https://github.com/atom/atom/blob/v1.6.2/spec/jasmine-test-runner.coffee
-type LegacyTestRunnerParams = {
-  logFile: ?string;
-  headless: boolean;
-  testPaths: Array<string>;
-  buildAtomEnvironment: (params: BuildAtomEnvironmentParams) => AtomGlobal;
-};
-
-type BuildAtomEnvironmentParams = {
-  applicationDelegate: Object;
-  window: Object;
-  document: Object;
-  configDirPath?: string;
-  enablePersistence?: boolean;
-};
-
-export default async function(params: TestRunnerParams): Promise<number> {
-  const statusCode = await params.legacyTestRunner({
+exports.default = _asyncToGenerator(function* (params) {
+  var statusCode = yield params.legacyTestRunner({
     logFile: params.logFile,
     headless: params.headless,
     testPaths: params.testPaths,
-    buildAtomEnvironment(buildEnvParams) {
+    buildAtomEnvironment: function buildAtomEnvironment(buildEnvParams) {
       // TODO(asuarez): Investigate if this is still needed.
-      buildEnvParams.configDirPath = temp.mkdirSync('atom_home');
-      const atomGlobal = params.buildAtomEnvironment(buildEnvParams);
+      buildEnvParams.configDirPath = (_temp2 || _temp()).default.mkdirSync('atom_home');
+      var atomGlobal = params.buildAtomEnvironment(buildEnvParams);
 
-      jasmine.getEnv().beforeEach(() => {
+      jasmine.getEnv().beforeEach(function () {
         // Ensure 3rd-party packages are not installed via the
         // 'atom-package-deps' package when the 'nuclide' package is activated.
         // They are assumed to be already in ~/.atom/packages. js_test_runner.py
@@ -59,11 +46,12 @@ export default async function(params: TestRunnerParams): Promise<number> {
       });
 
       return atomGlobal;
-    },
+    }
   });
 
   // Atom intercepts "process.exit" so we have to do our own manual cleanup.
-  temp.cleanupSync();
+  (_temp2 || _temp()).default.cleanupSync();
 
   return statusCode;
-}
+});
+module.exports = exports.default;

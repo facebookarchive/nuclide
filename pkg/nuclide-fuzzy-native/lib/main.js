@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +8,13 @@
  * the root directory of this source tree.
  */
 
-import {getLogger} from '../../nuclide-logging';
+var _nuclideLogging2;
 
-const logger = getLogger();
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var logger = (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)();
 
 // Use the pre-built, native module if available.
 // If not, use the fallback JS implementation.

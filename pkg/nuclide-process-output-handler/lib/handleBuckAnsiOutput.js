@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +8,8 @@
  * the root directory of this source tree.
  */
 
-const STOP_OR_RESUME_WRAPPING_REGEX = /\u001B\[\?7[hl]/g;
-const ERASE_PREVIOUS_LINE_REGEX = /\u001B\[1A\u001B\[2K/g;
+var STOP_OR_RESUME_WRAPPING_REGEX = /\u001B\[\?7[hl]/g;
+var ERASE_PREVIOUS_LINE_REGEX = /\u001B\[1A\u001B\[2K/g;
 
 /**
  * An implementation of ProcessOutputHandler that parses and applies the behavior
@@ -22,25 +21,25 @@ const ERASE_PREVIOUS_LINE_REGEX = /\u001B\[1A\u001B\[2K/g;
  *   Cursor to previous line: ESC[1A
  *   Erase line: ESC[2K
  */
-function handleBuckAnsiOutput(textBuffer: atom$TextBuffer, text: string) {
+function handleBuckAnsiOutput(textBuffer, text) {
   // The chunk of new text may span several lines, each of which may contain
   // ANSI escape characters.
-  const lines = text.split('\n');
-  for (let lineNum = 0; lineNum < lines.length; lineNum++) {
-    const line = lines[lineNum];
+  var lines = text.split('\n');
+  for (var lineNum = 0; lineNum < lines.length; lineNum++) {
+    var line = lines[lineNum];
 
     // Simply strip the 'resume wrapping' and 'stop wrapping' escape characters.
-    let newText = line.replace(STOP_OR_RESUME_WRAPPING_REGEX, '');
+    var newText = line.replace(STOP_OR_RESUME_WRAPPING_REGEX, '');
 
     // In Buck, the 'cursor to previous line' and 'erase line' escape characters
     // occur in pairs.
-    const erasePreviousLineMatches = newText.match(ERASE_PREVIOUS_LINE_REGEX);
+    var erasePreviousLineMatches = newText.match(ERASE_PREVIOUS_LINE_REGEX);
     if (erasePreviousLineMatches) {
-      const numberOfLinesToRemove = erasePreviousLineMatches.length;
+      var numberOfLinesToRemove = erasePreviousLineMatches.length;
       // This represents 'moving the cursor to previous line':
-      const endRemove = textBuffer.getLastRow() - 1;
+      var endRemove = textBuffer.getLastRow() - 1;
       // TextBuffer::deleteRows is inclusive:
-      const startRemove = endRemove - numberOfLinesToRemove + 1;
+      var startRemove = endRemove - numberOfLinesToRemove + 1;
       textBuffer.deleteRows(startRemove, endRemove);
 
       // Remove these escape sequences.
@@ -52,12 +51,12 @@ function handleBuckAnsiOutput(textBuffer: atom$TextBuffer, text: string) {
     newText = newText.trim();
     // Append the processed text to a new line.
     // `{undo: 'skip'}` disables the TextEditor's "undo system".
-    textBuffer.append(newText, {undo: 'skip'});
-    if (lineNum !== (lines.length - 1)) {
+    textBuffer.append(newText, { undo: 'skip' });
+    if (lineNum !== lines.length - 1) {
       // Don't append a newline to the last line. (Since we split by \n, the
       // last segment should not end in a newline.)
       // `{undo: 'skip'}` disables the TextEditor's "undo system".
-      textBuffer.append('\n', {undo: 'skip'});
+      textBuffer.append('\n', { undo: 'skip' });
     }
   }
 }

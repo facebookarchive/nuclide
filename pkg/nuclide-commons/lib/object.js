@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.isEmpty = isEmpty;
+exports.keyMirror = keyMirror;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -12,8 +15,10 @@
 /**
  * O(1)-check if a given object is empty (has no properties, inherited or not)
  */
-export function isEmpty(obj: Object): boolean {
-  for (const key in obj) { // eslint-disable-line no-unused-vars
+
+function isEmpty(obj) {
+  for (var _key in obj) {
+    // eslint-disable-line no-unused-vars
     return false;
   }
   return true;
@@ -25,9 +30,10 @@ export function isEmpty(obj: Object): boolean {
  *
  * Based off the equivalent function in www.
  */
-export function keyMirror<T: Object>(obj: T): {[key: $Enum<T>]: $Enum<T>} {
-  const ret = {};
-  Object.keys(obj).forEach(key => {
+
+function keyMirror(obj) {
+  var ret = {};
+  Object.keys(obj).forEach(function (key) {
     ret[key] = key;
   });
   return ret;

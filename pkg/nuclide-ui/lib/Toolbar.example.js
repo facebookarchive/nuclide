@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,87 +10,184 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {Block} from './Block';
-import {Toolbar} from './Toolbar';
-import {ToolbarCenter} from './ToolbarCenter';
-import {ToolbarLeft} from './ToolbarLeft';
-import {ToolbarRight} from './ToolbarRight';
-import {Button} from './Button';
+var _reactForAtom2;
 
-const ToolbarExampleLeft = (): React.Element => (
-  <div>
-    <Block>
-      <Toolbar location="top">
-        <ToolbarLeft>
-          <div>a toolbar can have multiple children,</div>
-          <Button>such as this button.</Button>
-        </ToolbarLeft>
-      </Toolbar>
-    </Block>
-    <Block>
-      <div>
-        Be sure to use {'<ToolbarLeft/>, <ToolbarLeft/>, and <ToolbarLeft/>'} as children.
-      </div>
-    </Block>
-  </div>
-);
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
 
-const ToolbarExampleCenter = (): React.Element => (
-  <Block>
-    <Toolbar location="top">
-      <ToolbarCenter>
-        <div>Example of {'<ToolbarCenter />'}.</div>
-      </ToolbarCenter>
-    </Toolbar>
-  </Block>
-);
+var _Block2;
 
-const ToolbarExampleRight = (): React.Element => (
-  <Block>
-    <Toolbar location="top">
-      <ToolbarRight>
-        <div>Example of {'<ToolbarRight />'}</div>
-      </ToolbarRight>
-    </Toolbar>
-  </Block>
-);
+function _Block() {
+  return _Block2 = require('./Block');
+}
 
-const ToolbarExampleMultiple = (): React.Element => (
-  <Block>
-    <Toolbar location="top">
-      <ToolbarLeft>
-        <div>You can combine</div>
-      </ToolbarLeft>
-      <ToolbarCenter>
-        <div>the various kinds</div>
-      </ToolbarCenter>
-      <ToolbarRight>
-        <div>of aligners.</div>
-      </ToolbarRight>
-    </Toolbar>
-  </Block>
-);
+var _Toolbar2;
 
-export const ToolbarExamples = {
+function _Toolbar() {
+  return _Toolbar2 = require('./Toolbar');
+}
+
+var _ToolbarCenter2;
+
+function _ToolbarCenter() {
+  return _ToolbarCenter2 = require('./ToolbarCenter');
+}
+
+var _ToolbarLeft2;
+
+function _ToolbarLeft() {
+  return _ToolbarLeft2 = require('./ToolbarLeft');
+}
+
+var _ToolbarRight2;
+
+function _ToolbarRight() {
+  return _ToolbarRight2 = require('./ToolbarRight');
+}
+
+var _Button2;
+
+function _Button() {
+  return _Button2 = require('./Button');
+}
+
+var ToolbarExampleLeft = function ToolbarExampleLeft() {
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    'div',
+    null,
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      (_Block2 || _Block()).Block,
+      null,
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_Toolbar2 || _Toolbar()).Toolbar,
+        { location: 'top' },
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_ToolbarLeft2 || _ToolbarLeft()).ToolbarLeft,
+          null,
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'div',
+            null,
+            'a toolbar can have multiple children,'
+          ),
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            (_Button2 || _Button()).Button,
+            null,
+            'such as this button.'
+          )
+        )
+      )
+    ),
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      (_Block2 || _Block()).Block,
+      null,
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        null,
+        'Be sure to use ',
+        '<ToolbarLeft/>, <ToolbarLeft/>, and <ToolbarLeft/>',
+        ' as children.'
+      )
+    )
+  );
+};
+
+var ToolbarExampleCenter = function ToolbarExampleCenter() {
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    (_Block2 || _Block()).Block,
+    null,
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      (_Toolbar2 || _Toolbar()).Toolbar,
+      { location: 'top' },
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_ToolbarCenter2 || _ToolbarCenter()).ToolbarCenter,
+        null,
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'div',
+          null,
+          'Example of ',
+          '<ToolbarCenter />',
+          '.'
+        )
+      )
+    )
+  );
+};
+
+var ToolbarExampleRight = function ToolbarExampleRight() {
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    (_Block2 || _Block()).Block,
+    null,
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      (_Toolbar2 || _Toolbar()).Toolbar,
+      { location: 'top' },
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_ToolbarRight2 || _ToolbarRight()).ToolbarRight,
+        null,
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'div',
+          null,
+          'Example of ',
+          '<ToolbarRight />'
+        )
+      )
+    )
+  );
+};
+
+var ToolbarExampleMultiple = function ToolbarExampleMultiple() {
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    (_Block2 || _Block()).Block,
+    null,
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      (_Toolbar2 || _Toolbar()).Toolbar,
+      { location: 'top' },
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_ToolbarLeft2 || _ToolbarLeft()).ToolbarLeft,
+        null,
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'div',
+          null,
+          'You can combine'
+        )
+      ),
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_ToolbarCenter2 || _ToolbarCenter()).ToolbarCenter,
+        null,
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'div',
+          null,
+          'the various kinds'
+        )
+      ),
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_ToolbarRight2 || _ToolbarRight()).ToolbarRight,
+        null,
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'div',
+          null,
+          'of aligners.'
+        )
+      )
+    )
+  );
+};
+
+var ToolbarExamples = {
   sectionName: 'Toolbar',
   description: '',
-  examples: [
-    {
-      title: 'Left Toolbar',
-      component: ToolbarExampleLeft,
-    },
-    {
-      title: 'Center Toolbar',
-      component: ToolbarExampleCenter,
-    },
-    {
-      title: 'Right Toolbar',
-      component: ToolbarExampleRight,
-    },
-    {
-      title: 'Combining Toolbar aligners',
-      component: ToolbarExampleMultiple,
-    },
-  ],
+  examples: [{
+    title: 'Left Toolbar',
+    component: ToolbarExampleLeft
+  }, {
+    title: 'Center Toolbar',
+    component: ToolbarExampleCenter
+  }, {
+    title: 'Right Toolbar',
+    component: ToolbarExampleRight
+  }, {
+    title: 'Combining Toolbar aligners',
+    component: ToolbarExampleMultiple
+  }]
 };
+exports.ToolbarExamples = ToolbarExamples;

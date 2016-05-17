@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,71 +10,59 @@
  * the root directory of this source tree.
  */
 
-import fs from 'fs';
-import http from 'http';
-import https from 'https';
-import url from 'url';
+var _fs2;
+
+function _fs() {
+  return _fs2 = _interopRequireDefault(require('fs'));
+}
+
+var _http2;
+
+function _http() {
+  return _http2 = _interopRequireDefault(require('http'));
+}
+
+var _https2;
+
+function _https() {
+  return _https2 = _interopRequireDefault(require('https'));
+}
+
+var _url2;
+
+function _url() {
+  return _url2 = _interopRequireDefault(require('url'));
+}
 
 /**
  * This is not complete: see https://www.npmjs.com/package/request for details.
  */
-type RequestOptions = {
-  auth?: {
-    user: string;
-    pass: string;
-    sendImmediately?: boolean;
-    bearer?: string;
-  };
-
-  headers?: {[name: string]: string};
-
-  /** Entity body for PATCH, POST and PUT requests. */
-  body?: string;
-
-  /** Use this for application/x-www-form-urlencoded (URL-Encoded Forms). */
-  form?: Object;
-
-  /** Use this for multipart/form-data (Multipart Form Uploads). */
-  formData?: Object;
-
-  /** Type of HTTP method: 'GET', 'POST', 'PUT', etc. */
-  method?: string;
-
-  /** See docs. */
-  multipart?: mixed;
-
-  /** See docs. */
-  oauth?: mixed;
-
-  /** See docs. */
-  preambleCRLF?: boolean;
-
-  /** See docs. */
-  postambleCRLF?: boolean;
-};
 
 // Although rfc forbids the usage of white space in content type
 // (http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.7), it's still
 // a common practice to use that so we need to deal with it in regex.
-const contentTypeRe = /\s*\w+\/\w+\s*;\s*charset\s*=\s*([^\s]+)\s*/;
+var contentTypeRe = /\s*\w+\/\w+\s*;\s*charset\s*=\s*([^\s]+)\s*/;
 
-function getProtocolModule(urlString: string): any {
-  const {protocol} = url.parse(urlString);
+function getProtocolModule(urlString) {
+  var _default$parse = (_url2 || _url()).default.parse(urlString);
+
+  var protocol = _default$parse.protocol;
+
   if (protocol === 'http:') {
-    return http;
+    return (_http2 || _http()).default;
   } else if (protocol === 'https:') {
-    return https;
+    return (_https2 || _https()).default;
   } else {
-    throw Error(`Protocol ${protocol} not supported`);
+    throw Error('Protocol ' + protocol + ' not supported');
   }
 }
 
-function getResponseBodyCharset(response: any): ?string {
-  const contentType = response.headers['content-type'];
+function getResponseBodyCharset(response) {
+  var contentType = response.headers['content-type'];
   if (!contentType) {
     return null;
   }
-  const match = contentTypeRe.exec(contentType);
+  var match = contentTypeRe.exec(contentType);
   return match ? match[1] : null;
 }
 
@@ -82,27 +71,33 @@ module.exports = {
   /**
    * Send Http(s) GET request to given url and return the body as string.
    */
-  get(urlString: string, headers: ?Object, rejectUnauthorized: bool = true): Promise<string> {
-    return new Promise((resolve, reject) => {
-      let body = '';
-      const options: Object = url.parse(urlString);
+  get: function get(urlString, headers) {
+    var rejectUnauthorized = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
+
+    return new Promise(function (resolve, reject) {
+      var body = '';
+      var options = (_url2 || _url()).default.parse(urlString);
       if (!options.hostname) {
-        reject(new Error(`Unable to determine the domain name of ${urlString}`));
+        reject(new Error('Unable to determine the domain name of ' + urlString));
       }
       if (headers) {
         options.headers = headers;
       }
       options.rejectUnauthorized = rejectUnauthorized;
-      getProtocolModule(urlString).get(options, response => {
+      getProtocolModule(urlString).get(options, function (response) {
         if (response.statusCode < 200 || response.statusCode >= 300) {
-          reject(`Bad status ${response.statusCode}`);
+          reject('Bad status ' + response.statusCode);
         } else {
-          const charset = getResponseBodyCharset(response);
+          var charset = getResponseBodyCharset(response);
           if (charset) {
             response.setEncoding(charset);
           }
-          response.on('data', data => { body += data; });
-          response.on('end', () => resolve(body));
+          response.on('data', function (data) {
+            body += data;
+          });
+          response.on('end', function () {
+            return resolve(body);
+          });
         }
       }).on('error', reject);
     });
@@ -112,10 +107,7 @@ module.exports = {
    * Provides a limited version of `require('request').del()` so we have a basic Promise-based API
    * for making DELETE requests.
    */
-  delete(
-    uri: string,
-    options: RequestOptions,
-  ): Promise<{response: http$IncomingMessage; body: string}> {
+  'delete': function _delete(uri, options) {
     return makeRequest(uri, options, 'DELETE');
   },
 
@@ -130,10 +122,7 @@ module.exports = {
    * The major downside of using request instead of our hand-rolled implementation is that it has
    * a lot of dependencies of its own.
    */
-  doGet(
-    uri: string,
-    options: RequestOptions,
-  ): Promise<{response: http$IncomingMessage; body: string}> {
+  doGet: function doGet(uri, options) {
     return makeRequest(uri, options, 'GET');
   },
 
@@ -141,10 +130,7 @@ module.exports = {
    * Provides a limited version of `require('request').head()` so we have a basic Promise-based API
    * for making HEAD requests.
    */
-  head(
-    uri: string,
-    options: RequestOptions,
-  ): Promise<{response: http$IncomingMessage; body: string}> {
+  head: function head(uri, options) {
     return makeRequest(uri, options, 'HEAD');
   },
 
@@ -152,10 +138,7 @@ module.exports = {
    * Provides a limited version of `require('request').patch()` so we have a basic Promise-based API
    * for making PATCH requests.
    */
-  patch(
-    uri: string,
-    options: RequestOptions,
-  ): Promise<{response: http$IncomingMessage; body: string}> {
+  patch: function patch(uri, options) {
     return makeRequest(uri, options, 'PATCH');
   },
 
@@ -163,10 +146,7 @@ module.exports = {
    * Provides a limited version of `require('request').post()` so we have a basic Promise-based API
    * for making POST requests.
    */
-  post(
-    uri: string,
-    options: RequestOptions,
-  ): Promise<{response: http$IncomingMessage; body: string}> {
+  post: function post(uri, options) {
     return makeRequest(uri, options, 'POST');
   },
 
@@ -174,54 +154,65 @@ module.exports = {
    * Provides a limited version of `require('request').put()` so we have a basic Promise-based API
    * for making PUT requests.
    */
-  put(
-    uri: string,
-    options: RequestOptions,
-  ): Promise<{response: http$IncomingMessage; body: string}> {
+  put: function put(uri, options) {
     return makeRequest(uri, options, 'PUT');
   },
 
   /**
    * Send Http(s) GET request to given url and save the body to dest file.
    */
-  download(urlString: string, dest: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const file = fs.createWriteStream(dest);
-      getProtocolModule(urlString).get(urlString, response => {
+  download: function download(urlString, dest) {
+    return new Promise(function (resolve, reject) {
+      var file = (_fs2 || _fs()).default.createWriteStream(dest);
+      getProtocolModule(urlString).get(urlString, function (response) {
         if (response.statusCode < 200 || response.statusCode >= 300) {
-          reject(`Bad status ${response.statusCode}`);
+          reject('Bad status ' + response.statusCode);
         } else {
           response.on('error', reject);
           response.pipe(file);
           file.on('error', reject);
-          file.on('finish', () => file.close(resolve));
+          file.on('finish', function () {
+            return file.close(resolve);
+          });
         }
       }).on('error', reject);
     });
-  },
+  }
 };
 
 /**
  * Makes a request using the [`request`](https://www.npmjs.com/package/request) module,
  * which follows redirects and takes care of http vs. https by default.
  */
-function makeRequest(
-  uri: string,
-  options: RequestOptions,
-  method: string,
-): Promise<{response: http$IncomingMessage; body: string}> {
+function makeRequest(uri, options, method) {
   if (options.method !== method) {
-    options = {...options};
+    options = _extends({}, options);
     options.method = method;
   }
-  const request = require('request');
-  return new Promise((resolve, reject) => {
-    request(uri, options, (error, response, body) => {
+  var request = require('request');
+  return new Promise(function (resolve, reject) {
+    request(uri, options, function (error, response, body) {
       if (error != null) {
         reject(error);
       } else {
-        resolve({response, body});
+        resolve({ response: response, body: body });
       }
     });
   });
 }
+
+/** Entity body for PATCH, POST and PUT requests. */
+
+/** Use this for application/x-www-form-urlencoded (URL-Encoded Forms). */
+
+/** Use this for multipart/form-data (Multipart Form Uploads). */
+
+/** Type of HTTP method: 'GET', 'POST', 'PUT', etc. */
+
+/** See docs. */
+
+/** See docs. */
+
+/** See docs. */
+
+/** See docs. */

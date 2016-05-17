@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +8,31 @@
  * the root directory of this source tree.
  */
 
-import type {BreakStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import markers from '../../constants/markers';
-import wrapStatement from '../../wrappers/simple/wrapStatement';
+var _constantsMarkers2;
 
-function printBreakStatement(print: Print, node: BreakStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
 
-  let parts = ['break'];
+var _wrappersSimpleWrapStatement2;
+
+function _wrappersSimpleWrapStatement() {
+  return _wrappersSimpleWrapStatement2 = _interopRequireDefault(require('../../wrappers/simple/wrapStatement'));
+}
+
+function printBreakStatement(print, node) {
+  var wrap = function wrap(x) {
+    return (0, (_wrappersSimpleWrapStatement2 || _wrappersSimpleWrapStatement()).default)(print, node, x);
+  };
+
+  var parts = ['break'];
   if (node.label) {
-    const label = node.label;
-    parts = parts.concat([
-      ':',
-      markers.noBreak,
-      markers.space,
-      print(label),
-    ]);
+    var label = node.label;
+    parts = parts.concat([':', (_constantsMarkers2 || _constantsMarkers()).default.noBreak, (_constantsMarkers2 || _constantsMarkers()).default.space, print(label)]);
   }
-  return wrap([
-    parts,
-    markers.noBreak,
-    ';',
-  ]);
+  return wrap([parts, (_constantsMarkers2 || _constantsMarkers()).default.noBreak, ';']);
 }
 
 module.exports = printBreakStatement;

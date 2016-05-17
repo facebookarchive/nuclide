@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +10,29 @@
  * the root directory of this source tree.
  */
 
-export {ServiceRegistry} from './ServiceRegistry';
-export {RpcConnection} from './RpcConnection';
-export {LoopbackTransports} from './LoopbackTransports';
+var _ServiceRegistry = require('./ServiceRegistry');
 
-export type ConfigEntry = {
-  name: string;
-  definition:string;
-  implementation: string;
-};
+Object.defineProperty(exports, 'ServiceRegistry', {
+  enumerable: true,
+  get: function get() {
+    return _ServiceRegistry.ServiceRegistry;
+  }
+});
 
-export type Transport = {
-  send(data: Object): void;
-  onMessage(callback: (message: Object) => mixed): IDisposable;
-  close(): void;
-};
+var _RpcConnection = require('./RpcConnection');
+
+Object.defineProperty(exports, 'RpcConnection', {
+  enumerable: true,
+  get: function get() {
+    return _RpcConnection.RpcConnection;
+  }
+});
+
+var _LoopbackTransports = require('./LoopbackTransports');
+
+Object.defineProperty(exports, 'LoopbackTransports', {
+  enumerable: true,
+  get: function get() {
+    return _LoopbackTransports.LoopbackTransports;
+  }
+});

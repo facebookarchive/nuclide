@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,83 +8,87 @@
  * the root directory of this source tree.
  */
 
-import type {
-  FileResult,
-  Provider,
-  ProviderType,
-} from '../../nuclide-quick-open/lib/types';
+var _utils2;
 
-import {getFuzzyFileSearchService} from './utils';
-import {
-  RemoteDirectory,
-} from '../../nuclide-remote-connection';
+function _utils() {
+  return _utils2 = require('./utils');
+}
 
-const FuzzyFileNameProvider: Provider = {
+var _nuclideRemoteConnection2;
+
+function _nuclideRemoteConnection() {
+  return _nuclideRemoteConnection2 = require('../../nuclide-remote-connection');
+}
+
+var FuzzyFileNameProvider = {
 
   // Give preference to filename results in OmniSearch.
-  getPriority: () => 1,
+  getPriority: function getPriority() {
+    return 1;
+  },
 
-  getName(): string {
+  getName: function getName() {
     return 'FuzzyFileNameProvider';
   },
 
-  getProviderType(): ProviderType {
+  getProviderType: function getProviderType() {
     return 'DIRECTORY';
   },
 
-  isRenderable(): boolean {
+  isRenderable: function isRenderable() {
     return true;
   },
 
-  getDebounceDelay(): number {
+  getDebounceDelay: function getDebounceDelay() {
     return 0;
   },
 
-  getAction(): string {
+  getAction: function getAction() {
     return 'nuclide-fuzzy-filename-provider:toggle-provider';
   },
 
-  getPromptText(): string {
+  getPromptText: function getPromptText() {
     return 'Fuzzy File Name Search';
   },
 
-  getTabTitle(): string {
+  getTabTitle: function getTabTitle() {
     return 'Filenames';
   },
 
-  isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
+  isEligibleForDirectory: function isEligibleForDirectory(directory) {
     return directory.exists();
   },
 
-  async executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>> {
+  executeQuery: _asyncToGenerator(function* (query, directory) {
     if (query.length === 0) {
       return [];
     }
 
     if (directory == null) {
-      throw new Error(
-        'FuzzyFileNameProvider is a directory-specific provider but its executeQuery method was'
-        + ' called without a directory argument.'
-      );
+      throw new Error('FuzzyFileNameProvider is a directory-specific provider but its executeQuery method was' + ' called without a directory argument.');
     }
 
-    const service = await getFuzzyFileSearchService(directory);
+    var service = yield (0, (_utils2 || _utils()).getFuzzyFileSearchService)(directory);
     if (service == null) {
       return [];
     }
 
-    const directoryPath = directory.getPath();
-    const result = await service.queryFuzzyFile(directoryPath, query);
+    var directoryPath = directory.getPath();
+    var result = yield service.queryFuzzyFile(directoryPath, query);
     // Take the `nuclide://<host><port>` prefix into account for matchIndexes of remote files.
-    if (RemoteDirectory.isRemoteDirectory(directory)) {
-      const remoteDir: RemoteDirectory = (directory: any);
-      const indexOffset = directoryPath.length - remoteDir.getLocalPath().length;
-      result.forEach(res => {
-        res.matchIndexes = res.matchIndexes.map(index => index + indexOffset);
-      });
+    if ((_nuclideRemoteConnection2 || _nuclideRemoteConnection()).RemoteDirectory.isRemoteDirectory(directory)) {
+      (function () {
+        var remoteDir = directory;
+        var indexOffset = directoryPath.length - remoteDir.getLocalPath().length;
+        result.forEach(function (res) {
+          res.matchIndexes = res.matchIndexes.map(function (index) {
+            return index + indexOffset;
+          });
+        });
+      })();
     }
-    return ((result: any): Array<FileResult>);
-  },
+    return result;
+  })
 };
 
 module.exports = FuzzyFileNameProvider;

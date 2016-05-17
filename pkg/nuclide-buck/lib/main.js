@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,58 +10,86 @@
  * the root directory of this source tree.
  */
 
-import type {BuildSystem, BuildSystemRegistry} from '../../nuclide-build/lib/types';
-import type {BuckBuildSystem as BuckBuildSystemType} from './BuckBuildSystem';
-import type {SerializedState} from './types';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeBuildSystemRegistry = consumeBuildSystemRegistry;
+exports.serialize = serialize;
+exports.getHyperclickProvider = getHyperclickProvider;
 
-import registerGrammar from '../../commons-atom/register-grammar';
-import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
-import HyperclickProvider from './HyperclickProvider';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let disposables: ?CompositeDisposable = null;
-let buildSystem: ?BuckBuildSystemType = null;
-let initialState: ?Object = null;
+var _commonsAtomRegisterGrammar2;
 
-export function activate(rawState: ?Object): void {
-  invariant(disposables == null);
-  initialState = rawState;
-  disposables = new CompositeDisposable(
-    new Disposable(() => { buildSystem = null; }),
-    new Disposable(() => { initialState = null; }),
-  );
-  registerGrammar('source.python', 'BUCK');
-  registerGrammar('source.json', 'BUCK.autodeps');
-  registerGrammar('source.ini', '.buckconfig');
+function _commonsAtomRegisterGrammar() {
+  return _commonsAtomRegisterGrammar2 = _interopRequireDefault(require('../../commons-atom/register-grammar'));
 }
 
-export function deactivate(): void {
-  invariant(disposables != null);
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _HyperclickProvider2;
+
+function _HyperclickProvider() {
+  return _HyperclickProvider2 = _interopRequireDefault(require('./HyperclickProvider'));
+}
+
+var disposables = null;
+var buildSystem = null;
+var initialState = null;
+
+function activate(rawState) {
+  (0, (_assert2 || _assert()).default)(disposables == null);
+  initialState = rawState;
+  disposables = new (_atom2 || _atom()).CompositeDisposable(new (_atom2 || _atom()).Disposable(function () {
+    buildSystem = null;
+  }), new (_atom2 || _atom()).Disposable(function () {
+    initialState = null;
+  }));
+  (0, (_commonsAtomRegisterGrammar2 || _commonsAtomRegisterGrammar()).default)('source.python', 'BUCK');
+  (0, (_commonsAtomRegisterGrammar2 || _commonsAtomRegisterGrammar()).default)('source.json', 'BUCK.autodeps');
+  (0, (_commonsAtomRegisterGrammar2 || _commonsAtomRegisterGrammar()).default)('source.ini', '.buckconfig');
+}
+
+function deactivate() {
+  (0, (_assert2 || _assert()).default)(disposables != null);
   disposables.dispose();
   disposables = null;
 }
 
-export function consumeBuildSystemRegistry(registry: BuildSystemRegistry): void {
-  invariant(disposables != null);
+function consumeBuildSystemRegistry(registry) {
+  (0, (_assert2 || _assert()).default)(disposables != null);
   disposables.add(registry.register(getBuildSystem()));
 }
 
-function getBuildSystem(): BuildSystem {
+function getBuildSystem() {
   if (buildSystem == null) {
-    invariant(disposables != null);
-    const {BuckBuildSystem} = require('./BuckBuildSystem');
+    (0, (_assert2 || _assert()).default)(disposables != null);
+
+    var _require = require('./BuckBuildSystem');
+
+    var BuckBuildSystem = _require.BuckBuildSystem;
+
     buildSystem = new BuckBuildSystem(initialState);
     disposables.add(buildSystem);
   }
   return buildSystem;
 }
 
-export function serialize(): ?SerializedState {
+function serialize() {
   if (buildSystem != null) {
     return buildSystem.serialize();
   }
 }
 
-export function getHyperclickProvider() {
-  return HyperclickProvider;
+function getHyperclickProvider() {
+  return (_HyperclickProvider2 || _HyperclickProvider()).default;
 }

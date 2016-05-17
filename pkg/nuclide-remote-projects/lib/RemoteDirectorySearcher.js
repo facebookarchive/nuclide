@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,72 +8,88 @@
  * the root directory of this source tree.
  */
 
-import typeof * as FindInProjectService from '../../nuclide-remote-search';
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
-import {Observable, ReplaySubject} from 'rxjs';
-import {RemoteDirectory} from '../../nuclide-remote-connection';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-type RemoteDirectorySearch = {
-  then: (onFullfilled: any, onRejected: any) => Promise<any>;
-  cancel: () => void;
-};
+var _rxjs2;
 
-class RemoteDirectorySearcher {
-  _serviceProvider: (dir: RemoteDirectory) => FindInProjectService;
+function _rxjs() {
+  return _rxjs2 = require('rxjs');
+}
+
+var _nuclideRemoteConnection2;
+
+function _nuclideRemoteConnection() {
+  return _nuclideRemoteConnection2 = require('../../nuclide-remote-connection');
+}
+
+var RemoteDirectorySearcher = (function () {
 
   // When constructed, RemoteDirectorySearcher must be passed a function that
   // it can use to get a 'FindInProjectService' for a given remote path.
-  constructor(serviceProvider: (dir: RemoteDirectory) => FindInProjectService) {
+
+  function RemoteDirectorySearcher(serviceProvider) {
+    _classCallCheck(this, RemoteDirectorySearcher);
+
     this._serviceProvider = serviceProvider;
   }
 
-  canSearchDirectory(directory: atom$Directory | RemoteDirectory): boolean {
-    return RemoteDirectory.isRemoteDirectory(directory);
-  }
+  _createClass(RemoteDirectorySearcher, [{
+    key: 'canSearchDirectory',
+    value: function canSearchDirectory(directory) {
+      return (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).RemoteDirectory.isRemoteDirectory(directory);
+    }
+  }, {
+    key: 'search',
+    value: function search(directories, regex, options) {
+      var _Observable,
+          _this = this;
 
-  search(
-    directories: Array<RemoteDirectory>,
-    regex: RegExp,
-    options: Object,
-  ): RemoteDirectorySearch {
-    // Track the files that we have seen updates for.
-    const seenFiles = new Set();
+      // Track the files that we have seen updates for.
+      var seenFiles = new Set();
 
-    // Get the remote service that corresponds to each remote directory.
-    const services = directories.map(dir => this._serviceProvider(dir));
+      // Get the remote service that corresponds to each remote directory.
+      var services = directories.map(function (dir) {
+        return _this._serviceProvider(dir);
+      });
 
-    // Start the search in each directory, and merge the resulting streams.
-    const searchStream = Observable.merge(...directories.map((dir, index) =>
-      services[index].findInProjectSearch(dir.getPath(), regex, options.inclusions)));
+      // Start the search in each directory, and merge the resulting streams.
+      var searchStream = (_Observable = (_rxjs2 || _rxjs()).Observable).merge.apply(_Observable, _toConsumableArray(directories.map(function (dir, index) {
+        return services[index].findInProjectSearch(dir.getPath(), regex, options.inclusions);
+      })));
 
-    // Create a subject that we can use to track search completion.
-    const searchCompletion = new ReplaySubject();
-    searchCompletion.next();
+      // Create a subject that we can use to track search completion.
+      var searchCompletion = new (_rxjs2 || _rxjs()).ReplaySubject();
+      searchCompletion.next();
 
-    const subscription = searchStream.subscribe(next => {
-      options.didMatch(next);
+      var subscription = searchStream.subscribe(function (next) {
+        options.didMatch(next);
 
-      // Call didSearchPaths with the number of unique files we have seen matches in. This is
-      // not technically correct, as didSearchPaths is also supposed to count files for which
-      // no matches were found. However, we currently have no way of obtaining this information.
-      seenFiles.add(next.filePath);
-      options.didSearchPaths(seenFiles.size);
-    }, error => {
-      searchCompletion.error(error);
-    }, () => {
-      searchCompletion.complete();
-    });
+        // Call didSearchPaths with the number of unique files we have seen matches in. This is
+        // not technically correct, as didSearchPaths is also supposed to count files for which
+        // no matches were found. However, we currently have no way of obtaining this information.
+        seenFiles.add(next.filePath);
+        options.didSearchPaths(seenFiles.size);
+      }, function (error) {
+        searchCompletion.error(error);
+      }, function () {
+        searchCompletion.complete();
+      });
 
-    // Return a promise that resolves on search completion.
-    const completionPromise = searchCompletion.toPromise();
-    return {
-      then: completionPromise.then.bind(completionPromise),
-      cancel() {
-        // Cancel the subscription, which should also kill the grep process.
-        subscription.unsubscribe();
-      },
-    };
-  }
-}
+      // Return a promise that resolves on search completion.
+      var completionPromise = searchCompletion.toPromise();
+      return {
+        then: completionPromise.then.bind(completionPromise),
+        cancel: function cancel() {
+          // Cancel the subscription, which should also kill the grep process.
+          subscription.unsubscribe();
+        }
+      };
+    }
+  }]);
+
+  return RemoteDirectorySearcher;
+})();
 
 module.exports = RemoteDirectorySearcher;

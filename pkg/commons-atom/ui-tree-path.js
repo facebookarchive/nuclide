@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.default = uiTreePath;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +11,21 @@
  * the root directory of this source tree.
  */
 
-const TREE_API_DATA_PATH = 'data-path';
+var TREE_API_DATA_PATH = 'data-path';
 
 /**
  * This shouldn't be used for the `file-tree` as it's replaced by
  * the `FileTreeContextMenu` API.
  * This can only be useful for other `ui/tree` usages, like the `DiffViewTree`.
  */
-export default function uiTreePath(
-  event: Event | {currentTarget: EventTarget}
-): string {
+
+function uiTreePath(event) {
   // Event target isn't necessarily an HTMLElement,
-  // but that's guaranteed in the usages here.
-  const target: HTMLElement = (event.currentTarget: any);
-  const nameElement = target.hasAttribute(TREE_API_DATA_PATH)
-    ? target
-    : target.querySelector(`[${TREE_API_DATA_PATH}]`);
+
+  var target = event.currentTarget;
+  var nameElement = target.hasAttribute(TREE_API_DATA_PATH) ? target : target.querySelector('[' + TREE_API_DATA_PATH + ']');
   return nameElement.getAttribute(TREE_API_DATA_PATH);
 }
+
+module.exports = exports.default;
+// but that's guaranteed in the usages here.

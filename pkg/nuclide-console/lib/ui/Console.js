@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,178 +10,247 @@
  * the root directory of this source tree.
  */
 
-import type {Record, Executor} from '../types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {debounce} from '../../../nuclide-commons';
-import {React} from 'react-for-atom';
-import OutputTable from './OutputTable';
-import ConsoleHeader from './ConsoleHeader';
-import InputArea from './InputArea';
-import PromptButton from './PromptButton';
-import RecordView from './RecordView';
-import UnseenMessagesNotification from './UnseenMessagesNotification';
-import invariant from 'assert';
-import shallowEqual from 'shallowequal';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-type Props = {
-  records: Array<Record>;
-  clearRecords: () => void;
-  execute: (code: string) => void;
-  currentExecutor: ?Executor;
-  executors: Map<string, Executor>;
-  selectExecutor: (executorId: string) => void;
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-type State = {
-  unseenMessages: boolean;
-};
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-export default class Console extends React.Component {
-  props: Props;
-  state: State;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  _isScrolledToBottom: boolean;
-  _scrollPane: ?HTMLElement;
-  _userIsScrolling: boolean;
+var _nuclideCommons2;
 
-  constructor(props: Props) {
-    super(props);
+function _nuclideCommons() {
+  return _nuclideCommons2 = require('../../../nuclide-commons');
+}
+
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _OutputTable2;
+
+function _OutputTable() {
+  return _OutputTable2 = _interopRequireDefault(require('./OutputTable'));
+}
+
+var _ConsoleHeader2;
+
+function _ConsoleHeader() {
+  return _ConsoleHeader2 = _interopRequireDefault(require('./ConsoleHeader'));
+}
+
+var _InputArea2;
+
+function _InputArea() {
+  return _InputArea2 = _interopRequireDefault(require('./InputArea'));
+}
+
+var _PromptButton2;
+
+function _PromptButton() {
+  return _PromptButton2 = _interopRequireDefault(require('./PromptButton'));
+}
+
+var _RecordView2;
+
+function _RecordView() {
+  return _RecordView2 = _interopRequireDefault(require('./RecordView'));
+}
+
+var _UnseenMessagesNotification2;
+
+function _UnseenMessagesNotification() {
+  return _UnseenMessagesNotification2 = _interopRequireDefault(require('./UnseenMessagesNotification'));
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _shallowequal2;
+
+function _shallowequal() {
+  return _shallowequal2 = _interopRequireDefault(require('shallowequal'));
+}
+
+var Console = (function (_React$Component) {
+  _inherits(Console, _React$Component);
+
+  function Console(props) {
+    _classCallCheck(this, Console);
+
+    _get(Object.getPrototypeOf(Console.prototype), 'constructor', this).call(this, props);
     this.state = {
-      unseenMessages: false,
+      unseenMessages: false
     };
     this._isScrolledToBottom = true;
     this._userIsScrolling = false;
-    (this: any)._handleScrollPane = this._handleScrollPane.bind(this);
-    (this: any)._handleScroll = this._handleScroll.bind(this);
-    (this: any)._handleScrollEnd = debounce(this._handleScrollEnd, 100);
-    (this: any)._scrollToBottom = this._scrollToBottom.bind(this);
+    this._handleScrollPane = this._handleScrollPane.bind(this);
+    this._handleScroll = this._handleScroll.bind(this);
+    this._handleScrollEnd = (0, (_nuclideCommons2 || _nuclideCommons()).debounce)(this._handleScrollEnd, 100);
+    this._scrollToBottom = this._scrollToBottom.bind(this);
   }
 
-  componentDidUpdate(prevProps: Props): void {
-    if (this.props.records.length === 0) {
-      this._isScrolledToBottom = true;
-    }
+  _createClass(Console, [{
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate(prevProps) {
+      if (this.props.records.length === 0) {
+        this._isScrolledToBottom = true;
+      }
 
-    // If records are added while we're scrolled to the bottom (or very very close, at least),
-    // automatically scroll.
-    if (this.props.records.length !== prevProps.records.length) {
+      // If records are added while we're scrolled to the bottom (or very very close, at least),
+      // automatically scroll.
+      if (this.props.records.length !== prevProps.records.length) {
+        this._autoscroll();
+      }
+    }
+  }, {
+    key: '_renderPromptButton',
+    value: function _renderPromptButton() {
+      (0, (_assert2 || _assert()).default)(this.props.currentExecutor != null);
+      var currentExecutor = this.props.currentExecutor;
+
+      var options = Array.from(this.props.executors.values()).map(function (executor) {
+        return {
+          id: executor.id,
+          label: executor.name
+        };
+      });
+      return (_reactForAtom2 || _reactForAtom()).React.createElement((_PromptButton2 || _PromptButton()).default, {
+        value: currentExecutor.id,
+        onChange: this.props.selectExecutor,
+        options: options,
+        children: currentExecutor.name
+      });
+    }
+  }, {
+    key: 'componentWillReceiveProps',
+    value: function componentWillReceiveProps(props) {
+      // If we receive new messages after we've scrolled away from the bottom, show the "new messages"
+      // notification.
+      if (props.records !== this.props.records && !this._isScrolledToBottom) {
+        this.setState({ unseenMessages: true });
+      }
+    }
+  }, {
+    key: 'shouldComponentUpdate',
+    value: function shouldComponentUpdate(nextProps, nextState) {
+      return !(0, (_shallowequal2 || _shallowequal()).default)(this.props, nextProps) || !(0, (_shallowequal2 || _shallowequal()).default)(this.state, nextState);
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'nuclide-console' },
+        (_reactForAtom2 || _reactForAtom()).React.createElement((_ConsoleHeader2 || _ConsoleHeader()).default, { clear: this.props.clearRecords }),
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'div',
+          { className: 'nuclide-console-scroll-pane-wrapper' },
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'div',
+            {
+              ref: this._handleScrollPane,
+              className: 'nuclide-console-scroll-pane',
+              onScroll: this._handleScroll },
+            (_reactForAtom2 || _reactForAtom()).React.createElement((_OutputTable2 || _OutputTable()).default, { records: this.props.records })
+          ),
+          (_reactForAtom2 || _reactForAtom()).React.createElement((_UnseenMessagesNotification2 || _UnseenMessagesNotification()).default, {
+            visible: this.state.unseenMessages,
+            onClick: this._scrollToBottom
+          })
+        ),
+        this._renderPrompt()
+      );
+    }
+  }, {
+    key: '_renderPrompt',
+    value: function _renderPrompt() {
+      var currentExecutor = this.props.currentExecutor;
+
+      if (currentExecutor == null) {
+        return;
+      }
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'nuclide-console-prompt' },
+        this._renderPromptButton(),
+        (_reactForAtom2 || _reactForAtom()).React.createElement((_InputArea2 || _InputArea()).default, {
+          scopeName: currentExecutor.scopeName,
+          onSubmit: this.props.execute
+        })
+      );
+    }
+  }, {
+    key: '_handleScroll',
+    value: function _handleScroll(event) {
+      this._userIsScrolling = true;
+      this._handleScrollEnd();
+    }
+  }, {
+    key: '_handleScrollEnd',
+    value: function _handleScrollEnd() {
+      this._userIsScrolling = false;
+
+      if (!this._scrollPane) {
+        return;
+      }
+
+      var _scrollPane = this._scrollPane;
+      var scrollTop = _scrollPane.scrollTop;
+      var scrollHeight = _scrollPane.scrollHeight;
+      var offsetHeight = _scrollPane.offsetHeight;
+
+      this._isScrolledToBottom = scrollHeight - (offsetHeight + scrollTop) < 5;
+      this.setState({ unseenMessages: this.state.unseenMessages && !this._isScrolledToBottom });
+    }
+  }, {
+    key: '_handleScrollPane',
+    value: function _handleScrollPane(el) {
+      this._scrollPane = el;
       this._autoscroll();
     }
-  }
-
-  _renderPromptButton(): React.Element {
-    invariant(this.props.currentExecutor != null);
-    const {currentExecutor} = this.props;
-    const options = Array.from(this.props.executors.values())
-      .map(executor => ({
-        id: executor.id,
-        label: executor.name,
-      }));
-    return (
-      <PromptButton
-        value={currentExecutor.id}
-        onChange={this.props.selectExecutor}
-        options={options}
-        children={currentExecutor.name}
-      />
-    );
-  }
-
-  componentWillReceiveProps(props: Props): void {
-    // If we receive new messages after we've scrolled away from the bottom, show the "new messages"
-    // notification.
-    if (props.records !== this.props.records && !this._isScrolledToBottom) {
-      this.setState({unseenMessages: true});
+  }, {
+    key: '_renderRow',
+    value: function _renderRow(record, index) {
+      return (_reactForAtom2 || _reactForAtom()).React.createElement((_RecordView2 || _RecordView()).default, { key: index, record: record });
     }
-  }
-
-  shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
-    return !shallowEqual(this.props, nextProps) || !shallowEqual(this.state, nextState);
-  }
-
-  render(): ?React.Element {
-    return (
-      <div className="nuclide-console">
-        <ConsoleHeader clear={this.props.clearRecords} />
-        {/*
-          We need an extra wrapper element here in order to have the new messages notification stick
-          to the bottom of the scrollable area (and not scroll with it).
-        */}
-        <div className="nuclide-console-scroll-pane-wrapper">
-          <div
-            ref={this._handleScrollPane}
-            className="nuclide-console-scroll-pane"
-            onScroll={this._handleScroll}>
-            <OutputTable records={this.props.records} />
-          </div>
-          <UnseenMessagesNotification
-            visible={this.state.unseenMessages}
-            onClick={this._scrollToBottom}
-          />
-        </div>
-        {this._renderPrompt()}
-      </div>
-    );
-  }
-
-  _renderPrompt(): ?React.Element {
-    const {currentExecutor} = this.props;
-    if (currentExecutor == null) {
-      return;
-    }
-    return (
-      <div className="nuclide-console-prompt">
-        {this._renderPromptButton()}
-        <InputArea
-          scopeName={currentExecutor.scopeName}
-          onSubmit={this.props.execute}
-        />
-      </div>
-    );
-  }
-
-  _handleScroll(event: SyntheticMouseEvent): void {
-    this._userIsScrolling = true;
-    this._handleScrollEnd();
-  }
-
-  _handleScrollEnd(): void {
-    this._userIsScrolling = false;
-
-    if (!this._scrollPane) {
-      return;
+  }, {
+    key: '_scrollToBottom',
+    value: function _scrollToBottom() {
+      if (!this._scrollPane) {
+        return;
+      }
+      // TODO: Animate?
+      this._scrollPane.scrollTop = this._scrollPane.scrollHeight;
     }
 
-    const {scrollTop, scrollHeight, offsetHeight} = this._scrollPane;
-    this._isScrolledToBottom = scrollHeight - (offsetHeight + scrollTop) < 5;
-    this.setState({unseenMessages: this.state.unseenMessages && !this._isScrolledToBottom});
-  }
-
-  _handleScrollPane(el: HTMLElement): void {
-    this._scrollPane = el;
-    this._autoscroll();
-  }
-
-  _renderRow(record: Record, index: number): React.Element {
-    return <RecordView key={index} record={record} />;
-  }
-
-  _scrollToBottom(): void {
-    if (!this._scrollPane) {
-      return;
+    /**
+     * Scroll to the bottom of the list if autoscroll is active.
+     */
+  }, {
+    key: '_autoscroll',
+    value: function _autoscroll() {
+      if (!this._scrollPane || this._userIsScrolling || !this._isScrolledToBottom) {
+        return;
+      }
+      this._scrollToBottom();
     }
-    // TODO: Animate?
-    this._scrollPane.scrollTop = this._scrollPane.scrollHeight;
-  }
+  }]);
 
-  /**
-   * Scroll to the bottom of the list if autoscroll is active.
-   */
-  _autoscroll(): void {
-    if (!this._scrollPane || this._userIsScrolling || !this._isScrolledToBottom) {
-      return;
-    }
-    this._scrollToBottom();
-  }
+  return Console;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
 
-}
+exports.default = Console;
+module.exports = exports.default;
+/*
+ We need an extra wrapper element here in order to have the new messages notification stick
+ to the bottom of the scrollable area (and not scroll with it).
+*/
