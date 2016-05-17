@@ -41,16 +41,16 @@ export function activate(state: ?Object): void {
 }
 
 function proxyToNativeNotification(notification: atom$Notification): void {
-  const notificationType = notification.getType();
+  const options = notification.getOptions();
 
-  // Ensure the user has configured this type of notification to be sent to the OS.
-  if (!currentConfig[notificationType]) {
+  // Don't proceed if user only wants 'nativeFriendly' proxied notifications and this isn't one.
+  if (currentConfig.onlyNativeFriendly && !options.nativeFriendly) {
     return;
   }
 
   raiseNativeNotification(
-    `${upperCaseFirst(notificationType)}: ${notification.getMessage()}`,
-    notification.getOptions().detail,
+    `${upperCaseFirst(notification.getType())}: ${notification.getMessage()}`,
+    options.detail,
   );
 
 }

@@ -11,42 +11,14 @@
         "title": "Show notifications when in focus",
         "type": "boolean",
         "default": false,
-        "description": "Send notifications to the operating system even when Nuclide is in focus."
+        "description": "Display native notifications even when Nuclide is in focus."
       },
-      "success": {
+      "onlyNativeFriendly": {
         "order": 1,
-        "title": "Native success notifications",
+        "title": "Show 'native friendly' notifications only.",
         "type": "boolean",
         "default": true,
-        "description": "Send 'success' notifications to the operating system."
-      },
-      "info": {
-        "order": 2,
-        "title": "Native info notifications",
-        "type": "boolean",
-        "default": false,
-        "description": "Send 'info' notifications to the operating system."
-      },
-      "warning": {
-        "order": 3,
-        "title": "Native warning notifications",
-        "type": "boolean",
-        "default": true,
-        "description": "Send 'warning' notifications to the operating system."
-      },
-      "error": {
-        "order": 4,
-        "title": "Native error notifications",
-        "type": "boolean",
-        "default": true,
-        "description": "Send 'error' notifications to the operating system."
-      },
-      "fatal": {
-        "order": 5,
-        "title": "Native fatal notifications",
-        "type": "boolean",
-        "default": true,
-        "description": "Send 'fatal' notifications to the operating system."
+        "description": "Only display certain important Atom alerts (such as those relating to long-running jobs) as native notifications. Leave this checked if you want to reduce your notification frequency."
       }
     },
     "packageType": "Atom",
