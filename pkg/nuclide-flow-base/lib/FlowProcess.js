@@ -65,6 +65,10 @@ export class FlowProcess {
     this._serverStatus = new BehaviorSubject(ServerStatus.UNKNOWN);
     this._root = root;
 
+    this._serverStatus.subscribe(status => {
+      logger.info(`[${status}]: Flow server in ${this._root}`);
+    });
+
     this._serverStatus.filter(x => x === ServerStatus.NOT_RUNNING).subscribe(() => {
       this._startFlowServer();
       this._pingServer();
