@@ -157,12 +157,13 @@ declare module 'rxjs' {
       defaultValue: U,
     ): Observable<U>;
 
+    // Alias for `mergeMap`
     flatMap<U>(
-      f: (value: T) => Observable<U> | Promise<U> | Iterable<U>
+      project: (value: T) => Observable<U> | Promise<U> | Iterable<U>
     ): Observable<U>;
 
     switchMap<U>(
-      f: (value: T) => Observable<U> | Promise<U> | Iterable<U>
+      project: (value: T) => Observable<U> | Promise<U> | Iterable<U>
     ): Observable<U>;
 
     map<U>(f: (value: T) => U): Observable<U>;
@@ -172,6 +173,10 @@ declare module 'rxjs' {
     merge(other: Observable<T>): Observable<T>;
 
     mergeAll(): T; // assumption: T is Observable
+
+    mergeMap<U>(
+      project: (value: T, index?: number) => Observable<U> | Promise<U> | Iterable<U>,
+    ): Observable<U>;
 
     multicast(
       subjectOrSubjectFactory: Subject<T> | () => Subject<T>,
