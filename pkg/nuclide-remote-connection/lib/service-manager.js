@@ -22,6 +22,7 @@ import {
   ServiceRegistry,
   RpcConnection,
 } from '../../nuclide-rpc';
+import {isRunningInTest} from '../../commons-node/system-info';
 
 const logger = require('../../nuclide-logging').getLogger();
 const newServices = loadServicesConfig();
@@ -49,7 +50,7 @@ function setUseLocalRpc(value: boolean): void {
 }
 
 function getlocalService(serviceName: string): Object {
-  invariant(knownLocalRpc, 'Must call setUseLocalRpc before getService');
+  invariant(knownLocalRpc || isRunningInTest(), 'Must call setUseLocalRpc before getService');
   if (localRpcClient != null) {
     return localRpcClient.getService(serviceName);
   } else {
