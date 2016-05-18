@@ -158,6 +158,10 @@ export default class BuckToolbarStore {
     return this.canBeReactNativeApp() && this._isReactNativeServerMode;
   }
 
+  isInstallableRule(): boolean {
+    return this.canBeReactNativeApp() || this._buildRuleType === 'apk_genrule';
+  }
+
   async _getReactNativeServerCommand(): Promise<?string> {
     const buckProject = this._mostRecentBuckProject;
     if (!buckProject) {

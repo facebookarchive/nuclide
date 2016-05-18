@@ -46,12 +46,19 @@ export class BuckBuildSystem {
 
   getTasks() {
     const {store} = this._getFlux();
-    const enabled = store.getMostRecentBuckProject() != null && !store.isBuilding() &&
+    const allEnabled = store.getMostRecentBuckProject() != null && !store.isBuilding() &&
       Boolean(store.getBuildTarget());
-    return TASKS.map(task => ({
-      ...task,
-      enabled,
-    }));
+    return TASKS
+      .map(task => {
+        let enabled = allEnabled;
+        if (task.type === 'run' || task.type === 'debug') {
+          enabled = enabled && store.isInstallableRule();
+        }
+        return {
+          ...task,
+          enabled,
+        };
+      });
   }
 
   observeTasks(cb: (tasks: Array<Task>) => mixed): IDisposable {
