@@ -21,7 +21,6 @@ import invariant from 'assert';
 import {Emitter} from 'atom';
 import path from 'path';
 import {Dispatcher} from 'flux';
-import {getBuckProject} from '../../nuclide-buck-base';
 import BuckToolbarActions from './BuckToolbarActions';
 
 type BuckRunDetails = {
@@ -54,7 +53,6 @@ class BuckToolbarStore {
   _reactNativeServerActions: ReactNativeServerActions;
   _reactNativeServerManager: ReactNativeServerManager;
   _mostRecentBuckProject: ?BuckProject;
-  _textEditorToBuckProject: WeakMap<TextEditor, BuckProject>;
   _isBuilding: boolean;
   _buildTarget: string;
   _buildProgress: number;
@@ -72,7 +70,6 @@ class BuckToolbarStore {
       this._reactNativeServerActions,
     );
     this._emitter = new Emitter();
-    this._textEditorToBuckProject = new WeakMap();
     this._initState(initialState);
     this._setupActions();
   }
@@ -90,7 +87,7 @@ class BuckToolbarStore {
     this._dispatcher.register(action => {
       switch (action.actionType) {
         case BuckToolbarActions.ActionType.UPDATE_PROJECT:
-          this._updateProject(action.editor);
+          this._mostRecentBuckProject = action.project;
           break;
         case BuckToolbarActions.ActionType.UPDATE_BUILD_TARGET:
           this._updateBuildTarget(action.buildTarget);
@@ -163,22 +160,6 @@ class BuckToolbarStore {
       return null;
     }
     return path.join(repoRoot, serverCommand);
-  }
-
-  async _updateProject(editor: TextEditor): Promise<void> {
-    const nuclideUri = editor.getPath();
-    if (!nuclideUri) {
-      return;
-    }
-    let buckProject = this._textEditorToBuckProject.get(editor);
-    if (!buckProject) {
-      buckProject = await getBuckProject(nuclideUri);
-      if (!buckProject) {
-        return;
-      }
-      this._textEditorToBuckProject.set(editor, buckProject);
-    }
-    this._mostRecentBuckProject = buckProject;
   }
 
   async _updateBuildTarget(buildTarget: string): Promise<void> {

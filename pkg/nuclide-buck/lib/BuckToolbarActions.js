@@ -12,6 +12,7 @@
 import type BuckToolbarStore from './BuckToolbarStore';
 
 import {Dispatcher} from 'flux';
+import {getBuckProject} from '../../nuclide-buck-base';
 
 class BuckToolbarActions {
 
@@ -34,10 +35,20 @@ class BuckToolbarActions {
     this._store = store;
   }
 
-  updateProjectFor(editor: TextEditor): void {
+  async updateProjectFor(editor: TextEditor): Promise<void> {
+    const nuclideUri = editor.getPath();
+    if (!nuclideUri) {
+      return;
+    }
+
+    const buckProject = await getBuckProject(nuclideUri);
+    if (buckProject == null) {
+      return;
+    }
+
     this._dispatcher.dispatch({
       actionType: BuckToolbarActions.ActionType.UPDATE_PROJECT,
-      editor,
+      project: buckProject,
     });
   }
 
