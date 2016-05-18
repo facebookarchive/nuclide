@@ -19,9 +19,12 @@ export default class BuckToolbarActions {
 
   _dispatcher: Dispatcher;
   _store: BuckToolbarStore;
+  // TODO(hansonw): Will be obsolete when this is an observable stream.
+  _loadingRules: number;
 
   static ActionType = Object.freeze(keyMirror({
     UPDATE_BUILD_TARGET: null,
+    UPDATE_IS_LOADING_RULE: null,
     UPDATE_RULE_TYPE: null,
     UPDATE_PANEL_VISIBILITY: null,
     UPDATE_PROJECT: null,
@@ -35,6 +38,7 @@ export default class BuckToolbarActions {
   ) {
     this._dispatcher = dispatcher;
     this._store = store;
+    this._loadingRules = 0;
   }
 
   async updateProjectFor(editor: TextEditor): Promise<void> {
@@ -63,6 +67,12 @@ export default class BuckToolbarActions {
     // Find the rule type, if applicable.
     const buckProject = this._store.getMostRecentBuckProject();
     if (buckProject != null) {
+      if (this._loadingRules++ === 0) {
+        this._dispatcher.dispatch({
+          actionType: BuckToolbarActions.ActionType.UPDATE_IS_LOADING_RULE,
+          isLoadingRule: true,
+        });
+      }
       const buildRuleType = buildTarget === '' ? null :
         await buckProject.buildRuleTypeFor(buildTarget)
           // Most likely, this is an invalid target, so do nothing.
@@ -71,6 +81,12 @@ export default class BuckToolbarActions {
         actionType: BuckToolbarActions.ActionType.UPDATE_RULE_TYPE,
         ruleType: buildRuleType,
       });
+      if (--this._loadingRules === 0) {
+        this._dispatcher.dispatch({
+          actionType: BuckToolbarActions.ActionType.UPDATE_IS_LOADING_RULE,
+          isLoadingRule: false,
+        });
+      }
     }
   }
 

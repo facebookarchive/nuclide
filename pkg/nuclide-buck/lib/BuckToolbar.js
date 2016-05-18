@@ -13,12 +13,15 @@ import type {BuckProject} from '../../nuclide-buck-base';
 
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
+
 import debounce from '../../commons-node/debounce';
 import SimulatorDropdown from './SimulatorDropdown';
 import BuckToolbarActions from './BuckToolbarActions';
 import BuckToolbarStore from './BuckToolbarStore';
 import {Combobox} from '../../nuclide-ui/lib/Combobox';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
+import {LoadingSpinner} from '../../nuclide-ui/lib/LoadingSpinner';
+import addTooltip from '../../nuclide-ui/lib/add-tooltip';
 import {
   onWorkspaceDidStopChangingActivePaneItem,
 } from '../../commons-atom/debounced';
@@ -103,26 +106,58 @@ class BuckToolbar extends React.Component {
 
   render(): React.Element {
     const buckToolbarStore = this._buckToolbarStore;
-    let simulatorDropdown;
-    if (buckToolbarStore.getRuleType() === 'apple_bundle') {
-      simulatorDropdown =
-        <SimulatorDropdown
-          className="inline-block"
-          title="Choose target device"
-          onSelectedSimulatorChange={this._handleSimulatorChange}
-        />;
-    }
-    let serverModeCheckbox;
-    if (buckToolbarStore.canBeReactNativeApp()) {
-      serverModeCheckbox =
-        <div className="inline-block">
-          <Checkbox
-            checked={buckToolbarStore.isReactNativeServerMode()}
-            onChange={this._handleReactNativeServerModeChanged}
-            label={'React Native Server Mode'}
+    let status;
+    if (buckToolbarStore.isLoadingRule()) {
+      status =
+        <div ref={addTooltip({title: 'Waiting on rule info...', delay: 0})}>
+          <LoadingSpinner
+            className="inline-block"
+            size="EXTRA_SMALL"
           />
         </div>;
+    } else if (buckToolbarStore.getBuildTarget() &&
+               buckToolbarStore.getRuleType() == null) {
+      status =
+        <span
+          className="icon icon-alert"
+          ref={addTooltip({
+            title: `Rule "${buckToolbarStore.getBuildTarget()}" could not be found.`,
+            delay: 0,
+          })}
+        />;
     }
+
+    let widgets = [];
+    if (status != null) {
+      widgets.push(
+        <div key="status" className="nuclide-buck-status inline-block text-center">
+          {status}
+        </div>
+      );
+    } else {
+      if (buckToolbarStore.getRuleType() === 'apple_bundle') {
+        widgets.push(
+          <SimulatorDropdown
+            key="simulator-dropdown"
+            className="inline-block"
+            title="Choose target device"
+            onSelectedSimulatorChange={this._handleSimulatorChange}
+          />
+        );
+      }
+      if (buckToolbarStore.canBeReactNativeApp()) {
+        widgets.push(
+          <div key="react-native-checkbox" className="inline-block">
+            <Checkbox
+              checked={buckToolbarStore.isReactNativeServerMode()}
+              onChange={this._handleReactNativeServerModeChanged}
+              label={'React Native Server Mode'}
+            />
+          </div>
+        );
+      }
+    }
+
     return (
       <div>
         <Combobox
@@ -138,14 +173,13 @@ class BuckToolbar extends React.Component {
           placeholderText="Buck build target"
           width={BUCK_TARGET_INPUT_WIDTH}
         />
-        {simulatorDropdown}
-        {serverModeCheckbox}
+        {widgets}
       </div>
     );
   }
 
   _handleBuildTargetChange(value: string) {
-    this._buckToolbarActions.updateBuildTarget(value);
+    this._buckToolbarActions.updateBuildTarget(value.trim());
   }
 
   _handleRequestOptionsError(error: Error): void {

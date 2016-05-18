@@ -53,6 +53,7 @@ export default class BuckToolbarStore {
   _reactNativeServerManager: ReactNativeServerManager;
   _mostRecentBuckProject: ?BuckProject;
   _isBuilding: boolean;
+  _isLoadingRule: boolean;
   _buildTarget: string;
   _buildProgress: number;
   _buildRuleType: string;
@@ -74,6 +75,7 @@ export default class BuckToolbarStore {
 
   _initState(initialState: ?SerializedState) {
     this._isBuilding = false;
+    this._isLoadingRule = false;
     this._buildTarget = initialState && initialState.buildTarget || '';
     this._buildProgress = 0;
     this._buildRuleType = '';
@@ -88,6 +90,10 @@ export default class BuckToolbarStore {
           break;
         case BuckToolbarActions.ActionType.UPDATE_BUILD_TARGET:
           this._buildTarget = action.buildTarget;
+          this.emitChange();
+          break;
+        case BuckToolbarActions.ActionType.UPDATE_IS_LOADING_RULE:
+          this._isLoadingRule = action.isLoadingRule;
           this.emitChange();
           break;
         case BuckToolbarActions.ActionType.UPDATE_RULE_TYPE:
@@ -130,6 +136,10 @@ export default class BuckToolbarStore {
 
   isBuilding(): boolean {
     return this._isBuilding;
+  }
+
+  isLoadingRule(): boolean {
+    return this._isLoadingRule;
   }
 
   getRuleType(): string {
