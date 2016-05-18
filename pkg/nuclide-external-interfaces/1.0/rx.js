@@ -157,6 +157,8 @@ declare module 'rxjs' {
       defaultValue: U,
     ): Observable<U>;
 
+    ignoreElements(): Observable<any>;
+
     // Alias for `mergeMap`
     flatMap<U>(
       project: (value: T) => Observable<U> | Promise<U> | Iterable<U>
