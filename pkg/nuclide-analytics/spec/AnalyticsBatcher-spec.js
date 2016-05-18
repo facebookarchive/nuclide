@@ -1,5 +1,5 @@
 'use babel';
-/* @noflow */
+/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -29,9 +29,9 @@ describe('analytics - AnalyticsBatcher', () => {
       {key: 'key2', values: {v1: 'value1'}},
     ]);
 
-    batcher.track('key3');
+    batcher.track('key3', {});
     advanceClock(10000);
-    expect(track).toHaveBeenCalledWith([{key: 'key3'}]);
+    expect(track).toHaveBeenCalledWith([{key: 'key3', values: {}}]);
   });
 
   it('flush on dispose', () => {

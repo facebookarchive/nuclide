@@ -11,6 +11,9 @@
 
 describe('main', () => {
   it('should throw when required', () => {
-    expect(() => { require('..'); }).toThrow();
+    expect(() => {
+      // $FlowIgnore: We expect this to be an error.
+      require('..');
+    }).toThrow();
   });
 });

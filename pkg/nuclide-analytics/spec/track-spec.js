@@ -1,5 +1,5 @@
 'use babel';
-/* @noflow */
+/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,6 +11,7 @@
 
 import main from '..';
 import * as track from '../lib/track';
+import invariant from 'assert';
 
 const startTracking = main.startTracking;
 
@@ -22,8 +23,8 @@ describe('startTracking', () => {
 
   beforeEach(() => {
     // `advanceClock` relies on Date.now exclusively. Ensure fallback to Date.now in tests.
-    originalProcessHrTime = process.hrtime;
-    process.hrtime = null;
+    originalProcessHrTime = (process: any).hrtime;
+    (process: any).hrtime = null;
     if (window && window.performance) {
       originalWindowPerformance = window.performance;
       window.performance = null;
@@ -42,7 +43,7 @@ describe('startTracking', () => {
   });
 
   afterEach(() => {
-    process.hrtime = originalProcessHrTime;
+    (process: any).hrtime = originalProcessHrTime;
     if (originalWindowPerformance) {
       window.performance = originalWindowPerformance;
     }
@@ -57,6 +58,7 @@ describe('startTracking', () => {
     timer.onSuccess();
     expect(track.track).toHaveBeenCalled();
     expect(trackKey).toBe('performance');
+    invariant(trackValues != null);
     expect(trackValues.duration).toBe('10');
     expect(trackValues.eventName).toBe('st-success');
     expect(trackValues.error).toBe('0');
@@ -69,6 +71,7 @@ describe('startTracking', () => {
     timer.onError(new Error());
     expect(track.track).toHaveBeenCalled();
     expect(trackKey).toBe('performance');
+    invariant(trackValues != null);
     expect(trackValues.duration).toBe('11');
     expect(trackValues.eventName).toBe('st-error');
     expect(trackValues.error).toBe('1');

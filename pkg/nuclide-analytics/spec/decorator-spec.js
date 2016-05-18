@@ -1,5 +1,5 @@
 'use babel';
-/* @noflow */
+/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,10 +11,13 @@
 
 import main from '..';
 import * as track from '../lib/track';
+import invariant from 'assert';
 
 const trackTiming = main.trackTiming;
 
 class TestClass {
+  _methodBodyToBeTracked: any;
+
   constructor(methodBodyToBeTracked: any) {
     this._methodBodyToBeTracked = methodBodyToBeTracked;
   }
@@ -60,6 +63,7 @@ describe('The @trackTiming decorator', () => {
     runs(() => {
       expect(ret).toEqual(1);
       expect(trackKey).toEqual('performance');
+      invariant(trackValues != null);
       expect(trackValues.eventName).toEqual('TestClass.foo');
       expect(trackValues.error).toEqual('0');
       expect(trackValues.exception).toEqual('');
@@ -85,11 +89,13 @@ describe('The @trackTiming decorator', () => {
     runs(() => {
       expect(errCaught).toEqual(errToThrow);
       expect(trackKey).toEqual('performance');
+      invariant(trackValues != null);
       expect(trackValues.eventName).toEqual('TestClass.foo');
       expect(trackValues.error).toEqual('1');
       expect(trackValues.exception).toEqual(errToThrow.toString());
     });
   });
+
   it('tracks timing on a successful async function call', () => {
     waitsForPromise(async () => {
       const ret = await createTestClassAndCallTrackedMethod(() => {
@@ -102,6 +108,7 @@ describe('The @trackTiming decorator', () => {
 
       expect(ret).toEqual(1);
       expect(trackKey).toEqual('performance');
+      invariant(trackValues != null);
       expect(trackValues.eventName).toEqual('TestClass.foo');
       expect(trackValues.error).toEqual('0');
       expect(trackValues.exception).toEqual('');
@@ -131,6 +138,7 @@ describe('The @trackTiming decorator', () => {
 
       expect(rejectionCaught).toEqual(rejectReason);
       expect(trackKey).toEqual('performance');
+      invariant(trackValues != null);
       expect(trackValues.eventName).toEqual('TestClass.foo');
       expect(trackValues.error).toEqual('1');
       expect(trackValues.exception).toEqual('Error: ' + rejectReason.toString());
