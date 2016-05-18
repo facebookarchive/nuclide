@@ -51,7 +51,10 @@ export class BuildToolbar extends React.Component {
       }));
 
     const activeBuildSystemIcon = this.props.getActiveBuildSystemIcon();
-    const activeTask = this.props.tasks.find(task => task.type === this.props.activeTaskType);
+    // Default to the first task if no task is currently active.
+    const activeTaskType = this.props.activeTaskType ||
+      (this.props.tasks[0] && this.props.tasks[0].type);
+    const activeTask = this.props.tasks.find(task => task.type === activeTaskType);
     const ExtraUi = this.props.getExtraUi && this.props.getExtraUi();
 
     return (
@@ -66,7 +69,7 @@ export class BuildToolbar extends React.Component {
           />
           <div className="inline-block">
             <SplitButtonDropdown
-              value={this.props.activeTaskType}
+              value={activeTaskType}
               options={taskOptions}
               onChange={value => { this.props.selectTask(value); }}
               onConfirm={() => { this.props.runTask(); }}
