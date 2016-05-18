@@ -1,0 +1,12 @@
+{
+  "name": "nuclide-nux",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "A New User Experience (NUX) framework for Nuclide.",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "private": false
+}
