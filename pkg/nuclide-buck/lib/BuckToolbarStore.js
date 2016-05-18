@@ -63,7 +63,6 @@ class BuckToolbarStore {
   _isReactNativeApp: boolean;
   _isReactNativeServerMode: boolean;
   _buckProcessOutputStore: ?ProcessOutputStoreType;
-  _aliasesByProject: WeakMap<BuckProject, Array<string>>;
 
   constructor(dispatcher: Dispatcher, initialState: ?SerializedState) {
     this._dispatcher = dispatcher;
@@ -74,7 +73,6 @@ class BuckToolbarStore {
     );
     this._emitter = new Emitter();
     this._textEditorToBuckProject = new WeakMap();
-    this._aliasesByProject = new WeakMap();
     this._initState(initialState);
     this._setupActions();
   }
@@ -127,6 +125,10 @@ class BuckToolbarStore {
     return this._buildTarget;
   }
 
+  getMostRecentBuckProject(): ?BuckProject {
+    return this._mostRecentBuckProject;
+  }
+
   isBuilding(): boolean {
     return this._isBuilding;
   }
@@ -145,23 +147,6 @@ class BuckToolbarStore {
 
   isReactNativeServerMode(): boolean {
     return this.isReactNativeApp() && this._isReactNativeServerMode;
-  }
-
-  async loadAliases(): Promise<Array<string>> {
-    const buckProject = this._mostRecentBuckProject;
-    if (!buckProject) {
-      return Promise.resolve([]);
-    }
-
-    // Cache aliases for a project because invoking buck just to list aliases that are highly
-    // unlikely to change is wasteful.
-    let aliases = this._aliasesByProject.get(buckProject);
-    if (!aliases) {
-      aliases = await buckProject.listAliases();
-      this._aliasesByProject.set(buckProject, aliases);
-    }
-
-    return aliases;
   }
 
   async _getReactNativeServerCommand(): Promise<?string> {

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {BuckProject} from '../../nuclide-buck-base';
+
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
 import debounce from '../../commons-node/debounce';
@@ -39,6 +41,10 @@ class BuckToolbar extends React.Component {
   _buckToolbarStore: BuckToolbarStore;
   _buckToolbarActions: BuckToolbarActions;
 
+  // Querying Buck can be slow, so cache aliases by project.
+  // Putting the cache here allows the user to refresh it by toggling the UI.
+  _projectAliasesCache: WeakMap<BuckProject, Promise<Array<string>>>;
+
   static propTypes = {
     store: React.PropTypes.instanceOf(BuckToolbarStore).isRequired,
     actions: React.PropTypes.instanceOf(BuckToolbarActions).isRequired,
@@ -56,6 +62,7 @@ class BuckToolbar extends React.Component {
 
     this._buckToolbarActions = this.props.actions;
     this._buckToolbarStore = this.props.store;
+    this._projectAliasesCache = new WeakMap();
     this._onActivePaneItemChanged(atom.workspace.getActivePaneItem());
 
     this._disposables = new CompositeDisposable();
@@ -80,7 +87,18 @@ class BuckToolbar extends React.Component {
   }
 
   _requestOptions(inputText: string): Promise<Array<string>> {
-    return this._buckToolbarStore.loadAliases();
+    const project = this._buckToolbarStore.getMostRecentBuckProject();
+    if (project == null) {
+      return Promise.resolve([]);
+    }
+
+    let aliases = this._projectAliasesCache.get(project);
+    if (!aliases) {
+      aliases = project.listAliases();
+      this._projectAliasesCache.set(project, aliases);
+    }
+
+    return aliases;
   }
 
   render(): React.Element {
