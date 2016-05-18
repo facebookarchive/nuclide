@@ -54,21 +54,24 @@ function handleFailure(pathToRoot: NuclideUri): void {
     'You may re-enable them by clicking below or by running the "Restart Flow Server" command ' +
     'from the command palette later.'
   ;
-  const notification = atom.notifications.addError(
+  const buttons = [{
+    className: 'icon icon-zap',
+    onDidClick() {
+      atom.commands.dispatch(
+        atom.views.getView(atom.workspace),
+        'nuclide-flow:restart-flow-server',
+      );
+    },
+    text: 'Restart Flow Server',
+  }];
+  try {
+    buttons.push(require('./fb-report-crash').button);
+  } catch (e) { }
+  atom.notifications.addError(
     failureMessage,
     {
       dismissable: true,
-      buttons: [{
-        className: 'icon icon-zap',
-        onDidClick() {
-          notification.dismiss();
-          atom.commands.dispatch(
-            atom.views.getView(atom.workspace),
-            'nuclide-flow:restart-flow-server',
-          );
-        },
-        text: 'Restart Flow Server',
-      }],
+      buttons,
     }
   );
 }
