@@ -29,6 +29,14 @@ export class FlowServiceWatcher {
         handleFailure(pathToRoot);
       }),
     );
+
+    this._subscription.add(serverStatusUpdates
+      .filter(({status}) => status === 'not installed')
+      .first()
+      .subscribe(({pathToRoot}) => {
+        handleNotInstalled(pathToRoot);
+      }),
+    );
   }
 
   dispose(): void {
@@ -57,6 +65,20 @@ function handleFailure(pathToRoot: NuclideUri): void {
         },
         text: 'Restart Flow Server',
       }],
+    }
+  );
+}
+
+function handleNotInstalled(pathToRoot: NuclideUri): void {
+  const message = `Flow was not found when attempting to start it in '${pathToRoot}'.<br/><br/>` +
+    'You can download it from <a href="http://flowtype.org/">flowtype.org</a>. ' +
+    'Make sure it is installed and on your PATH. ' +
+    'If this is a remote repository make sure it is available on the remote machine.<br/><br/>' +
+    'You will not see this message again until you restart Nuclide';
+  atom.notifications.addError(
+    message,
+    {
+      dismissable: true,
     }
   );
 }
