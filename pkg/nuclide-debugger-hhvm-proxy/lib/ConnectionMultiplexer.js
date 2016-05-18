@@ -32,6 +32,7 @@ import {
   STATUS_STDOUT,
   STATUS_STDERR,
   COMMAND_RUN,
+  COMMAND_STOP,
 } from './DbgpSocket';
 import {EventEmitter} from 'events';
 import invariant from 'assert';
@@ -251,7 +252,7 @@ export class ConnectionMultiplexer {
       case STATUS_STOPPING:
         // TODO: May want to enable post-mortem features?
         connectionInfo.status = status;
-        connection.sendContinuationCommand(COMMAND_RUN); // TODO: Change to COMMAND_STOP: t10862085
+        connection.sendContinuationCommand(COMMAND_STOP);
         return;
       case STATUS_RUNNING:
         connectionInfo.status = status;
