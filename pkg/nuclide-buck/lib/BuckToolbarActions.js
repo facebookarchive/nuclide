@@ -9,11 +9,14 @@
  * the root directory of this source tree.
  */
 
+import type BuckToolbarStore from './BuckToolbarStore';
+
 import {Dispatcher} from 'flux';
 
 class BuckToolbarActions {
 
   _dispatcher: Dispatcher;
+  _store: BuckToolbarStore;
 
   static ActionType = Object.freeze({
     UPDATE_BUILD_TARGET: 'UPDATE_BUILD_TARGET',
@@ -23,8 +26,12 @@ class BuckToolbarActions {
     UPDATE_SIMULATOR: 'UPDATE_SIMULATOR',
   });
 
-  constructor(dispatcher: Dispatcher) {
+  constructor(
+    dispatcher: Dispatcher,
+    store: BuckToolbarStore,
+  ) {
     this._dispatcher = dispatcher;
+    this._store = store;
   }
 
   updateProjectFor(editor: TextEditor): void {

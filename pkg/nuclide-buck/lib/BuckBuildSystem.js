@@ -80,12 +80,10 @@ export class BuckBuildSystem {
     if (this._flux == null) {
       // Set up flux stuff.
       const dispatcher = new Dispatcher();
-      const flux = {
-        store: new BuckToolbarStore(dispatcher, this._initialState),
-        actions: new BuckToolbarActions(dispatcher),
-      };
-      this._disposables.add(flux.store);
-      this._flux = flux;
+      const store = new BuckToolbarStore(dispatcher, this._initialState);
+      const actions = new BuckToolbarActions(dispatcher, store);
+      this._disposables.add(store);
+      this._flux = {store, actions};
     }
     return this._flux;
   }
