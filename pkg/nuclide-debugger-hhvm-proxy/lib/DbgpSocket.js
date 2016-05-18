@@ -302,7 +302,7 @@ class DbgpSocket {
         error: response.error[0],
         wasThrown: true,
       };
-    } else if (response != null) {
+    } else if (response.property != null) {
       return {
         result: response.property[0],
         wasThrown: false,
