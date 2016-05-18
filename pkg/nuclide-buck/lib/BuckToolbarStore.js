@@ -17,26 +17,18 @@ function getLogger() {
   return logger;
 }
 
-import invariant from 'assert';
 import {Emitter} from 'atom';
 import path from 'path';
 import {Dispatcher} from 'flux';
 import BuckToolbarActions from './BuckToolbarActions';
+import runBuckCommandInNewPane from './runBuckCommandInNewPane';
 
-type BuckRunDetails = {
-  pid?: number;
-};
-import type {
-  ProcessOutputStore as ProcessOutputStoreType,
-} from '../../nuclide-process-output-store';
-import type {ProcessOutputDataHandlers} from '../../nuclide-process-output-store/lib/types';
 import type {BuckProject} from '../../nuclide-buck-base';
 import type {SerializedState} from './types';
 
 import ReactNativeServerManager from './ReactNativeServerManager';
 import ReactNativeServerActions from './ReactNativeServerActions';
 
-const BUCK_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
 const REACT_NATIVE_APP_FLAGS = [
   '-executor-override', 'RCTWebSocketExecutor',
   '-websocket-executor-name', 'Nuclide',
@@ -59,7 +51,6 @@ export default class BuckToolbarStore {
   _buildRuleType: string;
   _simulator: ?string;
   _isReactNativeServerMode: boolean;
-  _buckProcessOutputStore: ?ProcessOutputStoreType;
 
   constructor(dispatcher: Dispatcher, initialState: ?SerializedState) {
     this._dispatcher = dispatcher;
@@ -113,9 +104,6 @@ export default class BuckToolbarStore {
 
   dispose() {
     this._reactNativeServerManager.dispose();
-    if (this._buckProcessOutputStore) {
-      this._buckProcessOutputStore.stopProcess();
-    }
   }
 
   subscribe(callback: () => void): IDisposable {
@@ -235,7 +223,7 @@ export default class BuckToolbarStore {
     this.emitChange();
 
     try {
-      const result = await this._runBuckCommandInNewPane(
+      const result = await runBuckCommandInNewPane(
         {buckProject, buildTarget, simulator, subcommand, debug, appArgs}
       );
       return {buckProject, buildTarget, pid: result.pid};
@@ -246,100 +234,6 @@ export default class BuckToolbarStore {
         ws.close();
       }
     }
-  }
-
-  /**
-   * @return An Object with some details about the output of the command:
-   *   pid: The process id of the running app, if 'run' was true.
-   */
-  async _runBuckCommandInNewPane(buckParams: {
-    buckProject: BuckProject;
-    buildTarget: string;
-    simulator: ?string;
-    subcommand: string;
-    debug: boolean;
-    appArgs: Array<string>;
-  }): Promise<BuckRunDetails> {
-    const {buckProject, buildTarget, simulator, subcommand, debug, appArgs} = buckParams;
-
-    const getRunCommandInNewPane = require('../../nuclide-process-output');
-    const {runCommandInNewPane, disposable} = getRunCommandInNewPane();
-
-    const run = subcommand === 'install';
-    const runProcessWithHandlers = async (dataHandlerOptions: ProcessOutputDataHandlers) => {
-      const {stdout, stderr, error, exit} = dataHandlerOptions;
-      let observable;
-      invariant(buckProject);
-      if (run) {
-        observable = await buckProject.installWithOutput(
-            [buildTarget], simulator, {run, debug, appArgs});
-      } else if (subcommand === 'build') {
-        observable = await buckProject.buildWithOutput([buildTarget]);
-      } else if (subcommand === 'test') {
-        observable = await buckProject.testWithOutput([buildTarget]);
-      } else {
-        throw Error(`Unknown subcommand: ${subcommand}`);
-      }
-      const onNext = (data: {stderr?: string; stdout?: string}) => {
-        if (data.stdout) {
-          stdout(data.stdout);
-        } else {
-          stderr(data.stderr || '');
-        }
-      };
-      const onError = (data: string) => {
-        error(new Error(data));
-        exit(1);
-        disposable.dispose();
-      };
-      const onExit = () => {
-        // onExit will only be called if the process completes successfully,
-        // i.e. with exit code 0. Unfortunately an Observable cannot pass an
-        // argument (e.g. an exit code) on completion.
-        exit(0);
-        disposable.dispose();
-      };
-      const subscription = observable.subscribe(onNext, onError, onExit);
-
-      return {
-        kill() {
-          subscription.unsubscribe();
-          disposable.dispose();
-        },
-      };
-    };
-
-    const buckRunPromise: Promise<BuckRunDetails> = new Promise((resolve, reject) => {
-      const {ProcessOutputStore} = require('../../nuclide-process-output-store');
-      const processOutputStore = new ProcessOutputStore(runProcessWithHandlers);
-      const {handleBuckAnsiOutput} = require('../../nuclide-process-output-handler');
-
-      this._buckProcessOutputStore = processOutputStore;
-      const exitSubscription = processOutputStore.onProcessExit((exitCode: number) => {
-        if (exitCode === 0 && run) {
-          // Get the process ID.
-          const allBuildOutput = processOutputStore.getStdout() || '';
-          const pidMatch = allBuildOutput.match(BUCK_PROCESS_ID_REGEX);
-          if (pidMatch) {
-            // Index 1 is the captured pid.
-            resolve({pid: parseInt(pidMatch[1], 10)});
-          }
-        } else {
-          resolve({});
-        }
-        exitSubscription.dispose();
-        this._buckProcessOutputStore = null;
-      });
-
-      runCommandInNewPane({
-        tabTitle: `buck ${subcommand} ${buildTarget}`,
-        processOutputStore,
-        processOutputHandler: handleBuckAnsiOutput,
-        destroyExistingPane: true,
-      });
-    });
-
-    return await buckRunPromise;
   }
 
   async _setupWebSocket(buckProject: BuckProject, buildTarget: string): Promise<?WebSocket> {
