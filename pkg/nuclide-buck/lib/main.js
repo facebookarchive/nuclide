@@ -9,14 +9,16 @@
  * the root directory of this source tree.
  */
 
-import type {BuildSystem, BuildSystemRegistry} from '../../nuclide-build/lib/types';
+import type {BuildSystemRegistry} from '../../nuclide-build/lib/types';
 import type {BuckBuildSystem as BuckBuildSystemType} from './BuckBuildSystem';
+import type {OutputService} from '../../nuclide-console/lib/types';
 import type {SerializedState} from './types';
 
 import registerGrammar from '../../commons-atom/register-grammar';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import HyperclickProvider from './HyperclickProvider';
+import {BuckBuildSystem} from './BuckBuildSystem';
 
 let disposables: ?CompositeDisposable = null;
 let buildSystem: ?BuckBuildSystemType = null;
@@ -45,14 +47,21 @@ export function consumeBuildSystemRegistry(registry: BuildSystemRegistry): void 
   disposables.add(registry.register(getBuildSystem()));
 }
 
-function getBuildSystem(): BuildSystem {
+function getBuildSystem(): BuckBuildSystem {
   if (buildSystem == null) {
     invariant(disposables != null);
-    const {BuckBuildSystem} = require('./BuckBuildSystem');
     buildSystem = new BuckBuildSystem(initialState);
     disposables.add(buildSystem);
   }
   return buildSystem;
+}
+
+export function consumeOutputService(service: OutputService): void {
+  invariant(disposables != null);
+  disposables.add(service.registerOutputProvider({
+    messages: getBuildSystem().getOutputMessages(),
+    source: 'Buck',
+  }));
 }
 
 export function serialize(): ?SerializedState {

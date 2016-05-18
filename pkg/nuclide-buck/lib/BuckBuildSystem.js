@@ -10,7 +10,12 @@
  */
 
 import type {Task, TaskInfo} from '../../nuclide-build/lib/types';
+import type {Message} from '../../nuclide-console/lib/types';
 import type {SerializedState} from './types';
+
+import {Observable, Subject} from 'rxjs';
+import {CompositeDisposable} from 'atom';
+import {Dispatcher} from 'flux';
 
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
@@ -18,9 +23,6 @@ import {BuckIcon} from './ui/BuckIcon';
 import BuckToolbarStore from './BuckToolbarStore';
 import BuckToolbarActions from './BuckToolbarActions';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
-import {Observable} from 'rxjs';
-import {CompositeDisposable} from 'atom';
-import {Dispatcher} from 'flux';
 
 type Flux = {
   actions: BuckToolbarActions;
@@ -36,12 +38,15 @@ export class BuckBuildSystem {
   _icon: ReactClass;
   _initialState: ?SerializedState;
   _tasks: Observable<Array<Task>>;
+  _outputMessages: Subject<Message>;
 
   constructor(initialState: ?SerializedState) {
     this.id = 'buck';
     this.name = 'Buck';
     this._initialState = initialState;
     this._disposables = new CompositeDisposable();
+    this._outputMessages = new Subject();
+    this._disposables.add(new DisposableSubscription(this._outputMessages));
   }
 
   getTasks() {
@@ -88,6 +93,10 @@ export class BuckBuildSystem {
       this._icon = BuckIcon;
     }
     return this._icon;
+  }
+
+  getOutputMessages(): Observable<Message> {
+    return this._outputMessages;
   }
 
   /**
