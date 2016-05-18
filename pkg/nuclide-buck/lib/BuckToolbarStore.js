@@ -88,7 +88,12 @@ class BuckToolbarStore {
           this._mostRecentBuckProject = action.project;
           break;
         case BuckToolbarActions.ActionType.UPDATE_BUILD_TARGET:
-          this._updateBuildTarget(action.buildTarget);
+          this._buildTarget = action.buildTarget;
+          this.emitChange();
+          break;
+        case BuckToolbarActions.ActionType.UPDATE_RULE_TYPE:
+          this._buildRuleType = action.ruleType;
+          this.emitChange();
           break;
         case BuckToolbarActions.ActionType.UPDATE_SIMULATOR:
           this._simulator = action.simulator;
@@ -160,28 +165,6 @@ class BuckToolbarStore {
     return path.join(repoRoot, serverCommand);
   }
 
-  async _updateBuildTarget(buildTarget: string): Promise<void> {
-    buildTarget = buildTarget.trim();
-    this._buildTarget = buildTarget;
-
-    this._buildRuleType = await this._findRuleType();
-    this.emitChange();
-  }
-
-  async _findRuleType(): Promise<string> {
-    const buckProject = this._mostRecentBuckProject;
-    const buildTarget = this._buildTarget;
-
-    let buildRuleType = '';
-    if (buildTarget && buckProject) {
-      try {
-        buildRuleType = await buckProject.buildRuleTypeFor(buildTarget);
-      } catch (e) {
-        // Most likely, this is an invalid target, so do nothing.
-      }
-    }
-    return buildRuleType;
-  }
   async _doDebug(): Promise<void> {
     // TODO(natthu): Restore validation logic to make sure the target is installable.
     // For now, let's leave that to Buck.
