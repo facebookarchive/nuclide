@@ -44,13 +44,23 @@ export class BuckBuildSystem {
     this._disposables = new CompositeDisposable();
   }
 
+  getTasks() {
+    const {store} = this._getFlux();
+    const enabled = store.getMostRecentBuckProject() != null && !store.isBuilding() &&
+      Boolean(store.getBuildTarget());
+    return TASKS.map(task => ({
+      ...task,
+      enabled,
+    }));
+  }
+
   observeTasks(cb: (tasks: Array<Task>) => mixed): IDisposable {
     if (this._tasks == null) {
       const {store} = this._getFlux();
       this._tasks = Observable.concat(
-        Observable.of(store.getTasks()),
+        Observable.of(this.getTasks()),
         observableFromSubscribeFunction(store.subscribe.bind(store))
-          .map(() => store.getTasks()),
+          .map(() => this.getTasks()),
       );
     }
     return new DisposableSubscription(
@@ -91,7 +101,7 @@ export class BuckBuildSystem {
   runTask(taskType: string): TaskInfo {
     const {store} = this._getFlux();
 
-    if (!store.getTasks().some(task => task.type === taskType)) {
+    if (!this.getTasks().some(task => task.type === taskType)) {
       throw new Error(`There's no Buck task named "${taskType}"`);
     }
 
@@ -136,6 +146,41 @@ export class BuckBuildSystem {
   }
 
 }
+
+const TASKS = [
+  {
+    type: 'build',
+    label: 'Build',
+    description: 'Build the specified Buck target',
+    enabled: true,
+    cancelable: false,
+    icon: 'tools',
+  },
+  {
+    type: 'run',
+    label: 'Run',
+    description: 'Run the specfied Buck target',
+    enabled: true,
+    cancelable: false,
+    icon: 'triangle-right',
+  },
+  {
+    type: 'test',
+    label: 'Test',
+    description: 'Test the specfied Buck target',
+    enabled: true,
+    cancelable: false,
+    icon: 'checklist',
+  },
+  {
+    type: 'debug',
+    label: 'Debug',
+    description: 'Debug the specfied Buck target',
+    enabled: true,
+    cancelable: false,
+    icon: 'plug',
+  },
+];
 
 /**
  * BuckToolbarActions and BuckToolbarStore implement an older version of the Flux pattern which puts
