@@ -48,7 +48,7 @@ export class FlowServiceWatcher {
   }
 }
 
-function handleFailure(pathToRoot: NuclideUri): void {
+async function handleFailure(pathToRoot: NuclideUri): Promise<void> {
   const failureMessage = `Flow has failed in '${pathToRoot}'.<br/><br/>` +
     'Flow features will be disabled for the remainder of this Nuclide session. ' +
     'You may re-enable them by clicking below or by running the "Restart Flow Server" command ' +
@@ -65,7 +65,10 @@ function handleFailure(pathToRoot: NuclideUri): void {
     text: 'Restart Flow Server',
   }];
   try {
-    buttons.push(require('./fb-report-crash').button);
+    const reportButton = await require('./fb-report-crash').getButton();
+    if (reportButton != null) {
+      buttons.push(reportButton);
+    }
   } catch (e) { }
   atom.notifications.addError(
     failureMessage,
