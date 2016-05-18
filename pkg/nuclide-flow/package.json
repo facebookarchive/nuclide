@@ -38,6 +38,12 @@
         "type": "boolean",
         "default": false,
         "description": "EXPERIMENTAL: Show tree-structured type hints. Type hints must first be enabled. Requires Flow v0.17.0"
+      },
+      "warnOnNotInstalled": {
+        "title": "Warn when Flow is not found",
+        "type": "boolean",
+        "default": true,
+        "description": "If a .flowconfig file is found, but Flow itself cannot be found, pop up a warning explaining how to install Flow"
       }
     },
     "packageType": "Atom",
