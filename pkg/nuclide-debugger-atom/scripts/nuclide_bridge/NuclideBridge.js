@@ -282,10 +282,12 @@ class NuclideBridge {
 
   _handleDebuggerPaused(event: WebInspector$Event) {
     endTimerTracking();
-    ipc.sendToHost('notification', 'DebuggerPaused', {});
     ++this._debuggerPausedCount;
     if (this._debuggerPausedCount === 1) {
+      ipc.sendToHost('notification', 'LoaderBreakpointHit', {});
       this._handleLoaderBreakpoint();
+    } else {
+      ipc.sendToHost('notification', 'NonLoaderDebuggerPaused', {});
     }
   }
 

@@ -230,8 +230,11 @@ class Bridge {
           case 'BreakpointRemoved':
             this._removeBreakpoint(event.args[1]);
             break;
-          case 'DebuggerPaused':
-            this._handleDebuggerPaused(event.args[1]);
+          case 'LoaderBreakpointHit':
+            this._handleLoaderBreakpointHit(event.args[1]);
+            break;
+          case 'NonLoaderDebuggerPaused':
+            this._handleNonLoaderDebuggerPaused(event.args[1]);
             break;
           case 'ExpressionEvaluationResponse':
             this._handleExpressionEvaluationResponse(event.args[1]);
@@ -255,12 +258,20 @@ class Bridge {
     }
   }
 
+  _handleLoaderBreakpointHit(additionalData: {sourceUrl?: string}): void {
+    this._handleDebuggerPaused(additionalData);
+  }
+
+  _handleNonLoaderDebuggerPaused(additionalData: {sourceUrl?: string}): void {
+    this._handleDebuggerPaused(additionalData);
+    raiseNativeNotificationAfterDelay('Nuclide Debugger', 'Paused at a breakpoint', 3000);
+  }
+
   _handleDebuggerPaused(additionalData: {sourceUrl?: string}): void {
     this._expressionsInFlight.clear();
     this._debuggerModel.getStore().setDebuggerMode(DebuggerMode.PAUSED);
     // TODO go through dispatcher
     this._debuggerModel.getWatchExpressionStore().triggerReevaluation();
-    raiseNativeNotificationAfterDelay('Nuclide Debugger', 'Paused at a breakpoint', 3000);
   }
 
   _handleClearInterface(): void {
