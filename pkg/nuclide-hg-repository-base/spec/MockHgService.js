@@ -38,11 +38,11 @@ module.exports = class MockHgService {
     return Promise.resolve(null);
   }
 
-  fetchCurrentBookmark(): Promise<string> {
+  fetchActiveBookmark(): Promise<string> {
     return Promise.resolve('');
   }
 
-  observeHgBookmarkDidChange(): Observable<void> {
+  observeActiveBookmarkDidChange(): Observable<void> {
     return new Subject();
   }
 

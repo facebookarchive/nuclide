@@ -17,7 +17,7 @@ import path from 'path';
  * @return A promise that resolves to the current bookmark name, if it exists,
  *   or else an empty string.
  */
-async function fetchCurrentBookmark(repoPath: string): Promise<string> {
+async function fetchActiveBookmark(repoPath: string): Promise<string> {
   const bookmarkFile = path.join(repoPath, 'bookmarks.current');
   let result;
   try {
@@ -35,5 +35,5 @@ async function fetchCurrentBookmark(repoPath: string): Promise<string> {
 }
 
 module.exports = {
-  fetchCurrentBookmark,
+  fetchActiveBookmark,
 };

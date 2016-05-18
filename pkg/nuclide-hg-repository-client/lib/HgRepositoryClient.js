@@ -100,7 +100,7 @@ export class HgRepositoryClient {
   _hgDiffCacheFilesUpdating: Set<NuclideUri>;
   _hgDiffCacheFilesToClear: Set<NuclideUri>;
 
-  _currentBookmark: ?string;
+  _activeBookmark: ?string;
   _serializedRefreshStatusesCache: () => Promise<void>;
   async: HgRepositoryClientAsync;
 
@@ -179,8 +179,8 @@ export class HgRepositoryClient {
     this._service.observeFilesDidChange().subscribe(onFilesChanges);
     this._service.observeHgRepoStateDidChange()
       .subscribe(this._serializedRefreshStatusesCache);
-    this._service.observeHgBookmarkDidChange()
-      .subscribe(this.fetchCurrentBookmark.bind(this));
+    this._service.observeActiveBookmarkDidChange()
+      .subscribe(this.fetchActiveBookmark.bind(this));
   }
 
   destroy() {
@@ -255,12 +255,12 @@ export class HgRepositoryClient {
    * @return The current Hg bookmark.
    */
   getShortHead(filePath: NuclideUri): string {
-    if (!this._currentBookmark) {
+    if (!this._activeBookmark) {
       // Kick off a fetch to get the current bookmark. This is async.
       this.async.getShortHead();
       return '';
     }
-    return this._currentBookmark;
+    return this._activeBookmark;
   }
 
   // TODO This is a stub.
@@ -736,7 +736,7 @@ export class HgRepositoryClient {
   /*
    * @deprecated Use {#async.getShortHead} instead
    */
-  fetchCurrentBookmark(): Promise<string> {
+  fetchActiveBookmark(): Promise<string> {
     return this.async.getShortHead();
   }
 

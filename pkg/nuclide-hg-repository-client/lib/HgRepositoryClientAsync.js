@@ -56,19 +56,19 @@ export default class HgRepositoryClientAsync {
   async getShortHead(): Promise<string> {
     let newlyFetchedBookmark = '';
     try {
-      newlyFetchedBookmark = await this._client._service.fetchCurrentBookmark();
+      newlyFetchedBookmark = await this._client._service.fetchActiveBookmark();
     } catch (e) {
       // Suppress the error. There are legitimate times when there may be no
       // current bookmark, such as during a rebase. In this case, we just want
       // to return an empty string if there is no current bookmark.
     }
-    if (newlyFetchedBookmark !== this._client._currentBookmark) {
-      this._client._currentBookmark = newlyFetchedBookmark;
+    if (newlyFetchedBookmark !== this._client._activeBookmark) {
+      this._client._activeBookmark = newlyFetchedBookmark;
       // The Atom status-bar uses this as a signal to refresh the 'shortHead'.
       // There is currently no dedicated 'shortHeadDidChange' event.
       this._client._emitter.emit('did-change-statuses');
     }
-    return this._client._currentBookmark || '';
+    return this._client._activeBookmark || '';
   }
 
   getCachedPathStatus(filePath: ?NuclideUri): Promise<StatusCodeNumberValue> {

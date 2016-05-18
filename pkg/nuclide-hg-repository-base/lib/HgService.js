@@ -164,14 +164,14 @@ export class HgService {
 
   _workingDirectory: string;
   _filesDidChangeObserver: Subject;
+  _hgActiveBookmarkDidChangeObserver: Subject;
   _hgRepoStateDidChangeObserver: Subject;
-  _hgBookmarkDidChangeObserver: Subject;
 
   constructor(workingDirectory: string) {
     this._workingDirectory = workingDirectory;
     this._filesDidChangeObserver = new Subject();
     this._hgRepoStateDidChangeObserver = new Subject();
-    this._hgBookmarkDidChangeObserver = new Subject();
+    this._hgActiveBookmarkDidChangeObserver = new Subject();
     this._lockFileHeld = false;
     this._subscribeToWatchman().catch(error => {
       logger.error('Failed to subscribe to watchman error: ', error);
@@ -181,7 +181,7 @@ export class HgService {
   async dispose(): Promise<void> {
     this._filesDidChangeObserver.complete();
     this._hgRepoStateDidChangeObserver.complete();
-    this._hgBookmarkDidChangeObserver.complete();
+    this._hgActiveBookmarkDidChangeObserver.complete();
     if (this._hgDirWatcher != null) {
       this._hgDirWatcher.close();
       this._hgDirWatcher = null;
@@ -306,7 +306,7 @@ export class HgService {
     }
 
     // Subscribe to changes in the current Hg bookmark.
-    const hgBookmarkSubscription = await watchmanClient.watchDirectoryRecursive(
+    const hgActiveBookmarkSubscription = await watchmanClient.watchDirectoryRecursive(
       workingDirectory,
       WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK,
       {
@@ -329,7 +329,7 @@ export class HgService {
     logger.debug(`Watchman subscription ${WATCHMAN_HG_DIR_STATE} established.`);
 
     primarySubscribtion.on('change', this._filesDidChange.bind(this));
-    hgBookmarkSubscription.on('change', this._hgBookmarkDidChange.bind(this));
+    hgActiveBookmarkSubscription.on('change', this._hgActiveBookmarkDidChange.bind(this));
     dirStateSubscribtion.on('change', this._emitHgRepoStateChanged.bind(this));
   }
 
@@ -358,8 +358,8 @@ export class HgService {
     this._hgRepoStateDidChangeObserver.next();
   }
 
-  _hgBookmarkDidChange(): void {
-    this._hgBookmarkDidChangeObserver.next();
+  _hgActiveBookmarkDidChange(): void {
+    this._hgActiveBookmarkDidChangeObserver.next();
   }
 
   /**
@@ -422,16 +422,16 @@ export class HgService {
   /**
    * @return The name of the current bookmark.
    */
-  fetchCurrentBookmark(): Promise<string> {
-    const {fetchCurrentBookmark} = require('./hg-bookmark-helpers');
-    return fetchCurrentBookmark(path.join(this._workingDirectory, '.hg'));
+  fetchActiveBookmark(): Promise<string> {
+    const {fetchActiveBookmark} = require('./hg-bookmark-helpers');
+    return fetchActiveBookmark(path.join(this._workingDirectory, '.hg'));
   }
 
   /**
    * Observes that the Mercurial bookmark has changed.
    */
-  observeHgBookmarkDidChange(): Observable<void> {
-    return this._hgBookmarkDidChangeObserver;
+  observeActiveBookmarkDidChange(): Observable<void> {
+    return this._hgActiveBookmarkDidChangeObserver;
   }
 
   /**
