@@ -44,14 +44,14 @@ export default class BuckToolbarActions {
     }
 
     const buckProject = await getBuckProject(nuclideUri);
-    if (buckProject == null) {
-      return;
+    if (buckProject != null && buckProject !== this._store.getMostRecentBuckProject()) {
+      this._dispatcher.dispatch({
+        actionType: BuckToolbarActions.ActionType.UPDATE_PROJECT,
+        project: buckProject,
+      });
+      // Update the build target information as well.
+      this.updateBuildTarget(this._store.getBuildTarget());
     }
-
-    this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.UPDATE_PROJECT,
-      project: buckProject,
-    });
   }
 
   async updateBuildTarget(buildTarget: string): Promise<void> {
