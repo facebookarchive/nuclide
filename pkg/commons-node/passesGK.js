@@ -1,5 +1,5 @@
 'use babel';
-/* @noflow */
+/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -22,7 +22,7 @@ export default async function passesGK(
   // Only do the expensive require once.
   if (gatekeeper === undefined) {
     try {
-      gatekeeper = require('../../fb-gatekeeper').gatekeeper;
+      gatekeeper = require('../fb-gatekeeper').gatekeeper;
     } catch (e) {
       gatekeeper = null;
     }
