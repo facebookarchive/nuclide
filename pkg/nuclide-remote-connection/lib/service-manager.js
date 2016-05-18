@@ -34,9 +34,9 @@ let knownLocalRpc = false;
 // local service calls have the same behavior as remote RPC calls.
 function createLocalRpcClient(): RpcConnection<Transport> {
   const localTransports = new LoopbackTransports();
-  const serviceRegistry = ServiceRegistry.createRemote(newServices);
+  const serviceRegistry = ServiceRegistry.createLocal(newServices);
   const localClientConnection
-    = new RpcConnection('server', serviceRegistry, localTransports.serverTransport);
+    = RpcConnection.createServer(serviceRegistry, localTransports.serverTransport);
   invariant(localClientConnection != null); // silence lint...
   return RpcConnection.createLocal(localTransports.clientTransport, newServices);
 }

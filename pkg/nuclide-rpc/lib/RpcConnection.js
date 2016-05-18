@@ -33,7 +33,6 @@ import {EventEmitter} from 'events';
 import {Observable} from 'rxjs';
 import {ServiceRegistry} from './ServiceRegistry';
 import {ObjectRegistry} from './ObjectRegistry';
-import {getPath, createRemoteUri} from '../../nuclide-remote-uri';
 import {
   createCallFunctionMessage,
   createCallMethodMessage,
@@ -51,6 +50,8 @@ import {startTracking} from '../../nuclide-analytics';
 const logger = require('../../nuclide-logging').getLogger();
 const SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
 
+type RpcConnectionKind = 'server' | 'client';
+
 export class RpcConnection<TransportType: Transport> {
   _rpcRequestId: number;
   _emitter: EventEmitter;
@@ -58,8 +59,9 @@ export class RpcConnection<TransportType: Transport> {
   _serviceRegistry: ServiceRegistry;
   _objectRegistry: ObjectRegistry;
 
+  // Do not call this directly, use factory methods below.
   constructor(
-    kind: 'server' | 'client',
+    kind: RpcConnectionKind,
     serviceRegistry: ServiceRegistry,
     transport: TransportType
   ) {
@@ -71,28 +73,35 @@ export class RpcConnection<TransportType: Transport> {
     this._transport.onMessage(message => { this._handleMessage(message); });
   }
 
+  // Creates a connection on the server side.
+  static createServer(
+    serviceRegistry: ServiceRegistry,
+    transport: TransportType
+  ): RpcConnection<TransportType> {
+    return new RpcConnection(
+      'server',
+      serviceRegistry,
+      transport);
+  }
+
+  // Creates a client side connection to a server on another machine.
   static createRemote(
     hostname: string, transport: TransportType, services: Array<ConfigEntry>
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'client',
-      new ServiceRegistry(
-        remoteUri => getPath(remoteUri),
-        path => createRemoteUri(hostname, path),
-      services),
+      ServiceRegistry.createRemote(hostname, services),
       transport);
   }
 
+  // Creates a client side connection to a server on the same machine.
   static createLocal(
     transport: TransportType,
     services: Array<ConfigEntry>
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'client',
-      new ServiceRegistry(
-        remoteUri => remoteUri,
-        path => path,
-        services),
+      ServiceRegistry.createLocal(services),
       transport);
   }
 

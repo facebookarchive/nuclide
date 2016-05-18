@@ -90,7 +90,7 @@ class NuclideServer {
       });
     }
 
-    this._rpcServiceRegistry = ServiceRegistry.createRemote(services);
+    this._rpcServiceRegistry = ServiceRegistry.createLocal(services);
   }
 
   _attachUtilHandlers() {
@@ -243,8 +243,7 @@ class NuclideServer {
       client = this._clients.get(clientId);
       const transport = new WebSocketTransport(clientId, socket);
       if (client == null) {
-        client = new RpcConnection(
-          'server',
+        client = RpcConnection.createServer(
           this._rpcServiceRegistry,
           new QueuedTransport(clientId, transport));
         this._clients.set(clientId, client);

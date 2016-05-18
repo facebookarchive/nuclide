@@ -21,9 +21,9 @@ export class ServiceTester {
 
   async start(customServices: Array<ConfigEntry>): Promise<void> {
     const transports = new LoopbackTransports();
-    this._serviceRegistry = ServiceRegistry.createRemote(customServices);
-    this._clientConnection = new RpcConnection(
-      'server', this._serviceRegistry, transports.serverTransport);
+    this._serviceRegistry = ServiceRegistry.createLocal(customServices);
+    this._clientConnection = RpcConnection.createServer(
+      this._serviceRegistry, transports.serverTransport);
 
     this._client = RpcConnection.createRemote(
       'localhost', transports.clientTransport, customServices);

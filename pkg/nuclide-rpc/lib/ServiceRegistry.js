@@ -22,6 +22,7 @@ import type {ProxyFactory} from './main';
 import invariant from 'assert';
 import type {ConfigEntry} from './index';
 import type {ObjectRegistry} from './ObjectRegistry';
+import {getPath, createRemoteUri} from '../../nuclide-remote-uri';
 
 const logger = require('../../nuclide-logging').getLogger();
 
@@ -49,6 +50,7 @@ export class ServiceRegistry {
 
   _services: Map<string, ServiceDefinition>;
 
+  // Don't call directly, use factory methods below.
   constructor(
     marshalUri: (uri: NuclideUri) => string,
     unmarshalUri: (value: string) => NuclideUri,
@@ -65,11 +67,22 @@ export class ServiceRegistry {
     this.addServices(services);
   }
 
-  static createRemote(services: Array<ConfigEntry>): ServiceRegistry {
+  // Create local service registry.
+  static createLocal(services: Array<ConfigEntry>): ServiceRegistry {
     return new ServiceRegistry(
       uri => uri,
       remotePath => remotePath,
       services);
+  }
+
+  // Create service registry for connections to a remote machine.
+  static createRemote(
+    hostname: string, services: Array<ConfigEntry>
+  ): ServiceRegistry {
+    return new ServiceRegistry(
+        remoteUri => getPath(remoteUri),
+        path => createRemoteUri(hostname, path),
+        services);
   }
 
   addServices(services: Array<ConfigEntry>): void {
