@@ -103,6 +103,15 @@ class BuckToolbar extends React.Component {
 
   render(): React.Element {
     const buckToolbarStore = this._buckToolbarStore;
+    let simulatorDropdown;
+    if (buckToolbarStore.getRuleType() === 'apple_bundle') {
+      simulatorDropdown =
+        <SimulatorDropdown
+          className="inline-block"
+          title="Choose target device"
+          onSelectedSimulatorChange={this._handleSimulatorChange}
+        />;
+    }
     let serverModeCheckbox;
     if (buckToolbarStore.canBeReactNativeApp()) {
       serverModeCheckbox =
@@ -129,12 +138,7 @@ class BuckToolbar extends React.Component {
           placeholderText="Buck build target"
           width={BUCK_TARGET_INPUT_WIDTH}
         />
-        <SimulatorDropdown
-          className="inline-block"
-          disabled={buckToolbarStore.getRuleType() !== 'apple_bundle'}
-          title="Choose target device"
-          onSelectedSimulatorChange={this._handleSimulatorChange}
-        />
+        {simulatorDropdown}
         {serverModeCheckbox}
       </div>
     );
