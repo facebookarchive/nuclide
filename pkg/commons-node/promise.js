@@ -414,6 +414,22 @@ export async function asyncFilter<T>(
   return filteredList;
 }
 
+export async function asyncObjFilter<T>(
+  obj: {[key: string]: T},
+  filterFunction: (item: T, key: string) => Promise<boolean>,
+  limit?: number
+): Promise<{[key: string]: T}> {
+  const keys = Object.keys(obj);
+  const filteredObj = {};
+  await asyncLimit(keys, limit || keys.length, async (key: string) => {
+    const item = obj[key];
+    if (await filterFunction(item, key)) {
+      filteredObj[key] = item;
+    }
+  });
+  return filteredObj;
+}
+
 /**
  * `some` Promise utility that allows `some` an array with an async Promise some function.
  * It's an alternative to `Array.prototype.some` that accepts an async some function.

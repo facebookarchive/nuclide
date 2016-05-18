@@ -15,6 +15,7 @@ import {
   serializeAsyncCall,
   asyncLimit,
   asyncFilter,
+  asyncObjFilter,
   asyncSome,
   retryLimit,
   RequestSerializer,
@@ -317,6 +318,42 @@ describe('promises::asyncFilter()', () => {
         ]
       );
       expect(filtered).toEqual([3, 4, 5]);
+      // Increasing promise resolve time will gurantee maximum parallelization.
+      expect(parallelismHistory).toEqual([1, 2, 3, 3, 3]);
+    });
+  });
+});
+
+describe('promises::asyncObjFilter()', () => {
+
+  beforeEach(() => jasmine.useRealClock());
+
+  // eslint-disable-next-line max-len
+  it('filters an object with an async iterator and maximum parallelization when no limit is specified', () => {
+    waitsForPromise(async () => {
+      const {result: filtered, parallelismHistory} = await captureParallelismHistory(
+          asyncObjFilter,
+        [
+            {a: 1, b: 2, c: 3, d: 4, e: 5},
+          (value, key) => waitPromise(5 + value, value > 2),
+        ]
+      );
+      expect(filtered).toEqual({c: 3, d: 4, e: 5});
+      expect(parallelismHistory).toEqual([1, 2, 3, 4, 5]);
+    });
+  });
+
+  it('filters an array with a limit on parallelization', () => {
+    waitsForPromise(async () => {
+      const {result: filtered, parallelismHistory} = await captureParallelismHistory(
+          asyncObjFilter,
+        [
+            {a: 1, b: 2, c: 3, d: 4, e: 5},
+          (value, key) => waitPromise(5 + value, value > 2),
+          3,
+        ]
+      );
+      expect(filtered).toEqual({c: 3, d: 4, e: 5});
       // Increasing promise resolve time will gurantee maximum parallelization.
       expect(parallelismHistory).toEqual([1, 2, 3, 3, 3]);
     });
