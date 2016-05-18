@@ -130,10 +130,10 @@ WebInspector.DebuggerModel.ThreadStore.prototype = {
      this._debuggerAgent = debuggerModel._agent;
      this._id = payload.id;
      this._name = payload.name;
-     this._status = payload.status;
-     this._description = payload.description;
-     this._stop_reason = payload.stop_reason;
+     this._address = payload.address;
      this._location = WebInspector.DebuggerModel.Location.fromPayload(debuggerModel.target(), payload.location);
+     this._stop_reason = payload.stopReason;
+     this._description = payload.description;
      this._isCallstackFetched = false;
      this._stackFrames = [];
  }
@@ -156,6 +156,14 @@ WebInspector.DebuggerModel.ThreadStore.prototype = {
     },
 
     /**
+    * @return {string}
+    */
+    get address()
+    {
+        return this._address;
+    },
+
+    /**
     * @return {!WebInspector.DebuggerModel.Location}
     */
     get location()
@@ -163,20 +171,22 @@ WebInspector.DebuggerModel.ThreadStore.prototype = {
         return this._location;
     },
 
-    get status()
+    /**
+    * @return {string}
+    */
+    get stopReason()
     {
-        return this._status;
+        return this._stop_reason;
     },
 
+    /**
+    * @return {string}
+    */
     get description()
     {
         return this._description;
     },
 
-    get stopReason()
-    {
-        return this._stop_reason;
-    },
 
     get isCallstackFetched()
     {

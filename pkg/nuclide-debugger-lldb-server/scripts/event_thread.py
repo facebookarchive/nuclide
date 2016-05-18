@@ -25,7 +25,6 @@ breakpoint_event_type_to_name_map = {
     lldb.eBreakpointEventTypeRemoved: 'Removed',
     lldb.eBreakpointEventTypeThreadChanged: 'Thread Changed',
 }
-MAX_STOP_REASON_DESCRIPTION_LENGTH = 1024
 
 
 class LLDBListenerThread(Thread):
@@ -141,7 +140,8 @@ class LLDBListenerThread(Thread):
         thread = process.GetSelectedThread()
         output = 'Debugger paused at thread(%d) because of: %s' % (
             thread.GetThreadID(),
-            thread.GetStopDescription(MAX_STOP_REASON_DESCRIPTION_LENGTH))
+            self._debugger_store.thread_manager.get_thread_stop_description(thread))
+
         self._send_user_output('log', output)
         params = {
           "callFrames": self._debugger_store.thread_manager.get_thread_stack(thread),

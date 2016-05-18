@@ -121,8 +121,8 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
           <tr align="center" onDoubleClick={this._handleDoubleClick.bind(this, thread)}>
             <td>{indicator}</td>
             <td>{thread.id}</td>
-            <td>{thread.description}</td>
-            <td>{thread.location.scriptId}</td>
+            <td>{thread.address}</td>
+            <td>{thread.stopReason}</td>
           </tr>
         ));
       }
@@ -141,8 +141,8 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
               <tr key={0} align="center">
                 <td> </td>
                 <td>ID</td>
-                <td>Description</td>
-                <td>Location</td>
+                <td>Address</td>
+                <td>Stop Reason</td>
               </tr>
             </thead>
             <tbody align="center">

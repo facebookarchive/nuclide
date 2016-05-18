@@ -3217,8 +3217,10 @@
                "properties": [
                    { "name": "threadId", "type": "string", "description": "Thread identifier. This identifier is only valid while process is paused." },
                    { "name": "name", "type": "string", "optional": true, "description": "Name of the thread." },
+                   { "name": "address", "type": "string", "description": "Thread top frame address." },
                    { "name": "location", "$ref": "Location", "description": "Thread current location in the source code." },
-                   { "name": "status", "type": "string", "description": "The status of the thread." }
+                   { "name": "stopReason", "type": "string", "description": "Thread stop reason if any." },
+                   { "name": "description", "type": "string", "description": "Description of the thread." }
                ],
                "description": "Native thread object in OS process."
             },

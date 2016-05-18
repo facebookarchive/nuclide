@@ -9,6 +9,7 @@ from remote_objects import ValueListRemoteObject
 
 
 CALL_STACK_OBJECT_GROUP = 'thread_stack'
+MAX_STOP_REASON_DESCRIPTION_LENGTH = 1024
 
 
 class ThreadManager(object):
@@ -25,19 +26,18 @@ class ThreadManager(object):
         """Update threads status for input process."""
         threads_array = []
         for thread in process.threads:
-            status_stream = lldb.SBStream()
-            thread.GetStatus(status_stream)
-
             description_stream = lldb.SBStream()
             thread.GetDescription(description_stream)
 
+            location = self._debugger_store.location_serializer \
+                .get_frame_location(thread.GetSelectedFrame())
             threads_array.append({
                 'id': thread.GetThreadID(),
                 'name': thread.GetName(),
-                'status': status_stream.GetData(),
+                'address': self._get_frame_name(thread.GetSelectedFrame()),
+                'location': location,
+                'stopReason': self.get_thread_stop_description(thread),
                 'description': description_stream.GetData(),
-                'stop_reason': thread.GetStopReason(),
-                'location': self._debugger_store.location_serializer.get_frame_location(thread.GetSelectedFrame()),
             })
 
         params = {
@@ -56,14 +56,12 @@ class ThreadManager(object):
             local_variables = self._debugger_store.remote_object_manager.add_object(
                 ValueListRemoteObject(
                     variables,
-                    self._debugger_store.remote_object_manager.get_add_object_func(CALL_STACK_OBJECT_GROUP)),
+                    self._debugger_store.remote_object_manager.
+                    get_add_object_func(CALL_STACK_OBJECT_GROUP)),
                 CALL_STACK_OBJECT_GROUP)
-            target = frame.GetThread().GetProcess().GetTarget()
-            offset = frame.GetPCAddress().GetLoadAddress(target) \
-                - frame.GetSymbol().GetStartAddress().GetLoadAddress(target)
             result.append({
                 'callFrameId': "%d.%d" % (frame.thread.idx, frame.idx),
-                'functionName': "%s +%x" % (frame.name, offset),
+                'functionName': self._get_frame_name(frame),
                 'location': self._debugger_store.location_serializer.get_frame_location(frame),
                 'scopeChain': [{
                     'object': local_variables.serialized_value,
@@ -71,6 +69,15 @@ class ThreadManager(object):
                 }],
             })
         return result
+
+    def get_thread_stop_description(self, thread):
+        return thread.GetStopDescription(MAX_STOP_REASON_DESCRIPTION_LENGTH)
+
+    def _get_frame_name(self, frame):
+        target = frame.GetThread().GetProcess().GetTarget()
+        offset = frame.GetPCAddress().GetLoadAddress(target) \
+            - frame.GetSymbol().GetStartAddress().GetLoadAddress(target)
+        return "%s +%x" % (frame.name, offset)
 
     def release(self):
         self._debugger_store.remote_object_manager.release_object_group(CALL_STACK_OBJECT_GROUP)
