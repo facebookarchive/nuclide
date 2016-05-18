@@ -37,8 +37,6 @@ type TreeNode = InnerNode | LeafNode;
 *     A path URI is either a local path, such as: /aaa/bb/ccc
 *     or remote nuclide://sandbox.com/aaa/bb/ccc
 * - The URIs can point either to files or to directories.
-* - The remote URIs are port-insensitive and the port part is stripped from when
-*   internal structures are built.
 * - Empty WorkingSet is essentially an empty filter - it accepts everything.
 * - Non-empty WorkingSet contains every file specified by the contained URIs or below.
 *   So, if a URI points to a directory - all its sub-directories and files in them are included.

@@ -81,7 +81,7 @@ async testFileService(fileName: string, host: ?string) {
 // the calls to the proxy resolve to the local implementation.
 testFileService('/usr/local/local-file.txt', null);
 // With remote values, the proxy dispatches the call to the remote host.
-testFileService('nuclide://myhost.org:22/usr/local/file.txt', 'my.remote.machine.com');
+testFileService('nuclide://myhost.org/usr/local/file.txt', 'my.remote.machine.com');
 ```
 The implementation of a remotable module looks just like the implementation of a regular npm module.
 The implementation is not aware of whether the caller is local or from another host.

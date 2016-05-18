@@ -16,8 +16,8 @@ import logger from './utils';
 
 const {log} = logger;
 
-function translateMessageFromServer(hostname: string, port: number, message: string): string {
-  return translateMessage(message, uri => translateUriFromServer(hostname, port, uri));
+function translateMessageFromServer(hostname: string, message: string): string {
+  return translateMessage(message, uri => translateUriFromServer(hostname, uri));
 }
 
 function translateMessageToServer(message: string): string {
@@ -55,10 +55,10 @@ function translateField(obj: Object, field: string, translateUri: (uri: string) 
   return obj;
 }
 
-function translateUriFromServer(hostname: string, port: number, uri: string): string {
+function translateUriFromServer(hostname: string, uri: string): string {
   const components = remoteUri.parse(uri);
   if (components.protocol === 'file:') {
-    const result = remoteUri.createRemoteUri(hostname, port, components.pathname);
+    const result = remoteUri.createRemoteUri(hostname, components.pathname);
     log(`Translated URI from ${uri} to ${result}`);
     return result;
   } else {

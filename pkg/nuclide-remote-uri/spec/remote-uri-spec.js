@@ -14,11 +14,10 @@ import path from 'path';
 
 describe('nuclide-uri', () => {
   const localUri = '/usr/local/file';
-  const badRemoteUriNoPort = 'nuclide://fb.com/un/deux';
-  const badRemoteUriNoPath = 'nuclide://fb.com:8000';
-  const remoteUri = nuclideUri.createRemoteUri('fb.com', 8000, '/usr/local');
-  const remoteUriWithSpaces = nuclideUri.createRemoteUri('fb.com', 8000, '/a b/c d');
-  const remoteUriWithHashes = nuclideUri.createRemoteUri('fb.co.uk', 8000, '/ab/#c.d  #');
+  const badRemoteUriNoPath = 'nuclide://fb.com';
+  const remoteUri = nuclideUri.createRemoteUri('fb.com', '/usr/local');
+  const remoteUriWithSpaces = nuclideUri.createRemoteUri('fb.com', '/a b/c d');
+  const remoteUriWithHashes = nuclideUri.createRemoteUri('fb.co.uk', '/ab/#c.d  #');
 
   it('isRemote', () => {
     expect(nuclideUri.isRemote('/')).toBe(false);
@@ -31,42 +30,38 @@ describe('nuclide-uri', () => {
   });
 
   it('createRemoteUri', () => {
-    expect(remoteUri).toBe('nuclide://fb.com:8000/usr/local');
-    expect(remoteUriWithSpaces).toBe('nuclide://fb.com:8000/a b/c d');
+    expect(remoteUri).toBe('nuclide://fb.com/usr/local');
+    expect(remoteUriWithSpaces).toBe('nuclide://fb.com/a b/c d');
   });
 
   it('join', () => {
     expect(nuclideUri.join.bind(null, badRemoteUriNoPath, '../foo')).toThrow();
     expect(nuclideUri.join('/usr/local', 'bin')).toBe('/usr/local/bin');
-    expect(nuclideUri.join(remoteUri, 'bin')).toBe('nuclide://fb.com:8000/usr/local/bin');
+    expect(nuclideUri.join(remoteUri, 'bin')).toBe('nuclide://fb.com/usr/local/bin');
     expect(nuclideUri.join('/usr/local', '..')).toBe('/usr');
-    expect(nuclideUri.join(remoteUri, '..')).toBe('nuclide://fb.com:8000/usr');
+    expect(nuclideUri.join(remoteUri, '..')).toBe('nuclide://fb.com/usr');
   });
 
   describe('parsing remote', () => {
     it('handles simple paths', () => {
       expect(nuclideUri.getHostname(remoteUri)).toBe('fb.com');
-      expect(nuclideUri.getPort(remoteUri)).toBe(8000);
       expect(nuclideUri.getPath(remoteUri)).toBe('/usr/local');
     });
 
     it('does not encode space characters', () => {
       expect(nuclideUri.getHostname(remoteUriWithSpaces)).toBe('fb.com');
-      expect(nuclideUri.getPort(remoteUriWithSpaces)).toBe(8000);
       expect(nuclideUri.getPath(remoteUriWithSpaces)).toBe('/a b/c d');
     });
 
     it('treats hash symbols as literals, part of the path', () => {
       const parsedUri = nuclideUri.parse(remoteUriWithHashes);
       expect(parsedUri.hostname).toBe('fb.co.uk');
-      expect(parsedUri.port).toBe('8000');
       expect(parsedUri.pathname).toBe('/ab/#c.d  #');
     });
   });
 
   it('parsing local', () => {
     expect(() => nuclideUri.getHostname(localUri)).toThrow();
-    expect(() => nuclideUri.getPort(localUri)).toThrow();
     expect(nuclideUri.getPath(localUri)).toBe(localUri);
     expect(() => nuclideUri.parseRemoteUri(localUri)).toThrow();
   });
@@ -78,19 +73,18 @@ describe('nuclide-uri', () => {
 
   it('dirname', () => {
     expect(nuclideUri.dirname(localUri)).toBe('/usr/local');
-    expect(nuclideUri.dirname(remoteUri)).toBe('nuclide://fb.com:8000/usr');
-    expect(nuclideUri.dirname.bind(null, badRemoteUriNoPort)).toThrow();
-    expect(nuclideUri.dirname(remoteUriWithSpaces)).toBe('nuclide://fb.com:8000/a b');
+    expect(nuclideUri.dirname(remoteUri)).toBe('nuclide://fb.com/usr');
+    expect(nuclideUri.dirname(remoteUriWithSpaces)).toBe('nuclide://fb.com/a b');
   });
 
   it('getParent', () => {
     expect(nuclideUri.getParent(localUri)).toBe('/usr/local');
-    expect(nuclideUri.getParent(remoteUri)).toBe('nuclide://fb.com:8000/usr');
+    expect(nuclideUri.getParent(remoteUri)).toBe('nuclide://fb.com/usr');
   });
 
   it('contains', () => {
     expect(nuclideUri.contains('/usr/local', localUri)).toBe(true);
-    expect(nuclideUri.contains('nuclide://fb.com:8000/usr', remoteUri)).toBe(true);
+    expect(nuclideUri.contains('nuclide://fb.com/usr', remoteUri)).toBe(true);
     expect(nuclideUri.contains('/foo/bar/', '/foo/bar/abc.txt')).toBe(true);
     expect(nuclideUri.contains('/foo/bar', '/foo/bar/')).toBe(true);
     expect(nuclideUri.contains('/foo/bar/', '/foo/bar/')).toBe(true);
@@ -101,7 +95,7 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.normalize(remoteUri)).toBe(remoteUri);
     expect(nuclideUri.normalize.bind(null, badRemoteUriNoPath)).toThrow();
     expect(nuclideUri.normalize('/usr/local/..')).toBe('/usr');
-    expect(nuclideUri.normalize('nuclide://fb.com:8000/usr/local/..')).toBe('nuclide://fb.com:8000/usr');
+    expect(nuclideUri.normalize('nuclide://fb.com/usr/local/..')).toBe('nuclide://fb.com/usr');
     expect(nuclideUri.normalize('/a b/c d/..')).toBe('/a b');
   });
 
@@ -131,10 +125,10 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.pathModuleFor('/abc/def')).toBe(posixPath);
     expect(nuclideUri.pathModuleFor('/abc.txt')).toBe(posixPath);
     expect(nuclideUri.pathModuleFor('nuclide://host')).toBe(posixPath);
-    expect(nuclideUri.pathModuleFor('nuclide://host:123/')).toBe(posixPath);
-    expect(nuclideUri.pathModuleFor('nuclide://host:123/abc')).toBe(posixPath);
-    expect(nuclideUri.pathModuleFor('nuclide://host:123/abc/def')).toBe(posixPath);
-    expect(nuclideUri.pathModuleFor('nuclide://host:123/abc/def.txt')).toBe(posixPath);
+    expect(nuclideUri.pathModuleFor('nuclide://host/')).toBe(posixPath);
+    expect(nuclideUri.pathModuleFor('nuclide://host/abc')).toBe(posixPath);
+    expect(nuclideUri.pathModuleFor('nuclide://host/abc/def')).toBe(posixPath);
+    expect(nuclideUri.pathModuleFor('nuclide://host/abc/def.txt')).toBe(posixPath);
     expect(nuclideUri.pathModuleFor('C:\\')).toBe(win32Path);
     expect(nuclideUri.pathModuleFor('C:\\abc')).toBe(win32Path);
     expect(nuclideUri.pathModuleFor('C:\\abc\\def')).toBe(win32Path);

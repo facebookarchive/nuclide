@@ -76,7 +76,7 @@ const FuzzyFileNameProvider: Provider = {
 
     const directoryPath = directory.getPath();
     const result = await service.queryFuzzyFile(directoryPath, query);
-    // Take the `nuclide://<host><port>` prefix into account for matchIndexes of remote files.
+    // Take the `nuclide://<host>` prefix into account for matchIndexes of remote files.
     if (RemoteDirectory.isRemoteDirectory(directory)) {
       const remoteDir: RemoteDirectory = (directory: any);
       const indexOffset = directoryPath.length - remoteDir.getLocalPath().length;

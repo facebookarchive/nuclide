@@ -133,7 +133,7 @@ describe('RemoteFile', () => {
 
       const file = new RemoteFile(
         connectionMock,
-        `nuclide://host13:1234${symLinkedFilePath}`,
+        `nuclide://host13${symLinkedFilePath}`,
         true,
       );
       const symlink = file.isSymbolicLink();
@@ -147,7 +147,7 @@ describe('RemoteFile', () => {
 
       const file = new RemoteFile(
         connectionMock,
-        `nuclide://host13:1234${notLinkedFilePath}`,
+        `nuclide://host13${notLinkedFilePath}`,
         false,
       );
       const symlink = file.isSymbolicLink();
@@ -172,7 +172,7 @@ describe('RemoteFile', () => {
         const newFilePath = path.join(tempDir, 'new_file_name');
         expect(fs.existsSync(filePath)).toBe(true);
 
-        const file = new RemoteFile(connectionMock, `nuclide://host123:1234${filePath}`);
+        const file = new RemoteFile(connectionMock, `nuclide://host123${filePath}`);
         spyOn(file, '_subscribeToNativeChangeEvents').andReturn(null);
         await file.rename(newFilePath);
 
@@ -423,22 +423,22 @@ describe('RemoteFile', () => {
       const parentDirectory = jasmine.createSpy('RemoteDirectory');
       spyOn(server, 'createDirectory').andReturn(parentDirectory);
 
-      const filePath = 'nuclide://foo.bar.com:8084/foo.txt';
+      const filePath = 'nuclide://foo.bar.com/foo.txt';
       const file = new RemoteFile(server, filePath);
       expect(file.getParent()).toBe(parentDirectory);
       expect(server.createDirectory).toHaveBeenCalledWith(
-          'nuclide://foo.bar.com:8084/', null);
+          'nuclide://foo.bar.com/', null);
     });
 
     it('gets the parent directory for a file in a non-root directory', () => {
       const parentDirectory = jasmine.createSpy('RemoteDirectory');
       spyOn(server, 'createDirectory').andReturn(parentDirectory);
 
-      const filePath = 'nuclide://foo.bar.com:8084/a/foo.txt';
+      const filePath = 'nuclide://foo.bar.com/a/foo.txt';
       const file = new RemoteFile(server, filePath);
       expect(file.getParent()).toBe(parentDirectory);
       expect(server.createDirectory).toHaveBeenCalledWith(
-          'nuclide://foo.bar.com:8084/a', null);
+          'nuclide://foo.bar.com/a', null);
     });
   });
 });

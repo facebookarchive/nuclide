@@ -63,7 +63,7 @@ function getlocalService(serviceName: string): Object {
 /**
  * Create or get a cached service.
  * @param nuclideUri It could either be either a local path or a remote path in form of
- *    `nuclide:$host:$port/$path`. The function will use the $host from remote path to
+ *    `nuclide://$host/$path`. The function will use the $host from remote path to
  *    create a remote service or create a local service if the uri is local path.
  */
 function getServiceByNuclideUri(

@@ -15,7 +15,7 @@ import type {
 } from '../../nuclide-remote-connection/lib/RemoteConnection';
 
 import invariant from 'assert';
-import {parse, createRemoteUri} from '../../nuclide-remote-uri';
+import {parse} from '../../nuclide-remote-uri';
 
 const NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
 const NUCLIDE_PROTOCOL_PREFIX_LENGTH = NUCLIDE_PROTOCOL_PREFIX.length;
@@ -29,8 +29,8 @@ export type OpenFileEditorInstance = {
 
 /**
  * Clean a nuclide URI from the prepended absolute path prefixes and fix
- * the broken uri, in the sense that it's nuclide:/server:897/path/to/dir instead of
- * nuclide://server:897/path/to/dir because Atom called path.normalize() on the directory uri.
+ * the broken uri, in the sense that it's nuclide:/server/path/to/dir instead of
+ * nuclide://server/path/to/dir because Atom called path.normalize() on the directory uri.
  */
 export function sanitizeNuclideUri(uri: string): string {
   // Remove the leading absolute path prepended to the file paths
@@ -66,10 +66,7 @@ export function *getOpenFileEditorForRemoteProject(
         yield {
           pane,
           editor: paneItem,
-          // While restore opened files, the remote port might have been changed if the server
-          // restarted after upgrade or user killed it. So we need to create a new uri using
-          // the right port.
-          uri: createRemoteUri(fileHostname, connectionConfig.port, filePath),
+          uri,
           filePath,
         };
       }

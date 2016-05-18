@@ -69,7 +69,6 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       proxy.getOutputWindowObservable().map(message => {
         const serverMessage = translateMessageFromServer(
           remoteUri.getHostname(this.getTargetUri()),
-          remoteUri.getPort(this.getTargetUri()),
           message,
         );
         return JSON.parse(serverMessage);
@@ -163,7 +162,6 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       webSocket.send(
         translateMessageFromServer(
           remoteUri.getHostname(this.getTargetUri()),
-          remoteUri.getPort(this.getTargetUri()),
           message,
         ),
       );

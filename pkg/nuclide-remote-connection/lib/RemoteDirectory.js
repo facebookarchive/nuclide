@@ -47,7 +47,7 @@ export class RemoteDirectory {
   _deleted: boolean;
 
   /**
-   * @param uri should be of the form "nuclide://example.com:9090/path/to/directory".
+   * @param uri should be of the form "nuclide://example.com/path/to/directory".
    */
   constructor(
     server: ServerConnection,
@@ -64,7 +64,7 @@ export class RemoteDirectory {
     const {path: directoryPath, protocol, host} = remoteUri.parse(uri);
     invariant(protocol);
     invariant(host);
-    /** In the example, this would be "nuclide://example.com:9090". */
+    /** In the example, this would be "nuclide://example.com". */
     this._host = protocol + '//' + host;
     /** In the example, this would be "/path/to/directory". */
     this._localPath = directoryPath;

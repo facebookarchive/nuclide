@@ -21,7 +21,7 @@ describe('FileTreeHelpers', () => {
     expect(FileTreeHelpers.keyToPath('/a')).toBe('/a');
     expect(FileTreeHelpers.keyToPath('/a/')).toBe('/a');
     expect(FileTreeHelpers.keyToPath('/a/b//')).toBe('/a/b');
-    expect(FileTreeHelpers.keyToPath('nuclide://host:123/a/b//')).toBe('nuclide://host:123/a/b');
+    expect(FileTreeHelpers.keyToPath('nuclide://host/a/b//')).toBe('nuclide://host/a/b');
   });
 
   it('should convert path to key', () => {
@@ -34,7 +34,7 @@ describe('FileTreeHelpers', () => {
     expect(FileTreeHelpers.keyToName('/a/b/foo')).toBe('foo');
     expect(FileTreeHelpers.keyToName('/a/b/foo/')).toBe('foo');
     expect(FileTreeHelpers.keyToName('/a/b/foo//')).toBe('foo');
-    expect(FileTreeHelpers.keyToName('nuclide://host:123/a/b/foo//')).toBe('foo');
+    expect(FileTreeHelpers.keyToName('nuclide://host/a/b/foo//')).toBe('foo');
     expect(FileTreeHelpers.keyToName('asdf')).toBe('asdf');
   });
 
@@ -42,8 +42,8 @@ describe('FileTreeHelpers', () => {
     expect(FileTreeHelpers.isDirKey('/a/b/foo')).toBe(false);
     expect(FileTreeHelpers.isDirKey('/a/b/')).toBe(true);
     expect(FileTreeHelpers.isDirKey('/a/b//')).toBe(true);
-    expect(FileTreeHelpers.isDirKey('nuclide://host:456/a/b')).toBe(false);
-    expect(FileTreeHelpers.isDirKey('nuclide://host:456/a/b/')).toBe(true);
+    expect(FileTreeHelpers.isDirKey('nuclide://host/a/b')).toBe(false);
+    expect(FileTreeHelpers.isDirKey('nuclide://host/a/b/')).toBe(true);
   });
 
   it('should instantiate a local directory from a key', () => {
@@ -53,7 +53,7 @@ describe('FileTreeHelpers', () => {
   it('should validate directories', () => {
     const validDir = new Directory('/a/b/c');
     expect(FileTreeHelpers.isValidDirectory(validDir)).toBe(true);
-    const badDir = new Directory('nuclide://host:123/a/b/c');
+    const badDir = new Directory('nuclide://host/a/b/c');
     expect(FileTreeHelpers.isValidDirectory(badDir)).toBe(false);
   });
 
@@ -91,7 +91,7 @@ describe('FileTreeHelpers', () => {
       expect(FileTreeHelpers.keyToPath('\\a')).toBe('\\a');
       expect(FileTreeHelpers.keyToPath('\\a\\')).toBe('\\a');
       expect(FileTreeHelpers.keyToPath('\\a\\b\\\\')).toBe('\\a\\b');
-      expect(FileTreeHelpers.keyToPath('nuclide://host:123\\a\\b\\\\')).toBe('nuclide://host:123\\a\\b');
+      expect(FileTreeHelpers.keyToPath('nuclide://host\\a\\b\\\\')).toBe('nuclide://host\\a\\b');
     });
 
     it('should convert path to key', () => {
@@ -104,7 +104,7 @@ describe('FileTreeHelpers', () => {
       expect(FileTreeHelpers.keyToName('\\a\\b\\foo')).toBe('foo');
       expect(FileTreeHelpers.keyToName('\\a\\b\\foo\\')).toBe('foo');
       expect(FileTreeHelpers.keyToName('\\a\\b\\foo\\\\')).toBe('foo');
-      expect(FileTreeHelpers.keyToName('nuclide://host:123\\a\\b\\foo\\\\')).toBe('foo');
+      expect(FileTreeHelpers.keyToName('nuclide://host\\a\\b\\foo\\\\')).toBe('foo');
       expect(FileTreeHelpers.keyToName('asdf')).toBe('asdf');
     });
 
@@ -112,8 +112,8 @@ describe('FileTreeHelpers', () => {
       expect(FileTreeHelpers.isDirKey('c:\\a\\b\\foo')).toBe(false);
       expect(FileTreeHelpers.isDirKey('c:\\a\\b\\')).toBe(true);
       expect(FileTreeHelpers.isDirKey('c:\\a\\b\\\\')).toBe(true);
-      expect(FileTreeHelpers.isDirKey('nuclide://host:456\\a\\b')).toBe(false);
-      expect(FileTreeHelpers.isDirKey('nuclide://host:456\\a\\b\\')).toBe(true);
+      expect(FileTreeHelpers.isDirKey('nuclide://host\\a\\b')).toBe(false);
+      expect(FileTreeHelpers.isDirKey('nuclide://host\\a\\b\\')).toBe(true);
     });
 
     it('should instantiate a local directory from a key', () => {
@@ -123,7 +123,7 @@ describe('FileTreeHelpers', () => {
     it('should validate directories', () => {
       const validDir = new Directory('c:\\a\\b\\c');
       expect(FileTreeHelpers.isValidDirectory(validDir)).toBe(true);
-      const badDir = new Directory('nuclide://host:123\\a\\b\\c');
+      const badDir = new Directory('nuclide://host\\a\\b\\c');
       expect(FileTreeHelpers.isValidDirectory(badDir)).toBe(false);
     });
 

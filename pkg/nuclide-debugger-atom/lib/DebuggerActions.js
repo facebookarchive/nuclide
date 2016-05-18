@@ -229,8 +229,8 @@ class DebuggerActions {
     return atom.project.getPaths().filter(path => {
       return remoteUri.isRemote(path);
     }).map(remotePath => {
-      const {hostname, port} = remoteUri.parseRemoteUri(remotePath);
-      return remoteUri.createRemoteUri(hostname, Number(port), '/');
+      const {hostname} = remoteUri.parseRemoteUri(remotePath);
+      return remoteUri.createRemoteUri(hostname, '/');
     }).filter((path, index, inputArray) => {
       return inputArray.indexOf(path) === index;
     });

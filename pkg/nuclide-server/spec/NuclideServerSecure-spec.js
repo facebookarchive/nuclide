@@ -55,7 +55,7 @@ describe('Nuclide Secure Server test suite', () => {
         cert: fs.readFileSync(client_cert_path),
         key: fs.readFileSync(client_key_path),
       });
-      const client = RpcConnection.createRemote('localhost', 8176, socket, loadServicesConfig());
+      const client = RpcConnection.createRemote('localhost', socket, loadServicesConfig());
       invariant(client);
 
       socket.close();

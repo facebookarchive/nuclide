@@ -10,7 +10,7 @@
  */
 
 // NuclideUri's are either a local file path, or a URI
-// of the form nuclide://<host>:<port><path>
+// of the form nuclide://<host><path>
 //
 // This package creates, queries and decomposes NuclideUris.
 
@@ -23,7 +23,6 @@ type ParsedUrl = {
   hostname: ?string;
   path: string;
   pathname: string;
-  port: ?string;
   protocol: ?string;
   query: ?any;
   search: ?string;
@@ -37,7 +36,6 @@ type ParsedRemoteUrl = {
   hostname: string;
   path: string;
   pathname: string;
-  port: string;
   protocol: ?string;
   query: ?any;
   search: ?string;
@@ -59,8 +57,8 @@ function isLocal(uri: NuclideUri): boolean {
   return !isRemote(uri);
 }
 
-function createRemoteUri(hostname: string, remotePort: number, remotePath: string): string {
-  return `nuclide://${hostname}:${remotePort}${remotePath}`;
+function createRemoteUri(hostname: string, remotePath: string): string {
+  return `nuclide://${hostname}${remotePath}`;
 }
 
 /**
@@ -73,7 +71,7 @@ function createRemoteUri(hostname: string, remotePort: number, remotePath: strin
  *
  *   For example:
  *
- *       parse('nuclide://f.co:123/path/to/#foo.txt#')
+ *       parse('nuclide://f.co/path/to/#foo.txt#')
  *       >
  *         {
  *           ...
@@ -88,6 +86,7 @@ function parse(uri: NuclideUri): ParsedUrl {
     parsedUri.path,
     `Nuclide URIs must contain paths, '${parsedUri.path}' found while parsing '${uri}'`
   );
+
   let path = parsedUri.path;
   // `url.parse` treates the first '#' character as the beginning of the `hash` attribute. That
   // feature is not used in Nuclide and is instead treated as part of the path.
@@ -115,7 +114,6 @@ function parse(uri: NuclideUri): ParsedUrl {
     href: decodeURI(parsedUri.href),
     path: decodeURI(path),
     pathname: decodeURI(pathname),
-    port: parsedUri.port,
     protocol: parsedUri.protocol,
     query: parsedUri.query,
     search: parsedUri.search,
@@ -133,11 +131,6 @@ function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
     `Remote Nuclide URIs must contain hostnames, '${parsedUri.hostname}' found ` +
     `while parsing '${remoteUri}'`
   );
-  invariant(
-    parsedUri.port,
-    `Remote Nuclide URIs must have port numbers, '${parsedUri.port}' found ` +
-    `while parsing '${remoteUri}'`
-  );
 
   // Explicitly copying object properties appeases Flow's "maybe" type handling. Using the `...`
   // operator causes null/undefined errors, and `Object.assign` bypasses type checking.
@@ -148,7 +141,6 @@ function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
     href: parsedUri.href,
     path: parsedUri.path,
     pathname: parsedUri.pathname,
-    port: parsedUri.port,
     protocol: parsedUri.protocol,
     query: parsedUri.query,
     search: parsedUri.search,
@@ -164,18 +156,13 @@ function getHostname(remoteUri: NuclideUri): string {
   return parseRemoteUri(remoteUri).hostname;
 }
 
-function getPort(remoteUri: NuclideUri): number {
-  return Number(parseRemoteUri(remoteUri).port);
-}
-
 function join(uri: NuclideUri, ...relativePath: Array<string>): NuclideUri {
   const uriPathModule = pathModuleFor(uri);
   if (isRemote(uri)) {
-    const {hostname, port, path} = parseRemoteUri(uri);
+    const {hostname, path} = parseRemoteUri(uri);
     relativePath.splice(0, 0, path);
     return createRemoteUri(
       hostname,
-      Number(port),
       uriPathModule.join.apply(null, relativePath));
   } else {
     relativePath.splice(0, 0, uri);
@@ -186,10 +173,9 @@ function join(uri: NuclideUri, ...relativePath: Array<string>): NuclideUri {
 function normalize(uri: NuclideUri): NuclideUri {
   const uriPathModule = pathModuleFor(uri);
   if (isRemote(uri)) {
-    const {hostname, port, path} = parseRemoteUri(uri);
+    const {hostname, path} = parseRemoteUri(uri);
     return createRemoteUri(
       hostname,
-      Number(port),
       uriPathModule.normalize(path)
     );
   } else {
@@ -229,10 +215,9 @@ function basename(uri: NuclideUri): NuclideUri {
 function dirname(uri: NuclideUri): NuclideUri {
   const uriPathModule = pathModuleFor(uri);
   if (isRemote(uri)) {
-    const {hostname, port, path} = parseRemoteUri(uri);
+    const {hostname, path} = parseRemoteUri(uri);
     return createRemoteUri(
       hostname,
-      Number(port),
       uriPathModule.dirname(path)
     );
   } else {
@@ -349,7 +334,6 @@ module.exports = {
   parseRemoteUri,
   getPath,
   getHostname,
-  getPort,
   join,
   relative,
   normalize,

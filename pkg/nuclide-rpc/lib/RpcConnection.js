@@ -72,13 +72,13 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   static createRemote(
-    hostname: string, port: number, transport: TransportType, services: Array<ConfigEntry>
+    hostname: string, transport: TransportType, services: Array<ConfigEntry>
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'client',
       new ServiceRegistry(
         remoteUri => getPath(remoteUri),
-        path => createRemoteUri(hostname, port, path),
+        path => createRemoteUri(hostname, path),
       services),
       transport);
   }

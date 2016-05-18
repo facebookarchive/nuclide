@@ -12,7 +12,6 @@
 import invariant from 'assert';
 import {trackEvent} from '../../nuclide-analytics';
 import {CompositeDisposable} from 'atom';
-import {parse as parseRemoteUri} from '../../nuclide-remote-uri';
 import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
 
 const logger = require('../../nuclide-logging').getLogger();
@@ -138,7 +137,7 @@ export class ConnectionHealthNotifier {
           break;
         case 'PORT_NOT_ACCESSIBLE':
             // Notify never heard a heartbeat from the server.
-          const {port} = parseRemoteUri(serverUri);
+          const port = socket.getServerPort();
           addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
                 '**Nuclide Server Is Not Reachable**<br/>' +
                 `It could be running on a port that is not accessible: ${port}.`,

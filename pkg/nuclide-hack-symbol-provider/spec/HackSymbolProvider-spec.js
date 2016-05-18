@@ -119,12 +119,12 @@ describe('HackSymbolProvider', () => {
         // Set up the HackService to return some canned results.
         const mockRemoteDirectory = {
           getPath() {
-            return 'nuclide://some.host:1234/some/remote/path';
+            return 'nuclide://some.host/some/remote/path';
           },
         };
         const cannedResults = [
           {
-            path: 'nuclide://some.host:1234/some/local/path/asdf.txt',
+            path: 'nuclide://some.host/some/local/path/asdf.txt',
             line: 1,
             column: 42,
             context: 'aha',

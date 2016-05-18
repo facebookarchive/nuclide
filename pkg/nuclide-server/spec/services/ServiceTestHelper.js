@@ -19,7 +19,6 @@ type Services = Array<ConfigEntry>;
 export default class ServiceTestHelper {
   _server: NuclideServer;
   _client: RpcConnection<NuclideSocket>;
-  _port: number;
 
   async start(customServices: Services): Promise<void> {
     this._server = new NuclideServer({port: 0}, customServices);
@@ -27,8 +26,7 @@ export default class ServiceTestHelper {
 
     const port = this._server._webServer.address().port;
     this._client = RpcConnection.createRemote(
-      'localhost', port, new NuclideSocket(`http://localhost:${port}`, null), customServices);
-    this._port = port;
+      'localhost', new NuclideSocket(`http://localhost:${port}`, null), customServices);
   }
 
   stop(): void {
@@ -41,6 +39,6 @@ export default class ServiceTestHelper {
   }
 
   getUriOfRemotePath(remotePath: string): string {
-    return `nuclide://localhost:${this._port}${remotePath}`;
+    return `nuclide://localhost${remotePath}`;
   }
 }

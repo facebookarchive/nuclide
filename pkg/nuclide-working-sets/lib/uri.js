@@ -18,7 +18,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 export function normalizePathUri(uri: NuclideUri): string {
   const {hostname, path} = parse(uri);
   if (hostname != null && hostname !== '') {
-    // TODO: advinsky replace with remote-uri.normalize() when task t10040084 is closed
+    // TODO: advinsky replace with nuclideUri.ensurePathSeparator once it's in
     return `nuclide://${hostname}${normalizePath(path)}`;
   } else {
     return normalizePath(uri);

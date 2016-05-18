@@ -122,7 +122,7 @@ export class RemoteConnection {
   }
 
   getUriOfRemotePath(remotePath: string): string {
-    return `nuclide://${this.getRemoteHost()}${remotePath}`;
+    return `nuclide://${this.getRemoteHostname()}${remotePath}`;
   }
 
   getPathOfUri(uri: string): string {
@@ -232,10 +232,6 @@ export class RemoteConnection {
 
   getConnection(): ServerConnection {
     return this._connection;
-  }
-
-  getRemoteHost(): string {
-    return this._connection.getRemoteHost();
   }
 
   getPort(): number {

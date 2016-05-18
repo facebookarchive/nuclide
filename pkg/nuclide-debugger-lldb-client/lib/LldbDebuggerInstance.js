@@ -152,7 +152,6 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     if (remoteUri.isRemote(this.getTargetUri())) {
       message = translateMessageFromServer(
         remoteUri.getHostname(this.getTargetUri()),
-        remoteUri.getPort(this.getTargetUri()),
         message);
     }
     return message;

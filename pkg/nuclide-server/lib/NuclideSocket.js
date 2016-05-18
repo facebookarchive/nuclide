@@ -204,6 +204,14 @@ export class NuclideSocket {
     return this._serverUri;
   }
 
+  getServerPort(): ?number {
+    const {port} = url.parse(this.getServerUri());
+    if (port == null) {
+      return null;
+    }
+    return Number(port);
+  }
+
   close() {
     const transport = this._transport;
     if (transport != null) {

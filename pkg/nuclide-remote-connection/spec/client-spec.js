@@ -17,7 +17,7 @@ import {File} from 'atom';
 
 describe('getFileForPath()', () => {
 
-  const connectedRemoteUri = 'nuclide://server:123/abs';
+  const connectedRemoteUri = 'nuclide://server/abs';
   let connection = null;
 
   beforeEach(() => {
@@ -49,7 +49,7 @@ describe('getFileForPath()', () => {
   });
 
   it('returns null if path is remote with no valid connection', () => {
-    const remoteFile = getFileForPath('nuclide://no-conn-server:123/dir/file.txt');
+    const remoteFile = getFileForPath('nuclide://no-conn-server/dir/file.txt');
     expect(remoteFile).toBe(null);
   });
 });

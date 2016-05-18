@@ -104,8 +104,7 @@ class Activation {
         if (remoteUri.isLocal(debuggeeTargetUri)) {
           return; // Nothing to do if our debug session is local.
         }
-        if (remoteUri.getHostname(debuggeeTargetUri) === connection.getRemoteHostname()
-            && remoteUri.getPort(debuggeeTargetUri) === connection.getPort()) {
+        if (remoteUri.getHostname(debuggeeTargetUri) === connection.getRemoteHostname()) {
           this._model.getActions().stopDebugging();
         }
       }),

@@ -138,22 +138,6 @@ describe('WorkingSet', () => {
     expect(local.containsDir('nuclide://other.host/aaa/bbb/ccc')).toBe(false);
   });
 
-  it('does not care about the port of a connection to the host', () => {
-    const local = new WorkingSet(['nuclide://host:1/aaa/bbb', 'nuclide://host:1/aaa/ccc']);
-    expect(local.containsFile('nuclide://host:2/')).toBe(false);
-    expect(local.containsFile('nuclide://host:2/aaa')).toBe(false);
-    expect(local.containsFile('nuclide://host:2/aaa/bbb')).toBe(true);
-    expect(local.containsFile('nuclide://host:2/aaa/bbb/file.test')).toBe(true);
-    expect(local.containsFile('nuclide://host:2/aaa/ccc/file.test')).toBe(true);
-    expect(local.containsFile('nuclide://host:2/aaa/ddd/file.test')).toBe(false);
-
-    expect(local.containsDir('nuclide://host:2/')).toBe(true);
-    expect(local.containsDir('nuclide://host:2/aaa')).toBe(true);
-    expect(local.containsDir('nuclide://host:2/aaa/bbb')).toBe(true);
-    expect(local.containsDir('nuclide://host:2/aaa/bbb/ccc')).toBe(true);
-    expect(local.containsDir('nuclide://host:2/aaa/ddd')).toBe(false);
-  });
-
   it('handles removal of one of the URIs', () => {
     const local = new WorkingSet([
       '/aaa/bbb/ccc/ddd.txt',

@@ -18,7 +18,6 @@ export class ServiceTester {
   _serviceRegistry: ServiceRegistry;
   _client: RpcConnection<Transport>;
   _clientConnection: RpcConnection<Transport>;
-  _port: number;
 
   async start(customServices: Array<ConfigEntry>): Promise<void> {
     const transports = new LoopbackTransports();
@@ -26,10 +25,8 @@ export class ServiceTester {
     this._clientConnection = new RpcConnection(
       'server', this._serviceRegistry, transports.serverTransport);
 
-    const port = 42;
     this._client = RpcConnection.createRemote(
-      'localhost', port, transports.clientTransport, customServices);
-    this._port = port;
+      'localhost', transports.clientTransport, customServices);
   }
 
   stop(): void {
@@ -42,6 +39,6 @@ export class ServiceTester {
   }
 
   getUriOfRemotePath(remotePath: string): string {
-    return `nuclide://localhost:${this._port}${remotePath}`;
+    return `nuclide://localhost${remotePath}`;
   }
 }

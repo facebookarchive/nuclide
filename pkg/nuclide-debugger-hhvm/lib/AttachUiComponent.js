@@ -89,10 +89,10 @@ export class AttachUiComponent extends React.Component<void, PropsType, StateTyp
 
   _handleAttachButtonClick(): void {
     // Start a debug session with the user-supplied information.
-    const {hostname, port} = remoteUri.parseRemoteUri(this.props.targetUri);
+    const {hostname} = remoteUri.parseRemoteUri(this.props.targetUri);
     const selectedPath = this.state.pathMenuItems[this.state.selectedPathIndex].label;
     const processInfo = new AttachProcessInfo(
-      remoteUri.createRemoteUri(hostname, Number(port), selectedPath),
+      remoteUri.createRemoteUri(hostname, selectedPath),
     );
     require('../../nuclide-service-hub-plus')
       .consumeFirstProvider('nuclide-debugger.remote')

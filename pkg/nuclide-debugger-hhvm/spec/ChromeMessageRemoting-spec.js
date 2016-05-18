@@ -19,7 +19,6 @@ describe('debugger-hhvm ChromeMessageRemoting', () => {
   it('translateMessageFromServer', () => {
     expect(translateMessageFromServer(
         'myhost',
-        8080,
         JSON.stringify({
           method: 'Debugger.scriptParsed',
           params: {
@@ -34,7 +33,7 @@ describe('debugger-hhvm ChromeMessageRemoting', () => {
           method: 'Debugger.scriptParsed',
           params: {
             scriptId: '/home/test.php',
-            url: 'nuclide://myhost:8080/home/test.php',
+            url: 'nuclide://myhost/home/test.php',
             startLine: 0,
             startColumn: 0,
             endLine: 0,
@@ -46,7 +45,6 @@ describe('debugger-hhvm ChromeMessageRemoting', () => {
   it('translateMessageFromServer with space', () => {
     expect(translateMessageFromServer(
         'myhost',
-        8080,
         JSON.stringify({
           method: 'Debugger.scriptParsed',
           params: {
@@ -61,7 +59,7 @@ describe('debugger-hhvm ChromeMessageRemoting', () => {
           method: 'Debugger.scriptParsed',
           params: {
             scriptId: '/home/te st.php',
-            url: 'nuclide://myhost:8080/home/te st.php',
+            url: 'nuclide://myhost/home/te st.php',
             startLine: 0,
             startColumn: 0,
             endLine: 0,
@@ -76,7 +74,7 @@ describe('debugger-hhvm ChromeMessageRemoting', () => {
           method: 'Debugger.setBreakpointByUrl',
           params: {
             lineNumber: 3,
-            url: 'nuclide://myhost:8080/home/test.php',
+            url: 'nuclide://myhost/home/test.php',
             columnNumber: 0,
             condition: '',
           },

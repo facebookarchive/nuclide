@@ -124,7 +124,7 @@ class ServerConnection {
   }
 
   getUriOfRemotePath(remotePath: string): string {
-    return `nuclide://${this.getRemoteHost()}${remotePath}`;
+    return `nuclide://${this.getRemoteHostname()}${remotePath}`;
   }
 
   getPathOfUri(uri: string): string {
@@ -260,15 +260,16 @@ class ServerConnection {
         cert: this._config.clientCertificate,
         key: this._config.clientKey,
       };
-      uri = `https://${this.getRemoteHost()}`;
+      uri = `https://${this.getRemoteHostname()}:${this.getPort()}`;
     } else {
       options = null;
-      uri = `http://${this.getRemoteHost()}`;
+      uri = `http://${this.getRemoteHostname()}:${this.getPort()}`;
     }
 
     const socket = new NuclideSocket(uri, options);
     const client = RpcConnection.createRemote(
-      this.getRemoteHostname(), this.getPort(), socket, loadServicesConfig());
+      this.getRemoteHostname(), socket, loadServicesConfig(),
+    );
 
     this._client = client;
   }
@@ -279,10 +280,6 @@ class ServerConnection {
         && this._config.clientCertificate
         && this._config.clientKey
     );
-  }
-
-  getRemoteHost(): string {
-    return `${this._config.host}:${this._config.port}`;
   }
 
   getPort(): number {

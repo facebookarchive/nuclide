@@ -86,7 +86,7 @@ describe('bufferForUri', () => {
   });
 
   it('should throw an error if remote connection not found', () => {
-    const uri = 'nuclide://host:1234/abc.txt';
+    const uri = 'nuclide://host/abc.txt';
     expect(() => bufferForUri(uri))
       .toThrow(`ServerConnection cannot be found for uri: ${uri}`);
   });
