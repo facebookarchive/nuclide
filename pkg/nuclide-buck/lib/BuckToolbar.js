@@ -104,7 +104,7 @@ class BuckToolbar extends React.Component {
   render(): React.Element {
     const buckToolbarStore = this._buckToolbarStore;
     let serverModeCheckbox;
-    if (buckToolbarStore.isReactNativeApp()) {
+    if (buckToolbarStore.canBeReactNativeApp()) {
       serverModeCheckbox =
         <div className="inline-block">
           <Checkbox

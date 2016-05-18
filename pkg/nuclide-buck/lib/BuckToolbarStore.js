@@ -58,7 +58,6 @@ class BuckToolbarStore {
   _buildProgress: number;
   _buildRuleType: string;
   _simulator: ?string;
-  _isReactNativeApp: boolean;
   _isReactNativeServerMode: boolean;
   _buckProcessOutputStore: ?ProcessOutputStoreType;
 
@@ -79,7 +78,6 @@ class BuckToolbarStore {
     this._buildTarget = initialState && initialState.buildTarget || '';
     this._buildProgress = 0;
     this._buildRuleType = '';
-    this._isReactNativeApp = false;
     this._isReactNativeServerMode = initialState && initialState.isReactNativeServerMode || false;
   }
 
@@ -138,12 +136,12 @@ class BuckToolbarStore {
     return this._buildProgress;
   }
 
-  isReactNativeApp(): boolean {
-    return this._isReactNativeApp;
+  canBeReactNativeApp(): boolean {
+    return this._buildRuleType === 'apple_bundle' || this._buildRuleType === 'android_binary';
   }
 
   isReactNativeServerMode(): boolean {
-    return this.isReactNativeApp() && this._isReactNativeServerMode;
+    return this.canBeReactNativeApp() && this._isReactNativeServerMode;
   }
 
   async _getReactNativeServerCommand(): Promise<?string> {
@@ -168,8 +166,6 @@ class BuckToolbarStore {
 
     this._buildRuleType = await this._findRuleType();
     this.emitChange();
-    this._isReactNativeApp = await this._findIsReactNativeApp();
-    this.emitChange();
   }
 
   async _findRuleType(): Promise<string> {
@@ -186,29 +182,6 @@ class BuckToolbarStore {
     }
     return buildRuleType;
   }
-
-  async _findIsReactNativeApp(): Promise<boolean> {
-    const buildRuleType = this._buildRuleType;
-    if (buildRuleType !== 'apple_bundle' && buildRuleType !== 'android_binary') {
-      return false;
-    }
-    const buckProject = this._mostRecentBuckProject;
-    if (!buckProject) {
-      return false;
-    }
-
-    const reactNativeRule = buildRuleType === 'apple_bundle'
-    ? 'ios_react_native_library'
-    : 'android_react_native_library';
-
-    const buildTarget = this._buildTarget;
-    const matches = await buckProject.queryWithArgs(
-      `kind('${reactNativeRule}', deps('%s'))`,
-      [buildTarget],
-    );
-    return matches[buildTarget].length > 0;
-  }
-
   async _doDebug(): Promise<void> {
     // TODO(natthu): Restore validation logic to make sure the target is installable.
     // For now, let's leave that to Buck.
