@@ -26,3 +26,11 @@ export var y;
 
 // as are non-exported functions
 function f() {}
+
+export interface Iface {
+  p(a: number): Promise<number>;
+  f(): void;
+  o(): Observable<string>;
+
+  dispose(): void;
+}

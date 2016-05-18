@@ -218,5 +218,104 @@
                 }
             }
         }
+    },
+    "Iface": {
+        "constructorArgs": null,
+        "instanceMethods": {
+            "p": {
+                "location": {
+                    "type": "source",
+                    "fileName": "InterfaceService.def",
+                    "line": 31
+                },
+                "kind": "function",
+                "argumentTypes": [
+                    {
+                        "location": {
+                            "type": "source",
+                            "fileName": "InterfaceService.def",
+                            "line": 31
+                        },
+                        "kind": "number"
+                    }
+                ],
+                "returnType": {
+                    "location": {
+                        "type": "source",
+                        "fileName": "InterfaceService.def",
+                        "line": 31
+                    },
+                    "kind": "promise",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "InterfaceService.def",
+                            "line": 31
+                        },
+                        "kind": "number"
+                    }
+                }
+            },
+            "f": {
+                "location": {
+                    "type": "source",
+                    "fileName": "InterfaceService.def",
+                    "line": 32
+                },
+                "kind": "function",
+                "argumentTypes": [],
+                "returnType": {
+                    "location": {
+                        "type": "source",
+                        "fileName": "InterfaceService.def",
+                        "line": 32
+                    },
+                    "kind": "void"
+                }
+            },
+            "o": {
+                "location": {
+                    "type": "source",
+                    "fileName": "InterfaceService.def",
+                    "line": 33
+                },
+                "kind": "function",
+                "argumentTypes": [],
+                "returnType": {
+                    "location": {
+                        "type": "source",
+                        "fileName": "InterfaceService.def",
+                        "line": 33
+                    },
+                    "kind": "observable",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "InterfaceService.def",
+                            "line": 33
+                        },
+                        "kind": "string"
+                    }
+                }
+            },
+            "dispose": {
+                "location": {
+                    "type": "source",
+                    "fileName": "InterfaceService.def",
+                    "line": 35
+                },
+                "kind": "function",
+                "argumentTypes": [],
+                "returnType": {
+                    "location": {
+                        "type": "source",
+                        "fileName": "InterfaceService.def",
+                        "line": 35
+                    },
+                    "kind": "void"
+                }
+            }
+        },
+        "staticMethods": {}
     }
 }

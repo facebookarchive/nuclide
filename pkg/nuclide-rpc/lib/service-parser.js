@@ -119,6 +119,9 @@ class ServiceParser {
           case 'ClassDeclaration':
             this._add(this._parseClassDeclaration(declaration));
             break;
+          case 'InterfaceDeclaration':
+            this._add(this._parseInterfaceDeclaration(declaration));
+            break;
           case 'VariableDeclaration':
             // Ignore exported variables.
             break;
@@ -219,17 +222,54 @@ class ServiceParser {
       } else {
         if (!isPrivateMemberName(method.key.name)) {
           const {name, type} = this._parseMethodDefinition(method);
-          if (name === 'dispose') {
-            // Validate dispose method has a reasonable signature
-            if (type.argumentTypes.length > 0) {
-              throw this._error(method, 'dispose method may not take arguments');
-            }
-            if (!isValidDisposeReturnType(type.returnType)) {
-              throw this._error(method, 'dispose method must return either void or Promise<void>');
-            }
-          }
-          this._defineMethod(name, type, method.static ? def.staticMethods : def.instanceMethods);
+          const isStatic = Boolean(method.static);
+          this._validateMethod(method, name, type, isStatic);
+          this._defineMethod(name, type, isStatic ? def.staticMethods : def.instanceMethods);
         }
+      }
+    }
+    if (!def.instanceMethods.has('dispose')) {
+      throw this._error(declaration, 'Remotable interfaces must include a dispose method');
+    }
+    return def;
+  }
+
+  _validateMethod(node: Babel$Node, name: string, type: FunctionType, isStatic: boolean): void {
+    if (name === 'dispose' && !isStatic) {
+      // Validate dispose method has a reasonable signature
+      if (type.argumentTypes.length > 0) {
+        throw this._error(node, 'dispose method may not take arguments');
+      }
+      if (!isValidDisposeReturnType(type.returnType)) {
+        throw this._error(node, 'dispose method must return either void or Promise<void>');
+      }
+    }
+  }
+
+  /**
+   * Parse a InterfaceDeclaration AST Node.
+   * @param declaration - The AST node.
+   */
+  _parseInterfaceDeclaration(declaration: Object): InterfaceDefinition {
+    const def: InterfaceDefinition = {
+      kind: 'interface',
+      name: declaration.id.name,
+      location: this._locationOfNode(declaration),
+      constructorArgs: null,
+      staticMethods: new Map(),
+      instanceMethods: new Map(),
+    };
+
+    invariant(declaration.body.type === 'ObjectTypeAnnotation');
+    const properties = declaration.body.properties;
+    for (const property of properties) {
+      invariant(property.type === 'ObjectTypeProperty');
+
+      if (!isPrivateMemberName(property.key.name)) {
+        const {name, type} = this._parseInterfaceMethodDefinition(property);
+        invariant(!property.static, 'static interface members are a parse error');
+        this._validateMethod(property, name, type, false);
+        this._defineMethod(name, type, def.instanceMethods);
       }
     }
     if (!def.instanceMethods.has('dispose')) {
@@ -275,6 +315,51 @@ class ServiceParser {
         returnType,
       },
     };
+  }
+
+  /**
+   * Parses an method definition in an interface.
+   * Note that interface method definitions are slightly different structure to class methods.
+   * @param defintion - The ObjectTypeProperty AST node.
+   * @returns A record containing the name of the method, and a FunctionType object
+   *   encoding the arguments and return type of the method.
+   */
+  _parseInterfaceMethodDefinition(definition: any): {name: string; type: FunctionType} {
+    this._assert(definition, definition.type === 'ObjectTypeProperty',
+        'This is a ObjectTypeProperty object.');
+    this._assert(definition, definition.key && definition.key.type === 'Identifier',
+      'This method definition has an key (a name).');
+    this._assert(definition, definition.value.returnType != null,
+      `${definition.key.name} missing a return type annotation.`);
+
+    const returnType = this._parseTypeAnnotation(definition.value.returnType);
+    return {
+      location: this._locationOfNode(definition.key),
+      name: definition.key.name,
+      type: {
+        location: this._locationOfNode(definition.value),
+        kind: 'function',
+        argumentTypes: definition.value.params.map(param => this._parseInterfaceParameter(param)),
+        returnType,
+      },
+    };
+  }
+
+  _parseInterfaceParameter(param: Object): Type {
+    if (!param.typeAnnotation) {
+      throw this._error(param, `Parameter ${param.name} doesn't have type annotation.`);
+    } else {
+      const type = this._parseTypeAnnotation(param.typeAnnotation);
+      if (param.optional && type.kind !== 'nullable') {
+        return {
+          location: this._locationOfNode(param),
+          kind: 'nullable',
+          type,
+        };
+      } else {
+        return type;
+      }
+    }
   }
 
   _parseParameter(param: Object): Type {

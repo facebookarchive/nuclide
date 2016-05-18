@@ -400,9 +400,11 @@ export class RpcConnection<TransportType: Transport> {
       localImplementation,
       definition,
     } = classDefinition;
+    const constructorArgs = definition.constructorArgs;
+    invariant(constructorArgs != null);
 
     const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
-      this._objectRegistry, constructorMessage.args, definition.constructorArgs);
+      this._objectRegistry, constructorMessage.args, constructorArgs);
 
     // Create a new object and put it in the registry.
     const newObject = construct(localImplementation, marshalledArgs);

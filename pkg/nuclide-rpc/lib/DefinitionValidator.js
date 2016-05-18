@@ -221,7 +221,9 @@ export function validateDefinitions(definitions: Definitions): void {
           }
           break;
         case 'interface':
-          definition.constructorArgs.forEach(validateType);
+          if (definition.constructorArgs != null) {
+            definition.constructorArgs.forEach(validateType);
+          }
           definition.instanceMethods.forEach(validateType);
           definition.staticMethods.forEach(validateType);
           break;
@@ -626,7 +628,9 @@ export function validateDefinitions(definitions: Definitions): void {
           }
           break;
         case 'interface':
-          definition.constructorArgs.forEach(operation);
+          if (definition.constructorArgs != null) {
+            definition.constructorArgs.forEach(operation);
+          }
           definition.instanceMethods.forEach(operation);
           definition.staticMethods.forEach(operation);
           break;

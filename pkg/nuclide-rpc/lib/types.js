@@ -32,7 +32,7 @@ export type InterfaceDefinition = {
   kind: 'interface';
   name: string;
   location: Location;
-  constructorArgs: Array<Type>;
+  constructorArgs: ?Array<Type>;
   instanceMethods: Map<string, FunctionType>;
   staticMethods: Map<string, FunctionType>;
 };

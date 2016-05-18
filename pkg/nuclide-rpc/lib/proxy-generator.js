@@ -181,7 +181,9 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
   });
 
   // Generate constructor proxy.
-  methodDefinitions.push(generateRemoteConstructor(name, def.constructorArgs));
+  if (def.constructorArgs != null) {
+    methodDefinitions.push(generateRemoteConstructor(name, def.constructorArgs));
+  }
 
   // Generate proxies for instance methods.
   const thisType: NamedType = {

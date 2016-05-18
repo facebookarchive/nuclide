@@ -110,5 +110,65 @@ module.exports = _client => {
     }));
   }
 
+  remoteModule.Iface = class {
+    @trackTiming("Iface.p")
+    p(arg0) {
+      return Promise.all([_client.marshal(arg0, {
+        location: {
+          type: "source",
+          fileName: "InterfaceService.def",
+          line: 31
+        },
+        kind: "number"
+      })]).then(args => _client.marshal(this, {
+        kind: "named",
+        location: {
+          type: "source",
+          fileName: "InterfaceService.def",
+          line: 30
+        },
+        name: "Iface"
+      }).then(id => _client.callRemoteMethod(id, "p", "promise", args))).then(value => _client.unmarshal(value, {
+        location: {
+          type: "source",
+          fileName: "InterfaceService.def",
+          line: 31
+        },
+        kind: "number"
+      }));
+    }
+    f() {
+      return Promise.all([]).then(args => _client.marshal(this, {
+        kind: "named",
+        location: {
+          type: "source",
+          fileName: "InterfaceService.def",
+          line: 30
+        },
+        name: "Iface"
+      }).then(id => _client.callRemoteMethod(id, "f", "void", args)));
+    }
+    o() {
+      return Observable.fromPromise(Promise.all([]).then(args => _client.marshal(this, {
+        kind: "named",
+        location: {
+          type: "source",
+          fileName: "InterfaceService.def",
+          line: 30
+        },
+        name: "Iface"
+      }).then(id => _client.callRemoteMethod(id, "o", "observable", args)))).concatMap(id => id).concatMap(value => _client.unmarshal(value, {
+        location: {
+          type: "source",
+          fileName: "InterfaceService.def",
+          line: 33
+        },
+        kind: "string"
+      }));
+    }
+    dispose() {
+      return _client.disposeRemoteObject(this);
+    }
+  }
   return remoteModule;
 }
