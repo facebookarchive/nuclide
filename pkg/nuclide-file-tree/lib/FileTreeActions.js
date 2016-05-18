@@ -24,10 +24,7 @@ import {hgConstants} from '../../nuclide-hg-repository-base';
 import {getLogger} from '../../nuclide-logging';
 import remoteUri from '../../nuclide-remote-uri';
 
-import type {
-  HgRepositoryClient,
-  HgRepositoryClientAsync,
-} from '../../nuclide-hg-repository-client';
+import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
 import type {
   WorkingSet,
@@ -389,7 +386,7 @@ class FileTreeActions {
     if ((repo.getType() !== 'hg' && repo.getType() !== 'git') || repo.async == null) {
       return;
     }
-    const asyncRepo: atom$GitRepositoryAsync | HgRepositoryClientAsync = (repo: any).async;
+    const asyncRepo = repo.async;
     await asyncRepo.refreshStatus();
     const statusCodeForPath = this._getCachedPathStatuses(repo);
 
@@ -423,7 +420,7 @@ class FileTreeActions {
   _getCachedPathStatuses(
     repo: atom$GitRepository | HgRepositoryClient,
   ): {[filePath: NuclideUri]: StatusCodeNumberValue} {
-    const asyncRepo: atom$GitRepositoryAsync | HgRepositoryClientAsync = (repo: any).async;
+    const asyncRepo = repo.async;
     const statuses = asyncRepo.getCachedPathStatuses();
     let relativeCodePaths;
     if (asyncRepo.getType() === 'hg') {

@@ -1045,17 +1045,7 @@ declare class atom$File {
   writeSync(text: string): void;
 }
 
-declare class atom$GitRepository extends atom$Repository {
-  async: atom$GitRepositoryAsync;
-}
-
-declare class atom$GitRepositoryAsync extends atom$Repository {
-  getCachedPathStatuses(): {[filePath: string]: number};
-  refreshStatus(): Promise<void>;
-  isStatusIgnored(status: number): boolean;
-  isStatusStaged(status: number): boolean;
-  isStatusDeleted(status: number): boolean;
-}
+declare class atom$GitRepository extends atom$Repository {}
 
 declare class atom$Grammar {
   name: string;
@@ -1411,9 +1401,13 @@ type RepositoryLineDiff = {
   newLines: number;
 };
 
-// Taken from the interface of GitRepository, which is also implemented
-// by HgRepositoryClient.
+// Taken from the interface of [`GitRepository`][1], which is also implemented by
+// `HgRepositoryClient`.
+//
+// [1]: https://github.com/atom/atom/blob/v1.7.3/src/git-repository.coffee
 declare class atom$Repository {
+  async: atom$RepositoryAsync;
+
   // Event Subscription
   onDidChangeStatus: (callback: RepositoryDidChangeStatusCallback) => IDisposable;
   onDidChangeStatuses: (callback: () => mixed) => IDisposable;
@@ -1442,6 +1436,30 @@ declare class atom$Repository {
   // Checking Out
   checkoutHead: (aPath: string) => boolean;
   checkoutReference: (reference: string, create: boolean) => boolean;
+}
+
+// Taken from the interface of [`GitRepositoryAsync`][1], which is also implemented by Nuclide's
+// `HgRepositoryClientAsync`. This is an asynchronous version of `atom$Repository` with methods that
+// return Promises where possible rather than return values synchronously.
+//
+// [1]: https://github.com/atom/atom/blob/v1.7.3/src/git-repository-async.js
+declare class atom$RepositoryAsync {
+  // Event Subscription
+  onDidChangeStatus: (callback: RepositoryDidChangeStatusCallback) => IDisposable;
+  onDidChangeStatuses: (callback: () => mixed) => IDisposable;
+
+  // Repository Details
+  getType: () => string;
+
+  // Reading Status
+  isStatusModified: (status: number) => boolean;
+  isStatusNew: (status: number) => boolean;
+
+  getCachedPathStatuses: () => {[filePath: string]: number};
+  refreshStatus: () => Promise<void>;
+  isStatusIgnored: (status: number) => boolean;
+  isStatusStaged: (status: number) => boolean;
+  isStatusDeleted: (status: number) => boolean;
 }
 
 // One of text or snippet is required.
