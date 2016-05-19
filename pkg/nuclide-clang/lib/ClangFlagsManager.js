@@ -11,6 +11,7 @@
 
 import invariant from 'assert';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import {Observable} from 'rxjs';
 import {parse} from 'shell-quote';
@@ -21,6 +22,9 @@ import {BuckProject} from '../../nuclide-buck-base';
 import {isHeaderFile, isSourceFile, findIncludingSourceFile} from './utils';
 
 const logger = getLogger();
+
+const BUCK_MAX_THREADS = 8;
+const BUCK_TIMEOUT = 60000;
 
 const COMPILATION_DATABASE_FILE = 'compile_commands.json';
 /**
@@ -218,17 +222,15 @@ class ClangFlagsManager {
     } else {
       arch = 'default';
     }
-    // TODO(mbolin): Need logic to make sure results are restricted to
-    // apple_library or apple_binary rules. In practice, this should be OK for
-    // now. Though once we start supporting ordinary .cpp files, then we
-    // likely need to be even more careful about choosing the architecture
-    // flavor.
     const buildTarget = target + '#compilation-database,' + arch;
-
-    const buildReport = await buckProject.build([buildTarget]);
+    // Since this is a background process, limit the number of threads to avoid
+    // impacting the user too badly.
+    const maxCpus = Math.min(Math.ceil(os.cpus().length / 2), BUCK_MAX_THREADS);
+    const buildReport = await buckProject.build(
+      [buildTarget, '-j', String(maxCpus)],
+      {commandOptions: {timeout: BUCK_TIMEOUT}},
+    );
     if (!buildReport.success) {
-      // TODO(mbolin): Frequently failing due to 'Daemon is busy' errors.
-      // Ultimately, Buck should queue things up, but for now, Nuclide should.
       const error = `Failed to build ${buildTarget}`;
       logger.error(error);
       throw error;
