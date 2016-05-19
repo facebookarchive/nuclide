@@ -10,6 +10,7 @@
  */
 
 import {CompositeDisposable, Disposable} from 'atom';
+import debounce from '../../commons-node/debounce';
 
 const VALID_NUX_POSITIONS = new Set(['top', 'bottom', 'left', 'right', 'auto']);
 // The maximum number of times the NuxView will attempt to attach to the DOM
@@ -17,6 +18,7 @@ const ATTACHMENT_ATTEMPT_THRESHOLD = 5;
 const DISPLAY_PREDICATE_ATTEMPT_THRESHOLD = 4;
 const ATTACHMENT_RETRY_TIMEOUT = 500; // milliseconds
 const DISPLAY_RETRY_TIMEOUT = 500; // milliseconds
+const RESIZE_EVENT_DEBOUNCE_DURATION = 100; // milliseconds
 
 function validatePlacement(position: string) : boolean {
   return VALID_NUX_POSITIONS.has(position);
@@ -122,6 +124,10 @@ export class NuxView {
 
     this._createDisposableTooltip();
 
+    const debouncedWindowResizeListener =
+      debounce(this._handleWindowResize.bind(this), RESIZE_EVENT_DEBOUNCE_DURATION, false);
+    window.addEventListener('resize', debouncedWindowResizeListener);
+
     const tooltip = document.querySelector('.nuclide-nux-tooltip');
     const boundClickListener = this._handleDisposableClick.bind(
       this,
@@ -133,7 +139,13 @@ export class NuxView {
     this._disposables.add(new Disposable(() => {
       elem.removeEventListener('click', boundClickListener);
       tooltip.removeEventListener('click', boundClickListener);
+      window.removeEventListener('resize', debouncedWindowResizeListener);
     }));
+  }
+
+  _handleWindowResize() : void {
+    this._tooltipDisposable.dispose();
+    this._createDisposableTooltip();
   }
 
   _createDisposableTooltip() : void {
