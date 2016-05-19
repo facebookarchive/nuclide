@@ -27,7 +27,7 @@ class FileTreeSidebarFilterComponent extends React.Component {
 
     const classes = classnames({
       'nuclide-file-tree-filter': true,
-      'show': filter && filter.length,
+      'show': Boolean(filter && filter.length),
       'not-found': !found,
     });
     const text = `search for: ${filter}`;
