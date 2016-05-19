@@ -13,7 +13,6 @@ import type {process$asyncExecuteRet} from '../../commons-node/process';
 
 import type {ServerStatusType} from '..';
 
-import invariant from 'assert';
 import os from 'os';
 
 import {BehaviorSubject, Observable} from 'rxjs';
@@ -99,6 +98,8 @@ export class FlowProcess {
    */
   allowServerRestart(): void {
     if (this._serverStatus.getValue() === ServerStatus.FAILED) {
+      // We intentionally do not use _setServerStatus because leaving the FAILED state is a
+      // special-case that _setServerStatus does not allow.
       this._serverStatus.next(ServerStatus.UNKNOWN);
     }
   }
@@ -182,7 +183,7 @@ export class FlowProcess {
       // pattern.
       if (code === 2 && signal === null) {
         logger.error('Flow server unexpectedly exited', this._root);
-        this._serverStatus.next(ServerStatus.FAILED);
+        this._setServerStatus(ServerStatus.FAILED);
       }
     });
     this._startedServer = serverProcess;
@@ -251,11 +252,18 @@ export class FlowProcess {
           status = ServerStatus.UNKNOWN;
       }
     }
-    invariant(status != null);
+    this._setServerStatus(status);
+  }
+
+  _setServerStatus(status: ServerStatusType): void {
     const currentStatus = this._serverStatus.getValue();
-    // Avoid duplicate updates and avoid moving the status away from FAILED, to let any existing
-    // work die out when the server fails.
-    if (status !== currentStatus && currentStatus !== ServerStatus.FAILED) {
+    if (
+        // Avoid duplicate updates
+        status !== currentStatus &&
+        // Avoid moving the status away from FAILED, to let any existing  work die out when the
+        // server fails.
+        currentStatus !== ServerStatus.FAILED
+      ) {
       this._serverStatus.next(status);
     }
   }
