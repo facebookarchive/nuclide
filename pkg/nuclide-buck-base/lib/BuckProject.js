@@ -17,6 +17,7 @@ import {
 } from '../../commons-node/process';
 import fsPromise from '../../commons-node/fsPromise';
 import path from 'path';
+import createBuckWebSocket from './createBuckWebSocket';
 
 const logger = require('../../nuclide-logging').getLogger();
 
@@ -31,6 +32,14 @@ export type doRunOptions = {
 };
 
 export type BuckRunOptions = dontRunOptions | doRunOptions;
+
+export type BuckWebSocketMessage = {
+  type: 'BuildProgressUpdated';
+  progressValue: number;
+} | {
+  type: 'BuildFinished';
+  exitCode: number;
+};
 
 type BuckConfig = Object;
 type BaseBuckBuildOptions = {
@@ -436,7 +445,7 @@ export class BuckProject {
     return json[targets[0]]['buck.type'];
   }
 
-  async getServerPort(): Promise<number> {
+  async getHTTPServerPort(): Promise<number> {
     const args = ['server', 'status', '--json', '--http-port'];
     const result = await this._runBuckCommandFromProjectRoot(args);
     const json: Object = JSON.parse(result.stdout);
@@ -476,5 +485,11 @@ export class BuckProject {
       }
     }
     return json;
+  }
+
+  // TODO: Nuclide's RPC framework won't allow BuckWebSocketMessage here unless we cover
+  // all possible message types. For now, we'll manually typecast at the callsite.
+  getWebSocketStream(httpPort: number): Observable<Object> {
+    return createBuckWebSocket(this, httpPort);
   }
 }

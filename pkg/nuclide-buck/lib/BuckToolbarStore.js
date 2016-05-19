@@ -9,17 +9,10 @@
  * the root directory of this source tree.
  */
 
-let logger;
-function getLogger() {
-  if (!logger) {
-    logger = require('../../nuclide-logging').getLogger();
-  }
-  return logger;
-}
-
 import {Emitter} from 'atom';
 import path from 'path';
 import {Dispatcher} from 'flux';
+import {getLogger} from '../../nuclide-logging';
 import BuckToolbarActions from './BuckToolbarActions';
 import runBuckCommandInNewPane from './runBuckCommandInNewPane';
 
@@ -216,7 +209,23 @@ export default class BuckToolbarStore {
       }
     }
 
-    const ws = await this._setupWebSocket(buckProject, buildTarget);
+    const httpPort = await buckProject.getHTTPServerPort();
+    let socketStream;
+    if (httpPort > 0) {
+      socketStream = buckProject.getWebSocketStream(httpPort).subscribe({
+        next: message => {
+          switch (message.type) {
+            case 'BuildProgressUpdated':
+              this._buildProgress = message.progressValue;
+              this.emitChange();
+              break;
+          }
+        },
+        error: err => {
+          getLogger().error(`Got Buck websocket error building ${buildTarget}`, err);
+        },
+      });
+    }
 
     this._buildProgress = 0;
     this._isBuilding = true;
@@ -230,64 +239,10 @@ export default class BuckToolbarStore {
     } finally {
       this._isBuilding = false;
       this.emitChange();
-      if (ws) {
-        ws.close();
+      if (socketStream != null) {
+        socketStream.unsubscribe();
       }
     }
-  }
-
-  async _setupWebSocket(buckProject: BuckProject, buildTarget: string): Promise<?WebSocket> {
-    const httpPort = await buckProject.getServerPort();
-    if (httpPort <= 0) {
-      return null;
-    }
-
-    const uri = `ws://localhost:${httpPort}/ws/build`;
-    const ws = new WebSocket(uri);
-    let buildId: ?string = null;
-    let isFinished = false;
-
-    ws.onmessage = e => {
-      let message;
-      try {
-        // $FlowFixMe looks like e.data can be a Blob or ArrayBuffer -- verify that it is a string.
-        message = JSON.parse(e.data);
-      } catch (err) {
-        getLogger().error(
-            `Buck was likely killed while building ${buildTarget}.`);
-        return;
-      }
-      const type = message['type'];
-      if (buildId === null) {
-        if (type === 'BuildStarted') {
-          buildId = message['buildId'];
-        } else {
-          return;
-        }
-      }
-
-      if (buildId !== message['buildId']) {
-        return;
-      }
-
-      if (type === 'BuildProgressUpdated' || type === 'ParsingProgressUpdated') {
-        this._buildProgress = message.progressValue;
-        this.emitChange();
-      } else if (type === 'BuildFinished') {
-        this._buildProgress = 1.0;
-        this.emitChange();
-        isFinished = true;
-        ws.close();
-      }
-    };
-
-    ws.onclose = () => {
-      if (!isFinished) {
-        getLogger().error(
-            `WebSocket closed before ${buildTarget} finished building.`);
-      }
-    };
-    return ws;
   }
 
 }
