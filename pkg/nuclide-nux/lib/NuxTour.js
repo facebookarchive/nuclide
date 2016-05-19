@@ -22,8 +22,8 @@ export class NuxTour {
     id: string,
     nuxList : ?(Array<NuxView>),
   ): void {
-    if (nuxList == null || nuxList.length < 2) {
-      throw new Error('You must create a NuxTour with at least two NuxView elements!');
+    if (nuxList == null || nuxList.length < 1) {
+      throw new Error('You must create a NuxTour with at least one NuxView element!');
     }
     this._currentStep = 0;
     this._id = id;
