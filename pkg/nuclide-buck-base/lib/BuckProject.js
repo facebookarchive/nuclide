@@ -43,11 +43,13 @@ export type BuckWebSocketMessage = {
 };
 
 type BuckConfig = Object;
-type BaseBuckBuildOptions = {
+export type BaseBuckBuildOptions = {
   install?: boolean;
   test?: boolean;
   simulator?: ?string;
   runOptions?: ?BuckRunOptions;
+  // The service framework doesn't support imported types
+  commandOptions?: Object /*AsyncExecuteOptions*/;
 };
 type FullBuckBuildOptions = {
   baseOptions: BaseBuckBuildOptions;
@@ -125,9 +127,12 @@ export class BuckProject {
    * @param args Do not include 'buck' as the first argument: it will be added
    *     automatically.
    */
-  _runBuckCommandFromProjectRoot(args: Array<string>
-      ): Promise<{stdout: string; stderr: string; exitCode?: number}> {
-    const {pathToBuck, buckCommandOptions: options} = this._getBuckCommandAndOptions();
+  _runBuckCommandFromProjectRoot(
+    args: Array<string>,
+    commandOptions?: AsyncExecuteOptions,
+  ): Promise<{stdout: string; stderr: string; exitCode?: number}> {
+    const {pathToBuck, buckCommandOptions: options} =
+      this._getBuckCommandAndOptions(commandOptions);
     logger.debug('Buck command:', pathToBuck, args, options);
     return checkOutput(pathToBuck, args, options);
   }
@@ -135,13 +140,16 @@ export class BuckProject {
   /**
    * @return The path to buck and set of options to be used to run a `buck` command.
    */
-  _getBuckCommandAndOptions(): BuckCommandAndOptions {
+  _getBuckCommandAndOptions(
+    commandOptions?: AsyncExecuteOptions = {},
+  ): BuckCommandAndOptions {
     // $UPFixMe: This should use nuclide-features-config
     const pathToBuck =
       global.atom && global.atom.config.get('nuclide.nuclide-buck.pathToBuck') || 'buck';
     const buckCommandOptions = {
       cwd: this._rootPath,
       queueName: this._serialQueueName,
+      ...commandOptions,
     };
     return {pathToBuck, buckCommandOptions};
   }
@@ -207,8 +215,11 @@ export class BuckProject {
    * An error should be thrown only if the specified targets are invalid.
    * @return Promise that resolves to a build report.
    */
-  build(buildTargets: Array<string>): Promise<any> {
-    return this._build(buildTargets, {});
+  build(
+    buildTargets: Array<string>,
+    options?: BaseBuckBuildOptions,
+  ): Promise<any> {
+    return this._build(buildTargets, options || {});
   }
 
   /**
@@ -241,7 +252,7 @@ export class BuckProject {
     });
 
     try {
-      await this._runBuckCommandFromProjectRoot(args);
+      await this._runBuckCommandFromProjectRoot(args, options.commandOptions);
     } catch (e) {
       // The build failed. However, because --keep-going was specified, the
       // build report should have still been written unless any of the target

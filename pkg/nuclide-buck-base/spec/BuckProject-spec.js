@@ -53,6 +53,23 @@ describe('BuckProject', () => {
         expect(report).toEqual(expectedReport);
       });
     });
+
+    it('respects extra options', () => {
+      const projectDir = copyProject('test-project-with-failing-targets');
+      const buckProject = new BuckProject({rootPath: projectDir});
+
+      // Should immediately timeout.
+      jasmine.useRealClock();
+      waitsForPromise(async () => {
+        try {
+          await buckProject.build(['//:good_rule'], {commandOptions: {timeout: 0}});
+        } catch (e) {
+          expect(e.message).toMatch('timeout');
+          return;
+        }
+        throw new Error('promise should have been rejected');
+      });
+    });
   });
 
   describe('.resolveAlias(aliasOrTarget)', () => {
