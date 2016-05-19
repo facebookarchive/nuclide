@@ -245,20 +245,15 @@ export class BuckProject {
     } catch (e) {
       // The build failed. However, because --keep-going was specified, the
       // build report should have still been written unless any of the target
-      // args were invalid. We check the existence of the report file to be sure.
-      const fileWasWritten = await fsPromise.exists(report);
-      if (!fileWasWritten) {
+      // args were invalid. We check the contents of the report file to be sure.
+      const stat = await fsPromise.stat(report).catch(() => null);
+      if (stat == null || stat.size === 0) {
         throw e;
       }
     }
 
     try {
       const json: string = await fsPromise.readFile(report, {encoding: 'UTF-8'});
-      if (!json) {
-        throw Error(`Report file ${report} for ${buildTargets} was opened, ` +
-            'but nothing was written.');
-      }
-
       try {
         return JSON.parse(json);
       } catch (e) {
