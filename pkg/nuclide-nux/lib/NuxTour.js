@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import analytics from '../../nuclide-analytics';
 import {NuxView} from './NuxView';
 
 export class NuxTour {
@@ -36,14 +37,17 @@ export class NuxTour {
     try {
       this._nuxList[0].showNux();
     } catch (e) {
+      this._track(false, e.toString());
     }
   }
 
   _nextStep(): void {
     if (this._currentStep < this._nuxList.length - 1) {
+      this._track(true);
       try {
         this._nuxList[++this._currentStep].showNux();
       } catch (e) {
+        this._track(false, e.toString());
       }
     } else {
       this._onNuxComplete();
@@ -51,8 +55,28 @@ export class NuxTour {
   }
 
   _onNuxComplete() : void {
+    this._track(true);
     if (this._callback != null) {
       this._callback();
     }
+  }
+
+  _track(
+    completed: boolean = false,
+    error: ?string,
+  ) : void {
+    analytics.track(
+      'nux-tour-action',
+      {
+        tourId: this._id,
+        step: `${this._currentStep + 1}/${this._nuxList.length + 1}`,
+        completed: `${completed}`,
+        error: `${error}`,
+      },
+    );
+  }
+
+  setNuxCompleteCallback(callback: (() => void)): void {
+    this._callback = callback;
   }
 }
