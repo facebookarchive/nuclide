@@ -116,6 +116,33 @@ describe('HgService', () => {
     });
   });
 
+  describe('::createBookmark', () => {
+    const BOOKMARK_NAME = 'fakey456';
+    const BASE_REVISION = 'fakey123';
+
+    it('calls the appropriate `hg` command to add', () => {
+      waitsForPromise(async () => {
+        spyOn(hgService, '_hgAsyncExecute');
+        await hgService.createBookmark(BOOKMARK_NAME);
+        expect(hgService._hgAsyncExecute).toHaveBeenCalledWith(
+          ['bookmark', BOOKMARK_NAME],
+          {cwd: TEST_WORKING_DIRECTORY}
+        );
+      });
+    });
+
+    it('calls the appropriate `hg` command to add with base revision', () => {
+      waitsForPromise(async () => {
+        spyOn(hgService, '_hgAsyncExecute');
+        await hgService.createBookmark(BOOKMARK_NAME, BASE_REVISION);
+        expect(hgService._hgAsyncExecute).toHaveBeenCalledWith(
+          ['bookmark', '--rev', BASE_REVISION, BOOKMARK_NAME],
+          {cwd: TEST_WORKING_DIRECTORY}
+        );
+      });
+    });
+  });
+
   describe('::fetchDiffInfo', () => {
     const mockHgDiffOutput =
     `diff --git test-test/blah/blah.js test-test/blah/blah.js

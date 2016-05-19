@@ -447,6 +447,16 @@ export class HgService {
    * Section: Bookmarks
    */
 
+  createBookmark(name: string, revision: ?string): Promise<void> {
+    const args = [];
+    if (revision) {
+      args.push('--rev', revision);
+    }
+    args.push(name);
+
+    return this._runSimpleInWorkingDirectory('bookmark', args);
+  }
+
   /**
    * @return The name of the current bookmark.
    */

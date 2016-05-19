@@ -54,6 +54,10 @@ export default class HgRepositoryClientAsync {
     return this._client._service.checkout(reference, create);
   }
 
+  createBookmark(name: string, revision: ?string): Promise<void> {
+    return this._client._service.createBookmark(name, revision);
+  }
+
   getBookmarks(): Promise<Array<BookmarkInfo>> {
     return this._client._service.fetchBookmarks();
   }
