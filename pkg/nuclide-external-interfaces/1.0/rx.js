@@ -219,7 +219,7 @@ declare module 'rxjs' {
 
     skipUntil(other: Observable<any> | Promise<any>): Observable<T>;
 
-    startWith(values: T | Iterable<T>): Observable<T>;
+    startWith(...values: Array<T>): Observable<T>;
 
     take(count: number): Observable<T>;
 
