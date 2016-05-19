@@ -42,7 +42,15 @@ module.exports = class MockHgService {
     return Promise.resolve('');
   }
 
+  fetchBookmarks(): Promise<Array<Object>> {
+    return Promise.resolve([]);
+  }
+
   observeActiveBookmarkDidChange(): Observable<void> {
+    return new Subject();
+  }
+
+  observeBookmarksDidChange(): Observable<void> {
     return new Subject();
   }
 

@@ -176,6 +176,33 @@ describe('HgService', () => {
     });
   });
 
+  describe('::fetchBookmarks', () => {
+    const mockHgBookmarksOutput = `
+[
+  {
+    "active": true,
+    "bookmark": "foobar",
+    "node": "cc6608797c69d782ba26a0843795ef3118efcb2f",
+    "rev": 12345
+  }
+]`;
+
+    it('fetches bookmarks', () => {
+      let wasCalled = false;
+      spyOn(hgService, '_hgAsyncExecute').andCallFake((args, options) => {
+        expect(args.length).toBe(2);
+        expect(args.pop()).toBe('-Tjson');
+        expect(args.pop()).toBe('bookmarks');
+        wasCalled = true;
+        return {stdout: mockHgBookmarksOutput};
+      });
+      waitsForPromise(async () => {
+        await hgService.fetchBookmarks();
+        expect(wasCalled).toBeTruthy();
+      });
+    });
+  });
+
   describe('::rename', () => {
     it('can rename files', () => {
       let wasCalled = false;

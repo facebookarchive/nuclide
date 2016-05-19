@@ -181,6 +181,8 @@ export class HgRepositoryClient {
       .subscribe(this._serializedRefreshStatusesCache);
     this._service.observeActiveBookmarkDidChange()
       .subscribe(this.fetchActiveBookmark.bind(this));
+    this._service.observeBookmarksDidChange()
+      .subscribe(() => { this._emitter.emit('did-change-bookmarks'); });
   }
 
   destroy() {
@@ -211,7 +213,6 @@ export class HgRepositoryClient {
   onDidChangeStatuses(callback: () => mixed): IDisposable {
     return this._emitter.on('did-change-statuses', callback);
   }
-
 
   /**
    *

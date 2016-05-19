@@ -11,6 +11,7 @@
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {
+  BookmarkInfo,
   LineDiff,
   StatusCodeNumberValue,
 } from '../../nuclide-hg-repository-base/lib/HgService';
@@ -51,6 +52,10 @@ export default class HgRepositoryClientAsync {
 
   checkoutReference(reference: string, create: boolean): Promise<void> {
     return this._client._service.checkout(reference, create);
+  }
+
+  getBookmarks(): Promise<Array<BookmarkInfo>> {
+    return this._client._service.fetchBookmarks();
   }
 
   async getShortHead(): Promise<string> {
@@ -157,6 +162,10 @@ export default class HgRepositoryClientAsync {
 
   isStatusUntracked(status: ?number): boolean {
     return status === StatusCodeNumber.UNTRACKED;
+  }
+
+  onDidChangeBookmarks(callback: () => mixed): IDisposable {
+    return this._client._emitter.on('did-change-bookmarks', callback);
   }
 
   onDidChangeStatus(

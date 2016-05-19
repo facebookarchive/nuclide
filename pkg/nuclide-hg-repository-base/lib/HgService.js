@@ -41,6 +41,7 @@ const DEFAULT_FORK_BASE_NAME = 'default';
 
 const WATCHMAN_SUBSCRIPTION_NAME_PRIMARY = 'hg-repository-watchman-subscription-primary';
 const WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK = 'hg-repository-watchman-subscription-hgbookmark';
+const WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARKS = 'hg-repository-watchman-subscription-hgbookmarks';
 const WATCHMAN_HG_DIR_STATE = 'hg-repository-watchman-subscription-dirstate';
 
 // If Watchman reports that many files have changed, it's not really useful to report this.
@@ -80,6 +81,13 @@ export type LineDiff = {
   oldLines: number;
   newStart: number;
   newLines: number;
+};
+
+export type BookmarkInfo = {
+  active: boolean;
+  bookmark: string;
+  node: string;
+  rev: number;
 };
 
 export type DiffInfo = {
@@ -165,13 +173,15 @@ export class HgService {
   _workingDirectory: string;
   _filesDidChangeObserver: Subject;
   _hgActiveBookmarkDidChangeObserver: Subject;
+  _hgBookmarksDidChangeObserver: Subject;
   _hgRepoStateDidChangeObserver: Subject;
 
   constructor(workingDirectory: string) {
     this._workingDirectory = workingDirectory;
     this._filesDidChangeObserver = new Subject();
-    this._hgRepoStateDidChangeObserver = new Subject();
     this._hgActiveBookmarkDidChangeObserver = new Subject();
+    this._hgBookmarksDidChangeObserver = new Subject();
+    this._hgRepoStateDidChangeObserver = new Subject();
     this._lockFileHeld = false;
     this._subscribeToWatchman().catch(error => {
       logger.error('Failed to subscribe to watchman error: ', error);
@@ -182,6 +192,7 @@ export class HgService {
     this._filesDidChangeObserver.complete();
     this._hgRepoStateDidChangeObserver.complete();
     this._hgActiveBookmarkDidChangeObserver.complete();
+    this._hgBookmarksDidChangeObserver.complete();
     if (this._hgDirWatcher != null) {
       this._hgDirWatcher.close();
       this._hgDirWatcher = null;
@@ -305,7 +316,7 @@ export class HgService {
       getLogger().error('Error when creating node watcher for hg state files', error);
     }
 
-    // Subscribe to changes in the current Hg bookmark.
+    // Subscribe to changes to the active Mercurial bookmark.
     const hgActiveBookmarkSubscription = await watchmanClient.watchDirectoryRecursive(
       workingDirectory,
       WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK,
@@ -316,6 +327,18 @@ export class HgService {
       },
     );
     logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK} established.`);
+
+    // Subscribe to changes in Mercurial bookmarks.
+    const hgBookmarksSubscription = await watchmanClient.watchDirectoryRecursive(
+      workingDirectory,
+      WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARKS,
+      {
+        fields: ['name', 'exists'],
+        expression: ['name', '.hg/bookmarks', 'wholename'],
+        defer: ['hg.update'],
+      },
+    );
+    logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARKS} established.`);
 
     const dirStateSubscribtion = await watchmanClient.watchDirectoryRecursive(
       workingDirectory,
@@ -330,6 +353,7 @@ export class HgService {
 
     primarySubscribtion.on('change', this._filesDidChange.bind(this));
     hgActiveBookmarkSubscription.on('change', this._hgActiveBookmarkDidChange.bind(this));
+    hgBookmarksSubscription.on('change', this._hgBookmarksDidChange.bind(this));
     dirStateSubscribtion.on('change', this._emitHgRepoStateChanged.bind(this));
   }
 
@@ -360,6 +384,10 @@ export class HgService {
 
   _hgActiveBookmarkDidChange(): void {
     this._hgActiveBookmarkDidChangeObserver.next();
+  }
+
+  _hgBookmarksDidChange(): void {
+    this._hgBookmarksDidChangeObserver.next();
   }
 
   /**
@@ -428,10 +456,37 @@ export class HgService {
   }
 
   /**
-   * Observes that the Mercurial bookmark has changed.
+   * @return An Array of bookmarks for this repository.
+   */
+  async fetchBookmarks(): Promise<Array<BookmarkInfo>> {
+    const args = ['bookmarks', '-Tjson'];
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+
+    let output;
+    try {
+      output = await this._hgAsyncExecute(args, execOptions);
+    } catch (e) {
+      getLogger().error(`LocalHgServiceBase failed to fetch bookmarks. Error: ${e.stderr}`);
+      throw e;
+    }
+
+    return JSON.parse(output.stdout);
+  }
+
+  /**
+   * Observes that the active Mercurial bookmark has changed.
    */
   observeActiveBookmarkDidChange(): Observable<void> {
     return this._hgActiveBookmarkDidChangeObserver;
+  }
+
+  /**
+   * Observes that Mercurial bookmarks have changed.
+   */
+  observeBookmarksDidChange(): Observable<void> {
+    return this._hgBookmarksDidChangeObserver;
   }
 
   /**
