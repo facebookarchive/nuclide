@@ -9,11 +9,32 @@
  * the root directory of this source tree.
  */
 
+import {CompositeDisposable} from 'atom';
+
+class Activation {
+  _disposables: CompositeDisposable;
+
+  constructor(): void {
+    this._disposables = new CompositeDisposable();
+  }
+
+  dispose(): void {
+    this._disposables.dispose();
+  }
+}
+
+let activation: ?Activation = null;
+
 export function activate(state: ?mixed): void {
+  activation = new Activation();
 }
 
 export function serialize(): mixed {
 }
 
 export function deactivate(): void {
+  if (activation != null) {
+    activation.dispose();
+    activation = null;
+  }
 }
