@@ -40,6 +40,8 @@ export type AsyncExecuteOptions = child_process$spawnOpts & {
   pipedCommand?: string;
   // Arguments to the piped command.
   pipedArgs?: Array<string>;
+  // Timeout (in milliseconds).
+  timeout?: number;
 };
 
 export type ProcessMessage = StdoutMessage | StderrMessage | ExitMessage | ErrorMessage;
@@ -465,12 +467,31 @@ export function asyncExecute(
 
     let stderr = '';
     let stdout = '';
+    let timeout = null;
+    if (localOptions.timeout != null) {
+      timeout = setTimeout(() => {
+        // Prevent the other handlers from firing.
+        lastChild.removeAllListeners();
+        lastChild.kill();
+        resolve({
+          command: [command].concat(args).join(' '),
+          errorMessage: `Exceeded timeout of ${localOptions.timeout}ms`,
+          errorCode: 'ETIMEDOUT',
+          stderr,
+          stdout,
+        });
+      }, localOptions.timeout);
+    }
+
     lastChild.on('close', exitCode => {
       resolve({
         exitCode,
         stderr,
         stdout,
       });
+      if (timeout != null) {
+        clearTimeout(timeout);
+      }
     });
 
     lastChild.on('error', error => {
@@ -482,6 +503,9 @@ export function asyncExecute(
         stderr,
         stdout,
       });
+      if (timeout != null) {
+        clearTimeout(timeout);
+      }
     });
 
     lastChild.stderr.on('data', data => {

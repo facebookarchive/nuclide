@@ -171,6 +171,16 @@ describe('commons-node/process', () => {
           expect(exitCode).toBe(0);
         });
       });
+      it('supports a timeout', () => {
+        waitsForPromise(async () => {
+          jasmine.useRealClock();
+          let result = await asyncExecute('sleep', ['5'], {timeout: 100});
+          expect(result.errorCode).toBe('ETIMEDOUT');
+
+          result = await asyncExecute('sleep', ['0'], {timeout: 100});
+          expect(result.exitCode).toBe(0);
+        });
+      });
     }
   });
 
