@@ -149,7 +149,7 @@ function notifyRevisionStatus(
 ): void {
   let message = `Revision ${statusMessage}`;
   if (phabRevision == null) {
-    atom.notifications.addSuccess(message);
+    atom.notifications.addSuccess(message, {nativeFriendly: true});
     return;
   }
   const {id, url} = phabRevision;
@@ -161,6 +161,7 @@ function notifyRevisionStatus(
       onDidClick() { shell.openExternal(url); },
       text: 'Open in Phabricator',
     }],
+    nativeFriendly: true,
   });
 }
 
@@ -1200,11 +1201,11 @@ class DiffViewModel {
       switch (commitMode) {
         case CommitMode.COMMIT:
           await activeStack.commit(message);
-          atom.notifications.addSuccess('Commit created');
+          atom.notifications.addSuccess('Commit created', {nativeFriendly: true});
           break;
         case CommitMode.AMEND:
           await activeStack.amend(message);
-          atom.notifications.addSuccess('Commit amended');
+          atom.notifications.addSuccess('Commit amended', {nativeFriendly: true});
           break;
       }
 
@@ -1212,10 +1213,10 @@ class DiffViewModel {
       activeStack.getRevisionsStatePromise();
       this.setViewMode(DiffMode.BROWSE_MODE);
     } catch (e) {
-      atom.notifications.addError(
-        'Error creating commit',
-        {detail: `Details: ${e.stdout}`},
-      );
+      atom.notifications.addError('Error creating commit', {
+        detail: `Details: ${e.stdout}`,
+        nativeFriendly: true,
+      });
       this._setState({
         ...this._state,
         commitModeState: CommitModeState.READY,
