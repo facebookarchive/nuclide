@@ -72,7 +72,7 @@ export class BuildToolbar extends React.Component {
               value={activeTaskType}
               options={taskOptions}
               onChange={value => { this.props.selectTask(value); }}
-              onConfirm={() => { this.props.runTask(); }}
+              onConfirm={() => { this.props.runTask(activeTaskType); }}
               confirmDisabled={this.props.taskIsRunning || !activeTask || !activeTask.enabled}
               changeDisabled={this.props.taskIsRunning}
             />
