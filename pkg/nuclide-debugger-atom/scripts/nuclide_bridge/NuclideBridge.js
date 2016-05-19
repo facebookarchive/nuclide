@@ -248,10 +248,10 @@ class NuclideBridge {
       false, // ownProperties
       false, // accessorPropertiesOnly
       false, // generatePreview
-      (remoteObject, wasThrown, error) => {
+      (error, properties, internalProperties) => {
         ipc.sendToHost('notification', 'GetPropertiesResponse', {
-          result: wasThrown ? null : remoteObject,
-          error: wasThrown ? error : null,
+          result: properties,
+          error,
           objectId,
         });
       },
