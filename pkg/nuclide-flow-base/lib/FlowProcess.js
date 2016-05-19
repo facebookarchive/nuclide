@@ -191,11 +191,12 @@ export class FlowProcess {
 
   /** Execute Flow with the given arguments */
   async _rawExecFlow(args: Array<any>, options?: Object = {}): Promise<?process$asyncExecuteRet> {
-    const flowOptions = await this._getFlowExecOptions();
-    if (flowOptions == null) {
+    const installed = await isFlowInstalled();
+    if (!installed) {
       this._updateServerStatus(null);
       return null;
     }
+    const flowOptions = this._getFlowExecOptions();
     options = {...flowOptions, ...options};
     args = [
       ...args,
@@ -302,15 +303,10 @@ export class FlowProcess {
   /**
   * If this returns null, then it is not safe to run flow.
   */
-  async _getFlowExecOptions(): Promise<?{cwd: string}> {
-    const installed = await isFlowInstalled();
-    if (installed) {
-      return {
-        cwd: this._root,
-      };
-    } else {
-      return null;
-    }
+  _getFlowExecOptions(): {cwd: string} {
+    return {
+      cwd: this._root,
+    };
   }
 
   _getMaxWorkers(): number {
