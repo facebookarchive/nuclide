@@ -25,10 +25,10 @@ describe('PathSetFactory', () => {
   const UNTRACKED_FILE_BASE = 'untracked.js';
   const IGNORED_FILE_BASE = 'ignored.js';
 
-  let testDir: ?string;
-  let trackedFile: ?string;
-  let untrackedFile: ?string;
-  let ignoredFile: ?string;
+  let testDir: string;
+  let trackedFile: string;
+  let untrackedFile: string;
+  let ignoredFile: string;
   beforeEach(() => {
     testDir = temp.mkdirSync();
     testDir = fs.realpathSync(testDir);

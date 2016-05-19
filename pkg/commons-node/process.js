@@ -31,6 +31,17 @@ export type process$asyncExecuteRet = {
   stdout: string;
 };
 
+export type AsyncExecuteOptions = child_process$spawnOpts & {
+  // The queue on which to block dependent calls.
+  queueName?: string;
+  // The contents to write to stdin.
+  stdin?: ?string;
+  // A command to pipe output through.
+  pipedCommand?: string;
+  // Arguments to the piped command.
+  pipedArgs?: Array<string>;
+};
+
 export type ProcessMessage = StdoutMessage | StderrMessage | ExitMessage | ErrorMessage;
 export type StdoutMessage = {
   kind: 'stdout';
@@ -394,17 +405,13 @@ export function observeProcess(
  * @param command The command to execute.
  * @param args The arguments to pass to the command.
  * @param options Options for changing how to run the command.
- *     See here: http://nodejs.org/api/child_process.html
- *     The additional options we provide:
- *       queueName string The queue on which to block dependent calls.
- *       stdin string The contents to write to stdin.
- *       pipedCommand string a command to pipe the output of command through.
- *       pipedArgs array of strings as arguments.
+ *     Supports the options listed here: http://nodejs.org/api/child_process.html
+ *     in addition to the custom options listed in AsyncExecuteOptions.
  */
 export function asyncExecute(
   command: string,
   args: Array<string>,
-  options: ?Object = {}
+  options: ?AsyncExecuteOptions = {}
 ): Promise<process$asyncExecuteRet> {
   // Clone passed in options so this function doesn't modify an object it doesn't own.
   const localOptions = {...options};
@@ -526,7 +533,7 @@ export function asyncExecute(
 export async function checkOutput(
   command: string,
   args: Array<string>,
-  options: ?Object = {}
+  options: ?AsyncExecuteOptions = {}
 ): Promise<process$asyncExecuteRet> {
   const result = await asyncExecute(command, args, options);
   if (result.exitCode !== 0) {

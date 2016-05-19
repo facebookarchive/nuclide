@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {AsyncExecuteOptions} from '../../commons-node/process';
 
 import {
   checkOutput,
@@ -55,10 +56,7 @@ type FullBuckBuildOptions = {
 };
 type BuckCommandAndOptions = {
   pathToBuck: string;
-  buckCommandOptions: {
-    cwd: string;
-    queueName: string;
-  };
+  buckCommandOptions: AsyncExecuteOptions;
 };
 import type {Observable} from 'rxjs';
 
