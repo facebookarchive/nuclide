@@ -9,10 +9,14 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 
 const VALID_NUX_POSITIONS = new Set(['top', 'bottom', 'left', 'right', 'auto']);
 // The maximum number of times the NuxView will attempt to attach to the DOM
+const ATTACHMENT_ATTEMPT_THRESHOLD = 5;
+const DISPLAY_PREDICATE_ATTEMPT_THRESHOLD = 4;
+const ATTACHMENT_RETRY_TIMEOUT = 500; // milliseconds
+const DISPLAY_RETRY_TIMEOUT = 500; // milliseconds
 
 function validatePlacement(position: string) : boolean {
   return VALID_NUX_POSITIONS.has(position);
@@ -20,13 +24,15 @@ function validatePlacement(position: string) : boolean {
 
 export class NuxView {
   _selector : Function;
-  _position: string;
+  _position: 'top' | 'bottom' | 'left' | 'right' | 'auto';
   _content: string;
   _customContent: boolean;
   _disposables : CompositeDisposable;
   _callback: ?(() => void);
+  _tooltipDisposable: IDisposable;
   _displayPredicate: (() => boolean);
   _completePredicate: (() => boolean);
+  _tooltipDiv: HTMLElement;
 
   /**
    * Constructor for the NuxView.
@@ -52,7 +58,7 @@ export class NuxView {
   constructor(
     selectorString: ?string,
     selectorFunction : ?Function,
-    position: string,
+    position: 'top' | 'bottom' | 'left' | 'right' | 'auto',
     content: string,
     customContent: boolean = false,
     displayPredicate: ?(() => boolean) = null,
@@ -73,6 +79,99 @@ export class NuxView {
     this._completePredicate = completePredicate || (() => true);
 
     this._disposables = new CompositeDisposable();
+  }
+
+  _createNux(creationAttempt: number = 1, displayAttempt: number = 1): void {
+    if (creationAttempt > ATTACHMENT_ATTEMPT_THRESHOLD) {
+      this._onNuxComplete(false);
+      throw new Error('The NuxView failed to succesfully query and attach to the DOM.');
+    }
+    const elem = this._selector();
+    if (elem == null) {
+      const attachmentTimeout =
+        setTimeout(this._createNux.bind(this, creationAttempt + 1), ATTACHMENT_RETRY_TIMEOUT);
+      this._disposables.add(new Disposable(() => {
+        if (attachmentTimeout !== null) {
+          clearTimeout(attachmentTimeout);
+        }
+      }));
+      return;
+    }
+
+    // If the predicate fails, retry a few times to make sure that it actually failed this nux.
+    if (!this._displayPredicate()) {
+      if (displayAttempt < DISPLAY_PREDICATE_ATTEMPT_THRESHOLD) {
+        const displayTimeout = setTimeout(
+          this._createNux.bind(this, creationAttempt, displayAttempt + 1),
+          DISPLAY_RETRY_TIMEOUT,
+        );
+        this._disposables.add(new Disposable(() => {
+          if (displayTimeout !== null) {
+            clearTimeout(displayTimeout);
+          }
+        }));
+        return;
+      }
+      throw new Error('NuxView failed to display. Display predicate was consistently false.');
+    }
+
+    this._tooltipDiv = document.createElement('div');
+    this._tooltipDiv.className = `nuclide-nux-tooltip-helper nuclide-nux-tooltip-${this._position}`;
+    elem.classList.add('nuclide-nux-tooltip-helper-parent');
+    elem.appendChild(this._tooltipDiv);
+
+    this._createDisposableTooltip();
+
+    const tooltip = document.querySelector('.nuclide-nux-tooltip');
+    const boundClickListener = this._handleDisposableClick.bind(
+      this,
+      this._tooltipDisposable,
+      elem,
+    );
+    elem.addEventListener('click', boundClickListener);
+    tooltip.addEventListener('click', boundClickListener);
+    this._disposables.add(new Disposable(() => {
+      elem.removeEventListener('click', boundClickListener);
+      tooltip.removeEventListener('click', boundClickListener);
+    }));
+  }
+
+  _createDisposableTooltip() : void {
+    this._tooltipDisposable = atom.tooltips.add(
+      this._tooltipDiv,
+      {
+        title: this._content,
+        trigger: 'manual',
+        placement: this._position,
+        html: this._customContent,
+        template: '<div class="tooltip nuclide-nux-tooltip">' +
+                    '<div class="tooltip-arrow"></div>' +
+                    '<div class="tooltip-inner"></div>' +
+                  '</div>',
+      }
+    );
+    this._disposables.add(this._tooltipDisposable);
+  }
+
+  _handleDisposableClick(
+    disposable: IDisposable,
+    addedElement: HTMLElement,
+  ): void {
+    // Only consider the NUX as complete if the completion condition has been met.
+    if (!this._completePredicate()) {
+      return;
+    }
+
+    // Cleanup changes made to the DOM
+    addedElement.classList.remove('nuclide-nux-tooltip-helper-parent');
+    disposable.dispose();
+    this._tooltipDiv.remove();
+
+    this._onNuxComplete(true);
+  }
+
+  showNux() : void {
+    this._createNux();
   }
 
   setNuxCompleteCallback(callback: (() => void)): void {
