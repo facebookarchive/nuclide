@@ -12,6 +12,8 @@
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
+import type {Result} from '../../commons-atom/ActiveEditorRegistry';
+import type {Observable} from 'rxjs';
 
 import {CompositeDisposable, Disposable} from 'atom';
 
@@ -28,6 +30,7 @@ export type OutlineTree = {
   // Must be one or the other. If both are present, tokenizedText is preferred.
   plainText?: string;
   tokenizedText?: TokenizedText;
+  representativeName?: string;
 
   startPosition: atom$Point;
   endPosition?: atom$Point;
@@ -94,6 +97,10 @@ export type OutlineProvider = {
 type OutlineViewState = {
   width: number;
   visible: boolean;
+};
+
+export type ResultsStreamProvider = {
+  getResultsStream: () => Observable<Result<OutlineProvider, ?Outline>>;
 };
 
 const DEFAULT_WIDTH = 300; // px
@@ -185,6 +192,12 @@ class Activation {
       toggle: panel.toggle.bind(panel),
     };
   }
+
+  getOutlineViewResultsStream(): ResultsStreamProvider {
+    return {
+      getResultsStream: () => this._editorService.getResultsStream(),
+    };
+  }
 }
 
 let activation: ?Activation = null;
@@ -233,4 +246,9 @@ export function getHomeFragments(): HomeFragments {
 export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
   invariant(activation != null);
   return activation.getDistractionFreeModeProvider();
+}
+
+export function getOutlineViewResultsStream(): ResultsStreamProvider {
+  invariant(activation != null);
+  return activation.getOutlineViewResultsStream();
 }

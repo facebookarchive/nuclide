@@ -1,0 +1,26 @@
+{
+  "name": "nuclide-populate-symbols",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Populates Atom's symbols-view package with symbols retrieved from the outline-view",
+  "nuclide": {
+    "config": {
+      "populateSymbolsView": {
+        "title": "EXPERIMENTAL. Populate symbols-view (Cmd-R)",
+        "type": "boolean",
+        "default": false,
+        "description": "Populates the symbols-view (Cmd-R) with select items from the outline."
+      }
+    },
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "consumedServices": {
+    "nuclide-outline-view-results-stream": {
+      "versions": {
+        "0.0.0": "consumeOutlineViewResultsStream"
+      }
+    }
+  }
+}
