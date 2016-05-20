@@ -121,19 +121,32 @@ export class DbgpConnector {
     try {
       messages = this._messageHandler.parseMessages(data.toString());
     } catch (error) {
-      failConnection(
+      this._failConnection(
         socket,
-        'Non XML connection string: ' + data.toString() + '. Discarding connection.');
+        'Non XML connection string: ' + data.toString() + '. Discarding connection.',
+        'PHP sent a malformed request, please file a bug to the Nuclide developers.<br />' +
+        'Error: Non XML connection string.',
+      );
       return;
     }
 
     if (messages.length !== 1) {
-      failConnection(socket, 'Expected a single connection message. Got ' + messages.length);
+      this._failConnection(
+        socket,
+        'Expected a single connection message. Got ' + messages.length,
+        'PHP sent a malformed request, please file a bug to the Nuclide developers.<br />' +
+        'Error: Expected a single connection message.',
+      );
       return;
     }
 
     const message = messages[0];
     this._emitter.emit(DBGP_ATTACH_EVENT, {socket, message});
+  }
+
+  _failConnection(socket: Socket, logMessage: string, userMessage: string): void {
+    failConnection(socket, logMessage);
+    this._emitter.emit(DBGP_ERROR_EVENT, userMessage);
   }
 
   /**
