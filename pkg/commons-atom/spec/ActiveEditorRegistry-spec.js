@@ -16,7 +16,6 @@ import type {
   Result,
 } from '../ActiveEditorRegistry';
 
-import invariant from 'assert';
 import {Subject} from 'rxjs';
 
 import ActiveEditorRegistry from '../ActiveEditorRegistry';
@@ -129,10 +128,20 @@ describe('ActiveEditorRegistry', () => {
         ]);
 
         const fullEvents = await fullEventsPromise;
-        const firstResult = fullEvents[2];
-        invariant(firstResult.kind === 'result');
-        expect(firstResult.editor).toBe(editor1);
-        expect(firstResult.provider).toBe(provider);
+        expect(fullEvents[1]).toEqual({
+          kind: 'pane-change',
+          editor: editor1,
+        });
+        expect(fullEvents[2]).toEqual({
+          kind: 'result',
+          editor: editor1,
+          provider,
+          result: undefined,
+        });
+        expect(fullEvents[3]).toEqual({
+          kind: 'edit',
+          editor: editor1,
+        });
       });
     });
 
@@ -188,6 +197,12 @@ describe('ActiveEditorRegistry', () => {
             'save',
             'result',
           ]);
+
+          const fullEvents = await fullEventsPromise;
+          expect(fullEvents[2]).toEqual({
+            kind: 'save',
+            editor: editor1,
+          });
         });
       });
     });
@@ -259,6 +274,12 @@ describe('ActiveEditorRegistry', () => {
           'pane-change',
           'provider-error',
         ]);
+
+        const fullEvents = await fullEventsPromise;
+        expect(fullEvents[1]).toEqual({
+          kind: 'provider-error',
+          provider,
+        });
       });
     });
   });

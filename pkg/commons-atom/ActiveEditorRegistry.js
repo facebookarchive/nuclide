@@ -44,14 +44,18 @@ export type Result<T, V> = {
   grammar: atom$Grammar;
 } | {
   kind: 'provider-error';
+  provider: T;
 } | {
   // Since providers can be slow, the pane-change and edit events are emitted immediately in case
   // the UI needs to clear outdated results.
   kind: 'pane-change';
+  editor: atom$TextEditor;
 } | {
   kind: 'edit';
+  editor: atom$TextEditor;
 } | {
   kind: 'save';
+  editor: atom$TextEditor;
 } | {
   kind: 'result';
   result: V;
@@ -132,7 +136,10 @@ export default class ActiveEditorRegistry<T: Provider, V> {
       return Observable.concat(
         // Emit a pane change event first, so that clients can do something while waiting for a
         // provider to give a result.
-        Observable.of({kind: 'pane-change'}),
+        Observable.of({
+          kind: 'pane-change',
+          editor,
+        }),
         Observable.fromPromise(this._getResultForEditor(
           this._getProviderForEditor(editor),
           editor,
@@ -165,7 +172,7 @@ export default class ActiveEditorRegistry<T: Provider, V> {
       }
       return Observable.concat(
         // $FlowIssue: {kind: edit | save} <=> {kind: edit} | {kind: save}
-        Observable.of({kind: event}),
+        Observable.of({kind: event, editor}),
         Observable.fromPromise(this._getResultForEditor(provider, editor)),
       );
     });
@@ -192,6 +199,7 @@ export default class ActiveEditorRegistry<T: Provider, V> {
     } catch (e) {
       logger.error(`Error from provider for ${editor.getGrammar()}`, e);
       return {
+        provider,
         kind: 'provider-error',
       };
     }

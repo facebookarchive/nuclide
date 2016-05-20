@@ -166,20 +166,20 @@ describe('diagnosticProviderForResultStream', () => {
 
     it('should emit an invalidation when the provider throws an error', () => {
       isEnabledStream.next(true);
-      inputResults.next({kind: 'provider-error'});
+      inputResults.next({kind: 'provider-error', provider});
       expect(invalidations).toEqual([invalidateAll]);
     });
 
     it('should emit an invalidation on a pane change', () => {
       isEnabledStream.next(true);
-      inputResults.next({kind: 'pane-change'});
+      inputResults.next({kind: 'pane-change', editor});
       expect(invalidations).toEqual([invalidateAll]);
     });
 
     it('should not emit an invalidation on edit or save', () => {
       isEnabledStream.next(true);
-      inputResults.next({kind: 'edit'});
-      inputResults.next({kind: 'save'});
+      inputResults.next({kind: 'edit', editor});
+      inputResults.next({kind: 'save', editor});
       expect(invalidations).toEqual([]);
     });
   });
