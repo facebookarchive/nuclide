@@ -118,7 +118,7 @@ export class NuxView {
     }
 
     this._tooltipDiv = document.createElement('div');
-    this._tooltipDiv.className = `nuclide-nux-tooltip-helper nuclide-nux-tooltip-${this._position}`;
+    this._tooltipDiv.className = 'nuclide-nux-tooltip-helper';
     elem.classList.add('nuclide-nux-tooltip-helper-parent');
     elem.appendChild(this._tooltipDiv);
 
