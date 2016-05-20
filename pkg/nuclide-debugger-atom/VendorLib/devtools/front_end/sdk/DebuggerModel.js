@@ -465,10 +465,31 @@ WebInspector.DebuggerModel.prototype = {
         this._debuggerPausedDetails = debuggerPausedDetails;
         if (this._debuggerPausedDetails)
             this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPausedDetails);
-        if (debuggerPausedDetails)
-            this.setSelectedCallFrame(debuggerPausedDetails.callFrames[0]);
-        else
+            this.selectFirstCallFrame(this._debuggerPausedDetails.callFrames, /*needSource*/ true);
+        } else {
             this.setSelectedCallFrame(null);
+        }
+    },
+
+    selectFirstCallFrame: function(frames, needSource)
+    {
+        var frame = this._getFirstFrameWithSource(frames, needSource);
+        this.setSelectedCallFrame(frame || frames[0]);
+    },
+
+    _getFirstFrameWithSource: function(frames, needSource)
+    {
+        if (!needSource) {
+            return frames[0];
+        }
+        for (var i = 0; i < frames.length; ++i)
+        {
+            if (frames[i].hasSource())
+            {
+                return frames[i];
+            }
+        }
+        return null;
     },
 
     /**
@@ -1067,6 +1088,15 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
     location: function()
     {
         return this._location;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    hasSource: function()
+    {
+        // Fallback to hasSource by default.
+        return this._payload.hasOwnProperty('hasSource') ? this._payload.hasSource : true;
     },
 
     /**

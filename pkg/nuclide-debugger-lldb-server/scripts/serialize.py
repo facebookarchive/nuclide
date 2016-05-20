@@ -84,6 +84,11 @@ class LocationSerializer:
                 'lineNumber': assembly_file.line_number,
             }
 
+    def has_source(self, frame):
+        return frame.line_entry is not None and \
+                frame.line_entry.file is not None and \
+                frame.line_entry.file.fullpath is not None
+
     def get_breakpoint_locations(self, breakpoint):
         """Serialize the locations of a breakpoint.
 

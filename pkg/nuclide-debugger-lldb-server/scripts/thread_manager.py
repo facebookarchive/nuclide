@@ -29,13 +29,15 @@ class ThreadManager(object):
             description_stream = lldb.SBStream()
             thread.GetDescription(description_stream)
 
+            frame = thread.GetSelectedFrame()
             location = self._debugger_store.location_serializer \
-                .get_frame_location(thread.GetSelectedFrame())
+                .get_frame_location(frame)
             threads_array.append({
                 'id': thread.GetThreadID(),
                 'name': thread.GetName(),
-                'address': self._get_frame_name(thread.GetSelectedFrame()),
+                'address': self._get_frame_name(frame),
                 'location': location,
+                'hasSource': self._debugger_store.location_serializer.has_source(frame),
                 'stopReason': self.get_thread_stop_description(thread),
                 'description': description_stream.GetData(),
             })
@@ -63,6 +65,7 @@ class ThreadManager(object):
                 'callFrameId': "%d.%d" % (frame.thread.idx, frame.idx),
                 'functionName': self._get_frame_name(frame),
                 'location': self._debugger_store.location_serializer.get_frame_location(frame),
+                'hasSource': self._debugger_store.location_serializer.has_source(frame),
                 'scopeChain': [{
                     'object': local_variables.serialized_value,
                     'type': 'local',
