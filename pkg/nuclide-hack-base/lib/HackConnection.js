@@ -17,7 +17,7 @@ import {StreamTransport, HackRpc} from './HackRpc';
 // From https://reviews.facebook.net/diffusion/HHVM/browse/master/hphp/hack/src/utils/exit_status.ml
 const HACK_SERVER_ALREADY_EXISTS_EXIT_CODE = 77;
 
-const logger = require('../../nuclide-logging').getLogger();
+import {logger} from './hack-config';
 
 class HackConnection {
   _hhconfigPath: string;
@@ -30,7 +30,7 @@ class HackConnection {
     this._rpc = new HackRpc(new StreamTransport(process.stdin, process.stdout));
 
     process.on('exit', (code, signal) => {
-      logger.info(`Hack ide process exited with ${code}, ${signal}`);
+      logger.logInfo(`Hack ide process exited with ${code}, ${signal}`);
       this._process = null;
       this.dispose();
     });
@@ -48,7 +48,7 @@ class HackConnection {
   }
 
   dispose(): void {
-    logger.info(`Disposing hack connection ${this._hhconfigPath}`);
+    logger.logInfo(`Disposing hack connection ${this._hhconfigPath}`);
     if (this._rpc != null) {
       this._rpc.dispose();
       connections.delete(this._hhconfigPath);
@@ -93,10 +93,10 @@ async function getHackConnection(filePath: string): Promise<?HackConnection> {
 }
 
 async function createConnection(command: string, configDir: string): Promise<?HackConnection> {
-  logger.info(`Creating new hack connection for ${configDir}: ${command}`);
-  logger.info(`Current PATH: ${process.env.PATH}`);
+  logger.logInfo(`Creating new hack connection for ${configDir}: ${command}`);
+  logger.logInfo(`Current PATH: ${process.env.PATH}`);
   const startServerResult = await asyncExecute(command, ['start', configDir]);
-  logger.info(
+  logger.logInfo(
     `Hack connection start server results:\n${JSON.stringify(startServerResult, null, 2)}\n`);
   if (startServerResult.exitCode !== 0 &&
       startServerResult.exitCode !== HACK_SERVER_ALREADY_EXISTS_EXIT_CODE) {
@@ -104,10 +104,10 @@ async function createConnection(command: string, configDir: string): Promise<?Ha
   }
   const childProcess = await safeSpawn(command, ['ide', configDir]);
   observeStream(childProcess.stdout).subscribe(text => {
-    logger.info(`Hack ide stdout: ${text}`);
+    logger.logInfo(`Hack ide stdout: ${text}`);
   });
   observeStream(childProcess.stderr).subscribe(text => {
-    logger.info(`Hack ide stderr: ${text}`);
+    logger.logInfo(`Hack ide stderr: ${text}`);
   });
   return new HackConnection(configDir, childProcess);
 }

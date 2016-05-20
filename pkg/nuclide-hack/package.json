@@ -20,6 +20,22 @@
         "type": "boolean",
         "default": false,
         "description": "In Development: For use by Hack/Nuclide team only."
+      },
+      "logLevel": {
+        "title": "Log Level",
+        "type": "string",
+        "default": "INFO",
+        "description": "Specify that level of logging, supported values: ALL | TRACE | DEBUG | INFO | WARN | ERROR | FATAL | OFF.",
+        "enum": [
+          "ALL",
+          "TRACE",
+          "DEBUG",
+          "INFO",
+          "WARN",
+          "ERROR",
+          "FATAL",
+          "OFF"
+        ]
       }
     },
     "packageType": "Atom",

@@ -22,6 +22,17 @@ import {
 import {setHackCommand, setUseIde, getHackExecOptions} from './hack-config';
 import path from 'path';
 import {getPath} from '../../nuclide-remote-uri';
+import {logger} from './hack-config';
+
+export type LogLevel =
+  'ALL' |
+  'TRACE' |
+  'DEBUG' |
+  'INFO' |
+  'WARN' |
+  'ERROR' |
+  'FATAL' |
+  'OFF';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -306,10 +317,12 @@ export async function getReferences(
 export function getHackEnvironmentDetails(
   localFile: NuclideUri,
   hackCommand: string,
-  useIdeConnection: boolean
+  useIdeConnection: boolean,
+  logLevel: LogLevel,
 ): Promise<?{hackRoot: NuclideUri; hackCommand: string}> {
   setHackCommand(hackCommand);
   setUseIde(useIdeConnection);
+  logger.setLogLevel(logLevel);
   return getHackExecOptions(localFile);
 }
 

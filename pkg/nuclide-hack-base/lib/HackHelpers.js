@@ -22,7 +22,7 @@ import {callHHClientUsingConnection} from './HackConnection';
 
 const HH_SERVER_INIT_MESSAGE = 'hh_server still initializing';
 const HH_SERVER_BUSY_MESSAGE = 'hh_server is busy';
-const logger = require('../../nuclide-logging').getLogger();
+import {logger} from './hack-config';
 
 let hhPromiseQueue: ?PromiseQueue = null;
 const pendingSearchPromises: Map<string, Promise> = new Map();
@@ -64,7 +64,7 @@ export async function callHHClient(
 
     let execResult = null;
     try {
-      logger.debug(`Calling Hack: ${hackCommand} with ${allArgs}`);
+      logger.logTrace(`Calling Hack: ${hackCommand} with ${allArgs}`);
       execResult = await asyncExecute(hackCommand, allArgs, {stdin: processInput});
     } catch (err) {
       reject(err);
@@ -80,7 +80,7 @@ export async function callHHClient(
     }
 
     const output = errorStream ? stderr : stdout;
-    logger.debug(`Hack output for ${allArgs}: ${output}`);
+    logger.logTrace(`Hack output for ${allArgs}: ${output}`);
     if (!outputJson) {
       resolve({result: output, hackRoot});
       return;
@@ -90,7 +90,7 @@ export async function callHHClient(
     } catch (err) {
       const errorMessage = `hh_client error, args: [${args.join(',')}]
 stdout: ${stdout}, stderr: ${stderr}`;
-      logger.error(errorMessage);
+      logger.logError(errorMessage);
       reject(new Error(errorMessage));
     }
   });

@@ -107,7 +107,8 @@ export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<Ha
   const hackEnvironment = await hackService.getHackEnvironmentDetails(
     fileUri,
     config.hhClientPath,
-    useIdeConnection);
+    useIdeConnection,
+    config.logLevel);
   const isAvailable = hackEnvironment != null;
   const {hackRoot, hackCommand} = hackEnvironment || {};
 

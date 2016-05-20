@@ -11,7 +11,8 @@
 
 import fsPromise from '../../commons-node/fsPromise';
 import {asyncExecute} from '../../commons-node/process';
-const logger = require('../../nuclide-logging').getLogger();
+const HACK_LOGGER_CATEGORY = 'nuclide-hack';
+export const logger = require('../../nuclide-logging').getCategoryLogger(HACK_LOGGER_CATEGORY);
 
 const HACK_CONFIG_FILE_NAME = '.hhconfig';
 const PATH_TO_HH_CLIENT = 'hh_client';
@@ -40,10 +41,9 @@ async function findHackCommand(): Promise<string> {
 
 export function setHackCommand(newHackCommand: string): void {
   if (newHackCommand === '') {
-    logger.debug('Resetting to default hh_client');
     hackCommand = DEFAULT_HACK_COMMAND;
   } else {
-    logger.debug(`Using custom hh_client: ${newHackCommand}`);
+    logger.logTrace(`Using custom hh_client: ${newHackCommand}`);
     hackCommand = Promise.resolve(newHackCommand);
   }
 }

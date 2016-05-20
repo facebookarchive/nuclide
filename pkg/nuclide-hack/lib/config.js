@@ -10,10 +10,12 @@
  */
 
 import featureConfig from '../../nuclide-feature-config';
+import type {LogLevel} from '../../nuclide-logging';
 
 type HackConfig = {
   hhClientPath: string;
   useIdeConnection: boolean;
+  logLevel: LogLevel;
 };
 
 export const HACK_CONFIG_PATH = 'nuclide-hack';
