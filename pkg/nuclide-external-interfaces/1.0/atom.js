@@ -28,6 +28,8 @@ declare class atom$Package {
   getType(): 'atom' | 'textmate' | 'theme';
   hasActivationCommands(): boolean;
   hasActivationHooks(): boolean;
+  onDidDeactivate(cb: () => mixed): IDisposable;
+  activateNow(): void;
 }
 
 /**
