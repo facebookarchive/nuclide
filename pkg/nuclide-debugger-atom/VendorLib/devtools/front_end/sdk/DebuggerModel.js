@@ -463,7 +463,7 @@ WebInspector.DebuggerModel.prototype = {
     {
         this._isPausing = false;
         this._debuggerPausedDetails = debuggerPausedDetails;
-        if (this._debuggerPausedDetails)
+        if (this._debuggerPausedDetails) {
             this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPausedDetails);
             this.selectFirstCallFrame(this._debuggerPausedDetails.callFrames, /*needSource*/ true);
         } else {
