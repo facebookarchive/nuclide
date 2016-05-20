@@ -209,6 +209,7 @@ function assignToOutline(mode: ShowVariableMode, tree: AssignTree): ?OutlineTree
     tokenizedText: [
       plain(id),
     ],
+    representativeName: id,
     startPosition: treeToPoint(target),
     children: [],
   };
@@ -221,6 +222,7 @@ function classDefToOutline(tree: ClassDefTree): OutlineTree {
       whitespace(' '),
       method(tree.name),
     ],
+    representativeName: tree.name,
     startPosition: treeToPoint(tree),
     children: treesToOutlineTrees(SHOW_NO_VARIABLES, tree.body),
   };
@@ -236,6 +238,7 @@ function functionDefToOutline(tree: FunctionDefTree): OutlineTree {
       ...argsToText(tree.args),
       plain(')'),
     ],
+    representativeName: tree.name,
     startPosition: treeToPoint(tree),
     children: [],
   };

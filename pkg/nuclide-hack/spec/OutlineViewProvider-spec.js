@@ -17,6 +17,7 @@ describe('outlineFromHackIdeOutline', () => {
       [
         {
           'name': 'f',
+          'representativeName': 'f',
           'modifiers': [],
           'span': {
             'line_start': 3,
@@ -115,6 +116,7 @@ describe('outlineFromHackIdeOutline', () => {
                 value: ')',
               },
             ],
+            'representativeName': 'f',
             startPosition: {
               row: 2,
               column: 9,
@@ -285,6 +287,7 @@ describe('outlineFromHackIdeOutline', () => {
               {kind: 'whitespace', value: ' '},
               {kind: 'class-name', value: 'D'},
             ],
+            'representativeName': 'D',
             startPosition: {row: 9, column: 15},
             endPosition: {row: 16, column: 0},
             children: [
@@ -296,6 +299,7 @@ describe('outlineFromHackIdeOutline', () => {
                   {kind: 'whitespace', value: ' '},
                   {kind: 'class-name', value: 'Y'},
                 ],
+                'representativeName': 'Y',
                 startPosition: {row: 10, column: 13},
                 endPosition: {row: 10, column: 19},
                 children: [],
@@ -308,6 +312,7 @@ describe('outlineFromHackIdeOutline', () => {
                   {kind: 'whitespace', value: ' '},
                   {kind: 'method', value: 'x'},
                 ],
+                'representativeName': 'x',
                 startPosition: {row: 11, column: 38},
                 endPosition: {row: 11, column: 39},
                 children: [],
@@ -325,6 +330,7 @@ describe('outlineFromHackIdeOutline', () => {
                   {kind: 'plain', value: '$x'},
                   {kind: 'plain', value: ')'},
                 ],
+                'representativeName': '__construct',
                 startPosition: {row: 11, column: 18},
                 endPosition: {row: 13, column: 2},
                 children: [],
@@ -337,6 +343,7 @@ describe('outlineFromHackIdeOutline', () => {
                   {kind: 'whitespace', value: ' '},
                   {kind: 'method', value: 'Z'},
                 ],
+                'representativeName': 'Z',
                 startPosition: {row: 14, column: 17},
                 endPosition: {row: 14, column: 17},
                 children: [],
@@ -347,6 +354,7 @@ describe('outlineFromHackIdeOutline', () => {
                   {kind: 'whitespace', value: ' '},
                   {kind: 'method', value: 'X'},
                 ],
+                'representativeName': 'X',
                 startPosition: {row: 15, column: 8},
                 endPosition: {row: 15, column: 13},
                 children: [],
@@ -422,6 +430,7 @@ describe('outlineFromHackIdeOutline', () => {
                 value: 'T',
               },
             ],
+            'representativeName': 'T',
             startPosition: {
               row: 18,
               column: 6,
@@ -462,6 +471,7 @@ describe('outlineFromHackIdeOutline', () => {
                     value: ')',
                   },
                 ],
+                'representativeName': 'f',
                 startPosition: {
                   row: 19,
                   column: 18,
@@ -521,6 +531,7 @@ describe('outlineFromHackIdeOutline', () => {
                 value: 'I',
               },
             ],
+            'representativeName': 'I',
             startPosition: {
               row: 24,
               column: 10,
@@ -597,6 +608,7 @@ describe('outlineFromHackIdeOutline', () => {
                 value: 'En',
               },
             ],
+            'representativeName': 'En',
             startPosition:
             {
               row: 26,
@@ -622,6 +634,7 @@ describe('outlineFromHackIdeOutline', () => {
                     value: 'C',
                   },
                 ],
+                'representativeName': 'C',
                 startPosition: {
                   row: 27,
                   column: 2,

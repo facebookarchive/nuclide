@@ -100,6 +100,7 @@ function outlineFromHackIdeItem(hackItem: HackIdeOutlineItem): OutlineTree {
 
   return {
     tokenizedText,
+    representativeName: hackItem.name,
     startPosition: pointFromHack(hackItem.position.line, hackItem.position.char_start),
     endPosition: pointFromHack(hackItem.span.line_end, hackItem.span.char_end),
     children: hackItem.children == null ? [] : hackItem.children.map(outlineFromHackIdeItem),

@@ -69,6 +69,7 @@ export type ServerStatusUpdate = {
 
 export type FlowOutlineTree = {
   tokenizedText: TokenizedText;
+  representativeName?: string;
   children: Array<FlowOutlineTree>;
   startPosition: Point;
   endPosition: Point;

@@ -27,6 +27,7 @@ const expectedClassOutline = [
       {value: ' ', kind: 'whitespace'},
       {value: 'Foo', kind: 'class-name'},
     ],
+    representativeName: 'Foo',
     startPosition: {
       line: 11,
       column: 0,
@@ -41,6 +42,7 @@ const expectedClassOutline = [
           {value: 'field', kind: 'method'},
           {value: '=', kind: 'plain'},
         ],
+        representativeName: 'field',
         startPosition: {
           line: 12,
           column: 2,
@@ -58,6 +60,7 @@ const expectedClassOutline = [
           {value: 'arg', kind: 'param'},
           {value: ')', kind: 'plain'},
         ],
+        representativeName: 'bar',
         startPosition: {
           line: 14,
           column: 2,
@@ -76,6 +79,7 @@ const expectedClassOutline = [
           {value: 'arg', kind: 'param'},
           {value: ')', kind: 'plain'},
         ],
+        representativeName: 'baz',
         startPosition: {
           line: 18,
           column: 2,
@@ -103,6 +107,7 @@ const expectedToplevelOutline = [
       {value: 'a', kind: 'param'},
       {value: ')', kind: 'plain'},
     ],
+    representativeName: 'baz',
     startPosition: {
       line: 11,
       column: 0,
@@ -151,6 +156,7 @@ const expectedJasmineOutline = [
       {value: ' ', kind: 'whitespace'},
       {value: 'foo', kind: 'string'},
     ],
+    representativeName: 'foo',
     startPosition: {
       line: 11,
       column: 0,
@@ -166,6 +172,7 @@ const expectedJasmineOutline = [
           {value: ' ', kind: 'whitespace'},
           {value: 'should work', kind: 'string'},
         ],
+        representativeName: 'should work',
         startPosition: {
           line: 13,
           column: 2,
@@ -184,6 +191,7 @@ const expectedJasmineOutline = [
       {value: ' ', kind: 'whitespace'},
       {value: 'bar', kind: 'string'},
     ],
+    representativeName: 'bar',
     startPosition: {
       line: 18,
       column: 0,
@@ -199,6 +207,7 @@ const expectedJasmineOutline = [
           {value: ' ', kind: 'whitespace'},
           {value: 'should work with a normal function', kind: 'string'},
         ],
+        representativeName: 'should work with a normal function',
         startPosition: {
           line: 19,
           column: 2,
@@ -232,6 +241,7 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
           {value: 'foo', kind: 'string'},
           {value: ':', kind: 'plain'},
         ],
+        representativeName: 'foo',
         startPosition: {
           line: 14,
           column: 2,
@@ -249,6 +259,7 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
           {value: 'arg', kind: 'param'},
           {value: ')', kind: 'plain'},
         ],
+        representativeName: 'bar',
         startPosition: {
           line: 15,
           column: 2,
@@ -266,6 +277,7 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
           {value: 'arg', kind: 'param'},
           {value: ')', kind: 'plain'},
         ],
+        representativeName: 'baz',
         startPosition: {
           line: 18,
           column: 2,
@@ -283,6 +295,7 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
           {value: 'arg', kind: 'param'},
           {value: ')', kind: 'plain'},
         ],
+        representativeName: 'asdf',
         startPosition: {
           line: 19,
           column: 2,
@@ -300,6 +313,7 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
           {value: 'arg', kind: 'param'},
           {value: ')', kind: 'plain'},
         ],
+        representativeName: 'jkl',
         startPosition: {
           line: 20,
           column: 2,
@@ -317,6 +331,7 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
           {value: 'arg', kind: 'param'},
           {value: ')', kind: 'plain'},
         ],
+        representativeName: 'asdfjkl',
         startPosition: {
           line: 21,
           column: 2,
@@ -331,6 +346,7 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
         tokenizedText: [
           {value: 'thing', kind: 'string'},
         ],
+        representativeName: 'thing',
         startPosition: {
           line: 22,
           column: 2,
@@ -346,6 +362,7 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
           {value: 'stuff', kind: 'string'},
           {value: ':', kind: 'plain'},
         ],
+        representativeName: 'stuff',
         startPosition: {
           line: 23,
           column: 2,

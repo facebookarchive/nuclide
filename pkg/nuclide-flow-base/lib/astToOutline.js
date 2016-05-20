@@ -54,6 +54,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
           ...paramsTokenizedText(item.params),
           plain(')'),
         ],
+        representativeName: item.id.name,
         children: [],
         ...extent,
       };
@@ -64,6 +65,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
           whitespace(' '),
           className(item.id.name),
         ],
+        representativeName: item.id.name,
         children: itemsToTrees(item.body.body),
         ...extent,
       };
@@ -82,6 +84,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
           plain('='),
           ...paramTokens,
         ],
+        representativeName: item.key.name,
         children: [],
         ...extent,
       };
@@ -93,6 +96,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
           ...paramsTokenizedText(item.value.params),
           plain(')'),
         ],
+        representativeName: item.key.name,
         children: [],
         ...extent,
       };
@@ -107,6 +111,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
           whitespace(' '),
           ...tree.tokenizedText,
         ],
+        representativeName: tree.representativeName,
         children: tree.children,
         ...extent,
       };
@@ -213,6 +218,7 @@ function moduleExportsPropertyOutline(property: any): ?FlowOutlineTree {
       tokenizedText: [
         string(propName),
       ],
+      representativeName: propName,
       children: [],
       ...getExtent(property),
     };
@@ -228,6 +234,7 @@ function moduleExportsPropertyOutline(property: any): ?FlowOutlineTree {
         ...paramsTokenizedText(property.value.params),
         plain(')'),
       ],
+      representativeName: propName,
       children: [],
       ...getExtent(property),
     };
@@ -238,6 +245,7 @@ function moduleExportsPropertyOutline(property: any): ?FlowOutlineTree {
       string(propName),
       plain(':'),
     ],
+    representativeName: propName,
     children: [],
     ...getExtent(property),
   };
@@ -274,6 +282,7 @@ function specOutline(expressionStatement: any, describeOnly: boolean = false): ?
       whitespace(' '),
       string(description),
     ],
+    representativeName: description,
     children,
     ...getExtent(expressionStatement),
   };

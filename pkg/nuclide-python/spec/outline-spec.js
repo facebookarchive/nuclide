@@ -33,6 +33,7 @@ const expected = `{
           "value": "CONST"
         }
       ],
+      "representativeName": "CONST",
       "startPosition": {
         "row": 9,
         "column": 0
@@ -86,6 +87,7 @@ const expected = `{
           "value": ")"
         }
       ],
+      "representativeName": "check_output",
       "startPosition": {
         "row": 12,
         "column": 0
@@ -107,6 +109,7 @@ const expected = `{
           "value": "MyClass"
         }
       ],
+      "representativeName": "MyClass",
       "startPosition": {
         "row": 16,
         "column": 0
@@ -139,6 +142,7 @@ const expected = `{
               "value": ")"
             }
           ],
+          "representativeName": "__init",
           "startPosition": {
             "row": 17,
             "column": 4
@@ -170,6 +174,7 @@ const expected = `{
           "value": ")"
         }
       ],
+      "representativeName": "load_package_configs",
       "startPosition": {
         "row": 21,
         "column": 0
@@ -183,6 +188,7 @@ const expected = `{
           "value": "var"
         }
       ],
+      "representativeName": "var",
       "startPosition": {
         "row": 42,
         "column": 0

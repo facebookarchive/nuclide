@@ -114,6 +114,7 @@ export function outlineFromClangOutline(outline: Array<ClangOutlineTree>): Array
   return outline.map(cursor => {
     return {
       tokenizedText: tokenizeCursor(cursor),
+      representativeName: cursor.name,
       startPosition: new Point(
         cursor.extent.start.line,
         cursor.extent.start.column,

@@ -55,6 +55,7 @@ function flowOutlineToNormalOutline(
 function flowTreeToNormalTree(flowTree): OutlineTree {
   return {
     tokenizedText: flowTree.tokenizedText,
+    representativeName: flowTree.representativeName,
     startPosition: new Point(flowTree.startPosition.line, flowTree.startPosition.column),
     endPosition: new Point(flowTree.endPosition.line, flowTree.endPosition.column),
     children: flowTree.children.map(flowTreeToNormalTree),
