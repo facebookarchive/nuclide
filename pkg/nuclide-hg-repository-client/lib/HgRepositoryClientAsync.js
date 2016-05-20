@@ -58,6 +58,10 @@ export default class HgRepositoryClientAsync {
     return this._client._service.createBookmark(name, revision);
   }
 
+  deleteBookmark(name: string): Promise<void> {
+    return this._client._service.deleteBookmark(name);
+  }
+
   getBookmarks(): Promise<Array<BookmarkInfo>> {
     return this._client._service.fetchBookmarks();
   }

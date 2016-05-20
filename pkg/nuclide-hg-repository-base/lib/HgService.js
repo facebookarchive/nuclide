@@ -457,6 +457,10 @@ export class HgService {
     return this._runSimpleInWorkingDirectory('bookmark', args);
   }
 
+  deleteBookmark(name: string): Promise<void> {
+    return this._runSimpleInWorkingDirectory('bookmarks', ['--delete', name]);
+  }
+
   /**
    * @return The name of the current bookmark.
    */

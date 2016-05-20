@@ -34,6 +34,10 @@ module.exports = class MockHgService {
     return new Subject();
   }
 
+  deleteBookmark(name: string): Promise<void> {
+    return Promise.resolve();
+  }
+
   fetchDiffInfo(filePaths: Array<NuclideUri>): Promise<?Map<NuclideUri, DiffInfo>> {
     return Promise.resolve(null);
   }

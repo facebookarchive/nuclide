@@ -143,6 +143,21 @@ describe('HgService', () => {
     });
   });
 
+  describe('::deleteBookmark', () => {
+    const BOOKMARK_NAME = 'fakey456';
+
+    it('calls the appropriate `hg` command to delete', () => {
+      waitsForPromise(async () => {
+        spyOn(hgService, '_hgAsyncExecute');
+        await hgService.deleteBookmark(BOOKMARK_NAME);
+        expect(hgService._hgAsyncExecute).toHaveBeenCalledWith(
+          ['bookmarks', '--delete', BOOKMARK_NAME],
+          {cwd: TEST_WORKING_DIRECTORY}
+        );
+      });
+    });
+  });
+
   describe('::fetchDiffInfo', () => {
     const mockHgDiffOutput =
     `diff --git test-test/blah/blah.js test-test/blah/blah.js
