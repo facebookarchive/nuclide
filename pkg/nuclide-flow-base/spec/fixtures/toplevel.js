@@ -10,7 +10,10 @@
  */
 
 function baz(arg: ?Type, a: any): RetType {
+  foo();
   return {};
 }
 
-baz();
+function foo({bar, y}, [b]): void {
+  baz();
+}

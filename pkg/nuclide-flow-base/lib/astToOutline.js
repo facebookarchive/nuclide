@@ -120,7 +120,23 @@ function itemToTree(item: any): ?FlowOutlineTree {
 function paramsTokenizedText(params: Array<any>): TokenizedText {
   const textElements = [];
   params.forEach((p, index) => {
-    textElements.push(param(p.name));
+    switch (p.type) {
+      case 'Identifier':
+        textElements.push(param(p.name));
+        break;
+      case 'ObjectPattern':
+        textElements.push(plain('{'));
+        textElements.push(...paramsTokenizedText(p.properties.map(obj => obj.key)));
+        textElements.push(plain('}'));
+        break;
+      case 'ArrayPattern':
+        textElements.push(plain('['));
+        textElements.push(...paramsTokenizedText(p.elements));
+        textElements.push(plain(']'));
+        break;
+      default:
+        throw new Error(`encountered unexpected argument type ${p.type}`);
+    }
     if (index < params.length - 1) {
       textElements.push(plain(','));
       textElements.push(whitespace(' '));
