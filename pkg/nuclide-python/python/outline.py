@@ -29,7 +29,7 @@ def ast_to_json(node):
 def get_value(value):
     if value is None:
         return value
-    if isinstance(value, (int, basestring, float, long, complex, bool)):
+    if isinstance(value, (int, str, float, complex, bool)):
         return value
     if isinstance(value, list):
         return [get_value(x) for x in value]
@@ -41,4 +41,4 @@ def get_value(value):
 
 
 if __name__ == '__main__':
-    print json.dumps(ast_to_json(parse(sys.stdin.read())), indent=4)
+    print(json.dumps(ast_to_json(parse(sys.stdin.read())), indent=4))
