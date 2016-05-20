@@ -62,6 +62,7 @@
     "minimatch": "3.0.0",
     "mkdirp": "0.5.1",
     "mv": "2.1.1",
+    "node-fetch": "1.5.2",
     "plist": "1.2.0",
     "pre-binding": "1.1.0",
     "react": "15.0.2",

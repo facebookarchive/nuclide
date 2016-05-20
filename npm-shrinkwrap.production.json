@@ -1023,7 +1023,7 @@
     },
     "node-fetch": {
       "version": "1.5.2",
-      "from": "node-fetch@>=1.0.1 <2.0.0",
+      "from": "node-fetch@1.5.2",
       "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-1.5.2.tgz"
     },
     "node-int64": {
