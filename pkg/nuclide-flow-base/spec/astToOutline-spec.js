@@ -137,6 +137,7 @@ const expectedToplevelOutline = [
       {value: ']', kind: 'plain'},
       {value: ')', kind: 'plain'},
     ],
+    representativeName: 'foo',
     startPosition: {
       line: 16,
       column: 0,
