@@ -80,6 +80,7 @@ export default class HgRepositoryClientAsync {
       // The Atom status-bar uses this as a signal to refresh the 'shortHead'.
       // There is currently no dedicated 'shortHeadDidChange' event.
       this._client._emitter.emit('did-change-statuses');
+      this._client._emitter.emit('did-change-short-head');
     }
     return this._client._activeBookmark || '';
   }
@@ -174,6 +175,10 @@ export default class HgRepositoryClientAsync {
 
   onDidChangeBookmarks(callback: () => mixed): IDisposable {
     return this._client._emitter.on('did-change-bookmarks', callback);
+  }
+
+  onDidChangeShortHead(callback: () => mixed): IDisposable {
+    return this._client._emitter.on('did-change-short-head', callback);
   }
 
   onDidChangeStatus(
