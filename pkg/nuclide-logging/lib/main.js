@@ -20,6 +20,17 @@ import addPrepareStackTraceHook from './stacktrace';
 import invariant from 'assert';
 import singleton from '../../commons-node/singleton';
 
+// For use in setLevel calls.
+export type LogLevel =
+  'ALL' |
+  'TRACE' |
+  'DEBUG' |
+  'INFO' |
+  'WARN' |
+  'ERROR' |
+  'FATAL' |
+  'OFF';
+
 import type {Logger} from './types';
 
 /* Listed in order of severity. */
@@ -127,12 +138,12 @@ export type CategoryLogger = {
   logInfo(message: string): void;
   logError(message: string): void;
   logErrorAndThrow(message: string): void;
-  setLogLevel(level: string): void;
+  setLogLevel(level: LogLevel): void;
 };
 
 // Utility function that returns a wrapper logger for input category.
 export function getCategoryLogger(category: string): CategoryLogger {
-  function setLogLevel(level: string): void {
+  function setLogLevel(level: LogLevel): void {
     getLogger(category).setLevel(level);
   }
 

@@ -11,6 +11,16 @@
 
 import {Observable} from 'rxjs';
 
+export type LldbLogLevel =
+  'ALL' |
+  'TRACE' |
+  'DEBUG' |
+  'INFO' |
+  'WARN' |
+  'ERROR' |
+  'FATAL' |
+  'OFF';
+
 export type AttachTargetInfo = {
   pid: number;
   name: string;
@@ -26,7 +36,7 @@ export type LaunchTargetInfo = {
 };
 
 export type DebuggerConfig = {
-  logLevel: string;
+  logLevel: LldbLogLevel;
   pythonBinaryPath: string;
   buckConfigRootFile: string;
 };

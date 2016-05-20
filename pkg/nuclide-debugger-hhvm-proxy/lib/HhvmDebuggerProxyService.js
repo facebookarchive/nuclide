@@ -17,6 +17,17 @@ import {CompositeDisposable} from 'event-kit';
 
 import type {Observable} from 'rxjs';
 
+export type HhvmLogLevel =
+  'ALL' |
+  'TRACE' |
+  'DEBUG' |
+  'INFO' |
+  'WARN' |
+  'ERROR' |
+  'FATAL' |
+  'OFF';
+
+
 export type HhvmDebuggerSessionConfig = {
   xdebugAttachPort: number;
   xdebugLaunchingPort: number;
@@ -25,7 +36,7 @@ export type HhvmDebuggerSessionConfig = {
   scriptRegex?: string;
   idekeyRegex?: string;
   endDebugWhenNoRequests?: boolean;
-  logLevel: string;
+  logLevel: HhvmLogLevel;
   targetUri: string;
   phpRuntimePath: string;
   dummyRequestFilePath: string;
