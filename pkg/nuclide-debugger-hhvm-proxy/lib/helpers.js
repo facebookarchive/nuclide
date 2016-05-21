@@ -14,6 +14,7 @@ import url from 'url';
 import logger from './utils';
 import {getConfig} from './config';
 import {parse} from 'shell-quote';
+import {checkOutput} from '../../commons-node/process';
 
 export const DUMMY_FRAME_ID = 'Frame.0';
 
@@ -23,6 +24,15 @@ export function base64Decode(value: string): string {
 
 export function base64Encode(value: string): string {
   return new Buffer(value).toString('base64');
+}
+
+// Returns true if hphpd might be attached according to some heuristics applied to the process list.
+export async function hphpdMightBeAttached(): Promise<boolean> {
+  const processes = await checkOutput('ps', ['aux'], {});
+  return processes.stdout.toString().split('\n').slice(1).some(line => {
+    return line.indexOf('m debug') >= 0 // hhvm -m debug
+      || line.indexOf('mode debug') >= 0; // hhvm --mode debug
+  });
 }
 
 export function makeDbgpMessage(message: string): string {

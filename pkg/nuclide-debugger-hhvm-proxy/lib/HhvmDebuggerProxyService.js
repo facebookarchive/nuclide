@@ -10,6 +10,7 @@
  */
 
 import logger from './utils';
+import {hphpdMightBeAttached} from './helpers';
 import {clearConfig, setConfig} from './config';
 import {setRootDirectoryUri} from './ConnectionUtils';
 import {MessageTranslator} from './MessageTranslator';
@@ -100,6 +101,8 @@ export class HhvmDebuggerProxyService {
   async debug(config: HhvmDebuggerSessionConfig): Promise<string> {
     logger.logInfo('Connecting config: ' + JSON.stringify(config));
 
+    await this._warnIfHphpdAttached();
+
     setConfig(config);
     await setRootDirectoryUri(config.targetUri);
     logger.setLogLevel(config.logLevel);
@@ -119,6 +122,18 @@ export class HhvmDebuggerProxyService {
     logger.logInfo('Recieved command: ' + message);
     if (this._translator) {
       await this._translator.handleCommand(message);
+    }
+  }
+
+  async _warnIfHphpdAttached(): Promise<void> {
+    const mightBeAttached = await hphpdMightBeAttached();
+    if (mightBeAttached) {
+      this._clientCallback.sendUserMessage('notification', {
+        type: 'warning',
+        message:
+          'You may have an hphpd instance currently attached to your server!' +
+          '<br />Please kill it, or the Nuclide debugger may not work properly.',
+      });
     }
   }
 
