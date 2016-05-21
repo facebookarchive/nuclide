@@ -48,7 +48,6 @@ export class WatchExpressionStore {
     return new DisposableSubscription(
       Rx.Observable
       .fromPromise(callback())
-      // $FlowIssue Rx.Observable.never should not influence merged type
       .merge(Rx.Observable.never())
       .subscribe(subject)
     );

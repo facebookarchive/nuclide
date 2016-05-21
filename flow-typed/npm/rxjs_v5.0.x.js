@@ -1,14 +1,5 @@
-/*
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
-
-/* eslint-disable no-unused-vars */
+// flow-typed signature: 888dbaffed291bc244b3a8ca8126d3c5
+// flow-typed version: 51747c140d/rxjs_v5.0.x/flow_>=v0.25.0
 
 // FIXME(samgoldman) Remove top-level interface once Babel supports
 // `declare interface` syntax.
@@ -77,7 +68,7 @@ declare module 'rxjs' {
 
     static fromPromise(promise: Promise<T>): Observable<T>;
 
-    static empty(): Observable<any>;
+    static empty<U>(): Observable<U>;
 
     static interval(period: number): Observable<number>;
 
@@ -92,7 +83,7 @@ declare module 'rxjs' {
     ): Observable<T | U | V>;
     static merge(...sources: Observable<T>[]): Observable<T>;
 
-    static never(): Observable<void>;
+    static never<U>(): Observable<U>;
 
     static of(...values: T[]): Observable<T>;
 
@@ -157,7 +148,7 @@ declare module 'rxjs' {
       defaultValue: U,
     ): Observable<U>;
 
-    ignoreElements(): Observable<any>;
+    ignoreElements<U>(): Observable<U>;
 
     // Alias for `mergeMap`
     flatMap<U>(
@@ -302,10 +293,6 @@ declare module 'rxjs' {
 
   declare class ReplaySubject<T> extends Subject<T> {
 
-  }
-
-  declare class Disposable {
-    static create(action: () => mixed): IDisposable;
   }
 
   declare class Subscription {
