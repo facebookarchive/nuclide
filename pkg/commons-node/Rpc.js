@@ -10,9 +10,11 @@
  */
 
 import type {Observable, Subscription} from 'rxjs';
-import {observeStream, splitStream} from '../../commons-node/stream';
-const logger = require('../../nuclide-logging').getLogger();
+import {observeStream, splitStream} from './stream';
+import {getLogger} from '../nuclide-logging';
 import invariant from 'assert';
+
+const logger = getLogger();
 
 const CALL_MESSAGE_TYPE = 'call';
 const RESPONSE_MESSAGE_TYPE = 'response';
@@ -36,7 +38,7 @@ type ResponseMessage = {
 };
 
 type CallResolver = {
-  resolve: (result: string | Object) => void;
+  resolve: (result: any) => void;
   reject: (message: any) => void;
 };
 
@@ -45,22 +47,6 @@ export function createCallMessage(id: number, args: any): CallMessage {
     type: CALL_MESSAGE_TYPE,
     id,
     args,
-  };
-}
-
-export function createSuccessResponseMessage(id: number, result: any): ResponseMessage {
-  return {
-    type: RESPONSE_MESSAGE_TYPE,
-    id,
-    result,
-  };
-}
-
-export function createErrorReponseMessage(id: number, error: ResponseError): ResponseMessage {
-  return {
-    type: RESPONSE_MESSAGE_TYPE,
-    id,
-    error,
   };
 }
 
@@ -92,13 +78,17 @@ export class StreamTransport {
   }
 }
 
-export class HackRpc {
+export class Rpc {
+  _name: string;
+  _disposed: boolean;
   _index: number;
   _inProgress: Map<number, CallResolver>;
   _transport: Transport;
   _subscription: Subscription;
 
-  constructor(transport: Transport) {
+  constructor(name: string, transport: Transport) {
+    this._name = name;
+    this._disposed = false;
     this._index = 0;
     this._inProgress = new Map();
     this._transport = transport;
@@ -107,11 +97,16 @@ export class HackRpc {
     }).subscribe();
   }
 
-  call(args: Array<any>): Promise<string | Object> {
+  getName(): string {
+    return this._name;
+  }
+
+  call(args: any): Promise<any> {
+    invariant(!this._disposed, `${this._name} - called after dispose: ${args}`);
     this._index++;
     const message = createCallMessage(this._index, args);
     const messageString = JSON.stringify(message);
-    logger.debug(`Sending Hack Rpc: ${messageString}`);
+    logger.debug(`${this._name} - Sending RPC: ${messageString}`);
     this._transport.sendMessage(messageString);
 
     return new Promise((resolve, reject) => {
@@ -120,21 +115,23 @@ export class HackRpc {
   }
 
   dispose(): void {
+    this._disposed = true;
     this._subscription.unsubscribe();
+    this._clearInProgress();
   }
 
   _handleMessage(messageString: string): void {
-    // logger.debug(`Received Hack Rpc response: ${messageString}`);
+    invariant(!this._disposed, `${this._name} - received after dispose: ${messageString}`);
     let messageObject;
     try {
       messageObject = JSON.parse(messageString);
     } catch (e) {
-      logger.debug('Error: Parsing hack Rpc message.');
+      logger.debug(`${this._name} - error: parsing RPC message.`);
       return;
     }
 
     if (!isValidResponseMessage(messageObject)) {
-      logger.debug('Error: Received invalid Hack Rpc response.');
+      logger.debug(`${this._name} - error: received invalid RPC response.`);
       return;
     }
     const response: ResponseMessage = messageObject;
@@ -142,20 +139,29 @@ export class HackRpc {
 
     const inProgress = this._inProgress.get(id);
     if (inProgress == null) {
-      logger.debug('Error: Received Hack Rpc response with invalid index.');
+      logger.debug(`${this._name} - error: received RPC response with invalid index.`);
       return;
     }
 
     const {resolve, reject} = inProgress;
     this._inProgress.delete(id);
-    if (result != null) {
-      logger.debug(`Returning ${JSON.stringify(result)} from Hack RPC ${id}`);
-      resolve(result);
-      return;
+    if (error != null) {
+      // Stringify the error only if it's not already a string, to avoid extra
+      // double quotes around strings.
+      const errStr = (typeof error === 'string') ? error : JSON.stringify(error);
+      logger.debug(`${this._name} - error from RPC ${id}: ${errStr}`);
+      reject(new Error(errStr));
     } else {
-      invariant(error != null);
-      logger.debug(`Error ${JSON.stringify(error)} from Hack RPC ${id}`);
-      reject(new Error(JSON.stringify(error)));
+      logger.debug(`${this._name} - returning ${JSON.stringify(result)} from RPC ${id}`);
+      resolve(result);
     }
+  }
+
+  _clearInProgress(): void {
+    this._inProgress.forEach(({resolve, reject}) => {
+      const err = new Error('Server exited.');
+      reject(err);
+    });
+    this._inProgress.clear();
   }
 }

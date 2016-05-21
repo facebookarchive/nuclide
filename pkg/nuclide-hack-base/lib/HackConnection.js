@@ -12,7 +12,7 @@
 import {safeSpawn, asyncExecute} from '../../commons-node/process';
 import {observeStream} from '../../commons-node/stream';
 import {getHackCommand, findHackConfigDir} from './hack-config';
-import {StreamTransport, HackRpc} from './HackRpc';
+import {StreamTransport, Rpc} from '../../commons-node/Rpc';
 
 // From https://reviews.facebook.net/diffusion/HHVM/browse/master/hphp/hack/src/utils/exit_status.ml
 const HACK_SERVER_ALREADY_EXISTS_EXIT_CODE = 77;
@@ -22,12 +22,12 @@ import {logger} from './hack-config';
 class HackConnection {
   _hhconfigPath: string;
   _process: ?child_process$ChildProcess;
-  _rpc: ?HackRpc;
+  _rpc: ?Rpc;
 
   constructor(hhconfigPath: string, process: child_process$ChildProcess) {
     this._hhconfigPath = hhconfigPath;
     this._process = process;
-    this._rpc = new HackRpc(new StreamTransport(process.stdin, process.stdout));
+    this._rpc = new Rpc(`Hack-${hhconfigPath}`, new StreamTransport(process.stdin, process.stdout));
 
     process.on('exit', (code, signal) => {
       logger.logInfo(`Hack ide process exited with ${code}, ${signal}`);
