@@ -23,7 +23,7 @@ import path from 'path';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {getLogger} from '../../nuclide-logging';
-import {consumeFirstProvider} from '../../nuclide-service-hub-plus';
+import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import {BuckIcon} from './ui/BuckIcon';
 import BuckToolbarStore from './BuckToolbarStore';
 import BuckToolbarActions from './BuckToolbarActions';

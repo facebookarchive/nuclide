@@ -12,7 +12,7 @@
 import type DebuggerProcessInfo from '../../../nuclide-debugger-atom/lib/DebuggerProcessInfo';
 import type {nuclide_debugger$Service} from '../../../nuclide-debugger-interfaces/service';
 
-import serviceHubPlus from '../../../nuclide-service-hub-plus';
+import consumeFirstProvider from '../../../commons-atom/consumeFirstProvider';
 import {ReactNativeDebuggerInstance} from './ReactNativeDebuggerInstance';
 import {ReactNativeProcessInfo} from './ReactNativeProcessInfo';
 import {CompositeDisposable, Disposable} from 'atom';
@@ -53,7 +53,7 @@ export class DebuggingActivation {
     atom.commands.dispatch(workspace, 'nuclide-debugger:show');
 
     const debuggerServiceStream = Rx.Observable.fromPromise(
-      serviceHubPlus.consumeFirstProvider('nuclide-debugger.remote')
+      consumeFirstProvider('nuclide-debugger.remote')
     );
     const processInfoLists = Rx.Observable.fromPromise(getProcessInfoList());
     this._startDebuggingSubscription = debuggerServiceStream.combineLatest(processInfoLists)

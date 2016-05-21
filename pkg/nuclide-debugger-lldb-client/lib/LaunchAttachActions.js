@@ -22,6 +22,7 @@ import {LaunchAttachActionCode} from './Constants';
 import {AttachProcessInfo} from './AttachProcessInfo';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
 import {getServiceByNuclideUri} from '../../nuclide-client';
+import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
 export class LaunchAttachActions {
   _dispatcher: Dispatcher;
@@ -57,8 +58,7 @@ export class LaunchAttachActions {
   }
 
   async _startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
-    const debuggerService = await require('../../nuclide-service-hub-plus')
-          .consumeFirstProvider('nuclide-debugger.remote');
+    const debuggerService = await consumeFirstProvider('nuclide-debugger.remote');
     await debuggerService.startDebugging(processInfo);
   }
 

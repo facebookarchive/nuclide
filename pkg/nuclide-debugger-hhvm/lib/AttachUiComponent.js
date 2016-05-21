@@ -18,6 +18,7 @@ import {
 import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import remoteUri from '../../nuclide-remote-uri';
+import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
@@ -94,8 +95,7 @@ export class AttachUiComponent extends React.Component<void, PropsType, StateTyp
     const processInfo = new AttachProcessInfo(
       remoteUri.createRemoteUri(hostname, selectedPath),
     );
-    require('../../nuclide-service-hub-plus')
-      .consumeFirstProvider('nuclide-debugger.remote')
+    consumeFirstProvider('nuclide-debugger.remote')
       .then(debuggerService => debuggerService.startDebugging(processInfo));
     this._showDebuggerPanel();
     this._handleCancelButtonClick();

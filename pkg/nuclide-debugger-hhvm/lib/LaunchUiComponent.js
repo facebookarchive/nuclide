@@ -19,6 +19,7 @@ import {
   ButtonTypes,
 } from '../../nuclide-ui/lib/Button';
 import {RemoteConnection} from '../../nuclide-remote-connection';
+import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
@@ -101,8 +102,7 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
   _handleLaunchButtonClick(): void {
     const scriptPath = this.refs['scriptPath'].getText().trim();
     const processInfo = new LaunchProcessInfo(this.props.targetUri, scriptPath);
-    require('../../nuclide-service-hub-plus')
-      .consumeFirstProvider('nuclide-debugger.remote')
+    consumeFirstProvider('nuclide-debugger.remote')
       .then(debuggerService => debuggerService.startDebugging(processInfo));
     this._showDebuggerPanel();
     this._handleCancelButtonClick();

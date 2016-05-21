@@ -21,6 +21,7 @@ import {
   ButtonGroupSizes,
 } from '../../nuclide-ui/lib/ButtonGroup';
 import ProjectStore from './ProjectStore';
+import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
 const WEB_SERVER_OPTION = {label: 'WebServer', value: 0};
 const SCRIPT_OPTION = {label: 'Script', value: 1};
@@ -38,8 +39,7 @@ const NO_LAUNCH_DEBUG_OPTIONS = [
 async function callDebugService(processInfo: DebuggerProcessInfo): Promise {
   // Use commands here to trigger package activation.
   atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-  const debuggerService = await require('../../nuclide-service-hub-plus')
-      .consumeFirstProvider('nuclide-debugger.remote');
+  const debuggerService = await consumeFirstProvider('nuclide-debugger.remote');
   debuggerService.startDebugging(processInfo);
 }
 

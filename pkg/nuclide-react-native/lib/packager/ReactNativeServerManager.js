@@ -20,6 +20,7 @@ import ReactNativeServerStatus from './ReactNativeServerStatus';
 import {React} from 'react-for-atom';
 import ReactNativeServerPanel from './ReactNativeServerPanel';
 import ReactNativeServerActions from './ReactNativeServerActions';
+import consumeFirstProvider from '../../../commons-atom/consumeFirstProvider';
 
 export default class ReactNativeServerManager {
 
@@ -167,8 +168,7 @@ export default class ReactNativeServerManager {
 
   async _attachNodeDebugger(pid: number): Promise<void> {
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-    const debuggerService = await require('../../../nuclide-service-hub-plus')
-      .consumeFirstProvider('nuclide-debugger.remote');
+    const debuggerService = await consumeFirstProvider('nuclide-debugger.remote');
     debuggerService.debugNode(pid);
   }
 

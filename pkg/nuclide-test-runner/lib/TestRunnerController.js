@@ -22,6 +22,7 @@ import TestRunnerPanel from './ui/TestRunnerPanel';
 import TestSuiteModel from './TestSuiteModel';
 import os from 'os';
 import {track} from '../../nuclide-analytics';
+import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
 const logger = require('../../nuclide-logging').getLogger();
 
@@ -191,8 +192,7 @@ export class TestRunnerController {
   }
 
   async _isDebuggerAttached(debuggerProviderName: string): Promise<boolean> {
-    const debuggerService = await require('../../nuclide-service-hub-plus')
-      .consumeFirstProvider('nuclide-debugger.remote');
+    const debuggerService = await consumeFirstProvider('nuclide-debugger.remote');
     return debuggerService.isInDebuggingMode(debuggerProviderName);
   }
 
