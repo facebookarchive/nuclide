@@ -9,20 +9,35 @@
  * the root directory of this source tree.
  */
 
+import type {BuckWebSocketMessage} from '../../nuclide-buck-base/lib/BuckProject';
 import type {Task, TaskInfo} from '../../nuclide-build/lib/types';
 import type {Message} from '../../nuclide-console/lib/types';
+import type {BuckProject} from '../../nuclide-buck-base';
 import type {SerializedState} from './types';
 
 import {Observable, Subject} from 'rxjs';
 import {CompositeDisposable} from 'atom';
 import {Dispatcher} from 'flux';
+import path from 'path';
 
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {getLogger} from '../../nuclide-logging';
+import {consumeFirstProvider} from '../../nuclide-service-hub-plus';
 import {BuckIcon} from './ui/BuckIcon';
 import BuckToolbarStore from './BuckToolbarStore';
 import BuckToolbarActions from './BuckToolbarActions';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
+
+import ReactNativeServerManager from './ReactNativeServerManager';
+import ReactNativeServerActions from './ReactNativeServerActions';
+import runBuckCommandInNewPane from './runBuckCommandInNewPane';
+
+const REACT_NATIVE_APP_FLAGS = [
+  '-executor-override', 'RCTWebSocketExecutor',
+  '-websocket-executor-name', 'Nuclide',
+  '-websocket-executor-port', '8090',
+];
 
 type Flux = {
   actions: BuckToolbarActions;
@@ -40,6 +55,10 @@ export class BuckBuildSystem {
   _tasks: Observable<Array<Task>>;
   _outputMessages: Subject<Message>;
 
+  // React Native server state.
+  _reactNativeServerActions: ?ReactNativeServerActions;
+  _reactNativeServerManager: ?ReactNativeServerManager;
+
   constructor(initialState: ?SerializedState) {
     this.id = 'buck';
     this.name = 'Buck';
@@ -51,7 +70,7 @@ export class BuckBuildSystem {
 
   getTasks() {
     const {store} = this._getFlux();
-    const allEnabled = store.getMostRecentBuckProject() != null && !store.isBuilding() &&
+    const allEnabled = store.getMostRecentBuckProject() != null &&
       Boolean(store.getBuildTarget());
     return TASKS
       .map(task => {
@@ -115,20 +134,19 @@ export class BuckBuildSystem {
   }
 
   runTask(taskType: string): TaskInfo {
-    const {store} = this._getFlux();
-
     if (!this.getTasks().some(task => task.type === taskType)) {
       throw new Error(`There's no Buck task named "${taskType}"`);
     }
 
-    const run = getTaskRunFunction(store, taskType);
-    const resultStream = Observable.fromPromise(run());
-
-    // Currently, the BuckToolbarStore's progress reporting is pretty useless so we omit
-    // `observeProgress` and just use the indeterminate progress bar.
+    const resultStream = this._runTaskType(taskType);
     return {
       cancel() {
         // FIXME: How can we cancel Buck tasks?
+      },
+      observeProgress(cb) {
+        return new DisposableSubscription(
+          resultStream.subscribe({next: cb, error: () => {}})
+        );
       },
       onDidError(cb) {
         return new DisposableSubscription(
@@ -139,7 +157,7 @@ export class BuckBuildSystem {
         return new DisposableSubscription(
           // Add an empty error handler to avoid the "Unhandled Error" message. (We're handling it
           // above via the onDidError interface.)
-          resultStream.subscribe({next: cb, error: () => {}})
+          resultStream.subscribe({complete: cb, error: () => {}})
         );
       },
     };
@@ -159,6 +177,117 @@ export class BuckBuildSystem {
       buildTarget: store.getBuildTarget(),
       isReactNativeServerMode: store.isReactNativeServerMode(),
     };
+  }
+
+  _runTaskType(taskType: string): Observable<?number> {
+    const {store} = this._getFlux();
+    const buckProject = store.getMostRecentBuckProject();
+    const buildTarget = store.getBuildTarget();
+    if (buckProject == null || buildTarget == null) {
+      // All tasks should have been disabled.
+      return Observable.empty();
+    }
+
+    const subcommand = taskType === 'run' || taskType === 'debug' ? 'install' : taskType;
+    return Observable.fromPromise(buckProject.getHTTPServerPort())
+      .catch(err => {
+        getLogger().warn(`Failed to get httpPort for ${buildTarget}`, err);
+        return Observable.of(-1);
+      })
+      .flatMap(httpPort => {
+        let socketStream = Observable.empty();
+        if (httpPort > 0) {
+          socketStream = buckProject.getWebSocketStream(httpPort)
+            .flatMap((message: BuckWebSocketMessage) => {
+              switch (message.type) {
+                case 'BuildProgressUpdated':
+                  return Observable.of(message.progressValue);
+              }
+              return Observable.empty();
+            })
+            .catch(err => {
+              getLogger().error(`Got Buck websocket error building ${buildTarget}`, err);
+              // Return to indeterminate progress.
+              return Observable.of(null);
+            });
+        }
+        const buckObservable = Observable.fromPromise(
+          this._runBuckCommand(buckProject, buildTarget, subcommand),
+        );
+        return socketStream
+          .merge(buckObservable)
+          .takeUntil(buckObservable);
+      })
+      .share();
+  }
+
+  async _runBuckCommand(
+    buckProject: BuckProject,
+    buildTarget: string,
+    subcommand: string,
+  ): Promise<void> {
+    const {store} = this._getFlux();
+
+    let appArgs = [];
+    if (subcommand === 'install' && store.isReactNativeServerMode()) {
+      const serverCommand = await this._getReactNativeServerCommand(buckProject);
+      if (serverCommand) {
+        const rnActions = this._getReactNativeServerActions();
+        rnActions.startServer(serverCommand);
+        rnActions.startNodeExecutorServer();
+        appArgs = REACT_NATIVE_APP_FLAGS;
+      }
+    }
+
+    if (subcommand === 'debug') {
+      // Stop any existing debugging sessions, as install hangs if an existing
+      // app that's being overwritten is being debugged.
+      atom.commands.dispatch(
+        atom.views.getView(atom.workspace),
+        'nuclide-debugger:stop-debugging');
+    }
+
+    const result = await runBuckCommandInNewPane({
+      buckProject,
+      buildTarget,
+      simulator: store.getSimulator(),
+      subcommand,
+      debug: subcommand === 'debug',
+      appArgs,
+    });
+
+    if (subcommand === 'debug' && result != null && result.pid != null) {
+      // Use commands here to trigger package activation.
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
+      const debuggerService = await consumeFirstProvider('nuclide-debugger.remote');
+      const buckProjectPath = await buckProject.getPath();
+      debuggerService.debugLLDB(result.pid, buckProjectPath);
+    }
+  }
+
+  async _getReactNativeServerCommand(buckProject: BuckProject): Promise<?string> {
+    const serverCommand = await buckProject.getBuckConfig('react-native', 'server');
+    if (serverCommand == null) {
+      return null;
+    }
+    const repoRoot = await buckProject.getPath();
+    if (repoRoot == null) {
+      return null;
+    }
+    return path.join(repoRoot, serverCommand);
+  }
+
+  _getReactNativeServerActions(): ReactNativeServerActions {
+    if (this._reactNativeServerActions != null) {
+      return this._reactNativeServerActions;
+    }
+
+    const dispatcher = new Dispatcher();
+    const actions = new ReactNativeServerActions(dispatcher);
+    this._reactNativeServerActions = actions;
+    this._reactNativeServerManager = new ReactNativeServerManager(dispatcher, actions);
+    this._disposables.add(this._reactNativeServerManager);
+    return actions;
   }
 
 }
@@ -197,24 +326,3 @@ const TASKS = [
     icon: 'plug',
   },
 ];
-
-/**
- * BuckToolbarActions and BuckToolbarStore implement an older version of the Flux pattern which puts
- * a lot of the async work into the store. Therefore, it's not very easy to tie the action to the
- * result. To get around this without having to rewrite the whole thing in one go, we just use the
- * store API directly.
- */
-function getTaskRunFunction(store: BuckToolbarStore, taskType: string): () => Promise<any> {
-  switch (taskType) {
-    case 'build':
-      return () => store._doBuild('build', false);
-    case 'run':
-      return () => store._doBuild('install', false);
-    case 'test':
-      return () => store._doBuild('test', false);
-    case 'debug':
-      return () => store._doDebug();
-    default:
-      throw new Error(`Invalid task type: ${taskType}`);
-  }
-}

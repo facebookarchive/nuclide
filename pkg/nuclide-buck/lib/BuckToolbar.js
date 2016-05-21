@@ -69,7 +69,6 @@ class BuckToolbar extends React.Component {
     this._onActivePaneItemChanged(atom.workspace.getActivePaneItem());
 
     this._disposables = new CompositeDisposable();
-    this._disposables.add(this._buckToolbarStore);
     this._disposables.add(onWorkspaceDidStopChangingActivePaneItem(
       this._onActivePaneItemChanged.bind(this)));
 
