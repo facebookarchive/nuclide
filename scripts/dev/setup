@@ -22,16 +22,13 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 
 from package_manager import NUCLIDE_PATH
 
-try:
-    from fb.pre_setup import fb_pre_setup
-    fb_pre_setup()
-except ImportError as e:
-    pass
-
 # Parse the command-line arguments.
 parser = optparse.OptionParser(usage='usage: %prog [options]',
                                description='Install Nuclide packages for development')
 
+parser.add_option('--dev', action='store_true',
+                  help='Target ~/.atom/dev/packages/ instead of ~/.atom/packages',
+                  default=False)
 parser.add_option('--no-atom', action='store_true', default=False,
                   help='Exclude packages that depend on Atom (implies --no-link)')
 parser.add_option('--no-link', action='store_true', default=False,
@@ -49,6 +46,13 @@ parser.add_option('--fast', action='store_true', default=False,
                   help='Run faster by skipping a full re-install of node_modules')
 
 options, args = parser.parse_args(sys.argv[1:])
+
+try:
+    from fb.pre_setup import fb_pre_setup
+    disable_fb_update = not options.dev
+    fb_pre_setup(disable_fb_update)
+except ImportError as e:
+    pass
 
 # Don't do this by default as it destroys some saved user state.
 if options.nuke:
@@ -95,4 +99,9 @@ logging.info('"%s install" took %s seconds.',
 # overwrite if it's a symlink.
 if not options.no_link and not options.no_atom:
     logging.info('Linking nuclide...')
-    subprocess.check_call(['apm', 'link'], cwd=NUCLIDE_PATH)
+    apm_link_args = ['apm']
+    apm_link_args.append('link')
+    if options.dev:
+        apm_link_args.append('--dev')
+    apm_link_args.append(NUCLIDE_PATH)
+    subprocess.check_call(apm_link_args, cwd=NUCLIDE_PATH)

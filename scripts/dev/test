@@ -24,18 +24,15 @@ from dependencies import check_dependencies
 from js_test_runner import JsTestRunner
 from package_manager import PackageManager, NUCLIDE_PATH
 
-try:
-    from fb.pre_setup import fb_pre_setup
-    fb_pre_setup()
-except ImportError as _:
-    pass
-
 # Parse the command-line arguments.
 parser = optparse.OptionParser(
     usage='usage: %prog [options] [package-names or integration-tests]',
     description='Run all tests for Nuclide. '
                 'Can explicitly list individual packages or integration-tests '
                 'to run.')
+parser.add_option('--dev', action='store_true',
+                  help='Target ~/.atom/dev/packages/ instead of ~/.atom/packages',
+                  default=False)
 parser.add_option('--no-module-cycle-check', action='store_true',
                   help='Skip `./module_cycle_check` step')
 parser.add_option('--verbose', action='store_true',
@@ -52,6 +49,13 @@ parser.add_option('--continue-on-errors', action='store_true',
                   help='Run all tests, regardless of failures')
 
 options, args = parser.parse_args(sys.argv[1:])
+
+try:
+    from fb.pre_setup import fb_pre_setup
+    disable_fb_update = not options.dev
+    fb_pre_setup(disable_fb_update)
+except ImportError as _:
+    pass
 
 def run(name, cmd):
     try:
