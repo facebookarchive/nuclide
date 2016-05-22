@@ -1,7 +1,7 @@
 {
   "name": "nuclide-diagnostics-provider-base",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Utilities to make implementing a diagnostics provider easier",
   "nuclide": {

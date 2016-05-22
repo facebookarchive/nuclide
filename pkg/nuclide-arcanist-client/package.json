@@ -1,7 +1,7 @@
 {
   "name": "nuclide-arcanist-client",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Wrapper for arcanist-base which can handle both local and remote paths.",
   "nuclide": {

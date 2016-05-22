@@ -107,7 +107,7 @@ ATOM_APM_PACKAGE_JSON_TEMPLATE = """\
 {
   "name": "%s",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "",
   "nuclide": {
@@ -123,7 +123,7 @@ NODE_APM_PACKAGE_JSON_TEMPLATE = """\
 {
   "name": "%s",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "",
   "nuclide": {
@@ -137,7 +137,7 @@ NODE_NPM_PACKAGE_JSON_TEMPLATE = """\
 {
   "name": "%s",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "",
   "nuclide": {

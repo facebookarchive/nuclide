@@ -1,7 +1,7 @@
 {
   "name": "nuclide-remote-connection",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Remote connections and monitoring",
   "nuclide": {

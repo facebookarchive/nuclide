@@ -1,7 +1,7 @@
 {
   "name": "nuclide-arcanist",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Displays arcanist linter messages in Nuclide",
   "nuclide": {

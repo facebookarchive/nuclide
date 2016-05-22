@@ -1,7 +1,7 @@
 {
   "name": "nuclide-hack-symbol-provider",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides quick-open search results based on Hack symbols",
   "nuclide": {

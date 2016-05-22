@@ -1,7 +1,7 @@
 {
   "name": "nuclide-keystroke-label",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Helpers for generating platform-specific, human-readabe keystroke labels. Ported from atom/underscore-plus.",
   "nuclide": {

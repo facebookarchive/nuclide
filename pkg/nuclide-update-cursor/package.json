@@ -1,7 +1,7 @@
 {
   "name": "nuclide-update-cursor",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Utility to help update the position of the cursor when code changes",
   "nuclide": {

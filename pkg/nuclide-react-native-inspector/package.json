@@ -1,7 +1,7 @@
 {
   "name": "nuclide-react-native-inspector",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Use the React Native element inspector in Nuclide",
   "nuclide": {

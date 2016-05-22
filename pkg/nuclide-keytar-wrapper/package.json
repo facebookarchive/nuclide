@@ -1,7 +1,7 @@
 {
   "name": "nuclide-keytar-wrapper",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "A wrapper that uses keytar shipped with apm",
   "nuclide": {

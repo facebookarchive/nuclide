@@ -1,7 +1,7 @@
 {
   "name": "nuclide-textedit",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Utilities and types for manipulating editor text",
   "nuclide": {

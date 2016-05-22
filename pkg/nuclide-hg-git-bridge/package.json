@@ -1,7 +1,7 @@
 {
   "name": "nuclide-hg-git-bridge",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Helpers that account for the differences between Atom's GitRepository and Nuclide's HgRepositoryClient",
   "nuclide": {

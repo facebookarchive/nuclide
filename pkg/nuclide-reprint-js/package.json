@@ -1,7 +1,7 @@
 {
   "name": "nuclide-reprint-js",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Pretty printing for the Javascript AST",
   "nuclide": {

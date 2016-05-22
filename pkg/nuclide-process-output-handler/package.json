@@ -1,7 +1,7 @@
 {
   "name": "nuclide-process-output-handler",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "A library of ProcessOutputHandler implementations, for use with the nuclide-process-output package.",
   "nuclide": {

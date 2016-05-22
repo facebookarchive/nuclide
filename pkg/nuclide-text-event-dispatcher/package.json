@@ -1,7 +1,7 @@
 {
   "name": "nuclide-text-event-dispatcher",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Allows subscriptions to text editing events, at a higher level of abstraction than the included Atom events",
   "nuclide": {

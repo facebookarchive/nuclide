@@ -1,7 +1,7 @@
 {
   "name": "nuclide-react-native-node-executor",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/ExecutorServer",
+  "main": "./lib/ExecutorServer.js",
   "version": "0.0.0",
   "description": "Executes React Native application javascript in a node process.",
   "nuclide": {

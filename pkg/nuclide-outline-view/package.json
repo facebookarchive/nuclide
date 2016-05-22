@@ -1,7 +1,7 @@
 {
   "name": "nuclide-outline-view",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Extensible UI to display an outline of the current file",
   "nuclide": {

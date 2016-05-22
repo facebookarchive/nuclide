@@ -1,7 +1,7 @@
 {
   "name": "nuclide-clang",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/ClangService",
+  "main": "./lib/ClangService.js",
   "version": "0.0.0",
   "description": "Provides support for the cxx family of languages via the clang compiler",
   "nuclide": {

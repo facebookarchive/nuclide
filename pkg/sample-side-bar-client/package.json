@@ -1,7 +1,7 @@
 {
   "name": "sample-side-bar-client",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "A side-bar client that demonstrates side-bar view toggling",
   "consumedServices": {

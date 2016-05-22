@@ -1,7 +1,7 @@
 {
   "name": "nuclide-rpc",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/index",
+  "main": "./lib/index.js",
   "version": "0.0.0",
   "description": "JSON based RPC system using flow types for marshalling.",
   "nuclide": {

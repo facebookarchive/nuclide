@@ -1,7 +1,7 @@
 {
   "name": "nuclide-populate-symbols",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Populates Atom's symbols-view package with symbols retrieved from the outline-view",
   "nuclide": {

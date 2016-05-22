@@ -1,7 +1,7 @@
 {
   "name": "nuclide-working-sets",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Service for the definition of an overlay filtering layer on top of connected projects.",
   "nuclide": {

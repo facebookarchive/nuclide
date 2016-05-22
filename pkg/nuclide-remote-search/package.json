@@ -2,7 +2,7 @@
   "name": "nuclide-remote-search",
   "repository": "https://github.com/facebook/nuclide",
   "version": "0.0.0",
-  "main": "./lib/FindInProjectService",
+  "main": "./lib/FindInProjectService.js",
   "description": "Execute project search on a remote directory.",
   "nuclide": {
     "packageType": "Node",

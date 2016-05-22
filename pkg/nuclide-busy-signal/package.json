@@ -1,7 +1,7 @@
 {
   "name": "nuclide-busy-signal",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides a UI for packages to indicate that they are busy working on a request.",
   "nuclide": {

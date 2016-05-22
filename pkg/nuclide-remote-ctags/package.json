@@ -1,7 +1,7 @@
 {
   "name": "nuclide-remote-ctags",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Exposes nuclide-remote-ctags-base functionality to Atom.",
   "nuclide": {
