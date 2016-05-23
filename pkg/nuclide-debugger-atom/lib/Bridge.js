@@ -253,7 +253,7 @@ class Bridge {
       webview.send(
         'command',
         'UpdateSettings',
-        this._debuggerModel.getSettings().getSerializedData()
+        this._debuggerModel.getStore().getSettings().getSerializedData()
       );
     }
   }

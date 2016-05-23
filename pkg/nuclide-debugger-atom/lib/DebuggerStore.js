@@ -9,10 +9,6 @@
  * the root directory of this source tree.
  */
 
-import {Disposable} from 'atom';
-import {EventEmitter} from 'events';
-import Constants from './Constants';
-
 import type {Dispatcher} from 'flux';
 import type {
   nuclide_debugger$Service,
@@ -20,6 +16,11 @@ import type {
 } from '../../nuclide-debugger-interfaces/service';
 import type DebuggerInstance from './DebuggerInstance';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
+
+import {Disposable} from 'atom';
+import {EventEmitter} from 'events';
+import Constants from './Constants';
+import {DebuggerSettings} from './DebuggerSettings';
 
 export type DebuggerModeType = 'starting' | 'running' | 'paused' | 'stopping' | 'stopped';
 const DebuggerMode: {[key: string]: DebuggerModeType} = Object.freeze({
@@ -39,6 +40,7 @@ class DebuggerStore {
   _dispatcherToken: any;
 
   // Stored values
+  _debuggerSettings: DebuggerSettings;
   _debuggerInstance: ?DebuggerInstance;
   _error: ?string;
   _services: Set<nuclide_debugger$Service>;
@@ -53,6 +55,7 @@ class DebuggerStore {
     this._eventEmitter = new EventEmitter();
     this._dispatcherToken = this._dispatcher.register(this._handlePayload.bind(this));
 
+    this._debuggerSettings = new DebuggerSettings();
     this._debuggerInstance = null;
     this._error = null;
     this._services = new Set();
@@ -108,6 +111,10 @@ class DebuggerStore {
 
   getDebuggerMode(): DebuggerModeType {
     return this._debuggerMode;
+  }
+
+  getSettings(): DebuggerSettings {
+    return this._debuggerSettings;
   }
 
   getEvaluationExpressionProviders(): Set<NuclideEvaluationExpressionProvider> {

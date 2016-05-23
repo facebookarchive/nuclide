@@ -30,6 +30,10 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     this._launchTargetInfo = launchTargetInfo;
   }
 
+  supportThreads(): boolean {
+    return true;
+  }
+
   async debug(): Promise<DebuggerInstance> {
     const rpcService = this._getRpcService();
     if (this.basepath) {

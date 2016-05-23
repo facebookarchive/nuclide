@@ -41,6 +41,13 @@ class DebuggerProcessInfo {
     throw new Error('abstract method');
   }
 
+  // Whether or not this ProcessInfo supports threading or not.
+  // TODO: move this into chrome protocol after we move threads window
+  // to Nuclide UI.
+  supportThreads(): boolean {
+    return false;
+  }
+
   async debug(): Promise<DebuggerInstance> {
     throw new Error('abstract method');
   }

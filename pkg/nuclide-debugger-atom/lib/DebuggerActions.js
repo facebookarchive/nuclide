@@ -9,13 +9,6 @@
  * the root directory of this source tree.
  */
 
-import Constants from './Constants';
-import {CompositeDisposable} from 'atom';
-import {beginTimerTracking, failTimerTracking, endTimerTracking} from './AnalyticsHelper';
-import remoteUri from '../../nuclide-remote-uri';
-import invariant from 'assert';
-import {DebuggerMode} from './DebuggerStore';
-
 import type {Dispatcher} from 'flux';
 import type {
   nuclide_debugger$Service,
@@ -25,6 +18,14 @@ import type {
 import type {DebuggerStore, DebuggerModeType} from './DebuggerStore';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 import type DebuggerInstance from './DebuggerInstance';
+
+import Constants from './Constants';
+import {CompositeDisposable} from 'atom';
+import {beginTimerTracking, failTimerTracking, endTimerTracking} from './AnalyticsHelper';
+import remoteUri from '../../nuclide-remote-uri';
+import invariant from 'assert';
+import {DebuggerMode} from './DebuggerStore';
+import passesGK from '../../commons-node/passesGK';
 
 function track(...args: any) {
   const trackFunc = require('../../nuclide-analytics').track;
@@ -36,6 +37,8 @@ const AnalyticsEvents = Object.freeze({
   DEBUGGER_START_FAIL: 'debugger-start-fail',
   DEBUGGER_STOP: 'debugger-stop',
 });
+
+const GK_DEBUGGER_THREADS_WINDOW = 'nuclide_debugger_threads_window';
 
 /**
  * Flux style action creator for actions that affect the debugger.
@@ -64,6 +67,9 @@ class DebuggerActions {
     try {
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
       const debuggerInstance = await processInfo.debug();
+      const supportThreadsWindow = processInfo.supportThreads()
+        && await passesGK(GK_DEBUGGER_THREADS_WINDOW);
+      this._store.getSettings().set('SupportThreadsWindow', supportThreadsWindow);
       await this._waitForChromeConnection(debuggerInstance);
     } catch (err) {
       failTimerTracking(err);

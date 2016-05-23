@@ -31,6 +31,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     this._targetInfo = targetInfo;
   }
 
+  supportThreads(): boolean {
+    return true;
+  }
+
   async debug(): Promise<DebuggerInstance> {
     const rpcService = this._getRpcService();
     if (this.basepath) {

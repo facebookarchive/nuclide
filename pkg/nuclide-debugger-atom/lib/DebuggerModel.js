@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import {DebuggerSettings} from './DebuggerSettings';
 import {DebuggerProviderStore} from './DebuggerProviderStore';
 import BreakpointManager from './BreakpointManager';
 import BreakpointStore from './BreakpointStore';
@@ -31,7 +30,6 @@ class DebuggerModel {
   _actions: DebuggerActions;
   _breakpointManager: BreakpointManager;
   _breakpointStore: BreakpointStore;
-  _debuggerSettings: DebuggerSettings;
   _dispatcher: Dispatcher;
   _store: DebuggerStore;
   _watchExpressionStore: WatchExpressionStore;
@@ -45,7 +43,6 @@ class DebuggerModel {
     this._actions = new DebuggerActions(this._dispatcher, this._store);
     this._breakpointStore = new BreakpointStore(state ? state.breakpoints : null);
     this._breakpointManager = new BreakpointManager(this._breakpointStore);
-    this._debuggerSettings = new DebuggerSettings();
     this._bridge = new Bridge(this);
     this._debuggerProviderStore = new DebuggerProviderStore(this._dispatcher, this._actions);
     this._watchExpressionStore = new WatchExpressionStore(this._bridge);
@@ -95,10 +92,6 @@ class DebuggerModel {
 
   getBridge(): Bridge {
     return this._bridge;
-  }
-
-  getSettings(): DebuggerSettings {
-    return this._debuggerSettings;
   }
 }
 
