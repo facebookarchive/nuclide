@@ -66,11 +66,15 @@ class NuclideTextBuffer extends TextBuffer {
       return;
     }
     if (filePath) {
-      this.file = this.createFile(filePath);
-      if (this.file !== null) {
-        const file = this.file;
-        file.setEncoding(this.getEncoding());
-        this.subscribeToFile();
+      if (this.file != null) {
+        this.file.setPath(this._connection.getUriOfRemotePath(filePath));
+      } else {
+        this.file = this.createFile(filePath);
+        if (this.file !== null) {
+          const file = this.file;
+          file.setEncoding(this.getEncoding());
+          this.subscribeToFile();
+        }
       }
     } else {
       this.file = null;

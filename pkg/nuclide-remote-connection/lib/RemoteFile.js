@@ -11,6 +11,7 @@
 
 import type {ServerConnection} from './ServerConnection';
 import type {RemoteDirectory} from './RemoteDirectory';
+import type {NuclideUri} from '../../nuclide-remote-uri';
 import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-base';
 
@@ -44,9 +45,7 @@ export class RemoteFile {
     symlink: boolean = false,
   ) {
     this._server = server;
-    const {path: localPath} = remoteUri.parse(remotePath);
-    this._localPath = localPath;
-    this._path = remotePath;
+    this.setPath(remotePath);
     this._emitter = new Emitter();
     this._subscriptionCount = 0;
     this._deleted = false;
@@ -199,6 +198,12 @@ export class RemoteFile {
 
   getEncoding(): ?string {
     return this._encoding;
+  }
+
+  setPath(remotePath: NuclideUri): void {
+    const {path: localPath} = remoteUri.parse(remotePath);
+    this._localPath = localPath;
+    this._path = remotePath;
   }
 
   getPath(): string {
