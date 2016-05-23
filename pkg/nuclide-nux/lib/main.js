@@ -29,9 +29,6 @@ export function activate(state: ?mixed): void {
   activation = new Activation();
 }
 
-export function serialize(): mixed {
-}
-
 export function deactivate(): void {
   if (activation != null) {
     activation.dispose();
