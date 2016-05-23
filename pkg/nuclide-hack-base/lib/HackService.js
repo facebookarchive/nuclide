@@ -261,8 +261,8 @@ export async function getDefinition(
   contents: string,
   line: number,
   column: number,
-): Promise<?HackDefinition> {
-  const hhResult = await callHHClient(
+): Promise<Array<HackDefinition>> {
+  const hhResult: any = await callHHClient(
     /*args*/ ['--ide-get-definition', formatLineColumn(line, column)],
     /*errorStream*/ false,
     /*outputJson*/ true,
@@ -270,21 +270,30 @@ export async function getDefinition(
     /*cwd*/ file,
   );
   if (hhResult == null) {
-    return null;
+    return [];
   }
 
   // Results in the current file, have filename set to empty string.
-  const result: HackDefinition = (hhResult.result: any);
+  const result = hhResult.result;
   if (result == null) {
-    return null;
+    return [];
   }
-  if (result.definition_pos != null && result.definition_pos.filename === '') {
-    result.definition_pos.filename = file;
+
+  function fixupDefinition(definition: HackDefinition): void {
+    if (definition.definition_pos != null && definition.definition_pos.filename === '') {
+      definition.definition_pos.filename = file;
+    }
+    if (definition.pos.filename === '') {
+      definition.pos.filename = file;
+    }
   }
-  if (result.pos.filename === '') {
-    result.pos.filename = file;
+  if (Array.isArray(result)) {
+    result.forEach(fixupDefinition);
+    return result;
+  } else {
+    fixupDefinition(result);
+    return [result];
   }
-  return result;
 }
 
 export async function getReferences(

@@ -67,9 +67,9 @@ describe('HackDefinitionProvider', () => {
     });
   });
 
-  it('null definition', () => {
+  it('no definition', () => {
     waitsForPromise(async () => {
-      hackLanguage.getIdeDefinition.andReturn(Promise.resolve(null));
+      hackLanguage.getIdeDefinition.andReturn(Promise.resolve([]));
       const result = await provider.getDefinition(editor, position);
       expect(result).toBe(null);
       expect(hackLanguage.getIdeDefinition).toHaveBeenCalledWith(
@@ -90,7 +90,7 @@ describe('HackDefinitionProvider', () => {
         column: 12,
         name: 'symbol-name',
       };
-      hackLanguage.getIdeDefinition.andReturn(Promise.resolve(definition));
+      hackLanguage.getIdeDefinition.andReturn(Promise.resolve([definition]));
       const result = await provider.getDefinition(editor, position);
       const expected = {
         queryRange: definition.queryRange,
@@ -98,6 +98,7 @@ describe('HackDefinitionProvider', () => {
           path: definition.path,
           position: new Point(41, 11),
           id: 'symbol-name',
+          name: 'symbol-name',
         }],
       };
       expect(result).toEqual(expected);

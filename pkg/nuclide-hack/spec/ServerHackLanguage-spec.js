@@ -41,6 +41,7 @@ describe('ServerHackLanguage', () => {
       'getCompletions',
       'getDiagnostics',
       'getIdentifierDefinition',
+      'getDefinition',
       'getTypedRegions',
       'getTypeAtPos',
       'getSourceHighlights',
@@ -222,6 +223,156 @@ AUTO332class HackClass {}`);
 
       expect(mockService.getIdentifierDefinition).toHaveBeenCalledWith(filePath, contents, 1, 2);
       expect(result).toEqual([definition]);
+    });
+  });
+
+  it('getIdeDefinition - no results', () => {
+    waitsForPromise(async () => {
+      const definitions = [];
+      mockService.getDefinition.andReturn(definitions);
+
+      const result = await hackLanguage.getIdeDefinition(filePath, contents, 1, 2, 'howdy');
+
+      expect(mockService.getDefinition).toHaveBeenCalledWith(filePath, contents, 1, 2);
+      expect(result).toEqual([]);
+    });
+  });
+
+  it('getIdeDefinition - result with no definition', () => {
+    waitsForPromise(async () => {
+      const definitions = [{
+        definition_pos: null,
+        name: 'heyheyhey',
+        pos: {
+          filename: filePath,
+          line: 1,
+          char_start: 1,
+          char_end: 3,
+        },
+      }];
+      mockService.getDefinition.andReturn(definitions);
+
+      const result = await hackLanguage.getIdeDefinition(filePath, contents, 1, 2, 'howdy');
+
+      expect(mockService.getDefinition).toHaveBeenCalledWith(filePath, contents, 1, 2);
+      expect(result).toEqual([]);
+    });
+  });
+
+  it('getIdeDefinition - result with definition', () => {
+    waitsForPromise(async () => {
+      const definitions = [{
+        definition_pos: {
+          filename: filePath,
+          line: 42,
+          char_start: 12,
+          char_end: 13,
+        },
+        name: 'heyheyhey',
+        pos: {
+          filename: filePath,
+          line: 1,
+          char_start: 1,
+          char_end: 3,
+        },
+      }];
+      mockService.getDefinition.andReturn(definitions);
+
+      const result = await hackLanguage.getIdeDefinition(filePath, contents, 1, 2, 'howdy');
+
+      expect(mockService.getDefinition).toHaveBeenCalledWith(filePath, contents, 1, 2);
+      expect(result).toEqual([{
+        name: 'heyheyhey',
+        path: filePath,
+        line: 42,
+        column: 12,
+        queryRange: {
+          start: {
+            row: 0,
+            column: 0,
+          },
+          end: {
+            row: 0,
+            column: 3,
+          },
+        },
+      }]);
+    });
+  });
+
+  it('getIdeDefinition - multiple results', () => {
+    waitsForPromise(async () => {
+      const definitions = [
+        {
+          definition_pos: {
+            filename: filePath,
+            line: 42,
+            char_start: 12,
+            char_end: 13,
+          },
+          name: 'heyheyhey',
+          pos: {
+            filename: filePath,
+            line: 1,
+            char_start: 1,
+            char_end: 3,
+          },
+        },
+        {
+          definition_pos: {
+            filename: filePath,
+            line: 142,
+            char_start: 121,
+            char_end: 131,
+          },
+          name: 'heyheyhey::__construct',
+          pos: {
+            filename: filePath,
+            line: 1,
+            char_start: 1,
+            char_end: 3,
+          },
+        },
+      ];
+      mockService.getDefinition.andReturn(definitions);
+
+      const result = await hackLanguage.getIdeDefinition(filePath, contents, 1, 2, 'howdy');
+
+      expect(mockService.getDefinition).toHaveBeenCalledWith(filePath, contents, 1, 2);
+      expect(result).toEqual([
+        {
+          name: 'heyheyhey',
+          path: filePath,
+          line: 42,
+          column: 12,
+          queryRange: {
+            start: {
+              row: 0,
+              column: 0,
+            },
+            end: {
+              row: 0,
+              column: 3,
+            },
+          },
+        },
+        {
+          name: 'heyheyhey::__construct',
+          path: filePath,
+          line: 142,
+          column: 121,
+          queryRange: {
+            start: {
+              row: 0,
+              column: 0,
+            },
+            end: {
+              row: 0,
+              column: 3,
+            },
+          },
+        },
+      ]);
     });
   });
 

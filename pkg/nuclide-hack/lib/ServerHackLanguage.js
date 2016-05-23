@@ -19,6 +19,7 @@ import type {
   HackRange,
   HackReference,
   HackIdeOutline,
+  HackDefinition,
 } from '../../nuclide-hack-base/lib/HackService';
 import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
 import type {SymbolTypeValue} from '../../nuclide-hack-common';
@@ -28,6 +29,7 @@ import {Range} from 'atom';
 import {getLogger} from '../../nuclide-logging';
 import {convertTypedRegionsToCoverageResult} from './TypedRegions';
 import {SymbolType} from '../../nuclide-hack-common';
+import invariant from 'assert';
 
 /**
  * Serves language requests from HackService.
@@ -149,19 +151,24 @@ export class ServerHackLanguage {
     contents: string,
     lineNumber: number,
     column: number
-  ): Promise<?Definition> {
-    const definition =
+  ): Promise<Array<Definition>> {
+    const definitions =
       await this._hackService.getDefinition(filePath, contents, lineNumber, column);
-    if (definition == null || definition.definition_pos == null) {
-      return null;
+    if (definitions == null) {
+      return [];
     }
-    return {
-      name: definition.name,
-      path: definition.definition_pos.filename,
-      line: definition.definition_pos.line,
-      column: definition.definition_pos.char_start,
-      queryRange: hackRangeToAtomRange(definition.pos),
-    };
+    function convertDefinition(def: HackDefinition): Definition {
+      invariant(def.definition_pos != null);
+      return {
+        name: def.name,
+        path: def.definition_pos.filename,
+        line: def.definition_pos.line,
+        column: def.definition_pos.char_start,
+        queryRange: hackRangeToAtomRange(def.pos),
+      };
+    }
+    return definitions.filter(definition => definition.definition_pos != null)
+      .map(convertDefinition);
   }
 
   async getType(

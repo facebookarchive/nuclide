@@ -100,7 +100,7 @@ export type HackLanguage = {
       contents: string,
       lineNumber: number,
       column: number
-    ): Promise<?Definition>;
+    ): Promise<Array<Definition>>;
 
   getType(
     filePath: NuclideUri,
