@@ -55,15 +55,7 @@ function proxyToNativeNotification(notification: atom$Notification): void {
 
 }
 
-export function raiseNativeNotificationAfterDelay(
-  title: string,
-  body: string,
-  delay: number,
-): void {
-  setTimeout(() => raiseNativeNotification(title, body), delay);
-}
-
-export function raiseNativeNotification(title: string, body: string): void {
+function raiseNativeNotification(title: string, body: string): void {
   // Check we're in the gatekeeper for native notifications at all.
   if (!gkEnabled) {
     return;

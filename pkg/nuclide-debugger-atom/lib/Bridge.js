@@ -43,7 +43,6 @@ import {getLogger} from '../../nuclide-logging';
 import remoteUri from '../../nuclide-remote-uri';
 import {Deferred} from '../../commons-node/promise';
 import {DebuggerMode} from './DebuggerStore';
-import {raiseNativeNotificationAfterDelay} from '../../nuclide-notifications';
 
 const INJECTED_CSS = [
   /* Force the inspector to scroll vertically on Atom ≥ 1.4.0 */
@@ -291,7 +290,15 @@ class Bridge {
 
   _handleNonLoaderDebuggerPaused(additionalData: {sourceUrl?: string}): void {
     this._handleDebuggerPaused(additionalData);
-    raiseNativeNotificationAfterDelay('Nuclide Debugger', 'Paused at a breakpoint', 3000);
+    setTimeout(() => {
+      if (!atom.getCurrentWindow().isFocused()) {
+        // It is likely that we need to bring the user back into focus if they are not already.
+        atom.notifications.addInfo('Nuclide Debugger', {
+          detail: 'Paused at a breakpoint',
+          nativeFriendly: true,
+        });
+      }
+    }, 3000);
   }
 
   _handleDebuggerPaused(additionalData: {sourceUrl?: string}): void {
