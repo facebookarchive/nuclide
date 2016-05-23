@@ -70,6 +70,8 @@ class JediServer:
 
             if method == 'get_completions':
                 res['result']['completions'] = self.get_completions(script)
+            elif method == 'get_definitions':
+                res['result']['definitions'] = self.get_definitions(script)
             else:
                 res['result'] = None
                 res['error'] = 'Unknown method to jediserver.py: %s.' % method
@@ -104,6 +106,23 @@ class JediServer:
             # Return function params if completion has params (thus is a function)
             if hasattr(completion, 'params'):
                 result['params'] = [p.description for p in completion.params]
+            results.append(result)
+        return results
+
+    def get_definitions(self, script):
+        results = []
+        definitions = script.goto_assignments()
+
+        for definition in definitions:
+            if not definition.module_path:
+                continue
+            result = {
+                'text': definition.name,
+                'type': definition.type,
+                'file': definition.module_path,
+                'line': definition.line - 1,
+                'column': definition.column
+            }
             results.append(result)
         return results
 

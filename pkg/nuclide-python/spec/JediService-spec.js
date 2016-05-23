@@ -12,7 +12,7 @@
 import invariant from 'assert';
 import fs from 'fs';
 import path from 'path';
-import {getCompletions} from '../lib/JediService';
+import {getCompletions, getDefinitions} from '../lib/JediService';
 
 // Test python file located at fixtures/serverdummy.py
 const TEST_FILE = path.join(__dirname, 'fixtures', 'serverdummy.py');
@@ -63,6 +63,54 @@ describe('JediService', () => {
         const completion = response.completions[0];
         expect(completion.text).toEqual('potato');
         expect(completion.type).toEqual('statement');
+      });
+    });
+  });
+
+  describe('Definitions', () => {
+    it('gives a rejected promise when an invalid request is given', () => {
+      waitsForPromise(async () => {
+        // Basically everything is wrong here, but politely reject the promise.
+        try {
+          await getDefinitions('potato', 'tomato', 5, 15);
+          // Fail - this line should not be reachable.
+          invariant(false);
+        } catch (e) {
+          // Python process should respond with a Traceback for what went wrong while
+          // processing the request.
+          expect(e.toString().startsWith('Error: Traceback')).toBeTruthy();
+        }
+      });
+    });
+
+    it('can find definitions for imported modules', () => {
+      waitsForPromise(async () => {
+        // line 8: import os
+        const response = await getDefinitions(TEST_FILE, FILE_CONTENTS, 7, 8);
+        invariant(response);
+        expect(response.definitions.length).toBeGreaterThan(0);
+
+        const definition = response.definitions[0];
+        expect(definition.text).toEqual('os');
+        expect(definition.type).toEqual('module');
+        // Path is machine dependent, so just check that it exists and isn't empty.
+        expect(definition.file.length).toBeGreaterThan(0);
+      });
+    });
+
+    it('can find the definitions of locally defined variables', () => {
+      waitsForPromise(async () => {
+        // line 14: potato3 = potato
+        const response = await getDefinitions(TEST_FILE, FILE_CONTENTS, 13, 12);
+        invariant(response);
+        expect(response.definitions.length).toBeGreaterThan(0);
+
+        const definition = response.definitions[0];
+        expect(definition.text).toEqual('potato');
+        expect(definition.type).toEqual('statement');
+        expect(definition.line).toEqual(11);
+        // Local variable definition should be within the same file.
+        expect(definition.file).toEqual(TEST_FILE);
       });
     });
   });
