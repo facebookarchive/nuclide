@@ -27,7 +27,7 @@ import {
 } from '../../commons-atom/debounced';
 
 const BUCK_TARGET_INPUT_WIDTH = 400;
-const formatRequestOptionsErrorMessage = () => 'Invalid .buckconfig';
+const formatRequestOptionsErrorMessage = () => 'Failed to get targets from Buck';
 
 class BuckToolbar extends React.Component {
   /**
@@ -57,7 +57,6 @@ class BuckToolbar extends React.Component {
     super(props);
     (this: any)._handleBuildTargetChange =
       debounce(this._handleBuildTargetChange.bind(this), 100, false);
-    (this: any)._handleRequestOptionsError = this._handleRequestOptionsError.bind(this);
     (this: any)._handleSimulatorChange = this._handleSimulatorChange.bind(this);
     (this: any)._handleReactNativeServerModeChanged =
       this._handleReactNativeServerModeChanged.bind(this);
@@ -163,7 +162,6 @@ class BuckToolbar extends React.Component {
           className="inline-block"
           ref="buildTarget"
           formatRequestOptionsErrorMessage={formatRequestOptionsErrorMessage}
-          onRequestOptionsError={this._handleRequestOptionsError}
           requestOptions={this._requestOptions}
           size="sm"
           loadingMessage="Updating target names..."
@@ -179,13 +177,6 @@ class BuckToolbar extends React.Component {
 
   _handleBuildTargetChange(value: string) {
     this._buckToolbarActions.updateBuildTarget(value.trim());
-  }
-
-  _handleRequestOptionsError(error: Error): void {
-    atom.notifications.addError(
-      'Failed to get targets from Buck',
-      {detail: error.message},
-    );
   }
 
   _handleSimulatorChange(simulator: string) {
