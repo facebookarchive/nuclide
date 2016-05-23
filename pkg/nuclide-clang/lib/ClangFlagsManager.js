@@ -23,7 +23,6 @@ import {isHeaderFile, isSourceFile, findIncludingSourceFile} from './utils';
 
 const logger = getLogger();
 
-const BUCK_MAX_THREADS = 8;
 const BUCK_TIMEOUT = 60000;
 
 const COMPILATION_DATABASE_FILE = 'compile_commands.json';
@@ -55,6 +54,22 @@ export type ClangFlags = {
   // (rename, change)
   changes: Observable<string>;
 };
+
+let _overrideIncludePath = undefined;
+function overrideIncludePath(src: string): string {
+  if (_overrideIncludePath === undefined) {
+    _overrideIncludePath = null;
+    try {
+      _overrideIncludePath = require('./fb/custom-flags').overrideIncludePath;
+    } catch (e) {
+      // open-source version
+    }
+  }
+  if (_overrideIncludePath != null) {
+    return _overrideIncludePath(src);
+  }
+  return src;
+}
 
 class ClangFlagsManager {
   _cachedBuckProjects: Map<string, BuckProject>;
@@ -225,7 +240,7 @@ class ClangFlagsManager {
     const buildTarget = target + '#compilation-database,' + arch;
     // Since this is a background process, limit the number of threads to avoid
     // impacting the user too badly.
-    const maxCpus = Math.min(Math.ceil(os.cpus().length / 2), BUCK_MAX_THREADS);
+    const maxCpus = Math.ceil(os.cpus().length / 2);
     const buildReport = await buckProject.build(
       [buildTarget, '-j', String(maxCpus)],
       {commandOptions: {timeout: BUCK_TIMEOUT}},
@@ -338,17 +353,17 @@ class ClangFlagsManager {
     args.forEach((arg, argIndex) => {
       if (CLANG_FLAGS_THAT_TAKE_PATHS.has(arg)) {
         const nextIndex = argIndex + 1;
-        let filePath = args[nextIndex];
+        let filePath = overrideIncludePath(args[nextIndex]);
         if (!path.isAbsolute(filePath)) {
           filePath = path.join(basePath, filePath);
-          args[nextIndex] = filePath;
         }
+        args[nextIndex] = filePath;
       } else if (SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS.has(arg.substring(0, 2))) {
-        let filePath = arg.substring(2);
+        let filePath = overrideIncludePath(arg.substring(2));
         if (!path.isAbsolute(filePath)) {
           filePath = path.join(basePath, filePath);
-          args[argIndex] = arg.substring(0, 2) + filePath;
         }
+        args[argIndex] = arg.substring(0, 2) + filePath;
       }
     });
 

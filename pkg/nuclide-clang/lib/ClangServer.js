@@ -20,9 +20,6 @@ import {asyncExecute, safeSpawn} from '../../commons-node/process';
 import {serializeAsyncCall} from '../../commons-node/promise';
 import {getLogger} from '../../nuclide-logging';
 
-// Do not tie up the Buck server continuously retrying for flags.
-const FLAGS_RETRY_LIMIT = 2;
-
 // Mac OS X (El Capitan) prints this warning when loading the libclang library.
 // It's not silenceable and has no effect, so just ignore it.
 const DYLD_WARNING = 'dyld: warning, LC_RPATH';
@@ -69,7 +66,7 @@ async function augmentDefaultFlags(src: string, flags: Array<string>): Promise<A
   if (getDefaultFlags === undefined) {
     getDefaultFlags = null;
     try {
-      getDefaultFlags = require('./fb/get-default-flags');
+      getDefaultFlags = require('./fb/custom-flags').getDefaultFlags;
     } catch (e) {
       // Open-source version
     }
@@ -106,7 +103,6 @@ export default class ClangServer {
 
   // Cache the flags-fetching promise so we don't end up invoking Buck twice.
   _flagsPromise: ?Promise<?Array<string>>;
-  _flagsRetries: number;
 
   // Detect when flags have changed so we can alert the client.
   _flagsChanged: boolean;
@@ -121,7 +117,6 @@ export default class ClangServer {
     this._pendingCompileRequests = 0;
     this._getAsyncConnection = serializeAsyncCall(this._getAsyncConnectionImpl.bind(this));
     this._disposed = false;
-    this._flagsRetries = 0;
     this._flagsChanged = false;
     this._flagsChangedSubscription = null;
   }
@@ -183,12 +178,7 @@ export default class ClangServer {
         }
         return null;
       }, e => {
-        logger.error(
-          `clang-server: Could not get flags for ${this._src} (retry ${this._flagsRetries})`, e);
-        if (this._flagsRetries < FLAGS_RETRY_LIMIT) {
-          this._flagsPromise = null;
-          this._flagsRetries++;
-        }
+        logger.error(`clang-server: Could not get flags for ${this._src}`, e);
       });
     return this._flagsPromise;
   }
