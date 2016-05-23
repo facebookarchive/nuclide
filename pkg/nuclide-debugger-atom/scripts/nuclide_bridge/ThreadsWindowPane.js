@@ -135,7 +135,7 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
 
     if (children.length > 0) {
       return (
-        <div style={containerStyle}>
+        <div style={containerStyle} className="nuclide-chrome-debugger-data-grid">
           <table width="100%">
             <thead>
               <tr key={0} align="center">

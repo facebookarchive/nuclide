@@ -50,6 +50,33 @@ const INJECTED_CSS = [
   'body > .root-view {overflow-y: scroll;}',
   /* Force the contents of the mini console (on the bottom) to scroll vertically */
   '.insertion-point-sidebar#drawer-contents {overflow-y: auto;}',
+  /* imitate chrome table styles for threads window */
+  `
+  .nuclide-chrome-debugger-data-grid table {
+    border-spacing: 0;
+  }
+
+  .nuclide-chrome-debugger-data-grid thead {
+    background-color: #eee;
+  }
+
+  .nuclide-chrome-debugger-data-grid thead td {
+    border-bottom: 1px solid #aaa;
+  }
+
+  .nuclide-chrome-debugger-data-grid tbody tr:nth-child(2n+1) {
+    background: aliceblue;
+  }
+
+  .nuclide-chrome-debugger-data-grid td {
+    border-left: 1px solid #aaa;
+    padding: 2px 4px;
+  }
+
+  .nuclide-chrome-debugger-data-grid td:first-child {
+    border-left: none;
+  }
+  `,
 ].join('');
 
 class Bridge {
