@@ -50,7 +50,7 @@ class JsTestRunner(object):
         # Integration tests only run serially:
         for spec_file in spec_files:
             run_test(
-                ['atom', '--dev', '--test', spec_file],
+                ['atom', '--dev', '--test', '--timeout=60', spec_file],
                 nuclide_dir,
                 os.path.basename(spec_file),
                 retryable=True,
