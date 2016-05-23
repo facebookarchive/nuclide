@@ -15,6 +15,7 @@ import type {DefinitionProvider} from '../../nuclide-definition-service';
 import {GRAMMAR_SET} from './constants';
 import AutocompleteHelpers from './AutocompleteHelpers';
 import DefinitionHelpers from './DefinitionHelpers';
+import OutlineHelpers from './OutlineHelpers';
 
 export function activate() {
 }
@@ -31,13 +32,13 @@ export function createAutocompleteProvider(): atom$AutocompleteProvider {
 }
 
 export function provideOutlines(): OutlineProvider {
-  const {PythonOutlineProvider} = require('./PythonOutlineProvider');
-  const provider = new PythonOutlineProvider();
   return {
     grammarScopes: Array.from(GRAMMAR_SET),
     priority: 1,
     name: 'Python',
-    getOutline: provider.getOutline.bind(provider),
+    getOutline(editor) {
+      return OutlineHelpers.getOutline(editor);
+    },
   };
 }
 
