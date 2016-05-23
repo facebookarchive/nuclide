@@ -19,10 +19,10 @@ const logger = getLogger();
 const CALL_MESSAGE_TYPE = 'call';
 const RESPONSE_MESSAGE_TYPE = 'response';
 
-type CallMessage = {
+type CallMessage<T> = {
   type: 'call';
   id: number;
-  args: any; // Typically Array<string | Object>
+  args: T; // Typically Array<string | Object>
 };
 
 type ResponseError = {
@@ -30,19 +30,19 @@ type ResponseError = {
   message: string;
 };
 
-type ResponseMessage = {
+type ResponseMessage<T> = {
   type: 'response';
   id: number;
-  result?: any;
+  result?: T;
   error?: ResponseError;
 };
 
-type CallResolver = {
-  resolve: (result: any) => void;
-  reject: (message: any) => void;
+type CallResolver<T> = {
+  resolve: (result: T) => void;
+  reject: (err: Error) => void;
 };
 
-export function createCallMessage(id: number, args: any): CallMessage {
+export function createCallMessage<T>(id: number, args: T): CallMessage<T> {
   return {
     type: CALL_MESSAGE_TYPE,
     id,
@@ -78,11 +78,11 @@ export class StreamTransport {
   }
 }
 
-export class Rpc {
+export class Rpc<TReq, TRes> {
   _name: string;
   _disposed: boolean;
   _index: number;
-  _inProgress: Map<number, CallResolver>;
+  _inProgress: Map<number, CallResolver<TRes>>;
   _transport: Transport;
   _subscription: Subscription;
 
@@ -101,7 +101,7 @@ export class Rpc {
     return this._name;
   }
 
-  call(args: any): Promise<any> {
+  call(args: TReq): Promise<TRes> {
     invariant(!this._disposed, `${this._name} - called after dispose: ${args}`);
     this._index++;
     const message = createCallMessage(this._index, args);
@@ -153,6 +153,7 @@ export class Rpc {
       reject(new Error(errStr));
     } else {
       logger.debug(`${this._name} - returning ${JSON.stringify(result)} from RPC ${id}`);
+      invariant(result, `${this._name} - neither result or error received in response`);
       resolve(result);
     }
   }
