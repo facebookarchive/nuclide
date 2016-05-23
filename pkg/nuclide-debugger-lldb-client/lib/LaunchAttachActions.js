@@ -18,19 +18,52 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import type DebuggerProcessInfo from '../../nuclide-debugger-atom/lib/DebuggerProcessInfo';
 
 import invariant from 'assert';
+import {CompositeDisposable} from 'atom';
 import {LaunchAttachActionCode} from './Constants';
 import {AttachProcessInfo} from './AttachProcessInfo';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
 import {getServiceByNuclideUri} from '../../nuclide-client';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
+const ATTACH_TARGET_LIST_REFRESH_INTERVAL = 2000;
+
 export class LaunchAttachActions {
   _dispatcher: Dispatcher;
   _targetUri: NuclideUri;
+  _refreshTimerId: ?number;
+  _dialogVisible: boolean;
+  _subscriptions: atom$CompositeDisposable;
 
   constructor(dispatcher: Dispatcher, targetUri: NuclideUri) {
     this._dispatcher = dispatcher;
     this._targetUri = targetUri;
+    this._refreshTimerId = null;
+    this._dialogVisible = true; // visible by default.
+    (this: any).updateAttachTargetList = this.updateAttachTargetList.bind(this);
+    (this: any)._handleLaunchAttachDialogToggle = this._handleLaunchAttachDialogToggle.bind(this);
+    this._subscriptions = new CompositeDisposable(atom.commands.add('atom-workspace', {
+      // eslint-disable-next-line nuclide-internal/command-menu-items
+      'nuclide-debugger:toggle-launch-attach': this._handleLaunchAttachDialogToggle,
+    }));
+    this._setTimerEnabledState(true);
+  }
+
+  _handleLaunchAttachDialogToggle(): void {
+    this._dialogVisible = !this._dialogVisible;
+    this._setTimerEnabledState(this._dialogVisible);
+    // Fire and forget.
+    this.updateAttachTargetList();
+  }
+
+  _setTimerEnabledState(enabled: boolean): void {
+    if (enabled) {
+      this._refreshTimerId = setInterval(
+        this.updateAttachTargetList,
+        ATTACH_TARGET_LIST_REFRESH_INTERVAL,
+      );
+    } else if (this._refreshTimerId != null) {
+      clearTimeout(this._refreshTimerId);
+    }
   }
 
   attachDebugger(attachTarget: AttachTargetInfo): Promise<void> {
@@ -74,5 +107,9 @@ export class LaunchAttachActions {
       actionType,
       data,
     });
+  }
+
+  dispose(): void {
+    this._subscriptions.dispose();
   }
 }

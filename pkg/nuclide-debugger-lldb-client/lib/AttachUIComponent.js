@@ -62,9 +62,21 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
   }
 
   _updateList(): void {
+    const newSelectedTarget = this.state.selectedAttachTarget == null ? null :
+      this._getAttachTargetOfPid(this.state.selectedAttachTarget.pid);
     this.setState({
       attachTargetInfos: this.props.store.getAttachTargetInfos(),
+      selectedAttachTarget: newSelectedTarget,
     });
+  }
+
+  _getAttachTargetOfPid(pid: number): ?AttachTargetInfo {
+    for (const target of this.props.store.getAttachTargetInfos()) {
+      if (target.pid === pid) {
+        return target;
+      }
+    }
+    return null;
   }
 
   render(): React.Element {
@@ -72,22 +84,26 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
       maxHeight: '30em',
       overflow: 'auto',
     };
+    let hasSelectedItem = false;
     const filterRegex = new RegExp(this.state.filterText, 'i');
     const children = this.state.attachTargetInfos
       .filter(item => filterRegex.test(item.name) || filterRegex.test(item.pid.toString()))
-      .map((item, index) => (
-        <tr key={index + 1}
+      .map((item, index) => {
+        const isSelected = (this.state.selectedAttachTarget === item);
+        if (isSelected) {
+          hasSelectedItem = true;
+        }
+        return <tr key={index + 1}
             align="center"
             className={
-              classnames({'attach-selected-row': this.state.selectedAttachTarget === item})
+              classnames({'attach-selected-row': isSelected})
             }
             onClick={this._handleClickTableRow.bind(this, item)}
             onDoubleClick={this._handleDoubleClickTableRow.bind(this, index)}>
           <td>{item.name}</td>
           <td>{item.pid}</td>
-        </tr>
-      )
-    );
+        </tr>;
+      });
     // TODO: wrap into separate React components.
     return (
       <div className="block">
@@ -114,13 +130,10 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
           <Button onClick={this._handleCancelButtonClick}>
             Cancel
           </Button>
-          <Button onClick={this._updateAttachTargetList}>
-            Refresh
-          </Button>
           <Button
               buttonType={ButtonTypes.PRIMARY}
               onClick={this._handleAttachClick}
-              disabled={this.state.selectedAttachTarget === null}>
+              disabled={!hasSelectedItem}>
             Attach
           </Button>
         </div>
@@ -153,18 +166,13 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
   }
 
   _updateAttachTargetList(): void {
-    // Clear old list.
-    this.setState({
-      attachTargetInfos: [],
-      selectedAttachTarget: null,
-    });
     // Fire and forget.
     this.props.actions.updateAttachTargetList();
   }
 
   _attachToProcess(): void {
     const attachTarget = this.state.selectedAttachTarget;
-    if (attachTarget) {
+    if (attachTarget != null) {
       // Fire and forget.
       this.props.actions.attachDebugger(attachTarget);
       this.props.actions.showDebuggerPanel();

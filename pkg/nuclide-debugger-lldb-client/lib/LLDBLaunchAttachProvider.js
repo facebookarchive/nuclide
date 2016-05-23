@@ -46,5 +46,6 @@ export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
 
   dispose(): void {
     this._store.dispose();
+    this._actions.dispose();
   }
 }
