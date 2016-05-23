@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {CompletionResult} from './HackLanguage';
+
 import {Point, Range} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
 import {getHackLanguageForUri} from './HackLanguage';
@@ -80,7 +82,7 @@ function findHackPrefix(editor: atom$TextEditor): string {
 async function fetchCompletionsForEditor(
   editor: atom$TextEditor,
   prefix: string
-): Promise<Array<any>> {
+): Promise<Array<CompletionResult>> {
   const hackLanguage = await getHackLanguageForUri(editor.getPath());
   const filePath = editor.getPath();
   if (!hackLanguage || !filePath) {
