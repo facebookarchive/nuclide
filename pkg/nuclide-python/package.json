@@ -26,6 +26,11 @@
     "testRunner": "apm"
   },
   "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "createAutocompleteProvider"
+      }
+    },
     "nuclide-outline-view": {
       "versions": {
         "0.0.0": "provideOutlines"
