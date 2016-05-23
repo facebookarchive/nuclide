@@ -10,9 +10,11 @@
  */
 
 import type {OutlineProvider} from '../../nuclide-outline-view';
+import type {DefinitionProvider} from '../../nuclide-definition-service';
 
 import {GRAMMAR_SET} from './constants';
 import AutocompleteHelpers from './AutocompleteHelpers';
+import DefinitionHelpers from './DefinitionHelpers';
 
 export function activate() {
 }
@@ -36,6 +38,17 @@ export function provideOutlines(): OutlineProvider {
     priority: 1,
     name: 'Python',
     getOutline: provider.getOutline.bind(provider),
+  };
+}
+
+export function provideDefinitions(): DefinitionProvider {
+  return {
+    grammarScopes: Array.from(GRAMMAR_SET),
+    priority: 20,
+    name: 'PythonDefinitionProvider',
+    getDefinition(editor, position) {
+      return DefinitionHelpers.getDefinition(editor, position);
+    },
   };
 }
 

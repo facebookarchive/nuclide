@@ -13,18 +13,20 @@ import {
   activateAllPackages,
   copyFixture,
   deactivateAllPackages,
+  dispatchKeyboardEvent,
   jasmineIntegrationTestSetup,
   waitsForFile,
+  waitsForFilePosition,
 } from '../pkg/nuclide-integration-test-helpers';
 
 import path from 'path';
 
 describe('Python Integration Test', () => {
-  it('gives autocomplete suggestions', () => {
-    let pyProjPath;
-    let textEditor: atom$TextEditor = (null : any);
-    let textEditorView: HTMLElement = (null : any);
+  let pyProjPath;
+  let textEditor: atom$TextEditor = (null : any);
+  let textEditorView: HTMLElement = (null : any);
 
+  beforeEach(() => {
     waitsForPromise({timeout: 60000}, async () => {
       jasmineIntegrationTestSetup();
       // Activate atom packages.
@@ -36,7 +38,15 @@ describe('Python Integration Test', () => {
     });
 
     waitsForFile('Foo.py');
+  });
 
+  afterEach(() => {
+    // Deactivate nuclide packages.
+    deactivateAllPackages();
+  });
+
+
+  it('gives autocomplete suggestions', () => {
     runs(() => {
       // Trigger autocompletion.
       textEditor.setCursorBufferPosition([13, 1]);
@@ -57,8 +67,17 @@ describe('Python Integration Test', () => {
       // The first suggestion should be 'path' as in 'os.path'.
       // $FlowIgnore -- innerText is nonstandard.
       expect(autocompleteMenuView.querySelector('.word').innerText).toBe('path');
-      // Deactivate nuclide packages.
-      deactivateAllPackages();
     });
   });
+
+  it('supports hyperclicking to goto definitions', () => {
+    runs(() => {
+      textEditor.setCursorBufferPosition([6, 8]);
+      // shortcut key for hyperclick:confirm-cursor
+      dispatchKeyboardEvent('enter', document.activeElement, {cmd: true, alt: true});
+    });
+
+    waitsForFilePosition('os.py', 0, 0);
+  });
+
 });
