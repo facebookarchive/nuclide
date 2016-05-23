@@ -37,6 +37,7 @@ import {readArcConfig} from '../../nuclide-arcanist-base';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
+const DEFAULT_ARC_PROJECT_FORK_BASE = 'remote/master';
 const DEFAULT_FORK_BASE_NAME = 'default';
 
 const WATCHMAN_SUBSCRIPTION_NAME_PRIMARY = 'hg-repository-watchman-subscription-primary';
@@ -146,7 +147,9 @@ export type VcsLogResponse = {
 async function getForkBaseName(directoryPath: string): Promise<string> {
   const arcConfig = await readArcConfig(directoryPath);
   if (arcConfig != null) {
-    return arcConfig['arc.feature.start.default'] || arcConfig['arc.land.onto.default'];
+    return arcConfig['arc.feature.start.default']
+      || arcConfig['arc.land.onto.default']
+      || DEFAULT_ARC_PROJECT_FORK_BASE;
   }
   return DEFAULT_FORK_BASE_NAME;
 }
