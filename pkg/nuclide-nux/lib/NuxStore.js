@@ -34,7 +34,38 @@ export class NuxStore {
     //TODO [rageandqq | 05-19-16]: Deserialize 'saved' NUXes
     if (this._shouldSeedNux) {
       // TODO [rageandqq | 05-19-16]: Seed with sample NUX
+      this.addNewNux(this._createSampleNux());
     }
+  }
+
+  _createSampleNux(): NuxTourModel {
+    const nuxTriggerOutline = {
+      content: 'Check out the new Outline View!',
+      isCustomContent: false,
+      selector: '.icon-list-unordered',
+      selectorFunction: null,
+      position: 'right',
+      displayPredicate: (() => document.querySelector('div.nuclide-outline-view') == null),
+      completionPredicate: (() => document.querySelector('div.nuclide-outline-view') != null),
+      completed: false,
+    };
+    const nuxOutlineView = {
+      content: 'Click on a symbol to jump to its definition.',
+      isCustomContent: false,
+      selector: 'div.pane-item.nuclide-outline-view',
+      selectorFunction: null,
+      position: 'left',
+      displayPredicate: (() => document.querySelector('div.nuclide-outline-view') == null),
+      completionPredicate: null,
+      completed: false,
+    };
+    const sampleOutlineNuxTour = {
+      numNuxes: 2,
+      completed: false,
+      id: 'outline-view-tour',
+      nuxList: [nuxTriggerOutline, nuxOutlineView],
+    };
+    return sampleOutlineNuxTour;
   }
 
   addNewNux(nux: NuxTourModel) {
