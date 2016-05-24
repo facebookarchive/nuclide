@@ -13,7 +13,7 @@ import type {Metadata, Priority} from './types';
 
 // Example: [ 01-14 17:14:44.285   640:  656 E/KernelUidCpuTimeReader ]
 const METADATA_REGEX =
-  /^\[ (\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\s+(\d+):\s+(\d+)\s+(V|D|I|W|E|F|S)\/(\w+)\s+\]$/;
+  /^\[ (\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\s+(\d+):\s+(\d+)\s+(V|D|I|W|E|F|S)\/(.+) \]$/;
 
 export default function parseLogcatMetadata(line: string): ?Metadata {
   const match = line.match(METADATA_REGEX);
