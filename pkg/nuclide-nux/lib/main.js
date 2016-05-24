@@ -13,6 +13,7 @@ import {CompositeDisposable} from 'atom';
 
 const NUX_NAMESPACE = 'nuclide-nux';
 export const NUX_SAVED_STORE = `${NUX_NAMESPACE}.saved-nux-data-store`;
+export const NUX_SAMPLE_OUTLINE_VIEW_TOUR = `${NUX_NAMESPACE}.outline-view-tour`;
 
 class Activation {
   _disposables: CompositeDisposable;

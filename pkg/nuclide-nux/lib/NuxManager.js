@@ -10,11 +10,16 @@
  */
 
 import {CompositeDisposable, Emitter} from 'atom';
+import passesGK from '../../commons-node/passesGK';
+
 import {NuxStore} from './NuxStore';
 import {NuxTour} from './NuxTour';
 import {NuxView} from './NuxView';
+import {NUX_SAMPLE_OUTLINE_VIEW_TOUR} from './main';
 
 import type {NuxTourModel} from './NuxModel';
+
+const GK_NUX_OUTLINE_VIEW = 'nuclide_outline_view_nux';
 
 export class NuxManager {
   _nuxStore: NuxStore;
@@ -70,11 +75,12 @@ export class NuxManager {
       nuxTour,
       nuxTourModel,
     } = value;
-    //TODO [rageandqq | 05-19-16]: Determine if nux passes GK and then add to show queue
-    nuxTour.setNuxCompleteCallback(
-      this._nuxStore.onNuxCompleted.bind(this._nuxStore, nuxTourModel)
-    );
-    nuxTour.begin();
+    if (nuxTourModel.id === NUX_SAMPLE_OUTLINE_VIEW_TOUR && passesGK(GK_NUX_OUTLINE_VIEW)) {
+      nuxTour.setNuxCompleteCallback(
+        this._nuxStore.onNuxCompleted.bind(this._nuxStore, nuxTourModel)
+      );
+      nuxTour.begin();
+    }
   }
 
   dispose() : void {

@@ -14,7 +14,10 @@ import {Emitter} from 'atom';
 import type {NuxTourModel} from './NuxModel';
 import featureConfig from '../../nuclide-feature-config';
 
-import {NUX_SAVED_STORE} from './main';
+import {
+  NUX_SAVED_STORE,
+  NUX_SAMPLE_OUTLINE_VIEW_TOUR,
+} from './main';
 
 export class NuxStore {
   _emitter: atom$Emitter;
@@ -71,7 +74,7 @@ export class NuxStore {
     const sampleOutlineNuxTour = {
       numNuxes: 2,
       completed: false,
-      id: 'outline-view-tour',
+      id: NUX_SAMPLE_OUTLINE_VIEW_TOUR,
       nuxList: [nuxTriggerOutline, nuxOutlineView],
     };
     return sampleOutlineNuxTour;
