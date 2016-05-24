@@ -1,0 +1,5 @@
+{
+  "atom-workspace": {
+    "cmd-b": "nuclide-definition-preview:toggle"
+  }
+}

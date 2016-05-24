@@ -7,5 +7,19 @@
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"
+  },
+  "consumedServices": {
+    "nuclide-definition-service": {
+      "versions": {
+        "0.0.0": "consumeDefinitionService"
+      }
+    }
+  },
+  "providedServices": {
+    "nuclide-distraction-free-mode": {
+      "versions": {
+        "0.0.0": "getDistractionFreeModeProvider"
+      }
+    }
   }
 }

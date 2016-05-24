@@ -1,0 +1,26 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Beaker",
+          "submenu": [
+            {
+              "label": "Toggle",
+              "command": "nuclide-definition-preview:toggle"
+            },
+            {
+              "label": "Show",
+              "command": "nuclide-definition-preview:show"
+            },
+            {
+              "label": "Hide",
+              "command": "nuclide-definition-preview:hide"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
