@@ -18,7 +18,7 @@ import {asyncExecute} from '../../commons-node/process';
 import {PromiseQueue} from '../../commons-node/promise-executors';
 import {SearchResultType} from '../../nuclide-hack-common';
 import {getHackExecOptions, getUseIde} from './hack-config';
-import {callHHClientUsingConnection} from './HackConnection';
+import {callHHClientUsingProcess} from './HackProcess';
 
 const HH_SERVER_INIT_MESSAGE = 'hh_server still initializing';
 const HH_SERVER_BUSY_MESSAGE = 'hh_server is busy';
@@ -38,7 +38,7 @@ export async function callHHClient(
   filePath: string): Promise<?{hackRoot: string; result: string | Object}> {
 
   if (getUseIde()) {
-    return await callHHClientUsingConnection(args, processInput, filePath);
+    return await callHHClientUsingProcess(args, processInput, filePath);
   }
 
   if (!hhPromiseQueue) {
