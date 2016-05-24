@@ -26,7 +26,9 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
   constructor(props: mixed) {
     super(props);
     this._registerUpdate();
-    this.state = this._getState();
+    this.state = {
+      threadData: null,
+    };
     (this: any)._handleThreadsUpdated = this._handleThreadsUpdated.bind(this);
     (this: any)._handleClearInterface = this._handleClearInterface.bind(this);
   }
