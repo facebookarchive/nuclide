@@ -484,8 +484,6 @@ export class ConnectionMultiplexer {
         this._launchConnector == null ||
         getConfig().endDebugWhenNoRequests)) {
 
-      // TODO: When HHVM handles the 'stop' message correctly, we don't need to await this promise,
-      //       and we can delete this if check.  See: D3192728
       if (this._launchedScriptProcessPromise != null) {
         await this._launchedScriptProcessPromise;
         this._launchedScriptProcessPromise = null;
