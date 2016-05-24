@@ -21,7 +21,6 @@ export type NuxViewModel = {
 };
 
 export type NuxTourModel = {
-  numNuxes: number;
   completed: boolean;
   id: string;
   nuxList: Array<NuxViewModel>;

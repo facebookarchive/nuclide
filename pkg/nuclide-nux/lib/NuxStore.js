@@ -72,7 +72,6 @@ export class NuxStore {
       completed: false,
     };
     const sampleOutlineNuxTour = {
-      numNuxes: 2,
       completed: false,
       id: NUX_SAMPLE_OUTLINE_VIEW_TOUR,
       nuxList: [nuxTriggerOutline, nuxOutlineView],
