@@ -14,7 +14,7 @@ export type NuxViewModel = {
   isCustomContent: boolean;
   selector: ?string;
   selectorFunction: ?(() => HTMLElement);
-  position: string;
+  position: 'top' | 'bottom' | 'left' | 'right' | 'auto';
   displayPredicate: ?(() => boolean);
   completionPredicate: ?(() => boolean);
   completed: boolean;
