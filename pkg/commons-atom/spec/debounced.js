@@ -9,14 +9,16 @@
  * the root directory of this source tree.
  */
 
+import {Point} from 'atom';
 import {Observable} from 'rxjs';
-
 import {
   onWorkspaceDidStopChangingActivePaneItem,
   observeActivePaneItemDebounced,
   observeActiveEditorsDebounced,
   editorChangesDebounced,
+  observeTextEditorsPositions,
 } from '../debounced';
+import {goToLocationInEditor} from '../go-to-location';
 
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 
@@ -25,6 +27,8 @@ const DEBOUNCE_INTERVAL = 10;
 // Longer than DEBOUNCE_INTERVAL so when we wait for this amount of time, a debounced event will be
 // emitted.
 const SLEEP_INTERVAL = 15;
+// Sleep interval for double the debounce interval.
+const SLEEP_INTERVAL_2 = 25;
 
 describe('pane item change events', () => {
   let pane: atom$Pane = (null: any);
@@ -149,6 +153,50 @@ describe('pane item change events', () => {
         pane.activateItem(editor2);
 
         expect(await itemsPromise).toEqual([editor1, null, editor2]);
+      });
+    });
+  });
+
+  describe('observeTextEditorsPositions', () => {
+    it('cursor moves and non-editors', () => {
+      waitsForPromise(async () => {
+        const itemsPromise = observeTextEditorsPositions(DEBOUNCE_INTERVAL, DEBOUNCE_INTERVAL)
+          .take(5)
+          .toArray()
+          .toPromise();
+        await sleep(SLEEP_INTERVAL_2);
+        goToLocationInEditor(editor1, 3, 4);
+        await sleep(SLEEP_INTERVAL_2);
+        pane.activateItem(nonEditor);
+        await sleep(SLEEP_INTERVAL_2);
+        goToLocationInEditor(editor1, 0, 0);
+        await sleep(SLEEP_INTERVAL_2);
+        pane.activateItem(editor2);
+        await sleep(SLEEP_INTERVAL_2);
+        goToLocationInEditor(editor1, 3, 4);
+        await sleep(SLEEP_INTERVAL_2);
+        goToLocationInEditor(editor2, 1, 1);
+        await sleep(SLEEP_INTERVAL_2);
+
+        expect(await itemsPromise).toEqual([
+          {
+            editor: editor1,
+            position: new Point(4, 0),
+          },
+          {
+            editor: editor1,
+            position: new Point(3, 4),
+          },
+          null,
+          {
+            editor: editor2,
+            position: new Point(3, 0),
+          },
+          {
+            editor: editor2,
+            position: new Point(1, 1),
+          },
+        ]);
       });
     });
   });

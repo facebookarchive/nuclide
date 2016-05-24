@@ -22,9 +22,12 @@ import {Observable} from 'rxjs';
 
 import {observableFromSubscribeFunction} from '../commons-node/event';
 import debounce from '../commons-node/debounce';
+import {getCursorPositions} from './text-editor';
+import invariant from 'assert';
 
 const DEFAULT_PANE_DEBOUNCE_INTERVAL_MS = 100;
 const DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS = 300;
+const DEFAULT_POSITION_DEBOUNCE_INTERVAL_MS = 300;
 
 /**
  * Similar to Atom's Workspace::onDidChangeActivePaneItem
@@ -80,4 +83,28 @@ export function editorScrollTopDebounced(
   return observableFromSubscribeFunction(
     callback => atom.views.getView(editor).onDidChangeScrollTop(callback)
   ).debounceTime(debounceInterval);
+}
+
+export type EditorPosition = {
+  editor: atom$TextEditor;
+  position: atom$Point;
+};
+
+// Yields null when the current pane is not an editor,
+// otherwise yields events on each move of the primary cursor within any Editor.
+export function observeTextEditorsPositions(
+  editorDebounceInterval: number = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS,
+  positionDebounceInterval: number = DEFAULT_POSITION_DEBOUNCE_INTERVAL_MS,
+): Observable<?EditorPosition> {
+  return observeActiveEditorsDebounced(editorDebounceInterval).switchMap(
+    editor => {
+      return editor == null
+        ? Observable.of(null)
+        : getCursorPositions(editor)
+            .debounceTime(positionDebounceInterval)
+            .map(position => {
+              invariant(editor != null);
+              return {editor, position};
+            });
+    });
 }
