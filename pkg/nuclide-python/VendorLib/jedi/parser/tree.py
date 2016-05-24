@@ -248,10 +248,6 @@ class LeafWithNewLines(Leaf):
         return end_pos_line, end_pos_col
 
 
-    @utf8_repr
-    def __repr__(self):
-        return "<%s: %r>" % (type(self).__name__, self.value)
-
 class Whitespace(LeafWithNewLines):
     """Contains NEWLINE and ENDMARKER tokens."""
     __slots__ = ()
@@ -752,6 +748,15 @@ def _create_params(parent, argslist_list):
 class Function(ClassOrFunc):
     """
     Used to store the parsed contents of a python function.
+
+    Children:
+      0) <Keyword: def>
+      1) <Name>
+      2) parameter list (including open-paren and close-paren <Operator>s)
+      3) <Operator: :>
+      4) Node() representing function body
+      5) ??
+      6) annotation (if present)
     """
     __slots__ = ('listeners',)
     type = 'funcdef'
@@ -764,6 +769,7 @@ class Function(ClassOrFunc):
 
     @property
     def params(self):
+        # Contents of parameter lit minus the leading <Operator: (> and the trailing <Operator: )>.
         return self.children[2].children[1:-1]
 
     @property
@@ -795,10 +801,13 @@ class Function(ClassOrFunc):
 
         :rtype: str
         """
-        func_name = func_name or self.children[1]
-        code = unicode(func_name) + self.children[2].get_code()
+        func_name = func_name or self.name
+        code = unicode(func_name) + self._get_paramlist_code()
         return '\n'.join(textwrap.wrap(code, width))
 
+    def _get_paramlist_code(self):
+        return self.children[2].get_code()
+    
     @property
     def doc(self):
         """ Return a document string including call signature. """
@@ -809,6 +818,12 @@ class Function(ClassOrFunc):
 class Lambda(Function):
     """
     Lambdas are basically trimmed functions, so give it the same interface.
+
+    Children:
+       0) <Keyword: lambda>
+       *) <Param x> for each argument x
+      -2) <Operator: :>
+      -1) Node() representing body
     """
     type = 'lambda'
     __slots__ = ()
@@ -817,9 +832,17 @@ class Lambda(Function):
         # We don't want to call the Function constructor, call its parent.
         super(Function, self).__init__(children)
         self.listeners = set()  # not used here, but in evaluation.
-        lst = self.children[1:-2]  # After `def foo`
+        lst = self.children[1:-2]  # Everything between `lambda` and the `:` operator is a parameter.
         self.children[1:-2] = _create_params(self, lst)
 
+    @property
+    def name(self):
+        # Borrow the position of the <Keyword: lambda> AST node.
+        return Name(self.children[0].position_modifier, '<lambda>', self.children[0].start_pos)
+
+    def _get_paramlist_code(self):
+        return '(' + ''.join(param.get_code() for param in self.params).strip() + ')'
+    
     @property
     def params(self):
         return self.children[1:-2]
@@ -827,6 +850,7 @@ class Lambda(Function):
     def is_generator(self):
         return False
 
+    @property
     def yields(self):
         return []
 

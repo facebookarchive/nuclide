@@ -342,7 +342,7 @@ class Importer(object):
             module_file.close()
 
         if module_file is None and not module_path.endswith('.py'):
-            module = compiled.load_module(module_path)
+            module = compiled.load_module(self._evaluator, module_path)
         else:
             module = _load_module(self._evaluator, module_path, source, sys_path)
 
@@ -440,11 +440,14 @@ def _load_module(evaluator, path=None, source=None, sys_path=None):
                 with open(path, 'rb') as f:
                     source = f.read()
         else:
-            return compiled.load_module(path)
+            return compiled.load_module(evaluator, path)
         p = path
         p = fast.FastParser(evaluator.grammar, common.source_to_unicode(source), p)
         cache.save_parser(path, p)
         return p.module
+
+    if sys_path is None:
+        sys_path = evaluator.sys_path
 
     cached = cache.load_parser(path)
     module = load(source) if cached is None else cached.module

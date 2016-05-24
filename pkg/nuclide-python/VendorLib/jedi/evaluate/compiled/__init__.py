@@ -10,7 +10,6 @@ from functools import partial
 from jedi._compatibility import builtins as _builtins, unicode
 from jedi import debug
 from jedi.cache import underscore_memoization, memoize_method
-from jedi.evaluate.sys_path import get_sys_path
 from jedi.parser.tree import Param, Base, Operator, zero_position_modifier
 from jedi.evaluate.helpers import FakeName
 from . import fake
@@ -309,15 +308,12 @@ class CompiledName(FakeName):
         pass  # Just ignore this, FakeName tries to overwrite the parent attribute.
 
 
-def dotted_from_fs_path(fs_path, sys_path=None):
+def dotted_from_fs_path(fs_path, sys_path):
     """
     Changes `/usr/lib/python3.4/email/utils.py` to `email.utils`.  I.e.
     compares the path with sys.path and then returns the dotted_path. If the
     path is not in the sys.path, just returns None.
     """
-    if sys_path is None:
-        sys_path = get_sys_path()
-
     if os.path.basename(fs_path).startswith('__init__.'):
         # We are calculating the path. __init__ files are not interesting.
         fs_path = os.path.dirname(fs_path)
@@ -341,13 +337,13 @@ def dotted_from_fs_path(fs_path, sys_path=None):
     return _path_re.sub('', fs_path[len(path):].lstrip(os.path.sep)).replace(os.path.sep, '.')
 
 
-def load_module(path=None, name=None):
+def load_module(evaluator, path=None, name=None):
+    sys_path = evaluator.sys_path
     if path is not None:
-        dotted_path = dotted_from_fs_path(path)
+        dotted_path = dotted_from_fs_path(path, sys_path=sys_path)
     else:
         dotted_path = name
 
-    sys_path = get_sys_path()
     if dotted_path is None:
         p, _, dotted_path = path.partition(os.path.sep)
         sys_path.insert(0, p)

@@ -207,21 +207,6 @@ class dict():
         return d
 
 
-class enumerate():
-    def __init__(self, sequence, start=0):
-        self.__sequence = sequence
-
-    def __iter__(self):
-        for i in self.__sequence:
-            yield 1, i
-
-    def __next__(self):
-        return next(self.__iter__())
-
-    def next(self):
-        return next(self.__iter__())
-
-
 class reversed():
     def __init__(self, sequence):
         self.__sequence = sequence

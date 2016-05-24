@@ -3,6 +3,9 @@ The API basically only provides one class. You can create a :class:`Script` and
 use its methods.
 
 Additionally you can add a debug function with :func:`set_debug_function`.
+Alternatively, if you don't need a custom function and are happy with printing
+debug messages to stdout, simply call :func:`set_debug_function` without
+arguments.
 
 .. warning:: Please, note that Jedi is **not thread safe**.
 """
@@ -34,6 +37,7 @@ from jedi.evaluate.cache import memoize_default
 from jedi.evaluate.helpers import FakeName, get_module_names
 from jedi.evaluate.finder import global_names_dict_generator, filter_definition_names
 from jedi.evaluate import analysis
+from jedi.evaluate.sys_path import get_venv_path
 
 # Jedi uses lots and lots of recursion. By setting this a little bit higher, we
 # can remove some "maximum recursion depth" errors.
@@ -58,12 +62,24 @@ class Script(object):
     You can either use the ``source`` parameter or ``path`` to read a file.
     Usually you're going to want to use both of them (in an editor).
 
+    The script might be analyzed in a different ``sys.path`` than |jedi|:
+
+    - if `sys_path` parameter is not ``None``, it will be used as ``sys.path``
+      for the script;
+
+    - if `sys_path` parameter is ``None`` and ``VIRTUAL_ENV`` environment
+      variable is defined, ``sys.path`` for the specified environment will be
+      guessed (see :func:`jedi.evaluate.sys_path.get_venv_path`) and used for
+      the script;
+
+    - otherwise ``sys.path`` will match that of |jedi|.
+
     :param source: The source code of the current file, separated by newlines.
     :type source: str
     :param line: The line to perform actions on (starting with 1).
     :type line: int
-    :param column: The column of the cursor (starting with 0).
-    :type column: int
+    :param col: The column of the cursor (starting with 0).
+    :type col: int
     :param path: The path of the file in the file system, or ``''`` if
         it hasn't been saved yet.
     :type path: str or None
@@ -73,9 +89,13 @@ class Script(object):
     :param source_encoding: The encoding of ``source``, if it is not a
         ``unicode`` object (default ``'utf-8'``).
     :type encoding: str
+    :param sys_path: ``sys.path`` to use during analysis of the script
+    :type sys_path: list
+
     """
     def __init__(self, source=None, line=None, column=None, path=None,
-                 encoding='utf-8', source_path=None, source_encoding=None):
+                 encoding='utf-8', source_path=None, source_encoding=None,
+                 sys_path=None):
         if source_path is not None:
             warnings.warn("Use path instead of source_path.", DeprecationWarning)
             path = source_path
@@ -109,7 +129,11 @@ class Script(object):
         self._parser = UserContextParser(self._grammar, self.source, path,
                                          self._pos, self._user_context,
                                          self._parsed_callback)
-        self._evaluator = Evaluator(self._grammar)
+        if sys_path is None:
+            venv = os.getenv('VIRTUAL_ENV')
+            if venv:
+                sys_path = list(get_venv_path(venv))
+        self._evaluator = Evaluator(self._grammar, sys_path=sys_path)
         debug.speed('init')
 
     def _parsed_callback(self, parser):
@@ -157,7 +181,7 @@ class Script(object):
                     if unfinished_dotted:
                         return completion_names
                     else:
-                        return set([keywords.keyword('import').name])
+                        return keywords.keyword_names('import')
 
             if isinstance(user_stmt, tree.Import):
                 module = self._parser.module()
@@ -168,11 +192,7 @@ class Script(object):
             if names is None and not isinstance(user_stmt, tree.Import):
                 if not path and not dot:
                     # add keywords
-                    completion_names += keywords.completion_names(
-                        self._evaluator,
-                        user_stmt,
-                        self._pos,
-                        module)
+                    completion_names += keywords.keyword_names(all=True)
                     # TODO delete? We should search for valid parser
                     # transformations.
                 completion_names += self._simple_complete(path, dot, like)
@@ -704,6 +724,8 @@ def set_debug_function(func_cb=debug.print_to_stdout, warnings=True,
                        notices=True, speed=True):
     """
     Define a callback debug function to get all the debug messages.
+
+    If you don't specify any arguments, debug messages will be printed to stdout.
 
     :param func_cb: The callback function for debug messages, with n params.
     """

@@ -1,6 +1,7 @@
 import glob
 import os
 import sys
+from jedi.evaluate.site import addsitedir
 
 from jedi._compatibility import exec_function, unicode
 from jedi.parser import tree
@@ -11,24 +12,51 @@ from jedi import common
 from jedi import cache
 
 
-def get_sys_path():
-    def check_virtual_env(sys_path):
-        """ Add virtualenv's site-packages to the `sys.path`."""
-        venv = os.getenv('VIRTUAL_ENV')
-        if not venv:
-            return
-        venv = os.path.abspath(venv)
-        p = _get_venv_sitepackages(venv)
-        if p not in sys_path:
-            sys_path.insert(0, p)
+def get_venv_path(venv):
+    """Get sys.path for specified virtual environment."""
+    sys_path = _get_venv_path_dirs(venv)
+    with common.ignored(ValueError):
+        sys_path.remove('')
+    sys_path = _get_sys_path_with_egglinks(sys_path)
+    # As of now, get_venv_path_dirs does not scan built-in pythonpath and
+    # user-local site-packages, let's approximate them using path from Jedi
+    # interpreter.
+    return sys_path + sys.path
 
-        # Add all egg-links from the virtualenv.
-        for egg_link in glob.glob(os.path.join(p, '*.egg-link')):
+
+def _get_sys_path_with_egglinks(sys_path):
+    """Find all paths including those referenced by egg-links.
+
+    Egg-link-referenced directories are inserted into path immediately after
+    the directory on which their links were found.  Such directories are not
+    taken into consideration by normal import mechanism, but they are traversed
+    when doing pkg_resources.require.
+    """
+    result = []
+    for p in sys_path:
+        result.append(p)
+        # pkg_resources does not define a specific order for egg-link files
+        # using os.listdir to enumerate them, we're sorting them to have
+        # reproducible tests.
+        for egg_link in sorted(glob.glob(os.path.join(p, '*.egg-link'))):
             with open(egg_link) as fd:
-                sys_path.insert(0, fd.readline().rstrip())
+                for line in fd:
+                    line = line.strip()
+                    if line:
+                        result.append(os.path.join(p, line))
+                        # pkg_resources package only interprets the first
+                        # non-empty line in egg-link files.
+                        break
+    return result
 
-    check_virtual_env(sys.path)
-    return [p for p in sys.path if p != ""]
+
+def _get_venv_path_dirs(venv):
+    """Get sys.path for venv without starting up the interpreter."""
+    venv = os.path.abspath(venv)
+    sitedir = _get_venv_sitepackages(venv)
+    sys_path = []
+    addsitedir(sys_path, sitedir)
+    return sys_path
 
 
 def _get_venv_sitepackages(venv):
@@ -109,7 +137,6 @@ def _paths_from_list_modifications(module_path, trailer1, trailer2):
     name = trailer1.children[1].value
     if name not in ['insert', 'append']:
         return []
-
     arg = trailer2.children[1]
     if name == 'insert' and len(arg.children) in (3, 4):  # Possible trailing comma.
         arg = arg.children[2]
@@ -117,6 +144,9 @@ def _paths_from_list_modifications(module_path, trailer1, trailer2):
 
 
 def _check_module(evaluator, module):
+    """
+    Detect sys.path modifications within module.
+    """
     def get_sys_path_powers(names):
         for name in names:
             power = name.parent.parent
@@ -128,10 +158,12 @@ def _check_module(evaluator, module):
                     if isinstance(n, tree.Name) and n.value == 'path':
                         yield name, power
 
-    sys_path = list(get_sys_path())  # copy
+    sys_path = list(evaluator.sys_path)  # copy
     try:
         possible_names = module.used_names['path']
     except KeyError:
+        # module.used_names is MergedNamesDict whose getitem never throws
+        # keyerror, this is superfluous.
         pass
     else:
         for name, power in get_sys_path_powers(possible_names):
@@ -148,7 +180,7 @@ def sys_path_with_modifications(evaluator, module):
     if module.path is None:
         # Support for modules without a path is bad, therefore return the
         # normal path.
-        return list(get_sys_path())
+        return list(evaluator.sys_path)
 
     curdir = os.path.abspath(os.curdir)
     with common.ignored(OSError):
