@@ -1,5 +1,27 @@
 # Nuclide Changelog
 
+## v0.139.0
+
+**Python**
+
+* Experimental: Autocompletion and go-to-definition for Python files.
+
+**Hack**
+
+* Debugger warns if HPHPD is attached.
+
+**C++**
+
+* Automatically select the first frame with source code during C++ debugging pause.
+* Auto refresh C++ debugger attach process list.
+* Decreased resource usage of background indexing processes.
+
+**Buck**
+
+* Added loading indicator for target selector.
+* Re-enabled build progress indicator in the toolbar
+* iOS simulator dropdown is now hidden for non-iOS projects.
+
 ## v0.138.0
 
 Hotfix for an error being thrown during the upgrade process from <0.136 to >=0.137
