@@ -11,8 +11,6 @@
 
 import invariant from 'assert';
 import {Observable, Subscription, Subject} from 'rxjs';
-// $FlowFixMe(matthewwithanm): Replace this with Observable.prototype.pairwise when we upgrade
-import {pairwise} from 'rxjs/operator/pairwise';
 
 /**
  * Observe a stream like stdout or stderr.
@@ -172,9 +170,9 @@ class CacheWhileSubscribedSubject<T> extends Subject<T> {
     this._hasCachedValue = false;
   }
 
-  _next(value: T): void {
+  next(value: T): void {
     this._setCachedValue(value);
-    super._next(value);
+    super.next(value);
   }
 
   _subscribe(subscriber: any): Subscription {
@@ -232,13 +230,13 @@ function setsAreEqual<T>(a: Set<T>, b: Set<T>): boolean {
  * **IMPORTANT:** These sets are assumed to be immutable by convention. Don't mutate them!
  */
 export function diffSets<T>(stream: Observable<Set<T>>): Observable<Diff<T>> {
-  return pairwise.call(
-    Observable.concat(
+  return Observable.concat(
       Observable.of(new Set()), // Always start with no items with an empty set
       stream,
     )
     .distinctUntilChanged(setsAreEqual)
-  )
+    // $FlowFixMe(matthewwithanm): Type this.
+    .pairwise()
     .map(([previous, next]) => ({
       added: subtractSet(next, previous),
       removed: subtractSet(previous, next),

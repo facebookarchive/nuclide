@@ -16,8 +16,6 @@ import {observableFromSubscribeFunction} from '../../commons-node/event';
 import * as ActionTypes from './ActionTypes';
 import {getActiveBuildSystem} from './getActiveBuildSystem';
 import {Observable} from 'rxjs';
-// $FlowIssue: Flow doesn't recognize this nested module.
-import {using as observableUsing} from 'rxjs/observable/using';
 import invariant from 'assert';
 
 const HANDLED_ACTION_TYPES = [
@@ -111,7 +109,8 @@ export function applyActionMiddleware(
  * Run a task and transform its output into domain-specific actions.
  */
 function runTask(buildSystem: BuildSystem, task: Task): Observable<Action> {
-  return observableUsing(
+  // $FlowFixMe(matthewwithanm): Type this.
+  return Observable.using(
     () => {
       let taskInfo = buildSystem.runTask(task.type);
       // We may call cancel multiple times so let's make sure it's idempotent.
