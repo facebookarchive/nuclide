@@ -37,6 +37,10 @@ export class NuxManager {
   }
 
   _handleNewNux(nuxTourModel: NuxTourModel): void {
+    if (nuxTourModel.completed) {
+      return;
+    }
+
     const nuxViews = nuxTourModel.nuxList.map(model =>
       new NuxView(
         model.selector,
@@ -52,11 +56,24 @@ export class NuxManager {
     const nuxTour = new NuxTour(nuxTourModel.id, nuxViews);
     this._nuxTours.push(nuxTour);
 
-    this._emitter.emit('newTour', nuxTour);
+    this._emitter.emit(
+      'newTour',
+      {
+        nuxTour: nuxTour,
+        nuxTourModel: nuxTourModel,
+      },
+    );
   }
 
-  _handleNewTour(nuxTour: NuxTour) {
+  _handleNewTour(value: any) {
+    const {
+      nuxTour,
+      nuxTourModel,
+    } = value;
     //TODO [rageandqq | 05-19-16]: Determine if nux passes GK and then add to show queue
+    nuxTour.setNuxCompleteCallback(
+      this._nuxStore.onNuxCompleted.bind(this._nuxStore, nuxTourModel)
+    );
     nuxTour.begin();
   }
 

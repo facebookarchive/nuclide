@@ -10,7 +10,11 @@
  */
 
 import {Emitter} from 'atom';
+
 import type {NuxTourModel} from './NuxModel';
+import featureConfig from '../../nuclide-feature-config';
+
+import {NUX_SAVED_STORE} from './main';
 
 export class NuxStore {
   _emitter: atom$Emitter;
@@ -30,10 +34,15 @@ export class NuxStore {
     this._emitter.dispose();
   }
 
+  // Tries to load saved NUXes.
+  // If none exist, will attempt to seed a NUX iff `_seedNux` is true.
   initialize(): void {
-    //TODO [rageandqq | 05-19-16]: Deserialize 'saved' NUXes
+    const serializedNuxes = featureConfig.get(NUX_SAVED_STORE);
+    if (Array.isArray(serializedNuxes)) {
+      serializedNuxes.forEach((nux: NuxTourModel) => { this.addNewNux(nux); });
+      return;
+    }
     if (this._shouldSeedNux) {
-      // TODO [rageandqq | 05-19-16]: Seed with sample NUX
       this.addNewNux(this._createSampleNux());
     }
   }
@@ -55,7 +64,7 @@ export class NuxStore {
       selector: 'div.pane-item.nuclide-outline-view',
       selectorFunction: null,
       position: 'left',
-      displayPredicate: (() => document.querySelector('div.nuclide-outline-view') == null),
+      displayPredicate: (() => document.querySelector('div.nuclide-outline-view') != null),
       completionPredicate: null,
       completed: false,
     };
@@ -73,6 +82,14 @@ export class NuxStore {
     this._emitter.emit('newNux', nux);
   }
 
+  serialize(): void {
+    this._saveNuxState();
+  }
+
+  _saveNuxState(): void {
+    featureConfig.set(NUX_SAVED_STORE, this._nuxList);
+  }
+
   /**
    * Register a change handler that is invoked whenever the store changes.
    */
@@ -80,9 +97,18 @@ export class NuxStore {
     return this._emitter.on('newNux', callback);
   }
 
-  onNuxCompleted(nux: NuxTourModel): void {
-    const nuxToMark = this._nuxList.find(tour => tour.id === nux.id);
+  onNuxCompleted(nuxModel: NuxTourModel): void {
+    const nuxToMark = this._nuxList.find(tour => tour.id === nuxModel.id);
+    if (nuxToMark == null) {
+      return;
+    }
+    nuxToMark.nuxList.forEach(nux => { nux.completed = true; });
+    for (let i = 0; i < nuxToMark.nuxList.length; i++) {
+      // It's possible that some NuxViews were skipped, and thus not completed.
+      // This can be used for internal tracking and logging more useful data.
+      nuxToMark.nuxList[i].completed = nuxModel.nuxList[i].completed;
+    }
     nuxToMark.completed = true;
-    // TODO [rageandqq | 05-19-16]: Save 'completed' state of nux.
+    this._saveNuxState();
   }
 }

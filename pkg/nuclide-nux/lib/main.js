@@ -11,6 +11,9 @@
 
 import {CompositeDisposable} from 'atom';
 
+const NUX_NAMESPACE = 'nuclide-nux';
+export const NUX_SAVED_STORE = `${NUX_NAMESPACE}.saved-nux-data-store`;
+
 class Activation {
   _disposables: CompositeDisposable;
 
@@ -25,7 +28,7 @@ class Activation {
 
 let activation: ?Activation = null;
 
-export function activate(state: ?mixed): void {
+export function activate(): void {
   activation = new Activation();
 }
 
