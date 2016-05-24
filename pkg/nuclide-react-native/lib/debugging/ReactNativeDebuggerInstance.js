@@ -39,18 +39,10 @@ export class ReactNativeDebuggerInstance extends DebuggerInstance {
     let didConnect;
     this._connected = new Promise(resolve => { didConnect = resolve; });
 
-    const session$ = Rx.Observable.create(observer => (
-      // `Session` is particular about what order everything is closed in, so we manage it carefully
-      // here.
-      new CompositeSubscription(
-        uiConnection$
-          .combineLatest(pid$)
-          .switchMap(([ws, pid]) => createSessionStream(ws, debugPort))
-          .subscribe(observer),
-        uiConnection$.connect(),
-        pid$.connect(),
-      )
-    ));
+    const session$ = uiConnection$
+      .combineLatest(pid$)
+      .switchMap(([ws, pid]) => createSessionStream(ws, debugPort))
+      .publish();
 
     this._subscriptions = new CompositeSubscription(
       // Tell the user if we can't connect to the debugger UI.
@@ -72,7 +64,10 @@ export class ReactNativeDebuggerInstance extends DebuggerInstance {
 
       pid$.first().subscribe(() => { didConnect(); }),
 
-      session$.subscribe(),
+      // Explicitly manage connection.
+      uiConnection$.connect(),
+      session$.connect(),
+      pid$.connect(),
     );
   }
 
