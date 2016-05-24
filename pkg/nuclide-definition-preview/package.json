@@ -1,0 +1,11 @@
+{
+  "name": "nuclide-definition-preview",
+  "description": "Show preview of definitions while browsing code",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  }
+}
