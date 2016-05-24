@@ -40,6 +40,16 @@ export default function search(directory: string, regex: RegExp, subdirs: Array<
   if (!subdirs || subdirs.length === 0) {
     // Since no subdirs were specified, run search on the root directory.
     return searchInSubdir(matchesByFile, directory, '.', regex);
+  } else if (subdirs.length === 1 && subdirs[0].includes('*')) {
+    // Filters results by glob specified in subdirs[0]
+    const unfilteredResults: Observable<search$FileResult>
+      = searchInSubdir(matchesByFile, directory, '.', regex);
+
+    return unfilteredResults.filter(result => {
+      const glob: string = subdirs[0];
+      const matches = result.filePath.match(globToRegex(glob));
+      return (matches != null) && (matches.length > 0);
+    });
   } else {
     // Run the search on each subdirectory that exists.
     return Observable.from(subdirs).concatMap(async subdir => {
@@ -166,4 +176,14 @@ function getLinesFromCommand(command: string, args: Array<string>, localDirector
       }
     };
   });
+}
+
+// Converts a wildcard string to JS RegExp.
+function globToRegex(str): RegExp {
+  return new RegExp(preg_quote(str).replace(/\\\*/g, '.*').replace(/\\\?/g, '.'), 'g');
+}
+
+function preg_quote(str, delimiter) {
+  return String(str).replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!<>|:\\'
+    + (delimiter || '') + '-]', 'g'), '\\$&');
 }

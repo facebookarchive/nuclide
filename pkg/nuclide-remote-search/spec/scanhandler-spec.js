@@ -83,7 +83,6 @@ describe('Scan Handler Tests', () => {
       fs.writeFileSync(path.join(folder, 'dir2', 'file.txt'), testCode);
       fs.mkdirSync(path.join(folder, 'dir3'));
       fs.writeFileSync(path.join(folder, 'dir3', 'file.txt'), testCode);
-
       const results = await search(
         folder, /hello world/i, ['dir2', 'dir3', 'nonexistantdir']
       ).toArray().toPromise();
@@ -92,6 +91,26 @@ describe('Scan Handler Tests', () => {
       );
 
       // Sort the list of matches by filename to normalize order.
+      sortResults(results);
+      expect(results).diffJson(expected);
+    });
+  });
+
+  it('Should include results from files matching wildcard path name', () => {
+    waitsForPromise(async () => {
+      // Create test folders and files
+      const folder = temp.mkdirSync();
+      const fileContents = 'console.log("a wildcard appears!");';
+      // Create foo.js, foo.py
+      fs.writeFileSync(path.join(folder, 'foo.js'), fileContents);
+      fs.writeFileSync(path.join(folder, 'foo.py'), fileContents);
+      const results = await search(
+        folder, /a wildcard appears/i, ['*.js']
+      ).toArray().toPromise();
+      const expected = JSON.parse(
+        fs.readFileSync(path.join(__dirname, 'fixtures', 'wildcard.json'), 'utf8')
+      );
+
       sortResults(results);
       expect(results).diffJson(expected);
     });
