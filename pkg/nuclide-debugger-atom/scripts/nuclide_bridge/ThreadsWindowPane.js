@@ -119,8 +119,15 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
           threadData.stopThreadId,
           threadData.selectedThreadId
         );
+        const rowStyle = {};
+        if (thread.id === threadData.selectedThreadId) {
+          rowStyle.backgroundColor = '#cfcfcf';
+        }
         children.push((
-          <tr align="center" onDoubleClick={this._handleDoubleClick.bind(this, thread)}>
+          <tr
+            align="center"
+            onDoubleClick={this._handleDoubleClick.bind(this, thread)}
+            style={rowStyle}>
             <td>{indicator}</td>
             <td>{thread.id}</td>
             <td>{thread.address}</td>
