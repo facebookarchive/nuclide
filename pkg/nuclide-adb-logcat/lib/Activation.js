@@ -77,7 +77,7 @@ class Activation {
 
   consumeOutputService(api: OutputService): IDisposable {
     return api.registerOutputProvider({
-      source: 'adb logcat',
+      id: 'adb logcat',
       messages: this._logTailer.getMessages(),
     });
   }

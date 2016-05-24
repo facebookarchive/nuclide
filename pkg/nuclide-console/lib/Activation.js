@@ -107,7 +107,7 @@ class Activation {
           }
           return new Disposable(() => {
             if (commands != null) {
-              commands.removeSource(outputProvider.source);
+              commands.removeSource(outputProvider.id);
             }
           });
         },

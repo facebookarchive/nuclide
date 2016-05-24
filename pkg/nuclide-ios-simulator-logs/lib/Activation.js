@@ -56,7 +56,7 @@ class Activation {
 
   consumeOutputService(api: OutputService): IDisposable {
     return api.registerOutputProvider({
-      source: 'iOS Simulator Logs',
+      id: 'iOS Simulator Logs',
       messages: this._logTailer.getMessages(),
     });
   }

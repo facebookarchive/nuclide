@@ -28,7 +28,7 @@ export function registerOutputWindowLogging(userOutputStream: Observable<string>
   let outputDisposable = null;
   if (api != null) {
     outputDisposable = api.registerOutputProvider({
-      source: 'lldb debugger',
+      id: 'lldb debugger',
       messages: userOutputStream.map(message => JSON.parse(message)),
     });
   }

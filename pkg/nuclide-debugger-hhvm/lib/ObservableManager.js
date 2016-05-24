@@ -94,7 +94,7 @@ export class ObservableManager {
         complete: this._handleOutputWindowEnd.bind(this),
       })));
       this._disposables.add(api.registerOutputProvider({
-        source: 'hhvm debugger',
+        id: 'hhvm debugger',
         messages,
       }));
     } else {

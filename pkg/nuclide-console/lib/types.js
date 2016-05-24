@@ -29,7 +29,7 @@ type Response = Message;
 // Messages are transformed into these.
 export type Record = Message & {
   kind: MessageKind;
-  source: string;
+  sourceId: string;
   scopeName: ?string;
 };
 
@@ -47,12 +47,12 @@ export type OutputProvider = {
 
   // The source can't be part of the message because we want to be able to populate a filter menu
   // before we even have any messages.
-  source: string;
+  id: string;
 };
 
 export type RecordProvider = {
   records: Rx.Observable<Record>;
-  source: string;
+  id: string;
 };
 
 export type OutputService = {

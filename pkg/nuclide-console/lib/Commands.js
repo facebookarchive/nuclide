@@ -70,11 +70,11 @@ export default class Commands {
       payload: {executor},
     });
     this._registerRecordProvider({
-      source: executor.id,
+      id: executor.id,
       records: executor.output.map(message => ({
         ...message,
         kind: 'response',
-        source: executor.id,
+        sourceId: executor.id,
         scopeName: null, // The output won't be in the language's grammar.
       })),
     });
@@ -90,7 +90,7 @@ export default class Commands {
         .map(message => ({
           ...message,
           kind: 'message',
-          source: outputProvider.source,
+          sourceId: outputProvider.id,
           scopeName: null,
         })),
     });

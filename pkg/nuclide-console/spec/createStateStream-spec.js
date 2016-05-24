@@ -94,7 +94,7 @@ describe('createStateStream', () => {
           type: ActionTypes.PROVIDER_REGISTERED,
           payload: {
             recordProvider: {
-              source: 'test',
+              sourceId: 'test',
               records: Rx.Observable.empty(),
             },
           },
@@ -122,7 +122,7 @@ describe('createStateStream', () => {
       waitsForPromise(async () => {
         initialRecords = [{
           kind: 'message',
-          source: 'Test',
+          sourceId: 'Test',
           level: 'info',
           text: 'test',
           scopeName: null,

@@ -60,7 +60,7 @@ export function consumeOutputService(service: OutputService): void {
   invariant(disposables != null);
   disposables.add(service.registerOutputProvider({
     messages: getBuildSystem().getOutputMessages(),
-    source: 'Buck',
+    id: 'Buck',
   }));
 }
 

@@ -49,9 +49,9 @@ function accumulateState(state: AppState, action: Object): AppState {
       const {recordProvider, subscription} = action.payload;
       return {
         ...state,
-        providers: new Map(state.providers).set(recordProvider.source, recordProvider),
+        providers: new Map(state.providers).set(recordProvider.id, recordProvider),
         providerSubscriptions:
-          new Map(state.providerSubscriptions).set(recordProvider.source, subscription),
+          new Map(state.providerSubscriptions).set(recordProvider.id, subscription),
       };
     }
     case ActionTypes.RECORDS_CLEARED: {
