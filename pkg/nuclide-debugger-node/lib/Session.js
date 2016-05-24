@@ -33,4 +33,14 @@ function CustomSession(config: Object, debuggerPort: number, wsConnection: WS): 
 
 util.inherits(CustomSession, BaseSession);
 
+CustomSession.prototype.close = function() {
+  // Pause frontend client events to ensure none are sent after the debugger has closed the
+  // websocket. Omitting this causes a "not opened" error after closing the debugger window. See
+  // <https://github.com/node-inspector/node-inspector/issues/870>
+  this.frontendClient.pauseEvents();
+
+  // "super.close()"
+  BaseSession.prototype.close.call(this);
+};
+
 export const Session = ((CustomSession: any): Class<BaseSession>);
