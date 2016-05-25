@@ -1,10 +1,21 @@
-@import "ui-variables";
-
-.nuclide-diagnostics-status-bar:hover {
-  cursor: pointer;
-  background-color: @background-color-highlight;
+.nuclide-diagnostics-status-bar-highlight {
+  display: inline-block;
+  line-height: 1.3em;
+  min-width: 2em;
+  text-align: center;
 }
 
-.nuclide-diagnostics-status-bar-error {
-  margin-right: @component-icon-padding;
+.nuclide-diagnostics-highlight-group {
+  cursor: pointer;
+  display: inline-block;
+
+  .nuclide-diagnostics-status-bar-highlight:first-child {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  .nuclide-diagnostics-status-bar-highlight:last-child {
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+  }
 }

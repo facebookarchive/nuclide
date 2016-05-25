@@ -14,6 +14,7 @@ import type {
   DiagnosticMessage,
 } from '../../nuclide-diagnostics-base';
 
+import classnames from 'classnames';
 import {CompositeDisposable} from 'atom';
 import {
   React,
@@ -148,18 +149,24 @@ class StatusBarTileComponent extends React.Component {
   }
 
   render() {
-    const errorColorClass = this.props.errorCount === 0 ? '' : 'text-error';
-    const warningColorClass = this.props.warningCount === 0 ? '' : 'text-warning';
+    const errorClassName = classnames('nuclide-diagnostics-status-bar-highlight', {
+      'highlight': this.props.errorCount === 0,
+      'highlight-error': this.props.errorCount > 0,
+    });
+    const warningClassName = classnames('nuclide-diagnostics-status-bar-highlight', {
+      'highlight': this.props.warningCount === 0,
+      'highlight-warning': this.props.warningCount > 0,
+    });
+
     return (
-      <span className="nuclide-diagnostics-status-bar" onClick={this._onClick}>
-        <span className={`nuclide-diagnostics-status-bar-error ${errorColorClass}`}>
-          <span className="icon icon-stop" />
-          &nbsp;
+      <span
+        className="nuclide-diagnostics-highlight-group"
+        onClick={this._onClick}
+        title="Errors | Warnings">
+        <span className={errorClassName}>
           {this.props.errorCount}
         </span>
-        <span className={`nuclide-diagnostics-status-bar-warning ${warningColorClass}`}>
-          <span className="icon icon-alert" />
-          &nbsp;
+        <span className={warningClassName}>
           {this.props.warningCount}
         </span>
       </span>

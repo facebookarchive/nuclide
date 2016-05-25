@@ -92,9 +92,8 @@ describe('Clang Integration Test (objc)', () => {
     });
 
     waitsFor('error to show up in diagnostics', 10000, () => {
-      // $FlowFixMe
       const errors = atom.views.getView(atom.workspace)
-        .querySelector('.nuclide-diagnostics-status-bar-error');
+        .querySelector('.nuclide-diagnostics-highlight-group > :first-child');
       if (errors instanceof HTMLElement) {
         return errors.innerText.trim() === '1';
       }

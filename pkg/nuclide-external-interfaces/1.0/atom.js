@@ -800,6 +800,7 @@ declare class atom$ViewRegistry {
   getView(notification: atom$Notification): HTMLElement;
   getView(gutter: atom$Gutter): HTMLElement;
   getView(panel: atom$Panel): HTMLElement;
+  getView(workspace: atom$Workspace): HTMLElement;
   getView(object: Object): HTMLElement;
   providers: Array<atom$ViewProvider>;
 }
