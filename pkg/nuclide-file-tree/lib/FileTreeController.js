@@ -37,7 +37,7 @@ export type FileTreeControllerState = {
   tree: ExportStoreData;
 };
 
-const VALID_FILTER_CHARS = '!#./0123456789:;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
+const VALID_FILTER_CHARS = '!#./0123456789-:;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
   '_abcdefghijklmnopqrstuvwxyz~';
 
 class FileTreeController {

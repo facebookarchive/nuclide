@@ -37,6 +37,7 @@
     "7": "nuclide-file-tree:go-to-letter-7",
     "8": "nuclide-file-tree:go-to-letter-8",
     "9": "nuclide-file-tree:go-to-letter-9",
+    "-": "nuclide-file-tree:go-to-letter--",
     ":": "nuclide-file-tree:go-to-letter-:",
     ";": "nuclide-file-tree:go-to-letter-;",
     "?": "nuclide-file-tree:go-to-letter-?",
