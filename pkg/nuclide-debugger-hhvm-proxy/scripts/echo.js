@@ -32,6 +32,9 @@ var server = net.createServer(
 
     socket.on('data', function(data) {
       console.log('server: ' + data.toString());
+      var components = data.toString().split('\x00');
+      console.log('components count: ' + components.length);
+      console.log('message content length: ' + components[1].length);
     });
   });
 
