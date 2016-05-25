@@ -60,7 +60,6 @@ describe('FlowProcess', () => {
     // we depend on since the outer beforeEach ran.
     FlowProcess = (uncachedRequire(require, flowProcessPath): any).FlowProcess;
     flowProcess = new FlowProcess(root);
-    spyOn(flowProcess, '_getFlowExecOptions').andReturn(Promise.resolve({cwd: root}));
   });
 
   describe('Server startup and teardown', () => {
@@ -95,8 +94,10 @@ describe('FlowProcess', () => {
     describe('execFlow', () => {
       it('should spawn a new Flow server', () => {
         const expectedWorkers = os.cpus().length - 1;
-        expect(require('../../commons-node/process').safeSpawn).toHaveBeenCalledWith(
-          'flow',
+        // $FlowIgnore it's a spy.
+        const args = require('../../commons-node/process').safeSpawn.mostRecentCall.args;
+        expect(args[0]).toEqual('flow');
+        expect(args[1]).toEqual(
           [
             'server',
             '--from', 'nuclide',
@@ -104,6 +105,8 @@ describe('FlowProcess', () => {
             '/path/to/flow/root',
           ]
         );
+        expect(args[2].cwd).toEqual(root);
+        expect(args[2].env.OCAMLRUNPARAM).toEqual('b');
       });
     });
 

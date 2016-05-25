@@ -166,6 +166,7 @@ export class FlowProcess {
         '--max-workers', this._getMaxWorkers().toString(),
         this._root,
       ],
+      this._getFlowExecOptions(),
     );
     const logIt = data => {
       const pid = serverProcess.pid;
@@ -306,6 +307,14 @@ export class FlowProcess {
   _getFlowExecOptions(): {cwd: string} {
     return {
       cwd: this._root,
+      env: {
+        // Allows backtrace to be printed:
+        // http://caml.inria.fr/pub/docs/manual-ocaml/runtime.html#sec279
+        OCAMLRUNPARAM: 'b',
+        // Put this after so that if the user already has something set for OCAMLRUNPARAM we use
+        // that instead. They probably know what they're doing.
+        ...process.env,
+      },
     };
   }
 
