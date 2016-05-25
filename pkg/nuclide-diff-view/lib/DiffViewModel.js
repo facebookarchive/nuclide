@@ -1262,6 +1262,7 @@ class DiffViewModel {
       this._activeRepositoryStack = null;
     }
     this._setActiveFileState(getInitialFileChangeState());
+    this._activeSubscriptions.dispose();
   }
 
   dispose(): void {
