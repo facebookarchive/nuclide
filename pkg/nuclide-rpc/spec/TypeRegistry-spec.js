@@ -272,7 +272,7 @@ describe('TypeRegistry', () => {
   it('Can serialize / deserialize type aliases.', () => {
     waitsForPromise(async () => {
       invariant(typeRegistry);
-      typeRegistry.registerAlias('ValueTypeA', ValueTypeA);
+      typeRegistry.registerAlias('ValueTypeA', builtinLocation, ValueTypeA);
 
       const data = {valueA: 'Hello World.', valueB: null};
       const type: NamedType = {
@@ -291,7 +291,7 @@ describe('TypeRegistry', () => {
   it('Can serialize / deserialize named types with same name as type kinds.', () => {
     waitsForPromise(async () => {
       invariant(typeRegistry);
-      typeRegistry.registerAlias('nullable', numberType);
+      typeRegistry.registerAlias('nullable', builtinLocation, numberType);
 
       const data = null;
       const type: NullableType = {

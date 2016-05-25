@@ -19,8 +19,10 @@ import type {
   ObjectType,
   ObjectField,
   UnionType,
+  Location,
 } from './types';
 import {
+  builtinLocation,
   objectType,
   dateType,
   regExpType,
@@ -28,6 +30,7 @@ import {
   fsStatsType,
 } from './builtin-types';
 import type {ObjectRegistry} from './ObjectRegistry';
+import {locationsEqual, locationToString} from './location';
 
 /*
  * This type represents a Transformer function, which takes in a value, and either serializes
@@ -131,6 +134,7 @@ export class TypeRegistry {
 
   /** Store marshallers and and unmarshallers, index by the name of the type. */
   _namedMarshallers: Map<string, {
+      location: Location;
       marshaller: NamedTransformer;
       unmarshaller: NamedTransformer;
     }>;
@@ -200,13 +204,20 @@ export class TypeRegistry {
    */
   registerType(
     typeName: string,
+    location: Location,
     marshaller: NamedTransformer,
     unmarshaller: NamedTransformer,
   ): void {
-    if (this._namedMarshallers.has(typeName)) {
-      throw new Error(`A type by the name ${typeName} has already been registered.`);
+    const existingMarshaller = this._namedMarshallers.get(typeName);
+    if (existingMarshaller != null) {
+      // If the locations are equal then assume that the types are equal.
+      if (!locationsEqual(existingMarshaller.location, location)) {
+        throw new Error(`${locationToString(location)}: A type by the name ${typeName} has already`
+        + ` been registered at ${locationToString(existingMarshaller.location)}.`);
+      }
+    } else {
+      this._namedMarshallers.set(typeName, {location, marshaller, unmarshaller});
     }
-    this._namedMarshallers.set(typeName, {marshaller, unmarshaller});
   }
 
   /**
@@ -214,8 +225,8 @@ export class TypeRegistry {
    * @param name - The name of the alias type.
    * @param type - The type the the alias represents.
    */
-  registerAlias(name: string, type: Type): void {
-    this.registerType(name, (value, context) => this._marshal(context, value, type),
+  registerAlias(name: string, location: Location, type: Type): void {
+    this.registerType(name, location, (value, context) => this._marshal(context, value, type),
       (value, context) => this._unmarshal(context, value, type));
   }
 
@@ -406,7 +417,7 @@ export class TypeRegistry {
 
   _registerSpecialTypes(): void {
     // Serialize / Deserialize any Object type
-    this.registerType(objectType.name, object => {
+    this.registerType(objectType.name, builtinLocation, object => {
       assert(object != null && typeof object === 'object', 'Expected Object argument.');
       return object;
     }, object => {
@@ -415,7 +426,7 @@ export class TypeRegistry {
     });
 
     // Serialize / Deserialize Javascript Date objects
-    this.registerType(dateType.name, date => {
+    this.registerType(dateType.name, builtinLocation, date => {
       assert(date instanceof Date, 'Expected date argument.');
       return date.toJSON();
     }, dateStr => {
@@ -427,7 +438,7 @@ export class TypeRegistry {
     });
 
     // Serialize / Deserialize RegExp objects
-    this.registerType(regExpType.name, regexp => {
+    this.registerType(regExpType.name, builtinLocation, regexp => {
       assert(regexp instanceof RegExp, 'Expected a RegExp object as an argument');
       return regexp.toString();
     }, regStr => {
@@ -439,7 +450,7 @@ export class TypeRegistry {
     });
 
     // Serialize / Deserialize Buffer objects through Base64 strings
-    this.registerType(bufferType.name, buffer => {
+    this.registerType(bufferType.name, builtinLocation, buffer => {
       assert(buffer instanceof Buffer, 'Expected a buffer argument.');
       return buffer.toString('base64');
     }, base64string => {
@@ -453,7 +464,7 @@ export class TypeRegistry {
     });
 
     // fs.Stats
-    this.registerType(fsStatsType.name, stats => {
+    this.registerType(fsStatsType.name, builtinLocation, stats => {
       assert(stats instanceof fs.Stats);
       return JSON.stringify(statsToObject(stats));
     }, json => {

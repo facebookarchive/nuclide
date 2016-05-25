@@ -23,6 +23,7 @@ import invariant from 'assert';
 import type {ConfigEntry} from './index';
 import type {ObjectRegistry} from './ObjectRegistry';
 import {getPath, createRemoteUri} from '../../nuclide-remote-uri';
+import {builtinLocation} from './builtin-types';
 
 const logger = require('../../nuclide-logging').getLogger();
 
@@ -62,7 +63,7 @@ export class ServiceRegistry {
     this._services = new Map();
 
     // NuclideUri type requires no transformations (it is done on the client side).
-    this._typeRegistry.registerType('NuclideUri', marshalUri, unmarshalUri);
+    this._typeRegistry.registerType('NuclideUri', builtinLocation, marshalUri, unmarshalUri);
 
     this.addServices(services);
   }
@@ -107,7 +108,8 @@ export class ServiceRegistry {
           case 'alias':
             logger.debug(`Registering type alias ${name}...`);
             if (definition.definition != null) {
-              this._typeRegistry.registerAlias(name, (definition.definition: Type));
+              this._typeRegistry.registerAlias(
+                name, definition.location, (definition.definition: Type));
             }
             break;
           case 'function':
@@ -124,6 +126,7 @@ export class ServiceRegistry {
 
             this._typeRegistry.registerType(
               name,
+              definition.location,
               (object, context: ObjectRegistry) => context.marshal(name, object),
               (objectId, context: ObjectRegistry) =>
                 context.unmarshal(objectId, context.getService(service.name)[name]));
