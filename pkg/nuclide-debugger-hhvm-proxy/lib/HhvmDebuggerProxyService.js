@@ -17,17 +17,7 @@ import {MessageTranslator} from './MessageTranslator';
 import {CompositeDisposable} from 'event-kit';
 
 import type {Observable} from 'rxjs';
-
-export type HhvmLogLevel =
-  'ALL' |
-  'TRACE' |
-  'DEBUG' |
-  'INFO' |
-  'WARN' |
-  'ERROR' |
-  'FATAL' |
-  'OFF';
-
+import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
 export type HhvmDebuggerSessionConfig = {
   xdebugAttachPort: number;
@@ -37,7 +27,7 @@ export type HhvmDebuggerSessionConfig = {
   scriptRegex?: string;
   idekeyRegex?: string;
   endDebugWhenNoRequests?: boolean;
-  logLevel: HhvmLogLevel;
+  logLevel: LogLevel;
   targetUri: string;
   phpRuntimePath: string;
   dummyRequestFilePath: string;
