@@ -40,15 +40,15 @@ function isPrivateMemberName(name: string): boolean {
  * @param source - The string source of the definition file.
  */
 export function parseServiceDefinition(fileName: string, source: string): Definitions {
-  return new ServiceParser(fileName).parseService(source);
+  return new ServiceParser().parseService(fileName, source);
 }
 
 class ServiceParser {
   _fileName: string;
   _defs: Map<string, Definition>;
 
-  constructor(fileName: string) {
-    this._fileName = fileName;
+  constructor() {
+    this._fileName = '';
     this._defs = new Map();
 
     // Add all builtin types
@@ -94,7 +94,8 @@ class ServiceParser {
     }
   }
 
-  parseService(source: string): Definitions {
+  parseService(fileName: string, source: string): Definitions {
+    this._fileName = fileName;
     const program = babelParse(source);
     invariant(program && program.type === 'Program', 'The result of parsing is a Program node.');
 
