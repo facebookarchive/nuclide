@@ -1048,7 +1048,7 @@ export class FileTreeStore {
             childNode.subscription.dispose();
           }
 
-          if (childNode !== node) {
+          if (childNode.uri !== node.uri) {
             return childNode.set({isExpanded: false, isSelected: false, subscription: null});
           } else {
             return childNode.set({isExpanded: false, subscription: null});
