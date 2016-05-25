@@ -26,6 +26,7 @@ import classnames from 'classnames';
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 import {LazyNestedValueComponent} from '../../nuclide-ui/lib/LazyNestedValueComponent';
+import SimpleValueComponent from '../../nuclide-ui/lib/SimpleValueComponent';
 
 type WatchExpressionComponentProps = {
   watchExpressions: WatchExpressionList;
@@ -149,6 +150,7 @@ export class WatchExpressionComponent extends React.Component {
           <ValueComponent
             expression={expression}
             fetchChildren={fetchChildren}
+            simpleValueComponent={SimpleValueComponent}
           />
         </div>
         <i

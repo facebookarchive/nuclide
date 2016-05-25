@@ -26,7 +26,6 @@ import {
   NestedTreeItem,
 } from './Tree';
 import {LoadingSpinner} from './LoadingSpinner';
-import SimpleValueComponent from './SimpleValueComponent';
 
 const SPINNER_DELAY = 100; /* ms */
 const NOT_AVAILABLE_MESSAGE = '<not available>';
@@ -45,6 +44,7 @@ type LoadableValueComponentProps = {
   path: string;
   expandedValuePaths: Set<string>;
   onExpandedStateChange: (path: string, isExpanded: boolean) => void;
+  simpleValueComponent: ReactClass;
 };
 
 /**
@@ -58,6 +58,7 @@ const LoadableValueComponent = (props: LoadableValueComponentProps) => {
     path,
     expandedValuePaths,
     onExpandedStateChange,
+    simpleValueComponent,
   } = props;
   return children == null
     ? TreeItemWithLoadingSpinner()
@@ -72,6 +73,7 @@ const LoadableValueComponent = (props: LoadableValueComponentProps) => {
                 expandedValuePaths={expandedValuePaths}
                 onExpandedStateChange={onExpandedStateChange}
                 path={path + '.' + child.name}
+                simpleValueComponent={simpleValueComponent}
               />
             </TreeItem>
           )
@@ -95,6 +97,7 @@ type LazyNestedValueComponentProps = {
   expandedValuePaths: Set<string>;
   onExpandedStateChange: (path: string, expanded: boolean) => void;
   path: string;
+  simpleValueComponent: ReactClass;
 };
 
 type LazyNestedValueComponentState = {
@@ -187,6 +190,7 @@ class ValueComponent extends React.Component {
       path,
       expandedValuePaths,
       onExpandedStateChange,
+      simpleValueComponent: SimpleValueComponent,
     } = this.props;
     if (evaluationResult == null) {
       return renderValueLine(expression, NOT_AVAILABLE_MESSAGE);
@@ -196,6 +200,7 @@ class ValueComponent extends React.Component {
         <SimpleValueComponent
           expression={expression}
           evaluationResult={evaluationResult}
+          simpleValueComponent={SimpleValueComponent}
         />
       );
       return isRoot ? simpleValueElement : <TreeItem>{simpleValueElement}</TreeItem>;
@@ -221,6 +226,7 @@ class ValueComponent extends React.Component {
             path={path}
             expandedValuePaths={expandedValuePaths}
             onExpandedStateChange={onExpandedStateChange}
+            simpleValueComponent={SimpleValueComponent}
           />
         );
       }
@@ -243,6 +249,7 @@ type TopLevelValueComponentProps = {
   evaluationResult: ?EvaluationResult;
   fetchChildren: (objectId: string) => Observable<?ExpansionResult>;
   expression: string;
+  simpleValueComponent: ReactClass;
 };
 
 /**

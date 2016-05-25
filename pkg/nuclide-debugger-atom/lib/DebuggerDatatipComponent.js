@@ -16,6 +16,7 @@ import type {
 
 import {React} from 'react-for-atom';
 import {LazyNestedValueComponent} from '../../nuclide-ui/lib/LazyNestedValueComponent';
+import SimpleValueComponent from '../../nuclide-ui/lib/SimpleValueComponent';
 
 type DebuggerDatatipComponentProps = {
   expression: string;
@@ -40,6 +41,7 @@ export class DebuggerDatatipComponent extends React.Component {
             evaluationResult={evaluationResult}
             expression={expression}
             fetchChildren={fetchChildren}
+            simpleValueComponent={SimpleValueComponent}
           />
         </span>
       </div>
