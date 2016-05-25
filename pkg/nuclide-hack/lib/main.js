@@ -17,6 +17,7 @@ import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 import type {DefinitionProvider} from '../../nuclide-definition-service';
 import type {CoverageProvider} from '../../nuclide-type-coverage/lib/types';
+import type {FindReferencesProvider} from '../../nuclide-find-references';
 
 import CodeHighlightProvider from './CodeHighlightProvider';
 import {CompositeDisposable} from 'atom';
@@ -84,7 +85,7 @@ export function createCodeFormatProvider(): any {
   };
 }
 
-export function createFindReferencesProvider(): any {
+export function createFindReferencesProvider(): FindReferencesProvider {
   return require('./FindReferencesProvider');
 }
 

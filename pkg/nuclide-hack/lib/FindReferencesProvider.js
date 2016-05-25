@@ -9,12 +9,10 @@
  * the root directory of this source tree.
  */
 
-// We can't pull in nuclide-find-references as a dependency, unfortunately.
-// import type {FindReferencesReturn} from 'nuclide-find-references';
-
 import type {
   HackReference,
 } from '../../nuclide-hack-base/lib/HackService';
+import type {FindReferencesReturn} from '../../nuclide-find-references';
 
 import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';
 import {trackOperationTiming} from '../../nuclide-analytics';
@@ -24,7 +22,7 @@ import loadingNotification from '../../commons-atom/loading-notification';
 async function doFindReferences(
   textEditor: atom$TextEditor,
   position: atom$Point,
-): Promise<?Object /*FindReferencesReturn*/> {
+): Promise<?FindReferencesReturn> {
   const result = await loadingNotification(
     findReferences(textEditor, position.row, position.column),
     'Loading references from Hack server...',
@@ -94,7 +92,7 @@ module.exports = {
     return true;
   },
 
-  findReferences(editor: atom$TextEditor, position: atom$Point): Promise<?Object> {
+  findReferences(editor: atom$TextEditor, position: atom$Point): Promise<?FindReferencesReturn> {
     return trackOperationTiming('hack:findReferences', () => doFindReferences(editor, position));
   },
 };
