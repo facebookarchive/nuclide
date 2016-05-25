@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,73 +12,93 @@
  * the root directory of this source tree.
  */
 
-import {Directory as LocalDirectory} from 'atom';
-import {File as LocalFile} from 'atom';
-import {
-  RemoteConnection,
-  RemoteDirectory,
-  RemoteFile,
-} from '../../nuclide-remote-connection';
-import RemoteUri from '../../nuclide-remote-uri';
+var _atom2;
 
-import url from 'url';
-import crypto from 'crypto';
+function _atom() {
+  return _atom2 = require('atom');
+}
 
-export type Directory = LocalDirectory | RemoteDirectory;
-type File = LocalFile | RemoteFile;
-type Entry = LocalDirectory | RemoteDirectory | LocalFile | RemoteFile;
+var _atom4;
+
+function _atom3() {
+  return _atom4 = require('atom');
+}
+
+var _nuclideRemoteConnection2;
+
+function _nuclideRemoteConnection() {
+  return _nuclideRemoteConnection2 = require('../../nuclide-remote-connection');
+}
+
+var _nuclideRemoteUri2;
+
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = _interopRequireDefault(require('../../nuclide-remote-uri'));
+}
+
+var _url2;
+
+function _url() {
+  return _url2 = _interopRequireDefault(require('url'));
+}
+
+var _crypto2;
+
+function _crypto() {
+  return _crypto2 = _interopRequireDefault(require('crypto'));
+}
 
 /*
  * Returns a string with backslashes replaced by two backslashes for use with strings passed to the
  * `RegExp` constructor.
  */
-function escapeBackslash(str: string): string {
+function escapeBackslash(str) {
   return str.replace('\\', '\\\\');
 }
 
-function dirPathToKey(path: string): string {
-  const pathModule = RemoteUri.pathModuleFor(path);
-  return path.replace(new RegExp(`${escapeBackslash(pathModule.sep)}+$`), '') + pathModule.sep;
+function dirPathToKey(path) {
+  var pathModule = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.pathModuleFor(path);
+  return path.replace(new RegExp(escapeBackslash(pathModule.sep) + '+$'), '') + pathModule.sep;
 }
 
-function isDirKey(key: string): boolean {
-  const pathModule = RemoteUri.pathModuleFor(key);
-  return (key.slice(-1) === pathModule.sep);
+function isDirKey(key) {
+  var pathModule = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.pathModuleFor(key);
+  return key.slice(-1) === pathModule.sep;
 }
 
-function keyToName(key: string): string {
-  const pathModule = RemoteUri.pathModuleFor(key);
-  const path = keyToPath(key);
-  const index = path.lastIndexOf(pathModule.sep);
-  return (index === -1) ? path : path.slice(index + 1);
+function keyToName(key) {
+  var pathModule = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.pathModuleFor(key);
+  var path = keyToPath(key);
+  var index = path.lastIndexOf(pathModule.sep);
+  return index === -1 ? path : path.slice(index + 1);
 }
 
-function keyToPath(key: string): string {
-  const pathModule = RemoteUri.pathModuleFor(key);
-  return key.replace(new RegExp(`${escapeBackslash(pathModule.sep)}+$`), '');
+function keyToPath(key) {
+  var pathModule = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.pathModuleFor(key);
+  return key.replace(new RegExp(escapeBackslash(pathModule.sep) + '+$'), '');
 }
 
-function getParentKey(key: string): string {
-  const pathModule = RemoteUri.pathModuleFor(key);
-  const path = keyToPath(key);
-  const parsed = RemoteUri.parse(path);
+function getParentKey(key) {
+  var pathModule = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.pathModuleFor(key);
+  var path = keyToPath(key);
+  var parsed = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.parse(path);
   parsed.pathname = pathModule.join(parsed.pathname, '..');
-  const parentPath = url.format((parsed: any));
+  var parentPath = (_url2 || _url()).default.format(parsed);
   return dirPathToKey(parentPath);
 }
 
 // The array this resolves to contains the `nodeKey` of each child
-function fetchChildren(nodeKey: string): Promise<Array<string>> {
-  const directory = getDirectoryByKey(nodeKey);
+function fetchChildren(nodeKey) {
+  var directory = getDirectoryByKey(nodeKey);
 
-  return new Promise((resolve, reject) => {
+  return new Promise(function (resolve, reject) {
     if (directory == null) {
-      reject(`Directory "${nodeKey}" not found or is inaccessible.`);
+      reject('Directory "' + nodeKey + '" not found or is inaccessible.');
       return;
     }
 
     // $FlowIssue https://github.com/facebook/flow/issues/582
-    directory.getEntries((error, entries) => {
+    directory.getEntries(function (error, entries) {
       // Resolve to an empty array if the directory deson't exist.
       // TODO: should we reject promise?
       if (error && error.code !== 'ENOENT') {
@@ -83,8 +106,8 @@ function fetchChildren(nodeKey: string): Promise<Array<string>> {
         return;
       }
       entries = entries || [];
-      const keys = entries.map(entry => {
-        const path = entry.getPath();
+      var keys = entries.map(function (entry) {
+        var path = entry.getPath();
         return entry.isDirectory() ? dirPathToKey(path) : path;
       });
       resolve(keys);
@@ -92,46 +115,46 @@ function fetchChildren(nodeKey: string): Promise<Array<string>> {
   });
 }
 
-function getDirectoryByKey(key: string): ?Directory {
-  const path = keyToPath(key);
+function getDirectoryByKey(key) {
+  var path = keyToPath(key);
   if (!isDirKey(key)) {
     return null;
-  } else if (RemoteUri.isRemote(path)) {
-    const connection = RemoteConnection.getForUri(path);
+  } else if ((_nuclideRemoteUri2 || _nuclideRemoteUri()).default.isRemote(path)) {
+    var connection = (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).RemoteConnection.getForUri(path);
     if (connection == null) {
       return null;
     }
-    return new RemoteDirectory(connection.getConnection(), path);
+    return new (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).RemoteDirectory(connection.getConnection(), path);
   } else {
-    return new LocalDirectory(path);
+    return new (_atom2 || _atom()).Directory(path);
   }
 }
 
-function getFileByKey(key: string): ?File {
-  const path = keyToPath(key);
+function getFileByKey(key) {
+  var path = keyToPath(key);
   if (isDirKey(key)) {
     return null;
-  } else if (RemoteUri.isRemote(path)) {
-    const connection = RemoteConnection.getForUri(path);
+  } else if ((_nuclideRemoteUri2 || _nuclideRemoteUri()).default.isRemote(path)) {
+    var connection = (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).RemoteConnection.getForUri(path);
     if (connection == null) {
       return;
     }
 
-    return new RemoteFile(connection.getConnection(), path);
+    return new (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).RemoteFile(connection.getConnection(), path);
   } else {
-    return new LocalFile(path);
+    return new (_atom4 || _atom3()).File(path);
   }
 }
 
-function getEntryByKey(key: string): ?Entry {
+function getEntryByKey(key) {
   return getFileByKey(key) || getDirectoryByKey(key);
 }
 
-function getDisplayTitle(key: string): ?string {
-  const path = keyToPath(key);
+function getDisplayTitle(key) {
+  var path = keyToPath(key);
 
-  if (RemoteUri.isRemote(path)) {
-    const connection = RemoteConnection.getForUri(path);
+  if ((_nuclideRemoteUri2 || _nuclideRemoteUri()).default.isRemote(path)) {
+    var connection = (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).RemoteConnection.getForUri(path);
 
     if (connection != null) {
       return connection.getDisplayTitle();
@@ -140,45 +163,42 @@ function getDisplayTitle(key: string): ?string {
 }
 
 // Sometimes remote directories are instantiated as local directories but with invalid paths.
-function isValidDirectory(directory: Directory): boolean {
-  if (!isLocalEntry((directory: any))) {
+function isValidDirectory(directory) {
+  if (!isLocalEntry(directory)) {
     return true;
   }
 
-  const dirPath = directory.getPath();
-  const pathModule = RemoteUri.pathModuleFor(dirPath);
+  var dirPath = directory.getPath();
+  var pathModule = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.pathModuleFor(dirPath);
   return pathModule.isAbsolute(dirPath);
 }
 
-function isLocalEntry(entry: Entry): boolean {
+function isLocalEntry(entry) {
   // TODO: implement `RemoteDirectory.isRemoteDirectory()`
   return !('getLocalPath' in entry);
 }
 
-function isContextClick(event: SyntheticMouseEvent): boolean {
-  return (
-    event.button === 2 ||
-    (event.button === 0 && event.ctrlKey === true && process.platform === 'darwin')
-  );
+function isContextClick(event) {
+  return event.button === 2 || event.button === 0 && event.ctrlKey === true && process.platform === 'darwin';
 }
 
-function buildHashKey(nodeKey: string): string {
-  return crypto.createHash('MD5').update(nodeKey).digest('base64');
+function buildHashKey(nodeKey) {
+  return (_crypto2 || _crypto()).default.createHash('MD5').update(nodeKey).digest('base64');
 }
 
 module.exports = {
-  dirPathToKey,
-  isDirKey,
-  keyToName,
-  keyToPath,
-  getParentKey,
-  fetchChildren,
-  getDirectoryByKey,
-  getEntryByKey,
-  getFileByKey,
-  getDisplayTitle,
-  isValidDirectory,
-  isLocalEntry,
-  isContextClick,
-  buildHashKey,
+  dirPathToKey: dirPathToKey,
+  isDirKey: isDirKey,
+  keyToName: keyToName,
+  keyToPath: keyToPath,
+  getParentKey: getParentKey,
+  fetchChildren: fetchChildren,
+  getDirectoryByKey: getDirectoryByKey,
+  getEntryByKey: getEntryByKey,
+  getFileByKey: getFileByKey,
+  getDisplayTitle: getDisplayTitle,
+  isValidDirectory: isValidDirectory,
+  isLocalEntry: isLocalEntry,
+  isContextClick: isContextClick,
+  buildHashKey: buildHashKey
 };

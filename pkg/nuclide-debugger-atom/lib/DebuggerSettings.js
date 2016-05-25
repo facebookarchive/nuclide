@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +14,33 @@
  * the root directory of this source tree.
  */
 
-export class DebuggerSettings {
-  _settings: {
-    SupportThreadsWindow: boolean;
-  };
+var DebuggerSettings = (function () {
+  function DebuggerSettings() {
+    _classCallCheck(this, DebuggerSettings);
 
-  constructor() {
     this._settings = {
-      SupportThreadsWindow: false,
+      SupportThreadsWindow: false
     };
   }
 
-  set(key: string, value: mixed): void {
-    this._settings[key] = value;
-  }
+  _createClass(DebuggerSettings, [{
+    key: 'set',
+    value: function set(key, value) {
+      this._settings[key] = value;
+    }
+  }, {
+    key: 'get',
+    value: function get(key) {
+      return this._settings[key];
+    }
+  }, {
+    key: 'getSerializedData',
+    value: function getSerializedData() {
+      return JSON.stringify(this._settings);
+    }
+  }]);
 
-  get(key: string): ?mixed {
-    return this._settings[key];
-  }
+  return DebuggerSettings;
+})();
 
-  getSerializedData(): string {
-    return JSON.stringify(this._settings);
-  }
-}
+exports.DebuggerSettings = DebuggerSettings;

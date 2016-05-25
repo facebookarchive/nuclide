@@ -1,5 +1,79 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var getHackConnection = _asyncToGenerator(function* (filePath) {
+  var command = yield (0, (_hackConfig2 || _hackConfig()).getHackCommand)();
+  if (command === '') {
+    return null;
+  }
+
+  var configDir = yield (0, (_hackConfig2 || _hackConfig()).findHackConfigDir)(filePath);
+  if (configDir == null) {
+    return null;
+  }
+
+  var connection = connections.get(configDir);
+  if (connection == null) {
+    connection = createConnection(command, configDir);
+    connections.set(configDir, connection);
+    connection.then(function (result) {
+      // If we fail to connect to hack, then retry on next request.
+      if (result == null) {
+        connections.delete(configDir);
+      }
+    });
+  }
+  return connection;
+});
+
+var createConnection = _asyncToGenerator(function* (command, configDir) {
+  (_hackConfig4 || _hackConfig3()).logger.logInfo('Creating new hack connection for ' + configDir + ': ' + command);
+  (_hackConfig4 || _hackConfig3()).logger.logInfo('Current PATH: ' + process.env.PATH);
+  var startServerResult = yield (0, (_commonsNodeProcess2 || _commonsNodeProcess()).asyncExecute)(command, ['start', configDir]);
+  (_hackConfig4 || _hackConfig3()).logger.logInfo('Hack connection start server results:\n' + JSON.stringify(startServerResult, null, 2) + '\n');
+  if (startServerResult.exitCode !== 0 && startServerResult.exitCode !== HACK_SERVER_ALREADY_EXISTS_EXIT_CODE) {
+    return null;
+  }
+  var childProcess = yield (0, (_commonsNodeProcess2 || _commonsNodeProcess()).safeSpawn)(command, ['ide', configDir]);
+  (0, (_commonsNodeStream2 || _commonsNodeStream()).observeStream)(childProcess.stdout).subscribe(function (text) {
+    (_hackConfig4 || _hackConfig3()).logger.logInfo('Hack ide stdout: ' + text);
+  });
+  (0, (_commonsNodeStream2 || _commonsNodeStream()).observeStream)(childProcess.stderr).subscribe(function (text) {
+    (_hackConfig4 || _hackConfig3()).logger.logInfo('Hack ide stderr: ' + text);
+  });
+  return new HackConnection(configDir, childProcess);
+}
+
+/**
+ * Executes hh_client with proper arguments returning the result string or json object.
+ */
+);
+
+var callHHClientUsingConnection = _asyncToGenerator(function* (args, processInput, filePath) {
+
+  var connection = yield getHackConnection(filePath);
+  if (connection == null) {
+    return null;
+  }
+
+  if (processInput != null) {
+    args.push(processInput);
+  }
+  var result = yield connection.call(args);
+  return {
+    hackRoot: connection.getRoot(),
+    result: result
+  };
+});
+
+exports.callHHClientUsingConnection = callHHClientUsingConnection;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,128 +83,92 @@
  * the root directory of this source tree.
  */
 
-import {safeSpawn, asyncExecute} from '../../commons-node/process';
-import {observeStream} from '../../commons-node/stream';
-import {getHackCommand, findHackConfigDir} from './hack-config';
-import {StreamTransport, Rpc} from '../../commons-node/Rpc';
+var _commonsNodeProcess2;
+
+function _commonsNodeProcess() {
+  return _commonsNodeProcess2 = require('../../commons-node/process');
+}
+
+var _commonsNodeStream2;
+
+function _commonsNodeStream() {
+  return _commonsNodeStream2 = require('../../commons-node/stream');
+}
+
+var _hackConfig2;
+
+function _hackConfig() {
+  return _hackConfig2 = require('./hack-config');
+}
+
+var _commonsNodeRpc2;
+
+function _commonsNodeRpc() {
+  return _commonsNodeRpc2 = require('../../commons-node/Rpc');
+}
 
 // From https://reviews.facebook.net/diffusion/HHVM/browse/master/hphp/hack/src/utils/exit_status.ml
-const HACK_SERVER_ALREADY_EXISTS_EXIT_CODE = 77;
+var HACK_SERVER_ALREADY_EXISTS_EXIT_CODE = 77;
 
-import {logger} from './hack-config';
+var _hackConfig4;
 
-class HackConnection {
-  _hhconfigPath: string;
-  _process: ?child_process$ChildProcess;
-  _rpc: ?Rpc;
+function _hackConfig3() {
+  return _hackConfig4 = require('./hack-config');
+}
 
-  constructor(hhconfigPath: string, process: child_process$ChildProcess) {
+var HackConnection = (function () {
+  function HackConnection(hhconfigPath, process) {
+    var _this = this;
+
+    _classCallCheck(this, HackConnection);
+
     this._hhconfigPath = hhconfigPath;
     this._process = process;
-    this._rpc = new Rpc(`Hack-${hhconfigPath}`, new StreamTransport(process.stdin, process.stdout));
+    this._rpc = new (_commonsNodeRpc2 || _commonsNodeRpc()).Rpc('Hack-' + hhconfigPath, new (_commonsNodeRpc2 || _commonsNodeRpc()).StreamTransport(process.stdin, process.stdout));
 
-    process.on('exit', (code, signal) => {
-      logger.logInfo(`Hack ide process exited with ${code}, ${signal}`);
-      this._process = null;
-      this.dispose();
+    process.on('exit', function (code, signal) {
+      (_hackConfig4 || _hackConfig3()).logger.logInfo('Hack ide process exited with ' + code + ', ' + signal);
+      _this._process = null;
+      _this.dispose();
     });
   }
 
-  call(args: Array<any>): Promise<string | Object> {
-    if (this._rpc == null) {
-      throw new Error('Attempting to call on disposed hack connection.');
+  // Maps hack config dir to HackConnection
+
+  _createClass(HackConnection, [{
+    key: 'call',
+    value: function call(args) {
+      if (this._rpc == null) {
+        throw new Error('Attempting to call on disposed hack connection.');
+      }
+      return this._rpc.call(args);
     }
-    return this._rpc.call(args);
-  }
-
-  getRoot(): string {
-    return this._hhconfigPath;
-  }
-
-  dispose(): void {
-    logger.logInfo(`Disposing hack connection ${this._hhconfigPath}`);
-    if (this._rpc != null) {
-      this._rpc.dispose();
-      connections.delete(this._hhconfigPath);
-      if (this._process != null) {
-        this._process.kill();
-        this._process = null;
+  }, {
+    key: 'getRoot',
+    value: function getRoot() {
+      return this._hhconfigPath;
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      (_hackConfig4 || _hackConfig3()).logger.logInfo('Disposing hack connection ' + this._hhconfigPath);
+      if (this._rpc != null) {
+        this._rpc.dispose();
+        connections.delete(this._hhconfigPath);
+        if (this._process != null) {
+          this._process.kill();
+          this._process = null;
+        }
       }
     }
-  }
+  }, {
+    key: 'isDisposed',
+    value: function isDisposed() {
+      return this._rpc == null;
+    }
+  }]);
 
-  isDisposed(): boolean {
-    return this._rpc == null;
-  }
-}
+  return HackConnection;
+})();
 
-// Maps hack config dir to HackConnection
-const connections: Map<string, Promise<?HackConnection>> = new Map();
-
-async function getHackConnection(filePath: string): Promise<?HackConnection> {
-  const command = await getHackCommand();
-  if (command === '') {
-    return null;
-  }
-
-  const configDir = await findHackConfigDir(filePath);
-  if (configDir == null) {
-    return null;
-  }
-
-  let connection = connections.get(configDir);
-  if (connection == null) {
-    connection = createConnection(command, configDir);
-    connections.set(configDir, connection);
-    connection.then(result => {
-      // If we fail to connect to hack, then retry on next request.
-      if (result == null) {
-        connections.delete(configDir);
-      }
-    });
-  }
-  return connection;
-}
-
-async function createConnection(command: string, configDir: string): Promise<?HackConnection> {
-  logger.logInfo(`Creating new hack connection for ${configDir}: ${command}`);
-  logger.logInfo(`Current PATH: ${process.env.PATH}`);
-  const startServerResult = await asyncExecute(command, ['start', configDir]);
-  logger.logInfo(
-    `Hack connection start server results:\n${JSON.stringify(startServerResult, null, 2)}\n`);
-  if (startServerResult.exitCode !== 0 &&
-      startServerResult.exitCode !== HACK_SERVER_ALREADY_EXISTS_EXIT_CODE) {
-    return null;
-  }
-  const childProcess = await safeSpawn(command, ['ide', configDir]);
-  observeStream(childProcess.stdout).subscribe(text => {
-    logger.logInfo(`Hack ide stdout: ${text}`);
-  });
-  observeStream(childProcess.stderr).subscribe(text => {
-    logger.logInfo(`Hack ide stderr: ${text}`);
-  });
-  return new HackConnection(configDir, childProcess);
-}
-
-/**
- * Executes hh_client with proper arguments returning the result string or json object.
- */
-export async function callHHClientUsingConnection(
- args: Array<any>,
- processInput: ?string,
- filePath: string): Promise<?{hackRoot: string; result: string | Object}> {
-
-  const connection: ?HackConnection = await getHackConnection(filePath);
-  if (connection == null) {
-    return null;
-  }
-
-  if (processInput != null) {
-    args.push(processInput);
-  }
-  const result = await connection.call(args);
-  return {
-    hackRoot: connection.getRoot(),
-    result,
-  };
-}
+var connections = new Map();

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,45 +10,62 @@
  * the root directory of this source tree.
  */
 
-import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-atom';
-import type {
-  nuclide_debugger$Service,
-  NuclideDebuggerProvider,
-} from '../../nuclide-debugger-interfaces/service';
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {Activation as ActivationType} from './Activation';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.provideNuclideDebugger = provideNuclideDebugger;
+exports.createDebuggerProvider = createDebuggerProvider;
 
-import remoteUri from '../../nuclide-remote-uri';
-import {ReactNativeLaunchAttachProvider} from './debugging/ReactNativeLaunchAttachProvider';
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let activation: ?ActivationType = null;
+var _nuclideRemoteUri2;
 
-export function activate(state: ?Object): void {
-  invariant(activation == null);
-  const {Activation} = require('./Activation');
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = _interopRequireDefault(require('../../nuclide-remote-uri'));
+}
+
+var _debuggingReactNativeLaunchAttachProvider2;
+
+function _debuggingReactNativeLaunchAttachProvider() {
+  return _debuggingReactNativeLaunchAttachProvider2 = require('./debugging/ReactNativeLaunchAttachProvider');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var activation = null;
+
+function activate(state) {
+  (0, (_assert2 || _assert()).default)(activation == null);
+
+  var _require = require('./Activation');
+
+  var Activation = _require.Activation;
+
   activation = new Activation(state);
 }
 
-export function deactivate(): void {
-  invariant(activation != null);
+function deactivate() {
+  (0, (_assert2 || _assert()).default)(activation != null);
   activation.dispose();
   activation = null;
 }
 
-export function provideNuclideDebugger(): nuclide_debugger$Service {
-  invariant(activation != null);
+function provideNuclideDebugger() {
+  (0, (_assert2 || _assert()).default)(activation != null);
   return activation.provideNuclideDebugger();
 }
 
-export function createDebuggerProvider(): NuclideDebuggerProvider {
+function createDebuggerProvider() {
   return {
     name: 'react-native',
-    getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
-      if (remoteUri.isLocal(connection)) {
-        return new ReactNativeLaunchAttachProvider('React Native', connection);
+    getLaunchAttachProvider: function getLaunchAttachProvider(connection) {
+      if ((_nuclideRemoteUri2 || _nuclideRemoteUri()).default.isLocal(connection)) {
+        return new (_debuggingReactNativeLaunchAttachProvider2 || _debuggingReactNativeLaunchAttachProvider()).ReactNativeLaunchAttachProvider('React Native', connection);
       }
       return null;
-    },
+    }
   };
 }

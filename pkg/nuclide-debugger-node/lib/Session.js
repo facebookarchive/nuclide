@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +10,31 @@
  * the root directory of this source tree.
  */
 
-import type WS from 'ws';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import BaseSession from '../VendorLib/node-inspector/lib/session';
-import util from 'util';
+var _VendorLibNodeInspectorLibSession2;
+
+function _VendorLibNodeInspectorLibSession() {
+  return _VendorLibNodeInspectorLibSession2 = _interopRequireDefault(require('../VendorLib/node-inspector/lib/session'));
+}
+
+var _util2;
+
+function _util() {
+  return _util2 = _interopRequireDefault(require('util'));
+}
 
 /**
  * A custom version of node-inspector's Session that ignores commands that we don't support. (We
  * do this here so we can pull in new versions of node-inspector without having to worry about what
  * modifications we've made to the source.)
  */
-function CustomSession(config: Object, debuggerPort: number, wsConnection: WS): void {
-  BaseSession.call(this, config, debuggerPort, wsConnection);
-  this.frontendCommandHandler._registerNoopCommands(
-    'Emulation.canEmulate',
-    'Network.setMonitoringXHREnabled',
-    'Worker.enable',
-    'ServiceWorker.enable',
-    'Emulation.setScriptExecutionDisabled',
-    'Page.setOverlayMessage',
-  );
+function CustomSession(config, debuggerPort, wsConnection) {
+  (_VendorLibNodeInspectorLibSession2 || _VendorLibNodeInspectorLibSession()).default.call(this, config, debuggerPort, wsConnection);
+  this.frontendCommandHandler._registerNoopCommands('Emulation.canEmulate', 'Network.setMonitoringXHREnabled', 'Worker.enable', 'ServiceWorker.enable', 'Emulation.setScriptExecutionDisabled', 'Page.setOverlayMessage');
 }
 
-util.inherits(CustomSession, BaseSession);
+(_util2 || _util()).default.inherits(CustomSession, (_VendorLibNodeInspectorLibSession2 || _VendorLibNodeInspectorLibSession()).default);
 
-export const Session = ((CustomSession: any): Class<BaseSession>);
+var Session = CustomSession;
+exports.Session = Session;

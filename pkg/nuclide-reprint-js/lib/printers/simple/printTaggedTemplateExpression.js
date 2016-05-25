@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,22 +8,25 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {TaggedTemplateExpression} from 'ast-types-flow';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import markers from '../../constants/markers';
-import wrapExpression from '../../wrappers/simple/wrapExpression';
+var _constantsMarkers2;
 
-function printTaggedTemplateExpression(
-  print: Print,
-  node: TaggedTemplateExpression,
-): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    print(node.tag),
-    markers.noBreak,
-    print(node.quasi),
-  ]);
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+var _wrappersSimpleWrapExpression2;
+
+function _wrappersSimpleWrapExpression() {
+  return _wrappersSimpleWrapExpression2 = _interopRequireDefault(require('../../wrappers/simple/wrapExpression'));
+}
+
+function printTaggedTemplateExpression(print, node) {
+  var wrap = function wrap(x) {
+    return (0, (_wrappersSimpleWrapExpression2 || _wrappersSimpleWrapExpression()).default)(print, node, x);
+  };
+  return wrap([print(node.tag), (_constantsMarkers2 || _constantsMarkers()).default.noBreak, print(node.quasi)]);
 }
 
 module.exports = printTaggedTemplateExpression;

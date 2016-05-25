@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,53 +14,56 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
-import featureConfig from '../../nuclide-feature-config';
+var _atom2;
 
-let subscriptions: CompositeDisposable = (null: any);
-let currentConfig = ((featureConfig.get('nuclide-notifications'): any): {[type: string]: bool});
-let gkEnabled = false;
-
-export function activate(state: ?Object): void {
-  subscriptions = new CompositeDisposable(
-
-    // Listen for changes to the native notification settings:
-    featureConfig.onDidChange('nuclide-notifications', event => {
-      currentConfig = event.newValue;
-    }),
-
-    // Listen for Atom notifications:
-    atom.notifications.onDidAddNotification(proxyToNativeNotification),
-
-  );
-
-  try {
-    // Listen for the gatekeeper to tell us if we can generate native notifications.
-    const gatekeeper = require('../../fb-gatekeeper').gatekeeper;
-    subscriptions.add(
-      gatekeeper.onceInitialized(() => {
-        gkEnabled = gatekeeper.isGkEnabled('nuclide_native_notifications');
-      }),
-    );
-  } catch (e) { }
+function _atom() {
+  return _atom2 = require('atom');
 }
 
-function proxyToNativeNotification(notification: atom$Notification): void {
-  const options = notification.getOptions();
+var _nuclideFeatureConfig2;
+
+function _nuclideFeatureConfig() {
+  return _nuclideFeatureConfig2 = _interopRequireDefault(require('../../nuclide-feature-config'));
+}
+
+var subscriptions = null;
+var currentConfig = (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get('nuclide-notifications');
+var gkEnabled = false;
+
+function activate(state) {
+  subscriptions = new (_atom2 || _atom()).CompositeDisposable(
+
+  // Listen for changes to the native notification settings:
+  (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.onDidChange('nuclide-notifications', function (event) {
+    currentConfig = event.newValue;
+  }),
+
+  // Listen for Atom notifications:
+  atom.notifications.onDidAddNotification(proxyToNativeNotification));
+
+  try {
+    (function () {
+      // Listen for the gatekeeper to tell us if we can generate native notifications.
+      var gatekeeper = require('../../fb-gatekeeper').gatekeeper;
+      subscriptions.add(gatekeeper.onceInitialized(function () {
+        gkEnabled = gatekeeper.isGkEnabled('nuclide_native_notifications');
+      }));
+    })();
+  } catch (e) {}
+}
+
+function proxyToNativeNotification(notification) {
+  var options = notification.getOptions();
 
   // Don't proceed if user only wants 'nativeFriendly' proxied notifications and this isn't one.
   if (currentConfig.onlyNativeFriendly && !options.nativeFriendly) {
     return;
   }
 
-  raiseNativeNotification(
-    `${upperCaseFirst(notification.getType())}: ${notification.getMessage()}`,
-    options.detail,
-  );
-
+  raiseNativeNotification(upperCaseFirst(notification.getType()) + ': ' + notification.getMessage(), options.detail);
 }
 
-function raiseNativeNotification(title: string, body: string): void {
+function raiseNativeNotification(title, body) {
   // Check we're in the gatekeeper for native notifications at all.
   if (!gkEnabled) {
     return;
@@ -66,19 +74,17 @@ function raiseNativeNotification(title: string, body: string): void {
   }
 
   // eslint-disable-next-line no-new, no-undef
-  new Notification(
-    title, {
-      body: body,
-      icon: 'atom://nuclide/pkg/nuclide-notifications/notification.png',
-    }
-  );
+  new Notification(title, {
+    body: body,
+    icon: 'atom://nuclide/pkg/nuclide-notifications/notification.png'
+  });
 }
 
-export function deactivate(): void {
+function deactivate() {
   subscriptions.dispose();
-  subscriptions = (null: any);
+  subscriptions = null;
 }
 
-function upperCaseFirst(str: string): string {
-  return `${str[0].toUpperCase()}${str.slice(1)}`;
+function upperCaseFirst(str) {
+  return '' + str[0].toUpperCase() + str.slice(1);
 }

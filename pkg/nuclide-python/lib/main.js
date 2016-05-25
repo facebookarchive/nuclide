@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,49 +10,71 @@
  * the root directory of this source tree.
  */
 
-import type {OutlineProvider} from '../../nuclide-outline-view';
-import type {DefinitionProvider} from '../../nuclide-definition-service';
+exports.activate = activate;
+exports.createAutocompleteProvider = createAutocompleteProvider;
+exports.provideOutlines = provideOutlines;
+exports.provideDefinitions = provideDefinitions;
+exports.deactivate = deactivate;
 
-import {GRAMMAR_SET} from './constants';
-import AutocompleteHelpers from './AutocompleteHelpers';
-import DefinitionHelpers from './DefinitionHelpers';
-import OutlineHelpers from './OutlineHelpers';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export function activate() {
+var _constants2;
+
+function _constants() {
+  return _constants2 = require('./constants');
 }
 
-export function createAutocompleteProvider(): atom$AutocompleteProvider {
+var _AutocompleteHelpers2;
+
+function _AutocompleteHelpers() {
+  return _AutocompleteHelpers2 = _interopRequireDefault(require('./AutocompleteHelpers'));
+}
+
+var _DefinitionHelpers2;
+
+function _DefinitionHelpers() {
+  return _DefinitionHelpers2 = _interopRequireDefault(require('./DefinitionHelpers'));
+}
+
+var _OutlineHelpers2;
+
+function _OutlineHelpers() {
+  return _OutlineHelpers2 = _interopRequireDefault(require('./OutlineHelpers'));
+}
+
+function activate() {}
+
+function createAutocompleteProvider() {
   return {
     selector: '.source.python',
     inclusionPriority: 5,
-    suggestionPriority: 5,  // Higher than the snippets provider.
-    getSuggestions(request) {
-      return AutocompleteHelpers.getAutocompleteSuggestions(request);
-    },
+    suggestionPriority: 5, // Higher than the snippets provider.
+    getSuggestions: function getSuggestions(request) {
+      return (_AutocompleteHelpers2 || _AutocompleteHelpers()).default.getAutocompleteSuggestions(request);
+    }
   };
 }
 
-export function provideOutlines(): OutlineProvider {
+function provideOutlines() {
   return {
-    grammarScopes: Array.from(GRAMMAR_SET),
+    grammarScopes: Array.from((_constants2 || _constants()).GRAMMAR_SET),
     priority: 1,
     name: 'Python',
-    getOutline(editor) {
-      return OutlineHelpers.getOutline(editor);
-    },
+    getOutline: function getOutline(editor) {
+      return (_OutlineHelpers2 || _OutlineHelpers()).default.getOutline(editor);
+    }
   };
 }
 
-export function provideDefinitions(): DefinitionProvider {
+function provideDefinitions() {
   return {
-    grammarScopes: Array.from(GRAMMAR_SET),
+    grammarScopes: Array.from((_constants2 || _constants()).GRAMMAR_SET),
     priority: 20,
     name: 'PythonDefinitionProvider',
-    getDefinition(editor, position) {
-      return DefinitionHelpers.getDefinition(editor, position);
-    },
+    getDefinition: function getDefinition(editor, position) {
+      return (_DefinitionHelpers2 || _DefinitionHelpers()).default.getDefinition(editor, position);
+    }
   };
 }
 
-export function deactivate() {
-}
+function deactivate() {}

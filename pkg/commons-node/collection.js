@@ -1,5 +1,18 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
+exports.arrayRemove = arrayRemove;
+exports.arrayEqual = arrayEqual;
+exports.arrayCompact = arrayCompact;
+exports.mapUnion = mapUnion;
+exports.mapFilter = mapFilter;
+exports.mapEqual = mapEqual;
+exports.setIntersect = setIntersect;
+exports.isEmpty = isEmpty;
+exports.keyMirror = keyMirror;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +22,33 @@
  * the root directory of this source tree.
  */
 
-export function arrayRemove<T>(array: Array<T>, element: T): void {
-  const index = array.indexOf(element);
+function arrayRemove(array, element) {
+  var index = array.indexOf(element);
   if (index >= 0) {
     array.splice(index, 1);
   }
 }
 
-export function arrayEqual<T>(
-  array1: Array<T>,
-  array2: Array<T>,
-  equalComparator?: (a: T, b: T) => boolean,
-): boolean {
+function arrayEqual(array1, array2, equalComparator) {
   if (array1.length !== array2.length) {
     return false;
   }
-  const equalFunction = equalComparator || ((a: T, b: T) => a === b);
-  return array1.every((item1, i) => equalFunction(item1, array2[i]));
+  var equalFunction = equalComparator || function (a, b) {
+    return a === b;
+  };
+  return array1.every(function (item1, i) {
+    return equalFunction(item1, array2[i]);
+  });
 }
 
 /**
  * Returns a copy of the input Array with all `null` and `undefined` values filtered out.
  * Allows Flow to typecheck the common `filter(x => x != null)` pattern.
  */
-export function arrayCompact<T>(array: Array<?T>): Array<T> {
-  const result = [];
-  for (const elem of array) {
+
+function arrayCompact(array) {
+  var result = [];
+  for (var elem of array) {
     if (elem != null) {
       result.push(elem);
     }
@@ -46,37 +60,52 @@ export function arrayCompact<T>(array: Array<?T>): Array<T> {
  * Merges a given arguments of maps into one Map, with the latest maps
  * overriding the values of the prior maps.
  */
-export function mapUnion<T, X>(...maps: Array<Map<T, X>>): Map<T, X> {
-  const unionMap = new Map();
-  for (const map of maps) {
-    for (const [key, value] of map) {
-      unionMap.set(key, value);
+
+function mapUnion() {
+  var unionMap = new Map();
+
+  for (var _len = arguments.length, maps = Array(_len), _key = 0; _key < _len; _key++) {
+    maps[_key] = arguments[_key];
+  }
+
+  for (var map of maps) {
+    for (var _ref3 of map) {
+      var _ref2 = _slicedToArray(_ref3, 2);
+
+      var _key2 = _ref2[0];
+      var _value = _ref2[1];
+
+      unionMap.set(_key2, _value);
     }
   }
   return unionMap;
 }
 
-export function mapFilter<T, X>(
-  map: Map<T, X>,
-  selector: (key: T, value: X) => boolean,
-): Map<T, X> {
-  const selected = new Map();
-  for (const [key, value] of map) {
-    if (selector(key, value)) {
-      selected.set(key, value);
+function mapFilter(map, selector) {
+  var selected = new Map();
+  for (var _ref43 of map) {
+    var _ref42 = _slicedToArray(_ref43, 2);
+
+    var _key3 = _ref42[0];
+    var _value2 = _ref42[1];
+
+    if (selector(_key3, _value2)) {
+      selected.set(_key3, _value2);
     }
   }
   return selected;
 }
 
-export function mapEqual<T, X>(
-  map1: Map<T, X>,
-  map2: Map<T, X>,
-) {
+function mapEqual(map1, map2) {
   if (map1.size !== map2.size) {
     return false;
   }
-  for (const [key1, value1] of map1) {
+  for (var _ref53 of map1) {
+    var _ref52 = _slicedToArray(_ref53, 2);
+
+    var key1 = _ref52[0];
+    var value1 = _ref52[1];
+
     if (map2.get(key1) !== value1) {
       return false;
     }
@@ -84,16 +113,19 @@ export function mapEqual<T, X>(
   return true;
 }
 
-export function setIntersect<T>(a: Set<T>, b: Set<T>): Set<T> {
-  return new Set(Array.from(a).filter(e => b.has(e)));
+function setIntersect(a, b) {
+  return new Set(Array.from(a).filter(function (e) {
+    return b.has(e);
+  }));
 }
-
 
 /**
  * O(1)-check if a given object is empty (has no properties, inherited or not)
  */
-export function isEmpty(obj: Object): boolean {
-  for (const key in obj) { // eslint-disable-line no-unused-vars
+
+function isEmpty(obj) {
+  for (var _key4 in obj) {
+    // eslint-disable-line no-unused-vars
     return false;
   }
   return true;
@@ -105,9 +137,10 @@ export function isEmpty(obj: Object): boolean {
  *
  * Based off the equivalent function in www.
  */
-export function keyMirror<T: Object>(obj: T): {[key: $Enum<T>]: $Enum<T>} {
-  const ret = {};
-  Object.keys(obj).forEach(key => {
+
+function keyMirror(obj) {
+  var ret = {};
+  Object.keys(obj).forEach(function (key) {
     ret[key] = key;
   });
   return ret;

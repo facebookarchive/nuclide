@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +10,20 @@
  * the root directory of this source tree.
  */
 
-import type Immutable from 'immutable';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-export class LazyTreeNode {
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  // Protected
-  __isContainer: boolean;
-  __item: any;
-  __key: ?string;
-  __parent: ?LazyTreeNode;
-
-  // Private
-  _children: ?Immutable.List;
-  _fetchChildren: (node: LazyTreeNode) => Promise;
-  _isCacheValid: boolean;
-  _pendingFetch: ?Promise;
+var LazyTreeNode = (function () {
 
   /**
    * @param fetchChildren returns a Promise that resolves to an Immutable.List
    *     of LazyTreeNode objects.
    */
-  constructor(
-      item: any,
-      parent: ?LazyTreeNode,
-      isContainer: boolean,
-      fetchChildren: (node: LazyTreeNode) => Promise) {
+
+  function LazyTreeNode(item, parent, isContainer, fetchChildren) {
+    _classCallCheck(this, LazyTreeNode);
+
     this.__item = item;
     this.__parent = parent;
     this.__isContainer = isContainer;
@@ -44,83 +34,108 @@ export class LazyTreeNode {
     this.__key = null;
   }
 
-  isRoot(): boolean {
-    return this.__parent === null;
-  }
-
-  getParent(): ?LazyTreeNode {
-    return this.__parent;
-  }
-
-  getItem(): any {
-    return this.__item;
-  }
-
-  getCachedChildren(): ?Immutable.List<LazyTreeNode> {
-    return this._children;
-  }
-
-  fetchChildren(): Promise {
-    let pendingFetch = this._pendingFetch;
-    if (!pendingFetch) {
-      pendingFetch = this._fetchChildren(this).then(children => {
-        // Store the children before returning them from the Promise.
-        this._children = children;
-        this._isCacheValid = true;
-        return children;
-      });
-      this._pendingFetch = pendingFetch;
-
-      // Make sure that whether the fetch succeeds or fails, the _pendingFetch
-      // field is cleared.
-      const clear = () => {
-        this._pendingFetch = null;
-      };
-      pendingFetch.then(clear, clear);
+  _createClass(LazyTreeNode, [{
+    key: 'isRoot',
+    value: function isRoot() {
+      return this.__parent === null;
     }
-    return pendingFetch;
-  }
-
-  /**
-   * Each node should have a key that uniquely identifies it among the
-   * LazyTreeNodes that make up the tree.
-   */
-  getKey(): string {
-    let key = this.__key;
-    if (!key) {
-      // TODO(mbolin): Escape slashes.
-      const prefix = this.__parent ? this.__parent.getKey() : '/';
-      const suffix = this.__isContainer ? '/' : '';
-      key = prefix + this.getLabel() + suffix;
-      this.__key = key;
+  }, {
+    key: 'getParent',
+    value: function getParent() {
+      return this.__parent;
     }
-    return key;
-  }
+  }, {
+    key: 'getItem',
+    value: function getItem() {
+      return this.__item;
+    }
+  }, {
+    key: 'getCachedChildren',
+    value: function getCachedChildren() {
+      return this._children;
+    }
+  }, {
+    key: 'fetchChildren',
+    value: function fetchChildren() {
+      var _this = this;
 
-  /**
-   * @return the string that the tree UI should display for the node
-   */
-  getLabel(): string {
-    throw new Error('subclasses must override this method');
-  }
+      var pendingFetch = this._pendingFetch;
+      if (!pendingFetch) {
+        pendingFetch = this._fetchChildren(this).then(function (children) {
+          // Store the children before returning them from the Promise.
+          _this._children = children;
+          _this._isCacheValid = true;
+          return children;
+        });
+        this._pendingFetch = pendingFetch;
 
-  /**
-   * This can return a richer element for a node and will be used instead of the label if present.
-   */
-  getLabelElement(): ?React$Element {
-    return null;
-  }
+        // Make sure that whether the fetch succeeds or fails, the _pendingFetch
+        // field is cleared.
+        var clear = function clear() {
+          _this._pendingFetch = null;
+        };
+        pendingFetch.then(clear, clear);
+      }
+      return pendingFetch;
+    }
 
-  isContainer(): boolean {
-    return this.__isContainer;
-  }
+    /**
+     * Each node should have a key that uniquely identifies it among the
+     * LazyTreeNodes that make up the tree.
+     */
+  }, {
+    key: 'getKey',
+    value: function getKey() {
+      var key = this.__key;
+      if (!key) {
+        // TODO(mbolin): Escape slashes.
+        var prefix = this.__parent ? this.__parent.getKey() : '/';
+        var suffix = this.__isContainer ? '/' : '';
+        key = prefix + this.getLabel() + suffix;
+        this.__key = key;
+      }
+      return key;
+    }
 
-  isCacheValid(): boolean {
-    return this._isCacheValid;
-  }
+    /**
+     * @return the string that the tree UI should display for the node
+     */
+  }, {
+    key: 'getLabel',
+    value: function getLabel() {
+      throw new Error('subclasses must override this method');
+    }
 
-  invalidateCache(): void {
-    this._isCacheValid = false;
-  }
+    /**
+     * This can return a richer element for a node and will be used instead of the label if present.
+     */
+  }, {
+    key: 'getLabelElement',
+    value: function getLabelElement() {
+      return null;
+    }
+  }, {
+    key: 'isContainer',
+    value: function isContainer() {
+      return this.__isContainer;
+    }
+  }, {
+    key: 'isCacheValid',
+    value: function isCacheValid() {
+      return this._isCacheValid;
+    }
+  }, {
+    key: 'invalidateCache',
+    value: function invalidateCache() {
+      this._isCacheValid = false;
+    }
+  }]);
 
-}
+  return LazyTreeNode;
+})();
+
+exports.LazyTreeNode = LazyTreeNode;
+
+// Protected
+
+// Private

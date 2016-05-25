@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,119 +10,121 @@
  * the root directory of this source tree.
  */
 
-import type {Outline, OutlineForUi, OutlineTree, OutlineTreeForUi, OutlineProvider} from '..';
-import type ActiveEditorRegistry, {Result} from
-  '../../commons-atom/ActiveEditorRegistry';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import {Observable} from 'rxjs';
-import invariant from 'assert';
+exports.createOutlines = createOutlines;
 
-import {getCursorPositions} from '../../commons-atom/text-editor';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const LOADING_DELAY_MS = 500;
+var _rxjs2;
 
-export function createOutlines(
-  editorService: ActiveEditorRegistry<OutlineProvider, ?Outline>,
-): Observable<OutlineForUi> {
+function _rxjs() {
+  return _rxjs2 = require('rxjs');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _commonsAtomTextEditor2;
+
+function _commonsAtomTextEditor() {
+  return _commonsAtomTextEditor2 = require('../../commons-atom/text-editor');
+}
+
+var LOADING_DELAY_MS = 500;
+
+function createOutlines(editorService) {
   return outlinesForProviderResults(editorService.getResultsStream());
 }
 
-function outlinesForProviderResults(
-  providerResults: Observable<Result<OutlineProvider, ?Outline>>,
-): Observable<OutlineForUi> {
+function outlinesForProviderResults(providerResults) {
   return providerResults.switchMap(uiOutlinesForResult);
 }
 
-function uiOutlinesForResult(result: Result<OutlineProvider, ?Outline>): Observable<OutlineForUi> {
+function uiOutlinesForResult(result) {
   switch (result.kind) {
     case 'not-text-editor':
-      return Observable.of({kind: 'not-text-editor'});
+      return (_rxjs2 || _rxjs()).Observable.of({ kind: 'not-text-editor' });
     case 'no-provider':
-      return Observable.of({
+      return (_rxjs2 || _rxjs()).Observable.of({
         kind: 'no-provider',
-        grammar: result.grammar.name,
+        grammar: result.grammar.name
       });
     case 'pane-change':
       // Render a blank outline when we change panes.
       // If we haven't received anything after LOADING_DELAY_MS, display a loading indicator.
-      return Observable.concat(
-        Observable.of({kind: 'empty'}),
-        Observable.of({kind: 'loading'}).delay(LOADING_DELAY_MS),
-      );
+      return (_rxjs2 || _rxjs()).Observable.concat((_rxjs2 || _rxjs()).Observable.of({ kind: 'empty' }), (_rxjs2 || _rxjs()).Observable.of({ kind: 'loading' }).delay(LOADING_DELAY_MS));
     case 'result':
-      const outline = result.result;
+      var outline = result.result;
       if (outline == null) {
-        return Observable.of({kind: 'provider-no-outline'});
+        return (_rxjs2 || _rxjs()).Observable.of({ kind: 'provider-no-outline' });
       }
       return highlightedOutlines(outline, result.editor);
     case 'provider-error':
-      return Observable.of({kind: 'provider-no-outline'});
+      return (_rxjs2 || _rxjs()).Observable.of({ kind: 'provider-no-outline' });
     default:
       // Don't change the UI after 'edit' or 'save' events.
       // It's better to just leave the existing outline visible until the new results come in.
-      return Observable.empty();
+      return (_rxjs2 || _rxjs()).Observable.empty();
   }
 }
 
-function highlightedOutlines(outline: Outline, editor: atom$TextEditor): Observable<OutlineForUi> {
-  const outlineForUi = {
+function highlightedOutlines(outline, editor) {
+  var outlineForUi = {
     kind: 'outline',
     outlineTrees: outline.outlineTrees.map(treeToUiTree),
-    editor,
+    editor: editor
   };
 
-  return getCursorPositions(editor)
-    .map(cursorLocation => highlightCurrentNode(outlineForUi, cursorLocation));
+  return (0, (_commonsAtomTextEditor2 || _commonsAtomTextEditor()).getCursorPositions)(editor).map(function (cursorLocation) {
+    return highlightCurrentNode(outlineForUi, cursorLocation);
+  });
 }
 
-function treeToUiTree(outlineTree: OutlineTree): OutlineTreeForUi {
+function treeToUiTree(outlineTree) {
   return {
     plainText: outlineTree.plainText,
     tokenizedText: outlineTree.tokenizedText,
     startPosition: outlineTree.startPosition,
     endPosition: outlineTree.endPosition,
     highlighted: false,
-    children: outlineTree.children.map(treeToUiTree),
+    children: outlineTree.children.map(treeToUiTree)
   };
 }
 
 // Return an outline object with the node under the cursor highlighted. Does not mutate the
 // original.
-function highlightCurrentNode(outline: OutlineForUi, cursorLocation: atom$Point): OutlineForUi {
-  invariant(outline.kind === 'outline');
-  return {
-    ...outline,
-    outlineTrees: highlightCurrentNodeInTrees(outline.outlineTrees, cursorLocation),
-  };
-}
-
-function highlightCurrentNodeInTrees(
-  outlineTrees: Array<OutlineTreeForUi>,
-  cursorLocation: atom$Point
-): Array<OutlineTreeForUi> {
-  return outlineTrees.map(tree => {
-    return {
-      ...tree,
-      highlighted: shouldHighlightNode(tree, cursorLocation),
-      children: highlightCurrentNodeInTrees(tree.children, cursorLocation),
-    };
+function highlightCurrentNode(outline, cursorLocation) {
+  (0, (_assert2 || _assert()).default)(outline.kind === 'outline');
+  return _extends({}, outline, {
+    outlineTrees: highlightCurrentNodeInTrees(outline.outlineTrees, cursorLocation)
   });
 }
 
-function shouldHighlightNode(outlineTree: OutlineTreeForUi, cursorLocation: atom$Point): boolean {
-  const startPosition = outlineTree.startPosition;
-  const endPosition = outlineTree.endPosition;
+function highlightCurrentNodeInTrees(outlineTrees, cursorLocation) {
+  return outlineTrees.map(function (tree) {
+    return _extends({}, tree, {
+      highlighted: shouldHighlightNode(tree, cursorLocation),
+      children: highlightCurrentNodeInTrees(tree.children, cursorLocation)
+    });
+  });
+}
+
+function shouldHighlightNode(outlineTree, cursorLocation) {
+  var startPosition = outlineTree.startPosition;
+  var endPosition = outlineTree.endPosition;
   if (endPosition == null) {
     return false;
   }
   if (outlineTree.children.length !== 0) {
-    const childStartPosition = outlineTree.children[0].startPosition;
+    var childStartPosition = outlineTree.children[0].startPosition;
     // Since the parent is rendered in the list above the children, it doesn't really make sense to
     // highlight it if you are below the start position of any child. However, if you are at the top
     // of a class it does seem desirable to highlight it.
-    return cursorLocation.isGreaterThanOrEqual(startPosition) &&
-      cursorLocation.isLessThan(childStartPosition);
+    return cursorLocation.isGreaterThanOrEqual(startPosition) && cursorLocation.isLessThan(childStartPosition);
   }
-  return cursorLocation.isGreaterThanOrEqual(startPosition) &&
-   cursorLocation.isLessThanOrEqual(endPosition);
+  return cursorLocation.isGreaterThanOrEqual(startPosition) && cursorLocation.isLessThanOrEqual(endPosition);
 }

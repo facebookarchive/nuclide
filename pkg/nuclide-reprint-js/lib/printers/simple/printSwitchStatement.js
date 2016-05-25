@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +8,28 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {SwitchStatement} from 'ast-types-flow';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import markers from '../../constants/markers';
-import wrapStatement from '../../wrappers/simple/wrapStatement';
+var _constantsMarkers2;
 
-function printSwitchStatement(print: Print, node: SwitchStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
-  return wrap([
-    markers.hardBreak,
-    'switch (',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    print(node.discriminant),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-    ') {',
-    markers.hardBreak,
-    markers.indent,
-    node.cases.map(caseNode => print(caseNode)),
-    markers.noBreak, // Squash the last breaks.
-    '',
-    markers.dedent,
-    markers.hardBreak,
-    '}',
-  ]);
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+var _wrappersSimpleWrapStatement2;
+
+function _wrappersSimpleWrapStatement() {
+  return _wrappersSimpleWrapStatement2 = _interopRequireDefault(require('../../wrappers/simple/wrapStatement'));
+}
+
+function printSwitchStatement(print, node) {
+  var wrap = function wrap(x) {
+    return (0, (_wrappersSimpleWrapStatement2 || _wrappersSimpleWrapStatement()).default)(print, node, x);
+  };
+  return wrap([(_constantsMarkers2 || _constantsMarkers()).default.hardBreak, 'switch (', (_constantsMarkers2 || _constantsMarkers()).default.openScope, (_constantsMarkers2 || _constantsMarkers()).default.scopeIndent, (_constantsMarkers2 || _constantsMarkers()).default.scopeBreak, print(node.discriminant), (_constantsMarkers2 || _constantsMarkers()).default.scopeBreak, (_constantsMarkers2 || _constantsMarkers()).default.scopeDedent, (_constantsMarkers2 || _constantsMarkers()).default.closeScope, ') {', (_constantsMarkers2 || _constantsMarkers()).default.hardBreak, (_constantsMarkers2 || _constantsMarkers()).default.indent, node.cases.map(function (caseNode) {
+    return print(caseNode);
+  }), (_constantsMarkers2 || _constantsMarkers()).default.noBreak, // Squash the last breaks.
+  '', (_constantsMarkers2 || _constantsMarkers()).default.dedent, (_constantsMarkers2 || _constantsMarkers()).default.hardBreak, '}']);
 }
 
 module.exports = printSwitchStatement;

@@ -1,21 +1,11 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
-/*
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import net from 'net';
-import logger from './utils';
-import {Emitter} from 'event-kit';
-import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
-import {failConnection} from './ConnectionUtils';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-import type {Socket, Server} from 'net';
 /**
  * xdebugAttachPort is the port to listen for dbgp connections on.
  *
@@ -28,9 +18,49 @@ import type {Socket, Server} from 'net';
  * Note that 0 pid also does not filter on process id.
  */
 
-const DBGP_ATTACH_EVENT = 'dbgp-attach-event';
-const DBGP_CLOSE_EVENT = 'dbgp-close-event';
-const DBGP_ERROR_EVENT = 'dbgp-error-event';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+var _net2;
+
+function _net() {
+  return _net2 = _interopRequireDefault(require('net'));
+}
+
+var _utils2;
+
+function _utils() {
+  return _utils2 = _interopRequireDefault(require('./utils'));
+}
+
+var _eventKit2;
+
+function _eventKit() {
+  return _eventKit2 = require('event-kit');
+}
+
+var _DbgpMessageHandler2;
+
+function _DbgpMessageHandler() {
+  return _DbgpMessageHandler2 = require('./DbgpMessageHandler');
+}
+
+var _ConnectionUtils2;
+
+function _ConnectionUtils() {
+  return _ConnectionUtils2 = require('./ConnectionUtils');
+}
+
+var DBGP_ATTACH_EVENT = 'dbgp-attach-event';
+var DBGP_CLOSE_EVENT = 'dbgp-close-event';
+var DBGP_ERROR_EVENT = 'dbgp-error-event';
 
 /**
  * Connect to requested dbgp debuggee on given port.
@@ -43,132 +73,149 @@ const DBGP_ERROR_EVENT = 'dbgp-error-event';
  * If the connection does not match the given pid/idekey/path
  * then close the connection and continue waiting for a match.
  */
-export class DbgpConnector {
-  _server: ?Server;
-  _emitter: Emitter;
-  _messageHandler: DbgpMessageHandler;
-  _port: number;
 
-  constructor(port: number) {
+var DbgpConnector = (function () {
+  function DbgpConnector(port) {
+    _classCallCheck(this, DbgpConnector);
+
     this._server = null;
-    this._emitter = new Emitter();
-    this._messageHandler = getDbgpMessageHandlerInstance();
+    this._emitter = new (_eventKit2 || _eventKit()).Emitter();
+    this._messageHandler = (0, (_DbgpMessageHandler2 || _DbgpMessageHandler()).getDbgpMessageHandlerInstance)();
     this._port = port;
   }
 
-  onAttach(callback: (params: {socket: Socket; message: Object}) => Promise): IDisposable {
-    return this._emitter.on(DBGP_ATTACH_EVENT, callback);
-  }
+  _createClass(DbgpConnector, [{
+    key: 'onAttach',
+    value: function onAttach(callback) {
+      return this._emitter.on(DBGP_ATTACH_EVENT, callback);
+    }
+  }, {
+    key: 'onClose',
+    value: function onClose(callback) {
+      return this._emitter.on(DBGP_CLOSE_EVENT, callback);
+    }
+  }, {
+    key: 'onError',
+    value: function onError(callback) {
+      return this._emitter.on(DBGP_ERROR_EVENT, callback);
+    }
+  }, {
+    key: 'listen',
+    value: function listen() {
+      var _this = this;
 
-  onClose(callback: () => void): IDisposable {
-    return this._emitter.on(DBGP_CLOSE_EVENT, callback);
-  }
+      (_utils2 || _utils()).default.log('Creating debug server on port ' + this._port);
 
-  onError(callback: (error: string) => void): IDisposable {
-    return this._emitter.on(DBGP_ERROR_EVENT, callback);
-  }
+      var server = (_net2 || _net()).default.createServer();
 
-  listen(): void {
-    logger.log('Creating debug server on port ' + this._port);
-
-    const server = net.createServer();
-
-    server.on('close', socket => logger.log('Closing port ' + this._port));
-    server.listen(
-      this._port,
-      undefined, // Hostname.
+      server.on('close', function (socket) {
+        return (_utils2 || _utils()).default.log('Closing port ' + _this._port);
+      });
+      server.listen(this._port, undefined, // Hostname.
       undefined, // Backlog -- the maximum length of the queue of pending connections.
-      () => logger.log('Listening on port ' + this._port),
-    );
+      function () {
+        return (_utils2 || _utils()).default.log('Listening on port ' + _this._port);
+      });
 
-    server.on('error', error => this._onServerError(error));
-    server.on('connection', socket => this._onSocketConnection(socket));
-    server.on('close', () => { logger.log('DBGP Server closed.'); });
+      server.on('error', function (error) {
+        return _this._onServerError(error);
+      });
+      server.on('connection', function (socket) {
+        return _this._onSocketConnection(socket);
+      });
+      server.on('close', function () {
+        (_utils2 || _utils()).default.log('DBGP Server closed.');
+      });
 
-    this._server = server;
-  }
-
-  _onSocketConnection(socket: Socket) {
-    logger.log('Connection on port ' + this._port);
-    if (!this._checkListening(socket, 'Connection')) {
-      return;
+      this._server = server;
     }
-    socket.once('data', data => this._onSocketData(socket, data));
-  }
+  }, {
+    key: '_onSocketConnection',
+    value: function _onSocketConnection(socket) {
+      var _this2 = this;
 
-  _onServerError(error: Object): void {
-    let errorMessage;
-    if (error.code === 'EADDRINUSE') {
-      errorMessage =
-        `Can't start debugging because port ${this._port} is being used by another process. `
-        + "Try running 'killall node' on your devserver and then restarting Nuclide.";
-    } else {
-      errorMessage = `Unknown debugger socket error: ${error.code}.`;
+      (_utils2 || _utils()).default.log('Connection on port ' + this._port);
+      if (!this._checkListening(socket, 'Connection')) {
+        return;
+      }
+      socket.once('data', function (data) {
+        return _this2._onSocketData(socket, data);
+      });
+    }
+  }, {
+    key: '_onServerError',
+    value: function _onServerError(error) {
+      var errorMessage = undefined;
+      if (error.code === 'EADDRINUSE') {
+        errorMessage = 'Can\'t start debugging because port ' + this._port + ' is being used by another process. ' + "Try running 'killall node' on your devserver and then restarting Nuclide.";
+      } else {
+        errorMessage = 'Unknown debugger socket error: ' + error.code + '.';
+      }
+
+      (_utils2 || _utils()).default.logError(errorMessage);
+      this._emitter.emit(DBGP_ERROR_EVENT, errorMessage);
+
+      this.dispose();
+    }
+  }, {
+    key: '_onSocketData',
+    value: function _onSocketData(socket, data) {
+      if (!this._checkListening(socket, 'Data')) {
+        return;
+      }
+
+      var messages = undefined;
+      try {
+        messages = this._messageHandler.parseMessages(data.toString());
+      } catch (error) {
+        this._failConnection(socket, 'Non XML connection string: ' + data.toString() + '. Discarding connection.', 'PHP sent a malformed request, please file a bug to the Nuclide developers.<br />' + 'Error: Non XML connection string.');
+        return;
+      }
+
+      if (messages.length !== 1) {
+        this._failConnection(socket, 'Expected a single connection message. Got ' + messages.length, 'PHP sent a malformed request, please file a bug to the Nuclide developers.<br />' + 'Error: Expected a single connection message.');
+        return;
+      }
+
+      var message = messages[0];
+      this._emitter.emit(DBGP_ATTACH_EVENT, { socket: socket, message: message });
+    }
+  }, {
+    key: '_failConnection',
+    value: function _failConnection(socket, logMessage, userMessage) {
+      (0, (_ConnectionUtils2 || _ConnectionUtils()).failConnection)(socket, logMessage);
+      this._emitter.emit(DBGP_ERROR_EVENT, userMessage);
     }
 
-    logger.logError(errorMessage);
-    this._emitter.emit(DBGP_ERROR_EVENT, errorMessage);
-
-    this.dispose();
-  }
-
-  _onSocketData(socket: Socket, data: Buffer | string): void {
-    if (!this._checkListening(socket, 'Data')) {
-      return;
+    /**
+     * Checks if listening for connections. If not then close the new socket.
+     */
+  }, {
+    key: '_checkListening',
+    value: function _checkListening(socket, message) {
+      if (!this.isListening()) {
+        (_utils2 || _utils()).default.log('Ignoring ' + message + ' on port ' + this._port + ' after stopped connection.');
+        return false;
+      }
+      return true;
     }
-
-    let messages;
-    try {
-      messages = this._messageHandler.parseMessages(data.toString());
-    } catch (error) {
-      this._failConnection(
-        socket,
-        'Non XML connection string: ' + data.toString() + '. Discarding connection.',
-        'PHP sent a malformed request, please file a bug to the Nuclide developers.<br />' +
-        'Error: Non XML connection string.',
-      );
-      return;
+  }, {
+    key: 'isListening',
+    value: function isListening() {
+      return Boolean(this._server);
     }
-
-    if (messages.length !== 1) {
-      this._failConnection(
-        socket,
-        'Expected a single connection message. Got ' + messages.length,
-        'PHP sent a malformed request, please file a bug to the Nuclide developers.<br />' +
-        'Error: Expected a single connection message.',
-      );
-      return;
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      if (this._server) {
+        this._server.close();
+        this._emitter.emit(DBGP_CLOSE_EVENT);
+        this._server = null;
+      }
     }
+  }]);
 
-    const message = messages[0];
-    this._emitter.emit(DBGP_ATTACH_EVENT, {socket, message});
-  }
+  return DbgpConnector;
+})();
 
-  _failConnection(socket: Socket, logMessage: string, userMessage: string): void {
-    failConnection(socket, logMessage);
-    this._emitter.emit(DBGP_ERROR_EVENT, userMessage);
-  }
-
-  /**
-   * Checks if listening for connections. If not then close the new socket.
-   */
-  _checkListening(socket: Socket, message: string): boolean {
-    if (!this.isListening()) {
-      logger.log('Ignoring ' + message + ' on port ' + this._port + ' after stopped connection.');
-      return false;
-    }
-    return true;
-  }
-
-  isListening(): boolean {
-    return Boolean(this._server);
-  }
-
-  dispose() {
-    if (this._server) {
-      this._server.close();
-      this._emitter.emit(DBGP_CLOSE_EVENT);
-      this._server = null;
-    }
-  }
-}
+exports.DbgpConnector = DbgpConnector;

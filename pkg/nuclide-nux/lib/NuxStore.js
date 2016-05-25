@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,80 +14,102 @@
  * the root directory of this source tree.
  */
 
-import {Emitter} from 'atom';
-import type {NuxTourModel} from './NuxModel';
+var _atom2;
 
-export class NuxStore {
-  _emitter: atom$Emitter;
-  _shouldSeedNux: boolean;
-  _nuxList: Array<NuxTourModel>;
+function _atom() {
+  return _atom2 = require('atom');
+}
 
-  constructor(
-    shouldSeedNux: boolean = false,
-  ): void {
+var NuxStore = (function () {
+  function NuxStore() {
+    var shouldSeedNux = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+
+    _classCallCheck(this, NuxStore);
+
     this._shouldSeedNux = shouldSeedNux;
 
     this._nuxList = [];
-    this._emitter = new Emitter();
+    this._emitter = new (_atom2 || _atom()).Emitter();
   }
 
-  dispose(): void {
-    this._emitter.dispose();
-  }
-
-  initialize(): void {
-    //TODO [rageandqq | 05-19-16]: Deserialize 'saved' NUXes
-    if (this._shouldSeedNux) {
-      // TODO [rageandqq | 05-19-16]: Seed with sample NUX
-      this.addNewNux(this._createSampleNux());
+  _createClass(NuxStore, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._emitter.dispose();
     }
-  }
+  }, {
+    key: 'initialize',
+    value: function initialize() {
+      //TODO [rageandqq | 05-19-16]: Deserialize 'saved' NUXes
+      if (this._shouldSeedNux) {
+        // TODO [rageandqq | 05-19-16]: Seed with sample NUX
+        this.addNewNux(this._createSampleNux());
+      }
+    }
+  }, {
+    key: '_createSampleNux',
+    value: function _createSampleNux() {
+      var nuxTriggerOutline = {
+        content: 'Check out the new Outline View!',
+        isCustomContent: false,
+        selector: '.icon-list-unordered',
+        selectorFunction: null,
+        position: 'right',
+        displayPredicate: function displayPredicate() {
+          return document.querySelector('div.nuclide-outline-view') == null;
+        },
+        completionPredicate: function completionPredicate() {
+          return document.querySelector('div.nuclide-outline-view') != null;
+        },
+        completed: false
+      };
+      var nuxOutlineView = {
+        content: 'Click on a symbol to jump to its definition.',
+        isCustomContent: false,
+        selector: 'div.pane-item.nuclide-outline-view',
+        selectorFunction: null,
+        position: 'left',
+        displayPredicate: function displayPredicate() {
+          return document.querySelector('div.nuclide-outline-view') == null;
+        },
+        completionPredicate: null,
+        completed: false
+      };
+      var sampleOutlineNuxTour = {
+        numNuxes: 2,
+        completed: false,
+        id: 'outline-view-tour',
+        nuxList: [nuxTriggerOutline, nuxOutlineView]
+      };
+      return sampleOutlineNuxTour;
+    }
+  }, {
+    key: 'addNewNux',
+    value: function addNewNux(nux) {
+      this._nuxList.push(nux);
+      this._emitter.emit('newNux', nux);
+    }
 
-  _createSampleNux(): NuxTourModel {
-    const nuxTriggerOutline = {
-      content: 'Check out the new Outline View!',
-      isCustomContent: false,
-      selector: '.icon-list-unordered',
-      selectorFunction: null,
-      position: 'right',
-      displayPredicate: (() => document.querySelector('div.nuclide-outline-view') == null),
-      completionPredicate: (() => document.querySelector('div.nuclide-outline-view') != null),
-      completed: false,
-    };
-    const nuxOutlineView = {
-      content: 'Click on a symbol to jump to its definition.',
-      isCustomContent: false,
-      selector: 'div.pane-item.nuclide-outline-view',
-      selectorFunction: null,
-      position: 'left',
-      displayPredicate: (() => document.querySelector('div.nuclide-outline-view') == null),
-      completionPredicate: null,
-      completed: false,
-    };
-    const sampleOutlineNuxTour = {
-      numNuxes: 2,
-      completed: false,
-      id: 'outline-view-tour',
-      nuxList: [nuxTriggerOutline, nuxOutlineView],
-    };
-    return sampleOutlineNuxTour;
-  }
+    /**
+     * Register a change handler that is invoked whenever the store changes.
+     */
+  }, {
+    key: 'onNewNux',
+    value: function onNewNux(callback) {
+      return this._emitter.on('newNux', callback);
+    }
+  }, {
+    key: 'onNuxCompleted',
+    value: function onNuxCompleted(nux) {
+      var nuxToMark = this._nuxList.find(function (tour) {
+        return tour.id === nux.id;
+      });
+      nuxToMark.completed = true;
+      // TODO [rageandqq | 05-19-16]: Save 'completed' state of nux.
+    }
+  }]);
 
-  addNewNux(nux: NuxTourModel) {
-    this._nuxList.push(nux);
-    this._emitter.emit('newNux', nux);
-  }
+  return NuxStore;
+})();
 
-  /**
-   * Register a change handler that is invoked whenever the store changes.
-   */
-  onNewNux(callback: (nux: NuxTourModel) => void): IDisposable {
-    return this._emitter.on('newNux', callback);
-  }
-
-  onNuxCompleted(nux: NuxTourModel): void {
-    const nuxToMark = this._nuxList.find(tour => tour.id === nux.id);
-    nuxToMark.completed = true;
-    // TODO [rageandqq | 05-19-16]: Save 'completed' state of nux.
-  }
-}
+exports.NuxStore = NuxStore;

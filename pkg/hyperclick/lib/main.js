@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +10,55 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from './types';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeProvider = consumeProvider;
+exports.observeTextEditor = observeTextEditor;
 
-import {Disposable} from 'atom';
-import Hyperclick from './Hyperclick';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let hyperclick: ?Hyperclick = null;
+var _atom2;
 
-export function activate() {
-  hyperclick = new Hyperclick();
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _Hyperclick2;
+
+function _Hyperclick() {
+  return _Hyperclick2 = _interopRequireDefault(require('./Hyperclick'));
+}
+
+var hyperclick = null;
+
+function activate() {
+  hyperclick = new (_Hyperclick2 || _Hyperclick()).default();
 
   // FB-only: override the symbols-view "Go To Declaration" context menu item
   // with the Hyperclick "confirm-cursor" command.
   // TODO(hansonw): Remove when symbols-view has a proper API.
   try {
-    const {overrideGoToDeclaration} = require('./fb/overrideGoToDeclaration');
+    var _require = require('./fb/overrideGoToDeclaration');
+
+    var overrideGoToDeclaration = _require.overrideGoToDeclaration;
+
     overrideGoToDeclaration();
   } catch (e) {
     // Ignore.
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (hyperclick != null) {
     hyperclick.dispose();
     hyperclick = null;
   }
 }
 
-export function consumeProvider(
-  provider: HyperclickProvider | Array<HyperclickProvider>,
-): ?Disposable {
+function consumeProvider(provider) {
   if (hyperclick != null) {
     hyperclick.consumeProvider(provider);
-    return new Disposable(() => {
+    return new (_atom2 || _atom()).Disposable(function () {
       if (hyperclick != null) {
         hyperclick.removeProvider(provider);
       }
@@ -55,8 +71,9 @@ export function consumeProvider(
  * observed by default by hyperclick. However, if a TextEditor is created via some other means,
  * (such as a building block for a piece of UI), then it must be observed explicitly.
  */
-export function observeTextEditor(): (textEditor: atom$TextEditor) => void {
-  return (textEditor: atom$TextEditor) => {
+
+function observeTextEditor() {
+  return function (textEditor) {
     if (hyperclick != null) {
       hyperclick.observeTextEditor(textEditor);
     }

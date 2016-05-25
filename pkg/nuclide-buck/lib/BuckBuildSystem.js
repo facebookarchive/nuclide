@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,320 +10,386 @@
  * the root directory of this source tree.
  */
 
-import type {BuckWebSocketMessage} from '../../nuclide-buck-base/lib/BuckProject';
-import type {Task, TaskInfo} from '../../nuclide-build/lib/types';
-import type {Message} from '../../nuclide-console/lib/types';
-import type {BuckProject} from '../../nuclide-buck-base';
-import type {SerializedState} from './types';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import {Observable, Subject} from 'rxjs';
-import {CompositeDisposable} from 'atom';
-import {Dispatcher} from 'flux';
-import path from 'path';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {DisposableSubscription} from '../../commons-node/stream';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {getLogger} from '../../nuclide-logging';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
-import {BuckIcon} from './ui/BuckIcon';
-import BuckToolbarStore from './BuckToolbarStore';
-import BuckToolbarActions from './BuckToolbarActions';
-import {createExtraUiComponent} from './ui/createExtraUiComponent';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-import ReactNativeServerManager from './ReactNativeServerManager';
-import ReactNativeServerActions from './ReactNativeServerActions';
-import runBuckCommandInNewPane from './runBuckCommandInNewPane';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const REACT_NATIVE_APP_FLAGS = [
-  '-executor-override', 'RCTWebSocketExecutor',
-  '-websocket-executor-name', 'Nuclide',
-  '-websocket-executor-port', '8090',
-];
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-type Flux = {
-  actions: BuckToolbarActions;
-  store: BuckToolbarStore;
-};
+var _rxjs2;
 
-export class BuckBuildSystem {
-  _flux: ?Flux;
-  _disposables: CompositeDisposable;
-  _extraUi: ?ReactClass;
-  id: string;
-  name: string;
-  _icon: ReactClass;
-  _initialState: ?SerializedState;
-  _tasks: Observable<Array<Task>>;
-  _outputMessages: Subject<Message>;
+function _rxjs() {
+  return _rxjs2 = require('rxjs');
+}
 
-  // React Native server state.
-  _reactNativeServerActions: ?ReactNativeServerActions;
-  _reactNativeServerManager: ?ReactNativeServerManager;
+var _atom2;
 
-  constructor(initialState: ?SerializedState) {
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _flux2;
+
+function _flux() {
+  return _flux2 = require('flux');
+}
+
+var _path2;
+
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
+
+var _commonsNodeStream2;
+
+function _commonsNodeStream() {
+  return _commonsNodeStream2 = require('../../commons-node/stream');
+}
+
+var _commonsNodeEvent2;
+
+function _commonsNodeEvent() {
+  return _commonsNodeEvent2 = require('../../commons-node/event');
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var _commonsAtomConsumeFirstProvider2;
+
+function _commonsAtomConsumeFirstProvider() {
+  return _commonsAtomConsumeFirstProvider2 = _interopRequireDefault(require('../../commons-atom/consumeFirstProvider'));
+}
+
+var _uiBuckIcon2;
+
+function _uiBuckIcon() {
+  return _uiBuckIcon2 = require('./ui/BuckIcon');
+}
+
+var _BuckToolbarStore2;
+
+function _BuckToolbarStore() {
+  return _BuckToolbarStore2 = _interopRequireDefault(require('./BuckToolbarStore'));
+}
+
+var _BuckToolbarActions2;
+
+function _BuckToolbarActions() {
+  return _BuckToolbarActions2 = _interopRequireDefault(require('./BuckToolbarActions'));
+}
+
+var _uiCreateExtraUiComponent2;
+
+function _uiCreateExtraUiComponent() {
+  return _uiCreateExtraUiComponent2 = require('./ui/createExtraUiComponent');
+}
+
+var _ReactNativeServerManager2;
+
+function _ReactNativeServerManager() {
+  return _ReactNativeServerManager2 = _interopRequireDefault(require('./ReactNativeServerManager'));
+}
+
+var _ReactNativeServerActions2;
+
+function _ReactNativeServerActions() {
+  return _ReactNativeServerActions2 = _interopRequireDefault(require('./ReactNativeServerActions'));
+}
+
+var _runBuckCommandInNewPane2;
+
+function _runBuckCommandInNewPane() {
+  return _runBuckCommandInNewPane2 = _interopRequireDefault(require('./runBuckCommandInNewPane'));
+}
+
+var REACT_NATIVE_APP_FLAGS = ['-executor-override', 'RCTWebSocketExecutor', '-websocket-executor-name', 'Nuclide', '-websocket-executor-port', '8090'];
+
+var BuckBuildSystem = (function () {
+  function BuckBuildSystem(initialState) {
+    _classCallCheck(this, BuckBuildSystem);
+
     this.id = 'buck';
     this.name = 'Buck';
     this._initialState = initialState;
-    this._disposables = new CompositeDisposable();
-    this._outputMessages = new Subject();
-    this._disposables.add(new DisposableSubscription(this._outputMessages));
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable();
+    this._outputMessages = new (_rxjs2 || _rxjs()).Subject();
+    this._disposables.add(new (_commonsNodeStream2 || _commonsNodeStream()).DisposableSubscription(this._outputMessages));
   }
 
-  getTasks() {
-    const {store} = this._getFlux();
-    const allEnabled = store.getMostRecentBuckProject() != null &&
-      Boolean(store.getBuildTarget());
-    return TASKS
-      .map(task => {
-        let enabled = allEnabled;
+  _createClass(BuckBuildSystem, [{
+    key: 'getTasks',
+    value: function getTasks() {
+      var _getFlux2 = this._getFlux();
+
+      var store = _getFlux2.store;
+
+      var allEnabled = store.getMostRecentBuckProject() != null && Boolean(store.getBuildTarget());
+      return TASKS.map(function (task) {
+        var enabled = allEnabled;
         if (task.type === 'run' || task.type === 'debug') {
           enabled = enabled && store.isInstallableRule();
         }
-        return {
-          ...task,
-          enabled,
-        };
+        return _extends({}, task, {
+          enabled: enabled
+        });
       });
-  }
-
-  observeTasks(cb: (tasks: Array<Task>) => mixed): IDisposable {
-    if (this._tasks == null) {
-      const {store} = this._getFlux();
-      this._tasks = Observable.concat(
-        Observable.of(this.getTasks()),
-        observableFromSubscribeFunction(store.subscribe.bind(store))
-          .map(() => this.getTasks()),
-      );
     }
-    return new DisposableSubscription(
-      this._tasks.subscribe({next: cb})
-    );
-  }
+  }, {
+    key: 'observeTasks',
+    value: function observeTasks(cb) {
+      var _this = this;
 
-  getExtraUi(): ReactClass {
-    if (this._extraUi == null) {
-      const {store, actions} = this._getFlux();
-      this._extraUi = createExtraUiComponent(store, actions);
+      if (this._tasks == null) {
+        var _getFlux3 = this._getFlux();
+
+        var _store = _getFlux3.store;
+
+        this._tasks = (_rxjs2 || _rxjs()).Observable.concat((_rxjs2 || _rxjs()).Observable.of(this.getTasks()), (0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(_store.subscribe.bind(_store)).map(function () {
+          return _this.getTasks();
+        }));
+      }
+      return new (_commonsNodeStream2 || _commonsNodeStream()).DisposableSubscription(this._tasks.subscribe({ next: cb }));
     }
-    return this._extraUi;
-  }
+  }, {
+    key: 'getExtraUi',
+    value: function getExtraUi() {
+      if (this._extraUi == null) {
+        var _getFlux4 = this._getFlux();
 
-  getIcon(): ReactClass {
-    if (this._icon == null) {
-      this._icon = BuckIcon;
+        var _store2 = _getFlux4.store;
+        var _actions = _getFlux4.actions;
+
+        this._extraUi = (0, (_uiCreateExtraUiComponent2 || _uiCreateExtraUiComponent()).createExtraUiComponent)(_store2, _actions);
+      }
+      return this._extraUi;
     }
-    return this._icon;
-  }
-
-  getOutputMessages(): Observable<Message> {
-    return this._outputMessages;
-  }
-
-  /**
-   * Lazily create the flux stuff.
-   */
-  _getFlux(): Flux {
-    if (this._flux == null) {
-      // Set up flux stuff.
-      const dispatcher = new Dispatcher();
-      const store = new BuckToolbarStore(dispatcher, this._initialState);
-      const actions = new BuckToolbarActions(dispatcher, store);
-      this._disposables.add(store);
-      this._flux = {store, actions};
+  }, {
+    key: 'getIcon',
+    value: function getIcon() {
+      if (this._icon == null) {
+        this._icon = (_uiBuckIcon2 || _uiBuckIcon()).BuckIcon;
+      }
+      return this._icon;
     }
-    return this._flux;
-  }
-
-  runTask(taskType: string): TaskInfo {
-    if (!this.getTasks().some(task => task.type === taskType)) {
-      throw new Error(`There's no Buck task named "${taskType}"`);
+  }, {
+    key: 'getOutputMessages',
+    value: function getOutputMessages() {
+      return this._outputMessages;
     }
 
-    const resultStream = this._runTaskType(taskType);
-    return {
-      cancel() {
-        // FIXME: How can we cancel Buck tasks?
-      },
-      observeProgress(cb) {
-        return new DisposableSubscription(
-          resultStream.subscribe({next: cb, error: () => {}})
-        );
-      },
-      onDidError(cb) {
-        return new DisposableSubscription(
-          resultStream.subscribe({error: cb})
-        );
-      },
-      onDidComplete(cb) {
-        return new DisposableSubscription(
+    /**
+     * Lazily create the flux stuff.
+     */
+  }, {
+    key: '_getFlux',
+    value: function _getFlux() {
+      if (this._flux == null) {
+        // Set up flux stuff.
+        var dispatcher = new (_flux2 || _flux()).Dispatcher();
+        var _store3 = new (_BuckToolbarStore2 || _BuckToolbarStore()).default(dispatcher, this._initialState);
+        var _actions2 = new (_BuckToolbarActions2 || _BuckToolbarActions()).default(dispatcher, _store3);
+        this._disposables.add(_store3);
+        this._flux = { store: _store3, actions: _actions2 };
+      }
+      return this._flux;
+    }
+  }, {
+    key: 'runTask',
+    value: function runTask(taskType) {
+      if (!this.getTasks().some(function (task) {
+        return task.type === taskType;
+      })) {
+        throw new Error('There\'s no Buck task named "' + taskType + '"');
+      }
+
+      var resultStream = this._runTaskType(taskType);
+      return {
+        cancel: function cancel() {
+          // FIXME: How can we cancel Buck tasks?
+        },
+        observeProgress: function observeProgress(cb) {
+          return new (_commonsNodeStream2 || _commonsNodeStream()).DisposableSubscription(resultStream.subscribe({ next: cb, error: function error() {} }));
+        },
+        onDidError: function onDidError(cb) {
+          return new (_commonsNodeStream2 || _commonsNodeStream()).DisposableSubscription(resultStream.subscribe({ error: cb }));
+        },
+        onDidComplete: function onDidComplete(cb) {
+          return new (_commonsNodeStream2 || _commonsNodeStream()).DisposableSubscription(
           // Add an empty error handler to avoid the "Unhandled Error" message. (We're handling it
           // above via the onDidError interface.)
-          resultStream.subscribe({complete: cb, error: () => {}})
-        );
-      },
-    };
-  }
-
-  dispose(): void {
-    this._disposables.dispose();
-  }
-
-  serialize(): ?SerializedState {
-    // If we haven't had to load and create the Flux stuff yet, don't do it now.
-    if (this._flux == null) {
-      return;
-    }
-    const {store} = this._flux;
-    return {
-      buildTarget: store.getBuildTarget(),
-      isReactNativeServerMode: store.isReactNativeServerMode(),
-    };
-  }
-
-  _runTaskType(taskType: string): Observable<?number> {
-    const {store} = this._getFlux();
-    const buckProject = store.getMostRecentBuckProject();
-    const buildTarget = store.getBuildTarget();
-    if (buckProject == null || buildTarget == null) {
-      // All tasks should have been disabled.
-      return Observable.empty();
-    }
-
-    const subcommand = taskType === 'run' || taskType === 'debug' ? 'install' : taskType;
-    return Observable.fromPromise(buckProject.getHTTPServerPort())
-      .catch(err => {
-        getLogger().warn(`Failed to get httpPort for ${buildTarget}`, err);
-        return Observable.of(-1);
-      })
-      .flatMap(httpPort => {
-        let socketStream = Observable.empty();
-        if (httpPort > 0) {
-          socketStream = buckProject.getWebSocketStream(httpPort)
-            .flatMap((message: BuckWebSocketMessage) => {
-              switch (message.type) {
-                case 'BuildProgressUpdated':
-                  return Observable.of(message.progressValue);
-              }
-              return Observable.empty();
-            })
-            .catch(err => {
-              getLogger().error(`Got Buck websocket error building ${buildTarget}`, err);
-              // Return to indeterminate progress.
-              return Observable.of(null);
-            });
+          resultStream.subscribe({ complete: cb, error: function error() {} }));
         }
-        const buckObservable = Observable.fromPromise(
-          this._runBuckCommand(buckProject, buildTarget, subcommand),
-        );
-        return socketStream
-          .merge(buckObservable)
-          .takeUntil(buckObservable);
-      })
-      .share();
-  }
-
-  async _runBuckCommand(
-    buckProject: BuckProject,
-    buildTarget: string,
-    subcommand: string,
-  ): Promise<void> {
-    const {store} = this._getFlux();
-
-    let appArgs = [];
-    if (subcommand === 'install' && store.isReactNativeServerMode()) {
-      const serverCommand = await this._getReactNativeServerCommand(buckProject);
-      if (serverCommand) {
-        const rnActions = this._getReactNativeServerActions();
-        rnActions.startServer(serverCommand);
-        rnActions.startNodeExecutorServer();
-        appArgs = REACT_NATIVE_APP_FLAGS;
+      };
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }, {
+    key: 'serialize',
+    value: function serialize() {
+      // If we haven't had to load and create the Flux stuff yet, don't do it now.
+      if (this._flux == null) {
+        return;
       }
+      var store = this._flux.store;
+
+      return {
+        buildTarget: store.getBuildTarget(),
+        isReactNativeServerMode: store.isReactNativeServerMode()
+      };
     }
+  }, {
+    key: '_runTaskType',
+    value: function _runTaskType(taskType) {
+      var _this2 = this;
 
-    if (subcommand === 'debug') {
-      // Stop any existing debugging sessions, as install hangs if an existing
-      // app that's being overwritten is being debugged.
-      atom.commands.dispatch(
-        atom.views.getView(atom.workspace),
-        'nuclide-debugger:stop-debugging');
+      var _getFlux5 = this._getFlux();
+
+      var store = _getFlux5.store;
+
+      var buckProject = store.getMostRecentBuckProject();
+      var buildTarget = store.getBuildTarget();
+      if (buckProject == null || buildTarget == null) {
+        // All tasks should have been disabled.
+        return (_rxjs2 || _rxjs()).Observable.empty();
+      }
+
+      var subcommand = taskType === 'run' || taskType === 'debug' ? 'install' : taskType;
+      return (_rxjs2 || _rxjs()).Observable.fromPromise(buckProject.getHTTPServerPort()).catch(function (err) {
+        (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)().warn('Failed to get httpPort for ' + buildTarget, err);
+        return (_rxjs2 || _rxjs()).Observable.of(-1);
+      }).flatMap(function (httpPort) {
+        var socketStream = (_rxjs2 || _rxjs()).Observable.empty();
+        if (httpPort > 0) {
+          socketStream = buckProject.getWebSocketStream(httpPort).flatMap(function (message) {
+            switch (message.type) {
+              case 'BuildProgressUpdated':
+                return (_rxjs2 || _rxjs()).Observable.of(message.progressValue);
+            }
+            return (_rxjs2 || _rxjs()).Observable.empty();
+          }).catch(function (err) {
+            (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)().error('Got Buck websocket error building ' + buildTarget, err);
+            // Return to indeterminate progress.
+            return (_rxjs2 || _rxjs()).Observable.of(null);
+          });
+        }
+        var buckObservable = (_rxjs2 || _rxjs()).Observable.fromPromise(_this2._runBuckCommand(buckProject, buildTarget, subcommand));
+        return socketStream.merge(buckObservable).takeUntil(buckObservable);
+      }).share();
     }
+  }, {
+    key: '_runBuckCommand',
+    value: _asyncToGenerator(function* (buckProject, buildTarget, subcommand) {
+      var _getFlux6 = this._getFlux();
 
-    const result = await runBuckCommandInNewPane({
-      buckProject,
-      buildTarget,
-      simulator: store.getSimulator(),
-      subcommand,
-      debug: subcommand === 'debug',
-      appArgs,
-    });
+      var store = _getFlux6.store;
 
-    if (subcommand === 'debug' && result != null && result.pid != null) {
-      // Use commands here to trigger package activation.
-      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-      const debuggerService = await consumeFirstProvider('nuclide-debugger.remote');
-      const buckProjectPath = await buckProject.getPath();
-      debuggerService.debugLLDB(result.pid, buckProjectPath);
+      var appArgs = [];
+      if (subcommand === 'install' && store.isReactNativeServerMode()) {
+        var serverCommand = yield this._getReactNativeServerCommand(buckProject);
+        if (serverCommand) {
+          var rnActions = this._getReactNativeServerActions();
+          rnActions.startServer(serverCommand);
+          rnActions.startNodeExecutorServer();
+          appArgs = REACT_NATIVE_APP_FLAGS;
+        }
+      }
+
+      if (subcommand === 'debug') {
+        // Stop any existing debugging sessions, as install hangs if an existing
+        // app that's being overwritten is being debugged.
+        atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:stop-debugging');
+      }
+
+      var result = yield (0, (_runBuckCommandInNewPane2 || _runBuckCommandInNewPane()).default)({
+        buckProject: buckProject,
+        buildTarget: buildTarget,
+        simulator: store.getSimulator(),
+        subcommand: subcommand,
+        debug: subcommand === 'debug',
+        appArgs: appArgs
+      });
+
+      if (subcommand === 'debug' && result != null && result.pid != null) {
+        // Use commands here to trigger package activation.
+        atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
+        var debuggerService = yield (0, (_commonsAtomConsumeFirstProvider2 || _commonsAtomConsumeFirstProvider()).default)('nuclide-debugger.remote');
+        var buckProjectPath = yield buckProject.getPath();
+        debuggerService.debugLLDB(result.pid, buckProjectPath);
+      }
+    })
+  }, {
+    key: '_getReactNativeServerCommand',
+    value: _asyncToGenerator(function* (buckProject) {
+      var serverCommand = yield buckProject.getBuckConfig('react-native', 'server');
+      if (serverCommand == null) {
+        return null;
+      }
+      var repoRoot = yield buckProject.getPath();
+      if (repoRoot == null) {
+        return null;
+      }
+      return (_path2 || _path()).default.join(repoRoot, serverCommand);
+    })
+  }, {
+    key: '_getReactNativeServerActions',
+    value: function _getReactNativeServerActions() {
+      if (this._reactNativeServerActions != null) {
+        return this._reactNativeServerActions;
+      }
+
+      var dispatcher = new (_flux2 || _flux()).Dispatcher();
+      var actions = new (_ReactNativeServerActions2 || _ReactNativeServerActions()).default(dispatcher);
+      this._reactNativeServerActions = actions;
+      this._reactNativeServerManager = new (_ReactNativeServerManager2 || _ReactNativeServerManager()).default(dispatcher, actions);
+      this._disposables.add(this._reactNativeServerManager);
+      return actions;
     }
-  }
+  }]);
 
-  async _getReactNativeServerCommand(buckProject: BuckProject): Promise<?string> {
-    const serverCommand = await buckProject.getBuckConfig('react-native', 'server');
-    if (serverCommand == null) {
-      return null;
-    }
-    const repoRoot = await buckProject.getPath();
-    if (repoRoot == null) {
-      return null;
-    }
-    return path.join(repoRoot, serverCommand);
-  }
+  return BuckBuildSystem;
+})();
 
-  _getReactNativeServerActions(): ReactNativeServerActions {
-    if (this._reactNativeServerActions != null) {
-      return this._reactNativeServerActions;
-    }
+exports.BuckBuildSystem = BuckBuildSystem;
 
-    const dispatcher = new Dispatcher();
-    const actions = new ReactNativeServerActions(dispatcher);
-    this._reactNativeServerActions = actions;
-    this._reactNativeServerManager = new ReactNativeServerManager(dispatcher, actions);
-    this._disposables.add(this._reactNativeServerManager);
-    return actions;
-  }
+var TASKS = [{
+  type: 'build',
+  label: 'Build',
+  description: 'Build the specified Buck target',
+  enabled: true,
+  cancelable: false,
+  icon: 'tools'
+}, {
+  type: 'run',
+  label: 'Run',
+  description: 'Run the specfied Buck target',
+  enabled: true,
+  cancelable: false,
+  icon: 'triangle-right'
+}, {
+  type: 'test',
+  label: 'Test',
+  description: 'Test the specfied Buck target',
+  enabled: true,
+  cancelable: false,
+  icon: 'checklist'
+}, {
+  type: 'debug',
+  label: 'Debug',
+  description: 'Debug the specfied Buck target',
+  enabled: true,
+  cancelable: false,
+  icon: 'plug'
+}];
 
-}
-
-const TASKS = [
-  {
-    type: 'build',
-    label: 'Build',
-    description: 'Build the specified Buck target',
-    enabled: true,
-    cancelable: false,
-    icon: 'tools',
-  },
-  {
-    type: 'run',
-    label: 'Run',
-    description: 'Run the specfied Buck target',
-    enabled: true,
-    cancelable: false,
-    icon: 'triangle-right',
-  },
-  {
-    type: 'test',
-    label: 'Test',
-    description: 'Test the specfied Buck target',
-    enabled: true,
-    cancelable: false,
-    icon: 'checklist',
-  },
-  {
-    type: 'debug',
-    label: 'Debug',
-    description: 'Debug the specfied Buck target',
-    enabled: true,
-    cancelable: false,
-    icon: 'plug',
-  },
-];
+// React Native server state.

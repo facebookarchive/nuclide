@@ -1,5 +1,13 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+exports.activate = activate;
+exports.deactivate = deactivate;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +17,36 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
+var _atom2;
 
-class Activation {
-  _disposables: CompositeDisposable;
-
-  constructor(): void {
-    this._disposables = new CompositeDisposable();
-  }
-
-  dispose(): void {
-    this._disposables.dispose();
-  }
+function _atom() {
+  return _atom2 = require('atom');
 }
 
-let activation: ?Activation = null;
+var Activation = (function () {
+  function Activation() {
+    _classCallCheck(this, Activation);
 
-export function activate(state: ?mixed): void {
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable();
+  }
+
+  _createClass(Activation, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }]);
+
+  return Activation;
+})();
+
+var activation = null;
+
+function activate(state) {
   activation = new Activation();
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;

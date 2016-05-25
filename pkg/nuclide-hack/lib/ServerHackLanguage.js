@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,309 +10,287 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {CompletionResult, DefinitionResult, Definition} from './HackLanguage';
-import type {
-  HackCompletion,
-  HackDiagnostic,
-  HackDefinitionResult,
-  HackSearchPosition,
-  HackRange,
-  HackReference,
-  HackIdeOutline,
-  HackDefinition,
-} from '../../nuclide-hack-base/lib/HackService';
-import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
-import type {SymbolTypeValue} from '../../nuclide-hack-common';
-import type {HackCoverageResult} from './TypedRegions';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import {Range} from 'atom';
-import {getLogger} from '../../nuclide-logging';
-import {convertTypedRegionsToCoverageResult} from './TypedRegions';
-import {SymbolType} from '../../nuclide-hack-common';
-import invariant from 'assert';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var _TypedRegions2;
+
+function _TypedRegions() {
+  return _TypedRegions2 = require('./TypedRegions');
+}
+
+var _nuclideHackCommon2;
+
+function _nuclideHackCommon() {
+  return _nuclideHackCommon2 = require('../../nuclide-hack-common');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
 /**
  * Serves language requests from HackService.
  * Note that all line/column values are 1 based.
  */
-export class ServerHackLanguage {
 
-  _hackService: HackService;
-  _hhAvailable: boolean;
-  _basePath: ?string;
+var ServerHackLanguage = (function () {
 
   /**
    * `basePath` should be the directory where the .hhconfig file is located.
    */
-  constructor(hackService: HackService, hhAvailable: boolean, basePath: ?string) {
+
+  function ServerHackLanguage(hackService, hhAvailable, basePath) {
+    _classCallCheck(this, ServerHackLanguage);
+
     this._hackService = hackService;
     this._hhAvailable = hhAvailable;
     this._basePath = basePath;
   }
 
-  dispose() {
-  }
-
-  async getCompletions(
-    filePath: NuclideUri,
-    contents: string,
-    offset: number
-  ): Promise<Array<CompletionResult>> {
-    const markedContents = markFileForCompletion(contents, offset);
-    let completions = [];
-    const completionsResult = await this._hackService.getCompletions(filePath, markedContents);
-    if (completionsResult) {
-      completions = completionsResult.completions;
+  _createClass(ServerHackLanguage, [{
+    key: 'dispose',
+    value: function dispose() {}
+  }, {
+    key: 'getCompletions',
+    value: _asyncToGenerator(function* (filePath, contents, offset) {
+      var markedContents = markFileForCompletion(contents, offset);
+      var completions = [];
+      var completionsResult = yield this._hackService.getCompletions(filePath, markedContents);
+      if (completionsResult) {
+        completions = completionsResult.completions;
+      }
+      return processCompletions(completions);
+    })
+  }, {
+    key: 'formatSource',
+    value: _asyncToGenerator(function* (contents, startPosition, endPosition) {
+      var path = this._basePath;
+      if (path == null) {
+        throw new Error('No Hack provider for this file.');
+      }
+      var response = yield this._hackService.formatSource(path, contents, startPosition, endPosition);
+      if (response == null) {
+        throw new Error('Error formatting hack source.');
+      } else if (response.error_message !== '') {
+        throw new Error('Error formatting hack source: ' + response.error_message);
+      }
+      return response.result;
+    })
+  }, {
+    key: 'highlightSource',
+    value: _asyncToGenerator(function* (filePath, contents, line, col) {
+      var response = yield this._hackService.getSourceHighlights(filePath, contents, line, col);
+      if (response == null) {
+        return [];
+      }
+      return response.positions.map(hackRangeToAtomRange);
+    })
+  }, {
+    key: 'getDiagnostics',
+    value: _asyncToGenerator(function* (filePath, contents) {
+      var diagnosticResult = null;
+      try {
+        diagnosticResult = yield this._hackService.getDiagnostics(filePath, contents);
+      } catch (err) {
+        (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)().error(err);
+        return [];
+      }
+      if (!diagnosticResult) {
+        (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)().error('hh_client could not be reached');
+        return [];
+      }
+      var hackDiagnostics = diagnosticResult;
+      return hackDiagnostics.messages;
+    })
+  }, {
+    key: 'getTypeCoverage',
+    value: _asyncToGenerator(function* (filePath) {
+      var regions = yield this._hackService.getTypedRegions(filePath);
+      return (0, (_TypedRegions2 || _TypedRegions()).convertTypedRegionsToCoverageResult)(regions);
+    })
+  }, {
+    key: 'getIdeOutline',
+    value: function getIdeOutline(filePath, contents) {
+      return this._hackService.getIdeOutline(filePath, contents);
     }
-    return processCompletions(completions);
-  }
+  }, {
+    key: 'getDefinition',
+    value: _asyncToGenerator(function* (filePath, contents, lineNumber, column, lineText) {
+      var definitionResult = yield this._hackService.getIdentifierDefinition(filePath, contents, lineNumber, column);
+      var identifierResult = processDefinitionsForXhp(definitionResult, column, lineText);
+      return identifierResult.length === 1 ? identifierResult : [];
+    })
+  }, {
+    key: 'getIdeDefinition',
+    value: _asyncToGenerator(function* (filePath, contents, lineNumber, column) {
+      var definitions = yield this._hackService.getDefinition(filePath, contents, lineNumber, column);
+      if (definitions == null) {
+        return [];
+      }
+      function convertDefinition(def) {
+        (0, (_assert2 || _assert()).default)(def.definition_pos != null);
+        return {
+          name: def.name,
+          path: def.definition_pos.filename,
+          line: def.definition_pos.line,
+          column: def.definition_pos.char_start,
+          queryRange: hackRangeToAtomRange(def.pos)
+        };
+      }
+      return definitions.filter(function (definition) {
+        return definition.definition_pos != null;
+      }).map(convertDefinition);
+    })
+  }, {
+    key: 'getType',
+    value: _asyncToGenerator(function* (filePath, contents, expression, lineNumber, column) {
+      if (!expression.startsWith('$')) {
+        return null;
+      }
+      var result = yield this._hackService.getTypeAtPos(filePath, contents, lineNumber, column);
+      return result == null ? null : result.type;
+    })
+  }, {
+    key: 'findReferences',
+    value: _asyncToGenerator(function* (filePath, contents, line, column) {
+      var getMethodNameResult = yield this._hackService.getMethodName(filePath, contents, line + 1, column + 1);
+      if (getMethodNameResult == null) {
+        return null;
+      }
+      var symbolName = getMethodNameResult.name;
+      var symbolType = getSymbolType(getMethodNameResult.result_type);
 
-  async formatSource(
-    contents: string,
-    startPosition: number,
-    endPosition: number,
-  ): Promise<string> {
-    const path = this._basePath;
-    if (path == null) {
-      throw new Error('No Hack provider for this file.');
+      if (!SYMBOL_TYPES_WITH_REFERENCES.has(symbolType)) {
+        return null;
+      }
+
+      var referencesResult = yield this._hackService.getReferences(filePath, symbolName, symbolType);
+      if (!referencesResult) {
+        return null;
+      }
+      var hackRoot = referencesResult.hackRoot;
+      var references = referencesResult.references;
+
+      return { baseUri: hackRoot, symbolName: symbolName, references: references };
+    })
+  }, {
+    key: 'getBasePath',
+    value: function getBasePath() {
+      return this._basePath;
     }
-    const response =
-      await this._hackService.formatSource(path, contents, startPosition, endPosition);
-    if (response == null) {
-      throw new Error('Error formatting hack source.');
-    } else if (response.error_message !== '') {
-      throw new Error(`Error formatting hack source: ${response.error_message}`);
+  }, {
+    key: 'isHackAvailable',
+    value: function isHackAvailable() {
+      return this._hhAvailable;
     }
-    return response.result;
-  }
+  }]);
 
-  async highlightSource(
-    filePath: NuclideUri,
-    contents: string,
-    line: number,
-    col: number,
-  ): Promise<Array<atom$Range>> {
-    const response = await this._hackService.getSourceHighlights(filePath, contents, line, col);
-    if (response == null) {
-      return [];
-    }
-    return response.positions.map(hackRangeToAtomRange);
-  }
+  return ServerHackLanguage;
+})();
 
-  async getDiagnostics(
-    filePath: NuclideUri,
-    contents: string,
-  ): Promise<Array<{message: HackDiagnostic;}>> {
-    let diagnosticResult = null;
-    try {
-      diagnosticResult = await this._hackService.getDiagnostics(filePath, contents);
-    } catch (err) {
-      getLogger().error(err);
-      return [];
-    }
-    if (!diagnosticResult) {
-      getLogger().error('hh_client could not be reached');
-      return [];
-    }
-    const hackDiagnostics = diagnosticResult;
-    return hackDiagnostics.messages;
-  }
+exports.ServerHackLanguage = ServerHackLanguage;
 
-  async getTypeCoverage(
-    filePath: NuclideUri,
-  ): Promise<?HackCoverageResult> {
-    const regions = await this._hackService.getTypedRegions(filePath);
-    return convertTypedRegionsToCoverageResult(regions);
-  }
-
-  getIdeOutline(
-    filePath: NuclideUri,
-    contents: string,
-  ): Promise<?HackIdeOutline> {
-    return this._hackService.getIdeOutline(filePath, contents);
-  }
-
-  async getDefinition(
-    filePath: NuclideUri,
-    contents: string,
-    lineNumber: number,
-    column: number,
-    lineText: string
-  ): Promise<Array<DefinitionResult>> {
-    const definitionResult = await this._hackService.getIdentifierDefinition(
-      filePath, contents, lineNumber, column
-    );
-    const identifierResult = processDefinitionsForXhp(definitionResult, column, lineText);
-    return identifierResult.length === 1 ? identifierResult : [];
-  }
-
-  async getIdeDefinition(
-    filePath: NuclideUri,
-    contents: string,
-    lineNumber: number,
-    column: number
-  ): Promise<Array<Definition>> {
-    const definitions =
-      await this._hackService.getDefinition(filePath, contents, lineNumber, column);
-    if (definitions == null) {
-      return [];
-    }
-    function convertDefinition(def: HackDefinition): Definition {
-      invariant(def.definition_pos != null);
-      return {
-        name: def.name,
-        path: def.definition_pos.filename,
-        line: def.definition_pos.line,
-        column: def.definition_pos.char_start,
-        queryRange: hackRangeToAtomRange(def.pos),
-      };
-    }
-    return definitions.filter(definition => definition.definition_pos != null)
-      .map(convertDefinition);
-  }
-
-  async getType(
-    filePath: NuclideUri,
-    contents: string,
-    expression: string,
-    lineNumber: number,
-    column: number,
-  ): Promise<?string> {
-    if (!expression.startsWith('$')) {
-      return null;
-    }
-    const result = await this._hackService.getTypeAtPos(filePath, contents, lineNumber, column);
-    return result == null ? null : result.type;
-  }
-
-  async findReferences(
-    filePath: NuclideUri,
-    contents: string,
-    line: number,
-    column: number
-  ): Promise<?{baseUri: string; symbolName: string; references: Array<HackReference>}> {
-    const getMethodNameResult =
-      await this._hackService.getMethodName(filePath, contents, line + 1, column + 1);
-    if (getMethodNameResult == null) {
-      return null;
-    }
-    const symbolName = getMethodNameResult.name;
-    const symbolType = getSymbolType(getMethodNameResult.result_type);
-
-    if (!SYMBOL_TYPES_WITH_REFERENCES.has(symbolType)) {
-      return null;
-    }
-
-    const referencesResult =
-      await this._hackService.getReferences(filePath, symbolName, symbolType);
-    if (!referencesResult) {
-      return null;
-    }
-    const {hackRoot, references} = referencesResult;
-    return {baseUri: hackRoot, symbolName, references};
-  }
-
-  getBasePath(): ?string {
-    return this._basePath;
-  }
-
-  isHackAvailable(): boolean {
-    return this._hhAvailable;
-  }
-}
-
-function hackRangeToAtomRange(position: HackRange): atom$Range {
-  return new Range(
-        [position.line - 1, position.char_start - 1],
-        [position.line - 1, position.char_end],
-      );
+function hackRangeToAtomRange(position) {
+  return new (_atom2 || _atom()).Range([position.line - 1, position.char_start - 1], [position.line - 1, position.char_end]);
 }
 
 // The xhp char regex include : and - to match xhp tags like <ui:button-group>.
-const xhpCharRegex = /[\w:-]/;
+var xhpCharRegex = /[\w:-]/;
 
-const stringToSymbolType = {
-  'class': SymbolType.CLASS,
-  'function': SymbolType.FUNCTION,
-  'method': SymbolType.METHOD,
-  'local': SymbolType.LOCAL,
+var stringToSymbolType = {
+  'class': (_nuclideHackCommon2 || _nuclideHackCommon()).SymbolType.CLASS,
+  'function': (_nuclideHackCommon2 || _nuclideHackCommon()).SymbolType.FUNCTION,
+  'method': (_nuclideHackCommon2 || _nuclideHackCommon()).SymbolType.METHOD,
+  'local': (_nuclideHackCommon2 || _nuclideHackCommon()).SymbolType.LOCAL
 };
 
 // Symbol types we can get references for.
-const SYMBOL_TYPES_WITH_REFERENCES = new Set([
-  SymbolType.CLASS,
-  SymbolType.FUNCTION,
-  SymbolType.METHOD,
-]);
+var SYMBOL_TYPES_WITH_REFERENCES = new Set([(_nuclideHackCommon2 || _nuclideHackCommon()).SymbolType.CLASS, (_nuclideHackCommon2 || _nuclideHackCommon()).SymbolType.FUNCTION, (_nuclideHackCommon2 || _nuclideHackCommon()).SymbolType.METHOD]);
 
-function getSymbolType(input: string): SymbolTypeValue {
-  let symbolType = stringToSymbolType[input];
+function getSymbolType(input) {
+  var symbolType = stringToSymbolType[input];
   if (typeof symbolType === 'undefined') {
-    symbolType = SymbolType.METHOD;
+    symbolType = (_nuclideHackCommon2 || _nuclideHackCommon()).SymbolType.METHOD;
   }
   return symbolType;
 }
 
-function processCompletions(completionsResponse: Array<HackCompletion>):
-    Array<CompletionResult> {
-  return completionsResponse.map(completion => {
-    const {name, func_details: functionDetails} = completion;
-    let {type} = completion;
+function processCompletions(completionsResponse) {
+  return completionsResponse.map(function (completion) {
+    var name = completion.name;
+    var functionDetails = completion.func_details;
+    var type = completion.type;
+
     if (type && type.indexOf('(') === 0 && type.lastIndexOf(')') === type.length - 1) {
       type = type.substring(1, type.length - 1);
     }
-    let matchSnippet = name;
+    var matchSnippet = name;
     if (functionDetails) {
-      const {params} = functionDetails;
+      var params = functionDetails.params;
+
       // Construct the snippet: e.g. myFunction(${1:$arg1}, ${2:$arg2});
-      const paramsString = params.map(
-        (param, index) => '${' + (index + 1) + ':' + param.name + '}').join(', ');
+      var paramsString = params.map(function (param, index) {
+        return '${' + (index + 1) + ':' + param.name + '}';
+      }).join(', ');
       matchSnippet = name + '(' + paramsString + ')';
     }
     return {
-      matchSnippet,
+      matchSnippet: matchSnippet,
       matchText: name,
-      matchType: type,
+      matchType: type
     };
   });
 }
 
 // Calculate the offset of the cursor from the beginning of the file.
 // Then insert AUTO332 in at this offset. (Hack uses this as a marker.)
-function markFileForCompletion(contents: string, offset: number): string {
-  return contents.substring(0, offset) +
-      'AUTO332' + contents.substring(offset, contents.length);
+function markFileForCompletion(contents, offset) {
+  return contents.substring(0, offset) + 'AUTO332' + contents.substring(offset, contents.length);
 }
 
-function processDefinitionsForXhp(
-  definitionResult: ?HackDefinitionResult,
-  column: number,
-  lineText: string,
-): Array<DefinitionResult> {
+function processDefinitionsForXhp(definitionResult, column, lineText) {
   if (!definitionResult) {
     return [];
   }
-  const {definitions} = definitionResult;
-  return definitions.map((definition: HackSearchPosition) => {
-    let {name} = definition;
+  var definitions = definitionResult.definitions;
+
+  return definitions.map(function (definition) {
+    var name = definition.name;
+
     if (name.startsWith(':')) {
       // XHP class name, usages omit the leading ':'.
       name = name.substring(1);
     }
-    const definitionIndex = lineText.indexOf(name);
-    if (
-      definitionIndex === -1 ||
-      definitionIndex >= column ||
-      !xhpCharRegex.test(lineText.substring(definitionIndex, column))
-    ) {
-      return {...definition};
+    var definitionIndex = lineText.indexOf(name);
+    if (definitionIndex === -1 || definitionIndex >= column || !xhpCharRegex.test(lineText.substring(definitionIndex, column))) {
+      return _extends({}, definition);
     } else {
-      return {
-        ...definition,
+      return _extends({}, definition, {
         searchStartColumn: definitionIndex,
-        searchEndColumn: definitionIndex + definition.name.length,
-      };
+        searchEndColumn: definitionIndex + definition.name.length
+      });
     }
   });
 }

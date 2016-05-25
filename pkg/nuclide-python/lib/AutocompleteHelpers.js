@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,61 +10,91 @@
  * the root directory of this source tree.
  */
 
-import type {JediCompletion} from './JediService';
+var _createDecoratedClass = (function () { function defineProperties(target, descriptors, initializers) { for (var i = 0; i < descriptors.length; i++) { var descriptor = descriptors[i]; var decorators = descriptor.decorators; var key = descriptor.key; delete descriptor.key; delete descriptor.decorators; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor || descriptor.initializer) descriptor.writable = true; if (decorators) { for (var f = 0; f < decorators.length; f++) { var decorator = decorators[f]; if (typeof decorator === 'function') { descriptor = decorator(target, key, descriptor) || descriptor; } else { throw new TypeError('The decorator for method ' + descriptor.key + ' is of the invalid type ' + typeof decorator); } } if (descriptor.initializer !== undefined) { initializers[key] = descriptor; continue; } } Object.defineProperty(target, key, descriptor); } } return function (Constructor, protoProps, staticProps, protoInitializers, staticInitializers) { if (protoProps) defineProperties(Constructor.prototype, protoProps, protoInitializers); if (staticProps) defineProperties(Constructor, staticProps, staticInitializers); return Constructor; }; })();
 
-import {trackTiming} from '../../nuclide-analytics';
-import {TYPES} from './constants';
-import {getCompletions} from './jedi-client-helpers';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-const VALID_EMPTY_SUFFIX = /(\.|\()$/;
-const TRIGGER_COMPLETION_REGEX = /([\. ]|[a-zA-Z_][a-zA-Z0-9_]*)$/;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-function getText(completion: JediCompletion): string {
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+var _constants2;
+
+function _constants() {
+  return _constants2 = require('./constants');
+}
+
+var _jediClientHelpers2;
+
+function _jediClientHelpers() {
+  return _jediClientHelpers2 = require('./jedi-client-helpers');
+}
+
+var VALID_EMPTY_SUFFIX = /(\.|\()$/;
+var TRIGGER_COMPLETION_REGEX = /([\. ]|[a-zA-Z_][a-zA-Z0-9_]*)$/;
+
+function getText(completion) {
   // Generate a snippet if completion is a function. Otherwise just return the
   // completion text.
   if (completion.params) {
-    const placeholders = completion.params.map((param, index) =>
-      `\${${index + 1}:${param}}`
-    );
-    return `${completion.text}(${placeholders.join(', ')})`;
+    var placeholders = completion.params.map(function (param, index) {
+      return '${' + (index + 1) + ':' + param + '}';
+    });
+    return completion.text + '(' + placeholders.join(', ') + ')';
   }
   return completion.text;
 }
 
-export default class AutocompleteHelpers {
-
-  @trackTiming('nuclide-python:getAutocompleteSuggestions')
-  static async getAutocompleteSuggestions(
-    request: atom$AutocompleteRequest
-  ): Promise<Array<atom$AutocompleteSuggestion>> {
-    const {editor, activatedManually, prefix} = request;
-
-    if (!TRIGGER_COMPLETION_REGEX.test(prefix)) {
-      return [];
-    }
-
-    if (!activatedManually && prefix === '') {
-      const wordPrefix = editor.getLastCursor().getCurrentWordPrefix();
-      if (!VALID_EMPTY_SUFFIX.test(wordPrefix)) {
-        return [];
-      }
-    }
-
-    let result;
-    try {
-      result = await getCompletions(editor);
-    } catch (e) {
-      return [];
-    }
-    if (result == null) {
-      return [];
-    }
-
-    return result.completions.map(completion => ({
-      snippet: getText(completion),
-      type: TYPES[completion.type],
-      description: completion.description,
-    }));
+var AutocompleteHelpers = (function () {
+  function AutocompleteHelpers() {
+    _classCallCheck(this, AutocompleteHelpers);
   }
 
-}
+  _createDecoratedClass(AutocompleteHelpers, null, [{
+    key: 'getAutocompleteSuggestions',
+    decorators: [(0, (_nuclideAnalytics2 || _nuclideAnalytics()).trackTiming)('nuclide-python:getAutocompleteSuggestions')],
+    value: _asyncToGenerator(function* (request) {
+      var editor = request.editor;
+      var activatedManually = request.activatedManually;
+      var prefix = request.prefix;
+
+      if (!TRIGGER_COMPLETION_REGEX.test(prefix)) {
+        return [];
+      }
+
+      if (!activatedManually && prefix === '') {
+        var wordPrefix = editor.getLastCursor().getCurrentWordPrefix();
+        if (!VALID_EMPTY_SUFFIX.test(wordPrefix)) {
+          return [];
+        }
+      }
+
+      var result = undefined;
+      try {
+        result = yield (0, (_jediClientHelpers2 || _jediClientHelpers()).getCompletions)(editor);
+      } catch (e) {
+        return [];
+      }
+      if (result == null) {
+        return [];
+      }
+
+      return result.completions.map(function (completion) {
+        return {
+          snippet: getText(completion),
+          type: (_constants2 || _constants()).TYPES[completion.type],
+          description: completion.description
+        };
+      });
+    })
+  }]);
+
+  return AutocompleteHelpers;
+})();
+
+exports.default = AutocompleteHelpers;
+module.exports = exports.default;

@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.default = addObserveMethods;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,45 +13,51 @@
  * the root directory of this source tree.
  */
 
-import Rx from 'rxjs';
-import {DisposableSubscription} from '../../commons-node/stream';
+var _rxjs2;
 
-type Comparer = (a: mixed, b: mixed) => boolean;
-type SubscribeCallback = (...args: Array<mixed>) => mixed;
-type SubscribeFunction = (callback: SubscribeCallback) => IDisposable;
-type NotifyFunction = (getValue: () => mixed) => void;
-type Result = {notify: NotifyFunction; observe: SubscribeFunction};
-type MethodMap = {[methodName: string]: (instance: Object) => mixed};
-type Decorator = (target: Object) => Object;
+function _rxjs() {
+  return _rxjs2 = _interopRequireDefault(require('rxjs'));
+}
 
-const strictEquals = (a, b) => a === b;
+var _commonsNodeStream2;
+
+function _commonsNodeStream() {
+  return _commonsNodeStream2 = require('../../commons-node/stream');
+}
+
+var strictEquals = function strictEquals(a, b) {
+  return a === b;
+};
 
 /**
  * A decorator for adding Atom-style observation methods to a React component class whose
  * whose subscribers are invoked whenever the component updates.
  */
-export default function addObserveMethods(methodMap: MethodMap): Decorator {
-  return function(target) {
-    const proto = (target.prototype: Object);
+
+function addObserveMethods(methodMap) {
+  return function (target) {
+    var proto = target.prototype;
 
     // Add an observation method for each item in the map.
-    Object.keys(methodMap).forEach(methodName => {
-      const getValue = methodMap[methodName];
-      Object.defineProperty(
-        proto,
-        methodName,
-        createObserveMethodDescriptor(target, methodName, getValue),
-      );
+    Object.keys(methodMap).forEach(function (methodName) {
+      var getValue = methodMap[methodName];
+      Object.defineProperty(proto, methodName, createObserveMethodDescriptor(target, methodName, getValue));
     });
 
     // Wrap `componentDidUpdate` to notify Atom of changes.
-    const oldMethod = proto.componentDidUpdate;
-    proto.componentDidUpdate = function(...args) {
+    var oldMethod = proto.componentDidUpdate;
+    proto.componentDidUpdate = function () {
       if (oldMethod) {
+        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+          args[_key] = arguments[_key];
+        }
+
         oldMethod.apply(this, args);
       }
       if (this._notifiers) {
-        this._notifiers.forEach(notify => notify());
+        this._notifiers.forEach(function (notify) {
+          return notify();
+        });
       }
     };
 
@@ -62,7 +72,9 @@ export default function addObserveMethods(methodMap: MethodMap): Decorator {
 function createObserveMethodDescriptor(target, key, getValue) {
   return {
     configurable: true,
-    get() {
+    get: function get() {
+      var _this = this;
+
       // Don't override when accessed via prototype.
       if (this === target.prototype) {
         return null;
@@ -74,15 +86,24 @@ function createObserveMethodDescriptor(target, key, getValue) {
       }
 
       // Override the method with a new version on first access.
-      const {notify, observe} = createObserveFunction();
-      this._notifiers.push(() => notify(() => getValue(this)));
+
+      var _createObserveFunction = createObserveFunction();
+
+      var notify = _createObserveFunction.notify;
+      var observe = _createObserveFunction.observe;
+
+      this._notifiers.push(function () {
+        return notify(function () {
+          return getValue(_this);
+        });
+      });
       Object.defineProperty(this, key, {
         value: observe,
         configurable: true,
-        writable: true,
+        writable: true
       });
       return observe;
-    },
+    }
   };
 }
 
@@ -92,20 +113,25 @@ function createObserveMethodDescriptor(target, key, getValue) {
  * provide our own default comparer because we want to be more strict (by default) than RxJS is.
  * (For example, RxJS will consider similar objects equal.)
  */
-function createObserveFunction(comparer: Comparer = strictEquals): Result {
-  const value$ = new Rx.Subject();
-  const distinctValue$ = value$.distinctUntilChanged(undefined, comparer);
+function createObserveFunction() {
+  var comparer = arguments.length <= 0 || arguments[0] === undefined ? strictEquals : arguments[0];
+
+  var value$ = new (_rxjs2 || _rxjs()).default.Subject();
+  var distinctValue$ = value$.distinctUntilChanged(undefined, comparer);
   // Wrap each callback so that we don't leak the fact that subscribe is implemented with
   // observables (by accepting Observers as well as callbacks).
   return {
-    observe: callback => new DisposableSubscription(
-      distinctValue$.subscribe(value => callback(value))
-    ),
-    notify(getValue) {
+    observe: function observe(callback) {
+      return new (_commonsNodeStream2 || _commonsNodeStream()).DisposableSubscription(distinctValue$.subscribe(function (value) {
+        return callback(value);
+      }));
+    },
+    notify: function notify(getValue) {
       // Don't calculate the next value unless somebody's listening.
       if (value$.observers.length) {
         value$.next(getValue());
       }
-    },
+    }
   };
 }
+module.exports = exports.default;

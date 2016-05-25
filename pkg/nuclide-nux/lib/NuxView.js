@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +16,31 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable, Disposable} from 'atom';
-import debounce from '../../commons-node/debounce';
+var _atom2;
 
-const VALID_NUX_POSITIONS = new Set(['top', 'bottom', 'left', 'right', 'auto']);
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _commonsNodeDebounce2;
+
+function _commonsNodeDebounce() {
+  return _commonsNodeDebounce2 = _interopRequireDefault(require('../../commons-node/debounce'));
+}
+
+var VALID_NUX_POSITIONS = new Set(['top', 'bottom', 'left', 'right', 'auto']);
 // The maximum number of times the NuxView will attempt to attach to the DOM
-const ATTACHMENT_ATTEMPT_THRESHOLD = 5;
-const DISPLAY_PREDICATE_ATTEMPT_THRESHOLD = 4;
-const ATTACHMENT_RETRY_TIMEOUT = 500; // milliseconds
-const DISPLAY_RETRY_TIMEOUT = 500; // milliseconds
-const RESIZE_EVENT_DEBOUNCE_DURATION = 100; // milliseconds
+var ATTACHMENT_ATTEMPT_THRESHOLD = 5;
+var DISPLAY_PREDICATE_ATTEMPT_THRESHOLD = 4;
+var ATTACHMENT_RETRY_TIMEOUT = 500; // milliseconds
+var DISPLAY_RETRY_TIMEOUT = 500; // milliseconds
+var RESIZE_EVENT_DEBOUNCE_DURATION = 100; // milliseconds
 
-function validatePlacement(position: string) : boolean {
+function validatePlacement(position) {
   return VALID_NUX_POSITIONS.has(position);
 }
 
-export class NuxView {
-  _selector : Function;
-  _position: 'top' | 'bottom' | 'left' | 'right' | 'auto';
-  _content: string;
-  _customContent: boolean;
-  _disposables : CompositeDisposable;
-  _callback: ?(() => void);
-  _tooltipDisposable: IDisposable;
-  _displayPredicate: (() => boolean);
-  _completePredicate: (() => boolean);
-  _tooltipDiv: HTMLElement;
+var NuxView = (function () {
 
   /**
    * Constructor for the NuxView.
@@ -57,150 +63,168 @@ export class NuxView {
    *
    * @throws Errors if both `selectorString` and `selectorFunction` are null.
    */
-  constructor(
-    selectorString: ?string,
-    selectorFunction : ?Function,
-    position: 'top' | 'bottom' | 'left' | 'right' | 'auto',
-    content: string,
-    customContent: boolean = false,
-    displayPredicate: ?(() => boolean) = null,
-    completePredicate: ?(() => boolean) = null,
-  ) : void {
+
+  function NuxView(selectorString, selectorFunction, position, content) {
+    var customContent = arguments.length <= 4 || arguments[4] === undefined ? false : arguments[4];
+    var displayPredicate = arguments.length <= 5 || arguments[5] === undefined ? null : arguments[5];
+    var completePredicate = arguments.length <= 6 || arguments[6] === undefined ? null : arguments[6];
+
+    _classCallCheck(this, NuxView);
+
     if (selectorFunction != null) {
       this._selector = selectorFunction;
     } else if (selectorString != null) {
       //$FlowIgnore - selectorString complains even with the explicit check above.
-      this._selector = () => document.querySelector(selectorString);
+      this._selector = function () {
+        return document.querySelector(selectorString);
+      };
     } else {
       throw new Error('Either the selector or selectorFunction must be non-null!');
     }
     this._content = content;
     this._position = validatePlacement(position) ? position : 'auto';
     this._customContent = customContent;
-    this._displayPredicate = displayPredicate || (() => true);
-    this._completePredicate = completePredicate || (() => true);
+    this._displayPredicate = displayPredicate || function () {
+      return true;
+    };
+    this._completePredicate = completePredicate || function () {
+      return true;
+    };
 
-    this._disposables = new CompositeDisposable();
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable();
   }
 
-  _createNux(creationAttempt: number = 1, displayAttempt: number = 1): void {
-    if (creationAttempt > ATTACHMENT_ATTEMPT_THRESHOLD) {
-      this._onNuxComplete(false);
-      throw new Error('The NuxView failed to succesfully query and attach to the DOM.');
-    }
-    const elem = this._selector();
-    if (elem == null) {
-      const attachmentTimeout =
-        setTimeout(this._createNux.bind(this, creationAttempt + 1), ATTACHMENT_RETRY_TIMEOUT);
-      this._disposables.add(new Disposable(() => {
-        if (attachmentTimeout !== null) {
-          clearTimeout(attachmentTimeout);
-        }
-      }));
-      return;
-    }
+  _createClass(NuxView, [{
+    key: '_createNux',
+    value: function _createNux() {
+      var _this = this;
 
-    // If the predicate fails, retry a few times to make sure that it actually failed this nux.
-    if (!this._displayPredicate()) {
-      if (displayAttempt < DISPLAY_PREDICATE_ATTEMPT_THRESHOLD) {
-        const displayTimeout = setTimeout(
-          this._createNux.bind(this, creationAttempt, displayAttempt + 1),
-          DISPLAY_RETRY_TIMEOUT,
-        );
-        this._disposables.add(new Disposable(() => {
-          if (displayTimeout !== null) {
-            clearTimeout(displayTimeout);
-          }
-        }));
-        return;
+      var creationAttempt = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+      var displayAttempt = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+
+      if (creationAttempt > ATTACHMENT_ATTEMPT_THRESHOLD) {
+        this._onNuxComplete(false);
+        throw new Error('The NuxView failed to succesfully query and attach to the DOM.');
       }
-      throw new Error('NuxView failed to display. Display predicate was consistently false.');
+      var elem = this._selector();
+      if (elem == null) {
+        var _ret = (function () {
+          var attachmentTimeout = setTimeout(_this._createNux.bind(_this, creationAttempt + 1), ATTACHMENT_RETRY_TIMEOUT);
+          _this._disposables.add(new (_atom2 || _atom()).Disposable(function () {
+            if (attachmentTimeout !== null) {
+              clearTimeout(attachmentTimeout);
+            }
+          }));
+          return {
+            v: undefined
+          };
+        })();
+
+        if (typeof _ret === 'object') return _ret.v;
+      }
+
+      // If the predicate fails, retry a few times to make sure that it actually failed this nux.
+      if (!this._displayPredicate()) {
+        if (displayAttempt < DISPLAY_PREDICATE_ATTEMPT_THRESHOLD) {
+          var _ret2 = (function () {
+            var displayTimeout = setTimeout(_this._createNux.bind(_this, creationAttempt, displayAttempt + 1), DISPLAY_RETRY_TIMEOUT);
+            _this._disposables.add(new (_atom2 || _atom()).Disposable(function () {
+              if (displayTimeout !== null) {
+                clearTimeout(displayTimeout);
+              }
+            }));
+            return {
+              v: undefined
+            };
+          })();
+
+          if (typeof _ret2 === 'object') return _ret2.v;
+        }
+        throw new Error('NuxView failed to display. Display predicate was consistently false.');
+      }
+
+      this._tooltipDiv = document.createElement('div');
+      this._tooltipDiv.className = 'nuclide-nux-tooltip-helper';
+      elem.classList.add('nuclide-nux-tooltip-helper-parent');
+      elem.appendChild(this._tooltipDiv);
+
+      this._createDisposableTooltip();
+
+      var debouncedWindowResizeListener = (0, (_commonsNodeDebounce2 || _commonsNodeDebounce()).default)(this._handleWindowResize.bind(this), RESIZE_EVENT_DEBOUNCE_DURATION, false);
+      window.addEventListener('resize', debouncedWindowResizeListener);
+
+      var tooltip = document.querySelector('.nuclide-nux-tooltip');
+      var boundClickListener = this._handleDisposableClick.bind(this, this._tooltipDisposable, elem);
+      elem.addEventListener('click', boundClickListener);
+      tooltip.addEventListener('click', boundClickListener);
+      this._disposables.add(new (_atom2 || _atom()).Disposable(function () {
+        elem.removeEventListener('click', boundClickListener);
+        tooltip.removeEventListener('click', boundClickListener);
+        window.removeEventListener('resize', debouncedWindowResizeListener);
+      }));
     }
-
-    this._tooltipDiv = document.createElement('div');
-    this._tooltipDiv.className = 'nuclide-nux-tooltip-helper';
-    elem.classList.add('nuclide-nux-tooltip-helper-parent');
-    elem.appendChild(this._tooltipDiv);
-
-    this._createDisposableTooltip();
-
-    const debouncedWindowResizeListener =
-      debounce(this._handleWindowResize.bind(this), RESIZE_EVENT_DEBOUNCE_DURATION, false);
-    window.addEventListener('resize', debouncedWindowResizeListener);
-
-    const tooltip = document.querySelector('.nuclide-nux-tooltip');
-    const boundClickListener = this._handleDisposableClick.bind(
-      this,
-      this._tooltipDisposable,
-      elem,
-    );
-    elem.addEventListener('click', boundClickListener);
-    tooltip.addEventListener('click', boundClickListener);
-    this._disposables.add(new Disposable(() => {
-      elem.removeEventListener('click', boundClickListener);
-      tooltip.removeEventListener('click', boundClickListener);
-      window.removeEventListener('resize', debouncedWindowResizeListener);
-    }));
-  }
-
-  _handleWindowResize() : void {
-    this._tooltipDisposable.dispose();
-    this._createDisposableTooltip();
-  }
-
-  _createDisposableTooltip() : void {
-    this._tooltipDisposable = atom.tooltips.add(
-      this._tooltipDiv,
-      {
+  }, {
+    key: '_handleWindowResize',
+    value: function _handleWindowResize() {
+      this._tooltipDisposable.dispose();
+      this._createDisposableTooltip();
+    }
+  }, {
+    key: '_createDisposableTooltip',
+    value: function _createDisposableTooltip() {
+      this._tooltipDisposable = atom.tooltips.add(this._tooltipDiv, {
         title: this._content,
         trigger: 'manual',
         placement: this._position,
         html: this._customContent,
-        template: '<div class="tooltip nuclide-nux-tooltip">' +
-                    '<div class="tooltip-arrow"></div>' +
-                    '<div class="tooltip-inner"></div>' +
-                  '</div>',
+        template: '<div class="tooltip nuclide-nux-tooltip">' + '<div class="tooltip-arrow"></div>' + '<div class="tooltip-inner"></div>' + '</div>'
+      });
+      this._disposables.add(this._tooltipDisposable);
+    }
+  }, {
+    key: '_handleDisposableClick',
+    value: function _handleDisposableClick(disposable, addedElement) {
+      // Only consider the NUX as complete if the completion condition has been met.
+      if (!this._completePredicate()) {
+        return;
       }
-    );
-    this._disposables.add(this._tooltipDisposable);
-  }
 
-  _handleDisposableClick(
-    disposable: IDisposable,
-    addedElement: HTMLElement,
-  ): void {
-    // Only consider the NUX as complete if the completion condition has been met.
-    if (!this._completePredicate()) {
-      return;
+      // Cleanup changes made to the DOM
+      addedElement.classList.remove('nuclide-nux-tooltip-helper-parent');
+      disposable.dispose();
+      this._tooltipDiv.remove();
+
+      this._onNuxComplete(true);
     }
-
-    // Cleanup changes made to the DOM
-    addedElement.classList.remove('nuclide-nux-tooltip-helper-parent');
-    disposable.dispose();
-    this._tooltipDiv.remove();
-
-    this._onNuxComplete(true);
-  }
-
-  showNux() : void {
-    this._createNux();
-  }
-
-  setNuxCompleteCallback(callback: (() => void)): void {
-    this._callback = callback;
-  }
-
-  _onNuxComplete(success: boolean): boolean {
-    if (this._callback) {
-      this._callback();
-       // avoid the callback being invoked again
-      this._callback = null;
+  }, {
+    key: 'showNux',
+    value: function showNux() {
+      this._createNux();
     }
-    this.dispose();
-    return success;
-  }
+  }, {
+    key: 'setNuxCompleteCallback',
+    value: function setNuxCompleteCallback(callback) {
+      this._callback = callback;
+    }
+  }, {
+    key: '_onNuxComplete',
+    value: function _onNuxComplete(success) {
+      if (this._callback) {
+        this._callback();
+        // avoid the callback being invoked again
+        this._callback = null;
+      }
+      this.dispose();
+      return success;
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }]);
 
-  dispose() : void {
-    this._disposables.dispose();
-  }
-}
+  return NuxView;
+})();
+
+exports.NuxView = NuxView;

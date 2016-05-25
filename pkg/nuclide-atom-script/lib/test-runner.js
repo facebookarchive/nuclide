@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -20,71 +21,91 @@
 // process will have production options set - not test options like
 // `--user-data-dir`.
 
-import type {
-  ExitCode,
-  TestRunnerParams,
-} from './types';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-import invariant from 'assert';
-import path from 'path';
-import {Console} from 'console';
-import {ipcRenderer} from 'electron';
-import {parse} from 'shell-quote';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const STDOUT_FILTERS = [
-  // Always shows:
-  /^window load time: \d+ms\n$/i,
-];
+var _assert2;
 
-const STDERR_FILTERS = [
-  // If the script takes ~1sec or more, and there's another Atom window open,
-  // then this error gets logged. It's because we set `--user-data-dir`, and
-  // our process can't get a lock on the IndexedDB file.
-  // https://github.com/atom/atom/blob/v1.7.3/src/state-store.js#L16
-  /^Could not connect to indexedDB Event { isTrusted: \[Getter\] }\n$/i,
-];
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _path2;
+
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
+
+var _console2;
+
+function _console() {
+  return _console2 = require('console');
+}
+
+var _electron2;
+
+function _electron() {
+  return _electron2 = require('electron');
+}
+
+var _shellQuote2;
+
+function _shellQuote() {
+  return _shellQuote2 = require('shell-quote');
+}
+
+var STDOUT_FILTERS = [
+// Always shows:
+/^window load time: \d+ms\n$/i];
+
+var STDERR_FILTERS = [
+// If the script takes ~1sec or more, and there's another Atom window open,
+// then this error gets logged. It's because we set `--user-data-dir`, and
+// our process can't get a lock on the IndexedDB file.
+// https://github.com/atom/atom/blob/v1.7.3/src/state-store.js#L16
+/^Could not connect to indexedDB Event { isTrusted: \[Getter\] }\n$/i];
 
 // eslint-disable-next-line no-unused-vars
-const debugConsole = global.console;
+var debugConsole = global.console;
 
 // https://github.com/nodejs/node/blob/v5.1.1/lib/console.js
-const outputConsole = new Console(
-  { /*stdout*/
-    write(chunk) {
-      if (!STDOUT_FILTERS.some(re => re.test(chunk))) {
-        ipcRenderer.send('write-to-stdout', chunk);
-      }
-    },
-  },
-  { /*stderr*/
-    write(chunk) {
-      if (!STDERR_FILTERS.some(re => re.test(chunk))) {
-        ipcRenderer.send('write-to-stderr', chunk);
-      }
-    },
-  },
-);
+var outputConsole = new (_console2 || _console()).Console({ /*stdout*/
+  write: function write(chunk) {
+    if (!STDOUT_FILTERS.some(function (re) {
+      return re.test(chunk);
+    })) {
+      (_electron2 || _electron()).ipcRenderer.send('write-to-stdout', chunk);
+    }
+  }
+}, { /*stderr*/
+  write: function write(chunk) {
+    if (!STDERR_FILTERS.some(function (re) {
+      return re.test(chunk);
+    })) {
+      (_electron2 || _electron()).ipcRenderer.send('write-to-stderr', chunk);
+    }
+  }
+});
 
-export default async function runTest(
-  params: TestRunnerParams
-): Promise<ExitCode> {
-  let exitCode = 0;
+exports.default = _asyncToGenerator(function* (params) {
+  var exitCode = 0;
   try {
-    const atomGlobal = params.buildAtomEnvironment({
+    var atomGlobal = params.buildAtomEnvironment({
       applicationDelegate: params.buildDefaultApplicationDelegate(),
-      document,
-      window,
+      document: document,
+      window: window
     });
     atomGlobal.atomScriptMode = true;
 
-    invariant(typeof process.env.FILE_ATOM_SCRIPT === 'string');
-    const fileAtomScript = process.env.FILE_ATOM_SCRIPT;
+    (0, (_assert2 || _assert()).default)(typeof process.env.FILE_ATOM_SCRIPT === 'string');
+    var fileAtomScript = process.env.FILE_ATOM_SCRIPT;
 
-    invariant(typeof process.env.ARGS_ATOM_SCRIPT === 'string');
-    const argsAtomScript = process.env.ARGS_ATOM_SCRIPT;
+    (0, (_assert2 || _assert()).default)(typeof process.env.ARGS_ATOM_SCRIPT === 'string');
+    var argsAtomScript = process.env.ARGS_ATOM_SCRIPT;
 
-    const scriptPath = path.resolve(fileAtomScript);
-    const scriptArgs = argsAtomScript === "''" ? [] : parse(argsAtomScript);
+    var scriptPath = (_path2 || _path()).default.resolve(fileAtomScript);
+    var scriptArgs = argsAtomScript === "''" ? [] : (0, (_shellQuote2 || _shellQuote()).parse)(argsAtomScript);
 
     // Unfortunately we have to pollute our environment if we want to take
     // advantage of Atom's v8 cache. Ideally, we'd run the script file using
@@ -98,12 +119,13 @@ export default async function runTest(
     global.console = outputConsole;
 
     // $FlowIgnore
-    const handler = require(scriptPath);
-    exitCode = await handler(scriptArgs);
+    var handler = require(scriptPath);
+    exitCode = yield handler(scriptArgs);
   } catch (e) {
     outputConsole.error(e);
     exitCode = 1;
   }
 
   return exitCode;
-}
+});
+module.exports = exports.default;

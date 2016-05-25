@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +10,31 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
-import type {OutputService} from '../../nuclide-console/lib/types';
+exports.setOutputService = setOutputService;
+exports.getOutputService = getOutputService;
+exports.registerOutputWindowLogging = registerOutputWindowLogging;
 
-let outputServiceApi: ?OutputService = null;
+var outputServiceApi = null;
 
-export function setOutputService(api: OutputService): void {
+function setOutputService(api) {
   outputServiceApi = api;
 }
 
-export function getOutputService(): ?OutputService {
+function getOutputService() {
   return outputServiceApi;
 }
 
 // TODO: refactor this function to work with other providers(like hhvm).
-export function registerOutputWindowLogging(userOutputStream: Observable<string>): ?IDisposable {
-  const api = getOutputService();
-  let outputDisposable = null;
+
+function registerOutputWindowLogging(userOutputStream) {
+  var api = getOutputService();
+  var outputDisposable = null;
   if (api != null) {
     outputDisposable = api.registerOutputProvider({
       source: 'lldb debugger',
-      messages: userOutputStream.map(message => JSON.parse(message)),
+      messages: userOutputStream.map(function (message) {
+        return JSON.parse(message);
+      })
     });
   }
   return outputDisposable;

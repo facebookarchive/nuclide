@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,61 +10,85 @@
  * the root directory of this source tree.
  */
 
-import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
-import type {ServerConnection} from './ServerConnection';
-import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
-import type {RemoteFile} from './RemoteFile';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import typeof * as FileWatcherService from '../../nuclide-filewatcher-base';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-import invariant from 'assert';
-import path from 'path';
-import {Disposable, Emitter} from 'atom';
-import {getLogger} from '../../nuclide-logging';
-import remoteUri from '../../nuclide-remote-uri';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const posixPath = path.posix;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const logger = getLogger();
+var _assert2;
 
-const MARKER_PROPERTY_FOR_REMOTE_DIRECTORY = '__nuclide_remote_directory__';
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _path2;
+
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var _nuclideRemoteUri2;
+
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = _interopRequireDefault(require('../../nuclide-remote-uri'));
+}
+
+var posixPath = (_path2 || _path()).default.posix;
+
+var logger = (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)();
+
+var MARKER_PROPERTY_FOR_REMOTE_DIRECTORY = '__nuclide_remote_directory__';
 
 /* Mostly implements https://atom.io/docs/api/latest/Directory */
-export class RemoteDirectory {
-  static isRemoteDirectory(directory: atom$Directory | RemoteDirectory): boolean {
-    /* $FlowFixMe */
-    return directory[MARKER_PROPERTY_FOR_REMOTE_DIRECTORY] === true;
-  }
 
-  _watchSubscription: ?rx$ISubscription;
-  _server: ServerConnection;
-  _uri: string;
-  _emitter: atom$Emitter;
-  _subscriptionCount: number;
-  _host: string;
-  _localPath: string;
-  _hgRepositoryDescription: ?HgRepositoryDescription;
-  _symlink: boolean;
-  _deleted: boolean;
+var RemoteDirectory = (function () {
+  _createClass(RemoteDirectory, null, [{
+    key: 'isRemoteDirectory',
+    value: function isRemoteDirectory(directory) {
+      /* $FlowFixMe */
+      return directory[MARKER_PROPERTY_FOR_REMOTE_DIRECTORY] === true;
+    }
+  }]);
 
   /**
    * @param uri should be of the form "nuclide://example.com/path/to/directory".
    */
-  constructor(
-    server: ServerConnection,
-    uri: string,
-    symlink: boolean = false,
-    options: ?any,
-  ) {
-    Object.defineProperty(this, MARKER_PROPERTY_FOR_REMOTE_DIRECTORY, {value: true});
+
+  function RemoteDirectory(server, uri, symlink, options) {
+    if (symlink === undefined) symlink = false;
+
+    _classCallCheck(this, RemoteDirectory);
+
+    Object.defineProperty(this, MARKER_PROPERTY_FOR_REMOTE_DIRECTORY, { value: true });
     this._server = server;
     this._uri = uri;
-    this._emitter = new Emitter();
+    this._emitter = new (_atom2 || _atom()).Emitter();
     this._subscriptionCount = 0;
     this._symlink = symlink;
-    const {path: directoryPath, protocol, host} = remoteUri.parse(uri);
-    invariant(protocol);
-    invariant(host);
+
+    var _default$parse = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.parse(uri);
+
+    var directoryPath = _default$parse.path;
+    var protocol = _default$parse.protocol;
+    var host = _default$parse.host;
+
+    (0, (_assert2 || _assert()).default)(protocol);
+    (0, (_assert2 || _assert()).default)(host);
     /** In the example, this would be "nuclide://example.com". */
     this._host = protocol + '//' + host;
     /** In the example, this would be "/path/to/directory". */
@@ -73,277 +98,324 @@ export class RemoteDirectory {
     this._deleted = false;
   }
 
-  onDidChange(callback: () => any): IDisposable {
-    this._willAddSubscription();
-    return this._trackUnsubscription(this._emitter.on('did-change', callback));
-  }
-
-  onDidDelete(callback: () => any): IDisposable {
-    this._willAddSubscription();
-    return this._trackUnsubscription(this._emitter.on('did-delete', callback));
-  }
-
-  _willAddSubscription(): void {
-    this._subscriptionCount++;
-    try {
-      this._subscribeToNativeChangeEvents();
-    } catch (err) {
-      logger.error('Failed to subscribe RemoteDirectory:', this._localPath, err);
+  _createClass(RemoteDirectory, [{
+    key: 'onDidChange',
+    value: function onDidChange(callback) {
+      this._willAddSubscription();
+      return this._trackUnsubscription(this._emitter.on('did-change', callback));
     }
-  }
-
-  _subscribeToNativeChangeEvents(): void {
-    if (this._watchSubscription) {
-      return;
+  }, {
+    key: 'onDidDelete',
+    value: function onDidDelete(callback) {
+      this._willAddSubscription();
+      return this._trackUnsubscription(this._emitter.on('did-delete', callback));
     }
-    const {watchDirectory} = (this._getService('FileWatcherService'): FileWatcherService);
-    const watchStream = watchDirectory(this._uri);
-    this._watchSubscription = watchStream.subscribe(watchUpdate => {
-      logger.debug('watchDirectory update:', watchUpdate);
-      switch (watchUpdate.type) {
-        case 'change':
-          return this._handleNativeChangeEvent();
-        case 'delete':
-          return this._handleNativeDeleteEvent();
-      }
-    }, error => {
-      logger.error('Failed to subscribe RemoteDirectory:', this._uri, error);
-      this._watchSubscription = null;
-    }, () => {
-      // Nothing needs to be done if the root directory watch has ended.
-      logger.debug(`watchDirectory ended: ${this._uri}`);
-      this._watchSubscription = null;
-    });
-  }
-
-  _handleNativeChangeEvent(): void {
-    this._emitter.emit('did-change');
-  }
-
-  _handleNativeDeleteEvent(): void {
-    this._unsubscribeFromNativeChangeEvents();
-    if (!this._deleted) {
-      this._deleted = true;
-      this._emitter.emit('did-delete');
-    }
-  }
-
-  _trackUnsubscription(subscription: IDisposable): IDisposable {
-    return new Disposable(() => {
-      subscription.dispose();
-      this._didRemoveSubscription();
-    });
-  }
-
-  _didRemoveSubscription(): void {
-    this._subscriptionCount--;
-    if (this._subscriptionCount === 0) {
-      return this._unsubscribeFromNativeChangeEvents();
-    }
-  }
-
-  _unsubscribeFromNativeChangeEvents(): void {
-    if (this._watchSubscription) {
+  }, {
+    key: '_willAddSubscription',
+    value: function _willAddSubscription() {
+      this._subscriptionCount++;
       try {
-        this._watchSubscription.unsubscribe();
-      } catch (error) {
-        logger.warn(
-          'RemoteDirectory failed to unsubscribe from native events:',
-          this._uri,
-          error.message,
-        );
+        this._subscribeToNativeChangeEvents();
+      } catch (err) {
+        logger.error('Failed to subscribe RemoteDirectory:', this._localPath, err);
       }
-      this._watchSubscription = null;
     }
-  }
+  }, {
+    key: '_subscribeToNativeChangeEvents',
+    value: function _subscribeToNativeChangeEvents() {
+      var _this = this;
 
-  isFile(): boolean {
-    return false;
-  }
+      if (this._watchSubscription) {
+        return;
+      }
 
-  isDirectory(): boolean {
-    return true;
-  }
+      var _ref = this._getService('FileWatcherService');
 
-  isRoot(): boolean {
-    return this._isRoot(this._localPath);
-  }
+      var watchDirectory = _ref.watchDirectory;
 
-  exists(): Promise<boolean> {
-    return this._getFileSystemService().exists(this._localPath);
-  }
-
-  existsSync(): boolean {
-    return false;
-  }
-
-  _isRoot(filePath: string): boolean {
-    filePath = posixPath.normalize(filePath);
-    const parts = posixPath.parse(filePath);
-    return parts.root === filePath;
-  }
-
-  getPath(): string {
-    return this._uri;
-  }
-
-  getLocalPath(): string {
-    return this._localPath;
-  }
-
-  getHost(): string {
-    return this._host;
-  }
-
-  getRealPathSync(): string {
-    throw new Error('Not implemented');
-  }
-
-  getBaseName(): string {
-    return posixPath.basename(this._localPath);
-  }
-
-  relativize(uri: string): string {
-    if (!uri) {
-      return uri;
+      var watchStream = watchDirectory(this._uri);
+      this._watchSubscription = watchStream.subscribe(function (watchUpdate) {
+        logger.debug('watchDirectory update:', watchUpdate);
+        switch (watchUpdate.type) {
+          case 'change':
+            return _this._handleNativeChangeEvent();
+          case 'delete':
+            return _this._handleNativeDeleteEvent();
+        }
+      }, function (error) {
+        logger.error('Failed to subscribe RemoteDirectory:', _this._uri, error);
+        _this._watchSubscription = null;
+      }, function () {
+        // Nothing needs to be done if the root directory watch has ended.
+        logger.debug('watchDirectory ended: ' + _this._uri);
+        _this._watchSubscription = null;
+      });
     }
-    // Note: host of uri must match this._host.
-    const subpath = remoteUri.parse(uri).path;
-    return posixPath.relative(this._localPath, subpath);
-  }
+  }, {
+    key: '_handleNativeChangeEvent',
+    value: function _handleNativeChangeEvent() {
+      this._emitter.emit('did-change');
+    }
+  }, {
+    key: '_handleNativeDeleteEvent',
+    value: function _handleNativeDeleteEvent() {
+      this._unsubscribeFromNativeChangeEvents();
+      if (!this._deleted) {
+        this._deleted = true;
+        this._emitter.emit('did-delete');
+      }
+    }
+  }, {
+    key: '_trackUnsubscription',
+    value: function _trackUnsubscription(subscription) {
+      var _this2 = this;
 
-  getParent(): RemoteDirectory {
-    if (this.isRoot()) {
-      return this;
-    } else {
-      const uri = this._host + posixPath.normalize(posixPath.join(this._localPath, '..'));
+      return new (_atom2 || _atom()).Disposable(function () {
+        subscription.dispose();
+        _this2._didRemoveSubscription();
+      });
+    }
+  }, {
+    key: '_didRemoveSubscription',
+    value: function _didRemoveSubscription() {
+      this._subscriptionCount--;
+      if (this._subscriptionCount === 0) {
+        return this._unsubscribeFromNativeChangeEvents();
+      }
+    }
+  }, {
+    key: '_unsubscribeFromNativeChangeEvents',
+    value: function _unsubscribeFromNativeChangeEvents() {
+      if (this._watchSubscription) {
+        try {
+          this._watchSubscription.unsubscribe();
+        } catch (error) {
+          logger.warn('RemoteDirectory failed to unsubscribe from native events:', this._uri, error.message);
+        }
+        this._watchSubscription = null;
+      }
+    }
+  }, {
+    key: 'isFile',
+    value: function isFile() {
+      return false;
+    }
+  }, {
+    key: 'isDirectory',
+    value: function isDirectory() {
+      return true;
+    }
+  }, {
+    key: 'isRoot',
+    value: function isRoot() {
+      return this._isRoot(this._localPath);
+    }
+  }, {
+    key: 'exists',
+    value: function exists() {
+      return this._getFileSystemService().exists(this._localPath);
+    }
+  }, {
+    key: 'existsSync',
+    value: function existsSync() {
+      return false;
+    }
+  }, {
+    key: '_isRoot',
+    value: function _isRoot(filePath) {
+      filePath = posixPath.normalize(filePath);
+      var parts = posixPath.parse(filePath);
+      return parts.root === filePath;
+    }
+  }, {
+    key: 'getPath',
+    value: function getPath() {
+      return this._uri;
+    }
+  }, {
+    key: 'getLocalPath',
+    value: function getLocalPath() {
+      return this._localPath;
+    }
+  }, {
+    key: 'getHost',
+    value: function getHost() {
+      return this._host;
+    }
+  }, {
+    key: 'getRealPathSync',
+    value: function getRealPathSync() {
+      throw new Error('Not implemented');
+    }
+  }, {
+    key: 'getBaseName',
+    value: function getBaseName() {
+      return posixPath.basename(this._localPath);
+    }
+  }, {
+    key: 'relativize',
+    value: function relativize(uri) {
+      if (!uri) {
+        return uri;
+      }
+      // Note: host of uri must match this._host.
+      var subpath = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.parse(uri).path;
+      return posixPath.relative(this._localPath, subpath);
+    }
+  }, {
+    key: 'getParent',
+    value: function getParent() {
+      if (this.isRoot()) {
+        return this;
+      } else {
+        var uri = this._host + posixPath.normalize(posixPath.join(this._localPath, '..'));
+        return this._server.createDirectory(uri, this._hgRepositoryDescription);
+      }
+    }
+  }, {
+    key: 'getFile',
+    value: function getFile(filename) {
+      var uri = this._host + posixPath.join(this._localPath, filename);
+      return this._server.createFile(uri);
+    }
+  }, {
+    key: 'getSubdirectory',
+    value: function getSubdirectory(dirname) {
+      var uri = this._host + posixPath.join(this._localPath, dirname);
       return this._server.createDirectory(uri, this._hgRepositoryDescription);
     }
-  }
-
-  getFile(filename: string): RemoteFile {
-    const uri = this._host + posixPath.join(this._localPath, filename);
-    return this._server.createFile(uri);
-  }
-
-  getSubdirectory(dirname: string): RemoteDirectory {
-    const uri = this._host + posixPath.join(this._localPath, dirname);
-    return this._server.createDirectory(uri, this._hgRepositoryDescription);
-  }
-
-  async create(): Promise<boolean> {
-    invariant(!this._deleted, 'RemoteDirectory has been deleted');
-    const created = await this._getFileSystemService().mkdirp(this._localPath);
-    if (this._subscriptionCount > 0) {
-      this._subscribeToNativeChangeEvents();
-    }
-    return created;
-  }
-
-  async delete(): Promise {
-    await this._getFileSystemService().rmdir(this._localPath);
-    this._handleNativeDeleteEvent();
-  }
-
-  /**
-   * Renames this directory to the given absolute path.
-   */
-  async rename(newPath: string): Promise {
-    await this._getFileSystemService().rename(this._localPath, newPath);
-
-    // Unsubscribe from the old `this._localPath`. This must be done before
-    // setting the new `this._localPath`.
-    this._unsubscribeFromNativeChangeEvents();
-
-    const {protocol, host} = remoteUri.parse(this._uri);
-    this._localPath = newPath;
-    invariant(protocol);
-    invariant(host);
-    this._uri = protocol + '//' + host + this._localPath;
-
-    // Subscribe to changes for the new `this._localPath`. This must be done
-    // after setting the new `this._localPath`.
-    if (this._subscriptionCount > 0) {
-      this._subscribeToNativeChangeEvents();
-    }
-  }
-
-  getEntriesSync(): Array<RemoteFile | RemoteDirectory> {
-    throw new Error('not implemented');
-  }
-
-  /*
-   * Calls `callback` with either an Array of entries or an Error if there was a problem fetching
-   * those entries.
-   *
-   * Note: Although this function is `async`, it never rejects. Check whether the `error` argument
-   * passed to `callback` is `null` to determine if there was an error.
-   */
-  async getEntries(
-    callback: (error: ?atom$GetEntriesError, entries: ?Array<RemoteDirectory | RemoteFile>) => any,
-  ): Promise<void> {
-    let entries;
-    try {
-      entries = await this._getFileSystemService().readdir(this._localPath);
-    } catch (e) {
-      callback(e, null);
-      return;
-    }
-
-    const directories : Array<RemoteDirectory> = [];
-    const files = [];
-    entries.sort((a, b) => {
-      return a.file.toLowerCase().localeCompare(b.file.toLowerCase());
-    }).forEach(entry => {
-      invariant(entry);
-      const uri = this._host + posixPath.join(this._localPath, entry.file);
-      const symlink = entry.isSymbolicLink;
-      if (entry.stats && entry.stats.isFile()) {
-        files.push(this._server.createFile(uri, symlink));
-      } else {
-        directories.push(this._server.createDirectory(uri, this._hgRepositoryDescription, symlink));
+  }, {
+    key: 'create',
+    value: _asyncToGenerator(function* () {
+      (0, (_assert2 || _assert()).default)(!this._deleted, 'RemoteDirectory has been deleted');
+      var created = yield this._getFileSystemService().mkdirp(this._localPath);
+      if (this._subscriptionCount > 0) {
+        this._subscribeToNativeChangeEvents();
       }
-    });
-    callback(null, directories.concat(files));
-  }
+      return created;
+    })
+  }, {
+    key: 'delete',
+    value: _asyncToGenerator(function* () {
+      yield this._getFileSystemService().rmdir(this._localPath);
+      this._handleNativeDeleteEvent();
+    })
 
-  contains(pathToCheck: ?string): boolean {
-    // Can't just do startsWith here. If this directory is "www" and you
-    // are trying to check "www-base", just using startsWith would return
-    // true, even though "www-base" is at the same level as "Www", not
-    // contained in it.
-    // So first check startsWith. If so, then if the two path lengths are
-    // equal OR if the next character in the path to check is a path
-    // separator, then we know the checked path is in this path.
-    const endIndex = this.getPath().slice(-1) === posixPath.sep
-                   ? this.getPath().length - 1
-                   : this.getPath().length;
-    return pathToCheck != null
-      && pathToCheck.startsWith(this.getPath())
-      && (pathToCheck.length === this.getPath().length
-          || pathToCheck.charAt(endIndex) === posixPath.sep);
-  }
+    /**
+     * Renames this directory to the given absolute path.
+     */
+  }, {
+    key: 'rename',
+    value: _asyncToGenerator(function* (newPath) {
+      yield this._getFileSystemService().rename(this._localPath, newPath);
 
-  off() {
+      // Unsubscribe from the old `this._localPath`. This must be done before
+      // setting the new `this._localPath`.
+      this._unsubscribeFromNativeChangeEvents();
+
+      var _default$parse2 = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.parse(this._uri);
+
+      var protocol = _default$parse2.protocol;
+      var host = _default$parse2.host;
+
+      this._localPath = newPath;
+      (0, (_assert2 || _assert()).default)(protocol);
+      (0, (_assert2 || _assert()).default)(host);
+      this._uri = protocol + '//' + host + this._localPath;
+
+      // Subscribe to changes for the new `this._localPath`. This must be done
+      // after setting the new `this._localPath`.
+      if (this._subscriptionCount > 0) {
+        this._subscribeToNativeChangeEvents();
+      }
+    })
+  }, {
+    key: 'getEntriesSync',
+    value: function getEntriesSync() {
+      throw new Error('not implemented');
+    }
+
+    /*
+     * Calls `callback` with either an Array of entries or an Error if there was a problem fetching
+     * those entries.
+     *
+     * Note: Although this function is `async`, it never rejects. Check whether the `error` argument
+     * passed to `callback` is `null` to determine if there was an error.
+     */
+  }, {
+    key: 'getEntries',
+    value: _asyncToGenerator(function* (callback) {
+      var _this3 = this;
+
+      var entries = undefined;
+      try {
+        entries = yield this._getFileSystemService().readdir(this._localPath);
+      } catch (e) {
+        callback(e, null);
+        return;
+      }
+
+      var directories = [];
+      var files = [];
+      entries.sort(function (a, b) {
+        return a.file.toLowerCase().localeCompare(b.file.toLowerCase());
+      }).forEach(function (entry) {
+        (0, (_assert2 || _assert()).default)(entry);
+        var uri = _this3._host + posixPath.join(_this3._localPath, entry.file);
+        var symlink = entry.isSymbolicLink;
+        if (entry.stats && entry.stats.isFile()) {
+          files.push(_this3._server.createFile(uri, symlink));
+        } else {
+          directories.push(_this3._server.createDirectory(uri, _this3._hgRepositoryDescription, symlink));
+        }
+      });
+      callback(null, directories.concat(files));
+    })
+  }, {
+    key: 'contains',
+    value: function contains(pathToCheck) {
+      // Can't just do startsWith here. If this directory is "www" and you
+      // are trying to check "www-base", just using startsWith would return
+      // true, even though "www-base" is at the same level as "Www", not
+      // contained in it.
+      // So first check startsWith. If so, then if the two path lengths are
+      // equal OR if the next character in the path to check is a path
+      // separator, then we know the checked path is in this path.
+      var endIndex = this.getPath().slice(-1) === posixPath.sep ? this.getPath().length - 1 : this.getPath().length;
+      return pathToCheck != null && pathToCheck.startsWith(this.getPath()) && (pathToCheck.length === this.getPath().length || pathToCheck.charAt(endIndex) === posixPath.sep);
+    }
+  }, {
+    key: 'off',
+    value: function off() {}
     // This method is part of the EmitterMixin used by Atom's local Directory, but not documented
     // as part of the API - https://atom.io/docs/api/latest/Directory,
     // However, it appears to be called in project.coffee by Atom.
-  }
 
-  // A workaround before Atom 2.0: see ::getHgRepoInfo of main.js.
-  getHgRepositoryDescription(): ?HgRepositoryDescription {
-    return this._hgRepositoryDescription;
-  }
+    // A workaround before Atom 2.0: see ::getHgRepoInfo of main.js.
 
-  isSymbolicLink(): boolean {
-    return this._symlink;
-  }
+  }, {
+    key: 'getHgRepositoryDescription',
+    value: function getHgRepositoryDescription() {
+      return this._hgRepositoryDescription;
+    }
+  }, {
+    key: 'isSymbolicLink',
+    value: function isSymbolicLink() {
+      return this._symlink;
+    }
+  }, {
+    key: '_getFileSystemService',
+    value: function _getFileSystemService() {
+      return this._getService('FileSystemService');
+    }
+  }, {
+    key: '_getService',
+    value: function _getService(serviceName) {
+      return this._server.getService(serviceName);
+    }
+  }]);
 
-  _getFileSystemService(): FileSystemService {
-    return this._getService('FileSystemService');
-  }
+  return RemoteDirectory;
+})();
 
-  _getService(serviceName: string): any {
-    return this._server.getService(serviceName);
-  }
-}
+exports.RemoteDirectory = RemoteDirectory;
