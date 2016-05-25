@@ -11,6 +11,7 @@
 
 import type {HackSearchResult} from './types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
 import fsPromise from '../../commons-node/fsPromise';
 import {retryLimit} from '../../commons-node/promise';
@@ -23,16 +24,6 @@ import {setHackCommand, setUseIde, getHackExecOptions} from './hack-config';
 import path from 'path';
 import {getPath} from '../../nuclide-remote-uri';
 import {logger} from './hack-config';
-
-export type LogLevel =
-  'ALL' |
-  'TRACE' |
-  'DEBUG' |
-  'INFO' |
-  'WARN' |
-  'ERROR' |
-  'FATAL' |
-  'OFF';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
