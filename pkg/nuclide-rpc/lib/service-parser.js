@@ -30,6 +30,7 @@ import {locationToString} from './location';
 import {validateDefinitions} from './DefinitionValidator';
 import resolveFrom from 'resolve-from';
 import path from 'path';
+import fs from 'fs';
 
 function isPrivateMemberName(name: string): boolean {
   return name.startsWith('_');
@@ -50,10 +51,14 @@ class ServiceParser {
   _defs: Map<string, Definition>;
   // Maps type names to the imported name and file that they are imported from.
   _imports: Map<string, {imported: string; file: string;}>;
+  _filesTodo: Array<string>;
+  _filesSeen: Set<string>;
 
   constructor() {
     this._fileName = '';
     this._defs = new Map();
+    this._filesTodo = [];
+    this._filesSeen = new Set();
 
     // Add all builtin types
     const defineBuiltinType = name => {
@@ -99,7 +104,27 @@ class ServiceParser {
   }
 
   parseService(fileName: string, source: string): Definitions {
+    this._filesSeen.add(fileName);
+
+    this._parseFile(fileName, source);
+
+    while (this._filesTodo.length > 0) {
+      const file = this._filesTodo.pop();
+      const contents = fs.readFileSync(file, 'utf8');
+      this._parseFile(file, contents);
+    }
+
+    validateDefinitions(this._defs);
+
+    return this._defs;
+  }
+
+  _parseFile(fileName: string, source: string): void {
+    invariant(this._filesSeen.has(fileName));
+
     this._fileName = fileName;
+    this._imports = new Map();
+
     const program = babelParse(source);
     invariant(program && program.type === 'Program', 'The result of parsing is a Program node.');
 
@@ -121,10 +146,6 @@ class ServiceParser {
           break;
       }
     }
-
-    validateDefinitions(this._defs);
-
-    return this._defs;
   }
 
   _parseExport(node: Object): void {
@@ -532,6 +553,19 @@ class ServiceParser {
         // Named types are represented as Generic types with no type parameters.
         this._assert(typeAnnotation, typeAnnotation.typeParameters == null,
             `Unknown generic type ${id}.`);
+
+        const imp = this._imports.get(id);
+        if (id !== 'NuclideUri' && imp != null) {
+          if (id !== imp.imported) {
+            this._error(
+              typeAnnotation, `Cannot import type ${id}. Aliases in imports not supported.`);
+          }
+          const importedFile = imp.file;
+          if (!this._filesSeen.has(importedFile)) {
+            this._filesSeen.add(importedFile);
+            this._filesTodo.push(importedFile);
+          }
+        }
         return {location, kind: 'named', name: id};
     }
   }

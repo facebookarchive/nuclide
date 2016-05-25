@@ -343,6 +343,16 @@ describe('Nuclide service parser test suite.', () => {
       parseServiceDefinition('fileName', code);
     }).toThrow();
   });
+
+  it('importing type aliases not supported', () => {
+    const code = `
+      import type {A as T} from 'foo';
+      export f(p: T): void {};
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
 });
 
 function mapDefinitions(map: Map<string, Definition>): { [key: string]: Object } {
