@@ -16,6 +16,7 @@ import type {
 import {React} from 'react-for-atom';
 
 type SimpleValueComponentProps = {
+  expression: string;
   evaluationResult: EvaluationResult;
 };
 
@@ -55,6 +56,7 @@ export default class SimpleValueComponent extends React.Component {
 
   render(): ?React.Element {
     const {
+      expression,
       evaluationResult,
     } = this.props;
     let displayValue;
@@ -68,7 +70,7 @@ export default class SimpleValueComponent extends React.Component {
       displayValue = '(N/A)';
     }
     return (
-      <span>{displayValue}</span>
+      <span>{expression}: {displayValue}</span>
     );
   }
 }

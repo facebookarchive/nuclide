@@ -17,7 +17,10 @@ import SimpleValueComponent from './SimpleValueComponent';
 
 type DebuggerValueComponentProps = {
   evaluationResult: ?EvaluationResult;
+  expression: string;
 };
+
+const NOT_AVAILABLE_MESSAGE = '<not available>';
 
 function renderObject(evaluationResult: EvaluationResult): ?string {
   const {
@@ -35,18 +38,32 @@ function isObjectValue(result: EvaluationResult): boolean {
   return result._objectId != null;
 }
 
+// TODO allow passing action components (edit button, pin button) here
+function renderValueLine(
+  expression: React.Element | string,
+  value: React.Element | string,
+): React.Element {
+  return <div>{expression}: {value}</div>;
+}
+
 class ValueComponent extends React.Component {
   props: DebuggerValueComponentProps;
 
   render(): ?React.Element {
     const {
       evaluationResult,
+      expression,
     } = this.props;
     if (evaluationResult == null) {
-      return <span>{'<not available>'}</span>;
+      return renderValueLine(expression, NOT_AVAILABLE_MESSAGE);
     }
     if (!isObjectValue(evaluationResult)) {
-      return <SimpleValueComponent evaluationResult={evaluationResult} />;
+      return (
+        <SimpleValueComponent
+          expression={expression}
+          evaluationResult={evaluationResult}
+        />
+      );
     }
     return (
       <span>

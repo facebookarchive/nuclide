@@ -29,9 +29,11 @@ export class DebuggerDatatipComponent extends React.Component {
     } = this.props;
     return (
       <div className="nuclide-debugger-datatip">
-        {expression}:{' '}
         <span className="nuclide-debugger-datatip-value">
-          <DebuggerValueComponent evaluationResult={evaluationResult} />
+          <DebuggerValueComponent
+            evaluationResult={evaluationResult}
+            expression={expression}
+          />
         </span>
       </div>
     );
