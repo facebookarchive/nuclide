@@ -44,6 +44,14 @@ describe('ImportService', () => {
     });
   });
 
+  it('ImportService - type import requiring multiple imports of a ImportedType', () => {
+    waitsForPromise(async () => {
+      invariant(service);
+      const result = await service.g({field: 'msg'});
+      expect(result).toBe('msg');
+    });
+  });
+
   afterEach(() => {
     invariant(testHelper);
     return testHelper.stop();

@@ -47,15 +47,11 @@ export function parseServiceDefinition(fileName: string, source: string): Defini
 }
 
 class ServiceParser {
-  _fileName: string;
   _defs: Map<string, Definition>;
-  // Maps type names to the imported name and file that they are imported from.
-  _imports: Map<string, {imported: string; file: string;}>;
   _filesTodo: Array<string>;
   _filesSeen: Set<string>;
 
   constructor() {
-    this._fileName = '';
     this._defs = new Map();
     this._filesTodo = [];
     this._filesSeen = new Set();
@@ -71,6 +67,51 @@ class ServiceParser {
     namedBuiltinTypes.forEach(defineBuiltinType);
     // TODO: Find a better place for this.
     defineBuiltinType('NuclideUri');
+  }
+
+  parseService(fileName: string, source: string): Definitions {
+    this._filesSeen.add(fileName);
+
+    this._parseFile(fileName, source);
+
+    while (this._filesTodo.length > 0) {
+      const file = this._filesTodo.pop();
+      const contents = fs.readFileSync(file, 'utf8');
+      this._parseFile(file, contents);
+    }
+
+    validateDefinitions(this._defs);
+
+    return this._defs;
+  }
+
+  _parseFile(fileName: string, source: string): void {
+    const parser = new FileParser(fileName, this._defs);
+    const imports = parser.parse(source);
+    for (const imp of imports) {
+      const resolvedFrom = resolveFrom(path.dirname(fileName), imp);
+
+      if (!this._filesSeen.has(resolvedFrom)) {
+        this._filesSeen.add(resolvedFrom);
+        this._filesTodo.push(resolvedFrom);
+      }
+    }
+  }
+}
+
+class FileParser {
+  _fileName: string;
+  _defs: Map<string, Definition>;
+  // Maps type names to the imported name and file that they are imported from.
+  _imports: Map<string, {imported: string; file: string;}>;
+  // Set of files required by imports
+  _importsUsed: Set<string>;
+
+  constructor(fileName: string, defs: Map<string, Definition>) {
+    this._fileName = fileName;
+    this._defs = defs;
+    this._imports = new Map();
+    this._importsUsed = new Set();
   }
 
   _locationOfNode(node: any): SourceLocation {
@@ -103,26 +144,9 @@ class ServiceParser {
     }
   }
 
-  parseService(fileName: string, source: string): Definitions {
-    this._filesSeen.add(fileName);
-
-    this._parseFile(fileName, source);
-
-    while (this._filesTodo.length > 0) {
-      const file = this._filesTodo.pop();
-      const contents = fs.readFileSync(file, 'utf8');
-      this._parseFile(file, contents);
-    }
-
-    validateDefinitions(this._defs);
-
-    return this._defs;
-  }
-
-  _parseFile(fileName: string, source: string): void {
-    invariant(this._filesSeen.has(fileName));
-
-    this._fileName = fileName;
+  // Returns set of imported files required.
+  // The file names returned are relative to the file being parsed.
+  parse(source: string): Set<string> {
     this._imports = new Map();
 
     const program = babelParse(source);
@@ -146,6 +170,8 @@ class ServiceParser {
           break;
       }
     }
+
+    return this._importsUsed;
   }
 
   _parseExport(node: Object): void {
@@ -184,7 +210,6 @@ class ServiceParser {
 
   _parseImport(node: Object): void {
     const from = node.source.value;
-    const resolvedFrom = resolveFrom(path.dirname(this._fileName), from);
 
     invariant(typeof from === 'string');
 
@@ -192,7 +217,7 @@ class ServiceParser {
       if (specifier.type === 'ImportSpecifier') {
         const imported = specifier.imported.name;
         const local = specifier.local.name;
-        this._imports.set(local, {imported, file: resolvedFrom});
+        this._imports.set(local, {imported, file: from});
       }
     }
   }
@@ -560,11 +585,7 @@ class ServiceParser {
             this._error(
               typeAnnotation, `Cannot import type ${id}. Aliases in imports not supported.`);
           }
-          const importedFile = imp.file;
-          if (!this._filesSeen.has(importedFile)) {
-            this._filesSeen.add(importedFile);
-            this._filesTodo.push(importedFile);
-          }
+          this._importsUsed.add(imp.file);
         }
         return {location, kind: 'named', name: id};
     }

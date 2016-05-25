@@ -10,7 +10,19 @@
  */
 
 import type {ImportedType} from './Types';
+import type {AnotherImportedType} from './MoreTypes';
+
+// We should be able to import types from non-rpc compatible files
+// as long as they are not used in the external interface of the file.
+// $FlowIgnore - Ignore the fact that the file doesn't exist.
+import type {NonRpcType} from './NonRpcFile';
+
+export let _NonRpcDefinition: NonRpcType;
 
 export async function f(t: ImportedType): Promise<ImportedType> {
   return t;
+}
+
+export async function g(t: AnotherImportedType): Promise<ImportedType> {
+  return t.field;
 }
