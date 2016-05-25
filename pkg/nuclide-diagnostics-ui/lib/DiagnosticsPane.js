@@ -137,10 +137,8 @@ function Cell(props: CellProps): React.Element {
       className="fixedDataTableCellLayout_main public_fixedDataTableCell_main"
       style={props.style}
       title={props.title}>
-      <div className="fixedDataTableCellLayout_wrap">
-        <div className="public_fixedDataTableCell_cellContent">
-          {props.children}
-        </div>
+      <div className="public_fixedDataTableCell_cellContent">
+        {props.children}
       </div>
     </div>
   );
@@ -234,7 +232,7 @@ class DiagnosticsPane extends React.Component {
     if (this.props.diagnostics.length > MAX_RESULTS_COUNT) {
       diagnosticCells.push(
         <div className="fixedDataTableCellGroupLayout_cellGroup" key="maxResultsMessage">
-          <div className="public_fixedDataTableCell_cellContent text-center">
+          <div className="public_fixedDataTableCell_cellContent">
             <em>Max results ({MAX_RESULTS_COUNT}) reached. Fix diagnostics or show only diagnostics
             for the current file to view more.</em>
           </div>
