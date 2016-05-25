@@ -137,9 +137,9 @@ function Cell(props: CellProps): React.Element {
       className="fixedDataTableCellLayout_main public_fixedDataTableCell_main"
       style={props.style}
       title={props.title}>
-      <div className="fixedDataTableCellLayout_wrap1 public_fixedDataTableCell_wrap1">
-        <div className="fixedDataTableCellLayout_wrap2 public_fixedDataTableCell_wrap2">
-          <div className="fixedDataTableCellLayout_wrap3 public_fixedDataTableCell_wrap3">
+      <div className="fixedDataTableCellLayout_wrap1">
+        <div className="fixedDataTableCellLayout_wrap2">
+          <div className="fixedDataTableCellLayout_wrap3">
             <div className="public_fixedDataTableCell_cellContent">
               {props.children}
             </div>
