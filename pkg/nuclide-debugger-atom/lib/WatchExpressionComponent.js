@@ -25,7 +25,7 @@ import {
 import classnames from 'classnames';
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
-import {DebuggerValueComponent} from './DebuggerValueComponent';
+import {LazyNestedValueComponent} from '../../nuclide-ui/lib/LazyNestedValueComponent';
 
 type WatchExpressionComponentProps = {
   watchExpressions: WatchExpressionList;
@@ -137,7 +137,7 @@ export class WatchExpressionComponent extends React.Component {
     }
     const ValueComponent = bindObservableAsProps(
       value.map(v => ({evaluationResult: v})),
-      DebuggerValueComponent,
+      LazyNestedValueComponent,
     );
     return (
       <div

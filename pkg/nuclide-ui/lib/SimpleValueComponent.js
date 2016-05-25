@@ -9,9 +9,10 @@
  * the root directory of this source tree.
  */
 
+// TODO @jxg export debugger typedefs from main module. (t11406963)
 import type {
   EvaluationResult,
-} from './Bridge';
+} from '../../nuclide-debugger-atom/lib/Bridge';
 
 import {React} from 'react-for-atom';
 

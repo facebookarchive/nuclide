@@ -9,22 +9,23 @@
  * the root directory of this source tree.
  */
 
+// TODO @jxg export debugger typedefs from main module. (t11406963)
 import type {
   EvaluationResult,
   ExpansionResult,
-} from './Bridge';
+} from '../../nuclide-debugger-atom/lib/Bridge';
 import type {Observable} from 'rxjs';
 
 import {React} from 'react-for-atom';
 import invariant from 'assert';
-import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
-import {highlightOnUpdate} from '../../nuclide-ui/lib/highlightOnUpdate';
+import {bindObservableAsProps} from './bindObservableAsProps';
+import {highlightOnUpdate} from './highlightOnUpdate';
 import {
   TreeList,
   TreeItem,
   NestedTreeItem,
-} from '../../nuclide-ui/lib/Tree';
-import {LoadingSpinner} from '../../nuclide-ui/lib/LoadingSpinner';
+} from './Tree';
+import {LoadingSpinner} from './LoadingSpinner';
 import SimpleValueComponent from './SimpleValueComponent';
 
 const SPINNER_DELAY = 100; /* ms */
@@ -86,7 +87,7 @@ function renderValueLine(
   return <div>{expression}: {value}</div>;
 }
 
-type DebuggerValueComponentProps = {
+type LazyNestedValueComponentProps = {
   evaluationResult: ?EvaluationResult;
   fetchChildren: (objectId: string) => Observable<?ExpansionResult>;
   expression: string;
@@ -96,7 +97,7 @@ type DebuggerValueComponentProps = {
   path: string;
 };
 
-type DebuggerValueComponentState = {
+type LazyNestedValueComponentState = {
   isExpanded: boolean;
   children: ?Observable<?ExpansionResult>;
 };
@@ -106,10 +107,10 @@ type DebuggerValueComponentState = {
  * The rendering of non-expandable "leaf" values is delegated to the SimpleValueComponent.
  */
 class ValueComponent extends React.Component {
-  props: DebuggerValueComponentProps;
-  state: DebuggerValueComponentState;
+  props: LazyNestedValueComponentProps;
+  state: LazyNestedValueComponentState;
 
-  constructor(props: DebuggerValueComponentProps) {
+  constructor(props: LazyNestedValueComponentProps) {
     super(props);
     this.state = {
       isExpanded: false,
@@ -140,7 +141,7 @@ class ValueComponent extends React.Component {
     }
   }
 
-  componentWillReceiveProps(nextProps: DebuggerValueComponentProps): void {
+  componentWillReceiveProps(nextProps: LazyNestedValueComponentProps): void {
     if (this.state.isExpanded && nextProps.evaluationResult != null) {
       const {_objectId} = nextProps.evaluationResult;
       if (_objectId == null) {
@@ -159,7 +160,7 @@ class ValueComponent extends React.Component {
       onExpandedStateChange,
       path,
     } = this.props;
-    const newState: DebuggerValueComponentState = {
+    const newState: LazyNestedValueComponentState = {
       children: null,
       isExpanded: !this.state.isExpanded,
     };
@@ -210,10 +211,7 @@ class ValueComponent extends React.Component {
         childListElement = <TreeItemWithLoadingSpinner />;
       } else {
         const ChildrenComponent = bindObservableAsProps(
-          children
-            .map(childrenValue => ({children: childrenValue}))
-            // Start with a null-value to set off the loading spinner.
-            .startWith({children: null}),
+          children.map(childrenValue => ({children: childrenValue})).startWith({children: null}),
           // $FlowIssue HOC
           LoadableValueComponent
         );
@@ -254,7 +252,7 @@ type TopLevelValueComponentProps = {
  * is necessary to preserve the expansion state while the values are temporarily unavailable, such
  * as after stepping in the debugger, which triggers a recursive re-fetch.
  */
-class TopLevelValueComponent extends React.Component {
+class TopLevelLazyNestedValueComponent extends React.Component {
   // $FlowIssue `evaluationResult` gets injected via HOC.
   props: TopLevelValueComponentProps;
   expandedValuePaths: Set<string>;
@@ -275,7 +273,7 @@ class TopLevelValueComponent extends React.Component {
 
   render(): React.Element {
     return (
-      <span className="nuclide-debugger-atom-value">
+      <span className="nuclide-ui-lazy-nested-value">
         <ValueComponent
           {...this.props}
           isRoot={true}
@@ -288,7 +286,10 @@ class TopLevelValueComponent extends React.Component {
   }
 }
 
-function arePropsEqual(p1: DebuggerValueComponentProps, p2: DebuggerValueComponentProps): boolean {
+function arePropsEqual(
+  p1: LazyNestedValueComponentProps,
+  p2: LazyNestedValueComponentProps,
+): boolean {
   const evaluationResult1 = p1.evaluationResult;
   const evaluationResult2 = p2.evaluationResult;
   if (evaluationResult1 === evaluationResult2) {
@@ -303,8 +304,8 @@ function arePropsEqual(p1: DebuggerValueComponentProps, p2: DebuggerValueCompone
     evaluationResult1._description === evaluationResult2._description
   );
 }
-export const DebuggerValueComponent = highlightOnUpdate(
-  TopLevelValueComponent,
+export const LazyNestedValueComponent = highlightOnUpdate(
+  TopLevelLazyNestedValueComponent,
   arePropsEqual,
   undefined, /* custom classname */
   undefined, /* custom delay */

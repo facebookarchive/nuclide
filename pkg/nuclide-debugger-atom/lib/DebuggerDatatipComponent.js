@@ -15,7 +15,7 @@ import type {
 } from './Bridge';
 
 import {React} from 'react-for-atom';
-import {DebuggerValueComponent} from './DebuggerValueComponent';
+import {LazyNestedValueComponent} from '../../nuclide-ui/lib/LazyNestedValueComponent';
 
 type DebuggerDatatipComponentProps = {
   expression: string;
@@ -36,7 +36,7 @@ export class DebuggerDatatipComponent extends React.Component {
     return (
       <div className="nuclide-debugger-datatip">
         <span className="nuclide-debugger-datatip-value">
-          <DebuggerValueComponent
+          <LazyNestedValueComponent
             evaluationResult={evaluationResult}
             expression={expression}
             fetchChildren={fetchChildren}
