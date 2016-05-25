@@ -28,6 +28,8 @@ import babelParse from './babel-parse';
 import {namedBuiltinTypes} from './builtin-types';
 import {locationToString} from './location';
 import {validateDefinitions} from './DefinitionValidator';
+import resolveFrom from 'resolve-from';
+import path from 'path';
 
 function isPrivateMemberName(name: string): boolean {
   return name.startsWith('_');
@@ -46,6 +48,8 @@ export function parseServiceDefinition(fileName: string, source: string): Defini
 class ServiceParser {
   _fileName: string;
   _defs: Map<string, Definition>;
+  // Maps type names to the imported name and file that they are imported from.
+  _imports: Map<string, {imported: string; file: string;}>;
 
   constructor() {
     this._fileName = '';
@@ -102,46 +106,74 @@ class ServiceParser {
     // Iterate through each node in the program body.
     for (const node of program.body) {
       // We're specifically looking for exports.
-      if (node.type === 'ExportNamedDeclaration') {
-        const declaration = node.declaration;
-        switch (declaration.type) {
-          // An exported function that can be directly called by a client.
-          case 'FunctionDeclaration':
-            if (!isPrivateMemberName(declaration.id.name)) {
-              this._add(this._parseFunctionDeclaration(declaration));
-            }
-            break;
-          // An exported type alias.
-          case 'TypeAlias':
-            if (!isPrivateMemberName(declaration.id.name)) {
-              this._add(this._parseTypeAlias(declaration));
-            }
-            break;
-          // Parse classes as remotable interfaces.
-          case 'ClassDeclaration':
-            this._add(this._parseClassDeclaration(declaration));
-            break;
-          case 'InterfaceDeclaration':
-            this._add(this._parseInterfaceDeclaration(declaration));
-            break;
-          case 'VariableDeclaration':
-            // Ignore exported variables.
-            break;
-          // Unknown export declaration.
-          default:
-            throw this._error(
-              declaration,
-              `Unknown declaration type ${declaration.type} in definition body.`);
-        }
-      } else {
-        // Ignore all non-export top level program elements including:
-        // imports, statements, variable declarations, function declarations
+      switch (node.type) {
+        case 'ExportNamedDeclaration':
+          this._parseExport(node);
+          break;
+
+        case 'ImportDeclaration':
+          this._parseImport(node);
+          break;
+
+        default:
+          // Ignore all non-export top level program elements including:
+          // imports, statements, variable declarations, function declarations
+          break;
       }
     }
 
     validateDefinitions(this._defs);
 
     return this._defs;
+  }
+
+  _parseExport(node: Object): void {
+    invariant(node.type === 'ExportNamedDeclaration');
+    const declaration = node.declaration;
+    switch (declaration.type) {
+      // An exported function that can be directly called by a client.
+      case 'FunctionDeclaration':
+        if (!isPrivateMemberName(declaration.id.name)) {
+          this._add(this._parseFunctionDeclaration(declaration));
+        }
+        break;
+      // An exported type alias.
+      case 'TypeAlias':
+        if (!isPrivateMemberName(declaration.id.name)) {
+          this._add(this._parseTypeAlias(declaration));
+        }
+        break;
+      // Parse classes as remotable interfaces.
+      case 'ClassDeclaration':
+        this._add(this._parseClassDeclaration(declaration));
+        break;
+      case 'InterfaceDeclaration':
+        this._add(this._parseInterfaceDeclaration(declaration));
+        break;
+      case 'VariableDeclaration':
+        // Ignore exported variables.
+        break;
+      // Unknown export declaration.
+      default:
+        throw this._error(
+          declaration,
+          `Unknown declaration type ${declaration.type} in definition body.`);
+    }
+  }
+
+  _parseImport(node: Object): void {
+    const from = node.source.value;
+    const resolvedFrom = resolveFrom(path.dirname(this._fileName), from);
+
+    invariant(typeof from === 'string');
+
+    for (const specifier of node.specifiers) {
+      if (specifier.type === 'ImportSpecifier') {
+        const imported = specifier.imported.name;
+        const local = specifier.local.name;
+        this._imports.set(local, {imported, file: resolvedFrom});
+      }
+    }
   }
 
   _add(definition: Definition): void {
