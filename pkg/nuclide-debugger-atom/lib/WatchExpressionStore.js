@@ -64,24 +64,12 @@ export class WatchExpressionStore {
     this._previousEvaluationSubscriptions.add(evaluationDisposable);
   }
 
-  _requestPropertiesForObjectId(
-    objectId: string,
-    subject: Rx.BehaviorSubject<?ExpansionResult>,
-  ): void {
-    this._requestActionFromBridge(
-      subject,
-      () => this._bridge.getProperties(objectId),
-    );
-  }
-
   /**
    * Returns an observable of child properties for the given objectId.
    * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
    */
   getProperties(objectId: string): Rx.Observable<?ExpansionResult> {
-    const subject = new Rx.BehaviorSubject();
-    this._requestPropertiesForObjectId(objectId, subject);
-    return subject.asObservable();
+    return Rx.Observable.fromPromise(this._bridge.getProperties(objectId));
   }
 
   /**
