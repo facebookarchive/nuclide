@@ -53,6 +53,7 @@ export class NewDebuggerView extends React.Component {
           onAddWatchExpression={actions.addWatchExpression.bind(model)}
           onRemoveWatchExpression={actions.removeWatchExpression.bind(model)}
           onUpdateWatchExpression={actions.updateWatchExpression.bind(model)}
+          watchExpressionStore={model.getWatchExpressionStore()}
         />
       </div>
     );

@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {EvaluationResult} from './Bridge';
+import type {WatchExpressionStore} from './WatchExpressionStore';
+import type {
+  EvaluationResult,
+} from './Bridge';
 
 import {React} from 'react-for-atom';
 import {DebuggerValueComponent} from './DebuggerValueComponent';
@@ -17,6 +20,7 @@ import {DebuggerValueComponent} from './DebuggerValueComponent';
 type DebuggerDatatipComponentProps = {
   expression: string;
   evaluationResult: EvaluationResult;
+  watchExpressionStore: WatchExpressionStore;
 };
 
 export class DebuggerDatatipComponent extends React.Component {
@@ -26,13 +30,16 @@ export class DebuggerDatatipComponent extends React.Component {
     const {
       expression,
       evaluationResult,
+      watchExpressionStore,
     } = this.props;
+    const fetchChildren = watchExpressionStore.getProperties.bind(watchExpressionStore);
     return (
       <div className="nuclide-debugger-datatip">
         <span className="nuclide-debugger-datatip-value">
           <DebuggerValueComponent
             evaluationResult={evaluationResult}
             expression={expression}
+            fetchChildren={fetchChildren}
           />
         </span>
       </div>

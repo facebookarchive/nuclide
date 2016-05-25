@@ -91,7 +91,8 @@ export async function debuggerDatatip(
   if (expression == null) {
     return null;
   }
-  const evaluation = model.getWatchExpressionStore().evaluateWatchExpression(expression);
+  const watchExpressionStore = model.getWatchExpressionStore();
+  const evaluation = watchExpressionStore.evaluateWatchExpression(expression);
   // Avoid creating a datatip if the evaluation fails
   const evaluationResult: ?EvaluationResult = await evaluation.take(1).toPromise();
   if (evaluationResult === null) {
@@ -99,7 +100,7 @@ export async function debuggerDatatip(
   }
   const propStream = evaluation
     .filter(result => result != null)
-    .map(result => ({expression, evaluationResult: result}));
+    .map(result => ({expression, evaluationResult: result, watchExpressionStore}));
   return {
     component: bindObservableAsProps(
       propStream,

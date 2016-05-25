@@ -10,9 +10,14 @@
  */
 
 import type {
+  ExpansionResult,
+} from './Bridge';
+import {WatchExpressionStore} from './WatchExpressionStore';
+import type {
   WatchExpression,
   WatchExpressionList,
 } from './WatchExpressionListStore';
+import type {Observable} from 'rxjs';
 
 import {
   React,
@@ -27,6 +32,7 @@ type WatchExpressionComponentProps = {
   onAddWatchExpression: (expression: string) => void;
   onRemoveWatchExpression: (index: number) => void;
   onUpdateWatchExpression: (index: number, newExpression: string) => void;
+  watchExpressionStore: WatchExpressionStore;
 };
 
 export class WatchExpressionComponent extends React.Component {
@@ -106,7 +112,11 @@ export class WatchExpressionComponent extends React.Component {
     this.setState({rowBeingEdited: null});
   }
 
-  _renderExpression(watchExpression: WatchExpression, index: number): React.Element {
+  _renderExpression(
+    fetchChildren: (objectId: string) => Observable<?ExpansionResult>,
+    watchExpression: WatchExpression,
+    index: number,
+  ): React.Element {
     const {
       expression,
       value,
@@ -129,20 +139,17 @@ export class WatchExpressionComponent extends React.Component {
       value.map(v => ({evaluationResult: v})),
       DebuggerValueComponent,
     );
-    /* $FlowIssue `evaluationResult` prop is injected by a higher-order component. */
-    const valueElement = <ValueComponent />;
     return (
       <div
         className="nuclide-debugger-atom-watch-expression-row"
-        key={index}
-        onMouseDown={this._setRowBeingEdited.bind(this, index)}>
-        <div>
-          <span className="nuclide-debugger-atom-watch-expression">
-            {expression}
-          </span>
-          <span className="nuclide-debugger-atom-watch-expression-value">
-            {valueElement}
-          </span>
+        key={index}>
+        <div
+          className="nuclide-debugger-atom-watch-expression-row-content"
+          onDoubleClick={this._setRowBeingEdited.bind(this, index)}>
+          <ValueComponent
+            expression={expression}
+            fetchChildren={fetchChildren}
+          />
         </div>
         <i
           className="icon icon-x nuclide-debugger-atom-watch-expression-xout"
@@ -155,8 +162,10 @@ export class WatchExpressionComponent extends React.Component {
   render(): ?React.Element {
     const {
       watchExpressions,
+      watchExpressionStore,
     } = this.props;
-    const expressions = watchExpressions.map(this._renderExpression);
+    const fetchChildren = watchExpressionStore.getProperties.bind(watchExpressionStore);
+    const expressions = watchExpressions.map(this._renderExpression.bind(this, fetchChildren));
     const addNewExpressionInput = (
       <AtomInput
         className={classnames(

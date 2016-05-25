@@ -9,7 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {EvaluationResult} from './Bridge';
+import type {
+  EvaluationResult,
+  ExpansionResult,
+} from './Bridge';
+import type {Observable} from 'rxjs';
 
 import {React} from 'react-for-atom';
 import {highlightOnUpdate} from '../../nuclide-ui/lib/highlightOnUpdate';
@@ -18,6 +22,7 @@ import SimpleValueComponent from './SimpleValueComponent';
 type DebuggerValueComponentProps = {
   evaluationResult: ?EvaluationResult;
   expression: string;
+  fetchChildren: (objectId: string) => Observable<?ExpansionResult>;
 };
 
 const NOT_AVAILABLE_MESSAGE = '<not available>';
@@ -47,6 +52,7 @@ function renderValueLine(
 }
 
 class ValueComponent extends React.Component {
+  // $FlowIssue HOC
   props: DebuggerValueComponentProps;
 
   render(): ?React.Element {

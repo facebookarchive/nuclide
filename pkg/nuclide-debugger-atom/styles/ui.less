@@ -97,15 +97,23 @@ Use flexbox cross-axis stretch to fill the vertical space.
 
 .nuclide-debugger-atom-watch-expression-row {
   align-items: center;
-  cursor: pointer;
   display: flex;
   flex-direction: row;
   font-family: Menlo, Monaco, Consolas, monospace;
-  height: 23px; // Match height of AtomInput to prevent list items from jumping around.
   justify-content: space-between;
+  max-width: 400px;
+  min-height: 23px; // Match height of AtomInput to prevent list items from jumping around.
+  overflow: auto;
+}
+
+.nuclide-debugger-atom-watch-expression-row-content {
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
 }
 
 .nuclide-debugger-atom-watch-expression-xout {
+  cursor: pointer;
   opacity: 0;
 }
 
