@@ -10,16 +10,7 @@
  */
 
 import {Observable} from 'rxjs';
-
-export type LldbLogLevel =
-  'ALL' |
-  'TRACE' |
-  'DEBUG' |
-  'INFO' |
-  'WARN' |
-  'ERROR' |
-  'FATAL' |
-  'OFF';
+import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
 export type AttachTargetInfo = {
   pid: number;
@@ -36,7 +27,7 @@ export type LaunchTargetInfo = {
 };
 
 export type DebuggerConfig = {
-  logLevel: LldbLogLevel;
+  logLevel: LogLevel;
   pythonBinaryPath: string;
   buckConfigRootFile: string;
 };
