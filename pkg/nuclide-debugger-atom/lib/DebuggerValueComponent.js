@@ -24,13 +24,59 @@ import {
   TreeItem,
   NestedTreeItem,
 } from '../../nuclide-ui/lib/Tree';
+import {LoadingSpinner} from '../../nuclide-ui/lib/LoadingSpinner';
 import SimpleValueComponent from './SimpleValueComponent';
 
+const SPINNER_DELAY = 100; /* ms */
 const NOT_AVAILABLE_MESSAGE = '<not available>';
 
 function isObjectValue(result: EvaluationResult): boolean {
   return result._objectId != null;
 }
+
+function TreeItemWithLoadingSpinner(): React.Element {
+  return <TreeItem><LoadingSpinner size="EXTRA_SMALL" delay={SPINNER_DELAY} /></TreeItem>;
+}
+
+type LoadableValueComponentProps = {
+  children: ?ExpansionResult;
+  fetchChildren: (objectId: string) => Observable<?ExpansionResult>;
+  path: string;
+  expandedValuePaths: Set<string>;
+  onExpandedStateChange: (path: string, isExpanded: boolean) => void;
+};
+
+/**
+ * A wrapper that renders a (delayed) spinner while the list of child properties is being loaded.
+ * Otherwise, it renders ValueComponent for each property in `children`.
+ */
+const LoadableValueComponent = (props: LoadableValueComponentProps) => {
+  const {
+    children,
+    fetchChildren,
+    path,
+    expandedValuePaths,
+    onExpandedStateChange,
+  } = props;
+  return children == null
+    ? TreeItemWithLoadingSpinner()
+    : <span>
+        {
+          children.map(child =>
+            <TreeItem key={child.name}>
+              <ValueComponent
+                evaluationResult={child.value}
+                fetchChildren={fetchChildren}
+                expression={child.name}
+                expandedValuePaths={expandedValuePaths}
+                onExpandedStateChange={onExpandedStateChange}
+                path={path + '.' + child.name}
+              />
+            </TreeItem>
+          )
+        }
+      </span>;
+};
 
 // TODO allow passing action components (edit button, pin button) here
 function renderValueLine(
@@ -60,7 +106,6 @@ type DebuggerValueComponentState = {
  * The rendering of non-expandable "leaf" values is delegated to the SimpleValueComponent.
  */
 class ValueComponent extends React.Component {
-  // $FlowIssue HOC
   props: DebuggerValueComponentProps;
   state: DebuggerValueComponentState;
 
@@ -162,12 +207,15 @@ class ValueComponent extends React.Component {
     let childListElement = null;
     if (isExpanded) {
       if (children == null) {
-        childListElement = null;
+        childListElement = <TreeItemWithLoadingSpinner />;
       } else {
         const ChildrenComponent = bindObservableAsProps(
-          children.map(childrenValue => ({children: childrenValue})),
+          children
+            .map(childrenValue => ({children: childrenValue}))
+            // Start with a null-value to set off the loading spinner.
+            .startWith({children: null}),
           // $FlowIssue HOC
-          ValueComponent
+          LoadableValueComponent
         );
         childListElement = (
           <ChildrenComponent
