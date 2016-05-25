@@ -10,7 +10,7 @@
  */
 
 import featureConfig from '../../nuclide-feature-config';
-import type {LogLevel} from '../../nuclide-logging';
+import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
 type HackConfig = {
   hhClientPath: string;

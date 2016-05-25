@@ -20,17 +20,7 @@ import addPrepareStackTraceHook from './stacktrace';
 import invariant from 'assert';
 import singleton from '../../commons-node/singleton';
 
-// For use in setLevel calls.
-export type LogLevel =
-  'ALL' |
-  'TRACE' |
-  'DEBUG' |
-  'INFO' |
-  'WARN' |
-  'ERROR' |
-  'FATAL' |
-  'OFF';
-
+import type {LogLevel} from './rpc-types';
 import type {Logger} from './types';
 
 /* Listed in order of severity. */
