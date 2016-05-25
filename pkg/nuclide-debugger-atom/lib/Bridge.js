@@ -30,6 +30,8 @@ export type EvaluationResult = {
   value?: string;
   // Or:
   _description? : string;
+  _objectId?: string;
+
 };
 
 export type ExpansionResult = Array<{
