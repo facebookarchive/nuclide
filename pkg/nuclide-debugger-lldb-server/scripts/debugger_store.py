@@ -37,13 +37,10 @@ class DebuggerStore:
     def _resolve_basepath_heuristic(self, basepath):
         '''Buck emits relative path in the symbol file so we need a way to
         resolve all source from_filespec into absolute path.
-        This heuristic will try to guess the fbcode root repo from executable module path.
+        This heuristic will try to guess the buck root from executable module path.
         Note:
-        1. This only deals with process built from fbcode(which is the primary customer on Linux).
-        2. This assumes buck binary will be used as main executable
-        instead of shared library.(which should be addressed in future diffs).
-        3. It assumes buck built binaries will be running directly from
-        fbcode sub-directories instead of being deployed to some other folder.
+        This heuristic assumes user run buck built binaries directly from
+        buck-out/gen sub-directories instead of being deployed to some other folder.
         Hopefully this is true most of the time.
         TODO: we need a better way to discover buck built root repo in long term.
         '''
@@ -52,10 +49,10 @@ class DebuggerStore:
             executable_dir_path = target.executable.GetDirectory()
             executable_dir_path = os.path.realpath(
                 os.path.normpath(os.path.expanduser(executable_dir_path)))
-            FBCODE_REPO_IDENTIFY_REGEX = '/fbsource\d?/fbcode\d?/'
-            search_result = re.search(FBCODE_REPO_IDENTIFY_REGEX, executable_dir_path)
+            BUCK_OUTPUT_IDENTIFY_REGEX = '/buck-out/gen/'
+            search_result = re.search(BUCK_OUTPUT_IDENTIFY_REGEX, executable_dir_path)
             if search_result:
-                basepath = executable_dir_path[:search_result.end()]
+                basepath = executable_dir_path[:search_result.start()]
         return basepath
 
     @property
