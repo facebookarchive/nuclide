@@ -10,7 +10,6 @@
  */
 
 import type {
-  Location,
   BuiltinLocation,
   StringType,
   NumberType,
@@ -24,17 +23,6 @@ import type {
 export const builtinLocation: BuiltinLocation = {
   type: 'builtin',
 };
-
-export function locationToString(location: Location): string {
-  switch (location.type) {
-    case 'source':
-      return `${location.fileName}(${location.line})`;
-    case 'builtin':
-      return '<builtin>';
-    default:
-      throw new Error('Bad location type');
-  }
-}
 
 export const voidType: VoidType = {
   location: builtinLocation,

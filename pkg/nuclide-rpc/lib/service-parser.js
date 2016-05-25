@@ -25,7 +25,8 @@ import type {
 } from './types';
 
 import babelParse from './babel-parse';
-import {locationToString, namedBuiltinTypes} from './builtin-types';
+import {namedBuiltinTypes} from './builtin-types';
+import {locationToString} from './location';
 import {validateDefinitions} from './DefinitionValidator';
 
 function isPrivateMemberName(name: string): boolean {

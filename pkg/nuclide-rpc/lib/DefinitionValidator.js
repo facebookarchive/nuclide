@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {locationToString} from './builtin-types';
+import {locationToString} from './location';
 import invariant from 'assert';
 import {setIntersect} from '../../commons-node/collection';
 
