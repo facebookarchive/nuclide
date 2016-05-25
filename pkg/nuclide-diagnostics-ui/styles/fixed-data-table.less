@@ -36,7 +36,15 @@
  */
 .public_fixedDataTableCell_main {
   border-color: transparent;
+  border-style: solid;
+  border-width: 0 1px 1px 0;
   display: inline-block;
+  overflow: hidden;
+  white-space: normal;
+}
+
+.public_fixedDataTableCell_main:last-child {
+  border-right-width: 0;
 }
 
 .public_fixedDataTableCell_cellContent {
@@ -60,20 +68,6 @@
   height: inherit;
   vertical-align: top;
   white-space: normal;
-}
-
-/** fixedDataTableCellLayout */
-
-.fixedDataTableCellLayout_main {
-  border-style: solid;
-  border-width: 0 1px 1px 0;
-  display: block;
-  overflow: hidden;
-  white-space: normal;
-}
-
-.fixedDataTableCellLayout_main:last-child {
-  border-right-width: 0;
 }
 
 /** fixedDataTableLayout */

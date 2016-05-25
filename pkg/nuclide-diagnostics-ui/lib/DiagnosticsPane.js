@@ -134,7 +134,7 @@ type CellProps = {
 function Cell(props: CellProps): React.Element {
   return (
     <div
-      className="fixedDataTableCellLayout_main public_fixedDataTableCell_main"
+      className="public_fixedDataTableCell_main"
       style={props.style}
       title={props.title}>
       <div className="public_fixedDataTableCell_cellContent">
