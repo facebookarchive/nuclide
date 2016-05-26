@@ -17,6 +17,7 @@ import {
   isEmpty,
   keyMirror,
   setIntersect,
+  collect,
 } from '../collection';
 
 describe('arrayRemove', () => {
@@ -145,5 +146,27 @@ describe('setIntersect', () => {
 
     expect(result.size).toBe(1);
     expect(result.has('bar')).toBe(true);
+  });
+});
+
+describe('collect', () => {
+  it('collects key-value pairs into a Map of arrays', () => {
+    const pairs = [
+      ['neither', 1],
+      ['neither', 2],
+      ['fizz', 3],
+      ['neither', 4],
+      ['buzz', 5],
+      ['fizz', 6],
+      ['neither', 7],
+      ['neither', 8],
+      ['fizz', 9],
+    ];
+    const result = collect(pairs);
+
+    expect(result.size).toBe(3);
+    expect(result.get('fizz')).toEqual([3, 6, 9]);
+    expect(result.get('buzz')).toEqual([5]);
+    expect(result.get('neither')).toEqual([1, 2, 4, 7, 8]);
   });
 });

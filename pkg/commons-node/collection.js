@@ -112,3 +112,21 @@ export function keyMirror<T: Object>(obj: T): {[key: $Enum<T>]: $Enum<T>} {
   });
   return ret;
 }
+
+/**
+ * Given an array of [key, value] pairs, construct a map where the values for
+ * each key are collected into an array of values, in order.
+ */
+export function collect<K, V>(pairs: Array<[K, V]>): Map<K, Array<V>> {
+  const result = new Map();
+  for (const pair of pairs) {
+    const [k, v] = pair;
+    let list = result.get(k);
+    if (list == null) {
+      list = [];
+      result.set(k, list);
+    }
+    list.push(v);
+  }
+  return result;
+}
