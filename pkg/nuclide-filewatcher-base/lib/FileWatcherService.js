@@ -13,7 +13,6 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import type WatchmanSubscription from '../../nuclide-watchman-helpers/lib/WatchmanSubscription';
 import type {FileChange} from '../../nuclide-watchman-helpers/lib/WatchmanClient';
 
-import invariant from 'assert';
 import path from 'path';
 import {Observable} from 'rxjs';
 import fsPromise from '../../commons-node/fsPromise';
@@ -132,17 +131,15 @@ function onWatcherChange(subscription: WatchmanSubscription, entries: Array<File
     // A file watch event can also be considered a directory change
     // for the parent directory if a file was created or deleted.
     if (entry.new || !entry.exists) {
-      const entryDirectoryPath = path.dirname(entryPath);
-      if (entityObserver.has(entryDirectoryPath)) {
-        directoryChanges.add(entryDirectoryPath);
-      }
+      directoryChanges.add(path.dirname(entryPath));
     }
   });
 
   directoryChanges.forEach(watchedDirectoryPath => {
     const observer = entityObserver.get(watchedDirectoryPath);
-    invariant(observer != null);
-    observer.next('change');
+    if (observer != null) {
+      observer.next('change');
+    }
   });
 }
 
