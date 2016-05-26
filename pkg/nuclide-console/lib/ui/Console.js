@@ -17,7 +17,6 @@ import OutputTable from './OutputTable';
 import ConsoleHeader from './ConsoleHeader';
 import InputArea from './InputArea';
 import PromptButton from './PromptButton';
-import RecordView from './RecordView';
 import UnseenMessagesNotification from './UnseenMessagesNotification';
 import invariant from 'assert';
 import shallowEqual from 'shallowequal';
@@ -159,10 +158,6 @@ export default class Console extends React.Component {
   _handleScrollPane(el: HTMLElement): void {
     this._scrollPane = el;
     this._autoscroll();
-  }
-
-  _renderRow(record: Record, index: number): React.Element {
-    return <RecordView key={index} record={record} />;
   }
 
   _scrollToBottom(): void {
