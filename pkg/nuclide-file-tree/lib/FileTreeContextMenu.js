@@ -211,6 +211,9 @@ class FileTreeContextMenu {
       type: 'submenu',
       label: 'Source Control',
       parent: this._contextMenu,
+      shouldDisplay: (e: MouseEvent) => {
+        return !this._sourceControlMenu.isEmpty() && !this._store.getSelectedNodes().isEmpty();
+      },
     });
     this._contextMenu.addSubmenu(
       this._sourceControlMenu,

@@ -35,6 +35,7 @@ type SubmenuOptions = {
   type: 'submenu';
   label: string;
   parent: ContextMenu;
+  shouldDisplay?: (e: MouseEvent) => boolean;
 };
 
 type MenuOptions = RootMenuOptions | SubmenuOptions;
@@ -176,6 +177,7 @@ export default class ContextMenu {
       return {
         label: menuOptions.label,
         submenu: items.map(this._contextMenuItemForInternalItem, this),
+        shouldDisplay: menuOptions.shouldDisplay,
       };
     } else {
       invariant(false);
