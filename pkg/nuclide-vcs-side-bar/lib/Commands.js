@@ -13,6 +13,7 @@ import type {Action} from './types';
 import type {AppState} from '..';
 import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService';
 
+import * as ActionType from './ActionType';
 import {HgRepositoryClientAsync} from '../../nuclide-hg-repository-client';
 import invariant from 'assert';
 
@@ -49,7 +50,7 @@ export default class Commands {
       payload: {
         projectDirectories: atom.project.getDirectories(),
       },
-      type: 'set-project-directories',
+      type: ActionType.SET_PROJECT_DIRECTORIES,
     });
 
     this.fetchProjectRepositories();
@@ -57,7 +58,7 @@ export default class Commands {
 
   fetchProjectRepositories(): void {
     this._dispatch({
-      type: 'fetch-project-repositories',
+      type: ActionType.FETCH_PROJECT_REPOSITORIES,
     });
   }
 
@@ -67,7 +68,7 @@ export default class Commands {
         bookmark,
         repository,
       },
-      type: 'update-to-bookmark',
+      type: ActionType.UPDATE_TO_BOOKMARK,
     });
   }
 }
