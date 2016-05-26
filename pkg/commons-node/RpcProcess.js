@@ -35,11 +35,11 @@ const logger = getLogger();
  * - Note that stdin, stdout, and stderr must be piped, done by node by default.
  *   Don't override the stdio to close off any of these streams in the constructor opts.
  */
-export default class RpcProcess {
+export default class RpcProcess<TReq, TResp> {
   _name: string;
   _disposed: boolean;
   _process: ?child_process$ChildProcess;
-  _rpc: ?Rpc;
+  _rpc: ?Rpc<TReq, TResp>;
   _subscription: ?Subscription;
 
   _ensureProcess: () => Promise<void>;
@@ -70,7 +70,7 @@ export default class RpcProcess {
    * @return         arbitrary payload, received as a response from the
    *                 child process.
    */
-  async call<T, U>(args: T): Promise<U> {
+  async call(args: TReq): Promise<TResp> {
     invariant(
       !this._disposed,
       `${this._name} - Attempting to call on disposed connection: ${args}`
