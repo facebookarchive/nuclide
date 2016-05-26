@@ -59,6 +59,7 @@ const ALLOWED_NAMES_BY_MODULE = {
   // node_modules
   // 'rx': ['Rx'],
   // 'temp': ['temp'],
+  'uuid': ['uuid'],
   'ws': ['WS'],
 };
 
