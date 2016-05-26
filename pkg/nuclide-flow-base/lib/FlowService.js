@@ -85,6 +85,7 @@ export type TokenKind = 'keyword'
   | 'string'
   | 'whitespace'
   | 'plain'
+  | 'type'
   ;
 
 // The origin of this type is at nuclide-tokenized-text/lib/main.js

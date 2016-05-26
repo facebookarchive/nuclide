@@ -20,6 +20,7 @@ export type TokenKind = 'keyword'
   | 'string'
   | 'whitespace'
   | 'plain'
+  | 'type'
   ;
 
 // This type is duplicated in nuclide-flow-base/lib/FlowService.js
@@ -63,6 +64,10 @@ export function whitespace(value: string): TextToken {
 
 export function plain(value: string): TextToken {
   return _buildToken('plain', value);
+}
+
+export function type(value: string): TextToken {
+  return _buildToken('type', value);
 }
 
 

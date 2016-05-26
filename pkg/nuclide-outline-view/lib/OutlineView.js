@@ -40,6 +40,7 @@ const TOKEN_KIND_TO_CLASS_NAME_MAP = {
   'string': 'string',
   'whitespace': '',
   'plain': '',
+  'type': 'support type',
 };
 
 export class OutlineView extends React.Component {
