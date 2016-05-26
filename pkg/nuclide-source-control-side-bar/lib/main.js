@@ -21,7 +21,7 @@ import {CompositeDisposable, Disposable} from 'atom';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import Rx from 'rxjs';
-import VcsSideBarComponent from './VcsSideBarComponent';
+import SideBarComponent from './SideBarComponent';
 
 export type AppState = {
   projectBookmarks: Map<string, Array<BookmarkInfo>>;
@@ -87,15 +87,17 @@ export function consumeNuclideSideBar(sideBar: NuclideSideBarService): void {
         updateToBookmark: commands.updateToBookmark,
       }));
 
-      return bindObservableAsProps(props, VcsSideBarComponent);
+      return bindObservableAsProps(props, SideBarComponent);
     },
     onDidShow() {},
-    title: 'Version Control',
-    toggleCommand: 'nuclide-vcs-side-bar:toggle',
-    viewId: 'nuclide-vcs-side-bar',
+    title: 'Source Control',
+    toggleCommand: 'nuclide-source-control-side-bar:toggle',
+    viewId: 'nuclide-source-control-side-bar',
   });
 
-  disposables.add(new Disposable(() => { sideBar.destroyView('nuclide-vcs-side-bar'); }));
+  disposables.add(new Disposable(() => {
+    sideBar.destroyView('nuclide-source-control-side-bar');
+  }));
 }
 
 function accumulateState(state: AppState, action: Action): AppState {

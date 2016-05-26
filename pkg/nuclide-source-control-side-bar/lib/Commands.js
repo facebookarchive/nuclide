@@ -35,11 +35,10 @@ export default class Commands {
   }
 
   createBookmark(name: string, repository: atom$Repository): void {
-    if (repository.getType() !== 'hg') {
+    const repositoryAsync = repository.async;
+    if (repositoryAsync.getType() !== 'hg') {
       return;
     }
-
-    const repositoryAsync = repository.async;
 
     // Type was checked with `getType`. Downcast to safely access members with Flow.
     invariant(repositoryAsync instanceof HgRepositoryClientAsync);
@@ -48,11 +47,10 @@ export default class Commands {
   }
 
   deleteBookmark(bookmark: BookmarkInfo, repository: atom$Repository): void {
-    if (repository.getType() !== 'hg') {
+    const repositoryAsync = repository.async;
+    if (repositoryAsync.getType() !== 'hg') {
       return;
     }
-
-    const repositoryAsync = repository.async;
 
     // Type was checked with `getType`. Downcast to safely access members with Flow.
     invariant(repositoryAsync instanceof HgRepositoryClientAsync);

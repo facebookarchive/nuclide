@@ -32,11 +32,11 @@ type Props = {
 };
 
 type State = {
-  activeModalComponent: ?Object;
+  activeModalComponent?: ?Object;
   selectedBookmark?: Object;
 };
 
-export default class VcsSideBarComponent extends React.Component {
+export default class SideBarComponent extends React.Component {
   props: Props;
   state: State;
 
@@ -47,13 +47,11 @@ export default class VcsSideBarComponent extends React.Component {
   constructor(props: Props) {
     super(props);
     this._disposables = new CompositeDisposable();
-    this.state = {
-      activeModalComponent: null,
-    };
+    this.state = {};
 
     (this: any)._confirmCreateBookmark = this._confirmCreateBookmark.bind(this);
     (this: any)._confirmDeleteBookmark = this._confirmDeleteBookmark.bind(this);
-    (this: any)._clearActiveModalComponent = this._clearActiveModalComponent.bind(this);
+    (this: any)._destroyActiveModal = this._destroyActiveModal.bind(this);
     (this: any)._handleBookmarkClick = this._handleBookmarkClick.bind(this);
     (this: any)._handleBookmarkContextMenu = this._handleBookmarkContextMenu.bind(this);
     (this: any)._handleRepoGearClick = this._handleRepoGearClick.bind(this);
@@ -62,7 +60,7 @@ export default class VcsSideBarComponent extends React.Component {
 
   componentDidMount(): void {
     this._disposables.add(
-      atom.commands.add('atom-workspace', 'core:cancel', this._clearActiveModalComponent)
+      atom.commands.add('atom-workspace', 'core:cancel', this._destroyActiveModal)
     );
   }
 
@@ -84,18 +82,14 @@ export default class VcsSideBarComponent extends React.Component {
     }
   }
 
-  _clearActiveModalComponent(): void {
-    this.setState({activeModalComponent: null});
-  }
-
   _confirmCreateBookmark(name: string, repo: atom$Repository): void {
     this.props.createBookmark(name, repo);
-    this._clearActiveModalComponent();
+    this.setState({activeModalComponent: null});
   }
 
   _confirmDeleteBookmark(bookmark: BookmarkInfo, repo: atom$Repository): void {
     this.props.deleteBookmark(bookmark, repo);
-    this._clearActiveModalComponent();
+    this.setState({activeModalComponent: null});
   }
 
   _destroyActiveModal(): void {
@@ -153,7 +147,7 @@ export default class VcsSideBarComponent extends React.Component {
             activeModalComponent: (
               <DeleteBookmarkModalComponent
                 bookmark={bookmark}
-                onCancel={this._clearActiveModalComponent}
+                onCancel={() => { this.setState({activeModalComponent: null}); }}
                 onDelete={this._confirmDeleteBookmark}
                 repo={repo}
               />
@@ -188,7 +182,7 @@ export default class VcsSideBarComponent extends React.Component {
           this.setState({
             activeModalComponent: (
               <CreateBookmarkModalComponent
-                onCancel={this._clearActiveModalComponent}
+                onCancel={() => { this.setState({activeModalComponent: null}); }}
                 onCreate={this._confirmCreateBookmark}
                 repo={repo}
               />

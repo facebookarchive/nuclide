@@ -1,9 +1,9 @@
 {
-  "name": "nuclide-vcs-side-bar",
+  "name": "nuclide-source-control-side-bar",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
-  "description": "VCS management in your nuclide-side-bar",
+  "description": "Source control management in your nuclide-side-bar",
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"

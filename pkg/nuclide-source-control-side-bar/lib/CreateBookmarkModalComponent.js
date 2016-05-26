@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import {Button} from '../../nuclide-ui/lib/Button';
-import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
 import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 
@@ -21,25 +19,25 @@ type Props = {
 };
 
 export default class CreateBookmarkModal extends React.Component {
-  _disposables: CompositeDisposable;
+  disposables: CompositeDisposable;
   props: Props;
 
   constructor(props: Props): void {
     super(props);
-    this._disposables = new CompositeDisposable();
+    this.disposables = new CompositeDisposable();
 
     (this: any)._handleCreateClick = this._handleCreateClick.bind(this);
   }
 
   componentDidMount(): void {
-    this._disposables.add(
-      atom.commands.add(ReactDOM.findDOMNode(this), 'core:confirm', this._handleCreateClick),
+    this.disposables.add(
+      atom.commands.add(ReactDOM.findDOMNode(this), 'core:confirm', this._handleCreateClick)
     );
     this.refs.atomTextEditor.focus();
   }
 
   componentWillUnmount(): void {
-    this._disposables.dispose();
+    this.disposables.dispose();
   }
 
   _handleCreateClick(): void {
@@ -53,16 +51,16 @@ export default class CreateBookmarkModal extends React.Component {
         <label>Bookmark name:</label>
         <atom-text-editor mini ref="atomTextEditor" tabIndex="0" />
         <div className="text-right">
-          <ButtonGroup size="SMALL">
-            <Button onClick={this.props.onCancel}>
+          <div className="btn-group btn-group-sm">
+            <button className="btn" onClick={this.props.onCancel}>
               Cancel
-            </Button>
-            <Button
-              buttonType="PRIMARY"
+            </button>
+            <button
+              className="btn btn-primary"
               onClick={this._handleCreateClick}>
               Create
-            </Button>
-          </ButtonGroup>
+            </button>
+          </div>
         </div>
       </div>
     );

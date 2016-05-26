@@ -11,7 +11,6 @@
 
 import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService';
 
-import {Button} from '../../nuclide-ui/lib/Button';
 import classnames from 'classnames';
 import invariant from 'assert';
 import {React} from 'react-for-atom';
@@ -77,10 +76,9 @@ export default class RepositorySectionComponent extends React.Component {
       if (repository.getType() === 'hg') {
         bookmarksBranchesHeader = 'BOOKMARKS';
         createButton = (
-          <Button
-            icon="plus"
+          <button
+            className="btn btn-sm icon icon-plus"
             onClick={this._handleRepoGearClick}
-            size="SMALL"
             style={{marginTop: '6px', position: 'absolute', right: '10px'}}
           />
         );
@@ -107,11 +105,13 @@ export default class RepositorySectionComponent extends React.Component {
                   );
                 }
 
-                let liClassName = classnames('list-item nuclide-vcs-side-bar--list-item', {
-                  // Deeply compare bookmarks because the Objects get re-created when bookmarks are
-                  // re-fetched and will not remain equal across fetches.
-                  selected: bookmarkIsEqual(bookmark, this.props.selectedBookmark),
-                });
+                let liClassName = classnames(
+                  'list-item nuclide-source-control-side-bar--list-item', {
+                    // Deeply compare bookmarks because the Objects get re-created when bookmarks
+                    // are re-fetched and will not remain equal across fetches.
+                    selected: bookmarkIsEqual(bookmark, this.props.selectedBookmark),
+                  }
+                );
 
                 return (
                   <li
@@ -134,7 +134,7 @@ export default class RepositorySectionComponent extends React.Component {
         }
       } else {
         bookmarksBranchesList = (
-          <div className="nuclide-vcs-side-bar--header text-info">
+          <div className="nuclide-source-control-side-bar--header text-info">
             Only Mercurial repositories are supported. '{repository.getType()}' found.
           </div>
         );
@@ -143,17 +143,17 @@ export default class RepositorySectionComponent extends React.Component {
 
     let separator;
     if (this.props.hasSeparator) {
-      separator = <hr className="nuclide-vcs-side-bar--repo-separator" />;
+      separator = <hr className="nuclide-source-control-side-bar--repo-separator" />;
     }
 
     return (
       <li>
         {separator}
-        <h5 className="text-highlight nuclide-vcs-side-bar--repo-header">
+        <h5 className="text-highlight nuclide-source-control-side-bar--repo-header">
           {this.props.title}
         </h5>
         <ul className="list-group">
-          <li className="list-item nuclide-vcs-side-bar--list-item">
+          <li className="list-item nuclide-source-control-side-bar--list-item">
             <span
               onClick={this._handleUncommittedChangesClick}>
               Uncommitted Changes
@@ -161,7 +161,7 @@ export default class RepositorySectionComponent extends React.Component {
           </li>
         </ul>
         {createButton}
-        <h6 className="nuclide-vcs-side-bar--header">
+        <h6 className="nuclide-source-control-side-bar--header">
           {bookmarksBranchesHeader}
         </h6>
         {bookmarksBranchesList}
