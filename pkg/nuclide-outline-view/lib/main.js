@@ -24,7 +24,7 @@ import {createOutlines} from './createOutlines';
 
 import invariant from 'assert';
 
-import type {TokenizedText} from '../../nuclide-tokenized-text';
+import type {TokenizedText} from '../../nuclide-tokenized-text/lib/rpc-types';
 
 export type OutlineTree = {
   // Must be one or the other. If both are present, tokenizedText is preferred.

@@ -11,7 +11,7 @@
 
 import type {Outline, OutlineTree} from '../../nuclide-outline-view';
 import type {ClangOutlineTree} from '../../nuclide-clang';
-import type {TokenizedText} from '../../nuclide-tokenized-text';
+import type {TokenizedText} from '../../nuclide-tokenized-text/lib/rpc-types';
 
 import {Point} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';

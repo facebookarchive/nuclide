@@ -13,7 +13,7 @@ import type {
   OutlineTree,
   Outline,
 } from '../../nuclide-outline-view';
-import type {TextToken} from '../../nuclide-tokenized-text';
+import type {TextToken} from '../../nuclide-tokenized-text/lib/rpc-types';
 
 import {Point} from 'atom';
 import {getLogger} from '../../nuclide-logging';
