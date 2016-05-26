@@ -37,6 +37,10 @@ export type JediDefinitionsResult = {
   definitions: Array<JediDefinition>;
 };
 
+export type JediReferencesResult = {
+  references: Array<JediDefinition>;
+};
+
 // Limit the number of active Jedi processes.
 const jediServers = new LRUCache({
   max: 10,
@@ -104,6 +108,22 @@ export async function getDefinitions(
   const server = await getJediServer(src);
   return server.call({
     method: 'get_definitions',
+    src,
+    contents,
+    line,
+    column,
+  });
+}
+
+export async function getReferences(
+  src: NuclideUri,
+  contents: string,
+  line: number,
+  column: number,
+): Promise<?JediReferencesResult> {
+  const server = await getJediServer(src);
+  return server.call({
+    method: 'get_references',
     src,
     contents,
     line,

@@ -12,7 +12,7 @@
 import invariant from 'assert';
 import fs from 'fs';
 import path from 'path';
-import {getCompletions, getDefinitions} from '../lib/JediService';
+import {getCompletions, getDefinitions, getReferences} from '../lib/JediService';
 
 // Test python file located at fixtures/serverdummy.py
 const TEST_FILE = path.join(__dirname, 'fixtures', 'serverdummy.py');
@@ -111,6 +111,33 @@ describe('JediService', () => {
         expect(definition.line).toEqual(11);
         // Local variable definition should be within the same file.
         expect(definition.file).toEqual(TEST_FILE);
+      });
+    });
+  });
+
+  describe('References', () => {
+    it('can find the references of locally defined variables', () => {
+      waitsForPromise(async () => {
+        // line 12: potato = 5
+        const response = await getReferences(TEST_FILE, FILE_CONTENTS, 11, 2);
+        invariant(response);
+
+        expect(response.references).toEqual([
+          {
+            type: 'statement',
+            text: 'potato',
+            file: TEST_FILE,
+            line: 11,
+            column: 0,
+          },
+          {
+            type: 'statement',
+            text: 'potato',
+            file: TEST_FILE,
+            line: 13,
+            column: 10,
+          },
+        ]);
       });
     });
   });

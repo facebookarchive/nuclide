@@ -72,6 +72,8 @@ class JediServer:
                 res['result']['completions'] = self.get_completions(script)
             elif method == 'get_definitions':
                 res['result']['definitions'] = self.get_definitions(script)
+            elif method == 'get_references':
+                res['result']['references'] = self.get_references(script)
             else:
                 del res['result']
                 res['error'] = 'Unknown method to jediserver.py: %s.' % method
@@ -116,15 +118,30 @@ class JediServer:
         for definition in definitions:
             if not definition.module_path:
                 continue
-            result = {
-                'text': definition.name,
-                'type': definition.type,
-                'file': definition.module_path,
-                'line': definition.line - 1,
-                'column': definition.column
-            }
+            result = self.serialize_definition(definition)
             results.append(result)
         return results
+
+    def get_references(self, script):
+        results = []
+        references = script.usages()
+
+        for ref in references:
+            if not ref.module_path:
+                continue
+            result = self.serialize_definition(ref)
+            results.append(result)
+        return results
+
+    def serialize_definition(self, definition):
+        return {
+            'text': definition.name,
+            'type': definition.type,
+            'file': definition.module_path,
+            'line': definition.line - 1,
+            'column': definition.column
+        }
+
 
 if __name__ == '__main__':
     parser = OptionParser()
