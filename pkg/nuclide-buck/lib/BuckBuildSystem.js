@@ -50,7 +50,6 @@ export class BuckBuildSystem {
   _extraUi: ?ReactClass;
   id: string;
   name: string;
-  _icon: ReactClass;
   _initialState: ?SerializedState;
   _tasks: Observable<Array<Task>>;
   _outputMessages: Subject<Message>;
@@ -108,10 +107,7 @@ export class BuckBuildSystem {
   }
 
   getIcon(): ReactClass {
-    if (this._icon == null) {
-      this._icon = BuckIcon;
-    }
-    return this._icon;
+    return BuckIcon;
   }
 
   getOutputMessages(): Observable<Message> {
