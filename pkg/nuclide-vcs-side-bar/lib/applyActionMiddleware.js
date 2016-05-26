@@ -21,6 +21,7 @@ import Rx from 'rxjs';
 
 const HANDLED_ACTION_TYPES = [
   ActionType.FETCH_PROJECT_REPOSITORIES,
+  ActionType.UPDATE_TO_BOOKMARK,
 ];
 
 export function applyActionMiddleware(
@@ -78,6 +79,32 @@ export function applyActionMiddleware(
             }))
           );
         });
+      }),
+
+    actions.filter(action => action.type === ActionType.UPDATE_TO_BOOKMARK)
+      .switchMap(action => {
+        // Action was filtered, invariant check to downcast in Flow.
+        invariant(action.type === ActionType.UPDATE_TO_BOOKMARK);
+
+        const {bookmark, repository} = action.payload;
+        return Rx.Observable
+          .fromPromise(repository.async.checkoutReference(bookmark.bookmark, false))
+          .catch(error => {
+            atom.notifications.addWarning('Failed Updating to Bookmark', {
+              description: 'Revert or commit uncommitted changes before changing bookmarks.',
+              detail: error,
+              dismissable: true,
+            });
+
+            // Replace previous, single-use Promise Observable with an empty one because the former
+            // will be completed and not re-subscribable (which is the default action for `catch`).
+            return Rx.Observable.empty();
+          })
+          // Middlware always returns an action. Return a no-op but handled action so the state
+          // accumulator is happy.
+          .map(() => ({
+            type: ActionType.SET_PENDING_BOOKMARK,
+          }));
       }),
   );
   return output.share();

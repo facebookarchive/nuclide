@@ -1463,6 +1463,9 @@ declare class atom$RepositoryAsync {
   isStatusIgnored: (status: number) => boolean;
   isStatusStaged: (status: number) => boolean;
   isStatusDeleted: (status: number) => boolean;
+
+  // Checking Out
+  checkoutReference: (reference: string, create: boolean) => Promise<void>;
 }
 
 // One of text or snippet is required.
