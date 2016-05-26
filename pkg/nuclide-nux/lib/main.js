@@ -30,7 +30,9 @@ class Activation {
 let activation: ?Activation = null;
 
 export function activate(): void {
-  activation = new Activation();
+  if (activation == null) {
+    activation = new Activation();
+  }
 }
 
 export function deactivate(): void {
