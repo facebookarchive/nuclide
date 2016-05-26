@@ -10,6 +10,7 @@
  */
 
 import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {SelectableItem} from './SideBarComponent';
 
 import classnames from 'classnames';
 import invariant from 'assert';
@@ -24,7 +25,7 @@ type Props = {
   onRepoGearClick: (repository: atom$Repository, event: SyntheticMouseEvent) => mixed;
   onUncommittedChangesClick: (repository: atom$Repository) => mixed;
   repository: ?atom$Repository;
-  selectedBookmark: ?BookmarkInfo;
+  selectedItem: ?SelectableItem;
   title: string;
 };
 
@@ -68,6 +69,7 @@ export default class RepositorySectionComponent extends React.Component {
 
   render(): React.Element {
     const repository = this.props.repository;
+    const selectedItem = this.props.selectedItem;
 
     let bookmarksBranchesHeader;
     let bookmarksBranchesList;
@@ -109,7 +111,9 @@ export default class RepositorySectionComponent extends React.Component {
                   'list-item nuclide-source-control-side-bar--list-item', {
                     // Deeply compare bookmarks because the Objects get re-created when bookmarks
                     // are re-fetched and will not remain equal across fetches.
-                    selected: bookmarkIsEqual(bookmark, this.props.selectedBookmark),
+                    selected: selectedItem != null
+                      && selectedItem.type === 'bookmark'
+                      && bookmarkIsEqual(bookmark, selectedItem.bookmark),
                   }
                 );
 
@@ -146,6 +150,12 @@ export default class RepositorySectionComponent extends React.Component {
       separator = <hr className="nuclide-source-control-side-bar--repo-separator" />;
     }
 
+    const uncommittedChangesClassName = classnames(
+      'list-item nuclide-source-control-side-bar--list-item',
+      {
+        selected: selectedItem != null && selectedItem.type === 'uncommitted',
+      }
+    );
     return (
       <li>
         {separator}
@@ -153,9 +163,10 @@ export default class RepositorySectionComponent extends React.Component {
           {this.props.title}
         </h5>
         <ul className="list-group">
-          <li className="list-item nuclide-source-control-side-bar--list-item">
-            <span
-              onClick={this._handleUncommittedChangesClick}>
+          <li
+            className={uncommittedChangesClassName}
+            onClick={this._handleUncommittedChangesClick}>
+            <span>
               Uncommitted Changes
             </span>
           </li>

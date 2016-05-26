@@ -31,9 +31,22 @@ type Props = {
   updateToBookmark: (bookmarkInfo: BookmarkInfo, repo: atom$Repository) => mixed;
 };
 
+type BookmarkItem = {
+  bookmark: BookmarkInfo;
+  repository: atom$Repository;
+  type: 'bookmark';
+};
+
+type UncommittedChangesItem = {
+  repository: atom$Repository;
+  type: 'uncommitted';
+};
+
+export type SelectableItem = BookmarkItem | UncommittedChangesItem;
+
 type State = {
   activeModalComponent?: ?Object;
-  selectedBookmark?: Object;
+  selectedItem?: SelectableItem;
 };
 
 export default class SideBarComponent extends React.Component {
@@ -76,6 +89,7 @@ export default class SideBarComponent extends React.Component {
   }
 
   componentWillUnmount() {
+    this._destroyActiveModal();
     this._disposables.dispose();
     if (this._menuPopupTimeout != null) {
       clearTimeout(this._menuPopupTimeout);
@@ -115,13 +129,19 @@ export default class SideBarComponent extends React.Component {
     ReactDOM.render(this.state.activeModalComponent, panel.getItem());
   }
 
-  _handleBookmarkClick(bookmark: BookmarkInfo, repo: atom$Repository): void {
-    this.setState({selectedBookmark: bookmark});
+  _handleBookmarkClick(bookmark: BookmarkInfo, repository: atom$Repository): void {
+    this.setState({
+      selectedItem: {
+        bookmark,
+        repository,
+        type: 'bookmark',
+      },
+    });
     atom.workspace.open(url.format({
       hostname: 'view',
       protocol: 'fb-hg-smartlog',
       query: {
-        repositoryPath: repo.getPath(),
+        repositoryPath: repository.getPath(),
       },
       slashes: true,
     }));
@@ -129,13 +149,13 @@ export default class SideBarComponent extends React.Component {
 
   _handleBookmarkContextMenu(
     bookmark: BookmarkInfo,
-    repo: atom$Repository,
+    repository: atom$Repository,
     event: SyntheticMouseEvent
   ): void {
     const menu = Menu.buildFromTemplate([
       {
         click: () => {
-          this.props.updateToBookmark(bookmark, repo);
+          this.props.updateToBookmark(bookmark, repository);
         },
         enabled: !bookmark.active,
         label: `Update to ${bookmark.bookmark}`,
@@ -149,7 +169,7 @@ export default class SideBarComponent extends React.Component {
                 bookmark={bookmark}
                 onCancel={() => { this.setState({activeModalComponent: null}); }}
                 onDelete={this._confirmDeleteBookmark}
-                repo={repo}
+                repository={repository}
               />
             ),
           });
@@ -164,7 +184,13 @@ export default class SideBarComponent extends React.Component {
     const clientY = event.clientY;
 
     this.setState(
-      {selectedBookmark: bookmark},
+      {
+        selectedItem: {
+          bookmark,
+          repository,
+          type: 'bookmark',
+        },
+      },
       () => {
         // Circumvent Electron / OS X render blocking bug.
         // @see https://github.com/electron/electron/issues/1854
@@ -195,7 +221,13 @@ export default class SideBarComponent extends React.Component {
     menu.popup(remote.getCurrentWindow(), event.clientX, event.clientY);
   }
 
-  _handleUncommittedChangesClick(repo: atom$Repository): void {
+  _handleUncommittedChangesClick(repository: atom$Repository): void {
+    this.setState({
+      selectedItem: {
+        repository,
+        type: 'uncommitted',
+      },
+    });
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-diff-view:open');
   }
 
@@ -208,9 +240,18 @@ export default class SideBarComponent extends React.Component {
         <ul className="list-unstyled">
           {this.props.projectDirectories.map((directory, index) => {
             const repository = this.props.projectRepositories.get(directory.getPath());
-            const bookmarks = (repository == null)
-              ? null :
-              this.props.projectBookmarks.get(repository.getPath());
+
+            let bookmarks;
+            let selectedItem;
+            if (repository != null) {
+              bookmarks = this.props.projectBookmarks.get(repository.getPath());
+              if (
+                this.state.selectedItem != null
+                && this.state.selectedItem.repository === repository
+              ) {
+                selectedItem = this.state.selectedItem;
+              }
+            }
 
             return (
               <RepositorySectionComponent
@@ -222,7 +263,7 @@ export default class SideBarComponent extends React.Component {
                 onRepoGearClick={this._handleRepoGearClick}
                 onUncommittedChangesClick={this._handleUncommittedChangesClick}
                 repository={repository}
-                selectedBookmark={this.state.selectedBookmark}
+                selectedItem={selectedItem}
                 title={directory.getBaseName()}
               />
             );

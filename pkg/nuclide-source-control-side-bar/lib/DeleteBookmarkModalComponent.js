@@ -17,7 +17,7 @@ type Props = {
   bookmark: BookmarkInfo;
   onCancel: () => mixed;
   onDelete: (bookmark: BookmarkInfo, repo: atom$Repository) => mixed;
-  repo: atom$Repository;
+  repository: atom$Repository;
 };
 
 export default class DeleteBookmarkModalComponent extends React.Component {
@@ -33,7 +33,7 @@ export default class DeleteBookmarkModalComponent extends React.Component {
   }
 
   _handleDeleteClick(): void {
-    this.props.onDelete(this.props.bookmark, this.props.repo);
+    this.props.onDelete(this.props.bookmark, this.props.repository);
   }
 
   render(): React.Element {
