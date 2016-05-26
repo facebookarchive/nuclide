@@ -19,6 +19,7 @@ import {EventEmitter} from 'events';
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
 import {serializeAsyncCall} from '../../commons-node/promise';
 import {getLogger} from '../../nuclide-logging';
+import findClangServerArgs from './find-clang-server-args';
 
 // Mac OS X (El Capitan) prints this warning when loading the libclang library.
 // It's not silenceable and has no effect, so just ignore it.
@@ -26,40 +27,6 @@ const DYLD_WARNING = 'dyld: warning, LC_RPATH';
 
 const logger = getLogger();
 const pathToLibClangServer = path.join(__dirname, '../python/clang_server.py');
-
-async function _findClangServerArgs(): Promise<{
-  libClangLibraryFile: ?string;
-  pythonExecutable: string;
-  pythonPathEnv: ?string;
-}> {
-  let findClangServerArgs;
-  try {
-    findClangServerArgs = require('./fb/find-clang-server-args');
-  } catch (e) {
-    // Ignore.
-  }
-
-  let libClangLibraryFile;
-  if (process.platform === 'darwin') {
-    const result = await asyncExecute('xcode-select', ['--print-path']);
-    if (result.exitCode === 0) {
-      libClangLibraryFile = result.stdout.trim() +
-        '/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib';
-    }
-  }
-
-  const clangServerArgs = {
-    libClangLibraryFile,
-    pythonExecutable: 'python',
-    pythonPathEnv: path.join(__dirname, '../pythonpath'),
-  };
-  if (typeof findClangServerArgs === 'function') {
-    const clangServerArgsOverrides = await findClangServerArgs();
-    return {...clangServerArgs, ...clangServerArgsOverrides};
-  } else {
-    return clangServerArgs;
-  }
-}
 
 let getDefaultFlags;
 async function augmentDefaultFlags(src: string, flags: Array<string>): Promise<Array<string>> {
@@ -311,7 +278,7 @@ export default class ClangServer {
 
   async createAsyncConnection(src: string): Promise<Connection> {
     return await new Promise(async (resolve, reject) => {
-      const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = await _findClangServerArgs();
+      const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = await findClangServerArgs();
       const env: any = {
         PYTHONPATH: pythonPathEnv,
       };
