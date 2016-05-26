@@ -17,6 +17,10 @@ import invariant from 'assert';
 
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 
+// TODO: This probably won't work on Windows, but we'll worry about that
+// when Watchman officially supports Windows.
+const S_IFDIR = 16384;
+
 /**
  * This class keeps the PathSets passed to it up to date by using file system
  * watchers to observe when relevant file additions and deletions occur.
@@ -116,6 +120,11 @@ export default class PathSetUpdater {
     const deletedPaths = [];
 
     files.forEach(file => {
+      // Only keep track of files.
+      // eslint-disable-next-line no-bitwise
+      if ((file.mode & S_IFDIR) !== 0) {
+        return;
+      }
       const fileName = file.name;
       // Watchman returns paths relative to the subscription root, which may be
       // different from (i.e. a parent directory of) the localDirectory passed into
