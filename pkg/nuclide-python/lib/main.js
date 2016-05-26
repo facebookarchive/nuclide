@@ -11,11 +11,13 @@
 
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {DefinitionProvider} from '../../nuclide-definition-service';
+import type {FindReferencesProvider} from '../../nuclide-find-references';
 
 import {GRAMMAR_SET} from './constants';
 import AutocompleteHelpers from './AutocompleteHelpers';
 import DefinitionHelpers from './DefinitionHelpers';
 import OutlineHelpers from './OutlineHelpers';
+import ReferenceHelpers from './ReferenceHelpers';
 
 export function activate() {
 }
@@ -49,6 +51,21 @@ export function provideDefinitions(): DefinitionProvider {
     name: 'PythonDefinitionProvider',
     getDefinition(editor, position) {
       return DefinitionHelpers.getDefinition(editor, position);
+    },
+  };
+}
+
+export function provideReferences(): FindReferencesProvider {
+  return {
+    async isEditorSupported(textEditor) {
+      const fileUri = textEditor.getPath();
+      if (!fileUri || !GRAMMAR_SET.has(textEditor.getGrammar().scopeName)) {
+        return false;
+      }
+      return true;
+    },
+    findReferences(editor, position) {
+      return ReferenceHelpers.getReferences(editor, position);
     },
   };
 }
