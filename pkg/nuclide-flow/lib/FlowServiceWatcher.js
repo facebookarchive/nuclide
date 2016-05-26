@@ -49,11 +49,6 @@ export class FlowServiceWatcher {
 }
 
 async function handleFailure(pathToRoot: NuclideUri): Promise<void> {
-  const failureMessage = `Flow has failed in '${pathToRoot}'.<br/><br/>` +
-    'Flow features will be disabled for the remainder of this Nuclide session. ' +
-    'You may re-enable them by clicking below or by running the "Restart Flow Server" command ' +
-    'from the command palette later.'
-  ;
   const buttons = [{
     className: 'icon icon-zap',
     onDidClick() {
@@ -61,6 +56,11 @@ async function handleFailure(pathToRoot: NuclideUri): Promise<void> {
         atom.views.getView(atom.workspace),
         'nuclide-flow:restart-flow-server',
       );
+      if (buttons.length > 1) {
+        this.classList.add('disabled');
+      } else {
+        notification.dismiss();
+      }
     },
     text: 'Restart Flow Server',
   }];
@@ -70,9 +70,12 @@ async function handleFailure(pathToRoot: NuclideUri): Promise<void> {
       buttons.push(reportButton);
     }
   } catch (e) { }
-  atom.notifications.addError(
-    failureMessage,
+  const notification = atom.notifications.addError(
+    `Flow has failed in <code>${pathToRoot}</code>`,
     {
+      description: `Flow features will be disabled for the remainder of this
+        Nuclide session. You may re-enable them by clicking below or by running
+        the "Restart Flow Server" command from the command palette later.`,
       dismissable: true,
       buttons,
     }
