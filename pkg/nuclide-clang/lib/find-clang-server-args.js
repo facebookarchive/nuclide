@@ -41,7 +41,7 @@ export default async function findClangServerArgs(): Promise<{
   const clangServerArgs = {
     libClangLibraryFile,
     pythonExecutable: 'python',
-    pythonPathEnv: path.join(__dirname, '../pythonpath'),
+    pythonPathEnv: path.join(__dirname, '../VendorLib'),
   };
   if (typeof fbFindClangServerArgs === 'function') {
     const clangServerArgsOverrides = await fbFindClangServerArgs();
