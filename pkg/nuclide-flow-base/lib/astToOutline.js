@@ -21,6 +21,8 @@ import {
   string,
   whitespace,
   plain,
+  // This is to work around a Flow parser bug.
+  type as type,
 } from '../../nuclide-tokenized-text';
 
 import invariant from 'assert';
@@ -117,6 +119,8 @@ function itemToTree(item: any): ?FlowOutlineTree {
       };
     case 'ExpressionStatement':
       return topLevelExpressionOutline(item);
+    case 'TypeAlias':
+      return typeAliasOutline(item);
     default:
       return null;
   }
@@ -163,6 +167,21 @@ function getExtent(item: any): Extent {
       line: item.loc.end.line - 1,
       column: item.loc.end.column,
     },
+  };
+}
+
+function typeAliasOutline(typeAliasExpression: any): FlowOutlineTree {
+  invariant(typeAliasExpression.type === 'TypeAlias');
+  const name = typeAliasExpression.id.name;
+  return {
+    tokenizedText: [
+      keyword('type'),
+      whitespace(' '),
+      type(name),
+    ],
+    representativeName: name,
+    children: [],
+    ...getExtent(typeAliasExpression),
   };
 }
 

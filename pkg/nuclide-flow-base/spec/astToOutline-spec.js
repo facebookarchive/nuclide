@@ -17,6 +17,7 @@ import classAST from './fixtures/class-ast';
 import jasmineAST from './fixtures/jasmine-ast';
 import toplevelAST from './fixtures/toplevel-ast';
 import exportsAST from './fixtures/exports-ast';
+import typesAST from './fixtures/types-ast';
 
 const expectedClassOutline = [
   {
@@ -378,6 +379,45 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
   },
 ];
 
+const expectedTypesOutline = [
+  {
+    tokenizedText: [
+      {value: 'type', kind: 'keyword'},
+      {value: ' ', kind: 'whitespace'},
+      {value: 'Foo', kind: 'type'},
+    ],
+    representativeName: 'Foo',
+    startPosition: {
+      line: 13,
+      column: 0,
+    },
+    endPosition: {
+      line: 13,
+      column: 18,
+    },
+    children: [],
+  },
+  {
+    tokenizedText: [
+      {value: 'export', kind: 'keyword'},
+      {value: ' ', kind: 'whitespace'},
+      {value: 'type', kind: 'keyword'},
+      {value: ' ', kind: 'whitespace'},
+      {value: 'Bar', kind: 'type'},
+    ],
+    representativeName: 'Bar',
+    startPosition: {
+      line: 14,
+      column: 0,
+    },
+    endPosition: {
+      line: 14,
+      column: 30,
+    },
+    children: [],
+  },
+];
+
 describe('astToOutline', () => {
   it('should provide a class outline', () => {
     expect(astToOutline(classAST)).toEqual(expectedClassOutline);
@@ -393,5 +433,9 @@ describe('astToOutline', () => {
 
   it('should provide an outline for module.exports', () => {
     expect(astToOutline(exportsAST)).toEqual(expectedExportsOutline);
+  });
+
+  it('should provide an outline for type declarations', () => {
+    expect(astToOutline(typesAST)).toEqual(expectedTypesOutline);
   });
 });
