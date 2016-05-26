@@ -14,6 +14,7 @@ import type {Directory} from 'atom';
 
 import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
+import RepositorySectionComponent from './RepositorySectionComponent';
 import remote from 'remote';
 
 const Menu = remote.require('menu');
@@ -158,6 +159,26 @@ export default class VcsSideBarComponent extends React.Component {
         style={{flex: 1, overflow: 'auto', position: 'relative', whiteSpace: 'normal'}}
         tabIndex="0">
         <ul className="list-unstyled">
+          {this.props.projectDirectories.map((directory, index) => {
+            const repository = this.props.projectRepositories.get(directory.getPath());
+            const bookmarks = (repository == null)
+              ? null :
+              this.props.projectBookmarks.get(repository.getPath());
+
+            return (
+              <RepositorySectionComponent
+                bookmarks={bookmarks}
+                hasSeparator={index > 0}
+                key={directory.getPath()}
+                onBookmarkClick={this._handleBookmarkClick}
+                onBookmarkContextMenu={this._handleBookmarkContextMenu}
+                onUncommittedChangesClick={this._handleUncommittedChangesClick}
+                repository={repository}
+                selectedBookmark={this.state.selectedBookmark}
+                title={directory.getBaseName()}
+              />
+            );
+          })}
         </ul>
       </div>
     );
