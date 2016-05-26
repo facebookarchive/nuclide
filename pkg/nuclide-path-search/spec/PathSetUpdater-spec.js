@@ -90,9 +90,28 @@ describe('PathSetUpdater', () => {
             exists: false,
             mode: 1234,
           },
+          {
+            name: path.join(RELATIVE_PATH, 'dir'),
+            new: true,
+            exists: true,
+            // This is a directory, and should be ignored.
+            mode: 16384,
+          },
         ];
         emitMockWatchmanUpdate(mockChanges);
-        const newValues = pathSet.match('').map(x => x.value);
+        let newValues = pathSet.match('').map(x => x.value);
+        expect(newValues.sort()).toEqual(['b', 'c']);
+
+        // This is a no-op.
+        emitMockWatchmanUpdate([
+          {
+            name: path.join(RELATIVE_PATH, 'x'),
+            new: true,
+            exists: false,
+            mode: 1234,
+          },
+        ]);
+        newValues = pathSet.match('').map(x => x.value);
         expect(newValues.sort()).toEqual(['b', 'c']);
 
         // Verify that disposing the Disposable stops updates to the pathSet.

@@ -133,10 +133,10 @@ export default class PathSetUpdater {
       const adjustedPath = pathFromSubscriptionRootToDir ?
         fileName.slice(pathFromSubscriptionRootToDir.length + 1) :
         fileName;
-      if (file.new) {
-        newPaths.push(adjustedPath);
-      } else if (!file.exists) {
+      if (!file.exists) {
         deletedPaths.push(adjustedPath);
+      } else if (file.new) {
+        newPaths.push(adjustedPath);
       }
     });
 
