@@ -560,6 +560,14 @@ class DiffViewModel {
     this._activeSubscriptions.add(buffer.onDidReload(
       () => this._onActiveBufferReload(filePath, buffer).catch(notifyInternalError),
     ));
+    this._activeSubscriptions.add(buffer.onDidDestroy(() => {
+      getLogger().info(
+        'Diff View\'s active buffer has been destroyed.\n' +
+        'The underlying file could have been removed.'
+      );
+      this._activeSubscriptions.dispose();
+      this._setActiveFileState(getInitialFileChangeState());
+    }));
     this._activeSubscriptions.add(buffer.onDidChangeModified(
       this.emitActiveBufferChangeModified.bind(this),
     ));
@@ -577,7 +585,10 @@ class DiffViewModel {
       oldContents: committedContents,
       compareRevisionInfo: revisionInfo,
     } = this._activeFileState;
-    invariant(revisionInfo, 'Diff View: Revision info must be defined to update changed state');
+    if (revisionInfo == null) {
+      // The file could be just loaded.
+      return;
+    }
     await this._updateDiffStateIfChanged(
       filePath,
       committedContents,
