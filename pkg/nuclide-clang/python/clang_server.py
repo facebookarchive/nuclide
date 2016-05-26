@@ -177,8 +177,8 @@ class Server:
 
         # Every request should have an id that must also be present in the
         # response.
-        reqid = request['reqid']
-        response = {'reqid': reqid}
+        reqid = request['id']
+        response = {'id': reqid}
 
         start_time = time.time()
         try:

@@ -58,7 +58,7 @@ describe('ClangServer', () => {
       });
       invariant(response);
       expect(response).toEqual({
-        reqid: '0',
+        id: '0',
         diagnostics: [
           {
             severity: 3,
@@ -124,7 +124,7 @@ describe('ClangServer', () => {
         prefix: 'f',
       });
       invariant(response);
-      expect(response.reqid).toBe('1');
+      expect(response.id).toBe('1');
       expect(response.completions.map(x => x.spelling).sort()).toEqual([
         'f()',
         'false',
@@ -140,7 +140,7 @@ describe('ClangServer', () => {
         prefix: 'fa',
       });
       invariant(response);
-      expect(response.reqid).toBe('2');
+      expect(response.id).toBe('2');
       expect(response.completions.map(x => x.spelling).sort()).toEqual([
         'false',
       ]);
@@ -154,7 +154,7 @@ describe('ClangServer', () => {
         prefix: '',
       });
       invariant(response);
-      expect(response.reqid).toBe('3');
+      expect(response.id).toBe('3');
       expect(response.completions[0].spelling).toBe('f()');
       expect(response.completions[0].cursor_kind).toBe('OVERLOAD_CANDIDATE');
 
@@ -164,7 +164,7 @@ describe('ClangServer', () => {
         column: 2,
       });
       invariant(response);
-      expect(response.reqid).toBe('4');
+      expect(response.id).toBe('4');
       const {line, column, spelling, type} = response.locationAndSpelling;
       expect(line).toBe(0);
       expect(column).toBe(5);
@@ -177,7 +177,7 @@ describe('ClangServer', () => {
         column: 2,
       });
       invariant(response);
-      expect(response.reqid).toBe('5');
+      expect(response.id).toBe('5');
       expect(response.line).toBe(4);
       expect(response.column).toBe(2);
       const {info} = response;

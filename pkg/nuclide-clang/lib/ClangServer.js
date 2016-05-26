@@ -116,7 +116,7 @@ export default class ClangServer {
     // The Clang server receives requests serially via stdin (and processes them in that order)
     // so it's quite safe to assume that requests are processed in order.
     for (let reqid = this._lastProcessedRequestId + 1; reqid < this._nextRequestId; reqid++) {
-      this._emitter.emit(reqid.toString(16), {error: 'Server was killed.'});
+      this._emitter.emit(reqid.toString(), {error: 'Server was killed.'});
     }
     if (this._asyncConnection) {
       this._asyncConnection.dispose();
@@ -204,7 +204,7 @@ export default class ClangServer {
     }
 
     const reqid = this._getNextRequestId();
-    const request = {reqid, method, flags, ...params};
+    const request = {id: reqid, method, flags, ...params};
     const logData = JSON.stringify(request, (key, value) => {
       // File contents are too large and clutter up the logs, so exclude them.
       // We generally only want to see the flags for 'compile' commands, since they'll usually
@@ -232,7 +232,7 @@ export default class ClangServer {
             logData,
             response['error']);
         }
-        this._lastProcessedRequestId = parseInt(reqid, 16);
+        this._lastProcessedRequestId = parseInt(reqid, 10);
         if (method === 'compile') {
           // Using default flags typically results in poor diagnostics, so let the caller know.
           response.accurateFlags = accurateFlags;
@@ -243,7 +243,7 @@ export default class ClangServer {
   }
 
   _getNextRequestId(): string {
-    return (this._nextRequestId++).toString(16);
+    return (this._nextRequestId++).toString();
   }
 
   async _getAsyncConnectionImpl(): Promise<?Connection> {
@@ -253,7 +253,7 @@ export default class ClangServer {
         connection.readableStream
           .pipe(split(JSON.parse))
           .on('data', response => {
-            const id = response['reqid'];
+            const id = response['id'];
             this._emitter.emit(id, response);
           })
           .on('error', error => {
