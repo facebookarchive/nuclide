@@ -32,7 +32,7 @@ describe('ClangServer', () => {
         contents: FILE_CONTENTS,
       });
       invariant(response != null);
-      expect(response.outline).toEqual([
+      expect(response).toEqual([
         {
           extent: {
             start: {

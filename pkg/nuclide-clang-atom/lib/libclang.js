@@ -11,9 +11,9 @@
 
 import type {
   ClangCompileResult,
-  ClangCompletionsResult,
-  ClangDeclarationResult,
-  ClangOutline,
+  ClangCompletion,
+  ClangDeclaration,
+  ClangOutlineTree,
 } from '../../nuclide-clang';
 
 import featureConfig from '../../nuclide-feature-config';
@@ -51,7 +51,7 @@ module.exports = {
         .toPromise();
   },
 
-  async getCompletions(editor: atom$TextEditor, prefix: string): Promise<?ClangCompletionsResult> {
+  async getCompletions(editor: atom$TextEditor, prefix: string): Promise<?Array<ClangCompletion>> {
     const src = editor.getPath();
     const cursor = editor.getLastCursor();
 
@@ -83,7 +83,7 @@ module.exports = {
     editor: atom$TextEditor,
     line: number,
     column: number,
-  ): Promise<?ClangDeclarationResult> {
+  ): Promise<?ClangDeclaration> {
     const src = editor.getPath();
     const defaultFlags = getDefaultFlags();
 
@@ -94,7 +94,7 @@ module.exports = {
         .getDeclaration(src, editor.getText(), line, column, defaultFlags);
   },
 
-  async getOutline(editor: atom$TextEditor): Promise<?ClangOutline> {
+  async getOutline(editor: atom$TextEditor): Promise<?Array<ClangOutlineTree>> {
     const src = editor.getPath();
     const defaultFlags = getDefaultFlags();
 

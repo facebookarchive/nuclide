@@ -199,7 +199,7 @@ export default class AutocompleteHelpers {
       return [];
     }
 
-    return data.completions.map(completion => {
+    return data.map(completion => {
       let snippet;
       let displayText;
       // For function argument completions, strip out everything before the current parameter.

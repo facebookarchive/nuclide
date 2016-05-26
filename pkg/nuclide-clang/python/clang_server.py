@@ -152,44 +152,49 @@ class Server:
             output_stream.flush()
 
     def process_request(self, line):
-        '''Note that line will likely including a trailing newline.
-
-        Returns a dict or list that can be serialized by json.dump().
+        '''
+        request should be a dict containing id and args.
+        The response will be a dict containing id and exactly one of result/error.
         '''
         request = json.loads(line)
 
-        # Every request should have an id that must also be present in the
-        # response.
         reqid = request['id']
-        response = {'id': reqid}
+        args = request['args']
 
         start_time = time.time()
+        result = None
+        error = None
         try:
-            method = request['method']
+            method = args['method']
             if method == 'compile':
-                self.compile(request, response)
+                result = self.compile(args)
             elif method == 'get_completions':
-                self.get_completions(request, response)
+                result = self.get_completions(args)
             elif method == 'get_declaration':
-                self.get_declaration(request, response)
+                result = self.get_declaration(args)
             elif method == 'get_declaration_info':
-                self.get_declaration_info(request, response)
+                result = self.get_declaration_info(args)
             elif method == 'get_outline':
-                self.get_outline(request, response)
+                result = self.get_outline(args)
             else:
-                response[
-                    'error'] = 'Unknown method to clang_server.py: %s.' % method
+                error = 'Unknown method to clang_server.py: %s.' % method
         except:
-            response['error'] = traceback.format_exc()
+            error = traceback.format_exc()
 
         root_logger.info('Finished %s request in %.2lf seconds.',
                          method, time.time() - start_time)
 
-        # response must have a key named "error" if there was a failure of any
-        # kind.
+        response = {
+            'type': 'response',
+            'id': reqid,
+        }
+        if error is not None:
+            response['error'] = error
+        else:
+            response['result'] = result
         return response
 
-    def compile(self, request, response):
+    def compile(self, request):
         contents = request['contents']
         flags = request['flags']
 
@@ -200,8 +205,7 @@ class Server:
         if not translation_unit:
             sys.stderr.write(
                 'Suspicious: requesting compilation of %s without flags' % self.src)
-            response['diagnostics'] = []
-            return
+            return {'diagnostics': []}
 
         # Return the diagnostics.
         diagnostics = []
@@ -209,7 +213,7 @@ class Server:
             if diag.spelling == PRAGMA_ONCE_IN_MAIN_FILE and is_header_file(self.src):
                 continue
             diagnostics.append(self.diagnostic_dict(diag))
-        response['diagnostics'] = diagnostics
+        return {'diagnostics': diagnostics}
 
     def diagnostic_dict(self, diag):
         ranges = map(range_dict, diag.ranges)
@@ -243,7 +247,7 @@ class Server:
             'children': children,
         }
 
-    def get_completions(self, request, response):
+    def get_completions(self, request):
         contents = request['contents']
         line = request['line']
         column = request['column']
@@ -259,57 +263,51 @@ class Server:
             if self.completion_cache is None:
                 self.completion_cache = CompletionCache(
                     self.src, translation_unit, self.custom_clang_lib)
-            completions = self.completion_cache.get_completions(
+            return self.completion_cache.get_completions(
                 line + 1,
                 token_start_column + 1,
                 prefix,
                 contents,
                 limit=COMPLETIONS_LIMIT)
-        else:
-            completions = []
-        response['completions'] = completions
-        response['line'] = line
-        response['column'] = column
-        response['prefix'] = prefix
+        return []
 
-    def get_declaration(self, request, response):
+    def get_declaration(self, request):
         contents = request['contents']
         line = request['line']
         column = request['column']
         flags = request['flags']
 
-        response['line'] = line
-        response['column'] = column
-
         # Update the translation unit with the latest contents.
         translation_unit = self._update_translation_unit(contents, flags)
         if not translation_unit:
-            return
+            return None
 
-        response['locationAndSpelling'] = get_declaration_location_and_spelling(
-            translation_unit, contents, flags, self.src, line + 1, column + 1)
+        return get_declaration_location_and_spelling(
+            translation_unit,
+            contents,
+            flags,
+            self.src,
+            line + 1,
+            column + 1)
 
-    def get_declaration_info(self, request, response):
+    def get_declaration_info(self, request):
         contents = request['contents']
         line = request['line']
         column = request['column']
         flags = request['flags']
 
-        response['line'] = line
-        response['column'] = column
-
         # Update the translation unit with the latest contents.
         translation_unit = self._update_translation_unit(contents, flags)
         if not translation_unit:
-            return
+            return None
 
         location = translation_unit.get_location(self.src, (line + 1, column + 1))
         cursor = Cursor.from_location(translation_unit, location)
         cursor = cursor.referenced
         if cursor is None:
-            return
+            return None
 
-        response['info'] = self.get_declaration_info_for_cursor(cursor)
+        return self.get_declaration_info_for_cursor(cursor)
 
     def get_declaration_info_for_cursor(self, cursor):
         '''Returns string id in clang-callgraph-service format for entity under the
@@ -344,13 +342,13 @@ class Server:
             return base_name + ' (' + name + ')'
         return name
 
-    def get_outline(self, request, response):
+    def get_outline(self, request):
         contents = request['contents']
         flags = request['flags']
         translation_unit = self._update_translation_unit(contents, flags)
         if not translation_unit:
-            return
-        response['outline'] = outline.get_outline(translation_unit, self.src)
+            return None
+        return outline.get_outline(translation_unit, self.src)
 
     def _get_translation_unit(self, unsaved_contents, flags=None):
         '''

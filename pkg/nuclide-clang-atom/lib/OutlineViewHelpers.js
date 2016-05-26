@@ -136,7 +136,7 @@ export default class OutlineViewHelpers {
       return null;
     }
     return {
-      outlineTrees: outlineFromClangOutline(clangOutline.outline),
+      outlineTrees: outlineFromClangOutline(clangOutline),
     };
   }
 }

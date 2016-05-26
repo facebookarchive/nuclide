@@ -164,7 +164,7 @@ export default class ClangServer {
     defaultFlags: ?Array<string>,
     params: Object,
     blocking?: boolean,
-  ): Promise<?Object> {
+  ): Promise<any> {
     invariant(!this._disposed, 'calling makeRequest on a disposed ClangServer');
     if (method === 'compile') {
       this._pendingCompileRequests++;
@@ -186,7 +186,7 @@ export default class ClangServer {
     method: ClangServerRequest,
     defaultFlags: ?Array<string>,
     params: Object,
-  ): Promise<?Object> {
+  ): Promise<any> {
     let flags = await this.getFlags();
     let accurateFlags = true;
     if (flags == null) {
@@ -203,7 +203,7 @@ export default class ClangServer {
     }
 
     const reqid = this._getNextRequestId();
-    const request = {id: reqid, method, flags, ...params};
+    const request = {id: reqid, args: {method, flags, ...params}};
     const logData = JSON.stringify(request, (key, value) => {
       // File contents are too large and clutter up the logs, so exclude them.
       // We generally only want to see the flags for 'compile' commands, since they'll usually
@@ -225,18 +225,20 @@ export default class ClangServer {
     return new Promise((resolve, reject) => {
       this._emitter.once(reqid, response => {
         logger.debug('LibClang response: ' + JSON.stringify(response));
-        const isError = 'error' in response;
-        if (isError && !this._disposed) {
+        this._lastProcessedRequestId = parseInt(reqid, 10);
+        if (response.error && !this._disposed) {
           logger.error('error received from clang_server.py for request:',
             logData,
-            response['error']);
+            response.error);
+          reject(response.error);
+        } else {
+          const {result} = response;
+          if (method === 'compile') {
+            // Using default flags typically results in poor diagnostics, so let the caller know.
+            result.accurateFlags = accurateFlags;
+          }
+          resolve(result);
         }
-        this._lastProcessedRequestId = parseInt(reqid, 10);
-        if (method === 'compile') {
-          // Using default flags typically results in poor diagnostics, so let the caller know.
-          response.accurateFlags = accurateFlags;
-        }
-        (isError ? reject : resolve)(response);
       });
     });
   }

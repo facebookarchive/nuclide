@@ -202,14 +202,7 @@ export type ClangCompletion = {
   brief_comment: ?string;
 };
 
-export type ClangCompletionsResult = {
-  completions: Array<ClangCompletion>;
-  line: number;
-  column: number;
-  prefix: string;
-};
-
-export type ClangDeclarationResult = {
+export type ClangDeclaration = {
   file: NuclideUri;
   line: number;
   column: number;
@@ -218,7 +211,7 @@ export type ClangDeclarationResult = {
   extent: ClangCursorExtent;
 };
 
-export type ClangDeclaration = {
+export type ClangCursor = {
   name: string;
   type: ClangCursorType;
   cursor_usr: ?string;
@@ -238,19 +231,6 @@ export type ClangOutlineTree = {
   tparams?: Array<string>;
   // Will be non-null for class-like containers only.
   children?: Array<ClangOutlineTree>;
-};
-
-export type ClangOutline = {
-  outline: Array<ClangOutlineTree>;
-};
-
-// Fetches information for a declaration and all its parents.
-// The first element in info will be for the declaration itself,
-// the second will be for its direct semantic parent (if it exists), etc.
-export type ClangDeclarationInfoResult = {
-  line: number;
-  column: number;
-  info?: Array<ClangDeclaration>;
 };
 
 export const ClangCursorTypes = keyMirror(ClangCursorToDeclarationTypes);
@@ -293,7 +273,7 @@ export function getCompletions(
   tokenStartColumn: number,
   prefix: string,
   defaultFlags?: Array<string>,
-): Promise<?ClangCompletionsResult> {
+): Promise<?Array<ClangCompletion>> {
   return getClangServer(src, contents, defaultFlags).makeRequest('get_completions', defaultFlags, {
     contents,
     line,
@@ -309,26 +289,25 @@ export async function getDeclaration(
   line: number,
   column: number,
   defaultFlags?: Array<string>,
-): Promise<?ClangDeclarationResult> {
-  const result = await getClangServer(src, contents, defaultFlags)
+): Promise<?ClangDeclaration> {
+  return await getClangServer(src, contents, defaultFlags)
     .makeRequest('get_declaration', defaultFlags, {
       contents,
       line,
       column,
     });
-  if (result == null) {
-    return null;
-  }
-  return result.locationAndSpelling;
 }
 
+// Fetches information for a declaration and all its parents.
+// The first element in info will be for the declaration itself,
+// the second will be for its direct semantic parent (if it exists), etc.
 export function getDeclarationInfo(
   src: NuclideUri,
   contents: string,
   line: number,
   column: number,
   defaultFlags: ?Array<string>,
-): Promise<?ClangDeclarationInfoResult> {
+): Promise<?Array<ClangCursor>> {
   return getClangServer(src, contents, defaultFlags)
     .makeRequest('get_declaration_info', defaultFlags, {
       contents,
@@ -341,7 +320,7 @@ export async function getOutline(
   src: NuclideUri,
   contents: string,
   defaultFlags: ?Array<string>,
-): Promise<?ClangOutline> {
+): Promise<?Array<ClangOutlineTree>> {
   return getClangServer(src, contents, defaultFlags)
     .makeRequest('get_outline', defaultFlags, {contents}, /* blocking */ true);
 }

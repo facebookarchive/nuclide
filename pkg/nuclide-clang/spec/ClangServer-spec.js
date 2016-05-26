@@ -58,7 +58,6 @@ describe('ClangServer', () => {
       });
       invariant(response);
       expect(response).toEqual({
-        id: '0',
         diagnostics: [
           {
             severity: 3,
@@ -124,8 +123,7 @@ describe('ClangServer', () => {
         prefix: 'f',
       });
       invariant(response);
-      expect(response.id).toBe('1');
-      expect(response.completions.map(x => x.spelling).sort()).toEqual([
+      expect(response.map(x => x.spelling).sort()).toEqual([
         'f()',
         'false',
         'float',
@@ -140,8 +138,7 @@ describe('ClangServer', () => {
         prefix: 'fa',
       });
       invariant(response);
-      expect(response.id).toBe('2');
-      expect(response.completions.map(x => x.spelling).sort()).toEqual([
+      expect(response.map(x => x.spelling).sort()).toEqual([
         'false',
       ]);
 
@@ -154,9 +151,8 @@ describe('ClangServer', () => {
         prefix: '',
       });
       invariant(response);
-      expect(response.id).toBe('3');
-      expect(response.completions[0].spelling).toBe('f()');
-      expect(response.completions[0].cursor_kind).toBe('OVERLOAD_CANDIDATE');
+      expect(response[0].spelling).toBe('f()');
+      expect(response[0].cursor_kind).toBe('OVERLOAD_CANDIDATE');
 
       response = await server.makeRequest('get_declaration', null, {
         contents: FILE_CONTENTS,
@@ -164,8 +160,7 @@ describe('ClangServer', () => {
         column: 2,
       });
       invariant(response);
-      expect(response.id).toBe('4');
-      const {line, column, spelling, type} = response.locationAndSpelling;
+      const {line, column, spelling, type} = response;
       expect(line).toBe(0);
       expect(column).toBe(5);
       expect(spelling).toBe('f');
@@ -177,21 +172,17 @@ describe('ClangServer', () => {
         column: 2,
       });
       invariant(response);
-      expect(response.id).toBe('5');
-      expect(response.line).toBe(4);
-      expect(response.column).toBe(2);
-      const {info} = response;
-      expect(info.length).toBe(1);
-      expect(info[0].name).toBe('f()');
-      expect(info[0].type).toBe('FUNCTION_DECL');
+      expect(response.length).toBe(1);
+      expect(response[0].name).toBe('f()');
+      expect(response[0].type).toBe('FUNCTION_DECL');
       // May not be consistent between clang versions.
-      expect(info[0].cursor_usr).not.toBe(null);
+      expect(response[0].cursor_usr).not.toBe(null);
 
       response = await server.makeRequest('get_outline', null, {
         contents: FILE_CONTENTS,
       });
       invariant(response);
-      expect(response.outline).toEqual(EXPECTED_FILE_OUTLINE);
+      expect(response).toEqual(EXPECTED_FILE_OUTLINE);
     });
   });
 
