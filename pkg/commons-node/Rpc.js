@@ -53,7 +53,7 @@ export function createCallMessage<T>(id: number, args: T): CallMessage<T> {
 export function isValidResponseMessage(obj: any): boolean {
   return obj.type === RESPONSE_MESSAGE_TYPE
     && typeof obj.id === 'number'
-    && ((obj.result == null) !== (obj.error == null));
+    && ((obj.result === undefined) !== (obj.error === undefined));
 }
 
 interface Transport {
@@ -144,14 +144,17 @@ export class Rpc<TReq, TRes> {
 
     const {resolve, reject} = inProgress;
     this._inProgress.delete(id);
-    if (error != null) {
+    if (error !== undefined) {
       // Stringify the error only if it's not already a string, to avoid extra
       // double quotes around strings.
       const errStr = (typeof error === 'string') ? error : JSON.stringify(error);
       logger.error(`${this._name} - error from RPC ${id}: ${errStr}`);
       reject(new Error(errStr));
     } else {
-      invariant(result, `${this._name} - neither result or error received in response`);
+      invariant(
+        result !== undefined,
+        `${this._name} - neither result or error received in response`,
+      );
       resolve(result);
     }
   }

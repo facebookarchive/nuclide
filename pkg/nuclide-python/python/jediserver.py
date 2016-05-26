@@ -73,10 +73,10 @@ class JediServer:
             elif method == 'get_definitions':
                 res['result']['definitions'] = self.get_definitions(script)
             else:
-                res['result'] = None
+                del res['result']
                 res['error'] = 'Unknown method to jediserver.py: %s.' % method
         except:
-            res['result'] = None
+            del res['result']
             res['error'] = traceback.format_exc()
 
         self.logger.info('Finished %s request in %.2lf seconds.',
