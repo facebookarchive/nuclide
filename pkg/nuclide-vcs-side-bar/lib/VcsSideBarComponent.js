@@ -13,6 +13,7 @@ import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService'
 import type {Directory} from 'atom';
 
 import {CompositeDisposable} from 'atom';
+import DeleteBookmarkModalComponent from './DeleteBookmarkModalComponent';
 import {React, ReactDOM} from 'react-for-atom';
 import RepositorySectionComponent from './RepositorySectionComponent';
 import remote from 'remote';
@@ -125,6 +126,16 @@ export default class VcsSideBarComponent extends React.Component {
       {type: 'separator'},
       {
         click: () => {
+          this.setState({
+            activeModalComponent: (
+              <DeleteBookmarkModalComponent
+                bookmark={bookmark}
+                onCancel={this._destroyActiveModal}
+                onDelete={this._confirmDeleteBookmark}
+                repo={repo}
+              />
+            ),
+          });
         },
         enabled: !bookmark.active,
         label: `Delete ${bookmark.bookmark}...`,
