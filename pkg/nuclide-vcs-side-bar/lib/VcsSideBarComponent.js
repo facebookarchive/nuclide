@@ -18,6 +18,7 @@ import DeleteBookmarkModalComponent from './DeleteBookmarkModalComponent';
 import {React, ReactDOM} from 'react-for-atom';
 import RepositorySectionComponent from './RepositorySectionComponent';
 import remote from 'remote';
+import url from 'url';
 
 const Menu = remote.require('menu');
 
@@ -122,7 +123,14 @@ export default class VcsSideBarComponent extends React.Component {
 
   _handleBookmarkClick(bookmark: BookmarkInfo, repo: atom$Repository): void {
     this.setState({selectedBookmark: bookmark});
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'fb-hg-smartlog:show-smartlog');
+    atom.workspace.open(url.format({
+      hostname: 'view',
+      protocol: 'fb-hg-smartlog',
+      query: {
+        repositoryPath: repo.getPath(),
+      },
+      slashes: true,
+    }));
   }
 
   _handleBookmarkContextMenu(
