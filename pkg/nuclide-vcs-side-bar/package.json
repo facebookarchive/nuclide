@@ -1,0 +1,18 @@
+{
+  "name": "nuclide-vcs-side-bar",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "VCS management in your nuclide-side-bar",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "consumedServices": {
+    "nuclide-side-bar": {
+      "versions": {
+        "1.0.0": "consumeNuclideSideBar"
+      }
+    }
+  }
+}
