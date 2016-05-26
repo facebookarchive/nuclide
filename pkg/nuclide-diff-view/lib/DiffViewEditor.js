@@ -69,17 +69,9 @@ export default class DiffViewEditor {
   setFileContents(filePath: string, contents: string): void {
     const buffer = this._editor.getBuffer();
     if (buffer.getText() !== contents) {
-      if (buffer.getPath() === filePath && !buffer.isEmpty()) {
-        // The text is set via diffs to keep the cursor position when updating the file that is
-        // already active.
-        buffer.setTextViaDiff(contents);
-      } else {
-        // `setText` is faster than diffing and is used for speed when the buffer is changing to a
-        // different path or when an editable buffer is being loaded for the first time
-        // (`buffer.isEmpty() === true`) because maintaining cursor position between file changes is
-        // not needed.
-        buffer.setText(contents);
-      }
+      // Applies only to the compared read only text buffer.
+      // Hence, it's safe and performant to use `setText` because the cursor position is hidden.
+      buffer.setText(contents);
     }
     const grammar = atom.grammars.selectGrammar(filePath, contents);
     this._editor.setGrammar(grammar);

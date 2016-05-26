@@ -149,10 +149,10 @@ class DiffViewComponent extends React.Component {
     this._renderDiffView();
 
     this._subscriptions.add(
-      this._destroyPaneDisposable(this._oldEditorPane, true),
-      this._destroyPaneDisposable(this._newEditorPane, true),
-      this._destroyPaneDisposable(this._navigationPane, true),
-      this._destroyPaneDisposable(this._treePane, true),
+      this._destroyPaneDisposable(this._oldEditorPane),
+      this._destroyPaneDisposable(this._newEditorPane),
+      this._destroyPaneDisposable(this._navigationPane),
+      this._destroyPaneDisposable(this._treePane),
       this._destroyPaneDisposable(this._bottomRightPane),
     );
 
@@ -334,7 +334,7 @@ class DiffViewComponent extends React.Component {
           filePath={filePath}
           offsets={oldState.offsets}
           highlightedLines={oldState.highlightedLines}
-          initialTextContent={oldState.text}
+          textContent={oldState.text}
           inlineElements={oldState.inlineElements}
           readOnly={true}
           onChange={EMPTY_FUNCTION}
@@ -352,7 +352,6 @@ class DiffViewComponent extends React.Component {
           filePath={filePath}
           offsets={newState.offsets}
           highlightedLines={newState.highlightedLines}
-          initialTextContent={newState.text}
           inlineElements={newState.inlineElements}
           onDidUpdateTextEditorElement={this._onDidUpdateTextEditorElement}
           readOnly={false}
@@ -415,6 +414,7 @@ class DiffViewComponent extends React.Component {
 
   _destroyPaneDisposable(pane: atom$Pane): IDisposable {
     return new Disposable(() => {
+      ReactDOM.unmountComponentAtNode(ReactDOM.findDOMNode(this._getPaneElement(pane)));
       pane.destroy();
     });
   }

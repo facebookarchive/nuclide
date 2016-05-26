@@ -30,7 +30,7 @@ type Props = {
     added: Array<number>;
     removed: Array<number>;
   };
-  initialTextContent: string;
+  textContent?: string;
   inlineElements: Array<UIElement>;
   readOnly: boolean;
   onChange: (newContents: string) => any;
@@ -72,9 +72,6 @@ export default class DiffViewEditorPane extends React.Component {
           return;
         }
         const textContent = textBuffer.getText();
-        if (textContent === this.props.initialTextContent) {
-          return;
-        }
         if (this.props.onChange) {
           this.props.onChange(textContent);
         }
@@ -140,13 +137,17 @@ export default class DiffViewEditorPane extends React.Component {
   _updateDiffView(oldProps: Props): void {
     const newProps = this.props;
     const diffEditorUpdated = oldProps.textBuffer !== newProps.textBuffer;
-    if (diffEditorUpdated || oldProps.initialTextContent !== this.props.initialTextContent) {
-      this._setTextContent(newProps.filePath, newProps.initialTextContent);
+    // The Diff View can never edit the edited buffer contents.
+    if (newProps.readOnly &&
+      newProps.textContent != null &&
+      oldProps.textContent !== newProps.textContent
+    ) {
+      this._setTextContent(newProps.filePath, newProps.textContent);
     }
     if (diffEditorUpdated || !mapEqual(oldProps.offsets, newProps.offsets)) {
       this._setOffsets(newProps.offsets);
     }
-    if (!arrayEqual(oldProps.inlineElements, newProps.inlineElements)) {
+    if (diffEditorUpdated || !arrayEqual(oldProps.inlineElements, newProps.inlineElements)) {
       this._renderComponentsInline(newProps.inlineElements);
     }
     this._setHighlightedLines(newProps.highlightedLines);
