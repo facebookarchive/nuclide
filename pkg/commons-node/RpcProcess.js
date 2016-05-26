@@ -124,7 +124,7 @@ export default class RpcProcess<TReq, TResp> {
       case 'stdout':
         break;
       case 'stderr':
-        logger.error(`${this._name} - error from stderr received: `, message.data.toString());
+        logger.warn(`${this._name} - error from stderr received: `, message.data.toString());
         break;
       case 'exit':
         // Log exit code if process exited not as a result of being disposed.

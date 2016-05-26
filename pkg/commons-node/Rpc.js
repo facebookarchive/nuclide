@@ -106,7 +106,6 @@ export class Rpc<TReq, TRes> {
     this._index++;
     const message = createCallMessage(this._index, args);
     const messageString = JSON.stringify(message);
-    logger.debug(`${this._name} - Sending RPC: ${messageString}`);
     this._transport.sendMessage(messageString);
 
     return new Promise((resolve, reject) => {
@@ -126,12 +125,12 @@ export class Rpc<TReq, TRes> {
     try {
       messageObject = JSON.parse(messageString);
     } catch (e) {
-      logger.debug(`${this._name} - error: parsing RPC message.`);
+      logger.error(`${this._name} - error: parsing RPC message.`);
       return;
     }
 
     if (!isValidResponseMessage(messageObject)) {
-      logger.debug(`${this._name} - error: received invalid RPC response.`);
+      logger.error(`${this._name} - error: received invalid RPC response.`);
       return;
     }
     const response: ResponseMessage = messageObject;
@@ -139,7 +138,7 @@ export class Rpc<TReq, TRes> {
 
     const inProgress = this._inProgress.get(id);
     if (inProgress == null) {
-      logger.debug(`${this._name} - error: received RPC response with invalid index.`);
+      logger.error(`${this._name} - error: received RPC response with invalid index.`);
       return;
     }
 
@@ -149,10 +148,9 @@ export class Rpc<TReq, TRes> {
       // Stringify the error only if it's not already a string, to avoid extra
       // double quotes around strings.
       const errStr = (typeof error === 'string') ? error : JSON.stringify(error);
-      logger.debug(`${this._name} - error from RPC ${id}: ${errStr}`);
+      logger.error(`${this._name} - error from RPC ${id}: ${errStr}`);
       reject(new Error(errStr));
     } else {
-      logger.debug(`${this._name} - returning ${JSON.stringify(result)} from RPC ${id}`);
       invariant(result, `${this._name} - neither result or error received in response`);
       resolve(result);
     }
