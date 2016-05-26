@@ -153,7 +153,7 @@ function _callArcDiff(
     .fromPromise(getCommitBasedArcConfigDirectory(filePath))
     .flatMap((arcConfigDir: ?string) => {
       if (arcConfigDir == null) {
-        throw new Error('Failed to find Arcanist config.  Is this project set-up for Arcanist?');
+        throw new Error('Failed to find Arcanist config.  Is this project set up for Arcanist?');
       }
       const options = {
         'cwd': arcConfigDir,
