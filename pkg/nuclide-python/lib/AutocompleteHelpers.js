@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {JediCompletion} from './JediService';
+import type {JediCompletion} from '../../nuclide-python-base/lib/JediService';
 
 import {trackTiming} from '../../nuclide-analytics';
 import {TYPES} from './constants';
