@@ -15,6 +15,7 @@ from ctypes import *
 from declarationlocation import get_declaration_location_and_spelling
 import outline
 
+import argparse
 import json
 import getpass
 import hashlib
@@ -63,24 +64,6 @@ def set_up_logging(src):
     root_logger.addHandler(handler)
     root_logger.setLevel(logging.INFO)
     root_logger.info('starting for ' + src)
-
-
-def wait_for_init():
-    fd = FD_FOR_READING
-    mode = 'r'
-    buffering = 1  # 1 means line-buffered.
-    input_stream = os.fdopen(fd, mode, buffering)
-    output_stream = sys.stdout
-    first_line = input_stream.readline()
-    if first_line.startswith('init:'):
-        src = first_line[5:-1]
-        # Client is initiating connection. Acknowledge!
-        output_stream.write('ack\n')
-        output_stream.flush()
-        return src, input_stream, output_stream
-    else:
-        # Fail: did not receive proper initialization sequence.
-        sys.exit(2)
 
 
 def child_diagnostics(lib, diag):
@@ -320,7 +303,7 @@ class Server:
         if not translation_unit:
             return
 
-        location = translation_unit.get_location(src, (line + 1, column + 1))
+        location = translation_unit.get_location(self.src, (line + 1, column + 1))
         cursor = Cursor.from_location(translation_unit, location)
         cursor = cursor.referenced
         if cursor is None:
@@ -457,9 +440,13 @@ class Server:
 
 
 if __name__ == '__main__':
-    lib_clang_file = os.environ.get('LIB_CLANG_LIBRARY_FILE')
-    if lib_clang_file:
-        Config.set_library_file(lib_clang_file)
-    src, input_stream, output_stream = wait_for_init()
-    set_up_logging(src)
-    Server(src, input_stream, output_stream).run()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('src', metavar='<path>', type=str,
+                        help='Full path of source file to analyze.')
+    parser.add_argument('--libclang-file', help='Path to libclang dynamic library')
+    args = parser.parse_args()
+
+    if args.libclang_file:
+        Config.set_library_file(args.libclang_file)
+    set_up_logging(args.src)
+    Server(args.src, sys.stdin, sys.stdout).run()

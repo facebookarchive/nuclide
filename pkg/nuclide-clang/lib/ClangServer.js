@@ -26,7 +26,6 @@ import findClangServerArgs from './find-clang-server-args';
 const DYLD_WARNING = 'dyld: warning, LC_RPATH';
 
 const logger = getLogger();
-const pathToLibClangServer = path.join(__dirname, '../python/clang_server.py');
 
 let getDefaultFlags;
 async function augmentDefaultFlags(src: string, flags: Array<string>): Promise<Array<string>> {
@@ -279,21 +278,18 @@ export default class ClangServer {
   async createAsyncConnection(src: string): Promise<Connection> {
     return await new Promise(async (resolve, reject) => {
       const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = await findClangServerArgs();
+      const pathToLibClangServer = path.join(__dirname, '../python/clang_server.py');
       const env: any = {
         PYTHONPATH: pythonPathEnv,
       };
-      // Note: undefined values in `env` get serialized to the string "undefined".
-      // Thus we have to make sure the key only gets set for valid values.
+      const args = [pathToLibClangServer, src];
       if (libClangLibraryFile != null) {
-        // On Mac OSX El Capitan, bash seems to wipe out the `LD_LIBRARY_PATH` and
-        // `DYLD_LIBRARY_PATH` environment variables. So, set this env var which is read by
-        // clang_server.py to explicitly set the file path to load.
-        env.LIB_CLANG_LIBRARY_FILE = libClangLibraryFile;
+        args.push('--libclang-file', libClangLibraryFile);
       }
       const options = {
         cwd: path.dirname(pathToLibClangServer),
         // The process should use its ordinary stderr for errors.
-        stdio: ['pipe', null, 'pipe', 'pipe'],
+        stdio: 'pipe',
         detached: false, // When Atom is killed, clang_server.py should be killed, too.
         env,
       };
@@ -301,7 +297,7 @@ export default class ClangServer {
       // Note that safeSpawn() often overrides options.env.PATH, but that only happens when
       // options.env is undefined (which is not the case here). This will only be an issue if the
       // system cannot find `pythonExecutable`.
-      const child = await safeSpawn(pythonExecutable, /* args */ [pathToLibClangServer], options);
+      const child = await safeSpawn(pythonExecutable, args, options);
 
       child.on('close', exitCode => {
         if (!this._disposed) {
@@ -316,8 +312,7 @@ export default class ClangServer {
           logger.error('Error receiving data', error);
         }
       });
-      /* $FlowFixMe - update Flow defs for ChildProcess */
-      const writableStream = child.stdio[3];
+      const writableStream = child.stdin;
       writableStream.on('error', error => {
         logger.error('Error writing data', error);
       });
@@ -326,27 +321,17 @@ export default class ClangServer {
       child.on('exit', () => {
         childRunning = false;
       });
-      // Make sure the bidirectional communication channel is set up before
-      // resolving this Promise.
-      child.stdout.once('data', (data: Buffer) => {
-        if (data.toString().trim() === 'ack') {
-          const result = {
-            dispose: () => {
-              if (childRunning) {
-                child.kill();
-                childRunning = false;
-              }
-            },
-            process: child,
-            readableStream: child.stdout,
-            writableStream,
-          };
-          resolve(result);
-        } else {
-          reject(data);
-        }
+      resolve({
+        dispose: () => {
+          if (childRunning) {
+            child.kill();
+            childRunning = false;
+          }
+        },
+        process: child,
+        readableStream: child.stdout,
+        writableStream,
       });
-      writableStream.write(`init:${src}\n`);
     });
   }
 
