@@ -15,11 +15,27 @@ type FetchProjectDirectoriesAction = {
   type: 'fetch-project-repositories';
 };
 
+type SetDirectoryRepository = {
+  payload: {
+    directory: atom$Directory;
+    repository: atom$Repository;
+  };
+  type: 'set-directory-repository';
+};
+
 type SetProjectDirectoriesAction = {
   payload: {
     projectDirectories: Array<atom$Directory>;
   };
   type: 'set-project-directories';
+};
+
+type SetRepositoryBookmarks = {
+  payload: {
+    bookmarks: Array<BookmarkInfo>;
+    repository: atom$Repository;
+  };
+  type: 'set-repository-bookmarks';
 };
 
 type UpdateToBookmarkAction = {
@@ -32,5 +48,7 @@ type UpdateToBookmarkAction = {
 
 export type Action =
   FetchProjectDirectoriesAction
+  | SetDirectoryRepository
   | SetProjectDirectoriesAction
+  | SetRepositoryBookmarks
   | UpdateToBookmarkAction;

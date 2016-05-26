@@ -15,9 +15,13 @@ import type {NuclideSideBarService} from '../../nuclide-side-bar';
 
 import * as ActionType from './ActionType';
 import {applyActionMiddleware} from './applyActionMiddleware';
+import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 import Commands from './Commands';
+import {CompositeDisposable, Disposable} from 'atom';
+import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import Rx from 'rxjs';
+import VcsSideBarComponent from './VcsSideBarComponent';
 
 export type AppState = {
   projectBookmarks: Map<string, Array<BookmarkInfo>>;
@@ -43,8 +47,8 @@ function getInitialState() {
 }
 
 let commands: Commands;
+let disposables: CompositeDisposable;
 let states: Rx.BehaviorSubject<AppState>;
-let subscription: Rx.Subscription;
 
 export function activate(rawState: Object): void {
   const initialState = getInitialState();
@@ -57,16 +61,40 @@ export function activate(rawState: Object): void {
   const dispatch = action => { actions.next(action); };
   commands = new Commands(dispatch, () => states.getValue());
 
-  subscription = observableFromSubscribeFunction(
+  const subscription = observableFromSubscribeFunction(
       atom.project.onDidChangePaths.bind(atom.project)
     )
     .startWith(null) // Start with a fake event to fetch initial directories.
     .subscribe(() => {
       commands.fetchProjectDirectories();
     });
+
+  disposables = new CompositeDisposable(
+    new DisposableSubscription(states),
+    new DisposableSubscription(subscription)
+  );
 }
 
 export function consumeNuclideSideBar(sideBar: NuclideSideBarService): void {
+  sideBar.registerView({
+    getComponent() {
+      const props = states.map(state => ({
+        deleteBookmark: commands.deleteBookmark,
+        projectBookmarks: state.projectBookmarks,
+        projectDirectories: state.projectDirectories,
+        projectRepositories: state.projectRepositories,
+        updateToBookmark: commands.updateToBookmark,
+      }));
+
+      return bindObservableAsProps(props, VcsSideBarComponent);
+    },
+    onDidShow() {},
+    title: 'Version Control',
+    toggleCommand: 'nuclide-vcs-side-bar:toggle',
+    viewId: 'nuclide-vcs-side-bar',
+  });
+
+  disposables.add(new Disposable(() => { sideBar.destroyView('nuclide-vcs-side-bar'); }));
 }
 
 function accumulateState(state: AppState, action: Action): AppState {
@@ -120,6 +148,5 @@ function accumulateState(state: AppState, action: Action): AppState {
 }
 
 export function deactivate(): void {
-  states.unsubscribe();
-  subscription.unsubscribe();
+  disposables.dispose();
 }
