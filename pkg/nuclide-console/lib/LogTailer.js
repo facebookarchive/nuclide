@@ -88,8 +88,8 @@ export class LogTailer {
 
     this._running = false;
 
-    if (this._disposables != null) {
-      this._disposables.dispose();
+    if (this._subscription != null) {
+      this._subscription.unsubscribe();
     }
   }
 
