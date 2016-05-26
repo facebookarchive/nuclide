@@ -9,16 +9,14 @@
  * the root directory of this source tree.
  */
 
+import type {Action} from './types';
 import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService';
 import type {NuclideSideBarService} from '../../nuclide-side-bar';
 
 import {applyActionMiddleware} from './applyActionMiddleware';
+import Commands from './Commands';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 import Rx from 'rxjs';
-
-export type Action = {
-  payload: Object;
-  type: string;
-};
 
 export type AppState = {
   projectBookmarks: Map<string, Array<BookmarkInfo>>;
@@ -43,7 +41,9 @@ function getInitialState() {
   };
 }
 
+let commands: Commands;
 let states: Rx.BehaviorSubject<AppState>;
+let subscription: Rx.Subscription;
 
 export function activate(rawState: Object): void {
   const initialState = getInitialState();
@@ -52,6 +52,17 @@ export function activate(rawState: Object): void {
     applyActionMiddleware(actions, () => states.getValue()),
     initialState
   );
+
+  const dispatch = action => { actions.next(action); };
+  commands = new Commands(dispatch, () => states.getValue());
+
+  subscription = observableFromSubscribeFunction(
+      atom.project.onDidChangePaths.bind(atom.project)
+    )
+    .startWith(null) // Start with a fake event to fetch initial directories.
+    .subscribe(() => {
+      commands.fetchProjectDirectories();
+    });
 }
 
 export function consumeNuclideSideBar(sideBar: NuclideSideBarService): void {
@@ -68,4 +79,5 @@ function accumulateState(state: AppState, action: Action): AppState {
 
 export function deactivate(): void {
   states.unsubscribe();
+  subscription.unsubscribe();
 }

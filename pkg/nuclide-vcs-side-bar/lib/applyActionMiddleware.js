@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState} from '..';
+import type {Action} from './types';
+import type {AppState} from '..';
 
 import Rx from 'rxjs';
 
