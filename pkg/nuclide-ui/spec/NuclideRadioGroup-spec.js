@@ -66,7 +66,7 @@ describe('RadioGroup', () => {
     const props = {
       optionLabels: ['foo', 'bar'],
       selectedIndex: 0,
-      onSelectedChange: onSelectedChange,
+      onSelectedChange,
     };
     const component = renderIntoDocument(
       <RadioGroup {...props} />

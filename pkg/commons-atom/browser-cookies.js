@@ -15,7 +15,7 @@ export default {
   getCookies(domain: string): Promise<{[key: string]: string}> {
     return new Promise((resolve, reject) => {
       remote.getCurrentWindow().webContents.session.cookies.get({
-        domain: domain,
+        domain,
       }, (error, cookies) => {
         if (error) {
           reject(error);
@@ -33,10 +33,10 @@ export default {
   setCookie(url: string, domain: string, name: string, value: string): Promise<void> {
     return new Promise((resolve, reject) => {
       remote.getCurrentWindow().webContents.session.cookies.set({
-        url: url,
-        domain: domain,
-        name: name,
-        value: value,
+        url,
+        domain,
+        name,
+        value,
       }, error => {
         if (error) {
           reject(error);

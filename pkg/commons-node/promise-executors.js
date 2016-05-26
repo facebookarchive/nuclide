@@ -45,7 +45,7 @@ export class PromisePool {
    */
   submit(executor: Executor): Promise {
     const id = this._getNextRequestId();
-    this._fifo.push({id: id, executor: executor});
+    this._fifo.push({id, executor});
     const promise = new Promise((resolve, reject) => {
       this._emitter.once(id, result => {
         const {isSuccess, value} = result;

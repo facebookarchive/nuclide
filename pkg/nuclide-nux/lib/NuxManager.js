@@ -64,8 +64,8 @@ export class NuxManager {
     this._emitter.emit(
       'newTour',
       {
-        nuxTour: nuxTour,
-        nuxTourModel: nuxTourModel,
+        nuxTour,
+        nuxTourModel,
       },
     );
   }

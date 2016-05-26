@@ -29,7 +29,7 @@ export function dispatchKeyboardEvent(
 ): void {
   const {alt, cmd, ctrl, shift} = metaKeys;
   const event = atom.keymaps.constructor.buildKeydownEvent(key, {
-    target: target,
+    target,
     alt: Boolean(alt),
     cmd: Boolean(cmd),
     ctrl: Boolean(ctrl),

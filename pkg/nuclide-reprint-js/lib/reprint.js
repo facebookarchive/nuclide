@@ -131,7 +131,7 @@ function reprint(source: string, nullableOptions?: Options): Output {
   const lines = flatten(printWithWrappers(ast, {
     invalidLeadingComments: getInvalidLeadingComments(ast),
     invalidTrailingComments: getInvalidTrailingComments(ast),
-    options: options,
+    options,
     path: Immutable.List(),
   }));
   return resolveLines(lines, options);

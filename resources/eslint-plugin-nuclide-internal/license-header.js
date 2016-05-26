@@ -106,7 +106,7 @@ module.exports = context => {
         }
       } else {
         context.report({
-          node: node,
+          node,
           message: 'Expected a license header',
         });
       }

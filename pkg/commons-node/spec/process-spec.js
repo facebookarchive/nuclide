@@ -58,7 +58,7 @@ describe('commons-node/process', () => {
         const PATH = process.env.PATH;
         invariant(PATH != null);
         expect(
-          await createExecEnvironment({foo: 'bar', PATH: PATH}, ['/abc/def'])
+          await createExecEnvironment({foo: 'bar', PATH}, ['/abc/def'])
         ).toEqual({foo: 'bar', PATH: PATH + path.delimiter + '/abc/def'});
       });
     });

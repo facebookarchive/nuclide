@@ -67,7 +67,7 @@ export function oldFlowStatusOutputToDiagnostics(
 
   return {
     flowRoot: root,
-    messages: messages,
+    messages,
   };
 }
 

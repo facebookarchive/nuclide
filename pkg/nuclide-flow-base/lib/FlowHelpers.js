@@ -19,7 +19,7 @@ import invariant from 'assert';
 
 const flowConfigDirCache = LRU({
   max: 10,
-  length: function(n) { return n.length; },
+  length(n) { return n.length; },
   maxAge: 1000 * 30, //30 seconds
 });
 const flowPathCache = LRU({
@@ -46,7 +46,7 @@ function processAutocompleteItem(replacementPrefix: string, flowItem: Object): O
     ? flowItem['type']
     : flowItem['type'].substring(0, 80) + ' ...';
   let result = {
-    description: description,
+    description,
     displayText: flowItem['name'],
     replacementPrefix,
   };

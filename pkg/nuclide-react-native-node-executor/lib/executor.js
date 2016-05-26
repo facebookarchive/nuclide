@@ -20,7 +20,7 @@ var currentContext = null;
 process.on('message', function(request) {
   switch (request.method) {
     case 'prepareJSRuntime':
-      currentContext = vm.createContext({console: console});
+      currentContext = vm.createContext({console});
       sendResult(request.id);
       return;
 
@@ -82,14 +82,14 @@ function sendResult(replyId, result) {
   process.send({
     kind: 'result',
     replyId,
-    result: result,
+    result,
   });
 }
 
 function sendError(message) {
   process.send({
     kind: 'error',
-    message: message,
+    message,
   });
 }
 

@@ -90,7 +90,7 @@ describe('Bridge', () => {
   function sendIpcNotification(...args: any[]) {
     mockWebview._simulateDispatch('ipc-message', {
       channel: 'notification',
-      args: args,
+      args,
     });
   }
 

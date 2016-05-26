@@ -68,7 +68,7 @@ function raiseNativeNotification(title: string, body: string): void {
   // eslint-disable-next-line no-new, no-undef
   new Notification(
     title, {
-      body: body,
+      body,
       icon: 'atom://nuclide/pkg/nuclide-notifications/notification.png',
     }
   );

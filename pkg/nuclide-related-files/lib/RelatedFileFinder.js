@@ -52,8 +52,8 @@ export default class RelatedFileFinder {
     }
 
     return {
-      relatedFiles: relatedFiles,
-      index: index,
+      relatedFiles,
+      index,
     };
   }
 

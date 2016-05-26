@@ -116,7 +116,7 @@ class ConnectionDialog extends React.Component {
       indexOfSelectedConnectionProfile: props.indexOfInitiallySelectedConnectionProfile,
       instructions: '',
       mode: REQUEST_CONNECTION_DETAILS,
-      sshHandshake: sshHandshake,
+      sshHandshake,
     };
 
     (this: any).cancel = this.cancel.bind(this);

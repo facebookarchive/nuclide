@@ -19,7 +19,7 @@ module.exports = function(context) {
       const lastToken = context.getLastToken(node);
       if (!isSemicolon(lastToken)) {
         context.report({
-          node: node,
+          node,
           message: 'Missing semicolon.',
           fix(fixer) {
             return fixer.insertTextAfter(lastToken, ';');

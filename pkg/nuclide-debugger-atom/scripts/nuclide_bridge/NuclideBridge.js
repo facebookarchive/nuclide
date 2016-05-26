@@ -229,7 +229,7 @@ class NuclideBridge {
 
   sendOpenSourceLocation(sourceURL: string, line: number) {
     ipc.sendToHost('notification', 'OpenSourceLocation', {
-      sourceURL: sourceURL,
+      sourceURL,
       lineNumber: line,
     });
   }

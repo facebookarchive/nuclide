@@ -52,14 +52,14 @@ function processMessage(message) {
 
     function sendSuccessResponse(result) {
       process.send({
-        id: id,
-        result: result,
+        id,
+        result,
       });
     }
 
     function sendErrorResponse(err) {
       process.send({
-        id: id,
+        id,
         error: {
           message: err.message,
           stack: err.stack,

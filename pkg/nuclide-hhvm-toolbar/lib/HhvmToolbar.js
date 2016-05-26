@@ -91,7 +91,7 @@ class HhvmToolbar extends React.Component {
     // TODO[jeffreytan]: this is ugly, refactor to make it more elegant.
     if (!this._isTargetLaunchable(nextProps.targetFilePath)) {
       selectedIndex = DEFAULT_OPTION_INDEX;
-      this.setState({selectedIndex: selectedIndex});
+      this.setState({selectedIndex});
     }
     this.refs.debugTarget.setText(this._getDebugTarget(selectedIndex, nextProps.targetFilePath));
   }

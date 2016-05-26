@@ -135,7 +135,7 @@ class FileDialogComponent extends React.Component {
   _handleAdditionalOptionChanged(name: string, isChecked: boolean): void {
     const {options} = this.state;
     options[name] = isChecked;
-    this.setState({options: options});
+    this.setState({options});
   }
 
   _handleDocumentClick(event: Event): void {

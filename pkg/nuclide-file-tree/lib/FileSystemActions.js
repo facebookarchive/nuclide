@@ -234,7 +234,7 @@ const FileSystemActions = {
     }
     this._openDialog({
       iconClassName: 'icon-arrow-right',
-      initialValue: initialValue,
+      initialValue,
       message: <span>Enter the new path for the duplicate.</span>,
       onConfirm: (newBasename: string, options: {addToVCS?: boolean}) => {
         const file = FileTreeHelpers.getFileByKey(node.uri);

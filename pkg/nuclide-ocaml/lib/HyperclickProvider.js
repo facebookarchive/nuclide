@@ -53,7 +53,7 @@ module.exports = {
 
     return {
       range,
-      callback: async function() {
+      async callback() {
         await instance.pushNewBuffer(file, textEditor.getText());
         const location = await instance.locate(
           file,

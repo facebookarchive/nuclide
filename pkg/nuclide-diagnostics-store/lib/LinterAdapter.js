@@ -45,7 +45,7 @@ export function linterMessageToDiagnosticMessage(
       text: msg.text,
       html: msg.html,
       range: msg.range && Range.fromObject(msg.range),
-      trace: trace,
+      trace,
       fix: msg.fix == null ? undefined : {
         oldRange: msg.fix.range,
         oldText: msg.fix.oldText,
@@ -60,7 +60,7 @@ export function linterMessageToDiagnosticMessage(
       text: msg.text,
       html: msg.html,
       range: msg.range && Range.fromObject(msg.range),
-      trace: trace,
+      trace,
     }: ProjectDiagnosticMessage);
   }
 }

@@ -182,7 +182,7 @@ export class FileTreeStore {
 
     return {
       version: VERSION,
-      childKeyMap: childKeyMap,
+      childKeyMap,
       expandedKeysByRoot,
       rootKeys,
       selectedKeysByRoot,

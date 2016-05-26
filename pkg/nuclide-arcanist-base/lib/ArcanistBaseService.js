@@ -186,7 +186,7 @@ async function execArcLint(cwd: string, filePaths: Array<NuclideUri>, skip: Arra
   if (skip.length > 0) {
     args.push('--skip', skip.join(','));
   }
-  const options = {'cwd': cwd};
+  const options = {cwd};
   const result = await checkOutput('arc', args, options);
 
   const output: Map<string, Array<Object>> = new Map();

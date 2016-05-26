@@ -252,7 +252,7 @@ module.exports = {
     'no-useless-computed-key': 1,
     'no-useless-constructor': 0,
     'no-var': 1,
-    // 'object-shorthand': 1,
+    'object-shorthand': 0, // Enforced by babel/object-shorthand
     'prefer-arrow-callback': [1, {'allowNamedFunctions': true}],
     'prefer-const': 1,
     'prefer-reflect': 0,
@@ -270,7 +270,7 @@ module.exports = {
     'babel/generator-star-spacing': 1,
     'babel/new-cap': 0,
     'babel/object-curly-spacing': 0,
-    'babel/object-shorthand': 0,
+    'babel/object-shorthand': 1,
     // Babel (not in eslint)
     'babel/no-await-in-loop': 1,
     'babel/flow-object-type': [1, 'semicolon'],

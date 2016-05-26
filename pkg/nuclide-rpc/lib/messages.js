@@ -157,7 +157,7 @@ export function createNextMessage(requestId: number, data: any): ObservableRespo
     requestId,
     result: {
       type: 'next',
-      data: data,
+      data,
     },
   };
 }

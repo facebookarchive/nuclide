@@ -47,6 +47,10 @@ function reset<T>(field: string, constructor: () => T): T {
 }
 
 export default {
+  // Disable Object shorthand on the following line because an issue in Flow prevents using
+  // shorthand with the reserved word "get" (among others).
+  //
+  // eslint-disable-next-line babel/object-shorthand
   get: get,
   clear,
   reset,

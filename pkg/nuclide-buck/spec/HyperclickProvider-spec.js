@@ -95,7 +95,7 @@ describe('HyperclickProvider', () => {
                 expect(location).toEqual(
                   {
                     path: projectPath + file,
-                    line: line,
+                    line,
                     column: 0,
                   });
               } else {

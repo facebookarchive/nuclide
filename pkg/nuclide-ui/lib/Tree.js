@@ -28,7 +28,7 @@ export const TreeItem = (props: TreeItemProps) => {
     <li className={classnames(
       className,
       {
-        'selected': selected,
+        selected,
       },
       'list-item',
     )}
@@ -63,8 +63,8 @@ export const NestedTreeItem = (props: NestedTreeItemProps) => {
     <li className={classnames(
       className,
       {
-        'selected': selected,
-        'collapsed': collapsed,
+        selected,
+        collapsed,
       },
       'list-nested-item',
     )}

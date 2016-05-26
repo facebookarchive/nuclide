@@ -19,7 +19,7 @@ export function getConnectionDialogDefaultSettings(): NuclideRemoteConnectionPar
   const {username, homedir} = userInfo();
   return {
     server: '',
-    username: username,
+    username,
     // Do not use path.join() because we assume that the remote machine is *nix,
     // so we always want to use `/` as the path separator for cwd, even if Atom
     // is running on Windows.

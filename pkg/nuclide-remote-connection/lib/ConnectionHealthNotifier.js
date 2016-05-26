@@ -114,7 +114,7 @@ export class ConnectionHealthNotifier {
         data: {
           code: code || '',
           message: message || '',
-          host: host,
+          host,
         },
       });
       logger.info('Heartbeat network error:', code, originalCode, message);

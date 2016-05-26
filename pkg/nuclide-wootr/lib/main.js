@@ -76,7 +76,7 @@ export class WString {
           },
           visible: true,
           startDegree: 1,
-          length: length,
+          length,
         },
         length,
       );
@@ -317,7 +317,7 @@ export class WString {
 
     this.integrateIns(c, prevChar, nextChar);
 
-    return {type: 'INS', char: {...c}, prev: prevChar, next: nextChar, text: text};
+    return {type: 'INS', char: {...c}, prev: prevChar, next: nextChar, text};
   }
 
   // Main wooto algorithm. see: "Wooki: a P2P Wiki-based Collaborative Writing Tool"
@@ -353,7 +353,7 @@ export class WString {
         h: char.id.h,
       },
       startDegree: char.degree,
-      visible: visible,
+      visible,
       length: 1,
     };
   }

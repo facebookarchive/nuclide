@@ -56,7 +56,7 @@ module.exports = {
       return {
         text: item.name,
         rightLabel: (item.desc === '' ? '(module)' : item.desc),
-        replacementPrefix: replacementPrefix,
+        replacementPrefix,
       };
     });
   },

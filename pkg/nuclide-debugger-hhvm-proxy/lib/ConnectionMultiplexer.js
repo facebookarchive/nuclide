@@ -298,7 +298,7 @@ export class ConnectionMultiplexer {
 
   _sendOutput(message: string, level: string): void {
     this._clientCallback.sendUserMessage('outputWindow', {
-      level: level,
+      level,
       text: message,
     });
   }

@@ -194,7 +194,7 @@ class Activation {
     return {
       // Intentionally **not** an arrow function because Atom sets the context when calling this and
       // allows dynamically setting values by assigning to `this`.
-      created: function(event) {
+      created(event) {
         let target = (((event.target): any): HTMLElement);
         if (target.dataset.name === undefined) {
           // If the event did not happen on the `name` span, search for it in the descendants.

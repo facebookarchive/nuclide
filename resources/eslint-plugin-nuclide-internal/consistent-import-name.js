@@ -81,9 +81,9 @@ module.exports = function(context) {
     const allowedNames = ALLOWED_NAMES_BY_MODULE[id];
     if (allowedNames.indexOf(name) === -1) {
       context.report({
-        node: node,
+        node,
         data: {
-          id: id,
+          id,
           names: prettyNames(allowedNames),
         },
         message: '{{id}} should be named {{names}}',

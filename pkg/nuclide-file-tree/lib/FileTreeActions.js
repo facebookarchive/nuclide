@@ -177,7 +177,7 @@ class FileTreeActions {
         ActionType.COLLAPSE_NODE :
         ActionType.EXPAND_NODE;
       this._dispatcher.dispatch({
-        actionType: actionType,
+        actionType,
         nodeKey,
         rootKey,
       });

@@ -149,7 +149,7 @@ export class DebuggerHandler extends Handler {
     const path = uriToPath(url);
     const breakpointId = this._connectionMultiplexer.setBreakpoint(path, lineNumber + 1);
     this.replyToCommand(id, {
-      breakpointId: breakpointId,
+      breakpointId,
       locations: [
         {
           lineNumber,

@@ -53,7 +53,7 @@ export async function datatip(editor: TextEditor, position: atom$Point): Promise
   return {
     component: makeDiagnosticsDatatipComponent(message),
     pinnable: false,
-    range: range,
+    range,
   };
 }
 

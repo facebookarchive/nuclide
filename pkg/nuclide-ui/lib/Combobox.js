@@ -143,7 +143,7 @@ export class Combobox extends React.Component {
       error: null,
       loadingOptions: false,
       options: newOptions,
-      filteredOptions: filteredOptions,
+      filteredOptions,
     });
   }
 
@@ -172,7 +172,7 @@ export class Combobox extends React.Component {
           const valueLowercase = option.toLowerCase();
           return {
             value: option,
-            valueLowercase: valueLowercase,
+            valueLowercase,
             matchIndex: valueLowercase.indexOf(lowerCaseState),
           };
         }
@@ -203,7 +203,7 @@ export class Combobox extends React.Component {
     this.setState({
       textInput: newText,
       optionsVisible: true,
-      filteredOptions: filteredOptions,
+      filteredOptions,
       selectedIndex,
     });
     this.props.onChange(newText);

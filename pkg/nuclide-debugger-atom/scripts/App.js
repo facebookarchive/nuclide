@@ -54,7 +54,7 @@ window.loadScriptsPromise = (function(original) {
 
 // WebInspector.SourceMap indirectly needs this in order to load inline source maps.
 window.InspectorFrontendHost = {
-  loadNetworkResource: function(url, headers, streamId, callback) {
+  loadNetworkResource(url, headers, streamId, callback) {
     const dataPrefix = 'data:application/json;base64,';
     if (url.startsWith(dataPrefix)) {
       const response = window.atob(url.slice(dataPrefix.length));
