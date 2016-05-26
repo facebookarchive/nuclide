@@ -79,6 +79,7 @@ export function consumeNuclideSideBar(sideBar: NuclideSideBarService): void {
   sideBar.registerView({
     getComponent() {
       const props = states.map(state => ({
+        createBookmark: commands.createBookmark,
         deleteBookmark: commands.deleteBookmark,
         projectBookmarks: state.projectBookmarks,
         projectDirectories: state.projectDirectories,

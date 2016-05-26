@@ -29,15 +29,30 @@ export default class Commands {
     this._getState = getState;
 
     // Bind to allow methods to be passed as callbacks.
+    (this: any).createBookmark = this.createBookmark.bind(this);
     (this: any).deleteBookmark = this.deleteBookmark.bind(this);
     (this: any).updateToBookmark = this.updateToBookmark.bind(this);
   }
 
-  deleteBookmark(bookmark: BookmarkInfo, repository: atom$Repository): void {
-    const repositoryAsync = repository.async;
-    if (repositoryAsync.getType() !== 'hg') {
+  createBookmark(name: string, repository: atom$Repository): void {
+    if (repository.getType() !== 'hg') {
       return;
     }
+
+    const repositoryAsync = repository.async;
+
+    // Type was checked with `getType`. Downcast to safely access members with Flow.
+    invariant(repositoryAsync instanceof HgRepositoryClientAsync);
+
+    repositoryAsync.createBookmark(name);
+  }
+
+  deleteBookmark(bookmark: BookmarkInfo, repository: atom$Repository): void {
+    if (repository.getType() !== 'hg') {
+      return;
+    }
+
+    const repositoryAsync = repository.async;
 
     // Type was checked with `getType`. Downcast to safely access members with Flow.
     invariant(repositoryAsync instanceof HgRepositoryClientAsync);

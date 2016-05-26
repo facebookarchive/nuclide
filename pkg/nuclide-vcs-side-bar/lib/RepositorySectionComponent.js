@@ -11,6 +11,7 @@
 
 import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService';
 
+import {Button} from '../../nuclide-ui/lib/Button';
 import classnames from 'classnames';
 import invariant from 'assert';
 import {React} from 'react-for-atom';
@@ -21,6 +22,7 @@ type Props = {
   onBookmarkClick: (bookmark: BookmarkInfo, repository: atom$Repository) => mixed;
   onBookmarkContextMenu:
     (bookmark: BookmarkInfo, repository: atom$Repository, event: SyntheticMouseEvent) => mixed;
+  onRepoGearClick: (repository: atom$Repository, event: SyntheticMouseEvent) => mixed;
   onUncommittedChangesClick: (repository: atom$Repository) => mixed;
   repository: ?atom$Repository;
   selectedBookmark: ?BookmarkInfo;
@@ -41,6 +43,7 @@ export default class RepositorySectionComponent extends React.Component {
   constructor(props: Props) {
     super(props);
     (this: any)._handleBookmarkContextMenu = this._handleBookmarkContextMenu.bind(this);
+    (this: any)._handleRepoGearClick = this._handleRepoGearClick.bind(this);
     (this: any)._handleUncommittedChangesClick = this._handleUncommittedChangesClick.bind(this);
   }
 
@@ -54,6 +57,11 @@ export default class RepositorySectionComponent extends React.Component {
     this.props.onBookmarkContextMenu(bookmark, this.props.repository, event);
   }
 
+  _handleRepoGearClick(event: SyntheticMouseEvent) {
+    invariant(this.props.repository != null);
+    this.props.onRepoGearClick(this.props.repository, event);
+  }
+
   _handleUncommittedChangesClick() {
     invariant(this.props.repository != null);
     this.props.onUncommittedChangesClick(this.props.repository);
@@ -64,9 +72,18 @@ export default class RepositorySectionComponent extends React.Component {
 
     let bookmarksBranchesHeader;
     let bookmarksBranchesList;
+    let createButton;
     if (repository != null) {
       if (repository.getType() === 'hg') {
         bookmarksBranchesHeader = 'BOOKMARKS';
+        createButton = (
+          <Button
+            icon="plus"
+            onClick={this._handleRepoGearClick}
+            size="SMALL"
+            style={{marginTop: '6px', position: 'absolute', right: '10px'}}
+          />
+        );
       } else if (repository.getType() === 'git') {
         bookmarksBranchesHeader = 'BRANCHES';
       } else {
@@ -143,6 +160,7 @@ export default class RepositorySectionComponent extends React.Component {
             </span>
           </li>
         </ul>
+        {createButton}
         <h6 className="nuclide-vcs-side-bar--header">
           {bookmarksBranchesHeader}
         </h6>

@@ -13,6 +13,7 @@ import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService'
 import type {Directory} from 'atom';
 
 import {CompositeDisposable} from 'atom';
+import CreateBookmarkModalComponent from './CreateBookmarkModalComponent';
 import DeleteBookmarkModalComponent from './DeleteBookmarkModalComponent';
 import {React, ReactDOM} from 'react-for-atom';
 import RepositorySectionComponent from './RepositorySectionComponent';
@@ -21,6 +22,7 @@ import remote from 'remote';
 const Menu = remote.require('menu');
 
 type Props = {
+  createBookmark: (name: string, repo: atom$Repository) => mixed;
   deleteBookmark: (bookmark: BookmarkInfo, repo: atom$Repository) => mixed;
   projectBookmarks: Map<string, Array<BookmarkInfo>>;
   projectDirectories: Array<Directory>;
@@ -29,7 +31,7 @@ type Props = {
 };
 
 type State = {
-  activeModalComponent?: Object;
+  activeModalComponent: ?Object;
   selectedBookmark?: Object;
 };
 
@@ -44,18 +46,22 @@ export default class VcsSideBarComponent extends React.Component {
   constructor(props: Props) {
     super(props);
     this._disposables = new CompositeDisposable();
-    this.state = {};
+    this.state = {
+      activeModalComponent: null,
+    };
 
+    (this: any)._confirmCreateBookmark = this._confirmCreateBookmark.bind(this);
     (this: any)._confirmDeleteBookmark = this._confirmDeleteBookmark.bind(this);
-    (this: any)._destroyActiveModal = this._destroyActiveModal.bind(this);
+    (this: any)._clearActiveModalComponent = this._clearActiveModalComponent.bind(this);
     (this: any)._handleBookmarkClick = this._handleBookmarkClick.bind(this);
     (this: any)._handleBookmarkContextMenu = this._handleBookmarkContextMenu.bind(this);
+    (this: any)._handleRepoGearClick = this._handleRepoGearClick.bind(this);
     (this: any)._handleUncommittedChangesClick = this._handleUncommittedChangesClick.bind(this);
   }
 
   componentDidMount(): void {
     this._disposables.add(
-      atom.commands.add('atom-workspace', 'core:cancel', this._destroyActiveModal)
+      atom.commands.add('atom-workspace', 'core:cancel', this._clearActiveModalComponent)
     );
   }
 
@@ -77,9 +83,18 @@ export default class VcsSideBarComponent extends React.Component {
     }
   }
 
+  _clearActiveModalComponent(): void {
+    this.setState({activeModalComponent: null});
+  }
+
+  _confirmCreateBookmark(name: string, repo: atom$Repository): void {
+    this.props.createBookmark(name, repo);
+    this._clearActiveModalComponent();
+  }
+
   _confirmDeleteBookmark(bookmark: BookmarkInfo, repo: atom$Repository): void {
     this.props.deleteBookmark(bookmark, repo);
-    this._destroyActiveModal();
+    this._clearActiveModalComponent();
   }
 
   _destroyActiveModal(): void {
@@ -130,14 +145,13 @@ export default class VcsSideBarComponent extends React.Component {
             activeModalComponent: (
               <DeleteBookmarkModalComponent
                 bookmark={bookmark}
-                onCancel={this._destroyActiveModal}
+                onCancel={this._clearActiveModalComponent}
                 onDelete={this._confirmDeleteBookmark}
                 repo={repo}
               />
             ),
           });
         },
-        enabled: !bookmark.active,
         label: `Delete ${bookmark.bookmark}...`,
       },
     ]);
@@ -157,6 +171,26 @@ export default class VcsSideBarComponent extends React.Component {
         }, 35);
       }
     );
+  }
+
+  _handleRepoGearClick(repo: atom$Repository, event: SyntheticMouseEvent): void {
+    const menu = Menu.buildFromTemplate([
+      {
+        click: () => {
+          this.setState({
+            activeModalComponent: (
+              <CreateBookmarkModalComponent
+                onCancel={this._clearActiveModalComponent}
+                onCreate={this._confirmCreateBookmark}
+                repo={repo}
+              />
+            ),
+          });
+        },
+        label: 'Create bookmark...',
+      },
+    ]);
+    menu.popup(remote.getCurrentWindow(), event.clientX, event.clientY);
   }
 
   _handleUncommittedChangesClick(repo: atom$Repository): void {
@@ -183,6 +217,7 @@ export default class VcsSideBarComponent extends React.Component {
                 key={directory.getPath()}
                 onBookmarkClick={this._handleBookmarkClick}
                 onBookmarkContextMenu={this._handleBookmarkContextMenu}
+                onRepoGearClick={this._handleRepoGearClick}
                 onUncommittedChangesClick={this._handleUncommittedChangesClick}
                 repository={repository}
                 selectedBookmark={this.state.selectedBookmark}
