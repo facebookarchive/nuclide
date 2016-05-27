@@ -81,8 +81,13 @@ class JsTestRunner(object):
             if self._packages_to_test and name not in self._packages_to_test:
                 continue
 
-            if test_runner == 'apm' and not self._include_apm:
-                continue
+            if test_runner == 'apm':
+                if not self._include_apm:
+                    continue
+                # "apm test" exits with an error when there is no "spec" directory
+                if not os.path.isdir(os.path.join(pkg_path, 'spec')):
+                    logging.info('NO TESTS TO RUN FOR: %s', name)
+                    continue
 
             if package_config['testsCannotBeRunInParallel'] or not self._parallel:
                 test_bucket = serial_tests
@@ -144,11 +149,6 @@ def run_test(
 ):
     """Run test_cmd in the given pkg_path."""
     logging.info('Running `%s` in %s...', ' '.join(test_cmd), pkg_path)
-
-    # In Atom 1.2+, "apm test" exits with an error when there is no "spec" directory
-    if test_cmd == ['apm', 'test'] and not os.path.isdir(os.path.join(pkg_path, 'spec')):
-        logging.info('NO TESTS TO RUN FOR: %s', name)
-        return
 
     proc = subprocess.Popen(
         test_cmd,
