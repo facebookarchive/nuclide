@@ -90,13 +90,14 @@ export async function getCompletions(
   column: number,
 ): Promise<?JediCompletionsResult> {
   const server = await getJediServer(src);
-  return server.call({
-    method: 'get_completions',
-    src,
-    contents,
-    line,
-    column,
-  });
+  return server.call(
+    'get_completions',
+    {
+      src,
+      contents,
+      line,
+      column,
+    });
 }
 
 export async function getDefinitions(
@@ -106,13 +107,14 @@ export async function getDefinitions(
   column: number,
 ): Promise<?JediDefinitionsResult> {
   const server = await getJediServer(src);
-  return server.call({
-    method: 'get_definitions',
-    src,
-    contents,
-    line,
-    column,
-  });
+  return server.call(
+    'get_definitions',
+    {
+      src,
+      contents,
+      line,
+      column,
+    });
 }
 
 export async function getReferences(
@@ -122,11 +124,12 @@ export async function getReferences(
   column: number,
 ): Promise<?JediReferencesResult> {
   const server = await getJediServer(src);
-  return server.call({
-    method: 'get_references',
-    src,
-    contents,
-    line,
-    column,
-  });
+  return server.call(
+    'get_references',
+    {
+      src,
+      contents,
+      line,
+      column,
+    });
 }

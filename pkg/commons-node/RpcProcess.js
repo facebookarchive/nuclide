@@ -66,11 +66,12 @@ export default class RpcProcess<TReq, TResp> {
    * will resolve upon receiving a stdout response from the child process marked
    * the id of the request. The promise will be rejected if any errors occur.
    *
+   * @param  method  method name to call
    * @param  args    arbitrary payload to be sent with the request
    * @return         arbitrary payload, received as a response from the
    *                 child process.
    */
-  async call(args: TReq): Promise<TResp> {
+  async call(method: string, args: TReq): Promise<TResp> {
     invariant(
       !this._disposed,
       `${this._name} - Attempting to call on disposed connection: ${args}`
@@ -80,7 +81,7 @@ export default class RpcProcess<TReq, TResp> {
     invariant(this._process, 'process is null');
     invariant(this._rpc, 'rpc is null');
 
-    return this._rpc.call(args);
+    return this._rpc.call(method, args);
   }
 
   dispose(): void {

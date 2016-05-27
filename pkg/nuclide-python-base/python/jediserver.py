@@ -60,10 +60,10 @@ class JediServer:
 
         req = json.loads(line)
         id, data = req['id'], req['args']
+        method = req['method']
         res = {'type': 'response', 'id': id, 'result': {}}
 
         try:
-            method = data['method']
             script = jedi.api.Script(
                 source=data['contents'], line=data['line'] + 1,
                 column=data['column'], path=self.src)

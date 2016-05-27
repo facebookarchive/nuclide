@@ -96,7 +96,8 @@ export async function callHHClientUsingProcess(
   if (processInput != null) {
     args.push(processInput);
   }
-  const result = await hackProcess.call(args);
+  const method: string = args[0];
+  const result = await hackProcess.call(method, args.slice(1));
   return {
     hackRoot: hackProcess.getRoot(),
     result,

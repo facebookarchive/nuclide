@@ -38,11 +38,12 @@ describe('RpcProcess', () => {
 
   it('should be able to complete calls', () => {
     waitsForPromise(async () => {
-      const response = await server.call({
+      const response = await server.call(
         // All methods except 'kill' and 'error' return the same result in our
         // dummy server.
-        method: 'binarysystems',
-      });
+        'binarysystems',
+        {}
+      );
       expect(response).toEqual({
         hello: 'Hello World',
       });
@@ -52,7 +53,7 @@ describe('RpcProcess', () => {
   it('should be able to handle multiple calls', () => {
     waitsForPromise(async () => {
       const responses = await Promise.all(['a', 'b', 'c', 'd'].map(async method =>
-        await server.call({method})
+        await server.call(method, {})
       ));
       expect(responses.length).toBe(4);
       expect(responses).toEqual([
@@ -67,7 +68,7 @@ describe('RpcProcess', () => {
   it('should reject pending calls upon error', () => {
     waitsForPromise(async () => {
       try {
-        await server.call({method: 'error'});
+        await server.call('error', {});
         invariant(false, 'Fail - expected promise to reject');
       } catch (e) {
         expect(e.message).toEqual('Command to error received');
@@ -78,7 +79,7 @@ describe('RpcProcess', () => {
   it('should reject pending calls upon the child process exiting', () => {
     waitsForPromise(async () => {
       try {
-        await server.call({method: 'kill'});
+        await server.call('kill', {});
         invariant(false, 'Fail - expected promise to reject');
       } catch (e) {
         expect(e.message).toEqual('Server exited.');
@@ -89,7 +90,7 @@ describe('RpcProcess', () => {
   it('should recover gracefully after the child process exits', () => {
     waitsForPromise(async () => {
       try {
-        await server.call({method: 'kill'});
+        await server.call('kill', {});
         invariant(false, 'Fail - expected promise to reject');
       } catch (e) {
         // Ignore.
@@ -97,11 +98,12 @@ describe('RpcProcess', () => {
 
       // Subsequent request should process successfully, meaning the killed
       // child process has been restarted.
-      const response = await server.call({
+      const response = await server.call(
         // All methods except 'kill' and 'error' return the same result in our
         // dummy server.
-        method: 'polarbears',
-      });
+        'polarbears',
+        {}
+      );
       expect(response).toEqual({
         hello: 'Hello World',
       });

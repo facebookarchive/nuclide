@@ -36,8 +36,9 @@ describe('Rpc', () => {
     waitsForPromise(async () => {
       const transport = new MockTransport(['{"type":"response","id":1,"result":"result1"}']);
       const rpc = new Rpc('TestRPC', transport);
-      const result = rpc.call(['1', '2', '3']);
-      expect(transport.sentMessages).toEqual(['{"type":"call","id":1,"args":["1","2","3"]}']);
+      const result = rpc.call('m', ['1', '2', '3']);
+      expect(transport.sentMessages)
+        .toEqual(['{"type":"call","id":1,"method":"m","args":["1","2","3"]}']);
       transport.receiveMessages();
       expect(await result).toEqual('result1');
     });
@@ -47,8 +48,8 @@ describe('Rpc', () => {
     waitsForPromise(async () => {
       const transport = new MockTransport(['{"type":"response","id":1,"error":"error1"}']);
       const rpc = new Rpc('TestRPC', transport);
-      const result = rpc.call([]);
-      expect(transport.sentMessages).toEqual(['{"type":"call","id":1,"args":[]}']);
+      const result = rpc.call('m', []);
+      expect(transport.sentMessages).toEqual(['{"type":"call","id":1,"method":"m","args":[]}']);
       transport.receiveMessages();
       let hadError = false;
       try {

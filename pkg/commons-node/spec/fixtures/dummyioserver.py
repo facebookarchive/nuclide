@@ -27,9 +27,8 @@ class DummyIOServer:
     def process_request(self, line):
         req = json.loads(line)
         id, data = req['id'], req['args']
+        method = req['method']
         res = {'type': 'response', 'id': id}
-
-        method = data['method']
 
         if method == 'kill':
             sys.exit(0)

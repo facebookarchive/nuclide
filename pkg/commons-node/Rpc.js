@@ -22,6 +22,7 @@ const RESPONSE_MESSAGE_TYPE = 'response';
 type CallMessage<T> = {
   type: 'call';
   id: number;
+  method: string;
   args: T; // Typically Array<string | Object>
 };
 
@@ -42,10 +43,11 @@ type CallResolver<T> = {
   reject: (err: Error) => void;
 };
 
-export function createCallMessage<T>(id: number, args: T): CallMessage<T> {
+export function createCallMessage<T>(id: number, method: string, args: T): CallMessage<T> {
   return {
     type: CALL_MESSAGE_TYPE,
     id,
+    method,
     args,
   };
 }
@@ -101,10 +103,10 @@ export class Rpc<TReq, TRes> {
     return this._name;
   }
 
-  call(args: TReq): Promise<TRes> {
+  call(method: string, args: TReq): Promise<TRes> {
     invariant(!this._disposed, `${this._name} - called after dispose: ${args}`);
     this._index++;
-    const message = createCallMessage(this._index, args);
+    const message = createCallMessage(this._index, method, args);
     const messageString = JSON.stringify(message);
     this._transport.sendMessage(messageString);
 
