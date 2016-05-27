@@ -72,12 +72,12 @@ class ServiceParser {
   parseService(fileName: string, source: string): Definitions {
     this._filesSeen.add(fileName);
 
-    this._parseFile(fileName, source);
+    this._parseFile(fileName, 'service', source);
 
     while (this._filesTodo.length > 0) {
       const file = this._filesTodo.pop();
       const contents = fs.readFileSync(file, 'utf8');
-      this._parseFile(file, contents);
+      this._parseFile(file, 'import', contents);
     }
 
     validateDefinitions(this._defs);
@@ -85,8 +85,8 @@ class ServiceParser {
     return this._defs;
   }
 
-  _parseFile(fileName: string, source: string): void {
-    const parser = new FileParser(fileName, this._defs);
+  _parseFile(fileName: string, fileType: FileType, source: string): void {
+    const parser = new FileParser(fileName, fileType, this._defs);
     const imports = parser.parse(source);
     for (const imp of imports) {
       const resolvedFrom = resolveFrom(path.dirname(fileName), imp);
@@ -106,7 +106,10 @@ type Import = {
   location: Location;
 };
 
+type FileType = 'import' | 'service';
+
 class FileParser {
+  _fileType: FileType;
   _fileName: string;
   _defs: Map<string, Definition>;
   // Maps type names to the imported name and file that they are imported from.
@@ -114,7 +117,8 @@ class FileParser {
   // Set of files required by imports
   _importsUsed: Set<string>;
 
-  constructor(fileName: string, defs: Map<string, Definition>) {
+  constructor(fileName: string, fileType: FileType, defs: Map<string, Definition>) {
+    this._fileType = fileType;
     this._fileName = fileName;
     this._defs = defs;
     this._imports = new Map();
@@ -250,6 +254,10 @@ class FileParser {
    * along with a FunctionType object that encodes the argument and return types of the function.
    */
   _parseFunctionDeclaration(declaration: any): FunctionDefinition {
+    if (this._fileType === 'import') {
+      throw this._error(declaration, 'Exported function in imported RPC file');
+    }
+
     this._assert(
       declaration,
       declaration.id && declaration.id.type === 'Identifier',
@@ -295,6 +303,10 @@ class FileParser {
    * @param declaration - The AST node.
    */
   _parseClassDeclaration(declaration: Object): InterfaceDefinition {
+    if (this._fileType === 'import') {
+      throw this._error(declaration, 'Exported class in imported RPC file');
+    }
+
     const def: InterfaceDefinition = {
       kind: 'interface',
       name: declaration.id.name,
