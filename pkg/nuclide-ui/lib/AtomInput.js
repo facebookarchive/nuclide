@@ -103,6 +103,8 @@ export class AtomInput extends React.Component {
     // the text editor. (see focus-related spec in AtomInput-spec.js)
     this.setText(this.state.value);
     this.getTextEditor().moveToBeginningOfLine();
+
+    this._updateWidth();
   }
 
   componentWillReceiveProps(nextProps: Object): void {
@@ -112,9 +114,7 @@ export class AtomInput extends React.Component {
   }
 
   componentDidUpdate(prevProps: Object, prevState: Object): void {
-    if (prevProps.width !== this.props.width) {
-      this._getTextEditorElement().setWidth(this.props.width);
-    }
+    this._updateWidth(prevProps.width);
   }
 
   componentWillUnmount(): void {
@@ -175,6 +175,12 @@ export class AtomInput extends React.Component {
 
   _getTextEditorElement(): atom$TextEditorElement {
     return ReactDOM.findDOMNode(this);
+  }
+
+  _updateWidth(prevWidth?: number): void {
+    if (this.props.width !== prevWidth) {
+      this._getTextEditorElement().setWidth(this.props.width);
+    }
   }
 
   focus(): void {
