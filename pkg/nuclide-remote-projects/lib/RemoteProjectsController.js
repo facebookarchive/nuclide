@@ -13,7 +13,7 @@ import invariant from 'assert';
 import {ServerConnection} from '../../nuclide-remote-connection';
 import {React, ReactDOM} from 'react-for-atom';
 import {CompositeDisposable, Disposable} from 'atom';
-import StatusBarTile from './ui/StatusBarTile';
+import StatusBarTile from './StatusBarTile';
 import remoteUri from '../../nuclide-remote-uri';
 import ConnectionState from './ConnectionState';
 import {

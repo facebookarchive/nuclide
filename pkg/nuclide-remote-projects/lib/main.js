@@ -27,6 +27,7 @@ import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 import {RemoteConnection, ServerConnection} from '../../nuclide-remote-connection';
 import {trackImmediate} from '../../nuclide-analytics';
+import {openConnectionDialog} from './open-connection';
 
 const logger = getLogger();
 
@@ -70,7 +71,6 @@ async function createRemoteConnection(
   }
 
   // If connection fails using saved config, open connect dialog.
-  const {openConnectionDialog} = require('../../nuclide-ssh-dialog');
   return openConnectionDialog({
     initialServer: remoteProjectConfig.host,
     initialCwd: remoteProjectConfig.cwd,
@@ -300,7 +300,7 @@ export function activate(
   subscriptions.add(atom.commands.add(
     'atom-workspace',
     'nuclide-remote-projects:connect',
-    () => require('../../nuclide-ssh-dialog').openConnectionDialog()
+    () => openConnectionDialog()
   ));
 
   subscriptions.add(atom.commands.add(

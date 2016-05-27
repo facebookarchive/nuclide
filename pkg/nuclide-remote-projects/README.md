@@ -8,9 +8,6 @@ You can initiate opening a remote project by either of the following methods.
 2. "Connect..." command from Packages menu.
 
 ## Connect Dialog
-You will be asked to specify connection parameters as shown below.
-![Connect Dialog](./images/ConnectDialog.png)
-
 You can pick one of the three authentication methods in the dialog. If you have
 `ssh-agent` set up for your remote server, you can select "Use ssh-agent". If you
 have RSA key pair set up between your local machine and your remote server, you

@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import ConnectionState from '../ConnectionState';
+import ConnectionState from './ConnectionState';
 import {
   notifyLocalDiskFile,
   notifyConnectedRemoteFile,
   notifyDisconnectedRemoteFile,
-} from '../notification';
+} from './notification';
 import {React} from 'react-for-atom';
 
 const StatusBarTile = React.createClass({

@@ -34,7 +34,7 @@ let dialogPromiseQueue: ?PromiseQueue = null;
  * for connection parameters (e.g. username, server name, etc), and optionally
  * asking for additional (e.g. 2-fac) authentication.
  */
-export function openConnectionDialog(props: Object): Promise<?RemoteConnection> {
+export function openConnectionDialog(props?: Object): Promise<?RemoteConnection> {
   if (!dialogPromiseQueue) {
     dialogPromiseQueue = new PromiseQueue();
   }
