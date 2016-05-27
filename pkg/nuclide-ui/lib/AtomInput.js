@@ -28,7 +28,7 @@ type Props = {
   onBlur: () => mixed;
   size?: 'xs' | 'sm' | 'lg';
   unstyled: boolean;
-  width: number;
+  width: ?number;
 };
 
 type State = {
@@ -53,7 +53,7 @@ export class AtomInput extends React.Component {
     onFocus: () => {},
     onBlur: () => {},
     unstyled: false,
-    width: 200,
+    width: null,
   };
 
   constructor(props: Props) {
@@ -179,7 +179,8 @@ export class AtomInput extends React.Component {
 
   _updateWidth(prevWidth?: number): void {
     if (this.props.width !== prevWidth) {
-      this._getTextEditorElement().setWidth(this.props.width);
+      const width = this.props.width == null ? undefined : this.props.width;
+      this._getTextEditorElement().setWidth(width);
     }
   }
 

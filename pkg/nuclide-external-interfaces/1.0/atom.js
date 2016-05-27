@@ -783,7 +783,10 @@ declare class atom$TextEditorElement extends HTMLElement {
   onDidDetach(callback: () => mixed): IDisposable;
 
   // Undocumented Methods
-  setWidth(width: number): void;
+
+  // `undefined` means no explicit width. `null` sets a zero width (which is almost certainly a
+  // mistake) so we don't allow it.
+  setWidth(width: number | void): void;
 }
 
 declare class atom$ViewProvider {
