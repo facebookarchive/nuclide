@@ -14,7 +14,7 @@ import type {Gadget} from '../../../nuclide-gadgets/lib/types';
 import type {AppState, Record, Executor} from '../types';
 import type Rx from 'rxjs';
 
-import Console from './Console';
+import Console from './ConsoleView';
 import {React} from 'react-for-atom';
 import getCurrentExecutorId from '../getCurrentExecutorId';
 

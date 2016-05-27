@@ -34,7 +34,7 @@ type State = {
   unseenMessages: boolean;
 };
 
-export default class Console extends React.Component {
+export default class ConsoleView extends React.Component {
   props: Props;
   state: State;
 
