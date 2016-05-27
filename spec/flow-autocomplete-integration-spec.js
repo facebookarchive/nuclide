@@ -42,11 +42,11 @@ describe('Flow Autocomplete', () => {
     });
 
     waitsFor('spinner to start', 10000, () => {
-      return busySignal.classList.contains('nuclide-busy-signal-status-bar-busy');
+      return busySignal.classList.contains('loading-spinner-tiny');
     });
 
     waitsFor('spinner to stop', 30000, () => {
-      return busySignal.classList.contains('nuclide-busy-signal-status-bar-idle');
+      return !busySignal.classList.contains('loading-spinner-tiny');
     });
 
     runs(() => {

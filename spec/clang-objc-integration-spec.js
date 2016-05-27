@@ -50,11 +50,11 @@ describe('Clang Integration Test (objc)', () => {
     waitsForFile('Hello.m');
 
     waitsFor('compilation to begin', 10000, () => {
-      return busySignal.classList.contains('nuclide-busy-signal-status-bar-busy');
+      return busySignal.classList.contains('loading-spinner-tiny');
     });
 
     waitsFor('compilation to finish', 30000, () => {
-      return busySignal.classList.contains('nuclide-busy-signal-status-bar-idle');
+      return !busySignal.classList.contains('loading-spinner-tiny');
     });
 
     runs(() => {

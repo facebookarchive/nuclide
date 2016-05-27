@@ -10,12 +10,11 @@
  */
 
 import {React} from 'react-for-atom';
+import classnames from 'classnames';
 
 type Props = {
   busy: boolean;
 };
-
-const SPINNER = '\uF087';
 
 export class StatusBarTileComponent extends React.Component {
   props: Props;
@@ -25,14 +24,10 @@ export class StatusBarTileComponent extends React.Component {
   }
 
   render(): React.Element {
-    const classes = ['nuclide-busy-signal-status-bar'];
-    if (this.props.busy) {
-      classes.push('nuclide-busy-signal-status-bar-busy');
-    } else {
-      classes.push('nuclide-busy-signal-status-bar-idle');
-    }
-    return (
-      <div className={classes.join(' ')}>{SPINNER}</div>
+    const classes = classnames(
+      'nuclide-busy-signal-status-bar',
+      {'loading-spinner-tiny': this.props.busy},
     );
+    return <div className={classes} />;
   }
 }
