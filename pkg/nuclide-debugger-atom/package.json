@@ -4,6 +4,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Allows debugging of various types of process from within Nuclide",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"

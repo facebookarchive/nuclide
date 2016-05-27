@@ -4,6 +4,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Helpers for generating platform-specific, human-readabe keystroke labels. Ported from atom/underscore-plus.",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Node",
     "testRunner": "apm"

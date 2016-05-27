@@ -4,6 +4,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Uses hyperclick to open URLs in the browser",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"

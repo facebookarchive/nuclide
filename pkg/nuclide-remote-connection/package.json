@@ -4,6 +4,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Remote connections and monitoring",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Node",
     "testsCannotBeRunInParallel": true,

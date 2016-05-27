@@ -4,6 +4,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "A library of ProcessOutputHandler implementations, for use with the nuclide-process-output package.",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Node",
     "testRunner": "apm"

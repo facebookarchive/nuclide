@@ -11,6 +11,7 @@
       }
     }
   },
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"

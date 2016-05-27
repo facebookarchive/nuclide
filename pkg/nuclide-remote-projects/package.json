@@ -4,9 +4,13 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Manages remote projects",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "configMetadata": {
-      "pathComponents": ["IDE", "Remote Projects"]
+      "pathComponents": [
+        "IDE",
+        "Remote Projects"
+      ]
     },
     "config": {
       "shutdownServerAfterDisconnection": {

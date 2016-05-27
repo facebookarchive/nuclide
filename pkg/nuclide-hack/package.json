@@ -4,9 +4,13 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides hack language support in Nuclide",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "configMetadata": {
-      "pathComponents": ["Language", "Hack"]
+      "pathComponents": [
+        "Language",
+        "Hack"
+      ]
     },
     "config": {
       "hhClientPath": {

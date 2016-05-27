@@ -4,6 +4,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Wrapper for Nuclide/Atom feature config",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Node",
     "testRunner": "apm"

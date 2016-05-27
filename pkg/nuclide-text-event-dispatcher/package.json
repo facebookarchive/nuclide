@@ -4,6 +4,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Allows subscriptions to text editing events, at a higher level of abstraction than the included Atom events",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Node",
     "testRunner": "apm"

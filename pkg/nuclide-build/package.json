@@ -4,6 +4,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Build projects from Nuclide.",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"
@@ -28,6 +29,5 @@
       }
     }
   },
-  "activationCommands": {
-  }
+  "activationCommands": {}
 }

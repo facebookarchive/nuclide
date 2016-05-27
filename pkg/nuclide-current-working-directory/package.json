@@ -4,12 +4,12 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides the concept of a \"current\" directory",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationCommands": {
-  },
+  "activationCommands": {},
   "providedServices": {
     "nuclide-current-working-directory": {
       "description": "Which of the directories in the project is the \"active\" one?",

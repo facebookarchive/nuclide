@@ -4,9 +4,13 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides support for Objective-C in Nuclide",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "configMetadata": {
-      "pathComponents": ["Language", "Obj-C"]
+      "pathComponents": [
+        "Language",
+        "Obj-C"
+      ]
     },
     "config": {
       "enableAutomaticSquareBracketInsertion": {

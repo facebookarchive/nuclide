@@ -4,11 +4,15 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "A nuclide-output provider for adb logcat",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm",
     "configMetadata": {
-      "pathComponents": ["IDE", "Android"]
+      "pathComponents": [
+        "IDE",
+        "Android"
+      ]
     },
     "config": {
       "pathToAdb": {

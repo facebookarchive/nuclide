@@ -108,7 +108,7 @@
     "node": ">=5.1.1"
   },
   "private": true,
-  "atomTestRunner": "./pkg/nuclide-integration-test-helpers/lib/test-runner.js",
+  "atomTestRunner": "./lib/test-runner.js",
   "package-deps": [
     "tool-bar",
     "haskell-grammar",

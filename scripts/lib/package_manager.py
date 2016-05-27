@@ -99,6 +99,7 @@ def create_config_for_package(path):
         'testsCannotBeRunInParallel', False)
     config['excludeTestsFromContinuousIntegration'] = nuclide_config.get(
         'excludeTestsFromContinuousIntegration', False)
+    config['atomTestRunner'] = pkg.get('atomTestRunner')
     config['_atomModuleCache'] = pkg.get('_atomModuleCache')
 
     return config

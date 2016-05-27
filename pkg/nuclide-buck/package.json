@@ -4,11 +4,15 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Buck integration for Nuclide.",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm",
     "configMetadata": {
-      "pathComponents": ["IDE", "Buck"]
+      "pathComponents": [
+        "IDE",
+        "Buck"
+      ]
     },
     "config": {
       "pathToBuck": {
@@ -38,6 +42,5 @@
       }
     }
   },
-  "activationCommands": {
-  }
+  "activationCommands": {}
 }

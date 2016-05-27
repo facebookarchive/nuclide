@@ -4,9 +4,13 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "React Native development tools",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "configMetadata": {
-      "pathComponents": ["IDE", "React Native"]
+      "pathComponents": [
+        "IDE",
+        "React Native"
+      ]
     },
     "config": {
       "pathToNode": {

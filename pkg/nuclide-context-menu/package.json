@@ -4,6 +4,7 @@
   "main": "./lib/ContextMenu.js",
   "version": "0.0.0",
   "description": "Register context menu items in priority order.",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Node",
     "testRunner": "apm"

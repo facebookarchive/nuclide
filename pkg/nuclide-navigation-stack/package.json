@@ -4,10 +4,10 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Navigation stack for code browsing history.",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationCommands": {
-  }
+  "activationCommands": {}
 }

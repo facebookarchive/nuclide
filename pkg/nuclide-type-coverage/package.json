@@ -4,6 +4,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides type coverage information for gradually-typed languages such as Hack and Flow",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "config": {
       "colorizeStatusBar": {
@@ -16,8 +17,7 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationCommands": {
-  },
+  "activationCommands": {},
   "consumedServices": {
     "nuclide-type-coverage": {
       "versions": {

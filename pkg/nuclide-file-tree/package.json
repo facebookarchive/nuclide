@@ -28,9 +28,13 @@
       }
     }
   },
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "configMetadata": {
-      "pathComponents": ["IDE", "File Tree"]
+      "pathComponents": [
+        "IDE",
+        "File Tree"
+      ]
     },
     "config": {
       "revealFileOnSwitch": {

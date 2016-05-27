@@ -166,6 +166,15 @@ class PackageLinter(object):
                 ('Package %s should not have a custom scripts/test section ' +
                     'because it will use apm as its test runner.'),
                 package_name)
+        if package['atomTestRunner'] is None:
+            self.report_error(
+                'Package %s should have an "atomTestRunner" field', package_name)
+        atom_test_runner_path = os.path.join(package['packageRootAbsolutePath'],
+                                             package['atomTestRunner'])
+        if not os.path.isfile(atom_test_runner_path):
+            self.report_error(
+                'Package %s should have an "atomTestRunner" that exists at %s',
+                package_name, atom_test_runner_path)
 
     def validate_babelrc(self, package):
         # See https://phabricator.intern.facebook.com/D2301649

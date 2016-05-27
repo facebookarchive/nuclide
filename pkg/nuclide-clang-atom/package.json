@@ -4,11 +4,15 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Exposes features from nuclide-clang in Atom",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm",
     "configMetadata": {
-      "pathComponents": ["Language", "Clang"]
+      "pathComponents": [
+        "Language",
+        "Clang"
+      ]
     },
     "config": {
       "enableDefaultFlags": {
@@ -20,7 +24,11 @@
       "defaultFlags": {
         "title": "Default Compilation Flags",
         "type": "array",
-        "default": ["-std=c++14", "-x", "c++"],
+        "default": [
+          "-std=c++14",
+          "-x",
+          "c++"
+        ],
         "description": "List of default flags to use with Clang, if enabled.",
         "items": {
           "type": "string"

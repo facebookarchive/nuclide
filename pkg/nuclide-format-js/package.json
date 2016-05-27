@@ -7,9 +7,13 @@
   "activationCommands": {
     "atom-text-editor": "nuclide-format-js:format"
   },
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "configMetadata": {
-      "pathComponents": ["Language", "JS Format"]
+      "pathComponents": [
+        "Language",
+        "JS Format"
+      ]
     },
     "config": {
       "runOnSave": {

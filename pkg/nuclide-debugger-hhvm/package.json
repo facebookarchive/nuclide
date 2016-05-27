@@ -4,9 +4,13 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Allows Debugging of hhvm from Nuclide",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "configMetadata": {
-      "pathComponents": ["Debugger", "HHVM"]
+      "pathComponents": [
+        "Debugger",
+        "HHVM"
+      ]
     },
     "config": {
       "scriptRegex": {

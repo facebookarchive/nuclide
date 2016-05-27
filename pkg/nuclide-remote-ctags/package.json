@@ -4,9 +4,13 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Exposes nuclide-remote-ctags-base functionality to Atom.",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "configMetadata": {
-      "pathComponents": ["Language", "Remote ctags"]
+      "pathComponents": [
+        "Language",
+        "Remote ctags"
+      ]
     },
     "config": {
       "disableWithHack": {

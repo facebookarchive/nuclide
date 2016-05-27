@@ -4,9 +4,13 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "General display mechanism for the VCS log of a file",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "configMetadata": {
-      "pathComponents": ["IDE", "VCS Log"]
+      "pathComponents": [
+        "IDE",
+        "VCS Log"
+      ]
     },
     "config": {
       "showDifferentialRevision": {

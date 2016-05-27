@@ -4,9 +4,13 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides support for Python in Nuclide",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "configMetadata": {
-      "pathComponents": ["Language", "Python"]
+      "pathComponents": [
+        "Language",
+        "Python"
+      ]
     },
     "config": {
       "pathToPython": {

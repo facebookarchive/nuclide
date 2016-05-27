@@ -5,9 +5,13 @@
   "version": "0.0.0",
   "description": "Provides support for OCaml in Nuclide",
   "activationCommands": {},
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "configMetadata": {
-      "pathComponents": ["Language", "Ocaml"]
+      "pathComponents": [
+        "Language",
+        "Ocaml"
+      ]
     },
     "config": {
       "pathToMerlin": {

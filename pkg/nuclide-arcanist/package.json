@@ -4,9 +4,13 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Displays arcanist linter messages in Nuclide",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "configMetadata": {
-      "pathComponents": ["Language", "Arc"]
+      "pathComponents": [
+        "Language",
+        "Arc"
+      ]
     },
     "config": {
       "blacklistedLinters": {
