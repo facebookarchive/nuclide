@@ -1225,7 +1225,7 @@ class DiffViewModel {
       this.setViewMode(DiffMode.BROWSE_MODE);
     } catch (e) {
       atom.notifications.addError('Error creating commit', {
-        detail: `Details: ${e.stdout}`,
+        detail: `Details: ${e.message}`,
         nativeFriendly: true,
       });
       this._setState({

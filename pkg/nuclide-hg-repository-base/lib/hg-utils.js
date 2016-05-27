@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {checkOutput, createArgsForScriptCommand} from '../../commons-node/process';
+import {asyncExecute, createArgsForScriptCommand} from '../../commons-node/process';
 import {getLogger} from '../../nuclide-logging';
 
 /**
@@ -35,11 +35,17 @@ export async function hgAsyncExecute(args: Array<string>, options: any): Promise
   } else {
     cmd = 'hg';
   }
-  try {
-    return await checkOutput(cmd, args, options);
-  } catch (e) {
+  const result = await asyncExecute(cmd, args, options);
+  if (result.exitCode === 0) {
+    return result;
+  } else {
     getLogger().error(`Error executing hg command: ${JSON.stringify(args)} ` +
-        `options: ${JSON.stringify(options)} ${JSON.stringify(e)}`);
-    throw e;
+        `options: ${JSON.stringify(options)} ${JSON.stringify(result)}`);
+    if (result.stderr.length > 0 && result.stdout.length > 0) {
+      throw new Error(`hg error\nstderr: ${result.stderr}\nstdout: ${result.stdout}`);
+    } else {
+      // One of `stderr` or `stdout` is empty - not both.
+      throw new Error(result.stderr || result.stdout);
+    }
   }
 }
