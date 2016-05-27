@@ -67,9 +67,5 @@
     "definition": "../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface.js",
     "implementation": "../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceImplementation.js",
     "name": "LLDBDebuggerRpcService"
-  },
-  {
-    "implementation": "../fb-reflex-base/lib/ReflexService.js",
-    "name": "ReflexService"
   }
 ]
