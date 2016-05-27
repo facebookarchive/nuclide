@@ -20,6 +20,7 @@ import Commands from './Commands';
 import {CompositeDisposable, Disposable} from 'atom';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import passesGK from '../../commons-node/passesGK';
 import Rx from 'rxjs';
 import SideBarComponent from './SideBarComponent';
 
@@ -75,29 +76,50 @@ export function activate(rawState: Object): void {
   );
 }
 
-export function consumeNuclideSideBar(sideBar: NuclideSideBarService): void {
-  sideBar.registerView({
-    getComponent() {
-      const props = states.map(state => ({
-        createBookmark: commands.createBookmark,
-        deleteBookmark: commands.deleteBookmark,
-        projectBookmarks: state.projectBookmarks,
-        projectDirectories: state.projectDirectories,
-        projectRepositories: state.projectRepositories,
-        updateToBookmark: commands.updateToBookmark,
-      }));
+export function consumeNuclideSideBar(sideBar: NuclideSideBarService): IDisposable {
+  let localSidebar = sideBar;
+  let serviceDisposable;
 
-      return bindObservableAsProps(props, SideBarComponent);
-    },
-    onDidShow() {},
-    title: 'Source Control',
-    toggleCommand: 'nuclide-source-control-side-bar:toggle',
-    viewId: 'nuclide-source-control-side-bar',
+  passesGK('nuclide_source_control_side_bar', 5000).then(inGk => {
+    // If the side-bar went away while waiting for a GK response, do nothing.
+    if (!inGk || localSidebar == null) {
+      return;
+    }
+
+    localSidebar.registerView({
+      getComponent() {
+        const props = states.map(state => ({
+          createBookmark: commands.createBookmark,
+          deleteBookmark: commands.deleteBookmark,
+          projectBookmarks: state.projectBookmarks,
+          projectDirectories: state.projectDirectories,
+          projectRepositories: state.projectRepositories,
+          updateToBookmark: commands.updateToBookmark,
+        }));
+
+        return bindObservableAsProps(props, SideBarComponent);
+      },
+      onDidShow() {},
+      title: 'Source Control',
+      toggleCommand: 'nuclide-source-control-side-bar:toggle',
+      viewId: 'nuclide-source-control-side-bar',
+    });
+
+    serviceDisposable = new Disposable(() => {
+      if (localSidebar != null) {
+        localSidebar.destroyView('nuclide-source-control-side-bar');
+      }
+    });
+    disposables.add(serviceDisposable);
   });
 
-  disposables.add(new Disposable(() => {
-    sideBar.destroyView('nuclide-source-control-side-bar');
-  }));
+  return new Disposable(() => {
+    localSidebar = null;
+    if (serviceDisposable != null) {
+      disposables.remove(serviceDisposable);
+      serviceDisposable = null;
+    }
+  });
 }
 
 function accumulateState(state: AppState, action: Action): AppState {
