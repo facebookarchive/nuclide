@@ -5,7 +5,7 @@
 # "nuclide-debugger-node", and its dependencies. It'll also stub "node-pre-gyp".
 
 mkdir -p VendorLib/node-inspector
-curl https://registry.npmjs.org/node-inspector/-/node-inspector-0.12.7.tgz |
+curl https://registry.npmjs.org/node-inspector/-/node-inspector-0.12.8.tgz |
   tar -xz -C VendorLib/node-inspector --strip-components=1 \
   --include='./package/LICENSE' \
   --include='./package/package.json' \
@@ -13,20 +13,58 @@ curl https://registry.npmjs.org/node-inspector/-/node-inspector-0.12.7.tgz |
   --exclude='./package/lib/config.js' \
   --exclude='./package/lib/debug-server.js'
 
+# mkdir -p VendorLib/node_modules/v8-debug
+# curl https://registry.npmjs.org/v8-debug/-/v8-debug-0.7.7.tgz |
+#   tar -xz -C VendorLib/node_modules/v8-debug --strip-components=1 \
+#   --include='./package/build/debug/v0.7.7/' \
+#   --include='./package/InjectedScript' \
+#   --include='./package/tools/NODE_NEXT.js' \
+#   --include='./package/LICENSE' \
+#   --include='./package/package.json' \
+#   --include='./package/v8-debug.js'
+
+# v8-debug published an incomplete v0.7.7, so it's necessary to download the
+# binaries separately - unlike v8-profiler.
 mkdir -p VendorLib/node_modules/v8-debug
-curl https://registry.npmjs.org/v8-debug/-/v8-debug-0.7.0.tgz |
+curl https://registry.npmjs.org/v8-debug/-/v8-debug-0.7.7.tgz |
   tar -xz -C VendorLib/node_modules/v8-debug --strip-components=1 \
-  --include='./package/build/debug/v0.7.0/' \
   --include='./package/InjectedScript' \
   --include='./package/tools/NODE_NEXT.js' \
   --include='./package/LICENSE' \
   --include='./package/package.json' \
   --include='./package/v8-debug.js'
+V8_DEBUG_BINDINGS=(
+  node-v11-darwin-x64
+  node-v11-linux-x64
+  node-v11-win32-ia32
+  node-v11-win32-x64
+  node-v14-darwin-x64
+  node-v14-linux-x64
+  node-v14-win32-ia32
+  node-v14-win32-x64
+  node-v46-darwin-x64
+  node-v46-linux-x64
+  node-v46-win32-ia32
+  node-v46-win32-x64
+  node-v47-darwin-x64
+  node-v47-linux-x64
+  node-v47-win32-ia32
+  node-v47-win32-x64
+  node-v48-darwin-x64
+  node-v48-linux-x64
+  node-v48-win32-ia32
+  node-v48-win32-x64
+)
+mkdir -p "VendorLib/node_modules/v8-debug/build/debug/v0.7.7/"
+for binding in "${V8_DEBUG_BINDINGS[@]}"; do
+  curl -L "https://node-inspector.s3.amazonaws.com/debug/v0.7.7/${binding}.tar.gz" |
+    tar -xz -C "VendorLib/node_modules/v8-debug/build/debug/v0.7.7/"
+done
 
 mkdir -p VendorLib/node_modules/v8-profiler
-curl https://registry.npmjs.org/v8-profiler/-/v8-profiler-5.5.0.tgz |
+curl https://registry.npmjs.org/v8-profiler/-/v8-profiler-5.6.5.tgz |
   tar -xz -C VendorLib/node_modules/v8-profiler --strip-components=1 \
-  --include='./package/build/profiler/v5.5.0/' \
+  --include='./package/build/profiler/v5.6.5/' \
   --include='./package/LICENSE' \
   --include='./package/package.json' \
   --include='./package/v8-profiler.js'
