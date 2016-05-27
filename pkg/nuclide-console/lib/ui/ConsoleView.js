@@ -27,7 +27,10 @@ type Props = {
   execute: (code: string) => void;
   currentExecutor: ?Executor;
   executors: Map<string, Executor>;
+  selectedSourceId: string;
   selectExecutor: (executorId: string) => void;
+  selectSource: (sourceId: string) => void;
+  sources: Array<{id: string; name: string}>;
 };
 
 type State = {
@@ -100,7 +103,12 @@ export default class ConsoleView extends React.Component {
   render(): ?React.Element {
     return (
       <div className="nuclide-console">
-        <ConsoleHeader clear={this.props.clearRecords} />
+        <ConsoleHeader
+          clear={this.props.clearRecords}
+          selectedSourceId={this.props.selectedSourceId}
+          sources={this.props.sources}
+          onSelectedSourceChange={this.props.selectSource}
+        />
         {/*
           We need an extra wrapper element here in order to have the new messages notification stick
           to the bottom of the scrollable area (and not scroll with it).

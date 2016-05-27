@@ -11,15 +11,16 @@
 
 import type Commands from '../Commands';
 import type {Gadget} from '../../../nuclide-gadgets/lib/types';
-import type {AppState, Record, Executor} from '../types';
+import type {AppState, OutputProvider, Record, Executor} from '../types';
 import type Rx from 'rxjs';
 
-import Console from './ConsoleView';
+import Console from './Console';
 import {React} from 'react-for-atom';
 import getCurrentExecutorId from '../getCurrentExecutorId';
 
 type State = {
   currentExecutor: ?Executor;
+  providers: Map<string, OutputProvider>;
   records: Array<Record>;
   executors: Map<string, Executor>;
 };
@@ -29,7 +30,7 @@ export default function createConsoleGadget(
   commands: Commands,
 ): Gadget {
 
-  class OutputGadget extends React.Component<void, void, State> {
+  class OutputGadget extends React.Component {
     state: State;
 
     static gadgetId = 'nuclide-console';
@@ -41,6 +42,7 @@ export default function createConsoleGadget(
       super(props);
       this.state = {
         currentExecutor: null,
+        providers: new Map(),
         executors: new Map(),
         records: [],
       };
@@ -62,6 +64,7 @@ export default function createConsoleGadget(
         this.setState({
           currentExecutor,
           executors: state.executors,
+          providers: state.providers,
           records: state.records,
         });
       });
@@ -72,13 +75,21 @@ export default function createConsoleGadget(
     }
 
     render(): ?React.Element {
+      const sources = Array.from(this.state.providers.values())
+        .map(source => ({
+          id: source.id,
+          name: source.id,
+        }));
+      // TODO(matthewwithanm): serialize and restore `initialSelectedSourceId`
       return (
         <Console
           execute={code => commands.execute(code)}
           selectExecutor={commands.selectExecutor.bind(commands)}
           clearRecords={commands.clearRecords.bind(commands)}
           currentExecutor={this.state.currentExecutor}
+          initialSelectedSourceId=""
           records={this.state.records}
+          sources={sources}
           executors={this.state.executors}
         />
       );
