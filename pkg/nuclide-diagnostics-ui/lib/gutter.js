@@ -228,8 +228,8 @@ function showPopupFor(
     fixer(...args);
     track('diagnostics-gutter-autofix');
   };
-  const trackedGoToLocation = (...args) => {
-    goToLocation(...args);
+  const trackedGoToLocation = (filePath: NuclideUri, line: number) => {
+    goToLocation(filePath, line);
     track('diagnostics-gutter-goto-location');
   };
 

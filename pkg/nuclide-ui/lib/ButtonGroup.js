@@ -18,7 +18,7 @@ type Props = {
   /** The size of the buttons within the group. Overrides any `size` props on child buttons. */
   size?: ButtonGroupSize;
   /** The contents of the ButtonGroup; Generally, an instance of `Button`. */
-  children: React.Element;
+  children?: React.Element;
   className?: string;
 };
 

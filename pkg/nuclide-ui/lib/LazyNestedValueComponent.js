@@ -39,7 +39,7 @@ function TreeItemWithLoadingSpinner(): React.Element {
 }
 
 type LoadableValueComponentProps = {
-  children: ?ExpansionResult;
+  children?: ExpansionResult;
   fetchChildren: (objectId: string) => Observable<?ExpansionResult>;
   path: string;
   expandedValuePaths: Set<string>;
