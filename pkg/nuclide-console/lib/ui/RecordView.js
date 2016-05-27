@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Record} from '../types';
+import type {Level, Record} from '../types';
 
 import CodeBlock from './CodeBlock';
 import classnames from 'classnames';
@@ -17,6 +17,7 @@ import {React} from 'react-for-atom';
 
 type Props = {
   record: Record;
+  showSourceLabel: boolean;
 };
 
 export default class RecordView extends React.Component {
@@ -35,15 +36,35 @@ export default class RecordView extends React.Component {
 
     const iconName = getIconName(record);
     const icon = iconName ? <span className={`icon icon-${iconName}`} /> : null;
+    const sourceLabel = this.props.showSourceLabel
+      ? (
+        <span
+          className={`nuclide-console-record-source-label ${getHighlightClassName(record.level)}`}>
+          {record.sourceId}
+        </span>
+      )
+      : null;
 
     return (
       <div className={classNames}>
         {icon}
-        {renderContent(record)}
+        <div className="nuclide-console-record-content-wrapper">
+          {sourceLabel}
+          {renderContent(record)}
+        </div>
       </div>
     );
   }
 
+}
+
+function getHighlightClassName(level: Level): string {
+  switch (level) {
+    case 'info': return 'highlight-info';
+    case 'warning': return 'highlight-warning';
+    case 'error': return 'highlight-error';
+    default: return 'highlight';
+  }
 }
 
 function renderContent(record: Record): React.Element {

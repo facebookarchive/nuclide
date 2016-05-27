@@ -201,6 +201,7 @@
   }
 
   pre {
+    display: inline;
     padding: 0;
     background-color: transparent;
   }
@@ -215,6 +216,22 @@
     opacity: 0.7;
   }
 
+}
+
+.nuclide-console-record-content-wrapper {
+  width: 100%;
+
+  // Give the source label a little breathing room. We don't apply this directly
+  // to the label because that would affect text wrapping around it.
+  padding-bottom: 1px;
+}
+
+.nuclide-console-record-source-label {
+  display: inline-block;
+  float: right;
+  margin: 2px 0 0 4px;
+  white-space: nowrap;
+  font-size: 0.8em; // This makes the label < 1 line tall in most themes.
 }
 
 .nuclide-console-input-wrapper {

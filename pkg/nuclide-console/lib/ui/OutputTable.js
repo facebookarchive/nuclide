@@ -16,6 +16,7 @@ import RecordView from './RecordView';
 
 type Props = {
   records: Array<Record>;
+  showSourceLabels: boolean;
 };
 
 export default class OutputTable extends React.Component {
@@ -32,7 +33,13 @@ export default class OutputTable extends React.Component {
   }
 
   _renderRow(record: Record, index: number): React.Element {
-    return <RecordView key={index} record={record} />;
+    return (
+      <RecordView
+        key={index}
+        record={record}
+        showSourceLabel={this.props.showSourceLabels}
+      />
+    );
   }
 
 }

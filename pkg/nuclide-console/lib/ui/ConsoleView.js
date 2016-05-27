@@ -118,7 +118,10 @@ export default class ConsoleView extends React.Component {
             ref={this._handleScrollPane}
             className="nuclide-console-scroll-pane"
             onScroll={this._handleScroll}>
-            <OutputTable records={this.props.records} />
+            <OutputTable
+              records={this.props.records}
+              showSourceLabels={!this.props.selectedSourceId}
+            />
           </div>
           <UnseenMessagesNotification
             visible={this.state.unseenMessages}
