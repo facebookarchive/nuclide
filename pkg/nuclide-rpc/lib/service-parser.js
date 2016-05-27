@@ -99,11 +99,18 @@ class ServiceParser {
   }
 }
 
+type Import = {
+  imported: string;
+  file: string;
+  added: boolean;
+  location: Location;
+};
+
 class FileParser {
   _fileName: string;
   _defs: Map<string, Definition>;
   // Maps type names to the imported name and file that they are imported from.
-  _imports: Map<string, {imported: string; file: string;}>;
+  _imports: Map<string, Import>;
   // Set of files required by imports
   _importsUsed: Set<string>;
 
@@ -217,7 +224,12 @@ class FileParser {
       if (specifier.type === 'ImportSpecifier') {
         const imported = specifier.imported.name;
         const local = specifier.local.name;
-        this._imports.set(local, {imported, file: from});
+        this._imports.set(local, {
+          imported,
+          file: from,
+          added: false,
+          location: this._locationOfNode(specifier),
+        });
       }
     }
   }
@@ -580,12 +592,12 @@ class FileParser {
             `Unknown generic type ${id}.`);
 
         const imp = this._imports.get(id);
-        if (id !== 'NuclideUri' && imp != null) {
-          if (id !== imp.imported) {
-            this._error(
-              typeAnnotation, `Cannot import type ${id}. Aliases in imports not supported.`);
-          }
+        if (id !== 'NuclideUri' && imp != null && !imp.added) {
+          imp.added = true;
           this._importsUsed.add(imp.file);
+          if (id !== imp.imported) {
+            return {location, kind: 'named', name: imp.imported};
+          }
         }
         return {location, kind: 'named', name: id};
     }

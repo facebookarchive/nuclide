@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {ImportedType} from './Types';
+import type {ImportedType as AliasImportedType} from './Types';
 
 // Use ImportedType from another file - testing, multiple
 // imports the same file.
 export type AnotherImportedType = {
-  field: ImportedType;
+  field: AliasImportedType;
 };
