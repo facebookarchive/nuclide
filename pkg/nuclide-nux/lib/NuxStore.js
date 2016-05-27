@@ -56,11 +56,12 @@ export class NuxStore {
       isCustomContent: false,
       selector: '.icon-list-unordered',
       selectorFunction: null,
-      position: 'right',
-      displayPredicate: (() => document.querySelector('div.nuclide-outline-view') == null),
+      position: 'auto',
+      displayPredicate: null,
       completionPredicate: (() => document.querySelector('div.nuclide-outline-view') != null),
       completed: false,
     };
+
     const nuxOutlineView = {
       content: 'Click on a symbol to jump to its definition.',
       isCustomContent: false,
