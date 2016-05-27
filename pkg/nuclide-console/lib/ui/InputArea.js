@@ -52,7 +52,6 @@ export default class OutputTable extends React.Component {
     if (editor == null) {
       return;
     }
-    // $FlowFixMe: looks like `which` is nonstandard. consider `code`?
     if (event.which === ENTER_KEY_CODE) {
       event.preventDefault();
       event.stopImmediatePropagation();

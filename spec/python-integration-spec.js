@@ -65,7 +65,6 @@ describe('Python Integration Test', () => {
 
     runs(() => {
       // The first suggestion should be 'path' as in 'os.path'.
-      // $FlowIgnore -- innerText is nonstandard.
       expect(autocompleteMenuView.querySelector('.word').innerText).toBe('path');
     });
   });

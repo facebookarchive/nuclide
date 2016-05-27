@@ -105,7 +105,6 @@ class SuggestionList extends React.Component {
 
     const keydown = (event: KeyboardEvent) => {
       // If the user presses the enter key, confirm the selection.
-      // $FlowFixMe -- looks like the `code` property is the standard?
       if (event.keyCode === 13) {
         event.stopImmediatePropagation();
         this._confirm();

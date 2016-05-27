@@ -87,7 +87,6 @@ class ObjectiveCColonIndenter {
           //
           // 1. Get the current line and strip all the indentation.
           const line = buffer.lineForRow(currentColonPosition.row);
-          // $FlowIssue This needs to be added to lib/core.js.
           const unindentedLine = line.trimLeft();
           // 2. Calculate the amount of indentation the line should end up with.
           const numberOfIndentCharacters = line.length - unindentedLine.length;
