@@ -10,7 +10,6 @@
  */
 
 import type {
-  DiagnosticStore,
   DiagnosticUpdater,
   CallbackDiagnosticProvider,
   LinterProvider,
@@ -21,6 +20,10 @@ import {Disposable, CompositeDisposable} from 'atom';
 import featureConfig from '../../nuclide-feature-config';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {getLogger} from '../../nuclide-logging';
+import {DiagnosticStore} from '../../nuclide-diagnostics-base';
+
+import {createAdapters} from './LinterAdapterFactory';
 
 const legacyLinterSetting = 'nuclide-diagnostics-store.consumeLegacyLinters';
 
@@ -34,14 +37,13 @@ function addDisposable(disposable: IDisposable) {
   if (disposables) {
     disposables.add(disposable);
   } else {
-    const logger = require('../../nuclide-logging').getLogger();
-    logger.error('disposables is null');
+    getLogger().error('disposables is null');
   }
 }
 
 function getDiagnosticStore(): DiagnosticStore {
   if (!diagnosticStore) {
-    diagnosticStore = new (require('../../nuclide-diagnostics-base').DiagnosticStore)();
+    diagnosticStore = new DiagnosticStore();
   }
   return diagnosticStore;
 }
@@ -92,7 +94,6 @@ export function activate(state: ?Object): void {
 export function consumeLinterProvider(
   provider: LinterProvider | Array<LinterProvider>,
 ): IDisposable {
-  const {createAdapters} = require('./LinterAdapterFactory');
   const newAdapters = createAdapters(provider);
   const adapterDisposables = new CompositeDisposable();
   for (const adapter of newAdapters) {
