@@ -17,6 +17,9 @@
 // Set this up before we call jasmine-node. jasmine-node does this same trick,
 // but neglects to respect the exit code, so we beat it the to the punch.
 process.once('exit', code => {
+  // jasmine-node is swallowing temp's exit handler, so force a cleanup.
+  const temp = require('temp');
+  temp.cleanupSync();
   process.exit(code);
 });
 
