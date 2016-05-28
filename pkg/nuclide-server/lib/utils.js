@@ -27,6 +27,7 @@ export type RequestOptions = {
   uri: string;
   agentOptions?: AgentOptions;
   useQuerystring?: boolean;
+  timeout?: number;
 };
 
 /**

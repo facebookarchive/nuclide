@@ -16,6 +16,7 @@ import {Emitter} from 'event-kit';
 import {HEARTBEAT_CHANNEL} from './config';
 
 const HEARTBEAT_INTERVAL_MS = 5000;
+const HEARTBEAT_TIMEOUT_MS = 5000;
 const MAX_HEARTBEAT_AWAY_RECONNECT_MS = 60000;
 
 export class XhrConnectionHeartbeat {
@@ -33,6 +34,7 @@ export class XhrConnectionHeartbeat {
     const options: RequestOptions = {
       uri: serverUri + '/' + HEARTBEAT_CHANNEL,
       method: 'POST',
+      timeout: HEARTBEAT_TIMEOUT_MS,
     };
     if (agentOptions != null) {
       options.agentOptions = agentOptions;
@@ -69,9 +71,6 @@ export class XhrConnectionHeartbeat {
       this._lastHeartbeatTime = now;
       this._emitter.emit('heartbeat');
     } catch (err) {
-      if (this._transport != null) {
-        this._transport.disconnect();
-      }
       this._lastHeartbeat = 'away';
       // Error code could could be one of:
       // ['ENOTFOUND', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT']
@@ -93,6 +92,7 @@ export class XhrConnectionHeartbeat {
         // A request timeout is considered a network away event.
         // falls through
         case 'ETIMEDOUT':
+        case 'ESOCKETTIMEDOUT':
           code = 'NETWORK_AWAY';
           break;
         case 'ECONNREFUSED':
