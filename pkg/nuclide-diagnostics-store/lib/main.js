@@ -99,7 +99,7 @@ export function consumeLinterProvider(
     adapter.setEnabled(consumeLegacyLinters);
     adapter.setLintOnFly(lintOnTheFly);
     allLinterAdapters.add(adapter);
-    const diagnosticDisposable = this.consumeDiagnosticsProviderV1(adapter);
+    const diagnosticDisposable = consumeDiagnosticsProviderV1(adapter);
     const adapterDisposable = new Disposable(() => {
       diagnosticDisposable.dispose();
       adapter.dispose();
@@ -117,7 +117,7 @@ export function consumeDiagnosticsProviderV1(provider: CallbackDiagnosticProvide
     updates: observableFromSubscribeFunction(provider.onMessageUpdate.bind(provider)),
     invalidations: observableFromSubscribeFunction(provider.onMessageInvalidation.bind(provider)),
   };
-  const disposable = this.consumeDiagnosticsProviderV2(observableProvider);
+  const disposable = consumeDiagnosticsProviderV2(observableProvider);
   addDisposable(disposable);
   return disposable;
 }
