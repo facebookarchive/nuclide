@@ -119,6 +119,10 @@ export class NuclideSocket {
     // events specially.
     const onSocketError = error => {
       logger.error(`WebSocket Error - attempting connection... ${error.message}`);
+      if (this.isDisconnected()) {
+        logger.info('WebSocket reconnecting after startup error.');
+        this._scheduleReconnect();
+      }
     };
     websocket.on('error', onSocketError);
 
