@@ -40,7 +40,7 @@ function TreeItemWithLoadingSpinner(): React.Element {
 
 type LoadableValueComponentProps = {
   children?: ExpansionResult;
-  fetchChildren: (objectId: string) => Observable<?ExpansionResult>;
+  fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>;
   path: string;
   expandedValuePaths: Set<string>;
   onExpandedStateChange: (path: string, isExpanded: boolean) => void;
@@ -91,8 +91,8 @@ function renderValueLine(
 
 type LazyNestedValueComponentProps = {
   evaluationResult: ?EvaluationResult;
-  fetchChildren: (objectId: string) => Observable<?ExpansionResult>;
   expression: string;
+  fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>;
   isRoot?: boolean;
   expandedValuePaths: Set<string>;
   onExpandedStateChange: (path: string, expanded: boolean) => void;
@@ -134,7 +134,8 @@ class ValueComponent extends React.Component {
       !this.state.isExpanded &&
       expandedValuePaths.has(path) &&
       evaluationResult != null &&
-      evaluationResult._objectId != null
+      evaluationResult._objectId != null &&
+      fetchChildren != null
     ) {
       invariant(evaluationResult._objectId != null);
       this.setState({
@@ -145,7 +146,11 @@ class ValueComponent extends React.Component {
   }
 
   componentWillReceiveProps(nextProps: LazyNestedValueComponentProps): void {
-    if (this.state.isExpanded && nextProps.evaluationResult != null) {
+    if (
+      this.state.isExpanded &&
+      nextProps.evaluationResult != null &&
+      nextProps.fetchChildren != null
+    ) {
       const {_objectId} = nextProps.evaluationResult;
       if (_objectId == null) {
         return;
@@ -247,8 +252,8 @@ class ValueComponent extends React.Component {
 
 type TopLevelValueComponentProps = {
   evaluationResult: ?EvaluationResult;
-  fetchChildren: (objectId: string) => Observable<?ExpansionResult>;
   expression: string;
+  fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>;
   simpleValueComponent: ReactClass;
 };
 
