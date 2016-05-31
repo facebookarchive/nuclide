@@ -71,7 +71,6 @@ export function activate(rawState: Object): void {
     });
 
   disposables = new CompositeDisposable(
-    new DisposableSubscription(states),
     new DisposableSubscription(subscription)
   );
 }
