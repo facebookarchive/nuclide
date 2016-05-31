@@ -129,7 +129,12 @@ export class Combobox extends React.Component {
       .subscribe(
         options => this.receiveUpdate(options),
         err => {
-          this.setState({error: err, loadingOptions: false});
+          this.setState({
+            error: err,
+            loadingOptions: false,
+            options: [],
+            filteredOptions: [],
+          });
           if (this.props.onRequestOptionsError != null) {
             this.props.onRequestOptionsError(err);
           }
