@@ -91,51 +91,65 @@ export default class RepositorySectionComponent extends React.Component {
       }
 
       if (repository.getType() === 'hg') {
+        let bookmarksBranchesListItems;
         const repositoryBookmarks = this.props.bookmarks;
-        if (repositoryBookmarks != null) {
-          bookmarksBranchesList = (
-            <ul className="list-group">
-              {repositoryBookmarks.map(bookmark => {
-                let activeCheck;
-                if (bookmark.active) {
-                  activeCheck = (
-                    <span
-                      className="icon icon-check text-success"
-                      style={{marginLeft: '10px'}}
-                      title="Active bookmark"
-                    />
-                  );
-                }
-
-                let liClassName = classnames(
-                  'list-item nuclide-source-control-side-bar--list-item', {
-                    // Deeply compare bookmarks because the Objects get re-created when bookmarks
-                    // are re-fetched and will not remain equal across fetches.
-                    selected: selectedItem != null
-                      && selectedItem.type === 'bookmark'
-                      && bookmarkIsEqual(bookmark, selectedItem.bookmark),
-                  }
-                );
-
-                return (
-                  <li
-                    className={liClassName}
-                    data-name={bookmark.bookmark}
-                    onClick={this._handleBookmarkClick.bind(this, bookmark)}
-                    onContextMenu={
-                      this._handleBookmarkContextMenu.bind(this, bookmark)
-                    }
-                    key={bookmark.bookmark}>
-                    <span className="icon icon-bookmark">
-                      {bookmark.bookmark}
-                      {activeCheck}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
+        if (repositoryBookmarks == null) {
+          bookmarksBranchesListItems = (
+            <li className="list-item nuclide-source-control-side-bar--list-item text-subtle">
+              Loading...
+            </li>
           );
+        } else if (repositoryBookmarks.length === 0) {
+          bookmarksBranchesListItems = (
+            <li className="list-item nuclide-source-control-side-bar--list-item text-subtle">
+              None
+            </li>
+          );
+        } else {
+          bookmarksBranchesListItems = repositoryBookmarks.map(bookmark => {
+            let activeCheck;
+            if (bookmark.active) {
+              activeCheck = (
+                <span
+                  className="icon icon-check text-success"
+                  style={{marginLeft: '10px'}}
+                  title="Active bookmark"
+                />
+              );
+            }
+
+            let liClassName = classnames(
+              'list-item nuclide-source-control-side-bar--list-item', {
+                // Deeply compare bookmarks because the Objects get re-created when bookmarks
+                // are re-fetched and will not remain equal across fetches.
+                selected: selectedItem != null
+                  && selectedItem.type === 'bookmark'
+                  && bookmarkIsEqual(bookmark, selectedItem.bookmark),
+              }
+            );
+
+            return (
+              <li
+                className={liClassName}
+                data-name={bookmark.bookmark}
+                onClick={this._handleBookmarkClick.bind(this, bookmark)}
+                onContextMenu={
+                  this._handleBookmarkContextMenu.bind(this, bookmark)
+                }
+                key={bookmark.bookmark}>
+                <span className="icon icon-bookmark">
+                  {bookmark.bookmark}
+                  {activeCheck}
+                </span>
+              </li>
+            );
+          });
         }
+        bookmarksBranchesList = (
+          <ul className="list-group">
+            {bookmarksBranchesListItems}
+          </ul>
+        );
       } else {
         bookmarksBranchesList = (
           <div className="nuclide-source-control-side-bar--header text-info">
