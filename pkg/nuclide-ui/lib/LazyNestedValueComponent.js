@@ -83,16 +83,20 @@ const LoadableValueComponent = (props: LoadableValueComponentProps) => {
 
 // TODO allow passing action components (edit button, pin button) here
 function renderValueLine(
-  expression: React.Element | string,
+  expression: React.Element | ?string,
   value: React.Element | string,
 ): React.Element {
-  return <div>{expression}: {value}</div>;
+  if (expression == null) {
+    return <div>{value}</div>;
+  } else {
+    return <div>{expression}: {value}</div>;
+  }
 }
 
 type LazyNestedValueComponentProps = {
   evaluationResult: ?EvaluationResult;
-  expression: string;
   fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>;
+  expression: ?string;
   isRoot?: boolean;
   expandedValuePaths: Set<string>;
   onExpandedStateChange: (path: string, expanded: boolean) => void;
@@ -252,8 +256,8 @@ class ValueComponent extends React.Component {
 
 type TopLevelValueComponentProps = {
   evaluationResult: ?EvaluationResult;
-  expression: string;
   fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>;
+  expression: ?string;
   simpleValueComponent: ReactClass;
 };
 

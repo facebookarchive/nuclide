@@ -17,7 +17,7 @@ import type {
 import {React} from 'react-for-atom';
 
 type SimpleValueComponentProps = {
-  expression: string;
+  expression: ?string;
   evaluationResult: EvaluationResult;
 };
 
@@ -70,8 +70,10 @@ export default class SimpleValueComponent extends React.Component {
     if (displayValue == null || displayValue === '') {
       displayValue = evaluationResult._description || '(N/A)';
     }
-    return (
-      <span>{expression}: {displayValue}</span>
-    );
+    if (expression == null) {
+      return <span>{displayValue}</span>;
+    } else {
+      return <span>{expression}: {displayValue}</span>;
+    }
   }
 }
