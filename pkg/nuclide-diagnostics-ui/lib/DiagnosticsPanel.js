@@ -23,24 +23,6 @@ import {
 } from '../../nuclide-ui/lib/Button';
 import {track} from '../../nuclide-analytics';
 
-let keyboardShortcut: ?string = null;
-function getKeyboardShortcut(): string {
-  if (keyboardShortcut != null) {
-    return keyboardShortcut;
-  }
-
-  const matchingKeyBindings = atom.keymaps.findKeyBindings({
-    command: 'nuclide-diagnostics-ui:toggle-table',
-  });
-  if (matchingKeyBindings.length && matchingKeyBindings[0].keystrokes) {
-    const {humanizeKeystroke} = require('../../nuclide-keystroke-label');
-    keyboardShortcut = humanizeKeystroke(matchingKeyBindings[0].keystrokes);
-  } else {
-    keyboardShortcut = '';
-  }
-  return keyboardShortcut;
-}
-
 /**
  * Dismissable panel that displays the diagnostics from nuclide-diagnostics-store.
  */
@@ -84,17 +66,6 @@ class DiagnosticsPanel extends React.Component {
       }
     });
 
-    const shortcut = getKeyboardShortcut();
-    let shortcutSpan = null;
-    if (shortcut !== '') {
-      shortcutSpan = (
-        <span className="text-subtle inline-block">
-          Use <kbd className="key-binding key-binding-sm text-highlight">{shortcut}</kbd> to toggle
-          this panel.
-        </span>
-      );
-    }
-
     let linterWarning = null;
     if (this.props.warnAboutLinter) {
       linterWarning = (
@@ -134,6 +105,8 @@ class DiagnosticsPanel extends React.Component {
               <span className={warningSpanClassName}>
                 Warnings: {warningCount}
               </span>
+            </ToolbarLeft>
+            <ToolbarRight>
               <span className="inline-block">
                 <Checkbox
                   checked={this.props.filterByActiveTextEditor}
@@ -141,9 +114,6 @@ class DiagnosticsPanel extends React.Component {
                   onChange={this._onFilterByActiveTextEditorChange}
                 />
               </span>
-            </ToolbarLeft>
-            <ToolbarRight>
-              {shortcutSpan}
               <Button
                 onClick={this.props.onDismiss}
                 icon="x"
