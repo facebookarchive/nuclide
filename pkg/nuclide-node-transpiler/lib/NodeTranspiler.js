@@ -26,7 +26,7 @@ const path = require('path');
 const os = require('os');
 
 const PREFIXES = ["'use babel'", '"use babel"', '/* @flow */', '/** @babel */'];
-const PREFIX_LENGTH = Math.max.apply(Math, PREFIXES.map(x => x.length));
+const PREFIX_LENGTH = Math.max(...PREFIXES.map(x => x.length));
 
 // Atom defaults: https://github.com/atom/atom/blob/v1.6.2/static/babelrc.json
 // {

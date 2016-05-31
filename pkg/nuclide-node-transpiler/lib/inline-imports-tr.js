@@ -90,7 +90,7 @@ module.exports = function inlineImports(babel) {
         null;
 
       if (memoizedInterop) {
-        Array.prototype.push.apply(replacementNodes, memoizedInterop.nodes);
+        replacementNodes.push(...memoizedInterop.nodes);
       }
 
       const memoizedMember =
@@ -101,7 +101,7 @@ module.exports = function inlineImports(babel) {
         : null;
 
       if (memoizedMember) {
-        Array.prototype.push.apply(replacementNodes, memoizedMember.nodes);
+        replacementNodes.push(...memoizedMember.nodes);
       }
 
       node.specifiers.forEach(specifier => {
