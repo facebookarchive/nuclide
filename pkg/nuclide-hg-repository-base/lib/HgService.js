@@ -621,16 +621,16 @@ export class HgService {
    * Get the output of the experimental smartlog extension from Mercurial:
    * https://bitbucket.org/facebook/hg-experimental/#markdown-header-smartlog.
    * @param ttyOutput If true, return the output as if stdout were attached to a tty.
-   * @param concise true to run `hg smartlog`; false to run `hg sl`.
+   * @param concise true to run `hg smartlog`; false to run `hg ssl`.
    * @return The output from running the command.
    */
   async getSmartlog(ttyOutput: boolean, concise: boolean): Promise<AsyncExecuteRet> {
-    // disable the pager extension so that 'hg sl' terminates. We can't just use
+    // disable the pager extension so that 'hg ssl' terminates. We can't just use
     // HGPLAIN because we have not found a way to get colored output when we do.
-    const args = ['--config', 'extensions.pager=!', concise ? 'sl' : 'smartlog'];
+    const args = ['--config', 'extensions.pager=!', concise ? 'ssl' : 'smartlog'];
     const execOptions = {
       cwd: this._workingDirectory,
-      NO_HGPLAIN: concise, // `hg sl` is likely user-defined.
+      NO_HGPLAIN: concise, // `hg ssl` is likely user-defined.
       TTY_OUTPUT: ttyOutput,
     };
     return await this._hgAsyncExecute(args, execOptions);
