@@ -23,6 +23,10 @@ const {
   getApmNodeModulesPath,
 } = __test__;
 
+// This test is excluded from CI because depending on the machine that runs on
+// it hangs. It might have something to do with how the `keytar` binary tries
+// to access the keychain.
+
 describe('Keytar Wrapper', () => {
 
   describe('getApmNodePath', () => {
