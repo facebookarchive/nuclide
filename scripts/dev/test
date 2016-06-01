@@ -88,11 +88,13 @@ if not options.no_version:
     check_dependencies(not options.no_atom)
 
 if options.run_integration_tests:
+    run('transpile', ['scripts/dev/release_transpile.js'])
     test_runner.run_integration_tests()
 else:
     run('lint_packages', ['scripts/dev/lint_packages'])
     run('eslint', ['node_modules/.bin/eslint', '--max-warnings=0', '.'])
     run('flow', ['flow', 'check', '--show-all-errors'])
+    run('transpile', ['scripts/dev/release_transpile.js'])
     if not options.no_module_cycle_check:
         run('module_cycle_check', ['scripts/dev/module_cycle_check'])
     test_runner.run_unit_tests()

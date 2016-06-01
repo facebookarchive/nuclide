@@ -129,15 +129,19 @@ class NodeTranspiler {
     }
   }
 
-  transformWithCache(src, filename) {
+  transformWithCache(src, filename, done) {
     const cacheFilename = this._getCacheFilename(src);
 
     if (fs.existsSync(cacheFilename)) {
-      return fs.readFileSync(cacheFilename, 'utf8');
+      const cached = fs.readFileSync(cacheFilename, 'utf8');
+      if (done) {
+        process.nextTick(() => { done(null, cacheFilename); });
+      }
+      return cached;
     }
 
     const output = this.transform(src, filename);
-    cacheWriteAsync(cacheFilename, output);
+    cacheWriteAsync(cacheFilename, output, done);
 
     return output;
   }
@@ -164,16 +168,20 @@ class NodeTranspiler {
 
 module.exports = NodeTranspiler;
 
-function cacheWriteAsync(filename, src) {
+function cacheWriteAsync(cacheFilename, src, done) {
   const mkdirp = require('mkdirp');
   const uuid = require('uuid');
 
-  const basedir = path.dirname(filename);
+  const basedir = path.dirname(cacheFilename);
   const tmpName = path.join(basedir, '.' + uuid.v4());
+
+  const fail = done || (err => {
+    console.error(`Cache write failed. ${err}`);
+  });
 
   mkdirp(basedir, mkdirErr => {
     if (mkdirErr) {
-      console.error('nuclide-node-transpiler:', mkdirErr);
+      fail(mkdirErr);
       return;
     }
     // Asynchronously write the result to the cache. Write the file to a temp
@@ -182,15 +190,18 @@ function cacheWriteAsync(filename, src) {
     // simultaneously that are using the cache.
     fs.writeFile(tmpName, src, writeError => {
       if (writeError) {
-        console.error('nuclide-node-transpiler:', writeError);
+        fail(writeError);
         return;
       }
-      fs.rename(tmpName, filename, renameErr => {
+      fs.rename(tmpName, cacheFilename, renameErr => {
         if (renameErr) {
-          console.error('nuclide-node-transpiler:', renameErr);
+          fail(renameErr);
           // Try to remove the temp file if renaming failed.
           fs.unlink(tmpName, () => {});
           return;
+        }
+        if (done) {
+          done(null, cacheFilename);
         }
       });
     });
