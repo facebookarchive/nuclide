@@ -11,6 +11,7 @@
 
 import {React} from 'react-for-atom';
 import {AtomInput} from '../../../nuclide-ui/lib/AtomInput';
+import {ButtonGroup} from '../../../nuclide-ui/lib/ButtonGroup';
 import {Dropdown} from '../../../nuclide-ui/lib/Dropdown';
 import {Toolbar} from '../../../nuclide-ui/lib/Toolbar';
 import {ToolbarLeft} from '../../../nuclide-ui/lib/ToolbarLeft';
@@ -22,9 +23,11 @@ import {
 
 type Props = {
   clear: () => void;
+  enableRegExpFilter: boolean;
   selectedSourceId: string;
   sources: Array<{id: string; name: string}>;
   onFilterTextChange: (filterText: string) => void;
+  toggleRegExpFilter: () => void;
   onSelectedSourceChange: (sourceId: string) => void;
 };
 
@@ -34,10 +37,15 @@ export default class ConsoleHeader extends React.Component {
   constructor(props: Props) {
     super(props);
     (this: any)._handleClearButtonClick = this._handleClearButtonClick.bind(this);
+    (this: any)._handleReToggleButtonClick = this._handleReToggleButtonClick.bind(this);
   }
 
   _handleClearButtonClick(event: SyntheticMouseEvent): void {
     this.props.clear();
+  }
+
+  _handleReToggleButtonClick(): void {
+    this.props.toggleRegExpFilter();
   }
 
   render(): ?React.Element {
@@ -63,14 +71,22 @@ export default class ConsoleHeader extends React.Component {
               onChange={this.props.onSelectedSourceChange}
             />
           </span>
-          <span className="inline-block">
+          <ButtonGroup className="inline-block">
             <AtomInput
+              className="nuclide-console-filter-field"
               size="sm"
               width={200}
               placeholderText="Filter"
               onDidChange={this.props.onFilterTextChange}
             />
-          </span>
+            <Button
+              className="nuclide-console-filter-regexp-button"
+              size={ButtonSizes.SMALL}
+              selected={this.props.enableRegExpFilter}
+              onClick={this._handleReToggleButtonClick}>
+              .*
+            </Button>
+          </ButtonGroup>
         </ToolbarLeft>
         <ToolbarRight>
           <Button

@@ -27,10 +27,12 @@ type Props = {
   execute: (code: string) => void;
   currentExecutor: ?Executor;
   executors: Map<string, Executor>;
+  enableRegExpFilter: boolean;
   selectedSourceId: string;
   selectExecutor: (executorId: string) => void;
   selectSource: (sourceId: string) => void;
   sources: Array<{id: string; name: string}>;
+  toggleRegExpFilter: () => void;
   updateFilterText: (filterText: string) => void;
 };
 
@@ -106,8 +108,10 @@ export default class ConsoleView extends React.Component {
       <div className="nuclide-console">
         <ConsoleHeader
           clear={this.props.clearRecords}
+          enableRegExpFilter={this.props.enableRegExpFilter}
           selectedSourceId={this.props.selectedSourceId}
           sources={this.props.sources}
+          toggleRegExpFilter={this.props.toggleRegExpFilter}
           onFilterTextChange={this.props.updateFilterText}
           onSelectedSourceChange={this.props.selectSource}
         />

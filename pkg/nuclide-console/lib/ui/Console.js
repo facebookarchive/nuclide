@@ -28,6 +28,7 @@ type Props = {
 
 type State = {
   filterText: string;
+  enableRegExpFilter: boolean;
   selectedSourceId: string;
 };
 
@@ -42,16 +43,30 @@ export default class Console extends React.Component {
     super(props);
     this.state = {
       filterText: '',
+      enableRegExpFilter: false,
       selectedSourceId: props.initialSelectedSourceId,
     };
     (this: any)._selectSource = this._selectSource.bind(this);
     (this: any)._updateFilterText = this._updateFilterText.bind(this);
+    (this: any)._toggleRegExpFilter = this._toggleRegExpFilter.bind(this);
+  }
+
+  _getFilterPattern(filterText: string, isRegExp: boolean): ?RegExp {
+    if (filterText === '') { return null; }
+    const source = isRegExp ? filterText : escapeStringRegexp(filterText);
+    try {
+      return new RegExp(source, 'i');
+    } catch (err) {
+      // TODO: Indicate invalid expressions.
+      return null;
+    }
   }
 
   render(): React.Element {
-    const filterPattern = this.state.filterText === ''
-      ? null
-      : new RegExp(escapeStringRegexp(this.state.filterText), 'i');
+    const filterPattern = this._getFilterPattern(
+      this.state.filterText,
+      this.state.enableRegExpFilter,
+    );
 
     const records = filterRecords(
       this.props.records,
@@ -62,8 +77,10 @@ export default class Console extends React.Component {
     return (
       <ConsoleView {...this.props}
         records={records}
+        enableRegExpFilter={this.state.enableRegExpFilter}
         selectedSourceId={this.state.selectedSourceId}
         selectSource={this._selectSource}
+        toggleRegExpFilter={this._toggleRegExpFilter}
         updateFilterText={this._updateFilterText}
       />
     );
@@ -71,6 +88,10 @@ export default class Console extends React.Component {
 
   _selectSource(sourceId: string): void {
     this.setState({selectedSourceId: sourceId});
+  }
+
+  _toggleRegExpFilter(): void {
+    this.setState({enableRegExpFilter: !this.state.enableRegExpFilter});
   }
 
   _updateFilterText(filterText: string): void {

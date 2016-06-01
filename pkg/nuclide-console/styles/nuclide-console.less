@@ -304,3 +304,17 @@
   // Make sure that everything's vertically aligned.
   display: flex;
 }
+
+// Target the filter field, making sure that we have a great enough specificity.
+atom-text-editor[mini].nuclide-console-filter-field {
+  // Make it butt up against the button.
+  float: left;
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.btn.nuclide-console-filter-regexp-button {
+  border-left: 0;
+  font-weight: bold;
+  font-family: Menlo, monospace;
+}
