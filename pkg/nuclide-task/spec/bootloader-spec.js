@@ -53,8 +53,7 @@ describe('Task', () => {
       });
     });
 
-    // t7542202: fix this test and re-enable it
-    xit('can call a synchronous function from an exports object', () => {
+    it('can call a synchronous function from an exports object', () => {
       waitsForPromise(async () => {
         invariant(task);
         const result = await task.invokeRemoteMethod({
@@ -66,8 +65,7 @@ describe('Task', () => {
       });
     });
 
-    // t7542202: fix this test and re-enable it
-    xit('can call an async function from an exports object', () => {
+    it('can call an async function from an exports object', () => {
       waitsForPromise(async () => {
         invariant(task);
         const result = await task.invokeRemoteMethod({

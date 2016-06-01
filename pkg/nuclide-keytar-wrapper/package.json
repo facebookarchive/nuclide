@@ -6,7 +6,6 @@
   "description": "A wrapper that uses keytar shipped with apm",
   "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
-    "excludeTestsFromContinuousIntegration": true,
     "packageType": "Node",
     "testRunner": "apm"
   }

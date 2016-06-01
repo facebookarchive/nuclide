@@ -6,7 +6,6 @@
   "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Node",
-    "testsCannotBeRunInParallel": true,
     "testRunner": "apm"
   }
 }
