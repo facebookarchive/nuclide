@@ -16,6 +16,7 @@ import DebuggerActions from './DebuggerActions';
 import {DebuggerStore} from './DebuggerStore';
 import {WatchExpressionStore} from './WatchExpressionStore';
 import {WatchExpressionListStore} from './WatchExpressionListStore';
+import DebuggerActionsStore from './DebuggerActionsStore';
 import Bridge from './Bridge';
 import {CompositeDisposable} from 'atom';
 import {Dispatcher} from 'flux';
@@ -35,6 +36,7 @@ class DebuggerModel {
   _watchExpressionStore: WatchExpressionStore;
   _watchExpressionListStore: WatchExpressionListStore;
   _debuggerProviderStore: DebuggerProviderStore;
+  _debuggerActionStore: DebuggerActionsStore;
   _bridge: Bridge;
 
   constructor(state: ?SerializedState) {
@@ -50,6 +52,7 @@ class DebuggerModel {
       this._watchExpressionStore,
       this._dispatcher
     );
+    this._debuggerActionStore = new DebuggerActionsStore(this._dispatcher, this._bridge);
 
     this._disposables = new CompositeDisposable(
       this._store,
@@ -59,6 +62,7 @@ class DebuggerModel {
       this._bridge,
       this._debuggerProviderStore,
       this._watchExpressionStore,
+      this._debuggerActionStore,
     );
   }
 
