@@ -13,8 +13,8 @@ import type {FindReferencesReturn} from '../../nuclide-find-references';
 
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
+import {getAtomProjectRootPath} from '../../commons-atom/projects';
 import loadingNotification from '../../commons-atom/loading-notification';
-import remoteUri from '../../nuclide-remote-uri';
 import path from 'path';
 
 export default class ReferenceHelpers {
@@ -29,14 +29,9 @@ export default class ReferenceHelpers {
       return null;
     }
 
-    // Get paths that are parents of src path, in descending order of path length.
-    const projectPaths = atom.project.getPaths()
-      .filter(p => remoteUri.contains(p, src))
-      .sort((a, b) => b.length - a.length);
-
-    // Choose the best matching project root (longest path) as the baseUri, or if
-    // no project exists, use the dirname of the src file.
-    const baseUri = projectPaths[0] || path.dirname(src);
+    // Choose the project root as baseUri, or if no project exists,
+    // use the dirname of the src file.
+    const baseUri = getAtomProjectRootPath(src) || path.dirname(src);
 
     const contents = editor.getText();
     const line = position.row;
