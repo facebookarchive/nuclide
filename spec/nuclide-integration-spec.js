@@ -9,33 +9,15 @@
  * the root directory of this source tree.
  */
 
-import util from 'util';
-
 import {
   activateAllPackages,
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
 } from '../pkg/nuclide-integration-test-helpers';
 
-describe('aaa-nuclide', () => {
-  it('print the environment', () => {
-    // eslint-disable-next-line no-console
-    console.log(util.inspect(process.env));
-
-    const userConfigPath = atom.config.getUserConfigPath();
-    const rawConfig = atom.config.getRawValue('', {sources: userConfigPath});
-
-    // eslint-disable-next-line no-console
-    console.log(util.inspect(rawConfig, {depth: null}));
-
-    expect(true).toBe(true);
-  });
-
+describe('nuclide', () => {
   it('deactivates cleanly', () => {
-    // This test has a high timeout because when it runs on the CI, the
-    // transpile cache is cold. This test, among other things, warms up the
-    // cache as a side-effect.
-    waitsForPromise({timeout: 30000}, async () => {
+    waitsForPromise(async () => {
       jasmineIntegrationTestSetup();
 
       await activateAllPackages();
