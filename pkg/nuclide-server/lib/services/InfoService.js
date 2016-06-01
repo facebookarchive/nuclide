@@ -29,5 +29,5 @@ export async function closeConnection(shutdownServer: boolean): Promise<void> {
     if (shutdownServer) {
       NuclideServer.shutdown();
     }
-  }, 100);
+  }, 1000);
 }
