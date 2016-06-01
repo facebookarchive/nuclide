@@ -13,8 +13,6 @@ import type {Observable} from 'rxjs';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
-import type {TokenizedText} from '../../nuclide-tokenized-text/lib/rpc-types';
-
 // Diagnostic information, returned from findDiagnostics.
 export type Diagnostics = {
   // The location of the .flowconfig where these messages came from.
@@ -76,6 +74,30 @@ export type FlowOutlineTree = {
   startPosition: Point;
   endPosition: Point;
 };
+
+// The origin of this type is at nuclide-tokenized-text/lib/main.js
+// When updating update both locations!
+export type TokenKind = 'keyword'
+  | 'class-name'
+  | 'constructor'
+  | 'method'
+  | 'param'
+  | 'string'
+  | 'whitespace'
+  | 'plain'
+  | 'type'
+  ;
+
+// The origin of this type is at nuclide-tokenized-text/lib/main.js
+// When updating update both locations!
+export type TextToken = {
+  kind: TokenKind;
+  value: string;
+};
+
+// The origin of this type is at nuclide-tokenized-text/lib/main.js
+// When updating update both locations!
+export type TokenizedText = Array<TextToken>;
 
 export type FlowCoverageResult = {
   percentage: number;
