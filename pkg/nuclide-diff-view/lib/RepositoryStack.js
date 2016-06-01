@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {LRUCache} from 'lru-cache';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {FileChangeStatusValue, HgDiffState, RevisionsState, DiffOptionType} from './types';
 import type {
@@ -56,7 +57,7 @@ export default class RepositoryStack {
   _selectedCompareCommitId: ?number;
   _isActive: boolean;
   _serializedUpdateStatus: () => Promise<void>;
-  _revisionIdToFileChanges: LRU<number, RevisionFileChanges>;
+  _revisionIdToFileChanges: LRUCache<number, RevisionFileChanges>;
 
   constructor(repository: HgRepositoryClient) {
     this._repository = repository;

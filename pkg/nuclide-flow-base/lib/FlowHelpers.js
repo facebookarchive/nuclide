@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {LRUCache} from 'lru-cache';
+
 import type {FlowLocNoSource} from './flowOutputTypes';
 
 import path from 'path';
@@ -17,12 +19,11 @@ import fsPromise from '../../commons-node/fsPromise';
 import LRU from 'lru-cache';
 import invariant from 'assert';
 
-const flowConfigDirCache = LRU({
+const flowConfigDirCache: LRUCache<string, Promise<?string>> = LRU({
   max: 10,
-  length(n) { return n.length; },
   maxAge: 1000 * 30, //30 seconds
 });
-const flowPathCache = LRU({
+const flowPathCache: LRUCache<string, boolean> = LRU({
   max: 10,
   maxAge: 1000 * 30, // 30 seconds
 });
