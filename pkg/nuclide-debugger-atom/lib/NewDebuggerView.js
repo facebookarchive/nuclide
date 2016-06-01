@@ -50,7 +50,9 @@ export class NewDebuggerView extends React.Component {
     return (
       <div className="nuclide-debugger-container-new">
         <Section headline="Debugger Controls">
-          <DebuggerSteppingComponent />
+          <DebuggerSteppingComponent
+            actions={actions}
+          />
         </Section>
         <Section headline="Watch Expressions">
           <WatchExpressionComponentWrapped
