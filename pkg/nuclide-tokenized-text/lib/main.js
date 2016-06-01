@@ -9,10 +9,30 @@
  * the root directory of this source tree.
  */
 
-import type {
-  TokenKind,
-  TextToken,
-} from './rpc-types';
+
+// This type is duplicated in nuclide-flow-base/lib/FlowService.js
+// When updating update both locations!
+export type TokenKind = 'keyword'
+  | 'class-name'
+  | 'constructor'
+  | 'method'
+  | 'param'
+  | 'string'
+  | 'whitespace'
+  | 'plain'
+  | 'type'
+  ;
+
+// This type is duplicated in nuclide-flow-base/lib/FlowService.js
+// When updating update both locations!
+export type TextToken = {
+  kind: TokenKind;
+  value: string;
+};
+
+// This type is duplicated in nuclide-flow-base/lib/FlowService.js
+// When updating update both locations!
+export type TokenizedText = Array<TextToken>;
 
 export function keyword(value: string): TextToken {
   return _buildToken('keyword', value);
