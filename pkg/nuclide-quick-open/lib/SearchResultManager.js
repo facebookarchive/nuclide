@@ -277,6 +277,11 @@ class SearchResultManager {
       this._providersByDirectory.forEach((providers, dir) => {
         providers.delete(service);
       });
+      // Reset the active provider to omnisearch if the disposed service is
+      // the current active provider.
+      if (serviceName === this._activeProviderName) {
+        this._activeProviderName = OMNISEARCH_PROVIDER.name;
+      }
       this._removeResultsForProvider(serviceName);
       this._emitter.emit(PROVIDERS_CHANGED);
     }));

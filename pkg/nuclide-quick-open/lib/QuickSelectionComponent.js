@@ -42,6 +42,7 @@ import SearchResultManager from './SearchResultManager';
 import classnames from 'classnames';
 import {filterEmptyResults} from './searchResultHelpers';
 import {nuclideUriToDisplayString} from '../../nuclide-remote-uri';
+import QuickSelectionActions from './QuickSelectionActions';
 
 const RESULTS_CHANGED_DEBOUNCE_DELAY = 50;
 
@@ -254,7 +255,8 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   handleResultsChange(): void {
-    this._updateResults(this.props.activeProvider.name);
+    const activeProviderName = searchResultManager.getActiveProviderName();
+    this._updateResults(activeProviderName);
   }
 
   _updateResults(activeProviderName: string): void {
@@ -537,7 +539,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   setQuery(query: string) {
-    require('./QuickSelectionActions').query(query);
+    QuickSelectionActions.query(query);
   }
 
   getProvider(): ProviderSpec {
@@ -580,10 +582,7 @@ export default class QuickSelectionComponent extends React.Component {
   _handleTabChange(newTab: ProviderSpec): void {
     const providerName = newTab.name;
     if (providerName !== this.props.activeProvider.name) {
-      if (this.props.onProviderChange) {
-        this.props.onProviderChange(providerName);
-      }
-      this._emitter.emit('active-provider-changed', providerName);
+      QuickSelectionActions.changeActiveProvider(providerName);
     }
     this.refs['queryInput'].focus();
   }
@@ -767,7 +766,6 @@ QuickSelectionComponent.propTypes = {
     prompt: React.PropTypes.string.isRequired,
     title: React.PropTypes.string.isRequired,
   }).isRequired,
-  onProviderChange: React.PropTypes.func,
   maxScrollableAreaHeight: React.PropTypes.number,
   onBlur: React.PropTypes.func.isRequired,
 };

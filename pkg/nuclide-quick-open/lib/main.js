@@ -79,8 +79,7 @@ class Activation {
     const QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
     QuickSelectionDispatcher.getInstance().register(action => {
       if (action.actionType === QuickSelectionDispatcher.ActionType.ACTIVE_PROVIDER_CHANGED) {
-        this.toggleProvider(action.providerName);
-        this._render();
+        this._handleActiveProviderChange(action.providerName);
       }
     });
     this._reactDiv = document.createElement('div');
@@ -170,7 +169,6 @@ class Activation {
     const component = ReactDOM.render(
       <QuickSelectionComponent
         activeProvider={this._currentProvider}
-        onProviderChange={this.handleActiveProviderChange.bind(this)}
         maxScrollableAreaHeight={this._maxScrollableAreaHeight}
         onBlur={this.closeSearchPanel.bind(this)}
       />,
@@ -180,8 +178,11 @@ class Activation {
     return component;
   }
 
-  handleActiveProviderChange(newProviderName: string): void {
+  _handleActiveProviderChange(newProviderName: string): void {
     trackProviderChange(newProviderName);
+    // Toggle newProviderName before setting this._currentProvider to make
+    // the search panel stay open.
+    this.toggleProvider(newProviderName);
     this._currentProvider = getSearchResultManager().getProviderByName(newProviderName);
     this._searchComponent = this._render();
   }
