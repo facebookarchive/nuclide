@@ -18,8 +18,8 @@ export default class SideBarPanelComponent extends React.Component {
   props: {
     children?: React.Element;
     menuItems: Array<{label: string; value: string}>;
-    onSelectedViewMenuItemChange: (index: number) => void;
-    selectedViewMenuItemIndex: number;
+    onSelectedViewMenuItemChange: (value: ?string) => void;
+    selectedViewMenuItemValue: ?string;
   };
 
   focus() {
@@ -34,9 +34,9 @@ export default class SideBarPanelComponent extends React.Component {
           <ToolbarLeft>
             <Dropdown
               isFlat={true}
-              menuItems={this.props.menuItems}
-              onSelectedChange={this.props.onSelectedViewMenuItemChange}
-              selectedIndex={this.props.selectedViewMenuItemIndex}
+              options={this.props.menuItems}
+              onChange={this.props.onSelectedViewMenuItemChange}
+              value={this.props.selectedViewMenuItemValue}
             />
           </ToolbarLeft>
         </Toolbar>

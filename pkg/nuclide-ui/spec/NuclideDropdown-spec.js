@@ -20,41 +20,40 @@ const {
 
 describe('Dropdown', () => {
 
-  it('honors the selectedIndex param', () => {
+  it('honors the value param', () => {
     const component = renderIntoDocument(
       <Dropdown
-        menuItems={[
+        options={[
           {label: 'foo', value: 'vfoo'},
           {label: 'bar', value: 'vbar'},
         ]}
-        onSelectedChange={newIndex => {}}
-        selectedIndex={1}
+        onChange={newValue => {}}
+        value={'vbar'}
       />
     );
 
     const select = scryRenderedDOMComponentsWithTag(component, 'select');
     expect(ReactDOM.findDOMNode(select[0]).selectedIndex).toBe(1);
-    expect(ReactDOM.findDOMNode(select[0]).value).toBe('vbar');
   });
 
   it('calls the callback with the new index when a different menu item is selected', () => {
-    let changedIndex;
+    let changedValue;
     const component = renderIntoDocument(
       <Dropdown
-        menuItems={[
+        options={[
           {label: 'foo', value: 'vfoo'},
           {label: 'bar', value: 'vbar'},
         ]}
-        onSelectedChange={index => {
-          changedIndex = index;
+        onChange={value => {
+          changedValue = value;
         }}
-        selectedIndex={0}
+        value="vfoo"
       />
     );
 
     const select = scryRenderedDOMComponentsWithTag(component, 'select');
     ReactDOM.findDOMNode(select[0]).selectedIndex = 1;
     Simulate.change(ReactDOM.findDOMNode(select[0]));
-    expect(changedIndex).toBe(1);
+    expect(changedValue).toBe('vbar');
   });
 });

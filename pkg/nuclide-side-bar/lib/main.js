@@ -135,18 +135,12 @@ function focusPanel(): void {
 function renderPanelSync(renderState: State, onDidRender?: ?() => mixed): void {
   const activeViewInstance = getActiveViewInstance(renderState);
   const hidden = (activeViewInstance == null) || renderState.hidden;
+  const activeViewId = activeViewInstance == null ? null : activeViewInstance.view.viewId;
 
-  const viewMenuItems = [];
-  let selectedViewMenuItemIndex = -1;
-  renderState.views.forEach((viewInstance, viewId) => {
-    if (activeViewInstance != null && activeViewInstance.view.viewId === viewId) {
-      selectedViewMenuItemIndex = viewMenuItems.length;
-    }
-    viewMenuItems.push({
-      label: viewInstance.view.title,
-      value: viewId,
-    });
-  });
+  const viewMenuItems = Array.from(renderState.views.values()).map(viewInstance => ({
+    label: viewInstance.view.title,
+    value: viewInstance.view.viewId,
+  }));
 
   const component = ReactDOM.render(
     <PanelComponent
@@ -157,10 +151,10 @@ function renderPanelSync(renderState: State, onDidRender?: ?() => mixed): void {
       noScroll>
       <SideBarPanelComponent
         menuItems={viewMenuItems}
-        onSelectedViewMenuItemChange={index => {
-          toggleView(viewMenuItems[index].value, {display: true});
+        onSelectedViewMenuItemChange={value => {
+          toggleView(value, {display: true});
         }}
-        selectedViewMenuItemIndex={selectedViewMenuItemIndex}>
+        selectedViewMenuItemValue={activeViewId}>
         {activeViewInstance == null
           ? <div />
           : React.createElement(activeViewInstance.view.getComponent(), {hidden})}

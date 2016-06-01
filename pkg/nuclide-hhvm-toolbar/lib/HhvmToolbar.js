@@ -103,9 +103,9 @@ class HhvmToolbar extends React.Component {
       <div className="buck-toolbar hhvm-toolbar block padded">
         <Dropdown
           className="inline-block"
-          menuItems={this._getMenuItems()}
-          selectedIndex={this.state.selectedIndex}
-          onSelectedChange={this._handleDropdownChange}
+          options={this._getMenuItems()}
+          value={this.state.selectedIndex}
+          onChange={this._handleDropdownChange}
           ref="dropdown"
           size="sm"
         />

@@ -55,9 +55,9 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
           <label>Selected Project Directory: </label>
           <Dropdown
             className="inline-block nuclide-debugger-atom-connection-box"
-            menuItems={this.state.pathMenuItems}
-            onSelectedChange={this._handlePathsDropdownChange}
-            selectedIndex={this.state.pathsDropdownIndex}
+            options={this.state.pathMenuItems}
+            onChange={this._handlePathsDropdownChange}
+            value={this.state.pathsDropdownIndex}
           />
         </div>
         <label>Command: </label>

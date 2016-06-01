@@ -92,25 +92,25 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
           <label className="inline-block">Connection: </label>
           <Dropdown
             className="inline-block"
-            menuItems={connectionItems}
-            onSelectedChange={this._handleConnectionDropdownChange}
-            selectedIndex={this.state.connectionsDropdownIndex}
+            options={connectionItems}
+            onChange={this._handleConnectionDropdownChange}
+            value={this.state.connectionsDropdownIndex}
             size="sm"
           />
           <label className="inline-block">Type: </label>
           <Dropdown
             className="inline-block"
-            menuItems={debuggingTypeItems}
-            onSelectedChange={this._handleDebuggingTypeDropdownChange}
-            selectedIndex={this.state.debuggingTypeDropdownIndex}
+            options={debuggingTypeItems}
+            onChange={this._handleDebuggingTypeDropdownChange}
+            value={this.state.debuggingTypeDropdownIndex}
             size="sm"
           />
           <label className="inline-block">Action: </label>
           <Dropdown
             className="inline-block"
-            menuItems={providerActions}
-            onSelectedChange={this._handleProviderActionsDropdownChange}
-            selectedIndex={this.state.providerActionsDropdownIndex}
+            options={providerActions}
+            onChange={this._handleProviderActionsDropdownChange}
+            value={this.state.providerActionsDropdownIndex}
             size="sm"
           />
         </div>

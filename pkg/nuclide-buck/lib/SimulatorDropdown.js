@@ -34,15 +34,15 @@ class SimulatorDropdown extends React.Component {
   };
 
   state: {
-    menuItems: Array<{label: string; value: string}>;
-    selectedIndex: number;
+    options: Array<{label: string; value: string}>;
+    value: string;
   };
 
   constructor(props: Object) {
     super(props);
     this.state = {
-      menuItems: [],
-      selectedIndex: 0,
+      options: [],
+      value: '',
     };
     (this: any)._buildMenuItems = this._buildMenuItems.bind(this);
     (this: any)._handleSelection = this._handleSelection.bind(this);
@@ -59,15 +59,16 @@ class SimulatorDropdown extends React.Component {
 
   _buildMenuItems(devices: Array<Device>): void {
     const selectedIndex = IosSimulator.getActiveDeviceIndex(devices);
-    const menuItems = devices.map(device => ({
+    const value = devices[selectedIndex].udid;
+    const options = devices.map(device => ({
       label: `${device.name} (${device.os})`,
       value: device.udid,
     }));
-    this.setState({menuItems, selectedIndex});
+    this.setState({options, value});
   }
 
   render(): React.Element {
-    if (this.state.menuItems.length === 0) {
+    if (this.state.options.length === 0) {
       return <span />;
     }
 
@@ -75,21 +76,18 @@ class SimulatorDropdown extends React.Component {
       <Dropdown
         className={this.props.className}
         disabled={this.props.disabled}
-        selectedIndex={this.state.selectedIndex}
-        menuItems={this.state.menuItems}
-        onSelectedChange={this._handleSelection}
+        value={this.state.value}
+        options={this.state.options}
+        onChange={this._handleSelection}
         size="sm"
         title={this.props.title}
       />
     );
   }
 
-  _handleSelection(newIndex: number) {
-    const selectedItem = this.state.menuItems[newIndex];
-    if (selectedItem) {
-      this.props.onSelectedSimulatorChange(selectedItem.value);
-    }
-    this.setState({selectedIndex: newIndex});
+  _handleSelection(value: string) {
+    this.props.onSelectedSimulatorChange(value);
+    this.setState({value});
   }
 }
 

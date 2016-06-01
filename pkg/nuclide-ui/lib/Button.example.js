@@ -129,7 +129,7 @@ const DropdownExample = (() => {
   return (): React.Element => (
     <div>
       <Dropdown
-        menuItems={options}
+        options={options}
         value={2}
       />
     </div>

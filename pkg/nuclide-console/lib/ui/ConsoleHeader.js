@@ -50,16 +50,14 @@ export default class ConsoleHeader extends React.Component {
       {label: 'All Sources', value: ''},
     ];
 
-    const selectedIndex = options.findIndex(option => option.value === this.props.selectedSourceId);
-
     return (
       <Toolbar location="top">
         <ToolbarLeft>
           <Dropdown
             size="sm"
-            menuItems={options}
-            selectedIndex={selectedIndex}
-            onSelectedChange={index => this.props.onSelectedSourceChange(options[index].value)}
+            options={options}
+            value={this.props.selectedSourceId}
+            onChange={this.props.onSelectedSourceChange}
           />
         </ToolbarLeft>
         <ToolbarRight>

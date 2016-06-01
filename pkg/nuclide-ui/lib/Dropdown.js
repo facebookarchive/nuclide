@@ -16,12 +16,12 @@ type Props = {
   className: string;
   disabled: boolean;
   isFlat: boolean;
-  menuItems: Array<{label: React.Children; value: mixed}>;
-  selectedIndex: number;
+  options: Array<{label: React.Children; value: any}>;
+  value: any;
   /**
-   * A function that gets called with the new selected index on change.
+   * A function that gets called with the new value on change.
    */
-  onSelectedChange: (newIndex: number) => void;
+  onChange: (value: any) => void;
   /**
    * Size of dropdown. Sizes match .btn classes in Atom's style guide. Default is medium (which
    * does not have an associated 'size' string).
@@ -37,27 +37,27 @@ export class Dropdown extends React.Component {
     className: '',
     disabled: false,
     isFlat: false,
-    menuItems: [],
-    onSelectedChange: (newIndex: number) => {},
-    selectedIndex: 0,
+    options: [],
+    onChange: (value: any) => {},
+    value: (null: any),
     title: '',
   };
 
   constructor(props: Props) {
     super(props);
-    (this: any)._onChange = this._onChange.bind(this);
+    (this: any)._handleChange = this._handleChange.bind(this);
   }
 
-  _onChange(event: SyntheticMouseEvent): void {
-    if (event.target.selectedIndex != null) {
-      const selectedIndex = event.target.selectedIndex;
-      this.props.onSelectedChange(selectedIndex);
-    }
+  _handleChange(event: SyntheticMouseEvent): void {
+    const selectedIndex = (event.currentTarget: any).selectedIndex;
+    const option = this.props.options[selectedIndex];
+    this.props.onChange(option == null ? null : option.value);
   }
 
   render(): React.Element {
-    const options = this.props.menuItems.map(item =>
-      <option key={item.value} value={item.value}>{item.label}</option>
+    const options = this.props.options.map((item, index) =>
+      // Use indexes for values. This allows us to have non-string values in our options object.
+      <option key={index} value={index}>{item.label}</option>
     );
     const selectClassName = classnames('nuclide-dropdown', {
       'btn': !this.props.isFlat,
@@ -65,17 +65,16 @@ export class Dropdown extends React.Component {
       'nuclide-dropdown-flat': this.props.isFlat,
     });
 
-    const selectedItem = this.props.menuItems[this.props.selectedIndex];
-    const selectedValue = selectedItem && selectedItem.value;
+    const selectedIndex = this.props.options.findIndex(option => option.value === this.props.value);
 
     return (
       <div className={'nuclide-dropdown-container ' + this.props.className}>
         <select
           className={selectClassName}
           disabled={this.props.disabled}
-          onChange={this._onChange}
+          onChange={this._handleChange}
           title={this.props.title}
-          value={selectedValue}>
+          value={selectedIndex === -1 ? '' : selectedIndex}>
           {options}
         </select>
         <i className="icon icon-triangle-down text-center" />

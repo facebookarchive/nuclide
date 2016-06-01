@@ -184,12 +184,12 @@ class TestRunnerPanel extends React.Component {
         <Dropdown
           className="inline-block nuclide-test-runner__runner-dropdown"
           disabled={this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
-          menuItems={this.props.testRunners.map(testRunner =>
-            ({label: testRunner.label, value: testRunner.label})
+          options={this.props.testRunners.map((testRunner, index) =>
+            ({label: testRunner.label, value: index})
           )}
-          onSelectedChange={this.setSelectedTestRunnerIndex}
+          onChange={this.setSelectedTestRunnerIndex}
           ref="dropdown"
-          selectedIndex={this.state.selectedTestRunnerIndex}
+          value={this.state.selectedTestRunnerIndex}
           size="sm"
           title="Choose a test runner"
         />
