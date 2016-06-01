@@ -51,31 +51,37 @@ export default class Console extends React.Component {
     (this: any)._toggleRegExpFilter = this._toggleRegExpFilter.bind(this);
   }
 
-  _getFilterPattern(filterText: string, isRegExp: boolean): ?RegExp {
-    if (filterText === '') { return null; }
+  _getFilterPattern(filterText: string, isRegExp: boolean): {pattern: ?RegExp; isValid: boolean} {
+    if (filterText === '') {
+      return {pattern: null, isValid: true};
+    }
     const source = isRegExp ? filterText : escapeStringRegexp(filterText);
     try {
-      return new RegExp(source, 'i');
+      return {
+        pattern: new RegExp(source, 'i'),
+        isValid: true,
+      };
     } catch (err) {
-      // TODO: Indicate invalid expressions.
-      return null;
+      return {
+        pattern: null,
+        isValid: false,
+      };
     }
   }
 
   render(): React.Element {
-    const filterPattern = this._getFilterPattern(
-      this.state.filterText,
-      this.state.enableRegExpFilter,
-    );
+    const {pattern, isValid} =
+      this._getFilterPattern(this.state.filterText, this.state.enableRegExpFilter);
 
     const records = filterRecords(
       this.props.records,
       this.state.selectedSourceId,
-      filterPattern,
+      pattern,
     );
 
     return (
       <ConsoleView {...this.props}
+        invalidFilterInput={!isValid}
         records={records}
         enableRegExpFilter={this.state.enableRegExpFilter}
         selectedSourceId={this.state.selectedSourceId}

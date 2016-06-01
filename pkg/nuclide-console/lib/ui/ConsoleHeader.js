@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import {AtomInput} from '../../../nuclide-ui/lib/AtomInput';
 import {ButtonGroup} from '../../../nuclide-ui/lib/ButtonGroup';
@@ -23,6 +24,7 @@ import {
 
 type Props = {
   clear: () => void;
+  invalidFilterInput: boolean;
   enableRegExpFilter: boolean;
   selectedSourceId: string;
   sources: Array<{id: string; name: string}>;
@@ -60,6 +62,10 @@ export default class ConsoleHeader extends React.Component {
       {label: 'All Sources', value: ''},
     ];
 
+    const filterInputClassName = classnames('nuclide-console-filter-field', {
+      invalid: this.props.invalidFilterInput,
+    });
+
     return (
       <Toolbar location="top">
         <ToolbarLeft>
@@ -73,7 +79,7 @@ export default class ConsoleHeader extends React.Component {
           </span>
           <ButtonGroup className="inline-block">
             <AtomInput
-              className="nuclide-console-filter-field"
+              className={filterInputClassName}
               size="sm"
               width={200}
               placeholderText="Filter"

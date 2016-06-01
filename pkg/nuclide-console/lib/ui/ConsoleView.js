@@ -27,6 +27,7 @@ type Props = {
   execute: (code: string) => void;
   currentExecutor: ?Executor;
   executors: Map<string, Executor>;
+  invalidFilterInput: boolean;
   enableRegExpFilter: boolean;
   selectedSourceId: string;
   selectExecutor: (executorId: string) => void;
@@ -108,6 +109,7 @@ export default class ConsoleView extends React.Component {
       <div className="nuclide-console">
         <ConsoleHeader
           clear={this.props.clearRecords}
+          invalidFilterInput={this.props.invalidFilterInput}
           enableRegExpFilter={this.props.enableRegExpFilter}
           selectedSourceId={this.props.selectedSourceId}
           sources={this.props.sources}
