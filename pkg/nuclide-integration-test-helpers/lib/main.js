@@ -16,6 +16,7 @@ import {copyFixture, copyMercurialFixture, setLocalProject} from './fixtures';
 import {activateAllPackages, deactivateAllPackages} from './package-utils';
 import {addRemoteProject, startNuclideServer, stopNuclideServer} from './remote-utils';
 import {waitsForFile, waitsForFilePosition} from './waitsForFile';
+import busySignal from './busy-signal';
 
 // Smallish, yet realistic testing window dimensions.
 const TEST_WINDOW_HEIGHT = 600;
@@ -52,6 +53,7 @@ export function jasmineIntegrationTestSetup(): void {
 export {
   activateAllPackages,
   addRemoteProject,
+  busySignal,
   copyFixture,
   copyMercurialFixture,
   deactivateAllPackages,
