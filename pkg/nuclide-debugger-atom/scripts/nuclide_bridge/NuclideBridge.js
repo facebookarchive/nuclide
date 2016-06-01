@@ -196,6 +196,8 @@ class NuclideBridge {
       case 'getProperties':
         this._getProperties(args[0]);
         break;
+      case 'triggerDebuggerAction':
+        this._triggerDebuggerAction(args[0]);
     }
   }
 
@@ -278,6 +280,24 @@ class NuclideBridge {
         });
       },
     );
+  }
+
+  _triggerDebuggerAction(actionId: string): void {
+    switch (actionId) {
+      case 'debugger.toggle-pause':
+      case 'debugger.step-over':
+      case 'debugger.step-into':
+      case 'debugger.step-out':
+      case 'debugger.run-snippet':
+        WebInspector.actionRegistry.execute(actionId);
+        break;
+      default:
+        /* eslint-disable no-console */
+        // console.error because throwing can fatal the Chrome dev tools.
+        console.error('_triggerDebuggerAction: unrecognized actionId', actionId);
+        /* eslint-enable no-console */
+        break;
+    }
   }
 
   _handleDebuggerPaused(event: WebInspector$Event) {

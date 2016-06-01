@@ -270,6 +270,18 @@ class DebuggerActions {
     });
   }
 
+  /**
+   * `actionId` is a debugger action understood by Chrome's `WebInspector.ActionRegistry`.
+   */
+  triggerDebuggerAction(actionId: string): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.TRIGGER_DEBUGGER_ACTION,
+      data: {
+        actionId,
+      },
+    });
+  }
+
   dispose() {
     endTimerTracking();
     this._disposables.dispose();

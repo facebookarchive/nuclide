@@ -162,6 +162,16 @@ class Bridge {
     );
   }
 
+  triggerAction(actionId: string): void {
+    if (this._webview) {
+      this._webview.send(
+        'command',
+        'triggerDebuggerAction',
+        actionId,
+      );
+    }
+  }
+
   async _cachedSendCommand<T>(
     cache: Map<string, Deferred<?T>>,
     command: string,
