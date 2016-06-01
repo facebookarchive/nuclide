@@ -5,7 +5,7 @@
       "submenu": [
         {
           "label": "Settings...",
-          "command": "nuclide-home:show-settings"
+          "command": "nuclide-settings:show"
         }
       ]
     }

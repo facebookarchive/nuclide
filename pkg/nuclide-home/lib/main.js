@@ -10,13 +10,11 @@
  */
 
 
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {GadgetsService} from '../../nuclide-gadgets/lib/types';
 import type {HomeFragments} from './types';
 
 import {CompositeDisposable, Disposable} from 'atom';
 import featureConfig from '../../nuclide-feature-config';
-import {farEndPriority} from '../../commons-atom/suda-tool-bar';
 import Immutable from 'immutable';
 import Rx from 'rxjs';
 
@@ -30,11 +28,6 @@ const allHomeFragmentsStream: Rx.BehaviorSubject<Immutable.Set<HomeFragments>> =
 export function activate(state: ?Object): void {
   considerDisplayingHome();
   subscriptions = new CompositeDisposable();
-  subscriptions.add(
-    atom.commands.add('atom-workspace', 'nuclide-home:show-settings', () => {
-      atom.workspace.open('atom://config/packages/nuclide');
-    })
-  );
 }
 
 export function setHomeFragments(homeFragments: HomeFragments): Disposable {
@@ -67,21 +60,4 @@ export function consumeGadgetsService(api: GadgetsService): void {
   const gadget = createHomePaneItem(allHomeFragmentsStream);
   subscriptions.add(api.registerGadget(gadget));
   considerDisplayingHome();
-}
-
-export function consumeToolBar(getToolBar: GetToolBar): void {
-  const priority = farEndPriority(500);
-  const toolBar = getToolBar('nuclide-home');
-  toolBar.addSpacer({
-    priority: priority - 1,
-  });
-  toolBar.addButton({
-    icon: 'gear',
-    callback: 'nuclide-home:show-settings',
-    tooltip: 'Open Nuclide Settings',
-    priority,
-  });
-  subscriptions.add(new Disposable(() => {
-    toolBar.removeItems();
-  }));
 }
