@@ -20,6 +20,7 @@ import {React} from 'react-for-atom';
 import invariant from 'assert';
 import {bindObservableAsProps} from './bindObservableAsProps';
 import {highlightOnUpdate} from './highlightOnUpdate';
+import {ValueComponentClassNames} from './ValueComponentClassNames';
 import {
   TreeList,
   TreeItem,
@@ -89,7 +90,13 @@ function renderValueLine(
   if (expression == null) {
     return <div>{value}</div>;
   } else {
-    return <div>{expression}: {value}</div>;
+    // TODO @jxg use a text editor to apply proper syntax highlighting for expressions (t11408154)
+    return (
+      <div>
+        <span className={ValueComponentClassNames.identifier}>{expression}</span>
+        : {value}
+      </div>
+    );
   }
 }
 

@@ -15,29 +15,46 @@ import type {
 } from '../../nuclide-debugger-atom/lib/Bridge';
 
 import {React} from 'react-for-atom';
+import {ValueComponentClassNames} from './ValueComponentClassNames';
 
 type SimpleValueComponentProps = {
   expression: ?string;
   evaluationResult: EvaluationResult;
 };
 
-function renderNullish(evaluationResult: EvaluationResult): ?string {
+function renderNullish(evaluationResult: EvaluationResult): ?React.Element {
   const {_type} = evaluationResult;
   return (
     _type === 'undefined' || _type === 'null'
-      ? _type
+      ? <span className={ValueComponentClassNames.nullish}>{_type}</span>
       : null
   );
 }
 
-function renderString(evaluationResult: EvaluationResult): ?string {
+function renderString(evaluationResult: EvaluationResult): ?React.Element {
   const {
     _type,
     value,
   } = evaluationResult;
   return (
     _type === 'string'
-      ? `"${value}"`
+      ? <span className={ValueComponentClassNames.string}>
+          <span className={ValueComponentClassNames.stringOpeningQuote}>"</span>
+          {value}
+          <span className={ValueComponentClassNames.stringClosingQuote}>"</span>
+        </span>
+      : null
+  );
+}
+
+function renderNumber(evaluationResult: EvaluationResult): ?React.Element {
+  const {
+    _type,
+    value,
+  } = evaluationResult;
+  return (
+    _type === 'number'
+      ? <span className={ValueComponentClassNames.number}>{value}</span>
       : null
   );
 }
@@ -48,6 +65,7 @@ function renderDefault(evaluationResult: EvaluationResult): ?string {
 
 const valueRenderers = [
   renderString,
+  renderNumber,
   renderNullish,
   renderDefault,
 ];
@@ -72,8 +90,19 @@ export default class SimpleValueComponent extends React.Component {
     }
     if (expression == null) {
       return <span>{displayValue}</span>;
-    } else {
-      return <span>{expression}: {displayValue}</span>;
     }
+    // TODO @jxg use a text editor to apply proper syntax highlighting for expressions
+    // (t11408154)
+    const renderedExpression = (
+      <span className={ValueComponentClassNames.identifier}>
+        {expression}
+      </span>
+    );
+    return (
+      <span>
+        {renderedExpression}
+        : {displayValue}
+      </span>
+    );
   }
 }
