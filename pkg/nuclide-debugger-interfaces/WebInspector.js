@@ -160,6 +160,12 @@ declare class WebInspector$TargetManager {
   mainTarget(): ?WebInspector$Target;
 }
 
+declare class WebInspector$ActionRegistry {
+  execute(
+    actionId: string,
+  ): ?Promise<boolean>;
+}
+
 declare class WebInspector$Workspace {
   static Events: {
     UISourceCodeAdded: string;
@@ -271,6 +277,7 @@ declare var WebInspector: {
   BreakpointManager: typeof WebInspector$BreakpointManager;
   Streams: typeof WebInspector$Streams;
 
+  actionRegistry: WebInspector$ActionRegistry;
   breakpointManager: WebInspector$BreakpointManager;
   debuggerWorkspaceBinding: WebInspector$DebuggerWorkspaceBinding;
   inspectorView: WebInspector$InspectorView;
