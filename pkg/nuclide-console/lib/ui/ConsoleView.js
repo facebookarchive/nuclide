@@ -31,6 +31,7 @@ type Props = {
   selectExecutor: (executorId: string) => void;
   selectSource: (sourceId: string) => void;
   sources: Array<{id: string; name: string}>;
+  updateFilterText: (filterText: string) => void;
 };
 
 type State = {
@@ -107,6 +108,7 @@ export default class ConsoleView extends React.Component {
           clear={this.props.clearRecords}
           selectedSourceId={this.props.selectedSourceId}
           sources={this.props.sources}
+          onFilterTextChange={this.props.updateFilterText}
           onSelectedSourceChange={this.props.selectSource}
         />
         {/*

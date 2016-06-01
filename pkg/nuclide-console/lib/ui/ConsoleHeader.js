@@ -10,6 +10,7 @@
  */
 
 import {React} from 'react-for-atom';
+import {AtomInput} from '../../../nuclide-ui/lib/AtomInput';
 import {Dropdown} from '../../../nuclide-ui/lib/Dropdown';
 import {Toolbar} from '../../../nuclide-ui/lib/Toolbar';
 import {ToolbarLeft} from '../../../nuclide-ui/lib/ToolbarLeft';
@@ -23,6 +24,7 @@ type Props = {
   clear: () => void;
   selectedSourceId: string;
   sources: Array<{id: string; name: string}>;
+  onFilterTextChange: (filterText: string) => void;
   onSelectedSourceChange: (sourceId: string) => void;
 };
 
@@ -53,12 +55,22 @@ export default class ConsoleHeader extends React.Component {
     return (
       <Toolbar location="top">
         <ToolbarLeft>
-          <Dropdown
-            size="sm"
-            options={options}
-            value={this.props.selectedSourceId}
-            onChange={this.props.onSelectedSourceChange}
-          />
+          <span className="nuclide-console-source-dropdown-container inline-block">
+            <Dropdown
+              size="sm"
+              options={options}
+              value={this.props.selectedSourceId}
+              onChange={this.props.onSelectedSourceChange}
+            />
+          </span>
+          <span className="inline-block">
+            <AtomInput
+              size="sm"
+              width={200}
+              placeholderText="Filter"
+              onDidChange={this.props.onFilterTextChange}
+            />
+          </span>
         </ToolbarLeft>
         <ToolbarRight>
           <Button

@@ -12,6 +12,7 @@
 import type {Executor, Record} from '../types';
 
 import ConsoleView from './ConsoleView';
+import escapeStringRegexp from 'escape-string-regexp';
 import {React} from 'react-for-atom';
 
 type Props = {
@@ -26,6 +27,7 @@ type Props = {
 };
 
 type State = {
+  filterText: string;
   selectedSourceId: string;
 };
 
@@ -39,17 +41,30 @@ export default class Console extends React.Component {
   constructor(props: Props) {
     super(props);
     this.state = {
+      filterText: '',
       selectedSourceId: props.initialSelectedSourceId,
     };
     (this: any)._selectSource = this._selectSource.bind(this);
+    (this: any)._updateFilterText = this._updateFilterText.bind(this);
   }
 
   render(): React.Element {
+    const filterPattern = this.state.filterText === ''
+      ? null
+      : new RegExp(escapeStringRegexp(this.state.filterText), 'i');
+
+    const records = filterRecords(
+      this.props.records,
+      this.state.selectedSourceId,
+      filterPattern,
+    );
+
     return (
       <ConsoleView {...this.props}
-        records={filterRecords(this.props.records, this.state.selectedSourceId)}
+        records={records}
         selectedSourceId={this.state.selectedSourceId}
         selectSource={this._selectSource}
+        updateFilterText={this._updateFilterText}
       />
     );
   }
@@ -58,10 +73,25 @@ export default class Console extends React.Component {
     this.setState({selectedSourceId: sourceId});
   }
 
+  _updateFilterText(filterText: string): void {
+    this.setState({filterText});
+  }
+
 }
 
-function filterRecords(records: Array<Record>, selectedSourceId: string): Array<Record> {
-  return selectedSourceId === ''
-    ? records
-    : records.filter(record => record.sourceId === selectedSourceId);
+function filterRecords(
+  records: Array<Record>,
+  selectedSourceId: string,
+  filterPattern: ?RegExp,
+): Array<Record> {
+  if (selectedSourceId === '' && filterPattern == null) { return records; }
+
+  return records.filter(record => {
+    // Only filter regular messages
+    if (record.kind !== 'message') { return true; }
+
+    const sourceMatches = selectedSourceId === '' || selectedSourceId === record.sourceId;
+    const filterMatches = filterPattern == null || filterPattern.test(record.text);
+    return sourceMatches && filterMatches;
+  });
 }
