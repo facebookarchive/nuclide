@@ -175,8 +175,6 @@ type State = {
   publishModeState: PublishModeStateType;
   headRevision: ?RevisionInfo;
   dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>;
-  commitMergeFileChanges: Map<NuclideUri, FileChangeStatusValue>;
-  lastCommitMergeFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   showNonHgRepos: boolean;
 };
@@ -216,8 +214,6 @@ class DiffViewModel {
       publishModeState: PublishModeState.READY,
       headRevision: null,
       dirtyFileChanges: new Map(),
-      commitMergeFileChanges: new Map(),
-      lastCommitMergeFileChanges: new Map(),
       selectedFileChanges: new Map(),
       showNonHgRepos: true,
     };
@@ -272,14 +268,17 @@ class DiffViewModel {
   }
 
   _createRepositoryStack(repository: HgRepositoryClient): RepositoryStack {
-    const repositoryStack = new RepositoryStack(repository);
+    const repositoryStack = new RepositoryStack(
+      repository,
+      viewModeToDiffOption(this._state.viewMode),
+    );
     const subscriptions = new CompositeDisposable();
     subscriptions.add(
       repositoryStack.onDidUpdateDirtyFileChanges(
         this._updateDirtyChangedStatus.bind(this)
       ),
-      repositoryStack.onDidUpdateCommitMergeFileChanges(
-        this._updateCommitMergeFileChanges.bind(this)
+      repositoryStack.onDidUpdateSelectedFileChanges(
+        this._updateSelectedFileChanges.bind(this)
       ),
       repositoryStack.onDidChangeRevisions(revisionsState => {
         this._updateChangedRevisions(repositoryStack, revisionsState, true)
@@ -299,7 +298,7 @@ class DiffViewModel {
       ...Array.from(this._repositoryStacks.values())
       .map(repositoryStack => repositoryStack.getDirtyFileChanges())
     );
-    this._updateCompareChangedStatus(dirtyFileChanges);
+    this._updateViewChangedFilesStatus(dirtyFileChanges);
   }
 
   getActiveStackDirtyFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
@@ -310,37 +309,28 @@ class DiffViewModel {
     }
   }
 
-  _updateCommitMergeFileChanges(): void {
-    const commitMergeFileChanges = mapUnion(
+  _updateSelectedFileChanges(): void {
+    const selectedFileChanges = mapUnion(
       ...Array.from(this._repositoryStacks.values())
-      .map(repositoryStack => repositoryStack.getCommitMergeFileChanges())
+      .map(repositoryStack => repositoryStack.getSelectedFileChanges())
     );
-    const lastCommitMergeFileChanges = mapUnion(
-      ...Array.from(this._repositoryStacks.values())
-      .map(repositoryStack => repositoryStack.getLastCommitMergeFileChanges())
-    );
-    this._updateCompareChangedStatus(
+    this._updateViewChangedFilesStatus(
       null,
-      commitMergeFileChanges,
-      lastCommitMergeFileChanges,
+      selectedFileChanges,
     );
   }
 
-  _updateCompareChangedStatus(
+  _updateViewChangedFilesStatus(
     dirtyFileChanges?: ?Map<NuclideUri, FileChangeStatusValue>,
-    commitMergeFileChanges?: ?Map<NuclideUri, FileChangeStatusValue>,
-    lastCommitMergeFileChanges?: ?Map<NuclideUri, FileChangeStatusValue>,
+    selectedFileChanges?: ?Map<NuclideUri, FileChangeStatusValue>,
   ): void {
     if (dirtyFileChanges == null) {
       dirtyFileChanges = this._state.dirtyFileChanges;
     }
-    if (commitMergeFileChanges == null) {
-      commitMergeFileChanges = this._state.commitMergeFileChanges;
+    if (selectedFileChanges == null) {
+      selectedFileChanges = this._state.selectedFileChanges;
     }
-    if (lastCommitMergeFileChanges == null) {
-      lastCommitMergeFileChanges = this._state.lastCommitMergeFileChanges;
-    }
-    let selectedFileChanges;
+    let filteredFileChanges;
     let showNonHgRepos;
     let activeRepositorySelector = () => true;
     if (this._activeRepositoryStack != null) {
@@ -350,18 +340,16 @@ class DiffViewModel {
     }
     switch (this._state.viewMode) {
       case DiffMode.COMMIT_MODE:
-        // Commit mode only shows the changes of the active repository.
-        selectedFileChanges = mapFilter(dirtyFileChanges, activeRepositorySelector);
-        showNonHgRepos = false;
-        break;
       case DiffMode.PUBLISH_MODE:
+        // Commit mode only shows the changes of the active repository.
+        filteredFileChanges = mapFilter(selectedFileChanges, activeRepositorySelector);
         // Publish mode only shows the changes of the active repository.
-        selectedFileChanges = mapFilter(lastCommitMergeFileChanges, activeRepositorySelector);
+        filteredFileChanges = mapFilter(selectedFileChanges, activeRepositorySelector);
         showNonHgRepos = false;
         break;
       case DiffMode.BROWSE_MODE:
         // Broswe mode shows all changes from all repositories.
-        selectedFileChanges = commitMergeFileChanges;
+        filteredFileChanges = selectedFileChanges;
         showNonHgRepos = true;
         break;
       default:
@@ -370,9 +358,7 @@ class DiffViewModel {
     this._setState({
       ...this._state,
       dirtyFileChanges,
-      commitMergeFileChanges,
-      lastCommitMergeFileChanges,
-      selectedFileChanges,
+      selectedFileChanges: filteredFileChanges,
       showNonHgRepos,
     });
   }
@@ -457,7 +443,10 @@ class DiffViewModel {
       ...this._state,
       viewMode,
     });
-    this._updateCompareChangedStatus();
+    if (this._activeRepositoryStack != null) {
+      this._activeRepositoryStack.setDiffOption(viewModeToDiffOption(this._state.viewMode));
+    }
+    this._updateViewChangedFilesStatus();
     if (loadModeState) {
       this._loadModeState(false);
     }
@@ -697,7 +686,7 @@ class DiffViewModel {
   async _fetchFileDiff(filePath: NuclideUri): Promise<FileDiffState> {
     const repositoryStack = this._getRepositoryStackForPath(filePath);
     const [hgDiff] = await Promise.all([
-      repositoryStack.fetchHgDiff(filePath, viewModeToDiffOption(this._state.viewMode)),
+      repositoryStack.fetchHgDiff(filePath),
       this._setActiveRepositoryStack(repositoryStack),
     ]);
     // Intentionally fetch the filesystem contents after getting the committed contents
@@ -721,6 +710,7 @@ class DiffViewModel {
       return;
     }
     this._activeRepositoryStack = repositoryStack;
+    repositoryStack.setDiffOption(viewModeToDiffOption(this._state.viewMode));
     if (!this._isActive) {
       return;
     }

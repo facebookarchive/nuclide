@@ -27,59 +27,51 @@ import {trackTiming} from '../../nuclide-analytics';
 import {notifyInternalError} from './notifications';
 import invariant from 'assert';
 import LRU from 'lru-cache';
-import {getLogger} from '../../nuclide-logging';
 
-const UPDATE_COMMIT_MERGE_FILES_EVENT = 'update-commit-merge-files';
+const UPDATE_SELECTED_FILE_CHANGES_EVENT = 'update-selected-file-changes';
 const UPDATE_DIRTY_FILES_EVENT = 'update-dirty-files';
 const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
-const UPDATE_STATUS_DEBOUNCE_MS = 2000;
+const UPDATE_STATUS_DEBOUNCE_MS = 50;
 
 const FETCH_REV_INFO_RETRY_TIME_MS = 1000;
 const FETCH_REV_INFO_MAX_TRIES = 5;
-
-type RevisionsFileHistory = Array<{
-  id: number;
-  changes: RevisionFileChanges;
-}>;
 
 export default class RepositoryStack {
 
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
   _dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>;
-  _commitMergeFileChanges: Map<NuclideUri, FileChangeStatusValue>;
-  _lastCommitMergeFileChanges: Map<NuclideUri, FileChangeStatusValue>;
+  _selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _repository: HgRepositoryClient;
   _lastRevisionsState: ?RevisionsState;
   _revisionsStatePromise: ?Promise<RevisionsState>;
-  _revisionsFileHistoryPromise: ?Promise<RevisionsFileHistory>;
-  _lastRevisionsFileHistory: ?RevisionsFileHistory;
   _selectedCompareCommitId: ?number;
   _isActive: boolean;
-  _serializedUpdateStatus: () => Promise<void>;
+  _serializedUpdateStackState: () => Promise<void>;
   _revisionIdToFileChanges: LRUCache<number, RevisionFileChanges>;
+  _diffOption: DiffOptionType;
 
-  constructor(repository: HgRepositoryClient) {
+  constructor(repository: HgRepositoryClient, diffOption: DiffOptionType) {
     this._repository = repository;
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
-    this._commitMergeFileChanges = new Map();
-    this._lastCommitMergeFileChanges = new Map();
     this._dirtyFileChanges = new Map();
+    this._selectedFileChanges = new Map();
     this._isActive = false;
     this._revisionIdToFileChanges = new LRU({max: 100});
     this._selectedCompareCommitId = null;
-    this._lastRevisionsFileHistory = null;
     this._lastRevisionsState = null;
-    this._serializedUpdateStatus = serializeAsyncCall(
-      () => this._tryUpdateCommitMergeFileChanges(),
+    this._diffOption = diffOption;
+
+    this._serializedUpdateStackState = serializeAsyncCall(
+      () => this._tryUpdateStackState(),
     );
-    const debouncedSerializedUpdateStatus = debounce(
-      this._serializedUpdateStatus,
+    const debouncedSerializedUpdateStackState = debounce(
+      this._serializedUpdateStackState,
       UPDATE_STATUS_DEBOUNCE_MS,
       false,
     );
-    this._serializedUpdateStatus();
+    this._serializedUpdateStackState();
     // Get the initial project status, if it's not already there,
     // triggered by another integration, like the file tree.
     repository.getStatuses([repository.getProjectDirectory()]);
@@ -88,9 +80,17 @@ export default class RepositoryStack {
         // Do the lightweight dirty cache update to reflect the changes,
         // While only commit merge changes consumers wait for its results.
         this._updateDirtyFileChanges();
-        debouncedSerializedUpdateStatus();
+        debouncedSerializedUpdateStackState();
       }),
     );
+  }
+
+  setDiffOption(diffOption: DiffOptionType): void {
+    if (this._diffOption === diffOption) {
+      return;
+    }
+    this._diffOption = diffOption;
+    this._updateSelectedFileChanges().catch(notifyInternalError);
   }
 
   activate(): void {
@@ -98,17 +98,25 @@ export default class RepositoryStack {
       return;
     }
     this._isActive = true;
-    this._serializedUpdateStatus();
+    this._serializedUpdateStackState();
   }
 
   deactivate(): void {
     this._isActive = false;
+    this._revisionsStatePromise = null;
   }
 
   @trackTiming('diff-view.update-change-status')
-  async _tryUpdateCommitMergeFileChanges(): Promise<void> {
+  async _tryUpdateStackState(): Promise<void> {
+    if (!this._isActive) {
+      return;
+    }
     try {
-      await this._updateCommitMergeFileChanges();
+      await this._updateRevisionsState();
+      if (!this._isActive) {
+        return;
+      }
+      await this._updateSelectedFileChanges();
     } catch (error) {
       notifyInternalError(error);
     }
@@ -131,32 +139,9 @@ export default class RepositoryStack {
     return dirtyFileChanges;
   }
 
-  commit(message: string): Promise<void> {
-    return this._repository.commit(message);
-  }
-
-  amend(message: ?string): Promise<void> {
-    return this._repository.amend(message);
-  }
-
-  revert(filePaths: Array<NuclideUri>): Promise<void> {
-    return this._repository.revert(filePaths);
-  }
-
-  addAll(filePaths: Array<NuclideUri>): Promise<void> {
-    return this._repository.addAll(filePaths);
-  }
-
-  /**
-   * Update the file change state comparing the dirty filesystem status
-   * to a selected commit.
-   * That would be a merge of `hg status` with the diff from commits,
-   * and `hg log --rev ${revId}` for every commit.
-   */
-  async _updateCommitMergeFileChanges(): Promise<void> {
+  async _updateRevisionsState(): Promise<void> {
     // We should only update the revision state when the repository is active.
     if (!this._isActive) {
-      this._revisionsStatePromise = null;
       return;
     }
     const lastRevisionsState = this._lastRevisionsState;
@@ -176,45 +161,61 @@ export default class RepositoryStack {
       this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
     }
     this._lastRevisionsState = revisionsState;
+  }
 
-    // If the commits haven't changed ids, then thier diff haven't changed as well.
-    let revisionsFileHistory = null;
-    if (this._lastRevisionsFileHistory != null) {
-      const fileHistoryRevisionIds = this._lastRevisionsFileHistory
-        .map(revisionChanges => revisionChanges.id);
-      const revisionIds = revisionsState.revisions.map(revision => revision.id);
-      if (arrayEqual(revisionIds, fileHistoryRevisionIds)) {
-        revisionsFileHistory = this._lastRevisionsFileHistory;
-      }
+  /**
+   * Update the file change state comparing the dirty filesystem status
+   * to a selected commit.
+   * That would be a merge of `hg status` with the diff from commits,
+   * and `hg log --rev ${revId}` for every commit.
+   */
+  async _updateSelectedFileChanges(): Promise<void> {
+    const revisionsState = await this.getCachedRevisionsStatePromise();
+    switch (this._diffOption) {
+      case DiffOption.DIRTY:
+        this._selectedFileChanges = this._dirtyFileChanges;
+        break;
+      case DiffOption.COMPARE_COMMIT:
+        if (
+          revisionsState.compareCommitId == null ||
+          revisionsState.compareCommitId === revisionsState.commitId
+        ) {
+          this._selectedFileChanges = this._dirtyFileChanges;
+        } else {
+          // No need to fetch every commit file changes unless requested.
+          await this._updateSelectedChangesToCommit(
+            revisionsState,
+            revisionsState.compareCommitId,
+          );
+        }
+        break;
+      case DiffOption.LAST_COMMIT:
+        const {revisions} = revisionsState;
+        if (revisions.length <= 1) {
+          this._selectedFileChanges = this._dirtyFileChanges;
+        } else {
+          await this._updateSelectedChangesToCommit(
+            revisionsState,
+            revisions[revisions.length - 2].id,
+          );
+        }
+        break;
     }
+    this._emitter.emit(UPDATE_SELECTED_FILE_CHANGES_EVENT);
+  }
 
-    // Fetch revisions history if revisions state have changed.
-    if (revisionsFileHistory == null) {
-      try {
-        revisionsFileHistory = await this._getRevisionFileHistoryPromise(revisionsState);
-      } catch (error) {
-        getLogger().error(
-          'Cannot fetch revision history: ' +
-          '(could happen with pending source-control history writing operations)',
-          error,
-        );
-        return;
-      }
-    }
-    this._commitMergeFileChanges = this._computeCommitMergeFromHistory(
-      revisionsState,
-      revisionsFileHistory,
+  async _updateSelectedChangesToCommit(
+    revisionsState: RevisionsState,
+    beforeCommitId: number,
+  ): Promise<void> {
+    const latestToOldesRevisions = revisionsState.revisions.slice().reverse();
+    const revisionChanges = await this._fetchFileChangesForRevisions(
+      latestToOldesRevisions.filter(revision => revision.id > beforeCommitId),
     );
-
-    const lastCommitFileChanges = revisionsFileHistory.length <= 1
-      ? null :
-      revisionsFileHistory[revisionsFileHistory.length - 1].changes;
-
-    this._lastCommitMergeFileChanges = this._mergeFileStatuses(
+    this._selectedFileChanges = this._mergeFileStatuses(
       this._dirtyFileChanges,
-      lastCommitFileChanges == null ? [] : [lastCommitFileChanges],
+      revisionChanges,
     );
-    this._emitter.emit(UPDATE_COMMIT_MERGE_FILES_EVENT);
   }
 
   getRevisionsStatePromise(): Promise<RevisionsState> {
@@ -249,44 +250,11 @@ export default class RepositoryStack {
       // Invalidate if there there is no longer a revision with that id.
       compareCommitId = null;
     }
-    const latestToOldestRevisions = revisions.slice().reverse();
-    if (compareCommitId == null && latestToOldestRevisions.length > 0) {
-      // If the user has already committed, most of the times, he'd be working on an amend.
-      // So, the heuristic here is to compare against the previous version,
-      // not the just-committed one, while the revisions timeline
-      // would give a way to specify otherwise.
-      compareCommitId = latestToOldestRevisions[0].id;
-    }
     return {
       revisions,
       commitId,
       compareCommitId,
     };
-  }
-
-  _getRevisionFileHistoryPromise(
-    revisionsState: RevisionsState,
-  ): Promise<RevisionsFileHistory> {
-    this._revisionsFileHistoryPromise = this._fetchRevisionsFileHistory(revisionsState)
-      .then(revisionsFileHistory => {
-        this._lastRevisionsFileHistory = revisionsFileHistory;
-        return revisionsFileHistory;
-      }, error => {
-        this._revisionsFileHistoryPromise = null;
-        this._lastRevisionsFileHistory = null;
-        throw error;
-      });
-    return this._revisionsFileHistoryPromise;
-  }
-
-  _getCachedRevisionFileHistoryPromise(
-    revisionsState: RevisionsState,
-  ): Promise<RevisionsFileHistory> {
-    if (this._revisionsFileHistoryPromise != null) {
-      return this._revisionsFileHistoryPromise;
-    } else {
-      return this._getRevisionFileHistoryPromise(revisionsState);
-    }
   }
 
   @trackTiming('diff-view.fetch-revisions-state')
@@ -316,9 +284,9 @@ export default class RepositoryStack {
   }
 
   @trackTiming('diff-view.fetch-revisions-change-history')
-  async _fetchRevisionsFileHistory(revisionsState: RevisionsState): Promise<RevisionsFileHistory> {
-    const {revisions} = revisionsState;
-
+  async _fetchFileChangesForRevisions(
+    revisions: Array<RevisionInfo>,
+  ): Promise<Array<RevisionFileChanges>> {
     // Revision ids are unique and don't change, except when the revision is amended/rebased.
     // Hence, it's cached here to avoid service calls when working on a stack of commits.
     const revisionsFileHistory = await Promise.all(revisions
@@ -334,34 +302,11 @@ export default class RepositoryStack {
           }
           this._revisionIdToFileChanges.set(id, changes);
         }
-        return {id, changes};
+        return changes;
       })
     );
 
     return revisionsFileHistory;
-  }
-
-  _computeCommitMergeFromHistory(
-    revisionsState: RevisionsState,
-    revisionsFileHistory: RevisionsFileHistory,
-  ): Map<NuclideUri, FileChangeStatusValue> {
-
-    const {commitId, compareCommitId} = revisionsState;
-    // The status is fetched by merging the changes right after the `compareCommitId` if specified,
-    // or `HEAD` if not.
-    const startCommitId = compareCommitId ? (compareCommitId + 1) : commitId;
-    // Get the revision changes that's newer than or is the current commit id.
-    const commitRevisionsFileChanges = revisionsFileHistory
-      .slice(1) // Exclude the BASE revision.
-      .filter(revision => revision.id >= startCommitId)
-      .map(revision => revision.changes);
-
-    // The last status to merge is the dirty filesystem status.
-    const mergedFileStatuses = this._mergeFileStatuses(
-      this._dirtyFileChanges,
-      commitRevisionsFileChanges,
-    );
-    return mergedFileStatuses;
   }
 
   /**
@@ -406,21 +351,17 @@ export default class RepositoryStack {
     return this._dirtyFileChanges;
   }
 
-  getCommitMergeFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
-    return this._commitMergeFileChanges;
+  getSelectedFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
+    return this._selectedFileChanges;
   }
 
-  getLastCommitMergeFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
-    return this._lastCommitMergeFileChanges;
-  }
-
-  async fetchHgDiff(filePath: NuclideUri, diffOption: DiffOptionType): Promise<HgDiffState> {
+  async fetchHgDiff(filePath: NuclideUri): Promise<HgDiffState> {
     const revisionsState = await this.getCachedRevisionsStatePromise();
     const {revisions, commitId} = revisionsState;
     // When `compareCommitId` is null, the `HEAD` commit contents is compared
     // to the filesystem, otherwise it compares that commit to filesystem.
     let compareCommitId = null;
-    switch (diffOption) {
+    switch (this._diffOption) {
       case DiffOption.DIRTY:
         compareCommitId = null;
         break;
@@ -433,12 +374,12 @@ export default class RepositoryStack {
         compareCommitId = revisionsState.compareCommitId;
         break;
       default:
-        throw new Error(`Invalid Diff Option: ${diffOption}`);
+        throw new Error(`Invalid Diff Option: ${this._diffOption}`);
     }
     const committedContents = await this._repository
       .fetchFileContentAtRevision(filePath, compareCommitId ? `${compareCommitId}` : null)
       // If the file didn't exist on the previous revision, return empty contents.
-      .then(contents => contents || '', _err => '');
+      .catch(_err => '');
 
     const fetchedRevisionId = compareCommitId != null ? compareCommitId : commitId;
     const [revisionInfo] = revisions.filter(revision => revision.id === fetchedRevisionId);
@@ -468,12 +409,15 @@ export default class RepositoryStack {
     this._selectedCompareCommitId = revisionsState.compareCommitId = revision.id;
     this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
 
-    const revisionsFileHistory = await this._getCachedRevisionFileHistoryPromise(revisionsState);
-    this._commitMergeFileChanges = this._computeCommitMergeFromHistory(
-      revisionsState,
-      revisionsFileHistory,
+    invariant(
+      this._diffOption === DiffOption.COMPARE_COMMIT,
+      'Invalid Diff Option at setRevision time!',
     );
-    this._emitter.emit(UPDATE_COMMIT_MERGE_FILES_EVENT);
+    await this._updateSelectedChangesToCommit(
+      revisionsState,
+      revision.id,
+    );
+    this._emitter.emit(UPDATE_SELECTED_FILE_CHANGES_EVENT);
   }
 
   onDidUpdateDirtyFileChanges(
@@ -482,10 +426,10 @@ export default class RepositoryStack {
     return this._emitter.on(UPDATE_DIRTY_FILES_EVENT, callback);
   }
 
-  onDidUpdateCommitMergeFileChanges(
+  onDidUpdateSelectedFileChanges(
     callback: () => void
   ): IDisposable {
-    return this._emitter.on(UPDATE_COMMIT_MERGE_FILES_EVENT, callback);
+    return this._emitter.on(UPDATE_SELECTED_FILE_CHANGES_EVENT, callback);
   }
 
   onDidChangeRevisions(
@@ -498,11 +442,26 @@ export default class RepositoryStack {
     return this._repository;
   }
 
+  commit(message: string): Promise<void> {
+    return this._repository.commit(message);
+  }
+
+  amend(message: ?string): Promise<void> {
+    return this._repository.amend(message);
+  }
+
+  revert(filePaths: Array<NuclideUri>): Promise<void> {
+    return this._repository.revert(filePaths);
+  }
+
+  addAll(filePaths: Array<NuclideUri>): Promise<void> {
+    return this._repository.addAll(filePaths);
+  }
+
   dispose(): void {
     this._subscriptions.dispose();
     this._dirtyFileChanges.clear();
-    this._commitMergeFileChanges.clear();
-    this._lastCommitMergeFileChanges.clear();
+    this._selectedFileChanges.clear();
     this._revisionIdToFileChanges.reset();
   }
 }
