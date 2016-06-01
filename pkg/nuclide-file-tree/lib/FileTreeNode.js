@@ -27,6 +27,7 @@ export type FileTreeNodeOptions = {
   isExpanded?: boolean;
   isSelected?: boolean;
   isLoading?: boolean;
+  wasFetched?: boolean;
   isCwd?: boolean;
   isTracked?: boolean;
   children?: Immutable.OrderedMap<string, FileTreeNode>;
@@ -41,6 +42,7 @@ type DefaultFileTreeNodeOptions = {
   isExpanded: boolean;
   isSelected: boolean;
   isLoading: boolean;
+  wasFetched: boolean;
   isCwd: boolean;
   isTracked: boolean;
   children: Immutable.OrderedMap<string, FileTreeNode>;
@@ -54,6 +56,7 @@ const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
   isExpanded: false,
   isSelected: false,
   isLoading: false,
+  wasFetched: false,
   isCwd: false,
   isTracked: false,
   children: new Immutable.OrderedMap(),
@@ -67,6 +70,7 @@ export type ImmutableNodeSettableFields = {
   isExpanded?: boolean;
   isSelected?: boolean;
   isLoading?: boolean;
+  wasFetched?: boolean;
   isCwd?: boolean;
   isTracked?: boolean;
   children?: Immutable.OrderedMap<string, FileTreeNode>;
@@ -144,6 +148,7 @@ export class FileTreeNode {
   isExpanded: boolean;
   isSelected: boolean;
   isLoading: boolean;
+  wasFetched: boolean;
   isTracked: boolean;
   isCwd: boolean;
   children: Immutable.OrderedMap<string, FileTreeNode>;
@@ -276,6 +281,7 @@ export class FileTreeNode {
     this.isExpanded = o.isExpanded !== undefined ? o.isExpanded : D.isExpanded;
     this.isSelected = o.isSelected !== undefined ? o.isSelected : D.isSelected;
     this.isLoading = o.isLoading !== undefined ? o.isLoading : D.isLoading;
+    this.wasFetched = o.wasFetched !== undefined ? o.wasFetched : D.wasFetched;
     this.isTracked = o.isTracked !== undefined ? o.isTracked : D.isTracked;
     this.isCwd = o.isCwd !== undefined ? o.isCwd : D.isCwd;
     this.children = o.children !== undefined ? o.children : D.children;
@@ -317,6 +323,7 @@ export class FileTreeNode {
       isExpanded: this.isExpanded,
       isSelected: this.isSelected,
       isLoading: this.isLoading,
+      wasFetched: this.wasFetched,
       isTracked: this.isTracked,
       isCwd: this.isCwd,
       children: this.children,
@@ -715,6 +722,9 @@ export class FileTreeNode {
       return false;
     }
     if (props.isLoading !== undefined && this.isLoading !== props.isLoading) {
+      return false;
+    }
+    if (props.wasFetched !== undefined && this.wasFetched !== props.wasFetched) {
       return false;
     }
     if (props.isCwd !== undefined && this.isCwd !== props.isCwd) {

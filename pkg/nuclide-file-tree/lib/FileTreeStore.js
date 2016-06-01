@@ -733,59 +733,69 @@ export class FileTreeStore {
     }
 
     const promise = FileTreeHelpers.fetchChildren(nodeKey)
-      .catch(error => {
-        this._logger.error(`Unable to fetch children for "${nodeKey}".`);
-        this._logger.error('Original error: ', error);
+      .then(
+        childrenKeys => this._setFetchedKeys(nodeKey, childrenKeys),
+        error => {
+          this._logger.error(`Unable to fetch children for "${nodeKey}".`);
+          this._logger.error('Original error: ', error);
 
-        // Collapse the node and clear its loading state on error so the
-        // user can retry expanding it.
-        this._updateNodeAtAllRoots(nodeKey, node =>
-          node.set({isExpanded: false, isLoading: false, children: new Immutable.OrderedMap()})
-        );
-
-        this._clearLoading(nodeKey);
-      })
-      .then(childKeys => {
-        const childrenKeys = childKeys || [];
-        const directory = FileTreeHelpers.getDirectoryByKey(nodeKey);
-
-        // The node with URI === nodeKey might be present at several roots - update them all
-        this._updateNodeAtAllRoots(nodeKey, node => {
-          // Maintain the order fetched from the FS
-          const childrenNodes = childrenKeys.map(uri => {
-            const prevNode = node.find(uri);
-            // If we already had a child with this URI - keep it
-            if (prevNode != null) {
-              return prevNode;
+          // Unless the contents were already fetched in the past
+          // collapse the node and clear its loading state on error so the
+          // user can retry expanding it.
+          this._updateNodeAtAllRoots(nodeKey, node => {
+            if (node.wasFetched) {
+              return node.setIsLoading(false);
             }
 
-            return new FileTreeNode({uri, rootUri: node.rootUri}, this._conf);
+            return node.set(
+              {isExpanded: false, isLoading: false, children: new Immutable.OrderedMap()},
+            );
           });
 
-          const children = FileTreeNode.childrenFromArray(childrenNodes);
-          const subscription = node.subscription || this._makeSubscription(nodeKey, directory);
-
-          // If the fetch indicated that some children were removed - dispose of all
-          // their subscriptions
-          const removedChildren = node.children.filter(n => !children.has(n.name));
-          removedChildren.forEach(c => {
-            c.traverse(n => {
-              if (n.subscription != null) {
-                n.subscription.dispose();
-              }
-
-              return true;
-            });
-          });
-
-          return node.set({isLoading: false, children, subscription});
-        });
-
-        this._clearLoading(nodeKey);
-      });
+          this._clearLoading(nodeKey);
+        }
+      );
 
     this._setLoading(nodeKey, promise);
     return promise;
+  }
+
+  _setFetchedKeys(nodeKey: NuclideUri, childrenKeys: Array<string> = []): void {
+    const directory = FileTreeHelpers.getDirectoryByKey(nodeKey);
+
+    // The node with URI === nodeKey might be present at several roots - update them all
+    this._updateNodeAtAllRoots(nodeKey, node => {
+      // Maintain the order fetched from the FS
+      const childrenNodes = childrenKeys.map(uri => {
+        const prevNode = node.find(uri);
+        // If we already had a child with this URI - keep it
+        if (prevNode != null) {
+          return prevNode;
+        }
+
+        return new FileTreeNode({uri, rootUri: node.rootUri}, this._conf);
+      });
+
+      const children = FileTreeNode.childrenFromArray(childrenNodes);
+      const subscription = node.subscription || this._makeSubscription(nodeKey, directory);
+
+      // If the fetch indicated that some children were removed - dispose of all
+      // their subscriptions
+      const removedChildren = node.children.filter(n => !children.has(n.name));
+      removedChildren.forEach(c => {
+        c.traverse(n => {
+          if (n.subscription != null) {
+            n.subscription.dispose();
+          }
+
+          return true;
+        });
+      });
+
+      return node.set({isLoading: false, wasFetched: true, children, subscription});
+    });
+
+    this._clearLoading(nodeKey);
   }
 
   _makeSubscription(nodeKey: NuclideUri, directory: ?Directory): ?IDisposable {
