@@ -1,5 +1,30 @@
 # Nuclide Changelog
 
+## v0.140.0
+
+**General**
+
+* After updating Nuclide, a notification now asks you to reload Atom.
+* Atom 1.7.4 is now the minimally required version of Atom.
+
+**Source Control**
+
+* Clear diff view UI when the active file is deleted.
+* Diff View: Fix various contents-override errors when the diff view is closed and opened on with a different file.
+
+**Flow**
+
+* Outline view now includes type declarations.
+* Fixed race condition that often caused outdated Flow errors to appear, requiring multiple saves to get up-to-date errors.
+
+**C++**
+
+* Threads window for C++ debugger.
+
+**Hack**
+
+* Cmd-B Preview Definition Window.
+
 ## v0.139.0
 
 **Python**
