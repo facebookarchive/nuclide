@@ -88,8 +88,15 @@ function getAtomProjectRelativePath(path: NuclideUri): ?string {
   return relativePath;
 }
 
+function getAtomProjectRootPath(path: NuclideUri): ?string {
+  const [projectPath] = atom.project.relativizePath(path);
+  return projectPath;
+}
+
 module.exports = {
   getAtomProjectRelativePath,
+
+  getAtomProjectRootPath,
 
   observeProjectPaths(callback: (projectPath: string) => void): IDisposable {
     return getProjectManager().observeProjectPaths(callback);
