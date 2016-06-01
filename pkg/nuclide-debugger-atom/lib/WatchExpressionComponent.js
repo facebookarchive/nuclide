@@ -182,7 +182,6 @@ export class WatchExpressionComponent extends React.Component {
     );
     return (
       <div className="nuclide-debugger-atom-watch-expression-list">
-        <h3>Watch Expressions</h3>
         {expressions}
         {addNewExpressionInput}
       </div>

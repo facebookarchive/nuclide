@@ -17,6 +17,7 @@ import type {
 import {
   React,
 } from 'react-for-atom';
+import {Section} from '../../nuclide-ui/lib/Section';
 import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 import {
   WatchExpressionComponent,
@@ -46,15 +47,17 @@ export class NewDebuggerView extends React.Component {
       model,
     } = this.props;
     const actions = model.getActions();
-    const Component = this._wrappedComponent;
+    const WatchExpressionComponentWrapped = this._wrappedComponent;
     return (
       <div className="nuclide-debugger-container-new">
-        <Component
+        <Section headline="Watch Expressions">
+          <WatchExpressionComponentWrapped
           onAddWatchExpression={actions.addWatchExpression.bind(model)}
           onRemoveWatchExpression={actions.removeWatchExpression.bind(model)}
           onUpdateWatchExpression={actions.updateWatchExpression.bind(model)}
           watchExpressionStore={model.getWatchExpressionStore()}
-        />
+          />
+        </Section>
       </div>
     );
   }
