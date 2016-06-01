@@ -23,6 +23,7 @@ import {observableFromSubscribeFunction} from '../../commons-node/event';
 import passesGK from '../../commons-node/passesGK';
 import Rx from 'rxjs';
 import SideBarComponent from './SideBarComponent';
+import {track} from '../../nuclide-analytics';
 
 export type AppState = {
   projectBookmarks: Map<string, Array<BookmarkInfo>>;
@@ -96,6 +97,7 @@ export function consumeNuclideSideBar(sideBar: NuclideSideBarService): IDisposab
           updateToBookmark: commands.updateToBookmark,
         }));
 
+        track('scsidebar-show');
         return bindObservableAsProps(props, SideBarComponent);
       },
       onDidShow() {},

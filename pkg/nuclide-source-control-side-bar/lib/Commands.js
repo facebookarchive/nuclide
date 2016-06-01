@@ -16,6 +16,7 @@ import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService'
 import * as ActionType from './ActionType';
 import {HgRepositoryClientAsync} from '../../nuclide-hg-repository-client';
 import invariant from 'assert';
+import {track} from '../../nuclide-analytics';
 
 type dispatchType = (action: Action) => void;
 type getStateType = () => AppState;
@@ -43,6 +44,7 @@ export default class Commands {
     // Type was checked with `getType`. Downcast to safely access members with Flow.
     invariant(repositoryAsync instanceof HgRepositoryClientAsync);
 
+    track('scsidebar-create-bookmark');
     repositoryAsync.createBookmark(name);
   }
 
@@ -55,6 +57,7 @@ export default class Commands {
     // Type was checked with `getType`. Downcast to safely access members with Flow.
     invariant(repositoryAsync instanceof HgRepositoryClientAsync);
 
+    track('scsidebar-delete-bookmark');
     repositoryAsync.deleteBookmark(bookmark.bookmark);
   }
 
@@ -76,6 +79,7 @@ export default class Commands {
   }
 
   updateToBookmark(bookmark: BookmarkInfo, repository: atom$Repository): void {
+    track('scsidebar-update-to-bookmark');
     this._dispatch({
       payload: {
         bookmark,
