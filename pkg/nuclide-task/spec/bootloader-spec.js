@@ -141,6 +141,7 @@ describe('Task', () => {
     const task = createTask();
     task.onError(spy);
     task._child.disconnect();
+    spyOn(console, 'log');
     task.invokeRemoteMethod({
       file: 'test',
       method: null,
@@ -148,6 +149,10 @@ describe('Task', () => {
     });
     waitsFor(() => {
       return spy.callCount > 0;
+    });
+    runs(() => {
+      // eslint-disable-next-line no-console
+      expect(console.log.argsForCall[0]).toMatch(/TASK\(\d+\): Error: channel closed/);
     });
   });
 });
