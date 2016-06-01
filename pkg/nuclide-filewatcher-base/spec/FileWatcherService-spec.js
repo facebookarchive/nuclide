@@ -27,6 +27,7 @@ describe('FileWatcherService', () => {
       hasSubscription: () => false,
       async watchDirectoryRecursive() {
         emitter = new Emitter();
+        // $FlowIgnore
         emitter.root = TEST_DIR;
         return emitter;
       },
