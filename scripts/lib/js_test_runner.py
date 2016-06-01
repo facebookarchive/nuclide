@@ -108,9 +108,10 @@ class JsTestRunner(object):
             test_bucket.append(test_args)
 
         if len(parallel_tests):
-            logging.info('Starting %s workers for %s tests...',
-                         MAX_WORKERS,
-                         len(parallel_tests))
+            logging.info('Running %s tests in parallel across %s workers...',
+                         len(parallel_tests),
+                         MAX_WORKERS)
+            start = datetime.now()
             pool = multiprocessing.Pool(processes=MAX_WORKERS)
             results = [
                 pool.apply_async(
@@ -122,11 +123,16 @@ class JsTestRunner(object):
                 async_result.wait()
                 if not async_result.successful():
                     raise async_result.get()
+            end = datetime.now()
+            logging.info('Parallel tests took %s seconds.', (end - start).seconds)
 
         if len(serial_tests):
             logging.info('Running %s tests serially...', len(serial_tests))
+            start = datetime.now()
             for test_args in serial_tests:
                 run_test(*test_args)
+            end = datetime.now()
+            logging.info('Serial tests took %s seconds.', (end - start).seconds)
 
     @utils.retryable(num_retries=2, sleep_time=10, exponential=True)
     def install_third_party_packages(self):
