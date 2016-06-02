@@ -24,7 +24,7 @@ describe('Example Integration Test', () => {
       await activateAllPackages();
 
       // Your testing code goes here....
-      // See: https://our.intern.facebook.com/intern/dex/nuclide/writing-an-integration-test/
+      // See: https://github.com/facebook/nuclide/wiki/Writing-an-Integration-Test
       //      for instructions on how to write integration tests.
       // Also consider perusing the already-written tests in the top-level `spec/` directory.
       //
