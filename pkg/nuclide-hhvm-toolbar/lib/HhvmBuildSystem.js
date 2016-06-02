@@ -15,10 +15,12 @@ import type {ArcToolbarStore as ArcToolbarStoreType} from './ArcToolbarStore';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import HhvmIcon from './ui/HhvmIcon';
+import {createExtraUiComponent} from './ui/createExtraUiComponent';
 import {Observable} from 'rxjs';
 
 export default class ArcBuildSystem {
   _store: ArcToolbarStoreType;
+  _extraUi: ?ReactClass;
   id: string;
   name: string;
   _tasks: ?Observable<Array<Task>>;
@@ -50,6 +52,13 @@ export default class ArcBuildSystem {
     return new DisposableSubscription(
       this._tasks.subscribe({next: cb})
     );
+  }
+
+  getExtraUi(): ReactClass {
+    if (this._extraUi == null) {
+      this._extraUi = createExtraUiComponent(this._store);
+    }
+    return this._extraUi;
   }
 
   getIcon(): ReactClass {
