@@ -27,7 +27,8 @@ import path from 'path';
  *
  * 1. autocompletion support
  * 2. diagnostics for errors
- * 3. go-to-definition with Hyperclick
+ * 3. outline view
+ * 4. go-to-definition with Hyperclick
  */
 describe('Clang Integration Test (objc)', () => {
   it('handles basic IDE commands', () => {
@@ -95,6 +96,37 @@ describe('Clang Integration Test (objc)', () => {
     });
 
     runs(() => {
+      // Keyboard shortcut for outline view.
+      dispatchKeyboardEvent('o', document.activeElement, {alt: true});
+    });
+
+    let names;
+    waitsFor('outline view to load', 10000, () => {
+      names = atom.views.getView(atom.workspace)
+        .querySelectorAll('.nuclide-outline-view-item .name');
+      return names.length > 0;
+    });
+
+    runs(() => {
+      function getData(node) {
+        return {
+          name: node.innerText,
+          classes: node.className.split(' ').sort(),
+        };
+      }
+      expect(getData(names[0])).toEqual({
+        name: 'Hello',
+        classes: ['class', 'entity', 'name'],
+      });
+      expect(getData(names[1])).toEqual({
+        name: 'say:',
+        classes: ['entity', 'function', 'name'],
+      });
+      expect(getData(names[names.length - 1])).toEqual({
+        name: 'main',
+        classes: ['entity', 'function', 'name'],
+      });
+
       // Trigger Hyperclick on NSLog(...)
       textEditor.setCursorBufferPosition([11, 5]);
       dispatchKeyboardEvent('enter', document.activeElement, {cmd: true, alt: true});
