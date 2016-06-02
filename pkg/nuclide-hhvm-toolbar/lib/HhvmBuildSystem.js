@@ -10,7 +10,7 @@
  */
 
 import type {Task, TaskInfo} from '../../nuclide-build/lib/types';
-import type {ArcToolbarStore as ArcToolbarStoreType} from './ArcToolbarStore';
+import type {ArcToolbarModel as ArcToolbarModelType} from './ArcToolbarModel';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 
 import {DisposableSubscription} from '../../commons-node/stream';
@@ -20,7 +20,7 @@ import {createExtraUiComponent} from './ui/createExtraUiComponent';
 import {Observable} from 'rxjs';
 
 export default class ArcBuildSystem {
-  _store: ArcToolbarStoreType;
+  _model: ArcToolbarModelType;
   _extraUi: ?ReactClass;
   id: string;
   name: string;
@@ -29,31 +29,31 @@ export default class ArcBuildSystem {
 
   constructor() {
     this.id = 'hhvm';
-    this._store = this._getStore();
-    this.name = this._store.getName();
+    this._model = this._getModel();
+    this.name = this._model.getName();
   }
 
   setCwdApi(cwdApi: ?CwdApi): void {
     this._cwdApi = cwdApi;
-    this._store.setCwdApi(cwdApi);
+    this._model.setCwdApi(cwdApi);
   }
 
-  _getStore(): ArcToolbarStoreType {
-    let ArcToolbarStore;
+  _getModel(): ArcToolbarModelType {
+    let ArcToolbarModel;
     try {
-      ArcToolbarStore = require('./fb/FbArcToolbarStore').FbArcToolbarStore;
+      ArcToolbarModel = require('./fb/FbArcToolbarModel').FbArcToolbarModel;
     } catch (_) {
-      ArcToolbarStore = require('./ArcToolbarStore').ArcToolbarStore;
+      ArcToolbarModel = require('./ArcToolbarModel').ArcToolbarModel;
     }
-    return new ArcToolbarStore();
+    return new ArcToolbarModel();
   }
 
   observeTasks(cb: (tasks: Array<Task>) => mixed): IDisposable {
     if (this._tasks == null) {
       this._tasks = Observable.concat(
-        Observable.of(this._store.getTasks()),
-        observableFromSubscribeFunction(this._store.onChange.bind(this._store))
-          .map(() => this._store.getTasks()),
+        Observable.of(this._model.getTasks()),
+        observableFromSubscribeFunction(this._model.onChange.bind(this._model))
+          .map(() => this._model.getTasks()),
       );
     }
     return new DisposableSubscription(
@@ -63,7 +63,7 @@ export default class ArcBuildSystem {
 
   getExtraUi(): ReactClass {
     if (this._extraUi == null) {
-      this._extraUi = createExtraUiComponent(this._store);
+      this._extraUi = createExtraUiComponent(this._model);
     }
     return this._extraUi;
   }
@@ -73,11 +73,11 @@ export default class ArcBuildSystem {
   }
 
   runTask(taskType: string): TaskInfo {
-    if (!this._store.getTasks().some(task => task.type === taskType)) {
+    if (!this._model.getTasks().some(task => task.type === taskType)) {
       throw new Error(`There's no hhvm task named "${taskType}"`);
     }
 
-    const run = getTaskRunFunction(this._store, taskType);
+    const run = getTaskRunFunction(this._model, taskType);
     const resultStream = Observable.fromPromise(run());
 
     // Currently, the `arc build` has no meaningul progress reporting,
@@ -102,10 +102,10 @@ export default class ArcBuildSystem {
   }
 }
 
-function getTaskRunFunction(store: ArcToolbarStoreType, taskType: string): () => Promise<any> {
+function getTaskRunFunction(model: ArcToolbarModelType, taskType: string): () => Promise<any> {
   switch (taskType) {
     case 'build':
-      return () => store.arcBuild();
+      return () => model.arcBuild();
     default:
       throw new Error(`Invalid task type: ${taskType}`);
   }

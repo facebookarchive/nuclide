@@ -10,7 +10,7 @@
  */
 
 import {React} from 'react-for-atom';
-import {ArcToolbarStore} from './ArcToolbarStore';
+import {ArcToolbarModel} from './ArcToolbarModel';
 import {Combobox} from '../../nuclide-ui/lib/Combobox';
 import {getLogger} from '../../nuclide-logging';
 
@@ -30,7 +30,7 @@ function formatRequestOptionsErrorMessage(): string {
 }
 
 type Props = {
-  store: ArcToolbarStore;
+  model: ArcToolbarModel;
 };
 
 export default class ArcToolbarSection extends React.Component {
@@ -44,8 +44,8 @@ export default class ArcToolbarSection extends React.Component {
   }
 
   render(): ?React.Element {
-    const {store} = this.props;
-    if (!store.isArcSupported()) {
+    const {model} = this.props;
+    if (!model.isArcSupported()) {
       return null;
     }
     return (
@@ -58,7 +58,7 @@ export default class ArcToolbarSection extends React.Component {
           requestOptions={this._requestOptions}
           size="sm"
           loadingMessage="Updating target names..."
-          initialTextInput={store.getActiveBuildTarget()}
+          initialTextInput={model.getActiveBuildTarget()}
           onChange={this._handleBuildTargetChange}
           placeholderText="build step"
           width={ARC_BUILD_TARGET_WIDTH_PX}
@@ -68,14 +68,14 @@ export default class ArcToolbarSection extends React.Component {
   }
 
   _requestOptions(inputText: string): Promise<Array<string>> {
-    return this.props.store.loadBuildTargets();
+    return this.props.model.loadBuildTargets();
   }
 
   _handleBuildTargetChange(value: string) {
-    this.props.store.updateBuildTarget(value);
+    this.props.model.updateBuildTarget(value);
   }
 
   _arcBuild(): void {
-    this.props.store.arcBuild();
+    this.props.model.arcBuild();
   }
 }

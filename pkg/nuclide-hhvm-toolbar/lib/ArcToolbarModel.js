@@ -20,7 +20,7 @@ export const TASKS: Array<Task> = [];
  * This will provide the toolbar functionality for the open-source-supported HHVM targets.
  * e.g. HHVM Debugger
  */
-export class ArcToolbarStore {
+export class ArcToolbarModel {
 
   _cwdApi: ?CwdApi;
 

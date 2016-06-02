@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {ArcToolbarStore} from '../ArcToolbarStore';
+import type {ArcToolbarModel} from '../ArcToolbarModel';
 
 import ArcToolbarSection from '../ArcToolbarSection';
 import {React} from 'react-for-atom';
@@ -21,14 +21,14 @@ import {React} from 'react-for-atom';
  * too.
  */
 export function createExtraUiComponent(
-  store: ArcToolbarStore,
+  model: ArcToolbarModel,
 ): ReactClass {
 
   return class ExtraUi extends React.Component {
 
     render(): React.Element {
       return (
-        <ArcToolbarSection store={store} />
+        <ArcToolbarSection model={model} />
       );
     }
 
