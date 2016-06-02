@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +10,6 @@
  * the root directory of this source tree.
  */
 
-export type KillableProcess = {
-  kill: () => mixed;
-};
-
 /**
  * An object specifying methods that will be called with output from a process.
  * @param stdout A function that receives output from stdout.
@@ -20,12 +17,6 @@ export type KillableProcess = {
  * @param error A function that receives errors from the process.
  * @param exit A function that receives the exit code when the process exits.
  */
-export type ProcessOutputDataHandlers = {
-  stdout: (data: string) => mixed;
-  stderr: (data: string) => mixed;
-  error: (err: Error) => mixed;
-  exit: (code: number) => mixed;
-};
 
 /**
  * A function that kicks off a process.
@@ -34,5 +25,3 @@ export type ProcessOutputDataHandlers = {
  * @return A Promise that resolves to an object on which 'kill' can be called to
  *   kill the process.
  */
-export type RunProcessWithHandlers =
-  (options: ProcessOutputDataHandlers) => Promise<KillableProcess>;

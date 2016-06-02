@@ -1,5 +1,27 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+exports.observeStream = observeStream;
+exports.splitStream = splitStream;
+exports.bufferUntil = bufferUntil;
+exports.cacheWhileSubscribed = cacheWhileSubscribed;
+exports.diffSets = diffSets;
+exports.reconcileSetDiffs = reconcileSetDiffs;
+exports.toggle = toggle;
+exports.compact = compact;
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +31,27 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import {Observable, Subscription, Subject} from 'rxjs';
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _rxjsBundlesRxUmdMinJs2;
+
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
 
 /**
  * Observe a stream like stdout or stderr.
  */
-export function observeStream(stream: stream$Readable): Observable<string> {
-  const error = Observable.fromEvent(stream, 'error').flatMap(Observable.throw);
-  return Observable
-    .fromEvent(stream, 'data')
-    .map(data => data.toString())
-    .merge(error)
-    .takeUntil(Observable.fromEvent(stream, 'end').race(error));
+
+function observeStream(stream) {
+  var error = (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.fromEvent(stream, 'error').flatMap((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.throw);
+  return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.fromEvent(stream, 'data').map(function (data) {
+    return data.toString();
+  }).merge(error).takeUntil((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.fromEvent(stream, 'end').race(error));
 }
 
 /**
@@ -30,9 +60,10 @@ export function observeStream(stream: stream$Readable): Observable<string> {
  * Sends any non-newline terminated data before closing.
  * Never sends an empty string.
  */
-export function splitStream(input: Observable<string>): Observable<string> {
-  return Observable.create(observer => {
-    let current: string = '';
+
+function splitStream(input) {
+  return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.create(function (observer) {
+    var current = '';
 
     function onEnd() {
       if (current !== '') {
@@ -41,81 +72,95 @@ export function splitStream(input: Observable<string>): Observable<string> {
       }
     }
 
-    return input.subscribe(
-      value => {
-        const lines = (current + value).split('\n');
-        current = lines.pop();
-        lines.forEach(line => observer.next(line + '\n'));
-      },
-      error => { onEnd(); observer.error(error); },
-      () => { onEnd(); observer.complete(); },
-    );
+    return input.subscribe(function (value) {
+      var lines = (current + value).split('\n');
+      current = lines.pop();
+      lines.forEach(function (line) {
+        return observer.next(line + '\n');
+      });
+    }, function (error) {
+      onEnd();observer.error(error);
+    }, function () {
+      onEnd();observer.complete();
+    });
   });
 }
 
-export class DisposableSubscription {
-  _subscription: rx$ISubscription;
+var DisposableSubscription = (function () {
+  function DisposableSubscription(subscription) {
+    _classCallCheck(this, DisposableSubscription);
 
-  constructor(subscription: rx$ISubscription) {
     this._subscription = subscription;
   }
 
-  dispose(): void {
-    this._subscription.unsubscribe();
-  }
-}
+  _createClass(DisposableSubscription, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._subscription.unsubscribe();
+    }
+  }]);
 
-type TeardownLogic = (() => void) | rx$ISubscription;
+  return DisposableSubscription;
+})();
 
-export class CompositeSubscription {
-  _subscription: Subscription;
+exports.DisposableSubscription = DisposableSubscription;
 
-  constructor(...subscriptions: Array<TeardownLogic>) {
-    this._subscription = new Subscription();
-    subscriptions.forEach(sub => {
-      this._subscription.add(sub);
+var CompositeSubscription = (function () {
+  function CompositeSubscription() {
+    var _this = this;
+
+    _classCallCheck(this, CompositeSubscription);
+
+    this._subscription = new (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Subscription();
+
+    for (var _len = arguments.length, subscriptions = Array(_len), _key = 0; _key < _len; _key++) {
+      subscriptions[_key] = arguments[_key];
+    }
+
+    subscriptions.forEach(function (sub) {
+      _this._subscription.add(sub);
     });
   }
 
-  unsubscribe(): void {
-    this._subscription.unsubscribe();
-  }
-}
+  // TODO: We used to use `stream.buffer(stream.filter(...))` for this but it doesn't work in RxJS 5.
+  //  See https://github.com/ReactiveX/rxjs/issues/1610
 
-// TODO: We used to use `stream.buffer(stream.filter(...))` for this but it doesn't work in RxJS 5.
-//  See https://github.com/ReactiveX/rxjs/issues/1610
-export function bufferUntil<T>(
-  stream: Observable<T>,
-  condition: (item: T) => boolean,
-): Observable<Array<T>> {
-  return Observable.create(observer => {
-    let buffer = null;
-    const flush = () => {
+  _createClass(CompositeSubscription, [{
+    key: 'unsubscribe',
+    value: function unsubscribe() {
+      this._subscription.unsubscribe();
+    }
+  }]);
+
+  return CompositeSubscription;
+})();
+
+exports.CompositeSubscription = CompositeSubscription;
+
+function bufferUntil(stream, condition) {
+  return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.create(function (observer) {
+    var buffer = null;
+    var flush = function flush() {
       if (buffer != null) {
         observer.next(buffer);
         buffer = null;
       }
     };
-    return stream
-      .subscribe(
-        x => {
-          if (buffer == null) {
-            buffer = [];
-          }
-          buffer.push(x);
-          if (condition(x)) {
-            flush();
-          }
-        },
-        err => {
-          flush();
-          observer.error(err);
-        },
-        () => {
-          flush();
-          observer.complete();
-        },
-      );
+    return stream.subscribe(function (x) {
+      if (buffer == null) {
+        buffer = [];
+      }
+      buffer.push(x);
+      if (condition(x)) {
+        flush();
+      }
+    }, function (err) {
+      flush();
+      observer.error(err);
+    }, function () {
+      flush();
+      observer.complete();
+    });
   });
 }
 
@@ -131,7 +176,8 @@ export function bufferUntil<T>(
  * Completion and error semantics are usnpec'd. If you are using this with Observables that
  * complete, come up with coherent completion semantics and implement them.
  */
-export function cacheWhileSubscribed<T>(input: Observable<T>): Observable<T> {
+
+function cacheWhileSubscribed(input) {
   // cache() is implemented as publishBehavior().refCount
   //
   // publishBehavior() is implemented as multiCast(new ReplaySubject())
@@ -142,67 +188,74 @@ export function cacheWhileSubscribed<T>(input: Observable<T>): Observable<T> {
 
 // Based on the implementation of ReplaySubject:
 // http://reactivex.io/rxjs/file/es6/ReplaySubject.js.html#lineNumber7
-class CacheWhileSubscribedSubject<T> extends Subject<T> {
-  _cachedValue: ?T;
-  // undefined, null, etc. are valid values so we have to store the information about whether we
-  // have a cached result separately.
-  _hasCachedValue: boolean;
 
-  _subscriberCount: number;
+var CacheWhileSubscribedSubject = (function (_Subject) {
+  _inherits(CacheWhileSubscribedSubject, _Subject);
 
-  constructor() {
-    super();
+  function CacheWhileSubscribedSubject() {
+    _classCallCheck(this, CacheWhileSubscribedSubject);
+
+    _get(Object.getPrototypeOf(CacheWhileSubscribedSubject.prototype), 'constructor', this).call(this);
     this._cachedValue = null;
     this._hasCachedValue = false;
     this._subscriberCount = 0;
   }
 
-  _setCachedValue(value: T): void {
-    if (this._subscriberCount === 0) {
-      return;
+  _createClass(CacheWhileSubscribedSubject, [{
+    key: '_setCachedValue',
+    value: function _setCachedValue(value) {
+      if (this._subscriberCount === 0) {
+        return;
+      }
+      this._cachedValue = value;
+      this._hasCachedValue = true;
     }
-    this._cachedValue = value;
-    this._hasCachedValue = true;
-  }
-
-  _clearCachedValue(): void {
-    this._cachedValue = null;
-    this._hasCachedValue = false;
-  }
-
-  next(value: T): void {
-    this._setCachedValue(value);
-    super.next(value);
-  }
-
-  _subscribe(subscriber: any): Subscription {
-    this._incrementSubscriberCount();
-    if (this._hasCachedValue && !subscriber.isUnsubscribed) {
-      subscriber.next(this._cachedValue);
+  }, {
+    key: '_clearCachedValue',
+    value: function _clearCachedValue() {
+      this._cachedValue = null;
+      this._hasCachedValue = false;
     }
-    return super._subscribe(subscriber).add(() => this._decrementSubscriberCount());
-  }
-
-  _incrementSubscriberCount(): void {
-    this._subscriberCount++;
-  }
-
-  _decrementSubscriberCount(): void {
-    this._subscriberCount--;
-    if (this._subscriberCount === 0) {
-      this._clearCachedValue();
+  }, {
+    key: 'next',
+    value: function next(value) {
+      this._setCachedValue(value);
+      _get(Object.getPrototypeOf(CacheWhileSubscribedSubject.prototype), 'next', this).call(this, value);
     }
-  }
-}
+  }, {
+    key: '_subscribe',
+    value: function _subscribe(subscriber) {
+      var _this2 = this;
 
-type Diff<T> = {
-  added: Set<T>;
-  removed: Set<T>;
-};
+      this._incrementSubscriberCount();
+      if (this._hasCachedValue && !subscriber.isUnsubscribed) {
+        subscriber.next(this._cachedValue);
+      }
+      return _get(Object.getPrototypeOf(CacheWhileSubscribedSubject.prototype), '_subscribe', this).call(this, subscriber).add(function () {
+        return _this2._decrementSubscriberCount();
+      });
+    }
+  }, {
+    key: '_incrementSubscriberCount',
+    value: function _incrementSubscriberCount() {
+      this._subscriberCount++;
+    }
+  }, {
+    key: '_decrementSubscriberCount',
+    value: function _decrementSubscriberCount() {
+      this._subscriberCount--;
+      if (this._subscriberCount === 0) {
+        this._clearCachedValue();
+      }
+    }
+  }]);
 
-function subtractSet<T>(a: Set<T>, b: Set<T>): Set<T> {
-  const result = new Set();
-  a.forEach(value => {
+  return CacheWhileSubscribedSubject;
+})((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Subject);
+
+function subtractSet(a, b) {
+  var result = new Set();
+  a.forEach(function (value) {
     if (!b.has(value)) {
       result.add(value);
     }
@@ -213,12 +266,12 @@ function subtractSet<T>(a: Set<T>, b: Set<T>): Set<T> {
 /**
  * Shallowly compare two Sets.
  */
-function setsAreEqual<T>(a: Set<T>, b: Set<T>): boolean {
+function setsAreEqual(a, b) {
   if (a.size !== b.size) {
     return false;
   }
-  for (const item of a) {
-    if (!b.has(item)) {
+  for (var _item of a) {
+    if (!b.has(_item)) {
       return false;
     }
   }
@@ -229,63 +282,66 @@ function setsAreEqual<T>(a: Set<T>, b: Set<T>): boolean {
  * Given a stream of sets, return a stream of diffs.
  * **IMPORTANT:** These sets are assumed to be immutable by convention. Don't mutate them!
  */
-export function diffSets<T>(stream: Observable<Set<T>>): Observable<Diff<T>> {
-  return Observable.concat(
-      Observable.of(new Set()), // Always start with no items with an empty set
-      stream,
-    )
-    .distinctUntilChanged(setsAreEqual)
-    // $FlowFixMe(matthewwithanm): Type this.
-    .pairwise()
-    .map(([previous, next]) => ({
+
+function diffSets(stream) {
+  return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.concat((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of(new Set()), // Always start with no items with an empty set
+  stream).distinctUntilChanged(setsAreEqual)
+  // $FlowFixMe(matthewwithanm): Type this.
+  .pairwise().map(function (_ref) {
+    var _ref2 = _slicedToArray(_ref, 2);
+
+    var previous = _ref2[0];
+    var next = _ref2[1];
+    return {
       added: subtractSet(next, previous),
-      removed: subtractSet(previous, next),
-    }));
+      removed: subtractSet(previous, next)
+    };
+  });
 }
 
 /**
  * Give a stream of diffs, perform an action for each added item and dispose of the returned
  * disposable when the item is removed.
  */
-export function reconcileSetDiffs<T>(
-  diffs: Observable<Diff<T>>,
-  addAction: (addedItem: T) => IDisposable,
-): IDisposable {
-  const itemsToDisposables = new Map();
-  const disposeItem = item => {
-    const disposable = itemsToDisposables.get(item);
-    invariant(disposable != null);
+
+function reconcileSetDiffs(diffs, addAction) {
+  var itemsToDisposables = new Map();
+  var disposeItem = function disposeItem(item) {
+    var disposable = itemsToDisposables.get(item);
+    (0, (_assert2 || _assert()).default)(disposable != null);
     disposable.dispose();
     itemsToDisposables.delete(item);
   };
-  const disposeAll = () => {
-    itemsToDisposables.forEach(disposable => { disposable.dispose(); });
+  var disposeAll = function disposeAll() {
+    itemsToDisposables.forEach(function (disposable) {
+      disposable.dispose();
+    });
     itemsToDisposables.clear();
   };
 
-  return new DisposableSubscription(
-    diffs
-      .subscribe(diff => {
-        // For every item that got added, perform the add action.
-        diff.added.forEach(item => { itemsToDisposables.set(item, addAction(item)); });
+  return new DisposableSubscription(diffs.subscribe(function (diff) {
+    // For every item that got added, perform the add action.
+    diff.added.forEach(function (item) {
+      itemsToDisposables.set(item, addAction(item));
+    });
 
-        // "Undo" the add action for each item that got removed.
-        diff.removed.forEach(disposeItem);
-      })
-      .add(disposeAll)
-  );
+    // "Undo" the add action for each item that got removed.
+    diff.removed.forEach(disposeItem);
+  }).add(disposeAll));
 }
 
-export function toggle<T>(
-  source: Observable<T>,
-  toggler: Observable<boolean>,
-): Observable<T> {
-  return toggler
-    .distinctUntilChanged()
-    .switchMap(enabled => (enabled ? source : Observable.empty()));
+function toggle(source, toggler) {
+  return toggler.distinctUntilChanged().switchMap(function (enabled) {
+    return enabled ? source : (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.empty();
+  });
 }
 
-export function compact<T>(source: Observable<?T>): Observable<T> {
+function compact(source) {
   // Flow does not understand the semantics of `filter`
-  return (source.filter(x => x != null): any);
+  return source.filter(function (x) {
+    return x != null;
+  });
 }
+
+// undefined, null, etc. are valid values so we have to store the information about whether we
+// have a cached result separately.

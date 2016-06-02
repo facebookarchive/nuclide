@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,98 +10,122 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState, BuildSystem, Task} from './types';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import once from '../../commons-node/once';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import * as ActionTypes from './ActionTypes';
-import {getActiveBuildSystem} from './getActiveBuildSystem';
-import {Observable} from 'rxjs';
-import invariant from 'assert';
+exports.applyActionMiddleware = applyActionMiddleware;
 
-const HANDLED_ACTION_TYPES = [
-  ActionTypes.RUN_TASK,
-  ActionTypes.STOP_TASK,
-  ActionTypes.REFRESH_TASKS,
-];
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
-export function applyActionMiddleware(
-  actions: Observable<Action>,
-  getState: () => AppState,
-): Observable<Action> {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  const output = Observable.merge(
+var _commonsNodeOnce2;
 
-    // Forward on the actions that we don't handle here.
-    actions.filter(action => HANDLED_ACTION_TYPES.indexOf(action.type) === -1),
+function _commonsNodeOnce() {
+  return _commonsNodeOnce2 = _interopRequireDefault(require('../../commons-node/once'));
+}
 
-    actions.filter(action => action.type === ActionTypes.STOP_TASK)
-      .do(action => {
-        const {taskStatus} = getState();
-        const runningTaskInfo = taskStatus == null ? null : taskStatus.info;
-        if (runningTaskInfo == null) {
-          return;
-        }
-        runningTaskInfo.cancel();
-      })
-      .map(() => ({
-        type: ActionTypes.TASK_STOPPED,
-      })),
+var _commonsNodeEvent2;
 
-    // Update the tasks...
-    actions
-      // ...when the toolbar becomes visible
-      .filter(
-        action => action.type === ActionTypes.TOOLBAR_VISIBILITY_UPDATED && action.payload.visible
-      )
-      .merge(
-        // ...or when it's already visible and we hear a REFRESH_TASKS action.
-        actions.filter(action => action.type === ActionTypes.REFRESH_TASKS && getState().visible),
-      )
-      .map(action => getActiveBuildSystem(getState()))
-      .distinctUntilChanged()
-      .switchMap(activeBuildSystem => {
-        const tasksToActions = tasks => ({
-          type: ActionTypes.TASKS_UPDATED,
-          payload: {tasks},
-        });
-        const noTasks = Observable.of(tasksToActions([]));
-        return activeBuildSystem == null
-          ? noTasks
-          : noTasks.concat(
-              observableFromSubscribeFunction(
-                activeBuildSystem.observeTasks.bind(activeBuildSystem)
-              )
-              .map(tasksToActions)
-            );
-      }),
+function _commonsNodeEvent() {
+  return _commonsNodeEvent2 = require('../../commons-node/event');
+}
 
-    // Dispatch the run action to the selected build system and collect the results.
-    actions.filter(action => action.type === ActionTypes.RUN_TASK)
-      .switchMap(action => {
-        invariant(action.type === ActionTypes.RUN_TASK);
-        const activeBuildSystem = getActiveBuildSystem(getState());
-        const {taskType} = action.payload;
+var _ActionTypes2;
 
-        if (activeBuildSystem == null) {
-          throw new Error('No build system is selected');
-        }
+function _ActionTypes() {
+  return _ActionTypes2 = _interopRequireWildcard(require('./ActionTypes'));
+}
 
-        const task = getState().tasks.find(t => t.type === taskType);
-        invariant(task != null);
+var _getActiveBuildSystem2;
 
-        return runTask(activeBuildSystem, task)
-          // Stop listening once the task is done.
-          .takeUntil(output.filter(a => (
-            a.type === ActionTypes.TASK_COMPLETED
-            || a.type === ActionTypes.TASK_ERRORED
-            || a.type === ActionTypes.TASK_STOPPED
-          )));
-      }
-    ),
+function _getActiveBuildSystem() {
+  return _getActiveBuildSystem2 = require('./getActiveBuildSystem');
+}
 
-  )
-    .share();
+var _rxjsBundlesRxUmdMinJs2;
+
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var HANDLED_ACTION_TYPES = [(_ActionTypes2 || _ActionTypes()).RUN_TASK, (_ActionTypes2 || _ActionTypes()).STOP_TASK, (_ActionTypes2 || _ActionTypes()).REFRESH_TASKS];
+
+function applyActionMiddleware(actions, getState) {
+
+  var output = (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.merge(
+
+  // Forward on the actions that we don't handle here.
+  actions.filter(function (action) {
+    return HANDLED_ACTION_TYPES.indexOf(action.type) === -1;
+  }), actions.filter(function (action) {
+    return action.type === (_ActionTypes2 || _ActionTypes()).STOP_TASK;
+  }).do(function (action) {
+    var _getState = getState();
+
+    var taskStatus = _getState.taskStatus;
+
+    var runningTaskInfo = taskStatus == null ? null : taskStatus.info;
+    if (runningTaskInfo == null) {
+      return;
+    }
+    runningTaskInfo.cancel();
+  }).map(function () {
+    return {
+      type: (_ActionTypes2 || _ActionTypes()).TASK_STOPPED
+    };
+  }),
+
+  // Update the tasks...
+  actions
+  // ...when the toolbar becomes visible
+  .filter(function (action) {
+    return action.type === (_ActionTypes2 || _ActionTypes()).TOOLBAR_VISIBILITY_UPDATED && action.payload.visible;
+  }).merge(
+  // ...or when it's already visible and we hear a REFRESH_TASKS action.
+  actions.filter(function (action) {
+    return action.type === (_ActionTypes2 || _ActionTypes()).REFRESH_TASKS && getState().visible;
+  })).map(function (action) {
+    return (0, (_getActiveBuildSystem2 || _getActiveBuildSystem()).getActiveBuildSystem)(getState());
+  }).distinctUntilChanged().switchMap(function (activeBuildSystem) {
+    var tasksToActions = function tasksToActions(tasks) {
+      return {
+        type: (_ActionTypes2 || _ActionTypes()).TASKS_UPDATED,
+        payload: { tasks: tasks }
+      };
+    };
+    var noTasks = (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of(tasksToActions([]));
+    return activeBuildSystem == null ? noTasks : noTasks.concat((0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(activeBuildSystem.observeTasks.bind(activeBuildSystem)).map(tasksToActions));
+  }),
+
+  // Dispatch the run action to the selected build system and collect the results.
+  actions.filter(function (action) {
+    return action.type === (_ActionTypes2 || _ActionTypes()).RUN_TASK;
+  }).switchMap(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_ActionTypes2 || _ActionTypes()).RUN_TASK);
+    var activeBuildSystem = (0, (_getActiveBuildSystem2 || _getActiveBuildSystem()).getActiveBuildSystem)(getState());
+    var taskType = action.payload.taskType;
+
+    if (activeBuildSystem == null) {
+      throw new Error('No build system is selected');
+    }
+
+    var task = getState().tasks.find(function (t) {
+      return t.type === taskType;
+    });
+    (0, (_assert2 || _assert()).default)(task != null);
+
+    return runTask(activeBuildSystem, task)
+    // Stop listening once the task is done.
+    .takeUntil(output.filter(function (a) {
+      return a.type === (_ActionTypes2 || _ActionTypes()).TASK_COMPLETED || a.type === (_ActionTypes2 || _ActionTypes()).TASK_ERRORED || a.type === (_ActionTypes2 || _ActionTypes()).TASK_STOPPED;
+    }));
+  })).share();
 
   return output;
 }
@@ -108,57 +133,41 @@ export function applyActionMiddleware(
 /**
  * Run a task and transform its output into domain-specific actions.
  */
-function runTask(buildSystem: BuildSystem, task: Task): Observable<Action> {
+function runTask(buildSystem, task) {
   // $FlowFixMe(matthewwithanm): Type this.
-  return Observable.using(
-    () => {
-      let taskInfo = buildSystem.runTask(task.type);
-      // We may call cancel multiple times so let's make sure it's idempotent.
-      taskInfo = {...taskInfo, cancel: once(taskInfo.cancel)};
-      return {
-        taskInfo,
-        unsubscribe() { taskInfo.cancel(); },
-      };
-    },
-    ({taskInfo}) => {
-      const progressStream = taskInfo.observeProgress == null
-        ? Observable.empty()
-        : observableFromSubscribeFunction(
-            taskInfo.observeProgress.bind(taskInfo),
-          );
+  return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.using(function () {
+    var taskInfo = buildSystem.runTask(task.type);
+    // We may call cancel multiple times so let's make sure it's idempotent.
+    taskInfo = _extends({}, taskInfo, { cancel: (0, (_commonsNodeOnce2 || _commonsNodeOnce()).default)(taskInfo.cancel) });
+    return {
+      taskInfo: taskInfo,
+      unsubscribe: function unsubscribe() {
+        taskInfo.cancel();
+      }
+    };
+  }, function (_ref) {
+    var taskInfo = _ref.taskInfo;
 
-      return Observable
-        .of({
-          type: ActionTypes.TASK_STARTED,
-          payload: {taskInfo},
-        })
-        .concat(
-          progressStream.map(progress => ({
-            type: ActionTypes.TASK_PROGRESS,
-            payload: {progress},
-          }))
-        )
-        .merge(
-          observableFromSubscribeFunction(taskInfo.onDidError.bind(taskInfo))
-            .map(err => { throw err; })
-        )
-        .takeUntil(
-          observableFromSubscribeFunction(taskInfo.onDidComplete.bind(taskInfo))
-        )
-        .concat(Observable.of({
-          type: ActionTypes.TASK_COMPLETED,
-        }))
-        .catch(error => {
-          atom.notifications.addError(
-            `The task "${task.label}" failed`,
-            {description: error.message},
-          );
-          return Observable.of({
-            type: ActionTypes.TASK_ERRORED,
-            payload: {error},
-          });
-        });
-    },
-  )
-  .share();
+    var progressStream = taskInfo.observeProgress == null ? (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.empty() : (0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(taskInfo.observeProgress.bind(taskInfo));
+
+    return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of({
+      type: (_ActionTypes2 || _ActionTypes()).TASK_STARTED,
+      payload: { taskInfo: taskInfo }
+    }).concat(progressStream.map(function (progress) {
+      return {
+        type: (_ActionTypes2 || _ActionTypes()).TASK_PROGRESS,
+        payload: { progress: progress }
+      };
+    })).merge((0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(taskInfo.onDidError.bind(taskInfo)).map(function (err) {
+      throw err;
+    })).takeUntil((0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(taskInfo.onDidComplete.bind(taskInfo))).concat((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of({
+      type: (_ActionTypes2 || _ActionTypes()).TASK_COMPLETED
+    })).catch(function (error) {
+      atom.notifications.addError('The task "' + task.label + '" failed', { description: error.message });
+      return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of({
+        type: (_ActionTypes2 || _ActionTypes()).TASK_ERRORED,
+        payload: { error: error }
+      });
+    });
+  }).share();
 }

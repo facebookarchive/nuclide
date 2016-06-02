@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _nuclideUiLibAtomInput2;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,66 +8,70 @@
  * the root directory of this source tree.
  */
 
-import type {Reference} from '../types';
+function _nuclideUiLibAtomInput() {
+  return _nuclideUiLibAtomInput2 = require('../../../nuclide-ui/lib/AtomInput');
+}
 
-import {AtomInput} from '../../../nuclide-ui/lib/AtomInput';
-import {React} from 'react-for-atom';
+var _reactForAtom2;
 
-const FilePreview = React.createClass({
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var FilePreview = (_reactForAtom2 || _reactForAtom()).React.createClass({
 
   propTypes: {
-    text: React.PropTypes.string.isRequired,
-    grammar: React.PropTypes.object,
-    references: React.PropTypes.arrayOf(React.PropTypes.object /*Reference*/).isRequired,
-    startLine: React.PropTypes.number.isRequired,
-    endLine: React.PropTypes.number.isRequired,
+    text: (_reactForAtom2 || _reactForAtom()).React.PropTypes.string.isRequired,
+    grammar: (_reactForAtom2 || _reactForAtom()).React.PropTypes.object,
+    references: (_reactForAtom2 || _reactForAtom()).React.PropTypes.arrayOf((_reactForAtom2 || _reactForAtom()).React.PropTypes.object /*Reference*/).isRequired,
+    startLine: (_reactForAtom2 || _reactForAtom()).React.PropTypes.number.isRequired,
+    endLine: (_reactForAtom2 || _reactForAtom()).React.PropTypes.number.isRequired
   },
 
-  componentDidMount() {
-    const editor = this.refs.editor.getTextEditor();
-    const {grammar, references, startLine} = this.props;
+  componentDidMount: function componentDidMount() {
+    var editor = this.refs.editor.getTextEditor();
+    var _props = this.props;
+    var grammar = _props.grammar;
+    var references = _props.references;
+    var startLine = _props.startLine;
 
     if (grammar) {
       editor.setGrammar(grammar);
     }
 
-    references.forEach((ref: Reference) => {
-      const marker = editor.markBufferRange([
-        [ref.start.line - startLine, ref.start.column - 1],
-        [ref.end.line - startLine, ref.end.column],
-      ]);
-      editor.decorateMarker(marker, {type: 'highlight', class: 'reference'});
+    references.forEach(function (ref) {
+      var marker = editor.markBufferRange([[ref.start.line - startLine, ref.start.column - 1], [ref.end.line - startLine, ref.end.column]]);
+      editor.decorateMarker(marker, { type: 'highlight', 'class': 'reference' });
     });
 
     // Make sure at least one highlight is visible.
-    editor.scrollToBufferPosition([
-      references[0].end.line - startLine,
-      references[0].end.column - 1,
-    ]);
+    editor.scrollToBufferPosition([references[0].end.line - startLine, references[0].end.column - 1]);
   },
 
-  render(): React.Element {
-    const lineNumbers = [];
-    for (let i = this.props.startLine; i <= this.props.endLine; i++) {
-      lineNumbers.push(
-        <div key={i} className="nuclide-find-references-line-number">
-          {i}
-        </div>
-      );
+  render: function render() {
+    var lineNumbers = [];
+    for (var i = this.props.startLine; i <= this.props.endLine; i++) {
+      lineNumbers.push((_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { key: i, className: 'nuclide-find-references-line-number' },
+        i
+      ));
     }
-    return (
-      <div className="nuclide-find-references-file-preview">
-        <div className="nuclide-find-references-line-number-column">
-          {lineNumbers}
-        </div>
-        <AtomInput
-          ref="editor"
-          initialValue={this.props.text}
-          disabled={true}
-        />
-      </div>
+    return (_reactForAtom2 || _reactForAtom()).React.createElement(
+      'div',
+      { className: 'nuclide-find-references-file-preview' },
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'nuclide-find-references-line-number-column' },
+        lineNumbers
+      ),
+      (_reactForAtom2 || _reactForAtom()).React.createElement((_nuclideUiLibAtomInput2 || _nuclideUiLibAtomInput()).AtomInput, {
+        ref: 'editor',
+        initialValue: this.props.text,
+        disabled: true
+      })
     );
-  },
+  }
 
 });
 

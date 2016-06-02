@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +10,61 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
-import type {OutlineForUi, OutlineTreeForUi} from './main';
-import type {TextToken} from '../../nuclide-tokenized-text';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {React} from 'react-for-atom';
-import invariant from 'assert';
-import classnames from 'classnames';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-import {track} from '../../nuclide-analytics';
-import {goToLocationInEditor} from '../../commons-atom/go-to-location';
-import {getLogger} from '../../nuclide-logging';
-import {LoadingSpinner, LoadingSpinnerSizes} from '../../nuclide-ui/lib/LoadingSpinner';
-const logger = getLogger();
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-type State = {
-  outline: OutlineForUi;
-};
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-type Props = {
-  outlines: Observable<OutlineForUi>;
-};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const TOKEN_KIND_TO_CLASS_NAME_MAP = {
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _classnames2;
+
+function _classnames() {
+  return _classnames2 = _interopRequireDefault(require('classnames'));
+}
+
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+var _commonsAtomGoToLocation2;
+
+function _commonsAtomGoToLocation() {
+  return _commonsAtomGoToLocation2 = require('../../commons-atom/go-to-location');
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var _nuclideUiLibLoadingSpinner2;
+
+function _nuclideUiLibLoadingSpinner() {
+  return _nuclideUiLibLoadingSpinner2 = require('../../nuclide-ui/lib/LoadingSpinner');
+}
+
+var logger = (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)();
+
+var TOKEN_KIND_TO_CLASS_NAME_MAP = {
   'keyword': 'keyword',
   'class-name': 'entity name class',
   'constructor': 'entity name function',
@@ -40,138 +73,154 @@ const TOKEN_KIND_TO_CLASS_NAME_MAP = {
   'string': 'string',
   'whitespace': '',
   'plain': '',
-  'type': 'support type',
+  'type': 'support type'
 };
 
-export class OutlineView extends React.Component {
-  state: State;
-  props: Props;
+var OutlineView = (function (_React$Component) {
+  _inherits(OutlineView, _React$Component);
 
-  subscription: ?rx$ISubscription;
+  function OutlineView(props) {
+    _classCallCheck(this, OutlineView);
 
-  constructor(props: Props) {
-    super(props);
+    _get(Object.getPrototypeOf(OutlineView.prototype), 'constructor', this).call(this, props);
     this.state = {
       outline: {
-        kind: 'empty',
-      },
+        kind: 'empty'
+      }
     };
   }
 
-  componentDidMount(): void {
-    invariant(this.subscription == null);
-    this.subscription = this.props.outlines.subscribe(outline => {
-      // If the outline view has focus, we don't want to re-render anything.
-      if (this !== atom.workspace.getActivePaneItem()) {
-        this.setState({outline});
-      }
-    });
-  }
+  _createClass(OutlineView, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _this = this;
 
-  componentWillUnmount(): void {
-    invariant(this.subscription != null);
-    this.subscription.unsubscribe();
-    this.subscription = null;
-  }
-
-  render(): React.Element {
-    return (
-      <div className="pane-item padded nuclide-outline-view">
-        <OutlineViewComponent outline={this.state.outline} />
-      </div>
-    );
-  }
-
-  getTitle(): string {
-    return 'Outline View';
-  }
-
-  getIconName(): string {
-    return 'list-unordered';
-  }
-}
-
-type OutlineViewComponentProps = {
-  outline: OutlineForUi;
-};
-
-class OutlineViewComponent extends React.Component {
-  props: OutlineViewComponentProps;
-
-  render(): ?React.Element {
-    const outline = this.props.outline;
-    switch (outline.kind) {
-      case 'empty':
-      case 'not-text-editor':
-        return null;
-      case 'loading':
-        return (
-          <div className="nuclide-outline-view-loading">
-            <LoadingSpinner
-              className="inline-block"
-              size={LoadingSpinnerSizes.MEDIUM}
-            />
-          </div>
-        );
-      case 'no-provider':
-        return (
-          <span>
-            Outline view does not currently support {outline.grammar}.
-          </span>
-        );
-      case 'provider-no-outline':
-        return (
-          <span>
-            No outline available.
-          </span>
-        );
-      case 'outline':
-        return renderTrees(outline.editor, outline.outlineTrees);
-      default:
-        const errorText = `Encountered unexpected outline kind ${outline.kind}`;
-        logger.error(errorText);
-        return (
-          <span>
-            Internal Error:<br />
-            {errorText}
-          </span>
-        );
+      (0, (_assert2 || _assert()).default)(this.subscription == null);
+      this.subscription = this.props.outlines.subscribe(function (outline) {
+        // If the outline view has focus, we don't want to re-render anything.
+        if (_this !== atom.workspace.getActivePaneItem()) {
+          _this.setState({ outline: outline });
+        }
+      });
     }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      (0, (_assert2 || _assert()).default)(this.subscription != null);
+      this.subscription.unsubscribe();
+      this.subscription = null;
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'pane-item padded nuclide-outline-view' },
+        (_reactForAtom2 || _reactForAtom()).React.createElement(OutlineViewComponent, { outline: this.state.outline })
+      );
+    }
+  }, {
+    key: 'getTitle',
+    value: function getTitle() {
+      return 'Outline View';
+    }
+  }, {
+    key: 'getIconName',
+    value: function getIconName() {
+      return 'list-unordered';
+    }
+  }]);
+
+  return OutlineView;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
+
+exports.OutlineView = OutlineView;
+
+var OutlineViewComponent = (function (_React$Component2) {
+  _inherits(OutlineViewComponent, _React$Component2);
+
+  function OutlineViewComponent() {
+    _classCallCheck(this, OutlineViewComponent);
+
+    _get(Object.getPrototypeOf(OutlineViewComponent.prototype), 'constructor', this).apply(this, arguments);
   }
 
-}
+  _createClass(OutlineViewComponent, [{
+    key: 'render',
+    value: function render() {
+      var outline = this.props.outline;
+      switch (outline.kind) {
+        case 'empty':
+        case 'not-text-editor':
+          return null;
+        case 'loading':
+          return (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'div',
+            { className: 'nuclide-outline-view-loading' },
+            (_reactForAtom2 || _reactForAtom()).React.createElement((_nuclideUiLibLoadingSpinner2 || _nuclideUiLibLoadingSpinner()).LoadingSpinner, {
+              className: 'inline-block',
+              size: (_nuclideUiLibLoadingSpinner2 || _nuclideUiLibLoadingSpinner()).LoadingSpinnerSizes.MEDIUM
+            })
+          );
+        case 'no-provider':
+          return (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'span',
+            null,
+            'Outline view does not currently support ',
+            outline.grammar,
+            '.'
+          );
+        case 'provider-no-outline':
+          return (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'span',
+            null,
+            'No outline available.'
+          );
+        case 'outline':
+          return renderTrees(outline.editor, outline.outlineTrees);
+        default:
+          var errorText = 'Encountered unexpected outline kind ' + outline.kind;
+          logger.error(errorText);
+          return (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'span',
+            null,
+            'Internal Error:',
+            (_reactForAtom2 || _reactForAtom()).React.createElement('br', null),
+            errorText
+          );
+      }
+    }
+  }]);
 
-function renderTree(
-  editor: atom$TextEditor,
-  outline: OutlineTreeForUi,
-  index: number,
-): React.Element {
-  const onClick = () => {
-    const pane = atom.workspace.paneForItem(editor);
+  return OutlineViewComponent;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
+
+function renderTree(editor, outline, index) {
+  var onClick = function onClick() {
+    var pane = atom.workspace.paneForItem(editor);
     if (pane == null) {
       return;
     }
-    track('nuclide-outline-view:go-to-location');
+    (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)('nuclide-outline-view:go-to-location');
     pane.activate();
     pane.activateItem(editor);
-    goToLocationInEditor(editor, outline.startPosition.row, outline.startPosition.column);
+    (0, (_commonsAtomGoToLocation2 || _commonsAtomGoToLocation()).goToLocationInEditor)(editor, outline.startPosition.row, outline.startPosition.column);
   };
 
-  const classes = classnames(
-    'list-nested-item',
-    {selected: outline.highlighted},
-  );
-  return (
-    <li className={classes} key={index}>
-      <div className="list-item nuclide-outline-view-item" onClick={onClick}>
-        {renderItemText(outline)}
-      </div>
-      {renderTrees(editor, outline.children)}
-    </li>
+  var classes = (0, (_classnames2 || _classnames()).default)('list-nested-item', { selected: outline.highlighted });
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    'li',
+    { className: classes, key: index },
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      'div',
+      { className: 'list-item nuclide-outline-view-item', onClick: onClick },
+      renderItemText(outline)
+    ),
+    renderTrees(editor, outline.children)
   );
 }
 
-function renderItemText(outline: OutlineTreeForUi): Array<React.Element> | string {
+function renderItemText(outline) {
   if (outline.tokenizedText != null) {
     return outline.tokenizedText.map(renderTextToken);
   } else if (outline.plainText != null) {
@@ -181,23 +230,28 @@ function renderItemText(outline: OutlineTreeForUi): Array<React.Element> | strin
   }
 }
 
-function renderTextToken(token: TextToken, index: number): React.Element {
-  const className = TOKEN_KIND_TO_CLASS_NAME_MAP[token.kind];
-  return <span className={className} key={index}>{token.value}</span>;
+function renderTextToken(token, index) {
+  var className = TOKEN_KIND_TO_CLASS_NAME_MAP[token.kind];
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    'span',
+    { className: className, key: index },
+    token.value
+  );
 }
 
-function renderTrees(
-  editor: atom$TextEditor,
-  outlines: Array<OutlineTreeForUi>
-): ?React.Element {
+function renderTrees(editor, outlines) {
   if (outlines.length === 0) {
     return null;
   }
-  return (
+  return(
     // Add `position: relative;` to let `li.selected` style position itself relative to the list
     // tree rather than to its container.
-    <ul className="list-tree" style={{position: 'relative'}}>
-      {outlines.map((outline, index) => renderTree(editor, outline, index))}
-    </ul>
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      'ul',
+      { className: 'list-tree', style: { position: 'relative' } },
+      outlines.map(function (outline, index) {
+        return renderTree(editor, outline, index);
+      })
+    )
   );
 }

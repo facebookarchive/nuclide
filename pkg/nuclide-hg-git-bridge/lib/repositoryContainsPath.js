@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +8,19 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {Directory} from 'atom';
-import path from 'path';
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _path2;
+
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
 
 /**
  * @param repository Either a GitRepository or HgRepositoryClient.
@@ -21,21 +28,20 @@ import path from 'path';
  * @return boolean Whether the file path exists within the working directory
  *   (aka root directory) of the repository, or is the working directory.
  */
-function repositoryContainsPath(repository: atom$Repository, filePath: NuclideUri): boolean {
-  const workingDirectoryPath = repository.getWorkingDirectory();
+function repositoryContainsPath(repository, filePath) {
+  var workingDirectoryPath = repository.getWorkingDirectory();
   if (pathsAreEqual(workingDirectoryPath, filePath)) {
     return true;
   }
 
   if (repository.getType() === 'git') {
-    const rootGitProjectDirectory = new Directory(workingDirectoryPath);
+    var rootGitProjectDirectory = new (_atom2 || _atom()).Directory(workingDirectoryPath);
     return rootGitProjectDirectory.contains(filePath);
   } else if (repository.getType() === 'hg') {
-    const hgRepository = ((repository: any): HgRepositoryClient);
+    var hgRepository = repository;
     return hgRepository._workingDirectory.contains(filePath);
   }
-  throw new Error(
-    'repositoryContainsPath: Received an unrecognized repository type. Expected git or hg.');
+  throw new Error('repositoryContainsPath: Received an unrecognized repository type. Expected git or hg.');
 }
 
 /**
@@ -43,9 +49,8 @@ function repositoryContainsPath(repository: atom$Repository, filePath: NuclideUr
  * @param filePath2 An absolute file path.
  * @return Whether the file paths are equal, accounting for trailing slashes.
  */
-function pathsAreEqual(filePath1: string, filePath2: string): boolean {
-  return path.normalize(filePath1 + path.sep) === path.normalize(filePath2 + path.sep);
+function pathsAreEqual(filePath1, filePath2) {
+  return (_path2 || _path()).default.normalize(filePath1 + (_path2 || _path()).default.sep) === (_path2 || _path()).default.normalize(filePath2 + (_path2 || _path()).default.sep);
 }
-
 
 module.exports = repositoryContainsPath;

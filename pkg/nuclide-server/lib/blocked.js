@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -17,15 +16,15 @@
  * @return the interval handler.
  * To cancel, call clearInterval on the returned interval handler.
  */
-function blocked(
-    fn: (ms: number) => void,
-    intervalMs: number = 100,
-    thresholdMs: number = 50): number {
-  let start = Date.now();
+function blocked(fn) {
+  var intervalMs = arguments.length <= 1 || arguments[1] === undefined ? 100 : arguments[1];
+  var thresholdMs = arguments.length <= 2 || arguments[2] === undefined ? 50 : arguments[2];
 
-  return setInterval(() => {
-    const deltaMs = Date.now() - start;
-    const blockTimeMs = deltaMs - intervalMs;
+  var start = Date.now();
+
+  return setInterval(function () {
+    var deltaMs = Date.now() - start;
+    var blockTimeMs = deltaMs - intervalMs;
     if (blockTimeMs > thresholdMs) {
       fn(blockTimeMs);
     }

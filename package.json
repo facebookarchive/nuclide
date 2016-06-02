@@ -22,10 +22,7 @@
   ],
   "homepage": "http://nuclide.io/",
   "license": "SEE LICENSE IN LICENSE",
-  "main": "./lib/pre-main.js",
-  "bin": {
-    "nuclide-start-server": "./pkg/nuclide-server/nuclide-start-server"
-  },
+  "main": "./lib/main.js",
   "repository": "https://github.com/facebook/nuclide",
   "scripts": {
     "flow": "flow check --show-all-errors",
@@ -107,7 +104,6 @@
     "atom": ">=1.7.4",
     "node": ">=5.1.1"
   },
-  "private": true,
   "atomTestRunner": "./lib/test-runner.js",
   "package-deps": [
     "tool-bar",

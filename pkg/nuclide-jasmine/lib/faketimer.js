@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -16,13 +15,13 @@
  */
 require('jasmine-node');
 
-let now = 0;
-let timeoutCount = 0;
-let intervalCount = 0;
-let timeouts = [];
-let intervalTimeouts = {};
+var now = 0;
+var timeoutCount = 0;
+var intervalCount = 0;
+var timeouts = [];
+var intervalTimeouts = {};
 
-function resetTimeouts(): void {
+function resetTimeouts() {
   now = 0;
   timeoutCount = 0;
   intervalCount = 0;
@@ -30,22 +29,40 @@ function resetTimeouts(): void {
   intervalTimeouts = {};
 }
 
-function fakeSetTimeout(callback: () => ?any, ms: number): number {
-  const id = ++timeoutCount;
+function fakeSetTimeout(callback, ms) {
+  var id = ++timeoutCount;
   timeouts.push([id, now + ms, callback]);
-  timeouts = timeouts
-      .sort(([id0, strikeTime0, cb0], [id1, strikeTime1, cb1]) => strikeTime0 - strikeTime1);
+  timeouts = timeouts.sort(function (_ref, _ref3) {
+    var _ref2 = _slicedToArray(_ref, 3);
+
+    var id0 = _ref2[0];
+    var strikeTime0 = _ref2[1];
+    var cb0 = _ref2[2];
+
+    var _ref32 = _slicedToArray(_ref3, 3);
+
+    var id1 = _ref32[0];
+    var strikeTime1 = _ref32[1];
+    var cb1 = _ref32[2];
+    return strikeTime0 - strikeTime1;
+  });
   return id;
 }
 
-function fakeClearTimeout(idToClear: number): void {
-  timeouts = timeouts
-      .filter(([id, strikeTime, callback]) => (id !== idToClear));
+function fakeClearTimeout(idToClear) {
+  timeouts = timeouts.filter(function (_ref4) {
+    var _ref42 = _slicedToArray(_ref4, 3);
+
+    var id = _ref42[0];
+    var strikeTime = _ref42[1];
+    var callback = _ref42[2];
+    return id !== idToClear;
+  });
 }
 
-function fakeSetInterval(callback: () => ?any, ms: number): number {
-  const id = ++intervalCount;
-  const action = () => {
+function fakeSetInterval(callback, ms) {
+  var id = ++intervalCount;
+  var action = function action() {
     callback();
     intervalTimeouts[id] = fakeSetTimeout(action, ms);
   };
@@ -53,15 +70,21 @@ function fakeSetInterval(callback: () => ?any, ms: number): number {
   return id;
 }
 
-function fakeClearInterval(idToClear: number): void {
+function fakeClearInterval(idToClear) {
   fakeClearTimeout(intervalTimeouts[idToClear]);
 }
 
-function advanceClock(deltaMs: number): void {
-  const advanceTo = now + deltaMs;
+function advanceClock(deltaMs) {
+  var advanceTo = now + deltaMs;
 
   while (timeouts.length !== 0 && timeouts[0][1] <= advanceTo) {
-    const [, strikeTime, callback] = timeouts.shift();
+    var _timeouts$shift = timeouts.shift();
+
+    var _timeouts$shift2 = _slicedToArray(_timeouts$shift, 3);
+
+    var strikeTime = _timeouts$shift2[1];
+    var callback = _timeouts$shift2[2];
+
     now = strikeTime;
     callback();
   }
@@ -72,7 +95,7 @@ function advanceClock(deltaMs: number): void {
 /**
  * Allows tests to use the non-fake setTimeout and clearTimeout functions.
  */
-function useRealClock(): void {
+function useRealClock() {
   jasmine.unspy(global, 'setTimeout');
   jasmine.unspy(global, 'clearTimeout');
   jasmine.unspy(global, 'setInterval');
@@ -88,8 +111,10 @@ global.fakeSetInterval = fakeSetInterval;
 global.fakeClearInterval = fakeClearInterval;
 global.advanceClock = advanceClock;
 jasmine.useRealClock = useRealClock;
-const attributes = {};
-attributes['get'] = function() { return now; };
+var attributes = {};
+attributes['get'] = function () {
+  return now;
+};
 Object.defineProperty(global, 'now', attributes);
 
 /**
@@ -97,9 +122,11 @@ Object.defineProperty(global, 'now', attributes);
  * executed. This allows to use the fake timing by default and is a direct port from Atom's
  * `spec-helper.coffee`
  */
-beforeEach(() => {
+beforeEach(function () {
   resetTimeouts();
-  spyOn(Date, 'now').andCallFake(() => now);
+  spyOn(Date, 'now').andCallFake(function () {
+    return now;
+  });
   spyOn(global, 'setTimeout').andCallFake(fakeSetTimeout);
   spyOn(global, 'clearTimeout').andCallFake(fakeClearTimeout);
   spyOn(global, 'setInterval').andCallFake(fakeSetInterval);

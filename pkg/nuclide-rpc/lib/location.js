@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +10,21 @@
  * the root directory of this source tree.
  */
 
-import type {Location} from './types';
+exports.locationToString = locationToString;
+exports.locationsEqual = locationsEqual;
 
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export function locationToString(location: Location): string {
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+function locationToString(location) {
   switch (location.type) {
     case 'source':
-      return `${location.fileName}(${location.line})`;
+      return location.fileName + '(' + location.line + ')';
     case 'builtin':
       return '<builtin>';
     default:
@@ -24,13 +32,13 @@ export function locationToString(location: Location): string {
   }
 }
 
-export function locationsEqual(first: Location, second: Location): boolean {
+function locationsEqual(first, second) {
   if (first.type !== second.type) {
     return false;
   }
   switch (first.type) {
     case 'source':
-      invariant(second.type === 'source');
+      (0, (_assert2 || _assert()).default)(second.type === 'source');
       return first.fileName === second.fileName && first.line === second.line;
     case 'builtin':
       return true;

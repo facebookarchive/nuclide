@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -40,8 +41,5 @@
 // The export is typed with `typeof fetch` so flow treats the polyfill as the
 // real `fetch`.
 
-export default (
-  (typeof global.fetch === 'function'
-    ? global.fetch
-    : require('node-fetch')): typeof fetch
-  );
+exports.default = typeof global.fetch === 'function' ? global.fetch : require('node-fetch');
+module.exports = exports.default;

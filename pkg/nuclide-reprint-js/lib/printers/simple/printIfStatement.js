@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,37 +8,30 @@
  * the root directory of this source tree.
  */
 
-import type {IfStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import markers from '../../constants/markers';
-import wrapStatement from '../../wrappers/simple/wrapStatement';
+var _constantsMarkers2;
 
-function printIfStatement(print: Print, node: IfStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
 
-  let parts = [
-    markers.hardBreak,
-    'if (',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    print(node.test),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-    ') ',
-    print(node.consequent),
-  ];
+var _wrappersSimpleWrapStatement2;
+
+function _wrappersSimpleWrapStatement() {
+  return _wrappersSimpleWrapStatement2 = _interopRequireDefault(require('../../wrappers/simple/wrapStatement'));
+}
+
+function printIfStatement(print, node) {
+  var wrap = function wrap(x) {
+    return (0, (_wrappersSimpleWrapStatement2 || _wrappersSimpleWrapStatement()).default)(print, node, x);
+  };
+
+  var parts = [(_constantsMarkers2 || _constantsMarkers()).default.hardBreak, 'if (', (_constantsMarkers2 || _constantsMarkers()).default.openScope, (_constantsMarkers2 || _constantsMarkers()).default.scopeIndent, (_constantsMarkers2 || _constantsMarkers()).default.scopeBreak, print(node.test), (_constantsMarkers2 || _constantsMarkers()).default.scopeBreak, (_constantsMarkers2 || _constantsMarkers()).default.scopeDedent, (_constantsMarkers2 || _constantsMarkers()).default.closeScope, ') ', print(node.consequent)];
 
   if (node.alternate) {
 
-    parts = parts.concat([
-      markers.noBreak,
-      ' else ',
-      markers.noBreak,
-      print(node.alternate),
-    ]);
+    parts = parts.concat([(_constantsMarkers2 || _constantsMarkers()).default.noBreak, ' else ', (_constantsMarkers2 || _constantsMarkers()).default.noBreak, print(node.alternate)]);
   }
 
   return wrap(parts);

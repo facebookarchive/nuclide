@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +10,28 @@
  * the root directory of this source tree.
  */
 
-export type AtomCommands = {
-  [target: string]: {
-    [commandName: string]: (event: Event) => mixed;
-  };
-};
+var _bind = Function.prototype.bind;
+exports.default = syncAtomCommands;
 
-import {diffSets, reconcileSetDiffs} from '../commons-node/stream';
-import {CompositeDisposable} from 'atom';
-import {Observable} from 'rxjs';
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
-type Projector<T> = (set: Set<T>) => AtomCommands;
+var _commonsNodeStream2;
+
+function _commonsNodeStream() {
+  return _commonsNodeStream2 = require('../commons-node/stream');
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _rxjsBundlesRxUmdMinJs2;
+
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
 
 /**
  * A utility that adds and removes commands to the Atom command registry based on their presence in
@@ -27,24 +39,21 @@ type Projector<T> = (set: Set<T>) => AtomCommands;
  * result (commands), we diff the input (sets) since it's easier and less likely to contain
  * functions (which are unlikely to be able to be safely compared using `===`).
  */
-export default function syncAtomCommands<T>(
-  source: Observable<Set<T>>,
-  project: Projector<T>,
-): IDisposable {
+
+function syncAtomCommands(source, project) {
   // Add empty sets before completing and erroring to make sure that we remove remaining commands
   // in both cases.
-  const sets = source
-    .concat(Observable.of(new Set()))
-    .catch(err => Observable.of(new Set()).concat(Observable.throw(err)));
+  var sets = source.concat((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of(new Set())).catch(function (err) {
+    return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of(new Set()).concat((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.throw(err));
+  });
 
-  return reconcileSetDiffs(
-    diffSets(sets),
-    item => {
-      const commands = project(item);
-      const disposables = Object.keys(commands).map(target => (
-        atom.commands.add(target, commands[target])
-      ));
-      return new CompositeDisposable(...disposables);
-    },
-  );
+  return (0, (_commonsNodeStream2 || _commonsNodeStream()).reconcileSetDiffs)((0, (_commonsNodeStream2 || _commonsNodeStream()).diffSets)(sets), function (item) {
+    var commands = project(item);
+    var disposables = Object.keys(commands).map(function (target) {
+      return atom.commands.add(target, commands[target]);
+    });
+    return new (_bind.apply((_atom2 || _atom()).CompositeDisposable, [null].concat(_toConsumableArray(disposables))))();
+  });
 }
+
+module.exports = exports.default;

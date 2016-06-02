@@ -1,5 +1,15 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.decodeError = decodeError;
+exports.createCallFunctionMessage = createCallFunctionMessage;
+exports.createCallMethodMessage = createCallMethodMessage;
+exports.createNewObjectMessage = createNewObjectMessage;
+exports.createPromiseMessage = createPromiseMessage;
+exports.createNextMessage = createNextMessage;
+exports.createCompletedMessage = createCompletedMessage;
+exports.createDisposeMessage = createDisposeMessage;
+exports.createErrorMessage = createErrorMessage;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,85 +19,22 @@
  * the root directory of this source tree.
  */
 
-import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
+var _config2;
+
+function _config() {
+  return _config2 = require('./config');
+}
 
 // Encodes the structure of messages that can be sent from the client to the server.
-export type RequestMessage = CallRemoteFunctionMessage | CreateRemoteObjectMessage |
-  CallRemoteMethodMessage | DisposeRemoteObjectMessage;
-
-export type CallRemoteFunctionMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'FunctionCall';
-  function: string;
-  requestId: number;
-  args: Array<any>;
-};
-
-export type CreateRemoteObjectMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'NewObject';
-  interface: string;
-  requestId: number;
-  args: Array<any>;
-};
-
-export type CallRemoteMethodMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'MethodCall';
-  method: string;
-  requestId: number;
-  objectId: number;
-  args: Array<any>;
-};
-
-export type DisposeRemoteObjectMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'DisposeObject';
-  requestId: number;
-  objectId: number;
-};
-
-export type DisposeObservableMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'DisposeObservable';
-  requestId: number;
-};
 
 // Encodes the structure of messages that can be sent from the server to the client.
-export type ResponseMessage =
-  PromiseResponseMessage | ErrorResponseMessage | ObservableResponseMessage;
-
-export type ErrorResponseMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'ErrorMessage';
-  requestId: number;
-  error: any;
-};
-
-export type PromiseResponseMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'PromiseMessage';
-  requestId: number;
-  result: any;
-};
-
-export type ObservableResponseMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'ObservableMessage';
-  requestId: number;
-  result: ObservableResult;
-};
-
-export type ObservableResult = { type: 'completed'; } | { type: 'next'; data: any };
-
 
 // TODO: This should be a custom marshaller registered in the TypeRegistry
-export function decodeError(message: Object, encodedError: ?(Object | string)): ?(Error | string) {
+
+function decodeError(message, encodedError) {
   if (encodedError != null && typeof encodedError === 'object') {
-    const resultError = new Error();
-    resultError.message =
-      `Remote Error: ${encodedError.message} processing message ${JSON.stringify(message)}\n`
-      + JSON.stringify(encodedError.stack);
+    var resultError = new Error();
+    resultError.message = 'Remote Error: ' + encodedError.message + ' processing message ' + JSON.stringify(message) + '\n' + JSON.stringify(encodedError.stack);
     // $FlowIssue - some Errors (notably file operations) have a code.
     resultError.code = encodedError.code;
     resultError.stack = encodedError.stack;
@@ -97,94 +44,81 @@ export function decodeError(message: Object, encodedError: ?(Object | string)): 
   }
 }
 
-export function createCallFunctionMessage(
-  functionName: string,
-  requestId: number,
-  args: Array<any>
-): CallRemoteFunctionMessage {
+function createCallFunctionMessage(functionName, requestId, args) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'FunctionCall',
-    function: functionName,
-    requestId,
-    args,
+    'function': functionName,
+    requestId: requestId,
+    args: args
   };
 }
 
-export function createCallMethodMessage(
-  methodName: string,
-  objectId: number,
-  requestId: number,
-  args: Array<any>
-): CallRemoteMethodMessage {
+function createCallMethodMessage(methodName, objectId, requestId, args) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'MethodCall',
     method: methodName,
-    objectId,
-    requestId,
-    args,
+    objectId: objectId,
+    requestId: requestId,
+    args: args
   };
 }
 
-export function createNewObjectMessage(
-  interfaceName: string,
-  requestId: number,
-  args: Array<any>
-): CreateRemoteObjectMessage {
+function createNewObjectMessage(interfaceName, requestId, args) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'NewObject',
-    interface: interfaceName,
-    requestId,
-    args,
+    'interface': interfaceName,
+    requestId: requestId,
+    args: args
   };
 }
 
-export function createPromiseMessage(requestId: number, result: any): PromiseResponseMessage {
+function createPromiseMessage(requestId, result) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'PromiseMessage',
-    requestId,
-    result,
+    requestId: requestId,
+    result: result
   };
 }
 
-export function createNextMessage(requestId: number, data: any): ObservableResponseMessage {
+function createNextMessage(requestId, data) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'ObservableMessage',
-    requestId,
+    requestId: requestId,
     result: {
       type: 'next',
-      data,
-    },
+      data: data
+    }
   };
 }
 
-export function createCompletedMessage(requestId: number): ObservableResponseMessage {
+function createCompletedMessage(requestId) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'ObservableMessage',
-    requestId,
-    result: {type: 'completed'},
+    requestId: requestId,
+    result: { type: 'completed' }
   };
 }
 
-export function createDisposeMessage(requestId: number): DisposeObservableMessage {
+function createDisposeMessage(requestId) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'DisposeObservable',
-    requestId,
+    requestId: requestId
   };
 }
 
-export function createErrorMessage(requestId: number, error: any): ErrorResponseMessage {
+function createErrorMessage(requestId, error) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'ErrorMessage',
-    requestId,
-    error: formatError(error),
+    requestId: requestId,
+    error: formatError(error)
   };
 }
 
@@ -192,12 +126,12 @@ export function createErrorMessage(requestId: number, error: any): ErrorResponse
  * Format the error before sending over the web socket.
  * TODO: This should be a custom marshaller registered in the TypeRegistry
  */
-function formatError(error: any): ?(Object | string) {
+function formatError(error) {
   if (error instanceof Error) {
     return {
       message: error.message,
       code: error.code,
-      stack: error.stack,
+      stack: error.stack
     };
   } else if (typeof error === 'string') {
     return error.toString();
@@ -205,9 +139,9 @@ function formatError(error: any): ?(Object | string) {
     return undefined;
   } else {
     try {
-      return `Unknown Error: ${JSON.stringify(error, null, 2)}`;
+      return 'Unknown Error: ' + JSON.stringify(error, null, 2);
     } catch (jsonError) {
-      return `Unknown Error: ${error.toString()}`;
+      return 'Unknown Error: ' + error.toString();
     }
   }
 }

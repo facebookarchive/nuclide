@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +8,19 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  get repositoryContainsPath() {
-    return require('./repositoryContainsPath');
+module.exports = Object.defineProperties({}, {
+  repositoryContainsPath: {
+    get: function get() {
+      return require('./repositoryContainsPath');
+    },
+    configurable: true,
+    enumerable: true
   },
-
-  get repositoryForPath() {
-    return require('./repositoryForPath');
-  },
-};
+  repositoryForPath: {
+    get: function get() {
+      return require('./repositoryForPath');
+    },
+    configurable: true,
+    enumerable: true
+  }
+});

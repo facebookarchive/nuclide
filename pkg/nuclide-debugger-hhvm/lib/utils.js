@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,5 +10,6 @@
  * the root directory of this source tree.
  */
 
-const DEBUGGER_LOGGER_CATEGORY = 'nuclide-hhvm-debugger';
-export default require('../../nuclide-logging').getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
+var DEBUGGER_LOGGER_CATEGORY = 'nuclide-hhvm-debugger';
+exports.default = require('../../nuclide-logging').getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
+module.exports = exports.default;

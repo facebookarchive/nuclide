@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -17,22 +16,16 @@
  * occurs before the cursor, and source.slice(index) is the string that occurs
  * after the cursor.
  */
-function getRawPosition(
-  source: string,
-  position: {row: number; column: number},
-): number {
-  return source.split('\n').reduce(
-    (curr, line, i) => {
-      if (i < position.row) {
-        return curr + line.length + 1;
-      } else if (i === position.row) {
-        return curr + position.column;
-      } else {
-        return curr;
-      }
-    },
-    0,
-  );
+function getRawPosition(source, position) {
+  return source.split('\n').reduce(function (curr, line, i) {
+    if (i < position.row) {
+      return curr + line.length + 1;
+    } else if (i === position.row) {
+      return curr + position.column;
+    } else {
+      return curr;
+    }
+  }, 0);
 }
 
 module.exports = getRawPosition;

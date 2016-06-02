@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +16,21 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+var _path2;
 
-import {asyncExecute} from '../../commons-node/process';
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
 
-let fbFindClangServerArgs;
+var _commonsNodeProcess2;
 
-export default async function findClangServerArgs(): Promise<{
-  libClangLibraryFile: ?string;
-  pythonExecutable: string;
-  pythonPathEnv: ?string;
-}> {
+function _commonsNodeProcess() {
+  return _commonsNodeProcess2 = require('../../commons-node/process');
+}
+
+var fbFindClangServerArgs = undefined;
+
+exports.default = _asyncToGenerator(function* () {
   if (fbFindClangServerArgs === undefined) {
     fbFindClangServerArgs = null;
     try {
@@ -29,24 +40,24 @@ export default async function findClangServerArgs(): Promise<{
     }
   }
 
-  let libClangLibraryFile;
+  var libClangLibraryFile = undefined;
   if (process.platform === 'darwin') {
-    const result = await asyncExecute('xcode-select', ['--print-path']);
+    var result = yield (0, (_commonsNodeProcess2 || _commonsNodeProcess()).asyncExecute)('xcode-select', ['--print-path']);
     if (result.exitCode === 0) {
-      libClangLibraryFile = result.stdout.trim() +
-        '/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib';
+      libClangLibraryFile = result.stdout.trim() + '/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib';
     }
   }
 
-  const clangServerArgs = {
-    libClangLibraryFile,
+  var clangServerArgs = {
+    libClangLibraryFile: libClangLibraryFile,
     pythonExecutable: 'python',
-    pythonPathEnv: path.join(__dirname, '../VendorLib'),
+    pythonPathEnv: (_path2 || _path()).default.join(__dirname, '../VendorLib')
   };
   if (typeof fbFindClangServerArgs === 'function') {
-    const clangServerArgsOverrides = await fbFindClangServerArgs();
-    return {...clangServerArgs, ...clangServerArgsOverrides};
+    var clangServerArgsOverrides = yield fbFindClangServerArgs();
+    return _extends({}, clangServerArgs, clangServerArgsOverrides);
   } else {
     return clangServerArgs;
   }
-}
+});
+module.exports = exports.default;

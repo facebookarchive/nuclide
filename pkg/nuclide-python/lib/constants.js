@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +10,12 @@
  * the root directory of this source tree.
  */
 
-export const GRAMMAR_SET = new Set(['source.python']);
-export const PACKAGE_NAME = 'nuclide-python';
+var GRAMMAR_SET = new Set(['source.python']);
+exports.GRAMMAR_SET = GRAMMAR_SET;
+var PACKAGE_NAME = 'nuclide-python';
+exports.PACKAGE_NAME = PACKAGE_NAME;
 // Type mappings between Jedi types and autocomplete-plus types used for styling.
-export const TYPES = {
+var TYPES = {
   'module': 'import',
   'class': 'class',
   'instance': 'variable',
@@ -20,5 +23,6 @@ export const TYPES = {
   'generator': 'generator',
   'statement': 'variable',
   'import': 'import',
-  'param': 'variable',
+  'param': 'variable'
 };
+exports.TYPES = TYPES;

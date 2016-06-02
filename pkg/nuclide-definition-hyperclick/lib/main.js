@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -12,81 +13,100 @@
 // This package provides Hyperclick results for any language which provides a
 // DefinitionProvider.
 
-import type {HyperclickProvider, HyperclickSuggestion} from '../../hyperclick/lib/types';
-import type {DefinitionService} from '../../nuclide-definition-service';
-
-import {goToLocation} from '../../commons-atom/go-to-location';
-import {Disposable} from 'atom';
-import {relative} from '../../nuclide-remote-uri';
-import invariant from 'assert';
-
-let currentService: ?DefinitionService = null;
-
-async function getSuggestion(
-  editor: atom$TextEditor,
-  position: atom$Point,
-): Promise<?HyperclickSuggestion> {
+var getSuggestion = _asyncToGenerator(function* (editor, position) {
   if (currentService == null) {
     return null;
   }
-  const result = await currentService.getDefinition(editor, position);
+  var result = yield currentService.getDefinition(editor, position);
   if (result == null) {
     return null;
   }
-  const {definitions} = result;
-  invariant(definitions.length > 0);
+  var definitions = result.definitions;
+
+  (0, (_assert2 || _assert()).default)(definitions.length > 0);
 
   function createCallback(definition) {
-    return () => {
-      goToLocation(definition.path, definition.position.row, definition.position.column);
+    return function () {
+      (0, (_commonsAtomGoToLocation2 || _commonsAtomGoToLocation()).goToLocation)(definition.path, definition.position.row, definition.position.column);
     };
   }
 
   function createTitle(definition) {
-    invariant(definition.name != null, 'must include name when returning multiple definitions');
-    const filePath = definition.projectRoot == null
-      ? definition.path
-      : relative(definition.projectRoot, definition.path);
-    return `${definition.name} (${filePath})`;
+    (0, (_assert2 || _assert()).default)(definition.name != null, 'must include name when returning multiple definitions');
+    var filePath = definition.projectRoot == null ? definition.path : (0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).relative)(definition.projectRoot, definition.path);
+    return definition.name + ' (' + filePath + ')';
   }
 
   if (definitions.length === 1) {
     return {
       range: result.queryRange,
-      callback: createCallback(definitions[0]),
+      callback: createCallback(definitions[0])
     };
   } else {
     return {
       range: result.queryRange,
-      callback: definitions.map(definition => {
+      callback: definitions.map(function (definition) {
         return {
           title: createTitle(definition),
-          callback: createCallback(definition),
+          callback: createCallback(definition)
         };
-      }),
+      })
     };
   }
+});
+
+exports.consumeDefinitionService = consumeDefinitionService;
+exports.getHyperclickProvider = getHyperclickProvider;
+exports.activate = activate;
+exports.deactivate = deactivate;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _commonsAtomGoToLocation2;
+
+function _commonsAtomGoToLocation() {
+  return _commonsAtomGoToLocation2 = require('../../commons-atom/go-to-location');
 }
 
-export function consumeDefinitionService(service: DefinitionService): IDisposable {
-  invariant(currentService == null);
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _nuclideRemoteUri2;
+
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = require('../../nuclide-remote-uri');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var currentService = null;
+
+function consumeDefinitionService(service) {
+  (0, (_assert2 || _assert()).default)(currentService == null);
   currentService = service;
-  return new Disposable(() => {
-    invariant(currentService === service);
+  return new (_atom2 || _atom()).Disposable(function () {
+    (0, (_assert2 || _assert()).default)(currentService === service);
     currentService = null;
   });
 }
 
-export function getHyperclickProvider(): HyperclickProvider {
+function getHyperclickProvider() {
   return {
     priority: 20,
     providerName: 'nuclide-definition-hyperclick',
-    getSuggestion,
+    getSuggestion: getSuggestion
   };
 }
 
-export function activate(state: Object | void) {
-}
+function activate(state) {}
 
-export function deactivate() {
-}
+function deactivate() {}

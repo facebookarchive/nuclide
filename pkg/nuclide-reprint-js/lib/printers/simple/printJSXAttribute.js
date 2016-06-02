@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +8,22 @@
  * the root directory of this source tree.
  */
 
-import type {JSXAttribute} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2;
 
-function printJSXAttribute(print: Print, node: JSXAttribute): Lines {
-  return flatten([
-    print(node.name),
-    node.value
-      ? [markers.noBreak, '=', markers.noBreak, print(node.value)]
-      : markers.empty,
-  ]);
+function _utilsFlatten() {
+  return _utilsFlatten2 = _interopRequireDefault(require('../../utils/flatten'));
+}
+
+var _constantsMarkers2;
+
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+function printJSXAttribute(print, node) {
+  return (0, (_utilsFlatten2 || _utilsFlatten()).default)([print(node.name), node.value ? [(_constantsMarkers2 || _constantsMarkers()).default.noBreak, '=', (_constantsMarkers2 || _constantsMarkers()).default.noBreak, print(node.value)] : (_constantsMarkers2 || _constantsMarkers()).default.empty]);
 }
 
 module.exports = printJSXAttribute;

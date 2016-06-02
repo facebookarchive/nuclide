@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +10,46 @@
  * the root directory of this source tree.
  */
 
-import type {CodePreviewContent} from './CodePreviewContent';
-import type {DefinitionService} from '../../nuclide-definition-service';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import invariant from 'assert';
-import {CodePreviewPanel} from './CodePreviewPanel';
-import {Observable} from 'rxjs';
-import {track} from '../../nuclide-analytics';
-import {getContent} from './CodePreviewContent';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export class CodePreviewState {
-  _panel: ?CodePreviewPanel;
-  _width: number;
-  _data: Observable<?CodePreviewContent>;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  constructor(width: number, visible: boolean) {
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _CodePreviewPanel2;
+
+function _CodePreviewPanel() {
+  return _CodePreviewPanel2 = require('./CodePreviewPanel');
+}
+
+var _rxjsBundlesRxUmdMinJs2;
+
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
+
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+var _CodePreviewContent2;
+
+function _CodePreviewContent() {
+  return _CodePreviewContent2 = require('./CodePreviewContent');
+}
+
+var CodePreviewState = (function () {
+  function CodePreviewState(width, visible) {
+    _classCallCheck(this, CodePreviewState);
+
     this._width = width;
 
     this.setDefinitionService(null);
@@ -32,71 +58,87 @@ export class CodePreviewState {
     }
   }
 
-  setDefinitionService(service: ?DefinitionService) {
-    if (service == null) {
-      this._data = Observable.of(null);
-    } else {
-      this._data = getContent(service);
-    }
+  _createClass(CodePreviewState, [{
+    key: 'setDefinitionService',
+    value: function setDefinitionService(service) {
+      if (service == null) {
+        this._data = (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of(null);
+      } else {
+        this._data = (0, (_CodePreviewContent2 || _CodePreviewContent()).getContent)(service);
+      }
 
-    if (this.isVisible()) {
-      this._hide();
-      this._show();
+      if (this.isVisible()) {
+        this._hide();
+        this._show();
+      }
     }
-  }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      if (this.isVisible()) {
+        this._destroyPanel();
+      }
+    }
+  }, {
+    key: 'toggle',
+    value: function toggle() {
+      if (this.isVisible()) {
+        this._hide();
+      } else {
+        this._show();
+      }
+    }
+  }, {
+    key: 'show',
+    value: function show() {
+      if (!this.isVisible()) {
+        this._show();
+      }
+    }
+  }, {
+    key: 'hide',
+    value: function hide() {
+      if (this.isVisible()) {
+        this._hide();
+      }
+    }
+  }, {
+    key: 'getWidth',
+    value: function getWidth() {
+      return this._panel == null ? this._width : this._panel.getWidth();
+    }
+  }, {
+    key: 'isVisible',
+    value: function isVisible() {
+      return this._panel != null;
+    }
+  }, {
+    key: '_show',
+    value: function _show() {
+      (0, (_assert2 || _assert()).default)(this._panel == null);
 
-  dispose(): void {
-    if (this.isVisible()) {
+      (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)('nuclide-definition-preview-show');
+
+      this._panel = new (_CodePreviewPanel2 || _CodePreviewPanel()).CodePreviewPanel(this._width, this._data);
+    }
+  }, {
+    key: '_hide',
+    value: function _hide() {
       this._destroyPanel();
     }
-  }
+  }, {
+    key: '_destroyPanel',
+    value: function _destroyPanel() {
+      var outlineViewPanel = this._panel;
+      (0, (_assert2 || _assert()).default)(outlineViewPanel != null);
 
-  toggle(): void {
-    if (this.isVisible()) {
-      this._hide();
-    } else {
-      this._show();
+      this._width = outlineViewPanel.getWidth();
+      outlineViewPanel.dispose();
+      this._panel = null;
     }
-  }
+  }]);
 
-  show(): void {
-    if (!this.isVisible()) {
-      this._show();
-    }
-  }
+  return CodePreviewState;
+})();
 
-  hide(): void {
-    if (this.isVisible()) {
-      this._hide();
-    }
-  }
-
-  getWidth(): number {
-    return this._panel == null ? this._width : this._panel.getWidth();
-  }
-
-  isVisible(): boolean {
-    return this._panel != null;
-  }
-
-  _show(): void {
-    invariant(this._panel == null);
-
-    track('nuclide-definition-preview-show');
-
-    this._panel = new CodePreviewPanel(this._width, this._data);
-  }
-
-  _hide(): void {
-    this._destroyPanel();
-  }
-
-  _destroyPanel(): void {
-    const outlineViewPanel = this._panel;
-    invariant(outlineViewPanel != null);
-
-    this._width = outlineViewPanel.getWidth();
-    outlineViewPanel.dispose();
-    this._panel = null;
-  }
-}
+exports.CodePreviewState = CodePreviewState;
