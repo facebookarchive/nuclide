@@ -11,6 +11,7 @@
 
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
+import type {BuildSystem, BuildSystemRegistry} from '../../nuclide-build/lib/types';
 
 import type NuclideToolbarType from './NuclideToolbar';
 import type ProjectStoreType from './ProjectStore';
@@ -19,6 +20,7 @@ import {CompositeDisposable, Disposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 import invariant from 'assert';
 import HhvmIcon from './ui/HhvmIcon';
+import HhvmBuildSystem from './HhvmBuildSystem';
 
 class Activation {
 
@@ -28,6 +30,7 @@ class Activation {
   _projectStore: ProjectStoreType;
   _nuclideToolbar: ?NuclideToolbarType;
   _state: Object;
+  _buildSystem: ?HhvmBuildSystem;
 
   constructor(state: ?Object) {
     const ProjectStore = require('./ProjectStore');
@@ -75,6 +78,18 @@ class Activation {
       }),
     );
   }
+
+  consumeBuildSystemRegistry(registry: BuildSystemRegistry): void {
+    this._disposables.add(registry.register(this._getBuildSystem()));
+  }
+
+  _getBuildSystem(): BuildSystem {
+    if (this._buildSystem == null) {
+      this._buildSystem = new HhvmBuildSystem();
+    }
+    return this._buildSystem;
+  }
+
 
   getDistractionFreeModeProvider(): DistractionFreeModeProvider {
     return {
@@ -155,6 +170,11 @@ export function activate(state: ?Object) {
   if (!activation) {
     activation = new Activation(state);
   }
+}
+
+export function consumeBuildSystemRegistry(registry: BuildSystemRegistry): void {
+  invariant(activation);
+  activation.consumeBuildSystemRegistry(registry);
 }
 
 export function consumeToolBar(getToolBar: (group: string) => Object): void {
