@@ -248,9 +248,9 @@ export function compile(
   clean: boolean,
   defaultFlags?: Array<string>,
 ): Observable<?ClangCompileResult> {
-  const server = clangServers.get(src);
+  const server: ClangServer = clangServers.get(src);
   // A restart is also required when compilation flags have changed.
-  if (server != null && (clean || server.getFlagsChanged())) {
+  if (server != null && (clean || clangFlagsManager.getFlagsChanged(src))) {
     reset(src);
   }
 

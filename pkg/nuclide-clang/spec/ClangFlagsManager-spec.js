@@ -246,7 +246,7 @@ describe('ClangFlagsManager', () => {
       .toEqual(['test', 'a" b c', 'a b']);
   });
 
-  it('allows observation of flag changes', () => {
+  it('tracks flag changes', () => {
     waitsForPromise(async () => {
       // Create a mock file watcher.
       const watcher: any = new EventEmitter();
@@ -262,28 +262,23 @@ describe('ClangFlagsManager', () => {
       const result = await flagsManager.getFlagsForSrc(testFile);
       invariant(result != null);
 
-      const changedSpy = jasmine.createSpy('changed');
-      const obs = result.changes.subscribe(changedSpy);
-
-      expect(changedSpy).not.toHaveBeenCalled();
+      expect(flagsManager.getFlagsChanged(testFile)).toBe(false);
       invariant(changedCallback != null);
 
       // Ignore changes to other files.
       changedCallback('change', 'otherfile');
-      expect(changedSpy).not.toHaveBeenCalled();
+      expect(flagsManager.getFlagsChanged(testFile)).toBe(false);
 
       changedCallback('change', 'compile_commands.json');
-      expect(changedSpy).toHaveBeenCalled();
+      expect(flagsManager.getFlagsChanged(testFile)).toBe(true);
 
       // Make sure only one file watcher is created.
       const result2 = await flagsManager.getFlagsForSrc(testFile);
       invariant(result2 != null);
-      const obs2 = result2.changes.subscribe(() => {});
       expect(watchSpy.calls.length).toBe(1);
 
       // File watcher should be destroyed on dispose.
-      obs.unsubscribe();
-      obs2.unsubscribe();
+      flagsManager.reset();
       expect(watcher.close).toHaveBeenCalled();
     });
   });

@@ -270,17 +270,4 @@ describe('ClangServer', () => {
     });
   });
 
-  it('detects changes in the flags file', () => {
-    waitsForPromise(async () => {
-      const server = new ClangServer(mockFlagsManager, TEST_FILE);
-      await server.makeRequest('compile', null, {
-        contents: FILE_CONTENTS,
-      });
-      expect(server.getFlagsChanged()).toBe(false);
-
-      mockFlagsManager.subject.next('change');
-      expect(server.getFlagsChanged()).toBe(true);
-    });
-  });
-
 });

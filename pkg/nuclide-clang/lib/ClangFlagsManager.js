@@ -13,7 +13,7 @@ import invariant from 'assert';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {Observable} from 'rxjs';
+import {Observable, Subscription} from 'rxjs';
 import {parse} from 'shell-quote';
 import {trackTiming} from '../../nuclide-analytics';
 import fsPromise from '../../commons-node/fsPromise';
@@ -77,6 +77,8 @@ class ClangFlagsManager {
   _compilationDatabases: Set<string>;
   _realpathCache: Object;
   pathToFlags: Map<string, ?ClangFlags>;
+  _flagsChanged: Set<string>;
+  _subscriptions: Array<Subscription>;
 
   // Watch config files (TARGETS/BUCK/compile_commands.json) for changes.
   _flagFileObservables: Map<string, Observable<string>>;
@@ -87,6 +89,8 @@ class ClangFlagsManager {
     this._compilationDatabases = new Set();
     this._realpathCache = {};
     this._flagFileObservables = new Map();
+    this._flagsChanged = new Set();
+    this._subscriptions = [];
   }
 
   reset() {
@@ -95,6 +99,9 @@ class ClangFlagsManager {
     this._compilationDatabases.clear();
     this._realpathCache = {};
     this._flagFileObservables.clear();
+    this._flagsChanged.clear();
+    this._subscriptions.forEach(s => s.unsubscribe());
+    this._subscriptions = [];
   }
 
   async _getBuckProject(src: string): Promise<?BuckProject> {
@@ -121,6 +128,10 @@ class ClangFlagsManager {
     return buckProject;
   }
 
+  getFlagsChanged(src: string): boolean {
+    return this._flagsChanged.has(src);
+  }
+
   /**
    * @return a space-delimited string of flags or null if nothing is known
    *     about the src file. For example, null will be returned if src is not
@@ -133,6 +144,14 @@ class ClangFlagsManager {
     }
     flags = await this._getFlagsForSrcImpl(src);
     this.pathToFlags.set(src, flags);
+    if (flags != null) {
+      this._subscriptions.push(flags.changes.subscribe({
+        next: change => {
+          this._flagsChanged.add(src);
+        },
+        error: () => {},
+      }));
+    }
     return flags;
   }
 
