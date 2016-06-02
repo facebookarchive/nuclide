@@ -11,6 +11,7 @@
 
 import {
   activateAllPackages,
+  busySignal,
   copyFixture,
   deactivateAllPackages,
   dispatchKeyboardEvent,
@@ -24,7 +25,6 @@ describe('Flow Hyperclick', () => {
   it('tests flow hyperclick example', () => {
     let textEditor: atom$TextEditor = (null : any);
     let flowProjectPath: string = (null : any);
-    let busySignal: HTMLElement = (null : any);
 
     waitsForPromise({timeout: 240000}, async () => {
       jasmineIntegrationTestSetup();
@@ -33,9 +33,6 @@ describe('Flow Hyperclick', () => {
       // Copy flow project to a temporary location.
       flowProjectPath = await copyFixture('flow_project_1');
 
-      busySignal = atom.views.getView(atom.workspace)
-        .querySelector('.nuclide-busy-signal-status-bar');
-
       // Add this directory as an atom project.
       setLocalProject(flowProjectPath);
       // Open a file in the flow project we copied, and get reference to the editor's HTML.
@@ -43,11 +40,11 @@ describe('Flow Hyperclick', () => {
     });
 
     waitsFor('spinner to start', 10000, () => {
-      return busySignal.classList.contains('loading-spinner-tiny');
+      return busySignal.isBusy();
     });
 
     waitsFor('spinner to stop', 30000, () => {
-      return !busySignal.classList.contains('loading-spinner-tiny');
+      return !busySignal.isBusy();
     });
 
     runs(() => {

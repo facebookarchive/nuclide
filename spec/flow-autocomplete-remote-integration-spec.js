@@ -12,6 +12,7 @@
 import {
   addRemoteProject,
   activateAllPackages,
+  busySignal,
   copyFixture,
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
@@ -29,7 +30,6 @@ describe('Remote Flow Autocomplete', () => {
     let textEditorView: HTMLElement = (null : any);
     let flowProjectPath: string = (null : any);
     let connection: ?RemoteConnection = (null : any);
-    let busySignal: HTMLElement = (null : any);
 
     waitsForPromise({timeout: 240000}, async () => {
       jasmineIntegrationTestSetup();
@@ -37,9 +37,6 @@ describe('Remote Flow Autocomplete', () => {
       await activateAllPackages();
       // Copy flow project to a temporary location.
       flowProjectPath = await copyFixture('flow_project_1');
-
-      busySignal = atom.views.getView(atom.workspace)
-        .querySelector('.nuclide-busy-signal-status-bar');
 
       // Start the Nuclide server and add a remote project.
       await startNuclideServer();
@@ -51,11 +48,11 @@ describe('Remote Flow Autocomplete', () => {
     });
 
     waitsFor('spinner to start', 10000, () => {
-      return busySignal.classList.contains('loading-spinner-tiny');
+      return busySignal.isBusy();
     });
 
     waitsFor('spinner to stop', 30000, () => {
-      return !busySignal.classList.contains('loading-spinner-tiny');
+      return !busySignal.isBusy();
     });
 
     runs(() => {

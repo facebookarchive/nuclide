@@ -11,6 +11,7 @@
 
 import {
   activateAllPackages,
+  busySignal,
   copyFixture,
   deactivateAllPackages,
   dispatchKeyboardEvent,
@@ -33,7 +34,6 @@ describe('Clang Integration Test (objc)', () => {
     let objcPath;
     let textEditor: atom$TextEditor;
     let textEditorView: HTMLElement;
-    let busySignal: HTMLElement;
     waitsForPromise({timeout: 60000}, async () => {
       jasmineIntegrationTestSetup();
       // Activate atom packages.
@@ -42,19 +42,16 @@ describe('Clang Integration Test (objc)', () => {
       objcPath = await copyFixture('objc_project_1');
       textEditor = await atom.workspace.open(path.join(objcPath, 'Hello.m'));
       textEditorView = atom.views.getView(textEditor);
-
-      busySignal = atom.views.getView(atom.workspace)
-        .querySelector('.nuclide-busy-signal-status-bar');
     });
 
     waitsForFile('Hello.m');
 
     waitsFor('compilation to begin', 10000, () => {
-      return busySignal.classList.contains('loading-spinner-tiny');
+      return busySignal.isBusy();
     });
 
     waitsFor('compilation to finish', 30000, () => {
-      return !busySignal.classList.contains('loading-spinner-tiny');
+      return !busySignal.isBusy();
     });
 
     runs(() => {
