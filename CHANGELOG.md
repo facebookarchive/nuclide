@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.141.0
+
+* Hotfix for Python httplib server compatibility issues.
+
 ## v0.140.0
 
 **General**
