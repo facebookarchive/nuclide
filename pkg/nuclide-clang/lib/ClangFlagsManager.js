@@ -76,7 +76,7 @@ class ClangFlagsManager {
   _cachedBuckProjects: Map<string, BuckProject>;
   _compilationDatabases: Set<string>;
   _realpathCache: Object;
-  pathToFlags: Map<string, ?ClangFlags>;
+  _pathToFlags: Map<string, Promise<?ClangFlags>>;
   _flagsChanged: Set<string>;
   _subscriptions: Array<Subscription>;
 
@@ -84,7 +84,7 @@ class ClangFlagsManager {
   _flagFileObservables: Map<string, Observable<string>>;
 
   constructor() {
-    this.pathToFlags = new Map();
+    this._pathToFlags = new Map();
     this._cachedBuckProjects = new Map();
     this._compilationDatabases = new Set();
     this._realpathCache = {};
@@ -94,7 +94,7 @@ class ClangFlagsManager {
   }
 
   reset() {
-    this.pathToFlags.clear();
+    this._pathToFlags.clear();
     this._cachedBuckProjects.clear();
     this._compilationDatabases.clear();
     this._realpathCache = {};
@@ -138,12 +138,13 @@ class ClangFlagsManager {
    *     under the project root.
    */
   async getFlagsForSrc(src: string): Promise<?ClangFlags> {
-    let flags = this.pathToFlags.get(src);
-    if (flags !== undefined) {
-      return flags;
+    let cached = this._pathToFlags.get(src);
+    if (cached != null) {
+      return cached;
     }
-    flags = await this._getFlagsForSrcImpl(src);
-    this.pathToFlags.set(src, flags);
+    cached = this._getFlagsForSrcImpl(src);
+    this._pathToFlags.set(src, cached);
+    const flags = await cached;
     if (flags != null) {
       this._subscriptions.push(flags.changes.subscribe({
         next: change => {
@@ -164,8 +165,8 @@ class ClangFlagsManager {
     );
     if (dbDir != null) {
       const dbFile = path.join(dbDir, COMPILATION_DATABASE_FILE);
-      await this._loadFlagsFromCompilationDatabase(dbFile);
-      const flags = this.pathToFlags.get(src);
+      const dbFlags = await this._loadFlagsFromCompilationDatabase(dbFile);
+      const flags = dbFlags.get(src);
       if (flags != null) {
         return flags;
       }
@@ -189,7 +190,7 @@ class ClangFlagsManager {
       }
     }
 
-    const flags = this.pathToFlags.get(src);
+    const flags = buckFlags.get(src);
     if (flags != null) {
       return flags;
     }
@@ -206,9 +207,10 @@ class ClangFlagsManager {
     return null;
   }
 
-  async _loadFlagsFromCompilationDatabase(dbFile: string): Promise<void> {
+  async _loadFlagsFromCompilationDatabase(dbFile: string): Promise<Map<string, ClangFlags>> {
+    const flags = new Map();
     if (this._compilationDatabases.has(dbFile)) {
-      return;
+      return flags;
     }
 
     try {
@@ -223,16 +225,19 @@ class ClangFlagsManager {
         const filename = path.resolve(directory, file);
         if (await fsPromise.exists(filename)) {
           const realpath = await fsPromise.realpath(filename, this._realpathCache);
-          this.pathToFlags.set(realpath, {
+          const result = {
             flags: ClangFlagsManager.sanitizeCommand(file, args, directory),
             changes,
-          });
+          };
+          flags.set(realpath, result);
+          this._pathToFlags.set(realpath, Promise.resolve(result));
         }
       }));
       this._compilationDatabases.add(dbFile);
     } catch (e) {
       logger.error(`Error reading compilation flags from ${dbFile}`, e);
     }
+    return flags;
   }
 
   async _loadFlagsFromBuck(src: string): Promise<Map<string, ClangFlags>> {
@@ -293,7 +298,7 @@ class ClangFlagsManager {
         changes,
       };
       flags.set(file, result);
-      this.pathToFlags.set(file, result);
+      this._pathToFlags.set(file, Promise.resolve(result));
     });
     return flags;
   }
