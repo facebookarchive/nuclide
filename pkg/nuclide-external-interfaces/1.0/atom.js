@@ -1517,5 +1517,7 @@ declare class atom$Selection {
 
 // Electron
 declare module 'electron' {
+  declare var app: any;
+  declare var BrowserWindow: any;
   declare function ipcRenderer(channel: string, ...args: any[]): void;
 }
