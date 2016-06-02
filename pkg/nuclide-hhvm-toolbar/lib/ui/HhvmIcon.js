@@ -9,16 +9,28 @@
  * the root directory of this source tree.
  */
 
-function hhvmIcon(): string {
-  return (
-    `<div class="hhvm-toolbar-icon-container">
-      <svg
+import {React} from 'react-for-atom';
+
+type Props = {
+  width?: string;
+};
+
+export default class HhvmIcon extends React.Component {
+
+  props: Props;
+
+  static defaultProps = {
+    width: '16px',
+  };
+
+  render(): React.Element {
+    return (
+      <svg className="hhvm-icon"
         version="1.1"
         x="0px"
         y="0px"
-        width="37%"
-        viewBox="0 0 13.4 19.6"
-      >
+        width={this.props.width}
+        viewBox="0 0 13.4 19.6">
         <polygon points="7,6.6 7,12.6 13,6.6"></polygon>
         <polygon points="13.4,6 13.4,0 7.4,6"></polygon>
         <polygon points="7,13.4 7,19.6 13.4,13.2 13.4,7"></polygon>
@@ -26,8 +38,7 @@ function hhvmIcon(): string {
         <polygon points="6.4,13 6.4,7 0.4,13"></polygon>
         <polygon points="0,13.6 0,19.6 6,13.6"></polygon>
       </svg>
-    </div>`
-  );
-}
+    );
+  }
 
-module.exports = hhvmIcon;
+ }

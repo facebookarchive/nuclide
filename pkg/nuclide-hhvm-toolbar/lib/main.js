@@ -18,6 +18,7 @@ import type ProjectStoreType from './ProjectStore';
 import {CompositeDisposable, Disposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 import invariant from 'assert';
+import HhvmIcon from './ui/HhvmIcon';
 
 class Activation {
 
@@ -52,7 +53,6 @@ class Activation {
   }
 
   consumeToolBar(getToolBar: GetToolBar): void {
-    const hhvmIcon = require('./hhvmIcon');
     const toolBar = getToolBar('nuclide-buck-toolbar');
     const toolBarButton = toolBar.addButton({
       callback: 'nuclide-hhvm-toolbar:toggle',
@@ -62,9 +62,17 @@ class Activation {
     toolBar.addSpacer({
       priority: 501,
     });
-    toolBarButton.innerHTML = hhvmIcon();
+    ReactDOM.render(
+      <div className="hhvm-toolbar-icon-container">
+        <HhvmIcon width="37%" />
+      </div>,
+      toolBarButton,
+    );
     this._disposables.add(
-      new Disposable(() => { toolBar.removeItems(); }),
+      new Disposable(() => {
+        ReactDOM.unmountComponentAtNode(toolBarButton);
+        toolBar.removeItems();
+      }),
     );
   }
 
