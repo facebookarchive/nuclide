@@ -26,7 +26,7 @@ export type CodeFormatProvider = {
    * Useful for less-flexible providers like clang-format.
    */
   formatEntireFile?: (editor: atom$TextEditor, range: atom$Range) => Promise<{
-    newCursor: number;
+    newCursor?: number;
     formatted: string;
   }>;
 

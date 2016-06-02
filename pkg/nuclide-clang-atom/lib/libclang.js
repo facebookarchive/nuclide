@@ -106,7 +106,7 @@ module.exports = {
   },
 
   formatCode(editor: atom$TextEditor, range: atom$Range): Promise<{
-    newCursor: number;
+    newCursor?: number;
     formatted: string;
   }> {
     const fileUri = editor.getPath();

@@ -17,7 +17,7 @@ import libclang from './libclang';
 export default class CodeFormatHelpers {
   @trackTiming('nuclide-clang-format.formatCode')
   static async formatEntireFile(editor: atom$TextEditor, range: atom$Range): Promise<{
-    newCursor: number;
+    newCursor?: number;
     formatted: string;
   }> {
     try {

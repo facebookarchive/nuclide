@@ -70,7 +70,14 @@ class CodeFormatManager {
     } else if (provider.formatEntireFile != null) {
       const {newCursor, formatted} = await provider.formatEntireFile(editor, formatRange);
       buffer.setTextViaDiff(formatted);
-      editor.setCursorBufferPosition(buffer.positionForCharacterIndex(newCursor));
+
+      const newPosition = (newCursor != null)
+        ? buffer.positionForCharacterIndex(newCursor)
+        : editor.getCursorBufferPosition();
+
+      // We call setCursorBufferPosition even when there is no newCursor,
+      // because it unselects the text selection.
+      editor.setCursorBufferPosition(newPosition);
     } else {
       throw new Error('code-format providers must implement formatCode or formatEntireFile');
     }
