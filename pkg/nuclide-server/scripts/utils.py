@@ -53,30 +53,30 @@ def darwin_path_helper():
 
 # It supports https if key_file and cert_file are given.
 def http_get(host, port, method, url, key_file=None, cert_file=None, ca_cert=None, timeout=1):
-    conn = None
-    if key_file is not None and cert_file is not None and ca_cert is not None:
-        if sys.version_info < (2, 7, 9):
-            conn = httplib.HTTPSConnection(
-                host,
-                port,
-                key_file=key_file,
-                cert_file=cert_file,
-                timeout=timeout)
-        else:
-            ctx = ssl.create_default_context(cafile=ca_cert)
-            # We disable host name validation here so we can ping the server endpoint
-            # using localhost.
-            ctx.check_hostname = False
-            conn = httplib.HTTPSConnection(
-                host,
-                port,
-                key_file=key_file,
-                cert_file=cert_file,
-                timeout=timeout,
-                context=ctx)
-    else:
-        conn = httplib.HTTPConnection(host, port, timeout=timeout)
     try:
+        conn = None
+        if key_file is not None and cert_file is not None and ca_cert is not None:
+            if sys.version_info < (2, 7, 9):
+                conn = httplib.HTTPSConnection(
+                    host,
+                    port,
+                    key_file=key_file,
+                    cert_file=cert_file,
+                    timeout=timeout)
+            else:
+                ctx = ssl.create_default_context(cafile=ca_cert)
+                # We disable host name validation here so we can ping the server endpoint
+                # using localhost.
+                ctx.check_hostname = False
+                conn = httplib.HTTPSConnection(
+                    host,
+                    port,
+                    key_file=key_file,
+                    cert_file=cert_file,
+                    timeout=timeout,
+                    context=ctx)
+        else:
+            conn = httplib.HTTPConnection(host, port, timeout=timeout)
         conn.request(method, url)
         response = conn.getresponse()
         if response.status == 200:
