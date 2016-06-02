@@ -17,6 +17,7 @@ from logging import FileHandler
 from optparse import OptionParser
 import jedi
 from jedi.evaluate.representation import InstanceElement
+import outline
 
 LOGGING_DIR = 'nuclide-%s-logs/python' % getpass.getuser()
 
@@ -65,16 +66,14 @@ class JediServer:
         res = {'type': 'response', 'id': id, 'result': {}}
 
         try:
-            script = jedi.api.Script(
-                source=data['contents'], line=data['line'] + 1,
-                column=data['column'], path=self.src)
-
             if method == 'get_completions':
-                res['result']['completions'] = self.get_completions(script)
+                res['result']['completions'] = self.get_completions(self.make_script(data))
             elif method == 'get_definitions':
-                res['result']['definitions'] = self.get_definitions(script)
+                res['result']['definitions'] = self.get_definitions(self.make_script(data))
             elif method == 'get_references':
-                res['result']['references'] = self.get_references(script)
+                res['result']['references'] = self.get_references(self.make_script(data))
+            elif method == 'get_outline':
+                res['result']['items'] = outline.get_outline(self.src, data['contents'])
             else:
                 del res['result']
                 res['error'] = 'Unknown method to jediserver.py: %s.' % method
@@ -85,6 +84,11 @@ class JediServer:
         self.logger.info('Finished %s request in %.2lf seconds.',
                          method, time.time() - start_time)
         return res
+
+    def make_script(self, req_data):
+        return jedi.api.Script(
+            source=req_data['contents'], line=req_data['line'] + 1,
+            column=req_data['column'], path=self.src)
 
     def get_description(self, completion):
         description = completion.docstring()

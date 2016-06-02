@@ -41,6 +41,46 @@ export type JediReferencesResult = {
   references: Array<JediDefinition>;
 };
 
+export type Position = {
+  line: number;
+  column: number;
+};
+
+export type JediFunctionItem = {
+  kind: 'function';
+  name: string;
+  start: Position;
+  end: Position;
+  children?: Array<JediOutlineItem>;
+  docblock?: string;
+  params?: Array<string>;
+};
+
+export type JediClassItem = {
+  kind: 'class';
+  name: string;
+  start: Position;
+  end: Position;
+  children?: Array<JediOutlineItem>;
+  docblock?: string;
+  // Class params, i.e. superclasses.
+  params?: Array<string>;
+};
+
+export type JediStatementItem = {
+  kind: 'statement';
+  name: string;
+  start: Position;
+  end: Position;
+  docblock?: string;
+};
+
+export type JediOutlineItem = JediFunctionItem | JediClassItem | JediStatementItem;
+
+export type JediOutlineResult = {
+  items: Array<JediOutlineItem>
+};
+
 // Limit the number of active Jedi processes.
 const jediServers = new LRUCache({
   max: 10,
@@ -48,7 +88,6 @@ const jediServers = new LRUCache({
     val.dispose();
   },
 });
-
 
 // Cache the pythonPath on first execution so we don't rerun overrides script
 // everytime.
@@ -71,7 +110,6 @@ async function getPythonPath() {
   }
   return pythonPath;
 }
-
 
 async function getJediServer(src: NuclideUri): Promise<JediServer> {
   let server = jediServers.get(src);
@@ -133,4 +171,12 @@ export async function getReferences(
       line,
       column,
     });
+}
+
+export async function getOutline(
+  src: NuclideUri,
+  contents: string,
+): Promise<?JediOutlineResult> {
+  const server = await getJediServer(src);
+  return server.call('get_outline', {src, contents});
 }

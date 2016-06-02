@@ -12,7 +12,12 @@
 import invariant from 'assert';
 import fs from 'fs';
 import path from 'path';
-import {getCompletions, getDefinitions, getReferences} from '../lib/JediService';
+import {
+  getCompletions,
+  getDefinitions,
+  getReferences,
+  getOutline,
+} from '../lib/JediService';
 
 // Test python file located at fixtures/serverdummy.py
 const TEST_FILE = path.join(__dirname, 'fixtures', 'serverdummy.py');
@@ -152,6 +157,40 @@ describe('JediService', () => {
           },
         ]);
       });
+    });
+  });
+
+  describe('Outlines', () => {
+
+    function checkOutlineTree(testName: string) {
+      waitsForPromise(async () => {
+        const dirName = path.join(__dirname, 'fixtures', 'outline-tests');
+
+        const srcPath = path.join(dirName, testName + '.py');
+        const srcContents = fs.readFileSync(srcPath).toString('utf8');
+
+        const jsonPath = path.join(dirName, 'expected', testName + '.json');
+        const jsonContents = fs.readFileSync(jsonPath).toString('utf8');
+
+        const response = await getOutline(srcPath, srcContents);
+        expect(response).toEqual(JSON.parse(jsonContents));
+      });
+    }
+
+    it('can generate an outline for a basic python script', () => {
+      checkOutlineTree('1');
+    });
+
+    it('can generate an outline when minor syntax errors exist', () => {
+      checkOutlineTree('2');
+    });
+
+    it('can generate an outline when decorated functions are present', () => {
+      checkOutlineTree('3');
+    });
+
+    it('properly includes multiple assignments in the outline', () => {
+      checkOutlineTree('4');
     });
   });
 
