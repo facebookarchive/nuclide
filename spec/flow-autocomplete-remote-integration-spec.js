@@ -9,88 +9,9 @@
  * the root directory of this source tree.
  */
 
-import {
-  addRemoteProject,
-  activateAllPackages,
-  busySignal,
-  copyFixture,
-  deactivateAllPackages,
-  jasmineIntegrationTestSetup,
-  startNuclideServer,
-  stopNuclideServer,
-} from '../pkg/nuclide-integration-test-helpers';
-import {join} from '../pkg/nuclide-remote-uri';
-import invariant from 'assert';
+import {describeRemote} from './utils/remotable-tests';
+import {runTest} from './utils/flow-autocomplete-common';
 
-import type {RemoteConnection} from '../pkg/nuclide-remote-connection';
-
-describe('Remote Flow Autocomplete', () => {
-  it('tests remote flow autocomplete example', () => {
-    let textEditor: atom$TextEditor = (null : any);
-    let textEditorView: HTMLElement = (null : any);
-    let flowProjectPath: string = (null : any);
-    let connection: ?RemoteConnection = (null : any);
-
-    waitsForPromise({timeout: 240000}, async () => {
-      jasmineIntegrationTestSetup();
-      // Activate nuclide packages.
-      await activateAllPackages();
-      // Copy flow project to a temporary location.
-      flowProjectPath = await copyFixture('flow_project_1');
-
-      // Start the Nuclide server and add a remote project.
-      await startNuclideServer();
-      connection = await addRemoteProject(flowProjectPath);
-      invariant(connection != null, 'connection was not established');
-      // Open a remote file in the flow project we copied, and get reference to the editor's HTML.
-      const remoteFileUri = join(connection.getUriForInitialWorkingDirectory(), 'main.js');
-      textEditor = await atom.workspace.open(remoteFileUri);
-    });
-
-    waitsFor('spinner to start', 10000, () => {
-      return busySignal.isBusy();
-    });
-
-    waitsFor('spinner to stop', 30000, () => {
-      return !busySignal.isBusy();
-    });
-
-    runs(() => {
-      textEditorView = atom.views.getView(textEditor);
-      // Simulate a keypress to trigger the autocomplete menu.
-      textEditor.moveToBottom();
-      textEditor.insertText('n');
-    });
-
-    let autocompleteMenuView: HTMLElement = (null : any);
-    waitsFor('autocomplete suggestions to render', 10000, () => {
-      autocompleteMenuView = textEditorView.querySelector('.autocomplete-plus');
-      if (autocompleteMenuView != null) {
-        return autocompleteMenuView.querySelector('.right-label');
-      }
-      return autocompleteMenuView;
-    });
-
-    waitsForPromise(async () => {
-      // Check autocomplete box renders.
-      expect(autocompleteMenuView).toExist();
-
-      // Check type annotations exist and are correct.
-      expect(autocompleteMenuView.querySelector('.right-label').innerText).toBe('number');
-      const typeHintView = autocompleteMenuView.querySelector('.suggestion-description-content');
-      expect(typeHintView).toExist();
-      expect(typeHintView.innerText).toBe('number');
-
-      // Confirm autocomplete.
-      atom.commands.dispatch(textEditorView, 'autocomplete-plus:confirm');
-      expect(textEditorView.querySelector('.autocomplete-plus')).not.toExist();
-      const lineText = textEditor.lineTextForBufferRow(textEditor.getCursorBufferPosition().row);
-      expect(lineText).toBe('num');
-
-      // Clean up -- kill nuclide server and deactivate packages.
-      invariant(connection != null);
-      await stopNuclideServer(connection);
-      deactivateAllPackages();
-    });
-  });
+describeRemote('Flow Autocomplete', context => {
+  runTest(context);
 });
