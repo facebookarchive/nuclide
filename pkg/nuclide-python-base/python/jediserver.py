@@ -16,6 +16,7 @@ import traceback
 from logging import FileHandler
 from optparse import OptionParser
 import jedi
+from jedi.evaluate.representation import InstanceElement
 
 LOGGING_DIR = 'nuclide-%s-logs/python' % getpass.getuser()
 
@@ -105,9 +106,21 @@ class JediServer:
                 'text': completion.name,
                 'description': self.get_description(completion),
             }
-            # Return function params if completion has params (thus is a function)
+            # Return function params if completion has params (thus is a function).
             if hasattr(completion, 'params'):
                 result['params'] = [p.description for p in completion.params]
+
+            # Check for decorators on functions.
+            if completion.type == 'function' and not completion.in_builtin_module():
+                definition = completion._name.get_definition()
+                if isinstance(definition, InstanceElement):
+                    decorated_func = definition.get_decorated_func()
+                    if decorated_func.decorates is not None:
+                        # If a function has a property decorator, treat it as a property
+                        # instead of a method.
+                        if str(decorated_func.base.name) == 'property':
+                            del result['params']
+                            result['type'] = 'property'
             results.append(result)
         return results
 

@@ -6,9 +6,13 @@
 
 # Note: this file has intentionally invalid references to test autocompletion
 import os
+from decorated import Test
 
 
 def hello = os.path.isab
 potato = 5
 potato2 = po
 potato3 = potato
+
+a = Test()
+a.t

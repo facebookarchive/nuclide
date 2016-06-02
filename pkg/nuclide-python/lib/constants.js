@@ -21,4 +21,5 @@ export const TYPES = {
   'statement': 'variable',
   'import': 'import',
   'param': 'variable',
+  'property': 'property',
 };
