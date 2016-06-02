@@ -44,7 +44,7 @@ export function notifySshHandshakeError(
   switch (errorType) {
     case SshHandshake.ErrorType.HOST_NOT_FOUND:
       message = `Can't resolve IP address for host ${config.host}.`;
-      detail = 'Trouble shooting:\n' +
+      detail = 'Troubleshooting:\n' +
         '  1. Check your network connection.\n' +
         `  2. Make sure the hostname ${config.host} is valid.\n`;
       break;
@@ -56,13 +56,21 @@ export function notifySshHandshakeError(
       break;
     case SshHandshake.ErrorType.SSH_CONNECT_TIMEOUT:
       message = `Timeout while connecting to ${config.host}.`;
-      detail = 'Trouble shooting:\n' +
+      detail = 'Troubleshooting:\n' +
         '  1. Check your network connection.\n' +
         '  2. Input correct 2Fac passcode when prompted.';
       break;
+    case SshHandshake.ErrorType.SFTP_TIMEOUT:
+      message = `Timeout while connecting to ${config.host}.`;
+      detail = 'Troubleshooting:\n' +
+        `Make sure you can run "sftp ${config.host}" on the command line.\n` +
+        'Check your .bashrc / .bash_profile for extraneous output.\n' +
+        'You may need to add the following to the top of your .bashrc:\n' +
+        '  [ -z "$PS1" ] && return';
+      break;
     case SshHandshake.ErrorType.SSH_CONNECT_FAILED:
       message = `Failed to connect to ${config.host}:${config.sshPort}.`;
-      detail = 'Trouble shooting:\n' +
+      detail = 'Troubleshooting:\n' +
         '  1. Check your network connection.\n' +
         `  2. Make sure the host ${config.host} is running and has` +
           ` ssh server running on ${config.sshPort}.\n\n` +
@@ -79,7 +87,7 @@ export function notifySshHandshakeError(
     case SshHandshake.ErrorType.SERVER_START_FAILED:
       message = `Failed to start nuclide-server on ${config.host} using  ` +
         `${config.remoteServerCommand}`;
-      detail = 'Trouble shooting: \n' +
+      detail = 'Troubleshooting: \n' +
         `  1. Make sure the command "${config.remoteServerCommand}" is correct.\n` +
         `  2. The server might take longer to start up than expected, try to connect again.\n` +
         `  3. If none of above works, ssh to ${config.host} and kill existing nuclide-server` +
