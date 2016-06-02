@@ -2,6 +2,7 @@
 
 .nuclide-ui-toolbar {
   display: flex;
+  justify-content: space-between;
   flex-shrink: 0;
   height: 2.625em;
   line-height: 2.625em;
@@ -21,9 +22,18 @@
 .nuclide-ui-toolbar__right {
   align-items: center;
   display: flex;
-  flex: 1;
   overflow: hidden;
   white-space: nowrap;
+
+  // Set up flex for the following cases:
+  // * Any single children should take up the whole width (flex: 1)
+  // * If there are left, right, and center elements, the left and right should
+  //   both have equal width (so that middle column is actually centered)
+  &:only-child,
+  &:nth-child(3),
+  &:nth-last-child(3) {
+    flex: 1;
+  }
 }
 
 .nuclide-ui-toolbar__center {
