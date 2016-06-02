@@ -135,6 +135,7 @@ function createDiagnosticsPanel(
   // Both the iframe and the host element for the React component are children of the root element
   // that serves as the item for the panel.
   const rootElement = document.createElement('div');
+  rootElement.className = 'nuclide-diagnostics-ui';
   rootElement.appendChild(iframe);
   rootElement.appendChild(item);
   bottomPanel = atom.workspace.addBottomPanel({item: rootElement});
