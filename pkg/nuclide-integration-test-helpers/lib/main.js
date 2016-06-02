@@ -17,6 +17,7 @@ import {activateAllPackages, deactivateAllPackages} from './package-utils';
 import {addRemoteProject, startNuclideServer, stopNuclideServer} from './remote-utils';
 import {waitsForFile, waitsForFilePosition} from './waitsForFile';
 import busySignal from './busy-signal';
+import pollFor from './pollFor';
 
 // Smallish, yet realistic testing window dimensions.
 const TEST_WINDOW_HEIGHT = 600;
@@ -64,6 +65,7 @@ export {
   copyMercurialFixture,
   deactivateAllPackages,
   dispatchKeyboardEvent,
+  pollFor,
   setLocalProject,
   startNuclideServer,
   stopNuclideServer,
