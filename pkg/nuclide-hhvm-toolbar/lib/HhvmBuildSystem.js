@@ -30,7 +30,12 @@ export default class ArcBuildSystem {
   }
 
   _getStore(): ArcToolbarStoreType {
-    const {ArcToolbarStore} = require('./ArcToolbarStore');
+    let ArcToolbarStore;
+    try {
+      ArcToolbarStore = require('./fb/FbArcToolbarStore').FbArcToolbarStore;
+    } catch (_) {
+      ArcToolbarStore = require('./ArcToolbarStore').ArcToolbarStore;
+    }
     return new ArcToolbarStore();
   }
 
