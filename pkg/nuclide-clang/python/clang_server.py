@@ -160,13 +160,13 @@ class Server:
         request = json.loads(line)
 
         reqid = request['id']
+        method = request['method']
         args = request['args']
 
         start_time = time.time()
         result = None
         error = None
         try:
-            method = args['method']
             if method == 'compile':
                 result = self.compile(args)
             elif method == 'get_completions':

@@ -95,7 +95,7 @@ export default class ClangServerManager {
     }
     server = new ClangServer(src, flags, usesDefaultFlags);
     // Seed with a compile request to ensure fast responses.
-    server.makeRequest('compile', {contents})
+    server.call('compile', {contents})
       .then(() => this._checkMemoryUsage());
     this._servers.set(src, server);
     return server;

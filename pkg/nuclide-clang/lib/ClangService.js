@@ -181,7 +181,7 @@ export function compile(
   const doCompile = async () => {
     const server = await serverManager.getClangServer(src, contents, defaultFlags);
     if (server != null) {
-      return server.makeRequest('compile', {contents})
+      return server.call('compile', {contents})
         .then(result => ({
           ...result,
           accurateFlags: !server.usesDefaultFlags(),
@@ -202,7 +202,7 @@ export async function getCompletions(
 ): Promise<?Array<ClangCompletion>> {
   const server = await serverManager.getClangServer(src, contents, defaultFlags);
   if (server != null) {
-    return server.makeRequest('get_completions', {
+    return server.call('get_completions', {
       contents,
       line,
       column,
@@ -221,7 +221,7 @@ export async function getDeclaration(
 ): Promise<?ClangDeclaration> {
   const server = await serverManager.getClangServer(src, contents, defaultFlags);
   if (server != null) {
-    return server.makeRequest('get_declaration', {
+    return server.call('get_declaration', {
       contents,
       line,
       column,
@@ -241,7 +241,7 @@ export async function getDeclarationInfo(
 ): Promise<?Array<ClangCursor>> {
   const server = await serverManager.getClangServer(src, contents, defaultFlags);
   if (server != null) {
-    return server.makeRequest('get_declaration_info', {
+    return server.call('get_declaration_info', {
       contents,
       line,
       column,
@@ -256,7 +256,9 @@ export async function getOutline(
 ): Promise<?Array<ClangOutlineTree>> {
   const server = await serverManager.getClangServer(src, contents, defaultFlags);
   if (server != null) {
-    return server.makeRequest('get_outline', {contents}, /* blocking */ true);
+    return server.call('get_outline', {
+      contents,
+    }, /* blocking */ true);
   }
 }
 

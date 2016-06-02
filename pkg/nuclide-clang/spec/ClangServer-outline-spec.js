@@ -22,7 +22,7 @@ describe('ClangServer', () => {
   it('can return outline data', () => {
     waitsForPromise(async () => {
       const server = new ClangServer(TEST_FILE, ['-x', 'c++']);
-      const response = await server.makeRequest('get_outline', {
+      const response = await server.call('get_outline', {
         contents: FILE_CONTENTS,
       });
       invariant(response != null);
