@@ -13,8 +13,8 @@ import {
   activateAllPackages,
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
-  sleep,
 } from '../pkg/nuclide-integration-test-helpers';
+import {sleep} from '../pkg/commons-node/promise';
 
 describe('nuclide', () => {
   it('deactivates cleanly', () => {

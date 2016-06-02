@@ -15,7 +15,6 @@ import {dispatchKeyboardEvent} from './event';
 import {copyFixture, copyMercurialFixture, setLocalProject} from './fixtures';
 import {activateAllPackages, deactivateAllPackages} from './package-utils';
 import {addRemoteProject, startNuclideServer, stopNuclideServer} from './remote-utils';
-import {sleep} from './sleep';
 import {waitsForFile, waitsForFilePosition} from './waitsForFile';
 import busySignal from './busy-signal';
 
@@ -66,7 +65,6 @@ export {
   deactivateAllPackages,
   dispatchKeyboardEvent,
   setLocalProject,
-  sleep,
   startNuclideServer,
   stopNuclideServer,
   waitsForFile,

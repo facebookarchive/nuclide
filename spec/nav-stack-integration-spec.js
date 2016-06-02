@@ -17,8 +17,8 @@ import {
   waitsForFilePosition,
   jasmineIntegrationTestSetup,
   setLocalProject,
-  sleep,
 } from '../pkg/nuclide-integration-test-helpers';
+import {sleep} from '../pkg/commons-node/promise';
 import {goToLocation} from '../pkg/commons-atom/go-to-location';
 import path from 'path';
 

@@ -11,6 +11,7 @@
 
 import featureConfig from '../../nuclide-feature-config';
 import path from 'path';
+import {sleep} from '../../commons-node/promise';
 
 const openHealthPane = () => {
   atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-health:show');
@@ -25,12 +26,6 @@ function findHealthPaneAndItem(): {pane: ?atom$Pane; item: ?Object} {
     }
   }
   return {pane: null, item: null};
-}
-
-function sleep(ms: number): Promise {
-  return new Promise((resolve, reject) => {
-    setTimeout(resolve, ms);
-  });
 }
 
 describe('Health', () => {

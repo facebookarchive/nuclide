@@ -105,12 +105,10 @@ export class RequestSerializer<T> {
 /*
  * Returns a promise that will resolve after `milliSeconds` milli seconds.
  * this can be used to pause execution asynchronously.
- * e.g. await awaitMilliSeconds(1000), pauses the async flow execution for 1 second.
+ * e.g. await sleep(1000), pauses the async flow execution for 1 second.
  */
-export function awaitMilliSeconds(milliSeconds: number): Promise {
-  return new Promise((resolve, reject) => {
-    setTimeout(resolve, milliSeconds);
-  });
+export function sleep(milliSeconds: number): Promise<void> {
+  return new Promise(resolve => { setTimeout(resolve, milliSeconds); });
 }
 
 /**
@@ -178,7 +176,7 @@ export async function retryLimit<T>(
     }
 
     if (++tries < maximumTries && retryIntervalMs !== 0) {
-      await awaitMilliSeconds(retryIntervalMs);
+      await sleep(retryIntervalMs);
     }
   }
   /* eslint-enable babel/no-await-in-loop */

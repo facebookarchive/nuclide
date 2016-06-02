@@ -11,10 +11,7 @@
 
 import path from 'path';
 import watchman from 'fb-watchman';
-import {
-  serializeAsyncCall,
-  awaitMilliSeconds,
-} from '../../commons-node/promise';
+import {serializeAsyncCall, sleep} from '../../commons-node/promise';
 import {getWatchmanBinaryPath} from './path';
 import WatchmanSubscription from './WatchmanSubscription';
 import {getLogger} from '../../nuclide-logging';
@@ -101,7 +98,7 @@ class WatchmanClient {
       await this._watchProject(subscription.path);
       // We have already missed the change events from the disconnect time,
       // watchman could have died, so the last clock result is not valid.
-      await awaitMilliSeconds(WATCHMAN_SETTLE_TIME_MS);
+      await sleep(WATCHMAN_SETTLE_TIME_MS);
       // Register the subscriptions after the filesystem settles.
       subscription.options.since = await this._clock(subscription.root);
       await this._subscribe(subscription.root, subscription.name, subscription.options);

@@ -20,6 +20,7 @@ import {
 } from '../debounced';
 import {goToLocationInEditor} from '../go-to-location';
 
+import {sleep} from '../../commons-node/promise';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 
 // Shorter than the default so the tests don't run long.
@@ -232,7 +233,3 @@ describe('editorChangesDebounced', () => {
     });
   });
 });
-
-function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
