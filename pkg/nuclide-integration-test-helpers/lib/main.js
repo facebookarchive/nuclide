@@ -23,6 +23,12 @@ const TEST_WINDOW_HEIGHT = 600;
 const TEST_WINDOW_WIDTH = 1000;
 
 export function jasmineIntegrationTestSetup(): void {
+  // To run remote tests, we have to star the nuclide server. It uses `nohup`, but apparently
+  // `nohup` doesn't work from within tmux, so starting the server fails.
+  invariant(
+    process.env.TMUX == null,
+    'ERROR: tmux interferes with remote integration tests -- please run the tests outside of tmux',
+  );
   // Allow jasmine to interact with the DOM.
   jasmine.attachToDOM(atom.views.getView(atom.workspace));
 
