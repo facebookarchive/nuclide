@@ -81,10 +81,10 @@ function getClangServer(
   if (server != null) {
     return server;
   }
-  server = new ClangServer(clangFlagsManager, src);
+  server = new ClangServer(clangFlagsManager, src, defaultFlags);
   // Seed with a compile request to ensure fast responses.
   if (contents != null) {
-    server.makeRequest('compile', defaultFlags, {contents})
+    server.makeRequest('compile', {contents})
       .then(checkMemoryUsage);
   }
   clangServers.set(src, server);
@@ -255,8 +255,8 @@ export function compile(
   }
 
   return Observable.fromPromise(
-    getClangServer(src)
-      .makeRequest('compile', defaultFlags, {contents})
+    getClangServer(src, contents, defaultFlags)
+      .makeRequest('compile', {contents})
       .then(value => {
         // Trigger the memory usage check but do not wait for it.
         checkMemoryUsage();
@@ -274,7 +274,7 @@ export function getCompletions(
   prefix: string,
   defaultFlags?: Array<string>,
 ): Promise<?Array<ClangCompletion>> {
-  return getClangServer(src, contents, defaultFlags).makeRequest('get_completions', defaultFlags, {
+  return getClangServer(src, contents, defaultFlags).makeRequest('get_completions', {
     contents,
     line,
     column,
@@ -291,7 +291,7 @@ export async function getDeclaration(
   defaultFlags?: Array<string>,
 ): Promise<?ClangDeclaration> {
   return await getClangServer(src, contents, defaultFlags)
-    .makeRequest('get_declaration', defaultFlags, {
+    .makeRequest('get_declaration', {
       contents,
       line,
       column,
@@ -309,7 +309,7 @@ export function getDeclarationInfo(
   defaultFlags: ?Array<string>,
 ): Promise<?Array<ClangCursor>> {
   return getClangServer(src, contents, defaultFlags)
-    .makeRequest('get_declaration_info', defaultFlags, {
+    .makeRequest('get_declaration_info', {
       contents,
       line,
       column,
@@ -322,7 +322,7 @@ export async function getOutline(
   defaultFlags: ?Array<string>,
 ): Promise<?Array<ClangOutlineTree>> {
   return getClangServer(src, contents, defaultFlags)
-    .makeRequest('get_outline', defaultFlags, {contents}, /* blocking */ true);
+    .makeRequest('get_outline', {contents}, /* blocking */ true);
 }
 
 export async function formatCode(

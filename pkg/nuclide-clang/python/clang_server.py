@@ -118,8 +118,9 @@ class Server:
     # Prefix of the string returned by clang_getClangVersion.
     CLANG_VERSION_PREFIX = 'clang version'
 
-    def __init__(self, src, input_stream, output_stream):
+    def __init__(self, src, flags, input_stream, output_stream):
         self.src = src
+        self.flags = flags
         self.input_stream = input_stream
         self.output_stream = output_stream
         self.index = Index.create()
@@ -196,15 +197,12 @@ class Server:
 
     def compile(self, request):
         contents = request['contents']
-        flags = request['flags']
 
         # Update the translation unit with the latest contents.
         # Force a re-parse, in case the user e.g. changed a header file.
         self.cached_contents = None
-        translation_unit = self._update_translation_unit(contents, flags)
+        translation_unit = self._update_translation_unit(contents)
         if not translation_unit:
-            sys.stderr.write(
-                'Suspicious: requesting compilation of %s without flags' % self.src)
             return {'diagnostics': []}
 
         # Return the diagnostics.
@@ -253,12 +251,11 @@ class Server:
         column = request['column']
         prefix = request['prefix']
         token_start_column = request['tokenStartColumn']
-        flags = request['flags']
 
         # NOTE: there is no need to update the translation unit here.
         # libclang's completions API seamlessly takes care of unsaved content
         # without any special handling.
-        translation_unit = self._get_translation_unit(None, flags)
+        translation_unit = self._get_translation_unit(None)
         if translation_unit:
             if self.completion_cache is None:
                 self.completion_cache = CompletionCache(
@@ -275,17 +272,16 @@ class Server:
         contents = request['contents']
         line = request['line']
         column = request['column']
-        flags = request['flags']
 
         # Update the translation unit with the latest contents.
-        translation_unit = self._update_translation_unit(contents, flags)
+        translation_unit = self._update_translation_unit(contents)
         if not translation_unit:
             return None
 
         return get_declaration_location_and_spelling(
             translation_unit,
             contents,
-            flags,
+            self.flags,
             self.src,
             line + 1,
             column + 1)
@@ -294,10 +290,9 @@ class Server:
         contents = request['contents']
         line = request['line']
         column = request['column']
-        flags = request['flags']
 
         # Update the translation unit with the latest contents.
-        translation_unit = self._update_translation_unit(contents, flags)
+        translation_unit = self._update_translation_unit(contents)
         if not translation_unit:
             return None
 
@@ -344,22 +339,18 @@ class Server:
 
     def get_outline(self, request):
         contents = request['contents']
-        flags = request['flags']
-        translation_unit = self._update_translation_unit(contents, flags)
+        translation_unit = self._update_translation_unit(contents)
         if not translation_unit:
             return None
         return outline.get_outline(translation_unit, self.src)
 
-    def _get_translation_unit(self, unsaved_contents, flags=None):
+    def _get_translation_unit(self, unsaved_contents):
         '''
         Get the current translation unit, or create it if it does not exist.
         Flags can be optional if the translation unit already exists.
         '''
         if self.translation_unit is not None:
             return self.translation_unit
-
-        if flags is None:
-            return None
 
         # Configure the options.
         # See also clang_defaultEditingTranslationUnitOptions in Index.h.
@@ -378,7 +369,7 @@ class Server:
             options |= Server.PARSE_CREATE_PREAMBLE_ON_FIRST_PARSE
             self.cached_contents = unsaved_contents
 
-        args = self._get_args_for_flags(flags)
+        args = self._get_args_for_flags()
         self.translation_unit = self.index.parse(
             self.src, args, self._make_files(unsaved_contents), options)
         return self.translation_unit
@@ -389,11 +380,11 @@ class Server:
             return []
         return [(self.src, unsaved_contents.encode('utf-8'))]
 
-    def _get_args_for_flags(self, flags):
+    def _get_args_for_flags(self):
         # Enable typo-detection (and the corresponding fixits)
         # For some reason this is not enabled by default in libclang.
         args = ['-fspell-checking']
-        for arg in flags:
+        for arg in self.flags:
             if arg == self.src:
                 # Including the input file as an argument causes index.parse() to fail.
                 # Surprisingly, including the path to the clang binary
@@ -414,8 +405,8 @@ class Server:
                 args.append(arg)
         return args
 
-    def _update_translation_unit(self, unsaved_contents=None, flags=None):
-        translation_unit = self._get_translation_unit(unsaved_contents, flags)
+    def _update_translation_unit(self, unsaved_contents=None):
+        translation_unit = self._get_translation_unit(unsaved_contents)
         if translation_unit is None:
             return None
         # Reparsing isn't cheap, so skip it if nothing changed.
@@ -441,10 +432,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('src', metavar='<path>', type=str,
                         help='Full path of source file to analyze.')
+    parser.add_argument('flags', metavar='<flags>', type=str, nargs='*',
+                        help='Extra flags to pass to Clang.')
     parser.add_argument('--libclang-file', help='Path to libclang dynamic library')
     args = parser.parse_args()
 
     if args.libclang_file:
         Config.set_library_file(args.libclang_file)
     set_up_logging(args.src)
-    Server(args.src, sys.stdin, sys.stdout).run()
+    Server(args.src, args.flags, sys.stdin, sys.stdout).run()

@@ -53,7 +53,7 @@ describe('ClangServer', () => {
   it('can handle requests', () => {
     waitsForPromise(async () => {
       const server = new ClangServer(mockFlagsManager, TEST_FILE);
-      let response = await server.makeRequest('compile', null, {
+      let response = await server.makeRequest('compile', {
         contents: FILE_CONTENTS,
       });
       invariant(response);
@@ -115,7 +115,7 @@ describe('ClangServer', () => {
       const mem = await server.getMemoryUsage();
       expect(mem).toBeGreaterThan(0);
 
-      response = await server.makeRequest('get_completions', null, {
+      response = await server.makeRequest('get_completions', {
         contents: FILE_CONTENTS,
         line: 4,
         column: 7,
@@ -130,7 +130,7 @@ describe('ClangServer', () => {
       ]);
 
       // This will hit the cache. Double-check the result.
-      response = await server.makeRequest('get_completions', null, {
+      response = await server.makeRequest('get_completions', {
         contents: FILE_CONTENTS,
         line: 4,
         column: 7,
@@ -143,7 +143,7 @@ describe('ClangServer', () => {
       ]);
 
       // Function argument completions are a little special.
-      response = await server.makeRequest('get_completions', null, {
+      response = await server.makeRequest('get_completions', {
         contents: FILE_CONTENTS,
         line: 4,
         column: 4,
@@ -154,7 +154,7 @@ describe('ClangServer', () => {
       expect(response[0].spelling).toBe('f()');
       expect(response[0].cursor_kind).toBe('OVERLOAD_CANDIDATE');
 
-      response = await server.makeRequest('get_declaration', null, {
+      response = await server.makeRequest('get_declaration', {
         contents: FILE_CONTENTS,
         line: 4,
         column: 2,
@@ -166,7 +166,7 @@ describe('ClangServer', () => {
       expect(spelling).toBe('f');
       expect(type).toBe('void ()');
 
-      response = await server.makeRequest('get_declaration_info', null, {
+      response = await server.makeRequest('get_declaration_info', {
         contents: FILE_CONTENTS,
         line: 4,
         column: 2,
@@ -178,7 +178,7 @@ describe('ClangServer', () => {
       // May not be consistent between clang versions.
       expect(response[0].cursor_usr).not.toBe(null);
 
-      response = await server.makeRequest('get_outline', null, {
+      response = await server.makeRequest('get_outline', {
         contents: FILE_CONTENTS,
       });
       invariant(response);
@@ -193,26 +193,27 @@ describe('ClangServer', () => {
           throw 'fail';
         },
       }: any);
-      const server = new ClangServer(flagsManager, TEST_FILE);
-      let response = await server.makeRequest('compile', null, {
+      let server = new ClangServer(flagsManager, TEST_FILE);
+      let response = await server.makeRequest('compile', {
         contents: FILE_CONTENTS,
       });
       expect(response).toBe(null);
+      server.dispose();
 
       // Default flags should work.
-      response = await server.makeRequest('compile', [], {
+      server = new ClangServer(flagsManager, TEST_FILE, []);
+      response = await server.makeRequest('compile', {
         contents: FILE_CONTENTS,
       });
       expect(response).not.toBe(null);
       invariant(response);
-      expect(response.accurateFlags).toBe(false);
     });
   });
 
   it('gracefully handles server crashes', () => {
     waitsForPromise(async () => {
       const server = new ClangServer(mockFlagsManager, TEST_FILE);
-      let response = await server.makeRequest('compile', null, {
+      let response = await server.makeRequest('compile', {
         contents: FILE_CONTENTS,
       });
       expect(response).not.toBe(null);
@@ -224,7 +225,7 @@ describe('ClangServer', () => {
       // This request should fail, but cleanup should occur.
       let thrown = false;
       try {
-        response = await server.makeRequest('compile', null, {
+        response = await server.makeRequest('compile', {
           contents: FILE_CONTENTS,
         });
       } catch (e) {
@@ -233,7 +234,7 @@ describe('ClangServer', () => {
       expect(thrown).toBe(true);
 
       // The next request should work as expected.
-      response = await server.makeRequest('get_declaration', null, {
+      response = await server.makeRequest('get_declaration', {
         contents: FILE_CONTENTS,
         line: 4,
         column: 2,
@@ -245,12 +246,12 @@ describe('ClangServer', () => {
   it('blocks other requests during compilation', () => {
     waitsForPromise(async () => {
       const server = new ClangServer(mockFlagsManager, TEST_FILE);
-      const compilePromise = server.makeRequest('compile', null, {
+      const compilePromise = server.makeRequest('compile', {
         contents: FILE_CONTENTS,
       });
 
       // Since compilation has been triggered but not awaited, this should instantly fail.
-      let response = await server.makeRequest('get_declaration', null, {
+      let response = await server.makeRequest('get_declaration', {
         contents: FILE_CONTENTS,
         line: 4,
         column: 2,
@@ -261,7 +262,7 @@ describe('ClangServer', () => {
       expect(response).not.toBe(null);
 
       // Should work again after compilation finishes.
-      response = await server.makeRequest('get_declaration', null, {
+      response = await server.makeRequest('get_declaration', {
         contents: FILE_CONTENTS,
         line: 4,
         column: 2,

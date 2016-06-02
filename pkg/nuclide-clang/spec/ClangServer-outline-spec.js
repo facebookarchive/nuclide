@@ -27,8 +27,8 @@ const mockFlagsManager = ({
 describe('ClangServer', () => {
   it('can return outline data', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(mockFlagsManager, TEST_FILE);
-      const response = await server.makeRequest('get_outline', ['-x', 'c++'], {
+      const server = new ClangServer(mockFlagsManager, TEST_FILE, ['-x', 'c++']);
+      const response = await server.makeRequest('get_outline', {
         contents: FILE_CONTENTS,
       });
       invariant(response != null);

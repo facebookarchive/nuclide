@@ -59,6 +59,8 @@ type ClangServerRequest =
 export default class ClangServer {
 
   _src: string;
+  _defaultFlags: ?Array<string>;
+  _usesDefaultFlags: boolean;
   _clangFlagsManager: ClangFlagsManager;
   _emitter: EventEmitter;
   _nextRequestId: number;
@@ -71,8 +73,10 @@ export default class ClangServer {
   // Cache the flags-fetching promise so we don't end up invoking Buck twice.
   _flagsPromise: ?Promise<?Array<string>>;
 
-  constructor(clangFlagsManager: ClangFlagsManager, src: string) {
+  constructor(clangFlagsManager: ClangFlagsManager, src: string, defaultFlags: ?Array<string>) {
     this._src = src;
+    this._defaultFlags = defaultFlags;
+    this._usesDefaultFlags = false;
     this._clangFlagsManager = clangFlagsManager;
     this._emitter = new EventEmitter();
     this._nextRequestId = 0;
@@ -138,7 +142,6 @@ export default class ClangServer {
    */
   async makeRequest(
     method: ClangServerRequest,
-    defaultFlags: ?Array<string>,
     params: Object,
     blocking?: boolean,
   ): Promise<any> {
@@ -151,7 +154,7 @@ export default class ClangServer {
       return null;
     }
     try {
-      return await this._makeRequestImpl(method, defaultFlags, params);
+      return await this._makeRequestImpl(method, params);
     } finally {
       if (method === 'compile') {
         this._pendingCompileRequests--;
@@ -161,26 +164,15 @@ export default class ClangServer {
 
   async _makeRequestImpl(
     method: ClangServerRequest,
-    defaultFlags: ?Array<string>,
     params: Object,
   ): Promise<any> {
-    let flags = await this.getFlags();
-    let accurateFlags = true;
-    if (flags == null) {
-      if (defaultFlags == null) {
-        return null;
-      }
-      flags = await augmentDefaultFlags(this._src, defaultFlags);
-      accurateFlags = false;
-    }
-
     const connection = await this._getAsyncConnection();
     if (connection == null) {
       return null;
     }
 
     const reqid = this._getNextRequestId();
-    const request = {id: reqid, args: {method, flags, ...params}};
+    const request = {id: reqid, args: {method, ...params}};
     const logData = JSON.stringify(request, (key, value) => {
       // File contents are too large and clutter up the logs, so exclude them.
       // We generally only want to see the flags for 'compile' commands, since they'll usually
@@ -212,7 +204,7 @@ export default class ClangServer {
           const {result} = response;
           if (method === 'compile') {
             // Using default flags typically results in poor diagnostics, so let the caller know.
-            result.accurateFlags = accurateFlags;
+            result.accurateFlags = !this._usesDefaultFlags;
           }
           resolve(result);
         }
@@ -228,6 +220,9 @@ export default class ClangServer {
     if (this._asyncConnection == null) {
       try {
         const connection = await this.createAsyncConnection(this._src);
+        if (connection == null) {
+          return null;
+        }
         connection.readableStream
           .pipe(split(JSON.parse))
           .on('data', response => {
@@ -254,17 +249,27 @@ export default class ClangServer {
     return this._asyncConnection;
   }
 
-  async createAsyncConnection(src: string): Promise<Connection> {
+  async createAsyncConnection(src: string): Promise<?Connection> {
     return await new Promise(async (resolve, reject) => {
       const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = await findClangServerArgs();
       const pathToLibClangServer = path.join(__dirname, '../python/clang_server.py');
       const env: any = {
         PYTHONPATH: pythonPathEnv,
       };
-      const args = [pathToLibClangServer, src];
+      const args = [pathToLibClangServer];
       if (libClangLibraryFile != null) {
         args.push('--libclang-file', libClangLibraryFile);
       }
+      args.push('--', src);
+      let flags = await this.getFlags();
+      if (flags == null && this._defaultFlags != null) {
+        flags = await augmentDefaultFlags(this._src, this._defaultFlags);
+        this._usesDefaultFlags = true;
+      }
+      if (flags == null) {
+        return resolve(null);
+      }
+      args.push(...flags);
       const options = {
         cwd: path.dirname(pathToLibClangServer),
         // The process should use its ordinary stderr for errors.
