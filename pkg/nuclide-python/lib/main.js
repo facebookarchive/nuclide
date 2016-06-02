@@ -12,12 +12,14 @@
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {DefinitionProvider} from '../../nuclide-definition-service';
 import type {FindReferencesProvider} from '../../nuclide-find-references';
+import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
 
 import {GRAMMAR_SET} from './constants';
 import AutocompleteHelpers from './AutocompleteHelpers';
 import DefinitionHelpers from './DefinitionHelpers';
 import OutlineHelpers from './OutlineHelpers';
 import ReferenceHelpers from './ReferenceHelpers';
+import CodeFormatHelpers from './CodeFormatHelpers';
 
 export function activate() {
 }
@@ -66,6 +68,17 @@ export function provideReferences(): FindReferencesProvider {
     },
     findReferences(editor, position) {
       return ReferenceHelpers.getReferences(editor, position);
+    },
+  };
+}
+
+export function provideCodeFormat(): CodeFormatProvider {
+  return {
+    selector: 'source.python',
+    inclusionPriority: 1,
+
+    formatEntireFile(editor, range) {
+      return CodeFormatHelpers.formatEntireFile(editor, range);
     },
   };
 }

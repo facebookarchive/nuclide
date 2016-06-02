@@ -49,6 +49,11 @@
       "versions": {
         "0.0.0": "provideOutlines"
       }
+    },
+    "nuclide-code-format.provider": {
+      "versions": {
+        "0.0.0": "provideCodeFormat"
+      }
     }
   }
 }
