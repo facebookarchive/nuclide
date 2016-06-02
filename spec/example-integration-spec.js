@@ -16,13 +16,23 @@ import {
 } from '../pkg/nuclide-integration-test-helpers';
 
 describe('Example Integration Test', () => {
-  it('tests my feature', () => {
+
+  beforeEach(() => {
     waitsForPromise({timeout: 60000}, async () => {
       // Configure some jasmine specific things for integration testing.
       jasmineIntegrationTestSetup();
       // Activate nuclide packages.
       await activateAllPackages();
+    });
+  });
 
+  afterEach(() => {
+    // Deactivate nuclide packages.
+    deactivateAllPackages();
+  });
+
+  it('tests my feature', () => {
+    waitsForPromise(async () => {
       // Your testing code goes here....
       // See: https://github.com/facebook/nuclide/wiki/Writing-an-Integration-Test
       //      for instructions on how to write integration tests.
@@ -56,10 +66,7 @@ describe('Example Integration Test', () => {
       // await stopNuclideServer(connection);
       //
       // For more examples look at integration tests in the top-level `spec/` directory.
-
-
-      // Deactivate nuclide packages.
-      deactivateAllPackages();
     });
   });
+
 });
