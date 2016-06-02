@@ -33,6 +33,12 @@
         "items": {
           "type": "string"
         }
+      },
+      "defaultDiagnostics": {
+        "title": "Enable Diagnostics With Default Flags",
+        "type": "boolean",
+        "default": "false",
+        "description": "Enable diagnostics even while using default flags. May lead to inaccurate results."
       }
     }
   },

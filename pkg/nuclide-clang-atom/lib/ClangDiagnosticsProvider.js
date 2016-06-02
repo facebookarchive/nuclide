@@ -26,6 +26,7 @@ import invariant from 'assert';
 import {GRAMMAR_SET} from './constants';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import {track, trackTiming} from '../../nuclide-analytics';
+import featureConfig from '../../nuclide-feature-config';
 import {getLogger} from '../../nuclide-logging';
 import {getDiagnostics} from './libclang';
 import {CompositeDisposable, Range} from 'atom';
@@ -131,7 +132,7 @@ class ClangDiagnosticsProvider {
     const editorPath = textEditor.getPath();
     invariant(editorPath);
     const filePathToMessages = new Map();
-    if (data.accurateFlags) {
+    if (data.accurateFlags || featureConfig.get('nuclide-clang-atom.defaultDiagnostics')) {
       data.diagnostics.forEach(diagnostic => {
         // We show only warnings, errors and fatals (2, 3 and 4, respectively).
         if (diagnostic.severity < 2) {
