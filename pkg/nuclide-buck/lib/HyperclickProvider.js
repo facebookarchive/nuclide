@@ -9,16 +9,17 @@
  * the root directory of this source tree.
  */
 
-type Target = {path: string; name: string};
+type Target = {path: NuclideUri; name: string};
 
 import type {BuckProject} from '../../nuclide-buck-base';
+import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {Point} from 'atom';
 
 import {getBuckProject} from '../../nuclide-buck-base';
-import fsPromise from '../../commons-node/fsPromise';
 import wordAtPosition from '../../commons-atom/word-at-position';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
 import {goToLocation} from '../../commons-atom/go-to-location';
-import pathModule from 'path';
+import {basename, dirname, getPath, join} from '../../nuclide-remote-uri';
 import escapeStringRegExp from 'escape-string-regexp';
 
 /**
@@ -33,7 +34,7 @@ import escapeStringRegExp from 'escape-string-regexp';
  */
 async function parseTarget(
   match: Array<?string> | Array<string>,
-  filePath: ?string,
+  filePath: ?NuclideUri,
   buckProject: BuckProject,
 ): Promise<?Target> {
   if (!match || !filePath) {
@@ -46,7 +47,13 @@ async function parseTarget(
     // Strip off the leading slashes from the fully-qualified build target.
     const basePath = fullTarget.substring('//'.length);
     const buckRoot = await buckProject.getPath();
-    path = require('../../nuclide-remote-uri').join(buckRoot, basePath, 'BUCK');
+
+    let buildFileName = await buckProject.getBuckConfig('buildfile', 'name');
+    if (buildFileName == null) {
+      buildFileName = 'BUCK';
+    }
+
+    path = join(buckRoot, basePath, buildFileName);
   } else {
     // filePath is already an absolute path.
     path = filePath;
@@ -68,7 +75,8 @@ async function parseTarget(
 async function findTargetLocation(target: Target): Promise {
   let data;
   try {
-    data = await fsPromise.readFile(target.path, 'utf-8');
+    const fs = getFileSystemServiceByNuclideUri(target.path);
+    data = (await fs.readFile(getPath(target.path))).toString('utf8');
   } catch (e) {
     return null;
   }
@@ -106,12 +114,12 @@ module.exports = {
   priority: 200,
   providerName: 'nuclide-buck',
   async getSuggestion(textEditor: TextEditor, position: Point): Promise<mixed> {
-    const absolutePath = textEditor.getPath();
-    if (!absolutePath) {
+    const absolutePath: ?NuclideUri = textEditor.getPath();
+    if (absolutePath == null) {
       return null;
     }
 
-    const baseName = pathModule.basename(absolutePath);
+    const baseName = basename(absolutePath);
     if (!VALID_BUILD_FILE_NAMES.has(baseName)) {
       return null;
     }
@@ -123,7 +131,7 @@ module.exports = {
 
     const results = await Promise.all([
       findBuildTarget(textEditor, position, absolutePath, buckProject),
-      findRelativeFilePath(textEditor, position, pathModule.dirname(absolutePath)),
+      findRelativeFilePath(textEditor, position, dirname(absolutePath)),
     ]);
     const hyperclickMatch = results.find(x => x != null);
 
@@ -166,7 +174,7 @@ async function findBuildTarget(
   const {wordMatch, range} = wordMatchAndRange;
 
   const target = await parseTarget(wordMatch, absolutePath, buckProject);
-  if (!target) {
+  if (target == null) {
     return null;
   }
 
@@ -187,7 +195,7 @@ const RELATIVE_FILE_PATH_REGEX = /(['"])(.*)(['"])/;
 async function findRelativeFilePath(
   textEditor: atom$TextEditor,
   position: atom$Point,
-  directory: string,
+  directory: NuclideUri,
 ): Promise<?HyperclickMatch> {
   const wordMatchAndRange = wordAtPosition(textEditor, position, RELATIVE_FILE_PATH_REGEX);
   if (!wordMatchAndRange) {
@@ -200,10 +208,11 @@ async function findRelativeFilePath(
     return null;
   }
 
-  const potentialPath = pathModule.join(directory, wordMatch[2]);
+  const potentialPath = join(directory, wordMatch[2]);
   let stat;
   try {
-    stat = await fsPromise.stat(potentialPath);
+    const fs = getFileSystemServiceByNuclideUri(potentialPath);
+    stat = await fs.stat(getPath(potentialPath));
   } catch (e) {
     return null;
   }
