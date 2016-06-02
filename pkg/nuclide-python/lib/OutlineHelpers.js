@@ -11,11 +11,17 @@
 
 import type {Outline} from '../../nuclide-outline-view';
 
-import {pythonTextToOutline} from './outline';
 import {getShowGlobalVariables} from './config';
+import {generateOutline} from './outline';
 
 export default class OutlineHelpers {
   static async getOutline(editor: atom$TextEditor): Promise<?Outline> {
-    return pythonTextToOutline(getShowGlobalVariables(), editor.getText());
+    const src = editor.getPath();
+    if (!src) {
+      return null;
+    }
+    const contents = editor.getText();
+    const mode = getShowGlobalVariables() ? 'all' : 'constants';
+    return generateOutline(src, contents, mode);
   }
 }

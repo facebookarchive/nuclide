@@ -11,14 +11,16 @@
 
 import path from 'path';
 import fsPromise from '../../commons-node/fsPromise';
-import {pythonTextToOutline} from '../lib/outline';
+import {generateOutline} from '../lib/outline';
 
 describe('Python outline', () => {
 
+
   it('conversion from JSON to outline', () => {
     waitsForPromise(async () => {
-      const contents = await fsPromise.readFile(path.join(__dirname, './fixtures/t.py'), 'utf8');
-      const result = await pythonTextToOutline(true, contents);
+      const src = path.join(__dirname, './fixtures/t.py');
+      const contents = await fsPromise.readFile(src, 'utf8');
+      const result = await generateOutline(src, contents, 'all');
       expect(result).toEqual(JSON.parse(expected));
     });
   });
@@ -37,6 +39,10 @@ const expected = `{
       "startPosition": {
         "row": 9,
         "column": 0
+      },
+      "endPosition": {
+        "row": 9,
+        "column": 9
       },
       "children": []
     },
@@ -92,6 +98,10 @@ const expected = `{
         "row": 12,
         "column": 0
       },
+      "endPosition": {
+        "row": 16,
+        "column": -1
+      },
       "children": []
     },
     {
@@ -113,6 +123,10 @@ const expected = `{
       "startPosition": {
         "row": 16,
         "column": 0
+      },
+      "endPosition": {
+        "row": 21,
+        "column": -1
       },
       "children": [
         {
@@ -147,6 +161,10 @@ const expected = `{
             "row": 17,
             "column": 4
           },
+          "endPosition": {
+            "row": 21,
+            "column": -1
+          },
           "children": []
         }
       ]
@@ -179,6 +197,10 @@ const expected = `{
         "row": 21,
         "column": 0
       },
+      "endPosition": {
+        "row": 39,
+        "column": -1
+      },
       "children": []
     },
     {
@@ -192,6 +214,10 @@ const expected = `{
       "startPosition": {
         "row": 42,
         "column": 0
+      },
+      "endPosition": {
+        "row": 42,
+        "column": 7
       },
       "children": []
     }

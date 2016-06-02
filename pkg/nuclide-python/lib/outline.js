@@ -10,241 +10,118 @@
  */
 
 import type {
-  OutlineTree,
-  Outline,
+OutlineTree,
+Outline,
 } from '../../nuclide-outline-view';
 import type {TextToken} from '../../nuclide-tokenized-text';
+import type {
+  JediOutlineItem,
+  JediClassItem,
+  JediFunctionItem,
+  JediStatementItem,
+} from '../../nuclide-python-base';
+import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {Point} from 'atom';
-import {getLogger} from '../../nuclide-logging';
 import {
-  keyword,
-  method,
-  param,
-  whitespace,
-  plain,
+ keyword,
+ method,
+ param,
+ whitespace,
+ plain,
 } from '../../nuclide-tokenized-text';
-import path from 'path';
-import {asyncExecute} from '../../commons-node/process';
-import {getPythonPath} from './config';
-
-const SHOW_NO_VARIABLES = 'none';
-const SHOW_CONSTANTS = 'constants';
-const SHOW_ALL_VARIABLES = 'all';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 type ShowVariableMode = 'none' | 'constants' | 'all';
 
-const logger = getLogger();
-
-type FunctionDefTree = {
-  kind: 'FunctionDef';
-  name: string;
-  args: ArgumentsTree;
-  body: Array<PythonTree>;
-  lineno: number;
-  col_offset: number;
-};
-type ClassDefTree = {
-  kind: 'ClassDef';
-  name: string;
-  bases: Array<NameTree>;
-  body: Array<PythonTree>;
-  lineno: number;
-  col_offset: number;
-};
-type AssignTree = {
-  kind: 'Assign';
-  targets: Array<PythonTree>;
-  value: PythonTree;
-  lineno: number;
-  col_offset: number;
-};
-type ArgumentsTree = {
-  kind: 'arguments';
-  vararg: ?string;
-  args: Array<NameTree>;
-  defaults: Array<PythonTree>;
-  kwarg: ?string;
-};
-type NameTree = {
-  kind: 'Name';
-  ctx: ParamTree | LoadTree;
-  id: string;
-  lineno: number;
-  col_offset: number;
-};
-type ParamTree = {
-  kind: 'Param';
-};
-type LoadTree = {
-  kind: 'Load';
-};
-type ModuleTree = {
-  kind: 'Module';
-  body: Array<PythonTree>;
-};
-type ImportTree = {
-  kind: 'Import';
-  names: Array<AliasTree>;
-  lineno: number;
-  col_offset: number;
-};
-type ImportFromTree = {
-  kind: 'ImportFrom';
-  module: string;
-  names: Array<AliasTree>;
-  lineno: number;
-  col_offset: number;
-};
-type AliasTree = {
-  kind: 'alias';
-  name: string;
-  asname: ?string;
-};
-type PositionTree =
-  AssignTree
-  | ClassDefTree
-  | FunctionDefTree
-  | ImportTree
-  | ImportFromTree
-  | NameTree;
-export type PythonTree =
-  FunctionDefTree
-  | AliasTree
-  | ArgumentsTree
-  | AssignTree
-  | ClassDefTree
-  | ImportTree
-  | ImportFromTree
-  | ModuleTree
-  | NameTree
-  | ParamTree;
-
-export async function pythonTextToOutline(
-  showGlobalVariables: boolean,
-  text: string
-): Promise<?Outline> {
-  try {
-    const tree = await getPythonTree(text);
-    return tree == null ? null : treeToOutline(showGlobalVariables, tree);
-  } catch (e) {
-    logger.error('Exception getting outline: ', e);
-    return null;
+function itemToOutlineTree(
+  mode: ShowVariableMode,
+  item: JediOutlineItem
+): ?OutlineTree {
+  switch (item.kind) {
+    case 'class':
+      return classToOutlineTree('all', item);
+    case 'function':
+      return functionToOutlineTree(item);
+    case 'statement':
+      return statementToOutlineTree(mode, item);
   }
 }
 
-function treeToOutline(showGlobalVariables: boolean, tree: PythonTree): ?Outline {
-  switch (tree.kind) {
-    case 'Module':
-      return {
-        outlineTrees: treesToOutlineTrees(showGlobalVariables
-          ? SHOW_ALL_VARIABLES : SHOW_CONSTANTS, tree.body),
-      };
-    default:
-      logger.error(`Cannot convert python tree kind ${tree.kind}`);
-      return null;
-  }
-}
-
-async function getPythonTree(text: string): Promise<?PythonTree> {
-  const result = await asyncExecute(
-    getPythonPath(),
-    [path.join(__dirname, '../python/outline.py')],
-    {stdin: text});
-  if (result.exitCode !== 0) {
-    logger.error(`Python tree failed to get results: stderr: ${result.stderr}`);
-    return null;
-  }
-  return JSON.parse(result.stdout);
-}
-
-function treesToOutlineTrees(
-  showVariables: ShowVariableMode,
-  trees: Array<PythonTree>
+function itemsToOutline(
+  mode: ShowVariableMode,
+  items: ?Array<JediOutlineItem>
 ): Array<OutlineTree> {
-  return ((trees.map(tree => treeToOutlineTree(showVariables, tree))
-      .filter(outlineTree => outlineTree != null): any): Array<OutlineTree>);
+  if (!items || items.length === 0) {
+    return [];
+  }
+  const result = [];
+  items.map(i => itemToOutlineTree(mode, i)).forEach(tree => {
+    if (tree) {
+      result.push(tree);
+    }
+  });
+  return result;
 }
 
-function treeToOutlineTree(showVariables: ShowVariableMode, tree: PythonTree): ?OutlineTree {
-  switch (tree.kind) {
-    case 'FunctionDef':
-      return functionDefToOutline(tree);
-    case 'ClassDef':
-      return classDefToOutline(tree);
-    case 'Assign':
-      return assignToOutline(showVariables, tree);
-    case 'Expr':
-    case 'For':
-    case 'If':
-    case 'Import':
-    case 'ImportFrom':
-    case 'Print':
-    case 'TryExcept':
-      return null;
-    default:
-      logger.error(`Unexpected python outline tree kind ${tree.kind}`);
-      return null;
-  }
-}
-
-function assignToOutline(mode: ShowVariableMode, tree: AssignTree): ?OutlineTree {
-  if (mode === SHOW_NO_VARIABLES) {
-    return null;
-  }
-  if (tree.targets.length !== 1) {
-    return null;
-  }
-  const target = tree.targets[0];
-  if (target.kind !== 'Name') {
-    return null;
-  }
-  const id = target.id;
-  // Only show initialization of constants, which according to python
-  // style are all upper case.
-  if (mode === SHOW_CONSTANTS && id !== id.toUpperCase()) {
-    return null;
-  }
-  return {
-    tokenizedText: [
-      plain(id),
-    ],
-    representativeName: id,
-    startPosition: treeToPoint(target),
-    children: [],
-  };
-}
-
-function classDefToOutline(tree: ClassDefTree): OutlineTree {
+function classToOutlineTree(
+  mode: ShowVariableMode,
+  item: JediClassItem
+): OutlineTree {
   return {
     tokenizedText: [
       keyword('class'),
       whitespace(' '),
-      method(tree.name),
+      method(item.name),
     ],
-    representativeName: tree.name,
-    startPosition: treeToPoint(tree),
-    children: treesToOutlineTrees(SHOW_NO_VARIABLES, tree.body),
+    representativeName: item.name,
+    children: itemsToOutline(mode, item.children),
+    ...itemToPositions(item),
   };
 }
 
-function functionDefToOutline(tree: FunctionDefTree): OutlineTree {
+function functionToOutlineTree(item: JediFunctionItem): OutlineTree {
   return {
     tokenizedText: [
       keyword('def'),
       whitespace(' '),
-      method(tree.name),
+      method(item.name),
       plain('('),
-      ...argsToText(tree.args),
+      ...argsToText(item.params || []),
       plain(')'),
     ],
-    representativeName: tree.name,
-    startPosition: treeToPoint(tree),
+    representativeName: item.name,
     children: [],
+    ...itemToPositions(item),
   };
 }
 
-function argsToText(args: ArgumentsTree): Array<TextToken> {
+function statementToOutlineTree(
+  mode: ShowVariableMode,
+  item: JediStatementItem
+): ?OutlineTree {
+  if (mode === 'none') {
+    return null;
+  }
+  const name = item.name;
+  // Only show initialization of constants, which according to python
+  // style are all upper case.
+  if (mode === 'constants' && name !== name.toUpperCase()) {
+    return null;
+  }
+
+  return {
+    tokenizedText: [
+      plain(name),
+    ],
+    representativeName: name,
+    children: [],
+    ...itemToPositions(item),
+  };
+}
+
+function argsToText(args: Array<string>): Array<TextToken> {
+  const result = [];
 
   function startArg() {
     if (result.length > 0) {
@@ -252,25 +129,53 @@ function argsToText(args: ArgumentsTree): Array<TextToken> {
       result.push(whitespace(' '));
     }
   }
-  const result = [];
-  const vararg = args.vararg;
-  if (vararg != null) {
-    result.push(plain('*'));
-    result.push(param(vararg));
-  }
-  for (const arg of args.args) {
+  args.forEach(arg => {
     startArg();
-    result.push(param(arg.id));
-  }
-  const kwarg = args.kwarg;
-  if (kwarg != null) {
-    startArg();
-    result.push(plain('**'));
-    result.push(param(kwarg));
-  }
+    if (arg.startsWith('**')) {
+      result.push(plain('**'));
+      result.push(param(arg.slice(2)));
+    } else if (arg.startsWith('*')) {
+      result.push(plain('*'));
+      result.push(param(arg.slice(1)));
+    } else {
+      result.push(param(arg));
+    }
+  });
+
   return result;
 }
 
-function treeToPoint(tree: PositionTree): atom$Point {
-  return new Point(tree.lineno - 1, tree.col_offset);
+function itemToPositions(item: JediOutlineItem): {
+  startPosition: atom$Point;
+  endPosition: atom$Point;
+} {
+  const {start, end} = item;
+  return {
+    startPosition: new Point(start.line - 1, start.column),
+    // Outline's endPosition is inclusive, while Jedi's is exclusive.
+    // By decrementing the end column, we avoid situations where
+    // two items are highlighted at once. End column may end up as -1,
+    // which still has the intended effect.
+    endPosition: new Point(end.line - 1, end.column - 1),
+  };
+}
+
+export async function generateOutline(
+  src: NuclideUri,
+  contents: string,
+  mode: ShowVariableMode
+): Promise<?Outline> {
+  const service = await getServiceByNuclideUri('JediService', src);
+  if (!service) {
+    return null;
+  }
+
+  const result = await service.getOutline(src, contents);
+  if (result == null) {
+    return null;
+  }
+
+  return {
+    outlineTrees: itemsToOutline(mode, result.items),
+  };
 }
