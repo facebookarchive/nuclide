@@ -24,4 +24,13 @@ export type NuxTourModel = {
   completed: boolean;
   id: string;
   nuxList: Array<NuxViewModel>;
+  trigger: ?NuxTriggerModel;
 };
+
+export type NuxTriggerModel = {
+  triggerType: NuxTriggerType;
+  triggerCallback: ((editor: atom$TextEditor) => boolean);
+};
+
+// TODO: [ @rageandqq | 05-23-16 ]: Add more trigger types as use cases are developed
+export type NuxTriggerType = 'editor' | null;

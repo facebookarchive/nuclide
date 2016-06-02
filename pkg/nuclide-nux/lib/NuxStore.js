@@ -76,6 +76,7 @@ export class NuxStore {
       completed: false,
       id: NUX_SAMPLE_OUTLINE_VIEW_TOUR,
       nuxList: [nuxTriggerOutline, nuxOutlineView],
+      trigger: null,
     };
     return sampleOutlineNuxTour;
   }

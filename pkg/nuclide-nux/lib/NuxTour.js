@@ -9,6 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type {
+  NuxTriggerModel,
+  NuxTriggerType,
+} from './NuxModel';
+
 import analytics from '../../nuclide-analytics';
 import {NuxView} from './NuxView';
 
@@ -17,10 +22,12 @@ export class NuxTour {
   _callback: ?(() => void);
   _currentStep: number;
   _id: string;
+  _trigger: ?NuxTriggerModel;
 
   constructor(
     id: string,
     nuxList : ?(Array<NuxView>),
+    trigger: ?NuxTriggerModel,
   ): void {
     if (nuxList == null || nuxList.length < 1) {
       throw new Error('You must create a NuxTour with at least one NuxView element!');
@@ -28,6 +35,7 @@ export class NuxTour {
     this._currentStep = 0;
     this._id = id;
     this._nuxList = nuxList;
+    this._trigger = trigger;
 
     const boundNextStep = this._nextStep.bind(this);
     nuxList.forEach(n => { n.setNuxCompleteCallback(boundNextStep); });
@@ -54,7 +62,7 @@ export class NuxTour {
     }
   }
 
-  _onNuxComplete() : void {
+  _onNuxComplete(): void {
     this._track(true);
     if (this._callback != null) {
       this._callback();
@@ -64,7 +72,7 @@ export class NuxTour {
   _track(
     completed: boolean = false,
     error: ?string,
-  ) : void {
+  ): void {
     analytics.track(
       'nux-tour-action',
       {
@@ -78,5 +86,13 @@ export class NuxTour {
 
   setNuxCompleteCallback(callback: (() => void)): void {
     this._callback = callback;
+  }
+
+  isReady(editor: atom$TextEditor): boolean {
+    return this._trigger != null ? this._trigger.triggerCallback(editor) : true;
+  }
+
+  getTriggerType(): NuxTriggerType {
+    return this._trigger != null ? this._trigger.triggerType : null;
   }
 }
