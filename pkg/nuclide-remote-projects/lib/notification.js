@@ -50,7 +50,9 @@ export function notifySshHandshakeError(
       break;
     case SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY:
       message = `Can't read content of private key path ${config.pathToPrivateKey}.`;
-      detail = 'Make sure the private key path is properly configured.';
+      detail = 'Make sure the private key path is properly configured.\n' +
+        'You may need to convert your private key from PKCS to RSA.\n' +
+        originalErrorDetail;
       break;
     case SshHandshake.ErrorType.SSH_CONNECT_TIMEOUT:
       message = `Timeout while connecting to ${config.host}.`;

@@ -208,9 +208,16 @@ export class SshHandshake {
     } else if (config.authMethod === SupportedMethods.PRIVATE_KEY) {
       // We use fs-plus's normalize() function because it will expand the ~, if present.
       const expandedPath = fs.normalize(config.pathToPrivateKey);
-      let privateKey: string = (null : any);
       try {
-        privateKey = await fsPromise.readFile(expandedPath);
+        const privateKey = await fsPromise.readFile(expandedPath);
+        this._connection.connect({
+          host: address,
+          port: config.sshPort,
+          username: config.username,
+          privateKey,
+          tryKeyboard: true,
+          readyTimeout: READY_TIMEOUT_MS,
+        });
       } catch (e) {
         this._error(
           'Failed to read private key',
@@ -218,14 +225,6 @@ export class SshHandshake {
           e,
         );
       }
-      this._connection.connect({
-        host: address,
-        port: config.sshPort,
-        username: config.username,
-        privateKey,
-        tryKeyboard: true,
-        readyTimeout: READY_TIMEOUT_MS,
-      });
     }
   }
 
