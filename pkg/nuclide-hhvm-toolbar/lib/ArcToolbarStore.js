@@ -10,6 +10,7 @@
  */
 
 import type {Task} from '../../nuclide-build/lib/types';
+import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 
 import {Disposable} from 'atom';
 
@@ -20,6 +21,24 @@ export const TASKS: Array<Task> = [];
  * e.g. HHVM Debugger
  */
 export class ArcToolbarStore {
+
+  _cwdApi: ?CwdApi;
+
+  setCwdApi(cwdApi: ?CwdApi): void {
+    this._cwdApi = cwdApi;
+  }
+
+  getActiveProjectPath(): ?string {
+    if (this._cwdApi == null) {
+      return atom.project.getPaths()[0];
+    }
+    const workingDirectory = this._cwdApi.getCwd();
+    if (workingDirectory != null) {
+      return workingDirectory.getPath();
+    } else {
+      return null;
+    }
+  }
 
   onChange(callback: () => mixed): IDisposable {
     return new Disposable(() => {});

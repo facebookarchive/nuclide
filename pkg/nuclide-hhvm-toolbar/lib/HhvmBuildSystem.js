@@ -11,6 +11,7 @@
 
 import type {Task, TaskInfo} from '../../nuclide-build/lib/types';
 import type {ArcToolbarStore as ArcToolbarStoreType} from './ArcToolbarStore';
+import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
@@ -24,11 +25,17 @@ export default class ArcBuildSystem {
   id: string;
   name: string;
   _tasks: ?Observable<Array<Task>>;
+  _cwdApi: ?CwdApi;
 
   constructor() {
     this.id = 'hhvm';
     this._store = this._getStore();
     this.name = this._store.getName();
+  }
+
+  setCwdApi(cwdApi: ?CwdApi): void {
+    this._cwdApi = cwdApi;
+    this._store.setCwdApi(cwdApi);
   }
 
   _getStore(): ArcToolbarStoreType {

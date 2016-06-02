@@ -12,6 +12,7 @@
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {BuildSystem, BuildSystemRegistry} from '../../nuclide-build/lib/types';
+import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 
 import type NuclideToolbarType from './NuclideToolbar';
 import type ProjectStoreType from './ProjectStore';
@@ -31,6 +32,7 @@ class Activation {
   _nuclideToolbar: ?NuclideToolbarType;
   _state: Object;
   _buildSystem: ?HhvmBuildSystem;
+  _cwdApi: ?CwdApi;
 
   constructor(state: ?Object) {
     const ProjectStore = require('./ProjectStore');
@@ -43,6 +45,13 @@ class Activation {
     this._projectStore = new ProjectStore();
     this._addCommands();
     this._createToolbar();
+  }
+
+  setCwdApi(cwdApi: ?CwdApi) {
+    this._cwdApi = cwdApi;
+    if (this._buildSystem != null) {
+      this._buildSystem.setCwdApi(cwdApi);
+    }
   }
 
   _addCommands(): void {
@@ -85,7 +94,11 @@ class Activation {
 
   _getBuildSystem(): BuildSystem {
     if (this._buildSystem == null) {
-      this._buildSystem = new HhvmBuildSystem();
+      const buildSystem = new HhvmBuildSystem();
+      if (this._cwdApi != null) {
+        buildSystem.setCwdApi(this._cwdApi);
+      }
+      this._buildSystem = buildSystem;
     }
     return this._buildSystem;
   }
@@ -177,6 +190,16 @@ export function consumeBuildSystemRegistry(registry: BuildSystemRegistry): void 
   activation.consumeBuildSystemRegistry(registry);
 }
 
+export function consumeCwdApi(api: CwdApi): IDisposable {
+  invariant(activation);
+  activation.setCwdApi(api);
+  return new Disposable(() => {
+    if (activation != null) {
+      activation.setCwdApi(null);
+    }
+  });
+}
+
 export function consumeToolBar(getToolBar: (group: string) => Object): void {
   invariant(activation);
   return activation.consumeToolBar(getToolBar);
@@ -188,14 +211,14 @@ export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
 }
 
 export function deactivate() {
-  if (activation) {
+  if (activation != null) {
     activation.dispose();
     activation = null;
   }
 }
 
 export function serialize(): Object {
-  if (activation) {
+  if (activation != null) {
     return activation.serialize();
   } else {
     return {};
