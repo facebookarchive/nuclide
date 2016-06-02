@@ -18,16 +18,10 @@ import ClangServer from '../lib/ClangServer';
 const TEST_FILE = path.join(__dirname, 'fixtures', 'outline.cpp');
 const FILE_CONTENTS = fs.readFileSync(TEST_FILE, 'utf8');
 
-const mockFlagsManager = ({
-  async getFlagsForSrc() {
-    return null;
-  },
-}: any);
-
 describe('ClangServer', () => {
   it('can return outline data', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(mockFlagsManager, TEST_FILE, ['-x', 'c++']);
+      const server = new ClangServer(TEST_FILE, ['-x', 'c++']);
       const response = await server.makeRequest('get_outline', {
         contents: FILE_CONTENTS,
       });

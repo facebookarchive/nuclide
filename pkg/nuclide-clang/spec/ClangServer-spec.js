@@ -12,7 +12,6 @@
 import invariant from 'assert';
 import fs from 'fs';
 import path from 'path';
-import {Subject} from 'rxjs';
 import ClangServer from '../lib/ClangServer';
 
 const TEST_FILE = path.join(__dirname, 'fixtures', 'test.cpp');
@@ -40,19 +39,11 @@ const EXPECTED_FILE_OUTLINE = [
   },
 ];
 
-// The test file doesn't need any special flags.
-const mockFlagsManager = ({
-  subject: new Subject(),
-  async getFlagsForSrc() {
-    return {flags: [], changes: this.subject};
-  },
-}: any);
-
 describe('ClangServer', () => {
 
   it('can handle requests', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(mockFlagsManager, TEST_FILE);
+      const server = new ClangServer(TEST_FILE, []);
       let response = await server.makeRequest('compile', {
         contents: FILE_CONTENTS,
       });
@@ -109,7 +100,6 @@ describe('ClangServer', () => {
             children: [],
           },
         ],
-        accurateFlags: true,
       });
 
       const mem = await server.getMemoryUsage();
@@ -186,33 +176,9 @@ describe('ClangServer', () => {
     });
   });
 
-  it('returns null when flags are unavailable', () => {
-    waitsForPromise(async () => {
-      const flagsManager = ({
-        getFlagsForSrc: async () => {
-          throw 'fail';
-        },
-      }: any);
-      let server = new ClangServer(flagsManager, TEST_FILE);
-      let response = await server.makeRequest('compile', {
-        contents: FILE_CONTENTS,
-      });
-      expect(response).toBe(null);
-      server.dispose();
-
-      // Default flags should work.
-      server = new ClangServer(flagsManager, TEST_FILE, []);
-      response = await server.makeRequest('compile', {
-        contents: FILE_CONTENTS,
-      });
-      expect(response).not.toBe(null);
-      invariant(response);
-    });
-  });
-
   it('gracefully handles server crashes', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(mockFlagsManager, TEST_FILE);
+      const server = new ClangServer(TEST_FILE, []);
       let response = await server.makeRequest('compile', {
         contents: FILE_CONTENTS,
       });
@@ -245,7 +211,7 @@ describe('ClangServer', () => {
 
   it('blocks other requests during compilation', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(mockFlagsManager, TEST_FILE);
+      const server = new ClangServer(TEST_FILE, []);
       const compilePromise = server.makeRequest('compile', {
         contents: FILE_CONTENTS,
       });

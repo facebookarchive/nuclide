@@ -178,13 +178,20 @@ export function compile(
   if (clean) {
     serverManager.reset(src);
   }
-  return Observable.fromPromise(
-    serverManager.getClangServer(src, contents, defaultFlags, true)
-      .makeRequest('compile', {contents})
-  );
+  const doCompile = async () => {
+    const server = await serverManager.getClangServer(src, contents, defaultFlags);
+    if (server != null) {
+      return server.makeRequest('compile', {contents})
+        .then(result => ({
+          ...result,
+          accurateFlags: !server.usesDefaultFlags(),
+        }));
+    }
+  };
+  return Observable.fromPromise(doCompile());
 }
 
-export function getCompletions(
+export async function getCompletions(
   src: NuclideUri,
   contents: string,
   line: number,
@@ -193,14 +200,16 @@ export function getCompletions(
   prefix: string,
   defaultFlags?: Array<string>,
 ): Promise<?Array<ClangCompletion>> {
-  return serverManager.getClangServer(src, contents, defaultFlags)
-    .makeRequest('get_completions', {
+  const server = await serverManager.getClangServer(src, contents, defaultFlags);
+  if (server != null) {
+    return server.makeRequest('get_completions', {
       contents,
       line,
       column,
       tokenStartColumn,
       prefix,
     });
+  }
 }
 
 export async function getDeclaration(
@@ -210,30 +219,34 @@ export async function getDeclaration(
   column: number,
   defaultFlags?: Array<string>,
 ): Promise<?ClangDeclaration> {
-  return await serverManager.getClangServer(src, contents, defaultFlags)
-    .makeRequest('get_declaration', {
+  const server = await serverManager.getClangServer(src, contents, defaultFlags);
+  if (server != null) {
+    return server.makeRequest('get_declaration', {
       contents,
       line,
       column,
     });
+  }
 }
 
 // Fetches information for a declaration and all its parents.
 // The first element in info will be for the declaration itself,
 // the second will be for its direct semantic parent (if it exists), etc.
-export function getDeclarationInfo(
+export async function getDeclarationInfo(
   src: NuclideUri,
   contents: string,
   line: number,
   column: number,
   defaultFlags: ?Array<string>,
 ): Promise<?Array<ClangCursor>> {
-  return serverManager.getClangServer(src, contents, defaultFlags)
-    .makeRequest('get_declaration_info', {
+  const server = await serverManager.getClangServer(src, contents, defaultFlags);
+  if (server != null) {
+    return server.makeRequest('get_declaration_info', {
       contents,
       line,
       column,
     });
+  }
 }
 
 export async function getOutline(
@@ -241,8 +254,10 @@ export async function getOutline(
   contents: string,
   defaultFlags: ?Array<string>,
 ): Promise<?Array<ClangOutlineTree>> {
-  return serverManager.getClangServer(src, contents, defaultFlags)
-    .makeRequest('get_outline', {contents}, /* blocking */ true);
+  const server = await serverManager.getClangServer(src, contents, defaultFlags);
+  if (server != null) {
+    return server.makeRequest('get_outline', {contents}, /* blocking */ true);
+  }
 }
 
 export async function formatCode(

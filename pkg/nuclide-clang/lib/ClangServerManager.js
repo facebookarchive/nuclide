@@ -13,6 +13,7 @@ import LRUCache from 'lru-cache';
 import os from 'os';
 
 import {serializeAsyncCall} from '../../commons-node/promise';
+import {getLogger} from '../../nuclide-logging';
 import ClangFlagsManager from './ClangFlagsManager';
 import ClangServer from './ClangServer';
 
@@ -21,6 +22,23 @@ const SERVER_LIMIT = 10;
 
 // Limit the total memory usage of all Clang servers.
 const MEMORY_LIMIT = Math.round(os.totalmem() * 15 / 100);
+
+let _getDefaultFlags;
+async function augmentDefaultFlags(src: string, flags: Array<string>): Promise<Array<string>> {
+  if (_getDefaultFlags === undefined) {
+    _getDefaultFlags = null;
+    try {
+      // $FlowFB
+      _getDefaultFlags = require('./fb/custom-flags').getDefaultFlags;
+    } catch (e) {
+      // Open-source version
+    }
+  }
+  if (_getDefaultFlags != null) {
+    return flags.concat(await _getDefaultFlags(src));
+  }
+  return flags;
+}
 
 export default class ClangServerManager {
 
@@ -51,12 +69,12 @@ export default class ClangServerManager {
    * Currently, there's no "status" observable, so we can only provide a busy signal to the user
    * on diagnostic requests - and hence we only restart on 'compile' requests.
    */
-  getClangServer(
+  async getClangServer(
     src: string,
     contents: string,
     defaultFlags?: ?Array<string>,
     restartIfChanged?: boolean,
-  ): ClangServer {
+  ): Promise<?ClangServer> {
     let server = this._servers.get(src);
     if (server != null) {
       if (restartIfChanged && this._flagsManager.getFlagsChanged(src)) {
@@ -65,12 +83,42 @@ export default class ClangServerManager {
         return server;
       }
     }
-    server = new ClangServer(this._flagsManager, src, defaultFlags);
+    const flagsResult = await this._getFlags(src, defaultFlags);
+    if (flagsResult == null) {
+      return null;
+    }
+    const {flags, usesDefaultFlags} = flagsResult;
+    // Another server could have been created while we were waiting.
+    server = this._servers.get(src);
+    if (server != null) {
+      return server;
+    }
+    server = new ClangServer(src, flags, usesDefaultFlags);
     // Seed with a compile request to ensure fast responses.
     server.makeRequest('compile', {contents})
       .then(() => this._checkMemoryUsage());
     this._servers.set(src, server);
     return server;
+  }
+
+  // 1. Attempt to get flags from ClangFlagsManager.
+  // 2. Otherwise, fall back to default flags.
+  async _getFlags(
+    src: string,
+    defaultFlags: ?Array<string>,
+  ): Promise<?{flags: Array<string>; usesDefaultFlags: boolean}> {
+    const trueFlags = await this._flagsManager.getFlagsForSrc(src)
+      .catch(e => {
+        getLogger().error(`Error getting flags for ${src}:`, e);
+        return null;
+      });
+    if (trueFlags != null && trueFlags.flags != null) {
+      return {flags: trueFlags.flags, usesDefaultFlags: false};
+    } else if (defaultFlags != null) {
+      return {flags: await augmentDefaultFlags(src, defaultFlags), usesDefaultFlags: true};
+    } else {
+      return null;
+    }
   }
 
   reset(src: string): void {
