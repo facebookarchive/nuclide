@@ -105,14 +105,32 @@ class RemoteTestContext {
 // It will run the testDecription both locally and remotely.
 // The provided testDescription must call context.setProject() exactly once
 // and then use context.getProjectRelativePath() for relative file paths.
+//
+// Warning: running both tests in the same Atom instance may cause failures if the tests rely on
+// some state that is not cleared. In that case, use describeRemote and describeLocal, below, in two
+// separate integration test files.
 export function describeRemotableTest(
   testName: string,
   testDescription: (context: TestContext) => void
 ): void {
-  describe('Local ' + testName, () => {
-    testDescription(new LocalTestContext());
-  });
+  describeLocal(testName, testDescription);
+  describeRemote(testName, testDescription);
+}
+
+export function describeRemote(
+  testName: string,
+  testDescription: (context: TestContext) => void,
+): void {
   describe('Remote ' + testName, () => {
     testDescription(new RemoteTestContext());
+  });
+}
+
+export function describeLocal(
+  testName: string,
+  testDescription: (context: TestContext) => void,
+): void {
+  describe('Local ' + testName, () => {
+    testDescription(new LocalTestContext());
   });
 }
