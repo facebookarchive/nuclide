@@ -147,6 +147,9 @@ class JediServer:
             if not ref.module_path:
                 continue
             result = self.serialize_definition(ref)
+            parent = self.get_significant_parent(ref)
+            if parent is not None:
+                result['parentName'] = parent.name
             results.append(result)
         return results
 
@@ -158,6 +161,18 @@ class JediServer:
             'line': definition.line - 1,
             'column': definition.column
         }
+
+    def get_significant_parent(self, definition):
+        curr = definition.parent()
+        while curr is not None:
+            if curr.type == 'function' or curr.type == 'class':
+                return curr
+            # Since results are already grouped by module, there is no point in
+            # returning a parent for a module-level reference.
+            elif curr.type == 'module':
+                return None
+            curr = definition.parent()
+        return None
 
 
 if __name__ == '__main__':

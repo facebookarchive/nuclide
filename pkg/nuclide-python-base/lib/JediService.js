@@ -37,8 +37,17 @@ export type JediDefinitionsResult = {
   definitions: Array<JediDefinition>;
 };
 
+export type JediReference = {
+  type: string;
+  text: string;
+  file: NuclideUri;
+  line: number;
+  column: number;
+  parentName?: string;
+};
+
 export type JediReferencesResult = {
-  references: Array<JediDefinition>;
+  references: Array<JediReference>;
 };
 
 export type Position = {

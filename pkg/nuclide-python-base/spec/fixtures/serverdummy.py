@@ -9,10 +9,16 @@ import os
 from decorated import Test
 
 
-def hello = os.path.isab
+hello = os.path.isab
 potato = 5
 potato2 = po
 potato3 = potato
 
 a = Test()
 a.t
+
+test_parent_name = 'hello'
+
+
+def test_fn():
+    print(test_parent_name)

@@ -46,7 +46,7 @@ describe('JediService', () => {
     it('can make completion suggestions for imported module member functions', () => {
       waitsForPromise(async () => {
         // line 12: def hello = os.path.isab
-        const response = await getCompletions(TEST_FILE, FILE_CONTENTS, 11, 24);
+        const response = await getCompletions(TEST_FILE, FILE_CONTENTS, 11, 20);
         invariant(response);
         expect(response.completions.length).toBeGreaterThan(0);
 
@@ -154,6 +154,32 @@ describe('JediService', () => {
             file: TEST_FILE,
             line: 14,
             column: 10,
+          },
+        ]);
+      });
+    });
+
+    it('displays the caller name for references within functions', () => {
+      waitsForPromise(async () => {
+        // line 13: potato = 5
+        const response = await getReferences(TEST_FILE, FILE_CONTENTS, 19, 2);
+        invariant(response);
+
+        expect(response.references).toEqual([
+          {
+            type: 'statement',
+            text: 'test_parent_name',
+            file: TEST_FILE,
+            line: 19,
+            column: 0,
+          },
+          {
+            type: 'node',
+            text: 'test_parent_name',
+            file: TEST_FILE,
+            line: 23,
+            column: 10,
+            parentName: 'test_fn',
           },
         ]);
       });

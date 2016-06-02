@@ -62,7 +62,7 @@ export default class ReferenceHelpers {
     const references = result.references.map(ref => {
       return {
         uri: ref.file,
-        name: null,
+        name: ref.parentName,
         start: {
           line: ref.line + 1,
           column: ref.column + 1,
