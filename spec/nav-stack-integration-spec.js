@@ -17,15 +17,10 @@ import {
   waitsForFilePosition,
   jasmineIntegrationTestSetup,
   setLocalProject,
+  sleep,
 } from '../pkg/nuclide-integration-test-helpers';
 import {goToLocation} from '../pkg/commons-atom/go-to-location';
 import path from 'path';
-
-function sleep(ms: number): Promise {
-  return new Promise((resolve, reject) => {
-    setTimeout(resolve, ms);
-  });
-}
 
 const NAV_SLEEP_MS = 1000;
 

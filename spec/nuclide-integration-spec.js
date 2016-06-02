@@ -13,6 +13,7 @@ import {
   activateAllPackages,
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
+  sleep,
 } from '../pkg/nuclide-integration-test-helpers';
 
 describe('nuclide', () => {
@@ -35,7 +36,3 @@ describe('nuclide', () => {
     });
   });
 });
-
-function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
