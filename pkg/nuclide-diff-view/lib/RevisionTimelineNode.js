@@ -13,6 +13,7 @@ import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService'
 
 import classnames from 'classnames';
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-base/lib/utils';
+import {getCommitAuthorFromAuthorEmail} from '../../nuclide-arcanist-base/lib/utils';
 import {React} from 'react-for-atom';
 import {track} from '../../nuclide-analytics';
 
@@ -58,6 +59,14 @@ export default class RevisionTimelineNode extends React.Component {
   Author: ${author}
   Date: ${date}`;
 
+    const commitAuthor = getCommitAuthorFromAuthorEmail(author);
+    let commitAuthorElement;
+    if (commitAuthor != null) {
+      commitAuthorElement = (
+        <span className="inline-block">{commitAuthor}</span>
+      );
+    }
+
     const phabricatorRevision = getPhabricatorRevisionFromCommitMessage(description);
     let phabricatorRevisionElement;
     if (phabricatorRevision != null) {
@@ -95,7 +104,8 @@ export default class RevisionTimelineNode extends React.Component {
         title={tooltip}>
         <div className="revision-bubble" />
         <div className="revision-label text-monospace">
-          <span className="inline-block">{hash.substr(0, 6)}</span>
+          <span className="inline-block">{hash.substr(0, 7)}</span>
+          {commitAuthorElement}
           {phabricatorRevisionElement}
           {bookmarksElement}
           <br />

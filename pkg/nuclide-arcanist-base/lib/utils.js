@@ -15,6 +15,7 @@ export type PhabricatorRevisionInfo = {
 };
 
 const DIFFERENTIAL_REVISION_REGEX = /^Differential Revision:\s*(\D+\/[dD]([1-9][0-9]{5,}))/im;
+const COMMIT_AUTHOR_REGEX = /.*<(.*)@.*>/im;
 
 export function getPhabricatorRevisionFromCommitMessage(
   commitMessage: string,
@@ -27,5 +28,16 @@ export function getPhabricatorRevisionFromCommitMessage(
       url: match[1],
       id: `D${match[2]}`,
     };
+  }
+}
+
+export function getCommitAuthorFromAuthorEmail(
+  author: string,
+): ?string {
+  const match = COMMIT_AUTHOR_REGEX.exec(author);
+  if (match === null) {
+    return null;
+  } else {
+    return match[1];
   }
 }
