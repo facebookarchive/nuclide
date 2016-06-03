@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,47 +8,60 @@
  * the root directory of this source tree.
  */
 
-import type {MerlinError} from '../../nuclide-ocaml-base';
-import type {LinterMessage} from '../../nuclide-diagnostics-base';
+var _constants2;
 
-import {GRAMMARS} from './constants';
-import {trackOperationTiming} from '../../nuclide-analytics';
-import {Range} from 'atom';
-import {getServiceByNuclideUri} from '../../nuclide-client';
+function _constants() {
+  return _constants2 = require('./constants');
+}
+
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _nuclideClient2;
+
+function _nuclideClient() {
+  return _nuclideClient2 = require('../../nuclide-client');
+}
 
 module.exports = {
   name: 'nuclide-ocaml',
-  grammarScopes: Array.from(GRAMMARS),
+  grammarScopes: Array.from((_constants2 || _constants()).GRAMMARS),
   scope: 'file',
   lintOnFly: false,
 
-  lint(textEditor: atom$TextEditor): Promise<Array<LinterMessage>> {
-    return trackOperationTiming('nuclide-ocaml.lint', async () => {
-      const filePath = textEditor.getPath();
+  lint: function lint(textEditor) {
+    return (0, (_nuclideAnalytics2 || _nuclideAnalytics()).trackOperationTiming)('nuclide-ocaml.lint', _asyncToGenerator(function* () {
+      var filePath = textEditor.getPath();
       if (filePath == null) {
         return [];
       }
 
-      const instance = getServiceByNuclideUri('MerlinService', filePath);
+      var instance = (0, (_nuclideClient2 || _nuclideClient()).getServiceByNuclideUri)('MerlinService', filePath);
       if (instance == null) {
         return [];
       }
-      await instance.pushNewBuffer(filePath, textEditor.getText());
-      const diagnostics = await instance.errors(filePath);
+      yield instance.pushNewBuffer(filePath, textEditor.getText());
+      var diagnostics = yield instance.errors(filePath);
       if (diagnostics == null) {
         return [];
       }
-      return diagnostics.map((diagnostic: MerlinError): LinterMessage => {
+      return diagnostics.map(function (diagnostic) {
         return {
           type: diagnostic.type === 'warning' ? 'Warning' : 'Error',
-          filePath,
+          filePath: filePath,
           text: diagnostic.message,
-          range: new Range(
-            [diagnostic.start.line - 1, diagnostic.start.col],
-            [diagnostic.end.line - 1, diagnostic.end.col],
-          ),
+          range: new (_atom2 || _atom()).Range([diagnostic.start.line - 1, diagnostic.start.col], [diagnostic.end.line - 1, diagnostic.end.col])
         };
       });
-    });
-  },
+    }));
+  }
 };

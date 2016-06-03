@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,65 +14,79 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import classnames from 'classnames';
+var _reactForAtom2;
 
-export const Tabs = React.createClass({
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _classnames2;
+
+function _classnames() {
+  return _classnames2 = _interopRequireDefault(require('classnames'));
+}
+
+var Tabs = (_reactForAtom2 || _reactForAtom()).React.createClass({
 
   propTypes: {
-    tabs: React.PropTypes.arrayOf(React.PropTypes.shape({
-      name: React.PropTypes.string.isRequired,
-      tabContent: React.PropTypes.node.isRequired,
+    tabs: (_reactForAtom2 || _reactForAtom()).React.PropTypes.arrayOf((_reactForAtom2 || _reactForAtom()).React.PropTypes.shape({
+      name: (_reactForAtom2 || _reactForAtom()).React.PropTypes.string.isRequired,
+      tabContent: (_reactForAtom2 || _reactForAtom()).React.PropTypes.node.isRequired
     })).isRequired,
-    activeTabName: React.PropTypes.string.isRequired,
-    onActiveTabChange: React.PropTypes.func.isRequired,
-    triggeringEvent: React.PropTypes.string.isRequired,
+    activeTabName: (_reactForAtom2 || _reactForAtom()).React.PropTypes.string.isRequired,
+    onActiveTabChange: (_reactForAtom2 || _reactForAtom()).React.PropTypes.func.isRequired,
+    triggeringEvent: (_reactForAtom2 || _reactForAtom()).React.PropTypes.string.isRequired
   },
 
-  getDefaultProps(): any {
+  getDefaultProps: function getDefaultProps() {
     return {
-      triggeringEvent: 'onClick',
+      triggeringEvent: 'onClick'
     };
   },
 
-  _handleTabChange(selectedTabName: string) {
+  _handleTabChange: function _handleTabChange(selectedTabName) {
     if (typeof this.props.onActiveTabChange === 'function') {
-      this.props.onActiveTabChange(
-        this.props.tabs.find(tab => tab.name === selectedTabName)
-      );
+      this.props.onActiveTabChange(this.props.tabs.find(function (tab) {
+        return tab.name === selectedTabName;
+      }));
     }
   },
 
-  _renderTabMenu(): React.Element {
-    const tabs = this.props.tabs.map(tab => {
-      const handler = {};
-      handler[this.props.triggeringEvent] = this._handleTabChange.bind(this, tab.name);
-      return (
-        <li
-          className={classnames({
+  _renderTabMenu: function _renderTabMenu() {
+    var _this = this;
+
+    var tabs = this.props.tabs.map(function (tab) {
+      var handler = {};
+      handler[_this.props.triggeringEvent] = _this._handleTabChange.bind(_this, tab.name);
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'li',
+        _extends({
+          className: (0, (_classnames2 || _classnames()).default)({
             tab: true,
-            active: this.props.activeTabName === tab.name,
-          })}
-          key={tab.name}
-          {...handler}>
-          <div className="title">
-            {tab.tabContent}
-          </div>
-        </li>
+            active: _this.props.activeTabName === tab.name
+          }),
+          key: tab.name
+        }, handler),
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'div',
+          { className: 'title' },
+          tab.tabContent
+        )
       );
     });
-    return (
-      <ul className="tab-bar list-inline inset-panel">
-        {tabs}
-      </ul>
+    return (_reactForAtom2 || _reactForAtom()).React.createElement(
+      'ul',
+      { className: 'tab-bar list-inline inset-panel' },
+      tabs
     );
   },
 
-  render(): React.Element {
-    return (
-      <div className="nuclide-tabs">
-        {this._renderTabMenu()}
-      </div>
+  render: function render() {
+    return (_reactForAtom2 || _reactForAtom()).React.createElement(
+      'div',
+      { className: 'nuclide-tabs' },
+      this._renderTabMenu()
     );
-  },
+  }
 });
+exports.Tabs = Tabs;

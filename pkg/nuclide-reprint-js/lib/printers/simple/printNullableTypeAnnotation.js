@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +8,22 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {NullableTypeAnnotation} from 'ast-types-flow';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2;
 
-function printNullableTypeAnnotation(
-  print: Print,
-  node: NullableTypeAnnotation,
-): Lines {
-  return flatten([
-    '?',
-    markers.noBreak,
-    print(node.typeAnnotation),
-  ]);
+function _utilsFlatten() {
+  return _utilsFlatten2 = _interopRequireDefault(require('../../utils/flatten'));
+}
+
+var _constantsMarkers2;
+
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+function printNullableTypeAnnotation(print, node) {
+  return (0, (_utilsFlatten2 || _utilsFlatten()).default)(['?', (_constantsMarkers2 || _constantsMarkers()).default.noBreak, print(node.typeAnnotation)]);
 }
 
 module.exports = printNullableTypeAnnotation;

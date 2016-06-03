@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +8,18 @@
  * the root directory of this source tree.
  */
 
-import type {DebuggerStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import wrapStatement from '../../wrappers/simple/wrapStatement';
+var _wrappersSimpleWrapStatement2;
 
-function printDebuggerStatement(print: Print, node: DebuggerStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
+function _wrappersSimpleWrapStatement() {
+  return _wrappersSimpleWrapStatement2 = _interopRequireDefault(require('../../wrappers/simple/wrapStatement'));
+}
+
+function printDebuggerStatement(print, node) {
+  var wrap = function wrap(x) {
+    return (0, (_wrappersSimpleWrapStatement2 || _wrappersSimpleWrapStatement()).default)(print, node, x);
+  };
   return wrap(['debugger;']);
 }
 

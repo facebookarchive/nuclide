@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,164 +10,96 @@
  * the root directory of this source tree.
  */
 
-import type {
-  OutlineTree,
-  Outline,
-} from '../../nuclide-outline-view';
-import type {TextToken} from '../../nuclide-tokenized-text';
-
-import {Point} from 'atom';
-import {getLogger} from '../../nuclide-logging';
-import {
-  keyword,
-  method,
-  param,
-  whitespace,
-  plain,
-} from '../../nuclide-tokenized-text';
-import path from 'path';
-import {asyncExecute} from '../../commons-node/process';
-import {getPythonPath} from './config';
-
-const SHOW_NO_VARIABLES = 'none';
-const SHOW_CONSTANTS = 'constants';
-const SHOW_ALL_VARIABLES = 'all';
-
-type ShowVariableMode = 'none' | 'constants' | 'all';
-
-const logger = getLogger();
-
-type FunctionDefTree = {
-  kind: 'FunctionDef';
-  name: string;
-  args: ArgumentsTree;
-  body: Array<PythonTree>;
-  lineno: number;
-  col_offset: number;
-};
-type ClassDefTree = {
-  kind: 'ClassDef';
-  name: string;
-  bases: Array<NameTree>;
-  body: Array<PythonTree>;
-  lineno: number;
-  col_offset: number;
-};
-type AssignTree = {
-  kind: 'Assign';
-  targets: Array<PythonTree>;
-  value: PythonTree;
-  lineno: number;
-  col_offset: number;
-};
-type ArgumentsTree = {
-  kind: 'arguments';
-  vararg: ?string;
-  args: Array<NameTree>;
-  defaults: Array<PythonTree>;
-  kwarg: ?string;
-};
-type NameTree = {
-  kind: 'Name';
-  ctx: ParamTree | LoadTree;
-  id: string;
-  lineno: number;
-  col_offset: number;
-};
-type ParamTree = {
-  kind: 'Param';
-};
-type LoadTree = {
-  kind: 'Load';
-};
-type ModuleTree = {
-  kind: 'Module';
-  body: Array<PythonTree>;
-};
-type ImportTree = {
-  kind: 'Import';
-  names: Array<AliasTree>;
-  lineno: number;
-  col_offset: number;
-};
-type ImportFromTree = {
-  kind: 'ImportFrom';
-  module: string;
-  names: Array<AliasTree>;
-  lineno: number;
-  col_offset: number;
-};
-type AliasTree = {
-  kind: 'alias';
-  name: string;
-  asname: ?string;
-};
-type PositionTree =
-  AssignTree
-  | ClassDefTree
-  | FunctionDefTree
-  | ImportTree
-  | ImportFromTree
-  | NameTree;
-export type PythonTree =
-  FunctionDefTree
-  | AliasTree
-  | ArgumentsTree
-  | AssignTree
-  | ClassDefTree
-  | ImportTree
-  | ImportFromTree
-  | ModuleTree
-  | NameTree
-  | ParamTree;
-
-export async function pythonTextToOutline(
-  showGlobalVariables: boolean,
-  text: string
-): Promise<?Outline> {
+var pythonTextToOutline = _asyncToGenerator(function* (showGlobalVariables, text) {
   try {
-    const tree = await getPythonTree(text);
+    var tree = yield getPythonTree(text);
     return tree == null ? null : treeToOutline(showGlobalVariables, tree);
   } catch (e) {
     logger.error('Exception getting outline: ', e);
     return null;
   }
+});
+
+exports.pythonTextToOutline = pythonTextToOutline;
+
+var getPythonTree = _asyncToGenerator(function* (text) {
+  var result = yield (0, (_commonsNodeProcess2 || _commonsNodeProcess()).asyncExecute)((0, (_config2 || _config()).getPythonPath)(), [(_path2 || _path()).default.join(__dirname, '../python/outline.py')], { stdin: text });
+  if (result.exitCode !== 0) {
+    logger.error('Python tree failed to get results: stderr: ' + result.stderr);
+    return null;
+  }
+  return JSON.parse(result.stdout);
+});
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
 }
 
-function treeToOutline(showGlobalVariables: boolean, tree: PythonTree): ?Outline {
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var _nuclideTokenizedText2;
+
+function _nuclideTokenizedText() {
+  return _nuclideTokenizedText2 = require('../../nuclide-tokenized-text');
+}
+
+var _path2;
+
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
+
+var _commonsNodeProcess2;
+
+function _commonsNodeProcess() {
+  return _commonsNodeProcess2 = require('../../commons-node/process');
+}
+
+var _config2;
+
+function _config() {
+  return _config2 = require('./config');
+}
+
+var SHOW_NO_VARIABLES = 'none';
+var SHOW_CONSTANTS = 'constants';
+var SHOW_ALL_VARIABLES = 'all';
+
+var logger = (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)();
+
+function treeToOutline(showGlobalVariables, tree) {
   switch (tree.kind) {
     case 'Module':
       return {
-        outlineTrees: treesToOutlineTrees(showGlobalVariables
-          ? SHOW_ALL_VARIABLES : SHOW_CONSTANTS, tree.body),
+        outlineTrees: treesToOutlineTrees(showGlobalVariables ? SHOW_ALL_VARIABLES : SHOW_CONSTANTS, tree.body)
       };
     default:
-      logger.error(`Cannot convert python tree kind ${tree.kind}`);
+      logger.error('Cannot convert python tree kind ' + tree.kind);
       return null;
   }
 }
 
-async function getPythonTree(text: string): Promise<?PythonTree> {
-  const result = await asyncExecute(
-    getPythonPath(),
-    [path.join(__dirname, '../python/outline.py')],
-    {stdin: text});
-  if (result.exitCode !== 0) {
-    logger.error(`Python tree failed to get results: stderr: ${result.stderr}`);
-    return null;
-  }
-  return JSON.parse(result.stdout);
+function treesToOutlineTrees(showVariables, trees) {
+  return trees.map(function (tree) {
+    return treeToOutlineTree(showVariables, tree);
+  }).filter(function (outlineTree) {
+    return outlineTree != null;
+  });
 }
 
-function treesToOutlineTrees(
-  showVariables: ShowVariableMode,
-  trees: Array<PythonTree>
-): Array<OutlineTree> {
-  return ((trees.map(tree => treeToOutlineTree(showVariables, tree))
-      .filter(outlineTree => outlineTree != null): any): Array<OutlineTree>);
-}
-
-function treeToOutlineTree(showVariables: ShowVariableMode, tree: PythonTree): ?OutlineTree {
+function treeToOutlineTree(showVariables, tree) {
   switch (tree.kind) {
     case 'FunctionDef':
       return functionDefToOutline(tree);
@@ -183,94 +116,81 @@ function treeToOutlineTree(showVariables: ShowVariableMode, tree: PythonTree): ?
     case 'TryExcept':
       return null;
     default:
-      logger.error(`Unexpected python outline tree kind ${tree.kind}`);
+      logger.error('Unexpected python outline tree kind ' + tree.kind);
       return null;
   }
 }
 
-function assignToOutline(mode: ShowVariableMode, tree: AssignTree): ?OutlineTree {
+function assignToOutline(mode, tree) {
   if (mode === SHOW_NO_VARIABLES) {
     return null;
   }
   if (tree.targets.length !== 1) {
     return null;
   }
-  const target = tree.targets[0];
+  var target = tree.targets[0];
   if (target.kind !== 'Name') {
     return null;
   }
-  const id = target.id;
+  var id = target.id;
   // Only show initialization of constants, which according to python
   // style are all upper case.
   if (mode === SHOW_CONSTANTS && id !== id.toUpperCase()) {
     return null;
   }
   return {
-    tokenizedText: [
-      plain(id),
-    ],
+    tokenizedText: [(0, (_nuclideTokenizedText2 || _nuclideTokenizedText()).plain)(id)],
     representativeName: id,
     startPosition: treeToPoint(target),
-    children: [],
+    children: []
   };
 }
 
-function classDefToOutline(tree: ClassDefTree): OutlineTree {
+function classDefToOutline(tree) {
   return {
-    tokenizedText: [
-      keyword('class'),
-      whitespace(' '),
-      method(tree.name),
-    ],
+    tokenizedText: [(0, (_nuclideTokenizedText2 || _nuclideTokenizedText()).keyword)('class'), (0, (_nuclideTokenizedText2 || _nuclideTokenizedText()).whitespace)(' '), (0, (_nuclideTokenizedText2 || _nuclideTokenizedText()).method)(tree.name)],
     representativeName: tree.name,
     startPosition: treeToPoint(tree),
-    children: treesToOutlineTrees(SHOW_NO_VARIABLES, tree.body),
+    children: treesToOutlineTrees(SHOW_NO_VARIABLES, tree.body)
   };
 }
 
-function functionDefToOutline(tree: FunctionDefTree): OutlineTree {
+function functionDefToOutline(tree) {
   return {
-    tokenizedText: [
-      keyword('def'),
-      whitespace(' '),
-      method(tree.name),
-      plain('('),
-      ...argsToText(tree.args),
-      plain(')'),
-    ],
+    tokenizedText: [(0, (_nuclideTokenizedText2 || _nuclideTokenizedText()).keyword)('def'), (0, (_nuclideTokenizedText2 || _nuclideTokenizedText()).whitespace)(' '), (0, (_nuclideTokenizedText2 || _nuclideTokenizedText()).method)(tree.name), (0, (_nuclideTokenizedText2 || _nuclideTokenizedText()).plain)('(')].concat(_toConsumableArray(argsToText(tree.args)), [(0, (_nuclideTokenizedText2 || _nuclideTokenizedText()).plain)(')')]),
     representativeName: tree.name,
     startPosition: treeToPoint(tree),
-    children: [],
+    children: []
   };
 }
 
-function argsToText(args: ArgumentsTree): Array<TextToken> {
+function argsToText(args) {
 
   function startArg() {
     if (result.length > 0) {
-      result.push(plain(','));
-      result.push(whitespace(' '));
+      result.push((0, (_nuclideTokenizedText2 || _nuclideTokenizedText()).plain)(','));
+      result.push((0, (_nuclideTokenizedText2 || _nuclideTokenizedText()).whitespace)(' '));
     }
   }
-  const result = [];
-  const vararg = args.vararg;
+  var result = [];
+  var vararg = args.vararg;
   if (vararg != null) {
-    result.push(plain('*'));
-    result.push(param(vararg));
+    result.push((0, (_nuclideTokenizedText2 || _nuclideTokenizedText()).plain)('*'));
+    result.push((0, (_nuclideTokenizedText2 || _nuclideTokenizedText()).param)(vararg));
   }
-  for (const arg of args.args) {
+  for (var arg of args.args) {
     startArg();
-    result.push(param(arg.id));
+    result.push((0, (_nuclideTokenizedText2 || _nuclideTokenizedText()).param)(arg.id));
   }
-  const kwarg = args.kwarg;
+  var kwarg = args.kwarg;
   if (kwarg != null) {
     startArg();
-    result.push(plain('**'));
-    result.push(param(kwarg));
+    result.push((0, (_nuclideTokenizedText2 || _nuclideTokenizedText()).plain)('**'));
+    result.push((0, (_nuclideTokenizedText2 || _nuclideTokenizedText()).param)(kwarg));
   }
   return result;
 }
 
-function treeToPoint(tree: PositionTree): atom$Point {
-  return new Point(tree.lineno - 1, tree.col_offset);
+function treeToPoint(tree) {
+  return new (_atom2 || _atom()).Point(tree.lineno - 1, tree.col_offset);
 }

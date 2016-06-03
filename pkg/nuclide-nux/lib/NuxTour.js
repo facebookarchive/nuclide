@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +16,22 @@
  * the root directory of this source tree.
  */
 
-import analytics from '../../nuclide-analytics';
-import {NuxView} from './NuxView';
+var _nuclideAnalytics2;
 
-export class NuxTour {
-  _nuxList : Array<NuxView>;
-  _callback: ?(() => void);
-  _currentStep: number;
-  _id: string;
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = _interopRequireDefault(require('../../nuclide-analytics'));
+}
 
-  constructor(
-    id: string,
-    nuxList : ?(Array<NuxView>),
-  ): void {
+var _NuxView2;
+
+function _NuxView() {
+  return _NuxView2 = require('./NuxView');
+}
+
+var NuxTour = (function () {
+  function NuxTour(id, nuxList) {
+    _classCallCheck(this, NuxTour);
+
     if (nuxList == null || nuxList.length < 1) {
       throw new Error('You must create a NuxTour with at least one NuxView element!');
     }
@@ -29,54 +39,63 @@ export class NuxTour {
     this._id = id;
     this._nuxList = nuxList;
 
-    const boundNextStep = this._nextStep.bind(this);
-    nuxList.forEach(n => { n.setNuxCompleteCallback(boundNextStep); });
+    var boundNextStep = this._nextStep.bind(this);
+    nuxList.forEach(function (n) {
+      n.setNuxCompleteCallback(boundNextStep);
+    });
   }
 
-  begin(): void {
-    try {
-      this._nuxList[0].showNux();
-    } catch (e) {
-      this._track(false, e.toString());
-    }
-  }
-
-  _nextStep(): void {
-    if (this._currentStep < this._nuxList.length - 1) {
-      this._track(true);
+  _createClass(NuxTour, [{
+    key: 'begin',
+    value: function begin() {
       try {
-        this._nuxList[++this._currentStep].showNux();
+        this._nuxList[0].showNux();
       } catch (e) {
         this._track(false, e.toString());
       }
-    } else {
-      this._onNuxComplete();
     }
-  }
-
-  _onNuxComplete() : void {
-    this._track(true);
-    if (this._callback != null) {
-      this._callback();
+  }, {
+    key: '_nextStep',
+    value: function _nextStep() {
+      if (this._currentStep < this._nuxList.length - 1) {
+        this._track(true);
+        try {
+          this._nuxList[++this._currentStep].showNux();
+        } catch (e) {
+          this._track(false, e.toString());
+        }
+      } else {
+        this._onNuxComplete();
+      }
     }
-  }
+  }, {
+    key: '_onNuxComplete',
+    value: function _onNuxComplete() {
+      this._track(true);
+      if (this._callback != null) {
+        this._callback();
+      }
+    }
+  }, {
+    key: '_track',
+    value: function _track(completed, error) {
+      if (completed === undefined) completed = false;
 
-  _track(
-    completed: boolean = false,
-    error: ?string,
-  ) : void {
-    analytics.track(
-      'nux-tour-action',
-      {
+      (_nuclideAnalytics2 || _nuclideAnalytics()).default.track('nux-tour-action', {
         tourId: this._id,
-        step: `${this._currentStep + 1}/${this._nuxList.length + 1}`,
-        completed: `${completed}`,
-        error: `${error}`,
-      },
-    );
-  }
+        step: this._currentStep + 1 + '/' + (this._nuxList.length + 1),
+        completed: '' + completed,
+        error: '' + error
+      });
+    }
+  }, {
+    key: 'setNuxCompleteCallback',
+    value: function setNuxCompleteCallback(callback) {
+      this._callback = callback;
+    }
+  }]);
 
-  setNuxCompleteCallback(callback: (() => void)): void {
-    this._callback = callback;
-  }
-}
+  return NuxTour;
+})();
+
+exports.NuxTour = NuxTour;

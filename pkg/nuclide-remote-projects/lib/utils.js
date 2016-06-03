@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,65 +10,69 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {
-  RemoteConnectionConfiguration,
-} from '../../nuclide-remote-connection/lib/RemoteConnection';
+exports.sanitizeNuclideUri = sanitizeNuclideUri;
+exports.getOpenFileEditorForRemoteProject = getOpenFileEditorForRemoteProject;
 
-import invariant from 'assert';
-import {parse} from '../../nuclide-remote-uri';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
-const NUCLIDE_PROTOCOL_PREFIX_LENGTH = NUCLIDE_PROTOCOL_PREFIX.length;
+var _assert2;
 
-export type OpenFileEditorInstance = {
-  pane: atom$Pane;
-  editor: atom$TextEditor;
-  uri: NuclideUri;
-  filePath: string;
-};
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _nuclideRemoteUri2;
+
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = require('../../nuclide-remote-uri');
+}
+
+var NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
+var NUCLIDE_PROTOCOL_PREFIX_LENGTH = NUCLIDE_PROTOCOL_PREFIX.length;
 
 /**
  * Clean a nuclide URI from the prepended absolute path prefixes and fix
  * the broken uri, in the sense that it's nuclide:/server/path/to/dir instead of
  * nuclide://server/path/to/dir because Atom called path.normalize() on the directory uri.
  */
-export function sanitizeNuclideUri(uri: string): string {
+
+function sanitizeNuclideUri(uri) {
   // Remove the leading absolute path prepended to the file paths
   // between atom reloads.
-  const protocolIndex = uri.indexOf(NUCLIDE_PROTOCOL_PREFIX);
+  var protocolIndex = uri.indexOf(NUCLIDE_PROTOCOL_PREFIX);
   if (protocolIndex > 0) {
     uri = uri.substring(protocolIndex);
   }
   // Add the missing slash, if removed through a path.normalize() call.
-  if (uri.startsWith(NUCLIDE_PROTOCOL_PREFIX) &&
-      uri[NUCLIDE_PROTOCOL_PREFIX_LENGTH] !== '/' /*protocol missing last slash*/) {
+  if (uri.startsWith(NUCLIDE_PROTOCOL_PREFIX) && uri[NUCLIDE_PROTOCOL_PREFIX_LENGTH] !== '/' /*protocol missing last slash*/) {
 
-    uri = uri.substring(0, NUCLIDE_PROTOCOL_PREFIX_LENGTH) +
-        '/' + uri.substring(NUCLIDE_PROTOCOL_PREFIX_LENGTH);
-  }
+      uri = uri.substring(0, NUCLIDE_PROTOCOL_PREFIX_LENGTH) + '/' + uri.substring(NUCLIDE_PROTOCOL_PREFIX_LENGTH);
+    }
   return uri;
 }
 
-export function *getOpenFileEditorForRemoteProject(
-  connectionConfig: RemoteConnectionConfiguration,
-): Iterator<OpenFileEditorInstance> {
-  for (const pane of atom.workspace.getPanes()) {
-    const paneItems = pane.getItems();
-    for (const paneItem of paneItems) {
+function* getOpenFileEditorForRemoteProject(connectionConfig) {
+  for (var _pane of atom.workspace.getPanes()) {
+    var paneItems = _pane.getItems();
+    for (var paneItem of paneItems) {
       if (!atom.workspace.isTextEditor(paneItem) || !paneItem.getURI()) {
         // Ignore non-text editors and new editors with empty uris / paths.
         continue;
       }
-      const uri = sanitizeNuclideUri(paneItem.getURI());
-      const {hostname: fileHostname, path: filePath} = parse(uri);
+      var _uri = sanitizeNuclideUri(paneItem.getURI());
+
+      var _ref = (0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).parse)(_uri);
+
+      var fileHostname = _ref.hostname;
+      var _filePath = _ref.path;
+
       if (fileHostname === connectionConfig.host) {
-        invariant(fileHostname);
+        (0, (_assert2 || _assert()).default)(fileHostname);
         yield {
-          pane,
+          pane: _pane,
           editor: paneItem,
-          uri,
-          filePath,
+          uri: _uri,
+          filePath: _filePath
         };
       }
     }

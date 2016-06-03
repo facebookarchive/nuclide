@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +10,7 @@
  * the root directory of this source tree.
  */
 
-const HACK_GRAMMARS = ['text.html.hack', 'text.html.php'];
-
-export type CompletionTypeValue = 0 | 1 | 2 | 3 | 4 | 5;
-export type SymbolTypeValue = 0| 1 | 2 | 3 | 4;
-export type SearchResultTypeValue = 0| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+var HACK_GRAMMARS = ['text.html.hack', 'text.html.php'];
 
 /**
  * Constants here represent enums with the same values got from hh_client and the Hack web worker.
@@ -26,7 +23,7 @@ module.exports = {
     TYPE: 2,
     CLASS_GET: 3,
     VAR: 4,
-    NONE: 5,
+    NONE: 5
   }),
 
   SymbolType: Object.freeze({
@@ -34,7 +31,7 @@ module.exports = {
     FUNCTION: 1,
     METHOD: 2,
     LOCAL: 3,
-    UNKNOWN: 4,
+    UNKNOWN: 4
   }),
 
   SearchResultType: Object.freeze({
@@ -46,9 +43,9 @@ module.exports = {
     CONSTANT: 5,
     INTERFACE: 6,
     ABSTRACT_CLASS: 7,
-    TRAIT: 8,
+    TRAIT: 8
   }),
 
-  HACK_GRAMMARS,
-  HACK_GRAMMARS_SET: new Set(HACK_GRAMMARS),
+  HACK_GRAMMARS: HACK_GRAMMARS,
+  HACK_GRAMMARS_SET: new Set(HACK_GRAMMARS)
 };

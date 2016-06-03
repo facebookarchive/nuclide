@@ -1,5 +1,16 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,75 +20,113 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {Dropdown} from '../../../nuclide-ui/lib/Dropdown';
-import {Toolbar} from '../../../nuclide-ui/lib/Toolbar';
-import {ToolbarLeft} from '../../../nuclide-ui/lib/ToolbarLeft';
-import {ToolbarRight} from '../../../nuclide-ui/lib/ToolbarRight';
-import {
-  Button,
-  ButtonSizes,
-} from '../../../nuclide-ui/lib/Button';
+var _reactForAtom2;
 
-type Props = {
-  clear: () => void;
-  selectedSourceId: string;
-  sources: Array<{id: string; name: string}>;
-  onSelectedSourceChange: (sourceId: string) => void;
-};
-
-export default class ConsoleHeader extends React.Component {
-  props: Props;
-
-  constructor(props: Props) {
-    super(props);
-    (this: any)._handleClearButtonClick = this._handleClearButtonClick.bind(this);
-  }
-
-  _handleClearButtonClick(event: SyntheticMouseEvent): void {
-    this.props.clear();
-  }
-
-  render(): ?React.Element {
-    const options = [
-      ...this.props.sources
-        .slice()
-        .sort((a, b) => sortAlpha(a.name, b.name))
-        .map(source => ({
-          label: source.id,
-          value: source.name,
-        })),
-      {label: 'All Sources', value: ''},
-    ];
-
-    const selectedIndex = options.findIndex(option => option.value === this.props.selectedSourceId);
-
-    return (
-      <Toolbar location="top">
-        <ToolbarLeft>
-          <Dropdown
-            size="sm"
-            menuItems={options}
-            selectedIndex={selectedIndex}
-            onSelectedChange={index => this.props.onSelectedSourceChange(options[index].value)}
-          />
-        </ToolbarLeft>
-        <ToolbarRight>
-          <Button
-            size={ButtonSizes.SMALL}
-            onClick={this._handleClearButtonClick}>
-            Clear
-          </Button>
-        </ToolbarRight>
-      </Toolbar>
-    );
-  }
-
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
 }
 
-function sortAlpha(a: string, b: string): number {
-  const aLower = a.toLowerCase();
-  const bLower = b.toLowerCase();
+var _nuclideUiLibDropdown2;
+
+function _nuclideUiLibDropdown() {
+  return _nuclideUiLibDropdown2 = require('../../../nuclide-ui/lib/Dropdown');
+}
+
+var _nuclideUiLibToolbar2;
+
+function _nuclideUiLibToolbar() {
+  return _nuclideUiLibToolbar2 = require('../../../nuclide-ui/lib/Toolbar');
+}
+
+var _nuclideUiLibToolbarLeft2;
+
+function _nuclideUiLibToolbarLeft() {
+  return _nuclideUiLibToolbarLeft2 = require('../../../nuclide-ui/lib/ToolbarLeft');
+}
+
+var _nuclideUiLibToolbarRight2;
+
+function _nuclideUiLibToolbarRight() {
+  return _nuclideUiLibToolbarRight2 = require('../../../nuclide-ui/lib/ToolbarRight');
+}
+
+var _nuclideUiLibButton2;
+
+function _nuclideUiLibButton() {
+  return _nuclideUiLibButton2 = require('../../../nuclide-ui/lib/Button');
+}
+
+var ConsoleHeader = (function (_React$Component) {
+  _inherits(ConsoleHeader, _React$Component);
+
+  function ConsoleHeader(props) {
+    _classCallCheck(this, ConsoleHeader);
+
+    _get(Object.getPrototypeOf(ConsoleHeader.prototype), 'constructor', this).call(this, props);
+    this._handleClearButtonClick = this._handleClearButtonClick.bind(this);
+  }
+
+  _createClass(ConsoleHeader, [{
+    key: '_handleClearButtonClick',
+    value: function _handleClearButtonClick(event) {
+      this.props.clear();
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _this = this;
+
+      var options = [].concat(_toConsumableArray(this.props.sources.slice().sort(function (a, b) {
+        return sortAlpha(a.name, b.name);
+      }).map(function (source) {
+        return {
+          label: source.id,
+          value: source.name
+        };
+      })), [{ label: 'All Sources', value: '' }]);
+
+      var selectedIndex = options.findIndex(function (option) {
+        return option.value === _this.props.selectedSourceId;
+      });
+
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_nuclideUiLibToolbar2 || _nuclideUiLibToolbar()).Toolbar,
+        { location: 'top' },
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_nuclideUiLibToolbarLeft2 || _nuclideUiLibToolbarLeft()).ToolbarLeft,
+          null,
+          (_reactForAtom2 || _reactForAtom()).React.createElement((_nuclideUiLibDropdown2 || _nuclideUiLibDropdown()).Dropdown, {
+            size: 'sm',
+            menuItems: options,
+            selectedIndex: selectedIndex,
+            onSelectedChange: function (index) {
+              return _this.props.onSelectedSourceChange(options[index].value);
+            }
+          })
+        ),
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_nuclideUiLibToolbarRight2 || _nuclideUiLibToolbarRight()).ToolbarRight,
+          null,
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            (_nuclideUiLibButton2 || _nuclideUiLibButton()).Button,
+            {
+              size: (_nuclideUiLibButton2 || _nuclideUiLibButton()).ButtonSizes.SMALL,
+              onClick: this._handleClearButtonClick },
+            'Clear'
+          )
+        )
+      );
+    }
+  }]);
+
+  return ConsoleHeader;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
+
+exports.default = ConsoleHeader;
+
+function sortAlpha(a, b) {
+  var aLower = a.toLowerCase();
+  var bLower = b.toLowerCase();
   if (aLower < bLower) {
     return -1;
   } else if (aLower > bLower) {
@@ -85,3 +134,4 @@ function sortAlpha(a: string, b: string): number {
   }
   return 0;
 }
+module.exports = exports.default;

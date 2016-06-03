@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +16,17 @@
  * the root directory of this source tree.
  */
 
-import Dequeue from 'dequeue';
-import {EventEmitter} from 'events';
+var _dequeue2;
 
-type Executor = (resolve: any, reject: any) => any;
+function _dequeue() {
+  return _dequeue2 = _interopRequireDefault(require('dequeue'));
+}
+
+var _events2;
+
+function _events() {
+  return _events2 = require('events');
+}
 
 /**
  * A pool that executes Promise executors in parallel given the poolSize, in order.
@@ -22,20 +36,25 @@ type Executor = (resolve: any, reject: any) => any;
  * a sequence of async operations that need to be run in parallel and you also want
  * control the number of concurrent executions.
  */
-export class PromisePool {
-  _fifo: Dequeue;
-  _emitter: EventEmitter;
-  _numPromisesRunning: number;
-  _poolSize: number;
-  _nextRequestId: number;
 
-  constructor(poolSize: number) {
-    this._fifo = new Dequeue();
-    this._emitter = new EventEmitter();
+var PromisePool = (function () {
+  function PromisePool(poolSize) {
+    _classCallCheck(this, PromisePool);
+
+    this._fifo = new (_dequeue2 || _dequeue()).default();
+    this._emitter = new (_events2 || _events()).EventEmitter();
     this._numPromisesRunning = 0;
     this._poolSize = poolSize;
     this._nextRequestId = 1;
   }
+
+  /**
+   * FIFO queue that executes Promise executors one at a time, in order.
+   *
+   * The executor function passed to the constructor of a Promise is evaluated
+   * immediately. This may not always be desirable. Use a PromiseQueue if you have
+   * a sequence of async operations that need to use a shared resource serially.
+   */
 
   /**
    * @param executor A function that takes resolve and reject callbacks, just
@@ -43,57 +62,70 @@ export class PromisePool {
    * @return A Promise that will be resolved/rejected in response to the
    *     execution of the executor.
    */
-  submit(executor: Executor): Promise {
-    const id = this._getNextRequestId();
-    this._fifo.push({id, executor});
-    const promise = new Promise((resolve, reject) => {
-      this._emitter.once(id, result => {
-        const {isSuccess, value} = result;
-        (isSuccess ? resolve : reject)(value);
+
+  _createClass(PromisePool, [{
+    key: 'submit',
+    value: function submit(executor) {
+      var _this = this;
+
+      var id = this._getNextRequestId();
+      this._fifo.push({ id: id, executor: executor });
+      var promise = new Promise(function (resolve, reject) {
+        _this._emitter.once(id, function (result) {
+          var isSuccess = result.isSuccess;
+          var value = result.value;
+
+          (isSuccess ? resolve : reject)(value);
+        });
       });
-    });
-    this._run();
-    return promise;
-  }
-
-  _run() {
-    if (this._numPromisesRunning === this._poolSize) {
-      return;
-    }
-
-    if (this._fifo.length === 0) {
-      return;
-    }
-
-    const {id, executor} = this._fifo.shift();
-    this._numPromisesRunning++;
-    new Promise(executor).then(result => {
-      this._emitter.emit(id, {isSuccess: true, value: result});
-      this._numPromisesRunning--;
       this._run();
-    }, error => {
-      this._emitter.emit(id, {isSuccess: false, value: error});
-      this._numPromisesRunning--;
-      this._run();
-    });
-  }
+      return promise;
+    }
+  }, {
+    key: '_run',
+    value: function _run() {
+      var _this2 = this;
 
-  _getNextRequestId(): string {
-    return (this._nextRequestId++).toString(16);
-  }
-}
+      if (this._numPromisesRunning === this._poolSize) {
+        return;
+      }
 
-/**
- * FIFO queue that executes Promise executors one at a time, in order.
- *
- * The executor function passed to the constructor of a Promise is evaluated
- * immediately. This may not always be desirable. Use a PromiseQueue if you have
- * a sequence of async operations that need to use a shared resource serially.
- */
-export class PromiseQueue {
-  _promisePool: PromisePool;
+      if (this._fifo.length === 0) {
+        return;
+      }
 
-  constructor() {
+      var _fifo$shift = this._fifo.shift();
+
+      var id = _fifo$shift.id;
+      var executor = _fifo$shift.executor;
+
+      this._numPromisesRunning++;
+      new Promise(executor).then(function (result) {
+        _this2._emitter.emit(id, { isSuccess: true, value: result });
+        _this2._numPromisesRunning--;
+        _this2._run();
+      }, function (error) {
+        _this2._emitter.emit(id, { isSuccess: false, value: error });
+        _this2._numPromisesRunning--;
+        _this2._run();
+      });
+    }
+  }, {
+    key: '_getNextRequestId',
+    value: function _getNextRequestId() {
+      return (this._nextRequestId++).toString(16);
+    }
+  }]);
+
+  return PromisePool;
+})();
+
+exports.PromisePool = PromisePool;
+
+var PromiseQueue = (function () {
+  function PromiseQueue() {
+    _classCallCheck(this, PromiseQueue);
+
     this._promisePool = new PromisePool(1);
   }
 
@@ -103,7 +135,15 @@ export class PromiseQueue {
    * @return A Promise that will be resolved/rejected in response to the
    *     execution of the executor.
    */
-  submit(executor: Executor): Promise {
-    return this._promisePool.submit(executor);
-  }
-}
+
+  _createClass(PromiseQueue, [{
+    key: 'submit',
+    value: function submit(executor) {
+      return this._promisePool.submit(executor);
+    }
+  }]);
+
+  return PromiseQueue;
+})();
+
+exports.PromiseQueue = PromiseQueue;

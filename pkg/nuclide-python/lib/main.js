@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,66 +10,95 @@
  * the root directory of this source tree.
  */
 
-import type {OutlineProvider} from '../../nuclide-outline-view';
-import type {DefinitionProvider} from '../../nuclide-definition-service';
-import type {FindReferencesProvider} from '../../nuclide-find-references';
+exports.activate = activate;
+exports.createAutocompleteProvider = createAutocompleteProvider;
+exports.provideOutlines = provideOutlines;
+exports.provideDefinitions = provideDefinitions;
+exports.provideReferences = provideReferences;
+exports.deactivate = deactivate;
 
-import {GRAMMAR_SET} from './constants';
-import AutocompleteHelpers from './AutocompleteHelpers';
-import DefinitionHelpers from './DefinitionHelpers';
-import OutlineHelpers from './OutlineHelpers';
-import ReferenceHelpers from './ReferenceHelpers';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-export function activate() {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _constants2;
+
+function _constants() {
+  return _constants2 = require('./constants');
 }
 
-export function createAutocompleteProvider(): atom$AutocompleteProvider {
+var _AutocompleteHelpers2;
+
+function _AutocompleteHelpers() {
+  return _AutocompleteHelpers2 = _interopRequireDefault(require('./AutocompleteHelpers'));
+}
+
+var _DefinitionHelpers2;
+
+function _DefinitionHelpers() {
+  return _DefinitionHelpers2 = _interopRequireDefault(require('./DefinitionHelpers'));
+}
+
+var _OutlineHelpers2;
+
+function _OutlineHelpers() {
+  return _OutlineHelpers2 = _interopRequireDefault(require('./OutlineHelpers'));
+}
+
+var _ReferenceHelpers2;
+
+function _ReferenceHelpers() {
+  return _ReferenceHelpers2 = _interopRequireDefault(require('./ReferenceHelpers'));
+}
+
+function activate() {}
+
+function createAutocompleteProvider() {
   return {
     selector: '.source.python',
     inclusionPriority: 5,
-    suggestionPriority: 5,  // Higher than the snippets provider.
-    getSuggestions(request) {
-      return AutocompleteHelpers.getAutocompleteSuggestions(request);
-    },
+    suggestionPriority: 5, // Higher than the snippets provider.
+    getSuggestions: function getSuggestions(request) {
+      return (_AutocompleteHelpers2 || _AutocompleteHelpers()).default.getAutocompleteSuggestions(request);
+    }
   };
 }
 
-export function provideOutlines(): OutlineProvider {
+function provideOutlines() {
   return {
-    grammarScopes: Array.from(GRAMMAR_SET),
+    grammarScopes: Array.from((_constants2 || _constants()).GRAMMAR_SET),
     priority: 1,
     name: 'Python',
-    getOutline(editor) {
-      return OutlineHelpers.getOutline(editor);
-    },
+    getOutline: function getOutline(editor) {
+      return (_OutlineHelpers2 || _OutlineHelpers()).default.getOutline(editor);
+    }
   };
 }
 
-export function provideDefinitions(): DefinitionProvider {
+function provideDefinitions() {
   return {
-    grammarScopes: Array.from(GRAMMAR_SET),
+    grammarScopes: Array.from((_constants2 || _constants()).GRAMMAR_SET),
     priority: 20,
     name: 'PythonDefinitionProvider',
-    getDefinition(editor, position) {
-      return DefinitionHelpers.getDefinition(editor, position);
-    },
+    getDefinition: function getDefinition(editor, position) {
+      return (_DefinitionHelpers2 || _DefinitionHelpers()).default.getDefinition(editor, position);
+    }
   };
 }
 
-export function provideReferences(): FindReferencesProvider {
+function provideReferences() {
   return {
-    async isEditorSupported(textEditor) {
-      const fileUri = textEditor.getPath();
-      if (!fileUri || !GRAMMAR_SET.has(textEditor.getGrammar().scopeName)) {
+    isEditorSupported: _asyncToGenerator(function* (textEditor) {
+      var fileUri = textEditor.getPath();
+      if (!fileUri || !(_constants2 || _constants()).GRAMMAR_SET.has(textEditor.getGrammar().scopeName)) {
         return false;
       }
       return true;
-    },
-    findReferences(editor, position) {
-      return ReferenceHelpers.getReferences(editor, position);
-    },
+    }),
+    findReferences: function findReferences(editor, position) {
+      return (_ReferenceHelpers2 || _ReferenceHelpers()).default.getReferences(editor, position);
+    }
   };
 }
 
-export function deactivate() {
-}
+function deactivate() {}

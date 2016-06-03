@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +10,17 @@
  * the root directory of this source tree.
  */
 
-import type {Program} from 'ast-types-flow';
+exports.default = babelParse;
 
-import parse from 'babel-core/lib/helpers/parse';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const BABYLON_OPTIONS = {
+var _babelCoreLibHelpersParse2;
+
+function _babelCoreLibHelpersParse() {
+  return _babelCoreLibHelpersParse2 = _interopRequireDefault(require('babel-core/lib/helpers/parse'));
+}
+
+var BABYLON_OPTIONS = {
   allowHashBang: true,
   sourceType: 'module',
   ecmaVersion: Infinity,
@@ -27,19 +34,21 @@ const BABYLON_OPTIONS = {
     'es7.exportExtensions': true,
     'es7.functionBind': true,
     'es7.objectRestSpread': true,
-    'es7.trailingFunctionCommas': true,
+    'es7.trailingFunctionCommas': true
   },
   plugins: {
     jsx: true,
-    flow: true,
-  },
+    flow: true
+  }
 };
 
-export default function babelParse(source: string): ?Program {
-  const ast = parse(source, BABYLON_OPTIONS);
+function babelParse(source) {
+  var ast = (0, (_babelCoreLibHelpersParse2 || _babelCoreLibHelpersParse()).default)(source, BABYLON_OPTIONS);
   if (ast.program && ast.program.type === 'Program') {
     return ast.program;
   } else {
     return null;
   }
 }
+
+module.exports = exports.default;

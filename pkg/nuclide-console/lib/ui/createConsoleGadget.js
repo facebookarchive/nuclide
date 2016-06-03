@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,93 +10,122 @@
  * the root directory of this source tree.
  */
 
-import type Commands from '../Commands';
-import type {Gadget} from '../../../nuclide-gadgets/lib/types';
-import type {AppState, OutputProvider, Record, Executor} from '../types';
-import type Rx from 'rxjs';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import Console from './Console';
-import {React} from 'react-for-atom';
-import getCurrentExecutorId from '../getCurrentExecutorId';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-type State = {
-  currentExecutor: ?Executor;
-  providers: Map<string, OutputProvider>;
-  records: Array<Record>;
-  executors: Map<string, Executor>;
-};
+exports.default = createConsoleGadget;
 
-export default function createConsoleGadget(
-  state$: Rx.Observable<AppState>,
-  commands: Commands,
-): Gadget {
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  class OutputGadget extends React.Component {
-    state: State;
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-    static gadgetId = 'nuclide-console';
-    static defaultLocation = 'bottom';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-    _state$Subscription: rx$ISubscription;
+var _Console2;
 
-    constructor(props: mixed) {
-      super(props);
+function _Console() {
+  return _Console2 = _interopRequireDefault(require('./Console'));
+}
+
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _getCurrentExecutorId2;
+
+function _getCurrentExecutorId() {
+  return _getCurrentExecutorId2 = _interopRequireDefault(require('../getCurrentExecutorId'));
+}
+
+function createConsoleGadget(state$, commands) {
+  var OutputGadget = (function (_React$Component) {
+    _inherits(OutputGadget, _React$Component);
+
+    _createClass(OutputGadget, null, [{
+      key: 'gadgetId',
+      value: 'nuclide-console',
+      enumerable: true
+    }, {
+      key: 'defaultLocation',
+      value: 'bottom',
+      enumerable: true
+    }]);
+
+    function OutputGadget(props) {
+      _classCallCheck(this, OutputGadget);
+
+      _get(Object.getPrototypeOf(OutputGadget.prototype), 'constructor', this).call(this, props);
       this.state = {
         currentExecutor: null,
         providers: new Map(),
         executors: new Map(),
-        records: [],
+        records: []
       };
     }
 
-    getIconName(): string {
-      return 'terminal';
-    }
+    _createClass(OutputGadget, [{
+      key: 'getIconName',
+      value: function getIconName() {
+        return 'terminal';
+      }
+    }, {
+      key: 'getTitle',
+      value: function getTitle() {
+        return 'Console';
+      }
+    }, {
+      key: 'componentWillMount',
+      value: function componentWillMount() {
+        var _this = this;
 
-    getTitle(): string {
-      return 'Console';
-    }
-
-    componentWillMount() {
-      this._state$Subscription = state$.subscribe(state => {
-        const currentExecutorId = getCurrentExecutorId(state);
-        const currentExecutor =
-          currentExecutorId != null ? state.executors.get(currentExecutorId) : null;
-        this.setState({
-          currentExecutor,
-          executors: state.executors,
-          providers: state.providers,
-          records: state.records,
+        this._state$Subscription = state$.subscribe(function (state) {
+          var currentExecutorId = (0, (_getCurrentExecutorId2 || _getCurrentExecutorId()).default)(state);
+          var currentExecutor = currentExecutorId != null ? state.executors.get(currentExecutorId) : null;
+          _this.setState({
+            currentExecutor: currentExecutor,
+            executors: state.executors,
+            providers: state.providers,
+            records: state.records
+          });
         });
-      });
-    }
+      }
+    }, {
+      key: 'componentWillUnmount',
+      value: function componentWillUnmount() {
+        this._state$Subscription.unsubscribe();
+      }
+    }, {
+      key: 'render',
+      value: function render() {
+        var sources = Array.from(this.state.providers.values()).map(function (source) {
+          return {
+            id: source.id,
+            name: source.id
+          };
+        });
+        // TODO(matthewwithanm): serialize and restore `initialSelectedSourceId`
+        return (_reactForAtom2 || _reactForAtom()).React.createElement((_Console2 || _Console()).default, {
+          execute: function (code) {
+            return commands.execute(code);
+          },
+          selectExecutor: commands.selectExecutor.bind(commands),
+          clearRecords: commands.clearRecords.bind(commands),
+          currentExecutor: this.state.currentExecutor,
+          initialSelectedSourceId: '',
+          records: this.state.records,
+          sources: sources,
+          executors: this.state.executors
+        });
+      }
+    }]);
 
-    componentWillUnmount() {
-      this._state$Subscription.unsubscribe();
-    }
+    return OutputGadget;
+  })((_reactForAtom2 || _reactForAtom()).React.Component);
 
-    render(): ?React.Element {
-      const sources = Array.from(this.state.providers.values())
-        .map(source => ({
-          id: source.id,
-          name: source.id,
-        }));
-      // TODO(matthewwithanm): serialize and restore `initialSelectedSourceId`
-      return (
-        <Console
-          execute={code => commands.execute(code)}
-          selectExecutor={commands.selectExecutor.bind(commands)}
-          clearRecords={commands.clearRecords.bind(commands)}
-          currentExecutor={this.state.currentExecutor}
-          initialSelectedSourceId=""
-          records={this.state.records}
-          sources={sources}
-          executors={this.state.executors}
-        />
-      );
-    }
-
-  }
-
-  return ((OutputGadget: any): Gadget);
+  return OutputGadget;
 }
+
+module.exports = exports.default;

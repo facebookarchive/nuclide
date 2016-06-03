@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,140 +10,180 @@
  * the root directory of this source tree.
  */
 
-import type DiffViewModel from './DiffViewModel';
-import type {RevisionsState} from './types';
-import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {CompositeDisposable} from 'atom';
-import {React} from 'react-for-atom';
-import RevisionTimelineNode from './RevisionTimelineNode';
-import UncommittedChangesTimelineNode from './UncommittedChangesTimelineNode';
-import {DiffMode} from './constants';
-import {
-  Button,
-  ButtonSizes,
-} from '../../nuclide-ui/lib/Button';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-type DiffTimelineViewProps = {
-  diffModel: DiffViewModel;
-  onSelectionChange: (revisionInfo: RevisionInfo) => any;
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-type DiffTimelineViewState = {
-  revisionsState: ?RevisionsState;
-};
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-export default class DiffTimelineView extends React.Component {
-  props: DiffTimelineViewProps;
-  state: DiffTimelineViewState;
-  _subscriptions: CompositeDisposable;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  constructor(props: DiffTimelineViewProps) {
-    super(props);
-    this._subscriptions = new CompositeDisposable();
-    (this: any)._updateRevisions = this._updateRevisions.bind(this);
-    (this: any)._handleClickPublish = this._handleClickPublish.bind(this);
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _RevisionTimelineNode2;
+
+function _RevisionTimelineNode() {
+  return _RevisionTimelineNode2 = _interopRequireDefault(require('./RevisionTimelineNode'));
+}
+
+var _UncommittedChangesTimelineNode2;
+
+function _UncommittedChangesTimelineNode() {
+  return _UncommittedChangesTimelineNode2 = _interopRequireDefault(require('./UncommittedChangesTimelineNode'));
+}
+
+var _constants2;
+
+function _constants() {
+  return _constants2 = require('./constants');
+}
+
+var _nuclideUiLibButton2;
+
+function _nuclideUiLibButton() {
+  return _nuclideUiLibButton2 = require('../../nuclide-ui/lib/Button');
+}
+
+var DiffTimelineView = (function (_React$Component) {
+  _inherits(DiffTimelineView, _React$Component);
+
+  function DiffTimelineView(props) {
+    _classCallCheck(this, DiffTimelineView);
+
+    _get(Object.getPrototypeOf(DiffTimelineView.prototype), 'constructor', this).call(this, props);
+    this._subscriptions = new (_atom2 || _atom()).CompositeDisposable();
+    this._updateRevisions = this._updateRevisions.bind(this);
+    this._handleClickPublish = this._handleClickPublish.bind(this);
     this.state = {
-      revisionsState: null,
+      revisionsState: null
     };
   }
 
-  componentDidMount(): void {
-    const {diffModel} = this.props;
-    this._subscriptions.add(
-      diffModel.onRevisionsUpdate(this._updateRevisions)
-    );
-    diffModel.getActiveRevisionsState().then(this._updateRevisions);
-  }
+  _createClass(DiffTimelineView, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var diffModel = this.props.diffModel;
 
-  _updateRevisions(newRevisionsState: ?RevisionsState): void {
-    this.setState({
-      revisionsState: newRevisionsState,
-    });
-  }
+      this._subscriptions.add(diffModel.onRevisionsUpdate(this._updateRevisions));
+      diffModel.getActiveRevisionsState().then(this._updateRevisions);
+    }
+  }, {
+    key: '_updateRevisions',
+    value: function _updateRevisions(newRevisionsState) {
+      this.setState({
+        revisionsState: newRevisionsState
+      });
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var content = null;
+      var _props = this.props;
+      var diffModel = _props.diffModel;
+      var onSelectionChange = _props.onSelectionChange;
+      var revisionsState = this.state.revisionsState;
 
-  render(): ?React.Element {
-    let content = null;
-    const {diffModel, onSelectionChange} = this.props;
-    const {revisionsState} = this.state;
-    if (revisionsState == null) {
-      content = 'Revisions not loaded...';
-    } else {
-      const {revisions, compareCommitId, commitId} = revisionsState;
-      content = (
-        <RevisionsTimelineComponent
-          diffModel={diffModel}
-          compareRevisionId={compareCommitId || commitId}
-          dirtyFileCount={diffModel.getActiveStackDirtyFileChanges().size}
-          onSelectionChange={onSelectionChange}
-          onClickPublish={this._handleClickPublish}
-          revisions={revisions}
-        />
+      if (revisionsState == null) {
+        content = 'Revisions not loaded...';
+      } else {
+        var _revisions = revisionsState.revisions;
+        var compareCommitId = revisionsState.compareCommitId;
+        var commitId = revisionsState.commitId;
+
+        content = (_reactForAtom2 || _reactForAtom()).React.createElement(RevisionsTimelineComponent, {
+          diffModel: diffModel,
+          compareRevisionId: compareCommitId || commitId,
+          dirtyFileCount: diffModel.getActiveStackDirtyFileChanges().size,
+          onSelectionChange: onSelectionChange,
+          onClickPublish: this._handleClickPublish,
+          revisions: _revisions
+        });
+      }
+
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'nuclide-diff-timeline padded' },
+        content
       );
     }
+  }, {
+    key: '_handleClickPublish',
+    value: function _handleClickPublish() {
+      var diffModel = this.props.diffModel;
 
-    return (
-      <div className="nuclide-diff-timeline padded">
-        {content}
-      </div>
-    );
-  }
+      diffModel.setViewMode((_constants2 || _constants()).DiffMode.PUBLISH_MODE);
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      this._subscriptions.dispose();
+    }
+  }]);
 
-  _handleClickPublish(): void {
-    const {diffModel} = this.props;
-    diffModel.setViewMode(DiffMode.PUBLISH_MODE);
-  }
+  return DiffTimelineView;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
 
-  componentWillUnmount(): void {
-    this._subscriptions.dispose();
-  }
-}
+exports.default = DiffTimelineView;
 
-type RevisionsComponentProps = {
-  diffModel: DiffViewModel;
-  compareRevisionId: number;
-  dirtyFileCount: number;
-  onSelectionChange: (revisionInfo: RevisionInfo) => mixed;
-  onClickPublish: () => mixed;
-  revisions: Array<RevisionInfo>;
-};
+function RevisionsTimelineComponent(props) {
+  var revisions = props.revisions;
+  var compareRevisionId = props.compareRevisionId;
 
-function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Element {
+  var latestToOldestRevisions = revisions.slice().reverse();
+  var selectedIndex = latestToOldestRevisions.findIndex(function (revision) {
+    return revision.id === compareRevisionId;
+  });
 
-  const {revisions, compareRevisionId} = props;
-  const latestToOldestRevisions = revisions.slice().reverse();
-  const selectedIndex = latestToOldestRevisions.findIndex(
-    revision => revision.id === compareRevisionId
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    'div',
+    { className: 'revision-timeline-wrap' },
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      (_nuclideUiLibButton2 || _nuclideUiLibButton()).Button,
+      {
+        className: 'pull-right',
+        size: (_nuclideUiLibButton2 || _nuclideUiLibButton()).ButtonSizes.SMALL,
+        onClick: props.onClickPublish },
+      'Publish to Phabricator'
+    ),
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      'h5',
+      { style: { marginTop: 0 } },
+      'Compare Revisions'
+    ),
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      'div',
+      { className: 'revision-selector' },
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'revisions' },
+        (_reactForAtom2 || _reactForAtom()).React.createElement((_UncommittedChangesTimelineNode2 || _UncommittedChangesTimelineNode()).default, {
+          diffModel: props.diffModel,
+          dirtyFileCount: props.dirtyFileCount
+        }),
+        latestToOldestRevisions.map(function (revision, i) {
+          return (_reactForAtom2 || _reactForAtom()).React.createElement((_RevisionTimelineNode2 || _RevisionTimelineNode()).default, {
+            index: i,
+            key: revision.hash,
+            selectedIndex: selectedIndex,
+            revision: revision,
+            revisionsCount: revisions.length,
+            onSelectionChange: props.onSelectionChange
+          });
+        })
+      )
+    )
   );
-
-  return (
-    <div className="revision-timeline-wrap">
-      <Button
-        className="pull-right"
-        size={ButtonSizes.SMALL}
-        onClick={props.onClickPublish}>
-        Publish to Phabricator
-      </Button>
-      <h5 style={{marginTop: 0}}>Compare Revisions</h5>
-      <div className="revision-selector">
-        <div className="revisions">
-          <UncommittedChangesTimelineNode
-            diffModel={props.diffModel}
-            dirtyFileCount={props.dirtyFileCount}
-          />
-          {latestToOldestRevisions.map((revision, i) =>
-            <RevisionTimelineNode
-              index={i}
-              key={revision.hash}
-              selectedIndex={selectedIndex}
-              revision={revision}
-              revisionsCount={revisions.length}
-              onSelectionChange={props.onSelectionChange}
-            />
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
 }
+module.exports = exports.default;

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,62 +10,71 @@
  * the root directory of this source tree.
  */
 
-import type {RemoteDirectory} from '../../nuclide-remote-connection';
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {CheckoutSideName, MergeConflict} from '..';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import remoteUri from '../../nuclide-remote-uri';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export class MercurialConflictContext {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  _hgRepository: HgRepositoryClient;
+var _nuclideRemoteUri2;
 
-  workingDirectory: atom$Directory | RemoteDirectory;
-  resolveText: string;
-  priority: number;
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = _interopRequireDefault(require('../../nuclide-remote-uri'));
+}
 
-  constructor(
-    hgRepository: HgRepositoryClient,
-    workingDirectory: atom$Directory | RemoteDirectory,
-    priority: number,
-  ) {
+var MercurialConflictContext = (function () {
+  function MercurialConflictContext(hgRepository, workingDirectory, priority) {
+    _classCallCheck(this, MercurialConflictContext);
+
     this._hgRepository = hgRepository;
     this.workingDirectory = workingDirectory;
     this.priority = priority;
     this.resolveText = 'Resolve';
   }
 
-  readConflicts(): Promise<Array<MergeConflict>> {
-    // TODO(most)
-    return Promise.resolve([{
-      message: 'both changed',
-      path: 'test.txt',
-      resolveMessage: 'Resolve',
-    }]);
-  }
+  _createClass(MercurialConflictContext, [{
+    key: 'readConflicts',
+    value: function readConflicts() {
+      // TODO(most)
+      return Promise.resolve([{
+        message: 'both changed',
+        path: 'test.txt',
+        resolveMessage: 'Resolve'
+      }]);
+    }
+  }, {
+    key: 'isResolvedFile',
+    value: function isResolvedFile(filePath) {
+      return Promise.resolve(true);
+    }
+  }, {
+    key: 'checkoutSide',
+    value: function checkoutSide(sideName, filePath) {
+      // TODO(most)
+      return Promise.resolve();
+    }
+  }, {
+    key: 'resolveFile',
+    value: function resolveFile(filePath) {
+      // TODO(most): mark as resolved.
+      return Promise.resolve();
+    }
 
-  isResolvedFile(filePath: NuclideUri): Promise<boolean> {
-    return Promise.resolve(true);
-  }
+    // Deletermine if that's a rebase or merge operation.
+  }, {
+    key: 'isRebasing',
+    value: function isRebasing() {
+      // TODO(most)
+      return true;
+    }
+  }, {
+    key: 'joinPath',
+    value: function joinPath(relativePath) {
+      return (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.join(this.workingDirectory.getPath(), relativePath);
+    }
+  }]);
 
-  checkoutSide(sideName: CheckoutSideName, filePath: NuclideUri): Promise<void> {
-    // TODO(most)
-    return Promise.resolve();
-  }
+  return MercurialConflictContext;
+})();
 
-  resolveFile(filePath: NuclideUri): Promise<void> {
-    // TODO(most): mark as resolved.
-    return Promise.resolve();
-  }
-
-  // Deletermine if that's a rebase or merge operation.
-  isRebasing(): boolean {
-    // TODO(most)
-    return true;
-  }
-
-  joinPath(relativePath: string): NuclideUri {
-    return remoteUri.join(this.workingDirectory.getPath(), relativePath);
-  }
-}
+exports.MercurialConflictContext = MercurialConflictContext;

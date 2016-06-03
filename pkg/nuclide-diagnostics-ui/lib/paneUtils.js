@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +8,7 @@
  * the root directory of this source tree.
  */
 
-import type {DiagnosticMessage, MessageType} from '../../nuclide-diagnostics-base';
-
-function fileOfDiagnosticMessage(diagnostic: DiagnosticMessage): string {
+function fileOfDiagnosticMessage(diagnostic) {
   if (diagnostic.filePath != null) {
     return diagnostic.filePath;
   } else {
@@ -19,20 +16,25 @@ function fileOfDiagnosticMessage(diagnostic: DiagnosticMessage): string {
   }
 }
 
-function getProjectRelativePathOfDiagnostic(diagnostic: DiagnosticMessage): string {
+function getProjectRelativePathOfDiagnostic(diagnostic) {
   if (diagnostic.filePath != null) {
-    const [, relativePath] = atom.project.relativizePath(diagnostic.filePath);
+    var _atom$project$relativizePath = atom.project.relativizePath(diagnostic.filePath);
+
+    var _atom$project$relativizePath2 = _slicedToArray(_atom$project$relativizePath, 2);
+
+    var relativePath = _atom$project$relativizePath2[1];
+
     return relativePath;
   } else {
     return '';
   }
 }
 
-function fileColumnCellDataGetter(cellDataKey: 'filePath', diagnostic: DiagnosticMessage): string {
+function fileColumnCellDataGetter(cellDataKey, diagnostic) {
   return getProjectRelativePathOfDiagnostic(diagnostic);
 }
 
-function compareMessagesByFile(a: DiagnosticMessage, b: DiagnosticMessage): number {
+function compareMessagesByFile(a, b) {
   // This will sort by:
   //  - errors before warnings
   //  - local before remote
@@ -40,7 +42,7 @@ function compareMessagesByFile(a: DiagnosticMessage, b: DiagnosticMessage): numb
   //  - full path
   //
 
-  let compareVal = compareMessagesByLevel(a, b);
+  var compareVal = compareMessagesByLevel(a, b);
   if (compareVal !== 0) {
     return compareVal;
   }
@@ -50,24 +52,24 @@ function compareMessagesByFile(a: DiagnosticMessage, b: DiagnosticMessage): numb
   compareVal = fileOfDiagnosticMessage(a).localeCompare(fileOfDiagnosticMessage(b));
   // If the messages are from the same file (`filePath` is equal and `localeCompare`
   // returns 0), compare the line numbers within the file to determine their sort order.
-  if (compareVal === 0 && (a.range !== undefined && b.range !== undefined)) {
+  if (compareVal === 0 && a.range !== undefined && b.range !== undefined) {
     compareVal = a.range.start.row - b.range.start.row;
   }
 
   return compareVal;
 }
 
-const messageLevelRank: {[key: MessageType]: number} = {
+var messageLevelRank = {
   'Error': 0,
-  'Warning': 1,
+  'Warning': 1
 };
 
-function compareMessagesByLevel(a: DiagnosticMessage, b: DiagnosticMessage): number {
+function compareMessagesByLevel(a, b) {
   return messageLevelRank[a.type] - messageLevelRank[b.type];
 }
 
 module.exports = {
-  compareMessagesByFile,
-  getProjectRelativePathOfDiagnostic,
-  fileColumnCellDataGetter,
+  compareMessagesByFile: compareMessagesByFile,
+  getProjectRelativePathOfDiagnostic: getProjectRelativePathOfDiagnostic,
+  fileColumnCellDataGetter: fileColumnCellDataGetter
 };

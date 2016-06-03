@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +10,17 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+var _reactForAtom2;
 
-type Props = {
-  children?: React.Element;
-};
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
 
-export const ToolbarCenter = (props: Props) => {
-  return (
-    <div className="nuclide-ui-toolbar__center">
-      {props.children}
-    </div>
+var ToolbarCenter = function ToolbarCenter(props) {
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    'div',
+    { className: 'nuclide-ui-toolbar__center' },
+    props.children
   );
 };
+exports.ToolbarCenter = ToolbarCenter;

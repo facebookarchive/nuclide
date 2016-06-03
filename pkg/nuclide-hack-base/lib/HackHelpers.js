@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,99 +10,77 @@
  * the root directory of this source tree.
  */
 
-import type {HackSearchPosition} from './HackService';
-import type {HackSearchResult, HHSearchPosition} from './types';
-import type {SearchResultTypeValue} from '../../nuclide-hack-common';
+/**
+ * Executes hh_client with proper arguments returning the result string or json object.
+ */
 
-import invariant from 'assert';
-import {asyncExecute} from '../../commons-node/process';
-import {PromiseQueue} from '../../commons-node/promise-executors';
-import {SearchResultType} from '../../nuclide-hack-common';
-import {getHackExecOptions, getUseIde} from './hack-config';
-import {callHHClientUsingProcess} from './HackProcess';
+var callHHClient = _asyncToGenerator(function* (args, errorStream, outputJson, processInput, filePath) {
 
-const HH_SERVER_INIT_MESSAGE = 'hh_server still initializing';
-const HH_SERVER_BUSY_MESSAGE = 'hh_server is busy';
-import {logger} from './hack-config';
-
-let hhPromiseQueue: ?PromiseQueue = null;
-const pendingSearchPromises: Map<string, Promise> = new Map();
-
- /**
-  * Executes hh_client with proper arguments returning the result string or json object.
-  */
-export async function callHHClient(
-  args: Array<any>,
-  errorStream: boolean,
-  outputJson: boolean,
-  processInput: ?string,
-  filePath: string): Promise<?{hackRoot: string; result: string | Object}> {
-
-  if (getUseIde()) {
-    return await callHHClientUsingProcess(args, processInput, filePath);
+  if ((0, (_hackConfig2 || _hackConfig()).getUseIde)()) {
+    return yield (0, (_HackProcess2 || _HackProcess()).callHHClientUsingProcess)(args, processInput, filePath);
   }
 
   if (!hhPromiseQueue) {
-    hhPromiseQueue = new PromiseQueue();
+    hhPromiseQueue = new (_commonsNodePromiseExecutors2 || _commonsNodePromiseExecutors()).PromiseQueue();
   }
 
-  const hackExecOptions = await getHackExecOptions(filePath);
+  var hackExecOptions = yield (0, (_hackConfig2 || _hackConfig()).getHackExecOptions)(filePath);
   if (!hackExecOptions) {
     return null;
   }
-  const {hackRoot, hackCommand} = hackExecOptions;
+  var hackRoot = hackExecOptions.hackRoot;
+  var hackCommand = hackExecOptions.hackCommand;
 
-  invariant(hhPromiseQueue);
-  return hhPromiseQueue.submit(async (resolve, reject) => {
+  (0, (_assert2 || _assert()).default)(hhPromiseQueue);
+  return hhPromiseQueue.submit(_asyncToGenerator(function* (resolve, reject) {
     // Append args on the end of our commands.
-    const defaults = ['--retries', '0', '--retry-if-init', 'false', '--from', 'nuclide'];
+    var defaults = ['--retries', '0', '--retry-if-init', 'false', '--from', 'nuclide'];
     if (outputJson) {
       defaults.unshift('--json');
     }
 
-    const allArgs = defaults.concat(args);
+    var allArgs = defaults.concat(args);
     allArgs.push(hackRoot);
 
-    let execResult = null;
+    var execResult = null;
     try {
-      logger.logTrace(`Calling Hack: ${hackCommand} with ${allArgs}`);
-      execResult = await asyncExecute(hackCommand, allArgs, {stdin: processInput});
+      (_hackConfig4 || _hackConfig3()).logger.logTrace('Calling Hack: ' + hackCommand + ' with ' + allArgs);
+      execResult = yield (0, (_commonsNodeProcess2 || _commonsNodeProcess()).asyncExecute)(hackCommand, allArgs, { stdin: processInput });
     } catch (err) {
       reject(err);
       return;
     }
-    const {stdout, stderr} = execResult;
+    var _execResult = execResult;
+    var stdout = _execResult.stdout;
+    var stderr = _execResult.stderr;
+
     if (stderr.indexOf(HH_SERVER_INIT_MESSAGE) !== -1) {
-      reject(new Error(`${HH_SERVER_INIT_MESSAGE}: try: \`arc build\` or try again later!`));
+      reject(new Error(HH_SERVER_INIT_MESSAGE + ': try: `arc build` or try again later!'));
       return;
     } else if (stderr.startsWith(HH_SERVER_BUSY_MESSAGE)) {
-      reject(new Error(`${HH_SERVER_BUSY_MESSAGE}: try: \`arc build\` or try again later!`));
+      reject(new Error(HH_SERVER_BUSY_MESSAGE + ': try: `arc build` or try again later!'));
       return;
     }
 
-    const output = errorStream ? stderr : stdout;
-    logger.logTrace(`Hack output for ${allArgs}: ${output}`);
+    var output = errorStream ? stderr : stdout;
+    (_hackConfig4 || _hackConfig3()).logger.logTrace('Hack output for ' + allArgs + ': ' + output);
     if (!outputJson) {
-      resolve({result: output, hackRoot});
+      resolve({ result: output, hackRoot: hackRoot });
       return;
     }
     try {
-      resolve({result: JSON.parse(output), hackRoot});
+      resolve({ result: JSON.parse(output), hackRoot: hackRoot });
     } catch (err) {
-      const errorMessage = `hh_client error, args: [${args.join(',')}]
-stdout: ${stdout}, stderr: ${stderr}`;
-      logger.logError(errorMessage);
+      var errorMessage = 'hh_client error, args: [' + args.join(',') + ']\nstdout: ' + stdout + ', stderr: ' + stderr;
+      (_hackConfig4 || _hackConfig3()).logger.logError(errorMessage);
       reject(new Error(errorMessage));
     }
-  });
-}
+  }));
+});
 
-export async function getSearchResults(
-    filePath: string,
-    search: string,
-    filterTypes?: ?Array<SearchResultTypeValue>,
-    searchPostfix?: string,
-  ): Promise<?HackSearchResult> {
+exports.callHHClient = callHHClient;
+
+var getSearchResults = _asyncToGenerator(function* (filePath, search, filterTypes, searchPostfix) {
   if (!search) {
     return null;
   }
@@ -109,23 +88,20 @@ export async function getSearchResults(
   // `pendingSearchPromises` is used to temporally cache search result promises.
   // So, when a matching search query is done in parallel, it will wait and resolve
   // with the original search call.
-  let searchPromise = pendingSearchPromises.get(search);
+  var searchPromise = pendingSearchPromises.get(search);
   if (!searchPromise) {
     searchPromise = callHHClient(
-        /*args*/ ['--search' + (searchPostfix || ''), search],
-        /*errorStream*/ false,
-        /*outputJson*/ true,
-        /*processInput*/ null,
-        /*file*/ filePath,
-    );
+    /*args*/['--search' + (searchPostfix || ''), search],
+    /*errorStream*/false,
+    /*outputJson*/true,
+    /*processInput*/null,
+    /*file*/filePath);
     pendingSearchPromises.set(search, searchPromise);
   }
 
-  let searchResponse: ?{hackRoot: string; result: Array<HHSearchPosition>} = null;
+  var searchResponse = null;
   try {
-    searchResponse = (
-      ((await searchPromise): any): {hackRoot: string; result: Array<HHSearchPosition>}
-    );
+    searchResponse = yield searchPromise;
   } catch (error) {
     throw error;
   } finally {
@@ -136,10 +112,13 @@ export async function getSearchResults(
     return null;
   }
 
-  const {result: searchResult, hackRoot} = searchResponse;
-  let result: Array<HackSearchPosition> = [];
-  for (const entry of searchResult) {
-    const resultFile = entry.filename;
+  var _searchResponse = searchResponse;
+  var searchResult = _searchResponse.result;
+  var hackRoot = _searchResponse.hackRoot;
+
+  var result = [];
+  for (var entry of searchResult) {
+    var resultFile = entry.filename;
     if (!resultFile.startsWith(hackRoot)) {
       // Filter out files out of repo results, e.g. hh internal files.
       continue;
@@ -151,50 +130,102 @@ export async function getSearchResults(
       path: resultFile,
       length: entry.char_end - entry.char_start + 1,
       scope: entry.scope,
-      additionalInfo: entry.desc,
+      additionalInfo: entry.desc
     });
   }
 
   if (filterTypes) {
     result = filterSearchResults(result, filterTypes);
   }
-  return {hackRoot, result};
+  return { hackRoot: hackRoot, result: result };
 }
 
 // Eventually this will happen on the hack side, but for now, this will do.
-function filterSearchResults(
-  results: Array<HackSearchPosition>,
-  filter: Array<SearchResultTypeValue>,
-): Array<HackSearchPosition> {
-  return results.filter(result => {
-    const info = result.additionalInfo;
-    const searchType = getSearchType(info);
+);
+
+exports.getSearchResults = getSearchResults;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _commonsNodeProcess2;
+
+function _commonsNodeProcess() {
+  return _commonsNodeProcess2 = require('../../commons-node/process');
+}
+
+var _commonsNodePromiseExecutors2;
+
+function _commonsNodePromiseExecutors() {
+  return _commonsNodePromiseExecutors2 = require('../../commons-node/promise-executors');
+}
+
+var _nuclideHackCommon2;
+
+function _nuclideHackCommon() {
+  return _nuclideHackCommon2 = require('../../nuclide-hack-common');
+}
+
+var _hackConfig2;
+
+function _hackConfig() {
+  return _hackConfig2 = require('./hack-config');
+}
+
+var _HackProcess2;
+
+function _HackProcess() {
+  return _HackProcess2 = require('./HackProcess');
+}
+
+var HH_SERVER_INIT_MESSAGE = 'hh_server still initializing';
+var HH_SERVER_BUSY_MESSAGE = 'hh_server is busy';
+
+var _hackConfig4;
+
+function _hackConfig3() {
+  return _hackConfig4 = require('./hack-config');
+}
+
+var hhPromiseQueue = null;
+var pendingSearchPromises = new Map();function filterSearchResults(results, filter) {
+  return results.filter(function (result) {
+    var info = result.additionalInfo;
+    var searchType = getSearchType(info);
     return filter.indexOf(searchType) !== -1;
   });
 }
 
-function getSearchType(info: string): SearchResultTypeValue {
+function getSearchType(info) {
   switch (info) {
     case 'typedef':
-      return SearchResultType.TYPEDEF;
+      return (_nuclideHackCommon2 || _nuclideHackCommon()).SearchResultType.TYPEDEF;
     case 'function':
-      return SearchResultType.FUNCTION;
+      return (_nuclideHackCommon2 || _nuclideHackCommon()).SearchResultType.FUNCTION;
     case 'constant':
-      return SearchResultType.CONSTANT;
+      return (_nuclideHackCommon2 || _nuclideHackCommon()).SearchResultType.CONSTANT;
     case 'trait':
-      return SearchResultType.TRAIT;
+      return (_nuclideHackCommon2 || _nuclideHackCommon()).SearchResultType.TRAIT;
     case 'interface':
-      return SearchResultType.INTERFACE;
+      return (_nuclideHackCommon2 || _nuclideHackCommon()).SearchResultType.INTERFACE;
     case 'abstract class':
-      return SearchResultType.ABSTRACT_CLASS;
-    default: {
-      if (info.startsWith('method') || info.startsWith('static method')) {
-        return SearchResultType.METHOD;
+      return (_nuclideHackCommon2 || _nuclideHackCommon()).SearchResultType.ABSTRACT_CLASS;
+    default:
+      {
+        if (info.startsWith('method') || info.startsWith('static method')) {
+          return (_nuclideHackCommon2 || _nuclideHackCommon()).SearchResultType.METHOD;
+        }
+        if (info.startsWith('class var') || info.startsWith('static class var')) {
+          return (_nuclideHackCommon2 || _nuclideHackCommon()).SearchResultType.CLASS_VAR;
+        }
+        return (_nuclideHackCommon2 || _nuclideHackCommon()).SearchResultType.CLASS;
       }
-      if (info.startsWith('class var') || info.startsWith('static class var')) {
-        return SearchResultType.CLASS_VAR;
-      }
-      return SearchResultType.CLASS;
-    }
   }
 }

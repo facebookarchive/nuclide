@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,41 +10,76 @@
  * the root directory of this source tree.
  */
 
-import type {
-  DiagnosticUpdater,
-  CallbackDiagnosticProvider,
-  LinterProvider,
-  ObservableDiagnosticProvider,
-} from '../../nuclide-diagnostics-base';
+exports.activate = activate;
+exports.consumeLinterProvider = consumeLinterProvider;
+exports.consumeDiagnosticsProviderV1 = consumeDiagnosticsProviderV1;
+exports.consumeDiagnosticsProviderV2 = consumeDiagnosticsProviderV2;
+exports.provideDiagnosticUpdates = provideDiagnosticUpdates;
+exports.deactivate = deactivate;
 
-import {Disposable, CompositeDisposable} from 'atom';
-import featureConfig from '../../nuclide-feature-config';
-import {DisposableSubscription} from '../../commons-node/stream';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {getLogger} from '../../nuclide-logging';
-import {DiagnosticStore} from '../../nuclide-diagnostics-base';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {createAdapters} from './LinterAdapterFactory';
+var _atom2;
 
-const legacyLinterSetting = 'nuclide-diagnostics-store.consumeLegacyLinters';
+function _atom() {
+  return _atom2 = require('atom');
+}
 
-const legacyLintOnTheFlySetting = 'nuclide-diagnostics-store.legacyLintOnTheFly';
+var _nuclideFeatureConfig2;
 
-let disposables = null;
-let diagnosticStore = null;
-let diagnosticUpdater = null;
+function _nuclideFeatureConfig() {
+  return _nuclideFeatureConfig2 = _interopRequireDefault(require('../../nuclide-feature-config'));
+}
 
-function addDisposable(disposable: IDisposable) {
+var _commonsNodeStream2;
+
+function _commonsNodeStream() {
+  return _commonsNodeStream2 = require('../../commons-node/stream');
+}
+
+var _commonsNodeEvent2;
+
+function _commonsNodeEvent() {
+  return _commonsNodeEvent2 = require('../../commons-node/event');
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var _nuclideDiagnosticsBase2;
+
+function _nuclideDiagnosticsBase() {
+  return _nuclideDiagnosticsBase2 = require('../../nuclide-diagnostics-base');
+}
+
+var _LinterAdapterFactory2;
+
+function _LinterAdapterFactory() {
+  return _LinterAdapterFactory2 = require('./LinterAdapterFactory');
+}
+
+var legacyLinterSetting = 'nuclide-diagnostics-store.consumeLegacyLinters';
+
+var legacyLintOnTheFlySetting = 'nuclide-diagnostics-store.legacyLintOnTheFly';
+
+var disposables = null;
+var diagnosticStore = null;
+var diagnosticUpdater = null;
+
+function addDisposable(disposable) {
   if (disposables) {
     disposables.add(disposable);
   } else {
-    getLogger().error('disposables is null');
+    (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)().error('disposables is null');
   }
 }
 
-function getDiagnosticStore(): DiagnosticStore {
+function getDiagnosticStore() {
   if (!diagnosticStore) {
-    diagnosticStore = new DiagnosticStore();
+    diagnosticStore = new (_nuclideDiagnosticsBase2 || _nuclideDiagnosticsBase()).DiagnosticStore();
   }
   return diagnosticStore;
 }
@@ -51,106 +87,107 @@ function getDiagnosticStore(): DiagnosticStore {
 /**
  * @return A wrapper around the methods on DiagnosticStore that allow reading data.
  */
-function getDiagnosticUpdater(): DiagnosticUpdater {
+function getDiagnosticUpdater() {
   if (!diagnosticUpdater) {
-    const store = getDiagnosticStore();
+    var store = getDiagnosticStore();
     diagnosticUpdater = {
       onFileMessagesDidUpdate: store.onFileMessagesDidUpdate.bind(store),
       onProjectMessagesDidUpdate: store.onProjectMessagesDidUpdate.bind(store),
       onAllMessagesDidUpdate: store.onAllMessagesDidUpdate.bind(store),
       applyFix: store.applyFix.bind(store),
-      applyFixesForFile: store.applyFixesForFile.bind(store),
+      applyFixesForFile: store.applyFixesForFile.bind(store)
     };
   }
   return diagnosticUpdater;
 }
 
-let consumeLegacyLinters = false;
-let lintOnTheFly = false;
-const allLinterAdapters = new Set();
+var consumeLegacyLinters = false;
+var lintOnTheFly = false;
+var allLinterAdapters = new Set();
 
-export function activate(state: ?Object): void {
+function activate(state) {
   if (!disposables) {
-    disposables = new CompositeDisposable();
+    disposables = new (_atom2 || _atom()).CompositeDisposable();
   }
 
   // Returns mixed so a cast is necessary.
-  consumeLegacyLinters = ((featureConfig.get(legacyLinterSetting): any): boolean);
-  featureConfig.observe(legacyLinterSetting, newValue => {
+  consumeLegacyLinters = (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get(legacyLinterSetting);
+  (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.observe(legacyLinterSetting, function (newValue) {
     // To make this really solid, we should also probably trigger the linter
     // for the active text editor. Possibly more trouble than it's worth,
     // though, since this may be a temporary option.
     consumeLegacyLinters = newValue;
-    allLinterAdapters.forEach(adapter => adapter.setEnabled(newValue));
+    allLinterAdapters.forEach(function (adapter) {
+      return adapter.setEnabled(newValue);
+    });
   });
 
-  lintOnTheFly = ((featureConfig.get(legacyLintOnTheFlySetting): any): boolean);
-  featureConfig.observe(legacyLintOnTheFlySetting, newValue => {
+  lintOnTheFly = (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get(legacyLintOnTheFlySetting);
+  (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.observe(legacyLintOnTheFlySetting, function (newValue) {
     lintOnTheFly = newValue;
-    allLinterAdapters.forEach(adapter => adapter.setLintOnFly(newValue));
+    allLinterAdapters.forEach(function (adapter) {
+      return adapter.setLintOnFly(newValue);
+    });
   });
 }
 
-export function consumeLinterProvider(
-  provider: LinterProvider | Array<LinterProvider>,
-): IDisposable {
-  const newAdapters = createAdapters(provider);
-  const adapterDisposables = new CompositeDisposable();
-  for (const adapter of newAdapters) {
+function consumeLinterProvider(provider) {
+  var newAdapters = (0, (_LinterAdapterFactory2 || _LinterAdapterFactory()).createAdapters)(provider);
+  var adapterDisposables = new (_atom2 || _atom()).CompositeDisposable();
+
+  var _loop = function (adapter) {
     adapter.setEnabled(consumeLegacyLinters);
     adapter.setLintOnFly(lintOnTheFly);
     allLinterAdapters.add(adapter);
-    const diagnosticDisposable = consumeDiagnosticsProviderV1(adapter);
-    const adapterDisposable = new Disposable(() => {
+    var diagnosticDisposable = consumeDiagnosticsProviderV1(adapter);
+    var adapterDisposable = new (_atom2 || _atom()).Disposable(function () {
       diagnosticDisposable.dispose();
       adapter.dispose();
       allLinterAdapters.delete(adapter);
     });
     adapterDisposables.add(adapterDisposable);
     addDisposable(adapter);
+  };
+
+  for (var adapter of newAdapters) {
+    _loop(adapter);
   }
   return adapterDisposables;
 }
 
-export function consumeDiagnosticsProviderV1(provider: CallbackDiagnosticProvider): IDisposable {
+function consumeDiagnosticsProviderV1(provider) {
   // Register the diagnostic store for updates from the new provider.
-  const observableProvider = {
-    updates: observableFromSubscribeFunction(provider.onMessageUpdate.bind(provider)),
-    invalidations: observableFromSubscribeFunction(provider.onMessageInvalidation.bind(provider)),
+  var observableProvider = {
+    updates: (0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(provider.onMessageUpdate.bind(provider)),
+    invalidations: (0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(provider.onMessageInvalidation.bind(provider))
   };
-  const disposable = consumeDiagnosticsProviderV2(observableProvider);
+  var disposable = consumeDiagnosticsProviderV2(observableProvider);
   addDisposable(disposable);
   return disposable;
 }
 
-export function consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvider): IDisposable {
-  const compositeDisposable = new CompositeDisposable();
-  const store = getDiagnosticStore();
+function consumeDiagnosticsProviderV2(provider) {
+  var compositeDisposable = new (_atom2 || _atom()).CompositeDisposable();
+  var store = getDiagnosticStore();
 
-  compositeDisposable.add(
-    new DisposableSubscription(
-      provider.updates.subscribe(update => store.updateMessages(provider, update))
-    )
-  );
-  compositeDisposable.add(
-    new DisposableSubscription(
-      provider.invalidations.subscribe(
-        invalidation => store.invalidateMessages(provider, invalidation)
-      )
-    )
-  );
-  compositeDisposable.add(new Disposable(() => {
-    store.invalidateMessages(provider, {scope: 'all'});
+  compositeDisposable.add(new (_commonsNodeStream2 || _commonsNodeStream()).DisposableSubscription(provider.updates.subscribe(function (update) {
+    return store.updateMessages(provider, update);
+  })));
+  compositeDisposable.add(new (_commonsNodeStream2 || _commonsNodeStream()).DisposableSubscription(provider.invalidations.subscribe(function (invalidation) {
+    return store.invalidateMessages(provider, invalidation);
+  })));
+  compositeDisposable.add(new (_atom2 || _atom()).Disposable(function () {
+    store.invalidateMessages(provider, { scope: 'all' });
   }));
 
   return compositeDisposable;
 }
 
-export function provideDiagnosticUpdates(): DiagnosticUpdater {
+function provideDiagnosticUpdates() {
   return getDiagnosticUpdater();
 }
 
-export function deactivate() {
+function deactivate() {
   if (disposables) {
     disposables.dispose();
     disposables = null;

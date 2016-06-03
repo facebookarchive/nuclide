@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,164 +10,194 @@
  * the root directory of this source tree.
  */
 
-import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import type NuclideToolbarType from './NuclideToolbar';
-import type ProjectStoreType from './ProjectStore';
+exports.activate = activate;
+exports.consumeToolBar = consumeToolBar;
+exports.getDistractionFreeModeProvider = getDistractionFreeModeProvider;
+exports.deactivate = deactivate;
+exports.serialize = serialize;
 
-import {CompositeDisposable, Disposable} from 'atom';
-import {React, ReactDOM} from 'react-for-atom';
-import invariant from 'assert';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-class Activation {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  _disposables: atom$CompositeDisposable;
-  _item: ?HTMLElement;
-  _panel: Object;
-  _projectStore: ProjectStoreType;
-  _nuclideToolbar: ?NuclideToolbarType;
-  _state: Object;
+var _atom2;
 
-  constructor(state: ?Object) {
-    const ProjectStore = require('./ProjectStore');
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var Activation = (function () {
+  function Activation(state) {
+    _classCallCheck(this, Activation);
+
+    var ProjectStore = require('./ProjectStore');
 
     this._state = {
-      panelVisible: state != null && state.panelVisible != null ? state.panelVisible : true,
+      panelVisible: state != null && state.panelVisible != null ? state.panelVisible : true
     };
 
-    this._disposables = new CompositeDisposable();
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable();
     this._projectStore = new ProjectStore();
     this._addCommands();
     this._createToolbar();
   }
 
-  _addCommands(): void {
-    this._disposables.add(
-      atom.commands.add(
-        'body',
-        'nuclide-hhvm-toolbar:toggle',
-        () => { this.togglePanel(); },
-      )
-    );
-  }
+  _createClass(Activation, [{
+    key: '_addCommands',
+    value: function _addCommands() {
+      var _this = this;
 
-  consumeToolBar(getToolBar: GetToolBar): void {
-    const hhvmIcon = require('./hhvmIcon');
-    const toolBar = getToolBar('nuclide-buck-toolbar');
-    const toolBarButton = toolBar.addButton({
-      callback: 'nuclide-hhvm-toolbar:toggle',
-      tooltip: 'Toggle HHVM Toolbar',
-      priority: 500,
-    })[0];
-    toolBar.addSpacer({
-      priority: 501,
-    });
-    toolBarButton.innerHTML = hhvmIcon();
-    this._disposables.add(
-      new Disposable(() => { toolBar.removeItems(); }),
-    );
-  }
-
-  getDistractionFreeModeProvider(): DistractionFreeModeProvider {
-    return {
-      name: 'nuclide-hhvm-toolbar',
-      isVisible: () => this._state.panelVisible,
-      toggle: () => this.togglePanel(),
-    };
-  }
-
-  _createToolbar() {
-    const NuclideToolbar = require('./NuclideToolbar');
-    const item = document.createElement('div');
-
-    const component = ReactDOM.render(
-      <NuclideToolbar
-        projectStore={this._projectStore}
-      />,
-      item
-    );
-    invariant(component instanceof NuclideToolbar);
-    this._nuclideToolbar = component;
-
-    const panel = atom.workspace.addTopPanel({
-      item,
-      // Increase priority (default is 100) to ensure this toolbar comes after the 'tool-bar'
-      // package's toolbar. Hierarchically the controlling toolbar should be above, and practically
-      // this ensures the popover in this build toolbar stacks on top of other UI.
-      priority: 200,
-    });
-    this._disposables.add(new Disposable(() => panel.destroy()));
-    this._panel = panel;
-    this._updatePanelVisibility();
-  }
-
-  /**
-   * Show or hide the panel, if necessary, to match the current state.
-   */
-  _updatePanelVisibility(): void {
-    if (!this._panel) {
-      return;
+      this._disposables.add(atom.commands.add('body', 'nuclide-hhvm-toolbar:toggle', function () {
+        _this.togglePanel();
+      }));
     }
-    if (this._state.panelVisible !== this._panel.visible) {
-      if (this._state.panelVisible) {
-        this._panel.show();
-      } else {
-        this._panel.hide();
+  }, {
+    key: 'consumeToolBar',
+    value: function consumeToolBar(getToolBar) {
+      var hhvmIcon = require('./hhvmIcon');
+      var toolBar = getToolBar('nuclide-buck-toolbar');
+      var toolBarButton = toolBar.addButton({
+        callback: 'nuclide-hhvm-toolbar:toggle',
+        tooltip: 'Toggle HHVM Toolbar',
+        priority: 500
+      })[0];
+      toolBar.addSpacer({
+        priority: 501
+      });
+      toolBarButton.innerHTML = hhvmIcon();
+      this._disposables.add(new (_atom2 || _atom()).Disposable(function () {
+        toolBar.removeItems();
+      }));
+    }
+  }, {
+    key: 'getDistractionFreeModeProvider',
+    value: function getDistractionFreeModeProvider() {
+      var _this2 = this;
+
+      return {
+        name: 'nuclide-hhvm-toolbar',
+        isVisible: function isVisible() {
+          return _this2._state.panelVisible;
+        },
+        toggle: function toggle() {
+          return _this2.togglePanel();
+        }
+      };
+    }
+  }, {
+    key: '_createToolbar',
+    value: function _createToolbar() {
+      var NuclideToolbar = require('./NuclideToolbar');
+      var item = document.createElement('div');
+
+      var component = (_reactForAtom2 || _reactForAtom()).ReactDOM.render((_reactForAtom2 || _reactForAtom()).React.createElement(NuclideToolbar, {
+        projectStore: this._projectStore
+      }), item);
+      (0, (_assert2 || _assert()).default)(component instanceof NuclideToolbar);
+      this._nuclideToolbar = component;
+
+      var panel = atom.workspace.addTopPanel({
+        item: item,
+        // Increase priority (default is 100) to ensure this toolbar comes after the 'tool-bar'
+        // package's toolbar. Hierarchically the controlling toolbar should be above, and practically
+        // this ensures the popover in this build toolbar stacks on top of other UI.
+        priority: 200
+      });
+      this._disposables.add(new (_atom2 || _atom()).Disposable(function () {
+        return panel.destroy();
+      }));
+      this._panel = panel;
+      this._updatePanelVisibility();
+    }
+
+    /**
+     * Show or hide the panel, if necessary, to match the current state.
+     */
+  }, {
+    key: '_updatePanelVisibility',
+    value: function _updatePanelVisibility() {
+      if (!this._panel) {
+        return;
+      }
+      if (this._state.panelVisible !== this._panel.visible) {
+        if (this._state.panelVisible) {
+          this._panel.show();
+        } else {
+          this._panel.hide();
+        }
       }
     }
-  }
-
-  serialize(): Object {
-    return {
-      panelVisible: this._state.panelVisible,
-    };
-  }
-
-  dispose() {
-    if (this._nuclideToolbar) {
-      const toolbarNode = ReactDOM.findDOMNode(this._nuclideToolbar);
-      // If the toolbar is currently hidden for some reason, then toolbarNode will be null.
-      if (toolbarNode) {
-        ReactDOM.unmountComponentAtNode(toolbarNode.parentNode);
-      }
+  }, {
+    key: 'serialize',
+    value: function serialize() {
+      return {
+        panelVisible: this._state.panelVisible
+      };
     }
-    this._projectStore.dispose();
-    this._disposables.dispose();
-  }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      if (this._nuclideToolbar) {
+        var toolbarNode = (_reactForAtom2 || _reactForAtom()).ReactDOM.findDOMNode(this._nuclideToolbar);
+        // If the toolbar is currently hidden for some reason, then toolbarNode will be null.
+        if (toolbarNode) {
+          (_reactForAtom2 || _reactForAtom()).ReactDOM.unmountComponentAtNode(toolbarNode.parentNode);
+        }
+      }
+      this._projectStore.dispose();
+      this._disposables.dispose();
+    }
+  }, {
+    key: 'togglePanel',
+    value: function togglePanel() {
+      this._state.panelVisible = !this._state.panelVisible;
+      this._updatePanelVisibility();
+    }
+  }]);
 
-  togglePanel():void {
-    this._state.panelVisible = !this._state.panelVisible;
-    this._updatePanelVisibility();
-  }
-}
+  return Activation;
+})();
 
-let activation: ?Activation = null;
+var activation = null;
 
-export function activate(state: ?Object) {
+function activate(state) {
   if (!activation) {
     activation = new Activation(state);
   }
 }
 
-export function consumeToolBar(getToolBar: (group: string) => Object): void {
-  invariant(activation);
+function consumeToolBar(getToolBar) {
+  (0, (_assert2 || _assert()).default)(activation);
   return activation.consumeToolBar(getToolBar);
 }
 
-export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
-  invariant(activation != null);
+function getDistractionFreeModeProvider() {
+  (0, (_assert2 || _assert()).default)(activation != null);
   return activation.getDistractionFreeModeProvider();
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function serialize(): Object {
+function serialize() {
   if (activation) {
     return activation.serialize();
   } else {

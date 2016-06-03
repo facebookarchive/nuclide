@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +16,20 @@
  * the root directory of this source tree.
  */
 
-import logger from './utils';
-import {Observable, Subject} from 'rxjs';
+var _utils2;
 
-import type {NotificationMessage} from '..';
+function _utils() {
+  return _utils2 = _interopRequireDefault(require('./utils'));
+}
 
-export type UserMessageType = 'notification' | 'console' | 'outputWindow';
-export type NotificationType = 'info' | 'warning' | 'error' | 'fatalError';
+var _rxjsBundlesRxUmdMinJs2;
 
-function createMessage(method: string, params: ?Object): Object {
-  const result: Object = {method};
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
+
+function createMessage(method, params) {
+  var result = { method: method };
   if (params) {
     result.params = params;
   }
@@ -33,85 +44,104 @@ function createMessage(method: string, params: ?Object): Object {
  * 3. Chrome console user messages.
  * 4. Output window messages.
  */
-export class ClientCallback {
-  _serverMessageObservable: Subject;  // For server messages.
-  _notificationObservable: Subject;   // For atom UI notifications.
-  _outputWindowObservable: Subject;   // For output window messages.
 
-  constructor() {
-    this._serverMessageObservable = new Subject();
-    this._notificationObservable = new Subject();
-    this._outputWindowObservable = new Subject();
+var ClientCallback = (function () {
+  // For output window messages.
+
+  function ClientCallback() {
+    _classCallCheck(this, ClientCallback);
+
+    this._serverMessageObservable = new (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Subject();
+    this._notificationObservable = new (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Subject();
+    this._outputWindowObservable = new (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Subject();
   }
 
-  getNotificationObservable(): Observable<NotificationMessage> {
-    return this._notificationObservable;
-  }
-
-  getServerMessageObservable(): Observable<string> {
-    return this._serverMessageObservable;
-  }
-
-  getOutputWindowObservable(): Observable<string> {
-    return this._outputWindowObservable;
-  }
-
-  sendUserMessage(type: UserMessageType, message: Object): void {
-    logger.log(`sendUserMessage(${type}): ${JSON.stringify(message)}`);
-    switch (type) {
-      case 'notification':
-        this._notificationObservable.next({
-          type: message.type,
-          message: message.message,
-        });
-        break;
-      case 'console':
-        this.sendMethod(this._serverMessageObservable, 'Console.messageAdded', {
-          message,
-        });
-        break;
-      case 'outputWindow':
-        this.sendMethod(this._outputWindowObservable, 'Console.messageAdded', {
-          message,
-        });
-        break;
-      default:
-        logger.logError(`Unknown UserMessageType: ${type}`);
+  _createClass(ClientCallback, [{
+    key: 'getNotificationObservable',
+    value: function getNotificationObservable() {
+      return this._notificationObservable;
     }
-  }
-
-  unknownMethod(id: number, domain: string, method: string, params: ?Object): void {
-    const message = 'Unknown chrome dev tools method: ' + domain + '.' + method;
-    logger.log(message);
-    this.replyWithError(id, message);
-  }
-
-  replyWithError(id: number, error: string): void {
-    this.replyToCommand(id, {}, error);
-  }
-
-  replyToCommand(id: number, result: Object, error: ?string): void {
-    const value: Object = {id, result};
-    if (error) {
-      value.error = error;
+  }, {
+    key: 'getServerMessageObservable',
+    value: function getServerMessageObservable() {
+      return this._serverMessageObservable;
     }
-    this._sendJsonObject(this._serverMessageObservable, value);
-  }
+  }, {
+    key: 'getOutputWindowObservable',
+    value: function getOutputWindowObservable() {
+      return this._outputWindowObservable;
+    }
+  }, {
+    key: 'sendUserMessage',
+    value: function sendUserMessage(type, message) {
+      (_utils2 || _utils()).default.log('sendUserMessage(' + type + '): ' + JSON.stringify(message));
+      switch (type) {
+        case 'notification':
+          this._notificationObservable.next({
+            type: message.type,
+            message: message.message
+          });
+          break;
+        case 'console':
+          this.sendMethod(this._serverMessageObservable, 'Console.messageAdded', {
+            message: message
+          });
+          break;
+        case 'outputWindow':
+          this.sendMethod(this._outputWindowObservable, 'Console.messageAdded', {
+            message: message
+          });
+          break;
+        default:
+          (_utils2 || _utils()).default.logError('Unknown UserMessageType: ' + type);
+      }
+    }
+  }, {
+    key: 'unknownMethod',
+    value: function unknownMethod(id, domain, method, params) {
+      var message = 'Unknown chrome dev tools method: ' + domain + '.' + method;
+      (_utils2 || _utils()).default.log(message);
+      this.replyWithError(id, message);
+    }
+  }, {
+    key: 'replyWithError',
+    value: function replyWithError(id, error) {
+      this.replyToCommand(id, {}, error);
+    }
+  }, {
+    key: 'replyToCommand',
+    value: function replyToCommand(id, result, error) {
+      var value = { id: id, result: result };
+      if (error) {
+        value.error = error;
+      }
+      this._sendJsonObject(this._serverMessageObservable, value);
+    }
+  }, {
+    key: 'sendMethod',
+    value: function sendMethod(observable, method, params) {
+      this._sendJsonObject(observable, createMessage(method, params));
+    }
+  }, {
+    key: '_sendJsonObject',
+    value: function _sendJsonObject(observable, value) {
+      var message = JSON.stringify(value);
+      (_utils2 || _utils()).default.log('Sending JSON: ' + message);
+      observable.next(message);
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      (_utils2 || _utils()).default.log('Called ClientCallback dispose method.');
+      this._notificationObservable.complete();
+      this._serverMessageObservable.complete();
+      this._outputWindowObservable.complete();
+    }
+  }]);
 
-  sendMethod(observable: Observable<string>, method: string, params: ?Object) {
-    this._sendJsonObject(observable, createMessage(method, params));
-  }
+  return ClientCallback;
+})();
 
-  _sendJsonObject(observable: Observable<string>, value: Object): void {
-    const message = JSON.stringify(value);
-    logger.log('Sending JSON: ' + message);
-    ((observable : any) : Subject).next(message);
-  }
-
-  dispose(): void {
-    logger.log('Called ClientCallback dispose method.');
-    this._notificationObservable.complete();
-    this._serverMessageObservable.complete();
-    this._outputWindowObservable.complete();
-  }
-}
+exports.ClientCallback = ClientCallback;
+// For server messages.
+// For atom UI notifications.

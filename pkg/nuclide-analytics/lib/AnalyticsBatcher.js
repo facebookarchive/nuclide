@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,36 +10,50 @@
  * the root directory of this source tree.
  */
 
-import type {TrackEvent} from './track';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import BatchProcessedQueue from '../../commons-node/BatchProcessedQueue';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const REPORTING_PERIOD = 1000;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-type TrackCallback = (events: Array<TrackEvent>) => Promise<void>;
+var _commonsNodeBatchProcessedQueue2;
 
-export class AnalyticsBatcher {
-  _queue: BatchProcessedQueue<TrackEvent>;
-  _track: TrackCallback;
-
-  constructor(track: TrackCallback) {
-    this._track = track;
-    this._queue = new BatchProcessedQueue(
-      REPORTING_PERIOD,
-      events => {
-        this._handleBatch(events);
-      });
-  }
-
-  _handleBatch(events: Array<TrackEvent>): void {
-    this._track(events);
-  }
-
-  track(key: string, values: {[key: string]: mixed}): void {
-    this._queue.add({key, values});
-  }
-
-  dispose(): void {
-    this._queue.dispose();
-  }
+function _commonsNodeBatchProcessedQueue() {
+  return _commonsNodeBatchProcessedQueue2 = _interopRequireDefault(require('../../commons-node/BatchProcessedQueue'));
 }
+
+var REPORTING_PERIOD = 1000;
+
+var AnalyticsBatcher = (function () {
+  function AnalyticsBatcher(track) {
+    var _this = this;
+
+    _classCallCheck(this, AnalyticsBatcher);
+
+    this._track = track;
+    this._queue = new (_commonsNodeBatchProcessedQueue2 || _commonsNodeBatchProcessedQueue()).default(REPORTING_PERIOD, function (events) {
+      _this._handleBatch(events);
+    });
+  }
+
+  _createClass(AnalyticsBatcher, [{
+    key: '_handleBatch',
+    value: function _handleBatch(events) {
+      this._track(events);
+    }
+  }, {
+    key: 'track',
+    value: function track(key, values) {
+      this._queue.add({ key: key, values: values });
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._queue.dispose();
+    }
+  }]);
+
+  return AnalyticsBatcher;
+})();
+
+exports.AnalyticsBatcher = AnalyticsBatcher;

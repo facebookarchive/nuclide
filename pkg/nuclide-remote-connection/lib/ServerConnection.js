@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +10,99 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {RemoteConnection} from './RemoteConnection';
-import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
-import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-import invariant from 'assert';
-import pathModule from 'path';
-import {RpcConnection} from '../../nuclide-rpc';
-import {loadServicesConfig} from '../../nuclide-server/lib/services';
-import {setConnectionConfig} from './RemoteConnectionConfigurationManager';
-import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
-import {RemoteFile} from './RemoteFile';
-import {RemoteDirectory} from './RemoteDirectory';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {Disposable} from 'atom';
-import {parse as parseRemoteUri} from '../../nuclide-remote-uri';
-import {EventEmitter} from 'events';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
-import {getVersion} from '../../nuclide-version';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const posixPath = pathModule.posix;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export type ServerConnectionConfiguration = {
-  host: string; // host nuclide server is running on.
-  port: number; // port to connect to.
-  certificateAuthorityCertificate?: Buffer; // certificate of certificate authority.
-  clientCertificate?: Buffer; // client certificate for https connection.
-  clientKey?: Buffer; // key for https connection.
-};
+var _assert2;
 
-const _emitter: EventEmitter = new EventEmitter();
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _path2;
+
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
+
+var _nuclideRpc2;
+
+function _nuclideRpc() {
+  return _nuclideRpc2 = require('../../nuclide-rpc');
+}
+
+var _nuclideServerLibServices2;
+
+function _nuclideServerLibServices() {
+  return _nuclideServerLibServices2 = require('../../nuclide-server/lib/services');
+}
+
+var _RemoteConnectionConfigurationManager2;
+
+function _RemoteConnectionConfigurationManager() {
+  return _RemoteConnectionConfigurationManager2 = require('./RemoteConnectionConfigurationManager');
+}
+
+var _ConnectionHealthNotifier2;
+
+function _ConnectionHealthNotifier() {
+  return _ConnectionHealthNotifier2 = require('./ConnectionHealthNotifier');
+}
+
+var _RemoteFile2;
+
+function _RemoteFile() {
+  return _RemoteFile2 = require('./RemoteFile');
+}
+
+var _RemoteDirectory2;
+
+function _RemoteDirectory() {
+  return _RemoteDirectory2 = require('./RemoteDirectory');
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _nuclideRemoteUri2;
+
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = require('../../nuclide-remote-uri');
+}
+
+var _events2;
+
+function _events() {
+  return _events2 = require('events');
+}
+
+var _nuclideServerLibNuclideSocket2;
+
+function _nuclideServerLibNuclideSocket() {
+  return _nuclideServerLibNuclideSocket2 = require('../../nuclide-server/lib/NuclideSocket');
+}
+
+var _nuclideVersion2;
+
+function _nuclideVersion() {
+  return _nuclideVersion2 = require('../../nuclide-version');
+}
+
+var posixPath = (_path2 || _path()).default.posix;
+
+// key for https connection.
+
+var _emitter = new (_events2 || _events()).EventEmitter();
 
 // ServerConnection represents the client side of a connection to a remote machine.
 // There can be at most one connection to a given remote machine at a time. Clients should
@@ -51,45 +113,52 @@ const _emitter: EventEmitter = new EventEmitter();
 //
 // A ServerConnection keeps a list of RemoteConnections - one for each open directory on the remote
 // machine. Once all RemoteConnections have been closed, then the ServerConnection will close.
-class ServerConnection {
-  _entries: {[path: string]: RemoteFile | RemoteDirectory};
-  _config: ServerConnectionConfiguration;
-  _closed: boolean;
-  _healthNotifier: ?ConnectionHealthNotifier;
-  _client: ?RpcConnection<NuclideSocket>;
-  _connections: Array<RemoteConnection>;
 
-  static _connections: Map<string, ServerConnection> = new Map();
+var ServerConnection = (function () {
+  _createClass(ServerConnection, null, [{
+    key: 'getOrCreate',
+    value: _asyncToGenerator(function* (config) {
+      var existingConnection = ServerConnection.getByHostname(config.host);
+      if (existingConnection != null) {
+        return existingConnection;
+      }
 
-  static async getOrCreate(config: ServerConnectionConfiguration): Promise<ServerConnection> {
-    const existingConnection = ServerConnection.getByHostname(config.host);
-    if (existingConnection != null) {
-      return existingConnection;
-    }
+      var newConnection = new ServerConnection(config);
+      try {
+        yield newConnection.initialize();
+        return newConnection;
+      } catch (e) {
+        newConnection.close();
+        throw e;
+      }
+    })
 
-    const newConnection = new ServerConnection(config);
-    try {
-      await newConnection.initialize();
-      return newConnection;
-    } catch (e) {
-      newConnection.close();
-      throw e;
-    }
-  }
+    // WARNING: This shuts down all Nuclide servers _without_ closing their
+    // RemoteConnections first! This is extremely unsafe and
+    // should only be used to forcibly kill Nuclide servers before restarting.
+  }, {
+    key: 'forceShutdownAllServers',
+    value: _asyncToGenerator(function* () {
+      yield Promise.all(Array.from(ServerConnection._connections).map(function (_ref) {
+        var _ref2 = _slicedToArray(_ref, 2);
 
-  // WARNING: This shuts down all Nuclide servers _without_ closing their
-  // RemoteConnections first! This is extremely unsafe and
-  // should only be used to forcibly kill Nuclide servers before restarting.
-  static async forceShutdownAllServers(): Promise<void> {
-    await Promise.all(
-      Array.from(ServerConnection._connections).map(([_, connection]) => {
+        var _ = _ref2[0];
+        var connection = _ref2[1];
+
         return connection._getInfoService().closeConnection(true);
-      }),
-    );
-  }
+      }));
+    })
 
-  // Do NOT call this from outside this class. Use ServerConnection.getOrCreate() instead.
-  constructor(config: ServerConnectionConfiguration) {
+    // Do NOT call this from outside this class. Use ServerConnection.getOrCreate() instead.
+  }, {
+    key: '_connections',
+    value: new Map(),
+    enumerable: true
+  }]);
+
+  function ServerConnection(config) {
+    _classCallCheck(this, ServerConnection);
+
     this._entries = {};
     this._config = config;
     this._closed = false;
@@ -98,271 +167,292 @@ class ServerConnection {
     this._connections = [];
   }
 
-  dispose(): void {
-    if (this._healthNotifier != null) {
-      this._healthNotifier.dispose();
+  _createClass(ServerConnection, [{
+    key: 'dispose',
+    value: function dispose() {
+      if (this._healthNotifier != null) {
+        this._healthNotifier.dispose();
+      }
     }
-  }
-
-  static async _createInsecureConnectionForTesting(
-    cwd: string,
-    port: number,
-  ): Promise<?ServerConnection> {
-    const config = {
-      host: 'localhost',
-      port,
-      cwd,
-    };
-    const connection = new ServerConnection(config);
-    await connection.initialize();
-    return connection;
-  }
-
-  _monitorConnectionHeartbeat() {
-    invariant(this._healthNotifier == null);
-    this._healthNotifier = new ConnectionHealthNotifier(this._config.host, this.getSocket());
-  }
-
-  getUriOfRemotePath(remotePath: string): string {
-    return `nuclide://${this.getRemoteHostname()}${remotePath}`;
-  }
-
-  getPathOfUri(uri: string): string {
-    return parseRemoteUri(uri).path;
-  }
-
-  createDirectory(
-    uri: NuclideUri,
-    hgRepositoryDescription: ?HgRepositoryDescription,
-    symlink: boolean = false
-  ): RemoteDirectory {
-    let {path} = parseRemoteUri(uri);
-    path = posixPath.normalize(path);
-
-    let entry = this._entries[path];
-    if (
-      !entry ||
-      entry.getLocalPath() !== path ||
-      entry.isSymbolicLink() !== symlink
-    ) {
-      this._entries[path] = entry = new RemoteDirectory(
-        this,
-        this.getUriOfRemotePath(path),
-        symlink,
-        {hgRepositoryDescription},
-      );
-      this._addHandlersForEntry(entry);
+  }, {
+    key: '_monitorConnectionHeartbeat',
+    value: function _monitorConnectionHeartbeat() {
+      (0, (_assert2 || _assert()).default)(this._healthNotifier == null);
+      this._healthNotifier = new (_ConnectionHealthNotifier2 || _ConnectionHealthNotifier()).ConnectionHealthNotifier(this._config.host, this.getSocket());
     }
-
-    invariant(entry instanceof RemoteDirectory);
-    if (!entry.isDirectory()) {
-      throw new Error('Path is not a directory:' + uri);
+  }, {
+    key: 'getUriOfRemotePath',
+    value: function getUriOfRemotePath(remotePath) {
+      return 'nuclide://' + this.getRemoteHostname() + remotePath;
     }
-
-    return entry;
-  }
-
-  createFile(uri: NuclideUri, symlink: boolean = false): RemoteFile {
-    let {path} = parseRemoteUri(uri);
-    path = posixPath.normalize(path);
-
-    let entry = this._entries[path];
-    if (
-      !entry ||
-      entry.getLocalPath() !== path ||
-      entry.isSymbolicLink() !== symlink
-    ) {
-      this._entries[path] = entry = new RemoteFile(
-        this,
-        this.getUriOfRemotePath(path),
-        symlink,
-      );
-      this._addHandlersForEntry(entry);
+  }, {
+    key: 'getPathOfUri',
+    value: function getPathOfUri(uri) {
+      return (0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).parse)(uri).path;
     }
+  }, {
+    key: 'createDirectory',
+    value: function createDirectory(uri, hgRepositoryDescription) {
+      var symlink = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
 
-    invariant(entry instanceof RemoteFile);
-    if (entry.isDirectory()) {
-      throw new Error('Path is not a file');
+      var _ref3 = (0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).parse)(uri);
+
+      var path = _ref3.path;
+
+      path = posixPath.normalize(path);
+
+      var entry = this._entries[path];
+      if (!entry || entry.getLocalPath() !== path || entry.isSymbolicLink() !== symlink) {
+        this._entries[path] = entry = new (_RemoteDirectory2 || _RemoteDirectory()).RemoteDirectory(this, this.getUriOfRemotePath(path), symlink, { hgRepositoryDescription: hgRepositoryDescription });
+        this._addHandlersForEntry(entry);
+      }
+
+      (0, (_assert2 || _assert()).default)(entry instanceof (_RemoteDirectory2 || _RemoteDirectory()).RemoteDirectory);
+      if (!entry.isDirectory()) {
+        throw new Error('Path is not a directory:' + uri);
+      }
+
+      return entry;
     }
+  }, {
+    key: 'createFile',
+    value: function createFile(uri) {
+      var symlink = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
-    return entry;
-  }
+      var _ref4 = (0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).parse)(uri);
 
-  _addHandlersForEntry(entry: RemoteFile | RemoteDirectory): void {
-    // TODO(most): Subscribe to rename events when they're implemented.
-    const deleteSubscription = entry.onDidDelete(() => {
-      delete this._entries[entry.getLocalPath()];
-      deleteSubscription.dispose();
-    });
-  }
+      var path = _ref4.path;
 
-  async initialize(): Promise<void> {
-    this._startRpc();
-    const client = this.getClient();
+      path = posixPath.normalize(path);
 
-    // Test connection first. First time we get here we're checking to reestablish
-    // connection using cached credentials. This will fail fast (faster than infoService)
-    // when we don't have cached credentials yet.
-    await client.getTransport().testConnection();
+      var entry = this._entries[path];
+      if (!entry || entry.getLocalPath() !== path || entry.isSymbolicLink() !== symlink) {
+        this._entries[path] = entry = new (_RemoteFile2 || _RemoteFile()).RemoteFile(this, this.getUriOfRemotePath(path), symlink);
+        this._addHandlersForEntry(entry);
+      }
 
-    // Do version check.
-    const serverVersion = await this._getInfoService().getServerVersion();
+      (0, (_assert2 || _assert()).default)(entry instanceof (_RemoteFile2 || _RemoteFile()).RemoteFile);
+      if (entry.isDirectory()) {
+        throw new Error('Path is not a file');
+      }
 
-    const clientVersion = getVersion();
-    if (clientVersion !== serverVersion) {
-      throw new Error(
-        `Version mismatch. Client at ${clientVersion} while server at ${serverVersion}.`);
+      return entry;
     }
+  }, {
+    key: '_addHandlersForEntry',
+    value: function _addHandlersForEntry(entry) {
+      var _this = this;
 
-    this._monitorConnectionHeartbeat();
-
-    ServerConnection._connections.set(this.getRemoteHostname(), this);
-    setConnectionConfig(this._config);
-    _emitter.emit('did-add', this);
-  }
-
-  close(): void {
-    if (this._closed) {
-      return;
+      // TODO(most): Subscribe to rename events when they're implemented.
+      var deleteSubscription = entry.onDidDelete(function () {
+        delete _this._entries[entry.getLocalPath()];
+        deleteSubscription.dispose();
+      });
     }
+  }, {
+    key: 'initialize',
+    value: _asyncToGenerator(function* () {
+      this._startRpc();
+      var client = this.getClient();
 
-    // Future getClient calls should fail, if it has a cached ServerConnection instance.
-    this._closed = true;
+      // Test connection first. First time we get here we're checking to reestablish
+      // connection using cached credentials. This will fail fast (faster than infoService)
+      // when we don't have cached credentials yet.
+      yield client.getTransport().testConnection();
 
-    // The Rpc channel owns the socket.
-    if (this._client != null) {
-      this._client.dispose();
-      this._client = null;
+      // Do version check.
+      var serverVersion = yield this._getInfoService().getServerVersion();
+
+      var clientVersion = (0, (_nuclideVersion2 || _nuclideVersion()).getVersion)();
+      if (clientVersion !== serverVersion) {
+        throw new Error('Version mismatch. Client at ' + clientVersion + ' while server at ' + serverVersion + '.');
+      }
+
+      this._monitorConnectionHeartbeat();
+
+      ServerConnection._connections.set(this.getRemoteHostname(), this);
+      (0, (_RemoteConnectionConfigurationManager2 || _RemoteConnectionConfigurationManager()).setConnectionConfig)(this._config);
+      _emitter.emit('did-add', this);
+    })
+  }, {
+    key: 'close',
+    value: function close() {
+      if (this._closed) {
+        return;
+      }
+
+      // Future getClient calls should fail, if it has a cached ServerConnection instance.
+      this._closed = true;
+
+      // The Rpc channel owns the socket.
+      if (this._client != null) {
+        this._client.dispose();
+        this._client = null;
+      }
+
+      // Remove from _connections to not be considered in future connection queries.
+      if (ServerConnection._connections.delete(this.getRemoteHostname())) {
+        _emitter.emit('did-close', this);
+      }
     }
-
-    // Remove from _connections to not be considered in future connection queries.
-    if (ServerConnection._connections.delete(this.getRemoteHostname())) {
-      _emitter.emit('did-close', this);
+  }, {
+    key: 'getClient',
+    value: function getClient() {
+      (0, (_assert2 || _assert()).default)(!this._closed && this._client != null, 'Server connection has been closed.');
+      return this._client;
     }
-  }
+  }, {
+    key: '_startRpc',
+    value: function _startRpc() {
+      var uri = undefined;
+      var options = undefined;
 
-  getClient(): RpcConnection<NuclideSocket> {
-    invariant(!this._closed && this._client != null, 'Server connection has been closed.');
-    return this._client;
-  }
+      // Use https if we have key, cert, and ca
+      if (this._isSecure()) {
+        (0, (_assert2 || _assert()).default)(this._config.certificateAuthorityCertificate != null);
+        (0, (_assert2 || _assert()).default)(this._config.clientCertificate != null);
+        (0, (_assert2 || _assert()).default)(this._config.clientKey != null);
+        options = {
+          ca: this._config.certificateAuthorityCertificate,
+          cert: this._config.clientCertificate,
+          key: this._config.clientKey
+        };
+        uri = 'https://' + this.getRemoteHostname() + ':' + this.getPort();
+      } else {
+        options = null;
+        uri = 'http://' + this.getRemoteHostname() + ':' + this.getPort();
+      }
 
-  _startRpc(): void {
-    let uri;
-    let options;
+      var socket = new (_nuclideServerLibNuclideSocket2 || _nuclideServerLibNuclideSocket()).NuclideSocket(uri, options);
+      var client = (_nuclideRpc2 || _nuclideRpc()).RpcConnection.createRemote(this.getRemoteHostname(), socket, (0, (_nuclideServerLibServices2 || _nuclideServerLibServices()).loadServicesConfig)());
 
-    // Use https if we have key, cert, and ca
-    if (this._isSecure()) {
-      invariant(this._config.certificateAuthorityCertificate != null);
-      invariant(this._config.clientCertificate != null);
-      invariant(this._config.clientKey != null);
-      options = {
-        ca: this._config.certificateAuthorityCertificate,
-        cert: this._config.clientCertificate,
-        key: this._config.clientKey,
+      this._client = client;
+    }
+  }, {
+    key: '_isSecure',
+    value: function _isSecure() {
+      return Boolean(this._config.certificateAuthorityCertificate && this._config.clientCertificate && this._config.clientKey);
+    }
+  }, {
+    key: 'getPort',
+    value: function getPort() {
+      return this._config.port;
+    }
+  }, {
+    key: 'getRemoteHostname',
+    value: function getRemoteHostname() {
+      return this._config.host;
+    }
+  }, {
+    key: 'getConfig',
+    value: function getConfig() {
+      return this._config;
+    }
+  }, {
+    key: 'addConnection',
+    value: function addConnection(connection) {
+      this._connections.push(connection);
+    }
+  }, {
+    key: 'removeConnection',
+    value: _asyncToGenerator(function* (connection, shutdownIfLast) {
+      (0, (_assert2 || _assert()).default)(this._connections.indexOf(connection) !== -1, 'Attempt to remove a non-existent RemoteConnection');
+      this._connections.splice(this._connections.indexOf(connection), 1);
+      if (this._connections.length === 0) {
+        // The await here is subtle, it ensures that the shutdown call is sent
+        // on the socket before the socket is closed on the next line.
+        yield this._getInfoService().closeConnection(shutdownIfLast);
+        this.close();
+      }
+    })
+  }, {
+    key: 'getRemoteConnectionForUri',
+    value: function getRemoteConnectionForUri(uri) {
+      var _ref5 = (0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).parse)(uri);
+
+      var path = _ref5.path;
+
+      return this.getConnections().filter(function (connection) {
+        return path.startsWith(connection.getPathForInitialWorkingDirectory());
+      })[0];
+    }
+  }, {
+    key: 'getConnections',
+    value: function getConnections() {
+      return this._connections;
+    }
+  }, {
+    key: 'getService',
+    value: function getService(serviceName) {
+      return this.getClient().getService(serviceName);
+    }
+  }, {
+    key: 'getSocket',
+    value: function getSocket() {
+      return this.getClient().getTransport();
+    }
+  }, {
+    key: '_getInfoService',
+    value: function _getInfoService() {
+      return this.getService('InfoService');
+    }
+  }], [{
+    key: '_createInsecureConnectionForTesting',
+    value: _asyncToGenerator(function* (cwd, port) {
+      var config = {
+        host: 'localhost',
+        port: port,
+        cwd: cwd
       };
-      uri = `https://${this.getRemoteHostname()}:${this.getPort()}`;
-    } else {
-      options = null;
-      uri = `http://${this.getRemoteHostname()}:${this.getPort()}`;
+      var connection = new ServerConnection(config);
+      yield connection.initialize();
+      return connection;
+    })
+  }, {
+    key: 'onDidAddServerConnection',
+    value: function onDidAddServerConnection(handler) {
+      _emitter.on('did-add', handler);
+      return new (_atom2 || _atom()).Disposable(function () {
+        _emitter.removeListener('did-add', handler);
+      });
     }
-
-    const socket = new NuclideSocket(uri, options);
-    const client = RpcConnection.createRemote(
-      this.getRemoteHostname(), socket, loadServicesConfig(),
-    );
-
-    this._client = client;
-  }
-
-  _isSecure(): boolean {
-    return Boolean(
-        this._config.certificateAuthorityCertificate
-        && this._config.clientCertificate
-        && this._config.clientKey
-    );
-  }
-
-  getPort(): number {
-    return this._config.port;
-  }
-
-  getRemoteHostname(): string {
-    return this._config.host;
-  }
-
-  getConfig(): ServerConnectionConfiguration {
-    return this._config;
-  }
-
-  addConnection(connection: RemoteConnection): void {
-    this._connections.push(connection);
-  }
-
-  async removeConnection(connection: RemoteConnection, shutdownIfLast: boolean): Promise<void> {
-    invariant(this._connections.indexOf(connection) !== -1,
-      'Attempt to remove a non-existent RemoteConnection');
-    this._connections.splice(this._connections.indexOf(connection), 1);
-    if (this._connections.length === 0) {
-      // The await here is subtle, it ensures that the shutdown call is sent
-      // on the socket before the socket is closed on the next line.
-      await this._getInfoService().closeConnection(shutdownIfLast);
-      this.close();
+  }, {
+    key: 'onDidCloseServerConnection',
+    value: function onDidCloseServerConnection(handler) {
+      _emitter.on('did-close', handler);
+      return new (_atom2 || _atom()).Disposable(function () {
+        _emitter.removeListener('did-close', handler);
+      });
     }
-  }
+  }, {
+    key: 'getForUri',
+    value: function getForUri(uri) {
+      var _ref6 = (0, (_nuclideRemoteUri2 || _nuclideRemoteUri()).parse)(uri);
 
-  static onDidAddServerConnection(handler: (connection: ServerConnection) => void): Disposable {
-    _emitter.on('did-add', handler);
-    return new Disposable(() => {
-      _emitter.removeListener('did-add', handler);
-    });
-  }
+      var hostname = _ref6.hostname;
 
-  static onDidCloseServerConnection(handler: (connection: ServerConnection) => void): Disposable {
-    _emitter.on('did-close', handler);
-    return new Disposable(() => {
-      _emitter.removeListener('did-close', handler);
-    });
-  }
-
-  static getForUri(uri: NuclideUri): ?ServerConnection {
-    const {hostname} = parseRemoteUri(uri);
-    if (hostname == null) {
-      return null;
+      if (hostname == null) {
+        return null;
+      }
+      return ServerConnection.getByHostname(hostname);
     }
-    return ServerConnection.getByHostname(hostname);
-  }
+  }, {
+    key: 'getByHostname',
+    value: function getByHostname(hostname) {
+      return ServerConnection._connections.get(hostname);
+    }
+  }]);
 
-  static getByHostname(hostname: string): ?ServerConnection {
-    return ServerConnection._connections.get(hostname);
-  }
-
-  getRemoteConnectionForUri(uri: NuclideUri): ?RemoteConnection {
-    const {path} = parseRemoteUri(uri);
-    return this.getConnections().filter(connection => {
-      return path.startsWith(connection.getPathForInitialWorkingDirectory());
-    })[0];
-  }
-
-  getConnections(): Array<RemoteConnection> {
-    return this._connections;
-  }
-
-  getService(serviceName: string): any {
-    return this.getClient().getService(serviceName);
-  }
-
-  getSocket(): NuclideSocket {
-    return this.getClient().getTransport();
-  }
-
-  _getInfoService(): InfoService {
-    return this.getService('InfoService');
-  }
-}
+  return ServerConnection;
+})();
 
 module.exports = {
-  ServerConnection,
+  ServerConnection: ServerConnection,
   __test__: {
-    connections: ServerConnection._connections,
-  },
+    connections: ServerConnection._connections
+  }
 };
+// host nuclide server is running on.
+// port to connect to.
+// certificate of certificate authority.
+// client certificate for https connection.

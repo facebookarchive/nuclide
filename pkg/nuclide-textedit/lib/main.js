@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +10,21 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+exports.applyTextEdit = applyTextEdit;
 
-export type TextEdit = {
-  oldRange: atom$Range;
-  newText: string;
-  // If included, this will be used to verify that the edit still applies cleanly.
-  oldText?: string;
-};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import invariant from 'assert';
+var _assert2;
 
-import {existingEditorForUri} from '../../commons-atom/text-editor';
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _commonsAtomTextEditor2;
+
+function _commonsAtomTextEditor() {
+  return _commonsAtomTextEditor2 = require('../../commons-atom/text-editor');
+}
 
 /**
  * Attempts to apply the patch to the given file.
@@ -31,21 +35,22 @@ import {existingEditorForUri} from '../../commons-atom/text-editor';
  * Returns true if the application was successful, otherwise false (e.g. if the oldText did not
  * match).
  */
-export function applyTextEdit(path: NuclideUri, edit: TextEdit): boolean {
-  const editor = existingEditorForUri(path);
-  invariant(editor != null);
-  const buffer = editor.getBuffer();
+
+function applyTextEdit(path, edit) {
+  var editor = (0, (_commonsAtomTextEditor2 || _commonsAtomTextEditor()).existingEditorForUri)(path);
+  (0, (_assert2 || _assert()).default)(editor != null);
+  var buffer = editor.getBuffer();
   if (edit.oldRange.start.row === edit.oldRange.end.row) {
     // A little extra validation when the old range spans only one line. In particular, this helps
     // when the old range is empty so there is no old text for us to compare against. We can at
     // least abort if the line isn't long enough.
-    const lineLength = buffer.lineLengthForRow(edit.oldRange.start.row);
+    var lineLength = buffer.lineLengthForRow(edit.oldRange.start.row);
     if (edit.oldRange.end.column > lineLength) {
       return false;
     }
   }
   if (edit.oldText != null) {
-    const currentText = buffer.getTextInRange(edit.oldRange);
+    var currentText = buffer.getTextInRange(edit.oldRange);
     if (currentText !== edit.oldText) {
       return false;
     }
@@ -53,3 +58,5 @@ export function applyTextEdit(path: NuclideUri, edit: TextEdit): boolean {
   buffer.setTextInRange(edit.oldRange, edit.newText);
   return true;
 }
+
+// If included, this will be used to verify that the edit still applies cleanly.

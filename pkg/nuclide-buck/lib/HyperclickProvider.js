@@ -1,25 +1,4 @@
-'use babel';
-/* @flow */
-
-/*
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- */
-
-type Target = {path: string; name: string};
-
-import type {BuckProject} from '../../nuclide-buck-base';
-import type {Point} from 'atom';
-
-import {getBuckProject} from '../../nuclide-buck-base';
-import fsPromise from '../../commons-node/fsPromise';
-import wordAtPosition from '../../commons-atom/word-at-position';
-import {goToLocation} from '../../commons-atom/go-to-location';
-import pathModule from 'path';
-import escapeStringRegExp from 'escape-string-regexp';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 /**
  * Takes target regex match and file path where given target is found as
@@ -31,31 +10,28 @@ import escapeStringRegExp from 'escape-string-regexp';
  * parsed to {path: filePath, name: MyTarget}.
  * Returns null if target cannot be parsed from given arguments.
  */
-async function parseTarget(
-  match: Array<?string> | Array<string>,
-  filePath: ?string,
-  buckProject: BuckProject,
-): Promise<?Target> {
+
+var parseTarget = _asyncToGenerator(function* (match, filePath, buckProject) {
   if (!match || !filePath) {
     return null;
   }
 
-  let path;
-  const fullTarget = match[1];
+  var path = undefined;
+  var fullTarget = match[1];
   if (fullTarget) {
     // Strip off the leading slashes from the fully-qualified build target.
-    const basePath = fullTarget.substring('//'.length);
-    const buckRoot = await buckProject.getPath();
+    var basePath = fullTarget.substring('//'.length);
+    var buckRoot = yield buckProject.getPath();
     path = require('../../nuclide-remote-uri').join(buckRoot, basePath, 'BUCK');
   } else {
     // filePath is already an absolute path.
     path = filePath;
   }
-  const name = match[2];
+  var name = match[2];
   if (!name) {
     return null;
   }
-  return {path, name};
+  return { path: path, name: name };
 }
 
 /**
@@ -65,10 +41,12 @@ async function parseTarget(
  * position property of the target location will be set to null.
  * If `target.path` file cannot be found or read, Promise resolves to null.
  */
-async function findTargetLocation(target: Target): Promise {
-  let data;
+);
+
+var findTargetLocation = _asyncToGenerator(function* (target) {
+  var data = undefined;
   try {
-    data = await fsPromise.readFile(target.path, 'utf-8');
+    data = yield (_commonsNodeFsPromise2 || _commonsNodeFsPromise()).default.readFile(target.path, 'utf-8');
   } catch (e) {
     return null;
   }
@@ -76,134 +54,72 @@ async function findTargetLocation(target: Target): Promise {
   // We split the file content into lines and look for the line that looks
   // like "name = '#{target.name}'" ignoring whitespaces and trailling
   // comma.
-  const lines = data.split('\n');
-  const regex = new RegExp(
-      '^\\s*' + // beginning of the line
-      'name\\s*=\\s*' + // name =
-      '[\'"]' + // opening quotation mark
-      escapeStringRegExp(target.name) + // target name
-      '[\'"]' + // closing quotation mark
-      ',?$' // optional trailling comma
+  var lines = data.split('\n');
+  var regex = new RegExp('^\\s*' + // beginning of the line
+  'name\\s*=\\s*' + // name =
+  '[\'"]' + // opening quotation mark
+  (0, (_escapeStringRegexp2 || _escapeStringRegexp()).default)(target.name) + // target name
+  '[\'"]' + // closing quotation mark
+  ',?$' // optional trailling comma
   );
 
-  let lineIndex = 0;
-  lines.forEach((line, i) => {
+  var lineIndex = 0;
+  lines.forEach(function (line, i) {
     if (regex.test(line)) {
       lineIndex = i;
     }
   });
 
-  return {path: target.path, line: lineIndex, column: 0};
-}
-
-const VALID_BUILD_FILE_NAMES = new Set([
-  'BUCK',
-  'BUCK.autodeps',
-  'TARGETS',
-]);
-
-module.exports = {
-  priority: 200,
-  providerName: 'nuclide-buck',
-  async getSuggestion(textEditor: TextEditor, position: Point): Promise<mixed> {
-    const absolutePath = textEditor.getPath();
-    if (!absolutePath) {
-      return null;
-    }
-
-    const baseName = pathModule.basename(absolutePath);
-    if (!VALID_BUILD_FILE_NAMES.has(baseName)) {
-      return null;
-    }
-
-    const buckProject = await getBuckProject(absolutePath);
-    if (!buckProject) {
-      return null;
-    }
-
-    const results = await Promise.all([
-      findBuildTarget(textEditor, position, absolutePath, buckProject),
-      findRelativeFilePath(textEditor, position, pathModule.dirname(absolutePath)),
-    ]);
-    const hyperclickMatch = results.find(x => x != null);
-
-    if (hyperclickMatch != null) {
-      const match = hyperclickMatch;
-      return {
-        range: match.range,
-        callback() { goToLocation(match.path, match.line, match.column); },
-      };
-    } else {
-      return null;
-    }
-  },
-  parseTarget,
-  findTargetLocation,
-};
-
-type HyperclickMatch = {
-  path: string;
-  line: number;
-  column: number;
-  range: atom$Range;
-};
-
-const TARGET_REGEX = /(\/(?:\/[\w\-\.]*)*){0,1}:([\w\-\.]+)/;
+  return { path: target.path, line: lineIndex, column: 0 };
+});
 
 /**
  * @return HyperclickMatch if (textEditor, position) identifies a build target.
  */
-async function findBuildTarget(
-  textEditor: atom$TextEditor,
-  position: atom$Point,
-  absolutePath: string,
-  buckProject: BuckProject,
-): Promise<?HyperclickMatch> {
-  const wordMatchAndRange = wordAtPosition(textEditor, position, TARGET_REGEX);
+
+var findBuildTarget = _asyncToGenerator(function* (textEditor, position, absolutePath, buckProject) {
+  var wordMatchAndRange = (0, (_commonsAtomWordAtPosition2 || _commonsAtomWordAtPosition()).default)(textEditor, position, TARGET_REGEX);
   if (wordMatchAndRange == null) {
     return null;
   }
-  const {wordMatch, range} = wordMatchAndRange;
+  var wordMatch = wordMatchAndRange.wordMatch;
+  var range = wordMatchAndRange.range;
 
-  const target = await parseTarget(wordMatch, absolutePath, buckProject);
+  var target = yield parseTarget(wordMatch, absolutePath, buckProject);
   if (!target) {
     return null;
   }
 
-  const location = await findTargetLocation(target);
+  var location = yield findTargetLocation(target);
   if (location != null) {
-    return {...location, range};
+    return _extends({}, location, { range: range });
   } else {
     return null;
   }
-}
-
-const RELATIVE_FILE_PATH_REGEX = /(['"])(.*)(['"])/;
+});
 
 /**
  * @return HyperclickMatch if (textEditor, position) identifies a file path that resolves to a file
  *   under the specified directory.
  */
-async function findRelativeFilePath(
-  textEditor: atom$TextEditor,
-  position: atom$Point,
-  directory: string,
-): Promise<?HyperclickMatch> {
-  const wordMatchAndRange = wordAtPosition(textEditor, position, RELATIVE_FILE_PATH_REGEX);
+
+var findRelativeFilePath = _asyncToGenerator(function* (textEditor, position, directory) {
+  var wordMatchAndRange = (0, (_commonsAtomWordAtPosition2 || _commonsAtomWordAtPosition()).default)(textEditor, position, RELATIVE_FILE_PATH_REGEX);
   if (!wordMatchAndRange) {
     return null;
   }
-  const {wordMatch, range} = wordMatchAndRange;
+  var wordMatch = wordMatchAndRange.wordMatch;
+  var range = wordMatchAndRange.range;
 
   // Make sure that the quotes match up.
   if (wordMatch[1] !== wordMatch[3]) {
     return null;
   }
 
-  const potentialPath = pathModule.join(directory, wordMatch[2]);
-  let stat;
+  var potentialPath = (_path2 || _path()).default.join(directory, wordMatch[2]);
+  var stat = undefined;
   try {
-    stat = await fsPromise.stat(potentialPath);
+    stat = yield (_commonsNodeFsPromise2 || _commonsNodeFsPromise()).default.stat(potentialPath);
   } catch (e) {
     return null;
   }
@@ -213,9 +129,109 @@ async function findRelativeFilePath(
       path: potentialPath,
       line: 0,
       column: 0,
-      range,
+      range: range
     };
   } else {
     return null;
   }
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+var _nuclideBuckBase2;
+
+function _nuclideBuckBase() {
+  return _nuclideBuckBase2 = require('../../nuclide-buck-base');
 }
+
+var _commonsNodeFsPromise2;
+
+function _commonsNodeFsPromise() {
+  return _commonsNodeFsPromise2 = _interopRequireDefault(require('../../commons-node/fsPromise'));
+}
+
+var _commonsAtomWordAtPosition2;
+
+function _commonsAtomWordAtPosition() {
+  return _commonsAtomWordAtPosition2 = _interopRequireDefault(require('../../commons-atom/word-at-position'));
+}
+
+var _commonsAtomGoToLocation2;
+
+function _commonsAtomGoToLocation() {
+  return _commonsAtomGoToLocation2 = require('../../commons-atom/go-to-location');
+}
+
+var _path2;
+
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
+
+var _escapeStringRegexp2;
+
+function _escapeStringRegexp() {
+  return _escapeStringRegexp2 = _interopRequireDefault(require('escape-string-regexp'));
+}
+
+var VALID_BUILD_FILE_NAMES = new Set(['BUCK', 'BUCK.autodeps', 'TARGETS']);
+
+module.exports = {
+  priority: 200,
+  providerName: 'nuclide-buck',
+  getSuggestion: _asyncToGenerator(function* (textEditor, position) {
+    var absolutePath = textEditor.getPath();
+    if (!absolutePath) {
+      return null;
+    }
+
+    var baseName = (_path2 || _path()).default.basename(absolutePath);
+    if (!VALID_BUILD_FILE_NAMES.has(baseName)) {
+      return null;
+    }
+
+    var buckProject = yield (0, (_nuclideBuckBase2 || _nuclideBuckBase()).getBuckProject)(absolutePath);
+    if (!buckProject) {
+      return null;
+    }
+
+    var results = yield Promise.all([findBuildTarget(textEditor, position, absolutePath, buckProject), findRelativeFilePath(textEditor, position, (_path2 || _path()).default.dirname(absolutePath))]);
+    var hyperclickMatch = results.find(function (x) {
+      return x != null;
+    });
+
+    if (hyperclickMatch != null) {
+      var _ret = (function () {
+        var match = hyperclickMatch;
+        return {
+          v: {
+            range: match.range,
+            callback: function callback() {
+              (0, (_commonsAtomGoToLocation2 || _commonsAtomGoToLocation()).goToLocation)(match.path, match.line, match.column);
+            }
+          }
+        };
+      })();
+
+      if (typeof _ret === 'object') return _ret.v;
+    } else {
+      return null;
+    }
+  }),
+  parseTarget: parseTarget,
+  findTargetLocation: findTargetLocation
+};
+
+var TARGET_REGEX = /(\/(?:\/[\w\-\.]*)*){0,1}:([\w\-\.]+)/;
+
+var RELATIVE_FILE_PATH_REGEX = /(['"])(.*)(['"])/;

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _StatusCodeIdToNumber;
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,57 +12,43 @@
 
 /* @providesModule HgConstants */
 
-import type {
-  StatusCodeIdValue,
-  StatusCodeNumberValue,
-  HgStatusOptionValue,
-} from './HgService';
-
-const StatusCodeId = Object.freeze({
+var StatusCodeId = Object.freeze({
   ADDED: 'A',
   CLEAN: 'C',
   IGNORED: 'I',
   MODIFIED: 'M',
   MISSING: '!', // (deleted by non-hg command, but still tracked)
   REMOVED: 'R',
-  UNTRACKED: '?',
+  UNTRACKED: '?'
 });
 
 // This is to work around flow's missing support of enums.
-(StatusCodeId: {[key: string]: StatusCodeIdValue});
+StatusCodeId;
 
-const StatusCodeNumber = Object.freeze({
+var StatusCodeNumber = Object.freeze({
   ADDED: 1,
   CLEAN: 2,
   IGNORED: 3,
   MODIFIED: 4,
   MISSING: 5,
   REMOVED: 6,
-  UNTRACKED: 7,
+  UNTRACKED: 7
 });
 
 // This is to work around flow's missing support of enums.
-(StatusCodeNumber: { [key: string]: StatusCodeNumberValue });
+StatusCodeNumber;
 
-const StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = {
-  [StatusCodeId.ADDED]: StatusCodeNumber.ADDED,
-  [StatusCodeId.CLEAN]: StatusCodeNumber.CLEAN,
-  [StatusCodeId.IGNORED]: StatusCodeNumber.IGNORED,
-  [StatusCodeId.MODIFIED]: StatusCodeNumber.MODIFIED,
-  [StatusCodeId.MISSING]: StatusCodeNumber.MISSING,
-  [StatusCodeId.REMOVED]: StatusCodeNumber.REMOVED,
-  [StatusCodeId.UNTRACKED]: StatusCodeNumber.UNTRACKED,
-};
+var StatusCodeIdToNumber = (_StatusCodeIdToNumber = {}, _defineProperty(_StatusCodeIdToNumber, StatusCodeId.ADDED, StatusCodeNumber.ADDED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.CLEAN, StatusCodeNumber.CLEAN), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.IGNORED, StatusCodeNumber.IGNORED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.MODIFIED, StatusCodeNumber.MODIFIED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.MISSING, StatusCodeNumber.MISSING), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.REMOVED, StatusCodeNumber.REMOVED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.UNTRACKED, StatusCodeNumber.UNTRACKED), _StatusCodeIdToNumber);
 
-const HgStatusOption: {[key: string]: HgStatusOptionValue} = Object.freeze({
-  ONLY_NON_IGNORED: 1,  // only the output of `hg status`
-  ONLY_IGNORED: 2,      // only the output of `hg status --ignored`
-  ALL_STATUSES: 3,      // the output of `hg status --all`
-});
+var HgStatusOption = Object.freeze({
+  ONLY_NON_IGNORED: 1, // only the output of `hg status`
+  ONLY_IGNORED: 2, // only the output of `hg status --ignored`
+  ALL_STATUSES: 3 });
 
+// the output of `hg status --all`
 module.exports = {
-  HgStatusOption,
-  StatusCodeId,
-  StatusCodeIdToNumber,
-  StatusCodeNumber,
+  HgStatusOption: HgStatusOption,
+  StatusCodeId: StatusCodeId,
+  StatusCodeIdToNumber: StatusCodeIdToNumber,
+  StatusCodeNumber: StatusCodeNumber
 };

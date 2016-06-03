@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.default = createPaneContainer;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +11,9 @@
  * the root directory of this source tree.
  */
 
-export default function createPaneContainer(): Object {
-  const PaneContainer = atom.workspace.paneContainer.constructor;
+function createPaneContainer() {
+  var PaneContainer = atom.workspace.paneContainer.constructor;
   return new PaneContainer({});
 }
+
+module.exports = exports.default;

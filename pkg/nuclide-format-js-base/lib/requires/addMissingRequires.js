@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,33 +8,46 @@
  * the root directory of this source tree.
  */
 
-import type {Collection} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import FirstNode from '../utils/FirstNode';
-import getUndeclaredIdentifiers from '../utils/getUndeclaredIdentifiers';
-import getUndeclaredJSXIdentifiers from '../utils/getUndeclaredJSXIdentifiers';
+var _utilsFirstNode2;
 
-function addMissingRequires(root: Collection, options: SourceOptions): void {
-  const first = FirstNode.get(root);
+function _utilsFirstNode() {
+  return _utilsFirstNode2 = _interopRequireDefault(require('../utils/FirstNode'));
+}
+
+var _utilsGetUndeclaredIdentifiers2;
+
+function _utilsGetUndeclaredIdentifiers() {
+  return _utilsGetUndeclaredIdentifiers2 = _interopRequireDefault(require('../utils/getUndeclaredIdentifiers'));
+}
+
+var _utilsGetUndeclaredJSXIdentifiers2;
+
+function _utilsGetUndeclaredJSXIdentifiers() {
+  return _utilsGetUndeclaredJSXIdentifiers2 = _interopRequireDefault(require('../utils/getUndeclaredJSXIdentifiers'));
+}
+
+function addMissingRequires(root, options) {
+  var first = (_utilsFirstNode2 || _utilsFirstNode()).default.get(root);
   if (!first) {
     return;
   }
-  const _first = first; // For flow.
+  var _first = first; // For flow.
 
-  const {moduleMap} = options;
+  var moduleMap = options.moduleMap;
 
   // Add the missing requires.
-  getUndeclaredIdentifiers(root, options).forEach(name => {
-    const node = moduleMap.getRequire(name, {sourcePath: options.sourcePath});
+  (0, (_utilsGetUndeclaredIdentifiers2 || _utilsGetUndeclaredIdentifiers()).default)(root, options).forEach(function (name) {
+    var node = moduleMap.getRequire(name, { sourcePath: options.sourcePath });
     _first.insertBefore(node);
   });
 
   // Add missing JSX requires.
-  getUndeclaredJSXIdentifiers(root, options).forEach(name => {
-    const node = moduleMap.getRequire(name, {
+  (0, (_utilsGetUndeclaredJSXIdentifiers2 || _utilsGetUndeclaredJSXIdentifiers()).default)(root, options).forEach(function (name) {
+    var node = moduleMap.getRequire(name, {
       sourcePath: options.sourcePath,
-      jsxIdentifier: true,
+      jsxIdentifier: true
     });
     _first.insertBefore(node);
   });

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,65 +8,78 @@
  * the root directory of this source tree.
  */
 
-import type {Context, Lines, Print} from '../../types/common';
-import type {Literal} from 'ast-types-flow';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import escapeStringLiteral from '../../utils/escapeStringLiteral';
-import flatten from '../../utils/flatten';
-import invariant from 'assert';
-import markers from '../../constants/markers';
+var _utilsEscapeStringLiteral2;
 
-function printLiteral(print: Print, node: Literal, context: Context): Lines {
-  const last = context.path.last();
+function _utilsEscapeStringLiteral() {
+  return _utilsEscapeStringLiteral2 = _interopRequireDefault(require('../../utils/escapeStringLiteral'));
+}
+
+var _utilsFlatten2;
+
+function _utilsFlatten() {
+  return _utilsFlatten2 = _interopRequireDefault(require('../../utils/flatten'));
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _constantsMarkers2;
+
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+function printLiteral(print, node, context) {
+  var last = context.path.last();
 
   // JSXAttributes should always use double quotes.
   if (last && last.type === 'JSXAttribute') {
-    invariant(
-      typeof node.value === 'string',
-      'Literals within a JSXAttribute should always be a string',
-    );
-    return [escapeStringLiteral(node.value, {quotes: 'double'})];
+    (0, (_assert2 || _assert()).default)(typeof node.value === 'string', 'Literals within a JSXAttribute should always be a string');
+    return [(0, (_utilsEscapeStringLiteral2 || _utilsEscapeStringLiteral()).default)(node.value, { quotes: 'double' })];
   }
 
   // JSXElements don't need quotes, so we need special handling.
   if (last && last.type === 'JSXElement') {
-    invariant(
-      typeof node.value === 'string',
-      'Literals within a JSXElement should always be a string',
-    );
-    const lines = node.value.split('\n');
-    let spaceNeeded = true;
-    return flatten(lines.map((line, i) => {
-      // Note: Scope is already opened in the JSXElement.
-      // We have to check in order to avoid consecutive spaces when the scope
-      // is not broken.
-      const breakMarker = spaceNeeded
-        ? markers.scopeSpaceBreak
-        : markers.scopeBreak;
-      if (/^\s*$/.test(line)) {
-        spaceNeeded = false;
-      } else {
-        spaceNeeded = true;
-      }
-      return [
-        i > 0 ? breakMarker : markers.empty,
-        line,
-      ];
-    }));
+    var _ret = (function () {
+      (0, (_assert2 || _assert()).default)(typeof node.value === 'string', 'Literals within a JSXElement should always be a string');
+      var lines = node.value.split('\n');
+      var spaceNeeded = true;
+      return {
+        v: (0, (_utilsFlatten2 || _utilsFlatten()).default)(lines.map(function (line, i) {
+          // Note: Scope is already opened in the JSXElement.
+          // We have to check in order to avoid consecutive spaces when the scope
+          // is not broken.
+          var breakMarker = spaceNeeded ? (_constantsMarkers2 || _constantsMarkers()).default.scopeSpaceBreak : (_constantsMarkers2 || _constantsMarkers()).default.scopeBreak;
+          if (/^\s*$/.test(line)) {
+            spaceNeeded = false;
+          } else {
+            spaceNeeded = true;
+          }
+          return [i > 0 ? breakMarker : (_constantsMarkers2 || _constantsMarkers()).default.empty, line];
+        }))
+      };
+    })();
+
+    if (typeof _ret === 'object') return _ret.v;
   }
 
   return [literalToString(node)];
 }
 
-function literalToString(node: Literal): string {
+function literalToString(node) {
   if (typeof node.value === 'string') {
-    return escapeStringLiteral(node.value, {quotes: 'single'});
+    return (0, (_utilsEscapeStringLiteral2 || _utilsEscapeStringLiteral()).default)(node.value, { quotes: 'single' });
   }
   // It's not safe to use value for number literals that would lose precision.
   if (node.raw != null) {
     return node.raw;
   }
-  return markers.empty;
+  return (_constantsMarkers2 || _constantsMarkers()).default.empty;
 }
 
 module.exports = printLiteral;
