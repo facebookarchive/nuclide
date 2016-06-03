@@ -14,8 +14,6 @@ import type {TestContext} from './remotable-tests';
 import {Range} from 'atom';
 
 import {
-  busySignal,
-  copyFixture,
   dispatchKeyboardEvent,
 } from '../../pkg/nuclide-integration-test-helpers';
 
@@ -25,28 +23,14 @@ import {
   expectGutterDiagnosticToContain,
 } from './diagnostics-common';
 
+import {setup} from './flow-common';
+
 export function runTest(context: TestContext) {
   it('tests for flow ', () => {
-    let textEditor: atom$TextEditor = (null : any);
+    const textEditorPromise = setup(context);
 
-    waitsForPromise({timeout: 240000}, async () => {
-      const flowProjectPath = await copyFixture('flow_project_1');
-
-      // Add this directory as an atom project.
-      await context.setProject(flowProjectPath);
-      // Open a file in the flow project we copied, and get reference to the editor's HTML.
-      textEditor = await atom.workspace.open(context.getProjectRelativePath('main.js'));
-    });
-
-    waitsFor('spinner to start', 10000, () => {
-      return busySignal.isBusy();
-    });
-
-    waitsFor('spinner to stop', 30000, () => {
-      return !busySignal.isBusy();
-    });
-
-    runs(() => {
+    waitsForPromise(async () => {
+      const textEditor = await textEditorPromise;
       // Change `bar` to `baz`
       textEditor.setTextInBufferRange(new Range([14, 12], [14, 13]), 'z');
 
