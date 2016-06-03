@@ -41,6 +41,7 @@ export class ArcanistDiagnosticsProvider {
       onNewUpdateSubscriber: this._receivedNewUpdateSubscriber.bind(this),
     };
     this._providerBase = new DiagnosticsProviderBase(baseOptions);
+    this._subscriptions.add(this._providerBase);
     this._requestSerializer = new RequestSerializer();
     this._subscriptions.add(onWillDestroyTextBuffer(buffer => {
       const path: ?string = buffer.getPath();
