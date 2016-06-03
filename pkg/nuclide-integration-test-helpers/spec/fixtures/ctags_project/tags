@@ -1,0 +1,4 @@
+a	a.txt	/^void a() {$/
+b	a.txt	/^void b() {$/
+b	b.txt	/^void b() {$/;"	f	namespace:test
+c	c.txt	/^void c() {$/
