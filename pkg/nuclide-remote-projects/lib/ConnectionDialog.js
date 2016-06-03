@@ -13,31 +13,25 @@ import type {
   NuclideRemoteConnectionParams,
   NuclideRemoteConnectionProfile,
 } from './connection-types';
-
 import type {
   SshHandshakeErrorType,
   SshConnectionConfiguration,
 } from '../../nuclide-remote-connection/lib/SshHandshake';
-
 import type {RemoteConnection} from '../../nuclide-remote-connection/lib/RemoteConnection';
 
-import {notifySshHandshakeError} from './notification';
 import AuthenticationPrompt from './AuthenticationPrompt';
+import {Button, ButtonTypes} from '../../nuclide-ui/lib/Button';
+import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
 import ConnectionDetailsPrompt from './ConnectionDetailsPrompt';
 import IndeterminateProgressBar from './IndeterminateProgressBar';
+import {notifySshHandshakeError} from './notification';
 import {React} from 'react-for-atom';
 import {
   SshHandshake,
   decorateSshConnectionDelegateWithTracking,
 } from '../../nuclide-remote-connection';
+
 const logger = require('../../nuclide-logging').getLogger();
-import {
-  Button,
-  ButtonTypes,
-} from '../../nuclide-ui/lib/Button';
-import {
-  ButtonGroup,
-} from '../../nuclide-ui/lib/ButtonGroup';
 
 type Props = {
   // The list of connection profiles that will be displayed.
@@ -183,10 +177,10 @@ class ConnectionDialog extends React.Component {
 
     return (
       <div>
-        <div className="padded">
+        <div className="block">
           {content}
         </div>
-        <div className="padded text-right">
+        <div className="block text-right">
           <ButtonGroup>
             <Button onClick={this.cancel}>
               Cancel

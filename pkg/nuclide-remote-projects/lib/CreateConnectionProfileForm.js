@@ -87,7 +87,7 @@ class CreateConnectionProfileForm extends React.Component<void, Props, void> {
     const initialFields = this.props.initialFormFields;
 
     return (
-      <div className="padded">
+      <div>
         <div className="form-group">
           <label>{PROFILE_NAME_LABEL}:</label>
           <AtomInput
@@ -108,7 +108,7 @@ class CreateConnectionProfileForm extends React.Component<void, Props, void> {
           onConfirm={emptyFunction}
           onCancel={emptyFunction}
         />
-        <div className="padded text-right">
+        <div className="text-right">
           <ButtonGroup>
             <Button onClick={this._clickCancel}>
               Cancel
