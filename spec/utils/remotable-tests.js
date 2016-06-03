@@ -101,6 +101,12 @@ class RemoteTestContext {
   }
 }
 
+function getDescribeFunction(forceDescribe: boolean): Function {
+  // TODO guard against `fdescribe` usages in prod.
+  // $FlowIgnore usage of `fdescribe`.
+  return forceDescribe ? fdescribe : describe;
+}
+
 // This function can be used in place of jasmine's describe.
 // It will run the testDecription both locally and remotely.
 // The provided testDescription must call context.setProject() exactly once
@@ -111,17 +117,19 @@ class RemoteTestContext {
 // separate integration test files.
 export function describeRemotableTest(
   testName: string,
-  testDescription: (context: TestContext) => void
+  testDescription: (context: TestContext) => void,
+  forceDescribe?: boolean = false,
 ): void {
-  describeLocal(testName, testDescription);
-  describeRemote(testName, testDescription);
+  describeLocal(testName, testDescription, forceDescribe);
+  describeRemote(testName, testDescription, forceDescribe);
 }
 
 export function describeRemote(
   testName: string,
   testDescription: (context: TestContext) => void,
+  forceDescribe?: boolean = false,
 ): void {
-  describe('Remote ' + testName, () => {
+  getDescribeFunction(forceDescribe)('Remote ' + testName, () => {
     testDescription(new RemoteTestContext());
   });
 }
@@ -129,8 +137,9 @@ export function describeRemote(
 export function describeLocal(
   testName: string,
   testDescription: (context: TestContext) => void,
+  forceDescribe?: boolean = false,
 ): void {
-  describe('Local ' + testName, () => {
+  getDescribeFunction(forceDescribe)('Local ' + testName, () => {
     testDescription(new LocalTestContext());
   });
 }
