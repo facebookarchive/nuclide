@@ -9,18 +9,21 @@
  * the root directory of this source tree.
  */
 
-/* global MouseEvent */
-
 import type {TestContext} from './remotable-tests';
 
 import {Range} from 'atom';
-import invariant from 'assert';
 
 import {
   busySignal,
   copyFixture,
   dispatchKeyboardEvent,
 } from '../../pkg/nuclide-integration-test-helpers';
+
+import {
+  doGutterDiagnosticsExist,
+  waitsForGutterDiagnostics,
+  expectGutterDiagnosticToContain,
+} from './diagnostics-common';
 
 export function runTest(context: TestContext) {
   it('tests for flow ', () => {
@@ -47,38 +50,17 @@ export function runTest(context: TestContext) {
       // Change `bar` to `baz`
       textEditor.setTextInBufferRange(new Range([14, 12], [14, 13]), 'z');
 
-      expect(getGutterElement()).toBeNull();
+      expect(doGutterDiagnosticsExist()).toBeFalsy();
 
       dispatchKeyboardEvent('s', document.activeElement, {cmd: true});
     });
 
-    let gutterElement: ?HTMLElement = null;
-
-    waitsFor('error to appear', 10000, () => {
-      gutterElement = getGutterElement();
-      return gutterElement != null;
-    });
+    waitsForGutterDiagnostics();
 
     runs(() => {
-      invariant(gutterElement != null);
-      gutterElement.dispatchEvent(new MouseEvent('mouseenter'));
-
-      const popupElement = getPopupElement();
-      invariant(popupElement != null);
-
       // This may need to be updated if Flow changes error text
       const expectedText = 'property `baz`\nProperty not found in\nFoo';
-      expect(popupElement.innerText).toContain(expectedText);
+      expectGutterDiagnosticToContain(expectedText);
     });
   });
-}
-
-function getGutterElement(): ?HTMLElement {
-  return atom.views.getView(atom.workspace).querySelector(
-    'atom-workspace /deep/ .nuclide-diagnostics-gutter-ui-gutter-error'
-  );
-}
-
-function getPopupElement(): ?HTMLElement {
-  return document.querySelector('.nuclide-diagnostics-gutter-ui-popup');
 }
