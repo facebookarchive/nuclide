@@ -11,10 +11,12 @@
 
 import {
   copyFixture,
-  dispatchKeyboardEvent,
-  waitsForFilePosition,
 } from '../pkg/nuclide-integration-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
+import {
+  waitsForHyperclickResult,
+  waitsForMultipleHyperclickResults,
+} from './utils/hyperclick-common';
 
 describeRemotableTest('Ctags Hyperclick', context => {
   it('tests ctags hyperclick example', () => {
@@ -26,31 +28,23 @@ describeRemotableTest('Ctags Hyperclick', context => {
       textEditor = await atom.workspace.open(context.getProjectRelativePath('a.txt'));
     });
 
-    runs(() => {
-      textEditor.setCursorBufferPosition([0, 5]);
-      // shortcut key for hyperclick:confirm-cursor
-      dispatchKeyboardEvent('enter', document.activeElement, {cmd: true, alt: true});
-    });
-
-    waitsForFilePosition('a.txt', 0, 0);
+    waitsForHyperclickResult(
+      [0, 5],
+      'a.txt',
+      [0, 0],
+    );
 
     // 'b' has multiple options.
     runs(() => {
       textEditor.setCursorBufferPosition([3, 5]);
-      dispatchKeyboardEvent('enter', document.activeElement, {cmd: true, alt: true});
     });
 
-    let results;
-    waitsFor(() => {
-      results = atom.views.getView(atom.workspace)
-        .querySelectorAll('.hyperclick-result-item');
-      return results.length > 0;
-    });
-
-    runs(() => {
-      expect(results.length).toBe(2);
-      expect(results[0].innerText).toBe('b (a.txt)');
-      expect(results[1].innerText).toBe('function test::b (b.txt)');
-    });
+    waitsForMultipleHyperclickResults(
+      [3, 5],
+      [
+        'b (a.txt)',
+        'function test::b (b.txt)',
+      ],
+    );
   });
 });

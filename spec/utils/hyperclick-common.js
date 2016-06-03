@@ -33,3 +33,24 @@ export function waitsForHyperclickResult(
 
   waitsForFilePosition(endFile, ...endPosition);
 }
+
+export function waitsForMultipleHyperclickResults(
+  startPosition: [number, number],
+  expectedResultsText: Array<string>,
+) {
+  runs(() => {
+    dispatchKeyboardEvent('enter', document.activeElement, {cmd: true, alt: true});
+  });
+
+  let results;
+  waitsFor(() => {
+    // Convert from a NodeList to an actual array.
+    results = [...atom.views.getView(atom.workspace).querySelectorAll('.hyperclick-result-item')];
+    return results.length > 0;
+  });
+
+  runs(() => {
+    const resultsText = results.map(result => result.innerText);
+    expect(resultsText).toEqual(expectedResultsText);
+  });
+}
