@@ -12,6 +12,7 @@
 import type {Observable} from 'rxjs';
 import type {ServerStatusUpdate} from '..';
 
+import invariant from 'assert';
 import {Subject} from 'rxjs';
 
 import {findFlowConfigDir} from './FlowHelpers';
@@ -24,7 +25,10 @@ export class FlowRootContainer {
 
   _flowRoot$: Subject<FlowRoot>;
 
+  _disposed: boolean;
+
   constructor() {
+    this._disposed = false;
     this._flowRootMap = new Map();
 
     // No need to dispose of this subscription since we want to keep it for the entire life of this
@@ -36,8 +40,11 @@ export class FlowRootContainer {
   }
 
   async getRootForPath(path: string): Promise<?FlowRoot> {
+    this._checkForDisposal();
     const rootPath = await findFlowConfigDir(path);
-    if (rootPath == null) {
+    // During the await above, this may have been disposed. If so, return null to stop the current
+    // operation.
+    if (rootPath == null || this._disposed) {
       return null;
     }
 
@@ -53,6 +60,7 @@ export class FlowRootContainer {
     file: string,
     f: (instance: FlowRoot) => Promise<T>,
   ): Promise<?T> {
+    this._checkForDisposal();
     const instance = await this.getRootForPath(file);
     if (instance == null) {
       return null;
@@ -62,10 +70,12 @@ export class FlowRootContainer {
   }
 
   getAllRoots(): Iterable<FlowRoot> {
+    this._checkForDisposal();
     return this._flowRootMap.values();
   }
 
   getServerStatusUpdates(): Observable<ServerStatusUpdate> {
+    this._checkForDisposal();
     return this._flowRoot$.flatMap(root => {
       const pathToRoot = root.getPathToRoot();
       // The status update stream will be completed when a root is disposed, so there is no need to
@@ -74,8 +84,14 @@ export class FlowRootContainer {
     });
   }
 
-  clear(): void {
+  dispose(): void {
+    this._checkForDisposal();
     this._flowRootMap.forEach(instance => instance.dispose());
     this._flowRootMap.clear();
+    this._disposed = true;
+  }
+
+  _checkForDisposal(): void {
+    invariant(!this._disposed, 'Method called on disposed FlowRootContainer');
   }
 }
