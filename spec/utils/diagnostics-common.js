@@ -34,6 +34,27 @@ export function expectGutterDiagnosticToContain(message: string): void {
   expect(popupElement.innerText).toContain(message);
 }
 
+export function isDiagnosticsPanelShowing(): boolean {
+  const rootNode = getDiagnosticsPanelElement();
+  if (rootNode == null) {
+    return false;
+  }
+  return (rootNode.style.getPropertyValue('display') !== 'none');
+}
+
+export function waitsForStatusBarItem(): void {
+  waitsFor('gutter icon to load in the DOM', 10000, () => {
+    const element = getStatusBarElement();
+    return element != null && element.children.length !== 0;
+  });
+}
+
+export function clickStatusBarItem(): void {
+  const element = getStatusBarElement();
+  invariant(element != null);
+  element.click();
+}
+
 function getGutterElement(): ?HTMLElement {
   return atom.views.getView(atom.workspace).querySelector(
     'atom-workspace /deep/ .nuclide-diagnostics-gutter-ui-gutter-error'
@@ -42,4 +63,17 @@ function getGutterElement(): ?HTMLElement {
 
 function getPopupElement(): ?HTMLElement {
   return document.querySelector('.nuclide-diagnostics-gutter-ui-popup');
+}
+
+// Returns the parent element of .nuclide-diagnostics-ui, which is helpful for determining
+// whether the diagnostics panel is shown or hidden
+function getDiagnosticsPanelElement(): ?HTMLElement {
+  const rootNode = atom.views.getView(atom.workspace).querySelector('.nuclide-diagnostics-ui');
+  return (rootNode == null)
+    ? null
+    : ((rootNode.parentElement: any): ?HTMLElement);
+}
+
+function getStatusBarElement(): ?HTMLElement {
+  return atom.views.getView(atom.workspace).querySelector('.nuclide-diagnostics-highlight-group');
 }
