@@ -23,7 +23,7 @@ import {isHeaderFile, isSourceFile, findIncludingSourceFile} from './utils';
 
 const logger = getLogger();
 
-const BUCK_TIMEOUT = 60000;
+const BUCK_TIMEOUT = 5 * 60 * 1000;
 
 const COMPILATION_DATABASE_FILE = 'compile_commands.json';
 /**
